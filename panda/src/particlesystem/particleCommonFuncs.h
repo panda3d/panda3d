@@ -16,7 +16,7 @@
 #define PARTICLECOMMONFUNCS_H
 
 // evaluates to a float in the range [0,1]
-#define NORMALIZED_RAND() ((float)rand() / (float)RAND_MAX)
+#define NORMALIZED_RAND() ((PN_stdfloat)rand() / (PN_stdfloat)RAND_MAX)
 
 // linear interpolation
 // t is in [0,1]

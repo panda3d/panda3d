@@ -22,7 +22,7 @@ TypeHandle AngularVectorForce::_type_handle;
 // Description : constructor
 ////////////////////////////////////////////////////////////////////
 AngularVectorForce::
-AngularVectorForce(const LRotationf &vec) :
+AngularVectorForce(const LRotation &vec) :
   AngularForce(), _fvec(vec) {
 }
 
@@ -32,9 +32,9 @@ AngularVectorForce(const LRotationf &vec) :
 // Description : constructor
 ////////////////////////////////////////////////////////////////////
 AngularVectorForce::
-AngularVectorForce(float h, float p, float r) :
+AngularVectorForce(PN_stdfloat h, PN_stdfloat p, PN_stdfloat r) :
   AngularForce() {
-  _fvec.set_hpr(LVecBase3f(h, p, r));
+  _fvec.set_hpr(LVecBase3(h, p, r));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -72,7 +72,7 @@ make_copy() const {
 //      Access : private, virtual
 // Description : query
 ////////////////////////////////////////////////////////////////////
-LRotationf AngularVectorForce::
+LRotation AngularVectorForce::
 get_child_quat(const PhysicsObject *) {
   return _fvec;
 }

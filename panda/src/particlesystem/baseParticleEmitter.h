@@ -39,21 +39,21 @@ PUBLISHED:
   virtual ~BaseParticleEmitter();
   virtual BaseParticleEmitter *make_copy() = 0;
 
-  void generate(LPoint3f& pos, LVector3f& vel);
+  void generate(LPoint3& pos, LVector3& vel);
 
   INLINE void set_emission_type(emissionType et);
-  INLINE void set_amplitude(float a);
-  INLINE void set_amplitude_spread(float as);
-  INLINE void set_offset_force(const LVector3f& of);  // this is a constant force applied to all particles
-  INLINE void set_explicit_launch_vector(const LVector3f& elv);
-  INLINE void set_radiate_origin(const LPoint3f& ro);
+  INLINE void set_amplitude(PN_stdfloat a);
+  INLINE void set_amplitude_spread(PN_stdfloat as);
+  INLINE void set_offset_force(const LVector3& of);  // this is a constant force applied to all particles
+  INLINE void set_explicit_launch_vector(const LVector3& elv);
+  INLINE void set_radiate_origin(const LPoint3& ro);
 
   INLINE emissionType get_emission_type() const;
-  INLINE float get_amplitude() const;
-  INLINE float get_amplitude_spread() const;
-  INLINE LVector3f get_offset_force() const;
-  INLINE LVector3f get_explicit_launch_vector() const;
-  INLINE LPoint3f get_radiate_origin() const;
+  INLINE PN_stdfloat get_amplitude() const;
+  INLINE PN_stdfloat get_amplitude_spread() const;
+  INLINE LVector3 get_offset_force() const;
+  INLINE LVector3 get_explicit_launch_vector() const;
+  INLINE LPoint3 get_radiate_origin() const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent=0) const;
@@ -63,18 +63,18 @@ protected:
   BaseParticleEmitter(const BaseParticleEmitter &copy);
 
   emissionType _emission_type;
-  LVector3f _explicit_launch_vector;
-  LPoint3f  _radiate_origin;
+  LVector3 _explicit_launch_vector;
+  LPoint3  _radiate_origin;
 
-  float _amplitude;
-  float _amplitude_spread;
+  PN_stdfloat _amplitude;
+  PN_stdfloat _amplitude_spread;
 
 private:
   // these should be called in sequence (pos, then vel)
-  virtual void assign_initial_position(LPoint3f& pos) = 0;
-  virtual void assign_initial_velocity(LVector3f& vel) = 0;
+  virtual void assign_initial_position(LPoint3& pos) = 0;
+  virtual void assign_initial_velocity(LVector3& vel) = 0;
 
-  LVector3f _offset_force;
+  LVector3 _offset_force;
 };
 
 #include "baseParticleEmitter.I"

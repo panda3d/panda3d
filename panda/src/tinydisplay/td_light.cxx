@@ -1,7 +1,7 @@
 #include "zgl.h"
 #include <math.h>
 
-static inline float clampf(float a,float min,float max)
+static inline PN_stdfloat clampf(PN_stdfloat a,PN_stdfloat min,PN_stdfloat max)
 {
   if (a<min) return min;
   else if (a>max) return max;
@@ -11,11 +11,11 @@ static inline float clampf(float a,float min,float max)
 /* non optimized lighting model */
 void gl_shade_vertex(GLContext *c,GLVertex *v)
 {
-  float R,G,B,A;
+  PN_stdfloat R,G,B,A;
   GLMaterial *m;
   GLLight *l;
   V3 n,s,d;
-  float dist,tmp,att,dot,dot_spot,dot_spec;
+  PN_stdfloat dist,tmp,att,dot,dot_spot,dot_spec;
   int twoside = c->light_model_two_side;
 
   m=&c->materials[0];
@@ -30,7 +30,7 @@ void gl_shade_vertex(GLContext *c,GLVertex *v)
   A=clampf(m->diffuse.v[3],0,1);
 
   for(l=c->first_light;l!=NULL;l=l->next) {
-    float lR,lB,lG;
+    PN_stdfloat lR,lB,lG;
     
     /* ambient */
     lR=l->ambient.v[0] * m->ambient.v[0];

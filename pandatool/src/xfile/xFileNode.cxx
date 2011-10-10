@@ -444,9 +444,9 @@ add_MeshMaterialList(const string &name) {
 //               this node.
 ////////////////////////////////////////////////////////////////////
 XFileDataNode *XFileNode::
-add_Material(const string &name, const Colorf &face_color,
-             double power, const RGBColorf &specular_color,
-             const RGBColorf &emissive_color) {
+add_Material(const string &name, const LColor &face_color,
+             double power, const LRGBColor &specular_color,
+             const LRGBColor &emissive_color) {
   XFileTemplate *xtemplate = XFile::find_standard_template("Material");
   nassertr(xtemplate != (XFileTemplate *)NULL, NULL);
   XFileDataNodeTemplate *node =

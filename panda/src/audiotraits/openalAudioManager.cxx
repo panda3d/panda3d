@@ -482,12 +482,12 @@ release_sound(OpenALAudioSound* audioSound) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioManager::set_volume(float volume)
+//     Function: OpenALAudioManager::set_volume(PN_stdfloat volume)
 //       Access: Public
 //  Description: 
 //        Sets listener gain
 ////////////////////////////////////////////////////////////////////
-void OpenALAudioManager::set_volume(float volume) {
+void OpenALAudioManager::set_volume(PN_stdfloat volume) {
   if (_volume!=volume) {
     _volume = volume;
 
@@ -514,7 +514,7 @@ void OpenALAudioManager::set_volume(float volume) {
 //  Description: 
 //        Gets listener gain
 ////////////////////////////////////////////////////////////////////
-float OpenALAudioManager::
+PN_stdfloat OpenALAudioManager::
 get_volume() const {
   return _volume;
 }
@@ -525,7 +525,7 @@ get_volume() const {
 //  Description: set the overall play rate
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
-set_play_rate(float play_rate) {
+set_play_rate(PN_stdfloat play_rate) {
   if (_play_rate!=play_rate) {
     _play_rate = play_rate;
     // Tell our AudioSounds to adjust:
@@ -541,7 +541,7 @@ set_play_rate(float play_rate) {
 //       Access: Public
 //  Description: get the overall speed/pitch/play rate
 ////////////////////////////////////////////////////////////////////
-float OpenALAudioManager::
+PN_stdfloat OpenALAudioManager::
 get_play_rate() const {
   return _play_rate;
 }
@@ -590,7 +590,7 @@ get_active() const {
 //        I told you, so you can't say I didn't.
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
-audio_3d_set_listener_attributes(float px, float py, float pz, float vx, float vy, float vz, float fx, float fy, float fz, float ux, float uy, float uz) {
+audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz, PN_stdfloat fx, PN_stdfloat fy, PN_stdfloat fz, PN_stdfloat ux, PN_stdfloat uy, PN_stdfloat uz) {
   _position[0] = px;
   _position[1] = pz;
   _position[2] = -py; 
@@ -625,7 +625,7 @@ audio_3d_set_listener_attributes(float px, float py, float pz, float vx, float v
 //  Description: Get position of the "ear" that picks up 3d sounds
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
-audio_3d_get_listener_attributes(float *px, float *py, float *pz, float *vx, float *vy, float *vz, float *fx, float *fy, float *fz, float *ux, float *uy, float *uz) {
+audio_3d_get_listener_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz, PN_stdfloat *fx, PN_stdfloat *fy, PN_stdfloat *fz, PN_stdfloat *ux, PN_stdfloat *uy, PN_stdfloat *uz) {
   *px = _position[0];
   *py = -_position[2];
   *pz = _position[1];
@@ -654,7 +654,7 @@ audio_3d_get_listener_attributes(float *px, float *py, float *pz, float *vx, flo
 //                        OpenAL's default speed of sound is 343.3 m/s == 1126.3 ft/s
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
-audio_3d_set_distance_factor(float factor) {
+audio_3d_set_distance_factor(PN_stdfloat factor) {
   _distance_factor = factor;
 
   make_current();
@@ -685,7 +685,7 @@ audio_3d_set_distance_factor(float factor) {
 //       Access: Public
 //  Description: Sets units per foot
 ////////////////////////////////////////////////////////////////////
-float OpenALAudioManager::
+PN_stdfloat OpenALAudioManager::
 audio_3d_get_distance_factor() const {
   return _distance_factor;
 }
@@ -697,7 +697,7 @@ audio_3d_get_distance_factor() const {
 //               Defaults to 1.0
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
-audio_3d_set_doppler_factor(float factor) {
+audio_3d_set_doppler_factor(PN_stdfloat factor) {
   _doppler_factor = factor;
 
   make_current();
@@ -712,7 +712,7 @@ audio_3d_set_doppler_factor(float factor) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-float OpenALAudioManager::
+PN_stdfloat OpenALAudioManager::
 audio_3d_get_doppler_factor() const {
   return _doppler_factor;
 }
@@ -724,7 +724,7 @@ audio_3d_get_doppler_factor() const {
 //               Defaults to 1.0
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
-audio_3d_set_drop_off_factor(float factor) {
+audio_3d_set_drop_off_factor(PN_stdfloat factor) {
   _drop_off_factor = factor;
 
   AllSounds::iterator i=_all_sounds.begin();
@@ -738,7 +738,7 @@ audio_3d_set_drop_off_factor(float factor) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-float OpenALAudioManager::
+PN_stdfloat OpenALAudioManager::
 audio_3d_get_drop_off_factor() const {
   return _drop_off_factor;
 }

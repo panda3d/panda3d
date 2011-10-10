@@ -40,13 +40,13 @@ public:
   virtual void play();
   virtual void stop();
   
-  virtual float get_time() const;
+  virtual PN_stdfloat get_time() const;
   
-  virtual void set_volume(float volume=1.0f);
-  virtual void set_balance(float balance_right=0.0f);
-  virtual void set_play_rate(float play_rate=1.0f);
+  virtual void set_volume(PN_stdfloat volume=1.0f);
+  virtual void set_balance(PN_stdfloat balance_right=0.0f);
+  virtual void set_play_rate(PN_stdfloat play_rate=1.0f);
   
-  virtual float length() const;
+  virtual PN_stdfloat length() const;
 
   virtual AudioSound::SoundStatus status() const;
 
@@ -54,12 +54,12 @@ public:
 
 private:
   static void AILCALLBACK finish_callback(HSTREAM stream);
-  void do_set_time(float time);
+  void do_set_time(PN_stdfloat time);
 
   Filename _path;
   HSTREAM _stream;
   S32 _original_playback_rate;
-  mutable float _length;
+  mutable PN_stdfloat _length;
   mutable bool _got_length;
 
 public:

@@ -939,11 +939,11 @@ dispatch_double_quad(const string &opt, const string &arg, void *var) {
 //       Access: Protected, Static
 //  Description: Standard dispatch function for an option that takes a
 //               color, as l or l,a or r,g,b or r,g,b,a.  The data
-//               pointer is to an array of four floats, e.g. a Colorf.
+//               pointer is to an array of four floats, e.g. a LColor.
 ////////////////////////////////////////////////////////////////////
 bool ProgramBase::
 dispatch_color(const string &opt, const string &arg, void *var) {
-  float *ip = (float *)var;
+  PN_stdfloat *ip = (PN_stdfloat *)var;
 
   vector_string words;
   tokenize(arg, words, ",");

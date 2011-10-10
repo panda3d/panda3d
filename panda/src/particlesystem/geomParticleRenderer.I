@@ -64,7 +64,7 @@ set_z_scale_flag(bool animate_z_ratio) {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomParticleRenderer::
-set_initial_x_scale(float initial_x_scale) {
+set_initial_x_scale(PN_stdfloat initial_x_scale) {
   _initial_x_scale = initial_x_scale;
   init_geoms();
 }
@@ -74,7 +74,7 @@ set_initial_x_scale(float initial_x_scale) {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomParticleRenderer::
-set_final_x_scale(float final_x_scale) {
+set_final_x_scale(PN_stdfloat final_x_scale) {
   _final_x_scale = final_x_scale;
   init_geoms();
 }
@@ -84,7 +84,7 @@ set_final_x_scale(float final_x_scale) {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomParticleRenderer::
-set_initial_y_scale(float initial_y_scale) {
+set_initial_y_scale(PN_stdfloat initial_y_scale) {
   _initial_y_scale = initial_y_scale;
   init_geoms();
 }
@@ -94,7 +94,7 @@ set_initial_y_scale(float initial_y_scale) {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomParticleRenderer::
-set_final_y_scale(float final_y_scale) {
+set_final_y_scale(PN_stdfloat final_y_scale) {
   _final_y_scale = final_y_scale;
   init_geoms();
 }
@@ -104,7 +104,7 @@ set_final_y_scale(float final_y_scale) {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomParticleRenderer::
-set_initial_z_scale(float initial_z_scale) {
+set_initial_z_scale(PN_stdfloat initial_z_scale) {
   _initial_z_scale = initial_z_scale;
   init_geoms();
 }
@@ -114,7 +114,7 @@ set_initial_z_scale(float initial_z_scale) {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomParticleRenderer::
-set_final_z_scale(float final_z_scale) {
+set_final_z_scale(PN_stdfloat final_z_scale) {
   _final_z_scale = final_z_scale;
   init_geoms();
 }
@@ -168,7 +168,7 @@ get_z_scale_flag() const {
 // Function : GeomParticleRenderer::get_initial_x_scale
 //   Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE float GeomParticleRenderer::
+INLINE PN_stdfloat GeomParticleRenderer::
 get_initial_x_scale() const {
   return _initial_x_scale;
 }
@@ -177,7 +177,7 @@ get_initial_x_scale() const {
 // Function : GeomParticleRenderer::get_final_x_scale
 //   Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE float GeomParticleRenderer::
+INLINE PN_stdfloat GeomParticleRenderer::
 get_final_x_scale() const {
   return _final_x_scale;
 }
@@ -186,7 +186,7 @@ get_final_x_scale() const {
 // Function : GeomParticleRenderer::get_initial_y_scale
 //   Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE float GeomParticleRenderer::
+INLINE PN_stdfloat GeomParticleRenderer::
 get_initial_y_scale() const {
   return _initial_y_scale;
 }
@@ -195,7 +195,7 @@ get_initial_y_scale() const {
 // Function : GeomParticleRenderer::get_final_y_scale
 //   Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE float GeomParticleRenderer::
+INLINE PN_stdfloat GeomParticleRenderer::
 get_final_y_scale() const {
   return _final_y_scale;
 }
@@ -204,7 +204,7 @@ get_final_y_scale() const {
 // Function : GeomParticleRenderer::get_initial_z_scale
 //   Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE float GeomParticleRenderer::
+INLINE PN_stdfloat GeomParticleRenderer::
 get_initial_z_scale() const {
   return _initial_z_scale;
 }
@@ -213,7 +213,7 @@ get_initial_z_scale() const {
 // Function : GeomParticleRenderer::get_final_z_scale
 //   Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE float GeomParticleRenderer::
+INLINE PN_stdfloat GeomParticleRenderer::
 get_final_z_scale() const {
   return _final_z_scale;
 }

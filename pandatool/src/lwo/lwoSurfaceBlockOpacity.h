@@ -38,7 +38,7 @@ public:
   };
 
   Type _type;
-  float _opacity;
+  PN_stdfloat _opacity;
   int _envelope;
 
 public:

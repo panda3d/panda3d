@@ -32,7 +32,7 @@ STTransform() :
 //  Description: Construct a transform with componentwise inputs.
 ////////////////////////////////////////////////////////////////////
 INLINE STTransform::
-STTransform(const LPoint3f &pos, float rotate, float scale) :
+STTransform(const LPoint3 &pos, PN_stdfloat rotate, PN_stdfloat scale) :
   _pos(pos),
   _rotate(rotate),
   _scale(scale)
@@ -45,7 +45,7 @@ STTransform(const LPoint3f &pos, float rotate, float scale) :
 //  Description: Construct a transform with componentwise inputs.
 ////////////////////////////////////////////////////////////////////
 INLINE STTransform::
-STTransform(float x, float y, float z, float rotate, float scale) :
+STTransform(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat rotate, PN_stdfloat scale) :
   _pos(x, y, z),
   _rotate(rotate),
   _scale(scale)
@@ -115,8 +115,8 @@ operator SpeedTree::CInstance () const {
 INLINE STTransform::
 operator CPT(TransformState) () const {
   return TransformState::make_pos_hpr_scale(_pos, 
-                                            LVecBase3f(_rotate, 0.0f, 0.0f),
-                                            LVecBase3f(_scale, _scale, _scale));
+                                            LVecBase3(_rotate, 0.0f, 0.0f),
+                                            LVecBase3(_scale, _scale, _scale));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -135,7 +135,7 @@ ident_mat() {
 //  Description: Replaces the translation component.
 ////////////////////////////////////////////////////////////////////
 INLINE void STTransform::
-set_pos(const LPoint3f &pos) {
+set_pos(const LPoint3 &pos) {
   _pos = pos;
 }
 
@@ -144,7 +144,7 @@ set_pos(const LPoint3f &pos) {
 //       Access: Published
 //  Description: Returns the translation component.
 ////////////////////////////////////////////////////////////////////
-INLINE const LPoint3f &STTransform::
+INLINE const LPoint3 &STTransform::
 get_pos() const {
   return _pos;
 }
@@ -157,7 +157,7 @@ get_pos() const {
 //               axis.
 ////////////////////////////////////////////////////////////////////
 INLINE void STTransform::
-set_rotate(float rotate) {
+set_rotate(PN_stdfloat rotate) {
   _rotate = rotate;
 }
 
@@ -167,7 +167,7 @@ set_rotate(float rotate) {
 //  Description: Returns the rotation component, in degrees
 //               counter-clockwise around the vertical axis.
 ////////////////////////////////////////////////////////////////////
-INLINE float STTransform::
+INLINE PN_stdfloat STTransform::
 get_rotate() const {
   return _rotate;
 }
@@ -179,7 +179,7 @@ get_rotate() const {
 //               scale value.
 ////////////////////////////////////////////////////////////////////
 INLINE void STTransform::
-set_scale(float scale) {
+set_scale(PN_stdfloat scale) {
   _scale = scale;
 }
 
@@ -189,7 +189,7 @@ set_scale(float scale) {
 //  Description: Returns the scale component, as a uniform scale
 //               value.
 ////////////////////////////////////////////////////////////////////
-INLINE float STTransform::
+INLINE PN_stdfloat STTransform::
 get_scale() const {
   return _scale;
 }
@@ -202,8 +202,8 @@ get_scale() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void STTransform::
 operator *= (const STTransform &other) {
-  LQuaternionf quat;
-  quat.set_hpr(LVecBase3f(_rotate, 0.0f, 0.0f));
+  LQuaternion quat;
+  quat.set_hpr(LVecBase3(_rotate, 0.0f, 0.0f));
   _pos += quat.xform(other.get_pos()) * _scale;
   _rotate += other._rotate;
   _scale *= other._scale;

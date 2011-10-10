@@ -33,22 +33,22 @@ protected:
 
 public:
   virtual PandaNode *make_copy() const;
-  virtual void xform(const LMatrix4f &mat);
+  virtual void xform(const LMatrix4 &mat);
   virtual void write(ostream &out, int indent_level) const;
 
-  virtual bool get_vector_to_light(LVector3f &result,
-                                   const LPoint3f &from_object_point, 
-                                   const LMatrix4f &to_object_space);
+  virtual bool get_vector_to_light(LVector3 &result,
+                                   const LPoint3 &from_object_point, 
+                                   const LMatrix4 &to_object_space);
 
 PUBLISHED:
-  INLINE const Colorf &get_specular_color() const;
-  INLINE void set_specular_color(const Colorf &color);
+  INLINE const LColor &get_specular_color() const;
+  INLINE void set_specular_color(const LColor &color);
   
-  INLINE const LPoint3f &get_point() const;
-  INLINE void set_point(const LPoint3f &point);
+  INLINE const LPoint3 &get_point() const;
+  INLINE void set_point(const LPoint3 &point);
   
-  INLINE const LVector3f &get_direction() const;
-  INLINE void set_direction(const LVector3f &direction);
+  INLINE const LVector3 &get_direction() const;
+  INLINE void set_direction(const LVector3 &direction);
 
   virtual int get_class_priority() const;
   
@@ -69,9 +69,9 @@ private:
       return DirectionalLight::get_class_type();
     }
 
-    Colorf _specular_color;
-    LPoint3f _point;
-    LVector3f _direction;
+    LColor _specular_color;
+    LPoint3 _point;
+    LVector3 _direction;
   };
 
   PipelineCycler<CData> _cycler;

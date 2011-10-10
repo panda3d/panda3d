@@ -115,7 +115,7 @@ munge_format_impl(const GeomVertexFormat *orig,
       PT(GeomVertexArrayFormat) new_array_format = new GeomVertexArrayFormat;
       new_array_format->add_column
         (InternalName::get_transform_weight(), animation.get_num_transforms() - 1,
-         NT_float32, C_other);
+         NT_stdfloat, C_other);
       
       if (animation.get_indexed_transforms()) {
         // Also, if we'll be indexing into the transform table, reserve
@@ -196,11 +196,11 @@ munge_format_impl(const GeomVertexFormat *orig,
             
             if (texcoord_type != (const GeomVertexColumn *)NULL) {
               new_array_format->add_column
-                (name, texcoord_type->get_num_values(), NT_float32, C_texcoord);
+                (name, texcoord_type->get_num_values(), NT_stdfloat, C_texcoord);
             } else {
               // We have to add something as a placeholder, even if the
               // texture coordinates aren't defined.
-              new_array_format->add_column(name, 2, NT_float32, C_texcoord);
+              new_array_format->add_column(name, 2, NT_stdfloat, C_texcoord);
             }
             new_format->remove_column(name);
           }
@@ -307,11 +307,11 @@ premunge_format_impl(const GeomVertexFormat *orig) {
             
             if (texcoord_type != (const GeomVertexColumn *)NULL) {
               new_array_format->add_column
-                (name, texcoord_type->get_num_values(), NT_float32, C_texcoord);
+                (name, texcoord_type->get_num_values(), NT_stdfloat, C_texcoord);
             } else {
               // We have to add something as a placeholder, even if the
               // texture coordinates aren't defined.
-              new_array_format->add_column(name, 2, NT_float32, C_texcoord);
+              new_array_format->add_column(name, 2, NT_stdfloat, C_texcoord);
             }
             new_format->remove_column(name);
           }

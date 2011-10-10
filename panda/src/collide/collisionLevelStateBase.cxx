@@ -71,19 +71,19 @@ prepare_collider(const ColliderDef &def, const NodePath &root) {
     // motion relative to each object it is considering a collision
     // with.  That makes things complicated!
     if (bv->as_bounding_sphere()) {
-      LPoint3f pos_delta = def._node_path.get_pos_delta(root);
+      LPoint3 pos_delta = def._node_path.get_pos_delta(root);
       
-      //LVector3f cap(pos_delta);
+      //LVector3 cap(pos_delta);
       //if(cap.length()>fluid_cap_amount) {
-      //  pos_delta=LPoint3f(cap/cap.length())*fluid_cap_amount;
+      //  pos_delta=LPoint3(cap/cap.length())*fluid_cap_amount;
       //}
-      if (pos_delta != LVector3f::zero()) {
+      if (pos_delta != LVector3::zero()) {
         // If the node has a delta, we have to include the starting
         // position in the volume as well.  We only do this for bounding
         // spheres, since (a) other kinds of volumes may not extend so
         // well, and (b) we've only implemented fluid-motion detection
         // for CollisionSpheres anyway.
-        LMatrix4f inv_trans = LMatrix4f::translate_mat(-pos_delta);
+        LMatrix4 inv_trans = LMatrix4::translate_mat(-pos_delta);
         PT(GeometricBoundingVolume) gbv_prev;
         gbv_prev = DCAST(GeometricBoundingVolume, bv->make_copy());
          

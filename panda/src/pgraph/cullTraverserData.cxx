@@ -231,7 +231,7 @@ get_fake_view_frustum_cull_state() {
   static CPT(RenderState) state = (const RenderState *)NULL;
   if (state == (const RenderState *)NULL) {
     state = RenderState::make
-      (ColorAttrib::make_flat(Colorf(1.0f, 0.0f, 0.0f, 1.0f)),
+      (ColorAttrib::make_flat(LColor(1.0f, 0.0f, 0.0f, 1.0f)),
        TextureAttrib::make_all_off(),
        RenderModeAttrib::make(RenderModeAttrib::M_wireframe),
        RenderState::get_max_priority());

@@ -213,36 +213,36 @@ VectorSender1ui(GeomVertexReader *reader, VectorUintFunc *func) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::VectorSender2ui::Constructor
+//     Function: CLP(ImmediateModeSender)::VectorSender2fui::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE CLP(ImmediateModeSender)::VectorSender2ui::
-VectorSender2ui(GeomVertexReader *reader, VectorUintFunc *func) :
+INLINE CLP(ImmediateModeSender)::VectorSender2fui::
+VectorSender2fui(GeomVertexReader *reader, VectorUintFunc *func) :
   ComponentSender(reader),
   _func(func)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::VectorSender3ui::Constructor
+//     Function: CLP(ImmediateModeSender)::VectorSender3fui::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE CLP(ImmediateModeSender)::VectorSender3ui::
-VectorSender3ui(GeomVertexReader *reader, VectorUintFunc *func) :
+INLINE CLP(ImmediateModeSender)::VectorSender3fui::
+VectorSender3fui(GeomVertexReader *reader, VectorUintFunc *func) :
   ComponentSender(reader),
   _func(func)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::VectorSender4ui::Constructor
+//     Function: CLP(ImmediateModeSender)::VectorSender4fui::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE CLP(ImmediateModeSender)::VectorSender4ui::
-VectorSender4ui(GeomVertexReader *reader, VectorUintFunc *func) :
+INLINE CLP(ImmediateModeSender)::VectorSender4fui::
+VectorSender4fui(GeomVertexReader *reader, VectorUintFunc *func) :
   ComponentSender(reader),
   _func(func)
 {

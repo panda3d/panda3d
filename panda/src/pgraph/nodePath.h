@@ -32,11 +32,11 @@
 #include "typedObject.h"
 #include "pta_float.h"
 #include "pta_double.h"
-#include "pta_LMatrix4f.h"
-#include "pta_LMatrix3f.h"
-#include "pta_LVecBase4f.h"
-#include "pta_LVecBase3f.h"
-#include "pta_LVecBase2f.h"
+#include "pta_LMatrix4.h"
+#include "pta_LMatrix3.h"
+#include "pta_LVecBase4.h"
+#include "pta_LVecBase3.h"
+#include "pta_LVecBase2.h"
 #include "stl_compares.h"
 
 class NodePathCollection;
@@ -312,248 +312,248 @@ PUBLISHED:
   // Methods that get and set the matrix transform: pos, hpr, scale,
   // in the local coordinate system.
 
-  INLINE void set_pos(float x, float y, float z);
-  void set_pos(const LVecBase3f &pos);
-  void set_x(float x);
-  void set_y(float y);
-  void set_z(float z);
-  INLINE void set_fluid_pos(float x, float y, float z);
-  void set_fluid_pos(const LVecBase3f &pos);
-  void set_fluid_x(float x);
-  void set_fluid_y(float y);
-  void set_fluid_z(float z);
-  LPoint3f get_pos() const;
-  INLINE float get_x() const;
-  INLINE float get_y() const;
-  INLINE float get_z() const;
+  INLINE void set_pos(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+  void set_pos(const LVecBase3 &pos);
+  void set_x(PN_stdfloat x);
+  void set_y(PN_stdfloat y);
+  void set_z(PN_stdfloat z);
+  INLINE void set_fluid_pos(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+  void set_fluid_pos(const LVecBase3 &pos);
+  void set_fluid_x(PN_stdfloat x);
+  void set_fluid_y(PN_stdfloat y);
+  void set_fluid_z(PN_stdfloat z);
+  LPoint3 get_pos() const;
+  INLINE PN_stdfloat get_x() const;
+  INLINE PN_stdfloat get_y() const;
+  INLINE PN_stdfloat get_z() const;
 
-  LVector3f get_pos_delta() const;
+  LVector3 get_pos_delta() const;
 
-  INLINE void set_hpr(float h, float p, float r);
-  void set_hpr(const LVecBase3f &hpr);
-  void set_h(float h);
-  void set_p(float p);
-  void set_r(float r);
-  LVecBase3f get_hpr() const;
-  INLINE float get_h() const;
-  INLINE float get_p() const;
-  INLINE float get_r() const;
+  INLINE void set_hpr(PN_stdfloat h, PN_stdfloat p, PN_stdfloat r);
+  void set_hpr(const LVecBase3 &hpr);
+  void set_h(PN_stdfloat h);
+  void set_p(PN_stdfloat p);
+  void set_r(PN_stdfloat r);
+  LVecBase3 get_hpr() const;
+  INLINE PN_stdfloat get_h() const;
+  INLINE PN_stdfloat get_p() const;
+  INLINE PN_stdfloat get_r() const;
 
-  void set_quat(const LQuaternionf &quat);
-  LQuaternionf get_quat() const;
+  void set_quat(const LQuaternion &quat);
+  LQuaternion get_quat() const;
 
-  INLINE void set_scale(float scale);
-  INLINE void set_scale(float sx, float sy, float sz);
-  void set_scale(const LVecBase3f &scale);
-  void set_sx(float sx);
-  void set_sy(float sy);
-  void set_sz(float sz);
-  LVecBase3f get_scale() const;
-  INLINE float get_sx() const;
-  INLINE float get_sy() const;
-  INLINE float get_sz() const;
+  INLINE void set_scale(PN_stdfloat scale);
+  INLINE void set_scale(PN_stdfloat sx, PN_stdfloat sy, PN_stdfloat sz);
+  void set_scale(const LVecBase3 &scale);
+  void set_sx(PN_stdfloat sx);
+  void set_sy(PN_stdfloat sy);
+  void set_sz(PN_stdfloat sz);
+  LVecBase3 get_scale() const;
+  INLINE PN_stdfloat get_sx() const;
+  INLINE PN_stdfloat get_sy() const;
+  INLINE PN_stdfloat get_sz() const;
 
-  INLINE void set_shear(float shxy, float shxz, float shyz);
-  void set_shear(const LVecBase3f &shear);
-  void set_shxy(float shxy);
-  void set_shxz(float shxz);
-  void set_shyz(float shyz);
-  LVecBase3f get_shear() const;
-  INLINE float get_shxy() const;
-  INLINE float get_shxz() const;
-  INLINE float get_shyz() const;
+  INLINE void set_shear(PN_stdfloat shxy, PN_stdfloat shxz, PN_stdfloat shyz);
+  void set_shear(const LVecBase3 &shear);
+  void set_shxy(PN_stdfloat shxy);
+  void set_shxz(PN_stdfloat shxz);
+  void set_shyz(PN_stdfloat shyz);
+  LVecBase3 get_shear() const;
+  INLINE PN_stdfloat get_shxy() const;
+  INLINE PN_stdfloat get_shxz() const;
+  INLINE PN_stdfloat get_shyz() const;
 
-  INLINE void set_pos_hpr(float x, float y, float z,
-                          float h, float p, float r);
-  void set_pos_hpr(const LVecBase3f &pos,
-                   const LVecBase3f &hpr);
-  void set_pos_quat(const LVecBase3f &pos,
-                    const LQuaternionf &quat);
+  INLINE void set_pos_hpr(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z,
+                          PN_stdfloat h, PN_stdfloat p, PN_stdfloat r);
+  void set_pos_hpr(const LVecBase3 &pos,
+                   const LVecBase3 &hpr);
+  void set_pos_quat(const LVecBase3 &pos,
+                    const LQuaternion &quat);
 
-  INLINE void set_hpr_scale(float h, float p, float r,
-                            float sx, float sy, float sz);
-  void set_hpr_scale(const LVecBase3f &hpr,
-                     const LVecBase3f &scale);
-  void set_quat_scale(const LQuaternionf &quat,
-                      const LVecBase3f &scale);
-  INLINE void set_pos_hpr_scale(float x, float y, float z,
-                                float h, float p, float r,
-                                float sx, float sy, float sz);
-  void set_pos_hpr_scale(const LVecBase3f &pos,
-                         const LVecBase3f &hpr,
-                         const LVecBase3f &scale);
-  void set_pos_quat_scale(const LVecBase3f &pos,
-                          const LQuaternionf &quat,
-                          const LVecBase3f &scale);
-  void set_pos_hpr_scale_shear(const LVecBase3f &pos,
-                               const LVecBase3f &hpr,
-                               const LVecBase3f &scale,
-                               const LVecBase3f &shear);
-  void set_pos_quat_scale_shear(const LVecBase3f &pos,
-                                const LQuaternionf &quat,
-                                const LVecBase3f &scale,
-                                const LVecBase3f &shear);
+  INLINE void set_hpr_scale(PN_stdfloat h, PN_stdfloat p, PN_stdfloat r,
+                            PN_stdfloat sx, PN_stdfloat sy, PN_stdfloat sz);
+  void set_hpr_scale(const LVecBase3 &hpr,
+                     const LVecBase3 &scale);
+  void set_quat_scale(const LQuaternion &quat,
+                      const LVecBase3 &scale);
+  INLINE void set_pos_hpr_scale(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z,
+                                PN_stdfloat h, PN_stdfloat p, PN_stdfloat r,
+                                PN_stdfloat sx, PN_stdfloat sy, PN_stdfloat sz);
+  void set_pos_hpr_scale(const LVecBase3 &pos,
+                         const LVecBase3 &hpr,
+                         const LVecBase3 &scale);
+  void set_pos_quat_scale(const LVecBase3 &pos,
+                          const LQuaternion &quat,
+                          const LVecBase3 &scale);
+  void set_pos_hpr_scale_shear(const LVecBase3 &pos,
+                               const LVecBase3 &hpr,
+                               const LVecBase3 &scale,
+                               const LVecBase3 &shear);
+  void set_pos_quat_scale_shear(const LVecBase3 &pos,
+                                const LQuaternion &quat,
+                                const LVecBase3 &scale,
+                                const LVecBase3 &shear);
 
-  void set_mat(const LMatrix4f &mat);
+  void set_mat(const LMatrix4 &mat);
   INLINE void clear_mat();
   INLINE bool has_mat() const;
-  INLINE const LMatrix4f &get_mat() const;
+  INLINE const LMatrix4 &get_mat() const;
 
-  INLINE void look_at(float x, float y, float z);
-  void look_at(const LPoint3f &point, const LVector3f &up = LVector3f::up());
-  INLINE void heads_up(float x, float y, float z);
-  void heads_up(const LPoint3f &point, const LVector3f &up = LVector3f::up());
+  INLINE void look_at(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+  void look_at(const LPoint3 &point, const LVector3 &up = LVector3::up());
+  INLINE void heads_up(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+  void heads_up(const LPoint3 &point, const LVector3 &up = LVector3::up());
 
   // Methods that get and set the matrix transforms relative to some
   // other node in the scene graph.  These perform an implicit wrt().
 
-  INLINE void set_pos(const NodePath &other, float x, float y, float z);
-  void set_pos(const NodePath &other, const LVecBase3f &pos);
-  void set_x(const NodePath &other, float x);
-  void set_y(const NodePath &other, float y);
-  void set_z(const NodePath &other, float z);
-  INLINE void set_fluid_pos(const NodePath &other, float x, float y, float z);
-  void set_fluid_pos(const NodePath &other, const LVecBase3f &pos);
-  void set_fluid_x(const NodePath &other, float x);
-  void set_fluid_y(const NodePath &other, float y);
-  void set_fluid_z(const NodePath &other, float z);
-  LPoint3f get_pos(const NodePath &other) const;
-  INLINE float get_x(const NodePath &other) const;
-  INLINE float get_y(const NodePath &other) const;
-  INLINE float get_z(const NodePath &other) const;
+  INLINE void set_pos(const NodePath &other, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+  void set_pos(const NodePath &other, const LVecBase3 &pos);
+  void set_x(const NodePath &other, PN_stdfloat x);
+  void set_y(const NodePath &other, PN_stdfloat y);
+  void set_z(const NodePath &other, PN_stdfloat z);
+  INLINE void set_fluid_pos(const NodePath &other, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+  void set_fluid_pos(const NodePath &other, const LVecBase3 &pos);
+  void set_fluid_x(const NodePath &other, PN_stdfloat x);
+  void set_fluid_y(const NodePath &other, PN_stdfloat y);
+  void set_fluid_z(const NodePath &other, PN_stdfloat z);
+  LPoint3 get_pos(const NodePath &other) const;
+  INLINE PN_stdfloat get_x(const NodePath &other) const;
+  INLINE PN_stdfloat get_y(const NodePath &other) const;
+  INLINE PN_stdfloat get_z(const NodePath &other) const;
 
-  LVector3f get_pos_delta(const NodePath &other) const;
+  LVector3 get_pos_delta(const NodePath &other) const;
 
-  INLINE void set_hpr(const NodePath &other, float h, float p, float r);
-  void set_hpr(const NodePath &other, const LVecBase3f &hpr);
-  void set_h(const NodePath &other, float h);
-  void set_p(const NodePath &other, float p);
-  void set_r(const NodePath &other, float r);
-  LVecBase3f get_hpr(const NodePath &other) const;
-  INLINE float get_h(const NodePath &other) const;
-  INLINE float get_p(const NodePath &other) const;
-  INLINE float get_r(const NodePath &other) const;
+  INLINE void set_hpr(const NodePath &other, PN_stdfloat h, PN_stdfloat p, PN_stdfloat r);
+  void set_hpr(const NodePath &other, const LVecBase3 &hpr);
+  void set_h(const NodePath &other, PN_stdfloat h);
+  void set_p(const NodePath &other, PN_stdfloat p);
+  void set_r(const NodePath &other, PN_stdfloat r);
+  LVecBase3 get_hpr(const NodePath &other) const;
+  INLINE PN_stdfloat get_h(const NodePath &other) const;
+  INLINE PN_stdfloat get_p(const NodePath &other) const;
+  INLINE PN_stdfloat get_r(const NodePath &other) const;
 
-  void set_quat(const NodePath &other, const LQuaternionf &quat);
-  LQuaternionf get_quat(const NodePath &other) const;
+  void set_quat(const NodePath &other, const LQuaternion &quat);
+  LQuaternion get_quat(const NodePath &other) const;
 
-  INLINE void set_scale(const NodePath &other, float scale);
-  INLINE void set_scale(const NodePath &other, float sx, float sy, float sz);
-  void set_scale(const NodePath &other, const LVecBase3f &scale);
-  void set_sx(const NodePath &other, float sx);
-  void set_sy(const NodePath &other, float sy);
-  void set_sz(const NodePath &other, float sz);
-  LVecBase3f get_scale(const NodePath &other) const;
-  INLINE float get_sx(const NodePath &other) const;
-  INLINE float get_sy(const NodePath &other) const;
-  INLINE float get_sz(const NodePath &other) const;
+  INLINE void set_scale(const NodePath &other, PN_stdfloat scale);
+  INLINE void set_scale(const NodePath &other, PN_stdfloat sx, PN_stdfloat sy, PN_stdfloat sz);
+  void set_scale(const NodePath &other, const LVecBase3 &scale);
+  void set_sx(const NodePath &other, PN_stdfloat sx);
+  void set_sy(const NodePath &other, PN_stdfloat sy);
+  void set_sz(const NodePath &other, PN_stdfloat sz);
+  LVecBase3 get_scale(const NodePath &other) const;
+  INLINE PN_stdfloat get_sx(const NodePath &other) const;
+  INLINE PN_stdfloat get_sy(const NodePath &other) const;
+  INLINE PN_stdfloat get_sz(const NodePath &other) const;
 
-  INLINE void set_shear(const NodePath &other, float shxy, float shxz, float shyz);
-  void set_shear(const NodePath &other, const LVecBase3f &shear);
-  void set_shxy(const NodePath &other, float shxy);
-  void set_shxz(const NodePath &other, float shxz);
-  void set_shyz(const NodePath &other, float shyz);
-  LVecBase3f get_shear(const NodePath &other) const;
-  INLINE float get_shxy(const NodePath &other) const;
-  INLINE float get_shxz(const NodePath &other) const;
-  INLINE float get_shyz(const NodePath &other) const;
+  INLINE void set_shear(const NodePath &other, PN_stdfloat shxy, PN_stdfloat shxz, PN_stdfloat shyz);
+  void set_shear(const NodePath &other, const LVecBase3 &shear);
+  void set_shxy(const NodePath &other, PN_stdfloat shxy);
+  void set_shxz(const NodePath &other, PN_stdfloat shxz);
+  void set_shyz(const NodePath &other, PN_stdfloat shyz);
+  LVecBase3 get_shear(const NodePath &other) const;
+  INLINE PN_stdfloat get_shxy(const NodePath &other) const;
+  INLINE PN_stdfloat get_shxz(const NodePath &other) const;
+  INLINE PN_stdfloat get_shyz(const NodePath &other) const;
 
   INLINE void set_pos_hpr(const NodePath &other,
-                          float x, float y, float z,
-                          float h, float p, float r);
+                          PN_stdfloat x, PN_stdfloat y, PN_stdfloat z,
+                          PN_stdfloat h, PN_stdfloat p, PN_stdfloat r);
   void set_pos_hpr(const NodePath &other,
-                   const LVecBase3f &pos,
-                   const LVecBase3f &hpr);
+                   const LVecBase3 &pos,
+                   const LVecBase3 &hpr);
   void set_pos_quat(const NodePath &other,
-                    const LVecBase3f &pos,
-                    const LQuaternionf &quat);
+                    const LVecBase3 &pos,
+                    const LQuaternion &quat);
   INLINE void set_hpr_scale(const NodePath &other,
-                            float h, float p, float r,
-                            float sx, float sy, float sz);
+                            PN_stdfloat h, PN_stdfloat p, PN_stdfloat r,
+                            PN_stdfloat sx, PN_stdfloat sy, PN_stdfloat sz);
   void set_hpr_scale(const NodePath &other,
-                     const LVecBase3f &hpr,
-                     const LVecBase3f &scale);
+                     const LVecBase3 &hpr,
+                     const LVecBase3 &scale);
   void set_quat_scale(const NodePath &other,
-                      const LQuaternionf &quat,
-                      const LVecBase3f &scale);
+                      const LQuaternion &quat,
+                      const LVecBase3 &scale);
   INLINE void set_pos_hpr_scale(const NodePath &other,
-                                float x, float y, float z,
-                                float h, float p, float r,
-                                float sx, float sy, float sz);
+                                PN_stdfloat x, PN_stdfloat y, PN_stdfloat z,
+                                PN_stdfloat h, PN_stdfloat p, PN_stdfloat r,
+                                PN_stdfloat sx, PN_stdfloat sy, PN_stdfloat sz);
   void set_pos_hpr_scale(const NodePath &other,
-                         const LVecBase3f &pos,
-                         const LVecBase3f &hpr,
-                         const LVecBase3f &scale);
+                         const LVecBase3 &pos,
+                         const LVecBase3 &hpr,
+                         const LVecBase3 &scale);
   void set_pos_quat_scale(const NodePath &other,
-                          const LVecBase3f &pos,
-                          const LQuaternionf &quat,
-                          const LVecBase3f &scale);
+                          const LVecBase3 &pos,
+                          const LQuaternion &quat,
+                          const LVecBase3 &scale);
   void set_pos_hpr_scale_shear(const NodePath &other,
-                               const LVecBase3f &pos,
-                               const LVecBase3f &hpr,
-                               const LVecBase3f &scale,
-                               const LVecBase3f &shear);
+                               const LVecBase3 &pos,
+                               const LVecBase3 &hpr,
+                               const LVecBase3 &scale,
+                               const LVecBase3 &shear);
   void set_pos_quat_scale_shear(const NodePath &other,
-                                const LVecBase3f &pos,
-                                const LQuaternionf &quat,
-                                const LVecBase3f &scale,
-                                const LVecBase3f &shear);
+                                const LVecBase3 &pos,
+                                const LQuaternion &quat,
+                                const LVecBase3 &scale,
+                                const LVecBase3 &shear);
 
-  LMatrix4f get_mat(const NodePath &other) const;
-  void set_mat(const NodePath &other, const LMatrix4f &mat);
+  LMatrix4 get_mat(const NodePath &other) const;
+  void set_mat(const NodePath &other, const LMatrix4 &mat);
 
-  LPoint3f get_relative_point(const NodePath &other, const LVecBase3f &point) const;
-  LVector3f get_relative_vector(const NodePath &other, const LVecBase3f &vec) const;
+  LPoint3 get_relative_point(const NodePath &other, const LVecBase3 &point) const;
+  LVector3 get_relative_vector(const NodePath &other, const LVecBase3 &vec) const;
 
   INLINE void look_at(const NodePath &other,
-                      float x, float y, float z);
+                      PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
   void look_at(const NodePath &other,
-               const LPoint3f &point = LPoint3f(0.0, 0.0, 0.0),
-               const LVector3f &up = LVector3f::up());
+               const LPoint3 &point = LPoint3(0.0, 0.0, 0.0),
+               const LVector3 &up = LVector3::up());
   INLINE void heads_up(const NodePath &other,
-                       float x, float y, float z);
+                       PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
   void heads_up(const NodePath &other,
-                const LPoint3f &point = LPoint3f(0.0, 0.0, 0.0),
-                const LVector3f &up = LVector3f::up());
+                const LPoint3 &point = LPoint3(0.0, 0.0, 0.0),
+                const LVector3 &up = LVector3::up());
 
-  INLINE float get_distance(const NodePath &other) const;
+  INLINE PN_stdfloat get_distance(const NodePath &other) const;
 
 
   // Methods that affect appearance of geometry: color, texture, etc.
   // These affect the state at the bottom level only.
 
-  void set_color(float r, float g, float b, float a = 1.0,
+  void set_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a = 1.0,
                  int priority = 0);
-  void set_color(const Colorf &color, int priority = 0);
+  void set_color(const LColor &color, int priority = 0);
   void set_color_off(int priority = 0);
   void clear_color();
   bool has_color() const;
-  Colorf get_color() const;
+  LColor get_color() const;
 
   bool has_color_scale() const;
   void clear_color_scale();
-  void set_color_scale(const LVecBase4f &scale,
+  void set_color_scale(const LVecBase4 &scale,
                        int priority = 0);
-  INLINE void set_color_scale(float sx, float sy, float sz, float sa,
+  INLINE void set_color_scale(PN_stdfloat sx, PN_stdfloat sy, PN_stdfloat sz, PN_stdfloat sa,
                               int priority = 0);
-  void compose_color_scale(const LVecBase4f &scale,
+  void compose_color_scale(const LVecBase4 &scale,
                            int priority = 0);
-  INLINE void compose_color_scale(float sx, float sy, float sz, float sa,
+  INLINE void compose_color_scale(PN_stdfloat sx, PN_stdfloat sy, PN_stdfloat sz, PN_stdfloat sa,
                                   int priority = 0);
   void set_color_scale_off(int priority = 0);
   
-  void set_alpha_scale(float scale, int priority = 0);
-  void set_all_color_scale(float scale, int priority = 0);
-  INLINE void set_sr(float sr);
-  INLINE void set_sg(float sg);
-  INLINE void set_sb(float sb);
-  INLINE void set_sa(float sa);
+  void set_alpha_scale(PN_stdfloat scale, int priority = 0);
+  void set_all_color_scale(PN_stdfloat scale, int priority = 0);
+  INLINE void set_sr(PN_stdfloat sr);
+  INLINE void set_sg(PN_stdfloat sg);
+  INLINE void set_sb(PN_stdfloat sb);
+  INLINE void set_sa(PN_stdfloat sa);
 
-  const LVecBase4f &get_color_scale() const;
-  INLINE float get_sr() const;
-  INLINE float get_sg() const;
-  INLINE float get_sb() const;
-  INLINE float get_sa() const;
+  const LVecBase4 &get_color_scale() const;
+  INLINE PN_stdfloat get_sr() const;
+  INLINE PN_stdfloat get_sg() const;
+  INLINE PN_stdfloat get_sb() const;
+  INLINE PN_stdfloat get_sa() const;
 
   void set_light(const NodePath &light, int priority = 0);
   void set_light_off(int priority = 0);
@@ -573,15 +573,15 @@ PUBLISHED:
   bool has_clip_plane_off() const;
   bool has_clip_plane_off(const NodePath &clip_plane) const;
 
-  void set_scissor(float left, float right, float bottom, float top);
-  void set_scissor(const LPoint3f &a, const LPoint3f &b);
-  void set_scissor(const LPoint3f &a, const LPoint3f &b, 
-                   const LPoint3f &c, const LPoint3f &d);
+  void set_scissor(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top);
+  void set_scissor(const LPoint3 &a, const LPoint3 &b);
+  void set_scissor(const LPoint3 &a, const LPoint3 &b, 
+                   const LPoint3 &c, const LPoint3 &d);
   void set_scissor(const NodePath &other, 
-                   const LPoint3f &a, const LPoint3f &b);
+                   const LPoint3 &a, const LPoint3 &b);
   void set_scissor(const NodePath &other,
-                   const LPoint3f &a, const LPoint3f &b, 
-                   const LPoint3f &c, const LPoint3f &d);
+                   const LPoint3 &a, const LPoint3 &b, 
+                   const LPoint3 &c, const LPoint3 &d);
   void clear_scissor();
   bool has_scissor() const;
 
@@ -616,46 +616,46 @@ PUBLISHED:
   void clear_shader();
   
   void set_shader_input(const ShaderInput *inp);
-  void set_shader_input(InternalName *id, Texture *tex,       int priority=0);
-  void set_shader_input(InternalName *id, const NodePath &np, int priority=0);
-  void set_shader_input(InternalName *id, const PTA_float &v, int priority=0);
-  void set_shader_input(InternalName *id, const PTA_double &v, int priority=0);
-  void set_shader_input(InternalName *id, const PTA_LVecBase4f &v, int priority=0);
-  void set_shader_input(InternalName *id, const PTA_LVecBase3f &v, int priority=0);
-  void set_shader_input(InternalName *id, const PTA_LVecBase2f &v, int priority=0);
-  void set_shader_input(InternalName *id, const PTA_LMatrix4f &v, int priority=0); 
-  void set_shader_input(InternalName *id, const PTA_LMatrix3f &v, int priority=0); 
-  void set_shader_input(InternalName *id, const LVecBase4f &v, int priority=0); 
-  void set_shader_input(InternalName *id, const LVecBase3f &v, int priority=0); 
-  void set_shader_input(InternalName *id, const LVecBase2f &v, int priority=0); 
-  void set_shader_input(InternalName *id, const LMatrix4f &v, int priority=0); 
-  void set_shader_input(InternalName *id, const LMatrix3f &v, int priority=0);
-  void set_shader_input(InternalName *id, double  n1=0, double n2=0, double n3=0, 
+  void set_shader_input(const InternalName *id, Texture *tex, int priority=0);
+  void set_shader_input(const InternalName *id, const NodePath &np, int priority=0);
+  void set_shader_input(const InternalName *id, const PTA_float &v, int priority=0);
+  void set_shader_input(const InternalName *id, const PTA_double &v, int priority=0);
+  void set_shader_input(const InternalName *id, const PTA_LVecBase4 &v, int priority=0);
+  void set_shader_input(const InternalName *id, const PTA_LVecBase3 &v, int priority=0);
+  void set_shader_input(const InternalName *id, const PTA_LVecBase2 &v, int priority=0);
+  void set_shader_input(const InternalName *id, const PTA_LMatrix4 &v, int priority=0); 
+  void set_shader_input(const InternalName *id, const PTA_LMatrix3 &v, int priority=0); 
+  void set_shader_input(const InternalName *id, const LVecBase4 &v, int priority=0); 
+  void set_shader_input(const InternalName *id, const LVecBase3 &v, int priority=0); 
+  void set_shader_input(const InternalName *id, const LVecBase2 &v, int priority=0); 
+  void set_shader_input(const InternalName *id, const LMatrix4 &v, int priority=0); 
+  void set_shader_input(const InternalName *id, const LMatrix3 &v, int priority=0);
+  void set_shader_input(const InternalName *id, double  n1=0, double n2=0, double n3=0, 
       double n4=1, int priority=0);
 
-  void set_shader_input(const string &id, Texture *tex,       int priority=0);
+  void set_shader_input(const string &id, Texture *tex, int priority=0);
   void set_shader_input(const string &id, const NodePath &np, int priority=0);
   void set_shader_input(const string &id, const PTA_float &v, int priority=0); 
   void set_shader_input(const string &id, const PTA_double &v, int priority=0); 
-  void set_shader_input(const string &id, const PTA_LVecBase4f &v, int priority=0); 
-  void set_shader_input(const string &id, const PTA_LVecBase3f &v, int priority=0); 
-  void set_shader_input(const string &id, const PTA_LVecBase2f &v, int priority=0); 
-  void set_shader_input(const string &id, const PTA_LMatrix4f &v, int priority=0);
-  void set_shader_input(const string &id, const PTA_LMatrix3f &v, int priority=0);
-  void set_shader_input(const string &id, const LVecBase4f &v, int priority=0); 
-  void set_shader_input(const string &id, const LVecBase3f &v, int priority=0); 
-  void set_shader_input(const string &id, const LVecBase2f &v, int priority=0); 
-  void set_shader_input(const string &id, const LMatrix4f &v, int priority=0); 
-  void set_shader_input(const string &id, const LMatrix3f &v, int priority=0); 
+  void set_shader_input(const string &id, const PTA_LVecBase4 &v, int priority=0); 
+  void set_shader_input(const string &id, const PTA_LVecBase3 &v, int priority=0); 
+  void set_shader_input(const string &id, const PTA_LVecBase2 &v, int priority=0); 
+  void set_shader_input(const string &id, const PTA_LMatrix4 &v, int priority=0);
+  void set_shader_input(const string &id, const PTA_LMatrix3 &v, int priority=0);
+  void set_shader_input(const string &id, const LVecBase4 &v, int priority=0); 
+  void set_shader_input(const string &id, const LVecBase3 &v, int priority=0); 
+  void set_shader_input(const string &id, const LVecBase2 &v, int priority=0); 
+  void set_shader_input(const string &id, const LMatrix4 &v, int priority=0); 
+  void set_shader_input(const string &id, const LMatrix3 &v, int priority=0); 
   void set_shader_input(const string &id, double  n1=0, double n2=0, double n3=0, 
       double n4=1, int priority=0);
   
-  void clear_shader_input(InternalName *id);
+  void clear_shader_input(const InternalName *id);
   void clear_shader_input(const string &id);
   void set_instance_count(int instance_count);
 
   const Shader *get_shader() const;
-  const ShaderInput *get_shader_input(InternalName *id) const;
+  const ShaderInput *get_shader_input(const InternalName *id) const;
   const ShaderInput *get_shader_input(const string &id) const;
   const int get_instance_count() const;
   
@@ -665,55 +665,55 @@ PUBLISHED:
   bool has_tex_transform(TextureStage *stage) const;
   CPT(TransformState) get_tex_transform(TextureStage *stage) const;
 
-  INLINE void set_tex_offset(TextureStage *stage, float u, float v);
-  INLINE void set_tex_offset(TextureStage *stage, const LVecBase2f &uv);
-  INLINE void set_tex_rotate(TextureStage *stage, float r);
-  INLINE void set_tex_scale(TextureStage *stage, float scale);
-  INLINE void set_tex_scale(TextureStage *stage, float su, float sv);
-  INLINE void set_tex_scale(TextureStage *stage, const LVecBase2f &scale);
-  INLINE LVecBase2f get_tex_offset(TextureStage *stage) const;
-  INLINE float get_tex_rotate(TextureStage *stage) const;
-  INLINE LVecBase2f get_tex_scale(TextureStage *stage) const;
+  INLINE void set_tex_offset(TextureStage *stage, PN_stdfloat u, PN_stdfloat v);
+  INLINE void set_tex_offset(TextureStage *stage, const LVecBase2 &uv);
+  INLINE void set_tex_rotate(TextureStage *stage, PN_stdfloat r);
+  INLINE void set_tex_scale(TextureStage *stage, PN_stdfloat scale);
+  INLINE void set_tex_scale(TextureStage *stage, PN_stdfloat su, PN_stdfloat sv);
+  INLINE void set_tex_scale(TextureStage *stage, const LVecBase2 &scale);
+  INLINE LVecBase2 get_tex_offset(TextureStage *stage) const;
+  INLINE PN_stdfloat get_tex_rotate(TextureStage *stage) const;
+  INLINE LVecBase2 get_tex_scale(TextureStage *stage) const;
 
-  INLINE void set_tex_pos(TextureStage *stage, float u, float v, float w);
-  INLINE void set_tex_pos(TextureStage *stage, const LVecBase3f &uvw);
-  INLINE void set_tex_hpr(TextureStage *stage, float h, float p, float r);
-  INLINE void set_tex_hpr(TextureStage *stage, const LVecBase3f &hpr);
-  INLINE void set_tex_scale(TextureStage *stage, float su, float sv, float sw);
-  INLINE void set_tex_scale(TextureStage *stage, const LVecBase3f &scale);
-  INLINE LVecBase3f get_tex_pos(TextureStage *stage) const;
-  INLINE LVecBase3f get_tex_hpr(TextureStage *stage) const;
-  INLINE LVecBase3f get_tex_scale_3d(TextureStage *stage) const;
+  INLINE void set_tex_pos(TextureStage *stage, PN_stdfloat u, PN_stdfloat v, PN_stdfloat w);
+  INLINE void set_tex_pos(TextureStage *stage, const LVecBase3 &uvw);
+  INLINE void set_tex_hpr(TextureStage *stage, PN_stdfloat h, PN_stdfloat p, PN_stdfloat r);
+  INLINE void set_tex_hpr(TextureStage *stage, const LVecBase3 &hpr);
+  INLINE void set_tex_scale(TextureStage *stage, PN_stdfloat su, PN_stdfloat sv, PN_stdfloat sw);
+  INLINE void set_tex_scale(TextureStage *stage, const LVecBase3 &scale);
+  INLINE LVecBase3 get_tex_pos(TextureStage *stage) const;
+  INLINE LVecBase3 get_tex_hpr(TextureStage *stage) const;
+  INLINE LVecBase3 get_tex_scale_3d(TextureStage *stage) const;
 
   void set_tex_transform(const NodePath &other, TextureStage *stage, const TransformState *transform);
   CPT(TransformState) get_tex_transform(const NodePath &other, TextureStage *stage) const;
 
-  INLINE void set_tex_offset(const NodePath &other, TextureStage *stage, float u, float v);
-  INLINE void set_tex_offset(const NodePath &other, TextureStage *stage, const LVecBase2f &uv);
-  INLINE void set_tex_rotate(const NodePath &other, TextureStage *stage, float r);
-  INLINE void set_tex_scale(const NodePath &other, TextureStage *stage, float scale);
-  INLINE void set_tex_scale(const NodePath &other, TextureStage *stage, float su, float sv);
-  INLINE void set_tex_scale(const NodePath &other, TextureStage *stage, const LVecBase2f &scale);
-  INLINE LVecBase2f get_tex_offset(const NodePath &other, TextureStage *stage) const;
-  INLINE float get_tex_rotate(const NodePath &other, TextureStage *stage) const;
-  INLINE LVecBase2f get_tex_scale(const NodePath &other, TextureStage *stage) const;
+  INLINE void set_tex_offset(const NodePath &other, TextureStage *stage, PN_stdfloat u, PN_stdfloat v);
+  INLINE void set_tex_offset(const NodePath &other, TextureStage *stage, const LVecBase2 &uv);
+  INLINE void set_tex_rotate(const NodePath &other, TextureStage *stage, PN_stdfloat r);
+  INLINE void set_tex_scale(const NodePath &other, TextureStage *stage, PN_stdfloat scale);
+  INLINE void set_tex_scale(const NodePath &other, TextureStage *stage, PN_stdfloat su, PN_stdfloat sv);
+  INLINE void set_tex_scale(const NodePath &other, TextureStage *stage, const LVecBase2 &scale);
+  INLINE LVecBase2 get_tex_offset(const NodePath &other, TextureStage *stage) const;
+  INLINE PN_stdfloat get_tex_rotate(const NodePath &other, TextureStage *stage) const;
+  INLINE LVecBase2 get_tex_scale(const NodePath &other, TextureStage *stage) const;
 
-  INLINE void set_tex_pos(const NodePath &other, TextureStage *stage, float u, float v, float w);
-  INLINE void set_tex_pos(const NodePath &other, TextureStage *stage, const LVecBase3f &uvw);
-  INLINE void set_tex_hpr(const NodePath &other, TextureStage *stage, float h, float p, float r);
-  INLINE void set_tex_hpr(const NodePath &other, TextureStage *stage, const LVecBase3f &hpr);
-  INLINE void set_tex_scale(const NodePath &other, TextureStage *stage, float su, float sv, float sw);
-  INLINE void set_tex_scale(const NodePath &other, TextureStage *stage, const LVecBase3f &scale);
-  INLINE LVecBase3f get_tex_pos(const NodePath &other, TextureStage *stage) const;
-  INLINE LVecBase3f get_tex_hpr(const NodePath &other, TextureStage *stage) const;
-  INLINE LVecBase3f get_tex_scale_3d(const NodePath &other, TextureStage *stage) const;
+  INLINE void set_tex_pos(const NodePath &other, TextureStage *stage, PN_stdfloat u, PN_stdfloat v, PN_stdfloat w);
+  INLINE void set_tex_pos(const NodePath &other, TextureStage *stage, const LVecBase3 &uvw);
+  INLINE void set_tex_hpr(const NodePath &other, TextureStage *stage, PN_stdfloat h, PN_stdfloat p, PN_stdfloat r);
+  INLINE void set_tex_hpr(const NodePath &other, TextureStage *stage, const LVecBase3 &hpr);
+  INLINE void set_tex_scale(const NodePath &other, TextureStage *stage, PN_stdfloat su, PN_stdfloat sv, PN_stdfloat sw);
+  INLINE void set_tex_scale(const NodePath &other, TextureStage *stage, const LVecBase3 &scale);
+  INLINE LVecBase3 get_tex_pos(const NodePath &other, TextureStage *stage) const;
+  INLINE LVecBase3 get_tex_hpr(const NodePath &other, TextureStage *stage) const;
+  INLINE LVecBase3 get_tex_scale_3d(const NodePath &other, TextureStage *stage) const;
 
   void set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode, int priority = 0);
   void set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode, 
                    const string &source_name, const NodePath &light, 
                    int priority = 0);
   void set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode, 
-                   const TexCoord3f &constant_value,
+                   const LTexCoord3 &constant_value,
                    int priority = 0);
   void clear_tex_gen();
   void clear_tex_gen(TextureStage *stage);
@@ -773,13 +773,13 @@ PUBLISHED:
 
   void set_render_mode_wireframe(int priority = 0);
   void set_render_mode_filled(int priority = 0);
-  void set_render_mode_thickness(float thickness, int priority = 0);
+  void set_render_mode_thickness(PN_stdfloat thickness, int priority = 0);
   void set_render_mode_perspective(bool perspective, int priority = 0);
-  void set_render_mode(RenderModeAttrib::Mode mode, float thickness, int priority = 0);
+  void set_render_mode(RenderModeAttrib::Mode mode, PN_stdfloat thickness, int priority = 0);
   void clear_render_mode();
   bool has_render_mode() const;
   RenderModeAttrib::Mode get_render_mode() const;
-  float get_render_mode_thickness() const;
+  PN_stdfloat get_render_mode_thickness() const;
   bool get_render_mode_perspective() const;
 
   void set_two_sided(bool two_sided, int priority = 0);
@@ -802,15 +802,15 @@ PUBLISHED:
   bool has_depth_offset() const;
   int get_depth_offset() const;
 
-  void do_billboard_axis(const NodePath &camera, float offset);
-  void do_billboard_point_eye(const NodePath &camera, float offset);
-  void do_billboard_point_world(const NodePath &camera, float offset);
-  INLINE void set_billboard_axis(float offset = 0.0);
-  INLINE void set_billboard_point_eye(float offset = 0.0);
-  INLINE void set_billboard_point_world(float offset = 0.0);
-  void set_billboard_axis(const NodePath &camera, float offset);
-  void set_billboard_point_eye(const NodePath &camera, float offset);
-  void set_billboard_point_world(const NodePath &camera, float offset);
+  void do_billboard_axis(const NodePath &camera, PN_stdfloat offset);
+  void do_billboard_point_eye(const NodePath &camera, PN_stdfloat offset);
+  void do_billboard_point_world(const NodePath &camera, PN_stdfloat offset);
+  INLINE void set_billboard_axis(PN_stdfloat offset = 0.0);
+  INLINE void set_billboard_point_eye(PN_stdfloat offset = 0.0);
+  INLINE void set_billboard_point_world(PN_stdfloat offset = 0.0);
+  void set_billboard_axis(const NodePath &camera, PN_stdfloat offset);
+  void set_billboard_point_eye(const NodePath &camera, PN_stdfloat offset);
+  void set_billboard_point_world(const NodePath &camera, PN_stdfloat offset);
   void clear_billboard();
   bool has_billboard() const;
 
@@ -830,11 +830,11 @@ PUBLISHED:
 
   bool has_audio_volume() const;
   void clear_audio_volume();
-  void set_audio_volume(float volume,
+  void set_audio_volume(PN_stdfloat volume,
                         int priority = 0);
   void set_audio_volume_off(int priority = 0);
-  float get_audio_volume() const;
-  float get_net_audio_volume() const;
+  PN_stdfloat get_audio_volume() const;
+  PN_stdfloat get_net_audio_volume() const;
 
   INLINE void adjust_all_priorities(int adjustment);
 
@@ -877,7 +877,7 @@ PUBLISHED:
   PT(BoundingVolume) get_bounds(Thread *current_thread = Thread::get_current_thread()) const;
   void force_recompute_bounds();
   void write_bounds(ostream &out) const;
-  bool calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+  bool calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
                          Thread *current_thread = Thread::get_current_thread()) const;
 
   //  void analyze() const;

@@ -25,9 +25,9 @@ DrawableRegion() :
 {
   for (int i=0; i<RTP_COUNT; i++) {
     _clear_active[i] = false;
-    _clear_value[i] = Colorf(0.0f, 0.0f, 0.0f, 0.0f);
+    _clear_value[i] = LColor(0.0f, 0.0f, 0.0f, 0.0f);
   }
-  _clear_value[RTP_depth] = Colorf(1.0f,1.0f,1.0f,1.0f);
+  _clear_value[RTP_depth] = LColor(1.0f,1.0f,1.0f,1.0f);
   _pixel_zoom = 1.0f;
   _pixel_factor = 1.0f;
 }
@@ -170,7 +170,7 @@ get_clear_stencil_active() const {
 //               false, this is meaningless.
 ////////////////////////////////////////////////////////////////////
 INLINE void DrawableRegion::
-set_clear_color(const Colorf &color) {
+set_clear_color(const LColor &color) {
   set_clear_value(RTP_color, color);
 }
 
@@ -183,7 +183,7 @@ set_clear_color(const Colorf &color) {
 //               returns true.  If get_clear_color_active() returns
 //               false, this is meaningless.
 ////////////////////////////////////////////////////////////////////
-INLINE const Colorf &DrawableRegion::
+INLINE const LColor &DrawableRegion::
 get_clear_color() const {
   return get_clear_value(RTP_color);
 }
@@ -198,8 +198,8 @@ get_clear_color() const {
 //               false, this is meaningless.
 ////////////////////////////////////////////////////////////////////
 INLINE void DrawableRegion::
-set_clear_depth(float depth) {
-  set_clear_value(RTP_depth, Colorf(depth,depth,depth,depth));
+set_clear_depth(PN_stdfloat depth) {
+  set_clear_value(RTP_depth, LColor(depth,depth,depth,depth));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -211,7 +211,7 @@ set_clear_depth(float depth) {
 //               returns true.  If get_clear_depth_active() returns
 //               false, this is meaningless.
 ////////////////////////////////////////////////////////////////////
-INLINE float DrawableRegion::
+INLINE PN_stdfloat DrawableRegion::
 get_clear_depth() const {
   return get_clear_value(RTP_depth)[0];
 }
@@ -226,7 +226,7 @@ get_clear_depth() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DrawableRegion::
 set_clear_stencil(const unsigned int stencil) {
-  set_clear_value(RTP_stencil, Colorf(stencil,stencil,stencil,stencil));
+  set_clear_value(RTP_stencil, LColor(stencil,stencil,stencil,stencil));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -250,7 +250,7 @@ get_clear_stencil() const {
 //               of whether it is being respected or not.  Also see
 //               get_pixel_factor().
 ////////////////////////////////////////////////////////////////////
-INLINE float DrawableRegion::
+INLINE PN_stdfloat DrawableRegion::
 get_pixel_zoom() const {
   return _pixel_zoom;
 }
@@ -266,7 +266,7 @@ get_pixel_zoom() const {
 //               underlying renderer doesn't support it--see
 //               supports_pixel_zoom).
 ////////////////////////////////////////////////////////////////////
-INLINE float DrawableRegion::
+INLINE PN_stdfloat DrawableRegion::
 get_pixel_factor() const {
   return _pixel_factor;
 }
@@ -304,11 +304,11 @@ get_draw_buffer_type() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DrawableRegion::
 update_pixel_factor() {
-  float new_pixel_factor;
+  PN_stdfloat new_pixel_factor;
   if (supports_pixel_zoom()) {
-    new_pixel_factor = 1.0f / sqrt(max(_pixel_zoom, 1.0f));
+    new_pixel_factor = 1.0 / sqrt(max(_pixel_zoom, (PN_stdfloat)1.0));
   } else {
-    new_pixel_factor = 1.0f;
+    new_pixel_factor = 1.0;
   }
   if (new_pixel_factor != _pixel_factor) {
     _pixel_factor = new_pixel_factor;

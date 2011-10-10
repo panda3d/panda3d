@@ -20,7 +20,7 @@
 //               ColorAttrib object.
 ////////////////////////////////////////////////////////////////////
 INLINE ColorAttrib::
-ColorAttrib(ColorAttrib::Type type, const Colorf &color) :
+ColorAttrib(ColorAttrib::Type type, const LColor &color) :
   _type(type),
   _color(color)
 {
@@ -54,7 +54,7 @@ get_color_type() const {
 //               color that will be applied to geometry.  If the type
 //               is T_vertex, this is meaningless.
 ////////////////////////////////////////////////////////////////////
-INLINE const Colorf &ColorAttrib::
+INLINE const LColor &ColorAttrib::
 get_color() const {
   return _color;
 }

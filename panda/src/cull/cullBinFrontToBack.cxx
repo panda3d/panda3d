@@ -67,11 +67,11 @@ add_object(CullableObject *object, Thread *current_thread) {
   const GeometricBoundingVolume *gbv;
   DCAST_INTO_V(gbv, volume);
   
-  LPoint3f center = gbv->get_approx_center();
+  LPoint3 center = gbv->get_approx_center();
   nassertv(object->_modelview_transform != (const TransformState *)NULL);
   center = center * object->_modelview_transform->get_mat();
   
-  float distance = _gsg->compute_distance_to(center);
+  PN_stdfloat distance = _gsg->compute_distance_to(center);
   _objects.push_back(ObjectData(object, distance));
 }
 

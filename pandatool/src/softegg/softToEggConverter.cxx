@@ -677,7 +677,7 @@ open_api() {
   }
   //  cout << "got past scene load" << endl;
   if ( SAA_updatelistGet( &scene ) == SI_SUCCESS ) {
-    float time;
+    PN_stdfloat time;
     
     softegg_cat.info() << "setting Scene to frame " << pose_frame << "...\n";
     //SAA_sceneSetPlayCtrlCurrentFrame( &scene, pose_frame );
@@ -780,7 +780,7 @@ convert_char_chan() {
   int frame_inc, frame;
   double output_frame_rate = anim_rate;
   
-  float time;
+  PN_stdfloat time;
 
   EggTable *root_table_node = new EggTable();
   get_egg_data()->add_child(root_table_node);
@@ -1008,8 +1008,8 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
   int numShapes;
   SAA_Boolean valid;
   SAA_Boolean visible;
-  float *uCoords = NULL;
-  float *vCoords = NULL;
+  PN_stdfloat *uCoords = NULL;
+  PN_stdfloat *vCoords = NULL;
   string name = node_desc->get_name();
  
   SAA_modelGetNodeVisibility( &scene, node_desc->get_model(), &visible ); 
@@ -1094,8 +1094,8 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
           if (node_desc->numTexLoc && node_desc->numTexTri[idx]) {
             // allocate arrays for u & v coords
             // I think there are one texture per triangle hence we need only 3 corrdinates
-            uCoords = new float[3];
-            vCoords = new float[3];
+            uCoords = new PN_stdfloat[3];
+            vCoords = new PN_stdfloat[3];
             
             // read the u & v coords into the arrays
             if ( uCoords != NULL && vCoords != NULL) {
@@ -1116,8 +1116,8 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
           }
           else if (node_desc->numTexGlb) {
             // allocate arrays for u & v coords
-            uCoords = new float[node_desc->numTexGlb*3];
-            vCoords = new float[node_desc->numTexGlb*3];
+            uCoords = new PN_stdfloat[node_desc->numTexGlb*3];
+            vCoords = new PN_stdfloat[node_desc->numTexGlb*3];
             
             for ( i = 0; i < node_desc->numTexGlb*3; i++ ) {
               uCoords[i] = vCoords[i] = 0.0f;
@@ -1167,7 +1167,7 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
           
           // if texture present set the texture coordinates
           if (node_desc->textures) {
-            float u, v;
+            PN_stdfloat u, v;
             
             if (uCoords && vCoords) {
               u = uCoords[i];
@@ -1183,17 +1183,17 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
           egg_poly->add_vertex(vpool->create_unique_vertex(vert));
 
           // check to see if material is present
-          float r,g,b,a;
+          PN_stdfloat r,g,b,a;
           SAA_elementIsValid( &scene, &node_desc->materials[idx], &valid );
           // material present - get the color 
           if ( valid ) {
             SAA_materialGetDiffuse( &scene, &node_desc->materials[idx], &r, &g, &b );
             SAA_materialGetTransparency( &scene, &node_desc->materials[idx], &a );
-            egg_poly->set_color(Colorf(r, g, b, 1.0f - a));
+            egg_poly->set_color(LColor(r, g, b, 1.0f - a));
             softegg_cat.spam() << "color r = " << r << " g = " << g << " b = " << b << " a = " << 1.0f - a << "\n";
           }
           else {     // no material - default to white
-            egg_poly->set_color(Colorf(1.0, 1.0, 1.0, 1.0));
+            egg_poly->set_color(LColor(1.0, 1.0, 1.0, 1.0));
             softegg_cat.spam() << "default color\n";
           }
           
@@ -1246,8 +1246,8 @@ make_nurb_surface(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType ty
   int numShapes;
   SAA_Boolean valid;
   SAA_Boolean visible;
-  float *uCoords = NULL;
-  float *vCoords = NULL;
+  PN_stdfloat *uCoords = NULL;
+  PN_stdfloat *vCoords = NULL;
   string name = node_desc->get_name();
   
   SAA_modelGetNodeVisibility( &scene, node_desc->get_model(), &visible ); 
@@ -1440,17 +1440,17 @@ make_nurb_surface(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType ty
 
         // check to see if material is present
         if (node_desc->numNurbMats) {
-          float r,g,b,a;
+          PN_stdfloat r,g,b,a;
           SAA_elementIsValid( &scene, &node_desc->materials[0], &valid );
           // material present - get the color 
           if ( valid ) {
             SAA_materialGetDiffuse( &scene, &node_desc->materials[0], &r, &g, &b );
             SAA_materialGetTransparency( &scene, &node_desc->materials[0], &a );
-            verts[k].set_color(Colorf(r, g, b, 1.0f - a));
+            verts[k].set_color(LColor(r, g, b, 1.0f - a));
             //softegg_cat.spam() << "color r = " << r << " g = " << g << " b = " << b << " a = " << a << "\n";
           }
           else {     // no material - default to white
-            verts[k].set_color(Colorf(1.0, 1.0, 1.0, 1.0));
+            verts[k].set_color(LColor(1.0, 1.0, 1.0, 1.0));
             softegg_cat.spam() << "default color\n";
           }
         }
@@ -1580,8 +1580,8 @@ FindClosestTriVert( EggVertexPool *vpool, SAA_DVector *vertices, int numVert ) {
   int i,j;
   int *vertMap = NULL; 
   int vpoolSize = (int)vpool->size();
-  float closestDist;
-  float thisDist;
+  PN_stdfloat closestDist;
+  PN_stdfloat thisDist;
   int closest;
     
   vertMap = new int[vpoolSize];
@@ -1733,10 +1733,10 @@ make_soft_skin() {
           }
           // loop through for each envelope
           for ( i = 0; i < numEnv; i++ ) {
-            float *weights = NULL;
+            PN_stdfloat *weights = NULL;
             int vertArrayOffset = 0;
             softegg_cat.spam() << "envelope[" << i << "]: ";
-            weights = new float[numEnvVertices[i]];
+            weights = new PN_stdfloat[numEnvVertices[i]];
             if ( weights ) {
               char *envName;
               int *vpoolMap = NULL;
@@ -1816,7 +1816,7 @@ make_soft_skin() {
               // create array of global model coords 
               SAA_DVector *globalModelVertices = NULL;
               globalModelVertices = new SAA_DVector[modelNumVert];
-              float matrix[4][4];
+              PN_stdfloat matrix[4][4];
               
               // tranform local model vert coords to global
               

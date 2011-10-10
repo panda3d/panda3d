@@ -119,27 +119,27 @@ private:
                          const GeomInfo &geom_info);
 
   size_t choose_model_stage(const StageList &stage_list) const;
-  bool determine_uv_range(TexCoordf &min_uv, TexCoordf &max_uv,
+  bool determine_uv_range(LTexCoord &min_uv, LTexCoord &max_uv,
                           const StageInfo &model_stage,
                           const GeomList &geom_list) const;
 
-  void get_uv_scale(LVecBase2f &uv_scale, LVecBase2f &uv_trans,
-                    const TexCoordf &min_uv, const TexCoordf &max_uv) const;
+  void get_uv_scale(LVecBase2 &uv_scale, LVecBase2 &uv_trans,
+                    const LTexCoord &min_uv, const LTexCoord &max_uv) const;
 
   void choose_texture_size(int &x_size, int &y_size,
                            const StageInfo &model_stage,
-                           const LVecBase2f &uv_scale,
+                           const LVecBase2 &uv_scale,
                            GraphicsOutput *window) const;
 
   void make_texture_layer(const NodePath &render, 
                           const StageInfo &stage_info, 
                           const GeomList &geom_list,
-                          const TexCoordf &min_uv, const TexCoordf &max_uv,
+                          const LTexCoord &min_uv, const LTexCoord &max_uv,
                           bool force_use_geom, bool transparent_base);
   void transfer_geom(GeomNode *geom_node, const InternalName *texcoord_name,
                      const GeomList &geom_list, bool preserve_color);
 
-  void scan_color(const GeomList &geom_list, Colorf &geom_color, 
+  void scan_color(const GeomList &geom_list, LColor &geom_color, 
                   int &num_colors) const;
   bool scan_decal(const StageList &stage_list) const;
 

@@ -43,27 +43,27 @@ protected:
 
 public:
   virtual PandaNode *make_copy() const;
-  virtual void xform(const LMatrix4f &mat);
+  virtual void xform(const LMatrix4 &mat);
   virtual void write(ostream &out, int indent_level) const;
 
-  virtual bool get_vector_to_light(LVector3f &result,
-                                   const LPoint3f &from_object_point, 
-                                   const LMatrix4f &to_object_space);
+  virtual bool get_vector_to_light(LVector3 &result,
+                                   const LPoint3 &from_object_point, 
+                                   const LMatrix4 &to_object_space);
 
 PUBLISHED:
-  INLINE float get_exponent() const;
-  INLINE void set_exponent(float exponent);
+  INLINE PN_stdfloat get_exponent() const;
+  INLINE void set_exponent(PN_stdfloat exponent);
   
-  INLINE const Colorf &get_specular_color() const;
-  INLINE void set_specular_color(const Colorf &color);
+  INLINE const LColor &get_specular_color() const;
+  INLINE void set_specular_color(const LColor &color);
   
-  INLINE const LVecBase3f &get_attenuation() const;
-  INLINE void set_attenuation(const LVecBase3f &attenuation);
+  INLINE const LVecBase3 &get_attenuation() const;
+  INLINE void set_attenuation(const LVecBase3 &attenuation);
 
   virtual int get_class_priority() const;
 
-  static PT(Texture) make_spot(int pixel_width, float full_radius,
-                               Colorf &fg, Colorf &bg);
+  static PT(Texture) make_spot(int pixel_width, PN_stdfloat full_radius,
+                               LColor &fg, LColor &bg);
   
 public:
   virtual void bind(GraphicsStateGuardianBase *gsg, const NodePath &light,
@@ -88,9 +88,9 @@ private:
       return Spotlight::get_class_type();
     }
 
-    float _exponent;
-    Colorf _specular_color;
-    LVecBase3f _attenuation;
+    PN_stdfloat _exponent;
+    LColor _specular_color;
+    LVecBase3 _attenuation;
   };
 
   PipelineCycler<CData> _cycler;

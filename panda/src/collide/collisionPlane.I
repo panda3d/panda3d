@@ -30,7 +30,7 @@ CollisionPlane() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionPlane::
-CollisionPlane(const Planef &plane) :
+CollisionPlane(const LPlane &plane) :
   _plane(plane)
 {
 }
@@ -63,7 +63,7 @@ flush_level() {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE LVector3f CollisionPlane::
+INLINE LVector3 CollisionPlane::
 get_normal() const {
   return _plane.get_normal();
 }
@@ -73,8 +73,8 @@ get_normal() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE float CollisionPlane::
-dist_to_plane(const LPoint3f &point) const {
+INLINE PN_stdfloat CollisionPlane::
+dist_to_plane(const LPoint3 &point) const {
   return _plane.dist_to_plane(point);
 }
 
@@ -84,7 +84,7 @@ dist_to_plane(const LPoint3f &point) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionPlane::
-set_plane(const Planef &plane) {
+set_plane(const LPlane &plane) {
   _plane = plane;
   mark_internal_bounds_stale();
   mark_viz_stale();
@@ -95,7 +95,7 @@ set_plane(const Planef &plane) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const Planef &CollisionPlane::
+INLINE const LPlane &CollisionPlane::
 get_plane() const {
   return _plane;
 }

@@ -59,10 +59,10 @@ make() {
 //               interface is deprecated.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) TexMatrixAttrib::
-make(const LMatrix4f &mat) {
+make(const LMatrix4 &mat) {
   pgraph_cat.warning()
     << "Using deprecated TexMatrixAttrib interface.\n";
-  if (mat == LMatrix4f::ident_mat()) {
+  if (mat == LMatrix4::ident_mat()) {
     return make();
   }
   CPT(TransformState) transform = TransformState::make_mat(mat);
@@ -129,7 +129,7 @@ remove_stage(TextureStage *stage) const {
 //  Description: Returns the transformation matrix associated with
 //               the default texture stage.
 ////////////////////////////////////////////////////////////////////
-const LMatrix4f &TexMatrixAttrib::
+const LMatrix4 &TexMatrixAttrib::
 get_mat() const {
   return get_mat(TextureStage::get_default());
 }
@@ -190,7 +190,7 @@ get_stage(int n) const {
 //               the indicated texture stage, or identity matrix if
 //               nothing is associated with the indicated stage.
 ////////////////////////////////////////////////////////////////////
-const LMatrix4f &TexMatrixAttrib::
+const LMatrix4 &TexMatrixAttrib::
 get_mat(TextureStage *stage) const {
   return get_transform(stage)->get_mat();
 }

@@ -31,15 +31,15 @@ protected:
   INLINE CollisionPlane();
 
 PUBLISHED:
-  INLINE CollisionPlane(const Planef &plane);
+  INLINE CollisionPlane(const LPlane &plane);
   INLINE CollisionPlane(const CollisionPlane &copy);
 
-  virtual LPoint3f get_collision_origin() const;
+  virtual LPoint3 get_collision_origin() const;
 
 public:
   virtual CollisionSolid *make_copy();
 
-  virtual void xform(const LMatrix4f &mat);
+  virtual void xform(const LMatrix4 &mat);
 
   virtual PStatCollector &get_volume_pcollector();
   virtual PStatCollector &get_test_pcollector();
@@ -49,11 +49,11 @@ public:
   INLINE static void flush_level();
 
 PUBLISHED:
-  INLINE LVector3f get_normal() const;
-  INLINE float dist_to_plane(const LPoint3f &point) const;
+  INLINE LVector3 get_normal() const;
+  INLINE PN_stdfloat dist_to_plane(const LPoint3 &point) const;
 
-  INLINE void set_plane(const Planef &plane);
-  INLINE const Planef &get_plane() const;
+  INLINE void set_plane(const LPlane &plane);
+  INLINE const LPlane &get_plane() const;
 
   INLINE void flip();
 
@@ -75,7 +75,7 @@ protected:
   virtual void fill_viz_geom();
 
 private:
-  Planef _plane;
+  LPlane _plane;
 
   static PStatCollector _volume_pcollector;
   static PStatCollector _test_pcollector;

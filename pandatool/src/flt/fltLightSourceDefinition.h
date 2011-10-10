@@ -40,21 +40,21 @@ public:
 
   int _light_index;
   string _light_name;
-  Colorf _ambient;
-  Colorf _diffuse;
-  Colorf _specular;
+  LColor _ambient;
+  LColor _diffuse;
+  LColor _specular;
   LightType _light_type;
-  float _exponential_dropoff;
-  float _cutoff_angle;  // in degrees
+  PN_stdfloat _exponential_dropoff;
+  PN_stdfloat _cutoff_angle;  // in degrees
 
   // yaw and pitch only for modeling lights, which are positioned at
   // the eyepoint.
-  float _yaw;
-  float _pitch;
+  PN_stdfloat _yaw;
+  PN_stdfloat _pitch;
 
-  float _constant_coefficient;
-  float _linear_coefficient;
-  float _quadratic_coefficient;
+  PN_stdfloat _constant_coefficient;
+  PN_stdfloat _linear_coefficient;
+  PN_stdfloat _quadratic_coefficient;
   bool _modeling_light;
 
 protected:

@@ -13,7 +13,6 @@
 ////////////////////////////////////////////////////////////////////
 
 
-#include "collisionDSSolid.h"
 #include "collisionSphere.h"
 #include "collisionLine.h"
 #include "collisionRay.h"
@@ -65,12 +64,12 @@ test_intersection(const CollisionEntry &entry) const {
 //  Description: Transforms the solid by the indicated matrix.
 ////////////////////////////////////////////////////////////////////
 void CollisionSphere::
-xform(const LMatrix4f &mat) {
+xform(const LMatrix4 &mat) {
   _center = _center * mat;
 
   // This is a little cheesy and fails miserably in the presence of a
   // non-uniform scale.
-  LVector3f radius_v = LVector3f(_radius, 0.0f, 0.0f) * mat;
+  LVector3 radius_v = LVector3(_radius, 0.0f, 0.0f) * mat;
   _radius = length(radius_v);
   mark_viz_stale();
   mark_internal_bounds_stale();
@@ -84,7 +83,7 @@ xform(const LMatrix4f &mat) {
 //               intersection point to this origin point is considered
 //               to be the most significant.
 ////////////////////////////////////////////////////////////////////
-LPoint3f CollisionSphere::
+LPoint3 CollisionSphere::
 get_collision_origin() const {
   return get_center();
 }
@@ -132,174 +131,6 @@ PT(BoundingVolume) CollisionSphere::
 compute_internal_bounds() const {
   return new BoundingSphere(_center, _radius);
 }
-#define USE_DS_SOLID_PLANES 1
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::test_intersection_from_ds_solid
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-PT(CollisionEntry) CollisionSphere::
-test_intersection_from_ds_solid(const CollisionEntry &entry) const {
-  const CollisionDSSolid *ds_solid;
-  DCAST_INTO_R(ds_solid, entry.get_from(), 0);
-  cerr<<"CollisionSphere::test_intersection_from_ds_solid\n";
-
-  CPT(TransformState) wrt_space = entry.get_wrt_space();
-  const LMatrix4f &wrt_mat = wrt_space->get_mat();
-
-  LPoint3f into_center = get_center();
-  float into_radius = get_radius();
-
-  LPoint3f sa_center = ds_solid->get_center_a() * wrt_mat;
-  float sa_radius = length(
-    LVector3f(ds_solid->get_radius_a(), 0.0f, 0.0f) * wrt_mat);
-  LVector3f sa_vec = sa_center - into_center;
-  float sa_distance_squared = dot(sa_vec, sa_vec);
-  float sa_and_into_radii_squared = (
-    sa_radius + into_radius) * (sa_radius + into_radius);
-  if (sa_distance_squared > sa_and_into_radii_squared) {
-    // No intersection.
-    return NULL;
-  }
-
-  LPoint3f sb_center = ds_solid->get_center_b() * wrt_mat;
-  float sb_radius = length(
-    LVector3f(ds_solid->get_radius_b(), 0.0f, 0.0f) * wrt_mat);
-  LVector3f sb_vec = sb_center - into_center;
-  float sb_distance_squared = dot(sb_vec, sb_vec);
-  float sb_and_into_radii_squared = (
-    sb_radius + into_radius) * (sb_radius + into_radius);
-  if (sb_distance_squared > sb_and_into_radii_squared) {
-    // No intersection.
-    return NULL;
-  }
-
-  #if USE_DS_SOLID_PLANES
-  CPT(TransformState) inv_wrt_space = entry.get_inv_wrt_space();
-  const LMatrix4f &inv_wrt_mat = inv_wrt_space->get_mat();
-  
-  LPoint3f inv_into_center = get_center() * inv_wrt_mat;
-  float inv_into_radius = length(
-    LVector3f(get_radius(), 0.0f, 0.0f) * inv_wrt_mat);
-
-  float pa_distance =
-    ds_solid->dist_to_plane_a(inv_into_center) - inv_into_radius;
-  if (pa_distance > 0.0f) {
-    // No intersection.
-    return NULL;
-  }
-
-  float pb_distance =
-    ds_solid->dist_to_plane_b(inv_into_center) - inv_into_radius;
-  if (pb_distance > 0.0f) {
-    // No intersection.
-    return NULL;
-  }
-  #endif
-
-  LVector3f lens_center = ds_solid->get_collision_origin() * wrt_mat;
-  float lens_radius = length(
-    LVector3f(ds_solid->get_lens_radius(), 0.0f, 0.0f) * wrt_mat);
-  LVector3f lens_vec = lens_center - into_center;
-  //  float lens_distance_squared = dot(lens_vec, lens_vec);
-
-  LVector3f surface_normal; // into
-  //LPoint3f surface_point; // into
-  LPoint3f interior_point; // from
-  float sa_distance = sqrtf(sa_distance_squared) - sa_radius;
-  float sb_distance = sqrtf(sb_distance_squared) - sb_radius;
-  pa_distance = ds_solid->dist_to_plane_a(inv_into_center);
-  pb_distance = ds_solid->dist_to_plane_b(inv_into_center);
-  #if USE_DS_SOLID_PLANES
-  cerr
-    <<" sa_distance:"<<sa_distance
-    <<" sb_distance:"<<sb_distance
-    <<" pa_distance:"<<pa_distance
-    <<" pb_distance:"<<pb_distance<<"\n";
-  if ((sa_distance > pa_distance && sa_distance > pb_distance) ||
-      (sb_distance > pa_distance && sb_distance > pb_distance)) {
-  #else
-  cerr
-    <<" sa_distance:"<<sa_distance
-    <<" sb_distance:"<<sb_distance<<"\n";
-  #endif
-    LVector3f *primary_vec;
-    LPoint3f *primary_center;
-    float primary_radius;
-    LPoint3f *secondary_center;
-    float secondary_radius;
-    if (sa_distance > sb_distance) {
-      // sphere_a is the furthest
-      cerr<<"sphere_a is the furthest\n";
-      primary_vec = &sa_vec;
-      primary_center = &sa_center;
-      primary_radius = sa_radius;
-      secondary_center = &sb_center;
-      secondary_radius = sb_radius;
-    } else {
-      // sphere_b is the furthest
-      cerr<<"sphere_b is the furthest\n";
-      primary_vec = &sb_vec;
-      primary_center = &sb_center;
-      primary_radius = sb_radius;
-      secondary_center = &sa_center;
-      secondary_radius = sa_radius;
-    }
-
-    float vec_length = primary_vec->length();
-    if (IS_NEARLY_ZERO(vec_length)) {
-      // The centers are coincident, use an arbitrary normal.
-      surface_normal.set(1.0, 0.0, 0.0);
-    } else {
-      // Lens face
-      surface_normal = *primary_vec / vec_length;
-    }
-    interior_point = *primary_center - surface_normal * primary_radius;
-
-    float temp_length_squared =
-      (interior_point - *secondary_center).length_squared();
-    if (temp_length_squared > (secondary_radius * secondary_radius)) {
-      cerr<<"foo\n";
-      LVector3f a = (*primary_center - lens_center).normalize();
-      LVector3f b =
-        cross(cross(a, (into_center - lens_center).normalize()), a).normalize();
-      interior_point = lens_center + b * lens_radius;
-      surface_normal = (interior_point - into_center).normalize();
-    }
-  #if USE_DS_SOLID_PLANES
-  } else {
-    if (pa_distance > pb_distance) {
-      // plane_a is the furthest
-      cerr<<"plane_a is the furthest\n";
-      surface_normal = -(ds_solid->get_plane_a().get_normal() * wrt_mat);
-      float d = length(
-        LVector3f(pa_distance, 0.0f, 0.0f) * wrt_mat);
-      interior_point = into_center + surface_normal * d;
-    } else {
-      // plane_b is the furthest
-      cerr<<"plane_b is the furthest\n";
-      //surface_normal = -(ds_solid->get_plane_b().get_normal() * wrt_mat);
-      surface_normal = -ds_solid->get_plane_b().get_normal();
-      surface_normal = surface_normal * wrt_mat;
-      float d = length(
-        LVector3f(pb_distance, 0.0f, 0.0f) * wrt_mat);
-      interior_point = into_center + surface_normal * d;
-    }
-  }
-  #endif
-
-  if (collide_cat.is_debug()) {
-    collide_cat.debug()
-      << "intersection detected from " << entry.get_from_node_path()
-      << " into " << entry.get_into_node_path() << "\n";
-  }
-
-  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
-  new_entry->set_surface_normal(surface_normal);
-  new_entry->set_surface_point(into_center + surface_normal * into_radius);
-  new_entry->set_interior_point(interior_point);
-  return new_entry;
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSphere::test_intersection_from_sphere
@@ -313,32 +144,32 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 
   CPT(TransformState) wrt_space = entry.get_wrt_space();
 
-  const LMatrix4f &wrt_mat = wrt_space->get_mat();
+  const LMatrix4 &wrt_mat = wrt_space->get_mat();
 
-  LPoint3f from_b = sphere->get_center() * wrt_mat;
+  LPoint3 from_b = sphere->get_center() * wrt_mat;
 
-  LPoint3f into_center(get_center());
-  float into_radius(get_radius());
+  LPoint3 into_center(get_center());
+  PN_stdfloat into_radius(get_radius());
 
-  LVector3f from_radius_v =
-    LVector3f(sphere->get_radius(), 0.0f, 0.0f) * wrt_mat;
-  float from_radius = length(from_radius_v);
+  LVector3 from_radius_v =
+    LVector3(sphere->get_radius(), 0.0f, 0.0f) * wrt_mat;
+  PN_stdfloat from_radius = length(from_radius_v);
 
-  LPoint3f into_intersection_point(from_b);
+  LPoint3 into_intersection_point(from_b);
   double t1, t2;
-  LPoint3f contact_point(into_intersection_point);
-  float actual_t = 0.0f;
+  LPoint3 contact_point(into_intersection_point);
+  PN_stdfloat actual_t = 0.0f;
 
-  LVector3f vec = from_b - into_center;
-  float dist2 = dot(vec, vec);
+  LVector3 vec = from_b - into_center;
+  PN_stdfloat dist2 = dot(vec, vec);
   if (dist2 > (into_radius + from_radius) * (into_radius + from_radius)) {
     // No intersection with the current position.  Check the delta
     // from the previous frame.
     CPT(TransformState) wrt_prev_space = entry.get_wrt_prev_space();
-    LPoint3f from_a = sphere->get_center() * wrt_prev_space->get_mat();
+    LPoint3 from_a = sphere->get_center() * wrt_prev_space->get_mat();
 
     if (!from_a.almost_equal(from_b)) {
-      LVector3f from_direction = from_b - from_a;
+      LVector3 from_direction = from_b - from_a;
       if (!intersects_line(t1, t2, from_a, from_direction, from_radius)) {
         // No intersection.
         return NULL;
@@ -376,11 +207,11 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LPoint3f from_center = sphere->get_center() * wrt_mat;
+  LPoint3 from_center = sphere->get_center() * wrt_mat;
 
-  LVector3f surface_normal;
-  LVector3f v(into_intersection_point - into_center);
-  float vec_length = v.length();
+  LVector3 surface_normal;
+  LVector3 v(into_intersection_point - into_center);
+  PN_stdfloat vec_length = v.length();
   if (IS_NEARLY_ZERO(vec_length)) {
     // If we don't have a collision normal (e.g. the centers are
     // exactly coincident), then make up an arbitrary normal--any one
@@ -390,11 +221,11 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     surface_normal = v / vec_length;
   }
 
-  LVector3f eff_normal = (has_effective_normal() && sphere->get_respect_effective_normal()) ? get_effective_normal() : surface_normal;
+  LVector3 eff_normal = (has_effective_normal() && sphere->get_respect_effective_normal()) ? get_effective_normal() : surface_normal;
 
-  LVector3f contact_normal;
-  LVector3f v2 = contact_point - into_center;
-  float v2_len = v2.length();
+  LVector3 contact_normal;
+  LVector3 v2 = contact_point - into_center;
+  PN_stdfloat v2_len = v2.length();
   if (IS_NEARLY_ZERO(v2_len)) {
     // If we don't have a collision normal (e.g. the centers are
     // exactly coincident), then make up an arbitrary normal--any one
@@ -424,10 +255,10 @@ test_intersection_from_line(const CollisionEntry &entry) const {
   const CollisionLine *line;
   DCAST_INTO_R(line, entry.get_from(), 0);
 
-  const LMatrix4f &wrt_mat = entry.get_wrt_mat();
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
-  LPoint3f from_origin = line->get_origin() * wrt_mat;
-  LVector3f from_direction = line->get_direction() * wrt_mat;
+  LPoint3 from_origin = line->get_origin() * wrt_mat;
+  LVector3 from_direction = line->get_direction() * wrt_mat;
 
   double t1, t2;
   if (!intersects_line(t1, t2, from_origin, from_direction, 0.0f)) {
@@ -442,13 +273,13 @@ test_intersection_from_line(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LPoint3f into_intersection_point = from_origin + t1 * from_direction;
+  LPoint3 into_intersection_point = from_origin + t1 * from_direction;
   new_entry->set_surface_point(into_intersection_point);
 
   if (has_effective_normal() && line->get_respect_effective_normal()) {
     new_entry->set_surface_normal(get_effective_normal());
   } else {
-    LVector3f normal = into_intersection_point - get_center();
+    LVector3 normal = into_intersection_point - get_center();
     normal.normalize();
     new_entry->set_surface_normal(normal);
   }
@@ -469,27 +300,27 @@ test_intersection_from_box(const CollisionEntry &entry) const {
   CPT(TransformState) wrt_space = entry.get_wrt_space();
   CPT(TransformState) wrt_prev_space = entry.get_wrt_prev_space();
 
-  const LMatrix4f &wrt_mat = wrt_space->get_mat();
+  const LMatrix4 &wrt_mat = wrt_space->get_mat();
 
   CollisionBox local_b( *box );
   local_b.xform( wrt_mat );
 
-  LPoint3f from_center = local_b.get_center();
+  LPoint3 from_center = local_b.get_center();
 
-  LPoint3f orig_center = get_center();
-  LPoint3f to_center = orig_center;
-  LPoint3f contact_point(from_center);
-  float actual_t = 1.0f;
+  LPoint3 orig_center = get_center();
+  LPoint3 to_center = orig_center;
+  LPoint3 contact_point(from_center);
+  PN_stdfloat actual_t = 1.0f;
 
-  float to_radius = get_radius();
-  float to_radius_2 = to_radius * to_radius;
+  PN_stdfloat to_radius = get_radius();
+  PN_stdfloat to_radius_2 = to_radius * to_radius;
 
   int ip;
-  float max_dist = 0.0f;
-  float dist = 0.0f; // initial assignment to squelch silly compiler warning
+  PN_stdfloat max_dist = 0.0f;
+  PN_stdfloat dist = 0.0f; // initial assignment to squelch silly compiler warning
   bool intersect;
-  Planef plane;
-  LVector3f normal;
+  LPlane plane;
+  LVector3 normal;
 
   for (ip = 0, intersect=false; ip < 6 && !intersect; ip++) {
     plane = local_b.get_plane( ip );
@@ -524,8 +355,8 @@ test_intersection_from_box(const CollisionEntry &entry) const {
       continue;
     }
 
-    LPoint2f p = local_b.to_2d(to_center - dist * plane.get_normal(), ip);
-    float edge_dist = 0.0f;
+    LPoint2 p = local_b.to_2d(to_center - dist * plane.get_normal(), ip);
+    PN_stdfloat edge_dist = 0.0f;
 
     edge_dist = local_b.dist_to_polygon(p, local_b.get_plane_points(ip));
 
@@ -548,7 +379,7 @@ test_intersection_from_box(const CollisionEntry &entry) const {
 
     max_dist = to_radius;
     if (edge_dist >= 0.0f) {
-      float max_dist_2 = max(to_radius_2 - edge_dist * edge_dist, 0.0f);
+      PN_stdfloat max_dist_2 = max(to_radius_2 - edge_dist * edge_dist, (PN_stdfloat)0.0);
       max_dist = csqrt(max_dist_2);
     }
 
@@ -569,7 +400,7 @@ test_intersection_from_box(const CollisionEntry &entry) const {
 
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  float into_depth = max_dist - dist;
+  PN_stdfloat into_depth = max_dist - dist;
 
   new_entry->set_surface_normal(normal);
   new_entry->set_surface_point(to_center - normal * dist);
@@ -591,10 +422,10 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
   DCAST_INTO_R(ray, entry.get_from(), 0);
 
-  const LMatrix4f &wrt_mat = entry.get_wrt_mat();
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
-  LPoint3f from_origin = ray->get_origin() * wrt_mat;
-  LVector3f from_direction = ray->get_direction() * wrt_mat;
+  LPoint3 from_origin = ray->get_origin() * wrt_mat;
+  LVector3 from_direction = ray->get_direction() * wrt_mat;
 
   double t1, t2;
   if (!intersects_line(t1, t2, from_origin, from_direction, 0.0f)) {
@@ -616,13 +447,13 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LPoint3f into_intersection_point = from_origin + t1 * from_direction;
+  LPoint3 into_intersection_point = from_origin + t1 * from_direction;
   new_entry->set_surface_point(into_intersection_point);
 
   if (has_effective_normal() && ray->get_respect_effective_normal()) {
     new_entry->set_surface_normal(get_effective_normal());
   } else {
-    LVector3f normal = into_intersection_point - get_center();
+    LVector3 normal = into_intersection_point - get_center();
     normal.normalize();
     new_entry->set_surface_normal(normal);
   }
@@ -640,11 +471,11 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   const CollisionSegment *segment;
   DCAST_INTO_R(segment, entry.get_from(), 0);
 
-  const LMatrix4f &wrt_mat = entry.get_wrt_mat();
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
-  LPoint3f from_a = segment->get_point_a() * wrt_mat;
-  LPoint3f from_b = segment->get_point_b() * wrt_mat;
-  LVector3f from_direction = from_b - from_a;
+  LPoint3 from_a = segment->get_point_a() * wrt_mat;
+  LPoint3 from_b = segment->get_point_b() * wrt_mat;
+  LVector3 from_direction = from_b - from_a;
 
   double t1, t2;
   if (!intersects_line(t1, t2, from_a, from_direction, 0.0f)) {
@@ -667,13 +498,13 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LPoint3f into_intersection_point = from_a + t1 * from_direction;
+  LPoint3 into_intersection_point = from_a + t1 * from_direction;
   new_entry->set_surface_point(into_intersection_point);
 
   if (has_effective_normal() && segment->get_respect_effective_normal()) {
     new_entry->set_surface_normal(get_effective_normal());
   } else {
-    LVector3f normal = into_intersection_point - get_center();
+    LVector3 normal = into_intersection_point - get_center();
     normal.normalize();
     new_entry->set_surface_normal(normal);
   }
@@ -691,10 +522,10 @@ test_intersection_from_parabola(const CollisionEntry &entry) const {
   const CollisionParabola *parabola;
   DCAST_INTO_R(parabola, entry.get_from(), 0);
 
-  const LMatrix4f &wrt_mat = entry.get_wrt_mat();
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
   // Convert the parabola into local coordinate space.
-  Parabolaf local_p(parabola->get_parabola());
+  LParabola local_p(parabola->get_parabola());
   local_p.xform(wrt_mat);
 
   double t;
@@ -712,13 +543,13 @@ test_intersection_from_parabola(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LPoint3f into_intersection_point = local_p.calc_point(t);
+  LPoint3 into_intersection_point = local_p.calc_point(t);
   new_entry->set_surface_point(into_intersection_point);
 
   if (has_effective_normal() && parabola->get_respect_effective_normal()) {
     new_entry->set_surface_normal(get_effective_normal());
   } else {
-    LVector3f normal = into_intersection_point - get_center();
+    LVector3 normal = into_intersection_point - get_center();
     normal.normalize();
     new_entry->set_surface_normal(normal);
   }
@@ -749,15 +580,15 @@ fill_viz_geom() {
   
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
   for (int sl = 0; sl < num_slices; ++sl) {
-    float longitude0 = (float)sl / (float)num_slices;
-    float longitude1 = (float)(sl + 1) / (float)num_slices;
-    vertex.add_data3f(compute_point(0.0, longitude0));
+    PN_stdfloat longitude0 = (PN_stdfloat)sl / (PN_stdfloat)num_slices;
+    PN_stdfloat longitude1 = (PN_stdfloat)(sl + 1) / (PN_stdfloat)num_slices;
+    vertex.add_data3(compute_point(0.0, longitude0));
     for (int st = 1; st < num_stacks; ++st) {
-      float latitude = (float)st / (float)num_stacks;
-      vertex.add_data3f(compute_point(latitude, longitude0));
-      vertex.add_data3f(compute_point(latitude, longitude1));
+      PN_stdfloat latitude = (PN_stdfloat)st / (PN_stdfloat)num_stacks;
+      vertex.add_data3(compute_point(latitude, longitude0));
+      vertex.add_data3(compute_point(latitude, longitude1));
     }
-    vertex.add_data3f(compute_point(1.0, longitude0));
+    vertex.add_data3(compute_point(1.0, longitude0));
     
     strip->add_next_vertices(num_stacks * 2);
     strip->close_primitive();
@@ -785,8 +616,8 @@ fill_viz_geom() {
 ////////////////////////////////////////////////////////////////////
 bool CollisionSphere::
 intersects_line(double &t1, double &t2,
-                const LPoint3f &from, const LVector3f &delta,
-                float inflate_radius) const {
+                const LPoint3 &from, const LVector3 &delta,
+                PN_stdfloat inflate_radius) const {
   // Solve the equation for the intersection of a line with a sphere
   // using the quadratic equation.
 
@@ -821,7 +652,7 @@ intersects_line(double &t1, double &t2,
 
   nassertr(A != 0.0, false);
 
-  LVector3f fc = from - get_center();
+  LVector3 fc = from - get_center();
   double B = 2.0f* dot(delta, fc);
   double fc_d2 = dot(fc, fc);
   double radius = get_radius() + inflate_radius;
@@ -861,9 +692,9 @@ intersects_line(double &t1, double &t2,
 //               is returned.
 ////////////////////////////////////////////////////////////////////
 bool CollisionSphere::
-intersects_parabola(double &t, const Parabolaf &parabola,
+intersects_parabola(double &t, const LParabola &parabola,
                     double t1, double t2,
-                    const LPoint3f &p1, const LPoint3f &p2) const {
+                    const LPoint3 &p1, const LPoint3 &p2) const {
   if (t1 == t2) {
     // Special case: a single point.
     if ((p1 - _center).length_squared() > _radius * _radius) {
@@ -888,8 +719,8 @@ intersects_parabola(double &t, const Parabolaf &parabola,
   // point.
   double tmid = (t1 + t2) * 0.5;
   if (tmid != t1 && tmid != t2) {
-    LPoint3f pmid = parabola.calc_point(tmid);
-    LPoint3f pmid2 = (p1 + p2) * 0.5f;
+    LPoint3 pmid = parabola.calc_point(tmid);
+    LPoint3 pmid2 = (p1 + p2) * 0.5f;
   
     if ((pmid - pmid2).length_squared() > 0.001f) {
       // Subdivide.
@@ -922,15 +753,15 @@ intersects_parabola(double &t, const Parabolaf &parabola,
 //               is used by fill_viz_geom() to create a visible
 //               representation of the sphere.
 ////////////////////////////////////////////////////////////////////
-Vertexf CollisionSphere::
-compute_point(float latitude, float longitude) const {
-  float s1, c1;
-  csincos(latitude * MathNumbers::pi_f, &s1, &c1);
+LVertex CollisionSphere::
+compute_point(PN_stdfloat latitude, PN_stdfloat longitude) const {
+  PN_stdfloat s1, c1;
+  csincos(latitude * MathNumbers::pi, &s1, &c1);
 
-  float s2, c2;
-  csincos(longitude * 2.0f * MathNumbers::pi_f, &s2, &c2);
+  PN_stdfloat s2, c2;
+  csincos(longitude * 2.0f * MathNumbers::pi, &s2, &c2);
 
-  Vertexf p(s1 * c2, s1 * s2, c1);
+  LVertex p(s1 * c2, s1 * s2, c1);
   return p * get_radius() + get_center();
 }
 
@@ -954,7 +785,7 @@ void CollisionSphere::
 write_datagram(BamWriter *manager, Datagram &me) {
   CollisionSolid::write_datagram(manager, me);
   _center.write_datagram(me);
-  me.add_float32(_radius);
+  me.add_stdfloat(_radius);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -985,5 +816,5 @@ void CollisionSphere::
 fillin(DatagramIterator& scan, BamReader* manager) {
   CollisionSolid::fillin(scan, manager);
   _center.read_datagram(scan);
-  _radius = scan.get_float32();
+  _radius = scan.get_stdfloat();
 }

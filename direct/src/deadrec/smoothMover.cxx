@@ -101,8 +101,8 @@ mark_position() {
 
     // We also need to compute the velocity here.
     if (_smooth_position_known) {
-      LVector3f pos_delta = _sample._pos - _smooth_pos;
-      LVecBase3f hpr_delta = _sample._hpr - _smooth_hpr;
+      LVector3 pos_delta = _sample._pos - _smooth_pos;
+      LVecBase3 hpr_delta = _sample._hpr - _smooth_hpr;
       double age = timestamp - _smooth_timestamp;
       age = min(age, _max_position_age);
 
@@ -583,7 +583,7 @@ write(ostream &out) const {
 //               the indicated timestamp.
 ////////////////////////////////////////////////////////////////////
 void SmoothMover::
-set_smooth_pos(const LPoint3f &pos, const LVecBase3f &hpr,
+set_smooth_pos(const LPoint3 &pos, const LVecBase3 &hpr,
                double timestamp) {
   if (deadrec_cat.is_spam()) {
     deadrec_cat.spam()
@@ -661,8 +661,8 @@ linear_interpolate(int point_before, int point_after, double timestamp) {
     }
     
     double t = (timestamp - point_b._timestamp) / age;
-    LVector3f pos_delta = point_a._pos - point_b._pos;
-    LVecBase3f hpr_delta = point_a._hpr - point_b._hpr;
+    LVector3 pos_delta = point_a._pos - point_b._pos;
+    LVecBase3 hpr_delta = point_a._hpr - point_b._hpr;
 
     if (deadrec_cat.is_spam()) {
       deadrec_cat.spam()
@@ -683,7 +683,7 @@ linear_interpolate(int point_before, int point_after, double timestamp) {
 //               moving object.
 ////////////////////////////////////////////////////////////////////
 void SmoothMover::
-compute_velocity(const LVector3f &pos_delta, const LVecBase3f &hpr_delta,
+compute_velocity(const LVector3 &pos_delta, const LVecBase3 &hpr_delta,
                  double age) {
   _smooth_rotational_velocity = hpr_delta[0] / age;
 
@@ -692,9 +692,9 @@ compute_velocity(const LVector3f &pos_delta, const LVecBase3f &hpr_delta,
     // the velocity vector onto the y axis, as rotated by the current
     // hpr.
     if (!_computed_forward_axis) {
-      LMatrix3f rot_mat;
-      compose_matrix(rot_mat, LVecBase3f(1.0, 1.0, 1.0), _smooth_hpr);
-      _forward_axis = LVector3f(0.0, 1.0, 0.0) * rot_mat;
+      LMatrix3 rot_mat;
+      compose_matrix(rot_mat, LVecBase3(1.0, 1.0, 1.0), _smooth_hpr);
+      _forward_axis = LVector3(0.0, 1.0, 0.0) * rot_mat;
       
       if (deadrec_cat.is_spam()) {
         deadrec_cat.spam()
@@ -702,10 +702,10 @@ compute_velocity(const LVector3f &pos_delta, const LVecBase3f &hpr_delta,
       }
     }
     
-    LVector3f lateral_axis = _forward_axis.cross(LVector3f(0.0,0.0,1.0));
+    LVector3 lateral_axis = _forward_axis.cross(LVector3(0.0,0.0,1.0));
     
-    float forward_distance = pos_delta.dot(_forward_axis);
-    float lateral_distance = pos_delta.dot(lateral_axis);
+    PN_stdfloat forward_distance = pos_delta.dot(_forward_axis);
+    PN_stdfloat lateral_distance = pos_delta.dot(lateral_axis);
     
     _smooth_forward_velocity = forward_distance / age;
     _smooth_lateral_velocity = lateral_distance / age;

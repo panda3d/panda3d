@@ -11,7 +11,6 @@
 #include "collisionHandlerPusher.cxx"
 #include "collisionHandlerFluidPusher.cxx"
 #include "collisionHandlerQueue.cxx"
-#include "collisionDSSolid.cxx"
 #include "collisionInvSphere.cxx"
 #include "collisionLevelStateBase.cxx"
 #include "collisionLevelState.cxx"

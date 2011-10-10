@@ -68,11 +68,11 @@ set_from_egg(EggPrimitive *egg_prim) {
       _face_color = egg_mat->get_diff();
     }
     if (egg_mat->has_spec()) {
-      const Colorf &spec = egg_mat->get_spec();
+      const LColor &spec = egg_mat->get_spec();
       _specular_color.set(spec[0], spec[1], spec[2]);
     }
     if (egg_mat->has_emit()) {
-      const Colorf &emit = egg_mat->get_emit();
+      const LColor &emit = egg_mat->get_emit();
       _emissive_color.set(emit[0], emit[1], emit[2]);
     }
     if (egg_mat->has_shininess()) {
@@ -106,18 +106,18 @@ apply_to_egg(EggPrimitive *egg_prim, XFileToEggConverter *converter) {
   }
 
   // Are there any fancy lighting effects?
-  bool got_spec = (_specular_color != RGBColorf::zero());
-  bool got_emit = (_emissive_color != RGBColorf::zero());
+  bool got_spec = (_specular_color != LRGBColor::zero());
+  bool got_emit = (_emissive_color != LRGBColor::zero());
   if (got_spec || got_emit) {
     EggMaterial temp("");
     temp.set_diff(_face_color);
     if (got_spec) {
       temp.set_shininess(_power);
-      temp.set_spec(Colorf(_specular_color[0], _specular_color[1],
+      temp.set_spec(LColor(_specular_color[0], _specular_color[1],
                            _specular_color[2], 1.0));
     }
     if (got_emit) {
-      temp.set_emit(Colorf(_emissive_color[0], _emissive_color[1],
+      temp.set_emit(LColor(_emissive_color[0], _emissive_color[1],
                            _emissive_color[2], 1.0));
     }
     EggMaterial *egg_mat = converter->create_unique_material(temp);
@@ -202,10 +202,10 @@ make_x_material(XFileNode *x_meshMaterials, const string &suffix) {
 ////////////////////////////////////////////////////////////////////
 bool XFileMaterial::
 fill_material(XFileDataNode *obj) {
-  _face_color = LCAST(float, (*obj)["faceColor"].vec4());
+  _face_color = LCAST(PN_stdfloat, (*obj)["faceColor"].vec4());
   _power = (*obj)["power"].d();
-  _specular_color = LCAST(float, (*obj)["specularColor"].vec3());
-  _emissive_color = LCAST(float, (*obj)["emissiveColor"].vec3());
+  _specular_color = LCAST(PN_stdfloat, (*obj)["specularColor"].vec3());
+  _emissive_color = LCAST(PN_stdfloat, (*obj)["emissiveColor"].vec3());
   _has_material = true;
 
   // Walk through the children of the material.  If there are any,

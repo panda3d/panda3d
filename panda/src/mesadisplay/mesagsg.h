@@ -28,12 +28,33 @@
 
 #ifdef MESA_MGL
   #define GLP(name) mgl##name
+
+#ifndef STDFLOAT_DOUBLE
+#define GLPf(name) mgl ## name ## f
+#define GLPfv(name) mgl ## name ## fv
+#else  // STDFLOAT_DOUBLE
+#define GLPf(name) mgl ## name ## d
+#define GLPfv(name) mgl ## name ## dv
+#endif  // STDFLOAT_DOUBLE
+
   #define GLPREFIX_QUOTED "mgl"
   #define USE_MGL_NAMESPACE 1
-#else
+
+#else  // MESA_MGL
+
+#ifndef STDFLOAT_DOUBLE
+#define GLPf(name) gl ## name ## f
+#define GLPfv(name) gl ## name ## fv
+#else  // STDFLOAT_DOUBLE
+#define GLPf(name) gl ## name ## d
+#define GLPfv(name) gl ## name ## dv
+#endif  // STDFLOAT_DOUBLE
+
   #define GLP(name) gl##name
   #define GLPREFIX_QUOTED "gl"
-#endif
+
+#endif  // MESA_MGL
+
 #define CLP(name) Mesa##name
 #define CLASSPREFIX_QUOTED "Mesa"
 #define GLSYSTEM_NAME "Mesa"

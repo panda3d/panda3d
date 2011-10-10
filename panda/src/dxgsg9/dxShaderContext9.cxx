@@ -332,7 +332,7 @@ unbind(GSG *gsg) {
 ////////////////////////////////////////////////////////////////////
 
 #if DEBUG_SHADER
-float *global_data = 0;
+PN_stdfloat *global_data = 0;
 ShaderContext::ShaderMatSpec *global_shader_mat_spec = 0;
 InternalName *global_internal_name_0 = 0;
 InternalName *global_internal_name_1 = 0;
@@ -361,7 +361,7 @@ issue_parameters(GSG *gsg, int altered)
         
         switch(_ptr_data->_type) {
         case Shader::SPT_float:
-          cgD3D9SetUniform(p, (float*)_ptr_data->_ptr); 
+          cgD3D9SetUniform(p, (PN_stdfloat*)_ptr_data->_ptr); 
           break;
 
         default: 
@@ -380,21 +380,21 @@ issue_parameters(GSG *gsg, int altered)
         if (p == NULL) {
           continue;
         }        
-        const LMatrix4f *val = gsg->fetch_specified_value(_shader->_mat_spec[i], altered);
+        const LMatrix4 *val = gsg->fetch_specified_value(_shader->_mat_spec[i], altered);
         if (val) {
           HRESULT hr;
-          float v [4];
-          LMatrix4f temp_matrix;
+          PN_stdfloat v [4];
+          LMatrix4 temp_matrix;
 
           hr = D3D_OK;
 
-          const float *data;
+          const PN_stdfloat *data;
 
           data = val -> get_data ( );
 
           #if DEBUG_SHADER
           // DEBUG
-          global_data = (float *) data;
+          global_data = (PN_stdfloat *) data;
           global_shader_mat_spec = &_shader->_mat_spec[i];
           global_internal_name_0 = global_shader_mat_spec -> _arg [0];
           global_internal_name_1 = global_shader_mat_spec -> _arg [1];

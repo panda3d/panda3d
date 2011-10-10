@@ -40,7 +40,7 @@ public:
 
 PUBLISHED:
   static CPT(RenderAttrib) make();
-  static CPT(RenderAttrib) make(const LMatrix4f &mat);
+  static CPT(RenderAttrib) make(const LMatrix4 &mat);
   static CPT(RenderAttrib) make(TextureStage *stage, const TransformState *transform);
   static CPT(RenderAttrib) make_default();
 
@@ -54,8 +54,8 @@ PUBLISHED:
   TextureStage *get_stage(int n) const;
   MAKE_SEQ(get_stages, get_num_stages, get_stage);
 
-  const LMatrix4f &get_mat() const;
-  const LMatrix4f &get_mat(TextureStage *stage) const;
+  const LMatrix4 &get_mat() const;
+  const LMatrix4 &get_mat(TextureStage *stage) const;
 
   CPT(TransformState) get_transform(TextureStage *stage) const;
   INLINE int get_override(TextureStage *stage) const;

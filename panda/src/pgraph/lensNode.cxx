@@ -58,7 +58,7 @@ LensNode(const LensNode &copy) :
 //               most kinds of PandaNodes, this does nothing.
 ////////////////////////////////////////////////////////////////////
 void LensNode::
-xform(const LMatrix4f &mat) {
+xform(const LMatrix4 &mat) {
   PandaNode::xform(mat);
   // We need to actually transform the lens here.
 }
@@ -143,7 +143,7 @@ set_lens_active(int index, bool flag) {
 //               see the point).
 ////////////////////////////////////////////////////////////////////
 bool LensNode::
-is_in_view(int index, const LPoint3f &pos) {
+is_in_view(int index, const LPoint3 &pos) {
   Lens *lens = get_lens(index);
   nassertr(lens != (Lens *)NULL, false);
   PT(BoundingVolume) bv = lens->make_bounds();

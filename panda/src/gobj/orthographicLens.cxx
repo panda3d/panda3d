@@ -77,10 +77,10 @@ compute_projection_mat() {
     cs = get_default_coordinate_system();
   }
 
-  float a = 2.0f / (_far_distance - _near_distance);
-  float b = -(_far_distance + _near_distance) / (_far_distance - _near_distance);
+  PN_stdfloat a = 2.0f / (_far_distance - _near_distance);
+  PN_stdfloat b = -(_far_distance + _near_distance) / (_far_distance - _near_distance);
 
-  LMatrix4f canonical;
+  LMatrix4 canonical;
   switch (cs) {
   case CS_zup_right:
     canonical.set(1.0f,  0.0f,  0.0f,  0.0f,
@@ -113,7 +113,7 @@ compute_projection_mat() {
   default:
     gobj_cat.error()
       << "Invalid coordinate system " << (int)cs << " in OrthographicLens!\n";
-    canonical = LMatrix4f::ident_mat();
+    canonical = LMatrix4::ident_mat();
   }
 
   _projection_mat = get_lens_mat_inv() * canonical * get_film_mat();

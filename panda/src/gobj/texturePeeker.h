@@ -39,46 +39,46 @@ PUBLISHED:
   INLINE int get_y_size() const;
   INLINE int get_z_size() const;
 
-  void lookup(Colorf &color, float u, float v) const;
-  void lookup(Colorf &color, float u, float v, float w) const;
-  void filter_rect(Colorf &color, 
-                   float min_u, float min_v, 
-                   float max_u, float max_v) const;
-  void filter_rect(Colorf &color, 
-                   float min_u, float min_v, float min_w,
-                   float max_u, float max_v, float max_w) const;
+  void lookup(LColor &color, PN_stdfloat u, PN_stdfloat v) const;
+  void lookup(LColor &color, PN_stdfloat u, PN_stdfloat v, PN_stdfloat w) const;
+  void filter_rect(LColor &color, 
+                   PN_stdfloat min_u, PN_stdfloat min_v, 
+                   PN_stdfloat max_u, PN_stdfloat max_v) const;
+  void filter_rect(LColor &color, 
+                   PN_stdfloat min_u, PN_stdfloat min_v, PN_stdfloat min_w,
+                   PN_stdfloat max_u, PN_stdfloat max_v, PN_stdfloat max_w) const;
 
 private:
   static void init_rect_minmax(int &min_x, int &max_x, 
-                               float &min_u, float &max_u,
+                               PN_stdfloat &min_u, PN_stdfloat &max_u,
                                int x_size);
 
-  void accum_filter_z(Colorf &color, float &net,
-                      int min_x, int max_x, float min_u, float max_u,
-                      int min_y, int max_y, float min_v, float max_v,
-                      int min_z, int max_z, float min_w, float max_w) const;
-  void accum_filter_y(Colorf &color, float &net, int zi,
-                      int min_x, int max_x, float min_u, float max_u,
-                      int min_y, int max_y, float min_v, float max_v,
-                      float weight) const;
-  void accum_filter_x(Colorf &color, float &net, int yi, int zi,
-                      int min_x, int max_x, float min_u, float max_u,
-                      float weight) const;
-  void accum_texel(Colorf &color, float &net, const unsigned char *&p, 
-                   float weight) const;
+  void accum_filter_z(LColor &color, PN_stdfloat &net,
+                      int min_x, int max_x, PN_stdfloat min_u, PN_stdfloat max_u,
+                      int min_y, int max_y, PN_stdfloat min_v, PN_stdfloat max_v,
+                      int min_z, int max_z, PN_stdfloat min_w, PN_stdfloat max_w) const;
+  void accum_filter_y(LColor &color, PN_stdfloat &net, int zi,
+                      int min_x, int max_x, PN_stdfloat min_u, PN_stdfloat max_u,
+                      int min_y, int max_y, PN_stdfloat min_v, PN_stdfloat max_v,
+                      PN_stdfloat weight) const;
+  void accum_filter_x(LColor &color, PN_stdfloat &net, int yi, int zi,
+                      int min_x, int max_x, PN_stdfloat min_u, PN_stdfloat max_u,
+                      PN_stdfloat weight) const;
+  void accum_texel(LColor &color, PN_stdfloat &net, const unsigned char *&p, 
+                   PN_stdfloat weight) const;
 
   typedef double GetComponentFunc(const unsigned char *&p);
-  typedef void GetTexelFunc(Colorf &color, const unsigned char *&p,
+  typedef void GetTexelFunc(LColor &color, const unsigned char *&p,
                             GetComponentFunc *get_component);
 
-  static void get_texel_r(Colorf &color, const unsigned char *&p, GetComponentFunc *get_component);
-  static void get_texel_g(Colorf &color, const unsigned char *&p, GetComponentFunc *get_component);
-  static void get_texel_b(Colorf &color, const unsigned char *&p, GetComponentFunc *get_component);
-  static void get_texel_a(Colorf &color, const unsigned char *&p, GetComponentFunc *get_component);
-  static void get_texel_l(Colorf &color, const unsigned char *&p, GetComponentFunc *get_component);
-  static void get_texel_la(Colorf &color, const unsigned char *&p, GetComponentFunc *get_component);
-  static void get_texel_rgb(Colorf &color, const unsigned char *&p, GetComponentFunc *get_component);
-  static void get_texel_rgba(Colorf &color, const unsigned char *&p, GetComponentFunc *get_component);
+  static void get_texel_r(LColor &color, const unsigned char *&p, GetComponentFunc *get_component);
+  static void get_texel_g(LColor &color, const unsigned char *&p, GetComponentFunc *get_component);
+  static void get_texel_b(LColor &color, const unsigned char *&p, GetComponentFunc *get_component);
+  static void get_texel_a(LColor &color, const unsigned char *&p, GetComponentFunc *get_component);
+  static void get_texel_l(LColor &color, const unsigned char *&p, GetComponentFunc *get_component);
+  static void get_texel_la(LColor &color, const unsigned char *&p, GetComponentFunc *get_component);
+  static void get_texel_rgb(LColor &color, const unsigned char *&p, GetComponentFunc *get_component);
+  static void get_texel_rgba(LColor &color, const unsigned char *&p, GetComponentFunc *get_component);
   
   int _x_size;
   int _y_size;

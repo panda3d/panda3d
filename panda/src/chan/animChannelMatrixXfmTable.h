@@ -20,7 +20,7 @@
 #include "animChannel.h"
 
 #include "pointerToArray.h"
-#include "pta_float.h"
+#include "pta_stdfloat.h"
 #include "compose_matrix.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -43,20 +43,20 @@ PUBLISHED:
 public:
   virtual bool has_changed(int last_frame, double last_frac, 
                            int this_frame, double this_frac);
-  virtual void get_value(int frame, LMatrix4f &mat);
+  virtual void get_value(int frame, LMatrix4 &mat);
 
-  virtual void get_value_no_scale_shear(int frame, LMatrix4f &value);
-  virtual void get_scale(int frame, LVecBase3f &scale);
-  virtual void get_hpr(int frame, LVecBase3f &hpr);
-  virtual void get_quat(int frame, LQuaternionf &quat);
-  virtual void get_pos(int frame, LVecBase3f &pos);
-  virtual void get_shear(int frame, LVecBase3f &shear);
+  virtual void get_value_no_scale_shear(int frame, LMatrix4 &value);
+  virtual void get_scale(int frame, LVecBase3 &scale);
+  virtual void get_hpr(int frame, LVecBase3 &hpr);
+  virtual void get_quat(int frame, LQuaternion &quat);
+  virtual void get_pos(int frame, LVecBase3 &pos);
+  virtual void get_shear(int frame, LVecBase3 &shear);
 
 PUBLISHED:
   static INLINE bool is_valid_id(char table_id);
 
-  void set_table(char table_id, const CPTA_float &table);
-  INLINE CPTA_float get_table(char table_id) const;
+  void set_table(char table_id, const CPTA_stdfloat &table);
+  INLINE CPTA_stdfloat get_table(char table_id) const;
 
   void clear_all_tables();
   INLINE bool has_table(char table_id) const;
@@ -70,9 +70,9 @@ protected:
 
   INLINE static char get_table_id(int table_index);
   static int get_table_index(char table_id);
-  INLINE static float get_default_value(int table_index);
+  INLINE static PN_stdfloat get_default_value(int table_index);
 
-  CPTA_float _tables[num_matrix_components];
+  CPTA_stdfloat _tables[num_matrix_components];
 
 public:
   static void register_with_read_factory();

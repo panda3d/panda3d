@@ -39,17 +39,17 @@ public:
   void set_loop_count(unsigned long);
   unsigned long get_loop_count() const;
   
-  void set_time(float);
-  float get_time() const;
+  void set_time(PN_stdfloat);
+  PN_stdfloat get_time() const;
   
-  void set_volume(float);
-  float get_volume() const;
+  void set_volume(PN_stdfloat);
+  PN_stdfloat get_volume() const;
   
-  void set_balance(float);
-  float get_balance() const;
+  void set_balance(PN_stdfloat);
+  PN_stdfloat get_balance() const;
   
-  void set_play_rate(float);
-  float get_play_rate() const;
+  void set_play_rate(PN_stdfloat);
+  PN_stdfloat get_play_rate() const;
 
   void set_active(bool);
   bool get_active() const;
@@ -59,14 +59,14 @@ public:
   
   const string& get_name() const;
   
-  float length() const;
+  PN_stdfloat length() const;
 
-  void set_3d_attributes(float px, float py, float pz, float vx, float vy, float vz);
-  void get_3d_attributes(float *px, float *py, float *pz, float *vx, float *vy, float *vz);
-  void set_3d_min_distance(float dist);
-  float get_3d_min_distance() const;
-  void set_3d_max_distance(float dist);
-  float get_3d_max_distance() const;
+  void set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz);
+  void get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz);
+  void set_3d_min_distance(PN_stdfloat dist);
+  PN_stdfloat get_3d_min_distance() const;
+  void set_3d_max_distance(PN_stdfloat dist);
+  PN_stdfloat get_3d_max_distance() const;
   
   AudioSound::SoundStatus status() const;
 

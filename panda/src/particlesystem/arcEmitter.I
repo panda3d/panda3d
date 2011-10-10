@@ -19,7 +19,7 @@
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ArcEmitter::
-set_start_angle(float angle) {
+set_start_angle(PN_stdfloat angle) {
   _start_theta = deg_2_rad(angle);
 }
 
@@ -30,7 +30,7 @@ set_start_angle(float angle) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ArcEmitter::
-set_end_angle(float angle) {
+set_end_angle(PN_stdfloat angle) {
   _end_theta = deg_2_rad(angle);
 }
 
@@ -41,7 +41,7 @@ set_end_angle(float angle) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ArcEmitter::
-set_arc(float startAngle, float endAngle) {
+set_arc(PN_stdfloat startAngle, PN_stdfloat endAngle) {
   _start_theta = deg_2_rad(startAngle);
   _end_theta = deg_2_rad(endAngle);
 }
@@ -52,7 +52,7 @@ set_arc(float startAngle, float endAngle) {
 // Description : get start angle
 ////////////////////////////////////////////////////////////////////
 
-INLINE float ArcEmitter::
+INLINE PN_stdfloat ArcEmitter::
 get_start_angle() {
   return rad_2_deg(_start_theta);
 }
@@ -63,7 +63,7 @@ get_start_angle() {
 // Description : get end angle
 ////////////////////////////////////////////////////////////////////
 
-INLINE float ArcEmitter::
+INLINE PN_stdfloat ArcEmitter::
 get_end_angle() {
   return rad_2_deg(_end_theta);
 }

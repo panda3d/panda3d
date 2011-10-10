@@ -27,7 +27,7 @@
 #include "dataGraphTraverser.h"
 
 TypeHandle DriveInterface::_type_handle;
-const float DriveInterface::_hpr_quantize = 0.001;
+const PN_stdfloat DriveInterface::_hpr_quantize = 0.001;
 
 DriveInterface::KeyHeld::
 KeyHeld() {
@@ -37,8 +37,8 @@ KeyHeld() {
   _effect_at_change = 0.0f;
 }
 
-float DriveInterface::KeyHeld::
-get_effect(float ramp_up_time, float ramp_down_time) {
+PN_stdfloat DriveInterface::KeyHeld::
+get_effect(PN_stdfloat ramp_up_time, PN_stdfloat ramp_down_time) {
   double elapsed = ClockObject::get_global_clock()->get_frame_time() - _changed_time;
   if (_down) {
     // We are currently holding down the key.  That means we base our
@@ -47,8 +47,8 @@ get_effect(float ramp_up_time, float ramp_down_time) {
       _effect = 1.0f;
 
     } else {
-      float change = elapsed / ramp_up_time;
-      _effect = min(_effect_at_change + change, 1.0f);
+      PN_stdfloat change = elapsed / ramp_up_time;
+      _effect = min(_effect_at_change + change, (PN_stdfloat)1.0);
     }
   } else {
     // We are *not* currently holding down the key.  That means we
@@ -57,8 +57,8 @@ get_effect(float ramp_up_time, float ramp_down_time) {
       _effect = 0.0f;
 
     } else {
-      float change = elapsed / ramp_down_time;
-      _effect = max(_effect_at_change - change, 0.0f);
+      PN_stdfloat change = elapsed / ramp_down_time;
+      _effect = max(_effect_at_change - change, (PN_stdfloat)0.0);
     }
   }
   return _effect;
@@ -109,7 +109,7 @@ DriveInterface(const string &name) :
   _velocity_output = define_output("velocity", EventStoreVec3::get_class_type());
 
   _transform = TransformState::make_identity();
-  _velocity = new EventStoreVec3(LVector3f::zero());
+  _velocity = new EventStoreVec3(LVector3::zero());
 
   _forward_speed = drive_forward_speed;
   _reverse_speed = drive_reverse_speed;
@@ -172,7 +172,7 @@ reset() {
 //               will be removed soon.
 ////////////////////////////////////////////////////////////////////
 void DriveInterface::
-set_force_roll(float) {
+set_force_roll(PN_stdfloat) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -181,8 +181,8 @@ set_force_roll(float) {
 //  Description: Stores the indicated transform in the DriveInterface.
 ////////////////////////////////////////////////////////////////////
 void DriveInterface::
-set_mat(const LMatrix4f &mat) {
-  LVecBase3f scale, shear;
+set_mat(const LMatrix4 &mat) {
+  LVecBase3 scale, shear;
   decompose_matrix(mat, scale, shear, _hpr, _xyz);
 }
 
@@ -191,11 +191,11 @@ set_mat(const LMatrix4f &mat) {
 //       Access: Published
 //  Description: Returns the current transform.
 ////////////////////////////////////////////////////////////////////
-const LMatrix4f &DriveInterface::
+const LMatrix4 &DriveInterface::
 get_mat() {
   compose_matrix(_mat, 
-                 LVecBase3f(1.0f, 1.0f, 1.0f), 
-                 LVecBase3f(0.0f, 0.0f, 0.0f),
+                 LVecBase3(1.0f, 1.0f, 1.0f), 
+                 LVecBase3(0.0f, 0.0f, 0.0f),
                  _hpr, _xyz);
   return _mat;
 }
@@ -249,13 +249,13 @@ apply(double x, double y, bool any_button) {
     // First, how fast are we moving?  This is based on the mouse's
     // vertical position.
 
-    float dead_zone_top = _vertical_center + _vertical_dead_zone;
-    float dead_zone_bottom = _vertical_center - _vertical_dead_zone;
+    PN_stdfloat dead_zone_top = _vertical_center + _vertical_dead_zone;
+    PN_stdfloat dead_zone_bottom = _vertical_center - _vertical_dead_zone;
 
     if (y >= dead_zone_top) {
       // Motion is forward.  Compute the throttle value: the ratio of
       // the mouse pointer within the range of vertical movement.
-      float throttle =
+      PN_stdfloat throttle =
         // double 1.0, not 1.0f, is required here to satisfy min()
         (min(y, 1.0) - dead_zone_top) /
         (1.0f - dead_zone_top);
@@ -263,7 +263,7 @@ apply(double x, double y, bool any_button) {
 
     } else if (y <= dead_zone_bottom) {
       // Motion is backward.
-      float throttle =
+      PN_stdfloat throttle =
         (max(y, -1.0) - dead_zone_bottom) /
         (-1.0f - dead_zone_bottom);
       _speed = -throttle * _reverse_speed;
@@ -271,21 +271,21 @@ apply(double x, double y, bool any_button) {
 
     // Now, what's our rotational velocity?  This is based on the
     // mouse's horizontal position.
-    float dead_zone_right = _horizontal_center + _horizontal_dead_zone;
-    float dead_zone_left = _horizontal_center - _horizontal_dead_zone;
+    PN_stdfloat dead_zone_right = _horizontal_center + _horizontal_dead_zone;
+    PN_stdfloat dead_zone_left = _horizontal_center - _horizontal_dead_zone;
 
     if (x >= dead_zone_right) {
       // Rotation is to the right.  Compute the throttle value: the
       // ratio of the mouse pointer within the range of horizontal
       // movement.
-      float throttle =
+      PN_stdfloat throttle =
         (min(x, 1.0) - dead_zone_right) /
         (1.0f - dead_zone_right);
       _rot_speed = throttle * _rotate_speed;
 
     } else if (x <= dead_zone_left) {
       // Rotation is to the left.
-      float throttle =
+      PN_stdfloat throttle =
         (max(x, -1.0) - dead_zone_left) /
         (-1.0f - dead_zone_left);
       _rot_speed = -throttle * _rotate_speed;
@@ -296,7 +296,7 @@ apply(double x, double y, bool any_button) {
     // computation based on the arrow keys.
 
     // Which vertical arrow key changed state more recently?
-    float throttle;
+    PN_stdfloat throttle;
 
     if (_up_arrow < _down_arrow) {
       throttle = _up_arrow.get_effect(_vertical_ramp_up_time,
@@ -334,8 +334,8 @@ apply(double x, double y, bool any_button) {
   }
 
   // Now how far did we move based on the amount of time elapsed?
-  float distance = ClockObject::get_global_clock()->get_dt() * _speed;
-  float rotation = ClockObject::get_global_clock()->get_dt() * _rot_speed;
+  PN_stdfloat distance = ClockObject::get_global_clock()->get_dt() * _speed;
+  PN_stdfloat rotation = ClockObject::get_global_clock()->get_dt() * _rot_speed;
   if (_stop_this_frame) {
     distance = 0.0f;
     rotation = 0.0f;
@@ -346,12 +346,12 @@ apply(double x, double y, bool any_button) {
 
   // rot_mat is the rotation matrix corresponding to our previous
   // heading.
-  LMatrix3f rot_mat;
-  rot_mat.set_rotate_mat_normaxis(_hpr[0], LVector3f::up());
+  LMatrix3 rot_mat;
+  rot_mat.set_rotate_mat_normaxis(_hpr[0], LVector3::up());
 
   // Take a step in the direction of our previous heading.
-  _vel = LVector3f::forward() * distance;
-  LVector3f step = (_vel * rot_mat);
+  _vel = LVector3::forward() * distance;
+  LVector3 step = (_vel * rot_mat);
 
   // To prevent upward drift due to numerical errors, force the
   // vertical component of our step to zero (it should be pretty near
@@ -404,7 +404,7 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
   if (required_buttons_match && input.has_data(_xy_input)) {
     const EventStoreVec2 *xy;
     DCAST_INTO_V(xy, input.get_data(_xy_input).get_ptr());
-    const LVecBase2f &p = xy->get_value();
+    const LVecBase2 &p = xy->get_value();
     x = p[0];
     y = p[1];
 

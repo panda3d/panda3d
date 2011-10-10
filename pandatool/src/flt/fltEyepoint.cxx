@@ -25,12 +25,12 @@ FltEyepoint::
 FltEyepoint() {
   _rotation_center.set(0.0, 0.0, 0.0);
   _hpr.set(0.0, 0.0, 0.0);
-  _rotation = LMatrix4f::ident_mat();
+  _rotation = LMatrix4::ident_mat();
   _fov = 60.0;
   _scale = 1.0;
   _near_clip = 0.1;
   _far_clip = 10000.0;
-  _fly_through = LMatrix4f::ident_mat();
+  _fly_through = LMatrix4::ident_mat();
   _eyepoint.set(0.0, 0.0, 0.0);
   _fly_through_yaw = 0.0;
   _fly_through_pitch = 0.0;

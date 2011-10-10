@@ -25,7 +25,7 @@ TypeHandle ColorScaleLerpFunctor::_type_handle;
 
 
 PosLerpFunctor::PosLerpFunctor(const PosLerpFunctor& c)
-  : LPoint3fLerpFunctor(c), _node_path(c._node_path) {}
+  : LPoint3LerpFunctor(c), _node_path(c._node_path) {}
 
 PosLerpFunctor::~PosLerpFunctor()
 {
@@ -33,11 +33,11 @@ PosLerpFunctor::~PosLerpFunctor()
 
 PosLerpFunctor& PosLerpFunctor::operator=(const PosLerpFunctor& c) {
   _node_path = c._node_path;
-  LPoint3fLerpFunctor::operator=(c);
+  LPoint3LerpFunctor::operator=(c);
   return *this;
 }
 
-void PosLerpFunctor::operator()(float t) {
+void PosLerpFunctor::operator()(PN_stdfloat t) {
   if (_is_wrt)
     _node_path.set_pos(_wrt_path, interpolate(t));
   else
@@ -45,7 +45,7 @@ void PosLerpFunctor::operator()(float t) {
 }
 
 HprLerpFunctor::HprLerpFunctor(const HprLerpFunctor& c)
-  : LVecBase3fLerpFunctor(c), _node_path(c._node_path) {}
+  : LVecBase3LerpFunctor(c), _node_path(c._node_path) {}
 
 void HprLerpFunctor::take_shortest() {
   // so long as these are actually degrees
@@ -73,11 +73,11 @@ HprLerpFunctor::~HprLerpFunctor()
 
 HprLerpFunctor& HprLerpFunctor::operator=(const HprLerpFunctor& c) {
   _node_path = c._node_path;
-  LVecBase3fLerpFunctor::operator=(c);
+  LVecBase3LerpFunctor::operator=(c);
   return *this;
 }
 
-void HprLerpFunctor::operator()(float t) {
+void HprLerpFunctor::operator()(PN_stdfloat t) {
   if (_is_wrt)
     _node_path.set_hpr(_wrt_path, interpolate(t));
   else
@@ -85,7 +85,7 @@ void HprLerpFunctor::operator()(float t) {
 }
 
 ScaleLerpFunctor::ScaleLerpFunctor(const ScaleLerpFunctor& c)
-  : LVecBase3fLerpFunctor(c), _node_path(c._node_path) {}
+  : LVecBase3LerpFunctor(c), _node_path(c._node_path) {}
 
 ScaleLerpFunctor::~ScaleLerpFunctor()
 {
@@ -93,11 +93,11 @@ ScaleLerpFunctor::~ScaleLerpFunctor()
 
 ScaleLerpFunctor& ScaleLerpFunctor::operator=(const ScaleLerpFunctor& c) {
   _node_path = c._node_path;
-  LVecBase3fLerpFunctor::operator=(c);
+  LVecBase3LerpFunctor::operator=(c);
   return *this;
 }
 
-void ScaleLerpFunctor::operator()(float t) {
+void ScaleLerpFunctor::operator()(PN_stdfloat t) {
   if (_is_wrt)
     _node_path.set_scale(_wrt_path, interpolate(t));
   else
@@ -105,7 +105,7 @@ void ScaleLerpFunctor::operator()(float t) {
 }
 
 ColorLerpFunctor::ColorLerpFunctor(const ColorLerpFunctor& c)
-  : LVecBase4fLerpFunctor(c), _node_path(c._node_path) {}
+  : LVecBase4LerpFunctor(c), _node_path(c._node_path) {}
 
 ColorLerpFunctor::~ColorLerpFunctor()
 {
@@ -113,11 +113,11 @@ ColorLerpFunctor::~ColorLerpFunctor()
 
 ColorLerpFunctor& ColorLerpFunctor::operator=(const ColorLerpFunctor& c) {
   _node_path = c._node_path;
-  LVecBase4fLerpFunctor::operator=(c);
+  LVecBase4LerpFunctor::operator=(c);
   return *this;
 }
 
-void ColorLerpFunctor::operator()(float t) {
+void ColorLerpFunctor::operator()(PN_stdfloat t) {
         _node_path.set_color(interpolate(t));
 }
 
@@ -161,9 +161,9 @@ PosHprLerpFunctor& PosHprLerpFunctor::operator=(const PosHprLerpFunctor& c) {
   return *this;
 }
 
-void PosHprLerpFunctor::operator()(float t) {
-  LPoint3f p = ((t * _pdiff_cache) + _pstart);
-  LVecBase3f h = ((t * _hdiff_cache) + _hstart);
+void PosHprLerpFunctor::operator()(PN_stdfloat t) {
+  LPoint3 p = ((t * _pdiff_cache) + _pstart);
+  LVecBase3 h = ((t * _hdiff_cache) + _hstart);
   if (_is_wrt)
     _node_path.set_pos_hpr(_wrt_path, p, h);
   else
@@ -210,9 +210,9 @@ HprScaleLerpFunctor::operator=(const HprScaleLerpFunctor& c) {
   return *this;
 }
 
-void HprScaleLerpFunctor::operator()(float t) {
-  LVecBase3f h = ((t * _hdiff_cache) + _hstart);
-  LVecBase3f s = ((t * _sdiff_cache) + _sstart);
+void HprScaleLerpFunctor::operator()(PN_stdfloat t) {
+  LVecBase3 h = ((t * _hdiff_cache) + _hstart);
+  LVecBase3 s = ((t * _sdiff_cache) + _sstart);
   if (_is_wrt)
     _node_path.set_hpr_scale(_wrt_path, h, s);
   else
@@ -262,10 +262,10 @@ PosHprScaleLerpFunctor::operator=(const PosHprScaleLerpFunctor& c) {
   return *this;
 }
 
-void PosHprScaleLerpFunctor::operator()(float t) {
-  LPoint3f p = ((t * _pdiff_cache) + _pstart);
-  LVecBase3f h = ((t * _hdiff_cache) + _hstart);
-  LVecBase3f s = ((t * _sdiff_cache) + _sstart);
+void PosHprScaleLerpFunctor::operator()(PN_stdfloat t) {
+  LPoint3 p = ((t * _pdiff_cache) + _pstart);
+  LVecBase3 h = ((t * _hdiff_cache) + _hstart);
+  LVecBase3 s = ((t * _sdiff_cache) + _sstart);
   if (_is_wrt)
     _node_path.set_pos_hpr_scale(_wrt_path, p, h, s);
   else
@@ -273,7 +273,7 @@ void PosHprScaleLerpFunctor::operator()(float t) {
 }
 
 ColorScaleLerpFunctor::ColorScaleLerpFunctor(const ColorScaleLerpFunctor& c)
-  : LVecBase4fLerpFunctor(c), _node_path(c._node_path) {}
+  : LVecBase4LerpFunctor(c), _node_path(c._node_path) {}
 
 ColorScaleLerpFunctor::~ColorScaleLerpFunctor()
 {
@@ -281,11 +281,11 @@ ColorScaleLerpFunctor::~ColorScaleLerpFunctor()
 
 ColorScaleLerpFunctor& ColorScaleLerpFunctor::operator=(const ColorScaleLerpFunctor& c) {
   _node_path = c._node_path;
-  LVecBase4fLerpFunctor::operator=(c);
+  LVecBase4LerpFunctor::operator=(c);
   return *this;
 }
 
-void ColorScaleLerpFunctor::operator()(float t) {
+void ColorScaleLerpFunctor::operator()(PN_stdfloat t) {
   _node_path.set_color_scale(interpolate(t));
 }
 

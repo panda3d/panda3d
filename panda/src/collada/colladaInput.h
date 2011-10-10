@@ -18,7 +18,7 @@
 #include "config_collada.h"
 #include "referenceCount.h"
 #include "pvector.h"
-#include "pta_LVecBase4f.h"
+#include "pta_LVecBase4.h"
 #include "internalName.h"
 #include "geomEnums.h"
 

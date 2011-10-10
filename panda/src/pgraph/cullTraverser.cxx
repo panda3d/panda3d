@@ -1,5 +1,5 @@
 // Filename: cullTraverser.cxx
-// Created by:  drose (23Feb02)
+// Created by:  drose (23eb02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -410,15 +410,15 @@ make_bounds_viz(const BoundingVolume *vol) {
     
     PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_stream);
     for (int sl = 0; sl < num_slices; ++sl) {
-      float longitude0 = (float)sl / (float)num_slices;
-      float longitude1 = (float)(sl + 1) / (float)num_slices;
-      vertex.add_data3f(compute_point(sphere, 0.0, longitude0));
+      PN_stdfloat longitude0 = (PN_stdfloat)sl / (PN_stdfloat)num_slices;
+      PN_stdfloat longitude1 = (PN_stdfloat)(sl + 1) / (PN_stdfloat)num_slices;
+      vertex.add_data3(compute_point(sphere, 0.0, longitude0));
       for (int st = 1; st < num_stacks; ++st) {
-        float latitude = (float)st / (float)num_stacks;
-        vertex.add_data3f(compute_point(sphere, latitude, longitude0));
-        vertex.add_data3f(compute_point(sphere, latitude, longitude1));
+        PN_stdfloat latitude = (PN_stdfloat)st / (PN_stdfloat)num_stacks;
+        vertex.add_data3(compute_point(sphere, latitude, longitude0));
+        vertex.add_data3(compute_point(sphere, latitude, longitude1));
       }
-      vertex.add_data3f(compute_point(sphere, 1.0, longitude0));
+      vertex.add_data3(compute_point(sphere, 1.0, longitude0));
       
       strip->add_next_vertices(num_stacks * 2);
       strip->close_primitive();
@@ -436,7 +436,7 @@ make_bounds_viz(const BoundingVolume *vol) {
     GeomVertexWriter vertex(vdata, InternalName::get_vertex());
 
     for (int i = 0; i < 8; ++i ) {
-      vertex.add_data3f(fvol->get_point(i));
+      vertex.add_data3(fvol->get_point(i));
     }
     
     PT(GeomLines) lines = new GeomLines(Geom::UH_stream);
@@ -470,7 +470,7 @@ make_bounds_viz(const BoundingVolume *vol) {
     GeomVertexWriter vertex(vdata, InternalName::get_vertex());
 
     for (int i = 0; i < 8; ++i ) {
-      vertex.add_data3f(box.get_point(i));
+      vertex.add_data3(box.get_point(i));
     }
     
     PT(GeomTriangles) tris = new GeomTriangles(Geom::UH_stream);
@@ -523,7 +523,7 @@ make_tight_bounds_viz(PandaNode *node) const {
 
   NodePath np = NodePath::any_path(node);
 
-  LPoint3f n, x;
+  LPoint3 n, x;
   bool found_any = false;
   node->calc_tight_bounds(n, x, found_any, TransformState::make_identity(),
                           _current_thread);
@@ -534,14 +534,14 @@ make_tight_bounds_viz(PandaNode *node) const {
     GeomVertexWriter vertex(vdata, InternalName::get_vertex(),
                             _current_thread);
     
-    vertex.add_data3f(n[0], n[1], n[2]);
-    vertex.add_data3f(n[0], n[1], x[2]);
-    vertex.add_data3f(n[0], x[1], n[2]);
-    vertex.add_data3f(n[0], x[1], x[2]);
-    vertex.add_data3f(x[0], n[1], n[2]);
-    vertex.add_data3f(x[0], n[1], x[2]);
-    vertex.add_data3f(x[0], x[1], n[2]);
-    vertex.add_data3f(x[0], x[1], x[2]);
+    vertex.add_data3(n[0], n[1], n[2]);
+    vertex.add_data3(n[0], n[1], x[2]);
+    vertex.add_data3(n[0], x[1], n[2]);
+    vertex.add_data3(n[0], x[1], x[2]);
+    vertex.add_data3(x[0], n[1], n[2]);
+    vertex.add_data3(x[0], n[1], x[2]);
+    vertex.add_data3(x[0], x[1], n[2]);
+    vertex.add_data3(x[0], x[1], x[2]);
   
     PT(GeomLinestrips) strip = new GeomLinestrips(Geom::UH_stream);
 
@@ -578,16 +578,16 @@ make_tight_bounds_viz(PandaNode *node) const {
 //  Description: Returns a point on the surface of the sphere.
 //               latitude and longitude range from 0.0 to 1.0.  
 ////////////////////////////////////////////////////////////////////
-Vertexf CullTraverser::
+LVertex CullTraverser::
 compute_point(const BoundingSphere *sphere, 
-              float latitude, float longitude) {
-  float s1, c1;
-  csincos(latitude * MathNumbers::pi_f, &s1, &c1);
+              PN_stdfloat latitude, PN_stdfloat longitude) {
+  PN_stdfloat s1, c1;
+  csincos(latitude * MathNumbers::pi, &s1, &c1);
 
-  float s2, c2;
-  csincos(longitude * 2.0f * MathNumbers::pi_f, &s2, &c2);
+  PN_stdfloat s2, c2;
+  csincos(longitude * 2.0 * MathNumbers::pi, &s2, &c2);
 
-  Vertexf p(s1 * c2, s1 * s2, c1);
+  LVertex p(s1 * c2, s1 * s2, c1);
   return p * sphere->get_radius() + sphere->get_center();
 }
 
@@ -604,7 +604,7 @@ get_bounds_outer_viz_state() {
   static CPT(RenderState) state = (const RenderState *)NULL;
   if (state == (const RenderState *)NULL) {
     state = RenderState::make
-      (ColorAttrib::make_flat(Colorf(0.3f, 1.0f, 0.5f, 1.0f)),
+      (ColorAttrib::make_flat(LColor(0.3, 1.0f, 0.5f, 1.0f)),
        RenderModeAttrib::make(RenderModeAttrib::M_wireframe),
        CullFaceAttrib::make(CullFaceAttrib::M_cull_clockwise));
   }
@@ -624,7 +624,7 @@ get_bounds_inner_viz_state() {
   static CPT(RenderState) state = (const RenderState *)NULL;
   if (state == (const RenderState *)NULL) {
     state = RenderState::make
-      (ColorAttrib::make_flat(Colorf(0.15f, 0.5f, 0.25f, 1.0f)),
+      (ColorAttrib::make_flat(LColor(0.15f, 0.5f, 0.25f, 1.0f)),
        RenderModeAttrib::make(RenderModeAttrib::M_wireframe),
        CullFaceAttrib::make(CullFaceAttrib::M_cull_counter_clockwise));
   }

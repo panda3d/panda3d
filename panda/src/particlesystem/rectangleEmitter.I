@@ -18,7 +18,7 @@
 // Description : boundary set
 ////////////////////////////////////////////////////////////////////
 INLINE void RectangleEmitter::
-set_min_bound(const LPoint2f& vmin) {
+set_min_bound(const LPoint2& vmin) {
   _vmin = vmin;
 }
 
@@ -28,7 +28,7 @@ set_min_bound(const LPoint2f& vmin) {
 // Description : boundary set
 ////////////////////////////////////////////////////////////////////
 INLINE void RectangleEmitter::
-set_max_bound(const LPoint2f& vmax) {
+set_max_bound(const LPoint2& vmax) {
   _vmax = vmax;
 }
 
@@ -37,7 +37,7 @@ set_max_bound(const LPoint2f& vmax) {
 //      Access : public
 // Description : boundary get
 ////////////////////////////////////////////////////////////////////
-INLINE LPoint2f RectangleEmitter::
+INLINE LPoint2 RectangleEmitter::
 get_min_bound() const {
   return _vmin;
 }
@@ -47,7 +47,7 @@ get_min_bound() const {
 //      Access : public
 // Description : boundary get
 ////////////////////////////////////////////////////////////////////
-INLINE LPoint2f RectangleEmitter::
+INLINE LPoint2 RectangleEmitter::
 get_max_bound() const {
   return _vmax;
 }

@@ -17,14 +17,14 @@
 //       Access : Protected
 //  Description : generates a random unit vector
 ////////////////////////////////////////////////////////////////////
-INLINE LVector3f LinearRandomForce::
+INLINE LVector3 LinearRandomForce::
 random_unit_vector() {
-  float z, r, theta;
+  PN_stdfloat z, r, theta;
 
-  z = 1.0f - (2.0f * bounded_rand());
-  r = sqrtf(1.0f - (z * z));
-  theta = 2.0f * 3.1415926f * bounded_rand();
+  z = 1.0 - (2.0 * bounded_rand());
+  r = csqrt(1.0 - (z * z));
+  theta = 2.0 * MathNumbers::pi * bounded_rand();
 
-  return LVector3f(r * cosf(theta), r * sinf(theta), z);
+  return LVector3(r * ccos(theta), r * csin(theta), z);
 }
 

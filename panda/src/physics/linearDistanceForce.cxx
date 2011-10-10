@@ -22,7 +22,7 @@ TypeHandle LinearDistanceForce::_type_handle;
 // Description : Simple constructor
 ////////////////////////////////////////////////////////////////////
 LinearDistanceForce::
-LinearDistanceForce(const LPoint3f& p, FalloffType ft, float r, float a, bool m) :
+LinearDistanceForce(const LPoint3& p, FalloffType ft, PN_stdfloat r, PN_stdfloat a, bool m) :
   LinearForce(a, m),
   _force_center(p), _falloff(ft), _radius(r)
 {

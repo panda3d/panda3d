@@ -56,7 +56,7 @@ private:
   create_xfm_channel(EggXfmSAnim *egg_anim, const string &name,
                      AnimGroup *parent);
 
-  float _fps;
+  PN_stdfloat _fps;
   int _num_frames;
   bool _ok_fps;
   bool _ok_num_frames;

@@ -30,24 +30,24 @@ PUBLISHED:
 
   virtual BaseParticleEmitter *make_copy();
 
-  INLINE void set_min_bound(const LPoint2f& vmin);
-  INLINE void set_max_bound(const LPoint2f& vmax);
+  INLINE void set_min_bound(const LPoint2& vmin);
+  INLINE void set_max_bound(const LPoint2& vmax);
 
-  INLINE LPoint2f get_min_bound() const;
-  INLINE LPoint2f get_max_bound() const;
+  INLINE LPoint2 get_min_bound() const;
+  INLINE LPoint2 get_max_bound() const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent=0) const;
 
 private:
-  LPoint2f _vmin;
-  LPoint2f _vmax;
+  LPoint2 _vmin;
+  LPoint2 _vmax;
 
   // CUSTOM EMISSION PARAMETERS
   // none
 
-  virtual void assign_initial_position(LPoint3f& pos);
-  virtual void assign_initial_velocity(LVector3f& vel);
+  virtual void assign_initial_position(LPoint3& pos);
+  virtual void assign_initial_velocity(LVector3& vel);
 };
 
 #include "rectangleEmitter.I"

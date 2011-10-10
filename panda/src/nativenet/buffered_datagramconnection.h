@@ -79,7 +79,7 @@ PUBLISHED:
 
 //  int WaitFor_Read_Error(const Socket_fdset & fd, const Time_Span & timeout);
 
-  inline void WaitForNetworkReadEvent(float MaxTime)
+  inline void WaitForNetworkReadEvent(PN_stdfloat MaxTime)
   {
     Socket_fdset  fdset;
     fdset.setForSocket(*this);

@@ -55,23 +55,23 @@ public:
   void register_vertices(Geom *geom, bool might_have_unused);
   void register_vertices(GeomNode *node, bool might_have_unused);
 
-  bool transform_vertices(Geom *geom, const LMatrix4f &mat);
-  bool transform_vertices(GeomNode *node, const LMatrix4f &mat);
+  bool transform_vertices(Geom *geom, const LMatrix4 &mat);
+  bool transform_vertices(GeomNode *node, const LMatrix4 &mat);
 
   bool transform_texcoords(Geom *geom, const InternalName *from_name,
-                           InternalName *to_name, const LMatrix4f &mat);
+                           InternalName *to_name, const LMatrix4 &mat);
   bool transform_texcoords(GeomNode *node, const InternalName *from_name,
-                           InternalName *to_name, const LMatrix4f &mat);
+                           InternalName *to_name, const LMatrix4 &mat);
 
-  bool set_color(Geom *geom, const Colorf &color);
-  bool set_color(GeomNode *node, const Colorf &color);
+  bool set_color(Geom *geom, const LColor &color);
+  bool set_color(GeomNode *node, const LColor &color);
 
-  bool transform_colors(Geom *geom, const LVecBase4f &scale);
-  bool transform_colors(GeomNode *node, const LVecBase4f &scale);
+  bool transform_colors(Geom *geom, const LVecBase4 &scale);
+  bool transform_colors(GeomNode *node, const LVecBase4 &scale);
 
   bool apply_texture_colors(Geom *geom, TextureStage *ts, Texture *tex, 
                             const TexMatrixAttrib *tma,
-                            const Colorf &base_color, bool keep_vertex_color);
+                            const LColor &base_color, bool keep_vertex_color);
   bool apply_texture_colors(GeomNode *node, const RenderState *state);
 
   bool apply_state(GeomNode *node, const RenderState *state);
@@ -93,12 +93,6 @@ public:
   int finish_collect(bool format_only);
 
   PT(Geom) premunge_geom(const Geom *geom, GeomMunger *munger);
-
-private:
-  static void get_texel_color(Colorf &color, float u, float v, 
-                              const unsigned char *image, 
-                              int x_size, int y_size);
-
 
 private:
   int _max_collect_vertices;
@@ -131,7 +125,7 @@ private:
   public:
     INLINE bool operator < (const SourceVertices &other) const;
 
-    LMatrix4f _mat;
+    LMatrix4 _mat;
     CPT(GeomVertexData) _vertex_data;
   };
   typedef pmap<SourceVertices, NewVertexData> NewVertices;
@@ -143,7 +137,7 @@ private:
   public:
     INLINE bool operator < (const SourceTexCoords &other) const;
 
-    LMatrix4f _mat;
+    LMatrix4 _mat;
     CPT(InternalName) _from;
     CPT(InternalName) _to;
     CPT(GeomVertexData) _vertex_data;
@@ -157,7 +151,7 @@ private:
   public:
     INLINE bool operator < (const SourceColors &other) const;
 
-    LVecBase4f _color;
+    LVecBase4 _color;
     CPT(GeomVertexData) _vertex_data;
   };
   typedef pmap<SourceColors, NewVertexData> NewColors;
@@ -177,7 +171,7 @@ private:
     TextureStage *_ts;
     Texture *_tex;
     const TexMatrixAttrib *_tma;
-    Colorf _base_color;
+    LColor _base_color;
     bool _keep_vertex_color;
     CPT(GeomVertexData) _vertex_data;
   };

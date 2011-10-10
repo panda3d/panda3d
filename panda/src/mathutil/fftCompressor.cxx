@@ -251,13 +251,13 @@ write_header(Datagram &datagram) {
 //               indicated datagram.
 ////////////////////////////////////////////////////////////////////
 void FFTCompressor::
-write_reals(Datagram &datagram, const float *array, int length) {
+write_reals(Datagram &datagram, const PN_stdfloat *array, int length) {
   datagram.add_int32(length);
 
   if (_quality > 100) {
     // Special case: lossless output.
     for (int i = 0; i < length; i++) {
-      datagram.add_float32(array[i]);
+      datagram.add_stdfloat(array[i]);
     }
     return;
   }
@@ -275,7 +275,7 @@ write_reals(Datagram &datagram, const float *array, int length) {
 
   if (length == 1) {
     // Special case: just write out the one number.
-    datagram.add_float32(array[0]);
+    datagram.add_stdfloat(array[0]);
     return;
   }
 
@@ -289,7 +289,7 @@ write_reals(Datagram &datagram, const float *array, int length) {
   /*
   if (_use_error_threshold) {
     // Don't encode the data if it moves too erratically.
-    float error = get_compressability(array, length);
+    PN_stdfloat error = get_compressability(array, length);
     if (error > fft_error_threshold) {
       // No good: the data probably won't compress well.  Just write
       // out lossless data.
@@ -305,7 +305,7 @@ write_reals(Datagram &datagram, const float *array, int length) {
         << "Writing stream of " << length << " numbers uncompressed.\n";
     }
     for (int i = 0; i < length; i++) {
-      datagram.add_float32(array[i]);
+      datagram.add_stdfloat(array[i]);
     }
     return;
   }
@@ -389,12 +389,12 @@ write_reals(Datagram &datagram, const float *array, int length) {
 //               datagram.
 ////////////////////////////////////////////////////////////////////
 void FFTCompressor::
-write_hprs(Datagram &datagram, const LVecBase3f *array, int length) {
+write_hprs(Datagram &datagram, const LVecBase3 *array, int length) {
 #ifndef NDEBUG
   if (_quality >= 104) {
     // If quality level is at least 104, we don't even convert hpr at
     // all.  This is just for debugging.
-    vector_float h, p, r;
+    vector_stdfloat h, p, r;
 
     h.reserve(length);
     p.reserve(length);
@@ -420,13 +420,13 @@ write_hprs(Datagram &datagram, const LVecBase3f *array, int length) {
   if (_quality >= 103) {
     // If quality level is 103, we convert hpr to a table of matrices.
     // This is just for debugging.
-    vector_float
+    vector_stdfloat
       m00, m01, m02,
       m10, m11, m12,
       m20, m21, m22;
     for (int i = 0; i < length; i++) {
-      LMatrix3f mat;
-      compose_matrix(mat, LVecBase3f(1.0, 1.0, 1.0), LVecBase3f(0.0, 0.0, 0.0),
+      LMatrix3 mat;
+      compose_matrix(mat, LVecBase3(1.0, 1.0, 1.0), LVecBase3(0.0, 0.0, 0.0),
                      array[i]);
       m00.push_back(mat(0, 0));
       m01.push_back(mat(0, 1));
@@ -472,7 +472,7 @@ write_hprs(Datagram &datagram, const LVecBase3f *array, int length) {
   // have to write out all three components; any three can be used to
   // determine the fourth (provided we ensure consistency of sign).
 
-  vector_float qr, qi, qj, qk;
+  vector_stdfloat qr, qi, qj, qk;
 
   qr.reserve(length);
   qi.reserve(length);
@@ -480,14 +480,14 @@ write_hprs(Datagram &datagram, const LVecBase3f *array, int length) {
   qk.reserve(length);
 
   for (int i = 0; i < length; i++) {
-    LMatrix3f mat;
-    compose_matrix(mat, LVecBase3f(1.0, 1.0, 1.0), LVecBase3f(0.0, 0.0, 0.0), 
+    LMatrix3 mat;
+    compose_matrix(mat, LVecBase3(1.0, 1.0, 1.0), LVecBase3(0.0, 0.0, 0.0), 
                    array[i]);
     if (_transpose_quats) {
       mat.transpose_in_place();
     }
 
-    LOrientationf rot(mat);
+    LOrientation rot(mat);
     rot.normalize();  // This may not be necessary, but let's not take chances.
 
     if (rot.get_r() < 0) {
@@ -506,11 +506,11 @@ write_hprs(Datagram &datagram, const LVecBase3f *array, int length) {
 
 #ifdef NOTIFY_DEBUG
     if (mathutil_cat.is_warning()) {
-      LMatrix3f mat2;
+      LMatrix3 mat2;
       rot.extract_to_matrix(mat2);
       if (!mat.almost_equal(mat2, 0.0001)) {
-        LVecBase3f hpr1, hpr2;
-        LVecBase3f scale, shear;
+        LVecBase3 hpr1, hpr2;
+        LVecBase3 scale, shear;
         decompose_matrix(mat, scale, shear, hpr1);
         decompose_matrix(mat2, scale, shear, hpr2);
         mathutil_cat.warning()
@@ -602,7 +602,7 @@ read_header(DatagramIterator &di, int bam_minor_version) {
 //               an error.
 ////////////////////////////////////////////////////////////////////
 bool FFTCompressor::
-read_reals(DatagramIterator &di, vector_float &array) {
+read_reals(DatagramIterator &di, vector_stdfloat &array) {
   int length = di.get_int32();
 
   if (_quality > 100) {
@@ -610,7 +610,7 @@ read_reals(DatagramIterator &di, vector_float &array) {
 
     // Special case: lossless output.
     for (int i = 0; i < length; i++) {
-      array.push_back(di.get_float32());
+      array.push_back(di.get_stdfloat());
     }
     return true;
   }
@@ -628,7 +628,7 @@ read_reals(DatagramIterator &di, vector_float &array) {
 
   if (length == 1) {
     // Special case: just read in the one number.
-    array.push_back(di.get_float32());
+    array.push_back(di.get_stdfloat());
     return true;
   }
 
@@ -641,7 +641,7 @@ read_reals(DatagramIterator &di, vector_float &array) {
   if (reject_compression) {
     array.reserve(array.size() + length);
     for (int i = 0; i < length; i++) {
-      array.push_back(di.get_float32());
+      array.push_back(di.get_stdfloat());
     }
     return true;
   }
@@ -689,12 +689,12 @@ read_reals(DatagramIterator &di, vector_float &array) {
 //               calculation.  See temp_hpr_fix.
 ////////////////////////////////////////////////////////////////////
 bool FFTCompressor::
-read_hprs(DatagramIterator &di, pvector<LVecBase3f> &array, bool new_hpr) {
+read_hprs(DatagramIterator &di, pvector<LVecBase3> &array, bool new_hpr) {
 #ifndef NDEBUG
   if (_quality >= 104) {
     // If quality level is at least 104, we don't even convert hpr to
     // quat.  This is just for debugging.
-    vector_float h, p, r;
+    vector_stdfloat h, p, r;
     bool okflag = true;
     okflag =
       read_reals(di, h) &&
@@ -704,7 +704,7 @@ read_hprs(DatagramIterator &di, pvector<LVecBase3f> &array, bool new_hpr) {
     if (okflag) {
       nassertr(h.size() == p.size() && p.size() == r.size(), false);
       for (int i = 0; i < (int)h.size(); i++) {
-        array.push_back(LVecBase3f(h[i], p[i], r[i]));
+        array.push_back(LVecBase3(h[i], p[i], r[i]));
       }
     }
 
@@ -713,7 +713,7 @@ read_hprs(DatagramIterator &di, pvector<LVecBase3f> &array, bool new_hpr) {
   if (_quality >= 103) {
     // If quality level is 103, we read in a table of 3x3 rotation
     // matrices.  This is just for debugging.
-    vector_float
+    vector_stdfloat
       m00, m01, m02,
       m10, m11, m12,
       m20, m21, m22;
@@ -731,10 +731,10 @@ read_hprs(DatagramIterator &di, pvector<LVecBase3f> &array, bool new_hpr) {
 
     if (okflag) {
       for (int i = 0; i < (int)m00.size(); i++) {
-        LMatrix3f mat(m00[i], m01[i], m02[i],
+        LMatrix3 mat(m00[i], m01[i], m02[i],
                       m10[i], m11[i], m12[i],
                       m20[i], m21[i], m22[i]);
-        LVecBase3f scale, shear, hpr;
+        LVecBase3 scale, shear, hpr;
         if (new_hpr) {
           decompose_matrix_new_hpr(mat, scale, shear, hpr);
         } else {
@@ -748,7 +748,7 @@ read_hprs(DatagramIterator &di, pvector<LVecBase3f> &array, bool new_hpr) {
   }
 #endif
 
-  vector_float qr, qi, qj, qk;
+  vector_stdfloat qr, qi, qj, qk;
 
   bool okflag = true;
 
@@ -769,11 +769,11 @@ read_hprs(DatagramIterator &di, pvector<LVecBase3f> &array, bool new_hpr) {
 
     array.reserve(array.size() + qi.size());
     for (int i = 0; i < (int)qi.size(); i++) {
-      LOrientationf rot;
+      LOrientation rot;
 
       // Infer the r component from the remaining three.
-      float qr2 = 1.0 - (qi[i] * qi[i] + qj[i] * qj[i] + qk[i] * qk[i]);
-      float qr1 = qr2 < 0.0 ? 0.0 : sqrtf(qr2);
+      PN_stdfloat qr2 = 1.0 - (qi[i] * qi[i] + qj[i] * qj[i] + qk[i] * qk[i]);
+      PN_stdfloat qr1 = qr2 < 0.0 ? 0.0 : sqrtf(qr2);
 
       rot.set(qr1, qi[i], qj[i], qk[i]);
 
@@ -792,12 +792,12 @@ read_hprs(DatagramIterator &di, pvector<LVecBase3f> &array, bool new_hpr) {
 
       rot.normalize();      // Just for good measure.
 
-      LMatrix3f mat;
+      LMatrix3 mat;
       rot.extract_to_matrix(mat);
       if (_transpose_quats) {
         mat.transpose_in_place();
       }
-      LVecBase3f scale, shear, hpr;
+      LVecBase3 scale, shear, hpr;
       if (new_hpr) {
         decompose_matrix_new_hpr(mat, scale, shear, hpr);
       } else {
@@ -819,7 +819,7 @@ read_hprs(DatagramIterator &di, pvector<LVecBase3f> &array, bool new_hpr) {
 //               ensure that the array is initially empty.
 ////////////////////////////////////////////////////////////////////
 bool FFTCompressor::
-read_hprs(DatagramIterator &di, pvector<LVecBase3f> &array) {
+read_hprs(DatagramIterator &di, pvector<LVecBase3> &array) {
   return read_hprs(di, array, temp_hpr_fix);
 }
 
@@ -1046,8 +1046,8 @@ interpolate(double t, double a, double b) {
 //               calmer the numbers, and the greater its likelihood of
 //               being successfully compressed.
 ////////////////////////////////////////////////////////////////////
-float FFTCompressor::
-get_compressability(const float *data, int length) const {
+PN_stdfloat FFTCompressor::
+get_compressability(const PN_stdfloat *data, int length) const {
   // The result returned is actually the standard deviation of the
   // table of deltas between consecutive frames.  This number is
   // larger if the frames have wildly different values.
@@ -1056,21 +1056,21 @@ get_compressability(const float *data, int length) const {
     return 0.0;
   }
 
-  float sum = 0.0;
-  float sum2 = 0.0;
+  PN_stdfloat sum = 0.0;
+  PN_stdfloat sum2 = 0.0;
   for (int i = 1; i < length; i++) {
-    float delta = data[i] - data[i - 1];
+    PN_stdfloat delta = data[i] - data[i - 1];
 
     sum += delta;
     sum2 += delta * delta;
   }
-  float variance = (sum2 - (sum * sum) / (length - 1)) / (length - 2);
+  PN_stdfloat variance = (sum2 - (sum * sum) / (length - 1)) / (length - 2);
   if (variance < 0.0) {
     // This can only happen due to tiny roundoff error.
     return 0.0;
   }
 
-  float std_deviation = csqrt(variance);
+  PN_stdfloat std_deviation = csqrt(variance);
 
   return std_deviation;
 }

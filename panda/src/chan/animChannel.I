@@ -116,7 +116,7 @@ get_value_no_scale_shear(int frame, ValueType &value) {
 ////////////////////////////////////////////////////////////////////
 template<class SwitchType>
 void AnimChannel<SwitchType>::
-get_scale(int, LVecBase3f &scale) {
+get_scale(int, LVecBase3 &scale) {
   nassertv(false);
 }
 
@@ -129,7 +129,7 @@ get_scale(int, LVecBase3f &scale) {
 ////////////////////////////////////////////////////////////////////
 template<class SwitchType>
 void AnimChannel<SwitchType>::
-get_hpr(int, LVecBase3f &hpr) {
+get_hpr(int, LVecBase3 &hpr) {
   nassertv(false);
 }
 
@@ -142,7 +142,7 @@ get_hpr(int, LVecBase3f &hpr) {
 ////////////////////////////////////////////////////////////////////
 template<class SwitchType>
 void AnimChannel<SwitchType>::
-get_quat(int, LQuaternionf &quat) {
+get_quat(int, LQuaternion &quat) {
   nassertv(false);
 }
 
@@ -155,7 +155,7 @@ get_quat(int, LQuaternionf &quat) {
 ////////////////////////////////////////////////////////////////////
 template<class SwitchType>
 void AnimChannel<SwitchType>::
-get_pos(int, LVecBase3f &pos) {
+get_pos(int, LVecBase3 &pos) {
   nassertv(false);
 }
 
@@ -168,7 +168,7 @@ get_pos(int, LVecBase3f &pos) {
 ////////////////////////////////////////////////////////////////////
 template<class SwitchType>
 void AnimChannel<SwitchType>::
-get_shear(int, LVecBase3f &shear) {
+get_shear(int, LVecBase3 &shear) {
   nassertv(false);
 }
 

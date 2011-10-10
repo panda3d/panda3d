@@ -38,23 +38,23 @@ PUBLISHED:
   ~CurveFitter();
 
   void reset();
-  void add_xyz(float t, const LVecBase3f &xyz);
-  void add_hpr(float t, const LVecBase3f &hpr);
-  void add_xyz_hpr(float t, const LVecBase3f &xyz, const LVecBase3f &hpr);
+  void add_xyz(PN_stdfloat t, const LVecBase3 &xyz);
+  void add_hpr(PN_stdfloat t, const LVecBase3 &hpr);
+  void add_xyz_hpr(PN_stdfloat t, const LVecBase3 &xyz, const LVecBase3 &hpr);
 
   int get_num_samples() const;
-  float get_sample_t(int n) const;
-  LVecBase3f get_sample_xyz(int n) const;
-  LVecBase3f get_sample_hpr(int n) const;
-  LVecBase3f get_sample_tangent(int n) const;
+  PN_stdfloat get_sample_t(int n) const;
+  LVecBase3 get_sample_xyz(int n) const;
+  LVecBase3 get_sample_hpr(int n) const;
+  LVecBase3 get_sample_tangent(int n) const;
   void remove_samples(int begin, int end);
 
   void sample(ParametricCurveCollection *curves, int count);
   void wrap_hpr();
   void sort_points();
-  void desample(float factor);
+  void desample(PN_stdfloat factor);
 
-  void compute_tangents(float scale);
+  void compute_tangents(PN_stdfloat scale);
   PT(ParametricCurveCollection) make_hermite() const;
   PT(ParametricCurveCollection) make_nurbs() const;
 
@@ -68,11 +68,11 @@ public:
     INLINE void output(ostream &out) const;
     INLINE bool operator < (const DataPoint &other) const;
 
-    float _t;
-    LVecBase3f _xyz;
-    LVecBase3f _hpr;
-    LVecBase3f _tangent;
-    LVecBase3f _hpr_tangent;
+    PN_stdfloat _t;
+    LVecBase3 _xyz;
+    LVecBase3 _hpr;
+    LVecBase3 _tangent;
+    LVecBase3 _hpr_tangent;
   };
 
   typedef pvector<DataPoint> Data;

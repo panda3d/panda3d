@@ -122,7 +122,7 @@ clear_physicals() {
 // Description : Set the global viscosity.
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsManager::
-set_viscosity(float viscosity) {
+set_viscosity(PN_stdfloat viscosity) {
   _viscosity=viscosity;
 }
 
@@ -131,7 +131,7 @@ set_viscosity(float viscosity) {
 //      Access : Public
 // Description : Get the global viscosity.
 ////////////////////////////////////////////////////////////////////
-INLINE float PhysicsManager::
+INLINE PN_stdfloat PhysicsManager::
 get_viscosity() const {
   return _viscosity;
 }

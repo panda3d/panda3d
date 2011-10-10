@@ -132,35 +132,35 @@ handle_entries() {
       Entries entries(*orig_entries);
       
       // this is the original position delta for the entire frame, before collision response
-      LVector3f M(from_node_path.get_pos_delta(wrt_node));
+      LVector3 M(from_node_path.get_pos_delta(wrt_node));
       // this is used to track position deltas every time we collide against a solid
-      LVector3f N(M);
+      LVector3 N(M);
       
-      const LPoint3f orig_pos(from_node_path.get_pos(wrt_node));
+      const LPoint3 orig_pos(from_node_path.get_pos(wrt_node));
       CPT(TransformState) prev_trans(from_node_path.get_prev_transform(wrt_node));
-      const LPoint3f orig_prev_pos(prev_trans->get_pos());
+      const LPoint3 orig_prev_pos(prev_trans->get_pos());
       
       // currently we only support spheres as the collider
       const CollisionSphere *sphere;
       DCAST_INTO_R(sphere, entries.front()->get_from(), 0);
       
       from_node_path.set_pos(wrt_node, 0,0,0);
-      LPoint3f sphere_offset = (sphere->get_center() *
+      LPoint3 sphere_offset = (sphere->get_center() *
                                 from_node_path.get_transform(wrt_node)->get_mat());
       from_node_path.set_pos(wrt_node, orig_pos);
       
       // this will hold the final calculated position at each iteration
-      LPoint3f candidate_final_pos(orig_pos);
+      LPoint3 candidate_final_pos(orig_pos);
       // this holds the position before reacting to collisions
-      LPoint3f uncollided_pos(candidate_final_pos);
+      LPoint3 uncollided_pos(candidate_final_pos);
       
       // unit vector facing back into original direction of motion
-      LVector3f reverse_vec(-M);
+      LVector3 reverse_vec(-M);
       reverse_vec.normalize();
       
       // unit vector pointing out to the right relative to the direction of motion,
       // looking into the direction of motion
-      const LVector3f right_unit(LVector3f::up().cross(reverse_vec));
+      const LVector3 right_unit(LVector3::up().cross(reverse_vec));
       
       // iterate until the mover runs out of movement or gets stuck
       while (true) {
@@ -182,8 +182,8 @@ handle_entries() {
         }
         
         // move back to initial contact position
-        LPoint3f contact_pos;
-        LVector3f contact_normal;
+        LPoint3 contact_pos;
+        LVector3 contact_normal;
 
         if (!C->get_all_contact_info(wrt_node, contact_pos, contact_normal)) {
           collide_cat.warning()
@@ -197,14 +197,14 @@ handle_entries() {
         uncollided_pos = candidate_final_pos;
         candidate_final_pos = contact_pos;
         
-        LVector3f proj_surface_normal(contact_normal);
+        LVector3 proj_surface_normal(contact_normal);
 
-        LVector3f norm_proj_surface_normal(proj_surface_normal);
+        LVector3 norm_proj_surface_normal(proj_surface_normal);
         norm_proj_surface_normal.normalize();
         
-        LVector3f blocked_movement(uncollided_pos - contact_pos);
+        LVector3 blocked_movement(uncollided_pos - contact_pos);
         
-        float push_magnitude(-blocked_movement.dot(proj_surface_normal));
+        PN_stdfloat push_magnitude(-blocked_movement.dot(proj_surface_normal));
         if (push_magnitude < 0.0f) {
           // don't ever push into plane
           candidate_final_pos = contact_pos;
@@ -220,9 +220,9 @@ handle_entries() {
         from_node_path.set_prev_transform(wrt_node, prev_trans);
         
         {
-          const LPoint3f new_pos(from_node_path.get_pos(wrt_node));
+          const LPoint3 new_pos(from_node_path.get_pos(wrt_node));
           CPT(TransformState) new_prev_trans(from_node_path.get_prev_transform(wrt_node));
-          const LPoint3f new_prev_pos(new_prev_trans->get_pos());
+          const LPoint3 new_prev_pos(new_prev_trans->get_pos());
         }
 
         // recalculate the position delta
@@ -254,8 +254,8 @@ handle_entries() {
       prev_trans = prev_trans->set_pos(orig_prev_pos);
       from_node_path.set_prev_transform(wrt_node, prev_trans);
       
-      LVector3f net_shove(candidate_final_pos - orig_pos);
-      LVector3f force_normal(net_shove);
+      LVector3 net_shove(candidate_final_pos - orig_pos);
+      LVector3 force_normal(net_shove);
       force_normal.normalize();
       
       // This is the part where the node actually gets moved:

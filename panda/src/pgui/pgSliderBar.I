@@ -59,7 +59,7 @@ get_notify() const {
 //               directly.
 ////////////////////////////////////////////////////////////////////
 INLINE void PGSliderBar:: 
-set_axis(const LVector3f &axis) {
+set_axis(const LVector3 &axis) {
   LightReMutexHolder holder(_lock);
   _axis = axis;
   _needs_remanage = true;
@@ -72,7 +72,7 @@ set_axis(const LVector3f &axis) {
 //  Description: Returns the axis of the slider bar's motion.  See
 //               set_axis().
 ////////////////////////////////////////////////////////////////////
-INLINE const LVector3f &PGSliderBar:: 
+INLINE const LVector3 &PGSliderBar:: 
 get_axis() const {
   LightReMutexHolder holder(_lock);
   return _axis;
@@ -84,7 +84,7 @@ get_axis() const {
 //  Description: Sets the minimum and maxmimum value for the slider.
 ////////////////////////////////////////////////////////////////////
 INLINE void PGSliderBar:: 
-set_range(float min_value, float max_value) {
+set_range(PN_stdfloat min_value, PN_stdfloat max_value) {
   LightReMutexHolder holder(_lock);
   nassertv(min_value != max_value);
   _min_value = min_value;
@@ -102,7 +102,7 @@ set_range(float min_value, float max_value) {
 //  Description: Returns the value when the slider is all the way to
 //               the left.
 ////////////////////////////////////////////////////////////////////
-INLINE float PGSliderBar:: 
+INLINE PN_stdfloat PGSliderBar:: 
 get_min_value() const {
   LightReMutexHolder holder(_lock);
   return _min_value;
@@ -114,7 +114,7 @@ get_min_value() const {
 //  Description: Returns the value when the slider is all the way to
 //               the right.
 ////////////////////////////////////////////////////////////////////
-INLINE float PGSliderBar:: 
+INLINE PN_stdfloat PGSliderBar:: 
 get_max_value() const {
   LightReMutexHolder holder(_lock);
   return _max_value;
@@ -127,7 +127,7 @@ get_max_value() const {
 //               user clicks on the left or right buttons.
 ////////////////////////////////////////////////////////////////////
 INLINE void PGSliderBar:: 
-set_scroll_size(float value) {
+set_scroll_size(PN_stdfloat value) {
   LightReMutexHolder holder(_lock);
   _scroll_value = value;
   _needs_recompute = true;
@@ -138,7 +138,7 @@ set_scroll_size(float value) {
 //       Access: Published
 //  Description: Returns the value last set by set_scroll_size().
 ////////////////////////////////////////////////////////////////////
-INLINE float PGSliderBar:: 
+INLINE PN_stdfloat PGSliderBar:: 
 get_scroll_size() const {
   LightReMutexHolder holder(_lock);
   return _scroll_value;
@@ -154,7 +154,7 @@ get_scroll_size() const {
 //               size of the thumb button.
 ////////////////////////////////////////////////////////////////////
 INLINE void PGSliderBar:: 
-set_page_size(float value) {
+set_page_size(PN_stdfloat value) {
   LightReMutexHolder holder(_lock);
   _page_value = value;
   _needs_recompute = true;
@@ -165,7 +165,7 @@ set_page_size(float value) {
 //       Access: Published
 //  Description: Returns the value last set by set_page_size().
 ////////////////////////////////////////////////////////////////////
-INLINE float PGSliderBar:: 
+INLINE PN_stdfloat PGSliderBar:: 
 get_page_size() const {
   LightReMutexHolder holder(_lock);
   return _page_value;
@@ -179,7 +179,7 @@ get_page_size() const {
 //               get_min_value() and get_max_value().
 ////////////////////////////////////////////////////////////////////
 INLINE void PGSliderBar:: 
-set_value(float value) {
+set_value(PN_stdfloat value) {
   LightReMutexHolder holder(_lock);
   set_ratio((value - _min_value) / (_max_value - _min_value));
 }
@@ -189,7 +189,7 @@ set_value(float value) {
 //       Access: Published
 //  Description: Returns the current value of the slider.
 ////////////////////////////////////////////////////////////////////
-INLINE float PGSliderBar:: 
+INLINE PN_stdfloat PGSliderBar:: 
 get_value() const {
   LightReMutexHolder holder(_lock);
   return get_ratio() * (_max_value - _min_value) + _min_value;
@@ -202,7 +202,7 @@ get_value() const {
 //               the range 0 .. 1.
 ////////////////////////////////////////////////////////////////////
 INLINE void PGSliderBar:: 
-set_ratio(float ratio) {
+set_ratio(PN_stdfloat ratio) {
   LightReMutexHolder holder(_lock);
   if (!is_button_down()) {
     internal_set_ratio(ratio);
@@ -215,7 +215,7 @@ set_ratio(float ratio) {
 //  Description: Returns the current value of the slider, expressed in
 //               the range 0 .. 1.
 ////////////////////////////////////////////////////////////////////
-INLINE float PGSliderBar:: 
+INLINE PN_stdfloat PGSliderBar:: 
 get_ratio() const {
   LightReMutexHolder holder(_lock);
   return _ratio;
@@ -477,8 +477,8 @@ get_adjust_event() const {
 //               is currently manipulating the slider.
 ////////////////////////////////////////////////////////////////////
 INLINE void PGSliderBar:: 
-internal_set_ratio(float ratio) {
-  _ratio = max(min(ratio, 1.0f), 0.0f);
+internal_set_ratio(PN_stdfloat ratio) {
+  _ratio = max(min(ratio, (PN_stdfloat)1.0), (PN_stdfloat)0.0);
   _needs_reposition = true;
   adjust();
 }

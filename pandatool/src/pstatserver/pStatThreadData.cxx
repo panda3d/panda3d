@@ -140,7 +140,7 @@ get_frame(int frame_number) const {
 //  Description: Returns the timestamp (in seconds elapsed since
 //               connection) of the latest available frame.
 ////////////////////////////////////////////////////////////////////
-float PStatThreadData::
+PN_stdfloat PStatThreadData::
 get_latest_time() const {
   nassertr(!_frames.empty(), 0.0);
   return _frames.back()->get_start();
@@ -152,7 +152,7 @@ get_latest_time() const {
 //  Description: Returns the timestamp (in seconds elapsed since
 //               connection) of the oldest available frame.
 ////////////////////////////////////////////////////////////////////
-float PStatThreadData::
+PN_stdfloat PStatThreadData::
 get_oldest_time() const {
   nassertr(!_frames.empty(), 0.0);
   return _frames.front()->get_start();
@@ -165,7 +165,7 @@ get_oldest_time() const {
 //               latest frame not later than the indicated time.
 ////////////////////////////////////////////////////////////////////
 const PStatFrameData &PStatThreadData::
-get_frame_at_time(float time) const {
+get_frame_at_time(PN_stdfloat time) const {
   return get_frame(get_frame_number_at_time(time));
 }
 
@@ -180,7 +180,7 @@ get_frame_at_time(float time) const {
 //               which may speed the search for the frame.
 ////////////////////////////////////////////////////////////////////
 int PStatThreadData::
-get_frame_number_at_time(float time, int hint) const {
+get_frame_number_at_time(PN_stdfloat time, int hint) const {
   hint -= _first_frame_number;
   if (hint >= 0 && hint < (int)_frames.size()) {
     if (_frames[hint] != (PStatFrameData *)NULL &&
@@ -253,7 +253,7 @@ get_elapsed_frames(int &then_i, int &now_i) const {
 //               pstats_average_time seconds, by counting up the
 //               number of frames elapsed in that time interval.
 ////////////////////////////////////////////////////////////////////
-float PStatThreadData::
+PN_stdfloat PStatThreadData::
 get_frame_rate() const {
   int then_i, now_i;
   if (!get_elapsed_frames(then_i, now_i)) {
@@ -261,9 +261,9 @@ get_frame_rate() const {
   }
 
   int num_frames = now_i - then_i + 1;
-  float now = _frames[now_i - _first_frame_number]->get_end();
-  float elapsed_time = (now - _frames[then_i - _first_frame_number]->get_start());
-  return (float)num_frames / elapsed_time;
+  PN_stdfloat now = _frames[now_i - _first_frame_number]->get_end();
+  PN_stdfloat elapsed_time = (now - _frames[then_i - _first_frame_number]->get_start());
+  return (PN_stdfloat)num_frames / elapsed_time;
 }
 
 
@@ -276,7 +276,7 @@ get_frame_rate() const {
 //               frame that may be queried is.
 ////////////////////////////////////////////////////////////////////
 void PStatThreadData::
-set_history(float time) {
+set_history(PN_stdfloat time) {
   _history = time;
 }
 
@@ -288,7 +288,7 @@ set_history(float time) {
 //               new frame is added.  This affects how old the oldest
 //               frame that may be queried is.
 ////////////////////////////////////////////////////////////////////
-float PStatThreadData::
+PN_stdfloat PStatThreadData::
 get_history() const {
   return _history;
 }
@@ -309,11 +309,11 @@ void PStatThreadData::
 record_new_frame(int frame_number, PStatFrameData *frame_data) {
   nassertv(frame_data != (PStatFrameData *)NULL);
   nassertv(!frame_data->is_empty());
-  float time = frame_data->get_start();
+  PN_stdfloat time = frame_data->get_start();
 
   // First, remove all the old frames that fall outside of our
   // history window.
-  float oldest_allowable_time = time - _history;
+  PN_stdfloat oldest_allowable_time = time - _history;
   while (!_frames.empty() &&
          (_frames.front() == (PStatFrameData *)NULL ||
           _frames.front()->is_empty() ||
@@ -376,8 +376,8 @@ compute_elapsed_frames() {
     } else {
       nassertv(_frames[_now_i] != (PStatFrameData *)NULL);
       
-      float now = _frames[_now_i]->get_end();
-      float then = now - pstats_average_time;
+      PN_stdfloat now = _frames[_now_i]->get_end();
+      PN_stdfloat then = now - pstats_average_time;
       
       int old_i = _now_i;
       _then_i = _now_i;

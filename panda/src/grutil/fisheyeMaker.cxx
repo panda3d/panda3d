@@ -48,7 +48,7 @@ reset() {
 //               field of view (and this is the default).
 ////////////////////////////////////////////////////////////////////
 void FisheyeMaker::
-set_fov(float fov) {
+set_fov(PN_stdfloat fov) {
   _fov = fov;
   _half_fov_rad =  deg_2_rad(_fov * 0.5f);
 }
@@ -84,8 +84,8 @@ generate() {
   // number of vertices per square unit is (_num_vertices / pi), and
   // thus the number of vertices per linear unit is the square root of
   // that.
-  float vertices_per_unit = csqrt(_num_vertices / MathNumbers::pi_f);
-  float two_pi = 2.0f * MathNumbers::pi_f;
+  PN_stdfloat vertices_per_unit = csqrt(_num_vertices / MathNumbers::pi_f);
+  PN_stdfloat two_pi = 2.0f * MathNumbers::pi_f;
 
   // The rose will be made up of concentric rings, originating from
   // the center, to a radius of 1.0.
@@ -94,9 +94,9 @@ generate() {
   CPT(GeomVertexFormat) format = GeomVertexFormat::register_format
     (new GeomVertexArrayFormat
      (InternalName::get_vertex(), 3, 
-      Geom::NT_float32, Geom::C_point,
+      Geom::NT_stdfloat, Geom::C_point,
       InternalName::get_texcoord(), 3,
-      Geom::NT_float32, Geom::C_texcoord));
+      Geom::NT_stdfloat, Geom::C_texcoord));
 
   PT(GeomVertexData) vdata = 
     new GeomVertexData(get_name(), format, Geom::UH_static);
@@ -111,14 +111,14 @@ generate() {
 
   int last_ring_size = 3;
   int last_ring_vertex = 0;
-  float last_r = 1.0f / (float)num_rings;
+  PN_stdfloat last_r = 1.0f / (PN_stdfloat)num_rings;
 
   // Make the first triangle.  We actually make a one-triangle strip,
   // but that seems more sensible than making a single isolated
   // triangle.
   for (int vi = 0; vi < last_ring_size; ++vi) {
     add_vertex(vertex, texcoord, last_r, 
-               two_pi * (float)vi / (float)last_ring_size);
+               two_pi * (PN_stdfloat)vi / (PN_stdfloat)last_ring_size);
     tristrips->add_vertex(vi);
   }
   // Actually, we need to add one more degenerate triangle to make it
@@ -128,10 +128,10 @@ generate() {
 
   // Now make all of the rings.
   for (int ri = 1; ri < num_rings; ++ri) {
-    float r = (float)(ri + 1) / (float)num_rings;
+    PN_stdfloat r = (PN_stdfloat)(ri + 1) / (PN_stdfloat)num_rings;
     
     // The circumference of a ring of radius r is 2*pi*r.
-    float c = two_pi * r;
+    PN_stdfloat c = two_pi * r;
     int ring_size = (int)floor(c * vertices_per_unit + 0.5f);
     
     // Each ring must either have exactly the same number of vertices
@@ -168,7 +168,7 @@ generate() {
       last_ring_vertex = 0;
       for (int vi = 0; vi < last_ring_size; ++vi) {
         add_vertex(vertex, texcoord, last_r, 
-                   two_pi * (float)vi / (float)last_ring_size);
+                   two_pi * (PN_stdfloat)vi / (PN_stdfloat)last_ring_size);
       }
     }
 
@@ -176,7 +176,7 @@ generate() {
     int ring_vertex = vdata->get_num_rows();
     for (int vi = 0; vi < ring_size; ++vi) {
       add_vertex(vertex, texcoord, r, 
-                 two_pi * (float)vi / (float)ring_size);
+                 two_pi * (PN_stdfloat)vi / (PN_stdfloat)ring_size);
     }
 
     // Now draw the triangle strip to connect the rings.
@@ -277,7 +277,7 @@ generate() {
       last_ring_vertex = 0;
       for (int vi = 0; vi < last_ring_size; ++vi) {
         add_vertex(vertex, texcoord, last_r, 
-                   two_pi * (float)vi / (float)last_ring_size);
+                   two_pi * (PN_stdfloat)vi / (PN_stdfloat)last_ring_size);
       }
     }
 
@@ -285,7 +285,7 @@ generate() {
     int ring_vertex = vdata->get_num_rows();
     for (int vi = 0; vi < ring_size; ++vi) {
       add_square_vertex(vertex, texcoord,
-                        two_pi * (float)vi / (float)ring_size);
+                        two_pi * (PN_stdfloat)vi / (PN_stdfloat)ring_size);
     }
 
     // Now draw the triangle strip to connect the rings.
@@ -346,28 +346,28 @@ generate() {
 ////////////////////////////////////////////////////////////////////
 void FisheyeMaker::
 add_vertex(GeomVertexWriter &vertex, GeomVertexWriter &texcoord,
-           float r, float a) {
-  float sina, cosa;
+           PN_stdfloat r, PN_stdfloat a) {
+  PN_stdfloat sina, cosa;
   csincos(a, &sina, &cosa);
   
   // The 2-d point is just a point r units from the center of the
   // circle.
-  LPoint3f point(r * cosa, 0.0f, r * sina);
-  vertex.add_data3f(point);
+  LPoint3 point(r * cosa, 0.0f, r * sina);
+  vertex.add_data3(point);
 
   // The 3-d point is the same thing, bent through the third dimension
   // around the surface of a sphere to the point in the back.
-  float b = r * _half_fov_rad;
+  PN_stdfloat b = r * _half_fov_rad;
   if (b >= MathNumbers::pi_f) {
     // Special case: we want to stop at the back pole, not continue
     // around it.
-    texcoord.add_data3f(0, _reflect, 0);
+    texcoord.add_data3(0, _reflect, 0);
 
   } else {
-    float sinb, cosb;
+    PN_stdfloat sinb, cosb;
     csincos(b, &sinb, &cosb);
-    LPoint3f tc(sinb * cosa, cosb * _reflect, sinb * sina);
-    texcoord.add_data3f(tc);
+    LPoint3 tc(sinb * cosa, cosb * _reflect, sinb * sina);
+    texcoord.add_data3(tc);
   }
 }
   
@@ -384,25 +384,25 @@ add_vertex(GeomVertexWriter &vertex, GeomVertexWriter &texcoord,
 ////////////////////////////////////////////////////////////////////
 void FisheyeMaker::
 add_square_vertex(GeomVertexWriter &vertex, GeomVertexWriter &texcoord,
-                  float a) {
-  float sina, cosa;
+                  PN_stdfloat a) {
+  PN_stdfloat sina, cosa;
   csincos(a, &sina, &cosa);
   
   // Extend the 2-d point to the edge of the square of the indicated
   // size.
   if (cabs(sina) > cabs(cosa)) {
-    float y = (sina > 0.0f) ? _square_radius : -_square_radius;
-    float x = y * cosa / sina;
-    LPoint3f point(x, 0.0f, y);
-    vertex.add_data3f(point);
+    PN_stdfloat y = (sina > 0.0f) ? _square_radius : -_square_radius;
+    PN_stdfloat x = y * cosa / sina;
+    LPoint3 point(x, 0.0f, y);
+    vertex.add_data3(point);
 
   } else {
-    float x = (cosa > 0.0f) ? _square_radius : -_square_radius;
-    float y = x * sina / cosa;
-    LPoint3f point(x, 0.0f, y);
-    vertex.add_data3f(point);
+    PN_stdfloat x = (cosa > 0.0f) ? _square_radius : -_square_radius;
+    PN_stdfloat y = x * sina / cosa;
+    LPoint3 point(x, 0.0f, y);
+    vertex.add_data3(point);
   }
 
-  texcoord.add_data3f(0, _reflect, 0);
+  texcoord.add_data3(0, _reflect, 0);
 }
   

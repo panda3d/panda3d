@@ -24,7 +24,7 @@ public:
   VRMLAppearance(const VrmlNode *vrmlAppearance);
 
   bool _has_material;
-  Colorf _color;
+  LColor _color;
   double _transparency;
   PT_EggTexture _tex;
 

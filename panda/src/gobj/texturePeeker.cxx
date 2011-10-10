@@ -160,9 +160,9 @@ TexturePeeker(Texture *tex, Texture::CData *cdata) {
 //               the texture's wrap mode.
 ////////////////////////////////////////////////////////////////////
 void TexturePeeker::
-lookup(Colorf &color, float u, float v) const {
-  int x = int((u - cfloor(u)) * (float)_x_size) % _x_size;
-  int y = int((v - cfloor(v)) * (float)_y_size) % _y_size;
+lookup(LColor &color, PN_stdfloat u, PN_stdfloat v) const {
+  int x = int((u - cfloor(u)) * (PN_stdfloat)_x_size) % _x_size;
+  int y = int((v - cfloor(v)) * (PN_stdfloat)_y_size) % _y_size;
 
   nassertv(x >= 0 && x < _x_size && y >= 0 && y < _y_size);
   const unsigned char *p = _image.p() + (y * _x_size + x) * _pixel_width;
@@ -183,10 +183,10 @@ lookup(Colorf &color, float u, float v) const {
 //               the texture's wrap mode.
 ////////////////////////////////////////////////////////////////////
 void TexturePeeker::
-lookup(Colorf &color, float u, float v, float w) const {
-  int x = int((u - cfloor(u)) * (float)_x_size) % _x_size;
-  int y = int((v - cfloor(v)) * (float)_y_size) % _y_size;
-  int z = int((w - cfloor(w)) * (float)_z_size) % _z_size;
+lookup(LColor &color, PN_stdfloat u, PN_stdfloat v, PN_stdfloat w) const {
+  int x = int((u - cfloor(u)) * (PN_stdfloat)_x_size) % _x_size;
+  int y = int((v - cfloor(v)) * (PN_stdfloat)_y_size) % _y_size;
+  int z = int((w - cfloor(w)) * (PN_stdfloat)_z_size) % _z_size;
 
   nassertv(x >= 0 && x < _x_size && y >= 0 && y < _y_size && 
            z >= 0 && z < _z_size);
@@ -207,8 +207,8 @@ lookup(Colorf &color, float u, float v, float w) const {
 //               the texture's wrap mode.
 ////////////////////////////////////////////////////////////////////
 void TexturePeeker::
-filter_rect(Colorf &color, 
-            float min_u, float min_v, float max_u, float max_v) const {
+filter_rect(LColor &color, 
+            PN_stdfloat min_u, PN_stdfloat min_v, PN_stdfloat max_u, PN_stdfloat max_v) const {
   int min_x, max_x;
   init_rect_minmax(min_x, max_x, min_u, max_u, _x_size);
 
@@ -216,7 +216,7 @@ filter_rect(Colorf &color,
   init_rect_minmax(min_y, max_y, min_v, max_v, _y_size);
 
   color.set(0.0f, 0.0f, 0.0f, 0.0f);
-  float net = 0.0f;
+  PN_stdfloat net = 0.0f;
   accum_filter_y(color, net, 0,
                  min_x, max_x, min_u, max_u,
                  min_y, max_y, min_v, max_v, 
@@ -239,9 +239,9 @@ filter_rect(Colorf &color,
 //               the texture's wrap mode.
 ////////////////////////////////////////////////////////////////////
 void TexturePeeker::
-filter_rect(Colorf &color, 
-            float min_u, float min_v, float min_w,
-            float max_u, float max_v, float max_w) const {
+filter_rect(LColor &color, 
+            PN_stdfloat min_u, PN_stdfloat min_v, PN_stdfloat min_w,
+            PN_stdfloat max_u, PN_stdfloat max_v, PN_stdfloat max_w) const {
   int min_x, max_x;
   init_rect_minmax(min_x, max_x, min_u, max_u, _x_size);
 
@@ -252,7 +252,7 @@ filter_rect(Colorf &color,
   init_rect_minmax(min_z, max_z, min_w, max_w, _z_size);
 
   color.set(0.0f, 0.0f, 0.0f, 0.0f);
-  float net = 0.0f;
+  PN_stdfloat net = 0.0f;
   accum_filter_z(color, net,
                  min_x, max_x, min_u, max_u,
                  min_y, max_y, min_v, max_v,
@@ -270,10 +270,10 @@ filter_rect(Colorf &color,
 //               min_y based on them.  Also works for y and z.
 ////////////////////////////////////////////////////////////////////
 void TexturePeeker::
-init_rect_minmax(int &min_x, int &max_x, float &min_u, float &max_u,
+init_rect_minmax(int &min_x, int &max_x, PN_stdfloat &min_u, PN_stdfloat &max_u,
                  int x_size) {
   if (min_u > max_u) {
-    float t = min_u;
+    PN_stdfloat t = min_u;
     min_u = max_u;
     max_u = t;
   }
@@ -281,8 +281,8 @@ init_rect_minmax(int &min_x, int &max_x, float &min_u, float &max_u,
     min_u = 0.0f;
     max_u = 1.0f;
   }
-  min_x = (int)cfloor(min_u * (float)x_size);
-  max_x = (int)cceil(max_u * (float)x_size);
+  min_x = (int)cfloor(min_u * (PN_stdfloat)x_size);
+  max_x = (int)cceil(max_u * (PN_stdfloat)x_size);
   nassertv(min_x <= max_x);
 }
 
@@ -292,10 +292,10 @@ init_rect_minmax(int &min_x, int &max_x, float &min_u, float &max_u,
 //  Description: Accumulates the range of pixels from min_z to max_z.
 ////////////////////////////////////////////////////////////////////
 void TexturePeeker::
-accum_filter_z(Colorf &color, float &net,
-               int min_x, int max_x, float min_u, float max_u,
-               int min_y, int max_y, float min_v, float max_v,
-               int min_z, int max_z, float min_w, float max_w) const {
+accum_filter_z(LColor &color, PN_stdfloat &net,
+               int min_x, int max_x, PN_stdfloat min_u, PN_stdfloat max_u,
+               int min_y, int max_y, PN_stdfloat min_v, PN_stdfloat max_v,
+               int min_z, int max_z, PN_stdfloat min_w, PN_stdfloat max_w) const {
   nassertv(min_z >= 0 && min_z <= _z_size && 
            max_z >= 0 && max_z <= _z_size);
   int zi = min_z;
@@ -309,7 +309,7 @@ accum_filter_z(Colorf &color, float &net,
 
   } else {
     // First part-texel.
-    float w = (min_z + 1) - min_w * _z_size;
+    PN_stdfloat w = (min_z + 1) - min_w * _z_size;
     accum_filter_y(color, net, zi % _z_size, 
                    min_x, max_x, min_u, max_u,
                    min_y, max_y, min_v, max_v,
@@ -341,10 +341,10 @@ accum_filter_z(Colorf &color, float &net,
 //  Description: Accumulates the range of pixels from min_y to max_y.
 ////////////////////////////////////////////////////////////////////
 void TexturePeeker::
-accum_filter_y(Colorf &color, float &net, int zi,
-               int min_x, int max_x, float min_u, float max_u,
-               int min_y, int max_y, float min_v, float max_v,
-               float weight) const {
+accum_filter_y(LColor &color, PN_stdfloat &net, int zi,
+               int min_x, int max_x, PN_stdfloat min_u, PN_stdfloat max_u,
+               int min_y, int max_y, PN_stdfloat min_v, PN_stdfloat max_v,
+               PN_stdfloat weight) const {
   nassertv(zi >= 0 && zi < _z_size);
   nassertv(min_y >= 0 && min_y <= _y_size && 
            max_y >= 0 && max_y <= _y_size);
@@ -356,7 +356,7 @@ accum_filter_y(Colorf &color, float &net, int zi,
 
   } else {
     // First part-texel.
-    float w = (min_y + 1) - min_v * _y_size;
+    PN_stdfloat w = (min_y + 1) - min_v * _y_size;
     accum_filter_x(color, net, yi % _y_size, zi, min_x, max_x, min_u, max_u, weight * w);
     int ys = max_y - 1;
     
@@ -379,9 +379,9 @@ accum_filter_y(Colorf &color, float &net, int zi,
 //  Description: Accumulates the range of pixels from min_x to max_x.
 ////////////////////////////////////////////////////////////////////
 void TexturePeeker::
-accum_filter_x(Colorf &color, float &net, int yi, int zi,
-               int min_x, int max_x, float min_u, float max_u,
-               float weight) const {
+accum_filter_x(LColor &color, PN_stdfloat &net, int yi, int zi,
+               int min_x, int max_x, PN_stdfloat min_u, PN_stdfloat max_u,
+               PN_stdfloat weight) const {
   nassertv(yi >= 0 && yi < _y_size && zi >= 0 && zi < _z_size);
   nassertv(min_x >= 0 && min_x <= _x_size && 
            max_x >= 0 && max_x <= _x_size);
@@ -396,7 +396,7 @@ accum_filter_x(Colorf &color, float &net, int yi, int zi,
 
   } else {
     // First part-texel.
-    float w = (min_x + 1) - min_u * _x_size;
+    PN_stdfloat w = (min_x + 1) - min_u * _x_size;
     accum_texel(color, net, p, weight * w);
     int xs = max_x - 1;
     
@@ -429,8 +429,8 @@ accum_filter_x(Colorf &color, float &net, int yi, int zi,
 //               filter_rect().
 ////////////////////////////////////////////////////////////////////
 void TexturePeeker::
-accum_texel(Colorf &color, float &net, const unsigned char *&p, float weight) const {
-  Colorf c;
+accum_texel(LColor &color, PN_stdfloat &net, const unsigned char *&p, PN_stdfloat weight) const {
+  LColor c;
   (*_get_texel)(c, p, _get_component);
   color += c * weight;
   net += weight;
@@ -443,7 +443,7 @@ accum_texel(Colorf &color, float &net, const unsigned char *&p, float weight) co
 //               texture is in format F_red.
 ////////////////////////////////////////////////////////////////////
 void TexturePeeker::
-get_texel_r(Colorf &color, const unsigned char *&p, GetComponentFunc *get_component) {
+get_texel_r(LColor &color, const unsigned char *&p, GetComponentFunc *get_component) {
   color[0] = (*get_component)(p);
   color[1] = 0.0f;
   color[2] = 0.0f;
@@ -457,7 +457,7 @@ get_texel_r(Colorf &color, const unsigned char *&p, GetComponentFunc *get_compon
 //               texture is in format F_green.
 ////////////////////////////////////////////////////////////////////
 void TexturePeeker::
-get_texel_g(Colorf &color, const unsigned char *&p, GetComponentFunc *get_component) {
+get_texel_g(LColor &color, const unsigned char *&p, GetComponentFunc *get_component) {
   color[0] = 0.0f;
   color[1] = (*get_component)(p);
   color[2] = 0.0f;
@@ -471,7 +471,7 @@ get_texel_g(Colorf &color, const unsigned char *&p, GetComponentFunc *get_compon
 //               texture is in format F_blue.
 ////////////////////////////////////////////////////////////////////
 void TexturePeeker::
-get_texel_b(Colorf &color, const unsigned char *&p, GetComponentFunc *get_component) {
+get_texel_b(LColor &color, const unsigned char *&p, GetComponentFunc *get_component) {
   color[0] = 0.0f;
   color[1] = 0.0f;
   color[2] = (*get_component)(p);
@@ -485,7 +485,7 @@ get_texel_b(Colorf &color, const unsigned char *&p, GetComponentFunc *get_compon
 //               texture is in format F_alpha.
 ////////////////////////////////////////////////////////////////////
 void TexturePeeker::
-get_texel_a(Colorf &color, const unsigned char *&p, GetComponentFunc *get_component) {
+get_texel_a(LColor &color, const unsigned char *&p, GetComponentFunc *get_component) {
   color[0] = 0.0f;
   color[1] = 0.0f;
   color[2] = 1.0f;
@@ -499,7 +499,7 @@ get_texel_a(Colorf &color, const unsigned char *&p, GetComponentFunc *get_compon
 //               texture is in format F_luminance.
 ////////////////////////////////////////////////////////////////////
 void TexturePeeker::
-get_texel_l(Colorf &color, const unsigned char *&p, GetComponentFunc *get_component) {
+get_texel_l(LColor &color, const unsigned char *&p, GetComponentFunc *get_component) {
   color[0] = (*get_component)(p);
   color[1] = color[0];
   color[2] = color[0];
@@ -513,7 +513,7 @@ get_texel_l(Colorf &color, const unsigned char *&p, GetComponentFunc *get_compon
 //               texture is in format F_luminance_alpha or similar.
 ////////////////////////////////////////////////////////////////////
 void TexturePeeker::
-get_texel_la(Colorf &color, const unsigned char *&p, GetComponentFunc *get_component) {
+get_texel_la(LColor &color, const unsigned char *&p, GetComponentFunc *get_component) {
   color[0] = (*get_component)(p);
   color[1] = color[0];
   color[2] = color[0];
@@ -527,7 +527,7 @@ get_texel_la(Colorf &color, const unsigned char *&p, GetComponentFunc *get_compo
 //               texture is in format F_rgb or similar.
 ////////////////////////////////////////////////////////////////////
 void TexturePeeker::
-get_texel_rgb(Colorf &color, const unsigned char *&p, GetComponentFunc *get_component) {
+get_texel_rgb(LColor &color, const unsigned char *&p, GetComponentFunc *get_component) {
   color[2] = (*get_component)(p);
   color[1] = (*get_component)(p);
   color[0] = (*get_component)(p);
@@ -541,7 +541,7 @@ get_texel_rgb(Colorf &color, const unsigned char *&p, GetComponentFunc *get_comp
 //               texture is in format F_rgba or similar.
 ////////////////////////////////////////////////////////////////////
 void TexturePeeker::
-get_texel_rgba(Colorf &color, const unsigned char *&p, GetComponentFunc *get_component) {
+get_texel_rgba(LColor &color, const unsigned char *&p, GetComponentFunc *get_component) {
   color[2] = (*get_component)(p);
   color[1] = (*get_component)(p);
   color[0] = (*get_component)(p);

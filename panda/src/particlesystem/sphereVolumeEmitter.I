@@ -21,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////
 
 INLINE void SphereVolumeEmitter::
-set_radius(float r) {
+set_radius(PN_stdfloat r) {
   _radius = r;
 }
 
@@ -31,7 +31,7 @@ set_radius(float r) {
 // Description : radius get
 ////////////////////////////////////////////////////////////////////
 
-INLINE float SphereVolumeEmitter::
+INLINE PN_stdfloat SphereVolumeEmitter::
 get_radius() const {
   return _radius;
 }

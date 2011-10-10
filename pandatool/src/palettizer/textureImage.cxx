@@ -901,7 +901,7 @@ write_source_pathnames(ostream &out, int indent_level) const {
 
   if (_is_cutout) {
     indent(out, indent_level)
-      << "Cutout image (ratio " << (float)_mid_pixel_ratio << ")\n";
+      << "Cutout image (ratio " << (PN_stdfloat)_mid_pixel_ratio << ")\n";
   }
 
   // Now write out the group assignments.

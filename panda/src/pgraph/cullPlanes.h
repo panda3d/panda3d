@@ -56,7 +56,7 @@ public:
   INLINE bool is_empty() const;
 
   static CPT(CullPlanes) make_empty();
-  CPT(CullPlanes) xform(const LMatrix4f &mat) const;
+  CPT(CullPlanes) xform(const LMatrix4 &mat) const;
   CPT(CullPlanes) apply_state(const CullTraverser *trav, 
                               const CullTraverserData *data,
                               const ClipPlaneAttrib *net_attrib,

@@ -29,7 +29,7 @@
 
 class StreamReader;
 class StreamWriter;
-typedef float Phase;
+typedef PN_stdfloat Phase;
 class Ramfile;
 
 /*

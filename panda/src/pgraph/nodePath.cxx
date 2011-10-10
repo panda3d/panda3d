@@ -1259,32 +1259,32 @@ set_prev_transform(const NodePath &other, const TransformState *transform,
 //     See Also: NodePath::set_fluid_pos
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_pos(const LVecBase3f &pos) {
+set_pos(const LVecBase3 &pos) {
   nassertv_always(!is_empty());
   set_transform(get_transform()->set_pos(pos));
   node()->reset_prev_transform();
 }
 
 void NodePath::
-set_x(float x) {
+set_x(PN_stdfloat x) {
   nassertv_always(!is_empty());
-  LPoint3f pos = get_pos();
+  LPoint3 pos = get_pos();
   pos[0] = x;
   set_pos(pos);
 }
 
 void NodePath::
-set_y(float y) {
+set_y(PN_stdfloat y) {
   nassertv_always(!is_empty());
-  LPoint3f pos = get_pos();
+  LPoint3 pos = get_pos();
   pos[1] = y;
   set_pos(pos);
 }
 
 void NodePath::
-set_z(float z) {
+set_z(PN_stdfloat z) {
   nassertv_always(!is_empty());
-  LPoint3f pos = get_pos();
+  LPoint3 pos = get_pos();
   pos[2] = z;
   set_pos(pos);
 }
@@ -1299,31 +1299,31 @@ set_z(float z) {
 //     See Also: NodePath::set_pos
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_fluid_pos(const LVecBase3f &pos) {
+set_fluid_pos(const LVecBase3 &pos) {
   nassertv_always(!is_empty());
   set_transform(get_transform()->set_pos(pos));
 }
 
 void NodePath::
-set_fluid_x(float x) {
+set_fluid_x(PN_stdfloat x) {
   nassertv_always(!is_empty());
-  LPoint3f pos = get_pos();
+  LPoint3 pos = get_pos();
   pos[0] = x;
   set_fluid_pos(pos);
 }
 
 void NodePath::
-set_fluid_y(float y) {
+set_fluid_y(PN_stdfloat y) {
   nassertv_always(!is_empty());
-  LPoint3f pos = get_pos();
+  LPoint3 pos = get_pos();
   pos[1] = y;
   set_fluid_pos(pos);
 }
 
 void NodePath::
-set_fluid_z(float z) {
+set_fluid_z(PN_stdfloat z) {
   nassertv_always(!is_empty());
-  LPoint3f pos = get_pos();
+  LPoint3 pos = get_pos();
   pos[2] = z;
   set_fluid_pos(pos);
 }
@@ -1333,9 +1333,9 @@ set_fluid_z(float z) {
 //       Access: Published
 //  Description: Retrieves the translation component of the transform.
 ////////////////////////////////////////////////////////////////////
-LPoint3f NodePath::
+LPoint3 NodePath::
 get_pos() const {
-  nassertr_always(!is_empty(), LPoint3f(0.0f, 0.0f, 0.0f));
+  nassertr_always(!is_empty(), LPoint3(0.0f, 0.0f, 0.0f));
   return get_transform()->get_pos();
 }
 
@@ -1353,9 +1353,9 @@ get_pos() const {
 //               will represent the change from the previous frame's
 //               position.
 ////////////////////////////////////////////////////////////////////
-LVector3f NodePath::
+LVector3 NodePath::
 get_pos_delta() const {
-  nassertr_always(!is_empty(), LPoint3f(0.0f, 0.0f, 0.0f));
+  nassertr_always(!is_empty(), LPoint3(0.0f, 0.0f, 0.0f));
   return get_transform()->get_pos() - get_prev_transform()->get_pos();
 }
 
@@ -1366,7 +1366,7 @@ get_pos_delta() const {
 //               leaving translation and scale untouched.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_hpr(const LVecBase3f &hpr) {
+set_hpr(const LVecBase3 &hpr) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
   nassertv(transform->has_hpr());
@@ -1374,31 +1374,31 @@ set_hpr(const LVecBase3f &hpr) {
 }
 
 void NodePath::
-set_h(float h) {
+set_h(PN_stdfloat h) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
   nassertv(transform->has_hpr());
-  LVecBase3f hpr = transform->get_hpr();
+  LVecBase3 hpr = transform->get_hpr();
   hpr[0] = h;
   set_transform(transform->set_hpr(hpr));
 }
 
 void NodePath::
-set_p(float p) {
+set_p(PN_stdfloat p) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
   nassertv(transform->has_hpr());
-  LVecBase3f hpr = transform->get_hpr();
+  LVecBase3 hpr = transform->get_hpr();
   hpr[1] = p;
   set_transform(transform->set_hpr(hpr));
 }
 
 void NodePath::
-set_r(float r) {
+set_r(PN_stdfloat r) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
   nassertv(transform->has_hpr());
-  LVecBase3f hpr = transform->get_hpr();
+  LVecBase3 hpr = transform->get_hpr();
   hpr[2] = r;
   set_transform(transform->set_hpr(hpr));
 }
@@ -1408,11 +1408,11 @@ set_r(float r) {
 //       Access: Published
 //  Description: Retrieves the rotation component of the transform.
 ////////////////////////////////////////////////////////////////////
-LVecBase3f NodePath::
+LVecBase3 NodePath::
 get_hpr() const {
-  nassertr_always(!is_empty(), LVecBase3f(0.0f, 0.0f, 0.0f));
+  nassertr_always(!is_empty(), LVecBase3(0.0f, 0.0f, 0.0f));
   CPT(TransformState) transform = get_transform();
-  nassertr(transform->has_hpr(), LVecBase3f(0.0f, 0.0f, 0.0f));
+  nassertr(transform->has_hpr(), LVecBase3(0.0f, 0.0f, 0.0f));
   return transform->get_hpr();
 }
 
@@ -1423,7 +1423,7 @@ get_hpr() const {
 //               leaving translation and scale untouched.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_quat(const LQuaternionf &quat) {
+set_quat(const LQuaternion &quat) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
   set_transform(transform->set_quat(quat));
@@ -1434,9 +1434,9 @@ set_quat(const LQuaternionf &quat) {
 //       Access: Published
 //  Description: Retrieves the rotation component of the transform.
 ////////////////////////////////////////////////////////////////////
-LQuaternionf NodePath::
+LQuaternion NodePath::
 get_quat() const {
-  nassertr_always(!is_empty(), LQuaternionf::ident_quat());
+  nassertr_always(!is_empty(), LQuaternion::ident_quat());
   CPT(TransformState) transform = get_transform();
   return transform->get_quat();
 }
@@ -1448,35 +1448,35 @@ get_quat() const {
 //               leaving translation and rotation untouched.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_scale(const LVecBase3f &scale) {
+set_scale(const LVecBase3 &scale) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
   set_transform(transform->set_scale(scale));
 }
 
 void NodePath::
-set_sx(float sx) {
+set_sx(PN_stdfloat sx) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
-  LVecBase3f scale = transform->get_scale();
+  LVecBase3 scale = transform->get_scale();
   scale[0] = sx;
   set_transform(transform->set_scale(scale));
 }
 
 void NodePath::
-set_sy(float sy) {
+set_sy(PN_stdfloat sy) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
-  LVecBase3f scale = transform->get_scale();
+  LVecBase3 scale = transform->get_scale();
   scale[1] = sy;
   set_transform(transform->set_scale(scale));
 }
 
 void NodePath::
-set_sz(float sz) {
+set_sz(PN_stdfloat sz) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
-  LVecBase3f scale = transform->get_scale();
+  LVecBase3 scale = transform->get_scale();
   scale[2] = sz;
   set_transform(transform->set_scale(scale));
 }
@@ -1486,9 +1486,9 @@ set_sz(float sz) {
 //       Access: Published
 //  Description: Retrieves the scale component of the transform.
 ////////////////////////////////////////////////////////////////////
-LVecBase3f NodePath::
+LVecBase3 NodePath::
 get_scale() const {
-  nassertr_always(!is_empty(), LVecBase3f(0.0f, 0.0f, 0.0f));
+  nassertr_always(!is_empty(), LVecBase3(0.0f, 0.0f, 0.0f));
   CPT(TransformState) transform = get_transform();
   return transform->get_scale();
 }
@@ -1500,35 +1500,35 @@ get_scale() const {
 //               leaving translation and rotation untouched.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_shear(const LVecBase3f &shear) {
+set_shear(const LVecBase3 &shear) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
   set_transform(transform->set_shear(shear));
 }
 
 void NodePath::
-set_shxy(float shxy) {
+set_shxy(PN_stdfloat shxy) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
-  LVecBase3f shear = transform->get_shear();
+  LVecBase3 shear = transform->get_shear();
   shear[0] = shxy;
   set_transform(transform->set_shear(shear));
 }
 
 void NodePath::
-set_shxz(float shxz) {
+set_shxz(PN_stdfloat shxz) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
-  LVecBase3f shear = transform->get_shear();
+  LVecBase3 shear = transform->get_shear();
   shear[1] = shxz;
   set_transform(transform->set_shear(shear));
 }
 
 void NodePath::
-set_shyz(float shyz) {
+set_shyz(PN_stdfloat shyz) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
-  LVecBase3f shear = transform->get_shear();
+  LVecBase3 shear = transform->get_shear();
   shear[2] = shyz;
   set_transform(transform->set_shear(shear));
 }
@@ -1538,9 +1538,9 @@ set_shyz(float shyz) {
 //       Access: Published
 //  Description: Retrieves the shear component of the transform.
 ////////////////////////////////////////////////////////////////////
-LVecBase3f NodePath::
+LVecBase3 NodePath::
 get_shear() const {
-  nassertr_always(!is_empty(), LVecBase3f(0.0f, 0.0f, 0.0f));
+  nassertr_always(!is_empty(), LVecBase3(0.0f, 0.0f, 0.0f));
   CPT(TransformState) transform = get_transform();
   return transform->get_shear();
 }
@@ -1552,7 +1552,7 @@ get_shear() const {
 //               transform, leaving scale untouched.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_pos_hpr(const LVecBase3f &pos, const LVecBase3f &hpr) {
+set_pos_hpr(const LVecBase3 &pos, const LVecBase3 &hpr) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
   transform = TransformState::make_pos_hpr_scale_shear
@@ -1568,7 +1568,7 @@ set_pos_hpr(const LVecBase3f &pos, const LVecBase3f &hpr) {
 //               transform, leaving scale untouched.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_pos_quat(const LVecBase3f &pos, const LQuaternionf &quat) {
+set_pos_quat(const LVecBase3 &pos, const LQuaternion &quat) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
   transform = TransformState::make_pos_quat_scale_shear
@@ -1584,7 +1584,7 @@ set_pos_quat(const LVecBase3f &pos, const LQuaternionf &quat) {
 //               transform, leaving translation untouched.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_hpr_scale(const LVecBase3f &hpr, const LVecBase3f &scale) {
+set_hpr_scale(const LVecBase3 &hpr, const LVecBase3 &scale) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
   transform = TransformState::make_pos_hpr_scale_shear
@@ -1599,7 +1599,7 @@ set_hpr_scale(const LVecBase3f &hpr, const LVecBase3f &scale) {
 //               transform, leaving translation untouched.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_quat_scale(const LQuaternionf &quat, const LVecBase3f &scale) {
+set_quat_scale(const LQuaternion &quat, const LVecBase3 &scale) {
   nassertv_always(!is_empty());
   CPT(TransformState) transform = get_transform();
   transform = TransformState::make_pos_quat_scale_shear
@@ -1614,8 +1614,8 @@ set_quat_scale(const LQuaternionf &quat, const LVecBase3f &scale) {
 //               components, implicitly setting shear to 0.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_pos_hpr_scale(const LVecBase3f &pos, const LVecBase3f &hpr,
-                  const LVecBase3f &scale) {
+set_pos_hpr_scale(const LVecBase3 &pos, const LVecBase3 &hpr,
+                  const LVecBase3 &scale) {
   nassertv_always(!is_empty());
   set_transform(TransformState::make_pos_hpr_scale
                 (pos, hpr, scale));
@@ -1629,8 +1629,8 @@ set_pos_hpr_scale(const LVecBase3f &pos, const LVecBase3f &hpr,
 //               components, implicitly setting shear to 0.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_pos_quat_scale(const LVecBase3f &pos, const LQuaternionf &quat,
-                   const LVecBase3f &scale) {
+set_pos_quat_scale(const LVecBase3 &pos, const LQuaternion &quat,
+                   const LVecBase3 &scale) {
   nassertv_always(!is_empty());
   set_transform(TransformState::make_pos_quat_scale
                 (pos, quat, scale));
@@ -1644,8 +1644,8 @@ set_pos_quat_scale(const LVecBase3f &pos, const LQuaternionf &quat,
 //               translation, rotation, scale, and shear components.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_pos_hpr_scale_shear(const LVecBase3f &pos, const LVecBase3f &hpr,
-                        const LVecBase3f &scale, const LVecBase3f &shear) {
+set_pos_hpr_scale_shear(const LVecBase3 &pos, const LVecBase3 &hpr,
+                        const LVecBase3 &scale, const LVecBase3 &shear) {
   nassertv_always(!is_empty());
   set_transform(TransformState::make_pos_hpr_scale_shear
                 (pos, hpr, scale, shear));
@@ -1659,8 +1659,8 @@ set_pos_hpr_scale_shear(const LVecBase3f &pos, const LVecBase3f &hpr,
 //               translation, rotation, scale, and shear components.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_pos_quat_scale_shear(const LVecBase3f &pos, const LQuaternionf &quat,
-                         const LVecBase3f &scale, const LVecBase3f &shear) {
+set_pos_quat_scale_shear(const LVecBase3 &pos, const LQuaternion &quat,
+                         const LVecBase3 &scale, const LVecBase3 &shear) {
   nassertv_always(!is_empty());
   set_transform(TransformState::make_pos_quat_scale_shear
                 (pos, quat, scale, shear));
@@ -1673,7 +1673,7 @@ set_pos_quat_scale_shear(const LVecBase3f &pos, const LQuaternionf &quat,
 //  Description: Directly sets an arbitrary 4x4 transform matrix.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_mat(const LMatrix4f &mat) {
+set_mat(const LMatrix4 &mat) {
   nassertv_always(!is_empty());
   set_transform(TransformState::make_mat(mat));
   node()->reset_prev_transform();
@@ -1686,12 +1686,12 @@ set_mat(const LMatrix4f &mat) {
 //               rotates to face the indicated point in space.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-look_at(const LPoint3f &point, const LVector3f &up) {
+look_at(const LPoint3 &point, const LVector3 &up) {
   nassertv_always(!is_empty());
 
-  LPoint3f pos = get_pos();
+  LPoint3 pos = get_pos();
 
-  LQuaternionf quat;
+  LQuaternion quat;
   ::look_at(quat, point - pos, up);
   set_quat(quat);
 }
@@ -1704,12 +1704,12 @@ look_at(const LPoint3f &point, const LVector3f &up) {
 //               "up" direction.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-heads_up(const LPoint3f &point, const LVector3f &up) {
+heads_up(const LPoint3 &point, const LVector3 &up) {
   nassertv_always(!is_empty());
 
-  LPoint3f pos = get_pos();
+  LPoint3 pos = get_pos();
 
-  LQuaternionf quat;
+  LQuaternion quat;
   ::heads_up(quat, point - pos, up);
   set_quat(quat);
 }
@@ -1721,7 +1721,7 @@ heads_up(const LPoint3f &point, const LVector3f &up) {
 //               relative to the other node.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_pos(const NodePath &other, const LVecBase3f &pos) {
+set_pos(const NodePath &other, const LVecBase3 &pos) {
   nassertv_always(!is_empty());
   CPT(TransformState) rel_transform = get_transform(other);
 
@@ -1731,9 +1731,9 @@ set_pos(const NodePath &other, const LVecBase3f &pos) {
     // should be careful to preserve the other three components.  We
     // wouldn't need to do this, except for the possibility of
     // numerical error or decompose ambiguity.
-    const LVecBase3f &orig_hpr = orig_transform->get_hpr();
-    const LVecBase3f &orig_scale = orig_transform->get_scale();
-    const LVecBase3f &orig_shear = orig_transform->get_shear();
+    const LVecBase3 &orig_hpr = orig_transform->get_hpr();
+    const LVecBase3 &orig_scale = orig_transform->get_scale();
+    const LVecBase3 &orig_shear = orig_transform->get_shear();
 
     set_transform(other, rel_transform->set_pos(pos));
     set_pos_hpr_scale_shear(get_transform()->get_pos(), orig_hpr, orig_scale, orig_shear);
@@ -1747,25 +1747,25 @@ set_pos(const NodePath &other, const LVecBase3f &pos) {
 }
 
 void NodePath::
-set_x(const NodePath &other, float x) {
+set_x(const NodePath &other, PN_stdfloat x) {
   nassertv_always(!is_empty());
-  LPoint3f pos = get_pos(other);
+  LPoint3 pos = get_pos(other);
   pos[0] = x;
   set_pos(other, pos);
 }
 
 void NodePath::
-set_y(const NodePath &other, float y) {
+set_y(const NodePath &other, PN_stdfloat y) {
   nassertv_always(!is_empty());
-  LPoint3f pos = get_pos(other);
+  LPoint3 pos = get_pos(other);
   pos[1] = y;
   set_pos(other, pos);
 }
 
 void NodePath::
-set_z(const NodePath &other, float z) {
+set_z(const NodePath &other, PN_stdfloat z) {
   nassertv_always(!is_empty());
-  LPoint3f pos = get_pos(other);
+  LPoint3 pos = get_pos(other);
   pos[2] = z;
   set_pos(other, pos);
 }
@@ -1777,7 +1777,7 @@ set_z(const NodePath &other, float z) {
 //               relative to the other node.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_fluid_pos(const NodePath &other, const LVecBase3f &pos) {
+set_fluid_pos(const NodePath &other, const LVecBase3 &pos) {
   nassertv_always(!is_empty());
   CPT(TransformState) rel_transform = get_transform(other);
 
@@ -1787,9 +1787,9 @@ set_fluid_pos(const NodePath &other, const LVecBase3f &pos) {
     // should be careful to preserve the other three components.  We
     // wouldn't need to do this, except for the possibility of
     // numerical error or decompose ambiguity.
-    const LVecBase3f &orig_hpr = orig_transform->get_hpr();
-    const LVecBase3f &orig_scale = orig_transform->get_scale();
-    const LVecBase3f &orig_shear = orig_transform->get_shear();
+    const LVecBase3 &orig_hpr = orig_transform->get_hpr();
+    const LVecBase3 &orig_scale = orig_transform->get_scale();
+    const LVecBase3 &orig_shear = orig_transform->get_shear();
 
     // Use the relative set_transform() to compute the relative pos, and
     // then reset all of the other components back to the way they were.
@@ -1805,25 +1805,25 @@ set_fluid_pos(const NodePath &other, const LVecBase3f &pos) {
 }
 
 void NodePath::
-set_fluid_x(const NodePath &other, float x) {
+set_fluid_x(const NodePath &other, PN_stdfloat x) {
   nassertv_always(!is_empty());
-  LPoint3f pos = get_pos(other);
+  LPoint3 pos = get_pos(other);
   pos[0] = x;
   set_fluid_pos(other, pos);
 }
 
 void NodePath::
-set_fluid_y(const NodePath &other, float y) {
+set_fluid_y(const NodePath &other, PN_stdfloat y) {
   nassertv_always(!is_empty());
-  LPoint3f pos = get_pos(other);
+  LPoint3 pos = get_pos(other);
   pos[1] = y;
   set_fluid_pos(other, pos);
 }
 
 void NodePath::
-set_fluid_z(const NodePath &other, float z) {
+set_fluid_z(const NodePath &other, PN_stdfloat z) {
   nassertv_always(!is_empty());
-  LPoint3f pos = get_pos(other);
+  LPoint3 pos = get_pos(other);
   pos[2] = z;
   set_fluid_pos(other, pos);
 }
@@ -1834,9 +1834,9 @@ set_fluid_z(const NodePath &other, float z) {
 //  Description: Returns the relative position of the referenced node
 //               as seen from the other node.
 ////////////////////////////////////////////////////////////////////
-LPoint3f NodePath::
+LPoint3 NodePath::
 get_pos(const NodePath &other) const {
-  nassertr_always(!is_empty(), LPoint3f(0.0f, 0.0f, 0.0f));
+  nassertr_always(!is_empty(), LPoint3(0.0f, 0.0f, 0.0f));
   return get_transform(other)->get_pos();
 }
 
@@ -1855,9 +1855,9 @@ get_pos(const NodePath &other) const {
 //               will represent the change from the previous frame's
 //               position.
 ////////////////////////////////////////////////////////////////////
-LVector3f NodePath::
+LVector3 NodePath::
 get_pos_delta(const NodePath &other) const {
-  nassertr_always(!is_empty(), LPoint3f(0.0f, 0.0f, 0.0f));
+  nassertr_always(!is_empty(), LPoint3(0.0f, 0.0f, 0.0f));
   return get_transform(other)->get_pos() - get_prev_transform(other)->get_pos();
 }
 
@@ -1868,7 +1868,7 @@ get_pos_delta(const NodePath &other) const {
 //               relative to the other node.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_hpr(const NodePath &other, const LVecBase3f &hpr) {
+set_hpr(const NodePath &other, const LVecBase3 &hpr) {
   nassertv_always(!is_empty());
   CPT(TransformState) rel_transform = get_transform(other);
   nassertv(rel_transform->has_hpr());
@@ -1879,9 +1879,9 @@ set_hpr(const NodePath &other, const LVecBase3f &hpr) {
     // should be careful to preserve the other three components.  We
     // wouldn't need to do this, except for the possibility of
     // numerical error or decompose ambiguity.
-    const LVecBase3f &orig_pos = orig_transform->get_pos();
-    const LVecBase3f &orig_scale = orig_transform->get_scale();
-    const LVecBase3f &orig_shear = orig_transform->get_shear();
+    const LVecBase3 &orig_pos = orig_transform->get_pos();
+    const LVecBase3 &orig_scale = orig_transform->get_scale();
+    const LVecBase3 &orig_shear = orig_transform->get_shear();
 
     set_transform(other, rel_transform->set_hpr(hpr));
     const TransformState *new_transform = get_transform();
@@ -1898,25 +1898,25 @@ set_hpr(const NodePath &other, const LVecBase3f &hpr) {
 }
 
 void NodePath::
-set_h(const NodePath &other, float h) {
+set_h(const NodePath &other, PN_stdfloat h) {
   nassertv_always(!is_empty());
-  LVecBase3f hpr = get_hpr(other);
+  LVecBase3 hpr = get_hpr(other);
   hpr[0] = h;
   set_hpr(other, hpr);
 }
 
 void NodePath::
-set_p(const NodePath &other, float p) {
+set_p(const NodePath &other, PN_stdfloat p) {
   nassertv_always(!is_empty());
-  LVecBase3f hpr = get_hpr(other);
+  LVecBase3 hpr = get_hpr(other);
   hpr[1] = p;
   set_hpr(other, hpr);
 }
 
 void NodePath::
-set_r(const NodePath &other, float r) {
+set_r(const NodePath &other, PN_stdfloat r) {
   nassertv_always(!is_empty());
-  LVecBase3f hpr = get_hpr(other);
+  LVecBase3 hpr = get_hpr(other);
   hpr[2] = r;
   set_hpr(other, hpr);
 }
@@ -1927,11 +1927,11 @@ set_r(const NodePath &other, float r) {
 //  Description: Returns the relative orientation of the bottom node
 //               as seen from the other node.
 ////////////////////////////////////////////////////////////////////
-LVecBase3f NodePath::
+LVecBase3 NodePath::
 get_hpr(const NodePath &other) const {
-  nassertr_always(!is_empty(), LVecBase3f(0.0f, 0.0f, 0.0f));
+  nassertr_always(!is_empty(), LVecBase3(0.0f, 0.0f, 0.0f));
   CPT(TransformState) transform = get_transform(other);
-  nassertr(transform->has_hpr(), LVecBase3f(0.0f, 0.0f, 0.0f));
+  nassertr(transform->has_hpr(), LVecBase3(0.0f, 0.0f, 0.0f));
   return transform->get_hpr();
 }
 
@@ -1942,7 +1942,7 @@ get_hpr(const NodePath &other) const {
 //               relative to the other node.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_quat(const NodePath &other, const LQuaternionf &quat) {
+set_quat(const NodePath &other, const LQuaternion &quat) {
   nassertv_always(!is_empty());
   CPT(TransformState) rel_transform = get_transform(other);
 
@@ -1952,9 +1952,9 @@ set_quat(const NodePath &other, const LQuaternionf &quat) {
     // should be careful to preserve the other three components.  We
     // wouldn't need to do this, except for the possibility of
     // numerical error or decompose ambiguity.
-    const LVecBase3f &orig_pos = orig_transform->get_pos();
-    const LVecBase3f &orig_scale = orig_transform->get_scale();
-    const LVecBase3f &orig_shear = orig_transform->get_shear();
+    const LVecBase3 &orig_pos = orig_transform->get_pos();
+    const LVecBase3 &orig_scale = orig_transform->get_scale();
+    const LVecBase3 &orig_shear = orig_transform->get_shear();
 
     set_transform(other, rel_transform->set_quat(quat));
     const TransformState *new_transform = get_transform();
@@ -1976,9 +1976,9 @@ set_quat(const NodePath &other, const LQuaternionf &quat) {
 //  Description: Returns the relative orientation of the bottom node
 //               as seen from the other node.
 ////////////////////////////////////////////////////////////////////
-LQuaternionf NodePath::
+LQuaternion NodePath::
 get_quat(const NodePath &other) const {
-  nassertr_always(!is_empty(), LQuaternionf::ident_quat());
+  nassertr_always(!is_empty(), LQuaternion::ident_quat());
   CPT(TransformState) transform = get_transform(other);
   return transform->get_quat();
 }
@@ -1990,7 +1990,7 @@ get_quat(const NodePath &other) const {
 //               relative to the other node.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_scale(const NodePath &other, const LVecBase3f &scale) {
+set_scale(const NodePath &other, const LVecBase3 &scale) {
   nassertv_always(!is_empty());
   CPT(TransformState) rel_transform = get_transform(other);
 
@@ -2000,9 +2000,9 @@ set_scale(const NodePath &other, const LVecBase3f &scale) {
     // should be careful to preserve the other three components.  We
     // wouldn't need to do this, except for the possibility of
     // numerical error or decompose ambiguity.
-    const LVecBase3f &orig_pos = orig_transform->get_pos();
-    const LVecBase3f &orig_hpr = orig_transform->get_hpr();
-    const LVecBase3f &orig_shear = orig_transform->get_shear();
+    const LVecBase3 &orig_pos = orig_transform->get_pos();
+    const LVecBase3 &orig_hpr = orig_transform->get_hpr();
+    const LVecBase3 &orig_shear = orig_transform->get_shear();
 
     set_transform(other, rel_transform->set_scale(scale));
     const TransformState *new_transform = get_transform();
@@ -2019,25 +2019,25 @@ set_scale(const NodePath &other, const LVecBase3f &scale) {
 }
 
 void NodePath::
-set_sx(const NodePath &other, float sx) {
+set_sx(const NodePath &other, PN_stdfloat sx) {
   nassertv_always(!is_empty());
-  LVecBase3f scale = get_scale(other);
+  LVecBase3 scale = get_scale(other);
   scale[0] = sx;
   set_scale(other, scale);
 }
 
 void NodePath::
-set_sy(const NodePath &other, float sy) {
+set_sy(const NodePath &other, PN_stdfloat sy) {
   nassertv_always(!is_empty());
-  LVecBase3f scale = get_scale(other);
+  LVecBase3 scale = get_scale(other);
   scale[1] = sy;
   set_scale(other, scale);
 }
 
 void NodePath::
-set_sz(const NodePath &other, float sz) {
+set_sz(const NodePath &other, PN_stdfloat sz) {
   nassertv_always(!is_empty());
-  LVecBase3f scale = get_scale(other);
+  LVecBase3 scale = get_scale(other);
   scale[2] = sz;
   set_scale(other, scale);
 }
@@ -2048,9 +2048,9 @@ set_sz(const NodePath &other, float sz) {
 //  Description: Returns the relative scale of the bottom node
 //               as seen from the other node.
 ////////////////////////////////////////////////////////////////////
-LVecBase3f NodePath::
+LVecBase3 NodePath::
 get_scale(const NodePath &other) const {
-  nassertr_always(!is_empty(), LVecBase3f(0.0f, 0.0f, 0.0f));
+  nassertr_always(!is_empty(), LVecBase3(0.0f, 0.0f, 0.0f));
   CPT(TransformState) transform = get_transform(other);
   return transform->get_scale();
 }
@@ -2062,7 +2062,7 @@ get_scale(const NodePath &other) const {
 //               relative to the other node.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_shear(const NodePath &other, const LVecBase3f &shear) {
+set_shear(const NodePath &other, const LVecBase3 &shear) {
   nassertv_always(!is_empty());
   CPT(TransformState) rel_transform = get_transform(other);
 
@@ -2072,9 +2072,9 @@ set_shear(const NodePath &other, const LVecBase3f &shear) {
     // should be careful to preserve the other three components.  We
     // wouldn't need to do this, except for the possibility of
     // numerical error or decompose ambiguity.
-    const LVecBase3f &orig_pos = orig_transform->get_pos();
-    const LVecBase3f &orig_hpr = orig_transform->get_hpr();
-    const LVecBase3f &orig_scale = orig_transform->get_scale();
+    const LVecBase3 &orig_pos = orig_transform->get_pos();
+    const LVecBase3 &orig_hpr = orig_transform->get_hpr();
+    const LVecBase3 &orig_scale = orig_transform->get_scale();
 
     set_transform(other, rel_transform->set_shear(shear));
     const TransformState *new_transform = get_transform();
@@ -2091,25 +2091,25 @@ set_shear(const NodePath &other, const LVecBase3f &shear) {
 }
 
 void NodePath::
-set_shxy(const NodePath &other, float shxy) {
+set_shxy(const NodePath &other, PN_stdfloat shxy) {
   nassertv_always(!is_empty());
-  LVecBase3f shear = get_shear(other);
+  LVecBase3 shear = get_shear(other);
   shear[0] = shxy;
   set_shear(other, shear);
 }
 
 void NodePath::
-set_shxz(const NodePath &other, float shxz) {
+set_shxz(const NodePath &other, PN_stdfloat shxz) {
   nassertv_always(!is_empty());
-  LVecBase3f shear = get_shear(other);
+  LVecBase3 shear = get_shear(other);
   shear[1] = shxz;
   set_shear(other, shear);
 }
 
 void NodePath::
-set_shyz(const NodePath &other, float shyz) {
+set_shyz(const NodePath &other, PN_stdfloat shyz) {
   nassertv_always(!is_empty());
-  LVecBase3f shear = get_shear(other);
+  LVecBase3 shear = get_shear(other);
   shear[2] = shyz;
   set_shear(other, shear);
 }
@@ -2120,9 +2120,9 @@ set_shyz(const NodePath &other, float shyz) {
 //  Description: Returns the relative shear of the bottom node
 //               as seen from the other node.
 ////////////////////////////////////////////////////////////////////
-LVecBase3f NodePath::
+LVecBase3 NodePath::
 get_shear(const NodePath &other) const {
-  nassertr_always(!is_empty(), LVecBase3f(0.0f, 0.0f, 0.0f));
+  nassertr_always(!is_empty(), LVecBase3(0.0f, 0.0f, 0.0f));
   CPT(TransformState) transform = get_transform(other);
   return transform->get_shear();
 }
@@ -2134,8 +2134,8 @@ get_shear(const NodePath &other) const {
 //               transform, relative to the other node.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_pos_hpr(const NodePath &other, const LVecBase3f &pos,
-            const LVecBase3f &hpr) {
+set_pos_hpr(const NodePath &other, const LVecBase3 &pos,
+            const LVecBase3 &hpr) {
   nassertv_always(!is_empty());
   CPT(TransformState) rel_transform = get_transform(other);
 
@@ -2145,8 +2145,8 @@ set_pos_hpr(const NodePath &other, const LVecBase3f &pos,
     // should be careful to preserve the other two components.  We
     // wouldn't need to do this, except for the possibility of
     // numerical error or decompose ambiguity.
-    const LVecBase3f &orig_scale = orig_transform->get_scale();
-    const LVecBase3f &orig_shear = orig_transform->get_shear();
+    const LVecBase3 &orig_scale = orig_transform->get_scale();
+    const LVecBase3 &orig_shear = orig_transform->get_shear();
 
     set_transform(other, TransformState::make_pos_hpr_scale_shear
                   (pos, hpr, rel_transform->get_scale(), rel_transform->get_shear()));
@@ -2172,8 +2172,8 @@ set_pos_hpr(const NodePath &other, const LVecBase3f &pos,
 //               transform, relative to the other node.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_pos_quat(const NodePath &other, const LVecBase3f &pos,
-             const LQuaternionf &quat) {
+set_pos_quat(const NodePath &other, const LVecBase3 &pos,
+             const LQuaternion &quat) {
   nassertv_always(!is_empty());
   CPT(TransformState) rel_transform = get_transform(other);
   
@@ -2183,8 +2183,8 @@ set_pos_quat(const NodePath &other, const LVecBase3f &pos,
     // should be careful to preserve the other two components.  We
     // wouldn't need to do this, except for the possibility of
     // numerical error or decompose ambiguity.
-    const LVecBase3f &orig_scale = orig_transform->get_scale();
-    const LVecBase3f &orig_shear = orig_transform->get_shear();
+    const LVecBase3 &orig_scale = orig_transform->get_scale();
+    const LVecBase3 &orig_shear = orig_transform->get_shear();
 
     set_transform(other, TransformState::make_pos_quat_scale_shear
                   (pos, quat, rel_transform->get_scale(), rel_transform->get_shear()));
@@ -2212,7 +2212,7 @@ set_pos_quat(const NodePath &other, const LVecBase3f &pos,
 //               transform when both hpr and scale are to be changed.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_hpr_scale(const NodePath &other, const LVecBase3f &hpr, const LVecBase3f &scale) {
+set_hpr_scale(const NodePath &other, const LVecBase3 &hpr, const LVecBase3 &scale) {
   // We don't bother trying very hard to preserve pos across this
   // operation, unlike the work we do above to preserve hpr or scale,
   // since it generally doesn't matter that much if pos is off by a
@@ -2233,8 +2233,8 @@ set_hpr_scale(const NodePath &other, const LVecBase3f &hpr, const LVecBase3f &sc
 //               transform when both quat and scale are to be changed.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_quat_scale(const NodePath &other, const LQuaternionf &quat, 
-               const LVecBase3f &scale) {
+set_quat_scale(const NodePath &other, const LQuaternion &quat, 
+               const LVecBase3 &scale) {
   // We don't bother trying very hard to preserve pos across this
   // operation, unlike the work we do above to preserve quat or scale,
   // since it generally doesn't matter that much if pos is off by a
@@ -2255,8 +2255,8 @@ set_quat_scale(const NodePath &other, const LQuaternionf &quat,
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_pos_hpr_scale(const NodePath &other,
-                  const LVecBase3f &pos, const LVecBase3f &hpr,
-                  const LVecBase3f &scale) {
+                  const LVecBase3 &pos, const LVecBase3 &hpr,
+                  const LVecBase3 &scale) {
   nassertv_always(!is_empty());
   set_transform(other, TransformState::make_pos_hpr_scale
                 (pos, hpr, scale));
@@ -2272,8 +2272,8 @@ set_pos_hpr_scale(const NodePath &other,
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_pos_quat_scale(const NodePath &other,
-                   const LVecBase3f &pos, const LQuaternionf &quat,
-                   const LVecBase3f &scale) {
+                   const LVecBase3 &pos, const LQuaternion &quat,
+                   const LVecBase3 &scale) {
   nassertv_always(!is_empty());
   set_transform(other, TransformState::make_pos_quat_scale
                 (pos, quat, scale));
@@ -2289,8 +2289,8 @@ set_pos_quat_scale(const NodePath &other,
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_pos_hpr_scale_shear(const NodePath &other,
-                        const LVecBase3f &pos, const LVecBase3f &hpr,
-                        const LVecBase3f &scale, const LVecBase3f &shear) {
+                        const LVecBase3 &pos, const LVecBase3 &hpr,
+                        const LVecBase3 &scale, const LVecBase3 &shear) {
   nassertv_always(!is_empty());
   set_transform(other, TransformState::make_pos_hpr_scale_shear
                 (pos, hpr, scale, shear));
@@ -2306,8 +2306,8 @@ set_pos_hpr_scale_shear(const NodePath &other,
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_pos_quat_scale_shear(const NodePath &other,
-                         const LVecBase3f &pos, const LQuaternionf &quat,
-                         const LVecBase3f &scale, const LVecBase3f &shear) {
+                         const LVecBase3 &pos, const LQuaternion &quat,
+                         const LVecBase3 &scale, const LVecBase3 &shear) {
   nassertv_always(!is_empty());
   set_transform(other, TransformState::make_pos_quat_scale_shear
                 (pos, quat, scale, shear));
@@ -2321,7 +2321,7 @@ set_pos_quat_scale_shear(const NodePath &other,
 //               space of the bottom node, relative to the other
 //               path's bottom node's coordinate space.
 ////////////////////////////////////////////////////////////////////
-LMatrix4f NodePath::
+LMatrix4 NodePath::
 get_mat(const NodePath &other) const {
   CPT(TransformState) transform = get_transform(other);
   // We can't safely return a reference to the matrix, because we
@@ -2340,7 +2340,7 @@ get_mat(const NodePath &other) const {
 //               applies it to the node.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_mat(const NodePath &other, const LMatrix4f &mat) {
+set_mat(const NodePath &other, const LMatrix4 &mat) {
   nassertv_always(!is_empty());
   set_transform(other, TransformState::make_mat(mat));
   node()->reset_prev_transform();
@@ -2353,10 +2353,10 @@ set_mat(const NodePath &other, const LMatrix4f &mat) {
 //               system of the other node, returns the same point in
 //               this node's coordinate system.
 ////////////////////////////////////////////////////////////////////
-LPoint3f NodePath::
-get_relative_point(const NodePath &other, const LVecBase3f &point) const {
+LPoint3 NodePath::
+get_relative_point(const NodePath &other, const LVecBase3 &point) const {
   CPT(TransformState) transform = other.get_transform(*this);
-  LPoint3f rel_point = LPoint3f(point) * transform->get_mat();
+  LPoint3 rel_point = LPoint3(point) * transform->get_mat();
   return rel_point;
 }
 
@@ -2367,10 +2367,10 @@ get_relative_point(const NodePath &other, const LVecBase3f &point) const {
 //               system of the other node, returns the same vector in
 //               this node's coordinate system.
 ////////////////////////////////////////////////////////////////////
-LVector3f NodePath::
-get_relative_vector(const NodePath &other, const LVecBase3f &vec) const {
+LVector3 NodePath::
+get_relative_vector(const NodePath &other, const LVecBase3 &vec) const {
   CPT(TransformState) transform = other.get_transform(*this);
-  LVector3f rel_vector = LVector3f(vec) * transform->get_mat();
+  LVector3 rel_vector = LVector3(vec) * transform->get_mat();
   return rel_vector;
 }
 
@@ -2382,15 +2382,15 @@ get_relative_vector(const NodePath &other, const LVecBase3f &vec) const {
 //               is relative to the other NodePath.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-look_at(const NodePath &other, const LPoint3f &point, const LVector3f &up) {
+look_at(const NodePath &other, const LPoint3 &point, const LVector3 &up) {
   nassertv_always(!is_empty());
 
   CPT(TransformState) transform = other.get_transform(get_parent());
-  LPoint3f rel_point = point * transform->get_mat();
+  LPoint3 rel_point = point * transform->get_mat();
 
-  LPoint3f pos = get_pos();
+  LPoint3 pos = get_pos();
 
-  LQuaternionf quat;
+  LQuaternion quat;
   ::look_at(quat, rel_point - pos, up);
   set_quat(quat);
 }
@@ -2403,15 +2403,15 @@ look_at(const NodePath &other, const LPoint3f &point, const LVector3f &up) {
 //               "up" direction.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-heads_up(const NodePath &other, const LPoint3f &point, const LVector3f &up) {
+heads_up(const NodePath &other, const LPoint3 &point, const LVector3 &up) {
   nassertv_always(!is_empty());
 
   CPT(TransformState) transform = other.get_transform(get_parent());
-  LPoint3f rel_point = point * transform->get_mat();
+  LPoint3 rel_point = point * transform->get_mat();
 
-  LPoint3f pos = get_pos();
+  LPoint3 pos = get_pos();
 
-  LQuaternionf quat;
+  LQuaternion quat;
   ::heads_up(quat, rel_point - pos, up);
   set_quat(quat);
 }
@@ -2426,9 +2426,9 @@ heads_up(const NodePath &other, const LPoint3f &point, const LVector3f &up) {
 //               set_color_off()).
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_color(float r, float g, float b, float a,
+set_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a,
           int priority) {
-  set_color(Colorf(r, g, b, a), priority);
+  set_color(LColor(r, g, b, a), priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2440,7 +2440,7 @@ set_color(float r, float g, float b, float a,
 //               set_color_off()).
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_color(const Colorf &color, int priority) {
+set_color(const LColor &color, int priority) {
   nassertv_always(!is_empty());
   node()->set_attrib(ColorAttrib::make_flat(color), priority);
 }
@@ -2493,7 +2493,7 @@ has_color() const {
 //  Description: Returns the color that has been assigned to the node,
 //               or black if no color has been assigned.
 ////////////////////////////////////////////////////////////////////
-Colorf NodePath::
+LColor NodePath::
 get_color() const {
   nassertr_always(!is_empty(), false);
   const RenderAttrib *attrib =
@@ -2508,7 +2508,7 @@ get_color() const {
   pgraph_cat.warning()
     << "get_color() called on " << *this << " which has no color set.\n";
 
-  return Colorf(1.0f, 1.0f, 1.0f, 1.0f);
+  return LColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2548,7 +2548,7 @@ clear_color_scale() {
 //               rotation untouched.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-compose_color_scale(const LVecBase4f &scale, int priority) {
+compose_color_scale(const LVecBase4 &scale, int priority) {
   nassertv_always(!is_empty());
 
   const RenderAttrib *attrib =
@@ -2560,8 +2560,8 @@ compose_color_scale(const LVecBase4f &scale, int priority) {
 
     // Modify the existing ColorScaleAttrib by multiplying with the 
     // indicated colorScale.
-    LVecBase4f prev_color_scale = csa->get_scale();
-    LVecBase4f new_color_scale(prev_color_scale[0]*scale[0],
+    LVecBase4 prev_color_scale = csa->get_scale();
+    LVecBase4 new_color_scale(prev_color_scale[0]*scale[0],
                                prev_color_scale[1]*scale[1],
                                prev_color_scale[2]*scale[2],
                                prev_color_scale[3]*scale[3]);
@@ -2580,7 +2580,7 @@ compose_color_scale(const LVecBase4f &scale, int priority) {
 //               leaving translation and rotation untouched.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_color_scale(const LVecBase4f &scale, int priority) {
+set_color_scale(const LVecBase4 &scale, int priority) {
   nassertv_always(!is_empty());
 
   const RenderAttrib *attrib =
@@ -2631,7 +2631,7 @@ set_color_scale_off(int priority) {
 //               scale.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_alpha_scale(float scale, int priority) {
+set_alpha_scale(PN_stdfloat scale, int priority) {
   nassertv_always(!is_empty());
 
   const RenderAttrib *attrib =
@@ -2643,12 +2643,12 @@ set_alpha_scale(float scale, int priority) {
 
     // Modify the existing ColorScaleAttrib to add the indicated
     // colorScale.
-    const LVecBase4f &sc = csa->get_scale();
-    node()->set_attrib(csa->set_scale(LVecBase4f(sc[0], sc[1], sc[2], scale)), priority);
+    const LVecBase4 &sc = csa->get_scale();
+    node()->set_attrib(csa->set_scale(LVecBase4(sc[0], sc[1], sc[2], scale)), priority);
 
   } else {
     // Create a new ColorScaleAttrib for this node.
-    node()->set_attrib(ColorScaleAttrib::make(LVecBase4f(1.0f, 1.0f, 1.0f, scale)), priority);
+    node()->set_attrib(ColorScaleAttrib::make(LVecBase4(1.0f, 1.0f, 1.0f, scale)), priority);
   }
 }
 
@@ -2661,7 +2661,7 @@ set_alpha_scale(float scale, int priority) {
 //               will also apply to the alpha scale.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_all_color_scale(float scale, int priority) {
+set_all_color_scale(PN_stdfloat scale, int priority) {
   nassertv_always(!is_empty());
 
   const RenderAttrib *attrib =
@@ -2673,12 +2673,12 @@ set_all_color_scale(float scale, int priority) {
 
     // Modify the existing ColorScaleAttrib to add the indicated
     // colorScale.
-    const LVecBase4f &sc = csa->get_scale();
-    node()->set_attrib(csa->set_scale(LVecBase4f(scale, scale, scale, sc[3])), priority);
+    const LVecBase4 &sc = csa->get_scale();
+    node()->set_attrib(csa->set_scale(LVecBase4(scale, scale, scale, sc[3])), priority);
 
   } else {
     // Create a new ColorScaleAttrib for this node.
-    node()->set_attrib(ColorScaleAttrib::make(LVecBase4f(scale, scale, scale, 1.0f)), priority);
+    node()->set_attrib(ColorScaleAttrib::make(LVecBase4(scale, scale, scale, 1.0f)), priority);
   }
 }
 
@@ -2691,9 +2691,9 @@ set_all_color_scale(float scale, int priority) {
 //               1's (identity) if no scale has been applied to this
 //               particular node.
 ////////////////////////////////////////////////////////////////////
-const LVecBase4f &NodePath::
+const LVecBase4 &NodePath::
 get_color_scale() const {
-  static const LVecBase4f ident_scale(1.0f, 1.0f, 1.0f, 1.0f);
+  static const LVecBase4 ident_scale(1.0f, 1.0f, 1.0f, 1.0f);
   nassertr_always(!is_empty(), ident_scale);
   const RenderAttrib *attrib =
     node()->get_attrib(ColorScaleAttrib::get_class_slot());
@@ -3299,8 +3299,8 @@ has_occluder(const NodePath &occluder) const {
 //               corner.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_scissor(float left, float right, float bottom, float top) {
-  set_effect(ScissorEffect::make_screen(LVecBase4f(left, right, bottom, top)));
+set_scissor(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top) {
+  set_effect(ScissorEffect::make_screen(LVecBase4(left, right, bottom, top)));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3314,7 +3314,7 @@ set_scissor(float left, float right, float bottom, float top) {
 //               region.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_scissor(const LPoint3f &a, const LPoint3f &b) {
+set_scissor(const LPoint3 &a, const LPoint3 &b) {
   set_effect(ScissorEffect::make_node(a, b));
 }
 
@@ -3330,8 +3330,8 @@ set_scissor(const LPoint3f &a, const LPoint3f &b) {
 //               encloses all four points).
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_scissor(const LPoint3f &a, const LPoint3f &b,
-            const LPoint3f &c, const LPoint3f &d) {
+set_scissor(const LPoint3 &a, const LPoint3 &b,
+            const LPoint3 &c, const LPoint3 &d) {
   set_effect(ScissorEffect::make_node(a, b, c, d));
 }
 
@@ -3346,7 +3346,7 @@ set_scissor(const LPoint3f &a, const LPoint3f &b,
 //               the scissor region.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_scissor(const NodePath &other, const LPoint3f &a, const LPoint3f &b) {
+set_scissor(const NodePath &other, const LPoint3 &a, const LPoint3 &b) {
   set_effect(ScissorEffect::make_node(a, b, other));
 }
 
@@ -3363,8 +3363,8 @@ set_scissor(const NodePath &other, const LPoint3f &a, const LPoint3f &b) {
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_scissor(const NodePath &other,
-            const LPoint3f &a, const LPoint3f &b,
-            const LPoint3f &c, const LPoint3f &d) {
+            const LPoint3 &a, const LPoint3 &b,
+            const LPoint3 &c, const LPoint3 &d) {
   set_effect(ScissorEffect::make_node(a, b, c, d, other));
 }
 
@@ -3901,7 +3901,7 @@ set_shader_input(const ShaderInput *inp) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 const ShaderInput *NodePath::
-get_shader_input(InternalName *id) const {
+get_shader_input(const InternalName *id) const {
   nassertr_always(!is_empty(), NULL);
   
   const RenderAttrib *attrib =
@@ -3940,7 +3940,7 @@ get_instance_count() const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-clear_shader_input(InternalName *id) {
+clear_shader_input(const InternalName *id) {
   nassertv_always(!is_empty());
 
   const RenderAttrib *attrib =
@@ -3958,7 +3958,7 @@ clear_shader_input(InternalName *id) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NodePath:: 
-set_shader_input(InternalName *id, const PTA_float &v, int priority) {
+set_shader_input(const InternalName *id, const PTA_float &v, int priority) {
   set_shader_input(new ShaderInput(id,v,priority));
 }
 
@@ -3968,7 +3968,7 @@ set_shader_input(InternalName *id, const PTA_float &v, int priority) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NodePath:: 
-set_shader_input(InternalName *id, const PTA_double &v, int priority) {
+set_shader_input(const InternalName *id, const PTA_double &v, int priority) {
   set_shader_input(new ShaderInput(id,v,priority));
 }
 
@@ -3978,7 +3978,7 @@ set_shader_input(InternalName *id, const PTA_double &v, int priority) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NodePath:: 
-set_shader_input(InternalName *id, const PTA_LVecBase4f &v, int priority) {
+set_shader_input(const InternalName *id, const PTA_LVecBase4 &v, int priority) {
   set_shader_input(new ShaderInput(id,v,priority));
 }
 
@@ -3988,7 +3988,7 @@ set_shader_input(InternalName *id, const PTA_LVecBase4f &v, int priority) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NodePath:: 
-set_shader_input(InternalName *id, const PTA_LVecBase3f &v, int priority) {
+set_shader_input(const InternalName *id, const PTA_LVecBase3 &v, int priority) {
   set_shader_input(new ShaderInput(id,v,priority));
 }
 
@@ -3999,7 +3999,7 @@ set_shader_input(InternalName *id, const PTA_LVecBase3f &v, int priority) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NodePath:: 
-set_shader_input(InternalName *id, const PTA_LVecBase2f &v, int priority) {
+set_shader_input(const InternalName *id, const PTA_LVecBase2 &v, int priority) {
   set_shader_input(new ShaderInput(id,v,priority));
 }
 
@@ -4009,7 +4009,7 @@ set_shader_input(InternalName *id, const PTA_LVecBase2f &v, int priority) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NodePath:: 
-set_shader_input(InternalName *id, const LVecBase4f &v, int priority) {
+set_shader_input(const InternalName *id, const LVecBase4 &v, int priority) {
   set_shader_input(new ShaderInput(id,v,priority));
 }
 
@@ -4019,7 +4019,7 @@ set_shader_input(InternalName *id, const LVecBase4f &v, int priority) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NodePath:: 
-set_shader_input(InternalName *id, const LVecBase3f &v, int priority) {
+set_shader_input(const InternalName *id, const LVecBase3 &v, int priority) {
   set_shader_input(new ShaderInput(id,v,priority));
 }
 
@@ -4029,7 +4029,7 @@ set_shader_input(InternalName *id, const LVecBase3f &v, int priority) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NodePath:: 
-set_shader_input(InternalName *id, const LVecBase2f &v, int priority) {
+set_shader_input(const InternalName *id, const LVecBase2 &v, int priority) {
   set_shader_input(new ShaderInput(id,v,priority));
 }
 
@@ -4039,7 +4039,7 @@ set_shader_input(InternalName *id, const LVecBase2f &v, int priority) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NodePath:: 
-set_shader_input(InternalName *id, const PTA_LMatrix4f &v, int priority) {
+set_shader_input(const InternalName *id, const PTA_LMatrix4 &v, int priority) {
   set_shader_input(new ShaderInput(id,v,priority));
 }
 
@@ -4049,7 +4049,7 @@ set_shader_input(InternalName *id, const PTA_LMatrix4f &v, int priority) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NodePath:: 
-set_shader_input(InternalName *id, const PTA_LMatrix3f &v, int priority) {
+set_shader_input(const InternalName *id, const PTA_LMatrix3 &v, int priority) {
   set_shader_input(new ShaderInput(id,v,priority));
 }
 
@@ -4059,7 +4059,7 @@ set_shader_input(InternalName *id, const PTA_LMatrix3f &v, int priority) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NodePath:: 
-set_shader_input(InternalName *id, const LMatrix4f &v, int priority) {
+set_shader_input(const InternalName *id, const LMatrix4 &v, int priority) {
   set_shader_input(new ShaderInput(id,v,priority));
 }
 
@@ -4069,7 +4069,7 @@ set_shader_input(InternalName *id, const LMatrix4f &v, int priority) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NodePath:: 
-set_shader_input(InternalName *id, const LMatrix3f &v, int priority) {
+set_shader_input(const InternalName *id, const LMatrix3 &v, int priority) {
   set_shader_input(new ShaderInput(id,v,priority));
 }
 
@@ -4079,7 +4079,7 @@ set_shader_input(InternalName *id, const LMatrix3f &v, int priority) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_shader_input(InternalName *id, Texture *tex, int priority) {
+set_shader_input(const InternalName *id, Texture *tex, int priority) {
   set_shader_input(new ShaderInput(id,tex,priority));
 }
 
@@ -4089,7 +4089,7 @@ set_shader_input(InternalName *id, Texture *tex, int priority) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_shader_input(InternalName *id, const NodePath &np, int priority) {
+set_shader_input(const InternalName *id, const NodePath &np, int priority) {
   set_shader_input(new ShaderInput(id,np,priority));
 }
 
@@ -4099,8 +4099,8 @@ set_shader_input(InternalName *id, const NodePath &np, int priority) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NodePath:: 
-set_shader_input(InternalName *id, double n1, double n2, double n3, double n4, int priority) {
-  set_shader_input(new ShaderInput(id, LVecBase4f(n1, n2, n3, n4), priority));
+set_shader_input(const InternalName *id, double n1, double n2, double n3, double n4, int priority) {
+  set_shader_input(new ShaderInput(id, LVecBase4(n1, n2, n3, n4), priority));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4129,7 +4129,7 @@ set_shader_input(const string &id, const PTA_double &v, int priority) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NodePath:: 
-set_shader_input(const string &id, const PTA_LVecBase4f &v, int priority) {
+set_shader_input(const string &id, const PTA_LVecBase4 &v, int priority) {
   set_shader_input(new ShaderInput(InternalName::make(id),v,priority));
 }
 
@@ -4139,7 +4139,7 @@ set_shader_input(const string &id, const PTA_LVecBase4f &v, int priority) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NodePath:: 
-set_shader_input(const string &id, const PTA_LVecBase3f &v, int priority) {
+set_shader_input(const string &id, const PTA_LVecBase3 &v, int priority) {
   set_shader_input(new ShaderInput(InternalName::make(id),v,priority));
 }
 
@@ -4150,7 +4150,7 @@ set_shader_input(const string &id, const PTA_LVecBase3f &v, int priority) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NodePath:: 
-set_shader_input(const string &id, const PTA_LVecBase2f &v, int priority) {
+set_shader_input(const string &id, const PTA_LVecBase2 &v, int priority) {
   set_shader_input(new ShaderInput(InternalName::make(id),v,priority));
 }
 
@@ -4160,7 +4160,7 @@ set_shader_input(const string &id, const PTA_LVecBase2f &v, int priority) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NodePath:: 
-set_shader_input(const string &id, const LVecBase4f &v, int priority) {
+set_shader_input(const string &id, const LVecBase4 &v, int priority) {
   set_shader_input(new ShaderInput(InternalName::make(id),v,priority));
 }
 
@@ -4170,7 +4170,7 @@ set_shader_input(const string &id, const LVecBase4f &v, int priority) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NodePath:: 
-set_shader_input(const string &id, const LVecBase3f &v, int priority) {
+set_shader_input(const string &id, const LVecBase3 &v, int priority) {
   set_shader_input(new ShaderInput(InternalName::make(id),v,priority));
 }
 
@@ -4180,7 +4180,7 @@ set_shader_input(const string &id, const LVecBase3f &v, int priority) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NodePath:: 
-set_shader_input(const string &id, const LVecBase2f &v, int priority) {
+set_shader_input(const string &id, const LVecBase2 &v, int priority) {
   set_shader_input(new ShaderInput(InternalName::make(id),v,priority));
 }
 
@@ -4190,7 +4190,7 @@ set_shader_input(const string &id, const LVecBase2f &v, int priority) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NodePath:: 
-set_shader_input(const string &id, const PTA_LMatrix4f &v, int priority) {
+set_shader_input(const string &id, const PTA_LMatrix4 &v, int priority) {
   set_shader_input(new ShaderInput(InternalName::make(id),v,priority));
 }
 
@@ -4200,7 +4200,7 @@ set_shader_input(const string &id, const PTA_LMatrix4f &v, int priority) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NodePath:: 
-set_shader_input(const string &id, const PTA_LMatrix3f &v, int priority) {
+set_shader_input(const string &id, const PTA_LMatrix3 &v, int priority) {
   set_shader_input(new ShaderInput(InternalName::make(id),v,priority));
 }
 
@@ -4210,7 +4210,7 @@ set_shader_input(const string &id, const PTA_LMatrix3f &v, int priority) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NodePath:: 
-set_shader_input(const string &id, const LMatrix4f &v, int priority) {
+set_shader_input(const string &id, const LMatrix4 &v, int priority) {
   set_shader_input(new ShaderInput(InternalName::make(id),v,priority));
 }
 
@@ -4220,7 +4220,7 @@ set_shader_input(const string &id, const LMatrix4f &v, int priority) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NodePath:: 
-set_shader_input(const string &id, const LMatrix3f &v, int priority) {
+set_shader_input(const string &id, const LMatrix3 &v, int priority) {
   set_shader_input(new ShaderInput(InternalName::make(id),v,priority));
 }
 ////////////////////////////////////////////////////////////////////
@@ -4250,7 +4250,7 @@ set_shader_input(const string &id, const NodePath &np, int priority) {
 ////////////////////////////////////////////////////////////////////
 void NodePath:: 
 set_shader_input(const string &id, double n1, double n2, double n3, double n4, int priority) {
-  set_shader_input(new ShaderInput(InternalName::make(id), LVecBase4f(n1, n2, n3, n4), priority));
+  set_shader_input(new ShaderInput(InternalName::make(id), LVecBase4(n1, n2, n3, n4), priority));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4529,7 +4529,7 @@ set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode,
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode, 
-            const TexCoord3f &constant_value, int priority) {
+            const LTexCoord3 &constant_value, int priority) {
   nassertv_always(!is_empty());
 
   const RenderAttrib *attrib =
@@ -5463,7 +5463,7 @@ get_fog() const {
 void NodePath::
 set_render_mode_wireframe(int priority) {
   nassertv_always(!is_empty());
-  float thickness = get_render_mode_thickness();
+  PN_stdfloat thickness = get_render_mode_thickness();
   bool perspective = get_render_mode_perspective();
   node()->set_attrib(RenderModeAttrib::make(RenderModeAttrib::M_wireframe, thickness, perspective), priority);
 }
@@ -5478,7 +5478,7 @@ set_render_mode_wireframe(int priority) {
 void NodePath::
 set_render_mode_filled(int priority) {
   nassertv_always(!is_empty());
-  float thickness = get_render_mode_thickness();
+  PN_stdfloat thickness = get_render_mode_thickness();
   bool perspective = get_render_mode_perspective();
   node()->set_attrib(RenderModeAttrib::make(RenderModeAttrib::M_filled, thickness, perspective), priority);
 }
@@ -5502,7 +5502,7 @@ void NodePath::
 set_render_mode_perspective(bool perspective, int priority) {
   nassertv_always(!is_empty());
   RenderModeAttrib::Mode mode = get_render_mode();
-  float thickness = get_render_mode_thickness();
+  PN_stdfloat thickness = get_render_mode_thickness();
   node()->set_attrib(RenderModeAttrib::make(mode, thickness, perspective), priority);
 }
 
@@ -5520,7 +5520,7 @@ set_render_mode_perspective(bool perspective, int priority) {
 //               the node.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_render_mode_thickness(float thickness, int priority) {
+set_render_mode_thickness(PN_stdfloat thickness, int priority) {
   nassertv_always(!is_empty());
   RenderModeAttrib::Mode mode = get_render_mode();
   bool perspective = get_render_mode_perspective();
@@ -5535,7 +5535,7 @@ set_render_mode_thickness(float thickness, int priority) {
 //               the indicated line and/or point thickness.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_render_mode(RenderModeAttrib::Mode mode, float thickness, int priority) {
+set_render_mode(RenderModeAttrib::Mode mode, PN_stdfloat thickness, int priority) {
   nassertv_always(!is_empty());
 
   node()->set_attrib(RenderModeAttrib::make(mode, thickness), priority);
@@ -5596,7 +5596,7 @@ get_render_mode() const {
 //               specifically set on this node via set_render_mode(),
 //               or 1.0 if nothing has been set.
 ////////////////////////////////////////////////////////////////////
-float NodePath::
+PN_stdfloat NodePath::
 get_render_mode_thickness() const {
   nassertr_always(!is_empty(), 0.0f);
   const RenderAttrib *attrib =
@@ -5922,23 +5922,23 @@ get_depth_offset() const {
 //               rotated.  This is similar in principle to heads_up().
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-do_billboard_axis(const NodePath &camera, float offset) {
+do_billboard_axis(const NodePath &camera, PN_stdfloat offset) {
   nassertv_always(!is_empty());
 
   CPT(TransformState) transform = camera.get_transform(get_parent());
-  const LMatrix4f &rel_mat = transform->get_mat();
+  const LMatrix4 &rel_mat = transform->get_mat();
 
-  LVector3f up = LVector3f::up();
-  LVector3f rel_pos = -rel_mat.get_row3(3);
+  LVector3 up = LVector3::up();
+  LVector3 rel_pos = -rel_mat.get_row3(3);
 
-  LQuaternionf quat;
+  LQuaternion quat;
   ::heads_up(quat, rel_pos, up);
   set_quat(quat);
 
   // Also slide the geometry towards the camera according to the
   // offset factor.
   if (offset != 0.0f) {
-    LVector3f translate = rel_mat.get_row3(3);
+    LVector3 translate = rel_mat.get_row3(3);
     translate.normalize();
     translate *= offset;
     set_pos(translate);
@@ -5955,23 +5955,23 @@ do_billboard_axis(const NodePath &camera, float offset) {
 //               achieved using the ordinary look_at() call.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-do_billboard_point_eye(const NodePath &camera, float offset) {
+do_billboard_point_eye(const NodePath &camera, PN_stdfloat offset) {
   nassertv_always(!is_empty());
 
   CPT(TransformState) transform = camera.get_transform(get_parent());
-  const LMatrix4f &rel_mat = transform->get_mat();
+  const LMatrix4 &rel_mat = transform->get_mat();
 
-  LVector3f up = LVector3f::up() * rel_mat;
-  LVector3f rel_pos = LVector3f::forward() * rel_mat;
+  LVector3 up = LVector3::up() * rel_mat;
+  LVector3 rel_pos = LVector3::forward() * rel_mat;
 
-  LQuaternionf quat;
+  LQuaternion quat;
   ::look_at(quat, rel_pos, up);
   set_quat(quat);
 
   // Also slide the geometry towards the camera according to the
   // offset factor.
   if (offset != 0.0f) {
-    LVector3f translate = rel_mat.get_row3(3);
+    LVector3 translate = rel_mat.get_row3(3);
     translate.normalize();
     translate *= offset;
     set_pos(translate);
@@ -5986,23 +5986,23 @@ do_billboard_point_eye(const NodePath &camera, float offset) {
 //               rotated.  This is similar in principle to look_at().
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-do_billboard_point_world(const NodePath &camera, float offset) {
+do_billboard_point_world(const NodePath &camera, PN_stdfloat offset) {
   nassertv_always(!is_empty());
 
   CPT(TransformState) transform = camera.get_transform(get_parent());
-  const LMatrix4f &rel_mat = transform->get_mat();
+  const LMatrix4 &rel_mat = transform->get_mat();
 
-  LVector3f up = LVector3f::up();
-  LVector3f rel_pos = -rel_mat.get_row3(3);
+  LVector3 up = LVector3::up();
+  LVector3 rel_pos = -rel_mat.get_row3(3);
 
-  LQuaternionf quat;
+  LQuaternion quat;
   ::look_at(quat, rel_pos, up);
   set_quat(quat);
 
   // Also slide the geometry towards the camera according to the
   // offset factor.
   if (offset != 0.0f) {
-    LVector3f translate = rel_mat.get_row3(3);
+    LVector3 translate = rel_mat.get_row3(3);
     translate.normalize();
     translate *= offset;
     set_pos(translate);
@@ -6018,11 +6018,11 @@ do_billboard_point_world(const NodePath &camera, float offset) {
 //               viewing camera.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_billboard_axis(const NodePath &camera, float offset) {
+set_billboard_axis(const NodePath &camera, PN_stdfloat offset) {
   nassertv_always(!is_empty());
   CPT(RenderEffect) billboard = BillboardEffect::make
-    (LVector3f::up(), false, true, 
-     offset, camera, LPoint3f(0.0f, 0.0f, 0.0f));
+    (LVector3::up(), false, true, 
+     offset, camera, LPoint3(0.0f, 0.0f, 0.0f));
   node()->set_effect(billboard);
 }
 
@@ -6036,11 +6036,11 @@ set_billboard_axis(const NodePath &camera, float offset) {
 //               the viewing camera.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_billboard_point_eye(const NodePath &camera, float offset) {
+set_billboard_point_eye(const NodePath &camera, PN_stdfloat offset) {
   nassertv_always(!is_empty());
   CPT(RenderEffect) billboard = BillboardEffect::make
-    (LVector3f::up(), true, false,
-     offset, camera, LPoint3f(0.0f, 0.0f, 0.0f));
+    (LVector3::up(), true, false,
+     offset, camera, LPoint3(0.0f, 0.0f, 0.0f));
   node()->set_effect(billboard);
 }
 
@@ -6053,11 +6053,11 @@ set_billboard_point_eye(const NodePath &camera, float offset) {
 //               specified "camera" instead of to the viewing camera.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_billboard_point_world(const NodePath &camera, float offset) {
+set_billboard_point_world(const NodePath &camera, PN_stdfloat offset) {
   nassertv_always(!is_empty());
   CPT(RenderEffect) billboard = BillboardEffect::make
-    (LVector3f::up(), false, false,
-     offset, camera, LPoint3f(0.0f, 0.0f, 0.0f));
+    (LVector3::up(), false, false,
+     offset, camera, LPoint3(0.0f, 0.0f, 0.0f));
   node()->set_effect(billboard);
 }
 
@@ -6287,7 +6287,7 @@ clear_audio_volume() {
 //  Description: Sets the audio volume component of the transform
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_audio_volume(float volume, int priority) {
+set_audio_volume(PN_stdfloat volume, int priority) {
   nassertv_always(!is_empty());
 
   const RenderAttrib *attrib =
@@ -6335,7 +6335,7 @@ set_audio_volume_off(int priority) {
 //               set_audio_volume(), or 1. (identity) if no volume has
 //               been applied to this particular node.
 ////////////////////////////////////////////////////////////////////
-float NodePath::
+PN_stdfloat NodePath::
 get_audio_volume() const {
   const RenderAttrib *attrib =
     node()->get_attrib(AudioVolumeAttrib::get_class_slot());
@@ -6353,7 +6353,7 @@ get_audio_volume() const {
 //  Description: Returns the complete audio volume for this node
 //               taking highers nodes in the graph into account.
 ////////////////////////////////////////////////////////////////////
-float NodePath::
+PN_stdfloat NodePath::
 get_net_audio_volume() const {
   CPT(RenderState) net_state = get_net_state();
   const RenderAttrib *attrib = net_state->get_attrib(AudioVolumeAttrib::get_class_slot());
@@ -6704,7 +6704,7 @@ write_bounds(ostream &out) const {
 //               bounding volume, or false if none are.
 ////////////////////////////////////////////////////////////////////
 bool NodePath::
-calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
                   Thread *current_thread) const {
   min_point.set(0.0f, 0.0f, 0.0f);
   max_point.set(0.0f, 0.0f, 0.0f);

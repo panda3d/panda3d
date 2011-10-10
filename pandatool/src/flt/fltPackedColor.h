@@ -32,10 +32,10 @@ class FltPackedColor {
 public:
   INLINE FltPackedColor();
 
-  INLINE Colorf get_color() const;
-  INLINE RGBColorf get_rgb() const;
-  INLINE void set_color(const Colorf &color);
-  INLINE void set_rgb(const RGBColorf &rgb);
+  INLINE LColor get_color() const;
+  INLINE LRGBColor get_rgb() const;
+  INLINE void set_color(const LColor &color);
+  INLINE void set_rgb(const LRGBColor &rgb);
 
   void output(ostream &out) const;
   bool extract_record(FltRecordReader &reader);

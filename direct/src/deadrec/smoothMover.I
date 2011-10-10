@@ -29,7 +29,7 @@
 //               are the same.
 ////////////////////////////////////////////////////////////////////
 INLINE bool SmoothMover::
-set_pos(const LVecBase3f &pos) {
+set_pos(const LVecBase3 &pos) {
   return set_x(pos[0]) | set_y(pos[1]) | set_z(pos[2]);
 }
 
@@ -49,7 +49,7 @@ set_pos(const LVecBase3f &pos) {
 //               are the same.
 ////////////////////////////////////////////////////////////////////
 INLINE bool SmoothMover::
-set_pos(float x, float y, float z) {
+set_pos(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
   return set_x(x) | set_y(y) | set_z(z);
 }
 
@@ -59,7 +59,7 @@ set_pos(float x, float y, float z) {
 //  Description: Sets the X position only.  See set_pos().
 ////////////////////////////////////////////////////////////////////
 INLINE bool SmoothMover::
-set_x(float x) {
+set_x(PN_stdfloat x) {
   bool result = (x != _sample._pos[0]);
   /*
   if (deadrec_cat.is_debug()) {
@@ -76,7 +76,7 @@ set_x(float x) {
 //  Description: Sets the Y position only.  See set_pos().
 ////////////////////////////////////////////////////////////////////
 INLINE bool SmoothMover::
-set_y(float y) {
+set_y(PN_stdfloat y) {
   bool result = (y != _sample._pos[1]);
   /*
   if (deadrec_cat.is_debug()) {
@@ -93,7 +93,7 @@ set_y(float y) {
 //  Description: Sets the Z position only.  See set_pos().
 ////////////////////////////////////////////////////////////////////
 INLINE bool SmoothMover::
-set_z(float z) {
+set_z(PN_stdfloat z) {
   bool result = (z != _sample._pos[2]);
   /*
   if (deadrec_cat.is_debug()) {
@@ -120,7 +120,7 @@ set_z(float z) {
 //               are the same.
 ////////////////////////////////////////////////////////////////////
 INLINE bool SmoothMover::
-set_hpr(const LVecBase3f &hpr) {
+set_hpr(const LVecBase3 &hpr) {
   return set_h(hpr[0]) | set_p(hpr[1]) | set_r(hpr[2]);
 }
 
@@ -140,7 +140,7 @@ set_hpr(const LVecBase3f &hpr) {
 //               are the same.
 ////////////////////////////////////////////////////////////////////
 INLINE bool SmoothMover::
-set_hpr(float h, float p, float r) {
+set_hpr(PN_stdfloat h, PN_stdfloat p, PN_stdfloat r) {
   return set_h(h) | set_p(p) | set_r(r);
 }
 
@@ -150,7 +150,7 @@ set_hpr(float h, float p, float r) {
 //  Description: Sets the heading only.  See set_hpr().
 ////////////////////////////////////////////////////////////////////
 INLINE bool SmoothMover::
-set_h(float h) {
+set_h(PN_stdfloat h) {
   bool result = (h != _sample._hpr[0]);
   /*
   if (deadrec_cat.is_debug()) {
@@ -167,7 +167,7 @@ set_h(float h) {
 //  Description: Sets the pitch only.  See set_hpr().
 ////////////////////////////////////////////////////////////////////
 INLINE bool SmoothMover::
-set_p(float p) {
+set_p(PN_stdfloat p) {
   bool result = (p != _sample._hpr[1]);
   /*  
   if (deadrec_cat.is_debug()) {
@@ -184,7 +184,7 @@ set_p(float p) {
 //  Description: Sets the roll only.  See set_hpr().
 ////////////////////////////////////////////////////////////////////
 INLINE bool SmoothMover::
-set_r(float r) {
+set_r(PN_stdfloat r) {
   bool result = (r != _sample._hpr[2]);
   /*
   if (deadrec_cat.is_debug()) {
@@ -211,7 +211,7 @@ set_r(float r) {
 //               are the same.
 ////////////////////////////////////////////////////////////////////
 INLINE bool SmoothMover::
-set_pos_hpr(const LVecBase3f &pos, const LVecBase3f &hpr) {
+set_pos_hpr(const LVecBase3 &pos, const LVecBase3 &hpr) {
   return (set_x(pos[0]) | set_y(pos[1]) | set_z(pos[2]) |
           set_h(hpr[0]) | set_p(hpr[1]) | set_r(hpr[2]));
 }
@@ -232,7 +232,7 @@ set_pos_hpr(const LVecBase3f &pos, const LVecBase3f &hpr) {
 //               are the same.
 ////////////////////////////////////////////////////////////////////
 INLINE bool SmoothMover::
-set_pos_hpr(float x, float y, float z, float h, float p, float r) {
+set_pos_hpr(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat h, PN_stdfloat p, PN_stdfloat r) {
   return set_x(x) | set_y(y) | set_z(z) | set_h(h) | set_p(p) | set_r(r);
 }
 
@@ -245,7 +245,7 @@ set_pos_hpr(float x, float y, float z, float h, float p, float r) {
 //               copied to the sample point table when
 //               mark_position() is called.
 ////////////////////////////////////////////////////////////////////
-INLINE const LPoint3f &SmoothMover::
+INLINE const LPoint3 &SmoothMover::
 get_sample_pos() const {
   return _sample._pos;
 }
@@ -259,7 +259,7 @@ get_sample_pos() const {
 //               copied to the sample point table when
 //               mark_position() is called.
 ////////////////////////////////////////////////////////////////////
-INLINE const LVecBase3f &SmoothMover::
+INLINE const LVecBase3 &SmoothMover::
 get_sample_hpr() const {
   return _sample._hpr;
 }
@@ -355,7 +355,7 @@ compute_smooth_position() {
 //  Description: Returns the smoothed position as computed by a
 //               previous call to compute_smooth_position().
 ////////////////////////////////////////////////////////////////////
-INLINE const LPoint3f &SmoothMover::
+INLINE const LPoint3 &SmoothMover::
 get_smooth_pos() const {
   return _smooth_pos;
 }
@@ -366,7 +366,7 @@ get_smooth_pos() const {
 //  Description: Returns the smoothed position as computed by a
 //               previous call to compute_smooth_position().
 ////////////////////////////////////////////////////////////////////
-INLINE const LVecBase3f &SmoothMover::
+INLINE const LVecBase3 &SmoothMover::
 get_forward_axis() const {
   return _forward_axis;
 }
@@ -377,7 +377,7 @@ get_forward_axis() const {
 //  Description: Returns the smoothed orientation as computed by a
 //               previous call to compute_smooth_position().
 ////////////////////////////////////////////////////////////////////
-INLINE const LVecBase3f &SmoothMover::
+INLINE const LVecBase3 &SmoothMover::
 get_smooth_hpr() const {
   return _smooth_hpr;
 }
@@ -480,7 +480,7 @@ compute_and_apply_smooth_hpr(NodePath &hpr_node) {
 //               number if the avatar is moving forward, and a
 //               negative number if it is moving backward.
 ////////////////////////////////////////////////////////////////////
-INLINE float SmoothMover::
+INLINE PN_stdfloat SmoothMover::
 get_smooth_forward_velocity() const {
   return _smooth_forward_velocity;
 }
@@ -494,7 +494,7 @@ get_smooth_forward_velocity() const {
 //               number if the avatar is moving right, and a
 //               negative number if it is moving left.
 ////////////////////////////////////////////////////////////////////
-INLINE float SmoothMover::
+INLINE PN_stdfloat SmoothMover::
 get_smooth_lateral_velocity() const {
   return _smooth_lateral_velocity;
 }
@@ -507,7 +507,7 @@ get_smooth_lateral_velocity() const {
 //               second.  This may be positive or negative, according
 //               to the direction of rotation.
 ////////////////////////////////////////////////////////////////////
-INLINE float SmoothMover::
+INLINE PN_stdfloat SmoothMover::
 get_smooth_rotational_velocity() const {
   return _smooth_rotational_velocity;
 }

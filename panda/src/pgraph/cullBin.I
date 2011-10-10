@@ -85,7 +85,7 @@ has_flash_color() const {
 //  Description: If has_flash_color returns true, this returns the
 //               color specified.
 ////////////////////////////////////////////////////////////////////
-INLINE const Colorf &CullBin::
+INLINE const LColor &CullBin::
 get_flash_color() const {
   return _flash_color;
 }

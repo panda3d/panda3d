@@ -30,10 +30,10 @@ PStatCollector PointParticleRenderer::_render_collector("App:Particles:Point:Ren
 
 PointParticleRenderer::
 PointParticleRenderer(ParticleRendererAlphaMode am,
-                      float point_size,
+                      PN_stdfloat point_size,
                       PointParticleBlendType bt,
                       ParticleRendererBlendMethod bm,
-                      const Colorf& sc, const Colorf& ec) :
+                      const LColor& sc, const LColor& ec) :
   BaseParticleRenderer(am),
   _start_color(sc), _end_color(ec),
   _blend_type(bt), _blend_method(bm)
@@ -146,11 +146,11 @@ kill_particle(int) {
 // Description : Generates the point color based on the render_type
 ////////////////////////////////////////////////////////////////////
 
-Colorf PointParticleRenderer::
+LColor PointParticleRenderer::
 create_color(const BaseParticle *p) {
-  Colorf color;
-  float life_t, vel_t;
-  float parameterized_age = 1.0f;
+  LColor color;
+  PN_stdfloat life_t, vel_t;
+  PN_stdfloat parameterized_age = 1.0f;
   bool have_alpha_t = false;
 
   switch (_blend_type) {
@@ -241,7 +241,7 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
     if (!cur_particle->get_alive())
       continue;
 
-    LPoint3f position = cur_particle->get_position();
+    LPoint3 position = cur_particle->get_position();
 
     // x aabb adjust
 
@@ -266,8 +266,8 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
     // stuff it into the arrays
 
-    vertex.add_data3f(position);
-    color.add_data4f(create_color(cur_particle));
+    vertex.add_data3(position);
+    color.add_data4(create_color(cur_particle));
 
     // maybe jump out early?
 
@@ -281,8 +281,8 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
   // done filling geompoint node, now do the bb stuff
 
-  LPoint3f aabb_center = _aabb_min + ((_aabb_max - _aabb_min) * 0.5f);
-  float radius = (aabb_center - _aabb_min).length();
+  LPoint3 aabb_center = _aabb_min + ((_aabb_max - _aabb_min) * 0.5f);
+  PN_stdfloat radius = (aabb_center - _aabb_min).length();
 
   BoundingSphere sphere(aabb_center, radius);
   _point_primitive->set_bounds(&sphere);

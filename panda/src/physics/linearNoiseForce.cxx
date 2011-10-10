@@ -24,7 +24,7 @@ ConfigVariableInt LinearNoiseForce::_random_seed
 
 bool LinearNoiseForce::_initialized = false;
 unsigned char LinearNoiseForce::_prn_table[256];
-LVector3f LinearNoiseForce::_gradient_table[256];
+LVector3 LinearNoiseForce::_gradient_table[256];
 
 TypeHandle LinearNoiseForce::_type_handle;
 
@@ -40,7 +40,7 @@ init_noise_tables() {
   // to init with the same seed.
   srand(_random_seed);
 
-  LVector3f *gtable = _gradient_table;
+  LVector3 *gtable = _gradient_table;
   for (int i = 0; i < 256; ++i) {
     // fill the 1d array
     _prn_table[i] = rand() & 255;
@@ -56,7 +56,7 @@ init_noise_tables() {
 //  Description : constructor
 ////////////////////////////////////////////////////////////////////
 LinearNoiseForce::
-LinearNoiseForce(float a, bool mass) :
+LinearNoiseForce(PN_stdfloat a, bool mass) :
   LinearRandomForce(a, mass) {
   if (_initialized == false) {
     init_noise_tables();
@@ -99,13 +99,13 @@ make_copy() {
 //  Description : Returns the noise value based on the object's
 //                position.
 ////////////////////////////////////////////////////////////////////
-LVector3f LinearNoiseForce::
+LVector3 LinearNoiseForce::
 get_child_vector(const PhysicsObject *po) {
-  LPoint3f p = po->get_position();
+  LPoint3 p = po->get_position();
 
   // get all of the components
   int int_x, int_y, int_z;
-  float frac_x, frac_y, frac_z;
+  PN_stdfloat frac_x, frac_y, frac_z;
 
   int_x = (int) p[0];
   frac_x = p[0] - int_x;
@@ -117,14 +117,14 @@ get_child_vector(const PhysicsObject *po) {
   frac_z = p[2] - int_z;
 
   // apply the cubic smoother to the fractional values
-  float cubic_x, cubic_y, cubic_z;
+  PN_stdfloat cubic_x, cubic_y, cubic_z;
 
   cubic_x = cubic_step(frac_x);
   cubic_y = cubic_step(frac_y);
   cubic_z = cubic_step(frac_z);
 
   // trilinear interpolation into the cube (over, in, down)
-  LVector3f temp0, temp1, temp2, temp3;
+  LVector3 temp0, temp1, temp2, temp3;
 
   // x direction
   temp0 = vlerp(cubic_x, get_lattice_entry(p),

@@ -219,7 +219,7 @@ get_num_user_guide_bars() const {
 //       Access: Public
 //  Description: Returns the height of the nth user-defined guide bar.
 ////////////////////////////////////////////////////////////////////
-float PStatServer::
+PN_stdfloat PStatServer::
 get_user_guide_bar_height(int n) const {
   nassertr(n >= 0 && n < (int)_user_guide_bars.size(), 0.0f);
   return _user_guide_bars[n];
@@ -231,7 +231,7 @@ get_user_guide_bar_height(int n) const {
 //  Description: Adjusts the height of the nth user-defined guide bar.
 ////////////////////////////////////////////////////////////////////
 void PStatServer::
-move_user_guide_bar(int n, float height) {
+move_user_guide_bar(int n, PN_stdfloat height) {
   nassertv(n >= 0 && n < (int)_user_guide_bars.size());
   _user_guide_bars[n] = height;
   user_guide_bars_changed();
@@ -244,7 +244,7 @@ move_user_guide_bar(int n, float height) {
 //               number.
 ////////////////////////////////////////////////////////////////////
 int PStatServer::
-add_user_guide_bar(float height) {
+add_user_guide_bar(PN_stdfloat height) {
   int n = (int)_user_guide_bars.size();
   _user_guide_bars.push_back(height);
   user_guide_bars_changed();
@@ -274,12 +274,12 @@ remove_user_guide_bar(int n) {
 //               -1 if no user guide bars fall within the range.
 ////////////////////////////////////////////////////////////////////
 int PStatServer::
-find_user_guide_bar(float from_height, float to_height) const {
+find_user_guide_bar(PN_stdfloat from_height, PN_stdfloat to_height) const {
   GuideBars::const_iterator gbi;
   for (gbi = _user_guide_bars.begin();
        gbi != _user_guide_bars.end();
        ++gbi) {
-    float height = (*gbi);
+    PN_stdfloat height = (*gbi);
     if (height >= from_height && height <= to_height) {
       return (int)(gbi - _user_guide_bars.begin());
     }

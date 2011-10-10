@@ -53,12 +53,12 @@ public:
   INLINE int get_collector_index() const;
   void set_collector_index(int collector_index);
 
-  INLINE void set_horizontal_scale(float time_width);
-  INLINE float get_horizontal_scale() const;
-  INLINE void set_vertical_scale(float value_height);
+  INLINE void set_horizontal_scale(PN_stdfloat time_width);
+  INLINE PN_stdfloat get_horizontal_scale() const;
+  INLINE void set_vertical_scale(PN_stdfloat value_height);
   void set_default_vertical_scale();
   void set_auto_vertical_scale();
-  INLINE float get_vertical_scale() const;
+  INLINE PN_stdfloat get_vertical_scale() const;
 
   INLINE void set_scroll_mode(bool scroll_mode);
   INLINE bool get_scroll_mode() const;
@@ -67,10 +67,10 @@ public:
   INLINE bool get_average_mode() const;
 
   int get_collector_under_pixel(int xpoint, int ypoint);
-  INLINE int timestamp_to_pixel(float time) const;
-  INLINE float pixel_to_timestamp(int x) const;
-  INLINE int height_to_pixel(float value) const;
-  INLINE float pixel_to_height(int y) const;
+  INLINE int timestamp_to_pixel(PN_stdfloat time) const;
+  INLINE PN_stdfloat pixel_to_timestamp(int x) const;
+  INLINE int height_to_pixel(PN_stdfloat value) const;
+  INLINE PN_stdfloat pixel_to_height(int y) const;
 
   string get_title_text();
   bool is_title_unknown() const;
@@ -80,20 +80,20 @@ protected:
   public:
     unsigned short _collector_index;
     unsigned short _i;
-    float _net_value;
+    PN_stdfloat _net_value;
   };
   typedef pvector<ColorData> FrameData;
   typedef pmap<int, FrameData> Data;
 
   static void accumulate_frame_data(FrameData &fdata,
-                                    const FrameData &additional, float weight);
-  static void scale_frame_data(FrameData &fdata, float factor);
+                                    const FrameData &additional, PN_stdfloat weight);
+  static void scale_frame_data(FrameData &fdata, PN_stdfloat factor);
 
   const FrameData &get_frame_data(int frame_number);
   void compute_average_pixel_data(PStatStripChart::FrameData &result, 
-                                  int &then_i, int &now_i, float now);
-  float get_net_value(int frame_number) const;
-  float get_average_net_value() const;
+                                  int &then_i, int &now_i, PN_stdfloat now);
+  PN_stdfloat get_net_value(int frame_number) const;
+  PN_stdfloat get_average_net_value() const;
 
   void changed_size(int xsize, int ysize);
   void force_redraw();
@@ -137,9 +137,9 @@ private:
 
   int _level_index;
 
-  float _time_width;
-  float _start_time;
-  float _value_height;
+  PN_stdfloat _time_width;
+  PN_stdfloat _start_time;
+  PN_stdfloat _value_height;
   bool _title_unknown;
 
   typedef vector_int LabelUsage;

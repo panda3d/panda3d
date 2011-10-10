@@ -72,11 +72,11 @@ PUBLISHED:
   INLINE void set_clear_stencil_active(bool clear_stencil_active);
   INLINE bool get_clear_stencil_active() const;
 
-  INLINE void set_clear_color(const Colorf &color);
-  INLINE const Colorf &get_clear_color() const;
+  INLINE void set_clear_color(const LColor &color);
+  INLINE const LColor &get_clear_color() const;
 
-  INLINE void set_clear_depth(float depth);
-  INLINE float get_clear_depth() const;
+  INLINE void set_clear_depth(PN_stdfloat depth);
+  INLINE PN_stdfloat get_clear_depth() const;
 
   INLINE void set_clear_stencil(unsigned int stencil);
   INLINE unsigned int get_clear_stencil() const;
@@ -84,15 +84,15 @@ PUBLISHED:
   virtual void set_clear_active(int n, bool clear_aux_active);
   virtual bool get_clear_active(int n) const;
 
-  virtual void set_clear_value(int n, const Colorf &clear_value);
-  virtual const Colorf &get_clear_value(int n) const;
+  virtual void set_clear_value(int n, const LColor &clear_value);
+  virtual const LColor &get_clear_value(int n) const;
   
   virtual void disable_clears();
   virtual bool is_any_clear_active() const;
 
-  virtual void set_pixel_zoom(float pixel_zoom);
-  INLINE float get_pixel_zoom() const;
-  INLINE float get_pixel_factor() const;
+  virtual void set_pixel_zoom(PN_stdfloat pixel_zoom);
+  INLINE PN_stdfloat get_pixel_zoom() const;
+  INLINE PN_stdfloat get_pixel_factor() const;
   virtual bool supports_pixel_zoom() const;
 
   static int get_renderbuffer_type(int plane);
@@ -111,10 +111,10 @@ protected:
 
 private:
   bool    _clear_active[RTP_COUNT];
-  Colorf  _clear_value[RTP_COUNT];
+  LColor  _clear_value[RTP_COUNT];
 
-  float _pixel_zoom;
-  float _pixel_factor;
+  PN_stdfloat _pixel_zoom;
+  PN_stdfloat _pixel_factor;
 };
 
 

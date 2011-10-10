@@ -69,7 +69,7 @@ fillin(DatagramIterator &scan, BamReader *) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PlaneNode::
-PlaneNode(const string &name, const Planef &plane) :
+PlaneNode(const string &name, const LPlane &plane) :
   PandaNode(name),
   _priority(0),
   _clip_effect(~0)
@@ -128,7 +128,7 @@ make_copy() const {
 //               most kinds of PandaNodes, this does nothing.
 ////////////////////////////////////////////////////////////////////
 void PlaneNode::
-xform(const LMatrix4f &mat) {
+xform(const LMatrix4 &mat) {
   PandaNode::xform(mat);
   CDWriter cdata(_cycler);
   cdata->_plane = cdata->_plane * mat;
@@ -223,7 +223,7 @@ get_viz(CullTraverser *trav, CullTraverserData &data) {
   // Figure out whether we are looking at the front or the back of the
   // plane.
   const Lens *lens = trav->get_scene()->get_lens();
-  Planef eye_plane = cdata->_plane * data.get_modelview_transform(trav)->get_mat();
+  LPlane eye_plane = cdata->_plane * data.get_modelview_transform(trav)->get_mat();
   bool front = (eye_plane.dist_to_plane(lens->get_nodal_point()) >= 0.0f);
 
   if (cdata->_front_viz != (Geom *)NULL) {
@@ -236,7 +236,7 @@ get_viz(CullTraverser *trav, CullTraverserData &data) {
   }
 
   CDWriter cdataw(_cycler, cdata, false);
-  const Planef &plane = cdataw->_plane;
+  const LPlane &plane = cdataw->_plane;
 
   PT(GeomVertexData) vdata = new GeomVertexData
     (get_name(), GeomVertexFormat::get_v3cp(), Geom::UH_static);
@@ -244,7 +244,7 @@ get_viz(CullTraverser *trav, CullTraverserData &data) {
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   PT(GeomLines) lines = new GeomLines(Geom::UH_static);
 
-  LVector3f a, b;
+  LVector3 a, b;
 
   if (fabs(plane[0]) > fabs(plane[1])) {
     // X > Y
@@ -275,22 +275,22 @@ get_viz(CullTraverser *trav, CullTraverserData &data) {
   b *= cdataw->_viz_scale / (num_segs * 2);
   
   for (int x = -num_segs; x <= num_segs; ++x) {
-    vertex.add_data3f(plane.project(a * x - b * num_segs));
-    vertex.add_data3f(plane.project(a * x + b * num_segs));
+    vertex.add_data3(plane.project(a * x - b * num_segs));
+    vertex.add_data3(plane.project(a * x + b * num_segs));
     lines->add_next_vertices(2);
     lines->close_primitive();
   }
   for (int y = -num_segs; y <= num_segs; ++y) {
-    vertex.add_data3f(plane.project(b * y - a * num_segs));
-    vertex.add_data3f(plane.project(b * y + a * num_segs));
+    vertex.add_data3(plane.project(b * y - a * num_segs));
+    vertex.add_data3(plane.project(b * y + a * num_segs));
     lines->add_next_vertices(2);
     lines->close_primitive();
   }
 
-  cdataw->_front_viz = new Geom(vdata->set_color(Colorf(1.0f, 1.0f, 0.0f, 1.0f)));
+  cdataw->_front_viz = new Geom(vdata->set_color(LColor(1.0f, 1.0f, 0.0f, 1.0f)));
   cdataw->_front_viz->add_primitive(lines);
 
-  cdataw->_back_viz = new Geom(vdata->set_color(Colorf(0.4f, 0.4f, 0.0f, 1.0f)));
+  cdataw->_back_viz = new Geom(vdata->set_color(LColor(0.4, 0.4, 0.0f, 1.0f)));
   cdataw->_back_viz->add_primitive(lines);
 
   return front ? cdataw->_front_viz : cdataw->_back_viz;

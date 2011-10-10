@@ -168,7 +168,7 @@ CLwoSurface::
 ////////////////////////////////////////////////////////////////////
 void CLwoSurface::
 apply_properties(EggPrimitive *egg_prim, vector_PT_EggVertex &egg_vertices,
-                 float &smooth_angle) {
+                 PN_stdfloat &smooth_angle) {
   if (!_surface->_source.empty()) {
     // This surface is derived from another surface; apply that one
     // first.
@@ -323,7 +323,7 @@ check_material() {
   }
 
   if ((_flags & F_luminosity) != 0) {
-    Colorf luminosity(_color[0] * _luminosity,
+    LColor luminosity(_color[0] * _luminosity,
                       _color[1] * _luminosity,
                       _color[2] * _luminosity,
                       1.0);
@@ -331,7 +331,7 @@ check_material() {
   }
 
   if ((_flags & F_specular) != 0) {
-    Colorf specular(_color[0] * _specular,
+    LColor specular(_color[0] * _specular,
                     _color[1] * _specular,
                     _color[2] * _specular,
                     1.0);

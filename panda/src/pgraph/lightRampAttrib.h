@@ -45,16 +45,16 @@ PUBLISHED:
   };
   static CPT(RenderAttrib) make_default();
   static CPT(RenderAttrib) make_identity();
-  static CPT(RenderAttrib) make_single_threshold(float thresh0, float lev0);
-  static CPT(RenderAttrib) make_double_threshold(float thresh0, float lev0, float thresh1, float lev1);
+  static CPT(RenderAttrib) make_single_threshold(PN_stdfloat thresh0, PN_stdfloat lev0);
+  static CPT(RenderAttrib) make_double_threshold(PN_stdfloat thresh0, PN_stdfloat lev0, PN_stdfloat thresh1, PN_stdfloat lev1);
   static CPT(RenderAttrib) make_hdr0();
   static CPT(RenderAttrib) make_hdr1();
   static CPT(RenderAttrib) make_hdr2();
   
 
   INLINE LightRampMode get_mode() const;
-  INLINE float get_level(int n) const;
-  INLINE float get_threshold(int n) const;
+  INLINE PN_stdfloat get_level(int n) const;
+  INLINE PN_stdfloat get_threshold(int n) const;
   
 public:
   virtual void output(ostream &out) const;
@@ -65,8 +65,8 @@ protected:
   
 private:
   LightRampMode _mode;
-  float _level[2];
-  float _threshold[2];
+  PN_stdfloat _level[2];
+  PN_stdfloat _threshold[2];
 
   static CPT(RenderAttrib) _default;
 

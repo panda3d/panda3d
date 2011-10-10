@@ -210,8 +210,8 @@ adjust_transform(CPT(TransformState) &net_transform,
   } else {
     // How much of the pos do we want to steal?  We can always
     // determine a transform's pos, even if it's nondecomposable.
-    LVecBase3f want_pos = net_transform->get_pos();
-    const LVecBase3f &ref_pos = ref_transform->get_pos();
+    LVecBase3 want_pos = net_transform->get_pos();
+    const LVecBase3 &ref_pos = ref_transform->get_pos();
     if ((_properties & P_x) != 0) {
       want_pos[0] = ref_pos[0];
     }
@@ -241,13 +241,13 @@ adjust_transform(CPT(TransformState) &net_transform,
 
       } else {
         // If we can decompose, then take only the components we want.
-        LQuaternionf want_quat = net_transform->get_quat();
+        LQuaternion want_quat = net_transform->get_quat();
         if ((_properties & P_rot) != 0) {
           want_quat = ref_transform->get_quat();
         }
 
-        LVecBase3f want_scale = net_transform->get_scale();
-        const LVecBase3f &ref_scale = ref_transform->get_scale();
+        LVecBase3 want_scale = net_transform->get_scale();
+        const LVecBase3 &ref_scale = ref_transform->get_scale();
         if ((_properties & P_sx) != 0) {
           want_scale[0] = ref_scale[0];
         }

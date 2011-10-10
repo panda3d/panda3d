@@ -43,7 +43,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 void Spotlight::CData::
 write_datagram(BamWriter *, Datagram &dg) const {
-  dg.add_float32(_exponent);
+  dg.add_stdfloat(_exponent);
   _specular_color.write_datagram(dg);
   _attenuation.write_datagram(dg);
 }
@@ -57,7 +57,7 @@ write_datagram(BamWriter *, Datagram &dg) const {
 ////////////////////////////////////////////////////////////////////
 void Spotlight::CData::
 fillin(DatagramIterator &scan, BamReader *) {
-  _exponent = scan.get_float32();
+  _exponent = scan.get_stdfloat();
   _specular_color.read_datagram(scan);
   _attenuation.read_datagram(scan);
 }
@@ -109,7 +109,7 @@ make_copy() const {
 //               most kinds of PandaNodes, this does nothing.
 ////////////////////////////////////////////////////////////////////
 void Spotlight::
-xform(const LMatrix4f &mat) {
+xform(const LMatrix4 &mat) {
   LightLensNode::xform(mat); 
   mark_viz_stale();
 }
@@ -155,8 +155,8 @@ write(ostream &out, int indent_level) const {
 //               ambient light).
 ////////////////////////////////////////////////////////////////////
 bool Spotlight::
-get_vector_to_light(LVector3f &result, const LPoint3f &from_object_point, 
-                    const LMatrix4f &to_object_space) {
+get_vector_to_light(LVector3 &result, const LPoint3 &from_object_point, 
+                    const LMatrix4 &to_object_space) {
   return false;
 }
 
@@ -179,7 +179,7 @@ get_vector_to_light(LVector3f &result, const LPoint3f &from_object_point,
 //               respectively.
 ////////////////////////////////////////////////////////////////////
 PT(Texture) Spotlight::
-make_spot(int pixel_width, float full_radius, Colorf &fg, Colorf &bg) {
+make_spot(int pixel_width, PN_stdfloat full_radius, LColor &fg, LColor &bg) {
   int num_channels;
   if (fg[0] == fg[1] && fg[1] == fg[2] &&
       bg[0] == bg[1] && bg[1] == bg[2]) {

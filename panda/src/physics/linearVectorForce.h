@@ -24,16 +24,16 @@
 ////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS LinearVectorForce : public LinearForce {
 PUBLISHED:
-  LinearVectorForce(const LVector3f& vec, float a = 1.0f, bool mass = false);
+  LinearVectorForce(const LVector3& vec, PN_stdfloat a = 1.0f, bool mass = false);
   LinearVectorForce(const LinearVectorForce &copy);
-  LinearVectorForce(float x = 0.0f, float y = 0.0f, float z = 0.0f,
-              float a = 1.0f, bool mass = false);
+  LinearVectorForce(PN_stdfloat x = 0.0f, PN_stdfloat y = 0.0f, PN_stdfloat z = 0.0f,
+              PN_stdfloat a = 1.0f, bool mass = false);
   virtual ~LinearVectorForce();
 
-  INLINE void set_vector(const LVector3f& v);
-  INLINE void set_vector(float x, float y, float z);
+  INLINE void set_vector(const LVector3& v);
+  INLINE void set_vector(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
 
-  INLINE LVector3f get_local_vector() const;
+  INLINE LVector3 get_local_vector() const;
   
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
@@ -42,10 +42,10 @@ public:
   INLINE LinearVectorForce& operator += (const LinearVectorForce &other);
 
 private:
-  LVector3f _fvec;
+  LVector3 _fvec;
 
   virtual LinearForce *make_copy();
-  virtual LVector3f get_child_vector(const PhysicsObject *po);
+  virtual LVector3 get_child_vector(const PhysicsObject *po);
 
 public:
   static TypeHandle get_class_type() {

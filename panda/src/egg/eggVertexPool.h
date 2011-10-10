@@ -94,7 +94,7 @@ PUBLISHED:
   bool has_normals() const;
   bool has_colors() const;
   bool has_nonwhite_colors() const;
-  void check_overall_color(bool &has_overall_color, Colorf &overall_color) const;
+  void check_overall_color(bool &has_overall_color, LColor &overall_color) const;
   bool has_uvs() const;
   void get_uv_names(vector_string &uv_names, vector_string &uvw_names, 
                     vector_string &tbn_names) const;

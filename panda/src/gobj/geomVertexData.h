@@ -138,14 +138,14 @@ PUBLISHED:
                      int source_row, Thread *current_thread);
   CPT(GeomVertexData) convert_to(const GeomVertexFormat *new_format) const;
   CPT(GeomVertexData) 
-    scale_color(const LVecBase4f &color_scale) const;
+    scale_color(const LVecBase4 &color_scale) const;
   CPT(GeomVertexData) 
-    scale_color(const LVecBase4f &color_scale, int num_components,
+    scale_color(const LVecBase4 &color_scale, int num_components,
                 NumericType numeric_type, Contents contents) const;
   CPT(GeomVertexData) 
-    set_color(const Colorf &color) const;
+    set_color(const LColor &color) const;
   CPT(GeomVertexData) 
-    set_color(const Colorf &color, int num_components,
+    set_color(const LColor &color, int num_components,
               NumericType numeric_type, Contents contents) const;
 
   CPT(GeomVertexData) reverse_normals() const;

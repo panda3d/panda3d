@@ -36,7 +36,7 @@ PUBLISHED:
   int initiate(Filename &patch, Filename &infile);
   int run();
 
-  INLINE float get_progress() const;
+  INLINE PN_stdfloat get_progress() const;
 
 private:
   void init(PT(Buffer) buffer);

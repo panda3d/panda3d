@@ -23,8 +23,8 @@
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionSegment::
 CollisionSegment() :
-  _a(LPoint3f(0.0, 0.0, 0.0)),
-  _b(LPoint3f(0.0, 0.0, 0.0))
+  _a(LPoint3(0.0, 0.0, 0.0)),
+  _b(LPoint3(0.0, 0.0, 0.0))
 {
 }
 
@@ -34,7 +34,7 @@ CollisionSegment() :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionSegment::
-CollisionSegment(const LPoint3f &a, const LPoint3f &b) :
+CollisionSegment(const LPoint3 &a, const LPoint3 &b) :
   _a(a), _b(b)
 {
   nassertv(_a != _b);
@@ -46,8 +46,8 @@ CollisionSegment(const LPoint3f &a, const LPoint3f &b) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionSegment::
-CollisionSegment(float ax, float ay, float az,
-                 float bx, float by, float bz) :
+CollisionSegment(PN_stdfloat ax, PN_stdfloat ay, PN_stdfloat az,
+                 PN_stdfloat bx, PN_stdfloat by, PN_stdfloat bz) :
   _a(ax, ay, az), _b(bx, by, bz)
 {
   nassertv(_a != _b);
@@ -72,7 +72,7 @@ CollisionSegment(const CollisionSegment &copy) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionSegment::
-set_point_a(const LPoint3f &a) {
+set_point_a(const LPoint3 &a) {
   _a = a;
   mark_internal_bounds_stale();
   mark_viz_stale();
@@ -87,8 +87,8 @@ set_point_a(const LPoint3f &a) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionSegment::
-set_point_a(float x, float y, float z) {
-  set_point_a(LPoint3f(x, y, z));
+set_point_a(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
+  set_point_a(LPoint3(x, y, z));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -96,7 +96,7 @@ set_point_a(float x, float y, float z) {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const LPoint3f &CollisionSegment::
+INLINE const LPoint3 &CollisionSegment::
 get_point_a() const {
   return _a;
 }
@@ -107,7 +107,7 @@ get_point_a() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionSegment::
-set_point_b(const LPoint3f &b) {
+set_point_b(const LPoint3 &b) {
   _b = b;
   mark_internal_bounds_stale();
   mark_viz_stale();
@@ -120,8 +120,8 @@ set_point_b(const LPoint3f &b) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionSegment::
-set_point_b(float x, float y, float z) {
-  set_point_b(LPoint3f(x, y, z));
+set_point_b(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
+  set_point_b(LPoint3(x, y, z));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -129,7 +129,7 @@ set_point_b(float x, float y, float z) {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const LPoint3f &CollisionSegment::
+INLINE const LPoint3 &CollisionSegment::
 get_point_b() const {
   return _b;
 }
@@ -144,6 +144,6 @@ get_point_b() const {
 //               from the screen given a camera and a mouse location.
 ////////////////////////////////////////////////////////////////////
 INLINE bool CollisionSegment::
-set_from_lens(LensNode *camera, float px, float py) {
-  return set_from_lens(camera, LPoint2f(px, py));
+set_from_lens(LensNode *camera, PN_stdfloat px, PN_stdfloat py) {
+  return set_from_lens(camera, LPoint2(px, py));
 }

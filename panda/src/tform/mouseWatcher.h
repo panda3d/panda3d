@@ -74,21 +74,21 @@ PUBLISHED:
 
   INLINE bool has_mouse() const;
   INLINE bool is_mouse_open() const;
-  INLINE const LPoint2f &get_mouse() const;
-  INLINE float get_mouse_x() const;
-  INLINE float get_mouse_y() const;
+  INLINE const LPoint2 &get_mouse() const;
+  INLINE PN_stdfloat get_mouse_x() const;
+  INLINE PN_stdfloat get_mouse_y() const;
 
-  INLINE void set_frame(float left, float right, float bottom, float top);
-  INLINE void set_frame(const LVecBase4f &frame);
-  INLINE const LVecBase4f &get_frame() const;
+  INLINE void set_frame(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top);
+  INLINE void set_frame(const LVecBase4 &frame);
+  INLINE const LVecBase4 &get_frame() const;
 
   INLINE bool is_over_region() const;
-  INLINE bool is_over_region(float x, float y) const;
-  INLINE bool is_over_region(const LPoint2f &pos) const;
+  INLINE bool is_over_region(PN_stdfloat x, PN_stdfloat y) const;
+  INLINE bool is_over_region(const LPoint2 &pos) const;
 
   INLINE MouseWatcherRegion *get_over_region() const;
-  INLINE MouseWatcherRegion *get_over_region(float x, float y) const;
-  MouseWatcherRegion *get_over_region(const LPoint2f &pos) const;
+  INLINE MouseWatcherRegion *get_over_region(PN_stdfloat x, PN_stdfloat y) const;
+  MouseWatcherRegion *get_over_region(const LPoint2 &pos) const;
 
   INLINE bool is_button_down(ButtonHandle button) const;
 
@@ -158,7 +158,7 @@ public:
   virtual void write(ostream &out, int indent_level = 0) const;
 
 protected:
-  void get_over_regions(Regions &regions, const LPoint2f &pos) const;
+  void get_over_regions(Regions &regions, const LPoint2 &pos) const;
   static MouseWatcherRegion *get_preferred_region(const Regions &regions);
 
   void set_current_regions(Regions &regions);
@@ -200,7 +200,7 @@ protected:
   void exit_region(MouseWatcherRegion *region, const MouseWatcherParameter &param);
 
   void set_no_mouse();
-  void set_mouse(const LVecBase2f &xy, const LVecBase2f &pixel_xy);
+  void set_mouse(const LVecBase2 &xy, const LVecBase2 &pixel_xy);
 
 private:
   void consider_keyboard_suppress(const MouseWatcherRegion *region);
@@ -208,7 +208,7 @@ private:
   void update_trail_node();
 
   static bool constrain_display_region(DisplayRegion *display_region, 
-                                       LVecBase2f &f, LVecBase2f &p,
+                                       LVecBase2 &f, LVecBase2 &p,
                                        Thread *current_thread);
   
 private:
@@ -220,11 +220,11 @@ private:
   bool _has_mouse;
   int _internal_suppress;
   int _external_suppress;
-  LPoint2f _mouse;
-  LPoint2f _mouse_pixel;
+  LPoint2 _mouse;
+  LPoint2 _mouse_pixel;
   BitArray _current_buttons_down;
 
-  LVecBase4f _frame;
+  LVecBase4 _frame;
 
   PT(PointerEventList) _trail_log;
   int _num_trail_recent;

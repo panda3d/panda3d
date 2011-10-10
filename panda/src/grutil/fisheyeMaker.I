@@ -64,7 +64,7 @@ set_num_vertices(int num_vertices) {
 //               artifacts due to numerical imprecision when mapping.
 ////////////////////////////////////////////////////////////////////
 INLINE void FisheyeMaker::
-set_square_inscribed(bool square_inscribed, float square_radius) {
+set_square_inscribed(bool square_inscribed, PN_stdfloat square_radius) {
   _square_inscribed = square_inscribed;
   _square_radius = square_radius;
 }

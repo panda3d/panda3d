@@ -22,7 +22,7 @@
 //               commands, in which case the value of this method is
 //               questionable.
 ////////////////////////////////////////////////////////////////////
-INLINE float TextNode::
+INLINE PN_stdfloat TextNode::
 get_line_height() const {
   TextFont *font = get_font();
   if (font == (TextFont *)NULL) {
@@ -99,8 +99,8 @@ has_overflow() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
-set_frame_color(float r, float g, float b, float a) {
-  set_frame_color(Colorf(r, g, b, a));
+set_frame_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a) {
+  set_frame_color(LColor(r, g, b, a));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -109,7 +109,7 @@ set_frame_color(float r, float g, float b, float a) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
-set_frame_color(const Colorf &frame_color) {
+set_frame_color(const LColor &frame_color) {
   if (_frame_color != frame_color) {
     _frame_color = frame_color;
     invalidate_no_measure();
@@ -121,7 +121,7 @@ set_frame_color(const Colorf &frame_color) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE Colorf TextNode::
+INLINE LColor TextNode::
 get_frame_color() const {
   return _frame_color;
 }
@@ -132,7 +132,7 @@ get_frame_color() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
-set_card_border(float size, float uv_portion) {
+set_card_border(PN_stdfloat size, PN_stdfloat uv_portion) {
   if (!has_card_border() || _card_border_size != size || _card_border_uv_portion != uv_portion) {
     _flags |= F_has_card_border;
     _card_border_size = size;
@@ -159,7 +159,7 @@ clear_card_border() {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE float TextNode::
+INLINE PN_stdfloat TextNode::
 get_card_border_size() const {
   return _card_border_size;
 }
@@ -169,7 +169,7 @@ get_card_border_size() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE float TextNode::
+INLINE PN_stdfloat TextNode::
 get_card_border_uv_portion() const {
   return _card_border_uv_portion;
 }
@@ -190,8 +190,8 @@ has_card_border() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
-set_card_color(float r, float g, float b, float a) {
-  set_card_color(Colorf(r, g, b, a));
+set_card_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a) {
+  set_card_color(LColor(r, g, b, a));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -200,7 +200,7 @@ set_card_color(float r, float g, float b, float a) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
-set_card_color(const Colorf &card_color) {
+set_card_color(const LColor &card_color) {
   if (_card_color != card_color) {
     _card_color = card_color;
     invalidate_no_measure();
@@ -212,7 +212,7 @@ set_card_color(const Colorf &card_color) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE Colorf TextNode::
+INLINE LColor TextNode::
 get_card_color() const {
   return _card_color;
 }
@@ -279,7 +279,7 @@ get_card_texture() const {
 //               generally be positive.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
-set_frame_as_margin(float left, float right, float bottom, float top) {
+set_frame_as_margin(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top) {
   _flags |= (F_has_frame | F_frame_as_margin);
   _frame_ul.set(left, top);
   _frame_lr.set(right, bottom);
@@ -297,7 +297,7 @@ set_frame_as_margin(float left, float right, float bottom, float top) {
 //               coordinates should generally be positive.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
-set_frame_actual(float left, float right, float bottom, float top) {
+set_frame_actual(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top) {
   _flags |= F_has_frame;
   _flags &= ~F_frame_as_margin;
   _frame_ul.set(left, top);
@@ -353,10 +353,10 @@ is_frame_as_margin() const {
 //               values returned by this function.  It is an error to
 //               call this if has_frame() is false.
 ////////////////////////////////////////////////////////////////////
-INLINE LVecBase4f TextNode::
+INLINE LVecBase4 TextNode::
 get_frame_as_set() const {
-  nassertr(has_frame(), LVecBase4f(0.0, 0.0, 0.0, 0.0));
-  return LVecBase4f(_frame_ul[0], _frame_lr[0], _frame_lr[1], _frame_ul[1]);
+  nassertr(has_frame(), LVecBase4(0.0, 0.0, 0.0, 0.0));
+  return LVecBase4(_frame_ul[0], _frame_lr[0], _frame_lr[1], _frame_ul[1]);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -373,15 +373,15 @@ get_frame_as_set() const {
 //               dimensions of the text itself, as if the frame were
 //               set with a margin of 0, 0, 0, 0.
 ////////////////////////////////////////////////////////////////////
-INLINE LVecBase4f TextNode::
+INLINE LVecBase4 TextNode::
 get_frame_actual() const {
   if (!has_frame()) {
     check_measure();
-    return LVecBase4f(_text_ul[0], _text_lr[0], _text_lr[1], _text_ul[1]);
+    return LVecBase4(_text_ul[0], _text_lr[0], _text_lr[1], _text_ul[1]);
 
   } else if (is_frame_as_margin()) {
     check_measure();
-    return LVecBase4f(_text_ul[0] - _frame_ul[0],
+    return LVecBase4(_text_ul[0] - _frame_ul[0],
                       _text_lr[0] + _frame_lr[0],
                       _text_lr[1] - _frame_lr[1],
                       _text_ul[1] + _frame_ul[1]);
@@ -397,7 +397,7 @@ get_frame_actual() const {
 //               used to draw the frame.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
-set_frame_line_width(float frame_width) {
+set_frame_line_width(PN_stdfloat frame_width) {
   _frame_width = frame_width;
   invalidate_no_measure();
 }
@@ -408,7 +408,7 @@ set_frame_line_width(float frame_width) {
 //  Description: Returns the thickness of the lines that will be
 //               used to draw the frame.
 ////////////////////////////////////////////////////////////////////
-INLINE float TextNode::
+INLINE PN_stdfloat TextNode::
 get_frame_line_width() const {
   return _frame_width;
 }
@@ -452,7 +452,7 @@ get_frame_corners() const {
 //               positive.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
-set_card_as_margin(float left, float right, float bottom, float top) {
+set_card_as_margin(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top) {
   _flags |= (F_has_card | F_card_as_margin);
   _card_ul.set(left, top);
   _card_lr.set(right, bottom);
@@ -470,7 +470,7 @@ set_card_as_margin(float left, float right, float bottom, float top) {
 //               coordinates should generally be positive.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
-set_card_actual(float left, float right, float bottom, float top) {
+set_card_actual(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top) {
   _flags |= F_has_card;
   _flags &= ~F_card_as_margin;
   _card_ul.set(left, top);
@@ -554,10 +554,10 @@ is_card_as_margin() const {
 //               values returned by this function.  It is an error to
 //               call this if has_card() is false.
 ////////////////////////////////////////////////////////////////////
-INLINE LVecBase4f TextNode::
+INLINE LVecBase4 TextNode::
 get_card_as_set() const {
-  nassertr(has_card(), LVecBase4f(0.0, 0.0, 0.0, 0.0));
-  return LVecBase4f(_card_ul[0], _card_lr[0], _card_lr[1], _card_ul[1]);
+  nassertr(has_card(), LVecBase4(0.0, 0.0, 0.0, 0.0));
+  return LVecBase4(_card_ul[0], _card_lr[0], _card_lr[1], _card_ul[1]);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -574,15 +574,15 @@ get_card_as_set() const {
 //               dimensions of the text itself, as if the card were
 //               set with a margin of 0, 0, 0, 0.
 ////////////////////////////////////////////////////////////////////
-INLINE LVecBase4f TextNode::
+INLINE LVecBase4 TextNode::
 get_card_actual() const {
   if (!has_card()) {
     check_measure();
-    return LVecBase4f(_text_ul[0], _text_lr[0], _text_lr[1], _text_ul[1]);
+    return LVecBase4(_text_ul[0], _text_lr[0], _text_lr[1], _text_ul[1]);
 
   } else if (is_card_as_margin()) {
     check_measure();
-    return LVecBase4f(_text_ul[0] - _card_ul[0],
+    return LVecBase4(_text_ul[0] - _card_ul[0],
                       _text_lr[0] + _card_lr[0],
                       _text_lr[1] - _card_lr[1],
                       _text_ul[1] + _card_ul[1]);
@@ -600,13 +600,13 @@ get_card_actual() const {
 //               rest of the world.  Also see get_upper_left_3d() and
 //               get_lower_right_3d().
 ////////////////////////////////////////////////////////////////////
-INLINE LVecBase4f TextNode::
+INLINE LVecBase4 TextNode::
 get_card_transformed() const {
-  LVecBase4f card = get_card_actual();
-  LPoint3f ul = LPoint3f(card[0], 0.0, card[3]) * _transform;
-  LPoint3f lr = LPoint3f(card[1], 0.0, card[2]) * _transform;
+  LVecBase4 card = get_card_actual();
+  LPoint3 ul = LPoint3(card[0], 0.0, card[3]) * _transform;
+  LPoint3 lr = LPoint3(card[1], 0.0, card[2]) * _transform;
 
-  return LVecBase4f(ul[0], lr[0], lr[2], ul[2]);
+  return LVecBase4(ul[0], lr[0], lr[2], ul[2]);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -616,7 +616,7 @@ get_card_transformed() const {
 //               entire text paragraph.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
-set_transform(const LMatrix4f &transform) {
+set_transform(const LMatrix4 &transform) {
   _transform = transform;
   invalidate_with_measure();
 }
@@ -626,7 +626,7 @@ set_transform(const LMatrix4f &transform) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE LMatrix4f TextNode::
+INLINE LMatrix4 TextNode::
 get_transform() const {
   return _transform;
 }
@@ -810,7 +810,7 @@ clear_small_caps() {
 //               this will be a number less than one.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
-set_small_caps_scale(float small_caps_scale) {
+set_small_caps_scale(PN_stdfloat small_caps_scale) {
   TextProperties::set_small_caps_scale(small_caps_scale);
   invalidate_with_measure();
 }
@@ -832,7 +832,7 @@ clear_small_caps_scale() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
-set_slant(float slant) {
+set_slant(PN_stdfloat slant) {
   TextProperties::set_slant(slant);
   invalidate_with_measure();
 }
@@ -878,7 +878,7 @@ clear_align() {
 //               thought of as a left margin.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
-set_indent(float indent) {
+set_indent(PN_stdfloat indent) {
   TextProperties::set_indent(indent);
   invalidate_with_measure();
 }
@@ -902,7 +902,7 @@ clear_indent() {
 //               as a right margin or margin width.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
-set_wordwrap(float wordwrap) {
+set_wordwrap(PN_stdfloat wordwrap) {
   TextProperties::set_wordwrap(wordwrap);
   invalidate_with_measure();
 }
@@ -925,7 +925,7 @@ clear_wordwrap() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
-set_text_color(const Colorf &text_color) {
+set_text_color(const LColor &text_color) {
   TextProperties::set_text_color(text_color);
   invalidate_no_measure();
 }
@@ -936,8 +936,8 @@ set_text_color(const Colorf &text_color) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
-set_text_color(float r, float g, float b, float a) {
-  set_text_color(Colorf(r, g, b, a));
+set_text_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a) {
+  set_text_color(LColor(r, g, b, a));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -958,8 +958,8 @@ clear_text_color() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
-set_shadow_color(float r, float g, float b, float a) {
-  set_shadow_color(Colorf(r, g, b, a));
+set_shadow_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a) {
+  set_shadow_color(LColor(r, g, b, a));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -968,7 +968,7 @@ set_shadow_color(float r, float g, float b, float a) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
-set_shadow_color(const Colorf &shadow_color) {
+set_shadow_color(const LColor &shadow_color) {
   TextProperties::set_shadow_color(shadow_color);
   invalidate_no_measure();
 }
@@ -992,8 +992,8 @@ clear_shadow_color() {
 //               offsetting it slightly behind the first.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
-set_shadow(float xoffset, float yoffset) {
-  set_shadow(LVecBase2f(xoffset, yoffset));
+set_shadow(PN_stdfloat xoffset, PN_stdfloat yoffset) {
+  set_shadow(LVecBase2(xoffset, yoffset));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1004,7 +1004,7 @@ set_shadow(float xoffset, float yoffset) {
 //               offsetting it slightly behind the first.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
-set_shadow(const LVecBase2f &shadow_offset) {
+set_shadow(const LVecBase2 &shadow_offset) {
   TextProperties::set_shadow(shadow_offset);
   invalidate_no_measure();
 }
@@ -1094,7 +1094,7 @@ clear_draw_order() {
 //               horizontal position to the next tab stop.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
-set_tab_width(float tab_width) {
+set_tab_width(PN_stdfloat tab_width) {
   TextProperties::set_tab_width(tab_width);
   invalidate_with_measure();
 }
@@ -1119,7 +1119,7 @@ clear_tab_width() {
 //               superscripting or subscripting.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
-set_glyph_scale(float glyph_scale) {
+set_glyph_scale(PN_stdfloat glyph_scale) {
   TextProperties::set_glyph_scale(glyph_scale);
   invalidate_with_measure();
 }
@@ -1144,7 +1144,7 @@ clear_glyph_scale() {
 //               superscripting or subscripting.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
-set_glyph_shift(float glyph_shift) {
+set_glyph_shift(PN_stdfloat glyph_shift) {
   TextProperties::set_glyph_shift(glyph_shift);
   invalidate_with_measure();
 }
@@ -1247,7 +1247,7 @@ get_wordwrapped_text() const {
 //               characters.  The line should not include the newline
 //               character.
 ////////////////////////////////////////////////////////////////////
-INLINE float TextNode::
+INLINE PN_stdfloat TextNode::
 calc_width(const string &line) const {
   return calc_width(decode_text(line));
 }
@@ -1301,7 +1301,7 @@ get_wordwrapped_wtext() const {
 //               coordinates, unmodified by the set_transform()
 //               matrix.
 ////////////////////////////////////////////////////////////////////
-INLINE float TextNode::
+INLINE PN_stdfloat TextNode::
 get_left() const {
   check_measure();
   return _text_ul[0];
@@ -1314,7 +1314,7 @@ get_left() const {
 //               coordinates, unmodified by the set_transform()
 //               matrix.
 ////////////////////////////////////////////////////////////////////
-INLINE float TextNode::
+INLINE PN_stdfloat TextNode::
 get_right() const {
   check_measure();
   return _text_lr[0];
@@ -1327,7 +1327,7 @@ get_right() const {
 //               2-d coordinates, unmodified by the set_transform()
 //               matrix.
 ////////////////////////////////////////////////////////////////////
-INLINE float TextNode::
+INLINE PN_stdfloat TextNode::
 get_bottom() const {
   check_measure();
   return _text_lr[1];
@@ -1340,7 +1340,7 @@ get_bottom() const {
 //               coordinates, unmodified by the set_transform()
 //               matrix.
 ////////////////////////////////////////////////////////////////////
-INLINE float TextNode::
+INLINE PN_stdfloat TextNode::
 get_top() const {
   check_measure();
   return _text_ul[1];
@@ -1352,7 +1352,7 @@ get_top() const {
 //  Description: Returns the net height of the text in local 2-d
 //               coordinates.
 ////////////////////////////////////////////////////////////////////
-INLINE float TextNode::
+INLINE PN_stdfloat TextNode::
 get_height() const {
   check_measure();
   return _text_ul[1] - _text_lr[1];
@@ -1364,7 +1364,7 @@ get_height() const {
 //  Description: Returns the net width of the text in local 2-d
 //               coordinates.
 ////////////////////////////////////////////////////////////////////
-INLINE float TextNode::
+INLINE PN_stdfloat TextNode::
 get_width() const {
   check_measure();
   return _text_lr[0] - _text_ul[0];
@@ -1377,7 +1377,7 @@ get_width() const {
 //               after it has been transformed into 3-d space by
 //               applying the set_transform() matrix.
 ////////////////////////////////////////////////////////////////////
-INLINE LPoint3f TextNode::
+INLINE LPoint3 TextNode::
 get_upper_left_3d() const {
   check_measure();
   return _ul3d;
@@ -1390,7 +1390,7 @@ get_upper_left_3d() const {
 //               after it has been transformed into 3-d space by
 //               applying the set_transform() matrix.
 ////////////////////////////////////////////////////////////////////
-INLINE LPoint3f TextNode::
+INLINE LPoint3 TextNode::
 get_lower_right_3d() const {
   check_measure();
   return _lr3d;

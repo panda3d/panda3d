@@ -17,7 +17,7 @@
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE void PointParticleRenderer::
-set_point_size(float point_size) {
+set_point_size(PN_stdfloat point_size) {
   _point_size = point_size;
   _thick = RenderModeAttrib::make(RenderModeAttrib::M_unchanged, _point_size);
 }
@@ -27,7 +27,7 @@ set_point_size(float point_size) {
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE void PointParticleRenderer::
-set_start_color(const Colorf& sc) {
+set_start_color(const LColor& sc) {
   _start_color = sc;
 }
 
@@ -36,7 +36,7 @@ set_start_color(const Colorf& sc) {
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE void PointParticleRenderer::
-set_end_color(const Colorf& ec) {
+set_end_color(const LColor& ec) {
   _end_color = ec;
 }
 
@@ -62,7 +62,7 @@ set_blend_method(BaseParticleRenderer::ParticleRendererBlendMethod bm) {
 //    Function : get_point_size
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
-INLINE float PointParticleRenderer::
+INLINE PN_stdfloat PointParticleRenderer::
 get_point_size() const {
   return _point_size;
 }
@@ -71,7 +71,7 @@ get_point_size() const {
 //    Function : get_start_color
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
-INLINE const Colorf& PointParticleRenderer::
+INLINE const LColor& PointParticleRenderer::
 get_start_color() const {
   return _start_color;
 }
@@ -80,7 +80,7 @@ get_start_color() const {
 //    Function : get_end_color
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
-INLINE const Colorf& PointParticleRenderer::
+INLINE const LColor& PointParticleRenderer::
 get_end_color() const {
   return _end_color;
 }

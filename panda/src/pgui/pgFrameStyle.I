@@ -93,8 +93,8 @@ get_type() const {
 //  Description: Sets the dominant color of the frame.
 ////////////////////////////////////////////////////////////////////
 INLINE void PGFrameStyle::
-set_color(float r, float g, float b, float a) {
-  set_color(Colorf(r, g, b, a));
+set_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a) {
+  set_color(LColor(r, g, b, a));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -103,7 +103,7 @@ set_color(float r, float g, float b, float a) {
 //  Description: Sets the dominant color of the frame.
 ////////////////////////////////////////////////////////////////////
 INLINE void PGFrameStyle::
-set_color(const Colorf &color) {
+set_color(const LColor &color) {
   _color = color;
 }
 
@@ -112,7 +112,7 @@ set_color(const Colorf &color) {
 //       Access: Published
 //  Description: Returns the dominant color of the frame.
 ////////////////////////////////////////////////////////////////////
-INLINE const Colorf &PGFrameStyle::
+INLINE const LColor &PGFrameStyle::
 get_color() const {
   return _color;
 }
@@ -169,8 +169,8 @@ clear_texture() {
 //               units are in screen units.
 ////////////////////////////////////////////////////////////////////
 INLINE void PGFrameStyle::
-set_width(float x, float y) {
-  set_width(LVecBase2f(x, y));
+set_width(PN_stdfloat x, PN_stdfloat y) {
+  set_width(LVecBase2(x, y));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -182,7 +182,7 @@ set_width(float x, float y) {
 //               units are in screen units.
 ////////////////////////////////////////////////////////////////////
 INLINE void PGFrameStyle::
-set_width(const LVecBase2f &width) {
+set_width(const LVecBase2 &width) {
   _width = width;
 }
 
@@ -194,7 +194,7 @@ set_width(const LVecBase2f &width) {
 //               width of the bevel for T_bevel_in or T_bevel_out.
 //               The units are in screen units.
 ////////////////////////////////////////////////////////////////////
-INLINE const LVecBase2f &PGFrameStyle::
+INLINE const LVecBase2 &PGFrameStyle::
 get_width() const {
   return _width;
 }
@@ -208,8 +208,8 @@ get_width() const {
 //               indicated by set_width.
 ////////////////////////////////////////////////////////////////////
 INLINE void PGFrameStyle::
-set_uv_width(float u, float v) {
-  set_uv_width(LVecBase2f(u, v));
+set_uv_width(PN_stdfloat u, PN_stdfloat v) {
+  set_uv_width(LVecBase2(u, v));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -221,7 +221,7 @@ set_uv_width(float u, float v) {
 //               indicated by set_width.
 ////////////////////////////////////////////////////////////////////
 INLINE void PGFrameStyle::
-set_uv_width(const LVecBase2f &uv_width) {
+set_uv_width(const LVecBase2 &uv_width) {
   _uv_width = uv_width;
 }
 
@@ -230,7 +230,7 @@ set_uv_width(const LVecBase2f &uv_width) {
 //       Access: Published
 //  Description: See set_uv_width().
 ////////////////////////////////////////////////////////////////////
-INLINE const LVecBase2f &PGFrameStyle::
+INLINE const LVecBase2 &PGFrameStyle::
 get_uv_width() const {
   return _uv_width;
 }
@@ -245,8 +245,8 @@ get_uv_width() const {
 //               frame border.
 ////////////////////////////////////////////////////////////////////
 INLINE void PGFrameStyle::
-set_visible_scale(float x, float y) {
-  set_visible_scale(LVecBase2f(x, y));
+set_visible_scale(PN_stdfloat x, PN_stdfloat y) {
+  set_visible_scale(LVecBase2(x, y));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -259,7 +259,7 @@ set_visible_scale(float x, float y) {
 //               frame border.
 ////////////////////////////////////////////////////////////////////
 INLINE void PGFrameStyle::
-set_visible_scale(const LVecBase2f &visible_scale) {
+set_visible_scale(const LVecBase2 &visible_scale) {
   _visible_scale = visible_scale;
 }
 
@@ -272,7 +272,7 @@ set_visible_scale(const LVecBase2f &visible_scale) {
 //               will affect the size of the visible frame
 //               representation within the actual frame border.
 ////////////////////////////////////////////////////////////////////
-INLINE const LVecBase2f &PGFrameStyle::
+INLINE const LVecBase2 &PGFrameStyle::
 get_visible_scale() const {
   return _visible_scale;
 }

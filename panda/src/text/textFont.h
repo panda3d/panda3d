@@ -73,11 +73,11 @@ PUBLISHED:
 
   INLINE bool is_valid() const;
   INLINE operator bool () const;
-  INLINE float get_line_height() const;
-  INLINE void set_line_height(float line_height);
+  INLINE PN_stdfloat get_line_height() const;
+  INLINE void set_line_height(PN_stdfloat line_height);
 
-  INLINE float get_space_advance() const;
-  INLINE void set_space_advance(float space_advance);
+  INLINE PN_stdfloat get_space_advance() const;
+  INLINE void set_space_advance(PN_stdfloat space_advance);
 
   virtual void write(ostream &out, int indent_level) const;
 
@@ -93,8 +93,8 @@ private:
 
 protected:
   bool _is_valid;
-  float _line_height;
-  float _space_advance;
+  PN_stdfloat _line_height;
+  PN_stdfloat _space_advance;
   PT(TextGlyph) _invalid_glyph;
 
 public:

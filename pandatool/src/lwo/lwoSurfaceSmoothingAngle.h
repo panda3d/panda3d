@@ -26,7 +26,7 @@
 ////////////////////////////////////////////////////////////////////
 class LwoSurfaceSmoothingAngle : public LwoChunk {
 public:
-  float _angle;
+  PN_stdfloat _angle;
 
 public:
   virtual bool read_iff(IffInputFile *in, size_t stop_at);

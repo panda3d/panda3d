@@ -35,7 +35,7 @@ make() {
   PolylightEffect *effect = new PolylightEffect;
   effect->_contribution_type = CT_proximal;
   effect->_weight = 1.0; // 0.9; // Asad: I don't think we should monkey with the weight.
-  effect->_effect_center = LPoint3f(0.0,0.0,0.0);
+  effect->_effect_center = LPoint3(0.0,0.0,0.0);
   return return_new(effect);
 }
 
@@ -45,7 +45,7 @@ make() {
 //  Description: Constructs a new PolylightEffect object.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderEffect) PolylightEffect::
-make(float weight, ContribType contrib, LPoint3f effect_center) {
+make(PN_stdfloat weight, ContribType contrib, LPoint3 effect_center) {
   PolylightEffect *effect = new PolylightEffect;
   effect->_contribution_type = contrib;
   effect->_weight = weight;
@@ -59,7 +59,7 @@ make(float weight, ContribType contrib, LPoint3f effect_center) {
 //  Description: Constructs a new PolylightEffect object.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderEffect) PolylightEffect::
-make(float weight, ContribType contrib, LPoint3f effect_center,
+make(PN_stdfloat weight, ContribType contrib, LPoint3 effect_center,
      const LightGroup &lights) {
   PolylightEffect *effect = new PolylightEffect;
   effect->_contribution_type = contrib;
@@ -123,13 +123,13 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
 CPT(RenderAttrib) PolylightEffect::
 do_poly_light(const SceneSetup *scene, const CullTraverserData *data, const TransformState *node_transform) const {
   //static bool was_under_polylight = false;
-  float dist; // To calculate the distance of each light from the node
-  float r,g,b; // To hold the color calculation
-  float min_dist; // hold the dist from light that avatar is closer to
+  PN_stdfloat dist; // To calculate the distance of each light from the node
+  PN_stdfloat r,g,b; // To hold the color calculation
+  PN_stdfloat min_dist; // hold the dist from light that avatar is closer to
   int num_lights = 0; // Keep track of number of lights for division
-  float light_scale; // Variable to calculate attenuation 
-  float weight_scale = 1.0f; // Variable to compensate snap of color when you walk inside the light volume
-  float Rcollect, Gcollect, Bcollect;
+  PN_stdfloat light_scale; // Variable to calculate attenuation 
+  PN_stdfloat weight_scale = 1.0f; // Variable to compensate snap of color when you walk inside the light volume
+  PN_stdfloat Rcollect, Gcollect, Bcollect;
 
   const NodePath &root = scene->get_scene_root();
   //const NodePath &camera = scene->get_camera_path();
@@ -140,7 +140,7 @@ do_poly_light(const SceneSetup *scene, const CullTraverserData *data, const Tran
   Rcollect = Gcollect = Bcollect = 0.0;
 
   // get the avatar's base color scale
-  Colorf scene_color = root.get_color_scale();
+  LColor scene_color = root.get_color_scale();
   if (polylight_info) {
     pgraph_cat.debug() << "scene color scale = " << scene_color << endl;
   }
@@ -152,31 +152,31 @@ do_poly_light(const SceneSetup *scene, const CullTraverserData *data, const Tran
 
     // light holds the current PolylightNode
     if (light->is_enabled()) { // if enabled get all the properties
-      float light_radius = light->get_radius();
+      PN_stdfloat light_radius = light->get_radius();
       // Calculate the distance of the node from the light
       //dist = light_iter->second->get_distance(data->_node_path.get_node_path());
       const NodePath lightnp = *light_iter;
-      LPoint3f relative_point = data->_node_path.get_node_path().get_relative_point(lightnp, light->get_pos());
+      LPoint3 relative_point = data->_node_path.get_node_path().get_relative_point(lightnp, light->get_pos());
 
       if (_effect_center[2]) {
         dist = (relative_point - _effect_center).length(); // this counts height difference
       } else {
         // get distance as if the light is at the same height of player
-        LVector2f xz(relative_point[0], relative_point[1]);
+        LVector2 xz(relative_point[0], relative_point[1]);
         dist = xz.length(); // this does not count height difference
       }
 
       if (dist <= light_radius) { // If node is in range of this light
         // as to Schuyler's suggestion, lets do some vector processing relative to camera
-        LPoint3f light_position = light->get_pos();
-        //LPoint3f camera_position = camera.get_relative_point(lightnp, light->get_pos());
-        LPoint3f camera_position = lightnp.get_relative_point(camera, LPoint3f(0,0,0));
-        LPoint3f avatar_position = lightnp.get_relative_point(data->_node_path.get_node_path(), LPoint3f(0,0,0));
-        LVector3f light_camera = camera_position  - light_position;
-        LVector3f light_avatar = avatar_position - light_position;
+        LPoint3 light_position = light->get_pos();
+        //LPoint3 camera_position = camera.get_relative_point(lightnp, light->get_pos());
+        LPoint3 camera_position = lightnp.get_relative_point(camera, LPoint3(0,0,0));
+        LPoint3 avatar_position = lightnp.get_relative_point(data->_node_path.get_node_path(), LPoint3(0,0,0));
+        LVector3 light_camera = camera_position  - light_position;
+        LVector3 light_avatar = avatar_position - light_position;
         light_camera.normalize();
         light_avatar.normalize();
-        float intensity = light_camera.dot(light_avatar);
+        PN_stdfloat intensity = light_camera.dot(light_avatar);
         
         if (polylight_info) {
           pgraph_cat.debug() << "light position = " << light_position << endl;
@@ -197,7 +197,7 @@ do_poly_light(const SceneSetup *scene, const CullTraverserData *data, const Tran
         }
 
         PolylightNode::Attenuation_Type light_attenuation = light->get_attenuation();
-        Colorf light_color;
+        LColor light_color;
         if (light->is_flickering()) { // If flickering, modify color
           light_color = light->flicker();
         } else {
@@ -205,15 +205,15 @@ do_poly_light(const SceneSetup *scene, const CullTraverserData *data, const Tran
           //light_color = light->get_color_scenegraph();
         }
 
-        float ratio = dist/light_radius;
+        PN_stdfloat ratio = dist/light_radius;
         if (light_attenuation == PolylightNode::ALINEAR) {
           light_scale = 1.0 - ratio;
         } else if (light_attenuation == PolylightNode::AQUADRATIC) {
           /*
-          float fd; // Variable for quadratic attenuation
-          float light_a0 = light->get_a0();
-          float light_a1 = light->get_a1();
-          float light_a2 = light->get_a2();
+          PN_stdfloat fd; // Variable for quadratic attenuation
+          PN_stdfloat light_a0 = light->get_a0();
+          PN_stdfloat light_a1 = light->get_a1();
+          PN_stdfloat light_a2 = light->get_a2();
           if (light_a0 == 0 && light_a1 == 0 && light_a2 == 0) { // To prevent division by zero
             light_a0 = 1.0;
           }
@@ -300,7 +300,7 @@ do_poly_light(const SceneSetup *scene, const CullTraverserData *data, const Tran
 
     /*
     // normalize the color
-    LVector3f color_vector(r, g, b);
+    LVector3 color_vector(r, g, b);
     color_vector.normalize();
     r = color_vector[0];
     g = color_vector[1];
@@ -343,7 +343,7 @@ do_poly_light(const SceneSetup *scene, const CullTraverserData *data, const Tran
   }
   */
 
-  return ColorScaleAttrib::make(LVecBase4f(r, g, b, 1.0));
+  return ColorScaleAttrib::make(LVecBase4(r, g, b, 1.0));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -448,7 +448,7 @@ remove_light(const NodePath &newlight) const {
 //               Here, we just pass that to the make
 ////////////////////////////////////////////////////////////////////
 CPT(RenderEffect) PolylightEffect::
-set_weight(float w) const {
+set_weight(PN_stdfloat w) const {
   PolylightEffect *effect = new PolylightEffect(*this);
   effect->_weight = w;
   return return_new(effect);
@@ -480,7 +480,7 @@ set_contrib(ContribType ct) const {
 //               Here, we just pass that to the make
 ////////////////////////////////////////////////////////////////////
 CPT(RenderEffect) PolylightEffect::
-set_effect_center(LPoint3f ec) const{
+set_effect_center(LPoint3 ec) const{
   PolylightEffect *effect = new PolylightEffect(*this);
   effect->_effect_center = ec;
   return return_new(effect);

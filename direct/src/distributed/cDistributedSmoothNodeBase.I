@@ -72,7 +72,7 @@ d_setSmStop() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void CDistributedSmoothNodeBase::
-d_setSmH(float h) {
+d_setSmH(PN_stdfloat h) {
   //cout << "d_setSmH: " << h << endl;
   DCPacker packer;
   begin_send_update(packer, "setSmH");
@@ -86,7 +86,7 @@ d_setSmH(float h) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void CDistributedSmoothNodeBase::
-d_setSmZ(float z) {
+d_setSmZ(PN_stdfloat z) {
   //cout << "d_setSmZ: " << z << endl;
   DCPacker packer;
   begin_send_update(packer, "setSmZ");
@@ -100,7 +100,7 @@ d_setSmZ(float z) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void CDistributedSmoothNodeBase::
-d_setSmXY(float x, float y) {
+d_setSmXY(PN_stdfloat x, PN_stdfloat y) {
   //cout << "d_setSmXY: " << x << ", " << y << endl;
   DCPacker packer;
   begin_send_update(packer, "setSmXY");
@@ -115,7 +115,7 @@ d_setSmXY(float x, float y) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void CDistributedSmoothNodeBase::
-d_setSmXZ(float x, float z) {
+d_setSmXZ(PN_stdfloat x, PN_stdfloat z) {
   //cout << "d_setSmXZ: " << x << ", " << z << endl;
   DCPacker packer;
   begin_send_update(packer, "setSmXZ");
@@ -130,7 +130,7 @@ d_setSmXZ(float x, float z) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void CDistributedSmoothNodeBase::
-d_setSmPos(float x, float y, float z) {
+d_setSmPos(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
   //cout << "d_setSmXYZ: " << x << ", " << y << ", " << z << endl;
   DCPacker packer;
   begin_send_update(packer, "setSmPos");
@@ -146,7 +146,7 @@ d_setSmPos(float x, float y, float z) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void CDistributedSmoothNodeBase::
-d_setSmHpr(float h, float p, float r) {
+d_setSmHpr(PN_stdfloat h, PN_stdfloat p, PN_stdfloat r) {
   //cout << "d_setSmHPR: " << h << ", " << p << ", " << r << endl;
   DCPacker packer;
   begin_send_update(packer, "setSmHpr");
@@ -162,7 +162,7 @@ d_setSmHpr(float h, float p, float r) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void CDistributedSmoothNodeBase::
-d_setSmXYH(float x, float y, float h) {
+d_setSmXYH(PN_stdfloat x, PN_stdfloat y, PN_stdfloat h) {
   //cout << "d_setSmXYH: " << x << ", " << y << ", " << h << endl;
   DCPacker packer;
   begin_send_update(packer, "setSmXYH");
@@ -178,7 +178,7 @@ d_setSmXYH(float x, float y, float h) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void CDistributedSmoothNodeBase::
-d_setSmXYZH(float x, float y, float z, float h) {
+d_setSmXYZH(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat h) {
   //cout << "d_setSmXYZH: " << x << ", " << y << ", " << z << ", " << h << endl;
   DCPacker packer;
   begin_send_update(packer, "setSmXYZH");
@@ -195,7 +195,7 @@ d_setSmXYZH(float x, float y, float z, float h) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void CDistributedSmoothNodeBase::
-d_setSmPosHpr(float x, float y, float z, float h, float p, float r) {
+d_setSmPosHpr(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat h, PN_stdfloat p, PN_stdfloat r) {
   //cout << "d_setSmPosHpr: " << x << ", " << y << ", " << z << ", " << h << ", " << p << ", " << r << endl;
   DCPacker packer;
   begin_send_update(packer, "setSmPosHpr");
@@ -215,7 +215,7 @@ d_setSmPosHpr(float x, float y, float z, float h, float p, float r) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void CDistributedSmoothNodeBase::
-d_setSmPosHprL(float x, float y, float z, float h, float p, float r, PN_uint64 l) {
+d_setSmPosHprL(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat h, PN_stdfloat p, PN_stdfloat r, PN_uint64 l) {
   //cout << "d_setSmPosHprL: " << x << ", " << y << ", " << z << ", " << h << ", " << p << ", " << r << l << endl;
   DCPacker packer;
   begin_send_update(packer, "setSmPosHprL");

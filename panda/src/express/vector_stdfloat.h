@@ -1,5 +1,5 @@
-// Filename: pta_LVecBase2f.cxx
-// Created by:  drose (27Feb10)
+// Filename: vector_stdfloat.h
+// Created by:  drose (07Oct11)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,9 +12,19 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "pta_LVecBase2f.h"
+#ifndef VECTOR_STDFLOAT_H
+#define VECTOR_STDFLOAT_H
 
-// Tell GCC that we'll take care of the instantiation explicitly here.
-#ifdef __GNUC__
-#pragma implementation
+#include "pandabase.h"
+
+#include "vector_double.h"
+#include "vector_float.h"
+
+#ifndef STDFLOAT_DOUBLE
+typedef vector_float vector_stdfloat;
+#else
+typedef vector_double vector_stdfloat;
+#endif  // STDFLOAT_DOUBLE
+
 #endif
+

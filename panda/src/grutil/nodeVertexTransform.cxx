@@ -1,5 +1,5 @@
 // Filename: nodeVertexTransform.cxx
-// Created by:  drose (22Feb07)
+// Created by:  drose (22eb07)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -37,9 +37,9 @@ NodeVertexTransform(const PandaNode *node,
 //               expressed as a matrix.
 ////////////////////////////////////////////////////////////////////
 void NodeVertexTransform::
-get_matrix(LMatrix4f &matrix) const {
+get_matrix(LMatrix4 &matrix) const {
   if (_prev != (const VertexTransform *)NULL) {
-    LMatrix4f prev_matrix;
+    LMatrix4 prev_matrix;
     _prev->get_matrix(prev_matrix);
     matrix.multiply(_node->get_transform()->get_mat(), prev_matrix);
 

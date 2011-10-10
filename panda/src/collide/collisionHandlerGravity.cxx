@@ -32,10 +32,10 @@ CollisionHandlerGravity() {
   _reach = 1.0f;
   _airborne_height = 0.0f;
   _impact_velocity = 0.0f;
-  _gravity = 32.174f;
+  _gravity = 32.174;
   _current_velocity = 0.0f;
   _max_velocity = 400.0f;
-  _contact_normal = LVector3f::zero();
+  _contact_normal = LVector3::zero();
   _legacy_mode = false;
 }
 
@@ -61,11 +61,11 @@ CollisionHandlerGravity::
 ////////////////////////////////////////////////////////////////////
 #define OLD_COLLISION_HANDLER_GRAVITY 0
 #if OLD_COLLISION_HANDLER_GRAVITY
-float CollisionHandlerGravity::
+PN_stdfloat CollisionHandlerGravity::
 set_highest_collision(const NodePath &target_node_path, const NodePath &from_node_path, const Entries &entries) {
   // Get the maximum height for all collisions with this node.
   bool got_max = false;
-  float max_height = 0.0f;
+  PN_stdfloat max_height = 0.0f;
   CollisionEntry *highest = NULL;
   
   Entries::const_iterator ei;
@@ -75,13 +75,13 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
     nassertr(from_node_path == entry->get_from_node_path(), 0.0f);
 
     if (entry->has_surface_point()) {
-      LPoint3f point = entry->get_surface_point(target_node_path);
+      LPoint3 point = entry->get_surface_point(target_node_path);
       if (collide_cat.is_debug()) {
         collide_cat.debug()
           << "Intersection point detected at " << point << "\n";
       }
 
-      float height = point[2];
+      PN_stdfloat height = point[2];
       if (!got_max || height > max_height) {
         got_max = true;
         max_height = height;
@@ -112,7 +112,7 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
   return max_height;
 }
 #else
-float CollisionHandlerGravity::
+PN_stdfloat CollisionHandlerGravity::
 set_highest_collision(const NodePath &target_node_path, const NodePath &from_node_path, const Entries &entries) {
   // Get the maximum height for all collisions with this node.
   // This is really the distance to-the-ground, so it will
@@ -121,8 +121,8 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
   // the avatar is right-side-up (or the ray is plumb)).
   bool got_max = false;
   bool got_min = false;
-  float max_height = 0.0f;
-  float min_height = 0.0f;
+  PN_stdfloat max_height = 0.0f;
+  PN_stdfloat min_height = 0.0f;
   CollisionEntry *highest = NULL;
   CollisionEntry *lowest = NULL;
 
@@ -135,12 +135,12 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
     nassertr(from_node_path == entry->get_from_node_path(), 0.0f);
 
     if (entry->has_surface_point()) {
-      LPoint3f point = entry->get_surface_point(target_node_path);
+      LPoint3 point = entry->get_surface_point(target_node_path);
       if (collide_cat.is_debug()) {
         collide_cat.debug()
           << "Intersection point detected at " << point << "\n";
       }
-      float height = point[2];
+      PN_stdfloat height = point[2];
       if(height < _offset + _reach) {
         valid_entries.push_back(entry);
         if (!got_max || height > max_height) {
@@ -245,13 +245,13 @@ handle_entries() {
       okflag = false;
     } else {
       ColliderDef &def = (*ci).second;
-      float max_height = set_highest_collision(def._target, from_node_path, entries);
+      PN_stdfloat max_height = set_highest_collision(def._target, from_node_path, entries);
 
       // Now set our height accordingly.
       #if OLD_COLLISION_HANDLER_GRAVITY
-      float adjust = max_height + _offset;
+      PN_stdfloat adjust = max_height + _offset;
       #else
-      float adjust = max_height + _offset;
+      PN_stdfloat adjust = max_height + _offset;
       #endif
       if (_current_velocity > 0.0f || !IS_THRESHOLD_ZERO(adjust, 0.001)) {
         if (collide_cat.is_debug()) {
@@ -262,15 +262,15 @@ handle_entries() {
         if (_current_velocity > 0.0f || adjust) {
           // ...we have a vertical thrust,
           // ...or the node is above the floor, so it is airborne.
-          float dt = ClockObject::get_global_clock()->get_dt();
+          PN_stdfloat dt = ClockObject::get_global_clock()->get_dt();
           // Fyi, the sign of _gravity is reversed. I think it makes the get_*() set_*()
           // more intuitive to do it this way.
-          float gravity_adjust = _current_velocity * dt + 0.5 * -_gravity * dt * dt;
+          PN_stdfloat gravity_adjust = _current_velocity * dt + 0.5 * -_gravity * dt * dt;
           if (adjust > 0.0f) {
             // ...the node is under the floor, so it has landed.
             // Keep the adjust to bring us up to the ground and
             // then add the gravity_adjust to get us airborne:
-            adjust += max(0.0f, gravity_adjust);
+            adjust += max((PN_stdfloat)0.0, gravity_adjust);
           } else {
             // ...the node is above the floor, so it is airborne.
             adjust = max(adjust, gravity_adjust);
@@ -292,12 +292,12 @@ handle_entries() {
         }
 
         CPT(TransformState) trans = def._target.get_transform();
-        LVecBase3f pos = trans->get_pos();
+        LVecBase3 pos = trans->get_pos();
         pos[2] += adjust;
         def._target.set_transform(trans->set_pos(pos));
         def.updated_transform();
 
-        apply_linear_force(def, LVector3f(0.0f, 0.0f, adjust));
+        apply_linear_force(def, LVector3(0.0f, 0.0f, adjust));
       } else {
         // _impact_velocity = _current_velocity;
         _current_velocity = _airborne_height = 0.0f;
@@ -318,5 +318,5 @@ handle_entries() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void CollisionHandlerGravity::
-apply_linear_force(ColliderDef &def, const LVector3f &force) {
+apply_linear_force(ColliderDef &def, const LVector3 &force) {
 }

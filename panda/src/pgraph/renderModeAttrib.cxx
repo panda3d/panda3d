@@ -46,7 +46,7 @@ int RenderModeAttrib::_attrib_slot;
 //               regardless of distance from the camera.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) RenderModeAttrib::
-make(RenderModeAttrib::Mode mode, float thickness, bool perspective) {
+make(RenderModeAttrib::Mode mode, PN_stdfloat thickness, bool perspective) {
   RenderModeAttrib *attrib = new RenderModeAttrib(mode, thickness, perspective);
   return return_new(attrib);
 }
@@ -205,7 +205,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   RenderAttrib::write_datagram(manager, dg);
 
   dg.add_int8(_mode);
-  dg.add_float32(_thickness);
+  dg.add_stdfloat(_thickness);
   dg.add_bool(_perspective);
 }
 
@@ -241,6 +241,6 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
 
   _mode = (Mode)scan.get_int8();
-  _thickness = scan.get_float32();
+  _thickness = scan.get_stdfloat();
   _perspective = scan.get_bool();
 }

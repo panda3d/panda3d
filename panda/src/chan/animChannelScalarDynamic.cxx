@@ -96,7 +96,7 @@ has_changed(int, double, int, double) {
 //  Description: Gets the value of the channel at the indicated frame.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelScalarDynamic::
-get_value(int, float &value) {
+get_value(int, PN_stdfloat &value) {
   if (_value_node != (PandaNode *)NULL) {
     value = _value->get_pos()[0];
 
@@ -111,7 +111,7 @@ get_value(int, float &value) {
 //  Description: Explicitly sets the value.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelScalarDynamic::
-set_value(float value) {
+set_value(PN_stdfloat value) {
   _float_value = value;
   _value_node.clear();
   _value_changed = true;
@@ -127,7 +127,7 @@ set_value(float value) {
 void AnimChannelScalarDynamic::
 set_value_node(PandaNode *value_node) {
   if (_value_node == (PandaNode *)NULL) {
-    _last_value = TransformState::make_pos(LVecBase3f(_float_value, 0.0f, 0.0f));
+    _last_value = TransformState::make_pos(LVecBase3(_float_value, 0.0f, 0.0f));
   }
 
   _value_node = value_node;
@@ -162,7 +162,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   AnimChannelScalar::write_datagram(manager, dg);
   manager->write_pointer(dg, _value_node);
   manager->write_pointer(dg, _value);
-  dg.add_float32(_float_value);
+  dg.add_stdfloat(_float_value);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -199,7 +199,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   manager->read_pointer(scan);
   manager->read_pointer(scan);
 
-  _float_value = scan.get_float32();
+  _float_value = scan.get_stdfloat();
 }
 
 ////////////////////////////////////////////////////////////////////

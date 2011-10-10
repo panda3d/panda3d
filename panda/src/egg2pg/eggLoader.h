@@ -154,14 +154,14 @@ private:
                       EggPrimitive *egg_prim, 
                       UniquePrimitives &unique_primitives,
                       Primitives &primitives,
-                      bool has_overall_color, const Colorf &overall_color);
+                      bool has_overall_color, const LColor &overall_color);
 
   void set_portal_polygon(EggGroup *egg_group, PortalNode *pnode);
   void set_occluder_polygon(EggGroup *egg_group, OccluderNode *pnode);
   PT(EggPolygon) find_first_polygon(EggGroup *egg_group);
 
   bool make_sphere(EggGroup *start_group, EggGroup::CollideFlags flags,
-                   LPoint3f &center, float &radius, Colorf &color);
+                   LPoint3 &center, PN_stdfloat &radius, LColor &color);
 
   void make_collision_solids(EggGroup *start_group, EggGroup *egg_group,
                              CollisionNode *cnode);
@@ -243,7 +243,7 @@ private:
   typedef pmap<VertexPoolTransform, PT(GeomVertexData) > VertexPoolData;
   VertexPoolData _vertex_pool_data;
 
-  typedef pmap<LMatrix4f, CPT(TransformState) > TransformStates;
+  typedef pmap<LMatrix4, CPT(TransformState) > TransformStates;
   TransformStates _transform_states;
 
   DeferredNodes _deferred_nodes;

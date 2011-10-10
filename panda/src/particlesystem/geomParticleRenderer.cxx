@@ -32,7 +32,7 @@ GeomParticleRenderer::
 GeomParticleRenderer(ParticleRendererAlphaMode am, PandaNode *geom_node) :
   BaseParticleRenderer(am),
   _geom_node(geom_node),
-  _color_interpolation_manager(new ColorInterpolationManager(Colorf(1.0f,1.0f,1.0f,1.0f))),
+  _color_interpolation_manager(new ColorInterpolationManager(LColor(1.0f,1.0f,1.0f,1.0f))),
   _pool_size(0),
   _initial_x_scale(1.0f),
   _final_x_scale(1.0f),
@@ -207,11 +207,11 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
       cur_node->set_state(_render_state);
 
-      float t = cur_particle->get_parameterized_age();
-      Colorf c = _color_interpolation_manager->generateColor(t);
+      PN_stdfloat t = cur_particle->get_parameterized_age();
+      LColor c = _color_interpolation_manager->generateColor(t);
 
       if ((_alpha_mode != PR_ALPHA_NONE)) {
-        float alpha_scalar;
+        PN_stdfloat alpha_scalar;
 
         if(_alpha_mode == PR_ALPHA_USER) {
           alpha_scalar = get_user_alpha();
@@ -226,15 +226,15 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
         
         c[3] *= alpha_scalar;
         cur_node->set_attrib(ColorScaleAttrib::make
-                             (Colorf(1.0f, 1.0f, 1.0f, c[3])));
+                             (LColor(1.0f, 1.0f, 1.0f, c[3])));
       }
 
       cur_node->set_attrib(ColorAttrib::make_flat(c), 0);
 
       // animate scale
-      float current_x_scale = _initial_x_scale;
-      float current_y_scale = _initial_y_scale;
-      float current_z_scale = _initial_z_scale;
+      PN_stdfloat current_x_scale = _initial_x_scale;
+      PN_stdfloat current_y_scale = _initial_y_scale;
+      PN_stdfloat current_z_scale = _initial_z_scale;
 
       if (_animate_x_ratio || _animate_y_ratio || _animate_z_ratio) {
         if (_animate_x_ratio) {
@@ -254,7 +254,7 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
       cur_node->set_transform(TransformState::make_pos_quat_scale
                               (cur_particle->get_position(),
                                cur_particle->get_orientation(),
-                               LVecBase3f(current_x_scale, current_y_scale, current_z_scale)));
+                               LVecBase3(current_x_scale, current_y_scale, current_z_scale)));
 
       // maybe get out early if possible.
 

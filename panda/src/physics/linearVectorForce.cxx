@@ -27,7 +27,7 @@ TypeHandle LinearVectorForce::_type_handle;
 //  Description : Vector Constructor
 ////////////////////////////////////////////////////////////////////
 LinearVectorForce::
-LinearVectorForce(const LVector3f& vec, float a, bool mass) :
+LinearVectorForce(const LVector3& vec, PN_stdfloat a, bool mass) :
   LinearForce(a, mass),
   _fvec(vec) {
 }
@@ -38,7 +38,7 @@ LinearVectorForce(const LVector3f& vec, float a, bool mass) :
 //  Description : Default/Piecewise constructor
 ////////////////////////////////////////////////////////////////////
 LinearVectorForce::
-LinearVectorForce(float x, float y, float z, float a, bool mass) :
+LinearVectorForce(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat a, bool mass) :
   LinearForce(a, mass) {
   _fvec.set(x, y, z);
 }
@@ -78,7 +78,7 @@ make_copy() {
 //      Access : Public
 // Description : vector access
 ////////////////////////////////////////////////////////////////////
-LVector3f LinearVectorForce::
+LVector3 LinearVectorForce::
 get_child_vector(const PhysicsObject *) {
   return _fvec;
 }

@@ -48,7 +48,7 @@ MovingPartMatrix::
 ////////////////////////////////////////////////////////////////////
 AnimChannelBase *MovingPartMatrix::
 make_default_channel() const {
-  LVecBase3f pos, hpr, scale, shear;
+  LVecBase3 pos, hpr, scale, shear;
   decompose_matrix(_default_value, pos, hpr, scale, shear);
   return new AnimChannelMatrixFixed(get_name(), pos, hpr, scale);
 }
@@ -93,13 +93,13 @@ get_blend_value(const PartBundle *root) {
     case PartBundle::BT_linear:
       {
         // An ordinary, linear blend.
-        LMatrix4f net_value = LMatrix4f::zeros_mat();
-        float net_effect = 0.0f;
+        LMatrix4 net_value = LMatrix4::zeros_mat();
+        PN_stdfloat net_effect = 0.0f;
         
         PartBundle::ChannelBlend::const_iterator cbi;
         for (cbi = cdata->_blend.begin(); cbi != cdata->_blend.end(); ++cbi) {
           AnimControl *control = (*cbi).first;
-          float effect = (*cbi).second;
+          PN_stdfloat effect = (*cbi).second;
           nassertv(effect != 0.0f);
           
           int channel_index = control->get_channel_index();
@@ -114,7 +114,7 @@ get_blend_value(const PartBundle *root) {
               net_value += v * effect;
             } else {
               // Blend between successive frames.
-              float frac = (float)control->get_frac();
+              PN_stdfloat frac = (PN_stdfloat)control->get_frac();
               net_value += v * (effect * (1.0f - frac));
 
               channel->get_value(control->get_next_frame(), v);
@@ -142,15 +142,15 @@ get_blend_value(const PartBundle *root) {
         // artificially-introduced scales, and then reapply the
         // scales and shears.
         
-        LMatrix4f net_value = LMatrix4f::zeros_mat();
-        LVecBase3f scale(0.0f, 0.0f, 0.0f);
-        LVecBase3f shear(0.0f, 0.0f, 0.0f);
-        float net_effect = 0.0f;
+        LMatrix4 net_value = LMatrix4::zeros_mat();
+        LVecBase3 scale(0.0f, 0.0f, 0.0f);
+        LVecBase3 shear(0.0f, 0.0f, 0.0f);
+        PN_stdfloat net_effect = 0.0f;
         
         PartBundle::ChannelBlend::const_iterator cbi;
         for (cbi = cdata->_blend.begin(); cbi != cdata->_blend.end(); ++cbi) {
           AnimControl *control = (*cbi).first;
-          float effect = (*cbi).second;
+          PN_stdfloat effect = (*cbi).second;
           nassertv(effect != 0.0f);
           
           ChannelType *channel = NULL;
@@ -161,7 +161,7 @@ get_blend_value(const PartBundle *root) {
           if (channel != (ChannelType *)NULL) {
             int frame = control->get_frame();
             ValueType v;
-            LVecBase3f iscale, ishear;
+            LVecBase3 iscale, ishear;
             channel->get_value_no_scale_shear(frame, v);
             channel->get_scale(frame, iscale);
             channel->get_shear(frame, ishear);
@@ -173,8 +173,8 @@ get_blend_value(const PartBundle *root) {
               shear += ishear * effect;
             } else {
               // Blend between successive frames.
-              float frac = (float)control->get_frac();
-              float e0 = effect * (1.0f - frac);
+              PN_stdfloat frac = (PN_stdfloat)control->get_frac();
+              PN_stdfloat e0 = effect * (1.0f - frac);
               net_value += v * e0;
               scale += iscale * e0;
               shear += ishear * e0;
@@ -183,7 +183,7 @@ get_blend_value(const PartBundle *root) {
               channel->get_value_no_scale_shear(next_frame, v);
               channel->get_scale(next_frame, iscale);
               channel->get_shear(next_frame, ishear);
-              float e1 = effect * frac;
+              PN_stdfloat e1 = effect * frac;
               net_value += v * e1;
               scale += iscale * e1;
               shear += ishear * e1;
@@ -204,7 +204,7 @@ get_blend_value(const PartBundle *root) {
           
           // Now rebuild the matrix with the correct scale values.
           
-          LVector3f false_scale, false_shear, hpr, translate;
+          LVector3 false_scale, false_shear, hpr, translate;
           decompose_matrix(net_value, false_scale, false_shear, hpr, translate);
           compose_matrix(_value, scale, shear, hpr, translate);
         }
@@ -214,16 +214,16 @@ get_blend_value(const PartBundle *root) {
     case PartBundle::BT_componentwise:
       {
         // Componentwise linear, including componentwise H, P, and R.
-        LVecBase3f scale(0.0f, 0.0f, 0.0f);
-        LVecBase3f hpr(0.0f, 0.0f, 0.0f);
-        LVecBase3f pos(0.0f, 0.0f, 0.0f);
-        LVecBase3f shear(0.0f, 0.0f, 0.0f);
-        float net_effect = 0.0f;
+        LVecBase3 scale(0.0f, 0.0f, 0.0f);
+        LVecBase3 hpr(0.0f, 0.0f, 0.0f);
+        LVecBase3 pos(0.0f, 0.0f, 0.0f);
+        LVecBase3 shear(0.0f, 0.0f, 0.0f);
+        PN_stdfloat net_effect = 0.0f;
         
         PartBundle::ChannelBlend::const_iterator cbi;
         for (cbi = cdata->_blend.begin(); cbi != cdata->_blend.end(); ++cbi) {
           AnimControl *control = (*cbi).first;
-          float effect = (*cbi).second;
+          PN_stdfloat effect = (*cbi).second;
           nassertv(effect != 0.0f);
           
           ChannelType *channel = NULL;
@@ -233,7 +233,7 @@ get_blend_value(const PartBundle *root) {
           }
           if (channel != (ChannelType *)NULL) {
             int frame = control->get_frame();
-            LVecBase3f iscale, ihpr, ipos, ishear;
+            LVecBase3 iscale, ihpr, ipos, ishear;
             channel->get_scale(frame, iscale);
             channel->get_hpr(frame, ihpr);
             channel->get_pos(frame, ipos);
@@ -247,8 +247,8 @@ get_blend_value(const PartBundle *root) {
               shear += ishear * effect;
             } else {
               // Blend between successive frames.
-              float frac = (float)control->get_frac();
-              float e0 = effect * (1.0f - frac);
+              PN_stdfloat frac = (PN_stdfloat)control->get_frac();
+              PN_stdfloat e0 = effect * (1.0f - frac);
 
               scale += iscale * e0;
               hpr += ihpr * e0;
@@ -260,7 +260,7 @@ get_blend_value(const PartBundle *root) {
               channel->get_hpr(next_frame, ihpr);
               channel->get_pos(next_frame, ipos);
               channel->get_shear(next_frame, ishear);
-              float e1 = effect * frac;
+              PN_stdfloat e1 = effect * frac;
 
               scale += iscale * e1;
               hpr += ihpr * e1;
@@ -291,16 +291,16 @@ get_blend_value(const PartBundle *root) {
       {
         // Componentwise linear, except for rotation, which is a
         // quaternion.
-        LVecBase3f scale(0.0f, 0.0f, 0.0f);
-        LQuaternionf quat(0.0f, 0.0f, 0.0f, 0.0f);
-        LVecBase3f pos(0.0f, 0.0f, 0.0f);
-        LVecBase3f shear(0.0f, 0.0f, 0.0f);
-        float net_effect = 0.0f;
+        LVecBase3 scale(0.0f, 0.0f, 0.0f);
+        LQuaternion quat(0.0f, 0.0f, 0.0f, 0.0f);
+        LVecBase3 pos(0.0f, 0.0f, 0.0f);
+        LVecBase3 shear(0.0f, 0.0f, 0.0f);
+        PN_stdfloat net_effect = 0.0f;
         
         PartBundle::ChannelBlend::const_iterator cbi;
         for (cbi = cdata->_blend.begin(); cbi != cdata->_blend.end(); ++cbi) {
           AnimControl *control = (*cbi).first;
-          float effect = (*cbi).second;
+          PN_stdfloat effect = (*cbi).second;
           nassertv(effect != 0.0f);
           
           ChannelType *channel = NULL;
@@ -310,8 +310,8 @@ get_blend_value(const PartBundle *root) {
           }
           if (channel != (ChannelType *)NULL) {
             int frame = control->get_frame();
-            LVecBase3f iscale, ipos, ishear;
-            LQuaternionf iquat;
+            LVecBase3 iscale, ipos, ishear;
+            LQuaternion iquat;
             channel->get_scale(frame, iscale);
             channel->get_quat(frame, iquat);
             channel->get_pos(frame, ipos);
@@ -326,8 +326,8 @@ get_blend_value(const PartBundle *root) {
 
             } else {
               // Blend between successive frames.
-              float frac = (float)control->get_frac();
-              float e0 = effect * (1.0f - frac);
+              PN_stdfloat frac = (PN_stdfloat)control->get_frac();
+              PN_stdfloat e0 = effect * (1.0f - frac);
 
               scale += iscale * e0;
               quat += iquat * e0;
@@ -339,7 +339,7 @@ get_blend_value(const PartBundle *root) {
               channel->get_quat(next_frame, iquat);
               channel->get_pos(next_frame, ipos);
               channel->get_shear(next_frame, ishear);
-              float e1 = effect * frac;
+              PN_stdfloat e1 = effect * frac;
 
               scale += iscale * e1;
               quat += iquat * e1;
@@ -365,7 +365,7 @@ get_blend_value(const PartBundle *root) {
           // assuming all of the input quaternions were already
           // normalized.
           
-          _value = LMatrix4f::scale_shear_mat(scale, shear) * quat;
+          _value = LMatrix4::scale_shear_mat(scale, shear) * quat;
           _value.set_row(3, pos);
         }
       }
@@ -384,7 +384,7 @@ get_blend_value(const PartBundle *root) {
 //               PartBundle::freeze_joint().
 ////////////////////////////////////////////////////////////////////
 bool MovingPartMatrix::
-apply_freeze_matrix(const LVecBase3f &pos, const LVecBase3f &hpr, const LVecBase3f &scale) {
+apply_freeze_matrix(const LVecBase3 &pos, const LVecBase3 &hpr, const LVecBase3 &scale) {
   _forced_channel = new AnimChannelMatrixFixed(get_name(), pos, hpr, scale);
   return true;
 }

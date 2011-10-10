@@ -171,8 +171,8 @@ birth_particle() {
   bp->init();
 
   // get the location of the new particle.
-  LPoint3f new_pos, world_pos;
-  LVector3f new_vel;
+  LPoint3 new_pos, world_pos;
+  LVector3 new_vel;
 
   _emitter->generate(new_pos, new_vel);
 
@@ -181,7 +181,7 @@ birth_particle() {
   NodePath render_np = _renderer->get_render_node_path();
 
   CPT(TransformState) transform = physical_np.get_transform(render_np);
-  const LMatrix4f &birth_to_render_xform = transform->get_mat();
+  const LMatrix4 &birth_to_render_xform = transform->get_mat();
   world_pos = new_pos * birth_to_render_xform;
 
   //  cout << "New particle at " << world_pos << endl;
@@ -275,9 +275,9 @@ spawn_child_system(BaseParticle *bp) {
   parent->add_child(new_pn);
 
   CPT(TransformState) transform = physical_np.get_transform(parent_np);
-  const LMatrix4f &old_system_to_parent_xform = transform->get_mat();
+  const LMatrix4 &old_system_to_parent_xform = transform->get_mat();
 
-  LMatrix4f child_space_xform = old_system_to_parent_xform *
+  LMatrix4 child_space_xform = old_system_to_parent_xform *
     bp->get_lcs();
 
   new_pn->set_transform(TransformState::make_mat(child_space_xform));
@@ -465,13 +465,13 @@ resize_pool(int size) {
 //#define PARTICLE_SYSTEM_UPDATE_SENTRIES
 #endif
 void ParticleSystem::
-update(float dt) {
+update(PN_stdfloat dt) {
   PStatTimer t1(_update_collector);
 
   int ttl_updates_left = _living_particles;
   int current_index = 0, index_counter = 0;
   BaseParticle *bp;
-  float age;
+  PN_stdfloat age;
 
   #ifdef PSSANITYCHECK
   // check up on things

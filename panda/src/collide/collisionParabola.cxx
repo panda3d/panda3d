@@ -38,7 +38,7 @@ TypeHandle CollisionParabola::_type_handle;
 //               intersection point to this origin point is considered
 //               to be the most significant.
 ////////////////////////////////////////////////////////////////////
-LPoint3f CollisionParabola::
+LPoint3 CollisionParabola::
 get_collision_origin() const {
   return _parabola.calc_point(_t1);
 }
@@ -70,7 +70,7 @@ test_intersection(const CollisionEntry &entry) const {
 //  Description: Transforms the solid by the indicated matrix.
 ////////////////////////////////////////////////////////////////////
 void CollisionParabola::
-xform(const LMatrix4f &mat) {
+xform(const LMatrix4 &mat) {
   _parabola.xform(mat);
 
   mark_viz_stale();
@@ -118,15 +118,15 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 PT(BoundingVolume) CollisionParabola::
 compute_internal_bounds() const {
-  LPoint3f p1 = _parabola.calc_point(get_t1());
-  LPoint3f p2 = _parabola.calc_point(get_t2());
-  LVector3f pdelta = p2 - p1;
+  LPoint3 p1 = _parabola.calc_point(get_t1());
+  LPoint3 p2 = _parabola.calc_point(get_t2());
+  LVector3 pdelta = p2 - p1;
 
   // If p1 and p2 are sufficiently close, just put a sphere around
   // them.
-  float d2 = pdelta.length_squared();
+  PN_stdfloat d2 = pdelta.length_squared();
   if (d2 < collision_parabola_bounds_threshold * collision_parabola_bounds_threshold) {
-    LPoint3f pmid = (p1 + p2) * 0.5f;
+    LPoint3 pmid = (p1 + p2) * 0.5f;
     return new BoundingSphere(pmid, csqrt(d2) * 0.5f);
   }
 
@@ -143,40 +143,40 @@ compute_internal_bounds() const {
   // We have to be explicit about the coordinate system--we
   // specifically mean CS_zup_right here, to make the YZ plane.
 
-  LMatrix4f from_parabola;
+  LMatrix4 from_parabola;
   look_at(from_parabola, pdelta, -_parabola.get_a(), CS_zup_right);
   from_parabola.set_row(3, p1);
 
   // The matrix that computes from world space to parabola space is
   // the inverse of that which we just computed.
-  LMatrix4f to_parabola;
+  LMatrix4 to_parabola;
   to_parabola.invert_from(from_parabola);
 
   // Now convert the parabola itself into parabola space.
-  Parabolaf psp = _parabola;
+  LParabola psp = _parabola;
   psp.xform(to_parabola);
 
-  LPoint3f pp2 = psp.calc_point(get_t2());
-  float max_y = pp2[1];
+  LPoint3 pp2 = psp.calc_point(get_t2());
+  PN_stdfloat max_y = pp2[1];
 
   // We compute a few points along the parabola to attempt to get the
   // minmax.
-  float min_z = 0.0f;
-  float max_z = 0.0f;
+  PN_stdfloat min_z = 0.0f;
+  PN_stdfloat max_z = 0.0f;
   int num_points = collision_parabola_bounds_sample;
   for (int i = 0; i < num_points; ++i) {
     double t = (double)(i + 1) / (double)(num_points + 1);
-    LPoint3f p = psp.calc_point(get_t1() + t * (get_t2() - get_t1()));
+    LPoint3 p = psp.calc_point(get_t1() + t * (get_t2() - get_t1()));
     min_z = min(min_z, p[2]);
     max_z = max(max_z, p[2]);
   }
 
   // That gives us a simple bounding volume in parabola space.
   PT(BoundingHexahedron) volume = 
-    new BoundingHexahedron(LPoint3f(-0.01, max_y, min_z), LPoint3f(0.01, max_y, min_z),
-                           LPoint3f(0.01, max_y, max_z), LPoint3f(-0.01, max_y, max_z), 
-                           LPoint3f(-0.01, 0, min_z), LPoint3f(0.01, 0, min_z), 
-                           LPoint3f(0.01, 0, max_z), LPoint3f(-0.01, 0, max_z));
+    new BoundingHexahedron(LPoint3(-0.01, max_y, min_z), LPoint3(0.01, max_y, min_z),
+                           LPoint3(0.01, max_y, max_z), LPoint3(-0.01, max_y, max_z), 
+                           LPoint3(-0.01, 0, min_z), LPoint3(0.01, 0, min_z), 
+                           LPoint3(0.01, 0, max_z), LPoint3(-0.01, 0, max_z));
   // And convert that back into real space.
   volume->xform(from_parabola);
   return volume.p();
@@ -205,10 +205,10 @@ fill_viz_geom() {
   
   for (int i = 0; i < num_points; i++) {
     double t = ((double)i / (double)num_points);
-    vertex.add_data3f(_parabola.calc_point(_t1 + t * (_t2 - _t1)));
+    vertex.add_data3(_parabola.calc_point(_t1 + t * (_t2 - _t1)));
     
-    color.add_data4f(Colorf(1.0f, 1.0f, 1.0f, 0.0f) +
-                     t * Colorf(0.0f, 0.0f, 0.0f, 1.0f));
+    color.add_data4(LColor(1.0f, 1.0f, 1.0f, 0.0f) +
+                     t * LColor(0.0f, 0.0f, 0.0f, 1.0f));
   }
 
   PT(GeomLinestrips) line = new GeomLinestrips(Geom::UH_static);
@@ -242,8 +242,8 @@ void CollisionParabola::
 write_datagram(BamWriter *manager, Datagram &me) {
   CollisionSolid::write_datagram(manager, me);
   _parabola.write_datagram(me);
-  me.add_float32(_t1);
-  me.add_float32(_t2);
+  me.add_stdfloat(_t1);
+  me.add_stdfloat(_t2);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -274,6 +274,6 @@ void CollisionParabola::
 fillin(DatagramIterator& scan, BamReader* manager) {
   CollisionSolid::fillin(scan, manager);
   _parabola.read_datagram(scan);
-  _t1 = scan.get_float32();
-  _t2 = scan.get_float32();
+  _t1 = scan.get_stdfloat();
+  _t2 = scan.get_stdfloat();
 }

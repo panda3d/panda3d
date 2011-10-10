@@ -2033,7 +2033,6 @@ CopyAllHeaders('panda/src/lerp')
 CopyAllHeaders('panda/src/pgraphnodes')
 CopyAllHeaders('panda/src/pgraph')
 CopyAllHeaders('panda/src/cull')
-CopyAllHeaders('panda/src/effects')
 CopyAllHeaders('panda/src/chan')
 CopyAllHeaders('panda/src/char')
 CopyAllHeaders('panda/src/dgraph')
@@ -3063,18 +3062,6 @@ if (not RUNTIME):
   TargetAdd('libdistort_igate.obj', input='libdistort.in', opts=["DEPENDENCYONLY"])
 
 #
-# DIRECTORY: panda/src/effects/
-#
-
-if (not RUNTIME):
-  OPTS=['DIR:panda/src/effects', 'BUILDING:PANDAFX',  'NVIDIACG']
-  TargetAdd('effects_composite.obj', opts=OPTS, input='effects_composite.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/effects', ["*.h", "*_composite.cxx"])
-  TargetAdd('libeffects.in', opts=OPTS, input=IGATEFILES)
-  TargetAdd('libeffects.in', opts=['IMOD:pandafx', 'ILIB:libeffects', 'SRCDIR:panda/src/effects'])
-  TargetAdd('libeffects_igate.obj', input='libeffects.in', opts=["DEPENDENCYONLY"])
-
-#
 # DIRECTORY: panda/metalibs/pandafx/
 #
 
@@ -3083,7 +3070,6 @@ if (not RUNTIME):
   TargetAdd('pandafx_pandafx.obj', opts=OPTS, input='pandafx.cxx')
 
   TargetAdd('libpandafx_module.obj', input='libdistort.in')
-  TargetAdd('libpandafx_module.obj', input='libeffects.in')
   TargetAdd('libpandafx_module.obj', opts=OPTS)
   TargetAdd('libpandafx_module.obj', opts=['IMOD:pandafx', 'ILIB:libpandafx'])
 
@@ -3091,8 +3077,6 @@ if (not RUNTIME):
   TargetAdd('libpandafx.dll', input='libpandafx_module.obj')
   TargetAdd('libpandafx.dll', input='distort_composite.obj')
   TargetAdd('libpandafx.dll', input='libdistort_igate.obj')
-  TargetAdd('libpandafx.dll', input='effects_composite.obj')
-  TargetAdd('libpandafx.dll', input='libeffects_igate.obj')
   TargetAdd('libpandafx.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libpandafx.dll', opts=['ADVAPI',  'NVIDIACG'])
 

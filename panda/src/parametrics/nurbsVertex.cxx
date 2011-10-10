@@ -38,19 +38,19 @@
 //               extended vertices can be set.
 ////////////////////////////////////////////////////////////////////
 void NurbsVertex::
-set_extended_vertex(int d, float value) {
+set_extended_vertex(int d, PN_stdfloat value) {
   _extended[d] = value * _vertex[3];
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NurbsVertex::float_extended_vertex
+//     Function: NurbsVertex::get_extended_vertex
 //       Access: Public
 //  Description: Returns an n-dimensional vertex value.  See
 //               set_extended_vertex().  This returns the value set
 //               for the indicated dimension, or 0.0 if nothing has
 //               been set.
 ////////////////////////////////////////////////////////////////////
-float NurbsVertex::
+PN_stdfloat NurbsVertex::
 get_extended_vertex(int d) const {
   Extended::const_iterator ei;
   ei = _extended.find(d);

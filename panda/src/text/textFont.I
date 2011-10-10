@@ -41,7 +41,7 @@ operator bool () const {
 //  Description: Returns the number of units high each line of text
 //               is.
 ////////////////////////////////////////////////////////////////////
-INLINE float TextFont::
+INLINE PN_stdfloat TextFont::
 get_line_height() const {
   return _line_height;
 }
@@ -53,7 +53,7 @@ get_line_height() const {
 //               is.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextFont::
-set_line_height(float line_height) {
+set_line_height(PN_stdfloat line_height) {
   _line_height = line_height;
 }
 
@@ -62,7 +62,7 @@ set_line_height(float line_height) {
 //       Access: Published
 //  Description: Returns the number of units wide a space is.
 ////////////////////////////////////////////////////////////////////
-INLINE float TextFont::
+INLINE PN_stdfloat TextFont::
 get_space_advance() const {
   return _space_advance;
 }
@@ -73,6 +73,6 @@ get_space_advance() const {
 //  Description: Changes the number of units wide a space is.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextFont::
-set_space_advance(float space_advance) {
+set_space_advance(PN_stdfloat space_advance) {
   _space_advance = space_advance;
 }

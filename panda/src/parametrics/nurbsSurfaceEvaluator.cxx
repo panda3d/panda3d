@@ -91,7 +91,7 @@ get_vertex_space(int ui, int vi, const NodePath &rel_to) const {
 ////////////////////////////////////////////////////////////////////
 void NurbsSurfaceEvaluator::
 set_extended_vertices(int ui, int vi, int d, 
-                      const float values[], int num_values) {
+                      const PN_stdfloat values[], int num_values) {
   nassertv(ui >= 0 && ui < _num_u_vertices &&
            vi >= 0 && vi < _num_v_vertices);
 
@@ -110,7 +110,7 @@ set_extended_vertices(int ui, int vi, int d,
 //               vector is supplied.
 ////////////////////////////////////////////////////////////////////
 void NurbsSurfaceEvaluator::
-set_u_knot(int i, float knot) {
+set_u_knot(int i, PN_stdfloat knot) {
   if (_u_knots_dirty) {
     recompute_u_knots();
   }
@@ -123,7 +123,7 @@ set_u_knot(int i, float knot) {
 //       Access: Published
 //  Description: Returns the value of the nth knot.
 ////////////////////////////////////////////////////////////////////
-float NurbsSurfaceEvaluator::
+PN_stdfloat NurbsSurfaceEvaluator::
 get_u_knot(int i) const {
   if (_u_knots_dirty) {
     ((NurbsSurfaceEvaluator *)this)->recompute_u_knots();
@@ -165,7 +165,7 @@ normalize_u_knots() {
 //               vector is supplied.
 ////////////////////////////////////////////////////////////////////
 void NurbsSurfaceEvaluator::
-set_v_knot(int i, float knot) {
+set_v_knot(int i, PN_stdfloat knot) {
   if (_v_knots_dirty) {
     recompute_v_knots();
   }
@@ -178,7 +178,7 @@ set_v_knot(int i, float knot) {
 //       Access: Published
 //  Description: Returns the value of the nth knot.
 ////////////////////////////////////////////////////////////////////
-float NurbsSurfaceEvaluator::
+PN_stdfloat NurbsSurfaceEvaluator::
 get_v_knot(int i) const {
   if (_v_knots_dirty) {
     ((NurbsSurfaceEvaluator *)this)->recompute_v_knots();
@@ -229,7 +229,7 @@ evaluate(const NodePath &rel_to) const {
   }
 
   // First, transform the vertices as appropriate.
-  pvector<LVecBase4f> vecs;
+  pvector<LVecBase4> vecs;
   get_vertices(vecs, rel_to);
 
   // And apply those transformed vertices to the basis matrices to
@@ -262,18 +262,18 @@ output(ostream &out) const {
 //               coordinate changing more rapidly.
 ////////////////////////////////////////////////////////////////////
 void NurbsSurfaceEvaluator::
-get_vertices(pvector<LVecBase4f> &verts, const NodePath &rel_to) const {
+get_vertices(pvector<LVecBase4> &verts, const NodePath &rel_to) const {
   int num_vertices = (int)_vertices.size();
   verts.reserve(verts.size() + num_vertices);
   int vi;
   for (vi = 0; vi < num_vertices; vi++) {
     NodePath space = _vertices[vi].get_space(rel_to);
-    const LVecBase4f &vertex = _vertices[vi].get_vertex();
+    const LVecBase4 &vertex = _vertices[vi].get_vertex();
     if (space.is_empty()) {
       verts.push_back(vertex);
     } else {
       CPT(TransformState) transform = space.get_transform(rel_to);
-      const LMatrix4f &mat = transform->get_mat();
+      const LMatrix4 &mat = transform->get_mat();
       verts.push_back(vertex * mat);
     }
   }
@@ -291,19 +291,19 @@ get_vertices(pvector<LVecBase4f> &verts, const NodePath &rel_to) const {
 //               coordinate changing more rapidly.
 ////////////////////////////////////////////////////////////////////
 void NurbsSurfaceEvaluator::
-get_vertices(pvector<LPoint3f> &verts, const NodePath &rel_to) const {
+get_vertices(pvector<LPoint3> &verts, const NodePath &rel_to) const {
   int num_vertices = (int)_vertices.size();
   verts.reserve(verts.size() + num_vertices);
   int vi;
   for (vi = 0; vi < num_vertices; vi++) {
     const NodePath &space = _vertices[vi].get_space(rel_to);
-    LVecBase4f vertex = _vertices[vi].get_vertex();
+    LVecBase4 vertex = _vertices[vi].get_vertex();
     if (!space.is_empty()) {
       CPT(TransformState) transform = space.get_transform(rel_to);
-      const LMatrix4f &mat = transform->get_mat();
+      const LMatrix4 &mat = transform->get_mat();
       vertex = vertex * mat;
     }
-    LPoint3f v3(vertex[0] / vertex[3], vertex[1] / vertex[3], vertex[2] / vertex[3]);
+    LPoint3 v3(vertex[0] / vertex[3], vertex[1] / vertex[3], vertex[2] / vertex[3]);
     verts.push_back(v3);
   }
 }
@@ -319,7 +319,7 @@ recompute_u_knots() {
   int num_knots = get_num_u_knots();
   _u_knots.reserve(num_knots);
 
-  float value = 0.0f;
+  PN_stdfloat value = 0.0f;
 
   int i = 0;
   while (i < _u_order) {
@@ -351,7 +351,7 @@ recompute_v_knots() {
   int num_knots = get_num_v_knots();
   _v_knots.reserve(num_knots);
 
-  float value = 0.0f;
+  PN_stdfloat value = 0.0f;
 
   int i = 0;
   while (i < _v_order) {

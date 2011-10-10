@@ -88,9 +88,9 @@ clear() {
 
   CPT(GeomVertexFormat) format = GeomVertexFormat::register_format
     (new GeomVertexArrayFormat(InternalName::get_vertex(), 3, 
-                               GeomEnums::NT_float32, GeomEnums::C_point,
+                               GeomEnums::NT_stdfloat, GeomEnums::C_point,
                                InternalName::get_texcoord(), 3, 
-                               GeomEnums::NT_float32, GeomEnums::C_texcoord));
+                               GeomEnums::NT_stdfloat, GeomEnums::C_texcoord));
   set_vertex_format(format);
 }
 
@@ -161,7 +161,7 @@ setup_terrain(istream &in, const Filename &pathname) {
     if (keyword == "area") {
       // "area" defines the size of the terrain in square kilometers.
       // We apply speedtree_area_scale to convert that to local units.
-      float area;
+      PN_stdfloat area;
       in >> area;
       _size = csqrt(area) * speedtree_area_scale;
 
@@ -169,7 +169,7 @@ setup_terrain(istream &in, const Filename &pathname) {
       in >> _height_scale;
 
     } else if (keyword == "normalmap_b_scale") {
-      float normalmap_b_scale;
+      PN_stdfloat normalmap_b_scale;
       in >> normalmap_b_scale;
 
     } else if (keyword == "heightmap") {
@@ -184,18 +184,18 @@ setup_terrain(istream &in, const Filename &pathname) {
 
     } else if (keyword == "color") {
       // color means the overall color of the previous texture.
-      float r, g, b;
+      PN_stdfloat r, g, b;
       in >> r >> g >> b;
       if (!_splat_layers.empty()) {
         _splat_layers.back()._color.set(r, g, b, 1.0f);
       }
 
     } else if (keyword == "ambient" || keyword == "diffuse" || keyword == "specular" || keyword == "emissive") {
-      float r, g, b;
+      PN_stdfloat r, g, b;
       in >> r >> g >> b;
 
     } else if (keyword == "shininess") {
-      float s;
+      PN_stdfloat s;
       in >> s;
 
     } else {
@@ -268,8 +268,8 @@ load_data() {
 //               terrain, where x and y are unbounded and may refer to
 //               any 2-d point in space.
 ////////////////////////////////////////////////////////////////////
-float STBasicTerrain::
-get_height(float x, float y) const {
+PN_stdfloat STBasicTerrain::
+get_height(PN_stdfloat x, PN_stdfloat y) const {
   return _height_data.calc_bilinear_interpolation(x / _size, y / _size);
 }
 
@@ -281,8 +281,8 @@ get_height(float x, float y) const {
 //               the specified radius, centered at point (x, y) of the
 //               terrain.
 ////////////////////////////////////////////////////////////////////
-float STBasicTerrain::
-get_smooth_height(float x, float y, float radius) const {
+PN_stdfloat STBasicTerrain::
+get_smooth_height(PN_stdfloat x, PN_stdfloat y, PN_stdfloat radius) const {
   return _height_data.calc_smooth(x / _size, y / _size, radius / _size);
 }
 
@@ -295,8 +295,8 @@ get_smooth_height(float x, float y, float radius) const {
 //               is used for determining the legal points to place
 //               trees and grass.
 ////////////////////////////////////////////////////////////////////
-float STBasicTerrain::
-get_slope(float x, float y) const {
+PN_stdfloat STBasicTerrain::
+get_slope(PN_stdfloat x, PN_stdfloat y) const {
   return _slope_data.calc_bilinear_interpolation(x / _size, y / _size);
 }
 
@@ -319,25 +319,25 @@ get_slope(float x, float y) const {
 ////////////////////////////////////////////////////////////////////
 void STBasicTerrain::
 fill_vertices(GeomVertexData *data,
-              float start_x, float start_y,
-              float size_xy, int num_xy) const {
+              PN_stdfloat start_x, PN_stdfloat start_y,
+              PN_stdfloat size_xy, int num_xy) const {
   nassertv(data->get_format() == _vertex_format);
   GeomVertexWriter vertex(data, InternalName::get_vertex());
   GeomVertexWriter texcoord(data, InternalName::get_texcoord());
 
-  float vertex_scale = 1.0 / (float)(num_xy - 1);
-  float texcoord_scale = 1.0 / _size;
+  PN_stdfloat vertex_scale = 1.0 / (PN_stdfloat)(num_xy - 1);
+  PN_stdfloat texcoord_scale = 1.0 / _size;
   for (int xi = 0; xi < num_xy; ++xi) {
-    float xt = xi * vertex_scale;
-    float x = start_x + xt * size_xy;
+    PN_stdfloat xt = xi * vertex_scale;
+    PN_stdfloat x = start_x + xt * size_xy;
     for (int yi = 0; yi < num_xy; ++yi) {
-      float yt = yi * vertex_scale;
-      float y = start_y + yt * size_xy;
+      PN_stdfloat yt = yi * vertex_scale;
+      PN_stdfloat y = start_y + yt * size_xy;
 
-      float z = get_height(x, y);
+      PN_stdfloat z = get_height(x, y);
       
-      vertex.set_data3f(x, y, z);
-      texcoord.set_data3f(x * texcoord_scale, -y * texcoord_scale, 1.0f);
+      vertex.set_data3(x, y, z);
+      texcoord.set_data3(x * texcoord_scale, -y * texcoord_scale, 1.0f);
     }
   }
 }
@@ -381,12 +381,12 @@ read_height_map() {
   _min_height = FLT_MAX;
   _max_height = FLT_MIN;
 
-  float scalar = _size * _height_scale / image.get_num_channels();
+  PN_stdfloat scalar = _size * _height_scale / image.get_num_channels();
   int pi = 0;
   for (int yi = image.get_y_size() - 1; yi >= 0; --yi) {
     for (int xi = 0; xi < image.get_x_size(); ++xi) {
       Colord rgba = image.get_xel_a(xi, yi);
-      float v = rgba[0] + rgba[1] + rgba[2] + rgba[3];
+      PN_stdfloat v = rgba[0] + rgba[1] + rgba[2] + rgba[3];
       v *= scalar;
       _height_data._data[pi] = v;
       ++pi;
@@ -407,15 +407,15 @@ read_height_map() {
 //               corresponding values for _slope_data.
 ////////////////////////////////////////////////////////////////////
 void STBasicTerrain::
-compute_slope(float smoothing) {
+compute_slope(PN_stdfloat smoothing) {
   nassertv(!_height_data._data.empty());
 
   int width = _height_data._width;
   int height = _height_data._height;
   _slope_data.reset(width, height);
 
-  float u_spacing = _size / (float)width;
-  float v_spacing = _size / (float)height;
+  PN_stdfloat u_spacing = _size / (PN_stdfloat)width;
+  PN_stdfloat v_spacing = _size / (PN_stdfloat)height;
 
   for (int i = 0; i < width; ++i) {
     int left = (i + width - 1) % width;
@@ -425,8 +425,8 @@ compute_slope(float smoothing) {
       int top = (j + height - 1) % height;
       int bottom = (j + 1) % height;
 
-      float slope = 0.0f;
-      float this_height = _height_data._data[i + j * width];
+      PN_stdfloat slope = 0.0f;
+      PN_stdfloat this_height = _height_data._data[i + j * width];
       slope += catan2(cabs(this_height - _height_data._data[right + j * width]), u_spacing);
       slope += catan2(cabs(this_height - _height_data._data[left + j * width]), u_spacing);
       slope += catan2(cabs(this_height - _height_data._data[i + top * width]), v_spacing);
@@ -443,12 +443,12 @@ compute_slope(float smoothing) {
 
   if (smoothing > 0.0f) {
     // Create a temporary array for smoothing data.
-    InterpolationData<float> smoothing_data;
+    InterpolationData<PN_stdfloat> smoothing_data;
     smoothing_data.reset(width, height);
-    float *smoothed = &smoothing_data._data[0];
+    PN_stdfloat *smoothed = &smoothing_data._data[0];
 
     int steps = int(smoothing);
-    float last_interpolation = smoothing - steps;
+    PN_stdfloat last_interpolation = smoothing - steps;
     ++steps;
     for (int si = 0; si < steps; ++si) {
 

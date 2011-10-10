@@ -250,13 +250,13 @@ flatten(GraphicsOutput *window) {
     Texture::FilterType magfilter = model_tex->get_magfilter();
 
     // What is the UV range of the model stage?
-    TexCoordf min_uv, max_uv;
+    LTexCoord min_uv, max_uv;
     determine_uv_range(min_uv, max_uv, model_stage, geom_list);
 
     // Maybe we only use a small portion of the texture, or maybe we
     // need to repeat the texture several times.
-    LVecBase2f uv_scale;
-    LVecBase2f uv_trans;
+    LVecBase2 uv_scale;
+    LVecBase2 uv_trans;
     get_uv_scale(uv_scale, uv_trans, min_uv, max_uv);
 
     // Also, if there is now a scale on the UV's (in conjunction with
@@ -294,7 +294,7 @@ flatten(GraphicsOutput *window) {
     lens->set_film_size(1.0f, 1.0f);
     lens->set_film_offset(0.5f, 0.5f);
     lens->set_near_far(-1000.0f, 1000.0f);
-    lens->set_view_mat(LMatrix4f(uv_scale[0], 0.0f, 0.0, 0.0f,
+    lens->set_view_mat(LMatrix4(uv_scale[0], 0.0f, 0.0, 0.0f,
                                  0.0f, 1.0f, 0.0, 0.0f,
                                  0.0f, 0.0f, uv_scale[1], 0.0f,
                                  uv_trans[0], 0.0f, uv_trans[1], 1.0f));
@@ -316,11 +316,11 @@ flatten(GraphicsOutput *window) {
     // might prefer not to).
     bool force_use_geom = _use_geom;
     bool bake_in_color = _use_geom;
-    Colorf geom_color(1.0f, 1.0f, 1.0f, 1.0f);
+    LColor geom_color(1.0f, 1.0f, 1.0f, 1.0f);
     
     //override the base color in the transparent pass down case.
     if(use_transparent_bg)
-      geom_color = Colorf(0.0f,0.0f,0.0f,0.0f);
+      geom_color = LColor(0.0f,0.0f,0.0f,0.0f);
 
     if (!force_use_geom) {
       bool uses_decal = scan_decal(stage_list);
@@ -387,7 +387,7 @@ flatten(GraphicsOutput *window) {
       if (bake_in_color) {
         // If we have baked the color into the texture, we have to be
         // sure to disable coloring on the new fragment.
-        geom_state = geom_state->add_attrib(ColorAttrib::make_flat(Colorf(1.0f, 1.0f, 1.0f, 1.0f)));
+        geom_state = geom_state->add_attrib(ColorAttrib::make_flat(LColor(1.0f, 1.0f, 1.0f, 1.0f)));
 
         // And we invent a ColorScaleAttrib to undo the effect of any
         // color scale we're getting from above.  This is not the same
@@ -414,9 +414,9 @@ flatten(GraphicsOutput *window) {
       }
 
       tex_mat = tex_mat->compose(TransformState::make_pos_hpr_scale
-                                 (LVecBase3f(uv_trans[0], uv_trans[1], 0.0f),
-                                  LVecBase3f(0.0f, 0.0f, 0.0f),
-                                  LVecBase3f(uv_scale[0], uv_scale[1], 1.0f)));
+                                 (LVecBase3(uv_trans[0], uv_trans[1], 0.0f),
+                                  LVecBase3(0.0f, 0.0f, 0.0f),
+                                  LVecBase3(uv_scale[0], uv_scale[1], 1.0f)));
 
       if (tex_mat->is_identity()) {
         // There should be no texture matrix on the Geom.
@@ -584,7 +584,7 @@ choose_model_stage(const MultitexReducer::StageList &stage_list) const {
 //               if any UV's are found, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool MultitexReducer::
-determine_uv_range(TexCoordf &min_uv, TexCoordf &max_uv,
+determine_uv_range(LTexCoord &min_uv, LTexCoord &max_uv,
                    const MultitexReducer::StageInfo &model_stage,
                    const MultitexReducer::GeomList &geom_list) const {
   const InternalName *model_name = model_stage._stage->get_texcoord_name();
@@ -603,7 +603,7 @@ determine_uv_range(TexCoordf &min_uv, TexCoordf &max_uv,
       GeomVertexReader texcoord(vdata, model_name);
 
       if (!texcoord.is_at_end()) {
-        const LVecBase2f &uv = texcoord.get_data2f();
+        const LVecBase2 &uv = texcoord.get_data2();
         if (!got_any) {
           min_uv = max_uv = uv;
           got_any = true;
@@ -614,7 +614,7 @@ determine_uv_range(TexCoordf &min_uv, TexCoordf &max_uv,
         }
 
         while (!texcoord.is_at_end()) {
-          const LVecBase2f &uv = texcoord.get_data2f();
+          const LVecBase2 &uv = texcoord.get_data2();
           min_uv.set(min(min_uv[0], uv[0]), min(min_uv[1], uv[1]));
           max_uv.set(max(max_uv[0], uv[0]), max(max_uv[1], uv[1]));
         }
@@ -642,8 +642,8 @@ determine_uv_range(TexCoordf &min_uv, TexCoordf &max_uv,
 //               to include all of the repeating image.
 ////////////////////////////////////////////////////////////////////
 void MultitexReducer::
-get_uv_scale(LVecBase2f &uv_scale, LVecBase2f &uv_trans,
-             const TexCoordf &min_uv, const TexCoordf &max_uv) const {
+get_uv_scale(LVecBase2 &uv_scale, LVecBase2 &uv_trans,
+             const LTexCoord &min_uv, const LTexCoord &max_uv) const {
   if (max_uv[0] != min_uv[0]) {
     uv_scale[0] = (max_uv[0] - min_uv[0]);
   } else {
@@ -670,7 +670,7 @@ get_uv_scale(LVecBase2f &uv_scale, LVecBase2f &uv_trans,
 void MultitexReducer::
 choose_texture_size(int &x_size, int &y_size, 
                     const MultitexReducer::StageInfo &model_stage, 
-                    const LVecBase2f &uv_scale,
+                    const LVecBase2 &uv_scale,
                     GraphicsOutput *window) const {
   Texture *model_tex = model_stage._tex;
   
@@ -683,9 +683,9 @@ choose_texture_size(int &x_size, int &y_size,
   // should adjust the pixel size accordingly, although we have to
   // keep it to a power of 2.
 
-  LVecBase3f inherited_scale = model_stage._tex_mat->get_scale();
+  LVecBase3 inherited_scale = model_stage._tex_mat->get_scale();
   
-  float u_scale = cabs(inherited_scale[0]) * uv_scale[0];
+  PN_stdfloat u_scale = cabs(inherited_scale[0]) * uv_scale[0];
   if (u_scale != 0.0f) {
     while (u_scale >= 2.0f) {
       x_size *= 2;
@@ -697,7 +697,7 @@ choose_texture_size(int &x_size, int &y_size,
     }
   }
 
-  float v_scale = cabs(inherited_scale[1]) * uv_scale[1];
+  PN_stdfloat v_scale = cabs(inherited_scale[1]) * uv_scale[1];
   if (v_scale != 0.0f) {
     while (v_scale >= 2.0f) {
       y_size *= 2;
@@ -755,7 +755,7 @@ void MultitexReducer::
 make_texture_layer(const NodePath &render, 
                    const MultitexReducer::StageInfo &stage_info, 
                    const MultitexReducer::GeomList &geom_list,
-                   const TexCoordf &min_uv, const TexCoordf &max_uv,
+                   const LTexCoord &min_uv, const LTexCoord &max_uv,
                    bool force_use_geom, bool transparent_base) {
   CPT(RenderAttrib) cba;
 
@@ -892,7 +892,7 @@ make_texture_layer(const NodePath &render,
     
     geom = render.attach_new_node(geom_node);
 
-    geom.set_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+    geom.set_color(LColor(1.0f, 1.0f, 1.0f, 1.0f));
   }
 
   if (!stage_info._tex_mat->is_identity()) {
@@ -940,8 +940,8 @@ transfer_geom(GeomNode *geom_node, const InternalName *texcoord_name,
       GeomVertexReader texcoord(vdata, _target_stage->get_texcoord_name(), current_thread);
       
       while (!texcoord.is_at_end()) {
-        const LVecBase2f &tc = texcoord.get_data2f();
-        vertex.set_data3f(tc[0], 0.0f, tc[1]);
+        const LVecBase2 &tc = texcoord.get_data2();
+        vertex.set_data3(tc[0], 0.0f, tc[1]);
       }
     }
     
@@ -960,7 +960,7 @@ transfer_geom(GeomNode *geom_node, const InternalName *texcoord_name,
         GeomVertexReader from(vdata, texcoord_name, current_thread);
         GeomVertexWriter to(vdata, InternalName::get_texcoord(), current_thread);
         while (!from.is_at_end()) {
-          to.add_data2f(from.get_data2f());
+          to.add_data2(from.get_data2());
         }
       }
     }
@@ -996,17 +996,17 @@ transfer_geom(GeomNode *geom_node, const InternalName *texcoord_name,
 //               color in use.
 ////////////////////////////////////////////////////////////////////
 void MultitexReducer::
-scan_color(const MultitexReducer::GeomList &geom_list, Colorf &geom_color, 
+scan_color(const MultitexReducer::GeomList &geom_list, LColor &geom_color, 
            int &num_colors) const {
   GeomList::const_iterator gi;
   for (gi = geom_list.begin(); gi != geom_list.end() && num_colors < 2; ++gi) {
     const GeomInfo &geom_info = (*gi);
     
-    Colorf flat_color;
+    LColor flat_color;
     bool has_flat_color = false;
     bool has_vertex_color = false;
 
-    Colorf color_scale(1.0f, 1.0f, 1.0f, 1.0f);
+    LColor color_scale(1.0f, 1.0f, 1.0f, 1.0f);
     const RenderAttrib *csa = geom_info._geom_net_state->get_attrib(ColorScaleAttrib::get_class_slot());
     if (csa != (const RenderAttrib *)NULL) {
       const ColorScaleAttrib *a = DCAST(ColorScaleAttrib, csa);

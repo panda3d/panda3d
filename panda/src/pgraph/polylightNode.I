@@ -85,7 +85,7 @@ disable(){
 //  Description: Set this light's position
 ////////////////////////////////////////////////////////////////////
 INLINE void PolylightNode::
-set_pos(LVecBase3f position){
+set_pos(LVecBase3 position){
   _position = position;
 }
 
@@ -96,7 +96,7 @@ set_pos(LVecBase3f position){
 //  Description: Set this light's position
 ////////////////////////////////////////////////////////////////////
 INLINE void PolylightNode::
-set_pos(float x, float y, float z){
+set_pos(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z){
   _position[0]=x;
   _position[1]=y;
   _position[2]=z;
@@ -105,9 +105,9 @@ set_pos(float x, float y, float z){
 ////////////////////////////////////////////////////////////////////
 //     Function: PolylightNode::get_pos
 //       Access: Published
-//  Description: Returns position as a LPoint3f
+//  Description: Returns position as a LPoint3
 ////////////////////////////////////////////////////////////////////
-INLINE LVecBase3f PolylightNode::
+INLINE LVecBase3 PolylightNode::
 get_pos() const {
   return _position;
 }
@@ -118,7 +118,7 @@ get_pos() const {
 //  Description: Set radius of the spherical light volume
 ////////////////////////////////////////////////////////////////////
 INLINE void PolylightNode::
-set_radius(float r){
+set_radius(PN_stdfloat r){
   _radius=r;
 }
 
@@ -127,7 +127,7 @@ set_radius(float r){
 //       Access: Published
 //  Description: Get radius of the spherical light volume
 ////////////////////////////////////////////////////////////////////
-INLINE float PolylightNode::
+INLINE PN_stdfloat PolylightNode::
 get_radius() const {
   return _radius;
 }
@@ -162,7 +162,7 @@ get_attenuation() const {
 //               fd = 1 / ( a0 + a1*distance + a2*distance*distance)
 ////////////////////////////////////////////////////////////////////
 INLINE void PolylightNode::
-set_a0(float a0){
+set_a0(PN_stdfloat a0){
   _a0=a0;
 }
 
@@ -173,7 +173,7 @@ set_a0(float a0){
 //               fd = 1 / ( a0 + a1*distance + a2*distance*distance)
 ////////////////////////////////////////////////////////////////////
 INLINE void PolylightNode::
-set_a1(float a1){
+set_a1(PN_stdfloat a1){
   _a1=a1;
 }
 
@@ -184,7 +184,7 @@ set_a1(float a1){
 //               fd = 1 / ( a0 + a1*distance + a2*distance*distance)
 ////////////////////////////////////////////////////////////////////
 INLINE void PolylightNode::
-set_a2(float a2){
+set_a2(PN_stdfloat a2){
   _a2=a2;
 }
 
@@ -194,7 +194,7 @@ set_a2(float a2){
 //  Description: Get the quadratic attenuation factor a0
 //               fd = 1 / ( a0 + a1*distance + a2*distance*distance)
 ////////////////////////////////////////////////////////////////////
-INLINE float PolylightNode::
+INLINE PN_stdfloat PolylightNode::
 get_a0() const {
   return _a0;
 }
@@ -205,7 +205,7 @@ get_a0() const {
 //  Description: Get the quadratic attenuation factor a1
 //               fd = 1 / ( a0 + a1*distance + a2*distance*distance)
 ////////////////////////////////////////////////////////////////////
-INLINE float PolylightNode::
+INLINE PN_stdfloat PolylightNode::
 get_a1() const {
   return _a1;
 }
@@ -216,7 +216,7 @@ get_a1() const {
 //  Description: Get the quadratic attenuation factor a2
 //               fd = 1 / ( a0 + a1*distance + a2*distance*distance)
 ////////////////////////////////////////////////////////////////////
-INLINE float PolylightNode::
+INLINE PN_stdfloat PolylightNode::
 get_a2() const {
   return _a2;
 }
@@ -286,7 +286,7 @@ get_flicker_type() const {
 //               This value is added to the variation
 ////////////////////////////////////////////////////////////////////
 INLINE void PolylightNode::
-set_offset(float offset){
+set_offset(PN_stdfloat offset){
   _offset=offset;
 }
 
@@ -296,7 +296,7 @@ set_offset(float offset){
 //  Description: Get the offset value for the random and sin
 //               flicker variations
 ////////////////////////////////////////////////////////////////////
-INLINE float PolylightNode::
+INLINE PN_stdfloat PolylightNode::
 get_offset() const {
   return _offset;
 }
@@ -309,7 +309,7 @@ get_offset() const {
 //               This value is multiplied with the variation
 ////////////////////////////////////////////////////////////////////
 INLINE void PolylightNode::
-set_scale(float scale){
+set_scale(PN_stdfloat scale){
   _scale=scale;
 }
 
@@ -319,7 +319,7 @@ set_scale(float scale){
 //  Description: Get the scale value for the random and sin
 //               flicker variations
 ////////////////////////////////////////////////////////////////////
-INLINE float PolylightNode::
+INLINE PN_stdfloat PolylightNode::
 get_scale() const {
   return _scale;
 }
@@ -332,7 +332,7 @@ get_scale() const {
 //               to the sin function
 ////////////////////////////////////////////////////////////////////
 INLINE void PolylightNode::
-set_step_size(float step){
+set_step_size(PN_stdfloat step){
   _step_size=step;
 }
 
@@ -343,7 +343,7 @@ set_step_size(float step){
 //               This is the increment size for the value supplied
 //               to the sin function
 ////////////////////////////////////////////////////////////////////
-INLINE float PolylightNode::
+INLINE PN_stdfloat PolylightNode::
 get_step_size() const {
   return _step_size;
 }
@@ -354,7 +354,7 @@ get_step_size() const {
 //  Description: Set the light's color... 
 ////////////////////////////////////////////////////////////////////
 INLINE void PolylightNode::
-set_color(Colorf color) {
+set_color(LColor color) {
   //PandaNode::set_attrib(ColorAttrib::make_flat(color));
   _color = color;
 }
@@ -365,9 +365,9 @@ set_color(Colorf color) {
 //  Description: Set the light's color... 3 floats between 0 and 1
 ////////////////////////////////////////////////////////////////////
 INLINE void PolylightNode::
-set_color(float r, float g, float b) {
+set_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b) {
   /*
-  Colorf color;
+  LColor color;
   color[0] = r;
   color[1] = g;
   color[2] = b;
@@ -383,9 +383,9 @@ set_color(float r, float g, float b) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PolylightNode::get_color
 //       Access: Published
-//  Description: Returns the light's color as Colorf
+//  Description: Returns the light's color as LColor
 ////////////////////////////////////////////////////////////////////
-INLINE Colorf PolylightNode::
+INLINE LColor PolylightNode::
 get_color() const {
   return _color;
 }
@@ -398,7 +398,7 @@ get_color() const {
 //               flattening external to the PolylightNode is not 
 //               ignored.
 ////////////////////////////////////////////////////////////////////
-INLINE Colorf PolylightNode::
+INLINE LColor PolylightNode::
 get_color_scenegraph() const {
 
   const RenderAttrib *attrib =
@@ -421,7 +421,7 @@ get_color_scenegraph() const {
 //  Description: Set frequency of sin flicker
 ////////////////////////////////////////////////////////////////////
 INLINE void PolylightNode::
-set_freq(float f) {
+set_freq(PN_stdfloat f) {
   _sin_freq=f;
 }
 
@@ -430,7 +430,7 @@ set_freq(float f) {
 //       Access: Published
 //  Description: Get frequency of sin flicker
 ////////////////////////////////////////////////////////////////////
-INLINE float PolylightNode::
+INLINE PN_stdfloat PolylightNode::
 get_freq() const {
   return _sin_freq;
 }

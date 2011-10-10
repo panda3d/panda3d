@@ -43,7 +43,7 @@ PolylightEffect(const PolylightEffect &copy) :
 //       Access: Published
 //  Description: Get the weight value
 ////////////////////////////////////////////////////////////////////
-INLINE float PolylightEffect:: 
+INLINE PN_stdfloat PolylightEffect:: 
 get_weight() const {
   return _weight;
 }
@@ -63,7 +63,7 @@ get_contrib() const {
 //       Access: Published
 //  Description: Return the value of the _effect_center
 ////////////////////////////////////////////////////////////////////
-INLINE LPoint3f PolylightEffect::
+INLINE LPoint3 PolylightEffect::
 get_effect_center() const {
   return _effect_center;
 }

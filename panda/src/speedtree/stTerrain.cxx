@@ -97,8 +97,8 @@ load_data() {
 //               terrain, where x and y are unbounded and may refer to
 //               any 2-d point in space.
 ////////////////////////////////////////////////////////////////////
-float STTerrain::
-get_height(float x, float y) const {
+PN_stdfloat STTerrain::
+get_height(PN_stdfloat x, PN_stdfloat y) const {
   return 0.0f;
 }
 
@@ -110,8 +110,8 @@ get_height(float x, float y) const {
 //               the specified radius, centered at point (x, y) of the
 //               terrain.
 ////////////////////////////////////////////////////////////////////
-float STTerrain::
-get_smooth_height(float x, float y, float radius) const {
+PN_stdfloat STTerrain::
+get_smooth_height(PN_stdfloat x, PN_stdfloat y, PN_stdfloat radius) const {
   return get_height(x, y);
 }
 
@@ -124,8 +124,8 @@ get_smooth_height(float x, float y, float radius) const {
 //               is used for determining the legal points to place
 //               trees and grass.
 ////////////////////////////////////////////////////////////////////
-float STTerrain::
-get_slope(float x, float y) const {
+PN_stdfloat STTerrain::
+get_slope(PN_stdfloat x, PN_stdfloat y) const {
   return 0.0f;
 }
 
@@ -136,15 +136,15 @@ get_slope(float x, float y) const {
 //               y) fall within the requested limits, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool STTerrain::
-placement_is_acceptable(float x, float y,
-                        float height_min, float height_max, 
-                        float slope_min, float slope_max) {
-  float height = get_height(x, y);
+placement_is_acceptable(PN_stdfloat x, PN_stdfloat y,
+                        PN_stdfloat height_min, PN_stdfloat height_max, 
+                        PN_stdfloat slope_min, PN_stdfloat slope_max) {
+  PN_stdfloat height = get_height(x, y);
   if (height < height_min || height > height_max) {
     return false;
   }
 
-  float slope = get_slope(x, y);
+  PN_stdfloat slope = get_slope(x, y);
   if (slope < slope_min || slope > slope_max) {
     return false;
   }
@@ -171,8 +171,8 @@ placement_is_acceptable(float x, float y,
 ////////////////////////////////////////////////////////////////////
 void STTerrain::
 fill_vertices(GeomVertexData *data,
-              float start_x, float start_y,
-              float size_xy, int num_xy) const {
+              PN_stdfloat start_x, PN_stdfloat start_y,
+              PN_stdfloat size_xy, int num_xy) const {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -285,7 +285,7 @@ bool STTerrain::
 convert_vertex_column(SpeedTree::SVertexAttribDesc &st_attrib,
                       const GeomVertexColumn *column) {
   switch (column->get_numeric_type()) {
-  case GeomEnums::NT_float32:
+  case GeomEnums::NT_stdfloat:
     st_attrib.m_eDataType = SpeedTree::VERTEX_ATTRIB_TYPE_FLOAT;
     break;
 

@@ -61,25 +61,25 @@ public:
 
   // 0 = beginning; length() = end.
   // inits to 0.0.
-  void set_time(float time=0.0);
-  float get_time() const;
+  void set_time(PN_stdfloat time=0.0);
+  PN_stdfloat get_time() const;
 
   // 0 = minimum; 1.0 = maximum.
   // inits to 1.0.
-  void set_volume(float volume=1.0);
-  float get_volume() const;
+  void set_volume(PN_stdfloat volume=1.0);
+  PN_stdfloat get_volume() const;
 
   // -1.0 is hard left
   // 0.0 is centered
   // 1.0 is hard right
   // inits to 0.0.
-  void set_balance(float balance_right=0.0);
-  float get_balance() const;
+  void set_balance(PN_stdfloat balance_right=0.0);
+  PN_stdfloat get_balance() const;
 
   // play_rate is any positive float value.
   // inits to 1.0.
-  void set_play_rate(float play_rate=1.0f);
-  float get_play_rate() const;
+  void set_play_rate(PN_stdfloat play_rate=1.0f);
+  PN_stdfloat get_play_rate() const;
 
   // inits to manager's state.
   void set_active(bool active=true);
@@ -94,22 +94,22 @@ public:
   const string &get_name() const;
 
   // return: playing time in seconds.
-  float length() const;
+  PN_stdfloat length() const;
 
   // Controls the position of this sound's emitter.
   // pos is a pointer to an xyz triplet of the emitter's position.
   // vel is a pointer to an xyz triplet of the emitter's velocity.
-  void set_3d_attributes(float px, float py, float pz, float vx, float vy, float vz);
-  void get_3d_attributes(float *px, float *py, float *pz, float *vx, float *vy, float *vz);
+  void set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz);
+  void get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz);
 
-  void set_3d_min_distance(float dist);
-  float get_3d_min_distance() const;
+  void set_3d_min_distance(PN_stdfloat dist);
+  PN_stdfloat get_3d_min_distance() const;
 
-  void set_3d_max_distance(float dist);
-  float get_3d_max_distance() const;
+  void set_3d_max_distance(PN_stdfloat dist);
+  PN_stdfloat get_3d_max_distance() const;
 
-  void set_3d_drop_off_factor(float factor);
-  float get_3d_drop_off_factor() const;
+  void set_3d_drop_off_factor(PN_stdfloat factor);
+  PN_stdfloat get_3d_drop_off_factor() const;
 
   AudioSound::SoundStatus status() const;
 
@@ -150,7 +150,7 @@ private:
   };
 
   int    _playing_loops;
-  float  _playing_rate;
+  PN_stdfloat  _playing_rate;
 
   pdeque<QueuedBuffer> _stream_queued;
   int                  _loops_completed;
@@ -158,17 +158,17 @@ private:
   ALuint _source;
   PT(OpenALAudioManager) _manager;
 
-  float _volume; // 0..1.0
-  float _balance; // -1..1
-  float _play_rate; // 0..1.0
+  PN_stdfloat _volume; // 0..1.0
+  PN_stdfloat _balance; // -1..1
+  PN_stdfloat _play_rate; // 0..1.0
 
   bool _positional;
   ALfloat _location[3];
   ALfloat _velocity[3];
 
-  float _min_dist;
-  float _max_dist;
-  float _drop_off_factor;
+  PN_stdfloat _min_dist;
+  PN_stdfloat _max_dist;
+  PN_stdfloat _drop_off_factor;
 
   double _length;
   int    _loop_count;
@@ -189,7 +189,7 @@ private:
   // during the AudioManager update.  Updates need
   // to be atomic, because get_time can be called
   // in the cull thread.
-  float  _current_time;
+  PN_stdfloat  _current_time;
 
   // This is the string that throw_event() will throw
   // when the sound finishes playing.  It is not triggered

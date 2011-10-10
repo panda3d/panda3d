@@ -47,16 +47,16 @@ protected:
 public:
   virtual PandaNode *make_copy() const;
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
-  virtual void xform(const LMatrix4f &mat);
+  virtual void xform(const LMatrix4 &mat);
 
 PUBLISHED:
-  void setup(float width, float height,
-             float left, float right, float bottom, float top,
-             float slider_width, float bevel);
+  void setup(PN_stdfloat width, PN_stdfloat height,
+             PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top,
+             PN_stdfloat slider_width, PN_stdfloat bevel);
 
-  INLINE void set_virtual_frame(float left, float right, float bottom, float top);
-  INLINE void set_virtual_frame(const LVecBase4f &virtual_frame);
-  INLINE const LVecBase4f &get_virtual_frame() const;
+  INLINE void set_virtual_frame(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top);
+  INLINE void set_virtual_frame(const LVecBase4 &virtual_frame);
+  INLINE const LVecBase4 &get_virtual_frame() const;
   INLINE bool has_virtual_frame() const;
   INLINE void clear_virtual_frame();
 
@@ -89,8 +89,8 @@ private:
   void recompute_clip();
 
   void recompute_canvas();
-  float interpolate_canvas(float clip_min, float clip_max, 
-                           float canvas_min, float canvas_max,
+  PN_stdfloat interpolate_canvas(PN_stdfloat clip_min, PN_stdfloat clip_max, 
+                           PN_stdfloat canvas_min, PN_stdfloat canvas_max,
                            PGSliderBar *slider_bar);
 
 private:
@@ -98,10 +98,10 @@ private:
   bool _needs_recompute_clip;
   bool _needs_recompute_canvas;
 
-  LVecBase4f _orig_clip_frame;
+  LVecBase4 _orig_clip_frame;
 
   bool _has_virtual_frame;
-  LVecBase4f _virtual_frame;
+  LVecBase4 _virtual_frame;
 
   bool _manage_pieces;
   bool _auto_hide;

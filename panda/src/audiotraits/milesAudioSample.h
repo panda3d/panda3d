@@ -40,13 +40,13 @@ public:
   virtual void play();
   virtual void stop();
   
-  virtual float get_time() const;
+  virtual PN_stdfloat get_time() const;
   
-  virtual void set_volume(float volume=1.0f);
-  virtual void set_balance(float balance_right=0.0f);
-  virtual void set_play_rate(float play_rate=1.0f);
+  virtual void set_volume(PN_stdfloat volume=1.0f);
+  virtual void set_balance(PN_stdfloat balance_right=0.0f);
+  virtual void set_play_rate(PN_stdfloat play_rate=1.0f);
   
-  virtual float length() const;
+  virtual PN_stdfloat length() const;
 
   virtual AudioSound::SoundStatus status() const;
 
@@ -57,20 +57,20 @@ public:
   // Spatialized sound was originally added for FMOD, so there are parts of the
   // interface in the Miles implementation that are a little more awkward than
   // they would be otherwise.
-  void set_3d_attributes(float px, float py, float pz, float vx, float vy, float vz);
-  void get_3d_attributes(float *px, float *py, float *pz, float *vx, float *vy, float *vz);
-  void set_3d_min_distance(float dist);
-  float get_3d_min_distance() const;
-  void set_3d_max_distance(float dist);
-  float get_3d_max_distance() const;
+  void set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz);
+  void get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz);
+  void set_3d_min_distance(PN_stdfloat dist);
+  PN_stdfloat get_3d_min_distance() const;
+  void set_3d_max_distance(PN_stdfloat dist);
+  PN_stdfloat get_3d_max_distance() const;
 
-  virtual float get_speaker_level(int index);
-  virtual void set_speaker_levels(float level1, float level2=-1.0f, float level3=-1.0f, float level4=-1.0f, float level5=-1.0f, float level6=-1.0f, float level7=-1.0f, float level8=-1.0f, float level9=-1.0f);
+  virtual PN_stdfloat get_speaker_level(int index);
+  virtual void set_speaker_levels(PN_stdfloat level1, PN_stdfloat level2=-1.0f, PN_stdfloat level3=-1.0f, PN_stdfloat level4=-1.0f, PN_stdfloat level5=-1.0f, PN_stdfloat level6=-1.0f, PN_stdfloat level7=-1.0f, PN_stdfloat level8=-1.0f, PN_stdfloat level9=-1.0f);
 
 private:
   void internal_stop();
   static void AILCALLBACK finish_callback(HSAMPLE sample);
-  void do_set_time(float time);
+  void do_set_time(PN_stdfloat time);
 
   PT(MilesAudioManager::SoundData) _sd;
   HSAMPLE _sample;

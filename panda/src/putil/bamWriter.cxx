@@ -45,6 +45,11 @@ BamWriter(DatagramSink *target) :
   _long_pta_id = false;
 
   _file_endian = bam_endian;
+#ifndef STDFLOAT_DOUBLE
+  _file_stdfloat_double = false;
+#else
+  _file_stdfloat_double = true;
+#endif
   _file_texture_mode = bam_texture_mode;
 }
 
@@ -120,6 +125,7 @@ init() {
   header.add_uint16(_bam_major_ver);
   header.add_uint16(_bam_minor_ver);
   header.add_uint8(_file_endian);
+  header.add_bool(_file_stdfloat_double);
 
   if (!_target->put_datagram(header)) {
     util_cat.error()

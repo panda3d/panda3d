@@ -71,9 +71,9 @@ get_vx() {
 //       Access: Public
 //  Description: Reads a three-component vector of floats.
 ////////////////////////////////////////////////////////////////////
-LVecBase3f LwoInputFile::
+LVecBase3 LwoInputFile::
 get_vec3() {
-  LVecBase3f result;
+  LVecBase3 result;
   result[0] = get_be_float32();
   result[1] = get_be_float32();
   result[2] = get_be_float32();

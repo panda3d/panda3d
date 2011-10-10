@@ -94,7 +94,7 @@ is_ambient_light() const {
 //               ambient light).
 ////////////////////////////////////////////////////////////////////
 bool Light::
-get_vector_to_light(LVector3f &, const LPoint3f &, const LMatrix4f &) {
+get_vector_to_light(LVector3 &, const LPoint3 &, const LMatrix4 &) {
   return false;
 }
 

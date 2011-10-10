@@ -50,7 +50,7 @@ PUBLISHED:
   NurbsCurve(const ParametricCurve &pc);
 public:
   NurbsCurve(int order, int num_cvs,
-                    const float knots[], const LVecBase4f cvs[]);
+             const PN_stdfloat knots[], const LVecBase4 cvs[]);
 PUBLISHED:
   virtual ~NurbsCurve();
 
@@ -65,25 +65,25 @@ public:
   virtual int get_num_cvs() const;
   virtual int get_num_knots() const;
 
-  virtual bool insert_cv(float t);
+  virtual bool insert_cv(PN_stdfloat t);
 
   virtual bool remove_cv(int n);
   virtual void remove_all_cvs();
 
-  virtual bool set_cv(int n, const LVecBase4f &v);
-  virtual LVecBase4f get_cv(int n) const;
+  virtual bool set_cv(int n, const LVecBase4 &v);
+  virtual LVecBase4 get_cv(int n) const;
 
-  virtual bool set_knot(int n, float t);
-  virtual float get_knot(int n) const;
+  virtual bool set_knot(int n, PN_stdfloat t);
+  virtual PN_stdfloat get_knot(int n) const;
 
   virtual bool recompute();
 
 public:
   virtual bool
-  rebuild_curveseg(int rtype0, float t0, const LVecBase4f &v0,
-                   int rtype1, float t1, const LVecBase4f &v1,
-                   int rtype2, float t2, const LVecBase4f &v2,
-                   int rtype3, float t3, const LVecBase4f &v3);
+  rebuild_curveseg(int rtype0, PN_stdfloat t0, const LVecBase4 &v0,
+                   int rtype1, PN_stdfloat t1, const LVecBase4 &v1,
+                   int rtype2, PN_stdfloat t2, const LVecBase4 &v2,
+                   int rtype3, PN_stdfloat t3, const LVecBase4 &v3);
 
   virtual bool stitch(const ParametricCurve *a, const ParametricCurve *b);
 
@@ -94,20 +94,20 @@ public:
   virtual void write(ostream &out, int indent_level = 0) const;
 
 protected:
-  virtual int append_cv_impl(const LVecBase4f &v);
+  virtual int append_cv_impl(const LVecBase4 &v);
   virtual bool format_egg(ostream &out, const string &name,
                           const string &curve_type, int indent_level) const;
 
-  int find_cv(float t);
+  int find_cv(PN_stdfloat t);
 
   int _order;
 
   class CV {
   public:
     CV() {}
-    CV(const LVecBase4f &p, float t) : _p(p), _t(t) {}
-    LVecBase4f _p;
-    float _t;
+    CV(const LVecBase4 &p, PN_stdfloat t) : _p(p), _t(t) {}
+    LVecBase4 _p;
+    PN_stdfloat _t;
   };
 
   pvector<CV> _cvs;

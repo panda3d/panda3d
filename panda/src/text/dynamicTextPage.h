@@ -43,7 +43,7 @@ public:
   INLINE int get_x_size() const;
   INLINE int get_y_size() const;
 
-  void fill_region(int x, int y, int x_size, int y_size, const Colorf &color);
+  void fill_region(int x, int y, int x_size, int y_size, const LColor &color);
 
 PUBLISHED:
   INLINE bool is_empty() const;

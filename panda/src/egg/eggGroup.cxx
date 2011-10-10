@@ -39,7 +39,7 @@ EggGroup(const string &name) : EggGroupNode(name) {
   _blend_mode = BM_unspecified;
   _blend_operand_a = BO_unspecified;
   _blend_operand_b = BO_unspecified;
-  _blend_color = Colorf::zero();
+  _blend_color = LColor::zero();
   _u_speed = 0;
   _v_speed = 0;
   _r_speed = 0;
@@ -289,7 +289,7 @@ write(ostream &out, int indent_level) const {
   }
 
   if (has_blend_color()) {
-    const Colorf &c = get_blend_color();
+    const LColor &c = get_blend_color();
     indent(out, indent_level + 2)
       << "<Scalar> blendr { " << c[0] << " }\n";
     indent(out, indent_level + 2)

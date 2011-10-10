@@ -51,7 +51,7 @@ clear() {
 //               second data point turns it off (ends the bar).
 ////////////////////////////////////////////////////////////////////
 void PStatPianoRoll::BarBuilder::
-add_data_point(float time, bool is_start) {
+add_data_point(PN_stdfloat time, bool is_start) {
   if (is_start) {
     // This is a "start" data point: start the bar.
     if (_color_bars.empty() || _color_bars.back()._end >= 0.0) {
@@ -84,7 +84,7 @@ add_data_point(float time, bool is_start) {
 //               by a corresponding end-bar data point.
 ////////////////////////////////////////////////////////////////////
 void PStatPianoRoll::BarBuilder::
-finish(float time) {
+finish(PN_stdfloat time) {
   if (!_color_bars.empty() && _color_bars.back()._end < 0.0) {
     _color_bars.back()._end = time;
   }
@@ -304,7 +304,7 @@ compute_page(const PStatFrameData &frame_data) {
   int num_events = frame_data.get_num_events();
   for (int i = 0; i < num_events; i++) {
     int collector_index = frame_data.get_time_collector(i);
-    float time = frame_data.get_time(i);
+    PN_stdfloat time = frame_data.get_time(i);
     bool is_start = frame_data.is_start(i);
     _page_data[collector_index].add_data_point(time, is_start);
   }
@@ -344,7 +344,7 @@ compute_page(const PStatFrameData &frame_data) {
   }
 
   // Finally, make sure all of the bars are closed.
-  float time = frame_data.get_end();
+  PN_stdfloat time = frame_data.get_end();
   PageData::iterator pi;
   for (pi = _page_data.begin(); pi != _page_data.end(); ++pi) {
     (*pi).second.finish(time);

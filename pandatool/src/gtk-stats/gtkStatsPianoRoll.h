@@ -42,7 +42,7 @@ public:
 
   virtual void set_time_units(int unit_mask);
   virtual void clicked_label(int collector_index);
-  void set_horizontal_scale(float time_width);
+  void set_horizontal_scale(PN_stdfloat time_width);
 
 protected:
   void clear_region();

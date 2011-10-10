@@ -28,13 +28,13 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_COLLIDE CollisionBox : public CollisionSolid {
 PUBLISHED:
-  INLINE CollisionBox(const LPoint3f &center, 
-                      float x, float y, float z);
-  INLINE CollisionBox(float cx, float cy,   float cz,
-                      float x,  float y,  float z);
-  INLINE CollisionBox(const LPoint3f &min, const LPoint3f &max);
+  INLINE CollisionBox(const LPoint3 &center, 
+                      PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+  INLINE CollisionBox(PN_stdfloat cx, PN_stdfloat cy,   PN_stdfloat cz,
+                      PN_stdfloat x,  PN_stdfloat y,  PN_stdfloat z);
+  INLINE CollisionBox(const LPoint3 &min, const LPoint3 &max);
 
-  virtual LPoint3f get_collision_origin() const;
+  virtual LPoint3 get_collision_origin() const;
 
 protected:
   INLINE CollisionBox();
@@ -45,31 +45,31 @@ public:
 
   virtual PT(CollisionEntry)
     test_intersection(const CollisionEntry &entry) const;
-  virtual void xform(const LMatrix4f &mat);
+  virtual void xform(const LMatrix4 &mat);
 
   virtual PStatCollector &get_volume_pcollector();
   virtual PStatCollector &get_test_pcollector();
 
   virtual void output(ostream &out) const;
   
-  virtual LPoint3f get_approx_center() const;
-  virtual LPoint3f get_min() const;
-  virtual LPoint3f get_max() const;
+  virtual LPoint3 get_approx_center() const;
+  virtual LPoint3 get_min() const;
+  virtual LPoint3 get_max() const;
 
   INLINE static void flush_level();
   void setup_box();
 
 PUBLISHED:
   INLINE_MATHUTIL int get_num_points() const;
-  INLINE_MATHUTIL LPoint3f get_point_aabb(int n) const;
-  INLINE_MATHUTIL LPoint3f get_point(int n) const;
+  INLINE_MATHUTIL LPoint3 get_point_aabb(int n) const;
+  INLINE_MATHUTIL LPoint3 get_point(int n) const;
   INLINE_MATHUTIL int get_num_planes() const;
-  INLINE_MATHUTIL Planef set_plane(int n) const;
-  INLINE_MATHUTIL Planef get_plane(int n) const;
-  INLINE void set_center(const LPoint3f &center);
-  INLINE void set_center(float x, float y, float z);
-  INLINE const LPoint3f &get_center() const;
-  INLINE float get_radius() const;
+  INLINE_MATHUTIL LPlane set_plane(int n) const;
+  INLINE_MATHUTIL LPlane get_plane(int n) const;
+  INLINE void set_center(const LPoint3 &center);
+  INLINE void set_center(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+  INLINE const LPoint3 &get_center() const;
+  INLINE PN_stdfloat get_radius() const;
 
 protected:
   virtual PT(BoundingVolume) compute_internal_bounds() const;
@@ -84,16 +84,13 @@ protected:
   
   virtual void fill_viz_geom();
 
-protected:
-  Vertexf compute_point(float latitude, float longitude) const;
-
 private:
-  LPoint3f _center;
-  LPoint3f _min;
-  LPoint3f _max;
-  float _x, _y, _z, _radius;
-  LPoint3f _vertex[8]; // Each of the Eight Vertices of the Box
-  Planef _planes[6]; //Points to each of the six sides of the Box
+  LPoint3 _center;
+  LPoint3 _min;
+  LPoint3 _max;
+  PN_stdfloat _x, _y, _z, _radius;
+  LPoint3 _vertex[8]; // Each of the Eight Vertices of the Box
+  LPlane _planes[6]; //Points to each of the six sides of the Box
   
   static const int plane_def[6][4];
   
@@ -101,23 +98,23 @@ private:
   static PStatCollector _test_pcollector;
 
 private:
-  INLINE static bool is_right(const LVector2f &v1, const LVector2f &v2);
-  INLINE static float dist_to_line(const LPoint2f &p,
-                                   const LPoint2f &f, const LVector2f &v);
-  static float dist_to_line_segment(const LPoint2f &p,
-                                    const LPoint2f &f, const LPoint2f &t,
-                                    const LVector2f &v);
+  INLINE static bool is_right(const LVector2 &v1, const LVector2 &v2);
+  INLINE static PN_stdfloat dist_to_line(const LPoint2 &p,
+                                   const LPoint2 &f, const LVector2 &v);
+  static PN_stdfloat dist_to_line_segment(const LPoint2 &p,
+                                    const LPoint2 &f, const LPoint2 &t,
+                                    const LVector2 &v);
   
 public:
   class PointDef {
   public:
-    INLINE PointDef(const LPoint2f &p, const LVector2f &v);
-    INLINE PointDef(float x, float y);
+    INLINE PointDef(const LPoint2 &p, const LVector2 &v);
+    INLINE PointDef(PN_stdfloat x, PN_stdfloat y);
     INLINE PointDef(const PointDef &copy);
     INLINE void operator = (const PointDef &copy);
 
-    LPoint2f _p;  // the point in 2-d space
-    LVector2f _v; // the normalized vector to the next point
+    LPoint2 _p;  // the point in 2-d space
+    LVector2 _v; // the normalized vector to the next point
   };
   typedef pvector<PointDef> Points;
 
@@ -125,23 +122,23 @@ public:
   void draw_polygon(GeomNode *viz_geom_node, GeomNode *bounds_viz_geom_node,
                     const Points &points) const;
 
-  bool point_is_inside(const LPoint2f &p, const Points &points) const;
-  float dist_to_polygon(const LPoint2f &p, const Points &points) const;
+  bool point_is_inside(const LPoint2 &p, const Points &points) const;
+  PN_stdfloat dist_to_polygon(const LPoint2 &p, const Points &points) const;
 
-  void setup_points(const LPoint3f *begin, const LPoint3f *end, int plane);
-  INLINE LPoint2f to_2d(const LVecBase3f &point3d, int plane) const;
-  INLINE void calc_to_3d_mat(LMatrix4f &to_3d_mat, int plane) const;
-  INLINE void rederive_to_3d_mat(LMatrix4f &to_3d_mat, int plane) const;
-  INLINE static LPoint3f to_3d(const LVecBase2f &point2d, const LMatrix4f &to_3d_mat);
-  LPoint3f legacy_to_3d(const LVecBase2f &point2d, int axis) const;
+  void setup_points(const LPoint3 *begin, const LPoint3 *end, int plane);
+  INLINE LPoint2 to_2d(const LVecBase3 &point3d, int plane) const;
+  INLINE void calc_to_3d_mat(LMatrix4 &to_3d_mat, int plane) const;
+  INLINE void rederive_to_3d_mat(LMatrix4 &to_3d_mat, int plane) const;
+  INLINE static LPoint3 to_3d(const LVecBase2 &point2d, const LMatrix4 &to_3d_mat);
+  LPoint3 legacy_to_3d(const LVecBase2 &point2d, int axis) const;
   bool clip_polygon(Points &new_points, const Points &source_points,
-                    const Planef &plane,int plane_no) const;
+                    const LPlane &plane,int plane_no) const;
   bool apply_clip_plane(Points &new_points, const ClipPlaneAttrib *cpa,
                         const TransformState *net_transform, int plane_no) const;
 
 private:
   Points _points[6]; // one set of points for each of the six planes that make up the box
-  LMatrix4f _to_2d_mat[6]; 
+  LMatrix4 _to_2d_mat[6]; 
 
 public:
   INLINE Points get_plane_points( int n );

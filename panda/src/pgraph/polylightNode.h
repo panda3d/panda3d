@@ -38,9 +38,9 @@ PUBLISHED:
   // separate wrapper for each parameter... so its better to 
   // have a simpler constructor and require the programmer
   // to use set_* methods.
-  PolylightNode(const string &name, float x = 0.0, float y = 0.0, float z = 0.0,
-  float r = 1.0, float g = 1.0, float b = 1.0,
-  float radius=50.0, string attenuation_type= "linear",
+  PolylightNode(const string &name, PN_stdfloat x = 0.0, PN_stdfloat y = 0.0, PN_stdfloat z = 0.0,
+  PN_stdfloat r = 1.0, PN_stdfloat g = 1.0, PN_stdfloat b = 1.0,
+  PN_stdfloat radius=50.0, string attenuation_type= "linear",
   bool flickering =false, string flicker_type="random");
   */
 
@@ -58,36 +58,36 @@ PUBLISHED:
   PolylightNode(const string &name);
   INLINE void enable();
   INLINE void disable();
-  INLINE void set_pos(LVecBase3f position);
-  INLINE void set_pos(float x,float y, float z);
-  INLINE LVecBase3f get_pos() const;
-  INLINE void set_color(Colorf color);
-  INLINE void set_color(float r, float g, float b);
-  INLINE Colorf get_color() const;
-  INLINE Colorf get_color_scenegraph() const;
-  INLINE void set_radius(float r);
-  INLINE float get_radius() const;
+  INLINE void set_pos(LVecBase3 position);
+  INLINE void set_pos(PN_stdfloat x,PN_stdfloat y, PN_stdfloat z);
+  INLINE LVecBase3 get_pos() const;
+  INLINE void set_color(LColor color);
+  INLINE void set_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b);
+  INLINE LColor get_color() const;
+  INLINE LColor get_color_scenegraph() const;
+  INLINE void set_radius(PN_stdfloat r);
+  INLINE PN_stdfloat get_radius() const;
   INLINE bool set_attenuation(Attenuation_Type type);
   INLINE Attenuation_Type get_attenuation() const;
-  INLINE void set_a0(float a0);
-  INLINE void set_a1(float a1);
-  INLINE void set_a2(float a2);
-  INLINE float get_a0() const;
-  INLINE float get_a1() const;
-  INLINE float get_a2() const;
+  INLINE void set_a0(PN_stdfloat a0);
+  INLINE void set_a1(PN_stdfloat a1);
+  INLINE void set_a2(PN_stdfloat a2);
+  INLINE PN_stdfloat get_a0() const;
+  INLINE PN_stdfloat get_a1() const;
+  INLINE PN_stdfloat get_a2() const;
   INLINE void flicker_on();
   INLINE void flicker_off();
   INLINE bool is_flickering() const;
   INLINE bool set_flicker_type(Flicker_Type type);
   INLINE Flicker_Type get_flicker_type() const;
-  INLINE void set_offset(float offset);
-  INLINE float get_offset() const;
-  INLINE void set_scale(float scale);
-  INLINE float get_scale() const;
-  INLINE void set_step_size(float step) ;
-  INLINE float get_step_size() const;
-  INLINE void set_freq(float f);
-  INLINE float get_freq() const;
+  INLINE void set_offset(PN_stdfloat offset);
+  INLINE PN_stdfloat get_offset() const;
+  INLINE void set_scale(PN_stdfloat scale);
+  INLINE PN_stdfloat get_scale() const;
+  INLINE void set_step_size(PN_stdfloat step) ;
+  INLINE PN_stdfloat get_step_size() const;
+  INLINE void set_freq(PN_stdfloat f);
+  INLINE PN_stdfloat get_freq() const;
 
   // Comparison methods
   INLINE bool operator == (const PolylightNode &other) const;
@@ -98,27 +98,27 @@ PUBLISHED:
   INLINE bool is_enabled() const;
 
 public:
-  Colorf flicker() const;
+  LColor flicker() const;
   virtual PandaNode *make_copy() const;
 
   
 private:
   bool _enabled;
-  LVecBase3f _position;
-  Colorf _color;
-  float _radius;
+  LVecBase3 _position;
+  LColor _color;
+  PN_stdfloat _radius;
   Attenuation_Type _attenuation_type;
-  float _a0;
-  float _a1;
-  float _a2;
+  PN_stdfloat _a0;
+  PN_stdfloat _a1;
+  PN_stdfloat _a2;
   bool _flickering;
   Flicker_Type _flicker_type;
-  float _offset;
-  float _scale;
-  float _step_size;
-  float _sin_freq;
-  //float _speed;
-  //float fixed_points
+  PN_stdfloat _offset;
+  PN_stdfloat _scale;
+  PN_stdfloat _step_size;
+  PN_stdfloat _sin_freq;
+  //PN_stdfloat _speed;
+  //PN_stdfloat fixed_points
   
 
 public:

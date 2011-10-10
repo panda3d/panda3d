@@ -43,7 +43,7 @@ public:
   EggXfmSAnim *get_egg_anim(MaxNodeDesc *node_desc);
 
   MaxNodeDesc* _root;
-  float _fps;
+  PN_stdfloat _fps;
   // the flag for the setting up collision
   //bool _has_collision;
   //EggGroup::CollideFlags _cf_type;

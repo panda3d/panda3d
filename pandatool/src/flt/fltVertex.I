@@ -34,6 +34,6 @@ has_color() const {
 //               color convention.  The alpha component is ignored.
 ////////////////////////////////////////////////////////////////////
 INLINE void FltVertex::
-set_color(const Colorf &color) {
-  set_rgb(RGBColorf(color[0], color[1], color[2]));
+set_color(const LColor &color) {
+  set_rgb(LRGBColor(color[0], color[1], color[2]));
 }

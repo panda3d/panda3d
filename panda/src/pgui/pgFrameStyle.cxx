@@ -30,7 +30,7 @@
 // we'll have a reason to make this a parameter of the frame style one
 // day, but for now it's hardcoded to fit the entire texture over the
 // rectangular frame.
-static const LVecBase4f uv_range = LVecBase4f(0.0f, 1.0f, 0.0f, 1.0f);
+static const LVecBase4 uv_range = LVecBase4(0.0f, 1.0f, 0.0f, 1.0f);
 
 ostream &
 operator << (ostream &out, PGFrameStyle::Type type) {
@@ -68,11 +68,11 @@ operator << (ostream &out, PGFrameStyle::Type type) {
 //               of frame style.  This simply subtracts the border
 //               width for those frame styles that include a border.
 ////////////////////////////////////////////////////////////////////
-LVecBase4f PGFrameStyle::
-get_internal_frame(const LVecBase4f &frame) const {
-  LPoint2f center((frame[0] + frame[1]) / 2.0f,
+LVecBase4 PGFrameStyle::
+get_internal_frame(const LVecBase4 &frame) const {
+  LPoint2 center((frame[0] + frame[1]) / 2.0f,
                   (frame[2] + frame[3]) / 2.0f);
-  LVecBase4f scaled_frame
+  LVecBase4 scaled_frame
     ((frame[0] - center[0]) * _visible_scale[0] + center[0],
      (frame[1] - center[0]) * _visible_scale[0] + center[0],
      (frame[2] - center[1]) * _visible_scale[1] + center[1],
@@ -87,7 +87,7 @@ get_internal_frame(const LVecBase4f &frame) const {
     break;
   }
 
-  return LVecBase4f(scaled_frame[0] + _width[0],
+  return LVecBase4(scaled_frame[0] + _width[0],
                     scaled_frame[1] - _width[0],
                     scaled_frame[2] + _width[1],
                     scaled_frame[3] - _width[1]);
@@ -101,7 +101,7 @@ get_internal_frame(const LVecBase4f &frame) const {
 void PGFrameStyle::
 output(ostream &out) const {
   out << _type << " color = " << _color << " width = " << _width;
-  if (_visible_scale != LVecBase2f(1.0f, 1.0f)) {
+  if (_visible_scale != LVecBase2(1.0f, 1.0f)) {
     out << "visible_scale = " << get_visible_scale();
   }
   if (has_texture()) {
@@ -118,16 +118,16 @@ output(ostream &out) const {
 //               transform.
 ////////////////////////////////////////////////////////////////////
 bool PGFrameStyle::
-xform(const LMatrix4f &mat) {
+xform(const LMatrix4 &mat) {
   // All we can do is scale the X and Y bevel sizes.
 
   // Extract the X and Z axes from the matrix.
-  LVector3f x, z;
+  LVector3 x, z;
   mat.get_row3(x, 0);
-  float x_scale = x.length();
+  PN_stdfloat x_scale = x.length();
   
   mat.get_row3(z, 2);
-  float z_scale = z.length();
+  PN_stdfloat z_scale = z.length();
 
   _width[0] *= x_scale;
   _width[1] *= z_scale;
@@ -160,13 +160,13 @@ xform(const LMatrix4f &mat) {
 //               or an empty NodePath if nothing is generated.
 ////////////////////////////////////////////////////////////////////
 NodePath PGFrameStyle::
-generate_into(const NodePath &parent, const LVecBase4f &frame,
+generate_into(const NodePath &parent, const LVecBase4 &frame,
               int sort) {
   PT(PandaNode) new_node;
 
-  LPoint2f center((frame[0] + frame[1]) / 2.0f,
+  LPoint2 center((frame[0] + frame[1]) / 2.0f,
                   (frame[2] + frame[3]) / 2.0f);
-  LVecBase4f scaled_frame
+  LVecBase4 scaled_frame
     ((frame[0] - center[0]) * _visible_scale[0] + center[0],
      (frame[1] - center[0]) * _visible_scale[0] + center[0],
      (frame[2] - center[1]) * _visible_scale[1] + center[1],
@@ -220,13 +220,13 @@ generate_into(const NodePath &parent, const LVecBase4f &frame,
 //               frame.
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) PGFrameStyle::
-generate_flat_geom(const LVecBase4f &frame) {
+generate_flat_geom(const LVecBase4 &frame) {
   PT(GeomNode) gnode = new GeomNode("flat");
 
-  float left = frame[0];
-  float right = frame[1];
-  float bottom = frame[2];
-  float top = frame[3];
+  PN_stdfloat left = frame[0];
+  PN_stdfloat right = frame[1];
+  PN_stdfloat bottom = frame[2];
+  PN_stdfloat top = frame[3];
 
   CPT(GeomVertexFormat) format;
   if (has_texture()) {
@@ -239,10 +239,10 @@ generate_flat_geom(const LVecBase4f &frame) {
     ("PGFrame", format, Geom::UH_static);
   
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
-  vertex.add_data3f(LPoint3f::rfu(left, 0.0f, top));
-  vertex.add_data3f(LPoint3f::rfu(left, 0.0f, bottom));
-  vertex.add_data3f(LPoint3f::rfu(right, 0.0f, top));
-  vertex.add_data3f(LPoint3f::rfu(right, 0.0f, bottom));
+  vertex.add_data3(LPoint3::rfu(left, 0.0f, top));
+  vertex.add_data3(LPoint3::rfu(left, 0.0f, bottom));
+  vertex.add_data3(LPoint3::rfu(right, 0.0f, top));
+  vertex.add_data3(LPoint3::rfu(right, 0.0f, bottom));
 
   if (has_texture()) {
     // Generate UV's.
@@ -252,10 +252,10 @@ generate_flat_geom(const LVecBase4f &frame) {
     top = uv_range[3];
     
     GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
-    texcoord.add_data2f(left, top);
-    texcoord.add_data2f(left, bottom);
-    texcoord.add_data2f(right, top);
-    texcoord.add_data2f(right, bottom);
+    texcoord.add_data2(left, top);
+    texcoord.add_data2(left, bottom);
+    texcoord.add_data2(right, top);
+    texcoord.add_data2(right, bottom);
   }
   
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
@@ -280,7 +280,7 @@ generate_flat_geom(const LVecBase4f &frame) {
 //               or T_bevel_out frame.
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) PGFrameStyle::
-generate_bevel_geom(const LVecBase4f &frame, bool in) {
+generate_bevel_geom(const LVecBase4 &frame, bool in) {
   //
   // Colors:
   //
@@ -340,23 +340,23 @@ generate_bevel_geom(const LVecBase4f &frame, bool in) {
 
   PT(GeomNode) gnode = new GeomNode("bevel");
 
-  float left = frame[0];
-  float right = frame[1];
-  float bottom = frame[2];
-  float top = frame[3];
+  PN_stdfloat left = frame[0];
+  PN_stdfloat right = frame[1];
+  PN_stdfloat bottom = frame[2];
+  PN_stdfloat top = frame[3];
 
-  float cx = (left + right) * 0.5;
-  float cy = (top + bottom) * 0.5;
+  PN_stdfloat cx = (left + right) * 0.5;
+  PN_stdfloat cy = (top + bottom) * 0.5;
 
-  float inner_left = min(left + _width[0], cx);
-  float inner_right = max(right - _width[0], cx);
-  float inner_bottom = min(bottom + _width[1], cy);
-  float inner_top = max(top - _width[1], cy);
+  PN_stdfloat inner_left = min(left + _width[0], cx);
+  PN_stdfloat inner_right = max(right - _width[0], cx);
+  PN_stdfloat inner_bottom = min(bottom + _width[1], cy);
+  PN_stdfloat inner_top = max(top - _width[1], cy);
 
-  float left_color_scale = 1.2;
-  float right_color_scale = 0.8;
-  float bottom_color_scale = 0.7;
-  float top_color_scale = 1.3;
+  PN_stdfloat left_color_scale = 1.2;
+  PN_stdfloat right_color_scale = 0.8;
+  PN_stdfloat bottom_color_scale = 0.7;
+  PN_stdfloat top_color_scale = 1.3;
 
   if (in) {
     right_color_scale = 1.2;
@@ -366,24 +366,24 @@ generate_bevel_geom(const LVecBase4f &frame, bool in) {
   }
 
   // Clamp all colors at white, and don't scale the alpha.
-  Colorf cleft(min(_color[0] * left_color_scale, 1.0f),
-               min(_color[1] * left_color_scale, 1.0f),
-               min(_color[2] * left_color_scale, 1.0f),
+  LColor cleft(min(_color[0] * left_color_scale, (PN_stdfloat)1.0),
+               min(_color[1] * left_color_scale, (PN_stdfloat)1.0),
+               min(_color[2] * left_color_scale, (PN_stdfloat)1.0),
                _color[3]);
 
-  Colorf cright(min(_color[0] * right_color_scale, 1.0f),
-                min(_color[1] * right_color_scale, 1.0f),
-                min(_color[2] * right_color_scale, 1.0f),
+  LColor cright(min(_color[0] * right_color_scale, (PN_stdfloat)1.0),
+                min(_color[1] * right_color_scale, (PN_stdfloat)1.0),
+                min(_color[2] * right_color_scale, (PN_stdfloat)1.0),
                 _color[3]);
 
-  Colorf cbottom(min(_color[0] * bottom_color_scale, 1.0f),
-                 min(_color[1] * bottom_color_scale, 1.0f),
-                 min(_color[2] * bottom_color_scale, 1.0f),
+  LColor cbottom(min(_color[0] * bottom_color_scale, (PN_stdfloat)1.0),
+                 min(_color[1] * bottom_color_scale, (PN_stdfloat)1.0),
+                 min(_color[2] * bottom_color_scale, (PN_stdfloat)1.0),
                  _color[3]);
 
-  Colorf ctop(min(_color[0] * top_color_scale, 1.0f),
-              min(_color[1] * top_color_scale, 1.0f),
-              min(_color[2] * top_color_scale, 1.0f),
+  LColor ctop(min(_color[0] * top_color_scale, (PN_stdfloat)1.0),
+              min(_color[1] * top_color_scale, (PN_stdfloat)1.0),
+              min(_color[2] * top_color_scale, (PN_stdfloat)1.0),
               _color[3]);
 
   CPT(GeomVertexFormat) format;
@@ -401,39 +401,39 @@ generate_bevel_geom(const LVecBase4f &frame, bool in) {
   
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
   // Tristrip 1.
-  vertex.add_data3f(LPoint3f::rfu(right, 0.0f, bottom));
-  vertex.add_data3f(LPoint3f::rfu(inner_right, 0.0f, inner_bottom));
-  vertex.add_data3f(LPoint3f::rfu(left, 0.0f, bottom));
-  vertex.add_data3f(LPoint3f::rfu(inner_left, 0.0f, inner_bottom));
-  vertex.add_data3f(LPoint3f::rfu(left, 0.0f, top));
-  vertex.add_data3f(LPoint3f::rfu(inner_left, 0.0f, inner_top));
-  vertex.add_data3f(LPoint3f::rfu(right, 0.0f, top));
-  vertex.add_data3f(LPoint3f::rfu(inner_right, 0.0f, inner_top));
-  color.add_data4f(cbottom);
-  color.add_data4f(cbottom);
-  color.add_data4f(cbottom);
-  color.add_data4f(cbottom);
-  color.add_data4f(cleft);
-  color.add_data4f(cleft);
-  color.add_data4f(ctop);
-  color.add_data4f(ctop);
+  vertex.add_data3(LPoint3::rfu(right, 0.0f, bottom));
+  vertex.add_data3(LPoint3::rfu(inner_right, 0.0f, inner_bottom));
+  vertex.add_data3(LPoint3::rfu(left, 0.0f, bottom));
+  vertex.add_data3(LPoint3::rfu(inner_left, 0.0f, inner_bottom));
+  vertex.add_data3(LPoint3::rfu(left, 0.0f, top));
+  vertex.add_data3(LPoint3::rfu(inner_left, 0.0f, inner_top));
+  vertex.add_data3(LPoint3::rfu(right, 0.0f, top));
+  vertex.add_data3(LPoint3::rfu(inner_right, 0.0f, inner_top));
+  color.add_data4(cbottom);
+  color.add_data4(cbottom);
+  color.add_data4(cbottom);
+  color.add_data4(cbottom);
+  color.add_data4(cleft);
+  color.add_data4(cleft);
+  color.add_data4(ctop);
+  color.add_data4(ctop);
   
   strip->add_next_vertices(8);
   strip->close_primitive();
   
   // Tristrip 2.
-  vertex.add_data3f(LPoint3f::rfu(right, 0.0f, bottom));
-  vertex.add_data3f(LPoint3f::rfu(right, 0.0f, top));
-  vertex.add_data3f(LPoint3f::rfu(inner_right, 0.0f, inner_bottom));
-  vertex.add_data3f(LPoint3f::rfu(inner_right, 0.0f, inner_top));
-  vertex.add_data3f(LPoint3f::rfu(inner_left, 0.0f, inner_bottom));
-  vertex.add_data3f(LPoint3f::rfu(inner_left, 0.0f, inner_top));
-  color.add_data4f(cright);
-  color.add_data4f(cright);
-  color.add_data4f(cright);
-  color.add_data4f(cright);
-  color.add_data4f(_color);
-  color.add_data4f(_color);
+  vertex.add_data3(LPoint3::rfu(right, 0.0f, bottom));
+  vertex.add_data3(LPoint3::rfu(right, 0.0f, top));
+  vertex.add_data3(LPoint3::rfu(inner_right, 0.0f, inner_bottom));
+  vertex.add_data3(LPoint3::rfu(inner_right, 0.0f, inner_top));
+  vertex.add_data3(LPoint3::rfu(inner_left, 0.0f, inner_bottom));
+  vertex.add_data3(LPoint3::rfu(inner_left, 0.0f, inner_top));
+  color.add_data4(cright);
+  color.add_data4(cright);
+  color.add_data4(cright);
+  color.add_data4(cright);
+  color.add_data4(_color);
+  color.add_data4(_color);
   
   strip->add_next_vertices(6);
   strip->close_primitive();
@@ -441,35 +441,35 @@ generate_bevel_geom(const LVecBase4f &frame, bool in) {
 
   if (has_texture()) {
     // Generate UV's.
-    float left = uv_range[0];
-    float right = uv_range[1];
-    float bottom = uv_range[2];
-    float top = uv_range[3];
+    PN_stdfloat left = uv_range[0];
+    PN_stdfloat right = uv_range[1];
+    PN_stdfloat bottom = uv_range[2];
+    PN_stdfloat top = uv_range[3];
 
-    float cx = (left + right) * 0.5;
-    float cy = (top + bottom) * 0.5;
+    PN_stdfloat cx = (left + right) * 0.5;
+    PN_stdfloat cy = (top + bottom) * 0.5;
     
-    float inner_left = min(left + _uv_width[0], cx);
-    float inner_right = max(right - _uv_width[0], cx);
-    float inner_bottom = min(bottom + _uv_width[1], cy);
-    float inner_top = max(top - _uv_width[1], cy);
+    PN_stdfloat inner_left = min(left + _uv_width[0], cx);
+    PN_stdfloat inner_right = max(right - _uv_width[0], cx);
+    PN_stdfloat inner_bottom = min(bottom + _uv_width[1], cy);
+    PN_stdfloat inner_top = max(top - _uv_width[1], cy);
 
     GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
-    texcoord.add_data2f(right, bottom);
-    texcoord.add_data2f(inner_right, inner_bottom);
-    texcoord.add_data2f(left, bottom);
-    texcoord.add_data2f(inner_left, inner_bottom);
-    texcoord.add_data2f(left, top);
-    texcoord.add_data2f(inner_left, inner_top);
-    texcoord.add_data2f(right, top);
-    texcoord.add_data2f(inner_right, inner_top);
+    texcoord.add_data2(right, bottom);
+    texcoord.add_data2(inner_right, inner_bottom);
+    texcoord.add_data2(left, bottom);
+    texcoord.add_data2(inner_left, inner_bottom);
+    texcoord.add_data2(left, top);
+    texcoord.add_data2(inner_left, inner_top);
+    texcoord.add_data2(right, top);
+    texcoord.add_data2(inner_right, inner_top);
 
-    texcoord.add_data2f(right, bottom);
-    texcoord.add_data2f(right, top);
-    texcoord.add_data2f(inner_right, inner_bottom);
-    texcoord.add_data2f(inner_right, inner_top);
-    texcoord.add_data2f(inner_left, inner_bottom);
-    texcoord.add_data2f(inner_left, inner_top);
+    texcoord.add_data2(right, bottom);
+    texcoord.add_data2(right, top);
+    texcoord.add_data2(inner_right, inner_bottom);
+    texcoord.add_data2(inner_right, inner_top);
+    texcoord.add_data2(inner_left, inner_bottom);
+    texcoord.add_data2(inner_left, inner_top);
   }
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
@@ -492,7 +492,7 @@ generate_bevel_geom(const LVecBase4f &frame, bool in) {
 //               T_ridge frame.
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) PGFrameStyle::
-generate_groove_geom(const LVecBase4f &frame, bool in) {
+generate_groove_geom(const LVecBase4 &frame, bool in) {
   //
   // Colors:
   //
@@ -593,55 +593,55 @@ generate_groove_geom(const LVecBase4f &frame, bool in) {
 
   PT(GeomNode) gnode = new GeomNode("groove");
 
-  float left = frame[0];
-  float right = frame[1];
-  float bottom = frame[2];
-  float top = frame[3];
+  PN_stdfloat left = frame[0];
+  PN_stdfloat right = frame[1];
+  PN_stdfloat bottom = frame[2];
+  PN_stdfloat top = frame[3];
 
-  float cx = (left + right) * 0.5;
-  float cy = (top + bottom) * 0.5;
+  PN_stdfloat cx = (left + right) * 0.5;
+  PN_stdfloat cy = (top + bottom) * 0.5;
 
-  float mid_left = min(left + 0.5f * _width[0], cx);
-  float mid_right = max(right - 0.5f * _width[0], cx);
-  float mid_bottom = min(bottom + 0.5f * _width[1], cy);
-  float mid_top = max(top - 0.5f * _width[1], cy);
+  PN_stdfloat mid_left = min(left + 0.5f * _width[0], cx);
+  PN_stdfloat mid_right = max(right - 0.5f * _width[0], cx);
+  PN_stdfloat mid_bottom = min(bottom + 0.5f * _width[1], cy);
+  PN_stdfloat mid_top = max(top - 0.5f * _width[1], cy);
 
-  float inner_left = min(left + _width[0], cx);
-  float inner_right = max(right - _width[0], cx);
-  float inner_bottom = min(bottom + _width[1], cy);
-  float inner_top = max(top - _width[1], cy);
+  PN_stdfloat inner_left = min(left + _width[0], cx);
+  PN_stdfloat inner_right = max(right - _width[0], cx);
+  PN_stdfloat inner_bottom = min(bottom + _width[1], cy);
+  PN_stdfloat inner_top = max(top - _width[1], cy);
 
-  float left_color_scale = 1.2f;
-  float right_color_scale = 0.8f;
-  float bottom_color_scale = 0.7f;
-  float top_color_scale = 1.3f;
+  PN_stdfloat left_color_scale = 1.2;
+  PN_stdfloat right_color_scale = 0.8f;
+  PN_stdfloat bottom_color_scale = 0.7f;
+  PN_stdfloat top_color_scale = 1.3;
 
   if (in) {
-    right_color_scale = 1.2f;
+    right_color_scale = 1.2;
     left_color_scale = 0.8f;
     top_color_scale = 0.7f;
-    bottom_color_scale = 1.3f;
+    bottom_color_scale = 1.3;
   }
 
   // Clamp all colors at white, and don't scale the alpha.
-  Colorf cleft(min(_color[0] * left_color_scale, 1.0f),
-               min(_color[1] * left_color_scale, 1.0f),
-               min(_color[2] * left_color_scale, 1.0f),
+  LColor cleft(min(_color[0] * left_color_scale, (PN_stdfloat)1.0),
+               min(_color[1] * left_color_scale, (PN_stdfloat)1.0),
+               min(_color[2] * left_color_scale, (PN_stdfloat)1.0),
                _color[3]);
 
-  Colorf cright(min(_color[0] * right_color_scale, 1.0f),
-                min(_color[1] * right_color_scale, 1.0f),
-                min(_color[2] * right_color_scale, 1.0f),
+  LColor cright(min(_color[0] * right_color_scale, (PN_stdfloat)1.0),
+                min(_color[1] * right_color_scale, (PN_stdfloat)1.0),
+                min(_color[2] * right_color_scale, (PN_stdfloat)1.0),
                 _color[3]);
 
-  Colorf cbottom(min(_color[0] * bottom_color_scale, 1.0f),
-                 min(_color[1] * bottom_color_scale, 1.0f),
-                 min(_color[2] * bottom_color_scale, 1.0f),
+  LColor cbottom(min(_color[0] * bottom_color_scale, (PN_stdfloat)1.0),
+                 min(_color[1] * bottom_color_scale, (PN_stdfloat)1.0),
+                 min(_color[2] * bottom_color_scale, (PN_stdfloat)1.0),
                  _color[3]);
 
-  Colorf ctop(min(_color[0] * top_color_scale, 1.0f),
-              min(_color[1] * top_color_scale, 1.0f),
-              min(_color[2] * top_color_scale, 1.0f),
+  LColor ctop(min(_color[0] * top_color_scale, (PN_stdfloat)1.0),
+              min(_color[1] * top_color_scale, (PN_stdfloat)1.0),
+              min(_color[2] * top_color_scale, (PN_stdfloat)1.0),
               _color[3]);
 
   CPT(GeomVertexFormat) format;
@@ -658,64 +658,64 @@ generate_groove_geom(const LVecBase4f &frame, bool in) {
   
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
   // Tristrip 1.
-  vertex.add_data3f(LPoint3f::rfu(right, 0.0f, bottom));
-  vertex.add_data3f(LPoint3f::rfu(mid_right, 0.0f, mid_bottom));
-  vertex.add_data3f(LPoint3f::rfu(left, 0.0f, bottom));
-  vertex.add_data3f(LPoint3f::rfu(mid_left, 0.0f, mid_bottom));
-  vertex.add_data3f(LPoint3f::rfu(left, 0.0f, top));
-  vertex.add_data3f(LPoint3f::rfu(mid_left, 0.0f, mid_top));
-  vertex.add_data3f(LPoint3f::rfu(right, 0.0f, top));
-  vertex.add_data3f(LPoint3f::rfu(mid_right, 0.0f, mid_top));
-  color.add_data4f(cbottom);
-  color.add_data4f(cbottom);
-  color.add_data4f(cbottom);
-  color.add_data4f(cbottom);
-  color.add_data4f(cleft);
-  color.add_data4f(cleft);
-  color.add_data4f(ctop);
-  color.add_data4f(ctop);
+  vertex.add_data3(LPoint3::rfu(right, 0.0f, bottom));
+  vertex.add_data3(LPoint3::rfu(mid_right, 0.0f, mid_bottom));
+  vertex.add_data3(LPoint3::rfu(left, 0.0f, bottom));
+  vertex.add_data3(LPoint3::rfu(mid_left, 0.0f, mid_bottom));
+  vertex.add_data3(LPoint3::rfu(left, 0.0f, top));
+  vertex.add_data3(LPoint3::rfu(mid_left, 0.0f, mid_top));
+  vertex.add_data3(LPoint3::rfu(right, 0.0f, top));
+  vertex.add_data3(LPoint3::rfu(mid_right, 0.0f, mid_top));
+  color.add_data4(cbottom);
+  color.add_data4(cbottom);
+  color.add_data4(cbottom);
+  color.add_data4(cbottom);
+  color.add_data4(cleft);
+  color.add_data4(cleft);
+  color.add_data4(ctop);
+  color.add_data4(ctop);
   
   strip->add_next_vertices(8);
   strip->close_primitive();
   
   // Tristrip 2.
-  vertex.add_data3f(LPoint3f::rfu(mid_right, 0.0f, mid_bottom));
-  vertex.add_data3f(LPoint3f::rfu(inner_right, 0.0f, inner_bottom));
-  vertex.add_data3f(LPoint3f::rfu(mid_left, 0.0f, mid_bottom));
-  vertex.add_data3f(LPoint3f::rfu(inner_left, 0.0f, inner_bottom));
-  vertex.add_data3f(LPoint3f::rfu(mid_left, 0.0f, mid_top));
-  vertex.add_data3f(LPoint3f::rfu(inner_left, 0.0f, inner_top));
-  vertex.add_data3f(LPoint3f::rfu(mid_right, 0.0f, mid_top));
-  vertex.add_data3f(LPoint3f::rfu(inner_right, 0.0f, inner_top));
-  color.add_data4f(ctop);
-  color.add_data4f(ctop);
-  color.add_data4f(ctop);
-  color.add_data4f(ctop);
-  color.add_data4f(cright);
-  color.add_data4f(cright);
-  color.add_data4f(cbottom);
-  color.add_data4f(cbottom);
+  vertex.add_data3(LPoint3::rfu(mid_right, 0.0f, mid_bottom));
+  vertex.add_data3(LPoint3::rfu(inner_right, 0.0f, inner_bottom));
+  vertex.add_data3(LPoint3::rfu(mid_left, 0.0f, mid_bottom));
+  vertex.add_data3(LPoint3::rfu(inner_left, 0.0f, inner_bottom));
+  vertex.add_data3(LPoint3::rfu(mid_left, 0.0f, mid_top));
+  vertex.add_data3(LPoint3::rfu(inner_left, 0.0f, inner_top));
+  vertex.add_data3(LPoint3::rfu(mid_right, 0.0f, mid_top));
+  vertex.add_data3(LPoint3::rfu(inner_right, 0.0f, inner_top));
+  color.add_data4(ctop);
+  color.add_data4(ctop);
+  color.add_data4(ctop);
+  color.add_data4(ctop);
+  color.add_data4(cright);
+  color.add_data4(cright);
+  color.add_data4(cbottom);
+  color.add_data4(cbottom);
   
   strip->add_next_vertices(8);
   strip->close_primitive();
   
   // Tristrip 3.
-  vertex.add_data3f(LPoint3f::rfu(right, 0.0f, bottom));
-  vertex.add_data3f(LPoint3f::rfu(right, 0.0f, top));
-  vertex.add_data3f(LPoint3f::rfu(mid_right, 0.0f, mid_bottom));
-  vertex.add_data3f(LPoint3f::rfu(mid_right, 0.0f, mid_top));
-  vertex.add_data3f(LPoint3f::rfu(inner_right, 0.0f, inner_bottom));
-  vertex.add_data3f(LPoint3f::rfu(inner_right, 0.0f, inner_top));
-  vertex.add_data3f(LPoint3f::rfu(inner_left, 0.0f, inner_bottom));
-  vertex.add_data3f(LPoint3f::rfu(inner_left, 0.0f, inner_top));
-  color.add_data4f(cright);
-  color.add_data4f(cright);
-  color.add_data4f(cright);
-  color.add_data4f(cright);
-  color.add_data4f(cleft);
-  color.add_data4f(cleft);
-  color.add_data4f(_color);
-  color.add_data4f(_color);
+  vertex.add_data3(LPoint3::rfu(right, 0.0f, bottom));
+  vertex.add_data3(LPoint3::rfu(right, 0.0f, top));
+  vertex.add_data3(LPoint3::rfu(mid_right, 0.0f, mid_bottom));
+  vertex.add_data3(LPoint3::rfu(mid_right, 0.0f, mid_top));
+  vertex.add_data3(LPoint3::rfu(inner_right, 0.0f, inner_bottom));
+  vertex.add_data3(LPoint3::rfu(inner_right, 0.0f, inner_top));
+  vertex.add_data3(LPoint3::rfu(inner_left, 0.0f, inner_bottom));
+  vertex.add_data3(LPoint3::rfu(inner_left, 0.0f, inner_top));
+  color.add_data4(cright);
+  color.add_data4(cright);
+  color.add_data4(cright);
+  color.add_data4(cright);
+  color.add_data4(cleft);
+  color.add_data4(cleft);
+  color.add_data4(_color);
+  color.add_data4(_color);
   
   strip->add_next_vertices(8);
   strip->close_primitive();
@@ -724,51 +724,51 @@ generate_groove_geom(const LVecBase4f &frame, bool in) {
 
   if (has_texture()) {
     // Generate UV's.
-    float left = uv_range[0];
-    float right = uv_range[1];
-    float bottom = uv_range[2];
-    float top = uv_range[3];
+    PN_stdfloat left = uv_range[0];
+    PN_stdfloat right = uv_range[1];
+    PN_stdfloat bottom = uv_range[2];
+    PN_stdfloat top = uv_range[3];
 
-    float cx = (left + right) * 0.5;
-    float cy = (top + bottom) * 0.5;
+    PN_stdfloat cx = (left + right) * 0.5;
+    PN_stdfloat cy = (top + bottom) * 0.5;
 
-    float mid_left = min(left + 0.5f * _width[0], cx);
-    float mid_right = max(right - 0.5f * _width[0], cx);
-    float mid_bottom = min(bottom + 0.5f * _width[1], cy);
-    float mid_top = max(top - 0.5f * _width[1], cy);
+    PN_stdfloat mid_left = min(left + 0.5f * _width[0], cx);
+    PN_stdfloat mid_right = max(right - 0.5f * _width[0], cx);
+    PN_stdfloat mid_bottom = min(bottom + 0.5f * _width[1], cy);
+    PN_stdfloat mid_top = max(top - 0.5f * _width[1], cy);
 
-    float inner_left = min(left + _width[0], cx);
-    float inner_right = max(right - _width[0], cx);
-    float inner_bottom = min(bottom + _width[1], cy);
-    float inner_top = max(top - _width[1], cy);
+    PN_stdfloat inner_left = min(left + _width[0], cx);
+    PN_stdfloat inner_right = max(right - _width[0], cx);
+    PN_stdfloat inner_bottom = min(bottom + _width[1], cy);
+    PN_stdfloat inner_top = max(top - _width[1], cy);
 
     GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
-    texcoord.add_data2f(right, bottom);
-    texcoord.add_data2f(mid_right, mid_bottom);
-    texcoord.add_data2f(left, bottom);
-    texcoord.add_data2f(mid_left, mid_bottom);
-    texcoord.add_data2f(left, top);
-    texcoord.add_data2f(mid_left, mid_top);
-    texcoord.add_data2f(right, top);
-    texcoord.add_data2f(mid_right, mid_top);
+    texcoord.add_data2(right, bottom);
+    texcoord.add_data2(mid_right, mid_bottom);
+    texcoord.add_data2(left, bottom);
+    texcoord.add_data2(mid_left, mid_bottom);
+    texcoord.add_data2(left, top);
+    texcoord.add_data2(mid_left, mid_top);
+    texcoord.add_data2(right, top);
+    texcoord.add_data2(mid_right, mid_top);
 
-    texcoord.add_data2f(mid_right, mid_bottom);
-    texcoord.add_data2f(inner_right, inner_bottom);
-    texcoord.add_data2f(mid_left, mid_bottom);
-    texcoord.add_data2f(inner_left, inner_bottom);
-    texcoord.add_data2f(mid_left, mid_top);
-    texcoord.add_data2f(inner_left, inner_top);
-    texcoord.add_data2f(mid_right, mid_top);
-    texcoord.add_data2f(inner_right, inner_top);
+    texcoord.add_data2(mid_right, mid_bottom);
+    texcoord.add_data2(inner_right, inner_bottom);
+    texcoord.add_data2(mid_left, mid_bottom);
+    texcoord.add_data2(inner_left, inner_bottom);
+    texcoord.add_data2(mid_left, mid_top);
+    texcoord.add_data2(inner_left, inner_top);
+    texcoord.add_data2(mid_right, mid_top);
+    texcoord.add_data2(inner_right, inner_top);
 
-    texcoord.add_data2f(right, bottom);
-    texcoord.add_data2f(right, top);
-    texcoord.add_data2f(mid_right, mid_bottom);
-    texcoord.add_data2f(mid_right, mid_top);
-    texcoord.add_data2f(inner_right, inner_bottom);
-    texcoord.add_data2f(inner_right, inner_top);
-    texcoord.add_data2f(inner_left, inner_bottom);
-    texcoord.add_data2f(inner_left, inner_top);
+    texcoord.add_data2(right, bottom);
+    texcoord.add_data2(right, top);
+    texcoord.add_data2(mid_right, mid_bottom);
+    texcoord.add_data2(mid_right, mid_top);
+    texcoord.add_data2(inner_right, inner_bottom);
+    texcoord.add_data2(inner_right, inner_top);
+    texcoord.add_data2(inner_left, inner_bottom);
+    texcoord.add_data2(inner_left, inner_top);
   }
 
   PT(Geom) geom = new Geom(vdata);
@@ -791,7 +791,7 @@ generate_groove_geom(const LVecBase4f &frame, bool in) {
 //               T_texture_border frame.
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode) PGFrameStyle::
-generate_texture_border_geom(const LVecBase4f &frame) {
+generate_texture_border_geom(const LVecBase4 &frame) {
   //
   // Vertices:
   //
@@ -821,18 +821,18 @@ generate_texture_border_geom(const LVecBase4f &frame) {
 
   PT(GeomNode) gnode = new GeomNode("flat");
 
-  float left = frame[0];
-  float right = frame[1];
-  float bottom = frame[2];
-  float top = frame[3];
+  PN_stdfloat left = frame[0];
+  PN_stdfloat right = frame[1];
+  PN_stdfloat bottom = frame[2];
+  PN_stdfloat top = frame[3];
 
-  float cx = (left + right) * 0.5;
-  float cy = (top + bottom) * 0.5;
+  PN_stdfloat cx = (left + right) * 0.5;
+  PN_stdfloat cy = (top + bottom) * 0.5;
 
-  float inner_left = min(left + _width[0], cx);
-  float inner_right = max(right - _width[0], cx);
-  float inner_bottom = min(bottom + _width[1], cy);
-  float inner_top = max(top - _width[1], cy);
+  PN_stdfloat inner_left = min(left + _width[0], cx);
+  PN_stdfloat inner_right = max(right - _width[0], cx);
+  PN_stdfloat inner_bottom = min(bottom + _width[1], cy);
+  PN_stdfloat inner_top = max(top - _width[1], cy);
 
   CPT(GeomVertexFormat) format;
   if (has_texture()) {
@@ -847,63 +847,63 @@ generate_texture_border_geom(const LVecBase4f &frame) {
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   
   // verts 0,1,2,3
-  vertex.add_data3f(LPoint3f::rfu(left, 0.0f, top));
-  vertex.add_data3f(LPoint3f::rfu(left, 0.0f, inner_top));
-  vertex.add_data3f(LPoint3f::rfu(inner_left, 0.0f, top));
-  vertex.add_data3f(LPoint3f::rfu(inner_left, 0.0f, inner_top));
+  vertex.add_data3(LPoint3::rfu(left, 0.0f, top));
+  vertex.add_data3(LPoint3::rfu(left, 0.0f, inner_top));
+  vertex.add_data3(LPoint3::rfu(inner_left, 0.0f, top));
+  vertex.add_data3(LPoint3::rfu(inner_left, 0.0f, inner_top));
   // verts 4,5,6,7
-  vertex.add_data3f(LPoint3f::rfu(inner_right, 0.0f, top));
-  vertex.add_data3f(LPoint3f::rfu(inner_right, 0.0f, inner_top));
-  vertex.add_data3f(LPoint3f::rfu(right, 0.0f, top));
-  vertex.add_data3f(LPoint3f::rfu(right, 0.0f, inner_top));
+  vertex.add_data3(LPoint3::rfu(inner_right, 0.0f, top));
+  vertex.add_data3(LPoint3::rfu(inner_right, 0.0f, inner_top));
+  vertex.add_data3(LPoint3::rfu(right, 0.0f, top));
+  vertex.add_data3(LPoint3::rfu(right, 0.0f, inner_top));
   // verts 8,9,10,11
-  vertex.add_data3f(LPoint3f::rfu(left, 0.0f, inner_bottom));
-  vertex.add_data3f(LPoint3f::rfu(left, 0.0f, bottom));
-  vertex.add_data3f(LPoint3f::rfu(inner_left, 0.0f, inner_bottom));
-  vertex.add_data3f(LPoint3f::rfu(inner_left, 0.0f, bottom));
+  vertex.add_data3(LPoint3::rfu(left, 0.0f, inner_bottom));
+  vertex.add_data3(LPoint3::rfu(left, 0.0f, bottom));
+  vertex.add_data3(LPoint3::rfu(inner_left, 0.0f, inner_bottom));
+  vertex.add_data3(LPoint3::rfu(inner_left, 0.0f, bottom));
   // verts 12,13,14,15
-  vertex.add_data3f(LPoint3f::rfu(inner_right, 0.0f, inner_bottom));
-  vertex.add_data3f(LPoint3f::rfu(inner_right, 0.0f, bottom));
-  vertex.add_data3f(LPoint3f::rfu(right, 0.0f, inner_bottom));
-  vertex.add_data3f(LPoint3f::rfu(right, 0.0f, bottom));
+  vertex.add_data3(LPoint3::rfu(inner_right, 0.0f, inner_bottom));
+  vertex.add_data3(LPoint3::rfu(inner_right, 0.0f, bottom));
+  vertex.add_data3(LPoint3::rfu(right, 0.0f, inner_bottom));
+  vertex.add_data3(LPoint3::rfu(right, 0.0f, bottom));
 
   if (has_texture()) {
     // Generate UV's.
-    float left = uv_range[0];
-    float right = uv_range[1];
-    float bottom = uv_range[2];
-    float top = uv_range[3];
+    PN_stdfloat left = uv_range[0];
+    PN_stdfloat right = uv_range[1];
+    PN_stdfloat bottom = uv_range[2];
+    PN_stdfloat top = uv_range[3];
 
-    float cx = (left + right) * 0.5;
-    float cy = (top + bottom) * 0.5;
+    PN_stdfloat cx = (left + right) * 0.5;
+    PN_stdfloat cy = (top + bottom) * 0.5;
     
-    float inner_left = min(left + _uv_width[0], cx);
-    float inner_right = max(right - _uv_width[0], cx);
-    float inner_bottom = min(bottom + _uv_width[1], cy);
-    float inner_top = max(top - _uv_width[1], cy);
+    PN_stdfloat inner_left = min(left + _uv_width[0], cx);
+    PN_stdfloat inner_right = max(right - _uv_width[0], cx);
+    PN_stdfloat inner_bottom = min(bottom + _uv_width[1], cy);
+    PN_stdfloat inner_top = max(top - _uv_width[1], cy);
 
     GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
   
     // verts 0,1,2,3
-    texcoord.add_data2f(left, top);
-    texcoord.add_data2f(left, inner_top);
-    texcoord.add_data2f(inner_left, top);
-    texcoord.add_data2f(inner_left, inner_top);
+    texcoord.add_data2(left, top);
+    texcoord.add_data2(left, inner_top);
+    texcoord.add_data2(inner_left, top);
+    texcoord.add_data2(inner_left, inner_top);
     // verts 4,5,6,7
-    texcoord.add_data2f(inner_right, top);
-    texcoord.add_data2f(inner_right, inner_top);
-    texcoord.add_data2f(right, top);
-    texcoord.add_data2f(right, inner_top);
+    texcoord.add_data2(inner_right, top);
+    texcoord.add_data2(inner_right, inner_top);
+    texcoord.add_data2(right, top);
+    texcoord.add_data2(right, inner_top);
     // verts 8,9,10,11
-    texcoord.add_data2f(left, inner_bottom);
-    texcoord.add_data2f(left, bottom);
-    texcoord.add_data2f(inner_left, inner_bottom);
-    texcoord.add_data2f(inner_left, bottom);
+    texcoord.add_data2(left, inner_bottom);
+    texcoord.add_data2(left, bottom);
+    texcoord.add_data2(inner_left, inner_bottom);
+    texcoord.add_data2(inner_left, bottom);
     // verts 12,13,14,15
-    texcoord.add_data2f(inner_right, inner_bottom);
-    texcoord.add_data2f(inner_right, bottom);
-    texcoord.add_data2f(right, inner_bottom);
-    texcoord.add_data2f(right, bottom);
+    texcoord.add_data2(inner_right, inner_bottom);
+    texcoord.add_data2(inner_right, bottom);
+    texcoord.add_data2(right, inner_bottom);
+    texcoord.add_data2(right, bottom);
   }
   
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);

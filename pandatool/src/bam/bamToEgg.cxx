@@ -239,9 +239,9 @@ convert_lod_node(LODNode *node, const WorkingNodePath &node_path,
     }
 
     // Now set up the switching properties appropriately.
-    float in = node->get_in(i);
-    float out = node->get_out(i);
-    LPoint3f center = node->get_center();
+    PN_stdfloat in = node->get_in(i);
+    PN_stdfloat out = node->get_out(i);
+    LPoint3 center = node->get_center();
     EggSwitchConditionDistance dist(in, out, LCAST(double, center));
     next_group->set_lod(dist);
     egg_group->add_child(next_group.p());
@@ -339,7 +339,7 @@ EggGroupNode * BamToEgg::convert_animGroup_node(AnimGroup *animGroup, double fps
     for (int i = 0; i < num_matrix_components; i++) {
       string componentName(1, matrix_component_letters[i]);
       char table_id = matrix_component_letters[i];
-      CPTA_float table = xmfTable->get_table(table_id);
+      CPTA_stdfloat table = xmfTable->get_table(table_id);
 
       if (xmfTable->has_table(table_id)) {
         for (unsigned int j = 0; j < table.size(); j++) {
@@ -398,7 +398,7 @@ convert_character_bundle(PartGroup *bundleNode, EggGroupNode *egg_parent, Charac
   if (bundleNode->is_of_type(CharacterJoint::get_class_type())) {
     CharacterJoint *character_joint = DCAST(CharacterJoint, bundleNode);
 
-    LMatrix4f transformf;
+    LMatrix4 transformf;
     character_joint->get_net_transform(transformf);
     LMatrix4d transformd(LCAST(double, transformf));
     EggGroup *joint = new EggGroup(bundleNode->get_name());
@@ -409,8 +409,8 @@ convert_character_bundle(PartGroup *bundleNode, EggGroupNode *egg_parent, Charac
     if (jointMap!=NULL) {
       CharacterJointMap::iterator mi = jointMap->find(character_joint);
       if (mi != jointMap->end()) {
-        pvector<pair<EggVertex*,float> > &joint_vertices = (*mi).second;
-        pvector<pair<EggVertex*,float> >::const_iterator vi;
+        pvector<pair<EggVertex*,PN_stdfloat> > &joint_vertices = (*mi).second;
+        pvector<pair<EggVertex*,PN_stdfloat> >::const_iterator vi;
         for (vi = joint_vertices.begin(); vi != joint_vertices.end(); ++vi) {
           joint->set_vertex_membership((*vi).first, (*vi).second);
         }
@@ -487,8 +487,8 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
 
   NodePath np = node_path.get_node_path();
   CPT(TransformState) net_transform = np.get_net_transform();
-  LMatrix4f net_mat = net_transform->get_mat();
-  LMatrix4f inv = LCAST(float, egg_parent->get_vertex_frame_inv());
+  LMatrix4 net_mat = net_transform->get_mat();
+  LMatrix4 inv = LCAST(PN_stdfloat, egg_parent->get_vertex_frame_inv());
   net_mat = net_mat * inv;
 
   int num_solids = node->get_num_solids();
@@ -564,8 +564,8 @@ convert_geom_node(GeomNode *node, const WorkingNodePath &node_path,
   NodePath np = node_path.get_node_path();
   CPT(RenderState) net_state = np.get_net_state();
   CPT(TransformState) net_transform = np.get_net_transform();
-  LMatrix4f net_mat = net_transform->get_mat();
-  LMatrix4f inv = LCAST(float, egg_parent->get_vertex_frame_inv());
+  LMatrix4 net_mat = net_transform->get_mat();
+  LMatrix4 inv = LCAST(PN_stdfloat, egg_parent->get_vertex_frame_inv());
   net_mat = net_mat * inv;
 
   // Now get out all the various kinds of geometry.
@@ -600,12 +600,12 @@ void BamToEgg::
 convert_triangles(const GeomVertexData *vertex_data,
                   const GeomTriangles *primitive, 
                   const RenderState *net_state, 
-                  const LMatrix4f &net_mat, EggGroupNode *egg_parent,
+                  const LMatrix4 &net_mat, EggGroupNode *egg_parent,
                   CharacterJointMap *jointMap) {
   GeomVertexReader reader(vertex_data);
 
   // Check for a color scale.
-  LVecBase4f color_scale(1.0f, 1.0f, 1.0f, 1.0f);
+  LVecBase4 color_scale(1.0f, 1.0f, 1.0f, 1.0f);
   const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, net_state->get_attrib(ColorScaleAttrib::get_class_type()));
   if (csa != (const ColorScaleAttrib *)NULL) {
     color_scale = csa->get_scale();
@@ -614,7 +614,7 @@ convert_triangles(const GeomVertexData *vertex_data,
   // Check for a color override.
   bool has_color_override = false;
   bool has_color_off = false;
-  Colorf color_override;
+  LColor color_override;
   const ColorAttrib *ca = DCAST(ColorAttrib, net_state->get_attrib(ColorAttrib::get_class_type()));
   if (ca != (const ColorAttrib *)NULL) {
     if (ca->get_color_type() == ColorAttrib::T_flat) {
@@ -735,8 +735,8 @@ convert_triangles(const GeomVertexData *vertex_data,
   }
 
 
-  Normalf normal;
-  Colorf color;
+  LNormal normal;
+  LColor color;
   CPT(TransformBlendTable) transformBlendTable = vertex_data->get_transform_blend_table();
 
   int nprims = primitive->get_num_primitives();
@@ -758,24 +758,24 @@ convert_triangles(const GeomVertexData *vertex_data,
       reader.set_row(primitive->get_vertex(i * 3 + j));
 
       reader.set_column(InternalName::get_vertex());
-      Vertexf vertex = reader.get_data3f();
+      LVertex vertex = reader.get_data3();
       egg_vert.set_pos(LCAST(double, vertex * net_mat));
 
       if (vertex_data->has_column(InternalName::get_normal())) {
         reader.set_column(InternalName::get_normal());
-        Normalf normal = reader.get_data3f();
+        LNormal normal = reader.get_data3();
         egg_vert.set_normal(LCAST(double, normal * net_mat));
       }
       if (has_color_override) {
         egg_vert.set_color(color_override);
 
       } else if (!has_color_off) {
-        Colorf color(1.0f, 1.0f, 1.0f, 1.0f);
+        LColor color(1.0f, 1.0f, 1.0f, 1.0f);
         if (vertex_data->has_column(InternalName::get_color())) {
           reader.set_column(InternalName::get_color());
-          color = reader.get_data4f();
+          color = reader.get_data4();
         }
-        egg_vert.set_color(Colorf(color[0] * color_scale[0],
+        egg_vert.set_color(LColor(color[0] * color_scale[0],
                                   color[1] * color_scale[1],
                                   color[2] * color_scale[2],
                                   color[3] * color_scale[3]));
@@ -783,7 +783,7 @@ convert_triangles(const GeomVertexData *vertex_data,
 
       if (vertex_data->has_column(InternalName::get_texcoord())) {
         reader.set_column(InternalName::get_texcoord());
-        TexCoordf uv = reader.get_data2f();
+        LTexCoord uv = reader.get_data2();
         egg_vert.set_uv(LCAST(double, uv));
       }
 
@@ -796,7 +796,7 @@ convert_triangles(const GeomVertexData *vertex_data,
         const TransformBlend &blend = transformBlendTable->get_blend(idx);
         int num_weights = blend.get_num_transforms();
         for (int k = 0; k < num_weights; ++k) {
-          float weight = blend.get_weight(k);
+          PN_stdfloat weight = blend.get_weight(k);
           if (weight!=0) {
             const VertexTransform *vertex_transform = blend.get_transform(k);
             if (vertex_transform->is_of_type(JointVertexTransform::get_class_type())) {
@@ -804,10 +804,10 @@ convert_triangles(const GeomVertexData *vertex_data,
 
               CharacterJointMap::iterator mi = jointMap->find(joint_vertex_transform->get_joint());
               if (mi == jointMap->end()) {
-                mi = jointMap->insert(CharacterJointMap::value_type(joint_vertex_transform->get_joint(), pvector<pair<EggVertex*,float> >())).first;
+                mi = jointMap->insert(CharacterJointMap::value_type(joint_vertex_transform->get_joint(), pvector<pair<EggVertex*,PN_stdfloat> >())).first;
               }
-              pvector<pair<EggVertex*,float> > &joint_vertices = (*mi).second;
-              joint_vertices.push_back(pair<EggVertex*,float>(new_egg_vert, weight));
+              pvector<pair<EggVertex*,PN_stdfloat> > &joint_vertices = (*mi).second;
+              joint_vertices.push_back(pair<EggVertex*,PN_stdfloat>(new_egg_vert, weight));
             }
           }
         }
@@ -903,22 +903,22 @@ apply_node_properties(EggGroup *egg_group, PandaNode *node, bool allow_backstage
     if (transform->has_components()) {
       // If the transform can be represented componentwise, we prefer
       // storing it that way in the egg file.
-      const LVecBase3f &scale = transform->get_scale();
-      const LQuaternionf &quat = transform->get_quat();
-      const LVecBase3f &pos = transform->get_pos();
-      if (!scale.almost_equal(LVecBase3f(1.0f, 1.0f, 1.0f))) {
+      const LVecBase3 &scale = transform->get_scale();
+      const LQuaternion &quat = transform->get_quat();
+      const LVecBase3 &pos = transform->get_pos();
+      if (!scale.almost_equal(LVecBase3(1.0f, 1.0f, 1.0f))) {
         egg_group->add_scale3d(LCAST(double, scale));
       }
       if (!quat.is_identity()) {
         egg_group->add_rotate3d(LCAST(double, quat));
       }
-      if (!pos.almost_equal(LVecBase3f::zero())) {
+      if (!pos.almost_equal(LVecBase3::zero())) {
         egg_group->add_translate3d(LCAST(double, pos));
       }
 
     } else if (transform->has_mat()) {
       // Otherwise, we store the raw matrix.
-      const LMatrix4f &mat = transform->get_mat();
+      const LMatrix4 &mat = transform->get_mat();
       egg_group->set_transform3d(LCAST(double, mat));
     }
     any_applied = true;

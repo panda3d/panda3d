@@ -43,11 +43,11 @@ PUBLISHED:
 
   PointParticleRenderer(const PointParticleRenderer& copy);
   PointParticleRenderer(ParticleRendererAlphaMode ad = PR_ALPHA_NONE,
-                        float point_size = 1.0f,
+                        PN_stdfloat point_size = 1.0f,
                         PointParticleBlendType bt = PP_ONE_COLOR,
                         ParticleRendererBlendMethod bm = PP_NO_BLEND,
-                        const Colorf& sc = Colorf(1.0f, 1.0f, 1.0f, 1.0f),
-                        const Colorf& ec = Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+                        const LColor& sc = LColor(1.0f, 1.0f, 1.0f, 1.0f),
+                        const LColor& ec = LColor(1.0f, 1.0f, 1.0f, 1.0f));
 
   virtual ~PointParticleRenderer();
 
@@ -55,15 +55,15 @@ public:
   virtual BaseParticleRenderer *make_copy();
 
 PUBLISHED:
-  INLINE void set_point_size(float point_size);
-  INLINE void set_start_color(const Colorf& sc);
-  INLINE void set_end_color(const Colorf& ec);
+  INLINE void set_point_size(PN_stdfloat point_size);
+  INLINE void set_start_color(const LColor& sc);
+  INLINE void set_end_color(const LColor& ec);
   INLINE void set_blend_type(PointParticleBlendType bt);
   INLINE void set_blend_method(ParticleRendererBlendMethod bm);
 
-  INLINE float get_point_size() const;
-  INLINE const Colorf& get_start_color() const;
-  INLINE const Colorf& get_end_color() const;
+  INLINE PN_stdfloat get_point_size() const;
+  INLINE const LColor& get_start_color() const;
+  INLINE const LColor& get_end_color() const;
   INLINE PointParticleBlendType get_blend_type() const;
   INLINE ParticleRendererBlendMethod get_blend_method() const;
 
@@ -71,9 +71,9 @@ PUBLISHED:
   virtual void write(ostream &out, int indent_level = 0) const;
 
 private:
-  Colorf _start_color;
-  Colorf _end_color;
-  float _point_size;
+  LColor _start_color;
+  LColor _end_color;
+  PN_stdfloat _point_size;
   CPT(RenderAttrib) _thick;
 
   PT(Geom) _point_primitive;
@@ -85,10 +85,10 @@ private:
   PointParticleBlendType _blend_type;
   ParticleRendererBlendMethod _blend_method;
 
-  LPoint3f _aabb_min;
-  LPoint3f _aabb_max;
+  LPoint3 _aabb_min;
+  LPoint3 _aabb_max;
 
-  Colorf create_color(const BaseParticle *p);
+  LColor create_color(const BaseParticle *p);
 
   virtual void birth_particle(int index);
   virtual void kill_particle(int index);

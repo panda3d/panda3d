@@ -16,8 +16,8 @@
 #define LINEARRANDOMFORCE_H
 
 #include <stdlib.h>
-#include <math.h>
-
+#include "cmath.h"
+#include "mathNumbers.h"
 #include "linearForce.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -32,13 +32,13 @@ PUBLISHED:
   virtual void write(ostream &out, unsigned int indent=0) const;
 
 protected:
-  static float bounded_rand();
-  static LVector3f random_unit_vector();
+  static PN_stdfloat bounded_rand();
+  static LVector3 random_unit_vector();
 
-  LinearRandomForce(float a = 1.0f, bool m = false);
+  LinearRandomForce(PN_stdfloat a = 1.0f, bool m = false);
   LinearRandomForce(const LinearRandomForce &copy);
 
-  virtual LVector3f get_child_vector(const PhysicsObject *po) = 0;
+  virtual LVector3 get_child_vector(const PhysicsObject *po) = 0;
   virtual LinearForce *make_copy() = 0;
 
 public:

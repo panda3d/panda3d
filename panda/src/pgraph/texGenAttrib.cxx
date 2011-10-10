@@ -137,7 +137,7 @@ add_stage(TextureStage *stage, TexGenAttrib::Mode mode,
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) TexGenAttrib::
 add_stage(TextureStage *stage, TexGenAttrib::Mode mode, 
-          const TexCoord3f &constant_value) const {
+          const LTexCoord3 &constant_value) const {
   nassertr(mode == M_constant, this);
 
   CPT(RenderAttrib) removed = remove_stage(stage);
@@ -282,13 +282,13 @@ get_light(TextureStage *stage) const {
 //               texture stage.  This is only meaningful if the mode
 //               is M_constant.
 ////////////////////////////////////////////////////////////////////
-const TexCoord3f &TexGenAttrib::
+const LTexCoord3 &TexGenAttrib::
 get_constant_value(TextureStage *stage) const {
   Stages::const_iterator mi = _stages.find(stage);
   if (mi != _stages.end()) {
     return (*mi).second._constant_value;
   }
-  return TexCoord3f::zero();
+  return LTexCoord3::zero();
 }
 
 ////////////////////////////////////////////////////////////////////

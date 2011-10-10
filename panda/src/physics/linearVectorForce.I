@@ -18,7 +18,7 @@
 // Description : encapsulating wrapper
 ////////////////////////////////////////////////////////////////////
 INLINE void LinearVectorForce::
-set_vector(const LVector3f& v) {
+set_vector(const LVector3& v) {
   _fvec = v;
 }
 
@@ -28,7 +28,7 @@ set_vector(const LVector3f& v) {
 // Description : piecewise encapsulating wrapper
 ////////////////////////////////////////////////////////////////////
 INLINE void LinearVectorForce::
-set_vector(float x, float y, float z) {
+set_vector(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
   _fvec.set(x, y, z);
 }
 
@@ -37,7 +37,7 @@ set_vector(float x, float y, float z) {
 //      Access : Public
 // Description :
 ////////////////////////////////////////////////////////////////////
-INLINE LVector3f LinearVectorForce::
+INLINE LVector3 LinearVectorForce::
 get_local_vector() const {
   return _fvec;
 }

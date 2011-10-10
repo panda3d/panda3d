@@ -516,9 +516,9 @@ get_joint_transform(SAA_Scene *scene,  EggGroup *egg_group, EggXfmSAnim *anim, b
   const char *name = get_name().c_str();
 
   if ( skeletonPart != NULL ) {
-    float i,j,k;
-    float h,p,r;
-    float x,y,z;
+    PN_stdfloat i,j,k;
+    PN_stdfloat h,p,r;
+    PN_stdfloat x,y,z;
     int scale_joint = 0;
 
     softegg_cat.spam() << "\n\nanimating child " << name << endl;
@@ -675,10 +675,10 @@ load_poly_model(SAA_Scene *scene, SAA_ModelType type) {
       softegg_cat.spam() << "numTexLoc = " << numTexLoc << endl;
       
       // allocate arrays of texture info
-      uScale = new float[numTri];
-      vScale = new float[numTri];
-      uOffset = new float[numTri];
-      vOffset = new float[numTri];
+      uScale = new PN_stdfloat[numTri];
+      vScale = new PN_stdfloat[numTri];
+      uOffset = new PN_stdfloat[numTri];
+      vOffset = new PN_stdfloat[numTri];
       texNameArray = new char *[numTri];
       uRepeat = new int[numTri];
       vRepeat = new int[numTri];
@@ -765,10 +765,10 @@ load_poly_model(SAA_Scene *scene, SAA_ModelType type) {
           softegg_cat.spam() << " global tex named: " << *texNameArray << endl;
           
           // allocate arrays of texture info
-          uScale = new float;
-          vScale = new float;
-          uOffset = new float;
-          vOffset = new float;
+          uScale = new PN_stdfloat;
+          vScale = new PN_stdfloat;
+          uOffset = new PN_stdfloat;
+          vOffset = new PN_stdfloat;
           
           SAA_texture2DGetUScale( scene, textures, uScale );
           SAA_texture2DGetVScale( scene, textures, vScale );
@@ -871,10 +871,10 @@ load_nurbs_model(SAA_Scene *scene, SAA_ModelType type) {
       // allocate the texture name array
       texNameArray = new char *[1];
       // allocate arrays of texture info
-      uScale = new float;
-      vScale = new float;
-      uOffset = new float;
-      vOffset = new float;
+      uScale = new PN_stdfloat;
+      vScale = new PN_stdfloat;
+      uOffset = new PN_stdfloat;
+      vOffset = new PN_stdfloat;
       uRepeat = new int;
       vRepeat = new int;
       
@@ -1077,7 +1077,7 @@ make_vertex_offsets(int numShapes) {
 //               the shape weight info for this frame...
 ////////////////////////////////////////////////////////////////////
 void SoftNodeDesc::
-make_morph_table(  float time ) {
+make_morph_table(  PN_stdfloat time ) {
   int numShapes;
   SAA_Elem *model = NULL;
   SAA_AnimInterpType type;
@@ -1121,9 +1121,9 @@ make_morph_table(  float time ) {
 //               to populate the morph table.
 ////////////////////////////////////////////////////////////////////
 void SoftNodeDesc::
-make_linear_morph_table(int numShapes, float time) {    
+make_linear_morph_table(int numShapes, PN_stdfloat time) {    
   int i;
-  float curveVal;
+  PN_stdfloat curveVal;
   char tableName[_MAX_PATH];
   SAA_Elem fcurve;
   //SAnimTable *thisTable;
@@ -1139,7 +1139,7 @@ make_linear_morph_table(int numShapes, float time) {
     
   softegg_cat.spam() << "at time " << time << ", fcurve for " << get_name() << " = " << curveVal << endl;
 
-  float nextVal = 0.0f;
+  PN_stdfloat nextVal = 0.0f;
 
   // populate morph table values for this frame
   for ( i = 1; i < numShapes; i++ ) {
@@ -1193,8 +1193,8 @@ make_linear_morph_table(int numShapes, float time) {
 //               appropriate routine.
 ////////////////////////////////////////////////////////////////////
 void SoftNodeDesc::
-make_weighted_morph_table(int numShapes, float time) {
-  float curveVal;
+make_weighted_morph_table(int numShapes, PN_stdfloat time) {
+  PN_stdfloat curveVal;
   SI_Error result;
   char tableName[_MAX_PATH];
   SAA_Elem *weightCurves;
@@ -1246,13 +1246,13 @@ make_weighted_morph_table(int numShapes, float time) {
 //               controlling sliders. 
 ////////////////////////////////////////////////////////////////////
 void SoftNodeDesc::
-make_expression_morph_table(int numShapes, float time)
+make_expression_morph_table(int numShapes, PN_stdfloat time)
 {    
   //int j;
   int numExp;
   char *track;
-  //float expVal;
-  //float sliderVal;
+  //PN_stdfloat expVal;
+  //PN_stdfloat sliderVal;
   //char *tableName;
   //char *sliderName;
   //SAnimTable *thisTable;

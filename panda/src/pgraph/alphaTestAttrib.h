@@ -28,14 +28,14 @@ class FactoryParams;
 class EXPCL_PANDA_PGRAPH AlphaTestAttrib : public RenderAttrib {
 private:
   INLINE AlphaTestAttrib(PandaCompareFunc mode = M_always,
-                         float reference_alpha = 1.0f);
+                         PN_stdfloat reference_alpha = 1.0f);
 
 PUBLISHED:
   static CPT(RenderAttrib) make(PandaCompareFunc mode,
-                                float reference_alpha);
+                                PN_stdfloat reference_alpha);
   static CPT(RenderAttrib) make_default();
 
-  INLINE float get_reference_alpha() const;
+  INLINE PN_stdfloat get_reference_alpha() const;
   INLINE PandaCompareFunc get_mode() const;
 
 public:
@@ -47,7 +47,7 @@ protected:
 
 private:
   PandaCompareFunc _mode;
-  float _reference_alpha;  // should be in range [0.0-1.0]
+  PN_stdfloat _reference_alpha;  // should be in range [0.0-1.0]
 
 PUBLISHED:
   static int get_class_slot() {

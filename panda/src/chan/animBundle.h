@@ -33,7 +33,7 @@ protected:
   AnimBundle(AnimGroup *parent, const AnimBundle &copy);
 
 PUBLISHED:
-  INLINE AnimBundle(const string &name, float fps, int num_frames);
+  INLINE AnimBundle(const string &name, PN_stdfloat fps, int num_frames);
 
   PT(AnimBundle) copy_bundle() const;
 
@@ -48,7 +48,7 @@ protected:
   virtual AnimGroup *make_copy(AnimGroup *parent) const;
 
 private:
-  float _fps;
+  PN_stdfloat _fps;
   int _num_frames;
 
 public:

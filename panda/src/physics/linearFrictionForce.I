@@ -17,7 +17,7 @@
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void LinearFrictionForce::
-set_coef(float coef) {
+set_coef(PN_stdfloat coef) {
   // friction shouldn't be outside of [0, 1]
   if (coef < 0.0f) {
     coef = 0.0f;
@@ -31,7 +31,7 @@ set_coef(float coef) {
 // Function : get_coef
 //   Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE float LinearFrictionForce::
+INLINE PN_stdfloat LinearFrictionForce::
 get_coef() const {
   return _coef;
 }

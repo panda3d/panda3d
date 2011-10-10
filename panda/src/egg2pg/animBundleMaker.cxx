@@ -109,7 +109,7 @@ inspect_tree(EggNode *egg_node) {
         _fps = egg_anim->get_fps();
       } else if (_fps != egg_anim->get_fps()) {
         // Whoops!  This table differs in opinion from the other tables.
-        _fps = min(_fps, (float)egg_anim->get_fps());
+        _fps = min(_fps, (PN_stdfloat)egg_anim->get_fps());
         _ok_fps = false;
       }
     }
@@ -123,7 +123,7 @@ inspect_tree(EggNode *egg_node) {
         _fps = egg_anim->get_fps();
       } else if (_fps != egg_anim->get_fps()) {
         // Whoops!  This table differs in opinion from the other tables.
-        _fps = min(_fps, (float)egg_anim->get_fps());
+        _fps = min(_fps, (PN_stdfloat)egg_anim->get_fps());
         _ok_fps = false;
       }
     }
@@ -235,11 +235,11 @@ create_s_channel(EggSAnimData *egg_anim, const string &name,
     = new AnimChannelScalarTable(parent, name);
 
   // First we have to copy the table data from PTA_double to
-  // PTA_float.
-  PTA_float new_data = PTA_float::empty_array(egg_anim->get_num_rows(),
-                                              table->get_class_type());
+  // PTA_stdfloat.
+  PTA_stdfloat new_data = PTA_stdfloat::empty_array(egg_anim->get_num_rows(),
+                                                    table->get_class_type());
   for (int i = 0; i < egg_anim->get_num_rows(); i++) {
-    new_data[i] = (float)egg_anim->get_value(i);
+    new_data[i] = (PN_stdfloat)egg_anim->get_value(i);
   }
 
   // Now we can assign the table.
@@ -321,11 +321,11 @@ create_xfm_channel(EggXfmSAnim *egg_anim, const string &name,
         } else {
 
           // Now we have to copy the table data from PTA_double to
-          // PTA_float.
-          PTA_float new_data=PTA_float::empty_array(child->get_num_rows(),
+          // PTA_stdfloat.
+          PTA_stdfloat new_data=PTA_stdfloat::empty_array(child->get_num_rows(),
                                                     table->get_class_type());
           for (int i = 0; i < child->get_num_rows(); i++) {
-            new_data[i] = (float)child->get_value(i);
+            new_data[i] = (PN_stdfloat)child->get_value(i);
           }
 
           // Now we can assign the table.

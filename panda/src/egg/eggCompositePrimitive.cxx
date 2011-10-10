@@ -177,7 +177,7 @@ unify_attributes(EggPrimitive::Shading shading) {
 
       // Not having a color is implicitly white.
       if (!has_color()) {
-        set_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+        set_color(LColor(1.0f, 1.0f, 1.0f, 1.0f));
       }
 
       iterator pi;
@@ -230,7 +230,7 @@ unify_attributes(EggPrimitive::Shading shading) {
 
       // Not having a color is implicitly white.
       if (!has_color()) {
-        set_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+        set_color(LColor(1.0f, 1.0f, 1.0f, 1.0f));
       }
 
       Components::iterator ci;
@@ -293,7 +293,7 @@ unify_attributes(EggPrimitive::Shading shading) {
 
       // Not having a color is implicitly white.
       if (!has_color()) {
-        set_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+        set_color(LColor(1.0f, 1.0f, 1.0f, 1.0f));
       }
     }
     break;

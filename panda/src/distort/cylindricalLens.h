@@ -49,14 +49,14 @@ public:
   virtual PT(Lens) make_copy() const;
 
 protected:
-  virtual bool extrude_impl(const LPoint3f &point2d,
-                            LPoint3f &near_point, LPoint3f &far_point) const;
-  virtual bool extrude_vec_impl(const LPoint3f &point2d, LVector3f &vec) const;
-  virtual bool project_impl(const LPoint3f &point3d, LPoint3f &point2d) const;
+  virtual bool extrude_impl(const LPoint3 &point2d,
+                            LPoint3 &near_point, LPoint3 &far_point) const;
+  virtual bool extrude_vec_impl(const LPoint3 &point2d, LVector3 &vec) const;
+  virtual bool project_impl(const LPoint3 &point3d, LPoint3 &point2d) const;
 
-  virtual float fov_to_film(float fov, float focal_length, bool horiz) const;
-  virtual float fov_to_focal_length(float fov, float film_size, bool horiz) const;
-  virtual float film_to_fov(float film_size, float focal_length, bool horiz) const;
+  virtual PN_stdfloat fov_to_film(PN_stdfloat fov, PN_stdfloat focal_length, bool horiz) const;
+  virtual PN_stdfloat fov_to_focal_length(PN_stdfloat fov, PN_stdfloat film_size, bool horiz) const;
+  virtual PN_stdfloat film_to_fov(PN_stdfloat film_size, PN_stdfloat focal_length, bool horiz) const;
 
 public:
   virtual TypeHandle get_type() const {

@@ -157,14 +157,14 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     if (ldata->_fade_mode != FadeLODNodeData::FM_solid) {
       // Play the transition.
 
-      float elapsed = now - ldata->_fade_start;
+      PN_stdfloat elapsed = now - ldata->_fade_start;
         
       if (elapsed >= _fade_time) {
         // Transition complete.
         ldata->_fade_mode = FadeLODNodeData::FM_solid;
 
       } else {
-        float half_fade_time = _fade_time * 0.5f;
+        PN_stdfloat half_fade_time = _fade_time * 0.5f;
 
         int in_child = ldata->_fade_in;
         int out_child = ldata->_fade_out;
@@ -200,7 +200,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
             if (child != (PandaNode *)NULL) {
               CullTraverserData next_data_in(data, child);
               
-              float in_alpha = elapsed / half_fade_time;
+              PN_stdfloat in_alpha = elapsed / half_fade_time;
               next_data_in._state = 
                 next_data_in._state->compose(get_fade_1_new_state(in_alpha));
               trav->traverse(next_data_in);
@@ -226,7 +226,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
             if (child != (PandaNode *)NULL) {
               CullTraverserData next_data_out(data, child);
               
-              float out_alpha = 1.0f - (elapsed - half_fade_time) / half_fade_time;  
+              PN_stdfloat out_alpha = 1.0f - (elapsed - half_fade_time) / half_fade_time;  
               next_data_out._state = 
                 next_data_out._state->compose(get_fade_2_old_state(out_alpha));
               trav->traverse(next_data_out);
@@ -321,7 +321,7 @@ get_fade_1_old_state() {
 //               during first half of fade.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) FadeLODNode::
-get_fade_1_new_state(float in_alpha) {
+get_fade_1_new_state(PN_stdfloat in_alpha) {
   if (_fade_1_new_state == (const RenderState *)NULL) {
     _fade_1_new_state = RenderState::make
       (TransparencyAttrib::make(TransparencyAttrib::M_alpha),
@@ -330,7 +330,7 @@ get_fade_1_new_state(float in_alpha) {
        _fade_state_override);
   }
 
-  LVecBase4f alpha_scale(1.0f, 1.0f, 1.0f, in_alpha);
+  LVecBase4 alpha_scale(1.0f, 1.0f, 1.0f, in_alpha);
   return _fade_1_new_state->compose
     (RenderState::make(ColorScaleAttrib::make(alpha_scale)));
 }
@@ -342,7 +342,7 @@ get_fade_1_new_state(float in_alpha) {
 //               during second half of fade.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) FadeLODNode::
-get_fade_2_old_state(float out_alpha) {
+get_fade_2_old_state(PN_stdfloat out_alpha) {
   if (_fade_2_old_state == (const RenderState *)NULL) {
     _fade_2_old_state = RenderState::make
       (TransparencyAttrib::make(TransparencyAttrib::M_alpha),
@@ -351,7 +351,7 @@ get_fade_2_old_state(float out_alpha) {
        _fade_state_override);
   }
 
-  LVecBase4f alpha_scale(1.0f, 1.0f, 1.0f, out_alpha);
+  LVecBase4 alpha_scale(1.0f, 1.0f, 1.0f, out_alpha);
   return _fade_2_old_state->compose
     (RenderState::make(ColorScaleAttrib::make(alpha_scale)));
 }

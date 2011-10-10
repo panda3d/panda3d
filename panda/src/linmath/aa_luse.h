@@ -60,6 +60,61 @@ typedef LPoint3d TexCoord3d;
 typedef LVecBase4d Colord;
 typedef LVecBase3d RGBColord;
 
+// And finally, we define the unqualified "standard" float type, which
+// is based on the setting of STDFLOAT_DOUBLE.  This is the type that
+// is used for graphics-specific operations such as vertex and pos
+// value.  The default is single-precision floats, which is almost
+// always what you really want.
+#ifndef STDFLOAT_DOUBLE
+// The default setting--single-precision floats.
+
+typedef LVecBase2f LVecBase2;
+typedef LPoint2f LPoint2;
+typedef LVector2f LVector2;
+typedef LVecBase3f LVecBase3;
+typedef LPoint3f LPoint3;
+typedef LVector3f LVector3;
+typedef LVecBase4f LVecBase4;
+typedef LPoint4f LPoint4;
+typedef LVector4f LVector4;
+typedef LQuaternionf LQuaternion;
+typedef LRotationf LRotation;
+typedef LOrientationf LOrientation;
+typedef LMatrix3f LMatrix3;
+typedef LMatrix4f LMatrix4;
+
+typedef Vertexf LVertex;
+typedef Normalf LNormal;
+typedef TexCoordf LTexCoord;
+typedef TexCoord3f LTexCoord3;
+typedef Colorf LColor;
+typedef RGBColorf LRGBColor;
+
+#else  // STDFLOAT_DOUBLE
+// The specialty setting--double-precision floats.
+
+typedef LVecBase2d LVecBase2;
+typedef LPoint2d LPoint2;
+typedef LVector2d LVector2;
+typedef LVecBase3d LVecBase3;
+typedef LPoint3d LPoint3;
+typedef LVector3d LVector3;
+typedef LVecBase4d LVecBase4;
+typedef LPoint4d LPoint4;
+typedef LVector4d LVector4;
+typedef LQuaterniond LQuaternion;
+typedef LRotationd LRotation;
+typedef LOrientationd LOrientation;
+typedef LMatrix3d LMatrix3;
+typedef LMatrix4d LMatrix4;
+
+typedef Vertexd LVertex;
+typedef Normald LNormal;
+typedef TexCoordd LTexCoord;
+typedef TexCoord3d LTexCoord3;
+typedef Colord LColor;
+typedef RGBColord LRGBColor;
+
+#endif  // STDFLOAT_DOUBLE
 
 #endif
-

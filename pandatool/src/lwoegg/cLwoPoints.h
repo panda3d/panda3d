@@ -39,7 +39,7 @@ public:
                     CLwoLayer *layer);
 
   void add_vmap(const LwoVertexMap *lwo_vmap);
-  bool get_uv(const string &uv_name, int n, LPoint2f &uv) const;
+  bool get_uv(const string &uv_name, int n, LPoint2 &uv) const;
 
   void make_egg();
   void connect_egg();

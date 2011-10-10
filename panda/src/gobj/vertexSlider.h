@@ -45,7 +45,7 @@ PUBLISHED:
 
   INLINE const InternalName *get_name() const;
 
-  virtual float get_slider() const=0;
+  virtual PN_stdfloat get_slider() const=0;
   INLINE UpdateSeq get_modified(Thread *current_thread) const;
 
   virtual void output(ostream &out) const;

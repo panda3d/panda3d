@@ -112,13 +112,13 @@ PUBLISHED:
   }
 
 public:
-  SpriteAnim(Texture* t, TexCoordf ll, TexCoordf ur) {
+  SpriteAnim(Texture* t, LTexCoord ll, LTexCoord ur) {
     textures.push_back(t);
     this->ll.push_back(ll);
     this->ur.push_back(ur);
   };
 
-  SpriteAnim(const TextureCollection &t, const pvector< TexCoordf > &lls, const pvector< TexCoordf > &urs) :
+  SpriteAnim(const TextureCollection &t, const pvector< LTexCoord > &lls, const pvector< LTexCoord > &urs) :
     ll(lls),
     ur(urs) {
     for (int i = 0; i < t.get_num_textures(); ++i) {
@@ -126,11 +126,11 @@ public:
     }
   };
   
-  void set_ll(const int n, TexCoordf c) {
+  void set_ll(const int n, LTexCoord c) {
     ll[n] = c;
   }
 
-  void set_ur(const int n, TexCoordf c) {
+  void set_ur(const int n, LTexCoord c) {
     ur[n] = c;
   }
 
@@ -138,17 +138,17 @@ public:
     return textures[n];
   };
 
-  TexCoordf get_ll(const int n) const {
+  LTexCoord get_ll(const int n) const {
     return ll[n];
   }
 
-  TexCoordf get_ur(const int n) const {
+  LTexCoord get_ur(const int n) const {
     return ur[n];
   }
 
 private:
   pvector< PT(Texture) > textures;
-  pvector< TexCoordf > ll,ur;
+  pvector< LTexCoord > ll,ur;
   SourceType _source_type;
   string _source_tex,_source_model,_source_node;
 };
@@ -173,27 +173,27 @@ PUBLISHED:
   void add_from_node(const NodePath &node_path, bool size_from_texels = false, bool resize = false);
   void add_from_node(const NodePath &node_path, const string &model, const string &node, bool size_from_texels = false, bool resize = false);
 
-  INLINE void set_texture(Texture *tex, float texels_per_unit = 1.0f);
-  INLINE void add_texture(Texture *tex, float texels_per_unit = 1.0f, bool resize = false);
+  INLINE void set_texture(Texture *tex, PN_stdfloat texels_per_unit = 1.0f);
+  INLINE void add_texture(Texture *tex, PN_stdfloat texels_per_unit = 1.0f, bool resize = false);
   INLINE void remove_animation(const int n);
-  INLINE void set_ll_uv(const TexCoordf &ll_uv);
-  INLINE void set_ll_uv(const TexCoordf &ll_uv, const int anim, const int frame);
-  INLINE void set_ur_uv(const TexCoordf &ur_uv);
-  INLINE void set_ur_uv(const TexCoordf &ur_uv, const int anim, const int frame);
-  INLINE void set_size(float width, float height);
-  INLINE void set_color(const Colorf &color);
+  INLINE void set_ll_uv(const LTexCoord &ll_uv);
+  INLINE void set_ll_uv(const LTexCoord &ll_uv, const int anim, const int frame);
+  INLINE void set_ur_uv(const LTexCoord &ur_uv);
+  INLINE void set_ur_uv(const LTexCoord &ur_uv, const int anim, const int frame);
+  INLINE void set_size(PN_stdfloat width, PN_stdfloat height);
+  INLINE void set_color(const LColor &color);
   INLINE void set_x_scale_flag(bool animate_x_ratio);
   INLINE void set_y_scale_flag(bool animate_y_ratio);
   INLINE void set_anim_angle_flag(bool animate_theta);
-  INLINE void set_initial_x_scale(float initial_x_scale);
-  INLINE void set_final_x_scale(float final_x_scale);  
-  INLINE void set_initial_y_scale(float initial_y_scale);
-  INLINE void set_final_y_scale(float final_y_scale);
-  INLINE void set_nonanimated_theta(float theta);
+  INLINE void set_initial_x_scale(PN_stdfloat initial_x_scale);
+  INLINE void set_final_x_scale(PN_stdfloat final_x_scale);  
+  INLINE void set_initial_y_scale(PN_stdfloat initial_y_scale);
+  INLINE void set_final_y_scale(PN_stdfloat final_y_scale);
+  INLINE void set_nonanimated_theta(PN_stdfloat theta);
   INLINE void set_alpha_blend_method(ParticleRendererBlendMethod bm);
   INLINE void set_alpha_disable(bool ad);
   INLINE void set_animate_frames_enable(bool an);
-  INLINE void set_animate_frames_rate(float r);
+  INLINE void set_animate_frames_rate(PN_stdfloat r);
   INLINE void set_animate_frames_index(int i);
 
   INLINE Texture *get_texture() const;
@@ -203,25 +203,25 @@ PUBLISHED:
   MAKE_SEQ(get_anims, get_num_anims, get_anim);
   INLINE SpriteAnim *get_last_anim() const;
   INLINE ColorInterpolationManager* get_color_interpolation_manager() const;
-  INLINE TexCoordf get_ll_uv() const;
-  INLINE TexCoordf get_ll_uv(const int anim, const int frame) const;
-  INLINE TexCoordf get_ur_uv() const;
-  INLINE TexCoordf get_ur_uv(const int anim, const int frame) const;
-  INLINE float get_width() const;
-  INLINE float get_height() const;
-  INLINE Colorf get_color() const;
+  INLINE LTexCoord get_ll_uv() const;
+  INLINE LTexCoord get_ll_uv(const int anim, const int frame) const;
+  INLINE LTexCoord get_ur_uv() const;
+  INLINE LTexCoord get_ur_uv(const int anim, const int frame) const;
+  INLINE PN_stdfloat get_width() const;
+  INLINE PN_stdfloat get_height() const;
+  INLINE LColor get_color() const;
   INLINE bool get_x_scale_flag() const;
   INLINE bool get_y_scale_flag() const;
   INLINE bool get_anim_angle_flag() const;
-  INLINE float get_initial_x_scale() const;
-  INLINE float get_final_x_scale() const;
-  INLINE float get_initial_y_scale() const;
-  INLINE float get_final_y_scale() const;
-  INLINE float get_nonanimated_theta() const;
+  INLINE PN_stdfloat get_initial_x_scale() const;
+  INLINE PN_stdfloat get_final_x_scale() const;
+  INLINE PN_stdfloat get_initial_y_scale() const;
+  INLINE PN_stdfloat get_final_y_scale() const;
+  INLINE PN_stdfloat get_nonanimated_theta() const;
   INLINE ParticleRendererBlendMethod get_alpha_blend_method() const;
   INLINE bool get_alpha_disable() const;  
   INLINE bool get_animate_frames_enable() const;  
-  INLINE float get_animate_frames_rate() const;
+  INLINE PN_stdfloat get_animate_frames_rate() const;
   INLINE int get_animate_frames_index() const;
 
   virtual void output(ostream &out) const;
@@ -235,18 +235,18 @@ private:
 
   pvector< PT(SpriteAnim) > _anims;            // Stores texture references and UV info for each geom.
 
-  Colorf _color;
+  LColor _color;
 
-  float _height;
-  float _width;
-  float _initial_x_scale;
-  float _final_x_scale;
-  float _initial_y_scale;
-  float _final_y_scale;
-  float _theta;
-  float _base_y_scale;
-  float _aspect_ratio;
-  float _animate_frames_rate;
+  PN_stdfloat _height;
+  PN_stdfloat _width;
+  PN_stdfloat _initial_x_scale;
+  PN_stdfloat _final_x_scale;
+  PN_stdfloat _initial_y_scale;
+  PN_stdfloat _final_y_scale;
+  PN_stdfloat _theta;
+  PN_stdfloat _base_y_scale;
+  PN_stdfloat _aspect_ratio;
+  PN_stdfloat _animate_frames_rate;
   int _animate_frames_index;
 
   bool _animate_x_ratio;
@@ -259,8 +259,8 @@ private:
   ParticleRendererBlendMethod _blend_method;
   PT(ColorInterpolationManager) _color_interpolation_manager;
 
-  Vertexf _aabb_min;
-  Vertexf _aabb_max;
+  LVertex _aabb_min;
+  LVertex _aabb_max;
 
   int _pool_size;
 

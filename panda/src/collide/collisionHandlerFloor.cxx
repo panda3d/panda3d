@@ -53,7 +53,7 @@ CollisionHandlerFloor::
 //               
 //               
 ////////////////////////////////////////////////////////////////////
-float CollisionHandlerFloor::
+PN_stdfloat CollisionHandlerFloor::
 set_highest_collision(const NodePath &target_node_path, const NodePath &from_node_path, const Entries &entries) {
   // Get the maximum height for all collisions with this node.
   // This is really the distance to-the-ground, so it will
@@ -62,8 +62,8 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
   // the avatar is right-side-up (or the ray is plumb)).
   bool got_max = false;
   bool got_min = false;
-  float max_height = 0.0f;
-  float min_height = 0.0f;
+  PN_stdfloat max_height = 0.0f;
+  PN_stdfloat min_height = 0.0f;
   CollisionEntry *highest = NULL;
   CollisionEntry *lowest = NULL;
 
@@ -74,13 +74,13 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
     nassertr(from_node_path == entry->get_from_node_path(), 0.0f);
 
     if (entry->has_surface_point()) {
-      LPoint3f point = entry->get_surface_point(target_node_path);
+      LPoint3 point = entry->get_surface_point(target_node_path);
       if (collide_cat.is_debug()) {
         collide_cat.debug()
           << "Intersection point detected at " << point << "\n";
       }
 
-      float height = point[2];
+      PN_stdfloat height = point[2];
       if (height < _offset + _reach &&
          (!got_max || height > max_height)) {
         got_max = true;
@@ -165,7 +165,7 @@ handle_entries() {
         #if 0
         // Get the maximum height for all collisions with this node.
         bool got_max = false;
-        float max_height = 0.0f;
+        PN_stdfloat max_height = 0.0f;
         CollisionEntry *max_entry = NULL;
         
         Entries::const_iterator ei;
@@ -175,13 +175,13 @@ handle_entries() {
           nassertr(from_node_path == entry->get_from_node_path(), false);
           
           if (entry->has_surface_point()) {
-            LPoint3f point = entry->get_surface_point(def._target);
+            LPoint3 point = entry->get_surface_point(def._target);
             if (collide_cat.is_debug()) {
               collide_cat.debug()
                 << "Intersection point detected at " << point << "\n";
             }
             
-            float height = point[2];
+            PN_stdfloat height = point[2];
             if (!got_max || height > max_height) {
               got_max = true;
               max_height = height;
@@ -195,12 +195,12 @@ handle_entries() {
         _current_colliding.insert(max_entry);
 
         // Now set our height accordingly.
-        float adjust = max_height + _offset;
+        PN_stdfloat adjust = max_height + _offset;
         #else
-        float max_height = set_highest_collision(def._target, from_node_path, entries);
+        PN_stdfloat max_height = set_highest_collision(def._target, from_node_path, entries);
 
         // Now set our height accordingly.
-        float adjust = max_height + _offset;        
+        PN_stdfloat adjust = max_height + _offset;        
         #endif
         if (!IS_THRESHOLD_ZERO(adjust, 0.001)) {
           if (collide_cat.is_debug()) {
@@ -209,18 +209,18 @@ handle_entries() {
           }
           
           if (adjust < 0.0f && _max_velocity != 0.0f) {
-            float max_adjust =
+            PN_stdfloat max_adjust =
               _max_velocity * ClockObject::get_global_clock()->get_dt();
             adjust = max(adjust, -max_adjust);
           }
 
           CPT(TransformState) trans = def._target.get_transform();
-          LVecBase3f pos = trans->get_pos();
+          LVecBase3 pos = trans->get_pos();
           pos[2] += adjust;
           def._target.set_transform(trans->set_pos(pos));
           def.updated_transform();
 
-          apply_linear_force(def, LVector3f(0.0f, 0.0f, adjust));
+          apply_linear_force(def, LVector3(0.0f, 0.0f, adjust));
         } else {
           if (collide_cat.is_spam()) {
             collide_cat.spam()
@@ -240,5 +240,5 @@ handle_entries() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void CollisionHandlerFloor::
-apply_linear_force(ColliderDef &def, const LVector3f &force) {
+apply_linear_force(ColliderDef &def, const LVector3 &force) {
 }

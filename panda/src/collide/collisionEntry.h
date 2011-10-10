@@ -59,40 +59,40 @@ PUBLISHED:
   INLINE NodePath get_from_node_path() const;
   INLINE NodePath get_into_node_path() const;
 
-  INLINE void set_t(float t);
-  INLINE float get_t() const;
+  INLINE void set_t(PN_stdfloat t);
+  INLINE PN_stdfloat get_t() const;
   INLINE bool collided() const;
   INLINE void reset_collided();
 
   INLINE bool get_respect_prev_transform() const;
 
-  INLINE void set_surface_point(const LPoint3f &point);
-  INLINE void set_surface_normal(const LVector3f &normal);
-  INLINE void set_interior_point(const LPoint3f &point);
+  INLINE void set_surface_point(const LPoint3 &point);
+  INLINE void set_surface_normal(const LVector3 &normal);
+  INLINE void set_interior_point(const LPoint3 &point);
 
   INLINE bool has_surface_point() const;
   INLINE bool has_surface_normal() const;
   INLINE bool has_interior_point() const;
 
-  INLINE void set_contact_pos(const LPoint3f &pos);
-  INLINE void set_contact_normal(const LVector3f &normal);
+  INLINE void set_contact_pos(const LPoint3 &pos);
+  INLINE void set_contact_normal(const LVector3 &normal);
 
   INLINE bool has_contact_pos() const;
   INLINE bool has_contact_normal() const;
 
-  LPoint3f get_surface_point(const NodePath &space) const;
-  LVector3f get_surface_normal(const NodePath &space) const;
-  LPoint3f get_interior_point(const NodePath &space) const;
+  LPoint3 get_surface_point(const NodePath &space) const;
+  LVector3 get_surface_normal(const NodePath &space) const;
+  LPoint3 get_interior_point(const NodePath &space) const;
   bool get_all(const NodePath &space,
-               LPoint3f &surface_point,
-               LVector3f &surface_normal,
-               LPoint3f &interior_point) const;
+               LPoint3 &surface_point,
+               LVector3 &surface_normal,
+               LPoint3 &interior_point) const;
 
-  LPoint3f get_contact_pos(const NodePath &space) const;
-  LVector3f get_contact_normal(const NodePath &space) const;
+  LPoint3 get_contact_pos(const NodePath &space) const;
+  LVector3 get_contact_normal(const NodePath &space) const;
   bool get_all_contact_info(const NodePath &space,
-                            LPoint3f &contact_pos,
-                            LVector3f &contact_normal) const;
+                            LPoint3 &contact_pos,
+                            LVector3 &contact_normal) const;
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
@@ -102,9 +102,9 @@ public:
   INLINE CPT(TransformState) get_inv_wrt_space() const;
   INLINE CPT(TransformState) get_wrt_prev_space() const;
 
-  INLINE const LMatrix4f &get_wrt_mat() const;
-  INLINE const LMatrix4f &get_inv_wrt_mat() const;
-  INLINE const LMatrix4f &get_wrt_prev_mat() const;
+  INLINE const LMatrix4 &get_wrt_mat() const;
+  INLINE const LMatrix4 &get_inv_wrt_mat() const;
+  INLINE const LMatrix4 &get_wrt_prev_mat() const;
 
   INLINE const ClipPlaneAttrib *get_into_clip_planes() const;
 
@@ -121,7 +121,7 @@ private:
   NodePath _from_node_path;
   NodePath _into_node_path;
   CPT(ClipPlaneAttrib) _into_clip_planes;
-  float _t;
+  PN_stdfloat _t;
 
   enum Flags {
     F_has_surface_point       = 0x0001,
@@ -135,12 +135,12 @@ private:
 
   int _flags;
 
-  LPoint3f _surface_point;
-  LVector3f _surface_normal;
-  LPoint3f _interior_point;
+  LPoint3 _surface_point;
+  LVector3 _surface_normal;
+  LPoint3 _interior_point;
 
-  LPoint3f _contact_pos;
-  LVector3f _contact_normal;
+  LPoint3 _contact_pos;
+  LVector3 _contact_normal;
   
 public:
   static TypeHandle get_class_type() {

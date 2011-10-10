@@ -37,11 +37,11 @@ public:
   virtual void set_cache_limit(unsigned int);
   virtual unsigned int get_cache_limit() const;
 
-  virtual void set_volume(float);
-  virtual float get_volume() const;
+  virtual void set_volume(PN_stdfloat);
+  virtual PN_stdfloat get_volume() const;
 
-  virtual void set_play_rate(float);
-  virtual float get_play_rate() const;
+  virtual void set_play_rate(PN_stdfloat);
+  virtual PN_stdfloat get_play_rate() const;
   
   virtual void set_active(bool);
   virtual bool get_active() const;
@@ -53,23 +53,23 @@ public:
 
   virtual void stop_all_sounds();
 
-  virtual void audio_3d_set_listener_attributes(float px, float py, float pz,
-                                                float vx, float vy, float vz,
-                                                float fx, float fy, float fz,
-                                                float ux, float uy, float uz);
-  virtual void audio_3d_get_listener_attributes(float *px, float *py, float *pz,
-                                                float *vx, float *vy, float *vz,
-                                                float *fx, float *fy, float *fz,
-                                                float *ux, float *uy, float *uz);
+  virtual void audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz,
+                                                PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz,
+                                                PN_stdfloat fx, PN_stdfloat fy, PN_stdfloat fz,
+                                                PN_stdfloat ux, PN_stdfloat uy, PN_stdfloat uz);
+  virtual void audio_3d_get_listener_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz,
+                                                PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz,
+                                                PN_stdfloat *fx, PN_stdfloat *fy, PN_stdfloat *fz,
+                                                PN_stdfloat *ux, PN_stdfloat *uy, PN_stdfloat *uz);
   
-  virtual void audio_3d_set_distance_factor(float factor);
-  virtual float audio_3d_get_distance_factor() const;
+  virtual void audio_3d_set_distance_factor(PN_stdfloat factor);
+  virtual PN_stdfloat audio_3d_get_distance_factor() const;
 
-  virtual void audio_3d_set_doppler_factor(float factor);
-  virtual float audio_3d_get_doppler_factor() const;
+  virtual void audio_3d_set_doppler_factor(PN_stdfloat factor);
+  virtual PN_stdfloat audio_3d_get_doppler_factor() const;
 
-  virtual void audio_3d_set_drop_off_factor(float factor);
-  virtual float audio_3d_get_drop_off_factor() const;
+  virtual void audio_3d_set_drop_off_factor(PN_stdfloat factor);
+  virtual PN_stdfloat audio_3d_get_drop_off_factor() const;
 
 
 public:

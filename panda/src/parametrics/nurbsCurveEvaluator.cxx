@@ -81,7 +81,7 @@ get_vertex_space(int i, const NodePath &rel_to) const {
 //               num_values times.  See set_extended_vertex().
 ////////////////////////////////////////////////////////////////////
 void NurbsCurveEvaluator::
-set_extended_vertices(int i, int d, const float values[], int num_values) {
+set_extended_vertices(int i, int d, const PN_stdfloat values[], int num_values) {
   nassertv(i >= 0 && i < (int)_vertices.size());
 
   NurbsVertex &vertex = _vertices[i];
@@ -99,7 +99,7 @@ set_extended_vertices(int i, int d, const float values[], int num_values) {
 //               vector is supplied.
 ////////////////////////////////////////////////////////////////////
 void NurbsCurveEvaluator::
-set_knot(int i, float knot) {
+set_knot(int i, PN_stdfloat knot) {
   if (_knots_dirty) {
     recompute_knots();
   }
@@ -112,7 +112,7 @@ set_knot(int i, float knot) {
 //       Access: Published
 //  Description: Returns the value of the nth knot.
 ////////////////////////////////////////////////////////////////////
-float NurbsCurveEvaluator::
+PN_stdfloat NurbsCurveEvaluator::
 get_knot(int i) const {
   if (_knots_dirty) {
     ((NurbsCurveEvaluator *)this)->recompute_knots();
@@ -160,7 +160,7 @@ evaluate(const NodePath &rel_to) const {
   }
 
   // First, transform the vertices as appropriate.
-  pvector<LVecBase4f> vecs;
+  pvector<LVecBase4> vecs;
   get_vertices(vecs, rel_to);
 
   // And apply those transformed vertices to the basis matrices to
@@ -179,17 +179,17 @@ evaluate(const NodePath &rel_to) const {
 //               transformed by the indicated matrix.
 ////////////////////////////////////////////////////////////////////
 PT(NurbsCurveResult) NurbsCurveEvaluator::
-evaluate(const NodePath &rel_to, const LMatrix4f &mat) const {
+evaluate(const NodePath &rel_to, const LMatrix4 &mat) const {
   if (_basis_dirty) {
     ((NurbsCurveEvaluator *)this)->recompute_basis();
   }
 
   // First, transform the vertices as appropriate.
-  pvector<LVecBase4f> vecs;
+  pvector<LVecBase4> vecs;
   get_vertices(vecs, rel_to);
 
   // And then apply the indicated matrix.
-  pvector<LVecBase4f>::iterator vi;
+  pvector<LVecBase4>::iterator vi;
   for (vi = vecs.begin(); vi != vecs.end(); ++vi) {
     (*vi) = (*vi) * mat;
   }
@@ -220,7 +220,7 @@ output(ostream &out) const {
 //               homogenous space.
 ////////////////////////////////////////////////////////////////////
 void NurbsCurveEvaluator::
-get_vertices(pvector<LVecBase4f> &verts, const NodePath &rel_to) const {
+get_vertices(pvector<LVecBase4> &verts, const NodePath &rel_to) const {
   int num_vertices = (int)_vertices.size();
   verts.reserve(verts.size() + num_vertices);
   int vi;
@@ -238,13 +238,13 @@ get_vertices(pvector<LVecBase4f> &verts, const NodePath &rel_to) const {
 //               space.
 ////////////////////////////////////////////////////////////////////
 void NurbsCurveEvaluator::
-get_vertices(pvector<LPoint3f> &verts, const NodePath &rel_to) const {
+get_vertices(pvector<LPoint3> &verts, const NodePath &rel_to) const {
   int num_vertices = (int)_vertices.size();
   verts.reserve(verts.size() + num_vertices);
   int vi;
   for (vi = 0; vi < num_vertices; vi++) {
-    LVecBase4f vertex = get_vertex(vi, rel_to);
-    LPoint3f v3(vertex[0] / vertex[3], vertex[1] / vertex[3], vertex[2] / vertex[3]);
+    LVecBase4 vertex = get_vertex(vi, rel_to);
+    LPoint3 v3(vertex[0] / vertex[3], vertex[1] / vertex[3], vertex[2] / vertex[3]);
     verts.push_back(v3);
   }
 }
@@ -260,7 +260,7 @@ recompute_knots() {
   int num_knots = get_num_knots();
   _knots.reserve(num_knots);
 
-  float value = 0.0f;
+  PN_stdfloat value = 0.0f;
 
   int i = 0;
   while (i < _order) {

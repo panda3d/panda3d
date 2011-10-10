@@ -37,22 +37,22 @@
 #include <stdio.h>  // for sprintf
   
 // This is the factor by which CT_small scales the character down.
-static const float small_accent_scale = 0.6f;
+static const PN_stdfloat small_accent_scale = 0.6f;
 
 // This is the factor by which CT_tiny scales the character down.
-static const float tiny_accent_scale = 0.4f;
+static const PN_stdfloat tiny_accent_scale = 0.4;
 
 // This is the factor by which CT_squash scales the character in X and Y.
-static const float squash_accent_scale_x = 0.8f;
-static const float squash_accent_scale_y = 0.5f;
+static const PN_stdfloat squash_accent_scale_x = 0.8f;
+static const PN_stdfloat squash_accent_scale_y = 0.5f;
 
 // This is the factor by which CT_small_squash scales the character in X and Y.
-static const float small_squash_accent_scale_x = 0.6f;
-static const float small_squash_accent_scale_y = 0.3f;
+static const PN_stdfloat small_squash_accent_scale_x = 0.6f;
+static const PN_stdfloat small_squash_accent_scale_y = 0.3;
 
 // This is the factor by which the advance is reduced for the first
 // character of a two-character ligature.
-static const float ligature_advance_scale = 0.6f;
+static const PN_stdfloat ligature_advance_scale = 0.6f;
 
 
 ////////////////////////////////////////////////////////////////////
@@ -525,7 +525,7 @@ calc_index(int r, int c) const {
 //               last column by 1, and it is legal for r to exceed the
 //               index number of the last row by 1, if c is 0.
 ////////////////////////////////////////////////////////////////////
-float TextAssembler::
+PN_stdfloat TextAssembler::
 get_xpos(int r, int c) const {
   nassertr(r >= 0 && r <= (int)_text_block.size(), 0.0f);
   if (r == (int)_text_block.size()) {
@@ -535,7 +535,7 @@ get_xpos(int r, int c) const {
   } else {
     nassertr(c >= 0 && c <= (int)_text_block[r]._string.size(), 0.0f);
     const TextRow &row = _text_block[r];
-    float xpos = row._xpos;
+    PN_stdfloat xpos = row._xpos;
     for (int i = 0; i < c; ++i) {
       xpos += calc_width(row._string[i]);
     }
@@ -573,7 +573,7 @@ assemble_text() {
   const TextProperties *properties = NULL;
   CPT(RenderState) text_state;
   CPT(RenderState) shadow_state;
-  LMatrix4f shadow_xform;
+  LMatrix4 shadow_xform;
 
   bool any_shadow = false;
 
@@ -589,7 +589,7 @@ assemble_text() {
       properties = placement->_properties;
       text_state = RenderState::make_empty();
       shadow_state = RenderState::make_empty();
-      shadow_xform = LMatrix4f::ident_mat();
+      shadow_xform = LMatrix4::ident_mat();
 
       if (properties->has_text_color()) {
         text_state = text_state->add_attrib(ColorAttrib::make_flat(properties->get_text_color()));
@@ -612,8 +612,8 @@ assemble_text() {
           shadow_state = shadow_state->add_attrib(CullBinAttrib::make(properties->get_bin(), properties->get_draw_order() + 1));
         }
 
-        LVector2f offset = properties->get_shadow();
-        shadow_xform = LMatrix4f::translate_mat(offset[0], 0.0f, -offset[1]);
+        LVector2 offset = properties->get_shadow();
+        shadow_xform = LMatrix4::translate_mat(offset[0], 0.0f, -offset[1]);
       }
     }
 
@@ -635,11 +635,11 @@ assemble_text() {
     }
 
     if (_dynamic_merge) {
-      placement->assign_append_to(geom_collector_map, text_state, LMatrix4f::ident_mat());
+      placement->assign_append_to(geom_collector_map, text_state, LMatrix4::ident_mat());
     } else {
       placement->assign_to(text_geom_node, text_state);
     }
-    placement->copy_graphic_to(text_node, text_state, LMatrix4f::ident_mat());
+    placement->copy_graphic_to(text_node, text_state, LMatrix4::ident_mat());
     delete placement;
   }  
   placed_glyphs.clear();
@@ -676,7 +676,7 @@ assemble_text() {
 //               the width of cheesy ligatures and accented
 //               characters, which may not exist in the font as such.
 ////////////////////////////////////////////////////////////////////
-float TextAssembler::
+PN_stdfloat TextAssembler::
 calc_width(wchar_t character, const TextProperties &properties) {
   if (character == ' ') {
     // A space is a special case.
@@ -690,13 +690,13 @@ calc_width(wchar_t character, const TextProperties &properties) {
   const TextGlyph *second_glyph = NULL;
   UnicodeLatinMap::AccentType accent_type;
   int additional_flags;
-  float glyph_scale;
-  float advance_scale;
+  PN_stdfloat glyph_scale;
+  PN_stdfloat advance_scale;
   get_character_glyphs(character, &properties, 
                        got_glyph, first_glyph, second_glyph, accent_type,
                        additional_flags, glyph_scale, advance_scale);
 
-  float advance = 0.0f;
+  PN_stdfloat advance = 0.0f;
   
   if (first_glyph != (TextGlyph *)NULL) {
     advance = first_glyph->get_advance() * advance_scale;
@@ -715,9 +715,9 @@ calc_width(wchar_t character, const TextProperties &properties) {
 //       Access: Published, Static
 //  Description: Returns the width of a single TextGraphic image.
 ////////////////////////////////////////////////////////////////////
-float TextAssembler::
+PN_stdfloat TextAssembler::
 calc_width(const TextGraphic *graphic, const TextProperties &properties) {
-  LVecBase4f frame = graphic->get_frame();
+  LVecBase4 frame = graphic->get_frame();
   return (frame[1] - frame[0]) * properties.get_glyph_scale() * properties.get_text_scale();
 }
 
@@ -780,8 +780,8 @@ has_character(wchar_t character, const TextProperties &properties) {
   const TextGlyph *second_glyph = NULL;
   UnicodeLatinMap::AccentType accent_type;
   int additional_flags;
-  float glyph_scale;
-  float advance_scale;
+  PN_stdfloat glyph_scale;
+  PN_stdfloat advance_scale;
   get_character_glyphs(character, &properties, 
                        got_glyph, first_glyph, second_glyph, accent_type,
                        additional_flags, glyph_scale, advance_scale);
@@ -964,7 +964,7 @@ wordwrap_text() {
   _text_block.push_back(TextRow(p));
 
   // Preserve any initial whitespace and newlines.
-  float initial_width = 0.0f;
+  PN_stdfloat initial_width = 0.0f;
   while (p < _text_string.size() && isspacew(_text_string[p]._character)) {
     if (_text_string[p]._character == '\n') {
       initial_width = 0.0f;
@@ -991,17 +991,17 @@ wordwrap_text() {
     size_t q = p;
     bool any_spaces = false;
     size_t last_space = 0;
-    float last_space_width = 0.0f;
+    PN_stdfloat last_space_width = 0.0f;
 
     bool any_hyphens = false;
     size_t last_hyphen = 0;
     bool output_hyphen = false;
 
     bool overflow = false;
-    float wordwrap_width = -1.0f;
+    PN_stdfloat wordwrap_width = -1.0f;
 
     bool last_was_space = false;
-    float width = initial_width;
+    PN_stdfloat width = initial_width;
     while (q < _text_string.size() && _text_string[q]._character != '\n') {
       if (_text_string[q]._cprops->_properties.has_wordwrap()) {
         wordwrap_width = _text_string[q]._cprops->_properties.get_wordwrap();
@@ -1196,12 +1196,12 @@ wordwrap_text() {
 //               string, according to the indicated character's
 //               associated font.
 ////////////////////////////////////////////////////////////////////
-float TextAssembler::
+PN_stdfloat TextAssembler::
 calc_hyphen_width(const TextCharacter &tch) {
   TextFont *font = tch._cprops->_properties.get_font();
   nassertr(font != (TextFont *)NULL, 0.0f);
 
-  float hyphen_width = 0.0f;
+  PN_stdfloat hyphen_width = 0.0f;
   wstring text_soft_hyphen_output = get_text_soft_hyphen_output();
   wstring::const_iterator wi;
   for (wi = text_soft_hyphen_output.begin();
@@ -1226,7 +1226,7 @@ assemble_paragraph(TextAssembler::PlacedGlyphs &placed_glyphs) {
   _lr.set(0.0f, 0.0f);
   int num_rows = 0;
 
-  float ypos = 0.0f;
+  PN_stdfloat ypos = 0.0f;
   _next_row_ypos = 0.0f;
   TextBlock::iterator bi;
   for (bi = _text_block.begin(); bi != _text_block.end(); ++bi) {
@@ -1234,13 +1234,13 @@ assemble_paragraph(TextAssembler::PlacedGlyphs &placed_glyphs) {
 
     // First, assemble all the glyphs of this row.
     PlacedGlyphs row_placed_glyphs;
-    float row_width, line_height, wordwrap;
+    PN_stdfloat row_width, line_height, wordwrap;
     TextProperties::Alignment align;
     assemble_row(row, row_placed_glyphs,
                  row_width, line_height, align, wordwrap);
     // Now move the row to its appropriate position.  This might
     // involve a horizontal as well as a vertical translation.
-    LMatrix4f mat = LMatrix4f::ident_mat();
+    LMatrix4 mat = LMatrix4::ident_mat();
 
     if (num_rows == 0) {
       // If this is the first row, account for its space.
@@ -1251,12 +1251,12 @@ assemble_paragraph(TextAssembler::PlacedGlyphs &placed_glyphs) {
       // line_height from the previous row.
       ypos -= line_height;
     }
-    _lr[1] = ypos - 0.2f * line_height;
+    _lr[1] = ypos - 0.2 * line_height;
 
     // Apply the requested horizontal alignment to the row.
     //[fabius] added a different concept of text alignment based upon a boxed region where his width is defined by the wordwrap size with the upper left corner starting from 0,0,0
     // if the wordwrap size is unspecified the alignment could eventually result wrong.
-    float xpos;
+    PN_stdfloat xpos;
     switch (align) {
     case TextProperties::A_left:
       xpos = 0.0f;
@@ -1292,7 +1292,7 @@ assemble_paragraph(TextAssembler::PlacedGlyphs &placed_glyphs) {
       break;
     }
 
-    mat.set_row(3, LVector3f(xpos, 0.0f, ypos));
+    mat.set_row(3, LVector3(xpos, 0.0f, ypos));
     row._xpos = xpos;
     row._ypos = ypos;
 
@@ -1325,16 +1325,16 @@ assemble_paragraph(TextAssembler::PlacedGlyphs &placed_glyphs) {
 void TextAssembler::
 assemble_row(TextAssembler::TextRow &row,
              TextAssembler::PlacedGlyphs &row_placed_glyphs,
-             float &row_width, float &line_height, 
-             TextProperties::Alignment &align, float &wordwrap) {
+             PN_stdfloat &row_width, PN_stdfloat &line_height, 
+             TextProperties::Alignment &align, PN_stdfloat &wordwrap) {
   Thread *current_thread = Thread::get_current_thread();
 
   line_height = 0.0f;
-  float xpos = 0.0f;
+  PN_stdfloat xpos = 0.0f;
   align = TextProperties::A_left;
 
   bool underscore = false;
-  float underscore_start = 0.0f;
+  PN_stdfloat underscore_start = 0.0f;
   const TextProperties *underscore_properties = NULL;
 
   TextString::const_iterator si;
@@ -1369,7 +1369,7 @@ assemble_row(TextAssembler::TextRow &row,
     // And the height of the row is the maximum of all the fonts used
     // within the row.
     if (graphic != (TextGraphic *)NULL) {
-      LVecBase4f frame = graphic->get_frame();
+      LVecBase4 frame = graphic->get_frame();
       line_height = max(line_height, frame[3] - frame[2]);
     } else {
       //[fabius] this is not the right place to calc line height (see below)
@@ -1382,7 +1382,7 @@ assemble_row(TextAssembler::TextRow &row,
 
     } else if (character == '\t') {
       // So is a tab character.
-      float tab_width = properties->get_tab_width();
+      PN_stdfloat tab_width = properties->get_tab_width();
       xpos = (floor(xpos / tab_width) + 1.0f) * tab_width;
 
     } else if (character == text_soft_hyphen_key) {
@@ -1408,20 +1408,20 @@ assemble_row(TextAssembler::TextRow &row,
         placement->_graphic_model = model->copy_subgraph();
       }
 
-      LVecBase4f frame = graphic->get_frame();
-      float glyph_scale = properties->get_glyph_scale() * properties->get_text_scale();
+      LVecBase4 frame = graphic->get_frame();
+      PN_stdfloat glyph_scale = properties->get_glyph_scale() * properties->get_text_scale();
 
-      float advance = (frame[1] - frame[0]);
+      PN_stdfloat advance = (frame[1] - frame[0]);
 
       // Now compute the matrix that will transform the glyph (or
       // glyphs) into position.
-      LMatrix4f glyph_xform = LMatrix4f::scale_mat(glyph_scale);
+      LMatrix4 glyph_xform = LMatrix4::scale_mat(glyph_scale);
 
       glyph_xform(3, 0) += (xpos - frame[0]);
       glyph_xform(3, 2) += (properties->get_glyph_shift() - frame[2]);
 
       if (properties->has_slant()) {
-        LMatrix4f shear(1.0f, 0.0f, 0.0f, 0.0f,
+        LMatrix4 shear(1.0f, 0.0f, 0.0f, 0.0f,
                         0.0f, 1.0f, 0.0f, 0.0f,
                         properties->get_slant(), 0.0f, 1.0f, 0.0f,
                         0.0f, 0.0f, 0.0f, 1.0f);
@@ -1440,8 +1440,8 @@ assemble_row(TextAssembler::TextRow &row,
       const TextGlyph *second_glyph;
       UnicodeLatinMap::AccentType accent_type;
       int additional_flags;
-      float glyph_scale;
-      float advance_scale;
+      PN_stdfloat glyph_scale;
+      PN_stdfloat advance_scale;
       get_character_glyphs(character, properties, 
                            got_glyph, first_glyph, second_glyph, accent_type,
                            additional_flags, glyph_scale, advance_scale);
@@ -1467,7 +1467,7 @@ assemble_row(TextAssembler::TextRow &row,
       GlyphPlacement *placement = new GlyphPlacement;
       row_placed_glyphs.push_back(placement);
 
-      float advance = 0.0f;
+      PN_stdfloat advance = 0.0f;
 
       if (first_glyph != (TextGlyph *)NULL) {
         PT(Geom) first_char_geom = first_glyph->get_geom(_usage_hint);
@@ -1479,7 +1479,7 @@ assemble_row(TextAssembler::TextRow &row,
       if (second_glyph != (TextGlyph *)NULL) {
         PT(Geom) second_char_geom = second_glyph->get_geom(_usage_hint);
         if (second_char_geom != (Geom *)NULL) {
-          second_char_geom->transform_vertices(LMatrix4f::translate_mat(advance, 0.0f, 0.0f));
+          second_char_geom->transform_vertices(LMatrix4::translate_mat(advance, 0.0f, 0.0f));
           placement->add_piece(second_char_geom, second_glyph->get_state());
         }
         advance += second_glyph->get_advance();
@@ -1492,19 +1492,19 @@ assemble_row(TextAssembler::TextRow &row,
       }
       // Now compute the matrix that will transform the glyph (or
       // glyphs) into position.
-      LMatrix4f glyph_xform = LMatrix4f::scale_mat(glyph_scale);
+      LMatrix4 glyph_xform = LMatrix4::scale_mat(glyph_scale);
 
       if (accent_type != UnicodeLatinMap::AT_none || additional_flags != 0) {
         // If we have some special handling to perform, do so now.
         // This will probably require the bounding volume of the
         // glyph, so go get that.
-        LPoint3f min_vert, max_vert;
+        LPoint3 min_vert, max_vert;
         bool found_any = false;
         placement->calc_tight_bounds(min_vert, max_vert, found_any,
                                      current_thread);
 
         if (found_any) {
-          LPoint3f centroid = (min_vert + max_vert) / 2.0f;
+          LPoint3 centroid = (min_vert + max_vert) / 2.0f;
           tack_on_accent(accent_type, min_vert, max_vert, centroid, 
                          properties, placement);
     
@@ -1520,10 +1520,10 @@ assemble_row(TextAssembler::TextRow &row,
             // We rotate the character around its centroid, which may
             // not always be the right point, but it's the best we've
             // got and it's probably pretty close.
-            LMatrix4f rotate =
-              LMatrix4f::translate_mat(-centroid) *
-              LMatrix4f::rotate_mat_normaxis(180.0f, LVecBase3f(0.0f, -1.0f, 0.0f)) *
-              LMatrix4f::translate_mat(centroid);
+            LMatrix4 rotate =
+              LMatrix4::translate_mat(-centroid) *
+              LMatrix4::rotate_mat_normaxis(180.0f, LVecBase3(0.0f, -1.0f, 0.0f)) *
+              LMatrix4::translate_mat(centroid);
             glyph_xform *= rotate;
           }
         }
@@ -1533,7 +1533,7 @@ assemble_row(TextAssembler::TextRow &row,
       glyph_xform(3, 2) += properties->get_glyph_shift();
 
       if (properties->has_slant()) {
-        LMatrix4f shear(1.0f, 0.0f, 0.0f, 0.0f,
+        LMatrix4 shear(1.0f, 0.0f, 0.0f, 0.0f,
                         0.0f, 1.0f, 0.0f, 0.0f,
                         properties->get_slant(), 0.0f, 1.0f, 0.0f,
                         0.0f, 0.0f, 0.0f, 1.0f);
@@ -1565,7 +1565,7 @@ assemble_row(TextAssembler::TextRow &row,
     nassertv(font != (TextFont *)NULL);
 
     if (line_height == 0.0f) {
-      float glyph_scale = properties->get_glyph_scale() * properties->get_text_scale();
+      PN_stdfloat glyph_scale = properties->get_glyph_scale() * properties->get_text_scale();
       line_height = max(line_height, font->get_line_height() * glyph_scale);
     }
   }
@@ -1579,7 +1579,7 @@ assemble_row(TextAssembler::TextRow &row,
 ////////////////////////////////////////////////////////////////////
 void TextAssembler::
 draw_underscore(TextAssembler::PlacedGlyphs &row_placed_glyphs,
-                float underscore_start, float underscore_end, 
+                PN_stdfloat underscore_start, PN_stdfloat underscore_end, 
                 const TextProperties *underscore_properties) {
   CPT(GeomVertexFormat) format = GeomVertexFormat::get_v3cp();
   PT(GeomVertexData) vdata = 
@@ -1588,11 +1588,11 @@ draw_underscore(TextAssembler::PlacedGlyphs &row_placed_glyphs,
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter color(vdata, InternalName::get_color());
 
-  float y = underscore_properties->get_underscore_height();
-  vertex.add_data3f(underscore_start, 0.0f, y);
-  color.add_data4f(underscore_properties->get_text_color());
-  vertex.add_data3f(underscore_end, 0.0f, y);
-  color.add_data4f(underscore_properties->get_text_color());
+  PN_stdfloat y = underscore_properties->get_underscore_height();
+  vertex.add_data3(underscore_start, 0.0f, y);
+  color.add_data4(underscore_properties->get_text_color());
+  vertex.add_data3(underscore_end, 0.0f, y);
+  color.add_data4(underscore_properties->get_text_color());
 
   PT(GeomLines) lines = new GeomLines(Geom::UH_static);
   lines->add_vertices(0, 1);
@@ -1603,7 +1603,7 @@ draw_underscore(TextAssembler::PlacedGlyphs &row_placed_glyphs,
 
   GlyphPlacement *placement = new GlyphPlacement;
   placement->add_piece(geom, RenderState::make_empty());
-  placement->_xform = LMatrix4f::ident_mat();
+  placement->_xform = LMatrix4::ident_mat();
   placement->_properties = underscore_properties;
 
   row_placed_glyphs.push_back(placement);
@@ -1634,7 +1634,7 @@ get_character_glyphs(int character, const TextProperties *properties,
                      const TextGlyph *&second_glyph,
                      UnicodeLatinMap::AccentType &accent_type,
                      int &additional_flags,
-                     float &glyph_scale, float &advance_scale) {
+                     PN_stdfloat &glyph_scale, PN_stdfloat &advance_scale) {
   TextFont *font = properties->get_font();
   nassertv_always(font != (TextFont *)NULL);
 
@@ -1712,8 +1712,8 @@ get_character_glyphs(int character, const TextProperties *properties,
 ////////////////////////////////////////////////////////////////////
 void TextAssembler::
 tack_on_accent(UnicodeLatinMap::AccentType accent_type,
-               const LPoint3f &min_vert, const LPoint3f &max_vert,
-               const LPoint3f &centroid,
+               const LPoint3 &min_vert, const LPoint3 &max_vert,
+               const LPoint3 &centroid,
                const TextProperties *properties, 
                TextAssembler::GlyphPlacement *placement) const {
   switch (accent_type) {
@@ -1857,8 +1857,8 @@ tack_on_accent(UnicodeLatinMap::AccentType accent_type,
 bool TextAssembler::
 tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
                TextAssembler::CheesyTransform transform,
-               const LPoint3f &min_vert, const LPoint3f &max_vert,
-               const LPoint3f &centroid,
+               const LPoint3 &min_vert, const LPoint3 &max_vert,
+               const LPoint3 &centroid,
                const TextProperties *properties,
                TextAssembler::GlyphPlacement *placement) const {
   TextFont *font = properties->get_font();
@@ -1871,13 +1871,13 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
       font->get_glyph(toupper(accent_mark), accent_glyph)) {
     PT(Geom) accent_geom = accent_glyph->get_geom(_usage_hint);
     if (accent_geom != (Geom *)NULL) {
-      LPoint3f min_accent, max_accent;
+      LPoint3 min_accent, max_accent;
       bool found_any = false;
       accent_geom->calc_tight_bounds(min_accent, max_accent, found_any,
                                      current_thread);
       if (found_any) {
-        float t, u;
-        LMatrix4f accent_mat;
+        PN_stdfloat t, u;
+        LMatrix4 accent_mat;
 
         // This gets set to true if the glyph gets mirrored and needs
         // to have backface culling disabled.
@@ -1885,11 +1885,11 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
 
         switch (transform) {
         case CT_none:
-          accent_mat = LMatrix4f::ident_mat();
+          accent_mat = LMatrix4::ident_mat();
           break;
 
         case CT_mirror_x:
-          accent_mat = LMatrix4f::scale_mat(-1.0f, 1.0f, 1.0f);
+          accent_mat = LMatrix4::scale_mat(-1.0f, 1.0f, 1.0f);
           t = min_accent[0];
           min_accent[0] = -max_accent[0];
           max_accent[0] = -t;
@@ -1897,7 +1897,7 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
           break;
 
         case CT_mirror_y:
-          accent_mat = LMatrix4f::scale_mat(1.0f, 1.0f, -1.0f);
+          accent_mat = LMatrix4::scale_mat(1.0f, 1.0f, -1.0f);
           t = min_accent[2];
           min_accent[2] = -max_accent[2];
           max_accent[2] = -t;
@@ -1905,7 +1905,7 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
           break;
 
         case CT_rotate_90:
-          accent_mat.set_rotate_mat_normaxis(90.0f, LVecBase3f(0.0f, -1.0f, 0.0f));
+          accent_mat.set_rotate_mat_normaxis(90.0f, LVecBase3(0.0f, -1.0f, 0.0f));
           // rotate min, max
           t = min_accent[0];
           u = max_accent[0];
@@ -1916,7 +1916,7 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
           break;
 
         case CT_rotate_180:
-          accent_mat = LMatrix4f::scale_mat(-1.0f, -1.0f, 1.0f);
+          accent_mat = LMatrix4::scale_mat(-1.0f, -1.0f, 1.0f);
           
           t = min_accent[0];
           min_accent[0] = -max_accent[0];
@@ -1927,7 +1927,7 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
           break;
 
         case CT_rotate_270:
-          accent_mat.set_rotate_mat_normaxis(270.0f, LVecBase3f(0.0f, -1.0f, 0.0f));
+          accent_mat.set_rotate_mat_normaxis(270.0f, LVecBase3(0.0f, -1.0f, 0.0f));
           // rotate min, max
           t = min_accent[0];
           u = max_accent[0];
@@ -1938,7 +1938,7 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
           break;
 
         case CT_squash:
-          accent_mat = LMatrix4f::scale_mat(squash_accent_scale_x, 1.0f, squash_accent_scale_y);
+          accent_mat = LMatrix4::scale_mat(squash_accent_scale_x, 1.0f, squash_accent_scale_y);
           min_accent[0] *= squash_accent_scale_x;
           max_accent[0] *= squash_accent_scale_x;
           min_accent[2] *= squash_accent_scale_y;
@@ -1946,7 +1946,7 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
           break;
 
         case CT_squash_mirror_y:
-          accent_mat = LMatrix4f::scale_mat(squash_accent_scale_x, 1.0f, -squash_accent_scale_y);
+          accent_mat = LMatrix4::scale_mat(squash_accent_scale_x, 1.0f, -squash_accent_scale_y);
           min_accent[0] *= squash_accent_scale_x;
           max_accent[0] *= squash_accent_scale_x;
           t = min_accent[2];
@@ -1957,8 +1957,8 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
 
         case CT_squash_mirror_diag:
           accent_mat =
-            LMatrix4f::rotate_mat_normaxis(270.0f, LVecBase3f(0.0f, -1.0f, 0.0f)) *
-            LMatrix4f::scale_mat(-squash_accent_scale_x, 1.0f, squash_accent_scale_y);
+            LMatrix4::rotate_mat_normaxis(270.0f, LVecBase3(0.0f, -1.0f, 0.0f)) *
+            LMatrix4::scale_mat(-squash_accent_scale_x, 1.0f, squash_accent_scale_y);
           
           // rotate min, max
           t = min_accent[0];
@@ -1971,7 +1971,7 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
           break;
 
         case CT_small_squash:
-          accent_mat = LMatrix4f::scale_mat(small_squash_accent_scale_x, 1.0f, small_squash_accent_scale_y);
+          accent_mat = LMatrix4::scale_mat(small_squash_accent_scale_x, 1.0f, small_squash_accent_scale_y);
           min_accent[0] *= small_squash_accent_scale_x;
           max_accent[0] *= small_squash_accent_scale_x;
           min_accent[2] *= small_squash_accent_scale_y;
@@ -1979,7 +1979,7 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
           break;
 
         case CT_small_squash_mirror_y:
-          accent_mat = LMatrix4f::scale_mat(small_squash_accent_scale_x, 1.0f, -small_squash_accent_scale_y);
+          accent_mat = LMatrix4::scale_mat(small_squash_accent_scale_x, 1.0f, -small_squash_accent_scale_y);
           min_accent[0] *= small_squash_accent_scale_x;
           max_accent[0] *= small_squash_accent_scale_x;
           t = min_accent[2];
@@ -1990,8 +1990,8 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
 
         case CT_small_squash_mirror_diag:
           accent_mat =
-            LMatrix4f::rotate_mat_normaxis(270.0f, LVecBase3f(0.0f, -1.0f, 0.0f)) *
-            LMatrix4f::scale_mat(-small_squash_accent_scale_x, 1.0f, small_squash_accent_scale_y);
+            LMatrix4::rotate_mat_normaxis(270.0f, LVecBase3(0.0f, -1.0f, 0.0f)) *
+            LMatrix4::scale_mat(-small_squash_accent_scale_x, 1.0f, small_squash_accent_scale_y);
           
           // rotate min, max
           t = min_accent[0];
@@ -2004,15 +2004,15 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
           break;
 
         case CT_small:
-          accent_mat = LMatrix4f::scale_mat(small_accent_scale);
+          accent_mat = LMatrix4::scale_mat(small_accent_scale);
           min_accent *= small_accent_scale;
           max_accent *= small_accent_scale;
           break;
 
         case CT_small_rotate_270:
           accent_mat =
-            LMatrix4f::rotate_mat_normaxis(270.0f, LVecBase3f(0.0f, -1.0f, 0.0f)) *
-            LMatrix4f::scale_mat(small_accent_scale);
+            LMatrix4::rotate_mat_normaxis(270.0f, LVecBase3(0.0f, -1.0f, 0.0f)) *
+            LMatrix4::scale_mat(small_accent_scale);
 
           // rotate min, max
           t = min_accent[0];
@@ -2024,13 +2024,13 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
           break;
 
         case CT_tiny:
-          accent_mat = LMatrix4f::scale_mat(tiny_accent_scale);
+          accent_mat = LMatrix4::scale_mat(tiny_accent_scale);
           min_accent *= tiny_accent_scale;
           max_accent *= tiny_accent_scale;
           break;
 
         case CT_tiny_mirror_x:
-          accent_mat = LMatrix4f::scale_mat(-tiny_accent_scale, 1.0f, tiny_accent_scale);
+          accent_mat = LMatrix4::scale_mat(-tiny_accent_scale, 1.0f, tiny_accent_scale);
           
           t = min_accent[0];
           min_accent[0] = -max_accent[0] * tiny_accent_scale;
@@ -2042,8 +2042,8 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
 
         case CT_tiny_rotate_270:
           accent_mat =
-            LMatrix4f::rotate_mat_normaxis(270.0f, LVecBase3f(0.0f, -1.0f, 0.0f)) *
-            LMatrix4f::scale_mat(tiny_accent_scale);
+            LMatrix4::rotate_mat_normaxis(270.0f, LVecBase3(0.0f, -1.0f, 0.0f)) *
+            LMatrix4::scale_mat(tiny_accent_scale);
 
           // rotate min, max
           t = min_accent[0];
@@ -2055,9 +2055,9 @@ tack_on_accent(char accent_mark, TextAssembler::CheesyPosition position,
           break;
         }
 
-        LPoint3f accent_centroid = (min_accent + max_accent) / 2.0f;
-        float accent_height = max_accent[2] - min_accent[2];
-        LVector3f trans;
+        LPoint3 accent_centroid = (min_accent + max_accent) / 2.0f;
+        PN_stdfloat accent_height = max_accent[2] - min_accent[2];
+        LVector3 trans;
         switch (position) {
         case CP_above:
           // A little above the character.
@@ -2165,7 +2165,7 @@ append_delta(wstring &wtext, TextAssembler::ComputedProperties *other) {
 //               and found_any before calling this function.
 ////////////////////////////////////////////////////////////////////
 void TextAssembler::GlyphPlacement::
-calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
                   bool &found_any, Thread *current_thread) const {
   Pieces::const_iterator pi;
   for (pi = _pieces.begin(); pi != _pieces.end(); ++pi) {
@@ -2200,8 +2200,8 @@ assign_to(GeomNode *geom_node, const RenderState *state) const {
 ////////////////////////////////////////////////////////////////////
 void TextAssembler::GlyphPlacement::
 assign_copy_to(GeomNode *geom_node, const RenderState *state,
-               const LMatrix4f &extra_xform) const {
-  LMatrix4f new_xform = _xform * extra_xform;
+               const LMatrix4 &extra_xform) const {
+  LMatrix4 new_xform = _xform * extra_xform;
   Pieces::const_iterator pi;
   for (pi = _pieces.begin(); pi != _pieces.end(); ++pi) {
     const Geom *geom = (*pi)._geom;
@@ -2222,8 +2222,8 @@ assign_copy_to(GeomNode *geom_node, const RenderState *state,
 void TextAssembler::GlyphPlacement::
 assign_append_to(GeomCollectorMap &geom_collector_map, 
                  const RenderState *state,
-                 const LMatrix4f &extra_xform) const {
-  LMatrix4f new_xform = _xform * extra_xform;
+                 const LMatrix4 &extra_xform) const {
+  LMatrix4 new_xform = _xform * extra_xform;
   Pieces::const_iterator pi;
 
   int p, sp, s, e, i;
@@ -2294,9 +2294,9 @@ assign_append_to(GeomCollectorMap &geom_collector_map,
 ////////////////////////////////////////////////////////////////////
 void TextAssembler::GlyphPlacement::
 copy_graphic_to(PandaNode *node, const RenderState *state,
-                const LMatrix4f &extra_xform) const {
+                const LMatrix4 &extra_xform) const {
   if (_graphic_model != (PandaNode *)NULL) {
-    LMatrix4f new_xform = _xform * extra_xform;
+    LMatrix4 new_xform = _xform * extra_xform;
 
     // We need an intermediate node to hold the transform and state.
     PT(PandaNode) intermediate_node = new PandaNode("");
@@ -2377,14 +2377,14 @@ get_primitive(TypeHandle prim_type) {
 ////////////////////////////////////////////////////////////////////
 int TextAssembler::GeomCollector::
 append_vertex(const GeomVertexData *orig_vdata, int orig_row,
-              const LMatrix4f &xform) {
+              const LMatrix4 &xform) {
   int new_row = _vdata->get_num_rows();
   _vdata->copy_row_from(new_row, orig_vdata, orig_row, Thread::get_current_thread());
 
   GeomVertexRewriter vertex_rewriter(_vdata, InternalName::get_vertex());
   vertex_rewriter.set_row_unsafe(new_row);
-  LPoint3f point = vertex_rewriter.get_data3f();
-  vertex_rewriter.set_data3f(point * xform);
+  LPoint3 point = vertex_rewriter.get_data3();
+  vertex_rewriter.set_data3(point * xform);
 
   return new_row;
 }

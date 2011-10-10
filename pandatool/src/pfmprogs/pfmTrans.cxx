@@ -30,7 +30,7 @@
 PfmTrans::
 PfmTrans() {
   _got_transform = false;
-  _transform = LMatrix4f::ident_mat();
+  _transform = LMatrix4::ident_mat();
 
   add_transform_options();
 
@@ -255,16 +255,16 @@ handle_args(ProgramBase::Args &args) {
 //     Function: PfmTrans::dispatch_scale
 //       Access: Protected, Static
 //  Description: Handles -TS, which specifies a scale transform.  Var
-//               is an LMatrix4f.
+//               is an LMatrix4.
 ////////////////////////////////////////////////////////////////////
 bool PfmTrans::
 dispatch_scale(const string &opt, const string &arg, void *var) {
-  LMatrix4f *transform = (LMatrix4f *)var;
+  LMatrix4 *transform = (LMatrix4 *)var;
 
   vector_string words;
   tokenize(arg, words, ",");
 
-  float sx, sy, sz;
+  PN_stdfloat sx, sy, sz;
 
   bool okflag = false;
   if (words.size() == 3) {
@@ -285,7 +285,7 @@ dispatch_scale(const string &opt, const string &arg, void *var) {
     return false;
   }
 
-  *transform = (*transform) * LMatrix4f::scale_mat(sx, sy, sz);
+  *transform = (*transform) * LMatrix4::scale_mat(sx, sy, sz);
 
   return true;
 }
@@ -294,7 +294,7 @@ dispatch_scale(const string &opt, const string &arg, void *var) {
 //     Function: PfmTrans::dispatch_rotate_xyz
 //       Access: Protected, Static
 //  Description: Handles -TR, which specifies a rotate transform about
-//               the three cardinal axes.  Var is an LMatrix4f.
+//               the three cardinal axes.  Var is an LMatrix4.
 ////////////////////////////////////////////////////////////////////
 bool PfmTrans::
 dispatch_rotate_xyz(ProgramBase *self, const string &opt, const string &arg, void *var) {
@@ -306,16 +306,16 @@ dispatch_rotate_xyz(ProgramBase *self, const string &opt, const string &arg, voi
 //     Function: PfmTrans::ns_dispatch_rotate_xyz
 //       Access: Protected
 //  Description: Handles -TR, which specifies a rotate transform about
-//               the three cardinal axes.  Var is an LMatrix4f.
+//               the three cardinal axes.  Var is an LMatrix4.
 ////////////////////////////////////////////////////////////////////
 bool PfmTrans::
 ns_dispatch_rotate_xyz(const string &opt, const string &arg, void *var) {
-  LMatrix4f *transform = (LMatrix4f *)var;
+  LMatrix4 *transform = (LMatrix4 *)var;
 
   vector_string words;
   tokenize(arg, words, ",");
 
-  LVecBase3f xyz;
+  LVecBase3 xyz;
 
   bool okflag = false;
   if (words.size() == 3) {
@@ -331,10 +331,10 @@ ns_dispatch_rotate_xyz(const string &opt, const string &arg, void *var) {
     return false;
   }
 
-  LMatrix4f mat =
-    LMatrix4f::rotate_mat(xyz[0], LVector3f(1.0, 0.0, 0.0)) *
-    LMatrix4f::rotate_mat(xyz[1], LVector3f(0.0, 1.0, 0.0)) *
-    LMatrix4f::rotate_mat(xyz[2], LVector3f(0.0, 0.0, 1.0));
+  LMatrix4 mat =
+    LMatrix4::rotate_mat(xyz[0], LVector3(1.0, 0.0, 0.0)) *
+    LMatrix4::rotate_mat(xyz[1], LVector3(0.0, 1.0, 0.0)) *
+    LMatrix4::rotate_mat(xyz[2], LVector3(0.0, 0.0, 1.0));
 
   *transform = (*transform) * mat;
 
@@ -345,7 +345,7 @@ ns_dispatch_rotate_xyz(const string &opt, const string &arg, void *var) {
 //     Function: PfmTrans::dispatch_rotate_axis
 //       Access: Protected, Static
 //  Description: Handles -TA, which specifies a rotate transform about
-//               an arbitrary axis.  Var is an LMatrix4f.
+//               an arbitrary axis.  Var is an LMatrix4.
 ////////////////////////////////////////////////////////////////////
 bool PfmTrans::
 dispatch_rotate_axis(ProgramBase *self, const string &opt, const string &arg, void *var) {
@@ -357,17 +357,17 @@ dispatch_rotate_axis(ProgramBase *self, const string &opt, const string &arg, vo
 //     Function: PfmTrans::ns_dispatch_rotate_axis
 //       Access: Protected
 //  Description: Handles -TA, which specifies a rotate transform about
-//               an arbitrary axis.  Var is an LMatrix4f.
+//               an arbitrary axis.  Var is an LMatrix4.
 ////////////////////////////////////////////////////////////////////
 bool PfmTrans::
 ns_dispatch_rotate_axis(const string &opt, const string &arg, void *var) {
-  LMatrix4f *transform = (LMatrix4f *)var;
+  LMatrix4 *transform = (LMatrix4 *)var;
 
   vector_string words;
   tokenize(arg, words, ",");
 
-  float angle;
-  LVecBase3f axis;
+  PN_stdfloat angle;
+  LVecBase3 axis;
 
   bool okflag = false;
   if (words.size() == 4) {
@@ -384,7 +384,7 @@ ns_dispatch_rotate_axis(const string &opt, const string &arg, void *var) {
     return false;
   }
 
-  *transform = (*transform) * LMatrix4f::rotate_mat(angle, axis);
+  *transform = (*transform) * LMatrix4::rotate_mat(angle, axis);
 
   return true;
 }
@@ -393,16 +393,16 @@ ns_dispatch_rotate_axis(const string &opt, const string &arg, void *var) {
 //     Function: PfmTrans::dispatch_translate
 //       Access: Protected, Static
 //  Description: Handles -TT, which specifies a translate transform.
-//               Var is an LMatrix4f.
+//               Var is an LMatrix4.
 ////////////////////////////////////////////////////////////////////
 bool PfmTrans::
 dispatch_translate(const string &opt, const string &arg, void *var) {
-  LMatrix4f *transform = (LMatrix4f *)var;
+  LMatrix4 *transform = (LMatrix4 *)var;
 
   vector_string words;
   tokenize(arg, words, ",");
 
-  LVector3f trans;
+  LVector3 trans;
 
   bool okflag = false;
   if (words.size() == 3) {
@@ -418,7 +418,7 @@ dispatch_translate(const string &opt, const string &arg, void *var) {
     return false;
   }
 
-  *transform = (*transform) * LMatrix4f::translate_mat(trans);
+  *transform = (*transform) * LMatrix4::translate_mat(trans);
 
   return true;
 }

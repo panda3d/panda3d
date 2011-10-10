@@ -61,7 +61,7 @@ BaseParticleEmitter::
 // Description : parent generation function
 ////////////////////////////////////////////////////////////////////
 void BaseParticleEmitter::
-generate(LPoint3f& pos, LVector3f& vel) {
+generate(LPoint3& pos, LVector3& vel) {
   assign_initial_position(pos);
 
   switch(_emission_type)

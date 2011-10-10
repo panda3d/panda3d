@@ -592,15 +592,15 @@ typedef BOOL (WINAPI * PFNWGLQUERYFRAMELOCKMASTERI3DPROC) (BOOL *pFlag);
 #ifndef WGL_I3D_swap_frame_usage
 #define WGL_I3D_swap_frame_usage 1
 #ifdef WGL_WGLEXT_PROTOTYPES
-extern BOOL WINAPI wglGetFrameUsageI3D (float *);
+extern BOOL WINAPI wglGetFrameUsageI3D (PN_stdfloat *);
 extern BOOL WINAPI wglBeginFrameTrackingI3D (void);
 extern BOOL WINAPI wglEndFrameTrackingI3D (void);
-extern BOOL WINAPI wglQueryFrameTrackingI3D (DWORD *, DWORD *, float *);
+extern BOOL WINAPI wglQueryFrameTrackingI3D (DWORD *, DWORD *, PN_stdfloat *);
 #endif /* WGL_WGLEXT_PROTOTYPES */
-typedef BOOL (WINAPI * PFNWGLGETFRAMEUSAGEI3DPROC) (float *pUsage);
+typedef BOOL (WINAPI * PFNWGLGETFRAMEUSAGEI3DPROC) (PN_stdfloat *pUsage);
 typedef BOOL (WINAPI * PFNWGLBEGINFRAMETRACKINGI3DPROC) (void);
 typedef BOOL (WINAPI * PFNWGLENDFRAMETRACKINGI3DPROC) (void);
-typedef BOOL (WINAPI * PFNWGLQUERYFRAMETRACKINGI3DPROC) (DWORD *pFrameCount, DWORD *pMissedFrames, float *pLastMissedUsage);
+typedef BOOL (WINAPI * PFNWGLQUERYFRAMETRACKINGI3DPROC) (DWORD *pFrameCount, DWORD *pMissedFrames, PN_stdfloat *pLastMissedUsage);
 #endif
 
 

@@ -58,15 +58,15 @@ protected:
   virtual PT(CopyOnWriteObject) make_cow_copy();
 
 PUBLISHED:
-  virtual LPoint3f get_collision_origin() const=0;
+  virtual LPoint3 get_collision_origin() const=0;
 
   INLINE void set_tangible(bool tangible);
   INLINE bool is_tangible() const;
 
-  INLINE void set_effective_normal(const LVector3f &effective_normal);
+  INLINE void set_effective_normal(const LVector3 &effective_normal);
   INLINE void clear_effective_normal();
   INLINE bool has_effective_normal() const;
-  INLINE const LVector3f &get_effective_normal() const;
+  INLINE const LVector3 &get_effective_normal() const;
 
   INLINE void set_respect_effective_normal(bool respect_effective_normal);
   INLINE bool get_respect_effective_normal() const;
@@ -78,7 +78,7 @@ public:
   virtual PT(CollisionEntry)
   test_intersection(const CollisionEntry &entry) const;
 
-  virtual void xform(const LMatrix4f &mat);
+  virtual void xform(const LMatrix4 &mat);
 
   virtual PT(PandaNode) get_viz(const CullTraverser *trav,
                                 const CullTraverserData &data,
@@ -98,8 +98,6 @@ protected:
   INLINE void mark_internal_bounds_stale();
   virtual PT(BoundingVolume) compute_internal_bounds() const;
 
-  virtual PT(CollisionEntry)
-  test_intersection_from_ds_solid(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
   test_intersection_from_sphere(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
@@ -131,7 +129,7 @@ protected:
   PT(GeomNode) _bounds_viz_geom;
 
 private:
-  LVector3f _effective_normal;
+  LVector3 _effective_normal;
   PT(BoundingVolume) _internal_bounds;
 
   // Be careful reordering these bits, since they are written to a bam
@@ -173,7 +171,6 @@ public:
 private:
   static TypeHandle _type_handle;
 
-  friend class CollisionDSSolid;
   friend class CollisionSphere;
   friend class CollisionLine;
   friend class CollisionRay;

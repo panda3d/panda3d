@@ -225,9 +225,9 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
       static CPT(TransformState) fixmat;
       if (fixmat == (TransformState *)NULL) {
         fixmat = TransformState::make_pos_hpr_scale
-          (LVecBase3f(0.5f, 0.5f, 0.0f),
-           LVecBase3f(0.0f, 0.0f, 0.0f),
-           LVecBase3f(0.5f, 0.5f, 1.0f));
+          (LVecBase3(0.5f, 0.5f, 0.0f),
+           LVecBase3(0.0f, 0.0f, 0.0f),
+           LVecBase3(0.5f, 0.5f, 1.0f));
       }
 
       // Now apply both to the current transform.

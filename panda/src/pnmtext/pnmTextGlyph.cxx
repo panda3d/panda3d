@@ -49,7 +49,7 @@ PNMTextGlyph::
 //               other pixels alone.
 ////////////////////////////////////////////////////////////////////
 void PNMTextGlyph::
-place(PNMImage &dest_image, int xp, int yp, const Colorf &fg) {
+place(PNMImage &dest_image, int xp, int yp, const LColor &fg) {
   if (!_image.is_valid()) {
     // If we have no image, do nothing.
     return;
@@ -97,8 +97,8 @@ place(PNMImage &dest_image, int xp, int yp, const Colorf &fg) {
 //               called earlier.
 ////////////////////////////////////////////////////////////////////
 void PNMTextGlyph::
-place(PNMImage &dest_image, int xp, int yp, const Colorf &fg, 
-      const Colorf &interior) {
+place(PNMImage &dest_image, int xp, int yp, const LColor &fg, 
+      const LColor &interior) {
   if (!_image.is_valid()) {
     // If we have no image, do nothing.
     return;

@@ -38,7 +38,7 @@ get_emission_type() const {
 // Description : assignment of explicit emission launch vector
 ////////////////////////////////////////////////////////////////////
 INLINE void BaseParticleEmitter::
-set_explicit_launch_vector(const LVector3f& elv) {
+set_explicit_launch_vector(const LVector3& elv) {
   _explicit_launch_vector = elv;
 }
 
@@ -47,7 +47,7 @@ set_explicit_launch_vector(const LVector3f& elv) {
 //      Access : Public
 // Description : query for explicit emission launch vector
 ////////////////////////////////////////////////////////////////////
-INLINE LVector3f BaseParticleEmitter::
+INLINE LVector3 BaseParticleEmitter::
 get_explicit_launch_vector() const {
   return _explicit_launch_vector;
 }
@@ -58,7 +58,7 @@ get_explicit_launch_vector() const {
 // Description : assignment of radiate emission origin point
 ////////////////////////////////////////////////////////////////////
 INLINE void BaseParticleEmitter::
-set_radiate_origin(const LPoint3f& ro) {
+set_radiate_origin(const LPoint3& ro) {
   _radiate_origin = ro;
 }
 
@@ -67,7 +67,7 @@ set_radiate_origin(const LPoint3f& ro) {
 //      Access : Public
 // Description : query for explicit emission launch vector
 ////////////////////////////////////////////////////////////////////
-INLINE LPoint3f BaseParticleEmitter::
+INLINE LPoint3 BaseParticleEmitter::
 get_radiate_origin() const {
   return _radiate_origin;
 }
@@ -78,7 +78,7 @@ get_radiate_origin() const {
 // Description : amplitude assignment
 ////////////////////////////////////////////////////////////////////
 INLINE void BaseParticleEmitter::
-set_amplitude(float a) {
+set_amplitude(PN_stdfloat a) {
   _amplitude = a;
 }
 
@@ -87,7 +87,7 @@ set_amplitude(float a) {
 //      Access : Public
 // Description : amplitude query
 ////////////////////////////////////////////////////////////////////
-INLINE float BaseParticleEmitter::
+INLINE PN_stdfloat BaseParticleEmitter::
 get_amplitude() const {
   return _amplitude;
 }
@@ -98,7 +98,7 @@ get_amplitude() const {
 // Description : amplitude spread assignment
 ////////////////////////////////////////////////////////////////////
 INLINE void BaseParticleEmitter::
-set_amplitude_spread(float as) {
+set_amplitude_spread(PN_stdfloat as) {
   _amplitude_spread = as;
 }
 
@@ -107,7 +107,7 @@ set_amplitude_spread(float as) {
 //      Access : Public
 // Description : amplitude spread query
 ////////////////////////////////////////////////////////////////////
-INLINE float BaseParticleEmitter::
+INLINE PN_stdfloat BaseParticleEmitter::
 get_amplitude_spread() const {
   return _amplitude_spread;
 }
@@ -118,7 +118,7 @@ get_amplitude_spread() const {
 // Description : user-defined force
 ////////////////////////////////////////////////////////////////////
 INLINE void BaseParticleEmitter::
-set_offset_force(const LVector3f& of) {
+set_offset_force(const LVector3& of) {
   _offset_force = of;
 }
 
@@ -127,7 +127,7 @@ set_offset_force(const LVector3f& of) {
 //      Access : Public
 // Description : user-defined force
 ////////////////////////////////////////////////////////////////////
-INLINE LVector3f BaseParticleEmitter::
+INLINE LVector3 BaseParticleEmitter::
 get_offset_force() const {
   return _offset_force;
 }

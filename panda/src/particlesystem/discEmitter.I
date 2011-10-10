@@ -19,7 +19,7 @@
 ////////////////////////////////////////////////////////////////////
 
 INLINE void DiscEmitter::
-set_radius(float r) {
+set_radius(PN_stdfloat r) {
   _radius = r;
 }
 
@@ -30,7 +30,7 @@ set_radius(float r) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE void DiscEmitter::
-set_outer_angle(float o_angle) {
+set_outer_angle(PN_stdfloat o_angle) {
   _outer_aoe = o_angle;
 }
 
@@ -41,7 +41,7 @@ set_outer_angle(float o_angle) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE void DiscEmitter::
-set_inner_angle(float i_angle) {
+set_inner_angle(PN_stdfloat i_angle) {
   _inner_aoe = i_angle;
 }
 
@@ -52,7 +52,7 @@ set_inner_angle(float i_angle) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE void DiscEmitter::
-set_outer_magnitude(float o_mag) {
+set_outer_magnitude(PN_stdfloat o_mag) {
   _outer_magnitude = o_mag;
 }
 
@@ -63,7 +63,7 @@ set_outer_magnitude(float o_mag) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE void DiscEmitter::
-set_inner_magnitude(float i_mag) {
+set_inner_magnitude(PN_stdfloat i_mag) {
   _inner_magnitude = i_mag;
 }
 
@@ -84,7 +84,7 @@ set_cubic_lerping(bool clerp) {
 // Description : radius accessor
 ////////////////////////////////////////////////////////////////////
 
-INLINE float DiscEmitter::
+INLINE PN_stdfloat DiscEmitter::
 get_radius() const {
   return _radius;
 }
@@ -95,7 +95,7 @@ get_radius() const {
 // Description : aoe accessor
 ////////////////////////////////////////////////////////////////////
 
-INLINE float DiscEmitter::
+INLINE PN_stdfloat DiscEmitter::
 get_outer_angle() const {
   return _outer_aoe;
 }
@@ -106,7 +106,7 @@ get_outer_angle() const {
 // Description : aoe accessor
 ////////////////////////////////////////////////////////////////////
 
-INLINE float DiscEmitter::
+INLINE PN_stdfloat DiscEmitter::
 get_inner_angle() const {
   return _inner_aoe;
 }
@@ -117,7 +117,7 @@ get_inner_angle() const {
 // Description : mag accessor
 ////////////////////////////////////////////////////////////////////
 
-INLINE float DiscEmitter::
+INLINE PN_stdfloat DiscEmitter::
 get_outer_magnitude() const {
   return _outer_magnitude;
 }
@@ -128,7 +128,7 @@ get_outer_magnitude() const {
 // Description : mag accessor
 ////////////////////////////////////////////////////////////////////
 
-INLINE float DiscEmitter::
+INLINE PN_stdfloat DiscEmitter::
 get_inner_magnitude() const {
   return _inner_magnitude;
 }

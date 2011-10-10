@@ -56,6 +56,20 @@ get_file_endian() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BamWriter::get_file_stdfloat_double
+//       Access: Published
+//  Description: Returns true if the file will store all "standard"
+//               floats as 64-bit doubles, or false if they are 32-bit
+//               floats.  This isn't runtime settable; it's based on
+//               the compilation flags of the version of Panda that
+//               generated this file.
+////////////////////////////////////////////////////////////////////
+INLINE bool BamWriter::
+get_file_stdfloat_double() const {
+  return _file_stdfloat_double;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BamWriter::get_file_texture_mode
 //       Access: Published
 //  Description: Returns the BamTextureMode preference indicated by

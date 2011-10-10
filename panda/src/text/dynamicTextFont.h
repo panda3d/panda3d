@@ -51,27 +51,27 @@ PUBLISHED:
 
   INLINE const string &get_name() const;
 
-  INLINE bool set_point_size(float point_size);
-  INLINE float get_point_size() const;
+  INLINE bool set_point_size(PN_stdfloat point_size);
+  INLINE PN_stdfloat get_point_size() const;
 
-  INLINE bool set_pixels_per_unit(float pixels_per_unit);
-  INLINE float get_pixels_per_unit() const;
+  INLINE bool set_pixels_per_unit(PN_stdfloat pixels_per_unit);
+  INLINE PN_stdfloat get_pixels_per_unit() const;
 
-  INLINE bool set_scale_factor(float scale_factor);
-  INLINE float get_scale_factor() const;
+  INLINE bool set_scale_factor(PN_stdfloat scale_factor);
+  INLINE PN_stdfloat get_scale_factor() const;
 
   INLINE void set_native_antialias(bool native_antialias);
   INLINE bool get_native_antialias() const;
 
   INLINE int get_font_pixel_size() const;
 
-  INLINE float get_line_height() const;
-  INLINE float get_space_advance() const;
+  INLINE PN_stdfloat get_line_height() const;
+  INLINE PN_stdfloat get_space_advance() const;
 
   INLINE void set_texture_margin(int texture_margin);
   INLINE int get_texture_margin() const;
-  INLINE void set_poly_margin(float poly_margin);
-  INLINE float get_poly_margin() const;
+  INLINE void set_poly_margin(PN_stdfloat poly_margin);
+  INLINE PN_stdfloat get_poly_margin() const;
 
   INLINE void set_page_size(int x_size, int y_size);
   INLINE int get_page_x_size() const;
@@ -89,15 +89,15 @@ PUBLISHED:
   INLINE void set_winding_order(WindingOrder winding_order);
   INLINE WindingOrder get_winding_order() const;
 
-  INLINE void set_fg(const Colorf &fg);
-  INLINE const Colorf &get_fg() const;
-  INLINE void set_bg(const Colorf &bg);
-  INLINE const Colorf &get_bg() const;
-  INLINE void set_outline(const Colorf &outline_color, float outline_width,
-                          float outline_feather);
-  INLINE const Colorf &get_outline_color() const;
-  INLINE float get_outline_width() const;
-  INLINE float get_outline_feather() const;
+  INLINE void set_fg(const LColor &fg);
+  INLINE const LColor &get_fg() const;
+  INLINE void set_bg(const LColor &bg);
+  INLINE const LColor &get_bg() const;
+  INLINE void set_outline(const LColor &outline_color, PN_stdfloat outline_width,
+                          PN_stdfloat outline_feather);
+  INLINE const LColor &get_outline_color() const;
+  INLINE PN_stdfloat get_outline_width() const;
+  INLINE PN_stdfloat get_outline_feather() const;
   INLINE Texture::Format get_tex_format() const;
 
   int get_num_pages() const;
@@ -120,7 +120,7 @@ private:
   void copy_bitmap_to_texture(const FT_Bitmap &bitmap, DynamicTextGlyph *glyph);
   void copy_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph);
   void blend_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph,
-                                 const Colorf &fg);
+                                 const LColor &fg);
   DynamicTextGlyph *slot_glyph(int character, int x_size, int y_size);
 
   void render_wireframe_contours(DynamicTextGlyph *glyph);
@@ -136,7 +136,7 @@ private:
   int outline_nurbs(NurbsCurveResult *ncr);
 
   int _texture_margin;
-  float _poly_margin;
+  PN_stdfloat _poly_margin;
   int _page_x_size, _page_y_size;
 
   Texture::FilterType _minfilter;
@@ -146,9 +146,9 @@ private:
   RenderMode _render_mode;
   WindingOrder _winding_order;
 
-  Colorf _fg, _bg, _outline_color;
-  float _outline_width;
-  float _outline_feather;
+  LColor _fg, _bg, _outline_color;
+  PN_stdfloat _outline_width;
+  PN_stdfloat _outline_feather;
   bool _has_outline;
   Texture::Format _tex_format;
   bool _needs_image_processing;
@@ -171,12 +171,12 @@ private:
 
   class ContourPoint {
   public:
-    INLINE ContourPoint(const LPoint2f &p, const LVector2f &in, 
-                        const LVector2f &out);
-    INLINE ContourPoint(float px, float py, float tx, float ty);
-    INLINE void connect_to(const LVector2f &out);
-    LPoint2f _p;
-    LVector2f _in, _out;  // tangents into and out of the vertex.
+    INLINE ContourPoint(const LPoint2 &p, const LVector2 &in, 
+                        const LVector2 &out);
+    INLINE ContourPoint(PN_stdfloat px, PN_stdfloat py, PN_stdfloat tx, PN_stdfloat ty);
+    INLINE void connect_to(const LVector2 &out);
+    LPoint2 _p;
+    LVector2 _in, _out;  // tangents into and out of the vertex.
   };
   typedef pvector<ContourPoint> Points;
 
@@ -189,7 +189,7 @@ private:
 
   typedef pvector<Contour> Contours;
   Contours _contours;
-  LPoint2f _q;  // The "current point".
+  LPoint2 _q;  // The "current point".
 
 public:
   static TypeHandle get_class_type() {

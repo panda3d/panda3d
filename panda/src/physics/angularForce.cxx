@@ -50,9 +50,9 @@ AngularForce::
 //      Access : public
 // Description : access query
 ////////////////////////////////////////////////////////////////////
-LRotationf AngularForce::
+LRotation AngularForce::
 get_quat(const PhysicsObject *po) {
-  LRotationf v = get_child_quat(po);
+  LRotation v = get_child_quat(po);
   return v;
 }
 

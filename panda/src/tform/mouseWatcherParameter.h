@@ -43,7 +43,7 @@ public:
                             size_t higlight_end,
                             size_t cursor_pos);
   INLINE void set_modifier_buttons(const ModifierButtons &mods);
-  INLINE void set_mouse(const LPoint2f &mouse);
+  INLINE void set_mouse(const LPoint2 &mouse);
   INLINE void set_outside(bool flag);
 
 PUBLISHED:
@@ -69,7 +69,7 @@ PUBLISHED:
   INLINE const ModifierButtons &get_modifier_buttons() const;
 
   INLINE bool has_mouse() const;
-  INLINE const LPoint2f &get_mouse() const;
+  INLINE const LPoint2 &get_mouse() const;
 
   INLINE bool is_outside() const;
 
@@ -83,7 +83,7 @@ public:
   size_t _highlight_end;
   size_t _cursor_pos;
   ModifierButtons _mods;
-  LPoint2f _mouse;
+  LPoint2 _mouse;
 
   enum Flags {
     F_has_button    = 0x001,

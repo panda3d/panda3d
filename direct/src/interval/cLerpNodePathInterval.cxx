@@ -141,11 +141,11 @@ priv_step(double t) {
       transform = _node.get_transform(_other);
     }
     
-    LPoint3f pos;
-    LVecBase3f hpr;
-    LQuaternionf quat;
-    LVecBase3f scale;
-    LVecBase3f shear;
+    LPoint3 pos;
+    LVecBase3 hpr;
+    LQuaternion quat;
+    LVecBase3 scale;
+    LVecBase3 shear;
 
     if ((_flags & F_end_pos) != 0) {
       if ((_flags & F_start_pos) != 0) {
@@ -198,7 +198,7 @@ priv_step(double t) {
           if (_prev_d == 1.0) {
             _start_quat = _end_quat;
           } else {
-            LQuaternionf prev_value = transform->get_quat();
+            LQuaternion prev_value = transform->get_quat();
             _start_quat = (prev_value - _prev_d * _end_quat) / (1.0 - _prev_d);
           }
           setup_slerp();
@@ -412,7 +412,7 @@ priv_step(double t) {
     // attributes don't interrelate.
 
     if ((_flags & F_end_color) != 0) {
-      Colorf color;
+      LColor color;
 
       if ((_flags & F_start_color) != 0) {
         lerp_value(color, d, _start_color, _end_color);
@@ -436,7 +436,7 @@ priv_step(double t) {
     }
 
     if ((_flags & F_end_color_scale) != 0) {
-      LVecBase4f color_scale;
+      LVecBase4 color_scale;
 
       if ((_flags & F_start_color_scale) != 0) {
         lerp_value(color_scale, d, _start_color_scale, _end_color_scale);
@@ -472,7 +472,7 @@ priv_step(double t) {
       }
 
       if ((_flags & F_end_tex_offset) != 0) {
-        LVecBase2f tex_offset;
+        LVecBase2 tex_offset;
 
         if ((_flags & F_start_tex_offset) != 0) {
           lerp_value(tex_offset, d, _start_tex_offset, _end_tex_offset);
@@ -486,7 +486,7 @@ priv_step(double t) {
       }
 
       if ((_flags & F_end_tex_rotate) != 0) {
-        float tex_rotate;
+        PN_stdfloat tex_rotate;
 
         if ((_flags & F_start_tex_rotate) != 0) {
           lerp_value(tex_rotate, d, _start_tex_rotate, _end_tex_rotate);
@@ -500,7 +500,7 @@ priv_step(double t) {
       }
 
       if ((_flags & F_end_tex_scale) != 0) {
-        LVecBase2f tex_scale;
+        LVecBase2 tex_scale;
 
         if ((_flags & F_start_tex_scale) != 0) {
           lerp_value(tex_scale, d, _start_tex_scale, _end_tex_scale);
@@ -691,11 +691,11 @@ setup_slerp() {
 //               quaternions is not near one extreme or the other.
 ////////////////////////////////////////////////////////////////////
 void CLerpNodePathInterval::
-slerp_basic(LQuaternionf &result, float t) const {
+slerp_basic(LQuaternion &result, PN_stdfloat t) const {
   nassertv(_slerp_denom != 0.0f);
-  float ti = 1.0f - t;
-  float ta = t * _slerp_angle;
-  float tia = ti * _slerp_angle;
+  PN_stdfloat ti = 1.0f - t;
+  PN_stdfloat ta = t * _slerp_angle;
+  PN_stdfloat tia = ti * _slerp_angle;
 
   if (interval_cat.is_spam()) {
     interval_cat.spam()
@@ -716,11 +716,11 @@ slerp_basic(LQuaternionf &result, float t) const {
 //               quaternions approaches zero.
 ////////////////////////////////////////////////////////////////////
 void CLerpNodePathInterval::
-slerp_angle_0(LQuaternionf &result, float t) const {
+slerp_angle_0(LQuaternion &result, PN_stdfloat t) const {
   nassertv(_slerp_denom != 0.0f);
-  float ti = 1.0f - t;
-  float ta = t * _slerp_angle;
-  float tia = ti * _slerp_angle;
+  PN_stdfloat ti = 1.0f - t;
+  PN_stdfloat ta = t * _slerp_angle;
+  PN_stdfloat tia = ti * _slerp_angle;
 
   if (interval_cat.is_spam()) {
     interval_cat.spam()
@@ -742,16 +742,16 @@ slerp_angle_0(LQuaternionf &result, float t) const {
 //               the quaternions approaches 180 degrees.
 ////////////////////////////////////////////////////////////////////
 void CLerpNodePathInterval::
-slerp_angle_180(LQuaternionf &result, float t) const {
+slerp_angle_180(LQuaternion &result, PN_stdfloat t) const {
   nassertv(_slerp_denom != 0.0f);
   if (t < 0.5) {
     // The first half of the lerp: _start_quat to _slerp_c.
 
     t *= 2.0f;
 
-    float ti = 1.0f - t;
-    float ta = t * _slerp_angle;
-    float tia = ti * _slerp_angle;
+    PN_stdfloat ti = 1.0f - t;
+    PN_stdfloat ta = t * _slerp_angle;
+    PN_stdfloat tia = ti * _slerp_angle;
 
     if (interval_cat.is_spam()) {
       interval_cat.spam()
@@ -767,9 +767,9 @@ slerp_angle_180(LQuaternionf &result, float t) const {
     // The second half of the lerp: _slerp_c to _end_quat.
     t = t * 2.0f - 1.0f;
 
-    float ti = 1.0f - t;
-    float ta = t * _slerp_angle;
-    float tia = ti * _slerp_angle;
+    PN_stdfloat ti = 1.0f - t;
+    PN_stdfloat ta = t * _slerp_angle;
+    PN_stdfloat tia = ti * _slerp_angle;
 
     if (interval_cat.is_spam()) {
       interval_cat.spam()

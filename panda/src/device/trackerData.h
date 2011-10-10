@@ -34,13 +34,13 @@ public:
   INLINE bool has_time() const;
   INLINE double get_time() const;
 
-  INLINE void set_pos(const LPoint3f &pos);
+  INLINE void set_pos(const LPoint3 &pos);
   INLINE bool has_pos() const;
-  INLINE const LPoint3f &get_pos() const;
+  INLINE const LPoint3 &get_pos() const;
 
-  INLINE void set_orient(const LOrientationf &orient);
+  INLINE void set_orient(const LOrientation &orient);
   INLINE bool has_orient() const;
-  INLINE const LOrientationf &get_orient() const;
+  INLINE const LOrientation &get_orient() const;
 
   INLINE void set_dt(double dt);
   INLINE bool has_dt() const;
@@ -57,8 +57,8 @@ private:
   int _flags;
 
   double _time;
-  LPoint3f _pos;
-  LOrientationf _orient;
+  LPoint3 _pos;
+  LOrientation _orient;
   double _dt;
 };
 

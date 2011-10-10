@@ -63,7 +63,7 @@ is_valid() const {
 //               The curve is defined in the range 0.0f <= t <=
 //               get_max_t().
 ////////////////////////////////////////////////////////////////////
-float PiecewiseCurve::
+PN_stdfloat PiecewiseCurve::
 get_max_t() const {
   return _segs.empty() ? 0.0f : _segs.back()._tend;
 }
@@ -79,7 +79,7 @@ get_max_t() const {
 //               end (whichever is nearer) and returns false.
 ////////////////////////////////////////////////////////////////////
 bool PiecewiseCurve::
-get_point(float t, LVecBase3f &point) const {
+get_point(PN_stdfloat t, LVecBase3 &point) const {
   const ParametricCurve *curve;
   bool result = find_curve(curve, t);
   if (curve == NULL){
@@ -97,7 +97,7 @@ get_point(float t, LVecBase3f &point) const {
 //               point t.
 ////////////////////////////////////////////////////////////////////
 bool PiecewiseCurve::
-get_tangent(float t, LVecBase3f &tangent) const {
+get_tangent(PN_stdfloat t, LVecBase3 &tangent) const {
   const ParametricCurve *curve;
   bool result = find_curve(curve, t);
 
@@ -113,7 +113,7 @@ get_tangent(float t, LVecBase3f &tangent) const {
 //               curve at the point t.
 ////////////////////////////////////////////////////////////////////
 bool PiecewiseCurve::
-get_2ndtangent(float t, LVecBase3f &tangent2) const {
+get_2ndtangent(PN_stdfloat t, LVecBase3 &tangent2) const {
   const ParametricCurve *curve;
   bool result = find_curve(curve, t);
 
@@ -129,8 +129,8 @@ get_2ndtangent(float t, LVecBase3f &tangent2) const {
 //               tangent value at that point.
 ////////////////////////////////////////////////////////////////////
 bool PiecewiseCurve::
-adjust_point(float t,
-             float px, float py, float pz) {
+adjust_point(PN_stdfloat t,
+             PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz) {
   if (parametrics_cat.is_debug()) {
     parametrics_cat.debug()
       << "Adjusting point at " << t << " to " << px << " " << py << " "
@@ -145,10 +145,10 @@ adjust_point(float t,
     return false;
   }
 
-  rebuild_curveseg(RT_CV | RT_KEEP_ORIG, 0.0f, LVecBase4f(),
-                   RT_POINT, t, LVecBase4f(px, py, pz, 1.0f),
-                   RT_TANGENT | RT_KEEP_ORIG, t, LVecBase4f(),
-                   RT_CV | RT_KEEP_ORIG, 0.0f, LVecBase4f());
+  rebuild_curveseg(RT_CV | RT_KEEP_ORIG, 0.0f, LVecBase4(),
+                   RT_POINT, t, LVecBase4(px, py, pz, 1.0f),
+                   RT_TANGENT | RT_KEEP_ORIG, t, LVecBase4(),
+                   RT_CV | RT_KEEP_ORIG, 0.0f, LVecBase4());
   return true;
 }
 
@@ -160,8 +160,8 @@ adjust_point(float t,
 //               at the point.
 ////////////////////////////////////////////////////////////////////
 bool PiecewiseCurve::
-adjust_tangent(float t,
-               float tx, float ty, float tz) {
+adjust_tangent(PN_stdfloat t,
+               PN_stdfloat tx, PN_stdfloat ty, PN_stdfloat tz) {
   const ParametricCurve *curve;
   bool result = find_curve(curve, t);
 
@@ -170,10 +170,10 @@ adjust_tangent(float t,
     return false;
   }
 
-  rebuild_curveseg(RT_CV | RT_KEEP_ORIG, 0.0f, LVecBase4f(),
-                   RT_POINT | RT_KEEP_ORIG, t, LVecBase4f(),
-                   RT_TANGENT, t, LVecBase4f(tx, ty, tz, 0.0f),
-                   RT_CV | RT_KEEP_ORIG, 0.0f, LVecBase4f());
+  rebuild_curveseg(RT_CV | RT_KEEP_ORIG, 0.0f, LVecBase4(),
+                   RT_POINT | RT_KEEP_ORIG, t, LVecBase4(),
+                   RT_TANGENT, t, LVecBase4(tx, ty, tz, 0.0f),
+                   RT_CV | RT_KEEP_ORIG, 0.0f, LVecBase4());
   return true;
 }
 
@@ -184,9 +184,9 @@ adjust_tangent(float t,
 //               point (px, py, pz) with the tangent (tx, ty, tz).
 ////////////////////////////////////////////////////////////////////
 bool PiecewiseCurve::
-adjust_pt(float t,
-          float px, float py, float pz,
-          float tx, float ty, float tz) {
+adjust_pt(PN_stdfloat t,
+          PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz,
+          PN_stdfloat tx, PN_stdfloat ty, PN_stdfloat tz) {
   const ParametricCurve *curve;
   bool result = find_curve(curve, t);
 
@@ -195,10 +195,10 @@ adjust_pt(float t,
     return false;
   }
 
-  rebuild_curveseg(RT_CV | RT_KEEP_ORIG, 0.0f, LVecBase4f(),
-                   RT_POINT, t, LVecBase4f(px, py, pz, 1.0f),
-                   RT_TANGENT, t, LVecBase4f(tx, ty, tz, 0.0f),
-                   RT_CV | RT_KEEP_ORIG, 0.0f, LVecBase4f());
+  rebuild_curveseg(RT_CV | RT_KEEP_ORIG, 0.0f, LVecBase4(),
+                   RT_POINT, t, LVecBase4(px, py, pz, 1.0f),
+                   RT_TANGENT, t, LVecBase4(tx, ty, tz, 0.0f),
+                   RT_CV | RT_KEEP_ORIG, 0.0f, LVecBase4());
   return true;
 }
 
@@ -210,7 +210,7 @@ adjust_pt(float t,
 //               curve at a given parametric point t.
 ////////////////////////////////////////////////////////////////////
 bool PiecewiseCurve::
-get_pt(float t, LVecBase3f &point, LVecBase3f &tangent) const {
+get_pt(PN_stdfloat t, LVecBase3 &point, LVecBase3 &tangent) const {
   const ParametricCurve *curve;
   bool result = find_curve(curve, t);
 
@@ -257,7 +257,7 @@ get_curveseg(int ti) {
 //               not changed.
 ////////////////////////////////////////////////////////////////////
 bool PiecewiseCurve::
-insert_curveseg(int ti, ParametricCurve *seg, float tlength) {
+insert_curveseg(int ti, ParametricCurve *seg, PN_stdfloat tlength) {
   if (ti < 0 || ti > (int)_segs.size()) {
     return false;
   }
@@ -291,7 +291,7 @@ remove_curveseg(int ti) {
     return false;
   }
 
-  float tlength = get_tlength(ti);
+  PN_stdfloat tlength = get_tlength(ti);
   _segs.erase(_segs.begin() + ti);
 
   // Now update the _tend figures for everything after the one we
@@ -322,7 +322,7 @@ remove_all_curvesegs() {
 //  Description: Returns the parametric length of the given segment of
 //               the curve.
 ////////////////////////////////////////////////////////////////////
-float PiecewiseCurve::
+PN_stdfloat PiecewiseCurve::
 get_tlength(int ti) const {
   assert(ti >= 0 && ti < (int)_segs.size());
   return (ti==0) ? _segs[ti]._tend : _segs[ti]._tend - _segs[ti-1]._tend;
@@ -334,7 +334,7 @@ get_tlength(int ti) const {
 //  Description: Returns the parametric start of the given segment of
 //               the curve.
 ////////////////////////////////////////////////////////////////////
-float PiecewiseCurve::
+PN_stdfloat PiecewiseCurve::
 get_tstart(int ti) const {
   assert(ti >= 0 && ti <= (int)_segs.size());
   return (ti==0) ? 0.0f : _segs[ti-1]._tend;
@@ -346,7 +346,7 @@ get_tstart(int ti) const {
 //  Description: Returns the parametric end of the given segment of
 //               the curve.
 ////////////////////////////////////////////////////////////////////
-float PiecewiseCurve::
+PN_stdfloat PiecewiseCurve::
 get_tend(int ti) const {
   assert(ti >= 0 && ti < (int)_segs.size());
   return _segs[ti]._tend;
@@ -362,7 +362,7 @@ get_tend(int ti) const {
 //               overall length of the curve the same.
 ////////////////////////////////////////////////////////////////////
 bool PiecewiseCurve::
-set_tlength(int ti, float tlength) {
+set_tlength(int ti, PN_stdfloat tlength) {
   if (ti < 0 || ti >= (int)_segs.size()) {
     return false;
   }
@@ -389,7 +389,7 @@ set_tlength(int ti, float tlength) {
 ////////////////////////////////////////////////////////////////////
 void PiecewiseCurve::
 make_nurbs(int order, int num_cvs,
-           const float knots[], const LVecBase4f cvs[]) {
+           const PN_stdfloat knots[], const LVecBase4 cvs[]) {
   remove_all_curvesegs();
 
   for (int i=0; i<num_cvs - order + 1; i++) {
@@ -439,10 +439,10 @@ get_bezier_segs(BezierSegs &bz_segs) const {
 //               possible, false if something goes horribly wrong.
 ////////////////////////////////////////////////////////////////////
 bool PiecewiseCurve::
-rebuild_curveseg(int, float, const LVecBase4f &,
-                 int, float, const LVecBase4f &,
-                 int, float, const LVecBase4f &,
-                 int, float, const LVecBase4f &) {
+rebuild_curveseg(int, PN_stdfloat, const LVecBase4 &,
+                 int, PN_stdfloat, const LVecBase4 &,
+                 int, PN_stdfloat, const LVecBase4 &,
+                 int, PN_stdfloat, const LVecBase4 &) {
   cerr << "rebuild_curveseg not implemented for this curve type.\n";
   return false;
 }
@@ -460,7 +460,7 @@ rebuild_curveseg(int, float, const LVecBase4f &,
 //               false.
 ////////////////////////////////////////////////////////////////////
 bool PiecewiseCurve::
-find_curve(const ParametricCurve *&curve, float &t) const {
+find_curve(const ParametricCurve *&curve, PN_stdfloat &t) const {
   // Check the index computed by the last call to find_curve().  If
   // it's still a reasonable starting value, start searching from
   // there.  This way, we take advantage of locality of reference: the
@@ -554,8 +554,8 @@ find_curve(const ParametricCurve *&curve, float &t) const {
 //               has not yet been called, or if find_curve() returned
 //               false from its previous call.
 ////////////////////////////////////////////////////////////////////
-float PiecewiseCurve::
-current_seg_range(float t) const {
+PN_stdfloat PiecewiseCurve::
+current_seg_range(PN_stdfloat t) const {
   int ti = _last_ti;
 
   assert(ti < (int)_segs.size());

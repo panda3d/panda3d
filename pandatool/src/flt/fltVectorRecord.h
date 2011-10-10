@@ -32,10 +32,10 @@ class FltVectorRecord : public FltRecord {
 public:
   FltVectorRecord(FltHeader *header);
 
-  const LVector3f &get_vector() const;
+  const LVector3 &get_vector() const;
 
 protected:
-  LVector3f _vector;
+  LVector3 _vector;
 
 protected:
   virtual bool extract_record(FltRecordReader &reader);

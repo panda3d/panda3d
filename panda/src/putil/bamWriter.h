@@ -85,6 +85,7 @@ PUBLISHED:
   void flush();
 
   INLINE BamEndian get_file_endian() const;
+  INLINE bool get_file_stdfloat_double() const;
 
   INLINE BamTextureMode get_file_texture_mode() const;
   INLINE void set_file_texture_mode(BamTextureMode file_texture_mode);
@@ -114,6 +115,7 @@ private:
   bool flush_queue();
 
   BamEndian _file_endian;
+  bool _file_stdfloat_double;
   BamTextureMode _file_texture_mode;
 
   // This is the set of all TypeHandles already written.

@@ -52,7 +52,7 @@ operator = (const Material &copy) {
 //               If this is not set, the object color will be used.
 ////////////////////////////////////////////////////////////////////
 void Material::
-set_ambient(const Colorf &color) {
+set_ambient(const LColor &color) {
   if (enforce_attrib_lock) {
     if ((_flags & F_ambient)==0) {
       nassertv(!is_attrib_locked());
@@ -77,7 +77,7 @@ set_ambient(const Colorf &color) {
 //               If this is not set, the object color will be used.
 ////////////////////////////////////////////////////////////////////
 void Material::
-set_diffuse(const Colorf &color) {
+set_diffuse(const LColor &color) {
   if (enforce_attrib_lock) {
     if ((_flags & F_diffuse)==0) {
       nassertv(!is_attrib_locked());
@@ -101,7 +101,7 @@ set_diffuse(const Colorf &color) {
 //               If this is not set, highlights will not appear.
 ////////////////////////////////////////////////////////////////////
 void Material::
-set_specular(const Colorf &color) {
+set_specular(const LColor &color) {
   if (enforce_attrib_lock) {
     if ((_flags & F_specular)==0) {
       nassertv(!is_attrib_locked());
@@ -126,7 +126,7 @@ set_specular(const Colorf &color) {
 //               presence of one or more lights.
 ////////////////////////////////////////////////////////////////////
 void Material::
-set_emission(const Colorf &color) {
+set_emission(const LColor &color) {
   if (enforce_attrib_lock) {
     if ((_flags & F_emission)==0) {
       nassertv(!is_attrib_locked());
@@ -244,7 +244,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
   _diffuse.write_datagram(me);
   _specular.write_datagram(me);
   _emission.write_datagram(me);
-  me.add_float32(_shininess);
+  me.add_stdfloat(_shininess);
   me.add_int32(_flags);
 }
 
@@ -279,6 +279,6 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _diffuse.read_datagram(scan);
   _specular.read_datagram(scan);
   _emission.read_datagram(scan);
-  _shininess = scan.get_float32();
+  _shininess = scan.get_stdfloat();
   _flags = scan.get_int32();
 }

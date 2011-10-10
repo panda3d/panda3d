@@ -34,7 +34,7 @@
 class EXPCL_PANDA_PGRAPH PortalNode : public PandaNode {
 PUBLISHED:
   PortalNode(const string &name);
-  PortalNode(const string &name, LPoint3f pos, float scale=10.0);
+  PortalNode(const string &name, LPoint3 pos, PN_stdfloat scale=10.0);
 
 protected:
   PortalNode(const PortalNode &copy);
@@ -43,7 +43,7 @@ public:
   virtual ~PortalNode();
   virtual PandaNode *make_copy() const;
   virtual bool preserve_name() const;
-  virtual void xform(const LMatrix4f &mat);
+  virtual void xform(const LMatrix4 &mat);
   virtual PandaNode *combine_with(PandaNode *other); 
 
   virtual void enable_clipping_planes();
@@ -64,10 +64,10 @@ PUBLISHED:
   INLINE bool get_portal_geom() const;
 
   INLINE void clear_vertices();
-  INLINE void add_vertex(const LPoint3f &vertex);
+  INLINE void add_vertex(const LPoint3 &vertex);
 
   INLINE int get_num_vertices() const;
-  INLINE const LPoint3f &get_vertex(int n) const;
+  INLINE const LPoint3 &get_vertex(int n) const;
   MAKE_SEQ(get_vertices, get_num_vertices, get_vertex);
 
   INLINE void set_cell_in(const NodePath &cell);
@@ -111,7 +111,7 @@ private:
   };
   int _flags;
 
-  typedef pvector<LPoint3f> Vertices;
+  typedef pvector<LPoint3> Vertices;
   Vertices _vertices;
 
   NodePath _cell_in;  // This is the cell it resides in

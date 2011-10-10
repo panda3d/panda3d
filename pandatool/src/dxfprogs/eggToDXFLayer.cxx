@@ -69,7 +69,7 @@ operator = (const EggToDXFLayer &copy) {
 //               the layer color.
 ////////////////////////////////////////////////////////////////////
 void EggToDXFLayer::
-add_color(const Colorf &color) {
+add_color(const LColor &color) {
   int autocad_color = get_autocad_color(color);
 
   ColorCounts::iterator cci;
@@ -226,8 +226,8 @@ write_entities(ostream &out) {
 //               matches the indicated EggColor.
 ////////////////////////////////////////////////////////////////////
 int EggToDXFLayer::
-get_autocad_color(const Colorf &color) {
-  typedef pmap<Colorf, int> ColorMap;
+get_autocad_color(const LColor &color) {
+  typedef pmap<LColor, int> ColorMap;
   static ColorMap _map;
 
   ColorMap::iterator cmi;

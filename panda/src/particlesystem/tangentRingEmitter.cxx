@@ -62,13 +62,13 @@ make_copy() {
 // Description : Generates a location for a new particle
 ////////////////////////////////////////////////////////////////////
 void TangentRingEmitter::
-assign_initial_position(LPoint3f& pos) {
-  float theta = NORMALIZED_RAND() * 2.0f * MathNumbers::pi_f;
+assign_initial_position(LPoint3& pos) {
+  PN_stdfloat theta = NORMALIZED_RAND() * 2.0f * MathNumbers::pi_f;
 
   _x = cosf(theta);
   _y = sinf(theta);
 
-  float new_radius = _radius + SPREAD(_radius_spread);
+  PN_stdfloat new_radius = _radius + SPREAD(_radius_spread);
   pos.set(new_radius * _x, new_radius * _y, 0.0f);
 }
 
@@ -78,7 +78,7 @@ assign_initial_position(LPoint3f& pos) {
 // Description : Generates a velocity for a new particle
 ////////////////////////////////////////////////////////////////////
 void TangentRingEmitter::
-assign_initial_velocity(LVector3f& vel) {
+assign_initial_velocity(LVector3& vel) {
   vel.set(-_y, _x, 0.0f);
 }
 

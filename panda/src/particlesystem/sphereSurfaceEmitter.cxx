@@ -60,8 +60,8 @@ make_copy() {
 // Description : Generates a location for a new particle
 ////////////////////////////////////////////////////////////////////
 void SphereSurfaceEmitter::
-assign_initial_position(LPoint3f& pos) {
-  float z, theta, r;
+assign_initial_position(LPoint3& pos) {
+  PN_stdfloat z, theta, r;
 
   z = SPREAD(_radius);
   r = sqrtf((_radius * _radius) - (z * z));
@@ -76,7 +76,7 @@ assign_initial_position(LPoint3f& pos) {
 // Description : Generates a velocity for a new particle
 ////////////////////////////////////////////////////////////////////
 void SphereSurfaceEmitter::
-assign_initial_velocity(LVector3f& vel) {
+assign_initial_velocity(LVector3& vel) {
   vel.set(0,0,0);
 }
 

@@ -84,7 +84,7 @@ get_budget() {
 //  Description: Sets clipping rectangle
 ////////////////////////////////////////////////////////////////////
 INLINE void MeshDrawer2D::
-set_clip(float x, float y, float w, float h) {
+set_clip(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h) {
   _clip_x = x;
   _clip_y = y;
   _clip_w = w;
@@ -98,45 +98,45 @@ set_clip(float x, float y, float w, float h) {
 //               Ignores the cliping rectangle
 ////////////////////////////////////////////////////////////////////
 INLINE void MeshDrawer2D::
-quad_raw(LVector3f v1, LVector4f c1, LVector2f uv1,
-     LVector3f v2, LVector4f c2, LVector2f uv2,
-     LVector3f v3, LVector4f c3, LVector2f uv3,
-     LVector3f v4, LVector4f c4, LVector2f uv4
+quad_raw(LVector3 v1, LVector4 c1, LVector2 uv1,
+     LVector3 v2, LVector4 c2, LVector2 uv2,
+     LVector3 v3, LVector4 c3, LVector2 uv3,
+     LVector3 v4, LVector4 c4, LVector2 uv4
 ) {
 
   if( _clear_index > _end_clear_index) return;
 
-  _vertex->add_data3f(v1);
-  _color->add_data4f(c1);
-  _uv->add_data2f(uv1);
+  _vertex->add_data3(v1);
+  _color->add_data4(c1);
+  _uv->add_data2(uv1);
 
-  _vertex->add_data3f(v2);
-  _color->add_data4f(c2);
-  _uv->add_data2f(uv2);
+  _vertex->add_data3(v2);
+  _color->add_data4(c2);
+  _uv->add_data2(uv2);
 
-  _vertex->add_data3f(v3);
-  _color->add_data4f(c3);
-  _uv->add_data2f(uv3);
+  _vertex->add_data3(v3);
+  _color->add_data4(c3);
+  _uv->add_data2(uv3);
 
-  _vertex->add_data3f(v4);
-  _color->add_data4f(c4);
-  _uv->add_data2f(uv4);
+  _vertex->add_data3(v4);
+  _color->add_data4(c4);
+  _uv->add_data2(uv4);
   
   _clear_index += 1;
 }
 
 
 INLINE void MeshDrawer2D::
-rectangle_raw(float x, float y, float w, float h, 
-     float u, float v, float us, float vs, 
-     LVector4f color
+rectangle_raw(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h, 
+     PN_stdfloat u, PN_stdfloat v, PN_stdfloat us, PN_stdfloat vs, 
+     LVector4 color
 ) {
     
   quad_raw( 
-    LVector3f(x,   0, y),   color, LVector2f(u   , v),
-    LVector3f(x,   0, y+h), color, LVector2f(u   , v+vs),
-    LVector3f(x+w, 0, y),   color, LVector2f(u+us, v),
-    LVector3f(x+w, 0, y+h), color, LVector2f(u+us, v+vs)
+    LVector3(x,   0, y),   color, LVector2(u   , v),
+    LVector3(x,   0, y+h), color, LVector2(u   , v+vs),
+    LVector3(x+w, 0, y),   color, LVector2(u+us, v),
+    LVector3(x+w, 0, y+h), color, LVector2(u+us, v+vs)
     );
 }
 
@@ -146,9 +146,9 @@ rectangle_raw(float x, float y, float w, float h,
 //  Description: Draws a 2d rectangle, that can be cliped
 ////////////////////////////////////////////////////////////////////
 INLINE void MeshDrawer2D::
-rectangle(float x, float y, float w, float h, 
-     float u, float v, float us, float vs, 
-     LVector4f color
+rectangle(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h, 
+     PN_stdfloat u, PN_stdfloat v, PN_stdfloat us, PN_stdfloat vs, 
+     LVector4 color
 ) {
     
   if( w == 0 &&  h == 0 ) return; // no size return 
@@ -159,9 +159,9 @@ rectangle(float x, float y, float w, float h,
     
   // the rectange fits but it might need to be cliped
   
-  float x_uv_ratio = us/w;
-  float y_uv_ratio = vs/h;
-  float dt = 0;
+  PN_stdfloat x_uv_ratio = us/w;
+  PN_stdfloat y_uv_ratio = vs/h;
+  PN_stdfloat dt = 0;
       
   if (x < _clip_x){
     // clip right 

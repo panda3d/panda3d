@@ -15,6 +15,7 @@
 #include "config_physics.h"
 #include "linearCylinderVortexForce.h"
 #include "nearly_zero.h"
+#include "cmath.h"
 
 TypeHandle LinearCylinderVortexForce::_type_handle;
 
@@ -24,8 +25,8 @@ TypeHandle LinearCylinderVortexForce::_type_handle;
 // Description : Simple Constructor
 ////////////////////////////////////////////////////////////////////
 LinearCylinderVortexForce::
-LinearCylinderVortexForce(float radius, float length, float coef,
-                    float a, bool md) :
+LinearCylinderVortexForce(PN_stdfloat radius, PN_stdfloat length, PN_stdfloat coef,
+                    PN_stdfloat a, bool md) :
   LinearForce(a, md),
   _radius(radius), _length(length), _coef(coef) {
 }
@@ -68,26 +69,26 @@ make_copy() {
 // Description : returns the centripetal force vector for the
 //               passed-in object
 ////////////////////////////////////////////////////////////////////
-LVector3f LinearCylinderVortexForce::
+LVector3 LinearCylinderVortexForce::
 get_child_vector(const PhysicsObject *po) {
   // get the force-space transform- this MUST be the relative matrix
   // from the point's local coordinate system to the attached node's
   // local system.
-  //  LMatrix4f force_space_xform = LMatrix4f::ident_mat();
-  LVector3f force_vec(0.0f, 0.0f, 0.0f);
+  //  LMatrix4 force_space_xform = LMatrix4::ident_mat();
+  LVector3 force_vec(0.0f, 0.0f, 0.0f);
 
   // project the point into force_space
-  LPoint3f point = po->get_position();
+  LPoint3 point = po->get_position();
 
   // clip along length
   if (point[2] < 0.0f || point[2] > _length)
     return force_vec;
 
   // clip to radius
-  float x_squared = point[0] * point[0];
-  float y_squared = point[1] * point[1];
-  float dist_squared = x_squared + y_squared;
-  float radius_squared = _radius * _radius;
+  PN_stdfloat x_squared = point[0] * point[0];
+  PN_stdfloat y_squared = point[1] * point[1];
+  PN_stdfloat dist_squared = x_squared + y_squared;
+  PN_stdfloat radius_squared = _radius * _radius;
 
   // squared space increases monotonically wrt linear space,
   // so there's no need to sqrt to check inside/outside this disc.
@@ -97,21 +98,21 @@ get_child_vector(const PhysicsObject *po) {
   if IS_NEARLY_ZERO(dist_squared)
     return force_vec;
 
-  float r = sqrtf(dist_squared);
+  PN_stdfloat r = csqrt(dist_squared);
 
   if IS_NEARLY_ZERO(r)
     return force_vec;
 
-  LVector3f tangential = point;
+  LVector3 tangential = point;
   tangential[2] = 0.0f;
   tangential.normalize();
-  tangential = tangential.cross(LVector3f(0,0,1));
+  tangential = tangential.cross(LVector3(0,0,1));
 
-  LVector3f centripetal = -point;
+  LVector3 centripetal = -point;
   centripetal[2] = 0.0f;
   centripetal.normalize();
 
-  LVector3f combined = tangential + centripetal;
+  LVector3 combined = tangential + centripetal;
   combined.normalize();
 
   //  a = v^2 / r

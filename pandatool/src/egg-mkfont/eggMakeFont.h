@@ -63,7 +63,7 @@ private:
 
 
 private:
-  Colorf _fg, _bg, _interior;
+  LColor _fg, _bg, _interior;
   bool _got_interior;
   RangeDescription _range;
   vector_string _extra_filenames;

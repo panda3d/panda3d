@@ -35,9 +35,9 @@ get_num_points() const {
 //       Access: Public
 //  Description: Returns the nth point of this group.
 ////////////////////////////////////////////////////////////////////
-const LPoint3f &LwoPoints::
+const LPoint3 &LwoPoints::
 get_point(int n) const {
-  nassertr(n >= 0 && n < (int)_points.size(), LPoint3f::zero());
+  nassertr(n >= 0 && n < (int)_points.size(), LPoint3::zero());
   return _points[n];
 }
 
@@ -56,7 +56,7 @@ read_iff(IffInputFile *in, size_t stop_at) {
   LwoInputFile *lin = DCAST(LwoInputFile, in);
 
   while (lin->get_bytes_read() < stop_at && !lin->is_eof()) {
-    LPoint3f point = lin->get_vec3();
+    LPoint3 point = lin->get_vec3();
     _points.push_back(point);
   }
 

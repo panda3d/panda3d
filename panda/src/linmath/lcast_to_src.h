@@ -12,6 +12,42 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+INLINE_LINMATH const FLOATNAME(LVecBase2) &
+lcast_to(FLOATTYPE *, const FLOATNAME(LVecBase2) &source);
+
+INLINE_LINMATH const FLOATNAME(LVecBase3) &
+lcast_to(FLOATTYPE *, const FLOATNAME(LVecBase3) &source);
+
+INLINE_LINMATH const FLOATNAME(LVecBase4) &
+lcast_to(FLOATTYPE *, const FLOATNAME(LVecBase4) &source);
+
+INLINE_LINMATH const FLOATNAME(LVector2) &
+lcast_to(FLOATTYPE *, const FLOATNAME(LVector2) &source);
+
+INLINE_LINMATH const FLOATNAME(LVector3) &
+lcast_to(FLOATTYPE *, const FLOATNAME(LVector3) &source);
+
+INLINE_LINMATH const FLOATNAME(LVector4) &
+lcast_to(FLOATTYPE *, const FLOATNAME(LVector4) &source);
+
+INLINE_LINMATH const FLOATNAME(LPoint2) &
+lcast_to(FLOATTYPE *, const FLOATNAME(LPoint2) &source);
+
+INLINE_LINMATH const FLOATNAME(LPoint3) &
+lcast_to(FLOATTYPE *, const FLOATNAME(LPoint3) &source);
+
+INLINE_LINMATH const FLOATNAME(LPoint4) &
+lcast_to(FLOATTYPE *, const FLOATNAME(LPoint4) &source);
+
+INLINE_LINMATH const FLOATNAME(LQuaternion) &
+lcast_to(FLOATTYPE *, const FLOATNAME(LQuaternion) &c);
+
+INLINE_LINMATH const FLOATNAME(LMatrix3) &
+lcast_to(FLOATTYPE *, const FLOATNAME(LMatrix3) &source);
+
+INLINE_LINMATH const FLOATNAME(LMatrix4) &
+lcast_to(FLOATTYPE *, const FLOATNAME(LMatrix4) &source);
+
 INLINE_LINMATH FLOATNAME2(LVecBase2)
 lcast_to(FLOATTYPE2 *, const FLOATNAME(LVecBase2) &source);
 

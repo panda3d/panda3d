@@ -44,7 +44,7 @@ WinStatsLabel(WinStatsMonitor *monitor, WinStatsGraph *graph,
     _text = _monitor->get_client_data()->get_collector_name(_collector_index);
   }
 
-  RGBColorf rgb = _monitor->get_collector_color(_collector_index);
+  LRGBColor rgb = _monitor->get_collector_color(_collector_index);
   int r = (int)(rgb[0] * 255.0f);
   int g = (int)(rgb[1] * 255.0f);
   int b = (int)(rgb[2] * 255.0f);
@@ -52,7 +52,7 @@ WinStatsLabel(WinStatsMonitor *monitor, WinStatsGraph *graph,
   _bg_brush = CreateSolidBrush(RGB(r, g, b));
 
   // Should our foreground be black or white?
-  float bright =
+  PN_stdfloat bright =
     rgb[0] * 0.299 +
     rgb[1] * 0.587 +
     rgb[2] * 0.114;

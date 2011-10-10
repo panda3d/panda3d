@@ -23,7 +23,7 @@ class CollisionEntrySorter {
 public:
   CollisionEntrySorter(CollisionEntry *entry) {
     _entry = entry;
-    LVector3f vec =
+    LVector3 vec =
       entry->get_surface_point(entry->get_from_node_path()) -
       entry->get_from()->get_collision_origin();
     _dist2 = vec.length_squared();
@@ -33,7 +33,7 @@ public:
   }
 
   CollisionEntry *_entry;
-  float _dist2;
+  PN_stdfloat _dist2;
 };
 
 ////////////////////////////////////////////////////////////////////

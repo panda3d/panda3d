@@ -28,7 +28,7 @@ set_falloff_type(FalloffType ft) {
 // Description : set the radius
 ////////////////////////////////////////////////////////////////////
 INLINE void LinearDistanceForce::
-set_radius(float r) {
+set_radius(PN_stdfloat r) {
   _radius = r;
 }
 
@@ -38,7 +38,7 @@ set_radius(float r) {
 // Description : set the force center
 ////////////////////////////////////////////////////////////////////
 INLINE void LinearDistanceForce::
-set_force_center(const LPoint3f& p) {
+set_force_center(const LPoint3& p) {
   _force_center = p;
 }
 
@@ -57,7 +57,7 @@ get_falloff_type() const {
 //      Access : public
 // Description : radius query
 ////////////////////////////////////////////////////////////////////
-INLINE float LinearDistanceForce::
+INLINE PN_stdfloat LinearDistanceForce::
 get_radius() const {
   return _radius;
 }
@@ -67,7 +67,7 @@ get_radius() const {
 //      Access : public
 // Description : force_center query
 ////////////////////////////////////////////////////////////////////
-INLINE LPoint3f LinearDistanceForce::
+INLINE LPoint3 LinearDistanceForce::
 get_force_center() const {
   return _force_center;
 }
@@ -77,9 +77,9 @@ get_force_center() const {
 //      Access : private
 // Description : calculate the term based on falloff
 ////////////////////////////////////////////////////////////////////
-INLINE float LinearDistanceForce::
+INLINE PN_stdfloat LinearDistanceForce::
 get_scalar_term() const {
-  float r = _radius;
+  PN_stdfloat r = _radius;
   if (_falloff == FT_ONE_OVER_R_SQUARED)
     r = r * r;
   else if (_falloff == FT_ONE_OVER_R_CUBED)

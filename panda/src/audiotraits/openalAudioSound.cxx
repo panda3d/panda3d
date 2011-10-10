@@ -130,7 +130,7 @@ void OpenALAudioSound::
 play() {
   if (_manager == 0) return;
 
-  float px,py,pz,vx,vy,vz;
+  PN_stdfloat px,py,pz,vx,vy,vz;
   
   if (!_active) {
     _paused = true;
@@ -535,7 +535,7 @@ push_fresh_buffers() {
 //               start from the specified offset.
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
-set_time(float time) {
+set_time(PN_stdfloat time) {
   _start_time = time;
 }
 
@@ -544,7 +544,7 @@ set_time(float time) {
 //       Access: public
 //  Description: Gets the play position within the sound
 ////////////////////////////////////////////////////////////////////
-float OpenALAudioSound::
+PN_stdfloat OpenALAudioSound::
 get_time() const {
   if (_manager == 0) {
     return 0.0;
@@ -570,13 +570,13 @@ cache_time(double rtc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioSound::set_volume(float vol)
+//     Function: OpenALAudioSound::set_volume(PN_stdfloat vol)
 //       Access: public
 //  Description: 0.0 to 1.0 scale of volume converted to Fmod's
 //               internal 0.0 to 255.0 scale.
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
-set_volume(float volume) {
+set_volume(PN_stdfloat volume) {
   _volume=volume;
 
   if (_source) {
@@ -593,18 +593,18 @@ set_volume(float volume) {
 //       Access: public
 //  Description: Gets the current volume of a sound.  1 is Max. O is Min.
 ////////////////////////////////////////////////////////////////////
-float OpenALAudioSound::
+PN_stdfloat OpenALAudioSound::
 get_volume() const {
   return _volume;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioSound::set_balance(float bal)
+//     Function: OpenALAudioSound::set_balance(PN_stdfloat bal)
 //       Access: public
 //  Description: -1.0 to 1.0 scale
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
-set_balance(float balance_right) {
+set_balance(PN_stdfloat balance_right) {
   audio_debug("OpenALAudioSound::set_balance() not implemented");
 }
 
@@ -615,21 +615,21 @@ set_balance(float balance_right) {
 //        -1 should be all the way left.
 //        1 is all the way to the right.
 ////////////////////////////////////////////////////////////////////
-float OpenALAudioSound::
+PN_stdfloat OpenALAudioSound::
 get_balance() const {
   audio_debug("OpenALAudioSound::get_balance() not implemented");
   return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: OpenALAudioSound::set_play_rate(float rate)
+//     Function: OpenALAudioSound::set_play_rate(PN_stdfloat rate)
 //       Access: public
 //  Description: Sets the speed at which a sound plays back.
 //        The rate is a multiple of the sound, normal playback speed.
 //        IE 2 would play back 2 times fast, 3 would play 3 times, and so on.
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
-set_play_rate(float play_rate) {
+set_play_rate(PN_stdfloat play_rate) {
   _play_rate = play_rate;
   if (_source) {
     alSourcef(_source, AL_PITCH, play_rate);
@@ -641,7 +641,7 @@ set_play_rate(float play_rate) {
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-float OpenALAudioSound::
+PN_stdfloat OpenALAudioSound::
 get_play_rate() const {
   return _play_rate;
 }
@@ -651,7 +651,7 @@ get_play_rate() const {
 //       Access: public
 //  Description: Get length
 ////////////////////////////////////////////////////////////////////
-float OpenALAudioSound::
+PN_stdfloat OpenALAudioSound::
 length() const {
   return _length;
 }
@@ -673,7 +673,7 @@ length() const {
 //               coordinates from Panda to OpenAL and back.
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
-set_3d_attributes(float px, float py, float pz, float vx, float vy, float vz) {
+set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz) {
   _location[0] = px;
   _location[1] = pz;
   _location[2] = -py; 
@@ -700,7 +700,7 @@ set_3d_attributes(float px, float py, float pz, float vx, float vy, float vz) {
 //         Currently unimplemented. Get the attributes of the attached object.
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
-get_3d_attributes(float *px, float *py, float *pz, float *vx, float *vy, float *vz) {
+get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz) {
   *px = _location[0];
   *py = -_location[2];
   *pz = _location[1];
@@ -717,7 +717,7 @@ get_3d_attributes(float *px, float *py, float *pz, float *vx, float *vy, float *
 //               affects the rate it falls off.
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
-set_3d_min_distance(float dist) {
+set_3d_min_distance(PN_stdfloat dist) {
   _min_dist = dist;
 
   if (_source) {
@@ -734,7 +734,7 @@ set_3d_min_distance(float dist) {
 //       Access: public
 //  Description: Get the distance that this sound begins to fall off
 ////////////////////////////////////////////////////////////////////
-float OpenALAudioSound::
+PN_stdfloat OpenALAudioSound::
 get_3d_min_distance() const {
   return _min_dist;
 }
@@ -745,7 +745,7 @@ get_3d_min_distance() const {
 //  Description: Set the distance that this sound stops falling off
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
-set_3d_max_distance(float dist) {
+set_3d_max_distance(PN_stdfloat dist) {
   _max_dist = dist;
 
   if (_source) {
@@ -762,7 +762,7 @@ set_3d_max_distance(float dist) {
 //       Access: public
 //  Description: Get the distance that this sound stops falling off
 ////////////////////////////////////////////////////////////////////
-float OpenALAudioSound::
+PN_stdfloat OpenALAudioSound::
 get_3d_max_distance() const {
   return _max_dist;
 }
@@ -774,7 +774,7 @@ get_3d_max_distance() const {
 //               Defaults to 1.0
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
-set_3d_drop_off_factor(float factor) {
+set_3d_drop_off_factor(PN_stdfloat factor) {
   _drop_off_factor = factor;
 
   if (_source) {
@@ -792,7 +792,7 @@ set_3d_drop_off_factor(float factor) {
 //  Description: Control the effect distance has on audability.
 //               Defaults to 1.0
 ////////////////////////////////////////////////////////////////////
-float OpenALAudioSound::
+PN_stdfloat OpenALAudioSound::
 get_3d_drop_off_factor() const {
   return _drop_off_factor;
 }

@@ -66,7 +66,7 @@ Light(const Light &copy) :
 //       Access: Published
 //  Description: Returns the basic color of the light.
 ////////////////////////////////////////////////////////////////////
-INLINE const Colorf &Light::
+INLINE const LColor &Light::
 get_color() const {
   CDReader cdata(_cycler);
   return cdata->_color;
@@ -78,7 +78,7 @@ get_color() const {
 //  Description: Sets the basic color of the light.
 ////////////////////////////////////////////////////////////////////
 INLINE void Light::
-set_color(const Colorf &color) {
+set_color(const LColor &color) {
   CDWriter cdata(_cycler);
   cdata->_color = color;
   mark_viz_stale();

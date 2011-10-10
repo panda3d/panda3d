@@ -47,8 +47,8 @@ get_scores(int subdiv, int across, double ratio,
   for (a = 0; a <= across; a++) {
     double v = (double)a / (double)across;
 
-    LVecBase3f p1, p2, p3, pnext;
-    LVecBase3f v1, v2;
+    LVecBase3 p1, p2, p3, pnext;
+    LVecBase3 v1, v2;
     if (s) {
       surf->eval_point(0.0, v, p3);
     } else {

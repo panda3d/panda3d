@@ -406,7 +406,7 @@ void DAEToEggConverter::process_mesh(PT(EggGroup) parent, const FCDGeometryMesh*
     // Loop through the indices and add the vertices.
     for (size_t ix = 0; ix < pinput->GetIndexCount(); ++ix) {
       PT_EggVertex vertex = mesh_pool->make_new_vertex();
-      const float* data = &vsource->GetData()[indices[ix]*3];
+      const PN_stdfloat* data = &vsource->GetData()[indices[ix]*3];
       vertex->set_pos(LPoint3d(data[0], data[1], data[2]));
       // Process the normal
       if (nsource != NULL && ninput != NULL) {
@@ -429,10 +429,10 @@ void DAEToEggConverter::process_mesh(PT(EggGroup) parent, const FCDGeometryMesh*
         assert(csource->GetStride() == 3 || csource->GetStride() == 4);
         if (csource->GetStride() == 3) {
           data = &csource->GetData()[cindices[ix]*3];
-          vertex->set_color(Colorf(data[0], data[1], data[2], 1.0f));
+          vertex->set_color(LColor(data[0], data[1], data[2], 1.0f));
         } else {
           data = &csource->GetData()[cindices[ix]*4];
-          vertex->set_color(Colorf(data[0], data[1], data[2], data[3]));
+          vertex->set_color(LColor(data[0], data[1], data[2], data[3]));
         }
       }
       // Possibly add a UV object
@@ -529,7 +529,7 @@ void DAEToEggConverter::process_spline(PT(EggGroup) parent, const FCDSpline* spl
   //TODO: what value is this?
   nurbs_curve->setup(0, ((const FCDNURBSSpline*) spline)->GetKnotCount());
   for (size_t kn = 0; kn < ((const FCDNURBSSpline*) spline)->GetKnotCount(); ++kn) {
-    const float* knot = ((const FCDNURBSSpline*) spline)->GetKnot(kn);
+    const PN_stdfloat* knot = ((const FCDNURBSSpline*) spline)->GetKnot(kn);
     assert(knot != NULL);
     nurbs_curve->set_knot(kn, *knot);
   }
@@ -573,18 +573,18 @@ void DAEToEggConverter::process_controller(PT(EggGroup) parent, const FCDControl
   }
   if (controller->IsSkin()) {
     // Load in the vertex influences first
-    pmap<int32, pvector<pair<PT_EggVertex, float> > > influences;
+    pmap<int32, pvector<pair<PT_EggVertex, PN_stdfloat> > > influences;
     if (vertex_pool) {
       for (size_t in = 0; in < controller->GetSkinController()->GetInfluenceCount(); ++in) {
         assert(vertex_pool->has_vertex(in));
         for (size_t pa = 0; pa < controller->GetSkinController()->GetVertexInfluence(in)->GetPairCount(); ++pa) {
           const FCDJointWeightPair* jwpair = controller->GetSkinController()->GetVertexInfluence(in)->GetPair(pa);
-          influences[jwpair->jointIndex].push_back(pair<PT_EggVertex, float> (vertex_pool->get_vertex(in), jwpair->weight));
+          influences[jwpair->jointIndex].push_back(pair<PT_EggVertex, PN_stdfloat> (vertex_pool->get_vertex(in), jwpair->weight));
         }
       }
     }
     // Loop through the joints in the vertex influences
-    for (pmap<int32, pvector<pair<PT_EggVertex, float> > >::iterator it = influences.begin(); it != influences.end(); ++it) {
+    for (pmap<int32, pvector<pair<PT_EggVertex, PN_stdfloat> > >::iterator it = influences.begin(); it != influences.end(); ++it) {
       if (it->first == -1) {
         daeegg_cat.warning() << "Ignoring vertex influence with negative joint index\n";
         //FIXME: Why are there joints with index -1
@@ -593,7 +593,7 @@ void DAEToEggConverter::process_controller(PT(EggGroup) parent, const FCDControl
         //TODO: what if the joints have just not been defined yet?
         if (_joints.count(joint_id) > 0) {
           if (_joints[joint_id]) {
-            for (pvector<pair<PT_EggVertex, float> >::iterator vi = it->second.begin(); vi != it->second.end(); ++vi) {
+            for (pvector<pair<PT_EggVertex, PN_stdfloat> >::iterator vi = it->second.begin(); vi != it->second.end(); ++vi) {
               _joints[joint_id]->ref_vertex(vi->first, vi->second);
             }
           } else {

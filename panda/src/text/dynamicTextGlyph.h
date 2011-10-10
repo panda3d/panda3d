@@ -36,7 +36,7 @@ public:
   INLINE DynamicTextGlyph(int character, DynamicTextPage *page,
                           int x, int y, int x_size, int y_size, 
                           int margin);
-  INLINE DynamicTextGlyph(int character, float advance);
+  INLINE DynamicTextGlyph(int character, PN_stdfloat advance);
 private:
   INLINE DynamicTextGlyph(const DynamicTextGlyph &copy);
   INLINE void operator = (const DynamicTextGlyph &copy);
@@ -47,9 +47,9 @@ public:
   INLINE bool intersects(int x, int y, int x_size, int y_size) const;
   unsigned char *get_row(int y);
   void erase(DynamicTextFont *font);
-  void make_geom(int top, int left, float advance, float poly_margin,
-                 float tex_x_size, float tex_y_size,
-                 float font_pixels_per_unit, float tex_pixels_per_unit);
+  void make_geom(int top, int left, PN_stdfloat advance, PN_stdfloat poly_margin,
+                 PN_stdfloat tex_x_size, PN_stdfloat tex_y_size,
+                 PN_stdfloat font_pixels_per_unit, PN_stdfloat tex_pixels_per_unit);
   void set_geom(GeomVertexData *vdata, GeomPrimitive *prim, 
                 const RenderState *state);
   virtual bool is_whitespace() const;

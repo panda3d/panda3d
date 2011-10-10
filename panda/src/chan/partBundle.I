@@ -154,7 +154,7 @@ get_frame_blend_flag() const {
 //               applied at the root of the animated hierarchy.
 ////////////////////////////////////////////////////////////////////
 INLINE void PartBundle::
-set_root_xform(const LMatrix4f &root_xform) {
+set_root_xform(const LMatrix4 &root_xform) {
   nassertv(Thread::get_current_pipeline_stage() == 0);
   CDWriter cdata(_cycler);
   cdata->_root_xform = root_xform;
@@ -168,7 +168,7 @@ set_root_xform(const LMatrix4f &root_xform) {
 //               animated hierarchy.
 ////////////////////////////////////////////////////////////////////
 INLINE void PartBundle::
-xform(const LMatrix4f &mat) {
+xform(const LMatrix4 &mat) {
   nassertv(Thread::get_current_pipeline_stage() == 0);
   CDWriter cdata(_cycler);
   cdata->_root_xform = cdata->_root_xform * mat;
@@ -182,7 +182,7 @@ xform(const LMatrix4f &mat) {
 //  Description: Returns the transform matrix which is implicitly
 //               applied at the root of the animated hierarchy.
 ////////////////////////////////////////////////////////////////////
-INLINE const LMatrix4f &PartBundle::
+INLINE const LMatrix4 &PartBundle::
 get_root_xform() const {
   CDReader cdata(_cycler);
   return cdata->_root_xform;
@@ -229,7 +229,7 @@ get_node(int n) const {
 //               animation.
 ////////////////////////////////////////////////////////////////////
 void PartBundle::
-set_control_effect(AnimControl *control, float effect) {
+set_control_effect(AnimControl *control, PN_stdfloat effect) {
   nassertv(Thread::get_current_pipeline_stage() == 0);
 
   CDWriter cdata(_cycler);
@@ -243,7 +243,7 @@ set_control_effect(AnimControl *control, float effect) {
 //               by the indicated AnimControl and its associated
 //               animation.  See set_control_effect().
 ////////////////////////////////////////////////////////////////////
-INLINE float PartBundle::
+INLINE PN_stdfloat PartBundle::
 get_control_effect(AnimControl *control) const {
   CDReader cdata(_cycler);
   return do_get_control_effect(control, cdata);

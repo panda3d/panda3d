@@ -42,7 +42,7 @@ EggMesherStrip(const EggMesherStrip &copy) :
 //               coplanarity().
 ////////////////////////////////////////////////////////////////////
 INLINE bool EggMesherStrip::
-is_coplanar_with(const EggMesherStrip &other, float threshold) const {
+is_coplanar_with(const EggMesherStrip &other, PN_stdfloat threshold) const {
   return (coplanarity(other) <= threshold);
 }
 
@@ -55,7 +55,7 @@ is_coplanar_with(const EggMesherStrip &other, float threshold) const {
 //               at right angles; 2.0 is exactly backfacing.  If
 //               either strip is not itself planar, 3.0 is returned.
 ////////////////////////////////////////////////////////////////////
-INLINE float EggMesherStrip::
+INLINE PN_stdfloat EggMesherStrip::
 coplanarity(const EggMesherStrip &other) const {
   if (_planar && other._planar) {
     return 1.0 - dot(_plane_normal, other._plane_normal);

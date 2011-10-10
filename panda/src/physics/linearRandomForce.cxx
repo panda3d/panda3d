@@ -22,7 +22,7 @@ TypeHandle LinearRandomForce::_type_handle;
 // Description : vector constructor
 ////////////////////////////////////////////////////////////////////
 LinearRandomForce::
-LinearRandomForce(float a, bool mass) :
+LinearRandomForce(PN_stdfloat a, bool mass) :
   LinearForce(a, mass) {
 }
 
@@ -50,9 +50,9 @@ LinearRandomForce::
 //       Access : Protected
 //  Description : Returns a float in [0, 1]
 ////////////////////////////////////////////////////////////////////
-float LinearRandomForce::
+PN_stdfloat LinearRandomForce::
 bounded_rand() {
-  return ((float)rand() / (float)RAND_MAX);
+  return ((PN_stdfloat)rand() / (PN_stdfloat)RAND_MAX);
 }
 
 ////////////////////////////////////////////////////////////////////

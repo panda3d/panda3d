@@ -293,7 +293,7 @@ is_dirty() {
 //               The default value is 100.
 ////////////////////////////////////////////////////////////////////
 INLINE void GeoMipTerrain::
-set_factor(float factor) {
+set_factor(PN_stdfloat factor) {
   grutil_cat.debug() << "Using deprecated method set_factor, use set_near and set_far instead!\n";
   _use_near_far = false;
   _factor = factor;
@@ -401,7 +401,7 @@ get_block_node_path(unsigned short mx, unsigned short my) {
 //               the block index of the block which you can use
 //               in GeoMipTerrain::get_block_node_path.
 ////////////////////////////////////////////////////////////////////
-INLINE LVecBase2f GeoMipTerrain::
+INLINE LVecBase2 GeoMipTerrain::
 get_block_from_pos(double x, double y) {
   if (x < 0) x = 0;
   if (y < 0) y = 0;
@@ -409,7 +409,7 @@ get_block_from_pos(double x, double y) {
   if (y > _ysize - 1) y = _ysize - 1;
   x = floor(x / _block_size);
   y = floor(y / _block_size);
-  return LVecBase2f(x, y);
+  return LVecBase2(x, y);
 }
 ////////////////////////////////////////////////////////////////////
 //     Function: GeoMipTerrain::lod_decide
@@ -418,11 +418,11 @@ get_block_from_pos(double x, double y) {
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned short GeoMipTerrain::
 lod_decide(unsigned short mx, unsigned short my) {
-  float cx = mx;
-  float cy = my;
+  PN_stdfloat cx = mx;
+  PN_stdfloat cy = my;
   cx = (cx * _block_size + _block_size / 2) * _root.get_sx();
   cy = (cy * _block_size + _block_size / 2) * _root.get_sy();
-  float d;
+  PN_stdfloat d;
   if (_use_near_far) {
     d = sqrt(pow(_focal_point.get_x(_root) - cx, 2) +
              pow(_focal_point.get_y(_root) - cy, 2));
@@ -604,7 +604,7 @@ get_pixel_value(unsigned short mx, unsigned short my, int x, int y) {
 //               accurate normals, please divide it by the
 //               terrain scale and normalize it again!
 ////////////////////////////////////////////////////////////////////
-INLINE LVector3f GeoMipTerrain::
+INLINE LVector3 GeoMipTerrain::
 get_normal(unsigned short mx, unsigned short my, int x, int y) {
   nassertr_always(mx < (_xsize - 1) / _block_size, false);
   nassertr_always(my < (_ysize - 1) / _block_size, false);

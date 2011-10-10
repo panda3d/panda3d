@@ -46,7 +46,7 @@ get_height_map() const {
 //               Increasing this number spreads the heightmap out over
 //               a greater area.
 ////////////////////////////////////////////////////////////////////
-INLINE float STBasicTerrain::
+INLINE PN_stdfloat STBasicTerrain::
 get_size() const {
   return _size;
 }
@@ -57,8 +57,8 @@ get_size() const {
 //  Description: Convenience function to calculate the linear
 //               interpolation from A to B.
 ////////////////////////////////////////////////////////////////////
-INLINE float STBasicTerrain::
-interpolate(float a, float b, float t) {
+INLINE PN_stdfloat STBasicTerrain::
+interpolate(PN_stdfloat a, PN_stdfloat b, PN_stdfloat t) {
   return (a + (b - a) * t);
 }
 
@@ -95,7 +95,7 @@ reset(int width, int height) {
 ////////////////////////////////////////////////////////////////////
 template<class ValueType>
 ValueType STBasicTerrain::InterpolationData<ValueType>::
-get_nearest_neighbor(float u, float v) const {
+get_nearest_neighbor(PN_stdfloat u, PN_stdfloat v) const {
   int u = int(u * _width + 0.5f);
   int v = int(v * _height + 0.5f);
   int index = u + v * _width;
@@ -111,22 +111,22 @@ get_nearest_neighbor(float u, float v) const {
 ////////////////////////////////////////////////////////////////////
 template<class ValueType>
 ValueType STBasicTerrain::InterpolationData<ValueType>::
-calc_bilinear_interpolation(float u, float v) const {
+calc_bilinear_interpolation(PN_stdfloat u, PN_stdfloat v) const {
   u -= cfloor(u);
   v -= cfloor(v);
   
-  u *= (float)_width;
-  v *= (float)_height;
+  u *= (PN_stdfloat)_width;
+  v *= (PN_stdfloat)_height;
   
   const int lower_x = int(u);
   const int lower_y = int(v);
   const int higher_x = (lower_x + 1) % _width;
   const int higher_y = (lower_y + 1) % _height;
   
-  const float ratio_x = u - float(lower_x);
-  const float ratio_y = v - float(lower_y);
-  const float inv_ratio_x = 1.0f - ratio_x;
-  const float inv_ratio_y = 1.0f - ratio_y;
+  const PN_stdfloat ratio_x = u - PN_stdfloat(lower_x);
+  const PN_stdfloat ratio_y = v - PN_stdfloat(lower_y);
+  const PN_stdfloat inv_ratio_x = 1.0f - ratio_x;
+  const PN_stdfloat inv_ratio_y = 1.0f - ratio_y;
   
   nassertr(lower_x + lower_y * _width >= 0 && higher_x + higher_y * _width < (int)_data.size(), 0);
 
@@ -147,14 +147,14 @@ calc_bilinear_interpolation(float u, float v) const {
 ////////////////////////////////////////////////////////////////////
 template<class ValueType>
 ValueType STBasicTerrain::InterpolationData<ValueType>::
-calc_smooth(float u, float v, float radius) const {
+calc_smooth(PN_stdfloat u, PN_stdfloat v, PN_stdfloat radius) const {
   ValueType retval = 0;
 
   if (radius <= 0.0f) {
     retval = calc_bilinear_interpolation(u, v);
 
   } else {
-    const float test_points[9][2] = {
+    const PN_stdfloat test_points[9][2] = {
       {  0.0f * radius,   0.0f * radius },
       {  0.8f * radius,   0.0f * radius },
       { -0.8f * radius,   0.0f * radius },
@@ -166,10 +166,10 @@ calc_smooth(float u, float v, float radius) const {
       { -0.25f * radius, -0.25f * radius }
     };
 
-    float total_weight = 0.0f;
+    PN_stdfloat total_weight = 0.0f;
     for (int i = 0; i < 9; ++i) {
-      const float *test_point = test_points[i];
-      float weight = (1.0f - sqrt((test_point[0] * test_point[0]) + (test_point[1] * test_point[1])));
+      const PN_stdfloat *test_point = test_points[i];
+      PN_stdfloat weight = (1.0f - sqrt((test_point[0] * test_point[0]) + (test_point[1] * test_point[1])));
       total_weight += weight;
       retval += weight * calc_bilinear_interpolation(u + test_point[0], v + test_point[1]);
     }   

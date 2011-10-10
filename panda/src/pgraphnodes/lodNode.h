@@ -40,7 +40,7 @@ public:
   virtual PandaNode *make_copy() const;
   virtual bool safe_to_combine() const;
   virtual bool safe_to_combine_children() const;
-  virtual void xform(const LMatrix4f &mat);
+  virtual void xform(const LMatrix4 &mat);
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
 
   virtual void output(ostream &out) const;
@@ -53,14 +53,14 @@ PUBLISHED:
   // and switches "out" at the close distance.  Thus, "in" should be
   // larger than "out".
 
-  INLINE void add_switch(float in, float out);
-  INLINE bool set_switch(int index, float in, float out);
+  INLINE void add_switch(PN_stdfloat in, PN_stdfloat out);
+  INLINE bool set_switch(int index, PN_stdfloat in, PN_stdfloat out);
   INLINE void clear_switches();
 
   INLINE int get_num_switches() const;
-  INLINE float get_in(int index) const;
+  INLINE PN_stdfloat get_in(int index) const;
   MAKE_SEQ(get_ins, get_num_switches, get_in);
-  INLINE float get_out(int index) const;
+  INLINE PN_stdfloat get_out(int index) const;
   MAKE_SEQ(get_outs, get_num_switches, get_out);
 
   INLINE int get_lowest_switch() const;
@@ -71,15 +71,15 @@ PUBLISHED:
 
   //for performance tuning, increasing this value should improve performance
   //at the cost of model quality
-  INLINE void set_lod_scale(float value);
-  INLINE float get_lod_scale() const;
+  INLINE void set_lod_scale(PN_stdfloat value);
+  INLINE PN_stdfloat get_lod_scale() const;
 
 
-  INLINE void set_center(const LPoint3f &center);
-  INLINE const LPoint3f &get_center() const;
+  INLINE void set_center(const LPoint3 &center);
+  INLINE const LPoint3 &get_center() const;
 
   void show_switch(int index);
-  void show_switch(int index, const Colorf &color);
+  void show_switch(int index, const LColor &color);
   void hide_switch(int index);
   void show_all_switches();
   void hide_all_switches();
@@ -102,29 +102,29 @@ protected:
 
 private:
   class CData;
-  void do_show_switch(CData *cdata, int index, const Colorf &color);
+  void do_show_switch(CData *cdata, int index, const LColor &color);
   void do_hide_switch(CData *cdata, int index);
   bool do_verify_child_bounds(const CData *cdata, int index,
-                              float &suggested_radius) const;
+                              PN_stdfloat &suggested_radius) const;
   void do_auto_verify_lods(CullTraverser *trav, CullTraverserData &data);
 
-  static const Colorf &get_default_show_color(int index);
+  static const LColor &get_default_show_color(int index);
 
 protected:
   class Switch {
   public:
-    INLINE Switch(float in, float out);
-    INLINE float get_in() const;
-    INLINE float get_out() const;
+    INLINE Switch(PN_stdfloat in, PN_stdfloat out);
+    INLINE PN_stdfloat get_in() const;
+    INLINE PN_stdfloat get_out() const;
 
-    INLINE void set_range(float in, float out);
-    INLINE bool in_range(float dist) const;
-    INLINE bool in_range_2(float dist2) const;
+    INLINE void set_range(PN_stdfloat in, PN_stdfloat out);
+    INLINE bool in_range(PN_stdfloat dist) const;
+    INLINE bool in_range_2(PN_stdfloat dist2) const;
 
-    INLINE void rescale(float factor);
+    INLINE void rescale(PN_stdfloat factor);
 
     INLINE bool is_shown() const;
-    INLINE void show(const Colorf &color);
+    INLINE void show(const LColor &color);
     INLINE void hide();
 
     INLINE PandaNode *get_ring_viz() const;
@@ -142,10 +142,10 @@ protected:
     void compute_viz_model_state();
 
   private:
-    float _in;
-    float _out;
+    PN_stdfloat _in;
+    PN_stdfloat _out;
     bool _shown;
-    Colorf _show_color;
+    LColor _show_color;
     PT(PandaNode) _ring_viz;
     PT(PandaNode) _spindle_viz;
     CPT(RenderState) _viz_model_state;
@@ -171,7 +171,7 @@ private:
       return LODNode::get_class_type();
     }
 
-    LPoint3f _center;
+    LPoint3 _center;
     SwitchVector _switch_vector;
     size_t _lowest, _highest;
     UpdateSeq _bounds_seq;
@@ -179,7 +179,7 @@ private:
     bool _got_force_switch;
     int _force_switch;
     int _num_shown;
-    float _lod_scale;
+    PN_stdfloat _lod_scale;
   };
 
   PipelineCycler<CData> _cycler;

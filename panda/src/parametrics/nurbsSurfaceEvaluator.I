@@ -103,7 +103,7 @@ get_num_v_vertices() const {
 //               homogeneous weight.
 ////////////////////////////////////////////////////////////////////
 INLINE void NurbsSurfaceEvaluator::
-set_vertex(int ui, int vi, const LVecBase4f &vertex) {
+set_vertex(int ui, int vi, const LVecBase4 &vertex) {
   nassertv(ui >= 0 && ui < _num_u_vertices &&
            vi >= 0 && vi < _num_v_vertices);
   vert(ui, vi).set_vertex(vertex);
@@ -118,10 +118,10 @@ set_vertex(int ui, int vi, const LVecBase4f &vertex) {
 //               scaled up by the weight factor.
 ////////////////////////////////////////////////////////////////////
 INLINE void NurbsSurfaceEvaluator::
-set_vertex(int ui, int vi, const LVecBase3f &vertex, float weight) {
+set_vertex(int ui, int vi, const LVecBase3 &vertex, PN_stdfloat weight) {
   nassertv(ui >= 0 && ui < _num_u_vertices &&
            vi >= 0 && vi < _num_v_vertices);
-  vert(ui, vi).set_vertex(LVecBase4f(vertex[0] * weight, vertex[1] * weight, vertex[2] * weight, weight));
+  vert(ui, vi).set_vertex(LVecBase4(vertex[0] * weight, vertex[1] * weight, vertex[2] * weight, weight));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -130,10 +130,10 @@ set_vertex(int ui, int vi, const LVecBase3f &vertex, float weight) {
 //  Description: Returns the nth control vertex of the surface, relative
 //               to its indicated coordinate space.
 ////////////////////////////////////////////////////////////////////
-INLINE const LVecBase4f &NurbsSurfaceEvaluator::
+INLINE const LVecBase4 &NurbsSurfaceEvaluator::
 get_vertex(int ui, int vi) const {
   nassertr(ui >= 0 && ui < _num_u_vertices &&
-           vi >= 0 && vi < _num_v_vertices, LVecBase4f::zero());
+           vi >= 0 && vi < _num_v_vertices, LVecBase4::zero());
   return vert(ui, vi).get_vertex();
 }
 
@@ -143,17 +143,17 @@ get_vertex(int ui, int vi) const {
 //  Description: Returns the nth control vertex of the surface, relative
 //               to the given coordinate space.
 ////////////////////////////////////////////////////////////////////
-INLINE LVecBase4f NurbsSurfaceEvaluator::
+INLINE LVecBase4 NurbsSurfaceEvaluator::
 get_vertex(int ui, int vi, const NodePath &rel_to) const {
   nassertr(ui >= 0 && ui < _num_u_vertices &&
-           vi >= 0 && vi < _num_v_vertices, LVecBase4f::zero());
+           vi >= 0 && vi < _num_v_vertices, LVecBase4::zero());
 
   NodePath space = vert(ui, vi).get_space(rel_to);
-  const LVecBase4f &vertex = vert(ui, vi).get_vertex();
+  const LVecBase4 &vertex = vert(ui, vi).get_vertex();
   if (space.is_empty()) {
     return vertex;
   } else {
-    const LMatrix4f &mat = space.get_mat(rel_to);
+    const LMatrix4 &mat = space.get_mat(rel_to);
     return vertex * mat;
   }
 }
@@ -220,21 +220,21 @@ set_vertex_space(int ui, int vi, const string &space) {
 //               extended vertices can be set.
 ////////////////////////////////////////////////////////////////////
 INLINE void NurbsSurfaceEvaluator::
-set_extended_vertex(int ui, int vi, int d, float value) {
+set_extended_vertex(int ui, int vi, int d, PN_stdfloat value) {
   nassertv(ui >= 0 && ui < _num_u_vertices &&
            vi >= 0 && vi < _num_v_vertices);
   vert(ui, vi).set_extended_vertex(d, value);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NurbsSurfaceEvaluator::float_extended_vertex
+//     Function: NurbsSurfaceEvaluator::get_extended_vertex
 //       Access: Public
 //  Description: Returns an n-dimensional vertex value.  See
 //               set_extended_vertex().  This returns the value set
 //               for the indicated dimension, or 0.0 if nothing has
 //               been set.
 ////////////////////////////////////////////////////////////////////
-INLINE float NurbsSurfaceEvaluator::
+INLINE PN_stdfloat NurbsSurfaceEvaluator::
 get_extended_vertex(int ui, int vi, int d) const {
   nassertr(ui >= 0 && ui < _num_u_vertices &&
            vi >= 0 && vi < _num_v_vertices, 0.0f);

@@ -72,12 +72,12 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
 //               most kinds of PandaNodes, this does nothing.
 ////////////////////////////////////////////////////////////////////
 void PartBundleNode::
-xform(const LMatrix4f &mat) {
+xform(const LMatrix4 &mat) {
   // With plain xform(), we can't attempt to share bundles across
   // different nodes.  Better to use apply_attribs_to_vertices(),
   // instead.
 
-  if (mat.almost_equal(LMatrix4f::ident_mat())) {
+  if (mat.almost_equal(LMatrix4::ident_mat())) {
     // Don't bother.
     return;
   }

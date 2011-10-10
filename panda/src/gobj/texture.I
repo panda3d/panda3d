@@ -577,15 +577,15 @@ get_pad_z_size() const {
 //               this case, this is a convenient way to generate UV's
 //               that reflect the built-in padding size.
 ////////////////////////////////////////////////////////////////////
-INLINE LVecBase2f Texture::
+INLINE LVecBase2 Texture::
 get_tex_scale() const {
   CDReader cdata(_cycler);
   if (cdata->_pad_x_size == 0 || cdata->_pad_y_size == 0 ||
       cdata->_x_size == 0 || cdata->_y_size == 0) {
-    LVecBase2f(1.0f, 1.0f);
+    LVecBase2(1.0f, 1.0f);
   }
-  return LVecBase2f((float)(cdata->_x_size - cdata->_pad_x_size) / (float)cdata->_x_size,
-                    (float)(cdata->_y_size - cdata->_pad_y_size) / (float)cdata->_y_size);
+  return LVecBase2((PN_stdfloat)(cdata->_x_size - cdata->_pad_x_size) / (PN_stdfloat)cdata->_x_size,
+                   (PN_stdfloat)(cdata->_y_size - cdata->_pad_y_size) / (PN_stdfloat)cdata->_y_size);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -798,7 +798,7 @@ set_anisotropic_degree(int anisotropic_degree) {
 //               the clamp color.
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
-set_border_color(const Colorf &color) {
+set_border_color(const LColor &color) {
   CDWriter cdata(_cycler, true);
   do_set_border_color(cdata, color);
 }
@@ -956,7 +956,7 @@ get_effective_anisotropic_degree() const {
 //               textures; in Panda, it is only used for specifying
 //               the clamp color.
 ////////////////////////////////////////////////////////////////////
-INLINE Colorf Texture::
+INLINE LColor Texture::
 get_border_color() const {
   CDReader cdata(_cycler);
   return cdata->_border_color;

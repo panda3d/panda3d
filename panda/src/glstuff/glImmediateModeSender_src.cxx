@@ -86,7 +86,7 @@ issue_vertex() {
 ////////////////////////////////////////////////////////////////////
 bool CLP(ImmediateModeSender)::
 add_column(const GeomVertexDataPipelineReader *data_reader, const InternalName *name,
-           Func1f *func1f, Func2f *func2f, Func3f *func3f, Func4f *func4f) {
+           Func1f *func1f, Func2f *func2, Func3f *func3, Func4f *func4) {
   if (data_reader->has_column(name)) {
     GeomVertexReader *reader = new GeomVertexReader(data_reader, name);
     ComponentSender *sender = NULL;
@@ -99,20 +99,20 @@ add_column(const GeomVertexDataPipelineReader *data_reader, const InternalName *
       break;
 
     case 2:
-      if (func2f != (Func2f *)NULL) {
-        sender = new ComponentSender2f(reader, func2f);
+      if (func2 != (Func2f *)NULL) {
+        sender = new ComponentSender2f(reader, func2);
       }
       break;
 
     case 3:
-      if (func3f != (Func3f *)NULL) {
-        sender = new ComponentSender3f(reader, func3f);
+      if (func3 != (Func3f *)NULL) {
+        sender = new ComponentSender3f(reader, func3);
       }
       break;
 
     case 4:
-      if (func4f != (Func4f *)NULL) {
-        sender = new ComponentSender4f(reader, func4f);
+      if (func4 != (Func4f *)NULL) {
+        sender = new ComponentSender4f(reader, func4);
       }
       break;
     }
@@ -149,8 +149,8 @@ add_column(const GeomVertexDataPipelineReader *data_reader, const InternalName *
 bool CLP(ImmediateModeSender)::
 add_texcoord_column(const GeomVertexDataPipelineReader *data_reader, 
                     const InternalName *name, int stage_index,
-                    TexcoordFunc1f *func1f, TexcoordFunc2f *func2f, 
-                    TexcoordFunc3f *func3f, TexcoordFunc4f *func4f) {
+                    TexcoordFunc1f *func1f, TexcoordFunc2f *func2, 
+                    TexcoordFunc3f *func3, TexcoordFunc4f *func4) {
   if (data_reader->has_column(name)) {
     GeomVertexReader *reader = new GeomVertexReader(data_reader, name);
     ComponentSender *sender = NULL;
@@ -161,15 +161,15 @@ add_texcoord_column(const GeomVertexDataPipelineReader *data_reader,
       break;
 
     case 2:
-      sender = new TexcoordSender2f(reader, func2f, stage_index);
+      sender = new TexcoordSender2f(reader, func2, stage_index);
       break;
 
     case 3:
-      sender = new TexcoordSender3f(reader, func3f, stage_index);
+      sender = new TexcoordSender3f(reader, func3, stage_index);
       break;
 
     case 4:
-      sender = new TexcoordSender4f(reader, func4f, stage_index);
+      sender = new TexcoordSender4f(reader, func4, stage_index);
       break;
     }
 
@@ -270,15 +270,15 @@ add_vector_uint_column(const GeomVertexDataPipelineReader *data_reader,
       break;
 
     case 2:
-      sender = new VectorSender2ui(reader, func);
+      sender = new VectorSender2fui(reader, func);
       break;
 
     case 3:
-      sender = new VectorSender3ui(reader, func);
+      sender = new VectorSender3fui(reader, func);
       break;
 
     case 4:
-      sender = new VectorSender4ui(reader, func);
+      sender = new VectorSender4fui(reader, func);
       break;
     }
 
@@ -326,7 +326,7 @@ CLP(ImmediateModeSender)::ComponentSender::
 ////////////////////////////////////////////////////////////////////
 void CLP(ImmediateModeSender)::ComponentSender1f::
 issue_vertex() {
-  float d = _reader->get_data1f();
+  PN_stdfloat d = _reader->get_data1f();
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam()
@@ -344,7 +344,7 @@ issue_vertex() {
 ////////////////////////////////////////////////////////////////////
 void CLP(ImmediateModeSender)::ComponentSender2f::
 issue_vertex() {
-  const LVecBase2f &d = _reader->get_data2f();
+  const LVecBase2 &d = _reader->get_data2();
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam()
@@ -362,7 +362,7 @@ issue_vertex() {
 ////////////////////////////////////////////////////////////////////
 void CLP(ImmediateModeSender)::ComponentSender3f::
 issue_vertex() {
-  const LVecBase3f &d = _reader->get_data3f();
+  const LVecBase3 &d = _reader->get_data3();
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam()
@@ -380,7 +380,7 @@ issue_vertex() {
 ////////////////////////////////////////////////////////////////////
 void CLP(ImmediateModeSender)::ComponentSender4f::
 issue_vertex() {
-  const LVecBase4f &d = _reader->get_data4f();
+  const LVecBase4 &d = _reader->get_data4();
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam()
@@ -398,7 +398,7 @@ issue_vertex() {
 ////////////////////////////////////////////////////////////////////
 void CLP(ImmediateModeSender)::TexcoordSender1f::
 issue_vertex() {
-  float d = _reader->get_data1f();
+  PN_stdfloat d = _reader->get_data1f();
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam()
@@ -417,7 +417,7 @@ issue_vertex() {
 ////////////////////////////////////////////////////////////////////
 void CLP(ImmediateModeSender)::TexcoordSender2f::
 issue_vertex() {
-  const LVecBase2f &d = _reader->get_data2f();
+  const LVecBase2 &d = _reader->get_data2();
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam()
@@ -436,7 +436,7 @@ issue_vertex() {
 ////////////////////////////////////////////////////////////////////
 void CLP(ImmediateModeSender)::TexcoordSender3f::
 issue_vertex() {
-  const LVecBase3f &d = _reader->get_data3f();
+  const LVecBase3 &d = _reader->get_data3();
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam()
@@ -455,7 +455,7 @@ issue_vertex() {
 ////////////////////////////////////////////////////////////////////
 void CLP(ImmediateModeSender)::TexcoordSender4f::
 issue_vertex() {
-  const LVecBase4f &d = _reader->get_data4f();
+  const LVecBase4 &d = _reader->get_data4();
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam()
@@ -474,7 +474,7 @@ issue_vertex() {
 ////////////////////////////////////////////////////////////////////
 void CLP(ImmediateModeSender)::VectorSender1f::
 issue_vertex() {
-  float d = _reader->get_data1f();
+  PN_stdfloat d = _reader->get_data1f();
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam()
@@ -492,7 +492,7 @@ issue_vertex() {
 ////////////////////////////////////////////////////////////////////
 void CLP(ImmediateModeSender)::VectorSender2f::
 issue_vertex() {
-  const LVecBase2f &d = _reader->get_data2f();
+  const LVecBase2 &d = _reader->get_data2();
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam()
@@ -510,7 +510,7 @@ issue_vertex() {
 ////////////////////////////////////////////////////////////////////
 void CLP(ImmediateModeSender)::VectorSender3f::
 issue_vertex() {
-  const LVecBase3f &d = _reader->get_data3f();
+  const LVecBase3 &d = _reader->get_data3();
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam()
@@ -528,7 +528,7 @@ issue_vertex() {
 ////////////////////////////////////////////////////////////////////
 void CLP(ImmediateModeSender)::VectorSender4f::
 issue_vertex() {
-  const LVecBase4f &d = _reader->get_data4f();
+  const LVecBase4 &d = _reader->get_data4();
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam()
@@ -558,11 +558,11 @@ issue_vertex() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::VectorSender2ui::issue_vertex
+//     Function: CLP(ImmediateModeSender)::VectorSender2fui::issue_vertex
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void CLP(ImmediateModeSender)::VectorSender2ui::
+void CLP(ImmediateModeSender)::VectorSender2fui::
 issue_vertex() {
   const int *d = _reader->get_data2i();
 #ifndef NDEBUG
@@ -577,11 +577,11 @@ issue_vertex() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::VectorSender3ui::issue_vertex
+//     Function: CLP(ImmediateModeSender)::VectorSender3fui::issue_vertex
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void CLP(ImmediateModeSender)::VectorSender3ui::
+void CLP(ImmediateModeSender)::VectorSender3fui::
 issue_vertex() {
   const int *d = _reader->get_data3i();
 #ifndef NDEBUG
@@ -596,11 +596,11 @@ issue_vertex() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(ImmediateModeSender)::VectorSender4ui::issue_vertex
+//     Function: CLP(ImmediateModeSender)::VectorSender4fui::issue_vertex
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void CLP(ImmediateModeSender)::VectorSender4ui::
+void CLP(ImmediateModeSender)::VectorSender4fui::
 issue_vertex() {
   const int *d = _reader->get_data4i();
 #ifndef NDEBUG

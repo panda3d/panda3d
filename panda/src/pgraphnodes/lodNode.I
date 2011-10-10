@@ -52,7 +52,7 @@ LODNode(const LODNode &copy) :
 //               "out".
 ////////////////////////////////////////////////////////////////////
 INLINE void LODNode::
-add_switch(float in, float out) {
+add_switch(PN_stdfloat in, PN_stdfloat out) {
   nassertv(in >= out);
 
   CDWriter cdata(_cycler);
@@ -71,7 +71,7 @@ add_switch(float in, float out) {
 //               the LODNode.  See add_switch().
 ////////////////////////////////////////////////////////////////////
 INLINE bool LODNode::
-set_switch(int index, float in, float out) {
+set_switch(int index, PN_stdfloat in, PN_stdfloat out) {
   nassertr(in >= out, false);
 
   CDWriter cdata(_cycler);
@@ -124,7 +124,7 @@ get_num_switches() const {
 //       Access: Published
 //  Description: Returns the multiplier for lod distances
 ////////////////////////////////////////////////////////////////////
-INLINE float LODNode::
+INLINE PN_stdfloat LODNode::
 get_lod_scale() const {
   CDReader cdata(_cycler);
   return cdata->_lod_scale;
@@ -137,7 +137,7 @@ get_lod_scale() const {
 //               value means you'll see farther switchs than normal
 ////////////////////////////////////////////////////////////////////
 INLINE void LODNode::
-set_lod_scale(float value) {
+set_lod_scale(PN_stdfloat value) {
   CDWriter cdata(_cycler);
   cdata->_lod_scale = value;
 }
@@ -150,7 +150,7 @@ set_lod_scale(float value) {
 //               range.  This should be larger than the "out" distance
 //               of the same range.
 ////////////////////////////////////////////////////////////////////
-INLINE float LODNode::
+INLINE PN_stdfloat LODNode::
 get_in(int index) const {
   CDReader cdata(_cycler);
   nassertr(index >= 0 && index < (int)cdata->_switch_vector.size(), 0.0);
@@ -164,7 +164,7 @@ get_in(int index) const {
 //               range.  This should be smaller than the "in" distance
 //               of the same range.
 ////////////////////////////////////////////////////////////////////
-INLINE float LODNode::
+INLINE PN_stdfloat LODNode::
 get_out(int index) const {
   CDReader cdata(_cycler);
   nassertr(index >= 0 && index < (int)cdata->_switch_vector.size(), 0.0);
@@ -234,7 +234,7 @@ clear_force_switch() {
 //               determine the particular LOD that should be chosen.
 ////////////////////////////////////////////////////////////////////
 INLINE void LODNode::
-set_center(const LPoint3f &center) {
+set_center(const LPoint3 &center) {
   CDWriter cdata(_cycler);
   cdata->_center = center;
 
@@ -250,7 +250,7 @@ set_center(const LPoint3f &center) {
 //               that is compared to the camera (in camera space) to
 //               determine the particular LOD that should be chosen.
 ////////////////////////////////////////////////////////////////////
-INLINE const LPoint3f &LODNode::
+INLINE const LPoint3 &LODNode::
 get_center() const {
   CDReader cdata(_cycler);
   return cdata->_center;
@@ -328,7 +328,7 @@ CData(const LODNode::CData &copy) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE LODNode::Switch::
-Switch(float in, float out) : 
+Switch(PN_stdfloat in, PN_stdfloat out) : 
   _shown(false),
   _bounds_seq(UpdateSeq::old()),
   _verify_ok(false)
@@ -341,7 +341,7 @@ Switch(float in, float out) :
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE float LODNode::Switch::
+INLINE PN_stdfloat LODNode::Switch::
 get_in() const {
   return _in;
 }
@@ -351,7 +351,7 @@ get_in() const {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE float LODNode::Switch::
+INLINE PN_stdfloat LODNode::Switch::
 get_out() const {
   return _out;
 }
@@ -362,7 +362,7 @@ get_out() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void LODNode::Switch::
-set_range(float in, float out) {
+set_range(PN_stdfloat in, PN_stdfloat out) {
   _in = in;
   _out = out;
   clear_ring_viz();
@@ -375,7 +375,7 @@ set_range(float in, float out) {
 //               range for the LOD.
 ////////////////////////////////////////////////////////////////////
 INLINE bool LODNode::Switch::
-in_range(float dist) const {
+in_range(PN_stdfloat dist) const {
   return (dist >= _out && dist < _in);
 }
 
@@ -388,7 +388,7 @@ in_range(float dist) const {
 //               camera to the object.)
 ////////////////////////////////////////////////////////////////////
 INLINE bool LODNode::Switch::
-in_range_2(float dist2) const {
+in_range_2(PN_stdfloat dist2) const {
   return (dist2 >= _out * _out && dist2 < _in * _in);
 }
 
@@ -398,7 +398,7 @@ in_range_2(float dist2) const {
 //  Description: Scales the switching distances by the indicated factor.
 ////////////////////////////////////////////////////////////////////
 INLINE void LODNode::Switch::
-rescale(float factor) {
+rescale(PN_stdfloat factor) {
   _in *= factor;
   _out *= factor;
   clear_ring_viz();
@@ -421,7 +421,7 @@ is_shown() const {
 //               color.
 ////////////////////////////////////////////////////////////////////
 INLINE void LODNode::Switch::
-show(const Colorf &color) {
+show(const LColor &color) {
   _shown = true;
   _show_color = color;
 }
@@ -491,8 +491,8 @@ get_viz_model_state() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void LODNode::Switch::
 write_datagram(Datagram &destination) const {
-  destination.add_float32(_in);
-  destination.add_float32(_out);
+  destination.add_stdfloat(_in);
+  destination.add_stdfloat(_out);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -503,8 +503,8 @@ write_datagram(Datagram &destination) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void LODNode::Switch::
 read_datagram(DatagramIterator &source) {
-  _in = source.get_float32();
-  _out = source.get_float32();
+  _in = source.get_stdfloat();
+  _out = source.get_stdfloat();
 }
 
 ////////////////////////////////////////////////////////////////////

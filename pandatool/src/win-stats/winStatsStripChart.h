@@ -41,9 +41,9 @@ public:
   virtual void changed_graph_size(int graph_xsize, int graph_ysize);
 
   virtual void set_time_units(int unit_mask);
-  virtual void set_scroll_speed(float scroll_speed);
+  virtual void set_scroll_speed(PN_stdfloat scroll_speed);
   virtual void clicked_label(int collector_index);
-  void set_vertical_scale(float value_height);
+  void set_vertical_scale(PN_stdfloat value_height);
 
 protected:
   virtual void update_labels();

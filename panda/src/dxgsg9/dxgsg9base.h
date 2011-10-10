@@ -209,7 +209,7 @@ struct DXScreenData {
   UINT _supported_screen_depths_mask;
   UINT _supported_tex_formats_mask;
   bool _supports_rgba16f_texture_format;
-  bool _supports_rgba32f_texture_format;
+  bool _supports_rgba32_texture_format;
   D3DCAPS9 _d3dcaps;
   D3DDISPLAYMODE _display_mode;
   D3DPRESENT_PARAMETERS _presentation_params;  // not redundant with _display_mode since width/height must be 0 for windowed mode

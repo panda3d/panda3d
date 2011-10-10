@@ -65,7 +65,7 @@ clear_to_initial() {
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ParticleSystem::
-soft_start(float br) {
+soft_start(PN_stdfloat br) {
   if (br > 0.0)
     set_birth_rate(br);
   _cur_birth_rate = _birth_rate;
@@ -80,7 +80,7 @@ soft_start(float br) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ParticleSystem::
-soft_stop(float br) {
+soft_stop(PN_stdfloat br) {
   if (br > 0.0)
     set_soft_birth_rate(br);
   _cur_birth_rate = _soft_birth_rate;
@@ -107,10 +107,10 @@ set_pool_size(int size) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ParticleSystem::
-set_birth_rate(float new_br) {
+set_birth_rate(PN_stdfloat new_br) {
   _birth_rate = new_br;
   _cur_birth_rate = _birth_rate;
-  if(IS_NEARLY_ZERO(_birth_rate)) _birth_rate = NEARLY_ZERO(float);
+  if(IS_NEARLY_ZERO(_birth_rate)) _birth_rate = NEARLY_ZERO(PN_stdfloat);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -119,9 +119,9 @@ set_birth_rate(float new_br) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ParticleSystem::
-set_soft_birth_rate(float new_br) {
+set_soft_birth_rate(PN_stdfloat new_br) {
   _soft_birth_rate = new_br;
-  if(IS_NEARLY_ZERO(_soft_birth_rate)) _soft_birth_rate = NEARLY_ZERO(float);
+  if(IS_NEARLY_ZERO(_soft_birth_rate)) _soft_birth_rate = NEARLY_ZERO(PN_stdfloat);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -184,7 +184,7 @@ set_factory(BaseParticleFactory *f) {
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE void ParticleSystem::
-set_floor_z(float z) {
+set_floor_z(PN_stdfloat z) {
   _floor_z = z;
 }
 
@@ -230,7 +230,7 @@ set_system_grows_older_flag(bool sgo) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ParticleSystem::
-set_system_lifespan(float sl) {
+set_system_lifespan(PN_stdfloat sl) {
   _system_lifespan = sl;
 }
 
@@ -240,7 +240,7 @@ set_system_lifespan(float sl) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ParticleSystem::
-set_system_age(float age) {
+set_system_age(PN_stdfloat age) {
   _system_age = age;
 }
 
@@ -339,7 +339,7 @@ get_pool_size() const {
 //    Function : get_birth_rate
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
-INLINE float ParticleSystem::
+INLINE PN_stdfloat ParticleSystem::
 get_birth_rate() const {
   return _birth_rate;
 }
@@ -348,7 +348,7 @@ get_birth_rate() const {
 //    Function : get_soft_birth_rate
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
-INLINE float ParticleSystem::
+INLINE PN_stdfloat ParticleSystem::
 get_soft_birth_rate() const {
   return _soft_birth_rate;
 }
@@ -402,7 +402,7 @@ get_factory() const {
 //    Function : get_factory
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
-INLINE float ParticleSystem::
+INLINE PN_stdfloat ParticleSystem::
 get_floor_z() const {
   return _floor_z;
 }
@@ -456,7 +456,7 @@ get_system_grows_older_flag() const {
 //    Function : get_system_lifespan
 //      Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE float ParticleSystem::
+INLINE PN_stdfloat ParticleSystem::
 get_system_lifespan() const {
   return _system_lifespan;
 }
@@ -465,7 +465,7 @@ get_system_lifespan() const {
 //    Function : get_system_age
 //      Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE float ParticleSystem::
+INLINE PN_stdfloat ParticleSystem::
 get_system_age() const {
   return _system_age;
 }

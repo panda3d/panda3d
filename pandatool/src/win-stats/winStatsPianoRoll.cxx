@@ -134,7 +134,7 @@ clicked_label(int collector_index) {
 //               horizontal axis represents.  This may force a redraw.
 ////////////////////////////////////////////////////////////////////
 void WinStatsPianoRoll::
-set_horizontal_scale(float time_width) {
+set_horizontal_scale(PN_stdfloat time_width) {
   PStatPianoRoll::set_horizontal_scale(time_width);
 
   RECT rect;
@@ -287,7 +287,7 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
     if (_drag_mode == DM_scale) {
       PN_int16 x = LOWORD(lparam);
-      float ratio = (float)x / (float)get_xsize();
+      PN_stdfloat ratio = (PN_stdfloat)x / (PN_stdfloat)get_xsize();
       if (ratio > 0.0f) {
         set_horizontal_scale(_drag_scale_start / ratio);
       }
@@ -412,8 +412,8 @@ consider_drag_start(int mouse_x, int mouse_y, int width, int height) {
     if (mouse_x >= _graph_left && mouse_x < _graph_left + get_xsize()) {
       // See if the mouse is over a user-defined guide bar.
       int x = mouse_x - _graph_left;
-      float from_height = pixel_to_height(x - 2);
-      float to_height = pixel_to_height(x + 2);
+      PN_stdfloat from_height = pixel_to_height(x - 2);
+      PN_stdfloat to_height = pixel_to_height(x + 2);
       _drag_guide_bar = find_user_guide_bar(from_height, to_height);
       if (_drag_guide_bar >= 0) {
         return DM_guide_bar;
@@ -527,8 +527,8 @@ draw_guide_label(HDC hdc, int y, const PStatGraph::GuideBar &bar) {
   GetTextExtentPoint32(hdc, label.data(), label.length(), &size);
 
   if (bar._style != GBS_user) {
-    float from_height = pixel_to_height(x - size.cx);
-    float to_height = pixel_to_height(x + size.cx);
+    PN_stdfloat from_height = pixel_to_height(x - size.cx);
+    PN_stdfloat to_height = pixel_to_height(x + size.cx);
     if (find_user_guide_bar(from_height, to_height) >= 0) {
       // Omit the label: there's a user-defined guide bar in the same space.
       return;

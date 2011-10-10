@@ -52,7 +52,7 @@ flush_level() {
 //  Description: store away a vertex to index against
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionFloorMesh::
-add_vertex(const LPoint3f &vert) {
+add_vertex(const LPoint3 &vert) {
   _vertices.push_back(vert);
 }
 
@@ -61,7 +61,7 @@ get_num_vertices() const {
   return _vertices.size();
 }
 
-INLINE const LPoint3f CollisionFloorMesh::
+INLINE const LPoint3 CollisionFloorMesh::
 get_vertex(unsigned int index) const {
   return _vertices[index];
 }

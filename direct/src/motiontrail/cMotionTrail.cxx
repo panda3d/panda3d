@@ -124,7 +124,7 @@ set_geom_node (PT(GeomNode) geom_node) {
 //  Description: Add a vertex.
 ////////////////////////////////////////////////////////////////////
 void CMotionTrail::
-add_vertex (LVector4f *vertex, LVector4f *start_color, LVector4f *end_color, float v) {
+add_vertex (LVector4 *vertex, LVector4 *start_color, LVector4 *end_color, PN_stdfloat v) {
 
   CMotionTrailVertex motion_trail_vertex;
 
@@ -164,7 +164,7 @@ add_vertex (LVector4f *vertex, LVector4f *start_color, LVector4f *end_color, flo
 //               Applicable only if nurbs is on.
 ////////////////////////////////////////////////////////////////////
 void CMotionTrail::
-set_parameters (float sampling_time, float time_window, bool use_texture, bool calculate_relative_matrix, bool use_nurbs, float resolution_distance) {
+set_parameters (PN_stdfloat sampling_time, PN_stdfloat time_window, bool use_texture, bool calculate_relative_matrix, bool use_nurbs, PN_stdfloat resolution_distance) {
 
   _sampling_time = sampling_time;
   _time_window = time_window;
@@ -180,7 +180,7 @@ set_parameters (float sampling_time, float time_window, bool use_texture, bool c
 //  Description: Check if a sample can be submitted.
 ////////////////////////////////////////////////////////////////////
 int CMotionTrail::
-check_for_update (float current_time) {
+check_for_update (PN_stdfloat current_time) {
 
   int state;
   
@@ -196,7 +196,7 @@ check_for_update (float current_time) {
   return state;
 }
 
-float one_minus_x (float x) {
+PN_stdfloat one_minus_x (PN_stdfloat x) {
   x = 1.0 - x;
   if (x < 0.0) {
     x = 0.0;
@@ -243,26 +243,26 @@ begin_geometry ( ) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CMotionTrail::add_geometry_quad
 //       Access: Public
-//  Description: LVector3f vertex version.
+//  Description: LVector3 vertex version.
 ////////////////////////////////////////////////////////////////////
 void CMotionTrail::
-add_geometry_quad (LVector3f &v0, LVector3f &v1, LVector3f &v2, LVector3f &v3, LVector4f &c0, LVector4f &c1, LVector4f &c2, LVector4f &c3, LVector2f &t0, LVector2f &t1, LVector2f &t2, LVector2f &t3) {
+add_geometry_quad (LVector3 &v0, LVector3 &v1, LVector3 &v2, LVector3 &v3, LVector4 &c0, LVector4 &c1, LVector4 &c2, LVector4 &c3, LVector2 &t0, LVector2 &t1, LVector2 &t2, LVector2 &t3) {
 
-  _vertex_writer.add_data3f (v0);
-  _vertex_writer.add_data3f (v1);
-  _vertex_writer.add_data3f (v2);
-  _vertex_writer.add_data3f (v3);
+  _vertex_writer.add_data3 (v0);
+  _vertex_writer.add_data3 (v1);
+  _vertex_writer.add_data3 (v2);
+  _vertex_writer.add_data3 (v3);
 
-  _color_writer.add_data4f (c0);
-  _color_writer.add_data4f (c1);
-  _color_writer.add_data4f (c2);
-  _color_writer.add_data4f (c3);
+  _color_writer.add_data4 (c0);
+  _color_writer.add_data4 (c1);
+  _color_writer.add_data4 (c2);
+  _color_writer.add_data4 (c3);
 
   if (_use_texture) {
-    _texture_writer.add_data2f (t0);
-    _texture_writer.add_data2f (t1);
-    _texture_writer.add_data2f (t2);
-    _texture_writer.add_data2f (t3);
+    _texture_writer.add_data2 (t0);
+    _texture_writer.add_data2 (t1);
+    _texture_writer.add_data2 (t2);
+    _texture_writer.add_data2 (t3);
   }
 
   int vertex_index;
@@ -284,26 +284,26 @@ add_geometry_quad (LVector3f &v0, LVector3f &v1, LVector3f &v2, LVector3f &v3, L
 ////////////////////////////////////////////////////////////////////
 //     Function: CMotionTrail::add_geometry_quad
 //       Access: Public
-//  Description: LVector4f vertex version.
+//  Description: LVector4 vertex version.
 ////////////////////////////////////////////////////////////////////
 void CMotionTrail::
-add_geometry_quad (LVector4f &v0, LVector4f &v1, LVector4f &v2, LVector4f &v3, LVector4f &c0, LVector4f &c1, LVector4f &c2, LVector4f &c3, LVector2f &t0, LVector2f &t1, LVector2f &t2, LVector2f &t3) {
+add_geometry_quad (LVector4 &v0, LVector4 &v1, LVector4 &v2, LVector4 &v3, LVector4 &c0, LVector4 &c1, LVector4 &c2, LVector4 &c3, LVector2 &t0, LVector2 &t1, LVector2 &t2, LVector2 &t3) {
 
-  _vertex_writer.add_data3f (v0 [0], v0 [1], v0 [2]);
-  _vertex_writer.add_data3f (v1 [0], v1 [1], v1 [2]);
-  _vertex_writer.add_data3f (v2 [0], v2 [1], v2 [2]);
-  _vertex_writer.add_data3f (v3 [0], v3 [1], v3 [2]);
+  _vertex_writer.add_data3 (v0 [0], v0 [1], v0 [2]);
+  _vertex_writer.add_data3 (v1 [0], v1 [1], v1 [2]);
+  _vertex_writer.add_data3 (v2 [0], v2 [1], v2 [2]);
+  _vertex_writer.add_data3 (v3 [0], v3 [1], v3 [2]);
 
-  _color_writer.add_data4f (c0);
-  _color_writer.add_data4f (c1);
-  _color_writer.add_data4f (c2);
-  _color_writer.add_data4f (c3);
+  _color_writer.add_data4 (c0);
+  _color_writer.add_data4 (c1);
+  _color_writer.add_data4 (c2);
+  _color_writer.add_data4 (c3);
 
   if (_use_texture) {
-    _texture_writer.add_data2f (t0);
-    _texture_writer.add_data2f (t1);
-    _texture_writer.add_data2f (t2);
-    _texture_writer.add_data2f (t3);
+    _texture_writer.add_data2 (t0);
+    _texture_writer.add_data2 (t1);
+    _texture_writer.add_data2 (t2);
+    _texture_writer.add_data2 (t3);
   }
 
   int vertex_index;
@@ -350,7 +350,7 @@ void CMotionTrail::end_geometry ( ) {
 //  Description: See class header comments.
 ////////////////////////////////////////////////////////////////////
 void CMotionTrail::
-update_motion_trail (float current_time, LMatrix4f *transform) {
+update_motion_trail (PN_stdfloat current_time, LMatrix4 *transform) {
 
   int debug;
   int total_frames;
@@ -371,15 +371,15 @@ update_motion_trail (float current_time, LMatrix4f *transform) {
   }
 
   int total_vertices;
-  float color_scale;
-  LMatrix4f start_transform;
-  LMatrix4f end_transform;
-  LMatrix4f inverse_matrix;
+  PN_stdfloat color_scale;
+  LMatrix4 start_transform;
+  LMatrix4 end_transform;
+  LMatrix4 inverse_matrix;
 
   total_vertices = _vertex_list.size ( );
   color_scale = _color_scale;
   if (_fade) {
-    float elapsed_time;
+    PN_stdfloat elapsed_time;
     
     elapsed_time = current_time - _fade_start_time;
     if (elapsed_time < 0.0) {
@@ -397,7 +397,7 @@ update_motion_trail (float current_time, LMatrix4f *transform) {
   _last_update_time = current_time;
 
   // remove expired frames
-  float minimum_time;
+  PN_stdfloat minimum_time;
   
   minimum_time = current_time - _time_window;
   
@@ -431,8 +431,8 @@ update_motion_trail (float current_time, LMatrix4f *transform) {
 
   if ((total_frames >= 2) && (total_vertices >= 2)) {
     int total_segments;
-    float minimum_time;
-    float delta_time;
+    PN_stdfloat minimum_time;
+    PN_stdfloat delta_time;
     CMotionTrailFrame last_motion_trail_frame;
 
     list <CMotionTrailVertex>::iterator vertex_iterator;    
@@ -463,13 +463,13 @@ update_motion_trail (float current_time, LMatrix4f *transform) {
     
       // nurbs version
       int total_vertex_segments;
-      float total_distance;  
-      LVector3f vector;
-      LVector4f v;
-      LVector4f v0;
-      LVector4f v1;
-      LVector4f v2;
-      LVector4f v3;
+      PN_stdfloat total_distance;  
+      LVector3 vector;
+      LVector4 v;
+      LVector4 v0;
+      LVector4 v1;
+      LVector4 v2;
+      LVector4 v3;
 
       total_vertex_segments = total_vertices - 1;
       total_distance = 0.0f;
@@ -536,7 +536,7 @@ update_motion_trail (float current_time, LMatrix4f *transform) {
 
           nurbs_curve_evaluator -> set_vertex (segment_index, v1);
           if (vertex_segement_index == (total_vertex_segments - 1)) {
-            float distance;
+            PN_stdfloat distance;
 
             v = v1 - v3;
             vector.set (v[0], v[1], v[2]);
@@ -567,8 +567,8 @@ update_motion_trail (float current_time, LMatrix4f *transform) {
         nurbs_curve_result_array [index] = nurbs_curve_result;
 
         if (debug) {
-          float nurbs_start_t;
-          float nurbs_end_t;
+          PN_stdfloat nurbs_start_t;
+          PN_stdfloat nurbs_end_t;
 
           nurbs_start_t = nurbs_curve_result -> get_start_t();
           nurbs_end_t = nurbs_curve_result -> get_end_t();
@@ -578,7 +578,7 @@ update_motion_trail (float current_time, LMatrix4f *transform) {
       }
       
       // create quads from NurbsCurveResult                    
-      float total_curve_segments;
+      PN_stdfloat total_curve_segments;
       
       total_curve_segments = (total_distance / _resolution_distance);
       if (total_curve_segments < total_segments) {
@@ -586,35 +586,35 @@ update_motion_trail (float current_time, LMatrix4f *transform) {
       }
 
       {
-        LVector3f v0;
-        LVector3f v1;
-        LVector3f v2;
-        LVector3f v3;
+        LVector3 v0;
+        LVector3 v1;
+        LVector3 v2;
+        LVector3 v3;
 
-        LVector4f c0;
-        LVector4f c1;
-        LVector4f c2;
-        LVector4f c3;
+        LVector4 c0;
+        LVector4 c1;
+        LVector4 c2;
+        LVector4 c3;
 
-        LVector2f t0;
-        LVector2f t1;
-        LVector2f t2;
-        LVector2f t3;
+        LVector2 t0;
+        LVector2 t1;
+        LVector2 t2;
+        LVector2 t3;
 
-        LVector4f vertex_start_color;
-        LVector4f vertex_end_color;
+        LVector4 vertex_start_color;
+        LVector4 vertex_end_color;
 
-        float curve_segment_index;
+        PN_stdfloat curve_segment_index;
 
         curve_segment_index = 0.0;
         while (curve_segment_index < total_curve_segments) {   
         
-          float st;
-          float et;
-          float start_t;
-          float end_t;
-          float color_start_t;
-          float color_end_t;
+          PN_stdfloat st;
+          PN_stdfloat et;
+          PN_stdfloat start_t;
+          PN_stdfloat end_t;
+          PN_stdfloat color_start_t;
+          PN_stdfloat color_end_t;
 
           int vertex_segement_index;
 
@@ -651,10 +651,10 @@ update_motion_trail (float current_time, LMatrix4f *transform) {
 
           while (vertex_segement_index < total_vertex_segments) {
 
-            float start_nurbs_start_t;
-            float start_nurbs_end_t;
-            float end_nurbs_start_t;
-            float end_nurbs_end_t;
+            PN_stdfloat start_nurbs_start_t;
+            PN_stdfloat start_nurbs_end_t;
+            PN_stdfloat end_nurbs_start_t;
+            PN_stdfloat end_nurbs_end_t;
 
             motion_trail_vertex_start = &_vertex_array [vertex_segement_index];
             motion_trail_vertex_end = &_vertex_array [vertex_segement_index + 1];
@@ -667,8 +667,8 @@ update_motion_trail (float current_time, LMatrix4f *transform) {
             end_nurbs_start_t = end_nurbs_curve_result -> get_start_t();
             end_nurbs_end_t = end_nurbs_curve_result -> get_end_t();
 
-            float start_delta_t;
-            float end_delta_t;
+            PN_stdfloat start_delta_t;
+            PN_stdfloat end_delta_t;
 
             start_delta_t = (start_nurbs_end_t - start_nurbs_start_t);
             end_delta_t = (end_nurbs_end_t - end_nurbs_start_t);
@@ -718,30 +718,30 @@ update_motion_trail (float current_time, LMatrix4f *transform) {
       int vertex_segment_index;
       int total_vertex_segments;
       
-      float st;
-      float et;
-      float start_t;
-      float end_t;
-      float color_start_t;
-      float color_end_t;
+      PN_stdfloat st;
+      PN_stdfloat et;
+      PN_stdfloat start_t;
+      PN_stdfloat end_t;
+      PN_stdfloat color_start_t;
+      PN_stdfloat color_end_t;
 
-      LVector4f v0;
-      LVector4f v1;
-      LVector4f v2;
-      LVector4f v3;
+      LVector4 v0;
+      LVector4 v1;
+      LVector4 v2;
+      LVector4 v3;
 
-      LVector4f c0;
-      LVector4f c1;
-      LVector4f c2;
-      LVector4f c3;
+      LVector4 c0;
+      LVector4 c1;
+      LVector4 c2;
+      LVector4 c3;
 
-      LVector2f t0;
-      LVector2f t1;
-      LVector2f t2;
-      LVector2f t3;
+      LVector2 t0;
+      LVector2 t1;
+      LVector2 t2;
+      LVector2 t3;
 
-      LVector4f vertex_start_color;
-      LVector4f vertex_end_color;
+      LVector4 vertex_start_color;
+      LVector4 vertex_end_color;
 
       CMotionTrailFrame motion_trail_frame_start;
       CMotionTrailFrame motion_trail_frame_end;

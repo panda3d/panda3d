@@ -34,9 +34,9 @@ public:
   const LPoint3d &get_center() const;
   const LPoint3d &get_reference_point() const;
   const LPoint3d &get_to_point() const;
-  float get_overall_scale() const;
-  float get_axis_scale() const;
-  float get_angle() const;
+  PN_stdfloat get_overall_scale() const;
+  PN_stdfloat get_axis_scale() const;
+  PN_stdfloat get_angle() const;
 
 private:
   void recompute_matrix();
@@ -44,9 +44,9 @@ private:
   LPoint3d _center;
   LPoint3d _reference_point;
   LPoint3d _to_point;
-  float _overall_scale;
-  float _axis_scale;
-  float _angle;
+  PN_stdfloat _overall_scale;
+  PN_stdfloat _axis_scale;
+  PN_stdfloat _angle;
 
 protected:
   virtual bool extract_record(FltRecordReader &reader);

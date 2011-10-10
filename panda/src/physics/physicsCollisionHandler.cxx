@@ -52,10 +52,10 @@ PhysicsCollisionHandler::
 //               account for friction.
 ////////////////////////////////////////////////////////////////////
 void PhysicsCollisionHandler::
-apply_friction(ColliderDef &def, LVector3f& vel, const LVector3f& force,
-    float angle) {
-  if (vel!=LVector3f::zero()) {
-    float friction_coefficient=0.0f;
+apply_friction(ColliderDef &def, LVector3& vel, const LVector3& force,
+    PN_stdfloat angle) {
+  if (vel!=LVector3::zero()) {
+    PN_stdfloat friction_coefficient=0.0f;
     // Determine the friction:
     if (vel.length()<_almost_stationary_speed) {
       physics_debug("  static friction");
@@ -66,14 +66,14 @@ apply_friction(ColliderDef &def, LVector3f& vel, const LVector3f& force,
     }
     // Apply the friction:
     physics_debug("  vel pre  friction "<<vel<<" len "<<vel.length());
-    float friction=friction_coefficient*angle;
+    PN_stdfloat friction=friction_coefficient*angle;
     physics_debug("  friction "<<friction);
     if (friction<0.0f || friction>1.0f) {
       cerr<<"\n\nfriction error "<<friction<<endl;
       friction=1.0f;
     }
     #if 0
-    float dt=ClockObject::get_global_clock()->get_dt();
+    PN_stdfloat dt=ClockObject::get_global_clock()->get_dt();
     vel *= (1.0f-friction) * dt * dt;
     #else
     vel *= 1.0f-friction;
@@ -88,10 +88,10 @@ apply_friction(ColliderDef &def, LVector3f& vel, const LVector3f& force,
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void PhysicsCollisionHandler::
-apply_net_shove(ColliderDef &def, const LVector3f& net_shove,
-    const LVector3f &force) {
+apply_net_shove(ColliderDef &def, const LVector3& net_shove,
+    const LVector3 &force) {
   CollisionHandlerPusher::apply_net_shove(def, net_shove, force);
-  if (force == LVector3f::zero()) {
+  if (force == LVector3::zero()) {
     return;
   }
   if (def._target.is_empty()) {
@@ -99,19 +99,19 @@ apply_net_shove(ColliderDef &def, const LVector3f& net_shove,
   }
   ActorNode *actor;
   DCAST_INTO_V(actor, def._target.node());
-  LVector3f vel=actor->get_physics_object()->get_velocity();
-  if (vel == LVector3f::zero()) {
+  LVector3 vel=actor->get_physics_object()->get_velocity();
+  if (vel == LVector3::zero()) {
     return;
   }
   physics_debug("apply_linear_force() {");
   physics_debug("  vel            "<<vel<<" len "<<vel.length());
   physics_debug("  net_shove      "<<net_shove<<" len "<<net_shove.length());
   physics_debug("  force          "<<force<<" len "<<force.length());
-  LVector3f old_vel=vel;
+  LVector3 old_vel=vel;
 
   // Copy the force vector while translating it 
   // into the physics object coordinate system:
-  LVector3f adjustment=force;
+  LVector3 adjustment=force;
   physics_debug(
       "  adjustment set "<<adjustment<<" len "<<adjustment.length());
 
@@ -129,9 +129,9 @@ apply_net_shove(ColliderDef &def, const LVector3f& net_shove,
   physics_debug(
       "  adjustment nrm "<<adjustment<<" len "<<adjustment.length());
 
-  float adjustmentLength=-(adjustment.dot(vel));
+  PN_stdfloat adjustmentLength=-(adjustment.dot(vel));
   physics_debug("  adjustmentLength "<<adjustmentLength);
-  float angle=-normalize(old_vel).dot(normalize(force));
+  PN_stdfloat angle=-normalize(old_vel).dot(normalize(force));
   physics_debug("  angle "<<angle);
   // Are we in contact with something:
   if (angle>0.0f) {
@@ -194,7 +194,7 @@ apply_net_shove(ColliderDef &def, const LVector3f& net_shove,
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void PhysicsCollisionHandler::
-apply_linear_force(ColliderDef &def, const LVector3f &force) {
+apply_linear_force(ColliderDef &def, const LVector3 &force) {
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -30,42 +30,42 @@ PUBLISHED:
 
   virtual BaseParticleEmitter *make_copy();
 
-  INLINE void set_radius(float r);
-  INLINE void set_outer_angle(float o_angle);
-  INLINE void set_inner_angle(float i_angle);
-  INLINE void set_outer_magnitude(float o_mag);
-  INLINE void set_inner_magnitude(float i_mag);
+  INLINE void set_radius(PN_stdfloat r);
+  INLINE void set_outer_angle(PN_stdfloat o_angle);
+  INLINE void set_inner_angle(PN_stdfloat i_angle);
+  INLINE void set_outer_magnitude(PN_stdfloat o_mag);
+  INLINE void set_inner_magnitude(PN_stdfloat i_mag);
   INLINE void set_cubic_lerping(bool clerp);
 
-  INLINE float get_radius() const;
-  INLINE float get_outer_angle() const;
-  INLINE float get_inner_angle() const;
-  INLINE float get_outer_magnitude() const;
-  INLINE float get_inner_magnitude() const;
+  INLINE PN_stdfloat get_radius() const;
+  INLINE PN_stdfloat get_outer_angle() const;
+  INLINE PN_stdfloat get_inner_angle() const;
+  INLINE PN_stdfloat get_outer_magnitude() const;
+  INLINE PN_stdfloat get_inner_magnitude() const;
   INLINE bool get_cubic_lerping() const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent=0) const;
 
 private:
-  float _radius;
+  PN_stdfloat _radius;
 
   // CUSTOM EMISSION PARAMETERS
-  float _inner_aoe;
-  float _outer_aoe;
-  float _inner_magnitude;
-  float _outer_magnitude;
+  PN_stdfloat _inner_aoe;
+  PN_stdfloat _outer_aoe;
+  PN_stdfloat _inner_magnitude;
+  PN_stdfloat _outer_magnitude;
   bool _cubic_lerping;
 
   ///////////////////////////////
   // scratch variables that carry over from position calc to velocity calc
-  float _distance_from_center;
-  float _sinf_theta;
-  float _cosf_theta;
+  PN_stdfloat _distance_from_center;
+  PN_stdfloat _sinf_theta;
+  PN_stdfloat _cosf_theta;
   ///////////////////////////////
 
-  virtual void assign_initial_position(LPoint3f& pos);
-  virtual void assign_initial_velocity(LVector3f& vel);
+  virtual void assign_initial_position(LPoint3& pos);
+  virtual void assign_initial_velocity(LVector3& vel);
 };
 
 #include "discEmitter.I"

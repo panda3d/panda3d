@@ -30,7 +30,7 @@ AnalogNode(ClientBase *client, const string &device_name) :
   DataNode(device_name)
 {
   _xy_output = define_output("xy", EventStoreVec2::get_class_type());
-  _xy = new EventStoreVec2(LPoint2f(0.0f, 0.0f));
+  _xy = new EventStoreVec2(LPoint2(0.0f, 0.0f));
 
   nassertv(client != (ClientBase *)NULL);
   PT(ClientDevice) device =
@@ -99,7 +99,7 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
   if (is_valid()) {
     _analog->poll();
 
-    LPoint2f out(0.0f, 0.0f);
+    LPoint2 out(0.0f, 0.0f);
 
     _analog->acquire();
     for (int i = 0; i < max_outputs; i++) {

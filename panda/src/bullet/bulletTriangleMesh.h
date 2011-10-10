@@ -24,7 +24,7 @@
 #include "nodePath.h"
 #include "lpoint3.h"
 #include "geom.h"
-#include "pta_LVecBase3f.h"
+#include "pta_LVecBase3.h"
 #include "pta_int.h"
 
 ////////////////////////////////////////////////////////////////////

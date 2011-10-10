@@ -37,18 +37,18 @@ public:
   INLINE void operator = (const MatrixLens &copy);
 
 PUBLISHED:
-  INLINE void set_user_mat(const LMatrix4f &user_mat);
-  INLINE const LMatrix4f &get_user_mat() const;
+  INLINE void set_user_mat(const LMatrix4 &user_mat);
+  INLINE const LMatrix4 &get_user_mat() const;
 
-  INLINE void set_left_eye_mat(const LMatrix4f &user_mat);
+  INLINE void set_left_eye_mat(const LMatrix4 &user_mat);
   INLINE void clear_left_eye_mat();
   INLINE bool has_left_eye_mat() const;
-  INLINE const LMatrix4f &get_left_eye_mat() const;
+  INLINE const LMatrix4 &get_left_eye_mat() const;
 
-  INLINE void set_right_eye_mat(const LMatrix4f &user_mat);
+  INLINE void set_right_eye_mat(const LMatrix4 &user_mat);
   INLINE void clear_right_eye_mat();
   INLINE bool has_right_eye_mat() const;
-  INLINE const LMatrix4f &get_right_eye_mat() const;
+  INLINE const LMatrix4 &get_right_eye_mat() const;
 
 public:
   virtual PT(Lens) make_copy() const;
@@ -60,9 +60,9 @@ protected:
   virtual void compute_projection_mat();
 
 private:
-  LMatrix4f _user_mat;
-  LMatrix4f _left_eye_mat;
-  LMatrix4f _right_eye_mat;
+  LMatrix4 _user_mat;
+  LMatrix4 _left_eye_mat;
+  LMatrix4 _right_eye_mat;
 
   enum MLFlags {
     MF_has_left_eye    = 0x001,

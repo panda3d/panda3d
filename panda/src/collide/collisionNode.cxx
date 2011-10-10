@@ -109,10 +109,10 @@ preserve_name() const {
 //               kinds of nodes, this does nothing.
 ////////////////////////////////////////////////////////////////////
 void CollisionNode::
-xform(const LMatrix4f &mat) {
+xform(const LMatrix4 &mat) {
   nassertv(!mat.is_nan());
 
-  if (mat.almost_equal(LMatrix4f::ident_mat())) {
+  if (mat.almost_equal(LMatrix4::ident_mat())) {
     return;
   }
 
@@ -371,7 +371,7 @@ get_last_pos_state() {
   static CPT(RenderState) state = (const RenderState *)NULL;
   if (state == (const RenderState *)NULL) {
     state = RenderState::make
-      (ColorScaleAttrib::make(LVecBase4f(1.0f, 1.0f, 1.0f, 0.5f)),
+      (ColorScaleAttrib::make(LVecBase4(1.0f, 1.0f, 1.0f, 0.5f)),
        TransparencyAttrib::make(TransparencyAttrib::M_alpha));
   }
 

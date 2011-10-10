@@ -20,7 +20,7 @@
 #include "nurbsSurfaceResult.h"
 #include "nurbsVertex.h"
 #include "pointerTo.h"
-#include "vector_float.h"
+#include "vector_stdfloat.h"
 #include "pvector.h"
 #include "nodePath.h"
 #include "referenceCount.h"
@@ -49,29 +49,29 @@ PUBLISHED:
 
   INLINE int get_num_u_vertices() const;
   INLINE int get_num_v_vertices() const;
-  INLINE void set_vertex(int ui, int vi, const LVecBase4f &vertex);
-  INLINE void set_vertex(int ui, int vi, const LVecBase3f &vertex, float weight = 1.0);
-  INLINE const LVecBase4f &get_vertex(int ui, int vi) const;
-  INLINE LVecBase4f get_vertex(int ui, int vi, const NodePath &rel_to) const;
+  INLINE void set_vertex(int ui, int vi, const LVecBase4 &vertex);
+  INLINE void set_vertex(int ui, int vi, const LVecBase3 &vertex, PN_stdfloat weight = 1.0);
+  INLINE const LVecBase4 &get_vertex(int ui, int vi) const;
+  INLINE LVecBase4 get_vertex(int ui, int vi, const NodePath &rel_to) const;
 
   INLINE void set_vertex_space(int ui, int vi, const NodePath &space);
   INLINE void set_vertex_space(int ui, int vi, const string &space);
   NodePath get_vertex_space(int ui, int vi, const NodePath &rel_to) const;
 
-  INLINE void set_extended_vertex(int ui, int vi, int d, float value);
-  INLINE float get_extended_vertex(int ui, int vi, int d) const;
+  INLINE void set_extended_vertex(int ui, int vi, int d, PN_stdfloat value);
+  INLINE PN_stdfloat get_extended_vertex(int ui, int vi, int d) const;
   void set_extended_vertices(int ui, int vi, int d, 
-                             const float values[], int num_values);
+                             const PN_stdfloat values[], int num_values);
 
   INLINE int get_num_u_knots() const;
-  void set_u_knot(int i, float knot);
-  float get_u_knot(int i) const;
+  void set_u_knot(int i, PN_stdfloat knot);
+  PN_stdfloat get_u_knot(int i) const;
   MAKE_SEQ(get_u_knots, get_num_u_knots, get_u_knot);
   void normalize_u_knots();
 
   INLINE int get_num_v_knots() const;
-  void set_v_knot(int i, float knot);
-  float get_v_knot(int i) const;
+  void set_v_knot(int i, PN_stdfloat knot);
+  PN_stdfloat get_v_knot(int i) const;
   MAKE_SEQ(get_v_knots, get_num_v_knots, get_v_knot);
   void normalize_v_knots();
 
@@ -83,8 +83,8 @@ PUBLISHED:
   void output(ostream &out) const;
 
 public:
-  void get_vertices(pvector<LVecBase4f> &verts, const NodePath &rel_to) const;
-  void get_vertices(pvector<LPoint3f> &verts, const NodePath &rel_to) const;
+  void get_vertices(pvector<LVecBase4> &verts, const NodePath &rel_to) const;
+  void get_vertices(pvector<LPoint3> &verts, const NodePath &rel_to) const;
 
 private:
   INLINE NurbsVertex &vert(int ui, int vi);
@@ -105,7 +105,7 @@ private:
 
   bool _u_knots_dirty;
   bool _v_knots_dirty;
-  typedef vector_float Knots;
+  typedef vector_stdfloat Knots;
   Knots _u_knots;
   Knots _v_knots;
 

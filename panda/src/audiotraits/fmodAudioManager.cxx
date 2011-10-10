@@ -50,11 +50,11 @@ bool FmodAudioManager::_system_is_valid = false;
 //  Since Panda use feet we need to compensate for that with a factor of 3.28
 //
 //  This can be overwritten.  You just need to call
-//  audio_3d_set_distance_factor(float factor) and set your new factor.
+//  audio_3d_set_distance_factor(PN_stdfloat factor) and set your new factor.
 
-float FmodAudioManager::_doppler_factor = 1;
-float FmodAudioManager::_distance_factor = 3.28;
-float FmodAudioManager::_drop_off_factor = 1;
+PN_stdfloat FmodAudioManager::_doppler_factor = 1;
+PN_stdfloat FmodAudioManager::_distance_factor = 3.28;
+PN_stdfloat FmodAudioManager::_drop_off_factor = 1;
 
 
 ////////////////////////////////////////////////////////////////////
@@ -517,13 +517,13 @@ setSpeakerSetup(AudioManager::SpeakerModeCategory cat) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FmodAudioManager::set_volume(float volume)
+//     Function: FmodAudioManager::set_volume(PN_stdfloat volume)
 //       Access: Public
 //  Description: Sets the volume of the AudioManager.
 //               It is not an override, but a multiplier.
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
-set_volume(float volume) {
+set_volume(PN_stdfloat volume) {
   FMOD_RESULT result;
   result = _channelgroup->setVolume(volume);
   fmod_audio_errcheck("_channelgroup->setVolume()", result);
@@ -534,13 +534,13 @@ set_volume(float volume) {
 //       Access: Public
 //  Description: Returns the AudioManager's volume.
 ////////////////////////////////////////////////////////////////////
-float FmodAudioManager::
+PN_stdfloat FmodAudioManager::
 get_volume() const {
   float volume;
   FMOD_RESULT result;
   result = _channelgroup->getVolume(&volume);
   fmod_audio_errcheck("_channelgroup->getVolume()", result);
-  return volume;
+  return (PN_stdfloat)volume;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -620,7 +620,7 @@ update() {
 //        I told you, so you can't say I didn't.
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
-audio_3d_set_listener_attributes(float px, float py, float pz, float vx, float vy, float vz, float fx, float fy, float fz, float ux, float uy, float uz) {
+audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz, PN_stdfloat fx, PN_stdfloat fy, PN_stdfloat fz, PN_stdfloat ux, PN_stdfloat uy, PN_stdfloat uz) {
   audio_debug("FmodAudioManager::audio_3d_set_listener_attributes()");
 
   FMOD_RESULT result;
@@ -652,7 +652,7 @@ audio_3d_set_listener_attributes(float px, float py, float pz, float vx, float v
 //  Description: Get position of the "ear" that picks up 3d sounds
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
-audio_3d_get_listener_attributes(float *px, float *py, float *pz, float *vx, float *vy, float *vz, float *fx, float *fy, float *fz, float *ux, float *uy, float *uz) {
+audio_3d_get_listener_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz, PN_stdfloat *fx, PN_stdfloat *fy, PN_stdfloat *fz, PN_stdfloat *ux, PN_stdfloat *uy, PN_stdfloat *uz) {
   audio_error("audio3dGetListenerAttributes: currently unimplemented. Get the attributes of the attached object");
 
 }
@@ -665,7 +665,7 @@ audio_3d_get_listener_attributes(float *px, float *py, float *pz, float *vx, flo
 //               its sound-spacialization calculations)
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
-audio_3d_set_distance_factor(float factor) {
+audio_3d_set_distance_factor(PN_stdfloat factor) {
   audio_debug( "FmodAudioManager::audio_3d_set_distance_factor( factor= " << factor << ")" );
   
   FMOD_RESULT result;
@@ -684,7 +684,7 @@ audio_3d_set_distance_factor(float factor) {
 //  Description: Gets units per meter (Fmod uses meters internally for
 //               its sound-spacialization calculations)
 ////////////////////////////////////////////////////////////////////
-float FmodAudioManager::
+PN_stdfloat FmodAudioManager::
 audio_3d_get_distance_factor() const {
   audio_debug("FmodAudioManager::audio_3d_get_distance_factor()");
 
@@ -698,7 +698,7 @@ audio_3d_get_distance_factor() const {
 //               Defaults to 1.0
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
-audio_3d_set_doppler_factor(float factor) {
+audio_3d_set_doppler_factor(PN_stdfloat factor) {
   audio_debug("FmodAudioManager::audio_3d_set_doppler_factor(factor="<<factor<<")");
 
   FMOD_RESULT result;
@@ -715,7 +715,7 @@ audio_3d_set_doppler_factor(float factor) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-float FmodAudioManager::
+PN_stdfloat FmodAudioManager::
 audio_3d_get_doppler_factor() const {
   audio_debug("FmodAudioManager::audio_3d_get_doppler_factor()");
 
@@ -729,7 +729,7 @@ audio_3d_get_doppler_factor() const {
 //               Defaults to 1.0
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
-audio_3d_set_drop_off_factor(float factor) {
+audio_3d_set_drop_off_factor(PN_stdfloat factor) {
   audio_debug("FmodAudioManager::audio_3d_set_drop_off_factor("<<factor<<")");
 
   FMOD_RESULT result;
@@ -746,7 +746,7 @@ audio_3d_set_drop_off_factor(float factor) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-float FmodAudioManager::
+PN_stdfloat FmodAudioManager::
 audio_3d_get_drop_off_factor() const {
   audio_debug("FmodAudioManager::audio_3d_get_drop_off_factor()");
 

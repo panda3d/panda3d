@@ -1472,10 +1472,10 @@ get_highest_index_value(NumericType index_type) {
 //               before calling this function.
 ////////////////////////////////////////////////////////////////////
 void GeomPrimitive::
-calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
                   bool &found_any, 
                   const GeomVertexData *vertex_data,
-                  bool got_mat, const LMatrix4f &mat,
+                  bool got_mat, const LMatrix4 &mat,
                   const InternalName *column_name,
                   Thread *current_thread) const {
   GeomVertexReader reader(vertex_data, column_name, current_thread);
@@ -1492,7 +1492,7 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
     if (got_mat) {
       for (int i = 0; i < cdata->_num_vertices; i++) {
         reader.set_row_unsafe(cdata->_first_vertex + i);
-        LPoint3f vertex = mat.xform_point(reader.get_data3f());
+        LPoint3 vertex = mat.xform_point(reader.get_data3());
         
         if (found_any) {
           min_point.set(min(min_point[0], vertex[0]),
@@ -1510,7 +1510,7 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
     } else {
       for (int i = 0; i < cdata->_num_vertices; i++) {
         reader.set_row_unsafe(cdata->_first_vertex + i);
-        const LVecBase3f &vertex = reader.get_data3f();
+        const LVecBase3 &vertex = reader.get_data3();
         
         if (found_any) {
           min_point.set(min(min_point[0], vertex[0]),
@@ -1535,7 +1535,7 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
       while (!index.is_at_end()) {
         int ii = index.get_data1i();
         reader.set_row_unsafe(ii);
-        LPoint3f vertex = mat.xform_point(reader.get_data3f());
+        LPoint3 vertex = mat.xform_point(reader.get_data3());
         
         if (found_any) {
           min_point.set(min(min_point[0], vertex[0]),
@@ -1554,7 +1554,7 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
       while (!index.is_at_end()) {
         int ii = index.get_data1i();
         reader.set_row_unsafe(ii);
-        const LVecBase3f &vertex = reader.get_data3f();
+        const LVecBase3 &vertex = reader.get_data3();
         
         if (found_any) {
           min_point.set(min(min_point[0], vertex[0]),

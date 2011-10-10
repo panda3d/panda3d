@@ -143,7 +143,7 @@ class MaxEggPlugin : public HelperObject
   int DoOwnSelectHilite() { return 1; }
 
   // From GeomObject
-  int IntersectRay(TimeValue t, Ray& r, float& at) { return 0; }
+  int IntersectRay(TimeValue t, Ray& r, PN_stdfloat& at) { return 0; }
   void GetWorldBoundBox(TimeValue t, INode *mat, ViewExp *vpt, Box3& box );
   void GetLocalBoundBox(TimeValue t, INode *mat, ViewExp *vpt, Box3& box );
   void GetDeformBBox(TimeValue t, Box3& box, Matrix3 *tm, BOOL useSel );

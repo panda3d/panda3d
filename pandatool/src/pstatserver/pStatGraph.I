@@ -62,9 +62,9 @@ get_label_name(int n) const {
 //       Access: Public
 //  Description: Returns the color associated with the nth label.
 ////////////////////////////////////////////////////////////////////
-INLINE RGBColorf PStatGraph::
+INLINE LRGBColor PStatGraph::
 get_label_color(int n) const {
-  nassertr(n >= 0 && n < (int)_labels.size(), RGBColorf(0.0, 0.0, 0.0));
+  nassertr(n >= 0 && n < (int)_labels.size(), LRGBColor(0.0, 0.0, 0.0));
   return _monitor->get_collector_color(_labels[n]);
 }
 
@@ -76,7 +76,7 @@ get_label_color(int n) const {
 //               placement of guide bars.
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatGraph::
-set_target_frame_rate(float frame_rate) {
+set_target_frame_rate(PN_stdfloat frame_rate) {
   if (_target_frame_rate != frame_rate) {
     _target_frame_rate = frame_rate;
     normal_guide_bars();
@@ -89,7 +89,7 @@ set_target_frame_rate(float frame_rate) {
 //  Description: Returns the indicated target frame rate in Hz.  See
 //               set_target_frame_rate().
 ////////////////////////////////////////////////////////////////////
-INLINE float PStatGraph::
+INLINE PN_stdfloat PStatGraph::
 get_target_frame_rate() const {
   return _target_frame_rate;
 }

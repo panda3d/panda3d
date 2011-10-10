@@ -84,7 +84,7 @@ public:
   XFileDataObject &add_Vector(XFile *x_file, const LVecBase3d &vector);
   XFileDataObject &add_MeshFace(XFile *x_file);
   XFileDataObject &add_IndexedColor(XFile *x_file, int index, 
-                                    const Colorf &color);
+                                    const LColor &color);
   XFileDataObject &add_Coords2d(XFile *x_file, const LVecBase2d &coords);
 
 public:

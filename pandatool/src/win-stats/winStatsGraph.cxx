@@ -146,7 +146,7 @@ set_time_units(int unit_mask) {
 //               speed for the graph to the indicated value.
 ////////////////////////////////////////////////////////////////////
 void WinStatsGraph::
-set_scroll_speed(float scroll_speed) {
+set_scroll_speed(PN_stdfloat scroll_speed) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -244,7 +244,7 @@ get_collector_brush(int collector_index) {
   }
 
   // Ask the monitor what color this guy should be.
-  RGBColorf rgb = _monitor->get_collector_color(collector_index);
+  LRGBColor rgb = _monitor->get_collector_color(collector_index);
   int r = (int)(rgb[0] * 255.0f);
   int g = (int)(rgb[1] * 255.0f);
   int b = (int)(rgb[2] * 255.0f);

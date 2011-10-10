@@ -38,7 +38,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PGRAPH PlaneNode : public PandaNode {
 PUBLISHED:
-  PlaneNode(const string &name, const Planef &plane = Planef());
+  PlaneNode(const string &name, const LPlane &plane = LPlane());
 
 protected:
   PlaneNode(const PlaneNode &copy);
@@ -46,17 +46,17 @@ public:
   virtual void output(ostream &out) const;
 
   virtual PandaNode *make_copy() const;
-  virtual void xform(const LMatrix4f &mat);
+  virtual void xform(const LMatrix4 &mat);
 
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
   virtual bool is_renderable() const;
 
 PUBLISHED:
-  INLINE void set_plane(const Planef &plane);
-  INLINE const Planef &get_plane() const;
+  INLINE void set_plane(const LPlane &plane);
+  INLINE const LPlane &get_plane() const;
 
-  INLINE void set_viz_scale(float viz_scale);
-  INLINE float get_viz_scale() const;
+  INLINE void set_viz_scale(PN_stdfloat viz_scale);
+  INLINE PN_stdfloat get_viz_scale() const;
 
   INLINE void set_priority(int priority);
   INLINE int get_priority() const;
@@ -98,9 +98,9 @@ private:
       return PlaneNode::get_class_type();
     }
 
-    Planef _plane;
+    LPlane _plane;
     PT(Geom) _front_viz, _back_viz;
-    float _viz_scale;
+    PN_stdfloat _viz_scale;
   };
 
   PipelineCycler<CData> _cycler;

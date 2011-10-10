@@ -28,17 +28,17 @@ class EXPCL_PANDA_AUDIO FilterProperties : public TypedReferenceCount {
   FilterProperties();
   ~FilterProperties();
   INLINE void clear();
-  INLINE void add_lowpass(float cutoff_freq, float resonance_q);
-  INLINE void add_highpass(float cutoff_freq, float resonance_q);
-  INLINE void add_echo(float drymix, float wetmix, float delay, float decayratio);
-  INLINE void add_flange(float drymix, float wetmix, float depth, float rate);
-  INLINE void add_distort(float level);
-  INLINE void add_normalize(float fadetime, float threshold, float maxamp);
-  INLINE void add_parameq(float center_freq, float bandwidth, float gain);
-  INLINE void add_pitchshift(float pitch, float fftsize, float overlap);
-  INLINE void add_chorus(float drymix, float wet1, float wet2, float wet3, float delay, float rate, float depth, float feedback);
-  INLINE void add_reverb(float drymix, float wetmix, float roomsize, float damp, float width);
-  INLINE void add_compress(float threshold, float attack, float release, float gainmakeup);
+  INLINE void add_lowpass(PN_stdfloat cutoff_freq, PN_stdfloat resonance_q);
+  INLINE void add_highpass(PN_stdfloat cutoff_freq, PN_stdfloat resonance_q);
+  INLINE void add_echo(PN_stdfloat drymix, PN_stdfloat wetmix, PN_stdfloat delay, PN_stdfloat decayratio);
+  INLINE void add_flange(PN_stdfloat drymix, PN_stdfloat wetmix, PN_stdfloat depth, PN_stdfloat rate);
+  INLINE void add_distort(PN_stdfloat level);
+  INLINE void add_normalize(PN_stdfloat fadetime, PN_stdfloat threshold, PN_stdfloat maxamp);
+  INLINE void add_parameq(PN_stdfloat center_freq, PN_stdfloat bandwidth, PN_stdfloat gain);
+  INLINE void add_pitchshift(PN_stdfloat pitch, PN_stdfloat fftsize, PN_stdfloat overlap);
+  INLINE void add_chorus(PN_stdfloat drymix, PN_stdfloat wet1, PN_stdfloat wet2, PN_stdfloat wet3, PN_stdfloat delay, PN_stdfloat rate, PN_stdfloat depth, PN_stdfloat feedback);
+  INLINE void add_reverb(PN_stdfloat drymix, PN_stdfloat wetmix, PN_stdfloat roomsize, PN_stdfloat damp, PN_stdfloat width);
+  INLINE void add_compress(PN_stdfloat threshold, PN_stdfloat attack, PN_stdfloat release, PN_stdfloat gainmakeup);
 
  public:
 
@@ -58,14 +58,14 @@ class EXPCL_PANDA_AUDIO FilterProperties : public TypedReferenceCount {
 
   struct FilterConfig {
     FilterType  _type;
-    float       _a,_b,_c,_d;
-    float       _e,_f,_g,_h;
+    PN_stdfloat       _a,_b,_c,_d;
+    PN_stdfloat       _e,_f,_g,_h;
   };
   
   typedef pvector<FilterConfig> ConfigVector;
   
  private:  
-  void add_filter(FilterType t, float a=0, float b=0, float c=0, float d=0, float e=0, float f=0, float g=0, float h=0);
+  void add_filter(FilterType t, PN_stdfloat a=0, PN_stdfloat b=0, PN_stdfloat c=0, PN_stdfloat d=0, PN_stdfloat e=0, PN_stdfloat f=0, PN_stdfloat g=0, PN_stdfloat h=0);
   ConfigVector _config;
   
  public:

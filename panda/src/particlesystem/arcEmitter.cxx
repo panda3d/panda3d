@@ -62,8 +62,8 @@ make_copy() {
 // Description : Generates a location for a new particle
 ////////////////////////////////////////////////////////////////////
 void ArcEmitter::
-assign_initial_position(LPoint3f& pos) {
-  float theta;
+assign_initial_position(LPoint3& pos) {
+  PN_stdfloat theta;
   if ( _start_theta < _end_theta ) {
     theta = LERP(NORMALIZED_RAND(), _start_theta, _end_theta);
   } else {
@@ -74,9 +74,9 @@ assign_initial_position(LPoint3f& pos) {
   this->_cos_theta = cosf(theta);
   this->_sin_theta = sinf(theta);
 
-  float new_radius_spread = SPREAD(_radius_spread);
-  float new_x = _cos_theta * (_radius + new_radius_spread);
-  float new_y = _sin_theta * (_radius + new_radius_spread);
+  PN_stdfloat new_radius_spread = SPREAD(_radius_spread);
+  PN_stdfloat new_x = _cos_theta * (_radius + new_radius_spread);
+  PN_stdfloat new_y = _sin_theta * (_radius + new_radius_spread);
 
   pos.set(new_x, new_y, 0.0f);
 }

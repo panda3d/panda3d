@@ -57,7 +57,7 @@ public:
   void clear_egg(EggData *egg_data, EggGroupNode *egg_root, EggGroupNode *skeleton_node);
 
   PT(SoftNodeDesc) _root;
-  float _fps;
+  PN_stdfloat _fps;
   int _use_prefix;
   char *_search_prefix;
   

@@ -105,47 +105,47 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
 
   // 0 = beginning; length() = end.
   // inits to 0.0.
-  void set_time(float start_time=0.0);
-  float get_time() const;
+  void set_time(PN_stdfloat start_time=0.0);
+  PN_stdfloat get_time() const;
 
   // 0 = minimum; 1.0 = maximum.
   // inits to 1.0.
-  void set_volume(float volume=1.0);
-  float get_volume() const;
+  void set_volume(PN_stdfloat volume=1.0);
+  PN_stdfloat get_volume() const;
 
   // -1.0 is hard left
   // 0.0 is centered
   // 1.0 is hard right
   // inits to 0.0.
-  void set_balance(float balance_right=0.0);
-  float get_balance() const;
+  void set_balance(PN_stdfloat balance_right=0.0);
+  PN_stdfloat get_balance() const;
 
   // play_rate is any positive float value.
   // inits to 1.0.
-  void set_play_rate(float play_rate=1.0f);
-  float get_play_rate() const;
+  void set_play_rate(PN_stdfloat play_rate=1.0f);
+  PN_stdfloat get_play_rate() const;
 
   const string &get_name() const;
 
   // return: playing time in seconds.
-  float length() const;
+  PN_stdfloat length() const;
 
   // Controls the position of this sound's emitter.
   // pos is a pointer to an xyz triplet of the emitter's position.
   // vel is a pointer to an xyz triplet of the emitter's velocity.
-  void set_3d_attributes(float px, float py, float pz, float vx, float vy, float vz);
-  void get_3d_attributes(float *px, float *py, float *pz, float *vx, float *vy, float *vz);
+  void set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz);
+  void get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz);
 
-  void set_3d_min_distance(float dist);
-  float get_3d_min_distance() const;
+  void set_3d_min_distance(PN_stdfloat dist);
+  PN_stdfloat get_3d_min_distance() const;
 
-  void set_3d_max_distance(float dist);
-  float get_3d_max_distance() const;
+  void set_3d_max_distance(PN_stdfloat dist);
+  PN_stdfloat get_3d_max_distance() const;
 
   AudioSound::SoundStatus status() const;
 
-  virtual float get_speaker_mix(AudioManager::SpeakerId speaker);
-  virtual void set_speaker_mix(float frontleft, float frontright, float center, float sub, float backleft, float backright, float sideleft, float  sideright);
+  virtual PN_stdfloat get_speaker_mix(AudioManager::SpeakerId speaker);
+  virtual void set_speaker_mix(PN_stdfloat frontleft, PN_stdfloat frontright, PN_stdfloat center, PN_stdfloat sub, PN_stdfloat backleft, PN_stdfloat backright, PN_stdfloat sideleft, PN_stdfloat  sideright);
 
   void set_active(bool active=true);
   bool get_active() const;
@@ -175,8 +175,8 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
   FMOD_VECTOR _location;
   FMOD_VECTOR _velocity;
 
-  float _min_dist;
-  float _max_dist;
+  PN_stdfloat _min_dist;
+  PN_stdfloat _max_dist;
 
   void start_playing();
   void set_volume_on_channel();
@@ -192,7 +192,7 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
 
   bool _active;
   bool _paused;
-  float _start_time;
+  PN_stdfloat _start_time;
 
   string _finished_event;
 

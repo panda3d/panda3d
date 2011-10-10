@@ -32,7 +32,7 @@ TypeHandle DisplayRegionPipelineReader::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DisplayRegion::
-DisplayRegion(GraphicsOutput *window, const LVecBase4f &dimensions) :
+DisplayRegion(GraphicsOutput *window, const LVecBase4 &dimensions) :
   _window(window),
   _incomplete_render(true),
   _texture_reload_priority(0),
@@ -124,7 +124,7 @@ set_lens_index(int index) {
 //               whole screen.
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
-set_dimensions(const LVecBase4f &dimensions) {
+set_dimensions(const LVecBase4 &dimensions) {
   int pipeline_stage = Thread::get_current_pipeline_stage();
   nassertv(pipeline_stage == 0);
   CDWriter cdata(_cycler);

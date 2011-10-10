@@ -60,7 +60,7 @@ test_intersection(const CollisionEntry &entry) const {
 //  Description: Transforms the solid by the indicated matrix.
 ////////////////////////////////////////////////////////////////////
 void CollisionSegment::
-xform(const LMatrix4f &mat) {
+xform(const LMatrix4 &mat) {
   _a = _a * mat;
   _b = _b * mat;
 
@@ -75,7 +75,7 @@ xform(const LMatrix4f &mat) {
 //               intersection point to this origin point is considered
 //               to be the most significant.
 ////////////////////////////////////////////////////////////////////
-LPoint3f CollisionSegment::
+LPoint3 CollisionSegment::
 get_collision_origin() const {
   return get_point_a();
 }
@@ -103,13 +103,13 @@ output(ostream &out) const {
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
 bool CollisionSegment::
-set_from_lens(LensNode *camera, const LPoint2f &point) {
+set_from_lens(LensNode *camera, const LPoint2 &point) {
   Lens *proj = camera->get_lens();
 
   bool success = true;
   if (!proj->extrude(point, _a, _b)) {
-    _a = LPoint3f::origin();
-    _b = _a + LVector3f::forward();
+    _a = LPoint3::origin();
+    _b = _a + LVector3::forward();
     success = false;
   }
 
@@ -127,26 +127,26 @@ set_from_lens(LensNode *camera, const LPoint2f &point) {
 PT(BoundingVolume) CollisionSegment::
 compute_internal_bounds() const {
 
-  LVector3f pdelta = _b - _a;
+  LVector3 pdelta = _b - _a;
 
   // If p1 and p2 are sufficiently close, just put a sphere around
   // them.
-  float d2 = pdelta.length_squared();
+  PN_stdfloat d2 = pdelta.length_squared();
   if (d2 < collision_parabola_bounds_threshold * collision_parabola_bounds_threshold) {
-    LPoint3f pmid = (_a + _b) * 0.5f;
+    LPoint3 pmid = (_a + _b) * 0.5f;
     return new BoundingSphere(pmid, csqrt(d2) * 0.5f);
   }
 
-  LMatrix4f from_segment;
-  look_at(from_segment, pdelta, LPoint3f(0,0,1), CS_zup_right);
+  LMatrix4 from_segment;
+  look_at(from_segment, pdelta, LPoint3(0,0,1), CS_zup_right);
   from_segment.set_row(3, _a);
   
-  float max_y =  sqrt(d2) + 0.01;
+  PN_stdfloat max_y =  sqrt(d2) + 0.01;
   PT(BoundingHexahedron) volume = 
-    new BoundingHexahedron(LPoint3f(-0.01, max_y, -0.01), LPoint3f(0.01, max_y, -0.01),
-                           LPoint3f(0.01, max_y, 0.01), LPoint3f(-0.01, max_y,  0.01),
-                           LPoint3f(-0.01, -0.01, -0.01), LPoint3f(0.01, 0.01, -0.01),
-                           LPoint3f(0.01, -0.01, 0.01), LPoint3f(-0.01, -0.01, 0.01));
+    new BoundingHexahedron(LPoint3(-0.01, max_y, -0.01), LPoint3(0.01, max_y, -0.01),
+                           LPoint3(0.01, max_y, 0.01), LPoint3(-0.01, max_y,  0.01),
+                           LPoint3(-0.01, -0.01, -0.01), LPoint3(0.01, 0.01, -0.01),
+                           LPoint3(0.01, -0.01, 0.01), LPoint3(-0.01, -0.01, 0.01));
 
   volume->xform(from_segment);
   return volume.p();
@@ -170,8 +170,8 @@ fill_viz_geom() {
      Geom::UH_static);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   
-  vertex.add_data3f(_a);
-  vertex.add_data3f(_b);
+  vertex.add_data3(_a);
+  vertex.add_data3(_b);
   
   PT(GeomLines) line = new GeomLines(Geom::UH_static);
   line->add_next_vertices(2);

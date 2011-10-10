@@ -51,16 +51,16 @@ protected:
 
 PUBLISHED:
   static CPT(RenderEffect) make();
-  static CPT(RenderEffect) make(float weight, ContribType contrib, LPoint3f effect_center);
-  static CPT(RenderEffect) make(float weight, ContribType contrib, LPoint3f effect_center, const LightGroup &lights);
+  static CPT(RenderEffect) make(PN_stdfloat weight, ContribType contrib, LPoint3 effect_center);
+  static CPT(RenderEffect) make(PN_stdfloat weight, ContribType contrib, LPoint3 effect_center, const LightGroup &lights);
   CPT(RenderEffect) add_light(const NodePath &newlight) const;
   CPT(RenderEffect) remove_light(const NodePath &newlight) const;
-  CPT(RenderEffect) set_weight(float w) const;
+  CPT(RenderEffect) set_weight(PN_stdfloat w) const;
   CPT(RenderEffect) set_contrib(ContribType c) const;
-  CPT(RenderEffect) set_effect_center(LPoint3f ec) const;
-  INLINE float get_weight() const;
+  CPT(RenderEffect) set_effect_center(LPoint3 ec) const;
+  INLINE PN_stdfloat get_weight() const;
   INLINE ContribType get_contrib() const;
-  INLINE LPoint3f get_effect_center()const;
+  INLINE LPoint3 get_effect_center()const;
 
   bool has_light(const NodePath &light) const;
 
@@ -77,9 +77,9 @@ public:
 
 private:
   ContribType _contribution_type;
-  float _weight;
+  PN_stdfloat _weight;
   LightGroup _lightgroup;
-  LPoint3f _effect_center;
+  LPoint3 _effect_center;
 
 protected:
   virtual int compare_to_impl(const RenderEffect *other) const;

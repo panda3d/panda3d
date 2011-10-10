@@ -1,5 +1,5 @@
-// Filename: config_effects.h
-// Created by:  jason (18Jul00)
+// Filename: pta_LMatrix4.cxx
+// Created by:  drose (27Feb10)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,15 +12,9 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "pta_LMatrix4.h"
 
-#ifndef CONFIG_EFFECTS_H
-#define CONFIG_EFFECTS_H
-
-#include "pandabase.h"
-#include "notifyCategoryProxy.h"
-
-NotifyCategoryDecl(effects, EXPCL_PANDAFX, EXPTP_PANDAFX);
-
-extern EXPCL_PANDAFX void init_libeffects();
-
-#endif /* CONFIG_EFFECTS_H */
+// Tell GCC that we'll take care of the instantiation explicitly here.
+#ifdef __GNUC__
+#pragma implementation
+#endif

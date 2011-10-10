@@ -30,7 +30,7 @@ get_name() const {
 //  Description: Stores the indicated matrix.
 ////////////////////////////////////////////////////////////////////
 INLINE void UserVertexTransform::
-set_matrix(const LMatrix4f &matrix) {
+set_matrix(const LMatrix4 &matrix) {
   Thread *current_thread = Thread::get_current_thread();
   CDWriter cdata(_cycler, true, current_thread);
   cdata->_matrix = matrix;
@@ -44,7 +44,7 @@ set_matrix(const LMatrix4f &matrix) {
 ////////////////////////////////////////////////////////////////////
 INLINE UserVertexTransform::CData::
 CData() :
-  _matrix(LMatrix4f::ident_mat())
+  _matrix(LMatrix4::ident_mat())
 {
 }
 

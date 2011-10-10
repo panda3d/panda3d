@@ -99,7 +99,7 @@ process_pfm(const Filename &input_filename, PfmFile &file) {
     };
     
     for (int i = 0; i < bounds->get_num_points(); ++i) {
-      LPoint3f p = bounds->get_point(reorder_points[ri][i]);
+      LPoint3 p = bounds->get_point(reorder_points[ri][i]);
       out << p[0] << "," << p[1] << "," << p[2] << "\n";
     }
   }

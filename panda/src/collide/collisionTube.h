@@ -29,13 +29,13 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_COLLIDE CollisionTube : public CollisionSolid {
 PUBLISHED:
-  INLINE CollisionTube(const LPoint3f &a, const LPoint3f &db,
-                       float radius);
-  INLINE CollisionTube(float ax, float ay, float az,
-                       float bx, float by, float bz,
-                       float radius);
+  INLINE CollisionTube(const LPoint3 &a, const LPoint3 &db,
+                       PN_stdfloat radius);
+  INLINE CollisionTube(PN_stdfloat ax, PN_stdfloat ay, PN_stdfloat az,
+                       PN_stdfloat bx, PN_stdfloat by, PN_stdfloat bz,
+                       PN_stdfloat radius);
 
-  virtual LPoint3f get_collision_origin() const;
+  virtual LPoint3 get_collision_origin() const;
 
 private:
   INLINE CollisionTube();
@@ -44,7 +44,7 @@ public:
   INLINE CollisionTube(const CollisionTube &copy);
   virtual CollisionSolid *make_copy();
 
-  virtual void xform(const LMatrix4f &mat);
+  virtual void xform(const LMatrix4 &mat);
 
   virtual PStatCollector &get_volume_pcollector();
   virtual PStatCollector &get_test_pcollector();
@@ -54,16 +54,16 @@ public:
   INLINE static void flush_level();
 
 PUBLISHED:
-  INLINE void set_point_a(const LPoint3f &a);
-  INLINE void set_point_a(float x, float y, float z);
-  INLINE const LPoint3f &get_point_a() const;
+  INLINE void set_point_a(const LPoint3 &a);
+  INLINE void set_point_a(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+  INLINE const LPoint3 &get_point_a() const;
 
-  INLINE void set_point_b(const LPoint3f &b);
-  INLINE void set_point_b(float x, float y, float z);
-  INLINE const LPoint3f &get_point_b() const;
+  INLINE void set_point_b(const LPoint3 &b);
+  INLINE void set_point_b(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+  INLINE const LPoint3 &get_point_b() const;
 
-  INLINE void set_radius(float radius);
-  INLINE float get_radius() const;
+  INLINE void set_radius(PN_stdfloat radius);
+  INLINE PN_stdfloat get_radius() const;
 
 protected:
   virtual PT(BoundingVolume) compute_internal_bounds() const;
@@ -85,35 +85,35 @@ protected:
 private:
   void recalc_internals();
 
-  Vertexf calc_sphere1_vertex(int ri, int si, int num_rings, int num_slices);
-  Vertexf calc_sphere2_vertex(int ri, int si, int num_rings, int num_slices,
-                              float length);
+  LVertex calc_sphere1_vertex(int ri, int si, int num_rings, int num_slices);
+  LVertex calc_sphere2_vertex(int ri, int si, int num_rings, int num_slices,
+                              PN_stdfloat length);
 
   bool intersects_line(double &t1, double &t2,
-                       LPoint3f from, LVector3f delta,
-                       float inflate_radius) const;
-  bool sphere_intersects_line(double &t1, double &t2, float center_y,
-                              const LPoint3f &from, const LVector3f &delta,
-                              float inflate_radius) const;
-  bool intersects_parabola(double &t, const Parabolaf &parabola,
+                       LPoint3 from, LVector3 delta,
+                       PN_stdfloat inflate_radius) const;
+  bool sphere_intersects_line(double &t1, double &t2, PN_stdfloat center_y,
+                              const LPoint3 &from, const LVector3 &delta,
+                              PN_stdfloat inflate_radius) const;
+  bool intersects_parabola(double &t, const LParabola &parabola,
                            double t1, double t2,
-                           const LPoint3f &p1, const LPoint3f &p2) const;
-  void calculate_surface_point_and_normal(const LPoint3f &surface_point,
+                           const LPoint3 &p1, const LPoint3 &p2) const;
+  void calculate_surface_point_and_normal(const LPoint3 &surface_point,
                                           double extra_radius,
-                                          LPoint3f &result_point,
-                                          LVector3f &result_normal) const;
+                                          LPoint3 &result_point,
+                                          LVector3 &result_normal) const;
   void set_intersection_point(CollisionEntry *new_entry, 
-                              const LPoint3f &into_intersection_point, 
+                              const LPoint3 &into_intersection_point, 
                               double extra_radius) const;
 
 private:
-  LPoint3f _a, _b;
-  float _radius;
+  LPoint3 _a, _b;
+  PN_stdfloat _radius;
 
   // These are derived from the above.
-  LMatrix4f _mat;
-  LMatrix4f _inv_mat;
-  float _length;
+  LMatrix4 _mat;
+  LMatrix4 _inv_mat;
+  PN_stdfloat _length;
 
   static PStatCollector _volume_pcollector;
   static PStatCollector _test_pcollector;

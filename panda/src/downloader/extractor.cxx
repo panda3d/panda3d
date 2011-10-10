@@ -266,7 +266,7 @@ step() {
 //  Description: Returns the fraction of the Multifile extracted so
 //               far.
 ////////////////////////////////////////////////////////////////////
-float Extractor::
+PN_stdfloat Extractor::
 get_progress() const {
   if (!_initiated) {
     return 0.0f;
@@ -275,7 +275,7 @@ get_progress() const {
     return 1.0f;
   }
 
-  return (float)_total_bytes_extracted / (float)_requests_total_length;
+  return (PN_stdfloat)_total_bytes_extracted / (PN_stdfloat)_requests_total_length;
 }
 
 ////////////////////////////////////////////////////////////////////

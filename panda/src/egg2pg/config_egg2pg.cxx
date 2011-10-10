@@ -56,16 +56,6 @@ ConfigVariableDouble egg_flatten_radius
           "the user to specify what should be considered \"small\".  Set "
           "it to 0.0 to disable this feature."));
 
-ConfigVariableBool egg_float64_vertices
-("egg-float64-vertices", false,
- PRC_DESC("When this is true, the egg loader will store the vertices "
-          "for all geometry in a 64-bit double-precision float, instead "
-          "of the standard 32-bit single-precision float.  You almost never "
-          "want to set this true, since current hardware does not support "
-          "double-precision vertices, and setting this will just require the "
-          "driver to downsample the vertices at load time, making everything "
-          "slower."));
-
 ConfigVariableBool egg_unify
 ("egg-unify", true,
  PRC_DESC("When this is true, then in addition to flattening the scene graph "

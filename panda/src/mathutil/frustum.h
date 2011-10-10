@@ -28,4 +28,10 @@
 #include "dblnames.h"
 #include "frustum_src.h"
 
+#ifndef STDFLOAT_DOUBLE
+typedef Frustumf LFrustum;
+#else
+typedef Frustumd LFrustum;
+#endif
+
 #endif

@@ -198,29 +198,29 @@ get_angle_attribute(MObject &node, const string &attribute_name,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: get_vec2f_attribute
+//     Function: get_vec2_attribute
 //  Description: Extracts the named two-component vector from the
 //               MObject.
 ////////////////////////////////////////////////////////////////////
 bool
-get_vec2f_attribute(MObject &node, const string &attribute_name,
-                    LVecBase2f &value) {
+get_vec2_attribute(MObject &node, const string &attribute_name,
+                    LVecBase2 &value) {
   MStatus status;
 
-  MObject vec2f_object;
-  if (!get_maya_attribute(node, attribute_name, vec2f_object)) {
+  MObject vec2_object;
+  if (!get_maya_attribute(node, attribute_name, vec2_object)) {
     maya_cat.warning()
       << "Attribute " << attribute_name
-      << " does not have a vec2f object value.\n";
+      << " does not have a vec2 object value.\n";
     describe_maya_attribute(node, attribute_name);
     return false;
   }
 
-  MFnNumericData data(vec2f_object, &status);
+  MFnNumericData data(vec2_object, &status);
   if (!status) {
     maya_cat.warning()
       << "Attribute " << attribute_name << " is of type "
-      << vec2f_object.apiTypeStr() << ", not a NumericData.\n";
+      << vec2_object.apiTypeStr() << ", not a NumericData.\n";
     return false;
   }
 
@@ -228,36 +228,36 @@ get_vec2f_attribute(MObject &node, const string &attribute_name,
   if (!status) {
     maya_cat.warning()
       << "Unable to extract 2 floats from " << attribute_name
-      << ", of type " << vec2f_object.apiTypeStr() << "\n";
+      << ", of type " << vec2_object.apiTypeStr() << "\n";
   }
 
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: get_vec3f_attribute
+//     Function: get_vec3_attribute
 //  Description: Extracts the named three-component vector from the
 //               MObject.
 ////////////////////////////////////////////////////////////////////
 bool
-get_vec3f_attribute(MObject &node, const string &attribute_name,
-                    LVecBase3f &value) {
+get_vec3_attribute(MObject &node, const string &attribute_name,
+                    LVecBase3 &value) {
   MStatus status;
 
-  MObject vec3f_object;
-  if (!get_maya_attribute(node, attribute_name, vec3f_object)) {
+  MObject vec3_object;
+  if (!get_maya_attribute(node, attribute_name, vec3_object)) {
     maya_cat.warning()
       << "Attribute " << attribute_name
-      << " does not have a vec3f object value.\n";
+      << " does not have a vec3 object value.\n";
     describe_maya_attribute(node, attribute_name);
     return false;
   }
 
-  MFnNumericData data(vec3f_object, &status);
+  MFnNumericData data(vec3_object, &status);
   if (!status) {
     maya_cat.warning()
       << "Attribute " << attribute_name << " is of type "
-      << vec3f_object.apiTypeStr() << ", not a NumericData.\n";
+      << vec3_object.apiTypeStr() << ", not a NumericData.\n";
     return false;
   }
 
@@ -265,7 +265,7 @@ get_vec3f_attribute(MObject &node, const string &attribute_name,
   if (!status) {
     maya_cat.warning()
       << "Unable to extract 3 floats from " << attribute_name
-      << ", of type " << vec3f_object.apiTypeStr() << "\n";
+      << ", of type " << vec3_object.apiTypeStr() << "\n";
   }
 
   return true;
@@ -545,9 +545,9 @@ describe_compound_attribute(MObject &node) {
   for (size_t i = 0; i < comp_attr.numChildren(); i++) {
     MObject child = comp_attr.child(i, &status);
     if (child.apiType() == MFn::kAttribute3Float){
-      RGBColorf color;
+      LRGBColor color;
       /*
-      if (get_vec3f_attribute(child, "color", color)) {
+      if (get_vec3_attribute(child, "color", color)) {
         maya_cat.info() << "color: " << color << endl;
       }
       */
@@ -557,7 +557,7 @@ describe_compound_attribute(MObject &node) {
       if (status) {
         switch(numeric.unitType()) {
         case MFnNumericData::kFloat :
-          float alpha;
+          PN_stdfloat alpha;
           status = numeric.getDefault(alpha);
           maya_cat.info() << "found a float :" << alpha << endl;
           break;

@@ -52,8 +52,8 @@ PUBLISHED:
   virtual PandaNode *as_node()=0;
   virtual bool is_ambient_light() const;
 
-  INLINE const Colorf &get_color() const;
-  INLINE void set_color(const Colorf &color);
+  INLINE const LColor &get_color() const;
+  INLINE void set_color(const LColor &color);
 
   INLINE void set_priority(int priority);
   INLINE int get_priority() const;
@@ -65,9 +65,9 @@ public:
   virtual void bind(GraphicsStateGuardianBase *gsg, const NodePath &light,
                     int light_id)=0;
 
-  virtual bool get_vector_to_light(LVector3f &result,
-                                   const LPoint3f &from_object_point, 
-                                   const LMatrix4f &to_object_space);
+  virtual bool get_vector_to_light(LVector3 &result,
+                                   const LPoint3 &from_object_point, 
+                                   const LMatrix4 &to_object_space);
 
   GeomNode *get_viz();
 
@@ -108,7 +108,7 @@ private:
       return Light::get_class_type();
     }
 
-    Colorf _color;
+    LColor _color;
 
     PT(GeomNode) _viz_geom;
     bool _viz_geom_stale;

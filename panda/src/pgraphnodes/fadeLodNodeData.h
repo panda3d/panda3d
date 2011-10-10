@@ -32,7 +32,7 @@ public:
     FM_less_detail,
   };
   FadeMode _fade_mode;
-  float _fade_start;
+  PN_stdfloat _fade_start;
   int _fade_out;
   int _fade_in;
 

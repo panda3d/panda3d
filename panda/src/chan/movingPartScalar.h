@@ -34,12 +34,12 @@ protected:
 
 public:
   INLINE MovingPartScalar(PartGroup *parent, const string &name,
-                          const float &default_value = 0);
+                          const PN_stdfloat &default_value = 0);
   virtual ~MovingPartScalar();
 
   virtual void get_blend_value(const PartBundle *root);
 
-  virtual bool apply_freeze_scalar(float value);
+  virtual bool apply_freeze_scalar(PN_stdfloat value);
   virtual bool apply_control(PandaNode *node);
 
 protected:

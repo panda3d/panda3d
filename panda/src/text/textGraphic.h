@@ -43,22 +43,22 @@
 class EXPCL_PANDA_TEXT TextGraphic {
 PUBLISHED:
   INLINE TextGraphic();
-  INLINE TextGraphic(const NodePath &model, const LVecBase4f &frame);
-  INLINE TextGraphic(const NodePath &model, float left, float right, float bottom, float top);
+  INLINE TextGraphic(const NodePath &model, const LVecBase4 &frame);
+  INLINE TextGraphic(const NodePath &model, PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top);
 
   INLINE NodePath get_model() const;
   INLINE void set_model(const NodePath &model);
 
-  INLINE LVecBase4f get_frame() const;
-  INLINE void set_frame(const LVecBase4f &frame);
-  INLINE void set_frame(float left, float right, float bottom, float top);
+  INLINE LVecBase4 get_frame() const;
+  INLINE void set_frame(const LVecBase4 &frame);
+  INLINE void set_frame(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top);
 
   INLINE bool get_instance_flag() const;
   INLINE void set_instance_flag(bool instance_flag);
 
 private:
   NodePath _model;
-  LVecBase4f _frame;
+  LVecBase4 _frame;
   bool _instance_flag;
 };
 

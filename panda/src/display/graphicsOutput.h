@@ -142,11 +142,11 @@ PUBLISHED:
 
   void set_side_by_side_stereo(bool side_by_side_stereo);
   void set_side_by_side_stereo(bool side_by_side_stereo,
-                               const LVecBase4f &sbs_left_dimensions,
-                               const LVecBase4f &sbs_right_dimensions);
+                               const LVecBase4 &sbs_left_dimensions,
+                               const LVecBase4 &sbs_right_dimensions);
   INLINE bool get_side_by_side_stereo() const;
-  INLINE const LVecBase4f &get_sbs_left_dimensions() const;
-  INLINE const LVecBase4f &get_sbs_right_dimensions() const;
+  INLINE const LVecBase4 &get_sbs_left_dimensions() const;
+  INLINE const LVecBase4 &get_sbs_right_dimensions() const;
 
   INLINE const FrameBufferProperties &get_fb_properties() const;
   INLINE bool is_stereo() const;
@@ -164,14 +164,14 @@ PUBLISHED:
   INLINE void trigger_copy();
   
   INLINE DisplayRegion *make_display_region();
-  INLINE DisplayRegion *make_display_region(float l, float r, float b, float t);
-  DisplayRegion *make_display_region(const LVecBase4f &dimensions);
+  INLINE DisplayRegion *make_display_region(PN_stdfloat l, PN_stdfloat r, PN_stdfloat b, PN_stdfloat t);
+  DisplayRegion *make_display_region(const LVecBase4 &dimensions);
   INLINE DisplayRegion *make_mono_display_region();
-  INLINE DisplayRegion *make_mono_display_region(float l, float r, float b, float t);
-  DisplayRegion *make_mono_display_region(const LVecBase4f &dimensions);
+  INLINE DisplayRegion *make_mono_display_region(PN_stdfloat l, PN_stdfloat r, PN_stdfloat b, PN_stdfloat t);
+  DisplayRegion *make_mono_display_region(const LVecBase4 &dimensions);
   INLINE StereoDisplayRegion *make_stereo_display_region();
-  INLINE StereoDisplayRegion *make_stereo_display_region(float l, float r, float b, float t);
-  StereoDisplayRegion *make_stereo_display_region(const LVecBase4f &dimensions);
+  INLINE StereoDisplayRegion *make_stereo_display_region(PN_stdfloat l, PN_stdfloat r, PN_stdfloat b, PN_stdfloat t);
+  StereoDisplayRegion *make_stereo_display_region(const LVecBase4 &dimensions);
   bool remove_display_region(DisplayRegion *display_region);
   void remove_all_display_regions();
 
@@ -308,8 +308,8 @@ protected:
   unsigned int _left_eye_color_mask;
   unsigned int _right_eye_color_mask;
   bool _side_by_side_stereo;
-  LVecBase4f _sbs_left_dimensions;
-  LVecBase4f _sbs_right_dimensions;
+  LVecBase4 _sbs_left_dimensions;
+  LVecBase4 _sbs_right_dimensions;
   bool _delete_flag;
 
   // These weak pointers are used to keep track of whether the

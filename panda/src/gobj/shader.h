@@ -22,11 +22,12 @@
 #include "internalName.h"
 #include "pta_float.h"
 #include "pta_double.h"
-#include "pta_LMatrix4f.h"
-#include "pta_LMatrix3f.h"
-#include "pta_LVecBase4f.h"
-#include "pta_LVecBase3f.h"
-#include "pta_LVecBase2f.h"
+#include "pta_stdfloat.h"
+#include "pta_LMatrix4.h"
+#include "pta_LMatrix3.h"
+#include "pta_LVecBase4.h"
+#include "pta_LVecBase3.h"
+#include "pta_LVecBase2.h"
 
 #ifdef HAVE_CG
 // I don't want to include the Cg header file into panda as a 
@@ -265,36 +266,41 @@ public:
   };  
   
   // Container structure for data of parameters ShaderPtrSpec.
-  struct ShaderPtrData{
+  struct ShaderPtrData {
   private:
-    PTA_float         _pta_float;
-    PTA_double        _pta_double;
-    PTA_LMatrix4f     _pta_lmat4f;
-    PTA_LMatrix3f     _pta_lmat3f;
-    PTA_LVecBase4f    _pta_lvec4f;
-    PTA_LVecBase3f    _pta_lvec3f;
-    PTA_LVecBase2f    _pta_lvec2f;
+    PT(ReferenceCount) _pta;
 
   public:
-    void*         _ptr; 
+    void *_ptr; 
     ShaderPtrType _type;
-    bool          _updated;
-    int           _size; //number of elements vec3[4]=12
+    bool _updated;
+    int _size; //number of elements vec3[4]=12
 
   public:
     INLINE ShaderPtrData();
-    INLINE ShaderPtrData(const PTA_float& ptr);
-    INLINE ShaderPtrData(const PTA_double& ptr);
-    INLINE ShaderPtrData(const PTA_LVecBase4f& ptr);
-    INLINE ShaderPtrData(const PTA_LVecBase3f& ptr);
-    INLINE ShaderPtrData(const PTA_LVecBase2f& ptr);
-    INLINE ShaderPtrData(const PTA_LMatrix4f& mat);
-    INLINE ShaderPtrData(const PTA_LMatrix3f& mat);
-    INLINE ShaderPtrData(const LVecBase4f& vec);
-    INLINE ShaderPtrData(const LVecBase3f& vec);
-    INLINE ShaderPtrData(const LVecBase2f& vec);
-    INLINE ShaderPtrData(const LMatrix4f& mat);
-    INLINE ShaderPtrData(const LMatrix3f& mat);
+    INLINE ShaderPtrData(const PTA_float &ptr);
+    INLINE ShaderPtrData(const PTA_LVecBase4f &ptr);
+    INLINE ShaderPtrData(const PTA_LVecBase3f &ptr);
+    INLINE ShaderPtrData(const PTA_LVecBase2f &ptr);
+    INLINE ShaderPtrData(const PTA_LMatrix4f &mat);
+    INLINE ShaderPtrData(const PTA_LMatrix3f &mat);
+    INLINE ShaderPtrData(const LVecBase4f &vec);
+    INLINE ShaderPtrData(const LVecBase3f &vec);
+    INLINE ShaderPtrData(const LVecBase2f &vec);
+    INLINE ShaderPtrData(const LMatrix4f &mat);
+    INLINE ShaderPtrData(const LMatrix3f &mat);
+
+    INLINE ShaderPtrData(const PTA_double &ptr);
+    INLINE ShaderPtrData(const PTA_LVecBase4d &ptr);
+    INLINE ShaderPtrData(const PTA_LVecBase3d &ptr);
+    INLINE ShaderPtrData(const PTA_LVecBase2d &ptr);
+    INLINE ShaderPtrData(const PTA_LMatrix4d &mat);
+    INLINE ShaderPtrData(const PTA_LMatrix3d &mat);
+    INLINE ShaderPtrData(const LVecBase4d &vec);
+    INLINE ShaderPtrData(const LVecBase3d &vec);
+    INLINE ShaderPtrData(const LVecBase2d &vec);
+    INLINE ShaderPtrData(const LMatrix4d &mat);
+    INLINE ShaderPtrData(const LMatrix3d &mat);
   };
 
   struct ShaderMatSpec {
@@ -303,8 +309,8 @@ public:
     ShaderMatInput    _part[2];
     PT(InternalName)  _arg[2];
     int               _dep[2];
-    LMatrix4f         _cache[2];
-    LMatrix4f         _value;
+    LMatrix4         _cache[2];
+    LMatrix4         _value;
     ShaderMatPiece    _piece;
   };
 
@@ -393,8 +399,8 @@ public:
 
 #ifdef HAVE_CG
   void cg_recurse_parameters(CGparameter parameter, 
-                          const ShaderType& type, 
-                          bool& success);
+                          const ShaderType &type, 
+                          bool &success);
 #endif
   
   bool compile_parameter(const ShaderArgId        &arg_id, 
@@ -428,7 +434,7 @@ public:
   
   // Determines the appropriate cg profile settings and stores them in the active shader caps
   // based on any profile settings stored in the shader's header
-  void          cg_get_profile_from_header(ShaderCaps& caps);
+  void          cg_get_profile_from_header(ShaderCaps &caps);
 
   ShaderCaps _cg_last_caps;
   CGcontext  _cg_context;

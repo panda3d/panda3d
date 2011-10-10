@@ -21,7 +21,7 @@
 //               actual height at which to set the collider.
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionHandlerGravity::
-set_offset(float offset) {
+set_offset(PN_stdfloat offset) {
   _offset = offset;
 }
 
@@ -32,7 +32,7 @@ set_offset(float offset) {
 //               the highest detected collision point to determine the
 //               actual height at which to set the collider.
 ////////////////////////////////////////////////////////////////////
-INLINE float CollisionHandlerGravity::
+INLINE PN_stdfloat CollisionHandlerGravity::
 get_offset() const {
   return _offset;
 }
@@ -44,7 +44,7 @@ get_offset() const {
 //               the highest collision point
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionHandlerGravity::
-set_reach(float reach) {
+set_reach(PN_stdfloat reach) {
   _reach = reach;
 }
 
@@ -54,7 +54,7 @@ set_reach(float reach) {
 //  Description: Returns the reach to add to (or subtract from)
 //               the highest collision point
 ////////////////////////////////////////////////////////////////////
-INLINE float CollisionHandlerGravity::
+INLINE PN_stdfloat CollisionHandlerGravity::
 get_reach() const {
   return _reach;
 }
@@ -70,7 +70,7 @@ get_reach() const {
 //
 //               See Also: is_in_outer_space()
 ////////////////////////////////////////////////////////////////////
-INLINE float CollisionHandlerGravity::
+INLINE PN_stdfloat CollisionHandlerGravity::
 get_airborne_height() const {
   return _airborne_height;
 }
@@ -98,7 +98,7 @@ is_on_ground() const {
 //               Normally I avoid polling, but we are calling
 //               is_on_ground() frequently anyway.
 ////////////////////////////////////////////////////////////////////
-INLINE float CollisionHandlerGravity::
+INLINE PN_stdfloat CollisionHandlerGravity::
 get_impact_velocity() const {
   return _impact_velocity;
 }
@@ -108,7 +108,7 @@ get_impact_velocity() const {
 //      Access : Public
 // Description : 
 ////////////////////////////////////////////////////////////////////
-INLINE const LVector3f &CollisionHandlerGravity::
+INLINE const LVector3 &CollisionHandlerGravity::
 get_contact_normal() const {
   return _contact_normal;
 }
@@ -122,7 +122,7 @@ get_contact_normal() const {
 //               even in cpp.
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionHandlerGravity::
-add_velocity(float velocity) {
+add_velocity(PN_stdfloat velocity) {
   _current_velocity += velocity;
 }
 
@@ -132,7 +132,7 @@ add_velocity(float velocity) {
 //  Description: Sets the current vertical velocity.
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionHandlerGravity::
-set_velocity(float velocity) {
+set_velocity(PN_stdfloat velocity) {
   _current_velocity = velocity;
 }
 
@@ -151,7 +151,7 @@ set_velocity(float velocity) {
 //
 //               See Also: is_on_ground() and get_gravity()
 ////////////////////////////////////////////////////////////////////
-INLINE float CollisionHandlerGravity::
+INLINE PN_stdfloat CollisionHandlerGravity::
 get_velocity() const {
   return _current_velocity;
 }
@@ -162,7 +162,7 @@ get_velocity() const {
 //  Description: Sets the linear gravity force (always plumb).
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionHandlerGravity::
-set_gravity(float gravity) {
+set_gravity(PN_stdfloat gravity) {
   _gravity = gravity;
 }
 
@@ -171,7 +171,7 @@ set_gravity(float gravity) {
 //       Access: Public
 //  Description: Gets the linear gravity force (always plumb).
 ////////////////////////////////////////////////////////////////////
-INLINE float CollisionHandlerGravity::
+INLINE PN_stdfloat CollisionHandlerGravity::
 get_gravity() const {
   return _gravity;
 }
@@ -185,7 +185,7 @@ get_gravity() const {
 //               instantly teleport any distance.
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionHandlerGravity::
-set_max_velocity(float max_velocity) {
+set_max_velocity(PN_stdfloat max_velocity) {
   _max_velocity = max_velocity;
 }
 
@@ -196,7 +196,7 @@ set_max_velocity(float max_velocity) {
 //               be allowed to descend towards a floor below it, in
 //               units per second.  See set_max_velocity().
 ////////////////////////////////////////////////////////////////////
-INLINE float CollisionHandlerGravity::
+INLINE PN_stdfloat CollisionHandlerGravity::
 get_max_velocity() const {
   return _max_velocity;
 }

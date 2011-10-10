@@ -118,8 +118,8 @@ private:
   // This class is used internally by munge_points_to_quads().
   class PointData {
   public:
-    LPoint3f _eye;
-    float _dist;
+    LPoint3 _eye;
+    PN_stdfloat _dist;
   };
   class SortPoints {
   public:

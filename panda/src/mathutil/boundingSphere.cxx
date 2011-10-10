@@ -40,11 +40,11 @@ make_copy() const {
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-LPoint3f BoundingSphere::
+LPoint3 BoundingSphere::
 get_min() const {
-  nassertr(!is_empty(), LPoint3f(0.0f, 0.0f, 0.0f));
-  nassertr(!is_infinite(), LPoint3f(0.0f, 0.0f, 0.0f));
-  return LPoint3f(_center[0] - _radius,
+  nassertr(!is_empty(), LPoint3(0.0f, 0.0f, 0.0f));
+  nassertr(!is_infinite(), LPoint3(0.0f, 0.0f, 0.0f));
+  return LPoint3(_center[0] - _radius,
                   _center[1] - _radius,
                   _center[2] - _radius);
 }
@@ -54,11 +54,11 @@ get_min() const {
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-LPoint3f BoundingSphere::
+LPoint3 BoundingSphere::
 get_max() const {
-  nassertr(!is_empty(), LPoint3f(0.0f, 0.0f, 0.0f));
-  nassertr(!is_infinite(), LPoint3f(0.0f, 0.0f, 0.0f));
-  return LPoint3f(_center[0] + _radius,
+  nassertr(!is_empty(), LPoint3(0.0f, 0.0f, 0.0f));
+  nassertr(!is_infinite(), LPoint3(0.0f, 0.0f, 0.0f));
+  return LPoint3(_center[0] + _radius,
                   _center[1] + _radius,
                   _center[2] + _radius);
 }
@@ -68,7 +68,7 @@ get_max() const {
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-float BoundingSphere::
+PN_stdfloat BoundingSphere::
 get_volume() const {
   nassertr(!is_infinite(), 0.0f);
   if (is_empty()) {
@@ -84,10 +84,10 @@ get_volume() const {
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-LPoint3f BoundingSphere::
+LPoint3 BoundingSphere::
 get_approx_center() const {
-  nassertr(!is_empty(), LPoint3f(0.0f, 0.0f, 0.0f));
-  nassertr(!is_infinite(), LPoint3f(0.0f, 0.0f, 0.0f));
+  nassertr(!is_empty(), LPoint3(0.0f, 0.0f, 0.0f));
+  nassertr(!is_infinite(), LPoint3(0.0f, 0.0f, 0.0f));
   return get_center();
 }
 
@@ -97,7 +97,7 @@ get_approx_center() const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void BoundingSphere::
-xform(const LMatrix4f &mat) {
+xform(const LMatrix4 &mat) {
   nassertv(!mat.is_nan());
 
   if (!is_empty() && !is_infinite()) {
@@ -105,16 +105,16 @@ xform(const LMatrix4f &mat) {
     // contains a non-uniform scale.
 
 /*
-    LVector3f x,y,z;
+    LVector3 x,y,z;
         mat.get_row3(x,0);
         mat.get_row3(y,1);
         mat.get_row3(z,2);
 
-    float xd = dot(x, x);
-    float yd = dot(y, y);
-    float zd = dot(z, z);
+    PN_stdfloat xd = dot(x, x);
+    PN_stdfloat yd = dot(y, y);
+    PN_stdfloat zd = dot(z, z);
 */
-    float xd,yd,zd,scale;
+    PN_stdfloat xd,yd,zd,scale;
 
 #define ROW_DOTTED(mat,ROWNUM)                        \
             (mat._m.m._##ROWNUM##0*mat._m.m._##ROWNUM##0 +    \
@@ -204,7 +204,7 @@ contains_other(const BoundingVolume *other) const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 bool BoundingSphere::
-extend_by_point(const LPoint3f &point) {
+extend_by_point(const LPoint3 &point) {
   nassertr(!point.is_nan(), false);
 
   if (is_empty()) {
@@ -212,8 +212,8 @@ extend_by_point(const LPoint3f &point) {
     _radius = 0.0f;
     _flags = 0;
   } else if (!is_infinite()) {
-    LVector3f v = point - _center;
-    float dist2 = dot(v, v);
+    LVector3 v = point - _center;
+    PN_stdfloat dist2 = dot(v, v);
     if (dist2 > _radius * _radius) {
       _radius = sqrtf(dist2);
     }
@@ -236,7 +236,7 @@ extend_by_sphere(const BoundingSphere *sphere) {
     _radius = sphere->_radius;
     _flags = 0;
   } else {
-    float dist = length(sphere->_center - _center);
+    PN_stdfloat dist = length(sphere->_center - _center);
 
     _radius = max(_radius, dist + sphere->_radius);
   }
@@ -250,19 +250,19 @@ extend_by_sphere(const BoundingSphere *sphere) {
 ////////////////////////////////////////////////////////////////////
 bool BoundingSphere::
 extend_by_box(const BoundingBox *box) {
-  const LVector3f &min1 = box->get_minq();
-  const LVector3f &max1 = box->get_maxq();
+  const LVector3 &min1 = box->get_minq();
+  const LVector3 &max1 = box->get_maxq();
 
   if (is_empty()) {
     _center = (min1 + max1) * 0.5f;
-    _radius = length(LVector3f(max1 - _center));
+    _radius = length(LVector3(max1 - _center));
     _flags = 0;
 
   } else {
     // Find the minimum radius necessary to reach the corner.
-    float max_dist2 = -1.0;
+    PN_stdfloat max_dist2 = -1.0;
     for (int i = 0; i < 8; ++i) {
-      float dist2 = (box->get_point(i) - _center).length_squared();
+      PN_stdfloat dist2 = (box->get_point(i) - _center).length_squared();
       if (dist2 > max_dist2) {
         max_dist2 = dist2;
       }
@@ -309,12 +309,12 @@ extend_by_finite(const FiniteBoundingVolume *volume) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 bool BoundingSphere::
-around_points(const LPoint3f *first, const LPoint3f *last) {
+around_points(const LPoint3 *first, const LPoint3 *last) {
   nassertr(first != last, false);
 
   // First, get the box of all the points to construct a bounding
   // box.
-  const LPoint3f *p = first;
+  const LPoint3 *p = first;
 
 #ifndef NDEBUG
   // Skip any NaN points.
@@ -330,8 +330,8 @@ around_points(const LPoint3f *first, const LPoint3f *last) {
   }
 #endif
 
-  LPoint3f min_box = *p;
-  LPoint3f max_box = *p;
+  LPoint3 min_box = *p;
+  LPoint3 max_box = *p;
   ++p;
 
 #ifndef NDEBUG
@@ -373,10 +373,10 @@ around_points(const LPoint3f *first, const LPoint3f *last) {
     _center = (min_box + max_box) * 0.5f;
 
     // Now walk back through to get the max distance from center.
-    float max_dist2 = 0.0f;
+    PN_stdfloat max_dist2 = 0.0f;
     for (p = first; p != last; ++p) {
-      LVector3f v = (*p) - _center;
-      float dist2 = dot(v, v);
+      LVector3 v = (*p) - _center;
+      PN_stdfloat dist2 = dot(v, v);
       max_dist2 = max(max_dist2, dist2);
     }
 
@@ -449,8 +449,8 @@ around_finite(const BoundingVolume **first,
   nassertr(!(*p)->is_empty() && !(*p)->is_infinite(), false);
   const FiniteBoundingVolume *vol = (*p)->as_finite_bounding_volume();
   nassertr(vol != (FiniteBoundingVolume *)NULL, false);
-  LPoint3f min_box = vol->get_min();
-  LPoint3f max_box = vol->get_max();
+  LPoint3 min_box = vol->get_min();
+  LPoint3 max_box = vol->get_max();
 
   bool any_spheres = (vol->as_bounding_sphere() != NULL);
 
@@ -462,8 +462,8 @@ around_finite(const BoundingVolume **first,
         set_infinite();
         return true;
       }
-      LPoint3f min1 = vol->get_min();
-      LPoint3f max1 = vol->get_max();
+      LPoint3 min1 = vol->get_min();
+      LPoint3 max1 = vol->get_max();
       min_box.set(min(min_box[0], min1[0]),
                   min(min_box[1], min1[1]),
                   min(min_box[2], min1[2]));
@@ -494,7 +494,7 @@ around_finite(const BoundingVolume **first,
         const BoundingSphere *sphere = (*p)->as_bounding_sphere();
         if (sphere != (BoundingSphere *)NULL) {
           // This is a sphere; consider its corner.
-          float dist = length(sphere->_center - _center);
+          PN_stdfloat dist = length(sphere->_center - _center);
           _radius = max(_radius, dist + sphere->_radius);
           
         } else {
@@ -506,9 +506,9 @@ around_finite(const BoundingVolume **first,
           box.local_object();
           
           // Find the minimum radius necessary to reach the corner.
-          float max_dist2 = -1.0;
+          PN_stdfloat max_dist2 = -1.0;
           for (int i = 0; i < 8; ++i) {
-            float dist2 = (box.get_point(i) - _center).length_squared();
+            PN_stdfloat dist2 = (box.get_point(i) - _center).length_squared();
             if (dist2 > max_dist2) {
               max_dist2 = dist2;
             }
@@ -529,7 +529,7 @@ around_finite(const BoundingVolume **first,
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 int BoundingSphere::
-contains_point(const LPoint3f &point) const {
+contains_point(const LPoint3 &point) const {
   nassertr(!point.is_nan(), IF_no_intersection);
 
   if (is_empty()) {
@@ -539,8 +539,8 @@ contains_point(const LPoint3f &point) const {
     return IF_possible | IF_some | IF_all;
 
   } else {
-    LVector3f v = point - _center;
-    float dist2 = dot(v, v);
+    LVector3 v = point - _center;
+    PN_stdfloat dist2 = dot(v, v);
     return (dist2 <= _radius * _radius) ?
       IF_possible | IF_some | IF_all : IF_no_intersection;
   }
@@ -552,7 +552,7 @@ contains_point(const LPoint3f &point) const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 int BoundingSphere::
-contains_lineseg(const LPoint3f &a, const LPoint3f &b) const {
+contains_lineseg(const LPoint3 &a, const LPoint3 &b) const {
   nassertr(!a.is_nan() && !b.is_nan(), IF_no_intersection);
 
   if (a == b) {
@@ -565,21 +565,21 @@ contains_lineseg(const LPoint3f &a, const LPoint3f &b) const {
     return IF_possible | IF_some | IF_all;
 
   } else {
-    LPoint3f from = a;
-    LVector3f delta = b - a;
-    float t1, t2;
+    LPoint3 from = a;
+    LVector3 delta = b - a;
+    PN_stdfloat t1, t2;
 
     // Solve the equation for the intersection of a line with a sphere
     // using the quadratic equation.
-    float A = dot(delta, delta);
+    PN_stdfloat A = dot(delta, delta);
 
     nassertr(A != 0.0f, 0);    // Trivial line segment.
 
-    LVector3f fc = from - _center;
-    float B = 2.0f * dot(delta, fc);
-    float C = dot(fc, fc) - _radius * _radius;
+    LVector3 fc = from - _center;
+    PN_stdfloat B = 2.0f * dot(delta, fc);
+    PN_stdfloat C = dot(fc, fc) - _radius * _radius;
 
-    float radical = B*B - 4.0f*A*C;
+    PN_stdfloat radical = B*B - 4.0f*A*C;
 
     if (IS_NEARLY_ZERO(radical)) {
       // Tangent.
@@ -593,8 +593,8 @@ contains_lineseg(const LPoint3f &a, const LPoint3f &b) const {
       return IF_no_intersection;
     }
 
-        float reciprocal_2A = 1.0f/(2.0f*A);
-    float sqrt_radical = sqrtf(radical);
+        PN_stdfloat reciprocal_2A = 1.0f/(2.0f*A);
+    PN_stdfloat sqrt_radical = sqrtf(radical);
 
     t1 = ( -B - sqrt_radical ) * reciprocal_2A;
     t2 = ( -B + sqrt_radical ) * reciprocal_2A;
@@ -621,8 +621,8 @@ contains_sphere(const BoundingSphere *sphere) const {
   nassertr(!is_empty() && !is_infinite(), 0);
   nassertr(!sphere->is_empty() && !sphere->is_infinite(), 0);
 
-  LVector3f v = sphere->_center - _center;
-  float dist2 = dot(v, v);
+  LVector3 v = sphere->_center - _center;
+  PN_stdfloat dist2 = dot(v, v);
 
   if (_radius >= sphere->_radius &&
       dist2 <= (_radius - sphere->_radius) * (_radius - sphere->_radius)) {

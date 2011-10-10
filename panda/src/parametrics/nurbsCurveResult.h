@@ -18,7 +18,7 @@
 #include "pandabase.h"
 #include "referenceCount.h"
 #include "nurbsBasisVector.h"
-#include "vector_float.h"
+#include "vector_stdfloat.h"
 
 class NurbsVertex;
 
@@ -38,44 +38,44 @@ class NurbsVertex;
 class EXPCL_PANDA_PARAMETRICS NurbsCurveResult : public ReferenceCount {
 public:
   NurbsCurveResult(const NurbsBasisVector &basis, 
-                   const LVecBase4f vecs[], const NurbsVertex *verts,
+                   const LVecBase4 vecs[], const NurbsVertex *verts,
                    int num_vertices);
 
 PUBLISHED:
   INLINE ~NurbsCurveResult();
 
-  INLINE float get_start_t() const;
-  INLINE float get_end_t() const;
+  INLINE PN_stdfloat get_start_t() const;
+  INLINE PN_stdfloat get_end_t() const;
 
-  INLINE bool eval_point(float t, LVecBase3f &point);
-  INLINE bool eval_tangent(float t, LVecBase3f &tangent);
-  INLINE float eval_extended_point(float t, int d);
-  INLINE bool eval_extended_points(float t, int d, 
-                                   float result[], int num_values);
+  INLINE bool eval_point(PN_stdfloat t, LVecBase3 &point);
+  INLINE bool eval_tangent(PN_stdfloat t, LVecBase3 &tangent);
+  INLINE PN_stdfloat eval_extended_point(PN_stdfloat t, int d);
+  INLINE bool eval_extended_points(PN_stdfloat t, int d, 
+                                   PN_stdfloat result[], int num_values);
   
   INLINE int get_num_segments() const;
-  void eval_segment_point(int segment, float t, LVecBase3f &point) const;
-  void eval_segment_tangent(int segment, float t, LVecBase3f &tangent) const;
-  float eval_segment_extended_point(int segment, float t, int d) const;
-  void eval_segment_extended_points(int segment, float t, int d,
-                                    float result[], int num_values) const;
-  INLINE float get_segment_t(int segment, float t) const;
+  void eval_segment_point(int segment, PN_stdfloat t, LVecBase3 &point) const;
+  void eval_segment_tangent(int segment, PN_stdfloat t, LVecBase3 &tangent) const;
+  PN_stdfloat eval_segment_extended_point(int segment, PN_stdfloat t, int d) const;
+  void eval_segment_extended_points(int segment, PN_stdfloat t, int d,
+                                    PN_stdfloat result[], int num_values) const;
+  INLINE PN_stdfloat get_segment_t(int segment, PN_stdfloat t) const;
 
-  void adaptive_sample(float tolerance);
+  void adaptive_sample(PN_stdfloat tolerance);
   INLINE int get_num_samples() const;
-  INLINE float get_sample_t(int n) const;
-  INLINE const LPoint3f &get_sample_point(int n) const;
+  INLINE PN_stdfloat get_sample_t(int n) const;
+  INLINE const LPoint3 &get_sample_point(int n) const;
   MAKE_SEQ(get_sample_ts, get_num_samples, get_sample_t);
   MAKE_SEQ(get_sample_points, get_num_samples, get_sample_points);
   
 private:
-  int find_segment(float t);
-  int r_find_segment(float t, int top, int bot) const;
+  int find_segment(PN_stdfloat t);
+  int r_find_segment(PN_stdfloat t, int top, int bot) const;
 
-  void r_adaptive_sample(int segment, float t0, const LPoint3f &p0, 
-                         float t1, const LPoint3f &p1, float tolerance_2);
-  static float sqr_dist_to_line(const LPoint3f &point, const LPoint3f &origin, 
-                                const LVector3f &vec);
+  void r_adaptive_sample(int segment, PN_stdfloat t0, const LPoint3 &p0, 
+                         PN_stdfloat t1, const LPoint3 &p1, PN_stdfloat tolerance_2);
+  static PN_stdfloat sqr_dist_to_line(const LPoint3 &point, const LPoint3 &origin, 
+                                const LVector3 &vec);
 
   NurbsBasisVector _basis;
   const NurbsVertex *_verts;
@@ -83,18 +83,18 @@ private:
   // We pre-compose the basis matrix and the geometry vectors, so we
   // have these handy for evaluation.  There is one entry in the
   // _composed for each entry in basis._segments.
-  typedef pvector<LMatrix4f> ComposedGeom;
+  typedef pvector<LMatrix4> ComposedGeom;
   ComposedGeom _composed;
 
   int _last_segment;
-  float _last_from;
-  float _last_to;
+  PN_stdfloat _last_from;
+  PN_stdfloat _last_to;
 
   class AdaptiveSample {
   public:
-    INLINE AdaptiveSample(float t, const LPoint3f &point);
-    float _t;
-    LPoint3f _point;
+    INLINE AdaptiveSample(PN_stdfloat t, const LPoint3 &point);
+    PN_stdfloat _t;
+    LPoint3 _point;
   };
   typedef pvector<AdaptiveSample> AdaptiveResult;
   AdaptiveResult _adaptive_result;

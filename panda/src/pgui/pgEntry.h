@@ -49,7 +49,7 @@ protected:
 
 public:
   virtual PandaNode *make_copy() const; 
-  virtual void xform(const LMatrix4f &mat);
+  virtual void xform(const LMatrix4 &mat);
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
 
   virtual void press(const MouseWatcherParameter &param, bool background);
@@ -70,8 +70,8 @@ PUBLISHED:
     S_inactive
   };
 
-  void setup(float width, int num_lines);
-  void setup_minimal(float width, int num_lines);
+  void setup(PN_stdfloat width, int num_lines);
+  void setup_minimal(PN_stdfloat width, int num_lines);
 
   INLINE bool set_text(const string &text);
   INLINE string get_plain_text() const;
@@ -85,18 +85,18 @@ PUBLISHED:
   INLINE void set_cursor_position(int position);
   INLINE int get_cursor_position() const;
   
-  INLINE float get_cursor_X() const;
-  INLINE float get_cursor_Y() const;
+  INLINE PN_stdfloat get_cursor_X() const;
+  INLINE PN_stdfloat get_cursor_Y() const;
 
   INLINE void set_max_chars(int max_chars);
   INLINE int get_max_chars() const;
-  INLINE void set_max_width(float max_width);
-  INLINE float get_max_width() const;
+  INLINE void set_max_width(PN_stdfloat max_width);
+  INLINE PN_stdfloat get_max_width() const;
   INLINE void set_num_lines(int num_lines);
   INLINE int get_num_lines() const;
 
-  INLINE void set_blink_rate(float blink_rate);
-  INLINE float get_blink_rate() const;
+  INLINE void set_blink_rate(PN_stdfloat blink_rate);
+  INLINE PN_stdfloat get_blink_rate() const;
 
   INLINE NodePath get_cursor_def();
   INLINE void clear_cursor_def();
@@ -163,7 +163,7 @@ private:
   size_t _candidate_cursor_pos;
 
   int _max_chars;
-  float _max_width;
+  PN_stdfloat _max_width;
   int _num_lines;
 
   bool _accept_enabled;
@@ -197,7 +197,7 @@ private:
   bool _obscure_mode;
   bool _overflow_mode;
 
-  float _current_padding;
+  PN_stdfloat _current_padding;
 
 public:
   static TypeHandle get_class_type() {

@@ -36,55 +36,55 @@ public:
   // These functions are all inherited from ParametricCurve, and need
   // not be re-published.
   virtual bool is_valid() const;
-  virtual float get_max_t() const;
+  virtual PN_stdfloat get_max_t() const;
 
-  virtual bool get_point(float t, LVecBase3f &point) const;
-  virtual bool get_tangent(float t, LVecBase3f &tangent) const;
-  virtual bool get_pt(float t, LVecBase3f &point, LVecBase3f &tangent) const;
-  virtual bool get_2ndtangent(float t, LVecBase3f &tangent2) const;
+  virtual bool get_point(PN_stdfloat t, LVecBase3 &point) const;
+  virtual bool get_tangent(PN_stdfloat t, LVecBase3 &tangent) const;
+  virtual bool get_pt(PN_stdfloat t, LVecBase3 &point, LVecBase3 &tangent) const;
+  virtual bool get_2ndtangent(PN_stdfloat t, LVecBase3 &tangent2) const;
 
-  virtual bool adjust_point(float t, float px, float py, float pz);
-  virtual bool adjust_tangent(float t, float tx, float ty, float tz);
-  virtual bool adjust_pt(float t,
-                         float px, float py, float pz,
-                         float tx, float ty, float tz);
+  virtual bool adjust_point(PN_stdfloat t, PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz);
+  virtual bool adjust_tangent(PN_stdfloat t, PN_stdfloat tx, PN_stdfloat ty, PN_stdfloat tz);
+  virtual bool adjust_pt(PN_stdfloat t,
+                         PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz,
+                         PN_stdfloat tx, PN_stdfloat ty, PN_stdfloat tz);
 
 public:
   int get_num_segs() const;
 
   ParametricCurve *get_curveseg(int ti);
-  bool insert_curveseg(int ti, ParametricCurve *seg, float tlength);
+  bool insert_curveseg(int ti, ParametricCurve *seg, PN_stdfloat tlength);
 
   bool remove_curveseg(int ti);
   void remove_all_curvesegs();
 
-  float get_tlength(int ti) const;
-  float get_tstart(int ti) const;
-  float get_tend(int ti) const;
-  bool set_tlength(int ti, float tlength);
+  PN_stdfloat get_tlength(int ti) const;
+  PN_stdfloat get_tstart(int ti) const;
+  PN_stdfloat get_tend(int ti) const;
+  bool set_tlength(int ti, PN_stdfloat tlength);
 
   void make_nurbs(int order, int num_cvs,
-                  const float knots[], const LVecBase4f cvs[]);
+                  const PN_stdfloat knots[], const LVecBase4 cvs[]);
 
   virtual bool get_bezier_segs(BezierSegs &bz_segs) const;
 
   virtual bool
-  rebuild_curveseg(int rtype0, float t0, const LVecBase4f &v0,
-                   int rtype1, float t1, const LVecBase4f &v1,
-                   int rtype2, float t2, const LVecBase4f &v2,
-                   int rtype3, float t3, const LVecBase4f &v3);
+  rebuild_curveseg(int rtype0, PN_stdfloat t0, const LVecBase4 &v0,
+                   int rtype1, PN_stdfloat t1, const LVecBase4 &v1,
+                   int rtype2, PN_stdfloat t2, const LVecBase4 &v2,
+                   int rtype3, PN_stdfloat t3, const LVecBase4 &v3);
 
 protected:
-  bool find_curve(const ParametricCurve *&curve, float &t) const;
-  float current_seg_range(float t) const;
+  bool find_curve(const ParametricCurve *&curve, PN_stdfloat &t) const;
+  PN_stdfloat current_seg_range(PN_stdfloat t) const;
 
   class Curveseg {
   public:
     Curveseg() {}
-    Curveseg(ParametricCurve *c, float t) : _curve(c), _tend(t) {}
+    Curveseg(ParametricCurve *c, PN_stdfloat t) : _curve(c), _tend(t) {}
 
     PT(ParametricCurve) _curve;
-    float _tend;
+    PN_stdfloat _tend;
   };
 
   pvector<Curveseg> _segs;

@@ -25,7 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 NurbsCurveResult::
 NurbsCurveResult(const NurbsBasisVector &basis,
-                 const LVecBase4f vecs[], const NurbsVertex *verts,
+                 const LVecBase4 vecs[], const NurbsVertex *verts,
                  int num_vertices) :
   _basis(basis),
   _verts(verts)
@@ -40,20 +40,20 @@ NurbsCurveResult(const NurbsBasisVector &basis,
     nassertv(vi >= 0 && vi + order - 1 < num_vertices);
 
     // Create a geometry matrix from our (up to) four involved vertices.
-    LMatrix4f geom;
+    LMatrix4 geom;
     int ci = 0;
     while (ci < order) {
       geom.set_row(ci, vecs[vi + ci]);
       ci++;
     }
     while (ci < 4) {
-      geom.set_row(ci, LVecBase4f::zero());
+      geom.set_row(ci, LVecBase4::zero());
       ci++;
     }
 
     // And compose this geometry matrix with the basis matrix to
     // produce a new matrix, which will be used to evaluate the curve.
-    LMatrix4f result;
+    LMatrix4 result;
     result.multiply(_basis.get_basis(i), geom);
     _composed.push_back(result);
   }
@@ -78,11 +78,11 @@ NurbsCurveResult(const NurbsBasisVector &basis,
 //               evaluate the points along each segment.
 ////////////////////////////////////////////////////////////////////
 void NurbsCurveResult::
-eval_segment_point(int segment, float t, LVecBase3f &point) const {
-  float t2 = t*t;
-  LVecBase4f tvec(t*t2, t2, t, 1.0f);
+eval_segment_point(int segment, PN_stdfloat t, LVecBase3 &point) const {
+  PN_stdfloat t2 = t*t;
+  LVecBase4 tvec(t*t2, t2, t, 1.0f);
 
-  float weight = tvec.dot(_composed[segment].get_col(3));
+  PN_stdfloat weight = tvec.dot(_composed[segment].get_col(3));
 
   point.set(tvec.dot(_composed[segment].get_col(0)) / weight,
             tvec.dot(_composed[segment].get_col(1)) / weight,
@@ -98,9 +98,9 @@ eval_segment_point(int segment, float t, LVecBase3f &point) const {
 //               zero, particularly at the endpoints.
 ////////////////////////////////////////////////////////////////////
 void NurbsCurveResult::
-eval_segment_tangent(int segment, float t, LVecBase3f &tangent) const {
-  float t2 = t*t;
-  LVecBase4f tvec(3.0 * t2, 2.0 * t, 1.0f, 0.0f);
+eval_segment_tangent(int segment, PN_stdfloat t, LVecBase3 &tangent) const {
+  PN_stdfloat t2 = t*t;
+  LVecBase4 tvec(3.0 * t2, 2.0 * t, 1.0f, 0.0f);
 
   tangent.set(tvec.dot(_composed[segment].get_col(0)),
               tvec.dot(_composed[segment].get_col(1)),
@@ -114,21 +114,21 @@ eval_segment_tangent(int segment, float t, LVecBase3f &tangent) const {
 //               to the extended vertices associated with the curve in
 //               the indicated dimension.
 ////////////////////////////////////////////////////////////////////
-float NurbsCurveResult::
-eval_segment_extended_point(int segment, float t, int d) const {
+PN_stdfloat NurbsCurveResult::
+eval_segment_extended_point(int segment, PN_stdfloat t, int d) const {
   nassertr(segment >= 0 && segment < _basis.get_num_segments(), 0.0f);
 
-  float t2 = t*t;
-  LVecBase4f tvec(t*t2, t2, t, 1.0f);
+  PN_stdfloat t2 = t*t;
+  LVecBase4 tvec(t*t2, t2, t, 1.0f);
 
-  float weight = tvec.dot(_composed[segment].get_col(3));
+  PN_stdfloat weight = tvec.dot(_composed[segment].get_col(3));
 
   // Calculate the composition of the basis matrix and the geometry
   // matrix on-the-fly.
   int order = _basis.get_order();
   int vi = _basis.get_vertex_index(segment);
 
-  LVecBase4f geom;
+  LVecBase4 geom;
   int ci = 0;
   while (ci < order) {
     geom[ci] = _verts[vi + ci].get_extended_vertex(d);
@@ -139,10 +139,10 @@ eval_segment_extended_point(int segment, float t, int d) const {
     ci++;
   }
 
-  const LMatrix4f &basis = _basis.get_basis(segment);
+  const LMatrix4 &basis = _basis.get_basis(segment);
 
   // Compute matrix * column vector.
-  LVecBase4f composed_geom(basis.get_row(0).dot(geom),
+  LVecBase4 composed_geom(basis.get_row(0).dot(geom),
                            basis.get_row(1).dot(geom),
                            basis.get_row(2).dot(geom),
                            basis.get_row(3).dot(geom));
@@ -159,23 +159,23 @@ eval_segment_extended_point(int segment, float t, int d) const {
 //               the indicated result array.
 ////////////////////////////////////////////////////////////////////
 void NurbsCurveResult::
-eval_segment_extended_points(int segment, float t, int d,
-                             float result[], int num_values) const {
+eval_segment_extended_points(int segment, PN_stdfloat t, int d,
+                             PN_stdfloat result[], int num_values) const {
   nassertv(segment >= 0 && segment < _basis.get_num_segments());
 
-  float t2 = t*t;
-  LVecBase4f tvec(t*t2, t2, t, 1.0f);
+  PN_stdfloat t2 = t*t;
+  LVecBase4 tvec(t*t2, t2, t, 1.0f);
 
-  float weight = tvec.dot(_composed[segment].get_col(3));
+  PN_stdfloat weight = tvec.dot(_composed[segment].get_col(3));
 
   // Calculate the composition of the basis matrix and the geometry
   // matrix on-the-fly.
-  const LMatrix4f &basis = _basis.get_basis(segment);
+  const LMatrix4 &basis = _basis.get_basis(segment);
   int order = _basis.get_order();
   int vi = _basis.get_vertex_index(segment);
 
   for (int n = 0; n < num_values; n++) {
-    LVecBase4f geom;
+    LVecBase4 geom;
     int ci = 0;
     while (ci < order) {
       geom[ci] = _verts[vi + ci].get_extended_vertex(d + n);
@@ -187,7 +187,7 @@ eval_segment_extended_points(int segment, float t, int d,
     }
 
     // Compute matrix * column vector.
-    LVecBase4f composed_geom(basis.get_row(0).dot(geom),
+    LVecBase4 composed_geom(basis.get_row(0).dot(geom),
                              basis.get_row(1).dot(geom),
                              basis.get_row(2).dot(geom),
                              basis.get_row(3).dot(geom));
@@ -208,11 +208,11 @@ eval_segment_extended_points(int segment, float t, int d,
 //               get_sample_t(), and get_sample_point().
 ////////////////////////////////////////////////////////////////////
 void NurbsCurveResult::
-adaptive_sample(float tolerance) {
-  float tolerance_2 = tolerance * tolerance;
+adaptive_sample(PN_stdfloat tolerance) {
+  PN_stdfloat tolerance_2 = tolerance * tolerance;
   _adaptive_result.clear();
 
-  LPoint3f p0, p1;
+  LPoint3 p0, p1;
 
   int num_segments = _basis.get_num_segments();
   for (int segment = 0; segment < num_segments; ++segment) {
@@ -238,7 +238,7 @@ adaptive_sample(float tolerance) {
 //               this value.
 ////////////////////////////////////////////////////////////////////
 int NurbsCurveResult::
-find_segment(float t) {
+find_segment(PN_stdfloat t) {
   // Trivially check the endpoints of the curve.
   if (t >= get_end_t()) {
     return _basis.get_num_segments() - 1;
@@ -271,7 +271,7 @@ find_segment(float t) {
 //               increasing order of t, and they don't overlap.
 ////////////////////////////////////////////////////////////////////
 int NurbsCurveResult::
-r_find_segment(float t, int top, int bot) const {
+r_find_segment(PN_stdfloat t, int top, int bot) const {
   if (bot < top) {
     // Not found.
     return -1;
@@ -279,8 +279,8 @@ r_find_segment(float t, int top, int bot) const {
   int mid = (top + bot) / 2;
   nassertr(mid >= 0 && mid < _basis.get_num_segments(), -1);
 
-  float from = _basis.get_from(mid);
-  float to = _basis.get_to(mid);
+  PN_stdfloat from = _basis.get_from(mid);
+  PN_stdfloat to = _basis.get_to(mid);
   if (from > t) {
     // Too high, try lower.
     return r_find_segment(t, top, mid - 1);
@@ -304,10 +304,10 @@ r_find_segment(float t, int top, int bot) const {
 //               excluding t0.
 ////////////////////////////////////////////////////////////////////
 void NurbsCurveResult::
-r_adaptive_sample(int segment, float t0, const LPoint3f &p0, 
-                  float t1, const LPoint3f &p1, float tolerance_2) {
-  float tmid = (t0 + t1) * 0.5f;
-  LPoint3f pmid;
+r_adaptive_sample(int segment, PN_stdfloat t0, const LPoint3 &p0, 
+                  PN_stdfloat t1, const LPoint3 &p1, PN_stdfloat tolerance_2) {
+  PN_stdfloat tmid = (t0 + t1) * 0.5f;
+  LPoint3 pmid;
   eval_segment_point(segment, tmid, pmid);
 
   if (sqr_dist_to_line(pmid, p0, p1 - p0) > tolerance_2) {
@@ -328,13 +328,13 @@ r_adaptive_sample(int segment, float t0, const LPoint3f &p0,
 //               computes the minimum distance from a point to a line,
 //               and returns the distance squared.
 ////////////////////////////////////////////////////////////////////
-float NurbsCurveResult::
-sqr_dist_to_line(const LPoint3f &point, const LPoint3f &origin, 
-                 const LVector3f &vec) {
-  LVector3f norm = vec;
+PN_stdfloat NurbsCurveResult::
+sqr_dist_to_line(const LPoint3 &point, const LPoint3 &origin, 
+                 const LVector3 &vec) {
+  LVector3 norm = vec;
   norm.normalize();
-  LVector3f d = point - origin;
-  float hyp_2 = d.length_squared();
-  float leg = d.dot(norm);
+  LVector3 d = point - origin;
+  PN_stdfloat hyp_2 = d.length_squared();
+  PN_stdfloat leg = d.dot(norm);
   return hyp_2 - leg * leg;
 }

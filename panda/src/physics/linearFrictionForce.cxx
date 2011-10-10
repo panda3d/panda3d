@@ -23,7 +23,7 @@ TypeHandle LinearFrictionForce::_type_handle;
 // Description : Constructor
 ////////////////////////////////////////////////////////////////////
 LinearFrictionForce::
-LinearFrictionForce(float coef, float a, bool m) :
+LinearFrictionForce(PN_stdfloat coef, PN_stdfloat a, bool m) :
   LinearForce(a, m) {
   set_coef(coef);
 }
@@ -63,16 +63,16 @@ make_copy() {
 //      Access : Public
 // Description : Constructor
 ////////////////////////////////////////////////////////////////////
-LVector3f LinearFrictionForce::
+LVector3 LinearFrictionForce::
 get_child_vector(const PhysicsObject* po) {
-  LVector3f v = po->get_velocity();
+  LVector3 v = po->get_velocity();
   assert(_coef>=0.0f && _coef<=1.0f);
   // Create a force vector in the opposite direction of v:
-  LVector3f friction = v * -_coef;
+  LVector3 friction = v * -_coef;
   physics_debug(" v "<<v<<" len "<<v.length()
       <<" friction "<<friction<<" len "<<friction.length()
       <<" dot "<<(normalize(v).dot(normalize(friction))));
-  assert(friction.almost_equal(LVector3f::zero()) 
+  assert(friction.almost_equal(LVector3::zero()) 
       || IS_NEARLY_EQUAL(normalize(v).dot(normalize(friction)), -1.0f));
   // cary said to cap this at zero so that friction can't reverse
   // your direction, but it seems to me that if you're computing:

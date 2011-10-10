@@ -53,7 +53,7 @@ public:
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
 
   virtual CPT(TransformState)
-    calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+    calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
                       bool &found_any,
                       const TransformState *transform,
                       Thread *current_thread) const;
@@ -66,9 +66,9 @@ PUBLISHED:
   void merge_bundles(PartBundleHandle *old_bundle_handle, 
                      PartBundleHandle *other_bundle_handle);
 
-  void set_lod_animation(const LPoint3f &center, 
-                         float far_distance, float near_distance,
-                         float delay_factor);
+  void set_lod_animation(const LPoint3 &center, 
+                         PN_stdfloat far_distance, PN_stdfloat near_distance,
+                         PN_stdfloat delay_factor);
   void clear_lod_animation();
 
   CharacterJoint *find_joint(const string &name) const;
@@ -139,10 +139,10 @@ private:
   int _view_frame;
   double _view_distance2;
 
-  LPoint3f _lod_center;
-  float _lod_far_distance;
-  float _lod_near_distance;
-  float _lod_delay_factor;
+  LPoint3 _lod_center;
+  PN_stdfloat _lod_far_distance;
+  PN_stdfloat _lod_near_distance;
+  PN_stdfloat _lod_delay_factor;
   bool _do_lod_animation;
 
   // Statistics

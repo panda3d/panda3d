@@ -24,23 +24,23 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS AngularVectorForce : public AngularForce {
 PUBLISHED:
-  AngularVectorForce(const LRotationf& quat);
-  AngularVectorForce(float h, float p, float r);
+  AngularVectorForce(const LRotation& quat);
+  AngularVectorForce(PN_stdfloat h, PN_stdfloat p, PN_stdfloat r);
   AngularVectorForce(const AngularVectorForce &copy);
   virtual ~AngularVectorForce();
 
-  INLINE void set_quat(const LRotationf& quat);
-  INLINE void set_hpr(float h, float p, float r);
-  INLINE LRotationf get_local_quat() const;
+  INLINE void set_quat(const LRotation& quat);
+  INLINE void set_hpr(PN_stdfloat h, PN_stdfloat p, PN_stdfloat r);
+  INLINE LRotation get_local_quat() const;
   
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 
 private:
-  LRotationf _fvec;
+  LRotation _fvec;
 
   virtual AngularForce *make_copy() const;
-  virtual LRotationf get_child_quat(const PhysicsObject *po);
+  virtual LRotation get_child_quat(const PhysicsObject *po);
 
 public:
   static TypeHandle get_class_type() {

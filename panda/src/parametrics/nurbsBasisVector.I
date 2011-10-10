@@ -59,7 +59,7 @@ get_num_segments() const {
 //  Description: Returns the first legal value of t on the curve.
 //               Usually this is 0.0.
 ////////////////////////////////////////////////////////////////////
-INLINE float NurbsBasisVector::
+INLINE PN_stdfloat NurbsBasisVector::
 get_start_t() const {
   nassertr(!_segments.empty(), 0.0f);
   return _segments.front()._from;
@@ -70,7 +70,7 @@ get_start_t() const {
 //       Access: Public
 //  Description: Returns the last legal value of t on the curve.
 ////////////////////////////////////////////////////////////////////
-INLINE float NurbsBasisVector::
+INLINE PN_stdfloat NurbsBasisVector::
 get_end_t() const {
   nassertr(!_segments.empty(), 0.0f);
   return _segments.back()._to;
@@ -94,7 +94,7 @@ get_vertex_index(int segment) const {
 //       Access: Public
 //  Description: Returns the t value of the beginning of this segment.
 ////////////////////////////////////////////////////////////////////
-INLINE float NurbsBasisVector::
+INLINE PN_stdfloat NurbsBasisVector::
 get_from(int segment) const {
   nassertr(segment >= 0 && segment < (int)_segments.size(), 0.0f);
   return _segments[segment]._from;
@@ -105,7 +105,7 @@ get_from(int segment) const {
 //       Access: Public
 //  Description: Returns the t value of the end of this segment.
 ////////////////////////////////////////////////////////////////////
-INLINE float NurbsBasisVector::
+INLINE PN_stdfloat NurbsBasisVector::
 get_to(int segment) const {
   nassertr(segment >= 0 && segment < (int)_segments.size(), 0.0f);
   return _segments[segment]._to;
@@ -119,9 +119,9 @@ get_to(int segment) const {
 //               vector over the segment; it does not depend on the
 //               control vertices.
 ////////////////////////////////////////////////////////////////////
-INLINE const LMatrix4f &NurbsBasisVector::
+INLINE const LMatrix4 &NurbsBasisVector::
 get_basis(int segment) const {
-  nassertr(segment >= 0 && segment < (int)_segments.size(), LMatrix4f::ident_mat());
+  nassertr(segment >= 0 && segment < (int)_segments.size(), LMatrix4::ident_mat());
   return _segments[segment]._basis;
 }
 
@@ -132,11 +132,11 @@ get_basis(int segment) const {
 //               corresponding to [from, to].  Returns the scaled
 //               value.
 ////////////////////////////////////////////////////////////////////
-INLINE float NurbsBasisVector::
-scale_t(int segment, float t) const {
+INLINE PN_stdfloat NurbsBasisVector::
+scale_t(int segment, PN_stdfloat t) const {
   nassertr(segment >= 0 && segment < (int)_segments.size(), 0.0f);
-  float from = _segments[segment]._from;
-  float to = _segments[segment]._to;
+  PN_stdfloat from = _segments[segment]._from;
+  PN_stdfloat to = _segments[segment]._to;
   t = (t - from) / (to - from);
-  return min(max(t, 0.0f), 1.0f);
+  return min(max(t, (PN_stdfloat)0.0), (PN_stdfloat)1.0);
 }

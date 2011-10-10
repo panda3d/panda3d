@@ -52,7 +52,7 @@ public:
   virtual void changed_graph_size(int graph_xsize, int graph_ysize);
 
   virtual void set_time_units(int unit_mask);
-  virtual void set_scroll_speed(float scroll_speed);
+  virtual void set_scroll_speed(PN_stdfloat scroll_speed);
   void set_pause(bool pause);
 
   void user_guide_bars_changed();
@@ -109,7 +109,7 @@ protected:
   DragMode _drag_mode;
   DragMode _potential_drag_mode;
   int _drag_start_x, _drag_start_y;
-  float _drag_scale_start;
+  PN_stdfloat _drag_scale_start;
   int _drag_guide_bar;
 
   bool _pause;

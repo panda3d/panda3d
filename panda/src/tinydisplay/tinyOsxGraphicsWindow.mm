@@ -304,8 +304,8 @@ void TinyOsxGraphicsWindow::DoResize(void) {
     CGRect                 viewRect = {{0.0f, 0.0f}, {0.0f, 0.0f}};
 
     GetWindowPortBounds (_osx_window, &rectPort);
-    viewRect.size.width = (float) (rectPort.right - rectPort.left);
-    viewRect.size.height = (float) (rectPort.bottom - rectPort.top);
+    viewRect.size.width = (PN_stdfloat) (rectPort.right - rectPort.left);
+    viewRect.size.height = (PN_stdfloat) (rectPort.bottom - rectPort.top);
     // tell panda
     WindowProperties properties;
     properties.set_size((int)viewRect.size.width,(int)viewRect.size.height);

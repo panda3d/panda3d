@@ -356,7 +356,7 @@ load_bind_anim(Loader *loader, const Filename &filename,
 
   // The animation is present in the table, so we can perform an
   // asynchronous load-and-bind.
-  float frame_rate = anim_preload->get_base_frame_rate(anim_index);
+  PN_stdfloat frame_rate = anim_preload->get_base_frame_rate(anim_index);
   int num_frames = anim_preload->get_num_frames(anim_index);
   PT(AnimControl) control = 
     new AnimControl(basename, this, frame_rate, num_frames);
@@ -394,7 +394,7 @@ wait_pending() {
        cbi != cdata->_blend.end(); 
        ++cbi) {
     AnimControl *control = (*cbi).first;
-    float effect = (*cbi).second;
+    PN_stdfloat effect = (*cbi).second;
     if (effect != 0.0f) {
       control->wait_pending();
     }
@@ -441,7 +441,7 @@ freeze_joint(const string &joint_name, const TransformState *transform) {
 //               or does not exist.
 ////////////////////////////////////////////////////////////////////
 bool PartBundle::
-freeze_joint(const string &joint_name, const LVecBase3f &pos, const LVecBase3f &hpr, const LVecBase3f &scale) {
+freeze_joint(const string &joint_name, const LVecBase3 &pos, const LVecBase3 &hpr, const LVecBase3 &scale) {
   PartGroup *child = find_child(joint_name);
   if (child == (PartGroup *)NULL) {
     return false;
@@ -467,7 +467,7 @@ freeze_joint(const string &joint_name, const LVecBase3f &pos, const LVecBase3f &
 //               or does not exist.
 ////////////////////////////////////////////////////////////////////
 bool PartBundle::
-freeze_joint(const string &joint_name, float value) {
+freeze_joint(const string &joint_name, PN_stdfloat value) {
   PartGroup *child = find_child(joint_name);
   if (child == (PartGroup *)NULL) {
     return false;
@@ -709,7 +709,7 @@ remove_node(PartBundleNode *node) {
 //  Description: The private implementation of set_control_effect().
 ////////////////////////////////////////////////////////////////////
 void PartBundle::
-do_set_control_effect(AnimControl *control, float effect, CData *cdata) {
+do_set_control_effect(AnimControl *control, PN_stdfloat effect, CData *cdata) {
   nassertv(control->get_part() == this);
 
   if (effect == 0.0f) {
@@ -744,7 +744,7 @@ do_set_control_effect(AnimControl *control, float effect, CData *cdata) {
 //       Access: Private
 //  Description: The private implementation of get_control_effect().
 ////////////////////////////////////////////////////////////////////
-float PartBundle::
+PN_stdfloat PartBundle::
 do_get_control_effect(AnimControl *control, const CData *cdata) const {
   nassertr(control->get_part() == this, 0.0f);
 
@@ -920,7 +920,7 @@ CData() {
   _blend_type = anim_blend_type;
   _anim_blend_flag = false;
   _frame_blend_flag = interpolate_frames;
-  _root_xform = LMatrix4f::ident_mat();
+  _root_xform = LMatrix4::ident_mat();
   _last_control_set = NULL;
   _net_blend = 0.0f;
   _anim_changed = false;

@@ -17,7 +17,7 @@
 //      Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void SparkleParticleRenderer::
-set_center_color(const Colorf& c) {
+set_center_color(const LColor& c) {
   _center_color = c;
 }
 
@@ -26,7 +26,7 @@ set_center_color(const Colorf& c) {
 //      Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void SparkleParticleRenderer::
-set_edge_color(const Colorf& c) {
+set_edge_color(const LColor& c) {
   _edge_color = c;
 }
 
@@ -44,7 +44,7 @@ set_life_scale(SparkleParticleRenderer::SparkleParticleLifeScale ls) {
 //      Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void SparkleParticleRenderer::
-set_birth_radius(float radius) {
+set_birth_radius(PN_stdfloat radius) {
   _birth_radius = radius;
 }
 
@@ -53,7 +53,7 @@ set_birth_radius(float radius) {
 //      Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void SparkleParticleRenderer::
-set_death_radius(float radius) {
+set_death_radius(PN_stdfloat radius) {
   _death_radius = radius;
 }
 
@@ -61,7 +61,7 @@ set_death_radius(float radius) {
 //    Function : get_center_color
 //      Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE const Colorf& SparkleParticleRenderer::
+INLINE const LColor& SparkleParticleRenderer::
 get_center_color() const {
   return _center_color;
 }
@@ -70,7 +70,7 @@ get_center_color() const {
 //    Function : get_edge_color
 //      Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE const Colorf& SparkleParticleRenderer::
+INLINE const LColor& SparkleParticleRenderer::
 get_edge_color() const {
   return _edge_color;
 }
@@ -88,7 +88,7 @@ get_life_scale() const {
 //    Function : get_birth_radius
 //      Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE float SparkleParticleRenderer::
+INLINE PN_stdfloat SparkleParticleRenderer::
 get_birth_radius() const {
   return _birth_radius;
 }
@@ -97,7 +97,7 @@ get_birth_radius() const {
 //    Function : get_death_radius
 //      Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE float SparkleParticleRenderer::
+INLINE PN_stdfloat SparkleParticleRenderer::
 get_death_radius() const {
   return _death_radius;
 }
@@ -106,12 +106,12 @@ get_death_radius() const {
 //    Function : get_radius
 //      Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE float SparkleParticleRenderer::
+INLINE PN_stdfloat SparkleParticleRenderer::
 get_radius(BaseParticle *bp) {
   if (_life_scale == SP_NO_SCALE)
     return _birth_radius;
   else {
-    float s_x = CUBIC_T(bp->get_parameterized_age());
+    PN_stdfloat s_x = CUBIC_T(bp->get_parameterized_age());
     return LERP(s_x, _birth_radius, _death_radius);
   }
 }

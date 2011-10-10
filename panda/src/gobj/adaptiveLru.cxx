@@ -125,8 +125,8 @@ update_page(AdaptiveLruPage *page) {
       
       update_frames = (_current_frame_identifier - page->_update_frame_identifier);
       if (update_frames > 0) {
-        float update_average_frame_utilization =
-          (float) (page->_update_total_usage) / (float)update_frames;
+        PN_stdfloat update_average_frame_utilization =
+          (PN_stdfloat) (page->_update_total_usage) / (PN_stdfloat)update_frames;
 
         page->_average_frame_utilization =
           calculate_exponential_moving_average(update_average_frame_utilization, 
@@ -138,7 +138,7 @@ update_page(AdaptiveLruPage *page) {
           
           integer_average_frame_utilization =
             (int) ((page->_average_frame_utilization - 1.0f) *
-                   (float) HIGH_PRIORITY_SCALE);
+                   (PN_stdfloat) HIGH_PRIORITY_SCALE);
           if (integer_average_frame_utilization >= LPP_New) {
             integer_average_frame_utilization = LPP_New;
           }
@@ -150,7 +150,7 @@ update_page(AdaptiveLruPage *page) {
           
           integer_average_frame_utilization = (int)
             (page->_average_frame_utilization *
-             (float) LOW_PRIORITY_RANGE);
+             (PN_stdfloat) LOW_PRIORITY_RANGE);
           integer_average_frame_utilization = LOW_PRIORITY_RANGE -
             integer_average_frame_utilization;
           target_priority = LPP_New + integer_average_frame_utilization;

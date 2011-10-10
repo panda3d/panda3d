@@ -44,10 +44,10 @@ is_mouse_open() const {
 //               true.  If so, this returns the current position of
 //               the mouse within the window.
 ////////////////////////////////////////////////////////////////////
-INLINE const LPoint2f &MouseWatcher::
+INLINE const LPoint2 &MouseWatcher::
 get_mouse() const {
 #ifndef NDEBUG
-  static LPoint2f bogus_mouse(0.0f, 0.0f);
+  static LPoint2 bogus_mouse(0.0f, 0.0f);
   nassertr(_has_mouse, bogus_mouse);
 #endif
   return _mouse;
@@ -60,7 +60,7 @@ get_mouse() const {
 //               true.  If so, this returns the current X position of
 //               the mouse within the window.
 ////////////////////////////////////////////////////////////////////
-INLINE float MouseWatcher::
+INLINE PN_stdfloat MouseWatcher::
 get_mouse_x() const {
   nassertr(_has_mouse, 0.0f);
   return _mouse[0];
@@ -73,7 +73,7 @@ get_mouse_x() const {
 //               true.  If so, this returns the current Y position of
 //               the mouse within the window.
 ////////////////////////////////////////////////////////////////////
-INLINE float MouseWatcher::
+INLINE PN_stdfloat MouseWatcher::
 get_mouse_y() const {
   nassertr(_has_mouse, 0.0f);
   return _mouse[1];
@@ -86,8 +86,8 @@ get_mouse_y() const {
 //               flavor of this method for a more verbose explanation.
 ////////////////////////////////////////////////////////////////////
 INLINE void MouseWatcher::
-set_frame(float left, float right, float bottom, float top) {
-  set_frame(LVecBase4f(left, right, bottom, top));
+set_frame(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top) {
+  set_frame(LVecBase4(left, right, bottom, top));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -107,7 +107,7 @@ set_frame(float left, float right, float bottom, float top) {
 //               cover the lower half of the screen.
 ////////////////////////////////////////////////////////////////////
 INLINE void MouseWatcher::
-set_frame(const LVecBase4f &frame) {
+set_frame(const LVecBase4 &frame) {
   _frame = frame;
 }
 
@@ -117,7 +117,7 @@ set_frame(const LVecBase4f &frame) {
 //  Description: Returns the frame of the MouseWatcher.  See
 //               set_frame().
 ////////////////////////////////////////////////////////////////////
-INLINE const LVecBase4f &MouseWatcher::
+INLINE const LVecBase4 &MouseWatcher::
 get_frame() const {
   return _frame;
 }
@@ -140,7 +140,7 @@ is_over_region() const {
 //               region, false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool MouseWatcher::
-is_over_region(float x, float y) const {
+is_over_region(PN_stdfloat x, PN_stdfloat y) const {
   return get_over_region(x, y) != (MouseWatcherRegion *)NULL;
 }
 
@@ -151,7 +151,7 @@ is_over_region(float x, float y) const {
 //               region, false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool MouseWatcher::
-is_over_region(const LPoint2f &pos) const {
+is_over_region(const LPoint2 &pos) const {
   return get_over_region(pos) != (MouseWatcherRegion *)NULL;
 }
 
@@ -173,8 +173,8 @@ get_over_region() const {
 //               over, or NULL if it is over no region.
 ////////////////////////////////////////////////////////////////////
 INLINE MouseWatcherRegion *MouseWatcher::
-get_over_region(float x, float y) const {
-  return get_over_region(LPoint2f(x, y));
+get_over_region(PN_stdfloat x, PN_stdfloat y) const {
+  return get_over_region(LPoint2(x, y));
 }
 
 ////////////////////////////////////////////////////////////////////

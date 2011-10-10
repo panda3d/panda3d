@@ -59,7 +59,7 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
         _color = color_attrib->get_color();
         if (color_scale_attrib != (ColorScaleAttrib *)NULL &&
             color_scale_attrib->has_scale()) {
-          const LVecBase4f &cs = color_scale_attrib->get_scale();
+          const LVecBase4 &cs = color_scale_attrib->get_scale();
           _color.set(_color[0] * cs[0],
                      _color[1] * cs[1],
                      _color[2] * cs[2],

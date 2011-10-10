@@ -62,7 +62,7 @@ public:
   INLINE PStatServer *get_server();
   INLINE const PStatClientData *get_client_data() const;
   INLINE string get_collector_name(int collector_index);
-  const RGBColorf &get_collector_color(int collector_index);
+  const LRGBColor &get_collector_color(int collector_index);
 
   INLINE bool is_client_known() const;
   INLINE string get_client_hostname() const;
@@ -108,7 +108,7 @@ private:
   typedef pmap<int, Views> LevelViews;
   LevelViews _level_views;
 
-  typedef pmap<int, RGBColorf> Colors;
+  typedef pmap<int, LRGBColor> Colors;
   Colors _colors;
 };
 

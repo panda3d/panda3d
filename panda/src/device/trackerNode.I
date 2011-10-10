@@ -30,7 +30,7 @@ is_valid() const {
 //  Description: Returns the current position of the tracker, if it is
 //               available.
 ////////////////////////////////////////////////////////////////////
-INLINE const LPoint3f &TrackerNode::
+INLINE const LPoint3 &TrackerNode::
 get_pos() const {
   return _data.get_pos();
 }
@@ -41,7 +41,7 @@ get_pos() const {
 //  Description: Returns the current orientation of the tracker, if it
 //               is available.
 ////////////////////////////////////////////////////////////////////
-INLINE const LOrientationf &TrackerNode::
+INLINE const LOrientation &TrackerNode::
 get_orient() const {
   return _data.get_orient();
 }
@@ -72,7 +72,7 @@ has_time() const {
 //  Description: Returns the current position and orientation of the
 //               tracker, as a combined matrix.
 ////////////////////////////////////////////////////////////////////
-INLINE const LMatrix4f &TrackerNode::
+INLINE const LMatrix4 &TrackerNode::
 get_transform() const {
   return _mat;
 }

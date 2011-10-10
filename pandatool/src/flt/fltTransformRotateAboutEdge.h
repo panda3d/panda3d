@@ -28,18 +28,18 @@ class FltTransformRotateAboutEdge : public FltTransformRecord {
 public:
   FltTransformRotateAboutEdge(FltHeader *header);
 
-  void set(const LPoint3d &point_a, const LPoint3d &point_b, float angle);
+  void set(const LPoint3d &point_a, const LPoint3d &point_b, PN_stdfloat angle);
 
   const LPoint3d &get_point_a() const;
   const LPoint3d &get_point_b() const;
-  float get_angle() const;
+  PN_stdfloat get_angle() const;
 
 private:
   void recompute_matrix();
 
   LPoint3d _point_a;
   LPoint3d _point_b;
-  float _angle;
+  PN_stdfloat _angle;
 
 protected:
   virtual bool extract_record(FltRecordReader &reader);

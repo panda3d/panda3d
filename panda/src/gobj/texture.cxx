@@ -239,10 +239,10 @@ generate_normalization_cube_map(int size) {
   ++(cdata->_image_modified);
   ++(cdata->_properties_modified);
 
-  float half_size = (float)size * 0.5f;
-  float center = half_size - 0.5f;
+  PN_stdfloat half_size = (PN_stdfloat)size * 0.5f;
+  PN_stdfloat center = half_size - 0.5f;
 
-  LMatrix4f scale
+  LMatrix4 scale
     (127.5f, 0.0f, 0.0f, 0.0f,
      0.0f, 127.5f, 0.0f, 0.0f,
      0.0f, 0.0f, 127.5f, 0.0f,
@@ -254,7 +254,7 @@ generate_normalization_cube_map(int size) {
   // Page 0: positive X.
   for (yi = 0; yi < size; ++yi) {
     for (xi = 0; xi < size; ++xi) {
-      LVector3f vec(half_size, center - yi, center - xi);
+      LVector3 vec(half_size, center - yi, center - xi);
       vec.normalize();
       vec = scale.xform_point(vec);
 
@@ -267,7 +267,7 @@ generate_normalization_cube_map(int size) {
   // Page 1: negative X.
   for (yi = 0; yi < size; ++yi) {
     for (xi = 0; xi < size; ++xi) {
-      LVector3f vec(-half_size, center - yi, xi - center);
+      LVector3 vec(-half_size, center - yi, xi - center);
       vec.normalize();
       vec = scale.xform_point(vec);
       *p++ = (unsigned char)vec[2];
@@ -279,7 +279,7 @@ generate_normalization_cube_map(int size) {
   // Page 2: positive Y.
   for (yi = 0; yi < size; ++yi) {
     for (xi = 0; xi < size; ++xi) {
-      LVector3f vec(xi - center, half_size, yi - center);
+      LVector3 vec(xi - center, half_size, yi - center);
       vec.normalize();
       vec = scale.xform_point(vec);
       *p++ = (unsigned char)vec[2];
@@ -291,7 +291,7 @@ generate_normalization_cube_map(int size) {
   // Page 3: negative Y.
   for (yi = 0; yi < size; ++yi) {
     for (xi = 0; xi < size; ++xi) {
-      LVector3f vec(xi - center, -half_size, center - yi);
+      LVector3 vec(xi - center, -half_size, center - yi);
       vec.normalize();
       vec = scale.xform_point(vec);
       *p++ = (unsigned char)vec[2];
@@ -303,7 +303,7 @@ generate_normalization_cube_map(int size) {
   // Page 4: positive Z.
   for (yi = 0; yi < size; ++yi) {
     for (xi = 0; xi < size; ++xi) {
-      LVector3f vec(xi - center, center - yi, half_size);
+      LVector3 vec(xi - center, center - yi, half_size);
       vec.normalize();
       vec = scale.xform_point(vec);
       *p++ = (unsigned char)vec[2];
@@ -315,7 +315,7 @@ generate_normalization_cube_map(int size) {
   // Page 5: negative Z.
   for (yi = 0; yi < size; ++yi) {
     for (xi = 0; xi < size; ++xi) {
-      LVector3f vec(center - xi, center - yi, -half_size);
+      LVector3 vec(center - xi, center - yi, -half_size);
       vec.normalize();
       vec = scale.xform_point(vec);
       *p++ = (unsigned char)vec[2];
@@ -4958,7 +4958,7 @@ do_set_anisotropic_degree(CData *cdata, int anisotropic_degree) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Texture::
-do_set_border_color(CData *cdata, const Colorf &color) {
+do_set_border_color(CData *cdata, const LColor &color) {
   if (cdata->_border_color != color) {
     ++(cdata->_properties_modified);
     cdata->_border_color = color;

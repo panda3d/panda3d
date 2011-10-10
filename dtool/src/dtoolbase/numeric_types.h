@@ -49,5 +49,13 @@ typedef unsigned long long int PN_uint64;
 typedef double PN_float64;
 typedef float PN_float32;
 
+#ifndef STDFLOAT_DOUBLE
+// The default setting--single-precision floats.
+typedef float PN_stdfloat;
+#else  // STDFLOAT_DOUBLE
+// The specialty setting--double-precision floats.
+typedef double PN_stdfloat;
+#endif  // STDFLOAT_DOUBLE
+
 #endif
 

@@ -17,7 +17,7 @@
 //    Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void TangentRingEmitter::
-set_radius(float r) {
+set_radius(PN_stdfloat r) {
   _radius = r;
 }
 
@@ -26,7 +26,7 @@ set_radius(float r) {
 //    Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void TangentRingEmitter::
-set_radius_spread(float spread) {
+set_radius_spread(PN_stdfloat spread) {
   _radius_spread = spread;
 }
 
@@ -34,7 +34,7 @@ set_radius_spread(float spread) {
 //  Function : get_radius
 //    Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE float TangentRingEmitter::
+INLINE PN_stdfloat TangentRingEmitter::
 get_radius() const {
   return _radius;
 }
@@ -43,7 +43,7 @@ get_radius() const {
 //  Function : get_radius_spread
 //    Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE float TangentRingEmitter::
+INLINE PN_stdfloat TangentRingEmitter::
 get_radius_spread() const {
   return _radius_spread;
 }

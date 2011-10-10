@@ -38,7 +38,7 @@ SolidInfo() {
 //               objects in a smaller window.
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionVisualizer::
-set_point_scale(float point_scale) {
+set_point_scale(PN_stdfloat point_scale) {
   _point_scale = point_scale;
 }
 
@@ -47,7 +47,7 @@ set_point_scale(float point_scale) {
 //       Access: Published
 //  Description: Returns the value last set by set_point_scale().
 ////////////////////////////////////////////////////////////////////
-INLINE float CollisionVisualizer::
+INLINE PN_stdfloat CollisionVisualizer::
 get_point_scale() const {
   return _point_scale;
 }
@@ -64,7 +64,7 @@ get_point_scale() const {
 //               observe these normals from farther away.
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionVisualizer::
-set_normal_scale(float normal_scale) {
+set_normal_scale(PN_stdfloat normal_scale) {
   _normal_scale = normal_scale;
 }
 
@@ -73,7 +73,7 @@ set_normal_scale(float normal_scale) {
 //       Access: Published
 //  Description: Returns the value last set by set_normal_scale().
 ////////////////////////////////////////////////////////////////////
-INLINE float CollisionVisualizer::
+INLINE PN_stdfloat CollisionVisualizer::
 get_normal_scale() const {
   return _normal_scale;
 }

@@ -124,8 +124,8 @@ PUBLISHED:
   void clear_gsg();
   INLINE GraphicsStateGuardianBase *get_gsg() const;
 
-  INLINE void set_combine_radius(float combine_radius);
-  INLINE float get_combine_radius() const;
+  INLINE void set_combine_radius(PN_stdfloat combine_radius);
+  INLINE PN_stdfloat get_combine_radius() const;
 
   INLINE void apply_attribs(PandaNode *node, int attrib_types = ~(TT_clip_plane | TT_cull_face | TT_apply_texture_color));
   INLINE void apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
@@ -189,7 +189,7 @@ protected:
 
 private:
   PT(GraphicsStateGuardianBase) _gsg;
-  float _combine_radius;
+  PN_stdfloat _combine_radius;
   GeomTransformer _transformer;
 
   static PStatCollector _flatten_collector;

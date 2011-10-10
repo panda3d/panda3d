@@ -77,63 +77,63 @@ PUBLISHED:
   INLINE bool has_small_caps() const;
   INLINE bool get_small_caps() const;
 
-  INLINE void set_small_caps_scale(float small_caps_scale);
+  INLINE void set_small_caps_scale(PN_stdfloat small_caps_scale);
   INLINE void clear_small_caps_scale();
   INLINE bool has_small_caps_scale() const;
-  INLINE float get_small_caps_scale() const;
+  INLINE PN_stdfloat get_small_caps_scale() const;
 
-  INLINE void set_slant(float slant);
+  INLINE void set_slant(PN_stdfloat slant);
   INLINE void clear_slant();
   INLINE bool has_slant() const;
-  INLINE float get_slant() const;
+  INLINE PN_stdfloat get_slant() const;
 
   INLINE void set_underscore(bool underscore);
   INLINE void clear_underscore();
   INLINE bool has_underscore() const;
   INLINE bool get_underscore() const;
 
-  INLINE void set_underscore_height(float underscore_height);
+  INLINE void set_underscore_height(PN_stdfloat underscore_height);
   INLINE void clear_underscore_height();
   INLINE bool has_underscore_height() const;
-  INLINE float get_underscore_height() const;
+  INLINE PN_stdfloat get_underscore_height() const;
 
   INLINE void set_align(Alignment align_type);
   INLINE void clear_align();
   INLINE bool has_align() const;
   INLINE Alignment get_align() const;
 
-  INLINE void set_indent(float indent);
+  INLINE void set_indent(PN_stdfloat indent);
   INLINE void clear_indent();
   INLINE bool has_indent() const;
-  INLINE float get_indent() const;
+  INLINE PN_stdfloat get_indent() const;
 
-  INLINE void set_wordwrap(float wordwrap);
+  INLINE void set_wordwrap(PN_stdfloat wordwrap);
   INLINE void clear_wordwrap();
   INLINE bool has_wordwrap() const;
-  INLINE float get_wordwrap() const;
+  INLINE PN_stdfloat get_wordwrap() const;
 
   INLINE void set_preserve_trailing_whitespace(bool preserve_trailing_whitespace);
   INLINE void clear_preserve_trailing_whitespace();
   INLINE bool has_preserve_trailing_whitespace() const;
   INLINE bool get_preserve_trailing_whitespace() const;
 
-  INLINE void set_text_color(float r, float g, float b, float a);
-  INLINE void set_text_color(const Colorf &text_color);
+  INLINE void set_text_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a);
+  INLINE void set_text_color(const LColor &text_color);
   INLINE void clear_text_color();
   INLINE bool has_text_color() const;
-  INLINE Colorf get_text_color() const;
+  INLINE LColor get_text_color() const;
 
-  INLINE void set_shadow_color(float r, float g, float b, float a);
-  INLINE void set_shadow_color(const Colorf &shadow_color);
+  INLINE void set_shadow_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a);
+  INLINE void set_shadow_color(const LColor &shadow_color);
   INLINE void clear_shadow_color();
   INLINE bool has_shadow_color() const;
-  INLINE Colorf get_shadow_color() const;
+  INLINE LColor get_shadow_color() const;
 
-  INLINE void set_shadow(float xoffset, float yoffset);
-  INLINE void set_shadow(const LVecBase2f &shadow_offset);
+  INLINE void set_shadow(PN_stdfloat xoffset, PN_stdfloat yoffset);
+  INLINE void set_shadow(const LVecBase2 &shadow_offset);
   INLINE void clear_shadow();
   INLINE bool has_shadow() const;
-  INLINE LVector2f get_shadow() const;
+  INLINE LVector2 get_shadow() const;
 
   INLINE void set_bin(const string &bin);
   INLINE void clear_bin();
@@ -145,25 +145,25 @@ PUBLISHED:
   INLINE bool has_draw_order() const;
   INLINE int get_draw_order() const;
 
-  INLINE void set_tab_width(float tab_width);
+  INLINE void set_tab_width(PN_stdfloat tab_width);
   INLINE void clear_tab_width();
   INLINE bool has_tab_width() const;
-  INLINE float get_tab_width() const;
+  INLINE PN_stdfloat get_tab_width() const;
 
-  INLINE void set_glyph_scale(float glyph_scale);
+  INLINE void set_glyph_scale(PN_stdfloat glyph_scale);
   INLINE void clear_glyph_scale();
   INLINE bool has_glyph_scale() const;
-  INLINE float get_glyph_scale() const;
+  INLINE PN_stdfloat get_glyph_scale() const;
 
-  INLINE void set_glyph_shift(float glyph_shift);
+  INLINE void set_glyph_shift(PN_stdfloat glyph_shift);
   INLINE void clear_glyph_shift();
   INLINE bool has_glyph_shift() const;
-  INLINE float get_glyph_shift() const;
+  INLINE PN_stdfloat get_glyph_shift() const;
 
-  INLINE void set_text_scale(float text_scale);
+  INLINE void set_text_scale(PN_stdfloat text_scale);
   INLINE void clear_text_scale();
   INLINE bool has_text_scale() const;
-  INLINE float get_text_scale() const;
+  INLINE PN_stdfloat get_text_scale() const;
 
   void add_properties(const TextProperties &other);
 
@@ -198,23 +198,23 @@ private:
 
   PT(TextFont) _font;
   bool _small_caps;
-  float _small_caps_scale;
-  float _slant;
+  PN_stdfloat _small_caps_scale;
+  PN_stdfloat _slant;
   bool _underscore;
-  float _underscore_height;
+  PN_stdfloat _underscore_height;
   Alignment _align;
-  float _indent_width;
-  float _wordwrap_width;
+  PN_stdfloat _indent_width;
+  PN_stdfloat _wordwrap_width;
   bool _preserve_trailing_whitespace;
-  Colorf _text_color;
-  Colorf _shadow_color;
-  LVector2f _shadow_offset;
+  LColor _text_color;
+  LColor _shadow_color;
+  LVector2 _shadow_offset;
   string _bin;
   int _draw_order;
-  float _tab_width;
-  float _glyph_scale;
-  float _glyph_shift;
-  float _text_scale;
+  PN_stdfloat _tab_width;
+  PN_stdfloat _glyph_scale;
+  PN_stdfloat _glyph_shift;
+  PN_stdfloat _text_scale;
 
   static PT(TextFont) _default_font;
   static bool _loaded_default_font;

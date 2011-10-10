@@ -24,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS LinearJitterForce : public LinearRandomForce {
 PUBLISHED:
-  LinearJitterForce(float a = 1.0f, bool m = false);
+  LinearJitterForce(PN_stdfloat a = 1.0f, bool m = false);
   LinearJitterForce(const LinearJitterForce &copy);
   virtual ~LinearJitterForce();
   
@@ -32,7 +32,7 @@ PUBLISHED:
   virtual void write(ostream &out, unsigned int indent=0) const;
 
 private:
-  virtual LVector3f get_child_vector(const PhysicsObject *po);
+  virtual LVector3 get_child_vector(const PhysicsObject *po);
   virtual LinearForce *make_copy();
 
 public:

@@ -55,13 +55,13 @@ make_copy() {
 //  Description: Transforms the solid by the indicated matrix.
 ////////////////////////////////////////////////////////////////////
 void CollisionTube::
-xform(const LMatrix4f &mat) {
+xform(const LMatrix4 &mat) {
   _a = _a * mat;
   _b = _b * mat;
 
   // This is a little cheesy and fails miserably in the presence of a
   // non-uniform scale.
-  LVector3f radius_v = LVector3f(_radius, 0.0f, 0.0f) * mat;
+  LVector3 radius_v = LVector3(_radius, 0.0f, 0.0f) * mat;
   _radius = length(radius_v);
 
   recalc_internals();
@@ -76,7 +76,7 @@ xform(const LMatrix4f &mat) {
 //               intersection point to this origin point is considered
 //               to be the most significant.
 ////////////////////////////////////////////////////////////////////
-LPoint3f CollisionTube::
+LPoint3 CollisionTube::
 get_collision_origin() const {
   return get_point_a();
 }
@@ -128,11 +128,11 @@ compute_internal_bounds() const {
     GeometricBoundingVolume *gbound;
     DCAST_INTO_R(gbound, bound, bound);
 
-    LVector3f vec = (_b - _a);
+    LVector3 vec = (_b - _a);
     if (vec.normalize()) {
       // The bounding volume includes both endpoints, plus a little
       // bit more to include the radius in both directions.
-      LPoint3f points[2];
+      LPoint3 points[2];
       points[0] = _a - vec * _radius;
       points[1] = _b + vec * _radius;
 
@@ -162,13 +162,13 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   CPT(TransformState) wrt_space = entry.get_wrt_space();
   CPT(TransformState) wrt_prev_space = entry.get_wrt_prev_space();
 
-  const LMatrix4f &wrt_mat = wrt_space->get_mat();
+  const LMatrix4 &wrt_mat = wrt_space->get_mat();
 
-  LPoint3f from_a = sphere->get_center() * wrt_mat;
-  LPoint3f from_b = from_a;
+  LPoint3 from_a = sphere->get_center() * wrt_mat;
+  LPoint3 from_b = from_a;
 
-  LPoint3f contact_point;
-  float actual_t = 0.0f;
+  LPoint3 contact_point;
+  PN_stdfloat actual_t = 0.0f;
 
   if (wrt_prev_space != wrt_space) {
     // If the sphere is moving relative to the tube, it becomes a tube
@@ -176,11 +176,11 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     from_a = sphere->get_center() * wrt_prev_space->get_mat();
   }
 
-  LVector3f from_direction = from_b - from_a;
+  LVector3 from_direction = from_b - from_a;
 
-  LVector3f from_radius_v =
-    LVector3f(sphere->get_radius(), 0.0f, 0.0f) * wrt_mat;
-  float from_radius = length(from_radius_v);
+  LVector3 from_radius_v =
+    LVector3(sphere->get_radius(), 0.0f, 0.0f) * wrt_mat;
+  PN_stdfloat from_radius = length(from_radius_v);
 
   double t1, t2;
   if (!intersects_line(t1, t2, from_a, from_direction, from_radius)) {
@@ -205,7 +205,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LPoint3f into_intersection_point;
+  LPoint3 into_intersection_point;
   if (t2 > 1.0) {
     // Point b is within the tube.  The first intersection point is
     // point b itself.
@@ -217,8 +217,8 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   }
   set_intersection_point(new_entry, into_intersection_point, from_radius);
 
-  LPoint3f fake_contact_point;
-  LVector3f contact_normal;
+  LPoint3 fake_contact_point;
+  LVector3 contact_normal;
   calculate_surface_point_and_normal(contact_point,
                                      from_radius,
                                      fake_contact_point,
@@ -240,10 +240,10 @@ test_intersection_from_line(const CollisionEntry &entry) const {
   const CollisionLine *line;
   DCAST_INTO_R(line, entry.get_from(), 0);
 
-  const LMatrix4f &wrt_mat = entry.get_wrt_mat();
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
-  LPoint3f from_origin = line->get_origin() * wrt_mat;
-  LVector3f from_direction = line->get_direction() * wrt_mat;
+  LPoint3 from_origin = line->get_origin() * wrt_mat;
+  LVector3 from_direction = line->get_direction() * wrt_mat;
 
   double t1, t2;
   if (!intersects_line(t1, t2, from_origin, from_direction, 0.0f)) {
@@ -258,14 +258,14 @@ test_intersection_from_line(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LPoint3f into_intersection_point = from_origin + t1 * from_direction;
+  LPoint3 into_intersection_point = from_origin + t1 * from_direction;
   set_intersection_point(new_entry, into_intersection_point, 0.0);
 
   if (has_effective_normal() && line->get_respect_effective_normal()) {
     new_entry->set_surface_normal(get_effective_normal());
 
   } else {
-    LVector3f normal = into_intersection_point * _inv_mat;
+    LVector3 normal = into_intersection_point * _inv_mat;
     if (normal[1] > _length) {
       // The point is within the top endcap.
       normal[1] -= _length;
@@ -290,10 +290,10 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
   DCAST_INTO_R(ray, entry.get_from(), 0);
 
-  const LMatrix4f &wrt_mat = entry.get_wrt_mat();
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
-  LPoint3f from_origin = ray->get_origin() * wrt_mat;
-  LVector3f from_direction = ray->get_direction() * wrt_mat;
+  LPoint3 from_origin = ray->get_origin() * wrt_mat;
+  LVector3 from_direction = ray->get_direction() * wrt_mat;
 
   double t1, t2;
   if (!intersects_line(t1, t2, from_origin, from_direction, 0.0f)) {
@@ -313,7 +313,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LPoint3f into_intersection_point;
+  LPoint3 into_intersection_point;
   if (t1 < 0.0) {
     // Point a is within the tube.  The first intersection point is
     // point a itself.
@@ -329,7 +329,7 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
     new_entry->set_surface_normal(get_effective_normal());
 
   } else {
-    LVector3f normal = into_intersection_point * _inv_mat;
+    LVector3 normal = into_intersection_point * _inv_mat;
     if (normal[1] > _length) {
       // The point is within the top endcap.
       normal[1] -= _length;
@@ -354,11 +354,11 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   const CollisionSegment *segment;
   DCAST_INTO_R(segment, entry.get_from(), 0);
 
-  const LMatrix4f &wrt_mat = entry.get_wrt_mat();
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
-  LPoint3f from_a = segment->get_point_a() * wrt_mat;
-  LPoint3f from_b = segment->get_point_b() * wrt_mat;
-  LVector3f from_direction = from_b - from_a;
+  LPoint3 from_a = segment->get_point_a() * wrt_mat;
+  LPoint3 from_b = segment->get_point_b() * wrt_mat;
+  LVector3 from_direction = from_b - from_a;
 
   double t1, t2;
   if (!intersects_line(t1, t2, from_a, from_direction, 0.0f)) {
@@ -379,7 +379,7 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LPoint3f into_intersection_point;
+  LPoint3 into_intersection_point;
   if (t1 < 0.0) {
     // Point a is within the tube.  The first intersection point is
     // point a itself.
@@ -395,7 +395,7 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
     new_entry->set_surface_normal(get_effective_normal());
 
   } else {
-    LVector3f normal = into_intersection_point * _inv_mat;
+    LVector3 normal = into_intersection_point * _inv_mat;
     if (normal[1] > _length) {
       // The point is within the top endcap.
       normal[1] -= _length;
@@ -420,10 +420,10 @@ test_intersection_from_parabola(const CollisionEntry &entry) const {
   const CollisionParabola *parabola;
   DCAST_INTO_R(parabola, entry.get_from(), 0);
 
-  const LMatrix4f &wrt_mat = entry.get_wrt_mat();
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
   // Convert the parabola into local coordinate space.
-  Parabolaf local_p(parabola->get_parabola());
+  LParabola local_p(parabola->get_parabola());
   local_p.xform(wrt_mat);
 
   double t;
@@ -441,14 +441,14 @@ test_intersection_from_parabola(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LPoint3f into_intersection_point = local_p.calc_point(t);
+  LPoint3 into_intersection_point = local_p.calc_point(t);
   set_intersection_point(new_entry, into_intersection_point, 0.0);
 
   if (has_effective_normal() && parabola->get_respect_effective_normal()) {
     new_entry->set_surface_normal(get_effective_normal());
 
   } else {
-    LVector3f normal = into_intersection_point * _inv_mat;
+    LVector3 normal = into_intersection_point * _inv_mat;
     if (normal[1] > _length) {
       // The point is within the top endcap.
       normal[1] -= _length;
@@ -479,8 +479,8 @@ fill_viz_geom() {
   // Generate the vertices such that we draw a tube with one endpoint
   // at (0, 0, 0), and another at (0, length, 0).  Then we'll rotate
   // and translate it into place with the appropriate look_at matrix.
-  LVector3f direction = (_b - _a);
-  float length = direction.length();
+  LVector3 direction = (_b - _a);
+  PN_stdfloat length = direction.length();
 
   PT(GeomVertexData) vdata = new GeomVertexData
     ("collision", GeomVertexFormat::get_v3(),
@@ -494,8 +494,8 @@ fill_viz_geom() {
   int ri, si;
   for (ri = 0; ri < num_rings; ri++) {
     for (si = 0; si <= num_slices; si++) {
-      vertex.add_data3f(calc_sphere1_vertex(ri, si, num_rings, num_slices));
-      vertex.add_data3f(calc_sphere1_vertex(ri + 1, si, num_rings, num_slices));
+      vertex.add_data3(calc_sphere1_vertex(ri, si, num_rings, num_slices));
+      vertex.add_data3(calc_sphere1_vertex(ri + 1, si, num_rings, num_slices));
     }
     strip->add_next_vertices((num_slices + 1) * 2);
     strip->close_primitive();
@@ -503,8 +503,8 @@ fill_viz_geom() {
   
   // Now the cylinder sides.
   for (si = 0; si <= num_slices; si++) {
-    vertex.add_data3f(calc_sphere1_vertex(num_rings, si, num_rings, num_slices));
-    vertex.add_data3f(calc_sphere2_vertex(num_rings, si, num_rings, num_slices,
+    vertex.add_data3(calc_sphere1_vertex(num_rings, si, num_rings, num_slices));
+    vertex.add_data3(calc_sphere2_vertex(num_rings, si, num_rings, num_slices,
                                           length));
   }
   strip->add_next_vertices((num_slices + 1) * 2);
@@ -513,8 +513,8 @@ fill_viz_geom() {
   // And the second endcap.
   for (ri = num_rings - 1; ri >= 0; ri--) {
     for (si = 0; si <= num_slices; si++) {
-      vertex.add_data3f(calc_sphere2_vertex(ri + 1, si, num_rings, num_slices, length));
-      vertex.add_data3f(calc_sphere2_vertex(ri, si, num_rings, num_slices, length));
+      vertex.add_data3(calc_sphere2_vertex(ri + 1, si, num_rings, num_slices, length));
+      vertex.add_data3(calc_sphere2_vertex(ri, si, num_rings, num_slices, length));
     }
     strip->add_next_vertices((num_slices + 1) * 2);
     strip->close_primitive();
@@ -524,8 +524,8 @@ fill_viz_geom() {
   geom->add_primitive(strip);
   
   // Now transform the vertices to their actual location.
-  LMatrix4f mat;
-  look_at(mat, direction, LVector3f(0.0f, 0.0f, 1.0f), CS_zup_right);
+  LMatrix4 mat;
+  look_at(mat, direction, LVector3(0.0f, 0.0f, 1.0f), CS_zup_right);
   mat.set_row(3, _a);
   geom->transform_vertices(mat);
   
@@ -542,10 +542,10 @@ fill_viz_geom() {
 ////////////////////////////////////////////////////////////////////
 void CollisionTube::
 recalc_internals() {
-  LVector3f direction = (_b - _a);
+  LVector3 direction = (_b - _a);
   _length = direction.length();
 
-  look_at(_mat, direction, LVector3f(0.0f, 0.0f, 1.0f), CS_zup_right);
+  look_at(_mat, direction, LVector3(0.0f, 0.0f, 1.0f), CS_zup_right);
   _mat.set_row(3, _a);
   _inv_mat.invert_from(_mat);
 
@@ -560,25 +560,25 @@ recalc_internals() {
 //               first endcap hemisphere, for use in generating the
 //               viz geometry.
 ////////////////////////////////////////////////////////////////////
-Vertexf CollisionTube::
+LVertex CollisionTube::
 calc_sphere1_vertex(int ri, int si, int num_rings, int num_slices) {
-  float r = (float)ri / (float)num_rings;
-  float s = (float)si / (float)num_slices;
+  PN_stdfloat r = (PN_stdfloat)ri / (PN_stdfloat)num_rings;
+  PN_stdfloat s = (PN_stdfloat)si / (PN_stdfloat)num_slices;
 
   // Find the point on the rim, based on the slice.
-  float theta = s * 2.0f * MathNumbers::pi_f;
-  float x_rim = ccos(theta);
-  float z_rim = csin(theta);
+  PN_stdfloat theta = s * 2.0f * MathNumbers::pi;
+  PN_stdfloat x_rim = ccos(theta);
+  PN_stdfloat z_rim = csin(theta);
 
   // Now pull that point in towards the pole, based on the ring.
-  float phi = r * 0.5f * MathNumbers::pi_f;
-  float to_pole = csin(phi);
+  PN_stdfloat phi = r * 0.5f * MathNumbers::pi;
+  PN_stdfloat to_pole = csin(phi);
 
-  float x = _radius * x_rim * to_pole;
-  float y = -_radius * ccos(phi);
-  float z = _radius * z_rim * to_pole;
+  PN_stdfloat x = _radius * x_rim * to_pole;
+  PN_stdfloat y = -_radius * ccos(phi);
+  PN_stdfloat z = _radius * z_rim * to_pole;
 
-  return Vertexf(x, y, z);
+  return LVertex(x, y, z);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -588,26 +588,26 @@ calc_sphere1_vertex(int ri, int si, int num_rings, int num_slices) {
 //               second endcap hemisphere, for use in generating the
 //               viz geometry.
 ////////////////////////////////////////////////////////////////////
-Vertexf CollisionTube::
+LVertex CollisionTube::
 calc_sphere2_vertex(int ri, int si, int num_rings, int num_slices,
-                    float length) {
-  float r = (float)ri / (float)num_rings;
-  float s = (float)si / (float)num_slices;
+                    PN_stdfloat length) {
+  PN_stdfloat r = (PN_stdfloat)ri / (PN_stdfloat)num_rings;
+  PN_stdfloat s = (PN_stdfloat)si / (PN_stdfloat)num_slices;
 
   // Find the point on the rim, based on the slice.
-  float theta = s * 2.0f * MathNumbers::pi_f;
-  float x_rim = ccos(theta);
-  float z_rim = csin(theta);
+  PN_stdfloat theta = s * 2.0f * MathNumbers::pi;
+  PN_stdfloat x_rim = ccos(theta);
+  PN_stdfloat z_rim = csin(theta);
 
   // Now pull that point in towards the pole, based on the ring.
-  float phi = r * 0.5f * MathNumbers::pi_f;
-  float to_pole = csin(phi);
+  PN_stdfloat phi = r * 0.5f * MathNumbers::pi;
+  PN_stdfloat to_pole = csin(phi);
 
-  float x = _radius * x_rim * to_pole;
-  float y = length + _radius * ccos(phi);
-  float z = _radius * z_rim * to_pole;
+  PN_stdfloat x = _radius * x_rim * to_pole;
+  PN_stdfloat y = length + _radius * ccos(phi);
+  PN_stdfloat z = _radius * z_rim * to_pole;
 
-  return Vertexf(x, y, z);
+  return LVertex(x, y, z);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -625,13 +625,13 @@ calc_sphere2_vertex(int ri, int si, int num_rings, int num_slices,
 ////////////////////////////////////////////////////////////////////
 bool CollisionTube::
 intersects_line(double &t1, double &t2,
-                LPoint3f from, LVector3f delta, float inflate_radius) const {
+                LPoint3 from, LVector3 delta, PN_stdfloat inflate_radius) const {
   // Convert the line into our canonical coordinate space: the tube is
   // aligned with the y axis.
   from = from * _inv_mat;
   delta = delta * _inv_mat;
 
-  float radius = _radius + inflate_radius;
+  PN_stdfloat radius = _radius + inflate_radius;
 
   // Now project the line into the X-Z plane to test for intersection
   // with a 2-d circle around the origin.  The equation for this is
@@ -639,8 +639,8 @@ intersects_line(double &t1, double &t2,
   // sphere; see CollisionSphere::intersects_line() for the complete
   // derivation.  It's a little bit simpler because the circle is
   // centered on the origin.
-  LVector2f from2(from[0], from[2]);
-  LVector2f delta2(delta[0], delta[2]);
+  LVector2 from2(from[0], from[2]);
+  LVector2 delta2(delta[0], delta[2]);
 
   double A = dot(delta2, delta2);
 
@@ -715,8 +715,8 @@ intersects_line(double &t1, double &t2,
 
   // Now we need to verify that the intersection points fall within
   // the length of the cylinder.
-  float t1_y = from[1] + t1 * delta[1];
-  float t2_y = from[1] + t2 * delta[1];
+  PN_stdfloat t1_y = from[1] + t1 * delta[1];
+  PN_stdfloat t2_y = from[1] + t2 * delta[1];
 
   if (t1_y < -radius && t2_y < -radius) {
     // Both points are way off the bottom of the tube; no
@@ -785,18 +785,18 @@ intersects_line(double &t1, double &t2,
 //               sphere (and hence the particular endcap.
 ////////////////////////////////////////////////////////////////////
 bool CollisionTube::
-sphere_intersects_line(double &t1, double &t2, float center_y,
-                       const LPoint3f &from, const LVector3f &delta,
-                       float inflate_radius) const {
+sphere_intersects_line(double &t1, double &t2, PN_stdfloat center_y,
+                       const LPoint3 &from, const LVector3 &delta,
+                       PN_stdfloat inflate_radius) const {
   // See CollisionSphere::intersects_line() for a derivation of the
   // formula here.
-  float radius = _radius + inflate_radius;
+  PN_stdfloat radius = _radius + inflate_radius;
 
   double A = dot(delta, delta);
 
   nassertr(A != 0.0, false);
 
-  LVector3f fc = from;
+  LVector3 fc = from;
   fc[1] -= center_y;
   double B = 2.0f* dot(delta, fc);
   double fc_d2 = dot(fc, fc);
@@ -836,9 +836,9 @@ sphere_intersects_line(double &t1, double &t2, float center_y,
 //               is returned.
 ////////////////////////////////////////////////////////////////////
 bool CollisionTube::
-intersects_parabola(double &t, const Parabolaf &parabola,
+intersects_parabola(double &t, const LParabola &parabola,
                     double t1, double t2,
-                    const LPoint3f &p1, const LPoint3f &p2) const {
+                    const LPoint3 &p1, const LPoint3 &p2) const {
   // I don't even want to think about the math to do this calculation
   // directly--it's even worse than sphere-parabola.  So I'll use the
   // recursive subdivision solution again, just like I did for
@@ -851,8 +851,8 @@ intersects_parabola(double &t, const Parabolaf &parabola,
   double tmid = (t1 + t2) * 0.5;
 
   if (tmid != t1 && tmid != t2) {
-    LPoint3f pmid = parabola.calc_point(tmid);
-    LPoint3f pmid2 = (p1 + p2) * 0.5f;
+    LPoint3 pmid = parabola.calc_point(tmid);
+    LPoint3 pmid2 = (p1 + p2) * 0.5f;
 
     if ((pmid - pmid2).length_squared() > 0.001f) {
       // Subdivide.
@@ -886,13 +886,13 @@ intersects_parabola(double &t, const Parabolaf &parabola,
 //               tube.
 ////////////////////////////////////////////////////////////////////
 void CollisionTube::
-calculate_surface_point_and_normal(const LPoint3f &surface_point,
+calculate_surface_point_and_normal(const LPoint3 &surface_point,
                                    double extra_radius,
-                                   LPoint3f &result_point,
-                                   LVector3f &result_normal) const {
+                                   LPoint3 &result_point,
+                                   LVector3 &result_normal) const {
   // Convert the point into our canonical space for analysis.
-  LPoint3f point = surface_point * _inv_mat;
-  LVector3f normal;
+  LPoint3 point = surface_point * _inv_mat;
+  LVector3 normal;
 
   if (point[1] <= 0.0) {
     // The point is on the first endcap.
@@ -936,10 +936,10 @@ calculate_surface_point_and_normal(const LPoint3f &surface_point,
 ////////////////////////////////////////////////////////////////////
 void CollisionTube::
 set_intersection_point(CollisionEntry *new_entry, 
-                       const LPoint3f &into_intersection_point, 
+                       const LPoint3 &into_intersection_point, 
                        double extra_radius) const {
-  LPoint3f point;
-  LVector3f normal;
+  LPoint3 point;
+  LVector3 normal;
 
   calculate_surface_point_and_normal(into_intersection_point,
                                      extra_radius,
@@ -980,7 +980,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   CollisionSolid::write_datagram(manager, dg);
   _a.write_datagram(dg);
   _b.write_datagram(dg);
-  dg.add_float32(_radius);
+  dg.add_stdfloat(_radius);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1015,6 +1015,6 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   CollisionSolid::fillin(scan, manager);
   _a.read_datagram(scan);
   _b.read_datagram(scan);
-  _radius = scan.get_float32();
+  _radius = scan.get_stdfloat();
   recalc_internals();
 }

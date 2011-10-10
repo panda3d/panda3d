@@ -17,7 +17,7 @@
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE float Patcher::
+INLINE PN_stdfloat Patcher::
 get_progress() const {
   if(_patchfile) {
     return _patchfile->get_progress();

@@ -68,7 +68,7 @@ PUBLISHED:
     FF_dynamic_merge = 0x0008,
   };
 
-  INLINE float get_line_height() const;
+  INLINE PN_stdfloat get_line_height() const;
 
   INLINE void set_max_rows(int max_rows);
   INLINE void clear_max_rows();
@@ -76,55 +76,55 @@ PUBLISHED:
   INLINE int get_max_rows() const;
   INLINE bool has_overflow() const;
 
-  INLINE void set_frame_color(float r, float g, float b, float a);
-  INLINE void set_frame_color(const Colorf &frame_color);
-  INLINE Colorf get_frame_color() const;
+  INLINE void set_frame_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a);
+  INLINE void set_frame_color(const LColor &frame_color);
+  INLINE LColor get_frame_color() const;
 
-  INLINE void set_card_border(float size, float uv_portion);
+  INLINE void set_card_border(PN_stdfloat size, PN_stdfloat uv_portion);
   INLINE void clear_card_border();
-  INLINE float get_card_border_size() const;
-  INLINE float get_card_border_uv_portion() const;
+  INLINE PN_stdfloat get_card_border_size() const;
+  INLINE PN_stdfloat get_card_border_uv_portion() const;
   INLINE bool has_card_border() const;
 
-  INLINE void set_card_color(float r, float g, float b, float a);
-  INLINE void set_card_color(const Colorf &card_color);
-  INLINE Colorf get_card_color() const;
+  INLINE void set_card_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a);
+  INLINE void set_card_color(const LColor &card_color);
+  INLINE LColor get_card_color() const;
 
   INLINE void set_card_texture(Texture *card_texture);
   INLINE void clear_card_texture();
   INLINE bool has_card_texture() const;
   INLINE Texture *get_card_texture() const;
 
-  INLINE void set_frame_as_margin(float left, float right,
-                                  float bottom, float top);
-  INLINE void set_frame_actual(float left, float right,
-                               float bottom, float top);
+  INLINE void set_frame_as_margin(PN_stdfloat left, PN_stdfloat right,
+                                  PN_stdfloat bottom, PN_stdfloat top);
+  INLINE void set_frame_actual(PN_stdfloat left, PN_stdfloat right,
+                               PN_stdfloat bottom, PN_stdfloat top);
   INLINE void clear_frame();
   INLINE bool has_frame() const;
   INLINE bool is_frame_as_margin() const;
-  INLINE LVecBase4f get_frame_as_set() const;
-  INLINE LVecBase4f get_frame_actual() const;
+  INLINE LVecBase4 get_frame_as_set() const;
+  INLINE LVecBase4 get_frame_actual() const;
 
-  INLINE void set_frame_line_width(float line_width);
-  INLINE float get_frame_line_width() const;
+  INLINE void set_frame_line_width(PN_stdfloat line_width);
+  INLINE PN_stdfloat get_frame_line_width() const;
   INLINE void set_frame_corners(bool corners);
   INLINE bool get_frame_corners() const;
 
-  INLINE void set_card_as_margin(float left, float right,
-                                 float bottom, float top);
-  INLINE void set_card_actual(float left, float right,
-                              float bottom, float top);
+  INLINE void set_card_as_margin(PN_stdfloat left, PN_stdfloat right,
+                                 PN_stdfloat bottom, PN_stdfloat top);
+  INLINE void set_card_actual(PN_stdfloat left, PN_stdfloat right,
+                              PN_stdfloat bottom, PN_stdfloat top);
   INLINE void set_card_decal(bool card_decal);
   INLINE void clear_card();
   INLINE bool has_card() const;
   INLINE bool get_card_decal() const;
   INLINE bool is_card_as_margin() const;
-  INLINE LVecBase4f get_card_as_set() const;
-  INLINE LVecBase4f get_card_actual() const;
-  INLINE LVecBase4f get_card_transformed() const;
+  INLINE LVecBase4 get_card_as_set() const;
+  INLINE LVecBase4 get_card_actual() const;
+  INLINE LVecBase4 get_card_transformed() const;
 
-  INLINE void set_transform(const LMatrix4f &transform);
-  INLINE LMatrix4f get_transform() const;
+  INLINE void set_transform(const LMatrix4 &transform);
+  INLINE LMatrix4 get_transform() const;
 
   INLINE void set_coordinate_system(CoordinateSystem cs);
   INLINE CoordinateSystem get_coordinate_system() const;
@@ -145,31 +145,31 @@ PUBLISHED:
   INLINE void set_small_caps(bool small_caps);
   INLINE void clear_small_caps();
 
-  INLINE void set_small_caps_scale(float small_caps_scale);
+  INLINE void set_small_caps_scale(PN_stdfloat small_caps_scale);
   INLINE void clear_small_caps_scale();
 
-  INLINE void set_slant(float slant);
+  INLINE void set_slant(PN_stdfloat slant);
   INLINE void clear_slant();
 
   INLINE void set_align(Alignment align_type);
   INLINE void clear_align();
 
-  INLINE void set_indent(float indent);
+  INLINE void set_indent(PN_stdfloat indent);
   INLINE void clear_indent();
 
-  INLINE void set_wordwrap(float wordwrap);
+  INLINE void set_wordwrap(PN_stdfloat wordwrap);
   INLINE void clear_wordwrap();
 
-  INLINE void set_text_color(float r, float g, float b, float a);
-  INLINE void set_text_color(const Colorf &text_color);
+  INLINE void set_text_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a);
+  INLINE void set_text_color(const LColor &text_color);
   INLINE void clear_text_color();
 
-  INLINE void set_shadow_color(float r, float g, float b, float a);
-  INLINE void set_shadow_color(const Colorf &shadow_color);
+  INLINE void set_shadow_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a);
+  INLINE void set_shadow_color(const LColor &shadow_color);
   INLINE void clear_shadow_color();
 
-  INLINE void set_shadow(float xoffset, float yoffset);
-  INLINE void set_shadow(const LVecBase2f &shadow_offset);
+  INLINE void set_shadow(PN_stdfloat xoffset, PN_stdfloat yoffset);
+  INLINE void set_shadow(const LVecBase2 &shadow_offset);
   INLINE void clear_shadow();
 
   INLINE void set_bin(const string &bin);
@@ -178,13 +178,13 @@ PUBLISHED:
   INLINE int set_draw_order(int draw_order);
   INLINE void clear_draw_order();
 
-  INLINE void set_tab_width(float tab_width);
+  INLINE void set_tab_width(PN_stdfloat tab_width);
   INLINE void clear_tab_width();
 
-  INLINE void set_glyph_scale(float glyph_scale);
+  INLINE void set_glyph_scale(PN_stdfloat glyph_scale);
   INLINE void clear_glyph_scale();
 
-  INLINE void set_glyph_shift(float glyph_shift);
+  INLINE void set_glyph_shift(PN_stdfloat glyph_shift);
   INLINE void clear_glyph_shift();
 
   // These methods are inherited from TextEncoder, but we override
@@ -202,8 +202,8 @@ PUBLISHED:
 
   // These methods calculate the width of a single character or a line
   // of text in the current font.
-  float calc_width(wchar_t character) const;
-  INLINE float calc_width(const string &line) const;
+  PN_stdfloat calc_width(wchar_t character) const;
+  INLINE PN_stdfloat calc_width(const string &line) const;
   
   bool has_exact_character(wchar_t character) const;
   bool has_character(wchar_t character) const;
@@ -214,22 +214,22 @@ PUBLISHED:
   INLINE void append_wtext(const wstring &text);
 
   INLINE wstring get_wordwrapped_wtext() const;
-  float calc_width(const wstring &line) const;
+  PN_stdfloat calc_width(const wstring &line) const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
 
   // The following functions return information about the text that
   // was last built (and is currently visible).
-  INLINE float get_left() const;
-  INLINE float get_right() const;
-  INLINE float get_bottom() const;
-  INLINE float get_top() const;
-  INLINE float get_height() const;
-  INLINE float get_width() const;
+  INLINE PN_stdfloat get_left() const;
+  INLINE PN_stdfloat get_right() const;
+  INLINE PN_stdfloat get_bottom() const;
+  INLINE PN_stdfloat get_top() const;
+  INLINE PN_stdfloat get_height() const;
+  INLINE PN_stdfloat get_width() const;
 
-  INLINE LPoint3f get_upper_left_3d() const;
-  INLINE LPoint3f get_lower_right_3d() const;
+  INLINE LPoint3 get_upper_left_3d() const;
+  INLINE LPoint3 get_lower_right_3d() const;
 
   INLINE int get_num_rows() const;
 
@@ -246,7 +246,7 @@ public:
                                          int attrib_types,
                                          GeomTransformer &transformer);
   virtual CPT(TransformState)
-    calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+    calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
                       bool &found_any,
                       const TransformState *transform,
                       Thread *current_thread) const;
@@ -281,8 +281,8 @@ private:
   PT(PandaNode) _internal_geom;
 
   PT(Texture) _card_texture;
-  Colorf _frame_color;
-  Colorf _card_color;
+  LColor _frame_color;
+  LColor _card_color;
 
   enum Flags {
     F_has_frame        =  0x0001,
@@ -304,20 +304,20 @@ private:
   GeomEnums::UsageHint _usage_hint;
   int _flatten_flags;
   bool _dynamic_merge;
-  float _frame_width;
-  float _card_border_size;
-  float _card_border_uv_portion;
+  PN_stdfloat _frame_width;
+  PN_stdfloat _card_border_size;
+  PN_stdfloat _card_border_uv_portion;
 
-  LVector2f _frame_ul, _frame_lr;
-  LVector2f _card_ul, _card_lr;
+  LVector2 _frame_ul, _frame_lr;
+  LVector2 _card_ul, _card_lr;
 
-  LMatrix4f _transform;
+  LMatrix4 _transform;
   CoordinateSystem _coordinate_system;
 
-  LPoint3f _ul3d, _lr3d;
+  LPoint3 _ul3d, _lr3d;
 
   // Returned from TextAssembler:
-  LVector2f _text_ul, _text_lr;
+  LVector2 _text_ul, _text_lr;
   int _num_rows;
   wstring _wordwrapped_wtext;
 

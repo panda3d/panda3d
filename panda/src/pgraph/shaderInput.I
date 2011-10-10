@@ -28,14 +28,10 @@ INLINE ShaderInput::
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE ShaderInput::
-ShaderInput(InternalName *name, int priority) :
+ShaderInput(const InternalName *name, int priority) :
   _name(name),
   _type(M_invalid),
-  _priority(priority),
-  _stored_ptr(),
-  _stored_texture(NULL),
-  _stored_nodepath(NodePath()),
-  _stored_vector(LVector4f(0,0,0,1))
+  _priority(priority)
 {
 }
 
@@ -45,14 +41,11 @@ ShaderInput(InternalName *name, int priority) :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE ShaderInput::
-ShaderInput(InternalName *name, Texture *tex, int priority) :
+ShaderInput(const InternalName *name, Texture *tex, int priority) :
   _name(name),
   _type(M_texture),
   _priority(priority),
-  _stored_ptr(),
-  _stored_texture(tex),
-  _stored_nodepath(NodePath()),
-  _stored_vector(LVector4f(0,0,0,1))
+  _stored_texture(tex)
 {
 }
 
@@ -62,14 +55,11 @@ ShaderInput(InternalName *name, Texture *tex, int priority) :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE ShaderInput::
-ShaderInput(InternalName *name, const NodePath &np, int priority) :
+ShaderInput(const InternalName *name, const NodePath &np, int priority) :
   _name(name),
   _type(M_nodepath),
   _priority(priority),
-  _stored_ptr(),
-  _stored_texture(NULL),
-  _stored_nodepath(np),
-  _stored_vector(LVector4f(0,0,0,1))
+  _stored_nodepath(np)
 {
 }
 
@@ -79,14 +69,11 @@ ShaderInput(InternalName *name, const NodePath &np, int priority) :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE ShaderInput::
-ShaderInput(InternalName *name, const PTA_float &ptr, int priority) : 
+ShaderInput(const InternalName *name, const PTA_float &ptr, int priority) : 
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(ptr),
-  _stored_texture(NULL),
-  _stored_nodepath(NodePath()),
-  _stored_vector(LVecBase4f::zero())
+  _stored_ptr(ptr)
 {
 }
 
@@ -96,14 +83,11 @@ ShaderInput(InternalName *name, const PTA_float &ptr, int priority) :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE ShaderInput::
-ShaderInput(InternalName *name, const PTA_double &ptr, int priority) : 
+ShaderInput(const InternalName *name, const PTA_LVecBase4f &ptr, int priority) : 
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(ptr),
-  _stored_texture(NULL),
-  _stored_nodepath(NodePath()),
-  _stored_vector(LVecBase4f::zero())
+  _stored_ptr(ptr)
 {
 }
 
@@ -113,14 +97,11 @@ ShaderInput(InternalName *name, const PTA_double &ptr, int priority) :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE ShaderInput::
-ShaderInput(InternalName *name, const PTA_LVecBase4f& ptr, int priority) : 
+ShaderInput(const InternalName *name, const PTA_LVecBase3f &ptr, int priority) : 
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(ptr),
-  _stored_texture(NULL),
-  _stored_nodepath(NodePath()),
-  _stored_vector(LVecBase4f::zero())
+  _stored_ptr(ptr)
 {
 }
 
@@ -130,14 +111,11 @@ ShaderInput(InternalName *name, const PTA_LVecBase4f& ptr, int priority) :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE ShaderInput::
-ShaderInput(InternalName *name, const PTA_LVecBase3f& ptr, int priority) : 
+ShaderInput(const InternalName *name, const PTA_LVecBase2f &ptr, int priority) :
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(ptr),
-  _stored_texture(NULL),
-  _stored_nodepath(NodePath()),
-  _stored_vector(LVecBase4f::zero())
+  _stored_ptr(ptr)
 {
 }
 
@@ -147,31 +125,12 @@ ShaderInput(InternalName *name, const PTA_LVecBase3f& ptr, int priority) :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE ShaderInput::
-ShaderInput(InternalName *name, const PTA_LVecBase2f& ptr, int priority) :
-  _name(name),
-  _type(M_numeric),
-  _priority(priority),
-  _stored_ptr(ptr),
-  _stored_texture(NULL),
-  _stored_nodepath(NodePath()),
-  _stored_vector(LVecBase4f::zero())
-{
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderInput::Constructor
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE ShaderInput::
-ShaderInput(InternalName *name, const LVecBase4f& vec, int priority) :
+ShaderInput(const InternalName *name, const LVecBase4f &vec, int priority) :
   _name(name),
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(vec),
-  _stored_texture(NULL),
-  _stored_nodepath(NodePath()),
-  _stored_vector(vec) //old GLSL inputs must be supported
+  _stored_vector(LCAST(PN_stdfloat, vec)) //old GLSL inputs must be supported
 {
 }
 
@@ -181,14 +140,152 @@ ShaderInput(InternalName *name, const LVecBase4f& vec, int priority) :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE ShaderInput::
-ShaderInput(InternalName *name, const LVecBase3f& vec, int priority) :
+ShaderInput(const InternalName *name, const LVecBase3f &vec, int priority) :
+  _name(name),
+  _type(M_numeric),
+  _priority(priority),
+  _stored_ptr(vec)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderInput::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ShaderInput::
+ShaderInput(const InternalName *name, const LVecBase2f &vec, int priority) :
+  _name(name),
+  _type(M_numeric),
+  _priority(priority),
+  _stored_ptr(vec)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderInput::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ShaderInput::
+ShaderInput(const InternalName *name, const PTA_LMatrix4f &ptr, int priority) : 
+  _name(name),
+  _type(M_numeric),
+  _priority(priority),
+  _stored_ptr(ptr)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderInput::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ShaderInput::
+ShaderInput(const InternalName *name, const PTA_LMatrix3f &ptr, int priority) : 
+  _name(name),
+  _type(M_numeric),
+  _priority(priority),
+  _stored_ptr(ptr)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderInput::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ShaderInput::
+ShaderInput(const InternalName *name, const LMatrix4f &mat, int priority) :
+  _name(name),
+  _type(M_numeric),
+  _priority(priority),
+  _stored_ptr(mat)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderInput::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ShaderInput::
+ShaderInput(const InternalName *name, const LMatrix3f &mat, int priority) :
+  _name(name),
+  _type(M_numeric),
+  _priority(priority),
+  _stored_ptr(mat)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderInput::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ShaderInput::
+ShaderInput(const InternalName *name, const PTA_double &ptr, int priority) : 
+  _name(name),
+  _type(M_numeric),
+  _priority(priority),
+  _stored_ptr(ptr)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderInput::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ShaderInput::
+ShaderInput(const InternalName *name, const PTA_LVecBase4d &ptr, int priority) : 
+  _name(name),
+  _type(M_numeric),
+  _priority(priority),
+  _stored_ptr(ptr)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderInput::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ShaderInput::
+ShaderInput(const InternalName *name, const PTA_LVecBase3d &ptr, int priority) : 
+  _name(name),
+  _type(M_numeric),
+  _priority(priority),
+  _stored_ptr(ptr)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderInput::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ShaderInput::
+ShaderInput(const InternalName *name, const PTA_LVecBase2d &ptr, int priority) :
+  _name(name),
+  _type(M_numeric),
+  _priority(priority),
+  _stored_ptr(ptr)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderInput::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ShaderInput::
+ShaderInput(const InternalName *name, const LVecBase4d &vec, int priority) :
   _name(name),
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(vec),
-  _stored_texture(NULL),
-  _stored_nodepath(NodePath()),
-  _stored_vector(LVecBase4f::zero())
+  _stored_vector(LCAST(PN_stdfloat, vec)) //old GLSL inputs must be supported
 {
 }
 
@@ -198,14 +295,11 @@ ShaderInput(InternalName *name, const LVecBase3f& vec, int priority) :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE ShaderInput::
-ShaderInput(InternalName *name, const LVecBase2f& vec, int priority) :
+ShaderInput(const InternalName *name, const LVecBase3d &vec, int priority) :
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(vec),
-  _stored_texture(NULL),
-  _stored_nodepath(NodePath()),
-  _stored_vector(LVecBase4f::zero())
+  _stored_ptr(vec)
 {
 }
 
@@ -215,14 +309,11 @@ ShaderInput(InternalName *name, const LVecBase2f& vec, int priority) :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE ShaderInput::
-ShaderInput(InternalName *name, const PTA_LMatrix4f& ptr, int priority) : 
+ShaderInput(const InternalName *name, const LVecBase2d &vec, int priority) :
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(ptr),
-  _stored_texture(NULL),
-  _stored_nodepath(NodePath()),
-  _stored_vector(LVecBase4f::zero())
+  _stored_ptr(vec)
 {
 }
 
@@ -232,14 +323,11 @@ ShaderInput(InternalName *name, const PTA_LMatrix4f& ptr, int priority) :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE ShaderInput::
-ShaderInput(InternalName *name, const PTA_LMatrix3f& ptr, int priority) : 
+ShaderInput(const InternalName *name, const PTA_LMatrix4d &ptr, int priority) : 
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(ptr),
-  _stored_texture(NULL),
-  _stored_nodepath(NodePath()),
-  _stored_vector(LVecBase4f::zero())
+  _stored_ptr(ptr)
 {
 }
 
@@ -249,14 +337,11 @@ ShaderInput(InternalName *name, const PTA_LMatrix3f& ptr, int priority) :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE ShaderInput::
-ShaderInput(InternalName *name, const LMatrix4f& mat, int priority) :
+ShaderInput(const InternalName *name, const PTA_LMatrix3d &ptr, int priority) : 
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(mat),
-  _stored_texture(NULL),
-  _stored_nodepath(NodePath()),
-  _stored_vector(LVecBase4f::zero())
+  _stored_ptr(ptr)
 {
 }
 
@@ -266,14 +351,25 @@ ShaderInput(InternalName *name, const LMatrix4f& mat, int priority) :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE ShaderInput::
-ShaderInput(InternalName *name, const LMatrix3f& mat, int priority) :
+ShaderInput(const InternalName *name, const LMatrix4d &mat, int priority) :
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(mat),
-  _stored_texture(NULL),
-  _stored_nodepath(NodePath()),
-  _stored_vector(LVecBase4f::zero())
+  _stored_ptr(mat)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderInput::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ShaderInput::
+ShaderInput(const InternalName *name, const LMatrix3d &mat, int priority) :
+  _name(name),
+  _type(M_numeric),
+  _priority(priority),
+  _stored_ptr(mat)
 {
 }
 
@@ -282,7 +378,7 @@ ShaderInput(InternalName *name, const LMatrix3f& mat, int priority) :
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE InternalName *ShaderInput::
+INLINE const InternalName *ShaderInput::
 get_name() const {
   return _name;
 }
@@ -322,7 +418,7 @@ get_texture() const {
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE const Shader::ShaderPtrData& ShaderInput::
+INLINE const Shader::ShaderPtrData &ShaderInput::
 get_ptr() const {
   return _stored_ptr;
 }
@@ -342,7 +438,7 @@ get_nodepath() const {
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE const LVector4f &ShaderInput::
+INLINE const LVecBase4 &ShaderInput::
 get_vector() const {
   return _stored_vector;
 }

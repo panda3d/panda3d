@@ -24,7 +24,7 @@ ColorBlendAttrib() :
   _mode(M_none),
   _a(O_one),
   _b(O_one),
-  _color(Colorf::zero()),
+  _color(LColor::zero()),
   _involves_constant_color(false),
   _involves_color_scale(false)
 {
@@ -39,7 +39,7 @@ ColorBlendAttrib() :
 INLINE ColorBlendAttrib::
 ColorBlendAttrib(ColorBlendAttrib::Mode mode,
                  ColorBlendAttrib::Operand a, ColorBlendAttrib::Operand b,
-                 const Colorf &color) :
+                 const LColor &color) :
   _mode(mode),
   _a(a),
   _b(b),
@@ -84,7 +84,7 @@ get_operand_b() const {
 //       Access: Published
 //  Description: Returns the constant color associated with the attrib.
 ////////////////////////////////////////////////////////////////////
-INLINE Colorf ColorBlendAttrib::
+INLINE LColor ColorBlendAttrib::
 get_color() const {
   return _color;
 }

@@ -31,7 +31,7 @@
 ////////////////////////////////////////////////////////////////////
 class LwoSurfaceBlockTransform : public LwoChunk {
 public:
-  LVecBase3f _vec;
+  LVecBase3 _vec;
   int _envelope;
 
 public:

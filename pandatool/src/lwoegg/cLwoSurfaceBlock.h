@@ -45,7 +45,7 @@ public:
   bool _enabled;
 
   LwoSurfaceBlockOpacity::Type _opacity_type;
-  float _opacity;
+  PN_stdfloat _opacity;
 
   LMatrix4d _transform;
   LMatrix4d _inv_transform;
@@ -55,8 +55,8 @@ public:
   int _clip_index;
   LwoSurfaceBlockWrap::Mode _w_wrap;
   LwoSurfaceBlockWrap::Mode _h_wrap;
-  float _w_repeat;
-  float _h_repeat;
+  PN_stdfloat _w_repeat;
+  PN_stdfloat _h_repeat;
   string _uv_name;
 
   LwoToEggConverter *_converter;

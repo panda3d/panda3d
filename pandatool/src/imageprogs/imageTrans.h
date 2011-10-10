@@ -48,7 +48,7 @@ private:
   };
     
   Channels _channels;
-  Colorf _color_scale;
+  LColor _color_scale;
   bool _has_color_scale;
 };
 

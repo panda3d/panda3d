@@ -118,8 +118,8 @@ PUBLISHED:
   
   INLINE bool is_fixed_function() const;
   
-  INLINE void set_color(const Colorf &color);
-  INLINE Colorf get_color() const;
+  INLINE void set_color(const LColor &color);
+  INLINE LColor get_color() const;
 
   INLINE void set_rgb_scale(int rgb_scale);
   INLINE int get_rgb_scale() const;
@@ -200,7 +200,7 @@ private:
   int _priority;
   PT(InternalName) _texcoord_name;
   Mode _mode;
-  Colorf _color;
+  LColor _color;
   int _rgb_scale;
   int _alpha_scale;
   bool _saved_result;

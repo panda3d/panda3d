@@ -45,16 +45,16 @@ Trackball(const string &name) :
 
   _transform = TransformState::make_identity();
 
-  _rotscale = 0.3f;
-  _fwdscale = 0.3f;
+  _rotscale = 0.3;
+  _fwdscale = 0.3;
 
   _last_button = 0;
   _lastx = _lasty = 0.5f;
 
-  _rotation = LMatrix4f::ident_mat();
+  _rotation = LMatrix4::ident_mat();
   _translation.set(0.0f, 0.0f, 0.0f);
-  _mat = LMatrix4f::ident_mat();
-  _orig = LMatrix4f::ident_mat();
+  _mat = LMatrix4::ident_mat();
+  _orig = LMatrix4::ident_mat();
   _invert = true;
   _cs = get_default_coordinate_system();
 
@@ -88,10 +88,10 @@ Trackball::
 ////////////////////////////////////////////////////////////////////
 void Trackball::
 reset() {
-  _rotation = LMatrix4f::ident_mat();
+  _rotation = LMatrix4::ident_mat();
   _translation.set(0.0f, 0.0f, 0.0f);
-  _orig = LMatrix4f::ident_mat();
-  _mat = LMatrix4f::ident_mat();
+  _orig = LMatrix4::ident_mat();
+  _mat = LMatrix4::ident_mat();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -100,7 +100,7 @@ reset() {
 //  Description: Returns the scale factor applied to forward and
 //               backward motion.  See set_forward_scale().
 ////////////////////////////////////////////////////////////////////
-float Trackball::
+PN_stdfloat Trackball::
 get_forward_scale() const {
   return _fwdscale;
 }
@@ -114,7 +114,7 @@ get_forward_scale() const {
 //               out.
 ////////////////////////////////////////////////////////////////////
 void Trackball::
-set_forward_scale(float fwdscale) {
+set_forward_scale(PN_stdfloat fwdscale) {
   _fwdscale = fwdscale;
 }
 
@@ -124,22 +124,22 @@ set_forward_scale(float fwdscale) {
 //       Access: Published
 //  Description: Return the offset from the center of rotation.
 ////////////////////////////////////////////////////////////////////
-const LPoint3f &Trackball::
+const LPoint3 &Trackball::
 get_pos() const {
   return _translation;
 }
 
-float Trackball::
+PN_stdfloat Trackball::
 get_x() const {
   return _translation[0];
 }
 
-float Trackball::
+PN_stdfloat Trackball::
 get_y() const {
   return _translation[1];
 }
 
-float Trackball::
+PN_stdfloat Trackball::
 get_z() const {
   return _translation[2];
 }
@@ -151,31 +151,31 @@ get_z() const {
 //  Description: Directly set the offset from the rotational origin.
 ////////////////////////////////////////////////////////////////////
 void Trackball::
-set_pos(const LVecBase3f &vec) {
+set_pos(const LVecBase3 &vec) {
   _translation = vec;
   recompute();
 }
 
 void Trackball::
-set_pos(float x, float y, float z) {
+set_pos(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
   _translation.set(x, y, z);
   recompute();
 }
 
 void Trackball::
-set_x(float x) {
+set_x(PN_stdfloat x) {
   _translation[0] = x;
   recompute();
 }
 
 void Trackball::
-set_y(float y) {
+set_y(PN_stdfloat y) {
   _translation[1] = y;
   recompute();
 }
 
 void Trackball::
-set_z(float z) {
+set_z(PN_stdfloat z) {
   _translation[2] = z;
   recompute();
 }
@@ -186,30 +186,30 @@ set_z(float z) {
 //       Access: Published
 //  Description: Return the trackball's orientation.
 ////////////////////////////////////////////////////////////////////
-LVecBase3f Trackball::
+LVecBase3 Trackball::
 get_hpr() const {
-  LVecBase3f scale, shear, hpr, translate;
+  LVecBase3 scale, shear, hpr, translate;
   decompose_matrix(_rotation, scale, shear, hpr, translate);
   return hpr;
 }
 
-float Trackball::
+PN_stdfloat Trackball::
 get_h() const {
-  LVecBase3f scale, shear, hpr, translate;
+  LVecBase3 scale, shear, hpr, translate;
   decompose_matrix(_rotation, scale, shear, hpr, translate);
   return hpr[0];
 }
 
-float Trackball::
+PN_stdfloat Trackball::
 get_p() const {
-  LVecBase3f scale, shear, hpr, translate;
+  LVecBase3 scale, shear, hpr, translate;
   decompose_matrix(_rotation, scale, shear, hpr, translate);
   return hpr[1];
 }
 
-float Trackball::
+PN_stdfloat Trackball::
 get_r() const {
-  LVecBase3f scale, shear, hpr, translate;
+  LVecBase3 scale, shear, hpr, translate;
   decompose_matrix(_rotation, scale, shear, hpr, translate);
   return hpr[2];
 }
@@ -221,16 +221,16 @@ get_r() const {
 //  Description: Directly set the mover's orientation.
 ////////////////////////////////////////////////////////////////////
 void Trackball::
-set_hpr(const LVecBase3f &hpr) {
-  LVecBase3f scale, shear, old_hpr, translate;
+set_hpr(const LVecBase3 &hpr) {
+  LVecBase3 scale, shear, old_hpr, translate;
   decompose_matrix(_rotation, scale, shear, old_hpr, translate);
   compose_matrix(_rotation, scale, shear, hpr, translate);
   recompute();
 }
 
 void Trackball::
-set_hpr(float h, float p, float r) {
-  LVecBase3f scale, shear, hpr, translate;
+set_hpr(PN_stdfloat h, PN_stdfloat p, PN_stdfloat r) {
+  LVecBase3 scale, shear, hpr, translate;
   decompose_matrix(_rotation, scale, shear, hpr, translate);
   hpr.set(h, p, r);
   compose_matrix(_rotation, scale, shear, hpr, translate);
@@ -238,8 +238,8 @@ set_hpr(float h, float p, float r) {
 }
 
 void Trackball::
-set_h(float h) {
-  LVecBase3f scale, shear, hpr, translate;
+set_h(PN_stdfloat h) {
+  LVecBase3 scale, shear, hpr, translate;
   decompose_matrix(_rotation, scale, shear, hpr, translate);
   hpr[0] = h;
   compose_matrix(_rotation, scale, shear, hpr, translate);
@@ -247,8 +247,8 @@ set_h(float h) {
 }
 
 void Trackball::
-set_p(float p) {
-  LVecBase3f scale, shear, hpr, translate;
+set_p(PN_stdfloat p) {
+  LVecBase3 scale, shear, hpr, translate;
   decompose_matrix(_rotation, scale, shear, hpr, translate);
   hpr[1] = p;
   compose_matrix(_rotation, scale, shear, hpr, translate);
@@ -256,8 +256,8 @@ set_p(float p) {
 }
 
 void Trackball::
-set_r(float r) {
-  LVecBase3f scale, shear, hpr, translate;
+set_r(PN_stdfloat r) {
+  LVecBase3 scale, shear, hpr, translate;
   decompose_matrix(_rotation, scale, shear, hpr, translate);
   hpr[2] = r;
   compose_matrix(_rotation, scale, shear, hpr, translate);
@@ -286,8 +286,8 @@ reset_origin_here() {
 //  Description: Moves the center of rotation by the given amount.
 ////////////////////////////////////////////////////////////////////
 void Trackball::
-move_origin(float x, float y, float z) {
-  _rotation = LMatrix4f::translate_mat(LVecBase3f(x, y, z)) *  _rotation;
+move_origin(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
+  _rotation = LMatrix4::translate_mat(LVecBase3(x, y, z)) *  _rotation;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -295,7 +295,7 @@ move_origin(float x, float y, float z) {
 //       Access: Published
 //  Description: Returns the current center of rotation.
 ////////////////////////////////////////////////////////////////////
-LPoint3f Trackball::
+LPoint3 Trackball::
 get_origin() const {
   return _rotation.get_row3(3);
 }
@@ -306,9 +306,9 @@ get_origin() const {
 //  Description: Directly sets the center of rotation.
 ////////////////////////////////////////////////////////////////////
 void Trackball::
-set_origin(const LVecBase3f &origin) {
-  _rotation.set_row(3, LVecBase3f(0.0f, 0.0f, 0.0f));
-  _rotation = LMatrix4f::translate_mat(-origin) *  _rotation;
+set_origin(const LVecBase3 &origin) {
+  _rotation.set_row(3, LVecBase3(0.0f, 0.0f, 0.0f));
+  _rotation = LMatrix4::translate_mat(-origin) *  _rotation;
 }
 
 
@@ -396,7 +396,7 @@ get_coordinate_system() const {
 //               the rel_to node.
 ////////////////////////////////////////////////////////////////////
 void Trackball::
-set_mat(const LMatrix4f &mat) {
+set_mat(const LMatrix4 &mat) {
   _orig = mat;
   if (_invert) {
     _mat = invert(_orig);
@@ -414,7 +414,7 @@ set_mat(const LMatrix4f &mat) {
 //  Description: Returns the matrix represented by the trackball
 //               rotation.
 ////////////////////////////////////////////////////////////////////
-const LMatrix4f &Trackball::
+const LMatrix4 &Trackball::
 get_mat() const {
   return _orig;
 }
@@ -426,7 +426,7 @@ get_mat() const {
 //               the scene graph.  This is the same as get_mat(),
 //               unless invert is in effect.
 ////////////////////////////////////////////////////////////////////
-const LMatrix4f &Trackball::
+const LMatrix4 &Trackball::
 get_trans_mat() const {
   return _mat;
 }
@@ -450,16 +450,16 @@ apply(double x, double y, int button) {
     // Button 1: translate in plane parallel to screen.
 
     _translation +=
-      x * _fwdscale * LVector3f::right(_cs) +
-      y * _fwdscale * LVector3f::down(_cs);
+      x * _fwdscale * LVector3::right(_cs) +
+      y * _fwdscale * LVector3::down(_cs);
 
   } else if (button == (B2_MASK | B3_MASK)) {
     // Buttons 2 + 3: rotate about the vector perpendicular to the
     // screen.
 
     _rotation *=
-      LMatrix4f::rotate_mat_normaxis((x - y) * _rotscale,
-                            LVector3f::forward(_cs), _cs);
+      LMatrix4::rotate_mat_normaxis((x - y) * _rotscale,
+                            LVector3::forward(_cs), _cs);
 
   } else if ((button == B2_MASK) || (button == (B1_MASK | B3_MASK))) {
     // Button 2, or buttons 1 + 3: rotate about the right and up
@@ -467,14 +467,14 @@ apply(double x, double y, int button) {
     // support two-button mice.)
 
     _rotation *=
-      LMatrix4f::rotate_mat_normaxis(x * _rotscale, LVector3f::up(_cs), _cs) *
-      LMatrix4f::rotate_mat_normaxis(y * _rotscale, LVector3f::right(_cs), _cs);
+      LMatrix4::rotate_mat_normaxis(x * _rotscale, LVector3::up(_cs), _cs) *
+      LMatrix4::rotate_mat_normaxis(y * _rotscale, LVector3::right(_cs), _cs);
 
   } else if ((button == B3_MASK) || (button == (B1_MASK | B2_MASK))) {
     // Button 3, or buttons 1 + 2: dolly in and out along the forward
     // vector.  (We alternately define this as buttons 1 + 2, to
     // support two-button mice.)
-    _translation -= y * _fwdscale * LVector3f::forward(_cs);
+    _translation -= y * _fwdscale * LVector3::forward(_cs);
   }
 
   if (button) {
@@ -491,7 +491,7 @@ apply(double x, double y, int button) {
 ////////////////////////////////////////////////////////////////////
 void Trackball::
 reextract() {
-  LMatrix4f m = _orig;
+  LMatrix4 m = _orig;
   if (!_rel_to.is_empty()) {
     NodePath root;
     m = _orig * root.get_transform(_rel_to)->get_mat();
@@ -499,7 +499,7 @@ reextract() {
 
   m.get_row3(_translation,3);
   _rotation = m;
-  _rotation.set_row(3, LVecBase3f(0.0f, 0.0f, 0.0f));
+  _rotation.set_row(3, LVecBase3(0.0f, 0.0f, 0.0f));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -510,7 +510,7 @@ reextract() {
 ////////////////////////////////////////////////////////////////////
 void Trackball::
 recompute() {
-  _orig = _rotation * LMatrix4f::translate_mat(_translation);
+  _orig = _rotation * LMatrix4::translate_mat(_translation);
 
   if (!_rel_to.is_empty()) {
     NodePath root;
@@ -549,9 +549,9 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
   if (required_buttons_match && input.has_data(_pixel_xy_input)) {
     const EventStoreVec2 *pixel_xy;
     DCAST_INTO_V(pixel_xy, input.get_data(_pixel_xy_input).get_ptr());
-    const LVecBase2f &p = pixel_xy->get_value();
-    float this_x = p[0];
-    float this_y = p[1];
+    const LVecBase2 &p = pixel_xy->get_value();
+    PN_stdfloat this_x = p[0];
+    PN_stdfloat this_y = p[1];
     int this_button = 0;
     
     if (is_down(MouseButton::one())) {
@@ -578,8 +578,8 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
       this_button |= B3_MASK;
     }
     
-    float x = this_x - _lastx;
-    float y = this_y - _lasty;
+    PN_stdfloat x = this_x - _lastx;
+    PN_stdfloat y = this_y - _lasty;
 
     if (this_button == _last_button) {
       apply(x, y, this_button);

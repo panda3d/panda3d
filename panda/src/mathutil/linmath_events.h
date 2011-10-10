@@ -32,13 +32,13 @@
 ////////////////////////////////////////////////////////////////////
 
 
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, EventStoreValue<LVecBase2f>);
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, EventStoreValue<LVecBase3f>);
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, EventStoreValue<LMatrix4f>);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, EventStoreValue<LVecBase2>);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, EventStoreValue<LVecBase3>);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, EventStoreValue<LMatrix4>);
 
-typedef EventStoreValue<LVecBase2f> EventStoreVec2;
-typedef EventStoreValue<LVecBase3f> EventStoreVec3;
-typedef EventStoreValue<LMatrix4f> EventStoreMat4;
+typedef EventStoreValue<LVecBase2> EventStoreVec2;
+typedef EventStoreValue<LVecBase3> EventStoreVec3;
+typedef EventStoreValue<LMatrix4> EventStoreMat4;
 
 
 // Tell GCC that we'll take care of the instantiation explicitly here.

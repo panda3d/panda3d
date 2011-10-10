@@ -50,28 +50,28 @@ protected:
 PUBLISHED:
   INLINE ~FreetypeFont();
 
-  INLINE bool set_point_size(float point_size);
-  INLINE float get_point_size() const;
+  INLINE bool set_point_size(PN_stdfloat point_size);
+  INLINE PN_stdfloat get_point_size() const;
 
-  INLINE bool set_pixels_per_unit(float pixels_per_unit);
-  INLINE float get_pixels_per_unit() const;
+  INLINE bool set_pixels_per_unit(PN_stdfloat pixels_per_unit);
+  INLINE PN_stdfloat get_pixels_per_unit() const;
 
-  INLINE bool set_pixel_size(float pixel_size);
-  INLINE float get_pixel_size() const;
+  INLINE bool set_pixel_size(PN_stdfloat pixel_size);
+  INLINE PN_stdfloat get_pixel_size() const;
 
-  INLINE bool set_scale_factor(float scale_factor);
-  INLINE float get_scale_factor() const;
+  INLINE bool set_scale_factor(PN_stdfloat scale_factor);
+  INLINE PN_stdfloat get_scale_factor() const;
 
   INLINE void set_native_antialias(bool native_antialias);
   INLINE bool get_native_antialias() const;
 
   INLINE int get_font_pixel_size() const;
 
-  INLINE float get_line_height() const;
-  INLINE float get_space_advance() const;
+  INLINE PN_stdfloat get_line_height() const;
+  INLINE PN_stdfloat get_space_advance() const;
 
-  INLINE static float get_points_per_unit();
-  INLINE static float get_points_per_inch();
+  INLINE static PN_stdfloat get_points_per_unit();
+  INLINE static PN_stdfloat get_points_per_inch();
 
 protected:
   INLINE FT_Face acquire_face() const;
@@ -84,17 +84,17 @@ private:
   bool reset_scale();
 
 protected:
-  float _point_size;
-  float _requested_pixels_per_unit;
-  float _tex_pixels_per_unit;
-  float _requested_scale_factor;
-  float _scale_factor;
+  PN_stdfloat _point_size;
+  PN_stdfloat _requested_pixels_per_unit;
+  PN_stdfloat _tex_pixels_per_unit;
+  PN_stdfloat _requested_scale_factor;
+  PN_stdfloat _scale_factor;
   bool _native_antialias;
-  float _font_pixels_per_unit;
+  PN_stdfloat _font_pixels_per_unit;
 
   int _font_pixel_size;
-  float _line_height;
-  float _space_advance;
+  PN_stdfloat _line_height;
+  PN_stdfloat _space_advance;
 
   PT(FreetypeFace) _face;
   int _char_size;
@@ -103,8 +103,8 @@ protected:
   int _pixel_height;
 
 protected:
-  static const float _points_per_unit;
-  static const float _points_per_inch;
+  static const PN_stdfloat _points_per_unit;
+  static const PN_stdfloat _points_per_inch;
 };
 
 #include "freetypeFont.I"

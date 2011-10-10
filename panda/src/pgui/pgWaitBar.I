@@ -19,7 +19,7 @@
 //  Description: Sets the value at which the WaitBar indicates 100%.
 ////////////////////////////////////////////////////////////////////
 INLINE void PGWaitBar:: 
-set_range(float range) {
+set_range(PN_stdfloat range) {
   LightReMutexHolder holder(_lock);
   _range = range;
   _bar_state = -1;
@@ -30,7 +30,7 @@ set_range(float range) {
 //       Access: Published
 //  Description: Returns the value at which the WaitBar indicates 100%.
 ////////////////////////////////////////////////////////////////////
-INLINE float PGWaitBar:: 
+INLINE PN_stdfloat PGWaitBar:: 
 get_range() const {
   LightReMutexHolder holder(_lock);
   return _range;
@@ -43,7 +43,7 @@ get_range() const {
 //               between 0 and get_range().
 ////////////////////////////////////////////////////////////////////
 INLINE void PGWaitBar:: 
-set_value(float value) {
+set_value(PN_stdfloat value) {
   LightReMutexHolder holder(_lock);
   _value = value;
   _bar_state = -1;
@@ -54,7 +54,7 @@ set_value(float value) {
 //       Access: Published
 //  Description: Returns the current value of the bar.
 ////////////////////////////////////////////////////////////////////
-INLINE float PGWaitBar:: 
+INLINE PN_stdfloat PGWaitBar:: 
 get_value() const {
   LightReMutexHolder holder(_lock);
   return _value;
@@ -65,7 +65,7 @@ get_value() const {
 //       Access: Published
 //  Description: Returns the percentage complete.
 ////////////////////////////////////////////////////////////////////
-INLINE float PGWaitBar:: 
+INLINE PN_stdfloat PGWaitBar:: 
 get_percent() const {
   LightReMutexHolder holder(_lock);
   return (_value / _range) * 100.0f;

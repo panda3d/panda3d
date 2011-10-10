@@ -35,9 +35,9 @@ class LensNode;
 class EXPCL_PANDA_COLLIDE CollisionParabola : public CollisionSolid {
 PUBLISHED:
   INLINE CollisionParabola();
-  INLINE CollisionParabola(const Parabolaf &parabola, float t1, float t2);
+  INLINE CollisionParabola(const LParabola &parabola, PN_stdfloat t1, PN_stdfloat t2);
 
-  virtual LPoint3f get_collision_origin() const;
+  virtual LPoint3 get_collision_origin() const;
 
 public:
   INLINE CollisionParabola(const CollisionParabola &copy);
@@ -46,7 +46,7 @@ public:
   virtual PT(CollisionEntry)
   test_intersection(const CollisionEntry &entry) const;
 
-  virtual void xform(const LMatrix4f &mat);
+  virtual void xform(const LMatrix4 &mat);
 
   virtual PStatCollector &get_volume_pcollector();
   virtual PStatCollector &get_test_pcollector();
@@ -54,14 +54,14 @@ public:
   virtual void output(ostream &out) const;
 
 PUBLISHED:
-  INLINE void set_parabola(const Parabolaf &parabola);
-  INLINE const Parabolaf &get_parabola() const;
+  INLINE void set_parabola(const LParabola &parabola);
+  INLINE const LParabola &get_parabola() const;
 
-  INLINE void set_t1(float t1);
-  INLINE float get_t1() const;
+  INLINE void set_t1(PN_stdfloat t1);
+  INLINE PN_stdfloat get_t1() const;
 
-  INLINE void set_t2(float t2);
-  INLINE float get_t2() const;
+  INLINE void set_t2(PN_stdfloat t2);
+  INLINE PN_stdfloat get_t2() const;
 
 protected:
   virtual PT(BoundingVolume) compute_internal_bounds() const;
@@ -70,8 +70,8 @@ protected:
   virtual void fill_viz_geom();
 
 private:
-  Parabolaf _parabola;
-  float _t1, _t2;
+  LParabola _parabola;
+  PN_stdfloat _t1, _t2;
 
   static PStatCollector _volume_pcollector;
   static PStatCollector _test_pcollector;

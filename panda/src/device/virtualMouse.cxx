@@ -31,9 +31,9 @@ VirtualMouse(const string &name) :
   _xy_output = define_output("xy", EventStoreVec2::get_class_type());
   _button_events_output = define_output("button_events", ButtonEventList::get_class_type());
 
-  _pixel_xy = new EventStoreVec2(LPoint2f(0.0f, 0.0f));
-  _pixel_size = new EventStoreVec2(LPoint2f(0.0f, 0.0f));
-  _xy = new EventStoreVec2(LPoint2f(0.0f, 0.0f));
+  _pixel_xy = new EventStoreVec2(LPoint2(0.0f, 0.0f));
+  _pixel_size = new EventStoreVec2(LPoint2(0.0f, 0.0f));
+  _xy = new EventStoreVec2(LPoint2(0.0f, 0.0f));
   _button_events = new ButtonEventList;
   _next_button_events = new ButtonEventList;
 
@@ -130,18 +130,18 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
   _next_button_events->clear();
   output.set_data(_button_events_output, EventParameter(_button_events));
 
-  _pixel_size->set_value(LPoint2f(_win_width, _win_height));
+  _pixel_size->set_value(LPoint2(_win_width, _win_height));
   output.set_data(_pixel_size_output, EventParameter(_pixel_size));
 
   if (_mouse_on) {
     // The mouse is within the window.
-    _pixel_xy->set_value(LPoint2f(_mouse_x, _mouse_y));
+    _pixel_xy->set_value(LPoint2(_mouse_x, _mouse_y));
     output.set_data(_pixel_xy_output, EventParameter(_pixel_xy));
 
     // Normalize pixel motion to range [-1,1].
-    float xf = (2.0f * (float)_mouse_x) / (float)_win_width - 1.0f;
-    float yf = 1.0f - (2.0f * (float)_mouse_y) / (float)_win_height;
-    _xy->set_value(LPoint2f(xf, yf));
+    PN_stdfloat xf = (2.0f * (PN_stdfloat)_mouse_x) / (PN_stdfloat)_win_width - 1.0f;
+    PN_stdfloat yf = 1.0f - (2.0f * (PN_stdfloat)_mouse_y) / (PN_stdfloat)_win_height;
+    _xy->set_value(LPoint2(xf, yf));
     output.set_data(_xy_output, EventParameter(_xy));
   }
 }

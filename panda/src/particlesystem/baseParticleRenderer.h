@@ -56,8 +56,8 @@ PUBLISHED:
   INLINE void set_alpha_mode(ParticleRendererAlphaMode am);
   INLINE ParticleRendererAlphaMode get_alpha_mode() const;
 
-  INLINE void set_user_alpha(float ua);
-  INLINE float get_user_alpha() const;
+  INLINE void set_user_alpha(PN_stdfloat ua);
+  INLINE PN_stdfloat get_user_alpha() const;
 
   INLINE void set_color_blend_mode(ColorBlendAttrib::Mode bm, ColorBlendAttrib::Operand oa = ColorBlendAttrib::O_zero, ColorBlendAttrib::Operand ob = ColorBlendAttrib::O_zero);
 
@@ -81,7 +81,7 @@ protected:
   void enable_alpha();
   void disable_alpha();
 
-  INLINE float get_cur_alpha(BaseParticle* bp);
+  INLINE PN_stdfloat get_cur_alpha(BaseParticle* bp);
 
   virtual void resize_pool(int new_size) = 0;
 
@@ -91,7 +91,7 @@ private:
   PT(GeomNode) _render_node;
   NodePath _render_node_path;
 
-  float _user_alpha;
+  PN_stdfloat _user_alpha;
   bool _ignore_scale;
 
   // birth and kill particle are for renderers that might do maintenance

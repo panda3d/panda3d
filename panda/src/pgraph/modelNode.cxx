@@ -179,7 +179,7 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 void ModelNode::
 test_transform(const TransformState *ts) const {
-  LPoint3f pos(ts->get_pos());
+  LPoint3 pos(ts->get_pos());
   nassertv(pos[0] < _transform_limit);
   nassertv(pos[0] > -_transform_limit);
   nassertv(pos[1] < _transform_limit);

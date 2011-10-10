@@ -190,7 +190,7 @@ new_frame(int thread_index) {
     return;
   }
 
-  float frame_start = get_real_time();
+  PN_stdfloat frame_start = get_real_time();
   int frame_number = -1;
   PStatFrameData frame_data;
 
@@ -245,11 +245,11 @@ transmit_frame_data(int thread_index, int frame_number,
     // server.  Check that enough time has elapsed for us to send a
     // new packet.  If not, we'll drop this packet on the floor and
     // send a new one next time around.
-    float now = get_real_time();
+    PN_stdfloat now = get_real_time();
     if (now >= thread->_next_packet) {
       // We don't want to send more than _max_rate UDP-size packets
       // per second, per thread.
-      float packet_delay = 1.0 / _max_rate;
+      PN_stdfloat packet_delay = 1.0 / _max_rate;
 
       // Send new data.
       NetDatagram datagram;
@@ -299,7 +299,7 @@ transmit_frame_data(int thread_index, int frame_number,
         int packet_ratio =
           (datagram.get_length() + maximum_udp_datagram - 1) /
           maximum_udp_datagram;
-        packet_delay *= (float)packet_ratio;
+        packet_delay *= (PN_stdfloat)packet_ratio;
       }
 
       thread->_next_packet = now + packet_delay;

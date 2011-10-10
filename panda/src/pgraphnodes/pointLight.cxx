@@ -143,7 +143,7 @@ make_copy() const {
 //               most kinds of PandaNodes, this does nothing.
 ////////////////////////////////////////////////////////////////////
 void PointLight::
-xform(const LMatrix4f &mat) {
+xform(const LMatrix4 &mat) {
   LightLensNode::xform(mat);
   CDWriter cdata(_cycler);
   cdata->_point = cdata->_point * mat;
@@ -184,10 +184,10 @@ write(ostream &out, int indent_level) const {
 //               ambient light).
 ////////////////////////////////////////////////////////////////////
 bool PointLight::
-get_vector_to_light(LVector3f &result, const LPoint3f &from_object_point, 
-                    const LMatrix4f &to_object_space) {
+get_vector_to_light(LVector3 &result, const LPoint3 &from_object_point, 
+                    const LMatrix4 &to_object_space) {
   CDReader cdata(_cycler);
-  LPoint3f point = cdata->_point * to_object_space;
+  LPoint3 point = cdata->_point * to_object_space;
 
   result = point - from_object_point;
   return true;

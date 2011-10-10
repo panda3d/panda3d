@@ -20,7 +20,7 @@
 //               rectangle within the window.  This number will be in
 //               the range [0..1].
 ////////////////////////////////////////////////////////////////////
-float MouseSubregion::
+PN_stdfloat MouseSubregion::
 get_left() const {
   return _l;
 }
@@ -32,7 +32,7 @@ get_left() const {
 //               rectangle within the window.  This number will be in
 //               the range [0..1].
 ////////////////////////////////////////////////////////////////////
-float MouseSubregion::
+PN_stdfloat MouseSubregion::
 get_right() const {
   return _r;
 }
@@ -44,7 +44,7 @@ get_right() const {
 //               the rectangle within the window.  This number will be
 //               in the range [0..1].
 ////////////////////////////////////////////////////////////////////
-float MouseSubregion::
+PN_stdfloat MouseSubregion::
 get_bottom() const {
   return _b;
 }
@@ -56,7 +56,7 @@ get_bottom() const {
 //               rectangle within the window.  This number will be in
 //               the range [0..1].
 ////////////////////////////////////////////////////////////////////
-float MouseSubregion::
+PN_stdfloat MouseSubregion::
 get_top() const {
   return _t;
 }
@@ -72,7 +72,7 @@ get_top() const {
 //               whole window.
 ////////////////////////////////////////////////////////////////////
 void MouseSubregion::
-set_dimensions(float l, float r, float b, float t) {
+set_dimensions(PN_stdfloat l, PN_stdfloat r, PN_stdfloat b, PN_stdfloat t) {
   _l = l;
   _r = r;
   _b = b;
@@ -81,8 +81,8 @@ set_dimensions(float l, float r, float b, float t) {
   _minx = l * 2.0f - 1.0f;
   _miny = b * 2.0f - 1.0f;
 
-  float maxx = r * 2.0f - 1.0f;
-  float maxy = t * 2.0f - 1.0f;
+  PN_stdfloat maxx = r * 2.0f - 1.0f;
+  PN_stdfloat maxy = t * 2.0f - 1.0f;
 
   _scalex = 2.0f / (maxx - _minx);
   _scaley = 2.0f / (maxy - _miny);

@@ -57,7 +57,7 @@ public:
   bool safe_to_transform() const;
   virtual CPT(TransformState) prepare_flatten_transform(const TransformState *net_transform) const;
   bool safe_to_combine() const;
-  CPT(RenderEffects) xform(const LMatrix4f &mat) const;
+  CPT(RenderEffects) xform(const LMatrix4 &mat) const;
 
 PUBLISHED:
   bool operator < (const RenderEffects &other) const;

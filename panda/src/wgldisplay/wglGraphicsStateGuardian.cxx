@@ -365,7 +365,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
   
   static const int max_attrib_list = 64;
   int iattrib_list[max_attrib_list];
-  float fattrib_list[max_attrib_list];
+  PN_stdfloat fattrib_list[max_attrib_list];
   int ni = 0;
   int nf = 0;
   
@@ -779,7 +779,7 @@ register_twindow_class() {
 static bool _gamma_table_initialized = false;
 static unsigned short _orignial_gamma_table [256 * 3];
 
-void _create_gamma_table (float gamma, unsigned short *original_red_table, unsigned short *original_green_table, unsigned short *original_blue_table, unsigned short *red_table, unsigned short *green_table, unsigned short *blue_table) {
+void _create_gamma_table (PN_stdfloat gamma, unsigned short *original_red_table, unsigned short *original_green_table, unsigned short *original_blue_table, unsigned short *red_table, unsigned short *green_table, unsigned short *blue_table) {
   int i;
   double gamma_correction;
 
@@ -862,7 +862,7 @@ get_gamma_table(void) {
 //               for atexit.
 ////////////////////////////////////////////////////////////////////
 bool wglGraphicsStateGuardian::
-static_set_gamma(bool restore, float gamma) {
+static_set_gamma(bool restore, PN_stdfloat gamma) {
   bool set;  
   HDC hdc = GetDC(NULL);
 
@@ -894,7 +894,7 @@ static_set_gamma(bool restore, float gamma) {
 //               on success.
 ////////////////////////////////////////////////////////////////////
 bool wglGraphicsStateGuardian::
-set_gamma(float gamma) {
+set_gamma(PN_stdfloat gamma) {
   bool set;
 
   set = static_set_gamma(false, gamma);

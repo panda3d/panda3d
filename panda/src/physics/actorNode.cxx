@@ -28,7 +28,7 @@ TypeHandle ActorNode::_type_handle;
 ActorNode::
 ActorNode(const string &name) :
     PhysicalNode(name) {
-  _contact_vector = LVector3f::zero();
+  _contact_vector = LVector3::zero();
   add_physical(new Physical(1, true));
   _mass_center = get_physical(0)->get_phys_body();
   _mass_center->set_active(true);
@@ -47,7 +47,7 @@ ActorNode(const string &name) :
 ActorNode::
 ActorNode(const ActorNode &copy) :
   PhysicalNode(copy) {
-  _contact_vector = LVector3f::zero();
+  _contact_vector = LVector3::zero();
   _ok_to_callback = true;
   _mass_center = get_physical(0)->get_phys_body();
   _transform_limit = copy._transform_limit;
@@ -71,7 +71,7 @@ ActorNode::
 ////////////////////////////////////////////////////////////////////
 void ActorNode::
 update_transform() {
-  LMatrix4f lcs = _mass_center->get_lcs();
+  LMatrix4 lcs = _mass_center->get_lcs();
 
   // lock the callback so that this doesn't call transform_changed.
   _ok_to_callback = false;
@@ -88,7 +88,7 @@ update_transform() {
 ////////////////////////////////////////////////////////////////////
 void ActorNode::
 test_transform(const TransformState *ts) const {
-  LPoint3f pos(ts->get_pos());
+  LPoint3 pos(ts->get_pos());
   nassertv(pos[0] < _transform_limit);
   nassertv(pos[0] > -_transform_limit);
   nassertv(pos[1] < _transform_limit);

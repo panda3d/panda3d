@@ -40,15 +40,15 @@ class FactoryParams;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PGRAPH ScissorAttrib : public RenderAttrib {
 private:
-  ScissorAttrib(const LVecBase4f &frame);
+  ScissorAttrib(const LVecBase4 &frame);
 
 PUBLISHED:
   static CPT(RenderAttrib) make_off();
-  INLINE static CPT(RenderAttrib) make(float left, float right, float bottom, float top);
-  static CPT(RenderAttrib) make(const LVecBase4f &frame);
+  INLINE static CPT(RenderAttrib) make(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top);
+  static CPT(RenderAttrib) make(const LVecBase4 &frame);
   static CPT(RenderAttrib) make_default();
 
-  INLINE const LVecBase4f &get_frame() const;
+  INLINE const LVecBase4 &get_frame() const;
 
 public:
   virtual void output(ostream &out) const;
@@ -59,7 +59,7 @@ protected:
   virtual CPT(RenderAttrib) compose_impl(const RenderAttrib *other) const;
 
 private:
-  LVecBase4f _frame;
+  LVecBase4 _frame;
   static CPT(RenderAttrib) _off;
 
 PUBLISHED:

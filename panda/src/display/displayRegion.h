@@ -59,7 +59,7 @@ class CullTraverser;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_DISPLAY DisplayRegion : public DisplayRegionBase, public DrawableRegion {
 protected:
-  DisplayRegion(GraphicsOutput *window, const LVecBase4f &dimensions);
+  DisplayRegion(GraphicsOutput *window, const LVecBase4 &dimensions);
 
 private:
   DisplayRegion(const DisplayRegion &copy);
@@ -72,14 +72,14 @@ public:
   INLINE bool operator < (const DisplayRegion &other) const;
 
 PUBLISHED:
-  INLINE void get_dimensions(float &l, float &r, float &b, float &t) const;
-  INLINE LVecBase4f get_dimensions() const;
-  INLINE float get_left() const;
-  INLINE float get_right() const;
-  INLINE float get_bottom() const;
-  INLINE float get_top() const;
-  INLINE void set_dimensions(float l, float r, float b, float t);
-  virtual void set_dimensions(const LVecBase4f &dimensions);
+  INLINE void get_dimensions(PN_stdfloat &l, PN_stdfloat &r, PN_stdfloat &b, PN_stdfloat &t) const;
+  INLINE LVecBase4 get_dimensions() const;
+  INLINE PN_stdfloat get_left() const;
+  INLINE PN_stdfloat get_right() const;
+  INLINE PN_stdfloat get_bottom() const;
+  INLINE PN_stdfloat get_top() const;
+  INLINE void set_dimensions(PN_stdfloat l, PN_stdfloat r, PN_stdfloat b, PN_stdfloat t);
+  virtual void set_dimensions(const LVecBase4 &dimensions);
 
   INLINE GraphicsOutput *get_window() const;
   GraphicsPipe *get_pipe() const;
@@ -189,7 +189,7 @@ private:
       return DisplayRegion::get_class_type();
     }
 
-    LVecBase4f _dimensions;  // left, right, bottom, top
+    LVecBase4 _dimensions;  // left, right, bottom, top
     
     int _pl;
     int _pr;
@@ -286,12 +286,12 @@ public:
 
   INLINE bool is_any_clear_active() const;
 
-  INLINE void get_dimensions(float &l, float &r, float &b, float &t) const;
-  INLINE const LVecBase4f &get_dimensions() const;
-  INLINE float get_left() const;
-  INLINE float get_right() const;
-  INLINE float get_bottom() const;
-  INLINE float get_top() const;
+  INLINE void get_dimensions(PN_stdfloat &l, PN_stdfloat &r, PN_stdfloat &b, PN_stdfloat &t) const;
+  INLINE const LVecBase4 &get_dimensions() const;
+  INLINE PN_stdfloat get_left() const;
+  INLINE PN_stdfloat get_right() const;
+  INLINE PN_stdfloat get_bottom() const;
+  INLINE PN_stdfloat get_top() const;
 
   INLINE GraphicsOutput *get_window() const;
   GraphicsPipe *get_pipe() const;

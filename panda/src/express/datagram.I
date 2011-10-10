@@ -167,11 +167,7 @@ add_uint64(PN_uint64 value) {
 //               special care is required.
 ////////////////////////////////////////////////////////////////////
 INLINE void Datagram::
-add_float32(float value) {
-  // For now, we assume the float format is portable across all
-  // architectures we are concerned with.  If we come across one that
-  // is different, we will have to convert.
-  nassertv(sizeof(value) == 4);
+add_float32(PN_float32 value) {
   LittleEndian s(&value, sizeof(value));
   append_data(s.get_data(), sizeof(value));
 }
@@ -185,6 +181,22 @@ INLINE void Datagram::
 add_float64(PN_float64 value) {
   LittleEndian s(&value, sizeof(value));
   append_data(s.get_data(), sizeof(value));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Datagram::add_stdfloat
+//       Access: Public
+//  Description: Adds either a 32-bit or a 64-bit floating-point
+//               number, according to the current Panda build
+//               configuration.
+////////////////////////////////////////////////////////////////////
+INLINE void Datagram::
+add_stdfloat(PN_stdfloat value) {
+#ifndef STDFLOAT_DOUBLE
+  add_float32(value);
+#else
+  add_float64(value);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -263,16 +275,10 @@ add_be_uint64(PN_uint64 value) {
 //     Function: Datagram::add_be_float32
 //       Access: Public
 //  Description: Adds a 32-bit single-precision big-endian
-//               floating-point number to the datagram.  Since this
-//               kind of float is not necessarily portable across
-//               different architectures, special care is required.
+//               floating-point number to the datagram.
 ////////////////////////////////////////////////////////////////////
 INLINE void Datagram::
-add_be_float32(float value) {
-  // For now, we assume the float format is portable across all
-  // architectures we are concerned with.  If we come across one that
-  // is different, we will have to convert.
-  nassertv(sizeof(value) == 4);
+add_be_float32(PN_float32 value) {
   BigEndian s(&value, sizeof(value));
   append_data(s.get_data(), sizeof(value));
 }

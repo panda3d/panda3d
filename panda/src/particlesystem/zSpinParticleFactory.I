@@ -18,7 +18,7 @@
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void ZSpinParticleFactory::
-set_initial_angle(float angle) {
+set_initial_angle(PN_stdfloat angle) {
   _initial_angle = angle;
 }
 
@@ -27,7 +27,7 @@ set_initial_angle(float angle) {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void ZSpinParticleFactory::
-set_final_angle(float angle) {
+set_final_angle(PN_stdfloat angle) {
   _final_angle = angle;
 }
 
@@ -36,7 +36,7 @@ set_final_angle(float angle) {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void ZSpinParticleFactory::
-set_initial_angle_spread(float spread) {
+set_initial_angle_spread(PN_stdfloat spread) {
   _initial_angle_spread = spread;
 }
 
@@ -45,7 +45,7 @@ set_initial_angle_spread(float spread) {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void ZSpinParticleFactory::
-set_final_angle_spread(float spread) {
+set_final_angle_spread(PN_stdfloat spread) {
   _final_angle_spread = spread;
 }
 
@@ -53,7 +53,7 @@ set_final_angle_spread(float spread) {
 // Function : get_initial_angle
 //   Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE float ZSpinParticleFactory::
+INLINE PN_stdfloat ZSpinParticleFactory::
 get_initial_angle() const {
   return _initial_angle;
 }
@@ -62,7 +62,7 @@ get_initial_angle() const {
 // Function : get_final_angle
 //   Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE float ZSpinParticleFactory::
+INLINE PN_stdfloat ZSpinParticleFactory::
 get_final_angle() const {
   return _final_angle;
 }
@@ -71,7 +71,7 @@ get_final_angle() const {
 // Function : get_initial_angle_spread
 //   Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE float ZSpinParticleFactory::
+INLINE PN_stdfloat ZSpinParticleFactory::
 get_initial_angle_spread() const {
   return _initial_angle_spread;
 }
@@ -80,7 +80,7 @@ get_initial_angle_spread() const {
 // Function : get_final_angle_spread
 //   Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE float ZSpinParticleFactory::
+INLINE PN_stdfloat ZSpinParticleFactory::
 get_final_angle_spread() const {
   return _final_angle_spread;
 }
@@ -89,23 +89,23 @@ get_final_angle_spread() const {
 // Function : get_angular_velocity
 //   Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE float ZSpinParticleFactory::
+INLINE PN_stdfloat ZSpinParticleFactory::
 get_angular_velocity() const {
   return _angular_velocity;
 }
 
 INLINE void ZSpinParticleFactory::
-set_angular_velocity(float v) {
+set_angular_velocity(PN_stdfloat v) {
   _angular_velocity = v;
 }
 
-INLINE float ZSpinParticleFactory::
+INLINE PN_stdfloat ZSpinParticleFactory::
 get_angular_velocity_spread() const {
   return _angular_velocity_spread;
 }
 
 INLINE void ZSpinParticleFactory::
-set_angular_velocity_spread(float spread) {
+set_angular_velocity_spread(PN_stdfloat spread) {
   _angular_velocity_spread = spread;
 }
 

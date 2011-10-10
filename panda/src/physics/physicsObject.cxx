@@ -35,7 +35,7 @@ PhysicsObject() :
   _last_position = _position;
   _velocity.set(0.0f, 0.0f, 0.0f);
   _orientation.set(1.0 ,0.0f, 0.0f, 0.0f);
-  _rotation = LRotationf::ident_quat();
+  _rotation = LRotation::ident_quat();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -99,8 +99,8 @@ make_copy() const {
 //               offset and force are in local coordinates.
 ////////////////////////////////////////////////////////////////////
 void PhysicsObject::
-add_local_impact(const LPoint3f &offset_from_center_of_mass,
-    const LVector3f &force) {
+add_local_impact(const LPoint3 &offset_from_center_of_mass,
+    const LVector3 &force) {
   nassertv(!offset_from_center_of_mass.is_nan());
   nassertv(!force.is_nan());
   add_impact(
@@ -120,26 +120,26 @@ add_local_impact(const LPoint3f &offset_from_center_of_mass,
 //               offset and force are in global (or parent) coordinates.
 ////////////////////////////////////////////////////////////////////
 void PhysicsObject::
-add_impact(const LPoint3f &offset,
-    const LVector3f &force) {
+add_impact(const LPoint3 &offset,
+    const LVector3 &force) {
   nassertv(!offset.is_nan());
   nassertv(!force.is_nan());
-  LVector3f a = offset;
-  LVector3f b = force;
+  LVector3 a = offset;
+  LVector3 b = force;
   a.normalize();
   b.normalize();
   a = a.cross(b);
-  float angle = a.length();
+  PN_stdfloat angle = a.length();
   if (angle) {
-    LRotationf torque;
-    float spin = force.length()*0.1f; // todo: this should account for
-                                      // impact distance and mass.
+    LRotation torque;
+    PN_stdfloat spin = force.length()*0.1; // todo: this should account for
+                                        // impact distance and mass.
     a.normalize();
     assert(IS_THRESHOLD_EQUAL(a.length(), 1.0f, 0.001f));
     torque.set_from_axis_angle(spin, a);
     add_torque(torque);
   }
-  LVector3f impulse = (1.0f - angle) * force;
+  LVector3 impulse = (1.0f - angle) * force;
   add_impulse(impulse);
 }
 
@@ -149,9 +149,9 @@ add_impact(const LPoint3f &offset,
 //  Description : returns a transform matrix to this object's
 //                local coordinate system.
 ////////////////////////////////////////////////////////////////////
-LMatrix4f PhysicsObject::
+LMatrix4 PhysicsObject::
 get_lcs() const {
-  LMatrix4f m = LMatrix4f::translate_mat(_position);
+  LMatrix4 m = LMatrix4::translate_mat(_position);
   if (_oriented) {
     m=m*_orientation;
   }
@@ -165,9 +165,9 @@ get_lcs() const {
 //  Description : returns a transform matrix that represents the
 //                object's willingness to be forced.
 ////////////////////////////////////////////////////////////////////
-LMatrix4f PhysicsObject::
+LMatrix4 PhysicsObject::
 get_inertial_tensor() const {
-  return LMatrix4f::ident_mat();
+  return LMatrix4::ident_mat();
 }
 
 ////////////////////////////////////////////////////////////////////

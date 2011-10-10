@@ -55,9 +55,9 @@ VertexTransform::
 //               previous.
 ////////////////////////////////////////////////////////////////////
 void VertexTransform::
-mult_matrix(LMatrix4f &result, const LMatrix4f &previous) const {
+mult_matrix(LMatrix4 &result, const LMatrix4 &previous) const {
   nassertv(&result != &previous);
-  LMatrix4f me;
+  LMatrix4 me;
   get_matrix(me);
   result.multiply(me, previous);
 }
@@ -71,8 +71,8 @@ mult_matrix(LMatrix4f &result, const LMatrix4f &previous) const {
 //               result of several blended transforms.
 ////////////////////////////////////////////////////////////////////
 void VertexTransform::
-accumulate_matrix(LMatrix4f &accum, float weight) const {
-  LMatrix4f me;
+accumulate_matrix(LMatrix4 &accum, PN_stdfloat weight) const {
+  LMatrix4 me;
   get_matrix(me);
   
   accum._m.m._00 += me._m.m._00 * weight;
@@ -115,7 +115,7 @@ void VertexTransform::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) 
     << *this << ":\n";
-  LMatrix4f mat;
+  LMatrix4 mat;
   get_matrix(mat);
   mat.write(out, indent_level + 2);
 }

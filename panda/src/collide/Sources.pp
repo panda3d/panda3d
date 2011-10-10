@@ -22,7 +22,6 @@
     collisionHandlerPusher.I collisionHandlerPusher.h  \
     collisionHandlerFluidPusher.I collisionHandlerFluidPusher.h  \
     collisionHandlerQueue.h \
-    collisionDSSolid.I collisionDSSolid.h \
     collisionInvSphere.I collisionInvSphere.h \
     collisionLine.I collisionLine.h \
     collisionLevelStateBase.I collisionLevelStateBase.h \
@@ -57,7 +56,6 @@
     collisionHandlerQueue.cxx  \
     collisionLevelStateBase.cxx \
     collisionLevelState.cxx \
-    collisionDSSolid.cxx \
     collisionInvSphere.cxx  \
     collisionLine.cxx \
     collisionNode.cxx \
@@ -88,7 +86,6 @@
     collisionHandlerPusher.I collisionHandlerPusher.h \
     collisionHandlerFluidPusher.I collisionHandlerFluidPusher.h \
     collisionHandlerQueue.h \
-    collisionDSSolid.I collisionDSSolid.h \
     collisionInvSphere.I collisionInvSphere.h \
     collisionLevelStateBase.I collisionLevelStateBase.h \
     collisionLevelState.I collisionLevelState.h \

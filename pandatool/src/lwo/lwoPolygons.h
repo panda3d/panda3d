@@ -34,7 +34,7 @@ public:
   enum PolygonFlags {
     PF_continuity_1    = 0x0400,
     PF_continuity_2    = 0x0800,
-    PF_numverts_mask   = 0x03ff,
+    PF_numverts_mask   = 0x03f,
 
     // This "flag" is stored artificially when reading 5.x LWOB files,
     // and indicates that the polygon is a decal of a preceding

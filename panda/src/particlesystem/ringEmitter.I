@@ -19,7 +19,7 @@
 ////////////////////////////////////////////////////////////////////
 
 INLINE void RingEmitter::
-set_radius(float r) {
+set_radius(PN_stdfloat r) {
   _radius = r;
 }
 
@@ -30,7 +30,7 @@ set_radius(float r) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE void RingEmitter::
-set_angle(float angle) {
+set_angle(PN_stdfloat angle) {
   _aoe = angle;
 }
 
@@ -41,7 +41,7 @@ set_angle(float angle) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE void RingEmitter::
-set_radius_spread(float spread) {
+set_radius_spread(PN_stdfloat spread) {
   _radius_spread = spread;
 }
 
@@ -62,7 +62,7 @@ set_uniform_emission(int uniform_emission) {
 // Description : radius get
 ////////////////////////////////////////////////////////////////////
 
-INLINE float RingEmitter::
+INLINE PN_stdfloat RingEmitter::
 get_radius() const {
   return _radius;
 }
@@ -73,7 +73,7 @@ get_radius() const {
 // Description : angle of elevation get
 ////////////////////////////////////////////////////////////////////
 
-INLINE float RingEmitter::
+INLINE PN_stdfloat RingEmitter::
 get_angle() const {
   return _aoe;
 }
@@ -84,7 +84,7 @@ get_angle() const {
 // Description : radius_spread get
 ////////////////////////////////////////////////////////////////////
 
-INLINE float RingEmitter::
+INLINE PN_stdfloat RingEmitter::
 get_radius_spread() const {
   return _radius_spread;
 }

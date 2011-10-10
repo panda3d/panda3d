@@ -28,8 +28,8 @@ inline LVecBase3d TO_VEC3(FMVector3 v) {
 inline LVecBase4d TO_VEC4(FMVector4 v) {
   return LVecBase4d(v.x, v.y, v.z, v.w);
 }
-inline Colorf TO_COLOR(FMVector4 v) {
-  return Colorf(v.x, v.y, v.z, v.w);
+inline LColor TO_COLOR(FMVector4 v) {
+  return LColor(v.x, v.y, v.z, v.w);
 }
 #define FROM_VEC3(v) (FMVector3(v[0], v[1], v[2]))
 #define FROM_VEC4(v) (FMVector4(v[0], v[1], v[2], v[3]))

@@ -30,25 +30,25 @@ PUBLISHED:
 
   virtual BaseParticleEmitter *make_copy();
 
-  INLINE void set_radius(float r);
-  INLINE float get_radius() const;
+  INLINE void set_radius(PN_stdfloat r);
+  INLINE PN_stdfloat get_radius() const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent=0) const;
 
 private:
-  float _radius;
+  PN_stdfloat _radius;
 
   // CUSTOM EMISSION PARAMETERS
   // none
 
   ///////////////////////////////
   // scratch variables that carry over from position calc to velocity calc
-  LPoint3f _particle_pos;
+  LPoint3 _particle_pos;
   ///////////////////////////////
 
-  virtual void assign_initial_position(LPoint3f& pos);
-  virtual void assign_initial_velocity(LVector3f& vel);
+  virtual void assign_initial_position(LPoint3& pos);
+  virtual void assign_initial_velocity(LVector3& vel);
 };
 
 #include "sphereVolumeEmitter.I"

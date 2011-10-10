@@ -28,9 +28,9 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_MATHUTIL FiniteBoundingVolume : public GeometricBoundingVolume {
 PUBLISHED:
-  virtual LPoint3f get_min() const=0;
-  virtual LPoint3f get_max() const=0;
-  virtual float get_volume() const;
+  virtual LPoint3 get_min() const=0;
+  virtual LPoint3 get_max() const=0;
+  virtual PN_stdfloat get_volume() const;
 
 public:
   virtual const FiniteBoundingVolume *as_finite_bounding_volume() const;

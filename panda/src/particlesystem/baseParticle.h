@@ -26,19 +26,19 @@
 class EXPCL_PANDAPHYSICS BaseParticle : public PhysicsObject {
 public:
   // local methods
-  INLINE void set_age(float age);
-  INLINE void set_lifespan(float lifespan);
+  INLINE void set_age(PN_stdfloat age);
+  INLINE void set_lifespan(PN_stdfloat lifespan);
   INLINE void set_alive(bool alive);
   INLINE void set_index(int index);
 
 
-  INLINE float get_age() const;
-  INLINE float get_lifespan() const;
+  INLINE PN_stdfloat get_age() const;
+  INLINE PN_stdfloat get_lifespan() const;
   INLINE bool get_alive() const;
   INLINE int get_index() const; 
 
-  INLINE float get_parameterized_age() const;
-  INLINE float get_parameterized_vel() const;
+  INLINE PN_stdfloat get_parameterized_age() const;
+  INLINE PN_stdfloat get_parameterized_vel() const;
 
   // child methods
   virtual void init() = 0;
@@ -46,7 +46,7 @@ public:
   virtual void update() = 0;
 
   // for spriteParticleRenderer
-  virtual float get_theta() const;
+  virtual PN_stdfloat get_theta() const;
 
   // from PhysicsObject
   virtual PhysicsObject *make_copy() const = 0;
@@ -55,18 +55,18 @@ public:
   virtual void write(ostream &out, int indent=0) const;
 
 protected:
-  BaseParticle(float lifespan = 1.0f, bool alive = false);
+  BaseParticle(PN_stdfloat lifespan = 1.0f, bool alive = false);
   BaseParticle(const BaseParticle &copy);
   virtual ~BaseParticle();
 
 private:
   // NOTE: age and lifespan are in seconds.
-  float _age;
-  float _lifespan;
+  PN_stdfloat _age;
+  PN_stdfloat _lifespan;
   bool _alive;
   int _index;
 
-  LPoint3f _last_position;
+  LPoint3 _last_position;
 };
 
 #include "baseParticle.I"

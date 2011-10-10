@@ -19,7 +19,7 @@
 //  Description: Returns a pointer to the table's data,
 //               if it exists, or NULL if it does not.
 ////////////////////////////////////////////////////////////////////
-INLINE CPTA_float AnimChannelScalarTable::
+INLINE CPTA_stdfloat AnimChannelScalarTable::
 get_table() const {
   return _table;
 }
@@ -31,7 +31,7 @@ get_table() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool AnimChannelScalarTable::
 has_table() const {
-  return _table != (const float *)NULL;
+  return _table != (const PN_stdfloat *)NULL;
 }
 
 

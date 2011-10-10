@@ -49,7 +49,7 @@ set_mode(Mode mode) {
 //       Access: Published
 //  Description: Returns the color of the fog.
 ////////////////////////////////////////////////////////////////////
-INLINE const Colorf &Fog::
+INLINE const LColor &Fog::
 get_color() const {
   return _color;
 }
@@ -60,7 +60,7 @@ get_color() const {
 //  Description: Sets the color of the fog.
 ////////////////////////////////////////////////////////////////////
 INLINE void Fog::
-set_color(float r, float g, float b) {
+set_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b) {
   _color[0] = r;
   _color[1] = g;
   _color[2] = b;
@@ -73,7 +73,7 @@ set_color(float r, float g, float b) {
 //               not used.
 ////////////////////////////////////////////////////////////////////
 INLINE void Fog::
-set_color(const Colorf &color) {
+set_color(const LColor &color) {
   _color = color;
 }
 
@@ -92,8 +92,8 @@ set_color(const Colorf &color) {
 //               M_linear, if it is not already set.
 ////////////////////////////////////////////////////////////////////
 INLINE void Fog::
-set_linear_range(float onset, float opaque) {
-  LVector3f forward = LVector3f::forward();
+set_linear_range(PN_stdfloat onset, PN_stdfloat opaque) {
+  LVector3 forward = LVector3::forward();
   _linear_onset_point = onset * forward;
   _linear_opaque_point = opaque * forward;
   _transformed_onset = onset;
@@ -107,7 +107,7 @@ set_linear_range(float onset, float opaque) {
 //  Description: Returns the point in space at which the fog begins.
 //               This is only used if the mode is M_linear.
 ////////////////////////////////////////////////////////////////////
-INLINE const LPoint3f &Fog::
+INLINE const LPoint3 &Fog::
 get_linear_onset_point() const {
   return _linear_onset_point;
 }
@@ -119,7 +119,7 @@ get_linear_onset_point() const {
 //               This is only used if the mode is M_linear.
 ////////////////////////////////////////////////////////////////////
 INLINE void Fog::
-set_linear_onset_point(float x, float y, float z) {
+set_linear_onset_point(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
   _linear_onset_point.set(x, y, z);
 }
 
@@ -130,7 +130,7 @@ set_linear_onset_point(float x, float y, float z) {
 //               This is only used if the mode is M_linear.
 ////////////////////////////////////////////////////////////////////
 INLINE void Fog::
-set_linear_onset_point(const LPoint3f &linear_onset_point) {
+set_linear_onset_point(const LPoint3 &linear_onset_point) {
   _linear_onset_point = linear_onset_point;
 }
 
@@ -141,7 +141,7 @@ set_linear_onset_point(const LPoint3f &linear_onset_point) {
 //               completely obscures geometry.  This is only used if
 //               the mode is M_linear.
 ////////////////////////////////////////////////////////////////////
-INLINE const LPoint3f &Fog::
+INLINE const LPoint3 &Fog::
 get_linear_opaque_point() const {
   return _linear_opaque_point;
 }
@@ -154,7 +154,7 @@ get_linear_opaque_point() const {
 //               the mode is M_linear.
 ////////////////////////////////////////////////////////////////////
 INLINE void Fog::
-set_linear_opaque_point(float x, float y, float z) {
+set_linear_opaque_point(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
   _linear_opaque_point.set(x, y, z);
 }
 
@@ -166,7 +166,7 @@ set_linear_opaque_point(float x, float y, float z) {
 //               the mode is M_linear.
 ////////////////////////////////////////////////////////////////////
 INLINE void Fog::
-set_linear_opaque_point(const LPoint3f &linear_opaque_point) {
+set_linear_opaque_point(const LPoint3 &linear_opaque_point) {
   _linear_opaque_point = linear_opaque_point;
 }
 
@@ -211,7 +211,7 @@ set_linear_opaque_point(const LPoint3f &linear_opaque_point) {
 //               supercedes the 3-d onset point and opaque points.
 ////////////////////////////////////////////////////////////////////
 INLINE void Fog::
-set_linear_fallback(float angle, float onset, float opaque) {
+set_linear_fallback(PN_stdfloat angle, PN_stdfloat onset, PN_stdfloat opaque) {
   _linear_fallback_cosa = ccos(deg_2_rad(angle));
   _linear_fallback_onset = onset;
   _linear_fallback_opaque = opaque;
@@ -224,7 +224,7 @@ set_linear_fallback(float angle, float onset, float opaque) {
 //               calculations.  This is only used if the mode is not
 //               M_linear.
 ////////////////////////////////////////////////////////////////////
-INLINE float Fog::
+INLINE PN_stdfloat Fog::
 get_exp_density() const {
   return _exp_density;
 }
@@ -240,7 +240,7 @@ get_exp_density() const {
 //               function implicitly sets it to M_exponential.
 ////////////////////////////////////////////////////////////////////
 INLINE void Fog::
-set_exp_density(float exp_density) {
+set_exp_density(PN_stdfloat exp_density) {
   nassertv((exp_density >= 0.0) && (exp_density <= 1.0));
   _exp_density = exp_density;
 

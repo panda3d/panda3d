@@ -57,7 +57,6 @@
     nodeCachedReferenceCount.h nodeCachedReferenceCount.I \
     pbitops.I pbitops.h \
     portalMask.h \
-    pta_double.h \
     pta_ushort.h \
     pythonCallbackObject.h pythonCallbackObject.I \
     simpleHashMap.I simpleHashMap.h \
@@ -67,7 +66,7 @@
     typedWritable.h typedWritableReferenceCount.I \
     typedWritableReferenceCount.h updateSeq.I updateSeq.h \
     uniqueIdAllocator.h \
-    vector_double.h vector_typedWritable.h \
+    vector_typedWritable.h \
     vector_ushort.h vector_writable.h \
     writableConfigurable.h \
     writableParam.I writableParam.h 
@@ -106,7 +105,6 @@
     nameUniquifier.cxx \
     nodeCachedReferenceCount.cxx \
     pbitops.cxx \
-    pta_double.cxx \
     pta_ushort.cxx \
     pythonCallbackObject.cxx \
     simpleHashMap.cxx \
@@ -115,7 +113,6 @@
     timedCycle.cxx typedWritable.cxx \
     typedWritableReferenceCount.cxx updateSeq.cxx \
     uniqueIdAllocator.cxx \
-    vector_double.cxx \
     vector_typedWritable.cxx \
     vector_ushort.cxx vector_writable.cxx \
     writableConfigurable.cxx writableParam.cxx 
@@ -168,7 +165,6 @@
     nodeCachedReferenceCount.h nodeCachedReferenceCount.I \
     portalMask.h \
     pbitops.I pbitops.h \
-    pta_double.h \
     pta_ushort.h \
     pythonCallbackObject.h pythonCallbackObject.I \
     simpleHashMap.I simpleHashMap.h \
@@ -178,7 +174,7 @@
     typedWritable.h typedWritableReferenceCount.I \
     typedWritableReferenceCount.h updateSeq.I updateSeq.h \
     uniqueIdAllocator.h \
-    vector_double.h vector_typedWritable.h \
+    vector_typedWritable.h \
     vector_ushort.h vector_writable.h \
     writableConfigurable.h writableParam.I \
     writableParam.h

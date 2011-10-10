@@ -23,21 +23,21 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS LinearFrictionForce : public LinearForce {
 PUBLISHED:
-  LinearFrictionForce(float coef = 1.0f, float a = 1.0f, bool m = false);
+  LinearFrictionForce(PN_stdfloat coef = 1.0f, PN_stdfloat a = 1.0f, bool m = false);
   LinearFrictionForce(const LinearFrictionForce &copy);
   virtual ~LinearFrictionForce();
 
-  INLINE void set_coef(float coef);
-  INLINE float get_coef() const;
+  INLINE void set_coef(PN_stdfloat coef);
+  INLINE PN_stdfloat get_coef() const;
   
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 
 private:
-  float _coef;
+  PN_stdfloat _coef;
 
   virtual LinearForce *make_copy();
-  virtual LVector3f get_child_vector(const PhysicsObject *);
+  virtual LVector3 get_child_vector(const PhysicsObject *);
 
 public:
   static TypeHandle get_class_type() {

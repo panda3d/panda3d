@@ -270,7 +270,7 @@ apply_transform() {
         return false;
       }
 
-      const LMatrix4f &mat = inv_transform->get_mat();
+      const LMatrix4 &mat = inv_transform->get_mat();
       
       // Now build the new bounding volumes list.
       BoundingVolumes new_bounds;

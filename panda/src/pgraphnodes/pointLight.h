@@ -33,22 +33,22 @@ protected:
 
 public:
   virtual PandaNode *make_copy() const;
-  virtual void xform(const LMatrix4f &mat);
+  virtual void xform(const LMatrix4 &mat);
   virtual void write(ostream &out, int indent_level) const;
 
-  virtual bool get_vector_to_light(LVector3f &result,
-                                   const LPoint3f &from_object_point, 
-                                   const LMatrix4f &to_object_space);
+  virtual bool get_vector_to_light(LVector3 &result,
+                                   const LPoint3 &from_object_point, 
+                                   const LMatrix4 &to_object_space);
 
 PUBLISHED:
-  INLINE const Colorf &get_specular_color() const;
-  INLINE void set_specular_color(const Colorf &color);
+  INLINE const LColor &get_specular_color() const;
+  INLINE void set_specular_color(const LColor &color);
   
-  INLINE const LVecBase3f &get_attenuation() const;
-  INLINE void set_attenuation(const LVecBase3f &attenuation);
+  INLINE const LVecBase3 &get_attenuation() const;
+  INLINE void set_attenuation(const LVecBase3 &attenuation);
   
-  INLINE const LPoint3f &get_point() const;
-  INLINE void set_point(const LPoint3f &point);
+  INLINE const LPoint3 &get_point() const;
+  INLINE void set_point(const LPoint3 &point);
 
   virtual int get_class_priority() const;
   
@@ -69,9 +69,9 @@ private:
       return PointLight::get_class_type();
     }
 
-    Colorf _specular_color;
-    LVecBase3f _attenuation;
-    LPoint3f _point;
+    LColor _specular_color;
+    LVecBase3 _attenuation;
+    LPoint3 _point;
   };
 
   PipelineCycler<CData> _cycler;

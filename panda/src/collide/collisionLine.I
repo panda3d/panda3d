@@ -31,7 +31,7 @@ CollisionLine() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionLine::
-CollisionLine(const LPoint3f &origin, const LVector3f &direction) :
+CollisionLine(const LPoint3 &origin, const LVector3 &direction) :
   CollisionRay(origin, direction)
 {
 }
@@ -42,8 +42,8 @@ CollisionLine(const LPoint3f &origin, const LVector3f &direction) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionLine::
-CollisionLine(float ox, float oy, float oz,
-              float dx, float dy, float dz) :
+CollisionLine(PN_stdfloat ox, PN_stdfloat oy, PN_stdfloat oz,
+              PN_stdfloat dx, PN_stdfloat dy, PN_stdfloat dz) :
   CollisionRay(ox, oy, oz, dx, dy, dz)
 {
 }

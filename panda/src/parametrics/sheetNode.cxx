@@ -266,7 +266,7 @@ do_recompute_bounds(const NodePath &rel_to, int pipeline_stage,
   
   NurbsSurfaceEvaluator *surface = get_surface();
   if (surface != (NurbsSurfaceEvaluator *)NULL) {
-    pvector<LPoint3f> verts;
+    pvector<LPoint3> verts;
     get_surface()->get_vertices(verts, rel_to);
     
     GeometricBoundingVolume *gbv;
@@ -310,26 +310,26 @@ render_sheet(CullTraverser *trav, CullTraverserData &data,
 
   for (int ui = 0; ui < num_u_segments; ui++) {
     for (int uni = 0; uni <= num_u_verts; uni++) {
-      float u0 = (float)uni / (float)num_u_verts;
-      float u0_tc = result->get_segment_u(ui, u0);
+      PN_stdfloat u0 = (PN_stdfloat)uni / (PN_stdfloat)num_u_verts;
+      PN_stdfloat u0_tc = result->get_segment_u(ui, u0);
       
       for (int vi = 0; vi < num_v_segments; vi++) {
         for (int vni = 0; vni < num_v_verts; vni++) {
-          float v = (float)vni / (float)(num_v_verts - 1);
-          float v_tc = result->get_segment_v(vi, v);
+          PN_stdfloat v = (PN_stdfloat)vni / (PN_stdfloat)(num_v_verts - 1);
+          PN_stdfloat v_tc = result->get_segment_v(vi, v);
           
-          LPoint3f point;
-          LVector3f norm;
+          LPoint3 point;
+          LVector3 norm;
           result->eval_segment_point(ui, vi, u0, v, point);
           result->eval_segment_normal(ui, vi, u0, v, norm);
-          vertex.add_data3f(point);
-          normal.add_data3f(norm);
-          texcoord.add_data2f(u0_tc, v_tc);
+          vertex.add_data3(point);
+          normal.add_data3(norm);
+          texcoord.add_data2(u0_tc, v_tc);
           
           if (use_vertex_color) {
-            Colorf c0;
+            LColor c0;
             result->eval_segment_extended_points(ui, vi, u0, v, 0, &c0[0], 4);
-            color.add_data4f(c0);
+            color.add_data4(c0);
           }
         }
       }

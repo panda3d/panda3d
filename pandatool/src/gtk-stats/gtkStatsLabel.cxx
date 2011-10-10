@@ -60,13 +60,13 @@ GtkStatsLabel(GtkStatsMonitor *monitor, GtkStatsGraph *graph,
   _layout = gtk_widget_create_pango_layout(_widget, _text.c_str());
 
   // Set the fg and bg colors on the label.
-  RGBColorf rgb = _monitor->get_collector_color(_collector_index);
+  LRGBColor rgb = _monitor->get_collector_color(_collector_index);
   _bg_color.red = (int)(rgb[0] * 65535.0f);
   _bg_color.green = (int)(rgb[1] * 65535.0f);
   _bg_color.blue = (int)(rgb[2] * 65535.0f);
 
   // Should our foreground be black or white?
-  float bright =
+  PN_stdfloat bright =
     rgb[0] * 0.299 +
     rgb[1] * 0.587 +
     rgb[2] * 0.114;

@@ -37,7 +37,7 @@
 class EXPCL_PANDA_DISPLAY StereoDisplayRegion : public DisplayRegion {
 protected:
   StereoDisplayRegion(GraphicsOutput *window,
-                      const LVecBase4f &dimensions,
+                      const LVecBase4 &dimensions,
                       DisplayRegion *left, DisplayRegion *right);
 
 public:
@@ -46,12 +46,12 @@ public:
 PUBLISHED:
   // Inherited from DrawableRegion
   virtual void set_clear_active(int n, bool clear_aux_active);
-  virtual void set_clear_value(int n, const Colorf &clear_value);
+  virtual void set_clear_value(int n, const LColor &clear_value);
   virtual void disable_clears();
-  virtual void set_pixel_zoom(float pixel_zoom);
+  virtual void set_pixel_zoom(PN_stdfloat pixel_zoom);
 
   // Inherited from DisplayRegion
-  virtual void set_dimensions(const LVecBase4f &dimensions);
+  virtual void set_dimensions(const LVecBase4 &dimensions);
   virtual bool is_stereo() const;
   virtual void set_camera(const NodePath &camera);
   virtual void set_active(bool active);

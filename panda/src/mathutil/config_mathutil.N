@@ -16,34 +16,69 @@ forcetype PointerToBase<ReferenceCountedVector<LMatrix4f> >
 forcetype PointerToArrayBase<LMatrix4f>
 forcetype PointerToArray<LMatrix4f>
 forcetype ConstPointerToArray<LMatrix4f>
-renametype PointerToArray<LMatrix4f> PTAMat4
-renametype ConstPointerToArray<LMatrix4f> CPTAMat4
+renametype PointerToArray<LMatrix4f> PTAMat4f
+renametype ConstPointerToArray<LMatrix4f> CPTAMat4f
 
 forcetype PointerToBase<ReferenceCountedVector<LMatrix3f> >
 forcetype PointerToArrayBase<LMatrix3f>
 forcetype PointerToArray<LMatrix3f>
 forcetype ConstPointerToArray<LMatrix3f>
-renametype PointerToArray<LMatrix3f> PTAMat3
-renametype ConstPointerToArray<LMatrix3f> CPTAMat3
+renametype PointerToArray<LMatrix3f> PTAMat3f
+renametype ConstPointerToArray<LMatrix3f> CPTAMat3f
 
 forcetype PointerToBase<ReferenceCountedVector<LVecBase4f> >
 forcetype PointerToArrayBase<LVecBase4f>
 forcetype PointerToArray<LVecBase4f>
 forcetype ConstPointerToArray<LVecBase4f>
-renametype PointerToArray<LVecBase4f> PTAVecBase4
-renametype ConstPointerToArray<LVecBase4f> PTAVecBase4
+renametype PointerToArray<LVecBase4f> PTAVecBase4f
+renametype ConstPointerToArray<LVecBase4f> PTAVecBase4f
 
 forcetype PointerToBase<ReferenceCountedVector<LVecBase3f> >
 forcetype PointerToArrayBase<LVecBase3f>
 forcetype PointerToArray<LVecBase3f>
 forcetype ConstPointerToArray<LVecBase3f>
-renametype PointerToArray<LVecBase3f> PTAVecBase3
-renametype ConstPointerToArray<LVecBase3f> PTAVecBase3
+renametype PointerToArray<LVecBase3f> PTAVecBase3f
+renametype ConstPointerToArray<LVecBase3f> PTAVecBase3f
 
 forcetype PointerToBase<ReferenceCountedVector<LVecBase2f> >
 forcetype PointerToArrayBase<LVecBase2f>
 forcetype PointerToArray<LVecBase2f>
 forcetype ConstPointerToArray<LVecBase2f>
-renametype PointerToArray<LVecBase2f> PTAVecBase2
-renametype ConstPointerToArray<LVecBase2f> PTAVecBase2
+renametype PointerToArray<LVecBase2f> PTAVecBase2f
+renametype ConstPointerToArray<LVecBase2f> PTAVecBase2f
+
+forcetype PointerToBase<ReferenceCountedVector<LMatrix4d> >
+forcetype PointerToArrayBase<LMatrix4d>
+forcetype PointerToArray<LMatrix4d>
+forcetype ConstPointerToArray<LMatrix4d>
+renametype PointerToArray<LMatrix4d> PTAMat4d
+renametype ConstPointerToArray<LMatrix4d> CPTAMat4d
+
+forcetype PointerToBase<ReferenceCountedVector<LMatrix3d> >
+forcetype PointerToArrayBase<LMatrix3d>
+forcetype PointerToArray<LMatrix3d>
+forcetype ConstPointerToArray<LMatrix3d>
+renametype PointerToArray<LMatrix3d> PTAMat3d
+renametype ConstPointerToArray<LMatrix3d> CPTAMat3d
+
+forcetype PointerToBase<ReferenceCountedVector<LVecBase4d> >
+forcetype PointerToArrayBase<LVecBase4d>
+forcetype PointerToArray<LVecBase4d>
+forcetype ConstPointerToArray<LVecBase4d>
+renametype PointerToArray<LVecBase4d> PTAVecBase4d
+renametype ConstPointerToArray<LVecBase4d> PTAVecBase4d
+
+forcetype PointerToBase<ReferenceCountedVector<LVecBase3d> >
+forcetype PointerToArrayBase<LVecBase3d>
+forcetype PointerToArray<LVecBase3d>
+forcetype ConstPointerToArray<LVecBase3d>
+renametype PointerToArray<LVecBase3d> PTAVecBase3d
+renametype ConstPointerToArray<LVecBase3d> PTAVecBase3d
+
+forcetype PointerToBase<ReferenceCountedVector<LVecBase2d> >
+forcetype PointerToArrayBase<LVecBase2d>
+forcetype PointerToArray<LVecBase2d>
+forcetype ConstPointerToArray<LVecBase2d>
+renametype PointerToArray<LVecBase2d> PTAVecBase2d
+renametype ConstPointerToArray<LVecBase2d> PTAVecBase2d
 

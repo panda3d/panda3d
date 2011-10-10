@@ -54,7 +54,7 @@ private:
   HRESULT fill_d3d_volume_texture_pixels(DXScreenData &scrn);
   static int down_to_power_2(int value);
   unsigned int get_bits_per_pixel(Texture::Format format, int *alphbits);
-  float d3d_format_to_bytes_per_pixel (D3DFORMAT format);
+  PN_stdfloat d3d_format_to_bytes_per_pixel (D3DFORMAT format);
 
 private:
   D3DFORMAT _d3d_format;    // the 'D3DFORMAT' the Panda TextureBuffer fmt corresponds to

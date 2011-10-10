@@ -64,8 +64,9 @@ PUBLISHED:
   INLINE void add_uint16(PN_uint16 value);
   INLINE void add_uint32(PN_uint32 value);
   INLINE void add_uint64(PN_uint64 value);
-  INLINE void add_float32(float value);
+  INLINE void add_float32(PN_float32 value);
   INLINE void add_float64(PN_float64 value);
+  INLINE void add_stdfloat(PN_stdfloat value);
 
   // These functions pack numbers big-endian, in case that's desired.
   INLINE void add_be_int16(PN_int16 value);
@@ -74,7 +75,7 @@ PUBLISHED:
   INLINE void add_be_uint16(PN_uint16 value);
   INLINE void add_be_uint32(PN_uint32 value);
   INLINE void add_be_uint64(PN_uint64 value);
-  INLINE void add_be_float32(float value);
+  INLINE void add_be_float32(PN_float32 value);
   INLINE void add_be_float64(PN_float64 value);
 
   INLINE void add_string(const string &str);

@@ -56,7 +56,7 @@ PUBLISHED:
   bool apply(Filename &patch_file, Filename &orig_file, 
              const Filename &target_file);
 
-  INLINE float get_progress() const;
+  INLINE PN_stdfloat get_progress() const;
 
   INLINE void set_allow_multifile(bool allow_multifile);
   INLINE bool get_allow_multifile();

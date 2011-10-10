@@ -30,20 +30,20 @@ PUBLISHED:
 
   virtual BaseParticleEmitter *make_copy();
 
-  INLINE void set_location(const LPoint3f& p);
-  INLINE LPoint3f get_location() const;
+  INLINE void set_location(const LPoint3& p);
+  INLINE LPoint3 get_location() const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent=0) const;
 
 private:
-  LPoint3f _location;
+  LPoint3 _location;
 
   // CUSTOM EMISSION PARAMETERS
   // none
 
-  virtual void assign_initial_position(LPoint3f& pos);
-  virtual void assign_initial_velocity(LVector3f& vel);
+  virtual void assign_initial_position(LPoint3& pos);
+  virtual void assign_initial_velocity(LVector3& vel);
 };
 
 #include "pointEmitter.I"

@@ -70,7 +70,7 @@ PortalClipper::
 //               move_to() or create(), this creates a single point.
 ////////////////////////////////////////////////////////////////////
 void PortalClipper::
-move_to(const LVecBase3f &v) {
+move_to(const LVecBase3 &v) {
   // We create a new SegmentList with the initial point in it.
   SegmentList segs;
   segs.push_back(Point(v, _color));
@@ -89,7 +89,7 @@ move_to(const LVecBase3f &v) {
 //               is called.
 ////////////////////////////////////////////////////////////////////
 void PortalClipper::
-draw_to(const LVecBase3f &v) {
+draw_to(const LVecBase3 &v) {
   if (_list.empty()) {
     // Let our first call to draw_to() be an implicit move_to().
     move_to(v);
@@ -181,8 +181,8 @@ draw_lines() {
         // A segment of length 1 is just a point.
         for (sl = segs.begin(); sl != segs.end(); sl++) {
           points->add_vertex(v);
-          vertex.add_data3f((*sl)._point);
-          color.add_data4f((*sl)._color);
+          vertex.add_data3((*sl)._point);
+          color.add_data4((*sl)._color);
           v++;
         }
         points->close_primitive();
@@ -192,8 +192,8 @@ draw_lines() {
         // segments.
         for (sl = segs.begin(); sl != segs.end(); sl++) {
           lines->add_vertex(v);
-          vertex.add_data3f((*sl)._point);
-          color.add_data4f((*sl)._color);
+          vertex.add_data3((*sl)._point);
+          color.add_data4((*sl)._color);
           v++;
         }
         lines->close_primitive();
@@ -234,10 +234,10 @@ prepare_portal(const NodePath &node_path)
   // Get the camera transformation matrix
   CPT(TransformState) ctransform = node_path.get_transform(_scene_setup->get_cull_center());
   //CPT(TransformState) ctransform = node_path.get_transform(_scene_setup->get_camera_path());
-  LMatrix4f cmat = ctransform->get_mat();
+  LMatrix4 cmat = ctransform->get_mat();
   portal_cat.spam() << cmat << endl;
  
-  Vertexf temp[4];
+  LVertex temp[4];
   temp[0] = _portal_node->get_vertex(0);
   temp[1] = _portal_node->get_vertex(1);
   temp[2] = _portal_node->get_vertex(2);
@@ -254,7 +254,7 @@ prepare_portal(const NodePath &node_path)
   temp[2] = temp[2]*cmat;
   temp[3] = temp[3]*cmat;
 
-  Planef portal_plane(temp[0], temp[1], temp[2]);
+  LPlane portal_plane(temp[0], temp[1], temp[2]);
   if (!is_facing_view(portal_plane)) {
     portal_cat.debug() << "portal failed 1st level test (isn't facing the camera)\n";
     return false;
@@ -270,7 +270,7 @@ prepare_portal(const NodePath &node_path)
   // portals intersecting the near plane or the 0 point are a weird case anyhow, therefore we don't reduce the frustum any further
   // and just return true. In effect the portal doesn't reduce visibility but will draw everything in its out cell
   const Lens *lens = _scene_setup->get_lens();
-  LVector3f forward = LVector3f::forward(lens->get_coordinate_system());
+  LVector3 forward = LVector3::forward(lens->get_coordinate_system());
   int forward_axis;
   if (forward[1]) {
     forward_axis = 1;
@@ -290,7 +290,7 @@ prepare_portal(const NodePath &node_path)
   }
   
   // project portal points, so they are in the -1..1 range
-  LPoint3f projected_coords[4];
+  LPoint3 projected_coords[4];
   lens->project(temp[0], projected_coords[0]);
   lens->project(temp[1], projected_coords[1]);
   lens->project(temp[2], projected_coords[2]);
@@ -303,7 +303,7 @@ prepare_portal(const NodePath &node_path)
   portal_cat.spam() << projected_coords[3] << endl;
 
   // calculate axis aligned bounding box of the portal
-  float min_x, max_x, min_y, max_y;
+  PN_stdfloat min_x, max_x, min_y, max_y;
   min_x = min(min(min(projected_coords[0][0], projected_coords[1][0]), projected_coords[2][0]), projected_coords[3][0]);
   max_x = max(max(max(projected_coords[0][0], projected_coords[1][0]), projected_coords[2][0]), projected_coords[3][0]);
   min_y = min(min(min(projected_coords[0][1], projected_coords[1][1]), projected_coords[2][1]), projected_coords[3][1]);
@@ -329,12 +329,12 @@ prepare_portal(const NodePath &node_path)
   _reduced_viewport_max.set(max_x, max_y);
 
   // calculate the near and far points so we can construct a frustum
-  LPoint3f near_point[4];
-  LPoint3f far_point[4];
-  lens->extrude(LPoint2f(min_x, min_y), near_point[0], far_point[0]);
-  lens->extrude(LPoint2f(max_x, min_y), near_point[1], far_point[1]);
-  lens->extrude(LPoint2f(max_x, max_y), near_point[2], far_point[2]);
-  lens->extrude(LPoint2f(min_x, max_y), near_point[3], far_point[3]);
+  LPoint3 near_point[4];
+  LPoint3 far_point[4];
+  lens->extrude(LPoint2(min_x, min_y), near_point[0], far_point[0]);
+  lens->extrude(LPoint2(max_x, min_y), near_point[1], far_point[1]);
+  lens->extrude(LPoint2(max_x, max_y), near_point[2], far_point[2]);
+  lens->extrude(LPoint2(min_x, max_y), near_point[3], far_point[3]);
 
   // With these points, construct the new reduced frustum
   _reduced_frustum = new BoundingHexahedron(far_point[0], far_point[1], far_point[2], far_point[3],  
@@ -345,11 +345,11 @@ prepare_portal(const NodePath &node_path)
   // do debug rendering, if requested
   if (debug_portal_cull) {
     // draw the reduced frustum
-    _color = Colorf(0,0,1,1);
+    _color = LColor(0,0,1,1);
     draw_hexahedron(DCAST(BoundingHexahedron, _reduced_frustum));
 
     // lets first add the clipped portal (in yellow)
-    _color = Colorf(1,1,0,1);
+    _color = LColor(1,1,0,1);
     move_to((near_point[0]*0.99+far_point[0]*0.01)); // I choose a point in the middle between near and far.. could also be some other z value.. 
     draw_to((near_point[1]*0.99+far_point[1]*0.01));
     draw_to((near_point[2]*0.99+far_point[2]*0.01));
@@ -357,7 +357,7 @@ prepare_portal(const NodePath &node_path)
     draw_to((near_point[0]*0.99+far_point[0]*0.01));
 
     // ok, now lets add the original portal (in cyan) 
-    _color = Colorf(0,1,1,1);
+    _color = LColor(0,1,1,1);
     move_to(temp[0]);
     draw_to(temp[1]);
     draw_to(temp[2]);

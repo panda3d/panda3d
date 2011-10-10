@@ -222,7 +222,7 @@ get_angular_force(int index) const {
 // Description : Set the local viscosity.
 ////////////////////////////////////////////////////////////////////
 INLINE void Physical::
-set_viscosity(float viscosity) {
+set_viscosity(PN_stdfloat viscosity) {
   _viscosity=viscosity;
 }
 
@@ -231,7 +231,7 @@ set_viscosity(float viscosity) {
 //      Access : Public
 // Description : Get the local viscosity.
 ////////////////////////////////////////////////////////////////////
-INLINE float Physical::
+INLINE PN_stdfloat Physical::
 get_viscosity() const {
   //zzzzzzzzzzzzzzzz return max(_viscosity, get_physics_manager()->get_viscosity());
   return _viscosity;

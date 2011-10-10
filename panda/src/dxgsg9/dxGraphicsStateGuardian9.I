@@ -14,13 +14,13 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::Colorf_to_D3DCOLOR
+//     Function: DXGraphicsStateGuardian9::LColor_to_D3DCOLOR
 //       Access: Public, Static
-//  Description: Converts Panda's floating-point Colorf structure to
+//  Description: Converts Panda's floating-point LColor structure to
 //               DirectX's D3DCOLOR packed structure.
 ////////////////////////////////////////////////////////////////////
 INLINE DWORD DXGraphicsStateGuardian9::
-Colorf_to_D3DCOLOR(const Colorf &cColorf) {
+LColor_to_D3DCOLOR(const LColor &cLColor) {
 // MS VC defines _M_IX86 for x86.  gcc should define _X86_
 #if defined(_M_IX86) || defined(_X86_)
   DWORD d3dcolor, tempcolorval=255;
@@ -31,7 +31,7 @@ Colorf_to_D3DCOLOR(const Colorf &cColorf) {
   __asm {
         push ebx   ; want to save this in case this fn is inlined
         push ecx
-        mov ecx, cColorf
+        mov ecx, cLColor
         fild tempcolorval
         fld DWORD PTR [ecx]
         fmul ST(0), ST(1)
@@ -68,7 +68,7 @@ Colorf_to_D3DCOLOR(const Colorf &cColorf) {
   //   dxgsg9_cat.debug() << (void*)d3dcolor << endl;
   return d3dcolor;
 #else //!_X86_
-  return D3DCOLOR_COLORVALUE(cColorf[0], cColorf[1], cColorf[2], cColorf[3]);
+  return D3DCOLOR_COLORVALUE(cLColor[0], cLColor[1], cLColor[2], cLColor[3]);
 #endif //!_X86_
 }
 

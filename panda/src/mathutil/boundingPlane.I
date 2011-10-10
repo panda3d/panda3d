@@ -29,7 +29,7 @@ BoundingPlane() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL BoundingPlane::
-BoundingPlane(const Planef &plane) :
+BoundingPlane(const LPlane &plane) :
   _plane(plane)
 {
   _flags = 0;
@@ -40,7 +40,7 @@ BoundingPlane(const Planef &plane) :
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL const Planef &BoundingPlane::
+INLINE_MATHUTIL const LPlane &BoundingPlane::
 get_plane() const {
   nassertr(!is_empty(), _plane);
   nassertr(!is_infinite(), _plane);

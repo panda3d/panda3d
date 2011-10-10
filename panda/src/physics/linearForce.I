@@ -17,7 +17,7 @@
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE void LinearForce::
-set_amplitude(float a) {
+set_amplitude(PN_stdfloat a) {
   _amplitude = a;
 }
 
@@ -25,7 +25,7 @@ set_amplitude(float a) {
 //    Function : get_amplitude
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
-INLINE float LinearForce::
+INLINE PN_stdfloat LinearForce::
 get_amplitude() const {
   return _amplitude;
 }
@@ -63,7 +63,7 @@ set_vector_masks(bool x, bool y, bool z) {
 //    Function : set_vector_masks
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
-INLINE LVector3f LinearForce::
+INLINE LVector3 LinearForce::
 get_vector_masks() {
-  return LVector3f(_x_mask, _y_mask, _z_mask);
+  return LVector3(_x_mask, _y_mask, _z_mask);
 }

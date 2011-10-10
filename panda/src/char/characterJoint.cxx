@@ -57,7 +57,7 @@ CharacterJoint(const CharacterJoint &copy) :
 CharacterJoint::
 CharacterJoint(Character *character,
                PartBundle *root, PartGroup *parent, const string &name,
-               const LMatrix4f &default_value) :
+               const LMatrix4 &default_value) :
   MovingPartMatrix(parent, name, default_value),
   _character(character)
 {
@@ -191,7 +191,7 @@ update_internals(PartBundle *root, PartGroup *parent, bool self_changed,
 //               joint.
 ////////////////////////////////////////////////////////////////////
 void CharacterJoint::
-do_xform(const LMatrix4f &mat, const LMatrix4f &inv_mat) {
+do_xform(const LMatrix4 &mat, const LMatrix4 &inv_mat) {
   _initial_net_transform_inverse = inv_mat * _initial_net_transform_inverse;
 
   MovingPartMatrix::do_xform(mat, inv_mat);
@@ -421,7 +421,7 @@ get_local_transforms() {
 //               indicated matrix.
 ////////////////////////////////////////////////////////////////////
 void CharacterJoint::
-get_transform(LMatrix4f &transform) const {
+get_transform(LMatrix4 &transform) const {
   transform = _value;
 }
 
@@ -433,7 +433,7 @@ get_transform(LMatrix4f &transform) const {
 //               the indicated matrix.
 ////////////////////////////////////////////////////////////////////
 void CharacterJoint::
-get_net_transform(LMatrix4f &transform) const {
+get_net_transform(LMatrix4 &transform) const {
   transform = _net_transform;
 }
 

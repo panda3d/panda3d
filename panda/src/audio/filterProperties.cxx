@@ -41,7 +41,7 @@ FilterProperties::
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void FilterProperties::
-add_filter(FilterType t, float a, float b, float c, float d, float e, float f, float g, float h) {
+add_filter(FilterType t, PN_stdfloat a, PN_stdfloat b, PN_stdfloat c, PN_stdfloat d, PN_stdfloat e, PN_stdfloat f, PN_stdfloat g, PN_stdfloat h) {
   FilterConfig conf;
   conf._type = t;
   conf._a = a;

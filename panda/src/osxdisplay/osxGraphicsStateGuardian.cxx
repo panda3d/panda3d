@@ -149,8 +149,8 @@ draw_resize_box() {
   // Now determine the inner corner of the quad, choosing a 15x15
   // pixel square in the lower-right corner, computed from the
   // viewport size.
-  float inner_x = 1.0f - (15.0f * 2.0f / _viewport_width);
-  float inner_y = (15.0f * 2.0f / _viewport_height) - 1.0f;
+  PN_stdfloat inner_x = 1.0f - (15.0f * 2.0f / _viewport_width);
+  PN_stdfloat inner_y = (15.0f * 2.0f / _viewport_height) - 1.0f;
   
   // Draw the quad.  We just use the slow, simple immediate mode calls
   // here.  It's just one quad, after all.
@@ -401,7 +401,7 @@ get_gamma_table() {
 //               for atexit.
 ////////////////////////////////////////////////////////////////////
 bool osxGraphicsStateGuardian::
-static_set_gamma(bool restore, float gamma) {
+static_set_gamma(bool restore, PN_stdfloat gamma) {
   bool set;  
         
   set = false;
@@ -458,7 +458,7 @@ static_set_gamma(bool restore, float gamma) {
 //               on success.
 ////////////////////////////////////////////////////////////////////
 bool osxGraphicsStateGuardian::
-set_gamma(float gamma) {
+set_gamma(PN_stdfloat gamma) {
   bool set;
 
   set = static_set_gamma(false, gamma);

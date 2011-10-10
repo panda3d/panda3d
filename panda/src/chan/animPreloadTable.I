@@ -51,7 +51,7 @@ get_basename(int n) const {
 //  Description: Returns the frame rate stored for the nth animation
 //               record.
 ////////////////////////////////////////////////////////////////////
-INLINE float AnimPreloadTable::
+INLINE PN_stdfloat AnimPreloadTable::
 get_base_frame_rate(int n) const {
   nassertr(n >= 0 && n < (int)_anims.size(), 0.0f);
   consider_sort();

@@ -192,7 +192,7 @@ is_fixed_function() const {
 //  Description: Set the color for this stage
 ////////////////////////////////////////////////////////////////////
 INLINE void TextureStage::
-set_color(const Colorf &color) {
+set_color(const LColor &color) {
   _color = color;
 }
 
@@ -201,7 +201,7 @@ set_color(const Colorf &color) {
 //       Access: Published
 //  Description: return the color for this stage
 ////////////////////////////////////////////////////////////////////
-INLINE Colorf TextureStage::
+INLINE LColor TextureStage::
 get_color() const {
   return _color;
 }

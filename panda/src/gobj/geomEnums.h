@@ -183,6 +183,7 @@ PUBLISHED:
     NT_packed_dabc,  // DirectX packed color order (ARGB)
     NT_float32,      // A single-precision float
     NT_float64,      // A double-precision float
+    NT_stdfloat      // Either single- or double-precision, according to vertices-float64.
   };
 
   // The contents determine the semantic meaning of a numeric value

@@ -18,6 +18,26 @@
 #include "configVariableEnum.h"
 #include "geomEnums.h"
 
+// Define some macros to transparently map to the double or float
+// versions of the OpenGL function names.
+#ifndef GLf
+
+#ifndef STDFLOAT_DOUBLE
+#define GLf(name) name ## f
+#define GLfv(name) name ## fv
+#define GLfc(name) name ## fc
+#define GLfr(name) name ## fr
+#define GLf_str "f"
+#else  // STDFLOAT_DOUBLE
+#define GLf(name) name ## d
+#define GLfv(name) name ## dv
+#define GLfc(name) name ## dc
+#define GLfr(name) name ## dr
+#define GLf_str "d"
+#endif  // STDFLOAT_DOUBLE
+
+#endif  // GLf
+
 //#define GSG_VERBOSE 1
 
 extern ConfigVariableBool CLP(cheap_textures);

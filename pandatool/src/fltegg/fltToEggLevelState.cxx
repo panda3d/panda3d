@@ -191,7 +191,7 @@ set_transform(const FltBead *flt_bead, EggGroup *egg_group) {
         } else if (step->is_exact_type(FltTransformScale::get_class_type())) {
           const FltTransformScale *scale;
           DCAST_INTO_V(scale, step);
-          if (!scale->get_scale().almost_equal(LVecBase3f(1.0f, 1.0f, 1.0f))) {
+          if (!scale->get_scale().almost_equal(LVecBase3(1.0f, 1.0f, 1.0f))) {
             if (scale->has_center() && 
                 !scale->get_center().almost_equal(LVector3d::zero())) {
               egg_group->add_translate3d(-scale->get_center());

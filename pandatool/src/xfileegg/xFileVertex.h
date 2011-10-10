@@ -34,7 +34,7 @@ public:
 
   Vertexd _point;
   TexCoordd _uv;
-  Colorf _color;
+  LColor _color;
   bool _has_color;
   bool _has_uv;
 };

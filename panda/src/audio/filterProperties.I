@@ -29,7 +29,7 @@ clear() {
 // Description: Add a lowpass filter to the end of the DSP chain.
 ////////////////////////////////////////////////////////////////////
 INLINE void FilterProperties::
-add_lowpass(float cutoff_freq, float resonance_q) {
+add_lowpass(PN_stdfloat cutoff_freq, PN_stdfloat resonance_q) {
   add_filter(FT_lowpass, cutoff_freq, resonance_q);
 }
 
@@ -39,7 +39,7 @@ add_lowpass(float cutoff_freq, float resonance_q) {
 // Description: Add a highpass filter to the end of the DSP chain.
 ////////////////////////////////////////////////////////////////////
 INLINE void FilterProperties::
-add_highpass(float cutoff_freq, float resonance_q) {
+add_highpass(PN_stdfloat cutoff_freq, PN_stdfloat resonance_q) {
   add_filter(FT_highpass, cutoff_freq, resonance_q);
 }
 
@@ -49,7 +49,7 @@ add_highpass(float cutoff_freq, float resonance_q) {
 // Description: Add a echo filter to the end of the DSP chain.
 ////////////////////////////////////////////////////////////////////
 INLINE void FilterProperties::
-add_echo(float drymix, float wetmix, float delay, float decayratio) {
+add_echo(PN_stdfloat drymix, PN_stdfloat wetmix, PN_stdfloat delay, PN_stdfloat decayratio) {
   add_filter(FT_echo, drymix, wetmix, delay, decayratio);
 }
 
@@ -59,7 +59,7 @@ add_echo(float drymix, float wetmix, float delay, float decayratio) {
 // Description: Add a flange filter to the end of the DSP chain.
 ////////////////////////////////////////////////////////////////////
 INLINE void FilterProperties::
-add_flange(float drymix, float wetmix, float depth, float rate) {
+add_flange(PN_stdfloat drymix, PN_stdfloat wetmix, PN_stdfloat depth, PN_stdfloat rate) {
   add_filter(FT_flange, drymix, wetmix, depth, rate);
 }
 
@@ -69,7 +69,7 @@ add_flange(float drymix, float wetmix, float depth, float rate) {
 // Description: Add a distort filter to the end of the DSP chain.
 ////////////////////////////////////////////////////////////////////
 INLINE void FilterProperties::
-add_distort(float level) {
+add_distort(PN_stdfloat level) {
   add_filter(FT_distort, level);
 }
 
@@ -79,7 +79,7 @@ add_distort(float level) {
 // Description: Add a normalize filter to the end of the DSP chain.
 ////////////////////////////////////////////////////////////////////
 INLINE void FilterProperties::
-add_normalize(float fadetime, float threshold, float maxamp) {
+add_normalize(PN_stdfloat fadetime, PN_stdfloat threshold, PN_stdfloat maxamp) {
   add_filter(FT_normalize, fadetime, threshold, maxamp);
 }
 
@@ -89,7 +89,7 @@ add_normalize(float fadetime, float threshold, float maxamp) {
 // Description: Add a parameq filter to the end of the DSP chain.
 ////////////////////////////////////////////////////////////////////
 INLINE void FilterProperties::
-add_parameq(float center_freq, float bandwidth, float gain) {
+add_parameq(PN_stdfloat center_freq, PN_stdfloat bandwidth, PN_stdfloat gain) {
   add_filter(FT_parameq, center_freq, bandwidth, gain);
 }
 
@@ -99,7 +99,7 @@ add_parameq(float center_freq, float bandwidth, float gain) {
 // Description: Add a pitchshift filter to the end of the DSP chain.
 ////////////////////////////////////////////////////////////////////
 INLINE void FilterProperties::
-add_pitchshift(float pitch, float fftsize, float overlap) {
+add_pitchshift(PN_stdfloat pitch, PN_stdfloat fftsize, PN_stdfloat overlap) {
   add_filter(FT_pitchshift, pitch, fftsize, overlap);
 }
 
@@ -109,7 +109,7 @@ add_pitchshift(float pitch, float fftsize, float overlap) {
 // Description: Add a chorus filter to the end of the DSP chain.
 ////////////////////////////////////////////////////////////////////
 INLINE void FilterProperties::
-add_chorus(float drymix, float wet1, float wet2, float wet3, float delay, float rate, float depth, float feedback) {
+add_chorus(PN_stdfloat drymix, PN_stdfloat wet1, PN_stdfloat wet2, PN_stdfloat wet3, PN_stdfloat delay, PN_stdfloat rate, PN_stdfloat depth, PN_stdfloat feedback) {
   add_filter(FT_chorus, drymix, wet1, wet2, wet3, delay, rate, depth, feedback);
 }
 
@@ -119,7 +119,7 @@ add_chorus(float drymix, float wet1, float wet2, float wet3, float delay, float 
 // Description: Add a reverb filter to the end of the DSP chain.
 ////////////////////////////////////////////////////////////////////
 INLINE void FilterProperties::
-add_reverb(float drymix, float wetmix, float roomsize, float damp, float width) {
+add_reverb(PN_stdfloat drymix, PN_stdfloat wetmix, PN_stdfloat roomsize, PN_stdfloat damp, PN_stdfloat width) {
   add_filter(FT_reverb, drymix, wetmix, roomsize, damp, width);
 }
 
@@ -129,7 +129,7 @@ add_reverb(float drymix, float wetmix, float roomsize, float damp, float width) 
 // Description: Add a compress filter to the end of the DSP chain.
 ////////////////////////////////////////////////////////////////////
 INLINE void FilterProperties::
-add_compress(float threshold, float attack, float release, float gainmakeup) {
+add_compress(PN_stdfloat threshold, PN_stdfloat attack, PN_stdfloat release, PN_stdfloat gainmakeup) {
   add_filter(FT_compress, threshold, attack, release, gainmakeup);
 }
 

@@ -785,7 +785,7 @@ get_blend_operand_b() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggGroup::
-set_blend_color(const Colorf &blend_color) {
+set_blend_color(const LColor &blend_color) {
   _blend_color = blend_color;
   _flags2 |= F2_has_blend_color;
 }
@@ -797,7 +797,7 @@ set_blend_color(const Colorf &blend_color) {
 ////////////////////////////////////////////////////////////////////
 INLINE void EggGroup::
 clear_blend_color() {
-  _blend_color = Colorf::zero();
+  _blend_color = LColor::zero();
   _flags2 &= ~F2_has_blend_color;
 }
  
@@ -818,7 +818,7 @@ has_blend_color() const {
 //  Description: Returns the blend color if one has been specified, or
 //               (0, 0, 0, 0) if one has not.
 ////////////////////////////////////////////////////////////////////
-INLINE const Colorf &EggGroup::
+INLINE const LColor &EggGroup::
 get_blend_color() const {
   return _blend_color;
 }

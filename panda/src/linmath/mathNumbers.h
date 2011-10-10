@@ -15,18 +15,24 @@
 #define MATHNUMBERS_H
 
 #include "pandabase.h"
+#include "numeric_types.h"
 
 class EXPCL_PANDA_LINMATH MathNumbers {
 PUBLISHED:
+  static const double pi_d;
+  static const double ln2_d;
+  static const double rad_2_deg_d;
+  static const double deg_2_rad_d;
+
   static const float pi_f;
+  static const float ln2_f;
   static const float rad_2_deg_f;
   static const float deg_2_rad_f;
-  static const float ln2_f;
 
-  static const double pi;
-  static const double ln2;
-  static const double rad_2_deg;
-  static const double deg_2_rad;
+  static const PN_stdfloat pi;
+  static const PN_stdfloat ln2;
+  static const PN_stdfloat rad_2_deg;
+  static const PN_stdfloat deg_2_rad;
 
 public:
   INLINE static float cpi(float);

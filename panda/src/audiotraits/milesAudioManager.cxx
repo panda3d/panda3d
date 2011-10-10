@@ -304,7 +304,7 @@ get_cache_limit() const {
 //  Description: set the overall volume
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
-set_volume(float volume) {
+set_volume(PN_stdfloat volume) {
   audio_debug("MilesAudioManager::set_volume(volume="<<volume<<")");
   LightReMutexHolder holder(_lock);
   if (_volume != volume) {
@@ -322,7 +322,7 @@ set_volume(float volume) {
 //       Access: Public, Virtual
 //  Description: get the overall volume
 ////////////////////////////////////////////////////////////////////
-float MilesAudioManager::
+PN_stdfloat MilesAudioManager::
 get_volume() const {
   return _volume;
 }
@@ -333,7 +333,7 @@ get_volume() const {
 //  Description: set the overall play rate
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
-set_play_rate(float play_rate) {
+set_play_rate(PN_stdfloat play_rate) {
   audio_debug("MilesAudioManager::set_play_rate(play_rate="<<play_rate<<")");
   LightReMutexHolder holder(_lock);
   if (_play_rate != play_rate) {
@@ -351,7 +351,7 @@ set_play_rate(float play_rate) {
 //       Access: Public
 //  Description: get the overall speed/pitch/play rate
 ////////////////////////////////////////////////////////////////////
-float MilesAudioManager::
+PN_stdfloat MilesAudioManager::
 get_play_rate() const {
   return _play_rate;
 }
@@ -440,7 +440,7 @@ stop_all_sounds() {
 //               sounds.  Note that Y and Z are switched to
 //               translate into Miles's coordinate system.
 ////////////////////////////////////////////////////////////////////
-void MilesAudioManager::audio_3d_set_listener_attributes(float px, float py, float pz, float vx, float vy, float vz, float fx, float fy, float fz, float ux, float uy, float uz) {
+void MilesAudioManager::audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz, PN_stdfloat fx, PN_stdfloat fy, PN_stdfloat fz, PN_stdfloat ux, PN_stdfloat uy, PN_stdfloat uz) {
   audio_debug("MilesAudioManager::audio_3d_set_listener_attributes()");
 
   GlobalMilesManager *mgr = GlobalMilesManager::get_global_ptr();
@@ -456,13 +456,27 @@ void MilesAudioManager::audio_3d_set_listener_attributes(float px, float py, flo
 //               sounds.  Note that Y and Z are switched to
 //               translate from Miles's coordinate system.
 ////////////////////////////////////////////////////////////////////
-void MilesAudioManager::audio_3d_get_listener_attributes(float *px, float *py, float *pz, float *vx, float *vy, float *vz, float *fx, float *fy, float *fz, float *ux, float *uy, float *uz) {
+void MilesAudioManager::audio_3d_get_listener_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz, PN_stdfloat *fx, PN_stdfloat *fy, PN_stdfloat *fz, PN_stdfloat *ux, PN_stdfloat *uy, PN_stdfloat *uz) {
   audio_debug("MilesAudioManager::audio_3d_get_listener_attributes()");
 
   GlobalMilesManager *mgr = GlobalMilesManager::get_global_ptr();
-  AIL_listener_3D_position(mgr->_digital_driver, px, pz, py);
-  AIL_listener_3D_velocity(mgr->_digital_driver, vx, vz, vy);
-  AIL_listener_3D_orientation(mgr->_digital_driver, fx, fz, fy, ux, uz, uy);
+  float lpx, lpy, lpz, lvx, lvy, lvz, lfx, lfy, lfz, lux, luy, luz;
+  AIL_listener_3D_position(mgr->_digital_driver, &lpx, &lpz, &lpy);
+  AIL_listener_3D_velocity(mgr->_digital_driver, &lvx, &lvz, &lvy);
+  AIL_listener_3D_orientation(mgr->_digital_driver, &lfx, &lfz, &lfy, &lux, &luz, &luy);
+
+  *px = lpx;
+  *py = lpy;
+  *pz = lpz;
+  *vx = lvx;
+  *vy = lvy;
+  *vz = lvz;
+  *fx = lfx;
+  *fy = lfy;
+  *fz = lfz;
+  *ux = lux;
+  *uy = luy;
+  *uz = luz;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -471,7 +485,7 @@ void MilesAudioManager::audio_3d_get_listener_attributes(float *px, float *py, f
 //  Description: Set factor to allow user to easily work in a
 //               different scale.  1.0 represents meters.
 ////////////////////////////////////////////////////////////////////
-void MilesAudioManager::audio_3d_set_distance_factor(float factor) {
+void MilesAudioManager::audio_3d_set_distance_factor(PN_stdfloat factor) {
   audio_debug("MilesAudioManager::audio_3d_set_distance_factor( factor= " << factor << ")");
 
   GlobalMilesManager *mgr = GlobalMilesManager::get_global_ptr();
@@ -483,7 +497,7 @@ void MilesAudioManager::audio_3d_set_distance_factor(float factor) {
 //       Access: Public
 //  Description: Get factor controlling working units.
 ////////////////////////////////////////////////////////////////////
-float MilesAudioManager::audio_3d_get_distance_factor() const {
+PN_stdfloat MilesAudioManager::audio_3d_get_distance_factor() const {
   audio_debug("MilesAudioManager::audio_3d_get_distance_factor()");
 
   GlobalMilesManager *mgr = GlobalMilesManager::get_global_ptr();
@@ -496,7 +510,7 @@ float MilesAudioManager::audio_3d_get_distance_factor() const {
 //  Description: Exaggerates or diminishes the Doppler effect. 
 //               Defaults to 1.0
 ////////////////////////////////////////////////////////////////////
-void MilesAudioManager::audio_3d_set_doppler_factor(float factor) {
+void MilesAudioManager::audio_3d_set_doppler_factor(PN_stdfloat factor) {
   audio_debug("MilesAudioManager::audio_3d_set_doppler_factor(factor="<<factor<<")");
 
   GlobalMilesManager *mgr = GlobalMilesManager::get_global_ptr();
@@ -508,7 +522,7 @@ void MilesAudioManager::audio_3d_set_doppler_factor(float factor) {
 //       Access: Public
 //  Description: Get the factor controlling the Doppler effect.
 ////////////////////////////////////////////////////////////////////
-float MilesAudioManager::audio_3d_get_doppler_factor() const {
+PN_stdfloat MilesAudioManager::audio_3d_get_doppler_factor() const {
   audio_debug("MilesAudioManager::audio_3d_get_doppler_factor()");
 
   GlobalMilesManager *mgr = GlobalMilesManager::get_global_ptr();
@@ -521,7 +535,7 @@ float MilesAudioManager::audio_3d_get_doppler_factor() const {
 //  Description: Control the effect distance has on audability.
 //               Defaults to 1.0
 ////////////////////////////////////////////////////////////////////
-void MilesAudioManager::audio_3d_set_drop_off_factor(float factor) {
+void MilesAudioManager::audio_3d_set_drop_off_factor(PN_stdfloat factor) {
   audio_debug("MilesAudioManager::audio_3d_set_drop_off_factor("<<factor<<")");
 
   GlobalMilesManager *mgr = GlobalMilesManager::get_global_ptr();
@@ -534,7 +548,7 @@ void MilesAudioManager::audio_3d_set_drop_off_factor(float factor) {
 //  Description: Get the factor controlling how quickly sound falls
 //               off with distance.
 ////////////////////////////////////////////////////////////////////
-float MilesAudioManager::audio_3d_get_drop_off_factor() const {
+PN_stdfloat MilesAudioManager::audio_3d_get_drop_off_factor() const {
   audio_debug("MilesAudioManager::audio_3d_get_drop_off_factor()");
 
   GlobalMilesManager *mgr = GlobalMilesManager::get_global_ptr();
@@ -554,7 +568,7 @@ float MilesAudioManager::audio_3d_get_drop_off_factor() const {
 //               coordinate system.
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
-set_speaker_configuration(LVecBase3f *speaker1, LVecBase3f *speaker2, LVecBase3f *speaker3, LVecBase3f *speaker4, LVecBase3f *speaker5, LVecBase3f *speaker6, LVecBase3f *speaker7, LVecBase3f *speaker8, LVecBase3f *speaker9) {
+set_speaker_configuration(LVecBase3 *speaker1, LVecBase3 *speaker2, LVecBase3 *speaker3, LVecBase3 *speaker4, LVecBase3 *speaker5, LVecBase3 *speaker6, LVecBase3 *speaker7, LVecBase3 *speaker8, LVecBase3 *speaker9) {
   audio_debug("MilesAudioManager::set_speaker_configuration()");
 
   GlobalMilesManager *mgr = GlobalMilesManager::get_global_ptr();
@@ -1176,7 +1190,7 @@ MilesAudioManager::SoundData::
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-float MilesAudioManager::SoundData::
+PN_stdfloat MilesAudioManager::SoundData::
 get_length() {
   if (!_has_length) {
     // Time to determine the length of the file.
@@ -1205,7 +1219,7 @@ get_length() {
 
       AILSOUNDINFO info;
       if (AIL_WAV_info(&_raw_data[0], &info)) {
-        _length = (float)info.samples / (float)info.rate;
+        _length = (PN_stdfloat)info.samples / (PN_stdfloat)info.rate;
         audio_debug(info.samples << " samples at " << info.rate
                     << "; length is " << _length << " seconds.");
         _has_length = true;
@@ -1223,7 +1237,7 @@ get_length() {
 //  Description: Records the sample length, as determined externally.
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::SoundData::
-set_length(float length) {
+set_length(PN_stdfloat length) {
   _length = length;
   _has_length = true;
 }

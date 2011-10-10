@@ -31,19 +31,19 @@
 class EXPCL_PANDA_MATHUTIL BoundingPlane : public GeometricBoundingVolume {
 PUBLISHED:
   INLINE_MATHUTIL BoundingPlane();
-  INLINE_MATHUTIL BoundingPlane(const Planef &plane);
+  INLINE_MATHUTIL BoundingPlane(const LPlane &plane);
   ALLOC_DELETED_CHAIN(BoundingPlane);
 
 public:
   virtual BoundingVolume *make_copy() const;
 
-  virtual LPoint3f get_approx_center() const;
-  virtual void xform(const LMatrix4f &mat);
+  virtual LPoint3 get_approx_center() const;
+  virtual void xform(const LMatrix4 &mat);
 
   virtual void output(ostream &out) const;
 
 PUBLISHED:
-  INLINE_MATHUTIL const Planef &get_plane() const;
+  INLINE_MATHUTIL const LPlane &get_plane() const;
 
 public:
   virtual const BoundingPlane *as_bounding_plane() const;
@@ -64,7 +64,7 @@ protected:
   virtual int contains_hexahedron(const BoundingHexahedron *hexahedron) const;
 
 private:
-  Planef _plane;
+  LPlane _plane;
 
 public:
   static TypeHandle get_class_type() {

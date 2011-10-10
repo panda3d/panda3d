@@ -80,7 +80,7 @@ SpeedTreeNode(const string &name) :
   // we'll change this to match whatever set of trees we're holding,
   // though it probably doesn't really matter too much.
   //set_internal_bounds(new OmniBoundingVolume);
-  //  set_internal_bounds(new BoundingSphere(LPoint3f::zero(), 10.0f));
+  //  set_internal_bounds(new BoundingSphere(LPoint3::zero(), 10.0f));
 
   // Intialize the render params.  First, get the shader directory.
   Filename shaders_dir = speedtree_shaders_dir;
@@ -389,11 +389,11 @@ add_instances_from(const SpeedTreeNode *other, const TransformState *transform) 
 ////////////////////////////////////////////////////////////////////
 void SpeedTreeNode::
 add_random_instances(const STTree *tree, int quantity, 
-                     float x_min, float x_max, 
-                     float y_min, float y_max,
-                     float scale_min, float scale_max,
-                     float height_min, float height_max,
-                     float slope_min, float slope_max,
+                     PN_stdfloat x_min, PN_stdfloat x_max, 
+                     PN_stdfloat y_min, PN_stdfloat y_max,
+                     PN_stdfloat scale_min, PN_stdfloat scale_max,
+                     PN_stdfloat height_min, PN_stdfloat height_max,
+                     PN_stdfloat slope_min, PN_stdfloat slope_max,
                      Randomizer &randomizer) {
   InstanceList &instance_list = add_tree(tree);
   _needs_repopulate = true;
@@ -533,14 +533,14 @@ add_from_stf(istream &in, const Filename &pathname,
     int num_instances;
     in >> num_instances;
     for (int ni = 0; ni < num_instances && in && !in.eof(); ++ni) {
-      LPoint3f pos;
-      float rotate, scale;
+      LPoint3 pos;
+      PN_stdfloat rotate, scale;
       in >> pos[0] >> pos[1] >> pos[2] >> rotate >> scale;
 
       if (!speedtree_5_2_stf) {
         // 5.1 or earlier stf files also included these additional
         // values, which we will ignore:
-        float height_min, height_max, slope_min, slope_max;
+        PN_stdfloat height_min, height_max, slope_min, slope_max;
         in >> height_min >> height_max >> slope_min >> slope_max;
       }
 
@@ -667,7 +667,7 @@ snap_to_terrain() {
     if (_terrain != (STTerrain *)NULL) {
       for (int i = 0; i < num_instances; ++i) {
         STTransform trans = instance_list->get_instance(i);
-        LPoint3f pos = trans.get_pos();
+        LPoint3 pos = trans.get_pos();
         pos[2] = _terrain->get_height(pos[0], pos[1]);
         trans.set_pos(pos);
         instance_list->set_instance(i, trans);
@@ -675,7 +675,7 @@ snap_to_terrain() {
     } else {
       for (int i = 0; i < num_instances; ++i) {
         STTransform trans = instance_list->get_instance(i);
-        LPoint3f pos = trans.get_pos();
+        LPoint3 pos = trans.get_pos();
         pos[2] = 0.0f;
         trans.set_pos(pos);
         instance_list->set_instance(i, trans);
@@ -761,7 +761,7 @@ reload_config() {
 //               Gusts are controlled internally.
 ////////////////////////////////////////////////////////////////////
 void SpeedTreeNode::
-set_wind(double strength, const LVector3f &direction) {
+set_wind(double strength, const LVector3 &direction) {
   _forest_render.SetGlobalWindStrength(strength);
   _forest_render.SetGlobalWindDirection(SpeedTree::Vec3(direction[0], direction[1], direction[2]));
 }
@@ -986,12 +986,12 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   CPT(TransformState) orig_modelview = data.get_modelview_transform(trav);
   CPT(TransformState) modelview = gsg->get_cs_transform()->compose(orig_modelview);
   CPT(TransformState) camera_transform = modelview->invert_compose(TransformState::make_identity());
-  const LMatrix4f &modelview_mat = modelview->get_mat();
-  const LPoint3f &camera_pos = camera_transform->get_pos();
+  const LMatrix4 &modelview_mat = modelview->get_mat();
+  const LPoint3 &camera_pos = camera_transform->get_pos();
   const Lens *lens = trav->get_scene()->get_lens();
   
-  LMatrix4f projection_mat =
-    LMatrix4f::convert_mat(gsg->get_internal_coordinate_system(), lens->get_coordinate_system()) *
+  LMatrix4 projection_mat =
+    LMatrix4::convert_mat(gsg->get_internal_coordinate_system(), lens->get_coordinate_system()) *
     lens->get_projection_mat();
   
   _view.Set(SpeedTree::Vec3(camera_pos[0], camera_pos[1], camera_pos[2]),
@@ -1016,10 +1016,10 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   // directional light; we look for a directional light in the
   // lighting state and pass its direction and color to SpeedTree.  We
   // also accumulate the ambient light colors.
-  Colorf ambient_color(0.0f, 0.0f, 0.0f, 0.0f);
+  LColor ambient_color(0.0f, 0.0f, 0.0f, 0.0f);
   DirectionalLight *dlight = NULL;
   NodePath dlight_np;
-  Colorf diffuse_color;
+  LColor diffuse_color;
 
   int diffuse_priority = 0;
   const LightAttrib *la = DCAST(LightAttrib, state->get_attrib(LightAttrib::get_class_slot()));
@@ -1044,7 +1044,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     
   if (dlight != (DirectionalLight *)NULL) {
     CPT(TransformState) transform = dlight_np.get_transform(trav->get_scene()->get_scene_root().get_parent());
-    LVector3f dir = dlight->get_direction() * transform->get_mat();
+    LVector3 dir = dlight->get_direction() * transform->get_mat();
     dir.normalize();
     _light_dir = SpeedTree::Vec3(dir[0], dir[1], dir[2]);
     diffuse_color = dlight->get_color();
@@ -1068,7 +1068,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 
   _forest_render.SetLightDir(_light_dir);
 
-  SpeedTree::st_float32 updated_splits[SpeedTree::c_nMaxNumShadowMaps];
+  SpeedTree::st_stdfloat updated_splits[SpeedTree::c_nMaxNumShadowMaps];
   memset(updated_splits, 0, sizeof(updated_splits));
   for (int smi = 0; smi < (int)_shadow_infos.size(); ++smi) {
     updated_splits[smi] = _shadow_infos[smi]._shadow_split;
@@ -1185,8 +1185,8 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
 
   const SpeedTree::Vec3 &emin = extents.Min();
   const SpeedTree::Vec3 &emax = extents.Max();
-  internal_bounds = new BoundingBox(LPoint3f(emin[0], emin[1], emin[2]),
-                                    LPoint3f(emax[0], emax[1], emax[2]));
+  internal_bounds = new BoundingBox(LPoint3(emin[0], emin[1], emin[2]),
+                                    LPoint3(emax[0], emax[1], emax[2]));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1398,7 +1398,7 @@ update_terrain_cells() {
   SpeedTree::TTerrainCellArray &cells = _visible_terrain.m_aCellsToUpdate;
 
   int num_tile_res = _terrain_render.GetMaxTileRes();
-  float cell_size = _terrain_render.GetCellSize();
+  PN_stdfloat cell_size = _terrain_render.GetCellSize();
 
   // A temporary vertex data object for populating terrain.
   PT(GeomVertexData) vertex_data = 

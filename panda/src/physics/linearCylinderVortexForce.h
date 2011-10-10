@@ -29,33 +29,33 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS LinearCylinderVortexForce : public LinearForce {
 PUBLISHED:
-  LinearCylinderVortexForce(float radius = 1.0f,
-                      float length = 0.0f,
-                      float coef = 1.0f,
-                      float a = 1.0f,
+  LinearCylinderVortexForce(PN_stdfloat radius = 1.0f,
+                      PN_stdfloat length = 0.0f,
+                      PN_stdfloat coef = 1.0f,
+                      PN_stdfloat a = 1.0f,
                       bool md = false);
   LinearCylinderVortexForce(const LinearCylinderVortexForce &copy);
   virtual ~LinearCylinderVortexForce();
 
-  INLINE void set_coef(float coef);
-  INLINE float get_coef() const;
+  INLINE void set_coef(PN_stdfloat coef);
+  INLINE PN_stdfloat get_coef() const;
 
-  INLINE void set_radius(float radius);
-  INLINE float get_radius() const;
+  INLINE void set_radius(PN_stdfloat radius);
+  INLINE PN_stdfloat get_radius() const;
 
-  INLINE void set_length(float length);
-  INLINE float get_length() const;
+  INLINE void set_length(PN_stdfloat length);
+  INLINE PN_stdfloat get_length() const;
   
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 
 private:
-  float _radius;
-  float _length;
-  float _coef;
+  PN_stdfloat _radius;
+  PN_stdfloat _length;
+  PN_stdfloat _coef;
 
   virtual LinearForce *make_copy();
-  virtual LVector3f get_child_vector(const PhysicsObject *po);
+  virtual LVector3 get_child_vector(const PhysicsObject *po);
 
 public:
   static TypeHandle get_class_type() {

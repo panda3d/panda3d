@@ -16,6 +16,7 @@
 #define PSTATCOLLECTORDEF_H
 
 #include "pandabase.h"
+#include "numeric_types.h"
 
 class Datagram;
 class DatagramIterator;
@@ -37,7 +38,7 @@ public:
   void read_datagram(DatagramIterator &source, PStatClientVersion *version);
 
   struct ColorDef {
-    float r, g, b;
+    PN_stdfloat r, g, b;
   };
 
   int _index;

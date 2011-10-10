@@ -99,7 +99,7 @@ has_changed(int last_frame, double last_frac,
 //  Description: Gets the value of the channel at the indicated frame.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelScalarTable::
-get_value(int frame, float &value) {
+get_value(int frame, PN_stdfloat &value) {
   if (_table.empty()) {
     value = 0.0f;
   } else {
@@ -114,7 +114,7 @@ get_value(int frame, float &value) {
 //  Description: Assigns the data table.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelScalarTable::
-set_table(const CPTA_float &table) {
+set_table(const CPTA_stdfloat &table) {
   int num_frames = _root->get_num_frames();
 
   if (table.size() > 1 && (int)table.size() < num_frames) {
@@ -181,7 +181,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
     // Write out everything the old way, as floats.
     me.add_uint16(_table.size());
     for(int i = 0; i < (int)_table.size(); i++) {
-      me.add_float32(_table[i]);
+      me.add_stdfloat(_table[i]);
     }
 
   } else {
@@ -193,7 +193,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
     // only to the nearest 1000th for this purpose, because floats
     // aren't very good at being precisely equal to each other.
     static const int max_values = 16;
-    static const float scale = 1000.0f;
+    static const PN_stdfloat scale = 1000.0f;
 
     pmap<int, int> index;
     int i;
@@ -213,17 +213,17 @@ write_datagram(BamWriter *manager, Datagram &me) {
       if (index_length > 0) {
         // We need to write the index in order by its index number; for
         // this, we need to invert the index.
-        vector_float reverse_index(index_length);
+        vector_stdfloat reverse_index(index_length);
         pmap<int, int>::iterator mi;
         for (mi = index.begin(); mi != index.end(); ++mi) {
-          float f = (float)(*mi).first / scale;
+          PN_stdfloat f = (PN_stdfloat)(*mi).first / scale;
           int i = (*mi).second;
           nassertv(i >= 0 && i < (int)reverse_index.size());
           reverse_index[i] = f;
         }
 
         for (i = 0; i < index_length; i++) {
-          me.add_float32(reverse_index[i]);
+          me.add_stdfloat(reverse_index[i]);
         }
 
         // Now write out the actual channels.  We write these two at a
@@ -284,13 +284,13 @@ fillin(DatagramIterator& scan, BamReader* manager) {
 
   bool wrote_compressed = scan.get_bool();
 
-  PTA_float temp_table = PTA_float::empty_array(0, get_class_type());
+  PTA_stdfloat temp_table = PTA_stdfloat::empty_array(0, get_class_type());
 
   if (!wrote_compressed) {
     // Regular floats.
     int size = scan.get_uint16();
     for(int i = 0; i < size; i++) {
-      temp_table.push_back(scan.get_float32());
+      temp_table.push_back(scan.get_stdfloat());
     }
 
   } else {
@@ -301,11 +301,11 @@ fillin(DatagramIterator& scan, BamReader* manager) {
     if (index_length < 0xff) {
       // Discrete.  Read in the index.
       if (index_length > 0) {
-        float *index = (float *)alloca(index_length * sizeof(float));
+        PN_stdfloat *index = (PN_stdfloat *)alloca(index_length * sizeof(PN_stdfloat));
 
         int i;
         for (i = 0; i < index_length; i++) {
-          index[i] = scan.get_float32();
+          index[i] = scan.get_stdfloat();
         }
 
         // Now read in the channel values.

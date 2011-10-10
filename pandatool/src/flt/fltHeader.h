@@ -182,23 +182,23 @@ public:
   // Accessors into the color palette.  This is read-only; why would
   // you want to mess with building a new color palette?
   int get_num_colors() const;
-  Colorf get_color(int color_index) const;
-  RGBColorf get_rgb(int color_index) const;
+  LColor get_color(int color_index) const;
+  LRGBColor get_rgb(int color_index) const;
   bool has_color_name(int color_index) const;
   string get_color_name(int color_index) const;
 
-  int get_closest_color(Colorf color) const;
-  int get_closest_rgb(RGBColorf color) const;
+  int get_closest_color(LColor color) const;
+  int get_closest_rgb(LRGBColor color) const;
 
   int get_num_color_entries() const;
   int get_num_color_shades() const;
 
   // These functions are mainly used behind-the-scenes to decode the
   // strange forest of color options defined for faces and vertices.
-  Colorf get_color(int color_index, bool use_packed_color,
+  LColor get_color(int color_index, bool use_packed_color,
                    const FltPackedColor &packed_color,
                    int transparency);
-  RGBColorf get_rgb(int color_index, bool use_packed_color,
+  LRGBColor get_rgb(int color_index, bool use_packed_color,
                     const FltPackedColor &packed_color);
 
   // Accessors into the material palette.

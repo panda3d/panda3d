@@ -111,7 +111,7 @@ deactivate_lens(int index) {
 //               see the point).
 ////////////////////////////////////////////////////////////////////
 INLINE bool LensNode::
-is_in_view(const LPoint3f &pos) {
+is_in_view(const LPoint3 &pos) {
   return is_in_view(0, pos);
 }
 

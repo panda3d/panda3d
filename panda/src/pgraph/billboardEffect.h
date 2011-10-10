@@ -32,23 +32,23 @@ private:
   INLINE BillboardEffect();
 
 PUBLISHED:
-  static CPT(RenderEffect) make(const LVector3f &up_vector,
+  static CPT(RenderEffect) make(const LVector3 &up_vector,
                                 bool eye_relative,
                                 bool axial_rotate,
-                                float offset,
+                                PN_stdfloat offset,
                                 const NodePath &look_at,
-                                const LPoint3f &look_at_point);
+                                const LPoint3 &look_at_point);
   INLINE static CPT(RenderEffect) make_axis();
   INLINE static CPT(RenderEffect) make_point_eye();
   INLINE static CPT(RenderEffect) make_point_world();
 
   INLINE bool is_off() const;
-  INLINE const LVector3f &get_up_vector() const;
+  INLINE const LVector3 &get_up_vector() const;
   INLINE bool get_eye_relative() const;
   INLINE bool get_axial_rotate() const;
-  INLINE float get_offset() const;
+  INLINE PN_stdfloat get_offset() const;
   INLINE const NodePath &get_look_at() const;
-  INLINE const LPoint3f &get_look_at_point() const;
+  INLINE const LPoint3 &get_look_at_point() const;
 
 public:
   virtual bool safe_to_transform() const;
@@ -75,12 +75,12 @@ private:
 
 private:
   bool _off;
-  LVector3f _up_vector;
+  LVector3 _up_vector;
   bool _eye_relative;
   bool _axial_rotate;
-  float _offset;
+  PN_stdfloat _offset;
   NodePath _look_at;
-  LPoint3f _look_at_point;
+  LPoint3 _look_at_point;
 
 public:
   static void register_with_read_factory();

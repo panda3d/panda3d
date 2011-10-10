@@ -119,7 +119,7 @@ register_vertices(GeomNode *node, bool might_have_unused) {
 //               if the Geom was changed, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool GeomTransformer::
-transform_vertices(Geom *geom, const LMatrix4f &mat) {
+transform_vertices(Geom *geom, const LMatrix4 &mat) {
   PStatTimer timer(_apply_vertex_collector);
 
   nassertr(geom != (Geom *)NULL, false);
@@ -138,16 +138,16 @@ transform_vertices(Geom *geom, const LMatrix4f &mat) {
       GeomVertexRewriter data(new_vdata, format->get_point(ci));
       
       while (!data.is_at_end()) {
-        const LPoint3f &point = data.get_data3f();
-        data.set_data3f(point * mat);
+        const LPoint3 &point = data.get_data3();
+        data.set_data3(point * mat);
       }
     }
     for (ci = 0; ci < format->get_num_vectors(); ci++) {
       GeomVertexRewriter data(new_vdata, format->get_vector(ci));
       
       while (!data.is_at_end()) {
-        const LVector3f &vector = data.get_data3f();
-        data.set_data3f(normalize(vector * mat));
+        const LVector3 &vector = data.get_data3();
+        data.set_data3(normalize(vector * mat));
       }
     }
     new_data._vdata = new_vdata;
@@ -175,7 +175,7 @@ transform_vertices(Geom *geom, const LMatrix4f &mat) {
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool GeomTransformer::
-transform_vertices(GeomNode *node, const LMatrix4f &mat) {
+transform_vertices(GeomNode *node, const LMatrix4 &mat) {
   bool any_changed = false;
 
   Thread *current_thread = Thread::get_current_thread();
@@ -211,7 +211,7 @@ transform_vertices(GeomNode *node, const LMatrix4f &mat) {
 ////////////////////////////////////////////////////////////////////
 bool GeomTransformer::
 transform_texcoords(Geom *geom, const InternalName *from_name, 
-                    InternalName *to_name, const LMatrix4f &mat) {
+                    InternalName *to_name, const LMatrix4 &mat) {
   PStatTimer timer(_apply_texcoord_collector);
 
   nassertr(geom != (Geom *)NULL, false);
@@ -249,8 +249,8 @@ transform_texcoords(Geom *geom, const InternalName *from_name,
     GeomVertexReader fdata(new_vdata, from_name);
     
     while (!fdata.is_at_end()) {
-      const LPoint4f &coord = fdata.get_data4f();
-      tdata.set_data4f(coord * mat);
+      const LPoint4 &coord = fdata.get_data4();
+      tdata.set_data4(coord * mat);
     }
     new_data._vdata = new_vdata;
   }
@@ -278,7 +278,7 @@ transform_texcoords(Geom *geom, const InternalName *from_name,
 ////////////////////////////////////////////////////////////////////
 bool GeomTransformer::
 transform_texcoords(GeomNode *node, const InternalName *from_name,
-                    InternalName *to_name, const LMatrix4f &mat) {
+                    InternalName *to_name, const LMatrix4 &mat) {
   bool any_changed = false;
 
   GeomNode::CDWriter cdata(node->_cycler);
@@ -305,7 +305,7 @@ transform_texcoords(GeomNode *node, const InternalName *from_name,
 //               Geom was changed, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool GeomTransformer::
-set_color(Geom *geom, const Colorf &color) {
+set_color(Geom *geom, const LColor &color) {
   PStatTimer timer(_apply_set_color_collector);
 
   SourceColors sc;
@@ -342,7 +342,7 @@ set_color(Geom *geom, const Colorf &color) {
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
 bool GeomTransformer::
-set_color(GeomNode *node, const Colorf &color) {
+set_color(GeomNode *node, const LColor &color) {
   bool any_changed = false;
 
   GeomNode::CDWriter cdata(node->_cycler);
@@ -368,7 +368,7 @@ set_color(GeomNode *node, const Colorf &color) {
 //               changed, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool GeomTransformer::
-transform_colors(Geom *geom, const LVecBase4f &scale) {
+transform_colors(Geom *geom, const LVecBase4 &scale) {
   PStatTimer timer(_apply_scale_color_collector);
 
   nassertr(geom != (Geom *)NULL, false);
@@ -409,7 +409,7 @@ transform_colors(Geom *geom, const LVecBase4f &scale) {
 //               the GeomNode was changed, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool GeomTransformer::
-transform_colors(GeomNode *node, const LVecBase4f &scale) {
+transform_colors(GeomNode *node, const LVecBase4 &scale) {
   bool any_changed = false;
 
   GeomNode::CDWriter cdata(node->_cycler);
@@ -438,7 +438,7 @@ transform_colors(GeomNode *node, const LVecBase4f &scale) {
 ////////////////////////////////////////////////////////////////////
 bool GeomTransformer::
 apply_texture_colors(Geom *geom, TextureStage *ts, Texture *tex, 
-                     const TexMatrixAttrib *tma, const Colorf &base_color,
+                     const TexMatrixAttrib *tma, const LColor &base_color,
                      bool keep_vertex_color) {
   PStatTimer timer(_apply_texture_color_collector);
 
@@ -455,7 +455,7 @@ apply_texture_colors(Geom *geom, TextureStage *ts, Texture *tex,
     // If it's just a one-pixel texture (e.g. a simple ram image),
     // don't bother scanning the UV's.  Just extract the color and
     // apply it.
-    Colorf color;
+    LColor color;
     peeker->lookup(color, 0.0f, 0.0f);
     color.set(color[0] * base_color[0],
               color[1] * base_color[1],
@@ -469,10 +469,10 @@ apply_texture_colors(Geom *geom, TextureStage *ts, Texture *tex,
   }
 
   bool got_mat = false;
-  LMatrix4f mat = LMatrix4f::ident_mat();
+  LMatrix4 mat = LMatrix4::ident_mat();
   if (tma != (TexMatrixAttrib *)NULL && tma->has_stage(ts)) {
     mat = tma->get_mat(ts);
-    got_mat = !mat.almost_equal(LMatrix4f::ident_mat());
+    got_mat = !mat.almost_equal(LMatrix4::ident_mat());
   }
 
   // This version of the code just applied one overall flat color to
@@ -483,7 +483,7 @@ apply_texture_colors(Geom *geom, TextureStage *ts, Texture *tex,
   // Scan the UV's to get the used range.  This is particularly
   // necessary for palettized textures.
 
-  LPoint3f min_point, max_point;
+  LPoint3 min_point, max_point;
   bool found_any = false;
   geom->calc_tight_bounds(min_point, max_point, found_any,
                           geom->get_vertex_data(),
@@ -493,7 +493,7 @@ apply_texture_colors(Geom *geom, TextureStage *ts, Texture *tex,
   if (found_any) {
     // Now use that UV range to determine the overall color of the
     // geom's texture.
-    Colorf color;
+    LColor color;
     peeker->filter_rect(color, 
                         min_point[0], min_point[1], min_point[2],
                         max_point[0], max_point[1], max_point[2]);
@@ -531,7 +531,7 @@ apply_texture_colors(Geom *geom, TextureStage *ts, Texture *tex,
     } else {
       // Create a color column where there wasn't one before.
       vdata = new GeomVertexData(*stc._vertex_data->set_color
-                                 (Colorf(1.0f, 1.0f, 1.0f, 1.0f), 1, Geom::NT_packed_dabc, Geom::C_color));
+                                 (LColor(1.0f, 1.0f, 1.0f, 1.0f), 1, Geom::NT_packed_dabc, Geom::C_color));
       keep_vertex_color = false;
     }
     
@@ -554,28 +554,28 @@ apply_texture_colors(Geom *geom, TextureStage *ts, Texture *tex,
       
       if (got_mat || tex3d) {
         while (!gtexcoord.is_at_end()) {
-          TexCoord3f p = gtexcoord.get_data3f();
-          Colorf c = gcolor.get_data4f();
+          LTexCoord3 p = gtexcoord.get_data3();
+          LColor c = gcolor.get_data4();
           p = p * mat;
-          Colorf color;
+          LColor color;
           peeker->lookup(color, p[0], p[1], p[2]);
           color.set(color[0] * base_color[0] * c[0],
                     color[1] * base_color[1] * c[1],
                     color[2] * base_color[2] * c[2],
                     color[3] * base_color[3] * c[3]);
-          gcolor.set_data4f(color);
+          gcolor.set_data4(color);
         }
       } else {
         while (!gtexcoord.is_at_end()) {
-          TexCoordf p = gtexcoord.get_data2f();
-          Colorf c = gcolor.get_data4f();
-          Colorf color;
+          LTexCoord p = gtexcoord.get_data2();
+          LColor c = gcolor.get_data4();
+          LColor color;
           peeker->lookup(color, p[0], p[1]);
           color.set(color[0] * base_color[0] * c[0],
                     color[1] * base_color[1] * c[1],
                     color[2] * base_color[2] * c[2],
                     color[3] * base_color[3] * c[3]);
-          gcolor.set_data4f(color);
+          gcolor.set_data4(color);
         }
       }
     } else {
@@ -585,26 +585,26 @@ apply_texture_colors(Geom *geom, TextureStage *ts, Texture *tex,
       
       if (got_mat || tex3d) {
         while (!gtexcoord.is_at_end()) {
-          TexCoord3f p = gtexcoord.get_data3f();
+          LTexCoord3 p = gtexcoord.get_data3();
           p = p * mat;
-          Colorf color;
+          LColor color;
           peeker->lookup(color, p[0], p[1], p[2]);
           color.set(color[0] * base_color[0],
                     color[1] * base_color[1],
                     color[2] * base_color[2],
                     color[3] * base_color[3]);
-          gcolor.set_data4f(color);
+          gcolor.set_data4(color);
         }
       } else {
         while (!gtexcoord.is_at_end()) {
-          TexCoordf p = gtexcoord.get_data2f();
-          Colorf color;
+          LTexCoord p = gtexcoord.get_data2();
+          LColor color;
           peeker->lookup(color, p[0], p[1]);
           color.set(color[0] * base_color[0],
                     color[1] * base_color[1],
                     color[2] * base_color[2],
                     color[3] * base_color[3]);
-          gcolor.set_data4f(color);
+          gcolor.set_data4(color);
         }
       }
     }
@@ -658,7 +658,7 @@ apply_texture_colors(GeomNode *node, const RenderState *state) {
         const TexMatrixAttrib *tma = DCAST(TexMatrixAttrib, geom_state->get_attrib(TexMatrixAttrib::get_class_slot()));
 
         const ColorAttrib *ca = DCAST(ColorAttrib, geom_state->get_attrib(ColorAttrib::get_class_slot()));
-        Colorf base_color(1.0f, 1.0f, 1.0f, 1.0f);
+        LColor base_color(1.0f, 1.0f, 1.0f, 1.0f);
         bool keep_vertex_color = true;
         if (ca != (ColorAttrib *)NULL && ca->get_color_type() == ColorAttrib::T_flat) {
           base_color = ca->get_color();
@@ -872,14 +872,14 @@ make_compatible_state(GeomNode *node) {
         // All we need to do is ensure that the geom has a color column.
         if (!entry._geom.get_read_pointer()->get_vertex_data()->has_column(InternalName::get_color())) {
           PT(Geom) new_geom = entry._geom.get_read_pointer()->make_copy();
-          if (set_color(new_geom, Colorf(1,1,1,1))) {
+          if (set_color(new_geom, LColor(1,1,1,1))) {
             entry._geom = new_geom;
           }
         }
       } else {
         // A flat color (or "off", which is white).  Set the vertices
         // to the indicated flat color.
-        Colorf c = ca->get_color();
+        LColor c = ca->get_color();
         PT(Geom) new_geom = entry._geom.get_read_pointer()->make_copy();
         if (set_color(new_geom, c)) {
           entry._geom = new_geom;

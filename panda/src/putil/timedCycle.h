@@ -37,10 +37,10 @@ class EXPCL_PANDA_PUTIL TimedCycle
 {
 public:
   INLINE TimedCycle();
-  INLINE TimedCycle(float cycle_time, int element_count);
+  INLINE TimedCycle(PN_stdfloat cycle_time, int element_count);
 
   INLINE void set_element_count(int element_count);
-  INLINE void set_cycle_time(float cycle_time);
+  INLINE void set_cycle_time(PN_stdfloat cycle_time);
   INLINE int next_element();
 
 public:
@@ -49,8 +49,8 @@ public:
 
 private:
   ClockObject* _global_clock;
-  float _cycle_time;
-  float _inv_cycle_time;
+  PN_stdfloat _cycle_time;
+  PN_stdfloat _inv_cycle_time;
   double _next_switch;
   int _current_child;
   int _element_count;

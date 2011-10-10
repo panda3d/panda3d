@@ -48,10 +48,10 @@ EggToFlt() :
 {
   set_binary_output(true);
   set_program_description
-    ("egg2flt converts files from egg format to MultiGen .flt "
+    ("egg2lt converts files from egg format to MultiGen .flt "
      "format.  It attempts to be as robust as possible, and matches "
      "the capabilities of flt2egg.  Generally, converting a model "
-     "from egg2flt and then back via flt2egg will result in essentially "
+     "from egg2lt and then back via flt2egg will result in essentially "
      "the same egg file, within the limitations of what can be "
      "represented in flt.");
 
@@ -394,7 +394,7 @@ apply_transform(EggTransform *egg_transform, FltBead *flt_node) {
       {
         FltTransformScale *scale = new FltTransformScale(_flt_header);
         LVector2d v2 = egg_transform->get_component_vec2(i);
-        scale->set(LPoint3d::zero(), LVector3f(v2[0], v2[1], 1.0f));
+        scale->set(LPoint3d::zero(), LVector3(v2[0], v2[1], 1.0f));
         flt_node->add_transform_step(scale);
       }
       break;
@@ -402,7 +402,7 @@ apply_transform(EggTransform *egg_transform, FltBead *flt_node) {
     case EggTransform::CT_scale3d:
       {
         FltTransformScale *scale = new FltTransformScale(_flt_header);
-        scale->set(LPoint3d::zero(), LCAST(float, egg_transform->get_component_vec3(i)));
+        scale->set(LPoint3d::zero(), LCAST(PN_stdfloat, egg_transform->get_component_vec3(i)));
         flt_node->add_transform_step(scale);
       }
       break;
@@ -410,8 +410,8 @@ apply_transform(EggTransform *egg_transform, FltBead *flt_node) {
     case EggTransform::CT_uniform_scale:
       {
         FltTransformScale *scale = new FltTransformScale(_flt_header);
-        float factor = (float)egg_transform->get_component_number(i);
-        scale->set(LPoint3d::zero(), LVecBase3f(factor, factor, factor));
+        PN_stdfloat factor = (PN_stdfloat)egg_transform->get_component_number(i);
+        scale->set(LPoint3d::zero(), LVecBase3(factor, factor, factor));
         flt_node->add_transform_step(scale);
       }
       break;
@@ -506,17 +506,17 @@ get_flt_vertex(EggVertex *egg_vertex, EggNode *context) {
     flt_vertex->set_color(egg_vertex->get_color());
   }
   if (egg_vertex->has_normal()) {
-    flt_vertex->_normal = LCAST(float, egg_vertex->get_normal());
+    flt_vertex->_normal = LCAST(PN_stdfloat, egg_vertex->get_normal());
     flt_vertex->_has_normal = true;
   }
   if (egg_vertex->has_uv()) {
-    flt_vertex->_uv = LCAST(float, egg_vertex->get_uv());
+    flt_vertex->_uv = LCAST(PN_stdfloat, egg_vertex->get_uv());
     flt_vertex->_has_uv = true;
   }
 
   if (frame != (const LMatrix4d *)NULL) {
     flt_vertex->_pos = flt_vertex->_pos * (*frame);
-    flt_vertex->_normal = flt_vertex->_normal * LCAST(float, (*frame));
+    flt_vertex->_normal = flt_vertex->_normal * LCAST(PN_stdfloat, (*frame));
   }
 
   _flt_header->add_vertex(flt_vertex);

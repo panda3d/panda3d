@@ -49,8 +49,8 @@ public:
   int _color_name_index;
   unsigned int _flags;
   LPoint3d _pos;
-  LPoint3f _normal;
-  LPoint2f _uv;
+  LPoint3 _normal;
+  LPoint2 _uv;
   FltPackedColor _packed_color;
   int _color_index;
 
@@ -59,10 +59,10 @@ public:
 
 public:
   INLINE bool has_color() const;
-  Colorf get_color() const;
-  INLINE void set_color(const Colorf &color);
-  RGBColorf get_rgb() const;
-  void set_rgb(const RGBColorf &rgb);
+  LColor get_color() const;
+  INLINE void set_color(const LColor &color);
+  LRGBColor get_rgb() const;
+  void set_rgb(const LRGBColor &rgb);
 
 
 protected:

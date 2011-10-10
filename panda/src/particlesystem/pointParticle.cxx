@@ -20,7 +20,7 @@
 // Description : simple constructor
 ////////////////////////////////////////////////////////////////////
 PointParticle::
-PointParticle(float lifespan, bool alive) :
+PointParticle(PN_stdfloat lifespan, bool alive) :
   BaseParticle(lifespan, alive) {
   set_oriented(false);
 }

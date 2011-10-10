@@ -36,10 +36,10 @@ has_value(int index) const {
 //     Function: LwoVertexMap::get_value
 //       Access: Public
 //  Description: Returns the mapping value associated with the given
-//               index, or an empty PTA_float if there is no mapping
+//               index, or an empty PTA_stdfloat if there is no mapping
 //               value associated.
 ////////////////////////////////////////////////////////////////////
-PTA_float LwoVertexMap::
+PTA_stdfloat LwoVertexMap::
 get_value(int index) const {
   VMap::const_iterator vi;
   vi = _vmap.find(index);
@@ -47,7 +47,7 @@ get_value(int index) const {
     return (*vi).second;
   }
 
-  return PTA_float();
+  return PTA_stdfloat();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -71,7 +71,7 @@ read_iff(IffInputFile *in, size_t stop_at) {
   while (lin->get_bytes_read() < stop_at && !lin->is_eof()) {
     int index = lin->get_vx();
 
-    PTA_float value;
+    PTA_stdfloat value;
     for (int i = 0; i < _dimension; i++) {
       value.push_back(lin->get_be_float32());
     }

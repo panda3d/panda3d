@@ -30,24 +30,24 @@ PUBLISHED:
 
   virtual BaseParticleEmitter *make_copy();
 
-  INLINE void set_min_bound(const LPoint3f& vmin);
-  INLINE void set_max_bound(const LPoint3f& vmax);
+  INLINE void set_min_bound(const LPoint3& vmin);
+  INLINE void set_max_bound(const LPoint3& vmax);
 
-  INLINE LPoint3f get_min_bound() const;
-  INLINE LPoint3f get_max_bound() const;
+  INLINE LPoint3 get_min_bound() const;
+  INLINE LPoint3 get_max_bound() const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent=0) const;
 
 private:
-  LPoint3f _vmin;
-  LPoint3f _vmax;
+  LPoint3 _vmin;
+  LPoint3 _vmax;
 
   // CUSTOM EMISSION PARAMETERS
   // none
 
-  virtual void assign_initial_position(LPoint3f& pos);
-  virtual void assign_initial_velocity(LVector3f& vel);
+  virtual void assign_initial_position(LPoint3& pos);
+  virtual void assign_initial_velocity(LVector3& vel);
 };
 
 #include "boxEmitter.I"

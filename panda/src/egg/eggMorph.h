@@ -50,12 +50,12 @@ private:
 };
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, EggMorph<LVector3d>);
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, EggMorph<LVector4f>);
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, EggMorph<LVector4>);
 
 typedef EggMorph<LVector3d> EggMorphVertex;
 typedef EggMorph<LVector3d> EggMorphNormal;
 typedef EggMorph<LVector3d> EggMorphTexCoord;
-typedef EggMorph<LVector4f> EggMorphColor;
+typedef EggMorph<LVector4> EggMorphColor;
 
 #include "eggMorph.I"
 

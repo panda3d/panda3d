@@ -139,7 +139,7 @@ clear_vertices() {
 //               orientation when viewing through the portal.
 ////////////////////////////////////////////////////////////////////
 INLINE void PortalNode::
-add_vertex(const LPoint3f &vertex) {
+add_vertex(const LPoint3 &vertex) {
   _vertices.push_back(vertex);
 }
 
@@ -158,9 +158,9 @@ get_num_vertices() const {
 //       Access: Published
 //  Description: Returns the nth vertex of the portal polygon.
 ////////////////////////////////////////////////////////////////////
-INLINE const LPoint3f &PortalNode::
+INLINE const LPoint3 &PortalNode::
 get_vertex(int n) const {
-  nassertr(n >= 0 && n < (int)_vertices.size(), LPoint3f::zero());
+  nassertr(n >= 0 && n < (int)_vertices.size(), LPoint3::zero());
   return _vertices[n];
 }
 

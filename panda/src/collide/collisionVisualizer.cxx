@@ -163,11 +163,11 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 
       PT(GeomVertexArrayFormat) point_array_format = 
         new GeomVertexArrayFormat(InternalName::get_vertex(), 3,
-                                  Geom::NT_float32, Geom::C_point,
+                                  Geom::NT_stdfloat, Geom::C_point,
                                   InternalName::get_color(), 1,
                                   Geom::NT_packed_dabc, Geom::C_color,
                                   InternalName::get_size(), 1, 
-                                  Geom::NT_float32, Geom::C_other);
+                                  Geom::NT_stdfloat, Geom::C_other);
       CPT(GeomVertexFormat) point_format = 
         GeomVertexFormat::register_format(point_array_format);
         
@@ -187,15 +187,15 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
           GeomVertexWriter color(point_vdata, InternalName::get_color());
           GeomVertexWriter size(point_vdata, InternalName::get_size());
 
-          vertex.add_data3f(point._surface_point);
-          color.add_data4f(1.0f, 0.0f, 0.0f, 1.0f);
+          vertex.add_data3(point._surface_point);
+          color.add_data4(1.0f, 0.0f, 0.0f, 1.0f);
           size.add_data1f(16.0f * _point_scale);
           points->add_next_vertices(1);
           points->close_primitive();
 
           if (point._interior_point != point._surface_point) {
-            vertex.add_data3f(point._interior_point);
-            color.add_data4f(1.0f, 1.0f, 1.0f, 1.0f);
+            vertex.add_data3(point._interior_point);
+            color.add_data4(1.0f, 1.0f, 1.0f, 1.0f);
             size.add_data1f(8.0f * _point_scale);
             points->add_next_vertices(1);
             points->close_primitive();
@@ -214,7 +214,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
         }
 
         // Draw the normal vector at the surface point.
-        if (!point._surface_normal.almost_equal(LVector3f::zero())) {
+        if (!point._surface_normal.almost_equal(LVector3::zero())) {
           PT(GeomVertexData) line_vdata = 
             new GeomVertexData("viz", GeomVertexFormat::get_v3cp(),
                                Geom::UH_stream);
@@ -224,11 +224,11 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
           GeomVertexWriter vertex(line_vdata, InternalName::get_vertex());
           GeomVertexWriter color(line_vdata, InternalName::get_color());
 
-          vertex.add_data3f(point._surface_point);
-          vertex.add_data3f(point._surface_point + 
+          vertex.add_data3(point._surface_point);
+          vertex.add_data3(point._surface_point + 
                             point._surface_normal * _normal_scale);
-          color.add_data4f(1.0f, 0.0f, 0.0f, 1.0f);
-          color.add_data4f(1.0f, 1.0f, 1.0f, 1.0f);
+          color.add_data4(1.0f, 0.0f, 0.0f, 1.0f);
+          color.add_data4(1.0f, 1.0f, 1.0f, 1.0f);
           lines->add_next_vertices(2);
           lines->close_primitive();
 

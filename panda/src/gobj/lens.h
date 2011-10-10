@@ -54,14 +54,14 @@ PUBLISHED:
 
   virtual PT(Lens) make_copy() const=0;
 
-  INLINE bool extrude(const LPoint2f &point2d,
-                      LPoint3f &near_point, LPoint3f &far_point) const;
-  INLINE bool extrude(const LPoint3f &point2d,
-                      LPoint3f &near_point, LPoint3f &far_point) const;
-  INLINE bool extrude_vec(const LPoint2f &point2d, LVector3f &vec3d) const;
-  INLINE bool extrude_vec(const LPoint3f &point2d, LVector3f &vec3d) const;
-  INLINE bool project(const LPoint3f &point3d, LPoint3f &point2d) const;
-  INLINE bool project(const LPoint3f &point3d, LPoint2f &point2d) const;
+  INLINE bool extrude(const LPoint2 &point2d,
+                      LPoint3 &near_point, LPoint3 &far_point) const;
+  INLINE bool extrude(const LPoint3 &point2d,
+                      LPoint3 &near_point, LPoint3 &far_point) const;
+  INLINE bool extrude_vec(const LPoint2 &point2d, LVector3 &vec3d) const;
+  INLINE bool extrude_vec(const LPoint3 &point2d, LVector3 &vec3d) const;
+  INLINE bool project(const LPoint3 &point3d, LPoint3 &point2d) const;
+  INLINE bool project(const LPoint3 &point3d, LPoint2 &point2d) const;
 
   INLINE void set_change_event(const string &event);
   INLINE const string &get_change_event() const;
@@ -71,59 +71,59 @@ PUBLISHED:
 
   void clear();
 
-  void set_film_size(float width);
-  INLINE void set_film_size(float width, float height);
-  void set_film_size(const LVecBase2f &film_size);
-  const LVecBase2f &get_film_size() const;
+  void set_film_size(PN_stdfloat width);
+  INLINE void set_film_size(PN_stdfloat width, PN_stdfloat height);
+  void set_film_size(const LVecBase2 &film_size);
+  const LVecBase2 &get_film_size() const;
 
-  INLINE void set_film_offset(float x, float y);
-  INLINE void set_film_offset(const LVecBase2f &film_offset);
-  INLINE const LVector2f &get_film_offset() const;
+  INLINE void set_film_offset(PN_stdfloat x, PN_stdfloat y);
+  INLINE void set_film_offset(const LVecBase2 &film_offset);
+  INLINE const LVector2 &get_film_offset() const;
 
-  void set_focal_length(float focal_length);
-  float get_focal_length() const;
+  void set_focal_length(PN_stdfloat focal_length);
+  PN_stdfloat get_focal_length() const;
 
-  void set_min_fov(float min_fov);
-  void set_fov(float fov);
-  INLINE void set_fov(float hfov, float vfov);
-  void set_fov(const LVecBase2f &fov);
-  const LVecBase2f &get_fov() const;
-  INLINE float get_hfov() const;
-  INLINE float get_vfov() const;
-  float get_min_fov() const;
+  void set_min_fov(PN_stdfloat min_fov);
+  void set_fov(PN_stdfloat fov);
+  INLINE void set_fov(PN_stdfloat hfov, PN_stdfloat vfov);
+  void set_fov(const LVecBase2 &fov);
+  const LVecBase2 &get_fov() const;
+  INLINE PN_stdfloat get_hfov() const;
+  INLINE PN_stdfloat get_vfov() const;
+  PN_stdfloat get_min_fov() const;
 
-  void set_aspect_ratio(float aspect_ratio);
-  float get_aspect_ratio() const;
+  void set_aspect_ratio(PN_stdfloat aspect_ratio);
+  PN_stdfloat get_aspect_ratio() const;
 
-  INLINE void set_near(float near_distance);
-  INLINE float get_near() const;
-  INLINE void set_far(float far_distance);
-  INLINE float get_far() const;
-  INLINE void set_near_far(float near_distance, float far_distance);
+  INLINE void set_near(PN_stdfloat near_distance);
+  INLINE PN_stdfloat get_near() const;
+  INLINE void set_far(PN_stdfloat far_distance);
+  INLINE PN_stdfloat get_far() const;
+  INLINE void set_near_far(PN_stdfloat near_distance, PN_stdfloat far_distance);
 
-  static float get_default_near();
-  static float get_default_far();
+  static PN_stdfloat get_default_near();
+  static PN_stdfloat get_default_far();
   
-  INLINE void set_view_hpr(float h, float p, float r);
-  void set_view_hpr(const LVecBase3f &view_hpr);
-  const LVecBase3f &get_view_hpr() const;
-  INLINE void set_view_vector(float x, float y, float z, float i, float j, float k);
-  void set_view_vector(const LVector3f &view_vector, const LVector3f &up_vector);
-  const LVector3f &get_view_vector() const;
-  const LVector3f &get_up_vector() const;
-  LPoint3f get_nodal_point() const;
+  INLINE void set_view_hpr(PN_stdfloat h, PN_stdfloat p, PN_stdfloat r);
+  void set_view_hpr(const LVecBase3 &view_hpr);
+  const LVecBase3 &get_view_hpr() const;
+  INLINE void set_view_vector(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat i, PN_stdfloat j, PN_stdfloat k);
+  void set_view_vector(const LVector3 &view_vector, const LVector3 &up_vector);
+  const LVector3 &get_view_vector() const;
+  const LVector3 &get_up_vector() const;
+  LPoint3 get_nodal_point() const;
 
-  void set_interocular_distance(float interocular_distance);
-  float get_interocular_distance() const;
-  void set_convergence_distance(float convergence_distance);
-  float get_convergence_distance() const;
+  void set_interocular_distance(PN_stdfloat interocular_distance);
+  PN_stdfloat get_interocular_distance() const;
+  void set_convergence_distance(PN_stdfloat convergence_distance);
+  PN_stdfloat get_convergence_distance() const;
 
-  void set_view_mat(const LMatrix4f &view_mat);
-  const LMatrix4f &get_view_mat() const;
+  void set_view_mat(const LMatrix4 &view_mat);
+  const LMatrix4 &get_view_mat() const;
   void clear_view_mat();
 
-  void set_keystone(const LVecBase2f &keystone);
-  INLINE const LVecBase2f &get_keystone() const;
+  void set_keystone(const LVecBase2 &keystone);
+  INLINE const LVecBase2 &get_keystone() const;
   void clear_keystone();
   
   // These flags are passed in as the last parameter to control the
@@ -137,8 +137,8 @@ PUBLISHED:
     FC_shear        = 0x0010,
     FC_keystone     = 0x0020,
   };
-  void set_frustum_from_corners(const LVecBase3f &ul, const LVecBase3f &ur,
-                                const LVecBase3f &ll, const LVecBase3f &lr,
+  void set_frustum_from_corners(const LVecBase3 &ul, const LVecBase3 &ur,
+                                const LVecBase3 &ll, const LVecBase3 &lr,
                                 int flags);
 
   void recompute_all();
@@ -150,14 +150,14 @@ PUBLISHED:
 
   virtual PT(BoundingVolume) make_bounds() const;
 
-  const LMatrix4f &get_projection_mat(StereoChannel channel = SC_mono) const;
-  const LMatrix4f &get_projection_mat_inv(StereoChannel channel = SC_mono) const;
+  const LMatrix4 &get_projection_mat(StereoChannel channel = SC_mono) const;
+  const LMatrix4 &get_projection_mat_inv(StereoChannel channel = SC_mono) const;
 
-  const LMatrix4f &get_film_mat() const;
-  const LMatrix4f &get_film_mat_inv() const;
+  const LMatrix4 &get_film_mat() const;
+  const LMatrix4 &get_film_mat_inv() const;
 
-  const LMatrix4f &get_lens_mat() const;
-  const LMatrix4f &get_lens_mat_inv() const;
+  const LMatrix4 &get_lens_mat() const;
+  const LMatrix4 &get_lens_mat_inv() const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
@@ -171,10 +171,10 @@ protected:
 
   void throw_change_event();
 
-  virtual bool extrude_impl(const LPoint3f &point2d,
-                            LPoint3f &near_point, LPoint3f &far_point) const;
-  virtual bool extrude_vec_impl(const LPoint3f &point2d, LVector3f &vec) const;
-  virtual bool project_impl(const LPoint3f &point3d, LPoint3f &point2d) const;
+  virtual bool extrude_impl(const LPoint3 &point2d,
+                            LPoint3 &near_point, LPoint3 &far_point) const;
+  virtual bool extrude_vec_impl(const LPoint3 &point2d, LVector3 &vec) const;
+  virtual bool project_impl(const LPoint3 &point3d, LPoint3 &point2d) const;
 
   virtual void compute_film_size();
   virtual void compute_focal_length();
@@ -186,43 +186,43 @@ protected:
   virtual void compute_film_mat();
   virtual void compute_lens_mat();
 
-  virtual float fov_to_film(float fov, float focal_length, bool horiz) const;
-  virtual float fov_to_focal_length(float fov, float film_size, bool horiz) const;
-  virtual float film_to_fov(float film_size, float focal_length, bool horiz) const;
+  virtual PN_stdfloat fov_to_film(PN_stdfloat fov, PN_stdfloat focal_length, bool horiz) const;
+  virtual PN_stdfloat fov_to_focal_length(PN_stdfloat fov, PN_stdfloat film_size, bool horiz) const;
+  virtual PN_stdfloat film_to_fov(PN_stdfloat film_size, PN_stdfloat focal_length, bool horiz) const;
 
 private:
   void resequence_fov_triad(char &newest, char &older_a, char &older_b) const;
   int define_geom_data();
-  static void build_shear_mat(LMatrix4f &shear_mat,
-                              const LPoint3f &cul, const LPoint3f &cur,
-                              const LPoint3f &cll, const LPoint3f &clr);
-  static float sqr_dist_to_line(const LPoint3f &point, const LPoint3f &origin, 
-                                const LVector3f &vec);
+  static void build_shear_mat(LMatrix4 &shear_mat,
+                              const LPoint3 &cul, const LPoint3 &cur,
+                              const LPoint3 &cll, const LPoint3 &clr);
+  static PN_stdfloat sqr_dist_to_line(const LPoint3 &point, const LPoint3 &origin, 
+                                const LVector3 &vec);
 
 protected:
   string _change_event;
   UpdateSeq _last_change;
   CoordinateSystem _cs;
 
-  LVecBase2f _film_size;
-  LVector2f _film_offset;
-  float _focal_length;
-  LVecBase2f _fov;
-  float _min_fov;
-  float _aspect_ratio;
-  float _near_distance, _far_distance;
+  LVecBase2 _film_size;
+  LVector2 _film_offset;
+  PN_stdfloat _focal_length;
+  LVecBase2 _fov;
+  PN_stdfloat _min_fov;
+  PN_stdfloat _aspect_ratio;
+  PN_stdfloat _near_distance, _far_distance;
 
-  LVecBase3f _view_hpr;
-  LVector3f _view_vector, _up_vector;
-  float _interocular_distance;
-  float _convergence_distance;
-  LVecBase2f _keystone;
+  LVecBase3 _view_hpr;
+  LVector3 _view_vector, _up_vector;
+  PN_stdfloat _interocular_distance;
+  PN_stdfloat _convergence_distance;
+  LVecBase2 _keystone;
 
-  LMatrix4f _film_mat, _film_mat_inv;
-  LMatrix4f _lens_mat, _lens_mat_inv;
-  LMatrix4f _projection_mat, _projection_mat_inv;
-  LMatrix4f _projection_mat_left, _projection_mat_left_inv;
-  LMatrix4f _projection_mat_right, _projection_mat_right_inv;
+  LMatrix4 _film_mat, _film_mat_inv;
+  LMatrix4 _lens_mat, _lens_mat_inv;
+  LMatrix4 _projection_mat, _projection_mat_inv;
+  LMatrix4 _projection_mat_left, _projection_mat_left_inv;
+  LMatrix4 _projection_mat_right, _projection_mat_right_inv;
 
   enum UserFlags {
     // Parameters the user may have explicitly specified.

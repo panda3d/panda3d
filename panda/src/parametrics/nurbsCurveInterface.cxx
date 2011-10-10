@@ -34,9 +34,9 @@ NurbsCurveInterface::
 //               its position in 3-d space.
 ////////////////////////////////////////////////////////////////////
 bool NurbsCurveInterface::
-set_cv_weight(int n, float w) {
+set_cv_weight(int n, PN_stdfloat w) {
   nassertr(n >= 0 && n < get_num_cvs(), false);
-  LVecBase4f cv = get_cv(n);
+  LVecBase4 cv = get_cv(n);
   if (cv[3] == 0.0f) {
     cv.set(0.0f, 0.0f, 0.0f, w);
   } else {
@@ -67,8 +67,8 @@ void NurbsCurveInterface::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level);
 
-  float min_t = 0.0f;
-  float max_t = 0.0f;
+  PN_stdfloat min_t = 0.0f;
+  PN_stdfloat max_t = 0.0f;
 
   if (get_num_knots() > 0) {
     min_t = get_knot(0);

@@ -58,9 +58,9 @@ MouseWatcher(const string &name) :
   _xy_output = define_output("xy", EventStoreVec2::get_class_type());
   _button_events_output = define_output("button_events", ButtonEventList::get_class_type());
 
-  _pixel_xy = new EventStoreVec2(LPoint2f(0.0f, 0.0f));
-  _xy = new EventStoreVec2(LPoint2f(0.0f, 0.0f));
-  _pixel_size = new EventStoreVec2(LPoint2f(0.0f, 0.0f));
+  _pixel_xy = new EventStoreVec2(LPoint2(0.0f, 0.0f));
+  _xy = new EventStoreVec2(LPoint2(0.0f, 0.0f));
+  _pixel_size = new EventStoreVec2(LPoint2(0.0f, 0.0f));
   _button_events = new ButtonEventList;
 
   _has_mouse = false;
@@ -140,7 +140,7 @@ remove_region(MouseWatcherRegion *region) {
 //               preferred.
 ////////////////////////////////////////////////////////////////////
 MouseWatcherRegion *MouseWatcher::
-get_over_region(const LPoint2f &pos) const {
+get_over_region(const LPoint2 &pos) const {
   LightMutexHolder holder(_lock);
 
   Regions regions;
@@ -489,7 +489,7 @@ update_trail_node() {
   for (int i=0; i<(int)_trail_log->get_num_events(); i++) {
     double x = (_trail_log->get_xpos(i) * xscale) - 1.0;
     double y = (_trail_log->get_ypos(i) * yscale) - 1.0;
-    vertex.add_data3f(LVecBase3f(x,0.0,-y));
+    vertex.add_data3(LVecBase3(x,0.0,-y));
     lines->add_vertex(i);
   }
   lines->close_primitive();
@@ -586,12 +586,12 @@ write(ostream &out, int indent_level) const {
 //               pointer.  Assumes the lock is held.
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
-get_over_regions(MouseWatcher::Regions &regions, const LPoint2f &pos) const {
+get_over_regions(MouseWatcher::Regions &regions, const LPoint2 &pos) const {
   nassertv(_lock.debug_is_locked());
 
   // Scale the mouse coordinates into the frame.
-  float mx = (pos[0] + 1.0f) * 0.5f * (_frame[1] - _frame[0]) + _frame[0];
-  float my = (pos[1] + 1.0f) * 0.5f * (_frame[3] - _frame[2]) + _frame[2];
+  PN_stdfloat mx = (pos[0] + 1.0f) * 0.5f * (_frame[1] - _frame[0]) + _frame[0];
+  PN_stdfloat my = (pos[1] + 1.0f) * 0.5f * (_frame[3] - _frame[2]) + _frame[2];
 
   //  pos[0] = 2.0f * (mx - _frame[0]) / (_frame[1] - _frame[0]) - 1.0f;
   //  pos[1] = 2.0f * (my - _frame[2]) / (_frame[3] - _frame[2]) - 1.0f;
@@ -602,7 +602,7 @@ get_over_regions(MouseWatcher::Regions &regions, const LPoint2f &pos) const {
   Regions::const_iterator ri;
   for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
     MouseWatcherRegion *region = (*ri);
-    const LVecBase4f &frame = region->get_frame();
+    const LVecBase4 &frame = region->get_frame();
 
     if (region->get_active() &&
         mx >= frame[0] && mx <= frame[1] &&
@@ -618,7 +618,7 @@ get_over_regions(MouseWatcher::Regions &regions, const LPoint2f &pos) const {
     MouseWatcherGroup *group = (*gi);
     for (ri = group->_regions.begin(); ri != group->_regions.end(); ++ri) {
       MouseWatcherRegion *region = (*ri);
-      const LVecBase4f &frame = region->get_frame();
+      const LVecBase4 &frame = region->get_frame();
       
       if (region->get_active() &&
           mx >= frame[0] && mx <= frame[1] &&
@@ -1338,12 +1338,12 @@ set_no_mouse() {
 //               position.
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
-set_mouse(const LVecBase2f &xy, const LVecBase2f &pixel_xy) {
+set_mouse(const LVecBase2 &xy, const LVecBase2 &pixel_xy) {
   nassertv(_lock.debug_is_locked());
 
   if (!_geometry.is_null()) {
     // Transform the mouse pointer.
-    _geometry->set_transform(TransformState::make_pos(LVecBase3f(xy[0], 0, xy[1])));
+    _geometry->set_transform(TransformState::make_pos(LVecBase3(xy[0], 0, xy[1])));
     if (!_has_mouse) {
       // Show the mouse pointer.
       _geometry->set_overall_hidden(false);
@@ -1416,11 +1416,11 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
     DCAST_INTO_V(xy, input.get_data(_xy_input).get_ptr());
     DCAST_INTO_V(pixel_xy, input.get_data(_pixel_xy_input).get_ptr());
 
-    LVecBase2f f = xy->get_value();
-    LVecBase2f p = pixel_xy->get_value();
+    LVecBase2 f = xy->get_value();
+    LVecBase2 p = pixel_xy->get_value();
 
     // Asad: determine if mouse moved from last position
-    const LVecBase2f &last_f = _xy->get_value();
+    const LVecBase2 &last_f = _xy->get_value();
     if (f != last_f) {
       activity = true;
       move();
@@ -1667,7 +1667,7 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
 ////////////////////////////////////////////////////////////////////
 bool MouseWatcher::
 constrain_display_region(DisplayRegion *display_region, 
-                         LVecBase2f &f, LVecBase2f &p,
+                         LVecBase2 &f, LVecBase2 &p,
                          Thread *current_thread) {
   // If it's a stereo DisplayRegion, we should actually call this
   // method twice, once for each eye, in case we have side-by-side
@@ -1680,12 +1680,12 @@ constrain_display_region(DisplayRegion *display_region,
   }
 
   DisplayRegionPipelineReader dr_reader(display_region, current_thread);
-  float left, right, bottom, top;
+  PN_stdfloat left, right, bottom, top;
   dr_reader.get_dimensions(left, right, bottom, top);
   
   // Need to translate this into DisplayRegion [0, 1] space
-  float x = (f[0] + 1.0f) / 2.0f;
-  float y = (f[1] + 1.0f) / 2.0f;
+  PN_stdfloat x = (f[0] + 1.0f) / 2.0f;
+  PN_stdfloat y = (f[1] + 1.0f) / 2.0f;
   
   if (x < left || x >= right || 
       y < bottom || y >= top) {
@@ -1696,12 +1696,12 @@ constrain_display_region(DisplayRegion *display_region,
   // The mouse is within the display region; rescale it.
   
   // Scale in DR space
-  float xp = (x - left) / (right - left);
+  PN_stdfloat xp = (x - left) / (right - left);
   // Translate back into [-1, 1] space
-  float xpp = (xp * 2.0f) - 1.0f;
+  PN_stdfloat xpp = (xp * 2.0f) - 1.0f;
   
-  float yp = (y - bottom) / (top - bottom);
-  float ypp = (yp * 2.0f) - 1.0f;
+  PN_stdfloat yp = (y - bottom) / (top - bottom);
+  PN_stdfloat ypp = (yp * 2.0f) - 1.0f;
   
   int xo, yo, w, h;
   dr_reader.get_region_pixels_i(xo, yo, w, h);

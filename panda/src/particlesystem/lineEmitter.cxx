@@ -63,14 +63,14 @@ make_copy() {
 // Description : Generates a location for a new particle
 ////////////////////////////////////////////////////////////////////
 void LineEmitter::
-assign_initial_position(LPoint3f& pos) {
-  float t = NORMALIZED_RAND();
+assign_initial_position(LPoint3& pos) {
+  PN_stdfloat t = NORMALIZED_RAND();
 
-  LVector3f v_diff = _endpoint2 - _endpoint1;
+  LVector3 v_diff = _endpoint2 - _endpoint1;
 
-  float lerp_x = _endpoint1[0] + t * v_diff[0];
-  float lerp_y = _endpoint1[1] + t * v_diff[1];
-  float lerp_z = _endpoint1[2] + t * v_diff[2];
+  PN_stdfloat lerp_x = _endpoint1[0] + t * v_diff[0];
+  PN_stdfloat lerp_y = _endpoint1[1] + t * v_diff[1];
+  PN_stdfloat lerp_z = _endpoint1[2] + t * v_diff[2];
 
   pos.set(lerp_x, lerp_y, lerp_z);
 }
@@ -81,7 +81,7 @@ assign_initial_position(LPoint3f& pos) {
 // Description : Generates a velocity for a new particle
 ////////////////////////////////////////////////////////////////////
 void LineEmitter::
-assign_initial_velocity(LVector3f& vel) {
+assign_initial_velocity(LVector3& vel) {
   vel.set(0,0,0);
 }
 

@@ -21,7 +21,7 @@
 #include "bulletShape.h"
 
 #include "geom.h"
-#include "pta_LVecBase3f.h"
+#include "pta_LVecBase3.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BulletConvexPointCloudShape

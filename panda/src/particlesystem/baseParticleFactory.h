@@ -31,19 +31,19 @@ class EXPCL_PANDAPHYSICS BaseParticleFactory : public ReferenceCount {
 PUBLISHED:
   virtual ~BaseParticleFactory();
 
-  INLINE void set_lifespan_base(float lb);
-  INLINE void set_lifespan_spread(float ls);
-  INLINE void set_mass_base(float mb);
-  INLINE void set_mass_spread(float ms);
-  INLINE void set_terminal_velocity_base(float tvb);
-  INLINE void set_terminal_velocity_spread(float tvs);
+  INLINE void set_lifespan_base(PN_stdfloat lb);
+  INLINE void set_lifespan_spread(PN_stdfloat ls);
+  INLINE void set_mass_base(PN_stdfloat mb);
+  INLINE void set_mass_spread(PN_stdfloat ms);
+  INLINE void set_terminal_velocity_base(PN_stdfloat tvb);
+  INLINE void set_terminal_velocity_spread(PN_stdfloat tvs);
 
-  INLINE float get_lifespan_base() const;
-  INLINE float get_lifespan_spread() const;
-  INLINE float get_mass_base() const;
-  INLINE float get_mass_spread() const;
-  INLINE float get_terminal_velocity_base() const;
-  INLINE float get_terminal_velocity_spread() const;
+  INLINE PN_stdfloat get_lifespan_base() const;
+  INLINE PN_stdfloat get_lifespan_spread() const;
+  INLINE PN_stdfloat get_mass_base() const;
+  INLINE PN_stdfloat get_mass_spread() const;
+  INLINE PN_stdfloat get_terminal_velocity_base() const;
+  INLINE PN_stdfloat get_terminal_velocity_spread() const;
 
   virtual BaseParticle *alloc_particle() const = 0;
 
@@ -57,14 +57,14 @@ protected:
   BaseParticleFactory(const BaseParticleFactory &copy);
 
 private:
-  float _lifespan_base;
-  float _lifespan_spread;
+  PN_stdfloat _lifespan_base;
+  PN_stdfloat _lifespan_spread;
 
-  float _mass_base;
-  float _mass_spread;
+  PN_stdfloat _mass_base;
+  PN_stdfloat _mass_spread;
 
-  float _terminal_velocity_base;
-  float _terminal_velocity_spread;
+  PN_stdfloat _terminal_velocity_base;
+  PN_stdfloat _terminal_velocity_spread;
 
   virtual void populate_child_particle(BaseParticle *bp) const = 0;
 };

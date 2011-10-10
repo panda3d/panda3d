@@ -154,7 +154,7 @@ stop() {
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-float MilesAudioSample::
+PN_stdfloat MilesAudioSample::
 get_time() const {
   if (_sample == 0) {
     if (_got_start_time) {
@@ -165,7 +165,7 @@ get_time() const {
 
   S32 current_ms;
   AIL_sample_ms_position(_sample, NULL, &current_ms);
-  float time = float(current_ms * 0.001f);
+  PN_stdfloat time = PN_stdfloat(current_ms * 0.001f);
 
   return time;
 }
@@ -176,7 +176,7 @@ get_time() const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void MilesAudioSample::
-set_volume(float volume) {
+set_volume(PN_stdfloat volume) {
   miles_audio_debug("set_volume(volume="<<volume<<")");
 
   // Set the volume even if our volume is not changing, because the
@@ -207,7 +207,7 @@ set_volume(float volume) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void MilesAudioSample::
-set_balance(float balance_right) {
+set_balance(PN_stdfloat balance_right) {
   miles_audio_debug("set_balance(balance_right="<<balance_right<<")");
   _balance = balance_right;
 
@@ -221,7 +221,7 @@ set_balance(float balance_right) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void MilesAudioSample::
-set_play_rate(float play_rate) {
+set_play_rate(PN_stdfloat play_rate) {
   miles_audio_debug("set_play_rate(play_rate="<<play_rate<<")");
 
   // Set the play_rate:
@@ -231,7 +231,7 @@ set_play_rate(float play_rate) {
     play_rate *= _manager->get_play_rate();
 
     // wave and mp3 use sample rate (e.g. 44100)
-    S32 speed = (S32)(play_rate * (float)_original_playback_rate);
+    S32 speed = (S32)(play_rate * (PN_stdfloat)_original_playback_rate);
     AIL_set_sample_playback_rate(_sample, speed);
     audio_debug("  play_rate for this wav or mp3 is now " << speed);
   }
@@ -242,7 +242,7 @@ set_play_rate(float play_rate) {
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-float MilesAudioSample::
+PN_stdfloat MilesAudioSample::
 length() const {
   return _sd->get_length();
 }
@@ -311,7 +311,7 @@ output(ostream &out) const {
 //               Y and Z are switched to translate from Miles's
 //               coordinate system.
 ////////////////////////////////////////////////////////////////////
-void MilesAudioSample::set_3d_attributes(float px, float py, float pz, float vx, float vy, float vz) {
+void MilesAudioSample::set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz) {
   audio_debug("MilesAudioSample::set_3d_attributes()  Setting a sound's 3D Coordinates.");
 
   if(_sample != 0) {
@@ -327,12 +327,19 @@ void MilesAudioSample::set_3d_attributes(float px, float py, float pz, float vx,
 //       Access: public
 //  Description: Get position and velocity of this sound.
 ////////////////////////////////////////////////////////////////////
-void MilesAudioSample::get_3d_attributes(float *px, float *py, float *pz, float *vx, float *vy, float *vz) {
+void MilesAudioSample::get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz) {
   audio_debug("MilesAudioSample::get_3d_attributes().");
 
   if(_sample != 0) {
-    AIL_sample_3D_position(_sample, px, pz, py);
-    AIL_sample_3D_velocity(_sample, vx, vz, vy);
+    float lpx, lpy, lpz, lvx, lvy, lvz;
+    AIL_sample_3D_position(_sample, &lpx, &lpz, &lpy);
+    AIL_sample_3D_velocity(_sample, &lvx, &lvz, &lvy);
+    *px = lpx;
+    *py = lpy;
+    *pz = lpz;
+    *vx = lvx;
+    *vy = lvy;
+    *vz = lvz;
   } else {
     audio_warning("_sample == 0 in MilesAudioSample::get_3d_attributes().");
   }
@@ -346,7 +353,7 @@ void MilesAudioSample::get_3d_attributes(float *px, float *py, float *pz, float 
 //               the distance between the sound and the listener is
 //               doubled, the volume is halved, and vice versa.
 ////////////////////////////////////////////////////////////////////
-void MilesAudioSample::set_3d_min_distance(float dist) {
+void MilesAudioSample::set_3d_min_distance(PN_stdfloat dist) {
   audio_debug("MilesAudioSample::set_3d_min_distance() Setting the sound's 3D min distance ( min= " << dist << " ) ");
 
   if(_sample != 0) {
@@ -367,13 +374,13 @@ void MilesAudioSample::set_3d_min_distance(float dist) {
 //       Access: public
 //  Description: Get the distance that this sound begins to fall off.
 ////////////////////////////////////////////////////////////////////
-float MilesAudioSample::get_3d_min_distance() const {
+PN_stdfloat MilesAudioSample::get_3d_min_distance() const {
   audio_debug("MilesAudioSample::get_3d_min_distance() ");
 
   if(_sample != 0) {
     float min_dist;
     AIL_sample_3D_distances(_sample, NULL, &min_dist, NULL);
-    return min_dist;
+    return (PN_stdfloat)min_dist;
   } else {
     audio_warning("_sample == 0 in MilesAudioSample::get_3d_min_distance().");
     return -1.0;
@@ -388,7 +395,7 @@ float MilesAudioSample::get_3d_min_distance() const {
 //               the rate at which the sound falls off, but only
 //               the distance at which it gets clipped.
 ////////////////////////////////////////////////////////////////////
-void MilesAudioSample::set_3d_max_distance(float dist) {
+void MilesAudioSample::set_3d_max_distance(PN_stdfloat dist) {
   audio_debug("MilesAudioSample::set_3d_max_distance() Setting the sound's 3D max distance ( max= " << dist << " ) ");
 
   if(_sample != 0) {
@@ -410,13 +417,13 @@ void MilesAudioSample::set_3d_max_distance(float dist) {
 //  Description: Get the distance at which this sound is clipped to
 //               silence.
 ////////////////////////////////////////////////////////////////////
-float MilesAudioSample::get_3d_max_distance() const {
+PN_stdfloat MilesAudioSample::get_3d_max_distance() const {
   audio_debug("MilesAudioSample::get_3d_max_distance() ");
 
   if(_sample != 0) {
     float max_dist;
     AIL_sample_3D_distances(_sample, &max_dist, NULL, NULL);
-    return max_dist;
+    return (PN_stdfloat)max_dist;
   } else {
     audio_warning("_sample == 0 in MilesAudioSample::get_3d_max_distance().");
     return -1.0;
@@ -459,7 +466,7 @@ float MilesAudioSample::get_3d_max_distance() const {
 //                  TOP_BACK_RIGHT 
 //               
 ////////////////////////////////////////////////////////////////////
-float MilesAudioSample::
+PN_stdfloat MilesAudioSample::
 get_speaker_level(int index) {
   audio_debug("MilesAudioSample::get_speaker_level(" << index << ")");
 
@@ -468,7 +475,7 @@ get_speaker_level(int index) {
     float *levels = AIL_sample_channel_levels(_sample, &numLevels);
 
     if(index < numLevels) {
-      return levels[index];
+      return (PN_stdfloat)levels[index];
     } else {
       audio_error("index out of range in MilesAudioSample::get_speaker_level.  numLevels: " << numLevels);
       return -1.0;
@@ -519,7 +526,7 @@ get_speaker_level(int index) {
 //               
 ////////////////////////////////////////////////////////////////////
 void MilesAudioSample::
-set_speaker_levels(float level1, float level2, float level3, float level4, float level5, float level6, float level7, float level8, float level9) {
+set_speaker_levels(PN_stdfloat level1, PN_stdfloat level2, PN_stdfloat level3, PN_stdfloat level4, PN_stdfloat level5, PN_stdfloat level6, PN_stdfloat level7, PN_stdfloat level8, PN_stdfloat level9) {
   audio_debug("MilesAudioSample::set_speaker_levels()");
 
   if(_sample != 0) {
@@ -589,12 +596,12 @@ finish_callback(HSAMPLE sample) {
 //  Description: Sets the start time of an already allocated sample.
 ////////////////////////////////////////////////////////////////////
 void MilesAudioSample::
-do_set_time(float time) {
+do_set_time(PN_stdfloat time) {
   miles_audio_debug("do_set_time(time="<<time<<")");
   nassertv(_sample != 0);
 
   // Ensure we don't inadvertently run off the end of the sound.
-  float max_time = length();
+  PN_stdfloat max_time = length();
   if (time > max_time) {
     milesAudio_cat.warning()
       << "set_time(" << time << ") requested for sound of length " 

@@ -657,7 +657,7 @@ void MaxEggPlugin::GetMat(TimeValue t, INode* inode, ViewExp* vpt, Matrix3& tm)
 {
     tm = inode->GetObjectTM(t);
     tm.NoScale();
-    float scaleFactor = vpt->NonScalingObjectSize()*vpt->GetVPWorldWidth(tm.GetTrans())/(float)360.0;
+    PN_stdfloat scaleFactor = vpt->NonScalingObjectSize()*vpt->GetVPWorldWidth(tm.GetTrans())/(PN_stdfloat)360.0;
     tm.Scale(Point3(scaleFactor,scaleFactor,scaleFactor));
 }
 
@@ -671,7 +671,7 @@ void MaxEggPlugin::GetLocalBoundBox(TimeValue t, INode* inode, ViewExp* vpt, Box
     Matrix3 m = inode->GetObjectTM(t);
     Point3 pt;
     Point3 q[4];
-    float scaleFactor = vpt->GetVPWorldWidth(m.GetTrans())/360.0f;
+    PN_stdfloat scaleFactor = vpt->GetVPWorldWidth(m.GetTrans())/360.0f;
     box = mesh.getBoundingBox();
     box.Scale(scaleFactor);
 }

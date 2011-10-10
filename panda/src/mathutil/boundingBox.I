@@ -28,7 +28,7 @@ BoundingBox() {
 //  Description: Constructs a specific box object.
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL BoundingBox::
-BoundingBox(const LPoint3f &min, const LPoint3f &max) :
+BoundingBox(const LPoint3 &min, const LPoint3 &max) :
   _min(min), _max(max)
 {
 #ifdef NDEBUG
@@ -46,7 +46,7 @@ BoundingBox(const LPoint3f &min, const LPoint3f &max) :
 //               would also work, but it is a virtual non-inline
 //               method.
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL const LPoint3f &BoundingBox::
+INLINE_MATHUTIL const LPoint3 &BoundingBox::
 get_minq() const {
   nassertr(!is_empty(), _min);
   nassertr(!is_infinite(), _min);
@@ -60,7 +60,7 @@ get_minq() const {
 //               would also work, but it is a virtual non-inline
 //               method.
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL const LPoint3f &BoundingBox::
+INLINE_MATHUTIL const LPoint3 &BoundingBox::
 get_maxq() const {
   nassertr(!is_empty(), _max);
   nassertr(!is_infinite(), _max);
@@ -82,14 +82,14 @@ get_num_points() const {
 //       Access: Published
 //  Description: Returns the nth vertex of the rectangular solid.
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL LPoint3f BoundingBox::
+INLINE_MATHUTIL LPoint3 BoundingBox::
 get_point(int n) const {
-  nassertr(n >= 0 && n < 8, LPoint3f::zero());
+  nassertr(n >= 0 && n < 8, LPoint3::zero());
   
   // We do some trickery assuming that _min and _max are consecutive
   // in memory.
-  const LPoint3f *a = &_min;
-  return LPoint3f(a[(n>>2)&1][0], a[(n>>1)&1][1], a[(n)&1][2]);
+  const LPoint3 *a = &_min;
+  return LPoint3(a[(n>>2)&1][0], a[(n>>1)&1][1], a[(n)&1][2]);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -107,10 +107,10 @@ get_num_planes() const {
 //       Access: Published
 //  Description: Returns the nth face of the rectangular solid.
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL Planef BoundingBox::
+INLINE_MATHUTIL LPlane BoundingBox::
 get_plane(int n) const {
-  nassertr(n >= 0 && n < 6, Planef());
-  return Planef(get_point(plane_def[n][0]),
+  nassertr(n >= 0 && n < 6, LPlane());
+  return LPlane(get_point(plane_def[n][0]),
                 get_point(plane_def[n][1]),
                 get_point(plane_def[n][2]));
 }

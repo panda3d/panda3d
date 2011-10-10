@@ -17,6 +17,6 @@
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 void LinearUserDefinedForce::
-set_proc(LVector3f (*proc)(const PhysicsObject *)) {
+set_proc(LVector3 (*proc)(const PhysicsObject *)) {
   _proc = proc;
 }

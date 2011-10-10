@@ -146,7 +146,7 @@ public:
                           int light_id);
 
   static D3DFORMAT get_index_type(Geom::NumericType numeric_type);
-  INLINE static DWORD Colorf_to_D3DCOLOR(const Colorf &cColorf);
+  INLINE static DWORD LColor_to_D3DCOLOR(const LColor &cLColor);
 
   virtual void set_state_and_transform(const RenderState *state,
                                        const TransformState *transform);
@@ -158,8 +158,8 @@ public:
   INLINE HRESULT set_sampler_state (DWORD sampler, D3DSAMPLERSTATETYPE type, DWORD value);
 
   static bool get_gamma_table(void);
-  static bool static_set_gamma(bool restore, float gamma);
-  bool set_gamma(float gamma);
+  static bool static_set_gamma(bool restore, PN_stdfloat gamma);
+  bool set_gamma(PN_stdfloat gamma);
   void restore_gamma();
   static void atexit_function(void);
 
@@ -190,7 +190,7 @@ protected:
   virtual void reissue_transforms();
 
   virtual void enable_lighting(bool enable);
-  virtual void set_ambient_light(const Colorf &color);
+  virtual void set_ambient_light(const LColor &color);
   virtual void enable_light(int light_id, bool enable);
 
   virtual void enable_clip_plane(int plane_id, bool enable);
@@ -273,11 +273,11 @@ protected:
   RenderBuffer::Type _cur_read_pixel_buffer;  // source for copy_pixel_buffer operation
   bool _auto_rescale_normal;
 
-  float _material_ambient;
-  float _material_diffuse;
-  float _material_specular;
-  float _material_shininess;
-  float _material_emission;
+  PN_stdfloat _material_ambient;
+  PN_stdfloat _material_diffuse;
+  PN_stdfloat _material_specular;
+  PN_stdfloat _material_shininess;
+  PN_stdfloat _material_emission;
 
   enum DxgsgFogType {
     None,

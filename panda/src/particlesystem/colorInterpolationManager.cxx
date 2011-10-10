@@ -58,7 +58,7 @@ ColorInterpolationFunctionConstant() :
 ////////////////////////////////////////////////////////////////////
 
 ColorInterpolationFunctionConstant::
-ColorInterpolationFunctionConstant(const Colorf color_a) :
+ColorInterpolationFunctionConstant(const LColor color_a) :
   _c_a(color_a) {
 }
 
@@ -68,8 +68,8 @@ ColorInterpolationFunctionConstant(const Colorf color_a) :
 // Description : Returns the color associated with this instance.
 ////////////////////////////////////////////////////////////////////
 
-Colorf ColorInterpolationFunctionConstant::
-interpolate(const float t) const {
+LColor ColorInterpolationFunctionConstant::
+interpolate(const PN_stdfloat t) const {
   return _c_a;
 }
 
@@ -91,8 +91,8 @@ ColorInterpolationFunctionLinear() :
 ////////////////////////////////////////////////////////////////////
 
 ColorInterpolationFunctionLinear::
-ColorInterpolationFunctionLinear(const Colorf color_a, 
-                                 const Colorf color_b) :
+ColorInterpolationFunctionLinear(const LColor color_a, 
+                                 const LColor color_b) :
   ColorInterpolationFunctionConstant(color_a),
   _c_b(color_b) {
 }
@@ -103,8 +103,8 @@ ColorInterpolationFunctionLinear(const Colorf color_a,
 // Description : Returns the linear mixture of A and B according to 't'.
 ////////////////////////////////////////////////////////////////////
 
-Colorf ColorInterpolationFunctionLinear::
-interpolate(const float t) const {
+LColor ColorInterpolationFunctionLinear::
+interpolate(const PN_stdfloat t) const {
   return (1.0f-t)*_c_a + t*_c_b;
 }
 
@@ -127,10 +127,10 @@ ColorInterpolationFunctionStepwave() :
 ////////////////////////////////////////////////////////////////////
 
 ColorInterpolationFunctionStepwave::
-ColorInterpolationFunctionStepwave(const Colorf color_a,
-                                   const Colorf color_b, 
-                                   const float width_a,
-                                   const float width_b) :
+ColorInterpolationFunctionStepwave(const LColor color_a,
+                                   const LColor color_b, 
+                                   const PN_stdfloat width_a,
+                                   const PN_stdfloat width_b) :
   ColorInterpolationFunctionLinear(color_a,color_b),
   _w_a(width_a),
   _w_b(width_b) {
@@ -142,8 +142,8 @@ ColorInterpolationFunctionStepwave(const Colorf color_a,
 // Description : Returns either A or B.
 ////////////////////////////////////////////////////////////////////
 
-Colorf ColorInterpolationFunctionStepwave::
-interpolate(const float t) const { 
+LColor ColorInterpolationFunctionStepwave::
+interpolate(const PN_stdfloat t) const { 
   if(fmodf(t,(_w_a+_w_b))<_w_a) {
       return _c_a;
   }
@@ -168,9 +168,9 @@ ColorInterpolationFunctionSinusoid() :
 ////////////////////////////////////////////////////////////////////
 
 ColorInterpolationFunctionSinusoid::
-ColorInterpolationFunctionSinusoid(const Colorf color_a, 
-                                   const Colorf color_b, 
-                                   const float period) :
+ColorInterpolationFunctionSinusoid(const LColor color_a, 
+                                   const LColor color_b, 
+                                   const PN_stdfloat period) :
   ColorInterpolationFunctionLinear(color_a,color_b),
   _period(period) {
 }
@@ -183,9 +183,9 @@ ColorInterpolationFunctionSinusoid(const Colorf color_a,
 //               A.
 ////////////////////////////////////////////////////////////////////
 
-Colorf ColorInterpolationFunctionSinusoid::
-interpolate(const float t) const {
-  float weight_a = (1.0f+cos(t*MathNumbers::pi_f*2.0f/_period))/2.0f;
+LColor ColorInterpolationFunctionSinusoid::
+interpolate(const PN_stdfloat t) const {
+  PN_stdfloat weight_a = (1.0f+cos(t*MathNumbers::pi_f*2.0f/_period))/2.0f;
   return (weight_a*_c_a)+((1.0f-weight_a)*_c_b);
 }
 
@@ -197,8 +197,8 @@ interpolate(const float t) const {
 
 ColorInterpolationSegment::
 ColorInterpolationSegment(ColorInterpolationFunction* function,
-                          const float &time_begin,
-                          const float &time_end,
+                          const PN_stdfloat &time_begin,
+                          const PN_stdfloat &time_end,
                           const bool is_modulated,
                           const int id) :
   _color_inter_func(function),
@@ -246,8 +246,8 @@ ColorInterpolationSegment::
 //               the segment and 1 corresponds to the end.
 ////////////////////////////////////////////////////////////////////
 
-Colorf ColorInterpolationSegment::
-interpolateColor(const float t) const {
+LColor ColorInterpolationSegment::
+interpolateColor(const PN_stdfloat t) const {
   return _color_inter_func->interpolate((t-_t_begin)/_t_total);
 }
 
@@ -259,7 +259,7 @@ interpolateColor(const float t) const {
 
 ColorInterpolationManager::
 ColorInterpolationManager() :
-  _default_color(Colorf(1.0f,1.0f,1.0f,1.0f)),
+  _default_color(LColor(1.0f,1.0f,1.0f,1.0f)),
   _id_generator(0) {
 }
 
@@ -270,7 +270,7 @@ ColorInterpolationManager() :
 ////////////////////////////////////////////////////////////////////
 
 ColorInterpolationManager::
-ColorInterpolationManager(const Colorf &c) :
+ColorInterpolationManager(const LColor &c) :
   _default_color(c),
   _id_generator(0) {
 }
@@ -307,7 +307,7 @@ ColorInterpolationManager::
 ////////////////////////////////////////////////////////////////////
 
 int ColorInterpolationManager::
-add_constant(const float time_begin, const float time_end, const Colorf color, const bool is_modulated) {
+add_constant(const PN_stdfloat time_begin, const PN_stdfloat time_end, const LColor color, const bool is_modulated) {
   PT(ColorInterpolationFunctionConstant) fPtr = new ColorInterpolationFunctionConstant(color);
   PT(ColorInterpolationSegment) sPtr = new ColorInterpolationSegment(fPtr,time_begin,time_end,is_modulated,_id_generator);
 
@@ -324,7 +324,7 @@ add_constant(const float time_begin, const float time_end, const Colorf color, c
 ////////////////////////////////////////////////////////////////////
 
 int ColorInterpolationManager::
-add_linear(const float time_begin, const float time_end, const Colorf color_a, const Colorf color_b, const bool is_modulated) {
+add_linear(const PN_stdfloat time_begin, const PN_stdfloat time_end, const LColor color_a, const LColor color_b, const bool is_modulated) {
   PT(ColorInterpolationFunctionLinear) fPtr = new ColorInterpolationFunctionLinear(color_a, color_b);
   PT(ColorInterpolationSegment) sPtr = new ColorInterpolationSegment(fPtr,time_begin,time_end,is_modulated,_id_generator);
 
@@ -341,7 +341,7 @@ add_linear(const float time_begin, const float time_end, const Colorf color_a, c
 ////////////////////////////////////////////////////////////////////
 
 int ColorInterpolationManager::
-add_stepwave(const float time_begin, const float time_end, const Colorf color_a, const Colorf color_b, const float width_a, const float width_b,const bool is_modulated) {
+add_stepwave(const PN_stdfloat time_begin, const PN_stdfloat time_end, const LColor color_a, const LColor color_b, const PN_stdfloat width_a, const PN_stdfloat width_b,const bool is_modulated) {
   PT(ColorInterpolationFunctionStepwave) fPtr = new ColorInterpolationFunctionStepwave(color_a, color_b, width_a, width_b);
   PT(ColorInterpolationSegment) sPtr = new ColorInterpolationSegment(fPtr,time_begin,time_end,is_modulated,_id_generator);
 
@@ -359,7 +359,7 @@ add_stepwave(const float time_begin, const float time_end, const Colorf color_a,
 ////////////////////////////////////////////////////////////////////
 
 int ColorInterpolationManager::
-add_sinusoid(const float time_begin, const float time_end, const Colorf color_a, const Colorf color_b, const float period,const bool is_modulated) {
+add_sinusoid(const PN_stdfloat time_begin, const PN_stdfloat time_end, const LColor color_a, const LColor color_b, const PN_stdfloat period,const bool is_modulated) {
   PT(ColorInterpolationFunctionSinusoid) fPtr = new ColorInterpolationFunctionSinusoid(color_a, color_b, period);
   PT(ColorInterpolationSegment) sPtr = new ColorInterpolationSegment(fPtr,time_begin,time_end,is_modulated,_id_generator);
 
@@ -407,10 +407,10 @@ clear_to_initial() {
 //               cover that time, the manager's default color is returned.
 ////////////////////////////////////////////////////////////////////
 
-Colorf ColorInterpolationManager::
-generateColor(const float interpolated_time) {
+LColor ColorInterpolationManager::
+generateColor(const PN_stdfloat interpolated_time) {
   bool segment_found = false;
-  Colorf out(_default_color);
+  LColor out(_default_color);
   ColorInterpolationSegment *cur_seg;
   pvector<PT(ColorInterpolationSegment)>::iterator iter;
 
@@ -420,7 +420,7 @@ generateColor(const float interpolated_time) {
         interpolated_time >= cur_seg->get_time_begin() 
         && interpolated_time <= cur_seg->get_time_end() ) {
       segment_found = true;
-      Colorf cur_color = cur_seg->interpolateColor(interpolated_time);
+      LColor cur_color = cur_seg->interpolateColor(interpolated_time);
       if( cur_seg->is_modulated() ) {
         out[0] *= cur_color[0];
         out[1] *= cur_color[1];
@@ -437,10 +437,10 @@ generateColor(const float interpolated_time) {
   }
   
   if(segment_found) {
-      out[0] = max(0.0f, min(out[0], 1.0f));
-      out[1] = max(0.0f, min(out[1], 1.0f));
-      out[2] = max(0.0f, min(out[2], 1.0f));
-      out[3] = max(0.0f, min(out[3], 1.0f));
+      out[0] = max((PN_stdfloat)0.0, min(out[0], (PN_stdfloat)1.0));
+      out[1] = max((PN_stdfloat)0.0, min(out[1], (PN_stdfloat)1.0));
+      out[2] = max((PN_stdfloat)0.0, min(out[2], (PN_stdfloat)1.0));
+      out[3] = max((PN_stdfloat)0.0, min(out[3], (PN_stdfloat)1.0));
     return out;
   }
   

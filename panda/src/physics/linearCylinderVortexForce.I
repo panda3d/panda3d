@@ -17,7 +17,7 @@
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void LinearCylinderVortexForce::
-set_radius(float radius) {
+set_radius(PN_stdfloat radius) {
   _radius = radius;
 }
 
@@ -26,7 +26,7 @@ set_radius(float radius) {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void LinearCylinderVortexForce::
-set_length(float length) {
+set_length(PN_stdfloat length) {
   _length = length;
 }
 
@@ -35,7 +35,7 @@ set_length(float length) {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void LinearCylinderVortexForce::
-set_coef(float coef) {
+set_coef(PN_stdfloat coef) {
   _coef = coef;
 }
 
@@ -43,7 +43,7 @@ set_coef(float coef) {
 // Function : get_radius
 //   Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE float LinearCylinderVortexForce::
+INLINE PN_stdfloat LinearCylinderVortexForce::
 get_radius() const {
   return _radius;
 }
@@ -52,7 +52,7 @@ get_radius() const {
 // Function : get_length
 //   Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE float LinearCylinderVortexForce::
+INLINE PN_stdfloat LinearCylinderVortexForce::
 get_length() const {
   return _length;
 }
@@ -61,7 +61,7 @@ get_length() const {
 // Function : get_coef
 //   Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE float LinearCylinderVortexForce::
+INLINE PN_stdfloat LinearCylinderVortexForce::
 get_coef() const {
   return _coef;
 }

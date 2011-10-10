@@ -38,11 +38,11 @@ public:
   virtual void set_loop_count(unsigned long loop_count=1);
   virtual unsigned long get_loop_count() const;
   
-  virtual float get_volume() const;
-  virtual float get_balance() const;
-  virtual float get_play_rate() const;
+  virtual PN_stdfloat get_volume() const;
+  virtual PN_stdfloat get_balance() const;
+  virtual PN_stdfloat get_play_rate() const;
 
-  virtual void set_time(float start_time=0.0);
+  virtual void set_time(PN_stdfloat start_time=0.0);
 
   virtual void set_active(bool active=true);
   virtual bool get_active() const;
@@ -58,9 +58,9 @@ protected:
   PT(MilesAudioManager) _manager;
   string _file_name;
 
-  float _volume; // 0..1.0
-  float _balance; // -1..1
-  float _play_rate; // 0..1.0
+  PN_stdfloat _volume; // 0..1.0
+  PN_stdfloat _balance; // -1..1
+  PN_stdfloat _play_rate; // 0..1.0
   unsigned long _loop_count;
   
   // _active is for things like a 'turn off sound effects' in
@@ -81,7 +81,7 @@ protected:
 
   // This is set whenever we call set_time().  Calling play() will
   // respect this if it is set, and then reset it.
-  float _start_time;
+  PN_stdfloat _start_time;
   bool _got_start_time;
 
 public:

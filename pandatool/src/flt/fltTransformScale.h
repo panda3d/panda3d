@@ -28,17 +28,17 @@ class FltTransformScale : public FltTransformRecord {
 public:
   FltTransformScale(FltHeader *header);
 
-  void set(const LPoint3d &center, const LVecBase3f &scale);
+  void set(const LPoint3d &center, const LVecBase3 &scale);
 
   bool has_center() const;
   const LPoint3d &get_center() const;
-  const LVecBase3f &get_scale() const;
+  const LVecBase3 &get_scale() const;
 
 private:
   void recompute_matrix();
 
   LPoint3d _center;
-  LVecBase3f _scale;
+  LVecBase3 _scale;
 
 protected:
   virtual bool extract_record(FltRecordReader &reader);

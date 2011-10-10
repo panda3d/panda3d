@@ -32,4 +32,10 @@ class DatagramIterator;
 #include "dblnames.h"
 #include "plane_src.h"
 
+#ifndef STDFLOAT_DOUBLE
+typedef Planef LPlane;
+#else
+typedef Planed LPlane;
+#endif
+
 #endif

@@ -39,7 +39,7 @@ extend_by(const GeometricBoundingVolume *vol) {
 //               point.
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL bool GeometricBoundingVolume::
-extend_by(const LPoint3f &point) {
+extend_by(const LPoint3 &point) {
   return extend_by_point(point);
 }
 
@@ -63,7 +63,7 @@ around(const GeometricBoundingVolume **first,
 //               indicated.
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL bool GeometricBoundingVolume::
-around(const LPoint3f *first, const LPoint3f *last) {
+around(const LPoint3 *first, const LPoint3 *last) {
   _flags = F_empty;
   if (first != last) {
     return around_points(first, last);
@@ -92,7 +92,7 @@ contains(const GeometricBoundingVolume *vol) const {
 //               indicated point.
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL int GeometricBoundingVolume::
-contains(const LPoint3f &point) const {
+contains(const LPoint3 &point) const {
   if (is_empty()) {
     return IF_no_intersection;
   }
@@ -108,7 +108,7 @@ contains(const LPoint3f &point) const {
 //               indicated line segment.
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL int GeometricBoundingVolume::
-contains(const LPoint3f &a, const LPoint3f &b) const {
+contains(const LPoint3 &a, const LPoint3 &b) const {
   if (is_empty()) {
     return IF_no_intersection;
   }

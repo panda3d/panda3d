@@ -20,6 +20,7 @@
 #include "typedWritableReferenceCount.h"
 #include "namable.h"
 #include "luse.h"
+#include "numeric_types.h"
 #include "config_gobj.h"
 
 class FactoryParams;
@@ -40,27 +41,27 @@ PUBLISHED:
   INLINE static Material *get_default();
   
   INLINE bool has_ambient() const;
-  INLINE const Colorf &get_ambient() const;
-  void set_ambient(const Colorf &color);
+  INLINE const LColor &get_ambient() const;
+  void set_ambient(const LColor &color);
   INLINE void clear_ambient();
 
   INLINE bool has_diffuse() const;
-  INLINE const Colorf &get_diffuse() const;
-  void set_diffuse(const Colorf &color);
+  INLINE const LColor &get_diffuse() const;
+  void set_diffuse(const LColor &color);
   INLINE void clear_diffuse();
 
   INLINE bool has_specular() const;
-  INLINE const Colorf &get_specular() const;
-  void set_specular(const Colorf &color);
+  INLINE const LColor &get_specular() const;
+  void set_specular(const LColor &color);
   INLINE void clear_specular();
 
   INLINE bool has_emission() const;
-  INLINE const Colorf &get_emission() const;
-  void set_emission(const Colorf &color);
+  INLINE const LColor &get_emission() const;
+  void set_emission(const LColor &color);
   INLINE void clear_emission();
 
-  INLINE float get_shininess() const;
-  INLINE void set_shininess(float shininess);
+  INLINE PN_stdfloat get_shininess() const;
+  INLINE void set_shininess(PN_stdfloat shininess);
 
   INLINE bool get_local() const;
   INLINE void set_local(bool local);
@@ -80,11 +81,11 @@ PUBLISHED:
   INLINE void set_attrib_lock();
 
 private:
-  Colorf _ambient;
-  Colorf _diffuse;
-  Colorf _specular;
-  Colorf _emission;
-  float _shininess;
+  LColor _ambient;
+  LColor _diffuse;
+  LColor _specular;
+  LColor _emission;
+  PN_stdfloat _shininess;
 
   static PT(Material) _default;
   

@@ -43,23 +43,23 @@ PUBLISHED:
 
   virtual void load_data();
 
-  INLINE float get_size() const;
-  virtual float get_height(float x, float y) const;
-  virtual float get_smooth_height(float x, float y, float radius) const;
-  virtual float get_slope(float x, float y) const;
+  INLINE PN_stdfloat get_size() const;
+  virtual PN_stdfloat get_height(PN_stdfloat x, PN_stdfloat y) const;
+  virtual PN_stdfloat get_smooth_height(PN_stdfloat x, PN_stdfloat y, PN_stdfloat radius) const;
+  virtual PN_stdfloat get_slope(PN_stdfloat x, PN_stdfloat y) const;
 
   virtual void fill_vertices(GeomVertexData *data,
-                             float start_x, float start_y,
-                             float size_xy, int num_xy) const;
+                             PN_stdfloat start_x, PN_stdfloat start_y,
+                             PN_stdfloat size_xy, int num_xy) const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
 
 protected:
   bool read_height_map();
-  void compute_slope(float smoothing);
+  void compute_slope(PN_stdfloat smoothing);
 
-  INLINE float interpolate(float a, float b, float t);
+  INLINE PN_stdfloat interpolate(PN_stdfloat a, PN_stdfloat b, PN_stdfloat t);
 
 private:
   static void read_quoted_filename(Filename &result, istream &in, 
@@ -72,9 +72,9 @@ protected:
     InterpolationData();
     void reset(int width, int height);
 
-    ValueType get_nearest_neighbor(float u, float v) const;
-    ValueType calc_bilinear_interpolation(float u, float v) const;
-    ValueType calc_smooth(float u, float v, float radius) const;
+    ValueType get_nearest_neighbor(PN_stdfloat u, PN_stdfloat v) const;
+    ValueType calc_bilinear_interpolation(PN_stdfloat u, PN_stdfloat v) const;
+    ValueType calc_smooth(PN_stdfloat u, PN_stdfloat v, PN_stdfloat radius) const;
     bool is_present() const;
 
     int _width;
@@ -84,12 +84,12 @@ protected:
 
 protected:
   Filename _height_map;
-  float _size;
-  float _height_scale;
+  PN_stdfloat _size;
+  PN_stdfloat _height_scale;
 
-  InterpolationData<float> _height_data;
-  //InterpolationData<LVector3f> _normal_data;
-  InterpolationData<float> _slope_data;
+  InterpolationData<PN_stdfloat> _height_data;
+  //InterpolationData<LVector3> _normal_data;
+  InterpolationData<PN_stdfloat> _slope_data;
   //InterpolationData<unsigned char> _ao_data;
 
 public:

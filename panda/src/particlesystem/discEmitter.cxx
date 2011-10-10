@@ -72,18 +72,18 @@ make_copy() {
 // Description : Generates a location for a new particle
 ////////////////////////////////////////////////////////////////////
 void DiscEmitter::
-assign_initial_position(LPoint3f& pos) {
+assign_initial_position(LPoint3& pos) {
   // position
-  float theta = NORMALIZED_RAND() * 2.0f * MathNumbers::pi_f;
+  PN_stdfloat theta = NORMALIZED_RAND() * 2.0f * MathNumbers::pi_f;
 
   _distance_from_center = NORMALIZED_RAND();
-  float r_scalar = _distance_from_center * _radius;
+  PN_stdfloat r_scalar = _distance_from_center * _radius;
 
   _sinf_theta = sinf(theta);
   _cosf_theta = cosf(theta);
 
-  float new_x = _cosf_theta * r_scalar;
-  float new_y = _sinf_theta * r_scalar;
+  PN_stdfloat new_x = _cosf_theta * r_scalar;
+  PN_stdfloat new_y = _sinf_theta * r_scalar;
 
   pos.set(new_x, new_y, 0.0f);
 }
@@ -94,8 +94,8 @@ assign_initial_position(LPoint3f& pos) {
 // Description : Generates a velocity for a new particle
 ////////////////////////////////////////////////////////////////////
 void DiscEmitter::
-assign_initial_velocity(LVector3f& vel) {
-  float aoe, mag;
+assign_initial_velocity(LVector3& vel) {
+  PN_stdfloat aoe, mag;
 
   // lerp type
   if (_cubic_lerping == true) {
@@ -108,11 +108,11 @@ assign_initial_velocity(LVector3f& vel) {
   }
 
   // velocity
-  float vel_z = mag * sinf(deg_2_rad(aoe));
-  float abs_diff = fabs((mag * mag) - (vel_z * vel_z));
-  float root_mag_minus_z_squared = sqrtf(abs_diff);
-  float vel_x = _cosf_theta * root_mag_minus_z_squared;
-  float vel_y = _sinf_theta * root_mag_minus_z_squared;
+  PN_stdfloat vel_z = mag * sinf(deg_2_rad(aoe));
+  PN_stdfloat abs_diff = fabs((mag * mag) - (vel_z * vel_z));
+  PN_stdfloat root_mag_minus_z_squared = sqrtf(abs_diff);
+  PN_stdfloat vel_x = _cosf_theta * root_mag_minus_z_squared;
+  PN_stdfloat vel_y = _sinf_theta * root_mag_minus_z_squared;
 
   // quick and dirty
   if((aoe > 90.0f) && (aoe < 270.0f))

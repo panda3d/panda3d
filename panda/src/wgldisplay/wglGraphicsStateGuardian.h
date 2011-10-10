@@ -49,8 +49,8 @@ public:
   INLINE HDC get_twindow_dc();
 
   static bool get_gamma_table(void);
-  static bool static_set_gamma(bool restore, float gamma);
-  bool set_gamma(float gamma);
+  static bool static_set_gamma(bool restore, PN_stdfloat gamma);
+  bool set_gamma(PN_stdfloat gamma);
   void restore_gamma();
   static void atexit_function(void);
 

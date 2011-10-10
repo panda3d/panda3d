@@ -27,18 +27,18 @@
 
 TypeHandle HermiteCurve::_type_handle;
 
-static const LVecBase3f zerovec_3f = LVecBase3f(0.0f, 0.0f, 0.0f);
+static const LVecBase3 zerovec_3 = LVecBase3(0.0f, 0.0f, 0.0f);
 // This is returned occasionally from some of the functions, and is
 // used from time to time as an initializer.
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: show_vec3
-//  Description: This function writes a LVecBase3f, with a specified
+//  Description: This function writes a LVecBase3, with a specified
 //               number of significant dimensions.
 ////////////////////////////////////////////////////////////////////
 static ostream &
-show_vec3(ostream &out, int indent_level, const LVecBase3f &v,
+show_vec3(ostream &out, int indent_level, const LVecBase3 &v,
           int num_dimensions) {
   indent(out, indent_level) << v[0];
   for (int i = 1; i<num_dimensions; i++) {
@@ -87,10 +87,10 @@ HermiteCurveCV::
 //  Description: Sets the CV's in tangent.
 ////////////////////////////////////////////////////////////////////
 void HermiteCurveCV::
-set_in(const LVecBase3f &in) {
+set_in(const LVecBase3 &in) {
   _in = in;
   /*
-  float l;
+  PN_stdfloat l;
   switch (_type) {
   case HC_G1:
     l = _in.length();
@@ -113,10 +113,10 @@ set_in(const LVecBase3f &in) {
 //  Description: Sets the CV's out tangent.
 ////////////////////////////////////////////////////////////////////
 void HermiteCurveCV::
-set_out(const LVecBase3f &out) {
+set_out(const LVecBase3 &out) {
   _out = out;
   /*
-  float l;
+  PN_stdfloat l;
   switch (_type) {
   case HC_G1:
     l = _out.length();
@@ -182,7 +182,7 @@ set_name(const string &name) {
 void HermiteCurveCV::
 format_egg(ostream &out, int indent_level, int num_dimensions,
        bool show_in, bool show_out,
-       float scale_in, float scale_out) const {
+       PN_stdfloat scale_in, PN_stdfloat scale_out) const {
   if (show_in) {
     indent(out, indent_level) << "<Vertex> {\n";
     show_vec3(out, indent_level + 2, _p - scale_in * _in / 3.0,
@@ -323,20 +323,20 @@ get_num_cvs() const {
 //               The index number of the new CV is returned.
 ////////////////////////////////////////////////////////////////////
 int HermiteCurve::
-insert_cv(float t) {
+insert_cv(PN_stdfloat t) {
   if (!is_valid() || t >= get_max_t()) {
     int n = append_cv(HC_SMOOTH, 0.0f, 0.0f, 0.0f);
     set_cv_tstart(n, t);
     return n;
   }
 
-  t = min(max(t, 0.0f), get_max_t());
+  t = min(max(t, (PN_stdfloat)0.0), get_max_t());
 
   int n = find_cv(t);
   nassertr(n+1<get_num_cvs(), 0);
 
   HermiteCurveCV cv;
-  LVecBase3f tan;
+  LVecBase3 tan;
   cv._type = HC_SMOOTH;
   get_pt(t, cv._p, tan);
   cv._out = cv._in = tan * 0.5f;
@@ -361,12 +361,12 @@ insert_cv(float t) {
 //               is the index of the new CV.
 ////////////////////////////////////////////////////////////////////
 int HermiteCurve::
-append_cv(int type, float x, float y, float z) {
+append_cv(int type, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
   HermiteCurveCV cv;
   cv.set_type(type);
-  cv.set_point(LVecBase3f(x, y, z));
-  cv.set_in(zerovec_3f);
-  cv.set_out(zerovec_3f);
+  cv.set_point(LVecBase3(x, y, z));
+  cv.set_in(zerovec_3);
+  cv.set_out(zerovec_3);
   _points.push_back(cv);
   if (_points.size()>1) {
     bool result =
@@ -461,11 +461,11 @@ set_cv_type(int n, int type) {
 //  Description: Changes the given CV's position.
 ////////////////////////////////////////////////////////////////////
 bool HermiteCurve::
-set_cv_point(int n, float x, float y, float z) {
+set_cv_point(int n, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
   if (n < 0 || n >= (int)_points.size()) {
     return false;
   }
-  _points[n].set_point(LVecBase3f(x, y, z));
+  _points[n].set_point(LVecBase3(x, y, z));
   invalidate_cv(n, false);
   return true;
 }
@@ -478,11 +478,11 @@ set_cv_point(int n, float x, float y, float z) {
 //               tangent.
 ////////////////////////////////////////////////////////////////////
 bool HermiteCurve::
-set_cv_in(int n, float x, float y, float z) {
+set_cv_in(int n, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
   if (n < 0 || n >= (int)_points.size()) {
     return false;
   }
-  _points[n].set_in(LVecBase3f(x, y, z));
+  _points[n].set_in(LVecBase3(x, y, z));
   invalidate_cv(n, false);
   return true;
 }
@@ -495,11 +495,11 @@ set_cv_in(int n, float x, float y, float z) {
 //               tangent.
 ////////////////////////////////////////////////////////////////////
 bool HermiteCurve::
-set_cv_out(int n, float x, float y, float z) {
+set_cv_out(int n, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
   if (n < 0 || n >= (int)_points.size()) {
     return false;
   }
-  _points[n].set_out(LVecBase3f(x, y, z));
+  _points[n].set_out(LVecBase3(x, y, z));
   invalidate_cv(n, false);
   return true;
 }
@@ -511,7 +511,7 @@ set_cv_out(int n, float x, float y, float z) {
 //               This may affect the shape of the curve.
 ////////////////////////////////////////////////////////////////////
 bool HermiteCurve::
-set_cv_tstart(int n, float tstart) {
+set_cv_tstart(int n, PN_stdfloat tstart) {
   if (n <= 0 || n >= (int)_points.size()) {
     return false;
   }
@@ -562,16 +562,16 @@ get_cv_type(int n) const {
 //       Access: Published
 //  Description: Returns the position of the given CV.
 ////////////////////////////////////////////////////////////////////
-const LVecBase3f &HermiteCurve::
+const LVecBase3 &HermiteCurve::
 get_cv_point(int n) const {
   if (n < 0 || n >= (int)_points.size()) {
-    return zerovec_3f;
+    return zerovec_3;
   }
 
   return _points[n]._p;
 }
 void HermiteCurve::
-get_cv_point(int n, LVecBase3f &v) const {
+get_cv_point(int n, LVecBase3 &v) const {
   v = get_cv_point(n);
 }
 
@@ -581,16 +581,16 @@ get_cv_point(int n, LVecBase3f &v) const {
 //       Access: Published
 //  Description: Returns the in tangent of the given CV.
 ////////////////////////////////////////////////////////////////////
-const LVecBase3f &HermiteCurve::
+const LVecBase3 &HermiteCurve::
 get_cv_in(int n) const {
   if (n < 0 || n >= (int)_points.size() || _points[n-1]._type==HC_CUT) {
-    return zerovec_3f;
+    return zerovec_3;
   }
 
   return _points[n]._in;
 }
 void HermiteCurve::
-get_cv_in(int n, LVecBase3f &v) const {
+get_cv_in(int n, LVecBase3 &v) const {
   v = get_cv_in(n);
 }
 
@@ -600,16 +600,16 @@ get_cv_in(int n, LVecBase3f &v) const {
 //       Access: Published
 //  Description: Returns the out tangent of the given CV.
 ////////////////////////////////////////////////////////////////////
-const LVecBase3f &HermiteCurve::
+const LVecBase3 &HermiteCurve::
 get_cv_out(int n) const {
   if (n < 0 || n >= (int)_points.size() || _points[n]._type==HC_CUT) {
-    return zerovec_3f;
+    return zerovec_3;
   }
 
   return _points[n]._out;
 }
 void HermiteCurve::
-get_cv_out(int n, LVecBase3f &v) const {
+get_cv_out(int n, LVecBase3 &v) const {
   v = get_cv_out(n);
 }
 
@@ -620,7 +620,7 @@ get_cv_out(int n, LVecBase3f &v) const {
 //  Description: Returns the starting point in parametric space of the
 //               given CV.
 ////////////////////////////////////////////////////////////////////
-float HermiteCurve::
+PN_stdfloat HermiteCurve::
 get_cv_tstart(int n) const {
   if (n<0) {
     return 0.0f;
@@ -728,10 +728,10 @@ write_cv(ostream &out, int n) const {
 //               possible, false if something goes horribly wrong.
 ////////////////////////////////////////////////////////////////////
 bool HermiteCurve::
-rebuild_curveseg(int, float, const LVecBase4f &,
-                 int, float, const LVecBase4f &,
-                 int, float, const LVecBase4f &,
-                 int, float, const LVecBase4f &) {
+rebuild_curveseg(int, PN_stdfloat, const LVecBase4 &,
+                 int, PN_stdfloat, const LVecBase4 &,
+                 int, PN_stdfloat, const LVecBase4 &,
+                 int, PN_stdfloat, const LVecBase4 &) {
   cerr << "rebuild_curveseg not implemented for this curve type.\n";
   return false;
 }
@@ -797,7 +797,7 @@ format_egg(ostream &out, const string &name, const string &curve_type,
 
 
 static void
-wrap_hpr(const LVecBase3f &hpr1, LVecBase3f &hpr2) {
+wrap_hpr(const LVecBase3 &hpr1, LVecBase3 &hpr2) {
   for (int i = 0; i < 3; i++) {
     while ((hpr2[i] - hpr1[i]) > 180.0) {
       hpr2[i] -= 360.0;
@@ -817,7 +817,7 @@ wrap_hpr(const LVecBase3f &hpr1, LVecBase3f &hpr2) {
 ////////////////////////////////////////////////////////////////////
 void HermiteCurve::
 invalidate_cv(int n, bool redo_all) {
-  float t1 = 0.0f, t2 = get_max_t();
+  PN_stdfloat t1 = 0.0f, t2 = get_max_t();
   if (n>0 && _points[n-1]._type!=HC_CUT) {
     const HermiteCurveCV &p1 = _points[n-1];
     HermiteCurveCV p2(_points[n]);
@@ -862,7 +862,7 @@ invalidate_cv(int n, bool redo_all) {
 //               t.
 ////////////////////////////////////////////////////////////////////
 int HermiteCurve::
-find_cv(float t) {
+find_cv(PN_stdfloat t) {
   nassertr(is_valid(), 0);
 
   int n;

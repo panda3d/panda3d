@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////////////
 class LwoSurfaceBlockRepeat : public LwoChunk {
 public:
-  float _cycles;
+  PN_stdfloat _cycles;
   int _envelope;
 
 public:

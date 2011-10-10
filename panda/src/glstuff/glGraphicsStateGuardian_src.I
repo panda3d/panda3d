@@ -594,6 +594,120 @@ enable_polygon_offset(bool val) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::call_glFogfv
+//       Access: Public
+//  Description: This method is necessary because there is no
+//               glFogdv().
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+call_glFogfv(GLenum pname, const LColor &color) {
+#ifndef STDFLOAT_DOUBLE
+  GLP(Fogfv)(pname, color.get_data());
+#else  // STDFLOAT_DOUBLE
+  Colorf fcolor = LCAST(float, color);
+  GLP(Fogfv)(pname, fcolor.get_data());
+#endif  //  STDFLOAT_DOUBLE
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::call_glMaterialfv
+//       Access: Public
+//  Description: This method is necessary because there is no
+//               glMaterialdv().
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+call_glMaterialfv(GLenum face, GLenum pname, const LColor &color) {
+#ifndef STDFLOAT_DOUBLE
+  GLP(Materialfv)(face, pname, color.get_data());
+#else  // STDFLOAT_DOUBLE
+  Colorf fcolor = LCAST(float, color);
+  GLP(Materialfv)(face, pname, fcolor.get_data());
+#endif  //  STDFLOAT_DOUBLE
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::call_glLightfv
+//       Access: Public
+//  Description: This method is necessary because there is no
+//               glLightdv().
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+call_glLightfv(GLenum light, GLenum pname, const LVecBase4 &value) {
+#ifndef STDFLOAT_DOUBLE
+  GLP(Lightfv)(light, pname, value.get_data());
+#else  // STDFLOAT_DOUBLE
+  LVecBase4f fvalue = LCAST(float, value);
+  GLP(Lightfv)(light, pname, fvalue.get_data());
+#endif  //  STDFLOAT_DOUBLE
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::call_glLightfv
+//       Access: Public
+//  Description: This method is necessary because there is no
+//               glLightdv().
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+call_glLightfv(GLenum light, GLenum pname, const LVecBase3 &value) {
+#ifndef STDFLOAT_DOUBLE
+  GLP(Lightfv)(light, pname, value.get_data());
+#else  // STDFLOAT_DOUBLE
+  LVecBase3f fvalue = LCAST(float, value);
+  GLP(Lightfv)(light, pname, fvalue.get_data());
+#endif  //  STDFLOAT_DOUBLE
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::call_glLightModelfv
+//       Access: Public
+//  Description: This method is necessary because there is no
+//               glLightModeldv().
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+call_glLightModelfv(GLenum pname, const LVecBase4 &value) {
+#ifndef OPENGLES_2
+#ifndef STDFLOAT_DOUBLE
+  GLP(LightModelfv)(pname, value.get_data());
+#else  // STDFLOAT_DOUBLE
+  LVecBase4f fvalue = LCAST(float, value);
+  GLP(LightModelfv)(pname, fvalue.get_data());
+#endif  //  STDFLOAT_DOUBLE
+#endif  // OPENGLES_2
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::call_glTexEnvfv
+//       Access: Public
+//  Description: This method is necessary because there is no
+//               glTexEnvdv().
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+call_glTexEnvfv(GLenum target, GLenum pname, const LVecBase4 &value) {
+#ifndef STDFLOAT_DOUBLE
+  GLP(TexEnvfv)(target, pname, value.get_data());
+#else  // STDFLOAT_DOUBLE
+  LVecBase4f fvalue = LCAST(float, value);
+  GLP(TexEnvfv)(target, pname, fvalue.get_data());
+#endif  //  STDFLOAT_DOUBLE
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::call_glTexParameterfv
+//       Access: Public
+//  Description: This method is necessary because there is no
+//               glTexParameterdv().
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+call_glTexParameterfv(GLenum target, GLenum pname, const LVecBase4 &value) {
+#ifndef STDFLOAT_DOUBLE
+  GLP(TexParameterfv)(target, pname, value.get_data());
+#else  // STDFLOAT_DOUBLE
+  LVecBase4f fvalue = LCAST(float, value);
+  GLP(TexParameterfv)(target, pname, fvalue.get_data());
+#endif  //  STDFLOAT_DOUBLE
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::get_light_id
 //       Access: Public
 //  Description: Convert index to gl light id

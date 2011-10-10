@@ -91,7 +91,7 @@ get_time() const {
 //               defined by the tracker.
 ////////////////////////////////////////////////////////////////////
 INLINE void TrackerData::
-set_pos(const LPoint3f &pos) {
+set_pos(const LPoint3 &pos) {
   _pos = pos;
   _flags |= F_has_pos;
 }
@@ -114,12 +114,12 @@ has_pos() const {
 //               legal to call this if has_pos() returns false; in
 //               this case, the position will always be (0, 0, 0).
 ////////////////////////////////////////////////////////////////////
-INLINE const LPoint3f &TrackerData::
+INLINE const LPoint3 &TrackerData::
 get_pos() const {
   if (has_pos()) {
     return _pos;
   } else {
-    static LPoint3f zero(0.0, 0.0, 0.0);
+    static LPoint3 zero(0.0, 0.0, 0.0);
     return zero;
   }
 }
@@ -134,7 +134,7 @@ get_pos() const {
 //               set_pos().
 ////////////////////////////////////////////////////////////////////
 INLINE void TrackerData::
-set_orient(const LOrientationf &orient) {
+set_orient(const LOrientation &orient) {
   _orient = orient;
   _flags |= F_has_orient;
 }
@@ -158,12 +158,12 @@ has_orient() const {
 //               in this case, the result is always the identity
 //               orientation.
 ////////////////////////////////////////////////////////////////////
-INLINE const LOrientationf &TrackerData::
+INLINE const LOrientation &TrackerData::
 get_orient() const {
   if (has_orient()) {
     return _orient;
   } else {
-    static LOrientationf ident = LOrientationf::ident_quat();
+    static LOrientation ident = LOrientation::ident_quat();
     return ident;
   }
 }

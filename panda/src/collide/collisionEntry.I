@@ -130,7 +130,7 @@ get_into_node_path() const {
 //               other CollisionEntries
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionEntry::
-set_t(float t) {
+set_t(PN_stdfloat t) {
   nassertv(!cnan(t));
   _t = t;
 }
@@ -141,7 +141,7 @@ set_t(float t) {
 //  Description: returns time value for this collision relative to
 //               other CollisionEntries
 ////////////////////////////////////////////////////////////////////
-INLINE float CollisionEntry::
+INLINE PN_stdfloat CollisionEntry::
 get_t() const {
   return _t;
 }
@@ -193,7 +193,7 @@ get_respect_prev_transform() const {
 //               the "into" object.
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionEntry::
-set_surface_point(const LPoint3f &point) {
+set_surface_point(const LPoint3 &point) {
   nassertv(!point.is_nan());
   _surface_point = point;
   _flags |= F_has_surface_point;
@@ -209,7 +209,7 @@ set_surface_point(const LPoint3f &point) {
 //               the "into" object.
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionEntry::
-set_surface_normal(const LVector3f &normal) {
+set_surface_normal(const LVector3 &normal) {
   nassertv(!normal.is_nan());
   _surface_normal = normal;
   _flags |= F_has_surface_normal;
@@ -229,7 +229,7 @@ set_surface_normal(const LVector3f &normal) {
 //               the "into" object.
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionEntry::
-set_interior_point(const LPoint3f &point) {
+set_interior_point(const LPoint3 &point) {
   nassertv(!point.is_nan());
   _interior_point = point;
   _flags |= F_has_interior_point;
@@ -284,7 +284,7 @@ has_interior_point() const {
 //               the "into" object.
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionEntry::
-set_contact_pos(const LPoint3f &pos) {
+set_contact_pos(const LPoint3 &pos) {
   nassertv(!pos.is_nan());
   _contact_pos = pos;
   _flags |= F_has_contact_pos;
@@ -300,7 +300,7 @@ set_contact_pos(const LPoint3f &pos) {
 //               the "into" object.
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionEntry::
-set_contact_normal(const LVector3f &normal) {
+set_contact_normal(const LVector3 &normal) {
   nassertv(!normal.is_nan());
   _contact_normal = normal;
   _flags |= F_has_contact_normal;
@@ -377,7 +377,7 @@ get_wrt_prev_space() const {
 //  Description: Returns the relative transform of the from node as
 //               seen from the into node.
 ////////////////////////////////////////////////////////////////////
-INLINE const LMatrix4f &CollisionEntry::
+INLINE const LMatrix4 &CollisionEntry::
 get_wrt_mat() const {
   return get_wrt_space()->get_mat();
 }
@@ -388,7 +388,7 @@ get_wrt_mat() const {
 //  Description: Returns the relative transform of the into node as
 //               seen from the from node.
 ////////////////////////////////////////////////////////////////////
-INLINE const LMatrix4f &CollisionEntry::
+INLINE const LMatrix4 &CollisionEntry::
 get_inv_wrt_mat() const {
   return get_inv_wrt_space()->get_mat();
 }
@@ -401,7 +401,7 @@ get_inv_wrt_mat() const {
 //               (according to set_prev_transform(), set_fluid_pos(),
 //               etc.)
 ////////////////////////////////////////////////////////////////////
-INLINE const LMatrix4f &CollisionEntry::
+INLINE const LMatrix4 &CollisionEntry::
 get_wrt_prev_mat() const {
   return get_wrt_prev_space()->get_mat();
 }

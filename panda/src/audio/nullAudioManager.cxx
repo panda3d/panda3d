@@ -19,7 +19,7 @@ TypeHandle NullAudioManager::_type_handle;
 
 //namespace {
     //static const string blank="";
-    //static float no_listener_attributes [] = {0.0f,0.0f,0.0f, 0.0f,0.0f,0.0f, 0.0f,0.0f,0.0f, 0.0f,0.0f,0.0f};
+    //static PN_stdfloat no_listener_attributes [] = {0.0f,0.0f,0.0f, 0.0f,0.0f,0.0f, 0.0f,0.0f,0.0f, 0.0f,0.0f,0.0f};
 //}
 
 
@@ -120,7 +120,7 @@ get_cache_limit() const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NullAudioManager::
-set_volume(float) {
+set_volume(PN_stdfloat) {
   // intentionally blank.
 }
 
@@ -129,7 +129,7 @@ set_volume(float) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-float NullAudioManager::
+PN_stdfloat NullAudioManager::
 get_volume() const {
   return 0;
 }
@@ -140,7 +140,7 @@ get_volume() const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NullAudioManager::
-set_play_rate(float) {
+set_play_rate(PN_stdfloat) {
   // intentionally blank.
 }
 
@@ -149,7 +149,7 @@ set_play_rate(float) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-float NullAudioManager::
+PN_stdfloat NullAudioManager::
 get_play_rate() const {
   return 0;
 }
@@ -220,7 +220,7 @@ stop_all_sounds() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NullAudioManager::
-audio_3d_set_listener_attributes(float px, float py, float pz, float vx, float vy, float vz, float fx, float fy, float fz, float ux, float uy, float uz) {
+audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz, PN_stdfloat fx, PN_stdfloat fy, PN_stdfloat fz, PN_stdfloat ux, PN_stdfloat uy, PN_stdfloat uz) {
     // intentionally blank.
 }
 
@@ -230,7 +230,7 @@ audio_3d_set_listener_attributes(float px, float py, float pz, float vx, float v
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NullAudioManager::
-audio_3d_get_listener_attributes(float *px, float *py, float *pz, float *vx, float *vy, float *vz, float *fx, float *fy, float *fz, float *ux, float *uy, float *uz) {
+audio_3d_get_listener_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz, PN_stdfloat *fx, PN_stdfloat *fy, PN_stdfloat *fz, PN_stdfloat *ux, PN_stdfloat *uy, PN_stdfloat *uz) {
     // intentionally blank.
 }
 
@@ -240,7 +240,7 @@ audio_3d_get_listener_attributes(float *px, float *py, float *pz, float *vx, flo
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NullAudioManager::
-audio_3d_set_distance_factor(float factor) {
+audio_3d_set_distance_factor(PN_stdfloat factor) {
     // intentionally blank.
 }
 
@@ -249,7 +249,7 @@ audio_3d_set_distance_factor(float factor) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-float NullAudioManager::
+PN_stdfloat NullAudioManager::
 audio_3d_get_distance_factor() const {
     // intentionally blank.
     return 0.0f;
@@ -261,7 +261,7 @@ audio_3d_get_distance_factor() const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NullAudioManager::
-audio_3d_set_doppler_factor(float factor) {
+audio_3d_set_doppler_factor(PN_stdfloat factor) {
     // intentionally blank.
 }
 
@@ -270,7 +270,7 @@ audio_3d_set_doppler_factor(float factor) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-float NullAudioManager::
+PN_stdfloat NullAudioManager::
 audio_3d_get_doppler_factor() const {
     // intentionally blank.
     return 0.0f;
@@ -282,7 +282,7 @@ audio_3d_get_doppler_factor() const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NullAudioManager::
-audio_3d_set_drop_off_factor(float factor) {
+audio_3d_set_drop_off_factor(PN_stdfloat factor) {
     // intentionally blank.
 }
 
@@ -291,7 +291,7 @@ audio_3d_set_drop_off_factor(float factor) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-float NullAudioManager::
+PN_stdfloat NullAudioManager::
 audio_3d_get_drop_off_factor() const {
     // intentionally blank.
     return 0.0f;

@@ -20,7 +20,7 @@
 // Description : Returns the primary color of the function.
 ////////////////////////////////////////////////////////////////////
 
-INLINE Colorf ColorInterpolationFunctionConstant::
+INLINE LColor ColorInterpolationFunctionConstant::
 get_color_a() const {
   return _c_a;
 }
@@ -32,7 +32,7 @@ get_color_a() const {
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ColorInterpolationFunctionConstant::
-set_color_a(const Colorf c) {
+set_color_a(const LColor c) {
   _c_a = c;
 }
 
@@ -42,7 +42,7 @@ set_color_a(const Colorf c) {
 // Description : Returns the secondary color of the function.
 ////////////////////////////////////////////////////////////////////
 
-INLINE Colorf ColorInterpolationFunctionLinear::
+INLINE LColor ColorInterpolationFunctionLinear::
 get_color_b() const {
   return _c_b;
 }
@@ -54,7 +54,7 @@ get_color_b() const {
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ColorInterpolationFunctionLinear::
-set_color_b(const Colorf c) {
+set_color_b(const LColor c) {
   _c_b = c;
 }
 
@@ -64,7 +64,7 @@ set_color_b(const Colorf c) {
 // Description : Returns the primary width of the function.
 ////////////////////////////////////////////////////////////////////
 
-INLINE float ColorInterpolationFunctionStepwave::
+INLINE PN_stdfloat ColorInterpolationFunctionStepwave::
 get_width_a() const {
   return _w_a;
 }
@@ -75,7 +75,7 @@ get_width_a() const {
 // Description : Returns the secondary width of the function.
 ////////////////////////////////////////////////////////////////////
 
-INLINE float ColorInterpolationFunctionStepwave::
+INLINE PN_stdfloat ColorInterpolationFunctionStepwave::
 get_width_b() const {
   return _w_b;
 }
@@ -87,7 +87,7 @@ get_width_b() const {
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ColorInterpolationFunctionStepwave::
-set_width_a(const float w) {
+set_width_a(const PN_stdfloat w) {
   _w_a = w;
 }
 
@@ -98,7 +98,7 @@ set_width_a(const float w) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ColorInterpolationFunctionStepwave::
-set_width_b(const float w) {
+set_width_b(const PN_stdfloat w) {
   _w_b = w;
 }
 
@@ -110,7 +110,7 @@ set_width_b(const float w) {
 //               to A again.
 ////////////////////////////////////////////////////////////////////
 
-INLINE float ColorInterpolationFunctionSinusoid::
+INLINE PN_stdfloat ColorInterpolationFunctionSinusoid::
 get_period() const {
   return _period;
 }
@@ -123,7 +123,7 @@ get_period() const {
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ColorInterpolationFunctionSinusoid::
-set_period(const float p) {
+set_period(const PN_stdfloat p) {
   _period = p;
 }
 
@@ -147,7 +147,7 @@ get_function() const {
 //               value in the range [0,1].
 ////////////////////////////////////////////////////////////////////
 
-INLINE float ColorInterpolationSegment::
+INLINE PN_stdfloat ColorInterpolationSegment::
 get_time_begin() const {
   return _t_begin;
 }
@@ -160,7 +160,7 @@ get_time_begin() const {
 //               value in the range [0,1].
 ////////////////////////////////////////////////////////////////////
 
-INLINE float ColorInterpolationSegment::
+INLINE PN_stdfloat ColorInterpolationSegment::
 get_time_end() const {
   return _t_end;
 }
@@ -220,7 +220,7 @@ set_function(ColorInterpolationFunction* function) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ColorInterpolationSegment::
-set_time_begin(const float time) {
+set_time_begin(const PN_stdfloat time) {
   _t_begin = time;
   _t_total = _t_end-_t_begin;
 }
@@ -234,7 +234,7 @@ set_time_begin(const float time) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ColorInterpolationSegment::
-set_time_end(const float time) {
+set_time_end(const PN_stdfloat time) {
   _t_end = time;
   _t_total = _t_end-_t_begin;
 }
@@ -270,7 +270,7 @@ set_enabled(const bool enabled) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ColorInterpolationManager::
-set_default_color(const Colorf &c) {
+set_default_color(const LColor &c) {
   _default_color = c;
 }
 

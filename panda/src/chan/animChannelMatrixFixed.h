@@ -32,22 +32,22 @@ protected:
   AnimChannelMatrixFixed(AnimGroup *parent, const AnimChannelMatrixFixed &copy);
 
 public:
-  AnimChannelMatrixFixed(const string &name, const LVecBase3f &pos, const LVecBase3f &hpr, const LVecBase3f &scale);
+  AnimChannelMatrixFixed(const string &name, const LVecBase3 &pos, const LVecBase3 &hpr, const LVecBase3 &scale);
 
   virtual bool has_changed(int last_frame, double last_frac, 
                            int this_frame, double this_frac);
-  virtual void get_value(int frame, LMatrix4f &value);
-  virtual void get_value_no_scale_shear(int frame, LMatrix4f &value);
-  virtual void get_scale(int frame, LVecBase3f &scale);
-  virtual void get_hpr(int frame, LVecBase3f &hpr);
-  virtual void get_quat(int frame, LQuaternionf &quat);
-  virtual void get_pos(int frame, LVecBase3f &pos);
-  virtual void get_shear(int frame, LVecBase3f &shear);
+  virtual void get_value(int frame, LMatrix4 &value);
+  virtual void get_value_no_scale_shear(int frame, LMatrix4 &value);
+  virtual void get_scale(int frame, LVecBase3 &scale);
+  virtual void get_hpr(int frame, LVecBase3 &hpr);
+  virtual void get_quat(int frame, LQuaternion &quat);
+  virtual void get_pos(int frame, LVecBase3 &pos);
+  virtual void get_shear(int frame, LVecBase3 &shear);
 
   virtual void output(ostream &out) const;
 
 private:
-  LVecBase3f _pos, _hpr, _scale;
+  LVecBase3 _pos, _hpr, _scale;
 
 public:
   static void register_with_read_factory();

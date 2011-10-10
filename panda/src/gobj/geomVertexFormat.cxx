@@ -950,95 +950,95 @@ void GeomVertexFormat::Registry::
 make_standard_formats() {
   _v3 = register_format(new GeomVertexArrayFormat
                         (InternalName::get_vertex(), 3, 
-                         NT_float32, C_point));
+                         NT_stdfloat, C_point));
 
   _v3n3 = register_format(new GeomVertexArrayFormat
                           (InternalName::get_vertex(), 3, 
-                           NT_float32, C_point,
+                           NT_stdfloat, C_point,
                            InternalName::get_normal(), 3, 
-                           NT_float32, C_vector));
+                           NT_stdfloat, C_vector));
 
   _v3t2 = register_format(new GeomVertexArrayFormat
                           (InternalName::get_vertex(), 3, 
-                           NT_float32, C_point,
+                           NT_stdfloat, C_point,
                            InternalName::get_texcoord(), 2, 
-                           NT_float32, C_texcoord));
+                           NT_stdfloat, C_texcoord));
 
   _v3n3t2 = register_format(new GeomVertexArrayFormat
                             (InternalName::get_vertex(), 3, 
-                             NT_float32, C_point,
+                             NT_stdfloat, C_point,
                              InternalName::get_normal(), 3,
-                             NT_float32, C_vector,
+                             NT_stdfloat, C_vector,
                              InternalName::get_texcoord(), 2, 
-                             NT_float32, C_texcoord));
+                             NT_stdfloat, C_texcoord));
 
   // Define the DirectX-style packed color formats
   _v3cp = register_format(new GeomVertexArrayFormat
                           (InternalName::get_vertex(), 3,
-                           NT_float32, C_point,
+                           NT_stdfloat, C_point,
                            InternalName::get_color(), 1,
                            NT_packed_dabc, C_color));
 
   _v3n3cp = register_format(new GeomVertexArrayFormat
                             (InternalName::get_vertex(), 3,
-                             NT_float32, C_point,
+                             NT_stdfloat, C_point,
                              InternalName::get_normal(), 3,
-                             NT_float32, C_vector,
+                             NT_stdfloat, C_vector,
                              InternalName::get_color(), 1,
                              NT_packed_dabc, C_color));
 
   _v3cpt2 = register_format(new GeomVertexArrayFormat
                             (InternalName::get_vertex(), 3,
-                             NT_float32, C_point,
+                             NT_stdfloat, C_point,
                              InternalName::get_color(), 1,
                              NT_packed_dabc, C_color,
                              InternalName::get_texcoord(), 2,
-                             NT_float32, C_texcoord));
+                             NT_stdfloat, C_texcoord));
 
   _v3n3cpt2 = register_format(new GeomVertexArrayFormat
                               (InternalName::get_vertex(), 3,
-                               NT_float32, C_point,
+                               NT_stdfloat, C_point,
                                InternalName::get_normal(), 3,
-                               NT_float32, C_vector,
+                               NT_stdfloat, C_vector,
                                InternalName::get_color(), 1,
                                NT_packed_dabc, C_color,
                                InternalName::get_texcoord(), 2,
-                               NT_float32, C_texcoord));
+                               NT_stdfloat, C_texcoord));
 
   // Define the OpenGL-style per-byte color formats.  This is not the
   // same as a packed format, above, because the resulting byte order
   // is endian-independent.
   _v3c4 = register_format(new GeomVertexArrayFormat
                           (InternalName::get_vertex(), 3,
-                           NT_float32, C_point,
+                           NT_stdfloat, C_point,
                            InternalName::get_color(), 4,
                            NT_uint8, C_color));
 
   _v3n3c4 = register_format(new GeomVertexArrayFormat
                             (InternalName::get_vertex(), 3,
-                             NT_float32, C_point,
+                             NT_stdfloat, C_point,
                              InternalName::get_normal(), 3,
-                             NT_float32, C_vector,
+                             NT_stdfloat, C_vector,
                              InternalName::get_color(), 4,
                              NT_uint8, C_color));
 
   _v3c4t2 = register_format(new GeomVertexArrayFormat
                             (InternalName::get_vertex(), 3,
-                             NT_float32, C_point,
+                             NT_stdfloat, C_point,
                              InternalName::get_color(), 4,
                              NT_uint8, C_color,
                              InternalName::get_texcoord(), 2,
-                             NT_float32, C_texcoord));
+                             NT_stdfloat, C_texcoord));
 
   _v3n3c4t2 = register_format(new GeomVertexArrayFormat
                               (InternalName::get_vertex(), 3,
-                               NT_float32, C_point,
+                               NT_stdfloat, C_point,
                                InternalName::get_normal(), 3,
-                               NT_float32, C_vector,
+                               NT_stdfloat, C_vector,
                                InternalName::get_color(), 4,
                                NT_uint8, C_color,
                                InternalName::get_texcoord(), 2,
-                               NT_float32, C_texcoord));
+                               NT_stdfloat, C_texcoord));
 }
 
 ////////////////////////////////////////////////////////////////////

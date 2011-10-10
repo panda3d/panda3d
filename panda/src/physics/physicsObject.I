@@ -18,7 +18,7 @@
 // Description : Set the mass in slugs (or kilograms).
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
-set_mass(float m) {
+set_mass(PN_stdfloat m) {
   nassertv(m > 0);
   _mass = m;
 }
@@ -30,7 +30,7 @@ set_mass(float m) {
 //               the center of mass.
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
-set_position(const LPoint3f &pos) {
+set_position(const LPoint3 &pos) {
   nassertv(!pos.is_nan());
   _position = pos;
 }
@@ -41,8 +41,8 @@ set_position(const LPoint3f &pos) {
 // Description : Piecewise position assignment
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
-set_position(float x, float y, float z) {
-  nassertv(!LPoint3f(x, y, z).is_nan());
+set_position(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
+  nassertv(!LPoint3(x, y, z).is_nan());
   _position.set(x, y, z);
 }
 
@@ -54,7 +54,7 @@ set_position(float x, float y, float z) {
 //               position.
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
-reset_position(const LPoint3f &pos) {
+reset_position(const LPoint3 &pos) {
   nassertv(!pos.is_nan());
   _position = pos;
   _last_position = pos;
@@ -68,10 +68,10 @@ reset_position(const LPoint3f &pos) {
 //               velocity.
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
-reset_orientation(const LOrientationf &orientation) {
+reset_orientation(const LOrientation &orientation) {
   nassertv(!orientation.is_nan());
   _orientation = orientation;
-  _rotation = LRotationf::ident_quat();
+  _rotation = LRotation::ident_quat();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -80,7 +80,7 @@ reset_orientation(const LOrientationf &orientation) {
 // Description : Last position assignment
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
-set_last_position(const LPoint3f &pos) {
+set_last_position(const LPoint3 &pos) {
   _last_position = pos;
 }
 
@@ -90,7 +90,7 @@ set_last_position(const LPoint3f &pos) {
 // Description : Vector velocity assignment
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
-set_velocity(const LVector3f &vel) {
+set_velocity(const LVector3 &vel) {
   nassertv(!vel.is_nan());
   _velocity = vel;
 }
@@ -101,8 +101,8 @@ set_velocity(const LVector3f &vel) {
 // Description : Piecewise velocity assignment
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
-set_velocity(float x, float y, float z) {
-  nassertv(!LVector3f(x, y, z).is_nan());
+set_velocity(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
+  nassertv(!LVector3(x, y, z).is_nan());
   _velocity.set(x, y, z);
 }
 
@@ -115,7 +115,7 @@ set_velocity(float x, float y, float z) {
 //               value to be the new angular velocity.
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
-add_local_torque(const LRotationf &torque) {
+add_local_torque(const LRotation &torque) {
   nassertv(!torque.is_nan());
   _rotation+=_orientation.xform(torque);
 }
@@ -129,9 +129,9 @@ add_local_torque(const LRotationf &torque) {
 //               be the new velocity.
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
-add_local_impulse(const LVector3f &impulse) {
+add_local_impulse(const LVector3 &impulse) {
   nassertv(!impulse.is_nan());
-  _velocity+=_orientation.xform(impulse);
+  _velocity += _orientation.xform(impulse);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -143,7 +143,7 @@ add_local_impulse(const LVector3f &impulse) {
 //               value to be the new angular velocity.
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
-add_torque(const LRotationf &torque) {
+add_torque(const LRotation &torque) {
   nassertv(!torque.is_nan());
   _rotation+=torque;
 }
@@ -157,7 +157,7 @@ add_torque(const LRotationf &torque) {
 //               be the new velocity.
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
-add_impulse(const LVector3f &impulse) {
+add_impulse(const LVector3 &impulse) {
   nassertv(!impulse.is_nan());
   _velocity+=impulse;
 }
@@ -178,7 +178,7 @@ set_active(bool flag) {
 // Description : tv assignment
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
-set_terminal_velocity(float tv) {
+set_terminal_velocity(PN_stdfloat tv) {
   _terminal_velocity = tv;
 }
 
@@ -187,7 +187,7 @@ set_terminal_velocity(float tv) {
 //      Access : Public
 // Description : Get the mass in slugs (or kilograms).
 ////////////////////////////////////////////////////////////////////
-INLINE float PhysicsObject::
+INLINE PN_stdfloat PhysicsObject::
 get_mass() const {
   return _mass;
 }
@@ -197,7 +197,7 @@ get_mass() const {
 //      Access : Public
 // Description : Position Query
 ////////////////////////////////////////////////////////////////////
-INLINE LPoint3f PhysicsObject::
+INLINE LPoint3 PhysicsObject::
 get_position() const {
   return _position;
 }
@@ -208,7 +208,7 @@ get_position() const {
 // Description : Get the position of the physics object at the start
 //               of the most recent do_physics.
 ////////////////////////////////////////////////////////////////////
-INLINE LPoint3f PhysicsObject::
+INLINE LPoint3 PhysicsObject::
 get_last_position() const {
   return _last_position;
 }
@@ -218,7 +218,7 @@ get_last_position() const {
 //      Access : Public
 // Description : Velocity Query per second
 ////////////////////////////////////////////////////////////////////
-INLINE LVector3f PhysicsObject::
+INLINE LVector3 PhysicsObject::
 get_velocity() const {
   return _velocity;
 }
@@ -228,7 +228,7 @@ get_velocity() const {
 //      Access : Public
 // Description : Velocity Query over the last dt
 ////////////////////////////////////////////////////////////////////
-INLINE LVector3f PhysicsObject::
+INLINE LVector3 PhysicsObject::
 get_implicit_velocity() const {
   return _position-_last_position;
 }
@@ -248,7 +248,7 @@ get_active() const {
 //      Access : Public
 // Description : tv query
 ////////////////////////////////////////////////////////////////////
-INLINE float PhysicsObject::
+INLINE PN_stdfloat PhysicsObject::
 get_terminal_velocity() const {
   return _terminal_velocity;
 }
@@ -259,7 +259,7 @@ get_terminal_velocity() const {
 // Description :
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
-set_orientation(const LOrientationf &orientation) {
+set_orientation(const LOrientation &orientation) {
   nassertv(!orientation.is_nan());
   _orientation = orientation;
 }
@@ -270,7 +270,7 @@ set_orientation(const LOrientationf &orientation) {
 // Description : set rotation as a quaternion delta per second.
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
-set_rotation(const LRotationf &rotation) {
+set_rotation(const LRotation &rotation) {
   nassertv(!rotation.is_nan());
   _rotation = rotation;
 }
@@ -280,7 +280,7 @@ set_rotation(const LRotationf &rotation) {
 //      Access : Public
 // Description : get current orientation.
 ////////////////////////////////////////////////////////////////////
-INLINE LOrientationf PhysicsObject::
+INLINE LOrientation PhysicsObject::
 get_orientation() const {
   return _orientation;
 }
@@ -290,7 +290,7 @@ get_orientation() const {
 //      Access : Public
 // Description : get rotation per second.
 ////////////////////////////////////////////////////////////////////
-INLINE LRotationf PhysicsObject::
+INLINE LRotation PhysicsObject::
 get_rotation() const {
   return _rotation;
 }

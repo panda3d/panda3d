@@ -4,7 +4,7 @@
 
 {
   ZBufferPoint *t,*pr1,*pr2,*l1,*l2;
-  float fdx1, fdx2, fdy1, fdy2, fz, d1, d2;
+  PN_stdfloat fdx1, fdx2, fdy1, fdy2, fz, d1, d2;
   ZPOINT *pz1;
   PIXEL *pp1;
   int part, update_left, update_right;
@@ -30,16 +30,16 @@
   int t1 = 0, dtdx = 0, dtdy = 0, dtdl_min = 0, dtdl_max = 0;
 #endif
 #ifdef INTERP_STZ
-  float sz1 = 0, dszdx = 0, dszdy = 0, dszdl_min = 0, dszdl_max = 0;
-  float tz1 = 0, dtzdx = 0, dtzdy = 0, dtzdl_min = 0, dtzdl_max = 0;
+  PN_stdfloat sz1 = 0, dszdx = 0, dszdy = 0, dszdl_min = 0, dszdl_max = 0;
+  PN_stdfloat tz1 = 0, dtzdx = 0, dtzdy = 0, dtzdl_min = 0, dtzdl_max = 0;
 #endif
 #ifdef INTERP_STZA
-  float sza1 = 0, dszadx = 0, dszady = 0, dszadl_min = 0, dszadl_max = 0;
-  float tza1 = 0, dtzadx = 0, dtzady = 0, dtzadl_min = 0, dtzadl_max = 0;
+  PN_stdfloat sza1 = 0, dszadx = 0, dszady = 0, dszadl_min = 0, dszadl_max = 0;
+  PN_stdfloat tza1 = 0, dtzadx = 0, dtzady = 0, dtzadl_min = 0, dtzadl_max = 0;
 #endif
 #ifdef INTERP_STZB
-  float szb1 = 0, dszbdx = 0, dszbdy = 0, dszbdl_min = 0, dszbdl_max = 0;
-  float tzb1 = 0, dtzbdx = 0, dtzbdy = 0, dtzbdl_min = 0, dtzbdl_max = 0;
+  PN_stdfloat szb1 = 0, dszbdx = 0, dszbdy = 0, dszbdl_min = 0, dszbdl_max = 0;
+  PN_stdfloat tzb1 = 0, dtzbdx = 0, dtzbdy = 0, dtzbdl_min = 0, dtzbdl_max = 0;
 #endif
 #if defined(INTERP_MIPMAP) && (defined(INTERP_ST) || defined(INTERP_STZ))
   unsigned int mipmap_dx = 0, mipmap_level = 0;
@@ -74,11 +74,11 @@
 
   /* we compute dXdx and dXdy for all interpolated values */
   
-  fdx1 = (float) (p1->x - p0->x);
-  fdy1 = (float) (p1->y - p0->y);
+  fdx1 = (PN_stdfloat) (p1->x - p0->x);
+  fdy1 = (PN_stdfloat) (p1->y - p0->y);
 
-  fdx2 = (float) (p2->x - p0->x);
-  fdy2 = (float) (p2->y - p0->y);
+  fdx2 = (PN_stdfloat) (p2->x - p0->x);
+  fdy2 = (PN_stdfloat) (p2->y - p0->y);
 
   fz = fdx1 * fdy2 - fdx2 * fdy1;
   if (fz == 0)
@@ -91,43 +91,43 @@
   fdy2 *= fz;
 
 #ifdef INTERP_Z
-  d1 = (float) (p1->z - p0->z);
-  d2 = (float) (p2->z - p0->z);
+  d1 = (PN_stdfloat) (p1->z - p0->z);
+  d2 = (PN_stdfloat) (p2->z - p0->z);
   dzdx = (int) (fdy2 * d1 - fdy1 * d2);
   dzdy = (int) (fdx1 * d2 - fdx2 * d1);
 #endif
 
 #ifdef INTERP_RGB
-  d1 = (float) (p1->r - p0->r);
-  d2 = (float) (p2->r - p0->r);
+  d1 = (PN_stdfloat) (p1->r - p0->r);
+  d2 = (PN_stdfloat) (p2->r - p0->r);
   drdx = (int) (fdy2 * d1 - fdy1 * d2);
   drdy = (int) (fdx1 * d2 - fdx2 * d1);
 
-  d1 = (float) (p1->g - p0->g);
-  d2 = (float) (p2->g - p0->g);
+  d1 = (PN_stdfloat) (p1->g - p0->g);
+  d2 = (PN_stdfloat) (p2->g - p0->g);
   dgdx = (int) (fdy2 * d1 - fdy1 * d2);
   dgdy = (int) (fdx1 * d2 - fdx2 * d1);
 
-  d1 = (float) (p1->b - p0->b);
-  d2 = (float) (p2->b - p0->b);
+  d1 = (PN_stdfloat) (p1->b - p0->b);
+  d2 = (PN_stdfloat) (p2->b - p0->b);
   dbdx = (int) (fdy2 * d1 - fdy1 * d2);
   dbdy = (int) (fdx1 * d2 - fdx2 * d1);
 
-  d1 = (float) (p1->a - p0->a);
-  d2 = (float) (p2->a - p0->a);
+  d1 = (PN_stdfloat) (p1->a - p0->a);
+  d2 = (PN_stdfloat) (p2->a - p0->a);
   dadx = (int) (fdy2 * d1 - fdy1 * d2);
   dady = (int) (fdx1 * d2 - fdx2 * d1);
 
 #endif
   
 #ifdef INTERP_ST
-  d1 = (float) (p1->s - p0->s);
-  d2 = (float) (p2->s - p0->s);
+  d1 = (PN_stdfloat) (p1->s - p0->s);
+  d2 = (PN_stdfloat) (p2->s - p0->s);
   dsdx = (int) (fdy2 * d1 - fdy1 * d2);
   dsdy = (int) (fdx1 * d2 - fdx2 * d1);
   
-  d1 = (float) (p1->t - p0->t);
-  d2 = (float) (p2->t - p0->t);
+  d1 = (PN_stdfloat) (p1->t - p0->t);
+  d2 = (PN_stdfloat) (p2->t - p0->t);
   dtdx = (int) (fdy2 * d1 - fdy1 * d2);
   dtdy = (int) (fdx1 * d2 - fdx2 * d1);
 
@@ -136,16 +136,16 @@
 
 #ifdef INTERP_STZ
   {
-    float zz;
-    zz=(float) p0->z;
-    p0->sz= (float) p0->s * zz;
-    p0->tz= (float) p0->t * zz;
-    zz=(float) p1->z;
-    p1->sz= (float) p1->s * zz;
-    p1->tz= (float) p1->t * zz;
-    zz=(float) p2->z;
-    p2->sz= (float) p2->s * zz;
-    p2->tz= (float) p2->t * zz;
+    PN_stdfloat zz;
+    zz=(PN_stdfloat) p0->z;
+    p0->sz= (PN_stdfloat) p0->s * zz;
+    p0->tz= (PN_stdfloat) p0->t * zz;
+    zz=(PN_stdfloat) p1->z;
+    p1->sz= (PN_stdfloat) p1->s * zz;
+    p1->tz= (PN_stdfloat) p1->t * zz;
+    zz=(PN_stdfloat) p2->z;
+    p2->sz= (PN_stdfloat) p2->s * zz;
+    p2->tz= (PN_stdfloat) p2->t * zz;
 
     d1 = p1->sz - p0->sz;
     d2 = p2->sz - p0->sz;
@@ -161,16 +161,16 @@
 
 #ifdef INTERP_STZA
   {
-    float zz;
-    zz=(float) p0->z;
-    p0->sza= (float) p0->sa * zz;
-    p0->tza= (float) p0->ta * zz;
-    zz=(float) p1->z;
-    p1->sza= (float) p1->sa * zz;
-    p1->tza= (float) p1->ta * zz;
-    zz=(float) p2->z;
-    p2->sza= (float) p2->sa * zz;
-    p2->tza= (float) p2->ta * zz;
+    PN_stdfloat zz;
+    zz=(PN_stdfloat) p0->z;
+    p0->sza= (PN_stdfloat) p0->sa * zz;
+    p0->tza= (PN_stdfloat) p0->ta * zz;
+    zz=(PN_stdfloat) p1->z;
+    p1->sza= (PN_stdfloat) p1->sa * zz;
+    p1->tza= (PN_stdfloat) p1->ta * zz;
+    zz=(PN_stdfloat) p2->z;
+    p2->sza= (PN_stdfloat) p2->sa * zz;
+    p2->tza= (PN_stdfloat) p2->ta * zz;
 
     d1 = p1->sza - p0->sza;
     d2 = p2->sza - p0->sza;
@@ -186,16 +186,16 @@
 
 #ifdef INTERP_STZB
   {
-    float zz;
-    zz=(float) p0->z;
-    p0->szb= (float) p0->sb * zz;
-    p0->tzb= (float) p0->tb * zz;
-    zz=(float) p1->z;
-    p1->szb= (float) p1->sb * zz;
-    p1->tzb= (float) p1->tb * zz;
-    zz=(float) p2->z;
-    p2->szb= (float) p2->sb * zz;
-    p2->tzb= (float) p2->tb * zz;
+    PN_stdfloat zz;
+    zz=(PN_stdfloat) p0->z;
+    p0->szb= (PN_stdfloat) p0->sb * zz;
+    p0->tzb= (PN_stdfloat) p0->tb * zz;
+    zz=(PN_stdfloat) p1->z;
+    p1->szb= (PN_stdfloat) p1->sb * zz;
+    p1->tzb= (PN_stdfloat) p1->tb * zz;
+    zz=(PN_stdfloat) p2->z;
+    p2->szb= (PN_stdfloat) p2->sb * zz;
+    p2->tzb= (PN_stdfloat) p2->tb * zz;
 
     d1 = p1->szb - p0->szb;
     d2 = p2->szb - p0->szb;
@@ -357,13 +357,13 @@
         register unsigned int s,t;
 #endif
 #ifdef INTERP_STZ
-        float sz,tz;
+        PN_stdfloat sz,tz;
 #endif
 #ifdef INTERP_STZA
-        float sza,tza;
+        PN_stdfloat sza,tza;
 #endif
 #ifdef INTERP_STZB
-        float szb,tzb;
+        PN_stdfloat szb,tzb;
 #endif
 
         n=(x2 >> 16) - x1;

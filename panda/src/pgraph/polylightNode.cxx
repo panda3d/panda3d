@@ -75,11 +75,11 @@ make_copy() const {
 //               Use offset, scale and step_size to tweak
 //               Future addition: custom function variations to flicker
 ////////////////////////////////////////////////////////////////////
-Colorf PolylightNode::flicker() const {
-  float r,g,b;
+LColor PolylightNode::flicker() const {
+  PN_stdfloat r,g,b;
 
-  float variation= 0.0;
-  Colorf color = get_color();  //color = get_color_scenegraph();
+  PN_stdfloat variation= 0.0;
+  LColor color = get_color();  //color = get_color_scenegraph();
 
   r = color[0];
   g = color[1];
@@ -126,7 +126,7 @@ Colorf PolylightNode::flicker() const {
   }
   */
   pgraph_cat.debug() << "Color R:" << r << "; G:" << g << "; B:" << b << endl;
-  return Colorf(r,g,b,1.0);
+  return LColor(r,g,b,1.0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -154,14 +154,14 @@ compare_to(const PolylightNode &other) const {
   if (_radius != other._radius) {
     return _radius < other._radius ? -1 :1;
   }
-  LVecBase3f position = get_pos();
-  LVecBase3f other_position = other.get_pos();
+  LVecBase3 position = get_pos();
+  LVecBase3 other_position = other.get_pos();
   if (position != other_position) {
     return position < other_position ? -1 :1;
   }
 
-  Colorf color = get_color();
-  Colorf other_color = other.get_color();
+  LColor color = get_color();
+  LColor other_color = other.get_color();
   if (color != other_color) {
     return color < other_color ? -1 :1;
   }
@@ -233,17 +233,11 @@ register_with_read_factory() {
 void PolylightNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
   PandaNode::write_datagram(manager, dg);
-  LVecBase3f position;
-  Colorf color;
-  position = get_pos();
-  color = get_color();
-  dg.add_float32(position[0]);
-  dg.add_float32(position[1]);
-  dg.add_float32(position[2]);
-  dg.add_float32(color[0]);
-  dg.add_float32(color[1]);
-  dg.add_float32(color[2]);
-  dg.add_float32(_radius);
+  _position.write_datagram(dg);
+  LRGBColor color;
+  color.set(_color[0], _color[1], _color[2]);
+  color.write_datagram(dg);
+  dg.add_stdfloat(_radius);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -276,17 +270,11 @@ make_from_bam(const FactoryParams &params) {
 void PolylightNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
   PandaNode::fillin(scan, manager);
-  LVecBase3f position;
-  Colorf color;
-  position[0] = scan.get_float32();
-  position[1] = scan.get_float32();
-  position[2] = scan.get_float32();
-  set_pos(position[0],position[1],position[2]);
-  color[0] = scan.get_float32();
-  color[1] = scan.get_float32();
-  color[2] = scan.get_float32();
+  _position.read_datagram(scan);
+  LRGBColor color;
+  color.read_datagram(scan);
   set_color(color[0], color[1], color[2]);
-  _radius = scan.get_float32();
+  _radius = scan.get_stdfloat();
 }
 
 

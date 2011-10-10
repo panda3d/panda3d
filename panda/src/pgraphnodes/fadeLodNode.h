@@ -35,8 +35,8 @@ public:
   virtual void output(ostream &out) const;
 
 PUBLISHED:
-  INLINE void set_fade_time(float t);
-  INLINE float get_fade_time() const;
+  INLINE void set_fade_time(PN_stdfloat t);
+  INLINE PN_stdfloat get_fade_time() const;
 
   void set_fade_bin(const string &name, int draw_order);
   INLINE const string &get_fade_bin_name() const;
@@ -47,12 +47,12 @@ PUBLISHED:
 
 private:
   CPT(RenderState) get_fade_1_old_state();
-  CPT(RenderState) get_fade_1_new_state(float in_alpha);
-  CPT(RenderState) get_fade_2_old_state(float out_alpha);
+  CPT(RenderState) get_fade_1_new_state(PN_stdfloat in_alpha);
+  CPT(RenderState) get_fade_2_old_state(PN_stdfloat out_alpha);
   CPT(RenderState) get_fade_2_new_state();
 
 private:
-  float _fade_time;
+  PN_stdfloat _fade_time;
   string _fade_bin_name;
   int _fade_bin_draw_order;
   int _fade_state_override;

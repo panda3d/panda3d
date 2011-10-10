@@ -32,8 +32,8 @@ BillboardEffect() {
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(RenderEffect) BillboardEffect::
 make_axis() {
-  return make(LVector3f::up(), false, true, 
-              0.0f, NodePath(), LPoint3f(0.0f, 0.0f, 0.0f));
+  return make(LVector3::up(), false, true, 
+              0.0f, NodePath(), LPoint3(0.0f, 0.0f, 0.0f));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -44,8 +44,8 @@ make_axis() {
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(RenderEffect) BillboardEffect::
 make_point_eye() {
-  return make(LVector3f::up(), true, false,
-              0.0f, NodePath(), LPoint3f(0.0f, 0.0f, 0.0f));
+  return make(LVector3::up(), true, false,
+              0.0f, NodePath(), LPoint3(0.0f, 0.0f, 0.0f));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -56,8 +56,8 @@ make_point_eye() {
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(RenderEffect) BillboardEffect::
 make_point_world() {
-  return make(LVector3f::up(), false, false,
-              0.0f, NodePath(), LPoint3f(0.0f, 0.0f, 0.0f));
+  return make(LVector3::up(), false, false,
+              0.0f, NodePath(), LPoint3(0.0f, 0.0f, 0.0f));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -81,7 +81,7 @@ is_off() const {
 //       Access: Published
 //  Description: Returns the up vector in effect for this billboard.
 ////////////////////////////////////////////////////////////////////
-INLINE const LVector3f &BillboardEffect::
+INLINE const LVector3 &BillboardEffect::
 get_up_vector() const {
   return _up_vector;
 }
@@ -118,7 +118,7 @@ get_axial_rotate() const {
 //               rotating.  This can be used to ensure the billboard
 //               is not obscured by nearby geometry.
 ////////////////////////////////////////////////////////////////////
-INLINE float BillboardEffect::
+INLINE PN_stdfloat BillboardEffect::
 get_offset() const {
   return _offset;
 }
@@ -143,7 +143,7 @@ get_look_at() const {
 //               towards which the billboard will rotate.  Normally
 //               this is (0, 0, 0).
 ////////////////////////////////////////////////////////////////////
-INLINE const LPoint3f &BillboardEffect::
+INLINE const LPoint3 &BillboardEffect::
 get_look_at_point() const {
   return _look_at_point;
 }

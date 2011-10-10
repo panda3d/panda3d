@@ -55,7 +55,7 @@ compare_to(const TransformBlend &other) const {
 //               already existed, increases its weight factor.
 ////////////////////////////////////////////////////////////////////
 void TransformBlend::
-add_transform(const VertexTransform *transform, float weight) {
+add_transform(const VertexTransform *transform, PN_stdfloat weight) {
   if (!IS_NEARLY_ZERO(weight)) {
     TransformEntry entry;
     entry._transform = transform;
@@ -104,7 +104,7 @@ remove_transform(const VertexTransform *transform) {
 ////////////////////////////////////////////////////////////////////
 void TransformBlend::
 normalize_weights() {
-  float net_weight = 0.0f;
+  PN_stdfloat net_weight = 0.0f;
   Entries::iterator ei;
   for (ei = _entries.begin(); ei != _entries.end(); ++ei) {
     net_weight += (*ei)._weight;
@@ -140,7 +140,7 @@ has_transform(const VertexTransform *transform) const {
 //               transform, or 0 if there is no entry for the
 //               transform.
 ////////////////////////////////////////////////////////////////////
-float TransformBlend::
+PN_stdfloat TransformBlend::
 get_weight(const VertexTransform *transform) const {
   TransformEntry entry;
   entry._transform = transform;
@@ -184,11 +184,11 @@ write(ostream &out, int indent_level) const {
   for (ei = _entries.begin(); ei != _entries.end(); ++ei) {
     indent(out, indent_level)
       << *(*ei)._transform << ":" << (*ei)._weight << "\n";
-    LMatrix4f mat;
+    LMatrix4 mat;
     (*ei)._transform->get_matrix(mat);
     mat.write(out, indent_level + 4);
   }
-  LMatrix4f blend;
+  LMatrix4 blend;
   update_blend(current_thread);
   get_blend(blend, current_thread);
   indent(out, indent_level)
@@ -241,7 +241,7 @@ clear_result(Thread *current_thread) {
   cdata->_global_modified = UpdateSeq();
   if (cdata->_modified != UpdateSeq()) {
     cdata->_modified = UpdateSeq();
-    cdata->_result = LMatrix4f::ident_mat();
+    cdata->_result = LMatrix4::ident_mat();
   }
 }
 
@@ -258,7 +258,7 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
   Entries::const_iterator ei;
   for (ei = _entries.begin(); ei != _entries.end(); ++ei) {
     manager->write_pointer(dg, (*ei)._transform);
-    dg.add_float32((*ei)._weight);
+    dg.add_stdfloat((*ei)._weight);
   }
 }
 
@@ -299,7 +299,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   for (size_t i = 0; i < num_entries; ++i) {
     TransformEntry entry;
     manager->read_pointer(scan);
-    entry._weight = scan.get_float32();
+    entry._weight = scan.get_stdfloat();
     _entries.push_back(entry);
   }
 }

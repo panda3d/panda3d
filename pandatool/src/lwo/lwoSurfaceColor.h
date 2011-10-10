@@ -28,7 +28,7 @@
 ////////////////////////////////////////////////////////////////////
 class LwoSurfaceColor : public LwoChunk {
 public:
-  RGBColorf _color;
+  LRGBColor _color;
   int _envelope;
 
 public:

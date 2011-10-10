@@ -69,8 +69,8 @@ PUBLISHED:
   // exist in the SimpleLru implementation.  In most cases, the
   // defaults will be sufficient, so you do not need to mess with
   // them.
-  INLINE void set_weight(float weight);
-  INLINE float get_weight() const;
+  INLINE void set_weight(PN_stdfloat weight);
+  INLINE PN_stdfloat get_weight() const;
 
   INLINE void set_max_updates_per_frame(int max_updates_per_frame);
   INLINE int get_max_updates_per_frame() const;
@@ -87,7 +87,7 @@ private:
     LPP_TotalPriorities = 50,
   };
 
-  INLINE float calculate_exponential_moving_average(float value, float average) const;
+  INLINE PN_stdfloat calculate_exponential_moving_average(PN_stdfloat value, PN_stdfloat average) const;
 
   void do_partial_lru_update(int num_updates);
   void update_page(AdaptiveLruPage *page);
@@ -185,7 +185,7 @@ private:
   int _total_usage;
   int _update_total_usage;
 
-  float _average_frame_utilization;
+  PN_stdfloat _average_frame_utilization;
 
   friend class AdaptiveLru;
 };

@@ -28,7 +28,7 @@ LerpBlendType& LerpBlendType::operator=(const LerpBlendType&) {
   return *this;
 }
 
-float LerpBlendType::operator()(float t) {
+PN_stdfloat LerpBlendType::operator()(PN_stdfloat t) {
   return t;
 }
 
@@ -43,8 +43,8 @@ EaseInBlendType& EaseInBlendType::operator=(const EaseInBlendType& c) {
   return *this;
 }
 
-float EaseInBlendType::operator()(float t) {
-  float x = t*t;
+PN_stdfloat EaseInBlendType::operator()(PN_stdfloat t) {
+  PN_stdfloat x = t*t;
   return ((3.0f * x) - (t * x)) * 0.5f;
 }
 
@@ -58,7 +58,7 @@ EaseOutBlendType& EaseOutBlendType::operator=(const EaseOutBlendType& c) {
   return *this;
 }
 
-float EaseOutBlendType::operator()(float t) {
+PN_stdfloat EaseOutBlendType::operator()(PN_stdfloat t) {
   return ((3.0f * t) - (t * t * t)) * 0.5f;
 }
 
@@ -73,8 +73,8 @@ EaseInOutBlendType& EaseInOutBlendType::operator=(const EaseInOutBlendType& c)
   return *this;
 }
 
-float EaseInOutBlendType::operator()(float t) {
-  float x = t*t;
+PN_stdfloat EaseInOutBlendType::operator()(PN_stdfloat t) {
+  PN_stdfloat x = t*t;
   return (3.0f * x) - (2.0f * t * x);
 }
 
@@ -87,7 +87,7 @@ NoBlendType& NoBlendType::operator=(const NoBlendType& c) {
   return *this;
 }
 
-float NoBlendType::operator()(float t) {
+PN_stdfloat NoBlendType::operator()(PN_stdfloat t) {
   return t;
 }
 

@@ -96,7 +96,7 @@ private:
   Materials _materials;
   Faces _faces;
 
-  typedef pmap<int, float> WeightMap;
+  typedef pmap<int, PN_stdfloat> WeightMap;
 
   class SkinWeightsData {
   public:

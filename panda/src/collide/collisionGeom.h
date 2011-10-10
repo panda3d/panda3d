@@ -32,8 +32,8 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_COLLIDE CollisionGeom : public CollisionPolygon {
 private:
-  INLINE CollisionGeom(const LVecBase3f &a, const LVecBase3f &b,
-                       const LVecBase3f &c);
+  INLINE CollisionGeom(const LVecBase3 &a, const LVecBase3 &b,
+                       const LVecBase3 &c);
   INLINE CollisionGeom(const CollisionGeom &copy);
 
 public:

@@ -1,4 +1,4 @@
-// Filename: pta_double.h
+// Filename: vector_double.h
 // Created by:  drose (10May00)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,30 +12,28 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef PTA_DOUBLE_H
-#define PTA_DOUBLE_H
+#ifndef VECTOR_DOUBLE_H
+#define VECTOR_DOUBLE_H
 
 #include "pandabase.h"
 
-#include "pointerToArray.h"
-#include "vector_double.h"
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : PTA_double
-// Description : A pta of doubles.  This class is defined once here,
+//       Class : vector_double
+// Description : A vector of doubles.  This class is defined once here,
 //               and exported to PANDA.DLL; other packages that want
-//               to use a pta of this type (whether they need to
+//               to use a vector of this type (whether they need to
 //               export it or not) should include this header file,
-//               rather than defining the pta again.
+//               rather than defining the vector again.
 ////////////////////////////////////////////////////////////////////
 
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, PointerToBase<ReferenceCountedVector<double> >)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, PointerToArrayBase<double>)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, PointerToArray<double>)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, ConstPointerToArray<double>)
+#define EXPCL EXPCL_PANDAEXPRESS
+#define EXPTP EXPTP_PANDAEXPRESS
+#define TYPE double
+#define NAME vector_double
 
-typedef PointerToArray<double> PTA_double;
-typedef ConstPointerToArray<double> CPTA_double;
+#include "vector_src.h"
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

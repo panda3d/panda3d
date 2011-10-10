@@ -69,7 +69,7 @@ public:
 PUBLISHED:
   virtual bool is_valid() const;
 
-  virtual float get_max_t() const;
+  virtual PN_stdfloat get_max_t() const;
 
   void set_curve_type(int type);
   int get_curve_type() const;
@@ -77,20 +77,20 @@ PUBLISHED:
   void set_num_dimensions(int num);
   int get_num_dimensions() const;
 
-  float calc_length() const;
-  float calc_length(float from, float to) const;
-  float find_length(float start_t, float length_offset) const;
+  PN_stdfloat calc_length() const;
+  PN_stdfloat calc_length(PN_stdfloat from, PN_stdfloat to) const;
+  PN_stdfloat find_length(PN_stdfloat start_t, PN_stdfloat length_offset) const;
 
-  virtual bool get_point(float t, LVecBase3f &point) const=0;
-  virtual bool get_tangent(float t, LVecBase3f &tangent) const=0;
-  virtual bool get_pt(float t, LVecBase3f &point, LVecBase3f &tangent) const=0;
-  virtual bool get_2ndtangent(float t, LVecBase3f &tangent2) const=0;
+  virtual bool get_point(PN_stdfloat t, LVecBase3 &point) const=0;
+  virtual bool get_tangent(PN_stdfloat t, LVecBase3 &tangent) const=0;
+  virtual bool get_pt(PN_stdfloat t, LVecBase3 &point, LVecBase3 &tangent) const=0;
+  virtual bool get_2ndtangent(PN_stdfloat t, LVecBase3 &tangent2) const=0;
 
-  virtual bool adjust_point(float t, float px, float py, float pz);
-  virtual bool adjust_tangent(float t, float tx, float ty, float tz);
-  virtual bool adjust_pt(float t,
-                         float px, float py, float pz,
-                         float tx, float ty, float tz);
+  virtual bool adjust_point(PN_stdfloat t, PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz);
+  virtual bool adjust_tangent(PN_stdfloat t, PN_stdfloat tx, PN_stdfloat ty, PN_stdfloat tz);
+  virtual bool adjust_pt(PN_stdfloat t,
+                         PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz,
+                         PN_stdfloat tx, PN_stdfloat ty, PN_stdfloat tz);
 
   virtual bool recompute();
 
@@ -102,8 +102,8 @@ PUBLISHED:
 public:
   struct BezierSeg {
   public:
-    LVecBase3f _v[4];
-    float _t;
+    LVecBase3 _v[4];
+    PN_stdfloat _t;
   };
   typedef pvector<BezierSeg> BezierSegs;
 
@@ -118,26 +118,26 @@ public:
   void unregister_drawer(ParametricCurveDrawer *drawer);
 
 protected:
-  void invalidate(float t1, float t2);
+  void invalidate(PN_stdfloat t1, PN_stdfloat t2);
   void invalidate_all();
 
   virtual bool format_egg(ostream &out, const string &name,
                           const string &curve_type, int indent_level) const;
 
 private:
-  float r_calc_length(float t1, float t2,
-                      const LPoint3f &p1, const LPoint3f &p2,
-                      float seglength) const;
-  bool r_find_length(float target_length, float &found_t,
-                     float t1, float t2,
-                     const LPoint3f &p1, const LPoint3f &p2,
-                     float &seglength) const;
-  bool r_find_t(float target_length, float &found_t,
-                float t1, float t2,
-                const LPoint3f &p1, const LPoint3f &p2) const;
-  bool find_t_linear(float target_length, float &found_t,
-                     float t1, float t2,
-                     const LPoint3f &p1, const LPoint3f &p2) const;
+  PN_stdfloat r_calc_length(PN_stdfloat t1, PN_stdfloat t2,
+                      const LPoint3 &p1, const LPoint3 &p2,
+                      PN_stdfloat seglength) const;
+  bool r_find_length(PN_stdfloat target_length, PN_stdfloat &found_t,
+                     PN_stdfloat t1, PN_stdfloat t2,
+                     const LPoint3 &p1, const LPoint3 &p2,
+                     PN_stdfloat &seglength) const;
+  bool r_find_t(PN_stdfloat target_length, PN_stdfloat &found_t,
+                PN_stdfloat t1, PN_stdfloat t2,
+                const LPoint3 &p1, const LPoint3 &p2) const;
+  bool find_t_linear(PN_stdfloat target_length, PN_stdfloat &found_t,
+                     PN_stdfloat t1, PN_stdfloat t2,
+                     const LPoint3 &p1, const LPoint3 &p2) const;
 
 protected:
   int _curve_type;

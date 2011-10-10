@@ -66,27 +66,27 @@ PUBLISHED:
   INLINE NodePath get_root();
 
   void begin(NodePath camera, NodePath render);
-  INLINE void tri(LVector3f v1, LVector4f c1, LVector2f uv1,
-                  LVector3f v2, LVector4f c2, LVector2f uv2,
-                  LVector3f v3, LVector4f c3, LVector2f uv3);
+  INLINE void tri(LVector3 v1, LVector4 c1, LVector2 uv1,
+                  LVector3 v2, LVector4 c2, LVector2 uv2,
+                  LVector3 v3, LVector4 c3, LVector2 uv3);
                   
-  void particle(LVector3f pos, LVector4f frame, float size, LVector4f color, float rotation);
-  void blended_particle(LVector3f pos, LVector4f frame1, LVector4f frame2,
-    float blend, float size, LVector4f color, float rotation);
-  void billboard(LVector3f pos, LVector4f frame, float size, LVector4f color);
-  void segment(LVector3f start, LVector3f stop, LVector4f frame, float thickness, LVector4f color);
-  void cross_segment(LVector3f start, LVector3f stop, LVector4f frame, float thickness, LVector4f color);
-  void uneven_segment(LVector3f start, LVector3f stop,
-    LVector4f frame, float thickness_start, LVector4f color_start,
-    float thickness_stop, LVector4f color_stop);
+  void particle(LVector3 pos, LVector4 frame, PN_stdfloat size, LVector4 color, PN_stdfloat rotation);
+  void blended_particle(LVector3 pos, LVector4 frame1, LVector4 frame2,
+    PN_stdfloat blend, PN_stdfloat size, LVector4 color, PN_stdfloat rotation);
+  void billboard(LVector3 pos, LVector4 frame, PN_stdfloat size, LVector4 color);
+  void segment(LVector3 start, LVector3 stop, LVector4 frame, PN_stdfloat thickness, LVector4 color);
+  void cross_segment(LVector3 start, LVector3 stop, LVector4 frame, PN_stdfloat thickness, LVector4 color);
+  void uneven_segment(LVector3 start, LVector3 stop,
+    LVector4 frame, PN_stdfloat thickness_start, LVector4 color_start,
+    PN_stdfloat thickness_stop, LVector4 color_stop);
 
-  void link_segment(LVector3f pos, LVector4f frame, float thickness, LVector4f color);
-  void link_segment_end(LVector4f frame, LVector4f color);
+  void link_segment(LVector3 pos, LVector4 frame, PN_stdfloat thickness, LVector4 color);
+  void link_segment_end(LVector4 frame, LVector4 color);
 
-  void explosion(LVector3f pos, LVector4f frame, float size, LVector4f color,
-    int seed, int number, float distance);
-  void stream(LVector3f start, LVector3f stop, LVector4f frame, float size, LVector4f color,
-    int number, float offset);
+  void explosion(LVector3 pos, LVector4 frame, PN_stdfloat size, LVector4 color,
+    int seed, int number, PN_stdfloat distance);
+  void stream(LVector3 start, LVector3 stop, LVector4 frame, PN_stdfloat size, LVector4 color,
+    int number, PN_stdfloat offset);
   void geometry(NodePath node);
   void end();
 
@@ -111,20 +111,20 @@ private:
   GeomVertexRewriter *_color;
 
   // billboard vectors
-  LVector4f _colorv;
-  LVector3f _normalv;
-  LVector3f _eyePos;
-  LVector3f _b1, _b2, _b3, _b4;
-  LVector3f _up, _right;
+  LVector4 _colorv;
+  LVector3 _normalv;
+  LVector3 _eyePos;
+  LVector3 _b1, _b2, _b3, _b4;
+  LVector3 _up, _right;
 
   // clear indexes
   int _last_clear_index, _start_clear_index, _end_clear_index, _clear_index;
 
   // used for curves
   int _at_start;
-  LVector3f _last_v1,_last_v2,_last_v3,_last_v4,_last_pos;
-  float _last_thickness;
-  LVector4f _last_color;
+  LVector3 _last_v1,_last_v2,_last_v3,_last_v4,_last_pos;
+  PN_stdfloat _last_thickness;
+  LVector4 _last_color;
 
   // bounding volume
   PT(BoundingVolume) _bv;

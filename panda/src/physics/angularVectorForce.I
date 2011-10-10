@@ -17,7 +17,7 @@
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void AngularVectorForce::
-set_quat(const LRotationf &v) {
+set_quat(const LRotation &v) {
   _fvec = v;
 }
 
@@ -26,15 +26,15 @@ set_quat(const LRotationf &v) {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void AngularVectorForce::
-set_hpr(float h, float p, float r) {
-  _fvec.set_hpr(LVecBase3f(h, p, r));
+set_hpr(PN_stdfloat h, PN_stdfloat p, PN_stdfloat r) {
+  _fvec.set_hpr(LVecBase3(h, p, r));
 }
 
 ////////////////////////////////////////////////////////////////////
 // Function : get_local_quat
 //   Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE LRotationf AngularVectorForce::
+INLINE LRotation AngularVectorForce::
 get_local_quat() const {
   return _fvec;
 }

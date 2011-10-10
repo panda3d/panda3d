@@ -40,30 +40,30 @@ public:
 PUBLISHED:
   BoundingHexahedron(const Frustumf &frustum, bool is_ortho,
                      CoordinateSystem cs = CS_default);
-  BoundingHexahedron(const LPoint3f &fll, const LPoint3f &flr,
-                     const LPoint3f &fur, const LPoint3f &ful,
-                     const LPoint3f &nll, const LPoint3f &nlr,
-                     const LPoint3f &nur, const LPoint3f &nul);
+  BoundingHexahedron(const LPoint3 &fll, const LPoint3 &flr,
+                     const LPoint3 &fur, const LPoint3 &ful,
+                     const LPoint3 &nll, const LPoint3 &nlr,
+                     const LPoint3 &nur, const LPoint3 &nul);
 
 public:
   ALLOC_DELETED_CHAIN(BoundingHexahedron);
   virtual BoundingVolume *make_copy() const;
 
-  virtual LPoint3f get_min() const;
-  virtual LPoint3f get_max() const;
+  virtual LPoint3 get_min() const;
+  virtual LPoint3 get_max() const;
 
-  virtual LPoint3f get_approx_center() const;
-  virtual void xform(const LMatrix4f &mat);
+  virtual LPoint3 get_approx_center() const;
+  virtual void xform(const LMatrix4 &mat);
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
 
 PUBLISHED:
   INLINE_MATHUTIL int get_num_points() const;
-  INLINE_MATHUTIL LPoint3f get_point(int n) const;
+  INLINE_MATHUTIL LPoint3 get_point(int n) const;
   MAKE_SEQ(get_points, get_num_points, get_point);
   INLINE_MATHUTIL int get_num_planes() const;
-  INLINE_MATHUTIL Planef get_plane(int n) const;
+  INLINE_MATHUTIL LPlane get_plane(int n) const;
   MAKE_SEQ(get_planes, get_num_planes, get_plane);
 
 public:
@@ -76,8 +76,8 @@ protected:
                             const BoundingVolume **last) const;
   virtual int contains_other(const BoundingVolume *other) const;
 
-  virtual int contains_point(const LPoint3f &point) const;
-  virtual int contains_lineseg(const LPoint3f &a, const LPoint3f &b) const;
+  virtual int contains_point(const LPoint3 &point) const;
+  virtual int contains_lineseg(const LPoint3 &a, const LPoint3 &b) const;
   virtual int contains_sphere(const BoundingSphere *sphere) const;
   virtual int contains_box(const BoundingBox *box) const;
   virtual int contains_hexahedron(const BoundingHexahedron *hexahedron) const;
@@ -91,9 +91,9 @@ private:
     num_points = 8,
     num_planes = 6
   };
-  LPoint3f _points[num_points];
-  Planef _planes[num_planes];
-  LPoint3f _centroid;
+  LPoint3 _points[num_points];
+  LPlane _planes[num_planes];
+  LPoint3 _centroid;
 
 
 public:

@@ -26,7 +26,7 @@ PUBLISHED:
   virtual ~AngularForce();
 
   virtual AngularForce *make_copy() const = 0;
-  LRotationf get_quat(const PhysicsObject *po);
+  LRotation get_quat(const PhysicsObject *po);
   virtual bool is_linear() const;
   
   virtual void output(ostream &out) const;
@@ -37,7 +37,7 @@ protected:
   AngularForce(const AngularForce &copy);
 
 private:
-  virtual LRotationf get_child_quat(const PhysicsObject *po) = 0;
+  virtual LRotation get_child_quat(const PhysicsObject *po) = 0;
 
 public:
   static TypeHandle get_class_type() {

@@ -48,7 +48,7 @@ get_physics_object() const {
 // Description : encapsulating wrapper
 ////////////////////////////////////////////////////////////////////
 INLINE void LinearControlForce::
-set_vector(const LVector3f& v) {
+set_vector(const LVector3& v) {
   _fvec = v;
 }
 
@@ -58,7 +58,7 @@ set_vector(const LVector3f& v) {
 // Description : piecewise encapsulating wrapper
 ////////////////////////////////////////////////////////////////////
 INLINE void LinearControlForce::
-set_vector(float x, float y, float z) {
+set_vector(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
   _fvec.set(x, y, z);
 }
 
@@ -67,7 +67,7 @@ set_vector(float x, float y, float z) {
 //      Access : Public
 // Description :
 ////////////////////////////////////////////////////////////////////
-INLINE LVector3f LinearControlForce::
+INLINE LVector3 LinearControlForce::
 get_local_vector() const {
   return _fvec;
 }

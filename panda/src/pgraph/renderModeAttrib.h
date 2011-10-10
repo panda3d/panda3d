@@ -48,15 +48,15 @@ PUBLISHED:
   };
 
 private:
-  INLINE RenderModeAttrib(Mode mode, float thickness, bool perspective);
+  INLINE RenderModeAttrib(Mode mode, PN_stdfloat thickness, bool perspective);
 
 PUBLISHED:
-  static CPT(RenderAttrib) make(Mode mode, float thickness = 1.0f,
+  static CPT(RenderAttrib) make(Mode mode, PN_stdfloat thickness = 1.0f,
                                 bool perspective = false);
   static CPT(RenderAttrib) make_default();
 
   INLINE Mode get_mode() const;
-  INLINE float get_thickness() const;
+  INLINE PN_stdfloat get_thickness() const;
   INLINE bool get_perspective() const;
 
   INLINE int get_geom_rendering(int geom_rendering) const;
@@ -71,7 +71,7 @@ protected:
 
 private:
   Mode _mode;
-  float _thickness;
+  PN_stdfloat _thickness;
   bool _perspective;
 
 PUBLISHED:

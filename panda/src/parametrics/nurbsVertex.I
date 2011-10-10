@@ -62,7 +62,7 @@ INLINE NurbsVertex::
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void NurbsVertex::
-set_vertex(const LVecBase4f &vertex) {
+set_vertex(const LVecBase4 &vertex) {
   _vertex = vertex;
 }
 
@@ -71,7 +71,7 @@ set_vertex(const LVecBase4f &vertex) {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const LVecBase4f &NurbsVertex::
+INLINE const LVecBase4 &NurbsVertex::
 get_vertex() const {
   return _vertex;
 }

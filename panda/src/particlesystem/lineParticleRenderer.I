@@ -17,7 +17,7 @@
 //      Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void LineParticleRenderer::
-set_head_color(const Colorf& c) {
+set_head_color(const LColor& c) {
   _head_color = c;
 }
 
@@ -26,7 +26,7 @@ set_head_color(const Colorf& c) {
 //      Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void LineParticleRenderer::
-set_tail_color(const Colorf& c) {
+set_tail_color(const LColor& c) {
   _tail_color = c;
 }
 
@@ -34,7 +34,7 @@ set_tail_color(const Colorf& c) {
 //    Function : get_head_color
 //      Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE const Colorf& LineParticleRenderer::
+INLINE const LColor& LineParticleRenderer::
 get_head_color() const {
   return _head_color;
 }
@@ -43,7 +43,7 @@ get_head_color() const {
 //    Function : get_tail_color
 //      Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE const Colorf& LineParticleRenderer::
+INLINE const LColor& LineParticleRenderer::
 get_tail_color() const {
   return _tail_color;
 }
@@ -53,7 +53,7 @@ get_tail_color() const {
 // Description : accessor
 ////////////////////////////////////////////////////////////////////
 INLINE void LineParticleRenderer::
-set_line_scale_factor(float sf) {
+set_line_scale_factor(PN_stdfloat sf) {
   _line_scale_factor = sf;
 }
 
@@ -61,7 +61,7 @@ set_line_scale_factor(float sf) {
 //    Function : get_line_scale_factor
 // Description : accessor
 ////////////////////////////////////////////////////////////////////
-INLINE float LineParticleRenderer::
+INLINE PN_stdfloat LineParticleRenderer::
 get_line_scale_factor() const {
   return _line_scale_factor;
 }

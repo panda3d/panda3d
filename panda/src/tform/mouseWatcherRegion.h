@@ -32,14 +32,14 @@ class MouseWatcherParameter;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_TFORM MouseWatcherRegion : public TypedWritableReferenceCount, public Namable {
 PUBLISHED:
-  INLINE MouseWatcherRegion(const string &name, float left, float right,
-                            float bottom, float top);
-  INLINE MouseWatcherRegion(const string &name, const LVecBase4f &frame);
+  INLINE MouseWatcherRegion(const string &name, PN_stdfloat left, PN_stdfloat right,
+                            PN_stdfloat bottom, PN_stdfloat top);
+  INLINE MouseWatcherRegion(const string &name, const LVecBase4 &frame);
 
-  INLINE void set_frame(float left, float right, float bottom, float top);
-  INLINE void set_frame(const LVecBase4f &frame);
-  INLINE const LVecBase4f &get_frame() const;
-  INLINE float get_area() const;
+  INLINE void set_frame(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top);
+  INLINE void set_frame(const LVecBase4 &frame);
+  INLINE const LVecBase4 &get_frame() const;
+  INLINE PN_stdfloat get_area() const;
 
   INLINE void set_sort(int sort);
   INLINE int get_sort() const;
@@ -77,8 +77,8 @@ public:
   virtual void move(const MouseWatcherParameter &param);
 
 private:
-  LVecBase4f _frame;
-  float _area;
+  LVecBase4 _frame;
+  PN_stdfloat _area;
   int _sort;
 
   enum Flags {

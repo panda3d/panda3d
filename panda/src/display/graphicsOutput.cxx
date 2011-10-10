@@ -43,21 +43,21 @@ PStatCollector GraphicsOutput::_cull_pcollector("Cull");
 PStatCollector GraphicsOutput::_draw_pcollector("Draw");
 
 struct CubeFaceDef {
-  CubeFaceDef(const char *name, const LPoint3f &look_at, const LVector3f &up) :
+  CubeFaceDef(const char *name, const LPoint3 &look_at, const LVector3 &up) :
     _name(name), _look_at(look_at), _up(up) { }
 
   const char *_name;
-  LPoint3f _look_at;
-  LVector3f _up;
+  LPoint3 _look_at;
+  LVector3 _up;
 };
 
 static CubeFaceDef cube_faces[6] = {
-  CubeFaceDef("positive_x", LPoint3f(1, 0, 0), LVector3f(0, -1, 0)),
-  CubeFaceDef("negative_x", LPoint3f(-1, 0, 0), LVector3f(0, -1, 0)),
-  CubeFaceDef("positive_y", LPoint3f(0, 1, 0), LVector3f(0, 0, 1)),
-  CubeFaceDef("negative_y", LPoint3f(0, -1, 0), LVector3f(0, 0, -1)),
-  CubeFaceDef("positive_z", LPoint3f(0, 0, 1), LVector3f(0, -1, 0)),
-  CubeFaceDef("negative_z", LPoint3f(0, 0, -1), LVector3f(0, -1, 0))
+  CubeFaceDef("positive_x", LPoint3(1, 0, 0), LVector3(0, -1, 0)),
+  CubeFaceDef("negative_x", LPoint3(-1, 0, 0), LVector3(0, -1, 0)),
+  CubeFaceDef("positive_y", LPoint3(0, 1, 0), LVector3(0, 0, 1)),
+  CubeFaceDef("negative_y", LPoint3(0, -1, 0), LVector3(0, 0, -1)),
+  CubeFaceDef("positive_z", LPoint3(0, 0, 1), LVector3(0, -1, 0)),
+  CubeFaceDef("negative_z", LPoint3(0, 0, -1), LVector3(0, -1, 0))
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -158,19 +158,19 @@ GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
 
   switch (background_color.get_num_words()) {
   case 1:
-    set_clear_color(Colorf(background_color[0], background_color[0], background_color[0], 0.0f));
+    set_clear_color(LColor(background_color[0], background_color[0], background_color[0], 0.0f));
     break;
 
   case 2:
-    set_clear_color(Colorf(background_color[0], background_color[0], background_color[0], background_color[1]));
+    set_clear_color(LColor(background_color[0], background_color[0], background_color[0], background_color[1]));
     break;
 
   case 3:
-    set_clear_color(Colorf(background_color[0], background_color[1], background_color[2], 0.0f));
+    set_clear_color(LColor(background_color[0], background_color[1], background_color[2], 0.0f));
     break;
 
   case 4:
-    set_clear_color(Colorf(background_color[0], background_color[1], background_color[2], background_color[3]));
+    set_clear_color(LColor(background_color[0], background_color[1], background_color[2], background_color[3]));
     break;
 
   default:
@@ -554,7 +554,7 @@ set_inverted(bool inverted) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
 set_side_by_side_stereo(bool side_by_side_stereo) {
-  LVecBase4f left, right;
+  LVecBase4 left, right;
   left.set(sbs_left_dimensions[0], sbs_left_dimensions[1], 
            sbs_left_dimensions[2], sbs_left_dimensions[3]);
   right.set(sbs_right_dimensions[0], sbs_right_dimensions[1], 
@@ -581,8 +581,8 @@ set_side_by_side_stereo(bool side_by_side_stereo) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
 set_side_by_side_stereo(bool side_by_side_stereo,
-                        const LVecBase4f &sbs_left_dimensions,
-                        const LVecBase4f &sbs_right_dimensions) {
+                        const LVecBase4 &sbs_left_dimensions,
+                        const LVecBase4 &sbs_right_dimensions) {
   _side_by_side_stereo = side_by_side_stereo;
   if (_side_by_side_stereo) {
     _sbs_left_dimensions = sbs_left_dimensions;
@@ -645,7 +645,7 @@ set_sort(int sort) {
 //               one or the other.
 ////////////////////////////////////////////////////////////////////
 DisplayRegion *GraphicsOutput::
-make_display_region(const LVecBase4f &dimensions) {
+make_display_region(const LVecBase4 &dimensions) {
   if (is_stereo() && default_stereo_camera) {
     return make_stereo_display_region(dimensions);
   } else {
@@ -668,7 +668,7 @@ make_display_region(const LVecBase4f &dimensions) {
 //               necessary to draw even mono DisplayRegions twice).
 ////////////////////////////////////////////////////////////////////
 DisplayRegion *GraphicsOutput::
-make_mono_display_region(const LVecBase4f &dimensions) {
+make_mono_display_region(const LVecBase4 &dimensions) {
   if (_side_by_side_stereo) {
     StereoDisplayRegion *dr = make_stereo_display_region(dimensions);
     dr->get_left_eye()->set_stereo_channel(Lens::SC_mono);
@@ -690,27 +690,27 @@ make_mono_display_region(const LVecBase4f &dimensions) {
 //               is_stereo() is false.
 ////////////////////////////////////////////////////////////////////
 StereoDisplayRegion *GraphicsOutput::
-make_stereo_display_region(const LVecBase4f &dimensions) {
+make_stereo_display_region(const LVecBase4 &dimensions) {
   PT(DisplayRegion) left, right;
 
   if (_side_by_side_stereo) {
     // On a side-by-side stereo window, each eye gets the
     // corresponding dimensions of its own sub-region.
-    float left_l = _sbs_left_dimensions[0];
-    float left_b = _sbs_left_dimensions[2];
-    float left_w = _sbs_left_dimensions[1] - _sbs_left_dimensions[0];
-    float left_h = _sbs_left_dimensions[3] - _sbs_left_dimensions[2];
-    LVecBase4f left_dimensions(dimensions[0] * left_w + left_l,
+    PN_stdfloat left_l = _sbs_left_dimensions[0];
+    PN_stdfloat left_b = _sbs_left_dimensions[2];
+    PN_stdfloat left_w = _sbs_left_dimensions[1] - _sbs_left_dimensions[0];
+    PN_stdfloat left_h = _sbs_left_dimensions[3] - _sbs_left_dimensions[2];
+    LVecBase4 left_dimensions(dimensions[0] * left_w + left_l,
                                dimensions[1] * left_w + left_l,
                                dimensions[2] * left_h + left_b,
                                dimensions[3] * left_h + left_b);
     left = new DisplayRegion(this, left_dimensions);
 
-    float right_l = _sbs_right_dimensions[0];
-    float right_b = _sbs_right_dimensions[2];
-    float right_w = _sbs_right_dimensions[1] - _sbs_right_dimensions[0];
-    float right_h = _sbs_right_dimensions[3] - _sbs_right_dimensions[2];
-    LVecBase4f right_dimensions(dimensions[0] * right_w + right_l,
+    PN_stdfloat right_l = _sbs_right_dimensions[0];
+    PN_stdfloat right_b = _sbs_right_dimensions[2];
+    PN_stdfloat right_w = _sbs_right_dimensions[1] - _sbs_right_dimensions[0];
+    PN_stdfloat right_h = _sbs_right_dimensions[3] - _sbs_right_dimensions[2];
+    LVecBase4 right_dimensions(dimensions[0] * right_w + right_l,
                                 dimensions[1] * right_w + right_l,
                                 dimensions[2] * right_h + right_b,
                                 dimensions[3] * right_h + right_b);
@@ -1557,8 +1557,8 @@ copy_to_textures() {
 ////////////////////////////////////////////////////////////////////
 PT(GeomVertexData) GraphicsOutput::
 create_texture_card_vdata(int x, int y) {
-  float xhi = 1.0;
-  float yhi = 1.0;
+  PN_stdfloat xhi = 1.0;
+  PN_stdfloat yhi = 1.0;
 
   if (Texture::get_textures_power_2() != ATS_none) {
     int xru = Texture::up_to_power_2(x);
@@ -1576,20 +1576,20 @@ create_texture_card_vdata(int x, int y) {
   GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
   GeomVertexWriter normal(vdata, InternalName::get_normal());
 
-  vertex.add_data3f(Vertexf::rfu(-1.0f, 0.0f,  1.0f));
-  vertex.add_data3f(Vertexf::rfu(-1.0f, 0.0f, -1.0f));
-  vertex.add_data3f(Vertexf::rfu( 1.0f, 0.0f,  1.0f));
-  vertex.add_data3f(Vertexf::rfu( 1.0f, 0.0f, -1.0f));
+  vertex.add_data3(LVertex::rfu(-1.0f, 0.0f,  1.0f));
+  vertex.add_data3(LVertex::rfu(-1.0f, 0.0f, -1.0f));
+  vertex.add_data3(LVertex::rfu( 1.0f, 0.0f,  1.0f));
+  vertex.add_data3(LVertex::rfu( 1.0f, 0.0f, -1.0f));
 
-  texcoord.add_data2f( 0.0f,  yhi);
-  texcoord.add_data2f( 0.0f, 0.0f);
-  texcoord.add_data2f(  xhi,  yhi);
-  texcoord.add_data2f(  xhi, 0.0f);
+  texcoord.add_data2( 0.0f,  yhi);
+  texcoord.add_data2( 0.0f, 0.0f);
+  texcoord.add_data2(  xhi,  yhi);
+  texcoord.add_data2(  xhi, 0.0f);
 
-  normal.add_data3f(LVector3f::back());
-  normal.add_data3f(LVector3f::back());
-  normal.add_data3f(LVector3f::back());
-  normal.add_data3f(LVector3f::back());
+  normal.add_data3(LVector3::back());
+  normal.add_data3(LVector3::back());
+  normal.add_data3(LVector3::back());
+  normal.add_data3(LVector3::back());
 
   return vdata;
 }

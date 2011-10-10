@@ -36,17 +36,17 @@ public:
 
 public:
   LPoint3d _rotation_center;
-  LVecBase3f _hpr;
-  LMatrix4f _rotation;
-  float _fov;
-  float _scale;
-  float _near_clip;
-  float _far_clip;
-  LMatrix4f _fly_through;
-  LPoint3f _eyepoint;
-  float _fly_through_yaw;
-  float _fly_through_pitch;
-  LVector3f _eyepoint_direction;
+  LVecBase3 _hpr;
+  LMatrix4 _rotation;
+  PN_stdfloat _fov;
+  PN_stdfloat _scale;
+  PN_stdfloat _near_clip;
+  PN_stdfloat _far_clip;
+  LMatrix4 _fly_through;
+  LPoint3 _eyepoint;
+  PN_stdfloat _fly_through_yaw;
+  PN_stdfloat _fly_through_pitch;
+  LVector3 _eyepoint_direction;
   bool _no_fly_through;
   bool _ortho_mode;
   bool _is_valid;

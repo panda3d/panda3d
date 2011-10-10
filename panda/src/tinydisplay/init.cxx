@@ -19,7 +19,7 @@ void glInit(GLContext *c, ZBuffer *zbuffer)
 
   /* lights */
   c->first_light=NULL;
-  c->ambient_light_model=gl_V4_New(0.2f, 0.2f, 0.2f, 1.0f);
+  c->ambient_light_model=gl_V4_New(0.2, 0.2, 0.2, 1.0f);
   c->local_light_model=0;
   c->lighting_enabled=0;
   c->light_model_two_side = 0;
@@ -30,7 +30,7 @@ void glInit(GLContext *c, ZBuffer *zbuffer)
   for(i=0;i<2;i++) {
     GLMaterial *m=&c->materials[i];
     m->emission=gl_V4_New(0.0f, 0.0f, 0.0f, 1.0f);
-    m->ambient=gl_V4_New(0.2f, 0.2f, 0.2f, 1.0f);
+    m->ambient=gl_V4_New(0.2, 0.2, 0.2, 1.0f);
     m->diffuse=gl_V4_New(0.8f, 0.8f, 0.8f, 1.0f);
     m->specular=gl_V4_New(0.0f, 0.0f, 0.0f, 1.0f);
     m->shininess=0;

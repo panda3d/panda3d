@@ -111,8 +111,8 @@ PUBLISHED:
   //   up later, you'll hear the sound playing at that late point.
   // 0 = minimum; 1.0 = maximum.
   // inits to 1.0.
-  virtual void set_volume(float volume) = 0;
-  virtual float get_volume() const = 0;
+  virtual void set_volume(PN_stdfloat volume) = 0;
+  virtual PN_stdfloat get_volume() const = 0;
   
   // Turn the manager on or off.
   // If you play a sound while the manager is inactive, it won't start.
@@ -157,34 +157,34 @@ PUBLISHED:
   // vx, vy, vz are a velocity vector in UNITS PER SECOND (default: meters). 
   // fx, fy and fz are the respective components of a unit forward-vector
   // ux, uy and uz are the respective components of a unit up-vector
-  virtual void audio_3d_set_listener_attributes(float px, float py, float pz,
-                                                float vx, float vy, float vz,
-                                                float fx, float fy, float fz,
-                                                float ux, float uy, float uz);
-  virtual void audio_3d_get_listener_attributes(float *px, float *py, float *pz,
-                                                float *vx, float *vy, float *vz,
-                                                float *fx, float *fy, float *fz,
-                                                float *ux, float *uy, float *uz);
+  virtual void audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz,
+                                                PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz,
+                                                PN_stdfloat fx, PN_stdfloat fy, PN_stdfloat fz,
+                                                PN_stdfloat ux, PN_stdfloat uy, PN_stdfloat uz);
+  virtual void audio_3d_get_listener_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz,
+                                                PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz,
+                                                PN_stdfloat *fx, PN_stdfloat *fy, PN_stdfloat *fz,
+                                                PN_stdfloat *ux, PN_stdfloat *uy, PN_stdfloat *uz);
  
   // Control the "relative scale that sets the distance factor" units for 3D spacialized audio. Default is 1.0
   // Fmod uses meters internally, so give a float in Units-per meter
   // Don't know what Miles uses.
   // Default is 1.0 which is adjust in panda to be feet.
-  virtual void audio_3d_set_distance_factor(float factor);
-  virtual float audio_3d_get_distance_factor() const;
+  virtual void audio_3d_set_distance_factor(PN_stdfloat factor);
+  virtual PN_stdfloat audio_3d_get_distance_factor() const;
 
   // Control the presence of the Doppler effect. Default is 1.0
   // Exaggerated Doppler, use >1.0
   // Diminshed Doppler, use <1.0
-  virtual void audio_3d_set_doppler_factor(float factor);
-  virtual float audio_3d_get_doppler_factor() const;
+  virtual void audio_3d_set_doppler_factor(PN_stdfloat factor);
+  virtual PN_stdfloat audio_3d_get_doppler_factor() const;
 
   // Exaggerate or diminish the effect of distance on sound. Default is 1.0
   // Valid range is 0 to 10
   // Faster drop off, use >1.0
   // Slower drop off, use <1.0
-  virtual void audio_3d_set_drop_off_factor(float factor);
-  virtual float audio_3d_get_drop_off_factor() const;
+  virtual void audio_3d_set_drop_off_factor(PN_stdfloat factor);
+  virtual PN_stdfloat audio_3d_get_drop_off_factor() const;
 
   static Filename get_dls_pathname();
 
@@ -192,7 +192,7 @@ PUBLISHED:
   virtual void write(ostream &out) const;
 
   // set_speaker_configuration is a Miles only method.
-  virtual void set_speaker_configuration(LVecBase3f *speaker1, LVecBase3f *speaker2=NULL, LVecBase3f *speaker3=NULL, LVecBase3f *speaker4=NULL, LVecBase3f *speaker5=NULL, LVecBase3f *speaker6=NULL, LVecBase3f *speaker7=NULL, LVecBase3f *speaker8=NULL, LVecBase3f *speaker9=NULL);
+  virtual void set_speaker_configuration(LVecBase3 *speaker1, LVecBase3 *speaker2=NULL, LVecBase3 *speaker3=NULL, LVecBase3 *speaker4=NULL, LVecBase3 *speaker5=NULL, LVecBase3 *speaker6=NULL, LVecBase3 *speaker7=NULL, LVecBase3 *speaker8=NULL, LVecBase3 *speaker9=NULL);
 
 public:
   static void register_AudioManager_creator(Create_AudioManager_proc* proc);

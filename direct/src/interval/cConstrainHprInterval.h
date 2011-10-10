@@ -30,7 +30,7 @@ class EXPCL_DIRECT CConstrainHprInterval : public CConstraintInterval {
 PUBLISHED:
   CConstrainHprInterval(const string &name, double duration,
                         const NodePath &node, const NodePath &target,
-                        bool wrt, const LVecBase3f hprOffset=LVector3f::zero());
+                        bool wrt, const LVecBase3 hprOffset=LVector3::zero());
 
   INLINE const NodePath &get_node() const;
   INLINE const NodePath &get_target() const;
@@ -42,7 +42,7 @@ private:
   NodePath _node;
   NodePath _target;
   bool _wrt;
-  LQuaternionf _quatOffset;
+  LQuaternion _quatOffset;
 
 public:
   static TypeHandle get_class_type() {

@@ -58,7 +58,7 @@ has_volume() const {
 //       Access: Published
 //  Description: Returns the volume to be applied to sounds.
 ////////////////////////////////////////////////////////////////////
-INLINE float AudioVolumeAttrib::
+INLINE PN_stdfloat AudioVolumeAttrib::
 get_volume() const {
   return _volume;
 }

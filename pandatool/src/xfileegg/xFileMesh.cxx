@@ -582,7 +582,7 @@ make_x_colors(XFileNode *x_mesh, const string &suffix) {
   int i = 0;
   for (vi = _vertices.begin(); vi != _vertices.end(); ++vi) {
     XFileVertex *vertex = (*vi);
-    const Colorf &color = vertex->_color;
+    const LColor &color = vertex->_color;
     x_colors.add_IndexedColor(x_mesh->get_x_file(), i, color);
     i++;
   }
@@ -808,7 +808,7 @@ fill_colors(XFileDataNode *obj) {
     }
 
     XFileVertex *vertex = _vertices[vertex_index];
-    vertex->_color = LCAST(float, vertexColors[i]["indexColor"].vec4());
+    vertex->_color = LCAST(PN_stdfloat, vertexColors[i]["indexColor"].vec4());
     vertex->_has_color = true;
   }
 

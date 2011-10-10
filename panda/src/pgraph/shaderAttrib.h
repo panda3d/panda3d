@@ -25,11 +25,11 @@
 #include "shader.h"
 #include "pta_float.h"
 #include "pta_double.h"
-#include "pta_LMatrix4f.h"
-#include "pta_LMatrix3f.h"
-#include "pta_LVecBase4f.h"
-#include "pta_LVecBase3f.h"
-#include "pta_LVecBase2f.h"
+#include "pta_LMatrix4.h"
+#include "pta_LMatrix3.h"
+#include "pta_LVecBase4.h"
+#include "pta_LVecBase3.h"
+#include "pta_LVecBase2.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ShaderAttrib
@@ -73,38 +73,21 @@ PUBLISHED:
   CPT(RenderAttrib) set_shader_input(const ShaderInput *inp) const;
   
   // InternalName* id
-  CPT(RenderAttrib) set_shader_input(InternalName *id, Texture *tex,       int priority=0) const;
-  CPT(RenderAttrib) set_shader_input(InternalName *id, const NodePath &np, int priority=0) const;
-  CPT(RenderAttrib) set_shader_input(InternalName *id, const PTA_float &v, int priority=0) const;
-  CPT(RenderAttrib) set_shader_input(InternalName *id, const PTA_double &v, int priority=0) const;
-  CPT(RenderAttrib) set_shader_input(InternalName *id, const PTA_LMatrix4f &v, int priority=0) const;
-  CPT(RenderAttrib) set_shader_input(InternalName *id, const PTA_LMatrix3f &v, int priority=0) const;
-  CPT(RenderAttrib) set_shader_input(InternalName *id, const PTA_LVecBase4f &v, int priority=0) const;
-  CPT(RenderAttrib) set_shader_input(InternalName *id, const PTA_LVecBase3f &v, int priority=0) const;
-  CPT(RenderAttrib) set_shader_input(InternalName *id, const PTA_LVecBase2f &v, int priority=0) const;
-  CPT(RenderAttrib) set_shader_input(InternalName *id, const LVecBase4f &v, int priority=0) const;
-  CPT(RenderAttrib) set_shader_input(InternalName *id, const LVecBase3f &v, int priority=0) const;
-  CPT(RenderAttrib) set_shader_input(InternalName *id, const LVecBase2f &v, int priority=0) const;
-  CPT(RenderAttrib) set_shader_input(InternalName *id, const LMatrix4f &v, int priority=0) const;
-  CPT(RenderAttrib) set_shader_input(InternalName *id, const LMatrix3f &v, int priority=0) const;
-  CPT(RenderAttrib) set_shader_input(InternalName *id, double n1=0, double n2=0, double n3=0, double n4=1,
-                                     int priority=0) const; 
-  // String id
-  CPT(RenderAttrib) set_shader_input(const string &id, Texture *tex,       int priority=0) const;
-  CPT(RenderAttrib) set_shader_input(const string &id, const NodePath &np, int priority=0) const;
-  CPT(RenderAttrib) set_shader_input(const string &id, const PTA_float &v, int priority=0) const;
-  CPT(RenderAttrib) set_shader_input(const string &id, const PTA_double &v, int priority=0) const;
-  CPT(RenderAttrib) set_shader_input(const string &id, const PTA_LMatrix4f &v, int priority=0) const;
-  CPT(RenderAttrib) set_shader_input(const string &id, const PTA_LMatrix3f &v, int priority=0) const;
-  CPT(RenderAttrib) set_shader_input(const string &id, const PTA_LVecBase4f &v, int priority=0) const;
-  CPT(RenderAttrib) set_shader_input(const string &id, const PTA_LVecBase3f &v, int priority=0) const;
-  CPT(RenderAttrib) set_shader_input(const string &id, const PTA_LVecBase2f &v, int priority=0) const;
-  CPT(RenderAttrib) set_shader_input(const string &id, const LVecBase4f &v, int priority=0) const;
-  CPT(RenderAttrib) set_shader_input(const string &id, const LVecBase3f &v, int priority=0) const;
-  CPT(RenderAttrib) set_shader_input(const string &id, const LVecBase2f &v, int priority=0) const;
-  CPT(RenderAttrib) set_shader_input(const string &id, const LMatrix4f &v, int priority=0) const;
-  CPT(RenderAttrib) set_shader_input(const string &id, const LMatrix3f &v, int priority=0) const;
-  CPT(RenderAttrib) set_shader_input(const string &id, double n1=0, double n2=0, double n3=0, double n4=1,
+  CPT(RenderAttrib) set_shader_input(const InternalName *id, Texture *tex,       int priority=0) const;
+  CPT(RenderAttrib) set_shader_input(const InternalName *id, const NodePath &np, int priority=0) const;
+  CPT(RenderAttrib) set_shader_input(const InternalName *id, const PTA_float &v, int priority=0) const;
+  CPT(RenderAttrib) set_shader_input(const InternalName *id, const PTA_double &v, int priority=0) const;
+  CPT(RenderAttrib) set_shader_input(const InternalName *id, const PTA_LMatrix4 &v, int priority=0) const;
+  CPT(RenderAttrib) set_shader_input(const InternalName *id, const PTA_LMatrix3 &v, int priority=0) const;
+  CPT(RenderAttrib) set_shader_input(const InternalName *id, const PTA_LVecBase4 &v, int priority=0) const;
+  CPT(RenderAttrib) set_shader_input(const InternalName *id, const PTA_LVecBase3 &v, int priority=0) const;
+  CPT(RenderAttrib) set_shader_input(const InternalName *id, const PTA_LVecBase2 &v, int priority=0) const;
+  CPT(RenderAttrib) set_shader_input(const InternalName *id, const LVecBase4 &v, int priority=0) const;
+  CPT(RenderAttrib) set_shader_input(const InternalName *id, const LVecBase3 &v, int priority=0) const;
+  CPT(RenderAttrib) set_shader_input(const InternalName *id, const LVecBase2 &v, int priority=0) const;
+  CPT(RenderAttrib) set_shader_input(const InternalName *id, const LMatrix4 &v, int priority=0) const;
+  CPT(RenderAttrib) set_shader_input(const InternalName *id, const LMatrix3 &v, int priority=0) const;
+  CPT(RenderAttrib) set_shader_input(const InternalName *id, double n1=0, double n2=0, double n3=0, double n4=1,
                                      int priority=0) const; 
 
   CPT(RenderAttrib) set_instance_count(int instance_count) const;
@@ -112,21 +95,21 @@ PUBLISHED:
   CPT(RenderAttrib) set_flag(int flag, bool value) const;
   CPT(RenderAttrib) clear_flag(int flag) const;
 
-  CPT(RenderAttrib) clear_shader_input(InternalName *id) const;
+  CPT(RenderAttrib) clear_shader_input(const InternalName *id) const;
   CPT(RenderAttrib) clear_shader_input(const string &id) const;
   
   CPT(RenderAttrib) clear_all_shader_inputs() const;
 
-  INLINE bool        get_flag(int flag) const;
+  INLINE bool get_flag(int flag) const;
   
-  const Shader      *get_shader() const;
-  const ShaderInput *get_shader_input(InternalName *id) const;
+  const Shader *get_shader() const;
+  const ShaderInput *get_shader_input(const InternalName *id) const;
   const ShaderInput *get_shader_input(const string &id) const;
 
-  const NodePath    &get_shader_input_nodepath(InternalName *id) const;
-  const LVector4f   &get_shader_input_vector(InternalName *id) const;
-  Texture*           get_shader_input_texture(InternalName *id) const;
-  const Shader::ShaderPtrData *get_shader_input_ptr(InternalName *id) const;
+  const NodePath &get_shader_input_nodepath(const InternalName *id) const;
+  const LVecBase4 &get_shader_input_vector(InternalName *id) const;
+  Texture *get_shader_input_texture(const InternalName *id) const;
+  const Shader::ShaderPtrData *get_shader_input_ptr(const InternalName *id) const;
 
   static void register_with_read_factory();
   

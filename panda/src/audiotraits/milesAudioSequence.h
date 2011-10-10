@@ -39,13 +39,13 @@ public:
   virtual void play();
   virtual void stop();
   
-  virtual float get_time() const;
+  virtual PN_stdfloat get_time() const;
   
-  virtual void set_volume(float volume=1.0f);
-  virtual void set_balance(float balance_right=0.0f);
-  virtual void set_play_rate(float play_rate=1.0f);
+  virtual void set_volume(PN_stdfloat volume=1.0f);
+  virtual void set_balance(PN_stdfloat balance_right=0.0f);
+  virtual void set_play_rate(PN_stdfloat play_rate=1.0f);
   
-  virtual float length() const;
+  virtual PN_stdfloat length() const;
 
   virtual AudioSound::SoundStatus status() const;
 
@@ -54,7 +54,7 @@ public:
 private:
   void internal_stop();
   static void AILCALLBACK finish_callback(HSEQUENCE sequence);
-  void do_set_time(float time);
+  void do_set_time(PN_stdfloat time);
   void determine_length();
 
   PT(MilesAudioManager::SoundData) _sd;

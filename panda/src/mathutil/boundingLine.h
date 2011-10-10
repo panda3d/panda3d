@@ -35,20 +35,20 @@ public:
   INLINE_MATHUTIL BoundingLine();
 
 PUBLISHED:
-  INLINE_MATHUTIL BoundingLine(const LPoint3f &a, const LPoint3f &b);
+  INLINE_MATHUTIL BoundingLine(const LPoint3 &a, const LPoint3 &b);
   ALLOC_DELETED_CHAIN(BoundingLine);
 
 public:
   virtual BoundingVolume *make_copy() const;
 
-  virtual LPoint3f get_approx_center() const;
-  virtual void xform(const LMatrix4f &mat);
+  virtual LPoint3 get_approx_center() const;
+  virtual void xform(const LMatrix4 &mat);
 
   virtual void output(ostream &out) const;
 
 PUBLISHED:
-  INLINE_MATHUTIL const LPoint3f &get_point_a() const;
-  INLINE_MATHUTIL LPoint3f get_point_b() const;
+  INLINE_MATHUTIL const LPoint3 &get_point_a() const;
+  INLINE_MATHUTIL LPoint3 get_point_b() const;
 
 public:
   virtual const BoundingLine *as_bounding_line() const;
@@ -65,11 +65,11 @@ protected:
   virtual int contains_sphere(const BoundingSphere *sphere) const;
   virtual int contains_box(const BoundingBox *box) const;
 
-  float sqr_dist_to_line(const LPoint3f &point) const;
+  PN_stdfloat sqr_dist_to_line(const LPoint3 &point) const;
 
 private:
-  LPoint3f _origin;
-  LVector3f _vector;
+  LPoint3 _origin;
+  LVector3 _vector;
 
 
 public:

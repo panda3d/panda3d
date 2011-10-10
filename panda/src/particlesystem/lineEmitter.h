@@ -30,24 +30,24 @@ PUBLISHED:
 
   virtual BaseParticleEmitter *make_copy();
 
-  INLINE void set_endpoint1(const LPoint3f& point);
-  INLINE void set_endpoint2(const LPoint3f& point);
+  INLINE void set_endpoint1(const LPoint3& point);
+  INLINE void set_endpoint2(const LPoint3& point);
 
-  INLINE LPoint3f get_endpoint1() const;
-  INLINE LPoint3f get_endpoint2() const;
+  INLINE LPoint3 get_endpoint1() const;
+  INLINE LPoint3 get_endpoint2() const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent=0) const;
 
 private:
-  LPoint3f _endpoint1;
-  LPoint3f _endpoint2;
+  LPoint3 _endpoint1;
+  LPoint3 _endpoint2;
 
   // CUSTOM EMISSION PARAMETERS
   // none
 
-  virtual void assign_initial_position(LPoint3f& pos);
-  virtual void assign_initial_velocity(LVector3f& vel);
+  virtual void assign_initial_position(LPoint3& pos);
+  virtual void assign_initial_velocity(LVector3& vel);
 };
 
 #include "lineEmitter.I"

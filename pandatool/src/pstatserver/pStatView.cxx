@@ -41,7 +41,7 @@ public:
     _pushed = false;
     _net_time = 0.0;
   }
-  void data_point(float time, bool is_start, Started &started) {
+  void data_point(PN_stdfloat time, bool is_start, Started &started) {
     _touched = true;
 
     // We only consider events that change the start/stop state.
@@ -80,7 +80,7 @@ public:
       }
     }
   }
-  void push(float time) {
+  void push(PN_stdfloat time) {
     if (!_pushed) {
       _pushed = true;
       if (_is_started) {
@@ -88,7 +88,7 @@ public:
       }
     }
   }
-  void pop(float time) {
+  void pop(PN_stdfloat time) {
     if (_pushed) {
       _pushed = false;
       if (_is_started) {
@@ -97,14 +97,14 @@ public:
     }
   }
 
-  void push_all(float time, Started &started) {
+  void push_all(PN_stdfloat time, Started &started) {
     Started::iterator si;
     for (si = started.begin(); si != started.end(); ++si) {
       (*si)->push(time);
     }
   }
 
-  void pop_one(float time, Started &started) {
+  void pop_one(PN_stdfloat time, Started &started) {
     Started::reverse_iterator si;
     for (si = started.rbegin(); si != started.rend(); ++si) {
       if ((*si)->_pushed) {
@@ -117,7 +117,7 @@ public:
   bool _touched;
   bool _is_started;
   bool _pushed;
-  float _net_time;
+  PN_stdfloat _net_time;
 };
 
 
@@ -246,9 +246,9 @@ all_collectors_known() const {
 //               is the sum of all of the individual levels'
 //               get_net_value() value.
 ////////////////////////////////////////////////////////////////////
-float PStatView::
+PN_stdfloat PStatView::
 get_net_value() const {
-  float net = 0.0;
+  PN_stdfloat net = 0.0;
   Levels::const_iterator li;
   for (li = _levels.begin(); li != _levels.end(); ++li) {
     net += (*li).second->_value_alone;
@@ -437,14 +437,14 @@ update_level_data(const PStatFrameData &frame_data) {
 
 
   // This tracks the set of level values we got.
-  typedef pmap<int, float> GotValues;
+  typedef pmap<int, PN_stdfloat> GotValues;
   GotValues net_values;
 
   int i;
   int num_levels = frame_data.get_num_levels();
   for (i = 0; i < num_levels; i++) {
     int collector_index = frame_data.get_level_collector(i);
-    float value = frame_data.get_level(i);
+    PN_stdfloat value = frame_data.get_level(i);
 
     if (!_client_data->has_collector(collector_index)) {
       _all_collectors_known = false;
@@ -465,7 +465,7 @@ update_level_data(const PStatFrameData &frame_data) {
   GotValues::iterator gi;
   for (gi = net_values.begin(); gi != net_values.end(); ++gi) {
     int collector_index = (*gi).first;
-    float value = (*gi).second;
+    PN_stdfloat value = (*gi).second;
 
     // Walk up to the top, but stop when we find a parent with actual
     // data.

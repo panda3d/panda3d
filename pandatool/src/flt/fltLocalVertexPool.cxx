@@ -193,7 +193,7 @@ build_record(FltRecordWriter &writer) const {
       if ((vertex->_flags & (FltVertex::F_no_color | FltVertex::F_packed_color)) != 0) {
         // This particular vertex does not have a color index.
         // Make it white.
-        datagram.add_be_int32(_header->get_closest_rgb(RGBColorf(1.0, 1.0, 1.0)));
+        datagram.add_be_int32(_header->get_closest_rgb(LRGBColor(1.0, 1.0, 1.0)));
       } else {
         datagram.add_be_int32(vertex->_color_index);
       }
@@ -209,7 +209,7 @@ build_record(FltRecordWriter &writer) const {
         color.set_color(vertex->get_color());
       } else {
         // An uncolored vertex.  Make it white.
-        color.set_color(Colorf(1.0, 1.0, 1.0, 1.0));
+        color.set_color(LColor(1.0, 1.0, 1.0, 1.0));
       }
 
       if (!color.build_record(writer)) {

@@ -32,13 +32,13 @@ clear(int order) {
 //               and appends it to the set of basis matrices.
 ////////////////////////////////////////////////////////////////////
 void NurbsBasisVector::
-append_segment(int vertex_index, const float knots[]) {
+append_segment(int vertex_index, const PN_stdfloat knots[]) {
   int i;
 
   // Scale the supplied knots to the range 0..1.
-  float scaled_knots[8];
-  float min_k = knots[_order - 1];
-  float max_k = knots[_order];
+  PN_stdfloat scaled_knots[8];
+  PN_stdfloat min_k = knots[_order - 1];
+  PN_stdfloat max_k = knots[_order];
 
   nassertv(min_k != max_k);
   for (i = 0; i < _order + _order; i++) {
@@ -51,12 +51,12 @@ append_segment(int vertex_index, const float knots[]) {
   segment._to = max_k;
 
   for (i = 0; i < _order; i++) {
-    LVecBase4f b = nurbs_blending_function(_order, i, _order, scaled_knots);
+    LVecBase4 b = nurbs_blending_function(_order, i, _order, scaled_knots);
     segment._basis.set_col(i, b);
   }
 
   for (i = _order; i < 4; i++) {
-    segment._basis.set_col(i, LVecBase4f::zero());
+    segment._basis.set_col(i, LVecBase4::zero());
   }
 
   _segments.push_back(segment);
@@ -81,10 +81,10 @@ transpose() {
 //  Description: Recursively computes the appropriate blending
 //               function for the indicated knot vector.
 ////////////////////////////////////////////////////////////////////
-LVecBase4f NurbsBasisVector::
-nurbs_blending_function(int order, int i, int j, const float knots[]) {
+LVecBase4 NurbsBasisVector::
+nurbs_blending_function(int order, int i, int j, const PN_stdfloat knots[]) {
   // This is doubly recursive.  Ick.
-  LVecBase4f r;
+  LVecBase4 r;
 
   if (j == 1) {
     if (i == order - 1 && knots[i] < knots[i + 1]) {
@@ -94,11 +94,11 @@ nurbs_blending_function(int order, int i, int j, const float knots[]) {
     }
 
   } else {
-    LVecBase4f bi0 = nurbs_blending_function(order, i, j - 1, knots);
-    LVecBase4f bi1 = nurbs_blending_function(order, i + 1, j - 1, knots);
+    LVecBase4 bi0 = nurbs_blending_function(order, i, j - 1, knots);
+    LVecBase4 bi1 = nurbs_blending_function(order, i + 1, j - 1, knots);
 
-    float d0 = knots[i + j - 1] - knots[i];
-    float d1 = knots[i + j] - knots[i + 1];
+    PN_stdfloat d0 = knots[i + j - 1] - knots[i];
+    PN_stdfloat d1 = knots[i + j] - knots[i + 1];
 
     // First term.  Division by zero is defined to equal zero.
     if (d0 != 0.0f) {

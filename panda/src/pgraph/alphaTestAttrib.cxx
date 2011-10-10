@@ -29,7 +29,7 @@ int AlphaTestAttrib::_attrib_slot;
 //  Description: Constructs a new AlphaTestAttrib object.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) AlphaTestAttrib::
-make(PandaCompareFunc mode, float reference_value) {
+make(PandaCompareFunc mode, PN_stdfloat reference_value) {
   assert((reference_value >=0.0f) && (reference_value <=1.0f));
   AlphaTestAttrib *attrib = new AlphaTestAttrib(mode,reference_value);
   return return_new(attrib);
@@ -130,7 +130,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   RenderAttrib::write_datagram(manager, dg);
 
   dg.add_int8(_mode);
-  dg.add_float32(_reference_alpha);
+  dg.add_stdfloat(_reference_alpha);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -165,5 +165,5 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
 
   _mode = (PandaCompareFunc)scan.get_int8();
-  _reference_alpha = scan.get_float32();
+  _reference_alpha = scan.get_stdfloat();
 }

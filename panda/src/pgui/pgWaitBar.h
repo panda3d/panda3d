@@ -39,15 +39,15 @@ public:
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
 
 PUBLISHED:
-  void setup(float width, float height, float range);
+  void setup(PN_stdfloat width, PN_stdfloat height, PN_stdfloat range);
 
-  INLINE void set_range(float range);
-  INLINE float get_range() const;
+  INLINE void set_range(PN_stdfloat range);
+  INLINE PN_stdfloat get_range() const;
 
-  INLINE void set_value(float value);
-  INLINE float get_value() const;
+  INLINE void set_value(PN_stdfloat value);
+  INLINE PN_stdfloat get_value() const;
 
-  INLINE float get_percent() const;
+  INLINE PN_stdfloat get_percent() const;
 
   INLINE void set_bar_style(const PGFrameStyle &style);
   INLINE PGFrameStyle get_bar_style() const;
@@ -55,7 +55,7 @@ PUBLISHED:
 private:
   void update();
 
-  float _range, _value;
+  PN_stdfloat _range, _value;
   int _bar_state;
   PGFrameStyle _bar_style;
   NodePath _bar;

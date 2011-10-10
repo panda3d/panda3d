@@ -47,7 +47,7 @@ PGItem::BackgroundFocus PGItem::_background_focus;
 //  Description: Returns true if the 2-d v1 is to the right of v2.
 ////////////////////////////////////////////////////////////////////
 INLINE bool
-is_right(const LVector2f &v1, const LVector2f &v2) {
+is_right(const LVector2 &v1, const LVector2 &v2) {
   return (v1[0] * v2[1] - v1[1] * v2[0]) > 0;
 }
 
@@ -222,7 +222,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       DCAST_INTO_R(pg_trav, trav, true);
 
       CPT(TransformState) net_transform = data.get_net_transform(trav);
-      const LMatrix4f &transform = net_transform->get_mat();
+      const LMatrix4 &transform = net_transform->get_mat();
 
       // Consider the cull bin this object is in.  Since the binning
       // affects the render order, we want bins that render later to
@@ -384,11 +384,11 @@ r_prepare_scene(const RenderState *state,
 //               kinds of nodes, this does nothing.
 ////////////////////////////////////////////////////////////////////
 void PGItem::
-xform(const LMatrix4f &mat) {
+xform(const LMatrix4 &mat) {
   LightReMutexHolder holder(_lock);
   // Transform the frame.
-  LPoint3f ll(_frame[0], 0.0f, _frame[2]);
-  LPoint3f ur(_frame[1], 0.0f, _frame[3]);
+  LPoint3 ll(_frame[0], 0.0f, _frame[2]);
+  LPoint3 ur(_frame[1], 0.0f, _frame[3]);
   ll = ll * mat;
   ur = ur * mat;
   _frame.set(ll[0], ur[0], ll[2], ur[2]);
@@ -422,17 +422,17 @@ xform(const LMatrix4f &mat) {
 //               false if it is empty or completely clipped.
 ////////////////////////////////////////////////////////////////////
 bool PGItem::
-activate_region(const LMatrix4f &transform, int sort,
+activate_region(const LMatrix4 &transform, int sort,
                 const ClipPlaneAttrib *cpa,
                 const ScissorAttrib *sa) {
   LightReMutexHolder holder(_lock);
   // Transform all four vertices, and get the new bounding box.  This
   // way the region works (mostly) even if has been rotated.
-  LPoint3f ll = LPoint3f::rfu(_frame[0], 0.0f, _frame[2]) * transform;
-  LPoint3f lr = LPoint3f::rfu(_frame[1], 0.0f, _frame[2]) * transform;
-  LPoint3f ul = LPoint3f::rfu(_frame[0], 0.0f, _frame[3]) * transform;
-  LPoint3f ur = LPoint3f::rfu(_frame[1], 0.0f, _frame[3]) * transform;
-  LVector3f up = LVector3f::up();
+  LPoint3 ll = LPoint3::rfu(_frame[0], 0.0f, _frame[2]) * transform;
+  LPoint3 lr = LPoint3::rfu(_frame[1], 0.0f, _frame[2]) * transform;
+  LPoint3 ul = LPoint3::rfu(_frame[0], 0.0f, _frame[3]) * transform;
+  LPoint3 ur = LPoint3::rfu(_frame[1], 0.0f, _frame[3]) * transform;
+  LVector3 up = LVector3::up();
   int up_axis;
   if (up[1]) {
     up_axis = 1;
@@ -443,7 +443,7 @@ activate_region(const LMatrix4f &transform, int sort,
   else {
     up_axis = 0;
   }
-  LVector3f right = LVector3f::right();
+  LVector3 right = LVector3::right();
   int right_axis;
   if (right[0]) {
     right_axis = 0;
@@ -455,22 +455,22 @@ activate_region(const LMatrix4f &transform, int sort,
     right_axis = 1;
   }
 
-  LVecBase4f frame;
+  LVecBase4 frame;
   if (cpa != (ClipPlaneAttrib *)NULL && cpa->get_num_on_planes() != 0) {
     // Apply the clip plane(s) and/or scissor region now that we are
     // here in world space.
     
-    pvector<LPoint2f> points;
+    pvector<LPoint2> points;
     points.reserve(4);
-    points.push_back(LPoint2f(ll[right_axis], ll[up_axis]));
-    points.push_back(LPoint2f(lr[right_axis], lr[up_axis]));
-    points.push_back(LPoint2f(ur[right_axis], ur[up_axis]));
-    points.push_back(LPoint2f(ul[right_axis], ul[up_axis]));
+    points.push_back(LPoint2(ll[right_axis], ll[up_axis]));
+    points.push_back(LPoint2(lr[right_axis], lr[up_axis]));
+    points.push_back(LPoint2(ur[right_axis], ur[up_axis]));
+    points.push_back(LPoint2(ul[right_axis], ul[up_axis]));
 
     int num_on_planes = cpa->get_num_on_planes();
     for (int i = 0; i < num_on_planes; ++i) {
       NodePath plane_path = cpa->get_on_plane(i);
-      Planef plane = DCAST(PlaneNode, plane_path.node())->get_plane();
+      LPlane plane = DCAST(PlaneNode, plane_path.node())->get_plane();
       plane.xform(plane_path.get_net_transform()->get_mat());
       
       // We ignore the forward axis, assuming the frame is still in
@@ -484,7 +484,7 @@ activate_region(const LMatrix4f &transform, int sort,
       return false;
     }
 
-    pvector<LPoint2f>::iterator pi;
+    pvector<LPoint2>::iterator pi;
     pi = points.begin();
     frame.set((*pi)[0], (*pi)[0], (*pi)[1], (*pi)[1]);
     ++pi;
@@ -505,7 +505,7 @@ activate_region(const LMatrix4f &transform, int sort,
 
   if (sa != (ScissorAttrib *)NULL) {
     // Also restrict it to within the scissor region.
-    const LVecBase4f &sf = sa->get_frame();
+    const LVecBase4 &sf = sa->get_frame();
     // Expand sf from 0..1 to -1..1.
     frame.set(max(frame[0], sf[0] * 2.0f - 1.0f),
               min(frame[1], sf[1] * 2.0f - 1.0f),
@@ -1222,20 +1222,20 @@ play_sound(const string &event) {
 //               bars and buttons.
 ////////////////////////////////////////////////////////////////////
 void PGItem::
-reduce_region(LVecBase4f &frame, PGItem *obscurer) const {
+reduce_region(LVecBase4 &frame, PGItem *obscurer) const {
   if (obscurer != (PGItem *)NULL && !obscurer->is_overall_hidden()) {
-    LVecBase4f oframe = get_relative_frame(obscurer);
+    LVecBase4 oframe = get_relative_frame(obscurer);
 
     // Determine the four rectangular regions on the four sides of the
     // obscuring region.
-    LVecBase4f right(max(frame[0], oframe[1]), frame[1], frame[2], frame[3]);
-    LVecBase4f left(frame[0], min(frame[1], oframe[0]), frame[2], frame[3]);
-    LVecBase4f above(frame[0], frame[1], max(frame[2], oframe[3]), frame[3]);
-    LVecBase4f below(frame[0], frame[1], frame[2], min(frame[3], oframe[2]));
+    LVecBase4 right(max(frame[0], oframe[1]), frame[1], frame[2], frame[3]);
+    LVecBase4 left(frame[0], min(frame[1], oframe[0]), frame[2], frame[3]);
+    LVecBase4 above(frame[0], frame[1], max(frame[2], oframe[3]), frame[3]);
+    LVecBase4 below(frame[0], frame[1], frame[2], min(frame[3], oframe[2]));
 
     // Now choose the largest of those four.
-    const LVecBase4f *largest = &right;
-    float largest_area = compute_area(*largest);
+    const LVecBase4 *largest = &right;
+    PN_stdfloat largest_area = compute_area(*largest);
     compare_largest(largest, largest_area, &left);
     compare_largest(largest, largest_area, &above);
     compare_largest(largest, largest_area, &below);
@@ -1247,34 +1247,34 @@ reduce_region(LVecBase4f &frame, PGItem *obscurer) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PGItem::get_relative_frame
 //       Access: Protected
-//  Description: Returns the LVecBase4f frame of the indicated item,
+//  Description: Returns the LVecBase4 frame of the indicated item,
 //               converted into this item's coordinate space.
 //               Presumably, item is a child of this node.
 ////////////////////////////////////////////////////////////////////
-LVecBase4f PGItem::
+LVecBase4 PGItem::
 get_relative_frame(PGItem *item) const {
   NodePath this_np = NodePath::any_path((PGItem *)this);
   NodePath item_np = this_np.find_path_to(item);
   if (item_np.is_empty()) { 
     item_np = NodePath::any_path(item);
   }
-  const LVecBase4f &orig_frame = item->get_frame();
-  LMatrix4f transform = item_np.get_mat(this_np);
+  const LVecBase4 &orig_frame = item->get_frame();
+  LMatrix4 transform = item_np.get_mat(this_np);
   
   // Transform the item's frame into the PGScrollFrame's
   // coordinate space.  Transform all four vertices, and get the
   // new bounding box.  This way the region works (mostly) even if
   // has been rotated.
-  LPoint3f ll(orig_frame[0], 0.0f, orig_frame[2]);
-  LPoint3f lr(orig_frame[1], 0.0f, orig_frame[2]);
-  LPoint3f ul(orig_frame[0], 0.0f, orig_frame[3]);
-  LPoint3f ur(orig_frame[1], 0.0f, orig_frame[3]);
+  LPoint3 ll(orig_frame[0], 0.0f, orig_frame[2]);
+  LPoint3 lr(orig_frame[1], 0.0f, orig_frame[2]);
+  LPoint3 ul(orig_frame[0], 0.0f, orig_frame[3]);
+  LPoint3 ur(orig_frame[1], 0.0f, orig_frame[3]);
   ll = ll * transform;
   lr = lr * transform;
   ul = ul * transform;
   ur = ur * transform;
   
-  return LVecBase4f(min(min(ll[0], lr[0]), min(ul[0], ur[0])),
+  return LVecBase4(min(min(ll[0], lr[0]), min(ul[0], ur[0])),
                     max(max(ll[0], lr[0]), max(ul[0], ur[0])),
                     min(min(ll[2], lr[2]), min(ul[2], ur[2])),
                     max(max(ll[2], lr[2]), max(ul[2], ur[2])));
@@ -1286,13 +1286,13 @@ get_relative_frame(PGItem *item) const {
 //  Description: Converts from the 2-d mouse coordinates into the
 //               coordinate space of the item.
 ////////////////////////////////////////////////////////////////////
-LPoint3f PGItem::
-mouse_to_local(const LPoint2f &mouse_point) const {
+LPoint3 PGItem::
+mouse_to_local(const LPoint2 &mouse_point) const {
   // This is ambiguous if the PGItem has multiple instances.  Why
   // would you do that, anyway?
   NodePath this_np((PGItem *)this);
   CPT(TransformState) inv_transform = NodePath().get_transform(this_np);
-  return inv_transform->get_mat().xform_point(LVector3f::rfu(mouse_point[0], 0, mouse_point[1]));
+  return inv_transform->get_mat().xform_point(LVector3::rfu(mouse_point[0], 0, mouse_point[1]));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1377,17 +1377,17 @@ mark_frames_stale() {
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool PGItem::
-clip_frame(pvector<LPoint2f> &source_points, const Planef &plane) const {
+clip_frame(pvector<LPoint2> &source_points, const LPlane &plane) const {
   if (source_points.empty()) {
     return true;
   }
 
-  LPoint3f from3d;
-  LVector3f delta3d;
-  if (!plane.intersects_plane(from3d, delta3d, Planef(LVector3f(0, 1, 0), LPoint3f::zero()))) {
+  LPoint3 from3d;
+  LVector3 delta3d;
+  if (!plane.intersects_plane(from3d, delta3d, LPlane(LVector3(0, 1, 0), LPoint3::zero()))) {
     // The clipping plane is parallel to the polygon.  The polygon is
     // either all in or all out.
-    if (plane.dist_to_plane(LPoint3f::zero()) < 0.0) {
+    if (plane.dist_to_plane(LPoint3::zero()) < 0.0) {
       // A point within the polygon is behind the clipping plane: the
       // polygon is all in.
       return true;
@@ -1397,12 +1397,12 @@ clip_frame(pvector<LPoint2f> &source_points, const Planef &plane) const {
 
   // Project the line of intersection into the X-Z plane.  Now we have
   // a 2-d clipping line.
-  LPoint2f from2d(from3d[0], from3d[2]);
-  LVector2f delta2d(delta3d[0], delta3d[2]);
+  LPoint2 from2d(from3d[0], from3d[2]);
+  LVector2 delta2d(delta3d[0], delta3d[2]);
 
-  float a = -delta2d[1];
-  float b = delta2d[0];
-  float c = from2d[0] * delta2d[1] - from2d[1] * delta2d[0];
+  PN_stdfloat a = -delta2d[1];
+  PN_stdfloat b = delta2d[0];
+  PN_stdfloat c = from2d[0] * delta2d[1] - from2d[1] * delta2d[0];
 
   // Now walk through the points.  Any point on the left of our line
   // gets removed, and the line segment clipped at the point of
@@ -1411,15 +1411,15 @@ clip_frame(pvector<LPoint2f> &source_points, const Planef &plane) const {
   // We might increase the number of vertices by as many as 1, if the
   // plane clips off exactly one corner.  (We might also decrease the
   // number of vertices, or keep them the same number.)
-  pvector<LPoint2f> new_points;
+  pvector<LPoint2> new_points;
   new_points.reserve(source_points.size() + 1);
 
-  LPoint2f last_point = source_points.back();
+  LPoint2 last_point = source_points.back();
   bool last_is_in = is_right(last_point - from2d, delta2d);
   bool all_in = last_is_in;
-  pvector<LPoint2f>::const_iterator pi;
+  pvector<LPoint2>::const_iterator pi;
   for (pi = source_points.begin(); pi != source_points.end(); ++pi) {
-    const LPoint2f &this_point = (*pi);
+    const LPoint2 &this_point = (*pi);
     bool this_is_in = is_right(this_point - from2d, delta2d);
 
     // There appears to be a compiler bug in gcc 4.0: we need to
@@ -1428,11 +1428,11 @@ clip_frame(pvector<LPoint2f> &source_points, const Planef &plane) const {
     if (crossed_over) {
       // We have just crossed over the clipping line.  Find the point
       // of intersection.
-      LVector2f d = this_point - last_point;
-      float denom = (a * d[0] + b * d[1]);
+      LVector2 d = this_point - last_point;
+      PN_stdfloat denom = (a * d[0] + b * d[1]);
       if (denom != 0.0) {
-        float t = -(a * last_point[0] + b * last_point[1] + c) / denom;
-        LPoint2f p = last_point + t * d;
+        PN_stdfloat t = -(a * last_point[0] + b * last_point[1] + c) / denom;
+        LPoint2 p = last_point + t * d;
         
         new_points.push_back(p);
         last_is_in = this_is_in;

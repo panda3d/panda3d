@@ -78,7 +78,7 @@ has_ambient() const {
 //               set.  Returns (0,0,0,0) if the ambient color has not
 //               been set.
 ////////////////////////////////////////////////////////////////////
-INLINE const Colorf &Material::
+INLINE const LColor &Material::
 get_ambient() const {
   return _ambient;
 }
@@ -115,7 +115,7 @@ has_diffuse() const {
 //               set.  Returns (1,1,1,1) if the diffuse color has not
 //               been set.
 ////////////////////////////////////////////////////////////////////
-INLINE const Colorf &Material::
+INLINE const LColor &Material::
 get_diffuse() const {
   return _diffuse;
 }
@@ -152,7 +152,7 @@ has_specular() const {
 //               set.  Returns (0,0,0,0) if the specular color has not
 //               been set.
 ////////////////////////////////////////////////////////////////////
-INLINE const Colorf &Material::
+INLINE const LColor &Material::
 get_specular() const {
   return _specular;
 }
@@ -189,7 +189,7 @@ has_emission() const {
 //               set.  Returns (0,0,0,0) if the emission color has not
 //               been set.
 ////////////////////////////////////////////////////////////////////
-INLINE const Colorf &Material::
+INLINE const LColor &Material::
 get_emission() const {
   return _emission;
 }
@@ -213,7 +213,7 @@ clear_emission() {
 //       Access: Published
 //  Description: Returns the shininess exponent of the material.
 ////////////////////////////////////////////////////////////////////
-INLINE float Material::
+INLINE PN_stdfloat Material::
 get_shininess() const {
   return _shininess;
 }
@@ -229,7 +229,7 @@ get_shininess() const {
 //               makes the object appear less shiny.
 ////////////////////////////////////////////////////////////////////
 INLINE void Material::
-set_shininess(float shininess) {
+set_shininess(PN_stdfloat shininess) {
   _shininess = shininess;
 }
 

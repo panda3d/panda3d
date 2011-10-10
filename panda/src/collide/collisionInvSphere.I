@@ -19,7 +19,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionInvSphere::
-CollisionInvSphere(const LPoint3f &center, float radius) :
+CollisionInvSphere(const LPoint3 &center, PN_stdfloat radius) :
   CollisionSphere(center, radius)
 {
 }
@@ -30,7 +30,7 @@ CollisionInvSphere(const LPoint3f &center, float radius) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionInvSphere::
-CollisionInvSphere(float cx, float cy, float cz, float radius) :
+CollisionInvSphere(PN_stdfloat cx, PN_stdfloat cy, PN_stdfloat cz, PN_stdfloat radius) :
   CollisionSphere(cx, cy, cz, radius)
 {
 }

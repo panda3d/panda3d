@@ -116,7 +116,7 @@ remove_anim(int n) {
 //               numbers.
 ////////////////////////////////////////////////////////////////////
 void AnimPreloadTable::
-add_anim(const string &basename, float base_frame_rate, int num_frames) {
+add_anim(const string &basename, PN_stdfloat base_frame_rate, int num_frames) {
   AnimRecord record;
   record._basename = basename;
   record._base_frame_rate = base_frame_rate;
@@ -198,7 +198,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   for (ai = _anims.begin(); ai != _anims.end(); ++ai) {
     const AnimRecord &record = (*ai);
     dg.add_string(record._basename);
-    dg.add_float32(record._base_frame_rate);
+    dg.add_stdfloat(record._base_frame_rate);
     dg.add_int32(record._num_frames);
   }
 }
@@ -234,7 +234,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   for (int i = 0; i < num_anims; ++i) {
     AnimRecord record;
     record._basename = scan.get_string();
-    record._base_frame_rate = scan.get_float32();
+    record._base_frame_rate = scan.get_stdfloat();
     record._num_frames = scan.get_int32();
     _anims.push_back(record);
   }

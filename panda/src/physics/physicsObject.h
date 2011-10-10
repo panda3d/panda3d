@@ -41,52 +41,52 @@ PUBLISHED:
   INLINE void set_active(bool flag);
   INLINE bool get_active() const;
 
-  INLINE void set_mass(float);
-  INLINE float get_mass() const;
+  INLINE void set_mass(PN_stdfloat);
+  INLINE PN_stdfloat get_mass() const;
 
-  //INLINE void set_center_of_mass(const LPoint3f &pos); use set_position.
-  INLINE void set_position(const LPoint3f &pos);
-  INLINE void set_position(float x, float y, float z);
-  INLINE LPoint3f get_position() const;
+  //INLINE void set_center_of_mass(const LPoint3 &pos); use set_position.
+  INLINE void set_position(const LPoint3 &pos);
+  INLINE void set_position(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+  INLINE LPoint3 get_position() const;
 
-  INLINE void reset_position(const LPoint3f &pos);
+  INLINE void reset_position(const LPoint3 &pos);
 
-  INLINE void set_last_position(const LPoint3f &pos);
-  INLINE LPoint3f get_last_position() const;
+  INLINE void set_last_position(const LPoint3 &pos);
+  INLINE LPoint3 get_last_position() const;
 
-  INLINE void set_velocity(const LVector3f &vel);
-  INLINE void set_velocity(float x, float y, float z);
-  INLINE LVector3f get_velocity() const;
-  INLINE LVector3f get_implicit_velocity() const;
+  INLINE void set_velocity(const LVector3 &vel);
+  INLINE void set_velocity(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+  INLINE LVector3 get_velocity() const;
+  INLINE LVector3 get_implicit_velocity() const;
 
   // Global instantanious forces
-  INLINE void add_torque(const LRotationf &torque);
-  INLINE void add_impulse(const LVector3f &impulse);
+  INLINE void add_torque(const LRotation &torque);
+  INLINE void add_impulse(const LVector3 &impulse);
   virtual void add_impact(
-      const LPoint3f &offset_from_center_of_mass, const LVector3f &impulse);
+      const LPoint3 &offset_from_center_of_mass, const LVector3 &impulse);
 
   // Local instantanious forces
-  INLINE void add_local_torque(const LRotationf &torque);
-  INLINE void add_local_impulse(const LVector3f &impulse);
+  INLINE void add_local_torque(const LRotation &torque);
+  INLINE void add_local_impulse(const LVector3 &impulse);
   virtual void add_local_impact(
-      const LPoint3f &offset_from_center_of_mass, const LVector3f &impulse);
+      const LPoint3 &offset_from_center_of_mass, const LVector3 &impulse);
 
-  INLINE void set_terminal_velocity(float tv);
-  INLINE float get_terminal_velocity() const;
+  INLINE void set_terminal_velocity(PN_stdfloat tv);
+  INLINE PN_stdfloat get_terminal_velocity() const;
 
   INLINE void set_oriented(bool flag);
   INLINE bool get_oriented() const;
 
-  INLINE void set_orientation(const LOrientationf &orientation);
-  INLINE LOrientationf get_orientation() const;
+  INLINE void set_orientation(const LOrientation &orientation);
+  INLINE LOrientation get_orientation() const;
 
-  INLINE void reset_orientation(const LOrientationf &orientation);
+  INLINE void reset_orientation(const LOrientation &orientation);
 
-  INLINE void set_rotation(const LRotationf &rotation);
-  INLINE LRotationf get_rotation() const;
+  INLINE void set_rotation(const LRotation &rotation);
+  INLINE LRotation get_rotation() const;
 
-  virtual LMatrix4f get_inertial_tensor() const;
-  virtual LMatrix4f get_lcs() const;
+  virtual LMatrix4 get_inertial_tensor() const;
+  virtual LMatrix4 get_lcs() const;
   virtual PhysicsObject *make_copy() const;
   
   #ifndef NDEBUG
@@ -103,16 +103,16 @@ PUBLISHED:
 
 private:
   // physical
-  LPoint3f _position; // aka _center_of_mass
-  LPoint3f _last_position;
-  LVector3f _velocity; // aka _linear_velocity
+  LPoint3 _position; // aka _center_of_mass
+  LPoint3 _last_position;
+  LVector3 _velocity; // aka _linear_velocity
 
   // angular
-  LOrientationf _orientation;
-  LRotationf _rotation; // aka _angular_velocity
+  LOrientation _orientation;
+  LRotation _rotation; // aka _angular_velocity
 
-  float _terminal_velocity;
-  float _mass;
+  PN_stdfloat _terminal_velocity;
+  PN_stdfloat _mass;
 
   bool _process_me;
   bool _oriented;

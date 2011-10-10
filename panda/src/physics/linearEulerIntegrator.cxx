@@ -54,7 +54,7 @@ LinearEulerIntegrator::
 void LinearEulerIntegrator::
 child_integrate(Physical *physical,
                 LinearForceVector& forces,
-                float dt) {
+                PN_stdfloat dt) {
   // perform the precomputation.  Note that the vector returned by
   // get_precomputed_matrices() has the matrices loaded in order of force
   // type: first global, then local.  If you're using this as a guide to write
@@ -70,7 +70,7 @@ child_integrate(Physical *physical,
 #endif  // NDEBUG
 
   // Get the greater of the local or global viscosity:
-  float viscosityDamper=1.0f-physical->get_viscosity();
+  PN_stdfloat viscosityDamper=1.0f-physical->get_viscosity();
 
   // Loop through each object in the set.  This processing occurs in O(pf) time,
   // where p is the number of physical objects and f is the number of
@@ -95,18 +95,18 @@ child_integrate(Physical *physical,
       continue;
     }
     
-    LVector3f md_accum_vec; // mass dependent accumulation vector.
-    LVector3f non_md_accum_vec;
-    LVector3f accel_vec;
-    LVector3f vel_vec;
+    LVector3 md_accum_vec; // mass dependent accumulation vector.
+    LVector3 non_md_accum_vec;
+    LVector3 accel_vec;
+    LVector3 vel_vec;
     
     // reset the accumulation vectors for this object
     md_accum_vec.set(0.0f, 0.0f, 0.0f);
     non_md_accum_vec.set(0.0f, 0.0f, 0.0f);
 
     // run through each acting force and sum it
-    LVector3f f;
-    //    LMatrix4f force_to_object_xform;
+    LVector3 f;
+    //    LMatrix4 force_to_object_xform;
 
     LinearForceVector::const_iterator f_cur;
 
@@ -156,9 +156,9 @@ child_integrate(Physical *physical,
     }
 
     // get this object's physical info
-    LPoint3f pos = current_object->get_position();
+    LPoint3 pos = current_object->get_position();
     vel_vec = current_object->get_velocity();
-    float mass = current_object->get_mass();
+    PN_stdfloat mass = current_object->get_mass();
 
     // we want 'a' in F = ma
     // get it by computing F / m
@@ -171,7 +171,7 @@ child_integrate(Physical *physical,
     vel_vec += accel_vec * dt;
 
     // cap terminal velocity
-    float len = vel_vec.length();
+    PN_stdfloat len = vel_vec.length();
 
     if (len > current_object->get_terminal_velocity()) {
       //cout << "Capping terminal velocity at: " << current_object->get_terminal_velocity() << endl;

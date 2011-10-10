@@ -141,7 +141,7 @@ get_properties() const {
 //  Description: Returns the upper-left corner of the assembled text,
 //               in 2-d text coordinates.
 ////////////////////////////////////////////////////////////////////
-INLINE const LVector2f &TextAssembler::
+INLINE const LVector2 &TextAssembler::
 get_ul() const {
   return _ul;
 }
@@ -152,7 +152,7 @@ get_ul() const {
 //  Description: Returns the lower-right corner of the assembled text,
 //               in 2-d text coordinates.
 ////////////////////////////////////////////////////////////////////
-INLINE const LVector2f &TextAssembler::
+INLINE const LVector2 &TextAssembler::
 get_lr() const {
   return _lr;
 }
@@ -257,7 +257,7 @@ get_properties(int n) const {
 //  Description: Returns the width of the character or object at the
 //               indicated position in the pre-wordwrapped string.
 ////////////////////////////////////////////////////////////////////
-INLINE float TextAssembler::
+INLINE PN_stdfloat TextAssembler::
 get_width(int n) const {
   nassertr(n >= 0 && n < (int)_text_string.size(), 0.0f);
   
@@ -338,7 +338,7 @@ get_properties(int r, int c) const {
 //  Description: Returns the width of the character or object at the
 //               indicated position in the indicated row.
 ////////////////////////////////////////////////////////////////////
-INLINE float TextAssembler::
+INLINE PN_stdfloat TextAssembler::
 get_width(int r, int c) const {
   nassertr(r >= 0 && r < (int)_text_block.size(), 0.0f);
   nassertr(c >= 0 && c < (int)_text_block[r]._string.size(), 0.0f);
@@ -355,7 +355,7 @@ get_width(int r, int c) const {
 //               It is legal for r to exceed the index number of the
 //               last row by 1.  The value of c is presently ignored.
 ////////////////////////////////////////////////////////////////////
-INLINE float TextAssembler::
+INLINE PN_stdfloat TextAssembler::
 get_ypos(int r, int) const {
   nassertr(r >= 0 && r <= (int)_text_block.size(), 0.0f);
   if (r == (int)_text_block.size()) {
@@ -371,7 +371,7 @@ get_ypos(int r, int) const {
 //  Description: Returns the width of a single character, according to
 //               its associated font.
 ////////////////////////////////////////////////////////////////////
-INLINE float TextAssembler::
+INLINE PN_stdfloat TextAssembler::
 calc_width(const TextCharacter &tch) {
   if (tch._graphic != (TextGraphic *)NULL) {
     return calc_width(tch._graphic, tch._cprops->_properties);

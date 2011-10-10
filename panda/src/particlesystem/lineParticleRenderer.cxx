@@ -30,8 +30,8 @@ PStatCollector LineParticleRenderer::_render_collector("App:Particles:Line:Rende
 
 LineParticleRenderer::
 LineParticleRenderer() :
-  _head_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f)),
-  _tail_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f)) {
+  _head_color(LColor(1.0f, 1.0f, 1.0f, 1.0f)),
+  _tail_color(LColor(1.0f, 1.0f, 1.0f, 1.0f)) {
 
   _line_scale_factor = 1.0f;
 
@@ -45,8 +45,8 @@ LineParticleRenderer() :
 ////////////////////////////////////////////////////////////////////
 
 LineParticleRenderer::
-LineParticleRenderer(const Colorf& head,
-                     const Colorf& tail,
+LineParticleRenderer(const LColor& head,
+                     const LColor& tail,
                      ParticleRendererAlphaMode alpha_mode) :
   BaseParticleRenderer(alpha_mode),
   _head_color(head), _tail_color(tail)
@@ -180,7 +180,7 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
     if (cur_particle->get_alive() == false)
       continue;
 
-    LPoint3f position = cur_particle->get_position();
+    LPoint3 position = cur_particle->get_position();
 
     // adjust the aabb
 
@@ -201,14 +201,14 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
     // draw the particle.
 
-    Colorf head_color = _head_color;
-    Colorf tail_color = _tail_color;
+    LColor head_color = _head_color;
+    LColor tail_color = _tail_color;
 
     // handle alpha
 
     if (_alpha_mode != PR_ALPHA_NONE) {
 
-          float alpha;
+          PN_stdfloat alpha;
 
       if (_alpha_mode == PR_ALPHA_USER) {
                   alpha = get_user_alpha();
@@ -226,12 +226,12 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
     // one line from current position to last position
 
-    vertex.add_data3f(position);
-    LPoint3f last_position = position + 
+    vertex.add_data3(position);
+    LPoint3 last_position = position + 
       (cur_particle->get_last_position() - position) * _line_scale_factor;
-    vertex.add_data3f(last_position);
-    color.add_data4f(head_color);
-    color.add_data4f(tail_color);
+    vertex.add_data3(last_position);
+    color.add_data4(head_color);
+    color.add_data4(tail_color);
     _lines->add_next_vertices(2);
     _lines->close_primitive();
 
@@ -242,8 +242,8 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
   // done filling geomline node, now do the bb stuff
 
-  LPoint3f aabb_center = (_aabb_min + _aabb_max) * 0.5f;
-  float radius = (aabb_center - _aabb_min).length();
+  LPoint3 aabb_center = (_aabb_min + _aabb_max) * 0.5f;
+  PN_stdfloat radius = (aabb_center - _aabb_min).length();
 
   BoundingSphere sphere(aabb_center, radius);
   _line_primitive->set_bounds(&sphere);

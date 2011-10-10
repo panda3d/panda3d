@@ -53,7 +53,7 @@ public:
   PN_int32 get_be_int32();
   PN_uint16 get_be_uint16();
   PN_uint32 get_be_uint32();
-  float get_be_float32();
+  PN_stdfloat get_be_float32();
 
   string get_string();
 

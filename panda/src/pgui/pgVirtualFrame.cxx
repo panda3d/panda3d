@@ -130,14 +130,14 @@ r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map,
 //               dimensions.
 ////////////////////////////////////////////////////////////////////
 void PGVirtualFrame::
-setup(float width, float height) {
+setup(PN_stdfloat width, PN_stdfloat height) {
   LightReMutexHolder holder(_lock);
   set_state(0);
   clear_state_def(0);
 
   set_frame(0, width, 0, height);
 
-  float bevel = 0.05f;
+  PN_stdfloat bevel = 0.05f;
 
   PGFrameStyle style;
   style.set_width(bevel, bevel);
@@ -161,17 +161,17 @@ setup(float width, float height) {
 //               room for scroll bars).
 ////////////////////////////////////////////////////////////////////
 void PGVirtualFrame::
-set_clip_frame(const LVecBase4f &frame) {
+set_clip_frame(const LVecBase4 &frame) {
   LightReMutexHolder holder(_lock);
   if (!_has_clip_frame || _clip_frame != frame) {
     _has_clip_frame = true;
     _clip_frame = frame;
 
     CPT(RenderEffect) scissor_effect = ScissorEffect::make_node
-      (LPoint3f(_clip_frame[0], _clip_frame[2], _clip_frame[2]),
-       LPoint3f(_clip_frame[1], _clip_frame[2], _clip_frame[2]),
-       LPoint3f(_clip_frame[1], _clip_frame[3], _clip_frame[3]),
-       LPoint3f(_clip_frame[0], _clip_frame[3], _clip_frame[3]));
+      (LPoint3(_clip_frame[0], _clip_frame[2], _clip_frame[2]),
+       LPoint3(_clip_frame[1], _clip_frame[2], _clip_frame[2]),
+       LPoint3(_clip_frame[1], _clip_frame[3], _clip_frame[3]),
+       LPoint3(_clip_frame[0], _clip_frame[3], _clip_frame[3]));
     
     _canvas_parent->set_effect(scissor_effect);
     clip_frame_changed();

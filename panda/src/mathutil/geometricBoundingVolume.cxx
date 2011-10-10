@@ -36,7 +36,7 @@ as_geometric_bounding_volume() const {
 //               Returns true if possible, false if not.
 ////////////////////////////////////////////////////////////////////
 bool GeometricBoundingVolume::
-extend_by_point(const LPoint3f &) {
+extend_by_point(const LPoint3 &) {
   return false;
 }
 
@@ -47,7 +47,7 @@ extend_by_point(const LPoint3f &) {
 //               identified by an STL-style begin/end list.
 ////////////////////////////////////////////////////////////////////
 bool GeometricBoundingVolume::
-around_points(const LPoint3f *, const LPoint3f *) {
+around_points(const LPoint3 *, const LPoint3 *) {
   _flags = F_empty;
   return false;
 }
@@ -59,7 +59,7 @@ around_points(const LPoint3f *, const LPoint3f *) {
 //               point.
 ////////////////////////////////////////////////////////////////////
 int GeometricBoundingVolume::
-contains_point(const LPoint3f &) const {
+contains_point(const LPoint3 &) const {
   return IF_dont_understand;
 }
 
@@ -70,6 +70,6 @@ contains_point(const LPoint3f &) const {
 //               segment.
 ////////////////////////////////////////////////////////////////////
 int GeometricBoundingVolume::
-contains_lineseg(const LPoint3f &, const LPoint3f &) const {
+contains_lineseg(const LPoint3 &, const LPoint3 &) const {
   return IF_dont_understand;
 }

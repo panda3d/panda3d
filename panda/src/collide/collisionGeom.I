@@ -19,8 +19,8 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionGeom::
-CollisionGeom(const LVecBase3f &a, const LVecBase3f &b,
-              const LVecBase3f &c) :
+CollisionGeom(const LVecBase3 &a, const LVecBase3 &b,
+              const LVecBase3 &c) :
   CollisionPolygon(a, b, c)
 {
 }

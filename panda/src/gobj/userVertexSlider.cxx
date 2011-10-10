@@ -45,7 +45,7 @@ UserVertexSlider(const InternalName *name) :
 //       Access: Published, Virtual
 //  Description: Returns the current slider value.
 ////////////////////////////////////////////////////////////////////
-float UserVertexSlider::
+PN_stdfloat UserVertexSlider::
 get_slider() const {
   CDReader cdata(_cycler);
   return cdata->_slider;
@@ -127,7 +127,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 void UserVertexSlider::CData::
 write_datagram(BamWriter *manager, Datagram &dg) const {
-  dg.add_float32(_slider);
+  dg.add_stdfloat(_slider);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -139,5 +139,5 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
 ////////////////////////////////////////////////////////////////////
 void UserVertexSlider::CData::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  _slider = scan.get_float32();
+  _slider = scan.get_stdfloat();
 }

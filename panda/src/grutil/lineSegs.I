@@ -27,7 +27,7 @@ Point() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE LineSegs::Point::
-Point(const LVecBase3f &point, const Colorf &color) :
+Point(const LVecBase3 &point, const LColor &color) :
   _point(point[0], point[1], point[2]),
   _color(color)
 {
@@ -65,7 +65,7 @@ operator = (const LineSegs::Point &copy) {
 //               draw_to().
 ////////////////////////////////////////////////////////////////////
 INLINE void LineSegs::
-set_color(float r, float g, float b, float a) {
+set_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a) {
   _color.set(r, g, b, a);
 }
 
@@ -77,7 +77,7 @@ set_color(float r, float g, float b, float a) {
 //               draw_to().
 ////////////////////////////////////////////////////////////////////
 INLINE void LineSegs::
-set_color(const Colorf &color) {
+set_color(const LColor &color) {
   _color = color;
 }
 
@@ -89,7 +89,7 @@ set_color(const Colorf &color) {
 //               created by future calls to create().
 ////////////////////////////////////////////////////////////////////
 INLINE void LineSegs::
-set_thickness(float thick) {
+set_thickness(PN_stdfloat thick) {
   _thick = thick;
 }
 
@@ -102,8 +102,8 @@ set_thickness(float thick) {
 //               move_to() or create(), this creates a single point.
 ////////////////////////////////////////////////////////////////////
 INLINE void LineSegs::
-move_to(float x, float y, float z) {
-  move_to(Vertexf(x, y, z));
+move_to(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
+  move_to(LVertex(x, y, z));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -116,8 +116,8 @@ move_to(float x, float y, float z) {
 //               is called.
 ////////////////////////////////////////////////////////////////////
 INLINE void LineSegs::
-draw_to(float x, float y, float z) {
-  draw_to(Vertexf(x, y, z));
+draw_to(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
+  draw_to(LVertex(x, y, z));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -165,8 +165,8 @@ get_num_vertices() const {
 //               higher vertex numbers.
 ////////////////////////////////////////////////////////////////////
 INLINE void LineSegs::
-set_vertex(int n, float x, float y, float z) {
-  set_vertex(n, Vertexf(x, y, z));
+set_vertex(int n, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
+  set_vertex(n, LVertex(x, y, z));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -176,6 +176,6 @@ set_vertex(int n, float x, float y, float z) {
 //               See set_vertex().
 ////////////////////////////////////////////////////////////////////
 INLINE void LineSegs::
-set_vertex_color(int n, float r, float g, float b, float a) {
-  set_vertex_color(n, Colorf(r, g, b, a));
+set_vertex_color(int n, PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a) {
+  set_vertex_color(n, LColor(r, g, b, a));
 }

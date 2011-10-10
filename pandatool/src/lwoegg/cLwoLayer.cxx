@@ -28,7 +28,7 @@ void CLwoLayer::
 make_egg() {
   _egg_group = new EggGroup(_layer->_name);
 
-  if (_layer->_pivot != LPoint3f::zero()) {
+  if (_layer->_pivot != LPoint3::zero()) {
     // If we have a nonzero pivot point, that's a translation
     // transform.
     LPoint3d translate = LCAST(double, _layer->_pivot);

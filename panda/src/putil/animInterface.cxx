@@ -175,16 +175,16 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 void AnimInterface::CData::
 write_datagram(BamWriter *, Datagram &dg) const {
-  dg.add_float32(_frame_rate);
+  dg.add_stdfloat(_frame_rate);
   dg.add_uint8(_play_mode);
-  dg.add_float32(_start_time);
-  dg.add_float32(_start_frame);
-  dg.add_float32(_play_frames);
+  dg.add_stdfloat(_start_time);
+  dg.add_stdfloat(_start_frame);
+  dg.add_stdfloat(_play_frames);
   dg.add_int32(_from_frame);
   dg.add_int32(_to_frame);
-  dg.add_float32(_play_rate);
+  dg.add_stdfloat(_play_rate);
   dg.add_bool(_paused);
-  dg.add_float32(_paused_f);
+  dg.add_stdfloat(_paused_f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -196,17 +196,17 @@ write_datagram(BamWriter *, Datagram &dg) const {
 ////////////////////////////////////////////////////////////////////
 void AnimInterface::CData::
 fillin(DatagramIterator &scan, BamReader *) {
-  _frame_rate = scan.get_float32();
+  _frame_rate = scan.get_stdfloat();
   _play_mode = (PlayMode)scan.get_uint8();
-  _start_time = scan.get_float32();
-  _start_frame = scan.get_float32();
-  _play_frames = scan.get_float32();
+  _start_time = scan.get_stdfloat();
+  _start_frame = scan.get_stdfloat();
+  _play_frames = scan.get_stdfloat();
   _from_frame = scan.get_int32();
   _to_frame = scan.get_int32();
-  _play_rate = scan.get_float32();
+  _play_rate = scan.get_stdfloat();
   _effective_frame_rate = _frame_rate * _play_rate;
   _paused = scan.get_bool();
-  _paused_f = scan.get_float32();
+  _paused_f = scan.get_stdfloat();
 }
 
 ////////////////////////////////////////////////////////////////////

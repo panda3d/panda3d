@@ -61,9 +61,9 @@ make_copy() {
 // Description : Generates a location for a new particle
 ////////////////////////////////////////////////////////////////////
 void SphereVolumeEmitter::
-assign_initial_position(LPoint3f& pos) {
-  float z, theta, r;
-  float t;
+assign_initial_position(LPoint3& pos) {
+  PN_stdfloat z, theta, r;
+  PN_stdfloat t;
 
   z = SPREAD(_radius);
   r = sqrtf((_radius * _radius) - (z * z));
@@ -74,9 +74,9 @@ assign_initial_position(LPoint3f& pos) {
   while (t == 0.0f)
     t = NORMALIZED_RAND();
 
-  float pos_x = r * cosf(theta) * t;
-  float pos_y = r * sinf(theta) * t;
-  float pos_z = z * t;
+  PN_stdfloat pos_x = r * cosf(theta) * t;
+  PN_stdfloat pos_y = r * sinf(theta) * t;
+  PN_stdfloat pos_z = z * t;
 
   _particle_pos.set(pos_x, pos_y, pos_z);
   pos = _particle_pos;
@@ -88,7 +88,7 @@ assign_initial_position(LPoint3f& pos) {
 // Description : Generates a velocity for a new particle
 ////////////////////////////////////////////////////////////////////
 void SphereVolumeEmitter::
-assign_initial_velocity(LVector3f& vel) {
+assign_initial_velocity(LVector3& vel) {
   // set velocity to [0..1] according to distance from center,
   // along vector from center to position
   vel = _particle_pos / _radius;

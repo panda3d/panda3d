@@ -31,9 +31,9 @@ TypeHandle BillboardEffect::_type_handle;
 //               indicated properties.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderEffect) BillboardEffect::
-make(const LVector3f &up_vector, bool eye_relative,
-     bool axial_rotate, float offset, const NodePath &look_at,
-     const LPoint3f &look_at_point) {
+make(const LVector3 &up_vector, bool eye_relative,
+     bool axial_rotate, PN_stdfloat offset, const NodePath &look_at,
+     const LPoint3 &look_at_point) {
   BillboardEffect *effect = new BillboardEffect;
   effect->_up_vector = up_vector;
   effect->_eye_relative = eye_relative;
@@ -70,7 +70,7 @@ prepare_flatten_transform(const TransformState *net_transform) const {
   // We don't want any flatten operation to rotate the billboarded
   // node, since the billboard effect should eat any rotation that
   // comes in from above.
-  return net_transform->set_hpr(LVecBase3f(0, 0, 0));
+  return net_transform->set_hpr(LVecBase3(0, 0, 0));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -89,7 +89,7 @@ output(ostream &out) const {
     } else {
       out << "(point";
     }
-    if (!_up_vector.almost_equal(LVector3f::up())) {
+    if (!_up_vector.almost_equal(LVector3::up())) {
       out << " up " << _up_vector;
     }
     if (_eye_relative) {
@@ -101,7 +101,7 @@ output(ostream &out) const {
     if (!_look_at.is_empty()) {
       out << " look at " << _look_at;
     }
-    if (!_look_at_point.almost_equal(LPoint3f(0.0f, 0.0f, 0.0f))) {
+    if (!_look_at_point.almost_equal(LPoint3(0.0f, 0.0f, 0.0f))) {
       out << " look at point " << _look_at_point;
     }
     out << ")";
@@ -274,7 +274,7 @@ compute_billboard(CPT(TransformState) &node_transform,
   // And then the translation gets removed from the node, but we keep
   // its rotation etc., which gets applied after the billboard
   // operation.
-  node_transform = node_transform->set_pos(LPoint3f(0.0f, 0.0f, 0.0f));
+  node_transform = node_transform->set_pos(LPoint3(0.0f, 0.0f, 0.0f));
 
   CPT(TransformState) rel_transform =
     net_transform->compose(translate)->invert_compose(camera_transform);
@@ -283,10 +283,10 @@ compute_billboard(CPT(TransformState) &node_transform,
     return;
   }
 
-  const LMatrix4f &rel_mat = rel_transform->get_mat();
+  const LMatrix4 &rel_mat = rel_transform->get_mat();
 
   // Determine the look_at point in the camera space.
-  LVector3f camera_pos, up;
+  LVector3 camera_pos, up;
 
   // If this is an eye-relative Billboard, then (a) the up vector is
   // relative to the camera, not to the world, and (b) the look
@@ -296,7 +296,7 @@ compute_billboard(CPT(TransformState) &node_transform,
 
   if (_eye_relative) {
     up = _up_vector * rel_mat;
-    camera_pos = LVector3f::forward() * rel_mat;
+    camera_pos = LVector3::forward() * rel_mat;
 
   } else {
     up = _up_vector;
@@ -304,7 +304,7 @@ compute_billboard(CPT(TransformState) &node_transform,
   }
 
   // Now determine the rotation matrix for the Billboard.
-  LMatrix4f rotate;
+  LMatrix4 rotate;
   if (_axial_rotate) {
     heads_up(rotate, camera_pos, up);
   } else {
@@ -314,7 +314,7 @@ compute_billboard(CPT(TransformState) &node_transform,
   // Also slide the billboard geometry towards the camera according to
   // the offset factor.
   if (_offset != 0.0f) {
-    LVector3f translate(rel_mat(3, 0), rel_mat(3, 1), rel_mat(3, 2));
+    LVector3 translate(rel_mat(3, 0), rel_mat(3, 1), rel_mat(3, 2));
     translate.normalize();
     translate *= _offset;
     rotate.set_row(3, translate);
@@ -348,7 +348,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   _up_vector.write_datagram(dg);
   dg.add_bool(_eye_relative);
   dg.add_bool(_axial_rotate);
-  dg.add_float32(_offset);
+  dg.add_stdfloat(_offset);
   _look_at_point.write_datagram(dg);
 
   // *** We don't write out the _look_at NodePath right now.  Maybe
@@ -390,6 +390,6 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _up_vector.read_datagram(scan);
   _eye_relative = scan.get_bool();
   _axial_rotate = scan.get_bool();
-  _offset = scan.get_float32();
+  _offset = scan.get_stdfloat();
   _look_at_point.read_datagram(scan);
 }

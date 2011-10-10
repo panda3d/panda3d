@@ -93,7 +93,7 @@ void DaeMaterials::add_material_instance(const FCDMaterialInstance* instance) {
       // Set the material parameters
       egg_material->set_amb(TO_COLOR(effect_common->GetAmbientColor()));
       ////We already process transparency using blend modes
-      //LVecBase4f diffuse = TO_COLOR(effect_common->GetDiffuseColor());
+      //LVecBase4 diffuse = TO_COLOR(effect_common->GetDiffuseColor());
       //diffuse.set_w(diffuse.get_w() * (1.0f - effect_common->GetOpacity()));
       //egg_material->set_diff(diffuse);
       egg_material->set_diff(TO_COLOR(effect_common->GetDiffuseColor()));
@@ -374,18 +374,18 @@ convert_filter_type(const FUDaeTextureFilterFunction::FilterFunction orig_type) 
 //  Description: Converts collada blend attribs to Panda's equivalents.
 ////////////////////////////////////////////////////////////////////
 PT(DaeMaterials::DaeBlendSettings) DaeMaterials::
-convert_blend(FCDEffectStandard::TransparencyMode mode, Colorf transparent, double transparency) {
+convert_blend(FCDEffectStandard::TransparencyMode mode, LColor transparent, double transparency) {
   // Create the DaeBlendSettings and fill it with some defaults.
   PT(DaeBlendSettings) blend = new DaeBlendSettings();
   blend->_enabled = true;
-  blend->_color = Colorf::zero();
+  blend->_color = LColor::zero();
   blend->_operand_a = EggGroup::BO_unspecified;
   blend->_operand_b = EggGroup::BO_unspecified;
   
   // First fill in the color value.
   if (mode == FCDEffectStandard::A_ONE) {// || mode == FCDEffectStandard::A_ZERO) {
     double value = transparent[3] * transparency;
-    blend->_color = Colorf(value, value, value, value);
+    blend->_color = LColor(value, value, value, value);
   } else if (mode == FCDEffectStandard::RGB_ZERO) {//|| mode == FCDEffectStandard::RGB_ONE) {
     blend->_color = transparent * transparency;
     blend->_color[3] = luminance(blend->_color);

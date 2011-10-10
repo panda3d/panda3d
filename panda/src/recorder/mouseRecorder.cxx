@@ -40,8 +40,8 @@ MouseRecorder(const string &name) :
   _live_button_events = new ButtonEventList;
   _save_button_events = new ButtonEventList;
 
-  _pixel_xy = new EventStoreVec2(LPoint2f(0.0f, 0.0f));
-  _xy = new EventStoreVec2(LPoint2f(0.0f, 0.0f));
+  _pixel_xy = new EventStoreVec2(LPoint2(0.0f, 0.0f));
+  _xy = new EventStoreVec2(LPoint2(0.0f, 0.0f));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -130,8 +130,8 @@ void MouseRecorder::
 do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input, 
                  DataNodeTransmit &output) {
   bool has_mouse = false;
-  LPoint2f mouse_xy;
-  LPoint2f mouse_pixel_xy;
+  LPoint2 mouse_xy;
+  LPoint2 mouse_pixel_xy;
 
   _live_button_events->clear();
 

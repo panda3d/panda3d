@@ -35,11 +35,11 @@ class LensNode;
 class EXPCL_PANDA_COLLIDE CollisionSegment : public CollisionSolid {
 PUBLISHED:
   INLINE CollisionSegment();
-  INLINE CollisionSegment(const LPoint3f &a, const LPoint3f &db);
-  INLINE CollisionSegment(float ax, float ay, float az,
-                          float bx, float by, float bz);
+  INLINE CollisionSegment(const LPoint3 &a, const LPoint3 &db);
+  INLINE CollisionSegment(PN_stdfloat ax, PN_stdfloat ay, PN_stdfloat az,
+                          PN_stdfloat bx, PN_stdfloat by, PN_stdfloat bz);
 
-  virtual LPoint3f get_collision_origin() const;
+  virtual LPoint3 get_collision_origin() const;
 
 public:
   INLINE CollisionSegment(const CollisionSegment &copy);
@@ -48,21 +48,21 @@ public:
   virtual PT(CollisionEntry)
   test_intersection(const CollisionEntry &entry) const;
 
-  virtual void xform(const LMatrix4f &mat);
+  virtual void xform(const LMatrix4 &mat);
 
   virtual void output(ostream &out) const;
 
 PUBLISHED:
-  INLINE void set_point_a(const LPoint3f &a);
-  INLINE void set_point_a(float x, float y, float z);
-  INLINE const LPoint3f &get_point_a() const;
+  INLINE void set_point_a(const LPoint3 &a);
+  INLINE void set_point_a(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+  INLINE const LPoint3 &get_point_a() const;
 
-  INLINE void set_point_b(const LPoint3f &b);
-  INLINE void set_point_b(float x, float y, float z);
-  INLINE const LPoint3f &get_point_b() const;
+  INLINE void set_point_b(const LPoint3 &b);
+  INLINE void set_point_b(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+  INLINE const LPoint3 &get_point_b() const;
 
-  bool set_from_lens(LensNode *camera, const LPoint2f &point);
-  INLINE bool set_from_lens(LensNode *camera, float px, float py);
+  bool set_from_lens(LensNode *camera, const LPoint2 &point);
+  INLINE bool set_from_lens(LensNode *camera, PN_stdfloat px, PN_stdfloat py);
 
 protected:
   virtual PT(BoundingVolume) compute_internal_bounds() const;
@@ -71,7 +71,7 @@ protected:
   virtual void fill_viz_geom();
 
 private:
-  LPoint3f _a, _b;
+  LPoint3 _a, _b;
 
 public:
   static void register_with_read_factory();

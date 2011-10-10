@@ -57,11 +57,11 @@ PUBLISHED:
   INLINE void set_interior_flag(bool interior_flag);
   INLINE bool get_interior_flag() const;
 
-  INLINE void set_fg(const Colorf &fg);
-  INLINE const Colorf &get_fg() const;
+  INLINE void set_fg(const LColor &fg);
+  INLINE const LColor &get_fg() const;
 
-  INLINE void set_interior(const Colorf &interior);
-  INLINE const Colorf &get_interior() const;
+  INLINE void set_interior(const LColor &interior);
+  INLINE const LColor &get_interior() const;
 
   INLINE int generate_into(const string &text,
                            PNMImage &dest_image, int x, int y);
@@ -84,8 +84,8 @@ private:
 
   Alignment _align;
   bool _interior_flag;
-  Colorf _fg;
-  Colorf _interior;
+  LColor _fg;
+  LColor _interior;
 };
 
 #include "pnmTextMaker.I"

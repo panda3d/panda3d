@@ -19,13 +19,13 @@
 ////////////////////////////////////////////////////////////////////
 INLINE MatrixLens::
 MatrixLens() :
-  _user_mat(LMatrix4f::ident_mat()),
+  _user_mat(LMatrix4::ident_mat()),
   _ml_flags(0)
 {
   // The default film size for a MatrixLens is 2, which makes the
   // default range for both X and Y be [-1, 1].  This also,
   // incidentally, makes the film_mat be identity.
-  set_film_size(2.0f);
+  set_film_size(2.0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -75,7 +75,7 @@ operator = (const MatrixLens &copy) {
 //               matrices.
 ////////////////////////////////////////////////////////////////////
 INLINE void MatrixLens::
-set_user_mat(const LMatrix4f &user_mat) {
+set_user_mat(const LMatrix4 &user_mat) {
   _user_mat = user_mat;
   adjust_comp_flags(CF_mat, 0);
 }
@@ -87,7 +87,7 @@ set_user_mat(const LMatrix4f &user_mat) {
 //               user.  This does not include transforms on the lens
 //               or film (e.g. a film offset or view hpr).
 ////////////////////////////////////////////////////////////////////
-INLINE const LMatrix4f &MatrixLens::
+INLINE const LMatrix4 &MatrixLens::
 get_user_mat() const {
   return _user_mat;
 }
@@ -107,7 +107,7 @@ get_user_mat() const {
 //               errors may become obvious.
 ////////////////////////////////////////////////////////////////////
 INLINE void MatrixLens::
-set_left_eye_mat(const LMatrix4f &left_eye_mat) {
+set_left_eye_mat(const LMatrix4 &left_eye_mat) {
   _left_eye_mat = left_eye_mat;
   _ml_flags |= MF_has_left_eye;
   adjust_comp_flags(CF_mat, 0);
@@ -146,7 +146,7 @@ has_left_eye_mat() const {
 //               eye, if any, or the center matrix if there is no
 //               custom matrix set for the left eye.
 ////////////////////////////////////////////////////////////////////
-INLINE const LMatrix4f &MatrixLens::
+INLINE const LMatrix4 &MatrixLens::
 get_left_eye_mat() const {
   if ((_ml_flags & MF_has_left_eye) != 0) {
     return _left_eye_mat;
@@ -169,7 +169,7 @@ get_left_eye_mat() const {
 //               errors may become obvious.
 ////////////////////////////////////////////////////////////////////
 INLINE void MatrixLens::
-set_right_eye_mat(const LMatrix4f &right_eye_mat) {
+set_right_eye_mat(const LMatrix4 &right_eye_mat) {
   _right_eye_mat = right_eye_mat;
   _ml_flags |= MF_has_right_eye;
   adjust_comp_flags(CF_mat, 0);
@@ -208,7 +208,7 @@ has_right_eye_mat() const {
 //               eye, if any, or the center matrix if there is no
 //               custom matrix set for the right eye.
 ////////////////////////////////////////////////////////////////////
-INLINE const LMatrix4f &MatrixLens::
+INLINE const LMatrix4 &MatrixLens::
 get_right_eye_mat() const {
   if ((_ml_flags & MF_has_right_eye) != 0) {
     return _right_eye_mat;

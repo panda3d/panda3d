@@ -24,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 void TimedCycle::
 write_datagram(Datagram &me) {
-  me.add_float32(_cycle_time);
+  me.add_stdfloat(_cycle_time);
   me.add_uint16(_element_count);
 }
 
@@ -37,7 +37,7 @@ write_datagram(Datagram &me) {
 ////////////////////////////////////////////////////////////////////
 void TimedCycle::
 fillin(DatagramIterator &scan) {
-  _cycle_time = scan.get_float32();
+  _cycle_time = scan.get_stdfloat();
   _element_count = scan.get_uint16();
   _inv_cycle_time = 1. / _cycle_time;
 

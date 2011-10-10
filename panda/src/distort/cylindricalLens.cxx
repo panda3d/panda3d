@@ -19,7 +19,7 @@ TypeHandle CylindricalLens::_type_handle;
 
 // This is the focal-length constant for fisheye lenses.  See
 // fisheyeLens.cxx.
-static const float cylindrical_k = 60.0f;
+static const PN_stdfloat cylindrical_k = 60.0f;
 // focal_length = film_size * cylindrical_k / fov;
 
 
@@ -51,23 +51,23 @@ make_copy() const {
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
 bool CylindricalLens::
-extrude_impl(const LPoint3f &point2d, LPoint3f &near_point, LPoint3f &far_point) const {
+extrude_impl(const LPoint3 &point2d, LPoint3 &near_point, LPoint3 &far_point) const {
   // Undo the shifting from film offsets, etc.  This puts the point
   // into the range [-film_size/2, film_size/2] in x and y.
-  LPoint3f f = point2d * get_film_mat_inv();
+  LPoint3 f = point2d * get_film_mat_inv();
 
-  float focal_length = get_focal_length();
-  float angle = f[0] * cylindrical_k / focal_length;
-  float sinAngle, cosAngle;
+  PN_stdfloat focal_length = get_focal_length();
+  PN_stdfloat angle = f[0] * cylindrical_k / focal_length;
+  PN_stdfloat sinAngle, cosAngle;
   csincos(deg_2_rad(angle), &sinAngle, &cosAngle);
 
   // Define a unit vector (well, a unit vector in the XY plane, at
   // least) that represents the vector corresponding to this point.
-  LPoint3f v(sinAngle, cosAngle, f[1] / focal_length);
+  LPoint3 v(sinAngle, cosAngle, f[1] / focal_length);
 
   // And we'll need to account for the lens's rotations, etc. at the
   // end of the day.
-  const LMatrix4f &lens_mat = get_lens_mat();
+  const LMatrix4 &lens_mat = get_lens_mat();
 
   near_point = (v * get_near()) * lens_mat;
   far_point = (v * get_far()) * lens_mat;
@@ -95,17 +95,17 @@ extrude_impl(const LPoint3f &point2d, LPoint3f &near_point, LPoint3f &far_point)
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
 bool CylindricalLens::
-extrude_vec_impl(const LPoint3f &point2d, LVector3f &vec) const {
+extrude_vec_impl(const LPoint3 &point2d, LVector3 &vec) const {
   // Undo the shifting from film offsets, etc.  This puts the point
   // into the range [-film_size/2, film_size/2] in x and y.
-  LPoint3f f = point2d * get_film_mat_inv();
+  LPoint3 f = point2d * get_film_mat_inv();
 
-  float focal_length = get_focal_length();
-  float angle = f[0] * cylindrical_k / focal_length;
-  float sinAngle, cosAngle;
+  PN_stdfloat focal_length = get_focal_length();
+  PN_stdfloat angle = f[0] * cylindrical_k / focal_length;
+  PN_stdfloat sinAngle, cosAngle;
   csincos(deg_2_rad(angle), &sinAngle, &cosAngle);
 
-  vec = LVector3f(sinAngle, cosAngle, 0.0f) * get_lens_mat();
+  vec = LVector3(sinAngle, cosAngle, 0.0f) * get_lens_mat();
 
   return true;
 }
@@ -128,24 +128,24 @@ extrude_vec_impl(const LPoint3f &point2d, LVector3f &vec) const {
 //               is filled in), or false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool CylindricalLens::
-project_impl(const LPoint3f &point3d, LPoint3f &point2d) const {
+project_impl(const LPoint3 &point3d, LPoint3 &point2d) const {
   // First, account for any rotations, etc. on the lens.
-  LPoint3f p = point3d * get_lens_mat_inv();
+  LPoint3 p = point3d * get_lens_mat_inv();
 
   // To compute the x position on the frame, we only need to consider
   // the angle of the vector about the Z axis.  Project the vector
   // into the XY plane to do this.
-  LVector2f xy(p[0], p[1]);
+  LVector2 xy(p[0], p[1]);
 
   // The perspective distance is the length of this vector in the XY
   // plane.
-  float pdist = xy.length();
+  PN_stdfloat pdist = xy.length();
   if (pdist == 0.0f) {
     point2d.set(0.0f, 0.0f, 0.0f);
     return false;
   }
 
-  float focal_length = get_focal_length();
+  PN_stdfloat focal_length = get_focal_length();
 
   point2d.set
     (
@@ -176,8 +176,8 @@ project_impl(const LPoint3f &point3d, LPoint3f &point2d) const {
 //               direction; otherwise, it is in the vertical direction
 //               (some lenses behave differently in each direction).
 ////////////////////////////////////////////////////////////////////
-float CylindricalLens::
-fov_to_film(float fov, float focal_length, bool horiz) const {
+PN_stdfloat CylindricalLens::
+fov_to_film(PN_stdfloat fov, PN_stdfloat focal_length, bool horiz) const {
   if (horiz) {
     return focal_length * fov / cylindrical_k;
   } else {
@@ -194,8 +194,8 @@ fov_to_film(float fov, float focal_length, bool horiz) const {
 //               direction; otherwise, it is in the vertical direction
 //               (some lenses behave differently in each direction).
 ////////////////////////////////////////////////////////////////////
-float CylindricalLens::
-fov_to_focal_length(float fov, float film_size, bool horiz) const {
+PN_stdfloat CylindricalLens::
+fov_to_focal_length(PN_stdfloat fov, PN_stdfloat film_size, bool horiz) const {
   if (horiz) {
     return film_size * cylindrical_k / fov;
   } else {
@@ -212,8 +212,8 @@ fov_to_focal_length(float fov, float film_size, bool horiz) const {
 //               otherwise, it is in the vertical direction (some
 //               lenses behave differently in each direction).
 ////////////////////////////////////////////////////////////////////
-float CylindricalLens::
-film_to_fov(float film_size, float focal_length, bool horiz) const {
+PN_stdfloat CylindricalLens::
+film_to_fov(PN_stdfloat film_size, PN_stdfloat focal_length, bool horiz) const {
   if (horiz) {
     return film_size * cylindrical_k / focal_length;
   } else {

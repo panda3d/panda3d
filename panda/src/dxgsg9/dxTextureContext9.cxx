@@ -426,7 +426,7 @@ create_texture(DXScreenData &scrn) {
 
   case 128:
     // check if format is supported    
-    if (scrn._supports_rgba32f_texture_format) {
+    if (scrn._supports_rgba32_texture_format) {
       target_pixel_format = D3DFMT_A32B32G32R32F;
     }
     else {
@@ -827,7 +827,7 @@ create_texture(DXScreenData &scrn) {
     }
   }
 
-  float bytes_per_texel;
+  PN_stdfloat bytes_per_texel;
 
   bytes_per_texel = this -> d3d_format_to_bytes_per_pixel (target_pixel_format);
   if (bytes_per_texel == 0.0f) {
@@ -839,9 +839,9 @@ create_texture(DXScreenData &scrn) {
 
   data_size = target_width * target_height * target_depth;
   if (_has_mipmaps) {
-    data_size = (int) ((float) data_size * 1.3333333f);
+    data_size = (int) ((PN_stdfloat) data_size * 1.3333333);
   }
-  data_size = (int) ((float) data_size * bytes_per_texel);
+  data_size = (int) ((PN_stdfloat) data_size * bytes_per_texel);
   if (tex->get_texture_type() == Texture::TT_cube_map) {
     data_size *= 6;
   }
@@ -2170,10 +2170,10 @@ get_bits_per_pixel(Texture::Format format, int *alphbits) {
 //       Access: Private
 //  Description: Determines bytes per pixel from D3DFORMAT.
 ////////////////////////////////////////////////////////////////////
-float DXTextureContext9::
+PN_stdfloat DXTextureContext9::
 d3d_format_to_bytes_per_pixel (D3DFORMAT format)
 {
-  float bytes_per_pixel;
+  PN_stdfloat bytes_per_pixel;
   
   bytes_per_pixel = 0.0f;
   switch (format)

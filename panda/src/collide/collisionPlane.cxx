@@ -54,7 +54,7 @@ make_copy() {
 //  Description: Transforms the solid by the indicated matrix.
 ////////////////////////////////////////////////////////////////////
 void CollisionPlane::
-xform(const LMatrix4f &mat) {
+xform(const LMatrix4 &mat) {
   _plane = _plane * mat;
   CollisionSolid::xform(mat);
 }
@@ -67,12 +67,12 @@ xform(const LMatrix4f &mat) {
 //               intersection point to this origin point is considered
 //               to be the most significant.
 ////////////////////////////////////////////////////////////////////
-LPoint3f CollisionPlane::
+LPoint3 CollisionPlane::
 get_collision_origin() const {
   // No real sensible origin exists for a plane.  We return 0, 0, 0,
   // without even bothering to ensure that that point exists on the
   // plane.
-  return LPoint3f::origin();
+  return LPoint3::origin();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -129,14 +129,14 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
   DCAST_INTO_R(sphere, entry.get_from(), 0);
 
-  const LMatrix4f &wrt_mat = entry.get_wrt_mat();
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
-  LPoint3f from_center = sphere->get_center() * wrt_mat;
-  LVector3f from_radius_v =
-    LVector3f(sphere->get_radius(), 0.0f, 0.0f) * wrt_mat;
-  float from_radius = length(from_radius_v);
+  LPoint3 from_center = sphere->get_center() * wrt_mat;
+  LVector3 from_radius_v =
+    LVector3(sphere->get_radius(), 0.0f, 0.0f) * wrt_mat;
+  PN_stdfloat from_radius = length(from_radius_v);
 
-  float dist = dist_to_plane(from_center);
+  PN_stdfloat dist = dist_to_plane(from_center);
   if (dist > from_radius) {
     // No intersection.
     return NULL;
@@ -149,7 +149,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LVector3f normal = (
+  LVector3 normal = (
     has_effective_normal() && sphere->get_respect_effective_normal())
     ? get_effective_normal() : get_normal();
 
@@ -170,12 +170,12 @@ test_intersection_from_line(const CollisionEntry &entry) const {
   const CollisionLine *line;
   DCAST_INTO_R(line, entry.get_from(), 0);
 
-  const LMatrix4f &wrt_mat = entry.get_wrt_mat();
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
-  LPoint3f from_origin = line->get_origin() * wrt_mat;
-  LVector3f from_direction = line->get_direction() * wrt_mat;
+  LPoint3 from_origin = line->get_origin() * wrt_mat;
+  LVector3 from_direction = line->get_direction() * wrt_mat;
 
-  float t;
+  PN_stdfloat t;
   if (!_plane.intersects_line(t, from_origin, from_direction)) {
     // No intersection.  The line is parallel to the plane.
 
@@ -195,9 +195,9 @@ test_intersection_from_line(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LPoint3f into_intersection_point = from_origin + t * from_direction;
+  LPoint3 into_intersection_point = from_origin + t * from_direction;
 
-  LVector3f normal = 
+  LVector3 normal = 
     (has_effective_normal() && line->get_respect_effective_normal())
     ? get_effective_normal() : get_normal();
 
@@ -217,12 +217,12 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
   DCAST_INTO_R(ray, entry.get_from(), 0);
 
-  const LMatrix4f &wrt_mat = entry.get_wrt_mat();
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
-  LPoint3f from_origin = ray->get_origin() * wrt_mat;
-  LVector3f from_direction = ray->get_direction() * wrt_mat;
+  LPoint3 from_origin = ray->get_origin() * wrt_mat;
+  LVector3 from_direction = ray->get_direction() * wrt_mat;
 
-  float t;
+  PN_stdfloat t;
 
   if (_plane.dist_to_plane(from_origin) < 0.0f) {
     // The origin of the ray is behind the plane, so we don't need to
@@ -249,9 +249,9 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LPoint3f into_intersection_point = from_origin + t * from_direction;
+  LPoint3 into_intersection_point = from_origin + t * from_direction;
 
-  LVector3f normal =
+  LVector3 normal =
     (has_effective_normal() && ray->get_respect_effective_normal()) 
     ? get_effective_normal() : get_normal();
 
@@ -271,13 +271,13 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   const CollisionSegment *segment;
   DCAST_INTO_R(segment, entry.get_from(), 0);
 
-  const LMatrix4f &wrt_mat = entry.get_wrt_mat();
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
-  LPoint3f from_a = segment->get_point_a() * wrt_mat;
-  LPoint3f from_b = segment->get_point_b() * wrt_mat;
+  LPoint3 from_a = segment->get_point_a() * wrt_mat;
+  LPoint3 from_b = segment->get_point_b() * wrt_mat;
 
-  float dist_a = _plane.dist_to_plane(from_a);
-  float dist_b = _plane.dist_to_plane(from_b);
+  PN_stdfloat dist_a = _plane.dist_to_plane(from_a);
+  PN_stdfloat dist_b = _plane.dist_to_plane(from_b);
 
   if (dist_a >= 0.0f && dist_b >= 0.0f) {
     // Entirely in front of the plane means no intersection.
@@ -291,11 +291,11 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LVector3f normal = (has_effective_normal() && segment->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
+  LVector3 normal = (has_effective_normal() && segment->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
   new_entry->set_surface_normal(normal);
 
-  float t;
-  LVector3f from_direction = from_b - from_a;
+  PN_stdfloat t;
+  LVector3 from_direction = from_b - from_a;
   if (_plane.intersects_line(t, from_a, from_direction)) {
     // It intersects the plane.
     if (t >= 0.0f && t <= 1.0f) {
@@ -332,20 +332,20 @@ test_intersection_from_parabola(const CollisionEntry &entry) const {
   const CollisionParabola *parabola;
   DCAST_INTO_R(parabola, entry.get_from(), 0);
 
-  const LMatrix4f &wrt_mat = entry.get_wrt_mat();
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
   // Convert the parabola into local coordinate space.
-  Parabolaf local_p(parabola->get_parabola());
+  LParabola local_p(parabola->get_parabola());
   local_p.xform(wrt_mat);
 
-  float t;
+  PN_stdfloat t;
   if (_plane.dist_to_plane(local_p.calc_point(parabola->get_t1())) < 0.0f) {
     // The first point in the parabola is behind the plane, so we
     // don't need to test further.
     t = parabola->get_t1();
 
   } else {
-    float t1, t2;
+    PN_stdfloat t1, t2;
     if (!get_plane().intersects_parabola(t1, t2, local_p)) {
       // No intersection.  The infinite parabola is entirely in front
       // of the plane.
@@ -379,9 +379,9 @@ test_intersection_from_parabola(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LPoint3f into_intersection_point = local_p.calc_point(t);
+  LPoint3 into_intersection_point = local_p.calc_point(t);
 
-  LVector3f normal = (has_effective_normal() && parabola->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
+  LVector3 normal = (has_effective_normal() && parabola->get_respect_effective_normal()) ? get_effective_normal() : get_normal();
 
   new_entry->set_surface_normal(normal);
   new_entry->set_surface_point(into_intersection_point);
@@ -415,27 +415,27 @@ fill_viz_geom() {
   // coefficent.  The first corner will be diagonal in the other two
   // dimensions.
 
-  LPoint3f cp;
-  LVector3f p1, p2, p3, p4;
+  LPoint3 cp;
+  LVector3 p1, p2, p3, p4;
 
-  LVector3f normal = get_normal();
-  float D = _plane[3];
+  LVector3 normal = get_normal();
+  PN_stdfloat D = _plane[3];
 
   if (fabs(normal[0]) > fabs(normal[1]) &&
       fabs(normal[0]) > fabs(normal[2])) {
     // X has the largest coefficient.
     cp.set(-D / normal[0], 0.0f, 0.0f);
-    p1 = LPoint3f(-(normal[1] + normal[2] + D)/normal[0], 1.0f, 1.0f) - cp;
+    p1 = LPoint3(-(normal[1] + normal[2] + D)/normal[0], 1.0f, 1.0f) - cp;
 
   } else if (fabs(normal[1]) > fabs(normal[2])) {
     // Y has the largest coefficient.
     cp.set(0.0f, -D / normal[1], 0.0f);
-    p1 = LPoint3f(1.0f, -(normal[0] + normal[2] + D)/normal[1], 1.0f) - cp;
+    p1 = LPoint3(1.0f, -(normal[0] + normal[2] + D)/normal[1], 1.0f) - cp;
 
   } else {
     // Z has the largest coefficient.
     cp.set(0.0f, 0.0f, -D / normal[2]);
-    p1 = LPoint3f(1.0f, 1.0f, -(normal[0] + normal[1] + D)/normal[2]) - cp;
+    p1 = LPoint3(1.0f, 1.0f, -(normal[0] + normal[1] + D)/normal[2]) - cp;
   }
 
   p1.normalize();
@@ -450,10 +450,10 @@ fill_viz_geom() {
      Geom::UH_static);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   
-  vertex.add_data3f(cp + p1 * plane_scale);
-  vertex.add_data3f(cp + p2 * plane_scale);
-  vertex.add_data3f(cp + p3 * plane_scale);
-  vertex.add_data3f(cp + p4 * plane_scale);
+  vertex.add_data3(cp + p1 * plane_scale);
+  vertex.add_data3(cp + p2 * plane_scale);
+  vertex.add_data3(cp + p3 * plane_scale);
+  vertex.add_data3(cp + p4 * plane_scale);
   
   PT(GeomTrifans) body = new GeomTrifans(Geom::UH_static);
   body->add_consecutive_vertices(0, 4);

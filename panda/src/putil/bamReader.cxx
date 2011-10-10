@@ -137,17 +137,29 @@ init() {
 
   _file_endian = (BamEndian)scan.get_uint8();
 
-  if (bam_cat.is_debug()) {
-    bam_cat.debug()
-      << "Bam file is version " << _file_major << "." << _file_minor
-      << ".\n";
-    if (_file_minor != _bam_minor_ver) {
-      bam_cat.debug()
-        << "(Current version is " << _bam_major_ver << "." << _bam_minor_ver
-        << ".)\n";
+  _file_stdfloat_double = false;
+  if (_file_minor >= 27) {
+    _file_stdfloat_double = scan.get_bool();
+  }
+
+#ifndef STDFLOAT_DOUBLE
+  bool need_stdfloat_double = false;
+#else
+  bool need_stdfloat_double = true;
+#endif
+  if (_file_stdfloat_double != need_stdfloat_double) {
+    if (_file_stdfloat_double) {
+      bam_cat.error()
+        << "This bam file was written with 64-bit floats.\n";
+      bam_cat.error()
+        << "This program can only read bam files with 32-bit floats.\n";
+    } else { 
+      bam_cat.error()
+        << "This bam file was written with 32-bit floats.\n";
+      bam_cat.error()
+        << "This program can only read bam files with 64-bit floats.\n";
     }
-    bam_cat.debug()
-      << "Endian preference is " << _file_endian << "\n";
+    return false;
   }
 
   return true;

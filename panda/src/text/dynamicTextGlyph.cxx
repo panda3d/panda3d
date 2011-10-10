@@ -95,9 +95,9 @@ erase(DynamicTextFont *font) {
 //               the pen should be advanced after drawing this glyph.
 ////////////////////////////////////////////////////////////////////
 void DynamicTextGlyph::
-make_geom(int bitmap_top, int bitmap_left, float advance, float poly_margin, 
-          float tex_x_size, float tex_y_size,
-          float font_pixels_per_unit, float tex_pixels_per_unit) {
+make_geom(int bitmap_top, int bitmap_left, PN_stdfloat advance, PN_stdfloat poly_margin, 
+          PN_stdfloat tex_x_size, PN_stdfloat tex_y_size,
+          PN_stdfloat font_pixels_per_unit, PN_stdfloat tex_pixels_per_unit) {
   nassertv(_page != (DynamicTextPage *)NULL);
 
   // This function should not be called twice.
@@ -107,21 +107,21 @@ make_geom(int bitmap_top, int bitmap_left, float advance, float poly_margin,
   tex_y_size += _margin * 2;
 
   // Determine the corners of the rectangle in geometric units.
-  float tex_poly_margin = poly_margin / tex_pixels_per_unit;
-  float origin_y = bitmap_top / font_pixels_per_unit;
-  float origin_x = bitmap_left / font_pixels_per_unit;
-  float top = origin_y + tex_poly_margin;
-  float left = origin_x - tex_poly_margin;
-  float bottom = origin_y - tex_y_size / tex_pixels_per_unit - tex_poly_margin;
-  float right = origin_x + tex_x_size / tex_pixels_per_unit + tex_poly_margin;
+  PN_stdfloat tex_poly_margin = poly_margin / tex_pixels_per_unit;
+  PN_stdfloat origin_y = bitmap_top / font_pixels_per_unit;
+  PN_stdfloat origin_x = bitmap_left / font_pixels_per_unit;
+  PN_stdfloat top = origin_y + tex_poly_margin;
+  PN_stdfloat left = origin_x - tex_poly_margin;
+  PN_stdfloat bottom = origin_y - tex_y_size / tex_pixels_per_unit - tex_poly_margin;
+  PN_stdfloat right = origin_x + tex_x_size / tex_pixels_per_unit + tex_poly_margin;
 
   // And the corresponding corners in UV units.  We add 0.5f to center
   // the UV in the middle of its texel, to minimize roundoff errors
   // when we are close to 1-to-1 pixel size.
-  float uv_top = 1.0f - ((float)(_y - poly_margin) + 0.5f) / _page->get_y_size();
-  float uv_left = ((float)(_x - poly_margin) + 0.5f) / _page->get_x_size();
-  float uv_bottom = 1.0f - ((float)(_y + poly_margin + tex_y_size) + 0.5f) / _page->get_y_size();
-  float uv_right = ((float)(_x + poly_margin + tex_x_size) + 0.5f) / _page->get_x_size();
+  PN_stdfloat uv_top = 1.0f - ((PN_stdfloat)(_y - poly_margin) + 0.5f) / _page->get_y_size();
+  PN_stdfloat uv_left = ((PN_stdfloat)(_x - poly_margin) + 0.5f) / _page->get_x_size();
+  PN_stdfloat uv_bottom = 1.0f - ((PN_stdfloat)(_y + poly_margin + tex_y_size) + 0.5f) / _page->get_y_size();
+  PN_stdfloat uv_right = ((PN_stdfloat)(_x + poly_margin + tex_x_size) + 0.5f) / _page->get_x_size();
   // Create a corresponding triangle pair.  We use a pair of indexed
   // triangles rather than a single triangle strip, to avoid the bad
   // vertex duplication behavior with lots of two-triangle strips.
@@ -131,15 +131,15 @@ make_geom(int bitmap_top, int bitmap_left, float advance, float poly_margin,
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
   
-  vertex.add_data3f(left, 0, top);
-  vertex.add_data3f(left, 0, bottom);
-  vertex.add_data3f(right, 0, top);
-  vertex.add_data3f(right, 0, bottom);
+  vertex.add_data3(left, 0, top);
+  vertex.add_data3(left, 0, bottom);
+  vertex.add_data3(right, 0, top);
+  vertex.add_data3(right, 0, bottom);
   
-  texcoord.add_data2f(uv_left, uv_top);
-  texcoord.add_data2f(uv_left, uv_bottom);
-  texcoord.add_data2f(uv_right, uv_top);
-  texcoord.add_data2f(uv_right, uv_bottom);
+  texcoord.add_data2(uv_left, uv_top);
+  texcoord.add_data2(uv_left, uv_bottom);
+  texcoord.add_data2(uv_right, uv_top);
+  texcoord.add_data2(uv_right, uv_bottom);
   
   PT(GeomTriangles) tris = new GeomTriangles(Geom::UH_static);
   tris->add_vertex(0);
@@ -162,7 +162,7 @@ make_geom(int bitmap_top, int bitmap_left, float advance, float poly_margin,
   
   _state = RenderState::make(TextureAttrib::make(_page),
                              TransparencyAttrib::make(TransparencyAttrib::M_alpha));
-  _state = _state->add_attrib(ColorAttrib::make_flat(Colorf(1.0f, 1.0f, 1.0f, 1.0f)), -1);
+  _state = _state->add_attrib(ColorAttrib::make_flat(LColor(1.0f, 1.0f, 1.0f, 1.0f)), -1);
   
   _advance = advance / font_pixels_per_unit;
 }

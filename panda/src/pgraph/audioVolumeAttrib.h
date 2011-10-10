@@ -29,19 +29,19 @@ class FactoryParams;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PGRAPH AudioVolumeAttrib : public RenderAttrib {
 protected:
-  AudioVolumeAttrib(bool off, float volume);
+  AudioVolumeAttrib(bool off, PN_stdfloat volume);
   INLINE AudioVolumeAttrib(const AudioVolumeAttrib &copy);
 
 PUBLISHED:
   static CPT(RenderAttrib) make_identity();
-  static CPT(RenderAttrib) make(float volume);
+  static CPT(RenderAttrib) make(PN_stdfloat volume);
   static CPT(RenderAttrib) make_off();
   static CPT(RenderAttrib) make_default();
 
   INLINE bool is_off() const;
   INLINE bool has_volume() const;
-  INLINE float get_volume() const;
-  CPT(RenderAttrib) set_volume(float volume) const;
+  INLINE PN_stdfloat get_volume() const;
+  CPT(RenderAttrib) set_volume(PN_stdfloat volume) const;
 
 public:
   virtual void output(ostream &out) const;
@@ -55,7 +55,7 @@ protected:
 private:
   bool _off;
   bool _has_volume;
-  float _volume;
+  PN_stdfloat _volume;
   static CPT(RenderAttrib) _identity_attrib;
 
 PUBLISHED:

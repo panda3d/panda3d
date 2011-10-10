@@ -46,7 +46,7 @@ public:
   void add_vmad(const LwoDiscontinuousVertexMap *lwo_vmad);
 
   CLwoSurface *get_surface(int polygon_index) const;
-  bool get_uv(const string &uv_name, int pi, int vi, LPoint2f &uv) const;
+  bool get_uv(const string &uv_name, int pi, int vi, LPoint2 &uv) const;
 
   void make_egg();
   void connect_egg();

@@ -31,14 +31,14 @@ CPT(RenderAttrib) ScissorAttrib::_off;
 //               ScissorAttrib object.
 ////////////////////////////////////////////////////////////////////
 ScissorAttrib::
-ScissorAttrib(const LVecBase4f &frame) :
+ScissorAttrib(const LVecBase4 &frame) :
   _frame(frame)
 {
   // Impose sensible bounds.
-  _frame[0] = max(min(_frame[0], 1.0f), 0.0f);
-  _frame[1] = max(min(_frame[1], 1.0f), _frame[0]);
-  _frame[2] = max(min(_frame[2], 1.0f), 0.0f);
-  _frame[3] = max(min(_frame[3], 1.0f), _frame[2]);
+  _frame[0] = max(min(_frame[0], (PN_stdfloat)1.0), (PN_stdfloat)0.0);
+  _frame[1] = max(min(_frame[1], (PN_stdfloat)1.0), _frame[0]);
+  _frame[2] = max(min(_frame[2], (PN_stdfloat)1.0), (PN_stdfloat)0.0);
+  _frame[3] = max(min(_frame[3], (PN_stdfloat)1.0), _frame[2]);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -52,7 +52,7 @@ make_off() {
   if (_off != 0) {
     return _off;
   }
-  ScissorAttrib *attrib = new ScissorAttrib(LVecBase4f(0.0f, 1.0f, 0.0f, 1.0f));
+  ScissorAttrib *attrib = new ScissorAttrib(LVecBase4(0.0f, 1.0f, 0.0f, 1.0f));
   _off = return_new(attrib);
   return _off;
 }
@@ -66,7 +66,7 @@ make_off() {
 //               DisplayRegion, and (1,1) is the upper-right corner.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ScissorAttrib::
-make(const LVecBase4f &frame) {
+make(const LVecBase4 &frame) {
   ScissorAttrib *attrib = new ScissorAttrib(frame);
   return return_new(attrib);
 }
@@ -80,7 +80,7 @@ make(const LVecBase4f &frame) {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ScissorAttrib::
 make_default() {
-  return return_new(new ScissorAttrib(LVecBase4f(0.0f, 1.0f, 0.0f, 1.0f)));
+  return return_new(new ScissorAttrib(LVecBase4(0.0f, 1.0f, 0.0f, 1.0f)));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -154,7 +154,7 @@ compose_impl(const RenderAttrib *other) const {
   const ScissorAttrib *ta;
   DCAST_INTO_R(ta, other, 0);
 
-  LVecBase4f new_frame(max(ta->_frame[0], _frame[0]),
+  LVecBase4 new_frame(max(ta->_frame[0], _frame[0]),
                        min(ta->_frame[1], _frame[1]),
                        max(ta->_frame[2], _frame[2]),
                        min(ta->_frame[3], _frame[3]));
@@ -197,7 +197,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 ////////////////////////////////////////////////////////////////////
 TypedWritable *ScissorAttrib::
 make_from_bam(const FactoryParams &params) {
-  ScissorAttrib *attrib = new ScissorAttrib(LVecBase4f(0.0f, 1.0f, 0.0f, 1.0f));
+  ScissorAttrib *attrib = new ScissorAttrib(LVecBase4(0.0f, 1.0f, 0.0f, 1.0f));
   DatagramIterator scan;
   BamReader *manager;
 

@@ -70,10 +70,10 @@ PUBLISHED:
   PT(GeomNode) generate_screen(const NodePath &projector,
                                const string &screen_name,
                                int num_x_verts, int num_y_verts,
-                               float distance, float fill_ratio);
+                               PN_stdfloat distance, PN_stdfloat fill_ratio);
   void regenerate_screen(const NodePath &projector, const string &screen_name,
-                         int num_x_verts, int num_y_verts, float distance,
-                         float fill_ratio);
+                         int num_x_verts, int num_y_verts, PN_stdfloat distance,
+                         PN_stdfloat fill_ratio);
   PT(PandaNode) make_flat_mesh(const NodePath &this_np, const NodePath &camera);
 
   INLINE void set_texcoord_name(const string &texcoord_name);
@@ -85,10 +85,10 @@ PUBLISHED:
   INLINE void set_vignette_on(bool vignette_on);
   INLINE bool get_vignette_on() const;
 
-  INLINE void set_vignette_color(const Colorf &vignette_color);
-  INLINE const Colorf &get_vignette_color() const;
-  INLINE void set_frame_color(const Colorf &frame_color);
-  INLINE const Colorf &get_frame_color() const;
+  INLINE void set_vignette_color(const LColor &vignette_color);
+  INLINE const LColor &get_vignette_color() const;
+  INLINE void set_frame_color(const LColor &frame_color);
+  INLINE const LColor &get_frame_color() const;
 
   void recompute();
 
@@ -98,23 +98,23 @@ public:
 
 private:
   void do_recompute(const NodePath &this_np);
-  void recompute_node(const WorkingNodePath &np, LMatrix4f &rel_mat, bool &computed_rel_mat);
-  void recompute_child(const WorkingNodePath &np, LMatrix4f &rel_mat, bool &computed_rel_mat);
-  void recompute_geom_node(const WorkingNodePath &np, LMatrix4f &rel_mat, bool &computed_rel_mat);
-  void recompute_geom(Geom *geom, const LMatrix4f &rel_mat);
+  void recompute_node(const WorkingNodePath &np, LMatrix4 &rel_mat, bool &computed_rel_mat);
+  void recompute_child(const WorkingNodePath &np, LMatrix4 &rel_mat, bool &computed_rel_mat);
+  void recompute_geom_node(const WorkingNodePath &np, LMatrix4 &rel_mat, bool &computed_rel_mat);
+  void recompute_geom(Geom *geom, const LMatrix4 &rel_mat);
 
   PandaNode *
   make_mesh_node(PandaNode *result_parent, const WorkingNodePath &np,
                  const NodePath &camera,
-                 LMatrix4f &rel_mat, bool &computed_rel_mat);
+                 LMatrix4 &rel_mat, bool &computed_rel_mat);
   void make_mesh_children(PandaNode *new_node, const WorkingNodePath &np,
                           const NodePath &camera,
-                          LMatrix4f &rel_mat, bool &computed_rel_mat);
+                          LMatrix4 &rel_mat, bool &computed_rel_mat);
   PT(GeomNode) make_mesh_geom_node(const WorkingNodePath &np, 
                                    const NodePath &camera,
-                                   LMatrix4f &rel_mat,
+                                   LMatrix4 &rel_mat,
                                    bool &computed_rel_mat);
-  PT(Geom) make_mesh_geom(const Geom *geom, Lens *lens, LMatrix4f &rel_mat);
+  PT(Geom) make_mesh_geom(const Geom *geom, Lens *lens, LMatrix4 &rel_mat);
 
 
   NodePath _projector;
@@ -122,10 +122,10 @@ private:
   PT(InternalName) _texcoord_name;
   bool _invert_uvs;
   bool _vignette_on;
-  Colorf _vignette_color;
-  Colorf _frame_color;
+  LColor _vignette_color;
+  LColor _frame_color;
 
-  LMatrix4f _rel_top_mat;
+  LMatrix4 _rel_top_mat;
   bool _computed_rel_top_mat;
   bool _stale;
   UpdateSeq _projector_lens_change;

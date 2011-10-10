@@ -286,6 +286,9 @@ $[cdefine HAVE_SPEEDTREE]
 /* Define if we want to compile in a default font. */
 $[cdefine COMPILE_IN_DEFAULT_FONT]
 
+/* Define to use doubles for graphic values, intead of single-precision floats. */
+$[cdefine STDFLOAT_DOUBLE]
+
 /* Define if we have Maya available. */
 $[cdefine HAVE_MAYA]
 $[cdefine MAYA_PRE_5_0]

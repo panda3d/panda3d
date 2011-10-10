@@ -54,7 +54,7 @@ PUBLISHED:
 #ifndef NDEBUG
   void show_regions(const NodePath &render2d, 
                     const string &bin_name, int draw_order);
-  void set_color(const Colorf &color);
+  void set_color(const LColor &color);
   void hide_regions();
 
   void update_regions();
@@ -90,7 +90,7 @@ private:
 
   bool _show_regions;
   NodePath _show_regions_root;
-  Colorf _color;
+  LColor _color;
 #endif  // NDEBUG
 
 public:

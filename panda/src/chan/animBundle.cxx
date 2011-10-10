@@ -89,7 +89,7 @@ make_copy(AnimGroup *parent) const {
 void AnimBundle::
 write_datagram(BamWriter *manager, Datagram &me) {
   AnimGroup::write_datagram(manager, me);
-  me.add_float32(_fps);
+  me.add_stdfloat(_fps);
   me.add_uint16(_num_frames);
 }
 
@@ -104,7 +104,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
 void AnimBundle::
 fillin(DatagramIterator &scan, BamReader *manager) {
   AnimGroup::fillin(scan, manager);
-  _fps = scan.get_float32();
+  _fps = scan.get_stdfloat();
   _num_frames = scan.get_uint16();
 }
 

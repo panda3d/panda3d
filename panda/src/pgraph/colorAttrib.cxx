@@ -37,7 +37,7 @@ make_vertex() {
   if (_vertex != 0) {
     return _vertex;
   }
-  ColorAttrib *attrib = new ColorAttrib(T_vertex, Colorf::zero());
+  ColorAttrib *attrib = new ColorAttrib(T_vertex, LColor::zero());
   _vertex = return_new(attrib);
   return _vertex;
 }
@@ -49,7 +49,7 @@ make_vertex() {
 //               geometry should be rendered in the indicated color.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ColorAttrib::
-make_flat(const Colorf &color) {
+make_flat(const LColor &color) {
   ColorAttrib *attrib = new ColorAttrib(T_flat, color);
   return return_new(attrib);
 }
@@ -65,7 +65,7 @@ make_off() {
   if (_off != 0) {
     return _off;
   }
-  ColorAttrib *attrib = new ColorAttrib(T_off, Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+  ColorAttrib *attrib = new ColorAttrib(T_off, LColor(1.0f, 1.0f, 1.0f, 1.0f));
   _off = return_new(attrib);
   return _off;
 }
@@ -215,7 +215,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 ////////////////////////////////////////////////////////////////////
 TypedWritable *ColorAttrib::
 make_from_bam(const FactoryParams &params) {
-  ColorAttrib *attrib = new ColorAttrib(T_off, Colorf::zero());
+  ColorAttrib *attrib = new ColorAttrib(T_off, LColor::zero());
   DatagramIterator scan;
   BamReader *manager;
 

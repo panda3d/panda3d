@@ -685,7 +685,7 @@ make_polyset(INode *max_node, Mesh *mesh,
             if(mesh->vcFace)  // if has vcFace, has used vertex color
             {
                 VertColor vertexColor = get_max_vertex_color(mesh, iFace, iVertex);
-                Colorf pVC(vertexColor.x, vertexColor.y, vertexColor.z, 1);
+                LColor pVC(vertexColor.x, vertexColor.y, vertexColor.z, 1);
                 vert.set_color(pVC);
             }
             // Get the UVs for this vertex
@@ -896,7 +896,7 @@ get_vertex_weights(INode *max_node, EggVertexPool *vpool) {
                             IPhyBlendedRigidVertex *pTypeVertex = (IPhyBlendedRigidVertex *)pVertexExport;
 
                             for (int ji = 0; ji < pTypeVertex->GetNumberNodes(); ++ji) {
-                                float weight = pTypeVertex->GetWeight(ji);
+                                PN_stdfloat weight = pTypeVertex->GetWeight(ji);
                                 if (weight > 0.0f) {
                                     INode *bone_node = pTypeVertex->GetNode(ji);
                                     MaxNodeDesc *joint_node_desc = _tree.find_joint(bone_node);
@@ -932,7 +932,7 @@ get_vertex_weights(INode *max_node, EggVertexPool *vpool) {
                         int max_vi = vert->get_external_index();
   
                         for (int ji = 0; ji < skinMC->GetNumAssignedBones(max_vi); ++ji) {
-                            float weight = skinMC->GetBoneWeight(max_vi, ji);
+                            PN_stdfloat weight = skinMC->GetBoneWeight(max_vi, ji);
                             if (weight > 0.0f) {
                                 INode *bone_node = skin->GetBone(skinMC->GetAssignedBone(max_vi, ji));
                                 MaxNodeDesc *joint_node_desc = _tree.find_joint(bone_node);
@@ -967,7 +967,7 @@ get_panda_material(Mtl *mtl, MtlID matID) {
     }
     
     PandaMaterial &pandaMat = _material_map[mtl];
-    pandaMat._color = Colorf(1,1,1,1);
+    pandaMat._color = LColor(1,1,1,1);
     pandaMat._any_diffuse = false;
     pandaMat._any_opacity = false;
     pandaMat._any_gloss = false;

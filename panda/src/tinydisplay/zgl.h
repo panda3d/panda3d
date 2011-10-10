@@ -39,7 +39,7 @@
 typedef struct GLSpecBuf {
   int shininess_i;
   int last_used;
-  float buf[SPECULAR_BUFFER_SIZE+1];
+  PN_stdfloat buf[SPECULAR_BUFFER_SIZE+1];
   struct GLSpecBuf *next;
 } GLSpecBuf;
 
@@ -49,11 +49,11 @@ typedef struct GLLight {
   V4 specular;
   V4 position;
   V3 spot_direction;
-  float spot_exponent;
-  float spot_cutoff;
-  float attenuation[3];
+  PN_stdfloat spot_exponent;
+  PN_stdfloat spot_cutoff;
+  PN_stdfloat attenuation[3];
   /* precomputed values */
-  float cos_spot_cutoff;
+  PN_stdfloat cos_spot_cutoff;
   V3 norm_spot_direction;
   V3 norm_position;
   struct GLLight *next;
@@ -64,7 +64,7 @@ typedef struct GLMaterial {
   V4 ambient;
   V4 diffuse;
   V4 specular;
-  float shininess;
+  PN_stdfloat shininess;
 
   /* computed values */
   int shininess_i;
@@ -80,12 +80,12 @@ typedef struct GLViewport {
 } GLViewport;
 
 typedef struct GLScissor {
-  float left, right, bottom, top;
+  PN_stdfloat left, right, bottom, top;
 } GLScissor;
 
 typedef union {
   int op;
-  float f;
+  PN_stdfloat f;
   int i;
   unsigned int ui;
   void *p;
@@ -173,7 +173,7 @@ typedef struct GLContext {
   int cull_face_enabled;
   int cull_clockwise;
   int normalize_enabled;
-  float normal_scale;
+  PN_stdfloat normal_scale;
 
   gl_draw_triangle_func draw_triangle_front,draw_triangle_back;
   ZB_fillTriangleFunc zb_fill_tri;
@@ -235,16 +235,16 @@ void gl_fatal_error(const char *format, ...);
 
 /* specular buffer "api" */
 GLSpecBuf *specbuf_get_buffer(GLContext *c, const int shininess_i, 
-                              const float shininess);
+                              const PN_stdfloat shininess);
 
 /* this clip epsilon is needed to avoid some rounding errors after
    several clipping stages */
 
 #define CLIP_EPSILON (1E-5f)
 
-static inline int gl_clipcode(float x,float y,float z,float w1)
+static inline int gl_clipcode(PN_stdfloat x,PN_stdfloat y,PN_stdfloat z,PN_stdfloat w1)
 {
-  float w;
+  PN_stdfloat w;
 
   w = w1 * (1.0f + CLIP_EPSILON);
   return (x<-w) |

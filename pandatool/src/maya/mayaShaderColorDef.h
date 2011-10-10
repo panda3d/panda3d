@@ -88,10 +88,10 @@ public:
     
   Filename _texture_filename;
   string _texture_name;
-  Colorf _color_gain;
+  LColor _color_gain;
   
-  LVector2f _coverage;
-  LVector2f _translate_frame;
+  LVector2 _coverage;
+  LVector2 _translate_frame;
   double _rotate_frame;
   
   bool _mirror;
@@ -99,8 +99,8 @@ public:
   bool _wrap_u;
   bool _wrap_v;
 
-  LVector2f _repeat_uv;
-  LVector2f _offset;
+  LVector2 _repeat_uv;
+  LVector2 _offset;
   double _rotate_uv;
 
   bool _is_alpha;

@@ -35,34 +35,34 @@ FltPackedColor() {
 ////////////////////////////////////////////////////////////////////
 //     Function: FltPackedColor::get_color
 //       Access: Public
-//  Description: Returns the four-component color as a Colorf, where
+//  Description: Returns the four-component color as a LColor, where
 //               each component is in the range [0, 1].
 ////////////////////////////////////////////////////////////////////
-INLINE Colorf FltPackedColor::
+INLINE LColor FltPackedColor::
 get_color() const {
-  return Colorf(_r / 255.0, _g / 255.0, _b / 255.0, _a / 255.0);
+  return LColor(_r / 255.0, _g / 255.0, _b / 255.0, _a / 255.0);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FltPackedColor::get_rgb
 //       Access: Public
-//  Description: Returns the three-component color as an RGBColorf
+//  Description: Returns the three-component color as an LRGBColor
 //               (ignoring the alpha component), where each component
 //               is in the range [0, 1].
 ////////////////////////////////////////////////////////////////////
-INLINE RGBColorf FltPackedColor::
+INLINE LRGBColor FltPackedColor::
 get_rgb() const {
-  return RGBColorf(_r / 255.0, _g / 255.0, _b / 255.0);
+  return LRGBColor(_r / 255.0, _g / 255.0, _b / 255.0);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FltPackedColor::set_color
 //       Access: Public
 //  Description: Sets the color according to the indicated
-//               four-component Colorf value (including alpha).
+//               four-component LColor value (including alpha).
 ////////////////////////////////////////////////////////////////////
 INLINE void FltPackedColor::
-set_color(const Colorf &color) {
+set_color(const LColor &color) {
   _r = (int)floor(color[0] * 255.0);
   _g = (int)floor(color[1] * 255.0);
   _b = (int)floor(color[2] * 255.0);
@@ -73,11 +73,11 @@ set_color(const Colorf &color) {
 //     Function: FltPackedColor::set_rgb
 //       Access: Public
 //  Description: Sets the color according to the indicated
-//               three-component RGBColorf value, and set the alpha to
+//               three-component LRGBColor value, and set the alpha to
 //               1.0.
 ////////////////////////////////////////////////////////////////////
 INLINE void FltPackedColor::
-set_rgb(const RGBColorf &color) {
+set_rgb(const LRGBColor &color) {
   _r = (int)floor(color[0] * 255.0);
   _g = (int)floor(color[1] * 255.0);
   _b = (int)floor(color[2] * 255.0);

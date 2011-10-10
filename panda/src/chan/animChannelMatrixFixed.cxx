@@ -40,7 +40,7 @@ AnimChannelMatrixFixed(AnimGroup *parent, const AnimChannelMatrixFixed &copy) :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 AnimChannelMatrixFixed::
-AnimChannelMatrixFixed(const string &name, const LVecBase3f &pos, const LVecBase3f &hpr, const LVecBase3f &scale) :
+AnimChannelMatrixFixed(const string &name, const LVecBase3 &pos, const LVecBase3 &hpr, const LVecBase3 &scale) :
   AnimChannel<ACMatrixSwitchType>(name),
   _pos(pos), _hpr(hpr), _scale(scale)
 {
@@ -63,8 +63,8 @@ has_changed(int, double, int, double) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixFixed::
-get_value(int, LMatrix4f &value) {
-  compose_matrix(value, _scale, LVecBase3f::zero(), _hpr, _pos);
+get_value(int, LMatrix4 &value) {
+  compose_matrix(value, _scale, LVecBase3::zero(), _hpr, _pos);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -74,8 +74,8 @@ get_value(int, LMatrix4f &value) {
 //               without any scale or shear information.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixFixed::
-get_value_no_scale_shear(int, LMatrix4f &mat) {
-  compose_matrix(mat, LVecBase3f(1.0f, 1.0f, 1.0f), LVecBase3f::zero(),
+get_value_no_scale_shear(int, LMatrix4 &mat) {
+  compose_matrix(mat, LVecBase3(1.0f, 1.0f, 1.0f), LVecBase3::zero(),
                  _hpr, _pos);
 }
 
@@ -85,7 +85,7 @@ get_value_no_scale_shear(int, LMatrix4f &mat) {
 //  Description: Gets the scale value at the indicated frame.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixFixed::
-get_scale(int, LVecBase3f &scale) {
+get_scale(int, LVecBase3 &scale) {
   scale = _scale;
 }
 
@@ -97,7 +97,7 @@ get_scale(int, LVecBase3f &scale) {
 //               sense for a matrix-type channel.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixFixed::
-get_hpr(int, LVecBase3f &hpr) {
+get_hpr(int, LVecBase3 &hpr) {
   hpr = _hpr;
 }
 
@@ -109,7 +109,7 @@ get_hpr(int, LVecBase3f &hpr) {
 //               this only makes sense for a matrix-type channel.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixFixed::
-get_quat(int, LQuaternionf &quat) {
+get_quat(int, LQuaternion &quat) {
   quat.set_hpr(_hpr);
 }
 
@@ -121,7 +121,7 @@ get_quat(int, LQuaternionf &quat) {
 //               only makes sense for a matrix-type channel.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixFixed::
-get_pos(int, LVecBase3f &pos) {
+get_pos(int, LVecBase3 &pos) {
   pos = _pos;
 }
 
@@ -133,8 +133,8 @@ get_pos(int, LVecBase3f &pos) {
 //               sense for a matrix-type channel.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixFixed::
-get_shear(int, LVecBase3f &shear) {
-  shear = LVecBase3f::zero();
+get_shear(int, LVecBase3 &shear) {
+  shear = LVecBase3::zero();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -184,7 +184,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 ////////////////////////////////////////////////////////////////////
 TypedWritable *AnimChannelMatrixFixed::
 make_from_bam(const FactoryParams &params) {
-  AnimChannelMatrixFixed *chan = new AnimChannelMatrixFixed("", LVecBase3f::zero(), LVecBase3f::zero(), LVecBase3f::zero());
+  AnimChannelMatrixFixed *chan = new AnimChannelMatrixFixed("", LVecBase3::zero(), LVecBase3::zero(), LVecBase3::zero());
   DatagramIterator scan;
   BamReader *manager;
 

@@ -420,8 +420,8 @@ determine_tex_format() {
       _tex_format = Texture::F_alpha;
 
       if (!_has_outline && 
-          _fg == Colorf(1.0f, 1.0f, 1.0f, 1.0f) &&
-          _bg == Colorf(1.0f, 1.0f, 1.0f, 0.0f)) {
+          _fg == LColor(1.0f, 1.0f, 1.0f, 1.0f) &&
+          _bg == LColor(1.0f, 1.0f, 1.0f, 0.0f)) {
         // This is the standard font color.  It can be copied directly
         // without any need for special processing.
         _needs_image_processing = false;
@@ -460,7 +460,7 @@ make_glyph(int character, FT_Face face, int glyph_index) {
     return NULL;
   }
 
-  float advance = slot->advance.x / 64.0;
+  PN_stdfloat advance = slot->advance.x / 64.0;
 
   if (_render_mode != RM_texture && 
       slot->format == ft_glyph_format_outline) {
@@ -560,8 +560,8 @@ make_glyph(int character, FT_Face face, int glyph_index) {
   } else {
     DynamicTextGlyph *glyph;
 
-    float tex_x_size = bitmap.width;
-    float tex_y_size = bitmap.rows;
+    PN_stdfloat tex_x_size = bitmap.width;
+    PN_stdfloat tex_y_size = bitmap.rows;
 
     int outline = 0;
 
@@ -591,7 +591,7 @@ make_glyph(int character, FT_Face face, int glyph_index) {
       reduced.quick_filter_from(image);
 
       // convert the outline width from points to tex_pixels.
-      float outline_pixels = _outline_width / _points_per_unit * _tex_pixels_per_unit;
+      PN_stdfloat outline_pixels = _outline_width / _points_per_unit * _tex_pixels_per_unit;
       outline = (int)ceil(outline_pixels);
 
       int_x_size += outline * 2;
@@ -711,18 +711,18 @@ copy_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph) {
     if (_has_outline) {
       // Gaussian blur the glyph to generate an outline.
       PNMImage outline(image.get_x_size(), image.get_y_size(), PNMImage::CT_grayscale);
-      float outline_pixels = _outline_width / _points_per_unit * _tex_pixels_per_unit;
+      PN_stdfloat outline_pixels = _outline_width / _points_per_unit * _tex_pixels_per_unit;
       outline.gaussian_filter_from(outline_pixels * 0.707, image);
 
       // Filter the resulting outline to make a harder edge.  Square
       // _outline_feather first to make the range more visually linear
       // (this approximately compensates for the Gaussian falloff of
       // the feathered edge).
-      float f = _outline_feather * _outline_feather;
+      PN_stdfloat f = _outline_feather * _outline_feather;
 
       for (int yi = 0; yi < outline.get_y_size(); yi++) {
         for (int xi = 0; xi < outline.get_x_size(); xi++) {
-          float v = outline.get_gray(xi, yi);
+          PN_stdfloat v = outline.get_gray(xi, yi);
           if (v == 0.0f) {
             // Do nothing.
           } else if (v >= f) {
@@ -756,8 +756,8 @@ copy_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph) {
 ////////////////////////////////////////////////////////////////////
 void DynamicTextFont::
 blend_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph,
-                          const Colorf &fg) {
-  Colorf fgv = fg * 255.0f;
+                          const LColor &fg) {
+  LColor fgv = fg * 255.0f;
 
   int num_components = glyph->_page->get_num_components();
   if (num_components == 1) {
@@ -772,7 +772,7 @@ blend_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph,
       nassertv(texture_row != (unsigned char *)NULL);
       for (int xi = 0; xi < image.get_x_size(); xi++) {
         unsigned char *tr = texture_row + xi;
-        float t = (float)image.get_gray(xi, yi);
+        PN_stdfloat t = (PN_stdfloat)image.get_gray(xi, yi);
         tr[0] = (unsigned char)(tr[0] + t * (fgv[ci] - tr[0]));
       }
     }
@@ -785,7 +785,7 @@ blend_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph,
       nassertv(texture_row != (unsigned char *)NULL);
       for (int xi = 0; xi < image.get_x_size(); xi++) {
         unsigned char *tr = texture_row + xi * 2;
-        float t = (float)image.get_gray(xi, yi);
+        PN_stdfloat t = (PN_stdfloat)image.get_gray(xi, yi);
         tr[0] = (unsigned char)(tr[0] + t * (fgv[0] - tr[0]));
         tr[1] = (unsigned char)(tr[1] + t * (fgv[3] - tr[1]));
       }
@@ -799,7 +799,7 @@ blend_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph,
       nassertv(texture_row != (unsigned char *)NULL);
       for (int xi = 0; xi < image.get_x_size(); xi++) {
         unsigned char *tr = texture_row + xi * 3;
-        float t = (float)image.get_gray(xi, yi);
+        PN_stdfloat t = (PN_stdfloat)image.get_gray(xi, yi);
         tr[0] = (unsigned char)(tr[0] + t * (fgv[2] - tr[0]));
         tr[1] = (unsigned char)(tr[1] + t * (fgv[1] - tr[1]));
         tr[2] = (unsigned char)(tr[2] + t * (fgv[0] - tr[2]));
@@ -814,7 +814,7 @@ blend_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph,
       nassertv(texture_row != (unsigned char *)NULL);
       for (int xi = 0; xi < image.get_x_size(); xi++) {
         unsigned char *tr = texture_row + xi * 4;
-        float t = (float)image.get_gray(xi, yi);
+        PN_stdfloat t = (PN_stdfloat)image.get_gray(xi, yi);
         tr[0] = (unsigned char)(tr[0] + t * (fgv[2] - tr[0]));
         tr[1] = (unsigned char)(tr[1] + t * (fgv[1] - tr[1]));
         tr[2] = (unsigned char)(tr[2] + t * (fgv[0] - tr[2]));
@@ -906,8 +906,8 @@ render_wireframe_contours(DynamicTextGlyph *glyph) {
     Points::const_iterator pi;
 
     for (pi = contour._points.begin(); pi != contour._points.end(); ++pi) {
-      const LPoint2f &p = (*pi)._p;
-      vertex.add_data3f(p[0], 0.0f, p[1]);
+      const LPoint2 &p = (*pi)._p;
+      vertex.add_data3(p[0], 0.0f, p[1]);
     }
 
     lines->add_next_vertices(contour._points.size());
@@ -946,9 +946,9 @@ render_polygon_contours(DynamicTextGlyph *glyph, bool face, bool extrude) {
       t.clear_polygon();
       contour._start_vertex = t.get_num_vertices();
       for (size_t i = 0; i < contour._points.size() - 1; ++i) {
-        const LPoint2f &p = contour._points[i]._p;
-        vertex.add_data3f(p[0], 0.0f, p[1]);
-        normal.add_data3f(0.0f, -1.0f, 0.0f);
+        const LPoint2 &p = contour._points[i]._p;
+        vertex.add_data3(p[0], 0.0f, p[1]);
+        normal.add_data3(0.0f, -1.0f, 0.0f);
         int vi = t.add_vertex(p[0], p[1]);
         t.add_polygon_vertex(vi);
       }
@@ -1001,15 +1001,15 @@ render_polygon_contours(DynamicTextGlyph *glyph, bool face, bool extrude) {
 
       for (size_t i = 0; i < contour._points.size(); ++i) {
         const ContourPoint &cp = contour._points[i];
-        const LPoint2f &p = cp._p;
-        const LVector2f &t_in = cp._in;
-        const LVector2f &t_out = cp._out;
+        const LPoint2 &p = cp._p;
+        const LVector2 &t_in = cp._in;
+        const LVector2 &t_out = cp._out;
 
-        LVector3f n_in(t_in[1], 0.0f, -t_in[0]);
-        vertex.add_data3f(p[0], 1.0f, p[1]);
-        vertex.add_data3f(p[0], 0.0f, p[1]);
-        normal.add_data3f(n_in);
-        normal.add_data3f(n_in);
+        LVector3 n_in(t_in[1], 0.0f, -t_in[0]);
+        vertex.add_data3(p[0], 1.0f, p[1]);
+        vertex.add_data3(p[0], 0.0f, p[1]);
+        normal.add_data3(n_in);
+        normal.add_data3(n_in);
 
         if (i != 0) {
           int vi = vertex.get_write_row();
@@ -1026,11 +1026,11 @@ render_polygon_contours(DynamicTextGlyph *glyph, bool face, bool extrude) {
         if (i != contour._points.size() - 1 && !t_in.almost_equal(t_out)) {
           // If the out tangent is different from the in tangent, we
           // need to store new vertices for the next quad.
-          LVector3f n_out(t_out[1], 0.0f, -t_out[0]);
-          vertex.add_data3f(p[0], 1.0f, p[1]);
-          vertex.add_data3f(p[0], 0.0f, p[1]);
-          normal.add_data3f(n_out);
-          normal.add_data3f(n_out);
+          LVector3 n_out(t_out[1], 0.0f, -t_out[0]);
+          vertex.add_data3(p[0], 1.0f, p[1]);
+          vertex.add_data3(p[0], 0.0f, p[1]);
+          normal.add_data3(n_out);
+          normal.add_data3(n_out);
         }
       }
     }
@@ -1042,9 +1042,9 @@ render_polygon_contours(DynamicTextGlyph *glyph, bool face, bool extrude) {
       for (ci = _contours.begin(); ci != _contours.end(); ++ci) {
         Contour &contour = (*ci);
         for (size_t i = 0; i < contour._points.size() - 1; ++i) {
-          const LPoint2f &p = contour._points[i]._p;
-          vertex.add_data3f(p[0], 1.0f, p[1]);
-          normal.add_data3f(0.0f, 1.0f, 0.0f);
+          const LPoint2 &p = contour._points[i]._p;
+          vertex.add_data3(p[0], 1.0f, p[1]);
+          normal.add_data3(0.0f, 1.0f, 0.0f);
         }
       }
 
@@ -1100,8 +1100,8 @@ outline_move_to(const FT_Vector *to, void *user) {
   DynamicTextFont *self = (DynamicTextFont *)user;
 
   // Convert from 26.6 pixel units to Panda units.
-  float scale = 1.0f / (64.0f * self->_font_pixels_per_unit);
-  LPoint2f p = LPoint2f(to->x, to->y) * scale;
+  PN_stdfloat scale = 1.0f / (64.0f * self->_font_pixels_per_unit);
+  LPoint2 p = LPoint2(to->x, to->y) * scale;
 
   if (self->_contours.empty() ||
       !self->_contours.back()._points.empty()) {
@@ -1123,20 +1123,20 @@ outline_line_to(const FT_Vector *to, void *user) {
   nassertr(!self->_contours.empty(), 1);
 
   // Convert from 26.6 pixel units to Panda units.
-  float scale = 1.0f / (64.0f * self->_font_pixels_per_unit);
-  LPoint2f p = LPoint2f(to->x, to->y) * scale;
+  PN_stdfloat scale = 1.0f / (64.0f * self->_font_pixels_per_unit);
+  LPoint2 p = LPoint2(to->x, to->y) * scale;
 
   // Compute the tangent: this is just the vector from the last point.
-  LVector2f t = (p - self->_q);
+  LVector2 t = (p - self->_q);
   t.normalize();
 
   if (self->_contours.back()._points.empty()) {
-    self->_contours.back()._points.push_back(ContourPoint(self->_q, LVector2f::zero(), t));
+    self->_contours.back()._points.push_back(ContourPoint(self->_q, LVector2::zero(), t));
   } else {
     self->_contours.back()._points.back().connect_to(t);
   }
   
-  self->_contours.back()._points.push_back(ContourPoint(p, t, LVector2f::zero()));
+  self->_contours.back()._points.push_back(ContourPoint(p, t, LVector2::zero()));
   self->_q = p;
   return 0;
 }
@@ -1154,19 +1154,19 @@ outline_conic_to(const FT_Vector *control,
   nassertr(!self->_contours.empty(), 1);
 
   // Convert from 26.6 pixel units to Panda units.
-  float scale = 1.0f / (64.0f * self->_font_pixels_per_unit);
+  PN_stdfloat scale = 1.0f / (64.0f * self->_font_pixels_per_unit);
 
-  LPoint2f c = LPoint2f(control->x, control->y) * scale;
-  LPoint2f p = LPoint2f(to->x, to->y) * scale;
+  LPoint2 c = LPoint2(control->x, control->y) * scale;
+  LPoint2 p = LPoint2(to->x, to->y) * scale;
 
   // The NurbsCurveEvaluator will evaluate the Bezier segment for us.
   NurbsCurveEvaluator nce;
   nce.local_object();
   nce.set_order(3);
   nce.reset(3);
-  nce.set_vertex(0, LVecBase3f(self->_q[0], self->_q[1], 0.0f));
-  nce.set_vertex(1, LVecBase3f(c[0], c[1], 0.0f));
-  nce.set_vertex(2, LVecBase3f(p[0], p[1], 0.0f));
+  nce.set_vertex(0, LVecBase3(self->_q[0], self->_q[1], 0.0f));
+  nce.set_vertex(1, LVecBase3(c[0], c[1], 0.0f));
+  nce.set_vertex(2, LVecBase3(p[0], p[1], 0.0f));
 
   self->_q = p;
 
@@ -1187,21 +1187,21 @@ outline_cubic_to(const FT_Vector *control1, const FT_Vector *control2,
   nassertr(!self->_contours.empty(), 1);
 
   // Convert from 26.6 pixel units to Panda units.
-  float scale = 1.0f / (64.0f * self->_font_pixels_per_unit);
+  PN_stdfloat scale = 1.0f / (64.0f * self->_font_pixels_per_unit);
 
-  LPoint2f c1 = LPoint2f(control1->x, control1->y) * scale;
-  LPoint2f c2 = LPoint2f(control2->x, control2->y) * scale;
-  LPoint2f p = LPoint2f(to->x, to->y) * scale;
+  LPoint2 c1 = LPoint2(control1->x, control1->y) * scale;
+  LPoint2 c2 = LPoint2(control2->x, control2->y) * scale;
+  LPoint2 p = LPoint2(to->x, to->y) * scale;
 
   // The NurbsCurveEvaluator will evaluate the Bezier segment for us.
   NurbsCurveEvaluator nce;
   nce.local_object();
   nce.set_order(4);
   nce.reset(4);
-  nce.set_vertex(0, LVecBase3f(self->_q[0], self->_q[1], 0.0f));
-  nce.set_vertex(1, LVecBase3f(c1[0], c1[1], 0.0f));
-  nce.set_vertex(2, LVecBase3f(c2[0], c2[1], 0.0f));
-  nce.set_vertex(3, LVecBase3f(p[0], p[1], 0.0f));
+  nce.set_vertex(0, LVecBase3(self->_q[0], self->_q[1], 0.0f));
+  nce.set_vertex(1, LVecBase3(c1[0], c1[1], 0.0f));
+  nce.set_vertex(2, LVecBase3(c2[0], c2[1], 0.0f));
+  nce.set_vertex(3, LVecBase3(p[0], p[1], 0.0f));
 
   self->_q = p;
 
@@ -1234,10 +1234,10 @@ outline_nurbs(NurbsCurveResult *ncr) {
   }
 
   for (int i = start; i < num_samples; ++i) {
-    float st = ncr->get_sample_t(i);
-    const LPoint3f &p = ncr->get_sample_point(i);
+    PN_stdfloat st = ncr->get_sample_t(i);
+    const LPoint3 &p = ncr->get_sample_point(i);
 
-    float st0 = st, st1 = st;
+    PN_stdfloat st0 = st, st1 = st;
     if (i > 0) {
       st0 = ncr->get_sample_t(i - 1) * 0.1f + st * 0.9f;
     }
@@ -1247,14 +1247,14 @@ outline_nurbs(NurbsCurveResult *ncr) {
     // Compute the tangent by deltaing nearby points.  Don't evaluate
     // the tangent from the NURBS, since that doesn't appear to be
     // reliable.
-    LPoint3f p0, p1;
+    LPoint3 p0, p1;
     ncr->eval_point(st0, p0);
     ncr->eval_point(st1, p1);
-    LVector3f t = p1 - p0;
+    LVector3 t = p1 - p0;
     t.normalize();
 
     if (needs_connect) {
-      _contours.back()._points.back().connect_to(LVector2f(t[0], t[1]));
+      _contours.back()._points.back().connect_to(LVector2(t[0], t[1]));
       needs_connect = false;
     }
 

@@ -45,7 +45,7 @@ make_empty() {
 //               modified by the indicated transform.
 ////////////////////////////////////////////////////////////////////
 CPT(CullPlanes) CullPlanes::
-xform(const LMatrix4f &mat) const {
+xform(const LMatrix4 &mat) const {
   PT(CullPlanes) new_planes;
   if (get_ref_count() == 1) {
     new_planes = (CullPlanes *)this;
@@ -121,7 +121,7 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
           CPT(TransformState) new_transform = 
             net_transform->invert_compose(clip_plane.get_net_transform());
           
-          Planef plane = plane_node->get_plane() * new_transform->get_mat();
+          LPlane plane = plane_node->get_plane() * new_transform->get_mat();
           new_planes->_planes[clip_plane] = new BoundingPlane(-plane);
         }
       }
@@ -167,20 +167,20 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
         // Get a transform from the occluder directly to this node's
         // space for comparing with the current view frustum.
         CPT(TransformState) composed_transform = center_transform->compose(occluder_transform);
-        const LMatrix4f &composed_mat = composed_transform->get_mat();
-        LPoint3f ccp[4];
+        const LMatrix4 &composed_mat = composed_transform->get_mat();
+        LPoint3 ccp[4];
         ccp[0] = occluder_node->get_vertex(0) * composed_mat;
         ccp[1] = occluder_node->get_vertex(1) * composed_mat;
         ccp[2] = occluder_node->get_vertex(2) * composed_mat;
         ccp[3] = occluder_node->get_vertex(3) * composed_mat;
 
-        LPoint3f ccp_min(min(min(ccp[0][0], ccp[1][0]), 
+        LPoint3 ccp_min(min(min(ccp[0][0], ccp[1][0]), 
                      min(ccp[2][0], ccp[3][0])),
                  min(min(ccp[0][1], ccp[1][1]), 
                      min(ccp[2][1], ccp[3][1])),
                  min(min(ccp[0][2], ccp[1][2]), 
                      min(ccp[2][2], ccp[3][2])));
-        LPoint3f ccp_max(max(max(ccp[0][0], ccp[1][0]), 
+        LPoint3 ccp_max(max(max(ccp[0][0], ccp[1][0]), 
                      max(ccp[2][0], ccp[3][0])),
                  max(max(ccp[0][1], ccp[1][1]), 
                      max(ccp[2][1], ccp[3][1])),
@@ -202,19 +202,19 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
         }
 
         // Get the occluder geometry in cull-center space.
-        const LMatrix4f &occluder_mat = occluder_transform->get_mat();
-        LPoint3f points_near[4];
+        const LMatrix4 &occluder_mat = occluder_transform->get_mat();
+        LPoint3 points_near[4];
         points_near[0] = occluder_node->get_vertex(0) * occluder_mat;
         points_near[1] = occluder_node->get_vertex(1) * occluder_mat;
         points_near[2] = occluder_node->get_vertex(2) * occluder_mat;
         points_near[3] = occluder_node->get_vertex(3) * occluder_mat;
-        Planef plane(points_near[0], points_near[1], points_near[2]);
+        LPlane plane(points_near[0], points_near[1], points_near[2]);
         
-        if (plane.get_normal().dot(LVector3f::forward()) >= 0.0) {
+        if (plane.get_normal().dot(LVector3::forward()) >= 0.0) {
           if (occluder_node->is_double_sided()) {
             swap(points_near[0], points_near[3]);
             swap(points_near[1], points_near[2]);
-            plane = Planef(points_near[0], points_near[1], points_near[2]);
+            plane = LPlane(points_near[0], points_near[1], points_near[2]);
           } else {
             // This occluder is facing the wrong direction.  Ignore it.
             if (pgraph_cat.is_spam()) {
@@ -225,8 +225,8 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
           }
         }
 
-        float near_clip = lens->get_near();
-        if (plane.dist_to_plane(LPoint3f::zero()) <= near_clip) {
+        PN_stdfloat near_clip = lens->get_near();
+        if (plane.dist_to_plane(LPoint3::zero()) <= near_clip) {
           // This occluder is behind the camera's near plane.  Ignore it.
           if (pgraph_cat.is_spam()) {
             pgraph_cat.spam()
@@ -235,10 +235,10 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
           continue;
         }
 
-        float d0 = points_near[0].dot(LVector3f::forward());
-        float d1 = points_near[1].dot(LVector3f::forward());
-        float d2 = points_near[2].dot(LVector3f::forward());
-        float d3 = points_near[3].dot(LVector3f::forward());
+        PN_stdfloat d0 = points_near[0].dot(LVector3::forward());
+        PN_stdfloat d1 = points_near[1].dot(LVector3::forward());
+        PN_stdfloat d2 = points_near[2].dot(LVector3::forward());
+        PN_stdfloat d3 = points_near[3].dot(LVector3::forward());
 
         if (d0 <= near_clip && d1 <= near_clip && d2 <= near_clip && d3 <= near_clip) {
           // All four corners of the occluder are behind the camera's
@@ -269,20 +269,20 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
         }
 
         if (occluder_node->get_min_coverage()) {
-          LPoint3f coords[4];
+          LPoint3 coords[4];
           lens->project(points_near[0], coords[0]);
           lens->project(points_near[1], coords[1]);
           lens->project(points_near[2], coords[2]);
           lens->project(points_near[3], coords[3]);
-          coords[0][0] = max(-1.f, min(1.f, coords[0][0]));
-          coords[0][1] = max(-1.f, min(1.f, coords[0][1]));
-          coords[1][0] = max(-1.f, min(1.f, coords[1][0]));
-          coords[1][1] = max(-1.f, min(1.f, coords[1][1]));
-          coords[2][0] = max(-1.f, min(1.f, coords[2][0]));
-          coords[2][1] = max(-1.f, min(1.f, coords[2][1]));
-          coords[3][0] = max(-1.f, min(1.f, coords[3][0]));
-          coords[3][1] = max(-1.f, min(1.f, coords[3][1]));
-          float coverage = ((coords[0] - coords[1]).cross(coords[0] - coords[2]).length()
+          coords[0][0] = max((PN_stdfloat)-1.0, min((PN_stdfloat)1.0, coords[0][0]));
+          coords[0][1] = max((PN_stdfloat)-1.0, min((PN_stdfloat)1.0, coords[0][1]));
+          coords[1][0] = max((PN_stdfloat)-1.0, min((PN_stdfloat)1.0, coords[1][0]));
+          coords[1][1] = max((PN_stdfloat)-1.0, min((PN_stdfloat)1.0, coords[1][1]));
+          coords[2][0] = max((PN_stdfloat)-1.0, min((PN_stdfloat)1.0, coords[2][0]));
+          coords[2][1] = max((PN_stdfloat)-1.0, min((PN_stdfloat)1.0, coords[2][1]));
+          coords[3][0] = max((PN_stdfloat)-1.0, min((PN_stdfloat)1.0, coords[3][0]));
+          coords[3][1] = max((PN_stdfloat)-1.0, min((PN_stdfloat)1.0, coords[3][1]));
+          PN_stdfloat coverage = ((coords[0] - coords[1]).cross(coords[0] - coords[2]).length()
                           + (coords[3] - coords[1]).cross(coords[3] - coords[2]).length())
                           * 0.125;
           if (coverage < occluder_node->get_min_coverage()) {
@@ -319,14 +319,14 @@ apply_state(const CullTraverser *trav, const CullTraverserData *data,
         // occluders are fully contained within this new one.
 
         // Project those four lines to the camera's far plane.
-        float far_clip = scene->get_lens()->get_far();
-        Planef far_plane(-LVector3f::forward(), LVector3f::forward() * far_clip);
+        PN_stdfloat far_clip = scene->get_lens()->get_far();
+        LPlane far_plane(-LVector3::forward(), LVector3::forward() * far_clip);
 
-        LPoint3f points_far[4];
-        far_plane.intersects_line(points_far[0], LPoint3f::zero(), points_near[0]);
-        far_plane.intersects_line(points_far[1], LPoint3f::zero(), points_near[1]);
-        far_plane.intersects_line(points_far[2], LPoint3f::zero(), points_near[2]);
-        far_plane.intersects_line(points_far[3], LPoint3f::zero(), points_near[3]);
+        LPoint3 points_far[4];
+        far_plane.intersects_line(points_far[0], LPoint3::zero(), points_near[0]);
+        far_plane.intersects_line(points_far[1], LPoint3::zero(), points_near[1]);
+        far_plane.intersects_line(points_far[2], LPoint3::zero(), points_near[2]);
+        far_plane.intersects_line(points_far[3], LPoint3::zero(), points_near[3]);
 
         // With these points, construct the bounding frustum of the
         // occluded region.

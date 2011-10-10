@@ -45,8 +45,8 @@ public:
   MayaBlendDesc(MFnBlendShapeDeformer deformer, int weight_index);
   ~MayaBlendDesc();
 
-  void set_slider(float value);
-  float get_slider() const;
+  void set_slider(PN_stdfloat value);
+  PN_stdfloat get_slider() const;
 
 private:
   void clear_egg();

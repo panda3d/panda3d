@@ -23,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS LinearSinkForce : public LinearDistanceForce {
 PUBLISHED:
-  LinearSinkForce(const LPoint3f& p, FalloffType f, float r, float a = 1.0f,
+  LinearSinkForce(const LPoint3& p, FalloffType f, PN_stdfloat r, PN_stdfloat a = 1.0f,
                   bool m = true);
   LinearSinkForce();
   LinearSinkForce(const LinearSinkForce &copy);
@@ -33,7 +33,7 @@ PUBLISHED:
   virtual void write(ostream &out, unsigned int indent=0) const;
 
 private:
-  virtual LVector3f get_child_vector(const PhysicsObject *po);
+  virtual LVector3 get_child_vector(const PhysicsObject *po);
   virtual LinearForce *make_copy();
 
 public:

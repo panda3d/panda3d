@@ -62,7 +62,7 @@ is_tangible() const {
 //               slide down it.
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionSolid::
-set_effective_normal(const LVector3f &effective_normal) {
+set_effective_normal(const LVector3 &effective_normal) {
   LightMutexHolder holder(_lock);
   _effective_normal = effective_normal;
   _flags |= F_effective_normal;
@@ -99,10 +99,10 @@ has_effective_normal() const {
 //               set_effective_normal().  It is an error to call this
 //               unless has_effective_normal() returns true.
 ////////////////////////////////////////////////////////////////////
-INLINE const LVector3f &CollisionSolid::
+INLINE const LVector3 &CollisionSolid::
 get_effective_normal() const {
   LightMutexHolder holder(_lock);
-  nassertr(do_has_effective_normal(), LVector3f::zero());
+  nassertr(do_has_effective_normal(), LVector3::zero());
   return _effective_normal;
 }
 

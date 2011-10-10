@@ -31,7 +31,7 @@ PUBLISHED:
 public:
 
   void integrate(Physical *physical, AngularForceVector &forces,
-                 float dt);
+                 PN_stdfloat dt);
 
 PUBLISHED:  
   virtual void output(ostream &out) const;
@@ -46,7 +46,7 @@ private:
   // this allows baseAngularIntegrator to censor/modify data that the
   // actual integration function receives.
   virtual void child_integrate(Physical *physical, AngularForceVector &forces,
-                               float dt) = 0;
+                               PN_stdfloat dt) = 0;
 };
 
 #endif // ANGULARINTEGRATOR_H

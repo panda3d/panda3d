@@ -33,8 +33,8 @@ class PStatClientData;
 class PStatViewLevel {
 public:
   INLINE int get_collector() const;
-  INLINE float get_value_alone() const;
-  float get_net_value() const;
+  INLINE PN_stdfloat get_value_alone() const;
+  PN_stdfloat get_net_value() const;
 
   void sort_children(const PStatClientData *client_data);
 
@@ -43,7 +43,7 @@ public:
 
 private:
   int _collector;
-  float _value_alone;
+  PN_stdfloat _value_alone;
   PStatViewLevel *_parent;
 
   typedef pvector<PStatViewLevel *> Children;

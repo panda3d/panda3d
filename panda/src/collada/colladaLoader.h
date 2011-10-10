@@ -21,7 +21,7 @@
 #include "pandaNode.h"
 #include "modelRoot.h"
 #include "pvector.h"
-#include "pta_LVecBase4f.h"
+#include "pta_LVecBase4.h"
 
 class ColladaBindMaterial;
 class BamCacheRecord;

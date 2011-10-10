@@ -154,7 +154,7 @@ safe_to_combine() const {
 //               indicated matrix.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderEffects) RenderEffects::
-xform(const LMatrix4f &mat) const {
+xform(const LMatrix4 &mat) const {
   if (is_empty()) {
     return this;
   }

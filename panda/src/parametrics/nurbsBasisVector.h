@@ -42,23 +42,23 @@ public:
   INLINE int get_order() const;
 
   INLINE int get_num_segments() const;
-  INLINE float get_start_t() const;
-  INLINE float get_end_t() const;
+  INLINE PN_stdfloat get_start_t() const;
+  INLINE PN_stdfloat get_end_t() const;
 
   INLINE int get_vertex_index(int segment) const;
-  INLINE float get_from(int segment) const;
-  INLINE float get_to(int segment) const;
-  INLINE const LMatrix4f &get_basis(int segment) const;
-  INLINE float scale_t(int segment, float t) const;
+  INLINE PN_stdfloat get_from(int segment) const;
+  INLINE PN_stdfloat get_to(int segment) const;
+  INLINE const LMatrix4 &get_basis(int segment) const;
+  INLINE PN_stdfloat scale_t(int segment, PN_stdfloat t) const;
 
   void clear(int order);
-  void append_segment(int vertex_index, const float knots[]);
+  void append_segment(int vertex_index, const PN_stdfloat knots[]);
 
   void transpose();
 
 private:
-  static LVecBase4f nurbs_blending_function(int order, int i, int j, 
-                                            const float knots[]);
+  static LVecBase4 nurbs_blending_function(int order, int i, int j, 
+                                            const PN_stdfloat knots[]);
 
 private:
   int _order;
@@ -66,9 +66,9 @@ private:
   class Segment {
   public:
     int _vertex_index;
-    float _from;
-    float _to;
-    LMatrix4f _basis;
+    PN_stdfloat _from;
+    PN_stdfloat _to;
+    LMatrix4 _basis;
   };
 
   typedef pvector<Segment> Segments;

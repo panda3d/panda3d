@@ -35,7 +35,7 @@ UserVertexTransform(const string &name) :
 //  Description: Returns the transform's matrix.
 ////////////////////////////////////////////////////////////////////
 void UserVertexTransform::
-get_matrix(LMatrix4f &matrix) const {
+get_matrix(LMatrix4 &matrix) const {
   CDReader cdata(_cycler);
   matrix = cdata->_matrix;
 }

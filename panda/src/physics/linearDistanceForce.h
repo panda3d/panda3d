@@ -31,30 +31,30 @@ PUBLISHED:
     FT_ONE_OVER_R_CUBED
   };
 
-  INLINE void set_radius(float r);
+  INLINE void set_radius(PN_stdfloat r);
   INLINE void set_falloff_type(FalloffType ft);
-  INLINE void set_force_center(const LPoint3f& p);
+  INLINE void set_force_center(const LPoint3& p);
 
-  INLINE float get_radius() const;
+  INLINE PN_stdfloat get_radius() const;
   INLINE FalloffType get_falloff_type() const;
-  INLINE LPoint3f get_force_center() const;
+  INLINE LPoint3 get_force_center() const;
 
-  INLINE float get_scalar_term() const;
+  INLINE PN_stdfloat get_scalar_term() const;
   
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 
 private:
-  LPoint3f _force_center;
+  LPoint3 _force_center;
 
   FalloffType _falloff;
-  float _radius;
+  PN_stdfloat _radius;
 
   virtual LinearForce *make_copy() = 0;
-  virtual LVector3f get_child_vector(const PhysicsObject *po) = 0;
+  virtual LVector3 get_child_vector(const PhysicsObject *po) = 0;
 
 protected:
-  LinearDistanceForce(const LPoint3f& p, FalloffType ft, float r, float a,
+  LinearDistanceForce(const LPoint3& p, FalloffType ft, PN_stdfloat r, PN_stdfloat a,
                 bool m);
   LinearDistanceForce(const LinearDistanceForce &copy);
   virtual ~LinearDistanceForce();

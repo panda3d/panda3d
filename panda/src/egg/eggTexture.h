@@ -231,15 +231,15 @@ PUBLISHED:
   INLINE bool has_priority() const;
   INLINE int get_priority() const;
 
-  INLINE void set_color(const Colorf &color);
+  INLINE void set_color(const LColor &color);
   INLINE void clear_color();
   INLINE bool has_color() const;
-  INLINE const Colorf &get_color() const;
+  INLINE const LColor &get_color() const;
 
-  INLINE void set_border_color(const Colorf &border_color);
+  INLINE void set_border_color(const LColor &border_color);
   INLINE void clear_border_color();
   INLINE bool has_border_color() const;
-  INLINE const Colorf &get_border_color() const;
+  INLINE const LColor &get_border_color() const;
 
   INLINE void set_uv_name(const string &uv_name);
   INLINE void clear_uv_name();
@@ -335,8 +335,8 @@ private:
   QualityLevel _quality_level;
   string _stage_name;
   int _priority;
-  Colorf _color;
-  Colorf _border_color;
+  LColor _color;
+  LColor _border_color;
   string _uv_name;
   int _rgb_scale;
   int _alpha_scale;

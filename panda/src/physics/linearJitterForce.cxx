@@ -22,7 +22,7 @@ TypeHandle LinearJitterForce::_type_handle;
 // Description : constructor
 ////////////////////////////////////////////////////////////////////
 LinearJitterForce::
-LinearJitterForce(float a, bool mass) :
+LinearJitterForce(PN_stdfloat a, bool mass) :
   LinearRandomForce(a, mass) {
 }
 
@@ -60,7 +60,7 @@ make_copy() {
 //      Access : Public
 // Description : random value
 ////////////////////////////////////////////////////////////////////
-LVector3f LinearJitterForce::
+LVector3 LinearJitterForce::
 get_child_vector(const PhysicsObject *) {
   return random_unit_vector();
 }

@@ -217,7 +217,7 @@ update() {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void AudioManager::audio_3d_set_listener_attributes(float px, float py, float pz, float vx, float vy, float vz, float fx, float fy, float fz, float ux, float uy, float uz) {
+void AudioManager::audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz, PN_stdfloat fx, PN_stdfloat fy, PN_stdfloat fz, PN_stdfloat ux, PN_stdfloat uy, PN_stdfloat uz) {
     // intentionally blank.
 }
 
@@ -226,7 +226,7 @@ void AudioManager::audio_3d_set_listener_attributes(float px, float py, float pz
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void AudioManager::audio_3d_get_listener_attributes(float *px, float *py, float *pz, float *vx, float *vy, float *vz, float *fx, float *fy, float *fz, float *ux, float *uy, float *uz) {
+void AudioManager::audio_3d_get_listener_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz, PN_stdfloat *fx, PN_stdfloat *fy, PN_stdfloat *fz, PN_stdfloat *ux, PN_stdfloat *uy, PN_stdfloat *uz) {
     // intentionally blank.
 }
 
@@ -235,7 +235,7 @@ void AudioManager::audio_3d_get_listener_attributes(float *px, float *py, float 
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void AudioManager::audio_3d_set_distance_factor(float factor) {
+void AudioManager::audio_3d_set_distance_factor(PN_stdfloat factor) {
     // intentionally blank.
 }
 
@@ -244,7 +244,7 @@ void AudioManager::audio_3d_set_distance_factor(float factor) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-float AudioManager::audio_3d_get_distance_factor() const {
+PN_stdfloat AudioManager::audio_3d_get_distance_factor() const {
     // intentionally blank.
     return 0.0f;
 }
@@ -254,7 +254,7 @@ float AudioManager::audio_3d_get_distance_factor() const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void AudioManager::audio_3d_set_doppler_factor(float factor) {
+void AudioManager::audio_3d_set_doppler_factor(PN_stdfloat factor) {
     // intentionally blank.
 }
 
@@ -263,7 +263,7 @@ void AudioManager::audio_3d_set_doppler_factor(float factor) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-float AudioManager::audio_3d_get_doppler_factor() const {
+PN_stdfloat AudioManager::audio_3d_get_doppler_factor() const {
     // intentionally blank.
     return 0.0f;
 }
@@ -273,7 +273,7 @@ float AudioManager::audio_3d_get_doppler_factor() const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void AudioManager::audio_3d_set_drop_off_factor(float factor) {
+void AudioManager::audio_3d_set_drop_off_factor(PN_stdfloat factor) {
     // intentionally blank.
 }
 
@@ -282,7 +282,7 @@ void AudioManager::audio_3d_set_drop_off_factor(float factor) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-float AudioManager::audio_3d_get_drop_off_factor() const {
+PN_stdfloat AudioManager::audio_3d_get_drop_off_factor() const {
     // intentionally blank.
     return 0.0f;
 }
@@ -356,6 +356,6 @@ write(ostream &out) const {
 //  Description: For use only with Miles.
 ////////////////////////////////////////////////////////////////////
 void AudioManager::
-set_speaker_configuration(LVecBase3f *speaker1, LVecBase3f *speaker2, LVecBase3f *speaker3, LVecBase3f *speaker4, LVecBase3f *speaker5, LVecBase3f *speaker6, LVecBase3f *speaker7, LVecBase3f *speaker8, LVecBase3f *speaker9) {
+set_speaker_configuration(LVecBase3 *speaker1, LVecBase3 *speaker2, LVecBase3 *speaker3, LVecBase3 *speaker4, LVecBase3 *speaker5, LVecBase3 *speaker6, LVecBase3 *speaker7, LVecBase3 *speaker8, LVecBase3 *speaker9) {
   // intentionally blank
 }

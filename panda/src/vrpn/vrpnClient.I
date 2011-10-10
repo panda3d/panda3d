@@ -87,8 +87,8 @@ VrpnClient(const string &server) :
 INLINE void VrpnClient::
 tracker_position(const string &tracker, const vrpn_TRACKERCB info) {
   double ptime = convert_to_secs(info.msg_time);
-  LPoint3f pos(info.pos[0], info.pos[1], info.pos[2]);
-  LVector4f pquat(info.quat[0], info.quat[1], info.quat[2], info.quat[3]);
+  LPoint3 pos(info.pos[0], info.pos[1], info.pos[2]);
+  LVector4 pquat(info.quat[0], info.quat[1], info.quat[2], info.quat[3]);
 
   push_tracker_position(tracker, info.sensor, ptime, pos, pquat);
 }
@@ -103,10 +103,10 @@ tracker_position(const string &tracker, const vrpn_TRACKERCB info) {
 INLINE void VrpnClient::
 tracker_velocity(const string &tracker, const vrpn_TRACKERVELCB info) {
   double vtime = convert_to_secs(info.msg_time);
-  LPoint3f vel(info.vel[0], info.vel[1], info.vel[2]);
-  LVector4f vquat(info.vel_quat[0], info.vel_quat[1],
+  LPoint3 vel(info.vel[0], info.vel[1], info.vel[2]);
+  LVector4 vquat(info.vel_quat[0], info.vel_quat[1],
                   info.vel_quat[2], info.vel_quat[3]);
-  float dt = info.vel_quat_dt;
+  PN_stdfloat dt = info.vel_quat_dt;
 
   push_tracker_velocity(tracker, info.sensor, vtime, vel, vquat, dt);
 }
@@ -120,10 +120,10 @@ tracker_velocity(const string &tracker, const vrpn_TRACKERVELCB info) {
 INLINE void VrpnClient::
 tracker_acceleration(const string &tracker, const vrpn_TRACKERACCCB info) {
   double atime = convert_to_secs(info.msg_time);
-  LPoint3f acc(info.acc[0], info.acc[1], info.acc[2]);
-  LVector4f aquat(info.acc_quat[0], info.acc_quat[1],
+  LPoint3 acc(info.acc[0], info.acc[1], info.acc[2]);
+  LVector4 aquat(info.acc_quat[0], info.acc_quat[1],
                   info.acc_quat[2], info.acc_quat[3]);
-  float dt = info.acc_quat_dt;
+  PN_stdfloat dt = info.acc_quat_dt;
 
   push_tracker_acceleration(tracker, info.sensor, atime, acc, aquat, dt);
 }

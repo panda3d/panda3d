@@ -1,5 +1,5 @@
 // Filename: geomNode.h
-// Created by:  drose (22Feb02)
+// Created by:  drose (22eb02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -46,10 +46,10 @@ public:
   virtual void apply_attribs_to_vertices(const AccumulatedAttribs &attribs,
                                          int attrib_types,
                                          GeomTransformer &transformer);
-  virtual void xform(const LMatrix4f &mat);
+  virtual void xform(const LMatrix4 &mat);
   virtual PandaNode *combine_with(PandaNode *other); 
   virtual CPT(TransformState)
-    calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+    calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
                       bool &found_any,
                       const TransformState *transform,
                       Thread *current_thread) const;

@@ -35,7 +35,7 @@ public:
   INLINE void set_lwo_version(double version);
 
   int get_vx();
-  LVecBase3f get_vec3();
+  LVecBase3 get_vec3();
   Filename get_filename();
 
 protected:

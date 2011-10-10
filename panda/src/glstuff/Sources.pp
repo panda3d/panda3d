@@ -8,8 +8,7 @@
   #define TARGET glstuff
   #define LOCAL_LIBS \
     gsgbase gobj display \
-    putil linmath mathutil pnmimage \
-    effects
+    putil linmath mathutil pnmimage
 
     
   #define INSTALL_HEADERS \

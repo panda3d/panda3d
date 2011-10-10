@@ -40,8 +40,8 @@ public:
   void draw_resize_box();
   
   bool get_gamma_table();
-  bool static_set_gamma(bool restore, float gamma);
-  bool set_gamma(float gamma);
+  bool static_set_gamma(bool restore, PN_stdfloat gamma);
+  bool set_gamma(PN_stdfloat gamma);
   void atexit_function();
   void restore_gamma();
         

@@ -225,7 +225,7 @@ apply_freeze(const TransformState *transform) {
 //               directly.
 ////////////////////////////////////////////////////////////////////
 bool PartGroup::
-apply_freeze_matrix(const LVecBase3f &pos, const LVecBase3f &hpr, const LVecBase3f &scale) {
+apply_freeze_matrix(const LVecBase3 &pos, const LVecBase3 &hpr, const LVecBase3 &scale) {
   return false;
 }
 
@@ -241,7 +241,7 @@ apply_freeze_matrix(const LVecBase3f &pos, const LVecBase3f &hpr, const LVecBase
 //               directly.
 ////////////////////////////////////////////////////////////////////
 bool PartGroup::
-apply_freeze_scalar(float value) {
+apply_freeze_scalar(PN_stdfloat value) {
   return false;
 }
 
@@ -551,7 +551,7 @@ do_update(PartBundle *root, const CycleData *root_cdata, PartGroup *,
 //               joint.
 ////////////////////////////////////////////////////////////////////
 void PartGroup::
-do_xform(const LMatrix4f &mat, const LMatrix4f &inv_mat) {
+do_xform(const LMatrix4 &mat, const LMatrix4 &inv_mat) {
   Children::const_iterator ci;
 
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
@@ -733,7 +733,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   if (manager->get_file_minor_ver() == 11) {
     // Skip over the old freeze-joint information, no longer stored here
     scan.get_bool();
-    LMatrix4f mat;
+    LMatrix4 mat;
     mat.read_datagram(scan);
   }
 

@@ -152,7 +152,7 @@ MVector MakeMayaVector(const LVector3d &vec)
   return MVector(vec[0], vec[1], vec[2]);
 }
 
-MColor MakeMayaColor(const Colorf &vec)
+MColor MakeMayaColor(const LColor &vec)
 {
   return MColor(vec[0], vec[1], vec[2], vec[3]);
 }
@@ -930,7 +930,7 @@ void MayaEggGeom::AddEggFlag(MString fieldName) {
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef phash_map<TexCoordd, int>             TVertTable;
-typedef phash_map<Colorf, int>                CVertTable;
+typedef phash_map<LColor, int>                CVertTable;
 
 class MayaEggMesh : public MayaEggGeom
 {
@@ -953,7 +953,7 @@ public:
   CVertTable _cvert_tab;
   
   int GetTVert(TexCoordd uv);
-  int GetCVert(Colorf col);
+  int GetCVert(LColor col);
   int AddFace(unsigned numVertices, MIntArray mvertIndices, MIntArray mtvertIndices, MayaEggTex *tex);
 
   void ConnectTextures(void);
@@ -977,7 +977,7 @@ int MayaEggMesh::GetTVert(TexCoordd uv)
   return idx;
 }
 
-int MayaEggMesh::GetCVert(Colorf col)
+int MayaEggMesh::GetCVert(LColor col)
 {
   //  if (_cvert_tab.count(col))
   //    return _cvert_tab[col];
@@ -1340,7 +1340,7 @@ void MayaEggLoader::CreateSkinCluster(MayaEggGeom *M)
     for (unsigned int i=0; i<vert->_weights.size(); i++) {
       double strength = vert->_weights[i].first / vert->_sumWeights; // [gjeon] nomalizing weights
       MayaEggJoint *joint = FindJoint(vert->_weights[i].second);
-      values[vert->_index * joints.size() + joint->_index] = (float)strength;
+      values[vert->_index * joints.size() + joint->_index] = (PN_stdfloat)strength;
     }
   }
   skinCluster.setWeights(M->_shape_dag_path, component.object(), influenceIndices, values, false, NULL);

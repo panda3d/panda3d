@@ -51,7 +51,7 @@ public:
 
   // The per-component difference below which two vertices are deemed
   // to have the same color.
-  float _color_threshold;
+  PN_stdfloat _color_threshold;
 
   // The per-component difference below which two anim table values
   // are deemed to be equivalent.

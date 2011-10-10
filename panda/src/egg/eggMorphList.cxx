@@ -30,6 +30,6 @@
 
 #define EXPCL EXPCL_PANDAEGG
 #define EXPTP EXPTP_PANDAEGG
-#define TYPE LVector4f
-#define NAME vector_LVector4f
+#define TYPE LVector4
+#define NAME vector_LVector4
 #include "vector_src.cxx"

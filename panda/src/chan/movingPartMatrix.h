@@ -35,13 +35,13 @@ protected:
 
 public:
   INLINE MovingPartMatrix(PartGroup *parent, const string &name,
-                          const LMatrix4f &default_value);
+                          const LMatrix4 &default_value);
   virtual ~MovingPartMatrix();
 
   virtual AnimChannelBase *make_default_channel() const;
   virtual void get_blend_value(const PartBundle *root);
 
-  virtual bool apply_freeze_matrix(const LVecBase3f &pos, const LVecBase3f &hpr, const LVecBase3f &scale);
+  virtual bool apply_freeze_matrix(const LVecBase3 &pos, const LVecBase3 &hpr, const LVecBase3 &scale);
   virtual bool apply_control(PandaNode *node);
 
 protected:

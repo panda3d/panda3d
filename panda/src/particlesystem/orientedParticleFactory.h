@@ -30,10 +30,10 @@ PUBLISHED:
   OrientedParticleFactory(const OrientedParticleFactory &copy);
   virtual ~OrientedParticleFactory();
 
-  INLINE void set_initial_orientation(const LOrientationf &o);
-  INLINE void set_final_orientation(const LOrientationf &o);
-  INLINE LOrientationf get_initial_orientation() const;
-  INLINE LOrientationf get_final_orientation() const;
+  INLINE void set_initial_orientation(const LOrientation &o);
+  INLINE void set_final_orientation(const LOrientation &o);
+  INLINE LOrientation get_initial_orientation() const;
+  INLINE LOrientation get_final_orientation() const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
@@ -42,8 +42,8 @@ private:
   virtual void populate_child_particle(BaseParticle *bp) const;
   virtual BaseParticle *alloc_particle() const;
 
-  LOrientationf _initial_orientation;
-  LOrientationf _final_orientation;
+  LOrientation _initial_orientation;
+  LOrientation _final_orientation;
 };
 
 #include "orientedParticleFactory.I"

@@ -19,7 +19,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE UvScrollNode::
-UvScrollNode(const string &name, float u_speed, float v_speed, float r_speed) :
+UvScrollNode(const string &name, PN_stdfloat u_speed, PN_stdfloat v_speed, PN_stdfloat r_speed) :
   PandaNode(name),
   _u_speed(u_speed),
   _v_speed(v_speed),
@@ -52,7 +52,7 @@ UvScrollNode(const string &name) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void UvScrollNode::
-set_u_speed(float u_speed) {
+set_u_speed(PN_stdfloat u_speed) {
   _u_speed = u_speed;
 }
 
@@ -62,7 +62,7 @@ set_u_speed(float u_speed) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void UvScrollNode::
-set_v_speed(float v_speed) {
+set_v_speed(PN_stdfloat v_speed) {
   _v_speed = v_speed;
 }
 
@@ -72,7 +72,7 @@ set_v_speed(float v_speed) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void UvScrollNode::
-set_r_speed(float r_speed) {
+set_r_speed(PN_stdfloat r_speed) {
   _r_speed = r_speed;
 }
 
@@ -81,7 +81,7 @@ set_r_speed(float r_speed) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE float UvScrollNode::
+INLINE PN_stdfloat UvScrollNode::
 get_u_speed() const {
   return _u_speed;
 }
@@ -91,7 +91,7 @@ get_u_speed() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE float UvScrollNode::
+INLINE PN_stdfloat UvScrollNode::
 get_v_speed() const {
   return _v_speed;
 }
@@ -101,7 +101,7 @@ get_v_speed() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE float UvScrollNode::
+INLINE PN_stdfloat UvScrollNode::
 get_r_speed() const {
   return _r_speed;
 }

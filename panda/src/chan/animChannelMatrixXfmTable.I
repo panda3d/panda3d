@@ -30,11 +30,11 @@ is_valid_id(char table_id) {
 //  Description: Returns a pointer to the indicated subtable's data,
 //               if it exists, or NULL if it does not.
 ////////////////////////////////////////////////////////////////////
-INLINE CPTA_float AnimChannelMatrixXfmTable::
+INLINE CPTA_stdfloat AnimChannelMatrixXfmTable::
 get_table(char table_id) const {
   int table_index = get_table_index(table_id);
   if (table_index < 0) {
-    return CPTA_float(get_class_type());
+    return CPTA_stdfloat(get_class_type());
   }
   return _tables[table_index];
 }
@@ -51,7 +51,7 @@ has_table(char table_id) const {
   if (table_index < 0) {
     return false;
   }
-  return !(_tables[table_index] == (const float *)NULL);
+  return !(_tables[table_index] == (const PN_stdfloat *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -88,7 +88,7 @@ get_table_id(int table_index) {
 //  Description: Returns the default value the indicated table is
 //               expected to have in the absence of any data.
 ////////////////////////////////////////////////////////////////////
-INLINE float AnimChannelMatrixXfmTable::
+INLINE PN_stdfloat AnimChannelMatrixXfmTable::
 get_default_value(int table_index) {
   nassertr(table_index >= 0 && table_index < num_matrix_components, 0.0);
   return matrix_component_defaults[table_index];

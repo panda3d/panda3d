@@ -36,7 +36,7 @@ PUBLISHED:
 
   INLINE const CharacterSlider *get_char_slider() const;
 
-  virtual float get_slider() const;
+  virtual PN_stdfloat get_slider() const;
 
 private:
   PT(CharacterSlider) _char_slider;

@@ -1328,14 +1328,14 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
           // Indexed case.
           GeomVertexReader index(tris->get_vertices(), 0);
           while (!index.is_at_end()) {
-            Vertexf v[3];
+            LVertex v[3];
             
             vertex.set_row_unsafe(index.get_data1i());
-            v[0] = vertex.get_data3f();
+            v[0] = vertex.get_data3();
             vertex.set_row_unsafe(index.get_data1i());
-            v[1] = vertex.get_data3f();
+            v[1] = vertex.get_data3();
             vertex.set_row_unsafe(index.get_data1i());
-            v[2] = vertex.get_data3f();
+            v[2] = vertex.get_data3();
             
             // Generate a temporary CollisionGeom on the fly for each
             // triangle in the Geom.
@@ -1361,11 +1361,11 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
           vertex.set_row_unsafe(primitive->get_first_vertex());
           int num_vertices = primitive->get_num_vertices();
           for (int i = 0; i < num_vertices; i += 3) {
-            Vertexf v[3];
+            LVertex v[3];
             
-            v[0] = vertex.get_data3f();
-            v[1] = vertex.get_data3f();
-            v[2] = vertex.get_data3f();
+            v[0] = vertex.get_data3();
+            v[1] = vertex.get_data3();
+            v[2] = vertex.get_data3();
             
             // Generate a temporary CollisionGeom on the fly for each
             // triangle in the Geom.

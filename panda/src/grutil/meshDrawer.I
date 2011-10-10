@@ -86,23 +86,23 @@ get_budget() {
 //       Access: Published
 //  Description: Draws a triangle with the given parameters.
 ////////////////////////////////////////////////////////////////////
-INLINE void MeshDrawer::tri(LVector3f v1, LVector4f c1, LVector2f uv1,
-                            LVector3f v2, LVector4f c2, LVector2f uv2,
-                            LVector3f v3, LVector4f c3, LVector2f uv3) {
+INLINE void MeshDrawer::tri(LVector3 v1, LVector4 c1, LVector2 uv1,
+                            LVector3 v2, LVector4 c2, LVector2 uv2,
+                            LVector3 v3, LVector4 c3, LVector2 uv3) {
 
   if( _clear_index > _end_clear_index) return;
 
-  _vertex->add_data3f(v1);
-  _color->add_data4f(c1);
-  _uv->add_data2f(uv1);
+  _vertex->add_data3(v1);
+  _color->add_data4(c1);
+  _uv->add_data2(uv1);
 
-  _vertex->add_data3f(v2);
-  _color->add_data4f(c2);
-  _uv->add_data2f(uv2);
+  _vertex->add_data3(v2);
+  _color->add_data4(c2);
+  _uv->add_data2(uv2);
 
-  _vertex->add_data3f(v3);
-  _color->add_data4f(c3);
-  _uv->add_data2f(uv3);
+  _vertex->add_data3(v3);
+  _color->add_data4(c3);
+  _uv->add_data2(uv3);
 
   _clear_index += 1;
 }

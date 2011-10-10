@@ -69,7 +69,7 @@ make_identity() {
 //               @endcode
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) LightRampAttrib::
-make_single_threshold(float thresh0, float val0) {
+make_single_threshold(PN_stdfloat thresh0, PN_stdfloat val0) {
   LightRampAttrib *attrib = new LightRampAttrib();
   attrib->_mode = LRT_single_threshold;
   attrib->_threshold[0] = thresh0;
@@ -94,7 +94,7 @@ make_single_threshold(float thresh0, float val0) {
 //               @endcode
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) LightRampAttrib::
-make_double_threshold(float thresh0, float val0, float thresh1, float val1) {
+make_double_threshold(PN_stdfloat thresh0, PN_stdfloat val0, PN_stdfloat thresh1, PN_stdfloat val1) {
   LightRampAttrib *attrib = new LightRampAttrib();
   attrib->_mode = LRT_single_threshold;
   attrib->_threshold[0] = thresh0;
@@ -305,10 +305,10 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 
   dg.add_int8(_mode);
   for (int i=0; i<2; i++) {
-    dg.add_float32(_level[i]);
+    dg.add_stdfloat(_level[i]);
   }
   for (int i=0; i<2; i++) {
-    dg.add_float32(_threshold[i]);
+    dg.add_stdfloat(_threshold[i]);
   }
 }
 
@@ -345,9 +345,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   _mode = (LightRampMode)scan.get_int8();
   for (int i=0; i<2; i++) {
-    _level[i] = scan.get_float32();
+    _level[i] = scan.get_stdfloat();
   }
   for (int i=0; i<2; i++) {
-    _threshold[i] = scan.get_float32();
+    _threshold[i] = scan.get_stdfloat();
   }
 }

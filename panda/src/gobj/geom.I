@@ -366,10 +366,10 @@ clear_bounds() {
 //               specifying a transform matrix.
 ////////////////////////////////////////////////////////////////////
 INLINE void Geom::
-calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
                   bool &found_any, 
                   const GeomVertexData *vertex_data,
-                  bool got_mat, const LMatrix4f &mat,
+                  bool got_mat, const LMatrix4 &mat,
                   Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
   
@@ -393,11 +393,11 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
 //               the Geom's own coordinate space.
 ////////////////////////////////////////////////////////////////////
 INLINE void Geom::
-calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
                   bool &found_any, Thread *current_thread) const {
   calc_tight_bounds(min_point, max_point, found_any,
                     get_vertex_data(current_thread), false, 
-                    LMatrix4f::ident_mat(),
+                    LMatrix4::ident_mat(),
                     current_thread);
 }
 
@@ -408,10 +408,10 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
 //               other named columns.
 ////////////////////////////////////////////////////////////////////
 INLINE void Geom::
-calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
                   bool &found_any, 
                   const GeomVertexData *vertex_data,
-                  bool got_mat, const LMatrix4f &mat,
+                  bool got_mat, const LMatrix4 &mat,
                   const InternalName *column_name,
                   Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);

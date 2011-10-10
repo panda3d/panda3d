@@ -96,7 +96,7 @@ has_alpha_scale() const {
 //       Access: Published
 //  Description: Returns the scale to be applied to colors.
 ////////////////////////////////////////////////////////////////////
-INLINE const LVecBase4f &ColorScaleAttrib::
+INLINE const LVecBase4 &ColorScaleAttrib::
 get_scale() const {
   return _scale;
 }

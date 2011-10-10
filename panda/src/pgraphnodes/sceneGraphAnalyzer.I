@@ -292,7 +292,7 @@ get_num_short_normals() const {
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-float SceneGraphAnalyzer::
+PN_stdfloat SceneGraphAnalyzer::
 get_total_normal_length() const {
   return _total_normal_length;
 }

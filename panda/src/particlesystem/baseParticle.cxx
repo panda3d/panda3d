@@ -20,7 +20,7 @@
 // Description : Default Constructor
 ////////////////////////////////////////////////////////////////////
 BaseParticle::
-BaseParticle(float lifespan, bool alive) :
+BaseParticle(PN_stdfloat lifespan, bool alive) :
   _age(0.0f), _lifespan(lifespan), _alive(alive), _index(0){
 }
 
@@ -51,7 +51,7 @@ BaseParticle::
 //      Access : Public
 // Description : for spriteParticleRenderer
 ////////////////////////////////////////////////////////////////////
-float BaseParticle::
+PN_stdfloat BaseParticle::
 get_theta() const {
   return 0.0f;
 }

@@ -222,9 +222,9 @@ free(PN_uint32 id) {
 //  Description: return the decimal fraction of the pool that is used.
 //               The range is 0 to 1.0 (e.g. 75% would be 0.75).
 ////////////////////////////////////////////////////////////////////
-float UniqueIdAllocator::
+PN_stdfloat UniqueIdAllocator::
 fraction_used() const {
-  return float(_size-_free)/_size;
+  return PN_stdfloat(_size-_free)/_size;
 }
 
 ////////////////////////////////////////////////////////////////////

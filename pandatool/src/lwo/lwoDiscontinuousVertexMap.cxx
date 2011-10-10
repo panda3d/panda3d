@@ -45,10 +45,10 @@ has_value(int polygon_index, int vertex_index) const {
 //     Function: LwoDiscontinuousVertexMap::get_value
 //       Access: Public
 //  Description: Returns the mapping value associated with the given
-//               index, or an empty PTA_float if there is no mapping
+//               index, or an empty PTA_stdfloat if there is no mapping
 //               value associated.
 ////////////////////////////////////////////////////////////////////
-PTA_float LwoDiscontinuousVertexMap::
+PTA_stdfloat LwoDiscontinuousVertexMap::
 get_value(int polygon_index, int vertex_index) const {
   VMad::const_iterator di;
   di = _vmad.find(polygon_index);
@@ -61,7 +61,7 @@ get_value(int polygon_index, int vertex_index) const {
     }
   }
 
-  return PTA_float();
+  return PTA_stdfloat();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -86,7 +86,7 @@ read_iff(IffInputFile *in, size_t stop_at) {
     int vertex_index = lin->get_vx();
     int polygon_index = lin->get_vx();
 
-    PTA_float value;
+    PTA_stdfloat value;
     for (int i = 0; i < _dimension; i++) {
       value.push_back(lin->get_be_float32());
     }
@@ -97,7 +97,7 @@ read_iff(IffInputFile *in, size_t stop_at) {
     if (!ir.second) {
       // This polygon/vertex pair was repeated in the vmad.  Is it
       // simply redundant, or is it contradictory?
-      PTA_float orig_value = (*ir.first).second;
+      PTA_stdfloat orig_value = (*ir.first).second;
 
       if (value.v() != orig_value.v()) {
         nout << "Multiple UV values for vertex " << vertex_index
@@ -105,7 +105,7 @@ read_iff(IffInputFile *in, size_t stop_at) {
              << " specified by discontinuous vertex map.\n"
              << "Original value = ";
 
-        PTA_float::const_iterator vi;
+        PTA_stdfloat::const_iterator vi;
         for (vi = orig_value.begin(); vi != orig_value.end(); ++vi) {
           nout << (*vi) << " ";
         }

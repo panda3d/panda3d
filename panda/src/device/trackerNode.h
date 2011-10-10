@@ -40,9 +40,9 @@ PUBLISHED:
 
   INLINE bool is_valid() const;
 
-  INLINE const LPoint3f &get_pos() const;
-  INLINE const LOrientationf &get_orient() const;
-  INLINE const LMatrix4f &get_transform() const;
+  INLINE const LPoint3 &get_pos() const;
+  INLINE const LOrientation &get_orient() const;
+  INLINE const LMatrix4 &get_transform() const;
   INLINE double get_time() const;
   INLINE bool has_time() const;
 
@@ -67,7 +67,7 @@ private:
 private:
   PT(ClientTrackerDevice) _tracker;
   TrackerData _data;
-  LMatrix4f _mat;
+  LMatrix4 _mat;
   CoordinateSystem _tracker_cs, _graph_cs;
 
 public:

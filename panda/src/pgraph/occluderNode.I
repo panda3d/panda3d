@@ -21,8 +21,8 @@
 //               orientation when looking at the face of the occluder.
 ////////////////////////////////////////////////////////////////////
 INLINE void OccluderNode::
-set_vertices(const LPoint3f &v0, const LPoint3f &v1,
-             const LPoint3f &v2, const LPoint3f &v3) {
+set_vertices(const LPoint3 &v0, const LPoint3 &v1,
+             const LPoint3 &v2, const LPoint3 &v3) {
   _vertices.clear();
   _vertices.reserve(4);
   _vertices.push_back(v0);
@@ -47,9 +47,9 @@ get_num_vertices() const {
 //       Access: Published
 //  Description: Returns the nth vertex of the occluder polygon.
 ////////////////////////////////////////////////////////////////////
-INLINE const LPoint3f &OccluderNode::
+INLINE const LPoint3 &OccluderNode::
 get_vertex(int n) const {
-  nassertr(n >= 0 && n < (int)_vertices.size(), LPoint3f::zero());
+  nassertr(n >= 0 && n < (int)_vertices.size(), LPoint3::zero());
   return _vertices[n];
 }
 
@@ -79,7 +79,7 @@ INLINE bool OccluderNode::is_double_sided() {
 //               would mean that the occluder needs to cover 20% of
 //               the screen to be considered.
 ////////////////////////////////////////////////////////////////////
-INLINE void OccluderNode::set_min_coverage(float value) {
+INLINE void OccluderNode::set_min_coverage(PN_stdfloat value) {
   _min_coverage = value;
 }
 
@@ -88,6 +88,6 @@ INLINE void OccluderNode::set_min_coverage(float value) {
 //       Access: Published
 //  Description: Returns the minimum screen coverage.
 ////////////////////////////////////////////////////////////////////
-INLINE float OccluderNode::get_min_coverage() {
+INLINE PN_stdfloat OccluderNode::get_min_coverage() {
   return _min_coverage;
 }

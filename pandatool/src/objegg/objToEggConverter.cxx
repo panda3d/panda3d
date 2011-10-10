@@ -240,7 +240,7 @@ process_v(vector_string &words) {
         << "Invalid number at line " << _line_number << "\n";
       return false;
     }
-    vertex->set_color(Colorf(r, g, b, 1.0));
+    vertex->set_color(LColor(r, g, b, 1.0));
   }
 
   ++_vi;

@@ -21,11 +21,11 @@
 
 int
 main() {
-  Planef p1(LVector3f(1, 0, 0), LPoint3f(1, 0, 0));
-  Planef p2(LVector3f(0, 0, 1), LPoint3f(1, 0, 0));
+  LPlane p1(LVector3(1, 0, 0), LPoint3(1, 0, 0));
+  LPlane p2(LVector3(0, 0, 1), LPoint3(1, 0, 0));
 
-  LPoint3f from;
-  LVector3f delta;
+  LPoint3 from;
+  LVector3 delta;
 
   if (p1.intersects_plane(from, delta, p2)) {
     nout << "intersects, " << from << " to " << delta << "\n";
@@ -54,12 +54,12 @@ main() {
   */
 
   /*
-  BoundingLine line(LPoint3f(0, 0, 1), LPoint3f(0, 0, 0));
+  BoundingLine line(LPoint3(0, 0, 1), LPoint3(0, 0, 0));
 
-  BoundingSphere s1(LPoint3f(0, 0, 10), 1);
-  BoundingSphere s2(LPoint3f(10, 0, 10), 1);
-  BoundingSphere s3(LPoint3f(1, 0, 0), 1);
-  BoundingSphere s4(LPoint3f(-1, -1, -1), 1);
+  BoundingSphere s1(LPoint3(0, 0, 10), 1);
+  BoundingSphere s2(LPoint3(10, 0, 10), 1);
+  BoundingSphere s3(LPoint3(1, 0, 0), 1);
+  BoundingSphere s4(LPoint3(-1, -1, -1), 1);
 
   line.contains(&s1);
   line.contains(&s2);
@@ -68,10 +68,10 @@ main() {
   */
 
   /*
-  s1.contains(LPoint3f(0, 0, 1), LPoint3f(0, 0, 0));
-  s2.contains(LPoint3f(0, 0, 1), LPoint3f(0, 0, 0));
-  s3.contains(LPoint3f(0, 0, 1), LPoint3f(0, 0, 0));
-  s4.contains(LPoint3f(0, 0, 1), LPoint3f(0, 0, 0));
+  s1.contains(LPoint3(0, 0, 1), LPoint3(0, 0, 0));
+  s2.contains(LPoint3(0, 0, 1), LPoint3(0, 0, 0));
+  s3.contains(LPoint3(0, 0, 1), LPoint3(0, 0, 0));
+  s4.contains(LPoint3(0, 0, 1), LPoint3(0, 0, 0));
   */
 
   return (0);

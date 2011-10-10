@@ -128,7 +128,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 //               kinds of nodes, this does nothing.
 ////////////////////////////////////////////////////////////////////
 void PGScrollFrame::
-xform(const LMatrix4f &mat) {
+xform(const LMatrix4 &mat) {
   LightReMutexHolder holder(_lock);
   PGVirtualFrame::xform(mat);
 
@@ -143,9 +143,9 @@ xform(const LMatrix4f &mat) {
 //               dimensions, and the indicated virtual frame.
 ////////////////////////////////////////////////////////////////////
 void PGScrollFrame::
-setup(float width, float height,
-      float left, float right, float bottom, float top,
-      float slider_width, float bevel) {
+setup(PN_stdfloat width, PN_stdfloat height,
+      PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top,
+      PN_stdfloat slider_width, PN_stdfloat bevel) {
   LightReMutexHolder holder(_lock);
   set_state(0);
   clear_state_def(0);
@@ -178,14 +178,14 @@ setup(float width, float height,
   // Create new slider bars.
   PT(PGSliderBar) horizontal_slider = new PGSliderBar("horizontal");
   horizontal_slider->setup_scroll_bar(false, width - slider_width - bevel * 2, slider_width, bevel);
-  horizontal_slider->set_transform(TransformState::make_pos(LVector3f::rfu(width / 2.0f - slider_width / 2.0f, 0, slider_width / 2.0f + bevel)));
+  horizontal_slider->set_transform(TransformState::make_pos(LVector3::rfu(width / 2.0f - slider_width / 2.0f, 0, slider_width / 2.0f + bevel)));
   add_child(horizontal_slider);
   set_horizontal_slider(horizontal_slider);
 
   PT(PGSliderBar) vertical_slider = new PGSliderBar("vertical");
   vertical_slider->setup_scroll_bar(true, width - slider_width - bevel * 2, slider_width, bevel);
   add_child(vertical_slider);
-  vertical_slider->set_transform(TransformState::make_pos(LVector3f::rfu(width - slider_width / 2.0f - bevel, 0, width / 2.0f + slider_width / 2.0f)));
+  vertical_slider->set_transform(TransformState::make_pos(LVector3::rfu(width - slider_width / 2.0f - bevel, 0, width / 2.0f + slider_width / 2.0f)));
   set_vertical_slider(vertical_slider);
 
   set_manage_pieces(true);
@@ -203,24 +203,24 @@ remanage() {
   LightReMutexHolder holder(_lock);
   _needs_remanage = false;
 
-  const LVecBase4f &frame = get_frame();
-  LVecBase4f clip = get_frame_style(get_state()).get_internal_frame(frame);
+  const LVecBase4 &frame = get_frame();
+  LVecBase4 clip = get_frame_style(get_state()).get_internal_frame(frame);
 
   // Determine which scroll bars we have in the frame.
   
   bool got_horizontal = false;
-  float horizontal_width = 0.0f;
+  PN_stdfloat horizontal_width = 0.0f;
   if (_horizontal_slider != (PGSliderBar *)NULL) {
     got_horizontal = true;
-    const LVecBase4f &slider_frame = _horizontal_slider->get_frame();
+    const LVecBase4 &slider_frame = _horizontal_slider->get_frame();
     horizontal_width = slider_frame[3] - slider_frame[2];
   }
   
   bool got_vertical = false;
-  float vertical_width = 0.0f;
+  PN_stdfloat vertical_width = 0.0f;
   if (_vertical_slider != (PGSliderBar *)NULL) {
     got_vertical = true;
-    const LVecBase4f &slider_frame = _vertical_slider->get_frame();
+    const LVecBase4 &slider_frame = _vertical_slider->get_frame();
     vertical_width = slider_frame[1] - slider_frame[0];
   }
 
@@ -228,13 +228,13 @@ remanage() {
     // Should we hide or show either of the scroll bars?  TODO.
 
     // Start by figuring out what our maximum clipping area will be.
-    float clip_width = clip[1] - clip[0];
-    float clip_height = clip[3] - clip[2];
+    PN_stdfloat clip_width = clip[1] - clip[0];
+    PN_stdfloat clip_height = clip[3] - clip[2];
 
     // And our virtual frame too.
-    const LVecBase4f &virtual_frame = get_virtual_frame();
-    float virtual_width = virtual_frame[1] - virtual_frame[0];
-    float virtual_height = virtual_frame[3] - virtual_frame[2];
+    const LVecBase4 &virtual_frame = get_virtual_frame();
+    PN_stdfloat virtual_width = virtual_frame[1] - virtual_frame[0];
+    PN_stdfloat virtual_height = virtual_frame[3] - virtual_frame[2];
 
     if (virtual_width <= clip_width &&
         virtual_height <= clip_height) {
@@ -385,7 +385,7 @@ recompute_clip() {
   _needs_recompute_canvas = true;
 
   // Figure out how to remove the scroll bars from the clip region.
-  LVecBase4f clip = get_frame_style(get_state()).get_internal_frame(get_frame());
+  LVecBase4 clip = get_frame_style(get_state()).get_internal_frame(get_frame());
   reduce_region(clip, _horizontal_slider);
   reduce_region(clip, _vertical_slider);
 
@@ -411,17 +411,17 @@ recompute_canvas() {
   LightReMutexHolder holder(_lock);
   _needs_recompute_canvas = false;
 
-  const LVecBase4f &clip = get_clip_frame();
+  const LVecBase4 &clip = get_clip_frame();
 
-  float x = interpolate_canvas(clip[0], clip[1], 
+  PN_stdfloat x = interpolate_canvas(clip[0], clip[1], 
                                _virtual_frame[0], _virtual_frame[1],
                                _horizontal_slider);
 
-  float y = interpolate_canvas(clip[3], clip[2], 
+  PN_stdfloat y = interpolate_canvas(clip[3], clip[2], 
                                _virtual_frame[3], _virtual_frame[2],
                                _vertical_slider);
 
-  get_canvas_node()->set_transform(TransformState::make_pos(LVector3f::rfu(x, 0, y)));
+  get_canvas_node()->set_transform(TransformState::make_pos(LVector3::rfu(x, 0, y)));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -431,18 +431,18 @@ recompute_canvas() {
 //               applied to the virtual canvas node, based on the
 //               corresponding slider bar's position.
 ////////////////////////////////////////////////////////////////////
-float PGScrollFrame::
-interpolate_canvas(float clip_min, float clip_max, 
-                   float canvas_min, float canvas_max,
+PN_stdfloat PGScrollFrame::
+interpolate_canvas(PN_stdfloat clip_min, PN_stdfloat clip_max, 
+                   PN_stdfloat canvas_min, PN_stdfloat canvas_max,
                    PGSliderBar *slider_bar) {
   LightReMutexHolder holder(_lock);
-  float t = 0.0f;
+  PN_stdfloat t = 0.0f;
   if (slider_bar != (PGSliderBar *)NULL) {
     t = slider_bar->get_ratio();
   }
 
-  float min = clip_min - canvas_min;
-  float max = clip_max - canvas_max;
+  PN_stdfloat min = clip_min - canvas_min;
+  PN_stdfloat max = clip_max - canvas_max;
 
   return min + t * (max - min);
 }

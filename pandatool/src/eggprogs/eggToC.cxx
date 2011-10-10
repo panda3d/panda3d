@@ -242,7 +242,7 @@ write_vertex_pool(EggVertexPool *vpool) {
       if (vert == (EggVertex *)NULL || !vert->has_color()) {
         out << "  color(),  /* " << i << " */\n";
       } else {
-        Colorf c = vert->get_color();
+        LColor c = vert->get_color();
         out << "  color(" << c[0] << ", " << c[1] << ", " << c[2]
             << ", " << c[3] << "),  /* " << i << " */\n";
       }
@@ -361,7 +361,7 @@ write_bin(EggBin *bin) {
         if (!prim->has_color()) {
           out << "  color(),   /* " << prim_index << " */\n";
         } else {
-          Colorf c = prim->get_color();
+          LColor c = prim->get_color();
           out << "  color(" << c[0] << ", " << c[1] << ", " << c[2]
               << ", " << c[3] << "),  /* " << prim_index << " */\n";
         }

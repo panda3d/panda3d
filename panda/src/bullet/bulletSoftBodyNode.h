@@ -28,7 +28,7 @@
 #include "boundingBox.h"
 #include "nurbsCurveEvaluator.h"
 #include "nurbsSurfaceEvaluator.h"
-#include "pta_LVecBase3f.h"
+#include "pta_LVecBase3.h"
 
 class BulletSoftBodyConfig;
 class BulletSoftBodyMaterial;

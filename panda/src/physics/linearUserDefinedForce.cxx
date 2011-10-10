@@ -22,8 +22,8 @@ TypeHandle LinearUserDefinedForce::_type_handle;
 // Description : constructor
 ////////////////////////////////////////////////////////////////////
 LinearUserDefinedForce::
-LinearUserDefinedForce(LVector3f (*proc)(const PhysicsObject *),
-    float a, bool md) :
+LinearUserDefinedForce(LVector3 (*proc)(const PhysicsObject *),
+    PN_stdfloat a, bool md) :
   LinearForce(a, md),
   _proc(proc)
 {
@@ -64,7 +64,7 @@ make_copy() {
 //      Access : private, virtual
 // Description : force builder
 ////////////////////////////////////////////////////////////////////
-LVector3f LinearUserDefinedForce::
+LVector3 LinearUserDefinedForce::
 get_child_vector(const PhysicsObject *po) {
   return _proc(po);
 }

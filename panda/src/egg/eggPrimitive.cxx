@@ -400,7 +400,7 @@ unify_attributes(EggPrimitive::Shading shading) {
     }
     if (!has_color()) {
       // If we still don't have a color, the implicit color is white.
-      set_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+      set_color(LColor(1.0f, 1.0f, 1.0f, 1.0f));
     }
   }
 
@@ -465,7 +465,7 @@ unify_attributes(EggPrimitive::Shading shading) {
   }
 
   if (!has_color() && shading == S_overall) {
-    set_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+    set_color(LColor(1.0f, 1.0f, 1.0f, 1.0f));
   }
 }
 
@@ -1257,10 +1257,10 @@ r_set_connected_shading(int stack_depth, EggPrimitive::Shading shading,
       // Make a special case for not having an overall color: that's
       // implicitly white.
       if (!neighbor->has_color() && has_color() && _drgbas.empty() &&
-          get_color() == Colorf(1.0f, 1.0f, 1.0f, 1.0f)) {
+          get_color() == LColor(1.0f, 1.0f, 1.0f, 1.0f)) {
         matches_color = true;
       } else if (!has_color() && neighbor->has_color() && neighbor->_drgbas.empty() &&
-          neighbor->get_color() == Colorf(1.0f, 1.0f, 1.0f, 1.0f)) {
+          neighbor->get_color() == LColor(1.0f, 1.0f, 1.0f, 1.0f)) {
         matches_color = true;
       }
     }

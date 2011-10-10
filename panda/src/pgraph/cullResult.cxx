@@ -51,7 +51,7 @@ TypeHandle CullResult::_type_handle;
 // fractional power of two will have a terminating representation in
 // base 2, and thus will be more likely to have a precise value in
 // whatever internal representation the graphics API will use.
-static const float dual_opaque_level = 252.0f / 256.0f;
+static const PN_stdfloat dual_opaque_level = 252.0 / 256.0;
 static const double bin_color_flash_rate = 1.0;  // 1 state change per second
 
 ////////////////////////////////////////////////////////////////////
@@ -107,10 +107,10 @@ make_next() const {
 ////////////////////////////////////////////////////////////////////
 void CullResult::
 add_object(CullableObject *object, const CullTraverser *traverser) {
-  static const Colorf flash_alpha_color(0.92, 0.96, 0.10, 1.0f);
-  static const Colorf flash_binary_color(0.21f, 0.67f, 0.24f, 1.0f);
-  static const Colorf flash_multisample_color(0.78f, 0.05f, 0.81f, 1.0f);
-  static const Colorf flash_dual_color(0.92f, 0.01f, 0.01f, 1.0f);
+  static const LColor flash_alpha_color(0.92, 0.96, 0.10, 1.0f);
+  static const LColor flash_binary_color(0.21f, 0.67f, 0.24, 1.0f);
+  static const LColor flash_multisample_color(0.78f, 0.05f, 0.81f, 1.0f);
+  static const LColor flash_dual_color(0.92, 0.01f, 0.01f, 1.0f);
 
   bool force = !traverser->get_effective_incomplete_render();
   Thread *current_thread = traverser->get_current_thread();
@@ -424,7 +424,7 @@ check_flash_bin(CPT(RenderState) &state, CullBin *bin) {
 //               geometry with the specified color.
 ////////////////////////////////////////////////////////////////////
 void CullResult::
-check_flash_transparency(CPT(RenderState) &state, const Colorf &transparency) {
+check_flash_transparency(CPT(RenderState) &state, const LColor &transparency) {
   if (show_transparency) {
     int cycle = (int)(ClockObject::get_global_clock()->get_frame_time() * bin_color_flash_rate);
     if ((cycle & 1) == 0) {
@@ -470,10 +470,10 @@ get_dual_transparent_state() {
     if ((cycle & 1) == 0) {
       static CPT(RenderState) flash_state = NULL;
       if (flash_state == (const RenderState *)NULL) {
-        flash_state = state->add_attrib(ColorAttrib::make_flat(Colorf(0.8f, 0.2f, 0.2f, 1.0f)),
+        flash_state = state->add_attrib(ColorAttrib::make_flat(LColor(0.8f, 0.2, 0.2, 1.0f)),
                                         RenderState::get_max_priority());
 
-        flash_state = flash_state->add_attrib(ColorScaleAttrib::make(LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f)),
+        flash_state = flash_state->add_attrib(ColorScaleAttrib::make(LVecBase4(1.0f, 1.0f, 1.0f, 1.0f)),
                                               RenderState::get_max_priority());
 
         flash_state = flash_state->add_attrib(AlphaTestAttrib::make(AlphaTestAttrib::M_less, 1.0f),
@@ -514,9 +514,9 @@ get_dual_transparent_state_decals() {
     if ((cycle & 1) == 0) {
       static CPT(RenderState) flash_state = NULL;
       if (flash_state == (const RenderState *)NULL) {
-        flash_state = state->add_attrib(ColorAttrib::make_flat(Colorf(0.8f, 0.2f, 0.2f, 1.0f)),
+        flash_state = state->add_attrib(ColorAttrib::make_flat(LColor(0.8f, 0.2, 0.2, 1.0f)),
                                         RenderState::get_max_priority());
-        flash_state = flash_state->add_attrib(ColorScaleAttrib::make(LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f)),
+        flash_state = flash_state->add_attrib(ColorScaleAttrib::make(LVecBase4(1.0f, 1.0f, 1.0f, 1.0f)),
                                               RenderState::get_max_priority());
 
       }
@@ -549,9 +549,9 @@ get_dual_opaque_state() {
     if ((cycle & 1) == 0) {
       static CPT(RenderState) flash_state = NULL;
       if (flash_state == (const RenderState *)NULL) {
-        flash_state = state->add_attrib(ColorAttrib::make_flat(Colorf(0.2f, 0.2f, 0.8f, 1.0f)),
+        flash_state = state->add_attrib(ColorAttrib::make_flat(LColor(0.2, 0.2, 0.8f, 1.0f)),
                                         RenderState::get_max_priority());
-        flash_state = flash_state->add_attrib(ColorScaleAttrib::make(LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f)),
+        flash_state = flash_state->add_attrib(ColorScaleAttrib::make(LVecBase4(1.0f, 1.0f, 1.0f, 1.0f)),
                                               RenderState::get_max_priority());
 
       }

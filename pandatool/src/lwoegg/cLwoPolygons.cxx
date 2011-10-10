@@ -137,7 +137,7 @@ get_surface(int polygon_index) const {
 //               is associated with the points themselves.
 ////////////////////////////////////////////////////////////////////
 bool CLwoPolygons::
-get_uv(const string &uv_name, int pi, int vi, LPoint2f &uv) const {
+get_uv(const string &uv_name, int pi, int vi, LPoint2 &uv) const {
   VMad::const_iterator ni = _txuv.find(uv_name);
   if (ni == _txuv.end()) {
     return false;
@@ -154,7 +154,7 @@ get_uv(const string &uv_name, int pi, int vi, LPoint2f &uv) const {
     return false;
   }
 
-  PTA_float value = vmad->get_value(pi, vi);
+  PTA_stdfloat value = vmad->get_value(pi, vi);
 
   uv.set(value[0], value[1]);
   return true;
@@ -214,7 +214,7 @@ connect_egg() {
 ////////////////////////////////////////////////////////////////////
 void CLwoPolygons::
 make_faces() {
-  float smooth_angle = -1.0;
+  PN_stdfloat smooth_angle = -1.0;
 
   int num_polygons = _polygons->get_num_polygons();
   for (int pindex = 0; pindex < num_polygons; pindex++) {
@@ -259,7 +259,7 @@ make_faces() {
         // Does the vertex used named UV's?
         if (surface != (CLwoSurface *)NULL && surface->has_named_uvs()) {
           string uv_name = surface->get_uv_name();
-          LPoint2f uv;
+          LPoint2 uv;
           if (get_uv(uv_name, pindex, vindex, uv)) {
             // This UV is defined in a "discontinuous" map, that
             // associated a particular UV per each polygon.

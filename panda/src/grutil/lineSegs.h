@@ -39,17 +39,17 @@ PUBLISHED:
   ~LineSegs();
 
   void reset();
-  INLINE void set_color(float r, float g, float b, float a = 1.0f);
-  INLINE void set_color(const Colorf &color);
-  INLINE void set_thickness(float thick);
+  INLINE void set_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a = 1.0f);
+  INLINE void set_color(const LColor &color);
+  INLINE void set_thickness(PN_stdfloat thick);
 
-  INLINE void move_to(float x, float y, float z);
-  void move_to(const LVecBase3f &v);
+  INLINE void move_to(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+  void move_to(const LVecBase3 &v);
 
-  INLINE void draw_to(float x, float y, float z);
-  void draw_to(const LVecBase3f &v);
+  INLINE void draw_to(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+  void draw_to(const LVecBase3 &v);
 
-  const Vertexf &get_current_position();
+  const LVertex &get_current_position();
   bool is_empty();
 
   INLINE GeomNode *create(bool dynamic = false);
@@ -57,34 +57,34 @@ PUBLISHED:
 
   // Functions to move the line vertices after they have been created.
   INLINE int get_num_vertices() const;
-  Vertexf get_vertex(int n) const;
+  LVertex get_vertex(int n) const;
   MAKE_SEQ(get_vertices, get_num_vertices, get_vertex);
-  void set_vertex(int n, const Vertexf &vert);
-  INLINE void set_vertex(int vertex, float x, float y, float z);
+  void set_vertex(int n, const LVertex &vert);
+  INLINE void set_vertex(int vertex, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
 
-  Colorf get_vertex_color(int vertex) const;
+  LColor get_vertex_color(int vertex) const;
   MAKE_SEQ(get_vertex_colors, get_num_vertices, get_vertex_color);
-  void set_vertex_color(int vertex, const Colorf &c);
-  INLINE void set_vertex_color(int vertex, float r, float g, float b, float a = 1.0f);
+  void set_vertex_color(int vertex, const LColor &c);
+  INLINE void set_vertex_color(int vertex, PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a = 1.0f);
 
 private:
   class Point {
   public:
     INLINE Point();
-    INLINE Point(const LVecBase3f &point, const Colorf &color);
+    INLINE Point(const LVecBase3 &point, const LColor &color);
     INLINE Point(const Point &copy);
     INLINE void operator = (const Point &copy);
 
-    Vertexf _point;
-    Colorf _color;
+    LVertex _point;
+    LColor _color;
   };
 
   typedef pvector<Point> SegmentList;
   typedef pvector<SegmentList> LineList;
 
   LineList _list;
-  Colorf _color;
-  float _thick;
+  LColor _color;
+  PN_stdfloat _thick;
 
   PT(GeomVertexData) _created_data;
 };

@@ -27,9 +27,9 @@
 
 class LerpChannelRange {
 private:
-  float _low, _high;
+  PN_stdfloat _low, _high;
 public:
-  INLINE LerpChannelRange(float low, float high) : _low(low), _high(high) {
+  INLINE LerpChannelRange(PN_stdfloat low, PN_stdfloat high) : _low(low), _high(high) {
     if (low > high) {
       _low = high;
       _high = low;
@@ -38,23 +38,23 @@ public:
   INLINE LerpChannelRange(const LerpChannelRange& c) : _low(c._low),
                                                        _high(c._high) {}
   INLINE ~LerpChannelRange() {}
-  INLINE float GetLow() { return _low; }
-  INLINE float GetHigh() { return _high; }
-  INLINE void SetLow(float l) {
+  INLINE PN_stdfloat GetLow() { return _low; }
+  INLINE PN_stdfloat GetHigh() { return _high; }
+  INLINE void SetLow(PN_stdfloat l) {
     if (l > _high) {
       _low = _high;
       _high = l;
     } else
       _low = l;
   }
-  INLINE void SetHigh(float h) {
+  INLINE void SetHigh(PN_stdfloat h) {
     if (h < _low) {
       _high = _low;
       _low = h;
     } else
       _high = h;
   }
-  INLINE void SetRange(float l, float h) {
+  INLINE void SetRange(PN_stdfloat l, PN_stdfloat h) {
     if (l > h) {
       _low = h;
       _high = l;
@@ -73,7 +73,7 @@ public:
 template <class value>
 class LerpChannel {
 public:
-  virtual GetValue(float p);
+  virtual GetValue(PN_stdfloat p);
 };
 
 template <class value>

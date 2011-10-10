@@ -102,7 +102,7 @@ run() {
     if (_image.has_alpha() && _color_scale[3] != 1.0f) {
       for (int yi = 0; yi < _image.get_y_size(); ++yi) {
         for (int xi = 0; xi < _image.get_x_size(); ++xi) {
-          float a = _image.get_alpha(xi, yi);
+          PN_stdfloat a = _image.get_alpha(xi, yi);
           _image.set_alpha(xi, yi, a * _color_scale[3]);
         }
       }

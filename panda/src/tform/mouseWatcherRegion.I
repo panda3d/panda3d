@@ -19,8 +19,8 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE MouseWatcherRegion::
-MouseWatcherRegion(const string &name, float left, float right,
-                   float bottom, float top) :
+MouseWatcherRegion(const string &name, PN_stdfloat left, PN_stdfloat right,
+                   PN_stdfloat bottom, PN_stdfloat top) :
   Namable(name),
   _frame(left, right, bottom, top)
 {
@@ -34,7 +34,7 @@ MouseWatcherRegion(const string &name, float left, float right,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE MouseWatcherRegion::
-MouseWatcherRegion(const string &name, const LVecBase4f &frame) :
+MouseWatcherRegion(const string &name, const LVecBase4 &frame) :
   Namable(name),
   _frame(frame)
 {
@@ -48,8 +48,8 @@ MouseWatcherRegion(const string &name, const LVecBase4f &frame) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void MouseWatcherRegion::
-set_frame(float left, float right, float bottom, float top) {
-  set_frame(LVecBase4f(left, right, bottom, top));
+set_frame(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top) {
+  set_frame(LVecBase4(left, right, bottom, top));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -58,7 +58,7 @@ set_frame(float left, float right, float bottom, float top) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void MouseWatcherRegion::
-set_frame(const LVecBase4f &frame) {
+set_frame(const LVecBase4 &frame) {
   _frame = frame;
   _area = (_frame[1] - _frame[0]) * (_frame[3] - _frame[2]);
 }
@@ -68,7 +68,7 @@ set_frame(const LVecBase4f &frame) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const LVecBase4f &MouseWatcherRegion::
+INLINE const LVecBase4 &MouseWatcherRegion::
 get_frame() const {
   return _frame;
 }
@@ -78,7 +78,7 @@ get_frame() const {
 //       Access: Published
 //  Description: Returns the area of the rectangular region.
 ////////////////////////////////////////////////////////////////////
-INLINE float MouseWatcherRegion::
+INLINE PN_stdfloat MouseWatcherRegion::
 get_area() const {
   return _area;
 }

@@ -58,7 +58,7 @@ test_intersection(const CollisionEntry &entry) const {
 //  Description: Transforms the solid by the indicated matrix.
 ////////////////////////////////////////////////////////////////////
 void CollisionRay::
-xform(const LMatrix4f &mat) {
+xform(const LMatrix4 &mat) {
   _origin = _origin * mat;
   _direction = _direction * mat;
 
@@ -73,7 +73,7 @@ xform(const LMatrix4f &mat) {
 //               intersection point to this origin point is considered
 //               to be the most significant.
 ////////////////////////////////////////////////////////////////////
-LPoint3f CollisionRay::
+LPoint3 CollisionRay::
 get_collision_origin() const {
   return get_origin();
 }
@@ -101,14 +101,14 @@ output(ostream &out) const {
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
 bool CollisionRay::
-set_from_lens(LensNode *camera, const LPoint2f &point) {
+set_from_lens(LensNode *camera, const LPoint2 &point) {
   Lens *lens = camera->get_lens();
 
   bool success = true;
-  LPoint3f near_point, far_point;
+  LPoint3 near_point, far_point;
   if (!lens->extrude(point, near_point, far_point)) {
-    _origin = LPoint3f::origin();
-    _direction = LVector3f::forward();
+    _origin = LPoint3::origin();
+    _direction = LVector3::forward();
     success = false;
   } else {
     _origin = near_point;
@@ -155,10 +155,10 @@ fill_viz_geom() {
   
   for (int i = 0; i < num_points; i++) {
     double t = ((double)i / (double)num_points);
-    vertex.add_data3f(get_origin() + t * scale * get_direction());
+    vertex.add_data3(get_origin() + t * scale * get_direction());
     
-    color.add_data4f(Colorf(1.0f, 1.0f, 1.0f, 1.0f) +
-                     t * Colorf(0.0f, 0.0f, 0.0f, -1.0f));
+    color.add_data4(LColor(1.0f, 1.0f, 1.0f, 1.0f) +
+                    t * LColor(0.0f, 0.0f, 0.0f, -1.0f));
   }
 
   PT(GeomLinestrips) line = new GeomLinestrips(Geom::UH_static);

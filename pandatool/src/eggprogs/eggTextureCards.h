@@ -56,7 +56,7 @@ public:
   LVecBase2d _pixel_scale;
   bool _got_pixel_scale;
   vector_string _suffixes;
-  Colorf _polygon_color;
+  LColor _polygon_color;
   vector_string _texture_names;
   EggTexture::WrapMode _wrap_mode;
   EggTexture::WrapMode _wrap_u;

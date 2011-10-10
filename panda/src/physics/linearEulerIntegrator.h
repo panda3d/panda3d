@@ -33,7 +33,7 @@ PUBLISHED:
 private:
   virtual void child_integrate(Physical *physical,
                                LinearForceVector& forces,
-                               float dt);
+                               PN_stdfloat dt);
 };
 
 #endif // EULERINTEGRATOR_H

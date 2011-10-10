@@ -119,9 +119,9 @@ get_record_length() const {
 //               be 1.0, as MultiGen does not store transparency
 //               per-vertex.
 ////////////////////////////////////////////////////////////////////
-Colorf FltVertex::
+LColor FltVertex::
 get_color() const {
-  nassertr(has_color(), Colorf(0.0, 0.0, 0.0, 0.0));
+  nassertr(has_color(), LColor(0.0, 0.0, 0.0, 0.0));
 
   return _header->get_color(_color_index, (_flags & F_packed_color) != 0,
                             _packed_color, 0);
@@ -133,9 +133,9 @@ get_color() const {
 //  Description: If has_color() indicates true, returns the 
 //               color of the vertex, as a three-component value.
 ////////////////////////////////////////////////////////////////////
-RGBColorf FltVertex::
+LRGBColor FltVertex::
 get_rgb() const {
-  nassertr(has_color(), RGBColorf(0.0, 0.0, 0.0));
+  nassertr(has_color(), LRGBColor(0.0, 0.0, 0.0));
 
   return _header->get_rgb(_color_index, (_flags & F_packed_color) != 0,
                           _packed_color);
@@ -148,7 +148,7 @@ get_rgb() const {
 //               color convention.
 ////////////////////////////////////////////////////////////////////
 void FltVertex::
-set_rgb(const RGBColorf &rgb) {
+set_rgb(const LRGBColor &rgb) {
   _packed_color.set_rgb(rgb);
   _flags = ((_flags & ~F_no_color) | F_packed_color);
 }

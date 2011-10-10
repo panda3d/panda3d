@@ -24,10 +24,10 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void IoPtaDatagramFloat::
-write_datagram(BamWriter *, Datagram &dest, CPTA_float array) {
+write_datagram(BamWriter *, Datagram &dest, CPTA_stdfloat array) {
   dest.add_uint32(array.size());
   for (int i = 0; i < (int)array.size(); ++i) {
-    dest.add_float32(array[i]);
+    dest.add_stdfloat(array[i]);
   }
 }
 
@@ -36,13 +36,13 @@ write_datagram(BamWriter *, Datagram &dest, CPTA_float array) {
 //       Access: Public, Static
 //  Description:
 ////////////////////////////////////////////////////////////////////
-PTA_float IoPtaDatagramFloat::
+PTA_stdfloat IoPtaDatagramFloat::
 read_datagram(BamReader *, DatagramIterator &source) {
-  PTA_float array;
+  PTA_stdfloat array;
 
   int size = source.get_uint32();
   for (int i = 0; i < size; ++i) {
-    array.push_back(source.get_float32());
+    array.push_back(source.get_stdfloat());
   }
 
   return array;

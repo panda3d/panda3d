@@ -137,7 +137,7 @@ set_modifier_buttons(const ModifierButtons &mods) {
 //               the event was generated.
 ////////////////////////////////////////////////////////////////////
 INLINE void MouseWatcherParameter::
-set_mouse(const LPoint2f &mouse) {
+set_mouse(const LPoint2 &mouse) {
   _mouse = mouse;
   _flags |= F_has_mouse;
 }
@@ -325,7 +325,7 @@ has_mouse() const {
 //               generated, in the normalized range (-1 .. 1).  It is
 //               valid to call this only if has_mouse() returned true.
 ////////////////////////////////////////////////////////////////////
-INLINE const LPoint2f &MouseWatcherParameter::
+INLINE const LPoint2 &MouseWatcherParameter::
 get_mouse() const {
   nassertr(has_mouse(), _mouse);
   return _mouse;

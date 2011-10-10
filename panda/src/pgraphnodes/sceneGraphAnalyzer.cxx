@@ -81,6 +81,7 @@ clear() {
   _prim_data_size = 0;
 
   _num_vertices = 0;
+  _num_vertices_64 = 0;
   _num_normals = 0;
   _num_colors = 0;
   _num_texcoords = 0;
@@ -141,16 +142,25 @@ write(ostream &out, int indent_level) const {
     << " GeomVertexFormats, appear on " << _num_geom_nodes
     << " GeomNodes.\n";
 
-  indent(out, indent_level)
-    << _num_vertices << " vertices, " << _num_normals << " normals, "
-    << _num_colors << " colors, "
-    << _num_texcoords << " texture coordinates.\n";
+  indent(out, indent_level);
+  if (_num_vertices_64 != 0) {
+    out << _num_vertices_64 << " 64-bit vertices, ";
+    if (_num_vertices != _num_vertices_64) {
+      out << _num_vertices - _num_vertices_64 << " 32-bit vertices, ";
+    }
+  } else {
+    out << _num_vertices << " vertices, ";
+  }
+
+  out << _num_normals << " normals, "
+      << _num_colors << " colors, "
+      << _num_texcoords << " texture coordinates.\n";
 
   if (_num_long_normals != 0 || _num_short_normals != 0) {
     indent(out, indent_level)
       << _num_long_normals << " normals are too long, "
       << _num_short_normals << " are too short.  Average normal length is "
-      << _total_normal_length / (float)_num_normals << "\n";
+      << _total_normal_length / (PN_stdfloat)_num_normals << "\n";
   }
 
   indent(out, indent_level)
@@ -386,10 +396,15 @@ collect_statistics(const Geom *geom) {
     ++dup_count;
 
     int num_rows = vdata->get_num_rows();
-    if (vdata->has_column(InternalName::get_vertex())) {
+    const GeomVertexFormat *format = vdata->get_format();
+    if (format->has_column(InternalName::get_vertex())) {
       _num_vertices += num_rows;
+      const GeomVertexColumn *vcolumn = format->get_column(InternalName::get_vertex());
+      if (vcolumn->get_numeric_type() == GeomEnums::NT_float64) {
+        _num_vertices_64 += num_rows;
+      }
     }
-    if (vdata->has_column(InternalName::get_normal())) {
+    if (format->has_column(InternalName::get_normal())) {
       _num_normals += num_rows;
       GeomVertexReader rnormal(vdata, InternalName::get_normal());
       while (!rnormal.is_at_end()) {
@@ -405,10 +420,9 @@ collect_statistics(const Geom *geom) {
         _total_normal_length += length;
       }
     }
-    if (vdata->has_column(InternalName::get_color())) {
+    if (format->has_column(InternalName::get_color())) {
       _num_colors += num_rows;
     }
-    const GeomVertexFormat *format = vdata->get_format();
     int num_texcoords = format->get_num_texcoords();
     _num_texcoords += num_rows * num_texcoords;
 

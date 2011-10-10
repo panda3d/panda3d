@@ -86,8 +86,8 @@ ls() const {
 //  Description: Colors all NodePaths in the collection
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePathCollection::
-set_color(float r, float g, float b, float a, int priority) {
-  set_color(Colorf(r, g, b, a), priority);
+set_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a, int priority) {
+  set_color(LColor(r, g, b, a), priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -97,8 +97,8 @@ set_color(float r, float g, float b, float a, int priority) {
 //               collection.  The existing color scale is replaced.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePathCollection::
-set_color_scale(float r, float g, float b, float a, int priority) {
-  set_color_scale(LVecBase4f(r, g, b, a), priority);
+set_color_scale(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a, int priority) {
+  set_color_scale(LVecBase4(r, g, b, a), priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -109,6 +109,6 @@ set_color_scale(float r, float g, float b, float a, int priority) {
 //               multiplied by the specified color scale.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePathCollection::
-compose_color_scale(float r, float g, float b, float a, int priority) {
-  compose_color_scale(LVecBase4f(r, g, b, a), priority);
+compose_color_scale(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a, int priority) {
+  compose_color_scale(LVecBase4(r, g, b, a), priority);
 }

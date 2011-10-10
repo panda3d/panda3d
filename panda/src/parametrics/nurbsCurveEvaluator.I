@@ -63,7 +63,7 @@ get_num_vertices() const {
 //               homogeneous weight.
 ////////////////////////////////////////////////////////////////////
 INLINE void NurbsCurveEvaluator::
-set_vertex(int i, const LVecBase4f &vertex) {
+set_vertex(int i, const LVecBase4 &vertex) {
   nassertv(i >= 0 && i < (int)_vertices.size());
   _vertices[i].set_vertex(vertex);
 }
@@ -77,9 +77,9 @@ set_vertex(int i, const LVecBase4f &vertex) {
 //               scaled up by the weight factor.
 ////////////////////////////////////////////////////////////////////
 INLINE void NurbsCurveEvaluator::
-set_vertex(int i, const LVecBase3f &vertex, float weight) {
+set_vertex(int i, const LVecBase3 &vertex, PN_stdfloat weight) {
   nassertv(i >= 0 && i < (int)_vertices.size());
-  _vertices[i].set_vertex(LVecBase4f(vertex[0] * weight, vertex[1] * weight, vertex[2] * weight, weight));
+  _vertices[i].set_vertex(LVecBase4(vertex[0] * weight, vertex[1] * weight, vertex[2] * weight, weight));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -88,9 +88,9 @@ set_vertex(int i, const LVecBase3f &vertex, float weight) {
 //  Description: Returns the nth control vertex of the curve, relative
 //               to its indicated coordinate space.
 ////////////////////////////////////////////////////////////////////
-INLINE const LVecBase4f &NurbsCurveEvaluator::
+INLINE const LVecBase4 &NurbsCurveEvaluator::
 get_vertex(int i) const {
-  nassertr(i >= 0 && i < (int)_vertices.size(), LVecBase4f::zero());
+  nassertr(i >= 0 && i < (int)_vertices.size(), LVecBase4::zero());
   return _vertices[i].get_vertex();
 }
 
@@ -100,16 +100,16 @@ get_vertex(int i) const {
 //  Description: Returns the nth control vertex of the curve, relative
 //               to the given coordinate space.
 ////////////////////////////////////////////////////////////////////
-INLINE LVecBase4f NurbsCurveEvaluator::
+INLINE LVecBase4 NurbsCurveEvaluator::
 get_vertex(int i, const NodePath &rel_to) const {
-  nassertr(i >= 0 && i < (int)_vertices.size(), LVecBase4f::zero());
+  nassertr(i >= 0 && i < (int)_vertices.size(), LVecBase4::zero());
 
   NodePath space = _vertices[i].get_space(rel_to);
-  const LVecBase4f &vertex = _vertices[i].get_vertex();
+  const LVecBase4 &vertex = _vertices[i].get_vertex();
   if (space.is_empty()) {
     return vertex;
   } else {
-    const LMatrix4f &mat = space.get_mat(rel_to);
+    const LMatrix4 &mat = space.get_mat(rel_to);
     return vertex * mat;
   }
 }
@@ -174,20 +174,20 @@ set_vertex_space(int i, const string &space) {
 //               extended vertices can be set.
 ////////////////////////////////////////////////////////////////////
 INLINE void NurbsCurveEvaluator::
-set_extended_vertex(int i, int d, float value) {
+set_extended_vertex(int i, int d, PN_stdfloat value) {
   nassertv(i >= 0 && i < (int)_vertices.size());
   _vertices[i].set_extended_vertex(d, value);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NurbsCurveEvaluator::float_extended_vertex
+//     Function: NurbsCurveEvaluator::get_extended_vertex
 //       Access: Public
 //  Description: Returns an n-dimensional vertex value.  See
 //               set_extended_vertex().  This returns the value set
 //               for the indicated dimension, or 0.0 if nothing has
 //               been set.
 ////////////////////////////////////////////////////////////////////
-INLINE float NurbsCurveEvaluator::
+INLINE PN_stdfloat NurbsCurveEvaluator::
 get_extended_vertex(int i, int d) const {
   nassertr(i >= 0 && i < (int)_vertices.size(), 0.0f);
   return _vertices[i].get_extended_vertex(d);

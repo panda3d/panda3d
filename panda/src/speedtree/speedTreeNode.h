@@ -117,11 +117,11 @@ PUBLISHED:
   void add_instances_from(const SpeedTreeNode *other);
   void add_instances_from(const SpeedTreeNode *other, const TransformState *transform);
   void add_random_instances(const STTree *tree, int quantity, 
-                            float x_min, float x_max, 
-                            float y_min, float y_max,
-                            float scale_min, float scale_max,
-                            float height_min, float height_max,
-                            float slope_min, float slope_max,
+                            PN_stdfloat x_min, PN_stdfloat x_max, 
+                            PN_stdfloat y_min, PN_stdfloat y_max,
+                            PN_stdfloat scale_min, PN_stdfloat scale_max,
+                            PN_stdfloat height_min, PN_stdfloat height_max,
+                            PN_stdfloat slope_min, PN_stdfloat slope_max,
                             Randomizer &randomizer = Randomizer());
 
   bool add_from_stf(const Filename &stf_filename, 
@@ -140,7 +140,7 @@ PUBLISHED:
 
   void reload_config();
 
-  void set_wind(double strength, const LVector3f &direction);
+  void set_wind(double strength, const LVector3 &direction);
 
   INLINE void set_time_delta(double delta);
   INLINE double get_time_delta() const;
@@ -250,7 +250,7 @@ private:
 
     SpeedTree::CView _light_view;
     SpeedTree::SForestCullResultsRender _light_cull;
-    float _shadow_split;
+    PN_stdfloat _shadow_split;
   };
   typedef pvector<ShadowInfo> ShadowInfos;
   ShadowInfos _shadow_infos;

@@ -152,7 +152,7 @@ event_0(const Event *event, void *) {
 
   // Make the clear color on the buffer be yellow, so it's obviously
   // different from the main scene's background color.
-  buffer->set_clear_color(Colorf(1, 1, 0, 0));
+  buffer->set_clear_color(LColor(1, 1, 0, 0));
 
   // Apply the offscreen buffer's texture to a card in the main
   // window.
@@ -304,7 +304,7 @@ main(int argc, char *argv[]) {
       loading_np.set_scale(0.125f);
       loading->set_text_color(1.0f, 1.0f, 1.0f, 1.0f);
       loading->set_shadow_color(0.0f, 0.0f, 0.0f, 1.0f);
-      loading->set_shadow(0.04f, 0.04f);
+      loading->set_shadow(0.04, 0.04);
       loading->set_align(TextNode::A_center);
       loading->set_text("Loading...");
 

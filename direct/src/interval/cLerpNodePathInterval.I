@@ -46,7 +46,7 @@ get_other() const {
 //               position at the time the lerp is performed.
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
-set_start_pos(const LVecBase3f &pos) {
+set_start_pos(const LVecBase3 &pos) {
   nassertv(!pos.is_nan());
   _start_pos = pos;
   _flags |= F_start_pos;
@@ -62,7 +62,7 @@ set_start_pos(const LVecBase3f &pos) {
 //               affected by the lerp.
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
-set_end_pos(const LVecBase3f &pos) {
+set_end_pos(const LVecBase3 &pos) {
   nassertv(!pos.is_nan());
   _end_pos = pos;
   _flags |= F_end_pos;
@@ -79,7 +79,7 @@ set_end_pos(const LVecBase3f &pos) {
 //               is performed.
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
-set_start_hpr(const LVecBase3f &hpr) {
+set_start_hpr(const LVecBase3 &hpr) {
   nassertv(!hpr.is_nan());
   _start_hpr = hpr;
   _flags = (_flags & ~(F_slerp_setup | F_start_quat)) | F_start_hpr;
@@ -97,7 +97,7 @@ set_start_hpr(const LVecBase3f &hpr) {
 //               the node's rotation will not be affected by the lerp.
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
-set_end_hpr(const LVecBase3f &hpr) {
+set_end_hpr(const LVecBase3 &hpr) {
   nassertv(!hpr.is_nan());
   _end_hpr = hpr;
   _flags = (_flags & ~F_end_quat) | F_end_hpr;
@@ -117,7 +117,7 @@ set_end_hpr(const LVecBase3f &hpr) {
 //               performed in HPR space, componentwise.
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
-set_end_hpr(const LQuaternionf &quat) {
+set_end_hpr(const LQuaternion &quat) {
   nassertv(!quat.is_nan());
   _end_hpr = quat.get_hpr();
   _flags = (_flags & ~F_end_quat) | F_end_hpr;
@@ -134,7 +134,7 @@ set_end_hpr(const LQuaternionf &quat) {
 //               is performed.
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
-set_start_quat(const LQuaternionf &quat) {
+set_start_quat(const LQuaternion &quat) {
   nassertv(!quat.is_nan());
   _start_quat = quat;
   _flags = (_flags & ~(F_slerp_setup | F_start_hpr)) | F_start_quat;
@@ -158,7 +158,7 @@ set_start_quat(const LQuaternionf &quat) {
 //               quaternion space, as a spherical lerp.
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
-set_end_quat(const LVecBase3f &hpr) {
+set_end_quat(const LVecBase3 &hpr) {
   nassertv(!hpr.is_nan());
   _end_quat.set_hpr(hpr);
   _flags = (_flags & ~(F_slerp_setup | F_end_hpr)) | F_end_quat;
@@ -176,7 +176,7 @@ set_end_quat(const LVecBase3f &hpr) {
 //               the node's rotation will not be affected by the lerp.
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
-set_end_quat(const LQuaternionf &quat) {
+set_end_quat(const LQuaternion &quat) {
   nassertv(!quat.is_nan());
   _end_quat = quat;
   _flags = (_flags & ~(F_slerp_setup | F_end_hpr)) | F_end_quat;
@@ -192,7 +192,7 @@ set_end_quat(const LQuaternionf &quat) {
 //               scale at the time the lerp is performed.
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
-set_start_scale(const LVecBase3f &scale) {
+set_start_scale(const LVecBase3 &scale) {
   nassertv(!scale.is_nan());
   _start_scale = scale;
   _flags |= F_start_scale;
@@ -208,9 +208,9 @@ set_start_scale(const LVecBase3f &scale) {
 //               scale at the time the lerp is performed.
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
-set_start_scale(float scale) {
+set_start_scale(PN_stdfloat scale) {
   nassertv(!cnan(scale));
-  set_start_scale(LVecBase3f(scale, scale, scale));
+  set_start_scale(LVecBase3(scale, scale, scale));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -223,7 +223,7 @@ set_start_scale(float scale) {
 //               affected by the lerp.
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
-set_end_scale(const LVecBase3f &scale) {
+set_end_scale(const LVecBase3 &scale) {
   nassertv(!scale.is_nan());
   _end_scale = scale;
   _flags |= F_end_scale;
@@ -239,9 +239,9 @@ set_end_scale(const LVecBase3f &scale) {
 //               affected by the lerp.
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
-set_end_scale(float scale) {
+set_end_scale(PN_stdfloat scale) {
   nassertv(!cnan(scale));
-  set_end_scale(LVecBase3f(scale, scale, scale));
+  set_end_scale(LVecBase3(scale, scale, scale));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -254,7 +254,7 @@ set_end_scale(float scale) {
 //               shear at the time the lerp is performed.
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
-set_start_shear(const LVecBase3f &shear) {
+set_start_shear(const LVecBase3 &shear) {
   nassertv(!shear.is_nan());
   _start_shear = shear;
   _flags |= F_start_shear;
@@ -270,7 +270,7 @@ set_start_shear(const LVecBase3f &shear) {
 //               affected by the lerp.
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
-set_end_shear(const LVecBase3f &shear) {
+set_end_shear(const LVecBase3 &shear) {
   nassertv(!shear.is_nan());
   _end_shear = shear;
   _flags |= F_end_shear;
@@ -286,7 +286,7 @@ set_end_shear(const LVecBase3f &shear) {
 //               color at the time the lerp is performed.
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
-set_start_color(const LVecBase4f &color) {
+set_start_color(const LVecBase4 &color) {
   nassertv(!color.is_nan());
   _start_color = color;
   _flags |= F_start_color;
@@ -302,7 +302,7 @@ set_start_color(const LVecBase4f &color) {
 //               affected by the lerp.
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
-set_end_color(const LVecBase4f &color) {
+set_end_color(const LVecBase4 &color) {
   nassertv(!color.is_nan());
   _end_color = color;
   _flags |= F_end_color;
@@ -318,7 +318,7 @@ set_end_color(const LVecBase4f &color) {
 //               color scale at the time the lerp is performed.
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
-set_start_color_scale(const LVecBase4f &color_scale) {
+set_start_color_scale(const LVecBase4 &color_scale) {
   nassertv(!color_scale.is_nan());
   _start_color_scale = color_scale;
   _flags |= F_start_color_scale;
@@ -334,7 +334,7 @@ set_start_color_scale(const LVecBase4f &color_scale) {
 //               affected by the lerp.
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
-set_end_color_scale(const LVecBase4f &color_scale) {
+set_end_color_scale(const LVecBase4 &color_scale) {
   nassertv(!color_scale.is_nan());
   _end_color_scale = color_scale;
   _flags |= F_end_color_scale;
@@ -362,7 +362,7 @@ set_texture_stage(TextureStage *stage) {
 //               UV offset at the time the lerp is performed.
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
-set_start_tex_offset(const LVecBase2f &tex_offset) {
+set_start_tex_offset(const LVecBase2 &tex_offset) {
   nassertv(!tex_offset.is_nan());
   _start_tex_offset = tex_offset;
   _flags |= F_start_tex_offset;
@@ -378,7 +378,7 @@ set_start_tex_offset(const LVecBase2f &tex_offset) {
 //               affected by the lerp.
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
-set_end_tex_offset(const LVecBase2f &tex_offset) {
+set_end_tex_offset(const LVecBase2 &tex_offset) {
   nassertv(!tex_offset.is_nan());
   _end_tex_offset = tex_offset;
   _flags |= F_end_tex_offset;
@@ -394,7 +394,7 @@ set_end_tex_offset(const LVecBase2f &tex_offset) {
 //               UV rotate at the time the lerp is performed.
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
-set_start_tex_rotate(float tex_rotate) {
+set_start_tex_rotate(PN_stdfloat tex_rotate) {
   nassertv(!cnan(tex_rotate));
   _start_tex_rotate = tex_rotate;
   _flags |= F_start_tex_rotate;
@@ -410,7 +410,7 @@ set_start_tex_rotate(float tex_rotate) {
 //               affected by the lerp.
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
-set_end_tex_rotate(float tex_rotate) {
+set_end_tex_rotate(PN_stdfloat tex_rotate) {
   nassertv(!cnan(tex_rotate));
   _end_tex_rotate = tex_rotate;
   _flags |= F_end_tex_rotate;
@@ -426,7 +426,7 @@ set_end_tex_rotate(float tex_rotate) {
 //               UV scale at the time the lerp is performed.
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
-set_start_tex_scale(const LVecBase2f &tex_scale) {
+set_start_tex_scale(const LVecBase2 &tex_scale) {
   nassertv(!tex_scale.is_nan());
   _start_tex_scale = tex_scale;
   _flags |= F_start_tex_scale;
@@ -442,7 +442,7 @@ set_start_tex_scale(const LVecBase2f &tex_scale) {
 //               affected by the lerp.
 ////////////////////////////////////////////////////////////////////
 INLINE void CLerpNodePathInterval::
-set_end_tex_scale(const LVecBase2f &tex_scale) {
+set_end_tex_scale(const LVecBase2 &tex_scale) {
   nassertv(!tex_scale.is_nan());
   _end_tex_scale = tex_scale;
   _flags |= F_end_tex_scale;

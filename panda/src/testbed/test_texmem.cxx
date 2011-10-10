@@ -57,22 +57,22 @@ event_T(const Event *, void *data) {
   white_center.fill(1.0f, 1.0f, 1.0f);
 
   for (int yi = 0; yi < num_quads_side; yi++) {
-    float y0 = (float)yi / (float)num_quads_side;
-    float y1 = (float)(yi + 1) / (float)num_quads_side;
+    PN_stdfloat y0 = (PN_stdfloat)yi / (PN_stdfloat)num_quads_side;
+    PN_stdfloat y1 = (PN_stdfloat)(yi + 1) / (PN_stdfloat)num_quads_side;
 
     // Map the x, y vertices onto a sphere just for fun.
-    float px0 = ccos((y0 - 0.5f) * MathNumbers::pi_f);
-    float px1 = ccos((y1 - 0.5f) * MathNumbers::pi_f);
-    float py0 = csin((y0 - 0.5f) * MathNumbers::pi_f);
-    float py1 = csin((y1 - 0.5f) * MathNumbers::pi_f);
+    PN_stdfloat px0 = ccos((y0 - 0.5f) * MathNumbers::pi_f);
+    PN_stdfloat px1 = ccos((y1 - 0.5f) * MathNumbers::pi_f);
+    PN_stdfloat py0 = csin((y0 - 0.5f) * MathNumbers::pi_f);
+    PN_stdfloat py1 = csin((y1 - 0.5f) * MathNumbers::pi_f);
     for (int xi = 0; xi < num_quads_side; xi++) {
-      float x0 = (float)xi / (float)num_quads_side;
-      float x1 = (float)(xi + 1) / (float)num_quads_side;
+      PN_stdfloat x0 = (PN_stdfloat)xi / (PN_stdfloat)num_quads_side;
+      PN_stdfloat x1 = (PN_stdfloat)(xi + 1) / (PN_stdfloat)num_quads_side;
 
-      float hx0 = ccos(x0 * MathNumbers::pi_f * 2.0f);
-      float hx1 = ccos(x1 * MathNumbers::pi_f * 2.0f);
-      float hy0 = csin(x0 * MathNumbers::pi_f * 2.0f);
-      float hy1 = csin(x1 * MathNumbers::pi_f * 2.0f);
+      PN_stdfloat hx0 = ccos(x0 * MathNumbers::pi_f * 2.0f);
+      PN_stdfloat hx1 = ccos(x1 * MathNumbers::pi_f * 2.0f);
+      PN_stdfloat hy0 = csin(x0 * MathNumbers::pi_f * 2.0f);
+      PN_stdfloat hy1 = csin(x1 * MathNumbers::pi_f * 2.0f);
 
       PNMImage bogus_image(tex_x_size, tex_y_size);
       bogus_image.fill(x0, (xi + yi) & 1, y0);

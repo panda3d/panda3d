@@ -317,7 +317,7 @@ get_timewarp_curve(int n) const {
 //               of the collection) will range from 0 to max_t.
 ////////////////////////////////////////////////////////////////////
 void ParametricCurveCollection::
-make_even(float max_t, float segments_per_unit) {
+make_even(PN_stdfloat max_t, PN_stdfloat segments_per_unit) {
   ParametricCurve *xyz_curve = get_xyz_curve();
   if (xyz_curve == (ParametricCurve *)NULL) {
     parametrics_cat.error()
@@ -338,8 +338,8 @@ make_even(float max_t, float segments_per_unit) {
       << "Calculating length of curve.\n";
   }
 
-  float net_length = xyz_curve->calc_length();
-  float segment_length = net_length / (float)num_segments;
+  PN_stdfloat net_length = xyz_curve->calc_length();
+  PN_stdfloat segment_length = net_length / (PN_stdfloat)num_segments;
 
   if (parametrics_cat.is_debug()) {
     parametrics_cat.debug()
@@ -347,15 +347,15 @@ make_even(float max_t, float segments_per_unit) {
       << num_segments << " segments of " << segment_length << " units each.\n";
   }
 
-  float last_t = 0.0f;
-  fitter.add_xyz(0.0f, LVecBase3f(last_t, 0.0f, 0.0f));
-  float val_inc= max_t/num_segments;
-  float val=val_inc;
+  PN_stdfloat last_t = 0.0f;
+  fitter.add_xyz(0.0f, LVecBase3(last_t, 0.0f, 0.0f));
+  PN_stdfloat val_inc= max_t/num_segments;
+  PN_stdfloat val=val_inc;
 
   for (int i = 0; i < num_segments; i++,val+=val_inc) {
-    float next_t = xyz_curve->find_length(last_t, segment_length);
-    fitter.add_xyz(/*(float)(i + 1)/num_segments * max_t,*/
-                   val, LVecBase3f(next_t, 0.0f, 0.0f));
+    PN_stdfloat next_t = xyz_curve->find_length(last_t, segment_length);
+    fitter.add_xyz(/*(PN_stdfloat)(i + 1)/num_segments * max_t,*/
+                   val, LVecBase3(next_t, 0.0f, 0.0f));
 
     if (parametrics_cat.is_spam()) {
       parametrics_cat.spam()
@@ -387,7 +387,7 @@ make_even(float max_t, float segments_per_unit) {
 //               point.
 ////////////////////////////////////////////////////////////////////
 void ParametricCurveCollection::
-face_forward(float segments_per_unit) {
+face_forward(PN_stdfloat segments_per_unit) {
   ParametricCurve *xyz_curve = get_xyz_curve();
   if (xyz_curve == (ParametricCurve *)NULL) {
     parametrics_cat.error()
@@ -418,10 +418,10 @@ face_forward(float segments_per_unit) {
   // length in parametric time (based on the timewarp curves).
   CurveFitter fitter;
 
-  float max_t = get_max_t();
+  PN_stdfloat max_t = get_max_t();
   int num_segments = (int)cfloor(segments_per_unit * max_t + 0.5);
 
-  LVecBase3f hpr(0.0f, 0.0f, 0.0f);
+  LVecBase3 hpr(0.0f, 0.0f, 0.0f);
 
   // We compute the first HPR point a little point into the beginning
   // of the curve, instead of at 0.0f, because the tangent at 0.0f is
@@ -430,7 +430,7 @@ face_forward(float segments_per_unit) {
   fitter.add_hpr(0.0f, hpr);
 
   for (int i = 0; i < num_segments; i++) {
-    float t = (float)(i + 1) / num_segments * max_t;
+    PN_stdfloat t = (PN_stdfloat)(i + 1) / num_segments * max_t;
     determine_hpr(t, xyz_curve, hpr);
     fitter.add_hpr(t, hpr);
   }
@@ -453,13 +453,13 @@ face_forward(float segments_per_unit) {
 //               get_max_t() will return the given max_t value.
 ////////////////////////////////////////////////////////////////////
 void ParametricCurveCollection::
-reset_max_t(float max_t) {
+reset_max_t(PN_stdfloat max_t) {
   // Define a linear NURBS curve.
   PT(NurbsCurve) nurbs = new NurbsCurve;
   nurbs->set_curve_type(PCT_T);
   nurbs->set_order(2);
-  nurbs->append_cv(LVecBase3f(0.0f, 0.0f, 0.0f));
-  nurbs->append_cv(LVecBase3f(get_max_t(), 0.0f, 0.0f));
+  nurbs->append_cv(LVecBase3(0.0f, 0.0f, 0.0f));
+  nurbs->append_cv(LVecBase3(get_max_t(), 0.0f, 0.0f));
   nurbs->set_knot(0, 0.0f);
   nurbs->set_knot(1, 0.0f);
   nurbs->set_knot(2, max_t);
@@ -483,15 +483,15 @@ reset_max_t(float max_t) {
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
 bool ParametricCurveCollection::
-evaluate(float t, LVecBase3f &xyz, LVecBase3f &hpr) const {
+evaluate(PN_stdfloat t, LVecBase3 &xyz, LVecBase3 &hpr) const {
   // First, apply all the timewarps in sequence, from back to front.
   // Also take note of the XYZ and HPR curves.
   ParametricCurve *xyz_curve = (ParametricCurve *)NULL;
   ParametricCurve *hpr_curve = (ParametricCurve *)NULL;
   ParametricCurve *default_curve = (ParametricCurve *)NULL;
 
-  float t0 = t;
-  LVecBase3f point;
+  PN_stdfloat t0 = t;
+  LVecBase3 point;
 
   ParametricCurves::const_reverse_iterator ci;
   for (ci = _curves.rbegin(); ci != _curves.rend(); ++ci) {
@@ -555,17 +555,17 @@ evaluate(float t, LVecBase3f &xyz, LVecBase3f &hpr) const {
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
 bool ParametricCurveCollection::
-evaluate(float t, LMatrix4f &result, CoordinateSystem cs) const {
-  LVecBase3f xyz(0.0f, 0.0f, 0.0f);
-  LVecBase3f hpr(0.0f, 0.0f, 0.0f);
+evaluate(PN_stdfloat t, LMatrix4 &result, CoordinateSystem cs) const {
+  LVecBase3 xyz(0.0f, 0.0f, 0.0f);
+  LVecBase3 hpr(0.0f, 0.0f, 0.0f);
 
   if (!evaluate(t, xyz, hpr)) {
     return false;
   }
 
   compose_matrix(result, 
-                 LVecBase3f(1.0f, 1.0f, 1.0f), 
-                 LVecBase3f(0.0f, 0.0f, 0.0f),
+                 LVecBase3(1.0f, 1.0f, 1.0f), 
+                 LVecBase3(0.0f, 0.0f, 0.0f),
                  hpr, xyz, cs);
   return true;
 }
@@ -578,10 +578,10 @@ evaluate(float t, LMatrix4f &result, CoordinateSystem cs) const {
 //               value of t to all the timewarps.  Return -1.0f if the
 //               value of t exceeds one of the timewarps' ranges.
 ////////////////////////////////////////////////////////////////////
-float ParametricCurveCollection::
-evaluate_t(float t) const {
-  float t0 = t;
-  LVecBase3f point;
+PN_stdfloat ParametricCurveCollection::
+evaluate_t(PN_stdfloat t) const {
+  PN_stdfloat t0 = t;
+  LVecBase3 point;
 
   ParametricCurves::const_iterator ci;
   for (ci = _curves.begin(); ci != _curves.end(); ++ci) {
@@ -607,13 +607,13 @@ evaluate_t(float t) const {
 //               the adjustment for some reason.
 ////////////////////////////////////////////////////////////////////
 bool ParametricCurveCollection::
-adjust_xyz(float t, const LVecBase3f &xyz) {
+adjust_xyz(PN_stdfloat t, const LVecBase3 &xyz) {
   ParametricCurve *xyz_curve = get_xyz_curve();
   if (xyz_curve == (ParametricCurve *)NULL) {
     return false;
   }
 
-  float t0 = evaluate_t(t);
+  PN_stdfloat t0 = evaluate_t(t);
   if (t0 >= 0.0f && t < xyz_curve->get_max_t()) {
     return xyz_curve->adjust_point(t, xyz[0], xyz[1], xyz[2]);
   }
@@ -629,13 +629,13 @@ adjust_xyz(float t, const LVecBase3f &xyz) {
 //               the adjustment for some reason.
 ////////////////////////////////////////////////////////////////////
 bool ParametricCurveCollection::
-adjust_hpr(float t, const LVecBase3f &hpr) {
+adjust_hpr(PN_stdfloat t, const LVecBase3 &hpr) {
   ParametricCurve *hpr_curve = get_hpr_curve();
   if (hpr_curve == (ParametricCurve *)NULL) {
     return false;
   }
 
-  float t0 = evaluate_t(t);
+  PN_stdfloat t0 = evaluate_t(t);
   if (t0 >= 0.0f && t < hpr_curve->get_max_t()) {
     return hpr_curve->adjust_point(t, hpr[0], hpr[1], hpr[2]);
   }
@@ -918,10 +918,10 @@ unregister_drawer(ParametricCurveDrawer *drawer) {
 //               cannot (in which case hpr is left unchanged).
 ////////////////////////////////////////////////////////////////////
 bool ParametricCurveCollection::
-determine_hpr(float t, ParametricCurve *xyz_curve, LVecBase3f &hpr) const {
-  float t0 = evaluate_t(t);
+determine_hpr(PN_stdfloat t, ParametricCurve *xyz_curve, LVecBase3 &hpr) const {
+  PN_stdfloat t0 = evaluate_t(t);
 
-  LVector3f tangent;
+  LVector3 tangent;
   if (!xyz_curve->get_tangent(t0, tangent)) {
     return false;
   }
@@ -930,10 +930,10 @@ determine_hpr(float t, ParametricCurve *xyz_curve, LVecBase3f &hpr) const {
     return false;
   }
 
-  LMatrix3f mat;
+  LMatrix3 mat;
   look_at(mat, tangent);
 
-  LVecBase3f scale, shear;
+  LVecBase3 scale, shear;
   return decompose_matrix(mat, scale, shear, hpr);
 }
 

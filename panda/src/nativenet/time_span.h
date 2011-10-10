@@ -23,7 +23,7 @@ public:
     Time_Span(long seconds, int usecs ) ;
     Time_Span(const Time_Span& Time_SpanSrc);
     Time_Span(const Time_Clock& Time_SpanSrc);
-    Time_Span(float Seconds);
+    Time_Span(PN_stdfloat Seconds);
     
     ///////////////////
     
@@ -88,7 +88,7 @@ inline Time_Span::Time_Span(time_t time)
 // Function name : Time_Span::Time_Span
 // Description   :
 //////////////////////////////////////////////////////////////
-inline Time_Span::Time_Span(float Seconds)
+inline Time_Span::Time_Span(PN_stdfloat Seconds)
 {
     _my_time.tv_sec = (long)Seconds; // this truncats .. desired result..
     _my_time.tv_usec = (long)((Seconds - (double)_my_time.tv_sec) * (double)USEC);

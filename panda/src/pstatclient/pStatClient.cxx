@@ -744,7 +744,7 @@ start(int collector_index, int thread_index) {
 //               instead, call PStatCollector::start().
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
-start(int collector_index, int thread_index, float as_of) {
+start(int collector_index, int thread_index, PN_stdfloat as_of) {
 #ifdef _DEBUG
   nassertv(collector_index >= 0 && collector_index < AtomicAdjust::get(_num_collectors));
   nassertv(thread_index >= 0 && thread_index < AtomicAdjust::get(_num_threads));
@@ -815,7 +815,7 @@ stop(int collector_index, int thread_index) {
 //               instead, call PStatCollector::stop().
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
-stop(int collector_index, int thread_index, float as_of) {
+stop(int collector_index, int thread_index, PN_stdfloat as_of) {
 #ifdef _DEBUG
   nassertv(collector_index >= 0 && collector_index < AtomicAdjust::get(_num_collectors));
   nassertv(thread_index >= 0 && thread_index < AtomicAdjust::get(_num_threads));

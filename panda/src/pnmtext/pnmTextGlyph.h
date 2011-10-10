@@ -32,9 +32,9 @@ PUBLISHED:
   INLINE int get_advance() const;
 
   void place(PNMImage &dest_image, int xp, int yp, 
-             const Colorf &fg);
+             const LColor &fg);
   void place(PNMImage &dest_image, int xp, int yp, 
-             const Colorf &fg, const Colorf &interior);
+             const LColor &fg, const LColor &interior);
 
   INLINE int get_left() const;
   INLINE int get_right() const;

@@ -140,7 +140,7 @@ clear() {
 //               automatically maintain the aspect ratio.
 ////////////////////////////////////////////////////////////////////
 void Lens::
-set_film_size(float width) {
+set_film_size(PN_stdfloat width) {
   nassertv(!cnan(width));
   _film_size.set(width, width / get_aspect_ratio());
 
@@ -185,7 +185,7 @@ set_film_size(float width) {
 //               and aspect ratio of the lens directly.
 ////////////////////////////////////////////////////////////////////
 void Lens::
-set_film_size(const LVecBase2f &film_size) {
+set_film_size(const LVecBase2 &film_size) {
   nassertv(!film_size.is_nan());
   _film_size = film_size;
 
@@ -220,7 +220,7 @@ set_film_size(const LVecBase2f &film_size) {
 //  Description: Returns the horizontal and vertical film size of
 //               the virtual film.  See set_film_size().
 ////////////////////////////////////////////////////////////////////
-const LVecBase2f &Lens::
+const LVecBase2 &Lens::
 get_film_size() const {
   if ((_comp_flags & CF_film_size) == 0) {
     // We pretend this is a const method, even though it may call a
@@ -242,7 +242,7 @@ get_film_size() const {
 //               the focal length has no meaning.
 ////////////////////////////////////////////////////////////////////
 void Lens::
-set_focal_length(float focal_length) {
+set_focal_length(PN_stdfloat focal_length) {
   nassertv(!cnan(focal_length));
   _focal_length = focal_length;
 
@@ -275,7 +275,7 @@ set_focal_length(float focal_length) {
 //               the lens' fov and film_size.  For certain kinds of
 //               lenses, the focal length has no meaning.
 ////////////////////////////////////////////////////////////////////
-float Lens::
+PN_stdfloat Lens::
 get_focal_length() const {
   if ((_comp_flags & CF_focal_length) == 0) {
     ((Lens *)this)->compute_focal_length();
@@ -299,7 +299,7 @@ get_focal_length() const {
 //               what you expect to happen.
 ////////////////////////////////////////////////////////////////////
 void Lens::
-set_min_fov(float min_fov) {
+set_min_fov(PN_stdfloat min_fov) {
   nassertv(!cnan(min_fov));
   _min_fov = min_fov;
 
@@ -336,7 +336,7 @@ set_min_fov(float min_fov) {
 //               view is adjusted to maintain the same aspect ratio.
 ////////////////////////////////////////////////////////////////////
 void Lens::
-set_fov(float hfov) {
+set_fov(PN_stdfloat hfov) {
   nassertv(!cnan(hfov));
   _fov[0] = hfov;
 
@@ -378,7 +378,7 @@ set_fov(float hfov) {
 //               the field of view has no meaning.
 ////////////////////////////////////////////////////////////////////
 void Lens::
-set_fov(const LVecBase2f &fov) {
+set_fov(const LVecBase2 &fov) {
   nassertv(!fov.is_nan());
   _fov = fov;
 
@@ -413,7 +413,7 @@ set_fov(const LVecBase2f &fov) {
 //  Description: Returns the horizontal and vertical film size of
 //               the virtual film.  See set_fov().
 ////////////////////////////////////////////////////////////////////
-const LVecBase2f &Lens::
+const LVecBase2 &Lens::
 get_fov() const {
   if ((_comp_flags & CF_fov) == 0) {
     ((Lens *)this)->compute_fov();
@@ -427,7 +427,7 @@ get_fov() const {
 //  Description: Returns the field of view of the narrowest dimension
 //               of the window.  See set_min_fov().
 ////////////////////////////////////////////////////////////////////
-float Lens::
+PN_stdfloat Lens::
 get_min_fov() const {
   if ((_comp_flags & CF_fov) == 0) {
     ((Lens *)this)->compute_fov();
@@ -445,7 +445,7 @@ get_min_fov() const {
 //               size setting.
 ////////////////////////////////////////////////////////////////////
 void Lens::
-set_aspect_ratio(float aspect_ratio) {
+set_aspect_ratio(PN_stdfloat aspect_ratio) {
   nassertv(!cnan(aspect_ratio));
   _aspect_ratio = aspect_ratio;
   adjust_user_flags(UF_film_height | UF_vfov,
@@ -462,7 +462,7 @@ set_aspect_ratio(float aspect_ratio) {
 //               determined based on the indicated film size; see
 //               set_film_size().
 ////////////////////////////////////////////////////////////////////
-float Lens::
+PN_stdfloat Lens::
 get_aspect_ratio() const {
   if ((_comp_flags & CF_aspect_ratio) == 0) {
     ((Lens *)this)->compute_aspect_ratio();
@@ -477,7 +477,7 @@ get_aspect_ratio() const {
 //               assigned to each newly-created lens.  This is read
 //               from the Configrc file.
 ////////////////////////////////////////////////////////////////////
-float Lens::
+PN_stdfloat Lens::
 get_default_near() {
   return default_near;
 }
@@ -489,7 +489,7 @@ get_default_near() {
 //               assigned to each newly-created lens.  This is read
 //               from the Configrc file.
 ////////////////////////////////////////////////////////////////////
-float Lens::
+PN_stdfloat Lens::
 get_default_far() {
   return default_far;
 }
@@ -505,7 +505,7 @@ get_default_far() {
 //               complete transformation matrix.
 ////////////////////////////////////////////////////////////////////
 void Lens::
-set_view_hpr(const LVecBase3f &view_hpr) {
+set_view_hpr(const LVecBase3 &view_hpr) {
   nassertv(!view_hpr.is_nan());
   _view_hpr = view_hpr;
   adjust_user_flags(UF_view_vector | UF_view_mat,
@@ -520,7 +520,7 @@ set_view_hpr(const LVecBase3f &view_hpr) {
 //       Access: Published
 //  Description: Returns the direction in which the lens is facing.
 ////////////////////////////////////////////////////////////////////
-const LVecBase3f &Lens::
+const LVecBase3 &Lens::
 get_view_hpr() const {
   if ((_comp_flags & CF_view_hpr) == 0) {
     ((Lens *)this)->compute_view_hpr();
@@ -538,7 +538,7 @@ get_view_hpr() const {
 //               See also set_view_hpr().
 ////////////////////////////////////////////////////////////////////
 void Lens::
-set_view_vector(const LVector3f &view_vector, const LVector3f &up_vector) {
+set_view_vector(const LVector3 &view_vector, const LVector3 &up_vector) {
   nassertv(!view_vector.is_nan());
   _view_vector = view_vector;
   _up_vector = up_vector;
@@ -554,7 +554,7 @@ set_view_vector(const LVector3f &view_vector, const LVector3f &up_vector) {
 //       Access: Published
 //  Description: Returns the axis along which the lens is facing.
 ////////////////////////////////////////////////////////////////////
-const LVector3f &Lens::
+const LVector3 &Lens::
 get_view_vector() const {
   if ((_comp_flags & CF_view_vector) == 0) {
     ((Lens *)this)->compute_view_vector();
@@ -568,7 +568,7 @@ get_view_vector() const {
 //  Description: Returns the axis perpendicular to the camera's view
 //               vector that indicates the "up" direction.
 ////////////////////////////////////////////////////////////////////
-const LVector3f &Lens::
+const LVector3 &Lens::
 get_up_vector() const {
   if ((_comp_flags & CF_view_vector) == 0) {
     ((Lens *)this)->compute_view_vector();
@@ -582,7 +582,7 @@ get_up_vector() const {
 //  Description: Returns the center point of the lens: the point from
 //               which the lens is viewing.
 ////////////////////////////////////////////////////////////////////
-LPoint3f Lens::
+LPoint3 Lens::
 get_nodal_point() const {
   return get_view_mat().get_row3(3);
 }
@@ -603,7 +603,7 @@ get_nodal_point() const {
 //               Also see set_convergence_distance(), which relates.
 ////////////////////////////////////////////////////////////////////
 void Lens::
-set_interocular_distance(float interocular_distance) {
+set_interocular_distance(PN_stdfloat interocular_distance) {
   nassertv(!cnan(interocular_distance));
   _interocular_distance = interocular_distance;
   if (_interocular_distance == 0.0f) {
@@ -621,7 +621,7 @@ set_interocular_distance(float interocular_distance) {
 //       Access: Published
 //  Description: See set_interocular_distance().
 ////////////////////////////////////////////////////////////////////
-float Lens::
+PN_stdfloat Lens::
 get_interocular_distance() const {
   return _interocular_distance;
 }
@@ -649,7 +649,7 @@ get_interocular_distance() const {
 //               Also see set_interocular_distance(), which relates.
 ////////////////////////////////////////////////////////////////////
 void Lens::
-set_convergence_distance(float convergence_distance) {
+set_convergence_distance(PN_stdfloat convergence_distance) {
   nassertv(!cnan(convergence_distance));
   _convergence_distance = convergence_distance;
   if (_convergence_distance == 0.0f) {
@@ -667,7 +667,7 @@ set_convergence_distance(float convergence_distance) {
 //       Access: Published
 //  Description: See set_convergence_distance().
 ////////////////////////////////////////////////////////////////////
-float Lens::
+PN_stdfloat Lens::
 get_convergence_distance() const {
   return _convergence_distance;
 }
@@ -688,7 +688,7 @@ get_convergence_distance() const {
 //               transformed by this matrix.
 ////////////////////////////////////////////////////////////////////
 void Lens::
-set_view_mat(const LMatrix4f &view_mat) {
+set_view_mat(const LMatrix4 &view_mat) {
   nassertv(!view_mat.is_nan());
   _lens_mat = view_mat;
   adjust_user_flags(UF_view_vector | UF_view_hpr,
@@ -705,7 +705,7 @@ set_view_mat(const LMatrix4f &view_mat) {
 //       Access: Published
 //  Description: Returns the direction in which the lens is facing.
 ////////////////////////////////////////////////////////////////////
-const LMatrix4f &Lens::
+const LMatrix4 &Lens::
 get_view_mat() const {
   if ((_comp_flags & CF_lens_mat) == 0) {
     ((Lens *)this)->compute_lens_mat();
@@ -720,7 +720,7 @@ get_view_mat() const {
 ////////////////////////////////////////////////////////////////////
 void Lens::
 clear_view_mat() {
-  _lens_mat = LMatrix4f::ident_mat();
+  _lens_mat = LMatrix4::ident_mat();
   adjust_user_flags(0, UF_view_vector | UF_view_hpr | UF_view_mat);
   adjust_comp_flags(CF_projection_mat | CF_projection_mat_inv | 
                     CF_projection_mat_left_inv | CF_projection_mat_right_inv | 
@@ -747,7 +747,7 @@ clear_view_mat() {
 //               generate a keystone correction in that axis.
 ////////////////////////////////////////////////////////////////////
 void Lens::
-set_keystone(const LVecBase2f &keystone) {
+set_keystone(const LVecBase2 &keystone) {
   nassertv(!keystone.is_nan());
   _keystone = keystone;
   adjust_user_flags(0, UF_keystone);
@@ -832,26 +832,26 @@ clear_keystone() {
 //               possibly screwy.
 ////////////////////////////////////////////////////////////////////
 void Lens::
-set_frustum_from_corners(const LVecBase3f &ul, const LVecBase3f &ur,
-                         const LVecBase3f &ll, const LVecBase3f &lr,
+set_frustum_from_corners(const LVecBase3 &ul, const LVecBase3 &ur,
+                         const LVecBase3 &ll, const LVecBase3 &lr,
                          int flags) {
   nassertv(!ul.is_nan() && !ur.is_nan() && !ll.is_nan() && !lr.is_nan());
   // We'll need to know the pre-existing eyepoint translation from the
   // center, so we can preserve it in the new frustum.  This is
   // usually (0, 0, 0), but it could be an arbitrary vector.
-  const LMatrix4f &lens_mat_inv = get_lens_mat_inv();
-  LVector3f eye_offset;
+  const LMatrix4 &lens_mat_inv = get_lens_mat_inv();
+  LVector3 eye_offset;
   lens_mat_inv.get_row3(eye_offset, 3);
 
   // Now choose the viewing axis.  If FC_camera_plane is specified,
   // we'll pass it through the centroid for the best camera plane;
   // otherwise, it's perpendicular to the plane in which the points
   // lie.
-  LVector3f view_vector;
+  LVector3 view_vector;
   if ((flags & FC_camera_plane) != 0) {
-    view_vector = (ul + ur + ll + lr) * 0.25f;
+    view_vector = (ul + ur + ll + lr) * 0.25;
   } else {
-    Planef plane(ll, ul, ur);
+    LPlane plane(ll, ul, ur);
     view_vector = plane.get_normal();
     nassertv(!view_vector.is_nan() && view_vector.length_squared() != 0.0f);
   }
@@ -860,27 +860,27 @@ set_frustum_from_corners(const LVecBase3f &ul, const LVecBase3f &ur,
   // view vector is straight up, it is the vector perpendicular to
   // both the viewing axis and the top line.  Otherwise, it is the
   // standard up axis.
-  LVector3f up_vector = LVector3f::up(_cs);
+  LVector3 up_vector = LVector3::up(_cs);
   if (view_vector == up_vector || ((flags & FC_roll) != 0)) {
-    LVector3f top = ul - ur;
+    LVector3 top = ul - ur;
     up_vector = view_vector.cross(top);
     nassertv(!up_vector.is_nan() && up_vector.length_squared() != 0.0f);
   }
 
   // Now compute the matrix that applies this rotation.
-  LMatrix4f rot_mat;
+  LMatrix4 rot_mat;
   look_at(rot_mat, view_vector, up_vector, CS_zup_right);
 
   // And invert it.
-  LMatrix4f inv_rot_mat;
+  LMatrix4 inv_rot_mat;
   inv_rot_mat.invert_affine_from(rot_mat);
 
   // Use that inverse matrix to convert the four corners to a local
   // coordinate system, looking down the Y axis.
-  LPoint3f cul = inv_rot_mat.xform_point(ul);
-  LPoint3f cur = inv_rot_mat.xform_point(ur);
-  LPoint3f cll = inv_rot_mat.xform_point(ll);
-  LPoint3f clr = inv_rot_mat.xform_point(lr);
+  LPoint3 cul = inv_rot_mat.xform_point(ul);
+  LPoint3 cur = inv_rot_mat.xform_point(ur);
+  LPoint3 cll = inv_rot_mat.xform_point(ll);
+  LPoint3 clr = inv_rot_mat.xform_point(lr);
 
   // Project all points into the Y == 1 plane, so we can do 2-d
   // manipulation on them.
@@ -890,8 +890,8 @@ set_frustum_from_corners(const LVecBase3f &ul, const LVecBase3f &ur,
   cll /= cll[1];
   clr /= clr[1];
 
-  LMatrix4f shear_mat = LMatrix4f::ident_mat();
-  LMatrix4f inv_shear_mat = LMatrix4f::ident_mat();
+  LMatrix4 shear_mat = LMatrix4::ident_mat();
+  LMatrix4 inv_shear_mat = LMatrix4::ident_mat();
 
   // Now, if we're allowed to shear the frustum, do so.
   if ((flags & FC_shear) != 0) {
@@ -900,21 +900,21 @@ set_frustum_from_corners(const LVecBase3f &ul, const LVecBase3f &ur,
   } 
 
   // Now build the complete view matrix.
-  LMatrix4f inv_view_mat =
+  LMatrix4 inv_view_mat =
     inv_rot_mat *
     inv_shear_mat;
 
   // And reapply the eye offset to this matrix.
   inv_view_mat.set_row(3, eye_offset);
 
-  LMatrix4f view_mat;
+  LMatrix4 view_mat;
   view_mat.invert_from(inv_view_mat);
   set_view_mat(view_mat);
 
-  LPoint3f ful = inv_view_mat.xform_point(ul);
-  LPoint3f fur = inv_view_mat.xform_point(ur);
-  LPoint3f fll = inv_view_mat.xform_point(ll);
-  LPoint3f flr = inv_view_mat.xform_point(lr);
+  LPoint3 ful = inv_view_mat.xform_point(ul);
+  LPoint3 fur = inv_view_mat.xform_point(ur);
+  LPoint3 fll = inv_view_mat.xform_point(ll);
+  LPoint3 flr = inv_view_mat.xform_point(lr);
 
   // Normalize *these* points into the y == 1 plane.
   nassertv(ful[1] != 0.0f && fur[1] != 0.0f && fll[1] != 0.0f && flr[1] != 0.0f);
@@ -925,12 +925,12 @@ set_frustum_from_corners(const LVecBase3f &ul, const LVecBase3f &ur,
 
   // Determine the minimum field of view necesary to cover all four
   // transformed points.
-  float min_x = min(min(ful[0], fur[0]), min(fll[0], flr[0]));
-  float max_x = max(max(ful[0], fur[0]), max(fll[0], flr[0]));
-  float min_z = min(min(ful[2], fur[2]), min(fll[2], flr[2]));
-  float max_z = max(max(ful[2], fur[2]), max(fll[2], flr[2]));
+  PN_stdfloat min_x = min(min(ful[0], fur[0]), min(fll[0], flr[0]));
+  PN_stdfloat max_x = max(max(ful[0], fur[0]), max(fll[0], flr[0]));
+  PN_stdfloat min_z = min(min(ful[2], fur[2]), min(fll[2], flr[2]));
+  PN_stdfloat max_z = max(max(ful[2], fur[2]), max(fll[2], flr[2]));
 
-  float x_spread, x_center, z_spread, z_center;
+  PN_stdfloat x_spread, x_center, z_spread, z_center;
 
   if ((flags & FC_off_axis) != 0) {
     // If we're allowed to make an off-axis projection, then pick the
@@ -947,7 +947,7 @@ set_frustum_from_corners(const LVecBase3f &ul, const LVecBase3f &ur,
     z_spread = max(cabs(max_z), cabs(min_z));
   }
 
-  float aspect_ratio = get_aspect_ratio();
+  PN_stdfloat aspect_ratio = get_aspect_ratio();
   nassertv(aspect_ratio != 0.0f);
   if ((flags & FC_aspect_ratio) == 0) {
     // If we must preserve the aspect ratio, then the x and z spreads
@@ -961,8 +961,8 @@ set_frustum_from_corners(const LVecBase3f &ul, const LVecBase3f &ur,
     }
   }
 
-  float hfov = rad_2_deg(catan(x_spread)) * 2.0f;
-  float vfov = rad_2_deg(catan(z_spread)) * 2.0f;
+  PN_stdfloat hfov = rad_2_deg(catan(x_spread)) * 2.0f;
+  PN_stdfloat vfov = rad_2_deg(catan(z_spread)) * 2.0f;
 
   set_fov(hfov, vfov);
 
@@ -973,7 +973,7 @@ set_frustum_from_corners(const LVecBase3f &ul, const LVecBase3f &ur,
     set_aspect_ratio(aspect_ratio);
   }
 
-  const LVecBase2f &film_size = get_film_size();
+  const LVecBase2 &film_size = get_film_size();
   nassertv(x_spread != 0.0f && z_spread != 0.0f);
   set_film_offset(film_size[0] * x_center / (x_spread * 2.0f),
                   film_size[1] * z_center / (z_spread * 2.0f));
@@ -1118,9 +1118,9 @@ PT(BoundingVolume) Lens::
 make_bounds() const {
   // The default bounding volume is a hexahedron based on the eight
   // corners of the frustum.
-  LPoint3f fll, flr, ful, fur;
-  LPoint3f nll, nlr, nul, nur;
-  LPoint2f corner;
+  LPoint3 fll, flr, ful, fur;
+  LPoint3 nll, nlr, nul, nur;
+  LPoint2 corner;
 
   // Upper left.
   corner.set(-1.0f, 1.0f);
@@ -1157,7 +1157,7 @@ make_bounds() const {
 //               matrix exists, or the identity matrix if the lens is
 //               nonlinear.
 ////////////////////////////////////////////////////////////////////
-const LMatrix4f &Lens::
+const LMatrix4 &Lens::
 get_projection_mat(StereoChannel channel) const {
   if ((_comp_flags & CF_projection_mat) == 0) {
     ((Lens *)this)->compute_projection_mat();
@@ -1183,14 +1183,14 @@ get_projection_mat(StereoChannel channel) const {
 //               on the film to a 3-d vector in space, if such a
 //               matrix exists.
 ////////////////////////////////////////////////////////////////////
-const LMatrix4f &Lens::
+const LMatrix4 &Lens::
 get_projection_mat_inv(StereoChannel stereo_channel) const {
   switch (stereo_channel) {
   case SC_left:
     {
       if ((_comp_flags & CF_projection_mat_left_inv) == 0) {
         Lens *non_const = (Lens *)this;
-        const LMatrix4f &projection_mat_left = get_projection_mat(SC_left);
+        const LMatrix4 &projection_mat_left = get_projection_mat(SC_left);
         non_const->_projection_mat_left_inv.invert_from(projection_mat_left);
         non_const->adjust_comp_flags(0, CF_projection_mat_left_inv);
       }
@@ -1201,7 +1201,7 @@ get_projection_mat_inv(StereoChannel stereo_channel) const {
     {
       if ((_comp_flags & CF_projection_mat_right_inv) == 0) {
         Lens *non_const = (Lens *)this;
-        const LMatrix4f &projection_mat_right = get_projection_mat(SC_right);
+        const LMatrix4 &projection_mat_right = get_projection_mat(SC_right);
         non_const->_projection_mat_right_inv.invert_from(projection_mat_right);
         non_const->adjust_comp_flags(0, CF_projection_mat_right_inv);
       }
@@ -1215,7 +1215,7 @@ get_projection_mat_inv(StereoChannel stereo_channel) const {
 
   if ((_comp_flags & CF_projection_mat_inv) == 0) {
     Lens *non_const = (Lens *)this;
-    const LMatrix4f &projection_mat = get_projection_mat();
+    const LMatrix4 &projection_mat = get_projection_mat();
     non_const->_projection_mat_inv.invert_from(projection_mat);
     non_const->adjust_comp_flags(0, CF_projection_mat_inv);
   }
@@ -1228,7 +1228,7 @@ get_projection_mat_inv(StereoChannel stereo_channel) const {
 //  Description: Returns the matrix that transforms from a point
 //               behind the lens to a point on the film.
 ////////////////////////////////////////////////////////////////////
-const LMatrix4f &Lens::
+const LMatrix4 &Lens::
 get_film_mat() const {
   if ((_comp_flags & CF_film_mat) == 0) {
     ((Lens *)this)->compute_film_mat();
@@ -1242,11 +1242,11 @@ get_film_mat() const {
 //  Description: Returns the matrix that transforms from a point on
 //               the film to a point behind the lens.
 ////////////////////////////////////////////////////////////////////
-const LMatrix4f &Lens::
+const LMatrix4 &Lens::
 get_film_mat_inv() const {
   if ((_comp_flags & CF_film_mat_inv) == 0) {
     Lens *non_const = (Lens *)this;
-    const LMatrix4f &film_mat = get_film_mat();
+    const LMatrix4 &film_mat = get_film_mat();
     non_const->_film_mat_inv.invert_from(film_mat);
     non_const->adjust_comp_flags(0, CF_film_mat_inv);
   }
@@ -1259,7 +1259,7 @@ get_film_mat_inv() const {
 //  Description: Returns the matrix that transforms from a point
 //               in front of the lens to a point in space.
 ////////////////////////////////////////////////////////////////////
-const LMatrix4f &Lens::
+const LMatrix4 &Lens::
 get_lens_mat() const {
   if ((_comp_flags & CF_lens_mat) == 0) {
     ((Lens *)this)->compute_lens_mat();
@@ -1273,11 +1273,11 @@ get_lens_mat() const {
 //  Description: Returns the matrix that transforms from a point in
 //               space to a point in front of the lens.
 ////////////////////////////////////////////////////////////////////
-const LMatrix4f &Lens::
+const LMatrix4 &Lens::
 get_lens_mat_inv() const {
   if ((_comp_flags & CF_lens_mat_inv) == 0) {
     Lens *non_const = (Lens *)this;
-    const LMatrix4f &lens_mat = get_lens_mat();
+    const LMatrix4 &lens_mat = get_lens_mat();
     non_const->_lens_mat_inv.invert_from(lens_mat);
     non_const->adjust_comp_flags(0, CF_lens_mat_inv);
   }
@@ -1350,19 +1350,19 @@ throw_change_event() {
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
 bool Lens::
-extrude_impl(const LPoint3f &point2d, LPoint3f &near_point, LPoint3f &far_point) const {
-  const LMatrix4f &projection_mat_inv = get_projection_mat_inv();
+extrude_impl(const LPoint3 &point2d, LPoint3 &near_point, LPoint3 &far_point) const {
+  const LMatrix4 &projection_mat_inv = get_projection_mat_inv();
   {
-    LVecBase4f full(point2d[0], point2d[1], -1.0f, 1.0f);
+    LVecBase4 full(point2d[0], point2d[1], -1.0f, 1.0f);
     full = projection_mat_inv.xform(full);
 
-    float recip_full3 = 1.0 / max((double)full[3], (double)lens_far_limit);
+    PN_stdfloat recip_full3 = 1.0 / max((double)full[3], (double)lens_far_limit);
     near_point.set(full[0] * recip_full3, 
                    full[1] * recip_full3, 
                    full[2] * recip_full3);
   }
   {
-    LVecBase4f full(point2d[0], point2d[1], 1.0f, 1.0f);
+    LVecBase4 full(point2d[0], point2d[1], 1.0f, 1.0f);
     full = projection_mat_inv.xform(full);
 
     // We can truncate the weight factor at near 0.  If it goes too
@@ -1370,7 +1370,7 @@ extrude_impl(const LPoint3f &point2d, LPoint3f &near_point, LPoint3f &far_point)
     // past infinity and comes back in behind the lens, which is just
     // crazy.  Truncating it to zero keeps the far plane from moving
     // too far out.
-    float recip_full3 = 1.0 / max((double)full[3], (double)lens_far_limit);
+    PN_stdfloat recip_full3 = 1.0 / max((double)full[3], (double)lens_far_limit);
     far_point.set(full[0] * recip_full3, 
                   full[1] * recip_full3, 
                   full[2] * recip_full3);
@@ -1408,8 +1408,8 @@ extrude_impl(const LPoint3f &point2d, LPoint3f &near_point, LPoint3f &far_point)
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
 bool Lens::
-extrude_vec_impl(const LPoint3f &point2d, LVector3f &vec) const {
-  vec = LVector3f::forward(_cs) * get_lens_mat();
+extrude_vec_impl(const LPoint3 &point2d, LVector3 &vec) const {
+  vec = LVector3::forward(_cs) * get_lens_mat();
   return true;
 }
 
@@ -1432,15 +1432,15 @@ extrude_vec_impl(const LPoint3f &point2d, LVector3f &vec) const {
 //               or may not be meaningful).
 ////////////////////////////////////////////////////////////////////
 bool Lens::
-project_impl(const LPoint3f &point3d, LPoint3f &point2d) const {
-  const LMatrix4f &projection_mat = get_projection_mat();
-  LVecBase4f full(point3d[0], point3d[1], point3d[2], 1.0f);
+project_impl(const LPoint3 &point3d, LPoint3 &point2d) const {
+  const LMatrix4 &projection_mat = get_projection_mat();
+  LVecBase4 full(point3d[0], point3d[1], point3d[2], 1.0f);
   full = projection_mat.xform(full);
   if (full[3] == 0.0f) {
     point2d.set(0.0f, 0.0f, 0.0f);
     return false;
   }
-  float recip_full3 = 1.0f/full[3];
+  PN_stdfloat recip_full3 = 1.0f/full[3];
   point2d.set(full[0] * recip_full3, full[1] * recip_full3, full[2] * recip_full3);
   return
     (full[3] > 0.0f) &&
@@ -1460,7 +1460,7 @@ compute_film_size() {
     // If we just have a min FOV and a focal length, that determines
     // the smaller of the two film_sizes, and the larger is simply
     // chosen according to the aspect ratio.
-    float fs = fov_to_film(_min_fov, _focal_length, true);
+    PN_stdfloat fs = fov_to_film(_min_fov, _focal_length, true);
     nassertv((_user_flags & UF_aspect_ratio) != 0 ||
              (_comp_flags & CF_aspect_ratio) != 0);
 
@@ -1520,8 +1520,8 @@ compute_film_size() {
 void Lens::
 compute_focal_length() {
   if ((_user_flags & UF_focal_length) == 0) {
-    const LVecBase2f &film_size = get_film_size();
-    const LVecBase2f &fov = get_fov();
+    const LVecBase2 &film_size = get_film_size();
+    const LVecBase2 &fov = get_fov();
     _focal_length = fov_to_focal_length(fov[0], film_size[0], true);
   }
 
@@ -1536,7 +1536,7 @@ compute_focal_length() {
 ////////////////////////////////////////////////////////////////////
 void Lens::
 compute_fov() {
-  const LVecBase2f &film_size = get_film_size();
+  const LVecBase2 &film_size = get_film_size();
 
   bool got_hfov = ((_user_flags & UF_hfov) != 0);
   bool got_vfov = ((_user_flags & UF_vfov) != 0);
@@ -1615,7 +1615,7 @@ compute_fov() {
 void Lens::
 compute_aspect_ratio() {
   if ((_user_flags & UF_aspect_ratio) == 0) {
-    const LVecBase2f &film_size = get_film_size();
+    const LVecBase2 &film_size = get_film_size();
     if (film_size[1] == 0.0f) {
       _aspect_ratio = 1.0f;
     } else {
@@ -1634,8 +1634,8 @@ compute_aspect_ratio() {
 void Lens::
 compute_view_hpr() {
   if ((_user_flags & UF_view_hpr) == 0) {
-    const LMatrix4f &view_mat = get_view_mat();
-    LVecBase3f scale, shear, translate;
+    const LMatrix4 &view_mat = get_view_mat();
+    LVecBase3 scale, shear, translate;
     decompose_matrix(view_mat, scale, shear, _view_hpr, translate, _cs);
   }
   adjust_comp_flags(0, CF_view_hpr);
@@ -1649,9 +1649,9 @@ compute_view_hpr() {
 void Lens::
 compute_view_vector() {
   if ((_user_flags & UF_view_vector) == 0) {
-    const LMatrix4f &view_mat = get_view_mat();
-    _view_vector = LVector3f::forward(_cs) * view_mat;
-    _up_vector = LVector3f::up(_cs) * view_mat;
+    const LMatrix4 &view_mat = get_view_mat();
+    _view_vector = LVector3::forward(_cs) * view_mat;
+    _up_vector = LVector3::up(_cs) * view_mat;
   }
   adjust_comp_flags(0, CF_view_vector);
 }
@@ -1670,7 +1670,7 @@ compute_projection_mat() {
     _projection_mat_inv = 
     _projection_mat_left_inv = 
     _projection_mat_right_inv = 
-    LMatrix4f::ident_mat();
+    LMatrix4::ident_mat();
   adjust_comp_flags(0, CF_projection_mat | CF_projection_mat_inv |
                     CF_projection_mat_left_inv |CF_projection_mat_right_inv);
 }
@@ -1689,18 +1689,18 @@ compute_film_mat() {
 
   // We declare these two as local variables, instead of references,
   // to work around a VC7 compiler bug.
-  LVecBase2f film_size = get_film_size();
-  LVector2f film_offset = get_film_offset();
+  LVecBase2 film_size = get_film_size();
+  LVector2 film_offset = get_film_offset();
 
-  float scale_x = 2.0f / film_size[0];
-  float scale_y = 2.0f / film_size[1];
+  PN_stdfloat scale_x = 2.0f / film_size[0];
+  PN_stdfloat scale_y = 2.0f / film_size[1];
   _film_mat.set(scale_x,      0.0f,   0.0f,  0.0f,
                    0.0f,   scale_y,   0.0f,  0.0f,
                    0.0f,      0.0f,   1.0f,  0.0f,
         -film_offset[0] * scale_x, -film_offset[1] * scale_y, 0.0f,  1.0f);
 
   if ((_user_flags & UF_keystone) != 0) {
-    _film_mat = LMatrix4f(1.0f, 0.0f, _keystone[0], _keystone[0],
+    _film_mat = LMatrix4(1.0f, 0.0f, _keystone[0], _keystone[0],
                           0.0f, 1.0f, _keystone[1], _keystone[1],
                           0.0f, 0.0f, 1.0f, 0.0f,
                           0.0f, 0.0f, 0.0f, 1.0f) * _film_mat;
@@ -1721,16 +1721,16 @@ compute_lens_mat() {
   if ((_user_flags & UF_view_mat) == 0) {
     if ((_user_flags & UF_view_hpr) != 0) {
       compose_matrix(_lens_mat,
-                     LVecBase3f(1.0f, 1.0f, 1.0f),
-                     LVecBase3f(0.0f, 0.0f, 0.0f),
+                     LVecBase3(1.0f, 1.0f, 1.0f),
+                     LVecBase3(0.0f, 0.0f, 0.0f),
                      _view_hpr,
-                     LVecBase3f(0.0f, 0.0f, 0.0f), _cs);
+                     LVecBase3(0.0f, 0.0f, 0.0f), _cs);
 
     } else if ((_user_flags & UF_view_vector) != 0) {
       look_at(_lens_mat, _view_vector, _up_vector, _cs);
 
     } else {
-      _lens_mat = LMatrix4f::ident_mat();
+      _lens_mat = LMatrix4::ident_mat();
     }
   }
   adjust_comp_flags(CF_lens_mat_inv,
@@ -1746,8 +1746,8 @@ compute_lens_mat() {
 //               direction; otherwise, it is in the vertical direction
 //               (some lenses behave differently in each direction).
 ////////////////////////////////////////////////////////////////////
-float Lens::
-fov_to_film(float, float, bool) const {
+PN_stdfloat Lens::
+fov_to_film(PN_stdfloat, PN_stdfloat, bool) const {
   return 1.0f;
 }
 
@@ -1760,8 +1760,8 @@ fov_to_film(float, float, bool) const {
 //               direction; otherwise, it is in the vertical direction
 //               (some lenses behave differently in each direction).
 ////////////////////////////////////////////////////////////////////
-float Lens::
-fov_to_focal_length(float, float, bool) const {
+PN_stdfloat Lens::
+fov_to_focal_length(PN_stdfloat, PN_stdfloat, bool) const {
   return 1.0f;
 }
 
@@ -1774,8 +1774,8 @@ fov_to_focal_length(float, float, bool) const {
 //               otherwise, it is in the vertical direction (some
 //               lenses behave differently in each direction).
 ////////////////////////////////////////////////////////////////////
-float Lens::
-film_to_fov(float, float, bool) const {
+PN_stdfloat Lens::
+film_to_fov(PN_stdfloat, PN_stdfloat, bool) const {
   return default_fov;
 }
 
@@ -1871,55 +1871,55 @@ define_geom_data() {
   }
 
   GeomVertexWriter vertex(_geom_data, InternalName::get_vertex());
-  LPoint3f near_point, far_point;
+  LPoint3 near_point, far_point;
   for (int si = 0; si < num_segments; si++) {
-    float t = 2.0f * (float)si / (float)num_segments;
+    PN_stdfloat t = 2.0f * (PN_stdfloat)si / (PN_stdfloat)num_segments;
 
     // Upper left, top edge.
-    LPoint2f p1(-1.0f + t, 1.0f);
+    LPoint2 p1(-1.0f + t, 1.0f);
     if (!extrude(p1, near_point, far_point)) {
       // Hey, this point is off the lens!  Can't do a frustum.
       return 0;
     }
-    vertex.add_data3f(near_point);
-    vertex.add_data3f(far_point);
+    vertex.add_data3(near_point);
+    vertex.add_data3(far_point);
 
     // Upper right, right edge.
-    LPoint2f p2(1.0f, 1.0f - t);
+    LPoint2 p2(1.0f, 1.0f - t);
     if (!extrude(p2, near_point, far_point)) {
       // Hey, this point is off the lens!  Can't do a frustum.
       return 0;
     }
-    vertex.add_data3f(near_point);
-    vertex.add_data3f(far_point);
+    vertex.add_data3(near_point);
+    vertex.add_data3(far_point);
 
     // Lower right, bottom edge.
-    LPoint2f p3(1.0f - t, -1.0f);
+    LPoint2 p3(1.0f - t, -1.0f);
     if (!extrude(p3, near_point, far_point)) {
       // Hey, this point is off the lens!  Can't do a frustum.
       return 0;
     }
-    vertex.add_data3f(near_point);
-    vertex.add_data3f(far_point);
+    vertex.add_data3(near_point);
+    vertex.add_data3(far_point);
 
     // Lower left, left edge.
-    LPoint2f p4(-1.0f, -1.0f + t);
+    LPoint2 p4(-1.0f, -1.0f + t);
     if (!extrude(p4, near_point, far_point)) {
       // Hey, this point is off the lens!  Can't do a frustum.
       return 0;
     }
-    vertex.add_data3f(near_point);
-    vertex.add_data3f(far_point);
+    vertex.add_data3(near_point);
+    vertex.add_data3(far_point);
   }
 
   // Finally, add one more pair for the viewing axis.
-  LPoint3f near_axis = LPoint3f::origin(_cs) + LVector3f::forward(_cs) * _near_distance;
-  LPoint3f far_axis = LPoint3f::origin(_cs) + LVector3f::forward(_cs) * _far_distance;
-  const LMatrix4f &lens_mat = get_lens_mat();
+  LPoint3 near_axis = LPoint3::origin(_cs) + LVector3::forward(_cs) * _near_distance;
+  LPoint3 far_axis = LPoint3::origin(_cs) + LVector3::forward(_cs) * _far_distance;
+  const LMatrix4 &lens_mat = get_lens_mat();
   near_axis = near_axis * lens_mat;
   far_axis = far_axis * lens_mat;
-  vertex.add_data3f(near_axis);
-  vertex.add_data3f(far_axis);
+  vertex.add_data3(near_axis);
+  vertex.add_data3(far_axis);
 
   return num_segments;
 }
@@ -1932,32 +1932,32 @@ define_geom_data() {
 //               indicated points to the most nearly rectangular.
 ////////////////////////////////////////////////////////////////////
 void Lens::
-build_shear_mat(LMatrix4f &shear_mat,
-                const LPoint3f &cul, const LPoint3f &cur,
-                const LPoint3f &cll, const LPoint3f &clr) {
+build_shear_mat(LMatrix4 &shear_mat,
+                const LPoint3 &cul, const LPoint3 &cur,
+                const LPoint3 &cll, const LPoint3 &clr) {
   // Fit a parallelogram around these four points.
 
   // Put the points in an array so we can rotate it around to find
   // the longest edge.
-  LPoint3f points[4] = {
+  LPoint3 points[4] = {
     cul, cur, clr, cll
   };
 
-  float max_edge_length = -1.0f;
+  PN_stdfloat max_edge_length = -1.0f;
   int base_edge = -1;
   for (int i = 0; i < 4; i++) {
-    LVector3f edge = points[(i + 1) % 4] - points[i];
-    float length = edge.length_squared();
+    LVector3 edge = points[(i + 1) % 4] - points[i];
+    PN_stdfloat length = edge.length_squared();
     if (length > max_edge_length) {
       base_edge = i;
       max_edge_length = length;
     }
   }
 
-  const LPoint3f &base_origin = points[base_edge];
-  LVector3f base_vec = points[(base_edge + 1) % 4] - base_origin;
+  const LPoint3 &base_origin = points[base_edge];
+  LVector3 base_vec = points[(base_edge + 1) % 4] - base_origin;
 
-  float base_edge_length = csqrt(max_edge_length);
+  PN_stdfloat base_edge_length = csqrt(max_edge_length);
 
   // The longest edge is the base of our parallelogram.  The parallel
   // edge must pass through the point furthest from this edge.
@@ -1965,11 +1965,11 @@ build_shear_mat(LMatrix4f &shear_mat,
   int a = (base_edge + 2) % 4;
   int b = (base_edge + 3) % 4;
 
-  float a_dist = sqr_dist_to_line(points[a], base_origin, base_vec);
-  float b_dist = sqr_dist_to_line(points[b], base_origin, base_vec);
+  PN_stdfloat a_dist = sqr_dist_to_line(points[a], base_origin, base_vec);
+  PN_stdfloat b_dist = sqr_dist_to_line(points[b], base_origin, base_vec);
 
   int far_point;
-  float dist;
+  PN_stdfloat dist;
   if (a_dist > b_dist) {
     far_point = a;
     dist = csqrt(a_dist);
@@ -1980,17 +1980,17 @@ build_shear_mat(LMatrix4f &shear_mat,
 
   // Try to make the parallelogram as nearly rectangular as possible.
   // How suitable is a true rectangle?
-  LVector3f perpendic = base_vec.cross(LVector3f(0.0f, -1.0f, 0.0f));
+  LVector3 perpendic = base_vec.cross(LVector3(0.0f, -1.0f, 0.0f));
   perpendic.normalize();
   perpendic *= dist;
-  LPoint3f parallel_origin = points[base_edge] + perpendic;
+  LPoint3 parallel_origin = points[base_edge] + perpendic;
 
   // It follows that far_point is on the line passing through the
   // parallel edge.  Is it within the endpoints?
-  LVector3f base_norm_vec = base_vec / base_edge_length;
+  LVector3 base_norm_vec = base_vec / base_edge_length;
 
-  LVector3f far_point_delta = points[far_point] - parallel_origin;
-  float far_point_pos = far_point_delta.dot(base_norm_vec);
+  LVector3 far_point_delta = points[far_point] - parallel_origin;
+  PN_stdfloat far_point_pos = far_point_delta.dot(base_norm_vec);
 
   if (far_point_pos < 0.0f) {
     // We have to slide the parallel_origin back to include far_point.
@@ -2003,23 +2003,23 @@ build_shear_mat(LMatrix4f &shear_mat,
   }
 
   // Finally, is the other point within the parallelogram?
-  float t;
-  float Ox = parallel_origin[0];
-  float Oy = parallel_origin[2];
-  float Vx = base_vec[0];
-  float Vy = base_vec[2];
-  float Ax, Ay, Bx, By;
+  PN_stdfloat t;
+  PN_stdfloat Ox = parallel_origin[0];
+  PN_stdfloat Oy = parallel_origin[2];
+  PN_stdfloat Vx = base_vec[0];
+  PN_stdfloat Vy = base_vec[2];
+  PN_stdfloat Ax, Ay, Bx, By;
 
   if (far_point == a) {
     // near point is b
-    LVector3f v = points[b] - base_origin;
+    LVector3 v = points[b] - base_origin;
     Ax = points[b][0];
     Ay = points[b][2];
     Bx = v[0];
     By = v[2];
   } else {
     // near point is a
-    LVector3f v = points[a] - (base_origin + base_vec);
+    LVector3 v = points[a] - (base_origin + base_vec);
     Ax = points[a][0];
     Ay = points[a][2];
     Bx = v[0];
@@ -2037,12 +2037,12 @@ build_shear_mat(LMatrix4f &shear_mat,
     parallel_origin += base_vec * (1.0f - t);
   }
 
-  LVector3f adjacent_norm_vec = parallel_origin - base_origin;
+  LVector3 adjacent_norm_vec = parallel_origin - base_origin;
   adjacent_norm_vec.normalize();
 
   // Now we've defined a parallelogram that includes all four points,
   // and we're ready to build a shear transform.
-  shear_mat = LMatrix4f::ident_mat();
+  shear_mat = LMatrix4::ident_mat();
 
   // The edges of the parallelogram become the axes.
   switch (base_edge) {
@@ -2086,14 +2086,14 @@ build_shear_mat(LMatrix4f &shear_mat,
 //               computes the minimum distance from a point to a line,
 //               and returns the distance squared.
 ////////////////////////////////////////////////////////////////////
-float Lens::
-sqr_dist_to_line(const LPoint3f &point, const LPoint3f &origin, 
-                 const LVector3f &vec) {
-  LVector3f norm = vec;
+PN_stdfloat Lens::
+sqr_dist_to_line(const LPoint3 &point, const LPoint3 &origin, 
+                 const LVector3 &vec) {
+  LVector3 norm = vec;
   norm.normalize();
-  LVector3f d = point - origin;
-  float hyp_2 = d.length_squared();
-  float leg = d.dot(norm);
+  LVector3 d = point - origin;
+  PN_stdfloat hyp_2 = d.length_squared();
+  PN_stdfloat leg = d.dot(norm);
   return hyp_2 - leg * leg;
 }
 
@@ -2111,11 +2111,11 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_uint8((int)_cs);
   _film_size.write_datagram(dg);
   _film_offset.write_datagram(dg);
-  dg.add_float32(_focal_length);
+  dg.add_stdfloat(_focal_length);
   _fov.write_datagram(dg);
-  dg.add_float32(_aspect_ratio);
-  dg.add_float32(_near_distance);
-  dg.add_float32(_far_distance);
+  dg.add_stdfloat(_aspect_ratio);
+  dg.add_stdfloat(_near_distance);
+  dg.add_stdfloat(_far_distance);
   dg.add_uint16(_user_flags);
 }
 
@@ -2134,11 +2134,11 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _cs = (CoordinateSystem)scan.get_uint8();
   _film_size.read_datagram(scan);
   _film_offset.read_datagram(scan);
-  _focal_length = scan.get_float32();
+  _focal_length = scan.get_stdfloat();
   _fov.read_datagram(scan);
-  _aspect_ratio = scan.get_float32();
-  _near_distance = scan.get_float32();
-  _far_distance = scan.get_float32();
+  _aspect_ratio = scan.get_stdfloat();
+  _near_distance = scan.get_stdfloat();
+  _far_distance = scan.get_stdfloat();
   _user_flags = scan.get_uint16();
 
   _comp_flags = 0;

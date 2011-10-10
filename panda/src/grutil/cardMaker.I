@@ -62,7 +62,7 @@ set_has_3d_uvs(bool flag) {
 //  Description: Sets the size of the card.
 ////////////////////////////////////////////////////////////////////
 INLINE void CardMaker::
-set_frame(float left, float right, float bottom, float top) {
+set_frame(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top) {
   _ll_pos.set(left,  0.0f, bottom);
   _lr_pos.set(right, 0.0f, bottom);
   _ur_pos.set(right, 0.0f, top);
@@ -75,7 +75,7 @@ set_frame(float left, float right, float bottom, float top) {
 //  Description: Sets the size of the card.
 ////////////////////////////////////////////////////////////////////
 INLINE void CardMaker::
-set_frame(const LVecBase4f &frame) {
+set_frame(const LVecBase4 &frame) {
   set_frame(frame[0], frame[1], frame[2], frame[3]);
 }
 
@@ -85,7 +85,7 @@ set_frame(const LVecBase4f &frame) {
 //  Description: Sets the size of the card.
 ////////////////////////////////////////////////////////////////////
 INLINE void CardMaker::
-set_frame(const Vertexf &ll, const Vertexf &lr, const Vertexf &ur, const Vertexf &ul)
+set_frame(const LVertex &ll, const LVertex &lr, const LVertex &ur, const LVertex &ul)
 {
   _ll_pos = ll;
   _lr_pos = lr;
@@ -112,8 +112,8 @@ set_frame_fullscreen_quad()
 //  Description: Sets the color of the card.
 ////////////////////////////////////////////////////////////////////
 INLINE void CardMaker::
-set_color(float r, float g, float b, float a) {
-  set_color(LVecBase4f(r, g, b, a));
+set_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a) {
+  set_color(LVecBase4(r, g, b, a));
 } 
 
 ////////////////////////////////////////////////////////////////////
@@ -122,7 +122,7 @@ set_color(float r, float g, float b, float a) {
 //  Description: Sets the color of the card.
 ////////////////////////////////////////////////////////////////////
 INLINE void CardMaker::
-set_color(const LVecBase4f &color) {
+set_color(const LVecBase4 &color) {
   _color = color;
   _has_color = true;
 }
@@ -159,7 +159,7 @@ set_has_normals(bool flag) {
 //               set_frame().
 ////////////////////////////////////////////////////////////////////
 INLINE void CardMaker::
-set_source_geometry(PandaNode *node, const LVecBase4f &frame) {
+set_source_geometry(PandaNode *node, const LVecBase4 &frame) {
   _source_geometry = node;
   _source_frame = frame;
 }

@@ -42,7 +42,7 @@ private:
   void get_coord_values();
   void get_polys();
   void get_vrml_colors(const VrmlNode *color_node, double transparency,
-                       pvector<Colorf> &color_list);
+                       pvector<LColor> &color_list);
   void get_vrml_normals(const VrmlNode *normal_node, 
                         pvector<Normald> &normal_list);
   void get_vrml_uvs(const VrmlNode *texCoord_node, 

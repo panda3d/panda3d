@@ -36,9 +36,9 @@ public:
 
   void get_transform(LMatrix4d &mat) const;
 
-  LPoint3f _center;
-  LVecBase3f _size;
-  LVecBase3f _rotation;
+  LPoint3 _center;
+  LVecBase3 _size;
+  LVecBase3 _rotation;
 
   string _reference_object;
 

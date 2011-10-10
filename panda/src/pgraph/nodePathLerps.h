@@ -24,32 +24,32 @@
 //       Class : PosLerpFunctor
 // Description : Class for Lerping between positions in space
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGRAPH PosLerpFunctor : public LPoint3fLerpFunctor {
+class EXPCL_PANDA_PGRAPH PosLerpFunctor : public LPoint3LerpFunctor {
 private:
   NodePath _node_path;
   bool _is_wrt;
   NodePath _wrt_path;
 
 PUBLISHED:
-  PosLerpFunctor(NodePath np, LPoint3f start, LPoint3f end)
-    : LPoint3fLerpFunctor(start, end), _node_path(np), _is_wrt(false) {}
-  PosLerpFunctor(NodePath np, float sx, float sy, float sz, float ex, float ey,
-                 float ez) : LPoint3fLerpFunctor(LPoint3f(sx, sy, sz),
-                                                 LPoint3f(ex, ey, ez)),
+  PosLerpFunctor(NodePath np, LPoint3 start, LPoint3 end)
+    : LPoint3LerpFunctor(start, end), _node_path(np), _is_wrt(false) {}
+  PosLerpFunctor(NodePath np, PN_stdfloat sx, PN_stdfloat sy, PN_stdfloat sz, PN_stdfloat ex, PN_stdfloat ey,
+                 PN_stdfloat ez) : LPoint3LerpFunctor(LPoint3(sx, sy, sz),
+                                                 LPoint3(ex, ey, ez)),
                              _node_path(np), _is_wrt(false) {}
-  PosLerpFunctor(NodePath np, LPoint3f start, LPoint3f end, NodePath wrt)
-    : LPoint3fLerpFunctor(start, end), _node_path(np), _is_wrt(true),
+  PosLerpFunctor(NodePath np, LPoint3 start, LPoint3 end, NodePath wrt)
+    : LPoint3LerpFunctor(start, end), _node_path(np), _is_wrt(true),
       _wrt_path(wrt) {}
-  PosLerpFunctor(NodePath np, float sx, float sy, float sz, float ex, float ey,
-                 float ez, NodePath wrt)
-    : LPoint3fLerpFunctor(LPoint3f(sx, sy, sz), LPoint3f(ex, ey, ez)),
+  PosLerpFunctor(NodePath np, PN_stdfloat sx, PN_stdfloat sy, PN_stdfloat sz, PN_stdfloat ex, PN_stdfloat ey,
+                 PN_stdfloat ez, NodePath wrt)
+    : LPoint3LerpFunctor(LPoint3(sx, sy, sz), LPoint3(ex, ey, ez)),
       _node_path(np), _is_wrt(true), _wrt_path(wrt) {}
 
 public:
   PosLerpFunctor(const PosLerpFunctor&);
   virtual ~PosLerpFunctor();
   PosLerpFunctor& operator=(const PosLerpFunctor&);
-  virtual void operator()(float);
+  virtual void operator()(PN_stdfloat);
 
 public:
   // now for typehandle stuff
@@ -57,9 +57,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    LPoint3fLerpFunctor::init_type();
+    LPoint3LerpFunctor::init_type();
     register_type(_type_handle, "PosLerpFunctor",
-                  LPoint3fLerpFunctor::get_class_type());
+                  LPoint3LerpFunctor::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -78,25 +78,25 @@ private:
 //       Class : HprLerpFunctor
 // Description : Class for Lerping between orientations in space
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGRAPH HprLerpFunctor : public LVecBase3fLerpFunctor {
+class EXPCL_PANDA_PGRAPH HprLerpFunctor : public LVecBase3LerpFunctor {
 private:
   NodePath _node_path;
   bool _is_wrt;
   NodePath _wrt_path;
 
 PUBLISHED:
-  HprLerpFunctor(NodePath np, LVecBase3f start, LVecBase3f end)
-    : LVecBase3fLerpFunctor(start, end), _node_path(np), _is_wrt(false) {}
-  HprLerpFunctor(NodePath np, float sx, float sy, float sz, float ex, float ey,
-                 float ez) : LVecBase3fLerpFunctor(LVecBase3f(sx, sy, sz),
-                                                  LVecBase3f(ex, ey, ez)),
+  HprLerpFunctor(NodePath np, LVecBase3 start, LVecBase3 end)
+    : LVecBase3LerpFunctor(start, end), _node_path(np), _is_wrt(false) {}
+  HprLerpFunctor(NodePath np, PN_stdfloat sx, PN_stdfloat sy, PN_stdfloat sz, PN_stdfloat ex, PN_stdfloat ey,
+                 PN_stdfloat ez) : LVecBase3LerpFunctor(LVecBase3(sx, sy, sz),
+                                                  LVecBase3(ex, ey, ez)),
                              _node_path(np), _is_wrt(false) {}
-  HprLerpFunctor(NodePath np, LVecBase3f start, LVecBase3f end, NodePath wrt)
-    : LVecBase3fLerpFunctor(start, end), _node_path(np), _is_wrt(true),
+  HprLerpFunctor(NodePath np, LVecBase3 start, LVecBase3 end, NodePath wrt)
+    : LVecBase3LerpFunctor(start, end), _node_path(np), _is_wrt(true),
       _wrt_path(wrt) {}
-  HprLerpFunctor(NodePath np, float sx, float sy, float sz, float ex, float ey,
-                 float ez, NodePath wrt)
-    : LVecBase3fLerpFunctor(LVecBase3f(sx, sy, sz), LVecBase3f(ex, ey, ez)),
+  HprLerpFunctor(NodePath np, PN_stdfloat sx, PN_stdfloat sy, PN_stdfloat sz, PN_stdfloat ex, PN_stdfloat ey,
+                 PN_stdfloat ez, NodePath wrt)
+    : LVecBase3LerpFunctor(LVecBase3(sx, sy, sz), LVecBase3(ex, ey, ez)),
       _node_path(np), _is_wrt(true), _wrt_path(wrt) {}
   void take_shortest();
   void take_longest();
@@ -105,7 +105,7 @@ public:
   HprLerpFunctor(const HprLerpFunctor&);
   virtual ~HprLerpFunctor();
   HprLerpFunctor& operator=(const HprLerpFunctor&);
-  virtual void operator()(float);
+  virtual void operator()(PN_stdfloat);
 
 public:
   // now for typehandle stuff
@@ -113,9 +113,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    LVecBase3fLerpFunctor::init_type();
+    LVecBase3LerpFunctor::init_type();
     register_type(_type_handle, "HprLerpFunctor",
-                  LVecBase3fLerpFunctor::get_class_type());
+                  LVecBase3LerpFunctor::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -132,32 +132,32 @@ private:
 //       Class : ScaleLerpFunctor
 // Description : Class for Lerping between scales
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGRAPH ScaleLerpFunctor : public LVecBase3fLerpFunctor {
+class EXPCL_PANDA_PGRAPH ScaleLerpFunctor : public LVecBase3LerpFunctor {
 private:
   NodePath _node_path;
   bool _is_wrt;
   NodePath _wrt_path;
 
 PUBLISHED:
-  ScaleLerpFunctor(NodePath np, LVecBase3f start, LVecBase3f end)
-    : LVecBase3fLerpFunctor(start, end), _node_path(np), _is_wrt(false) {}
-  ScaleLerpFunctor(NodePath np, float sx, float sy, float sz, float ex,
-                   float ey, float ez)
-    : LVecBase3fLerpFunctor(LVecBase3f(sx, sy, sz), LVecBase3f(ex, ey, ez)),
+  ScaleLerpFunctor(NodePath np, LVecBase3 start, LVecBase3 end)
+    : LVecBase3LerpFunctor(start, end), _node_path(np), _is_wrt(false) {}
+  ScaleLerpFunctor(NodePath np, PN_stdfloat sx, PN_stdfloat sy, PN_stdfloat sz, PN_stdfloat ex,
+                   PN_stdfloat ey, PN_stdfloat ez)
+    : LVecBase3LerpFunctor(LVecBase3(sx, sy, sz), LVecBase3(ex, ey, ez)),
       _node_path(np), _is_wrt(false) {}
-  ScaleLerpFunctor(NodePath np, LVecBase3f start, LVecBase3f end, NodePath wrt)
-    : LVecBase3fLerpFunctor(start, end), _node_path(np), _is_wrt(true),
+  ScaleLerpFunctor(NodePath np, LVecBase3 start, LVecBase3 end, NodePath wrt)
+    : LVecBase3LerpFunctor(start, end), _node_path(np), _is_wrt(true),
       _wrt_path(wrt) {}
-  ScaleLerpFunctor(NodePath np, float sx, float sy, float sz, float ex,
-                   float ey, float ez, NodePath wrt)
-    : LVecBase3fLerpFunctor(LVecBase3f(sx, sy, sz), LVecBase3f(ex, ey, ez)),
+  ScaleLerpFunctor(NodePath np, PN_stdfloat sx, PN_stdfloat sy, PN_stdfloat sz, PN_stdfloat ex,
+                   PN_stdfloat ey, PN_stdfloat ez, NodePath wrt)
+    : LVecBase3LerpFunctor(LVecBase3(sx, sy, sz), LVecBase3(ex, ey, ez)),
       _node_path(np), _is_wrt(true), _wrt_path(wrt) {}
 
 public:
   ScaleLerpFunctor(const ScaleLerpFunctor&);
   virtual ~ScaleLerpFunctor();
   ScaleLerpFunctor& operator=(const ScaleLerpFunctor&);
-  virtual void operator()(float);
+  virtual void operator()(PN_stdfloat);
 
 public:
   // now for typehandle stuff
@@ -165,9 +165,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    LVecBase3fLerpFunctor::init_type();
+    LVecBase3LerpFunctor::init_type();
     register_type(_type_handle, "ScaleLerpFunctor",
-                  LVecBase3fLerpFunctor::get_class_type());
+                  LVecBase3LerpFunctor::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -184,31 +184,31 @@ private:
 //       Class : ColorLerpFunctor
 // Description : Class for Lerping between colors
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGRAPH ColorLerpFunctor : public LVecBase4fLerpFunctor {
+class EXPCL_PANDA_PGRAPH ColorLerpFunctor : public LVecBase4LerpFunctor {
 private:
   NodePath _node_path;
   bool _is_wrt;
   NodePath _wrt_path;
 
 PUBLISHED:
-  ColorLerpFunctor(NodePath np, LVecBase4f start, LVecBase4f end)
-    : LVecBase4fLerpFunctor(start, end), _node_path(np), _is_wrt(false) {}
-  ColorLerpFunctor(NodePath np, float sr, float sg, float sb, float sa,
-                float er, float eg, float eb, float ea) : LVecBase4fLerpFunctor(LVecBase4f(sr, sg, sb, sa),
-                                                 LVecBase4f(er, eg, eb, ea)), _node_path(np), _is_wrt(false) {}
-  ColorLerpFunctor(NodePath np, LVecBase4f start, LVecBase4f end, NodePath wrt)
-    : LVecBase4fLerpFunctor(start, end), _node_path(np), _is_wrt(true),
+  ColorLerpFunctor(NodePath np, LVecBase4 start, LVecBase4 end)
+    : LVecBase4LerpFunctor(start, end), _node_path(np), _is_wrt(false) {}
+  ColorLerpFunctor(NodePath np, PN_stdfloat sr, PN_stdfloat sg, PN_stdfloat sb, PN_stdfloat sa,
+                PN_stdfloat er, PN_stdfloat eg, PN_stdfloat eb, PN_stdfloat ea) : LVecBase4LerpFunctor(LVecBase4(sr, sg, sb, sa),
+                                                 LVecBase4(er, eg, eb, ea)), _node_path(np), _is_wrt(false) {}
+  ColorLerpFunctor(NodePath np, LVecBase4 start, LVecBase4 end, NodePath wrt)
+    : LVecBase4LerpFunctor(start, end), _node_path(np), _is_wrt(true),
       _wrt_path(wrt) {}
-  ColorLerpFunctor(NodePath np, float sr, float sg, float sb, float sa, float er, float eg,
-                 float eb, float ea, NodePath wrt)
-    : LVecBase4fLerpFunctor(LVecBase4f(sr, sg, sb, sa), LVecBase4f(er, eg, eb, ea)),
+  ColorLerpFunctor(NodePath np, PN_stdfloat sr, PN_stdfloat sg, PN_stdfloat sb, PN_stdfloat sa, PN_stdfloat er, PN_stdfloat eg,
+                 PN_stdfloat eb, PN_stdfloat ea, NodePath wrt)
+    : LVecBase4LerpFunctor(LVecBase4(sr, sg, sb, sa), LVecBase4(er, eg, eb, ea)),
       _node_path(np), _is_wrt(true), _wrt_path(wrt) {}
 
 public:
   ColorLerpFunctor(const ColorLerpFunctor&);
   virtual ~ColorLerpFunctor();
   ColorLerpFunctor& operator=(const ColorLerpFunctor&);
-  virtual void operator()(float);
+  virtual void operator()(PN_stdfloat);
 
 public:
   // now for typehandle stuff
@@ -216,9 +216,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    LVecBase4fLerpFunctor::init_type();
+    LVecBase4LerpFunctor::init_type();
     register_type(_type_handle, "ColorLerpFunctor",
-                  LVecBase4fLerpFunctor::get_class_type());
+                  LVecBase4LerpFunctor::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -239,36 +239,36 @@ private:
 class EXPCL_PANDA_PGRAPH PosHprLerpFunctor : public LerpFunctor {
 private:
   NodePath _node_path;
-  LPoint3f _pstart;
-  LPoint3f _pend;
-  LPoint3f _pdiff_cache;
-  LVecBase3f _hstart;
-  LVecBase3f _hend;
-  LVecBase3f _hdiff_cache;
+  LPoint3 _pstart;
+  LPoint3 _pend;
+  LPoint3 _pdiff_cache;
+  LVecBase3 _hstart;
+  LVecBase3 _hend;
+  LVecBase3 _hdiff_cache;
   bool _is_wrt;
   NodePath _wrt_path;
 
 PUBLISHED:
-  PosHprLerpFunctor(NodePath np, LPoint3f pstart, LPoint3f pend,
-                    LVecBase3f hstart, LVecBase3f hend)
+  PosHprLerpFunctor(NodePath np, LPoint3 pstart, LPoint3 pend,
+                    LVecBase3 hstart, LVecBase3 hend)
     : LerpFunctor(), _node_path(np), _pstart(pstart), _pend(pend),
       _pdiff_cache(pend-pstart), _hstart(hstart), _hend(hend),
       _hdiff_cache(hend-hstart), _is_wrt(false) {}
-  PosHprLerpFunctor(NodePath np, float psx, float psy, float psz, float pex,
-                    float pey, float pez, float hsx, float hsy, float hsz,
-                    float hex, float hey, float hez)
+  PosHprLerpFunctor(NodePath np, PN_stdfloat psx, PN_stdfloat psy, PN_stdfloat psz, PN_stdfloat pex,
+                    PN_stdfloat pey, PN_stdfloat pez, PN_stdfloat hsx, PN_stdfloat hsy, PN_stdfloat hsz,
+                    PN_stdfloat hex, PN_stdfloat hey, PN_stdfloat hez)
     : LerpFunctor(), _node_path(np), _pstart(psx, psy, psz),
       _pend(pex, pey, pez), _pdiff_cache(_pend-_pstart),
       _hstart(hsx, hsy, hsz), _hend(hex, hey, hez),
       _hdiff_cache(_hend - _hstart), _is_wrt(false) {}
-  PosHprLerpFunctor(NodePath np, LPoint3f pstart, LPoint3f pend,
-                    LVecBase3f hstart, LVecBase3f hend, NodePath wrt)
+  PosHprLerpFunctor(NodePath np, LPoint3 pstart, LPoint3 pend,
+                    LVecBase3 hstart, LVecBase3 hend, NodePath wrt)
     : LerpFunctor(), _node_path(np), _pstart(pstart), _pend(pend),
       _pdiff_cache(pend-pstart), _hstart(hstart), _hend(hend),
       _hdiff_cache(hend-hstart), _is_wrt(true), _wrt_path(wrt) {}
-  PosHprLerpFunctor(NodePath np, float psx, float psy, float psz, float pex,
-                    float pey, float pez, float hsx, float hsy, float hsz,
-                    float hex, float hey, float hez, NodePath wrt)
+  PosHprLerpFunctor(NodePath np, PN_stdfloat psx, PN_stdfloat psy, PN_stdfloat psz, PN_stdfloat pex,
+                    PN_stdfloat pey, PN_stdfloat pez, PN_stdfloat hsx, PN_stdfloat hsy, PN_stdfloat hsz,
+                    PN_stdfloat hex, PN_stdfloat hey, PN_stdfloat hez, NodePath wrt)
     : LerpFunctor(), _node_path(np), _pstart(psx, psy, psz),
       _pend(pex, pey, pez), _pdiff_cache(_pend-_pstart),
       _hstart(hsx, hsy, hsz), _hend(hex, hey, hez),
@@ -280,7 +280,7 @@ public:
   PosHprLerpFunctor(const PosHprLerpFunctor&);
   virtual ~PosHprLerpFunctor();
   PosHprLerpFunctor& operator=(const PosHprLerpFunctor&);
-  virtual void operator()(float);
+  virtual void operator()(PN_stdfloat);
 
 public:
   // now for typehandle stuff
@@ -311,39 +311,39 @@ private:
 class EXPCL_PANDA_PGRAPH HprScaleLerpFunctor : public LerpFunctor {
 private:
   NodePath _node_path;
-  LVecBase3f _hstart;
-  LVecBase3f _hend;
-  LVecBase3f _hdiff_cache;
-  LVecBase3f _sstart;
-  LVecBase3f _send;
-  LVecBase3f _sdiff_cache;
+  LVecBase3 _hstart;
+  LVecBase3 _hend;
+  LVecBase3 _hdiff_cache;
+  LVecBase3 _sstart;
+  LVecBase3 _send;
+  LVecBase3 _sdiff_cache;
   bool _is_wrt;
   NodePath _wrt_path;
 
 PUBLISHED:
   HprScaleLerpFunctor(NodePath np, 
-                      LVecBase3f hstart, LVecBase3f hend, LVecBase3f sstart,
-                      LVecBase3f send)
+                      LVecBase3 hstart, LVecBase3 hend, LVecBase3 sstart,
+                      LVecBase3 send)
     : LerpFunctor(), _node_path(np),
       _hstart(hstart), _hend(hend),
       _hdiff_cache(hend-hstart), _sstart(sstart), _send(send),
       _sdiff_cache(send-sstart), _is_wrt(false) {}
-  HprScaleLerpFunctor(NodePath np, float hsx, float hsy,
-                         float hsz, float hex, float hey, float hez, float ssx,
-                         float ssy, float ssz, float sex, float sey, float sez)
+  HprScaleLerpFunctor(NodePath np, PN_stdfloat hsx, PN_stdfloat hsy,
+                         PN_stdfloat hsz, PN_stdfloat hex, PN_stdfloat hey, PN_stdfloat hez, PN_stdfloat ssx,
+                         PN_stdfloat ssy, PN_stdfloat ssz, PN_stdfloat sex, PN_stdfloat sey, PN_stdfloat sez)
     : LerpFunctor(), _node_path(np),
       _hstart(hsx, hsy, hsz), _hend(hex, hey, hez),
       _hdiff_cache(_hend-_hstart), _sstart(ssx, ssy, ssz),
       _send(sex, sey, sez), _sdiff_cache(_send-_sstart), _is_wrt(false) {}
   HprScaleLerpFunctor(NodePath np, 
-                      LVecBase3f hstart, LVecBase3f hend, LVecBase3f sstart,
-                      LVecBase3f send, NodePath wrt)
+                      LVecBase3 hstart, LVecBase3 hend, LVecBase3 sstart,
+                      LVecBase3 send, NodePath wrt)
     : LerpFunctor(), _node_path(np), _hstart(hstart), _hend(hend),
       _hdiff_cache(hend-hstart), _sstart(sstart), _send(send),
       _sdiff_cache(send-sstart), _is_wrt(true), _wrt_path(wrt) {}
-  HprScaleLerpFunctor(NodePath np, float hsx, float hsy,
-                      float hsz, float hex, float hey, float hez, float ssx,
-                      float ssy, float ssz, float sex, float sey, float sez,
+  HprScaleLerpFunctor(NodePath np, PN_stdfloat hsx, PN_stdfloat hsy,
+                      PN_stdfloat hsz, PN_stdfloat hex, PN_stdfloat hey, PN_stdfloat hez, PN_stdfloat ssx,
+                      PN_stdfloat ssy, PN_stdfloat ssz, PN_stdfloat sex, PN_stdfloat sey, PN_stdfloat sez,
                       NodePath wrt)
     : LerpFunctor(), _node_path(np),
       _hstart(hsx, hsy, hsz), _hend(hex, hey, hez),
@@ -357,7 +357,7 @@ public:
   HprScaleLerpFunctor(const HprScaleLerpFunctor&);
   virtual ~HprScaleLerpFunctor();
   HprScaleLerpFunctor& operator=(const HprScaleLerpFunctor&);
-  virtual void operator()(float);
+  virtual void operator()(PN_stdfloat);
 
 public:
   // now for typehandle stuff
@@ -388,46 +388,46 @@ private:
 class EXPCL_PANDA_PGRAPH PosHprScaleLerpFunctor : public LerpFunctor {
 private:
   NodePath _node_path;
-  LPoint3f _pstart;
-  LPoint3f _pend;
-  LPoint3f _pdiff_cache;
-  LVecBase3f _hstart;
-  LVecBase3f _hend;
-  LVecBase3f _hdiff_cache;
-  LVecBase3f _sstart;
-  LVecBase3f _send;
-  LVecBase3f _sdiff_cache;
+  LPoint3 _pstart;
+  LPoint3 _pend;
+  LPoint3 _pdiff_cache;
+  LVecBase3 _hstart;
+  LVecBase3 _hend;
+  LVecBase3 _hdiff_cache;
+  LVecBase3 _sstart;
+  LVecBase3 _send;
+  LVecBase3 _sdiff_cache;
   bool _is_wrt;
   NodePath _wrt_path;
 
 PUBLISHED:
-  PosHprScaleLerpFunctor(NodePath np, LPoint3f pstart, LPoint3f pend,
-                         LVecBase3f hstart, LVecBase3f hend, LVecBase3f sstart,
-                         LVecBase3f send)
+  PosHprScaleLerpFunctor(NodePath np, LPoint3 pstart, LPoint3 pend,
+                         LVecBase3 hstart, LVecBase3 hend, LVecBase3 sstart,
+                         LVecBase3 send)
     : LerpFunctor(), _node_path(np), _pstart(pstart), _pend(pend),
       _pdiff_cache(pend-pstart), _hstart(hstart), _hend(hend),
       _hdiff_cache(hend-hstart), _sstart(sstart), _send(send),
       _sdiff_cache(send-sstart), _is_wrt(false) {}
-  PosHprScaleLerpFunctor(NodePath np, float psx, float psy, float psz,
-                         float pex, float pey, float pez, float hsx, float hsy,
-                         float hsz, float hex, float hey, float hez, float ssx,
-                         float ssy, float ssz, float sex, float sey, float sez)
+  PosHprScaleLerpFunctor(NodePath np, PN_stdfloat psx, PN_stdfloat psy, PN_stdfloat psz,
+                         PN_stdfloat pex, PN_stdfloat pey, PN_stdfloat pez, PN_stdfloat hsx, PN_stdfloat hsy,
+                         PN_stdfloat hsz, PN_stdfloat hex, PN_stdfloat hey, PN_stdfloat hez, PN_stdfloat ssx,
+                         PN_stdfloat ssy, PN_stdfloat ssz, PN_stdfloat sex, PN_stdfloat sey, PN_stdfloat sez)
     : LerpFunctor(), _node_path(np), _pstart(psx, psy, psz),
       _pend(pex, pey, pez), _pdiff_cache(_pend-_pstart),
       _hstart(hsx, hsy, hsz), _hend(hex, hey, hez),
       _hdiff_cache(_hend-_hstart), _sstart(ssx, ssy, ssz),
       _send(sex, sey, sez), _sdiff_cache(_send-_sstart), _is_wrt(false) {}
-  PosHprScaleLerpFunctor(NodePath np, LPoint3f pstart, LPoint3f pend,
-                         LVecBase3f hstart, LVecBase3f hend, LVecBase3f sstart,
-                         LVecBase3f send, NodePath wrt)
+  PosHprScaleLerpFunctor(NodePath np, LPoint3 pstart, LPoint3 pend,
+                         LVecBase3 hstart, LVecBase3 hend, LVecBase3 sstart,
+                         LVecBase3 send, NodePath wrt)
     : LerpFunctor(), _node_path(np), _pstart(pstart), _pend(pend),
       _pdiff_cache(pend-pstart), _hstart(hstart), _hend(hend),
       _hdiff_cache(hend-hstart), _sstart(sstart), _send(send),
       _sdiff_cache(send-sstart), _is_wrt(true), _wrt_path(wrt) {}
-  PosHprScaleLerpFunctor(NodePath np, float psx, float psy, float psz,
-                         float pex, float pey, float pez, float hsx, float hsy,
-                         float hsz, float hex, float hey, float hez, float ssx,
-                         float ssy, float ssz, float sex, float sey, float sez,
+  PosHprScaleLerpFunctor(NodePath np, PN_stdfloat psx, PN_stdfloat psy, PN_stdfloat psz,
+                         PN_stdfloat pex, PN_stdfloat pey, PN_stdfloat pez, PN_stdfloat hsx, PN_stdfloat hsy,
+                         PN_stdfloat hsz, PN_stdfloat hex, PN_stdfloat hey, PN_stdfloat hez, PN_stdfloat ssx,
+                         PN_stdfloat ssy, PN_stdfloat ssz, PN_stdfloat sex, PN_stdfloat sey, PN_stdfloat sez,
                          NodePath wrt)
     : LerpFunctor(), _node_path(np), _pstart(psx, psy, psz),
       _pend(pex, pey, pez), _pdiff_cache(_pend-_pstart),
@@ -442,7 +442,7 @@ public:
   PosHprScaleLerpFunctor(const PosHprScaleLerpFunctor&);
   virtual ~PosHprScaleLerpFunctor();
   PosHprScaleLerpFunctor& operator=(const PosHprScaleLerpFunctor&);
-  virtual void operator()(float);
+  virtual void operator()(PN_stdfloat);
 
 public:
   // now for typehandle stuff
@@ -469,31 +469,31 @@ private:
 //       Class : ColorScaleLerpFunctor
 // Description : Class for Lerping between color scales
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGRAPH ColorScaleLerpFunctor : public LVecBase4fLerpFunctor {
+class EXPCL_PANDA_PGRAPH ColorScaleLerpFunctor : public LVecBase4LerpFunctor {
 private:
   NodePath _node_path;
   bool _is_wrt;
   NodePath _wrt_path;
 
 PUBLISHED:
-  ColorScaleLerpFunctor(NodePath np, LVecBase4f start, LVecBase4f end)
-    : LVecBase4fLerpFunctor(start, end), _node_path(np), _is_wrt(false) {}
-  ColorScaleLerpFunctor(NodePath np, float sr, float sg, float sb, float sa,
-                float er, float eg, float eb, float ea) : LVecBase4fLerpFunctor(LVecBase4f(sr, sg, sb, sa),
-                                                 LVecBase4f(er, eg, eb, ea)), _node_path(np), _is_wrt(false) {}
-  ColorScaleLerpFunctor(NodePath np, LVecBase4f start, LVecBase4f end, NodePath wrt)
-    : LVecBase4fLerpFunctor(start, end), _node_path(np), _is_wrt(true),
+  ColorScaleLerpFunctor(NodePath np, LVecBase4 start, LVecBase4 end)
+    : LVecBase4LerpFunctor(start, end), _node_path(np), _is_wrt(false) {}
+  ColorScaleLerpFunctor(NodePath np, PN_stdfloat sr, PN_stdfloat sg, PN_stdfloat sb, PN_stdfloat sa,
+                PN_stdfloat er, PN_stdfloat eg, PN_stdfloat eb, PN_stdfloat ea) : LVecBase4LerpFunctor(LVecBase4(sr, sg, sb, sa),
+                                                 LVecBase4(er, eg, eb, ea)), _node_path(np), _is_wrt(false) {}
+  ColorScaleLerpFunctor(NodePath np, LVecBase4 start, LVecBase4 end, NodePath wrt)
+    : LVecBase4LerpFunctor(start, end), _node_path(np), _is_wrt(true),
       _wrt_path(wrt) {}
-  ColorScaleLerpFunctor(NodePath np, float sr, float sg, float sb, float sa, float er, float eg,
-                 float eb, float ea, NodePath wrt)
-    : LVecBase4fLerpFunctor(LVecBase4f(sr, sg, sb, sa), LVecBase4f(er, eg, eb, ea)),
+  ColorScaleLerpFunctor(NodePath np, PN_stdfloat sr, PN_stdfloat sg, PN_stdfloat sb, PN_stdfloat sa, PN_stdfloat er, PN_stdfloat eg,
+                 PN_stdfloat eb, PN_stdfloat ea, NodePath wrt)
+    : LVecBase4LerpFunctor(LVecBase4(sr, sg, sb, sa), LVecBase4(er, eg, eb, ea)),
       _node_path(np), _is_wrt(true), _wrt_path(wrt) {}
 
 public:
   ColorScaleLerpFunctor(const ColorScaleLerpFunctor&);
   virtual ~ColorScaleLerpFunctor();
   ColorScaleLerpFunctor& operator=(const ColorScaleLerpFunctor&);
-  virtual void operator()(float);
+  virtual void operator()(PN_stdfloat);
 
 public:
   // now for typehandle stuff
@@ -501,9 +501,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    LVecBase4fLerpFunctor::init_type();
+    LVecBase4LerpFunctor::init_type();
     register_type(_type_handle, "ColorScaleLerpFunctor",
-                  LVecBase4fLerpFunctor::get_class_type());
+                  LVecBase4LerpFunctor::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

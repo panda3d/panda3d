@@ -46,7 +46,7 @@ make_off() {
 CPT(RenderAttrib) ColorBlendAttrib::
 make(ColorBlendAttrib::Mode mode) {
   ColorBlendAttrib *attrib = new ColorBlendAttrib(mode, O_one, O_one,
-                                                  Colorf::zero());
+                                                  LColor::zero());
   return return_new(attrib);
 }
 
@@ -60,7 +60,7 @@ make(ColorBlendAttrib::Mode mode) {
 CPT(RenderAttrib) ColorBlendAttrib::
 make(ColorBlendAttrib::Mode mode, 
      ColorBlendAttrib::Operand a, ColorBlendAttrib::Operand b,
-     const Colorf &color) {
+     const LColor &color) {
   ColorBlendAttrib *attrib = new ColorBlendAttrib(mode, a, b, color);
   return return_new(attrib);
 }

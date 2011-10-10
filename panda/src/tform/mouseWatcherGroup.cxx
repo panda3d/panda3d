@@ -31,7 +31,7 @@ MouseWatcherGroup() :
   _sorted = true;
 #ifndef NDEBUG
   _show_regions = false;
-  _color.set(0.4f, 0.6f, 1.0f, 1.0f);
+  _color.set(0.4, 0.6f, 1.0f, 1.0f);
 #endif  // NDEBUG
 }
 
@@ -262,7 +262,7 @@ show_regions(const NodePath &render2d, const string &bin_name, int draw_order) {
 //               show_regions().
 ////////////////////////////////////////////////////////////////////
 void MouseWatcherGroup::
-set_color(const Colorf &color) {
+set_color(const LColor &color) {
   LightMutexHolder holder(_lock);
 
   _color = color;
@@ -428,13 +428,13 @@ make_viz_region(MouseWatcherRegion *region) {
   LineSegs ls("show_regions");
   ls.set_color(_color);
 
-  const LVecBase4f &f = region->get_frame();
+  const LVecBase4 &f = region->get_frame();
 
-  ls.move_to(LVector3f::rfu(f[0], 0.0f, f[2]));
-  ls.draw_to(LVector3f::rfu(f[1], 0.0f, f[2]));
-  ls.draw_to(LVector3f::rfu(f[1], 0.0f, f[3]));
-  ls.draw_to(LVector3f::rfu(f[0], 0.0f, f[3]));
-  ls.draw_to(LVector3f::rfu(f[0], 0.0f, f[2]));
+  ls.move_to(LVector3::rfu(f[0], 0.0f, f[2]));
+  ls.draw_to(LVector3::rfu(f[1], 0.0f, f[2]));
+  ls.draw_to(LVector3::rfu(f[1], 0.0f, f[3]));
+  ls.draw_to(LVector3::rfu(f[0], 0.0f, f[3]));
+  ls.draw_to(LVector3::rfu(f[0], 0.0f, f[2]));
 
   PT(PandaNode) node = ls.create();
   _show_regions_root.attach_new_node(node);

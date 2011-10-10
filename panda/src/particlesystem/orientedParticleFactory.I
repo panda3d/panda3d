@@ -17,7 +17,7 @@
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 void OrientedParticleFactory::
-set_initial_orientation(const LOrientationf &o) {
+set_initial_orientation(const LOrientation &o) {
   _initial_orientation = o;
 }
 
@@ -26,7 +26,7 @@ set_initial_orientation(const LOrientationf &o) {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 void OrientedParticleFactory::
-set_final_orientation(const LOrientationf &o) {
+set_final_orientation(const LOrientation &o) {
   _final_orientation = o;
 }
 
@@ -34,7 +34,7 @@ set_final_orientation(const LOrientationf &o) {
 // Function : get_initial_orientation
 //   Access : public
 ////////////////////////////////////////////////////////////////////
-LOrientationf OrientedParticleFactory::
+LOrientation OrientedParticleFactory::
 get_initial_orientation() const {
   return _initial_orientation;
 }
@@ -43,7 +43,7 @@ get_initial_orientation() const {
 // Function : get_final_orientation
 //   Access : public
 ////////////////////////////////////////////////////////////////////
-LOrientationf OrientedParticleFactory::
+LOrientation OrientedParticleFactory::
 get_final_orientation() const {
   return _final_orientation;
 }

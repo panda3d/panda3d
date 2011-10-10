@@ -308,7 +308,7 @@ record_vertex_extras() {
            dxi != egg_vertex->_dxyzs.end(); 
            ++dxi) {
         const string &morph_name = (*dxi).get_name();
-        LVector3f delta = LCAST(float, (*dxi).get_offset());
+        LVector3 delta = LCAST(PN_stdfloat, (*dxi).get_offset());
         int d = get_dxyz_index(morph_name);
         _nurbs->set_extended_vertices(ui, vi, d, delta.get_data(), 3);
       }
@@ -319,7 +319,7 @@ record_vertex_extras() {
            dri != egg_vertex->_drgbas.end(); 
            ++dri) {
         const string &morph_name = (*dri).get_name();
-        const LVector4f &delta = (*dri).get_offset();
+        const LVector4 &delta = (*dri).get_offset();
         int d = get_drgba_index(morph_name);
         _nurbs->set_extended_vertices(ui, vi, d, delta.get_data(), 4);
       }
@@ -541,15 +541,15 @@ PT(EggVertex) QtessSurface::
 evaluate_vertex(double u, double v) const {
   PT(EggVertex) egg_vertex = new EggVertex;
 
-  Vertexf point;
-  Normalf normal;
+  LVertex point;
+  LNormal normal;
   _nurbs_result->eval_point(u, v, point);
   _nurbs_result->eval_normal(u, v, normal);
 
   // If the normal is too short, don't consider it--it's probably
   // inaccurate due to numerical limitations.  We'll recompute it
   // later based on the polygon normals.
-  float length = normal.length();
+  PN_stdfloat length = normal.length();
   if (length > 0.0001f) {
     normal /= length;
     egg_vertex->set_normal(LCAST(double, normal));
@@ -560,7 +560,7 @@ evaluate_vertex(double u, double v) const {
 
   // The color is stored, by convention, in slots 0-4 of the surface.
   if (_has_vertex_color) {
-    Colorf rgba;
+    LColor rgba;
     _nurbs_result->eval_extended_points(u, v, 0, &rgba[0], 4);
     egg_vertex->set_color(rgba);
   }
@@ -583,9 +583,9 @@ evaluate_vertex(double u, double v) const {
     const string &morph_name = (*mti).first;
     int d = (*mti).second;
 
-    LVector3f delta;
+    LVector3 delta;
     _nurbs_result->eval_extended_points(u, v, d, &delta[0], 3);
-    if (!delta.almost_equal(LVector3f::zero())) {
+    if (!delta.almost_equal(LVector3::zero())) {
       egg_vertex->_dxyzs.insert(EggMorphVertex(morph_name, LCAST(double, delta)));
     }
   }
@@ -594,9 +594,9 @@ evaluate_vertex(double u, double v) const {
     const string &morph_name = (*mti).first;
     int d = (*mti).second;
 
-    LVector4f delta;
+    LVector4 delta;
     _nurbs_result->eval_extended_points(u, v, d, &delta[0], 4);
-    if (!delta.almost_equal(LVector4f::zero())) {
+    if (!delta.almost_equal(LVector4::zero())) {
       egg_vertex->_drgbas.insert(EggMorphColor(morph_name, delta));
     }
   }

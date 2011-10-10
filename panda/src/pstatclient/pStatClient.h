@@ -62,8 +62,8 @@ public:
 PUBLISHED:
   INLINE void set_client_name(const string &name);
   INLINE string get_client_name() const;
-  INLINE void set_max_rate(float rate);
-  INLINE float get_max_rate() const;
+  INLINE void set_max_rate(PN_stdfloat rate);
+  INLINE PN_stdfloat get_max_rate() const;
 
   INLINE int get_num_collectors() const;
   PStatCollector get_collector(int index) const;
@@ -118,9 +118,9 @@ private:
   bool is_started(int collector_index, int thread_index) const;
 
   void start(int collector_index, int thread_index);
-  void start(int collector_index, int thread_index, float as_of);
+  void start(int collector_index, int thread_index, PN_stdfloat as_of);
   void stop(int collector_index, int thread_index);
-  void stop(int collector_index, int thread_index, float as_of);
+  void stop(int collector_index, int thread_index, PN_stdfloat as_of);
 
   void clear_level(int collector_index, int thread_index);
   void set_level(int collector_index, int thread_index, double level);
@@ -208,7 +208,7 @@ private:
     PStatFrameData _frame_data;
     bool _is_active;
     int _frame_number;
-    float _next_packet;
+    PN_stdfloat _next_packet;
 
     bool _thread_active;
     BitArray _active_collectors;  // no longer used.

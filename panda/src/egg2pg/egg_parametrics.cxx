@@ -52,9 +52,9 @@ make_nurbs_surface(EggNurbsSurface *egg_surface, const LMatrix4d &mat) {
     for (int vi = 0; vi < num_v_vertices; vi++) {
       int i = egg_surface->get_vertex_index(ui, vi);
       EggVertex *egg_vertex = egg_surface->get_vertex(i);
-      nurbs->set_vertex(ui, vi, LCAST(float, egg_vertex->get_pos4() * mat));
+      nurbs->set_vertex(ui, vi, LCAST(PN_stdfloat, egg_vertex->get_pos4() * mat));
 
-      Colorf color = egg_vertex->get_color();
+      LColor color = egg_vertex->get_color();
       nurbs->set_extended_vertices(ui, vi, 0, color.get_data(), 4);
     }
   }
@@ -114,8 +114,8 @@ make_nurbs_curve(EggNurbsCurve *egg_curve, const LMatrix4d &mat) {
   int vi = 0;
   for (pi = egg_curve->begin(); pi != egg_curve->end(); ++pi) {
     EggVertex *egg_vertex = (*pi);
-    nurbs->set_vertex(vi, LCAST(float, egg_vertex->get_pos4() * mat));
-    Colorf color = egg_vertex->get_color();
+    nurbs->set_vertex(vi, LCAST(PN_stdfloat, egg_vertex->get_pos4() * mat));
+    LColor color = egg_vertex->get_color();
     nurbs->set_extended_vertices(vi, 0, color.get_data(), 4);
     vi++;
   }

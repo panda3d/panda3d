@@ -20,8 +20,7 @@
 #include "collisionPlane.h"
 #include "clipPlaneAttrib.h"
 #include "look_at.h"
-
-#include "vector_LPoint2f.h"
+#include "pvector.h"
 
 class GeomNode;
 
@@ -31,11 +30,11 @@ class GeomNode;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_COLLIDE CollisionPolygon : public CollisionPlane {
 PUBLISHED:
-  INLINE CollisionPolygon(const LVecBase3f &a, const LVecBase3f &b,
-                          const LVecBase3f &c);
-  INLINE CollisionPolygon(const LVecBase3f &a, const LVecBase3f &b,
-                          const LVecBase3f &c, const LVecBase3f &d);
-  INLINE CollisionPolygon(const LPoint3f *begin, const LPoint3f *end);
+  INLINE CollisionPolygon(const LVecBase3 &a, const LVecBase3 &b,
+                          const LVecBase3 &c);
+  INLINE CollisionPolygon(const LVecBase3 &a, const LVecBase3 &b,
+                          const LVecBase3 &c, const LVecBase3 &d);
+  INLINE CollisionPolygon(const LPoint3 *begin, const LPoint3 *end);
 
 private:
   INLINE CollisionPolygon();
@@ -46,23 +45,23 @@ public:
   virtual CollisionSolid *make_copy();
 
 PUBLISHED:
-  virtual LPoint3f get_collision_origin() const;
+  virtual LPoint3 get_collision_origin() const;
 
   INLINE int get_num_points() const;
-  INLINE LPoint3f get_point(int n) const;
+  INLINE LPoint3 get_point(int n) const;
   MAKE_SEQ(get_points, get_num_points, get_point);
 
-  INLINE static bool verify_points(const LPoint3f &a, const LPoint3f &b,
-                                   const LPoint3f &c);
-  INLINE static bool verify_points(const LPoint3f &a, const LPoint3f &b,
-                                   const LPoint3f &c, const LPoint3f &d);
-  static bool verify_points(const LPoint3f *begin, const LPoint3f *end);
+  INLINE static bool verify_points(const LPoint3 &a, const LPoint3 &b,
+                                   const LPoint3 &c);
+  INLINE static bool verify_points(const LPoint3 &a, const LPoint3 &b,
+                                   const LPoint3 &c, const LPoint3 &d);
+  static bool verify_points(const LPoint3 *begin, const LPoint3 *end);
 
   bool is_valid() const;
   bool is_concave() const;
 
 public:
-  virtual void xform(const LMatrix4f &mat);
+  virtual void xform(const LMatrix4 &mat);
 
   virtual PT(PandaNode) get_viz(const CullTraverser *trav,
                                 const CullTraverserData &data,
@@ -93,23 +92,23 @@ protected:
   virtual void fill_viz_geom();
 
 private:
-  INLINE static bool is_right(const LVector2f &v1, const LVector2f &v2);
-  INLINE static float dist_to_line(const LPoint2f &p,
-                                   const LPoint2f &f, const LVector2f &v);
-  static float dist_to_line_segment(const LPoint2f &p,
-                                    const LPoint2f &f, const LPoint2f &t,
-                                    const LVector2f &v);
+  INLINE static bool is_right(const LVector2 &v1, const LVector2 &v2);
+  INLINE static PN_stdfloat dist_to_line(const LPoint2 &p,
+                                   const LPoint2 &f, const LVector2 &v);
+  static PN_stdfloat dist_to_line_segment(const LPoint2 &p,
+                                    const LPoint2 &f, const LPoint2 &t,
+                                    const LVector2 &v);
   
 private:
   class PointDef {
   public:
-    INLINE PointDef(const LPoint2f &p, const LVector2f &v);
-    INLINE PointDef(float x, float y);
+    INLINE PointDef(const LPoint2 &p, const LVector2 &v);
+    INLINE PointDef(PN_stdfloat x, PN_stdfloat y);
     INLINE PointDef(const PointDef &copy);
     INLINE void operator = (const PointDef &copy);
 
-    LPoint2f _p;  // the point in 2-d space
-    LVector2f _v; // the normalized vector to the next point
+    LPoint2 _p;  // the point in 2-d space
+    LVector2 _v; // the normalized vector to the next point
   };
   typedef pvector<PointDef> Points;
 
@@ -117,24 +116,24 @@ private:
   void draw_polygon(GeomNode *viz_geom_node, GeomNode *bounds_viz_geom_node,
                     const Points &points) const;
 
-  bool point_is_inside(const LPoint2f &p, const Points &points) const;
-  float dist_to_polygon(const LPoint2f &p, const Points &points) const;
+  bool point_is_inside(const LPoint2 &p, const Points &points) const;
+  PN_stdfloat dist_to_polygon(const LPoint2 &p, const Points &points) const;
 
-  void setup_points(const LPoint3f *begin, const LPoint3f *end);
-  INLINE LPoint2f to_2d(const LVecBase3f &point3d) const;
-  INLINE void calc_to_3d_mat(LMatrix4f &to_3d_mat) const;
-  INLINE void rederive_to_3d_mat(LMatrix4f &to_3d_mat) const;
-  INLINE static LPoint3f to_3d(const LVecBase2f &point2d, const LMatrix4f &to_3d_mat);
-  LPoint3f legacy_to_3d(const LVecBase2f &point2d, int axis) const;
+  void setup_points(const LPoint3 *begin, const LPoint3 *end);
+  INLINE LPoint2 to_2d(const LVecBase3 &point3d) const;
+  INLINE void calc_to_3d_mat(LMatrix4 &to_3d_mat) const;
+  INLINE void rederive_to_3d_mat(LMatrix4 &to_3d_mat) const;
+  INLINE static LPoint3 to_3d(const LVecBase2 &point2d, const LMatrix4 &to_3d_mat);
+  LPoint3 legacy_to_3d(const LVecBase2 &point2d, int axis) const;
 
   bool clip_polygon(Points &new_points, const Points &source_points,
-                    const Planef &plane) const;
+                    const LPlane &plane) const;
   bool apply_clip_plane(Points &new_points, const ClipPlaneAttrib *cpa,
                         const TransformState *net_transform) const;
 
 private:
   Points _points;
-  LMatrix4f _to_2d_mat;
+  LMatrix4 _to_2d_mat;
 
   static PStatCollector _volume_pcollector;
   static PStatCollector _test_pcollector;

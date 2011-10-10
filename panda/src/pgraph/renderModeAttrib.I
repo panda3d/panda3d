@@ -20,7 +20,7 @@
 //               RenderModeAttrib object.
 ////////////////////////////////////////////////////////////////////
 INLINE RenderModeAttrib::
-RenderModeAttrib(RenderModeAttrib::Mode mode, float thickness,
+RenderModeAttrib(RenderModeAttrib::Mode mode, PN_stdfloat thickness,
                  bool perspective) :
   _mode(mode),
   _thickness(thickness),
@@ -47,7 +47,7 @@ get_mode() const {
 //               rendering actual points or lines primitives in
 //               M_polygon mode).
 ////////////////////////////////////////////////////////////////////
-INLINE float RenderModeAttrib::
+INLINE PN_stdfloat RenderModeAttrib::
 get_thickness() const {
   return _thickness;
 }

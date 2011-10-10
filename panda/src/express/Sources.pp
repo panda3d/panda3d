@@ -49,7 +49,8 @@
     pointerToVoid.I pointerToVoid.h \
     profileTimer.I profileTimer.h \
     pta_int.h \
-    pta_uchar.h pta_float.h \
+    pta_uchar.h pta_double.h pta_float.h \
+    pta_stdfloat.h \
     ramfile.I ramfile.h \
     referenceCount.I referenceCount.h \
     subStream.I subStream.h subStreamBuf.h \
@@ -59,7 +60,8 @@
     threadSafePointerToBase.I threadSafePointerToBase.h \
     trueClock.I trueClock.h \
     typedReferenceCount.I typedReferenceCount.h typedef.h \
-    vector_uchar.h vector_float.h \
+    vector_uchar.h vector_double.h vector_float.h \
+    vector_stdfloat.h \
     virtualFile.I virtualFileList.I virtualFileList.h virtualFileMount.h \
     virtualFileComposite.h virtualFileComposite.I virtualFile.h \
     virtualFileMount.I virtualFileMountMultifile.h \
@@ -105,7 +107,7 @@
     pointerToVoid.cxx \
     profileTimer.cxx \
     pta_int.cxx \
-    pta_uchar.cxx pta_float.cxx \
+    pta_uchar.cxx pta_double.cxx pta_float.cxx \
     ramfile.cxx \
     referenceCount.cxx \
     subStream.cxx subStreamBuf.cxx \
@@ -115,7 +117,7 @@
     threadSafePointerToBase.cxx \
     trueClock.cxx \
     typedReferenceCount.cxx \
-    vector_uchar.cxx vector_float.cxx \
+    vector_uchar.cxx vector_double.cxx vector_float.cxx \
     virtualFileComposite.cxx virtualFile.cxx virtualFileList.cxx \
     virtualFileMount.cxx \
     virtualFileMountMultifile.cxx \
@@ -170,7 +172,8 @@
     pointerToVoid.I pointerToVoid.h \
     profileTimer.I profileTimer.h \
     pta_int.h \
-    pta_uchar.h pta_float.h \
+    pta_uchar.h pta_double.h pta_float.h \
+    pta_stdfloat.h \
     ramfile.I ramfile.h \
     referenceCount.I referenceCount.h \
     subStream.I subStream.h subStreamBuf.h \
@@ -180,7 +183,8 @@
     threadSafePointerToBase.I threadSafePointerToBase.h \
     trueClock.I trueClock.h \
     typedReferenceCount.I typedReferenceCount.h typedef.h \
-    vector_uchar.h vector_float.h \
+    vector_uchar.h vector_double.h vector_float.h \
+    vector_stdfloat.h \
     virtualFile.I virtualFileList.I virtualFileList.h virtualFileMount.h \
     virtualFileComposite.h virtualFileComposite.I virtualFile.h \
     virtualFileMount.I virtualFileMountMultifile.h \

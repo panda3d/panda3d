@@ -53,7 +53,7 @@ get_clear_active(int n) const {
 //  Description: Sets the clear value for any bitplane.
 ////////////////////////////////////////////////////////////////////
 void DrawableRegion::
-set_clear_value(int n, const Colorf &clear_value) {
+set_clear_value(int n, const LColor &clear_value) {
   nassertv((n >= 0) && (n < RTP_COUNT));
   _clear_value[n] = clear_value;
 }
@@ -63,9 +63,9 @@ set_clear_value(int n, const Colorf &clear_value) {
 //       Access: Published, Virtual
 //  Description: Returns the clear value for any bitplane.
 ////////////////////////////////////////////////////////////////////
-const Colorf &DrawableRegion::
+const LColor &DrawableRegion::
 get_clear_value(int n) const {
-  static Colorf blank(0.5,0.5,0.5,0.0);
+  static LColor blank(0.5,0.5,0.5,0.0);
   nassertr((n >= 0) && (n < RTP_COUNT), blank);
   return _clear_value[n];
 }
@@ -129,7 +129,7 @@ is_any_clear_active() const {
 //               it.
 ////////////////////////////////////////////////////////////////////
 void DrawableRegion::
-set_pixel_zoom(float pixel_zoom) {
+set_pixel_zoom(PN_stdfloat pixel_zoom) {
   _pixel_zoom = pixel_zoom;
   update_pixel_factor();
 }

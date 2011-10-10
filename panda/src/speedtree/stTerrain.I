@@ -81,7 +81,7 @@ get_splat_layer(int n) const {
 //               This is an arbitrary UV scale that is applied to each
 //               layer individually, by the terrain shader.
 ////////////////////////////////////////////////////////////////////
-INLINE float STTerrain::
+INLINE PN_stdfloat STTerrain::
 get_splat_layer_tiling(int n) const {
   nassertr(n >= 0 && n < (int)_splat_layers.size(), 0.0f);
   return _splat_layers[n]._tiling;
@@ -94,7 +94,7 @@ get_splat_layer_tiling(int n) const {
 //               is used just to match the color of the grass to its
 //               terrain.
 ////////////////////////////////////////////////////////////////////
-INLINE const LVecBase4f &STTerrain::
+INLINE const LVecBase4 &STTerrain::
 get_splat_layer_color(int n) const {
   nassertr(n >= 0 && n < (int)_splat_layers.size(), _splat_layers[0]._color);
   return _splat_layers[n]._color;
@@ -120,7 +120,7 @@ get_vertex_format() {
 //               returned by get_height().  This is used as a culling
 //               optimization.
 ////////////////////////////////////////////////////////////////////
-INLINE float STTerrain::
+INLINE PN_stdfloat STTerrain::
 get_min_height() const {
   return _min_height;
 }
@@ -132,7 +132,7 @@ get_min_height() const {
 //               returned by get_height().  This is used as a culling
 //               optimization.
 ////////////////////////////////////////////////////////////////////
-INLINE float STTerrain::
+INLINE PN_stdfloat STTerrain::
 get_max_height() const {
   return _max_height;
 }

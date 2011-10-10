@@ -20,7 +20,7 @@
 #include "nurbsCurveResult.h"
 #include "nurbsVertex.h"
 #include "pointerTo.h"
-#include "vector_float.h"
+#include "vector_stdfloat.h"
 #include "pvector.h"
 #include "nodePath.h"
 #include "referenceCount.h"
@@ -51,24 +51,24 @@ PUBLISHED:
   void reset(int num_vertices);
 
   INLINE int get_num_vertices() const;
-  INLINE void set_vertex(int i, const LVecBase4f &vertex);
-  INLINE void set_vertex(int i, const LVecBase3f &vertex, float weight = 1.0);
-  INLINE const LVecBase4f &get_vertex(int i) const;
-  INLINE LVecBase4f get_vertex(int i, const NodePath &rel_to) const;
+  INLINE void set_vertex(int i, const LVecBase4 &vertex);
+  INLINE void set_vertex(int i, const LVecBase3 &vertex, PN_stdfloat weight = 1.0);
+  INLINE const LVecBase4 &get_vertex(int i) const;
+  INLINE LVecBase4 get_vertex(int i, const NodePath &rel_to) const;
   MAKE_SEQ(get_vertices, get_num_vertices, get_vertex);
 
   INLINE void set_vertex_space(int i, const NodePath &space);
   INLINE void set_vertex_space(int i, const string &space);
   NodePath get_vertex_space(int i, const NodePath &rel_to) const;
 
-  INLINE void set_extended_vertex(int i, int d, float value);
-  INLINE float get_extended_vertex(int i, int d) const;
+  INLINE void set_extended_vertex(int i, int d, PN_stdfloat value);
+  INLINE PN_stdfloat get_extended_vertex(int i, int d) const;
   void set_extended_vertices(int i, int d,
-                             const float values[], int num_values);
+                             const PN_stdfloat values[], int num_values);
 
   INLINE int get_num_knots() const;
-  void set_knot(int i, float knot);
-  float get_knot(int i) const;
+  void set_knot(int i, PN_stdfloat knot);
+  PN_stdfloat get_knot(int i) const;
   MAKE_SEQ(get_knots, get_num_knots, get_knot);
   void normalize_knots();
 
@@ -76,13 +76,13 @@ PUBLISHED:
 
   PT(NurbsCurveResult) evaluate(const NodePath &rel_to = NodePath()) const;
   PT(NurbsCurveResult) evaluate(const NodePath &rel_to,
-                                const LMatrix4f &mat) const;
+                                const LMatrix4 &mat) const;
 
   void output(ostream &out) const;
 
 public:
-  void get_vertices(pvector<LVecBase4f> &verts, const NodePath &rel_to) const;
-  void get_vertices(pvector<LPoint3f> &verts, const NodePath &rel_to) const;
+  void get_vertices(pvector<LVecBase4> &verts, const NodePath &rel_to) const;
+  void get_vertices(pvector<LPoint3> &verts, const NodePath &rel_to) const;
 
 private:
   void recompute_knots();
@@ -94,7 +94,7 @@ private:
   Vertices _vertices;
 
   bool _knots_dirty;
-  typedef vector_float Knots;
+  typedef vector_stdfloat Knots;
   Knots _knots;
 
   bool _basis_dirty;

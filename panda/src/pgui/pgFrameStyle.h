@@ -49,49 +49,49 @@ PUBLISHED:
   INLINE void set_type(Type type);
   INLINE Type get_type() const;
 
-  INLINE void set_color(float r, float g, float b, float a);
-  INLINE void set_color(const Colorf &color);
-  INLINE const Colorf &get_color() const;
+  INLINE void set_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a);
+  INLINE void set_color(const LColor &color);
+  INLINE const LColor &get_color() const;
 
   INLINE void set_texture(Texture *texture);
   INLINE bool has_texture() const;
   INLINE Texture *get_texture() const;
   INLINE void clear_texture();
 
-  INLINE void set_width(float x, float y);
-  INLINE void set_width(const LVecBase2f &width);
-  INLINE const LVecBase2f &get_width() const;
+  INLINE void set_width(PN_stdfloat x, PN_stdfloat y);
+  INLINE void set_width(const LVecBase2 &width);
+  INLINE const LVecBase2 &get_width() const;
 
-  INLINE void set_uv_width(float u, float v);
-  INLINE void set_uv_width(const LVecBase2f &uv_width);
-  INLINE const LVecBase2f &get_uv_width() const;
+  INLINE void set_uv_width(PN_stdfloat u, PN_stdfloat v);
+  INLINE void set_uv_width(const LVecBase2 &uv_width);
+  INLINE const LVecBase2 &get_uv_width() const;
 
-  INLINE void set_visible_scale(float x, float y);
-  INLINE void set_visible_scale(const LVecBase2f &visible_scale);
-  INLINE const LVecBase2f &get_visible_scale() const;
+  INLINE void set_visible_scale(PN_stdfloat x, PN_stdfloat y);
+  INLINE void set_visible_scale(const LVecBase2 &visible_scale);
+  INLINE const LVecBase2 &get_visible_scale() const;
 
-  LVecBase4f get_internal_frame(const LVecBase4f &frame) const;
+  LVecBase4 get_internal_frame(const LVecBase4 &frame) const;
 
   void output(ostream &out) const;
 
 public:
-  bool xform(const LMatrix4f &mat);
-  NodePath generate_into(const NodePath &parent, const LVecBase4f &frame,
+  bool xform(const LMatrix4 &mat);
+  NodePath generate_into(const NodePath &parent, const LVecBase4 &frame,
                          int sort = 0);
 
 private:
-  PT(PandaNode) generate_flat_geom(const LVecBase4f &frame);
-  PT(PandaNode) generate_bevel_geom(const LVecBase4f &frame, bool in);
-  PT(PandaNode) generate_groove_geom(const LVecBase4f &frame, bool in);
-  PT(PandaNode) generate_texture_border_geom(const LVecBase4f &frame);
+  PT(PandaNode) generate_flat_geom(const LVecBase4 &frame);
+  PT(PandaNode) generate_bevel_geom(const LVecBase4 &frame, bool in);
+  PT(PandaNode) generate_groove_geom(const LVecBase4 &frame, bool in);
+  PT(PandaNode) generate_texture_border_geom(const LVecBase4 &frame);
 
 private:
   Type _type;
-  Colorf _color;
+  LColor _color;
   PT(Texture) _texture;
-  LVecBase2f _width;
-  LVecBase2f _uv_width;
-  LVecBase2f _visible_scale;
+  LVecBase2 _width;
+  LVecBase2 _uv_width;
+  LVecBase2 _visible_scale;
 };
 
 INLINE ostream &operator << (ostream &out, const PGFrameStyle &pfs);

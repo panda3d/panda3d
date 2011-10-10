@@ -30,24 +30,24 @@ public:
   int add_vertex(const XFileVertex &vertex);
 
   int get_num_vertices();
-  const Vertexf *get_vertices();
-  const Normalf *get_normals();
-  const TexCoordf *get_uvs();
-  const Colorf *get_colors();
+  const LVertex *get_vertices();
+  const LNormal *get_normals();
+  const LTexCoord *get_uvs();
+  const LColor *get_colors();
 
   
 
-  void set_normal(const Normalf &normal);
-  void set_uv(const TexCoordf &uv);
-  void set_color(const Colorf &color);
+  void set_normal(const LNormal &normal);
+  void set_uv(const LTexCoord &uv);
+  void set_color(const LColor &color);
 
   bool operator < (const XFileVertexPool &other) const;
 
 private:
-  Vertexf _point;
-  Normalf _normal;
-  TexCoordf _uv;
-  Colorf _color;
+  LVertex _point;
+  LNormal _normal;
+  LTexCoord _uv;
+  LColor _color;
 };
 
 #endif

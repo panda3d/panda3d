@@ -26,7 +26,7 @@
 NurbsSurfaceResult::
 NurbsSurfaceResult(const NurbsBasisVector &u_basis, 
                    const NurbsBasisVector &v_basis, 
-                   const LVecBase4f vecs[], const NurbsVertex *verts,
+                   const LVecBase4 vecs[], const NurbsVertex *verts,
                    int num_u_vertices, int num_v_vertices) :
   _u_basis(u_basis),
   _v_basis(v_basis),
@@ -51,20 +51,20 @@ NurbsSurfaceResult(const NurbsBasisVector &u_basis,
   }
 
   for (int vi = 0; vi < num_v_segments; vi++) {
-    const LMatrix4f &v_basis_transpose = _v_basis.get_basis(vi);
+    const LMatrix4 &v_basis_transpose = _v_basis.get_basis(vi);
     
     int vn = _v_basis.get_vertex_index(vi);
     nassertv(vn >= 0 && vn + v_order - 1 < _num_v_vertices);
     
     for (int ui = 0; ui < num_u_segments; ui++) {
-      const LMatrix4f &u_basis_mat = _u_basis.get_basis(ui);
+      const LMatrix4 &u_basis_mat = _u_basis.get_basis(ui);
       
       int un = _u_basis.get_vertex_index(ui);
       nassertv(un >= 0 && un + u_order - 1 < _num_u_vertices);
       
       // Create four geometry matrices from our (up to) sixteen
       // involved vertices.
-      LMatrix4f geom_x, geom_y, geom_z, geom_w;
+      LMatrix4 geom_x, geom_y, geom_z, geom_w;
       memset(&geom_x, 0, sizeof(geom_x));
       memset(&geom_y, 0, sizeof(geom_y));
       memset(&geom_z, 0, sizeof(geom_z));
@@ -73,7 +73,7 @@ NurbsSurfaceResult(const NurbsBasisVector &u_basis,
       for (int uni = 0; uni < 4; uni++) {
         for (int vni = 0; vni < 4; vni++) {
           if (uni < u_order && vni < v_order) {
-            const LVecBase4f &vec = vecs[verti(un + uni, vn + vni)];
+            const LVecBase4 &vec = vecs[verti(un + uni, vn + vni)];
             geom_x(uni, vni) = vec[0];
             geom_y(uni, vni) = vec[1];
             geom_z(uni, vni) = vec[2];
@@ -115,16 +115,16 @@ NurbsSurfaceResult(const NurbsBasisVector &u_basis,
 //               evaluate the points along each segment.
 ////////////////////////////////////////////////////////////////////
 void NurbsSurfaceResult::
-eval_segment_point(int ui, int vi, float u, float v, LVecBase3f &point) const {
+eval_segment_point(int ui, int vi, PN_stdfloat u, PN_stdfloat v, LVecBase3 &point) const {
   int i = segi(ui, vi);
   nassertv(i >= 0 && i < (int)_composed.size());
 
-  float u2 = u*u;
-  LVecBase4f uvec(u*u2, u2, u, 1.0f);
-  float v2 = v*v;
-  LVecBase4f vvec(v*v2, v2, v, 1.0f);
+  PN_stdfloat u2 = u*u;
+  LVecBase4 uvec(u*u2, u2, u, 1.0f);
+  PN_stdfloat v2 = v*v;
+  LVecBase4 vvec(v*v2, v2, v, 1.0f);
 
-  float weight = vvec.dot(uvec * _composed[i]._w);
+  PN_stdfloat weight = vvec.dot(uvec * _composed[i]._w);
 
   point.set(vvec.dot(uvec * _composed[i]._x) / weight,
             vvec.dot(uvec * _composed[i]._y) / weight,
@@ -140,22 +140,22 @@ eval_segment_point(int ui, int vi, float u, float v, LVecBase3f &point) const {
 //               zero.
 ////////////////////////////////////////////////////////////////////
 void NurbsSurfaceResult::
-eval_segment_normal(int ui, int vi, float u, float v, LVecBase3f &normal) const {
+eval_segment_normal(int ui, int vi, PN_stdfloat u, PN_stdfloat v, LVecBase3 &normal) const {
   int i = segi(ui, vi);
   nassertv(i >= 0 && i < (int)_composed.size());
 
-  float u2 = u*u;
-  LVecBase4f uvec(u*u2, u2, u, 1.0f);
-  LVecBase4f duvec(3.0f * u2, 2.0f * u, 1.0f, 0.0f);
-  float v2 = v*v;
-  LVecBase4f vvec(v*v2, v2, v, 1.0f);
-  LVecBase4f dvvec(3.0f * v2, 2.0f * v, 1.0f, 0.0f);
+  PN_stdfloat u2 = u*u;
+  LVecBase4 uvec(u*u2, u2, u, 1.0f);
+  LVecBase4 duvec(3.0f * u2, 2.0f * u, 1.0f, 0.0f);
+  PN_stdfloat v2 = v*v;
+  LVecBase4 vvec(v*v2, v2, v, 1.0f);
+  LVecBase4 dvvec(3.0f * v2, 2.0f * v, 1.0f, 0.0f);
 
-  LVector3f utan(vvec.dot(duvec * _composed[i]._x),
+  LVector3 utan(vvec.dot(duvec * _composed[i]._x),
                  vvec.dot(duvec * _composed[i]._y),
                  vvec.dot(duvec * _composed[i]._z));
 
-  LVector3f vtan(dvvec.dot(uvec * _composed[i]._x),
+  LVector3 vtan(dvvec.dot(uvec * _composed[i]._x),
                  dvvec.dot(uvec * _composed[i]._y),
                  dvvec.dot(uvec * _composed[i]._z));
 
@@ -169,29 +169,29 @@ eval_segment_normal(int ui, int vi, float u, float v, LVecBase3f &normal) const 
 //               to the extended vertices associated with the surface in
 //               the indicated dimension.
 ////////////////////////////////////////////////////////////////////
-float NurbsSurfaceResult::
-eval_segment_extended_point(int ui, int vi, float u, float v, int d) const {
+PN_stdfloat NurbsSurfaceResult::
+eval_segment_extended_point(int ui, int vi, PN_stdfloat u, PN_stdfloat v, int d) const {
   int i = segi(ui, vi);
   nassertr(i >= 0 && i < (int)_composed.size(), 0.0f);
 
-  float u2 = u*u;
-  LVecBase4f uvec(u*u2, u2, u, 1.0f);
-  float v2 = v*v;
-  LVecBase4f vvec(v*v2, v2, v, 1.0f);
+  PN_stdfloat u2 = u*u;
+  LVecBase4 uvec(u*u2, u2, u, 1.0f);
+  PN_stdfloat v2 = v*v;
+  LVecBase4 vvec(v*v2, v2, v, 1.0f);
 
-  float weight = vvec.dot(uvec * _composed[i]._w);
+  PN_stdfloat weight = vvec.dot(uvec * _composed[i]._w);
 
   // Calculate the composition of the basis matrices and the geometry
   // matrix on-the-fly.
-  const LMatrix4f &v_basis_transpose = _v_basis.get_basis(vi);
-  const LMatrix4f &u_basis_mat = _u_basis.get_basis(ui);
+  const LMatrix4 &v_basis_transpose = _v_basis.get_basis(vi);
+  const LMatrix4 &u_basis_mat = _u_basis.get_basis(ui);
   int u_order = _u_basis.get_order();
   int v_order = _v_basis.get_order();
 
   int un = _u_basis.get_vertex_index(ui);
   int vn = _v_basis.get_vertex_index(vi);
 
-  LMatrix4f geom;
+  LMatrix4 geom;
   memset(&geom, 0, sizeof(geom));
 
   for (int uni = 0; uni < 4; uni++) {
@@ -202,7 +202,7 @@ eval_segment_extended_point(int ui, int vi, float u, float v, int d) const {
     }
   }
 
-  LMatrix4f composed = u_basis_mat * geom * v_basis_transpose;
+  LMatrix4 composed = u_basis_mat * geom * v_basis_transpose;
   return vvec.dot(uvec * composed) / weight;
 }
 
@@ -216,22 +216,22 @@ eval_segment_extended_point(int ui, int vi, float u, float v, int d) const {
 //               the indicated result array.
 ////////////////////////////////////////////////////////////////////
 void NurbsSurfaceResult::
-eval_segment_extended_points(int ui, int vi, float u, float v, int d,
-                             float result[], int num_values) const {
+eval_segment_extended_points(int ui, int vi, PN_stdfloat u, PN_stdfloat v, int d,
+                             PN_stdfloat result[], int num_values) const {
   int i = segi(ui, vi);
   nassertv(i >= 0 && i < (int)_composed.size());
 
-  float u2 = u*u;
-  LVecBase4f uvec(u*u2, u2, u, 1.0f);
-  float v2 = v*v;
-  LVecBase4f vvec(v*v2, v2, v, 1.0f);
+  PN_stdfloat u2 = u*u;
+  LVecBase4 uvec(u*u2, u2, u, 1.0f);
+  PN_stdfloat v2 = v*v;
+  LVecBase4 vvec(v*v2, v2, v, 1.0f);
 
-  float weight = vvec.dot(uvec * _composed[i]._w);
+  PN_stdfloat weight = vvec.dot(uvec * _composed[i]._w);
 
   // Calculate the composition of the basis matrices and the geometry
   // matrix on-the-fly.
-  const LMatrix4f &v_basis_transpose = _v_basis.get_basis(vi);
-  const LMatrix4f &u_basis_mat = _u_basis.get_basis(ui);
+  const LMatrix4 &v_basis_transpose = _v_basis.get_basis(vi);
+  const LMatrix4 &u_basis_mat = _u_basis.get_basis(ui);
   int u_order = _u_basis.get_order();
   int v_order = _v_basis.get_order();
 
@@ -239,7 +239,7 @@ eval_segment_extended_points(int ui, int vi, float u, float v, int d,
   int vn = _v_basis.get_vertex_index(vi);
 
   for (int n = 0; n < num_values; n++) {
-    LMatrix4f geom;
+    LMatrix4 geom;
     memset(&geom, 0, sizeof(geom));
     
     for (int uni = 0; uni < 4; uni++) {
@@ -251,7 +251,7 @@ eval_segment_extended_points(int ui, int vi, float u, float v, int d,
       }
     }
     
-    LMatrix4f composed = u_basis_mat * geom * v_basis_transpose;
+    LMatrix4 composed = u_basis_mat * geom * v_basis_transpose;
     result[n] = vvec.dot(uvec * composed) / weight;
   }
 }
@@ -264,7 +264,7 @@ eval_segment_extended_points(int ui, int vi, float u, float v, int d,
 //               this value.
 ////////////////////////////////////////////////////////////////////
 int NurbsSurfaceResult::
-find_u_segment(float u) {
+find_u_segment(PN_stdfloat u) {
   // Trivially check the endpoints of the surface.
   if (u >= get_end_u()) {
     return _u_basis.get_num_segments() - 1;
@@ -297,7 +297,7 @@ find_u_segment(float u) {
 //               increasing order of t, and they don't overlap.
 ////////////////////////////////////////////////////////////////////
 int NurbsSurfaceResult::
-r_find_u_segment(float u, int top, int bot) const {
+r_find_u_segment(PN_stdfloat u, int top, int bot) const {
   if (bot < top) {
     // Not found.
     return -1;
@@ -305,8 +305,8 @@ r_find_u_segment(float u, int top, int bot) const {
   int mid = (top + bot) / 2;
   nassertr(mid >= 0 && mid < _u_basis.get_num_segments(), -1);
 
-  float from = _u_basis.get_from(mid);
-  float to = _u_basis.get_to(mid);
+  PN_stdfloat from = _u_basis.get_from(mid);
+  PN_stdfloat to = _u_basis.get_to(mid);
   if (from > u) {
     // Too high, try lower.
     return r_find_u_segment(u, top, mid - 1);
@@ -330,7 +330,7 @@ r_find_u_segment(float u, int top, int bot) const {
 //               this value.
 ////////////////////////////////////////////////////////////////////
 int NurbsSurfaceResult::
-find_v_segment(float v) {
+find_v_segment(PN_stdfloat v) {
   // Trivially check the endpoints of the surface.
   if (v >= get_end_v()) {
     return _v_basis.get_num_segments() - 1;
@@ -363,7 +363,7 @@ find_v_segment(float v) {
 //               increasing order of t, and they don't overlap.
 ////////////////////////////////////////////////////////////////////
 int NurbsSurfaceResult::
-r_find_v_segment(float v, int top, int bot) const {
+r_find_v_segment(PN_stdfloat v, int top, int bot) const {
   if (bot < top) {
     // Not found.
     return -1;
@@ -371,8 +371,8 @@ r_find_v_segment(float v, int top, int bot) const {
   int mid = (top + bot) / 2;
   nassertr(mid >= 0 && mid < _v_basis.get_num_segments(), -1);
 
-  float from = _v_basis.get_from(mid);
-  float to = _v_basis.get_to(mid);
+  PN_stdfloat from = _v_basis.get_from(mid);
+  PN_stdfloat to = _v_basis.get_to(mid);
   if (from > v) {
     // Too high, try lower.
     return r_find_v_segment(v, top, mid - 1);

@@ -21,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE AlphaTestAttrib::
 AlphaTestAttrib(AlphaTestAttrib::PandaCompareFunc mode,
-                float reference_alpha) :
+                PN_stdfloat reference_alpha) :
   _mode(mode), _reference_alpha(reference_alpha)
 {
 }
@@ -41,7 +41,7 @@ get_mode() const {
 //       Access: Published
 //  Description: Returns the alpha reference value.
 ////////////////////////////////////////////////////////////////////
-INLINE float AlphaTestAttrib::
+INLINE PN_stdfloat AlphaTestAttrib::
 get_reference_alpha() const {
   return _reference_alpha;
 }

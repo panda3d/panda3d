@@ -356,7 +356,7 @@ void PandaNode::
 apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
                           GeomTransformer &transformer) {
   if ((attrib_types & SceneGraphReducer::TT_transform) != 0) {
-    const LMatrix4f &mat = attribs._transform->get_mat();
+    const LMatrix4 &mat = attribs._transform->get_mat();
     xform(mat);
 
     Thread *current_thread = Thread::get_current_thread();
@@ -378,7 +378,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
 //               most kinds of PandaNodes, this does nothing.
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
-xform(const LMatrix4f &) {
+xform(const LMatrix4 &) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -437,7 +437,7 @@ combine_with(PandaNode *other) {
 //               node's transform.
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) PandaNode::
-calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, bool &found_any,
+calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point, bool &found_any,
                   const TransformState *transform, Thread *current_thread) const {
   CPT(TransformState) next_transform = transform->compose(get_transform());
 

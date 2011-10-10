@@ -24,8 +24,8 @@
 //               room for scroll bars).
 ////////////////////////////////////////////////////////////////////
 INLINE void PGVirtualFrame::
-set_clip_frame(float left, float right, float bottom, float top) {
-  set_clip_frame(LVecBase4f(left, right, bottom, top));
+set_clip_frame(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top) {
+  set_clip_frame(LVecBase4(left, right, bottom, top));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -35,7 +35,7 @@ set_clip_frame(float left, float right, float bottom, float top) {
 //               See set_clip_frame().  If has_clip_frame() is
 //               false, this returns the item's actual frame.
 ////////////////////////////////////////////////////////////////////
-INLINE const LVecBase4f &PGVirtualFrame::
+INLINE const LVecBase4 &PGVirtualFrame::
 get_clip_frame() const {
   LightReMutexHolder holder(_lock);
   return _has_clip_frame ? _clip_frame : get_frame();

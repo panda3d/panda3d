@@ -113,15 +113,15 @@ safe_to_combine_children() const {
 //               most kinds of PandaNodes, this does nothing.
 ////////////////////////////////////////////////////////////////////
 void LODNode::
-xform(const LMatrix4f &mat) {
+xform(const LMatrix4 &mat) {
   CDWriter cdata(_cycler);
 
   cdata->_center = cdata->_center * mat;
 
   // We'll take just the length of the y axis as the matrix's scale.
-  LVector3f y;
+  LVector3 y;
   mat.get_row3(y, 1);
-  float factor = y.length();
+  PN_stdfloat factor = y.length();
 
   SwitchVector::iterator si;
   for (si = cdata->_switch_vector.begin(); 
@@ -167,8 +167,8 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   CDReader cdata(_cycler);
 
   CPT(TransformState) rel_transform = get_rel_transform(trav, data);
-  LPoint3f center = cdata->_center * rel_transform->get_mat();
-  float dist2 = center.dot(center);
+  LPoint3 center = cdata->_center * rel_transform->get_mat();
+  PN_stdfloat dist2 = center.dot(center);
 
   int num_children = min(get_num_children(), (int)cdata->_switch_vector.size());
   for (int index = 0; index < num_children; ++index) {
@@ -274,7 +274,7 @@ show_switch(int index) {
 //               behavior.
 ////////////////////////////////////////////////////////////////////
 void LODNode::
-show_switch(int index, const Colorf &color) {
+show_switch(int index, const LColor &color) {
   CDWriter cdata(_cycler);
   do_show_switch(cdata, index, color);
   mark_internal_bounds_stale();
@@ -336,7 +336,7 @@ verify_child_bounds() const {
   CDReader cdata(_cycler);
 
   for (int index = 0; index < (int)cdata->_switch_vector.size(); ++index) {
-    float suggested_radius;
+    PN_stdfloat suggested_radius;
     if (!do_verify_child_bounds(cdata, index, suggested_radius)) { 
       const Switch &sw = cdata->_switch_vector[index];
       pgraph_cat.warning()
@@ -372,8 +372,8 @@ compute_child(CullTraverser *trav, CullTraverserData &data) {
   }
 
   CPT(TransformState) rel_transform = get_rel_transform(trav, data);
-  LPoint3f center = cdata->_center * rel_transform->get_mat();
-  float dist2 = center.dot(center);
+  LPoint3 center = cdata->_center * rel_transform->get_mat();
+  PN_stdfloat dist2 = center.dot(center);
 
   for (int index = 0; index < (int)cdata->_switch_vector.size(); ++index) {
     if (cdata->_switch_vector[index].in_range_2(dist2*cdata->_lod_scale)) { 
@@ -410,13 +410,13 @@ show_switches_cull_callback(CullTraverser *trav, CullTraverserData &data) {
   CDReader cdata(_cycler);
 
   CPT(TransformState) rel_transform = get_rel_transform(trav, data);
-  LPoint3f center = cdata->_center * rel_transform->get_mat();
-  float dist2 = center.dot(center);
+  LPoint3 center = cdata->_center * rel_transform->get_mat();
+  PN_stdfloat dist2 = center.dot(center);
 
   // Now orient the disk(s) in camera space such that their origin is
   // at center, and the (0, 0, 0) point in camera space is on the disk.
-  LMatrix4f mat;
-  look_at(mat, -center, LVector3f(0.0f, 0.0f, 1.0f));
+  LMatrix4 mat;
+  look_at(mat, -center, LVector3(0.0f, 0.0f, 1.0f));
   mat.set_row(3, center);
   CPT(TransformState) viz_transform = 
     rel_transform->invert_compose(TransformState::make_mat(mat));
@@ -552,7 +552,7 @@ get_rel_transform(CullTraverser *trav, CullTraverserData &data) {
 //  Description: The private implementation of show_switch().
 ////////////////////////////////////////////////////////////////////
 void LODNode::
-do_show_switch(LODNode::CData *cdata, int index, const Colorf &color) {
+do_show_switch(LODNode::CData *cdata, int index, const LColor &color) {
   nassertv(index >= 0 && index < (int)cdata->_switch_vector.size());
 
   if (!cdata->_switch_vector[index].is_shown()) {
@@ -588,7 +588,7 @@ do_hide_switch(LODNode::CData *cdata, int index) {
 ////////////////////////////////////////////////////////////////////
 bool LODNode::
 do_verify_child_bounds(const LODNode::CData *cdata, int index,
-                       float &suggested_radius) const {
+                       PN_stdfloat &suggested_radius) const {
   suggested_radius = 0.0f;
 
   if (index < get_num_children()) {
@@ -646,8 +646,8 @@ do_verify_child_bounds(const LODNode::CData *cdata, int index,
       // This child's radius partially encloses its (loose) bounding
       // volume.  We have to look closer to determine whether it, in
       // fact, fully encloses its geometry.
-      LPoint3f min_point(0.0f, 0.0f, 0.0f);
-      LPoint3f max_point(0.0f, 0.0f, 0.0f);
+      LPoint3 min_point(0.0f, 0.0f, 0.0f);
+      LPoint3 max_point(0.0f, 0.0f, 0.0f);
       
       bool found_any = false;
       child->calc_tight_bounds(min_point, max_point, found_any, 
@@ -662,8 +662,8 @@ do_verify_child_bounds(const LODNode::CData *cdata, int index,
       // that fits within this box.  All we can say about this sphere
       // is that it should definitely fit entirely within a bounding
       // sphere that contains all the points of the child.
-      LPoint3f box_center = (min_point + max_point) / 2.0f;
-      float box_radius = min(min(max_point[0] - box_center[0],
+      LPoint3 box_center = (min_point + max_point) / 2.0f;
+      PN_stdfloat box_radius = min(min(max_point[0] - box_center[0],
                                  max_point[1] - box_center[1]),
                              max_point[2] - box_center[2]);
       
@@ -711,7 +711,7 @@ do_auto_verify_lods(CullTraverser *trav, CullTraverserData &data) {
   if (seq != cdata->_bounds_seq) {
     // Time to validate the children again.
     for (int index = 0; index < (int)cdata->_switch_vector.size(); ++index) {
-      float suggested_radius;
+      PN_stdfloat suggested_radius;
       if (!do_verify_child_bounds(cdata, index, suggested_radius)) { 
         const Switch &sw = cdata->_switch_vector[index];
         ostringstream strm;
@@ -734,17 +734,17 @@ do_auto_verify_lods(CullTraverser *trav, CullTraverserData &data) {
 //  Description: Returns a default color appropriate for showing the
 //               indicated level.
 ////////////////////////////////////////////////////////////////////
-const Colorf &LODNode::
+const LColor &LODNode::
 get_default_show_color(int index) {
-  static Colorf default_colors[] = {
-    Colorf(1.0f, 0.0f, 0.0f, 0.7f),
-    Colorf(0.0f, 1.0f, 0.0f, 0.7f),
-    Colorf(0.0f, 0.0f, 1.0f, 0.7f),
-    Colorf(0.0f, 1.0f, 1.0f, 0.7f),
-    Colorf(1.0f, 0.0f, 1.0f, 0.7f),
-    Colorf(1.0f, 1.0f, 0.0f, 0.7f),
+  static LColor default_colors[] = {
+    LColor(1.0f, 0.0f, 0.0f, 0.7f),
+    LColor(0.0f, 1.0f, 0.0f, 0.7f),
+    LColor(0.0f, 0.0f, 1.0f, 0.7f),
+    LColor(0.0f, 1.0f, 1.0f, 0.7f),
+    LColor(1.0f, 0.0f, 1.0f, 0.7f),
+    LColor(1.0f, 1.0f, 0.0f, 0.7f),
   };
-  static const int num_default_colors = sizeof(default_colors) / sizeof(Colorf);
+  static const int num_default_colors = sizeof(default_colors) / sizeof(LColor);
 
   return default_colors[index % num_default_colors];
 }
@@ -896,7 +896,7 @@ compute_ring_viz() {
 
   // There are also two more triangle strips, one for the outer edge,
   // and one for the inner edge.
-  static const float edge_ratio = 0.1;  // ratio of edge height to diameter.
+  static const PN_stdfloat edge_ratio = 0.1;  // ratio of edge height to diameter.
 
   const GeomVertexFormat *format = GeomVertexFormat::get_v3n3cp();
   PT(GeomVertexData) vdata = new GeomVertexData("LOD_ring", format, Geom::UH_static);
@@ -910,53 +910,53 @@ compute_ring_viz() {
   int ri, si;
   for (ri = 0; ri <= num_rings; ++ri) {
     // r is in the range [0.0, 1.0].
-    float r = (float)ri / (float)num_rings;
+    PN_stdfloat r = (PN_stdfloat)ri / (PN_stdfloat)num_rings;
 
     // d is in the range [_out, _in].
-    float d = r * (_in - _out) + _out;
+    PN_stdfloat d = r * (_in - _out) + _out;
 
     for (si = 0; si < num_slices; ++si) {
       // s is in the range [0.0, 1.0).
-      float s = (float)si / (float)num_slices;
+      PN_stdfloat s = (PN_stdfloat)si / (PN_stdfloat)num_slices;
 
       // t is in the range [0.0, 2pi).
-      float t = MathNumbers::pi_f * 2.0f * s;
+      PN_stdfloat t = MathNumbers::pi * 2.0f * s;
 
-      float x = cosf(t);
-      float y = sinf(t);
-      vertex.add_data3f(x * d, y * d, 0.0f);
-      normal.add_data3f(0.0f, 0.0f, 1.0f);
-      color.add_data4f(_show_color);
+      PN_stdfloat x = ccos(t);
+      PN_stdfloat y = csin(t);
+      vertex.add_data3(x * d, y * d, 0.0f);
+      normal.add_data3(0.0f, 0.0f, 1.0f);
+      color.add_data4(_show_color);
     }
   }
 
   // Next, the vertices for the inner and outer edges.
   for (ri = 0; ri <= 1; ++ri) {
-    float r = (float)ri;
-    float d = r * (_in - _out) + _out;
+    PN_stdfloat r = (PN_stdfloat)ri;
+    PN_stdfloat d = r * (_in - _out) + _out;
 
     for (si = 0; si < num_slices; ++si) {
-      float s = (float)si / (float)num_slices;
-      float t = MathNumbers::pi_f * 2.0f * s;
+      PN_stdfloat s = (PN_stdfloat)si / (PN_stdfloat)num_slices;
+      PN_stdfloat t = MathNumbers::pi * 2.0f * s;
       
-      float x = cosf(t);
-      float y = sinf(t);
+      PN_stdfloat x = ccos(t);
+      PN_stdfloat y = csin(t);
 
-      vertex.add_data3f(x * d, y * d, 0.5f * edge_ratio * d);
-      normal.add_data3f(x, y, 0.0f);
-      color.add_data4f(_show_color);
+      vertex.add_data3(x * d, y * d, 0.5f * edge_ratio * d);
+      normal.add_data3(x, y, 0.0f);
+      color.add_data4(_show_color);
     }
 
     for (si = 0; si < num_slices; ++si) {
-      float s = (float)si / (float)num_slices;
-      float t = MathNumbers::pi_f * 2.0f * s;
+      PN_stdfloat s = (PN_stdfloat)si / (PN_stdfloat)num_slices;
+      PN_stdfloat t = MathNumbers::pi * 2.0f * s;
       
-      float x = cosf(t);
-      float y = sinf(t);
+      PN_stdfloat x = ccos(t);
+      PN_stdfloat y = csin(t);
 
-      vertex.add_data3f(x * d, y * d, -0.5f * edge_ratio * d);
-      normal.add_data3f(x, y, 0.0f);
-      color.add_data4f(_show_color);
+      vertex.add_data3(x * d, y * d, -0.5f * edge_ratio * d);
+      normal.add_data3(x, y, 0.0f);
+      color.add_data4(_show_color);
     }
   }
 
@@ -1037,23 +1037,23 @@ compute_spindle_viz() {
   int ri, si;
   for (ri = 0; ri <= num_rings; ++ri) {
     // r is in the range [0.0, 1.0].
-    float r = (float)ri / (float)num_rings;
+    PN_stdfloat r = (PN_stdfloat)ri / (PN_stdfloat)num_rings;
 
     // z is in the range [100.0, -100.0]
-    float z = 100.0f - r * 200.0f;
+    PN_stdfloat z = 100.0f - r * 200.0f;
 
     for (si = 0; si < num_slices; ++si) {
       // s is in the range [0.0, 1.0).
-      float s = (float)si / (float)num_slices;
+      PN_stdfloat s = (PN_stdfloat)si / (PN_stdfloat)num_slices;
 
       // t is in the range [0.0, 2pi).
-      float t = MathNumbers::pi_f * 2.0f * s;
+      PN_stdfloat t = MathNumbers::pi * 2.0f * s;
 
-      float x = cosf(t);
-      float y = sinf(t);
-      vertex.add_data3f(x, y, z);
-      normal.add_data3f(x, y, 0.0f);
-      color.add_data4f(_show_color);
+      PN_stdfloat x = ccos(t);
+      PN_stdfloat y = csin(t);
+      vertex.add_data3(x, y, z);
+      normal.add_data3(x, y, 0.0f);
+      color.add_data4(_show_color);
     }
   }
 

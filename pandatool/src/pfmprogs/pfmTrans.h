@@ -68,7 +68,7 @@ private:
   Filename _vistex_filename;
 
   bool _got_transform;
-  LMatrix4f _transform;
+  LMatrix4 _transform;
 
   NodePath _mesh_root;
 };

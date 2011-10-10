@@ -144,14 +144,14 @@ set_graphic(const string &name, const TextGraphic &graphic) {
 ////////////////////////////////////////////////////////////////////
 void TextPropertiesManager::
 set_graphic(const string &name, const NodePath &model) {
-  LPoint3f min_point, max_point;
+  LPoint3 min_point, max_point;
   model.calc_tight_bounds(min_point, max_point);
 
   TextGraphic graphic(model, 
-                      min_point.dot(LVector3f::right()),
-                      max_point.dot(LVector3f::right()),
-                      min_point.dot(LVector3f::up()), 
-                      max_point.dot(LVector3f::up()));
+                      min_point.dot(LVector3::right()),
+                      max_point.dot(LVector3::right()),
+                      min_point.dot(LVector3::up()), 
+                      max_point.dot(LVector3::up()));
 
   _graphics[name] = graphic;
 }

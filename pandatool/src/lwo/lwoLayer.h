@@ -39,7 +39,7 @@ public:
 
   int _number;
   int _flags;
-  LPoint3f _pivot;
+  LPoint3 _pivot;
   string _name;
   int _parent;
 

@@ -69,7 +69,7 @@ reset() {
 //               move_to() or create(), this creates a single point.
 ////////////////////////////////////////////////////////////////////
 void LineSegs::
-move_to(const LVecBase3f &v) {
+move_to(const LVecBase3 &v) {
   // We create a new SegmentList with the initial point in it.
   SegmentList segs;
   segs.push_back(Point(v, _color));
@@ -88,7 +88,7 @@ move_to(const LVecBase3f &v) {
 //               is called.
 ////////////////////////////////////////////////////////////////////
 void LineSegs::
-draw_to(const LVecBase3f &v) {
+draw_to(const LVecBase3 &v) {
   if (_list.empty()) {
     // Let our first call to draw_to() be an implicit move_to().
     move_to(v);
@@ -124,12 +124,12 @@ is_empty() {
 //               move_to() and draw_to() calls generate consecutively
 //               higher vertex numbers.
 ////////////////////////////////////////////////////////////////////
-Vertexf LineSegs::
+LVertex LineSegs::
 get_vertex(int n) const {
-  nassertr(_created_data != (GeomVertexData *)NULL, Vertexf::zero());
+  nassertr(_created_data != (GeomVertexData *)NULL, LVertex::zero());
   GeomVertexReader vertex(_created_data, InternalName::get_vertex());
   vertex.set_row_unsafe(n);
-  return vertex.get_data3f();
+  return vertex.get_data3();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -142,11 +142,11 @@ get_vertex(int n) const {
 //               higher vertex numbers.
 ////////////////////////////////////////////////////////////////////
 void LineSegs::
-set_vertex(int n, const Vertexf &vert) {
+set_vertex(int n, const LVertex &vert) {
   nassertv(_created_data != (GeomVertexData *)NULL);
   GeomVertexWriter vertex(_created_data, InternalName::get_vertex());
   vertex.set_row_unsafe(n);
-  vertex.set_data3f(vert);
+  vertex.set_data3(vert);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -154,12 +154,12 @@ set_vertex(int n, const Vertexf &vert) {
 //       Access: Public
 //  Description: Returns the color of the nth point or vertex.
 ////////////////////////////////////////////////////////////////////
-Colorf LineSegs::
+LColor LineSegs::
 get_vertex_color(int n) const {
-  nassertr(_created_data != (GeomVertexData *)NULL, Colorf::zero());
+  nassertr(_created_data != (GeomVertexData *)NULL, LColor::zero());
   GeomVertexReader color(_created_data, InternalName::get_color());
   color.set_row_unsafe(n);
-  return color.get_data4f();
+  return color.get_data4();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -169,11 +169,11 @@ get_vertex_color(int n) const {
 //               See set_vertex().
 ////////////////////////////////////////////////////////////////////
 void LineSegs::
-set_vertex_color(int n, const Colorf &c) {
+set_vertex_color(int n, const LColor &c) {
   nassertv(_created_data != (GeomVertexData *)NULL);
   GeomVertexWriter color(_created_data, InternalName::get_color());
   color.set_row_unsafe(n);
-  color.set_data4f(c);
+  color.set_data4(c);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -182,11 +182,11 @@ set_vertex_color(int n, const Colorf &c) {
 //  Description: Returns the pen's current position.  The next call to
 //               draw_to() will draw a line segment from this point.
 ////////////////////////////////////////////////////////////////////
-const Vertexf &LineSegs::
+const LVertex &LineSegs::
 get_current_position() {
   if (_list.empty()) {
     // Our pen isn't anywhere.  We'll put it somewhere.
-    move_to(Vertexf(0.0f, 0.0f, 0.0f));
+    move_to(LVertex(0.0f, 0.0f, 0.0f));
   }
 
   return _list.back().back()._point;
@@ -233,8 +233,8 @@ create(GeomNode *previous, bool dynamic) {
         // A segment of length 1 is just a point.
         for (sl = segs.begin(); sl != segs.end(); sl++) {
           points->add_vertex(v);
-          vertex.add_data3f((*sl)._point);
-          color.add_data4f((*sl)._color);
+          vertex.add_data3((*sl)._point);
+          color.add_data4((*sl)._color);
           v++;
         }
         points->close_primitive();
@@ -244,8 +244,8 @@ create(GeomNode *previous, bool dynamic) {
         // segments.
         for (sl = segs.begin(); sl != segs.end(); sl++) {
           lines->add_vertex(v);
-          vertex.add_data3f((*sl)._point);
-          color.add_data4f((*sl)._color);
+          vertex.add_data3((*sl)._point);
+          color.add_data4((*sl)._color);
           v++;
         }
         lines->close_primitive();

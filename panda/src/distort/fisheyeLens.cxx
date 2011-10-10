@@ -32,7 +32,7 @@ TypeHandle FisheyeLens::_type_handle;
 // know how well this extends to other lenses and other negative
 // sizes.
 
-static const float fisheye_k = 60.0f;
+static const PN_stdfloat fisheye_k = 60.0f;
 // focal_length = film_size * fisheye_k / fov;
 
 
@@ -64,18 +64,18 @@ make_copy() const {
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
 bool FisheyeLens::
-extrude_impl(const LPoint3f &point2d, LPoint3f &near_point, LPoint3f &far_point) const {
+extrude_impl(const LPoint3 &point2d, LPoint3 &near_point, LPoint3 &far_point) const {
   // Undo the shifting from film offsets, etc.  This puts the point
   // into the range [-film_size/2, film_size/2] in x and y.
-  LPoint3f f = point2d * get_film_mat_inv();
+  LPoint3 f = point2d * get_film_mat_inv();
 
   // First, get the vector from the center of the film to the point,
   // and normalize it.
-  LVector2f v2(f[0], f[1]);
+  LVector2 v2(f[0], f[1]);
 
-  LPoint3f v;
+  LPoint3 v;
 
-  float r = v2.length();
+  PN_stdfloat r = v2.length();
   if (r == 0.0f) {
     // Special case: directly forward.
     v.set(0.0f, 1.0f, 0.0f);
@@ -84,12 +84,12 @@ extrude_impl(const LPoint3f &point2d, LPoint3f &near_point, LPoint3f &far_point)
     v2 /= r;
 
     // Now get the point r units around the circle in the YZ plane.
-    float focal_length = get_focal_length();
-    float angle = r * fisheye_k / focal_length;
-    float sinAngle, cosAngle;
+    PN_stdfloat focal_length = get_focal_length();
+    PN_stdfloat angle = r * fisheye_k / focal_length;
+    PN_stdfloat sinAngle, cosAngle;
     csincos(deg_2_rad(angle), &sinAngle, &cosAngle);
 
-    LVector3f p(0.0, cosAngle, sinAngle);
+    LVector3 p(0.0, cosAngle, sinAngle);
 
     // And rotate this point around the Y axis.
     v.set(p[0]*v2[1] + p[2]*v2[0],
@@ -99,7 +99,7 @@ extrude_impl(const LPoint3f &point2d, LPoint3f &near_point, LPoint3f &far_point)
 
   // And we'll need to account for the lens's rotations, etc. at the
   // end of the day.
-  const LMatrix4f &lens_mat = get_lens_mat();
+  const LMatrix4 &lens_mat = get_lens_mat();
 
   near_point = (v * get_near()) * lens_mat;
   far_point = (v * get_far()) * lens_mat;
@@ -127,8 +127,8 @@ extrude_impl(const LPoint3f &point2d, LPoint3f &near_point, LPoint3f &far_point)
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
 bool FisheyeLens::
-extrude_vec_impl(const LPoint3f &point2d, LVector3f &vec) const {
-  LPoint3f near_point, far_point;
+extrude_vec_impl(const LPoint3 &point2d, LVector3 &vec) const {
+  LPoint3 near_point, far_point;
   if (!extrude_impl(point2d, near_point, far_point)) {
     return false;
   }
@@ -156,9 +156,9 @@ extrude_vec_impl(const LPoint3f &point2d, LVector3f &vec) const {
 //               is filled in), or false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool FisheyeLens::
-project_impl(const LPoint3f &point3d, LPoint3f &point2d) const {
+project_impl(const LPoint3 &point3d, LPoint3 &point2d) const {
   // First, account for any rotations, etc. on the lens.
-  LVector3f v2 = point3d * get_lens_mat_inv();
+  LVector3 v2 = point3d * get_lens_mat_inv();
 
   // A fisheye lens projection has the property that the distance from
   // the center point to any other point on the projection is
@@ -168,16 +168,16 @@ project_impl(const LPoint3f &point3d, LPoint3f &point2d) const {
 
   // First, get the straight-line distance from the lens, and use it
   // to normalize the vector.
-  float dist = v2.length();
+  PN_stdfloat dist = v2.length();
   v2 /= dist;
 
   // Now, project the point into the XZ plane and measure its angle
   // to the Z axis.  This is the same angle it will have to the
   // vertical axis on the film.
-  LVector2f y(v2[0], v2[2]);
+  LVector2 y(v2[0], v2[2]);
   y.normalize();
 
-  if (y == LVector2f(0.0f, 0.0f)) {
+  if (y == LVector2(0.0f, 0.0f)) {
     // Special case.  This point is either directly ahead or directly
     // behind.
     point2d.set(0.0f, 0.0f, 
@@ -187,14 +187,14 @@ project_impl(const LPoint3f &point3d, LPoint3f &point2d) const {
 
   // Now bring the vector into the YZ plane by rotating about the Y
   // axis.
-  LVector2f x(v2[1], v2[0]*y[0]+v2[2]*y[1]);
+  LVector2 x(v2[1], v2[0]*y[0]+v2[2]*y[1]);
 
   // Now the angle of x to the forward vector represents the distance
   // along the great circle to the point.
-  float r = 90.0f - rad_2_deg(catan2(x[0], x[1]));
+  PN_stdfloat r = 90.0f - rad_2_deg(catan2(x[0], x[1]));
 
-  float focal_length = get_focal_length();
-  float factor = r * focal_length / fisheye_k;
+  PN_stdfloat focal_length = get_focal_length();
+  PN_stdfloat factor = r * focal_length / fisheye_k;
 
   point2d.set
     (y[0] * factor,
@@ -221,8 +221,8 @@ project_impl(const LPoint3f &point3d, LPoint3f &point2d) const {
 //               direction; otherwise, it is in the vertical direction
 //               (some lenses behave differently in each direction).
 ////////////////////////////////////////////////////////////////////
-float FisheyeLens::
-fov_to_film(float fov, float focal_length, bool) const {
+PN_stdfloat FisheyeLens::
+fov_to_film(PN_stdfloat fov, PN_stdfloat focal_length, bool) const {
   return focal_length * fov / fisheye_k;
 }
 
@@ -235,8 +235,8 @@ fov_to_film(float fov, float focal_length, bool) const {
 //               direction; otherwise, it is in the vertical direction
 //               (some lenses behave differently in each direction).
 ////////////////////////////////////////////////////////////////////
-float FisheyeLens::
-fov_to_focal_length(float fov, float film_size, bool) const {
+PN_stdfloat FisheyeLens::
+fov_to_focal_length(PN_stdfloat fov, PN_stdfloat film_size, bool) const {
   return film_size * fisheye_k / fov;
 }
 
@@ -249,8 +249,8 @@ fov_to_focal_length(float fov, float film_size, bool) const {
 //               otherwise, it is in the vertical direction (some
 //               lenses behave differently in each direction).
 ////////////////////////////////////////////////////////////////////
-float FisheyeLens::
-film_to_fov(float film_size, float focal_length, bool) const {
+PN_stdfloat FisheyeLens::
+film_to_fov(PN_stdfloat film_size, PN_stdfloat focal_length, bool) const {
   return film_size * fisheye_k / focal_length;
 }
 

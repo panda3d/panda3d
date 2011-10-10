@@ -24,7 +24,7 @@ TypeHandle StereoDisplayRegion::_type_handle;
 ////////////////////////////////////////////////////////////////////
 StereoDisplayRegion::
 StereoDisplayRegion(GraphicsOutput *window,
-                    const LVecBase4f &dimensions,
+                    const LVecBase4 &dimensions,
                     DisplayRegion *left, DisplayRegion *right) :
   DisplayRegion(window, dimensions),
   _left_eye(left),
@@ -77,7 +77,7 @@ set_clear_active(int n, bool clear_active) {
 //  Description: Sets the clear value for any bitplane.
 ////////////////////////////////////////////////////////////////////
 void StereoDisplayRegion::
-set_clear_value(int n, const Colorf &clear_value) {
+set_clear_value(int n, const LColor &clear_value) {
   DisplayRegion::set_clear_value(n, clear_value);
   _left_eye->set_clear_value(n, clear_value);
   _right_eye->set_clear_value(n, clear_value);
@@ -102,7 +102,7 @@ disable_clears() {
 //  Description: Sets the pixel_zoom for left and right eyes.
 ////////////////////////////////////////////////////////////////////
 void StereoDisplayRegion::
-set_pixel_zoom(float pixel_zoom) {
+set_pixel_zoom(PN_stdfloat pixel_zoom) {
   DisplayRegion::set_pixel_zoom(pixel_zoom);
   _left_eye->set_pixel_zoom(pixel_zoom);
   _right_eye->set_pixel_zoom(pixel_zoom);
@@ -115,7 +115,7 @@ set_pixel_zoom(float pixel_zoom) {
 //               indicated dimensions.
 ////////////////////////////////////////////////////////////////////
 void StereoDisplayRegion::
-set_dimensions(const LVecBase4f &dimensions) {
+set_dimensions(const LVecBase4 &dimensions) {
   DisplayRegion::set_dimensions(dimensions);
   _left_eye->set_dimensions(dimensions);
   _right_eye->set_dimensions(dimensions);

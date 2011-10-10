@@ -39,8 +39,8 @@ PUBLISHED:
   void remove_particlesystem(ParticleSystem *ps);
   INLINE void clear();
 
-  void do_particles(float dt);
-  void do_particles(float dt, ParticleSystem * ps, bool do_render = true);
+  void do_particles(PN_stdfloat dt);
+  void do_particles(PN_stdfloat dt, ParticleSystem * ps, bool do_render = true);
 
   virtual void output(ostream &out) const;
   virtual void write_ps_list(ostream &out, int indent=0) const;

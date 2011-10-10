@@ -60,7 +60,7 @@ private:
   };
 
   SizeType _size_type;
-  float _scale;
+  PN_stdfloat _scale;
   int _x_size;
   int _y_size;
   int _num_channels;

@@ -54,7 +54,7 @@ public:
   virtual ~Fog();
 
   virtual PandaNode *make_copy() const;
-  virtual void xform(const LMatrix4f &mat);
+  virtual void xform(const LMatrix4 &mat);
 
 PUBLISHED:
   enum Mode {
@@ -66,30 +66,30 @@ PUBLISHED:
   INLINE Mode get_mode() const;
   INLINE void set_mode(Mode mode);
 
-  INLINE const Colorf &get_color() const;
-  INLINE void set_color(float r, float g, float b);
-  INLINE void set_color(const Colorf &color);
+  INLINE const LColor &get_color() const;
+  INLINE void set_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b);
+  INLINE void set_color(const LColor &color);
 
-  INLINE void set_linear_range(float onset, float opaque);
+  INLINE void set_linear_range(PN_stdfloat onset, PN_stdfloat opaque);
 
-  INLINE const LPoint3f &get_linear_onset_point() const;
-  INLINE void set_linear_onset_point(float x, float y, float z);
-  INLINE void set_linear_onset_point(const LPoint3f &linear_onset_point);
+  INLINE const LPoint3 &get_linear_onset_point() const;
+  INLINE void set_linear_onset_point(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+  INLINE void set_linear_onset_point(const LPoint3 &linear_onset_point);
 
-  INLINE const LPoint3f &get_linear_opaque_point() const;
-  INLINE void set_linear_opaque_point(const LPoint3f &linear_opaque_point);
-  INLINE void set_linear_opaque_point(float x, float y, float z);
+  INLINE const LPoint3 &get_linear_opaque_point() const;
+  INLINE void set_linear_opaque_point(const LPoint3 &linear_opaque_point);
+  INLINE void set_linear_opaque_point(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
 
-  INLINE void set_linear_fallback(float angle, float onset, float opaque);
+  INLINE void set_linear_fallback(PN_stdfloat angle, PN_stdfloat onset, PN_stdfloat opaque);
 
-  INLINE float get_exp_density() const;
-  INLINE void set_exp_density(float exp_density);
+  INLINE PN_stdfloat get_exp_density() const;
+  INLINE void set_exp_density(PN_stdfloat exp_density);
 
   void output(ostream &out) const;
 
 public:
   void adjust_to_camera(const TransformState *camera_transform);
-  void get_linear_range(float &onset, float &opaque);
+  void get_linear_range(PN_stdfloat &onset, PN_stdfloat &opaque);
 
 protected:
   void compute_density();
@@ -104,15 +104,15 @@ protected:
 
 protected:
   Mode _mode;
-  Colorf _color;
-  LPoint3f _linear_onset_point;
-  LPoint3f _linear_opaque_point;
-  float _exp_density;
+  LColor _color;
+  LPoint3 _linear_onset_point;
+  LPoint3 _linear_opaque_point;
+  PN_stdfloat _exp_density;
 
-  float _linear_fallback_cosa;
-  float _linear_fallback_onset, _linear_fallback_opaque;
+  PN_stdfloat _linear_fallback_cosa;
+  PN_stdfloat _linear_fallback_onset, _linear_fallback_opaque;
   
-  float _transformed_onset, _transformed_opaque;
+  PN_stdfloat _transformed_onset, _transformed_opaque;
 
 public:
   static TypeHandle get_class_type() {

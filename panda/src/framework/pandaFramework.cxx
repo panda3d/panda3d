@@ -1384,7 +1384,7 @@ event_f9(const Event *event, void *data) {
     self->_screenshot_text = NodePath(text_node);
     text_node->set_align(TextNode::A_center);
     text_node->set_shadow_color(0.0f, 0.0f, 0.0f, 1.0f);
-    text_node->set_shadow(0.04f, 0.04f);
+    text_node->set_shadow(0.04, 0.04);
     text_node->set_text(output_text);
     self->_screenshot_text.set_scale(0.06);
     self->_screenshot_text.set_pos(0.0, 0.0, -0.7);
@@ -1462,16 +1462,16 @@ event_question(const Event *event, void *data) {
       self->_help_text = NodePath(text_node);
       text_node->set_align(TextNode::A_left);
       text_node->set_shadow_color(0.0f, 0.0f, 0.0f, 1.0f);
-      text_node->set_shadow(0.04f, 0.04f);
+      text_node->set_shadow(0.04, 0.04);
       text_node->set_text(help_text);
 
-      LVecBase4f frame = text_node->get_frame_actual();
+      LVecBase4 frame = text_node->get_frame_actual();
 
-      float height = frame[3] - frame[2];
-      float scale = min(0.06, 1.8 / height);
+      PN_stdfloat height = frame[3] - frame[2];
+      PN_stdfloat scale = min(0.06, 1.8 / height);
       self->_help_text.set_scale(scale);
 
-      float pos_scale = scale / -2.0;
+      PN_stdfloat pos_scale = scale / -2.0;
       self->_help_text.set_pos((frame[0] + frame[1]) * pos_scale,
                                0.0,
                                (frame[2] + frame[3]) * pos_scale);

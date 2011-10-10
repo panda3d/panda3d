@@ -37,7 +37,7 @@ FltTransformRotateAboutEdge(FltHeader *header) : FltTransformRecord(header) {
 //               counterclockwise about the axis as seen from point a.
 ////////////////////////////////////////////////////////////////////
 void FltTransformRotateAboutEdge::
-set(const LPoint3d &point_a, const LPoint3d &point_b, float angle) {
+set(const LPoint3d &point_a, const LPoint3d &point_b, PN_stdfloat angle) {
   _point_a = point_a;
   _point_b = point_b;
   _angle = angle;
@@ -71,7 +71,7 @@ get_point_b() const {
 //  Description: Returns the angle of rotation, in degrees
 //               counterclockwise about the axis as seen from point a.
 ////////////////////////////////////////////////////////////////////
-float FltTransformRotateAboutEdge::
+PN_stdfloat FltTransformRotateAboutEdge::
 get_angle() const {
   return _angle;
 }

@@ -46,11 +46,11 @@ PUBLISHED:
 
   // These transform-component methods only have meaning for matrix types.
   virtual void get_value_no_scale_shear(int frame, ValueType &value);
-  virtual void get_scale(int frame, LVecBase3f &scale);
-  virtual void get_hpr(int frame, LVecBase3f &hpr);
-  virtual void get_quat(int frame, LQuaternionf &quat);
-  virtual void get_pos(int frame, LVecBase3f &pos);
-  virtual void get_shear(int frame, LVecBase3f &shear);
+  virtual void get_scale(int frame, LVecBase3 &scale);
+  virtual void get_hpr(int frame, LVecBase3 &hpr);
+  virtual void get_quat(int frame, LQuaternion &quat);
+  virtual void get_pos(int frame, LVecBase3 &pos);
+  virtual void get_shear(int frame, LVecBase3 &shear);
 
   virtual TypeHandle get_value_type() const;
 
@@ -80,10 +80,10 @@ private:
 
 class EXPCL_PANDA_CHAN ACMatrixSwitchType {
 public:
-  typedef LMatrix4f ValueType;
+  typedef LMatrix4 ValueType;
   static const char *get_channel_type_name() { return "AnimChannelMatrix"; }
-  static const char *get_fixed_channel_type_name() { return "AnimChannelFixed<LMatrix4f>"; }
-  static const char *get_part_type_name() { return "MovingPart<LMatrix4f>"; }
+  static const char *get_fixed_channel_type_name() { return "AnimChannelFixed<LMatrix4>"; }
+  static const char *get_part_type_name() { return "MovingPart<LMatrix4>"; }
   static void output_value(ostream &out, const ValueType &value);
 
   static void write_datagram(Datagram &dest, ValueType& me)
@@ -102,20 +102,20 @@ typedef AnimChannel<ACMatrixSwitchType> AnimChannelMatrix;
 
 class EXPCL_PANDA_CHAN ACScalarSwitchType {
 public:
-  typedef float ValueType;
+  typedef PN_stdfloat ValueType;
   static const char *get_channel_type_name() { return "AnimChannelScalar"; }
   static const char *get_fixed_channel_type_name() { return "AnimChannelScalarFixed"; }
-  static const char *get_part_type_name() { return "MovingPart<float>"; }
+  static const char *get_part_type_name() { return "MovingPart<PN_stdfloat>"; }
   static void output_value(ostream &out, ValueType value) {
     out << value;
   }
   static void write_datagram(Datagram &dest, ValueType& me)
   {
-    dest.add_float32(me);
+    dest.add_stdfloat(me);
   }
   static void read_datagram(DatagramIterator &source, ValueType& me)
   {
-    me = source.get_float32();
+    me = source.get_stdfloat();
   }
 };
 

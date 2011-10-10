@@ -26,8 +26,8 @@ CData() {
   _u_dominant = true;
   _uv_scale = 1.0f;
   _normal_mode = RopeNode::NM_none;
-  _tube_up = LVector3f::up();
-  _matrix = LMatrix4f::ident_mat();
+  _tube_up = LVector3::up();
+  _matrix = LMatrix4::ident_mat();
   _has_matrix = false;
   _use_vertex_color = false;
   _num_subdiv = 10;
@@ -166,7 +166,7 @@ get_uv_direction() const {
 //               specified by set_uv_direction().
 ////////////////////////////////////////////////////////////////////
 INLINE void RopeNode::
-set_uv_scale(float uv_scale) {
+set_uv_scale(PN_stdfloat uv_scale) {
   CDWriter cdata(_cycler);
   cdata->_uv_scale = uv_scale;
 }
@@ -177,7 +177,7 @@ set_uv_scale(float uv_scale) {
 //  Description: Returns the scaling factor to apply to generated UV's
 //               for the rope.
 ////////////////////////////////////////////////////////////////////
-INLINE float RopeNode::
+INLINE PN_stdfloat RopeNode::
 get_uv_scale() const {
   CDReader cdata(_cycler);
   return cdata->_uv_scale;
@@ -223,7 +223,7 @@ get_normal_mode() const {
 //               gimble-lock around its primary axis.
 ////////////////////////////////////////////////////////////////////
 INLINE void RopeNode::
-set_tube_up(const LVector3f &tube_up) {
+set_tube_up(const LVector3 &tube_up) {
   CDWriter cdata(_cycler);
   cdata->_tube_up = tube_up;
 }
@@ -235,7 +235,7 @@ set_tube_up(const LVector3f &tube_up) {
 //               of the curve, when RenderMode is RM_tube.  See
 //               set_tube_up().
 ////////////////////////////////////////////////////////////////////
-INLINE const LVector3f &RopeNode::
+INLINE const LVector3 &RopeNode::
 get_tube_up() const {
   CDReader cdata(_cycler);
   return cdata->_tube_up;
@@ -400,7 +400,7 @@ get_vertex_thickness_dimension() {
 //               basis.  See set_use_vertex_thickness().
 ////////////////////////////////////////////////////////////////////
 INLINE void RopeNode::
-set_thickness(float thickness) {
+set_thickness(PN_stdfloat thickness) {
   nassertv(thickness >= 0);
   CDWriter cdata(_cycler);
   cdata->_thickness = thickness;
@@ -412,7 +412,7 @@ set_thickness(float thickness) {
 //  Description: Returns the thickness of the rope.  See
 //               set_thickness().
 ////////////////////////////////////////////////////////////////////
-INLINE float RopeNode::
+INLINE PN_stdfloat RopeNode::
 get_thickness() const {
   CDReader cdata(_cycler);
   return cdata->_thickness;
@@ -427,7 +427,7 @@ get_thickness() const {
 //               before the polygon vertices are generated.
 ////////////////////////////////////////////////////////////////////
 INLINE void RopeNode::
-set_matrix(const LMatrix4f &matrix) {
+set_matrix(const LMatrix4 &matrix) {
   CDWriter cdata(_cycler);
   cdata->_matrix = matrix;
   cdata->_has_matrix = true;
@@ -442,7 +442,7 @@ set_matrix(const LMatrix4f &matrix) {
 INLINE void RopeNode::
 clear_matrix() {
   CDWriter cdata(_cycler);
-  cdata->_matrix = LMatrix4f::ident_mat();
+  cdata->_matrix = LMatrix4::ident_mat();
   cdata->_has_matrix = false;
 }
 
@@ -466,7 +466,7 @@ has_matrix() const {
 //               transformed into the RopeNode's coordinate space, but
 //               before the polygon vertices are generated.
 ////////////////////////////////////////////////////////////////////
-INLINE const LMatrix4f &RopeNode::
+INLINE const LMatrix4 &RopeNode::
 get_matrix() const {
   CDReader cdata(_cycler);
   return cdata->_matrix;

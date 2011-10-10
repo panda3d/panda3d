@@ -62,7 +62,7 @@ PortalNode(const string &name) :
 //               to create an arbitrary portal and setup from Python
 ////////////////////////////////////////////////////////////////////
 PortalNode::
-PortalNode(const string &name, LPoint3f pos, float scale) :
+PortalNode(const string &name, LPoint3 pos, PN_stdfloat scale) :
   PandaNode(name),
   _from_portal_mask(PortalMask::all_on()),
   _into_portal_mask(PortalMask::all_on()),
@@ -70,10 +70,10 @@ PortalNode(const string &name, LPoint3f pos, float scale) :
 {
   set_cull_callback();
 
-  add_vertex(LPoint3f(pos[0]-1.0*scale, pos[1], pos[2]-1.0*scale));
-  add_vertex(LPoint3f(pos[0]+1.0*scale, pos[1], pos[2]-1.0*scale));
-  add_vertex(LPoint3f(pos[0]+1.0*scale, pos[1], pos[2]+1.0*scale));
-  add_vertex(LPoint3f(pos[0]-1.0*scale, pos[1], pos[2]+1.0*scale));
+  add_vertex(LPoint3(pos[0]-1.0*scale, pos[1], pos[2]-1.0*scale));
+  add_vertex(LPoint3(pos[0]+1.0*scale, pos[1], pos[2]-1.0*scale));
+  add_vertex(LPoint3(pos[0]+1.0*scale, pos[1], pos[2]+1.0*scale));
+  add_vertex(LPoint3(pos[0]-1.0*scale, pos[1], pos[2]+1.0*scale));
 
   _visible = false;
   _open = true;
@@ -172,7 +172,7 @@ enable_clipping_planes() {
 //               kinds of nodes, this does nothing.
 ////////////////////////////////////////////////////////////////////
 void PortalNode::
-xform(const LMatrix4f &mat) {
+xform(const LMatrix4 &mat) {
   nassertv(!mat.is_nan());
 
 }
@@ -236,7 +236,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     PT(BoundingVolume) reduced_frustum;
     
     // remember old viewport and frustum, so we can restore them for the siblings. (it gets changed by the prepare_portal call)
-    LPoint2f old_reduced_viewport_min, old_reduced_viewport_max;
+    LPoint2 old_reduced_viewport_min, old_reduced_viewport_max;
     portal_viewer->get_reduced_viewport(old_reduced_viewport_min, old_reduced_viewport_max);
     PT(BoundingHexahedron) old_bh = portal_viewer->get_reduced_frustum();
 
@@ -394,8 +394,8 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
   // Now actually compute the bounding volume by putting it around all
   // of our vertices.
 
-  const LPoint3f *vertices_begin = &_vertices[0];
-  const LPoint3f *vertices_end = vertices_begin + _vertices.size();
+  const LPoint3 *vertices_begin = &_vertices[0];
+  const LPoint3 *vertices_end = vertices_begin + _vertices.size();
 
   // Now actually compute the bounding volume by putting it around all
   gbv->around(vertices_begin, vertices_end);
@@ -419,7 +419,7 @@ get_last_pos_state() {
   static CPT(RenderState) state = (const RenderState *)NULL;
   if (state == (const RenderState *)NULL) {
     state = RenderState::make
-      (ColorScaleAttrib::make(LVecBase4f(1.0f, 1.0f, 1.0f, 0.5f)),
+      (ColorScaleAttrib::make(LVecBase4(1.0f, 1.0f, 1.0f, 0.5f)),
        TransparencyAttrib::make(TransparencyAttrib::M_alpha));
   }
 
@@ -504,7 +504,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   int num_vertices = scan.get_uint16();
   _vertices.reserve(num_vertices);
   for (int i = 0; i < num_vertices; i++) {
-    LPoint3f vertex;
+    LPoint3 vertex;
     vertex.read_datagram(scan);
     _vertices.push_back(vertex);
   }

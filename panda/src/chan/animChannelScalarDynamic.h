@@ -44,10 +44,10 @@ public:
 
   virtual bool has_changed(int last_frame, double last_frac, 
                            int this_frame, double this_frac);
-  virtual void get_value(int frame, float &value);
+  virtual void get_value(int frame, PN_stdfloat &value);
 
 PUBLISHED:
-  void set_value(float value);
+  void set_value(PN_stdfloat value);
   void set_value_node(PandaNode *node);
 
 protected:
@@ -64,7 +64,7 @@ private:
   // This is used only if we are using the explicit set_value()
   // interface.
   bool _value_changed;
-  float _float_value;
+  PN_stdfloat _float_value;
 
 public:
   static void register_with_read_factory();

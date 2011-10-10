@@ -994,6 +994,14 @@
 // compiled-in font).
 #define COMPILE_IN_DEFAULT_FONT 1
 
+// Define this true to compile a special version of Panda to use a
+// "double" floating-precision type for most internal values, such as
+// positions and transforms, instead of the standard single-precision
+// "float" type.  This does not affect the default numeric type of
+// vertices, which is controlled by the runtime config variable
+// vertices-float64.  Presently *experimental*, do not use.
+#define STDFLOAT_DOUBLE
+
 // We use wxWidgets--the C++ library, not the Python library--for
 // building the application p3dcert, which is needed only when
 // building the plugin/runtime system.  This uses a wx-config program,

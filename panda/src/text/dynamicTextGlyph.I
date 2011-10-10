@@ -39,7 +39,7 @@ DynamicTextGlyph(int character, DynamicTextPage *page, int x, int y,
 //               and no Geom.
 ////////////////////////////////////////////////////////////////////
 INLINE DynamicTextGlyph::
-DynamicTextGlyph(int character, float advance) :
+DynamicTextGlyph(int character, PN_stdfloat advance) :
   TextGlyph(character),
   _page((DynamicTextPage *)NULL),
   _x(0), _y(0),

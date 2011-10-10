@@ -77,7 +77,7 @@ swap(PStatFrameData &other) {
 //               data.
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatFrameData::
-add_start(int index, float time) {
+add_start(int index, PN_stdfloat time) {
 #ifdef _DEBUG
   nassertv((index & 0x7fff) == index);
 #endif
@@ -94,7 +94,7 @@ add_start(int index, float time) {
 //               data.
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatFrameData::
-add_stop(int index, float time) {
+add_stop(int index, PN_stdfloat time) {
 #ifdef _DEBUG
   nassertv((index & 0x7fff) == index);
 #endif
@@ -111,7 +111,7 @@ add_stop(int index, float time) {
 //               collector to the frame data.
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatFrameData::
-add_level(int index, float level) {
+add_level(int index, PN_stdfloat level) {
 #ifdef _DEBUG
   nassertv((index & 0xffff) == index);
 #endif
@@ -128,7 +128,7 @@ add_level(int index, float level) {
 //               data.  This will generally be the time of the start
 //               of the frame.
 ////////////////////////////////////////////////////////////////////
-INLINE float PStatFrameData::
+INLINE PN_stdfloat PStatFrameData::
 get_start() const {
   if (is_empty()) {
     return 0.0;
@@ -144,7 +144,7 @@ get_start() const {
 //               data.  This will generally be the time of the end
 //               of the frame.
 ////////////////////////////////////////////////////////////////////
-INLINE float PStatFrameData::
+INLINE PN_stdfloat PStatFrameData::
 get_end() const {
   nassertr(!is_empty(), 0.0);
 
@@ -156,7 +156,7 @@ get_end() const {
 //       Access: Public
 //  Description: Returns the total time elapsed for the frame.
 ////////////////////////////////////////////////////////////////////
-INLINE float PStatFrameData::
+INLINE PN_stdfloat PStatFrameData::
 get_net_time() const {
   nassertr(!is_empty(), 0.0);
 
@@ -206,7 +206,7 @@ is_start(int n) const {
 //               guaranteed to be shared among all events returned
 //               from a given client).
 ////////////////////////////////////////////////////////////////////
-INLINE float PStatFrameData::
+INLINE PN_stdfloat PStatFrameData::
 get_time(int n) const {
   nassertr(n >= 0 && n < (int)_time_data.size(), 0);
   return _time_data[n]._value;
@@ -240,7 +240,7 @@ get_level_collector(int n) const {
 //       Access: Public
 //  Description: Returns the height of the nth level value.
 ////////////////////////////////////////////////////////////////////
-INLINE float PStatFrameData::
+INLINE PN_stdfloat PStatFrameData::
 get_level(int n) const {
   nassertr(n >= 0 && n < (int)_level_data.size(), 0);
   return _level_data[n]._value;

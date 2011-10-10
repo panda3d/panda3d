@@ -61,9 +61,9 @@ FltGeometry(FltHeader *header) : FltBeadID(header) {
 //               If has_color() is false, the result is white, but
 //               still reflects the transparency correctly.
 ////////////////////////////////////////////////////////////////////
-Colorf FltGeometry::
+LColor FltGeometry::
 get_color() const {
-  Colorf color;
+  LColor color;
 
   if (!has_color() || (_texwhite && has_texture())) {
     // Force this one white.
@@ -77,14 +77,14 @@ get_color() const {
               material->_diffuse[2],
               material->_alpha);
   } else {
-    RGBColorf rgb =
+    LRGBColor rgb =
       _header->get_rgb(_color_index, (_flags & F_packed_color) != 0,
                        _packed_color);
     color.set(rgb[0], rgb[1], rgb[2], 1.0);
   }
 
   // Modify the whole thing by our transparency.
-  float alpha = 1.0 - (_transparency / 65535.0);
+  PN_stdfloat alpha = 1.0 - (_transparency / 65535.0);
   color[3] *= alpha;
 
   return color;
@@ -97,8 +97,8 @@ get_color() const {
 //               color convention.
 ////////////////////////////////////////////////////////////////////
 void FltGeometry::
-set_color(const Colorf &color) {
-  set_rgb(RGBColorf(color[0], color[1], color[2]));
+set_color(const LColor &color) {
+  set_rgb(LRGBColor(color[0], color[1], color[2]));
   _transparency = (int)floor((1.0 - color[3]) * 65535.0);
 }
 
@@ -108,11 +108,11 @@ set_color(const Colorf &color) {
 //  Description: Returns the primary color of the face, as a
 //               three-component value ignoring transparency.
 ////////////////////////////////////////////////////////////////////
-RGBColorf FltGeometry::
+LRGBColor FltGeometry::
 get_rgb() const {
   if (!has_color() || (_texwhite && has_texture())) {
     // Force this one white.
-    return RGBColorf(1.0, 1.0, 1.0);
+    return LRGBColor(1.0, 1.0, 1.0);
   }
 
   if (has_material()) {
@@ -132,7 +132,7 @@ get_rgb() const {
 //               color convention; does not affect transparency.
 ////////////////////////////////////////////////////////////////////
 void FltGeometry::
-set_rgb(const RGBColorf &rgb) {
+set_rgb(const LRGBColor &rgb) {
   _packed_color.set_rgb(rgb);
   _flags = ((_flags & ~F_no_color) | F_packed_color);
 
@@ -159,9 +159,9 @@ has_alt_color() const {
 //               color of the face, as a four-component value
 //               (including alpha as the transparency channel).
 ////////////////////////////////////////////////////////////////////
-Colorf FltGeometry::
+LColor FltGeometry::
 get_alt_color() const {
-  nassertr(has_alt_color(), Colorf(0.0, 0.0, 0.0, 0.0));
+  nassertr(has_alt_color(), LColor(0.0, 0.0, 0.0, 0.0));
 
   return _header->get_color(_alt_color_index, (_flags & F_packed_color) != 0,
                             _alt_packed_color, _transparency);
@@ -174,9 +174,9 @@ get_alt_color() const {
 //               color of the face, as a three-component value
 //               ignoring transparency.
 ////////////////////////////////////////////////////////////////////
-RGBColorf FltGeometry::
+LRGBColor FltGeometry::
 get_alt_rgb() const {
-  nassertr(has_alt_color(), RGBColorf(0.0, 0.0, 0.0));
+  nassertr(has_alt_color(), LRGBColor(0.0, 0.0, 0.0));
 
   return _header->get_rgb(_alt_color_index, (_flags & F_packed_color) != 0,
                           _alt_packed_color);

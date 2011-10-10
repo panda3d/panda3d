@@ -30,8 +30,8 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_COLLIDE CollisionInvSphere : public CollisionSphere {
 PUBLISHED:
-  INLINE CollisionInvSphere(const LPoint3f &center, float radius);
-  INLINE CollisionInvSphere(float cx, float cy, float cz, float radius);
+  INLINE CollisionInvSphere(const LPoint3 &center, PN_stdfloat radius);
+  INLINE CollisionInvSphere(PN_stdfloat cx, PN_stdfloat cy, PN_stdfloat cz, PN_stdfloat radius);
 
 protected:
   INLINE CollisionInvSphere();

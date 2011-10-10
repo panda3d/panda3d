@@ -23,8 +23,8 @@
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionRay::
 CollisionRay() :
-  _origin(LPoint3f(0.0, 0.0, 0.0)),
-  _direction(LVector3f(0.0, 0.0, 0.0))
+  _origin(LPoint3(0.0, 0.0, 0.0)),
+  _direction(LVector3(0.0, 0.0, 0.0))
 {
 }
 
@@ -34,10 +34,10 @@ CollisionRay() :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionRay::
-CollisionRay(const LPoint3f &origin, const LVector3f &direction) :
+CollisionRay(const LPoint3 &origin, const LVector3 &direction) :
   _origin(origin), _direction(direction)
 {
-  nassertv(_direction != LPoint3f::zero());
+  nassertv(_direction != LPoint3::zero());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -46,11 +46,11 @@ CollisionRay(const LPoint3f &origin, const LVector3f &direction) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionRay::
-CollisionRay(float ox, float oy, float oz,
-             float dx, float dy, float dz) :
+CollisionRay(PN_stdfloat ox, PN_stdfloat oy, PN_stdfloat oz,
+             PN_stdfloat dx, PN_stdfloat dy, PN_stdfloat dz) :
   _origin(ox, oy, oz), _direction(dx, dy, dz)
 {
-  nassertv(_direction != LPoint3f::zero());
+  nassertv(_direction != LPoint3::zero());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -72,7 +72,7 @@ CollisionRay(const CollisionRay &copy) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionRay::
-set_origin(const LPoint3f &origin) {
+set_origin(const LPoint3 &origin) {
   _origin = origin;
   mark_internal_bounds_stale();
   mark_viz_stale();
@@ -84,8 +84,8 @@ set_origin(const LPoint3f &origin) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionRay::
-set_origin(float x, float y, float z) {
-  set_origin(LPoint3f(x, y, z));
+set_origin(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
+  set_origin(LPoint3(x, y, z));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -93,7 +93,7 @@ set_origin(float x, float y, float z) {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const LPoint3f &CollisionRay::
+INLINE const LPoint3 &CollisionRay::
 get_origin() const {
   return _origin;
 }
@@ -104,11 +104,11 @@ get_origin() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionRay::
-set_direction(const LVector3f &direction) {
+set_direction(const LVector3 &direction) {
   _direction = direction;
   mark_internal_bounds_stale();
   mark_viz_stale();
-  nassertv(_direction != LPoint3f::zero());
+  nassertv(_direction != LPoint3::zero());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -117,8 +117,8 @@ set_direction(const LVector3f &direction) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionRay::
-set_direction(float x, float y, float z) {
-  set_direction(LVector3f(x, y, z));
+set_direction(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
+  set_direction(LVector3(x, y, z));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -126,7 +126,7 @@ set_direction(float x, float y, float z) {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const LVector3f &CollisionRay::
+INLINE const LVector3 &CollisionRay::
 get_direction() const {
   return _direction;
 }
@@ -141,6 +141,6 @@ get_direction() const {
 //               the screen given a camera and a mouse location.
 ////////////////////////////////////////////////////////////////////
 INLINE bool CollisionRay::
-set_from_lens(LensNode *camera, float px, float py) {
-  return set_from_lens(camera, LPoint2f(px, py));
+set_from_lens(LensNode *camera, PN_stdfloat px, PN_stdfloat py) {
+  return set_from_lens(camera, LPoint2(px, py));
 }

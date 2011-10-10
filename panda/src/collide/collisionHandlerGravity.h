@@ -33,44 +33,44 @@ PUBLISHED:
   CollisionHandlerGravity();
   virtual ~CollisionHandlerGravity();
 
-  INLINE void set_offset(float offset);
-  INLINE float get_offset() const;
+  INLINE void set_offset(PN_stdfloat offset);
+  INLINE PN_stdfloat get_offset() const;
 
-  INLINE void set_reach(float reach);
-  INLINE float get_reach() const;
+  INLINE void set_reach(PN_stdfloat reach);
+  INLINE PN_stdfloat get_reach() const;
 
-  INLINE float get_airborne_height() const;
+  INLINE PN_stdfloat get_airborne_height() const;
   INLINE bool is_on_ground() const;
-  INLINE float get_impact_velocity() const;
-  INLINE const LVector3f &get_contact_normal() const;
+  INLINE PN_stdfloat get_impact_velocity() const;
+  INLINE const LVector3 &get_contact_normal() const;
 
-  INLINE void add_velocity(float velocity);
-  INLINE void set_velocity(float velocity);
-  INLINE float get_velocity() const;
+  INLINE void add_velocity(PN_stdfloat velocity);
+  INLINE void set_velocity(PN_stdfloat velocity);
+  INLINE PN_stdfloat get_velocity() const;
 
-  INLINE void set_gravity(float gravity);
-  INLINE float get_gravity() const;
+  INLINE void set_gravity(PN_stdfloat gravity);
+  INLINE PN_stdfloat get_gravity() const;
 
-  INLINE void set_max_velocity(float max_vel);
-  INLINE float get_max_velocity() const;
+  INLINE void set_max_velocity(PN_stdfloat max_vel);
+  INLINE PN_stdfloat get_max_velocity() const;
 
   INLINE void set_legacy_mode(bool legacy_mode);
   INLINE bool get_legacy_mode() const;
 
 protected:
-  float set_highest_collision(const NodePath &target_node_path, const NodePath &from_node_path, const Entries &entries);
+  PN_stdfloat set_highest_collision(const NodePath &target_node_path, const NodePath &from_node_path, const Entries &entries);
   virtual bool handle_entries();
-  virtual void apply_linear_force(ColliderDef &def, const LVector3f &force);
+  virtual void apply_linear_force(ColliderDef &def, const LVector3 &force);
 
 private:
-  float _offset;
-  float _reach;
-  float _airborne_height;
-  float _impact_velocity;
-  float _gravity;
-  float _current_velocity;
-  float _max_velocity;
-  LVector3f _contact_normal;
+  PN_stdfloat _offset;
+  PN_stdfloat _reach;
+  PN_stdfloat _airborne_height;
+  PN_stdfloat _impact_velocity;
+  PN_stdfloat _gravity;
+  PN_stdfloat _current_velocity;
+  PN_stdfloat _max_velocity;
+  LVector3 _contact_normal;
   bool _legacy_mode;
 
 

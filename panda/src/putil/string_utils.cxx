@@ -408,8 +408,8 @@ string_to_double(const string &str, double &result) {
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
 bool
-string_to_float(const string &str, float &result) {
+string_to_float(const string &str, PN_stdfloat &result) {
   string tail;
-  result = (float)string_to_double(str, tail);
+  result = (PN_stdfloat)string_to_double(str, tail);
   return tail.empty();
 }

@@ -66,8 +66,8 @@ private:
   int _button_events_output;
 
   bool _has_mouse;
-  LPoint2f _mouse_xy;
-  LPoint2f _mouse_pixel_xy;
+  LPoint2 _mouse_xy;
+  LPoint2 _mouse_pixel_xy;
   PT(ButtonEventList) _live_button_events;
   PT(ButtonEventList) _save_button_events;
 

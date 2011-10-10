@@ -184,7 +184,7 @@ make_vertex_columns(GeomVertexArrayFormat *format) const {
 
   nassertr(_column_name != NULL, 0);
 
-  format->add_column(_column_name, _num_bound_params, GeomEnums::NT_float32, _column_contents);
+  format->add_column(_column_name, _num_bound_params, GeomEnums::NT_stdfloat, _column_contents);
   return 1;
 }
 

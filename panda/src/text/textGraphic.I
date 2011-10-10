@@ -20,7 +20,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE TextGraphic::
 TextGraphic() {
-  _frame = LVecBase4f::zero();
+  _frame = LVecBase4::zero();
   _instance_flag = false;
 }
 
@@ -30,7 +30,7 @@ TextGraphic() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE TextGraphic::
-TextGraphic(const NodePath &model, const LVecBase4f &frame) :
+TextGraphic(const NodePath &model, const LVecBase4 &frame) :
   _model(model),
   _frame(frame),
   _instance_flag(false)
@@ -43,7 +43,7 @@ TextGraphic(const NodePath &model, const LVecBase4f &frame) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE TextGraphic::
-TextGraphic(const NodePath &model, float left, float right, float bottom, float top) :
+TextGraphic(const NodePath &model, PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top) :
   _model(model),
   _frame(left, right, bottom, top),
   _instance_flag(false)
@@ -87,7 +87,7 @@ set_model(const NodePath &model) {
 //               completely within it, but if it does not, it may
 //               visually overlap with nearby text.
 ////////////////////////////////////////////////////////////////////
-INLINE LVecBase4f TextGraphic::
+INLINE LVecBase4 TextGraphic::
 get_frame() const {
   return _frame;
 }
@@ -99,7 +99,7 @@ get_frame() const {
 //               frame for the graphic.  See get_frame().
 ////////////////////////////////////////////////////////////////////
 INLINE void TextGraphic::
-set_frame(const LVecBase4f &frame) {
+set_frame(const LVecBase4 &frame) {
   _frame = frame;
 }
 
@@ -110,7 +110,7 @@ set_frame(const LVecBase4f &frame) {
 //               frame for the graphic.  See get_frame().
 ////////////////////////////////////////////////////////////////////
 INLINE void TextGraphic::
-set_frame(float left, float right, float bottom, float top) {
+set_frame(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top) {
   _frame.set(left, right, bottom, top);
 }
 

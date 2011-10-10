@@ -61,7 +61,7 @@ make_copy() {
 // Description : Generates a location for a new particle
 ////////////////////////////////////////////////////////////////////
 void PointEmitter::
-assign_initial_position(LPoint3f& pos) {
+assign_initial_position(LPoint3& pos) {
   pos = _location;
 }
 
@@ -71,7 +71,7 @@ assign_initial_position(LPoint3f& pos) {
 // Description : Generates a velocity for a new particle
 ////////////////////////////////////////////////////////////////////
 void PointEmitter::
-assign_initial_velocity(LVector3f& vel) {
+assign_initial_velocity(LVector3& vel) {
   vel.set(0,0,0);
 }
 

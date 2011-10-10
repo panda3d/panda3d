@@ -28,7 +28,7 @@ TransformBlend() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE TransformBlend::
-TransformBlend(const VertexTransform *transform0, float) {
+TransformBlend(const VertexTransform *transform0, PN_stdfloat) {
   add_transform(transform0, 1.0f);
 }
 
@@ -38,8 +38,8 @@ TransformBlend(const VertexTransform *transform0, float) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE TransformBlend::
-TransformBlend(const VertexTransform *transform0, float weight0,
-               const VertexTransform *transform1, float weight1) {
+TransformBlend(const VertexTransform *transform0, PN_stdfloat weight0,
+               const VertexTransform *transform1, PN_stdfloat weight1) {
   add_transform(transform0, weight0);
   add_transform(transform1, weight1);
   normalize_weights();
@@ -51,9 +51,9 @@ TransformBlend(const VertexTransform *transform0, float weight0,
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE TransformBlend::
-TransformBlend(const VertexTransform *transform0, float weight0,
-               const VertexTransform *transform1, float weight1,
-               const VertexTransform *transform2, float weight2) {
+TransformBlend(const VertexTransform *transform0, PN_stdfloat weight0,
+               const VertexTransform *transform1, PN_stdfloat weight1,
+               const VertexTransform *transform2, PN_stdfloat weight2) {
   add_transform(transform0, weight0);
   add_transform(transform1, weight1);
   add_transform(transform2, weight2);
@@ -66,10 +66,10 @@ TransformBlend(const VertexTransform *transform0, float weight0,
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE TransformBlend::
-TransformBlend(const VertexTransform *transform0, float weight0,
-               const VertexTransform *transform1, float weight1,
-               const VertexTransform *transform2, float weight2,
-               const VertexTransform *transform3, float weight3) {
+TransformBlend(const VertexTransform *transform0, PN_stdfloat weight0,
+               const VertexTransform *transform1, PN_stdfloat weight1,
+               const VertexTransform *transform2, PN_stdfloat weight2,
+               const VertexTransform *transform3, PN_stdfloat weight3) {
   add_transform(transform0, weight0);
   add_transform(transform1, weight1);
   add_transform(transform2, weight2);
@@ -168,7 +168,7 @@ get_transform(int n) const {
 //  Description: Returns the weight associated with the nth transform
 //               stored in the blend object.
 ////////////////////////////////////////////////////////////////////
-INLINE float TransformBlend::
+INLINE PN_stdfloat TransformBlend::
 get_weight(int n) const {
   nassertr(n >= 0 && n < (int)_entries.size(), 0.0f);
   return _entries[n]._weight;
@@ -193,7 +193,7 @@ set_transform(int n, const VertexTransform *transform) {
 //               stored in the blend object.
 ////////////////////////////////////////////////////////////////////
 INLINE void TransformBlend::
-set_weight(int n, float weight) {
+set_weight(int n, PN_stdfloat weight) {
   nassertv(n >= 0 && n < (int)_entries.size());
   _entries[n]._weight = weight;
 }
@@ -225,7 +225,7 @@ update_blend(Thread *current_thread) const {
 //               cache is up-to-date before calling this.
 ////////////////////////////////////////////////////////////////////
 INLINE void TransformBlend::
-get_blend(LMatrix4f &result, Thread *current_thread) const {
+get_blend(LMatrix4 &result, Thread *current_thread) const {
   CDReader cdata(_cycler, current_thread);
   result = cdata->_result;
 }
@@ -239,7 +239,7 @@ get_blend(LMatrix4f &result, Thread *current_thread) const {
 //               cache is up-to-date before calling this.
 ////////////////////////////////////////////////////////////////////
 INLINE void TransformBlend::
-transform_point(LPoint4f &point, Thread *current_thread) const {
+transform_point(LPoint4 &point, Thread *current_thread) const {
   if (!_entries.empty()) {
     CDReader cdata(_cycler, current_thread);
     point = point * cdata->_result;
@@ -255,7 +255,7 @@ transform_point(LPoint4f &point, Thread *current_thread) const {
 //               cache is up-to-date before calling this.
 ////////////////////////////////////////////////////////////////////
 INLINE void TransformBlend::
-transform_point(LPoint3f &point, Thread *current_thread) const {
+transform_point(LPoint3 &point, Thread *current_thread) const {
   if (!_entries.empty()) {
     CDReader cdata(_cycler, current_thread);
     point = point * cdata->_result;
@@ -271,12 +271,114 @@ transform_point(LPoint3f &point, Thread *current_thread) const {
 //               cache is up-to-date before calling this.
 ////////////////////////////////////////////////////////////////////
 INLINE void TransformBlend::
-transform_vector(LVector3f &vector, Thread *current_thread) const {
+transform_vector(LVector3 &vector, Thread *current_thread) const {
   if (!_entries.empty()) {
     CDReader cdata(_cycler, current_thread);
     vector = vector * cdata->_result;
   }
 }
+
+#ifndef STDFLOAT_DOUBLE
+////////////////////////////////////////////////////////////////////
+//     Function: TransformBlend::transform_point (double)
+//       Access: Published
+//  Description: Transforms the indicated point by the blend matrix.
+//
+//               You should call update_blend() to ensure that the
+//               cache is up-to-date before calling this.
+////////////////////////////////////////////////////////////////////
+INLINE void TransformBlend::
+transform_point(LPoint4d &point, Thread *current_thread) const {
+  if (!_entries.empty()) {
+    CDReader cdata(_cycler, current_thread);
+    point = point * LCAST(double, cdata->_result);
+  }
+}
+#else  // STDFLOAT_DOUBLE
+////////////////////////////////////////////////////////////////////
+//     Function: TransformBlend::transform_point (float)
+//       Access: Published
+//  Description: Transforms the indicated point by the blend matrix.
+//
+//               You should call update_blend() to ensure that the
+//               cache is up-to-date before calling this.
+////////////////////////////////////////////////////////////////////
+INLINE void TransformBlend::
+transform_point(LPoint4f &point, Thread *current_thread) const {
+  if (!_entries.empty()) {
+    CDReader cdata(_cycler, current_thread);
+    point = point * LCAST(float, cdata->_result);
+  }
+}
+#endif  // STDFLOAT_DOUBLE
+
+#ifndef STDFLOAT_DOUBLE
+////////////////////////////////////////////////////////////////////
+//     Function: TransformBlend::transform_point (double)
+//       Access: Published
+//  Description: Transforms the indicated point by the blend matrix.
+//
+//               You should call update_blend() to ensure that the
+//               cache is up-to-date before calling this.
+////////////////////////////////////////////////////////////////////
+INLINE void TransformBlend::
+transform_point(LPoint3d &point, Thread *current_thread) const {
+  if (!_entries.empty()) {
+    CDReader cdata(_cycler, current_thread);
+    point = point * LCAST(double, cdata->_result);
+  }
+}
+#else  // STDFLOAT_DOUBLE
+////////////////////////////////////////////////////////////////////
+//     Function: TransformBlend::transform_point (float)
+//       Access: Published
+//  Description: Transforms the indicated point by the blend matrix.
+//
+//               You should call update_blend() to ensure that the
+//               cache is up-to-date before calling this.
+////////////////////////////////////////////////////////////////////
+INLINE void TransformBlend::
+transform_point(LPoint3f &point, Thread *current_thread) const {
+  if (!_entries.empty()) {
+    CDReader cdata(_cycler, current_thread);
+    point = point * LCAST(float, cdata->_result);
+  }
+}
+#endif  // STDFLOAT_DOUBLE
+
+#ifndef STDFLOAT_DOUBLE
+////////////////////////////////////////////////////////////////////
+//     Function: TransformBlend::transform_vector (double)
+//       Access: Published
+//  Description: Transforms the indicated vector by the blend matrix.
+//
+//               You should call update_blend() to ensure that the
+//               cache is up-to-date before calling this.
+////////////////////////////////////////////////////////////////////
+INLINE void TransformBlend::
+transform_vector(LVector3d &vector, Thread *current_thread) const {
+  if (!_entries.empty()) {
+    CDReader cdata(_cycler, current_thread);
+    vector = vector * LCAST(double, cdata->_result);
+  }
+}
+#else  // STDFLOAT_DOUBLE
+////////////////////////////////////////////////////////////////////
+//     Function: TransformBlend::transform_vector (float)
+//       Access: Published
+//  Description: Transforms the indicated vector by the blend matrix.
+//
+//               You should call update_blend() to ensure that the
+//               cache is up-to-date before calling this.
+////////////////////////////////////////////////////////////////////
+INLINE void TransformBlend::
+transform_vector(LVector3f &vector, Thread *current_thread) const {
+  if (!_entries.empty()) {
+    CDReader cdata(_cycler, current_thread);
+    vector = vector * LCAST(float, cdata->_result);
+  }
+}
+#endif  // STDFLOAT_DOUBLE
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TransformBlend::get_modified
@@ -316,7 +418,7 @@ operator < (const TransformBlend::TransformEntry &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE TransformBlend::CData::
 CData() :
-  _result(LMatrix4f::ident_mat())
+  _result(LMatrix4::ident_mat())
 {
 }
 

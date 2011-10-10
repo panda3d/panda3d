@@ -38,32 +38,32 @@ AudioSound() {
 
 
 void AudioSound::
-set_3d_attributes(float px, float py, float pz, float vx, float vy, float vz) {
+set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz) {
   // Intentionally blank.
 }
 
 void AudioSound::
-get_3d_attributes(float *px, float *py, float *pz, float *vx, float *vy, float *vz) {
+get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz) {
   // Intentionally blank.
 }
 
 void AudioSound::
-set_3d_min_distance(float dist) {
+set_3d_min_distance(PN_stdfloat dist) {
   // Intentionally blank.
 }
 
-float AudioSound::
+PN_stdfloat AudioSound::
 get_3d_min_distance() const {
   // Intentionally blank.
   return 0.0f;
 }
 
 void AudioSound::
-set_3d_max_distance(float dist) {
+set_3d_max_distance(PN_stdfloat dist) {
   // Intentionally blank.
 }
 
-float AudioSound::
+PN_stdfloat AudioSound::
 get_3d_max_distance() const {
   // Intentionally blank.
   return 0.0f;
@@ -74,7 +74,7 @@ get_3d_max_distance() const {
 //       Access: Published
 //  Description: For use only with FMOD.
 ////////////////////////////////////////////////////////////////////
-float AudioSound::
+PN_stdfloat AudioSound::
 get_speaker_mix(int speaker) {
     // intentionally blank
     return 0.0;
@@ -86,7 +86,7 @@ get_speaker_mix(int speaker) {
 //  Description: For use only with FMOD.
 ////////////////////////////////////////////////////////////////////
 void AudioSound::
-set_speaker_mix(float frontleft, float frontright, float center, float sub, float backleft, float backright, float sideleft, float  sideright) {
+set_speaker_mix(PN_stdfloat frontleft, PN_stdfloat frontright, PN_stdfloat center, PN_stdfloat sub, PN_stdfloat backleft, PN_stdfloat backright, PN_stdfloat sideleft, PN_stdfloat  sideright) {
     // intentionally blank
 }
 
@@ -95,7 +95,7 @@ set_speaker_mix(float frontleft, float frontright, float center, float sub, floa
 //       Access: Published
 //  Description: For use only with Miles.
 ////////////////////////////////////////////////////////////////////
-float AudioSound::
+PN_stdfloat AudioSound::
 get_speaker_level(int index) {
   // intentionally blank
   return 0.0;
@@ -107,7 +107,7 @@ get_speaker_level(int index) {
 //  Description: For use only with Miles.
 ////////////////////////////////////////////////////////////////////
 void AudioSound::
-set_speaker_levels(float level1, float level2, float level3, float level4, float level5, float level6, float level7, float level8, float level9) {
+set_speaker_levels(PN_stdfloat level1, PN_stdfloat level2, PN_stdfloat level3, PN_stdfloat level4, PN_stdfloat level5, PN_stdfloat level6, PN_stdfloat level7, PN_stdfloat level8, PN_stdfloat level9) {
   // intentionally blank
 }
 

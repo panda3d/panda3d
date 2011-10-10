@@ -132,7 +132,7 @@ test_intersection(const CollisionEntry &) const {
 //  Description: Transforms the solid by the indicated matrix.
 ////////////////////////////////////////////////////////////////////
 void CollisionSolid::
-xform(const LMatrix4f &mat) {
+xform(const LMatrix4 &mat) {
   LightMutexHolder holder(_lock);
   if ((_flags & F_effective_normal) != 0) {
     _effective_normal = _effective_normal * mat;
@@ -224,20 +224,6 @@ write(ostream &out, int indent_level) const {
 PT(BoundingVolume) CollisionSolid::
 compute_internal_bounds() const {
   return new BoundingSphere;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSolid::test_intersection_from_ds_solid
-//       Access: Protected, Virtual
-//  Description: This is part of the double-dispatch implementation of
-//               test_intersection().  It is called when the "from"
-//               object is a DSSolid.
-////////////////////////////////////////////////////////////////////
-PT(CollisionEntry) CollisionSolid::
-test_intersection_from_ds_solid(const CollisionEntry &) const {
-  report_undefined_intersection_test(CollisionSphere::get_class_type(),
-                                     get_type());
-  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -470,7 +456,7 @@ get_solid_viz_state() {
     static CPT(RenderState) intangible_state = (const RenderState *)NULL;
     if (intangible_state == (const RenderState *)NULL) {
       intangible_state = base_state->add_attrib
-        (ColorAttrib::make_flat(Colorf(1.0f, 0.3f, 0.5f, 0.5f)));
+        (ColorAttrib::make_flat(LColor(1.0f, 0.3, 0.5f, 0.5f)));
     }
     return intangible_state;
 
@@ -478,7 +464,7 @@ get_solid_viz_state() {
     static CPT(RenderState) fakenormal_state = (const RenderState *)NULL;
     if (fakenormal_state == (const RenderState *)NULL) {
       fakenormal_state = base_state->add_attrib
-        (ColorAttrib::make_flat(Colorf(0.5f, 0.5f, 1.0f, 0.5f)));
+        (ColorAttrib::make_flat(LColor(0.5f, 0.5f, 1.0f, 0.5f)));
     }
     return fakenormal_state;
 
@@ -486,7 +472,7 @@ get_solid_viz_state() {
     static CPT(RenderState) tangible_state = (const RenderState *)NULL;
     if (tangible_state == (const RenderState *)NULL) {
       tangible_state = base_state->add_attrib
-        (ColorAttrib::make_flat(Colorf(1.0f, 1.0f, 1.0f, 0.5f)));
+        (ColorAttrib::make_flat(LColor(1.0f, 1.0f, 1.0f, 0.5f)));
     }
     return tangible_state;
   }
@@ -519,7 +505,7 @@ get_wireframe_viz_state() {
     static CPT(RenderState) intangible_state = (const RenderState *)NULL;
     if (intangible_state == (const RenderState *)NULL) {
       intangible_state = base_state->add_attrib
-        (ColorAttrib::make_flat(Colorf(1.0f, 1.0f, 0.0f, 1.0f)));
+        (ColorAttrib::make_flat(LColor(1.0f, 1.0f, 0.0f, 1.0f)));
     }
     return intangible_state;
 
@@ -527,7 +513,7 @@ get_wireframe_viz_state() {
     static CPT(RenderState) fakenormal_state = (const RenderState *)NULL;
     if (fakenormal_state == (const RenderState *)NULL) {
       fakenormal_state = base_state->add_attrib
-        (ColorAttrib::make_flat(Colorf(0.0f, 0.0f, 1.0f, 1.0f)));
+        (ColorAttrib::make_flat(LColor(0.0f, 0.0f, 1.0f, 1.0f)));
     }
     return fakenormal_state;
 
@@ -535,7 +521,7 @@ get_wireframe_viz_state() {
     static CPT(RenderState) tangible_state = (const RenderState *)NULL;
     if (tangible_state == (const RenderState *)NULL) {
       tangible_state = base_state->add_attrib
-        (ColorAttrib::make_flat(Colorf(0.0f, 0.0f, 1.0f, 1.0f)));
+        (ColorAttrib::make_flat(LColor(0.0f, 0.0f, 1.0f, 1.0f)));
     }
     return tangible_state;
   }
@@ -594,7 +580,7 @@ get_solid_bounds_viz_state() {
     static CPT(RenderState) intangible_state = (const RenderState *)NULL;
     if (intangible_state == (const RenderState *)NULL) {
       intangible_state = base_state->add_attrib
-        (ColorAttrib::make_flat(Colorf(1.0f, 1.0f, 0.5f, 0.3f)));
+        (ColorAttrib::make_flat(LColor(1.0f, 1.0f, 0.5f, 0.3)));
     }
     return intangible_state;
 
@@ -602,7 +588,7 @@ get_solid_bounds_viz_state() {
     static CPT(RenderState) fakenormal_state = (const RenderState *)NULL;
     if (fakenormal_state == (const RenderState *)NULL) {
       fakenormal_state = base_state->add_attrib
-        (ColorAttrib::make_flat(Colorf(0.5f, 0.5f, 1.0f, 0.3f)));
+        (ColorAttrib::make_flat(LColor(0.5f, 0.5f, 1.0f, 0.3)));
     }
     return fakenormal_state;
 
@@ -610,7 +596,7 @@ get_solid_bounds_viz_state() {
     static CPT(RenderState) tangible_state = (const RenderState *)NULL;
     if (tangible_state == (const RenderState *)NULL) {
       tangible_state = base_state->add_attrib
-        (ColorAttrib::make_flat(Colorf(1.0f, 1.0f, 0.5f, 0.3f)));
+        (ColorAttrib::make_flat(LColor(1.0f, 1.0f, 0.5f, 0.3)));
     }
     return tangible_state;
   }
@@ -637,7 +623,7 @@ get_wireframe_bounds_viz_state() {
       (CullFaceAttrib::make(CullFaceAttrib::M_cull_none),
        RenderModeAttrib::make(RenderModeAttrib::M_wireframe),
        TransparencyAttrib::make(TransparencyAttrib::M_none),
-       ColorAttrib::make_flat(Colorf(1.0f, 0.0f, 0.0f, 1.0f)));
+       ColorAttrib::make_flat(LColor(1.0f, 0.0f, 0.0f, 1.0f)));
   }
 
   return base_state;

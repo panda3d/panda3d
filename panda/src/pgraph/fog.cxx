@@ -116,7 +116,7 @@ make_copy() const {
 //               kinds of nodes, this does nothing.
 ////////////////////////////////////////////////////////////////////
 void Fog::
-xform(const LMatrix4f &mat) {
+xform(const LMatrix4 &mat) {
   _linear_onset_point = _linear_onset_point * mat;
   _linear_opaque_point = _linear_opaque_point * mat;
 }
@@ -153,9 +153,9 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void Fog::
 adjust_to_camera(const TransformState *camera_transform) {
-  LVector3f forward = LVector3f::forward();
+  LVector3 forward = LVector3::forward();
 
-  LPoint3f onset_point, opaque_point;
+  LPoint3 onset_point, opaque_point;
   if (get_num_parents() != 0) {
     // Linear fog is relative to the fog's net transform in the scene
     // graph.
@@ -164,12 +164,12 @@ adjust_to_camera(const TransformState *camera_transform) {
     CPT(TransformState) rel_transform = 
       camera_transform->invert_compose(this_np.get_net_transform());
     
-    const LMatrix4f &mat = rel_transform->get_mat();
+    const LMatrix4 &mat = rel_transform->get_mat();
 
     // How far out of whack are we?
-    LVector3f fog_vector = (_linear_opaque_point - _linear_onset_point) * mat;
+    LVector3 fog_vector = (_linear_opaque_point - _linear_onset_point) * mat;
     fog_vector.normalize();
-    float cosa = fog_vector.dot(forward);
+    PN_stdfloat cosa = fog_vector.dot(forward);
     if (cabs(cosa) < _linear_fallback_cosa) {
       // The fog vector is too far from the eye vector; use the
       // fallback mode.
@@ -194,7 +194,7 @@ adjust_to_camera(const TransformState *camera_transform) {
 //  Description: Retrieves the current onset and offset ranges.
 ////////////////////////////////////////////////////////////////////
 void Fog::
-get_linear_range(float &onset, float &opaque) {
+get_linear_range(PN_stdfloat &onset, PN_stdfloat &opaque) {
   onset = _transformed_onset;
   opaque = _transformed_opaque;
 }
@@ -224,10 +224,10 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   _color.write_datagram(dg);
   _linear_onset_point.write_datagram(dg);
   _linear_opaque_point.write_datagram(dg);
-  dg.add_float32(_exp_density);
-  dg.add_float32(_linear_fallback_cosa);
-  dg.add_float32(_linear_fallback_onset);
-  dg.add_float32(_linear_fallback_opaque);
+  dg.add_stdfloat(_exp_density);
+  dg.add_stdfloat(_linear_fallback_cosa);
+  dg.add_stdfloat(_linear_fallback_onset);
+  dg.add_stdfloat(_linear_fallback_opaque);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -265,8 +265,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _color.read_datagram(scan);
   _linear_onset_point.read_datagram(scan);
   _linear_opaque_point.read_datagram(scan);
-  _exp_density = scan.get_float32();
-  _linear_fallback_cosa = scan.get_float32();
-  _linear_fallback_onset = scan.get_float32();
-  _linear_fallback_opaque = scan.get_float32();
+  _exp_density = scan.get_stdfloat();
+  _linear_fallback_cosa = scan.get_stdfloat();
+  _linear_fallback_onset = scan.get_stdfloat();
+  _linear_fallback_opaque = scan.get_stdfloat();
 }

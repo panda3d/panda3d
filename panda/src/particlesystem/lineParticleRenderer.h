@@ -34,8 +34,8 @@ class EXPCL_PANDAPHYSICS LineParticleRenderer : public BaseParticleRenderer {
 PUBLISHED:
   LineParticleRenderer();
   LineParticleRenderer(const LineParticleRenderer& copy);
-  LineParticleRenderer(const Colorf& head,
-                       const Colorf& tail,
+  LineParticleRenderer(const LColor& head,
+                       const LColor& tail,
                        ParticleRendererAlphaMode alpha_mode);
 
   virtual ~LineParticleRenderer();
@@ -44,21 +44,21 @@ public:
   virtual BaseParticleRenderer *make_copy();
 
 PUBLISHED:
-  INLINE void set_head_color(const Colorf& c);
-  INLINE void set_tail_color(const Colorf& c);
+  INLINE void set_head_color(const LColor& c);
+  INLINE void set_tail_color(const LColor& c);
 
-  INLINE const Colorf& get_head_color() const;
-  INLINE const Colorf& get_tail_color() const;
+  INLINE const LColor& get_head_color() const;
+  INLINE const LColor& get_tail_color() const;
   
-  INLINE void set_line_scale_factor(float sf);
-  INLINE float get_line_scale_factor() const;
+  INLINE void set_line_scale_factor(PN_stdfloat sf);
+  INLINE PN_stdfloat get_line_scale_factor() const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
 
 private:
-  Colorf _head_color;
-  Colorf _tail_color;
+  LColor _head_color;
+  LColor _tail_color;
 
   PT(Geom) _line_primitive;
   PT(GeomLines) _lines;
@@ -66,10 +66,10 @@ private:
 
   int _max_pool_size;
 
-  LPoint3f _aabb_min;
-  LPoint3f _aabb_max;
+  LPoint3 _aabb_min;
+  LPoint3 _aabb_max;
 
-  float _line_scale_factor;
+  PN_stdfloat _line_scale_factor;
 
   virtual void birth_particle(int index);
   virtual void kill_particle(int index);

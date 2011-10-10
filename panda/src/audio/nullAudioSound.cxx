@@ -19,7 +19,7 @@ TypeHandle NullAudioSound::_type_handle;
 
 namespace {
   static const string blank="";
-  //  static float no_attributes [] = {0.0f,0.0f,0.0f, 0.0f,0.0f,0.0f};
+  //  static PN_stdfloat no_attributes [] = {0.0f,0.0f,0.0f, 0.0f,0.0f,0.0f};
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -59,35 +59,35 @@ unsigned long NullAudioSound::get_loop_count() const {
   return 0; 
 }
   
-void NullAudioSound::set_time(float) {
+void NullAudioSound::set_time(PN_stdfloat) {
   // Intentionally blank.
 }
 
-float NullAudioSound::get_time() const {
+PN_stdfloat NullAudioSound::get_time() const {
   return 0; 
 }
 
-void NullAudioSound::set_volume(float) {
+void NullAudioSound::set_volume(PN_stdfloat) {
   // Intentionally blank.
 }
 
-float NullAudioSound::get_volume() const {
+PN_stdfloat NullAudioSound::get_volume() const {
   return 0; 
 }
 
-void NullAudioSound::set_balance(float) {
+void NullAudioSound::set_balance(PN_stdfloat) {
   // Intentionally blank.
 }
 
-float NullAudioSound::get_balance() const {
+PN_stdfloat NullAudioSound::get_balance() const {
   return 0; 
 }
 
-void NullAudioSound::set_play_rate(float) {
+void NullAudioSound::set_play_rate(PN_stdfloat) {
   // Intentionally blank.
 }
 
-float NullAudioSound::get_play_rate() const {
+PN_stdfloat NullAudioSound::get_play_rate() const {
   return 0; 
 }
 
@@ -111,32 +111,32 @@ const string& NullAudioSound::get_name() const {
   return blank;
 }
 
-float NullAudioSound::length() const {
+PN_stdfloat NullAudioSound::length() const {
   return 0;
 }
 
-void NullAudioSound::set_3d_attributes(float px, float py, float pz, float vx, float vy, float vz) {
+void NullAudioSound::set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz) {
   // Intentionally blank.
 }
 
-void NullAudioSound::get_3d_attributes(float *px, float *py, float *pz, float *vx, float *vy, float *vz) {
+void NullAudioSound::get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz) {
   // Intentionally blank.
 }
 
-void NullAudioSound::set_3d_min_distance(float dist) {
+void NullAudioSound::set_3d_min_distance(PN_stdfloat dist) {
   // Intentionally blank.
 }
 
-float NullAudioSound::get_3d_min_distance() const {
+PN_stdfloat NullAudioSound::get_3d_min_distance() const {
   // Intentionally blank.
   return 0.0f;
 }
 
-void NullAudioSound::set_3d_max_distance(float dist) {
+void NullAudioSound::set_3d_max_distance(PN_stdfloat dist) {
   // Intentionally blank.
 }
 
-float NullAudioSound::get_3d_max_distance() const {
+PN_stdfloat NullAudioSound::get_3d_max_distance() const {
   // Intentionally blank.
   return 0.0f;
 }

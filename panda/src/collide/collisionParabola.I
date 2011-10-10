@@ -31,7 +31,7 @@ CollisionParabola() :
 //               t2 in the parametric space of the parabola.
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionParabola::
-CollisionParabola(const Parabolaf &parabola, float t1, float t2) :
+CollisionParabola(const LParabola &parabola, PN_stdfloat t1, PN_stdfloat t2) :
   _parabola(parabola),
   _t1(t1), _t2(t2)
 {
@@ -55,7 +55,7 @@ CollisionParabola(const CollisionParabola &copy) :
 //  Description: Replaces the parabola specified by this solid.
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionParabola::
-set_parabola(const Parabolaf &parabola) {
+set_parabola(const LParabola &parabola) {
   _parabola = parabola;
   mark_internal_bounds_stale();
   mark_viz_stale();
@@ -66,7 +66,7 @@ set_parabola(const Parabolaf &parabola) {
 //       Access: Public
 //  Description: Returns the parabola specified by this solid.
 ////////////////////////////////////////////////////////////////////
-INLINE const Parabolaf &CollisionParabola::
+INLINE const LParabola &CollisionParabola::
 get_parabola() const {
   return _parabola;
 }
@@ -77,7 +77,7 @@ get_parabola() const {
 //  Description: Changes the starting point on the parabola.
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionParabola::
-set_t1(float t1) {
+set_t1(PN_stdfloat t1) {
   _t1 = t1;
   mark_internal_bounds_stale();
   mark_viz_stale();
@@ -88,7 +88,7 @@ set_t1(float t1) {
 //       Access: Public
 //  Description: Returns the starting point on the parabola.
 ////////////////////////////////////////////////////////////////////
-INLINE float CollisionParabola::
+INLINE PN_stdfloat CollisionParabola::
 get_t1() const {
   return _t1;
 }
@@ -99,7 +99,7 @@ get_t1() const {
 //  Description: Changes the ending point on the parabola.
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionParabola::
-set_t2(float t2) {
+set_t2(PN_stdfloat t2) {
   _t2 = t2;
   mark_internal_bounds_stale();
   mark_viz_stale();
@@ -110,7 +110,7 @@ set_t2(float t2) {
 //       Access: Public
 //  Description: Returns the ending point on the parabola.
 ////////////////////////////////////////////////////////////////////
-INLINE float CollisionParabola::
+INLINE PN_stdfloat CollisionParabola::
 get_t2() const {
   return _t2;
 }

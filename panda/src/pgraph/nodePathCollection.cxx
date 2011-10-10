@@ -609,7 +609,7 @@ set_texture_off(TextureStage *stage, int priority) {
 //  Description: Colors all NodePaths in the collection
 ////////////////////////////////////////////////////////////////////
 void NodePathCollection::
-set_color(const Colorf &color, int priority) {
+set_color(const LColor &color, int priority) {
   set_attrib(ColorAttrib::make_flat(color), priority);
 }
 
@@ -620,7 +620,7 @@ set_color(const Colorf &color, int priority) {
 //               collection.  The existing color scale is replaced.
 ////////////////////////////////////////////////////////////////////
 void NodePathCollection::
-set_color_scale(const LVecBase4f &scale, int priority) {
+set_color_scale(const LVecBase4 &scale, int priority) {
   StateMap state_map;
 
   NodePaths::iterator npi;
@@ -648,7 +648,7 @@ set_color_scale(const LVecBase4f &scale, int priority) {
 //               multiplied by the specified color scale.
 ////////////////////////////////////////////////////////////////////
 void NodePathCollection::
-compose_color_scale(const LVecBase4f &scale, int priority) {
+compose_color_scale(const LVecBase4 &scale, int priority) {
   StateMap state_map;
 
   NodePaths::iterator npi;

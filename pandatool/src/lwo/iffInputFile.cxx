@@ -186,7 +186,7 @@ get_be_uint32() {
 //  Description: Extracts a 32-bit big-endian single-precision
 //               floating-point number.
 ////////////////////////////////////////////////////////////////////
-float IffInputFile::
+PN_stdfloat IffInputFile::
 get_be_float32() {
   Datagram dg;
   if (!read_bytes(dg, 4)) {

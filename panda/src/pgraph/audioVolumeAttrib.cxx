@@ -32,7 +32,7 @@ int AudioVolumeAttrib::_attrib_slot;
 //               AudioVolumeAttrib object.
 ////////////////////////////////////////////////////////////////////
 AudioVolumeAttrib::
-AudioVolumeAttrib(bool off, float volume) :
+AudioVolumeAttrib(bool off, PN_stdfloat volume) :
   _off(off),
   _volume(volume)
 {
@@ -64,7 +64,7 @@ make_identity() {
 //               audio volume should be scaled by the indicated factor.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) AudioVolumeAttrib::
-make(float volume) {
+make(PN_stdfloat volume) {
   AudioVolumeAttrib *attrib = new AudioVolumeAttrib(false, volume);
   return return_new(attrib);
 }
@@ -103,7 +103,7 @@ make_default() {
 //               with the volume changed to the indicated value.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) AudioVolumeAttrib::
-set_volume(float volume) const {
+set_volume(PN_stdfloat volume) const {
   AudioVolumeAttrib *attrib = new AudioVolumeAttrib(*this);
   assert(volume >= 0.f);
   attrib->_volume = volume;
@@ -225,7 +225,7 @@ invert_compose_impl(const RenderAttrib *other) const {
   }
   const AudioVolumeAttrib *ta;
   DCAST_INTO_R(ta, other, 0);
-  float new_volume = _volume == 0.0f ? 1.0f : ta->_volume / _volume;
+  PN_stdfloat new_volume = _volume == 0.0f ? 1.0f : ta->_volume / _volume;
 
   AudioVolumeAttrib *attrib = new AudioVolumeAttrib(false, new_volume);
   return return_new(attrib);
@@ -256,7 +256,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   // version.  We can do this since we know that no existing bam files
   // have an AudioVolumeAttrib in them.
   dg.add_bool(_off);
-  dg.add_float32(_volume);
+  dg.add_stdfloat(_volume);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -291,7 +291,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
 
   _off = scan.get_bool();
-  _volume = scan.get_float32();
+  _volume = scan.get_stdfloat();
   nassertv(_volume >= 0.f);
   _has_volume = !IS_NEARLY_EQUAL(_volume, 1.0f);
 }

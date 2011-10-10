@@ -511,7 +511,7 @@ unbind(GSG *gsg) {
 //               transforms.
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
-issue_parameters(GSG *gsg, int altered) {
+                        issue_parameters(GSG *gsg, int altered) {
   _last_gsg = gsg;
 
   PStatTimer timer(gsg->_draw_set_state_shader_parameters_pcollector);
@@ -531,88 +531,88 @@ issue_parameters(GSG *gsg, int altered) {
 #if defined(HAVE_CG) && !defined(OPENGLES)
       else if (_shader->get_language() == Shader::SL_Cg) {
         const Shader::ShaderPtrSpec& _ptr = _shader->_ptr_spec[i];
-        Shader::ShaderPtrData* _ptr_data = 
+        Shader::ShaderPtrData* ptr_data = 
           const_cast< Shader::ShaderPtrData*>(gsg->fetch_ptr_parameter(_ptr));
         
-        if (_ptr_data == NULL){ //the input is not contained in ShaderPtrData
+        if (ptr_data == NULL){ //the input is not contained in ShaderPtrData
           release_resources(gsg);
           return;
         }
         //check if the data must be shipped to the GPU
-        /*if (!_ptr_data->_updated)
+        /*if (!ptr_data->_updated)
           continue;
-        _ptr_data->_updated = false;*/
+          ptr_data->_updated = false;*/
 
-        //Check if the size of the shader input and _ptr_data match
+        //Check if the size of the shader input and ptr_data match
         int input_size = _ptr._dim[0] * _ptr._dim[1] * _ptr._dim[2];
 
         // dimension is negative only if the parameter had the (deprecated)k_ prefix.
-        if ((input_size != _ptr_data->_size) && (_ptr._dim[0] > 0)) { 
+        if ((input_size != ptr_data->_size) && (_ptr._dim[0] > 0)) { 
           GLCAT.error() << _ptr._id._name << ": incorrect number of elements, expected " 
-            <<  input_size <<" got " <<  _ptr_data->_size << "\n";
+                        <<  input_size <<" got " <<  ptr_data->_size << "\n";
           release_resources(gsg);
           return;
         }
         CGparameter p = _cg_parameter_map[_ptr._id._seqno];
         
-        switch(_ptr_data->_type) {
-          case Shader::SPT_float:
-            switch(_ptr._info._class) {
-              case Shader::SAC_scalar: cgSetParameter1fv(p,(float*)_ptr_data->_ptr); continue;
-              case Shader::SAC_vector:
-                switch(_ptr._info._type) {
-                  case Shader::SAT_vec1: cgSetParameter1fv(p,(float*)_ptr_data->_ptr); continue;
-                  case Shader::SAT_vec2: cgSetParameter2fv(p,(float*)_ptr_data->_ptr); continue;
-                  case Shader::SAT_vec3: cgSetParameter3fv(p,(float*)_ptr_data->_ptr); continue;
-                  case Shader::SAT_vec4: cgSetParameter4fv(p,(float*)_ptr_data->_ptr); continue;
-                }
-              case Shader::SAC_matrix: cgGLSetMatrixParameterfc(p,(float*)_ptr_data->_ptr); continue;
-              case Shader::SAC_array: {
-                switch(_ptr._info._subclass) {
-                  case Shader::SAC_scalar: 
-                    cgGLSetParameterArray1f(p,0,_ptr._dim[0],(float*)_ptr_data->_ptr); continue;
-                  case Shader::SAC_vector:
-                    switch(_ptr._dim[2]) {
-                      case 1: cgGLSetParameterArray1f(p,0,_ptr._dim[0],(float*)_ptr_data->_ptr); continue;
-                      case 2: cgGLSetParameterArray2f(p,0,_ptr._dim[0],(float*)_ptr_data->_ptr); continue;
-                      case 3: cgGLSetParameterArray3f(p,0,_ptr._dim[0],(float*)_ptr_data->_ptr); continue;
-                      case 4: cgGLSetParameterArray4f(p,0,_ptr._dim[0],(float*)_ptr_data->_ptr); continue;
-                    }
-                  case Shader::SAC_matrix:
-                    cgGLSetMatrixParameterArrayfc(p,0,_ptr._dim[0],(float*)_ptr_data->_ptr); continue;
-                }
-              } 
+        switch(ptr_data->_type) {
+        case Shader::SPT_float:
+          switch(_ptr._info._class) {
+          case Shader::SAC_scalar: cgSetParameter1fv(p,(float*)ptr_data->_ptr); continue;
+          case Shader::SAC_vector:
+            switch(_ptr._info._type) {
+            case Shader::SAT_vec1: cgSetParameter1fv(p,(float*)ptr_data->_ptr); continue;
+            case Shader::SAT_vec2: cgSetParameter2fv(p,(float*)ptr_data->_ptr); continue;
+            case Shader::SAT_vec3: cgSetParameter3fv(p,(float*)ptr_data->_ptr); continue;
+            case Shader::SAT_vec4: cgSetParameter4fv(p,(float*)ptr_data->_ptr); continue;
             }
-          case Shader::SPT_double:
-            switch(_ptr._info._class) {
-              case Shader::SAC_scalar: cgSetParameter1dv(p,(double*)_ptr_data->_ptr); continue;
-              case Shader::SAC_vector:
-                switch(_ptr._info._type) {
-                  case Shader::SAT_vec1: cgSetParameter1dv(p,(double*)_ptr_data->_ptr); continue;
-                  case Shader::SAT_vec2: cgSetParameter2dv(p,(double*)_ptr_data->_ptr); continue;
-                  case Shader::SAT_vec3: cgSetParameter3dv(p,(double*)_ptr_data->_ptr); continue;
-                  case Shader::SAT_vec4: cgSetParameter4dv(p,(double*)_ptr_data->_ptr); continue;
-                }
-              case Shader::SAC_matrix: cgGLSetMatrixParameterdc(p,(double*)_ptr_data->_ptr); continue;
-              case Shader::SAC_array: {
-                switch(_ptr._info._subclass) {
-                  case Shader::SAC_scalar: 
-                    cgGLSetParameterArray1d(p,0,_ptr._dim[0],(double*)_ptr_data->_ptr); continue;
-                  case Shader::SAC_vector:
-                    switch(_ptr._dim[2]) {
-                      case 1: cgGLSetParameterArray1d(p,0,_ptr._dim[0],(double*)_ptr_data->_ptr); continue;
-                      case 2: cgGLSetParameterArray2d(p,0,_ptr._dim[0],(double*)_ptr_data->_ptr); continue;
-                      case 3: cgGLSetParameterArray3d(p,0,_ptr._dim[0],(double*)_ptr_data->_ptr); continue;
-                      case 4: cgGLSetParameterArray4d(p,0,_ptr._dim[0],(double*)_ptr_data->_ptr); continue;
-                    }
-                  case Shader::SAC_matrix:
-                    cgGLSetMatrixParameterArraydc(p,0,_ptr._dim[0],(double*)_ptr_data->_ptr); continue;
-                }
-              } 
+          case Shader::SAC_matrix: cgGLSetMatrixParameterfc(p,(float*)ptr_data->_ptr); continue;
+          case Shader::SAC_array: {
+            switch(_ptr._info._subclass) {
+            case Shader::SAC_scalar: 
+              cgGLSetParameterArray1f(p,0,_ptr._dim[0],(float*)ptr_data->_ptr); continue;
+            case Shader::SAC_vector:
+              switch(_ptr._dim[2]) {
+              case 1: cgGLSetParameterArray1f(p,0,_ptr._dim[0],(float*)ptr_data->_ptr); continue;
+              case 2: cgGLSetParameterArray2f(p,0,_ptr._dim[0],(float*)ptr_data->_ptr); continue;
+              case 3: cgGLSetParameterArray3f(p,0,_ptr._dim[0],(float*)ptr_data->_ptr); continue;
+              case 4: cgGLSetParameterArray4f(p,0,_ptr._dim[0],(float*)ptr_data->_ptr); continue;
+              }
+            case Shader::SAC_matrix:
+              cgGLSetMatrixParameterArrayfc(p,0,_ptr._dim[0],(float*)ptr_data->_ptr); continue;
             }
-          default: GLCAT.error() << _ptr._id._name << ":" << "unrecognized parameter type\n"; 
-                   release_resources(gsg); 
-                   return;
+          } 
+          }
+        case Shader::SPT_double:
+          switch(_ptr._info._class) {
+          case Shader::SAC_scalar: cgSetParameter1dv(p,(double*)ptr_data->_ptr); continue;
+          case Shader::SAC_vector:
+            switch(_ptr._info._type) {
+            case Shader::SAT_vec1: cgSetParameter1dv(p,(double*)ptr_data->_ptr); continue;
+            case Shader::SAT_vec2: cgSetParameter2dv(p,(double*)ptr_data->_ptr); continue;
+            case Shader::SAT_vec3: cgSetParameter3dv(p,(double*)ptr_data->_ptr); continue;
+            case Shader::SAT_vec4: cgSetParameter4dv(p,(double*)ptr_data->_ptr); continue;
+            }
+          case Shader::SAC_matrix: cgGLSetMatrixParameterdc(p,(double*)ptr_data->_ptr); continue;
+          case Shader::SAC_array: {
+            switch(_ptr._info._subclass) {
+            case Shader::SAC_scalar: 
+              cgGLSetParameterArray1d(p,0,_ptr._dim[0],(double*)ptr_data->_ptr); continue;
+            case Shader::SAC_vector:
+              switch(_ptr._dim[2]) {
+              case 1: cgGLSetParameterArray1d(p,0,_ptr._dim[0],(double*)ptr_data->_ptr); continue;
+              case 2: cgGLSetParameterArray2d(p,0,_ptr._dim[0],(double*)ptr_data->_ptr); continue;
+              case 3: cgGLSetParameterArray3d(p,0,_ptr._dim[0],(double*)ptr_data->_ptr); continue;
+              case 4: cgGLSetParameterArray4d(p,0,_ptr._dim[0],(double*)ptr_data->_ptr); continue;
+              }
+            case Shader::SAC_matrix:
+              cgGLSetMatrixParameterArraydc(p,0,_ptr._dim[0],(double*)ptr_data->_ptr); continue;
+            }
+          } 
+          }
+        default: GLCAT.error() << _ptr._id._name << ":" << "unrecognized parameter type\n"; 
+          release_resources(gsg); 
+          return;
         }
       }
 #endif
@@ -623,44 +623,44 @@ issue_parameters(GSG *gsg, int altered) {
 
   for (int i=0; i<(int)_shader->_mat_spec.size(); i++) {
     if (altered & (_shader->_mat_spec[i]._dep[0] | _shader->_mat_spec[i]._dep[1])) {
-      const LMatrix4f *val = gsg->fetch_specified_value(_shader->_mat_spec[i], altered);
+      const LMatrix4 *val = gsg->fetch_specified_value(_shader->_mat_spec[i], altered);
       if (!val) continue;
-      const float *data = val->get_data();
+      const PN_stdfloat *data = val->get_data();
       if (_shader->get_language() == Shader::SL_GLSL) {
         GLint p = _shader->_glsl_parameter_map[_shader->_mat_spec[i]._id._seqno];
         switch (_shader->_mat_spec[i]._piece) {
-          case Shader::SMP_whole: gsg->_glUniformMatrix4fv(p, 1, false, data); continue;
-          case Shader::SMP_transpose: gsg->_glUniformMatrix4fv(p, 1, true, data); continue;
-          case Shader::SMP_col0: gsg->_glUniform4f(p, data[0], data[4], data[ 8], data[12]); continue;
-          case Shader::SMP_col1: gsg->_glUniform4f(p, data[1], data[5], data[ 9], data[13]); continue;
-          case Shader::SMP_col2: gsg->_glUniform4f(p, data[2], data[6], data[10], data[14]); continue;
-          case Shader::SMP_col3: gsg->_glUniform4f(p, data[3], data[7], data[11], data[15]); continue;
-          case Shader::SMP_row0: gsg->_glUniform4fv(p, 1, data+ 0); continue;
-          case Shader::SMP_row1: gsg->_glUniform4fv(p, 1, data+ 4); continue;
-          case Shader::SMP_row2: gsg->_glUniform4fv(p, 1, data+ 8); continue;
-          case Shader::SMP_row3: gsg->_glUniform4fv(p, 1, data+12); continue;
-          case Shader::SMP_row3x1: gsg->_glUniform1fv(p, 1, data+12); continue;
-          case Shader::SMP_row3x2: gsg->_glUniform2fv(p, 1, data+12); continue;
-          case Shader::SMP_row3x3: gsg->_glUniform3fv(p, 1, data+12); continue;
+        case Shader::SMP_whole: gsg->GLfv(_glUniformMatrix4)(p, 1, false, data); continue;
+        case Shader::SMP_transpose: gsg->GLfv(_glUniformMatrix4)(p, 1, true, data); continue;
+        case Shader::SMP_col0: gsg->GLf(_glUniform4)(p, data[0], data[4], data[ 8], data[12]); continue;
+        case Shader::SMP_col1: gsg->GLf(_glUniform4)(p, data[1], data[5], data[ 9], data[13]); continue;
+        case Shader::SMP_col2: gsg->GLf(_glUniform4)(p, data[2], data[6], data[10], data[14]); continue;
+        case Shader::SMP_col3: gsg->GLf(_glUniform4)(p, data[3], data[7], data[11], data[15]); continue;
+        case Shader::SMP_row0: gsg->GLfv(_glUniform4)(p, 1, data+ 0); continue;
+        case Shader::SMP_row1: gsg->GLfv(_glUniform4)(p, 1, data+ 4); continue;
+        case Shader::SMP_row2: gsg->GLfv(_glUniform4)(p, 1, data+ 8); continue;
+        case Shader::SMP_row3: gsg->GLfv(_glUniform4)(p, 1, data+12); continue;
+        case Shader::SMP_row3x1: gsg->GLfv(_glUniform1)(p, 1, data+12); continue;
+        case Shader::SMP_row3x2: gsg->GLfv(_glUniform2)(p, 1, data+12); continue;
+        case Shader::SMP_row3x3: gsg->GLfv(_glUniform3)(p, 1, data+12); continue;
         }
       }
 #if defined(HAVE_CG) && !defined(OPENGLES)
       else if (_shader->get_language() == Shader::SL_Cg) {
         CGparameter p = _cg_parameter_map[_shader->_mat_spec[i]._id._seqno];
         switch (_shader->_mat_spec[i]._piece) {
-          case Shader::SMP_whole: cgGLSetMatrixParameterfc(p, data); continue;
-          case Shader::SMP_transpose: cgGLSetMatrixParameterfr(p, data); continue;
-          case Shader::SMP_col0: cgGLSetParameter4f(p, data[0], data[4], data[ 8], data[12]); continue;
-          case Shader::SMP_col1: cgGLSetParameter4f(p, data[1], data[5], data[ 9], data[13]); continue;
-          case Shader::SMP_col2: cgGLSetParameter4f(p, data[2], data[6], data[10], data[14]); continue;
-          case Shader::SMP_col3: cgGLSetParameter4f(p, data[3], data[7], data[11], data[15]); continue;
-          case Shader::SMP_row0: cgGLSetParameter4fv(p, data+ 0); continue;
-          case Shader::SMP_row1: cgGLSetParameter4fv(p, data+ 4); continue;
-          case Shader::SMP_row2: cgGLSetParameter4fv(p, data+ 8); continue;
-          case Shader::SMP_row3: cgGLSetParameter4fv(p, data+12); continue;
-          case Shader::SMP_row3x1: cgGLSetParameter1fv(p, data+12); continue;
-          case Shader::SMP_row3x2: cgGLSetParameter2fv(p, data+12); continue;
-          case Shader::SMP_row3x3: cgGLSetParameter3fv(p, data+12); continue;
+        case Shader::SMP_whole: GLfc(cgGLSetMatrixParameter)(p, data); continue;
+        case Shader::SMP_transpose: GLfr(cgGLSetMatrixParameter)(p, data); continue;
+        case Shader::SMP_col0: GLf(cgGLSetParameter4)(p, data[0], data[4], data[ 8], data[12]); continue;
+        case Shader::SMP_col1: GLf(cgGLSetParameter4)(p, data[1], data[5], data[ 9], data[13]); continue;
+        case Shader::SMP_col2: GLf(cgGLSetParameter4)(p, data[2], data[6], data[10], data[14]); continue;
+        case Shader::SMP_col3: GLf(cgGLSetParameter4)(p, data[3], data[7], data[11], data[15]); continue;
+        case Shader::SMP_row0: GLfv(cgGLSetParameter4)(p, data+ 0); continue;
+        case Shader::SMP_row1: GLfv(cgGLSetParameter4)(p, data+ 4); continue;
+        case Shader::SMP_row2: GLfv(cgGLSetParameter4)(p, data+ 8); continue;
+        case Shader::SMP_row3: GLfv(cgGLSetParameter4)(p, data+12); continue;
+        case Shader::SMP_row3x1: GLfv(cgGLSetParameter1)(p, data+12); continue;
+        case Shader::SMP_row3x2: GLfv(cgGLSetParameter2)(p, data+12); continue;
+        case Shader::SMP_row3x3: GLfv(cgGLSetParameter3)(p, data+12); continue;
         }
       }
 #endif

@@ -198,10 +198,10 @@ public:
                     const GeomPrimitivePipelineReader *reader,
                     bool force) const=0;
 
-  void calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+  void calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
                          bool &found_any, 
                          const GeomVertexData *vertex_data,
-                         bool got_mat, const LMatrix4f &mat,
+                         bool got_mat, const LMatrix4 &mat,
                          const InternalName *column_name,
                          Thread *current_thread) const;
 

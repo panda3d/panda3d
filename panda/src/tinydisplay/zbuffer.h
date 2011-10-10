@@ -157,13 +157,13 @@ struct ZBufferPoint {
   int s,t;       /* coordinates for the mapping */
   int r,g,b,a;     /* color indexes */
   
-  float sz,tz;   /* temporary coordinates for mapping */
+  PN_stdfloat sz,tz;   /* temporary coordinates for mapping */
 
   int sa, ta;   /* mapping coordinates for optional second texture stage */
-  float sza,tza; 
+  PN_stdfloat sza,tza; 
 
   int sb, tb;   /* mapping coordinates for optional third texture stage */
-  float szb,tzb; 
+  PN_stdfloat szb,tzb; 
 };
 
 /* zbuffer.c */

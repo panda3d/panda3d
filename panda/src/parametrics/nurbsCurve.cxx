@@ -58,7 +58,7 @@ NurbsCurve(const ParametricCurve &pc) {
 ////////////////////////////////////////////////////////////////////
 NurbsCurve::
 NurbsCurve(int order, int num_cvs,
-                  const float knots[], const LVecBase4f cvs[]) {
+           const PN_stdfloat knots[], const LVecBase4 cvs[]) {
   _order = order;
 
   int i;
@@ -155,7 +155,7 @@ get_num_knots() const {
 //               successful, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool NurbsCurve::
-insert_cv(float t) {
+insert_cv(PN_stdfloat t) {
   if (_cvs.empty()) {
     append_cv(0.0f, 0.0f, 0.0f);
     return true;
@@ -177,16 +177,16 @@ insert_cv(float t) {
   // First, get the new values of all the CV's that will change.
   // These are the CV's in the range [k - (_order-1), k-1].
 
-  LVecBase4f new_cvs[3];
+  LVecBase4 new_cvs[3];
   int i;
   for (i = 0; i < _order-1; i++) {
     int nk = i + k - (_order-1);
-    float ti = get_knot(nk);
-    float d = get_knot(nk + _order-1) - ti;
+    PN_stdfloat ti = get_knot(nk);
+    PN_stdfloat d = get_knot(nk + _order-1) - ti;
     if (d == 0.0f) {
       new_cvs[i] = _cvs[nk-1]._p;
     } else {
-      float a = (t - ti) / d;
+      PN_stdfloat a = (t - ti) / d;
       new_cvs[i] = (1.0f-a)*_cvs[nk-1]._p + a*_cvs[nk]._p;
     }
   }
@@ -240,7 +240,7 @@ remove_all_cvs() {
 //               successful, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool NurbsCurve::
-set_cv(int n, const LVecBase4f &v) {
+set_cv(int n, const LVecBase4 &v) {
   nassertr(n >= 0 && n < get_num_cvs(), false);
 
   _cvs[n]._p = v;
@@ -253,9 +253,9 @@ set_cv(int n, const LVecBase4f &v) {
 //  Description: Returns the position in homogeneous space of the
 //               indicated CV.
 ////////////////////////////////////////////////////////////////////
-LVecBase4f NurbsCurve::
+LVecBase4 NurbsCurve::
 get_cv(int n) const {
-  nassertr(n >= 0 && n < get_num_cvs(), LVecBase4f::zero());
+  nassertr(n >= 0 && n < get_num_cvs(), LVecBase4::zero());
 
   return _cvs[n]._p;
 }
@@ -271,7 +271,7 @@ get_cv(int n) const {
 //               outside the range of its neighbors.
 ////////////////////////////////////////////////////////////////////
 bool NurbsCurve::
-set_knot(int n, float t) {
+set_knot(int n, PN_stdfloat t) {
   nassertr(n >= 0 && n < get_num_knots(), false);
 
   if (n < _order || n-1 >= (int)_cvs.size()) {
@@ -286,7 +286,7 @@ set_knot(int n, float t) {
 //       Access: Published, Virtual
 //  Description: Retrieves the value of the indicated knot.
 ////////////////////////////////////////////////////////////////////
-float NurbsCurve::
+PN_stdfloat NurbsCurve::
 get_knot(int n) const {
   if (n < _order || _cvs.empty()) {
     return 0.0f;
@@ -312,8 +312,8 @@ bool NurbsCurve::
 recompute() {
   _segs.erase(_segs.begin(), _segs.end());
 
-  float knots[8];
-  LVecBase4f cvs[4];
+  PN_stdfloat knots[8];
+  LVecBase4 cvs[4];
 
   if ((int)_cvs.size() > _order-1) {
     for (int cv = 0; cv < (int)_cvs.size()-(_order-1); cv++) {
@@ -348,10 +348,10 @@ recompute() {
 //               possible, false if something goes horribly wrong.
 ////////////////////////////////////////////////////////////////////
 bool NurbsCurve::
-rebuild_curveseg(int rtype0, float t0, const LVecBase4f &v0,
-                 int rtype1, float t1, const LVecBase4f &v1,
-                 int rtype2, float t2, const LVecBase4f &v2,
-                 int rtype3, float t3, const LVecBase4f &v3) {
+rebuild_curveseg(int rtype0, PN_stdfloat t0, const LVecBase4 &v0,
+                 int rtype1, PN_stdfloat t1, const LVecBase4 &v1,
+                 int rtype2, PN_stdfloat t2, const LVecBase4 &v2,
+                 int rtype3, PN_stdfloat t3, const LVecBase4 &v3) {
   // Figure out which CV's contributed to this segment.
   int seg = 0;
 
@@ -368,8 +368,8 @@ rebuild_curveseg(int rtype0, float t0, const LVecBase4f &v0,
   }
 
   // Now copy the cvs and knots in question.
-  LMatrix4f G;
-  float knots[8];
+  LMatrix4 G;
+  PN_stdfloat knots[8];
 
   int c;
 
@@ -377,7 +377,7 @@ rebuild_curveseg(int rtype0, float t0, const LVecBase4f &v0,
   // properties depends on the original value.
   if ((rtype0 | rtype1 | rtype2 | rtype3) & RT_KEEP_ORIG) {
     for (c = 0; c < 4; c++) {
-      const LVecBase4f &s = (c < _order) ? _cvs[c+cv]._p : LVecBase4f::zero();
+      const LVecBase4 &s = (c < _order) ? _cvs[c+cv]._p : LVecBase4::zero();
 
       G.set_col(c, s);
     }
@@ -388,10 +388,10 @@ rebuild_curveseg(int rtype0, float t0, const LVecBase4f &v0,
     knots[c] = get_knot(c+cv);
   }
 
-  LMatrix4f B;
+  LMatrix4 B;
   compute_nurbs_basis(_order, knots, B);
 
-  LMatrix4f Bi;
+  LMatrix4 Bi;
   Bi = invert(B);
 
   if (!CubicCurveseg::compute_seg(rtype0, t0, v0,
@@ -441,7 +441,7 @@ stitch(const ParametricCurve *a, const ParametricCurve *b) {
 
   // First, translate curve B to move its first CV to curve A's last
   // CV.
-  LVecBase3f point_offset =
+  LVecBase3 point_offset =
     na->get_cv_point(na->get_num_cvs() - 1) - nb->get_cv_point(0);
   int num_b_cvs = nb->get_num_cvs();
   for (int i = 0; i < num_b_cvs; i++) {
@@ -454,7 +454,7 @@ stitch(const ParametricCurve *a, const ParametricCurve *b) {
     _cvs.pop_back();
   }
 
-  float t = na->get_max_t();
+  PN_stdfloat t = na->get_max_t();
 
   // Now add all the new CV's.
   pvector<CV>::iterator ci;
@@ -512,7 +512,7 @@ write(ostream &out, int indent_level) const {
 //               Returns the index of the new CV.
 ////////////////////////////////////////////////////////////////////
 int NurbsCurve::
-append_cv_impl(const LVecBase4f &v) {
+append_cv_impl(const LVecBase4 &v) {
   _cvs.push_back(CV(v, get_knot(_cvs.size())+1.0f));
   return _cvs.size()-1;
 }
@@ -537,7 +537,7 @@ format_egg(ostream &out, const string &name, const string &curve_type,
 //               is beyond the end of the curve.
 ////////////////////////////////////////////////////////////////////
 int NurbsCurve::
-find_cv(float t) {
+find_cv(PN_stdfloat t) {
   int i;
   for (i = _order-1; i < (int)_cvs.size(); i++) {
     if (_cvs[i]._t >= t) {

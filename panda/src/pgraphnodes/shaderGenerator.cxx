@@ -350,7 +350,7 @@ analyze_renderstate(const RenderState *rs) {
 
   if (_lighting && (_alights.size() > 0)) {
     if (_material->has_ambient()) {
-      Colorf a = _material->get_ambient();
+      LColor a = _material->get_ambient();
       if ((a[0]!=0.0)||(a[1]!=0.0)||(a[2]!=0.0)) {
         _have_ambient = true;
       }
@@ -361,7 +361,7 @@ analyze_renderstate(const RenderState *rs) {
 
   if (_lighting && (_dlights.size() + _plights.size() + _slights.size())) {
     if (_material->has_diffuse()) {
-      Colorf d = _material->get_diffuse();
+      LColor d = _material->get_diffuse();
       if ((d[0]!=0.0)||(d[1]!=0.0)||(d[2]!=0.0)) {
         _have_diffuse = true;
       }
@@ -371,7 +371,7 @@ analyze_renderstate(const RenderState *rs) {
   }
 
   if (_lighting && (_material->has_emission())) {
-    Colorf e = _material->get_emission();
+    LColor e = _material->get_emission();
     if ((e[0]!=0.0)||(e[1]!=0.0)||(e[2]!=0.0)) {
       _have_emission = true;
     }
@@ -379,7 +379,7 @@ analyze_renderstate(const RenderState *rs) {
 
   if (_lighting && (_dlights.size() + _plights.size() + _slights.size())) {
     if (_material->has_specular()) {
-      Colorf s = _material->get_specular();
+      LColor s = _material->get_specular();
       if ((s[0]!=0.0)||(s[1]!=0.0)||(s[2]!=0.0)) {
         _have_specular = true;
       }
@@ -1147,8 +1147,8 @@ synthesize_shader(const RenderState *rs) {
       switch (light_ramp->get_mode()) {
       case LightRampAttrib::LRT_single_threshold:
         {
-          float t = light_ramp->get_threshold(0);
-          float l0 = light_ramp->get_level(0);
+          PN_stdfloat t = light_ramp->get_threshold(0);
+          PN_stdfloat l0 = light_ramp->get_level(0);
           text << "\t // Single-threshold light ramp\n";
           text << "\t float lr_in = dot(tot_diffuse.rgb, float3(0.33,0.34,0.33));\n";
           text << "\t float lr_scale = (lr_in < " << t << ") ? 0.0 : (" << l0 << "/lr_in);\n";
@@ -1157,11 +1157,11 @@ synthesize_shader(const RenderState *rs) {
         }
       case LightRampAttrib::LRT_double_threshold:
         {
-          float t0 = light_ramp->get_threshold(0);
-          float t1 = light_ramp->get_threshold(1);
-          float l0 = light_ramp->get_level(0);
-          float l1 = light_ramp->get_level(1);
-          float l2 = light_ramp->get_level(2);
+          PN_stdfloat t0 = light_ramp->get_threshold(0);
+          PN_stdfloat t1 = light_ramp->get_threshold(1);
+          PN_stdfloat l0 = light_ramp->get_level(0);
+          PN_stdfloat l1 = light_ramp->get_level(1);
+          PN_stdfloat l2 = light_ramp->get_level(2);
           text << "\t // Double-threshold light ramp\n";
           text << "\t float lr_in = dot(tot_diffuse.rgb, float3(0.33,0.34,0.33));\n";
           text << "\t float lr_out = " << l0 << "\n";
@@ -1170,6 +1170,8 @@ synthesize_shader(const RenderState *rs) {
           text << "\t tot_diffuse = tot_diffuse * (lr_out / lr_in);\n";
           break;
         }
+      default:
+        break;
       }
     }
     text << "\t // Begin view-space light summation\n";
@@ -1290,7 +1292,7 @@ synthesize_shader(const RenderState *rs) {
       text << "\t result.rgb = lerp(result, tex" << i << ", tex" << i << ".a).rgb;\n";
       break;
     case TextureStage::M_blend: {
-      LVecBase4f c = stage->get_color();
+      LVecBase4 c = stage->get_color();
       text << "\t result.rgb = lerp(result, tex" << i << " * float4("
            << c[0] << ", " << c[1] << ", " << c[2] << ", " << c[3] << "), tex" << i << ".r).rgb;\n";
       break; }
@@ -1349,6 +1351,8 @@ synthesize_shader(const RenderState *rs) {
     case RenderAttrib::M_greater:        text<<"\t if (result.a <= "<<ref<<") discard;\n";
     case RenderAttrib::M_not_equal:      text<<"\t if (result.a == "<<ref<<") discard;\n";
     case RenderAttrib::M_greater_equal:  text<<"\t if (result.a <  "<<ref<<") discard;\n";
+    case RenderAttrib::M_none: break;
+    case RenderAttrib::M_always: break;
     }
   }
 
@@ -1536,7 +1540,7 @@ combine_source_as_string(CPT(TextureStage) stage, short num, bool alpha, bool si
       csource << "tex" << texindex;
       break;
     case TextureStage::CS_constant: {
-      LVecBase4f c = stage->get_color();
+      LVecBase4 c = stage->get_color();
       csource << "float4(" << c[0] << ", " << c[1] << ", " << c[2] << ", " << c[3] << ")";
       break; }
     case TextureStage::CS_primary_color:
@@ -1550,6 +1554,8 @@ combine_source_as_string(CPT(TextureStage) stage, short num, bool alpha, bool si
       break;
     case TextureStage::CS_last_saved_result:
       csource << "last_saved_result";
+      break;
+    case TextureStage::CS_undefined:
       break;
   }
   if (c_op == TextureStage::CO_src_color || c_op == TextureStage::CO_one_minus_src_color) {

@@ -29,21 +29,21 @@
 ////////////////////////////////////////////////////////////////////
 class LinearUserDefinedForce : public LinearForce {
 PUBLISHED:
-  LinearUserDefinedForce(LVector3f (*proc)(const PhysicsObject *) = NULL,
-                   float a = 1.0f,
-                   bool md = false);
+  LinearUserDefinedForce(LVector3 (*proc)(const PhysicsObject *) = NULL,
+                         PN_stdfloat a = 1.0f,
+                         bool md = false);
   LinearUserDefinedForce(const LinearUserDefinedForce &copy);
   virtual ~LinearUserDefinedForce();
 
-  INLINE void set_proc(LVector3f (*proc)(const PhysicsObject *));
+  INLINE void set_proc(LVector3 (*proc)(const PhysicsObject *));
   
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 
 private:
-  LVector3f (*_proc)(const PhysicsObject *po);
+  LVector3 (*_proc)(const PhysicsObject *po);
 
-  virtual LVector3f get_child_vector(const PhysicsObject *po);
+  virtual LVector3 get_child_vector(const PhysicsObject *po);
   virtual LinearForce *make_copy();
 
 public:

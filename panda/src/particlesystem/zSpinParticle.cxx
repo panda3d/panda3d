@@ -114,7 +114,7 @@ die() {
 //      Access : public, virtual
 // Description :
 ////////////////////////////////////////////////////////////////////
-float ZSpinParticle::
+PN_stdfloat ZSpinParticle::
 get_theta() const {
   return _cur_angle;
 }

@@ -18,7 +18,7 @@
 // Description : endpoint assignment
 ////////////////////////////////////////////////////////////////////
 INLINE void LineEmitter::
-set_endpoint1(const LPoint3f& point) {
+set_endpoint1(const LPoint3& point) {
   _endpoint1 = point;
 }
 
@@ -28,7 +28,7 @@ set_endpoint1(const LPoint3f& point) {
 // Description : endpoint assignment
 ////////////////////////////////////////////////////////////////////
 INLINE void LineEmitter::
-set_endpoint2(const LPoint3f& point) {
+set_endpoint2(const LPoint3& point) {
   _endpoint2 = point;
 }
 
@@ -37,7 +37,7 @@ set_endpoint2(const LPoint3f& point) {
 //      Access : Public
 // Description : endpoint accessor
 ////////////////////////////////////////////////////////////////////
-INLINE LPoint3f LineEmitter::
+INLINE LPoint3 LineEmitter::
 get_endpoint1() const {
   return _endpoint1;
 }
@@ -47,7 +47,7 @@ get_endpoint1() const {
 //      Access : Public
 // Description : endpoint accessor
 ////////////////////////////////////////////////////////////////////
-INLINE LPoint3f LineEmitter::
+INLINE LPoint3 LineEmitter::
 get_endpoint2() const {
   return _endpoint2;
 }

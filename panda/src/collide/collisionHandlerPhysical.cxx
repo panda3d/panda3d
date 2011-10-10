@@ -75,8 +75,8 @@ add_entry(CollisionEntry *entry) {
         return;
       }
 
-      LPoint3f point = entry->get_surface_point(_center);
-      LVector3f normal = entry->get_surface_normal(_center);
+      LPoint3 point = entry->get_surface_point(_center);
+      LVector3 normal = entry->get_surface_normal(_center);
        if (point.dot(normal) > 0) {
          return;
        }

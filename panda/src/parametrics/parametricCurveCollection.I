@@ -51,7 +51,7 @@ get_curve(int index) const {
 //               *last* curve in the collection.  Normally, this will
 //               be either the XYZ or HPR curve, or a timewarp curve.
 ////////////////////////////////////////////////////////////////////
-INLINE float ParametricCurveCollection::
+INLINE PN_stdfloat ParametricCurveCollection::
 get_max_t() const {
   if (_curves.empty()) {
     return 0.0f;
@@ -66,8 +66,8 @@ get_max_t() const {
 //               evaluate().
 ////////////////////////////////////////////////////////////////////
 INLINE bool ParametricCurveCollection::
-evaluate_xyz(float t, LVecBase3f &xyz) const {
-  LVecBase3f hpr;
+evaluate_xyz(PN_stdfloat t, LVecBase3 &xyz) const {
+  LVecBase3 hpr;
   return evaluate(t, xyz, hpr);
 }
 
@@ -78,8 +78,8 @@ evaluate_xyz(float t, LVecBase3f &xyz) const {
 //               evaluate().
 ////////////////////////////////////////////////////////////////////
 INLINE bool ParametricCurveCollection::
-evaluate_hpr(float t, LVecBase3f &hpr) const {
-  LVecBase3f xyz;
+evaluate_hpr(PN_stdfloat t, LVecBase3 &hpr) const {
+  LVecBase3 xyz;
   return evaluate(t, xyz, hpr);
 }
 
@@ -92,8 +92,8 @@ evaluate_hpr(float t, LVecBase3f &hpr) const {
 //               the adjustment for some reason.
 ////////////////////////////////////////////////////////////////////
 INLINE bool ParametricCurveCollection::
-adjust_xyz(float t, float x, float y, float z) {
-  return adjust_xyz(t, LVecBase3f(x, y, z));
+adjust_xyz(PN_stdfloat t, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
+  return adjust_xyz(t, LVecBase3(x, y, z));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -105,6 +105,6 @@ adjust_xyz(float t, float x, float y, float z) {
 //               the adjustment for some reason.
 ////////////////////////////////////////////////////////////////////
 INLINE bool ParametricCurveCollection::
-adjust_hpr(float t, float h, float p, float r) {
-  return adjust_hpr(t, LVecBase3f(h, p, r));
+adjust_hpr(PN_stdfloat t, PN_stdfloat h, PN_stdfloat p, PN_stdfloat r) {
+  return adjust_hpr(t, LVecBase3(h, p, r));
 }

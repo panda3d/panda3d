@@ -34,7 +34,7 @@
 TypeHandle MeshDrawer2D::_type_handle;
 
 
-#define RANDF ((float) rand() / (float) 0x7fffffff)
+#define RANDF ((PN_stdfloat) rand() / (PN_stdfloat) 0x7fffffff)
 
 
 ////////////////////////////////////////////////////////////////////
@@ -55,13 +55,13 @@ void MeshDrawer2D::generator(int budget) {
   for(int i = 0; i < budget; i++) {
     for( int vert = 0; vert < 4; vert++) {
       
-      LVector3f vec3 = LVector3f(RANDF+10000,RANDF,RANDF);
-      LVector4f vec4 = LVector4f(RANDF,RANDF,RANDF,0);
-      LVector2f vec2 = LVector2f(RANDF,RANDF);
+      LVector3 vec3 = LVector3(RANDF+10000,RANDF,RANDF);
+      LVector4 vec4 = LVector4(RANDF,RANDF,RANDF,0);
+      LVector2 vec2 = LVector2(RANDF,RANDF);
       
-      tvertex->add_data3f(vec3);
-      tcolor->add_data4f(vec4);
-      tuv->add_data2f(vec2);
+      tvertex->add_data3(vec3);
+      tcolor->add_data4(vec4);
+      tuv->add_data2(vec2);
       
     }
     
@@ -120,10 +120,10 @@ void MeshDrawer2D::end() {
 
   // clear the unused triangles at the end of the buffer
   for(int i = _clear_index ; i < _last_clear_index; i ++ ) {
-    _vertex->add_data3f(0,0,0);
-    _vertex->add_data3f(0,0,0);
-    _vertex->add_data3f(0,0,0);
-    _vertex->add_data3f(0,0,0);
+    _vertex->add_data3(0,0,0);
+    _vertex->add_data3(0,0,0);
+    _vertex->add_data3(0,0,0);
+    _vertex->add_data3(0,0,0);
   }
   // don't clear more then you have too
   _last_clear_index = _clear_index;
@@ -144,22 +144,22 @@ void MeshDrawer2D::end() {
 //               us and vs
 ////////////////////////////////////////////////////////////////////
 void MeshDrawer2D::
-rectangle_tiled(float x, float y, float w, float h, 
-     float u, float v, float us, float vs, 
-     LVector4f color
+rectangle_tiled(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h, 
+     PN_stdfloat u, PN_stdfloat v, PN_stdfloat us, PN_stdfloat vs, 
+     LVector4 color
 ) {
 
-  float x_fit = w/us;
-  float y_fit = h/vs;
-  float x_pos = x;
+  PN_stdfloat x_fit = w/us;
+  PN_stdfloat y_fit = h/vs;
+  PN_stdfloat x_pos = x;
   
   while (x_fit > 0){
-    float y_pos = y;
+    PN_stdfloat y_pos = y;
     y_fit = h/vs;           
     while (y_fit > 0){
     
-      float fixed_us = us;
-      float fixed_vs = vs;
+      PN_stdfloat fixed_us = us;
+      PN_stdfloat fixed_vs = vs;
       
       // we are cuttin in the middle of a tile x direction
       if (x_fit < 1){
@@ -198,11 +198,11 @@ rectangle_tiled(float x, float y, float w, float h,
 ////////////////////////////////////////////////////////////////////
 void MeshDrawer2D::
 rectangle_border(
-    float x, float y, float w, float h,
-    float r, float t, float l, float b,
-    float tr, float tt, float tl, float tb,
-    float u, float v, float us, float vs, 
-    LVector4f color){
+    PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h,
+    PN_stdfloat r, PN_stdfloat t, PN_stdfloat l, PN_stdfloat b,
+    PN_stdfloat tr, PN_stdfloat tt, PN_stdfloat tl, PN_stdfloat tb,
+    PN_stdfloat u, PN_stdfloat v, PN_stdfloat us, PN_stdfloat vs, 
+    LVector4 color){
     
     rectangle(x,y,w,h,u,v,us,vs,color); // center
     
@@ -230,11 +230,11 @@ rectangle_border(
 ////////////////////////////////////////////////////////////////////
 void MeshDrawer2D::
 rectangle_border_tiled(
-    float x, float y, float w, float h,
-    float r, float t, float l, float b,
-    float tr, float tt, float tl, float tb,
-    float u, float v, float us, float vs, 
-    LVector4f color){
+    PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h,
+    PN_stdfloat r, PN_stdfloat t, PN_stdfloat l, PN_stdfloat b,
+    PN_stdfloat tr, PN_stdfloat tt, PN_stdfloat tl, PN_stdfloat tb,
+    PN_stdfloat u, PN_stdfloat v, PN_stdfloat us, PN_stdfloat vs, 
+    LVector4 color){
     
     rectangle_tiled(x,y,w,h,u,v,us,vs,color); // center
     

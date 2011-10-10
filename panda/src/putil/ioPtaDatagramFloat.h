@@ -18,7 +18,7 @@
 #include "pandabase.h"
 
 #include "pointerToArray.h"
-#include "pta_float.h"
+#include "pta_stdfloat.h"
 
 class BamReader;
 class BamWriter;
@@ -27,7 +27,7 @@ class DatagramIterator;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : IoPtaDatagramFloat
-// Description : This class is used to read and write a PTA_float
+// Description : This class is used to read and write a PTA_stdfloat
 //               from a Datagram, in support of Bam.  It's not
 //               intended to be constructed; it's just a convenient
 //               place to scope these static methods which should be
@@ -35,8 +35,8 @@ class DatagramIterator;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PUTIL IoPtaDatagramFloat {
 public:
-  static void write_datagram(BamWriter *manager, Datagram &dest, CPTA_float array);
-  static PTA_float read_datagram(BamReader *manager, DatagramIterator &source);
+  static void write_datagram(BamWriter *manager, Datagram &dest, CPTA_stdfloat array);
+  static PTA_stdfloat read_datagram(BamReader *manager, DatagramIterator &source);
 };
 
 typedef IoPtaDatagramFloat IPD_float;

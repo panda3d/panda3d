@@ -36,7 +36,7 @@ TypeHandle AnimChannelMatrixXfmTable::_type_handle;
 AnimChannelMatrixXfmTable::
 AnimChannelMatrixXfmTable() {
   for (int i = 0; i < num_matrix_components; i++) {
-    _tables[i] = CPTA_float(get_class_type());
+    _tables[i] = CPTA_stdfloat(get_class_type());
   }
 }
 
@@ -67,7 +67,7 @@ AnimChannelMatrixXfmTable(AnimGroup *parent, const string &name)
   : AnimChannelMatrix(parent, name) 
 {
   for (int i = 0; i < num_matrix_components; i++) {
-    _tables[i] = CPTA_float(get_class_type());
+    _tables[i] = CPTA_stdfloat(get_class_type());
   }
 }
 
@@ -125,8 +125,8 @@ has_changed(int last_frame, double last_frac,
 //  Description: Gets the value of the channel at the indicated frame.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixXfmTable::
-get_value(int frame, LMatrix4f &mat) {
-  float components[num_matrix_components];
+get_value(int frame, LMatrix4 &mat) {
+  PN_stdfloat components[num_matrix_components];
 
   for (int i = 0; i < num_matrix_components; i++) {
     if (_tables[i].empty()) {
@@ -146,8 +146,8 @@ get_value(int frame, LMatrix4f &mat) {
 //               without any scale or shear information.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixXfmTable::
-get_value_no_scale_shear(int frame, LMatrix4f &mat) {
-  float components[num_matrix_components];
+get_value_no_scale_shear(int frame, LMatrix4 &mat) {
+  PN_stdfloat components[num_matrix_components];
   components[0] = 1.0f;
   components[1] = 1.0f;
   components[2] = 1.0f;
@@ -172,7 +172,7 @@ get_value_no_scale_shear(int frame, LMatrix4f &mat) {
 //  Description: Gets the scale value at the indicated frame.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixXfmTable::
-get_scale(int frame, LVecBase3f &scale) {
+get_scale(int frame, LVecBase3 &scale) {
   for (int i = 0; i < 3; i++) {
     if (_tables[i].empty()) {
       scale[i] = 1.0f;
@@ -190,7 +190,7 @@ get_scale(int frame, LVecBase3f &scale) {
 //               sense for a matrix-type channel.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixXfmTable::
-get_hpr(int frame, LVecBase3f &hpr) {
+get_hpr(int frame, LVecBase3 &hpr) {
   for (int i = 0; i < 3; i++) {
     if (_tables[i + 6].empty()) {
       hpr[i] = 0.0f;
@@ -208,8 +208,8 @@ get_hpr(int frame, LVecBase3f &hpr) {
 //               this only makes sense for a matrix-type channel.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixXfmTable::
-get_quat(int frame, LQuaternionf &quat) {
-  LVecBase3f hpr;
+get_quat(int frame, LQuaternion &quat) {
+  LVecBase3 hpr;
   for (int i = 0; i < 3; i++) {
     if (_tables[i + 6].empty()) {
       hpr[i] = 0.0f;
@@ -229,7 +229,7 @@ get_quat(int frame, LQuaternionf &quat) {
 //               only makes sense for a matrix-type channel.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixXfmTable::
-get_pos(int frame, LVecBase3f &pos) {
+get_pos(int frame, LVecBase3 &pos) {
   for (int i = 0; i < 3; i++) {
     if (_tables[i + 9].empty()) {
       pos[i] = 0.0f;
@@ -247,7 +247,7 @@ get_pos(int frame, LVecBase3f &pos) {
 //               sense for a matrix-type channel.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixXfmTable::
-get_shear(int frame, LVecBase3f &shear) {
+get_shear(int frame, LVecBase3 &shear) {
   for (int i = 0; i < 3; i++) {
     if (_tables[i + 3].empty()) {
       shear[i] = 0.0f;
@@ -267,7 +267,7 @@ get_shear(int frame, LVecBase3f &shear) {
 //               one, or get_num_frames() frames.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixXfmTable::
-set_table(char table_id, const CPTA_float &table) {
+set_table(char table_id, const CPTA_stdfloat &table) {
   int num_frames = _root->get_num_frames();
 
   if (table.size() > 1 && (int)table.size() < num_frames) {
@@ -295,7 +295,7 @@ set_table(char table_id, const CPTA_float &table) {
 void AnimChannelMatrixXfmTable::
 clear_all_tables() {
   for (int i = 0; i < num_matrix_components; i++) {
-    _tables[i] = CPTA_float(get_class_type());
+    _tables[i] = CPTA_stdfloat(get_class_type());
   }
 }
 
@@ -388,7 +388,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
     for (int i = 0; i < num_matrix_components; i++) {
       me.add_uint16(_tables[i].size());
       for(int j = 0; j < (int)_tables[i].size(); j++) {
-        me.add_float32(_tables[i][j]);
+        me.add_stdfloat(_tables[i][j]);
       }
     }
 
@@ -407,16 +407,16 @@ write_datagram(BamWriter *manager, Datagram &me) {
 
     // Now, write out the joint angles.  For these we need to build up
     // a HPR array.
-    pvector<LVecBase3f> hprs;
+    pvector<LVecBase3> hprs;
     int hprs_length = max(max(_tables[6].size(), _tables[7].size()), _tables[8].size());
     hprs.reserve(hprs_length);
     for (i = 0; i < hprs_length; i++) {
-      float h = _tables[6].empty() ? 0.0f : _tables[6][i % _tables[6].size()];
-      float p = _tables[7].empty() ? 0.0f : _tables[7][i % _tables[7].size()];
-      float r = _tables[8].empty() ? 0.0f : _tables[8][i % _tables[8].size()];
-      hprs.push_back(LVecBase3f(h, p, r));
+      PN_stdfloat h = _tables[6].empty() ? 0.0f : _tables[6][i % _tables[6].size()];
+      PN_stdfloat p = _tables[7].empty() ? 0.0f : _tables[7][i % _tables[7].size()];
+      PN_stdfloat r = _tables[8].empty() ? 0.0f : _tables[8][i % _tables[8].size()];
+      hprs.push_back(LVecBase3(h, p, r));
     }
-    const LVecBase3f *hprs_array = NULL;
+    const LVecBase3 *hprs_array = NULL;
     if (hprs_length != 0) {
       hprs_array = &hprs[0];
     }
@@ -450,9 +450,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
     for (int i = 0; i < num_matrix_components; i++) {
       int size = scan.get_uint16();
-      PTA_float ind_table(get_class_type());
+      PTA_stdfloat ind_table(get_class_type());
       for (int j = 0; j < size; j++) {
-        ind_table.push_back(scan.get_float32());
+        ind_table.push_back(scan.get_stdfloat());
       }
       _tables[i] = ind_table;
     }
@@ -462,7 +462,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
       size_t num_hprs = max(max(_tables[6].size(), _tables[7].size()),
                             _tables[8].size());
 
-      LVecBase3f default_hpr(0.0, 0.0, 0.0);
+      LVecBase3 default_hpr(0.0, 0.0, 0.0);
       if (!_tables[6].empty()) {
         default_hpr[0] = _tables[6][0];
       }
@@ -473,20 +473,20 @@ fillin(DatagramIterator &scan, BamReader *manager) {
         default_hpr[2] = _tables[8][0];
       }
 
-      PTA_float h_table = PTA_float::empty_array(num_hprs, get_class_type());
-      PTA_float p_table = PTA_float::empty_array(num_hprs, get_class_type());
-      PTA_float r_table = PTA_float::empty_array(num_hprs, get_class_type());
+      PTA_stdfloat h_table = PTA_stdfloat::empty_array(num_hprs, get_class_type());
+      PTA_stdfloat p_table = PTA_stdfloat::empty_array(num_hprs, get_class_type());
+      PTA_stdfloat r_table = PTA_stdfloat::empty_array(num_hprs, get_class_type());
 
       for (size_t hi = 0; hi < num_hprs; hi++) {
-        float h = (hi < _tables[6].size() ? _tables[6][hi] : default_hpr[0]);
-        float p = (hi < _tables[7].size() ? _tables[7][hi] : default_hpr[1]);
-        float r = (hi < _tables[8].size() ? _tables[8][hi] : default_hpr[2]);
+        PN_stdfloat h = (hi < _tables[6].size() ? _tables[6][hi] : default_hpr[0]);
+        PN_stdfloat p = (hi < _tables[7].size() ? _tables[7][hi] : default_hpr[1]);
+        PN_stdfloat r = (hi < _tables[8].size() ? _tables[8][hi] : default_hpr[2]);
 
-        LVecBase3f hpr;
+        LVecBase3 hpr;
         if (temp_hpr_fix) {
-          hpr = old_to_new_hpr(LVecBase3f(h, p, r));
+          hpr = old_to_new_hpr(LVecBase3(h, p, r));
         } else {
-          hpr = new_to_old_hpr(LVecBase3f(h, p, r));
+          hpr = new_to_old_hpr(LVecBase3(h, p, r));
         }
         h_table[hi] = hpr[0];
         p_table[hi] = hpr[1];
@@ -512,29 +512,29 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     int i;
     // First, read in the scales and shears.
     for (i = 0; i < 6; i++) {
-      PTA_float ind_table = PTA_float::empty_array(0, get_class_type());
+      PTA_stdfloat ind_table = PTA_stdfloat::empty_array(0, get_class_type());
       compressor.read_reals(scan, ind_table.v());
       _tables[i] = ind_table;
     }
 
     // Read in the HPR array and store it back in the joint angles.
-    pvector<LVecBase3f> hprs;
+    pvector<LVecBase3> hprs;
     compressor.read_hprs(scan, hprs, new_hpr);
-    PTA_float h_table = PTA_float::empty_array(hprs.size(), get_class_type());
-    PTA_float p_table = PTA_float::empty_array(hprs.size(), get_class_type());
-    PTA_float r_table = PTA_float::empty_array(hprs.size(), get_class_type());
+    PTA_stdfloat h_table = PTA_stdfloat::empty_array(hprs.size(), get_class_type());
+    PTA_stdfloat p_table = PTA_stdfloat::empty_array(hprs.size(), get_class_type());
+    PTA_stdfloat r_table = PTA_stdfloat::empty_array(hprs.size(), get_class_type());
 
     for (i = 0; i < (int)hprs.size(); i++) {
       if (!new_hpr && temp_hpr_fix) {
         // Convert the old HPR form to the new HPR form.
-        LVecBase3f hpr = old_to_new_hpr(hprs[i]);
+        LVecBase3 hpr = old_to_new_hpr(hprs[i]);
         h_table[i] = hpr[0];
         p_table[i] = hpr[1];
         r_table[i] = hpr[2];
 
       } else if (new_hpr && !temp_hpr_fix) {
         // Convert the new HPR form to the old HPR form.
-        LVecBase3f hpr = new_to_old_hpr(hprs[i]);
+        LVecBase3 hpr = new_to_old_hpr(hprs[i]);
         h_table[i] = hpr[0];
         p_table[i] = hpr[1];
         r_table[i] = hpr[2];
@@ -552,7 +552,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
     // Now read in the translations.
     for (i = 9; i < num_matrix_components; i++) {
-      PTA_float ind_table = PTA_float::empty_array(0, get_class_type());
+      PTA_stdfloat ind_table = PTA_stdfloat::empty_array(0, get_class_type());
       compressor.read_reals(scan, ind_table.v());
       _tables[i] = ind_table;
     }

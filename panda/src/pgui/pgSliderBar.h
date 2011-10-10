@@ -42,7 +42,7 @@ protected:
 public:
   virtual PandaNode *make_copy() const;
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
-  virtual void xform(const LMatrix4f &mat);
+  virtual void xform(const LMatrix4 &mat);
 
   virtual void press(const MouseWatcherParameter &param, bool background);
   virtual void release(const MouseWatcherParameter &param, bool background);
@@ -54,27 +54,27 @@ public:
   INLINE PGSliderBarNotify *get_notify() const;
 
 PUBLISHED:
-  void setup_scroll_bar(bool vertical, float length, float width, float bevel);
-  void setup_slider(bool vertical, float length, float width, float bevel);
+  void setup_scroll_bar(bool vertical, PN_stdfloat length, PN_stdfloat width, PN_stdfloat bevel);
+  void setup_slider(bool vertical, PN_stdfloat length, PN_stdfloat width, PN_stdfloat bevel);
 
-  INLINE void set_axis(const LVector3f &axis);
-  INLINE const LVector3f &get_axis() const;
+  INLINE void set_axis(const LVector3 &axis);
+  INLINE const LVector3 &get_axis() const;
 
-  INLINE void set_range(float min_value, float max_value);
-  INLINE float get_min_value() const;
-  INLINE float get_max_value() const;
+  INLINE void set_range(PN_stdfloat min_value, PN_stdfloat max_value);
+  INLINE PN_stdfloat get_min_value() const;
+  INLINE PN_stdfloat get_max_value() const;
 
-  INLINE void set_scroll_size(float scroll_size);
-  INLINE float get_scroll_size() const;
+  INLINE void set_scroll_size(PN_stdfloat scroll_size);
+  INLINE PN_stdfloat get_scroll_size() const;
 
-  INLINE void set_page_size(float page_size);
-  INLINE float get_page_size() const;
+  INLINE void set_page_size(PN_stdfloat page_size);
+  INLINE PN_stdfloat get_page_size() const;
 
-  INLINE void set_value(float value);
-  INLINE float get_value() const;
+  INLINE void set_value(PN_stdfloat value);
+  INLINE PN_stdfloat get_value() const;
 
-  INLINE void set_ratio(float ratio);
-  INLINE float get_ratio() const;
+  INLINE void set_ratio(PN_stdfloat ratio);
+  INLINE PN_stdfloat get_ratio() const;
 
   INLINE bool is_button_down() const;
 
@@ -115,7 +115,7 @@ protected:
   virtual void item_move(PGItem *item, const MouseWatcherParameter &param);
 
 private:
-  INLINE void internal_set_ratio(float ratio);
+  INLINE void internal_set_ratio(PN_stdfloat ratio);
 
   void reposition();
   void advance_scroll();
@@ -129,27 +129,27 @@ private:
   bool _needs_recompute;
   bool _needs_reposition;
 
-  float _min_value, _max_value;
-  float _scroll_value, _scroll_ratio;
-  float _page_value, _page_ratio;
-  float _ratio;
+  PN_stdfloat _min_value, _max_value;
+  PN_stdfloat _scroll_value, _scroll_ratio;
+  PN_stdfloat _page_value, _page_ratio;
+  PN_stdfloat _ratio;
   bool _resize_thumb;
   bool _manage_pieces;
 
-  LVector3f _axis;
+  LVector3 _axis;
 
   PT(PGButton) _thumb_button;
   PT(PGButton) _left_button;
   PT(PGButton) _right_button;
 
-  float _min_x, _max_x, _thumb_width, _range_x;
-  LPoint3f _thumb_start;
+  PN_stdfloat _min_x, _max_x, _thumb_width, _range_x;
+  LPoint3 _thumb_start;
   PGItem *_scroll_button_held;
   bool _mouse_button_page;
-  LPoint2f _mouse_pos;
+  LPoint2 _mouse_pos;
   double _next_advance_time;
   bool _dragging;
-  float _drag_start_x;
+  PN_stdfloat _drag_start_x;
 
 public:
   static TypeHandle get_class_type() {

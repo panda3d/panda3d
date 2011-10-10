@@ -35,7 +35,7 @@ public:
   EggToDXFLayer(const EggToDXFLayer &copy);
   void operator = (const EggToDXFLayer &copy);
 
-  void add_color(const Colorf &color);
+  void add_color(const LColor &color);
   void choose_overall_color();
 
   void write_layer(ostream &out);
@@ -44,7 +44,7 @@ public:
   void write_entities(ostream &out);
 
 private:
-  int get_autocad_color(const Colorf &color);
+  int get_autocad_color(const LColor &color);
 
   typedef pmap<int, int> ColorCounts;
   ColorCounts _color_counts;

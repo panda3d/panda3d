@@ -48,7 +48,7 @@ public:
   virtual void apply_attribs_to_vertices(const AccumulatedAttribs &attribs,
                                          int attrib_types,
                                          GeomTransformer &transformer);
-  virtual void xform(const LMatrix4f &mat);
+  virtual void xform(const LMatrix4 &mat);
 
 PUBLISHED:
   INLINE int get_num_bundles() const;

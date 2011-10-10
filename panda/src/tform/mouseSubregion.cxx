@@ -36,9 +36,9 @@ MouseSubregion(const string &name) :
   _xy_output = define_output("xy", EventStoreVec2::get_class_type());
   _button_events_output = define_output("button_events", ButtonEventList::get_class_type());
 
-  _pixel_xy = new EventStoreVec2(LPoint2f(0.0f, 0.0f));
-  _pixel_size = new EventStoreVec2(LPoint2f(0.0f, 0.0f));
-  _xy = new EventStoreVec2(LPoint2f(0.0f, 0.0f));
+  _pixel_xy = new EventStoreVec2(LPoint2(0.0f, 0.0f));
+  _pixel_size = new EventStoreVec2(LPoint2(0.0f, 0.0f));
+  _xy = new EventStoreVec2(LPoint2(0.0f, 0.0f));
   _button_events = new ButtonEventList;
 }
 
@@ -72,10 +72,10 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
   if (input.has_data(_xy_input)) {
     const EventStoreVec2 *xy;
     DCAST_INTO_V(xy, input.get_data(_xy_input).get_ptr());
-    const LVecBase2f &p = xy->get_value();
+    const LVecBase2 &p = xy->get_value();
 
     // Scale the old value into the new range.
-    LVecBase2f n((p[0] - _minx) * _scalex - 1.0f, (p[1] - _miny) * _scaley - 1.0f);
+    LVecBase2 n((p[0] - _minx) * _scalex - 1.0f, (p[1] - _miny) * _scaley - 1.0f);
 
     // If the mouse is indeed within the display region, pass it down.
     if (n[0] >= -1.0f && n[0] <= 1.0f &&
@@ -88,12 +88,12 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
       if (input.has_data(_pixel_size_input)) {
         const EventStoreVec2 *pixel_size;
         DCAST_INTO_V(pixel_size, input.get_data(_pixel_size_input).get_ptr());
-        const LVecBase2f &s = pixel_size->get_value();
+        const LVecBase2 &s = pixel_size->get_value();
 
-        float xf = (1.0f + n[0]) * 0.5f * s[0];
-        float yf = (1.0f - n[1]) * 0.5f * s[1];
+        PN_stdfloat xf = (1.0f + n[0]) * 0.5f * s[0];
+        PN_stdfloat yf = (1.0f - n[1]) * 0.5f * s[1];
         
-        _pixel_xy->set_value(LPoint2f(xf, yf));
+        _pixel_xy->set_value(LPoint2(xf, yf));
         output.set_data(_pixel_xy_output, EventParameter(_pixel_xy));
       }
 
@@ -131,9 +131,9 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
   if (input.has_data(_pixel_size_input)) {
     const EventStoreVec2 *pixel_size;
     DCAST_INTO_V(pixel_size, input.get_data(_pixel_size_input).get_ptr());
-    const LVecBase2f &s = pixel_size->get_value();
+    const LVecBase2 &s = pixel_size->get_value();
 
-    LVecBase2f n(s[0] * (_r - _l), s[1] * (_t - _b));
+    LVecBase2 n(s[0] * (_r - _l), s[1] * (_t - _b));
     _pixel_size->set_value(n);
     output.set_data(_pixel_size_output, EventParameter(_pixel_size));
   }

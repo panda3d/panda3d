@@ -18,7 +18,7 @@
 // Description : boundary assignment
 ////////////////////////////////////////////////////////////////////
 INLINE void BoxEmitter::
-set_min_bound(const LPoint3f& vmin) {
+set_min_bound(const LPoint3& vmin) {
   _vmin = vmin;
 }
 
@@ -28,7 +28,7 @@ set_min_bound(const LPoint3f& vmin) {
 // Description : boundary assignment
 ////////////////////////////////////////////////////////////////////
 INLINE void BoxEmitter::
-set_max_bound(const LPoint3f& vmax) {
+set_max_bound(const LPoint3& vmax) {
   _vmax = vmax;
 }
 
@@ -37,7 +37,7 @@ set_max_bound(const LPoint3f& vmax) {
 //      Access : Public
 // Description : boundary accessor
 ////////////////////////////////////////////////////////////////////
-INLINE LPoint3f BoxEmitter::
+INLINE LPoint3 BoxEmitter::
 get_min_bound() const {
   return _vmin;
 }
@@ -47,7 +47,7 @@ get_min_bound() const {
 //      Access : Public
 // Description : boundary accessor
 ////////////////////////////////////////////////////////////////////
-INLINE LPoint3f BoxEmitter::
+INLINE LPoint3 BoxEmitter::
 get_max_bound() const {
   return _vmax;
 }

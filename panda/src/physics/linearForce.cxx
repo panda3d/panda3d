@@ -27,7 +27,7 @@ TypeHandle LinearForce::_type_handle;
 //  Description : Default/component-based constructor
 ////////////////////////////////////////////////////////////////////
 LinearForce::
-LinearForce(float a, bool mass) :
+LinearForce(PN_stdfloat a, bool mass) :
   BaseForce(true),
   _amplitude(a), _mass_dependent(mass),
   _x_mask(true), _y_mask(true), _z_mask(true) {
@@ -61,10 +61,10 @@ LinearForce::
 //    Function : get_vector
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
-LVector3f LinearForce::
+LVector3 LinearForce::
 get_vector(const PhysicsObject *po) {
-  LVector3f child_vector = get_child_vector(po) * _amplitude;
-  nassertr(!child_vector.is_nan(), LVector3f::zero());
+  LVector3 child_vector = get_child_vector(po) * _amplitude;
+  nassertr(!child_vector.is_nan(), LVector3::zero());
 
   if (_x_mask == false)
     child_vector[0] = 0.0f;

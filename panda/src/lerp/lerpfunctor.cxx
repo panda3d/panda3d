@@ -29,7 +29,7 @@ LerpFunctor& LerpFunctor::operator=(const LerpFunctor&) {
   return *this;
 }
 
-void LerpFunctor::operator()(float) {
+void LerpFunctor::operator()(PN_stdfloat) {
   // should not be here
 }
 
@@ -44,7 +44,7 @@ MultiLerpFunctor& MultiLerpFunctor::operator=(const MultiLerpFunctor& c) {
   return *this;
 }
 
-void MultiLerpFunctor::operator()(float f) {
+void MultiLerpFunctor::operator()(PN_stdfloat f) {
   for (Functors::iterator i=_funcs.begin(); i!=_funcs.end(); ++i)
     (*(*i))(f);
 }

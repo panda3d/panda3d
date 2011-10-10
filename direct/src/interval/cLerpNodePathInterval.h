@@ -35,31 +35,31 @@ PUBLISHED:
   INLINE const NodePath &get_node() const;
   INLINE const NodePath &get_other() const;
 
-  INLINE void set_start_pos(const LVecBase3f &pos);
-  INLINE void set_end_pos(const LVecBase3f &pos);
-  INLINE void set_start_hpr(const LVecBase3f &hpr);
-  INLINE void set_end_hpr(const LVecBase3f &hpr);
-  INLINE void set_end_hpr(const LQuaternionf &quat);
-  INLINE void set_start_quat(const LQuaternionf &quat);
-  INLINE void set_end_quat(const LVecBase3f &hpr);
-  INLINE void set_end_quat(const LQuaternionf &quat);
-  INLINE void set_start_scale(const LVecBase3f &scale);
-  INLINE void set_start_scale(float scale);
-  INLINE void set_end_scale(const LVecBase3f &scale);
-  INLINE void set_end_scale(float scale);
-  INLINE void set_start_shear(const LVecBase3f &shear);
-  INLINE void set_end_shear(const LVecBase3f &shear);
-  INLINE void set_start_color(const LVecBase4f &color);
-  INLINE void set_end_color(const LVecBase4f &color);
-  INLINE void set_start_color_scale(const LVecBase4f &color_scale);
-  INLINE void set_end_color_scale(const LVecBase4f &color_scale);
+  INLINE void set_start_pos(const LVecBase3 &pos);
+  INLINE void set_end_pos(const LVecBase3 &pos);
+  INLINE void set_start_hpr(const LVecBase3 &hpr);
+  INLINE void set_end_hpr(const LVecBase3 &hpr);
+  INLINE void set_end_hpr(const LQuaternion &quat);
+  INLINE void set_start_quat(const LQuaternion &quat);
+  INLINE void set_end_quat(const LVecBase3 &hpr);
+  INLINE void set_end_quat(const LQuaternion &quat);
+  INLINE void set_start_scale(const LVecBase3 &scale);
+  INLINE void set_start_scale(PN_stdfloat scale);
+  INLINE void set_end_scale(const LVecBase3 &scale);
+  INLINE void set_end_scale(PN_stdfloat scale);
+  INLINE void set_start_shear(const LVecBase3 &shear);
+  INLINE void set_end_shear(const LVecBase3 &shear);
+  INLINE void set_start_color(const LVecBase4 &color);
+  INLINE void set_end_color(const LVecBase4 &color);
+  INLINE void set_start_color_scale(const LVecBase4 &color_scale);
+  INLINE void set_end_color_scale(const LVecBase4 &color_scale);
   INLINE void set_texture_stage(TextureStage *stage);
-  INLINE void set_start_tex_offset(const LVecBase2f &tex_offset);
-  INLINE void set_end_tex_offset(const LVecBase2f &tex_offset);
-  INLINE void set_start_tex_rotate(float tex_rotate);
-  INLINE void set_end_tex_rotate(float tex_rotate);
-  INLINE void set_start_tex_scale(const LVecBase2f &tex_scale);
-  INLINE void set_end_tex_scale(const LVecBase2f &tex_scale);
+  INLINE void set_start_tex_offset(const LVecBase2 &tex_offset);
+  INLINE void set_end_tex_offset(const LVecBase2 &tex_offset);
+  INLINE void set_start_tex_rotate(PN_stdfloat tex_rotate);
+  INLINE void set_end_tex_rotate(PN_stdfloat tex_rotate);
+  INLINE void set_start_tex_scale(const LVecBase2 &tex_scale);
+  INLINE void set_end_tex_scale(const LVecBase2 &tex_scale);
 
   INLINE void set_override(int override);
   INLINE int get_override() const;
@@ -108,30 +108,30 @@ private:
   };
   
   unsigned int _flags;
-  LPoint3f _start_pos, _end_pos;
-  LVecBase3f _start_hpr, _end_hpr;
-  LQuaternionf _start_quat, _end_quat;
-  LVecBase3f _start_scale, _end_scale;
-  LVecBase3f _start_shear, _end_shear;
-  Colorf _start_color, _end_color;
-  LVecBase4f _start_color_scale, _end_color_scale;
+  LPoint3 _start_pos, _end_pos;
+  LVecBase3 _start_hpr, _end_hpr;
+  LQuaternion _start_quat, _end_quat;
+  LVecBase3 _start_scale, _end_scale;
+  LVecBase3 _start_shear, _end_shear;
+  LColor _start_color, _end_color;
+  LVecBase4 _start_color_scale, _end_color_scale;
   PT(TextureStage) _texture_stage;
-  LVecBase2f _start_tex_offset, _end_tex_offset;
-  float _start_tex_rotate, _end_tex_rotate;
-  LVecBase2f _start_tex_scale, _end_tex_scale;
+  LVecBase2 _start_tex_offset, _end_tex_offset;
+  PN_stdfloat _start_tex_rotate, _end_tex_rotate;
+  LVecBase2 _start_tex_scale, _end_tex_scale;
 
   int _override;
   double _prev_d;
-  float _slerp_angle;
-  float _slerp_denom;
-  LQuaternionf _slerp_c;
+  PN_stdfloat _slerp_angle;
+  PN_stdfloat _slerp_denom;
+  LQuaternion _slerp_c;
 
-  void slerp_basic(LQuaternionf &result, float t) const;
-  void slerp_angle_0(LQuaternionf &result, float t) const;
-  void slerp_angle_180(LQuaternionf &result, float t) const;
+  void slerp_basic(LQuaternion &result, PN_stdfloat t) const;
+  void slerp_angle_0(LQuaternion &result, PN_stdfloat t) const;
+  void slerp_angle_180(LQuaternion &result, PN_stdfloat t) const;
 
   // Define a pointer to one of the above three methods.
-  void (CLerpNodePathInterval::*_slerp)(LQuaternionf &result, float t) const;
+  void (CLerpNodePathInterval::*_slerp)(LQuaternion &result, PN_stdfloat t) const;
   
 public:
   static TypeHandle get_class_type() {

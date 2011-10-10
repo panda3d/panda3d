@@ -128,7 +128,7 @@ get_vignette_on() const {
 //               set_vignette_on().
 ////////////////////////////////////////////////////////////////////
 INLINE void ProjectionScreen::
-set_vignette_color(const Colorf &vignette_color) {
+set_vignette_color(const LColor &vignette_color) {
   _vignette_color = vignette_color;
   _stale = true;
 }
@@ -140,7 +140,7 @@ set_vignette_color(const Colorf &vignette_color) {
 //               portions outside of the lens' frustum.  See
 //               set_vignette_color().
 ////////////////////////////////////////////////////////////////////
-INLINE const Colorf &ProjectionScreen::
+INLINE const LColor &ProjectionScreen::
 get_vignette_color() const {
   return _vignette_color;
 }
@@ -155,7 +155,7 @@ get_vignette_color() const {
 //               set_vignette_on().
 ////////////////////////////////////////////////////////////////////
 INLINE void ProjectionScreen::
-set_frame_color(const Colorf &frame_color) {
+set_frame_color(const LColor &frame_color) {
   _frame_color = frame_color;
   _stale = true;
 }
@@ -167,7 +167,7 @@ set_frame_color(const Colorf &frame_color) {
 //               portions outside of the lens' frustum.  See
 //               set_frame_color().
 ////////////////////////////////////////////////////////////////////
-INLINE const Colorf &ProjectionScreen::
+INLINE const LColor &ProjectionScreen::
 get_frame_color() const {
   return _frame_color;
 }

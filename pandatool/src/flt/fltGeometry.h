@@ -105,14 +105,14 @@ public:
   INLINE void set_material(FltMaterial *material);
 
   INLINE bool has_color() const;
-  Colorf get_color() const;
-  void set_color(const Colorf &color);
-  RGBColorf get_rgb() const;
-  void set_rgb(const RGBColorf &rgb);
+  LColor get_color() const;
+  void set_color(const LColor &color);
+  LRGBColor get_rgb() const;
+  void set_rgb(const LRGBColor &rgb);
 
   bool has_alt_color() const;
-  Colorf get_alt_color() const;
-  RGBColorf get_alt_rgb() const;
+  LColor get_alt_color() const;
+  LRGBColor get_alt_rgb() const;
 
 
 protected:

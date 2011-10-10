@@ -33,10 +33,10 @@ make_copy() const {
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-LPoint3f BoundingPlane::
+LPoint3 BoundingPlane::
 get_approx_center() const {
-  nassertr(!is_empty(), LPoint3f(0.0f, 0.0f, 0.0f));
-  nassertr(!is_infinite(), LPoint3f(0.0f, 0.0f, 0.0f));
+  nassertr(!is_empty(), LPoint3(0.0f, 0.0f, 0.0f));
+  nassertr(!is_infinite(), LPoint3(0.0f, 0.0f, 0.0f));
   return _plane.get_point();
 }
 
@@ -46,7 +46,7 @@ get_approx_center() const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void BoundingPlane::
-xform(const LMatrix4f &mat) {
+xform(const LMatrix4 &mat) {
   nassertv(!mat.is_nan());
 
   if (!is_empty() && !is_infinite()) {
@@ -143,8 +143,8 @@ contains_sphere(const BoundingSphere *sphere) const {
   nassertr(!is_empty() && !is_infinite(), 0);
   nassertr(!sphere->is_empty() && !sphere->is_infinite(), 0);
 
-  float r = sphere->get_radius();
-  float d = _plane.dist_to_plane(sphere->get_center());
+  PN_stdfloat r = sphere->get_radius();
+  PN_stdfloat d = _plane.dist_to_plane(sphere->get_center());
 
   if (d <= -r) {
     // The sphere is completely behind the plane.
@@ -171,15 +171,15 @@ contains_box(const BoundingBox *box) const {
   nassertr(!box->is_empty() && !box->is_infinite(), 0);
 
   // Put the box inside a sphere for the purpose of this test.
-  const LPoint3f &min = box->get_minq();
-  const LPoint3f &max = box->get_maxq();
-  LPoint3f center = (min + max) * 0.5f;
-  float radius2 = (max - center).length_squared();
+  const LPoint3 &min = box->get_minq();
+  const LPoint3 &max = box->get_maxq();
+  LPoint3 center = (min + max) * 0.5f;
+  PN_stdfloat radius2 = (max - center).length_squared();
 
   int result = IF_possible | IF_some | IF_all;
 
-  float dist = _plane.dist_to_plane(center);
-  float dist2 = dist * dist;
+  PN_stdfloat dist = _plane.dist_to_plane(center);
+  PN_stdfloat dist2 = dist * dist;
 
   if (dist2 <= radius2) {
     // The sphere is not completely behind this plane, but some of

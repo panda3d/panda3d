@@ -107,7 +107,7 @@ get_to_point() const {
 //       Access: Public
 //  Description: Returns the overall scale factor.
 ////////////////////////////////////////////////////////////////////
-float FltTransformRotateScale::
+PN_stdfloat FltTransformRotateScale::
 get_overall_scale() const {
   return _overall_scale;
 }
@@ -118,7 +118,7 @@ get_overall_scale() const {
 //  Description: Returns the scale factor in the direction of the
 //               axis.
 ////////////////////////////////////////////////////////////////////
-float FltTransformRotateScale::
+PN_stdfloat FltTransformRotateScale::
 get_axis_scale() const {
   return _axis_scale;
 }
@@ -128,7 +128,7 @@ get_axis_scale() const {
 //       Access: Public
 //  Description: Returns the angle of rotation in degrees.
 ////////////////////////////////////////////////////////////////////
-float FltTransformRotateScale::
+PN_stdfloat FltTransformRotateScale::
 get_angle() const {
   return _angle;
 }

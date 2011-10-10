@@ -21,7 +21,7 @@
 //               amount of progress through the patchfile, during a
 //               session.
 ////////////////////////////////////////////////////////////////////
-INLINE float Patchfile::
+INLINE PN_stdfloat Patchfile::
 get_progress() const {
   if (!_initiated) {
     express_cat.warning()
@@ -29,7 +29,7 @@ get_progress() const {
     return 0.0f;
   }
   nassertr(_total_bytes_to_process > 0, 0.0f);
-  return ((float)_total_bytes_processed / (float)_total_bytes_to_process);
+  return ((PN_stdfloat)_total_bytes_processed / (PN_stdfloat)_total_bytes_to_process);
 }
 
 ////////////////////////////////////////////////////////////////////

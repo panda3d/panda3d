@@ -71,12 +71,12 @@ get_blend_value(const PartBundle *root) {
   } else {
     // A blend of two or more values.
     _value = 0.0f;
-    float net = 0.0f;
+    PN_stdfloat net = 0.0f;
 
     PartBundle::ChannelBlend::const_iterator cbi;
     for (cbi = cdata->_blend.begin(); cbi != cdata->_blend.end(); ++cbi) {
       AnimControl *control = (*cbi).first;
-      float effect = (*cbi).second;
+      PN_stdfloat effect = (*cbi).second;
       nassertv(effect != 0.0f);
 
       ChannelType *channel = NULL;
@@ -93,7 +93,7 @@ get_blend_value(const PartBundle *root) {
           _value += v * effect;
         } else {
           // Blend between successive frames.
-          float frac = (float)control->get_frac();
+          PN_stdfloat frac = (PN_stdfloat)control->get_frac();
           _value += v * (effect * (1.0f - frac));
 
           channel->get_value(control->get_next_frame(), v);
@@ -124,7 +124,7 @@ get_blend_value(const PartBundle *root) {
 //               PartBundle::freeze_joint().
 ////////////////////////////////////////////////////////////////////
 bool MovingPartScalar::
-apply_freeze_scalar(float value) {
+apply_freeze_scalar(PN_stdfloat value) {
   _forced_channel = new AnimChannelFixed<ACScalarSwitchType>(get_name(), value);
   return true;
 }

@@ -28,22 +28,22 @@ private:
   PT(LerpBlendType) _blend;
   PT(LerpFunctor) _func;
   std::string _event;
-  float _startt;
-  float _endt;
-  float _delta;
-  float _t;
+  PN_stdfloat _startt;
+  PN_stdfloat _endt;
+  PN_stdfloat _delta;
+  PN_stdfloat _t;
 
 PUBLISHED:
-  Lerp(LerpFunctor* func, float endt, LerpBlendType* blend);
-  Lerp(LerpFunctor* func, float startt, float endt, LerpBlendType* blend);
+  Lerp(LerpFunctor* func, PN_stdfloat endt, LerpBlendType* blend);
+  Lerp(LerpFunctor* func, PN_stdfloat startt, PN_stdfloat endt, LerpBlendType* blend);
   Lerp(const Lerp&);
   virtual ~Lerp();
   Lerp& operator=(const Lerp&);
   void step();
-  void set_step_size(float);
-  float get_step_size() const;
-  void set_t(float);
-  float get_t() const;
+  void set_step_size(PN_stdfloat);
+  PN_stdfloat get_step_size() const;
+  void set_t(PN_stdfloat);
+  PN_stdfloat get_t() const;
   bool is_done() const;
   LerpFunctor* get_functor() const;
   void set_end_event(const std::string&);
@@ -75,17 +75,17 @@ private:
   PT(LerpFunctor) _func;
   EventHandler* _handler;
   std::string _event;
-  float _startt;
-  float _endt;
-  float _t;
+  PN_stdfloat _startt;
+  PN_stdfloat _endt;
+  PN_stdfloat _t;
 
   virtual void step();
   static void handle_event(const Event *, void*);
 
 PUBLISHED:
-  AutonomousLerp(LerpFunctor* func, float endt, LerpBlendType* blend,
+  AutonomousLerp(LerpFunctor* func, PN_stdfloat endt, LerpBlendType* blend,
                  EventHandler* handler);
-  AutonomousLerp(LerpFunctor* func, float startt, float endt,
+  AutonomousLerp(LerpFunctor* func, PN_stdfloat startt, PN_stdfloat endt,
                  LerpBlendType* blend, EventHandler* handler);
   AutonomousLerp(const AutonomousLerp&);
   virtual ~AutonomousLerp();
@@ -95,8 +95,8 @@ PUBLISHED:
   void resume();
   bool is_done() const;
   LerpFunctor* get_functor() const;
-  void set_t(float);
-  float get_t() const;
+  void set_t(PN_stdfloat);
+  PN_stdfloat get_t() const;
   void set_end_event(const std::string&);
   std::string get_end_event() const;
 

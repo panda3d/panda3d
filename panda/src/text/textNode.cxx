@@ -88,7 +88,7 @@ TextNode(const string &name) : PandaNode(name) {
   _card_ul.set(0.0f, 0.0f);
   _card_lr.set(0.0f, 0.0f);
 
-  _transform = LMatrix4f::ident_mat();
+  _transform = LMatrix4::ident_mat();
   _coordinate_system = CS_default;
 
   _ul3d.set(0.0f, 0.0f, 0.0f);
@@ -120,7 +120,7 @@ TextNode(const string &name, const TextProperties &copy) :
   _card_ul.set(0.0f, 0.0f);
   _card_lr.set(0.0f, 0.0f);
 
-  _transform = LMatrix4f::ident_mat();
+  _transform = LMatrix4::ident_mat();
   _coordinate_system = CS_default;
 
   _ul3d.set(0.0f, 0.0f, 0.0f);
@@ -187,7 +187,7 @@ TextNode::
 //               or 0.0 if the character is not known.  This may be a
 //               wide character (greater than 255).
 ////////////////////////////////////////////////////////////////////
-float TextNode::
+PN_stdfloat TextNode::
 calc_width(wchar_t character) const {
   TextFont *font = get_font();
   if (font == (TextFont *)NULL) {
@@ -287,9 +287,9 @@ is_whitespace(wchar_t character) const {
 //               character or any embedded control characters like \1
 //               or \3.
 ////////////////////////////////////////////////////////////////////
-float TextNode::
+PN_stdfloat TextNode::
 calc_width(const wstring &line) const {
-  float width = 0.0f;
+  PN_stdfloat width = 0.0f;
 
   wstring::const_iterator si;
   for (si = line.begin(); si != line.end(); ++si) {
@@ -383,8 +383,8 @@ generate() {
   // Compute the overall text transform matrix.  We build the text in
   // a Z-up coordinate system and then convert it to whatever the user
   // asked for.
-  LMatrix4f mat =
-    LMatrix4f::convert_mat(CS_zup_right, _coordinate_system) *
+  LMatrix4 mat =
+    LMatrix4::convert_mat(CS_zup_right, _coordinate_system) *
     _transform;
 
   CPT(TransformState) transform = TransformState::make_mat(mat);
@@ -420,8 +420,8 @@ generate() {
 
   // Save the bounding-box information about the text in a form
   // friendly to the user.
-  const LVector2f &ul = assembler.get_ul();
-  const LVector2f &lr = assembler.get_lr();
+  const LVector2 &ul = assembler.get_ul();
+  const LVector2 &lr = assembler.get_lr();
   _ul3d.set(ul[0], 0.0f, ul[1]);
   _lr3d.set(lr[0], 0.0f, lr[1]);
 
@@ -558,7 +558,7 @@ void TextNode::
 apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
                           GeomTransformer &transformer) {
   if ((attrib_types & SceneGraphReducer::TT_transform) != 0) {
-    const LMatrix4f &mat = attribs._transform->get_mat();
+    const LMatrix4 &mat = attribs._transform->get_mat();
     _transform *= mat;
 
     if ((_flags & F_needs_measure) == 0) {
@@ -573,7 +573,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
     if (attribs._color != (const RenderAttrib *)NULL) {
       const ColorAttrib *ca = DCAST(ColorAttrib, attribs._color);
       if (ca->get_color_type() == ColorAttrib::T_flat) {
-        const Colorf &c = ca->get_color();
+        const LColor &c = ca->get_color();
         set_text_color(c);
         set_frame_color(c);
         set_card_color(c);
@@ -584,27 +584,27 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
   if ((attrib_types & SceneGraphReducer::TT_color_scale) != 0) {
     if (attribs._color_scale != (const RenderAttrib *)NULL) {
       const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, attribs._color_scale);
-      const LVecBase4f &s = csa->get_scale();
-      if (s != LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f)) {
-        LVecBase4f tc = get_text_color();
+      const LVecBase4 &s = csa->get_scale();
+      if (s != LVecBase4(1.0f, 1.0f, 1.0f, 1.0f)) {
+        LVecBase4 tc = get_text_color();
         tc[0] *= s[0];
         tc[1] *= s[1];
         tc[2] *= s[2];
         tc[3] *= s[3];
         set_text_color(tc);
-        LVecBase4f sc = get_shadow_color();
+        LVecBase4 sc = get_shadow_color();
         sc[0] *= s[0];
         sc[1] *= s[1];
         sc[2] *= s[2];
         sc[3] *= s[3];
         set_shadow_color(sc);
-        LVecBase4f fc = get_frame_color();
+        LVecBase4 fc = get_frame_color();
         fc[0] *= s[0];
         fc[1] *= s[1];
         fc[2] *= s[2];
         fc[3] *= s[3];
         set_frame_color(fc);
-        LVecBase4f cc = get_card_color();
+        LVecBase4 cc = get_card_color();
         cc[0] *= s[0];
         cc[1] *= s[1];
         cc[2] *= s[2];
@@ -640,7 +640,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
 //               already set.
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) TextNode::
-calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, bool &found_any,
+calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point, bool &found_any,
                   const TransformState *transform, Thread *current_thread) const {
   CPT(TransformState) next_transform = 
     PandaNode::calc_tight_bounds(min_point, max_point, found_any, transform,
@@ -732,7 +732,7 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
   // measured it.
   check_measure();
 
-  LPoint3f vertices[8];
+  LPoint3 vertices[8];
   vertices[0].set(_ul3d[0], _ul3d[1], _ul3d[2]);
   vertices[1].set(_ul3d[0], _ul3d[1], _lr3d[2]);
   vertices[2].set(_ul3d[0], _lr3d[1], _ul3d[2]);
@@ -806,11 +806,11 @@ PT(PandaNode) TextNode::
 make_frame() {
   PT(GeomNode) frame_node = new GeomNode("frame");
 
-  LVector4f dimensions = get_frame_actual();
-  float left = dimensions[0];
-  float right = dimensions[1];
-  float bottom = dimensions[2];
-  float top = dimensions[3];
+  LVector4 dimensions = get_frame_actual();
+  PN_stdfloat left = dimensions[0];
+  PN_stdfloat right = dimensions[1];
+  PN_stdfloat bottom = dimensions[2];
+  PN_stdfloat top = dimensions[3];
     
   CPT(RenderAttrib) thick = RenderModeAttrib::make(RenderModeAttrib::M_unchanged, _frame_width);
   CPT(RenderState) state = RenderState::make(thick);
@@ -819,10 +819,10 @@ make_frame() {
     ("text", GeomVertexFormat::get_v3(), get_usage_hint());
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   
-  vertex.add_data3f(left, 0.0f, top);
-  vertex.add_data3f(left, 0.0f, bottom);
-  vertex.add_data3f(right, 0.0f, bottom);
-  vertex.add_data3f(right, 0.0f, top);
+  vertex.add_data3(left, 0.0f, top);
+  vertex.add_data3(left, 0.0f, bottom);
+  vertex.add_data3(right, 0.0f, bottom);
+  vertex.add_data3(right, 0.0f, top);
   
   PT(GeomLinestrips) frame = new GeomLinestrips(get_usage_hint());
   frame->add_consecutive_vertices(0, 4);
@@ -853,26 +853,26 @@ PT(PandaNode) TextNode::
 make_card() {
   PT(GeomNode) card_node = new GeomNode("card");
 
-  LVector4f dimensions = get_card_actual();
-  float left = dimensions[0];
-  float right = dimensions[1];
-  float bottom = dimensions[2];
-  float top = dimensions[3];
+  LVector4 dimensions = get_card_actual();
+  PN_stdfloat left = dimensions[0];
+  PN_stdfloat right = dimensions[1];
+  PN_stdfloat bottom = dimensions[2];
+  PN_stdfloat top = dimensions[3];
 
   PT(GeomVertexData) vdata = new GeomVertexData
     ("text", GeomVertexFormat::get_v3t2(), get_usage_hint());
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
   
-  vertex.add_data3f(left, 0.0f, top);
-  vertex.add_data3f(left, 0.0f, bottom);
-  vertex.add_data3f(right, 0.0f, top);
-  vertex.add_data3f(right, 0.0f, bottom);
+  vertex.add_data3(left, 0.0f, top);
+  vertex.add_data3(left, 0.0f, bottom);
+  vertex.add_data3(right, 0.0f, top);
+  vertex.add_data3(right, 0.0f, bottom);
   
-  texcoord.add_data2f(0.0f, 1.0f);
-  texcoord.add_data2f(0.0f, 0.0f);
-  texcoord.add_data2f(1.0f, 1.0f);
-  texcoord.add_data2f(1.0f, 0.0f);
+  texcoord.add_data2(0.0f, 1.0f);
+  texcoord.add_data2(0.0f, 0.0f);
+  texcoord.add_data2(1.0f, 1.0f);
+  texcoord.add_data2(1.0f, 0.0f);
   
   PT(GeomTristrips) card = new GeomTristrips(get_usage_hint());
   card->add_consecutive_vertices(0, 4);
@@ -897,11 +897,11 @@ PT(PandaNode) TextNode::
 make_card_with_border() {
   PT(GeomNode) card_node = new GeomNode("card");
 
-  LVector4f dimensions = get_card_actual();
-  float left = dimensions[0];
-  float right = dimensions[1];
-  float bottom = dimensions[2];
-  float top = dimensions[3];
+  LVector4 dimensions = get_card_actual();
+  PN_stdfloat left = dimensions[0];
+  PN_stdfloat right = dimensions[1];
+  PN_stdfloat bottom = dimensions[2];
+  PN_stdfloat top = dimensions[3];
 
   // we now create three tri-strips instead of one
   // with vertices arranged as follows:
@@ -918,50 +918,50 @@ make_card_with_border() {
   GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
   
   // verts 1,2,3,4
-  vertex.add_data3f(left, 0.02f, top);
-  vertex.add_data3f(left, 0.02f, top - _card_border_size);
-  vertex.add_data3f(left + _card_border_size, 0.02f, top);
-  vertex.add_data3f(left + _card_border_size, 0.02f,
+  vertex.add_data3(left, 0.02, top);
+  vertex.add_data3(left, 0.02, top - _card_border_size);
+  vertex.add_data3(left + _card_border_size, 0.02, top);
+  vertex.add_data3(left + _card_border_size, 0.02,
                     top - _card_border_size);
   // verts 5,6,7,8
-  vertex.add_data3f(right - _card_border_size, 0.02f, top);
-  vertex.add_data3f(right - _card_border_size, 0.02f,
+  vertex.add_data3(right - _card_border_size, 0.02, top);
+  vertex.add_data3(right - _card_border_size, 0.02,
                     top - _card_border_size);
-  vertex.add_data3f(right, 0.02f, top);
-  vertex.add_data3f(right, 0.02f, top - _card_border_size);
+  vertex.add_data3(right, 0.02, top);
+  vertex.add_data3(right, 0.02, top - _card_border_size);
   // verts 9,10,11,12
-  vertex.add_data3f(left, 0.02f, bottom + _card_border_size);
-  vertex.add_data3f(left, 0.02f, bottom);
-  vertex.add_data3f(left + _card_border_size, 0.02f,
+  vertex.add_data3(left, 0.02, bottom + _card_border_size);
+  vertex.add_data3(left, 0.02, bottom);
+  vertex.add_data3(left + _card_border_size, 0.02,
                     bottom + _card_border_size);
-  vertex.add_data3f(left + _card_border_size, 0.02f, bottom);
+  vertex.add_data3(left + _card_border_size, 0.02, bottom);
   // verts 13,14,15,16
-  vertex.add_data3f(right - _card_border_size, 0.02f,
+  vertex.add_data3(right - _card_border_size, 0.02,
                     bottom + _card_border_size);
-  vertex.add_data3f(right - _card_border_size, 0.02f, bottom);
-  vertex.add_data3f(right, 0.02f, bottom + _card_border_size);
-  vertex.add_data3f(right, 0.02f, bottom);
+  vertex.add_data3(right - _card_border_size, 0.02, bottom);
+  vertex.add_data3(right, 0.02, bottom + _card_border_size);
+  vertex.add_data3(right, 0.02, bottom);
   
-  texcoord.add_data2f(0.0f, 1.0f); //1
-  texcoord.add_data2f(0.0f, 1.0f - _card_border_uv_portion); //2
-  texcoord.add_data2f(0.0f + _card_border_uv_portion, 1.0f); //3
-  texcoord.add_data2f(0.0f + _card_border_uv_portion,
+  texcoord.add_data2(0.0f, 1.0f); //1
+  texcoord.add_data2(0.0f, 1.0f - _card_border_uv_portion); //2
+  texcoord.add_data2(0.0f + _card_border_uv_portion, 1.0f); //3
+  texcoord.add_data2(0.0f + _card_border_uv_portion,
                       1.0f - _card_border_uv_portion); //4
-  texcoord.add_data2f(1.0f -_card_border_uv_portion, 1.0f); //5
-  texcoord.add_data2f(1.0f -_card_border_uv_portion,
+  texcoord.add_data2(1.0f -_card_border_uv_portion, 1.0f); //5
+  texcoord.add_data2(1.0f -_card_border_uv_portion,
                       1.0f - _card_border_uv_portion); //6
-  texcoord.add_data2f(1.0f, 1.0f); //7
-  texcoord.add_data2f(1.0f, 1.0f - _card_border_uv_portion); //8
+  texcoord.add_data2(1.0f, 1.0f); //7
+  texcoord.add_data2(1.0f, 1.0f - _card_border_uv_portion); //8
   
-  texcoord.add_data2f(0.0f, _card_border_uv_portion); //9
-  texcoord.add_data2f(0.0f, 0.0f); //10
-  texcoord.add_data2f(_card_border_uv_portion, _card_border_uv_portion); //11
-  texcoord.add_data2f(_card_border_uv_portion, 0.0f); //12
+  texcoord.add_data2(0.0f, _card_border_uv_portion); //9
+  texcoord.add_data2(0.0f, 0.0f); //10
+  texcoord.add_data2(_card_border_uv_portion, _card_border_uv_portion); //11
+  texcoord.add_data2(_card_border_uv_portion, 0.0f); //12
 
-  texcoord.add_data2f(1.0f - _card_border_uv_portion, _card_border_uv_portion);//13
-  texcoord.add_data2f(1.0f - _card_border_uv_portion, 0.0f);//14
-  texcoord.add_data2f(1.0f, _card_border_uv_portion);//15
-  texcoord.add_data2f(1.0f, 0.0f);//16
+  texcoord.add_data2(1.0f - _card_border_uv_portion, _card_border_uv_portion);//13
+  texcoord.add_data2(1.0f - _card_border_uv_portion, 0.0f);//14
+  texcoord.add_data2(1.0f, _card_border_uv_portion);//15
+  texcoord.add_data2(1.0f, 0.0f);//16
   
   PT(GeomTristrips) card = new GeomTristrips(get_usage_hint());
   

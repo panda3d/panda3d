@@ -39,11 +39,11 @@ PUBLISHED:
   CollisionVisualizer(const string &name);
   virtual ~CollisionVisualizer();
 
-  INLINE void set_point_scale(float point_scale);
-  INLINE float get_point_scale() const;
+  INLINE void set_point_scale(PN_stdfloat point_scale);
+  INLINE PN_stdfloat get_point_scale() const;
 
-  INLINE void set_normal_scale(float normal_scale);
-  INLINE float get_normal_scale() const;
+  INLINE void set_normal_scale(PN_stdfloat normal_scale);
+  INLINE PN_stdfloat get_normal_scale() const;
 
   void clear();
 
@@ -76,9 +76,9 @@ private:
 
   class CollisionPoint {
   public:
-    LPoint3f _surface_point;
-    LVector3f _surface_normal;
-    LPoint3f _interior_point;
+    LPoint3 _surface_point;
+    LVector3 _surface_normal;
+    LPoint3 _interior_point;
   };
   typedef pvector<CollisionPoint> Points;
 
@@ -91,8 +91,8 @@ private:
   typedef pmap<CPT(TransformState), VizInfo> Data;
   Data _data;
 
-  float _point_scale;
-  float _normal_scale;
+  PN_stdfloat _point_scale;
+  PN_stdfloat _normal_scale;
 
 public:
   static TypeHandle get_class_type() {

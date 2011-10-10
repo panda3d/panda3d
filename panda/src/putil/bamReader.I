@@ -121,6 +121,22 @@ get_file_endian() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BamReader::get_file_stdfloat_double
+//       Access: Published
+//  Description: Returns true if the file stores all "standard"
+//               floats as 64-bit doubles, or false if they are 32-bit
+//               floats.  This is determined by the compilation flags
+//               of the version of Panda that generated this file.
+//
+//               If this doesn't match the current version of Panda,
+//               the file cannot be read.
+////////////////////////////////////////////////////////////////////
+INLINE bool BamReader::
+get_file_stdfloat_double() const {
+  return _file_stdfloat_double;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BamReader::get_current_major_ver
 //       Access: Published
 //  Description: Returns the major version number of Bam files

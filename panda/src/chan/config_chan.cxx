@@ -128,7 +128,7 @@ ConfigureFn(config_chan) {
   // be initialized.  We have to do it explicitly here since template
   // statics don't necessarily resolve very well across dynamic
   // libraries.
-  LMatrix4f::init_type();
+  LMatrix4::init_type();
 
   //Registration of writeable object's creation
   //functions with BamReader's factory

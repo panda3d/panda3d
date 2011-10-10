@@ -31,7 +31,7 @@ get_collector() const {
 //               for this Collector, not including any values
 //               accounted for by its child Collectors.
 ////////////////////////////////////////////////////////////////////
-INLINE float PStatViewLevel::
+INLINE PN_stdfloat PStatViewLevel::
 get_value_alone() const {
   return _value_alone;
 }

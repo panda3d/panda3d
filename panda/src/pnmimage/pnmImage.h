@@ -81,7 +81,7 @@ PUBLISHED:
   INLINE void fill(double red, double green, double blue);
   INLINE void fill(double gray = 0.0);
 
-  void remix_channels(const LMatrix4f &conv);
+  void remix_channels(const LMatrix4 &conv);
 
   void fill_val(xelval red, xelval green, xelval blue);
   INLINE void fill_val(xelval gray = 0);

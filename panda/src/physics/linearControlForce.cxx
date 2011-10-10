@@ -27,7 +27,7 @@ TypeHandle LinearControlForce::_type_handle;
 //  Description : Vector Constructor
 ////////////////////////////////////////////////////////////////////
 LinearControlForce::
-LinearControlForce(const PhysicsObject *po, float a, bool mass) :
+LinearControlForce(const PhysicsObject *po, PN_stdfloat a, bool mass) :
   LinearForce(a, mass),
   _physics_object(po),
   _fvec(0.0f, 0.0f, 0.0f) {
@@ -69,12 +69,12 @@ make_copy() {
 //      Access : Public
 // Description : vector access
 ////////////////////////////////////////////////////////////////////
-LVector3f LinearControlForce::
+LVector3 LinearControlForce::
 get_child_vector(const PhysicsObject *po) {
   if (_physics_object != 0 && po == _physics_object) {
     return _fvec;
   } else {
-    return LVector3f::zero();
+    return LVector3::zero();
   }
 }
 

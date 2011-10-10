@@ -37,8 +37,8 @@ PUBLISHED:
 
   INLINE const string &get_name() const;
 
-  INLINE void set_matrix(const LMatrix4f &matrix);
-  virtual void get_matrix(LMatrix4f &matrix) const;
+  INLINE void set_matrix(const LMatrix4 &matrix);
+  virtual void get_matrix(LMatrix4 &matrix) const;
 
   virtual void output(ostream &out) const;
 
@@ -57,7 +57,7 @@ private:
       return UserVertexTransform::get_class_type();
     }
 
-    LMatrix4f _matrix;
+    LMatrix4 _matrix;
   };
 
   PipelineCycler<CData> _cycler;

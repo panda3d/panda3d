@@ -34,7 +34,7 @@ is_screen() const {
 //               the scissor frame relative to the current
 //               DisplayRegion.  See ScissorAttrib.
 ////////////////////////////////////////////////////////////////////
-INLINE const LVecBase4f &ScissorEffect::
+INLINE const LVecBase4 &ScissorEffect::
 get_frame() const {
   return _frame;
 }
@@ -60,9 +60,9 @@ get_num_points() const {
 //               which define any opposite corners of the scissor
 //               frame.
 ////////////////////////////////////////////////////////////////////
-INLINE const LPoint3f &ScissorEffect::
+INLINE const LPoint3 &ScissorEffect::
 get_point(int n) const {
-  nassertr(n >= 0 && n < (int)_points.size(), LPoint3f::zero());
+  nassertr(n >= 0 && n < (int)_points.size(), LPoint3::zero());
   return _points[n]._p;
 }
 

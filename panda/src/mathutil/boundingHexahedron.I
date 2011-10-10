@@ -37,9 +37,9 @@ get_num_points() const {
 //       Access: Published
 //  Description: Returns the nth vertex of the hexahedron.
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL LPoint3f BoundingHexahedron::
+INLINE_MATHUTIL LPoint3 BoundingHexahedron::
 get_point(int n) const {
-  nassertr(n >= 0 && n < num_points, LPoint3f::zero());
+  nassertr(n >= 0 && n < num_points, LPoint3::zero());
   return _points[n];
 }
 
@@ -58,8 +58,8 @@ get_num_planes() const {
 //       Access: Published
 //  Description: Returns the nth face of the hexahedron.
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL Planef BoundingHexahedron::
+INLINE_MATHUTIL LPlane BoundingHexahedron::
 get_plane(int n) const {
-  nassertr(n >= 0 && n < num_planes, Planef());
+  nassertr(n >= 0 && n < num_planes, LPlane());
   return _planes[n];
 }

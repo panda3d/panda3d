@@ -37,7 +37,7 @@ FltTransformRotateAboutPoint(FltHeader *header) : FltTransformRecord(header) {
 //               counterclockwise about the axis as seen from point a.
 ////////////////////////////////////////////////////////////////////
 void FltTransformRotateAboutPoint::
-set(const LPoint3d &center, const LVector3f &axis, float angle) {
+set(const LPoint3d &center, const LVector3 &axis, PN_stdfloat angle) {
   _center = center;
   _axis = axis;
   _angle = angle;
@@ -60,7 +60,7 @@ get_center() const {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-const LVector3f &FltTransformRotateAboutPoint::
+const LVector3 &FltTransformRotateAboutPoint::
 get_axis() const {
   return _axis;
 }
@@ -71,7 +71,7 @@ get_axis() const {
 //  Description: Returns the angle of rotation, in degrees
 //               counterclockwise about the axis.
 ////////////////////////////////////////////////////////////////////
-float FltTransformRotateAboutPoint::
+PN_stdfloat FltTransformRotateAboutPoint::
 get_angle() const {
   return _angle;
 }
@@ -83,7 +83,7 @@ get_angle() const {
 ////////////////////////////////////////////////////////////////////
 void FltTransformRotateAboutPoint::
 recompute_matrix() {
-  if (_axis == LVector3f::zero()) {
+  if (_axis == LVector3::zero()) {
     // Degenerate case.
     _matrix = LMatrix4d::ident_mat();
   } else {

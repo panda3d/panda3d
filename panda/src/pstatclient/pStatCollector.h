@@ -92,9 +92,9 @@ PUBLISHED:
   INLINE bool is_active(const PStatThread &thread);
   INLINE bool is_started(const PStatThread &thread);
   INLINE void start(const PStatThread &thread);
-  INLINE void start(const PStatThread &thread, float as_of);
+  INLINE void start(const PStatThread &thread, PN_stdfloat as_of);
   INLINE void stop(const PStatThread &thread);
-  INLINE void stop(const PStatThread &thread, float as_of);
+  INLINE void stop(const PStatThread &thread, PN_stdfloat as_of);
 
   INLINE void clear_level(const PStatThread &thread);
   INLINE void set_level(const PStatThread &thread, double level);
@@ -137,9 +137,9 @@ PUBLISHED:
 
   INLINE bool is_active(const PStatThread &) { return false; }
   INLINE void start(const PStatThread &) { }
-  INLINE void start(const PStatThread &, float) { }
+  INLINE void start(const PStatThread &, PN_stdfloat) { }
   INLINE void stop(const PStatThread &) { }
-  INLINE void stop(const PStatThread &, float) { }
+  INLINE void stop(const PStatThread &, PN_stdfloat) { }
 
   INLINE void clear_level(const PStatThread &) { }
   INLINE void set_level(const PStatThread &, double) { }

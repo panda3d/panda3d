@@ -95,7 +95,7 @@ slot_glyph(int character, int x_size, int y_size, int margin) {
 //               indicated color.
 ////////////////////////////////////////////////////////////////////
 void DynamicTextPage::
-fill_region(int x, int y, int x_size, int y_size, const Colorf &color) {
+fill_region(int x, int y, int x_size, int y_size, const LColor &color) {
   nassertv(x >= 0 && x + x_size <= _x_size && y >= 0 && y + y_size <= _y_size);
   int num_components = get_num_components();
   if (num_components == 1) {

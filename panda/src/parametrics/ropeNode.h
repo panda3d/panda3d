@@ -109,14 +109,14 @@ PUBLISHED:
   INLINE void set_uv_direction(bool u_dominant);
   INLINE bool get_uv_direction() const;
 
-  INLINE void set_uv_scale(float scale);
-  INLINE float get_uv_scale() const;
+  INLINE void set_uv_scale(PN_stdfloat scale);
+  INLINE PN_stdfloat get_uv_scale() const;
 
   INLINE void set_normal_mode(NormalMode normal_mode);
   INLINE NormalMode get_normal_mode() const;
 
-  INLINE void set_tube_up(const LVector3f &tube_up);
-  INLINE const LVector3f &get_tube_up() const;
+  INLINE void set_tube_up(const LVector3 &tube_up);
+  INLINE const LVector3 &get_tube_up() const;
 
   INLINE void set_use_vertex_color(bool flag);
   INLINE bool get_use_vertex_color() const;
@@ -132,13 +132,13 @@ PUBLISHED:
   INLINE bool get_use_vertex_thickness() const;
   INLINE static int get_vertex_thickness_dimension();
 
-  INLINE void set_thickness(float thickness);
-  INLINE float get_thickness() const;
+  INLINE void set_thickness(PN_stdfloat thickness);
+  INLINE PN_stdfloat get_thickness() const;
 
-  INLINE void set_matrix(const LMatrix4f &matrix);
+  INLINE void set_matrix(const LMatrix4 &matrix);
   INLINE void clear_matrix();
   INLINE bool has_matrix() const;
-  INLINE const LMatrix4f &get_matrix() const;
+  INLINE const LMatrix4 &get_matrix() const;
 
   void reset_bound(const NodePath &rel_to);
 
@@ -165,10 +165,10 @@ private:
 
   class CurveVertex {
   public:
-    LPoint3f _p;
-    Colorf _c;
-    float _thickness;
-    float _t;
+    LPoint3 _p;
+    LColor _c;
+    PN_stdfloat _thickness;
+    PN_stdfloat _t;
   };
   typedef pvector<CurveVertex> CurveSegment;
   typedef pvector<CurveSegment> CurveSegments;
@@ -180,7 +180,7 @@ private:
                                const CurveSegments &curve_segments,
                                int num_curve_verts) const;
   void compute_billboard_vertices(GeomVertexData *vdata,
-                                  const LVector3f &camera_vec,
+                                  const LVector3 &camera_vec,
                                   const CurveSegments &curve_segments,
                                   int num_curve_verts,
                                   NurbsCurveResult *result) const;
@@ -190,10 +190,10 @@ private:
                              int num_curve_verts,
                              NurbsCurveResult *result) const;
 
-  static void compute_tangent(LVector3f &tangent, const CurveSegment &segment,
+  static void compute_tangent(LVector3 &tangent, const CurveSegment &segment,
                               size_t j, NurbsCurveResult *result);
-  static float compute_uv_t(float &dist, const UVMode &uv_mode,
-                            float uv_scale, const CurveSegment &segment,
+  static PN_stdfloat compute_uv_t(PN_stdfloat &dist, const UVMode &uv_mode,
+                            PN_stdfloat uv_scale, const CurveSegment &segment,
                             size_t j);
 
 
@@ -214,16 +214,16 @@ private:
     RenderMode _render_mode;
     UVMode _uv_mode;
     bool _u_dominant;
-    float _uv_scale;
+    PN_stdfloat _uv_scale;
     NormalMode _normal_mode;
-    LVector3f _tube_up;
-    LMatrix4f _matrix;
+    LVector3 _tube_up;
+    LMatrix4 _matrix;
     bool _has_matrix;
     bool _use_vertex_color;
     int _num_subdiv;
     int _num_slices;
     bool _use_vertex_thickness;
-    float _thickness;
+    PN_stdfloat _thickness;
   };
 
   PipelineCycler<CData> _cycler;

@@ -283,7 +283,7 @@ get_render_2d() {
 
     // Create a display region that matches the size of the 3-d
     // display region.
-    float l, r, b, t;
+    PN_stdfloat l, r, b, t;
     _display_region_3d->get_dimensions(l, r, b, t);
     _display_region_2d = _window->make_mono_display_region(l, r, b, t);
     _display_region_2d->set_sort(10);
@@ -294,10 +294,10 @@ get_render_2d() {
 
     PT(Lens) lens = new OrthographicLens;
 
-    static const float left = -1.0f;
-    static const float right = 1.0f;
-    static const float bottom = -1.0f;
-    static const float top = 1.0f;
+    static const PN_stdfloat left = -1.0f;
+    static const PN_stdfloat right = 1.0f;
+    static const PN_stdfloat bottom = -1.0f;
+    static const PN_stdfloat top = 1.0f;
     lens->set_film_size(right - left, top - bottom);
     lens->set_film_offset((right + left) * 0.5, (top + bottom) * 0.5);
     lens->set_near_far(-1000, 1000);
@@ -328,7 +328,7 @@ get_aspect_2d() {
       top->set_mouse_watcher(DCAST(MouseWatcher, mouse_node));
     }
 
-    float this_aspect_ratio = aspect_ratio;
+    PN_stdfloat this_aspect_ratio = aspect_ratio;
     if (this_aspect_ratio == 0.0f) {
       // An aspect ratio of 0.0 means to try to infer it.
       this_aspect_ratio = 1.0f;
@@ -337,7 +337,7 @@ get_aspect_2d() {
         int x_size = _window->get_sbs_left_x_size();
         int y_size = _window->get_sbs_left_y_size();
         if (y_size != 0) {
-          this_aspect_ratio = (float)x_size / (float)y_size;
+          this_aspect_ratio = (PN_stdfloat)x_size / (PN_stdfloat)y_size;
         }
       }
     }
@@ -443,7 +443,7 @@ setup_trackball() {
     NodePath camera = get_camera_group();
 
     _trackball = new Trackball("trackball");
-    _trackball->set_pos(LVector3f::forward() * 50.0);
+    _trackball->set_pos(LVector3::forward() * 50.0);
     mouse.attach_new_node(_trackball);
 
     PT(Transform2SG) tball2cam = new Transform2SG("tball2cam");
@@ -501,10 +501,10 @@ center_trackball(const NodePath &object) {
     return;
   }
 
-  LPoint3f center = sphere->get_center();
-  float radius = sphere->get_radius();
+  LPoint3 center = sphere->get_center();
+  PN_stdfloat radius = sphere->get_radius();
 
-  float distance = 50.0f;
+  PN_stdfloat distance = 50.0f;
 
   // Choose a suitable distance to view the whole volume in our frame.
   // This is based on the camera lens in use.  Determine the lens
@@ -520,20 +520,20 @@ center_trackball(const NodePath &object) {
   }
 
   if (lens != (Lens *)NULL) {
-    LVecBase2f fov = lens->get_fov();
+    LVecBase2 fov = lens->get_fov();
     distance = radius / ctan(deg_2_rad(min(fov[0], fov[1]) / 2.0f));
 
     // Ensure the far plane is far enough back to see the entire object.
-    float ideal_far_plane = distance + radius * 1.5;
+    PN_stdfloat ideal_far_plane = distance + radius * 1.5;
     lens->set_far(max(lens->get_default_far(), ideal_far_plane));
 
     // And that the near plane is far enough forward.
-    float ideal_near_plane = distance - radius;
+    PN_stdfloat ideal_near_plane = distance - radius;
     lens->set_near(min(lens->get_default_near(), ideal_near_plane));
   }
 
   _trackball->set_origin(center);
-  _trackball->set_pos(LVector3f::forward() * distance);
+  _trackball->set_pos(LVector3::forward() * distance);
 
   // Also set the movement scale on the trackball to be consistent
   // with the size of the model and the lens field-of-view.
@@ -668,7 +668,7 @@ NodePath WindowFramework::
 load_default_model(const NodePath &parent) {
   CPT(RenderState) state = RenderState::make_empty();
 
-  state = state->add_attrib(ColorAttrib::make_flat(Colorf(0.5, 0.5, 1.0, 1.0)));
+  state = state->add_attrib(ColorAttrib::make_flat(LColor(0.5, 0.5, 1.0, 1.0)));
 
   // Get the default texture to apply to the triangle; it's compiled
   // into the code these days.
@@ -693,17 +693,17 @@ load_default_model(const NodePath &parent) {
   GeomVertexWriter normal(vdata, InternalName::get_normal());
   GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
 
-  vertex.add_data3f(Vertexf::rfu(0.0, 0.0, 0.0));
-  vertex.add_data3f(Vertexf::rfu(1.0, 0.0, 0.0));
-  vertex.add_data3f(Vertexf::rfu(0.0, 0.0, 1.0));
+  vertex.add_data3(LVertex::rfu(0.0, 0.0, 0.0));
+  vertex.add_data3(LVertex::rfu(1.0, 0.0, 0.0));
+  vertex.add_data3(LVertex::rfu(0.0, 0.0, 1.0));
 
-  normal.add_data3f(Normalf::back());
-  normal.add_data3f(Normalf::back());
-  normal.add_data3f(Normalf::back());
+  normal.add_data3(LNormal::back());
+  normal.add_data3(LNormal::back());
+  normal.add_data3(LNormal::back());
 
-  texcoord.add_data2f(0.0, 0.0);
-  texcoord.add_data2f(1.0, 0.0);
-  texcoord.add_data2f(0.0, 1.0);
+  texcoord.add_data2(0.0, 0.0);
+  texcoord.add_data2(1.0, 0.0);
+  texcoord.add_data2(0.0, 1.0);
 
   PT(GeomTriangles) tri = new GeomTriangles(Geom::UH_static);
   tri->add_consecutive_vertices(0, 3);
@@ -806,7 +806,7 @@ set_anim_controls(bool enable) {
 ////////////////////////////////////////////////////////////////////
 void WindowFramework::
 adjust_aspect_ratio() {
-  float this_aspect_ratio = aspect_ratio;
+  PN_stdfloat this_aspect_ratio = aspect_ratio;
   int x_size = 0, y_size = 0;
   if (this_aspect_ratio == 0.0f) {
     // An aspect ratio of 0.0 means to try to infer it.
@@ -816,7 +816,7 @@ adjust_aspect_ratio() {
       x_size = _window->get_sbs_left_x_size();
       y_size = _window->get_sbs_left_y_size();
       if (y_size != 0) {
-        this_aspect_ratio = (float)x_size / (float)y_size;
+        this_aspect_ratio = (PN_stdfloat)x_size / (PN_stdfloat)y_size;
       }
     }
   }
@@ -864,7 +864,7 @@ split_window(SplitType split_type) {
     }
   }
 
-  float left, right, bottom, top;
+  PN_stdfloat left, right, bottom, top;
   _display_region_3d->get_dimensions(left, right, bottom, top);
   new_region = _display_region_3d->get_window()->make_display_region();
 
@@ -1080,7 +1080,7 @@ set_background_type(WindowFramework::BackgroundType type) {
     _display_region_3d->set_clear_color_active(true);
     _display_region_3d->set_clear_depth_active(true);
     _display_region_3d->set_clear_stencil_active(true);
-    _display_region_3d->set_clear_color(Colorf(0.0f, 0.0f, 0.0f, 0.0f));
+    _display_region_3d->set_clear_color(LColor(0.0f, 0.0f, 0.0f, 0.0f));
     _display_region_3d->set_clear_depth(1.0f);
     _display_region_3d->set_clear_stencil(0);
     break;
@@ -1089,7 +1089,7 @@ set_background_type(WindowFramework::BackgroundType type) {
     _display_region_3d->set_clear_color_active(true);
     _display_region_3d->set_clear_depth_active(true);
     _display_region_3d->set_clear_stencil_active(true);
-    _display_region_3d->set_clear_color(Colorf(0.3f, 0.3f, 0.3f, 0.0f));
+    _display_region_3d->set_clear_color(LColor(0.3, 0.3, 0.3, 0.0f));
     _display_region_3d->set_clear_depth(1.0f);
     _display_region_3d->set_clear_stencil(0);
     break;
@@ -1098,7 +1098,7 @@ set_background_type(WindowFramework::BackgroundType type) {
     _display_region_3d->set_clear_color_active(true);
     _display_region_3d->set_clear_depth_active(true);
     _display_region_3d->set_clear_stencil_active(true);
-    _display_region_3d->set_clear_color(Colorf(1.0f, 1.0f, 1.0f, 0.0f));
+    _display_region_3d->set_clear_color(LColor(1.0f, 1.0f, 1.0f, 0.0f));
     _display_region_3d->set_clear_depth(1.0f);
     _display_region_3d->set_clear_stencil(0);
     break;
@@ -1187,9 +1187,9 @@ setup_lights() {
   NodePath light_group = camera_group.attach_new_node("lights");
 
   AmbientLight *alight = new AmbientLight("ambient");
-  alight->set_color(Colorf(0.2f, 0.2f, 0.2f, 1.0f));
+  alight->set_color(LColor(0.2, 0.2, 0.2, 1.0f));
   DirectionalLight *dlight = new DirectionalLight("directional");
-  dlight->set_color(Colorf(0.8f, 0.8f, 0.8f, 1.0f));
+  dlight->set_color(LColor(0.8f, 0.8f, 0.8f, 1.0f));
 
   _alight = light_group.attach_new_node(alight);
   _dlight = light_group.attach_new_node(dlight);
@@ -1218,7 +1218,7 @@ load_image_as_model(const Filename &filename) {
 
   // Ok, now make a polygon to show the texture.
   bool has_alpha = true;
-  LVecBase2f tex_scale = tex->get_tex_scale();
+  LVecBase2 tex_scale = tex->get_tex_scale();
 
   // Get the size from the original image (the texture may have
   // scaled it to make a power of 2).
@@ -1226,8 +1226,8 @@ load_image_as_model(const Filename &filename) {
   int y_size = tex->get_orig_file_y_size();
 
   // Choose the dimensions of the polygon appropriately.
-  float left,right,top,bottom;
-  static const float scale = 10.0;
+  PN_stdfloat left,right,top,bottom;
+  static const PN_stdfloat scale = 10.0;
   if (x_size > y_size) {
     left   = -scale;
     right  =  scale;
@@ -1271,9 +1271,9 @@ load_image_as_model(const Filename &filename) {
     vformat = GeomVertexFormat::register_format
       (new GeomVertexArrayFormat
        (InternalName::get_vertex(), 3, 
-        GeomEnums::NT_float32, GeomEnums::C_point,
+        GeomEnums::NT_stdfloat, GeomEnums::C_point,
         InternalName::get_texcoord(), 3, 
-        GeomEnums::NT_float32, GeomEnums::C_texcoord));
+        GeomEnums::NT_stdfloat, GeomEnums::C_texcoord));
   }
 
   PT(GeomVertexData) vdata = new GeomVertexData
@@ -1283,35 +1283,35 @@ load_image_as_model(const Filename &filename) {
 
   if (!is_3d) {
     // A normal 2-d card.
-    vertex.add_data3f(Vertexf::rfu(left, 0.02f, top));
-    vertex.add_data3f(Vertexf::rfu(left, 0.02f, bottom));
-    vertex.add_data3f(Vertexf::rfu(right, 0.02f, top));
-    vertex.add_data3f(Vertexf::rfu(right, 0.02f, bottom));
+    vertex.add_data3(LVertex::rfu(left, 0.02, top));
+    vertex.add_data3(LVertex::rfu(left, 0.02, bottom));
+    vertex.add_data3(LVertex::rfu(right, 0.02, top));
+    vertex.add_data3(LVertex::rfu(right, 0.02, bottom));
     
-    texcoord.add_data2f(0.0f, tex_scale[1]);
-    texcoord.add_data2f(0.0f, 0.0f);
-    texcoord.add_data2f(tex_scale[0], tex_scale[1]);
-    texcoord.add_data2f(tex_scale[0], 0.0f);
+    texcoord.add_data2(0.0f, tex_scale[1]);
+    texcoord.add_data2(0.0f, 0.0f);
+    texcoord.add_data2(tex_scale[0], tex_scale[1]);
+    texcoord.add_data2(tex_scale[0], 0.0f);
 
   } else {
     // The eight vertices of a 3-d cube.
-    vertex.add_data3f(-1.0f, -1.0f, 1.0f);   // 0
-    vertex.add_data3f(-1.0f, -1.0f, -1.0f);  // 1
-    vertex.add_data3f(1.0f, -1.0f, -1.0f);   // 2
-    vertex.add_data3f(1.0f, -1.0f, 1.0f);    // 3
-    vertex.add_data3f(1.0f, 1.0f, 1.0f);     // 4
-    vertex.add_data3f(1.0f, 1.0f, -1.0f);    // 5
-    vertex.add_data3f(-1.0f, 1.0f, -1.0f);   // 6
-    vertex.add_data3f(-1.0f, 1.0f, 1.0f);    // 7
+    vertex.add_data3(-1.0f, -1.0f, 1.0f);   // 0
+    vertex.add_data3(-1.0f, -1.0f, -1.0f);  // 1
+    vertex.add_data3(1.0f, -1.0f, -1.0f);   // 2
+    vertex.add_data3(1.0f, -1.0f, 1.0f);    // 3
+    vertex.add_data3(1.0f, 1.0f, 1.0f);     // 4
+    vertex.add_data3(1.0f, 1.0f, -1.0f);    // 5
+    vertex.add_data3(-1.0f, 1.0f, -1.0f);   // 6
+    vertex.add_data3(-1.0f, 1.0f, 1.0f);    // 7
 
-    texcoord.add_data3f(-1.0f, -1.0f, 1.0f);   // 0
-    texcoord.add_data3f(-1.0f, -1.0f, -1.0f);  // 1
-    texcoord.add_data3f(1.0f, -1.0f, -1.0f);   // 2
-    texcoord.add_data3f(1.0f, -1.0f, 1.0f);    // 3
-    texcoord.add_data3f(1.0f, 1.0f, 1.0f);     // 4
-    texcoord.add_data3f(1.0f, 1.0f, -1.0f);    // 5
-    texcoord.add_data3f(-1.0f, 1.0f, -1.0f);   // 6
-    texcoord.add_data3f(-1.0f, 1.0f, 1.0f);    // 7
+    texcoord.add_data3(-1.0f, -1.0f, 1.0f);   // 0
+    texcoord.add_data3(-1.0f, -1.0f, -1.0f);  // 1
+    texcoord.add_data3(1.0f, -1.0f, -1.0f);   // 2
+    texcoord.add_data3(1.0f, -1.0f, 1.0f);    // 3
+    texcoord.add_data3(1.0f, 1.0f, 1.0f);     // 4
+    texcoord.add_data3(1.0f, 1.0f, -1.0f);    // 5
+    texcoord.add_data3(-1.0f, 1.0f, -1.0f);   // 6
+    texcoord.add_data3(-1.0f, 1.0f, 1.0f);    // 7
   }
 
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
@@ -1369,8 +1369,8 @@ create_anim_controls() {
   PT(PGItem) group = new PGItem("anim_controls_group");
   PGFrameStyle style;
   style.set_type(PGFrameStyle::T_flat);
-  style.set_color(0.0f, 0.0f, 0.0f, 0.3f);
-  group->set_frame(-1.0f, 1.0f, 0.0f, 0.2f);
+  style.set_color(0.0f, 0.0f, 0.0f, 0.3);
+  group->set_frame(-1.0f, 1.0f, 0.0f, 0.2);
   group->set_frame_style(0, style);
   group->set_suppress_flags(MouseWatcherRegion::SF_mouse_button);
   group->set_active(true);
@@ -1404,7 +1404,7 @@ create_anim_controls() {
   _anim_slider->set_suppress_flags(MouseWatcherRegion::SF_mouse_button);
   _anim_slider->get_thumb_button()->set_suppress_flags(MouseWatcherRegion::SF_mouse_button);
 
-  _anim_slider->set_range(0.0f, (float)(control->get_num_frames() - 1));
+  _anim_slider->set_range(0.0f, (PN_stdfloat)(control->get_num_frames() - 1));
   _anim_slider->set_scroll_size(0.0f);
   _anim_slider->set_page_size(1.0f);
   NodePath snp = _anim_controls_group.attach_new_node(_anim_slider);
@@ -1419,7 +1419,7 @@ create_anim_controls() {
   fnp.set_pos(0.0f, 0.0f, -0.01f);
 
   _play_rate_slider = new PGSliderBar("play_rate_slider");
-  _play_rate_slider->setup_slider(false, 0.4f, 0.05f, 0.005f);
+  _play_rate_slider->setup_slider(false, 0.4, 0.05f, 0.005f);
   _play_rate_slider->set_suppress_flags(MouseWatcherRegion::SF_mouse_button);
   _play_rate_slider->get_thumb_button()->set_suppress_flags(MouseWatcherRegion::SF_mouse_button);
   _play_rate_slider->set_value(control->get_play_rate());
@@ -1469,7 +1469,7 @@ update_anim_controls() {
   if (_anim_slider->is_button_down()) {
     control->pose((int)(_anim_slider->get_value() + 0.5));
   } else {
-    _anim_slider->set_value((float)control->get_frame());
+    _anim_slider->set_value((PN_stdfloat)control->get_frame());
   }
 
   _frame_number->set_text(format_string(control->get_frame()));
@@ -1489,7 +1489,7 @@ setup_shuttle_button(const string &label, int index,
   PT(PGButton) button = new PGButton(label);
   button->set_frame(-0.05f, 0.05f, 0.0f, 0.07f);
 
-  float bevel = 0.005f;
+  PN_stdfloat bevel = 0.005f;
 
   PGFrameStyle style;
   style.set_color(0.8f, 0.8f, 0.8f, 1.0f);
@@ -1511,8 +1511,8 @@ setup_shuttle_button(const string &label, int index,
     tn->set_font(get_shuttle_controls_font());
     tn->set_text(label);
     tn->set_text_color(0.0f, 0.0f, 0.0f, 1.0f);
-    LMatrix4f xform = LMatrix4f::scale_mat(0.07f);
-    xform.set_row(3, LVecBase3f(0.0f, 0.0f, 0.016f));
+    LMatrix4 xform = LMatrix4::scale_mat(0.07f);
+    xform.set_row(3, LVecBase3(0.0f, 0.0f, 0.016f));
     tn->set_transform(xform);
 
     button->get_state_def(PGButton::S_ready).attach_new_node(tn);
@@ -1521,7 +1521,7 @@ setup_shuttle_button(const string &label, int index,
   }
 
   NodePath np = _anim_controls_group.attach_new_node(button);
-  np.set_pos(0.1f * index - 0.15f, 0.0f, 0.12f);
+  np.set_pos(0.1f * index - 0.15f, 0.0f, 0.12);
 
   _panda_framework->get_event_handler().add_hook(button->get_click_event(MouseButton::one()), func, (void *)this);
 }

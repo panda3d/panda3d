@@ -493,12 +493,12 @@ setup_geometry(const FltGeometry *flt_geom, FltToEggLevelState &state,
     break;
   }
 
-  Colorf face_color = flt_geom->get_color();
+  LColor face_color = flt_geom->get_color();
 
   if (state._flt_object != (FltObject *)NULL) {
     // If we have a FltObject above us, it might also specify a
     // transparency.  This combines with our existing transparency.
-    float alpha = 1.0 - (state._flt_object->_transparency / 65535.0);
+    PN_stdfloat alpha = 1.0 - (state._flt_object->_transparency / 65535.0);
     face_color[3] *= alpha;
   }
 
@@ -525,7 +525,7 @@ setup_geometry(const FltGeometry *flt_geom, FltToEggLevelState &state,
     for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
       EggVertex *vertex = (*vi);
       if (vertex->has_color()) {
-        Colorf vertex_color = vertex->get_color();
+        LColor vertex_color = vertex->get_color();
         vertex_color[3] = face_color[3];
         vertex->set_color(vertex_color);
       } else {

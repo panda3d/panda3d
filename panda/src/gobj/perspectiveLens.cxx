@@ -66,17 +66,17 @@ compute_projection_mat() {
     cs = get_default_coordinate_system();
   }
 
-  float fl = get_focal_length();
-  float fFar = get_far();
-  float fNear = get_near();
-  float far_minus_near = fFar-fNear;
-  float a = (fFar + fNear);
-  float b = -2.0f * fFar * fNear;
+  PN_stdfloat fl = get_focal_length();
+  PN_stdfloat fFar = get_far();
+  PN_stdfloat fNear = get_near();
+  PN_stdfloat far_minus_near = fFar-fNear;
+  PN_stdfloat a = (fFar + fNear);
+  PN_stdfloat b = -2.0f * fFar * fNear;
 
   a /= far_minus_near;
   b /= far_minus_near;
 
-  LMatrix4f canonical;
+  LMatrix4 canonical;
   switch (cs) {
   case CS_zup_right:
     canonical.set(  fl,  0.0f,  0.0f,  0.0f,
@@ -109,7 +109,7 @@ compute_projection_mat() {
   default:
     gobj_cat.error()
       << "Invalid coordinate system " << (int)cs << " in PerspectiveLens!\n";
-    canonical = LMatrix4f::ident_mat();
+    canonical = LMatrix4::ident_mat();
   }
 
   _projection_mat = get_lens_mat_inv() * canonical * get_film_mat();
@@ -121,15 +121,15 @@ compute_projection_mat() {
     // Compute the left and right projection matrices in case this
     // lens is assigned to a stereo DisplayRegion.
 
-    LVector3f iod = _interocular_distance * 0.5f * LVector3f::left(_cs);
-    _projection_mat_left = get_lens_mat_inv() * LMatrix4f::translate_mat(-iod) * canonical * get_film_mat();
-    _projection_mat_right = get_lens_mat_inv() * LMatrix4f::translate_mat(iod) * canonical * get_film_mat();
+    LVector3 iod = _interocular_distance * 0.5f * LVector3::left(_cs);
+    _projection_mat_left = get_lens_mat_inv() * LMatrix4::translate_mat(-iod) * canonical * get_film_mat();
+    _projection_mat_right = get_lens_mat_inv() * LMatrix4::translate_mat(iod) * canonical * get_film_mat();
     
     if (_user_flags & UF_convergence_distance) {
       nassertv(_convergence_distance != 0.0f);
-      LVector3f cd = (0.25f / _convergence_distance) * LVector3f::left(_cs);
-      _projection_mat_left *= LMatrix4f::translate_mat(cd);
-      _projection_mat_right *= LMatrix4f::translate_mat(-cd);
+      LVector3 cd = (0.25f / _convergence_distance) * LVector3::left(_cs);
+      _projection_mat_left *= LMatrix4::translate_mat(cd);
+      _projection_mat_right *= LMatrix4::translate_mat(-cd);
     }
   }
 
@@ -147,8 +147,8 @@ compute_projection_mat() {
 //               direction; otherwise, it is in the vertical direction
 //               (some lenses behave differently in each direction).
 ////////////////////////////////////////////////////////////////////
-float PerspectiveLens::
-fov_to_film(float fov, float focal_length, bool) const {
+PN_stdfloat PerspectiveLens::
+fov_to_film(PN_stdfloat fov, PN_stdfloat focal_length, bool) const {
   return (ctan(deg_2_rad(fov * 0.5f)) * focal_length) * 2.0f;
 }
 
@@ -161,8 +161,8 @@ fov_to_film(float fov, float focal_length, bool) const {
 //               direction; otherwise, it is in the vertical direction
 //               (some lenses behave differently in each direction).
 ////////////////////////////////////////////////////////////////////
-float PerspectiveLens::
-fov_to_focal_length(float fov, float film_size, bool) const {
+PN_stdfloat PerspectiveLens::
+fov_to_focal_length(PN_stdfloat fov, PN_stdfloat film_size, bool) const {
   return film_size * 0.5f / ctan(deg_2_rad(fov * 0.5f));
 }
 
@@ -175,8 +175,8 @@ fov_to_focal_length(float fov, float film_size, bool) const {
 //               otherwise, it is in the vertical direction (some
 //               lenses behave differently in each direction).
 ////////////////////////////////////////////////////////////////////
-float PerspectiveLens::
-film_to_fov(float film_size, float focal_length, bool) const {
+PN_stdfloat PerspectiveLens::
+film_to_fov(PN_stdfloat film_size, PN_stdfloat focal_length, bool) const {
   return rad_2_deg(catan(film_size * 0.5f / focal_length)) * 2.0f;
 }
 

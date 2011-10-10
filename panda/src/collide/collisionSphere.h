@@ -26,10 +26,10 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_COLLIDE CollisionSphere : public CollisionSolid {
 PUBLISHED:
-  INLINE CollisionSphere(const LPoint3f &center, float radius);
-  INLINE CollisionSphere(float cx, float cy, float cz, float radius);
+  INLINE CollisionSphere(const LPoint3 &center, PN_stdfloat radius);
+  INLINE CollisionSphere(PN_stdfloat cx, PN_stdfloat cy, PN_stdfloat cz, PN_stdfloat radius);
 
-  virtual LPoint3f get_collision_origin() const;
+  virtual LPoint3 get_collision_origin() const;
 
 protected:
   INLINE CollisionSphere();
@@ -41,7 +41,7 @@ public:
   virtual PT(CollisionEntry)
   test_intersection(const CollisionEntry &entry) const;
 
-  virtual void xform(const LMatrix4f &mat);
+  virtual void xform(const LMatrix4 &mat);
 
   virtual PStatCollector &get_volume_pcollector();
   virtual PStatCollector &get_test_pcollector();
@@ -51,18 +51,16 @@ public:
   INLINE static void flush_level();
 
 PUBLISHED:
-  INLINE void set_center(const LPoint3f &center);
-  INLINE void set_center(float x, float y, float z);
-  INLINE const LPoint3f &get_center() const;
+  INLINE void set_center(const LPoint3 &center);
+  INLINE void set_center(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+  INLINE const LPoint3 &get_center() const;
 
-  INLINE void set_radius(float radius);
-  INLINE float get_radius() const;
+  INLINE void set_radius(PN_stdfloat radius);
+  INLINE PN_stdfloat get_radius() const;
 
 protected:
   virtual PT(BoundingVolume) compute_internal_bounds() const;
 
-  virtual PT(CollisionEntry)
-  test_intersection_from_ds_solid(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
   test_intersection_from_sphere(const CollisionEntry &entry) const;
   virtual PT(CollisionEntry)
@@ -80,16 +78,16 @@ protected:
 
 protected:
   bool intersects_line(double &t1, double &t2,
-                       const LPoint3f &from, const LVector3f &delta,
-                       float inflate_radius) const;
-  bool intersects_parabola(double &t, const Parabolaf &parabola,
+                       const LPoint3 &from, const LVector3 &delta,
+                       PN_stdfloat inflate_radius) const;
+  bool intersects_parabola(double &t, const LParabola &parabola,
                            double t1, double t2,
-                           const LPoint3f &p1, const LPoint3f &p2) const;
-  Vertexf compute_point(float latitude, float longitude) const;
+                           const LPoint3 &p1, const LPoint3 &p2) const;
+  LVertex compute_point(PN_stdfloat latitude, PN_stdfloat longitude) const;
 
 private:
-  LPoint3f _center;
-  float _radius;
+  LPoint3 _center;
+  PN_stdfloat _radius;
 
   static PStatCollector _volume_pcollector;
   static PStatCollector _test_pcollector;

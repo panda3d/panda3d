@@ -110,14 +110,14 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 //               with the indicated maximum range.
 ////////////////////////////////////////////////////////////////////
 void PGWaitBar::
-setup(float width, float height, float range) {
+setup(PN_stdfloat width, PN_stdfloat height, PN_stdfloat range) {
   LightReMutexHolder holder(_lock);
   set_state(0);
   clear_state_def(0);
 
   set_frame(-0.5f * width, 0.5f * width, -0.5f * height, 0.5f * height);
 
-  float bevel = 0.05f;
+  PN_stdfloat bevel = 0.05f;
 
   PGFrameStyle style;
   style.set_width(bevel, bevel);
@@ -157,18 +157,18 @@ update() {
     nassertv(!root.is_empty());
 
     PGFrameStyle style = get_frame_style(state);
-    const LVecBase4f &frame = get_frame();
-    const LVecBase2f &width = style.get_width();
+    const LVecBase4 &frame = get_frame();
+    const LVecBase2 &width = style.get_width();
 
     // Put the bar within the item's frame's border.
-    LVecBase4f bar_frame(frame[0] + width[0],
+    LVecBase4 bar_frame(frame[0] + width[0],
                          frame[1] - width[0],
                          frame[2] + width[1],
                          frame[3] - width[1]);
 
     // And scale the bar according to our value.
-    float frac = _value / _range;
-    frac = max(min(frac, 1.0f), 0.0f);
+    PN_stdfloat frac = _value / _range;
+    frac = max(min(frac, (PN_stdfloat)1.0), (PN_stdfloat)0.0);
     bar_frame[1] = bar_frame[0] + frac * (bar_frame[1] - bar_frame[0]);
     
     _bar = _bar_style.generate_into(root, bar_frame, 1);

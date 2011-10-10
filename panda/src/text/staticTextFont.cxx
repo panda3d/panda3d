@@ -291,7 +291,7 @@ find_characters(PandaNode *root, const RenderState *net_state) {
       // Get the first vertex from the "dot" geoset.  This will be the
       // origin of the next character.
       GeomVertexReader reader(dot->get_vertex_data(), InternalName::get_vertex());
-      float width = reader.get_data1f();
+      PN_stdfloat width = reader.get_data1f();
 
       _glyphs[character] = new TextGlyph(character, ch, state, width);
     }
@@ -308,7 +308,7 @@ find_characters(PandaNode *root, const RenderState *net_state) {
       // Get the first vertex from the "dot" geoset.  This will be the
       // design size indicator.
       GeomVertexReader reader(dot->get_vertex_data(), InternalName::get_vertex());
-      _line_height = reader.get_data3f()[2];
+      _line_height = reader.get_data3()[2];
       _space_advance = 0.25f * _line_height;
     }
 

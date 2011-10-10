@@ -117,7 +117,7 @@ PUBLISHED:
 
   bool request_resident() const;
 
-  void transform_vertices(const LMatrix4f &mat);
+  void transform_vertices(const LMatrix4 &mat);
   bool check_valid() const;
   bool check_valid(const GeomVertexData *vertex_data) const;
 
@@ -149,17 +149,17 @@ public:
             const GeomVertexData *vertex_data,
             bool force, Thread *current_thread) const;
   
-  INLINE void calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+  INLINE void calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
                                 bool &found_any, 
                                 const GeomVertexData *vertex_data,
-                                bool got_mat, const LMatrix4f &mat,
+                                bool got_mat, const LMatrix4 &mat,
                                 Thread *current_thread) const;
-  INLINE void calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+  INLINE void calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
                                 bool &found_any, Thread *current_thread) const;
-  INLINE void calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+  INLINE void calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
                                 bool &found_any, 
                                 const GeomVertexData *vertex_data,
-                                bool got_mat, const LMatrix4f &mat,
+                                bool got_mat, const LMatrix4 &mat,
                                 const InternalName *column_name,
                                 Thread *current_thread) const;
 
@@ -171,10 +171,10 @@ private:
   INLINE void mark_internal_bounds_stale(CData *cdata);
   void compute_internal_bounds(CData *cdata, Thread *current_thread) const;
 
-  void do_calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+  void do_calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
                             bool &found_any, 
                             const GeomVertexData *vertex_data,
-                            bool got_mat, const LMatrix4f &mat,
+                            bool got_mat, const LMatrix4 &mat,
                             const InternalName *column_name,
                             const CData *cdata, Thread *current_thread) const;
 

@@ -175,7 +175,7 @@ click(const MouseWatcherParameter &param) {
 //               according to the size of the text.
 ////////////////////////////////////////////////////////////////////
 void PGButton::
-setup(const string &label, float bevel) {
+setup(const string &label, PN_stdfloat bevel) {
   LightReMutexHolder holder(_lock);
   clear_state_def(S_ready);
   clear_state_def(S_depressed);
@@ -186,8 +186,8 @@ setup(const string &label, float bevel) {
   text_node->set_text(label);
   PT(PandaNode) geom = text_node->generate();
 
-  LVecBase4f frame = text_node->get_card_actual();
-  set_frame(frame[0] - 0.4f, frame[1] + 0.4f, frame[2] - 0.15f, frame[3] + 0.15f);
+  LVecBase4 frame = text_node->get_card_actual();
+  set_frame(frame[0] - 0.4, frame[1] + 0.4, frame[2] - 0.15f, frame[3] + 0.15f);
 
   PT(PandaNode) ready = new PandaNode("ready");
   PT(PandaNode) depressed = new PandaNode("depressed");
@@ -204,14 +204,14 @@ setup(const string &label, float bevel) {
   style.set_color(0.9f, 0.9f, 0.9f, 1.0f);
   set_frame_style(S_rollover, style);
 
-  inactive->set_attrib(ColorAttrib::make_flat(Colorf(0.8f, 0.8f, 0.8f, 1.0f)));
+  inactive->set_attrib(ColorAttrib::make_flat(LColor(0.8f, 0.8f, 0.8f, 1.0f)));
   style.set_color(0.6f, 0.6f, 0.6f, 1.0f);
   set_frame_style(S_inactive, style);
 
   style.set_type(PGFrameStyle::T_bevel_in);
   style.set_color(0.8f, 0.8f, 0.8f, 1.0f);
   set_frame_style(S_depressed, style);
-  depressed->set_transform(TransformState::make_pos(LVector3f(0.05f, 0.0f, -0.05f)));
+  depressed->set_transform(TransformState::make_pos(LVector3(0.05f, 0.0f, -0.05f)));
 
   get_state_def(S_ready).attach_new_node(ready, 1);
   get_state_def(S_depressed).attach_new_node(depressed, 1);
@@ -245,7 +245,7 @@ setup(const NodePath &ready, const NodePath &depressed,
   instance_to_state_def(S_inactive, inactive);
 
   // Set the button frame size.
-  LPoint3f min_point, max_point;
+  LPoint3 min_point, max_point;
   ready.calc_tight_bounds(min_point, max_point);
   set_frame(min_point[0], max_point[0],
             min_point[2], max_point[2]);

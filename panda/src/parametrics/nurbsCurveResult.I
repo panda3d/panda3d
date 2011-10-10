@@ -28,7 +28,7 @@ INLINE NurbsCurveResult::
 //  Description: Returns the first legal value of t on the curve.
 //               Usually this is 0.0.
 ////////////////////////////////////////////////////////////////////
-INLINE float NurbsCurveResult::
+INLINE PN_stdfloat NurbsCurveResult::
 get_start_t() const {
   return _basis.get_start_t();
 }
@@ -38,7 +38,7 @@ get_start_t() const {
 //       Access: Published
 //  Description: Returns the last legal value of t on the curve.
 ////////////////////////////////////////////////////////////////////
-INLINE float NurbsCurveResult::
+INLINE PN_stdfloat NurbsCurveResult::
 get_end_t() const {
   return _basis.get_end_t();
 }
@@ -51,7 +51,7 @@ get_end_t() const {
 //               the t value is valid, false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool NurbsCurveResult::
-eval_point(float t, LVecBase3f &point) {
+eval_point(PN_stdfloat t, LVecBase3 &point) {
   int segment = find_segment(t);
   if (segment == -1) {
     return false;
@@ -70,7 +70,7 @@ eval_point(float t, LVecBase3f &point) {
 //               See also eval_point().
 ////////////////////////////////////////////////////////////////////
 INLINE bool NurbsCurveResult::
-eval_tangent(float t, LVecBase3f &tangent) {
+eval_tangent(PN_stdfloat t, LVecBase3 &tangent) {
   int segment = find_segment(t);
   if (segment == -1) {
     return false;
@@ -87,8 +87,8 @@ eval_tangent(float t, LVecBase3f &tangent) {
 //               to the extended vertices associated with the curve in
 //               the indicated dimension.
 ////////////////////////////////////////////////////////////////////
-INLINE float NurbsCurveResult::
-eval_extended_point(float t, int d) {
+INLINE PN_stdfloat NurbsCurveResult::
+eval_extended_point(PN_stdfloat t, int d) {
   int segment = find_segment(t);
   if (segment == -1) {
     return 0.0f;
@@ -107,7 +107,7 @@ eval_extended_point(float t, int d) {
 //               the indicated result array.
 ////////////////////////////////////////////////////////////////////
 INLINE bool NurbsCurveResult::
-eval_extended_points(float t, int d, float result[], int num_values) {
+eval_extended_points(PN_stdfloat t, int d, PN_stdfloat result[], int num_values) {
   int segment = find_segment(t);
   if (segment == -1) {
     return false;
@@ -139,8 +139,8 @@ get_num_segments() const {
 //               eval_segment_point()), and returns the corresponding
 //               t value in the entire curve (as in eval_point()).
 ////////////////////////////////////////////////////////////////////
-INLINE float NurbsCurveResult::
-get_segment_t(int segment, float t) const {
+INLINE PN_stdfloat NurbsCurveResult::
+get_segment_t(int segment, PN_stdfloat t) const {
   return t * (_basis.get_to(segment) - _basis.get_from(segment)) + _basis.get_from(segment);
 }
 
@@ -161,7 +161,7 @@ get_num_samples() const {
 //  Description: Returns the t value of the nth sample point generated
 //               by the previous call to adaptive_sample().
 ////////////////////////////////////////////////////////////////////
-INLINE float NurbsCurveResult::
+INLINE PN_stdfloat NurbsCurveResult::
 get_sample_t(int n) const {
   nassertr(n >= 0 && n < (int)_adaptive_result.size(), 0.0f);
   return _adaptive_result[n]._t;
@@ -178,9 +178,9 @@ get_sample_t(int n) const {
 //               get_sample_t() and pass it into eval_tangent() or
 //               eval_extended_point().
 ////////////////////////////////////////////////////////////////////
-INLINE const LPoint3f &NurbsCurveResult::
+INLINE const LPoint3 &NurbsCurveResult::
 get_sample_point(int n) const {
-  nassertr(n >= 0 && n < (int)_adaptive_result.size(), LPoint3f::zero());
+  nassertr(n >= 0 && n < (int)_adaptive_result.size(), LPoint3::zero());
   return _adaptive_result[n]._point;
 }
 
@@ -193,7 +193,7 @@ get_sample_point(int n) const {
 //               t value in the entire curve (as in eval_point()).
 ////////////////////////////////////////////////////////////////////
 INLINE NurbsCurveResult::AdaptiveSample::
-AdaptiveSample(float t, const LPoint3f &point) :
+AdaptiveSample(PN_stdfloat t, const LPoint3 &point) :
   _t(t),
   _point(point)
 {

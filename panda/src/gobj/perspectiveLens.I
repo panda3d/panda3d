@@ -27,7 +27,7 @@ PerspectiveLens() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PerspectiveLens::
-PerspectiveLens(float hfov, float vfov) {
+PerspectiveLens(PN_stdfloat hfov, PN_stdfloat vfov) {
   _fov.set(hfov, vfov);
 }
 

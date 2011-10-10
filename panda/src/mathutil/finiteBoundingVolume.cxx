@@ -22,7 +22,7 @@ TypeHandle FiniteBoundingVolume::_type_handle;
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-float FiniteBoundingVolume::
+PN_stdfloat FiniteBoundingVolume::
 get_volume() const {
   nassertr(!is_infinite(), 0.0f);
   if (is_empty()) {

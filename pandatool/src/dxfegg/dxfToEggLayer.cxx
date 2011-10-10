@@ -51,7 +51,7 @@ add_polygon(const DXFToEggConverter *entity) {
   _group->add_child(poly);
 
   const DXFFile::Color &color = entity->get_color();
-  poly->set_color(Colorf(color.r, color.g, color.b, 1.0));
+  poly->set_color(LColor(color.r, color.g, color.b, 1.0));
 
   // A polyline's vertices are stored in the attached vector by
   // dxf.cxx.  They were defined in the DXF file using a series of
@@ -84,7 +84,7 @@ add_line(const DXFToEggConverter *entity) {
   _group->add_child(line);
 
   const DXFFile::Color &color = entity->get_color();
-  line->set_color(Colorf(color.r, color.g, color.b, 1.0));
+  line->set_color(LColor(color.r, color.g, color.b, 1.0));
 
   DXFVertices::const_iterator vi;
   for (vi = entity->_verts.begin();

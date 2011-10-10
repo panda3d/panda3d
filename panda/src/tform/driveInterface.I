@@ -21,7 +21,7 @@
 //               (e.g. feet) per second.
 ////////////////////////////////////////////////////////////////////
 INLINE void DriveInterface::
-set_forward_speed(float speed) {
+set_forward_speed(PN_stdfloat speed) {
   _forward_speed = speed;
 }
 
@@ -32,7 +32,7 @@ set_forward_speed(float speed) {
 //               mouse is at the very top of the window.  This is in
 //               units (e.g. feet) per second.
 ////////////////////////////////////////////////////////////////////
-INLINE float DriveInterface::
+INLINE PN_stdfloat DriveInterface::
 get_forward_speed() const {
   return _forward_speed;
 }
@@ -45,7 +45,7 @@ get_forward_speed() const {
 //               units (e.g. feet) per second.
 ////////////////////////////////////////////////////////////////////
 INLINE void DriveInterface::
-set_reverse_speed(float speed) {
+set_reverse_speed(PN_stdfloat speed) {
   _reverse_speed = speed;
 }
 
@@ -56,7 +56,7 @@ set_reverse_speed(float speed) {
 //               mouse is at the very bottom of the window.  This is
 //               in units (e.g. feet) per second.
 ////////////////////////////////////////////////////////////////////
-INLINE float DriveInterface::
+INLINE PN_stdfloat DriveInterface::
 get_reverse_speed() const {
   return _reverse_speed;
 }
@@ -69,7 +69,7 @@ get_reverse_speed() const {
 //               the window.  This is in degrees per second.
 ////////////////////////////////////////////////////////////////////
 INLINE void DriveInterface::
-set_rotate_speed(float speed) {
+set_rotate_speed(PN_stdfloat speed) {
   _rotate_speed = speed;
 }
 
@@ -80,7 +80,7 @@ set_rotate_speed(float speed) {
 //               left or right, when the mouse is at the very edge of
 //               the window.  This is in degrees per second.
 ////////////////////////////////////////////////////////////////////
-INLINE float DriveInterface::
+INLINE PN_stdfloat DriveInterface::
 get_rotate_speed() const {
   return _rotate_speed;
 }
@@ -96,7 +96,7 @@ get_rotate_speed() const {
 //               large as half the screen.
 ////////////////////////////////////////////////////////////////////
 INLINE void DriveInterface::
-set_vertical_dead_zone(float speed) {
+set_vertical_dead_zone(PN_stdfloat speed) {
   _vertical_dead_zone = speed;
 }
 
@@ -110,7 +110,7 @@ set_vertical_dead_zone(float speed) {
 //               the window height, so 0.5 will set a dead zone as
 //               large as half the screen.
 ////////////////////////////////////////////////////////////////////
-INLINE float DriveInterface::
+INLINE PN_stdfloat DriveInterface::
 get_vertical_dead_zone() const {
   return _vertical_dead_zone;
 }
@@ -126,7 +126,7 @@ get_vertical_dead_zone() const {
 //               large as half the screen.
 ////////////////////////////////////////////////////////////////////
 INLINE void DriveInterface::
-set_horizontal_dead_zone(float speed) {
+set_horizontal_dead_zone(PN_stdfloat speed) {
   _horizontal_dead_zone = speed;
 }
 
@@ -140,7 +140,7 @@ set_horizontal_dead_zone(float speed) {
 //               the window width, so 0.5 will set a dead zone as
 //               large as half the screen.
 ////////////////////////////////////////////////////////////////////
-INLINE float DriveInterface::
+INLINE PN_stdfloat DriveInterface::
 get_horizontal_dead_zone() const {
   return _horizontal_dead_zone;
 }
@@ -153,7 +153,7 @@ get_horizontal_dead_zone() const {
 //               time it registers full forward or backward motion.
 ////////////////////////////////////////////////////////////////////
 INLINE void DriveInterface::
-set_vertical_ramp_up_time(float ramp_up_time) {
+set_vertical_ramp_up_time(PN_stdfloat ramp_up_time) {
   _vertical_ramp_up_time = ramp_up_time;
 }
 
@@ -165,7 +165,7 @@ set_vertical_ramp_up_time(float ramp_up_time) {
 //               and the time it registers full forward or backward
 //               motion.
 ////////////////////////////////////////////////////////////////////
-INLINE float DriveInterface::
+INLINE PN_stdfloat DriveInterface::
 get_vertical_ramp_up_time() const {
   return _vertical_ramp_up_time;
 }
@@ -178,7 +178,7 @@ get_vertical_ramp_up_time() const {
 //               time it registers no motion.
 ////////////////////////////////////////////////////////////////////
 INLINE void DriveInterface::
-set_vertical_ramp_down_time(float ramp_down_time) {
+set_vertical_ramp_down_time(PN_stdfloat ramp_down_time) {
   _vertical_ramp_down_time = ramp_down_time;
 }
 
@@ -189,7 +189,7 @@ set_vertical_ramp_down_time(float ramp_down_time) {
 //               between the time an up or down arrow key is released
 //               and the time it registers no motion.
 ////////////////////////////////////////////////////////////////////
-INLINE float DriveInterface::
+INLINE PN_stdfloat DriveInterface::
 get_vertical_ramp_down_time() const {
   return _vertical_ramp_down_time;
 }
@@ -202,7 +202,7 @@ get_vertical_ramp_down_time() const {
 //               time it registers full rotation.
 ////////////////////////////////////////////////////////////////////
 INLINE void DriveInterface::
-set_horizontal_ramp_up_time(float ramp_up_time) {
+set_horizontal_ramp_up_time(PN_stdfloat ramp_up_time) {
   _horizontal_ramp_up_time = ramp_up_time;
 }
 
@@ -213,7 +213,7 @@ set_horizontal_ramp_up_time(float ramp_up_time) {
 //               between the time a left or right arrow key is pressed
 //               and the time it registers full rotation.
 ////////////////////////////////////////////////////////////////////
-INLINE float DriveInterface::
+INLINE PN_stdfloat DriveInterface::
 get_horizontal_ramp_up_time() const {
   return _horizontal_ramp_up_time;
 }
@@ -226,7 +226,7 @@ get_horizontal_ramp_up_time() const {
 //               time it registers no motion.
 ////////////////////////////////////////////////////////////////////
 INLINE void DriveInterface::
-set_horizontal_ramp_down_time(float ramp_down_time) {
+set_horizontal_ramp_down_time(PN_stdfloat ramp_down_time) {
   _horizontal_ramp_down_time = ramp_down_time;
 }
 
@@ -237,7 +237,7 @@ set_horizontal_ramp_down_time(float ramp_down_time) {
 //               between the time a left or right arrow key is released
 //               and the time it registers no motion.
 ////////////////////////////////////////////////////////////////////
-INLINE float DriveInterface::
+INLINE PN_stdfloat DriveInterface::
 get_horizontal_ramp_down_time() const {
   return _horizontal_ramp_down_time;
 }
@@ -247,7 +247,7 @@ get_horizontal_ramp_down_time() const {
 //       Access: Published
 //  Description: Returns the speed of the previous update in units/sec
 ////////////////////////////////////////////////////////////////////
-INLINE float DriveInterface::
+INLINE PN_stdfloat DriveInterface::
 get_speed() const {
   return _speed;
 }
@@ -257,7 +257,7 @@ get_speed() const {
 //       Access: Published
 //  Description: Returns the rot_speed of the previous update in units/sec
 ////////////////////////////////////////////////////////////////////
-INLINE float DriveInterface::
+INLINE PN_stdfloat DriveInterface::
 get_rot_speed() const {
   return _rot_speed;
 }
@@ -267,22 +267,22 @@ get_rot_speed() const {
 //       Access: Published
 //  Description: Returns the driver's position.
 ////////////////////////////////////////////////////////////////////
-INLINE const LPoint3f &DriveInterface::
+INLINE const LPoint3 &DriveInterface::
 get_pos() const {
   return _xyz;
 }
 
-INLINE float DriveInterface::
+INLINE PN_stdfloat DriveInterface::
 get_x() const {
   return _xyz[0];
 }
 
-INLINE float DriveInterface::
+INLINE PN_stdfloat DriveInterface::
 get_y() const {
   return _xyz[1];
 }
 
-INLINE float DriveInterface::
+INLINE PN_stdfloat DriveInterface::
 get_z() const {
   return _xyz[2];
 }
@@ -294,27 +294,27 @@ get_z() const {
 //  Description: Directly sets the driver's position.
 ////////////////////////////////////////////////////////////////////
 INLINE void DriveInterface::
-set_pos(const LVecBase3f &vec) {
+set_pos(const LVecBase3 &vec) {
   _xyz = vec;
 }
 
 INLINE void DriveInterface::
-set_pos(float x, float y, float z) {
+set_pos(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
   _xyz.set(x, y, z);
 }
 
 INLINE void DriveInterface::
-set_x(float x) {
+set_x(PN_stdfloat x) {
   _xyz[0] = x;
 }
 
 INLINE void DriveInterface::
-set_y(float y) {
+set_y(PN_stdfloat y) {
   _xyz[1] = y;
 }
 
 INLINE void DriveInterface::
-set_z(float z) {
+set_z(PN_stdfloat z) {
   _xyz[2] = z;
 }
 
@@ -324,22 +324,22 @@ set_z(float z) {
 //       Access: Published
 //  Description: Returns the driver's orientation.
 ////////////////////////////////////////////////////////////////////
-INLINE const LVecBase3f &DriveInterface::
+INLINE const LVecBase3 &DriveInterface::
 get_hpr() const {
   return _hpr;
 }
 
-INLINE float DriveInterface::
+INLINE PN_stdfloat DriveInterface::
 get_h() const {
   return _hpr[0];
 }
 
-INLINE float DriveInterface::
+INLINE PN_stdfloat DriveInterface::
 get_p() const {
   return _hpr[1];
 }
 
-INLINE float DriveInterface::
+INLINE PN_stdfloat DriveInterface::
 get_r() const {
   return _hpr[2];
 }
@@ -351,29 +351,29 @@ get_r() const {
 //  Description: Directly sets the driver's orientation.
 ////////////////////////////////////////////////////////////////////
 INLINE void DriveInterface::
-set_hpr(const LVecBase3f &hpr) {
+set_hpr(const LVecBase3 &hpr) {
   set_hpr(hpr[0], hpr[1], hpr[2]);
 }
 
 INLINE void DriveInterface::
-set_hpr(float h, float p, float r) {
+set_hpr(PN_stdfloat h, PN_stdfloat p, PN_stdfloat r) {
   set_h(h);
   set_p(p);
   set_r(r);
 }
 
 INLINE void DriveInterface::
-set_h(float h) {
+set_h(PN_stdfloat h) {
   _hpr[0] = _hpr_quantize * floor(h / _hpr_quantize + 0.5f);
 }
 
 INLINE void DriveInterface::
-set_p(float p) {
+set_p(PN_stdfloat p) {
   _hpr[1] = _hpr_quantize * floor(p / _hpr_quantize + 0.5f);
 }
 
 INLINE void DriveInterface::
-set_r(float r) {
+set_r(PN_stdfloat r) {
   _hpr[2] = _hpr_quantize * floor(r / _hpr_quantize + 0.5f);
 }
 

@@ -22,7 +22,7 @@ TypeHandle LinearSourceForce::_type_handle;
 // Description : Simple constructor
 ////////////////////////////////////////////////////////////////////
 LinearSourceForce::
-LinearSourceForce(const LPoint3f& p, FalloffType f, float r, float a,
+LinearSourceForce(const LPoint3& p, FalloffType f, PN_stdfloat r, PN_stdfloat a,
           bool mass) :
   LinearDistanceForce(p, f, r, a, mass) {
 }
@@ -34,7 +34,7 @@ LinearSourceForce(const LPoint3f& p, FalloffType f, float r, float a,
 ////////////////////////////////////////////////////////////////////
 LinearSourceForce::
 LinearSourceForce() :
-  LinearDistanceForce(LPoint3f(0.0f, 0.0f, 0.0f), FT_ONE_OVER_R_SQUARED,
+  LinearDistanceForce(LPoint3(0.0f, 0.0f, 0.0f), FT_ONE_OVER_R_SQUARED,
                       1.0f, 1.0f, true) {
 }
 
@@ -72,7 +72,7 @@ make_copy() {
 //      Access : Public
 // Description : virtual force query
 ////////////////////////////////////////////////////////////////////
-LVector3f LinearSourceForce::
+LVector3 LinearSourceForce::
 get_child_vector(const PhysicsObject *po) {
   return (po->get_position() - get_force_center()) * get_scalar_term();
 }

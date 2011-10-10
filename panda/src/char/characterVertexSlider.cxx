@@ -64,7 +64,7 @@ CharacterVertexSlider::
 //       Access: Published, Virtual
 //  Description: Returns the current slider value.
 ////////////////////////////////////////////////////////////////////
-float CharacterVertexSlider::
+PN_stdfloat CharacterVertexSlider::
 get_slider() const {
   return _char_slider->_value;
 }

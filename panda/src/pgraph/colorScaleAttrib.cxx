@@ -32,13 +32,13 @@ CPT(RenderAttrib) ColorScaleAttrib::_identity_attrib;
 //               ColorScaleAttrib object.
 ////////////////////////////////////////////////////////////////////
 ColorScaleAttrib::
-ColorScaleAttrib(bool off, const LVecBase4f &scale) :
+ColorScaleAttrib(bool off, const LVecBase4 &scale) :
   _off(off),
   _scale(scale)
 {
   quantize_scale();
-  _has_scale = !_scale.almost_equal(LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f));
-  _has_rgb_scale = !LVecBase3f(_scale[0], _scale[1], _scale[2]).almost_equal(LVecBase3f(1.0f, 1.0f, 1.0f));
+  _has_scale = !_scale.almost_equal(LVecBase4(1.0f, 1.0f, 1.0f, 1.0f));
+  _has_rgb_scale = !LVecBase3(_scale[0], _scale[1], _scale[2]).almost_equal(LVecBase3(1.0f, 1.0f, 1.0f));
   _has_alpha_scale = !IS_NEARLY_EQUAL(_scale[3], 1.0f);
 }
 
@@ -52,7 +52,7 @@ make_identity() {
   // We make identity a special case and store a pointer forever once
   // we find it the first time.
   if (_identity_attrib == (ColorScaleAttrib *)NULL) {
-    ColorScaleAttrib *attrib = new ColorScaleAttrib(false, LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f));;
+    ColorScaleAttrib *attrib = new ColorScaleAttrib(false, LVecBase4(1.0f, 1.0f, 1.0f, 1.0f));;
     _identity_attrib = return_new(attrib);
   }
 
@@ -66,7 +66,7 @@ make_identity() {
 //               geometry should be scaled by the indicated factor.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ColorScaleAttrib::
-make(const LVecBase4f &scale) {
+make(const LVecBase4 &scale) {
   ColorScaleAttrib *attrib = new ColorScaleAttrib(false, scale);
   return return_new(attrib);
 }
@@ -82,7 +82,7 @@ make(const LVecBase4f &scale) {
 CPT(RenderAttrib) ColorScaleAttrib::
 make_off() {
   ColorScaleAttrib *attrib = 
-    new ColorScaleAttrib(true, LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f));
+    new ColorScaleAttrib(true, LVecBase4(1.0f, 1.0f, 1.0f, 1.0f));
   return return_new(attrib);
 }
 
@@ -95,7 +95,7 @@ make_off() {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ColorScaleAttrib::
 make_default() {
-  return return_new(new ColorScaleAttrib(false, LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f)));
+  return return_new(new ColorScaleAttrib(false, LVecBase4(1.0f, 1.0f, 1.0f, 1.0f)));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -105,12 +105,12 @@ make_default() {
 //               with the scale changed to the indicated value.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ColorScaleAttrib::
-set_scale(const LVecBase4f &scale) const {
+set_scale(const LVecBase4 &scale) const {
   ColorScaleAttrib *attrib = new ColorScaleAttrib(*this);
   attrib->_scale = scale;
   attrib->quantize_scale();
-  attrib->_has_scale = !scale.almost_equal(LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f));
-  attrib->_has_rgb_scale = !LVecBase3f(scale[0], scale[1], scale[2]).almost_equal(LVecBase3f(1.0f, 1.0f, 1.0f));
+  attrib->_has_scale = !scale.almost_equal(LVecBase4(1.0f, 1.0f, 1.0f, 1.0f));
+  attrib->_has_rgb_scale = !LVecBase3(scale[0], scale[1], scale[2]).almost_equal(LVecBase3(1.0f, 1.0f, 1.0f));
   attrib->_has_alpha_scale = !IS_NEARLY_EQUAL(scale[3], 1.0f);
   return return_new(attrib);
 }
@@ -240,7 +240,7 @@ compose_impl(const RenderAttrib *other) const {
     return ta;
   }
 
-  LVecBase4f new_scale(ta->_scale[0] * _scale[0],
+  LVecBase4 new_scale(ta->_scale[0] * _scale[0],
                        ta->_scale[1] * _scale[1],
                        ta->_scale[2] * _scale[2],
                        ta->_scale[3] * _scale[3]);
@@ -265,7 +265,7 @@ invert_compose_impl(const RenderAttrib *other) const {
   }
   const ColorScaleAttrib *ta;
   DCAST_INTO_R(ta, other, 0);
-  LVecBase4f new_scale(_scale[0] == 0.0f ? 1.0f : ta->_scale[0] / _scale[0],
+  LVecBase4 new_scale(_scale[0] == 0.0f ? 1.0f : ta->_scale[0] / _scale[0],
                        _scale[1] == 0.0f ? 1.0f : ta->_scale[1] / _scale[1],
                        _scale[2] == 0.0f ? 1.0f : ta->_scale[2] / _scale[2],
                        _scale[3] == 0.0f ? 1.0f : ta->_scale[3] / _scale[3]);
@@ -327,7 +327,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 ////////////////////////////////////////////////////////////////////
 TypedWritable *ColorScaleAttrib::
 make_from_bam(const FactoryParams &params) {
-  ColorScaleAttrib *attrib = new ColorScaleAttrib(false, LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f));
+  ColorScaleAttrib *attrib = new ColorScaleAttrib(false, LVecBase4(1.0f, 1.0f, 1.0f, 1.0f));
   DatagramIterator scan;
   BamReader *manager;
 
@@ -351,7 +351,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _off = scan.get_bool();
   _scale.read_datagram(scan);
   quantize_scale();
-  _has_scale = !_scale.almost_equal(LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f));
-  _has_rgb_scale = !LVecBase3f(_scale[0], _scale[1], _scale[2]).almost_equal(LVecBase3f(1.0f, 1.0f, 1.0f));
+  _has_scale = !_scale.almost_equal(LVecBase4(1.0f, 1.0f, 1.0f, 1.0f));
+  _has_rgb_scale = !LVecBase3(_scale[0], _scale[1], _scale[2]).almost_equal(LVecBase3(1.0f, 1.0f, 1.0f));
   _has_alpha_scale = !IS_NEARLY_EQUAL(_scale[3], 1.0f);
 }

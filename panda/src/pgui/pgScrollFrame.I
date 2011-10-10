@@ -21,8 +21,8 @@
 //               we can see only a portion of at any given time.
 ////////////////////////////////////////////////////////////////////
 INLINE void PGScrollFrame::
-set_virtual_frame(float left, float right, float bottom, float top) {
-  set_virtual_frame(LVecBase4f(left, right, bottom, top));
+set_virtual_frame(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top) {
+  set_virtual_frame(LVecBase4(left, right, bottom, top));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -33,7 +33,7 @@ set_virtual_frame(float left, float right, float bottom, float top) {
 //               we can see only a portion of at any given time.
 ////////////////////////////////////////////////////////////////////
 INLINE void PGScrollFrame::
-set_virtual_frame(const LVecBase4f &frame) {
+set_virtual_frame(const LVecBase4 &frame) {
   LightReMutexHolder holder(_lock);
   _has_virtual_frame = true;
   _virtual_frame = frame;
@@ -51,7 +51,7 @@ set_virtual_frame(const LVecBase4f &frame) {
 //               See set_virtual_frame().  If has_virtual_frame() is
 //               false, this returns the item's clip frame.
 ////////////////////////////////////////////////////////////////////
-INLINE const LVecBase4f &PGScrollFrame::
+INLINE const LVecBase4 &PGScrollFrame::
 get_virtual_frame() const {
   LightReMutexHolder holder(_lock);
   return _has_virtual_frame ? _virtual_frame : get_clip_frame();

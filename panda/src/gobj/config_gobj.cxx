@@ -261,6 +261,17 @@ ConfigVariableBool enforce_attrib_lock
           "generator, but doing so may be necessary for backward "
           "compatibility with old code."));
 
+ConfigVariableBool vertices_float64
+("vertices-float64", false,
+ PRC_DESC("When this is true, the default float format for vertices "
+          "will be a 64-bit double-precision float, instead "
+          "of the normal 32-bit single-precision float.  This must be set "
+          "at static init time to have the broadest effect.  You almost never "
+          "want to set this true, since current hardware does not support "
+          "double-precision vertices, and setting this will just require the "
+          "driver to downsample the vertices at load time, making everything "
+          "slower."));
+
 ConfigVariableEnum<AutoTextureScale> textures_power_2
 ("textures-power-2", ATS_down,
  PRC_DESC("Specify whether textures should automatically be constrained to "

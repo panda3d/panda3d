@@ -30,8 +30,8 @@ class EXPCL_PANDASPEEDTREE STTransform {
 PUBLISHED:
   INLINE STTransform();
   STTransform(const TransformState *trans);
-  INLINE STTransform(const LPoint3f &pos, float rotate = 0.0f, float scale = 1.0f);
-  INLINE STTransform(float x, float y, float z, float rotate, float scale);
+  INLINE STTransform(const LPoint3 &pos, PN_stdfloat rotate = 0.0f, PN_stdfloat scale = 1.0f);
+  INLINE STTransform(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat rotate, PN_stdfloat scale);
   INLINE STTransform(const STTransform &copy);
   INLINE void operator = (const STTransform &copy);
 
@@ -43,12 +43,12 @@ public:
 PUBLISHED:
   INLINE static const STTransform &ident_mat();
 
-  INLINE void set_pos(const LPoint3f &pos);
-  INLINE const LPoint3f &get_pos() const;
-  INLINE void set_rotate(float rotate);
-  INLINE float get_rotate() const;
-  INLINE void set_scale(float scale);
-  INLINE float get_scale() const;
+  INLINE void set_pos(const LPoint3 &pos);
+  INLINE const LPoint3 &get_pos() const;
+  INLINE void set_rotate(PN_stdfloat rotate);
+  INLINE PN_stdfloat get_rotate() const;
+  INLINE void set_scale(PN_stdfloat scale);
+  INLINE PN_stdfloat get_scale() const;
 
   INLINE void operator *= (const STTransform &other);
   INLINE STTransform operator * (const STTransform &other) const;
@@ -60,9 +60,9 @@ public:
   void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
-  LPoint3f _pos;
-  float _rotate;
-  float _scale;
+  LPoint3 _pos;
+  PN_stdfloat _rotate;
+  PN_stdfloat _scale;
 
   static STTransform _ident_mat;
 };

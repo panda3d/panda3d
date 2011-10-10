@@ -12,11 +12,11 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-INLINE void BaseParticle::set_age(float age) {
+INLINE void BaseParticle::set_age(PN_stdfloat age) {
   _age = age;
 }
 
-INLINE void BaseParticle::set_lifespan(float lifespan) {
+INLINE void BaseParticle::set_lifespan(PN_stdfloat lifespan) {
   _lifespan = lifespan;
 }
 
@@ -28,11 +28,11 @@ INLINE void BaseParticle::set_index(int index) {
   _index = index;
 }
 
-INLINE float BaseParticle::get_age() const {
+INLINE PN_stdfloat BaseParticle::get_age() const {
   return _age;
 }
 
-INLINE float BaseParticle::get_lifespan() const {
+INLINE PN_stdfloat BaseParticle::get_lifespan() const {
   return _lifespan;
 }
 
@@ -44,12 +44,12 @@ INLINE int BaseParticle::get_index() const {
   return _index;
 }
 
-INLINE float BaseParticle::get_parameterized_age() const {
+INLINE PN_stdfloat BaseParticle::get_parameterized_age() const {
   if (_lifespan <= 0) return 1.0;
   return _age / _lifespan;
 }
 
-INLINE float BaseParticle::get_parameterized_vel() const {
+INLINE PN_stdfloat BaseParticle::get_parameterized_vel() const {
   if (IS_NEARLY_ZERO(get_terminal_velocity())) return 0.0;
   return (get_velocity().length()) / get_terminal_velocity();
 }

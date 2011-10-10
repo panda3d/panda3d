@@ -106,7 +106,7 @@ clear(int x_size, int y_size, int num_channels) {
 
   _table.clear();
   int size = _x_size * _y_size;
-  _table.insert(_table.end(), size, LPoint3f::zero());
+  _table.insert(_table.end(), size, LPoint3::zero());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -164,7 +164,7 @@ read(istream &in) {
   }
 
   int width, height;
-  float scale;
+  PN_stdfloat scale;
   in >> width >> height >> scale;
   if (!in) {
     grutil_cat.error()
@@ -200,7 +200,7 @@ read(istream &in) {
 
   if (little_endian) {
     for (int i = 0; i < size; ++i) {
-      LPoint3f point = LPoint3f::zero();
+      LPoint3 point = LPoint3::zero();
       for (int ci = 0; ci < _num_channels; ++ci) {
         PN_float32 data;
         in.read((char *)&data, sizeof(data));
@@ -213,7 +213,7 @@ read(istream &in) {
     }
   } else {
     for (int i = 0; i < size; ++i) {
-      LPoint3f point = LPoint3f::zero();
+      LPoint3 point = LPoint3::zero();
       for (int ci = 0; ci < _num_channels; ++ci) {
         PN_float32 data;
         in.read((char *)&data, sizeof(data));
@@ -275,7 +275,7 @@ write(ostream &out) {
   }
   out << _x_size << " " << _y_size << "\n";
 
-  float scale = cabs(_scale);
+  PN_stdfloat scale = cabs(_scale);
   if (scale == 0.0f) {
     scale = 1.0f;
   }
@@ -288,7 +288,7 @@ write(ostream &out) {
 
   int size = _x_size * _y_size;
   for (int i = 0; i < size; ++i) {
-    const LPoint3f &point = _table[i];
+    const LPoint3 &point = _table[i];
     for (int ci = 0; ci < _num_channels; ++ci) {
       PN_float32 data = point[ci];
       out.write((const char *)&data, sizeof(data));
@@ -313,8 +313,8 @@ write(ostream &out) {
 //               value cannot be determined.
 ////////////////////////////////////////////////////////////////////
 bool PfmFile::
-calc_average_point(LPoint3f &result, double x, double y, double radius) const {
-  result = LPoint3f::zero();
+calc_average_point(LPoint3 &result, double x, double y, double radius) const {
+  result = LPoint3::zero();
 
   int min_x = int(ceil(x - radius));
   int min_y = int(ceil(y - radius));
@@ -346,8 +346,8 @@ calc_average_point(LPoint3f &result, double x, double y, double radius) const {
   int xi, yi;
   for (yi = min_y; yi <= max_y; ++yi) {
     for (xi = min_x; xi <= max_x; ++xi) {
-      const LPoint3f &p = _table[yi * _x_size + xi];
-      if (_zero_special && p == LPoint3f::zero()) {
+      const LPoint3 &p = _table[yi * _x_size + xi];
+      if (_zero_special && p == LPoint3::zero()) {
         continue;
       }
 
@@ -385,7 +385,7 @@ calc_average_point(LPoint3f &result, double x, double y, double radius) const {
     result += _table[ti];
   }
 
-  result /= float(size);
+  result /= PN_stdfloat(size);
   return true;
 }
 
@@ -399,16 +399,16 @@ calc_average_point(LPoint3f &result, double x, double y, double radius) const {
 //               mesh contains no points.
 ////////////////////////////////////////////////////////////////////
 bool PfmFile::
-calc_min_max(LVecBase3f &min_depth, LVecBase3f &max_depth) const {
+calc_min_max(LVecBase3 &min_depth, LVecBase3 &max_depth) const {
   bool any_points = false;
 
-  min_depth = LVecBase3f::zero();
-  max_depth = LVecBase3f::zero();
+  min_depth = LVecBase3::zero();
+  max_depth = LVecBase3::zero();
 
   Table::const_iterator ti;
   for (ti = _table.begin(); ti != _table.end(); ++ti) {
-    const LPoint3f &p = (*ti);
-    if (_zero_special && p == LPoint3f::zero()) {
+    const LPoint3 &p = (*ti);
+    if (_zero_special && p == LPoint3::zero()) {
       continue;
     }
     
@@ -468,7 +468,7 @@ resize(int new_x_size, int new_y_size) {
 
       // Now the box from (from_x0, from_y0) - (from_x1, from_y1)
       // but not including (from_x1, from_y1) maps to the pixel (to_x, to_y).
-      LPoint3f result;
+      LPoint3 result;
       box_filter_region(result, from_x0, from_y0, from_x1, from_y1);
       new_data.push_back(result);
 
@@ -511,12 +511,12 @@ reverse_rows() {
 //               in-place.
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
-xform(const LMatrix4f &transform) {
+xform(const LMatrix4 &transform) {
   nassertv(is_valid());
 
   Table::iterator ti;
   for (ti = _table.begin(); ti != _table.end(); ++ti) {
-    if (_zero_special && (*ti) == LPoint3f::zero()) {
+    if (_zero_special && (*ti) == LPoint3::zero()) {
       continue;
     }
 
@@ -543,12 +543,12 @@ xform(const LMatrix4f &transform) {
 ////////////////////////////////////////////////////////////////////
 PT(BoundingHexahedron) PfmFile::
 compute_planar_bounds(double point_dist, double sample_radius) const {
-  LPoint3f p0, p1, p2;
+  LPoint3 p0, p1, p2;
   compute_sample_point(p0, 0.5 + point_dist, 0.5 - point_dist, sample_radius);
   compute_sample_point(p1, 0.5 + point_dist, 0.5 + point_dist, sample_radius);
   compute_sample_point(p2, 0.5 - point_dist, 0.5 + point_dist, sample_radius);
 
-  LPoint3f normal;
+  LPoint3 normal;
 
   normal[0] = p0[1] * p1[2] - p0[2] * p1[1];
   normal[1] = p0[2] * p1[0] - p0[0] * p1[2];
@@ -566,25 +566,25 @@ compute_planar_bounds(double point_dist, double sample_radius) const {
 
   // Compute the transform necessary to rotate all of the points into
   // the Y = 0 plane.
-  LMatrix4f rotate;
+  LMatrix4 rotate;
   look_at(rotate, normal, p1 - p0);
 
-  LMatrix4f rinv;
+  LMatrix4 rinv;
   rinv.invert_from(rotate);
 
-  LPoint3f trans = p0 * rinv;
+  LPoint3 trans = p0 * rinv;
   rinv.set_row(3, -trans);
   rotate.invert_from(rinv);
 
   // Now determine the minmax in the XZ plane.
-  float min_x, min_z, max_x, max_z;
+  PN_stdfloat min_x, min_z, max_x, max_z;
   bool got_point = false;
   Table::const_iterator ti;
   for (ti = _table.begin(); ti != _table.end(); ++ti) {
-    if (_zero_special && (*ti) == LPoint3f::zero()) {
+    if (_zero_special && (*ti) == LPoint3::zero()) {
       continue;
     }
-    LPoint3f point = (*ti) * rinv;
+    LPoint3 point = (*ti) * rinv;
     if (!got_point) {
       min_x = point[0];
       min_z = point[2];
@@ -600,10 +600,10 @@ compute_planar_bounds(double point_dist, double sample_radius) const {
   }
 
   PT(BoundingHexahedron) bounds = new BoundingHexahedron
-    (LPoint3f(min_x, 0, min_z), LPoint3f(max_x, 0, min_z),
-     LPoint3f(min_x, 0, max_z), LPoint3f(max_x, 0, max_z),
-     LPoint3f(min_x, 0, min_z), LPoint3f(max_x, 0, min_z),
-     LPoint3f(min_x, 0, max_z), LPoint3f(max_x, 0, max_z));
+    (LPoint3(min_x, 0, min_z), LPoint3(max_x, 0, min_z),
+     LPoint3(min_x, 0, max_z), LPoint3(max_x, 0, max_z),
+     LPoint3(min_x, 0, min_z), LPoint3(max_x, 0, min_z),
+     LPoint3(min_x, 0, max_z), LPoint3(max_x, 0, max_z));
 
   // Rotate the bounding volume back into the original space of the
   // screen.
@@ -633,9 +633,9 @@ generate_vis_points() const {
       // and it's 3-d.
       GeomVertexArrayFormat *v3t3 = new GeomVertexArrayFormat
         (InternalName::get_vertex(), 3, 
-         Geom::NT_float32, Geom::C_point,
+         Geom::NT_stdfloat, Geom::C_point,
          InternalName::get_texcoord(), 3, 
-         Geom::NT_float32, Geom::C_texcoord);
+         Geom::NT_stdfloat, Geom::C_texcoord);
       format = GeomVertexFormat::register_format(v3t3);
     }
   } else {
@@ -650,18 +650,18 @@ generate_vis_points() const {
   
   for (int yi = 0; yi < _y_size; ++yi) {
     for (int xi = 0; xi < _x_size; ++xi) {
-      const LPoint3f &point = get_point(xi, yi);
-      LPoint2f uv(float(xi) / float(_x_size - 1),
-                  float(yi) / float(_y_size - 1));
+      const LPoint3 &point = get_point(xi, yi);
+      LPoint2 uv(PN_stdfloat(xi) / PN_stdfloat(_x_size - 1),
+                  PN_stdfloat(yi) / PN_stdfloat(_y_size - 1));
       if (_vis_inverse) {
-        vertex.add_data2f(uv);
-        texcoord.add_data3f(point);
+        vertex.add_data2(uv);
+        texcoord.add_data3(point);
       } else if (_vis_2d) {
-        vertex.add_data2f(point[0], point[1]);
-        texcoord.add_data2f(uv);
+        vertex.add_data2(point[0], point[1]);
+        texcoord.add_data2(uv);
       } else {
-        vertex.add_data3f(point);
-        texcoord.add_data2f(uv);
+        vertex.add_data3(point);
+        texcoord.add_data2(uv);
       }
     }
   }
@@ -754,9 +754,9 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
       // and it's 3-d.  But we still don't need normals in that case.
       GeomVertexArrayFormat *v3t3 = new GeomVertexArrayFormat
         (InternalName::get_vertex(), 3, 
-         Geom::NT_float32, Geom::C_point,
+         Geom::NT_stdfloat, Geom::C_point,
          InternalName::get_texcoord(), 3, 
-         Geom::NT_float32, Geom::C_texcoord);
+         Geom::NT_stdfloat, Geom::C_texcoord);
       format = GeomVertexFormat::register_format(v3t3);
     } else {
       // Otherwise, we only need a 2-d texture coordinate, and we do
@@ -802,22 +802,22 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
 
       for (int yi = y_begin; yi < y_end; ++yi) {
         for (int xi = x_begin; xi < x_end; ++xi) {
-          const LPoint3f &point = get_point(xi, yi);
-          LPoint2f uv(float(xi) / float(_x_size - 1),
-                      float(yi) / float(_y_size - 1));
+          const LPoint3 &point = get_point(xi, yi);
+          LPoint2 uv(PN_stdfloat(xi) / PN_stdfloat(_x_size - 1),
+                      PN_stdfloat(yi) / PN_stdfloat(_y_size - 1));
 
           if (_vis_inverse) {
-            vertex.add_data2f(uv);
-            texcoord.add_data3f(point);
+            vertex.add_data2(uv);
+            texcoord.add_data3(point);
           } else if (_vis_2d) {
-            vertex.add_data2f(point[0], point[1]);
-            texcoord.add_data2f(uv);
+            vertex.add_data2(point[0], point[1]);
+            texcoord.add_data2(uv);
           } else {
-            vertex.add_data3f(point);
-            texcoord.add_data2f(uv);
+            vertex.add_data3(point);
+            texcoord.add_data2(uv);
             
             // Calculate the normal based on two neighboring vertices.
-            LPoint3f v[3];
+            LPoint3 v[3];
             v[0] = get_point(xi, yi);
             if (xi + 1 < _x_size) {
               v[1] = get_point(xi + 1, yi);
@@ -833,10 +833,10 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
               v[0] = get_point(xi, yi - 1);
             }
         
-            LVector3f n = LVector3f::zero();
+            LVector3 n = LVector3::zero();
             for (int i = 0; i < 3; ++i) {
-              const LPoint3f &v0 = v[i];
-              const LPoint3f &v1 = v[(i + 1) % 3];
+              const LPoint3 &v0 = v[i];
+              const LPoint3 &v1 = v[(i + 1) % 3];
               n[0] += v0[1] * v1[2] - v0[2] * v1[1];
               n[1] += v0[2] * v1[0] - v0[0] * v1[2];
               n[2] += v0[0] * v1[1] - v0[1] * v1[0];
@@ -845,7 +845,7 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
             if (inverted) {
               n = -n;
             }
-            normal.add_data3f(n);
+            normal.add_data3(n);
           }
         }
       }
@@ -859,10 +859,10 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
         for (int xi = x_begin; xi < x_end - 1; ++xi) {
 
           if (_zero_special) {
-            if (get_point(xi, yi) == LPoint3f::zero() ||
-                get_point(xi, yi + 1) == LPoint3f::zero() ||
-                get_point(xi + 1, yi + 1) == LPoint3f::zero() ||
-                get_point(xi + 1, yi) == LPoint3f::zero()) {
+            if (get_point(xi, yi) == LPoint3::zero() ||
+                get_point(xi, yi + 1) == LPoint3::zero() ||
+                get_point(xi + 1, yi + 1) == LPoint3::zero() ||
+                get_point(xi + 1, yi) == LPoint3::zero()) {
               continue;
             }
           }
@@ -908,7 +908,7 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
 //               in UV space, in the range 0..1.
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
-compute_sample_point(LPoint3f &result,
+compute_sample_point(LPoint3 &result,
                      double x, double y, double sample_radius) const {
   x *= _x_size;
   y *= _y_size;
@@ -928,9 +928,9 @@ compute_sample_point(LPoint3f &result,
 //               included point.
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
-box_filter_region(LPoint3f &result,
+box_filter_region(LPoint3 &result,
                   double x0, double y0, double x1, double y1) const {
-  result = LPoint3f::zero();
+  result = LPoint3::zero();
   double coverage = 0.0;
 
   assert(y0 >= 0.0 && y1 >= 0.0);
@@ -966,7 +966,7 @@ box_filter_region(LPoint3f &result,
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
-box_filter_line(LPoint3f &result, double &coverage,
+box_filter_line(LPoint3 &result, double &coverage,
                 double x0, int y, double x1, double y_contrib) const {
   int x = (int)x0;
   // Get the first (partial) xel
@@ -995,10 +995,10 @@ box_filter_line(LPoint3f &result, double &coverage,
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
-box_filter_point(LPoint3f &result, double &coverage,
+box_filter_point(LPoint3 &result, double &coverage,
                  int x, int y, double x_contrib, double y_contrib) const {
-  const LPoint3f &point = get_point(x, y);
-  if (_zero_special && point == LPoint3f::zero()) {
+  const LPoint3 &point = get_point(x, y);
+  if (_zero_special && point == LPoint3::zero()) {
     return;
   }
 

@@ -44,7 +44,7 @@ public:
     INLINE bool operator < (const AnimRecord &other) const;
 
     string _basename;
-    float _base_frame_rate;
+    PN_stdfloat _base_frame_rate;
     int _num_frames;
   };
 
@@ -59,12 +59,12 @@ PUBLISHED:
   int find_anim(const string &basename) const;
 
   INLINE string get_basename(int n) const;
-  INLINE float get_base_frame_rate(int n) const;
+  INLINE PN_stdfloat get_base_frame_rate(int n) const;
   INLINE int get_num_frames(int n) const;
 
   void clear_anims();
   void remove_anim(int n);
-  void add_anim(const string &basename, float base_frame_rate, int num_frames);
+  void add_anim(const string &basename, PN_stdfloat base_frame_rate, int num_frames);
   void add_anims_from(const AnimPreloadTable *other);
 
   virtual void output(ostream &out) const;

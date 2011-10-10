@@ -51,7 +51,7 @@ MayaBlendDesc::
 //               affected vertices.
 ////////////////////////////////////////////////////////////////////
 void MayaBlendDesc::
-set_slider(float value) {
+set_slider(PN_stdfloat value) {
   MStatus status = _deformer.setWeight(_weight_index, value);
   if (!status) {
     mayaegg_cat.warning()
@@ -65,7 +65,7 @@ set_slider(float value) {
 //  Description: Returns the current position of the Maya slider
 //               associated with this blend shape.
 ////////////////////////////////////////////////////////////////////
-float MayaBlendDesc::
+PN_stdfloat MayaBlendDesc::
 get_slider() const {
   return _deformer.weight(_weight_index);
 }

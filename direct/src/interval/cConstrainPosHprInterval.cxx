@@ -34,8 +34,8 @@ TypeHandle CConstrainPosHprInterval::_type_handle;
 CConstrainPosHprInterval::
 CConstrainPosHprInterval(const string &name, double duration,
                          const NodePath &node, const NodePath &target,
-                         bool wrt, const LVecBase3f posOffset,
-                         const LVecBase3f hprOffset) :
+                         bool wrt, const LVecBase3 posOffset,
+                         const LVecBase3 hprOffset) :
   CConstraintInterval(name, duration),
   _node(node),
   _target(target),

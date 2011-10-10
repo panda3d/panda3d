@@ -655,18 +655,18 @@ get_num_colors() const {
 //               given color index.  Each component will be in the
 //               range [0, 1].
 ////////////////////////////////////////////////////////////////////
-Colorf FltHeader::
+LColor FltHeader::
 get_color(int color_index) const {
   nassertr(color_index >= 0 && color_index < get_num_colors(),
-           Colorf(0.0, 0.0, 0.0, 0.0));
+           LColor(0.0, 0.0, 0.0, 0.0));
   int num_color_shades = get_num_color_shades();
 
   int index = (color_index / num_color_shades);
   int level = (color_index % num_color_shades);
   nassertr(index >= 0 && index < (int)_colors.size(),
-           Colorf(0.0, 0.0, 0.0, 0.0));
+           LColor(0.0, 0.0, 0.0, 0.0));
 
-  Colorf color = _colors[index].get_color();
+  LColor color = _colors[index].get_color();
   return color * ((double)level / (double)(num_color_shades - 1));
 }
 
@@ -677,18 +677,18 @@ get_color(int color_index) const {
 //               the given color index, ignoring the alpha component.
 //               Each component will be in the range [0, 1].
 ////////////////////////////////////////////////////////////////////
-RGBColorf FltHeader::
+LRGBColor FltHeader::
 get_rgb(int color_index) const {
   nassertr(color_index >= 0 && color_index < get_num_colors(),
-           RGBColorf(0.0, 0.0, 0.0));
+           LRGBColor(0.0, 0.0, 0.0));
   int num_color_shades = get_num_color_shades();
 
   int index = (color_index / num_color_shades);
   int level = (color_index % num_color_shades);
   nassertr(index >= 0 && index < (int)_colors.size(),
-           RGBColorf(0.0, 0.0, 0.0));
+           LRGBColor(0.0, 0.0, 0.0));
 
-  RGBColorf color = _colors[index].get_rgb();
+  LRGBColor color = _colors[index].get_rgb();
   return color * ((double)level / (double)(num_color_shades - 1));
 }
 
@@ -727,7 +727,7 @@ get_color_name(int color_index) const {
 //               including alpha.
 ////////////////////////////////////////////////////////////////////
 int FltHeader::
-get_closest_color(Colorf color) const {
+get_closest_color(LColor color) const {
   // Since the colortable stores the brightest colors, with
   // num_color_shades scaled versions of each color implicitly
   // available, we really only care about the relative brightnesses of
@@ -762,13 +762,13 @@ get_closest_color(Colorf color) const {
   }
 
   // Now search for the best match.
-  float best_dist = 5.0;  // Greater than 4.
+  PN_stdfloat best_dist = 5.0;  // Greater than 4.
   int best_i = -1;
 
   int num_color_entries = get_num_color_entries();
   for (int i = 0; i < num_color_entries; i++) {
-    Colorf consider = _colors[i].get_color();
-    float dist2 = dot(consider - color, consider - color);
+    LColor consider = _colors[i].get_color();
+    PN_stdfloat dist2 = dot(consider - color, consider - color);
     nassertr(dist2 < 5.0, 0);
 
     if (dist2 < best_dist) {
@@ -792,7 +792,7 @@ get_closest_color(Colorf color) const {
 //               ignoring alpha.
 ////////////////////////////////////////////////////////////////////
 int FltHeader::
-get_closest_rgb(RGBColorf color) const {
+get_closest_rgb(LRGBColor color) const {
   // Since the colortable stores the brightest colors, with
   // num_color_shades scaled versions of each color implicitly
   // available, we really only care about the relative brightnesses of
@@ -823,13 +823,13 @@ get_closest_rgb(RGBColorf color) const {
   }
 
   // Now search for the best match.
-  float best_dist = 5.0;  // Greater than 4.
+  PN_stdfloat best_dist = 5.0;  // Greater than 4.
   int best_i = -1;
 
   int num_color_entries = get_num_color_entries();
   for (int i = 0; i < num_color_entries; i++) {
-    RGBColorf consider = _colors[i].get_rgb();
-    float dist2 = dot(consider - color, consider - color);
+    LRGBColor consider = _colors[i].get_rgb();
+    PN_stdfloat dist2 = dot(consider - color, consider - color);
     nassertr(dist2 < 5.0, 0);
 
     if (dist2 < best_dist) {
@@ -874,12 +874,12 @@ get_num_color_shades() const {
 //     Function: FltHeader::get_color
 //       Access: Public
 //  Description: Decodes a MultiGen color, as stored on a face or
-//               vertex, into an actual four-component Colorf.
+//               vertex, into an actual four-component LColor.
 //               Normally you need not call this directly; there are
 //               color accessors defined on faces and vertices that do
 //               this.
 ////////////////////////////////////////////////////////////////////
-Colorf FltHeader::
+LColor FltHeader::
 get_color(int color_index, bool use_packed_color,
           const FltPackedColor &packed_color,
           int transparency) {
@@ -887,7 +887,7 @@ get_color(int color_index, bool use_packed_color,
     return get_color(color_index);
   }
 
-  Colorf color;
+  LColor color;
   color[0] = packed_color._r / 255.0;
   color[1] = packed_color._g / 255.0;
   color[2] = packed_color._b / 255.0;
@@ -901,19 +901,19 @@ get_color(int color_index, bool use_packed_color,
 //     Function: FltHeader::get_color
 //       Access: Public
 //  Description: Decodes a MultiGen color, as stored on a face or
-//               vertex, into an actual three-component RGBColorf.
+//               vertex, into an actual three-component LRGBColor.
 //               Normally you need not call this directly; there are
 //               color accessors defined on faces and vertices that do
 //               this.
 ////////////////////////////////////////////////////////////////////
-RGBColorf FltHeader::
+LRGBColor FltHeader::
 get_rgb(int color_index, bool use_packed_color,
         const FltPackedColor &packed_color) {
   if (!use_packed_color) {
     return get_rgb(color_index);
   }
 
-  RGBColorf color;
+  LRGBColor color;
   color[0] = packed_color._r / 255.0;
   color[1] = packed_color._g / 255.0;
   color[2] = packed_color._b / 255.0;

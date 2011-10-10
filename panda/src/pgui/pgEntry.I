@@ -161,7 +161,7 @@ get_cursor_position() const {
 //  Description: Returns the node position x of the cursor
 ////////////////////////////////////////////////////////////////////
 
-INLINE float PGEntry:: 
+INLINE PN_stdfloat PGEntry:: 
 get_cursor_X() const {
   LightReMutexHolder holder(_lock);
   return _cursor_def.get_x();
@@ -173,7 +173,7 @@ get_cursor_X() const {
 //  Description: Returns the node position y of the cursor
 ////////////////////////////////////////////////////////////////////
 
-INLINE float PGEntry:: 
+INLINE PN_stdfloat PGEntry:: 
 get_cursor_Y() const {
   LightReMutexHolder holder(_lock);
   return _cursor_def.get_y();
@@ -225,7 +225,7 @@ get_max_chars() const {
 //               is essentially _max_width * _num_lines).
 ////////////////////////////////////////////////////////////////////
 INLINE void PGEntry:: 
-set_max_width(float max_width) {
+set_max_width(PN_stdfloat max_width) {
   LightReMutexHolder holder(_lock);
   _max_width = max_width;
   _text_geom_stale = true;
@@ -238,7 +238,7 @@ set_max_width(float max_width) {
 //               that may be typed into the entry, or 0 if there is no
 //               limit.  See set_max_width().
 ////////////////////////////////////////////////////////////////////
-INLINE float PGEntry:: 
+INLINE PN_stdfloat PGEntry:: 
 get_max_width() const {
   LightReMutexHolder holder(_lock);
   return _max_width;
@@ -281,7 +281,7 @@ get_num_lines() const {
 //               steady.
 ////////////////////////////////////////////////////////////////////
 INLINE void PGEntry:: 
-set_blink_rate(float blink_rate) {
+set_blink_rate(PN_stdfloat blink_rate) {
   LightReMutexHolder holder(_lock);
   _blink_rate = blink_rate;
 }
@@ -292,7 +292,7 @@ set_blink_rate(float blink_rate) {
 //  Description: Returns the number of times per second the cursor
 //               will blink, or 0 if the cursor is not to blink.
 ////////////////////////////////////////////////////////////////////
-INLINE float PGEntry:: 
+INLINE PN_stdfloat PGEntry:: 
 get_blink_rate() const {
   LightReMutexHolder holder(_lock);
   return _blink_rate;

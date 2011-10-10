@@ -111,18 +111,18 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
   DCAST_INTO_R(sphere, entry.get_from(), 0);
 
-  const LMatrix4f &wrt_mat = entry.get_wrt_mat();
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
-  LPoint3f from_center = sphere->get_center() * wrt_mat;
-  LVector3f from_radius_v =
-    LVector3f(sphere->get_radius(), 0.0f, 0.0f) * wrt_mat;
-  float from_radius = length(from_radius_v);
+  LPoint3 from_center = sphere->get_center() * wrt_mat;
+  LVector3 from_radius_v =
+    LVector3(sphere->get_radius(), 0.0f, 0.0f) * wrt_mat;
+  PN_stdfloat from_radius = length(from_radius_v);
 
-  LPoint3f into_center = get_center();
-  float into_radius = get_radius();
+  LPoint3 into_center = get_center();
+  PN_stdfloat into_radius = get_radius();
 
-  LVector3f vec = from_center - into_center;
-  float dist2 = dot(vec, vec);
+  LVector3 vec = from_center - into_center;
+  PN_stdfloat dist2 = dot(vec, vec);
   if (dist2 < (into_radius - from_radius) * (into_radius - from_radius)) {
     // No intersection--the sphere is within the hollow.
     return NULL;
@@ -135,8 +135,8 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LVector3f surface_normal;
-  float vec_length = vec.length();
+  LVector3 surface_normal;
+  PN_stdfloat vec_length = vec.length();
   if (IS_NEARLY_ZERO(vec_length)) {
     // If we don't have a collision normal (e.g. the centers are
     // exactly coincident), then make up an arbitrary normal--any one
@@ -146,7 +146,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     surface_normal = vec / -vec_length;
   }
 
-  LVector3f normal = (has_effective_normal() && sphere->get_respect_effective_normal()) ? get_effective_normal() : surface_normal;
+  LVector3 normal = (has_effective_normal() && sphere->get_respect_effective_normal()) ? get_effective_normal() : surface_normal;
 
   new_entry->set_surface_normal(normal);
   new_entry->set_surface_point(into_center - surface_normal * into_radius);
@@ -165,10 +165,10 @@ test_intersection_from_line(const CollisionEntry &entry) const {
   const CollisionLine *line;
   DCAST_INTO_R(line, entry.get_from(), 0);
 
-  const LMatrix4f &wrt_mat = entry.get_wrt_mat();
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
-  LPoint3f from_origin = line->get_origin() * wrt_mat;
-  LVector3f from_direction = line->get_direction() * wrt_mat;
+  LPoint3 from_origin = line->get_origin() * wrt_mat;
+  LVector3 from_direction = line->get_direction() * wrt_mat;
 
   double t1, t2;
   if (!intersects_line(t1, t2, from_origin, from_direction, 0.0f)) {
@@ -184,13 +184,13 @@ test_intersection_from_line(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LPoint3f into_intersection_point = from_origin + t2 * from_direction;
+  LPoint3 into_intersection_point = from_origin + t2 * from_direction;
   new_entry->set_surface_point(into_intersection_point);
 
   if (has_effective_normal() && line->get_respect_effective_normal()) {
     new_entry->set_surface_normal(get_effective_normal());
   } else {
-    LVector3f normal = into_intersection_point - get_center();
+    LVector3 normal = into_intersection_point - get_center();
     normal.normalize();
     new_entry->set_surface_normal(-normal);
   }
@@ -208,10 +208,10 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
   DCAST_INTO_R(ray, entry.get_from(), 0);
 
-  const LMatrix4f &wrt_mat = entry.get_wrt_mat();
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
-  LPoint3f from_origin = ray->get_origin() * wrt_mat;
-  LVector3f from_direction = ray->get_direction() * wrt_mat;
+  LPoint3 from_origin = ray->get_origin() * wrt_mat;
+  LVector3 from_direction = ray->get_direction() * wrt_mat;
 
   double t1, t2;
   if (!intersects_line(t1, t2, from_origin, from_direction, 0.0f)) {
@@ -229,14 +229,14 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LPoint3f into_intersection_point;
+  LPoint3 into_intersection_point;
   into_intersection_point = from_origin + t2 * from_direction;
   new_entry->set_surface_point(into_intersection_point);
 
   if (has_effective_normal() && ray->get_respect_effective_normal()) {
     new_entry->set_surface_normal(get_effective_normal());
   } else {
-    LVector3f normal = into_intersection_point - get_center();
+    LVector3 normal = into_intersection_point - get_center();
     normal.normalize();
     new_entry->set_surface_normal(-normal);
   }
@@ -254,11 +254,11 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   const CollisionSegment *segment;
   DCAST_INTO_R(segment, entry.get_from(), 0);
 
-  const LMatrix4f &wrt_mat = entry.get_wrt_mat();
+  const LMatrix4 &wrt_mat = entry.get_wrt_mat();
 
-  LPoint3f from_a = segment->get_point_a() * wrt_mat;
-  LPoint3f from_b = segment->get_point_b() * wrt_mat;
-  LVector3f from_direction = from_b - from_a;
+  LPoint3 from_a = segment->get_point_a() * wrt_mat;
+  LPoint3 from_b = segment->get_point_b() * wrt_mat;
+  LVector3 from_direction = from_b - from_a;
 
   double t1, t2;
   if (!intersects_line(t1, t2, from_a, from_direction, 0.0f)) {
@@ -298,13 +298,13 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LPoint3f into_intersection_point = from_a + t * from_direction;
+  LPoint3 into_intersection_point = from_a + t * from_direction;
   new_entry->set_surface_point(into_intersection_point);
 
   if (has_effective_normal() && segment->get_respect_effective_normal()) {
     new_entry->set_surface_normal(get_effective_normal());
   } else {
-    LVector3f normal = into_intersection_point - get_center();
+    LVector3 normal = into_intersection_point - get_center();
     normal.normalize();
     new_entry->set_surface_normal(-normal);
   }
@@ -335,15 +335,15 @@ fill_viz_geom() {
   
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
   for (int sl = 0; sl < num_slices; ++sl) {
-    float longitude0 = (float)sl / (float)num_slices;
-    float longitude1 = (float)(sl + 1) / (float)num_slices;
-    vertex.add_data3f(compute_point(0.0, longitude0));
+    PN_stdfloat longitude0 = (PN_stdfloat)sl / (PN_stdfloat)num_slices;
+    PN_stdfloat longitude1 = (PN_stdfloat)(sl + 1) / (PN_stdfloat)num_slices;
+    vertex.add_data3(compute_point(0.0, longitude0));
     for (int st = 1; st < num_stacks; ++st) {
-      float latitude = (float)st / (float)num_stacks;
-      vertex.add_data3f(compute_point(latitude, longitude1));
-      vertex.add_data3f(compute_point(latitude, longitude0));
+      PN_stdfloat latitude = (PN_stdfloat)st / (PN_stdfloat)num_stacks;
+      vertex.add_data3(compute_point(latitude, longitude1));
+      vertex.add_data3(compute_point(latitude, longitude0));
     }
-    vertex.add_data3f(compute_point(1.0, longitude0));
+    vertex.add_data3(compute_point(1.0, longitude0));
     
     strip->add_next_vertices(num_stacks * 2);
     strip->close_primitive();

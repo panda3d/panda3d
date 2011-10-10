@@ -91,7 +91,7 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
     _data.get_orient().extract_to_matrix(_mat);
     if (_tracker_cs != _graph_cs) {
       // Convert the rotation for passing down the data graph.
-      _mat = _mat * LMatrix4f::convert_mat(_tracker_cs, _graph_cs);
+      _mat = _mat * LMatrix4::convert_mat(_tracker_cs, _graph_cs);
     }
     _mat.set_row(3, _data.get_pos());
 

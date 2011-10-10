@@ -86,10 +86,10 @@ fill_viz_geom() {
   
   for (int i = 0; i < num_points; i++) {
     double t = ((double)i / (double)num_points - 0.5) * 2.0;
-    vertex.add_data3f(get_origin() + t * scale * get_direction());
+    vertex.add_data3(get_origin() + t * scale * get_direction());
     
-    color.add_data4f(Colorf(1.0f, 1.0f, 1.0f, 1.0f) +
-                     fabs(t) * Colorf(0.0f, 0.0f, 0.0f, -1.0f));
+    color.add_data4(LColor(1.0f, 1.0f, 1.0f, 1.0f) +
+                    fabs(t) * LColor(0.0f, 0.0f, 0.0f, -1.0f));
   }
   
   PT(GeomLinestrips) line = new GeomLinestrips(Geom::UH_static);

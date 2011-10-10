@@ -71,7 +71,7 @@ remove_particlesystem(ParticleSystem *ps) {
 //               stepping applies only to rendering.
 ////////////////////////////////////////////////////////////////////
 void ParticleSystemManager::
-do_particles(float dt) {
+do_particles(PN_stdfloat dt) {
   //  cout << "ParticlesystemManager::doparticles entering." << endl;
   PStatTimer t1(_do_particles_collector);
 
@@ -102,7 +102,7 @@ do_particles(float dt) {
 
       // Handle age:
       if (cur_ps->get_system_grows_older_flag() == true) {
-        float age = cur_ps->get_system_age() + dt;
+        PN_stdfloat age = cur_ps->get_system_age() + dt;
         cur_ps->set_system_age(age);
 
         // handle death
@@ -137,12 +137,12 @@ do_particles(float dt) {
 //               updates could be applied before calling the final render.
 ////////////////////////////////////////////////////////////////////
 void ParticleSystemManager::
-do_particles(float dt, ParticleSystem *ps, bool do_render) {
+do_particles(PN_stdfloat dt, ParticleSystem *ps, bool do_render) {
   if (ps->get_active_system_flag() == true) {
     ps->update(dt);
     // Handle age:
     if (ps->get_system_grows_older_flag() == true) {
-      float age = ps->get_system_age() + dt;
+      PN_stdfloat age = ps->get_system_age() + dt;
       ps->set_system_age(age);
     }
     

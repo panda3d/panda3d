@@ -292,7 +292,7 @@ build_joint_hierarchy(EggNode *egg_node, PartGroup *part, int index) {
         matd = LMatrix4d::ident_mat();
       }
 
-      LMatrix4f matf = LCAST(float, matd);
+      LMatrix4 matf = LCAST(PN_stdfloat, matd);
 
       CharacterJoint *joint =
         new CharacterJoint(_character_node, _character_node->get_bundle(0),
@@ -305,7 +305,7 @@ build_joint_hierarchy(EggNode *egg_node, PartGroup *part, int index) {
       // <DefaultPose> entry.
       if (egg_group->get_default_pose().has_transform()) {
         matd = egg_group->get_default_pose().get_transform3d();
-        matf = LCAST(float, matd);
+        matf = LCAST(PN_stdfloat, matd);
         joint->_default_value = matf;
         joint->_value = matf;
       }

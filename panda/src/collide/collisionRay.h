@@ -32,11 +32,11 @@ class LensNode;
 class EXPCL_PANDA_COLLIDE CollisionRay : public CollisionSolid {
 PUBLISHED:
   INLINE CollisionRay();
-  INLINE CollisionRay(const LPoint3f &origin, const LVector3f &direction);
-  INLINE CollisionRay(float ox, float oy, float oz,
-                      float dx, float dy, float dz);
+  INLINE CollisionRay(const LPoint3 &origin, const LVector3 &direction);
+  INLINE CollisionRay(PN_stdfloat ox, PN_stdfloat oy, PN_stdfloat oz,
+                      PN_stdfloat dx, PN_stdfloat dy, PN_stdfloat dz);
 
-  virtual LPoint3f get_collision_origin() const;
+  virtual LPoint3 get_collision_origin() const;
 
 public:
   INLINE CollisionRay(const CollisionRay &copy);
@@ -45,21 +45,21 @@ public:
   virtual PT(CollisionEntry)
   test_intersection(const CollisionEntry &entry) const;
 
-  virtual void xform(const LMatrix4f &mat);
+  virtual void xform(const LMatrix4 &mat);
 
   virtual void output(ostream &out) const;
 
 PUBLISHED:
-  INLINE void set_origin(const LPoint3f &origin);
-  INLINE void set_origin(float x, float y, float z);
-  INLINE const LPoint3f &get_origin() const;
+  INLINE void set_origin(const LPoint3 &origin);
+  INLINE void set_origin(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+  INLINE const LPoint3 &get_origin() const;
 
-  INLINE void set_direction(const LVector3f &direction);
-  INLINE void set_direction(float x, float y, float z);
-  INLINE const LVector3f &get_direction() const;
+  INLINE void set_direction(const LVector3 &direction);
+  INLINE void set_direction(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+  INLINE const LVector3 &get_direction() const;
 
-  bool set_from_lens(LensNode *camera, const LPoint2f &point);
-  INLINE bool set_from_lens(LensNode *camera, float px, float py);
+  bool set_from_lens(LensNode *camera, const LPoint2 &point);
+  INLINE bool set_from_lens(LensNode *camera, PN_stdfloat px, PN_stdfloat py);
 
 protected:
   virtual PT(BoundingVolume) compute_internal_bounds() const;
@@ -68,8 +68,8 @@ protected:
   virtual void fill_viz_geom();
 
 private:
-  LPoint3f _origin;
-  LVector3f _direction;
+  LPoint3 _origin;
+  LVector3 _direction;
 
 public:
   static void register_with_read_factory();

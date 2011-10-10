@@ -43,6 +43,8 @@ public:
   void issue_vertex();
 
   class ComponentSender;
+
+#ifndef STDFLOAT_DOUBLE
   typedef void APIENTRY Func1f(GLfloat a);
   typedef void APIENTRY Func2f(GLfloat a, GLfloat b);
   typedef void APIENTRY Func3f(GLfloat a, GLfloat b, GLfloat c);
@@ -52,15 +54,26 @@ public:
   typedef void APIENTRY TexcoordFunc3f(GLenum texture, GLfloat a, GLfloat b, GLfloat c);
   typedef void APIENTRY TexcoordFunc4f(GLenum texture, GLfloat a, GLfloat b, GLfloat c, GLfloat d);
   typedef void APIENTRY VectorFunc(GLint, const GLfloat *);
+#else  // STDFLOAT_DOUBLE
+  typedef void APIENTRY Func1f(GLdouble a);
+  typedef void APIENTRY Func2f(GLdouble a, GLdouble b);
+  typedef void APIENTRY Func3f(GLdouble a, GLdouble b, GLdouble c);
+  typedef void APIENTRY Func4f(GLdouble a, GLdouble b, GLdouble c, GLdouble d);
+  typedef void APIENTRY TexcoordFunc1f(GLenum texture, GLdouble a);
+  typedef void APIENTRY TexcoordFunc2f(GLenum texture, GLdouble a, GLdouble b);
+  typedef void APIENTRY TexcoordFunc3f(GLenum texture, GLdouble a, GLdouble b, GLdouble c);
+  typedef void APIENTRY TexcoordFunc4f(GLenum texture, GLdouble a, GLdouble b, GLdouble c, GLdouble d);
+  typedef void APIENTRY VectorFunc(GLint, const GLdouble *);
+#endif  // STDFLOAT_DOUBLE
   typedef void APIENTRY VectorUintFunc(GLint, const GLuint *);
 
   bool add_column(const GeomVertexDataPipelineReader *data_reader, 
                   const InternalName *name, Func1f *func1f, 
-                  Func2f *func2f, Func3f *func3f, Func4f *func4f);
+                  Func2f *func2, Func3f *func3, Func4f *func4);
   bool add_texcoord_column(const GeomVertexDataPipelineReader *data_reader, 
                            const InternalName *name, int stage_index,
-                           TexcoordFunc1f *func1f, TexcoordFunc2f *func2f, 
-                           TexcoordFunc3f *func3f, TexcoordFunc4f *func4f);
+                           TexcoordFunc1f *func1f, TexcoordFunc2f *func2, 
+                           TexcoordFunc3f *func3, TexcoordFunc4f *func4);
 
   bool add_vector_column(const GeomVertexDataPipelineReader *data_reader, 
                          const InternalName *name, VectorFunc *func);
@@ -193,25 +206,25 @@ public:
     VectorUintFunc *_func;
   };
 
-  class VectorSender2ui : public ComponentSender {
+  class VectorSender2fui : public ComponentSender {
   public:
-    INLINE VectorSender2ui(GeomVertexReader *reader, VectorUintFunc *func);
+    INLINE VectorSender2fui(GeomVertexReader *reader, VectorUintFunc *func);
     virtual void issue_vertex();
   private:
     VectorUintFunc *_func;
   };
 
-  class VectorSender3ui : public ComponentSender {
+  class VectorSender3fui : public ComponentSender {
   public:
-    INLINE VectorSender3ui(GeomVertexReader *reader, VectorUintFunc *func);
+    INLINE VectorSender3fui(GeomVertexReader *reader, VectorUintFunc *func);
     virtual void issue_vertex();
   private:
     VectorUintFunc *_func;
   };
 
-  class VectorSender4ui : public ComponentSender {
+  class VectorSender4fui : public ComponentSender {
   public:
-    INLINE VectorSender4ui(GeomVertexReader *reader, VectorUintFunc *func);
+    INLINE VectorSender4fui(GeomVertexReader *reader, VectorUintFunc *func);
     virtual void issue_vertex();
   private:
     VectorUintFunc *_func;

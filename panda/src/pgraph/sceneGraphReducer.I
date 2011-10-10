@@ -62,7 +62,7 @@ get_gsg() const {
 //               CS_other were set).
 ////////////////////////////////////////////////////////////////////
 INLINE void SceneGraphReducer::
-set_combine_radius(float combine_radius) {
+set_combine_radius(PN_stdfloat combine_radius) {
   _combine_radius = combine_radius;
 }
 
@@ -72,7 +72,7 @@ set_combine_radius(float combine_radius) {
 //  Description: Returns the radius that is used in conjunction with
 //               CS_within_radius.  See set_combine_radius().
 ////////////////////////////////////////////////////////////////////
-INLINE float SceneGraphReducer::
+INLINE PN_stdfloat SceneGraphReducer::
 get_combine_radius() const {
   return _combine_radius;
 }

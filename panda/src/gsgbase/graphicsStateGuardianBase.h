@@ -173,7 +173,7 @@ public:
   // in eye coordinates, from the camera plane.  This is a virtual
   // function because different GSG's may define the eye coordinate
   // space differently.
-  virtual float compute_distance_to(const LPoint3f &point) const=0;
+  virtual PN_stdfloat compute_distance_to(const LPoint3 &point) const=0;
 
   // These are used to implement decals.  If depth_offset_decals()
   // returns true, none of the remaining functions will be called,

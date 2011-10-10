@@ -22,8 +22,17 @@
 #include "pandabase.h"
 #include "config_glgsg.h"
 
-#define GLP(name) gl##name
-#define CLP(name) GL##name
+#define GLP(name) gl ## name
+
+#ifndef STDFLOAT_DOUBLE
+#define GLPf(name) gl ## name ## f
+#define GLPfv(name) gl ## name ## fv
+#else  // STDFLOAT_DOUBLE
+#define GLPf(name) gl ## name ## d
+#define GLPfv(name) gl ## name ## dv
+#endif  // STDFLOAT_DOUBLE
+
+#define CLP(name) GL ## name
 #define GLPREFIX_QUOTED "gl"
 #define CLASSPREFIX_QUOTED "GL"
 #define GLSYSTEM_NAME "OpenGL"

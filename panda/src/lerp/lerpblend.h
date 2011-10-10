@@ -22,7 +22,7 @@ class EXPCL_PANDA_LERP LerpBlendType : public TypedReferenceCount {
 PUBLISHED:
   LerpBlendType() {}
   virtual ~LerpBlendType();
-  virtual float operator()(float) = 0;
+  virtual PN_stdfloat operator()(PN_stdfloat) = 0;
 
 public:
   LerpBlendType(const LerpBlendType&);
@@ -52,7 +52,7 @@ class EXPCL_PANDA_LERP EaseInBlendType : public LerpBlendType {
 PUBLISHED:
   EaseInBlendType() {}
   virtual ~EaseInBlendType();
-  virtual float operator()(float);
+  virtual PN_stdfloat operator()(PN_stdfloat);
 
 public:
   EaseInBlendType(const EaseInBlendType&);
@@ -82,7 +82,7 @@ class EXPCL_PANDA_LERP EaseOutBlendType : public LerpBlendType {
 PUBLISHED:
   EaseOutBlendType() {}
   virtual ~EaseOutBlendType();
-  virtual float operator()(float);
+  virtual PN_stdfloat operator()(PN_stdfloat);
 
 public:
   EaseOutBlendType(const EaseOutBlendType&);
@@ -112,7 +112,7 @@ class EXPCL_PANDA_LERP EaseInOutBlendType : public LerpBlendType {
 PUBLISHED:
   EaseInOutBlendType() {}
   virtual ~EaseInOutBlendType();
-  virtual float operator()(float);
+  virtual PN_stdfloat operator()(PN_stdfloat);
 public:
   EaseInOutBlendType(const EaseInOutBlendType&);
   EaseInOutBlendType& operator=(const EaseInOutBlendType&);
@@ -141,7 +141,7 @@ class EXPCL_PANDA_LERP NoBlendType : public LerpBlendType {
 PUBLISHED:
   NoBlendType() {}
   virtual ~NoBlendType();
-  virtual float operator()(float);
+  virtual PN_stdfloat operator()(PN_stdfloat);
 public:
   NoBlendType(const NoBlendType&);
   NoBlendType& operator=(const NoBlendType&);

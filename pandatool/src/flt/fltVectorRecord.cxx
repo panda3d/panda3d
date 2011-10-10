@@ -33,7 +33,7 @@ FltVectorRecord(FltHeader *header) : FltRecord(header) {
 //       Access: Public
 //  Description: Returns the vector value.
 ////////////////////////////////////////////////////////////////////
-const LVector3f &FltVectorRecord::
+const LVector3 &FltVectorRecord::
 get_vector() const {
   return _vector;
 }

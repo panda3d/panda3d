@@ -130,7 +130,7 @@ safe_to_combine() const {
 //               indicated matrix.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderEffect) RenderEffect::
-xform(const LMatrix4f &) const {
+xform(const LMatrix4 &) const {
   return this;
 }
 

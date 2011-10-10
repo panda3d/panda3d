@@ -58,7 +58,7 @@ PUBLISHED:
     S_inactive
   };
 
-  void setup(const string &label, float bevel = 0.1f);
+  void setup(const string &label, PN_stdfloat bevel = 0.1f);
   INLINE void setup(const NodePath &ready);
   INLINE void setup(const NodePath &ready, const NodePath &depressed);
   INLINE void setup(const NodePath &ready, const NodePath &depressed, 

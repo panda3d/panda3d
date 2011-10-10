@@ -75,7 +75,7 @@ private:
 public: // relevant only to legacy mode.
   MayaShaderColorList _color;
   MayaShaderColorDef  _transparency;
-  Colorf get_rgba(size_t idx=0) const;
+  LColor get_rgba(size_t idx=0) const;
   MayaShaderColorDef *get_color_def(size_t idx=0) const;
 };
 

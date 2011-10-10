@@ -39,11 +39,11 @@ PUBLISHED:
   MouseSubregion(const string &name);
   ~MouseSubregion();
 
-  INLINE float get_left() const;
-  INLINE float get_right() const;
-  INLINE float get_bottom() const;
-  INLINE float get_top() const;
-  INLINE void set_dimensions(float l, float r, float b, float t);
+  INLINE PN_stdfloat get_left() const;
+  INLINE PN_stdfloat get_right() const;
+  INLINE PN_stdfloat get_bottom() const;
+  INLINE PN_stdfloat get_top() const;
+  INLINE void set_dimensions(PN_stdfloat l, PN_stdfloat r, PN_stdfloat b, PN_stdfloat t);
 
 protected:
   // Inherited from DataNode
@@ -52,13 +52,13 @@ protected:
                                 DataNodeTransmit &output);
 
 private:
-  float _l;
-  float _r;
-  float _b;
-  float _t;
+  PN_stdfloat _l;
+  PN_stdfloat _r;
+  PN_stdfloat _b;
+  PN_stdfloat _t;
 
-  float _minx, _miny;
-  float _scalex, _scaley;
+  PN_stdfloat _minx, _miny;
+  PN_stdfloat _scalex, _scaley;
 
 private:
   // inputs

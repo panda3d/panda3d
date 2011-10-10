@@ -57,7 +57,7 @@ private:
 
   typedef pmap<int, PT(TextGlyph)> Glyphs;
   Glyphs _glyphs;
-  float _font_height;
+  PN_stdfloat _font_height;
   PT(PandaNode) _font;
 
 public:

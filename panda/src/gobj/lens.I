@@ -29,8 +29,8 @@
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool Lens::
-extrude(const LPoint2f &point2d, LPoint3f &near_point, LPoint3f &far_point) const {
-  return extrude_impl(LPoint3f(point2d[0], point2d[1], 0.0f),
+extrude(const LPoint2 &point2d, LPoint3 &near_point, LPoint3 &far_point) const {
+  return extrude_impl(LPoint3(point2d[0], point2d[1], 0.0f),
                       near_point, far_point);
 }
 
@@ -52,7 +52,7 @@ extrude(const LPoint2f &point2d, LPoint3f &near_point, LPoint3f &far_point) cons
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool Lens::
-extrude(const LPoint3f &point2d, LPoint3f &near_point, LPoint3f &far_point) const {
+extrude(const LPoint3 &point2d, LPoint3 &near_point, LPoint3 &far_point) const {
   return extrude_impl(point2d, near_point, far_point);
 }
 
@@ -75,8 +75,8 @@ extrude(const LPoint3f &point2d, LPoint3f &near_point, LPoint3f &far_point) cons
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool Lens::
-extrude_vec(const LPoint2f &point2d, LVector3f &vec) const {
-  return extrude_vec_impl(LPoint3f(point2d[0], point2d[1], 0.0f), vec);
+extrude_vec(const LPoint2 &point2d, LVector3 &vec) const {
+  return extrude_vec_impl(LPoint3(point2d[0], point2d[1], 0.0f), vec);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -100,7 +100,7 @@ extrude_vec(const LPoint2f &point2d, LVector3f &vec) const {
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool Lens::
-extrude_vec(const LPoint3f &point2d, LVector3f &vec) const {
+extrude_vec(const LPoint3 &point2d, LVector3 &vec) const {
   return extrude_vec_impl(point2d, vec);
 }
 
@@ -119,8 +119,8 @@ extrude_vec(const LPoint3f &point2d, LVector3f &vec) const {
 //               or may not be meaningful).
 ////////////////////////////////////////////////////////////////////
 INLINE bool Lens::
-project(const LPoint3f &point3d, LPoint2f &point2d) const {
-  LPoint3f result;
+project(const LPoint3 &point3d, LPoint2 &point2d) const {
+  LPoint3 result;
   bool okflag = project_impl(point3d, result);
   point2d.set(result[0], result[1]);
   return okflag;
@@ -145,7 +145,7 @@ project(const LPoint3f &point3d, LPoint2f &point2d) const {
 //               or may not be meaningful).
 ////////////////////////////////////////////////////////////////////
 INLINE bool Lens::
-project(const LPoint3f &point3d, LPoint3f &point2d) const {
+project(const LPoint3 &point3d, LPoint3 &point2d) const {
   return project_impl(point3d, point2d);
 }
 
@@ -212,8 +212,8 @@ get_coordinate_system() const {
 //               and aspect ratio of the lens directly.
 ////////////////////////////////////////////////////////////////////
 INLINE void Lens::
-set_film_size(float width, float height) {
-  set_film_size(LVecBase2f(width, height));
+set_film_size(PN_stdfloat width, PN_stdfloat height) {
+  set_film_size(LVecBase2(width, height));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -226,8 +226,8 @@ set_film_size(float width, float height) {
 //               This can be used to establish an off-axis lens.
 ////////////////////////////////////////////////////////////////////
 INLINE void Lens::
-set_film_offset(float x, float y) {
-  set_film_offset(LVecBase2f(x, y));
+set_film_offset(PN_stdfloat x, PN_stdfloat y) {
+  set_film_offset(LVecBase2(x, y));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -240,7 +240,7 @@ set_film_offset(float x, float y) {
 //               This can be used to establish an off-axis lens.
 ////////////////////////////////////////////////////////////////////
 INLINE void Lens::
-set_film_offset(const LVecBase2f &film_offset) {
+set_film_offset(const LVecBase2 &film_offset) {
   _film_offset = film_offset;
   adjust_comp_flags(CF_mat, 0);
   throw_change_event();
@@ -252,7 +252,7 @@ set_film_offset(const LVecBase2f &film_offset) {
 //  Description: Returns the horizontal and vertical offset amounts of
 //               this Lens.  See set_film_offset().
 ////////////////////////////////////////////////////////////////////
-INLINE const LVector2f &Lens::
+INLINE const LVector2 &Lens::
 get_film_offset() const {
   return _film_offset;
 }
@@ -270,8 +270,8 @@ get_film_offset() const {
 //               the field of view has no meaning.
 ////////////////////////////////////////////////////////////////////
 INLINE void Lens::
-set_fov(float hfov, float vfov) {
-  set_fov(LVecBase2f(hfov, vfov));
+set_fov(PN_stdfloat hfov, PN_stdfloat vfov) {
+  set_fov(LVecBase2(hfov, vfov));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -280,7 +280,7 @@ set_fov(float hfov, float vfov) {
 //  Description: Returns the horizontal component of fov only.  See
 //               get_fov().
 ////////////////////////////////////////////////////////////////////
-INLINE float Lens::
+INLINE PN_stdfloat Lens::
 get_hfov() const {
   return get_fov()[0];
 }
@@ -291,7 +291,7 @@ get_hfov() const {
 //  Description: Returns the vertical component of fov only.  See
 //               get_fov().
 ////////////////////////////////////////////////////////////////////
-INLINE float Lens::
+INLINE PN_stdfloat Lens::
 get_vfov() const {
   return get_fov()[1];
 }
@@ -304,7 +304,7 @@ get_vfov() const {
 //               this may not be rendered.
 ////////////////////////////////////////////////////////////////////
 INLINE void Lens::
-set_near(float near_distance) {
+set_near(PN_stdfloat near_distance) {
   _near_distance = near_distance;
   adjust_comp_flags(CF_projection_mat | CF_projection_mat_inv, 0);
   throw_change_event();
@@ -316,7 +316,7 @@ set_near(float near_distance) {
 //  Description: Returns the position of the near plane (or cylinder,
 //               sphere, whatever).
 ////////////////////////////////////////////////////////////////////
-INLINE float Lens::
+INLINE PN_stdfloat Lens::
 get_near() const {
   return _near_distance;
 }
@@ -329,7 +329,7 @@ get_near() const {
 //               this may not be rendered.
 ////////////////////////////////////////////////////////////////////
 INLINE void Lens::
-set_far(float far_distance) {
+set_far(PN_stdfloat far_distance) {
   _far_distance = far_distance;
   adjust_comp_flags(CF_projection_mat | CF_projection_mat_inv, 0);
   throw_change_event();
@@ -341,7 +341,7 @@ set_far(float far_distance) {
 //  Description: Returns the position of the far plane (or cylinder,
 //               sphere, whatever).
 ////////////////////////////////////////////////////////////////////
-INLINE float Lens::
+INLINE PN_stdfloat Lens::
 get_far() const {
   return _far_distance;
 }
@@ -352,7 +352,7 @@ get_far() const {
 //  Description: Simultaneously changes the near and far planes.
 ////////////////////////////////////////////////////////////////////
 INLINE void Lens::
-set_near_far(float near_distance, float far_distance) {
+set_near_far(PN_stdfloat near_distance, PN_stdfloat far_distance) {
   _near_distance = near_distance;
   _far_distance = far_distance;
   adjust_comp_flags(CF_projection_mat | CF_projection_mat_inv, 0);
@@ -370,8 +370,8 @@ set_near_far(float near_distance, float far_distance) {
 //               complete transformation matrix.
 ////////////////////////////////////////////////////////////////////
 INLINE void Lens::
-set_view_hpr(float h, float p, float r) {
-  set_view_hpr(LVecBase3f(h, p, r));
+set_view_hpr(PN_stdfloat h, PN_stdfloat p, PN_stdfloat r) {
+  set_view_hpr(LVecBase3(h, p, r));
 }
 ////////////////////////////////////////////////////////////////////
 //     Function: Lens::set_view_vector
@@ -383,8 +383,8 @@ set_view_hpr(float h, float p, float r) {
 //               See also set_view_hpr().
 ////////////////////////////////////////////////////////////////////
 INLINE void Lens::
-set_view_vector(float x, float y, float z, float i, float j, float k) {
-  set_view_vector(LVector3f(x, y, z), LVector3f(i, j, k));
+set_view_vector(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat i, PN_stdfloat j, PN_stdfloat k) {
+  set_view_vector(LVector3(x, y, z), LVector3(i, j, k));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -393,7 +393,7 @@ set_view_vector(float x, float y, float z, float i, float j, float k) {
 //  Description: Returns the keystone correction specified for the
 //               lens.
 ////////////////////////////////////////////////////////////////////
-INLINE const LVecBase2f &Lens::
+INLINE const LVecBase2 &Lens::
 get_keystone() const {
   return _keystone;
 }

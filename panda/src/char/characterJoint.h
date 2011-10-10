@@ -38,7 +38,7 @@ protected:
 PUBLISHED:
   CharacterJoint(Character *character,
                  PartBundle *root, PartGroup *parent, const string &name,
-                 const LMatrix4f &default_value);
+                 const LMatrix4 &default_value);
   virtual ~CharacterJoint();
 
 public:
@@ -48,7 +48,7 @@ public:
   virtual bool update_internals(PartBundle *root, PartGroup *parent, 
                                 bool self_changed, bool parent_changed, 
                                 Thread *current_thread);
-  virtual void do_xform(const LMatrix4f &mat, const LMatrix4f &inv_mat);
+  virtual void do_xform(const LMatrix4 &mat, const LMatrix4 &inv_mat);
 
 PUBLISHED:
   bool add_net_transform(PandaNode *node);
@@ -63,8 +63,8 @@ PUBLISHED:
   void clear_local_transforms();
   NodePathCollection get_local_transforms();
 
-  void get_transform(LMatrix4f &transform) const;
-  void get_net_transform(LMatrix4f &transform) const;
+  void get_transform(LMatrix4 &transform) const;
+  void get_net_transform(LMatrix4 &transform) const;
 
   Character *get_character() const;
 
@@ -104,8 +104,8 @@ public:
   PT(PandaNode) _geom_node;
 
   // These are filled in as the joint animates.
-  LMatrix4f _net_transform;
-  LMatrix4f _initial_net_transform_inverse;
+  LMatrix4 _net_transform;
+  LMatrix4 _initial_net_transform_inverse;
 
 public:
   virtual TypeHandle get_type() const {

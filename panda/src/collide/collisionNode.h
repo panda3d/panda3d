@@ -41,7 +41,7 @@ public:
   virtual ~CollisionNode();
   virtual PandaNode *make_copy() const;
   virtual bool preserve_name() const;
-  virtual void xform(const LMatrix4f &mat);
+  virtual void xform(const LMatrix4 &mat);
   virtual PandaNode *combine_with(PandaNode *other); 
   virtual CollideMask get_legal_collide_mask() const;
 

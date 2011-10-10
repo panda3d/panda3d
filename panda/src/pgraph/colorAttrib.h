@@ -34,16 +34,16 @@ PUBLISHED:
   };
 
 private:
-  INLINE ColorAttrib(Type type, const Colorf &color);
+  INLINE ColorAttrib(Type type, const LColor &color);
 
 PUBLISHED:
   static CPT(RenderAttrib) make_vertex();
-  static CPT(RenderAttrib) make_flat(const Colorf &color);
+  static CPT(RenderAttrib) make_flat(const LColor &color);
   static CPT(RenderAttrib) make_off();
   static CPT(RenderAttrib) make_default();
 
   INLINE Type get_color_type() const;
-  INLINE const Colorf &get_color() const;
+  INLINE const LColor &get_color() const;
 
 public:
   virtual void output(ostream &out) const;
@@ -57,7 +57,7 @@ private:
 
 private:
   Type _type;
-  Colorf _color;
+  LColor _color;
   static CPT(RenderAttrib) _off;
   static CPT(RenderAttrib) _vertex;
 

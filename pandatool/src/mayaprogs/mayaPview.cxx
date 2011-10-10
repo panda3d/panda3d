@@ -177,7 +177,7 @@ doIt(const MArgList &args) {
   loading_np.set_scale(0.125f);
   loading->set_text_color(1.0f, 1.0f, 1.0f, 1.0f);
   loading->set_shadow_color(0.0f, 0.0f, 0.0f, 1.0f);
-  loading->set_shadow(0.04f, 0.04f);
+  loading->set_shadow(0.04, 0.04);
   loading->set_align(TextNode::A_center);
   loading->set_text("Loading...");
 

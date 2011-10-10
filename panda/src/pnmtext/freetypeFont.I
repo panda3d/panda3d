@@ -35,7 +35,7 @@ INLINE FreetypeFont::
 //               calling clear().
 ////////////////////////////////////////////////////////////////////
 INLINE bool FreetypeFont::
-set_point_size(float point_size) {
+set_point_size(PN_stdfloat point_size) {
   _point_size = point_size;
   return reset_scale();
 }
@@ -45,7 +45,7 @@ set_point_size(float point_size) {
 //       Access: Public
 //  Description: Returns the point size of the font.
 ////////////////////////////////////////////////////////////////////
-INLINE float FreetypeFont::
+INLINE PN_stdfloat FreetypeFont::
 get_point_size() const {
   return _point_size;
 }
@@ -66,7 +66,7 @@ get_point_size() const {
 //               calling clear().
 ////////////////////////////////////////////////////////////////////
 INLINE bool FreetypeFont::
-set_pixels_per_unit(float pixels_per_unit) {
+set_pixels_per_unit(PN_stdfloat pixels_per_unit) {
   _requested_pixels_per_unit = pixels_per_unit;
   return reset_scale();
 }
@@ -77,7 +77,7 @@ set_pixels_per_unit(float pixels_per_unit) {
 //  Description: Returns the resolution of the texture map.  See
 //               set_pixels_per_unit().
 ////////////////////////////////////////////////////////////////////
-INLINE float FreetypeFont::
+INLINE PN_stdfloat FreetypeFont::
 get_pixels_per_unit() const {
   return _tex_pixels_per_unit;
 }
@@ -91,7 +91,7 @@ get_pixels_per_unit() const {
 //               specify pixels_per_unit().
 ////////////////////////////////////////////////////////////////////
 INLINE bool FreetypeFont::
-set_pixel_size(float pixel_size) {
+set_pixel_size(PN_stdfloat pixel_size) {
   return set_pixels_per_unit(pixel_size * _points_per_unit / _point_size);
 }
 
@@ -101,7 +101,7 @@ set_pixel_size(float pixel_size) {
 //  Description: Returns the size of the font in pixels, as it appears
 //               in the texture.
 ////////////////////////////////////////////////////////////////////
-INLINE float FreetypeFont::
+INLINE PN_stdfloat FreetypeFont::
 get_pixel_size() const {
   return _tex_pixels_per_unit * _point_size / _points_per_unit;
 }
@@ -123,7 +123,7 @@ get_pixel_size() const {
 //               calling clear().
 ////////////////////////////////////////////////////////////////////
 INLINE bool FreetypeFont::
-set_scale_factor(float scale_factor) {
+set_scale_factor(PN_stdfloat scale_factor) {
   _requested_scale_factor = scale_factor;
   return reset_scale();
 }
@@ -134,7 +134,7 @@ set_scale_factor(float scale_factor) {
 //  Description: Returns the antialiasing scale factor.  See
 //               set_scale_factor().
 ////////////////////////////////////////////////////////////////////
-INLINE float FreetypeFont::
+INLINE PN_stdfloat FreetypeFont::
 get_scale_factor() const {
   return _scale_factor;
 }
@@ -194,7 +194,7 @@ get_font_pixel_size() const {
 //  Description: Returns the number of units high each line of text
 //               is.
 ////////////////////////////////////////////////////////////////////
-INLINE float FreetypeFont::
+INLINE PN_stdfloat FreetypeFont::
 get_line_height() const {
   return _line_height;
 }
@@ -204,7 +204,7 @@ get_line_height() const {
 //       Access: Public
 //  Description: Returns the number of units wide a space is.
 ////////////////////////////////////////////////////////////////////
-INLINE float FreetypeFont::
+INLINE PN_stdfloat FreetypeFont::
 get_space_advance() const {
   return _space_advance;
 }
@@ -216,7 +216,7 @@ get_space_advance() const {
 //               unit high.  This is an arbitrary Panda convention for
 //               text, and is set to 10.0.
 ////////////////////////////////////////////////////////////////////
-INLINE float FreetypeFont::
+INLINE PN_stdfloat FreetypeFont::
 get_points_per_unit() {
   return _points_per_unit;
 }
@@ -227,7 +227,7 @@ get_points_per_unit() {
 //  Description: Returns the number of points in one inch.  This is a
 //               universal typographic convention.
 ////////////////////////////////////////////////////////////////////
-INLINE float FreetypeFont::
+INLINE PN_stdfloat FreetypeFont::
 get_points_per_inch() {
   return _points_per_inch;
 }

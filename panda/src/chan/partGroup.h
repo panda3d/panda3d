@@ -80,8 +80,8 @@ PUBLISHED:
   void sort_descendants();
 
   bool apply_freeze(const TransformState *transform);
-  virtual bool apply_freeze_matrix(const LVecBase3f &pos, const LVecBase3f &hpr, const LVecBase3f &scale);
-  virtual bool apply_freeze_scalar(float value);
+  virtual bool apply_freeze_matrix(const LVecBase3 &pos, const LVecBase3 &hpr, const LVecBase3 &scale);
+  virtual bool apply_freeze_scalar(PN_stdfloat value);
   virtual bool apply_control(PandaNode *node);
   virtual bool clear_forced_channel();
   virtual AnimChannelBase *get_forced_channel() const;
@@ -99,7 +99,7 @@ public:
   virtual bool do_update(PartBundle *root, const CycleData *root_cdata,
                          PartGroup *parent, bool parent_changed, 
                          bool anim_changed, Thread *current_thread);
-  virtual void do_xform(const LMatrix4f &mat, const LMatrix4f &inv_mat);
+  virtual void do_xform(const LMatrix4 &mat, const LMatrix4 &inv_mat);
   virtual void determine_effective_channels(const CycleData *root_cdata);
 
 protected:

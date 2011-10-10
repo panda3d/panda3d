@@ -42,26 +42,26 @@ PUBLISHED:
   INLINE ~FisheyeMaker();
 
   void reset();
-  void set_fov(float fov);
+  void set_fov(PN_stdfloat fov);
   INLINE void set_num_vertices(int num_vertices);
-  INLINE void set_square_inscribed(bool square_inscribed, float square_radius);
+  INLINE void set_square_inscribed(bool square_inscribed, PN_stdfloat square_radius);
   INLINE void set_reflection(bool reflection);
 
   PT(PandaNode) generate();
 
 private:
   void add_vertex(GeomVertexWriter &vertex, GeomVertexWriter &texcoord,
-                  float r, float a);
+                  PN_stdfloat r, PN_stdfloat a);
 
   void add_square_vertex(GeomVertexWriter &vertex, GeomVertexWriter &texcoord,
-                         float a);
+                         PN_stdfloat a);
 
-  float _fov;
-  float _half_fov_rad;
+  PN_stdfloat _fov;
+  PN_stdfloat _half_fov_rad;
   int _num_vertices;
   bool _square_inscribed;
-  float _square_radius;
-  float _reflect;
+  PN_stdfloat _square_radius;
+  PN_stdfloat _reflect;
 };
 
 #include "fisheyeMaker.I"

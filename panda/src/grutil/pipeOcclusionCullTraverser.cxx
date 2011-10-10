@@ -440,15 +440,15 @@ make_sphere() {
   
   PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_stream);
   for (int sl = 0; sl < num_slices; ++sl) {
-    float longitude0 = (float)sl / (float)num_slices;
-    float longitude1 = (float)(sl + 1) / (float)num_slices;
-    vertex.add_data3f(compute_sphere_point(0.0, longitude0));
+    PN_stdfloat longitude0 = (PN_stdfloat)sl / (PN_stdfloat)num_slices;
+    PN_stdfloat longitude1 = (PN_stdfloat)(sl + 1) / (PN_stdfloat)num_slices;
+    vertex.add_data3(compute_sphere_point(0.0, longitude0));
     for (int st = 1; st < num_stacks; ++st) {
-      float latitude = (float)st / (float)num_stacks;
-      vertex.add_data3f(compute_sphere_point(latitude, longitude0));
-      vertex.add_data3f(compute_sphere_point(latitude, longitude1));
+      PN_stdfloat latitude = (PN_stdfloat)st / (PN_stdfloat)num_stacks;
+      vertex.add_data3(compute_sphere_point(latitude, longitude0));
+      vertex.add_data3(compute_sphere_point(latitude, longitude1));
     }
-    vertex.add_data3f(compute_sphere_point(1.0, longitude0));
+    vertex.add_data3(compute_sphere_point(1.0, longitude0));
     
     strip->add_next_vertices(num_stacks * 2);
     strip->close_primitive();
@@ -464,15 +464,15 @@ make_sphere() {
 //  Description: Returns a point on the surface of the unit sphere.
 //               latitude and longitude range from 0.0 to 1.0.  
 ////////////////////////////////////////////////////////////////////
-Vertexf PipeOcclusionCullTraverser::
-compute_sphere_point(float latitude, float longitude) {
-  float s1, c1;
-  csincos(latitude * MathNumbers::pi_f, &s1, &c1);
+LVertex PipeOcclusionCullTraverser::
+compute_sphere_point(PN_stdfloat latitude, PN_stdfloat longitude) {
+  PN_stdfloat s1, c1;
+  csincos(latitude * MathNumbers::pi, &s1, &c1);
 
-  float s2, c2;
-  csincos(longitude * 2.0f * MathNumbers::pi_f, &s2, &c2);
+  PN_stdfloat s2, c2;
+  csincos(longitude * 2.0f * MathNumbers::pi, &s2, &c2);
 
-  Vertexf p(s1 * c2, s1 * s2, c1);
+  LVertex p(s1 * c2, s1 * s2, c1);
   return p;
 }
 
@@ -488,14 +488,14 @@ make_box() {
     ("occlusion_box", GeomVertexFormat::get_v3(), Geom::UH_static);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   
-  vertex.add_data3f(0.0f, 0.0f, 0.0f);
-  vertex.add_data3f(0.0f, 0.0f, 1.0f);
-  vertex.add_data3f(0.0f, 1.0f, 0.0f);
-  vertex.add_data3f(0.0f, 1.0f, 1.0f);
-  vertex.add_data3f(1.0f, 0.0f, 0.0f);
-  vertex.add_data3f(1.0f, 0.0f, 1.0f);
-  vertex.add_data3f(1.0f, 1.0f, 0.0f);
-  vertex.add_data3f(1.0f, 1.0f, 1.0f);
+  vertex.add_data3(0.0f, 0.0f, 0.0f);
+  vertex.add_data3(0.0f, 0.0f, 1.0f);
+  vertex.add_data3(0.0f, 1.0f, 0.0f);
+  vertex.add_data3(0.0f, 1.0f, 1.0f);
+  vertex.add_data3(1.0f, 0.0f, 0.0f);
+  vertex.add_data3(1.0f, 0.0f, 1.0f);
+  vertex.add_data3(1.0f, 1.0f, 0.0f);
+  vertex.add_data3(1.0f, 1.0f, 1.0f);
     
   PT(GeomTriangles) tris = new GeomTriangles(Geom::UH_static);
   tris->add_vertices(0, 4, 5);
@@ -571,7 +571,7 @@ get_volume_viz(const BoundingVolume *vol,
     const BoundingSphere *sphere = DCAST(BoundingSphere, vol);
     CPT(TransformState) local_transform = 
       TransformState::make_pos_hpr_scale(sphere->get_center(),
-                                         LVecBase3f(0, 0, 0),
+                                         LVecBase3(0, 0, 0),
                                          sphere->get_radius());
     net_transform = net_transform->compose(local_transform);
 
@@ -581,8 +581,8 @@ get_volume_viz(const BoundingVolume *vol,
     // is, the occlusion test may fail, so we won't bother performing
     // it for this object.  Anyway, it's not occluded by anything,
     // since it's intersecting the near plane.
-    const LPoint3f &center = modelview_transform->get_pos();
-    const LVecBase3f &radius = modelview_transform->get_scale();
+    const LPoint3 &center = modelview_transform->get_pos();
+    const LVecBase3 &radius = modelview_transform->get_scale();
     if (center[1] - radius[1] < 0.0f) {
       return false;
     }
@@ -595,7 +595,7 @@ get_volume_viz(const BoundingVolume *vol,
     const BoundingBox *box = DCAST(BoundingBox, vol);
     CPT(TransformState) local_transform = 
       TransformState::make_pos_hpr_scale(box->get_minq(),
-                                         LVecBase3f(0, 0, 0),
+                                         LVecBase3(0, 0, 0),
                                          box->get_maxq() - box->get_minq());
     net_transform = net_transform->compose(local_transform);
 
@@ -605,19 +605,19 @@ get_volume_viz(const BoundingVolume *vol,
     // is, the occlusion test may fail, so we won't bother performing
     // it for this object.  Anyway, it's not occluded by anything,
     // since it's intersecting the near plane.
-    static const LPoint3f points[8] = {
-      LPoint3f(0.0f, 0.0f, 0.0f),
-      LPoint3f(0.0f, 0.0f, 1.0f),
-      LPoint3f(0.0f, 1.0f, 0.0f),
-      LPoint3f(0.0f, 1.0f, 1.0f),
-      LPoint3f(1.0f, 0.0f, 0.0f),
-      LPoint3f(1.0f, 0.0f, 1.0f),
-      LPoint3f(1.0f, 1.0f, 0.0f),
-      LPoint3f(1.0f, 1.0f, 1.0f),
+    static const LPoint3 points[8] = {
+      LPoint3(0.0f, 0.0f, 0.0f),
+      LPoint3(0.0f, 0.0f, 1.0f),
+      LPoint3(0.0f, 1.0f, 0.0f),
+      LPoint3(0.0f, 1.0f, 1.0f),
+      LPoint3(1.0f, 0.0f, 0.0f),
+      LPoint3(1.0f, 0.0f, 1.0f),
+      LPoint3(1.0f, 1.0f, 0.0f),
+      LPoint3(1.0f, 1.0f, 1.0f),
     };
-    const LMatrix4f &mat = modelview_transform->get_mat();
+    const LMatrix4 &mat = modelview_transform->get_mat();
     for (int i = 0; i < 8; ++i) {
-      LPoint3f p = points[i] * mat;
+      LPoint3 p = points[i] * mat;
       if (p[1] < 0.0f) {
         return false;
       }
@@ -683,13 +683,13 @@ void PipeOcclusionCullTraverser::
 show_results(int num_fragments, const Geom *geom, 
              const TransformState *net_transform, 
              const TransformState *modelview_transform) {
-  Colorf color;
+  LColor color;
   if (num_fragments == 0) {
     // Magenta: culled
-    color.set(0.8f, 0.0f, 1.0f, 0.4f);
+    color.set(0.8f, 0.0f, 1.0f, 0.4);
   } else {
     // Yellow: visible
-    color.set(1.0f, 1.0f, 0.5f, 0.4f);
+    color.set(1.0f, 1.0f, 0.5f, 0.4);
   }
   
   CPT(RenderState) state = RenderState::make

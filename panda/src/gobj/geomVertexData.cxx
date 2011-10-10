@@ -615,7 +615,7 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
           from.set_column(source_i, source_column);
 
           while (!from.is_at_end()) {
-            to.set_data4f(from.get_data4f());
+            to.set_data4(from.get_data4());
           }
         }
       }
@@ -643,7 +643,7 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
         
           while (!from.is_at_end()) {
             const TransformBlend &blend = blend_table->get_blend(from.get_data1i());
-            LVecBase4f weights = LVecBase4f::zero();
+            LVecBase4 weights = LVecBase4::zero();
             int indices[4] = {0, 0, 0, 0};
             nassertv(blend.get_num_transforms() <= 4);
             
@@ -653,7 +653,7 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
                                          already_added);
             }
             if (weight.has_column()) {
-              weight.set_data4f(weights);
+              weight.set_data4(weights);
             }
             index.set_data4i(indices);
           }
@@ -665,7 +665,7 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
         
           while (!from.is_at_end()) {
             const TransformBlend &blend = blend_table->get_blend(from.get_data1i());
-            LVecBase4f weights = LVecBase4f::zero();
+            LVecBase4 weights = LVecBase4::zero();
             
             for (int i = 0; i < blend.get_num_transforms(); i++) {
               int index = add_transform(transform_table, blend.get_transform(i),
@@ -674,7 +674,7 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
               weights[index] = blend.get_weight(i);
             }
             if (weight.has_column()) {
-              weight.set_data4f(weights);
+              weight.set_data4(weights);
             }
           }
         }
@@ -832,7 +832,7 @@ convert_to(const GeomVertexFormat *new_format) const {
 //               new one will not be added.
 ////////////////////////////////////////////////////////////////////
 CPT(GeomVertexData) GeomVertexData::
-scale_color(const LVecBase4f &color_scale) const {
+scale_color(const LVecBase4 &color_scale) const {
   const GeomVertexColumn *old_column = 
     get_format()->get_column(InternalName::get_color());
   if (old_column == (GeomVertexColumn *)NULL) {
@@ -842,8 +842,8 @@ scale_color(const LVecBase4f &color_scale) const {
   PT(GeomVertexData) new_data = new GeomVertexData(*this);
   GeomVertexRewriter data(new_data, InternalName::get_color());
   while (!data.is_at_end()) {
-    Colorf color = data.get_data4f();
-    data.set_data4f(color[0] * color_scale[0],
+    LColor color = data.get_data4();
+    data.set_data4(color[0] * color_scale[0],
                     color[1] * color_scale[1],
                     color[2] * color_scale[2],
                     color[3] * color_scale[3]);
@@ -863,7 +863,7 @@ scale_color(const LVecBase4f &color_scale) const {
 //               array will not be repacked.
 ////////////////////////////////////////////////////////////////////
 CPT(GeomVertexData) GeomVertexData::
-scale_color(const LVecBase4f &color_scale, int num_components,
+scale_color(const LVecBase4 &color_scale, int num_components,
             GeomVertexData::NumericType numeric_type,
             GeomVertexData::Contents contents) const {
   int old_color_array = get_format()->get_array_with(InternalName::get_color());
@@ -889,8 +889,8 @@ scale_color(const LVecBase4f &color_scale, int num_components,
   GeomVertexReader from(this, InternalName::get_color());
 
   for (int i = 0; i < num_rows; i++) {
-    Colorf color = from.get_data4f();
-    to.set_data4f(color[0] * color_scale[0],
+    LColor color = from.get_data4();
+    to.set_data4(color[0] * color_scale[0],
                   color[1] * color_scale[1],
                   color[2] * color_scale[2],
                   color[3] * color_scale[3]);
@@ -909,7 +909,7 @@ scale_color(const LVecBase4f &color_scale, int num_components,
 //               new one will not be added.
 ////////////////////////////////////////////////////////////////////
 CPT(GeomVertexData) GeomVertexData::
-set_color(const Colorf &color) const {
+set_color(const LColor &color) const {
   const GeomVertexColumn *old_column = 
     get_format()->get_column(InternalName::get_color());
   if (old_column == (GeomVertexColumn *)NULL) {
@@ -919,7 +919,7 @@ set_color(const Colorf &color) const {
   PT(GeomVertexData) new_data = new GeomVertexData(*this);
   GeomVertexWriter to(new_data, InternalName::get_color());
   while (!to.is_at_end()) {
-    to.set_data4f(color);
+    to.set_data4(color);
   }
 
   return new_data;
@@ -936,7 +936,7 @@ set_color(const Colorf &color) const {
 //               array will not be repacked.
 ////////////////////////////////////////////////////////////////////
 CPT(GeomVertexData) GeomVertexData::
-set_color(const Colorf &color, int num_components,
+set_color(const LColor &color, int num_components,
           GeomVertexData::NumericType numeric_type,
           GeomVertexData::Contents contents) const {
   if (gobj_cat.is_debug()) {
@@ -952,7 +952,7 @@ set_color(const Colorf &color, int num_components,
   // Now go through and set the new color value.
   GeomVertexWriter to(new_data, InternalName::get_color());
   while (!to.is_at_end()) {
-    to.set_data4f(color);
+    to.set_data4(color);
   }
 
   return new_data;
@@ -980,7 +980,7 @@ reverse_normals() const {
   PT(GeomVertexData) new_data = new GeomVertexData(*this);
   GeomVertexRewriter to(new_data, InternalName::get_normal());
   while (!to.is_at_end()) {
-    to.set_data3f(-to.get_data3f());
+    to.set_data3(-to.get_data3());
   }
 
   return new_data;
@@ -1274,7 +1274,7 @@ describe_vertex(ostream &out, int row) const {
     reader.set_column(ai, column);
     
     int num_values = min(column->get_num_values(), 4);
-    const LVecBase4f &d = reader.get_data4f();
+    const LVecBase4 &d = reader.get_data4();
     
     out << "  " << *column->get_name();
     for (int v = 0; v < num_values; v++) {
@@ -1475,7 +1475,7 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
             const SparseArray &rows = slider_table->get_slider_rows(sn);
             nassertv(!rows.is_inverse());
 
-            float slider_value = slider->get_slider();
+            PN_stdfloat slider_value = slider->get_slider();
             if (slider_value != 0.0f) {
               CPT(InternalName) base_name = orig_format->get_morph_base(mi);
               CPT(InternalName) delta_name = orig_format->get_morph_delta(mi);
@@ -1493,10 +1493,10 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
                     data.set_row_unsafe(begin);
                     delta.set_row_unsafe(begin);
                     for (int j = begin; j < end; ++j) {
-                      LPoint4f vertex = data.get_data4f();
-                      LPoint3f d = delta.get_data3f();
+                      LPoint4 vertex = data.get_data4();
+                      LPoint3 d = delta.get_data3();
                       d *= slider_value * vertex[3];
-                      data.set_data4f(vertex[0] + d[0],
+                      data.set_data4(vertex[0] + d[0],
                                       vertex[1] + d[1],
                                       vertex[2] + d[2],
                                       vertex[3]);
@@ -1510,9 +1510,9 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
                     data.set_row_unsafe(begin);
                     delta.set_row_unsafe(begin);
                     for (int j = begin; j < end; ++j) {
-                      const LPoint4f &vertex = data.get_data4f();
-                      LPoint4f d = delta.get_data4f();
-                      data.set_data4f(vertex + d * slider_value);
+                      const LPoint4 &vertex = data.get_data4();
+                      LPoint4 d = delta.get_data4();
+                      data.set_data4(vertex + d * slider_value);
                     }
                   }
                 }
@@ -1525,9 +1525,9 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
                   data.set_row_unsafe(begin);
                   delta.set_row_unsafe(begin);
                   for (int j = begin; j < end; ++j) {
-                    const LPoint3f &vertex = data.get_data3f();
-                    LPoint3f d = delta.get_data3f();
-                    data.set_data3f(vertex + d * slider_value);
+                    const LPoint3 &vertex = data.get_data3();
+                    LPoint3 d = delta.get_data3();
+                    data.set_data3(vertex + d * slider_value);
                   }
                 }
               }
@@ -1607,10 +1607,10 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
             int end = rows.get_subrange_end(i);
             data.set_row_unsafe(begin);
             for (int j = begin; j < end; ++j) {
-              LPoint4f vertex = data.get_data4f();
+              LPoint4 vertex = data.get_data4();
               int bi = blendt[j];
               tb_table->get_blend(bi).transform_point(vertex, current_thread);
-              data.set_data4f(vertex);
+              data.set_data4(vertex);
             }
           }
           
@@ -1622,10 +1622,10 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
             int end = rows.get_subrange_end(i);
             data.set_row_unsafe(begin);
             for (int j = begin; j < end; ++j) {
-              LPoint3f vertex = data.get_data3f();
+              LPoint3 vertex = data.get_data3();
               int bi = blendt[j];
               tb_table->get_blend(bi).transform_point(vertex, current_thread);
-              data.set_data3f(vertex);
+              data.set_data3(vertex);
             }
           }
         }
@@ -1664,10 +1664,10 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
             int end = rows.get_subrange_end(i);
             data.set_row_unsafe(begin);
             for (int j = begin; j < end; ++j) {
-              LVector3f vertex = data.get_data3f();
+              LVector3 vertex = data.get_data3();
               int bi = blendt[j];
               tb_table->get_blend(bi).transform_vector(vertex, current_thread);
-              data.set_data3f(vertex);
+              data.set_data3(vertex);
             }
           }
         }
@@ -1691,10 +1691,10 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
             data.set_row_unsafe(begin);
             blendi.set_row_unsafe(begin);
             for (int j = begin; j < end; ++j) {
-              LPoint4f vertex = data.get_data4f();
+              LPoint4 vertex = data.get_data4();
               int bi = blendi.get_data1i();
               tb_table->get_blend(bi).transform_point(vertex, current_thread);
-              data.set_data4f(vertex);
+              data.set_data4(vertex);
             }
           }
         } else {
@@ -1704,10 +1704,10 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
             data.set_row_unsafe(begin);
             blendi.set_row_unsafe(begin);
             for (int j = begin; j < end; ++j) {
-              LPoint3f vertex = data.get_data3f();
+              LPoint3 vertex = data.get_data3();
               int bi = blendi.get_data1i();
               tb_table->get_blend(bi).transform_point(vertex, current_thread);
-              data.set_data3f(vertex);
+              data.set_data3(vertex);
             }
           }
         }
@@ -1720,10 +1720,10 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
           data.set_row_unsafe(begin);
           blendi.set_row_unsafe(begin);
           for (int j = begin; j < end; ++j) {
-            LVector3f vertex = data.get_data3f();
+            LVector3 vertex = data.get_data3();
             int bi = blendi.get_data1i();
             tb_table->get_blend(bi).transform_vector(vertex, current_thread);
-            data.set_data3f(vertex);
+            data.set_data3(vertex);
           }
         }
       }

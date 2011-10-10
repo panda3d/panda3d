@@ -30,39 +30,39 @@ PUBLISHED:
 
   virtual BaseParticleEmitter *make_copy();
 
-  INLINE void set_radius(float r);
-  INLINE void set_angle(float angle);
-  INLINE void set_radius_spread(float spread);
+  INLINE void set_radius(PN_stdfloat r);
+  INLINE void set_angle(PN_stdfloat angle);
+  INLINE void set_radius_spread(PN_stdfloat spread);
   INLINE void set_uniform_emission(int uniform_emission);
 
-  INLINE float get_radius() const;
-  INLINE float get_angle() const;
-  INLINE float get_radius_spread() const;
+  INLINE PN_stdfloat get_radius() const;
+  INLINE PN_stdfloat get_angle() const;
+  INLINE PN_stdfloat get_radius_spread() const;
   INLINE int get_uniform_emission() const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent=0) const;
 
 protected:
-  float _radius;
-  float _radius_spread;
+  PN_stdfloat _radius;
+  PN_stdfloat _radius_spread;
 
   // CUSTOM EMISSION PARAMETERS
-  float _aoe;  // angle of elevation
+  PN_stdfloat _aoe;  // angle of elevation
 
   // viariables used for uniform particle emission
   int _uniform_emission;
-  float _theta;
+  PN_stdfloat _theta;
 
   ///////////////////////////////
   // scratch variables that carry over from position calc to velocity calc
-  float _sin_theta;
-  float _cos_theta;
+  PN_stdfloat _sin_theta;
+  PN_stdfloat _cos_theta;
   ///////////////////////////////
 
 private:
-  virtual void assign_initial_position(LPoint3f& pos);
-  virtual void assign_initial_velocity(LVector3f& vel);
+  virtual void assign_initial_position(LPoint3& pos);
+  virtual void assign_initial_velocity(LVector3& vel);
 };
 
 #include "ringEmitter.I"

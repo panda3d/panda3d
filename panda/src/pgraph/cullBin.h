@@ -63,7 +63,7 @@ public:
   PT(PandaNode) make_result_graph();
 
   INLINE bool has_flash_color() const;
-  INLINE const Colorf &get_flash_color() const;
+  INLINE const LColor &get_flash_color() const;
 
 protected:
   class ResultGraphBuilder;
@@ -78,7 +78,7 @@ protected:
   GraphicsStateGuardianBase *_gsg;
 
   bool _has_flash_color;
-  Colorf _flash_color;
+  LColor _flash_color;
 
   // Used in make_result_graph() and fill_result_graph().
   class ResultGraphBuilder {

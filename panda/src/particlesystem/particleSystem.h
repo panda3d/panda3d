@@ -49,14 +49,14 @@ PUBLISHED:
 
   // access/queries
   INLINE void set_pool_size(int size);
-  INLINE void set_birth_rate(float new_br);
-  INLINE void set_soft_birth_rate(float new_br);
+  INLINE void set_birth_rate(PN_stdfloat new_br);
+  INLINE void set_soft_birth_rate(PN_stdfloat new_br);
   INLINE void set_litter_size(int new_ls);
   INLINE void set_litter_spread(int new_ls);
   INLINE void set_local_velocity_flag(bool lv);
   INLINE void set_system_grows_older_flag(bool sgo);
-  INLINE void set_system_lifespan(float sl);
-  INLINE void set_system_age(float age);
+  INLINE void set_system_lifespan(PN_stdfloat sl);
+  INLINE void set_system_age(PN_stdfloat age);
   INLINE void set_active_system_flag(bool a);
   INLINE void set_spawn_on_death_flag(bool sod);
   INLINE void set_spawn_render_node(PandaNode *node);
@@ -67,19 +67,19 @@ PUBLISHED:
   INLINE void set_renderer(BaseParticleRenderer *r);
   INLINE void set_emitter(BaseParticleEmitter *e);
   INLINE void set_factory(BaseParticleFactory *f);
-  INLINE void set_floor_z(float z);
+  INLINE void set_floor_z(PN_stdfloat z);
   
   INLINE void clear_floor_z();
 
   INLINE int get_pool_size() const;
-  INLINE float get_birth_rate() const;
-  INLINE float get_soft_birth_rate() const;
+  INLINE PN_stdfloat get_birth_rate() const;
+  INLINE PN_stdfloat get_soft_birth_rate() const;
   INLINE int get_litter_size() const;
   INLINE int get_litter_spread() const;
   INLINE bool get_local_velocity_flag() const;
   INLINE bool get_system_grows_older_flag() const;
-  INLINE float get_system_lifespan() const;
-  INLINE float get_system_age() const;
+  INLINE PN_stdfloat get_system_lifespan() const;
+  INLINE PN_stdfloat get_system_age() const;
   INLINE bool get_active_system_flag() const;
   INLINE bool get_spawn_on_death_flag() const;
   INLINE PandaNode *get_spawn_render_node() const;
@@ -90,7 +90,7 @@ PUBLISHED:
   INLINE BaseParticleRenderer *get_renderer() const;
   INLINE BaseParticleEmitter *get_emitter() const;
   INLINE BaseParticleFactory *get_factory() const;
-  INLINE float get_floor_z() const;
+  INLINE PN_stdfloat get_floor_z() const;
 
   // particle template vector
 
@@ -102,9 +102,9 @@ PUBLISHED:
   INLINE void render();
   INLINE void induce_labor();
   INLINE void clear_to_initial();
-  INLINE void soft_stop(float br = 0.0);
-  INLINE void soft_start(float br = 0.0);
-  void update(float dt);
+  INLINE void soft_stop(PN_stdfloat br = 0.0);
+  INLINE void soft_start(PN_stdfloat br = 0.0);
+  void update(PN_stdfloat dt);
 
   virtual void output(ostream &out) const;
   virtual void write_free_particle_fifo(ostream &out, int indent=0) const;
@@ -125,15 +125,15 @@ private:
 
   int _particle_pool_size;
   int _living_particles;
-  float _cur_birth_rate;
-  float _birth_rate;
-  float _soft_birth_rate;
-  float _tics_since_birth;
+  PN_stdfloat _cur_birth_rate;
+  PN_stdfloat _birth_rate;
+  PN_stdfloat _soft_birth_rate;
+  PN_stdfloat _tics_since_birth;
   int _litter_size;
   int _litter_spread;
-  float _system_age;
-  float _system_lifespan;
-  float _floor_z;
+  PN_stdfloat _system_age;
+  PN_stdfloat _system_lifespan;
+  PN_stdfloat _floor_z;
 
   PT(BaseParticleFactory) _factory;
   PT(BaseParticleEmitter) _emitter;

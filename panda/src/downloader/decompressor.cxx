@@ -244,7 +244,7 @@ decompress(Ramfile &source_and_dest_file) {
 //  Description: Returns the ratio through the decompression step
 //               in the background.
 ////////////////////////////////////////////////////////////////////
-float Decompressor::
+PN_stdfloat Decompressor::
 get_progress() const {
   if (_decompress == (istream *)NULL) {
     // Hmm, we were already done.
@@ -256,7 +256,7 @@ get_progress() const {
 
   // We stop the scale at 0.99 because there may be a little bit more
   // to do even after the decompressor has read all of the source.
-  return (0.99f * (float)source_pos / (float)_source_length);
+  return (0.99f * (PN_stdfloat)source_pos / (PN_stdfloat)_source_length);
 }
 
 ////////////////////////////////////////////////////////////////////

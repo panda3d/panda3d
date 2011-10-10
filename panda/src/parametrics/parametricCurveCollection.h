@@ -63,23 +63,23 @@ PUBLISHED:
   ParametricCurve *get_timewarp_curve(int n) const;
   MAKE_SEQ(get_timewarp_curves, get_num_timewarps, get_timewarp_curve);
 
-  INLINE float get_max_t() const;
+  INLINE PN_stdfloat get_max_t() const;
 
-  void make_even(float max_t, float segments_per_unit);
-  void face_forward(float segments_per_unit);
-  void reset_max_t(float max_t);
+  void make_even(PN_stdfloat max_t, PN_stdfloat segments_per_unit);
+  void face_forward(PN_stdfloat segments_per_unit);
+  void reset_max_t(PN_stdfloat max_t);
 
-  bool evaluate(float t, LVecBase3f &xyz, LVecBase3f &hpr) const;
-  bool evaluate(float t, LMatrix4f &result, CoordinateSystem cs = CS_default) const;
+  bool evaluate(PN_stdfloat t, LVecBase3 &xyz, LVecBase3 &hpr) const;
+  bool evaluate(PN_stdfloat t, LMatrix4 &result, CoordinateSystem cs = CS_default) const;
 
-  float evaluate_t(float t) const;
-  INLINE bool evaluate_xyz(float t, LVecBase3f &xyz) const;
-  INLINE bool evaluate_hpr(float t, LVecBase3f &hpr) const;
+  PN_stdfloat evaluate_t(PN_stdfloat t) const;
+  INLINE bool evaluate_xyz(PN_stdfloat t, LVecBase3 &xyz) const;
+  INLINE bool evaluate_hpr(PN_stdfloat t, LVecBase3 &hpr) const;
 
-  INLINE bool adjust_xyz(float t, float x, float y, float z);
-  bool adjust_xyz(float t, const LVecBase3f &xyz);
-  INLINE bool adjust_hpr(float t, float h, float p, float r);
-  bool adjust_hpr(float t, const LVecBase3f &xyz);
+  INLINE bool adjust_xyz(PN_stdfloat t, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+  bool adjust_xyz(PN_stdfloat t, const LVecBase3 &xyz);
+  INLINE bool adjust_hpr(PN_stdfloat t, PN_stdfloat h, PN_stdfloat p, PN_stdfloat r);
+  bool adjust_hpr(PN_stdfloat t, const LVecBase3 &xyz);
 
   bool recompute();
 
@@ -98,7 +98,7 @@ public:
   void unregister_drawer(ParametricCurveDrawer *drawer);
 
 private:
-  bool determine_hpr(float t, ParametricCurve *xyz_curve, LVecBase3f &hpr) const;
+  bool determine_hpr(PN_stdfloat t, ParametricCurve *xyz_curve, LVecBase3 &hpr) const;
   void prepare_add_curve(ParametricCurve *curve);
   void prepare_remove_curve(ParametricCurve *curve);
   void redraw();

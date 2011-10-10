@@ -142,14 +142,14 @@ get_color_def(size_t idx) const {
 //               color, so if a texture is also applied (_has_texture
 //               is true), this value is not used by Maya.
 ////////////////////////////////////////////////////////////////////
-Colorf MayaShader::
+LColor MayaShader::
 get_rgba(size_t idx) const {
-  Colorf rgba(1.0f, 1.0f, 1.0f, 1.0f);
+  LColor rgba(1.0f, 1.0f, 1.0f, 1.0f);
 
   if (_color.size() && _color[idx]->_has_flat_color) {
-    rgba[0] = (float)_color[idx]->_flat_color[0];
-    rgba[1] = (float)_color[idx]->_flat_color[1];
-    rgba[2] = (float)_color[idx]->_flat_color[2];
+    rgba[0] = (PN_stdfloat)_color[idx]->_flat_color[0];
+    rgba[1] = (PN_stdfloat)_color[idx]->_flat_color[1];
+    rgba[2] = (PN_stdfloat)_color[idx]->_flat_color[2];
   }
 
   if (_transparency._has_flat_color) {
@@ -160,7 +160,7 @@ get_rgba(size_t idx) const {
       _transparency._flat_color[0] * lumin_red + 
       _transparency._flat_color[1] * lumin_grn + 
       _transparency._flat_color[2] * lumin_blu;
-    rgba[3] = 1.0f - (float)trans;
+    rgba[3] = 1.0f - (PN_stdfloat)trans;
   }
 
   return rgba;

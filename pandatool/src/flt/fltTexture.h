@@ -147,8 +147,8 @@ public:
   };
 
   struct LODScale {
-    float _lod;
-    float _scale;
+    PN_stdfloat _lod;
+    PN_stdfloat _scale;
   };
 
   struct GeospecificControlPoint {
@@ -192,10 +192,10 @@ public:
   InternalFormat _internal_format;
   ExternalFormat _external_format;
   bool _use_mipmap_kernel;
-  float _mipmap_kernel[8];
+  PN_stdfloat _mipmap_kernel[8];
   bool _use_lod_scale;
   LODScale _lod_scale[8];
-  float _clamp;
+  PN_stdfloat _clamp;
   Magnification _mag_filter_alpha;
   Magnification _mag_filter_color;
   double _lambert_conic_central_meridian;
@@ -208,10 +208,10 @@ public:
   int _detail_n;
   int _detail_scramble;
   bool _use_tile;
-  float _tile_lower_left_u;
-  float _tile_lower_left_v;
-  float _tile_upper_right_u;
-  float _tile_upper_right_v;
+  PN_stdfloat _tile_lower_left_u;
+  PN_stdfloat _tile_lower_left_v;
+  PN_stdfloat _tile_upper_right_u;
+  PN_stdfloat _tile_upper_right_v;
   ProjectionType _projection;
   EarthModel _earth_model;
   int _utm_zone;

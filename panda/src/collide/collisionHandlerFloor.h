@@ -33,24 +33,24 @@ PUBLISHED:
   CollisionHandlerFloor();
   virtual ~CollisionHandlerFloor();
 
-  INLINE void set_offset(float offset);
-  INLINE float get_offset() const;
+  INLINE void set_offset(PN_stdfloat offset);
+  INLINE PN_stdfloat get_offset() const;
 
-  INLINE void set_reach(float reach);
-  INLINE float get_reach() const;
+  INLINE void set_reach(PN_stdfloat reach);
+  INLINE PN_stdfloat get_reach() const;
 
-  INLINE void set_max_velocity(float max_vel);
-  INLINE float get_max_velocity() const;
+  INLINE void set_max_velocity(PN_stdfloat max_vel);
+  INLINE PN_stdfloat get_max_velocity() const;
 
 protected:
-  float set_highest_collision(const NodePath &target_node_path, const NodePath &from_node_path, const Entries &entries);
+  PN_stdfloat set_highest_collision(const NodePath &target_node_path, const NodePath &from_node_path, const Entries &entries);
   virtual bool handle_entries();
-  virtual void apply_linear_force(ColliderDef &def, const LVector3f &force);
+  virtual void apply_linear_force(ColliderDef &def, const LVector3 &force);
 
 private:
-  float _offset;
-  float _reach;
-  float _max_velocity;
+  PN_stdfloat _offset;
+  PN_stdfloat _reach;
+  PN_stdfloat _max_velocity;
 
 
 public:

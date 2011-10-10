@@ -32,7 +32,7 @@ TypeHandle CConstrainPosInterval::_type_handle;
 CConstrainPosInterval::
 CConstrainPosInterval(const string &name, double duration,
                       const NodePath &node, const NodePath &target,
-                      bool wrt, const LVecBase3f posOffset) :
+                      bool wrt, const LVecBase3 posOffset) :
   CConstraintInterval(name, duration),
   _node(node),
   _target(target),
@@ -66,7 +66,7 @@ priv_step(double t) {
       }
       _target.set_pos(_node, _posOffset);
     } else {
-      if(_posOffset == LVector3f::zero()) {
+      if(_posOffset == LVector3::zero()) {
         _target.set_pos(_node.get_pos());
       } else {
         _target.set_pos(_node.get_pos() + _posOffset);

@@ -32,7 +32,7 @@ TypeHandle ScissorEffect::_type_handle;
 //               ScissorEffect object.
 ////////////////////////////////////////////////////////////////////
 ScissorEffect::
-ScissorEffect(bool screen, const LVecBase4f &frame,
+ScissorEffect(bool screen, const LVecBase4 &frame,
               const PointDef *points, int num_points, bool clip) :
   _screen(screen), _frame(frame), _clip(clip) 
 {
@@ -65,7 +65,7 @@ ScissorEffect(const ScissorEffect &copy) :
 //               relative to the DisplayRegion.  See ScissorAttrib.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderEffect) ScissorEffect::
-make_screen(const LVecBase4f &frame, bool clip) {
+make_screen(const LVecBase4 &frame, bool clip) {
   ScissorEffect *effect = new ScissorEffect(true, frame, NULL, 0, clip);
   return return_new(effect);
 }
@@ -80,7 +80,7 @@ make_screen(const LVecBase4f &frame, bool clip) {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderEffect) ScissorEffect::
 make_node(bool clip) {
-  ScissorEffect *effect = new ScissorEffect(false, LVecBase4f::zero(), NULL, 0, clip);
+  ScissorEffect *effect = new ScissorEffect(false, LVecBase4::zero(), NULL, 0, clip);
   return return_new(effect);
 }
 
@@ -94,13 +94,13 @@ make_node(bool clip) {
 //               corners of the scissor region.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderEffect) ScissorEffect::
-make_node(const LPoint3f &a, const LPoint3f &b, const NodePath &node) {
+make_node(const LPoint3 &a, const LPoint3 &b, const NodePath &node) {
   PointDef points[2];
   points[0]._p = a;
   points[0]._node = node;
   points[1]._p = b;
   points[1]._node = node;
-  ScissorEffect *effect = new ScissorEffect(false, LVecBase4f::zero(), points, 2, true);
+  ScissorEffect *effect = new ScissorEffect(false, LVecBase4::zero(), points, 2, true);
   return return_new(effect);
 }
 
@@ -114,7 +114,7 @@ make_node(const LPoint3f &a, const LPoint3f &b, const NodePath &node) {
 //               surrounding the scissor region.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderEffect) ScissorEffect::
-make_node(const LPoint3f &a, const LPoint3f &b, const LPoint3f &c, const LPoint3f &d, const NodePath &node) {
+make_node(const LPoint3 &a, const LPoint3 &b, const LPoint3 &c, const LPoint3 &d, const NodePath &node) {
   PointDef points[4];
   points[0]._p = a;
   points[0]._node = node;
@@ -124,7 +124,7 @@ make_node(const LPoint3f &a, const LPoint3f &b, const LPoint3f &c, const LPoint3
   points[2]._node = node;
   points[3]._p = d;
   points[3]._node = node;
-  ScissorEffect *effect = new ScissorEffect(false, LVecBase4f::zero(), points, 4, true);
+  ScissorEffect *effect = new ScissorEffect(false, LVecBase4::zero(), points, 4, true);
   return return_new(effect);
 }
 
@@ -141,7 +141,7 @@ make_node(const LPoint3f &a, const LPoint3f &b, const LPoint3f &c, const LPoint3
 //               desired.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderEffect) ScissorEffect::
-add_point(const LPoint3f &p, const NodePath &node) const {
+add_point(const LPoint3 &p, const NodePath &node) const {
   nassertr(!is_screen(), this);
   ScissorEffect *effect = new ScissorEffect(*this);
   PointDef point;
@@ -158,7 +158,7 @@ add_point(const LPoint3f &p, const NodePath &node) const {
 //               indicated matrix.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderEffect) ScissorEffect::
-xform(const LMatrix4f &mat) const {
+xform(const LMatrix4 &mat) const {
   if (is_screen()) {
     return this;
   }
@@ -237,7 +237,7 @@ void ScissorEffect::
 cull_callback(CullTraverser *trav, CullTraverserData &data,
               CPT(TransformState) &node_transform,
               CPT(RenderState) &node_state) const {
-  LVecBase4f frame;
+  LVecBase4 frame;
   const Lens *lens = trav->get_scene()->get_lens();
   CPT(TransformState) modelview_transform = data.get_modelview_transform(trav);
   CPT(TransformState) net_transform = modelview_transform->compose(node_transform);
@@ -249,29 +249,29 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
   if (is_screen()) {
     frame = _frame;
   } else {
-    const LMatrix4f &proj_mat = lens->get_projection_mat();
-    LMatrix4f net_mat = net_transform->get_mat() * proj_mat;
+    const LMatrix4 &proj_mat = lens->get_projection_mat();
+    LMatrix4 net_mat = net_transform->get_mat() * proj_mat;
 
     bool any_points = false;
 
     Points::const_iterator pi;
     for (pi = _points.begin(); pi != _points.end(); ++pi) {
       const PointDef &point = (*pi);
-      LVecBase4f pv(point._p[0], point._p[1], point._p[2], 1.0f);
+      LVecBase4 pv(point._p[0], point._p[1], point._p[2], 1.0f);
       if (point._node.is_empty()) {
         // Relative to this node.
         pv = pv * net_mat;
 
       } else {
         // Relative to some other node.
-        LMatrix4f other_mat = point._node.get_net_transform()->get_mat() * proj_mat;
+        LMatrix4 other_mat = point._node.get_net_transform()->get_mat() * proj_mat;
         pv = pv * other_mat;
       }
 
       if (pv[3] == 0) {
         continue;
       }
-      LPoint3f pr(pv[0] / pv[3], pv[1] / pv[3], pv[2] / pv[3]);
+      LPoint3 pr(pv[0] / pv[3], pv[1] / pv[3], pv[2] / pv[3]);
       if (!any_points) {
         frame[0] = pr[0];
         frame[1] = pr[0];
@@ -294,10 +294,10 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
   }
 
   // Impose bounding volumes.
-  frame[0] = max(min(frame[0], 1.0f), 0.0f);
-  frame[1] = max(min(frame[1], 1.0f), frame[0]);
-  frame[2] = max(min(frame[2], 1.0f), 0.0f);
-  frame[3] = max(min(frame[3], 1.0f), frame[2]);
+  frame[0] = max(min(frame[0], (PN_stdfloat)1.0), (PN_stdfloat)0.0);
+  frame[1] = max(min(frame[1], (PN_stdfloat)1.0), frame[0]);
+  frame[2] = max(min(frame[2], (PN_stdfloat)1.0), (PN_stdfloat)0.0);
+  frame[3] = max(min(frame[3], (PN_stdfloat)1.0), frame[2]);
 
   if (_clip) {
     CPT(RenderAttrib) scissor_attrib = ScissorAttrib::make(frame);
@@ -408,7 +408,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 ////////////////////////////////////////////////////////////////////
 TypedWritable *ScissorEffect::
 make_from_bam(const FactoryParams &params) {
-  ScissorEffect *effect = new ScissorEffect(true, LVecBase4f::zero(), NULL, 0, false);
+  ScissorEffect *effect = new ScissorEffect(true, LVecBase4::zero(), NULL, 0, false);
   DatagramIterator scan;
   BamReader *manager;
 
@@ -451,16 +451,16 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 //               properties, given the indicated scissor frame.
 ////////////////////////////////////////////////////////////////////
 PT(GeometricBoundingVolume) ScissorEffect::
-make_frustum(const Lens *lens, const LVecBase4f &frame) const{
+make_frustum(const Lens *lens, const LVecBase4 &frame) const{
   // Scale the frame from 0 .. 1 into -1 .. 1.
-  LVecBase4f f2(frame[0] * 2.0f - 1.0f,
-                frame[1] * 2.0f - 1.0f,
-                frame[2] * 2.0f - 1.0f,
-                frame[3] * 2.0f - 1.0f);
+  LVecBase4 f2(frame[0] * 2.0f - 1.0f,
+               frame[1] * 2.0f - 1.0f,
+               frame[2] * 2.0f - 1.0f,
+               frame[3] * 2.0f - 1.0f);
 
-  LPoint3f fll, flr, ful, fur;
-  LPoint3f nll, nlr, nul, nur;
-  LPoint2f corner;
+  LPoint3 fll, flr, ful, fur;
+  LPoint3 nll, nlr, nul, nur;
+  LPoint2 corner;
 
   corner[0] = f2[0]; corner[1] = f2[3];
 

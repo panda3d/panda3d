@@ -62,12 +62,12 @@ get_angle_attribute(MObject &node, const string &attribute_name,
                     double &value);
 
 bool
-get_vec2f_attribute(MObject &node, const string &attribute_name,
-                    LVecBase2f &value);
+get_vec2_attribute(MObject &node, const string &attribute_name,
+                    LVecBase2 &value);
 
 bool
-get_vec3f_attribute(MObject &node, const string &attribute_name,
-                    LVecBase3f &value);
+get_vec3_attribute(MObject &node, const string &attribute_name,
+                    LVecBase3 &value);
 
 bool
 get_vec2d_attribute(MObject &node, const string &attribute_name,

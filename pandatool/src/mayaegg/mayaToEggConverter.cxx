@@ -1550,7 +1550,7 @@ make_nurbs_surface(MayaNodeDesc *node_desc, const MDagPath &dag_path,
       EggVertex *vert = vpool->get_vertex(i);
 
       for (int ji = 0; ji < num_joints; ++ji) {
-        float weight = weights[maya_vi * num_joints + ji];
+        PN_stdfloat weight = weights[maya_vi * num_joints + ji];
         if (weight != 0.0f) {
           EggGroup *joint = joints[ji];
           if (joint != (EggGroup *)NULL) {
@@ -1901,7 +1901,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
       ignore_vertex_color = default_color_def->_has_texture && !(egg_vertex_color || _always_show_vertex_color);
     }
 
-    Colorf poly_color(1.0f, 1.0f, 1.0f, 1.0f);
+    LColor poly_color(1.0f, 1.0f, 1.0f, 1.0f);
     if (!ignore_vertex_color) {
       // If we're respecting the vertex color, then remove the color
       // specification from the polygon (so we can apply it to the
@@ -2104,7 +2104,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
       nassertv(maya_vi >= 0 && maya_vi < num_verts);
 
       for (int ji = 0; ji < num_joints; ++ji) {
-        float weight = weights[maya_vi * num_joints + ji];
+        PN_stdfloat weight = weights[maya_vi * num_joints + ji];
         if (weight != 0.0f) {
           EggGroup *joint = joints[ji];
           if (joint != (EggGroup *)NULL) {
@@ -2799,7 +2799,7 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
     dummy_tex->set_uv_name(dummy_uvset_name);
   }
   // Also apply an overall color to the primitive.
-  Colorf rgba = shader.get_rgba();
+  LColor rgba = shader.get_rgba();
   if (mayaegg_cat.is_spam()) {
     mayaegg_cat.spam() << "ssa:rgba = " << rgba << endl;
   }
@@ -3104,7 +3104,7 @@ string_transform_type(const string &arg) {
 //               the legacy or modern vertex color functions.
 ////////////////////////////////////////////////////////////////////
 void MayaToEggConverter::
-set_vertex_color(EggVertex &vert, MItMeshPolygon &pi, int vert_index, const MayaShader *shader, const Colorf &color) {
+set_vertex_color(EggVertex &vert, MItMeshPolygon &pi, int vert_index, const MayaShader *shader, const LColor &color) {
     if (shader == (MayaShader *)NULL || shader->_legacy_mode) {
       set_vertex_color_legacy(vert, pi, vert_index, shader, color);
     } else {
@@ -3121,7 +3121,7 @@ set_vertex_color(EggVertex &vert, MItMeshPolygon &pi, int vert_index, const Maya
 //               in Maya.
 ////////////////////////////////////////////////////////////////////
 void MayaToEggConverter::
-set_vertex_color_legacy(EggVertex &vert, MItMeshPolygon &pi, int vert_index, const MayaShader *shader, const Colorf &color){
+set_vertex_color_legacy(EggVertex &vert, MItMeshPolygon &pi, int vert_index, const MayaShader *shader, const LColor &color){
   if (pi.hasColor()) {
     MColor c;
     MStatus status = pi.getColor(c, vert_index);
@@ -3133,7 +3133,7 @@ set_vertex_color_legacy(EggVertex &vert, MItMeshPolygon &pi, int vert_index, con
       c /= 1.0;
       // The vertex color is a color scale that modifies the
       // polygon color, not an override that replaces it.
-      vert.set_color(Colorf(c.r * color[0], c.g * color[1], c.b * color[2], c.a * color[3]));
+      vert.set_color(LColor(c.r * color[0], c.g * color[1], c.b * color[2], c.a * color[3]));
 
       if (mayaegg_cat.is_spam()) {
         mayaegg_cat.spam() << "maya_color = " << c.r << " " << c.g << " " << c.b << " " << c.a << endl;
@@ -3155,13 +3155,13 @@ set_vertex_color_legacy(EggVertex &vert, MItMeshPolygon &pi, int vert_index, con
 //               or shaders.
 ////////////////////////////////////////////////////////////////////
 void MayaToEggConverter::
-set_vertex_color_modern(EggVertex &vert, MItMeshPolygon &pi, int vert_index, const MayaShader *shader, const Colorf &color) {
+set_vertex_color_modern(EggVertex &vert, MItMeshPolygon &pi, int vert_index, const MayaShader *shader, const LColor &color) {
   // If there's an explicit vertex color, output it.
   if (pi.hasColor(vert_index)) {
     MColor c;
     MStatus status = pi.getColor(c, vert_index);
     if (status) {
-      vert.set_color(Colorf(c.r, c.g, c.b, c.a));
+      vert.set_color(LColor(c.r, c.g, c.b, c.a));
       return;
     }
   }
@@ -3169,9 +3169,9 @@ set_vertex_color_modern(EggVertex &vert, MItMeshPolygon &pi, int vert_index, con
   // If there's no explicit color, use flat color, or white on a textured model.
   if (shader->_color_maps.empty()) {
     const Colord &c = shader->_flat_color;
-    vert.set_color(Colorf((float)c[0], (float)c[1], (float)c[2], (float)c[3]));
+    vert.set_color(LColor((PN_stdfloat)c[0], (PN_stdfloat)c[1], (PN_stdfloat)c[2], (PN_stdfloat)c[3]));
   } else {
     //there's no explicit color anywhere, must be textured (or blank)
-    vert.set_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+    vert.set_color(LColor(1.0f, 1.0f, 1.0f, 1.0f));
   }
 }

@@ -666,7 +666,7 @@ search_for_valid_displaymode(DXScreenData &scrn,
     }
 
     bool bIs16bppRenderTgt = IS_16BPP_DISPLAY_FORMAT(dispmode.Format);
-    float RendTgtMinMemReqmt = 0.0f;
+    PN_stdfloat RendTgtMinMemReqmt = 0.0f;
 
     // if we have a valid memavail value, try to determine if we have
     // enough space
@@ -680,12 +680,12 @@ search_for_valid_displaymode(DXScreenData &scrn,
 
 #define REQD_TEXMEM 1800000
 
-      float bytes_per_pixel = (bIs16bppRenderTgt ? 2 : 4);
+      PN_stdfloat bytes_per_pixel = (bIs16bppRenderTgt ? 2 : 4);
 
       // *2 for double buffer
 
       RendTgtMinMemReqmt =
-        ((float)RequestedX_Size) * ((float)RequestedY_Size) *
+        ((PN_stdfloat)RequestedX_Size) * ((PN_stdfloat)RequestedY_Size) *
         bytes_per_pixel * 2 + REQD_TEXMEM;
 
       if (bVerboseMode || wdxdisplay8_cat.is_spam())
@@ -714,12 +714,12 @@ search_for_valid_displaymode(DXScreenData &scrn,
         continue;
       }
 
-      float MinMemReqmt = 0.0f;
+      PN_stdfloat MinMemReqmt = 0.0f;
 
       if (bDoMemBasedChecks) {
         // test memory again, this time including zbuf size
-        float zbytes_per_pixel = (IS_16BPP_ZBUFFER(zformat) ? 2 : 4);
-        float MinMemReqmt = RendTgtMinMemReqmt + ((float)RequestedX_Size)*((float)RequestedY_Size)*zbytes_per_pixel;
+        PN_stdfloat zbytes_per_pixel = (IS_16BPP_ZBUFFER(zformat) ? 2 : 4);
+        PN_stdfloat MinMemReqmt = RendTgtMinMemReqmt + ((PN_stdfloat)RequestedX_Size)*((PN_stdfloat)RequestedY_Size)*zbytes_per_pixel;
 
         if (bVerboseMode || wdxdisplay8_cat.is_spam())
           wdxdisplay8_cat.info()

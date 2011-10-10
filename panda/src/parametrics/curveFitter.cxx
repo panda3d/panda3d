@@ -61,7 +61,7 @@ reset() {
 //  Description: Adds a single sample xyz.
 ////////////////////////////////////////////////////////////////////
 void CurveFitter::
-add_xyz(float t, const LVecBase3f &xyz) {
+add_xyz(PN_stdfloat t, const LVecBase3 &xyz) {
   DataPoint dp;
   dp._t = t;
   dp._xyz = xyz;
@@ -75,7 +75,7 @@ add_xyz(float t, const LVecBase3f &xyz) {
 //  Description: Adds a single sample hpr.
 ////////////////////////////////////////////////////////////////////
 void CurveFitter::
-add_hpr(float t, const LVecBase3f &hpr) {
+add_hpr(PN_stdfloat t, const LVecBase3 &hpr) {
   DataPoint dp;
   dp._t = t;
   dp._hpr = hpr;
@@ -89,7 +89,7 @@ add_hpr(float t, const LVecBase3f &hpr) {
 //  Description: Adds a single sample xyz & hpr simultaneously.
 ////////////////////////////////////////////////////////////////////
 void CurveFitter::
-add_xyz_hpr(float t, const LVecBase3f &xyz, const LVecBase3f &hpr) {
+add_xyz_hpr(PN_stdfloat t, const LVecBase3 &xyz, const LVecBase3 &hpr) {
   DataPoint dp;
   dp._t = t;
   dp._xyz = xyz;
@@ -115,7 +115,7 @@ get_num_samples() const {
 //       Access: Public
 //  Description: Returns the parametric value of the nth sample added.
 ////////////////////////////////////////////////////////////////////
-float CurveFitter::
+PN_stdfloat CurveFitter::
 get_sample_t(int n) const {
   nassertr(n >= 0 && n < (int)_data.size(), 0.0f);
   return _data[n]._t;
@@ -126,9 +126,9 @@ get_sample_t(int n) const {
 //       Access: Public
 //  Description: Returns the point in space of the nth sample added.
 ////////////////////////////////////////////////////////////////////
-LVecBase3f CurveFitter::
+LVecBase3 CurveFitter::
 get_sample_xyz(int n) const {
-  nassertr(n >= 0 && n < (int)_data.size(), LVecBase3f::zero());
+  nassertr(n >= 0 && n < (int)_data.size(), LVecBase3::zero());
   return _data[n]._xyz;
 }
 
@@ -137,9 +137,9 @@ get_sample_xyz(int n) const {
 //       Access: Public
 //  Description: Returns the orientation of the nth sample added.
 ////////////////////////////////////////////////////////////////////
-LVecBase3f CurveFitter::
+LVecBase3 CurveFitter::
 get_sample_hpr(int n) const {
-  nassertr(n >= 0 && n < (int)_data.size(), LVecBase3f::zero());
+  nassertr(n >= 0 && n < (int)_data.size(), LVecBase3::zero());
   return _data[n]._hpr;
 }
 
@@ -150,9 +150,9 @@ get_sample_hpr(int n) const {
 //               added.  This is only meaningful if compute_tangents()
 //               has already been called.
 ////////////////////////////////////////////////////////////////////
-LVecBase3f CurveFitter::
+LVecBase3 CurveFitter::
 get_sample_tangent(int n) const {
-  nassertr(n >= 0 && n < (int)_data.size(), LVecBase3f::zero());
+  nassertr(n >= 0 && n < (int)_data.size(), LVecBase3::zero());
   return _data[n]._tangent;
 }
 
@@ -183,15 +183,15 @@ remove_samples(int begin, int end) {
 void CurveFitter::
 sample(ParametricCurveCollection *curves, int count) {
   nassertv(curves != (ParametricCurveCollection *)NULL);
-  float max_t = curves->get_max_t();
-  float t, last_t, d;
+  PN_stdfloat max_t = curves->get_max_t();
+  PN_stdfloat t, last_t, d;
   DataPoint dp;
 
   last_t = 0.0f;
   d = 0.0f;
   int i;
   for (i = 0; i < count; i++) {
-    t = max_t * (float)i / (float)(count-1);
+    t = max_t * (PN_stdfloat)i / (PN_stdfloat)(count-1);
     if (curves->evaluate(t, dp._xyz, dp._hpr)) {
       dp._t = t;
       _data.push_back(dp);
@@ -218,8 +218,8 @@ sample(ParametricCurveCollection *curves, int count) {
 void CurveFitter::
 wrap_hpr() {
   Data::iterator di;
-  LVecBase3f last(0.0f, 0.0f, 0.0f);
-  LVecBase3f net(0.0f, 0.0f, 0.0f);
+  LVecBase3 last(0.0f, 0.0f, 0.0f);
+  LVecBase3 net(0.0f, 0.0f, 0.0f);
 
   for (di = _data.begin(); di != _data.end(); ++di) {
     int i;
@@ -261,9 +261,9 @@ sort_points() {
 //               last samples.
 ////////////////////////////////////////////////////////////////////
 void CurveFitter::
-desample(float factor) {
+desample(PN_stdfloat factor) {
   int in, out;
-  float count = factor;
+  PN_stdfloat count = factor;
 
   out = 0;
   for (in = 0; in < (int)_data.size()-1; in++) {
@@ -291,7 +291,7 @@ desample(float factor) {
 //               as the points were added).
 ////////////////////////////////////////////////////////////////////
 void CurveFitter::
-compute_tangents(float scale) {
+compute_tangents(PN_stdfloat scale) {
   // If the head and tail points match up, close the curve.
   bool closed = false;
 
@@ -438,8 +438,8 @@ make_nurbs() const {
     // between their two neighbors.
 
     int i;
-    float k1, k2 = nc->get_knot(num_knots-1);
-    const float one_third = 1.0f/3.0f;
+    PN_stdfloat k1, k2 = nc->get_knot(num_knots-1);
+    const PN_stdfloat one_third = 1.0f/3.0f;
     for (i = 3; i < num_knots - 4; i += 3) {
       k1 = nc->get_knot(i-1);
       k2 = nc->get_knot(i+2);

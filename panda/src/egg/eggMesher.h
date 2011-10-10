@@ -58,7 +58,7 @@ private:
   typedef pmap<int, EdgePtrs> Verts;
 
   // This is used for show-qsheets.
-  typedef pmap<int, Colorf> ColorSheetMap;
+  typedef pmap<int, LColor> ColorSheetMap;
 
   int count_vert_edges(const EdgePtrs &edges) const;
   plist<EggMesherStrip> &choose_strip_list(const EggMesherStrip &strip);
@@ -67,7 +67,7 @@ private:
   void find_fans();
   void make_quads();
   void mesh_list(Strips &strips);
-  static void make_random_color(Colorf &color);
+  static void make_random_color(LColor &color);
 
   bool _flat_shaded;
   Strips _tris, _quads, _strips;

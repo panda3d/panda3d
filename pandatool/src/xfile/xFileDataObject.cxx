@@ -146,7 +146,7 @@ add_MeshFace(XFile *x_file) {
 //  Description: Appends a new IndexedColor instance.
 ////////////////////////////////////////////////////////////////////
 XFileDataObject &XFileDataObject::
-add_IndexedColor(XFile *x_file, int index, const Colorf &color) {
+add_IndexedColor(XFile *x_file, int index, const LColor &color) {
   XFileTemplate *xtemplate = XFile::find_standard_template("IndexedColor");
   nassertr(xtemplate != (XFileTemplate *)NULL, *this);
   XFileDataNodeTemplate *node = 

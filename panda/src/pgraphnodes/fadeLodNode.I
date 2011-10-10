@@ -19,7 +19,7 @@
 //  Description: set the time taken to complete an LOD switch
 ////////////////////////////////////////////////////////////////////
 INLINE void FadeLODNode::
-set_fade_time(float t) {
+set_fade_time(PN_stdfloat t) {
   _fade_time = t;
 }
 
@@ -28,7 +28,7 @@ set_fade_time(float t) {
 //       Access: Published
 //  Description: get the time taken to complete an LOD switch
 ////////////////////////////////////////////////////////////////////
-INLINE float FadeLODNode::
+INLINE PN_stdfloat FadeLODNode::
 get_fade_time() const {
   return _fade_time;
 }

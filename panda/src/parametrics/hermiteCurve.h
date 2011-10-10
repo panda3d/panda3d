@@ -55,20 +55,20 @@ public:
   HermiteCurveCV(const HermiteCurveCV &c);
   ~HermiteCurveCV();
 
-  void set_point(const LVecBase3f &point) { _p = point; }
-  void set_in(const LVecBase3f &in);
-  void set_out(const LVecBase3f &out);
+  void set_point(const LVecBase3 &point) { _p = point; }
+  void set_in(const LVecBase3 &in);
+  void set_out(const LVecBase3 &out);
   void set_type(int type);
   void set_name(const string &name);
 
   void format_egg(ostream &out, int indent, int num_dimensions,
               bool show_in, bool show_out,
-              float scale_in, float scale_out) const;
+              PN_stdfloat scale_in, PN_stdfloat scale_out) const;
 
   void write_datagram(BamWriter *manager, Datagram &me) const;
   void fillin(DatagramIterator &scan, BamReader *manager);
 
-  LVecBase3f _p, _in, _out;
+  LVecBase3 _p, _in, _out;
   int _type;
   string _name;
 };
@@ -93,9 +93,9 @@ PUBLISHED:
 
   int get_num_cvs() const;
 
-  int insert_cv(float t);
-  int append_cv(int type, float x, float y, float z);
-  inline int append_cv(int type, const LVecBase3f &v) {
+  int insert_cv(PN_stdfloat t);
+  int append_cv(int type, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+  inline int append_cv(int type, const LVecBase3 &v) {
     return append_cv(type, v[0], v[1], v[2]);
   }
 
@@ -103,30 +103,30 @@ PUBLISHED:
   void remove_all_cvs();
 
   bool set_cv_type(int n, int type);
-  bool set_cv_point(int n, float x, float y, float z);
-  inline bool set_cv_point(int n, const LVecBase3f &v) {
+  bool set_cv_point(int n, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+  inline bool set_cv_point(int n, const LVecBase3 &v) {
     return set_cv_point(n, v[0], v[1], v[2]);
   }
-  bool set_cv_in(int n, float x, float y, float z);
-  inline bool set_cv_in(int n, const LVecBase3f &v) {
+  bool set_cv_in(int n, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+  inline bool set_cv_in(int n, const LVecBase3 &v) {
     return set_cv_in(n, v[0], v[1], v[2]);
   }
-  bool set_cv_out(int n, float x, float y, float z);
-  inline bool set_cv_out(int n, const LVecBase3f &v) {
+  bool set_cv_out(int n, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+  inline bool set_cv_out(int n, const LVecBase3 &v) {
     return set_cv_out(n, v[0], v[1], v[2]);
   }
-  bool set_cv_tstart(int n, float tstart);
+  bool set_cv_tstart(int n, PN_stdfloat tstart);
   bool set_cv_name(int n, const char *name);
 
 
   int get_cv_type(int n) const;
-  const LVecBase3f &get_cv_point(int n) const;
-  void get_cv_point(int n, LVecBase3f &v) const;
-  const LVecBase3f &get_cv_in(int n) const;
-  void get_cv_in(int n, LVecBase3f &v) const;
-  const LVecBase3f &get_cv_out(int n) const;
-  void get_cv_out(int n, LVecBase3f &v) const;
-  float get_cv_tstart(int n) const;
+  const LVecBase3 &get_cv_point(int n) const;
+  void get_cv_point(int n, LVecBase3 &v) const;
+  const LVecBase3 &get_cv_in(int n) const;
+  void get_cv_in(int n, LVecBase3 &v) const;
+  const LVecBase3 &get_cv_out(int n) const;
+  void get_cv_out(int n, LVecBase3 &v) const;
+  PN_stdfloat get_cv_tstart(int n) const;
   string get_cv_name(int n) const;
 
   virtual void output(ostream &out) const;
@@ -139,17 +139,17 @@ public:
   }
 
   virtual bool
-  rebuild_curveseg(int rtype0, float t0, const LVecBase4f &v0,
-                   int rtype1, float t1, const LVecBase4f &v1,
-                   int rtype2, float t2, const LVecBase4f &v2,
-                   int rtype3, float t3, const LVecBase4f &v3);
+  rebuild_curveseg(int rtype0, PN_stdfloat t0, const LVecBase4 &v0,
+                   int rtype1, PN_stdfloat t1, const LVecBase4 &v1,
+                   int rtype2, PN_stdfloat t2, const LVecBase4 &v2,
+                   int rtype3, PN_stdfloat t3, const LVecBase4 &v3);
 
 protected:
   virtual bool format_egg(ostream &out, const string &name,
                           const string &curve_type, int indent_level) const;
 
   void invalidate_cv(int n, bool redo_all);
-  int find_cv(float t);
+  int find_cv(PN_stdfloat t);
   void recompute_basis();
 
   pvector<HermiteCurveCV> _points;

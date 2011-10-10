@@ -59,8 +59,8 @@ public:
 
   INLINE void set_client_name(const string &name);
   INLINE string get_client_name() const;
-  INLINE void set_max_rate(float rate);
-  INLINE float get_max_rate() const;
+  INLINE void set_max_rate(PN_stdfloat rate);
+  INLINE PN_stdfloat get_max_rate() const;
 
   INLINE double get_real_time() const;
 
@@ -110,10 +110,10 @@ private:
 
   string _hostname;
   string _client_name;
-  float _max_rate;
+  PN_stdfloat _max_rate;
 
-  float _tcp_count_factor;
-  float _udp_count_factor;
+  PN_stdfloat _tcp_count_factor;
+  PN_stdfloat _udp_count_factor;
   unsigned int _tcp_count;
   unsigned int _udp_count;
 };

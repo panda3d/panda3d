@@ -1,5 +1,5 @@
 // Filename: cullTraverser.h
-// Created by:  drose (23Feb02)
+// Created by:  drose (23eb02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -105,8 +105,8 @@ private:
   void show_bounds(CullTraverserData &data, bool tight);
   static PT(Geom) make_bounds_viz(const BoundingVolume *vol);
   PT(Geom) make_tight_bounds_viz(PandaNode *node) const;
-  static Vertexf compute_point(const BoundingSphere *sphere, 
-                               float latitude, float longitude);
+  static LVertex compute_point(const BoundingSphere *sphere, 
+                               PN_stdfloat latitude, PN_stdfloat longitude);
   static CPT(RenderState) get_bounds_outer_viz_state();
   static CPT(RenderState) get_bounds_inner_viz_state();
   static CPT(RenderState) get_depth_offset_state();

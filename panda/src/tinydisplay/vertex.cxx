@@ -5,11 +5,11 @@ void gl_eval_viewport(GLContext * c) {
   GLViewport *v = &c->viewport;
   GLScissor *s = &c->scissor;
   
-  float xsize = v->xsize * (s->right - s->left);
-  float xmin = v->xmin + v->xsize * s->left;
-  float ysize = v->ysize * (s->top - s->bottom);
-  float ymin = v->ymin + v->ysize * (1.0f - s->top);
-  float zsize = (float)(1 << (ZB_Z_BITS + ZB_POINT_Z_FRAC_BITS));
+  PN_stdfloat xsize = v->xsize * (s->right - s->left);
+  PN_stdfloat xmin = v->xmin + v->xsize * s->left;
+  PN_stdfloat ysize = v->ysize * (s->top - s->bottom);
+  PN_stdfloat ymin = v->ymin + v->ysize * (1.0f - s->top);
+  PN_stdfloat zsize = (PN_stdfloat)(1 << (ZB_Z_BITS + ZB_POINT_Z_FRAC_BITS));
 
   v->trans.v[0] = ((xsize - 0.5f) / 2.0f) + xmin;
   v->trans.v[1] = ((ysize - 0.5f) / 2.0f) + ymin;
@@ -24,7 +24,7 @@ void gl_eval_viewport(GLContext * c) {
 /* TODO : handle all cases */
 void 
 gl_vertex_transform(GLContext * c, GLVertex * v) {
-  float *m;
+  PN_stdfloat *m;
   V4 *n;
 
   if (c->lighting_enabled) {

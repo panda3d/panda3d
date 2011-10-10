@@ -96,7 +96,7 @@ public:
 
   char **texNameArray;
   int *uRepeat, *vRepeat;
-  float matrix[4][4];
+  PN_stdfloat matrix[4][4];
 
   const char *fullname;
 
@@ -111,10 +111,10 @@ public:
   int numNurbTexGlb;
   int numNurbMats;
 
-  float *uScale;
-  float *vScale;
-  float *uOffset;
-  float *vOffset;
+  PN_stdfloat *uScale;
+  PN_stdfloat *vScale;
+  PN_stdfloat *uOffset;
+  PN_stdfloat *vOffset;
   
   SAA_Boolean valid;
   SAA_Boolean uv_swap;
@@ -131,10 +131,10 @@ public:
   void load_poly_model(SAA_Scene *scene, SAA_ModelType type);
   void load_nurbs_model(SAA_Scene *scene, SAA_ModelType type);
 
-  void make_morph_table(float time);
-  void make_linear_morph_table(int numShapes, float time);
-  void make_weighted_morph_table(int numShapes, float time);
-  void make_expression_morph_table(int numShapes, float time);
+  void make_morph_table(PN_stdfloat time);
+  void make_linear_morph_table(int numShapes, PN_stdfloat time);
+  void make_weighted_morph_table(int numShapes, PN_stdfloat time);
+  void make_expression_morph_table(int numShapes, PN_stdfloat time);
 
   void make_vertex_offsets(int numShapes);
   int find_shape_vert(LPoint3d p3d, SAA_DVector *vertices, int numVert);

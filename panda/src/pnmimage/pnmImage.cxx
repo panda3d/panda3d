@@ -234,13 +234,13 @@ alpha_fill_val(xelval alpha) {
 //               Input must be a color image.
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
-remix_channels(const LMatrix4f &conv) {
+remix_channels(const LMatrix4 &conv) {
   int nchannels = get_num_channels();
   nassertv((nchannels >= 3) && (nchannels <= 4));
   for (int y = 0; y < get_y_size(); y++) {
     for (int x = 0; x < get_x_size(); x++) {
-      LVector3f inv(get_red(x,y),get_green(x,y),get_blue(x,y));
-      LVector3f outv(conv.xform_point(inv));
+      LVector3 inv(get_red(x,y),get_green(x,y),get_blue(x,y));
+      LVector3 outv(conv.xform_point(inv));
       set_xel(x,y,outv[0],outv[1],outv[2]);
     }
   }

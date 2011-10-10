@@ -38,12 +38,12 @@ public:
   int _material_index;
   string _material_name;
   unsigned int _flags;
-  RGBColorf _ambient;
-  RGBColorf _diffuse;
-  RGBColorf _specular;
-  RGBColorf _emissive;
-  float _shininess;
-  float _alpha;
+  LRGBColor _ambient;
+  LRGBColor _diffuse;
+  LRGBColor _specular;
+  LRGBColor _emissive;
+  PN_stdfloat _shininess;
+  PN_stdfloat _alpha;
 
 protected:
   virtual bool extract_record(FltRecordReader &reader);

@@ -58,8 +58,8 @@ private:
   bool _munge_color;
   bool _munge_color_scale;
 
-  Colorf _color;
-  LVecBase4f _color_scale;
+  LColor _color;
+  LVecBase4 _color_scale;
 
 public:
   static TypeHandle get_class_type() {

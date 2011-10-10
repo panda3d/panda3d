@@ -175,8 +175,8 @@ set_projector(const NodePath &projector) {
 ////////////////////////////////////////////////////////////////////
 PT(GeomNode) ProjectionScreen::
 generate_screen(const NodePath &projector, const string &screen_name,
-                int num_x_verts, int num_y_verts, float distance,
-                float fill_ratio) {
+                int num_x_verts, int num_y_verts, PN_stdfloat distance,
+                PN_stdfloat fill_ratio) {
   nassertr(!projector.is_empty() && 
            projector.node()->is_of_type(LensNode::get_class_type()),
            NULL);
@@ -184,7 +184,7 @@ generate_screen(const NodePath &projector, const string &screen_name,
   nassertr(projector_node->get_lens() != NULL, NULL);
 
   // First, get the relative coordinate space of the projector.
-  LMatrix4f rel_mat;
+  LMatrix4 rel_mat;
   NodePath this_np(this);
   rel_mat = projector.get_transform(this_np)->get_mat();
 
@@ -195,10 +195,10 @@ generate_screen(const NodePath &projector, const string &screen_name,
   // in order from left to right and bottom to top.
   int num_verts = num_x_verts * num_y_verts;
   Lens *lens = projector_node->get_lens();
-  float t = (distance - lens->get_near()) / (lens->get_far() - lens->get_near());
+  PN_stdfloat t = (distance - lens->get_near()) / (lens->get_far() - lens->get_near());
 
-  float x_scale = 2.0f / (num_x_verts - 1);
-  float y_scale = 2.0f / (num_y_verts - 1);
+  PN_stdfloat x_scale = 2.0f / (num_x_verts - 1);
+  PN_stdfloat y_scale = 2.0f / (num_y_verts - 1);
 
   PT(GeomVertexData) vdata = new GeomVertexData
     ("projectionScreen", GeomVertexFormat::get_v3n3(),
@@ -208,23 +208,23 @@ generate_screen(const NodePath &projector, const string &screen_name,
   
   for (int yi = 0; yi < num_y_verts; yi++) {
     for (int xi = 0; xi < num_x_verts; xi++) {
-      LPoint2f film = LPoint2f((float)xi * x_scale - 1.0f,
-                               (float)yi * y_scale - 1.0f);
+      LPoint2 film = LPoint2((PN_stdfloat)xi * x_scale - 1.0f,
+                               (PN_stdfloat)yi * y_scale - 1.0f);
       
       // Reduce the image by the fill ratio.
       film *= fill_ratio;
       
-      LPoint3f near_point, far_point;
+      LPoint3 near_point, far_point;
       lens->extrude(film, near_point, far_point);
-      LPoint3f point = near_point + t * (far_point - near_point);
+      LPoint3 point = near_point + t * (far_point - near_point);
       
       // Normals aren't often needed on projection screens, but you
       // never know.
-      LVector3f norm;
+      LVector3 norm;
       lens->extrude_vec(film, norm);
       
-      vertex.add_data3f(point * rel_mat);
-      normal.add_data3f(-normalize(norm * rel_mat));
+      vertex.add_data3(point * rel_mat);
+      normal.add_data3(-normalize(norm * rel_mat));
     }
   }
   nassertr(vdata->get_num_rows() == num_verts, NULL);
@@ -264,8 +264,8 @@ generate_screen(const NodePath &projector, const string &screen_name,
 ////////////////////////////////////////////////////////////////////
 void ProjectionScreen::
 regenerate_screen(const NodePath &projector, const string &screen_name,
-                  int num_x_verts, int num_y_verts, float distance,
-                  float fill_ratio) {
+                  int num_x_verts, int num_y_verts, PN_stdfloat distance,
+                  PN_stdfloat fill_ratio) {
   // First, remove all existing children.
   remove_all_children();
 
@@ -309,7 +309,7 @@ make_flat_mesh(const NodePath &this_np, const NodePath &camera) {
 
   PT(PandaNode) top = new PandaNode(get_name());
 
-  LMatrix4f rel_mat;
+  LMatrix4 rel_mat;
   bool computed_rel_mat = false;
   make_mesh_children(top, this_np, camera, rel_mat, computed_rel_mat);
 
@@ -356,7 +356,7 @@ recompute_if_stale(const NodePath &this_np) {
     } else {
       // Get the relative transform to ensure it hasn't changed.
       CPT(TransformState) transform = this_np.get_transform(_projector);
-      const LMatrix4f &top_mat = transform->get_mat();
+      const LMatrix4 &top_mat = transform->get_mat();
       if (!_rel_top_mat.almost_equal(top_mat)) {
         _rel_top_mat = top_mat;
         _computed_rel_top_mat = true;
@@ -394,7 +394,7 @@ do_recompute(const NodePath &this_np) {
 //               encountered, a new relative matrix is computed.
 ////////////////////////////////////////////////////////////////////
 void ProjectionScreen::
-recompute_node(const WorkingNodePath &np, LMatrix4f &rel_mat,
+recompute_node(const WorkingNodePath &np, LMatrix4 &rel_mat,
                bool &computed_rel_mat) {
   PandaNode *node = np.node();
   if (node->is_geom_node()) {
@@ -430,7 +430,7 @@ recompute_node(const WorkingNodePath &np, LMatrix4f &rel_mat,
 //               of a given node.
 ////////////////////////////////////////////////////////////////////
 void ProjectionScreen::
-recompute_child(const WorkingNodePath &np, LMatrix4f &rel_mat,
+recompute_child(const WorkingNodePath &np, LMatrix4 &rel_mat,
                 bool &computed_rel_mat) {
   PandaNode *child = np.node();
 
@@ -438,7 +438,7 @@ recompute_child(const WorkingNodePath &np, LMatrix4f &rel_mat,
   if (!transform->is_identity()) {
     // This child node has a transform; therefore, we must recompute
     // the relative matrix from this point.
-    LMatrix4f new_rel_mat;
+    LMatrix4 new_rel_mat;
     bool computed_new_rel_mat = false;
 
     if (distort_cat.is_spam()) {
@@ -461,7 +461,7 @@ recompute_child(const WorkingNodePath &np, LMatrix4f &rel_mat,
 //  Description: Recomputes the UV's just for the indicated GeomNode.
 ////////////////////////////////////////////////////////////////////
 void ProjectionScreen::
-recompute_geom_node(const WorkingNodePath &np, LMatrix4f &rel_mat, 
+recompute_geom_node(const WorkingNodePath &np, LMatrix4 &rel_mat, 
                     bool &computed_rel_mat) {
   GeomNode *node = DCAST(GeomNode, np.node());
   if (!computed_rel_mat) {
@@ -496,14 +496,14 @@ recompute_geom_node(const WorkingNodePath &np, LMatrix4f &rel_mat,
 //  Description: Recomputes the UV's just for the indicated Geom.
 ////////////////////////////////////////////////////////////////////
 void ProjectionScreen::
-recompute_geom(Geom *geom, const LMatrix4f &rel_mat) {
-  static const LMatrix4f lens_to_uv
+recompute_geom(Geom *geom, const LMatrix4 &rel_mat) {
+  static const LMatrix4 lens_to_uv
     (0.5f, 0.0f, 0.0f, 0.0f,
      0.0f, 0.5f, 0.0f, 0.0f, 
      0.0f, 0.0f, 0.5f, 0.0f, 
      0.5f, 0.5f, 0.5f, 1.0f);
 
-  static const LMatrix4f lens_to_uv_inverted
+  static const LMatrix4 lens_to_uv_inverted
     (0.5f, 0.0f, 0.0f, 0.0f,
      0.0f,-0.5f, 0.0f, 0.0f, 
      0.0f, 0.0f, 0.5f, 0.0f, 
@@ -514,7 +514,7 @@ recompute_geom(Geom *geom, const LMatrix4f &rel_mat) {
   Lens *lens = _projector_node->get_lens();
   nassertv(lens != (Lens *)NULL);
 
-  const LMatrix4f &to_uv = _invert_uvs ? lens_to_uv_inverted : lens_to_uv;
+  const LMatrix4 &to_uv = _invert_uvs ? lens_to_uv_inverted : lens_to_uv;
 
   // Iterate through all the vertices in the Geom.
 
@@ -522,7 +522,7 @@ recompute_geom(Geom *geom, const LMatrix4f &rel_mat) {
   if (!vdata->has_column(_texcoord_name)) {
     // We need to add a new column for the new texcoords.
     vdata = vdata->replace_column
-      (_texcoord_name, 3, Geom::NT_float32, Geom::C_texcoord);
+      (_texcoord_name, 3, Geom::NT_stdfloat, Geom::C_texcoord);
     geom->set_vertex_data(vdata);
   }
   if (_vignette_on && !vdata->has_column(InternalName::get_color())) {
@@ -549,23 +549,23 @@ recompute_geom(Geom *geom, const LMatrix4f &rel_mat) {
   }
   
   while (!vertex.is_at_end()) {
-    Vertexf vert = vertex.get_data3f();
+    LVertex vert = vertex.get_data3();
     
     // For each vertex, project to the film plane.
-    LPoint3f film(0.0f, 0.0f, 0.0f);
+    LPoint3 film(0.0f, 0.0f, 0.0f);
     bool good = lens->project(vert * rel_mat, film);
     
     // Now the lens gives us coordinates in the range [-1, 1].
     // Rescale these to [0, 1].
-    texcoord.set_data3f(film * to_uv);
+    texcoord.set_data3(film * to_uv);
     
     // If we have vignette color in effect, color the vertex according
     // to whether it fell in front of the lens or not.
     if (_vignette_on) {
       if (good) {
-        color.set_data4f(_frame_color);
+        color.set_data4(_frame_color);
       } else {
-        color.set_data4f(_vignette_color);
+        color.set_data4(_vignette_color);
       }
     }
   }
@@ -583,7 +583,7 @@ recompute_geom(Geom *geom, const LMatrix4f &rel_mat) {
 PandaNode *ProjectionScreen::
 make_mesh_node(PandaNode *result_parent, const WorkingNodePath &np,
                const NodePath &camera,
-               LMatrix4f &rel_mat, bool &computed_rel_mat) {
+               LMatrix4 &rel_mat, bool &computed_rel_mat) {
   PandaNode *node = np.node();
   if (!node->safe_to_flatten()) {
     // If we can't safely flatten this node, ignore it (and all of its
@@ -613,7 +613,7 @@ make_mesh_node(PandaNode *result_parent, const WorkingNodePath &np,
 void ProjectionScreen::
 make_mesh_children(PandaNode *new_node, const WorkingNodePath &np,
                    const NodePath &camera,
-                   LMatrix4f &rel_mat, bool &computed_rel_mat) {
+                   LMatrix4 &rel_mat, bool &computed_rel_mat) {
   PandaNode *node = np.node();
   int num_children = node->get_num_children();
   for (int i = 0; i < num_children; i++) {
@@ -624,7 +624,7 @@ make_mesh_children(PandaNode *new_node, const WorkingNodePath &np,
     if (!transform->is_identity()) {
       // This child node has a transform; therefore, we must recompute
       // the relative matrix from this point.
-      LMatrix4f new_rel_mat;
+      LMatrix4 new_rel_mat;
       bool computed_new_rel_mat = false;
       new_child = make_mesh_node(new_node, WorkingNodePath(np, child), camera,
                                  new_rel_mat, computed_new_rel_mat);
@@ -651,7 +651,7 @@ make_mesh_children(PandaNode *new_node, const WorkingNodePath &np,
 ////////////////////////////////////////////////////////////////////
 PT(GeomNode) ProjectionScreen::
 make_mesh_geom_node(const WorkingNodePath &np, const NodePath &camera,
-                    LMatrix4f &rel_mat, bool &computed_rel_mat) {
+                    LMatrix4 &rel_mat, bool &computed_rel_mat) {
   GeomNode *node = DCAST(GeomNode, np.node());
   PT(GeomNode) new_node = new GeomNode(node->get_name());
   LensNode *lens_node = DCAST(LensNode, camera.node());
@@ -685,20 +685,20 @@ make_mesh_geom_node(const WorkingNodePath &np, const NodePath &camera,
 //               that involves an unprojectable vertex is eliminated.
 ////////////////////////////////////////////////////////////////////
 PT(Geom) ProjectionScreen::
-make_mesh_geom(const Geom *geom, Lens *lens, LMatrix4f &rel_mat) {
+make_mesh_geom(const Geom *geom, Lens *lens, LMatrix4 &rel_mat) {
   PT(Geom) new_geom = geom->make_copy();
 
   GeomVertexRewriter vertex(new_geom->modify_vertex_data(), 
                               InternalName::get_vertex());
   while (!vertex.is_at_end()) {
-    Vertexf vert = vertex.get_data3f();
+    LVertex vert = vertex.get_data3();
     
     // Project each vertex into the film plane, but use three
     // dimensions so the Z coordinate remains meaningful.
-    LPoint3f film(0.0f, 0.0f, 0.0f);
+    LPoint3 film(0.0f, 0.0f, 0.0f);
     lens->project(vert * rel_mat, film);
     
-    vertex.set_data3f(film);
+    vertex.set_data3(film);
   }      
   
   return new_geom;

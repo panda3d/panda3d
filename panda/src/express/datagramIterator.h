@@ -47,8 +47,9 @@ PUBLISHED:
   INLINE PN_uint16 get_uint16();
   INLINE PN_uint32 get_uint32();
   INLINE PN_uint64 get_uint64();
-  INLINE float get_float32();
+  INLINE PN_float32 get_float32();
   INLINE PN_float64 get_float64();
+  INLINE PN_stdfloat get_stdfloat();
 
   INLINE PN_int16 get_be_int16();
   INLINE PN_int32 get_be_int32();
@@ -56,7 +57,7 @@ PUBLISHED:
   INLINE PN_uint16 get_be_uint16();
   INLINE PN_uint32 get_be_uint32();
   INLINE PN_uint64 get_be_uint64();
-  INLINE float get_be_float32();
+  INLINE PN_float32 get_be_float32();
   INLINE PN_float64 get_be_float64();
 
   string get_string();

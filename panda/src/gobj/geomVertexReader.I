@@ -552,6 +552,70 @@ get_data4d() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexReader::get_data1
+//       Access: Published
+//  Description: Returns the data associated with the read row,
+//               expressed as a 1-component value, and advances the
+//               read row.
+////////////////////////////////////////////////////////////////////
+INLINE PN_stdfloat GeomVertexReader::
+get_data1() {
+#ifndef STDFLOAT_DOUBLE
+  return get_data1f();
+#else
+  return get_data1d();
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexReader::get_data2
+//       Access: Published
+//  Description: Returns the data associated with the read row,
+//               expressed as a 2-component value, and advances the
+//               read row.
+////////////////////////////////////////////////////////////////////
+INLINE const LVecBase2 &GeomVertexReader::
+get_data2() {
+#ifndef STDFLOAT_DOUBLE
+  return get_data2f();
+#else
+  return get_data2d();
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexReader::get_data3
+//       Access: Published
+//  Description: Returns the data associated with the read row,
+//               expressed as a 3-component value, and advances the
+//               read row.
+////////////////////////////////////////////////////////////////////
+INLINE const LVecBase3 &GeomVertexReader::
+get_data3() {
+#ifndef STDFLOAT_DOUBLE
+  return get_data3f();
+#else
+  return get_data3d();
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexReader::get_data4
+//       Access: Published
+//  Description: Returns the data associated with the read row,
+//               expressed as a 4-component value, and advances the
+//               read row.
+////////////////////////////////////////////////////////////////////
+INLINE const LVecBase4 &GeomVertexReader::
+get_data4() {
+#ifndef STDFLOAT_DOUBLE
+  return get_data4f();
+#else
+  return get_data4d();
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexReader::get_data1i
 //       Access: Published
 //  Description: Returns the data associated with the read row,

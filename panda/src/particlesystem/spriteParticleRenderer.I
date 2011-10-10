@@ -25,13 +25,13 @@
 //               all previously loaded textures and animations.
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
-set_texture(Texture *tex, float texels_per_unit) {
+set_texture(Texture *tex, PN_stdfloat texels_per_unit) {
   if (tex != (Texture *)NULL) {
     // Clear all texture information
     _anims.clear();
 
     // Insert the single texture
-    _anims.push_back(new SpriteAnim(tex,TexCoordf(0.0f, 0.0f),TexCoordf(1.0f, 1.0f)));
+    _anims.push_back(new SpriteAnim(tex,LTexCoord(0.0f, 0.0f),LTexCoord(1.0f, 1.0f)));
 
     // We scale the particle size by the size of the texture.
     set_size(tex->get_x_size() / texels_per_unit,
@@ -50,13 +50,13 @@ set_texture(Texture *tex, float texels_per_unit) {
 //               a previous call to set_texture().
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
-add_texture(Texture *tex, float texels_per_unit, bool resize) {
+add_texture(Texture *tex, PN_stdfloat texels_per_unit, bool resize) {
   if (_anims.size() == 0) {
     set_texture(tex, texels_per_unit);
   } else {
     if(tex != (Texture *)NULL) {
       if (tex != (Texture *)NULL) {
-        _anims.push_back(new SpriteAnim(tex,TexCoordf(0.0f, 0.0f),TexCoordf(1.0f, 1.0f)));
+        _anims.push_back(new SpriteAnim(tex,LTexCoord(0.0f, 0.0f),LTexCoord(1.0f, 1.0f)));
       }
       if(resize) {
         // We scale the particle size by the size of the texture.
@@ -99,7 +99,7 @@ remove_animation(const int n) {
 //               to use only a portion of the texture.
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
-set_ll_uv(const TexCoordf &ll_uv) {
+set_ll_uv(const LTexCoord &ll_uv) {
   set_ll_uv(ll_uv,0,0);
 }
 
@@ -112,7 +112,7 @@ set_ll_uv(const TexCoordf &ll_uv) {
 //               to use only a portion of the texture.
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
-set_ll_uv(const TexCoordf &ll_uv, const int anim, const int frame) {
+set_ll_uv(const LTexCoord &ll_uv, const int anim, const int frame) {
   if(anim < (int)_anims.size() && frame < (int)_anims[anim]->get_num_frames()) {
     _anims[anim]->set_ll(frame,ll_uv);
   }
@@ -127,7 +127,7 @@ set_ll_uv(const TexCoordf &ll_uv, const int anim, const int frame) {
 //               to use only a portion of the texture.
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
-set_ur_uv(const TexCoordf &ur_uv) {
+set_ur_uv(const LTexCoord &ur_uv) {
   set_ur_uv(ur_uv,0,0);
 }
 
@@ -140,7 +140,7 @@ set_ur_uv(const TexCoordf &ur_uv) {
 //               to use only a portion of the texture.
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
-set_ur_uv(const TexCoordf &ur_uv, const int anim, const int frame) {
+set_ur_uv(const LTexCoord &ur_uv, const int anim, const int frame) {
   if(anim < (int)_anims.size() && frame < (int)_anims[anim]->get_num_frames()) {
     _anims[anim]->set_ur(frame,ur_uv);
   }
@@ -152,7 +152,7 @@ set_ur_uv(const TexCoordf &ur_uv, const int anim, const int frame) {
 // Description : Sets the size of each particle in world units.
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
-set_size(float width, float height) {
+set_size(PN_stdfloat width, PN_stdfloat height) {
   _width = width;
   _height = height;
   init_geoms();
@@ -163,7 +163,7 @@ set_size(float width, float height) {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
-set_color(const Colorf &color) {
+set_color(const LColor &color) {
   _color = color;
   _color_interpolation_manager->set_default_color(_color);
 }
@@ -203,7 +203,7 @@ set_anim_angle_flag(bool animate_theta) {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
-set_initial_x_scale(float initial_x_scale) {
+set_initial_x_scale(PN_stdfloat initial_x_scale) {
   _initial_x_scale = initial_x_scale;
   init_geoms();
 }
@@ -213,7 +213,7 @@ set_initial_x_scale(float initial_x_scale) {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
-set_final_x_scale(float final_x_scale) {
+set_final_x_scale(PN_stdfloat final_x_scale) {
   _final_x_scale = final_x_scale;
 }
 
@@ -222,7 +222,7 @@ set_final_x_scale(float final_x_scale) {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
-set_initial_y_scale(float initial_y_scale) {
+set_initial_y_scale(PN_stdfloat initial_y_scale) {
   _initial_y_scale = initial_y_scale;
   init_geoms();
 }
@@ -232,7 +232,7 @@ set_initial_y_scale(float initial_y_scale) {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
-set_final_y_scale(float final_y_scale) {
+set_final_y_scale(PN_stdfloat final_y_scale) {
   _final_y_scale = final_y_scale;
 }
 
@@ -241,7 +241,7 @@ set_final_y_scale(float final_y_scale) {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
-set_nonanimated_theta(float theta) {
+set_nonanimated_theta(PN_stdfloat theta) {
   _theta = theta;
   init_geoms();
 }
@@ -278,7 +278,7 @@ set_animate_frames_enable(bool an) {
 //   Access : public
 ////////////////////////////////////////////////////////////////////
 INLINE void SpriteParticleRenderer::
-set_animate_frames_rate(float r) {
+set_animate_frames_rate(PN_stdfloat r) {
   nassertv( r >= 0.0);
   _animate_frames_rate = r;
 }
@@ -343,7 +343,7 @@ get_last_anim() const {
 // Description : Returns the UV coordinate of the lower-left corner;
 //               see set_ll_uv().
 ////////////////////////////////////////////////////////////////////
-INLINE TexCoordf SpriteParticleRenderer::
+INLINE LTexCoord SpriteParticleRenderer::
 get_ll_uv() const {
   return get_ll_uv(0,0);
 }
@@ -354,7 +354,7 @@ get_ll_uv() const {
 // Description : Returns the UV coordinate of the lower-left corner;
 //               see set_ll_uv().
 ////////////////////////////////////////////////////////////////////
-INLINE TexCoordf SpriteParticleRenderer::
+INLINE LTexCoord SpriteParticleRenderer::
 get_ll_uv(const int anim, const int frame) const {
   int a = anim < (int)_anims.size()?anim:0;
   int f = frame < (int)_anims[a]->get_num_frames()?frame:0;
@@ -367,7 +367,7 @@ get_ll_uv(const int anim, const int frame) const {
 // Description : Returns the UV coordinate of the lower-left corner;
 //               see set_ur_uv().
 ////////////////////////////////////////////////////////////////////
-INLINE TexCoordf SpriteParticleRenderer::
+INLINE LTexCoord SpriteParticleRenderer::
 get_ur_uv() const {
   return get_ur_uv(0,0);
 }
@@ -378,7 +378,7 @@ get_ur_uv() const {
 // Description : Returns the UV coordinate of the upper-right corner;
 //               see set_ur_uv().
 ////////////////////////////////////////////////////////////////////
-INLINE TexCoordf SpriteParticleRenderer::
+INLINE LTexCoord SpriteParticleRenderer::
 get_ur_uv(const int anim, const int frame) const {
   int a = anim < (int)_anims.size()?anim:0;
   int f = frame < (int)_anims[a]->get_num_frames()?frame:0;
@@ -390,7 +390,7 @@ get_ur_uv(const int anim, const int frame) const {
 //      Access : public
 // Description : Returns the width of each particle in world units.
 ////////////////////////////////////////////////////////////////////
-INLINE float SpriteParticleRenderer::
+INLINE PN_stdfloat SpriteParticleRenderer::
 get_width() const {
   return _width;
 }
@@ -400,7 +400,7 @@ get_width() const {
 //      Access : public
 // Description : Returns the height of each particle in world units.
 ////////////////////////////////////////////////////////////////////
-INLINE float SpriteParticleRenderer::
+INLINE PN_stdfloat SpriteParticleRenderer::
 get_height() const {
   return _height;
 }
@@ -409,7 +409,7 @@ get_height() const {
 // Function : SpriteParticleRenderer::get_color
 //   Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE Colorf SpriteParticleRenderer::
+INLINE LColor SpriteParticleRenderer::
 get_color() const {
   return _color;
 }
@@ -445,7 +445,7 @@ get_anim_angle_flag() const {
 // Function : SpriteParticleRenderer::get_initial_x_scale
 //   Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE float SpriteParticleRenderer::
+INLINE PN_stdfloat SpriteParticleRenderer::
 get_initial_x_scale() const {
   return _initial_x_scale;
 }
@@ -454,7 +454,7 @@ get_initial_x_scale() const {
 // Function : SpriteParticleRenderer::get_final_x_scale
 //   Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE float SpriteParticleRenderer::
+INLINE PN_stdfloat SpriteParticleRenderer::
 get_final_x_scale() const {
   return _final_x_scale;
 }
@@ -463,7 +463,7 @@ get_final_x_scale() const {
 // Function : SpriteParticleRenderer::get_initial_y_scale
 //   Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE float SpriteParticleRenderer::
+INLINE PN_stdfloat SpriteParticleRenderer::
 get_initial_y_scale() const {
   return _initial_y_scale;
 }
@@ -472,7 +472,7 @@ get_initial_y_scale() const {
 // Function : SpriteParticleRenderer::get_final_y_scale
 //   Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE float SpriteParticleRenderer::
+INLINE PN_stdfloat SpriteParticleRenderer::
 get_final_y_scale() const {
   return _final_y_scale;
 }
@@ -481,7 +481,7 @@ get_final_y_scale() const {
 // Function : SpriteParticleRenderer::get_nonanimated_theta
 //   Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE float SpriteParticleRenderer::
+INLINE PN_stdfloat SpriteParticleRenderer::
 get_nonanimated_theta() const {
   return _theta;
 }
@@ -517,7 +517,7 @@ get_animate_frames_enable() const {
 // Function : SpriteParticleRenderer::get_animate_frames_rate
 //   Access : public
 ////////////////////////////////////////////////////////////////////
-INLINE float SpriteParticleRenderer::
+INLINE PN_stdfloat SpriteParticleRenderer::
 get_animate_frames_rate() const {
   return _animate_frames_rate;
 }

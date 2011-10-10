@@ -63,10 +63,10 @@ OccluderNode(const string &name) :
   set_overall_hidden(true);
   set_double_sided(false);
   set_min_coverage(0.0);
-  set_vertices(LPoint3f::rfu(-1.0, 0.0, -1.0),
-               LPoint3f::rfu(1.0, 0.0, -1.0),
-               LPoint3f::rfu(1.0, 0.0, 1.0),
-               LPoint3f::rfu(-1.0, 0.0, 1.0));
+  set_vertices(LPoint3::rfu(-1.0, 0.0, -1.0),
+               LPoint3::rfu(1.0, 0.0, -1.0),
+               LPoint3::rfu(1.0, 0.0, 1.0),
+               LPoint3::rfu(-1.0, 0.0, 1.0));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -125,7 +125,7 @@ preserve_name() const {
 //               kinds of nodes, this does nothing.
 ////////////////////////////////////////////////////////////////////
 void OccluderNode::
-xform(const LMatrix4f &mat) {
+xform(const LMatrix4 &mat) {
   nassertv(!mat.is_nan());
 
   for (Vertices::iterator vi = _vertices.begin();
@@ -233,8 +233,8 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
   // Now actually compute the bounding volume by putting it around all
   // of our vertices.
   if (!_vertices.empty()) {
-    const LPoint3f *vertices_begin = &_vertices[0];
-    const LPoint3f *vertices_end = vertices_begin + _vertices.size();
+    const LPoint3 *vertices_begin = &_vertices[0];
+    const LPoint3 *vertices_end = vertices_begin + _vertices.size();
     gbv->around(vertices_begin, vertices_end);
   }
 
@@ -262,27 +262,27 @@ get_occluder_viz(CullTraverser *trav, CullTraverserData &data) {
       (get_name(), GeomVertexFormat::get_v3n3t2(), Geom::UH_static);
     
     // Compute the polygon normal from the first three vertices.
-    Planef plane(_vertices[0], _vertices[1], _vertices[2]);
-    LVector3f poly_normal = plane.get_normal();
+    LPlane plane(_vertices[0], _vertices[1], _vertices[2]);
+    LVector3 poly_normal = plane.get_normal();
     
     GeomVertexWriter vertex(vdata, InternalName::get_vertex());
     GeomVertexWriter normal(vdata, InternalName::get_normal());
     GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
-    vertex.add_data3f(_vertices[0]);
-    normal.add_data3f(poly_normal);
-    texcoord.add_data2f(0.0, 0.0);
+    vertex.add_data3(_vertices[0]);
+    normal.add_data3(poly_normal);
+    texcoord.add_data2(0.0, 0.0);
     
-    vertex.add_data3f(_vertices[1]);
-    normal.add_data3f(poly_normal);
-    texcoord.add_data2f(8.0, 0.0);
+    vertex.add_data3(_vertices[1]);
+    normal.add_data3(poly_normal);
+    texcoord.add_data2(8.0, 0.0);
     
-    vertex.add_data3f(_vertices[2]);
-    normal.add_data3f(poly_normal);
-    texcoord.add_data2f(8.0, 8.0);
+    vertex.add_data3(_vertices[2]);
+    normal.add_data3(poly_normal);
+    texcoord.add_data2(8.0, 8.0);
     
-    vertex.add_data3f(_vertices[3]);
-    normal.add_data3f(poly_normal);
-    texcoord.add_data2f(0.0, 8.0);
+    vertex.add_data3(_vertices[3]);
+    normal.add_data3(poly_normal);
+    texcoord.add_data2(0.0, 8.0);
     
     PT(GeomTriangles) triangles = new GeomTriangles(Geom::UH_static);
     triangles->add_vertices(0, 1, 2);
@@ -328,7 +328,7 @@ get_occluder_viz_state(CullTraverser *trav, CullTraverserData &data) {
   static CPT(RenderState) viz_state;
   if (viz_state == NULL) {
     viz_state = RenderState::make
-      (ColorAttrib::make_flat(LVecBase4f(1.0f, 1.0f, 1.0f, 0.5f)),
+      (ColorAttrib::make_flat(LVecBase4(1.0f, 1.0f, 1.0f, 0.5f)),
        TransparencyAttrib::make(TransparencyAttrib::M_alpha),
        DepthOffsetAttrib::make(),
        TextureAttrib::make(_viz_tex));
@@ -355,7 +355,7 @@ get_frame_viz_state(CullTraverser *trav, CullTraverserData &data) {
   static CPT(RenderState) viz_state;
   if (viz_state == NULL) {
     viz_state = RenderState::make
-      (ColorAttrib::make_flat(LVecBase4f(0.0f, 0.0f, 0.0f, 1.0f)),
+      (ColorAttrib::make_flat(LVecBase4(0.0f, 0.0f, 0.0f, 1.0f)),
        TextureAttrib::make_off());
     viz_state = viz_state->adjust_all_priorities(1);
   }
@@ -441,7 +441,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _vertices.clear();
   _vertices.reserve(num_vertices);
   for (int i = 0; i < num_vertices; i++) {
-    LPoint3f vertex;
+    LPoint3 vertex;
     vertex.read_datagram(scan);
     _vertices.push_back(vertex);
   }

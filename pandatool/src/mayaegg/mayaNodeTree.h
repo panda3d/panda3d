@@ -75,7 +75,7 @@ public:
 public:
   string _subroot_parent_name;
   PT(MayaNodeDesc) _root;
-  float _fps;
+  PN_stdfloat _fps;
 
 private:
   MayaNodeDesc *r_build_node(const string &path);

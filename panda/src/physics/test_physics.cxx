@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
   physics_manager.attach_physical(&nf_b);
 
   int steps=16;
-  float delta_time=1.0f/(float)steps;
+  PN_stdfloat delta_time=1.0f/(PN_stdfloat)steps;
   while (steps--) {
     cout << "ball: " << nf_b.get_phys_body()->get_position() << endl;
     cout << "nf: " << nf.get_vector(nf_b.get_phys_body()) << endl;
@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
   for (PhysicsObject::Vector::const_iterator co=b.get_object_vector().begin();
        co != b.get_object_vector().end();
        ++i, ++co) {
-    (*co)->set_position(i * 2.0f, float(i), 0.0f);
+    (*co)->set_position(i * 2.0f, PN_stdfloat(i), 0.0f);
     (*co)->set_velocity(5.0f, 0.0f, 30.0f);
     (*co)->set_active(true);
     (*co)->set_mass(1.0f);

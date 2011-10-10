@@ -120,11 +120,11 @@ get_vertex(int x, int y) {
   if (py >= _heightfield.get_y_size()) py--;
   double drx = _heightfield.get_gray(px,y) - _heightfield.get_gray(nx,y);
   double dry = _heightfield.get_gray(x,py) - _heightfield.get_gray(x,ny);
-  LVector3f normal(drx * _vertical_scale * 0.5, dry * _vertical_scale * 0.5, _horizontal_scale);
+  LVector3 normal(drx * _vertical_scale * 0.5, dry * _vertical_scale * 0.5, _horizontal_scale);
   normal.normalize();
   double z = _heightfield.get_gray(x,y);
-  _vertex_writer->add_data3f(x*_horizontal_scale,-y*_horizontal_scale,z*_vertical_scale);
-  _normal_writer->add_data3f(normal);
+  _vertex_writer->add_data3(x*_horizontal_scale,-y*_horizontal_scale,z*_vertical_scale);
+  _normal_writer->add_data3(normal);
   vtx = _next_index++;
   _dirty_vertices[vtx] = x+y*xsize;
   _vertex_index[x+y*xsize] = vtx;

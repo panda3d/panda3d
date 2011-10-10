@@ -1,4 +1,4 @@
-// Filename: pta_LVecBase4f.cxx
+// Filename: pta_LVecBase4.cxx
 // Created by:  drose (27Feb10)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,7 +12,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "pta_LVecBase4f.h"
+#include "pta_LVecBase4.h"
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

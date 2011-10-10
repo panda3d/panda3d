@@ -18,11 +18,11 @@
 // Description : point setting
 ////////////////////////////////////////////////////////////////////
 INLINE void PointEmitter::
-set_location(const LPoint3f& p) {
+set_location(const LPoint3& p) {
   _location = p;
 }
 
-INLINE LPoint3f PointEmitter::
+INLINE LPoint3 PointEmitter::
 get_location() const {
   return _location;
 }

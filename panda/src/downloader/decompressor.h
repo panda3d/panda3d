@@ -41,7 +41,7 @@ PUBLISHED:
   bool decompress(const Filename &source_file);
   bool decompress(Ramfile &source_and_dest_file);
 
-  float get_progress() const;
+  PN_stdfloat get_progress() const;
 
 private:
   void cleanup();

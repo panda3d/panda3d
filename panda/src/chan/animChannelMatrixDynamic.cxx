@@ -89,7 +89,7 @@ has_changed(int, double, int, double) {
 //  Description: Gets the value of the channel at the indicated frame.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixDynamic::
-get_value(int, LMatrix4f &mat) {
+get_value(int, LMatrix4 &mat) {
   if (_value_node != (PandaNode *)NULL) {
     _value = _value_node->get_transform();
   }
@@ -103,12 +103,12 @@ get_value(int, LMatrix4f &mat) {
 //               without any scale or shear information.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixDynamic::
-get_value_no_scale_shear(int, LMatrix4f &mat) {
+get_value_no_scale_shear(int, LMatrix4 &mat) {
   if (_value_node != (PandaNode *)NULL) {
     _value = _value_node->get_transform();
   }
   if (_value->has_scale() || _value->has_shear()) {
-    compose_matrix(mat, LVecBase3f(1.0f, 1.0f, 1.0f),
+    compose_matrix(mat, LVecBase3(1.0f, 1.0f, 1.0f),
                    _value->get_hpr(), _value->get_pos());
   } else {
     mat = _value->get_mat();
@@ -121,7 +121,7 @@ get_value_no_scale_shear(int, LMatrix4f &mat) {
 //  Description: Gets the scale value at the indicated frame.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixDynamic::
-get_scale(int, LVecBase3f &scale) {
+get_scale(int, LVecBase3 &scale) {
   if (_value_node != (PandaNode *)NULL) {
     _value = _value_node->get_transform();
   }
@@ -136,7 +136,7 @@ get_scale(int, LVecBase3f &scale) {
 //               sense for a matrix-type channel.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixDynamic::
-get_hpr(int, LVecBase3f &hpr) {
+get_hpr(int, LVecBase3 &hpr) {
   if (_value_node != (PandaNode *)NULL) {
     _value = _value_node->get_transform();
   }
@@ -151,7 +151,7 @@ get_hpr(int, LVecBase3f &hpr) {
 //               this only makes sense for a matrix-type channel.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixDynamic::
-get_quat(int, LQuaternionf &quat) {
+get_quat(int, LQuaternion &quat) {
   if (_value_node != (PandaNode *)NULL) {
     _value = _value_node->get_transform();
   }
@@ -166,7 +166,7 @@ get_quat(int, LQuaternionf &quat) {
 //               only makes sense for a matrix-type channel.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixDynamic::
-get_pos(int, LVecBase3f &pos) {
+get_pos(int, LVecBase3 &pos) {
   if (_value_node != (PandaNode *)NULL) {
     _value = _value_node->get_transform();
   }
@@ -181,7 +181,7 @@ get_pos(int, LVecBase3f &pos) {
 //               sense for a matrix-type channel.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixDynamic::
-get_shear(int, LVecBase3f &shear) {
+get_shear(int, LVecBase3 &shear) {
   if (_value_node != (PandaNode *)NULL) {
     _value = _value_node->get_transform();
   }
@@ -194,7 +194,7 @@ get_shear(int, LVecBase3f &shear) {
 //  Description: Explicitly sets the matrix value.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixDynamic::
-set_value(const LMatrix4f &value) {
+set_value(const LMatrix4 &value) {
   _value = TransformState::make_mat(value);
   _value_node.clear();
 }

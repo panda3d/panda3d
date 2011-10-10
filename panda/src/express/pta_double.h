@@ -1,5 +1,5 @@
-// Filename: pta_lmatrix3f.h
-// Created by:  drose (27Feb10)
+// Filename: pta_double.h
+// Created by:  drose (10May00)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,29 +12,30 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef PTA_LMATRIX3F_H
-#define PTA_LMATRIX3F_H
+#ifndef PTA_DOUBLE_H
+#define PTA_DOUBLE_H
 
 #include "pandabase.h"
-#include "luse.h"
+
 #include "pointerToArray.h"
+#include "vector_double.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : PTA_LMatrix3f
-// Description : A pta of LMatrix3fs.  This class is defined once here,
+//       Class : PTA_double
+// Description : A pta of doubles.  This class is defined once here,
 //               and exported to PANDA.DLL; other packages that want
 //               to use a pta of this type (whether they need to
 //               export it or not) should include this header file,
 //               rather than defining the pta again.
 ////////////////////////////////////////////////////////////////////
 
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToBase<ReferenceCountedVector<LMatrix3f> >)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToArrayBase<LMatrix3f>)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToArray<LMatrix3f>)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, ConstPointerToArray<LMatrix3f>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS, PointerToBase<ReferenceCountedVector<double> >)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS, PointerToArrayBase<double>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS, PointerToArray<double>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS, ConstPointerToArray<double>)
 
-typedef PointerToArray<LMatrix3f> PTA_LMatrix3f;
-typedef ConstPointerToArray<LMatrix3f> CPTA_LMatrix3f;
+typedef PointerToArray<double> PTA_double;
+typedef ConstPointerToArray<double> CPTA_double;
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

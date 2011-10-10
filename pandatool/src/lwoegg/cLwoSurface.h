@@ -48,7 +48,7 @@ public:
 
   void apply_properties(EggPrimitive *egg_prim,
                         vector_PT_EggVertex &egg_vertices,
-                        float &smooth_angle);
+                        PN_stdfloat &smooth_angle);
   bool check_texture();
   bool check_material();
 
@@ -70,19 +70,19 @@ public:
   };
 
   int _flags;
-  RGBColorf _rgb;
-  float _diffuse;
-  float _luminosity;
-  float _specular;
-  float _reflection;
-  float _transparency;
-  float _gloss;
-  float _translucency;
-  float _smooth_angle;
+  LRGBColor _rgb;
+  PN_stdfloat _diffuse;
+  PN_stdfloat _luminosity;
+  PN_stdfloat _specular;
+  PN_stdfloat _reflection;
+  PN_stdfloat _transparency;
+  PN_stdfloat _gloss;
+  PN_stdfloat _translucency;
+  PN_stdfloat _smooth_angle;
   bool _backface;
 
-  Colorf _color;
-  Colorf _diffuse_color;
+  LColor _color;
+  LColor _diffuse_color;
 
   LwoToEggConverter *_converter;
   CPT(LwoSurface) _surface;

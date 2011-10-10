@@ -45,23 +45,23 @@ PUBLISHED:
 
   INLINE int get_x_size() const;
   INLINE int get_y_size() const;
-  INLINE float get_scale() const;
+  INLINE PN_stdfloat get_scale() const;
   INLINE int get_num_channels() const;
 
   INLINE bool has_point(int x, int y) const;
-  INLINE const LPoint3f &get_point(int x, int y) const;
-  INLINE void set_point(int x, int y, const LVecBase3f &point);
-  INLINE LPoint3f &modify_point(int x, int y);
+  INLINE const LPoint3 &get_point(int x, int y) const;
+  INLINE void set_point(int x, int y, const LVecBase3 &point);
+  INLINE LPoint3 &modify_point(int x, int y);
 
-  bool calc_average_point(LPoint3f &result, double x, double y, double radius) const;
-  bool calc_min_max(LVecBase3f &min_points, LVecBase3f &max_points) const;
+  bool calc_average_point(LPoint3 &result, double x, double y, double radius) const;
+  bool calc_min_max(LVecBase3 &min_points, LVecBase3 &max_points) const;
 
   INLINE void set_zero_special(bool zero_special);
   INLINE bool get_zero_special() const;
 
   void resize(int new_x_size, int new_y_size);
   void reverse_rows();
-  void xform(const LMatrix4f &transform);
+  void xform(const LMatrix4 &transform);
 
   PT(BoundingHexahedron) compute_planar_bounds(double point_dist, double sample_radius) const;
 
@@ -76,13 +76,13 @@ PUBLISHED:
 private:
   void make_vis_mesh_geom(GeomNode *gnode, bool inverted) const;
 
-  void compute_sample_point(LPoint3f &result,
+  void compute_sample_point(LPoint3 &result,
                             double x, double y, double sample_radius) const;
-  void box_filter_region(LPoint3f &result,
+  void box_filter_region(LPoint3 &result,
                          double x0, double y0, double x1, double y1) const;
-  void box_filter_line(LPoint3f &result, double &coverage,
+  void box_filter_line(LPoint3 &result, double &coverage,
                        double x0, int y, double x1, double y_contrib) const;
-  void box_filter_point(LPoint3f &result, double &coverage,
+  void box_filter_point(LPoint3 &result, double &coverage,
                         int x, int y, double x_contrib, double y_contrib) const;
 
   class MiniGridCell {
@@ -96,12 +96,12 @@ private:
                       int xi, int yi, int dist, int ti) const;
 
 private:
-  typedef pvector<LPoint3f> Table;
+  typedef pvector<LPoint3> Table;
   Table _table;
 
   int _x_size;
   int _y_size;
-  float _scale;
+  PN_stdfloat _scale;
   int _num_channels;
 
   bool _zero_special;

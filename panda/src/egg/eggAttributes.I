@@ -106,12 +106,12 @@ has_color() const {
 //  Description: Returns the color set on this particular attribute.
 //               If there is no color set, returns white.
 ////////////////////////////////////////////////////////////////////
-INLINE Colorf EggAttributes::
+INLINE LColor EggAttributes::
 get_color() const {
   if (has_color()) {
     return _color;
   } else {
-    return Colorf(1.0, 1.0, 1.0, 1.0);
+    return LColor(1.0, 1.0, 1.0, 1.0);
   }
 }
 
@@ -121,7 +121,7 @@ get_color() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggAttributes::
-set_color(const Colorf &color) {
+set_color(const LColor &color) {
   _color = color;
   _flags |= F_has_color;
 }

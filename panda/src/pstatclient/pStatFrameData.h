@@ -41,24 +41,24 @@ public:
   INLINE void clear();
   INLINE void swap(PStatFrameData &other);
 
-  INLINE void add_start(int index, float time);
-  INLINE void add_stop(int index, float time);
-  INLINE void add_level(int index, float level);
+  INLINE void add_start(int index, PN_stdfloat time);
+  INLINE void add_stop(int index, PN_stdfloat time);
+  INLINE void add_level(int index, PN_stdfloat level);
 
   void sort_time();
 
-  INLINE float get_start() const;
-  INLINE float get_end() const;
-  INLINE float get_net_time() const;
+  INLINE PN_stdfloat get_start() const;
+  INLINE PN_stdfloat get_end() const;
+  INLINE PN_stdfloat get_net_time() const;
 
   INLINE int get_num_events() const;
   INLINE int get_time_collector(int n) const;
   INLINE bool is_start(int n) const;
-  INLINE float get_time(int n) const;
+  INLINE PN_stdfloat get_time(int n) const;
 
   INLINE int get_num_levels() const;
   INLINE int get_level_collector(int n) const;
-  INLINE float get_level(int n) const;
+  INLINE PN_stdfloat get_level(int n) const;
 
   bool write_datagram(Datagram &destination, PStatClient *client) const;
   void read_datagram(DatagramIterator &source, PStatClientVersion *version);
@@ -69,7 +69,7 @@ private:
     INLINE bool operator < (const DataPoint &other) const;
 
     int _index;
-    float _value;
+    PN_stdfloat _value;
   };
   typedef pvector<DataPoint> Data;
 

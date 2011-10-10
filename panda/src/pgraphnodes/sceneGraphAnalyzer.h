@@ -85,7 +85,7 @@ PUBLISHED:
 
   INLINE int get_num_long_normals() const;
   INLINE int get_num_short_normals() const;
-  INLINE float get_total_normal_length() const;
+  INLINE PN_stdfloat get_total_normal_length() const;
 
 private:
   void collect_statistics(PandaNode *node, bool under_instance);
@@ -134,6 +134,7 @@ private:
   size_t _prim_data_size;
 
   int _num_vertices;
+  int _num_vertices_64;
   int _num_normals;
   int _num_colors;
   int _num_texcoords;
@@ -151,7 +152,7 @@ private:
 
   int _num_long_normals;
   int _num_short_normals;
-  float _total_normal_length;
+  PN_stdfloat _total_normal_length;
 };
 
 #include "sceneGraphAnalyzer.I"

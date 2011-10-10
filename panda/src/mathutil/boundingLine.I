@@ -28,7 +28,7 @@ BoundingLine() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL BoundingLine::
-BoundingLine(const LPoint3f &a, const LPoint3f &b) :
+BoundingLine(const LPoint3 &a, const LPoint3 &b) :
   _origin(a), _vector(b - a)
 {
   _vector.normalize();
@@ -43,7 +43,7 @@ BoundingLine(const LPoint3f &a, const LPoint3f &b) :
 //       Access: Published
 //  Description: Returns the first point that defines the line.
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL const LPoint3f &BoundingLine::
+INLINE_MATHUTIL const LPoint3 &BoundingLine::
 get_point_a() const {
   nassertr(!is_empty(), _origin);
   nassertr(!is_infinite(), _origin);
@@ -55,7 +55,7 @@ get_point_a() const {
 //       Access: Published
 //  Description: Returns the second point that defines the line.
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL LPoint3f BoundingLine::
+INLINE_MATHUTIL LPoint3 BoundingLine::
 get_point_b() const {
   nassertr(!is_empty(), _origin);
   nassertr(!is_infinite(), _origin);

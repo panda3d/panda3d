@@ -56,41 +56,41 @@ PUBLISHED:
   INLINE NodePath get_root();
 
   INLINE void quad_raw(
-    LVector3f v1, LVector4f c1, LVector2f uv1,
-    LVector3f v2, LVector4f c2, LVector2f uv2,
-    LVector3f v3, LVector4f c3, LVector2f uv3,
-    LVector3f v4, LVector4f c4, LVector2f uv4);
+    LVector3 v1, LVector4 c1, LVector2 uv1,
+    LVector3 v2, LVector4 c2, LVector2 uv2,
+    LVector3 v3, LVector4 c3, LVector2 uv3,
+    LVector3 v4, LVector4 c4, LVector2 uv4);
 
   INLINE void rectangle_raw(
-    float x, float y, float w, float h,
-    float u, float v, float us, float vs,
-    LVector4f color);
+    PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h,
+    PN_stdfloat u, PN_stdfloat v, PN_stdfloat us, PN_stdfloat vs,
+    LVector4 color);
 
-  INLINE void set_clip(float x, float y, float w, float h);
+  INLINE void set_clip(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h);
 
   INLINE void rectangle(
-    float x, float y, float w, float h,
-    float u, float v, float us, float vs,
-    LVector4f color);
+    PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h,
+    PN_stdfloat u, PN_stdfloat v, PN_stdfloat us, PN_stdfloat vs,
+    LVector4 color);
 
   void rectangle_border(
-      float x, float y, float w, float h,
-      float r, float t, float l, float b,
-      float tr, float tt, float tl, float tb,
-      float u, float v, float us, float vs,
-      LVector4f color);
+      PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h,
+      PN_stdfloat r, PN_stdfloat t, PN_stdfloat l, PN_stdfloat b,
+      PN_stdfloat tr, PN_stdfloat tt, PN_stdfloat tl, PN_stdfloat tb,
+      PN_stdfloat u, PN_stdfloat v, PN_stdfloat us, PN_stdfloat vs,
+      LVector4 color);
 
   void rectangle_border_tiled(
-      float x, float y, float w, float h,
-      float r, float t, float l, float b,
-      float tr, float tt, float tl, float tb,
-      float u, float v, float us, float vs,
-      LVector4f color);
+      PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h,
+      PN_stdfloat r, PN_stdfloat t, PN_stdfloat l, PN_stdfloat b,
+      PN_stdfloat tr, PN_stdfloat tt, PN_stdfloat tl, PN_stdfloat tb,
+      PN_stdfloat u, PN_stdfloat v, PN_stdfloat us, PN_stdfloat vs,
+      LVector4 color);
 
   void rectangle_tiled(
-    float x, float y, float w, float h,
-    float u, float v, float us, float vs,
-    LVector4f color);
+    PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h,
+    PN_stdfloat u, PN_stdfloat v, PN_stdfloat us, PN_stdfloat vs,
+    LVector4 color);
 
   void begin();
   void end();
@@ -102,10 +102,10 @@ private:
   int _budget;
 
   // clip
-  float _clip_x;
-  float _clip_y;
-  float _clip_w;
-  float _clip_h;
+  PN_stdfloat _clip_x;
+  PN_stdfloat _clip_y;
+  PN_stdfloat _clip_w;
+  PN_stdfloat _clip_h;
 
   // store regeneration geoms & nodes
   PT(Geom) _geom;

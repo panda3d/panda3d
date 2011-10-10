@@ -119,7 +119,7 @@ close() {
 //               spot and associated with this collector for the rest
 //               of the session.
 ////////////////////////////////////////////////////////////////////
-const RGBColorf &PStatMonitor::
+const LRGBColor &PStatMonitor::
 get_collector_color(int collector_index) {
   Colors::iterator ci;
   ci = _colors.find(collector_index);
@@ -133,10 +133,10 @@ get_collector_color(int collector_index) {
     const PStatCollectorDef &def =
       _client_data->get_collector_def(collector_index);
 
-    RGBColorf sc(def._suggested_color.r,
+    LRGBColor sc(def._suggested_color.r,
                  def._suggested_color.g,
                  def._suggested_color.b);
-    if (sc != RGBColorf::zero()) {
+    if (sc != LRGBColor::zero()) {
       ci = _colors.insert(Colors::value_type(collector_index, sc)).first;
       return (*ci).second;
     }
@@ -153,10 +153,10 @@ get_collector_color(int collector_index) {
   }
 
   // We didn't have a color for the collector; make one up.
-  RGBColorf random_color;
-  random_color[0] = (float)rand() / (float)RAND_MAX;
-  random_color[1] = (float)rand() / (float)RAND_MAX;
-  random_color[2] = (float)rand() / (float)RAND_MAX;
+  LRGBColor random_color;
+  random_color[0] = (PN_stdfloat)rand() / (PN_stdfloat)RAND_MAX;
+  random_color[1] = (PN_stdfloat)rand() / (PN_stdfloat)RAND_MAX;
+  random_color[2] = (PN_stdfloat)rand() / (PN_stdfloat)RAND_MAX;
 
   ci = _colors.insert(Colors::value_type(collector_index, random_color)).first;
   return (*ci).second;

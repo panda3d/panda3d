@@ -70,7 +70,7 @@ protected:
   };
 
   virtual bool handle_entries()=0;
-  virtual void apply_linear_force(ColliderDef &def, const LVector3f &force)=0;
+  virtual void apply_linear_force(ColliderDef &def, const LVector3 &force)=0;
 
   virtual bool validate_target(const NodePath &target);
 

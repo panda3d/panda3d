@@ -71,8 +71,8 @@ PUBLISHED:
   INLINE PT(AngularForce) get_angular_force(int index) const;
   MAKE_SEQ(get_angular_forces, get_num_angular_forces, get_angular_force);
 
-  INLINE void set_viscosity(float viscosity);
-  INLINE float get_viscosity() const;
+  INLINE void set_viscosity(PN_stdfloat viscosity);
+  INLINE PN_stdfloat get_viscosity() const;
   
   const PhysicsObjectCollection get_objects() const;
 
@@ -94,7 +94,7 @@ public:
   friend class PhysicalNode;
 
 protected:
-  float _viscosity;
+  PN_stdfloat _viscosity;
   // containers
   PhysicsObject::Vector _physics_objects;
   LinearForceVector _linear_forces;

@@ -39,7 +39,7 @@ public:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
 
-  virtual void xform(const LMatrix4f &mat);
+  virtual void xform(const LMatrix4 &mat);
   virtual PandaNode *make_copy() const;
 
 PUBLISHED:
@@ -55,8 +55,8 @@ PUBLISHED:
   INLINE bool activate_lens(int index);
   INLINE bool deactivate_lens(int index);
 
-  INLINE bool is_in_view(const LPoint3f &pos);
-  bool is_in_view(int index, const LPoint3f &pos);
+  INLINE bool is_in_view(const LPoint3 &pos);
+  bool is_in_view(int index, const LPoint3 &pos);
 
   void show_frustum();
   void hide_frustum();

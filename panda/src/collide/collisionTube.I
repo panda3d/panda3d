@@ -19,7 +19,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionTube::
-CollisionTube(const LPoint3f &a, const LPoint3f &b, float radius) :
+CollisionTube(const LPoint3 &a, const LPoint3 &b, PN_stdfloat radius) :
   _a(a), _b(b), _radius(radius)
 {
   recalc_internals();
@@ -32,9 +32,9 @@ CollisionTube(const LPoint3f &a, const LPoint3f &b, float radius) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionTube::
-CollisionTube(float ax, float ay, float az,
-              float bx, float by, float bz,
-              float radius) :
+CollisionTube(PN_stdfloat ax, PN_stdfloat ay, PN_stdfloat az,
+              PN_stdfloat bx, PN_stdfloat by, PN_stdfloat bz,
+              PN_stdfloat radius) :
   _a(ax, ay, az), _b(bx, by, bz), _radius(radius)
 {
   recalc_internals();
@@ -83,7 +83,7 @@ flush_level() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionTube::
-set_point_a(const LPoint3f &a) {
+set_point_a(const LPoint3 &a) {
   _a = a;
   recalc_internals();
 }
@@ -94,8 +94,8 @@ set_point_a(const LPoint3f &a) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionTube::
-set_point_a(float x, float y, float z) {
-  set_point_a(LPoint3f(x, y, z));
+set_point_a(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
+  set_point_a(LPoint3(x, y, z));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -103,7 +103,7 @@ set_point_a(float x, float y, float z) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const LPoint3f &CollisionTube::
+INLINE const LPoint3 &CollisionTube::
 get_point_a() const {
   return _a;
 }
@@ -114,7 +114,7 @@ get_point_a() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionTube::
-set_point_b(const LPoint3f &b) {
+set_point_b(const LPoint3 &b) {
   _b = b;
   recalc_internals();
 }
@@ -125,8 +125,8 @@ set_point_b(const LPoint3f &b) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionTube::
-set_point_b(float x, float y, float z) {
-  set_point_b(LPoint3f(x, y, z));
+set_point_b(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
+  set_point_b(LPoint3(x, y, z));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -134,7 +134,7 @@ set_point_b(float x, float y, float z) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const LPoint3f &CollisionTube::
+INLINE const LPoint3 &CollisionTube::
 get_point_b() const {
   return _b;
 }
@@ -145,7 +145,7 @@ get_point_b() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionTube::
-set_radius(float radius) {
+set_radius(PN_stdfloat radius) {
   nassertv(radius >= 0.0f);
   _radius = radius;
 
@@ -160,7 +160,7 @@ set_radius(float radius) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE float CollisionTube::
+INLINE PN_stdfloat CollisionTube::
 get_radius() const {
   return _radius;
 }

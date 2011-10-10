@@ -267,8 +267,8 @@ get_panda_uvset_name() {
 ////////////////////////////////////////////////////////////////////
 void MayaShaderColorDef::
 find_textures_legacy(MayaShader *shader, MObject color, bool _texture_copy, Filename _texture_out_dir, bool trans) {
-  RGBColorf color_gain;
-  if (get_vec3f_attribute(color, "colorGain", color_gain)) {
+  LRGBColor color_gain;
+  if (get_vec3_attribute(color, "colorGain", color_gain)) {
     color_gain[0] = color_gain[0] > 1.0 ? 1.0 : color_gain[0];
     color_gain[0] = color_gain[0] < 0.0 ? 0.0 : color_gain[0];
     _color_gain[0] *= color_gain[0];
@@ -279,7 +279,7 @@ find_textures_legacy(MayaShader *shader, MObject color, bool _texture_copy, File
     color_gain[2] = color_gain[2] < 0.0 ? 0.0 : color_gain[2];
     _color_gain[2] *= color_gain[2];
   }
-  float alpha_gain;
+  PN_stdfloat alpha_gain;
   if (get_maya_attribute(color, "alphaGain", alpha_gain)) {
     alpha_gain = alpha_gain > 1.0 ? 1.0 : alpha_gain;
     alpha_gain = alpha_gain < 0.0 ? 0.0 : alpha_gain;
@@ -321,8 +321,8 @@ find_textures_legacy(MayaShader *shader, MObject color, bool _texture_copy, File
       }
     }
 
-    get_vec2f_attribute(color, "coverage", _coverage);
-    get_vec2f_attribute(color, "translateFrame", _translate_frame);
+    get_vec2_attribute(color, "coverage", _coverage);
+    get_vec2_attribute(color, "translateFrame", _translate_frame);
     get_angle_attribute(color, "rotateFrame", _rotate_frame);
 
     //get_bool_attribute(color, "alphaIsLuminance", _alpha_is_luminance);
@@ -332,8 +332,8 @@ find_textures_legacy(MayaShader *shader, MObject color, bool _texture_copy, File
     get_bool_attribute(color, "wrapU", _wrap_u);
     get_bool_attribute(color, "wrapV", _wrap_v);
 
-    get_vec2f_attribute(color, "repeatUV", _repeat_uv);
-    get_vec2f_attribute(color, "offset", _offset);
+    get_vec2_attribute(color, "repeatUV", _repeat_uv);
+    get_vec2_attribute(color, "offset", _offset);
     get_angle_attribute(color, "rotateUV", _rotate_uv);
 
     if (!trans) {
@@ -578,8 +578,8 @@ find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug 
     }
     def->_texture_name = sourceFn.name().asChar();
 
-    get_vec2f_attribute(source, "coverage",       def->_coverage);
-    get_vec2f_attribute(source, "translateFrame", def->_translate_frame);
+    get_vec2_attribute(source, "coverage",       def->_coverage);
+    get_vec2_attribute(source, "translateFrame", def->_translate_frame);
     get_angle_attribute(source, "rotateFrame",    def->_rotate_frame);
     
     get_bool_attribute(source, "mirror",          def->_mirror);
@@ -587,13 +587,13 @@ find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug 
     get_bool_attribute(source, "wrapU",           def->_wrap_u);
     get_bool_attribute(source, "wrapV",           def->_wrap_v);
 
-    get_vec2f_attribute(source, "repeatUV",       def->_repeat_uv);
-    get_vec2f_attribute(source, "offset",         def->_offset);
+    get_vec2_attribute(source, "repeatUV",       def->_repeat_uv);
+    get_vec2_attribute(source, "offset",         def->_offset);
     get_angle_attribute(source, "rotateUV",       def->_rotate_uv);
 
-    RGBColorf color_gain;
-    float alpha_gain;
-    get_vec3f_attribute(source, "colorGain",      color_gain);
+    LRGBColor color_gain;
+    PN_stdfloat alpha_gain;
+    get_vec3_attribute(source, "colorGain",      color_gain);
     get_maya_attribute(source, "alphaGain",       alpha_gain);
     def->_color_gain[0] = color_gain[0];
     def->_color_gain[1] = color_gain[1];

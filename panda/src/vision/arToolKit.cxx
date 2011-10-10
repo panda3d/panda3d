@@ -411,7 +411,7 @@ analyze(Texture *tex, bool do_flip_texture) {
         arGetTransMat(inf, center, _marker_size, _prev_conv);
         _have_prev_conv = true;
       }
-      LMatrix4f mat;
+      LMatrix4 mat;
       for (int i=0; i<4; i++) {
         mat(i,0) =  _prev_conv[0][i];
         mat(i,1) =  _prev_conv[2][i];
@@ -419,7 +419,7 @@ analyze(Texture *tex, bool do_flip_texture) {
         mat(i,3) = 0.0;
       }
       mat(3,3) = 1.0;
-      LVecBase3f scale, shear, hpr, pos;
+      LVecBase3 scale, shear, hpr, pos;
       decompose_matrix(mat, scale, shear, hpr, pos);
 
       if (np.get_parent().is_empty()) {

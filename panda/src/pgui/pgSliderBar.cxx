@@ -230,7 +230,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 //               kinds of nodes, this does nothing.
 ////////////////////////////////////////////////////////////////////
 void PGSliderBar::
-xform(const LMatrix4f &mat) {
+xform(const LMatrix4 &mat) {
   LightReMutexHolder holder(_lock);
   PGItem::xform(mat);
   _axis = _axis * mat;
@@ -279,17 +279,17 @@ adjust() {
 //               dimension, and the width is the y dimension).
 ////////////////////////////////////////////////////////////////////
 void PGSliderBar::
-setup_scroll_bar(bool vertical, float length, float width, float bevel) {
+setup_scroll_bar(bool vertical, PN_stdfloat length, PN_stdfloat width, PN_stdfloat bevel) {
   LightReMutexHolder holder(_lock);
   set_state(0);
   clear_state_def(0);
 
   if (vertical) {
     set_frame(-width / 2.0f, width / 2.0f, -length / 2.0f, length / 2.0f);
-    _axis = LVector3f::rfu(0.0f, 0.0f, -1.0f);
+    _axis = LVector3::rfu(0.0f, 0.0f, -1.0f);
   } else {
     set_frame(-length / 2.0f, length / 2.0f, -width / 2.0f, width / 2.0f);
-    _axis = LVector3f::rfu(1.0f, 0.0f, 0.0f);
+    _axis = LVector3::rfu(1.0f, 0.0f, 0.0f);
   }
 
   PGFrameStyle style;
@@ -353,17 +353,17 @@ setup_scroll_bar(bool vertical, float length, float width, float bevel) {
 //               has a distinctive look.
 ////////////////////////////////////////////////////////////////////
 void PGSliderBar::
-setup_slider(bool vertical, float length, float width, float bevel) {
+setup_slider(bool vertical, PN_stdfloat length, PN_stdfloat width, PN_stdfloat bevel) {
   LightReMutexHolder holder(_lock);
   set_state(0);
   clear_state_def(0);
 
   if (vertical) {
     set_frame(-width / 2.0f, width / 2.0f, -length / 2.0f, length / 2.0f);
-    _axis = LVector3f::rfu(0.0f, 0.0f, -1.0f);
+    _axis = LVector3::rfu(0.0f, 0.0f, -1.0f);
   } else {
     set_frame(-length / 2.0f, length / 2.0f, -width / 2.0f, width / 2.0f);
-    _axis = LVector3f::rfu(1.0f, 0.0f, 0.0f);
+    _axis = LVector3::rfu(1.0f, 0.0f, 0.0f);
   }
 
   PGFrameStyle style;
@@ -437,9 +437,9 @@ remanage() {
   LightReMutexHolder holder(_lock);
   _needs_remanage = false;
 
-  const LVecBase4f &frame = get_frame();
+  const LVecBase4 &frame = get_frame();
 
-  float width, length;
+  PN_stdfloat width, length;
   if (fabs(_axis[0]) > fabs(_axis[1] + _axis[2])) {
     // The slider is X-dominant.
     width = frame[3] - frame[2];
@@ -451,7 +451,7 @@ remanage() {
     length = frame[3] - frame[2];
   }
 
-  LVector3f center = LVector3f::rfu((frame[0] + frame[1]) / 2.0f,
+  LVector3 center = LVector3::rfu((frame[0] + frame[1]) / 2.0f,
                                     0.0f,
                                     (frame[2] + frame[3]) / 2.0f);
 
@@ -504,7 +504,7 @@ recompute() {
     _thumb_start.set(0.0f, 0.0f, 0.0f);
 
   } else {
-    LVecBase4f frame = get_frame();
+    LVecBase4 frame = get_frame();
     reduce_region(frame, _left_button);
     reduce_region(frame, _right_button);
     
@@ -514,7 +514,7 @@ recompute() {
       _min_x = frame[0];
       _max_x = frame[1];
       
-      float trough_width = _max_x - _min_x;
+      PN_stdfloat trough_width = _max_x - _min_x;
       
       if (_thumb_button == (PGButton *)NULL) {
         _thumb_width = 0.0f;
@@ -522,12 +522,12 @@ recompute() {
         _thumb_start.set(0.0f, 0.0f, 0.0f);
         
       } else {
-        const LVecBase4f &thumb_frame = _thumb_button->get_frame();
+        const LVecBase4 &thumb_frame = _thumb_button->get_frame();
         
         if (_resize_thumb) {
           // If we're allowed to adjust the thumb's size, we don't need to
           // find out how wide it is.
-          _thumb_width = trough_width * min(1.0f, _page_ratio);
+          _thumb_width = trough_width * min((PN_stdfloat)1.0, _page_ratio);
           _thumb_button->set_frame(-_thumb_width / 2.0f, _thumb_width / 2.0f,
                                    thumb_frame[2], thumb_frame[3]);
         } else {
@@ -545,7 +545,7 @@ recompute() {
           // The slider runs backwards: right to left.
           _thumb_start = (thumb_frame[1] - _max_x) * _axis;
         }
-        _thumb_start += LVector3f::rfu(0.0f, 0.0f, (frame[2] + frame[3]) / 2.0f);
+        _thumb_start += LVector3::rfu(0.0f, 0.0f, (frame[2] + frame[3]) / 2.0f);
       }
       
     } else {
@@ -555,7 +555,7 @@ recompute() {
       _min_x = frame[2];
       _max_x = frame[3];
       
-      float trough_width = _max_x - _min_x;
+      PN_stdfloat trough_width = _max_x - _min_x;
       
       if (_thumb_button == (PGButton *)NULL) {
         _thumb_width = 0.0f;
@@ -563,12 +563,12 @@ recompute() {
         _thumb_start.set(0.0f, 0.0f, 0.0f);
         
       } else {
-        const LVecBase4f &thumb_frame = _thumb_button->get_frame();
+        const LVecBase4 &thumb_frame = _thumb_button->get_frame();
         
         if (_resize_thumb) {
           // If we're allowed to adjust the thumb's size, we don't need to
           // find out how wide it is.
-          _thumb_width = trough_width * min(1.0f, _page_ratio);
+          _thumb_width = trough_width * min((PN_stdfloat)1.0, _page_ratio);
           _thumb_button->set_frame(thumb_frame[0], thumb_frame[1],
                                    -_thumb_width / 2.0f, _thumb_width / 2.0f);
         } else {
@@ -586,7 +586,7 @@ recompute() {
           // The slider runs backwards: top to bottom.
           _thumb_start = (thumb_frame[3] - _max_x) * _axis;
         }
-        _thumb_start += LVector3f::rfu((frame[0] + frame[1]) / 2.0f, 0.0f, 0.0f);
+        _thumb_start += LVector3::rfu((frame[0] + frame[1]) / 2.0f, 0.0f, 0.0f);
       }
     }
   }
@@ -716,10 +716,10 @@ void PGSliderBar::
 reposition() {
   _needs_reposition = false;
 
-  float t = get_ratio();
+  PN_stdfloat t = get_ratio();
   
   if (_thumb_button != (PGButton *)NULL) {
-    LPoint3f pos = (t * _range_x) * _axis + _thumb_start;
+    LPoint3 pos = (t * _range_x) * _axis + _thumb_start;
     CPT(TransformState) transform = TransformState::make_pos(pos);
     CPT(TransformState) orig_transform = _thumb_button->get_transform();
 
@@ -743,10 +743,10 @@ reposition() {
 void PGSliderBar::
 advance_scroll() {
   if (_scroll_button_held == _left_button) {
-    internal_set_ratio(max(_ratio - _scroll_ratio, 0.0f));
+    internal_set_ratio(max(_ratio - _scroll_ratio, (PN_stdfloat)0.0));
 
   } else if (_scroll_button_held == _right_button) {
-    internal_set_ratio(min(_ratio + _scroll_ratio, 1.0f));
+    internal_set_ratio(min(_ratio + _scroll_ratio, (PN_stdfloat)1.0));
   }
 
   _next_advance_time = 
@@ -764,10 +764,10 @@ void PGSliderBar::
 advance_page() {
   // Is the mouse position left or right of the current thumb
   // position?
-  LPoint3f mouse = mouse_to_local(_mouse_pos) - _thumb_start;
-  float target_ratio = mouse.dot(_axis) / _range_x;
+  LPoint3 mouse = mouse_to_local(_mouse_pos) - _thumb_start;
+  PN_stdfloat target_ratio = mouse.dot(_axis) / _range_x;
 
-  float t;
+  PN_stdfloat t;
   if (target_ratio < _ratio) {
     t = max(_ratio - _page_ratio + _scroll_ratio, target_ratio);
 
@@ -797,7 +797,7 @@ begin_drag() {
     recompute();
   }
   if (_range_x != 0.0f) {
-    float current_x = mouse_to_local(_mouse_pos).dot(_axis);
+    PN_stdfloat current_x = mouse_to_local(_mouse_pos).dot(_axis);
     _drag_start_x = current_x - get_ratio() * _range_x;
     _dragging = true;
   }
@@ -815,7 +815,7 @@ continue_drag() {
     recompute();
   }
   if (_range_x != 0.0f) {
-    float current_x = mouse_to_local(_mouse_pos).dot(_axis);
+    PN_stdfloat current_x = mouse_to_local(_mouse_pos).dot(_axis);
     internal_set_ratio((current_x - _drag_start_x) / _range_x);
   }
 }

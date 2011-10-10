@@ -47,10 +47,10 @@ public:
   bool fill_material(XFileDataNode *obj);
 
 private:
-  Colorf _face_color;
+  LColor _face_color;
   double _power;
-  RGBColorf _specular_color;
-  RGBColorf _emissive_color;
+  LRGBColor _specular_color;
+  LRGBColor _emissive_color;
   Filename _texture;
 
   bool _has_material;

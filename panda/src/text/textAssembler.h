@@ -84,24 +84,24 @@ PUBLISHED:
   INLINE wchar_t get_character(int n) const;
   INLINE const TextGraphic *get_graphic(int n) const;
   INLINE const TextProperties &get_properties(int n) const;
-  INLINE float get_width(int n) const;
+  INLINE PN_stdfloat get_width(int n) const;
 
   INLINE int get_num_rows() const;
   INLINE int get_num_cols(int r) const;
   INLINE wchar_t get_character(int r, int c) const;
   INLINE const TextGraphic *get_graphic(int r, int c) const;
   INLINE const TextProperties &get_properties(int r, int c) const;
-  INLINE float get_width(int r, int c) const;
-  float get_xpos(int r, int c) const;
-  INLINE float get_ypos(int r, int c) const;
+  INLINE PN_stdfloat get_width(int r, int c) const;
+  PN_stdfloat get_xpos(int r, int c) const;
+  INLINE PN_stdfloat get_ypos(int r, int c) const;
 
   PT(PandaNode) assemble_text();
 
-  INLINE const LVector2f &get_ul() const;
-  INLINE const LVector2f &get_lr() const;
+  INLINE const LVector2 &get_ul() const;
+  INLINE const LVector2 &get_lr() const;
 
-  static float calc_width(wchar_t character, const TextProperties &properties);
-  static float calc_width(const TextGraphic *graphic, const TextProperties &properties);
+  static PN_stdfloat calc_width(wchar_t character, const TextProperties &properties);
+  static PN_stdfloat calc_width(const TextGraphic *graphic, const TextProperties &properties);
 
   static bool has_exact_character(wchar_t character, const TextProperties &properties);
   static bool has_character(wchar_t character, const TextProperties &properties);
@@ -150,8 +150,8 @@ private:
     TextString _string;
     int _row_start;
     bool _got_soft_hyphens;
-    float _xpos;
-    float _ypos;
+    PN_stdfloat _xpos;
+    PN_stdfloat _ypos;
     PT(ComputedProperties) _eol_cprops;
   };
   typedef pvector<TextRow> TextBlock;
@@ -173,8 +173,8 @@ private:
 
   bool wordwrap_text();
 
-  INLINE static float calc_width(const TextCharacter &tch);
-  static float calc_hyphen_width(const TextCharacter &tch);
+  INLINE static PN_stdfloat calc_width(const TextCharacter &tch);
+  static PN_stdfloat calc_hyphen_width(const TextCharacter &tch);
 
   // These structures are built up by assemble_paragraph() and
   // assemble_row().  They represent the actual Geoms as laid out in a
@@ -206,7 +206,7 @@ private:
     INLINE void count_geom(const Geom *geom);
     GeomPrimitive *get_primitive(TypeHandle prim_type);
     int append_vertex(const GeomVertexData *orig_vdata, int orig_row,
-                      const LMatrix4f &xform);
+                      const LMatrix4 &xform);
     void append_geom(GeomNode *geom_node, const RenderState *state);
 
   private:
@@ -221,20 +221,20 @@ private:
   class GlyphPlacement {
   public:
     INLINE void add_piece(Geom *geom, const RenderState *state);
-    void calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+    void calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
                            bool &found_any, Thread *current_thread) const;
     void assign_to(GeomNode *geom_node, const RenderState *state) const;
     void assign_copy_to(GeomNode *geom_node, const RenderState *state, 
-                        const LMatrix4f &extra_xform) const;
+                        const LMatrix4 &extra_xform) const;
 
     void assign_append_to(GeomCollectorMap &geom_collector_map, const RenderState *state,
-                          const LMatrix4f &extra_xform) const;
+                          const LMatrix4 &extra_xform) const;
     void copy_graphic_to(PandaNode *node, const RenderState *state,
-                         const LMatrix4f &extra_xform) const;
+                         const LMatrix4 &extra_xform) const;
 
     Pieces _pieces;
     PT(PandaNode) _graphic_model;
-    LMatrix4f _xform;
+    LMatrix4 _xform;
     const TextProperties *_properties;
   };
   typedef pvector<GlyphPlacement *> PlacedGlyphs;
@@ -242,8 +242,8 @@ private:
   void assemble_paragraph(PlacedGlyphs &placed_glyphs);
   void assemble_row(TextRow &row,
                     PlacedGlyphs &row_placed_glyphs,
-                    float &row_width, float &line_height, 
-                    TextProperties::Alignment &align, float &wordwrap);
+                    PN_stdfloat &row_width, PN_stdfloat &line_height, 
+                    TextProperties::Alignment &align, PN_stdfloat &wordwrap);
 
   // These interfaces are for implementing cheesy accent marks and
   // ligatures when the font doesn't support them.
@@ -276,7 +276,7 @@ private:
 
   static void
   draw_underscore(TextAssembler::PlacedGlyphs &row_placed_glyphs,
-                  float underscore_start, float underscore_end, 
+                  PN_stdfloat underscore_start, PN_stdfloat underscore_end, 
                   const TextProperties *underscore_properties);
 
   static void
@@ -285,24 +285,24 @@ private:
                        const TextGlyph *&second_glyph,
                        UnicodeLatinMap::AccentType &accent_type,
                        int &additional_flags,
-                       float &glyph_scale, float &advance_scale);
+                       PN_stdfloat &glyph_scale, PN_stdfloat &advance_scale);
 
   void
   tack_on_accent(UnicodeLatinMap::AccentType accent_type,
-                 const LPoint3f &min_vert, const LPoint3f &max_vert,
-                 const LPoint3f &centroid,
+                 const LPoint3 &min_vert, const LPoint3 &max_vert,
+                 const LPoint3 &centroid,
                  const TextProperties *properties, GlyphPlacement *placement) const;
   bool 
   tack_on_accent(char accent_mark, CheesyPosition position,
                  CheesyTransform transform,
-                 const LPoint3f &min_vert, const LPoint3f &max_vert,
-                 const LPoint3f &centroid,
+                 const LPoint3 &min_vert, const LPoint3 &max_vert,
+                 const LPoint3 &centroid,
                  const TextProperties *properties, GlyphPlacement *placement) const;
 
   // These are filled in by assemble_paragraph().
-  LVector2f _ul;
-  LVector2f _lr;
-  float _next_row_ypos;
+  LVector2 _ul;
+  LVector2 _lr;
+  PN_stdfloat _next_row_ypos;
 
   TextEncoder *_encoder;
   Geom::UsageHint _usage_hint;

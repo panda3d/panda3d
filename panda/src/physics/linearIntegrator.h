@@ -32,7 +32,7 @@ PUBLISHED:
 public:
 
   void integrate(Physical *physical, LinearForceVector &forces,
-                 float dt);
+                 PN_stdfloat dt);
 
 PUBLISHED:  
   virtual void output(ostream &out) const;
@@ -48,7 +48,7 @@ private:
   // actual integration function receives.
   virtual void child_integrate(Physical *physical, 
                                LinearForceVector &forces,
-                               float dt) = 0;
+                               PN_stdfloat dt) = 0;
 };
 
 #endif // LINEARINTEGRATOR_H

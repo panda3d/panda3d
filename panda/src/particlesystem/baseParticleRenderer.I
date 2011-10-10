@@ -57,7 +57,7 @@ get_alpha_mode() const {
 // Description : sets alpha for "user" alpha mode
 ////////////////////////////////////////////////////////////////////
 INLINE void BaseParticleRenderer::
-set_user_alpha(float ua) {
+set_user_alpha(PN_stdfloat ua) {
   _user_alpha = ua;
 }
 
@@ -66,7 +66,7 @@ set_user_alpha(float ua) {
 //      Access : Published
 // Description : gets alpha for "user" alpha mode
 ////////////////////////////////////////////////////////////////////
-INLINE float BaseParticleRenderer::
+INLINE PN_stdfloat BaseParticleRenderer::
 get_user_alpha() const {
   return _user_alpha;
 }
@@ -105,7 +105,7 @@ get_ignore_scale() const {
 //      Access : Published
 // Description : gets current alpha for a particle
 ////////////////////////////////////////////////////////////////////
-INLINE float BaseParticleRenderer::
+INLINE PN_stdfloat BaseParticleRenderer::
 get_cur_alpha(BaseParticle* bp) {
   switch(_alpha_mode) {
   case PR_ALPHA_OUT:

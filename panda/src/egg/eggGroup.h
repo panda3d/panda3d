@@ -254,10 +254,10 @@ PUBLISHED:
   INLINE BlendOperand get_blend_operand_a() const;
   INLINE void set_blend_operand_b(BlendOperand blend_operand_b);
   INLINE BlendOperand get_blend_operand_b() const;
-  INLINE void set_blend_color(const Colorf &blend_color);
+  INLINE void set_blend_color(const LColor &blend_color);
   INLINE void clear_blend_color();
   INLINE bool has_blend_color() const;
-  INLINE const Colorf &get_blend_color() const;
+  INLINE const LColor &get_blend_color() const;
 
   INLINE void set_lod(const EggSwitchCondition &lod);
   INLINE void clear_lod();
@@ -374,7 +374,7 @@ private:
   BlendMode _blend_mode;
   BlendOperand _blend_operand_a;
   BlendOperand _blend_operand_b;
-  Colorf _blend_color;
+  LColor _blend_color;
   LPoint3d _billboard_center;
   vector_string _object_types;
   string _collision_name;

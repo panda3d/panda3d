@@ -179,7 +179,7 @@ set_time_units(int unit_mask) {
 //               speed for the graph to the indicated value.
 ////////////////////////////////////////////////////////////////////
 void WinStatsStripChart::
-set_scroll_speed(float scroll_speed) {
+set_scroll_speed(PN_stdfloat scroll_speed) {
   // The speed factor indicates chart widths per minute.
   if (scroll_speed != 0.0f) {
     set_horizontal_scale(60.0f / scroll_speed);
@@ -226,7 +226,7 @@ clicked_label(int collector_index) {
 //               represents.  This may force a redraw.
 ////////////////////////////////////////////////////////////////////
 void WinStatsStripChart::
-set_vertical_scale(float value_height) {
+set_vertical_scale(PN_stdfloat value_height) {
   PStatStripChart::set_vertical_scale(value_height);
 
   RECT rect;
@@ -301,7 +301,7 @@ draw_slice(int x, int w, const PStatStripChart::FrameData &fdata) {
   RECT rect = { x, 0, x + w, get_ysize() };
   FillRect(_bitmap_dc, &rect, (HBRUSH)GetStockObject(WHITE_BRUSH));
 
-  float overall_time = 0.0;
+  PN_stdfloat overall_time = 0.0;
   int y = get_ysize();
 
   FrameData::const_iterator fi;
@@ -456,7 +456,7 @@ graph_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
     if (_drag_mode == DM_scale) {
       PN_int16 y = HIWORD(lparam);
-      float ratio = 1.0f - ((float)y / (float)get_ysize());
+      PN_stdfloat ratio = 1.0f - ((PN_stdfloat)y / (PN_stdfloat)get_ysize());
       if (ratio > 0.0f) {
         set_vertical_scale(_drag_scale_start / ratio);
       }
@@ -601,8 +601,8 @@ consider_drag_start(int mouse_x, int mouse_y, int width, int height) {
     if (mouse_y >= _graph_top && mouse_y < _graph_top + get_ysize()) {
       // See if the mouse is over a user-defined guide bar.
       int y = mouse_y - _graph_top;
-      float from_height = pixel_to_height(y + 2);
-      float to_height = pixel_to_height(y - 2);
+      PN_stdfloat from_height = pixel_to_height(y + 2);
+      PN_stdfloat to_height = pixel_to_height(y - 2);
       _drag_guide_bar = find_user_guide_bar(from_height, to_height);
       if (_drag_guide_bar >= 0) {
         return DM_guide_bar;
@@ -725,8 +725,8 @@ draw_guide_label(HDC hdc, int x, const PStatGraph::GuideBar &bar, int last_y) {
   GetTextExtentPoint32(hdc, label.data(), label.length(), &size);
 
   if (bar._style != GBS_user) {
-    float from_height = pixel_to_height(y + size.cy);
-    float to_height = pixel_to_height(y - size.cy);
+    PN_stdfloat from_height = pixel_to_height(y + size.cy);
+    PN_stdfloat to_height = pixel_to_height(y - size.cy);
     if (find_user_guide_bar(from_height, to_height) >= 0) {
       // Omit the label: there's a user-defined guide bar in the same space.
       return last_y;

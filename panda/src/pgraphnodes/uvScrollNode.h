@@ -28,7 +28,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PGRAPH UvScrollNode : public PandaNode {
 PUBLISHED:
-  INLINE UvScrollNode(const string &name, float u_speed, float v_speed, float r_speed);
+  INLINE UvScrollNode(const string &name, PN_stdfloat u_speed, PN_stdfloat v_speed, PN_stdfloat r_speed);
   INLINE UvScrollNode(const string &name);
 
 protected:
@@ -41,17 +41,17 @@ public:
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
 
 PUBLISHED:
-  INLINE void set_u_speed(float u_speed);
-  INLINE void set_v_speed(float v_speed);
-  INLINE void set_r_speed(float r_speed);
-  INLINE float get_u_speed() const;
-  INLINE float get_v_speed() const;
-  INLINE float get_r_speed() const;
+  INLINE void set_u_speed(PN_stdfloat u_speed);
+  INLINE void set_v_speed(PN_stdfloat v_speed);
+  INLINE void set_r_speed(PN_stdfloat r_speed);
+  INLINE PN_stdfloat get_u_speed() const;
+  INLINE PN_stdfloat get_v_speed() const;
+  INLINE PN_stdfloat get_r_speed() const;
   
 private:
-  float _u_speed;
-  float _v_speed;
-  float _r_speed;
+  PN_stdfloat _u_speed;
+  PN_stdfloat _v_speed;
+  PN_stdfloat _r_speed;
 
   double _start_time;
 

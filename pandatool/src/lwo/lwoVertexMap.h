@@ -19,7 +19,7 @@
 
 #include "lwoChunk.h"
 
-#include "pta_float.h"
+#include "pta_stdfloat.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LwoVertexMap
@@ -30,7 +30,7 @@
 class LwoVertexMap : public LwoChunk {
 public:
   bool has_value(int index) const;
-  PTA_float get_value(int index) const;
+  PTA_stdfloat get_value(int index) const;
 
   IffId _map_type;
   int _dimension;
@@ -41,7 +41,7 @@ public:
   virtual void write(ostream &out, int indent_level = 0) const;
 
 private:
-  typedef pmap<int, PTA_float> VMap;
+  typedef pmap<int, PTA_stdfloat> VMap;
   VMap _vmap;
 
 public:

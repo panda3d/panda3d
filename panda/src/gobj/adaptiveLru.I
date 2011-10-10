@@ -102,7 +102,7 @@ validate() {
 //               exponential moving average.
 ////////////////////////////////////////////////////////////////////
 INLINE void AdaptiveLru::
-set_weight(float weight) {
+set_weight(PN_stdfloat weight) {
   _weight = weight;
 }
 
@@ -112,7 +112,7 @@ set_weight(float weight) {
 //  Description: Returns the weight value used to compute the
 //               exponential moving average.
 ////////////////////////////////////////////////////////////////////
-INLINE float AdaptiveLru::
+INLINE PN_stdfloat AdaptiveLru::
 get_weight() const {
   return _weight;
 }
@@ -146,8 +146,8 @@ get_max_updates_per_frame() const {
 //       Access: Private
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE float AdaptiveLru::
-calculate_exponential_moving_average(float value, float average) const {
+INLINE PN_stdfloat AdaptiveLru::
+calculate_exponential_moving_average(PN_stdfloat value, PN_stdfloat average) const {
   return ((value - average) * _weight) + average;
 }
 

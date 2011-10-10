@@ -112,7 +112,7 @@ public:
 
     int identifier;
 
-    float average_frame_utilization;
+    PN_stdfloat average_frame_utilization;
 
     LruPage *previous;
     LruPage *next;
@@ -171,7 +171,7 @@ public:
 
   void access_page (LruPage *lru_page);
 
-  void set_maximum_frame_bandwidth_utilization (float maximum_frame_bandwidth_utilization);
+  void set_maximum_frame_bandwidth_utilization (PN_stdfloat maximum_frame_bandwidth_utilization);
 
   void begin_frame ( );
 
@@ -226,10 +226,10 @@ public:
 
     int identifier; // the number of pages created during the lifetime of the LRU
 
-    float weight; // used for exponential moving average
-    float maximum_frame_bandwidth_utilization;
+    PN_stdfloat weight; // used for exponential moving average
+    PN_stdfloat maximum_frame_bandwidth_utilization;
 
-    float frame_bandwidth_factor;
+    PN_stdfloat frame_bandwidth_factor;
 
     LruPageTypeFunction page_in_function_array [MAXIMUM_LRU_PAGE_TYPES];
     LruPageTypeFunction page_out_function_array [MAXIMUM_LRU_PAGE_TYPES];
@@ -259,7 +259,7 @@ public:
   friend class LruPage;
 };
 
-float calculate_exponential_moving_average (float value, float weight, float average);
+PN_stdfloat calculate_exponential_moving_average (PN_stdfloat value, PN_stdfloat weight, PN_stdfloat average);
 bool default_page_in_function (LruPage *lru_page);
 bool default_page_out_function (LruPage *lru_page);
 

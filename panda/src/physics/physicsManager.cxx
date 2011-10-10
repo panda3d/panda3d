@@ -139,7 +139,7 @@ remove_physical_node(PhysicalNode *p) {
 //                integration on every attached Physical.
 ////////////////////////////////////////////////////////////////////
 void PhysicsManager::
-do_physics(float dt) {
+do_physics(PN_stdfloat dt) {
   // now, run through each physics object in the set.
   PhysicalsVector::iterator p_cur = _physicals.begin();
   for (; p_cur != _physicals.end(); ++p_cur) {
@@ -175,7 +175,7 @@ do_physics(float dt) {
 //                associated forces are active.
 ////////////////////////////////////////////////////////////////////
 void PhysicsManager::
-do_physics(float dt, Physical *physical) {
+do_physics(PN_stdfloat dt, Physical *physical) {
   nassertv(physical);
   
   // do linear

@@ -34,7 +34,7 @@ TimedCycle() :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE TimedCycle::
-TimedCycle(float cycle_time, int element_count) :
+TimedCycle(PN_stdfloat cycle_time, int element_count) :
   _cycle_time(cycle_time),
   _current_child(0),
   _element_count(element_count)
@@ -62,7 +62,7 @@ set_element_count(int element_count)
 //  Description: Set the number of elements being cycled through
 ////////////////////////////////////////////////////////////////////
 INLINE void TimedCycle::
-set_cycle_time(float cycle_time)
+set_cycle_time(PN_stdfloat cycle_time)
 {
   nassertv(cycle_time > 0);
   if (_next_switch == -1)

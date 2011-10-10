@@ -36,8 +36,8 @@ PUBLISHED:
   UserVertexSlider(const string &name);
   UserVertexSlider(const InternalName *name);
 
-  INLINE void set_slider(float slider);
-  virtual float get_slider() const;
+  INLINE void set_slider(PN_stdfloat slider);
+  virtual PN_stdfloat get_slider() const;
 
 private:
   // This is the data that must be cycled between pipeline stages.
@@ -52,7 +52,7 @@ private:
       return UserVertexSlider::get_class_type();
     }
 
-    float _slider;
+    PN_stdfloat _slider;
   };
 
   PipelineCycler<CData> _cycler;

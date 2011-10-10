@@ -292,7 +292,7 @@ PUBLISHED:
   INLINE void set_minfilter(FilterType filter);
   INLINE void set_magfilter(FilterType filter);
   INLINE void set_anisotropic_degree(int anisotropic_degree);
-  INLINE void set_border_color(const Colorf &color);
+  INLINE void set_border_color(const LColor &color);
   INLINE void set_compression(CompressionMode compression);
   INLINE void set_render_to_texture(bool render_to_texture);
 
@@ -305,7 +305,7 @@ PUBLISHED:
   FilterType get_effective_magfilter() const;
   INLINE int get_anisotropic_degree() const;
   INLINE int get_effective_anisotropic_degree() const;
-  INLINE Colorf get_border_color() const;
+  INLINE LColor get_border_color() const;
   INLINE CompressionMode get_compression() const;
   INLINE bool has_compression() const;
   INLINE bool get_render_to_texture() const;
@@ -430,7 +430,7 @@ PUBLISHED:
   INLINE int get_pad_x_size() const;
   INLINE int get_pad_y_size() const;
   INLINE int get_pad_z_size() const;
-  INLINE LVecBase2f get_tex_scale() const;
+  INLINE LVecBase2 get_tex_scale() const;
   
   INLINE void set_pad_size(int x=0, int y=0, int z=0);
   void set_size_padded(int x=1, int y=1, int z=1);
@@ -598,7 +598,7 @@ protected:
   void do_set_minfilter(CData *cdata, FilterType filter);
   void do_set_magfilter(CData *cdata, FilterType filter);
   void do_set_anisotropic_degree(CData *cdata, int anisotropic_degree);
-  void do_set_border_color(CData *cdata, const Colorf &color);
+  void do_set_border_color(CData *cdata, const LColor &color);
   void do_set_compression(CData *cdata, CompressionMode compression);
   void do_set_quality_level(CData *cdata, QualityLevel quality_level);
 
@@ -786,7 +786,7 @@ protected:
     FilterType _magfilter;
     int _anisotropic_degree;
     bool _keep_ram_image;
-    Colorf _border_color;
+    LColor _border_color;
     CompressionMode _compression;
     bool _render_to_texture;
     bool _match_framebuffer_format;

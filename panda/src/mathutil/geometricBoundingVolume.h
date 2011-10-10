@@ -34,22 +34,22 @@ public:
 
 PUBLISHED:
   INLINE_MATHUTIL bool extend_by(const GeometricBoundingVolume *vol);
-  INLINE_MATHUTIL bool extend_by(const LPoint3f &point);
+  INLINE_MATHUTIL bool extend_by(const LPoint3 &point);
 
   // It might be nice to make these template member functions so we
   // could have true STL-style first/last iterators, but that's
   // impossible for virtual functions.
   INLINE_MATHUTIL bool around(const GeometricBoundingVolume **first,
                      const GeometricBoundingVolume **last);
-  INLINE_MATHUTIL bool around(const LPoint3f *first,
-                     const LPoint3f *last);
+  INLINE_MATHUTIL bool around(const LPoint3 *first,
+                     const LPoint3 *last);
 
   INLINE_MATHUTIL int contains(const GeometricBoundingVolume *vol) const;
-  INLINE_MATHUTIL int contains(const LPoint3f &point) const;
-  INLINE_MATHUTIL int contains(const LPoint3f &a, const LPoint3f &b) const;
+  INLINE_MATHUTIL int contains(const LPoint3 &point) const;
+  INLINE_MATHUTIL int contains(const LPoint3 &a, const LPoint3 &b) const;
 
-  virtual LPoint3f get_approx_center() const=0;
-  virtual void xform(const LMatrix4f &mat)=0;
+  virtual LPoint3 get_approx_center() const=0;
+  virtual void xform(const LMatrix4 &mat)=0;
 
 public:
   virtual const GeometricBoundingVolume *as_geometric_bounding_volume() const;
@@ -58,11 +58,11 @@ protected:
   // Some virtual functions to implement fundamental bounding
   // operations on points in 3-d space.
 
-  virtual bool extend_by_point(const LPoint3f &point);
-  virtual bool around_points(const LPoint3f *first,
-                             const LPoint3f *last);
-  virtual int contains_point(const LPoint3f &point) const;
-  virtual int contains_lineseg(const LPoint3f &a, const LPoint3f &b) const;
+  virtual bool extend_by_point(const LPoint3 &point);
+  virtual bool around_points(const LPoint3 *first,
+                             const LPoint3 *last);
+  virtual int contains_point(const LPoint3 &point) const;
+  virtual int contains_lineseg(const LPoint3 &a, const LPoint3 &b) const;
 
 
 public:

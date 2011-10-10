@@ -70,7 +70,7 @@ protected:
 
 private:
   void make_sphere();
-  static Vertexf compute_sphere_point(float latitude, float longitude);
+  static LVertex compute_sphere_point(PN_stdfloat latitude, PN_stdfloat longitude);
   void make_box();
 
   void make_solid_test_state();

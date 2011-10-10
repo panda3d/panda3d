@@ -90,9 +90,9 @@ public:
   XFileDataNode *add_MeshVertexColors(const string &name);
   XFileDataNode *add_MeshTextureCoords(const string &name);
   XFileDataNode *add_MeshMaterialList(const string &name);
-  XFileDataNode *add_Material(const string &name, const Colorf &face_color,
-                              double power, const RGBColorf &specular_color,
-                              const RGBColorf &emissive_color);
+  XFileDataNode *add_Material(const string &name, const LColor &face_color,
+                              double power, const LRGBColor &specular_color,
+                              const LRGBColor &emissive_color);
   XFileDataNode *add_TextureFilename(const string &name, 
                                      const Filename &filename);
   XFileDataNode *add_Frame(const string &name);

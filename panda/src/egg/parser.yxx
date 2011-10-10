@@ -584,42 +584,42 @@ texture_body:
     }
 
   } else if (cmp_nocase_uh(name, "blendr") == 0) {
-    Colorf color = texture->get_color();
+    LColor color = texture->get_color();
     color[0] = value;
     texture->set_color(color);
 
   } else if (cmp_nocase_uh(name, "blendg") == 0) {
-    Colorf color = texture->get_color();
+    LColor color = texture->get_color();
     color[1] = value;
     texture->set_color(color);
 
   } else if (cmp_nocase_uh(name, "blendb") == 0) {
-    Colorf color = texture->get_color();
+    LColor color = texture->get_color();
     color[2] = value;
     texture->set_color(color);
 
   } else if (cmp_nocase_uh(name, "blenda") == 0) {
-    Colorf color = texture->get_color();
+    LColor color = texture->get_color();
     color[3] = value;
     texture->set_color(color);
 
   } else if (cmp_nocase_uh(name, "borderr") == 0) {
-    Colorf border_color = texture->get_border_color();
+    LColor border_color = texture->get_border_color();
     border_color[0] = value;
     texture->set_border_color(border_color);
 
   } else if (cmp_nocase_uh(name, "borderg") == 0) {
-    Colorf border_color = texture->get_border_color();
+    LColor border_color = texture->get_border_color();
     border_color[1] = value;
     texture->set_border_color(border_color);
 
   } else if (cmp_nocase_uh(name, "borderb") == 0) {
-    Colorf border_color = texture->get_border_color();
+    LColor border_color = texture->get_border_color();
     border_color[2] = value;
     texture->set_border_color(border_color);
 
   } else if (cmp_nocase_uh(name, "bordera") == 0) {
-    Colorf border_color = texture->get_border_color();
+    LColor border_color = texture->get_border_color();
     border_color[3] = value;
     texture->set_border_color(border_color);
 
@@ -745,70 +745,70 @@ material_body:
   double value = $<_number>5;
 
   if (cmp_nocase_uh(name, "diffr") == 0) {
-    Colorf diff = material->get_diff();
+    LColor diff = material->get_diff();
     diff[0] = value;
     material->set_diff(diff);
   } else if (cmp_nocase_uh(name, "diffg") == 0) {
-    Colorf diff = material->get_diff();
+    LColor diff = material->get_diff();
     diff[1] = value;
     material->set_diff(diff);
   } else if (cmp_nocase_uh(name, "diffb") == 0) {
-    Colorf diff = material->get_diff();
+    LColor diff = material->get_diff();
     diff[2] = value;
     material->set_diff(diff);
   } else if (cmp_nocase_uh(name, "diffa") == 0) {
-    Colorf diff = material->get_diff();
+    LColor diff = material->get_diff();
     diff[3] = value;
     material->set_diff(diff);
 
   } else if (cmp_nocase_uh(name, "ambr") == 0) {
-    Colorf amb = material->get_amb();
+    LColor amb = material->get_amb();
     amb[0] = value;
     material->set_amb(amb);
   } else if (cmp_nocase_uh(name, "ambg") == 0) {
-    Colorf amb = material->get_amb();
+    LColor amb = material->get_amb();
     amb[1] = value;
     material->set_amb(amb);
   } else if (cmp_nocase_uh(name, "ambb") == 0) {
-    Colorf amb = material->get_amb();
+    LColor amb = material->get_amb();
     amb[2] = value;
     material->set_amb(amb);
   } else if (cmp_nocase_uh(name, "amba") == 0) {
-    Colorf amb = material->get_amb();
+    LColor amb = material->get_amb();
     amb[3] = value;
     material->set_amb(amb);
 
   } else if (cmp_nocase_uh(name, "emitr") == 0) {
-    Colorf emit = material->get_emit();
+    LColor emit = material->get_emit();
     emit[0] = value;
     material->set_emit(emit);
   } else if (cmp_nocase_uh(name, "emitg") == 0) {
-    Colorf emit = material->get_emit();
+    LColor emit = material->get_emit();
     emit[1] = value;
     material->set_emit(emit);
   } else if (cmp_nocase_uh(name, "emitb") == 0) {
-    Colorf emit = material->get_emit();
+    LColor emit = material->get_emit();
     emit[2] = value;
     material->set_emit(emit);
   } else if (cmp_nocase_uh(name, "emita") == 0) {
-    Colorf emit = material->get_emit();
+    LColor emit = material->get_emit();
     emit[3] = value;
     material->set_emit(emit);
 
   } else if (cmp_nocase_uh(name, "specr") == 0) {
-    Colorf spec = material->get_spec();
+    LColor spec = material->get_spec();
     spec[0] = value;
     material->set_spec(spec);
   } else if (cmp_nocase_uh(name, "specg") == 0) {
-    Colorf spec = material->get_spec();
+    LColor spec = material->get_spec();
     spec[1] = value;
     material->set_spec(spec);
   } else if (cmp_nocase_uh(name, "specb") == 0) {
-    Colorf spec = material->get_spec();
+    LColor spec = material->get_spec();
     spec[2] = value;
     material->set_spec(spec);
   } else if (cmp_nocase_uh(name, "speca") == 0) {
-    Colorf spec = material->get_spec();
+    LColor spec = material->get_spec();
     spec[3] = value;
     material->set_spec(spec);
 
@@ -1127,12 +1127,12 @@ vertex_normal_body:
 vertex_color_body:
         real real real real
 {
-  DCAST(EggVertex, egg_stack.back())->set_color(Colorf($1, $2, $3, $4));
+  DCAST(EggVertex, egg_stack.back())->set_color(LColor($1, $2, $3, $4));
 }
         | vertex_color_body DRGBA string '{' real real real real '}'
 {
   bool inserted = DCAST(EggVertex, egg_stack.back())->_drgbas.
-    insert(EggMorphColor($3, LVector4f($5, $6, $7, $8))).second;
+    insert(EggMorphColor($3, LVector4($5, $6, $7, $8))).second;
   if (!inserted) {
     eggyywarning("Ignoring repeated morph name " + $3);
   }
@@ -1140,7 +1140,7 @@ vertex_color_body:
         | vertex_color_body DRGBA '{' string real real real real '}'
 {
   bool inserted = DCAST(EggVertex, egg_stack.back())->_drgbas.
-    insert(EggMorphColor($4, LVector4f($5, $6, $7, $8))).second;
+    insert(EggMorphColor($4, LVector4($5, $6, $7, $8))).second;
   if (!inserted) {
     eggyywarning("Ignoring repeated morph name " + $4);
   }
@@ -1349,22 +1349,22 @@ group_body:
     }
 
   } else if (cmp_nocase_uh(name, "blendr") == 0) {
-    Colorf color = group->get_blend_color();
+    LColor color = group->get_blend_color();
     color[0] = value;
     group->set_blend_color(color);
 
   } else if (cmp_nocase_uh(name, "blendg") == 0) {
-    Colorf color = group->get_blend_color();
+    LColor color = group->get_blend_color();
     color[1] = value;
     group->set_blend_color(color);
 
   } else if (cmp_nocase_uh(name, "blendb") == 0) {
-    Colorf color = group->get_blend_color();
+    LColor color = group->get_blend_color();
     color[2] = value;
     group->set_blend_color(color);
 
   } else if (cmp_nocase_uh(name, "blenda") == 0) {
-    Colorf color = group->get_blend_color();
+    LColor color = group->get_blend_color();
     color[3] = value;
     group->set_blend_color(color);
 
@@ -2329,12 +2329,12 @@ primitive_normal_body:
 primitive_color_body:
         real real real real
 {
-  DCAST(EggPrimitive, egg_stack.back())->set_color(Colorf($1, $2, $3, $4));
+  DCAST(EggPrimitive, egg_stack.back())->set_color(LColor($1, $2, $3, $4));
 }
         | primitive_color_body DRGBA string '{' real real real real '}'
 {
   bool inserted = DCAST(EggPrimitive, egg_stack.back())->_drgbas.
-    insert(EggMorphColor($3, LVector4f($5, $6, $7, $8))).second;
+    insert(EggMorphColor($3, LVector4($5, $6, $7, $8))).second;
   if (!inserted) {
     eggyywarning("Ignoring repeated morph name " + $3);
   }
@@ -2342,7 +2342,7 @@ primitive_color_body:
         | primitive_color_body DRGBA '{' string real real real real '}'
 {
   bool inserted = DCAST(EggPrimitive, egg_stack.back())->_drgbas.
-    insert(EggMorphColor($4, LVector4f($5, $6, $7, $8))).second;
+    insert(EggMorphColor($4, LVector4($5, $6, $7, $8))).second;
   if (!inserted) {
     eggyywarning("Ignoring repeated morph name " + $4);
   }

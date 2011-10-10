@@ -40,21 +40,21 @@ public:
   INLINE void operator = (const NurbsVertex &copy);
   INLINE ~NurbsVertex();
 
-  INLINE void set_vertex(const LVecBase4f &vertex);
-  INLINE const LVecBase4f &get_vertex() const;
+  INLINE void set_vertex(const LVecBase4 &vertex);
+  INLINE const LVecBase4 &get_vertex() const;
 
   INLINE void set_space(const NodePath &space);
   INLINE void set_space(const string &space);
   INLINE NodePath get_space(const NodePath &rel_to) const;
 
-  void set_extended_vertex(int d, float value);
-  float get_extended_vertex(int d) const;
+  void set_extended_vertex(int d, PN_stdfloat value);
+  PN_stdfloat get_extended_vertex(int d) const;
 
 private:
-  LVecBase4f _vertex;
+  LVecBase4 _vertex;
   NodePath _space;
   string _space_path;
-  typedef pmap<int, float> Extended;
+  typedef pmap<int, PN_stdfloat> Extended;
   Extended _extended;
 };
 

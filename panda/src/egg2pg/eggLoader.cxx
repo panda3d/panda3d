@@ -370,7 +370,7 @@ make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
     //  vertex_pool->write(cerr, 0);
 
     bool has_overall_color;
-    Colorf overall_color;
+    LColor overall_color;
     vertex_pool->check_overall_color(has_overall_color, overall_color);
     if (!egg_flat_colors) {
       // If flat colors aren't allowed, then we don't care whether
@@ -447,7 +447,7 @@ make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
 
       CPT(RenderState) geom_state = render_state->_state;
       if (has_overall_color) {
-        if (!overall_color.almost_equal(Colorf(1.0f, 1.0f, 1.0f, 1.0f))) {
+        if (!overall_color.almost_equal(LColor(1.0f, 1.0f, 1.0f, 1.0f))) {
           geom_state = geom_state->add_attrib(ColorAttrib::make_flat(overall_color), -1);
         }
       } else {
@@ -484,85 +484,85 @@ make_transform(const EggTransform *egg_transform) {
     switch (egg_transform->get_component_type(i)) {
     case EggTransform::CT_translate2d:
       {
-        LVecBase2f trans2d(LCAST(float, egg_transform->get_component_vec2(i)));
-        LVecBase3f trans3d(trans2d[0], trans2d[1], 0.0f);
+        LVecBase2 trans2d(LCAST(PN_stdfloat, egg_transform->get_component_vec2(i)));
+        LVecBase3 trans3d(trans2d[0], trans2d[1], 0.0f);
         ts = TransformState::make_pos(trans3d)->compose(ts);
       }
       break;
 
     case EggTransform::CT_translate3d:
       {
-        LVecBase3f trans3d(LCAST(float, egg_transform->get_component_vec3(i)));
+        LVecBase3 trans3d(LCAST(PN_stdfloat, egg_transform->get_component_vec3(i)));
         ts = TransformState::make_pos(trans3d)->compose(ts);
       }
       break;
 
     case EggTransform::CT_rotate2d:
       {
-        LRotationf rot(LVector3f(0.0f, 0.0f, 1.0f),
-                       (float)egg_transform->get_component_number(i));
+        LRotation rot(LVector3(0.0f, 0.0f, 1.0f),
+                       (PN_stdfloat)egg_transform->get_component_number(i));
         ts = TransformState::make_quat(rot)->compose(ts);
       }
       break;
 
     case EggTransform::CT_rotx:
       {
-        LRotationf rot(LVector3f(1.0f, 0.0f, 0.0f),
-                       (float)egg_transform->get_component_number(i));
+        LRotation rot(LVector3(1.0f, 0.0f, 0.0f),
+                       (PN_stdfloat)egg_transform->get_component_number(i));
         ts = TransformState::make_quat(rot)->compose(ts);
       }
       break;
 
     case EggTransform::CT_roty:
       {
-        LRotationf rot(LVector3f(0.0f, 1.0f, 0.0f),
-                       (float)egg_transform->get_component_number(i));
+        LRotation rot(LVector3(0.0f, 1.0f, 0.0f),
+                       (PN_stdfloat)egg_transform->get_component_number(i));
         ts = TransformState::make_quat(rot)->compose(ts);
       }
       break;
 
     case EggTransform::CT_rotz:
       {
-        LRotationf rot(LVector3f(0.0f, 0.0f, 1.0f),
-                       (float)egg_transform->get_component_number(i));
+        LRotation rot(LVector3(0.0f, 0.0f, 1.0f),
+                       (PN_stdfloat)egg_transform->get_component_number(i));
         ts = TransformState::make_quat(rot)->compose(ts);
       }
       break;
 
     case EggTransform::CT_rotate3d:
       {
-        LRotationf rot(LCAST(float, egg_transform->get_component_vec3(i)),
-                       (float)egg_transform->get_component_number(i));
+        LRotation rot(LCAST(PN_stdfloat, egg_transform->get_component_vec3(i)),
+                       (PN_stdfloat)egg_transform->get_component_number(i));
         ts = TransformState::make_quat(rot)->compose(ts);
       }
       break;
 
     case EggTransform::CT_scale2d:
       {
-        LVecBase2f scale2d(LCAST(float, egg_transform->get_component_vec2(i)));
-        LVecBase3f scale3d(scale2d[0], scale2d[1], 1.0f);
+        LVecBase2 scale2d(LCAST(PN_stdfloat, egg_transform->get_component_vec2(i)));
+        LVecBase3 scale3d(scale2d[0], scale2d[1], 1.0f);
         ts = TransformState::make_scale(scale3d)->compose(ts);
       }
       break;
 
     case EggTransform::CT_scale3d:
       {
-        LVecBase3f scale3d(LCAST(float, egg_transform->get_component_vec3(i)));
+        LVecBase3 scale3d(LCAST(PN_stdfloat, egg_transform->get_component_vec3(i)));
         ts = TransformState::make_scale(scale3d)->compose(ts);
       }
       break;
 
     case EggTransform::CT_uniform_scale:
       {
-        float scale = (float)egg_transform->get_component_number(i);
+        PN_stdfloat scale = (PN_stdfloat)egg_transform->get_component_number(i);
         ts = TransformState::make_scale(scale)->compose(ts);
       }
       break;
 
     case EggTransform::CT_matrix3:
       {
-        LMatrix3f m(LCAST(float, egg_transform->get_component_mat3(i)));
-        LMatrix4f mat4(m(0, 0), m(0, 1), 0.0, m(0, 2),
+        LMatrix3 m(LCAST(PN_stdfloat, egg_transform->get_component_mat3(i)));
+        LMatrix4 mat4(m(0, 0), m(0, 1), 0.0, m(0, 2),
                        m(1, 0), m(1, 1), 0.0, m(1, 2),
                        0.0, 0.0, 1.0, 0.0,
                        m(2, 0), m(2, 1), 0.0, m(2, 2));
@@ -573,7 +573,7 @@ make_transform(const EggTransform *egg_transform) {
 
     case EggTransform::CT_matrix4:
       {
-        LMatrix4f mat4(LCAST(float, egg_transform->get_component_mat4(i)));
+        LMatrix4 mat4(LCAST(PN_stdfloat, egg_transform->get_component_mat4(i)));
         ts = TransformState::make_mat(mat4)->compose(ts);
       }
       break;
@@ -624,8 +624,8 @@ show_normals(EggVertexPool *vertex_pool, GeomNode *geom_node) {
     if (vert->has_normal()) {
       vertex.add_data3d(pos);
       vertex.add_data3d(pos + vert->get_normal() * egg_normal_scale);
-      color.add_data4f(1.0f, 0.0f, 0.0f, 1.0f);
-      color.add_data4f(1.0f, 0.0f, 0.0f, 1.0f);
+      color.add_data4(1.0f, 0.0f, 0.0f, 1.0f);
+      color.add_data4(1.0f, 0.0f, 0.0f, 1.0f);
       primitive->add_next_vertices(2);
       primitive->close_primitive();
     }
@@ -638,16 +638,16 @@ show_normals(EggVertexPool *vertex_pool, GeomNode *geom_node) {
       if (uv_obj->has_tangent()) {
         vertex.add_data3d(pos);
         vertex.add_data3d(pos + uv_obj->get_tangent() * egg_normal_scale);
-        color.add_data4f(0.0f, 1.0f, 0.0f, 1.0f);
-        color.add_data4f(0.0f, 1.0f, 0.0f, 1.0f);
+        color.add_data4(0.0f, 1.0f, 0.0f, 1.0f);
+        color.add_data4(0.0f, 1.0f, 0.0f, 1.0f);
         primitive->add_next_vertices(2);
         primitive->close_primitive();
       }
       if (uv_obj->has_binormal()) {
         vertex.add_data3d(pos);
         vertex.add_data3d(pos + uv_obj->get_binormal() * egg_normal_scale);
-        color.add_data4f(0.0f, 0.0f, 1.0f, 1.0f);
-        color.add_data4f(0.0f, 0.0f, 1.0f, 1.0f);
+        color.add_data4(0.0f, 0.0f, 1.0f, 1.0f);
+        color.add_data4(0.0f, 0.0f, 1.0f, 1.0f);
         primitive->add_next_vertices(2);
         primitive->close_primitive();
       }
@@ -764,7 +764,7 @@ make_old_nurbs_curve(EggNurbsCurve *egg_curve, PandaNode *parent,
 
   EggPrimitive::const_iterator pi;
   for (pi = egg_curve->begin(); pi != egg_curve->end(); ++pi) {
-    nurbs->append_cv(LCAST(float, (*pi)->get_pos4() * mat));
+    nurbs->append_cv(LCAST(PN_stdfloat, (*pi)->get_pos4() * mat));
   }
 
   int num_knots = egg_curve->get_num_knots();
@@ -1783,7 +1783,7 @@ make_lod(EggBin *egg_bin, PandaNode *parent) {
   if (!instances.empty()) {
     // Set up the LOD node's center.  All of the children should have
     // the same center, because that's how we binned them.
-    lod_node->set_center(LCAST(float, instances[0]._d->_center));
+    lod_node->set_center(LCAST(PN_stdfloat, instances[0]._d->_center));
   }
   
   for (size_t i = 0; i < instances.size(); i++) {
@@ -1794,7 +1794,7 @@ make_lod(EggBin *egg_bin, PandaNode *parent) {
     // All of the children should have the same center, because that's
     // how we binned them.
     nassertr(lod_node->get_center().almost_equal
-             (LCAST(float, instance._d->_center), 0.01), NULL);
+             (LCAST(PN_stdfloat, instance._d->_center), 0.01), NULL);
     
     // Tell the LOD node about this child's switching distances.
     lod_node->add_switch(instance._d->_switch_in, instance._d->_switch_out);
@@ -1886,9 +1886,9 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
     // Create a polylight instead of a regular polyset.
     // use make_sphere to get the center, radius and color
     //egg2pg_cat.debug() << "polylight node\n";
-    LPoint3f center;
-    Colorf color;
-    float radius;
+    LPoint3 center;
+    LColor color;
+    PN_stdfloat radius;
     
     if (!make_sphere(egg_group, EggGroup::CF_none, center, radius, color)) {
       egg2pg_cat.warning()
@@ -2058,7 +2058,7 @@ create_group_arc(EggGroup *egg_group, PandaNode *parent, PandaNode *node) {
     ColorBlendAttrib::Mode mode = get_color_blend_mode(egg_group->get_blend_mode());
     ColorBlendAttrib::Operand a = get_color_blend_operand(egg_group->get_blend_operand_a());
     ColorBlendAttrib::Operand b = get_color_blend_operand(egg_group->get_blend_operand_b());
-    Colorf color = egg_group->get_blend_color();
+    LColor color = egg_group->get_blend_color();
     node->set_attrib(ColorBlendAttrib::make(mode, a, b, color));
   }
 
@@ -2198,21 +2198,15 @@ make_vertex_data(const EggRenderState *render_state,
     return (*di).second;
   }
 
-  // Decide on the format for the vertices.
-  Geom::NumericType vertex_numeric_type = Geom::NT_float32;
-  if (egg_float64_vertices) {
-    vertex_numeric_type = Geom::NT_float64;
-  }
-
   PT(GeomVertexArrayFormat) array_format = new GeomVertexArrayFormat;
   array_format->add_column
     (InternalName::get_vertex(), vertex_pool->get_num_dimensions(),
-     vertex_numeric_type, Geom::C_point);
+     Geom::NT_stdfloat, Geom::C_point);
 
   if (vertex_pool->has_normals()) {
     array_format->add_column
       (InternalName::get_normal(), 3, 
-       Geom::NT_float32, Geom::C_vector);
+       Geom::NT_stdfloat, Geom::C_vector);
   }
 
   if (!ignore_color) {
@@ -2232,10 +2226,10 @@ make_vertex_data(const EggRenderState *render_state,
     if (find(uvw_names.begin(), uvw_names.end(), name) != uvw_names.end()) {
       // This one actually represents 3-d texture coordinates.
       array_format->add_column
-        (iname, 3, Geom::NT_float32, Geom::C_texcoord);
+        (iname, 3, Geom::NT_stdfloat, Geom::C_texcoord);
     } else {
       array_format->add_column
-        (iname, 2, Geom::NT_float32, Geom::C_texcoord);
+        (iname, 2, Geom::NT_stdfloat, Geom::C_texcoord);
     }
   }
   for (ni = tbn_names.begin(); ni != tbn_names.end(); ++ni) {
@@ -2243,10 +2237,10 @@ make_vertex_data(const EggRenderState *render_state,
 
     PT(InternalName) iname = InternalName::get_tangent_name(name);
     array_format->add_column
-      (iname, 3, Geom::NT_float32, Geom::C_vector);
+      (iname, 3, Geom::NT_stdfloat, Geom::C_vector);
     iname = InternalName::get_binormal_name(name);
     array_format->add_column
-      (iname, 3, Geom::NT_float32, Geom::C_vector);
+      (iname, 3, Geom::NT_stdfloat, Geom::C_vector);
   }
 
   PT(GeomVertexFormat) temp_format = new GeomVertexFormat(array_format);
@@ -2397,7 +2391,7 @@ make_vertex_data(const EggRenderState *render_state,
 
     if (!ignore_color && vertex->has_color()) {
       gvw.set_column(InternalName::get_color());
-      gvw.add_data4f(vertex->get_color());
+      gvw.add_data4(vertex->get_color());
 
       if (is_dynamic) {
         EggMorphColorList::const_iterator mci;
@@ -2406,7 +2400,7 @@ make_vertex_data(const EggRenderState *render_state,
           CPT(InternalName) delta_name = 
             InternalName::get_morph(InternalName::get_color(), morph.get_name());
           gvw.set_column(delta_name);
-          gvw.add_data4f(morph.get_offset());
+          gvw.add_data4(morph.get_offset());
         }
       }
     }
@@ -2513,7 +2507,7 @@ record_morph(GeomVertexArrayFormat *array_format,
   if (!array_format->has_column(delta_name)) {
     array_format->add_column
       (delta_name, num_components,
-       Geom::NT_float32, Geom::C_morph_delta);
+       Geom::NT_stdfloat, Geom::C_morph_delta);
   }
 }
 
@@ -2527,7 +2521,7 @@ void EggLoader::
 make_primitive(const EggRenderState *render_state, EggPrimitive *egg_prim, 
                EggLoader::UniquePrimitives &unique_primitives,
                EggLoader::Primitives &primitives,
-               bool has_overall_color, const Colorf &overall_color) {
+               bool has_overall_color, const LColor &overall_color) {
   PT(GeomPrimitive) primitive;
   if (egg_prim->is_of_type(EggPolygon::get_class_type())) {
     if (egg_prim->size() == 3) {
@@ -2630,7 +2624,7 @@ set_portal_polygon(EggGroup *egg_group, PortalNode *pnode) {
     EggPolygon::const_iterator vi;
     for (vi = poly->begin(); vi != poly->end(); ++vi) {
       Vertexd vert = (*vi)->get_pos3() * mat;
-      pnode->add_vertex(LCAST(float, vert));
+      pnode->add_vertex(LCAST(PN_stdfloat, vert));
     }
   }
 }
@@ -2656,10 +2650,10 @@ set_occluder_polygon(EggGroup *egg_group, OccluderNode *pnode) {
       LPoint3d v1 = (*poly)[1]->get_pos3() * mat;
       LPoint3d v2 = (*poly)[2]->get_pos3() * mat;
       LPoint3d v3 = (*poly)[3]->get_pos3() * mat;
-      pnode->set_vertices(LCAST(float, v0),
-                          LCAST(float, v1),
-                          LCAST(float, v2),
-                          LCAST(float, v3));
+      pnode->set_vertices(LCAST(PN_stdfloat, v0),
+                          LCAST(PN_stdfloat, v1),
+                          LCAST(PN_stdfloat, v2),
+                          LCAST(PN_stdfloat, v3));
 
       if (poly->get_bface_flag()) {
         pnode->set_double_sided(true);
@@ -2711,7 +2705,7 @@ find_first_polygon(EggGroup *egg_group) {
 ////////////////////////////////////////////////////////////////////
 bool EggLoader::
 make_sphere(EggGroup *egg_group, EggGroup::CollideFlags flags, 
-            LPoint3f &center, float &radius, Colorf &color) {
+            LPoint3 &center, PN_stdfloat &radius, LColor &color) {
   bool success=false;
   EggGroup *geom_group = find_collision_geometry(egg_group, flags);
   if (geom_group != (EggGroup *)NULL) {
@@ -2756,7 +2750,7 @@ make_sphere(EggGroup *egg_group, EggGroup::CollideFlags flags,
         radius2 = max(radius2, v.length_squared());
       }
 
-      center = LCAST(float, d_center);
+      center = LCAST(PN_stdfloat, d_center);
       radius = sqrtf(radius2);
 
       //egg2pg_cat.debug() << "make_sphere radius: " << radius << "\n";
@@ -2947,9 +2941,9 @@ make_collision_polyset(EggGroup *egg_group, CollisionNode *cnode,
 void EggLoader::
 make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
                       EggGroup::CollideFlags flags) {
-  LPoint3f center;
-  float radius;
-  Colorf dummycolor;
+  LPoint3 center;
+  PN_stdfloat radius;
+  LColor dummycolor;
   if (make_sphere(egg_group, flags, center, radius, dummycolor)) {
     CollisionSphere *cssphere =
       new CollisionSphere(center, radius);
@@ -2967,9 +2961,9 @@ make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
 void EggLoader::
 make_collision_inv_sphere(EggGroup *egg_group, CollisionNode *cnode,
                           EggGroup::CollideFlags flags) {
-  LPoint3f center;
-  float radius;
-  Colorf dummycolor;
+  LPoint3 center;
+  PN_stdfloat radius;
+  LColor dummycolor;
   if (make_sphere(egg_group, flags, center, radius, dummycolor)) {
     CollisionInvSphere *cssphere =
       new CollisionInvSphere(center, radius);
@@ -3171,7 +3165,7 @@ make_collision_tube(EggGroup *egg_group, CollisionNode *cnode,
         LPoint3d point_b = center + half;
 
         CollisionTube *cstube =
-          new CollisionTube(LCAST(float, point_a), LCAST(float, point_b),
+          new CollisionTube(LCAST(PN_stdfloat, point_a), LCAST(PN_stdfloat, point_b),
                             radius);
         apply_collision_flags(cstube, flags);
         cnode->add_solid(cstube);
@@ -3193,7 +3187,7 @@ apply_collision_flags(CollisionSolid *solid, EggGroup::CollideFlags flags) {
     solid->set_tangible(false);
   }
   if ((flags & EggGroup::CF_level) != 0) {
-    solid->set_effective_normal(LVector3f::up());
+    solid->set_effective_normal(LVector3::up());
   }
 }
 
@@ -3259,20 +3253,20 @@ create_collision_plane(EggPolygon *egg_poly, EggGroup *parent_group) {
 
   LMatrix4d mat = egg_poly->get_vertex_to_node();
 
-  pvector<Vertexf> vertices;
+  pvector<LVertex> vertices;
   if (!egg_poly->empty()) {
     EggPolygon::const_iterator vi;
     vi = egg_poly->begin();
 
     Vertexd vert = (*vi)->get_pos3() * mat;
-    vertices.push_back(LCAST(float, vert));
+    vertices.push_back(LCAST(PN_stdfloat, vert));
 
     Vertexd last_vert = vert;
     ++vi;
     while (vi != egg_poly->end()) {
       vert = (*vi)->get_pos3() * mat;
       if (!vert.almost_equal(last_vert)) {
-        vertices.push_back(LCAST(float, vert));
+        vertices.push_back(LCAST(PN_stdfloat, vert));
       }
 
       last_vert = vert;
@@ -3283,7 +3277,7 @@ create_collision_plane(EggPolygon *egg_poly, EggGroup *parent_group) {
   if (vertices.size() < 3) {
     return NULL;
   }
-  Planef plane(vertices[0], vertices[1], vertices[2]);
+  LPlane plane(vertices[0], vertices[1], vertices[2]);
   return new CollisionPlane(plane);
 }
 
@@ -3321,20 +3315,20 @@ create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
   for (ci = group->begin(); ci != group->end(); ++ci) {
     EggPolygon *poly = DCAST(EggPolygon, *ci);
 
-    pvector<Vertexf> vertices;
+    pvector<LVertex> vertices;
     if (!poly->empty()) {
       EggPolygon::const_iterator vi;
       vi = poly->begin();
 
       Vertexd vert = (*vi)->get_pos3() * mat;
-      vertices.push_back(LCAST(float, vert));
+      vertices.push_back(LCAST(PN_stdfloat, vert));
 
       Vertexd last_vert = vert;
       ++vi;
       while (vi != poly->end()) {
         vert = (*vi)->get_pos3() * mat;
         if (!vert.almost_equal(last_vert)) {
-          vertices.push_back(LCAST(float, vert));
+          vertices.push_back(LCAST(PN_stdfloat, vert));
         }
 
         last_vert = vert;
@@ -3343,8 +3337,8 @@ create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
     }
 
     if (vertices.size() >= 3) {
-      const Vertexf *vertices_begin = &vertices[0];
-      const Vertexf *vertices_end = vertices_begin + vertices.size();
+      const LVertex *vertices_begin = &vertices[0];
+      const LVertex *vertices_end = vertices_begin + vertices.size();
       PT(CollisionPolygon) cspoly =
         new CollisionPolygon(vertices_begin, vertices_end);
       if (cspoly->is_valid()) {
@@ -3434,7 +3428,7 @@ create_collision_floor_mesh(CollisionNode *cnode,
 
   EggVertexPool::const_iterator vi;
   for (vi = pool.begin(); vi != pool.end(); vi++) {
-    csfloor->add_vertex(LCAST(float,(*vi)->get_pos3()));
+    csfloor->add_vertex(LCAST(PN_stdfloat,(*vi)->get_pos3()));
   }
 
   pvector<CollisionFloorMesh::TriangleIndices>::iterator ti;

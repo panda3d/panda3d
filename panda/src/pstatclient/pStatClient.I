@@ -51,7 +51,7 @@ get_client_name() const {
 //               thread.
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatClient::
-set_max_rate(float rate) {
+set_max_rate(PN_stdfloat rate) {
   get_impl()->set_max_rate(rate);
 }
 
@@ -62,7 +62,7 @@ set_max_rate(float rate) {
 //               sent to the server per second, per thread.  See
 //               set_max_rate().
 ////////////////////////////////////////////////////////////////////
-INLINE float PStatClient::
+INLINE PN_stdfloat PStatClient::
 get_max_rate() const {
   return get_impl()->get_max_rate();
 }

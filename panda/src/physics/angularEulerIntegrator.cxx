@@ -45,7 +45,7 @@ AngularEulerIntegrator::
 void AngularEulerIntegrator::
 child_integrate(Physical *physical,
                 AngularForceVector& forces,
-                float dt) {
+                PN_stdfloat dt) {
   // Loop through each object in the set.  This processing occurs in
   // O(pf) time, where p is the number of physical objects and f is
   // the number of forces.  Unfortunately, no precomputation of forces
@@ -69,12 +69,12 @@ child_integrate(Physical *physical,
       continue;
     }
 
-    LRotationf accum_quat(0, 0, 0, 0);
+    LRotation accum_quat(0, 0, 0, 0);
 
     // set up the traversal stuff.
     AngularForceVector::const_iterator f_cur;
 
-    LRotationf f;
+    LRotation f;
 
     // global forces
     f_cur = forces.begin();
@@ -92,7 +92,7 @@ child_integrate(Physical *physical,
       accum_quat += f;
     }
 
-    LOrientationf orientation = current_object->get_orientation();
+    LOrientation orientation = current_object->get_orientation();
     // local forces
     f_cur = physical->get_angular_forces().begin();
     for (; f_cur != physical->get_angular_forces().end(); ++f_cur) {
@@ -116,13 +116,13 @@ child_integrate(Physical *physical,
     accum_quat = current_object->get_inertial_tensor() * accum_quat;
 
     // derive this into the angular velocity vector.
-    LRotationf rot_quat = current_object->get_rotation();
+    LRotation rot_quat = current_object->get_rotation();
     #if 0
     rot_quat += accum_quat * dt;
 
     if (rot_quat.normalize()) {
-      LOrientationf old_orientation = current_object->get_orientation();
-      LOrientationf new_orientation = old_orientation * rot_quat;
+      LOrientation old_orientation = current_object->get_orientation();
+      LOrientation new_orientation = old_orientation * rot_quat;
       new_orientation.normalize();
 
       // and write the results back.
@@ -131,7 +131,7 @@ child_integrate(Physical *physical,
     }
     #else
     //accum_quat*=viscosityDamper;
-    //LOrientationf orientation = current_object->get_orientation();
+    //LOrientation orientation = current_object->get_orientation();
     
     //accum_quat.normalize();
     // x = x + v * t + 0.5 * a * t * t

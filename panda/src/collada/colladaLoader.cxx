@@ -468,7 +468,7 @@ load_light(domLight &light, PandaNode *parent) {
     lnode = DCAST(LightNode, alight);
 
     domFloat3 &color = ambient->getColor()->getValue();
-    alight->set_color(Colorf(color[0], color[1], color[2], 1.0));
+    alight->set_color(LColor(color[0], color[1], color[2], 1.0));
   }
 
   // Check for a directional light.
@@ -478,7 +478,7 @@ load_light(domLight &light, PandaNode *parent) {
     lnode = DCAST(LightNode, dlight);
 
     domFloat3 &color = directional->getColor()->getValue();
-    dlight->set_color(Colorf(color[0], color[1], color[2], 1.0));
+    dlight->set_color(LColor(color[0], color[1], color[2], 1.0));
     dlight->set_direction(LVector3f(0, 0, -1));
   }
 
@@ -489,7 +489,7 @@ load_light(domLight &light, PandaNode *parent) {
     lnode = DCAST(LightNode, plight);
 
     domFloat3 &color = point->getColor()->getValue();
-    plight->set_color(Colorf(color[0], color[1], color[2], 1.0));
+    plight->set_color(LColor(color[0], color[1], color[2], 1.0));
 
     LVecBase3f atten (1.0f, 0.0f, 0.0f);
     domTargetable_floatRef fval = point->getConstant_attenuation();
@@ -515,7 +515,7 @@ load_light(domLight &light, PandaNode *parent) {
     lnode = DCAST(LightNode, slight);
 
     domFloat3 &color = spot->getColor()->getValue();
-    slight->set_color(Colorf(color[0], color[1], color[2], 1.0));
+    slight->set_color(LColor(color[0], color[1], color[2], 1.0));
 
     LVecBase3f atten (1.0f, 0.0f, 0.0f);
     domTargetable_floatRef fval = spot->getConstant_attenuation();

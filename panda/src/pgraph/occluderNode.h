@@ -43,7 +43,7 @@ public:
   virtual ~OccluderNode();
   virtual PandaNode *make_copy() const;
   virtual bool preserve_name() const;
-  virtual void xform(const LMatrix4f &mat);
+  virtual void xform(const LMatrix4 &mat);
 
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
   virtual bool is_renderable() const;
@@ -53,12 +53,12 @@ public:
 PUBLISHED:
   INLINE void set_double_sided(bool value);
   INLINE bool is_double_sided();
-  INLINE void set_min_coverage(float value);
-  INLINE float get_min_coverage();
-  INLINE void set_vertices(const LPoint3f &v0, const LPoint3f &v1,
-                           const LPoint3f &v2, const LPoint3f &v3);
+  INLINE void set_min_coverage(PN_stdfloat value);
+  INLINE PN_stdfloat get_min_coverage();
+  INLINE void set_vertices(const LPoint3 &v0, const LPoint3 &v1,
+                           const LPoint3 &v2, const LPoint3 &v3);
   INLINE int get_num_vertices() const;
-  INLINE const LPoint3f &get_vertex(int n) const;
+  INLINE const LPoint3 &get_vertex(int n) const;
   MAKE_SEQ(get_vertices, get_num_vertices, get_vertex);
 
 protected:
@@ -72,8 +72,8 @@ protected:
 
 private:
   bool _double_sided;
-  float _min_coverage;
-  typedef pvector<LPoint3f> Vertices;
+  PN_stdfloat _min_coverage;
+  typedef pvector<LPoint3> Vertices;
   Vertices _vertices;
 
   PT(Geom) _occluder_viz, _frame_viz;

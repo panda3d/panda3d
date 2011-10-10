@@ -97,8 +97,8 @@ get_notify() const {
 //               rectangle of the visible geometry of the item.
 ////////////////////////////////////////////////////////////////////
 INLINE void PGItem::
-set_frame(float left, float right, float bottom, float top) {
-  set_frame(LVecBase4f(left, right, bottom, top));
+set_frame(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top) {
+  set_frame(LVecBase4(left, right, bottom, top));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -111,7 +111,7 @@ set_frame(float left, float right, float bottom, float top) {
 //               rectangle of the visible geometry of the item.
 ////////////////////////////////////////////////////////////////////
 INLINE void PGItem::
-set_frame(const LVecBase4f &frame) {
+set_frame(const LVecBase4 &frame) {
   LightReMutexHolder holder(_lock);
   if (!_has_frame || _frame != frame) {
     _has_frame = true;
@@ -127,7 +127,7 @@ set_frame(const LVecBase4f &frame) {
 //               set_frame().  It is an error to call this if
 //               has_frame() returns false.
 ////////////////////////////////////////////////////////////////////
-INLINE const LVecBase4f &PGItem::
+INLINE const LVecBase4 &PGItem::
 get_frame() const {
   LightReMutexHolder holder(_lock);
   nassertr(has_frame(), _frame);
@@ -579,7 +579,7 @@ get_focus_item() {
 //       Access: Published, Static
 //  Description: Returns the inverse of the frame transform matrix
 ////////////////////////////////////////////////////////////////////
-INLINE LMatrix4f PGItem::
+INLINE LMatrix4 PGItem::
 get_frame_inv_xform() const {
   LightReMutexHolder holder(_lock);
   return _frame_inv_xform;
@@ -590,8 +590,8 @@ get_frame_inv_xform() const {
 //       Access: Private, Static
 //  Description: Computes the area of the indicated frame.
 ////////////////////////////////////////////////////////////////////
-INLINE float PGItem::
-compute_area(const LVecBase4f &frame) {
+INLINE PN_stdfloat PGItem::
+compute_area(const LVecBase4 &frame) {
   return (frame[1] - frame[0]) * (frame[3] - frame[2]);
 }
 
@@ -605,9 +605,9 @@ compute_area(const LVecBase4f &frame) {
 //               appropriately.
 ////////////////////////////////////////////////////////////////////
 INLINE void PGItem::
-compare_largest(const LVecBase4f *&largest, float &largest_area, 
-                const LVecBase4f *new_frame) {
-  float new_area = compute_area(*new_frame);
+compare_largest(const LVecBase4 *&largest, PN_stdfloat &largest_area, 
+                const LVecBase4 *new_frame) {
+  PN_stdfloat new_area = compute_area(*new_frame);
   if (new_area > largest_area) {
     largest = new_frame;
     largest_area = new_area;

@@ -18,7 +18,7 @@
 // Description : 
 ////////////////////////////////////////////////////////////////////
 INLINE void ActorNode::
-set_contact_vector(const LVector3f &contact_vector) {
+set_contact_vector(const LVector3 &contact_vector) {
   _contact_vector=contact_vector;
 }
 
@@ -27,7 +27,7 @@ set_contact_vector(const LVector3f &contact_vector) {
 //      Access : Public
 // Description : 
 ////////////////////////////////////////////////////////////////////
-INLINE const LVector3f &ActorNode::
+INLINE const LVector3 &ActorNode::
 get_contact_vector() const {
   return _contact_vector;
 }

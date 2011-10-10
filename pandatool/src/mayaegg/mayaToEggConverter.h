@@ -160,11 +160,11 @@ private:
                          bool mesh);
   void set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
                          bool mesh);
-  void set_vertex_color(EggVertex &vert, MItMeshPolygon &pi, int vert_index, const MayaShader *shader, const Colorf &color);
+  void set_vertex_color(EggVertex &vert, MItMeshPolygon &pi, int vert_index, const MayaShader *shader, const LColor &color);
 
-  void set_vertex_color_legacy(EggVertex &vert, MItMeshPolygon &pi, int vert_index, const MayaShader *shader, const Colorf &color);
+  void set_vertex_color_legacy(EggVertex &vert, MItMeshPolygon &pi, int vert_index, const MayaShader *shader, const LColor &color);
 
-  void set_vertex_color_modern(EggVertex &vert, MItMeshPolygon &pi, int vert_index, const MayaShader *shader, const Colorf &color);
+  void set_vertex_color_modern(EggVertex &vert, MItMeshPolygon &pi, int vert_index, const MayaShader *shader, const LColor &color);
 
   int round(double value);
 

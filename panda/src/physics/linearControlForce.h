@@ -28,7 +28,7 @@
 ////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS LinearControlForce : public LinearForce {
 PUBLISHED:
-  LinearControlForce(const PhysicsObject *po = 0, float a = 1.0f,
+  LinearControlForce(const PhysicsObject *po = 0, PN_stdfloat a = 1.0f,
     bool mass = false);
   LinearControlForce(const LinearControlForce &copy);
   virtual ~LinearControlForce();
@@ -37,20 +37,20 @@ PUBLISHED:
   INLINE void set_physics_object(const PhysicsObject *po);
   INLINE CPT(PhysicsObject) get_physics_object() const;
 
-  INLINE void set_vector(const LVector3f& v);
-  INLINE void set_vector(float x, float y, float z);
+  INLINE void set_vector(const LVector3& v);
+  INLINE void set_vector(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
 
-  INLINE LVector3f get_local_vector() const;
+  INLINE LVector3 get_local_vector() const;
   
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 
 private:
   CPT(PhysicsObject) _physics_object;
-  LVector3f _fvec;
+  LVector3 _fvec;
 
   virtual LinearForce *make_copy();
-  virtual LVector3f get_child_vector(const PhysicsObject *po);
+  virtual LVector3 get_child_vector(const PhysicsObject *po);
 
 public:
   static TypeHandle get_class_type() {

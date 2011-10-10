@@ -28,7 +28,7 @@ INLINE NurbsSurfaceResult::
 //  Description: Returns the first legal value of u on the surface.
 //               Usually this is 0.0.
 ////////////////////////////////////////////////////////////////////
-INLINE float NurbsSurfaceResult::
+INLINE PN_stdfloat NurbsSurfaceResult::
 get_start_u() const {
   return _u_basis.get_start_t();
 }
@@ -38,7 +38,7 @@ get_start_u() const {
 //       Access: Public
 //  Description: Returns the last legal value of u on the surface.
 ////////////////////////////////////////////////////////////////////
-INLINE float NurbsSurfaceResult::
+INLINE PN_stdfloat NurbsSurfaceResult::
 get_end_u() const {
   return _u_basis.get_end_t();
 }
@@ -49,7 +49,7 @@ get_end_u() const {
 //  Description: Returns the first legal value of v on the surface.
 //               Usually this is 0.0.
 ////////////////////////////////////////////////////////////////////
-INLINE float NurbsSurfaceResult::
+INLINE PN_stdfloat NurbsSurfaceResult::
 get_start_v() const {
   return _v_basis.get_start_t();
 }
@@ -59,7 +59,7 @@ get_start_v() const {
 //       Access: Public
 //  Description: Returns the last legal value of v on the surface.
 ////////////////////////////////////////////////////////////////////
-INLINE float NurbsSurfaceResult::
+INLINE PN_stdfloat NurbsSurfaceResult::
 get_end_v() const {
   return _v_basis.get_end_t();
 }
@@ -72,7 +72,7 @@ get_end_v() const {
 //               the u, v values are valid, false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool NurbsSurfaceResult::
-eval_point(float u, float v, LVecBase3f &point) {
+eval_point(PN_stdfloat u, PN_stdfloat v, LVecBase3 &point) {
   int ui = find_u_segment(u);
   int vi = find_v_segment(v);
   if (ui == -1 || vi == -1) {
@@ -93,7 +93,7 @@ eval_point(float u, float v, LVecBase3f &point) {
 //               See also eval_point().
 ////////////////////////////////////////////////////////////////////
 INLINE bool NurbsSurfaceResult::
-eval_normal(float u, float v, LVecBase3f &normal) {
+eval_normal(PN_stdfloat u, PN_stdfloat v, LVecBase3 &normal) {
   int ui = find_u_segment(u);
   int vi = find_v_segment(v);
   if (ui == -1 || vi == -1) {
@@ -112,8 +112,8 @@ eval_normal(float u, float v, LVecBase3f &normal) {
 //               to the extended vertices associated with the surface in
 //               the indicated dimension.
 ////////////////////////////////////////////////////////////////////
-INLINE float NurbsSurfaceResult::
-eval_extended_point(float u, float v, int d) {
+INLINE PN_stdfloat NurbsSurfaceResult::
+eval_extended_point(PN_stdfloat u, PN_stdfloat v, int d) {
   int ui = find_u_segment(u);
   int vi = find_v_segment(v);
   if (ui == -1 || vi == -1) {
@@ -134,7 +134,7 @@ eval_extended_point(float u, float v, int d) {
 //               the indicated result array.
 ////////////////////////////////////////////////////////////////////
 INLINE bool NurbsSurfaceResult::
-eval_extended_points(float u, float v, int d, float result[],
+eval_extended_points(PN_stdfloat u, PN_stdfloat v, int d, PN_stdfloat result[],
                      int num_values) {
   int ui = find_u_segment(u);
   int vi = find_v_segment(v);
@@ -182,8 +182,8 @@ get_num_v_segments() const {
 //               eval_segment_point()), and returns the corresponding
 //               u value in the entire surface (as in eval_point()).
 ////////////////////////////////////////////////////////////////////
-INLINE float NurbsSurfaceResult::
-get_segment_u(int ui, float u) const {
+INLINE PN_stdfloat NurbsSurfaceResult::
+get_segment_u(int ui, PN_stdfloat u) const {
   return u * (_u_basis.get_to(ui) - _u_basis.get_from(ui)) + _u_basis.get_from(ui);
 }
 
@@ -195,8 +195,8 @@ get_segment_u(int ui, float u) const {
 //               eval_segment_point()), and returns the corresponding
 //               v value in the entire surface (as in eval_point()).
 ////////////////////////////////////////////////////////////////////
-INLINE float NurbsSurfaceResult::
-get_segment_v(int vi, float v) const {
+INLINE PN_stdfloat NurbsSurfaceResult::
+get_segment_v(int vi, PN_stdfloat v) const {
   return v * (_v_basis.get_to(vi) - _v_basis.get_from(vi)) + _v_basis.get_from(vi);
 }
 

@@ -28,7 +28,7 @@ Point() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PortalClipper::Point::
-Point(const LVecBase3f &point, const Colorf &color) :
+Point(const LVecBase3 &point, const LColor &color) :
   _point(point[0], point[1], point[2]),
   _color(color)
 {
@@ -66,8 +66,8 @@ operator = (const PortalClipper::Point &copy) {
 //               move_to() or create(), this creates a single point.
 ////////////////////////////////////////////////////////////////////
 INLINE void PortalClipper::
-move_to(float x, float y, float z) {
-  move_to(Vertexf(x, y, z));
+move_to(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
+  move_to(LVertex(x, y, z));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -80,8 +80,8 @@ move_to(float x, float y, float z) {
 //               is called.
 ////////////////////////////////////////////////////////////////////
 INLINE void PortalClipper::
-draw_to(float x, float y, float z) {
-  draw_to(Vertexf(x, y, z));
+draw_to(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
+  draw_to(LVertex(x, y, z));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -92,7 +92,7 @@ draw_to(float x, float y, float z) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PortalClipper::
 draw_camera_frustum() {
-  _color = Colorf(1,1,1,1);
+  _color = LColor(1,1,1,1);
   draw_hexahedron(_view_frustum);
 }
 
@@ -148,7 +148,7 @@ get_clip_state() const {
 //           
 ////////////////////////////////////////////////////////////////////
 INLINE void PortalClipper::
-set_reduced_viewport(const LPoint2f& min, const LPoint2f& max) {
+set_reduced_viewport(const LPoint2& min, const LPoint2& max) {
   _reduced_viewport_min = min;
   _reduced_viewport_max = max;
 }
@@ -160,7 +160,7 @@ set_reduced_viewport(const LPoint2f& min, const LPoint2f& max) {
 //  Description: Return the reduced viewport
 ////////////////////////////////////////////////////////////////////
 INLINE void PortalClipper::
-get_reduced_viewport(LPoint2f& min, LPoint2f& max) const  {
+get_reduced_viewport(LPoint2& min, LPoint2& max) const  {
   min = _reduced_viewport_min;
   max = _reduced_viewport_max;
 }
@@ -174,7 +174,7 @@ get_reduced_viewport(LPoint2f& min, LPoint2f& max) const  {
 //               is facing the camera's near plane
 ////////////////////////////////////////////////////////////////////
 INLINE bool PortalClipper::
-is_facing_view(Planef portal_plane) {
+is_facing_view(LPlane portal_plane) {
   portal_cat.debug() << "portal plane check value: " << portal_plane[3] << "\n";
   return (portal_plane[3] > 0);
 }
@@ -187,7 +187,7 @@ is_facing_view(Planef portal_plane) {
 //               is a 2nd level test to weed out most of the portals
 ////////////////////////////////////////////////////////////////////
 INLINE bool PortalClipper::
-is_whole_portal_in_view(LMatrix4f cmat) {
+is_whole_portal_in_view(LMatrix4 cmat) {
   // I am about to xform this gbv, so lets make a copy
   const BoundingVolume *bv = _portal_node->get_bounds();
   BoundingVolume *cbv = bv->make_copy();
@@ -230,9 +230,9 @@ is_partial_portal_in_view() {
 //       Access: Public
 //  Description: Given the x and z, solve for y: from the plane
 ////////////////////////////////////////////////////////////////////
-INLINE float PortalClipper::
-get_plane_depth(float x, float z, Planef *portal_plane) {
-  float y = 0.0;
+INLINE PN_stdfloat PortalClipper::
+get_plane_depth(PN_stdfloat x, PN_stdfloat z, LPlane *portal_plane) {
+  PN_stdfloat y = 0.0;
   // Plane equation: Ax + By + Cz + D = 0
   // y = (Ax + Cz + D) / -B
   portal_cat.spam() << *portal_plane << endl;

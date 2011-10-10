@@ -25,7 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS LinearNoiseForce : public LinearRandomForce {
 PUBLISHED:
-  LinearNoiseForce(float a = 1.0f, bool m = false);
+  LinearNoiseForce(PN_stdfloat a = 1.0f, bool m = false);
   LinearNoiseForce(const LinearNoiseForce &copy);
   virtual ~LinearNoiseForce();
   
@@ -38,21 +38,21 @@ public:
 
 private:
   static unsigned char _prn_table[256];
-  static LVector3f _gradient_table[256];
+  static LVector3 _gradient_table[256];
   static bool _initialized;
 
-  INLINE float cubic_step(const float x) const;
-  INLINE LVector3f vlerp(const float t, const LVector3f& v0, const LVector3f& v1) const;
+  INLINE PN_stdfloat cubic_step(const PN_stdfloat x) const;
+  INLINE LVector3 vlerp(const PN_stdfloat t, const LVector3& v0, const LVector3& v1) const;
 
-  INLINE unsigned char get_prn_entry(const LPoint3f& point) const;
-  INLINE unsigned char get_prn_entry(const float x, const float y, const float z) const;
+  INLINE unsigned char get_prn_entry(const LPoint3& point) const;
+  INLINE unsigned char get_prn_entry(const PN_stdfloat x, const PN_stdfloat y, const PN_stdfloat z) const;
 
-  INLINE LVector3f& get_lattice_entry(const LPoint3f& point);
-  INLINE LVector3f& get_lattice_entry(const float x, const float y, const float z);
+  INLINE LVector3& get_lattice_entry(const LPoint3& point);
+  INLINE LVector3& get_lattice_entry(const PN_stdfloat x, const PN_stdfloat y, const PN_stdfloat z);
 
   INLINE unsigned char prn_lookup(int index) const;
 
-  virtual LVector3f get_child_vector(const PhysicsObject *po);
+  virtual LVector3 get_child_vector(const PhysicsObject *po);
   virtual LinearForce *make_copy();
 
 public:

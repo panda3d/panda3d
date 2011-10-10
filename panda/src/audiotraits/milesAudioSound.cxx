@@ -106,7 +106,7 @@ get_loop_count() const {
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-float MilesAudioSound::
+PN_stdfloat MilesAudioSound::
 get_volume() const {
   return _volume;
 }
@@ -116,7 +116,7 @@ get_volume() const {
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-float MilesAudioSound::
+PN_stdfloat MilesAudioSound::
 get_balance() const {
   return _balance;
 }
@@ -126,7 +126,7 @@ get_balance() const {
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-float MilesAudioSound::
+PN_stdfloat MilesAudioSound::
 get_play_rate() const {
   return _play_rate;
 }
@@ -137,7 +137,7 @@ get_play_rate() const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void MilesAudioSound::
-set_time(float time) {
+set_time(PN_stdfloat time) {
   miles_audio_debug("set_time(time="<<time<<")");
 
   // Mark this position for the next play().

@@ -30,8 +30,8 @@ PStatCollector SparkleParticleRenderer::_render_collector("App:Particles:Sparkle
 SparkleParticleRenderer::
 SparkleParticleRenderer() :
   BaseParticleRenderer(PR_ALPHA_NONE),
-  _center_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f)),
-  _edge_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f)),
+  _center_color(LColor(1.0f, 1.0f, 1.0f, 1.0f)),
+  _edge_color(LColor(1.0f, 1.0f, 1.0f, 1.0f)),
   _birth_radius(0.1f), _death_radius(0.1f)
 {
   resize_pool(0);
@@ -43,8 +43,8 @@ SparkleParticleRenderer() :
 // Description : Constructor
 ////////////////////////////////////////////////////////////////////
 SparkleParticleRenderer::
-SparkleParticleRenderer(const Colorf& center, const Colorf& edge,
-                        float birth_radius, float death_radius,
+SparkleParticleRenderer(const LColor& center, const LColor& edge,
+                        PN_stdfloat birth_radius, PN_stdfloat death_radius,
                         SparkleParticleLifeScale life_scale,
                         ParticleRendererAlphaMode alpha_mode) :
   BaseParticleRenderer(alpha_mode),
@@ -176,7 +176,7 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
       continue;
     }
 
-    LPoint3f position = cur_particle->get_position();
+    LPoint3 position = cur_particle->get_position();
 
     // adjust the aabb
 
@@ -197,12 +197,12 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
     // draw the particle.
 
-    float radius = get_radius(cur_particle);
-    float neg_radius = -radius;
-    float alpha;
+    PN_stdfloat radius = get_radius(cur_particle);
+    PN_stdfloat neg_radius = -radius;
+    PN_stdfloat alpha;
 
-    Colorf center_color = _center_color;
-    Colorf edge_color = _edge_color;
+    LColor center_color = _center_color;
+    LColor edge_color = _edge_color;
 
     // handle alpha
 
@@ -225,31 +225,31 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
     // 6 lines coming from the center point.
 
-    vertex.add_data3f(position);
-    vertex.add_data3f(position + Vertexf(radius, 0.0f, 0.0f));
-    vertex.add_data3f(position);
-    vertex.add_data3f(position + Vertexf(neg_radius, 0.0f, 0.0f));
-    vertex.add_data3f(position);
-    vertex.add_data3f(position + Vertexf(0.0f, radius, 0.0f));
-    vertex.add_data3f(position);
-    vertex.add_data3f(position + Vertexf(0.0f, neg_radius, 0.0f));
-    vertex.add_data3f(position);
-    vertex.add_data3f(position + Vertexf(0.0f, 0.0f, radius));
-    vertex.add_data3f(position);
-    vertex.add_data3f(position + Vertexf(0.0f, 0.0f, neg_radius));
+    vertex.add_data3(position);
+    vertex.add_data3(position + LVertex(radius, 0.0f, 0.0f));
+    vertex.add_data3(position);
+    vertex.add_data3(position + LVertex(neg_radius, 0.0f, 0.0f));
+    vertex.add_data3(position);
+    vertex.add_data3(position + LVertex(0.0f, radius, 0.0f));
+    vertex.add_data3(position);
+    vertex.add_data3(position + LVertex(0.0f, neg_radius, 0.0f));
+    vertex.add_data3(position);
+    vertex.add_data3(position + LVertex(0.0f, 0.0f, radius));
+    vertex.add_data3(position);
+    vertex.add_data3(position + LVertex(0.0f, 0.0f, neg_radius));
 
-    color.add_data4f(center_color);
-    color.add_data4f(edge_color);
-    color.add_data4f(center_color);
-    color.add_data4f(edge_color);
-    color.add_data4f(center_color);
-    color.add_data4f(edge_color);
-    color.add_data4f(center_color);
-    color.add_data4f(edge_color);
-    color.add_data4f(center_color);
-    color.add_data4f(edge_color);
-    color.add_data4f(center_color);
-    color.add_data4f(edge_color);
+    color.add_data4(center_color);
+    color.add_data4(edge_color);
+    color.add_data4(center_color);
+    color.add_data4(edge_color);
+    color.add_data4(center_color);
+    color.add_data4(edge_color);
+    color.add_data4(center_color);
+    color.add_data4(edge_color);
+    color.add_data4(center_color);
+    color.add_data4(edge_color);
+    color.add_data4(center_color);
+    color.add_data4(edge_color);
     
     _lines->add_next_vertices(2);
     _lines->close_primitive();
@@ -272,8 +272,8 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
   // done filling geomline node, now do the bb stuff
 
-  LPoint3f aabb_center = _aabb_min + ((_aabb_max - _aabb_min) * 0.5f);
-  float radius = (aabb_center - _aabb_min).length();
+  LPoint3 aabb_center = _aabb_min + ((_aabb_max - _aabb_min) * 0.5f);
+  PN_stdfloat radius = (aabb_center - _aabb_min).length();
 
   BoundingSphere sphere(aabb_center, radius);
   _line_primitive->set_bounds(&sphere);

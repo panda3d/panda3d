@@ -1,5 +1,5 @@
 // Filename: nodeVertexTransform.h
-// Created by:  drose (22Feb07)
+// Created by:  drose (22eb07)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -38,7 +38,7 @@ PUBLISHED:
   INLINE const PandaNode *get_node() const;
   INLINE const VertexTransform *get_prev() const;
 
-  virtual void get_matrix(LMatrix4f &matrix) const;
+  virtual void get_matrix(LMatrix4 &matrix) const;
 
   virtual void output(ostream &out) const;
 

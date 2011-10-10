@@ -49,7 +49,7 @@ make_copy() const {
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-LPoint3f BoundingBox::
+LPoint3 BoundingBox::
 get_min() const {
   nassertr(!is_empty(), _min);
   nassertr(!is_infinite(), _min);
@@ -61,7 +61,7 @@ get_min() const {
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-LPoint3f BoundingBox::
+LPoint3 BoundingBox::
 get_max() const {
   nassertr(!is_empty(), _max);
   nassertr(!is_infinite(), _max);
@@ -73,7 +73,7 @@ get_max() const {
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-float BoundingBox::
+PN_stdfloat BoundingBox::
 get_volume() const {
   nassertr(!is_infinite(), 0.0f);
   if (is_empty()) {
@@ -89,10 +89,10 @@ get_volume() const {
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-LPoint3f BoundingBox::
+LPoint3 BoundingBox::
 get_approx_center() const {
-  nassertr(!is_empty(), LPoint3f::zero());
-  nassertr(!is_infinite(), LPoint3f::zero());
+  nassertr(!is_empty(), LPoint3::zero());
+  nassertr(!is_infinite(), LPoint3::zero());
   return (_min + _max) * 0.5f;
 }
 
@@ -102,16 +102,16 @@ get_approx_center() const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void BoundingBox::
-xform(const LMatrix4f &mat) {
+xform(const LMatrix4 &mat) {
   nassertv(!mat.is_nan());
 
   if (!is_empty() && !is_infinite()) {
     // We need to transform the eight corners of the cube, and then
     // determine the new box.
-    LPoint3f x = get_point(0) * mat;
-    LPoint3f n = x;
+    LPoint3 x = get_point(0) * mat;
+    LPoint3 n = x;
     for (int i = 1; i < 8; ++i) {
-      LPoint3f p = get_point(i) * mat;
+      LPoint3 p = get_point(i) * mat;
       n.set(min(n[0], p[0]), min(n[1], p[1]), min(n[2], p[2]));
       x.set(max(x[0], p[0]), max(x[1], p[1]), max(x[2], p[2]));
     }
@@ -187,7 +187,7 @@ contains_other(const BoundingVolume *other) const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 bool BoundingBox::
-extend_by_point(const LPoint3f &point) {
+extend_by_point(const LPoint3 &point) {
   nassertr(!point.is_nan(), false);
 
   if (is_empty()) {
@@ -258,8 +258,8 @@ bool BoundingBox::
 extend_by_finite(const FiniteBoundingVolume *volume) {
   nassertr(!volume->is_empty(), false);
 
-  LVector3f min1 = volume->get_min();
-  LVector3f max1 = volume->get_max();
+  LVector3 min1 = volume->get_min();
+  LVector3 max1 = volume->get_max();
 
   if (is_empty()) {
     _min = min1;
@@ -284,11 +284,11 @@ extend_by_finite(const FiniteBoundingVolume *volume) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 bool BoundingBox::
-around_points(const LPoint3f *first, const LPoint3f *last) {
+around_points(const LPoint3 *first, const LPoint3 *last) {
   nassertr(first != last, false);
 
   // Get the minmax of all the points to construct a bounding box.
-  const LPoint3f *p = first;
+  const LPoint3 *p = first;
 
 #ifndef NDEBUG
   // Skip any NaN points.
@@ -406,8 +406,8 @@ around_finite(const BoundingVolume **first,
     nassertr(!(*p)->is_infinite(), false);
     if (!(*p)->is_empty()) {
       const FiniteBoundingVolume *vol = DCAST(FiniteBoundingVolume, *p);
-      LPoint3f min1 = vol->get_min();
-      LPoint3f max1 = vol->get_max();
+      LPoint3 min1 = vol->get_min();
+      LPoint3 max1 = vol->get_max();
       _min.set(min(_min[0], min1[0]),
                min(_min[1], min1[1]),
                min(_min[2], min1[2]));
@@ -427,7 +427,7 @@ around_finite(const BoundingVolume **first,
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 int BoundingBox::
-contains_point(const LPoint3f &point) const {
+contains_point(const LPoint3 &point) const {
   nassertr(!point.is_nan(), IF_no_intersection);
 
   if (is_empty()) {
@@ -453,7 +453,7 @@ contains_point(const LPoint3f &point) const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 int BoundingBox::
-contains_lineseg(const LPoint3f &a, const LPoint3f &b) const {
+contains_lineseg(const LPoint3 &a, const LPoint3 &b) const {
   nassertr(!a.is_nan() && !b.is_nan(), IF_no_intersection);
 
   if (a == b) {
@@ -562,8 +562,8 @@ contains_box(const BoundingBox *box) const {
   nassertr(!is_empty() && !is_infinite(), 0);
   nassertr(!box->is_empty() && !box->is_infinite(), 0);
 
-  const LPoint3f &min1 = box->get_minq();
-  const LPoint3f &max1 = box->get_maxq();
+  const LPoint3 &min1 = box->get_minq();
+  const LPoint3 &max1 = box->get_maxq();
   
   if (min1[0] >= _min[0] && max1[0] <= _max[0] &&
       min1[1] >= _min[1] && max1[1] <= _max[1] &&
@@ -638,8 +638,8 @@ contains_finite(const FiniteBoundingVolume *volume) const {
   nassertr(!is_empty() && !is_infinite(), 0);
   nassertr(!volume->is_empty() && !volume->is_infinite(), 0);
 
-  LPoint3f min1 = volume->get_min();
-  LPoint3f max1 = volume->get_max();
+  LPoint3 min1 = volume->get_min();
+  LPoint3 max1 = volume->get_max();
   
   if (min1[0] >= _min[0] && max1[0] <= _max[0] &&
       min1[1] >= _min[1] && max1[1] <= _max[1] &&

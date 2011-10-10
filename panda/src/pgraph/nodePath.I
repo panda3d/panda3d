@@ -740,8 +740,8 @@ get_net_prev_transform(Thread *current_thread) const {
 //               points in between.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_pos(float x, float y, float z) {
-  set_pos(LPoint3f(x, y, z));
+set_pos(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
+  set_pos(LPoint3(x, y, z));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -753,21 +753,21 @@ set_pos(float x, float y, float z) {
 //               position to its new position.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_fluid_pos(float x, float y, float z) {
-  set_fluid_pos(LPoint3f(x, y, z));
+set_fluid_pos(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
+  set_fluid_pos(LPoint3(x, y, z));
 }
 
-INLINE float NodePath::
+INLINE PN_stdfloat NodePath::
 get_x() const {
   return get_pos()[0];
 }
 
-INLINE float NodePath::
+INLINE PN_stdfloat NodePath::
 get_y() const {
   return get_pos()[1];
 }
 
-INLINE float NodePath::
+INLINE PN_stdfloat NodePath::
 get_z() const {
   return get_pos()[2];
 }
@@ -779,21 +779,21 @@ get_z() const {
 //               leaving translation and scale untouched.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_hpr(float h, float p, float r) {
-  set_hpr(LVecBase3f(h, p, r));
+set_hpr(PN_stdfloat h, PN_stdfloat p, PN_stdfloat r) {
+  set_hpr(LVecBase3(h, p, r));
 }
 
-INLINE float NodePath::
+INLINE PN_stdfloat NodePath::
 get_h() const {
   return get_hpr()[0];
 }
 
-INLINE float NodePath::
+INLINE PN_stdfloat NodePath::
 get_p() const {
   return get_hpr()[1];
 }
 
-INLINE float NodePath::
+INLINE PN_stdfloat NodePath::
 get_r() const {
   return get_hpr()[2];
 }
@@ -805,26 +805,26 @@ get_r() const {
 //               leaving translation and rotation untouched.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_scale(float scale) {
-  set_scale(LVecBase3f(scale, scale, scale));
+set_scale(PN_stdfloat scale) {
+  set_scale(LVecBase3(scale, scale, scale));
 }
 
 INLINE void NodePath::
-set_scale(float sx, float sy, float sz) {
-  set_scale(LVecBase3f(sx, sy, sz));
+set_scale(PN_stdfloat sx, PN_stdfloat sy, PN_stdfloat sz) {
+  set_scale(LVecBase3(sx, sy, sz));
 }
 
-INLINE float NodePath::
+INLINE PN_stdfloat NodePath::
 get_sx() const {
   return get_scale()[0];
 }
 
-INLINE float NodePath::
+INLINE PN_stdfloat NodePath::
 get_sy() const {
   return get_scale()[1];
 }
 
-INLINE float NodePath::
+INLINE PN_stdfloat NodePath::
 get_sz() const {
   return get_scale()[2];
 }
@@ -836,21 +836,21 @@ get_sz() const {
 //               leaving translation, rotation, and scale untouched.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_shear(float shxy, float shxz, float shyz) {
-  set_shear(LVecBase3f(shxy, shxz, shyz));
+set_shear(PN_stdfloat shxy, PN_stdfloat shxz, PN_stdfloat shyz) {
+  set_shear(LVecBase3(shxy, shxz, shyz));
 }
 
-INLINE float NodePath::
+INLINE PN_stdfloat NodePath::
 get_shxy() const {
   return get_shear()[0];
 }
 
-INLINE float NodePath::
+INLINE PN_stdfloat NodePath::
 get_shxz() const {
   return get_shear()[1];
 }
 
-INLINE float NodePath::
+INLINE PN_stdfloat NodePath::
 get_shyz() const {
   return get_shear()[2];
 }
@@ -862,8 +862,8 @@ get_shyz() const {
 //               transform, leaving scale untouched.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_pos_hpr(float x, float y, float z, float h, float p, float r) {
-  set_pos_hpr(LVecBase3f(x, y, z), LVecBase3f(h, p, r));
+set_pos_hpr(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat h, PN_stdfloat p, PN_stdfloat r) {
+  set_pos_hpr(LVecBase3(x, y, z), LVecBase3(h, p, r));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -873,8 +873,8 @@ set_pos_hpr(float x, float y, float z, float h, float p, float r) {
 //               transform, leaving translation untouched.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_hpr_scale(float h, float p, float r, float sx, float sy, float sz) {
-  set_hpr_scale(LVecBase3f(h, p, r), LVecBase3f(sx, sy, sz));
+set_hpr_scale(PN_stdfloat h, PN_stdfloat p, PN_stdfloat r, PN_stdfloat sx, PN_stdfloat sy, PN_stdfloat sz) {
+  set_hpr_scale(LVecBase3(h, p, r), LVecBase3(sx, sy, sz));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -884,10 +884,10 @@ set_hpr_scale(float h, float p, float r, float sx, float sy, float sz) {
 //               translation, rotation, and scale components.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_pos_hpr_scale(float x, float y, float z, float h, float p, float r,
-                  float sx, float sy, float sz) {
-  set_pos_hpr_scale(LVecBase3f(x, y, z), LVecBase3f(h, p, r),
-                    LVecBase3f(sx, sy, sz));
+set_pos_hpr_scale(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat h, PN_stdfloat p, PN_stdfloat r,
+                  PN_stdfloat sx, PN_stdfloat sy, PN_stdfloat sz) {
+  set_pos_hpr_scale(LVecBase3(x, y, z), LVecBase3(h, p, r),
+                    LVecBase3(sx, sy, sz));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -921,9 +921,9 @@ has_mat() const {
 //               the referenced node, or the identity matrix if no
 //               matrix has been applied.
 ////////////////////////////////////////////////////////////////////
-INLINE const LMatrix4f &NodePath::
+INLINE const LMatrix4 &NodePath::
 get_mat() const {
-  nassertr_always(!is_empty(), LMatrix4f::ident_mat());
+  nassertr_always(!is_empty(), LMatrix4::ident_mat());
 
   return node()->get_transform()->get_mat();
 }
@@ -938,8 +938,8 @@ get_mat() const {
 //               node, although it will preserve any translation.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-look_at(float x, float y, float z) {
-  look_at(LPoint3f(x, y, z));
+look_at(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
+  look_at(LPoint3(x, y, z));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -950,8 +950,8 @@ look_at(float x, float y, float z) {
 //               "up" direction.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-heads_up(float x, float y, float z) {
-  heads_up(LPoint3f(x, y, z));
+heads_up(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
+  heads_up(LPoint3(x, y, z));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -961,8 +961,8 @@ heads_up(float x, float y, float z) {
 //               relative to the other node.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_pos(const NodePath &other, float x, float y, float z) {
-  set_pos(other, LPoint3f(x, y, z));
+set_pos(const NodePath &other, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
+  set_pos(other, LPoint3(x, y, z));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -974,21 +974,21 @@ set_pos(const NodePath &other, float x, float y, float z) {
 //               position to its new position.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_fluid_pos(const NodePath &other, float x, float y, float z) {
-  set_fluid_pos(other, LPoint3f(x, y, z));
+set_fluid_pos(const NodePath &other, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
+  set_fluid_pos(other, LPoint3(x, y, z));
 }
 
-INLINE float NodePath::
+INLINE PN_stdfloat NodePath::
 get_x(const NodePath &other) const {
   return get_pos(other)[0];
 }
 
-INLINE float NodePath::
+INLINE PN_stdfloat NodePath::
 get_y(const NodePath &other) const {
   return get_pos(other)[1];
 }
 
-INLINE float NodePath::
+INLINE PN_stdfloat NodePath::
 get_z(const NodePath &other) const {
   return get_pos(other)[2];
 }
@@ -1000,21 +1000,21 @@ get_z(const NodePath &other) const {
 //               relative to the other node.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_hpr(const NodePath &other, float h, float p, float r) {
-  set_hpr(other, LPoint3f(h, p, r));
+set_hpr(const NodePath &other, PN_stdfloat h, PN_stdfloat p, PN_stdfloat r) {
+  set_hpr(other, LPoint3(h, p, r));
 }
 
-INLINE float NodePath::
+INLINE PN_stdfloat NodePath::
 get_h(const NodePath &other) const {
   return get_hpr(other)[0];
 }
 
-INLINE float NodePath::
+INLINE PN_stdfloat NodePath::
 get_p(const NodePath &other) const {
   return get_hpr(other)[1];
 }
 
-INLINE float NodePath::
+INLINE PN_stdfloat NodePath::
 get_r(const NodePath &other) const {
   return get_hpr(other)[2];
 }
@@ -1026,8 +1026,8 @@ get_r(const NodePath &other) const {
 //               relative to the other node.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_scale(const NodePath &other, float scale) {
-  set_scale(other, LPoint3f(scale, scale, scale));
+set_scale(const NodePath &other, PN_stdfloat scale) {
+  set_scale(other, LPoint3(scale, scale, scale));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1037,8 +1037,8 @@ set_scale(const NodePath &other, float scale) {
 //               relative to the other node.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_scale(const NodePath &other, float sx, float sy, float sz) {
-  set_scale(other, LPoint3f(sx, sy, sz));
+set_scale(const NodePath &other, PN_stdfloat sx, PN_stdfloat sy, PN_stdfloat sz) {
+  set_scale(other, LPoint3(sx, sy, sz));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1047,17 +1047,17 @@ set_scale(const NodePath &other, float sx, float sy, float sz) {
 //  Description: Returns the relative scale of the referenced node
 //               as seen from the other node.
 ////////////////////////////////////////////////////////////////////
-INLINE float NodePath::
+INLINE PN_stdfloat NodePath::
 get_sx(const NodePath &other) const {
   return get_scale(other)[0];
 }
 
-INLINE float NodePath::
+INLINE PN_stdfloat NodePath::
 get_sy(const NodePath &other) const {
   return get_scale(other)[1];
 }
 
-INLINE float NodePath::
+INLINE PN_stdfloat NodePath::
 get_sz(const NodePath &other) const {
   return get_scale(other)[2];
 }
@@ -1069,8 +1069,8 @@ get_sz(const NodePath &other) const {
 //               relative to the other node.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_shear(const NodePath &other, float shxy, float shxz, float shyz) {
-  set_shear(other, LPoint3f(shxy, shxz, shyz));
+set_shear(const NodePath &other, PN_stdfloat shxy, PN_stdfloat shxz, PN_stdfloat shyz) {
+  set_shear(other, LPoint3(shxy, shxz, shyz));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1079,17 +1079,17 @@ set_shear(const NodePath &other, float shxy, float shxz, float shyz) {
 //  Description: Returns the relative shear of the referenced node
 //               as seen from the other node.
 ////////////////////////////////////////////////////////////////////
-INLINE float NodePath::
+INLINE PN_stdfloat NodePath::
 get_shxy(const NodePath &other) const {
   return get_shear(other)[0];
 }
 
-INLINE float NodePath::
+INLINE PN_stdfloat NodePath::
 get_shxz(const NodePath &other) const {
   return get_shear(other)[1];
 }
 
-INLINE float NodePath::
+INLINE PN_stdfloat NodePath::
 get_shyz(const NodePath &other) const {
   return get_shear(other)[2];
 }
@@ -1102,9 +1102,9 @@ get_shyz(const NodePath &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
 set_pos_hpr(const NodePath &other,
-            float x, float y, float z,
-            float h, float p, float r) {
-  set_pos_hpr(other, LVecBase3f(x, y, z), LVecBase3f(h, p, r));
+            PN_stdfloat x, PN_stdfloat y, PN_stdfloat z,
+            PN_stdfloat h, PN_stdfloat p, PN_stdfloat r) {
+  set_pos_hpr(other, LVecBase3(x, y, z), LVecBase3(h, p, r));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1117,8 +1117,8 @@ set_pos_hpr(const NodePath &other,
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
 set_hpr_scale(const NodePath &other,
-        float h, float p, float r, float sx, float sy, float sz) {
-  set_hpr_scale(other, LVecBase3f(h, p, r), LVecBase3f(sx, sy, sz));
+        PN_stdfloat h, PN_stdfloat p, PN_stdfloat r, PN_stdfloat sx, PN_stdfloat sy, PN_stdfloat sz) {
+  set_hpr_scale(other, LVecBase3(h, p, r), LVecBase3(sx, sy, sz));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1130,11 +1130,11 @@ set_hpr_scale(const NodePath &other,
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
 set_pos_hpr_scale(const NodePath &other,
-                  float x, float y, float z,
-                  float h, float p, float r,
-                  float sx, float sy, float sz) {
-  set_pos_hpr_scale(other, LVecBase3f(x, y, z), LVecBase3f(h, p, r),
-                    LVecBase3f(sx, sy, sz));
+                  PN_stdfloat x, PN_stdfloat y, PN_stdfloat z,
+                  PN_stdfloat h, PN_stdfloat p, PN_stdfloat r,
+                  PN_stdfloat sx, PN_stdfloat sy, PN_stdfloat sz) {
+  set_pos_hpr_scale(other, LVecBase3(x, y, z), LVecBase3(h, p, r),
+                    LVecBase3(sx, sy, sz));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1145,8 +1145,8 @@ set_pos_hpr_scale(const NodePath &other,
 //               to the other NodePath.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-look_at(const NodePath &other, float x, float y, float z) {
-  look_at(other, LPoint3f(x, y, z));
+look_at(const NodePath &other, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
+  look_at(other, LPoint3(x, y, z));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1157,8 +1157,8 @@ look_at(const NodePath &other, float x, float y, float z) {
 //               "up" direction.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-heads_up(const NodePath &other, float x, float y, float z) {
-  heads_up(other, LPoint3f(x, y, z));
+heads_up(const NodePath &other, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
+  heads_up(other, LPoint3(x, y, z));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1168,10 +1168,10 @@ heads_up(const NodePath &other, float x, float y, float z) {
 //               referenced node's coordinate frame's origin, and that
 //               of the other node's origin.
 ////////////////////////////////////////////////////////////////////
-INLINE float NodePath::
+INLINE PN_stdfloat NodePath::
 get_distance(const NodePath &other) const {
-  LPoint3f pos = get_pos(other);
-  return length(LVector3f(pos));
+  LPoint3 pos = get_pos(other);
+  return length(LVector3(pos));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1180,8 +1180,8 @@ get_distance(const NodePath &other) const {
 //  Description: Sets the color scale component of the transform
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_color_scale(float sr, float sg, float sb, float sa, int priority) {
-  set_color_scale(LVecBase4f(sr, sg, sb, sa), priority);
+set_color_scale(PN_stdfloat sr, PN_stdfloat sg, PN_stdfloat sb, PN_stdfloat sa, int priority) {
+  set_color_scale(LVecBase4(sr, sg, sb, sa), priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1190,8 +1190,8 @@ set_color_scale(float sr, float sg, float sb, float sa, int priority) {
 //  Description: Sets the color scale component of the transform
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-compose_color_scale(float sr, float sg, float sb, float sa, int priority) {
-  compose_color_scale(LVecBase4f(sr, sg, sb, sa), priority);
+compose_color_scale(PN_stdfloat sr, PN_stdfloat sg, PN_stdfloat sb, PN_stdfloat sa, int priority) {
+  compose_color_scale(LVecBase4(sr, sg, sb, sa), priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1200,8 +1200,8 @@ compose_color_scale(float sr, float sg, float sb, float sa, int priority) {
 //  Description: Sets the red scale component of the transform
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_sr(float sr) {
-  LVecBase4f new_scale = get_color_scale();
+set_sr(PN_stdfloat sr) {
+  LVecBase4 new_scale = get_color_scale();
   new_scale[0] = sr;
 
   set_color_scale(new_scale);
@@ -1213,8 +1213,8 @@ set_sr(float sr) {
 //  Description: Sets the alpha scale component of the transform
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_sg(float sg) {
-  LVecBase4f new_scale = get_color_scale();
+set_sg(PN_stdfloat sg) {
+  LVecBase4 new_scale = get_color_scale();
   new_scale[1] = sg;
 
   set_color_scale(new_scale);
@@ -1226,8 +1226,8 @@ set_sg(float sg) {
 //  Description: Sets the blue scale component of the transform
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_sb(float sb) {
-  LVecBase4f new_scale = get_color_scale();
+set_sb(PN_stdfloat sb) {
+  LVecBase4 new_scale = get_color_scale();
   new_scale[2] = sb;
 
   set_color_scale(new_scale);
@@ -1239,8 +1239,8 @@ set_sb(float sb) {
 //  Description: Sets the alpha scale component of the transform
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_sa(float sa) {
-  LVecBase4f new_scale = get_color_scale();
+set_sa(PN_stdfloat sa) {
+  LVecBase4 new_scale = get_color_scale();
   new_scale[3] = sa;
 
   set_color_scale(new_scale);
@@ -1251,7 +1251,7 @@ set_sa(float sa) {
 //       Access: Published
 //  Description: Gets the red scale component of the transform
 ////////////////////////////////////////////////////////////////////
-INLINE float NodePath::
+INLINE PN_stdfloat NodePath::
 get_sr() const {
   return get_color_scale()[0];
 }
@@ -1261,7 +1261,7 @@ get_sr() const {
 //       Access: Published
 //  Description: Gets the green scale component of the transform
 ////////////////////////////////////////////////////////////////////
-INLINE float NodePath::
+INLINE PN_stdfloat NodePath::
 get_sg() const {
   return get_color_scale()[1];
 }
@@ -1271,7 +1271,7 @@ get_sg() const {
 //       Access: Published
 //  Description: Gets the blue scale component of the transform
 ////////////////////////////////////////////////////////////////////
-INLINE float NodePath::
+INLINE PN_stdfloat NodePath::
 get_sb() const {
   return get_color_scale()[2];
 }
@@ -1281,7 +1281,7 @@ get_sb() const {
 //       Access: Published
 //  Description: Gets the alpha scale component of the transform
 ////////////////////////////////////////////////////////////////////
-INLINE float NodePath::
+INLINE PN_stdfloat NodePath::
 get_sa() const {
   return get_color_scale()[3];
 }
@@ -1296,8 +1296,8 @@ get_sa() const {
 //               coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_tex_offset(TextureStage *stage, float u, float v) {
-  set_tex_offset(stage, LVecBase2f(u, v));
+set_tex_offset(TextureStage *stage, PN_stdfloat u, PN_stdfloat v) {
+  set_tex_offset(stage, LVecBase2(u, v));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1310,7 +1310,7 @@ set_tex_offset(TextureStage *stage, float u, float v) {
 //               coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_tex_offset(TextureStage *stage, const LVecBase2f &uv) {
+set_tex_offset(TextureStage *stage, const LVecBase2 &uv) {
   nassertv_always(!is_empty());
   set_tex_transform(stage, 
                     get_tex_transform(stage)->set_pos2d(uv));
@@ -1327,7 +1327,7 @@ set_tex_offset(TextureStage *stage, const LVecBase2f &uv) {
 //               coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_tex_rotate(TextureStage *stage, float r) {
+set_tex_rotate(TextureStage *stage, PN_stdfloat r) {
   nassertv_always(!is_empty());
   set_tex_transform(stage, 
                     get_tex_transform(stage)->set_rotate2d(r));
@@ -1343,7 +1343,7 @@ set_tex_rotate(TextureStage *stage, float r) {
 //               coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_tex_scale(TextureStage *stage, float scale) {
+set_tex_scale(TextureStage *stage, PN_stdfloat scale) {
   nassertv_always(!is_empty());
   set_tex_transform(stage, 
                     get_tex_transform(stage)->set_scale(scale));
@@ -1359,8 +1359,8 @@ set_tex_scale(TextureStage *stage, float scale) {
 //               coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_tex_scale(TextureStage *stage, float su, float sv) {
-  set_tex_scale(stage, LVecBase2f(su, sv));
+set_tex_scale(TextureStage *stage, PN_stdfloat su, PN_stdfloat sv) {
+  set_tex_scale(stage, LVecBase2(su, sv));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1373,7 +1373,7 @@ set_tex_scale(TextureStage *stage, float su, float sv) {
 //               coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_tex_scale(TextureStage *stage, const LVecBase2f &scale) {
+set_tex_scale(TextureStage *stage, const LVecBase2 &scale) {
   nassertv_always(!is_empty());
   set_tex_transform(stage, 
                     get_tex_transform(stage)->set_scale2d(scale));
@@ -1388,9 +1388,9 @@ set_tex_scale(TextureStage *stage, const LVecBase2f &scale) {
 //               This call is appropriate for ordinary 2-d texture
 //               coordinates.
 ////////////////////////////////////////////////////////////////////
-INLINE LVecBase2f NodePath::
+INLINE LVecBase2 NodePath::
 get_tex_offset(TextureStage *stage) const {
-  nassertr_always(!is_empty(), LVecBase2f::zero());
+  nassertr_always(!is_empty(), LVecBase2::zero());
   return get_tex_transform(stage)->get_pos2d();
 }
 
@@ -1403,7 +1403,7 @@ get_tex_offset(TextureStage *stage) const {
 //               This call is appropriate for ordinary 2-d texture
 //               coordinates.
 ////////////////////////////////////////////////////////////////////
-INLINE float NodePath::
+INLINE PN_stdfloat NodePath::
 get_tex_rotate(TextureStage *stage) const {
   nassertr_always(!is_empty(), 0.0f);
   return get_tex_transform(stage)->get_rotate2d();
@@ -1418,9 +1418,9 @@ get_tex_rotate(TextureStage *stage) const {
 //               This call is appropriate for ordinary 2-d texture
 //               coordinates.
 ////////////////////////////////////////////////////////////////////
-INLINE LVecBase2f NodePath::
+INLINE LVecBase2 NodePath::
 get_tex_scale(TextureStage *stage) const {
-  nassertr_always(!is_empty(), LVecBase2f(1.0f, 1.0f));
+  nassertr_always(!is_empty(), LVecBase2(1.0f, 1.0f));
   return get_tex_transform(stage)->get_scale2d();
 }
 
@@ -1433,8 +1433,8 @@ get_tex_scale(TextureStage *stage) const {
 //               This call is appropriate for 3-d texture coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_tex_pos(TextureStage *stage, float u, float v, float w) {
-  set_tex_pos(stage, LVecBase3f(u, v, w));
+set_tex_pos(TextureStage *stage, PN_stdfloat u, PN_stdfloat v, PN_stdfloat w) {
+  set_tex_pos(stage, LVecBase3(u, v, w));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1446,7 +1446,7 @@ set_tex_pos(TextureStage *stage, float u, float v, float w) {
 //               This call is appropriate for 3-d texture coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_tex_pos(TextureStage *stage, const LVecBase3f &uvw) {
+set_tex_pos(TextureStage *stage, const LVecBase3 &uvw) {
   nassertv_always(!is_empty());
   set_tex_transform(stage, 
                     get_tex_transform(stage)->set_pos(uvw));
@@ -1462,8 +1462,8 @@ set_tex_pos(TextureStage *stage, const LVecBase3f &uvw) {
 //               This call is appropriate for 3-d texture coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_tex_hpr(TextureStage *stage, float h, float p, float r) {
-  set_tex_hpr(stage, LVecBase3f(h, p, r));
+set_tex_hpr(TextureStage *stage, PN_stdfloat h, PN_stdfloat p, PN_stdfloat r) {
+  set_tex_hpr(stage, LVecBase3(h, p, r));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1476,7 +1476,7 @@ set_tex_hpr(TextureStage *stage, float h, float p, float r) {
 //               This call is appropriate for 3-d texture coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_tex_hpr(TextureStage *stage, const LVecBase3f &hpr) {
+set_tex_hpr(TextureStage *stage, const LVecBase3 &hpr) {
   nassertv_always(!is_empty());
   set_tex_transform(stage, 
                     get_tex_transform(stage)->set_hpr(hpr));
@@ -1491,8 +1491,8 @@ set_tex_hpr(TextureStage *stage, const LVecBase3f &hpr) {
 //               This call is appropriate for 3-d texture coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_tex_scale(TextureStage *stage, float su, float sv, float sw) {
-  set_tex_scale(stage, LVecBase3f(su, sv, sw));
+set_tex_scale(TextureStage *stage, PN_stdfloat su, PN_stdfloat sv, PN_stdfloat sw) {
+  set_tex_scale(stage, LVecBase3(su, sv, sw));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1504,7 +1504,7 @@ set_tex_scale(TextureStage *stage, float su, float sv, float sw) {
 //               This call is appropriate for 3-d texture coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_tex_scale(TextureStage *stage, const LVecBase3f &scale) {
+set_tex_scale(TextureStage *stage, const LVecBase3 &scale) {
   nassertv_always(!is_empty());
   set_tex_transform(stage, 
                     get_tex_transform(stage)->set_scale(scale));
@@ -1518,9 +1518,9 @@ set_tex_scale(TextureStage *stage, const LVecBase3f &scale) {
 //
 //               This call is appropriate for 3-d texture coordinates.
 ////////////////////////////////////////////////////////////////////
-INLINE LVecBase3f NodePath::
+INLINE LVecBase3 NodePath::
 get_tex_pos(TextureStage *stage) const {
-  nassertr_always(!is_empty(), LVecBase3f::zero());
+  nassertr_always(!is_empty(), LVecBase3::zero());
   return get_tex_transform(stage)->get_pos();
 }
 
@@ -1532,9 +1532,9 @@ get_tex_pos(TextureStage *stage) const {
 //
 //               This call is appropriate for 3-d texture coordinates.
 ////////////////////////////////////////////////////////////////////
-INLINE LVecBase3f NodePath::
+INLINE LVecBase3 NodePath::
 get_tex_hpr(TextureStage *stage) const {
-  nassertr_always(!is_empty(), LVecBase3f::zero());
+  nassertr_always(!is_empty(), LVecBase3::zero());
   return get_tex_transform(stage)->get_hpr();
 }
 
@@ -1546,9 +1546,9 @@ get_tex_hpr(TextureStage *stage) const {
 //
 //               This call is appropriate for 3-d texture coordinates.
 ////////////////////////////////////////////////////////////////////
-INLINE LVecBase3f NodePath::
+INLINE LVecBase3 NodePath::
 get_tex_scale_3d(TextureStage *stage) const {
-  nassertr_always(!is_empty(), LVecBase3f(1.0f, 1.0f, 1.0f));
+  nassertr_always(!is_empty(), LVecBase3(1.0f, 1.0f, 1.0f));
   return get_tex_transform(stage)->get_scale();
 }
 
@@ -1562,8 +1562,8 @@ get_tex_scale_3d(TextureStage *stage) const {
 //               coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_tex_offset(const NodePath &other, TextureStage *stage, float u, float v) {
-  set_tex_offset(other, stage, LVecBase2f(u, v));
+set_tex_offset(const NodePath &other, TextureStage *stage, PN_stdfloat u, PN_stdfloat v) {
+  set_tex_offset(other, stage, LVecBase2(u, v));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1576,7 +1576,7 @@ set_tex_offset(const NodePath &other, TextureStage *stage, float u, float v) {
 //               coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_tex_offset(const NodePath &other, TextureStage *stage, const LVecBase2f &uv) {
+set_tex_offset(const NodePath &other, TextureStage *stage, const LVecBase2 &uv) {
   nassertv_always(!is_empty());
   set_tex_transform(other, stage, 
                     get_tex_transform(other, stage)->set_pos2d(uv));
@@ -1593,7 +1593,7 @@ set_tex_offset(const NodePath &other, TextureStage *stage, const LVecBase2f &uv)
 //               coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_tex_rotate(const NodePath &other, TextureStage *stage, float r) {
+set_tex_rotate(const NodePath &other, TextureStage *stage, PN_stdfloat r) {
   nassertv_always(!is_empty());
   set_tex_transform(other, stage, 
                     get_tex_transform(other, stage)->set_rotate2d(r));
@@ -1609,7 +1609,7 @@ set_tex_rotate(const NodePath &other, TextureStage *stage, float r) {
 //               coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_tex_scale(const NodePath &other, TextureStage *stage, float scale) {
+set_tex_scale(const NodePath &other, TextureStage *stage, PN_stdfloat scale) {
   nassertv_always(!is_empty());
   set_tex_transform(other, stage, 
                     get_tex_transform(stage)->set_scale(scale));
@@ -1625,8 +1625,8 @@ set_tex_scale(const NodePath &other, TextureStage *stage, float scale) {
 //               coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_tex_scale(const NodePath &other, TextureStage *stage, float su, float sv) {
-  set_tex_scale(other, stage, LVecBase2f(su, sv));
+set_tex_scale(const NodePath &other, TextureStage *stage, PN_stdfloat su, PN_stdfloat sv) {
+  set_tex_scale(other, stage, LVecBase2(su, sv));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1639,7 +1639,7 @@ set_tex_scale(const NodePath &other, TextureStage *stage, float su, float sv) {
 //               coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_tex_scale(const NodePath &other, TextureStage *stage, const LVecBase2f &scale) {
+set_tex_scale(const NodePath &other, TextureStage *stage, const LVecBase2 &scale) {
   nassertv_always(!is_empty());
   set_tex_transform(other, stage, 
                     get_tex_transform(stage)->set_scale2d(scale));
@@ -1654,9 +1654,9 @@ set_tex_scale(const NodePath &other, TextureStage *stage, const LVecBase2f &scal
 //               This call is appropriate for ordinary 2-d texture
 //               coordinates.
 ////////////////////////////////////////////////////////////////////
-INLINE LVecBase2f NodePath::
+INLINE LVecBase2 NodePath::
 get_tex_offset(const NodePath &other, TextureStage *stage) const {
-  nassertr_always(!is_empty(), LVecBase2f::zero());
+  nassertr_always(!is_empty(), LVecBase2::zero());
   return get_tex_transform(other, stage)->get_pos2d();
 }
 
@@ -1669,7 +1669,7 @@ get_tex_offset(const NodePath &other, TextureStage *stage) const {
 //               This call is appropriate for ordinary 2-d texture
 //               coordinates.
 ////////////////////////////////////////////////////////////////////
-INLINE float NodePath::
+INLINE PN_stdfloat NodePath::
 get_tex_rotate(const NodePath &other, TextureStage *stage) const {
   nassertr_always(!is_empty(), 0.0f);
   return get_tex_transform(other, stage)->get_rotate2d();
@@ -1684,9 +1684,9 @@ get_tex_rotate(const NodePath &other, TextureStage *stage) const {
 //               This call is appropriate for ordinary 2-d texture
 //               coordinates.
 ////////////////////////////////////////////////////////////////////
-INLINE LVecBase2f NodePath::
+INLINE LVecBase2 NodePath::
 get_tex_scale(const NodePath &other, TextureStage *stage) const {
-  nassertr_always(!is_empty(), LVecBase2f(1.0f, 1.0f));
+  nassertr_always(!is_empty(), LVecBase2(1.0f, 1.0f));
   return get_tex_transform(other, stage)->get_scale2d();
 }
 
@@ -1699,8 +1699,8 @@ get_tex_scale(const NodePath &other, TextureStage *stage) const {
 //               This call is appropriate for 3-d texture coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_tex_pos(const NodePath &other, TextureStage *stage, float u, float v, float w) {
-  set_tex_pos(other, stage, LVecBase3f(u, v, w));
+set_tex_pos(const NodePath &other, TextureStage *stage, PN_stdfloat u, PN_stdfloat v, PN_stdfloat w) {
+  set_tex_pos(other, stage, LVecBase3(u, v, w));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1712,7 +1712,7 @@ set_tex_pos(const NodePath &other, TextureStage *stage, float u, float v, float 
 //               This call is appropriate for 3-d texture coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_tex_pos(const NodePath &other, TextureStage *stage, const LVecBase3f &uvw) {
+set_tex_pos(const NodePath &other, TextureStage *stage, const LVecBase3 &uvw) {
   nassertv_always(!is_empty());
   set_tex_transform(other, stage, 
                     get_tex_transform(stage)->set_pos(uvw));
@@ -1728,8 +1728,8 @@ set_tex_pos(const NodePath &other, TextureStage *stage, const LVecBase3f &uvw) {
 //               This call is appropriate for 3-d texture coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_tex_hpr(const NodePath &other, TextureStage *stage, float h, float p, float r) {
-  set_tex_hpr(other, stage, LVecBase3f(h, p, r));
+set_tex_hpr(const NodePath &other, TextureStage *stage, PN_stdfloat h, PN_stdfloat p, PN_stdfloat r) {
+  set_tex_hpr(other, stage, LVecBase3(h, p, r));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1742,7 +1742,7 @@ set_tex_hpr(const NodePath &other, TextureStage *stage, float h, float p, float 
 //               This call is appropriate for 3-d texture coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_tex_hpr(const NodePath &other, TextureStage *stage, const LVecBase3f &hpr) {
+set_tex_hpr(const NodePath &other, TextureStage *stage, const LVecBase3 &hpr) {
   nassertv_always(!is_empty());
   set_tex_transform(other, stage, 
                     get_tex_transform(stage)->set_hpr(hpr));
@@ -1757,8 +1757,8 @@ set_tex_hpr(const NodePath &other, TextureStage *stage, const LVecBase3f &hpr) {
 //               This call is appropriate for 3-d texture coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_tex_scale(const NodePath &other, TextureStage *stage, float su, float sv, float sw) {
-  set_tex_scale(other, stage, LVecBase3f(su, sv, sw));
+set_tex_scale(const NodePath &other, TextureStage *stage, PN_stdfloat su, PN_stdfloat sv, PN_stdfloat sw) {
+  set_tex_scale(other, stage, LVecBase3(su, sv, sw));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1770,7 +1770,7 @@ set_tex_scale(const NodePath &other, TextureStage *stage, float su, float sv, fl
 //               This call is appropriate for 3-d texture coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_tex_scale(const NodePath &other, TextureStage *stage, const LVecBase3f &scale) {
+set_tex_scale(const NodePath &other, TextureStage *stage, const LVecBase3 &scale) {
   nassertv_always(!is_empty());
   set_tex_transform(other, stage, 
                     get_tex_transform(stage)->set_scale(scale));
@@ -1784,9 +1784,9 @@ set_tex_scale(const NodePath &other, TextureStage *stage, const LVecBase3f &scal
 //
 //               This call is appropriate for 3-d texture coordinates.
 ////////////////////////////////////////////////////////////////////
-INLINE LVecBase3f NodePath::
+INLINE LVecBase3 NodePath::
 get_tex_pos(const NodePath &other, TextureStage *stage) const {
-  nassertr_always(!is_empty(), LVecBase3f::zero());
+  nassertr_always(!is_empty(), LVecBase3::zero());
   return get_tex_transform(stage)->get_pos();
 }
 
@@ -1798,9 +1798,9 @@ get_tex_pos(const NodePath &other, TextureStage *stage) const {
 //
 //               This call is appropriate for 3-d texture coordinates.
 ////////////////////////////////////////////////////////////////////
-INLINE LVecBase3f NodePath::
+INLINE LVecBase3 NodePath::
 get_tex_hpr(const NodePath &other, TextureStage *stage) const {
-  nassertr_always(!is_empty(), LVecBase3f::zero());
+  nassertr_always(!is_empty(), LVecBase3::zero());
   return get_tex_transform(stage)->get_hpr();
 }
 
@@ -1812,9 +1812,9 @@ get_tex_hpr(const NodePath &other, TextureStage *stage) const {
 //
 //               This call is appropriate for 3-d texture coordinates.
 ////////////////////////////////////////////////////////////////////
-INLINE LVecBase3f NodePath::
+INLINE LVecBase3 NodePath::
 get_tex_scale_3d(const NodePath &other, TextureStage *stage) const {
-  nassertr_always(!is_empty(), LVecBase3f(1.0f, 1.0f, 1.0f));
+  nassertr_always(!is_empty(), LVecBase3(1.0f, 1.0f, 1.0f));
   return get_tex_transform(stage)->get_scale();
 }
 
@@ -1850,7 +1850,7 @@ has_texcoord(const string &texcoord_name) const {
 //               will rotate in two dimensions around the up axis.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_billboard_axis(float offset) {
+set_billboard_axis(PN_stdfloat offset) {
   set_billboard_axis(NodePath(), offset);
 }
 
@@ -1863,7 +1863,7 @@ set_billboard_axis(float offset) {
 //               camera.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_billboard_point_eye(float offset) {
+set_billboard_point_eye(PN_stdfloat offset) {
   set_billboard_point_eye(NodePath(), offset);
 }
 
@@ -1875,7 +1875,7 @@ set_billboard_point_eye(float offset) {
 //               keeping its up vector oriented to the sky.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_billboard_point_world(float offset) {
+set_billboard_point_world(PN_stdfloat offset) {
   set_billboard_point_world(NodePath(), offset);
 }
 

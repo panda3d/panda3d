@@ -72,6 +72,10 @@ output(ostream &out) const {
   case NT_float64:
     out << "d";
     break;
+
+  case NT_stdfloat:
+    out << "?";
+    break;
   }
 
   out << ")";
@@ -88,6 +92,14 @@ setup() {
   nassertv(_num_components > 0 && _start >= 0);
 
   _num_values = _num_components;
+
+  if (_numeric_type == NT_stdfloat) {
+    if (vertices_float64) {
+      _numeric_type = NT_float64;
+    } else {
+      _numeric_type = NT_float32;
+    }
+  }
 
   switch (_numeric_type) {
   case NT_uint16:
@@ -114,6 +126,10 @@ setup() {
 
   case NT_float64:
     _component_bytes = 8;  // sizeof(PN_float64)
+    break;
+
+  case NT_stdfloat:
+    nassertv(false);
     break;
   }
 
@@ -362,6 +378,9 @@ get_data1f(const unsigned char *pointer) {
 
   case NT_float64:
     return *(const PN_float64 *)pointer;
+
+  default:
+    nassertr(false, 0.0f);
   }
 
   return 0.0f;
@@ -427,6 +446,9 @@ get_data2f(const unsigned char *pointer) {
         _v2.set(pi[0], pi[1]);
       }
       return _v2;
+
+    case NT_stdfloat:
+      nassertr(false, _v2);
     }
   }
 
@@ -503,6 +525,9 @@ get_data3f(const unsigned char *pointer) {
         _v3.set(pi[0], pi[1], pi[2]);
       }
       return _v3;
+
+    case NT_stdfloat:
+      nassertr(false, _v3);
     }
   }
 
@@ -588,6 +613,9 @@ get_data4f(const unsigned char *pointer) {
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
+
+    case NT_stdfloat:
+      nassertr(false, _v4);
     }
   }
 
@@ -628,6 +656,9 @@ get_data1d(const unsigned char *pointer) {
 
   case NT_float64:
     return *(const PN_float64 *)pointer;
+
+  case NT_stdfloat:
+    nassertr(false, 0.0f);
   }
 
   return 0.0f;
@@ -693,6 +724,9 @@ get_data2d(const unsigned char *pointer) {
         _v2d.set(pi[0], pi[1]);
       }
       return _v2d;
+
+    case NT_stdfloat:
+      nassertr(false, _v2d);
     }
   }
 
@@ -769,6 +803,9 @@ get_data3d(const unsigned char *pointer) {
         _v3d.set(pi[0], pi[1], pi[2]);
       }
       return _v3d;
+
+    case NT_stdfloat:
+      nassertr(false, _v3d);
     }
   }
 
@@ -854,6 +891,9 @@ get_data4d(const unsigned char *pointer) {
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4d;
+
+    case NT_stdfloat:
+      nassertr(false, _v4d);
     }
   }
 
@@ -894,6 +934,9 @@ get_data1i(const unsigned char *pointer) {
 
   case NT_float64:
     return (int)*(const PN_float64 *)pointer;
+
+  case NT_stdfloat:
+    nassertr(false, 0);
   }
 
   return 0;
@@ -966,6 +1009,9 @@ get_data2i(const unsigned char *pointer) {
         _i[1] = (int)pi[1];
       }
       return _i;
+
+    case NT_stdfloat:
+      nassertr(false, _i);
     }
   }
 
@@ -1056,6 +1102,9 @@ get_data3i(const unsigned char *pointer) {
         _i[2] = (int)pi[2];
       }
       return _i;
+
+    case NT_stdfloat:
+      nassertr(false, _i);
     }
   }
 
@@ -1165,6 +1214,9 @@ get_data4i(const unsigned char *pointer) {
         _i[3] = (int)pi[3];
       }
       return _i;
+
+    case NT_stdfloat:
+      nassertr(false, _i);
     }
   }
 
@@ -1205,6 +1257,9 @@ set_data1f(unsigned char *pointer, float data) {
     case NT_float64:
       *(PN_float64 *)pointer = data;
       break;
+
+    case NT_stdfloat:
+      nassertv(false);
     }
     break;
 
@@ -1277,6 +1332,9 @@ set_data2f(unsigned char *pointer, const LVecBase2f &data) {
         pi[1] = data[1];
       }
       break;
+
+    case NT_stdfloat:
+      nassertv(false);
     }
     break;
 
@@ -1355,6 +1413,9 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
         pi[2] = data[2];
       }
       break;
+
+    case NT_stdfloat:
+      nassertv(false);
     }
     break;
 
@@ -1443,6 +1504,9 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
         pi[3] = data[3];
       }
       break;
+
+    case NT_stdfloat:
+      nassertv(false);
     }
     break;
   }
@@ -1482,6 +1546,9 @@ set_data1d(unsigned char *pointer, double data) {
     case NT_float64:
       *(PN_float64 *)pointer = data;
       break;
+
+    case NT_stdfloat:
+      nassertv(false);
     }
     break;
 
@@ -1554,6 +1621,9 @@ set_data2d(unsigned char *pointer, const LVecBase2d &data) {
         pi[1] = data[1];
       }
       break;
+
+    case NT_stdfloat:
+      nassertv(false);
     }
     break;
 
@@ -1632,6 +1702,9 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
         pi[2] = data[2];
       }
       break;
+
+    case NT_stdfloat:
+      nassertv(false);
     }
     break;
 
@@ -1720,6 +1793,9 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
         pi[3] = data[3];
       }
       break;
+
+    case NT_stdfloat:
+      nassertv(false);
     }
     break;
   }
@@ -1761,6 +1837,9 @@ set_data1i(unsigned char *pointer, int a) {
     case NT_float64:
       *(PN_float64 *)pointer = (double)a;
       break;
+
+    case NT_stdfloat:
+      nassertv(false);
     }
     break;
 
@@ -1833,6 +1912,9 @@ set_data2i(unsigned char *pointer, int a, int b) {
         pi[1] = b;
       }
       break;
+
+    case NT_stdfloat:
+      nassertv(false);
     }
     break;
 
@@ -1910,6 +1992,9 @@ set_data3i(unsigned char *pointer, int a, int b, int c) {
         pi[2] = c;
       }
       break;
+
+    case NT_stdfloat:
+      nassertv(false);
     }
     break;
 
@@ -1995,6 +2080,9 @@ set_data4i(unsigned char *pointer, int a, int b, int c, int d) {
         pi[3] = d;
       }
       break;
+
+    case NT_stdfloat:
+      nassertv(false);
     }
     break;
   }
@@ -2126,6 +2214,9 @@ get_data4f(const unsigned char *pointer) {
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
+
+    case NT_stdfloat:
+      nassertr(false, _v4);
     }
   }
 
@@ -2258,6 +2349,9 @@ get_data4d(const unsigned char *pointer) {
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4d;
+
+    case NT_stdfloat:
+      nassertr(false, _v4d);
     }
   }
 
@@ -2385,6 +2479,9 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
         pi[3] = data[3];
       }
       break;
+
+    case NT_stdfloat:
+      nassertv(false);
     }
     break;
   }
@@ -2511,6 +2608,9 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
         pi[3] = data[3];
       }
       break;
+
+    case NT_stdfloat:
+      nassertv(false);
     }
     break;
   }
@@ -2595,6 +2695,9 @@ get_data4f(const unsigned char *pointer) {
         _v4.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4;
+
+    case NT_stdfloat:
+      nassertr(false, _v4);
     }
   }
 
@@ -2680,6 +2783,9 @@ get_data4d(const unsigned char *pointer) {
         _v4d.set(pi[0], pi[1], pi[2], pi[3]);
       }
       return _v4d;
+
+    case NT_stdfloat:
+      nassertr(false, _v4d);
     }
   }
 

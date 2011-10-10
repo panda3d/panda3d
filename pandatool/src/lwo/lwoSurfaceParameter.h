@@ -27,7 +27,7 @@
 ////////////////////////////////////////////////////////////////////
 class LwoSurfaceParameter : public LwoChunk {
 public:
-  float _value;
+  PN_stdfloat _value;
   int _envelope;
 
 public:

@@ -77,9 +77,9 @@ operator = (const CollisionEntry &copy) {
 //               The point will be converted into whichever coordinate
 //               space the caller specifies.
 ////////////////////////////////////////////////////////////////////
-LPoint3f CollisionEntry::
+LPoint3 CollisionEntry::
 get_surface_point(const NodePath &space) const {
-  nassertr(has_surface_point(), LPoint3f::zero());
+  nassertr(has_surface_point(), LPoint3::zero());
   CPT(TransformState) transform = _into_node_path.get_transform(space);
   return _surface_point * transform->get_mat();
 }
@@ -93,9 +93,9 @@ get_surface_point(const NodePath &space) const {
 //               The normal will be converted into whichever coordinate
 //               space the caller specifies.
 ////////////////////////////////////////////////////////////////////
-LVector3f CollisionEntry::
+LVector3 CollisionEntry::
 get_surface_normal(const NodePath &space) const {
-  nassertr(has_surface_normal(), LVector3f::zero());
+  nassertr(has_surface_normal(), LVector3::zero());
   CPT(TransformState) transform = _into_node_path.get_transform(space);
   return _surface_normal * transform->get_mat();
 }
@@ -114,7 +114,7 @@ get_surface_normal(const NodePath &space) const {
 //               The point will be converted into whichever coordinate
 //               space the caller specifies.
 ////////////////////////////////////////////////////////////////////
-LPoint3f CollisionEntry::
+LPoint3 CollisionEntry::
 get_interior_point(const NodePath &space) const {
   if (!has_interior_point()) {
     return get_surface_point(space);
@@ -134,21 +134,21 @@ get_interior_point(const NodePath &space) const {
 //               or false if any one of them is not.
 ////////////////////////////////////////////////////////////////////
 bool CollisionEntry::
-get_all(const NodePath &space, LPoint3f &surface_point,
-        LVector3f &surface_normal, LPoint3f &interior_point) const {
+get_all(const NodePath &space, LPoint3 &surface_point,
+        LVector3 &surface_normal, LPoint3 &interior_point) const {
   CPT(TransformState) transform = _into_node_path.get_transform(space);
-  const LMatrix4f &mat = transform->get_mat();
+  const LMatrix4 &mat = transform->get_mat();
   bool all_ok = true;
 
   if (!has_surface_point()) {
-    surface_point = LPoint3f::zero();
+    surface_point = LPoint3::zero();
     all_ok = false;
   } else {
     surface_point = _surface_point * mat;
   }
 
   if (!has_surface_normal()) {
-    surface_normal = LVector3f::zero();
+    surface_normal = LVector3::zero();
     all_ok = false;
   } else {
     surface_normal = _surface_normal * mat;
@@ -173,9 +173,9 @@ get_all(const NodePath &space, LPoint3f &surface_point,
 //               The position will be converted into whichever coordinate
 //               space the caller specifies.
 ////////////////////////////////////////////////////////////////////
-LPoint3f CollisionEntry::
+LPoint3 CollisionEntry::
 get_contact_pos(const NodePath &space) const {
-  nassertr(has_contact_pos(), LPoint3f::zero());
+  nassertr(has_contact_pos(), LPoint3::zero());
   CPT(TransformState) transform = _into_node_path.get_transform(space);
   return _contact_pos * transform->get_mat();
 }
@@ -189,9 +189,9 @@ get_contact_pos(const NodePath &space) const {
 //               The normal will be converted into whichever coordinate
 //               space the caller specifies.
 ////////////////////////////////////////////////////////////////////
-LVector3f CollisionEntry::
+LVector3 CollisionEntry::
 get_contact_normal(const NodePath &space) const {
-  nassertr(has_contact_normal(), LVector3f::zero());
+  nassertr(has_contact_normal(), LVector3::zero());
   CPT(TransformState) transform = _into_node_path.get_transform(space);
   return _contact_normal * transform->get_mat();
 }
@@ -207,21 +207,21 @@ get_contact_normal(const NodePath &space) const {
 //               or false if any one of them is not.
 ////////////////////////////////////////////////////////////////////
 bool CollisionEntry::
-get_all_contact_info(const NodePath &space, LPoint3f &contact_pos,
-                     LVector3f &contact_normal) const {
+get_all_contact_info(const NodePath &space, LPoint3 &contact_pos,
+                     LVector3 &contact_normal) const {
   CPT(TransformState) transform = _into_node_path.get_transform(space);
-  const LMatrix4f &mat = transform->get_mat();
+  const LMatrix4 &mat = transform->get_mat();
   bool all_ok = true;
 
   if (!has_contact_pos()) {
-    contact_pos = LPoint3f::zero();
+    contact_pos = LPoint3::zero();
     all_ok = false;
   } else {
     contact_pos = _contact_pos * mat;
   }
 
   if (!has_contact_normal()) {
-    contact_normal = LVector3f::zero();
+    contact_normal = LVector3::zero();
     all_ok = false;
   } else {
     contact_normal = _contact_normal * mat;

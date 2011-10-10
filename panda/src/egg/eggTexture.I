@@ -567,7 +567,7 @@ get_priority() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggTexture::
-set_color(const Colorf &color) {
+set_color(const LColor &color) {
   _color = color;
   _flags |= F_has_color;
 }
@@ -600,7 +600,7 @@ has_color() const {
 //  Description: Returns the blend color if one has been
 //               specified, or (0, 0, 0, 1) otherwise.
 ////////////////////////////////////////////////////////////////////
-INLINE const Colorf &EggTexture::
+INLINE const LColor &EggTexture::
 get_color() const {
   return _color;
 }
@@ -611,7 +611,7 @@ get_color() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggTexture::
-set_border_color(const Colorf &border_color) {
+set_border_color(const LColor &border_color) {
   _border_color = border_color;
   _flags |= F_has_border_color;
 }
@@ -644,7 +644,7 @@ has_border_color() const {
 //  Description: Returns the border color if one has been
 //               specified, or (0, 0, 0, 1) otherwise.
 ////////////////////////////////////////////////////////////////////
-INLINE const Colorf &EggTexture::
+INLINE const LColor &EggTexture::
 get_border_color() const {
   return _border_color;
 }

@@ -521,12 +521,12 @@ void Lru::access_page (LruPage *lru_page)
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Lru::set_maximum_frame_bandwidth_utilization
-  (float maximum_frame_bandwidth_utilization)
+  (PN_stdfloat maximum_frame_bandwidth_utilization)
 {
   this->_m.maximum_frame_bandwidth_utilization =
     maximum_frame_bandwidth_utilization;
 
-  this->_m.frame_bandwidth_factor = (float) LPP_TotalPriorities
+  this->_m.frame_bandwidth_factor = (PN_stdfloat) LPP_TotalPriorities
     / this->_m.maximum_frame_bandwidth_utilization;
 }
 
@@ -615,18 +615,18 @@ void Lru::update_lru_page (LruPage *lru_page)
       if(lru_page->_m.update_frame_identifier) {
         int target_priority;
         int integer_update_frames;
-        float update_frames;
-        float one_over_update_frames;
-        float update_average_frame_utilization;
+        PN_stdfloat update_frames;
+        PN_stdfloat one_over_update_frames;
+        PN_stdfloat update_average_frame_utilization;
 
         integer_update_frames = (this->_m.current_frame_identifier -
           lru_page->_m.update_frame_identifier);
         if(integer_update_frames > 0) {
-          update_frames = ( float ) integer_update_frames;
+          update_frames = ( PN_stdfloat ) integer_update_frames;
           one_over_update_frames = 1.0f / update_frames;
 
           update_average_frame_utilization =
-            (float) (lru_page->_m.update_total_usage)* one_over_update_frames;
+            (PN_stdfloat) (lru_page->_m.update_total_usage)* one_over_update_frames;
 
           lru_page->_m.average_frame_utilization =
             calculate_exponential_moving_average(
@@ -639,7 +639,7 @@ void Lru::update_lru_page (LruPage *lru_page)
 
             integer_average_frame_utilization =
               (int) ((lru_page->_m.average_frame_utilization - 1.0f) *
-              (float) HIGH_PRIORITY_SCALE);
+              (PN_stdfloat) HIGH_PRIORITY_SCALE);
             if(integer_average_frame_utilization >= LPP_New) {
               integer_average_frame_utilization = LPP_New;
             }
@@ -652,7 +652,7 @@ void Lru::update_lru_page (LruPage *lru_page)
 
             integer_average_frame_utilization = (int)
                (lru_page->_m.average_frame_utilization *
-               (float) LOW_PRIORITY_RANGE);
+               (PN_stdfloat) LOW_PRIORITY_RANGE);
             integer_average_frame_utilization = LOW_PRIORITY_RANGE -
               integer_average_frame_utilization;
             target_priority = LPP_New + integer_average_frame_utilization;
@@ -1030,8 +1030,8 @@ void Lru::calculate_lru_statistics (void)
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float calculate_exponential_moving_average(float value,
-  float weight, float average)
+PN_stdfloat calculate_exponential_moving_average(PN_stdfloat value,
+  PN_stdfloat weight, PN_stdfloat average)
 {
   return ((value - average) * weight) + average;
 }
@@ -1082,15 +1082,15 @@ bool default_page_out_function(LruPage *lru_page)
 void test_ema(void)
 {
   int    index;
-  float  usage;
-  float  weight;
-  float  average;
+  PN_stdfloat  usage;
+  PN_stdfloat  weight;
+  PN_stdfloat  average;
 
-  weight  = 0.2f;
+  weight  = 0.2;
   average = 1.0f;
   for(index = 0; index < 50; index++) {
     if(index < 25) {
-      usage = (float) (index & 0x01);
+      usage = (PN_stdfloat) (index & 0x01);
     }
     else {
       usage = 0.0f;

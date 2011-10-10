@@ -199,15 +199,15 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     int this_frame = ClockObject::get_global_clock()->get_frame_count();
 
     CPT(TransformState) rel_transform = get_rel_transform(trav, data);
-    LPoint3f center = _lod_center * rel_transform->get_mat();
-    float dist2 = center.dot(center);
+    LPoint3 center = _lod_center * rel_transform->get_mat();
+    PN_stdfloat dist2 = center.dot(center);
 
     if (this_frame != _view_frame || dist2 < _view_distance2) {
       _view_frame = this_frame;
       _view_distance2 = dist2;
 
       // Now compute the lod delay.
-      float dist = sqrt(dist2);
+      PN_stdfloat dist = sqrt(dist2);
       double delay = 0.0;
       if (dist > _lod_near_distance) {
         delay = _lod_delay_factor * (dist - _lod_near_distance) / (_lod_far_distance - _lod_near_distance);
@@ -249,7 +249,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 //               node's transform.
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) Character::
-calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, bool &found_any,
+calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point, bool &found_any,
                   const TransformState *transform, Thread *current_thread) const {
   // This method is overridden by Character solely to provide a hook
   // to force the joints to update before computing the bounding
@@ -375,9 +375,9 @@ merge_bundles(PartBundleHandle *old_bundle_handle,
 //               given frame, the closest one counts.
 ////////////////////////////////////////////////////////////////////
 void Character::
-set_lod_animation(const LPoint3f &center,
-                  float far_distance, float near_distance,
-                  float delay_factor) {
+set_lod_animation(const LPoint3 &center,
+                  PN_stdfloat far_distance, PN_stdfloat near_distance,
+                  PN_stdfloat delay_factor) {
   nassertv(far_distance >= near_distance);
   nassertv(delay_factor >= 0.0f);
   _lod_center = center;
@@ -400,7 +400,7 @@ set_lod_animation(const LPoint3f &center,
 ////////////////////////////////////////////////////////////////////
 void Character::
 clear_lod_animation() {
-  _lod_center = LPoint3f::zero();
+  _lod_center = LPoint3::zero();
   _lod_far_distance = 0.0f;
   _lod_near_distance = 0.0f;
   _lod_delay_factor = 0.0f;

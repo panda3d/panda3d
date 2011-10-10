@@ -20,7 +20,7 @@
 #include "animChannel.h"
 
 #include "pointerToArray.h"
-#include "pta_float.h"
+#include "pta_stdfloat.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : AnimChannelScalarTable
@@ -38,11 +38,11 @@ public:
 
   virtual bool has_changed(int last_frame, double last_frac, 
                            int this_frame, double this_frac);
-  virtual void get_value(int frame, float &value);
+  virtual void get_value(int frame, PN_stdfloat &value);
 
 PUBLISHED:
-  void set_table(const CPTA_float &table);
-  INLINE CPTA_float get_table() const;
+  void set_table(const CPTA_stdfloat &table);
+  INLINE CPTA_stdfloat get_table() const;
 
   INLINE bool has_table() const;
   INLINE void clear_table();
@@ -54,7 +54,7 @@ protected:
   virtual AnimGroup *make_copy(AnimGroup *parent) const;
 
 protected:
-  CPTA_float _table;
+  CPTA_stdfloat _table;
 
 public:
   static void register_with_read_factory();

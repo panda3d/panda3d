@@ -57,24 +57,24 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PARAMETRICS CubicCurveseg : public ParametricCurve {
 PUBLISHED:
-  virtual bool get_point(float t, LVecBase3f &point) const;
-  virtual bool get_tangent(float t, LVecBase3f &tangent) const;
-  virtual bool get_pt(float t, LVecBase3f &point, LVecBase3f &tangent) const;
-  virtual bool get_2ndtangent(float t, LVecBase3f &tangent2) const;
+  virtual bool get_point(PN_stdfloat t, LVecBase3 &point) const;
+  virtual bool get_tangent(PN_stdfloat t, LVecBase3 &tangent) const;
+  virtual bool get_pt(PN_stdfloat t, LVecBase3 &point, LVecBase3 &tangent) const;
+  virtual bool get_2ndtangent(PN_stdfloat t, LVecBase3 &tangent2) const;
 
 public:
   CubicCurveseg();
-  CubicCurveseg(const LMatrix4f &basis);
+  CubicCurveseg(const LMatrix4 &basis);
   CubicCurveseg(const BezierSeg &seg);
-  CubicCurveseg(int order, const float knots[], const LVecBase4f cvs[]);
+  CubicCurveseg(int order, const PN_stdfloat knots[], const LVecBase4 cvs[]);
 
   virtual ~CubicCurveseg();
 
   void hermite_basis(const HermiteCurveCV &cv0,
                      const HermiteCurveCV &cv1,
-                     float tlength = 1.0f);
+                     PN_stdfloat tlength = 1.0f);
   void bezier_basis(const BezierSeg &seg);
-  void nurbs_basis(int order, const float knots[], const LVecBase4f cvs[]);
+  void nurbs_basis(int order, const PN_stdfloat knots[], const LVecBase4 cvs[]);
 
   // evaluate_point() and evaluate_vector() both evaluate the curve at
   // a given point by applying the basis vector against the vector
@@ -87,14 +87,14 @@ public:
   // points, and will never scale by the homogeneous coordinate (which
   // would be zero anyway).
 
-  void evaluate_point(const LVecBase4f &tv, LVecBase3f &result) const {
-    float recip_h = (rational) ? 1.0f/tv.dot(Bw) : 1.0f;
+  void evaluate_point(const LVecBase4 &tv, LVecBase3 &result) const {
+    PN_stdfloat recip_h = (rational) ? 1.0f/tv.dot(Bw) : 1.0f;
     result.set(tv.dot(Bx) * recip_h,
                tv.dot(By) * recip_h,
                tv.dot(Bz) * recip_h);
   }
 
-  void evaluate_vector(const LVecBase4f &tv, LVecBase3f &result) const {
+  void evaluate_vector(const LVecBase4 &tv, LVecBase3 &result) const {
     result.set(tv.dot(Bx),
                tv.dot(By),
                tv.dot(Bz));
@@ -102,15 +102,15 @@ public:
 
   virtual bool get_bezier_seg(BezierSeg &seg) const;
 
-  static bool compute_seg(int rtype0, float t0, const LVecBase4f &v0,
-                          int rtype1, float t1, const LVecBase4f &v1,
-                          int rtype2, float t2, const LVecBase4f &v2,
-                          int rtype3, float t3, const LVecBase4f &v3,
-                          const LMatrix4f &B,
-                          const LMatrix4f &Bi,
-                          LMatrix4f &G);
+  static bool compute_seg(int rtype0, PN_stdfloat t0, const LVecBase4 &v0,
+                          int rtype1, PN_stdfloat t1, const LVecBase4 &v1,
+                          int rtype2, PN_stdfloat t2, const LVecBase4 &v2,
+                          int rtype3, PN_stdfloat t3, const LVecBase4 &v3,
+                          const LMatrix4 &B,
+                          const LMatrix4 &Bi,
+                          LMatrix4 &G);
 
-  LVecBase4f Bx, By, Bz, Bw;
+  LVecBase4 Bx, By, Bz, Bw;
   bool rational;
 
 
@@ -144,8 +144,8 @@ private:
 // This function is used internally to build the NURBS basis matrix
 // based on a given knot sequence.
 void compute_nurbs_basis(int order,
-                         const float knots_in[],
-                         LMatrix4f &basis);
+                         const PN_stdfloat knots_in[],
+                         LMatrix4 &basis);
 
 
 #endif

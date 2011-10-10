@@ -55,8 +55,8 @@ public:
   ~PortalClipper();
 
   INLINE bool is_partial_portal_in_view();
-  INLINE bool is_facing_view(Planef portal_plane);
-  INLINE bool is_whole_portal_in_view(LMatrix4f cmat);
+  INLINE bool is_facing_view(LPlane portal_plane);
+  INLINE bool is_whole_portal_in_view(LMatrix4 cmat);
 
   bool prepare_portal(const NodePath &node_path);
   
@@ -64,18 +64,18 @@ public:
   INLINE void draw_camera_frustum();
   void draw_hexahedron(BoundingHexahedron *frustum);
 
-  INLINE void move_to(float x, float y, float z);
-  void move_to(const LVecBase3f &v);
+  INLINE void move_to(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+  void move_to(const LVecBase3 &v);
 
-  INLINE void draw_to(float x, float y, float z);
-  void draw_to(const LVecBase3f &v);
+  INLINE void draw_to(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+  void draw_to(const LVecBase3 &v);
 
   void draw_current_portal();
 
   INLINE BoundingHexahedron *get_reduced_frustum() const;
   INLINE void set_reduced_frustum(BoundingHexahedron *bh);
-  INLINE void get_reduced_viewport(LPoint2f& min, LPoint2f& max) const; 
-  INLINE void set_reduced_viewport(const LPoint2f& min, const LPoint2f& max);
+  INLINE void get_reduced_viewport(LPoint2& min, LPoint2& max) const; 
+  INLINE void set_reduced_viewport(const LPoint2& min, const LPoint2& max);
   INLINE const RenderState* get_clip_state() const; 
   INLINE void set_clip_state(const RenderState* clip_state);
 
@@ -100,32 +100,32 @@ private:
   class Point {
   public:
     INLINE Point();
-    INLINE Point(const LVecBase3f &point, const Colorf &color);
+    INLINE Point(const LVecBase3 &point, const LColor &color);
     INLINE Point(const Point &copy);
     INLINE void operator = (const Point &copy);
 
-    Vertexf _point;
-    Colorf _color;
+    LVertex _point;
+    LColor _color;
   };
 
   typedef pvector<Point> SegmentList;
   typedef pvector<SegmentList> LineList;
 
   LineList _list;
-  Colorf _color;
+  LColor _color;
 
   PT(GeomVertexData) _created_data;
 
   BoundingHexahedron *_view_frustum;
   BoundingHexahedron *_reduced_frustum;
-  LPoint2f _reduced_viewport_min;
-  LPoint2f _reduced_viewport_max;
+  LPoint2 _reduced_viewport_min;
+  LPoint2 _reduced_viewport_max;
   CPT(RenderState) _clip_state; // each portal node needs to know the clip state of its "parent" portal Node
 
   PortalNode *_portal_node;  // current working portal for dereference ease
 
   //int _num_vert;
-  //Vertexf _coords[4];
+  //LVertex _coords[4];
 
 public:
   PT(GeomNode) _previous;

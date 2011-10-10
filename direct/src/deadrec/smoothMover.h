@@ -54,23 +54,23 @@ PUBLISHED:
   // mark_position().  The return value of each function is true if
   // the parameter value has changed, or false if it remains the same
   // as last time.
-  INLINE bool set_pos(const LVecBase3f &pos);
-  INLINE bool set_pos(float x, float y, float z);
-  INLINE bool set_x(float x);
-  INLINE bool set_y(float y);
-  INLINE bool set_z(float z);
+  INLINE bool set_pos(const LVecBase3 &pos);
+  INLINE bool set_pos(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+  INLINE bool set_x(PN_stdfloat x);
+  INLINE bool set_y(PN_stdfloat y);
+  INLINE bool set_z(PN_stdfloat z);
 
-  INLINE bool set_hpr(const LVecBase3f &hpr);
-  INLINE bool set_hpr(float h, float p, float r);
-  INLINE bool set_h(float h);
-  INLINE bool set_p(float p);
-  INLINE bool set_r(float r);
+  INLINE bool set_hpr(const LVecBase3 &hpr);
+  INLINE bool set_hpr(PN_stdfloat h, PN_stdfloat p, PN_stdfloat r);
+  INLINE bool set_h(PN_stdfloat h);
+  INLINE bool set_p(PN_stdfloat p);
+  INLINE bool set_r(PN_stdfloat r);
 
-  INLINE bool set_pos_hpr(const LVecBase3f &pos, const LVecBase3f &hpr);
-  INLINE bool set_pos_hpr(float x, float y, float z, float h, float p, float r);
+  INLINE bool set_pos_hpr(const LVecBase3 &pos, const LVecBase3 &hpr);
+  INLINE bool set_pos_hpr(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat h, PN_stdfloat p, PN_stdfloat r);
 
-  INLINE const LPoint3f &get_sample_pos() const;
-  INLINE const LVecBase3f &get_sample_hpr() const;
+  INLINE const LPoint3 &get_sample_pos() const;
+  INLINE const LVecBase3 &get_sample_hpr() const;
 
   INLINE void set_phony_timestamp(double timestamp = 0.0, bool period_adjust = false);
 
@@ -86,8 +86,8 @@ PUBLISHED:
   bool compute_smooth_position(double timestamp);
   bool get_latest_position();
 
-  INLINE const LPoint3f &get_smooth_pos() const;
-  INLINE const LVecBase3f &get_smooth_hpr() const;
+  INLINE const LPoint3 &get_smooth_pos() const;
+  INLINE const LVecBase3 &get_smooth_hpr() const;
 
   INLINE void apply_smooth_pos(NodePath &node) const;
   INLINE void apply_smooth_pos_hpr(NodePath &pos_node, NodePath &hpr_node) const;
@@ -97,10 +97,10 @@ PUBLISHED:
   INLINE void compute_and_apply_smooth_pos_hpr(NodePath &pos_node, NodePath &hpr_node);
   INLINE void compute_and_apply_smooth_hpr(NodePath &hpr_node);
 
-  INLINE float get_smooth_forward_velocity() const;
-  INLINE float get_smooth_lateral_velocity() const;
-  INLINE float get_smooth_rotational_velocity() const;
-  INLINE const LVecBase3f &get_forward_axis() const;
+  INLINE PN_stdfloat get_smooth_forward_velocity() const;
+  INLINE PN_stdfloat get_smooth_lateral_velocity() const;
+  INLINE PN_stdfloat get_smooth_rotational_velocity() const;
+  INLINE const LVecBase3 &get_forward_axis() const;
 
   void handle_wrt_reparent(NodePath &old_parent, NodePath &new_parent);
 
@@ -149,11 +149,11 @@ PUBLISHED:
   void write(ostream &out) const;
 
 private:
-  void set_smooth_pos(const LPoint3f &pos, const LVecBase3f &hpr,
+  void set_smooth_pos(const LPoint3 &pos, const LVecBase3 &hpr,
                       double timestamp);
   void linear_interpolate(int point_before, int point_after, double timestamp);
-  void compute_velocity(const LVector3f &pos_delta, 
-                        const LVecBase3f &hpr_delta,
+  void compute_velocity(const LVector3 &pos_delta, 
+                        const LVecBase3 &hpr_delta,
                         double age);
 
   void record_timestamp_delay(double timestamp);
@@ -164,17 +164,17 @@ public:
   // issues.
   class SamplePoint {
   public:
-    LPoint3f _pos;
-    LVecBase3f _hpr;
+    LPoint3 _pos;
+    LVecBase3 _hpr;
     double _timestamp;
   };
 
 private:
   SamplePoint _sample;
 
-  LPoint3f _smooth_pos;
-  LVecBase3f _smooth_hpr;
-  LVector3f _forward_axis;
+  LPoint3 _smooth_pos;
+  LVecBase3 _smooth_hpr;
+  LVector3 _forward_axis;
   double _smooth_timestamp;
   bool _smooth_position_known;
   bool _smooth_position_changed;

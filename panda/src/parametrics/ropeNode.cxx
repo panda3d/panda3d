@@ -276,12 +276,12 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
 CPT(GeomVertexFormat) RopeNode::
 get_format(bool support_normals) const {
   PT(GeomVertexArrayFormat) array_format = new GeomVertexArrayFormat
-    (InternalName::get_vertex(), 3, Geom::NT_float32,
+    (InternalName::get_vertex(), 3, Geom::NT_stdfloat,
      Geom::C_point);
 
   if (support_normals && get_normal_mode() == NM_vertex) {
     array_format->add_column
-      (InternalName::get_normal(), 3, Geom::NT_float32,
+      (InternalName::get_normal(), 3, Geom::NT_stdfloat,
        Geom::C_vector);
   }
   if (get_use_vertex_color()) {
@@ -291,7 +291,7 @@ get_format(bool support_normals) const {
   }
   if (get_uv_mode() != UV_none) {
     array_format->add_column
-      (InternalName::get_texcoord(), 2, Geom::NT_float32,
+      (InternalName::get_texcoord(), 2, Geom::NT_stdfloat,
        Geom::C_texcoord);
   }
 
@@ -315,13 +315,13 @@ do_recompute_bounds(const NodePath &rel_to, int pipeline_stage,
   
   NurbsCurveEvaluator *curve = get_curve();
   if (curve != (NurbsCurveEvaluator *)NULL) {
-    pvector<LPoint3f> verts;
+    pvector<LPoint3> verts;
     get_curve()->get_vertices(verts, rel_to);
 
     if (has_matrix()) {
       // And then apply the indicated matrix.
-      const LMatrix4f &mat = get_matrix();
-      pvector<LPoint3f>::iterator vi;
+      const LMatrix4 &mat = get_matrix();
+      pvector<LPoint3>::iterator vi;
       for (vi = verts.begin(); vi != verts.end(); ++vi) {
         (*vi) = (*vi) * mat;
       }
@@ -458,7 +458,7 @@ render_billboard(CullTraverser *trav, CullTraverserData &data,
 
   CPT(TransformState) rel_transform =
     net_transform->invert_compose(camera_transform);
-  LVector3f camera_vec = LVector3f::forward() * rel_transform->get_mat();
+  LVector3 camera_vec = LVector3::forward() * rel_transform->get_mat();
 
   CurveSegments curve_segments;
   int num_curve_verts = get_connected_segments(curve_segments, result);
@@ -592,10 +592,10 @@ get_connected_segments(RopeNode::CurveSegments &curve_segments,
   bool use_vertex_thickness = get_use_vertex_thickness();
 
   CurveSegment *curve_segment = NULL;
-  LPoint3f last_point;
+  LPoint3 last_point;
 
   for (int segment = 0; segment < num_segments; ++segment) {
-    LPoint3f point;
+    LPoint3 point;
     result->eval_segment_point(segment, 0.0f, point);
 
     if (curve_segment == (CurveSegment *)NULL || 
@@ -626,7 +626,7 @@ get_connected_segments(RopeNode::CurveSegments &curve_segments,
 
     // Store all the remaining points in this segment.
     for (int i = 1; i < num_verts; ++i) {
-      float t = (float)i / (float)(num_verts - 1);
+      PN_stdfloat t = (PN_stdfloat)i / (PN_stdfloat)(num_verts - 1);
 
       CurveVertex vtx;
       result->eval_segment_point(segment, t, vtx._p);
@@ -670,28 +670,28 @@ compute_thread_vertices(GeomVertexData *vdata,
   GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
 
   UVMode uv_mode = get_uv_mode();
-  float uv_scale = get_uv_scale();
+  PN_stdfloat uv_scale = get_uv_scale();
   bool u_dominant = get_uv_direction();
   bool use_vertex_color = get_use_vertex_color();
 
-  float dist = 0.0f;
+  PN_stdfloat dist = 0.0f;
   CurveSegments::const_iterator si;
   for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
     const CurveSegment &segment = (*si);
     for (size_t j = 0; j < segment.size(); ++j) {
-      vertex.add_data3f(segment[j]._p);
+      vertex.add_data3(segment[j]._p);
 
       if (use_vertex_color) {
-        color.add_data4f(segment[j]._c);
+        color.add_data4(segment[j]._c);
       }
 
-      float uv_t = compute_uv_t(dist, uv_mode, uv_scale, segment, j);
+      PN_stdfloat uv_t = compute_uv_t(dist, uv_mode, uv_scale, segment, j);
 
       if (uv_mode != UV_none) {
         if (u_dominant) {
-          texcoord.add_data2f(uv_t, 0.0f);
+          texcoord.add_data2(uv_t, 0.0f);
         } else {
-          texcoord.add_data2f(0.0f, uv_t);
+          texcoord.add_data2(0.0f, uv_t);
         }
       }
     }
@@ -709,7 +709,7 @@ compute_thread_vertices(GeomVertexData *vdata,
 ////////////////////////////////////////////////////////////////////
 void RopeNode::
 compute_billboard_vertices(GeomVertexData *vdata,
-                           const LVector3f &camera_vec,
+                           const LVector3 &camera_vec,
                            const RopeNode::CurveSegments &curve_segments,
                            int num_curve_verts,
                            NurbsCurveResult *result) const {
@@ -720,47 +720,47 @@ compute_billboard_vertices(GeomVertexData *vdata,
   GeomVertexWriter color(vdata, InternalName::get_color());
   GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
 
-  float thickness = get_thickness();
-  float overall_radius = thickness * 0.5f;
-  float radius = overall_radius;
+  PN_stdfloat thickness = get_thickness();
+  PN_stdfloat overall_radius = thickness * 0.5f;
+  PN_stdfloat radius = overall_radius;
   UVMode uv_mode = get_uv_mode();
-  float uv_scale = get_uv_scale();
+  PN_stdfloat uv_scale = get_uv_scale();
   bool u_dominant = get_uv_direction();
   bool use_vertex_color = get_use_vertex_color();
   bool use_vertex_thickness = get_use_vertex_thickness();
 
-  float dist = 0.0f;
+  PN_stdfloat dist = 0.0f;
   CurveSegments::const_iterator si;
   for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
     const CurveSegment &segment = (*si);
     for (size_t j = 0; j < segment.size(); ++j) {
-      LVector3f tangent;
+      LVector3 tangent;
       compute_tangent(tangent, segment, j, result);
 
-      LVector3f norm = cross(tangent, camera_vec);
+      LVector3 norm = cross(tangent, camera_vec);
       norm.normalize();
 
       if (use_vertex_thickness) {
         radius = overall_radius * segment[j]._thickness;
       }
 
-      vertex.add_data3f(segment[j]._p + norm * radius);
-      vertex.add_data3f(segment[j]._p - norm * radius);
+      vertex.add_data3(segment[j]._p + norm * radius);
+      vertex.add_data3(segment[j]._p - norm * radius);
 
       if (use_vertex_color) {
-        color.add_data4f(segment[j]._c);
-        color.add_data4f(segment[j]._c);
+        color.add_data4(segment[j]._c);
+        color.add_data4(segment[j]._c);
       }
 
-      float uv_t = compute_uv_t(dist, uv_mode, uv_scale, segment, j);
+      PN_stdfloat uv_t = compute_uv_t(dist, uv_mode, uv_scale, segment, j);
 
       if (uv_mode != UV_none) {
         if (u_dominant) {
-          texcoord.add_data2f(uv_t, 1.0f);
-          texcoord.add_data2f(uv_t, 0.0f);
+          texcoord.add_data2(uv_t, 1.0f);
+          texcoord.add_data2(uv_t, 0.0f);
         } else {
-          texcoord.add_data2f(1.0f, uv_t);
-          texcoord.add_data2f(0.0f, uv_t);
+          texcoord.add_data2(1.0f, uv_t);
+          texcoord.add_data2(0.0f, uv_t);
         }
       }
     }
@@ -785,11 +785,11 @@ compute_tube_vertices(GeomVertexData *vdata,
   int num_slices = get_num_slices();
   num_verts_per_slice = num_slices;
 
-  float thickness = get_thickness();
-  float overall_radius = thickness * 0.5f;
-  float radius = overall_radius;
+  PN_stdfloat thickness = get_thickness();
+  PN_stdfloat overall_radius = thickness * 0.5f;
+  PN_stdfloat radius = overall_radius;
   UVMode uv_mode = get_uv_mode();
-  float uv_scale = get_uv_scale();
+  PN_stdfloat uv_scale = get_uv_scale();
   bool u_dominant = get_uv_direction();
   NormalMode normal_mode = get_normal_mode();
   bool use_vertex_color = get_use_vertex_color();
@@ -810,48 +810,48 @@ compute_tube_vertices(GeomVertexData *vdata,
   GeomVertexWriter color(vdata, InternalName::get_color());
   GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
 
-  LVector3f up = get_tube_up();
+  LVector3 up = get_tube_up();
 
-  float dist = 0.0f;
+  PN_stdfloat dist = 0.0f;
   CurveSegments::const_iterator si;
   for (si = curve_segments.begin(); si != curve_segments.end(); ++si) {
     const CurveSegment &segment = (*si);
     for (size_t j = 0; j < segment.size(); ++j) {
-      LVector3f tangent;
+      LVector3 tangent;
       compute_tangent(tangent, segment, j, result);
 
-      LVector3f norm = cross(tangent, up);
+      LVector3 norm = cross(tangent, up);
       norm.normalize();
       up = cross(norm, tangent);
 
-      LMatrix3f rotate = LMatrix3f::rotate_mat(360.0f / (float)num_slices,
+      LMatrix3 rotate = LMatrix3::rotate_mat(360.0f / (PN_stdfloat)num_slices,
                                                tangent);
 
-      float uv_t = compute_uv_t(dist, uv_mode, uv_scale, segment, j);
+      PN_stdfloat uv_t = compute_uv_t(dist, uv_mode, uv_scale, segment, j);
 
       for (int s = 0; s < num_verts_per_slice; ++s) {
         if (use_vertex_thickness) {
           radius = overall_radius * segment[j]._thickness;
         }
 
-        vertex.add_data3f(segment[j]._p + norm * radius);
+        vertex.add_data3(segment[j]._p + norm * radius);
 
         if (normal_mode == NM_vertex) {
-          normal.add_data3f(norm);
+          normal.add_data3(norm);
         }
 
         if (use_vertex_color) {
-          color.add_data4f(segment[j]._c);
+          color.add_data4(segment[j]._c);
         }
 
         norm = norm * rotate;
 
         if (uv_mode != UV_none) {
-          float uv_s = (float)s / (float)num_slices;
+          PN_stdfloat uv_s = (PN_stdfloat)s / (PN_stdfloat)num_slices;
           if (u_dominant) {
-            texcoord.add_data2f(uv_t, uv_s);
+            texcoord.add_data2(uv_t, uv_s);
           } else {
-            texcoord.add_data2f(uv_s, uv_t);
+            texcoord.add_data2(uv_s, uv_t);
           }
         }
       }
@@ -868,7 +868,7 @@ compute_tube_vertices(GeomVertexData *vdata,
 //               point in the segment.
 ////////////////////////////////////////////////////////////////////
 void RopeNode::
-compute_tangent(LVector3f &tangent, const RopeNode::CurveSegment &segment, 
+compute_tangent(LVector3 &tangent, const RopeNode::CurveSegment &segment, 
                 size_t j, NurbsCurveResult *result) {
   // First, try to evaluate the tangent at the curve.  This gives
   // better results at the ends at the endpoints where the tangent
@@ -878,7 +878,7 @@ compute_tangent(LVector3f &tangent, const RopeNode::CurveSegment &segment,
     Actually, on second thought this looks terrible.
 
   if (result->eval_tangent(segment[j]._t, tangent)) {
-    if (!tangent.almost_equal(LVector3f::zero())) {
+    if (!tangent.almost_equal(LVector3::zero())) {
       return;
     }
   }
@@ -901,9 +901,9 @@ compute_tangent(LVector3f &tangent, const RopeNode::CurveSegment &segment,
 //  Description: Computes the texture coordinate along the curve for
 //               the indicated point in the segment.
 ////////////////////////////////////////////////////////////////////
-float RopeNode::
-compute_uv_t(float &dist, const RopeNode::UVMode &uv_mode,
-             float uv_scale, const RopeNode::CurveSegment &segment,
+PN_stdfloat RopeNode::
+compute_uv_t(PN_stdfloat &dist, const RopeNode::UVMode &uv_mode,
+             PN_stdfloat uv_scale, const RopeNode::CurveSegment &segment,
              size_t j) {
   switch (uv_mode) {
   case UV_none:
@@ -914,14 +914,14 @@ compute_uv_t(float &dist, const RopeNode::UVMode &uv_mode,
     
   case UV_distance:
     if (j != 0) {
-      LVector3f vec = segment[j]._p - segment[j - 1]._p;
+      LVector3 vec = segment[j]._p - segment[j - 1]._p;
       dist += vec.length();
     }
     return dist * uv_scale;
     
   case UV_distance2:
     if (j != 0) {
-      LVector3f vec = segment[j]._p - segment[j - 1]._p;
+      LVector3 vec = segment[j]._p - segment[j - 1]._p;
       dist += vec.length_squared();
     }
     return dist * uv_scale;

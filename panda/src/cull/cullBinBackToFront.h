@@ -53,11 +53,11 @@ protected:
 private:
   class ObjectData {
   public:
-    INLINE ObjectData(CullableObject *object, float dist);
+    INLINE ObjectData(CullableObject *object, PN_stdfloat dist);
     INLINE bool operator < (const ObjectData &other) const;
     
     CullableObject *_object;
-    float _dist;
+    PN_stdfloat _dist;
   };
 
   typedef pvector<ObjectData> Objects;

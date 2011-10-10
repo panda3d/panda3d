@@ -59,11 +59,11 @@ protected:
                                Thread *current_thread);
 
 PUBLISHED:
-  void setup(float width, float height);
+  void setup(PN_stdfloat width, PN_stdfloat height);
 
-  INLINE void set_clip_frame(float left, float right, float bottom, float top);
-  void set_clip_frame(const LVecBase4f &clip_frame);
-  INLINE const LVecBase4f &get_clip_frame() const;
+  INLINE void set_clip_frame(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top);
+  void set_clip_frame(const LVecBase4 &clip_frame);
+  INLINE const LVecBase4 &get_clip_frame() const;
   INLINE bool has_clip_frame() const;
   void clear_clip_frame();
 
@@ -81,7 +81,7 @@ private:
 
 private:
   bool _has_clip_frame;
-  LVecBase4f _clip_frame;
+  LVecBase4 _clip_frame;
 
   PT(ModelNode) _canvas_node;
   PT(ModelNode) _canvas_parent;

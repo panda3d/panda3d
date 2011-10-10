@@ -112,7 +112,7 @@ private:
   void do_issue_texture();
   void do_issue_scissor();
 
-  void set_scissor(float left, float right, float bottom, float top);
+  void set_scissor(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top);
 
   bool apply_texture(TextureContext *tc);
   bool upload_texture(TinyTextureContext *gtc, bool force);
@@ -141,7 +141,7 @@ private:
   public:
     GeomVertexReader _r1;
     GeomVertexReader _r2;
-    LMatrix4f _mat;
+    LMatrix4 _mat;
   };
   typedef void GenTexcoordFunc(V2 &result, TexCoordData &tcdata);
 

@@ -47,7 +47,7 @@ CData(const PlaneNode::CData &copy) :
 //               PlaneNode.
 ////////////////////////////////////////////////////////////////////
 INLINE void PlaneNode::
-set_plane(const Planef &plane) {
+set_plane(const LPlane &plane) {
   CDWriter cdata(_cycler);
   if (cdata->_plane != plane) {
     cdata->_plane = plane;
@@ -61,7 +61,7 @@ set_plane(const Planef &plane) {
 //       Access: Public
 //  Description: Returns the plane represented by the PlaneNode.
 ////////////////////////////////////////////////////////////////////
-INLINE const Planef &PlaneNode::
+INLINE const LPlane &PlaneNode::
 get_plane() const {
   CDReader cdata(_cycler);
   return cdata->_plane;
@@ -74,7 +74,7 @@ get_plane() const {
 //               the plane that is drawn if the PlaneNode is shown.
 ////////////////////////////////////////////////////////////////////
 INLINE void PlaneNode::
-set_viz_scale(float viz_scale) {
+set_viz_scale(PN_stdfloat viz_scale) {
   CDWriter cdata(_cycler);
   if (cdata->_viz_scale != viz_scale) {
     cdata->_viz_scale = viz_scale;
@@ -89,7 +89,7 @@ set_viz_scale(float viz_scale) {
 //  Description: Returns the size of the visual representation of
 //               the plane that is drawn if the PlaneNode is shown.
 ////////////////////////////////////////////////////////////////////
-INLINE float PlaneNode::
+INLINE PN_stdfloat PlaneNode::
 get_viz_scale() const {
   CDReader cdata(_cycler);
   return cdata->_viz_scale;

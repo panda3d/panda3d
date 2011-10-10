@@ -35,9 +35,9 @@ make_copy() const {
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-LPoint3f OmniBoundingVolume::
+LPoint3 OmniBoundingVolume::
 get_approx_center() const {
-  return LPoint3f(0.0f, 0.0f, 0.0f);
+  return LPoint3(0.0f, 0.0f, 0.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -46,7 +46,7 @@ get_approx_center() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void OmniBoundingVolume::
-xform(const LMatrix4f &) {
+xform(const LMatrix4 &) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -99,7 +99,7 @@ contains_other(const BoundingVolume *) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool OmniBoundingVolume::
-extend_by_point(const LPoint3f &) {
+extend_by_point(const LPoint3 &) {
   return true;
 }
 
@@ -139,7 +139,7 @@ extend_by_hexahedron(const BoundingHexahedron *) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool OmniBoundingVolume::
-around_points(const LPoint3f *, const LPoint3f *) {
+around_points(const LPoint3 *, const LPoint3 *) {
   return true;
 }
 
@@ -182,7 +182,7 @@ around_hexahedrons(const BoundingVolume **,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 int OmniBoundingVolume::
-contains_point(const LPoint3f &) const {
+contains_point(const LPoint3 &) const {
   return IF_possible | IF_some | IF_all;
 }
 
@@ -192,7 +192,7 @@ contains_point(const LPoint3f &) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 int OmniBoundingVolume::
-contains_lineseg(const LPoint3f &, const LPoint3f &) const {
+contains_lineseg(const LPoint3 &, const LPoint3 &) const {
   return IF_possible | IF_some | IF_all;
 }
 

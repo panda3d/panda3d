@@ -45,7 +45,7 @@ class Texture;
 class CharacterJoint;
 class EggVertex;
 
-typedef pmap<const CharacterJoint*, pvector<pair<EggVertex*,float> > > CharacterJointMap;
+typedef pmap<const CharacterJoint*, pvector<pair<EggVertex*,PN_stdfloat> > > CharacterJointMap;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BamToEgg
@@ -81,7 +81,7 @@ private:
   void convert_triangles(const GeomVertexData *vertex_data,
                          const GeomTriangles *primitive, 
                          const RenderState *net_state, 
-                         const LMatrix4f &net_mat, EggGroupNode *egg_parent,
+                         const LMatrix4 &net_mat, EggGroupNode *egg_parent,
                          CharacterJointMap *jointMap);
 
   void recurse_nodes(const WorkingNodePath &node_path, EggGroupNode *egg_parent,

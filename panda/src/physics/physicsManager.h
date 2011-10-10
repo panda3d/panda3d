@@ -64,15 +64,15 @@ PUBLISHED:
   INLINE void clear_angular_forces();
   INLINE void clear_physicals();
 
-  INLINE void set_viscosity(float viscosity);
-  INLINE float get_viscosity() const;
+  INLINE void set_viscosity(PN_stdfloat viscosity);
+  INLINE PN_stdfloat get_viscosity() const;
   
   void remove_physical(Physical *p);
   void remove_physical_node(PhysicalNode *p);
   void remove_linear_force(LinearForce *f);
   void remove_angular_force(AngularForce *f);
-  void do_physics(float dt);
-  void do_physics(float dt, Physical *p);
+  void do_physics(PN_stdfloat dt);
+  void do_physics(PN_stdfloat dt, Physical *p);
   void init_random_seed();
   
   virtual void output(ostream &out) const;
@@ -88,7 +88,7 @@ public:
   static ConfigVariableInt _random_seed;
 
 private:
-  float _viscosity;
+  PN_stdfloat _viscosity;
   PhysicalsVector _physicals;
   LinearForceVector _linear_forces;
   AngularForceVector _angular_forces;

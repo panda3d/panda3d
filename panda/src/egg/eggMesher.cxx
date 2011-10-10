@@ -341,7 +341,7 @@ get_prim(EggMesherStrip &strip) {
     // If we have egg_show_tstrips on, it means we need to color every
     // primitive according to which, if any, tristrip it is in.
 
-    Colorf color1, color2;
+    LColor color1, color2;
 
     if (egg_prim->is_of_type(EggTriangleStrip::get_class_type()) ||
         egg_prim->is_of_type(EggTriangleFan::get_class_type())) {
@@ -380,7 +380,7 @@ get_prim(EggMesherStrip &strip) {
     // because the entire primitive gets the same color.
 
     // Is this a quadsheet?
-    Colorf color1;
+    LColor color1;
     if (strip._row_id < 0) {
       // Yep!  Assign a new color, if it doesn't already have one.
       ColorSheetMap::iterator ci = _color_sheets.find(strip._row_id);
@@ -422,13 +422,13 @@ get_prim(EggMesherStrip &strip) {
     // green: fans and retesselated fan polygons.
 
     // We need a handful of entries.
-    Colorf white(0.85, 0.85, 0.85, 1.0);
-    Colorf dark_blue(0.0, 0.0, 0.75, 1.0);
-    Colorf light_blue(0.4, 0.4, 0.8, 1.0);
-    Colorf very_light_blue(0.6, 0.6, 1.0, 1.0);
-    Colorf green(0.2, 0.8, 0.2, 1.0);
+    LColor white(0.85, 0.85, 0.85, 1.0);
+    LColor dark_blue(0.0, 0.0, 0.75, 1.0);
+    LColor light_blue(0.4, 0.4, 0.8, 1.0);
+    LColor very_light_blue(0.6, 0.6, 1.0, 1.0);
+    LColor green(0.2, 0.8, 0.2, 1.0);
 
-    Colorf color1;
+    LColor color1;
     if (strip._origin == EggMesherStrip::MO_user) {
       color1 = white;
     } else if (strip._origin == EggMesherStrip::MO_firstquad) {
@@ -449,7 +449,7 @@ get_prim(EggMesherStrip &strip) {
         make_random_color(color1);
         // Make it a shade of red.
         if (color1[0] < color1[1]) {
-          float t = color1[0];
+          PN_stdfloat t = color1[0];
           color1[0] = color1[1];
           color1[1] = t;
         }
@@ -460,7 +460,7 @@ get_prim(EggMesherStrip &strip) {
         make_random_color(color1);
         // Make it a shade of green.
         if (color1[0] > color1[1]) {
-          float t = color1[0];
+          PN_stdfloat t = color1[0];
           color1[0] = color1[1];
           color1[1] = t;
         }
@@ -844,9 +844,9 @@ mesh_list(Strips &strips) {
 //  Description: Chooses a reasonable random color.
 ////////////////////////////////////////////////////////////////////
 void EggMesher::
-make_random_color(Colorf &color) {
-  LVector3f rgb;
-  float len;
+make_random_color(LColor &color) {
+  LVector3 rgb;
+  PN_stdfloat len;
   do {
     for (int i = 0; i < 3; i++) {
       rgb[i] = (double)rand() / (double)RAND_MAX;

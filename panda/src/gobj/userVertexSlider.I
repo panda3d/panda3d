@@ -19,7 +19,7 @@
 //  Description: Stores the indicated slider value.
 ////////////////////////////////////////////////////////////////////
 INLINE void UserVertexSlider::
-set_slider(float slider) {
+set_slider(PN_stdfloat slider) {
   Thread *current_thread = Thread::get_current_thread();
   CDWriter cdata(_cycler, true, current_thread);
   cdata->_slider = slider;

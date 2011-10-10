@@ -419,15 +419,17 @@ reset() {
   _supports_vertex_blend = has_extension("GL_ARB_vertex_blend");
 
   if (_supports_vertex_blend) {
-    _glWeightPointerARB = (PFNGLWEIGHTPOINTERARBPROC)
+    _glWeightPointer = (PFNGLWEIGHTPOINTERARBPROC)
       get_extension_func(GLPREFIX_QUOTED, "WeightPointerARB");
-    _glVertexBlendARB = (PFNGLVERTEXBLENDARBPROC)
+    _glVertexBlend = (PFNGLVERTEXBLENDARBPROC)
       get_extension_func(GLPREFIX_QUOTED, "VertexBlendARB");
-    _glWeightfvARB = (PFNGLWEIGHTFVARBPROC)
+    _glWeightfv = (PFNGLWEIGHTFVARBPROC)
       get_extension_func(GLPREFIX_QUOTED, "WeightfvARB");
+    _glWeightdv = (PFNGLWEIGHTDVARBPROC)
+      get_extension_func(GLPREFIX_QUOTED, "WeightdvARB");
 
-    if (_glWeightPointerARB == NULL || _glVertexBlendARB == NULL ||
-        _glWeightfvARB == NULL) {
+    if (_glWeightPointer == NULL || _glVertexBlend == NULL ||
+        GLfv(_glWeight) == NULL) {
       GLCAT.warning()
         << "Vertex blending advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
       _supports_vertex_blend = false;
@@ -786,6 +788,14 @@ reset() {
       get_extension_func(GLPREFIX_QUOTED, "MultiTexCoord3f");
     _glMultiTexCoord4f = (PFNGLMULTITEXCOORD4FPROC)
       get_extension_func(GLPREFIX_QUOTED, "MultiTexCoord4f");
+    _glMultiTexCoord1d = (PFNGLMULTITEXCOORD1DPROC)
+      get_extension_func(GLPREFIX_QUOTED, "MultiTexCoord1d");
+    _glMultiTexCoord2d = (PFNGLMULTITEXCOORD2DPROC)
+      get_extension_func(GLPREFIX_QUOTED, "MultiTexCoord2d");
+    _glMultiTexCoord3d = (PFNGLMULTITEXCOORD3DPROC)
+      get_extension_func(GLPREFIX_QUOTED, "MultiTexCoord3d");
+    _glMultiTexCoord4d = (PFNGLMULTITEXCOORD4DPROC)
+      get_extension_func(GLPREFIX_QUOTED, "MultiTexCoord4d");
 
   } else if (has_extension("GL_ARB_multitexture")) {
     _supports_multitexture = true;
@@ -802,13 +812,21 @@ reset() {
       get_extension_func(GLPREFIX_QUOTED, "MultiTexCoord3fARB");
     _glMultiTexCoord4f = (PFNGLMULTITEXCOORD4FPROC)
       get_extension_func(GLPREFIX_QUOTED, "MultiTexCoord4fARB");
+    _glMultiTexCoord1d = (PFNGLMULTITEXCOORD1DPROC)
+      get_extension_func(GLPREFIX_QUOTED, "MultiTexCoord1dARB");
+    _glMultiTexCoord2d = (PFNGLMULTITEXCOORD2DPROC)
+      get_extension_func(GLPREFIX_QUOTED, "MultiTexCoord2dARB");
+    _glMultiTexCoord3d = (PFNGLMULTITEXCOORD3DPROC)
+      get_extension_func(GLPREFIX_QUOTED, "MultiTexCoord3dARB");
+    _glMultiTexCoord4d = (PFNGLMULTITEXCOORD4DPROC)
+      get_extension_func(GLPREFIX_QUOTED, "MultiTexCoord4dARB");
   }
 
   if (_supports_multitexture) {
     if (_glActiveTexture == NULL || _glClientActiveTexture == NULL
 #ifdef SUPPORT_IMMEDIATE_MODE
-        || _glMultiTexCoord1f == NULL || _glMultiTexCoord2f == NULL
-        || _glMultiTexCoord3f == NULL || _glMultiTexCoord4f == NULL
+        || GLf(_glMultiTexCoord1) == NULL || GLf(_glMultiTexCoord2) == NULL
+        || GLf(_glMultiTexCoord3) == NULL || GLf(_glMultiTexCoord4) == NULL
 #endif
         ) {
       GLCAT.warning()
@@ -972,6 +990,8 @@ reset() {
        get_extension_func(GLPREFIX_QUOTED, "UseProgram");
     _glUniform4f = (PFNGLUNIFORM4FPROC)
        get_extension_func(GLPREFIX_QUOTED, "Uniform4f");
+    _glUniform4d = (PFNGLUNIFORM4DPROC)
+       get_extension_func(GLPREFIX_QUOTED, "Uniform4d");
     _glUniform1i = (PFNGLUNIFORM1IPROC)
        get_extension_func(GLPREFIX_QUOTED, "Uniform1i");
     _glUniform1fv = (PFNGLUNIFORM1FVPROC)
@@ -982,8 +1002,18 @@ reset() {
        get_extension_func(GLPREFIX_QUOTED, "Uniform3fv");
     _glUniform4fv = (PFNGLUNIFORM4FVPROC)
        get_extension_func(GLPREFIX_QUOTED, "Uniform4fv");
+    _glUniform1dv = (PFNGLUNIFORM1DVPROC)
+       get_extension_func(GLPREFIX_QUOTED, "Uniform1dv");
+    _glUniform2dv = (PFNGLUNIFORM2DVPROC)
+       get_extension_func(GLPREFIX_QUOTED, "Uniform2dv");
+    _glUniform3dv = (PFNGLUNIFORM3DVPROC)
+       get_extension_func(GLPREFIX_QUOTED, "Uniform3dv");
+    _glUniform4dv = (PFNGLUNIFORM4DVPROC)
+       get_extension_func(GLPREFIX_QUOTED, "Uniform4dv");
     _glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC)
        get_extension_func(GLPREFIX_QUOTED, "UniformMatrix4fv");
+    _glUniformMatrix4dv = (PFNGLUNIFORMMATRIX4DVPROC)
+       get_extension_func(GLPREFIX_QUOTED, "UniformMatrix4dv");
     _glValidateProgram = (PFNGLVALIDATEPROGRAMPROC)
        get_extension_func(GLPREFIX_QUOTED, "ValidateProgram");
     _glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)
@@ -1023,12 +1053,18 @@ reset() {
   _glShaderSource = glShaderSource;
   _glUseProgram = glUseProgram;
   _glUniform4f = glUniform4f;
+  _glUniform4d = NULL;
   _glUniform1i = glUniform1i;
   _glUniform1fv = glUniform1fv;
   _glUniform2fv = glUniform2fv;
   _glUniform3fv = glUniform3fv;
   _glUniform4fv = glUniform4fv;
+  _glUniform1dv = NULL;
+  _glUniform2dv = NULL;
+  _glUniform3dv = NULL;
+  _glUniform4dv = NULL;
   _glUniformMatrix4fv = glUniformMatrix4fv;
+  _glUniformMatrix4dv = NULL;
   _glValidateProgram = glValidateProgram;
   _glVertexAttribPointer = glVertexAttribPointer;
 
@@ -1501,7 +1537,7 @@ reset() {
   if (has_extension("GL_EXT_texture_filter_anisotropic")) {
     GLfloat max_anisotropy;
     GLP(GetFloatv)(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &max_anisotropy);
-    _max_anisotropy = (float)max_anisotropy;
+    _max_anisotropy = (PN_stdfloat)max_anisotropy;
     _supports_anisotropy = true;
   } 
 
@@ -1819,7 +1855,7 @@ clear(DrawableRegion *clearable) {
     int layerid = GraphicsOutput::RTP_aux_rgba_0 + i;
     int layerbit = RenderBuffer::T_aux_rgba_0 << i;
     if (clearable->get_clear_active(layerid)) {
-      Colorf v = clearable->get_clear_value(layerid);
+      LColor v = clearable->get_clear_value(layerid);
       GLP(ClearColor)(v[0],v[1],v[2],v[3]);
       set_draw_buffer(layerbit);
       GLP(Clear)(GL_COLOR_BUFFER_BIT);
@@ -1829,7 +1865,7 @@ clear(DrawableRegion *clearable) {
     int layerid = GraphicsOutput::RTP_aux_hrgba_0 + i;
     int layerbit = RenderBuffer::T_aux_hrgba_0 << i;
     if (clearable->get_clear_active(layerid)) {
-      Colorf v = clearable->get_clear_value(layerid);
+      LColor v = clearable->get_clear_value(layerid);
       GLP(ClearColor)(v[0],v[1],v[2],v[3]);
       set_draw_buffer(layerbit);
       GLP(Clear)(GL_COLOR_BUFFER_BIT);
@@ -1839,7 +1875,7 @@ clear(DrawableRegion *clearable) {
     int layerid = GraphicsOutput::RTP_aux_float_0 + i;
     int layerbit = RenderBuffer::T_aux_float_0 << i;
     if (clearable->get_clear_active(layerid)) {
-      Colorf v = clearable->get_clear_value(layerid);
+      LColor v = clearable->get_clear_value(layerid);
       GLP(ClearColor)(v[0],v[1],v[2],v[3]);
       set_draw_buffer(layerbit);
       GLP(Clear)(GL_COLOR_BUFFER_BIT);
@@ -1847,7 +1883,7 @@ clear(DrawableRegion *clearable) {
   }
 
   if (clearable->get_clear_color_active()) {
-    Colorf v = clearable->get_clear_color();
+    LColor v = clearable->get_clear_color();
     GLP(ClearColor)(v[0],v[1],v[2],v[3]);
     if (CLP(color_mask)) {
       GLP(ColorMask)(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
@@ -1990,14 +2026,14 @@ calc_projection_mat(const Lens *lens) {
   // matrix, and store the conversion to our coordinate system of
   // choice in the modelview matrix.
 
-  LMatrix4f result =
-    LMatrix4f::convert_mat(CS_yup_right, lens->get_coordinate_system()) *
+  LMatrix4 result =
+    LMatrix4::convert_mat(CS_yup_right, lens->get_coordinate_system()) *
     lens->get_projection_mat(_current_stereo_channel);
 
   if (_scene_setup->get_inverted()) {
     // If the scene is supposed to be inverted, then invert the
     // projection matrix.
-    result *= LMatrix4f::scale_mat(1.0f, -1.0f, 1.0f);
+    result *= LMatrix4::scale_mat(1.0f, -1.0f, 1.0f);
   }
   
   return TransformState::make_mat(result);
@@ -2023,7 +2059,7 @@ prepare_lens() {
   }
 #ifndef OPENGLES_2
   GLP(MatrixMode)(GL_PROJECTION);
-  GLP(LoadMatrixf)(_projection_mat->get_mat().get_data());
+  GLPf(LoadMatrix)(_projection_mat->get_mat().get_data());
 #endif
   report_my_gl_errors();
 
@@ -2291,7 +2327,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     // Set up the transform matrices for vertex blending.
     nassertr(_supports_vertex_blend, false);
     GLP(Enable)(GL_VERTEX_BLEND_ARB);
-    _glVertexBlendARB(animation.get_num_transforms());
+    _glVertexBlend(animation.get_num_transforms());
 
     const TransformTable *table = _data_reader->get_transform_table();
     if (table != (TransformTable *)NULL) {
@@ -2306,10 +2342,10 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
         GLP(MatrixMode)(GL_MATRIX_PALETTE_ARB);
 
         for (int i = 0; i < table->get_num_transforms(); ++i) {
-          LMatrix4f mat;
+          LMatrix4 mat;
           table->get_transform(i)->mult_matrix(mat, _internal_transform->get_mat());
           _glCurrentPaletteMatrix(i);
-          GLP(LoadMatrixf)(mat.get_data());
+          GLPf(LoadMatrix)(mat.get_data());
         }
 
         // Presumably loading the matrix palette does not step on the
@@ -2326,24 +2362,24 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
         // GL_MODELVIEW0 and 1 are different than the rest.
         int i = 0;
         if (i < table->get_num_transforms()) {
-          LMatrix4f mat;
+          LMatrix4 mat;
           table->get_transform(i)->mult_matrix(mat, _internal_transform->get_mat());
           GLP(MatrixMode)(GL_MODELVIEW0_ARB);
-          GLP(LoadMatrixf)(mat.get_data());
+          GLPf(LoadMatrix)(mat.get_data());
           ++i;
         }
         if (i < table->get_num_transforms()) {
-          LMatrix4f mat;
+          LMatrix4 mat;
           table->get_transform(i)->mult_matrix(mat, _internal_transform->get_mat());
           GLP(MatrixMode)(GL_MODELVIEW1_ARB);
-          GLP(LoadMatrixf)(mat.get_data());
+          GLPf(LoadMatrix)(mat.get_data());
           ++i;
         }
         while (i < table->get_num_transforms()) {
-          LMatrix4f mat;
+          LMatrix4 mat;
           table->get_transform(i)->mult_matrix(mat, _internal_transform->get_mat());
           GLP(MatrixMode)(GL_MODELVIEW2_ARB + i - 2);
-          GLP(LoadMatrixf)(mat.get_data());
+          GLPf(LoadMatrix)(mat.get_data());
           ++i;
         }
 
@@ -2366,7 +2402,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
     if (_transform_stale) {
       GLP(MatrixMode)(GL_MODELVIEW);
-      GLP(LoadMatrixf)(_internal_transform->get_mat().get_data());
+      GLPf(LoadMatrix)(_internal_transform->get_mat().get_data());
     }
   }
 #endif
@@ -2519,18 +2555,18 @@ update_standard_vertex_arrays(bool force) {
     _sender.clear();
 
     _sender.add_column(_data_reader, InternalName::get_normal(),
-                       NULL, NULL, GLP(Normal3f), NULL);
+                       NULL, NULL, GLPf(Normal3), NULL);
 #ifndef NDEBUG
     if (_show_texture_usage) {
       // In show_texture_usage mode, all colors are white, so as not
       // to contaminate the texture color.
-      GLP(Color4f)(1.0f, 1.0f, 1.0f, 1.0f);
+      GLPf(Color4)(1.0f, 1.0f, 1.0f, 1.0f);
     } else
 #endif // NDEBUG
       if (!_sender.add_column(_data_reader, InternalName::get_color(),
-                              NULL, NULL, GLP(Color3f), GLP(Color4f))) {
+                              NULL, NULL, GLPf(Color3), GLPf(Color4))) {
         // If we didn't have a color column, the item color is white.
-        GLP(Color4f)(1.0f, 1.0f, 1.0f, 1.0f);
+        GLPf(Color4)(1.0f, 1.0f, 1.0f, 1.0f);
       }
 
     // Now set up each of the active texture coordinate stages--or at
@@ -2548,14 +2584,14 @@ update_standard_vertex_arrays(bool force) {
           // Use the original functions for stage 0, in case we don't
           // support multitexture.
           _sender.add_column(_data_reader, name,
-                             GLP(TexCoord1f), GLP(TexCoord2f),
-                             GLP(TexCoord3f), GLP(TexCoord4f));
+                             GLPf(TexCoord1), GLPf(TexCoord2),
+                             GLPf(TexCoord3), GLPf(TexCoord4));
 
         } else {
           // Other stages require the multitexture functions.
           _sender.add_texcoord_column(_data_reader, name, stage_index,
-                                      _glMultiTexCoord1f, _glMultiTexCoord2f,
-                                      _glMultiTexCoord3f, _glMultiTexCoord4f);
+                                      GLf(_glMultiTexCoord1), GLf(_glMultiTexCoord2),
+                                      GLf(_glMultiTexCoord3), GLf(_glMultiTexCoord4));
         }
       }
 
@@ -2574,7 +2610,7 @@ update_standard_vertex_arrays(bool force) {
       if (hardware_animation) {
         // Issue the weights and/or transform indices for vertex blending.
         _sender.add_vector_column(_data_reader, InternalName::get_transform_weight(),
-                                  _glWeightfvARB);
+                                  GLfv(_glWeight));
 
         if (animation.get_indexed_transforms()) {
           // Issue the matrix palette indices.
@@ -2587,7 +2623,7 @@ update_standard_vertex_arrays(bool force) {
     // We must add vertex last, because glVertex3f() is the key
     // function call that actually issues the vertex.
     _sender.add_column(_data_reader, InternalName::get_vertex(),
-                       NULL, GLP(Vertex2f), GLP(Vertex3f), GLP(Vertex4f));
+                       NULL, GLPf(Vertex2), GLPf(Vertex3), GLPf(Vertex4));
 
   } else
 #endif  // SUPPORT_IMMEDIATE_MODE
@@ -2617,7 +2653,7 @@ update_standard_vertex_arrays(bool force) {
       // In show_texture_usage mode, all colors are white, so as not
       // to contaminate the texture color.
       GLP(DisableClientState)(GL_COLOR_ARRAY);
-      GLP(Color4f)(1.0f, 1.0f, 1.0f, 1.0f);
+      GLPf(Color4)(1.0f, 1.0f, 1.0f, 1.0f);
     } else
 #endif // NDEBUG
       if (_data_reader->get_color_info(array_reader, num_values, numeric_type,
@@ -2634,7 +2670,7 @@ update_standard_vertex_arrays(bool force) {
         
         // Since we don't have per-vertex color, the implicit color is
         // white.
-        GLP(Color4f)(1.0f, 1.0f, 1.0f, 1.0f);
+        GLPf(Color4)(1.0f, 1.0f, 1.0f, 1.0f);
       }
     
     // Now set up each of the active texture coordinate stages--or at
@@ -2691,8 +2727,8 @@ update_standard_vertex_arrays(bool force) {
           if (!setup_array_data(client_pointer, array_reader, force)) {
             return false;
           }
-          _glWeightPointerARB(num_values, get_numeric_type(numeric_type),
-                              stride, client_pointer + start);
+          _glWeightPointer(num_values, get_numeric_type(numeric_type),
+                           stride, client_pointer + start);
           GLP(EnableClientState)(GL_WEIGHT_ARRAY_ARB);
         } else {
           GLP(DisableClientState)(GL_WEIGHT_ARRAY_ARB);
@@ -2788,7 +2824,7 @@ disable_standard_vertex_arrays()
 
   GLP(DisableClientState)(GL_NORMAL_ARRAY);
   GLP(DisableClientState)(GL_COLOR_ARRAY);
-  GLP(Color4f)(1.0f, 1.0f, 1.0f, 1.0f);
+  GLPf(Color4)(1.0f, 1.0f, 1.0f, 1.0f);
   report_my_gl_errors();
 
   for (int stage_index=0; stage_index < _last_max_stage_index; stage_index++) {
@@ -3258,7 +3294,7 @@ end_draw_primitives() {
 #ifndef OPENGLES_2
   if (_transform_stale) {
     GLP(MatrixMode)(GL_MODELVIEW);
-    GLP(LoadMatrixf)(_internal_transform->get_mat().get_data());
+    GLPf(LoadMatrix)(_internal_transform->get_mat().get_data());
   }
 
   if (_data_reader->is_vertex_transformed()) {
@@ -4299,7 +4335,7 @@ apply_fog(Fog *fog) {
   GLP(Fogf)(GL_FOG_MODE, get_fog_mode_type(fmode));
 
   if (fmode == Fog::M_linear) {
-    float onset, opaque;
+    PN_stdfloat onset, opaque;
     fog->get_linear_range(onset, opaque);
     GLP(Fogf)(GL_FOG_START, onset);
     GLP(Fogf)(GL_FOG_END, opaque);
@@ -4309,7 +4345,7 @@ apply_fog(Fog *fog) {
     GLP(Fogf)(GL_FOG_DENSITY, fog->get_exp_density());
   }
 
-  GLP(Fogfv)(GL_FOG_COLOR, fog->get_color().get_data());
+  call_glFogfv(GL_FOG_COLOR, fog->get_color());
   report_my_gl_errors();
 #endif
 }
@@ -4334,7 +4370,7 @@ do_issue_transform() {
   DO_PSTATS_STUFF(_transform_state_pcollector.add_level(1));
 #ifndef OPENGLES_2
   GLP(MatrixMode)(GL_MODELVIEW);
-  GLP(LoadMatrixf)(transform->get_mat().get_data());
+  GLPf(LoadMatrix)(transform->get_mat().get_data());
 #endif
   _transform_stale = false;
 
@@ -4765,24 +4801,24 @@ do_issue_material() {
   static const GLenum face = GL_FRONT_AND_BACK;
 #endif  // OPENGLES
 
-  GLP(Materialfv)(face, GL_SPECULAR, material->get_specular().get_data());
-  GLP(Materialfv)(face, GL_EMISSION, material->get_emission().get_data());
-  GLP(Materialf)(face, GL_SHININESS, min(material->get_shininess(), 128.0f));
+  call_glMaterialfv(face, GL_SPECULAR, material->get_specular());
+  call_glMaterialfv(face, GL_EMISSION, material->get_emission());
+  GLP(Materialf)(face, GL_SHININESS, min(material->get_shininess(), (PN_stdfloat)128.0));
 
   if (material->has_ambient() && material->has_diffuse()) {
     // The material has both an ambient and diffuse specified.  This
     // means we do not need glMaterialColor().
     GLP(Disable)(GL_COLOR_MATERIAL);
-    GLP(Materialfv)(face, GL_AMBIENT, material->get_ambient().get_data());
-    GLP(Materialfv)(face, GL_DIFFUSE, material->get_diffuse().get_data());
+    call_glMaterialfv(face, GL_AMBIENT, material->get_ambient());
+    call_glMaterialfv(face, GL_DIFFUSE, material->get_diffuse());
 
   } else if (material->has_ambient()) {
     // The material specifies an ambient, but not a diffuse component.
     // The diffuse component comes from the object's color.
-    GLP(Materialfv)(face, GL_AMBIENT, material->get_ambient().get_data());
+    call_glMaterialfv(face, GL_AMBIENT, material->get_ambient());
     if (has_material_force_color) {
       GLP(Disable)(GL_COLOR_MATERIAL);
-      GLP(Materialfv)(face, GL_DIFFUSE, _material_force_color.get_data());
+      call_glMaterialfv(face, GL_DIFFUSE, _material_force_color);
     } else {
 #ifndef OPENGLES
       GLP(ColorMaterial)(face, GL_DIFFUSE);
@@ -4793,10 +4829,10 @@ do_issue_material() {
   } else if (material->has_diffuse()) {
     // The material specifies a diffuse, but not an ambient component.
     // The ambient component comes from the object's color.
-    GLP(Materialfv)(face, GL_DIFFUSE, material->get_diffuse().get_data());
+    call_glMaterialfv(face, GL_DIFFUSE, material->get_diffuse());
     if (has_material_force_color) {
       GLP(Disable)(GL_COLOR_MATERIAL);
-      GLP(Materialfv)(face, GL_AMBIENT, _material_force_color.get_data());
+      call_glMaterialfv(face, GL_AMBIENT, _material_force_color);
     } else {
 #ifndef OPENGLES
       GLP(ColorMaterial)(face, GL_AMBIENT);
@@ -4809,8 +4845,8 @@ do_issue_material() {
     // component.  Both components come from the object's color.
     if (has_material_force_color) {
       GLP(Disable)(GL_COLOR_MATERIAL);
-      GLP(Materialfv)(face, GL_AMBIENT, _material_force_color.get_data());
-      GLP(Materialfv)(face, GL_DIFFUSE, _material_force_color.get_data());
+      call_glMaterialfv(face, GL_AMBIENT, _material_force_color);
+      call_glMaterialfv(face, GL_DIFFUSE, _material_force_color);
     } else {
 #ifndef OPENGLES
       GLP(ColorMaterial)(face, GL_AMBIENT_AND_DIFFUSE);
@@ -4892,7 +4928,7 @@ do_issue_blending() {
                     _current_color_scale[2], _current_color_scale[3]);
 
     } else {
-      Colorf c = color_blend->get_color();
+      LColor c = color_blend->get_color();
       _glBlendColor(c[0], c[1], c[2], c[3]);
     }
     return;
@@ -4973,20 +5009,19 @@ bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
   //  static PStatCollector _draw_set_state_light_bind_point_pcollector("Draw:Set State:Light:Bind:Point");
   //  PStatTimer timer(_draw_set_state_light_bind_point_pcollector);
   
-  float light_color[4];
   GLenum id = get_light_id(light_id);
-  static const Colorf black(0.0f, 0.0f, 0.0f, 1.0f);
-  GLP(Lightfv)(id, GL_AMBIENT, black.get_data());
-  GLP(Lightfv)(id, GL_DIFFUSE, get_light_color(light_color, light_obj));
-  GLP(Lightfv)(id, GL_SPECULAR, light_obj->get_specular_color().get_data());
+  static const LColor black(0.0f, 0.0f, 0.0f, 1.0f);
+  call_glLightfv(id, GL_AMBIENT, black);
+  call_glLightfv(id, GL_DIFFUSE, get_light_color(light_obj));
+  call_glLightfv(id, GL_SPECULAR, light_obj->get_specular_color());
 
   // Position needs to specify x, y, z, and w
   // w == 1 implies non-infinite position
   CPT(TransformState) transform = light.get_transform(_scene_setup->get_scene_root().get_parent());
-  LPoint3f pos = light_obj->get_point() * transform->get_mat();
+  LPoint3 pos = light_obj->get_point() * transform->get_mat();
 
-  LPoint4f fpos(pos[0], pos[1], pos[2], 1.0f);
-  GLP(Lightfv)(id, GL_POSITION, fpos.get_data());
+  LPoint4 fpos(pos[0], pos[1], pos[2], 1.0f);
+  call_glLightfv(id, GL_POSITION, fpos);
 
   // GL_SPOT_DIRECTION is not significant when cutoff == 180
 
@@ -4996,7 +5031,7 @@ bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
   // Cutoff == 180 means uniform point light source
   GLP(Lightf)(id, GL_SPOT_CUTOFF, 180.0f);
 
-  const LVecBase3f &att = light_obj->get_attenuation();
+  const LVecBase3 &att = light_obj->get_attenuation();
   GLP(Lightf)(id, GL_CONSTANT_ATTENUATION, att[0]);
   GLP(Lightf)(id, GL_LINEAR_ATTENUATION, att[1]);
   GLP(Lightf)(id, GL_QUADRATIC_ATTENUATION, att[2]);
@@ -5024,20 +5059,19 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
   if (lookup.second) {
     // The light was not computed yet this frame.  Compute it now.
     CPT(TransformState) transform = light.get_transform(_scene_setup->get_scene_root().get_parent());
-    LVector3f dir = light_obj->get_direction() * transform->get_mat();
+    LVector3 dir = light_obj->get_direction() * transform->get_mat();
     fdata._neg_dir.set(-dir[0], -dir[1], -dir[2], 0);
   }
 
-  float light_color[4];
   GLenum id = get_light_id( light_id );
-  static const Colorf black(0.0f, 0.0f, 0.0f, 1.0f);
-  GLP(Lightfv)(id, GL_AMBIENT, black.get_data());
-  GLP(Lightfv)(id, GL_DIFFUSE, get_light_color(light_color, light_obj));
-  GLP(Lightfv)(id, GL_SPECULAR, light_obj->get_specular_color().get_data());
+  static const LColor black(0.0f, 0.0f, 0.0f, 1.0f);
+  call_glLightfv(id, GL_AMBIENT, black);
+  call_glLightfv(id, GL_DIFFUSE, get_light_color(light_obj));
+  call_glLightfv(id, GL_SPECULAR, light_obj->get_specular_color());
 
   // Position needs to specify x, y, z, and w.
   // w == 0 implies light is at infinity
-  GLP(Lightfv)(id, GL_POSITION, fdata._neg_dir.get_data());
+  call_glLightfv(id, GL_POSITION, fdata._neg_dir);
 
   // GL_SPOT_DIRECTION is not significant when cutoff == 180
   // In this case, position x, y, z specifies direction
@@ -5075,28 +5109,27 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
   Lens *lens = light_obj->get_lens();
   nassertv(lens != (Lens *)NULL);
 
-  float light_color[4];
   GLenum id = get_light_id(light_id);
-  static const Colorf black(0.0f, 0.0f, 0.0f, 1.0f);
-  GLP(Lightfv)(id, GL_AMBIENT, black.get_data());
-  GLP(Lightfv)(id, GL_DIFFUSE, get_light_color(light_color, light_obj));
-  GLP(Lightfv)(id, GL_SPECULAR, light_obj->get_specular_color().get_data());
+  static const LColor black(0.0f, 0.0f, 0.0f, 1.0f);
+  call_glLightfv(id, GL_AMBIENT, black);
+  call_glLightfv(id, GL_DIFFUSE, get_light_color(light_obj));
+  call_glLightfv(id, GL_SPECULAR, light_obj->get_specular_color());
 
   // Position needs to specify x, y, z, and w
   // w == 1 implies non-infinite position
   CPT(TransformState) transform = light.get_transform(_scene_setup->get_scene_root().get_parent());
-  const LMatrix4f &light_mat = transform->get_mat();
-  LPoint3f pos = lens->get_nodal_point() * light_mat;
-  LVector3f dir = lens->get_view_vector() * light_mat;
+  const LMatrix4 &light_mat = transform->get_mat();
+  LPoint3 pos = lens->get_nodal_point() * light_mat;
+  LVector3 dir = lens->get_view_vector() * light_mat;
 
-  LPoint4f fpos(pos[0], pos[1], pos[2], 1.0f);
-  GLP(Lightfv)(id, GL_POSITION, fpos.get_data());
-  GLP(Lightfv)(id, GL_SPOT_DIRECTION, dir.get_data());
+  LPoint4 fpos(pos[0], pos[1], pos[2], 1.0f);
+  call_glLightfv(id, GL_POSITION, fpos);
+  call_glLightfv(id, GL_SPOT_DIRECTION, dir);
 
   GLP(Lightf)(id, GL_SPOT_EXPONENT, light_obj->get_exponent());
   GLP(Lightf)(id, GL_SPOT_CUTOFF, lens->get_hfov() * 0.5f);
 
-  const LVecBase3f &att = light_obj->get_attenuation();
+  const LVecBase3 &att = light_obj->get_attenuation();
   GLP(Lightf)(id, GL_CONSTANT_ATTENUATION, att[0]);
   GLP(Lightf)(id, GL_LINEAR_ATTENUATION, att[1]);
   GLP(Lightf)(id, GL_QUADRATIC_ATTENUATION, att[2]);
@@ -5466,9 +5499,9 @@ get_extension_func(const char *prefix, const char *name) {
     { "CompressedTexSubImage3D", (void *)&GLP(CompressedTexSubImage3D) },
     { "GetCompressedTexImage", (void *)&GLP(GetCompressedTexImage) },
     { "MultiTexCoord1f", (void *)&GLP(MultiTexCoord1f) },
-    { "MultiTexCoord2f", (void *)&GLP(MultiTexCoord2f) },
-    { "MultiTexCoord3f", (void *)&GLP(MultiTexCoord3f) },
-    { "MultiTexCoord4f", (void *)&GLP(MultiTexCoord4f) },
+    { "MultiTexCoord2", (void *)&GLP(MultiTexCoord2) },
+    { "MultiTexCoord3", (void *)&GLP(MultiTexCoord3) },
+    { "MultiTexCoord4", (void *)&GLP(MultiTexCoord4) },
 #endif
 #ifdef EXPECT_GL_VERSION_1_4
     { "PointParameterfv", (void *)&GLP(PointParameterfv) },
@@ -6795,33 +6828,27 @@ print_gfx_visual() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::get_light_color
 //       Access: Public
-//  Description: Fills the array of four floats with the values that
-//               that should be issued as the light's color, as scaled
-//               by the current value of _light_color_scale, in the
-//               case of color_scale_via_lighting.  Returns
-//               light_color.
+//  Description: Returns the value that that should be issued as the
+//               light's color, as scaled by the current value of
+//               _light_color_scale, in the case of
+//               color_scale_via_lighting.
 ////////////////////////////////////////////////////////////////////
-float *CLP(GraphicsStateGuardian)::
-get_light_color(float light_color[4], Light *light) const {
+LVecBase4 CLP(GraphicsStateGuardian)::
+get_light_color(Light *light) const {
 #ifndef NDEBUG
   if (_show_texture_usage) {
     // In show_texture_usage mode, all lights are white, so as not to
     // contaminate the texture color.
-    light_color[0] = 1.0f;
-    light_color[1] = 1.0f;
-    light_color[2] = 1.0f;
-    light_color[3] = 1.0f;
-    return light_color;
+    return LVecBase4(1.0, 1.0, 1.0, 1.0);
   }
 #endif  // NDEBUG
 
-  const Colorf &c = light->get_color();
+  const LColor &c = light->get_color();
 
-  light_color[0] = c[0] * _light_color_scale[0];
-  light_color[1] = c[1] * _light_color_scale[1];
-  light_color[2] = c[2] * _light_color_scale[2];
-  light_color[3] = c[3] * _light_color_scale[3];
-
+  LVecBase4 light_color(c[0] * _light_color_scale[0],
+                        c[1] * _light_color_scale[1],
+                        c[2] * _light_color_scale[2],
+                        c[3] * _light_color_scale[3]);
   return light_color;
 }
 
@@ -6871,18 +6898,16 @@ enable_lighting(bool enable) {
 //               all other lights have been enabled or disabled.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-set_ambient_light(const Colorf &color) {
-#ifndef OPENGLES_2
+set_ambient_light(const LColor &color) {
   //  static PStatCollector _draw_set_state_light_ambient_pcollector("Draw:Set State:Light:Ambient");
   //  PStatTimer timer(_draw_set_state_light_ambient_pcollector);
   
-  Colorf c = color;
+  LColor c = color;
   c.set(c[0] * _light_color_scale[0],
         c[1] * _light_color_scale[1],
         c[2] * _light_color_scale[2],
         c[3] * _light_color_scale[3]);
-  GLP(LightModelfv)(GL_LIGHT_MODEL_AMBIENT, c.get_data());
-#endif
+  call_glLightModelfv(GL_LIGHT_MODEL_AMBIENT, c);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -6934,7 +6959,7 @@ begin_bind_lights() {
 
   GLP(MatrixMode)(GL_MODELVIEW);
   GLP(PushMatrix)();
-  GLP(LoadMatrixf)(render_transform->get_mat().get_data());
+  GLPf(LoadMatrix)(render_transform->get_mat().get_data());
 #endif
 }
 
@@ -7002,7 +7027,7 @@ begin_bind_clip_planes() {
 
   GLP(MatrixMode)(GL_MODELVIEW);
   GLP(PushMatrix)();
-  GLP(LoadMatrixf)(render_transform->get_mat().get_data());
+  GLPf(LoadMatrix)(render_transform->get_mat().get_data());
 #endif
 }
 
@@ -7021,12 +7046,13 @@ bind_clip_plane(const NodePath &plane, int plane_id) {
   CPT(TransformState) transform = plane.get_transform(_scene_setup->get_scene_root().get_parent());
   const PlaneNode *plane_node;
   DCAST_INTO_V(plane_node, plane.node());
-  Planef xformed_plane = plane_node->get_plane() * transform->get_mat();
+  LPlane xformed_plane = plane_node->get_plane() * transform->get_mat();
 
 #ifndef OPENGLES_2 // OpenGL ES 2.0 doesn't support clip planes at all.
 #ifdef OPENGLES
   // OpenGL ES uses a single-precision call.
-  GLP(ClipPlanef)(id, xformed_plane.get_data());
+  Planef single_plane(LCAST(single, xformed_plane));
+  GLP(ClipPlanef)(id, single_plane.get_data());
 #else
   // Mainline OpenGL uses a double-precision call.
   Planed double_plane(LCAST(double, xformed_plane));
@@ -7553,15 +7579,15 @@ update_standard_texture_bindings() {
     }
     
     if (stage->involves_color_scale() && _color_scale_enabled) {
-      Colorf color = stage->get_color();
+      LColor color = stage->get_color();
       color.set(color[0] * _current_color_scale[0],
                 color[1] * _current_color_scale[1],
                 color[2] * _current_color_scale[2],
                 color[3] * _current_color_scale[3]);
       _texture_involves_color_scale = true;
-      GLP(TexEnvfv)(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, color.get_data());
+      call_glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, color);
     } else {
-      GLP(TexEnvfv)(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, stage->get_color().get_data());
+      call_glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, stage->get_color());
     }
     
     if (stage->get_mode() == TextureStage::M_decal) {
@@ -7823,10 +7849,10 @@ upload_usage_texture(int width, int height) {
       << "upload_usage_texture(" << width << ", " << height << ")\n";
   }
 
-  static Colorf colors[3] = {
-    Colorf(0.4f, 0.5f, 0.8f, 1.0f),   // mipmap 0: blue
-    Colorf(1.0f, 1.0f, 0.0f, 1.0f),   // mipmap 1: yellow
-    Colorf(0.8f, 0.3f, 0.3f, 1.0f),   // mipmap 2 and higher: red
+  static LColor colors[3] = {
+    LColor(0.4, 0.5f, 0.8f, 1.0f),   // mipmap 0: blue
+    LColor(1.0f, 1.0f, 0.0f, 1.0f),   // mipmap 1: yellow
+    LColor(0.8f, 0.3, 0.3, 1.0f),   // mipmap 2 and higher: red
   };
 
 
@@ -7837,7 +7863,7 @@ upload_usage_texture(int width, int height) {
   int n = 0;
   while (true) {
     // Choose the color for the nth mipmap.
-    Colorf c = colors[min(n, 2)];
+    LColor c = colors[min(n, 2)];
 
     // A simple union to store the colors values bytewise, and get the
     // answer wordwise, independently of machine byte-ordernig.
@@ -7924,7 +7950,7 @@ do_issue_tex_matrix() {
 
     const TexMatrixAttrib *target_tex_matrix = DCAST(TexMatrixAttrib, _target_rs->get_attrib_def(TexMatrixAttrib::get_class_slot()));
     if (target_tex_matrix->has_stage(stage)) {
-      GLP(LoadMatrixf)(target_tex_matrix->get_mat(stage).get_data());
+      GLPf(LoadMatrix)(target_tex_matrix->get_mat(stage).get_data());
     } else {
       GLP(LoadIdentity)();
 
@@ -7934,7 +7960,7 @@ do_issue_tex_matrix() {
       // an identity matrix does work.  But this buggy-driver
       // workaround might have other performance implications, so I
       // leave it out.
-      // GLP(LoadMatrixf)(LMatrix4f::ident_mat().get_data());
+      // GLPf(LoadMatrix)(LMatrix4::ident_mat().get_data());
     }
   }
   report_my_gl_errors();
@@ -7957,10 +7983,10 @@ do_issue_tex_gen() {
   // the spatial coordinates one-for-one to UV's.  If you want a
   // mapping other than identity, use a TexMatrixAttrib (or a
   // TexProjectorEffect).
-  static const float s_data[4] = { 1, 0, 0, 0 };
-  static const float t_data[4] = { 0, 1, 0, 0 };
-  static const float r_data[4] = { 0, 0, 1, 0 };
-  static const float q_data[4] = { 0, 0, 0, 1 };
+  static const PN_stdfloat s_data[4] = { 1, 0, 0, 0 };
+  static const PN_stdfloat t_data[4] = { 0, 1, 0, 0 };
+  static const PN_stdfloat r_data[4] = { 0, 0, 1, 0 };
+  static const PN_stdfloat q_data[4] = { 0, 0, 0, 1 };
 
   _tex_gen_modifies_mat = false;
 
@@ -8004,10 +8030,10 @@ do_issue_tex_gen() {
         // We need to rotate the normals out of GL's coordinate
         // system and into the user's coordinate system.  We do this
         // by composing a transform onto the texture matrix.
-        LMatrix4f mat = _inv_cs_transform->get_mat();
-        mat.set_row(3, LVecBase3f(0.0f, 0.0f, 0.0f));
+        LMatrix4 mat = _inv_cs_transform->get_mat();
+        mat.set_row(3, LVecBase3(0.0f, 0.0f, 0.0f));
         GLP(MatrixMode)(GL_TEXTURE);
-        GLP(MultMatrixf)(mat.get_data());
+        GLPf(MultMatrix)(mat.get_data());
 
         // Now we need to reset the texture matrix next time
         // around to undo this.
@@ -8033,10 +8059,10 @@ do_issue_tex_gen() {
         // GL_REFLECTION_MAP.
         CPT(TransformState) camera_transform = _scene_setup->get_camera_transform()->compose(_inv_cs_transform);
 
-        LMatrix4f mat = camera_transform->get_mat();
-        mat.set_row(3, LVecBase3f(0.0f, 0.0f, 0.0f));
+        LMatrix4 mat = camera_transform->get_mat();
+        mat.set_row(3, LVecBase3(0.0f, 0.0f, 0.0f));
         GLP(MatrixMode)(GL_TEXTURE);
-        GLP(MultMatrixf)(mat.get_data());
+        GLPf(MultMatrix)(mat.get_data());
 
         // Now we need to reset the texture matrix next time
         // around to undo this.
@@ -8057,10 +8083,10 @@ do_issue_tex_gen() {
         // We need to rotate the normals out of GL's coordinate
         // system and into the user's coordinate system.  We do this
         // by composing a transform onto the texture matrix.
-        LMatrix4f mat = _inv_cs_transform->get_mat();
-        mat.set_row(3, LVecBase3f(0.0f, 0.0f, 0.0f));
+        LMatrix4 mat = _inv_cs_transform->get_mat();
+        mat.set_row(3, LVecBase3(0.0f, 0.0f, 0.0f));
         GLP(MatrixMode)(GL_TEXTURE);
-        GLP(MultMatrixf)(mat.get_data());
+        GLPf(MultMatrix)(mat.get_data());
 
         // Now we need to reset the texture matrix next time
         // around to undo this.
@@ -8086,10 +8112,10 @@ do_issue_tex_gen() {
         // GL_NORMAL_MAP.
         CPT(TransformState) camera_transform = _scene_setup->get_camera_transform()->compose(_inv_cs_transform);
 
-        LMatrix4f mat = camera_transform->get_mat();
-        mat.set_row(3, LVecBase3f(0.0f, 0.0f, 0.0f));
+        LMatrix4 mat = camera_transform->get_mat();
+        mat.set_row(3, LVecBase3(0.0f, 0.0f, 0.0f));
         GLP(MatrixMode)(GL_TEXTURE);
-        GLP(MultMatrixf)(mat.get_data());
+        GLPf(MultMatrix)(mat.get_data());
 
         // Now we need to reset the texture matrix next time
         // around to undo this.
@@ -8110,17 +8136,17 @@ do_issue_tex_gen() {
       // load the coordinate-system transform.
       GLP(MatrixMode)(GL_MODELVIEW);
       GLP(PushMatrix)();
-      GLP(LoadMatrixf)(_cs_transform->get_mat().get_data());
+      GLPf(LoadMatrix)(_cs_transform->get_mat().get_data());
 
       GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
       GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
       GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
       GLP(TexGeni)(GL_Q, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
 
-      GLP(TexGenfv)(GL_S, GL_EYE_PLANE, s_data);
-      GLP(TexGenfv)(GL_T, GL_EYE_PLANE, t_data);
-      GLP(TexGenfv)(GL_R, GL_EYE_PLANE, r_data);
-      GLP(TexGenfv)(GL_Q, GL_EYE_PLANE, q_data);
+      GLPfv(TexGen)(GL_S, GL_EYE_PLANE, s_data);
+      GLPfv(TexGen)(GL_T, GL_EYE_PLANE, t_data);
+      GLPfv(TexGen)(GL_R, GL_EYE_PLANE, r_data);
+      GLPfv(TexGen)(GL_Q, GL_EYE_PLANE, q_data);
 
       GLP(Enable)(GL_TEXTURE_GEN_S);
       GLP(Enable)(GL_TEXTURE_GEN_T);
@@ -8139,16 +8165,16 @@ do_issue_tex_gen() {
         GLP(MatrixMode)(GL_MODELVIEW);
         GLP(PushMatrix)();
         CPT(TransformState) root_transform = _cs_transform->compose(_scene_setup->get_world_transform());
-        GLP(LoadMatrixf)(root_transform->get_mat().get_data());
+        GLPf(LoadMatrix)(root_transform->get_mat().get_data());
         GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
         GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
         GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
         GLP(TexGeni)(GL_Q, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
 
-        GLP(TexGenfv)(GL_S, GL_EYE_PLANE, s_data);
-        GLP(TexGenfv)(GL_T, GL_EYE_PLANE, t_data);
-        GLP(TexGenfv)(GL_R, GL_EYE_PLANE, r_data);
-        GLP(TexGenfv)(GL_Q, GL_EYE_PLANE, q_data);
+        GLPfv(TexGen)(GL_S, GL_EYE_PLANE, s_data);
+        GLPfv(TexGen)(GL_T, GL_EYE_PLANE, t_data);
+        GLPfv(TexGen)(GL_R, GL_EYE_PLANE, r_data);
+        GLPfv(TexGen)(GL_Q, GL_EYE_PLANE, q_data);
 
         GLP(Enable)(GL_TEXTURE_GEN_S);
         GLP(Enable)(GL_TEXTURE_GEN_T);
@@ -8177,21 +8203,21 @@ do_issue_tex_gen() {
       // flattens the vertex position to zero and then adds our
       // desired value.
       {
-        const TexCoord3f &v = _target_tex_gen->get_constant_value(stage);
+        const LTexCoord3 &v = _target_tex_gen->get_constant_value(stage);
 
         GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
         GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
         GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
         GLP(TexGeni)(GL_Q, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
 
-        LVecBase4f s(0.0f, 0.0f, 0.0f, v[0]);
-        LVecBase4f t(0.0f, 0.0f, 0.0f, v[1]);
-        LVecBase4f r(0.0f, 0.0f, 0.0f, v[2]);
+        LVecBase4 s(0.0f, 0.0f, 0.0f, v[0]);
+        LVecBase4 t(0.0f, 0.0f, 0.0f, v[1]);
+        LVecBase4 r(0.0f, 0.0f, 0.0f, v[2]);
 
-        GLP(TexGenfv)(GL_S, GL_OBJECT_PLANE, s.get_data());
-        GLP(TexGenfv)(GL_T, GL_OBJECT_PLANE, t.get_data());
-        GLP(TexGenfv)(GL_R, GL_OBJECT_PLANE, r.get_data());
-        GLP(TexGenfv)(GL_Q, GL_OBJECT_PLANE, q_data);
+        GLPfv(TexGen)(GL_S, GL_OBJECT_PLANE, s.get_data());
+        GLPfv(TexGen)(GL_T, GL_OBJECT_PLANE, t.get_data());
+        GLPfv(TexGen)(GL_R, GL_OBJECT_PLANE, r.get_data());
+        GLPfv(TexGen)(GL_Q, GL_OBJECT_PLANE, q_data);
 
         GLP(Enable)(GL_TEXTURE_GEN_S);
         GLP(Enable)(GL_TEXTURE_GEN_T);
@@ -8264,9 +8290,8 @@ specify_texture(CLP(TextureContext) *gtc) {
                        get_texture_wrap_mode(tex->get_wrap_w()));
   }
 
-  Colorf border_color = tex->get_border_color();
-  GLP(TexParameterfv)(target, GL_TEXTURE_BORDER_COLOR,
-                      border_color.get_data());
+  LColor border_color = tex->get_border_color();
+  call_glTexParameterfv(target, GL_TEXTURE_BORDER_COLOR, border_color);
 #endif  // OPENGLES
 
   Texture::FilterType minfilter = tex->get_effective_minfilter();
@@ -8302,9 +8327,9 @@ specify_texture(CLP(TextureContext) *gtc) {
 
   // Set anisotropic filtering.
   if (_supports_anisotropy) {
-    float anisotropy = tex->get_effective_anisotropic_degree();
+    PN_stdfloat anisotropy = tex->get_effective_anisotropic_degree();
     anisotropy = min(anisotropy, _max_anisotropy);
-    anisotropy = max(anisotropy, 1.0f);
+    anisotropy = max(anisotropy, (PN_stdfloat)1.0);
     GLP(TexParameterf)(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
   }
 
@@ -9571,7 +9596,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   tex->set_wrap_u(get_panda_wrap_mode(wrap_u));
   tex->set_wrap_v(get_panda_wrap_mode(wrap_v));
   tex->set_wrap_w(get_panda_wrap_mode(wrap_w));
-  tex->set_border_color(Colorf(border_color[0], border_color[1],
+  tex->set_border_color(LColor(border_color[0], border_color[1],
                                border_color[2], border_color[3]));
 
   tex->set_minfilter(get_panda_filter_type(minfilter));
@@ -9758,9 +9783,9 @@ do_point_size() {
     // units.  To arrange that, we need to figure out the appropriate
     // scaling factor based on the current viewport and projection
     // matrix.
-    LVector3f height(0.0f, _point_size, 1.0f);
+    LVector3 height(0.0f, _point_size, 1.0f);
     height = height * _projection_mat->get_mat();
-    float s = height[1] * _viewport_height / _point_size;
+    PN_stdfloat s = height[1] * _viewport_height / _point_size;
 
     if (_current_lens->is_orthographic()) {
       // If we have an orthographic lens in effect, we don't actually
@@ -10080,7 +10105,7 @@ do_issue_stencil() {
 void CLP(GraphicsStateGuardian)::
 do_issue_scissor() {
   const ScissorAttrib *target_scissor = DCAST(ScissorAttrib, _target_rs->get_attrib_def(ScissorAttrib::get_class_slot()));
-  const LVecBase4f &frame = target_scissor->get_frame();
+  const LVecBase4 &frame = target_scissor->get_frame();
 
   int x = (int)(_viewport_x + _viewport_width * frame[0] + 0.5f);
   int y = (int)(_viewport_y + _viewport_height * frame[2] + 0.5f);

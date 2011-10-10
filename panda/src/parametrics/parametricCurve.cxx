@@ -23,7 +23,7 @@
 #include "bamReader.h"
 #include "omniBoundingVolume.h"
 
-static const float tolerance_divisor = 100000.0f;
+static const PN_stdfloat tolerance_divisor = 100000.0f;
 
 TypeHandle ParametricCurve::_type_handle;
 
@@ -103,7 +103,7 @@ is_valid() const {
 //               1.0f; derived classes might override this to return
 //               something else.
 ////////////////////////////////////////////////////////////////////
-float ParametricCurve::
+PN_stdfloat ParametricCurve::
 get_max_t() const {
   return 1.0f;
 }
@@ -190,7 +190,7 @@ get_num_dimensions() const {
 //  Description: Approximates the length of the entire curve to within
 //               a few decimal places.
 ////////////////////////////////////////////////////////////////////
-float ParametricCurve::
+PN_stdfloat ParametricCurve::
 calc_length() const {
   return calc_length(0.0f, get_max_t());
 }
@@ -201,17 +201,17 @@ calc_length() const {
 //  Description: Approximates the length of the curve segment from
 //               parametric time 'from' to time 'to'.
 ////////////////////////////////////////////////////////////////////
-float ParametricCurve::
-calc_length(float from, float to) const {
-  float t1, t2;
-  LPoint3f p1, p2;
+PN_stdfloat ParametricCurve::
+calc_length(PN_stdfloat from, PN_stdfloat to) const {
+  PN_stdfloat t1, t2;
+  LPoint3 p1, p2;
 
   // Normally we expect from < to.  If they came in backwards, reverse
   // them.
-  float to_minus_from = to - from;
+  PN_stdfloat to_minus_from = to - from;
 
   if (to_minus_from < 0.0f) {
-    float temp = to;
+    PN_stdfloat temp = to;
     to = from;
     from = temp;
     to_minus_from=-to_minus_from;
@@ -221,13 +221,13 @@ calc_length(float from, float to) const {
   int num_segs = (int)(to_minus_from) + 1;
   t2 = from;
   get_point(t2, p2);
-  float net = 0.0f;
+  PN_stdfloat net = 0.0f;
 
   for (int i = 1; i <= num_segs; i++) {
     t1 = t2;
     p1 = p2;
 
-    t2 = (to - from) * (float)i / (float)num_segs + from;
+    t2 = (to - from) * (PN_stdfloat)i / (PN_stdfloat)num_segs + from;
     get_point(t2, p2);
 
     net += r_calc_length(t1, t2, p1, p2, (p1 - p2).length());
@@ -249,20 +249,20 @@ calc_length(float from, float to) const {
 //
 //               The search distance must not be negative.
 ////////////////////////////////////////////////////////////////////
-float ParametricCurve::
-find_length(float start_t, float length_offset) const {
+PN_stdfloat ParametricCurve::
+find_length(PN_stdfloat start_t, PN_stdfloat length_offset) const {
   nassertr(length_offset >= 0.0f, start_t);
   nassertr(start_t >= 0.0f && start_t <= get_max_t(), start_t);
 
-  float t1, t2;
-  LPoint3f p1, p2;
+  PN_stdfloat t1, t2;
+  LPoint3 p1, p2;
 
   // Start with a segment for each unit of t.
-  float max_t = get_max_t();
+  PN_stdfloat max_t = get_max_t();
   int num_segs = (int)cfloor(max_t - start_t + 1);
   t2 = start_t;
   get_point(t2, p2);
-  float net = 0.0f;
+  PN_stdfloat net = 0.0f;
 
   for (int i = 1; i <= num_segs; i++) {
     assert(net <= length_offset);
@@ -270,11 +270,11 @@ find_length(float start_t, float length_offset) const {
     t1 = t2;
     p1 = p2;
 
-    t2 = start_t + (((max_t - start_t) * (float)i) / (float)num_segs);
+    t2 = start_t + (((max_t - start_t) * (PN_stdfloat)i) / (PN_stdfloat)num_segs);
     get_point(t2, p2);
 
-    float seglength = (p1 - p2).length();
-    float result;
+    PN_stdfloat seglength = (p1 - p2).length();
+    PN_stdfloat result;
 
     if (r_find_length(length_offset - net, result,
                       t1, t2, p1, p2, seglength)) {
@@ -297,7 +297,7 @@ find_length(float start_t, float length_offset) const {
 //               tangent value at that point.
 ////////////////////////////////////////////////////////////////////
 bool ParametricCurve::
-adjust_point(float, float, float, float) {
+adjust_point(PN_stdfloat, PN_stdfloat, PN_stdfloat, PN_stdfloat) {
   return false;
 }
 
@@ -309,7 +309,7 @@ adjust_point(float, float, float, float) {
 //               at the point.
 ////////////////////////////////////////////////////////////////////
 bool ParametricCurve::
-adjust_tangent(float, float, float, float) {
+adjust_tangent(PN_stdfloat, PN_stdfloat, PN_stdfloat, PN_stdfloat) {
   return false;
 }
 
@@ -320,7 +320,7 @@ adjust_tangent(float, float, float, float) {
 //               point (px, py, pz) with the tangent (tx, ty, tz).
 ////////////////////////////////////////////////////////////////////
 bool ParametricCurve::
-adjust_pt(float, float, float, float, float, float, float) {
+adjust_pt(PN_stdfloat, PN_stdfloat, PN_stdfloat, PN_stdfloat, PN_stdfloat, PN_stdfloat, PN_stdfloat) {
   return false;
 }
 
@@ -515,8 +515,8 @@ convert_to_hermite(HermiteCurve *hc) const {
 
   int i, n;
   if (!bz_segs.empty()) {
-    float scale_in = 0.0f;
-    float scale_out = bz_segs[0]._t;
+    PN_stdfloat scale_in = 0.0f;
+    PN_stdfloat scale_out = bz_segs[0]._t;
     n = hc->append_cv(HC_SMOOTH, bz_segs[0]._v[0]);
     hc->set_cv_out(n, 3.0f * (bz_segs[0]._v[1] - bz_segs[0]._v[0]) / scale_out);
 
@@ -548,8 +548,8 @@ convert_to_hermite(HermiteCurve *hc) const {
   int num_cvs = hc->get_num_cvs();
   for (n = 1; n < num_cvs-1; n++) {
     if (hc->get_cv_type(n)!=HC_CUT) {
-      LVector3f in = hc->get_cv_in(n);
-      LVector3f out = hc->get_cv_out(n);
+      LVector3 in = hc->get_cv_in(n);
+      LVector3 out = hc->get_cv_out(n);
 
       if (in.almost_equal(out, 0.0001f)) {
         hc->set_cv_type(n, HC_SMOOTH);
@@ -598,7 +598,7 @@ convert_to_nurbs(ParametricCurve *nc) const {
       }
     }
 
-    float t;
+    PN_stdfloat t;
     int ki = 4;
     nurbs->set_knot(0, 0.0f);
     nurbs->set_knot(1, 0.0f);
@@ -664,7 +664,7 @@ unregister_drawer(ParametricCurveDrawer *drawer) {
 //               recomputed in some way.
 ////////////////////////////////////////////////////////////////////
 void ParametricCurve::
-invalidate(float, float) {
+invalidate(PN_stdfloat, PN_stdfloat) {
   invalidate_all();
 }
 
@@ -709,11 +709,11 @@ format_egg(ostream &, const string &, const string &, int) const {
 //               evaluate to the endpoints p1 and p2, and the segment
 //               has the length seglength.
 ////////////////////////////////////////////////////////////////////
-float ParametricCurve::
-r_calc_length(float t1, float t2, const LPoint3f &p1, const LPoint3f &p2,
-              float seglength) const {
-  static const float length_tolerance = 0.0000001f;
-  static const float t_tolerance = 0.000001f;
+PN_stdfloat ParametricCurve::
+r_calc_length(PN_stdfloat t1, PN_stdfloat t2, const LPoint3 &p1, const LPoint3 &p2,
+              PN_stdfloat seglength) const {
+  static const PN_stdfloat length_tolerance = 0.0000001f;
+  static const PN_stdfloat t_tolerance = 0.000001f;
 
   if (t2 - t1 < t_tolerance) {
     // Stop recursing--we've just walked off the limit for
@@ -721,9 +721,9 @@ r_calc_length(float t1, float t2, const LPoint3f &p1, const LPoint3f &p2,
     return 0.0f;
   }
 
-  float tmid;
-  LPoint3f pmid;
-  float left, right;
+  PN_stdfloat tmid;
+  LPoint3 pmid;
+  PN_stdfloat left, right;
 
   // Calculate the point on the curve midway between the two
   // endpoints.
@@ -757,12 +757,12 @@ r_calc_length(float t1, float t2, const LPoint3f &p1, const LPoint3f &p2,
 //               segment and returns false.
 ////////////////////////////////////////////////////////////////////
 bool ParametricCurve::
-r_find_length(float target_length, float &found_t,
-              float t1, float t2,
-              const LPoint3f &p1, const LPoint3f &p2,
-              float &seglength) const {
-  static const float length_tolerance = 0.0000001f;
-  static const float t_tolerance = 0.000001f;
+r_find_length(PN_stdfloat target_length, PN_stdfloat &found_t,
+              PN_stdfloat t1, PN_stdfloat t2,
+              const LPoint3 &p1, const LPoint3 &p2,
+              PN_stdfloat &seglength) const {
+  static const PN_stdfloat length_tolerance = 0.0000001f;
+  static const PN_stdfloat t_tolerance = 0.000001f;
 
   if (target_length < t_tolerance) {
     // Stop recursing--we've just walked off the limit for
@@ -772,9 +772,9 @@ r_find_length(float target_length, float &found_t,
 
   }
 
-  float tmid;
-  LPoint3f pmid;
-  float left, right;
+  PN_stdfloat tmid;
+  LPoint3 pmid;
+  PN_stdfloat left, right;
 
   // Calculate the point on the curve midway between the two
   // endpoints.
@@ -835,11 +835,11 @@ r_find_length(float target_length, float &found_t,
 //               found_t to the point along the segment.  
 ////////////////////////////////////////////////////////////////////
 bool ParametricCurve::
-r_find_t(float target_length, float &found_t,
-         float t1, float t2,
-         const LPoint3f &p1, const LPoint3f &p2) const {
-  static const float length_tolerance = 0.0001f;
-  static const float t_tolerance = 0.0001f;
+r_find_t(PN_stdfloat target_length, PN_stdfloat &found_t,
+         PN_stdfloat t1, PN_stdfloat t2,
+         const LPoint3 &p1, const LPoint3 &p2) const {
+  static const PN_stdfloat length_tolerance = 0.0001f;
+  static const PN_stdfloat t_tolerance = 0.0001f;
 
   if (parametrics_cat.is_spam()) {
     parametrics_cat.spam()
@@ -853,7 +853,7 @@ r_find_t(float target_length, float &found_t,
   } 
 
   // No, compute distance between two endpoints
-  float point_dist;
+  PN_stdfloat point_dist;
   point_dist = (p2 - p1).length();
 
   // Is the target point past the far endpoint?
@@ -874,9 +874,9 @@ r_find_t(float target_length, float &found_t,
   }
 
   // No, subdivide and continue
-  float tmid;
-  LPoint3f pmid;
-  float left;
+  PN_stdfloat tmid;
+  LPoint3 pmid;
+  PN_stdfloat left;
   
   // Calculate the point on the curve midway between the two
   // endpoints.
@@ -904,11 +904,11 @@ r_find_t(float target_length, float &found_t,
 //  Description: non-recursive version of r_find_t (see above)
 ////////////////////////////////////////////////////////////////////
 bool ParametricCurve::
-find_t_linear(float target_length, float &found_t,
-              float t1, float t2,
-              const LPoint3f &p1, const LPoint3f &p2) const {
-  const float length_tolerance = (p1-p2).length()/tolerance_divisor;
-  const float t_tolerance = (t1+t2)/tolerance_divisor;
+find_t_linear(PN_stdfloat target_length, PN_stdfloat &found_t,
+              PN_stdfloat t1, PN_stdfloat t2,
+              const LPoint3 &p1, const LPoint3 &p2) const {
+  const PN_stdfloat length_tolerance = (p1-p2).length()/tolerance_divisor;
+  const PN_stdfloat t_tolerance = (t1+t2)/tolerance_divisor;
 
   if (parametrics_cat.is_spam()) {
     parametrics_cat.spam()
@@ -922,11 +922,11 @@ find_t_linear(float target_length, float &found_t,
     return false;
   }
 
-  float tleft = t1;
-  float tright = t2;
-  float tmid;
-  LPoint3f pmid;
-  float len;
+  PN_stdfloat tleft = t1;
+  PN_stdfloat tright = t2;
+  PN_stdfloat tmid;
+  LPoint3 pmid;
+  PN_stdfloat len;
 
   while (1) {
     tmid = (tleft + tright) * 0.5f;

@@ -24,10 +24,10 @@
 // This constant determines how big a particular point size font
 // appears to be.  By convention, 10 points is 1 unit (e.g. 1 foot)
 // high.
-const float FreetypeFont::_points_per_unit = 10.0f;
+const PN_stdfloat FreetypeFont::_points_per_unit = 10.0f;
 
 // A universal typographic convention.
-const float FreetypeFont::_points_per_inch = 72.0f;
+const PN_stdfloat FreetypeFont::_points_per_inch = 72.0f;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FreetypeFont::Constructor
@@ -272,7 +272,7 @@ copy_bitmap_to_pnmimage(const FT_Bitmap &bitmap, PNMImage &image) {
     unsigned char *buffer_row = bitmap.buffer;
     for (int yi = 0; yi < bitmap.rows; yi++) {
       for (int xi = 0; xi < bitmap.width; xi++) {
-        image.set_gray(xi, yi, (float)buffer_row[xi] / (bitmap.num_grays - 1));
+        image.set_gray(xi, yi, (PN_stdfloat)buffer_row[xi] / (bitmap.num_grays - 1));
       }
       buffer_row += bitmap.pitch;
     }
@@ -309,7 +309,7 @@ reset_scale() {
 
   _pixel_height = 0;
   _pixel_width = 0;
-  float units_per_inch = (_points_per_inch / _points_per_unit);
+  PN_stdfloat units_per_inch = (_points_per_inch / _points_per_unit);
   _dpi = (int)(_font_pixels_per_unit * units_per_inch);
   _char_size = (int)(_point_size * 64);
   

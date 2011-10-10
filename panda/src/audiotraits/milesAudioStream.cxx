@@ -154,7 +154,7 @@ stop() {
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-float MilesAudioStream::
+PN_stdfloat MilesAudioStream::
 get_time() const {
   if (_stream == 0) {
     if (_got_start_time) {
@@ -165,7 +165,7 @@ get_time() const {
 
   S32 current_ms;
   AIL_stream_ms_position(_stream, NULL, &current_ms);
-  float time = float(current_ms * 0.001f);
+  PN_stdfloat time = PN_stdfloat(current_ms * 0.001f);
 
   return time;
 }
@@ -176,7 +176,7 @@ get_time() const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void MilesAudioStream::
-set_volume(float volume) {
+set_volume(PN_stdfloat volume) {
   _volume = volume;
 
   if (_stream != 0) {
@@ -203,7 +203,7 @@ set_volume(float volume) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void MilesAudioStream::
-set_balance(float balance_right) {
+set_balance(PN_stdfloat balance_right) {
   _balance = balance_right;
 
   // Call set_volume to effect the change:
@@ -216,7 +216,7 @@ set_balance(float balance_right) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void MilesAudioStream::
-set_play_rate(float play_rate) {
+set_play_rate(PN_stdfloat play_rate) {
   _play_rate = play_rate;
 
   if (_stream != 0) {
@@ -226,7 +226,7 @@ set_play_rate(float play_rate) {
     play_rate *= _manager->get_play_rate();
 
     // wave and mp3 use sample rate (e.g. 44100)
-    S32 speed = (S32)(play_rate * (float)_original_playback_rate);
+    S32 speed = (S32)(play_rate * (PN_stdfloat)_original_playback_rate);
     AIL_set_sample_playback_rate(sample, speed);
     audio_debug("  play_rate for this wav or mp3 is now " << speed);
   }
@@ -237,7 +237,7 @@ set_play_rate(float play_rate) {
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-float MilesAudioStream::
+PN_stdfloat MilesAudioStream::
 length() const {
   if (!_got_length) {
     if (_stream == 0) {
@@ -247,7 +247,7 @@ length() const {
     
     S32 length_ms;
     AIL_stream_ms_position(_stream, &length_ms, NULL);
-    _length = (float)length_ms * 0.001f;
+    _length = (PN_stdfloat)length_ms * 0.001f;
     _got_length = true;
   }
     
@@ -322,7 +322,7 @@ finish_callback(HSTREAM stream) {
 //  Description: Sets the start time of an already allocated stream.
 ////////////////////////////////////////////////////////////////////
 void MilesAudioStream::
-do_set_time(float time) {
+do_set_time(PN_stdfloat time) {
   nassertv(_stream != 0);
 
   S32 time_ms = (S32)(1000.0f * time);

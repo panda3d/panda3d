@@ -67,7 +67,7 @@ public:
 private:
   CullBin *make_new_bin(int bin_index);
   void check_flash_bin(CPT(RenderState) &state, CullBin *bin);
-  void check_flash_transparency(CPT(RenderState) &state, const Colorf &color);
+  void check_flash_transparency(CPT(RenderState) &state, const LColor &color);
 
   static CPT(RenderState) get_alpha_state();
   static CPT(RenderState) get_binary_state();

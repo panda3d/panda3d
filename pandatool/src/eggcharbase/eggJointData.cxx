@@ -198,8 +198,8 @@ score_reparent_to(EggJointData *new_parent, EggCharacterDb &db) {
   // First, build up a big array of the new transforms this joint
   // would receive in all frames of all models, were it reparented to
   // the indicated joint.
-  vector_float i, j, k, a, b, c, x, y, z;
-  pvector<LVecBase3f> hprs;
+  vector_stdfloat i, j, k, a, b, c, x, y, z;
+  pvector<LVecBase3> hprs;
   int num_rows = 0;
 
   int num_models = get_num_models();
@@ -243,7 +243,7 @@ score_reparent_to(EggJointData *new_parent, EggCharacterDb &db) {
         a.push_back(shear[0]);
         b.push_back(shear[1]);
         c.push_back(shear[2]);
-        hprs.push_back(LCAST(float, hpr));
+        hprs.push_back(LCAST(PN_stdfloat, hpr));
         x.push_back(translate[0]);
         y.push_back(translate[1]);
         z.push_back(translate[2]);

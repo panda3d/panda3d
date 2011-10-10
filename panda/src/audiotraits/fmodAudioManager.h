@@ -105,8 +105,8 @@ class EXPCL_FMOD_AUDIO FmodAudioManager : public AudioManager {
   virtual int getSpeakerSetup();
   virtual void setSpeakerSetup(SpeakerModeCategory cat);
 
-  virtual void set_volume(float);
-  virtual float get_volume() const;
+  virtual void set_volume(PN_stdfloat);
+  virtual PN_stdfloat get_volume() const;
           
   virtual void set_active(bool);
   virtual bool get_active() const;
@@ -121,34 +121,34 @@ class EXPCL_FMOD_AUDIO FmodAudioManager : public AudioManager {
   // fx, fy and fz are the respective components of a unit forward-vector
   // ux, uy and uz are the respective components of a unit up-vector
   // These changes will NOT be invoked until audio_3d_update() is called.
-  virtual void audio_3d_set_listener_attributes(float px, float py, float pz,
-                                                float vx, float xy, float xz, 
-                                                float fx, float fy, float fz,
-                                                float ux, float uy, float uz);
+  virtual void audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz,
+                                                PN_stdfloat vx, PN_stdfloat xy, PN_stdfloat xz, 
+                                                PN_stdfloat fx, PN_stdfloat fy, PN_stdfloat fz,
+                                                PN_stdfloat ux, PN_stdfloat uy, PN_stdfloat uz);
 
   // REMOVE THIS ONE
-  virtual void audio_3d_get_listener_attributes(float *px, float *py, float *pz,
-                                                float *vx, float *vy, float *vz,
-                                                float *fx, float *fy, float *fz,
-                                                float *ux, float *uy, float *uz);
+  virtual void audio_3d_get_listener_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz,
+                                                PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz,
+                                                PN_stdfloat *fx, PN_stdfloat *fy, PN_stdfloat *fz,
+                                                PN_stdfloat *ux, PN_stdfloat *uy, PN_stdfloat *uz);
           
   // Control the "relative distance factor" for 3D spacialized audio. Default is 1.0
   // Fmod uses meters internally, so give a float in Units-per meter
   // Don't know what Miles uses.
-  virtual void audio_3d_set_distance_factor(float factor);
-  virtual float audio_3d_get_distance_factor() const;
+  virtual void audio_3d_set_distance_factor(PN_stdfloat factor);
+  virtual PN_stdfloat audio_3d_get_distance_factor() const;
 
   // Control the presence of the Doppler effect. Default is 1.0
   // Exaggerated Doppler, use >1.0
   // Diminshed Doppler, use <1.0
-  virtual void audio_3d_set_doppler_factor(float factor);
-  virtual float audio_3d_get_doppler_factor() const;
+  virtual void audio_3d_set_doppler_factor(PN_stdfloat factor);
+  virtual PN_stdfloat audio_3d_get_doppler_factor() const;
 
   // Exaggerate or diminish the effect of distance on sound. Default is 1.0
   // Faster drop off, use >1.0
   // Slower drop off, use <1.0
-  virtual void audio_3d_set_drop_off_factor(float factor);
-  virtual float audio_3d_get_drop_off_factor() const;
+  virtual void audio_3d_set_drop_off_factor(PN_stdfloat factor);
+  virtual PN_stdfloat audio_3d_get_drop_off_factor() const;
 
   //THESE ARE NOT USED ANYMORE.
   //THEY ARE ONLY HERE BECAUSE THEY are still needed by Miles.
@@ -175,9 +175,9 @@ private:
 
   static bool _system_is_valid;
 
-  static float _distance_factor;
-  static float _doppler_factor;
-  static float _drop_off_factor;
+  static PN_stdfloat _distance_factor;
+  static PN_stdfloat _doppler_factor;
+  static PN_stdfloat _drop_off_factor;
 
   FMOD::ChannelGroup *_channelgroup;
 

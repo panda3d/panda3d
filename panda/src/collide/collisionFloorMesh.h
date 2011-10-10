@@ -20,8 +20,7 @@
 #include "collisionPlane.h"
 #include "clipPlaneAttrib.h"
 #include "look_at.h"
-
-#include "vector_LPoint2f.h"
+#include "pvector.h"
 
 class GeomNode;
 
@@ -36,10 +35,10 @@ public:
     unsigned int p1;
     unsigned int p2;
     unsigned int p3;
-    float min_x;
-    float max_x;
-    float min_y;
-    float max_y;
+    PN_stdfloat min_x;
+    PN_stdfloat max_x;
+    PN_stdfloat min_y;
+    PN_stdfloat max_y;
   } TriangleIndices;
 
 
@@ -47,17 +46,17 @@ PUBLISHED:
 
   INLINE CollisionFloorMesh();
   
-  INLINE void add_vertex(const LPoint3f &vert);
+  INLINE void add_vertex(const LPoint3 &vert);
   void add_triangle(unsigned int pointA, unsigned int pointB, unsigned int pointC);
 
   INLINE const unsigned int get_num_vertices() const;
-  INLINE const LPoint3f get_vertex(unsigned int index) const;
+  INLINE const LPoint3 get_vertex(unsigned int index) const;
   MAKE_SEQ(get_vertices, get_num_vertices, get_vertex);
   INLINE const unsigned int get_num_triangles() const;
   INLINE const LPoint3d get_triangle(unsigned int index) const;
   MAKE_SEQ(get_triangles, get_num_triangles, get_triangle);
 
-  virtual LPoint3f get_collision_origin() const;
+  virtual LPoint3 get_collision_origin() const;
 
 public:
   CollisionFloorMesh(const CollisionFloorMesh &copy);
@@ -65,7 +64,7 @@ public:
 
 public:
   
-  virtual void xform(const LMatrix4f &mat);
+  virtual void xform(const LMatrix4 &mat);
 
   virtual PStatCollector &get_volume_pcollector();
   virtual PStatCollector &get_test_pcollector();
@@ -86,7 +85,7 @@ protected:
   virtual void fill_viz_geom();
 
 private:
-  typedef pvector< LPoint3f > Vertices;
+  typedef pvector< LPoint3 > Vertices;
 
   typedef pvector< TriangleIndices > Triangles;
 

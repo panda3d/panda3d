@@ -225,7 +225,7 @@ get_fb_y_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int GraphicsOutput::
 get_sbs_left_x_size() const {
-  float left_w = _sbs_left_dimensions[1] - _sbs_left_dimensions[0];
+  PN_stdfloat left_w = _sbs_left_dimensions[1] - _sbs_left_dimensions[0];
   return max(int(_x_size * left_w), 1);
 }
 
@@ -240,7 +240,7 @@ get_sbs_left_x_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int GraphicsOutput::
 get_sbs_left_y_size() const {
-  float left_h = _sbs_left_dimensions[3] - _sbs_left_dimensions[2];
+  PN_stdfloat left_h = _sbs_left_dimensions[3] - _sbs_left_dimensions[2];
   return max(int(_y_size * left_h), 1);
 }
 
@@ -255,7 +255,7 @@ get_sbs_left_y_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int GraphicsOutput::
 get_sbs_right_x_size() const {
-  float right_w = _sbs_right_dimensions[1] - _sbs_right_dimensions[0];
+  PN_stdfloat right_w = _sbs_right_dimensions[1] - _sbs_right_dimensions[0];
   return max(int(_x_size * right_w), 1);
 }
 
@@ -270,7 +270,7 @@ get_sbs_right_x_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int GraphicsOutput::
 get_sbs_right_y_size() const {
-  float right_h = _sbs_right_dimensions[3] - _sbs_right_dimensions[2];
+  PN_stdfloat right_h = _sbs_right_dimensions[3] - _sbs_right_dimensions[2];
   return max(int(_y_size * right_h), 1);
 }
 
@@ -399,7 +399,7 @@ get_side_by_side_stereo() const {
 //               mode is in effect for the window.  See
 //               set_side_by_side_stereo().
 ////////////////////////////////////////////////////////////////////
-INLINE const LVecBase4f &GraphicsOutput::
+INLINE const LVecBase4 &GraphicsOutput::
 get_sbs_left_dimensions() const {
   return _sbs_left_dimensions;
 }
@@ -412,7 +412,7 @@ get_sbs_left_dimensions() const {
 //               mode is in effect for the window.  See
 //               set_side_by_side_stereo().
 ////////////////////////////////////////////////////////////////////
-INLINE const LVecBase4f &GraphicsOutput::
+INLINE const LVecBase4 &GraphicsOutput::
 get_sbs_right_dimensions() const {
   return _sbs_right_dimensions;
 }
@@ -562,8 +562,8 @@ make_display_region() {
 //               one or the other.
 ////////////////////////////////////////////////////////////////////
 DisplayRegion *GraphicsOutput::
-make_display_region(float l, float r, float b, float t) {
-  return make_display_region(LVecBase4f(l, r, b, t));
+make_display_region(PN_stdfloat l, PN_stdfloat r, PN_stdfloat b, PN_stdfloat t) {
+  return make_display_region(LVecBase4(l, r, b, t));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -598,8 +598,8 @@ make_mono_display_region() {
 //               necessary to draw even mono DisplayRegions twice).
 ////////////////////////////////////////////////////////////////////
 INLINE DisplayRegion *GraphicsOutput::
-make_mono_display_region(float l, float r, float b, float t) {
-  return make_mono_display_region(LVecBase4f(l, r, b, t));
+make_mono_display_region(PN_stdfloat l, PN_stdfloat r, PN_stdfloat b, PN_stdfloat t) {
+  return make_mono_display_region(LVecBase4(l, r, b, t));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -626,8 +626,8 @@ make_stereo_display_region() {
 //               is_stereo() is false.
 ////////////////////////////////////////////////////////////////////
 INLINE StereoDisplayRegion *GraphicsOutput::
-make_stereo_display_region(float l, float r, float b, float t) {
-  return make_stereo_display_region(LVecBase4f(l, r, b, t));
+make_stereo_display_region(PN_stdfloat l, PN_stdfloat r, PN_stdfloat b, PN_stdfloat t) {
+  return make_stereo_display_region(LVecBase4(l, r, b, t));
 }
 
 ////////////////////////////////////////////////////////////////////

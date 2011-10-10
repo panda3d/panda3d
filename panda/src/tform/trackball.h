@@ -44,40 +44,40 @@ PUBLISHED:
 
   void reset();
 
-  float get_forward_scale() const;
-  void set_forward_scale(float fwdscale);
+  PN_stdfloat get_forward_scale() const;
+  void set_forward_scale(PN_stdfloat fwdscale);
 
   /// **** Translation ****
 
-  const LPoint3f &get_pos() const;
-  float get_x() const;
-  float get_y() const;
-  float get_z() const;
-  void set_pos(const LVecBase3f &vec);
-  void set_pos(float x, float y, float z);
-  void set_x(float x);
-  void set_y(float y);
-  void set_z(float z);
+  const LPoint3 &get_pos() const;
+  PN_stdfloat get_x() const;
+  PN_stdfloat get_y() const;
+  PN_stdfloat get_z() const;
+  void set_pos(const LVecBase3 &vec);
+  void set_pos(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+  void set_x(PN_stdfloat x);
+  void set_y(PN_stdfloat y);
+  void set_z(PN_stdfloat z);
 
   /// **** Rotation ****
 
-  LVecBase3f get_hpr() const;
-  float get_h() const;
-  float get_p() const;
-  float get_r() const;
-  void set_hpr(const LVecBase3f &hpr);
-  void set_hpr(float h, float p, float r);
-  void set_h(float h);
-  void set_p(float p);
-  void set_r(float r);
+  LVecBase3 get_hpr() const;
+  PN_stdfloat get_h() const;
+  PN_stdfloat get_p() const;
+  PN_stdfloat get_r() const;
+  void set_hpr(const LVecBase3 &hpr);
+  void set_hpr(PN_stdfloat h, PN_stdfloat p, PN_stdfloat r);
+  void set_h(PN_stdfloat h);
+  void set_p(PN_stdfloat p);
+  void set_r(PN_stdfloat r);
 
   /// **** Origin of Rotation ****
 
   void reset_origin_here();
-  void move_origin(float x, float y, float z);
+  void move_origin(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
 
-  LPoint3f get_origin() const;
-  void set_origin(const LVecBase3f &origin);
+  LPoint3 get_origin() const;
+  void set_origin(const LVecBase3 &origin);
 
   /// **** Misc ****
 
@@ -90,9 +90,9 @@ PUBLISHED:
   void set_coordinate_system(CoordinateSystem cs);
   CoordinateSystem get_coordinate_system() const;
 
-  void set_mat(const LMatrix4f &mat);
-  const LMatrix4f &get_mat() const;
-  const LMatrix4f &get_trans_mat() const;
+  void set_mat(const LMatrix4 &mat);
+  const LMatrix4 &get_mat() const;
+  const LMatrix4 &get_trans_mat() const;
 
 
 private:
@@ -102,14 +102,14 @@ private:
   void recompute();
 
   int _last_button;
-  float _lastx, _lasty;
+  PN_stdfloat _lastx, _lasty;
 
-  float _rotscale;
-  float _fwdscale;
+  PN_stdfloat _rotscale;
+  PN_stdfloat _fwdscale;
 
-  LMatrix4f _rotation;
-  LPoint3f _translation;
-  LMatrix4f _mat, _orig;
+  LMatrix4 _rotation;
+  LPoint3 _translation;
+  LMatrix4 _mat, _orig;
   bool _invert;
   NodePath _rel_to;
   CoordinateSystem _cs;

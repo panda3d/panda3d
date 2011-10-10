@@ -33,7 +33,7 @@ TextGlyph(int character) :
 ////////////////////////////////////////////////////////////////////
 INLINE TextGlyph::
 TextGlyph(int character, const Geom *geom, 
-          const RenderState *state, float advance) :
+          const RenderState *state, PN_stdfloat advance) :
   _character(character),
   _geom(geom), 
   _state(state),
@@ -126,7 +126,7 @@ get_state() const {
 //               i.e. the approximate width the character takes up on
 //               the line.
 ////////////////////////////////////////////////////////////////////
-INLINE float TextGlyph::
+INLINE PN_stdfloat TextGlyph::
 get_advance() const {
   return _advance;
 }

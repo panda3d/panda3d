@@ -36,16 +36,16 @@
 class EXPCL_PANDA_GOBJ TransformBlend {
 PUBLISHED:
   INLINE TransformBlend();
-  INLINE TransformBlend(const VertexTransform *transform0, float weight0);
-  INLINE TransformBlend(const VertexTransform *transform0, float weight0,
-                        const VertexTransform *transform1, float weight1);
-  INLINE TransformBlend(const VertexTransform *transform0, float weight0,
-                        const VertexTransform *transform1, float weight1,
-                        const VertexTransform *transform2, float weight2);
-  INLINE TransformBlend(const VertexTransform *transform0, float weight0,
-                        const VertexTransform *transform1, float weight1,
-                        const VertexTransform *transform2, float weight2,
-                        const VertexTransform *transform3, float weight3);
+  INLINE TransformBlend(const VertexTransform *transform0, PN_stdfloat weight0);
+  INLINE TransformBlend(const VertexTransform *transform0, PN_stdfloat weight0,
+                        const VertexTransform *transform1, PN_stdfloat weight1);
+  INLINE TransformBlend(const VertexTransform *transform0, PN_stdfloat weight0,
+                        const VertexTransform *transform1, PN_stdfloat weight1,
+                        const VertexTransform *transform2, PN_stdfloat weight2);
+  INLINE TransformBlend(const VertexTransform *transform0, PN_stdfloat weight0,
+                        const VertexTransform *transform1, PN_stdfloat weight1,
+                        const VertexTransform *transform2, PN_stdfloat weight2,
+                        const VertexTransform *transform3, PN_stdfloat weight3);
   INLINE TransformBlend(const TransformBlend &copy);
   INLINE void operator = (const TransformBlend &copy);
   INLINE ~TransformBlend();
@@ -55,25 +55,31 @@ PUBLISHED:
   INLINE bool operator == (const TransformBlend &other) const;
   INLINE bool operator != (const TransformBlend &other) const;
 
-  void add_transform(const VertexTransform *transform, float weight);
+  void add_transform(const VertexTransform *transform, PN_stdfloat weight);
   void remove_transform(const VertexTransform *transform);
   void normalize_weights();
   bool has_transform(const VertexTransform *transform) const;
-  float get_weight(const VertexTransform *transform) const;
+  PN_stdfloat get_weight(const VertexTransform *transform) const;
 
   INLINE int get_num_transforms() const;
   INLINE const VertexTransform *get_transform(int n) const;
   MAKE_SEQ(get_transforms, get_num_transforms, get_transform);
-  INLINE float get_weight(int n) const;
+  INLINE PN_stdfloat get_weight(int n) const;
   INLINE void set_transform(int n, const VertexTransform *transform);
-  INLINE void set_weight(int n, float weight);
+  INLINE void set_weight(int n, PN_stdfloat weight);
 
   INLINE void update_blend(Thread *current_thread) const;
 
-  INLINE void get_blend(LMatrix4f &result, Thread *current_thread) const;
+  INLINE void get_blend(LMatrix4 &result, Thread *current_thread) const;
+
   INLINE void transform_point(LPoint4f &point, Thread *current_thread) const;
   INLINE void transform_point(LPoint3f &point, Thread *current_thread) const;
   INLINE void transform_vector(LVector3f &point, Thread *current_thread) const;
+
+  INLINE void transform_point(LPoint4d &point, Thread *current_thread) const;
+  INLINE void transform_point(LPoint3d &point, Thread *current_thread) const;
+  INLINE void transform_vector(LVector3d &point, Thread *current_thread) const;
+
   INLINE UpdateSeq get_modified(Thread *current_thread) const;
 
   void output(ostream &out) const;
@@ -90,7 +96,7 @@ private:
     INLINE bool operator < (const TransformEntry &other) const;
 
     CPT(VertexTransform) _transform;
-    float _weight;
+    PN_stdfloat _weight;
   };
   typedef ov_set<TransformEntry> Entries;
   Entries _entries;
@@ -106,7 +112,7 @@ private:
       return TransformBlend::get_class_type();
     }
 
-    LMatrix4f _result;
+    LMatrix4 _result;
     UpdateSeq _modified;
     UpdateSeq _global_modified;
   };

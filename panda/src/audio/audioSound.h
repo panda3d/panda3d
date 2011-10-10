@@ -60,26 +60,26 @@ PUBLISHED:
   //   sound.
   // - If a sound is playing, calling get_time() repeatedly will
   //   return different results over time.  e.g.:
-  //   float percent_complete = s.get_time() / s.length();
-  virtual void set_time(float start_time=0.0) = 0;
-  virtual float get_time() const = 0;
+  //   PN_stdfloat percent_complete = s.get_time() / s.length();
+  virtual void set_time(PN_stdfloat start_time=0.0) = 0;
+  virtual PN_stdfloat get_time() const = 0;
           
   // 0 = minimum; 1.0 = maximum.
   // inits to 1.0.
-  virtual void set_volume(float volume=1.0) = 0;
-  virtual float get_volume() const = 0;
+  virtual void set_volume(PN_stdfloat volume=1.0) = 0;
+  virtual PN_stdfloat get_volume() const = 0;
           
   // -1.0 is hard left
   // 0.0 is centered
   // 1.0 is hard right
   // inits to 0.0.
-  virtual void set_balance(float balance_right=0.0) = 0;
-  virtual float get_balance() const = 0;
+  virtual void set_balance(PN_stdfloat balance_right=0.0) = 0;
+  virtual PN_stdfloat get_balance() const = 0;
           
-  // play_rate is any positive float value.
+  // play_rate is any positive PN_stdfloat value.
   // inits to 1.0.
-  virtual void set_play_rate(float play_rate=1.0f) = 0;
-  virtual float get_play_rate() const = 0;
+  virtual void set_play_rate(PN_stdfloat play_rate=1.0f) = 0;
+  virtual PN_stdfloat get_play_rate() const = 0;
 
   // inits to manager's state.
   virtual void set_active(bool flag=true) = 0;
@@ -94,15 +94,15 @@ PUBLISHED:
   virtual const string& get_name() const = 0;
           
   // return: playing time in seconds.
-  virtual float length() const = 0;
+  virtual PN_stdfloat length() const = 0;
 
   // Controls the position of this sound's emitter.
   // px, py and pz are the emitter's position.
   // vx, vy and vz are the emitter's velocity in UNITS PER SECOND (default: meters).
-  virtual void set_3d_attributes(float px, float py, float pz,
-                                 float vx, float vy, float vz);
-  virtual void get_3d_attributes(float *px, float *py, float *pz,
-                                 float *vx, float *vy, float *vz);
+  virtual void set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz,
+                                 PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz);
+  virtual void get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz,
+                                 PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz);
 
 
   // Controls the distance (in units) that this sound begins to fall off.
@@ -110,15 +110,15 @@ PUBLISHED:
   // Default is 1.0
   // Closer/Faster, <1.0
   // Farther/Slower, >1.0
-  virtual void set_3d_min_distance(float dist);
-  virtual float get_3d_min_distance() const;
+  virtual void set_3d_min_distance(PN_stdfloat dist);
+  virtual PN_stdfloat get_3d_min_distance() const;
 
   // Controls the maximum distance (in units) that this sound stops falling off.
   // The sound does not stop at that point, it just doesn't get any quieter.
   // You should rarely need to adjust this.
   // Default is 1000000000.0
-  virtual void set_3d_max_distance(float dist);
-  virtual float get_3d_max_distance() const;
+  virtual void set_3d_max_distance(PN_stdfloat dist);
+  virtual PN_stdfloat get_3d_max_distance() const;
 
   // *_speaker_mix and *_speaker_level(s) serve the same purpose.
   // *_speaker_mix is for use with FMOD.
@@ -126,11 +126,11 @@ PUBLISHED:
   // Both interfaces exist because of a significant difference in the
   // two APIs.  Hopefully the difference can be reconciled into a single
   // interface at some point.
-  virtual float get_speaker_mix(int speaker);
-  virtual void set_speaker_mix(float frontleft, float frontright, float center, float sub, float backleft, float backright, float sideleft, float  sideright);
+  virtual PN_stdfloat get_speaker_mix(int speaker);
+  virtual void set_speaker_mix(PN_stdfloat frontleft, PN_stdfloat frontright, PN_stdfloat center, PN_stdfloat sub, PN_stdfloat backleft, PN_stdfloat backright, PN_stdfloat sideleft, PN_stdfloat  sideright);
 
-  virtual float get_speaker_level(int index);
-  virtual void set_speaker_levels(float level1, float level2=-1.0f, float level3=-1.0f, float level4=-1.0f, float level5=-1.0f, float level6=-1.0f, float level7=-1.0f, float level8=-1.0f, float level9=-1.0f);
+  virtual PN_stdfloat get_speaker_level(int index);
+  virtual void set_speaker_levels(PN_stdfloat level1, PN_stdfloat level2=-1.0f, PN_stdfloat level3=-1.0f, PN_stdfloat level4=-1.0f, PN_stdfloat level5=-1.0f, PN_stdfloat level6=-1.0f, PN_stdfloat level7=-1.0f, PN_stdfloat level8=-1.0f, PN_stdfloat level9=-1.0f);
 
   virtual int get_priority();
   virtual void set_priority(int priority);

@@ -49,8 +49,8 @@ PUBLISHED:
   INLINE void copy_normal(const EggAttributes &other);
 
   INLINE bool has_color() const;
-  INLINE Colorf get_color() const;
-  INLINE void set_color(const Colorf &Color);
+  INLINE LColor get_color() const;
+  INLINE void set_color(const LColor &Color);
   INLINE void clear_color();
   INLINE bool matches_color(const EggAttributes &other) const;
   INLINE void copy_color(const EggAttributes &other);
@@ -72,7 +72,7 @@ private:
 
   int _flags;
   Normald _normal;
-  Colorf _color;
+  LColor _color;
 
 
 public:

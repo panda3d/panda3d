@@ -44,17 +44,17 @@ public:
 
   virtual bool has_changed(int last_frame, double last_frac, 
                            int this_frame, double this_frac);
-  virtual void get_value(int frame, LMatrix4f &mat);
+  virtual void get_value(int frame, LMatrix4 &mat);
 
-  virtual void get_value_no_scale_shear(int frame, LMatrix4f &value);
-  virtual void get_scale(int frame, LVecBase3f &scale);
-  virtual void get_hpr(int frame, LVecBase3f &hpr);
-  virtual void get_quat(int frame, LQuaternionf &quat);
-  virtual void get_pos(int frame, LVecBase3f &pos);
-  virtual void get_shear(int frame, LVecBase3f &shear);
+  virtual void get_value_no_scale_shear(int frame, LMatrix4 &value);
+  virtual void get_scale(int frame, LVecBase3 &scale);
+  virtual void get_hpr(int frame, LVecBase3 &hpr);
+  virtual void get_quat(int frame, LQuaternion &quat);
+  virtual void get_pos(int frame, LVecBase3 &pos);
+  virtual void get_shear(int frame, LVecBase3 &shear);
 
 PUBLISHED:
-  void set_value(const LMatrix4f &value);
+  void set_value(const LMatrix4 &value);
   void set_value(const TransformState *value);
   void set_value_node(PandaNode *node);
 

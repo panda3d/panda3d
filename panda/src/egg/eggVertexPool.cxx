@@ -262,7 +262,7 @@ has_nonwhite_colors() const {
   for (ivi = _index_vertices.begin(); ivi != _index_vertices.end(); ++ivi) {
     EggVertex *vertex = (*ivi).second;
     if (vertex->has_color() && 
-        (vertex->get_color() != Colorf(1.0, 1.0, 1.0, 1.0) ||
+        (vertex->get_color() != LColor(1.0, 1.0, 1.0, 1.0) ||
          !vertex->_drgbas.empty())) {
       return true;
     }
@@ -283,7 +283,7 @@ has_nonwhite_colors() const {
 //               different colors, sets has_overall_color to false.
 ////////////////////////////////////////////////////////////////////
 void EggVertexPool::
-check_overall_color(bool &has_overall_color, Colorf &overall_color) const {
+check_overall_color(bool &has_overall_color, LColor &overall_color) const {
   if (empty()) {
     has_overall_color = true;
     overall_color.set(1.0f, 1.0f, 1.0f, 1.0f);

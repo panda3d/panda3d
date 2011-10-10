@@ -36,8 +36,8 @@ void signal_handler(int) {
 
 struct SampleData {
   const char *category;
-  float min_ms;
-  float max_ms;
+  PN_stdfloat min_ms;
+  PN_stdfloat max_ms;
   bool is_level;
 };
 
@@ -75,7 +75,7 @@ SampleData *datasets[NUM_DATASETS] = {
 
 class WaitRequest {
 public:
-  float _time;
+  PN_stdfloat _time;
   int _index;
   bool _start;
 
@@ -121,7 +121,7 @@ main(int argc, char *argv[]) {
     ds_index = atoi(argv[3]);
   } else {
     // Pick a random Dataset.
-    ds_index = (int)((float)NUM_DATASETS * rand() / (RAND_MAX + 1.0));
+    ds_index = (int)((PN_stdfloat)NUM_DATASETS * rand() / (RAND_MAX + 1.0));
   }
   if (ds_index < 0 || ds_index >= NUM_DATASETS) {
     nout << "Invalid dataset; choose a number in the range 0 to "
@@ -144,9 +144,9 @@ main(int argc, char *argv[]) {
   while (!user_interrupted && client->is_connected()) {
     PStatClient::main_tick();
 
-    float total_ms = 0.0;
-    float now = client->get_real_time();
-    float start = now;
+    PN_stdfloat total_ms = 0.0;
+    PN_stdfloat now = client->get_real_time();
+    PN_stdfloat start = now;
 
     typedef pvector<WaitRequest> Wait;
     Wait wait;
@@ -155,12 +155,12 @@ main(int argc, char *argv[]) {
     for (i = 0; i < (int)_collectors.size(); i++) {
       if (ds[i].is_level) {
         // Make up an amount to add/delete to the level this frame.
-        float increment = ds[i].max_ms * (rand() / (RAND_MAX + 1.0) - 0.5);
+        PN_stdfloat increment = ds[i].max_ms * (rand() / (RAND_MAX + 1.0) - 0.5);
         _collectors[i].add_level(increment);
 
       } else {
         // A bit of random jitter so the collectors might overlap some.
-        float jitter_ms = (5.0 * rand() / (RAND_MAX + 1.0));
+        PN_stdfloat jitter_ms = (5.0 * rand() / (RAND_MAX + 1.0));
 
         WaitRequest wr;
         wr._time = now + jitter_ms / 1000.0;
@@ -168,8 +168,8 @@ main(int argc, char *argv[]) {
         wr._start = true;
         wait.push_back(wr);
 
-        float ms_range = ds[i].max_ms - ds[i].min_ms;
-        float ms = (float)ds[i].min_ms +
+        PN_stdfloat ms_range = ds[i].max_ms - ds[i].min_ms;
+        PN_stdfloat ms = (PN_stdfloat)ds[i].min_ms +
           (ms_range * rand() / (RAND_MAX + 1.0));
         now += ms / 1000.0;
         total_ms += ms;

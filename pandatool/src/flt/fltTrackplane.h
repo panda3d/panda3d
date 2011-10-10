@@ -40,7 +40,7 @@ public:
   LVector3d _plane;
   bool _grid_state;
   bool _grid_under;
-  float _grid_angle;
+  PN_stdfloat _grid_angle;
   double _grid_spacing_x;
   double _grid_spacing_y;
   bool _snap_to_grid;

@@ -144,7 +144,7 @@ stop() {
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-float MilesAudioSequence::
+PN_stdfloat MilesAudioSequence::
 get_time() const {
   if (_sequence == 0) {
     if (_got_start_time) {
@@ -155,7 +155,7 @@ get_time() const {
 
   S32 current_ms;
   AIL_sequence_ms_position(_sequence, NULL, &current_ms);
-  float time = float(current_ms * 0.001f);
+  PN_stdfloat time = PN_stdfloat(current_ms * 0.001f);
 
   return time;
 }
@@ -166,7 +166,7 @@ get_time() const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void MilesAudioSequence::
-set_volume(float volume) {
+set_volume(PN_stdfloat volume) {
   miles_audio_debug("set_volume(volume="<<volume<<")");
 
   // Set the volume even if our volume is not changing, because the
@@ -194,7 +194,7 @@ set_volume(float volume) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void MilesAudioSequence::
-set_balance(float balance_right) {
+set_balance(PN_stdfloat balance_right) {
   miles_audio_debug("set_balance(balance_right="<<balance_right<<")");
   _balance = balance_right;
 
@@ -207,7 +207,7 @@ set_balance(float balance_right) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void MilesAudioSequence::
-set_play_rate(float play_rate) {
+set_play_rate(PN_stdfloat play_rate) {
   miles_audio_debug("set_play_rate(play_rate="<<play_rate<<")");
 
   // Set the play_rate:
@@ -226,7 +226,7 @@ set_play_rate(float play_rate) {
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-float MilesAudioSequence::
+PN_stdfloat MilesAudioSequence::
 length() const {
   if (_sequence == 0) {
     // The MIDI file hasn't been started yet.  See if the length is
@@ -244,7 +244,7 @@ length() const {
   // directly.
   S32 length_ms;
   AIL_sequence_ms_position(_sequence, &length_ms, NULL);
-  float time = (float)length_ms * 0.001f;
+  PN_stdfloat time = (PN_stdfloat)length_ms * 0.001f;
   return time;
 }
 
@@ -320,7 +320,7 @@ finish_callback(HSEQUENCE sequence) {
 //  Description: Sets the start time of an already allocated stream.
 ////////////////////////////////////////////////////////////////////
 void MilesAudioSequence::
-do_set_time(float time) {
+do_set_time(PN_stdfloat time) {
   miles_audio_debug("do_set_time(time="<<time<<")");
 
   nassertv(_sequence != 0);
@@ -355,7 +355,7 @@ determine_length() {
     AIL_init_sequence(_sequence, &_sd->_raw_data[0], 0);
     S32 length_ms;
     AIL_sequence_ms_position(_sequence, &length_ms, NULL);
-    float time = (float)length_ms * 0.001f;
+    PN_stdfloat time = (PN_stdfloat)length_ms * 0.001f;
     mgr->release_sequence(_sequence_index, this);
     _sequence = 0;
     _sequence_index = 0;

@@ -28,8 +28,8 @@
 ////////////////////////////////////////////////////////////////////
 class LwoBoundingBox : public LwoChunk {
 public:
-  LVecBase3f _min;
-  LVecBase3f _max;
+  LVecBase3 _min;
+  LVecBase3 _max;
 
 public:
   virtual bool read_iff(IffInputFile *in, size_t stop_at);

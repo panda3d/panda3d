@@ -19,7 +19,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionSphere::
-CollisionSphere(const LPoint3f &center, float radius) :
+CollisionSphere(const LPoint3 &center, PN_stdfloat radius) :
   _center(center), _radius(radius)
 {
   nassertv(_radius >= 0.0f);
@@ -31,7 +31,7 @@ CollisionSphere(const LPoint3f &center, float radius) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionSphere::
-CollisionSphere(float cx, float cy, float cz, float radius) :
+CollisionSphere(PN_stdfloat cx, PN_stdfloat cy, PN_stdfloat cz, PN_stdfloat radius) :
   _center(cx, cy, cz), _radius(radius)
 {
   nassertv(_radius >= 0.0f);
@@ -77,7 +77,7 @@ flush_level() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionSphere::
-set_center(const LPoint3f &center) {
+set_center(const LPoint3 &center) {
   _center = center;
   mark_internal_bounds_stale();
   mark_viz_stale();
@@ -89,8 +89,8 @@ set_center(const LPoint3f &center) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionSphere::
-set_center(float x, float y, float z) {
-  set_center(LPoint3f(x, y, z));
+set_center(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) {
+  set_center(LPoint3(x, y, z));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -98,7 +98,7 @@ set_center(float x, float y, float z) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const LPoint3f &CollisionSphere::
+INLINE const LPoint3 &CollisionSphere::
 get_center() const {
   return _center;
 }
@@ -109,7 +109,7 @@ get_center() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionSphere::
-set_radius(float radius) {
+set_radius(PN_stdfloat radius) {
   nassertv(radius >= 0.0f);
   _radius = radius;
   mark_internal_bounds_stale();
@@ -121,7 +121,7 @@ set_radius(float radius) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE float CollisionSphere::
+INLINE PN_stdfloat CollisionSphere::
 get_radius() const {
   return _radius;
 }

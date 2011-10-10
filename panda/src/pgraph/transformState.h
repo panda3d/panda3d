@@ -78,46 +78,46 @@ PUBLISHED:
 
   static CPT(TransformState) make_identity();
   static CPT(TransformState) make_invalid();
-  INLINE static CPT(TransformState) make_pos(const LVecBase3f &pos);
-  INLINE static CPT(TransformState) make_hpr(const LVecBase3f &hpr);
-  INLINE static CPT(TransformState) make_quat(const LQuaternionf &quat);
-  INLINE static CPT(TransformState) make_pos_hpr(const LVecBase3f &pos,
-                                                 const LVecBase3f &hpr);
-  INLINE static CPT(TransformState) make_scale(float scale);
-  INLINE static CPT(TransformState) make_scale(const LVecBase3f &scale);
-  INLINE static CPT(TransformState) make_shear(const LVecBase3f &shear);
-  INLINE static CPT(TransformState) make_pos_hpr_scale(const LVecBase3f &pos,
-                                                       const LVecBase3f &hpr, 
-                                                       const LVecBase3f &scale);
-  INLINE static CPT(TransformState) make_pos_quat_scale(const LVecBase3f &pos,
-                                                        const LQuaternionf &quat, 
-                                                        const LVecBase3f &scale);
-  static CPT(TransformState) make_pos_hpr_scale_shear(const LVecBase3f &pos,
-                                                      const LVecBase3f &hpr, 
-                                                      const LVecBase3f &scale,
-                                                      const LVecBase3f &shear);
-  static CPT(TransformState) make_pos_quat_scale_shear(const LVecBase3f &pos,
-                                                       const LQuaternionf &quat, 
-                                                       const LVecBase3f &scale,
-                                                       const LVecBase3f &shear);
-  static CPT(TransformState) make_mat(const LMatrix4f &mat);
+  INLINE static CPT(TransformState) make_pos(const LVecBase3 &pos);
+  INLINE static CPT(TransformState) make_hpr(const LVecBase3 &hpr);
+  INLINE static CPT(TransformState) make_quat(const LQuaternion &quat);
+  INLINE static CPT(TransformState) make_pos_hpr(const LVecBase3 &pos,
+                                                 const LVecBase3 &hpr);
+  INLINE static CPT(TransformState) make_scale(PN_stdfloat scale);
+  INLINE static CPT(TransformState) make_scale(const LVecBase3 &scale);
+  INLINE static CPT(TransformState) make_shear(const LVecBase3 &shear);
+  INLINE static CPT(TransformState) make_pos_hpr_scale(const LVecBase3 &pos,
+                                                       const LVecBase3 &hpr, 
+                                                       const LVecBase3 &scale);
+  INLINE static CPT(TransformState) make_pos_quat_scale(const LVecBase3 &pos,
+                                                        const LQuaternion &quat, 
+                                                        const LVecBase3 &scale);
+  static CPT(TransformState) make_pos_hpr_scale_shear(const LVecBase3 &pos,
+                                                      const LVecBase3 &hpr, 
+                                                      const LVecBase3 &scale,
+                                                      const LVecBase3 &shear);
+  static CPT(TransformState) make_pos_quat_scale_shear(const LVecBase3 &pos,
+                                                       const LQuaternion &quat, 
+                                                       const LVecBase3 &scale,
+                                                       const LVecBase3 &shear);
+  static CPT(TransformState) make_mat(const LMatrix4 &mat);
 
 
-  INLINE static CPT(TransformState) make_pos2d(const LVecBase2f &pos);
-  INLINE static CPT(TransformState) make_rotate2d(float rotate);
-  INLINE static CPT(TransformState) make_pos_rotate2d(const LVecBase2f &pos,
-                                                      float rotate);
-  INLINE static CPT(TransformState) make_scale2d(float scale);
-  INLINE static CPT(TransformState) make_scale2d(const LVecBase2f &scale);
-  INLINE static CPT(TransformState) make_shear2d(float shear);
-  INLINE static CPT(TransformState) make_pos_rotate_scale2d(const LVecBase2f &pos,
-                                                            float rotate, 
-                                                            const LVecBase2f &scale);
-  static CPT(TransformState) make_pos_rotate_scale_shear2d(const LVecBase2f &pos,
-                                                           float rotate,
-                                                           const LVecBase2f &scale,
-                                                           float shear);
-  static CPT(TransformState) make_mat3(const LMatrix3f &mat);
+  INLINE static CPT(TransformState) make_pos2d(const LVecBase2 &pos);
+  INLINE static CPT(TransformState) make_rotate2d(PN_stdfloat rotate);
+  INLINE static CPT(TransformState) make_pos_rotate2d(const LVecBase2 &pos,
+                                                      PN_stdfloat rotate);
+  INLINE static CPT(TransformState) make_scale2d(PN_stdfloat scale);
+  INLINE static CPT(TransformState) make_scale2d(const LVecBase2 &scale);
+  INLINE static CPT(TransformState) make_shear2d(PN_stdfloat shear);
+  INLINE static CPT(TransformState) make_pos_rotate_scale2d(const LVecBase2 &pos,
+                                                            PN_stdfloat rotate, 
+                                                            const LVecBase2 &scale);
+  static CPT(TransformState) make_pos_rotate_scale_shear2d(const LVecBase2 &pos,
+                                                           PN_stdfloat rotate,
+                                                           const LVecBase2 &scale,
+                                                           PN_stdfloat shear);
+  static CPT(TransformState) make_mat3(const LMatrix3 &mat);
 
 
   INLINE bool is_identity() const;
@@ -139,31 +139,31 @@ PUBLISHED:
   INLINE bool has_nonzero_shear() const;
   INLINE bool has_mat() const;
 
-  INLINE const LPoint3f &get_pos() const;
-  INLINE const LVecBase3f &get_hpr() const;
-  INLINE const LQuaternionf &get_quat() const;
-  INLINE const LQuaternionf &get_norm_quat() const;
-  INLINE const LVecBase3f &get_scale() const;
-  INLINE float get_uniform_scale() const;
-  INLINE const LVecBase3f &get_shear() const;
-  INLINE const LMatrix4f &get_mat() const;
+  INLINE const LPoint3 &get_pos() const;
+  INLINE const LVecBase3 &get_hpr() const;
+  INLINE const LQuaternion &get_quat() const;
+  INLINE const LQuaternion &get_norm_quat() const;
+  INLINE const LVecBase3 &get_scale() const;
+  INLINE PN_stdfloat get_uniform_scale() const;
+  INLINE const LVecBase3 &get_shear() const;
+  INLINE const LMatrix4 &get_mat() const;
 
-  INLINE LVecBase2f get_pos2d() const;
-  INLINE float get_rotate2d() const;
-  INLINE LVecBase2f get_scale2d() const;
-  INLINE float get_shear2d() const;
-  INLINE LMatrix3f get_mat3() const;
+  INLINE LVecBase2 get_pos2d() const;
+  INLINE PN_stdfloat get_rotate2d() const;
+  INLINE LVecBase2 get_scale2d() const;
+  INLINE PN_stdfloat get_shear2d() const;
+  INLINE LMatrix3 get_mat3() const;
 
-  CPT(TransformState) set_pos(const LVecBase3f &pos) const;
-  CPT(TransformState) set_hpr(const LVecBase3f &hpr) const;
-  CPT(TransformState) set_quat(const LQuaternionf &quat) const;
-  CPT(TransformState) set_scale(const LVecBase3f &scale) const;
-  CPT(TransformState) set_shear(const LVecBase3f &shear) const;
+  CPT(TransformState) set_pos(const LVecBase3 &pos) const;
+  CPT(TransformState) set_hpr(const LVecBase3 &hpr) const;
+  CPT(TransformState) set_quat(const LQuaternion &quat) const;
+  CPT(TransformState) set_scale(const LVecBase3 &scale) const;
+  CPT(TransformState) set_shear(const LVecBase3 &shear) const;
 
-  CPT(TransformState) set_pos2d(const LVecBase2f &pos) const;
-  CPT(TransformState) set_rotate2d(float rotate) const;
-  CPT(TransformState) set_scale2d(const LVecBase2f &scale) const;
-  CPT(TransformState) set_shear2d(float shear) const;
+  CPT(TransformState) set_pos2d(const LVecBase2 &pos) const;
+  CPT(TransformState) set_rotate2d(PN_stdfloat rotate) const;
+  CPT(TransformState) set_scale2d(const LVecBase2 &scale) const;
+  CPT(TransformState) set_shear2d(PN_stdfloat shear) const;
 
   CPT(TransformState) compose(const TransformState *other) const;
   CPT(TransformState) invert_compose(const TransformState *other) const;
@@ -366,11 +366,11 @@ private:
     F_hash_known         = 0x00020000,
     F_norm_quat_known    = 0x00040000,
   };
-  LPoint3f _pos;
-  LVecBase3f _hpr, _scale, _shear;
-  LQuaternionf _quat, _norm_quat;
-  LMatrix4f _mat;
-  LMatrix4f *_inv_mat;
+  LPoint3 _pos;
+  LVecBase3 _hpr, _scale, _shear;
+  LQuaternion _quat, _norm_quat;
+  LMatrix4 _mat;
+  LMatrix4 *_inv_mat;
   size_t _hash;
   
   unsigned int _flags;

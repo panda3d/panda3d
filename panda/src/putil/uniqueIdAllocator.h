@@ -50,7 +50,7 @@ PUBLISHED:
   void initial_reserve_id(PN_uint32 id);
 
   void free(PN_uint32 index);
-  float fraction_used() const;
+  PN_stdfloat fraction_used() const;
 
   void output(ostream &out) const;
   void write(ostream &out) const;

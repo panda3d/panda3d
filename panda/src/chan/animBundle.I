@@ -18,7 +18,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE AnimBundle::
-AnimBundle(const string &name, float fps, int num_frames) : AnimGroup(name) {
+AnimBundle(const string &name, PN_stdfloat fps, int num_frames) : AnimGroup(name) {
   _fps = fps;
   _num_frames = num_frames;
   _root = this;

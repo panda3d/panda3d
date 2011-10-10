@@ -18,7 +18,7 @@
 #include "pandatoolbase.h"
 #include "pStatListener.h"
 #include "connectionManager.h"
-#include "vector_float.h"
+#include "vector_stdfloat.h"
 #include "pmap.h"
 #include "pdeque.h"
 
@@ -56,11 +56,11 @@ public:
   void release_udp_port(int port);
 
   int get_num_user_guide_bars() const;
-  float get_user_guide_bar_height(int n) const;
-  void move_user_guide_bar(int n, float height);
-  int add_user_guide_bar(float height);
+  PN_stdfloat get_user_guide_bar_height(int n) const;
+  void move_user_guide_bar(int n, PN_stdfloat height);
+  int add_user_guide_bar(PN_stdfloat height);
   void remove_user_guide_bar(int n);
-  int find_user_guide_bar(float from_height, float to_height) const;
+  int find_user_guide_bar(PN_stdfloat from_height, PN_stdfloat to_height) const;
 
   virtual bool is_thread_safe();
 
@@ -83,7 +83,7 @@ private:
   Ports _available_udp_ports;
   int _next_udp_port;
 
-  typedef vector_float GuideBars;
+  typedef vector_stdfloat GuideBars;
   GuideBars _user_guide_bars;
 };
 

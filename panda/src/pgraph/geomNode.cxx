@@ -1,5 +1,5 @@
 // Filename: geomNode.cxx
-// Created by:  drose (23Feb02)
+// Created by:  drose (23eb02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -162,7 +162,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
       if ((attrib_types & SceneGraphReducer::TT_color_scale) != 0) {
         if (geom_attribs._color_scale != (const RenderAttrib *)NULL) {
           CPT(ColorScaleAttrib) csa = DCAST(ColorScaleAttrib, geom_attribs._color_scale);
-          if (csa->get_scale() != LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f)) {
+          if (csa->get_scale() != LVecBase4(1.0f, 1.0f, 1.0f, 1.0f)) {
 
             
             // Now, if we have an "off" or "flat" color attribute, we
@@ -184,9 +184,9 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
               } else if (ca->get_color_type() == ColorAttrib::T_flat) {
                 // ColorAttrib::T_flat means the color scale modulates
                 // the specified color to produce a new color.
-                const Colorf &c1 = ca->get_color();
-                const LVecBase4f &c2 = csa->get_scale();
-                Colorf color(c1[0] * c2[0], c1[1] * c2[1], 
+                const LColor &c1 = ca->get_color();
+                const LVecBase4 &c2 = csa->get_scale();
+                LColor color(c1[0] * c2[0], c1[1] * c2[1], 
                              c1[2] * c2[2], c1[3] * c2[3]);
                 entry->_state = entry->_state->set_attrib(ColorAttrib::make_flat(color));
               
@@ -331,7 +331,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
 //               GeomNodes.
 ////////////////////////////////////////////////////////////////////
 void GeomNode::
-xform(const LMatrix4f &mat) {
+xform(const LMatrix4 &mat) {
   GeomTransformer transformer;
   transformer.transform_vertices(this, mat);
 }
@@ -456,13 +456,13 @@ combine_with(PandaNode *other) {
 //               already set.
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) GeomNode::
-calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, bool &found_any,
+calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point, bool &found_any,
                   const TransformState *transform, Thread *current_thread) const {
   CPT(TransformState) next_transform = 
     PandaNode::calc_tight_bounds(min_point, max_point, found_any, transform,
                                  current_thread);
 
-  const LMatrix4f &mat = next_transform->get_mat();
+  const LMatrix4 &mat = next_transform->get_mat();
 
   CDReader cdata(_cycler, current_thread);
   GeomList::const_iterator gi;

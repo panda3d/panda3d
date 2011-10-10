@@ -37,7 +37,7 @@ get_name() const {
 //               calling clear().
 ////////////////////////////////////////////////////////////////////
 INLINE bool DynamicTextFont::
-set_point_size(float point_size) {
+set_point_size(PN_stdfloat point_size) {
   // If this assertion fails, you didn't call clear() first.  RTFM.
   nassertr(get_num_pages() == 0, false);
 
@@ -49,7 +49,7 @@ set_point_size(float point_size) {
 //       Access: Published
 //  Description: Returns the point size of the font.
 ////////////////////////////////////////////////////////////////////
-INLINE float DynamicTextFont::
+INLINE PN_stdfloat DynamicTextFont::
 get_point_size() const {
   return FreetypeFont::get_point_size();
 }
@@ -70,7 +70,7 @@ get_point_size() const {
 //               calling clear().
 ////////////////////////////////////////////////////////////////////
 INLINE bool DynamicTextFont::
-set_pixels_per_unit(float pixels_per_unit) {
+set_pixels_per_unit(PN_stdfloat pixels_per_unit) {
   // If this assertion fails, you didn't call clear() first.  RTFM.
   nassertr(get_num_pages() == 0, false);
 
@@ -83,7 +83,7 @@ set_pixels_per_unit(float pixels_per_unit) {
 //  Description: Returns the resolution of the texture map.  See
 //               set_pixels_per_unit().
 ////////////////////////////////////////////////////////////////////
-INLINE float DynamicTextFont::
+INLINE PN_stdfloat DynamicTextFont::
 get_pixels_per_unit() const {
   return FreetypeFont::get_pixels_per_unit();
 }
@@ -106,7 +106,7 @@ get_pixels_per_unit() const {
 //               calling clear().
 ////////////////////////////////////////////////////////////////////
 INLINE bool DynamicTextFont::
-set_scale_factor(float scale_factor) {
+set_scale_factor(PN_stdfloat scale_factor) {
   // If this assertion fails, you didn't call clear() first.  RTFM.
   nassertr(get_num_pages() == 0, false);
 
@@ -119,7 +119,7 @@ set_scale_factor(float scale_factor) {
 //  Description: Returns the antialiasing scale factor.  See
 //               set_scale_factor().
 ////////////////////////////////////////////////////////////////////
-INLINE float DynamicTextFont::
+INLINE PN_stdfloat DynamicTextFont::
 get_scale_factor() const {
   return FreetypeFont::get_scale_factor();
 }
@@ -182,7 +182,7 @@ get_font_pixel_size() const {
 //  Description: Returns the number of units high each line of text
 //               is.
 ////////////////////////////////////////////////////////////////////
-INLINE float DynamicTextFont::
+INLINE PN_stdfloat DynamicTextFont::
 get_line_height() const {
   return TextFont::get_line_height();
 }
@@ -192,7 +192,7 @@ get_line_height() const {
 //       Access: Published
 //  Description: Returns the number of units wide a space is.
 ////////////////////////////////////////////////////////////////////
-INLINE float DynamicTextFont::
+INLINE PN_stdfloat DynamicTextFont::
 get_space_advance() const {
   return TextFont::get_space_advance();
 }
@@ -236,7 +236,7 @@ get_texture_margin() const {
 //               texture).
 ////////////////////////////////////////////////////////////////////
 INLINE void DynamicTextFont::
-set_poly_margin(float poly_margin) {
+set_poly_margin(PN_stdfloat poly_margin) {
   _poly_margin = poly_margin;
 }
 
@@ -247,7 +247,7 @@ set_poly_margin(float poly_margin) {
 //               included around each glyph in the generated polygons.
 //               See set_poly_margin().
 ////////////////////////////////////////////////////////////////////
-INLINE float DynamicTextFont::
+INLINE PN_stdfloat DynamicTextFont::
 get_poly_margin() const {
   return _poly_margin;
 }
@@ -421,7 +421,7 @@ get_winding_order() const {
 //               calling clear().
 ////////////////////////////////////////////////////////////////////
 INLINE void DynamicTextFont::
-set_fg(const Colorf &fg) {
+set_fg(const LColor &fg) {
   // If this assertion fails, you didn't call clear() first.  RTFM.
   nassertv(get_num_pages() == 0);
 
@@ -436,7 +436,7 @@ set_fg(const Colorf &fg) {
 //               font as they are rendered into the font texture.
 //               See set_fg().
 ////////////////////////////////////////////////////////////////////
-INLINE const Colorf &DynamicTextFont::
+INLINE const LColor &DynamicTextFont::
 get_fg() const {
   return _fg;
 }
@@ -462,7 +462,7 @@ get_fg() const {
 //               calling clear().
 ////////////////////////////////////////////////////////////////////
 INLINE void DynamicTextFont::
-set_bg(const Colorf &bg) {
+set_bg(const LColor &bg) {
   // If this assertion fails, you didn't call clear() first.  RTFM.
   nassertv(get_num_pages() == 0);
 
@@ -477,7 +477,7 @@ set_bg(const Colorf &bg) {
 //               font as they are rendered into the font texture.
 //               See set_bg().
 ////////////////////////////////////////////////////////////////////
-INLINE const Colorf &DynamicTextFont::
+INLINE const LColor &DynamicTextFont::
 get_bg() const {
   return _bg;
 }
@@ -505,8 +505,8 @@ get_bg() const {
 //               calling clear().
 ////////////////////////////////////////////////////////////////////
 INLINE void DynamicTextFont::
-set_outline(const Colorf &outline_color, float outline_width,
-            float outline_feather) {
+set_outline(const LColor &outline_color, PN_stdfloat outline_width,
+            PN_stdfloat outline_feather) {
   // If this assertion fails, you didn't call clear() first.  RTFM.
   nassertv(get_num_pages() == 0);
 
@@ -523,7 +523,7 @@ set_outline(const Colorf &outline_color, float outline_width,
 //               font as they are rendered into the font texture.
 //               See set_outline().
 ////////////////////////////////////////////////////////////////////
-INLINE const Colorf &DynamicTextFont::
+INLINE const LColor &DynamicTextFont::
 get_outline_color() const {
   return _outline_color;
 }
@@ -535,7 +535,7 @@ get_outline_color() const {
 //               font, as the number of points beyond each letter.
 //               See set_outline().
 ////////////////////////////////////////////////////////////////////
-INLINE float DynamicTextFont::
+INLINE PN_stdfloat DynamicTextFont::
 get_outline_width() const {
   return _outline_width;
 }
@@ -547,7 +547,7 @@ get_outline_width() const {
 //               font, as a value in the range 0.0 to 1.0.
 //               See set_outline().
 ////////////////////////////////////////////////////////////////////
-INLINE float DynamicTextFont::
+INLINE PN_stdfloat DynamicTextFont::
 get_outline_feather() const {
   return _outline_feather;
 }
@@ -570,7 +570,7 @@ get_tex_format() const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE DynamicTextFont::ContourPoint::
-ContourPoint(const LPoint2f &p, const LVector2f &in, const LVector2f &out) :
+ContourPoint(const LPoint2 &p, const LVector2 &in, const LVector2 &out) :
   _p(p), _in(in), _out(out)
 {
 }
@@ -581,7 +581,7 @@ ContourPoint(const LPoint2f &p, const LVector2f &in, const LVector2f &out) :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE DynamicTextFont::ContourPoint::
-ContourPoint(float px, float py, float tx, float ty) :
+ContourPoint(PN_stdfloat px, PN_stdfloat py, PN_stdfloat tx, PN_stdfloat ty) :
   _p(px, py), _in(tx, ty), _out(tx, ty)
 {
 }
@@ -596,11 +596,11 @@ ContourPoint(float px, float py, float tx, float ty) :
 //               together.
 ////////////////////////////////////////////////////////////////////
 INLINE void DynamicTextFont::ContourPoint::
-connect_to(const LVector2f &out) {
+connect_to(const LVector2 &out) {
   _out = out;
   if (_in.dot(_out) > 0.7071) {
     // Less than 45 degrees of difference: smooth them.
-    LVector2f av = (_in + _out) * 0.5f;
+    LVector2 av = (_in + _out) * 0.5f;
     av.normalize();
     _in = av;
     _out = av;

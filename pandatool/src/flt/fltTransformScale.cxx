@@ -35,7 +35,7 @@ FltTransformScale(FltHeader *header) : FltTransformRecord(header) {
 //  Description: Defines the scale.
 ////////////////////////////////////////////////////////////////////
 void FltTransformScale::
-set(const LPoint3d &center, const LVecBase3f &scale) {
+set(const LPoint3d &center, const LVecBase3 &scale) {
   _center = center;
   _scale = scale;
 
@@ -74,7 +74,7 @@ get_center() const {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-const LVecBase3f &FltTransformScale::
+const LVecBase3 &FltTransformScale::
 get_scale() const {
   return _scale;
 }

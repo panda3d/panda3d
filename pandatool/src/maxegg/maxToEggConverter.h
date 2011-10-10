@@ -47,7 +47,7 @@ class MaxToEggConverter {
  private:
     struct PandaMaterial {
         std::vector<PT(EggTexture)> _texture_list;
-        Colorf _color;
+        LColor _color;
         std::vector<int> _map_channels;
         bool _any_diffuse;
         bool _any_opacity;

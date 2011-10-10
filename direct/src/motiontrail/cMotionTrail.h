@@ -29,10 +29,10 @@
 class CMotionTrailVertex {
 
 public:
-  LVector4f _vertex;
-  LVector4f _start_color;
-  LVector4f _end_color;
-  float _v;
+  LVector4 _vertex;
+  LVector4 _start_color;
+  LVector4 _end_color;
+  PN_stdfloat _v;
   
   PT(NurbsCurveEvaluator) _nurbs_curve_evaluator;
 };
@@ -40,8 +40,8 @@ public:
 class CMotionTrailFrame {
 
 public:
-  float _time;
-  LMatrix4f _transform;
+  PN_stdfloat _time;
+  LMatrix4 _transform;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -98,48 +98,48 @@ PUBLISHED:
   void enable (bool enable);
 
   void set_geom_node (PT(GeomNode) geom_node);
-  void add_vertex (LVector4f *vertex, LVector4f *start_color, LVector4f *end_color, float v);
+  void add_vertex (LVector4 *vertex, LVector4 *start_color, LVector4 *end_color, PN_stdfloat v);
 
-  void set_parameters (float sampling_time, float time_window, bool use_texture, bool calculate_relative_matrix, bool use_nurbs, float resolution_distance);
+  void set_parameters (PN_stdfloat sampling_time, PN_stdfloat time_window, bool use_texture, bool calculate_relative_matrix, bool use_nurbs, PN_stdfloat resolution_distance);
 
-  int check_for_update (float current_time);
-  void update_motion_trail (float current_time, LMatrix4f *transform);
+  int check_for_update (PN_stdfloat current_time);
+  void update_motion_trail (PN_stdfloat current_time, LMatrix4 *transform);
 
 public:
 
   void begin_geometry ( );
-  void add_geometry_quad (LVector3f &v0, LVector3f &v1, LVector3f &v2, LVector3f &v3, LVector4f &c0, LVector4f &c1, LVector4f &c2, LVector4f &c3, LVector2f &t0, LVector2f &t1, LVector2f &t2, LVector2f &t3);
-  void add_geometry_quad (LVector4f &v0, LVector4f &v1, LVector4f &v2, LVector4f &v3, LVector4f &c0, LVector4f &c1, LVector4f &c2, LVector4f &c3, LVector2f &t0, LVector2f &t1, LVector2f &t2, LVector2f &t3);
+  void add_geometry_quad (LVector3 &v0, LVector3 &v1, LVector3 &v2, LVector3 &v3, LVector4 &c0, LVector4 &c1, LVector4 &c2, LVector4 &c3, LVector2 &t0, LVector2 &t1, LVector2 &t2, LVector2 &t3);
+  void add_geometry_quad (LVector4 &v0, LVector4 &v1, LVector4 &v2, LVector4 &v3, LVector4 &c0, LVector4 &c1, LVector4 &c2, LVector4 &c3, LVector2 &t0, LVector2 &t1, LVector2 &t2, LVector2 &t3);
   void end_geometry ( );
 
   int _active;
   int _enable;
 
   int _pause;
-  float _pause_time;
+  PN_stdfloat _pause_time;
 
   int _fade;
   int _fade_end;
-  float _fade_time;
-  float _fade_start_time;
-  float _fade_color_scale;
+  PN_stdfloat _fade_time;
+  PN_stdfloat _fade_start_time;
+  PN_stdfloat _fade_color_scale;
 
-  float _last_update_time;
+  PN_stdfloat _last_update_time;
 
   list <CMotionTrailVertex> _vertex_list;
   list <CMotionTrailFrame> _frame_list;
 
   // parameters
-  float _color_scale;
-  float _sampling_time;
-  float _time_window;
+  PN_stdfloat _color_scale;
+  PN_stdfloat _sampling_time;
+  PN_stdfloat _time_window;
   bool _square_t;
   bool _use_texture;
   int _calculate_relative_matrix;
 
   // nurbs parameters
   bool _use_nurbs;
-  float _resolution_distance;
+  PN_stdfloat _resolution_distance;
 
   // geom
   PT(GeomNode) _geom_node;

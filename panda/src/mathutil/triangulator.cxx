@@ -2187,7 +2187,7 @@ triangulate_single_polygon(int nvert, int posmax, int side) {
       }
       if (ri > 0)               /* reflex chain is non-empty */
         {
-          float crossResult = CROSS(vert[v].pt, vert[rc[ri - 1]].pt,
+          PN_stdfloat crossResult = CROSS(vert[v].pt, vert[rc[ri - 1]].pt,
                                     vert[rc[ri]].pt);
           if ( crossResult >= 0 )  /* could be convex corner or straight */
             {

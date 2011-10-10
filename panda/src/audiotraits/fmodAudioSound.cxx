@@ -349,7 +349,7 @@ get_loop_count() const {
 //               immediatey.
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
-set_time(float start_time) {
+set_time(PN_stdfloat start_time) {
   _start_time = start_time;
 
   if (status() == PLAYING) {
@@ -363,7 +363,7 @@ set_time(float start_time) {
 //       Access: public
 //  Description: Gets the play position within the sound
 ////////////////////////////////////////////////////////////////////
-float FmodAudioSound::
+PN_stdfloat FmodAudioSound::
 get_time() const {
   FMOD_RESULT result;
   unsigned int current_time;
@@ -382,13 +382,13 @@ get_time() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FmodAudioSound::set_volume(float vol)
+//     Function: FmodAudioSound::set_volume(PN_stdfloat vol)
 //       Access: public
 //  Description: 0.0 to 1.0 scale of volume converted to Fmod's
 //               internal 0.0 to 255.0 scale.
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
-set_volume(float vol) {
+set_volume(PN_stdfloat vol) {
   _volume = vol;
   set_volume_on_channel();
 }
@@ -398,7 +398,7 @@ set_volume(float vol) {
 //       Access: public
 //  Description: Gets the current volume of a sound.  1 is Max. O is Min.
 ////////////////////////////////////////////////////////////////////
-float FmodAudioSound::
+PN_stdfloat FmodAudioSound::
 get_volume() const {
   return _volume;
 }
@@ -482,12 +482,12 @@ set_volume_on_channel() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FmodAudioSound::set_balance(float bal)
+//     Function: FmodAudioSound::set_balance(PN_stdfloat bal)
 //       Access: public
 //  Description: -1.0 to 1.0 scale
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
-set_balance(float bal) {
+set_balance(PN_stdfloat bal) {
   _balance = bal;
   set_speaker_mix_or_balance_on_channel();
 }
@@ -499,13 +499,13 @@ set_balance(float bal) {
 //        -1 should be all the way left.
 //        1 is all the way to the right.
 ////////////////////////////////////////////////////////////////////
-float FmodAudioSound::
+PN_stdfloat FmodAudioSound::
 get_balance() const {
   return _balance;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FmodAudioSound::set_play_rate(float rate)
+//     Function: FmodAudioSound::set_play_rate(PN_stdfloat rate)
 //       Access: public
 //  Description: Sets the speed at which a sound plays back.
 //        The rate is a multiple of the sound, normal playback speed.
@@ -515,7 +515,7 @@ get_balance() const {
 //        sound's time to its end to hear a song play backwards.
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
-set_play_rate(float rate) {
+set_play_rate(PN_stdfloat rate) {
   _playrate = rate;
   set_play_rate_on_channel();
 }
@@ -525,7 +525,7 @@ set_play_rate(float rate) {
 //       Access: public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-float FmodAudioSound::
+PN_stdfloat FmodAudioSound::
 get_play_rate() const {
   return _playrate;
 }
@@ -538,7 +538,7 @@ get_play_rate() const {
 void FmodAudioSound::
 set_play_rate_on_channel() {
   FMOD_RESULT result;
-  float frequency = _sampleFrequency * _playrate;
+  PN_stdfloat frequency = _sampleFrequency * _playrate;
   
   if (_channel != 0) {
     result = _channel->setFrequency( frequency );
@@ -566,7 +566,7 @@ get_name() const {
 //  Description: Get length
 //        FMOD returns the time in MS  so we have to convert to seconds.
 ////////////////////////////////////////////////////////////////////
-float FmodAudioSound::
+PN_stdfloat FmodAudioSound::
 length() const {
   FMOD_RESULT result;
   unsigned int length;
@@ -593,7 +593,7 @@ length() const {
 //        I told you, so you can't say I didn't.
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
-set_3d_attributes(float px, float py, float pz, float vx, float vy, float vz) {
+set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz) {
   _location.x = px;
   _location.y = pz;
   _location.z = py;
@@ -635,7 +635,7 @@ set_3d_attributes_on_channel() {
 //         Currently unimplemented. Get the attributes of the attached object.
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
-get_3d_attributes(float *px, float *py, float *pz, float *vx, float *vy, float *vz) {
+get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz) {
   audio_error("get3dAttributes: Currently unimplemented. Get the attributes of the attached object.");
 }
 
@@ -646,7 +646,7 @@ get_3d_attributes(float *px, float *py, float *pz, float *vx, float *vy, float *
 //               affects the rate it falls off.
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
-set_3d_min_distance(float dist) {
+set_3d_min_distance(PN_stdfloat dist) {
   FMOD_RESULT result;
 
   _min_dist = dist;
@@ -660,7 +660,7 @@ set_3d_min_distance(float dist) {
 //       Access: public
 //  Description: Get the distance that this sound begins to fall off
 ////////////////////////////////////////////////////////////////////
-float FmodAudioSound::
+PN_stdfloat FmodAudioSound::
 get_3d_min_distance() const {
   return _min_dist;
 }
@@ -671,7 +671,7 @@ get_3d_min_distance() const {
 //  Description: Set the distance that this sound stops falling off
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
-set_3d_max_distance(float dist) {
+set_3d_max_distance(PN_stdfloat dist) {
   FMOD_RESULT result;
 
   _max_dist = dist;
@@ -685,7 +685,7 @@ set_3d_max_distance(float dist) {
 //       Access: public
 //  Description: Get the distance that this sound stops falling off
 ////////////////////////////////////////////////////////////////////
-float FmodAudioSound::
+PN_stdfloat FmodAudioSound::
 get_3d_max_distance() const {
   return _max_dist;
 }
@@ -701,7 +701,7 @@ get_3d_max_distance() const {
 //        BTW This will also work in Stereo speaker systems, but since
 //        PANDA/FMOD has a balance [pan] function what is the point?
 ////////////////////////////////////////////////////////////////////
-float FmodAudioSound::
+PN_stdfloat FmodAudioSound::
 get_speaker_mix(AudioManager::SpeakerId speaker) {
   if (_channel == 0) {
     return 0.0;
@@ -750,7 +750,7 @@ get_speaker_mix(AudioManager::SpeakerId speaker) {
 //
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
-set_speaker_mix(float frontleft, float frontright, float center, float sub, float backleft, float backright, float sideleft, float  sideright) {
+set_speaker_mix(PN_stdfloat frontleft, PN_stdfloat frontright, PN_stdfloat center, PN_stdfloat sub, PN_stdfloat backleft, PN_stdfloat backright, PN_stdfloat sideleft, PN_stdfloat  sideright) {
   _mix[AudioManager::SPK_frontleft]  = frontleft;
   _mix[AudioManager::SPK_frontright] = frontright;
   _mix[AudioManager::SPK_center]     = center;

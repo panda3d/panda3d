@@ -889,7 +889,7 @@ request_resident() const {
 //               same transform to multiple Geoms.
 ////////////////////////////////////////////////////////////////////
 void Geom::
-transform_vertices(const LMatrix4f &mat) {
+transform_vertices(const LMatrix4 &mat) {
   PT(GeomVertexData) new_data = modify_vertex_data();
   CPT(GeomVertexFormat) format = new_data->get_format();
   
@@ -898,16 +898,16 @@ transform_vertices(const LMatrix4f &mat) {
     GeomVertexRewriter data(new_data, format->get_point(ci));
     
     while (!data.is_at_end()) {
-      const LPoint3f &point = data.get_data3f();
-      data.set_data3f(point * mat);
+      const LPoint3 &point = data.get_data3();
+      data.set_data3(point * mat);
     }
   }
   for (ci = 0; ci < format->get_num_vectors(); ci++) {
     GeomVertexRewriter data(new_data, format->get_vector(ci));
     
     while (!data.is_at_end()) {
-      const LVector3f &vector = data.get_data3f();
-      data.set_data3f(normalize(vector * mat));
+      const LVector3 &vector = data.get_data3();
+      data.set_data3(normalize(vector * mat));
     }
   }
 }
@@ -1254,10 +1254,10 @@ compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
 
   // Now actually compute the bounding volume.  We do this by using
   // calc_tight_bounds to determine our box first.
-  LPoint3f min, max;
+  LPoint3 min, max;
   bool found_any = false;
   do_calc_tight_bounds(min, max, found_any, vertex_data,
-                       false, LMatrix4f::ident_mat(), 
+                       false, LMatrix4::ident_mat(), 
                        InternalName::get_vertex(),
                        cdata, current_thread);
 
@@ -1309,10 +1309,10 @@ compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
 //  Description: The private implementation of calc_tight_bounds().
 ////////////////////////////////////////////////////////////////////
 void Geom::
-do_calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+do_calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
                      bool &found_any, 
                      const GeomVertexData *vertex_data,
-                     bool got_mat, const LMatrix4f &mat,
+                     bool got_mat, const LMatrix4 &mat,
                      const InternalName *column_name,
                      const CData *cdata, Thread *current_thread) const {
   Primitives::const_iterator pi;

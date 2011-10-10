@@ -35,21 +35,21 @@ PUBLISHED:
   
   PhysicsObject *get_physics_object() { return _mass_center; }
   
-  void set_contact_vector(const LVector3f &contact_vector);
-  const LVector3f &get_contact_vector() const;
+  void set_contact_vector(const LVector3 &contact_vector);
+  const LVector3 &get_contact_vector() const;
 
   // update the parent scene graph node with PhysicsObject information
   // i.e. copy from PhysicsObject to PandaNode
   void update_transform();
   
-  void set_transform_limit(float limit) { _transform_limit = limit; };
+  void set_transform_limit(PN_stdfloat limit) { _transform_limit = limit; };
   virtual void write(ostream &out, unsigned int indent=0) const;
 
 private:
   PhysicsObject *_mass_center;
-  LVector3f _contact_vector;
+  LVector3 _contact_vector;
   bool _ok_to_callback;
-  float _transform_limit;
+  PN_stdfloat _transform_limit;
 
   // node hook if the client changes the node's transform.
   // i.e. copy from PandaNode to PhysicsObject

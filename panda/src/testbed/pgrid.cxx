@@ -20,7 +20,7 @@
 #include "pvector.h"
 #include "panda_getopt.h"
 
-#define RANDFRAC (rand()/(float)(RAND_MAX))
+#define RANDFRAC (rand()/(PN_stdfloat)(RAND_MAX))
 
 class GriddedFilename {
 public:
@@ -32,20 +32,20 @@ typedef pvector<GriddedFilename> GriddedFilenames;
 
 typedef struct {
   // for rot moving
-  float xcenter,ycenter;
-  float xoffset,yoffset;
-  float ang1,ang1_vel;
-  float ang2,ang2_vel;
+  PN_stdfloat xcenter,ycenter;
+  PN_stdfloat xoffset,yoffset;
+  PN_stdfloat ang1,ang1_vel;
+  PN_stdfloat ang2,ang2_vel;
 
-  float radius;
+  PN_stdfloat radius;
 
   // for moving
-  float xstart,ystart;
-  float xend,yend;
-  float xdel,ydel,timedel;
+  PN_stdfloat xstart,ystart;
+  PN_stdfloat xend,yend;
+  PN_stdfloat xdel,ydel,timedel;
   double starttime,endtime;
   double vel;
-  LMatrix4f rotmat;
+  LMatrix4 rotmat;
 
   PandaNode *node;
 } gridded_file_info;
@@ -59,8 +59,8 @@ static int gridwidth;  // cells/side
 
 #define MIN_WANDERAREA_DIMENSION 120.0f
 
-static float grid_pos_offset;  // origin of grid
-static float wander_area_pos_offset;
+static PN_stdfloat grid_pos_offset;  // origin of grid
+static PN_stdfloat wander_area_pos_offset;
 
 static GriddedMotionType gridmotiontype = None;
 
@@ -71,13 +71,13 @@ move_gridded_stuff(GriddedMotionType gridmotiontype,
                    gridded_file_info *InfoArr, int size) {
   double now = ClockObject::get_global_clock()->get_frame_time();
 
-  LMatrix4f tmat1,tmat2,xfm_mat;
+  LMatrix4 tmat1,tmat2,xfm_mat;
 
   for(int i = 0; i < size; i++) {
     double time_delta = (now-InfoArr[i].starttime);
 #define DO_FP_MODULUS(VAL,MAXVAL)  \
-    {if(VAL > MAXVAL) {int idivresult = (int)(VAL / (float)MAXVAL);  VAL=VAL-idivresult*MAXVAL;} else  \
-    if(VAL < -MAXVAL) {int idivresult = (int)(VAL / (float)MAXVAL);  VAL=VAL+idivresult*MAXVAL;}}
+    {if(VAL > MAXVAL) {int idivresult = (int)(VAL / (PN_stdfloat)MAXVAL);  VAL=VAL-idivresult*MAXVAL;} else  \
+    if(VAL < -MAXVAL) {int idivresult = (int)(VAL / (PN_stdfloat)MAXVAL);  VAL=VAL+idivresult*MAXVAL;}}
 
     // probably should use panda lerps for this stuff, but I don't understand how
 
@@ -89,21 +89,21 @@ move_gridded_stuff(GriddedMotionType gridmotiontype,
       DO_FP_MODULUS(InfoArr[i].ang2,360.0);
 
       // xforms happen left to right
-      LVector2f new_center = LVector2f(InfoArr[i].radius,0.0) *
-        LMatrix3f::rotate_mat(InfoArr[i].ang1);
+      LVector2 new_center = LVector2(InfoArr[i].radius,0.0) *
+        LMatrix3::rotate_mat(InfoArr[i].ang1);
 
-      LVector3f translate_vec(InfoArr[i].xcenter+new_center._v.v._0,
+      LVector3 translate_vec(InfoArr[i].xcenter+new_center._v.v._0,
                               InfoArr[i].ycenter+new_center._v.v._1,
                               0.0);
 
-      const LVector3f rotation_axis(0.0, 0.0, 1.0);
+      const LVector3 rotation_axis(0.0, 0.0, 1.0);
 
-      tmat1 = LMatrix4f::rotate_mat_normaxis(InfoArr[i].ang2,rotation_axis);
-      tmat2 = LMatrix4f::translate_mat(translate_vec);
+      tmat1 = LMatrix4::rotate_mat_normaxis(InfoArr[i].ang2,rotation_axis);
+      tmat2 = LMatrix4::translate_mat(translate_vec);
       xfm_mat = tmat1 * tmat2;
     } else {
 
-      float xpos,ypos;
+      PN_stdfloat xpos,ypos;
 
       if(now>InfoArr[i].endtime) {
         InfoArr[i].starttime = now;
@@ -114,26 +114,26 @@ move_gridded_stuff(GriddedMotionType gridmotiontype,
         InfoArr[i].xend = RANDFRAC*fabs(2.0*wander_area_pos_offset) + wander_area_pos_offset;
         InfoArr[i].yend = RANDFRAC*fabs(2.0*wander_area_pos_offset) + wander_area_pos_offset;
 
-        float xdel = InfoArr[i].xdel = InfoArr[i].xend-InfoArr[i].xstart;
-        float ydel = InfoArr[i].ydel = InfoArr[i].yend-InfoArr[i].ystart;
+        PN_stdfloat xdel = InfoArr[i].xdel = InfoArr[i].xend-InfoArr[i].xstart;
+        PN_stdfloat ydel = InfoArr[i].ydel = InfoArr[i].yend-InfoArr[i].ystart;
 
         InfoArr[i].endtime = now + csqrt(xdel*xdel+ydel*ydel)/InfoArr[i].vel;
         InfoArr[i].timedel = InfoArr[i].endtime - InfoArr[i].starttime;
 
-        const LVector3f rotate_axis(0.0, 0.0, 1.0);
+        const LVector3 rotate_axis(0.0, 0.0, 1.0);
 
-        float ang = rad_2_deg(atan2(-xdel,ydel));
+        PN_stdfloat ang = rad_2_deg(atan2(-xdel,ydel));
 
-        InfoArr[i].rotmat= LMatrix4f::rotate_mat_normaxis(ang,rotate_axis);
+        InfoArr[i].rotmat= LMatrix4::rotate_mat_normaxis(ang,rotate_axis);
       } else {
-        float timefrac= time_delta/InfoArr[i].timedel;
+        PN_stdfloat timefrac= time_delta/InfoArr[i].timedel;
 
         xpos = InfoArr[i].xdel*timefrac+InfoArr[i].xstart;
         ypos = InfoArr[i].ydel*timefrac+InfoArr[i].ystart;
       }
 
-      LVector3f translate_vec(xpos, ypos, 0.0);
-      LMatrix4f tmat2 = LMatrix4f::translate_mat(translate_vec);
+      LVector3 translate_vec(xpos, ypos, 0.0);
+      LMatrix4 tmat2 = LMatrix4::translate_mat(translate_vec);
 
       xfm_mat = InfoArr[i].rotmat * tmat2;
     }
@@ -243,13 +243,13 @@ load_gridded_models(WindowFramework *window,
   }
 
   grid_pos_offset = -gridwidth*GRIDCELLSIZE/2.0;
-  wander_area_pos_offset = -max((float)fabs(grid_pos_offset), MIN_WANDERAREA_DIMENSION/2.0f);
+  wander_area_pos_offset = -max((PN_stdfloat)fabs(grid_pos_offset), MIN_WANDERAREA_DIMENSION/2.0f);
 
   // Now walk through the list again, copying models into the scene
   // graph as we go.
 
-  float xpos = grid_pos_offset;
-  float ypos = grid_pos_offset;
+  PN_stdfloat xpos = grid_pos_offset;
+  PN_stdfloat ypos = grid_pos_offset;
 
   srand( (unsigned)time( NULL ) );
   double now = ClockObject::get_global_clock()->get_frame_time();
@@ -282,7 +282,7 @@ load_gridded_models(WindowFramework *window,
         gridded_file_info info;
         info.node = model.node();
 
-        LMatrix4f xfm_mat,tmat1,tmat2;
+        LMatrix4 xfm_mat,tmat1,tmat2;
 
         if(gridmotiontype==Rotation) {
 
@@ -316,17 +316,17 @@ load_gridded_models(WindowFramework *window,
           }
 
           // xforms happen left to right
-          LVector2f new_center = LVector2f(info.radius,0.0) *
-            LMatrix3f::rotate_mat(info.ang1);
+          LVector2 new_center = LVector2(info.radius,0.0) *
+            LMatrix3::rotate_mat(info.ang1);
 
-          const LVector3f rotate_axis(0.0, 0.0, 1.0);
+          const LVector3 rotate_axis(0.0, 0.0, 1.0);
 
-          LVector3f translate_vec(xpos+new_center._v.v._0,
+          LVector3 translate_vec(xpos+new_center._v.v._0,
                                   ypos+new_center._v.v._1,
                                   0.0);
 
           tmat1.set_rotate_mat_normaxis(info.ang2,rotate_axis);
-          tmat2 = LMatrix4f::translate_mat(translate_vec);
+          tmat2 = LMatrix4::translate_mat(translate_vec);
           xfm_mat = tmat1 * tmat2;
         } else if(gridmotiontype==LinearMotion) {
 
@@ -343,25 +343,25 @@ load_gridded_models(WindowFramework *window,
 
           info.starttime = now;
 
-          float xdel = info.xdel = info.xend-info.xstart;
-          float ydel = info.ydel = info.yend-info.ystart;
+          PN_stdfloat xdel = info.xdel = info.xend-info.xstart;
+          PN_stdfloat ydel = info.ydel = info.yend-info.ystart;
 
           info.endtime = csqrt(xdel*xdel+ydel*ydel)/info.vel;
 
           info.timedel = info.endtime - info.starttime;
 
-          const LVector3f rotate_axis(0.0, 0.0, 1.0);
-          float ang = rad_2_deg(atan2(-xdel,ydel));
+          const LVector3 rotate_axis(0.0, 0.0, 1.0);
+          PN_stdfloat ang = rad_2_deg(atan2(-xdel,ydel));
 
           info.rotmat.set_rotate_mat_normaxis(ang,rotate_axis);
 
-          LVector3f translate_vec(xpos, ypos, 0.0);
-          LMatrix4f tmat2 = LMatrix4f::translate_mat(translate_vec);
+          LVector3 translate_vec(xpos, ypos, 0.0);
+          LMatrix4 tmat2 = LMatrix4::translate_mat(translate_vec);
 
           xfm_mat = info.rotmat * tmat2;
         } else {
-          LVector3f translate_vec(xpos, ypos, 0.0);
-          xfm_mat = LMatrix4f::translate_mat(translate_vec);
+          LVector3 translate_vec(xpos, ypos, 0.0);
+          xfm_mat = LMatrix4::translate_mat(translate_vec);
         }
 
         info.node->set_transform(TransformState::make_mat(xfm_mat));

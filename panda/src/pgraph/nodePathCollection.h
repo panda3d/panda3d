@@ -82,17 +82,17 @@ PUBLISHED:
   void set_texture_off(int priority = 0);
   void set_texture_off(TextureStage *stage, int priority = 0);
 
-  INLINE void set_color(float r, float g, float b, float a = 1.0,
+  INLINE void set_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a = 1.0,
                         int priority = 0);
-  void set_color(const Colorf &color, int priority = 0);
+  void set_color(const LColor &color, int priority = 0);
 
-  INLINE void set_color_scale(float r, float g, float b, float a = 1.0,
+  INLINE void set_color_scale(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a = 1.0,
                               int priority = 0);
-  void set_color_scale(const LVecBase4f &scale, int priority = 0);
+  void set_color_scale(const LVecBase4 &scale, int priority = 0);
 
-  INLINE void compose_color_scale(float r, float g, float b, float a = 1.0,
+  INLINE void compose_color_scale(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a = 1.0,
                                   int priority = 0);
-  void compose_color_scale(const LVecBase4f &scale, int priority = 0);
+  void compose_color_scale(const LVecBase4 &scale, int priority = 0);
 
   void set_attrib(const RenderAttrib *attrib, int priority = 0);
 

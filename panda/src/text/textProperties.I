@@ -176,7 +176,7 @@ get_small_caps() const {
 //               this will be a number less than one.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextProperties::
-set_small_caps_scale(float small_caps_scale) {
+set_small_caps_scale(PN_stdfloat small_caps_scale) {
   _small_caps_scale = small_caps_scale;
 }
 
@@ -209,7 +209,7 @@ has_small_caps_scale() const {
 //               flag is in effect.  See set_small_caps() and
 //               set_small_caps_scale().
 ////////////////////////////////////////////////////////////////////
-INLINE float TextProperties::
+INLINE PN_stdfloat TextProperties::
 get_small_caps_scale() const {
   return _small_caps_scale;
 }
@@ -221,7 +221,7 @@ get_small_caps_scale() const {
 //               right.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextProperties::
-set_slant(float slant) {
+set_slant(PN_stdfloat slant) {
   _slant = slant;
   _specified |= F_has_slant;
 }
@@ -253,7 +253,7 @@ has_slant() const {
 //  Description: Returns the factor by which the text is specified to
 //               slant to the right.
 ////////////////////////////////////////////////////////////////////
-INLINE float TextProperties::
+INLINE PN_stdfloat TextProperties::
 get_slant() const {
   return _slant;
 }
@@ -312,7 +312,7 @@ get_underscore() const {
 //               set_underscore().
 ////////////////////////////////////////////////////////////////////
 INLINE void TextProperties::
-set_underscore_height(float underscore_height) {
+set_underscore_height(PN_stdfloat underscore_height) {
   _underscore_height = underscore_height;
   _specified |= F_has_underscore_height;
 }
@@ -344,7 +344,7 @@ has_underscore_height() const {
 //  Description: Returns the vertical height of the underscore; see
 //               set_underscore_height().
 ////////////////////////////////////////////////////////////////////
-INLINE float TextProperties::
+INLINE PN_stdfloat TextProperties::
 get_underscore_height() const {
   return has_underscore_height() ? _underscore_height : text_default_underscore_height;
 }
@@ -400,7 +400,7 @@ get_align() const {
 //               thought of as a left margin.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextProperties::
-set_indent(float indent) {
+set_indent(PN_stdfloat indent) {
   _indent_width = indent;
   _specified |= F_has_indent;
 }
@@ -432,7 +432,7 @@ has_indent() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE float TextProperties::
+INLINE PN_stdfloat TextProperties::
 get_indent() const {
   return _indent_width;
 }
@@ -445,7 +445,7 @@ get_indent() const {
 //               as a right margin or margin width.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextProperties::
-set_wordwrap(float wordwrap) {
+set_wordwrap(PN_stdfloat wordwrap) {
   _wordwrap_width = wordwrap;
   _specified |= F_has_wordwrap;
 }
@@ -477,7 +477,7 @@ has_wordwrap() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE float TextProperties::
+INLINE PN_stdfloat TextProperties::
 get_wordwrap() const {
   return _wordwrap_width;
 }
@@ -537,8 +537,8 @@ get_preserve_trailing_whitespace() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void TextProperties::
-set_text_color(float r, float g, float b, float a) {
-  set_text_color(Colorf(r, g, b, a));
+set_text_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a) {
+  set_text_color(LColor(r, g, b, a));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -547,7 +547,7 @@ set_text_color(float r, float g, float b, float a) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void TextProperties::
-set_text_color(const Colorf &text_color) {
+set_text_color(const LColor &text_color) {
   _text_color = text_color;
   _specified |= F_has_text_color;
 }
@@ -579,7 +579,7 @@ has_text_color() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE Colorf TextProperties::
+INLINE LColor TextProperties::
 get_text_color() const {
   return _text_color;
 }
@@ -590,8 +590,8 @@ get_text_color() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void TextProperties::
-set_shadow_color(float r, float g, float b, float a) {
-  set_shadow_color(Colorf(r, g, b, a));
+set_shadow_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a) {
+  set_shadow_color(LColor(r, g, b, a));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -600,7 +600,7 @@ set_shadow_color(float r, float g, float b, float a) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void TextProperties::
-set_shadow_color(const Colorf &shadow_color) {
+set_shadow_color(const LColor &shadow_color) {
   _shadow_color = shadow_color;
   _specified |= F_has_shadow_color;
 }
@@ -631,7 +631,7 @@ has_shadow_color() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE Colorf TextProperties::
+INLINE LColor TextProperties::
 get_shadow_color() const {
   return _shadow_color;
 }
@@ -644,8 +644,8 @@ get_shadow_color() const {
 //               offsetting it slightly behind the first.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextProperties::
-set_shadow(float xoffset, float yoffset) {
-  set_shadow(LVecBase2f(xoffset, yoffset));
+set_shadow(PN_stdfloat xoffset, PN_stdfloat yoffset) {
+  set_shadow(LVecBase2(xoffset, yoffset));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -656,7 +656,7 @@ set_shadow(float xoffset, float yoffset) {
 //               offsetting it slightly behind the first.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextProperties::
-set_shadow(const LVecBase2f &shadow_offset) {
+set_shadow(const LVecBase2 &shadow_offset) {
   _shadow_offset = shadow_offset;
   _specified |= F_has_shadow;
 }
@@ -690,7 +690,7 @@ has_shadow() const {
 //               set_shadow().  It is an error to call this if
 //               has_shadow() is false.
 ////////////////////////////////////////////////////////////////////
-INLINE LVector2f TextProperties::
+INLINE LVector2 TextProperties::
 get_shadow() const {
   return _shadow_offset;
 }
@@ -810,7 +810,7 @@ get_draw_order() const {
 //               horizontal position to the next tab stop.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextProperties::
-set_tab_width(float tab_width) {
+set_tab_width(PN_stdfloat tab_width) {
   _tab_width = tab_width;
   _specified |= F_has_tab_width;
 }
@@ -841,7 +841,7 @@ has_tab_width() const {
 //       Access: Published
 //  Description: Returns the width set via set_tab_width().
 ////////////////////////////////////////////////////////////////////
-INLINE float TextProperties::
+INLINE PN_stdfloat TextProperties::
 get_tab_width() const {
   return _tab_width;
 }
@@ -864,7 +864,7 @@ get_tab_width() const {
 //               and is not cumulative.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextProperties::
-set_glyph_scale(float glyph_scale) {
+set_glyph_scale(PN_stdfloat glyph_scale) {
   _glyph_scale = glyph_scale;
   _specified |= F_has_glyph_scale;
 }
@@ -896,7 +896,7 @@ has_glyph_scale() const {
 //  Description: Returns the scale factor of each letter as specified
 //               by set_glyph_scale().
 ////////////////////////////////////////////////////////////////////
-INLINE float TextProperties::
+INLINE PN_stdfloat TextProperties::
 get_glyph_scale() const {
   return _glyph_scale;
 }
@@ -910,7 +910,7 @@ get_glyph_scale() const {
 //               superscripting or subscripting.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextProperties::
-set_glyph_shift(float glyph_shift) {
+set_glyph_shift(PN_stdfloat glyph_shift) {
   _glyph_shift = glyph_shift;
   _specified |= F_has_glyph_shift;
 }
@@ -942,7 +942,7 @@ has_glyph_shift() const {
 //  Description: Returns the vertical shift of each letter as
 //               specified by set_glyph_shift().
 ////////////////////////////////////////////////////////////////////
-INLINE float TextProperties::
+INLINE PN_stdfloat TextProperties::
 get_glyph_shift() const {
   return _glyph_shift;
 }
@@ -959,7 +959,7 @@ get_glyph_shift() const {
 //               which is cumulative.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextProperties::
-set_text_scale(float text_scale) {
+set_text_scale(PN_stdfloat text_scale) {
   _text_scale = text_scale;
   _specified |= F_has_text_scale;
 }
@@ -991,7 +991,7 @@ has_text_scale() const {
 //  Description: Returns the scale factor of the text as specified
 //               by set_text_scale().
 ////////////////////////////////////////////////////////////////////
-INLINE float TextProperties::
+INLINE PN_stdfloat TextProperties::
 get_text_scale() const {
   return _text_scale;
 }

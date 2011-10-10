@@ -43,7 +43,7 @@ get_mode() const {
 //       Access: Published
 //  Description: Returns the nth lighting level.
 ////////////////////////////////////////////////////////////////////
-INLINE float LightRampAttrib::
+INLINE PN_stdfloat LightRampAttrib::
 get_level(int n) const {
   if ((n<0)||(n>1)) return 0.0;
   return _level[n];
@@ -54,7 +54,7 @@ get_level(int n) const {
 //       Access: Published
 //  Description: Returns the nth threshold level.
 ////////////////////////////////////////////////////////////////////
-INLINE float LightRampAttrib::
+INLINE PN_stdfloat LightRampAttrib::
 get_threshold(int n) const {
   if ((n<0)||(n>1)) return 0.0;
   return _threshold[n];

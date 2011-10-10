@@ -64,6 +64,10 @@ typedef void (APIENTRYP PFNGLMULTITEXCOORD1FPROC) (GLenum target, const GLfloat 
 typedef void (APIENTRYP PFNGLMULTITEXCOORD2FPROC) (GLenum target, const GLfloat s, const GLfloat t);
 typedef void (APIENTRYP PFNGLMULTITEXCOORD3FPROC) (GLenum target, const GLfloat s, const GLfloat t, const GLfloat r);
 typedef void (APIENTRYP PFNGLMULTITEXCOORD4FPROC) (GLenum target, const GLfloat s, const GLfloat t, const GLfloat r, const GLfloat q);
+typedef void (APIENTRYP PFNGLMULTITEXCOORD1DPROC) (GLenum target, const GLdouble s);
+typedef void (APIENTRYP PFNGLMULTITEXCOORD2DPROC) (GLenum target, const GLdouble s, const GLdouble t);
+typedef void (APIENTRYP PFNGLMULTITEXCOORD3DPROC) (GLenum target, const GLdouble s, const GLdouble t, const GLdouble r);
+typedef void (APIENTRYP PFNGLMULTITEXCOORD4DPROC) (GLenum target, const GLdouble s, const GLdouble t, const GLdouble r, const GLdouble q);
 typedef void (APIENTRYP PFNGLBLENDEQUATIONPROC) (GLenum mode);
 typedef void (APIENTRYP PFNGLBLENDCOLORPROC) (GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
 typedef void (APIENTRYP PFNGLCLIENTACTIVETEXTUREPROC) (GLenum texture);
@@ -84,6 +88,7 @@ typedef void (APIENTRYP PFNGLACTIVESTENCILFACEEXTPROC) (GLenum face);
 typedef void (APIENTRYP PFNGLWEIGHTPOINTERARBPROC) (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer); 
 typedef void (APIENTRYP PFNGLVERTEXBLENDARBPROC) (GLint count); 
 typedef void (APIENTRYP PFNGLWEIGHTFVARBPROC) (GLint size, const GLfloat *weights); 
+typedef void (APIENTRYP PFNGLWEIGHTDVARBPROC) (GLint size, const GLdouble *weights); 
 typedef GLboolean (APIENTRYP PFNGLISRENDERBUFFEREXTPROC) (GLuint renderbuffer); 
 typedef void (APIENTRYP PFNGLBINDRENDERBUFFEREXTPROC) (GLenum target, GLuint renderbuffer); 
 typedef void (APIENTRYP PFNGLDELETERENDERBUFFERSEXTPROC) (GLsizei n, const GLuint *renderbuffers); 
@@ -140,12 +145,18 @@ typedef void (APIENTRYP PFNGLLINKPROGRAMPROC) (GLuint program);
 typedef void (APIENTRYP PFNGLSHADERSOURCEPROC) (GLuint shader, GLsizei count, const GLchar* *string, const GLint *length);
 typedef void (APIENTRYP PFNGLUSEPROGRAMPROC) (GLuint program);
 typedef void (APIENTRYP PFNGLUNIFORM4FPROC) (GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
+typedef void (APIENTRYP PFNGLUNIFORM4DPROC) (GLint location, GLdouble v0, GLdouble v1, GLdouble v2, GLdouble v3);
 typedef void (APIENTRYP PFNGLUNIFORM1IPROC) (GLint location, GLint v0);
 typedef void (APIENTRYP PFNGLUNIFORM1FVPROC) (GLint location, GLsizei count, const GLfloat *value);
 typedef void (APIENTRYP PFNGLUNIFORM2FVPROC) (GLint location, GLsizei count, const GLfloat *value);
 typedef void (APIENTRYP PFNGLUNIFORM3FVPROC) (GLint location, GLsizei count, const GLfloat *value);
 typedef void (APIENTRYP PFNGLUNIFORM4FVPROC) (GLint location, GLsizei count, const GLfloat *value);
+typedef void (APIENTRYP PFNGLUNIFORM1DVPROC) (GLint location, GLsizei count, const GLdouble *value);
+typedef void (APIENTRYP PFNGLUNIFORM2DVPROC) (GLint location, GLsizei count, const GLdouble *value);
+typedef void (APIENTRYP PFNGLUNIFORM3DVPROC) (GLint location, GLsizei count, const GLdouble *value);
+typedef void (APIENTRYP PFNGLUNIFORM4DVPROC) (GLint location, GLsizei count, const GLdouble *value);
 typedef void (APIENTRYP PFNGLUNIFORMMATRIX4FVPROC) (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
+typedef void (APIENTRYP PFNGLUNIFORMMATRIX4DVPROC) (GLint location, GLsizei count, GLboolean transpose, const GLdouble *value);
 typedef void (APIENTRYP PFNGLVALIDATEPROGRAMPROC) (GLuint program);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBPOINTERPROC) (GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid *pointer);
 #endif  // OPENGLES_1
@@ -253,7 +264,7 @@ public:
 
   void print_gfx_visual();
 
-  float *get_light_color(float light_color[4], Light *light) const;
+  LVecBase4 get_light_color(Light *light) const;
 
 #ifdef SUPPORT_IMMEDIATE_MODE
   void draw_immediate_simple_primitives(const GeomPrimitivePipelineReader *reader, GLenum mode);
@@ -320,7 +331,7 @@ protected:
 
   virtual void reissue_transforms();
   virtual void enable_lighting(bool enable);
-  virtual void set_ambient_light(const Colorf &color);
+  virtual void set_ambient_light(const LColor &color);
   virtual void enable_light(int light_id, bool enable);
   virtual void begin_bind_lights();
   virtual void end_bind_lights();
@@ -348,6 +359,14 @@ protected:
   INLINE void enable_fog(bool val);
   INLINE void enable_alpha_test(bool val);
   INLINE void enable_polygon_offset(bool val);
+
+  INLINE void call_glFogfv(GLenum pname, const LColor &color);
+  INLINE void call_glMaterialfv(GLenum face, GLenum pname, const LColor &color);
+  INLINE void call_glLightfv(GLenum light, GLenum pname, const LVecBase4 &value);
+  INLINE void call_glLightfv(GLenum light, GLenum pname, const LVecBase3 &value);
+  INLINE void call_glLightModelfv(GLenum pname, const LVecBase4 &value);
+  INLINE void call_glTexEnvfv(GLenum target, GLenum pname, const LVecBase4 &value);
+  INLINE void call_glTexParameterfv(GLenum target, GLenum pname, const LVecBase4 &value);
 
   INLINE GLenum get_light_id(int index) const;
   INLINE GLenum get_clip_plane_id(int index) const;
@@ -446,7 +465,7 @@ protected:
   int _draw_buffer_type;
   bool _auto_antialias_mode;
   RenderModeAttrib::Mode _render_mode;
-  float _point_size;
+  PN_stdfloat _point_size;
   bool _point_perspective;
   bool _vertex_blending_enabled;
 
@@ -472,7 +491,7 @@ protected:
   // to compute its data once.
   class DirectionalLightFrameData {
   public:
-    LVector4f _neg_dir;
+    LVector4 _neg_dir;
   };
   typedef pmap<NodePath, DirectionalLightFrameData> DirectionalLights;
   DirectionalLights _dlights;
@@ -484,7 +503,7 @@ protected:
   GLuint _current_ibuffer_index;
   GLuint _current_fbo;
   int _num_active_texture_stages;
-  float _max_anisotropy;
+  PN_stdfloat _max_anisotropy;
   bool _supports_anisotropy;
   
   int _error_count;
@@ -502,9 +521,10 @@ public:
   bool _supports_point_sprite;
 
   bool _supports_vertex_blend;
-  PFNGLWEIGHTPOINTERARBPROC _glWeightPointerARB;
-  PFNGLVERTEXBLENDARBPROC _glVertexBlendARB;
-  PFNGLWEIGHTFVARBPROC _glWeightfvARB;
+  PFNGLWEIGHTPOINTERARBPROC _glWeightPointer;
+  PFNGLVERTEXBLENDARBPROC _glVertexBlend;
+  PFNGLWEIGHTFVARBPROC _glWeightfv;
+  PFNGLWEIGHTDVARBPROC _glWeightdv;
 
   bool _supports_matrix_palette;
 #ifdef OPENGLES
@@ -541,6 +561,10 @@ public:
   PFNGLMULTITEXCOORD2FPROC _glMultiTexCoord2f;
   PFNGLMULTITEXCOORD3FPROC _glMultiTexCoord3f;
   PFNGLMULTITEXCOORD4FPROC _glMultiTexCoord4f;
+  PFNGLMULTITEXCOORD1DPROC _glMultiTexCoord1d;
+  PFNGLMULTITEXCOORD2DPROC _glMultiTexCoord2d;
+  PFNGLMULTITEXCOORD3DPROC _glMultiTexCoord3d;
+  PFNGLMULTITEXCOORD4DPROC _glMultiTexCoord4d;
 
   bool _supports_buffers;
   PFNGLGENBUFFERSPROC _glGenBuffers;
@@ -622,12 +646,18 @@ public:
   PFNGLSHADERSOURCEPROC _glShaderSource;
   PFNGLUSEPROGRAMPROC  _glUseProgram;
   PFNGLUNIFORM4FPROC _glUniform4f;
+  PFNGLUNIFORM4DPROC _glUniform4d;
   PFNGLUNIFORM1IPROC _glUniform1i;
   PFNGLUNIFORM1FVPROC _glUniform1fv;
   PFNGLUNIFORM2FVPROC _glUniform2fv;
   PFNGLUNIFORM3FVPROC _glUniform3fv;
   PFNGLUNIFORM4FVPROC _glUniform4fv;
+  PFNGLUNIFORM1DVPROC _glUniform1dv;
+  PFNGLUNIFORM2DVPROC _glUniform2dv;
+  PFNGLUNIFORM3DVPROC _glUniform3dv;
+  PFNGLUNIFORM4DVPROC _glUniform4dv;
   PFNGLUNIFORMMATRIX4FVPROC _glUniformMatrix4fv;
+  PFNGLUNIFORMMATRIX4DVPROC _glUniformMatrix4dv;
   PFNGLVALIDATEPROGRAMPROC _glValidateProgram;
   PFNGLVERTEXATTRIBPOINTERPROC _glVertexAttribPointer;
 #endif  // OPENGLES_1

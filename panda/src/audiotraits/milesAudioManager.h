@@ -50,11 +50,11 @@ public:
   virtual void set_cache_limit(unsigned int count);
   virtual unsigned int get_cache_limit() const;
 
-  virtual void set_volume(float volume);
-  virtual float get_volume() const;
+  virtual void set_volume(PN_stdfloat volume);
+  virtual PN_stdfloat get_volume() const;
 
-  void set_play_rate(float play_rate);
-  float get_play_rate() const;
+  void set_play_rate(PN_stdfloat play_rate);
+  PN_stdfloat get_play_rate() const;
   
   virtual void set_active(bool active);
   virtual bool get_active() const;
@@ -75,15 +75,15 @@ public:
   // Spatialized sound was originally added for FMOD, so there are parts of the
   // interface in the Miles implementation that are a little more awkward than
   // they would be otherwise.
-  virtual void audio_3d_set_listener_attributes(float px, float py, float pz, float vx, float xy, float xz, float fx, float fy, float fz, float ux, float uy, float uz);
-  virtual void audio_3d_get_listener_attributes(float *px, float *py, float *pz, float *vx, float *vy, float *vz, float *fx, float *fy, float *fz, float *ux, float *uy, float *uz);
-  virtual void audio_3d_set_distance_factor(float factor);
-  virtual float audio_3d_get_distance_factor() const;
-  virtual void audio_3d_set_doppler_factor(float factor);
-  virtual float audio_3d_get_doppler_factor() const;
-  virtual void audio_3d_set_drop_off_factor(float factor);
-  virtual float audio_3d_get_drop_off_factor() const;
-  virtual void set_speaker_configuration(LVecBase3f *speaker1, LVecBase3f *speaker2=NULL, LVecBase3f *speaker3=NULL, LVecBase3f *speaker4=NULL, LVecBase3f *speaker5=NULL, LVecBase3f *speaker6=NULL, LVecBase3f *speaker7=NULL, LVecBase3f *speaker8=NULL, LVecBase3f *speaker9=NULL);
+  virtual void audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat xy, PN_stdfloat xz, PN_stdfloat fx, PN_stdfloat fy, PN_stdfloat fz, PN_stdfloat ux, PN_stdfloat uy, PN_stdfloat uz);
+  virtual void audio_3d_get_listener_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz, PN_stdfloat *fx, PN_stdfloat *fy, PN_stdfloat *fz, PN_stdfloat *ux, PN_stdfloat *uy, PN_stdfloat *uz);
+  virtual void audio_3d_set_distance_factor(PN_stdfloat factor);
+  virtual PN_stdfloat audio_3d_get_distance_factor() const;
+  virtual void audio_3d_set_doppler_factor(PN_stdfloat factor);
+  virtual PN_stdfloat audio_3d_get_doppler_factor() const;
+  virtual void audio_3d_set_drop_off_factor(PN_stdfloat factor);
+  virtual PN_stdfloat audio_3d_get_drop_off_factor() const;
+  virtual void set_speaker_configuration(LVecBase3 *speaker1, LVecBase3 *speaker2=NULL, LVecBase3 *speaker3=NULL, LVecBase3 *speaker4=NULL, LVecBase3 *speaker5=NULL, LVecBase3 *speaker6=NULL, LVecBase3 *speaker7=NULL, LVecBase3 *speaker8=NULL, LVecBase3 *speaker9=NULL);
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out) const;
@@ -123,14 +123,14 @@ private:
   public:
     SoundData();
     ~SoundData();
-    float get_length();
-    void set_length(float length);
+    PN_stdfloat get_length();
+    void set_length(PN_stdfloat length);
 
     Filename _basename;
     S32 _file_type;
     pvector<unsigned char> _raw_data;
     bool _has_length;
-    float _length;  // in seconds.
+    PN_stdfloat _length;  // in seconds.
   };
   typedef pmap<string, PT(SoundData) > SoundMap;
   SoundMap _sounds;
@@ -147,8 +147,8 @@ private:
   typedef pdeque<const string *> LRU;
   LRU _lru;
   // State:
-  float _volume;
-  float _play_rate;
+  PN_stdfloat _volume;
+  PN_stdfloat _play_rate;
   bool _active;
   int _cache_limit;
   bool _cleanup_required;

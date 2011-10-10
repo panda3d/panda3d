@@ -30,8 +30,8 @@ TypeHandle CollisionHandlerPusher::_type_handle;
 ////////////////////////////////////////////////////////////////////
 class ShoveData {
 public:
-  LVector3f _vector;
-  float _length;
+  LVector3 _vector;
+  PN_stdfloat _length;
   bool _valid;
   CollisionEntry *_entry;
 };
@@ -105,9 +105,9 @@ handle_entries() {
           nassertr(entry != (CollisionEntry *)NULL, false);
           nassertr(from_node_path == entry->get_from_node_path(), false);
 
-          LPoint3f surface_point;
-          LVector3f normal;
-          LPoint3f interior_point;
+          LPoint3 surface_point;
+          LVector3 normal;
+          LPoint3 interior_point;
 
           if (!entry->get_all(def._target, surface_point, normal, interior_point)) {
             #ifndef NDEBUG          
@@ -162,7 +162,7 @@ handle_entries() {
             for (sj = shoves.begin(); sj != si; ++sj) {
               ShoveData &sd2 = (*sj);
               if (sd2._valid) {
-                float d = sd._vector.dot(sd2._vector);
+                PN_stdfloat d = sd._vector.dot(sd2._vector);
                 if (collide_cat.is_debug()) {
                   collide_cat.debug()
                     << "Considering dot product " << d << "\n";
@@ -223,8 +223,8 @@ handle_entries() {
           }
           
           // Now we can determine the net shove.
-          LVector3f net_shove(0.0f, 0.0f, 0.0f);
-          LVector3f force_normal(0.0f, 0.0f, 0.0f);
+          LVector3 net_shove(0.0f, 0.0f, 0.0f);
+          LVector3 force_normal(0.0f, 0.0f, 0.0f);
           for (si = shoves.begin(); si != shoves.end(); ++si) {
             const ShoveData &sd = (*si);
             if (sd._valid) {
@@ -243,7 +243,7 @@ handle_entries() {
           
           // This is the part where the node actually gets moved:
           CPT(TransformState) trans = def._target.get_transform();
-          LVecBase3f pos = trans->get_pos();
+          LVecBase3 pos = trans->get_pos();
           pos += net_shove * trans->get_mat();
           def._target.set_transform(trans->set_pos(pos));
           def.updated_transform();
@@ -267,8 +267,8 @@ handle_entries() {
 //               some work with the ColliderDef and the force vector.
 ////////////////////////////////////////////////////////////////////
 void CollisionHandlerPusher::
-apply_net_shove(ColliderDef &def, const LVector3f &net_shove, 
-    const LVector3f &force_normal) {
+apply_net_shove(ColliderDef &def, const LVector3 &net_shove, 
+    const LVector3 &force_normal) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -278,5 +278,5 @@ apply_net_shove(ColliderDef &def, const LVector3f &net_shove,
 //               some work with the ColliderDef and the force vector.
 ////////////////////////////////////////////////////////////////////
 void CollisionHandlerPusher::
-apply_linear_force(ColliderDef &def, const LVector3f &force_normal) {
+apply_linear_force(ColliderDef &def, const LVector3 &force_normal) {
 }

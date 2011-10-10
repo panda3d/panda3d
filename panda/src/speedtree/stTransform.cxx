@@ -35,7 +35,7 @@ STTransform(const TransformState *trans) {
   nassertv(trans->has_components());
   _pos = trans->get_pos();
 
-  const LVecBase3f &hpr = trans->get_hpr();
+  const LVecBase3 &hpr = trans->get_hpr();
   nassertv(IS_NEARLY_ZERO(hpr[1]) && IS_NEARLY_ZERO(hpr[2]));
   _rotate = hpr[0];
 
@@ -62,8 +62,8 @@ output(ostream &out) const {
 void STTransform::
 write_datagram(BamWriter *manager, Datagram &dg) {
   _pos.write_datagram(dg);
-  dg.add_float32(_rotate);
-  dg.add_float32(_scale);
+  dg.add_stdfloat(_rotate);
+  dg.add_stdfloat(_scale);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -76,6 +76,6 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 void STTransform::
 fillin(DatagramIterator &scan, BamReader *manager) {
   _pos.read_datagram(scan);
-  _rotate = scan.get_float32();
-  _scale = scan.get_float32();
+  _rotate = scan.get_stdfloat();
+  _scale = scan.get_stdfloat();
 }

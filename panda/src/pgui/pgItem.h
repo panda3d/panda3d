@@ -82,8 +82,8 @@ protected:
                                Thread *current_thread);
 
 public:
-  virtual void xform(const LMatrix4f &mat);
-  bool activate_region(const LMatrix4f &transform, int sort,
+  virtual void xform(const LMatrix4 &mat);
+  bool activate_region(const LMatrix4 &transform, int sort,
                        const ClipPlaneAttrib *cpa,
                        const ScissorAttrib *sa);
   INLINE PGMouseWatcherRegion *get_region() const;
@@ -110,9 +110,9 @@ public:
   INLINE PGItemNotify *get_notify() const;
 
 PUBLISHED:
-  INLINE void set_frame(float left, float right, float bottom, float top);
-  INLINE void set_frame(const LVecBase4f &frame);
-  INLINE const LVecBase4f &get_frame() const;
+  INLINE void set_frame(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top);
+  INLINE void set_frame(const LVecBase4 &frame);
+  INLINE const LVecBase4 &get_frame() const;
   INLINE bool has_frame() const;
   INLINE void clear_frame();
 
@@ -166,7 +166,7 @@ PUBLISHED:
   INLINE string get_release_event(const ButtonHandle &button) const;
   INLINE string get_keystroke_event() const;
 
-  INLINE LMatrix4f get_frame_inv_xform() const;
+  INLINE LMatrix4 get_frame_inv_xform() const;
 
 #ifdef HAVE_AUDIO
   void set_sound(const string &event, AudioSound *sound);
@@ -183,10 +183,10 @@ PUBLISHED:
 protected:
   void play_sound(const string &event);
 
-  void reduce_region(LVecBase4f &clip, PGItem *obscurer) const;
-  void reduce_region(LVecBase4f &frame, float px, float py) const;
-  LVecBase4f get_relative_frame(PGItem *item) const;
-  LPoint3f mouse_to_local(const LPoint2f &mouse_point) const;
+  void reduce_region(LVecBase4 &clip, PGItem *obscurer) const;
+  void reduce_region(LVecBase4 &frame, PN_stdfloat px, PN_stdfloat py) const;
+  LVecBase4 get_relative_frame(PGItem *item) const;
+  LPoint3 mouse_to_local(const LPoint2 &mouse_point) const;
 
   virtual void frame_changed();
 
@@ -195,12 +195,12 @@ private:
   void update_frame(int state);
   void mark_frames_stale();
 
-  INLINE static float compute_area(const LVecBase4f &frame);
-  INLINE static void compare_largest(const LVecBase4f *&largest, 
-                                     float &largest_area, 
-                                     const LVecBase4f *new_frame);
+  INLINE static PN_stdfloat compute_area(const LVecBase4 &frame);
+  INLINE static void compare_largest(const LVecBase4 *&largest, 
+                                     PN_stdfloat &largest_area, 
+                                     const LVecBase4 *new_frame);
 
-  bool clip_frame(pvector<LPoint2f> &source_points, const Planef &plane) const;
+  bool clip_frame(pvector<LPoint2> &source_points, const LPlane &plane) const;
 
 protected:
   LightReMutex _lock;
@@ -209,7 +209,7 @@ private:
   PGItemNotify *_notify;
 
   bool _has_frame;
-  LVecBase4f _frame;
+  LVecBase4 _frame;
   int _state;
   enum Flags {
     F_active             = 0x01,
@@ -220,7 +220,7 @@ private:
 
   PT(PGMouseWatcherRegion) _region;
 
-  LMatrix4f _frame_inv_xform;
+  LMatrix4 _frame_inv_xform;
 
   class StateDef {
   public:

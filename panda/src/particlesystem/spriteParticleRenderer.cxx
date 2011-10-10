@@ -41,7 +41,7 @@ PStatCollector SpriteParticleRenderer::_render_collector("App:Particles:Sprite:R
 SpriteParticleRenderer::
 SpriteParticleRenderer(Texture *tex) :
   BaseParticleRenderer(PR_ALPHA_NONE),
-  _color(Colorf(1.0f, 1.0f, 1.0f, 1.0f)),
+  _color(LColor(1.0f, 1.0f, 1.0f, 1.0f)),
   _height(1.0f),
   _width(1.0f),
   _initial_x_scale(1.0f),
@@ -297,7 +297,7 @@ add_from_node(const NodePath &node_path, bool size_from_texels, bool resize) {
 
   // Load the found textures into the renderer.
   if (extract_textures_from_node(node_path,np_col,tex_col)) {
-    pvector< TexCoordf > ll,ur;
+    pvector< LTexCoord > ll,ur;
     GeomNode *gnode = NULL;
     const Geom *geom;
     const GeomPrimitive *primitive;
@@ -311,8 +311,8 @@ add_from_node(const NodePath &node_path, bool size_from_texels, bool resize) {
       geom = gnode->get_geom(0);
       
       bool got_texcoord = false;
-      TexCoordf min_uv(0.0f, 0.0f);
-      TexCoordf max_uv(0.0f, 0.0f);
+      LTexCoord min_uv(0.0f, 0.0f);
+      LTexCoord max_uv(0.0f, 0.0f);
       
       GeomVertexReader texcoord(geom->get_vertex_data(),
                                 InternalName::get_texcoord());
@@ -324,11 +324,11 @@ add_from_node(const NodePath &node_path, bool size_from_texels, bool resize) {
             texcoord.set_row_unsafe(vert);
             
             if (!got_texcoord) {
-                min_uv = max_uv = texcoord.get_data2f();
+                min_uv = max_uv = texcoord.get_data2();
                 got_texcoord = true;
                 
             } else {
-              const LVecBase2f &uv = texcoord.get_data2f();
+              const LVecBase2 &uv = texcoord.get_data2();
 
               min_uv[0] = min(min_uv[0], uv[0]);
               max_uv[0] = max(max_uv[0], uv[0]);
@@ -355,8 +355,8 @@ add_from_node(const NodePath &node_path, bool size_from_texels, bool resize) {
       geom = gnode->get_geom(0);
 
       bool got_vertex = false;
-      Vertexf min_xyz(0.0f, 0.0f, 0.0f);
-      Vertexf max_xyz(0.0f, 0.0f, 0.0f);
+      LVertex min_xyz(0.0f, 0.0f, 0.0f);
+      LVertex max_xyz(0.0f, 0.0f, 0.0f);
       
       GeomVertexReader vertex(geom->get_vertex_data(),
                               InternalName::get_vertex());
@@ -368,11 +368,11 @@ add_from_node(const NodePath &node_path, bool size_from_texels, bool resize) {
             vertex.set_row_unsafe(vert);
             
             if (!got_vertex) {
-              min_xyz = max_xyz = vertex.get_data3f();
+              min_xyz = max_xyz = vertex.get_data3();
               got_vertex = true;
               
             } else {
-              const LVecBase3f &xyz = vertex.get_data3f();
+              const LVecBase3 &xyz = vertex.get_data3();
               
               min_xyz[0] = min(min_xyz[0], xyz[0]);
               max_xyz[0] = max(max_xyz[0], xyz[0]);
@@ -386,14 +386,14 @@ add_from_node(const NodePath &node_path, bool size_from_texels, bool resize) {
       }
 
       if (got_vertex) {
-        float width = max_xyz[0] - min_xyz[0];
-        float height = max(max_xyz[1] - min_xyz[1],
+        PN_stdfloat width = max_xyz[0] - min_xyz[0];
+        PN_stdfloat height = max(max_xyz[1] - min_xyz[1],
                            max_xyz[2] - min_xyz[2]);
       
         if (size_from_texels) {
           // If size_from_texels is true, we get the particle size from the
           // number of texels in the source image.
-          float y_texels = _anims[0]->get_frame(0)->get_y_size() * fabs(_anims[0]->get_ur(0)[1] - _anims[0]->get_ll(0)[1]);
+          PN_stdfloat y_texels = _anims[0]->get_frame(0)->get_y_size() * fabs(_anims[0]->get_ur(0)[1] - _anims[0]->get_ll(0)[1]);
           set_size(y_texels * width / height, y_texels);
         } else {
           // If size_from_texels is false, we get the particle size from
@@ -439,30 +439,30 @@ init_geoms() {
 
   // Setup format
   PT(GeomVertexArrayFormat) array_format = new GeomVertexArrayFormat
-    (InternalName::get_vertex(), 3, Geom::NT_float32, Geom::C_point,
+    (InternalName::get_vertex(), 3, Geom::NT_stdfloat, Geom::C_point,
      InternalName::get_color(), 1, Geom::NT_packed_dabc, Geom::C_color);
   
   if (_animate_theta || _theta != 0.0f) {
     array_format->add_column
-      (InternalName::get_rotate(), 1, Geom::NT_float32, Geom::C_other);
+      (InternalName::get_rotate(), 1, Geom::NT_stdfloat, Geom::C_other);
   }
 
   _base_y_scale = _initial_y_scale;
   _aspect_ratio = _width / _height;
   
-  float final_x_scale = _animate_x_ratio ? _final_x_scale : _initial_x_scale;
-  float final_y_scale = _animate_y_ratio ? _final_y_scale : _initial_y_scale;
+  PN_stdfloat final_x_scale = _animate_x_ratio ? _final_x_scale : _initial_x_scale;
+  PN_stdfloat final_y_scale = _animate_y_ratio ? _final_y_scale : _initial_y_scale;
   
   if (_animate_y_ratio) {
     _base_y_scale = max(_initial_y_scale, _final_y_scale);
     array_format->add_column
-      (InternalName::get_size(), 1, Geom::NT_float32, Geom::C_other);
+      (InternalName::get_size(), 1, Geom::NT_stdfloat, Geom::C_other);
   }
   
   if (_aspect_ratio * _initial_x_scale != _initial_y_scale ||
       _aspect_ratio * final_x_scale != final_y_scale) {
     array_format->add_column
-      (InternalName::get_aspect_ratio(), 1, Geom::NT_float32,
+      (InternalName::get_aspect_ratio(), 1, Geom::NT_stdfloat,
        Geom::C_other);
   }
   
@@ -515,9 +515,9 @@ init_geoms() {
         
         // Build a transform to convert the texture coordinates to the
         // ll, ur space.
-        LPoint2f ul(anim->get_ll(j)[0], anim->get_ur(j)[1]);
-        LPoint2f lr(anim->get_ur(j)[0], anim->get_ll(j)[1]);
-        LVector2f sc = lr - ul;
+        LPoint2 ul(anim->get_ll(j)[0], anim->get_ur(j)[1]);
+        LPoint2 lr(anim->get_ur(j)[0], anim->get_ll(j)[1]);
+        LVector2 sc = lr - ul;
 
         CPT(TransformState) ts = TransformState::make_pos_rotate_scale2d(ul, 0.0f, sc);
         state = state->add_attrib(TexMatrixAttrib::make(TextureStage::get_default(), ts));
@@ -619,7 +619,7 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
       continue;
     }
 
-    LPoint3f position = cur_particle->get_position();
+    LPoint3 position = cur_particle->get_position();
 
     // x aabb adjust
     if (position[0] > _aabb_max[0])
@@ -640,7 +640,7 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
       _aabb_min[2] = position[2];
 
 
-    float t = cur_particle->get_parameterized_age();
+    PN_stdfloat t = cur_particle->get_parameterized_age();
     int anim_index = cur_particle->get_index();
 
     // If an animation has been removed, we need to reassign
@@ -668,7 +668,7 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
     // Calculate the color
     // This is where we'll want to give the renderer the new color
-    Colorf c = _color_interpolation_manager->generateColor(t);
+    LColor c = _color_interpolation_manager->generateColor(t);
 
     int alphamode=get_alpha_mode();
     if (alphamode != PR_ALPHA_NONE) {
@@ -686,11 +686,11 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
     }
           
     // Send the data on its way...
-    _sprite_writer[anim_index][frame].vertex.add_data3f(position);
-    _sprite_writer[anim_index][frame].color.add_data4f(c);
+    _sprite_writer[anim_index][frame].vertex.add_data3(position);
+    _sprite_writer[anim_index][frame].color.add_data4(c);
     
-    float current_x_scale = _initial_x_scale;
-    float current_y_scale = _initial_y_scale;
+    PN_stdfloat current_x_scale = _initial_x_scale;
+    PN_stdfloat current_y_scale = _initial_y_scale;
     
     if (_animate_x_ratio || _animate_y_ratio) {
       if (_blend_method == PP_BLEND_CUBIC) {
@@ -757,8 +757,8 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   }
 
   // done filling geompoint node, now do the bb stuff
-  LPoint3f aabb_center = _aabb_min + ((_aabb_max - _aabb_min) * 0.5f);
-  float radius = (aabb_center - _aabb_min).length();
+  LPoint3 aabb_center = _aabb_min + ((_aabb_max - _aabb_min) * 0.5f);
+  PN_stdfloat radius = (aabb_center - _aabb_min).length();
 
   for (i = 0; i < anim_count; ++i) {
     for (j = 0; j < _anim_size[i]; ++j) {

@@ -40,33 +40,33 @@ PUBLISHED:
   virtual int get_num_cvs() const=0;
   virtual int get_num_knots() const=0;
 
-  virtual bool insert_cv(float t)=0;
+  virtual bool insert_cv(PN_stdfloat t)=0;
 
-  INLINE int append_cv(float x, float y, float z);
-  INLINE int append_cv(const LVecBase3f &v);
-  INLINE int append_cv(const LVecBase4f &v);
+  INLINE int append_cv(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+  INLINE int append_cv(const LVecBase3 &v);
+  INLINE int append_cv(const LVecBase4 &v);
 
   virtual bool remove_cv(int n)=0;
   virtual void remove_all_cvs()=0;
 
-  INLINE bool set_cv_point(int n, float x, float y, float z);
-  INLINE bool set_cv_point(int n, const LVecBase3f &v);
-  INLINE LVecBase3f get_cv_point(int n) const;
+  INLINE bool set_cv_point(int n, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
+  INLINE bool set_cv_point(int n, const LVecBase3 &v);
+  INLINE LVecBase3 get_cv_point(int n) const;
 
-  bool set_cv_weight(int n, float w);
-  INLINE float get_cv_weight(int n) const;
+  bool set_cv_weight(int n, PN_stdfloat w);
+  INLINE PN_stdfloat get_cv_weight(int n) const;
 
-  virtual bool set_cv(int n, const LVecBase4f &v)=0;
-  virtual LVecBase4f get_cv(int n) const=0;
+  virtual bool set_cv(int n, const LVecBase4 &v)=0;
+  virtual LVecBase4 get_cv(int n) const=0;
 
-  virtual bool set_knot(int n, float t)=0;
-  virtual float get_knot(int n) const=0;
+  virtual bool set_knot(int n, PN_stdfloat t)=0;
+  virtual PN_stdfloat get_knot(int n) const=0;
 
   void write_cv(ostream &out, int n) const;
 
 
 protected:
-  virtual int append_cv_impl(const LVecBase4f &v)=0;
+  virtual int append_cv_impl(const LVecBase4 &v)=0;
 
   void write(ostream &out, int indent_level) const;
   bool format_egg(ostream &out, const string &name,

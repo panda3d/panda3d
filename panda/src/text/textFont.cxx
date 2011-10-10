@@ -150,10 +150,10 @@ make_invalid_glyph() {
     new GeomVertexData("invalid_glyph", vformat, GeomEnums::UH_static);
 
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
-  vertex.add_data3f(_line_height * 0.2f, 0.0f, _line_height * 0.1f);
-  vertex.add_data3f(_line_height * 0.5f, 0.0f, _line_height * 0.1f);
-  vertex.add_data3f(_line_height * 0.5f, 0.0f, _line_height * 0.7f);
-  vertex.add_data3f(_line_height * 0.2f, 0.0f, _line_height * 0.7f);
+  vertex.add_data3(_line_height * 0.2, 0.0f, _line_height * 0.1f);
+  vertex.add_data3(_line_height * 0.5f, 0.0f, _line_height * 0.1f);
+  vertex.add_data3(_line_height * 0.5f, 0.0f, _line_height * 0.7f);
+  vertex.add_data3(_line_height * 0.2, 0.0f, _line_height * 0.7f);
 
   PT(GeomPrimitive) prim = new GeomLinestrips(GeomEnums::UH_static);
   prim->add_consecutive_vertices(0, 4);

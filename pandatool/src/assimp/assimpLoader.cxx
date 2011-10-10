@@ -231,7 +231,7 @@ load_texture_stage(const aiMaterial &mat, const aiTextureType &ttype, CPT(Textur
   aiString path;
   aiTextureMapping mapping;
   unsigned int uvindex;
-  float blend;
+  PN_stdfloat blend;
   aiTextureOp op;
   aiTextureMapMode mapmode;
 
@@ -310,7 +310,7 @@ load_material(size_t index) {
   aiColor3D col;
   bool have;
   int ival;
-  float fval;
+  PN_stdfloat fval;
 
   // XXX a lot of this is untested.
 
@@ -318,23 +318,23 @@ load_material(size_t index) {
   PT(Material) pmat = new Material;
   have = false;
   if (AI_SUCCESS == mat.Get(AI_MATKEY_COLOR_DIFFUSE, col)) {
-    pmat->set_diffuse(Colorf(col.r, col.g, col.b, 1));
+    pmat->set_diffuse(LColor(col.r, col.g, col.b, 1));
     have = true;
   }
   if (AI_SUCCESS == mat.Get(AI_MATKEY_COLOR_SPECULAR, col)) {
     if (AI_SUCCESS == mat.Get(AI_MATKEY_SHININESS_STRENGTH, fval)) {
-      pmat->set_specular(Colorf(col.r * fval, col.g * fval, col.b * fval, 1));
+      pmat->set_specular(LColor(col.r * fval, col.g * fval, col.b * fval, 1));
     } else {
-      pmat->set_specular(Colorf(col.r, col.g, col.b, 1));
+      pmat->set_specular(LColor(col.r, col.g, col.b, 1));
     }
     have = true;
   }
   if (AI_SUCCESS == mat.Get(AI_MATKEY_COLOR_AMBIENT, col)) {
-    pmat->set_specular(Colorf(col.r, col.g, col.b, 1));
+    pmat->set_specular(LColor(col.r, col.g, col.b, 1));
     have = true;
   }
   if (AI_SUCCESS == mat.Get(AI_MATKEY_COLOR_EMISSIVE, col)) {
-    pmat->set_emission(Colorf(col.r, col.g, col.b, 1));
+    pmat->set_emission(LColor(col.r, col.g, col.b, 1));
     have = true;
   }
   if (AI_SUCCESS == mat.Get(AI_MATKEY_COLOR_TRANSPARENT, col)) {
@@ -389,21 +389,21 @@ load_mesh(size_t index) {
 
   // Create the vertex format.
   PT(GeomVertexArrayFormat) aformat = new GeomVertexArrayFormat;
-  aformat->add_column(InternalName::get_vertex(), 3, Geom::NT_float32, Geom::C_point);
+  aformat->add_column(InternalName::get_vertex(), 3, Geom::NT_stdfloat, Geom::C_point);
   if (mesh.HasNormals()) {
-    aformat->add_column(InternalName::get_normal(), 3, Geom::NT_float32, Geom::C_vector);
+    aformat->add_column(InternalName::get_normal(), 3, Geom::NT_stdfloat, Geom::C_vector);
   }
   if (mesh.HasVertexColors(0)) {
-    aformat->add_column(InternalName::get_color(), 4, Geom::NT_float32, Geom::C_color);
+    aformat->add_column(InternalName::get_color(), 4, Geom::NT_stdfloat, Geom::C_color);
   }
   unsigned int num_uvs = mesh.GetNumUVChannels();
   if (num_uvs > 0) {
     // UV sets are named texcoord, texcoord.1, texcoord.2...
-    aformat->add_column(InternalName::get_texcoord(), 3, Geom::NT_float32, Geom::C_texcoord);
+    aformat->add_column(InternalName::get_texcoord(), 3, Geom::NT_stdfloat, Geom::C_texcoord);
     for (unsigned int u = 1; u < num_uvs; ++u) {
       ostringstream out;
       out << u;
-      aformat->add_column(InternalName::get_texcoord_name(out.str()), 3, Geom::NT_float32, Geom::C_texcoord);
+      aformat->add_column(InternalName::get_texcoord_name(out.str()), 3, Geom::NT_stdfloat, Geom::C_texcoord);
     }
   }
   //TODO: if there is only one UV set, hackily iterate over the texture stages and clear the texcoord name things
@@ -420,7 +420,7 @@ load_mesh(size_t index) {
   GeomVertexWriter vertex (vdata, InternalName::get_vertex());
   for (size_t i = 0; i < mesh.mNumVertices; ++i) {
     const aiVector3D &vec = mesh.mVertices[i];
-    vertex.add_data3f(vec.x, vec.y, vec.z);
+    vertex.add_data3(vec.x, vec.y, vec.z);
   }
 
   // Now the normals, if any.
@@ -428,7 +428,7 @@ load_mesh(size_t index) {
     GeomVertexWriter normal (vdata, InternalName::get_normal());
     for (size_t i = 0; i < mesh.mNumVertices; ++i) {
       const aiVector3D &vec = mesh.mNormals[i];
-      normal.add_data3f(vec.x, vec.y, vec.z);
+      normal.add_data3(vec.x, vec.y, vec.z);
     }
   }
 
@@ -437,7 +437,7 @@ load_mesh(size_t index) {
     GeomVertexWriter color (vdata, InternalName::get_color());
     for (size_t i = 0; i < mesh.mNumVertices; ++i) {
       const aiColor4D &col = mesh.mColors[0][i];
-      color.add_data4f(col.r, col.g, col.b, col.a);
+      color.add_data4(col.r, col.g, col.b, col.a);
     }
   }
 
@@ -447,7 +447,7 @@ load_mesh(size_t index) {
     GeomVertexWriter texcoord0 (vdata, InternalName::get_texcoord());
     for (size_t i = 0; i < mesh.mNumVertices; ++i) {
       const aiVector3D &vec = mesh.mTextureCoords[0][i];
-      texcoord0.add_data3f(vec.x, vec.y, vec.z);
+      texcoord0.add_data3(vec.x, vec.y, vec.z);
     }
     for (unsigned int u = 1; u < num_uvs; ++u) {
       ostringstream out;
@@ -455,7 +455,7 @@ load_mesh(size_t index) {
       GeomVertexWriter texcoord (vdata, InternalName::get_texcoord_name(out.str()));
       for (size_t i = 0; i < mesh.mNumVertices; ++i) {
         const aiVector3D &vec = mesh.mTextureCoords[u][i];
-        texcoord.add_data3f(vec.x, vec.y, vec.z);
+        texcoord.add_data3(vec.x, vec.y, vec.z);
       }
     }
   }
@@ -525,7 +525,7 @@ load_node(const aiNode &node, PandaNode *parent) {
   // Load in the transformation matrix.
   const aiMatrix4x4 &t = node.mTransformation;
   if (!t.IsIdentity()) {
-    LMatrix4f mat(t.a1, t.b1, t.c1, t.d1,
+    LMatrix4 mat(t.a1, t.b1, t.c1, t.d1,
                   t.a2, t.b2, t.c2, t.d2,
                   t.a3, t.b3, t.c3, t.d3,
                   t.a4, t.b4, t.c4, t.d4);
@@ -578,13 +578,13 @@ load_light(const aiLight &light) {
     lnode = DCAST(LightNode, dlight);
 
     col = light.mColorSpecular;
-    dlight->set_specular_color(Colorf(col.r, col.g, col.b, 1));
+    dlight->set_specular_color(LColor(col.r, col.g, col.b, 1));
 
     vec = light.mPosition;
-    dlight->set_point(LPoint3f(vec.x, vec.y, vec.z));
+    dlight->set_point(LPoint3(vec.x, vec.y, vec.z));
 
     vec = light.mDirection;
-    dlight->set_direction(LVector3f(vec.x, vec.y, vec.z));
+    dlight->set_direction(LVector3(vec.x, vec.y, vec.z));
     break; }
 
   case aiLightSource_POINT: {
@@ -592,12 +592,12 @@ load_light(const aiLight &light) {
     lnode = DCAST(LightNode, plight);
 
     col = light.mColorSpecular;
-    plight->set_specular_color(Colorf(col.r, col.g, col.b, 1));
+    plight->set_specular_color(LColor(col.r, col.g, col.b, 1));
 
     vec = light.mPosition;
-    plight->set_point(LPoint3f(vec.x, vec.y, vec.z));
+    plight->set_point(LPoint3(vec.x, vec.y, vec.z));
 
-    plight->set_attenuation(LVecBase3f(light.mAttenuationConstant,
+    plight->set_attenuation(LVecBase3(light.mAttenuationConstant,
                                        light.mAttenuationLinear,
                                        light.mAttenuationQuadratic));
     break; }
@@ -607,9 +607,9 @@ load_light(const aiLight &light) {
     lnode = DCAST(LightNode, plight);
 
     col = light.mColorSpecular;
-    plight->set_specular_color(Colorf(col.r, col.g, col.b, 1));
+    plight->set_specular_color(LColor(col.r, col.g, col.b, 1));
 
-    plight->set_attenuation(LVecBase3f(light.mAttenuationConstant,
+    plight->set_attenuation(LVecBase3(light.mAttenuationConstant,
                                        light.mAttenuationLinear,
                                        light.mAttenuationQuadratic));
 
@@ -618,10 +618,10 @@ load_light(const aiLight &light) {
 
     // This *should* be about right.
     vec = light.mDirection;
-    LPoint3f pos (light.mPosition.x, light.mPosition.y, light.mPosition.z);
-    LQuaternionf quat;
-    ::look_at(quat, LPoint3f(vec.x, vec.y, vec.z), LVector3f::up());
-    plight->set_transform(TransformState::make_pos_quat_scale(pos, quat, LVecBase3f(1, 1, 1)));
+    LPoint3 pos (light.mPosition.x, light.mPosition.y, light.mPosition.z);
+    LQuaternion quat;
+    ::look_at(quat, LPoint3(vec.x, vec.y, vec.z), LVector3::up());
+    plight->set_transform(TransformState::make_pos_quat_scale(pos, quat, LVecBase3(1, 1, 1)));
     break; }
 
   default:
@@ -630,8 +630,8 @@ load_light(const aiLight &light) {
   }
 
   // If there's an ambient color, add it as ambient light.
-  LVecBase4f ambient (col.r, col.g, col.b, 0);
-  if (ambient != LVecBase4f::zero()) {
+  LVecBase4 ambient (col.r, col.g, col.b, 0);
+  if (ambient != LVecBase4::zero()) {
     PT(AmbientLight) alight = new AmbientLight(name);
     col = light.mColorAmbient;
     alight->set_color(ambient);
@@ -640,5 +640,5 @@ load_light(const aiLight &light) {
 
   _root->add_child(lnode);
   col = light.mColorDiffuse;
-  lnode->set_color(Colorf(col.r, col.g, col.b, 1));
+  lnode->set_color(LColor(col.r, col.g, col.b, 1));
 }

@@ -51,7 +51,7 @@ public:
 
   // This is passed down through the MovingParts during the
   // do_update() call to specify the channels that are in effect.
-  typedef pmap<AnimControl *, float> ChannelBlend;
+  typedef pmap<AnimControl *, PN_stdfloat> ChannelBlend;
 
 protected:
   // The copy constructor is protected; use make_copy() or copy_subgraph().
@@ -109,9 +109,9 @@ PUBLISHED:
   INLINE void set_frame_blend_flag(bool frame_blend_flag);
   INLINE bool get_frame_blend_flag() const;
 
-  INLINE void set_root_xform(const LMatrix4f &root_xform);
-  INLINE void xform(const LMatrix4f &mat);
-  INLINE const LMatrix4f &get_root_xform() const;
+  INLINE void set_root_xform(const LMatrix4 &root_xform);
+  INLINE void xform(const LMatrix4 &mat);
+  INLINE const LMatrix4 &get_root_xform() const;
   PT(PartBundle) apply_transform(const TransformState *transform);
 
   INLINE int get_num_nodes() const;
@@ -119,8 +119,8 @@ PUBLISHED:
   MAKE_SEQ(get_nodes, get_num_nodes, get_node);
 
   void clear_control_effects();
-  INLINE void set_control_effect(AnimControl *control, float effect);
-  INLINE float get_control_effect(AnimControl *control) const;
+  INLINE void set_control_effect(AnimControl *control, PN_stdfloat effect);
+  INLINE PN_stdfloat get_control_effect(AnimControl *control) const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
@@ -136,8 +136,8 @@ PUBLISHED:
   void wait_pending();
 
   bool freeze_joint(const string &joint_name, const TransformState *transform);
-  bool freeze_joint(const string &joint_name, const LVecBase3f &pos, const LVecBase3f &hpr, const LVecBase3f &scale);
-  bool freeze_joint(const string &joint_name, float value);
+  bool freeze_joint(const string &joint_name, const LVecBase3 &pos, const LVecBase3 &hpr, const LVecBase3 &scale);
+  bool freeze_joint(const string &joint_name, PN_stdfloat value);
   bool control_joint(const string &joint_name, PandaNode *node);
   bool release_joint(const string &joint_name);
 
@@ -161,8 +161,8 @@ protected:
 private:
   class CData;
 
-  void do_set_control_effect(AnimControl *control, float effect, CData *cdata);
-  float do_get_control_effect(AnimControl *control, const CData *cdata) const;
+  void do_set_control_effect(AnimControl *control, PN_stdfloat effect, CData *cdata);
+  PN_stdfloat do_get_control_effect(AnimControl *control, const CData *cdata) const;
   void recompute_net_blend(CData *cdata);
   void clear_and_stop_intersecting(AnimControl *control, CData *cdata);
 
@@ -192,10 +192,10 @@ private:
     BlendType _blend_type;
     bool _anim_blend_flag;
     bool _frame_blend_flag;
-    LMatrix4f _root_xform;
+    LMatrix4 _root_xform;
     AnimControl *_last_control_set;
     ChannelBlend _blend;
-    float _net_blend;
+    PN_stdfloat _net_blend;
     bool _anim_changed;
     double _last_update;
   };

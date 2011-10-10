@@ -43,9 +43,9 @@ SceneGraphAnalyzerMeter(const string &name, PandaNode *node) : TextNode(name) {
   _clock_object = ClockObject::get_global_clock();
 
   set_align(A_left);
-  set_transform(LMatrix4f::scale_mat(scene_graph_analyzer_meter_scale) * 
-                LMatrix4f::translate_mat(LVector3f::rfu(-1.0f + scene_graph_analyzer_meter_side_margins * scene_graph_analyzer_meter_scale, 0.0f, 1.0f - scene_graph_analyzer_meter_scale)));
-  set_card_color(0.0f, 0.0f, 0.0f, 0.4f);
+  set_transform(LMatrix4::scale_mat(scene_graph_analyzer_meter_scale) * 
+                LMatrix4::translate_mat(LVector3::rfu(-1.0f + scene_graph_analyzer_meter_side_margins * scene_graph_analyzer_meter_scale, 0.0f, 1.0f - scene_graph_analyzer_meter_scale)));
+  set_card_color(0.0f, 0.0f, 0.0f, 0.4);
   set_card_as_margin(scene_graph_analyzer_meter_side_margins, scene_graph_analyzer_meter_side_margins, 0.1f, 0.0f);
   set_usage_hint(Geom::UH_client);
 
@@ -95,10 +95,10 @@ setup_window(GraphicsOutput *window) {
 
   PT(Lens) lens = new OrthographicLens;
   
-  static const float left = -1.0f;
-  static const float right = 1.0f;
-  static const float bottom = -1.0f;
-  static const float top = 1.0f;
+  static const PN_stdfloat left = -1.0f;
+  static const PN_stdfloat right = 1.0f;
+  static const PN_stdfloat bottom = -1.0f;
+  static const PN_stdfloat top = 1.0f;
   lens->set_film_size(right - left, top - bottom);
   lens->set_film_offset((right + left) * 0.5, (top + bottom) * 0.5);
   lens->set_near_far(-1000, 1000);

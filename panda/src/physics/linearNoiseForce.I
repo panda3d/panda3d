@@ -28,7 +28,7 @@ prn_lookup(int index) const {
 // Description : Hashes a point, returns a prn
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned char LinearNoiseForce::
-get_prn_entry(const LPoint3f& point) const {
+get_prn_entry(const LPoint3& point) const {
   return prn_lookup((int)(point[0] + prn_lookup((int)(point[1] + prn_lookup((int)point[2])))));
 }
 
@@ -38,7 +38,7 @@ get_prn_entry(const LPoint3f& point) const {
 // Description : Hashes a point, returns a prn (piecewise)
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned char LinearNoiseForce::
-get_prn_entry(const float x, const float y, const float z) const {
+get_prn_entry(const PN_stdfloat x, const PN_stdfloat y, const PN_stdfloat z) const {
   return prn_lookup((int)(x + prn_lookup((int)(y + prn_lookup((int)z)))));
 }
 
@@ -47,8 +47,8 @@ get_prn_entry(const float x, const float y, const float z) const {
 //      Access : Private
 // Description : Hashes a point, returns a gradient vector
 ////////////////////////////////////////////////////////////////////
-INLINE LVector3f& LinearNoiseForce::
-get_lattice_entry(const LPoint3f& point) {
+INLINE LVector3& LinearNoiseForce::
+get_lattice_entry(const LPoint3& point) {
   return _gradient_table[get_prn_entry(point)];
 }
 
@@ -57,8 +57,8 @@ get_lattice_entry(const LPoint3f& point) {
 //      Access : Private
 // Description : Hashes a point, returns a gradient vector (piecewise)
 ////////////////////////////////////////////////////////////////////
-INLINE LVector3f& LinearNoiseForce::
-get_lattice_entry(const float x, const float y, const float z) {
+INLINE LVector3& LinearNoiseForce::
+get_lattice_entry(const PN_stdfloat x, const PN_stdfloat y, const PN_stdfloat z) {
   return _gradient_table[get_prn_entry(x, y, z)];
 }
 
@@ -68,8 +68,8 @@ get_lattice_entry(const float x, const float y, const float z) {
 // Description : Smooths a parameterized interpolation using
 //               2x^3 - 3x^2
 ////////////////////////////////////////////////////////////////////
-INLINE float LinearNoiseForce::
-cubic_step(const float x) const {
+INLINE PN_stdfloat LinearNoiseForce::
+cubic_step(const PN_stdfloat x) const {
   return x * x * ((2 * x) - 3);
 }
 
@@ -78,7 +78,7 @@ cubic_step(const float x) const {
 //      Access : Private
 // Description : Vector linear interpolation
 ////////////////////////////////////////////////////////////////////
-INLINE LVector3f LinearNoiseForce::
-vlerp(const float t, const LVector3f& v0, const LVector3f& v1) const {
+INLINE LVector3 LinearNoiseForce::
+vlerp(const PN_stdfloat t, const LVector3& v0, const LVector3& v1) const {
   return v0 + ((v1 - v0) * t);
 }

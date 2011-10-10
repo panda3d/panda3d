@@ -16,6 +16,7 @@
 #include "lwoToEggConverter.h"
 #include "cLwoLayer.h"
 
+#include "pta_stdfloat.h"
 #include "lwoVertexMap.h"
 #include "string_utils.h"
 
@@ -58,7 +59,7 @@ add_vmap(const LwoVertexMap *lwo_vmap) {
 //               If true, fills in uv with the value.
 ////////////////////////////////////////////////////////////////////
 bool CLwoPoints::
-get_uv(const string &uv_name, int n, LPoint2f &uv) const {
+get_uv(const string &uv_name, int n, LPoint2 &uv) const {
   VMap::const_iterator ni = _txuv.find(uv_name);
   if (ni == _txuv.end()) {
     return false;
@@ -75,7 +76,7 @@ get_uv(const string &uv_name, int n, LPoint2f &uv) const {
     return false;
   }
 
-  PTA_float value = vmap->get_value(n);
+  PTA_stdfloat value = vmap->get_value(n);
 
   uv.set(value[0], value[1]);
   return true;
