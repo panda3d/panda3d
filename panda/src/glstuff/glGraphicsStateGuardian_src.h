@@ -41,6 +41,14 @@
 class PlaneNode;
 class Light;
 
+#ifdef OPENGLES
+// This is a cheesy hack to allow the following typedefs to compile
+// for OpenGL ES.  We won't actually be calling any of the "double"
+// functions in this case (and they don't exist anyway), but we need
+// to be able to get past their declarations.
+typedef double GLdouble;
+#endif  // OPENGLES
+
 // These typedefs are declared in glext.h, but we must repeat them
 // here, mainly because they will not be included from glext.h if the
 // system GL version matches or exceeds the GL version in which these
