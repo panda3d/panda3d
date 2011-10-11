@@ -2970,7 +2970,7 @@ do_issue_texture() {
                                           texcoord_index | D3DTSS_TCI_CAMERASPACEPOSITION);
         texcoord_dimensions = 3;
 
-        const TexCoord3 &v = _target_tex_gen->get_constant_value(stage);
+        const LTexCoord3 &v = _target_tex_gen->get_constant_value(stage);
         CPT(TransformState) squash = 
           TransformState::make_pos_hpr_scale(v, LVecBase3::zero(),
                                              LVecBase3::zero());
