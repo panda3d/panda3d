@@ -365,7 +365,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
   
   static const int max_attrib_list = 64;
   int iattrib_list[max_attrib_list];
-  PN_stdfloat fattrib_list[max_attrib_list];
+  float fattrib_list[max_attrib_list];
   int ni = 0;
   int nf = 0;
   

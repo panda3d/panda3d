@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "zSpinParticle.h"
+#include "cmath.h"
 
 ////////////////////////////////////////////////////////////////////
 //    Function : ZSpinParticle
@@ -90,9 +91,9 @@ update() {
   }
 
   // normalize the result to [0..360)
-  _cur_angle = fmod(_cur_angle, 360.0f);
+  _cur_angle = cmod(_cur_angle, (PN_stdfloat)360.0);
 
-  // if _cur_angle was negative, it is still negative after fmod,
+  // if _cur_angle was negative, it is still negative after cmod,
   // wrap it around by adding 360
 
   // is this really necessary?  should be in range of sin/cos

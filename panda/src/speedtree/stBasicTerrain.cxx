@@ -385,7 +385,7 @@ read_height_map() {
   int pi = 0;
   for (int yi = image.get_y_size() - 1; yi >= 0; --yi) {
     for (int xi = 0; xi < image.get_x_size(); ++xi) {
-      Colord rgba = image.get_xel_a(xi, yi);
+      LColord rgba = image.get_xel_a(xi, yi);
       PN_stdfloat v = rgba[0] + rgba[1] + rgba[2] + rgba[3];
       v *= scalar;
       _height_data._data[pi] = v;

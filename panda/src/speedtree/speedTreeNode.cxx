@@ -986,13 +986,13 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   CPT(TransformState) orig_modelview = data.get_modelview_transform(trav);
   CPT(TransformState) modelview = gsg->get_cs_transform()->compose(orig_modelview);
   CPT(TransformState) camera_transform = modelview->invert_compose(TransformState::make_identity());
-  const LMatrix4 &modelview_mat = modelview->get_mat();
+  LMatrix4f modelview_mat = LCAST(float, modelview->get_mat());
   const LPoint3 &camera_pos = camera_transform->get_pos();
   const Lens *lens = trav->get_scene()->get_lens();
   
-  LMatrix4 projection_mat =
-    LMatrix4::convert_mat(gsg->get_internal_coordinate_system(), lens->get_coordinate_system()) *
-    lens->get_projection_mat();
+  LMatrix4f projection_mat =
+    LCAST(float, LMatrix4::convert_mat(gsg->get_internal_coordinate_system(), lens->get_coordinate_system()) *
+          lens->get_projection_mat());
   
   _view.Set(SpeedTree::Vec3(camera_pos[0], camera_pos[1], camera_pos[2]),
             SpeedTree::Mat4x4(projection_mat.get_data()),
@@ -1068,7 +1068,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 
   _forest_render.SetLightDir(_light_dir);
 
-  SpeedTree::st_stdfloat updated_splits[SpeedTree::c_nMaxNumShadowMaps];
+  SpeedTree::st_float32 updated_splits[SpeedTree::c_nMaxNumShadowMaps];
   memset(updated_splits, 0, sizeof(updated_splits));
   for (int smi = 0; smi < (int)_shadow_infos.size(); ++smi) {
     updated_splits[smi] = _shadow_infos[smi]._shadow_split;
