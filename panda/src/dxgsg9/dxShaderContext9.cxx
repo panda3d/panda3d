@@ -384,13 +384,12 @@ issue_parameters(GSG *gsg, int altered)
         if (val) {
           HRESULT hr;
           PN_stdfloat v [4];
-          LMatrix4 temp_matrix;
+          LMatrix4f temp_matrix = LCAST(float, *val);
 
           hr = D3D_OK;
 
-          const PN_stdfloat *data;
-
-          data = val -> get_data ( );
+          const float *data;
+          data = temp_matrix.get_data();
 
           #if DEBUG_SHADER
           // DEBUG
@@ -403,7 +402,7 @@ issue_parameters(GSG *gsg, int altered)
           switch (_shader->_mat_spec[i]._piece) {
           case Shader::SMP_whole:
             // TRANSPOSE REQUIRED
-            temp_matrix.transpose_from (*val);
+            temp_matrix.transpose_in_place();
             data = temp_matrix.get_data();
 
             hr = cgD3D9SetUniform (p, data);

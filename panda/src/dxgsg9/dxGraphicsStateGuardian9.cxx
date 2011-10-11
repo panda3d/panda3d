@@ -988,9 +988,10 @@ calc_projection_mat(const Lens *lens) {
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian9::
 prepare_lens() {
+  LMatrix4f mat = LCAST(float, _projection_mat->get_mat());
   HRESULT hr =
     _d3d_device->SetTransform(D3DTS_PROJECTION,
-                              (D3DMATRIX*)_projection_mat->get_mat().get_data());
+                              (D3DMATRIX*)mat.get_data());
   return SUCCEEDED(hr);
 }
 
@@ -1280,7 +1281,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     // we want: that also prevents lighting calculations and user clip
     // planes.
     _d3d_device->SetTransform(D3DTS_WORLD, &_d3d_ident_mat);
-    static const LMatrix4 rescale_mat
+    static const LMatrix4f rescale_mat
       (1, 0, 0, 0,
        0, 1, 0, 0,
        0, 0, 0.5, 0,
@@ -1867,8 +1868,9 @@ end_draw_primitives() {
 
   if (_data_reader->is_vertex_transformed()) {
     // Restore the projection matrix that we wiped out above.
+    LMatrix4f mat = LCAST(float, _projection_mat->get_mat());
     _d3d_device->SetTransform(D3DTS_PROJECTION,
-                              (D3DMATRIX*)_projection_mat->get_mat().get_data());
+                              (D3DMATRIX*)mat.get_data());
   }
 
   GraphicsStateGuardian::end_draw_primitives();
@@ -2816,12 +2818,14 @@ do_issue_transform() {
     _current_shader_context->issue_parameters(this, Shader::SSD_transform);
 
 // ??? NO NEED TO SET THE D3D TRANSFORM VIA SetTransform SINCE THE TRANSFORM IS ONLY USED IN THE SHADER
-    const D3DMATRIX *d3d_mat = (const D3DMATRIX *)transform->get_mat().get_data();
+    LMatrix4f mat = LCAST(float, transform->get_mat());
+    const D3DMATRIX *d3d_mat = (const D3DMATRIX *)mat.get_data();
     _d3d_device->SetTransform(D3DTS_WORLD, d3d_mat);
 
   }
   else {
-    const D3DMATRIX *d3d_mat = (const D3DMATRIX *)transform->get_mat().get_data();
+    LMatrix4f mat = LCAST(float, transform->get_mat());
+    const D3DMATRIX *d3d_mat = (const D3DMATRIX *)mat.get_data();
     _d3d_device->SetTransform(D3DTS_WORLD, d3d_mat);
 
 // DEBUG PRINT
@@ -3384,7 +3388,7 @@ bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
   CPT(TransformState) transform = light.get_transform(_scene_setup->get_camera_path());
   const LMatrix4 &light_mat = transform->get_mat();
   LMatrix4 rel_mat = light_mat * LMatrix4::convert_mat(CS_yup_left, CS_default);
-  LPoint3 pos = light_obj->get_point() * rel_mat;
+  LPoint3f pos = LCAST(float, light_obj->get_point() * rel_mat);
 
   D3DCOLORVALUE black;
   black.r = black.g = black.b = black.a = 0.0f;
@@ -3392,7 +3396,8 @@ bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
   alight.Type =  D3DLIGHT_POINT;
   alight.Diffuse  = get_light_color(light_obj);
   alight.Ambient  =  black ;
-  alight.Specular = *(D3DCOLORVALUE *)(light_obj->get_specular_color().get_data());
+  LColorf color = LCAST(float, light_obj->get_specular_color());
+  alight.Specular = *(D3DCOLORVALUE *)(color.get_data());
 
   // Position needs to specify x, y, z, and w
   // w == 1 implies non-infinite position
@@ -3436,7 +3441,7 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
     CPT(TransformState) transform = light.get_transform(_scene_setup->get_camera_path());
     const LMatrix4 &light_mat = transform->get_mat();
     LMatrix4 rel_mat = light_mat * LMatrix4::convert_mat(CS_yup_left, CS_default);
-    LVector3 dir = light_obj->get_direction() * rel_mat;
+    LVector3f dir = LCAST(float, light_obj->get_direction() * rel_mat);
     
     D3DCOLORVALUE black;
     black.r = black.g = black.b = black.a = 0.0f;
@@ -3445,7 +3450,8 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
     
     fdata.Type =  D3DLIGHT_DIRECTIONAL;
     fdata.Ambient  =  black ;
-    fdata.Specular = *(D3DCOLORVALUE *)(light_obj->get_specular_color().get_data());
+    LColorf color = LCAST(float, light_obj->get_specular_color());
+    fdata.Specular = *(D3DCOLORVALUE *)(color.get_data());
     
     fdata.Direction = *(D3DVECTOR *)dir.get_data();
     
@@ -3489,8 +3495,8 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
   CPT(TransformState) transform = light.get_transform(_scene_setup->get_camera_path());
   const LMatrix4 &light_mat = transform->get_mat();
   LMatrix4 rel_mat = light_mat * LMatrix4::convert_mat(CS_yup_left, CS_default);
-  LPoint3 pos = lens->get_nodal_point() * rel_mat;
-  LVector3 dir = lens->get_view_vector() * rel_mat;
+  LPoint3f pos = LCAST(float, lens->get_nodal_point() * rel_mat);
+  LVector3f dir = LCAST(float, lens->get_view_vector() * rel_mat);
 
   D3DCOLORVALUE black;
   black.r = black.g = black.b = black.a = 0.0f;
@@ -3501,7 +3507,8 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
   alight.Type =  D3DLIGHT_SPOT;
   alight.Ambient  =  black ;
   alight.Diffuse  = get_light_color(light_obj);
-  alight.Specular = *(D3DCOLORVALUE *)(light_obj->get_specular_color().get_data());
+  LColorf color = LCAST(float, light_obj->get_specular_color());
+  alight.Specular = *(D3DCOLORVALUE *)(color.get_data());
 
   alight.Position = *(D3DVECTOR *)pos.get_data();
 
@@ -3569,10 +3576,14 @@ do_issue_material() {
   }
 
   D3DMATERIAL9 cur_material;
-  cur_material.Diffuse = *(D3DCOLORVALUE *)(material->get_diffuse().get_data());
-  cur_material.Ambient = *(D3DCOLORVALUE *)(material->get_ambient().get_data());
-  cur_material.Specular = *(D3DCOLORVALUE *)(material->get_specular().get_data());
-  cur_material.Emissive = *(D3DCOLORVALUE *)(material->get_emission().get_data());
+  LColorf color = LCAST(float, material->get_diffuse());
+  cur_material.Diffuse = *(D3DCOLORVALUE *)(color.get_data());
+  color = LCAST(float, material->get_ambient());
+  cur_material.Ambient = *(D3DCOLORVALUE *)(color.get_data());
+  color = LCAST(float, material->get_specular());
+  cur_material.Specular = *(D3DCOLORVALUE *)(color.get_data());
+  color = LCAST(float, material->get_emission());
+  cur_material.Emissive = *(D3DCOLORVALUE *)(color.get_data());
   cur_material.Power = material->get_shininess();
 
   if (material->has_diffuse()) {
@@ -3581,7 +3592,8 @@ do_issue_material() {
   } else {
     // Otherwise, the diffuse color comes from the object color.
     if (_has_material_force_color) {
-      cur_material.Diffuse = *(D3DCOLORVALUE *)_material_force_color.get_data();
+      color = LCAST(float, _material_force_color);
+      cur_material.Diffuse = *(D3DCOLORVALUE *)color.get_data();
       set_render_state(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_MATERIAL);
     } else {
       set_render_state(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_COLOR1);
@@ -3593,7 +3605,8 @@ do_issue_material() {
   } else {
     // Otherwise, the ambient color comes from the object color.
     if (_has_material_force_color) {
-      cur_material.Ambient = *(D3DCOLORVALUE *)_material_force_color.get_data();
+      color = LCAST(float, _material_force_color);
+      cur_material.Ambient = *(D3DCOLORVALUE *)color.get_data();
       set_render_state(D3DRS_AMBIENTMATERIALSOURCE, D3DMCS_MATERIAL);
     } else {
       set_render_state(D3DRS_AMBIENTMATERIALSOURCE, D3DMCS_COLOR1);
@@ -3841,18 +3854,19 @@ update_standard_texture_bindings() {
       if (/*tex_mat->is_2d() &&*/ texcoord_dimensions <= 2) {
         // For 2-d texture coordinates, we have to reorder the matrix.
         LMatrix4 m = tex_mat->get_mat();
-        m.set(m(0, 0), m(0, 1), m(0, 3), 0.0f,
-              m(1, 0), m(1, 1), m(1, 3), 0.0f,
-              m(3, 0), m(3, 1), m(3, 3), 0.0f,
-              0.0f, 0.0f, 0.0f, 1.0f);
-        _d3d_device->SetTransform(get_tex_mat_sym(si), (D3DMATRIX *)m.get_data());
+        LMatrix4f mf;
+        mf.set(m(0, 0), m(0, 1), m(0, 3), 0.0f,
+               m(1, 0), m(1, 1), m(1, 3), 0.0f,
+               m(3, 0), m(3, 1), m(3, 3), 0.0f,
+               0.0f, 0.0f, 0.0f, 1.0f);
+        _d3d_device->SetTransform(get_tex_mat_sym(si), (D3DMATRIX *)mf.get_data());
         set_texture_stage_state(si, D3DTSS_TEXTURETRANSFORMFLAGS,
                                 D3DTTFF_COUNT2);
       } else {
-        LMatrix4 m = tex_mat->get_mat();
-        _d3d_device->SetTransform(get_tex_mat_sym(si), (D3DMATRIX *)m.get_data());
+        LMatrix4f mf = LCAST(float, tex_mat->get_mat());
+        _d3d_device->SetTransform(get_tex_mat_sym(si), (D3DMATRIX *)mf.get_data());
         DWORD transform_flags = texcoord_dimensions;
-        if (m.get_col(3) != LVecBase4(0.0f, 0.0f, 0.0f, 1.0f)) {
+        if (mf.get_col(3) != LVecBase4f(0.0f, 0.0f, 0.0f, 1.0f)) {
           // If we have a projected texture matrix, we also need to
           // set D3DTTFF_COUNT4.
           transform_flags = D3DTTFF_COUNT4 | D3DTTFF_PROJECTED;
@@ -4229,13 +4243,13 @@ do_auto_rescale_normal() {
 ////////////////////////////////////////////////////////////////////
 const D3DCOLORVALUE &DXGraphicsStateGuardian9::
 get_light_color(Light *light) const {
-  static LColor c;
-  c = light->get_color();
-  c.set(c[0] * _light_color_scale[0],
-        c[1] * _light_color_scale[1],
-        c[2] * _light_color_scale[2],
-        c[3] * _light_color_scale[3]);
-  return *(D3DCOLORVALUE *)c.get_data();
+  LColor c = light->get_color();
+  static LColorf cf;
+  cf.set(c[0] * _light_color_scale[0],
+         c[1] * _light_color_scale[1],
+         c[2] * _light_color_scale[2],
+         c[3] * _light_color_scale[3]);
+  return *(D3DCOLORVALUE *)cf.get_data();
 }
 
 ////////////////////////////////////////////////////////////////////
