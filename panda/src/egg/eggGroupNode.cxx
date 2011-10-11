@@ -1877,7 +1877,7 @@ do_compute_vertex_normals(const NVertexGroup &group) {
 
   // Determine the common normal.  This is simply the average of all
   // the polygon normals that share this vertex.
-  Normald normal(0.0, 0.0, 0.0);
+  LNormald normal(0.0, 0.0, 0.0);
   NVertexGroup::const_iterator gi;
   for (gi = group.begin(); gi != group.end(); ++gi) {
     const NVertexReference &ref = (*gi);
@@ -1959,9 +1959,9 @@ r_collect_tangent_binormal(const GlobPattern &uv_name,
               LPoint3d p2 = v2->get_pos3();
               LPoint3d p3 = v3->get_pos3();
               
-              TexCoordd w1 = v1->get_uv(name);
-              TexCoordd w2 = v2->get_uv(name);
-              TexCoordd w3 = v3->get_uv(name);
+              LTexCoordd w1 = v1->get_uv(name);
+              LTexCoordd w2 = v2->get_uv(name);
+              LTexCoordd w3 = v3->get_uv(name);
 
               // Check the facing of the texture; we will have to
               // split vertices whose UV's are mirrored along a seam.
@@ -2033,8 +2033,8 @@ do_compute_tangent_binormal(const TBNVertexValue &value,
 
   // Accumulate together all of the s vectors and t vectors computed
   // for the different vertices that are together here.
-  Normald sdir(0.0, 0.0, 0.0);
-  Normald tdir(0.0, 0.0, 0.0);
+  LNormald sdir(0.0, 0.0, 0.0);
+  LNormald tdir(0.0, 0.0, 0.0);
 
   TBNVertexGroup::const_iterator gi;
   for (gi = group.begin(); gi != group.end(); ++gi) {
@@ -2051,13 +2051,13 @@ do_compute_tangent_binormal(const TBNVertexValue &value,
     sdir.set(1.0, 0.0, 0.0);
   }
   if (!tdir.normalize()) {
-    tdir = sdir.cross(Normald(0.0, 0.0, -1.0));
+    tdir = sdir.cross(LNormald(0.0, 0.0, -1.0));
   }
 
-  Normald tangent = (sdir - value._normal * value._normal.dot(sdir));
+  LNormald tangent = (sdir - value._normal * value._normal.dot(sdir));
   tangent.normalize();
 
-  Normald binormal = cross(value._normal, tangent);
+  LNormald binormal = cross(value._normal, tangent);
   if (dot(binormal, tdir) < 0.0f) {
     binormal = -binormal;
   }

@@ -181,9 +181,9 @@ has_projection() const {
 //               are closed up by ensuring the point is in the same
 //               quadrant as the indicated reference point.
 ////////////////////////////////////////////////////////////////////
-TexCoordd MayaShaderColorDef::
+LTexCoordd MayaShaderColorDef::
 project_uv(const LPoint3d &pos, const LPoint3d &centroid) const {
-  nassertr(_map_uvs != NULL, TexCoordd::zero());
+  nassertr(_map_uvs != NULL, LTexCoordd::zero());
   return (this->*_map_uvs)(pos * _projection_matrix, centroid * _projection_matrix);
 }
 

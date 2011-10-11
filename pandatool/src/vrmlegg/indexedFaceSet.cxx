@@ -75,7 +75,7 @@ get_coord_values() {
     MFArray::const_iterator ci;
     for (ci = point->begin(); ci != point->end(); ++ci) {
       const double *p = (*ci)._sfvec;
-      _coord_values.push_back(Vertexd(p[0], p[1], p[2]));
+      _coord_values.push_back(LVertexd(p[0], p[1], p[2]));
     }
   }
 }
@@ -97,7 +97,7 @@ get_polys() {
       _polys.push_back(poly);
       poly._verts.clear();
     } else {
-      const Vertexd &p = _coord_values[(*ci)._sfint32];
+      const LVertexd &p = _coord_values[(*ci)._sfint32];
       VrmlVertex vert;
       vert._index = (*ci)._sfint32;
       vert._pos = p;
@@ -132,12 +132,12 @@ get_vrml_colors(const VrmlNode *color_node, double transparency,
 ////////////////////////////////////////////////////////////////////
 void IndexedFaceSet::
 get_vrml_normals(const VrmlNode *normal_node, 
-                 pvector<Normald> &normal_list) {
+                 pvector<LNormald> &normal_list) {
   const MFArray *point = normal_node->get_value("vector")._mf;
   MFArray::const_iterator ci;
   for (ci = point->begin(); ci != point->end(); ++ci) {
     const double *p = (*ci)._sfvec;
-    Normald normal(p[0], p[1], p[2]);
+    LNormald normal(p[0], p[1], p[2]);
     normal_list.push_back(normal);
   }
 }
@@ -150,12 +150,12 @@ get_vrml_normals(const VrmlNode *normal_node,
 ////////////////////////////////////////////////////////////////////
 void IndexedFaceSet::
 get_vrml_uvs(const VrmlNode *texCoord_node, 
-             pvector<TexCoordd> &uv_list) {
+             pvector<LTexCoordd> &uv_list) {
   const MFArray *point = texCoord_node->get_value("point")._mf;
   MFArray::const_iterator ci;
   for (ci = point->begin(); ci != point->end(); ++ci) {
     const double *p = (*ci)._sfvec;
-    TexCoordd uv(p[0], p[1]);
+    LTexCoordd uv(p[0], p[1]);
     uv_list.push_back(uv);
   }
 }
@@ -243,7 +243,7 @@ get_normals() {
   const VrmlNode *normal = _geometry->get_value("normal")._sfnode._p;
   if (normal != NULL) {
     // Vertex or face normals.
-    pvector<Normald> normal_list;
+    pvector<LNormald> normal_list;
     get_vrml_normals(normal, normal_list);
     
     bool normalPerVertex = _geometry->get_value("normalPerVertex")._sfbool;
@@ -326,7 +326,7 @@ get_normals() {
               cerr << "Normal indices don't match up!\n";
               return false;
             }
-            const Normald &d = normal_list[(*ci)._sfint32];
+            const LNormald &d = normal_list[(*ci)._sfint32];
             _polys[pi]._verts[pv]._attrib.set_normal(d);
             pv++;
           }
@@ -348,7 +348,7 @@ get_normals() {
             cerr << "Invalid normal index!\n";
             return false;
           }
-          const Normald &d = normal_list[(*ci)._sfint32];
+          const LNormald &d = normal_list[(*ci)._sfint32];
           _polys[pi]._attrib.set_normal(d);
           pi++;
         }
@@ -358,7 +358,7 @@ get_normals() {
           return false;
         }
         for (size_t pi = 0; pi < normal_list.size(); pi++) {
-          const Normald &d = normal_list[pi];
+          const LNormald &d = normal_list[pi];
           _polys[pi]._attrib.set_normal(d);
         }
       }
@@ -383,7 +383,7 @@ assign_per_vertex_normals() {
     for (size_t pv = 0; pv < _polys[pi]._verts.size(); pv++) {
       VrmlVertex &vv = _polys[pi]._verts[pv];
       if (vv._index >= 0 && vv._index < (int)_per_vertex_normals.size()) {
-        const Normald &d = _per_vertex_normals[vv._index];
+        const LNormald &d = _per_vertex_normals[vv._index];
         vv._attrib.set_normal(d);
       }
     }
@@ -401,7 +401,7 @@ get_uvs() {
   const VrmlNode *texCoord = _geometry->get_value("texCoord")._sfnode._p;
   if (texCoord != NULL) {
     // Vertex or face texCoords.
-    pvector<TexCoordd> uv_list;
+    pvector<LTexCoordd> uv_list;
     get_vrml_uvs(texCoord, uv_list);
     
     MFArray *texCoordIndex = _geometry->get_value("texCoordIndex")._mf;
@@ -499,7 +499,7 @@ assign_per_vertex_uvs() {
     for (size_t pv = 0; pv < _polys[pi]._verts.size(); pv++) {
       VrmlVertex &vv = _polys[pi]._verts[pv];
       if (vv._index >= 0 && vv._index < (int)_per_vertex_uvs.size()) {
-        const TexCoordd &d = _per_vertex_uvs[vv._index];
+        const LTexCoordd &d = _per_vertex_uvs[vv._index];
         vv._attrib.set_uv(d);
       }
     }
@@ -539,7 +539,7 @@ make_polys(EggVertexPool *vpool, EggGroup *group,
       // The vertices are counterclockwise, same as Egg.
       for (int pv = 0; pv < (int)_polys[pi]._verts.size(); pv++) {
         EggVertex vert(_polys[pi]._verts[pv]._attrib);
-        Vertexd pos = 
+        LVertexd pos = 
           _polys[pi]._verts[pv]._pos * net_transform;
         vert.set_pos(pos);
 
@@ -549,7 +549,7 @@ make_polys(EggVertexPool *vpool, EggGroup *group,
       // The vertices are clockwise, so add 'em in reverse order.
       for (int pv = (int)_polys[pi]._verts.size() - 1; pv >= 0; pv--) {
         EggVertex vert(_polys[pi]._verts[pv]._attrib);
-        Vertexd pos = 
+        LVertexd pos = 
           _polys[pi]._verts[pv]._pos * net_transform;
         vert.set_pos(pos);
 

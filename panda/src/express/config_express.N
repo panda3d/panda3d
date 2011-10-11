@@ -17,9 +17,6 @@ forcetype NeverFreeMemory
 forcetype IFileStream
 forcetype OFileStream
 forcetype FileStream
-renametype IFileStream IFileStream
-renametype OFileStream OFileStream
-renametype FileStream FileStream
 forcetype IDecryptStream
 forcetype OEncryptStream
 
@@ -56,17 +53,11 @@ forcetype IStreamWrapper
 forcetype OStreamWrapper
 forcetype StreamWrapper
 
-forcetype PointerToArray<unsigned char>
-forcetype ConstPointerToArray<unsigned char>
-renametype PointerToArray<unsigned char> PTAUchar
-renametype ConstPointerToArray<unsigned char> CPTAUchar
-
-forcetype PointerToArray<float>
-forcetype ConstPointerToArray<float>
-renametype PointerToArray<float> PTAFloat
-renametype ConstPointerToArray<float> CPTAFloat
-
-forcetype PointerToArray<int>
-forcetype ConstPointerToArray<int>
-renametype PointerToArray<int> PTAInt
-renametype ConstPointerToArray<int> CPTAInt
+forcetype PTA_uchar
+forcetype CPTA_uchar
+forcetype PTA_float
+forcetype CPTA_float
+forcetype PTA_double
+forcetype CPTA_double
+forcetype PTA_int
+forcetype CPTA_int

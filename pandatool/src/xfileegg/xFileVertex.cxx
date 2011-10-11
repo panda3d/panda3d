@@ -38,7 +38,7 @@ XFileVertex() {
 ////////////////////////////////////////////////////////////////////
 void XFileVertex::
 set_from_egg(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
-  Vertexd pos = egg_vertex->get_pos3();
+  LVertexd pos = egg_vertex->get_pos3();
 
   if (xfile_one_mesh) {
     // If this is going into one big mesh, we must ensure every
@@ -52,7 +52,7 @@ set_from_egg(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
   _point = pos;
 
   if (egg_vertex->has_uv()) {
-    TexCoordd uv = egg_vertex->get_uv();
+    LTexCoordd uv = egg_vertex->get_uv();
     if (egg_prim->has_texture()) {
       // Check if there's a texture matrix on the texture.
       EggTexture *egg_tex = egg_prim->get_texture();

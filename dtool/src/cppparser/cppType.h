@@ -57,6 +57,8 @@ public:
   virtual string get_local_name(CPPScope *scope = NULL) const;
   virtual string get_fully_scoped_name() const;
   virtual string get_preferred_name() const;
+  int get_num_alt_names() const;
+  string get_alt_name(int n) const;
 
   virtual bool is_incomplete() const;
   virtual bool is_equivalent(const CPPType &other) const;
@@ -73,7 +75,7 @@ public:
 
   static CPPType *new_type(CPPType *type);
 
-  static void record_preferred_name_for(const CPPType *type, const string &name);
+  static void record_alt_name_for(const CPPType *type, const string &name);
   static string get_preferred_name_for(const CPPType *type);
 
   CPPTypeDeclaration *_declaration;
@@ -85,6 +87,10 @@ protected:
 
   typedef map<string, string> PreferredNames;
   static PreferredNames _preferred_names;
+
+  typedef vector<string> Names;
+  typedef map<string, Names> AltNames;
+  static AltNames _alt_names;
 };
 
 #endif

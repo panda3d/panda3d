@@ -302,8 +302,8 @@ typedef pair<double, EggGroup *> MaxEggWeight;
 
 struct MaxEggVertex
 {
-  Vertexd              _pos;
-  Normald              _normal;
+  LVertexd              _pos;
+  LNormald              _normal;
   vector<MaxEggWeight> _weights;
   int                  _index;
 };
@@ -339,7 +339,7 @@ struct MEV_Compare: public stl_hash_compare<MaxEggVertex>
 };
 
 typedef phash_set<MaxEggVertex, MEV_Compare> VertTable;
-typedef phash_map<TexCoordd, int>            TVertTable;
+typedef phash_map<LTexCoordd, int>            TVertTable;
 typedef phash_map<LColor, int>               CVertTable;
 
 class MaxEggMesh
@@ -364,7 +364,7 @@ public:
   CVertTable _cvert_tab;
   
   int GetVert(EggVertex *vert, EggGroup *context);
-  int GetTVert(TexCoordd uv);
+  int GetTVert(LTexCoordd uv);
   int GetCVert(LColor col);
   int AddFace(int v0, int v1, int v2, int tv0, int tv1, int tv2, int cv0, int cv1, int cv2, int tex);
   EggGroup *GetControlJoint(void);
@@ -404,7 +404,7 @@ int MaxEggMesh::GetVert(EggVertex *vert, EggGroup *context)
   return vtx._index;
 }
 
-int MaxEggMesh::GetTVert(TexCoordd uv)
+int MaxEggMesh::GetTVert(LTexCoordd uv)
 {
   if (_tvert_tab.count(uv))
     return _tvert_tab[uv];
@@ -589,7 +589,7 @@ void MaxEggLoader::TraverseEggNode(EggNode *node, EggGroup *context)
     for (ci = poly->begin(); ci != poly->end(); ++ci) {
       EggVertex *vtx = (*ci);
       EggVertexPool *pool = poly->get_pool();
-      TexCoordd uv = vtx->get_uv();
+      LTexCoordd uv = vtx->get_uv();
       vertIndices.push_back(mesh->GetVert(vtx, context));
       tvertIndices.push_back(mesh->GetTVert(uv * uvtrans));
       cvertIndices.push_back(mesh->GetCVert(vtx->get_color()));

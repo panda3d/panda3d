@@ -18,10 +18,6 @@
 
 #include <algorithm>
 
-// This static string is just kept around as a handy bogus return
-// value for functions that must return a const string reference.
-string InterrogateType::_empty_string;
-
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::Constructor
 //       Access: Public

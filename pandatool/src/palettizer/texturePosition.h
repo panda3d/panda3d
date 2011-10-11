@@ -41,8 +41,8 @@ public:
   int _x, _y;
   int _x_size, _y_size;
 
-  TexCoordd _min_uv;
-  TexCoordd _max_uv;
+  LTexCoordd _min_uv;
+  LTexCoordd _max_uv;
 
   EggTexture::WrapMode _wrap_u;
   EggTexture::WrapMode _wrap_v;

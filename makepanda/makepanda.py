@@ -1370,6 +1370,7 @@ DTOOL_CONFIG=[
     ("USE_DEBUG_PYTHON",               'UNDEF',                  'UNDEF'),
     ("PYTHON_FRAMEWORK",               'UNDEF',                  'UNDEF'),
     ("COMPILE_IN_DEFAULT_FONT",        '1',                      '1'),
+    ("STDFLOAT_DOUBLE",                'UNDEF',                  'UNDEF'),
     ("HAVE_MAYA",                      '1',                      '1'),
     ("MAYA_PRE_5_0",                   'UNDEF',                  'UNDEF'),
     ("HAVE_SOFTIMAGE",                 'UNDEF',                  'UNDEF'),

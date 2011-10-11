@@ -1104,11 +1104,11 @@ r_apply_texmats(EggTextureCollection &textures) {
         if (uv_obj != (EggVertexUV *)NULL) {
           EggVertex new_vertex(*vertex);
           PT(EggVertexUV) new_uv_obj = new EggVertexUV(*uv_obj);
-          TexCoord3d uvw = uv_obj->get_uvw() * mat;
+          LTexCoord3d uvw = uv_obj->get_uvw() * mat;
           if (uv_obj->has_w() || texture->has_transform3d()) {
             new_uv_obj->set_uvw(uvw);
           } else {
-            new_uv_obj->set_uv(TexCoordd(uvw[0], uvw[1]));
+            new_uv_obj->set_uv(LTexCoordd(uvw[0], uvw[1]));
           }
           new_vertex.set_uv_obj(new_uv_obj);
           

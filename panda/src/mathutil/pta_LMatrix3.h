@@ -61,6 +61,14 @@ typedef PTA_LMatrix3d PTA_LMatrix3;
 typedef CPTA_LMatrix3d CPTA_LMatrix3;
 #endif  // STDFLOAT_DOUBLE
 
+// Bogus typedefs for interrogate and legacy Python code.
+#ifdef CPPPARSER
+typedef PTA_LMatrix3 PTAMat3;
+typedef CPTA_LMatrix3 CPTAMat3;
+typedef PTA_LMatrix3d PTAMat3d;
+typedef CPTA_LMatrix3d CPTAMat3d;
+#endif  // CPPPARSER
+
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__
 #pragma interface

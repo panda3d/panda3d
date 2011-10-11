@@ -56,14 +56,14 @@ private:
   struct Line {
     LVecBase3f _p0;
     LVecBase3f _p1;
-    Colorf _color;
+    LColorf _color;
   };
 
   struct Triangle {
     LVecBase3f _p0;
     LVecBase3f _p1;
     LVecBase3f _p2;
-    Colorf _color;
+    LColorf _color;
   };
 
   class DebugDraw : public btIDebugDraw {

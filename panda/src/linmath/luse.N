@@ -1,38 +1,4 @@
 
-renametype LPoint2f LPoint2f
-renametype LPoint3f LPoint3f
-renametype LPoint4f LPoint4f
-renametype LPoint2d LPoint2d
-renametype LPoint3d LPoint3d
-renametype LPoint4d LPoint4d
-
-renametype LVecBase2f LVecBase2f
-renametype LVecBase3f LVecBase3f
-renametype LVecBase4f LVecBase4f
-renametype LVecBase2d LVecBase2d
-renametype LVecBase3d LVecBase3d
-renametype LVecBase4d LVecBase4d
-
-renametype LVector2f LVector2f
-renametype LVector3f LVector3f
-renametype LVector4f LVector4f
-renametype LVector2d LVector2d
-renametype LVector3d LVector3d
-renametype LVector4d LVector4d
-
-renametype LMatrix3f LMatrix3f
-renametype LMatrix4f LMatrix4f
-renametype LMatrix3d LMatrix3d
-renametype LMatrix4d LMatrix4d
-
-renametype LQuaternionf LQuaternionf
-renametype LRotationf LRotationf
-renametype LOrientationf LOrientationf
-
-renametype LQuaterniond LQuaterniond
-renametype LRotationd LRotationd
-renametype LOrientationd LOrientationd
-
 defconstruct LPoint2f new LPoint2f(0.0f)
 defconstruct LPoint3f new LPoint3f(0.0f)
 defconstruct LPoint4f new LPoint4f(0.0f)

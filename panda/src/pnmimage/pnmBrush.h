@@ -53,8 +53,8 @@ PUBLISHED:
   };
 
   static PT(PNMBrush) make_transparent();
-  static PT(PNMBrush) make_pixel(const Colord &color, BrushEffect effect = BE_blend);
-  static PT(PNMBrush) make_spot(const Colord &color, double radius, bool fuzzy,
+  static PT(PNMBrush) make_pixel(const LColord &color, BrushEffect effect = BE_blend);
+  static PT(PNMBrush) make_spot(const LColord &color, double radius, bool fuzzy,
                                 BrushEffect effect = BE_blend);
   static PT(PNMBrush) make_image(const PNMImage &image, double xc, double yc,
                                  BrushEffect effect = BE_blend);

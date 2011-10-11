@@ -18,6 +18,7 @@
 
 CPPType::Types CPPType::_types;
 CPPType::PreferredNames CPPType::_preferred_names;
+CPPType::AltNames CPPType::_alt_names;
 
 bool CPPTypeCompare::
 operator () (CPPType *a, CPPType *b) const {
@@ -167,6 +168,58 @@ get_preferred_name() const {
   return get_local_name();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: CPPType::get_num_alt_names
+//       Access: Public
+//  Description: Returns the number of "alternate" names for this
+//               type.  The alternate names are alternate typedef
+//               names.  This list might be empty, or it might be
+//               long.  One of these names may or may not be the same
+//               as the "preferred" name.
+////////////////////////////////////////////////////////////////////
+int CPPType::
+get_num_alt_names() const {
+  // We do a lookup based on the type's name, instead of its pointer,
+  // so we can resolve different expansions of the same type.
+  string tname = this->get_fully_scoped_name();
+
+  if (!tname.empty()) {
+    AltNames::const_iterator ai;
+    ai = _alt_names.find(tname);
+    if (ai != _alt_names.end()) {
+      const Names &names = (*ai).second;
+      return names.size();
+    }
+  }
+
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPType::get_alt_name
+//       Access: Public
+//  Description: Returns the nth "alternate" name for this
+//               type.  See get_num_alt_names().
+////////////////////////////////////////////////////////////////////
+string CPPType::
+get_alt_name(int n) const {
+  // We do a lookup based on the type's name, instead of its pointer,
+  // so we can resolve different expansions of the same type.
+  string tname = this->get_fully_scoped_name();
+
+  if (!tname.empty()) {
+    AltNames::const_iterator ai;
+    ai = _alt_names.find(tname);
+    if (ai != _alt_names.end()) {
+      const Names &names = (*ai).second;
+      if (n >= 0 && n < (int)names.size()) {
+        return names[n];
+      }
+    }
+  }
+
+  return string();
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPType::is_incomplete
@@ -271,18 +324,29 @@ new_type(CPPType *type) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CPPType::record_preferred_name_for
+//     Function: CPPType::record_alt_name_for
 //       Access: Public, Static
 //  Description: Records a global typedef name associated with the
-//               indicated Type.  This will be taken as the
-//               "preferred" name for this class, should anyone ask.
+//               indicated Type.  This will be an "alt" name, and it
+//               may also become the "preferred" name.
 ////////////////////////////////////////////////////////////////////
 void CPPType::
-record_preferred_name_for(const CPPType *type, const string &name) {
+record_alt_name_for(const CPPType *type, const string &name) {
   if (!name.empty()) {
     string tname = type->get_fully_scoped_name();
     if (!tname.empty()) {
-      _preferred_names.insert(PreferredNames::value_type(tname, name));
+      if (tname.find('<') != string::npos) {
+        // If the name contains a funny character like a template
+        // name, then we implicitly take the first typedef as the
+        // preferred name.
+        _preferred_names.insert(PreferredNames::value_type(tname, name));
+      }
+
+      Names &names = _alt_names[tname];
+      if (find(names.begin(), names.end(), name) == names.end()) {
+        // It's not already recorded as an alt name, so record it now.
+        names.push_back(name);
+      }
     }
   }
 }

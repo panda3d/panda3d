@@ -52,7 +52,7 @@ operator = (const EggPolygon &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool EggPolygon::
 recompute_polygon_normal(CoordinateSystem cs) {
-  Normald normal;
+  LNormald normal;
   if (calculate_normal(normal, cs)) {
     set_normal(normal);
     return true;

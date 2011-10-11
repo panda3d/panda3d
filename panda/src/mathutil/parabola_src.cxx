@@ -14,11 +14,11 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Parabola::xform
+//     Function: LParabola::xform
 //       Access: Published
 //  Description: Transforms the parabola by the indicated matrix.
 ////////////////////////////////////////////////////////////////////
-void FLOATNAME(Parabola)::
+void FLOATNAME(LParabola)::
 xform(const FLOATNAME(LMatrix4) &mat) {
   // Note that xform_vec() is the correct operation here, while
   // xform_vec_general() is not.
@@ -28,31 +28,31 @@ xform(const FLOATNAME(LMatrix4) &mat) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Parabola::output
+//     Function: LParabola::output
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void FLOATNAME(Parabola)::
+void FLOATNAME(LParabola)::
 output(ostream &out) const {
-  out << "Parabola(" << _a << ", " << _b << ", " << _c << ")";
+  out << "LParabola(" << _a << ", " << _b << ", " << _c << ")";
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Parabola::write
+//     Function: LParabola::write
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void FLOATNAME(Parabola)::
+void FLOATNAME(LParabola)::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Parabola::write_datagram
+//     Function: LParabola::write_datagram
 //       Access: Public
 //  Description: Function to write itself into a datagram
 ////////////////////////////////////////////////////////////////////
-void FLOATNAME(Parabola)::
+void FLOATNAME(LParabola)::
 write_datagram(Datagram &destination) const {
   _a.write_datagram(destination);
   _b.write_datagram(destination);
@@ -64,7 +64,7 @@ write_datagram(Datagram &destination) const {
 //       Access: Public
 //  Description: Function to read itself from a datagramIterator
 ////////////////////////////////////////////////////////////////////
-void FLOATNAME(Parabola)::
+void FLOATNAME(LParabola)::
 read_datagram(DatagramIterator &source) {
   _a.read_datagram(source);
   _b.read_datagram(source);

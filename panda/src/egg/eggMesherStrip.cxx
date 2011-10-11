@@ -822,7 +822,7 @@ convex_quad(EggMesherEdge *common_edge, EggMesherStrip &front,
 
   nassertr(front._planar, false);
 
-  const Normald &n = front._plane_normal;
+  const LNormald &n = front._plane_normal;
   int xi, yi;
 
   // Find the largest dimension of the normal.

@@ -311,7 +311,7 @@ create_polygons(XFileToEggConverter *converter) {
         temp_vtx.set_color(vertex->_color);
       }
       if (vertex->_has_uv) {
-        TexCoordd uv = vertex->_uv;
+        LTexCoordd uv = vertex->_uv;
         // Windows draws the UV's upside-down.
         uv[1] = 1.0 - uv[1];
         temp_vtx.set_uv(uv);

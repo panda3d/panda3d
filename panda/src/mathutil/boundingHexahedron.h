@@ -38,7 +38,7 @@ public:
   INLINE_MATHUTIL BoundingHexahedron();
 
 PUBLISHED:
-  BoundingHexahedron(const Frustumf &frustum, bool is_ortho,
+  BoundingHexahedron(const LFrustum &frustum, bool is_ortho,
                      CoordinateSystem cs = CS_default);
   BoundingHexahedron(const LPoint3 &fll, const LPoint3 &flr,
                      const LPoint3 &fur, const LPoint3 &ful,

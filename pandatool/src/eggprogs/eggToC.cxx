@@ -208,7 +208,7 @@ write_vertex_pool(EggVertexPool *vpool) {
       if (vert == (EggVertex *)NULL || !vert->has_uv()) {
         out << "  uv(),  /* " << i << " */\n";
       } else {
-        TexCoordd uv = vert->get_uv();
+        LTexCoordd uv = vert->get_uv();
         out << "  uv(" << uv[0] << ", " << uv[1]
             << "),  /* " << i << " */\n";
       }
@@ -225,7 +225,7 @@ write_vertex_pool(EggVertexPool *vpool) {
       if (vert == (EggVertex *)NULL || !vert->has_normal()) {
         out << "  normal(),  /* " << i << " */\n";
       } else {
-        Normald n = vert->get_normal();
+        LNormald n = vert->get_normal();
         out << "  normal(" << n[0] << ", " << n[1] << ", " << n[2]
             << "),  /* " << i << " */\n";
       }
@@ -334,7 +334,7 @@ write_bin(EggBin *bin) {
         if (!prim->has_normal()) {
           out << "  normal(),   /* " << prim_index << " */\n";
         } else {
-          Normald n = prim->get_normal();
+          LNormald n = prim->get_normal();
           out << "  normal(" << n[0] << ", " << n[1] << ", " << n[2]
               << "),  /* " << prim_index << " */\n";
         }

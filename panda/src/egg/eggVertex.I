@@ -156,11 +156,11 @@ get_pos2() const {
 //  Description: Valid if get_num_dimensions() returns 3 or 4.
 //               Returns the position as a three-dimensional value.
 ////////////////////////////////////////////////////////////////////
-INLINE Vertexd EggVertex::
+INLINE LVertexd EggVertex::
 get_pos3() const {
   nassertr(_num_dimensions == 3 || _num_dimensions == 4,
            LPoint3d(0.0, 0.0, 0.0));
-  return Vertexd(_pos[0] / _pos[3], _pos[1] / _pos[3], _pos[2] / _pos[3]);
+  return LVertexd(_pos[0] / _pos[3], _pos[1] / _pos[3], _pos[2] / _pos[3]);
 }
 
 
@@ -207,9 +207,9 @@ has_uv() const {
 //               multitexturing; see get_uv(name) for the interface
 //               that supports multitexturing.
 ////////////////////////////////////////////////////////////////////
-INLINE TexCoordd EggVertex::
+INLINE LTexCoordd EggVertex::
 get_uv() const {
-  nassertr(has_uv(), TexCoordd::zero());
+  nassertr(has_uv(), LTexCoordd::zero());
   return get_uv("");
 }
 
@@ -225,7 +225,7 @@ get_uv() const {
 //               interface that supports multitexturing.
 ////////////////////////////////////////////////////////////////////
 INLINE void EggVertex::
-set_uv(const TexCoordd &uv) {
+set_uv(const LTexCoordd &uv) {
   set_uv("", uv);
 }
 

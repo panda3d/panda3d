@@ -97,9 +97,9 @@ int main(int argc, char *argv[]) {
        << "q * invert(y) is " << q * invert(y) << "\n"
        << "q * a is " << q * a << "\n";
 
-  Normald v1(0,0,1), v2(1,1,1);
-  Vertexd p1(1,0,1), p2(1,2,3);
-  Colorf c1(1,1,1,1), c2(0,0,0,0);
+  LNormald v1(0,0,1), v2(1,1,1);
+  LVertexd p1(1,0,1), p2(1,2,3);
+  LColorf c1(1,1,1,1), c2(0,0,0,0);
 
   p2 = p2 - v1;
 

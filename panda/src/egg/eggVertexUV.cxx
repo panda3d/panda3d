@@ -25,7 +25,7 @@ TypeHandle EggVertexUV::_type_handle;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 EggVertexUV::
-EggVertexUV(const string &name, const TexCoordd &uv) :
+EggVertexUV(const string &name, const LTexCoordd &uv) :
   EggNamedObject(name),
   _flags(0),
   _uvw(uv[0], uv[1], 0.0)
@@ -41,7 +41,7 @@ EggVertexUV(const string &name, const TexCoordd &uv) :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 EggVertexUV::
-EggVertexUV(const string &name, const TexCoord3d &uvw) :
+EggVertexUV(const string &name, const LTexCoord3d &uvw) :
   EggNamedObject(name),
   _flags(F_has_w),
   _uvw(uvw)

@@ -58,8 +58,8 @@ public:
   bool operator < (const TextureReference &other) const;
 
   bool has_uvs() const;
-  const TexCoordd &get_min_uv() const;
-  const TexCoordd &get_max_uv() const;
+  const LTexCoordd &get_min_uv() const;
+  const LTexCoordd &get_max_uv() const;
 
   EggTexture::WrapMode get_wrap_u() const;
   EggTexture::WrapMode get_wrap_v() const;
@@ -83,14 +83,14 @@ private:
   void update_uv_range(EggGroupNode *group, Palettizer::RemapUV remap);
 
   bool get_geom_uvs(EggPrimitive *geom,
-                    TexCoordd &geom_min_uv, TexCoordd &geom_max_uv);
-  void translate_geom_uvs(EggPrimitive *geom, const TexCoordd &trans) const;
+                    LTexCoordd &geom_min_uv, LTexCoordd &geom_max_uv);
+  void translate_geom_uvs(EggPrimitive *geom, const LTexCoordd &trans) const;
   void collect_nominal_uv_range();
-  static void collect_uv(bool &any_uvs, TexCoordd &min_uv, TexCoordd &max_uv,
-                         const TexCoordd &got_min_uv,
-                         const TexCoordd &got_max_uv);
-  static LVector2d translate_uv(const TexCoordd &min_uv,
-                                const TexCoordd &max_uv);
+  static void collect_uv(bool &any_uvs, LTexCoordd &min_uv, LTexCoordd &max_uv,
+                         const LTexCoordd &got_min_uv,
+                         const LTexCoordd &got_max_uv);
+  static LVector2d translate_uv(const LTexCoordd &min_uv,
+                                const LTexCoordd &max_uv);
 
   EggFile *_egg_file;
   EggTexture *_egg_tex;
@@ -104,7 +104,7 @@ private:
   bool _uses_alpha;
 
   bool _any_uvs;
-  TexCoordd _min_uv, _max_uv;
+  LTexCoordd _min_uv, _max_uv;
   EggTexture::WrapMode _wrap_u, _wrap_v;
 
   TextureProperties _properties;

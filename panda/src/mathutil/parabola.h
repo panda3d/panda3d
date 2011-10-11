@@ -27,9 +27,9 @@
 #include "parabola_src.h"
 
 #ifndef STDFLOAT_DOUBLE
-typedef Parabolaf LParabola;
+typedef LParabolaf LParabola;
 #else
-typedef Parabolad LParabola;
+typedef LParabolad LParabola;
 #endif
 
 #endif

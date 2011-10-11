@@ -433,7 +433,7 @@ do_uniform_tesselate(int &tris) const {
   // Also collect the vertices into this set to group them by spatial
   // position only.  This is relevant for calculating normals.
   typedef pset<EggVertex *> NVertexGroup;
-  typedef pmap<Vertexd, NVertexGroup> NVertexCollection;
+  typedef pmap<LVertexd, NVertexGroup> NVertexCollection;
   NVertexCollection n_collection;
   
   for (vi = 0; vi < num_v; vi++) {
@@ -489,7 +489,7 @@ do_uniform_tesselate(int &tris) const {
 
     // Calculate the normal these vertices should have based on the
     // polygons that share it.
-    Normald normal = Normald::zero();
+    LNormald normal = LNormald::zero();
     int num_polys = 0;
     NVertexGroup::const_iterator ngi;
     for (ngi = group.begin(); ngi != group.end(); ++ngi) {

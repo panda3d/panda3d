@@ -551,10 +551,10 @@ make_geom(PNMTextGlyph *glyph, int character) {
     EggVertex *v3 = make_vertex(LPoint2d(right, top));
     EggVertex *v4 = make_vertex(LPoint2d(left, top));
     
-    v1->set_uv(TexCoordd(uv_left, uv_bottom));
-    v2->set_uv(TexCoordd(uv_right, uv_bottom));
-    v3->set_uv(TexCoordd(uv_right, uv_top));
-    v4->set_uv(TexCoordd(uv_left, uv_top));
+    v1->set_uv(LTexCoordd(uv_left, uv_bottom));
+    v2->set_uv(LTexCoordd(uv_right, uv_bottom));
+    v3->set_uv(LTexCoordd(uv_right, uv_top));
+    v4->set_uv(LTexCoordd(uv_left, uv_top));
     
     EggPolygon *poly = new EggPolygon();
     group->add_child(poly);

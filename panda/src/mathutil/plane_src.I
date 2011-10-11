@@ -13,14 +13,14 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Plane::Constructor
+//     Function: LPlane::Constructor
 //       Access: Published
 //  Description: Creates a default plane.  This plane happens to
 //               intersect the origin, perpendicular to the Z axis.
 //               It's not clear how useful a default plane is.
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL FLOATNAME(Plane)::
-FLOATNAME(Plane)() {
+INLINE_MATHUTIL FLOATNAME(LPlane)::
+FLOATNAME(LPlane)() {
   _v.v._0 = 0.0f;
   _v.v._1 = 0.0f;
   _v.v._2 = 1.0f;
@@ -28,26 +28,26 @@ FLOATNAME(Plane)() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Plane::Copy Constructor
+//     Function: LPlane::Copy Constructor
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL FLOATNAME(Plane)::
-FLOATNAME(Plane)(const FLOATNAME(LVecBase4) &copy) :
+INLINE_MATHUTIL FLOATNAME(LPlane)::
+FLOATNAME(LPlane)(const FLOATNAME(LVecBase4) &copy) :
   FLOATNAME(LVecBase4)(copy)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Plane::Constructor
+//     Function: LPlane::Constructor
 //       Access: Published
 //  Description: Constructs a plane given three counter-clockwise
 //               points, as seen from the front of the plane (that is,
 //               viewed from the end of the normal vector, looking
 //               down).
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL FLOATNAME(Plane)::
-FLOATNAME(Plane)(const FLOATNAME(LPoint3) &a, const FLOATNAME(LPoint3) &b,
+INLINE_MATHUTIL FLOATNAME(LPlane)::
+FLOATNAME(LPlane)(const FLOATNAME(LPoint3) &a, const FLOATNAME(LPoint3) &b,
                  const FLOATNAME(LPoint3) &c) {
   FLOATNAME(LVector3) u = b - a;
   FLOATNAME(LVector3) v = c - a;
@@ -60,13 +60,13 @@ FLOATNAME(Plane)(const FLOATNAME(LPoint3) &a, const FLOATNAME(LPoint3) &b,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Plane::Constructor
+//     Function: LPlane::Constructor
 //       Access: Published
 //  Description: Constructs a plane given a surface normal vector and
 //               a point within the plane.
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL FLOATNAME(Plane)::
-FLOATNAME(Plane)(const FLOATNAME(LVector3) &normal,
+INLINE_MATHUTIL FLOATNAME(LPlane)::
+FLOATNAME(LPlane)(const FLOATNAME(LVector3) &normal,
                  const FLOATNAME(LPoint3) &point) {
   FLOATNAME(LVector3) p = ::normalize(normal);
 
@@ -77,82 +77,82 @@ FLOATNAME(Plane)(const FLOATNAME(LVector3) &normal,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Plane::Constructor
+//     Function: LPlane::Constructor
 //       Access: Published
 //  Description: Constructs a plane given the four terms of the plane
 //               equation.
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL FLOATNAME(Plane)::
-FLOATNAME(Plane)(FLOATTYPE a, FLOATTYPE b, FLOATTYPE c, FLOATTYPE d) :
+INLINE_MATHUTIL FLOATNAME(LPlane)::
+FLOATNAME(LPlane)(FLOATTYPE a, FLOATTYPE b, FLOATTYPE c, FLOATTYPE d) :
   FLOATNAME(LVecBase4)(a, b, c, d)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Plane::Operator * LMatrix3
+//     Function: LPlane::Operator * LMatrix3
 //       Access: Published
 //  Description: Transforms the plane by the indicated matrix.
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL FLOATNAME(Plane) FLOATNAME(Plane)::
+INLINE_MATHUTIL FLOATNAME(LPlane) FLOATNAME(LPlane)::
 operator * (const FLOATNAME(LMatrix3) &mat) const {
   FLOATNAME(LVector3) new_normal = mat.xform(get_normal());
-  return FLOATNAME(Plane)(new_normal, get_point());
+  return FLOATNAME(LPlane)(new_normal, get_point());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Plane::Operator * LMatrix4
+//     Function: LPlane::Operator * LMatrix4
 //       Access: Published
 //  Description: Transforms the plane by the indicated matrix.
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL FLOATNAME(Plane) FLOATNAME(Plane)::
+INLINE_MATHUTIL FLOATNAME(LPlane) FLOATNAME(LPlane)::
 operator * (const FLOATNAME(LMatrix4) &mat) const {
   FLOATNAME(LVector3) new_normal = mat.xform_vec_general(get_normal());
   FLOATNAME(LPoint3) new_point = get_point() * mat;
-  return FLOATNAME(Plane)(new_normal, new_point);
+  return FLOATNAME(LPlane)(new_normal, new_point);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Plane::Operator *= LMatrix4
+//     Function: LPlane::Operator *= LMatrix4
 //       Access: Published
 //  Description: Transforms the plane by the indicated matrix.
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL void FLOATNAME(Plane)::
+INLINE_MATHUTIL void FLOATNAME(LPlane)::
 operator *= (const FLOATNAME(LMatrix4) &mat) {
   (*this) = (*this) * mat;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Plane::xform
+//     Function: LPlane::xform
 //       Access: Published
 //  Description: Transforms the plane by the indicated matrix.
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL void FLOATNAME(Plane)::
+INLINE_MATHUTIL void FLOATNAME(LPlane)::
 xform(const FLOATNAME(LMatrix4) &mat) {
   (*this) = (*this) * mat;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Plane::Unary -
+//     Function: LPlane::Unary -
 //       Access: Published
 //  Description: Returns the same plane facing the opposite direction.
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL FLOATNAME(Plane) FLOATNAME(Plane)::
+INLINE_MATHUTIL FLOATNAME(LPlane) FLOATNAME(LPlane)::
 operator - () const {
-  return FLOATNAME(Plane)(-_v.v._0, -_v.v._1, -_v.v._2, -_v.v._3);
+  return FLOATNAME(LPlane)(-_v.v._0, -_v.v._1, -_v.v._2, -_v.v._3);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Plane::get_normal
+//     Function: LPlane::get_normal
 //       Access: Published
 //  Description: Returns the surface normal of the plane.
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL FLOATNAME(LVector3) FLOATNAME(Plane)::
+INLINE_MATHUTIL FLOATNAME(LVector3) FLOATNAME(LPlane)::
 get_normal() const {
   return FLOATNAME(LVector3)(_v.v._0, _v.v._1, _v.v._2);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Plane::dist_to_plane
+//     Function: LPlane::dist_to_plane
 //       Access: Published
 //  Description: Returns the straight-line shortest distance from the
 //               point to the plane.  The returned value is positive
@@ -161,29 +161,29 @@ get_normal() const {
 //               the plane (on the opposite side from the normal).
 //               It's zero if the point is exactly in the plane.
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL FLOATTYPE FLOATNAME(Plane)::
+INLINE_MATHUTIL FLOATTYPE FLOATNAME(LPlane)::
 dist_to_plane(const FLOATNAME(LPoint3) &point) const {
   return (_v.v._0 * point[0] + _v.v._1 * point[1] + _v.v._2 * point[2] + _v.v._3);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Plane::project
+//     Function: LPlane::project
 //       Access: Published
 //  Description: Returns the point within the plane nearest to the
 //               indicated point in space.
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL FLOATNAME(LPoint3) FLOATNAME(Plane)::
+INLINE_MATHUTIL FLOATNAME(LPoint3) FLOATNAME(LPlane)::
 project(const FLOATNAME(LPoint3) &point) const {
   return point - get_normal() * dist_to_plane(point);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Plane::flip
+//     Function: LPlane::flip
 //       Access: Published
 //  Description: Convenience method that flips the plane in-place.
 //               This is done by simply flipping the normal vector.
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL void FLOATNAME(Plane)::
+INLINE_MATHUTIL void FLOATNAME(LPlane)::
 flip() {
   _v.v._0 = -_v.v._0;
   _v.v._1 = -_v.v._1;
@@ -192,7 +192,7 @@ flip() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Plane::intersects_line
+//     Function: LPlane::intersects_line
 //       Access: Published
 //  Description: Returns true if the plane intersects the infinite
 //               line passing through points p1 and p2, false if the
@@ -201,7 +201,7 @@ flip() {
 //               bearing on the intersection test.  If true, sets
 //               intersection_point to the point of intersection.
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL bool FLOATNAME(Plane)::
+INLINE_MATHUTIL bool FLOATNAME(LPlane)::
 intersects_line(FLOATNAME(LPoint3) &intersection_point,
                 const FLOATNAME(LPoint3) &p1,
                 const FLOATNAME(LPoint3) &p2) const {
@@ -214,7 +214,7 @@ intersects_line(FLOATNAME(LPoint3) &intersection_point,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Plane::intersects_line
+//     Function: LPlane::intersects_line
 //       Access: Published
 //  Description: This flavor of intersects_line() returns a bit more
 //               information about the nature of the intersecting
@@ -230,7 +230,7 @@ intersects_line(FLOATNAME(LPoint3) &intersection_point,
 //               point from, and t == 1.0f implies at point from +
 //               delta, with other values of t accordingly.
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL bool FLOATNAME(Plane)::
+INLINE_MATHUTIL bool FLOATNAME(LPlane)::
 intersects_line(FLOATTYPE &t,
                 const FLOATNAME(LPoint3) &from,
                 const FLOATNAME(LVector3) &delta) const {
@@ -245,7 +245,7 @@ intersects_line(FLOATTYPE &t,
 }
 
 INLINE_MATHUTIL ostream &
-operator << (ostream &out, const FLOATNAME(Plane) &p) {
+operator << (ostream &out, const FLOATNAME(LPlane) &p) {
   p.output(out);
   return out;
 }

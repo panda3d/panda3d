@@ -642,9 +642,9 @@ typedef pair<double, EggGroup *> MayaEggWeight;
 
 struct MayaEggVertex
 {
-  Vertexd               _pos;
-  Normald               _normal;
-  TexCoordd             _uv;
+  LVertexd               _pos;
+  LNormald               _normal;
+  LTexCoordd             _uv;
   vector<MayaEggWeight> _weights;
   double                _sumWeights; // [gjeon] to be used in normalizing weights
   int                   _index; 
@@ -929,7 +929,7 @@ void MayaEggGeom::AddEggFlag(MString fieldName) {
 // MayaEggMesh
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-typedef phash_map<TexCoordd, int>             TVertTable;
+typedef phash_map<LTexCoordd, int>             TVertTable;
 typedef phash_map<LColor, int>                CVertTable;
 
 class MayaEggMesh : public MayaEggGeom
@@ -952,14 +952,14 @@ public:
   TVertTable _tvert_tab;
   CVertTable _cvert_tab;
   
-  int GetTVert(TexCoordd uv);
+  int GetTVert(LTexCoordd uv);
   int GetCVert(LColor col);
   int AddFace(unsigned numVertices, MIntArray mvertIndices, MIntArray mtvertIndices, MayaEggTex *tex);
 
   void ConnectTextures(void);
 };
 
-int MayaEggMesh::GetTVert(TexCoordd uv)
+int MayaEggMesh::GetTVert(LTexCoordd uv)
 {
   if (_tvert_tab.count(uv)) {
     if (mayaloader_cat.is_spam()) {
@@ -1412,7 +1412,7 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
     for (ci = poly->begin(); ci != poly->end(); ++ci) {
       EggVertex *vtx = (*ci);
       EggVertexPool *pool = poly->get_pool();
-      TexCoordd uv(0,0);
+      LTexCoordd uv(0,0);
       if (vtx->has_uv()) {
         uv = vtx->get_uv();
       }

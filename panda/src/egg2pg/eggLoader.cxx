@@ -2370,8 +2370,8 @@ make_vertex_data(const EggRenderState *render_state,
 
     if (vertex->has_normal()) {
       gvw.set_column(InternalName::get_normal());
-      Normald orig_normal = vertex->get_normal();
-      Normald transformed_normal = normalize(orig_normal * transform);
+      LNormald orig_normal = vertex->get_normal();
+      LNormald transformed_normal = normalize(orig_normal * transform);
       gvw.add_data3d(transformed_normal);
 
       if (is_dynamic) {
@@ -2381,8 +2381,8 @@ make_vertex_data(const EggRenderState *render_state,
           CPT(InternalName) delta_name = 
             InternalName::get_morph(InternalName::get_normal(), morph.get_name());
           gvw.set_column(delta_name);
-          Normald morphed_normal = orig_normal + morph.get_offset();
-          Normald transformed_morphed_normal = normalize(morphed_normal * transform);
+          LNormald morphed_normal = orig_normal + morph.get_offset();
+          LNormald transformed_morphed_normal = normalize(morphed_normal * transform);
           LVector3d delta = transformed_morphed_normal - transformed_normal;
           gvw.add_data3d(delta);
         }
@@ -2408,8 +2408,8 @@ make_vertex_data(const EggRenderState *render_state,
     EggVertex::const_uv_iterator uvi;
     for (uvi = vertex->uv_begin(); uvi != vertex->uv_end(); ++uvi) {
       EggVertexUV *egg_uv = (*uvi);
-      TexCoord3d orig_uvw = egg_uv->get_uvw();
-      TexCoord3d uvw = egg_uv->get_uvw();
+      LTexCoord3d orig_uvw = egg_uv->get_uvw();
+      LTexCoord3d uvw = egg_uv->get_uvw();
 
       string name = egg_uv->get_name();
       PT(InternalName) iname = InternalName::get_texcoord_name(name);
@@ -2430,9 +2430,9 @@ make_vertex_data(const EggRenderState *render_state,
           CPT(InternalName) delta_name = 
             InternalName::get_morph(iname, morph.get_name());
           gvw.set_column(delta_name);
-          TexCoord3d duvw = morph.get_offset();
+          LTexCoord3d duvw = morph.get_offset();
           if (buv != render_state->_bake_in_uvs.end()) {
-            TexCoord3d new_uvw = orig_uvw + duvw;
+            LTexCoord3d new_uvw = orig_uvw + duvw;
             duvw = (new_uvw * (*buv).second->get_transform3d()) - uvw;
           }
           
@@ -2623,7 +2623,7 @@ set_portal_polygon(EggGroup *egg_group, PortalNode *pnode) {
 
     EggPolygon::const_iterator vi;
     for (vi = poly->begin(); vi != poly->end(); ++vi) {
-      Vertexd vert = (*vi)->get_pos3() * mat;
+      LVertexd vert = (*vi)->get_pos3() * mat;
       pnode->add_vertex(LCAST(PN_stdfloat, vert));
     }
   }
@@ -3258,10 +3258,10 @@ create_collision_plane(EggPolygon *egg_poly, EggGroup *parent_group) {
     EggPolygon::const_iterator vi;
     vi = egg_poly->begin();
 
-    Vertexd vert = (*vi)->get_pos3() * mat;
+    LVertexd vert = (*vi)->get_pos3() * mat;
     vertices.push_back(LCAST(PN_stdfloat, vert));
 
-    Vertexd last_vert = vert;
+    LVertexd last_vert = vert;
     ++vi;
     while (vi != egg_poly->end()) {
       vert = (*vi)->get_pos3() * mat;
@@ -3320,10 +3320,10 @@ create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
       EggPolygon::const_iterator vi;
       vi = poly->begin();
 
-      Vertexd vert = (*vi)->get_pos3() * mat;
+      LVertexd vert = (*vi)->get_pos3() * mat;
       vertices.push_back(LCAST(PN_stdfloat, vert));
 
-      Vertexd last_vert = vert;
+      LVertexd last_vert = vert;
       ++vi;
       while (vi != poly->end()) {
         vert = (*vi)->get_pos3() * mat;

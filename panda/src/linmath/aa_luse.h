@@ -46,19 +46,48 @@
 
 
 // Now we define some handy typedefs for these classes.
-typedef LPoint3f Vertexf;
-typedef LVector3f Normalf;
-typedef LPoint2f TexCoordf;
-typedef LPoint3f TexCoord3f;
-typedef LVecBase4f Colorf;
-typedef LVecBase3f RGBColorf;
+typedef LPoint3f LVertexf;
+typedef LVector3f LNormalf;
+typedef LPoint2f LTexCoordf;
+typedef LPoint3f LTexCoord3f;
+typedef LVecBase4f LColorf;
+typedef LVecBase3f LRGBColorf;
 
-typedef LPoint3d Vertexd;
-typedef LVector3d Normald;
-typedef LPoint2d TexCoordd;
-typedef LPoint3d TexCoord3d;
-typedef LVecBase4d Colord;
-typedef LVecBase3d RGBColord;
+typedef LPoint3d LVertexd;
+typedef LVector3d LNormald;
+typedef LPoint2d LTexCoordd;
+typedef LPoint3d LTexCoord3d;
+typedef LVecBase4d LColord;
+typedef LVecBase3d LRGBColord;
+
+// The following names are only for legacy Python code.  These aren't
+// real typedefs; they're just commands to interrogate.
+#ifdef CPPPARSER
+typedef LMatrix4f Mat4F;
+typedef LMatrix3f Mat3F;
+typedef LVecBase4f VBase4F;
+typedef LVector4f Vec4F;
+typedef LPoint4f Point4F;
+typedef LVecBase3f VBase3F;
+typedef LVector3f Vec3F;
+typedef LPoint3f Point3F;
+typedef LVecBase2f VBase2F;
+typedef LVector2f Vec2F;
+typedef LPoint2f Point2F;
+typedef LQuaternionf QuatF;
+typedef LMatrix4d Mat4D;
+typedef LMatrix3d Mat3D;
+typedef LVecBase4d VBase4D;
+typedef LVector4d Vec4D;
+typedef LPoint4d Point4D;
+typedef LVecBase3d VBase3D;
+typedef LVector3d Vec3D;
+typedef LPoint3d Point3D;
+typedef LVecBase2d VBase2D;
+typedef LVector2d Vec2D;
+typedef LPoint2d Point2D;
+typedef LQuaterniond QuatD;
+#endif // CPPPARSER
 
 // And finally, we define the unqualified "standard" float type, which
 // is based on the setting of STDFLOAT_DOUBLE.  This is the type that
@@ -83,12 +112,28 @@ typedef LOrientationf LOrientation;
 typedef LMatrix3f LMatrix3;
 typedef LMatrix4f LMatrix4;
 
-typedef Vertexf LVertex;
-typedef Normalf LNormal;
-typedef TexCoordf LTexCoord;
-typedef TexCoord3f LTexCoord3;
-typedef Colorf LColor;
-typedef RGBColorf LRGBColor;
+typedef LVertexf LVertex;
+typedef LNormalf LNormal;
+typedef LTexCoordf LTexCoord;
+typedef LTexCoord3f LTexCoord3;
+typedef LColorf LColor;
+typedef LRGBColorf LRGBColor;
+
+// Bogus typedefs for interrogate and legacy Python code.
+#ifdef CPPPARSER
+typedef LMatrix4f Mat4;
+typedef LMatrix3f Mat3;
+typedef LVecBase4f VBase4;
+typedef LVector4f Vec4;
+typedef LPoint4f Point4;
+typedef LVecBase3f VBase3;
+typedef LVector3f Vec3;
+typedef LPoint3f Point3;
+typedef LVecBase2f VBase2;
+typedef LVector2f Vec2;
+typedef LPoint2f Point2;
+typedef LQuaternionf Quat;
+#endif // CPPPARSER
 
 #else  // STDFLOAT_DOUBLE
 // The specialty setting--double-precision floats.
@@ -108,12 +153,28 @@ typedef LOrientationd LOrientation;
 typedef LMatrix3d LMatrix3;
 typedef LMatrix4d LMatrix4;
 
-typedef Vertexd LVertex;
-typedef Normald LNormal;
-typedef TexCoordd LTexCoord;
-typedef TexCoord3d LTexCoord3;
-typedef Colord LColor;
-typedef RGBColord LRGBColor;
+typedef LVertexd LVertex;
+typedef LNormald LNormal;
+typedef LTexCoordd LTexCoord;
+typedef LTexCoord3d LTexCoord3;
+typedef LColord LColor;
+typedef LRGBColord LRGBColor;
+
+// Bogus typedefs for interrogate and legacy Python code.
+#ifdef CPPPARSER
+typedef LMatrix4d Mat4;
+typedef LMatrix3d Mat3;
+typedef LVecBase4d VBase4;
+typedef LVector4d Vec4;
+typedef LPoint4d Point4;
+typedef LVecBase3d VBase3;
+typedef LVector3d Vec3;
+typedef LPoint3d Point3;
+typedef LVecBase2d VBase2;
+typedef LVector2d Vec2;
+typedef LPoint2d Point2;
+typedef LQuaterniond Quat;
+#endif // CPPPARSER
 
 #endif  // STDFLOAT_DOUBLE
 

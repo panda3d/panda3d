@@ -31,7 +31,7 @@ PUBLISHED:
 
   virtual bool cleanup();
 
-  bool calculate_normal(Normald &result, CoordinateSystem cs = CS_default) const;
+  bool calculate_normal(LNormald &result, CoordinateSystem cs = CS_default) const;
   bool is_planar() const;
 
   INLINE bool recompute_polygon_normal(CoordinateSystem cs = CS_default);

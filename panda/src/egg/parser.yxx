@@ -988,7 +988,7 @@ vertex_body:
         | vertex_body UV optional_name '{'
 {
   EggVertex *vertex = DCAST(EggVertex, egg_stack.back());
-  EggVertexUV *uv = new EggVertexUV($3, TexCoordd::zero());
+  EggVertexUV *uv = new EggVertexUV($3, LTexCoordd::zero());
   egg_stack.push_back(uv);
   if (vertex->has_uv($3)) {
     eggyywarning("Ignoring repeated UV name " + $3);
@@ -1031,7 +1031,7 @@ vertex_body:
 vertex_uv_body:
         real real
 {
-  DCAST(EggVertexUV, egg_stack.back())->set_uv(TexCoordd($1, $2));
+  DCAST(EggVertexUV, egg_stack.back())->set_uv(LTexCoordd($1, $2));
 }
         | real real real
 {
@@ -1042,7 +1042,7 @@ vertex_uv_body:
   if (DCAST(EggVertexUV, egg_stack.back())->has_tangent()) {
     eggyywarning("Ignoring repeated tangent");
   } else {
-    DCAST(EggVertexUV, egg_stack.back())->set_tangent(Normald($4, $5, $6));
+    DCAST(EggVertexUV, egg_stack.back())->set_tangent(LNormald($4, $5, $6));
   }
 }
         | vertex_uv_body BINORMAL '{' real real real '}'
@@ -1050,7 +1050,7 @@ vertex_uv_body:
   if (DCAST(EggVertexUV, egg_stack.back())->has_binormal()) {
     eggyywarning("Ignoring repeated binormal");
   } else {
-    DCAST(EggVertexUV, egg_stack.back())->set_binormal(Normald($4, $5, $6));
+    DCAST(EggVertexUV, egg_stack.back())->set_binormal(LNormald($4, $5, $6));
   }
 }
         | vertex_uv_body DUV string '{' real real '}'
@@ -1097,7 +1097,7 @@ vertex_uv_body:
 vertex_normal_body:
         real real real
 {
-  DCAST(EggVertex, egg_stack.back())->set_normal(Normald($1, $2, $3));
+  DCAST(EggVertex, egg_stack.back())->set_normal(LNormald($1, $2, $3));
 }
         | vertex_normal_body DNORMAL string '{' real real real '}'
 {
@@ -2299,7 +2299,7 @@ primitive_material_body:
 primitive_normal_body:
         real real real
 {
-  DCAST(EggPrimitive, egg_stack.back())->set_normal(Normald($1, $2, $3));
+  DCAST(EggPrimitive, egg_stack.back())->set_normal(LNormald($1, $2, $3));
 }
         | primitive_normal_body DNORMAL string '{' real real real '}'
 {

@@ -15,6 +15,9 @@
 #include "interrogateComponent.h"
 #include "interrogate_datafile.h"
 
+// This static string is just kept around as a handy bogus return
+// value for functions that must return a const string reference.
+string InterrogateComponent::_empty_string;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateComponent::output
@@ -24,6 +27,12 @@
 void InterrogateComponent::
 output(ostream &out) const {
   idf_output_string(out, _name);
+  out << _alt_names.size() << " ";
+
+  Strings::const_iterator vi;
+  for (vi = _alt_names.begin(); vi != _alt_names.end(); ++vi) {
+    idf_output_string(out, *vi);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -35,4 +44,13 @@ output(ostream &out) const {
 void InterrogateComponent::
 input(istream &in) {
   idf_input_string(in, _name);
+
+  int num_alt_names;
+  in >> num_alt_names;
+  _alt_names.reserve(num_alt_names);
+  for (int i = 0; i < num_alt_names; ++i) {
+    string alt_name;
+    idf_input_string(in, alt_name);
+    _alt_names.push_back(alt_name);
+  }
 }

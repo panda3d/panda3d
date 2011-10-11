@@ -698,7 +698,7 @@ make_polyset(INode *max_node, Mesh *mesh,
               //since the channel will always be one because there's
               //no other textures then don't bother with the name
               UVVert uvw = get_max_vertex_texcoord(mesh, iFace, iVertex, 1);
-              vert.set_uv( TexCoordd(uvw.x, uvw.y));   
+              vert.set_uv( LTexCoordd(uvw.x, uvw.y));   
             }
             //otherwise go through and generate the maps per channel
             //this will also generate default UV's as long 
@@ -710,9 +710,9 @@ make_polyset(INode *max_node, Mesh *mesh,
                 UVVert uvw = get_max_vertex_texcoord(mesh, iFace, iVertex, channel);
                 // changes allow the first channel to be swapped
                 if(channel == 1)
-                    vert.set_uv( TexCoordd(uvw.x, uvw.y));
+                    vert.set_uv( LTexCoordd(uvw.x, uvw.y));
                 else
-                    vert.set_uv( uvname.str(), TexCoordd(uvw.x, uvw.y));
+                    vert.set_uv( uvname.str(), LTexCoordd(uvw.x, uvw.y));
            
             }
 

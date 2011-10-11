@@ -37,7 +37,7 @@ CPPTypedef(CPPInstance *inst, bool global) : CPPInstance(*inst)
   assert(_type != NULL);
   if (global) {
     _type->_typedefs.push_back(this);
-    CPPType::record_preferred_name_for(_type, inst->get_local_name());
+    CPPType::record_alt_name_for(_type, inst->get_local_name());
   }
 }
 

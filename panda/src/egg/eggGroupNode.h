@@ -199,11 +199,11 @@ private:
   class NVertexReference {
   public:
     EggPolygon *_polygon;
-    Normald _normal;
+    LNormald _normal;
     size_t _vertex;
   };
   typedef pvector<NVertexReference> NVertexGroup;
-  typedef pmap<Vertexd, NVertexGroup> NVertexCollection;
+  typedef pmap<LVertexd, NVertexGroup> NVertexCollection;
 
   void r_collect_vertex_normals(NVertexCollection &collection,
                                 double threshold, CoordinateSystem cs);
@@ -220,10 +220,10 @@ private:
   class TBNVertexValue {
   public:
     INLINE bool operator < (const TBNVertexValue &other) const;
-    Vertexd _pos;
-    Normald _normal;
+    LVertexd _pos;
+    LNormald _normal;
     string _uv_name;
-    TexCoordd _uv;
+    LTexCoordd _uv;
     bool _facing;
   };
   typedef pvector<TBNVertexReference> TBNVertexGroup;

@@ -28,7 +28,7 @@ TypeHandle BoundingHexahedron::_type_handle;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 BoundingHexahedron::
-BoundingHexahedron(const Frustumf &frustum, bool is_ortho,
+BoundingHexahedron(const LFrustum &frustum, bool is_ortho,
                    CoordinateSystem cs) {
   if (cs == CS_default) {
     cs = get_default_coordinate_system();

@@ -74,19 +74,19 @@ PUBLISHED:
   INLINE int get_num_dimensions() const;
   INLINE double get_pos1() const;
   INLINE LPoint2d get_pos2() const;
-  INLINE Vertexd get_pos3() const;
+  INLINE LVertexd get_pos3() const;
   INLINE LPoint4d get_pos4() const;
 
   INLINE bool has_uv() const;
-  INLINE TexCoordd get_uv() const;
-  INLINE void set_uv(const TexCoordd &texCoord);
+  INLINE LTexCoordd get_uv() const;
+  INLINE void set_uv(const LTexCoordd &texCoord);
   INLINE void clear_uv();
   bool has_uv(const string &name) const;
   bool has_uvw(const string &name) const;
-  TexCoordd get_uv(const string &name) const;
-  const TexCoord3d &get_uvw(const string &name) const;
-  void set_uv(const string &name, const TexCoordd &texCoord);
-  void set_uvw(const string &name, const TexCoord3d &texCoord);
+  LTexCoordd get_uv(const string &name) const;
+  const LTexCoord3d &get_uvw(const string &name) const;
+  void set_uv(const string &name, const LTexCoordd &texCoord);
+  void set_uvw(const string &name, const LTexCoord3d &texCoord);
   const EggVertexUV *get_uv_obj(const string &name) const;
   EggVertexUV *modify_uv_obj(const string &name);
   void set_uv_obj(EggVertexUV *vertex_uv);

@@ -37,9 +37,7 @@
      lvecBase2_ext.I lvecBase3_ext.I lvecBase4_ext.I \
      lpoint2_ext.I lpoint3_ext.I lpoint4_ext.I \
      lvector2_ext.I lvector3_ext.I lvector4_ext.I \
-     mathNumbers.h mathNumbers.I vector_Colorf.h  \
-     vector_LPoint2f.h vector_Normalf.h  \
-     vector_TexCoordf.h vector_Vertexf.h
+     mathNumbers.h mathNumbers.I 
     
    #define INCLUDED_SOURCES \
      compose_matrix.cxx config_linmath.cxx coordinateSystem.cxx  \
@@ -47,9 +45,7 @@
      lorientation.cxx lpoint2.cxx  \
      lpoint3.cxx lpoint4.cxx lquaternion.cxx lrotation.cxx  \
      luse.cxx lvecBase2.cxx lvecBase3.cxx lvecBase4.cxx  \
-     lvector2.cxx lvector3.cxx lvector4.cxx mathNumbers.cxx  \
-     vector_Colorf.cxx vector_LPoint2f.cxx  \
-     vector_Normalf.cxx vector_Vertexf.cxx  \
+     lvector2.cxx lvector3.cxx lvector4.cxx mathNumbers.cxx 
 
   #define INSTALL_HEADERS \
     aa_luse.h \
@@ -70,9 +66,7 @@
     lvecBase3_src.I lvecBase3_src.h lvecBase4.h lvecBase4_src.I \
     lvecBase4_src.h lvector2.h lvector2_src.I lvector2_src.h \
     lvector3.h lvector3_src.I lvector3_src.h lvector4.h lvector4_src.I \
-    lvector4_src.h mathNumbers.h mathNumbers.I vector_Colorf.h \
-    vector_LPoint2f.h vector_Normalf.h \
-    vector_TexCoordf.h vector_Vertexf.h
+    lvector4_src.h mathNumbers.h mathNumbers.I 
 
   #define IGATESCAN all
 

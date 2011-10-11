@@ -1175,8 +1175,8 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
               softegg_cat.spam() << "texcoords[" << i << "] = " << u << " " 
                                  << v << endl;
               
-              vert.set_uv(TexCoordd(u, v));
-              //vert.set_uv(TexCoordd(uCoords[i], vCoords[i]));
+              vert.set_uv(LTexCoordd(u, v));
+              //vert.set_uv(LTexCoordd(uCoords[i], vCoords[i]));
             }
           }
           vert.set_external_index(indices[i]);

@@ -45,7 +45,7 @@ public:
   
   LMatrix3d compute_texture_matrix() const;
   bool has_projection() const;
-  TexCoordd project_uv(const LPoint3d &pos, const LPoint3d &ref_point) const;
+  LTexCoordd project_uv(const LPoint3d &pos, const LPoint3d &ref_point) const;
   bool reset_maya_texture(const Filename &texture);
   
   void write(ostream &out) const;
@@ -150,7 +150,7 @@ private:
 public:
   bool     _has_texture;       // deprecated, see above.
   bool     _has_flat_color;    // deprecated, see above.
-  Colord   _flat_color;        // deprecated, see above.
+  LColord   _flat_color;        // deprecated, see above.
   bool     _has_alpha_channel; // deprecated, see above.
   bool     _keep_color;        // deprecated, see above.
   bool     _keep_alpha;        // deprecated, see above.

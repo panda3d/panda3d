@@ -32,17 +32,17 @@ public:
 // A PNMPixelBrush is a family of brushes that draw one pixel at a time.
 class EXPCL_PANDA_PNMIMAGE PNMPixelBrush : public PNMBrush {
 protected:
-  PNMPixelBrush(const Colord &color) : 
+  PNMPixelBrush(const LColord &color) : 
     PNMBrush(0.5, 0.5), _rgb(color[0], color[1], color[2]), _a(color[3]) { }
 
-  RGBColord _rgb;
+  LRGBColord _rgb;
   double _a;
 };
 
 // Arbitrarily sets the pixel to a particular color, with no antialiasing.
 class EXPCL_PANDA_PNMIMAGE PNMSetPixelBrush : public PNMPixelBrush {
 public:
-  PNMSetPixelBrush(const Colord &color) : PNMPixelBrush(color) { }
+  PNMSetPixelBrush(const LColord &color) : PNMPixelBrush(color) { }
 
   virtual void draw(PNMImage &image, int x, int y, double pixel_scale) {
     if (x >= 0 && x < image.get_x_size() && 
@@ -75,7 +75,7 @@ public:
 // Blends the pixel in to the existing background.
 class EXPCL_PANDA_PNMIMAGE PNMBlendPixelBrush : public PNMPixelBrush {
 public:
-  PNMBlendPixelBrush(const Colord &color) : PNMPixelBrush(color) { }
+  PNMBlendPixelBrush(const LColord &color) : PNMPixelBrush(color) { }
 
   virtual void draw(PNMImage &image, int x, int y, double pixel_scale) {
     if (x >= 0 && x < image.get_x_size() && 
@@ -99,13 +99,13 @@ public:
 // Darkens the pixel in the existing background.
 class EXPCL_PANDA_PNMIMAGE PNMDarkenPixelBrush : public PNMPixelBrush {
 public:
-  PNMDarkenPixelBrush(const Colord &color) : PNMPixelBrush(color) { }
+  PNMDarkenPixelBrush(const LColord &color) : PNMPixelBrush(color) { }
 
   virtual void draw(PNMImage &image, int x, int y, double pixel_scale) {
     if (x >= 0 && x < image.get_x_size() && 
         y >= 0 && y < image.get_y_size()) {
-      RGBColord rgb = image.get_xel(x, y);
-      RGBColord p;
+      LRGBColord rgb = image.get_xel(x, y);
+      LRGBColord p;
       p.set(min(1.0 - (1.0 - _rgb[0]) * pixel_scale, rgb[0]), 
             min(1.0 - (1.0 - _rgb[1]) * pixel_scale, rgb[1]), 
             min(1.0 - (1.0 - _rgb[2]) * pixel_scale, rgb[2]));
@@ -124,8 +124,8 @@ public:
       xfrom = max(xfrom, 0);
       xto = min(xto, image.get_x_size() - 1);
       for (int x = xfrom; x <= xto; ++x) {
-        RGBColord rgb = image.get_xel(x, y);
-        RGBColord p;
+        LRGBColord rgb = image.get_xel(x, y);
+        LRGBColord p;
         p.set(min(_rgb[0], rgb[0]), 
               min(_rgb[1], rgb[1]), 
               min(_rgb[2], rgb[2]));
@@ -144,13 +144,13 @@ public:
 // Lightens the pixel in the existing background.
 class EXPCL_PANDA_PNMIMAGE PNMLightenPixelBrush : public PNMPixelBrush {
 public:
-  PNMLightenPixelBrush(const Colord &color) : PNMPixelBrush(color) { }
+  PNMLightenPixelBrush(const LColord &color) : PNMPixelBrush(color) { }
 
   virtual void draw(PNMImage &image, int x, int y, double pixel_scale) {
     if (x >= 0 && x < image.get_x_size() && 
         y >= 0 && y < image.get_y_size()) {
-      RGBColord rgb = image.get_xel(x, y);
-      RGBColord p;
+      LRGBColord rgb = image.get_xel(x, y);
+      LRGBColord p;
       p.set(max(_rgb[0] * pixel_scale, rgb[0]), 
             max(_rgb[1] * pixel_scale, rgb[1]), 
             max(_rgb[2] * pixel_scale, rgb[2]));
@@ -169,8 +169,8 @@ public:
       xfrom = max(xfrom, 0);
       xto = max(xto, image.get_x_size() - 1);
       for (int x = xfrom; x <= xto; ++x) {
-        RGBColord rgb = image.get_xel(x, y);
-        RGBColord p;
+        LRGBColord rgb = image.get_xel(x, y);
+        LRGBColord p;
         p.set(max(_rgb[0], rgb[0]), 
               max(_rgb[1], rgb[1]), 
               max(_rgb[2], rgb[2]));
@@ -317,7 +317,7 @@ make_transparent() {
 //               in an interior.
 ////////////////////////////////////////////////////////////////////
 PT(PNMBrush) PNMBrush::
-make_pixel(const Colord &color, PNMBrush::BrushEffect effect) {
+make_pixel(const LColord &color, PNMBrush::BrushEffect effect) {
   switch (effect) {
   case BE_set:
     return new PNMSetPixelBrush(color);
@@ -345,9 +345,9 @@ make_pixel(const Colord &color, PNMBrush::BrushEffect effect) {
 //               spot is fuzzy; otherwise, it is hard-edged.
 ////////////////////////////////////////////////////////////////////
 PT(PNMBrush) PNMBrush::
-make_spot(const Colord &color, double radius, bool fuzzy,
+make_spot(const LColord &color, double radius, bool fuzzy,
           BrushEffect effect) {
-  Colord bg;
+  LColord bg;
 
   switch (effect) {
   case BE_set:

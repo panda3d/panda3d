@@ -150,10 +150,10 @@ has_uvw(const string &name) const {
 //               vertex.  It is an error to call this if has_uv(name)
 //               returned false.
 ////////////////////////////////////////////////////////////////////
-TexCoordd EggVertex::
+LTexCoordd EggVertex::
 get_uv(const string &name) const {
   UVMap::const_iterator ui = _uv_map.find(EggVertexUV::filter_name(name));
-  nassertr(ui != _uv_map.end(), TexCoordd::zero());
+  nassertr(ui != _uv_map.end(), LTexCoordd::zero());
   return (*ui).second->get_uv();
 }
 
@@ -164,10 +164,10 @@ get_uv(const string &name) const {
 //               vertex.  It is an error to call this if has_uvw(name)
 //               returned false.
 ////////////////////////////////////////////////////////////////////
-const TexCoord3d &EggVertex::
+const LTexCoord3d &EggVertex::
 get_uvw(const string &name) const {
   UVMap::const_iterator ui = _uv_map.find(EggVertexUV::filter_name(name));
-  nassertr(ui != _uv_map.end(), TexCoord3d::zero());
+  nassertr(ui != _uv_map.end(), LTexCoord3d::zero());
   return (*ui).second->get_uvw();
 }
 
@@ -179,7 +179,7 @@ get_uvw(const string &name) const {
 //               name already on the vertex, but preserves UV morphs.
 ////////////////////////////////////////////////////////////////////
 void EggVertex::
-set_uv(const string &name, const TexCoordd &uv) {
+set_uv(const string &name, const LTexCoordd &uv) {
   string fname = EggVertexUV::filter_name(name);
   PT(EggVertexUV) &uv_obj = _uv_map[fname];
 
@@ -202,7 +202,7 @@ set_uv(const string &name, const TexCoordd &uv) {
 //               morphs.
 ////////////////////////////////////////////////////////////////////
 void EggVertex::
-set_uvw(const string &name, const TexCoord3d &uvw) {
+set_uvw(const string &name, const LTexCoord3d &uvw) {
   string fname = EggVertexUV::filter_name(name);
   PT(EggVertexUV) &uv_obj = _uv_map[fname];
 

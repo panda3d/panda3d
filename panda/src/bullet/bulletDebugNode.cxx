@@ -313,7 +313,7 @@ drawLine(const btVector3 &from, const btVector3 &to, const btVector3 &color) {
 
   line._p0 = LVecBase3f(from.getX(), from.getY(), from.getZ());
   line._p1 = LVecBase3f(to.getX(), to.getY(), to.getZ());
-  line._color = Colorf(r, g, b, 1.0f);
+  line._color = LColorf(r, g, b, 1.0f);
 
   _lines.push_back(line);
 }
@@ -335,7 +335,7 @@ drawTriangle(const btVector3 &v0, const btVector3 &v1, const btVector3 &v2, cons
   tri._p0 = LVecBase3f(v0.getX(), v0.getY(), v0.getZ());
   tri._p1 = LVecBase3f(v1.getX(), v1.getY(), v1.getZ());
   tri._p2 = LVecBase3f(v2.getX(), v2.getY(), v2.getZ());
-  tri._color = Colorf(r, g, b, 1.0f);
+  tri._color = LColorf(r, g, b, 1.0f);
 
   _triangles.push_back(tri);
 

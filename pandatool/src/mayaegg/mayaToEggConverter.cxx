@@ -1939,7 +1939,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
       if (!status) {
         status.perror("MItMeshPolygon::getNormal");
       } else {
-        Normald n3d(n[0], n[1], n[2]);
+        LNormald n3d(n[0], n[1], n[2]);
         n3d = n3d * vertex_frame_inv;
         vert.set_normal(n3d);
       }
@@ -1968,7 +1968,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
         
         bool keep_uv = keep_all_uvsets;
         bool project_uv = false;
-        TexCoordd uv_projection;
+        LTexCoordd uv_projection;
 
         if (shader != (MayaShader *)NULL) {
           for (size_t tj = 0; tj < shader->_all_maps.size(); ++tj) {
@@ -2023,7 +2023,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
                   mayaegg_cat.debug() << "after rounding uvs[1]: " << uvs[1] << endl;
                 }
               }
-              vert.set_uv(panda_uvset_name, TexCoordd(uvs[0], uvs[1]));
+              vert.set_uv(panda_uvset_name, LTexCoordd(uvs[0], uvs[1]));
             }
           }
         }
@@ -2042,7 +2042,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     }
 
     // Also get the face normal for the polygon.
-    Normald face_normal;
+    LNormald face_normal;
     bool got_face_normal = false;
 
     MVector n;
@@ -2060,7 +2060,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
     // direction of the normals.  If not, reverse the vertex ordering
     // (since we have seen cases where Maya sets this in contradiction
     // to its normals).
-    Normald order_normal;
+    LNormald order_normal;
     if (got_face_normal && egg_poly->calculate_normal(order_normal)) {
       if (order_normal.dot(face_normal) < 0.0) {
         egg_poly->reverse_vertex_ordering();
@@ -3168,7 +3168,7 @@ set_vertex_color_modern(EggVertex &vert, MItMeshPolygon &pi, int vert_index, con
   
   // If there's no explicit color, use flat color, or white on a textured model.
   if (shader->_color_maps.empty()) {
-    const Colord &c = shader->_flat_color;
+    const LColord &c = shader->_flat_color;
     vert.set_color(LColor((PN_stdfloat)c[0], (PN_stdfloat)c[1], (PN_stdfloat)c[2], (PN_stdfloat)c[3]));
   } else {
     //there's no explicit color anywhere, must be textured (or blank)

@@ -309,9 +309,9 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
     // The modified pickle support: call the "persistent" version of
     // this function, which receives the unpickler itself as an
     // additional parameter.
-    func = TypedWritable::find_global_decode(this_class, "pyDecodeNodePathFromBamStreamPersist");
+    func = TypedWritable::find_global_decode(this_class, "py_decode_NodePath_from_bam_stream_persist");
     if (func == NULL) {
-      PyErr_SetString(PyExc_TypeError, "Couldn't find pyDecodeNodePathFromBamStreamPersist()");
+      PyErr_SetString(PyExc_TypeError, "Couldn't find py_decode_NodePath_from_bam_stream_persist()");
       Py_DECREF(this_class);
       return NULL;
     }
@@ -320,9 +320,9 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
     // The traditional pickle support: call the non-persistent version
     // of this function.
 
-    func = TypedWritable::find_global_decode(this_class, "pyDecodeNodePathFromBamStream");
+    func = TypedWritable::find_global_decode(this_class, "py_decode_NodePath_from_bam_stream");
     if (func == NULL) {
-      PyErr_SetString(PyExc_TypeError, "Couldn't find pyDecodeNodePathFromBamStream()");
+      PyErr_SetString(PyExc_TypeError, "Couldn't find py_decode_NodePath_from_bam_stream()");
       Py_DECREF(this_class);
       return NULL;
     }

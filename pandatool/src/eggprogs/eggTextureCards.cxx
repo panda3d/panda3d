@@ -375,10 +375,10 @@ make_vertices(const LPoint4d &geometry, EggVertexPool *vpool,
   v4 = vpool->make_new_vertex
     (LPoint3d(geometry[1], geometry[3], 0.0));
 
-  v1->set_uv(TexCoordd(0.0, 1.0));
-  v2->set_uv(TexCoordd(0.0, 0.0));
-  v3->set_uv(TexCoordd(1.0, 0.0));
-  v4->set_uv(TexCoordd(1.0, 1.0));
+  v1->set_uv(LTexCoordd(0.0, 1.0));
+  v2->set_uv(LTexCoordd(0.0, 0.0));
+  v3->set_uv(LTexCoordd(1.0, 0.0));
+  v4->set_uv(LTexCoordd(1.0, 1.0));
 }
 
 ////////////////////////////////////////////////////////////////////

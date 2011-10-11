@@ -199,8 +199,6 @@ private:
   typedef vector<TypeIndex> Types;
   Types _nested_types;
 
-  static string _empty_string;
-
 public:
   // The rest of the members in this class aren't part of the public
   // interface to interrogate, but are used internally as the

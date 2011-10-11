@@ -21,7 +21,7 @@
 #include <set>
 #include <assert.h>
 
-bool cppparser_output_class_keyword = true;
+bool cppparser_output_class_keyword = false;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPParser::Constructor

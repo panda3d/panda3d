@@ -105,7 +105,7 @@ public:
   Filename _shadow_dirname;
   Filename _rel_dirname;
   int _pal_x_size, _pal_y_size;
-  Colord _background;
+  LColord _background;
   int _margin;
   bool _omit_solitary;
   bool _omit_everything;

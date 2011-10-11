@@ -685,7 +685,7 @@ blend(int x, int y, double r, double g, double b, double alpha) {
 
     } else {
       // Blend the color with the previous color.
-      RGBColord prev_rgb = get_xel(x, y);
+      LRGBColord prev_rgb = get_xel(x, y);
       r = r + (1.0 - alpha) * (get_red(x, y) - r);
       g = g + (1.0 - alpha) * (get_green(x, y) - g);
       b = b + (1.0 - alpha) * (get_blue(x, y) - b);
@@ -849,9 +849,9 @@ darken_sub_image(const PNMImage &copy, int xto, int yto,
     int x, y;
     for (y = ymin; y < ymax; y++) {
       for (x = xmin; x < xmax; x++) {
-        RGBColord c = copy.get_xel(x - xmin + xfrom, y - ymin + yfrom);
-        RGBColord o = get_xel(x, y);
-        RGBColord p;
+        LRGBColord c = copy.get_xel(x - xmin + xfrom, y - ymin + yfrom);
+        LRGBColord o = get_xel(x, y);
+        LRGBColord p;
         p.set(min(1.0 - ((1.0 - c[0]) * pixel_scale), o[0]),
               min(1.0 - ((1.0 - c[1]) * pixel_scale), o[1]),
               min(1.0 - ((1.0 - c[2]) * pixel_scale), o[2]));
@@ -919,9 +919,9 @@ lighten_sub_image(const PNMImage &copy, int xto, int yto,
     int x, y;
     for (y = ymin; y < ymax; y++) {
       for (x = xmin; x < xmax; x++) {
-        RGBColord c = copy.get_xel(x - xmin + xfrom, y - ymin + yfrom);
-        RGBColord o = get_xel(x, y);
-        RGBColord p;
+        LRGBColord c = copy.get_xel(x - xmin + xfrom, y - ymin + yfrom);
+        LRGBColord o = get_xel(x, y);
+        LRGBColord p;
         p.set(max(c[0] * pixel_scale, o[0]),
               max(c[1] * pixel_scale, o[1]),
               max(c[2] * pixel_scale, o[2]));
@@ -1132,7 +1132,7 @@ copy_channel(const PNMImage &copy, int xto, int yto, int cto,
 //               between fg and bg colors.
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
-render_spot(const Colord &fg, const Colord &bg,
+render_spot(const LColord &fg, const LColord &bg,
             double min_radius, double max_radius) {
   if (_x_size == 0 || _y_size == 0) {
     return;
@@ -1184,14 +1184,14 @@ render_spot(const Colord &fg, const Colord &bg,
 
       } else {
         // This pixel is in a feathered area or along the antialiased edge.
-        Colord c_outer, c_inner, c_a, c_b;
+        LColord c_outer, c_inner, c_a, c_b;
         compute_spot_pixel(c_outer, d2_outer, min_radius, max_radius, fg, bg);
         compute_spot_pixel(c_inner, d2_inner, min_radius, max_radius, fg, bg);
         compute_spot_pixel(c_a, d2_a, min_radius, max_radius, fg, bg);
         compute_spot_pixel(c_b, d2_b, min_radius, max_radius, fg, bg);
 
         // Now average all four pixels for the antialiased result.
-        Colord c;
+        LColord c;
         c = (c_outer + c_inner + c_a + c_b) * 0.25;
 
         set_xel_a(x_center1 - 1 - xi, y_center1 - 1 - yi, c);
@@ -1215,7 +1215,7 @@ render_spot(const Colord &fg, const Colord &bg,
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
 expand_border(int left, int right, int bottom, int top,
-              const Colord &color) {
+              const LColord &color) {
   PNMImage new_image(get_x_size() + left + right,
                      get_y_size() + bottom + top,
                      get_num_channels(), get_maxval(), get_type());
@@ -1323,9 +1323,9 @@ setup_rc() {
 //  Description: Returns the average color of all of the pixels
 //               in the image.
 ////////////////////////////////////////////////////////////////////
-RGBColord PNMImage::
+LRGBColord PNMImage::
 get_average_xel() const {
-  RGBColord color (RGBColord::zero());
+  LRGBColord color (LRGBColord::zero());
   if (_x_size == 0 || _y_size == 0) {
     return color;
   }
@@ -1347,9 +1347,9 @@ get_average_xel() const {
 //  Description: Returns the average color of all of the pixels
 //               in the image, including the alpha channel.
 ////////////////////////////////////////////////////////////////////
-Colord PNMImage::
+LColord PNMImage::
 get_average_xel_a() const {
-  Colord color (Colord::zero());
+  LColord color (LColord::zero());
   if (_x_size == 0 || _y_size == 0) {
     return color;
   }
@@ -1462,7 +1462,7 @@ operator += (const PNMImage &other) {
 //               is added to each pixel in the provided image.
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
-operator += (const Colord &other) {
+operator += (const LColord &other) {
   size_t array_size = _x_size * _y_size;
   // Note: don't use to_val here because it clamps values below 0
   int add_r = (int)(other.get_x() * get_maxval() + 0.5);
@@ -1531,7 +1531,7 @@ operator -= (const PNMImage &other) {
 //               is subtracted from each pixel in the provided image.
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
-operator -= (const Colord &other) {
+operator -= (const LColord &other) {
   (*this) += (-other);
 }
 

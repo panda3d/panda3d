@@ -14,13 +14,13 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Plane::get_reflection_mat
+//     Function: LPlane::get_reflection_mat
 //       Access: Published
 //  Description: This computes a transform matrix that reflects the
 //               universe to the other side of the plane, as in a
 //               mirror.
 ////////////////////////////////////////////////////////////////////
-FLOATNAME(LMatrix4) FLOATNAME(Plane)::
+FLOATNAME(LMatrix4) FLOATNAME(LPlane)::
 get_reflection_mat() const {
   FLOATTYPE aa = _v.v._0 * _v.v._0; 
   FLOATTYPE ab = _v.v._0 * _v.v._1;
@@ -39,13 +39,13 @@ get_reflection_mat() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Plane::get_point
+//     Function: LPlane::get_point
 //       Access: Published
 //  Description: Returns an arbitrary point in the plane.  This can be
 //               used along with the normal returned by get_normal()
 //               to reconstruct the plane.
 ////////////////////////////////////////////////////////////////////
-FLOATNAME(LPoint3) FLOATNAME(Plane)::
+FLOATNAME(LPoint3) FLOATNAME(LPlane)::
 get_point() const {
   // Choose the denominator based on the largest axis in the normal.
   if (cabs(_v.v._0) >= cabs(_v.v._1) && cabs(_v.v._0) >= cabs(_v.v._2)) {
@@ -62,7 +62,7 @@ get_point() const {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Plane::intersects_plane
+//     Function: LPlane::intersects_plane
 //       Access: Published
 //  Description: Returns true if the two planes intersect, false if
 //               they do not.  If they do intersect, then from and
@@ -71,10 +71,10 @@ get_point() const {
 //               from is a point on that line, and delta is a vector
 //               showing the direction of the line.
 ////////////////////////////////////////////////////////////////////
-bool FLOATNAME(Plane)::
+bool FLOATNAME(LPlane)::
 intersects_plane(FLOATNAME(LPoint3) &from,
                  FLOATNAME(LVector3) &delta,
-                 const FLOATNAME(Plane) &other) const {
+                 const FLOATNAME(LPlane) &other) const {
   FLOATNAME(LVector3) n1 = get_normal();
   FLOATNAME(LVector3) n2 = other.get_normal();
 
@@ -100,7 +100,7 @@ intersects_plane(FLOATNAME(LPoint3) &from,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Plane::intersects_parabola
+//     Function: LPlane::intersects_parabola
 //       Access: Published
 //  Description: Determines whether and where the indicated parabola
 //               intersects with the plane.
@@ -113,9 +113,9 @@ intersects_plane(FLOATNAME(LPoint3) &from,
 //               of intersection.  If the parabola is exactly tangent
 //               to the plane, then t1 == t2.
 ////////////////////////////////////////////////////////////////////
-bool FLOATNAME(Plane)::
+bool FLOATNAME(LPlane)::
 intersects_parabola(FLOATTYPE &t1, FLOATTYPE &t2,
-                    const FLOATNAME(Parabola) &parabola) const {
+                    const FLOATNAME(LParabola) &parabola) const {
   //
   // The parabola intersects the plane wherever:
   //
@@ -164,23 +164,23 @@ intersects_parabola(FLOATTYPE &t1, FLOATTYPE &t2,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Plane::output
+//     Function: LPlane::output
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void FLOATNAME(Plane)::
+void FLOATNAME(LPlane)::
 output(ostream &out) const {
-  out << "Plane(";
+  out << "LPlane(";
   FLOATNAME(LVecBase4)::output(out);
   out << ")";
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Plane::write
+//     Function: LPlane::write
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void FLOATNAME(Plane)::
+void FLOATNAME(LPlane)::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << "\n";
 }

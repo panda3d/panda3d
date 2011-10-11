@@ -494,8 +494,11 @@ main(int argc, char *argv[]) {
   // Now that we've parsed all the source code, change the way things
   // are output from now on so we can compile our generated code using
   // VC++.  Sheesh.
-  cppparser_output_class_keyword = false;
 
+  // Actually, don't do this any more, since it bitches some of the
+  // logic (particularly with locating alt names), and it shouldn't be
+  // necessary with modern VC++.
+  //  cppparser_output_class_keyword = false;
 
   // Now look for the .N files.
   for (i = 1; i < argc; ++i) {

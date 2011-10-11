@@ -28,7 +28,7 @@ has_normal() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const Normald &EggAttributes::
+INLINE const LNormald &EggAttributes::
 get_normal() const {
   nassertr(has_normal(), _normal);
   return _normal;
@@ -40,7 +40,7 @@ get_normal() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggAttributes::
-set_normal(const Normald &normal) {
+set_normal(const LNormald &normal) {
   _normal = normal;
   _flags |= F_has_normal;
 }

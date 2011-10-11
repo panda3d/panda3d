@@ -42,8 +42,8 @@ PUBLISHED:
   virtual ~EggAttributes();
 
   INLINE bool has_normal() const;
-  INLINE const Normald &get_normal() const;
-  INLINE void set_normal(const Normald &normal);
+  INLINE const LNormald &get_normal() const;
+  INLINE void set_normal(const LNormald &normal);
   INLINE void clear_normal();
   INLINE bool matches_normal(const EggAttributes &other) const;
   INLINE void copy_normal(const EggAttributes &other);
@@ -71,7 +71,7 @@ private:
   };
 
   int _flags;
-  Normald _normal;
+  LNormald _normal;
   LColor _color;
 
 

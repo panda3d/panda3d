@@ -37,7 +37,7 @@ cleanup() {
   remove_doubled_verts(true);
 
   // Use calculate_normal() to determine if the polygon is degenerate.
-  Normald normal;
+  LNormald normal;
   return calculate_normal(normal);
 }
 
@@ -54,8 +54,8 @@ cleanup() {
 //               does not have at least three noncollinear vertices.
 ////////////////////////////////////////////////////////////////////
 bool EggPolygon::
-calculate_normal(Normald &result, CoordinateSystem cs) const {
-  result = Normald::zero();
+calculate_normal(LNormald &result, CoordinateSystem cs) const {
+  result = LNormald::zero();
 
   // Project the polygon into each of the three major planes and
   // calculate the area of each 2-d projection.  This becomes the
@@ -64,8 +64,8 @@ calculate_normal(Normald &result, CoordinateSystem cs) const {
   // tilted toward each plane.
   size_t num_verts = size();
   for (size_t i = 0; i < num_verts; i++) {
-    Vertexd p0 = get_vertex(i)->get_pos3();
-    Vertexd p1 = get_vertex((i + 1) % num_verts)->get_pos3();
+    LVertexd p0 = get_vertex(i)->get_pos3();
+    LVertexd p1 = get_vertex((i + 1) % num_verts)->get_pos3();
     result[0] += p0[1] * p1[2] - p0[2] * p1[1];
     result[1] += p0[2] * p1[0] - p0[0] * p1[2];
     result[2] += p0[0] * p1[1] - p0[1] * p1[0];
@@ -100,7 +100,7 @@ is_planar() const {
     return true;
   }
 
-  Normald normal;
+  LNormald normal;
   if (!calculate_normal(normal)) {
     // A degenerate polygon--all of the vertices are within one line,
     // or all in the same point--is technically planar.  Not sure if
@@ -116,7 +116,7 @@ is_planar() const {
   // the first vertex.
   const_iterator vi = begin();
   LVecBase3d first_point = (*vi)->get_pos3();
-  Planed plane(normal, first_point);
+  LPlaned plane(normal, first_point);
 
   // And check that all of the remaining vertices are sufficiently
   // close to the plane.

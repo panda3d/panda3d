@@ -152,13 +152,13 @@ PUBLISHED:
   // automatically scale their values by get_maxval() into the range
   // [0..1].
 
-  INLINE RGBColord get_xel(int x, int y) const;
-  INLINE void set_xel(int x, int y, const RGBColord &value);
+  INLINE LRGBColord get_xel(int x, int y) const;
+  INLINE void set_xel(int x, int y, const LRGBColord &value);
   INLINE void set_xel(int x, int y, double r, double g, double b);
   INLINE void set_xel(int x, int y, double gray);
 
-  INLINE Colord get_xel_a(int x, int y) const;
-  INLINE void set_xel_a(int x, int y, const Colord &value);
+  INLINE LColord get_xel_a(int x, int y) const;
+  INLINE void set_xel_a(int x, int y, const LColord &value);
   INLINE void set_xel_a(int x, int y, double r, double g, double b, double a);
 
   INLINE double get_red(int x, int y) const;
@@ -182,7 +182,7 @@ PUBLISHED:
   INLINE double get_bright(int x, int y, double rc, double gc,
                            double bc, double ac) const;
 
-  INLINE void blend(int x, int y, const RGBColord &val, double alpha);
+  INLINE void blend(int x, int y, const LRGBColord &val, double alpha);
   void blend(int x, int y, double r, double g, double b, double alpha);
 
   // If you're used to the NetPBM library and like working with a 2-d
@@ -214,11 +214,11 @@ PUBLISHED:
                     int xfrom = 0, int yfrom = 0, int cfrom = 0,
                     int x_size = -1, int y_size = -1);
 
-  void render_spot(const Colord &fg, const Colord &bg,
+  void render_spot(const LColord &fg, const LColord &bg,
                    double min_radius, double max_radius);
 
   void expand_border(int left, int right, int bottom, int top,
-                     const Colord &color);
+                     const LColord &color);
 
   // The bodies for the non-inline *_filter() functions can be found
   // in the file pnm-image-filter.cxx.
@@ -236,8 +236,8 @@ PUBLISHED:
                          unsigned long seed = 0);
   void perlin_noise_fill(StackedPerlinNoise2 &perlin);
 
-  RGBColord get_average_xel() const;
-  Colord get_average_xel_a() const;
+  LRGBColord get_average_xel() const;
+  LColord get_average_xel_a() const;
   double get_average_gray() const;
 
 private:
@@ -251,9 +251,9 @@ private:
                               int &xfrom, int &yfrom, int &x_size, int &y_size,
                               int &xmin, int &ymin, int &xmax, int &ymax);
 
-  INLINE static void compute_spot_pixel(Colord &c, double d2,
+  INLINE static void compute_spot_pixel(LColord &c, double d2,
                                         double min_radius, double max_radius,
-                                        const Colord &fg, const Colord &bg);
+                                        const LColord &fg, const LColord &bg);
 
   void setup_rc();
 
@@ -261,15 +261,15 @@ PUBLISHED:
   PNMImage operator ~() const;
 
   INLINE PNMImage operator + (const PNMImage &other) const;
-  INLINE PNMImage operator + (const Colord &other) const;
+  INLINE PNMImage operator + (const LColord &other) const;
   INLINE PNMImage operator - (const PNMImage &other) const;
-  INLINE PNMImage operator - (const Colord &other) const;
+  INLINE PNMImage operator - (const LColord &other) const;
   INLINE PNMImage operator * (const PNMImage &other) const;
   INLINE PNMImage operator * (double multiplier) const;
   void operator += (const PNMImage &other);
-  void operator += (const Colord &other);
+  void operator += (const LColord &other);
   void operator -= (const PNMImage &other);
-  void operator -= (const Colord &other);
+  void operator -= (const LColord &other);
   void operator *= (const PNMImage &other);
   void operator *= (double multiplier);
 

@@ -125,3 +125,26 @@ INLINE const string &InterrogateComponent::
 get_name() const {
   return _name;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateComponent::get_num_alt_names
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE int InterrogateComponent::
+get_num_alt_names() const {
+  return _alt_names.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateComponent::get_num_alt_names
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE const string &InterrogateComponent::
+get_alt_name(int n) const {
+  if (n >= 0 && n < (int)_alt_names.size()) {
+    return _alt_names[n];
+  }
+  return _empty_string;
+}

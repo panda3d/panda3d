@@ -604,7 +604,7 @@ call_glFogfv(GLenum pname, const LColor &color) {
 #ifndef STDFLOAT_DOUBLE
   GLP(Fogfv)(pname, color.get_data());
 #else  // STDFLOAT_DOUBLE
-  Colorf fcolor = LCAST(float, color);
+  LColorf fcolor = LCAST(float, color);
   GLP(Fogfv)(pname, fcolor.get_data());
 #endif  //  STDFLOAT_DOUBLE
 }
@@ -620,7 +620,7 @@ call_glMaterialfv(GLenum face, GLenum pname, const LColor &color) {
 #ifndef STDFLOAT_DOUBLE
   GLP(Materialfv)(face, pname, color.get_data());
 #else  // STDFLOAT_DOUBLE
-  Colorf fcolor = LCAST(float, color);
+  LColorf fcolor = LCAST(float, color);
   GLP(Materialfv)(face, pname, fcolor.get_data());
 #endif  //  STDFLOAT_DOUBLE
 }

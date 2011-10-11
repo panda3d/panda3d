@@ -31,8 +31,8 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggVertexUV : public EggNamedObject {
 PUBLISHED:
-  EggVertexUV(const string &name, const TexCoordd &uv);
-  EggVertexUV(const string &name, const TexCoord3d &uvw);
+  EggVertexUV(const string &name, const LTexCoordd &uv);
+  EggVertexUV(const string &name, const LTexCoord3d &uvw);
   EggVertexUV(const EggVertexUV &copy);
   EggVertexUV &operator = (const EggVertexUV &copy);
   virtual ~EggVertexUV();
@@ -42,19 +42,19 @@ PUBLISHED:
 
   INLINE int get_num_dimensions() const;
   INLINE bool has_w() const;
-  INLINE TexCoordd get_uv() const;
-  INLINE const TexCoord3d &get_uvw() const;
-  INLINE void set_uv(const TexCoordd &texCoord);
-  INLINE void set_uvw(const TexCoord3d &texCoord);
+  INLINE LTexCoordd get_uv() const;
+  INLINE const LTexCoord3d &get_uvw() const;
+  INLINE void set_uv(const LTexCoordd &texCoord);
+  INLINE void set_uvw(const LTexCoord3d &texCoord);
 
   INLINE bool has_tangent() const;
-  INLINE const Normald &get_tangent() const;
-  INLINE void set_tangent(const Normald &tangent);
+  INLINE const LNormald &get_tangent() const;
+  INLINE void set_tangent(const LNormald &tangent);
   INLINE void clear_tangent();
 
   INLINE bool has_binormal() const;
-  INLINE const Normald &get_binormal() const;
-  INLINE void set_binormal(const Normald &binormal);
+  INLINE const LNormald &get_binormal() const;
+  INLINE void set_binormal(const LNormald &binormal);
   INLINE void clear_binormal();
 
   void transform(const LMatrix4d &mat);
@@ -72,9 +72,9 @@ private:
   };
 
   int _flags;
-  Normald _tangent;
-  Normald _binormal;
-  TexCoord3d _uvw;
+  LNormald _tangent;
+  LNormald _binormal;
+  LTexCoord3d _uvw;
 
 public:
   static TypeHandle get_class_type() {

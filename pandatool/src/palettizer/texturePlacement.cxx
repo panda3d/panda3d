@@ -249,14 +249,14 @@ determine_size() {
   _position._wrap_u = EggTexture::WM_clamp;
   _position._wrap_v = EggTexture::WM_clamp;
 
-  TexCoordd max_uv, min_uv;
+  LTexCoordd max_uv, min_uv;
 
   References::iterator ri;
   for (ri = _references.begin(); ri != _references.end(); ++ri) {
     TextureReference *reference = (*ri);
     if (reference->has_uvs()) {
-      const TexCoordd &n = reference->get_min_uv();
-      const TexCoordd &x = reference->get_max_uv();
+      const LTexCoordd &n = reference->get_min_uv();
+      const LTexCoordd &x = reference->get_max_uv();
 
       if (_has_uvs) {
         min_uv.set(min(min_uv[0], n[0]), min(min_uv[1], n[1]));
@@ -293,8 +293,8 @@ determine_size() {
     return false;
   }
 
-  TexCoordd rounded_min_uv = min_uv;
-  TexCoordd rounded_max_uv = max_uv;
+  LTexCoordd rounded_min_uv = min_uv;
+  LTexCoordd rounded_max_uv = max_uv;
 
   //cout << get_name() << endl;
 
@@ -485,7 +485,7 @@ get_uv_area() const {
     return 0.0;
   }
 
-  TexCoordd range = _position._max_uv - _position._min_uv;
+  LTexCoordd range = _position._max_uv - _position._min_uv;
   return range[0] * range[1];
 }
 
@@ -588,7 +588,7 @@ get_placed_y_size() const {
 double TexturePlacement::
 get_placed_uv_area() const {
   nassertr(is_placed(), 0);
-  TexCoordd range = _placed._max_uv - _placed._min_uv;
+  LTexCoordd range = _placed._max_uv - _placed._min_uv;
   return range[0] * range[1];
 }
 
@@ -702,7 +702,7 @@ compute_tex_matrix(LMatrix3d &transform) {
 
   LMatrix3d source_uvs = LMatrix3d::ident_mat();
 
-  TexCoordd range = _placed._max_uv - _placed._min_uv;
+  LTexCoordd range = _placed._max_uv - _placed._min_uv;
   if (range[0] != 0.0 && range[1] != 0.0) {
     source_uvs =
       LMatrix3d::translate_mat(-_placed._min_uv) *
@@ -807,8 +807,8 @@ fill_image(PNMImage &image) {
 
   LMatrix3d transform;
   compute_tex_matrix(transform);
-  TexCoordd ul = TexCoordd(0.0, 1.0) * transform;
-  TexCoordd lr = TexCoordd(1.0, 0.0) * transform;
+  LTexCoordd ul = LTexCoordd(0.0, 1.0) * transform;
+  LTexCoordd lr = LTexCoordd(1.0, 0.0) * transform;
 
   // Now we convert those texture coordinates back to pixel units.
   int pal_x_size = _image->get_x_size();
@@ -907,8 +907,8 @@ fill_swapped_image(PNMImage &image, int index) {
 
   LMatrix3d transform;
   compute_tex_matrix(transform);
-  TexCoordd ul = TexCoordd(0.0, 1.0) * transform;
-  TexCoordd lr = TexCoordd(1.0, 0.0) * transform;
+  LTexCoordd ul = LTexCoordd(0.0, 1.0) * transform;
+  LTexCoordd lr = LTexCoordd(1.0, 0.0) * transform;
 
   // Now we convert those texture coordinates back to pixel units.
   int pal_x_size = _image->get_x_size();
@@ -1021,11 +1021,11 @@ flag_error_image(PNMImage &image) {
 //               size of the source texture).
 ////////////////////////////////////////////////////////////////////
 void TexturePlacement::
-compute_size_from_uvs(const TexCoordd &min_uv, const TexCoordd &max_uv) {
+compute_size_from_uvs(const LTexCoordd &min_uv, const LTexCoordd &max_uv) {
   _position._min_uv = min_uv;
   _position._max_uv = max_uv;
 
-  TexCoordd range = _position._max_uv - _position._min_uv;
+  LTexCoordd range = _position._max_uv - _position._min_uv;
   //cout << "range: " << range << endl;
 
   //cout << "_x_size texture: " << _texture->get_x_size() << endl;

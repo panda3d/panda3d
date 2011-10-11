@@ -13,12 +13,12 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//       Class : Frustum
+//       Class : LFrustum
 // Description :
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_MATHUTIL FLOATNAME(Frustum) {
+class EXPCL_PANDA_MATHUTIL FLOATNAME(LFrustum) {
 PUBLISHED:
-  INLINE_MATHUTIL FLOATNAME(Frustum)();
+  INLINE_MATHUTIL FLOATNAME(LFrustum)();
 
   INLINE_MATHUTIL void make_ortho_2D();
   INLINE_MATHUTIL void make_ortho_2D(FLOATTYPE l, FLOATTYPE r, FLOATTYPE t, FLOATTYPE b);

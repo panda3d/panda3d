@@ -45,12 +45,21 @@ public:
   INLINE bool has_name() const;
   INLINE const string &get_name() const;
 
+  INLINE int get_num_alt_names() const;
+  INLINE const string &get_alt_name(int n) const;
+
   void output(ostream &out) const;
   void input(istream &in);
+
+protected:
+  static string _empty_string;
 
 private:
   InterrogateModuleDef *_def;
   string _name;
+
+  typedef vector<string> Strings;
+  Strings _alt_names;
 
   friend class InterrogateBuilder;
   friend class FunctionRemap;

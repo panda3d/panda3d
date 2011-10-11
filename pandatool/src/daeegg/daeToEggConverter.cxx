@@ -442,7 +442,7 @@ void DAEToEggConverter::process_mesh(PT(EggGroup) parent, const FCDGeometryMesh*
           data = &bsource->GetData()[bindices[ix]*3];
           PT(EggVertexUV) uv_obj = vertex->modify_uv_obj(tbsetname);
           if (uv_obj == NULL) {
-            uv_obj = new EggVertexUV(tbsetname, TexCoordd());
+            uv_obj = new EggVertexUV(tbsetname, LTexCoordd());
           }
           uv_obj->set_binormal(LVecBase3d(data[0], data[1], data[2]));
         }
@@ -451,7 +451,7 @@ void DAEToEggConverter::process_mesh(PT(EggGroup) parent, const FCDGeometryMesh*
           data = &tsource->GetData()[tindices[ix]*3];
           PT(EggVertexUV) uv_obj = vertex->modify_uv_obj(ttsetname);
           if (uv_obj == NULL) {
-            uv_obj = new EggVertexUV(ttsetname, TexCoordd());
+            uv_obj = new EggVertexUV(ttsetname, LTexCoordd());
           }
           uv_obj->set_tangent(LVecBase3d(data[0], data[1], data[2]));
         }

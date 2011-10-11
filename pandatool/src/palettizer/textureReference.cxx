@@ -262,7 +262,7 @@ has_uvs() const {
 //  Description: Returns the minimum UV coordinate in use for the
 //               texture by this reference.
 ////////////////////////////////////////////////////////////////////
-const TexCoordd &TextureReference::
+const LTexCoordd &TextureReference::
 get_min_uv() const {
   nassertr(_any_uvs, _min_uv);
   return _min_uv;
@@ -274,7 +274,7 @@ get_min_uv() const {
 //  Description: Returns the maximum UV coordinate in use for the
 //               texture by this reference.
 ////////////////////////////////////////////////////////////////////
-const TexCoordd &TextureReference::
+const LTexCoordd &TextureReference::
 get_max_uv() const {
   nassertr(_any_uvs, _max_uv);
   return _max_uv;
@@ -547,7 +547,7 @@ write(ostream &out, int indent_level) const {
   if (_any_uvs) {
     // Compute the fraction of the image that is covered by the UV's
     // minmax rectangle.
-    TexCoordd box = _max_uv - _min_uv;
+    LTexCoordd box = _max_uv - _min_uv;
     double area = box[0] * box[1];
 
     out << " coverage " << area;
@@ -621,7 +621,7 @@ get_uv_range(EggGroupNode *group, Palettizer::RemapUV remap) {
   }
 
   bool group_any_uvs = false;
-  TexCoordd group_min_uv, group_max_uv;
+  LTexCoordd group_min_uv, group_max_uv;
 
   EggGroupNode::iterator ci;
   for (ci = group->begin(); ci != group->end(); ci++) {
@@ -665,7 +665,7 @@ get_uv_range(EggGroupNode *group, Palettizer::RemapUV remap) {
           return false;
           
         } else {
-          TexCoordd geom_min_uv, geom_max_uv;
+          LTexCoordd geom_min_uv, geom_max_uv;
           
           if (get_geom_uvs(geom, geom_min_uv, geom_max_uv)) {
             if (remap == Palettizer::RU_poly) {
@@ -719,7 +719,7 @@ update_uv_range(EggGroupNode *group, Palettizer::RemapUV remap) {
   }
 
   bool group_any_uvs = false;
-  TexCoordd group_min_uv, group_max_uv;
+  LTexCoordd group_min_uv, group_max_uv;
 
   EggGroupNode::iterator ci;
   for (ci = group->begin(); ci != group->end(); ci++) {
@@ -732,7 +732,7 @@ update_uv_range(EggGroupNode *group, Palettizer::RemapUV remap) {
       if (remap != Palettizer::RU_never) {
         EggPrimitive *geom = DCAST(EggPrimitive, child);
         if (geom->has_texture(_egg_tex)) {
-          TexCoordd geom_min_uv, geom_max_uv;
+          LTexCoordd geom_min_uv, geom_max_uv;
 
           if (get_geom_uvs(geom, geom_min_uv, geom_max_uv)) {
             if (remap == Palettizer::RU_poly) {
@@ -781,7 +781,7 @@ update_uv_range(EggGroupNode *group, Palettizer::RemapUV remap) {
 ////////////////////////////////////////////////////////////////////
 bool TextureReference::
 get_geom_uvs(EggPrimitive *geom,
-             TexCoordd &geom_min_uv, TexCoordd &geom_max_uv) {
+             LTexCoordd &geom_min_uv, LTexCoordd &geom_max_uv) {
   string uv_name = _egg_tex->get_uv_name();
   bool geom_any_uvs = false;
 
@@ -789,7 +789,7 @@ get_geom_uvs(EggPrimitive *geom,
   for (pi = geom->begin(); pi != geom->end(); ++pi) {
     EggVertex *vtx = (*pi);
     if (vtx->has_uv(uv_name)) {
-      TexCoordd uv = vtx->get_uv(uv_name) * _tex_mat;
+      LTexCoordd uv = vtx->get_uv(uv_name) * _tex_mat;
       collect_uv(geom_any_uvs, geom_min_uv, geom_max_uv, uv, uv);
     }
   }
@@ -804,7 +804,7 @@ get_geom_uvs(EggPrimitive *geom,
 //               primitive.
 ////////////////////////////////////////////////////////////////////
 void TextureReference::
-translate_geom_uvs(EggPrimitive *geom, const TexCoordd &trans) const {
+translate_geom_uvs(EggPrimitive *geom, const LTexCoordd &trans) const {
   string uv_name = _egg_tex->get_uv_name();
 
   EggPrimitive::iterator pi;
@@ -833,15 +833,15 @@ translate_geom_uvs(EggPrimitive *geom, const TexCoordd &trans) const {
 void TextureReference::
 collect_nominal_uv_range() {
   static const int num_nurbs_uvs = 4;
-  static TexCoordd nurbs_uvs[num_nurbs_uvs] = {
-    TexCoordd(0.0, 0.0),
-    TexCoordd(0.0, 1.0),
-    TexCoordd(1.0, 1.0),
-    TexCoordd(1.0, 0.0)
+  static LTexCoordd nurbs_uvs[num_nurbs_uvs] = {
+    LTexCoordd(0.0, 0.0),
+    LTexCoordd(0.0, 1.0),
+    LTexCoordd(1.0, 1.0),
+    LTexCoordd(1.0, 0.0)
   };
   
   for (int i = 0; i < num_nurbs_uvs; i++) {
-    TexCoordd uv = nurbs_uvs[i] * _tex_mat;
+    LTexCoordd uv = nurbs_uvs[i] * _tex_mat;
     collect_uv(_any_uvs, _min_uv, _max_uv, uv, uv);
   }
 }
@@ -853,8 +853,8 @@ collect_nominal_uv_range() {
 //               indicated min and max UV's already determined.
 ////////////////////////////////////////////////////////////////////
 void TextureReference::
-collect_uv(bool &any_uvs, TexCoordd &min_uv, TexCoordd &max_uv,
-           const TexCoordd &got_min_uv, const TexCoordd &got_max_uv) {
+collect_uv(bool &any_uvs, LTexCoordd &min_uv, LTexCoordd &max_uv,
+           const LTexCoordd &got_min_uv, const LTexCoordd &got_max_uv) {
   if (any_uvs) {
     min_uv.set(min(min_uv[0], got_min_uv[0]),
                min(min_uv[1], got_min_uv[1]));
@@ -876,8 +876,8 @@ collect_uv(bool &any_uvs, TexCoordd &min_uv, TexCoordd &max_uv,
 //               square (0,0) - (1,1).
 ////////////////////////////////////////////////////////////////////
 LVector2d TextureReference::
-translate_uv(const TexCoordd &min_uv, const TexCoordd &max_uv) {
-  TexCoordd center = (min_uv + max_uv) / 2;
+translate_uv(const LTexCoordd &min_uv, const LTexCoordd &max_uv) {
+  LTexCoordd center = (min_uv + max_uv) / 2;
   return LVector2d(-floor(center[0]), -floor(center[1]));
 }
 

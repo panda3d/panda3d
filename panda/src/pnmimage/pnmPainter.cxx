@@ -36,8 +36,8 @@ PNMPainter(PNMImage &image, int xo, int yo) :
   _image(image),
   _xo(xo), _yo(yo)
 {
-  _pen = PNMBrush::make_pixel(Colord(0, 0, 0, 1));
-  _fill = PNMBrush::make_pixel(Colord(1, 1, 1, 1));
+  _pen = PNMBrush::make_pixel(LColord(0, 0, 0, 1));
+  _fill = PNMBrush::make_pixel(LColord(1, 1, 1, 1));
 }
 
 ////////////////////////////////////////////////////////////////////

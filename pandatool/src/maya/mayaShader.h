@@ -52,7 +52,7 @@ public:
 
 public: // relevant only to modern mode.
 
-  Colord _flat_color;
+  LColord _flat_color;
   
   MayaShaderColorList _color_maps;
   MayaShaderColorList _trans_maps;

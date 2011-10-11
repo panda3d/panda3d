@@ -61,6 +61,14 @@ typedef PTA_LVecBase3d PTA_LVecBase3;
 typedef CPTA_LVecBase3d CPTA_LVecBase3;
 #endif  // STDFLOAT_DOUBLE
 
+// Bogus typedefs for interrogate and legacy Python code.
+#ifdef CPPPARSER
+typedef PTA_LVecBase3f PTAVecBase3f;
+typedef CPTA_LVecBase3f CPTAVecBase3f;
+typedef PTA_LVecBase3d PTAVecBase3d;
+typedef CPTA_LVecBase3d CPTAVecBase3d;
+#endif  // CPPPARSER
+
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__
 #pragma interface

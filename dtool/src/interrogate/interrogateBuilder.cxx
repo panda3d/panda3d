@@ -1905,6 +1905,16 @@ get_type(CPPType *type, bool global) {
     InterrogateDatabase::get_ptr()->update_type(index);
 
   itype._name = get_preferred_name(type);
+  
+  int num_alt_names = type->get_num_alt_names();
+  if (num_alt_names != 0) {
+    itype._alt_names.clear();
+    for (int i = 0; i < num_alt_names; ++i) {
+      string alt_name = type->get_alt_name(i);
+      itype._alt_names.push_back(alt_name);
+    }
+  }
+
   itype._scoped_name = true_name;
   itype._true_name = true_name;
   itype._cpptype = type;

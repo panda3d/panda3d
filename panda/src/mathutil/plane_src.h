@@ -13,27 +13,27 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//       Class : Plane
+//       Class : LPlane
 // Description : An abstract mathematical description of a plane.  A
 //               plane is defined by the equation Ax + By + Cz + D = 0.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_MATHUTIL FLOATNAME(Plane) : public FLOATNAME(LVecBase4) {
+class EXPCL_PANDA_MATHUTIL FLOATNAME(LPlane) : public FLOATNAME(LVecBase4) {
 PUBLISHED:
-  INLINE_MATHUTIL FLOATNAME(Plane)();
-  INLINE_MATHUTIL FLOATNAME(Plane)(const FLOATNAME(LVecBase4) &copy);
-  INLINE_MATHUTIL FLOATNAME(Plane)(const FLOATNAME(LPoint3) &a,
+  INLINE_MATHUTIL FLOATNAME(LPlane)();
+  INLINE_MATHUTIL FLOATNAME(LPlane)(const FLOATNAME(LVecBase4) &copy);
+  INLINE_MATHUTIL FLOATNAME(LPlane)(const FLOATNAME(LPoint3) &a,
                                    const FLOATNAME(LPoint3) &b,
                                    const FLOATNAME(LPoint3) &c);
-  INLINE_MATHUTIL FLOATNAME(Plane)(const FLOATNAME(LVector3) &normal,
+  INLINE_MATHUTIL FLOATNAME(LPlane)(const FLOATNAME(LVector3) &normal,
                                    const FLOATNAME(LPoint3) &point);
-  INLINE_MATHUTIL FLOATNAME(Plane)(FLOATTYPE a, FLOATTYPE b,
+  INLINE_MATHUTIL FLOATNAME(LPlane)(FLOATTYPE a, FLOATTYPE b,
                                    FLOATTYPE c, FLOATTYPE d);
 
-  INLINE_MATHUTIL FLOATNAME(Plane) operator * (const FLOATNAME(LMatrix3) &mat) const;
-  INLINE_MATHUTIL FLOATNAME(Plane) operator * (const FLOATNAME(LMatrix4) &mat) const;
+  INLINE_MATHUTIL FLOATNAME(LPlane) operator * (const FLOATNAME(LMatrix3) &mat) const;
+  INLINE_MATHUTIL FLOATNAME(LPlane) operator * (const FLOATNAME(LMatrix4) &mat) const;
   INLINE_MATHUTIL void operator *= (const FLOATNAME(LMatrix4) &mat);
   INLINE_MATHUTIL void xform(const FLOATNAME(LMatrix4) &mat);
-  INLINE_MATHUTIL FLOATNAME(Plane) operator - () const;
+  INLINE_MATHUTIL FLOATNAME(LPlane) operator - () const;
 
   FLOATNAME(LMatrix4) get_reflection_mat() const;
 
@@ -53,16 +53,16 @@ PUBLISHED:
 
   bool intersects_plane(FLOATNAME(LPoint3) &from,
                         FLOATNAME(LVector3) &delta,
-                        const FLOATNAME(Plane) &other) const;
+                        const FLOATNAME(LPlane) &other) const;
 
   bool intersects_parabola(FLOATTYPE &t1, FLOATTYPE &t2,
-                           const FLOATNAME(Parabola) &parabola) const;
+                           const FLOATNAME(LParabola) &parabola) const;
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
 };
 
 INLINE_MATHUTIL ostream &
-operator << (ostream &out, const FLOATNAME(Plane) &p);
+operator << (ostream &out, const FLOATNAME(LPlane) &p);
 
 #include "plane_src.I"

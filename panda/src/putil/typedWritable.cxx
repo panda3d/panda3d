@@ -194,9 +194,9 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
   // (e.g. this), and the arguments necessary to reconstruct this
   // object.
 
-  // Check that we have a decodeFromBamStream python method.  If not,
+  // Check that we have a decode_from_bam_stream python method.  If not,
   // we can't use this interface.
-  PyObject *method = PyObject_GetAttrString(self, "decodeFromBamStream");
+  PyObject *method = PyObject_GetAttrString(self, "decode_from_bam_stream");
   if (method == NULL) {
     ostringstream stream;
     stream << "Cannot pickle objects of type " << get_type() << "\n";
@@ -239,9 +239,9 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
     // The modified pickle support: call the "persistent" version of
     // this function, which receives the unpickler itself as an
     // additional parameter.
-    func = find_global_decode(this_class, "pyDecodeTypedWritableFromBamStreamPersist");
+    func = find_global_decode(this_class, "py_decode_TypedWritable_from_bam_stream_persist");
     if (func == NULL) {
-      PyErr_SetString(PyExc_TypeError, "Couldn't find pyDecodeTypedWritableFromBamStreamPersist()");
+      PyErr_SetString(PyExc_TypeError, "Couldn't find py_decode_TypedWritable_from_bam_stream_persist()");
       Py_DECREF(this_class);
       return NULL;
     }
@@ -250,9 +250,9 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
     // The traditional pickle support: call the non-persistent version
     // of this function.
 
-    func = find_global_decode(this_class, "pyDecodeTypedWritableFromBamStream");
+    func = find_global_decode(this_class, "py_decode_TypedWritable_from_bam_stream");
     if (func == NULL) {
-      PyErr_SetString(PyExc_TypeError, "Couldn't find pyDecodeTypedWritableFromBamStream()");
+      PyErr_SetString(PyExc_TypeError, "Couldn't find py_decode_TypedWritable_from_bam_stream()");
       Py_DECREF(this_class);
       return NULL;
     }
@@ -432,11 +432,11 @@ decode_raw_from_bam_stream(TypedWritable *&ptr, ReferenceCount *&ref_ptr,
 //       Access: Public, Static
 //  Description: This is a support function for __reduce__().  It
 //               searches for the global function
-//               pyDecodeTypedWritableFromBamStream() in this class's
-//               module, or in the module for any base class.  (It's
-//               really looking for the libpanda module, but we can't
-//               be sure what name that module was loaded under, so we
-//               search upwards this way.)
+//               py_decode_TypedWritable_from_bam_stream() in this
+//               class's module, or in the module for any base class.
+//               (It's really looking for the libpanda module, but we
+//               can't be sure what name that module was loaded under,
+//               so we search upwards this way.)
 //
 //               Returns: new reference on success, or NULL on failure.
 ////////////////////////////////////////////////////////////////////
@@ -534,7 +534,7 @@ py_decode_TypedWritable_from_bam_stream_persist(PyObject *pickler, PyObject *thi
   // the specific object's class as the pointer, we get the particular
   // instance of decode_from_bam_stream appropriate to this class.
 
-  PyObject *func = PyObject_GetAttrString(this_class, "decodeFromBamStream");
+  PyObject *func = PyObject_GetAttrString(this_class, "decode_from_bam_stream");
   if (func == NULL) {
     return NULL;
   }

@@ -124,38 +124,7 @@ const char *  InPlaceSet[] = {
 
 ///////////////////////////////////////////////////////////////////////////////////////
 RenameSet classRenameDictionary[] = {
-    { "Loader"                    , "PandaLoader",0 },
-    { "string"                    , "CString",0 },
-    { "LMatrix4f"                 , "Mat4",0 },
-    { "LMatrix3f"                 , "Mat3",0 },
-    { "LVecBase4f"                , "VBase4",0 },
-    { "LVector4f"                 , "Vec4",0 },
-    { "LPoint4f"                  , "Point4",0 },
-    { "LVecBase3f"                , "VBase3",0 },
-    { "LVector3f"                 , "Vec3",0 },
-    { "LPoint3f"                  , "Point3",0 },
-    { "LVecBase2f"                , "VBase2",0 },
-    { "LVector2f"                 , "Vec2",0 },
-    { "LPoint2f"                  , "Point2",0 },
-    { "LQuaternionf"              , "Quat",0 },
-    { "LMatrix4d"                 , "Mat4D",0 },
-    { "LMatrix3d"                 , "Mat3D",0 },
-    { "LVecBase4d"                , "VBase4D",0 },
-    { "LVector4d"                 , "Vec4D",0 },
-    { "LPoint4d"                  , "Point4D",0 },
-    { "LVecBase3d"                , "VBase3D",0 },
-    { "LVector3d"                 , "Vec3D",0 },
-    { "LPoint3d"                  , "Point3D",0 },
-    { "LVecBase2d"                , "VBase2D",0 },
-    { "LVector2d"                 , "Vec2D",0 },
-    { "LPoint2d"                  , "Point2D",0 },
-    { "LQuaterniond"              , "QuatD",0 },
-    { "Plane"                     , "PlaneBase",0 },
-    { "Planef"                    , "Plane",0 },
-    { "Planed"                    , "PlaneD",0 },
-    { "Frustum"                   , "FrustumBase",0 },
-    { "Frustumf"                  , "Frustum",0 },
-    { "Frustumd"                  , "FrustumD",0 },
+  // No longer used, now empty.
     { NULL,NULL,-1 }
     };
 
@@ -205,78 +174,61 @@ std::string  checkKeyword(std::string & cppName)
     }
     return cppName;
 }
-///////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////
-std::string  classNameFromCppName(const std::string &cppName)
-{
-    //# initialize to empty string
-    std::string className = "";
-    //# These are the characters we want to strip out of the name
-    const std::string  badChars("!@#$%^&*()<>,.-=+~{}?");
-    int nextCap = 0;
-    int firstChar = 1;
-    for(std::string::const_iterator  chr = cppName.begin(); chr != cppName.end(); chr++)
-    {
-        if (badChars.find(*chr) != std::string::npos)
-        {
-        }
-        else if (*chr == '_' || *chr == ' ')
-        {
-            nextCap = 1;
-        }
-        else if (nextCap || firstChar)
-        {
-            className += toupper(*chr);
-            nextCap = 0;
-            firstChar = 0;
-        }
-        else
-        {
-            className += * chr;
-        }
-    }
-    for(int x = 0; classRenameDictionary[x]._from != NULL; x++)
-    {
-        if(cppName == classRenameDictionary[x]._from)
-            className = classRenameDictionary[x]._to;
-    }
 
-    if (className.empty())
-    {
-        std::string text = "** ERROR ** Renaming class: " + cppName + " to empty string";
-        printf("%s",text.c_str());
-    }
-
-
-    //# FFIConstants.notify.debug('Renaming class: ' + cppName + ' to: ' + className)
-    //# Note we do not have to check for keywords because class name are capitalized
-    return className;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////
-std::string nonClassNameFromCppName(const std::string &cppName_in)
-{
-    std::string className = classNameFromCppName(cppName_in);
-    //# Make the first character lowercase
-    std::string newName;
-    int pass = 0;
-    for(std::string::const_iterator  chr = className.begin(); chr != className.end(); chr++)
-    {
-        if(pass == 0)
-            newName += toupper(*chr);
-        else
-            newName += tolower(*chr);
-        pass++;
-    }    
-    //# Mangle names that happen to be python keywords so they are not anymore
-    //newName = checkKeyword(newName)
-    return newName;
-}
 ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
 std::string
-methodNameFromCppName(const std::string &cppName, const std::string &className) {
+classNameFromCppName(const std::string &cppName, bool mangle) {
+  //# initialize to empty string
+  std::string className = "";
+
+  //# These are the characters we want to strip out of the name
+  const std::string badChars("!@#$%^&*()<>,.-=+~{}? ");
+
+  bool nextCap = false;
+  bool firstChar = true && mangle;
+
+  for (std::string::const_iterator chr = cppName.begin(); 
+       chr != cppName.end(); 
+       chr++) {
+    if ((*chr == '_' || *chr == ' ') && mangle) {
+      nextCap = true;
+
+    } else if (badChars.find(*chr) != std::string::npos) {
+      if (!mangle) {
+        className += '_';
+      }
+
+    } else if (nextCap || firstChar) {
+      className += toupper(*chr);
+      nextCap = false;
+      firstChar = false;
+
+    } else {
+      className += * chr;
+    }
+  }
+
+  for (int x = 0; classRenameDictionary[x]._from != NULL; x++) {
+    if (cppName == classRenameDictionary[x]._from) {
+      className = classRenameDictionary[x]._to;
+    }
+  }
+  
+  if (className.empty()) {
+    std::string text = "** ERROR ** Renaming class: " + cppName + " to empty string";
+    printf("%s",text.c_str());
+  }
+
+  className = checkKeyword(className);
+  //# FFIConstants.notify.debug('Renaming class: ' + cppName + ' to: ' + className)
+  return className;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+std::string
+methodNameFromCppName(const std::string &cppName, const std::string &className, bool mangle) {
   std::string origName = cppName;
 
   if (origName.substr(0, 6) == "__py__") {
@@ -286,59 +238,54 @@ methodNameFromCppName(const std::string &cppName, const std::string &className) 
   }
 
   std::string methodName;
-  const std::string  badChars("!@#$%^&*()<>,.-=+~{}?");
-  int nextCap = 0;
-  for(std::string::const_iterator  chr = origName.begin(); chr != origName.end(); chr++)
-    {
-      if (badChars.find(*chr) != std::string::npos)
-        {
-        }
-      else if (*chr == '_' || *chr == ' ')
-        {
-          nextCap = 1;
-        }
-      else if (nextCap)
-        {
-          methodName += toupper(*chr);
-          nextCap = 0;
-        }
-      else
-        {
-          methodName += *chr;
-        }
-    }
+  const std::string badChars("!@#$%^&*()<>,.-=+~{}? ");
+  bool nextCap = false;
+  for (std::string::const_iterator chr = origName.begin(); 
+       chr != origName.end(); 
+       chr++) {
+    if ((*chr == '_' || *chr == ' ') && mangle) {
+      nextCap = true;
 
-  for(int x = 0; methodRenameDictionary[x]._from != NULL; x++)
-    {
-      if(origName == methodRenameDictionary[x]._from)
-        {
-          methodName = methodRenameDictionary[x]._to;
-        }
-    }
+    } else if (badChars.find(*chr) != std::string::npos) {
+      if (!mangle) {
+        methodName += '_';
+      }
 
-  if(className.size() > 0)
-    {
-      string LookUpName = className + '.' + cppName;
-      for(int x = 0; classRenameDictionary[x]._from != NULL; x++)
-        {
-          if(LookUpName == methodRenameDictionary[x]._from)
-            methodName = methodRenameDictionary[x]._to;
-        }
+    } else if (nextCap) {
+      methodName += toupper(*chr);
+      nextCap = false;
+
+    } else {
+      methodName += *chr;
     }
+  }
+
+  for (int x = 0; methodRenameDictionary[x]._from != NULL; x++) {
+    if (origName == methodRenameDictionary[x]._from) {
+      methodName = methodRenameDictionary[x]._to;
+    }
+  }
+
+  if (className.size() > 0) {
+    string LookUpName = className + '.' + cppName;
+    for (int x = 0; classRenameDictionary[x]._from != NULL; x++) {
+      if (LookUpName == methodRenameDictionary[x]._from)
+        methodName = methodRenameDictionary[x]._to;
+    }
+  }
  
-
   //    # Mangle names that happen to be python keywords so they are not anymore
   methodName = checkKeyword(methodName);
   return methodName;
 }
 
-std::string  methodNameFromCppName(InterfaceMaker::Function *func, const std::string &className)
+std::string  methodNameFromCppName(InterfaceMaker::Function *func, const std::string &className, bool mangle)
 {
     std::string cppName = func->_ifunc.get_name();
     if (func->_ifunc.is_unary_op()) {
       cppName += "unary";
     }
-    return methodNameFromCppName(cppName, className);
+    return methodNameFromCppName(cppName, className, mangle);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -346,13 +293,13 @@ std::string  methodNameFromCppName(InterfaceMaker::Function *func, const std::st
 
 bool isInplaceFunction(InterfaceMaker::Function *func)
 {
-    std::string wname = methodNameFromCppName(func,"");
-
-    for(int x = 0; InPlaceSet[x] != NULL; x++)
-        if(InPlaceSet[x] == wname)
-            return true;
-
-    return false;
+  std::string wname = methodNameFromCppName(func, "", false);
+  
+  for(int x = 0; InPlaceSet[x] != NULL; x++)
+    if(InPlaceSet[x] == wname)
+      return true;
+  
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -752,6 +699,7 @@ void InterfaceMakerPythonNative::write_prototypes_class_external(ostream &out, O
 {
     std::string class_name = make_safe_name(obj->_itype.get_scoped_name());
     std::string c_class_name =  obj->_itype.get_true_name();
+    std::string preferred_name =  obj->_itype.get_name();
 
 
     out << "//********************************************************************\n";
@@ -759,7 +707,7 @@ void InterfaceMakerPythonNative::write_prototypes_class_external(ostream &out, O
     out << "//********************************************************************\n";
 
     out << "typedef  "<< c_class_name <<"  "<< class_name <<"_localtype;\n";
-    out << "Define_Module_Class_Forward("<< _def->module_name << ", "<< class_name << "," << class_name <<"_localtype,"<< classNameFromCppName(c_class_name) << ");\n";
+    out << "Define_Module_Class_Forward("<< _def->module_name << ", "<< class_name << "," << class_name <<"_localtype,"<< classNameFromCppName(preferred_name, false) << ");\n";
 
 }
 ///////////////////////////////////////// ////////////////////////////////////////////////////
@@ -855,7 +803,6 @@ void InterfaceMakerPythonNative::write_ClasseDetails(ostream &out, Object * obj)
   //std::string cClassName = obj->_itype.get_scoped_name();
   std::string ClassName = make_safe_name(obj->_itype.get_scoped_name());
   std::string cClassName =  obj->_itype.get_true_name();
-  std::string export_class_name = classNameFromCppName(obj->_itype.get_name());
   
   out << "//********************************************************************\n";
   out << "//*** Functions for .. "<< cClassName <<" \n" ;
@@ -995,7 +942,8 @@ void InterfaceMakerPythonNative::write_ClasseDeclarations(ostream &out, ostream 
 
     const InterrogateType &itype = obj->_itype;
     std::string class_name = make_safe_name(obj->_itype.get_scoped_name());
-    std::string c_class_name =  itype.get_true_name();
+    std::string c_class_name =  obj->_itype.get_true_name();
+    std::string preferred_name =  itype.get_name();
     std::string class_struct_name = std::string(CLASS_PREFEX) +class_name;
 
     out << "typedef  "<< c_class_name <<"  "<< class_name <<"_localtype;\n";
@@ -1004,22 +952,22 @@ void InterfaceMakerPythonNative::write_ClasseDeclarations(ostream &out, ostream 
     {
         if(TypeManager::is_reference_count(obj->_itype._cpptype))
         {
-            out << "Define_Module_ClassRef("<< _def->module_name<<"," << class_name << "," << class_name <<"_localtype,"<< classNameFromCppName(c_class_name) <<");\n";
+          out << "Define_Module_ClassRef("<< _def->module_name<<"," << class_name << "," << class_name <<"_localtype,"<< classNameFromCppName(preferred_name, false) <<");\n";
         }
         else
         {
-            out << "Define_Module_Class("<<_def->module_name << "," << class_name << "," <<class_name <<"_localtype,"<< classNameFromCppName(c_class_name) <<");\n";
+          out << "Define_Module_Class("<<_def->module_name << "," << class_name << "," <<class_name <<"_localtype,"<< classNameFromCppName(preferred_name, false) <<");\n";
         }
     }
     else
     {
         if(TypeManager::is_reference_count(obj->_itype._cpptype))
         {
-            out << "Define_Module_ClassRef_Private("<<_def->module_name << "," << class_name << "," << class_name <<"_localtype,"<< classNameFromCppName(c_class_name) <<");\n";
+          out << "Define_Module_ClassRef_Private("<<_def->module_name << "," << class_name << "," << class_name <<"_localtype,"<< classNameFromCppName(preferred_name, false) <<");\n";
         }
         else
         {
-            out << "Define_Module_Class_Private("<<_def->module_name<< "," << class_name << "," << class_name <<"_localtype,"<< classNameFromCppName(c_class_name) << ");\n";
+          out << "Define_Module_Class_Private("<<_def->module_name<< "," << class_name << "," << class_name <<"_localtype,"<< classNameFromCppName(preferred_name, false) << ");\n";
         }
     }
 
@@ -1028,19 +976,19 @@ void InterfaceMakerPythonNative::write_ClasseDeclarations(ostream &out, ostream 
         *out_h  << "extern \"C\" " << EXPORT_IMPORT_PREFEX << " struct   Dtool_PyTypedObject Dtool_" << class_name <<";\n";
 }
 ////////////////////////////////////////////////////////////////////
-//     Function: InterfaceMakerPythonNative::write_module
+//     Function: InterfaceMakerPythonNative::write_sub_module
 //       Access: Public, Virtual
 //  Description: Generates whatever additional code is required to
 //               support a module file.
 ////////////////////////////////////////////////////////////////////
 void InterfaceMakerPythonNative::write_sub_module(ostream &out, Object *obj) 
 {
-        //Object * obj =  _objects[_embeded_index] ;
-        std::string ClassName = make_safe_name(obj->_itype.get_scoped_name());
-    out << "//********************************************************************\n";
-    out << "//*** Module Init Updcall .." << obj->_itype.get_scoped_name() << "\n";
-    out << "//********************************************************************\n";
-        out << "   Dtool_PyModuleClassInit_"<< ClassName <<"(module);\n";
+  //Object * obj =  _objects[_embeded_index] ;
+  std::string ClassName = make_safe_name(obj->_itype.get_scoped_name());
+  out << "//********************************************************************\n";
+  out << "//*** Module Init Updcall .." << obj->_itype.get_scoped_name() << "\n";
+  out << "//********************************************************************\n";
+  out << "   Dtool_PyModuleClassInit_"<< ClassName <<"(module);\n";
 }
 /////////////////////////////////////////////////////////////////////////////
 // Function : write_module_support
@@ -1068,8 +1016,16 @@ void InterfaceMakerPythonNative::write_module_support(ostream &out,ostream *out_
                     out << "//*** Module Enums  .." << object->_itype.get_scoped_name() << "\n";
                     out << "//********************************************************************\n";
                 }
-                for(int xx = 0; xx< enum_count; xx++)
-                    out << "   PyModule_AddIntConstant(module,\"" << classNameFromCppName(object->_itype.get_enum_value_name(xx)) <<"\","<<  object->_itype.get_enum_value(xx) << ");\n";
+                for(int xx = 0; xx< enum_count; xx++) {
+                  string name1 = classNameFromCppName(object->_itype.get_enum_value_name(xx), false);
+                  string name2 = classNameFromCppName(object->_itype.get_enum_value_name(xx), true);
+                  int enum_value = object->_itype.get_enum_value(xx);
+                  out << "   PyModule_AddIntConstant(module,\"" << name1 <<"\","<< enum_value << ");\n";
+                  if (name1 != name2) {
+                    // Also write the mangled name, for historical purposes.
+                    out << "   PyModule_AddIntConstant(module,\"" << name2 <<"\","<< enum_value << ");\n";
+                  }
+                }
             }
         }
     }
@@ -1085,14 +1041,24 @@ void InterfaceMakerPythonNative::write_module_support(ostream &out,ostream *out_
             FunctionIndex func_index = iman.get_getter();
             record_function(dummy_type, func_index);
         }
-        if(iman.has_int_value())
-                    out << "   PyModule_AddIntConstant(module,\"" << classNameFromCppName(iman.get_name()) <<"\","<<  iman.get_int_value() << ");\n";
-        else
-                    out << "   PyModule_AddStringConstant(module,\"" << classNameFromCppName(iman.get_name()) <<"\",\""<<  iman.get_definition().c_str() << "\");\n";
 
+        string name1 = classNameFromCppName(iman.get_name(), false);
+        string name2 = classNameFromCppName(iman.get_name(), true);
+        if(iman.has_int_value()) {
+          int value = iman.get_int_value();
+          out << "   PyModule_AddIntConstant(module,\"" << name1 <<"\","<< value << ");\n";
+          if (name1 != name2) {
+            // Also write the mangled name, for historical purposes.
+            out << "   PyModule_AddIntConstant(module,\"" << name2 <<"\","<< value << ");\n";
+          }
+        } else {
+          string value = iman.get_definition();
+          out << "   PyModule_AddStringConstant(module,\"" << name1 <<"\",\""<< value << "\");\n";
+          if (name1 != name2) {
+            out << "   PyModule_AddStringConstant(module,\"" << name2 <<"\",\""<< value << "\");\n";
+          }
+        }
     }    
-
-
 
     for (oi = _objects.begin(); oi != _objects.end(); ++oi) 
     {
@@ -1125,18 +1091,22 @@ void InterfaceMakerPythonNative::write_module_support(ostream &out,ostream *out_
         Function *func = (*fi);
         if(!func->_itype.is_global() && isFunctionLegal(func))
         {
-            {
-                out << "  { \"" << methodNameFromCppName(func,"") << "\", (PyCFunction) &" 
-                    << func->_name << ", METH_VARARGS| METH_KEYWORDS, (char *)" << func->_name << "_comment},\n";
-            }
+          string name1 = methodNameFromCppName(func, "", false);
+          string name2 = methodNameFromCppName(func, "", true);
+          out << "  { \"" << name1 << "\", (PyCFunction) &" 
+              << func->_name << ", METH_VARARGS| METH_KEYWORDS, (char *)" << func->_name << "_comment},\n";
+          if (name1 != name2) {
+            out << "  { \"" << name2 << "\", (PyCFunction) &" 
+                << func->_name << ", METH_VARARGS| METH_KEYWORDS, (char *)" << func->_name << "_comment},\n";
+          }
         }
     }  
 
     if(force_base_functions)
     {
         out << "  //Support Function For Dtool_types ... for now in each module ??\n";
-        out << "  {\"Dtool_BorrowThisReference\", &Dtool_BorrowThisReference,METH_VARARGS,\"Used to borrow 'this' poiner ( to, from)\\n Assumes no ownership\"}, \n"; 
-        out << "  {\"Dtool_AddToDictionary\", &Dtool_AddToDictionary,METH_VARARGS,\"Used to Items Into a types (tp_dict)\"}, \n"; 
+        out << "  {\"Dtool_BorrowThisReference\", &Dtool_BorrowThisReference,METH_VARARGS,\"Used to borrow 'this' pointer ( to, from)\\n Assumes no ownership\"}, \n"; 
+        out << "  {\"Dtool_AddToDictionary\", &Dtool_AddToDictionary,METH_VARARGS,\"Used to add items into a tp_dict\"}, \n"; 
     }
 
     out << "  { NULL, NULL ,0,NULL}\n" << "};\n\n";
@@ -1194,15 +1164,14 @@ write_module_class(ostream &out,  Object *obj) {
 
   std::string ClassName = make_safe_name(obj->_itype.get_scoped_name());
   std::string cClassName =  obj->_itype.get_true_name();
-  std::string export_calss_name = classNameFromCppName(obj->_itype.get_name());
+  std::string export_class_name = classNameFromCppName(obj->_itype.get_name(), false);
+  std::string export_class_name2 = classNameFromCppName(obj->_itype.get_name(), true);
 
   Functions::iterator fi;
   out << "//********************************************************************\n";
-  out << "//*** Py Init Code For .. "<< ClassName <<" | " << export_calss_name <<"\n" ;
+  out << "//*** Py Init Code For .. "<< ClassName <<" | " << export_class_name <<"\n" ;
   out << "//********************************************************************\n";
   out << "PyMethodDef Dtool_Methods_"<< ClassName << "[]= {\n";
-
-
 
   std::map<int , Function * > static_functions;
   std::map<Function *, std::string >       normal_Operator_functions;
@@ -1211,8 +1180,8 @@ write_module_class(ostream &out,  Object *obj) {
   bool got_copy = false;
   bool got_deepcopy = false;
 
-  int x;
-  for (x = 0, fi = obj->_methods.begin(); fi != obj->_methods.end(); ++fi,x++) {
+  int x = 0;
+  for (fi = obj->_methods.begin(); fi != obj->_methods.end(); ++fi) {
     Function *func = (*fi);
     if (func->_name == "__copy__") {
       got_copy = true;
@@ -1220,33 +1189,31 @@ write_module_class(ostream &out,  Object *obj) {
       got_deepcopy = true;
     }
 
+    if (!isFunctionWithThis(func)) {
+      // Save a reference to this static method, so we can add it
+      // directly to the class.
+      static_functions[x] = func;
+    }
+
+    string name1 = methodNameFromCppName(func, export_class_name, false);
+    string name2 = methodNameFromCppName(func, export_class_name, true);
+    out << "  { \"" << name1 << "\",(PyCFunction ) &" 
+        << func->_name << ", METH_VARARGS| METH_KEYWORDS, (char *)" << func->_name << "_comment},\n";
+    ++x;
+    if (name1 != name2) {
+      out << "  { \"" << name2 << "\",(PyCFunction ) &" 
+          << func->_name << ", METH_VARARGS| METH_KEYWORDS, (char *)" << func->_name << "_comment},\n";
+      ++x;
+    }
+
     SlottedFunctionDef slotted_def;
     if (!get_slotted_function_def(obj, func, slotted_def)) {
-      out << "  { \"" << methodNameFromCppName(func,export_calss_name) << "\",(PyCFunction ) &" 
-          << func->_name << ", METH_VARARGS| METH_KEYWORDS, (char *)" << func->_name << "_comment},\n";
-      if(!isFunctionWithThis(func)) {
-        static_functions[x] = func;
-      }
         
+    } else if (slotted_def._wrapper_type != WT_none) {
+      wraped_Operator_functions[func] = slotted_def;
+      
     } else {
-      if (slotted_def._wrapper_type != WT_none) {
-        wraped_Operator_functions[func] = slotted_def;
-        
-        out << "  { \"" << methodNameFromCppName(func,export_calss_name) << "\",(PyCFunction ) &" 
-            << func->_name << ", METH_VARARGS| METH_KEYWORDS, (char *)" << func->_name << "_comment},\n";
-        if (!isFunctionWithThis(func)) {
-          static_functions[x] = func;
-        }
-        
-      } else {
-        normal_Operator_functions[func] = slotted_def._answer_location;
-        
-        out << "  { \"" << methodNameFromCppName(func,export_calss_name) << "\",(PyCFunction ) &" 
-            << func->_name << ", METH_VARARGS| METH_KEYWORDS, (char *)" << func->_name << "_comment},\n";
-        if (!isFunctionWithThis(func)) {
-          static_functions[x] = func;
-        }
-      }
+      normal_Operator_functions[func] = slotted_def._answer_location;
     }
   }
 
@@ -1272,9 +1239,14 @@ write_module_class(ostream &out,  Object *obj) {
     if (obj->is_static_method((*msi)->_element_name)) {
       flags += "|METH_CLASS";
     }
-    out << "  { \""
-        << methodNameFromCppName((*msi)->_seq_name, export_calss_name)
+    string name1 = methodNameFromCppName((*msi)->_seq_name, export_class_name, false);
+    string name2 = methodNameFromCppName((*msi)->_seq_name, export_class_name, true);
+    out << "  { \"" << name1
         << "\",(PyCFunction) &" << (*msi)->_name << ", " << flags << ", NULL},\n";
+    if (name1 != name2) {
+      out << "  { \"" << name2
+          << "\",(PyCFunction) &" << (*msi)->_name << ", " << flags << ", NULL},\n";
+    }
   }
 
   out << "  { NULL, NULL }\n"
@@ -1329,9 +1301,9 @@ write_module_class(ostream &out,  Object *obj) {
           Function *func = rfi->first;
           out << "//////////////////\n";
           out << "//  A wrapper function to satisfy Python's internal calling conventions. \n";
-          out << "//     " <<ClassName<< " ..." << rfi->second._answer_location <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
+          out << "//     " <<ClassName<< " ..." << rfi->second._answer_location <<" = "<< methodNameFromCppName(func,export_class_name, false) <<"\n";
           out << "//////////////////\n";
-          out << "static PyObject * " <<  func->_name << methodNameFromCppName(func,export_calss_name) << "( PyObject * self)\n";
+          out << "static PyObject * " <<  func->_name << methodNameFromCppName(func,export_class_name, false) << "( PyObject * self)\n";
           out << "{\n";
           out << "    PyObject *args = Py_BuildValue(\"()\");\n";
           out << "    PyObject *result = " << func->_name <<"(self, args, NULL);\n";
@@ -1348,9 +1320,9 @@ write_module_class(ostream &out,  Object *obj) {
           Function *func = rfi->first;
           out << "//////////////////\n";
           out << "//  A wrapper function to satisfy Python's internal calling conventions. \n";
-          out << "//     " <<ClassName<< " ..." << rfi->second._answer_location <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
+          out << "//     " <<ClassName<< " ..." << rfi->second._answer_location <<" = "<< methodNameFromCppName(func,export_class_name, false) <<"\n";
           out << "//////////////////\n";
-          out << "static PyObject *" <<  func->_name << methodNameFromCppName(func,export_calss_name) << "(PyObject *self, PyObject *one)\n";
+          out << "static PyObject *" <<  func->_name << methodNameFromCppName(func,export_class_name, false) << "(PyObject *self, PyObject *one)\n";
           out << "{\n";
           out << "    PyObject *args = Py_BuildValue(\"(O)\", one);\n";
           out << "    PyObject *result = " << func->_name <<"(self, args, NULL);\n";
@@ -1366,9 +1338,9 @@ write_module_class(ostream &out,  Object *obj) {
           Function *func = rfi->first;
           out << "//////////////////\n";
           out << "//  A wrapper function to satisfy Python's internal calling conventions. \n";
-          out << "//     " <<ClassName<< " ..." << rfi->second._answer_location <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
+          out << "//     " <<ClassName<< " ..." << rfi->second._answer_location <<" = "<< methodNameFromCppName(func,export_class_name, false) <<"\n";
           out << "//////////////////\n";
-          out << "static int " <<  func->_name << methodNameFromCppName(func,export_calss_name) << "( PyObject * self, PyObject * one, PyObject * two)\n";
+          out << "static int " <<  func->_name << methodNameFromCppName(func,export_class_name, false) << "( PyObject * self, PyObject * one, PyObject * two)\n";
           out << "{\n";
           out << "    PyObject *args;\n";
           out << "    if (two == NULL) {\n";
@@ -1395,9 +1367,9 @@ write_module_class(ostream &out,  Object *obj) {
           Function *func = rfi->first;
           out << "//////////////////\n";
           out << "//  A wrapper function to satisfy Python's internal calling conventions. \n";
-          out << "//     " <<ClassName<< " ..." << rfi->second._answer_location <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
+          out << "//     " <<ClassName<< " ..." << rfi->second._answer_location <<" = "<< methodNameFromCppName(func,export_class_name, false) <<"\n";
           out << "//////////////////\n";
-          out << "static PyObject * " <<  func->_name << methodNameFromCppName(func,export_calss_name) << "( PyObject * self, PyObject * one)\n";
+          out << "static PyObject * " <<  func->_name << methodNameFromCppName(func,export_class_name, false) << "( PyObject * self, PyObject * one)\n";
           out << "{\n";
           out << "    PyObject *args = Py_BuildValue(\"(O)\", one);\n";
           out << "    PyObject *result = " << func->_name <<"(self, args, NULL);\n";
@@ -1417,9 +1389,9 @@ write_module_class(ostream &out,  Object *obj) {
           Function *func = rfi->first;
           out << "//////////////////\n";
           out << "//  A wrapper function to satisfy Python's internal calling conventions. \n";
-          out << "//     " <<ClassName<< " ..." << rfi->second._answer_location <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
+          out << "//     " <<ClassName<< " ..." << rfi->second._answer_location <<" = "<< methodNameFromCppName(func,export_class_name, false) <<"\n";
           out << "//////////////////\n";
-          out << "static PyObject * " <<  func->_name << methodNameFromCppName(func,export_calss_name) << "( PyObject * self, Py_ssize_t index)\n";
+          out << "static PyObject * " <<  func->_name << methodNameFromCppName(func,export_class_name, false) << "( PyObject * self, Py_ssize_t index)\n";
           out << "{\n";
           out << "    PyObject *args = Py_BuildValue(\"(i)\", index);\n";
           out << "    PyObject *result = " << func->_name <<"(self, args, NULL);\n";
@@ -1435,9 +1407,9 @@ write_module_class(ostream &out,  Object *obj) {
           Function *func = rfi->first;
           out << "//////////////////\n";
           out << "//  A wrapper function to satisfy Python's internal calling conventions. \n";
-          out << "//     " <<ClassName<< " ..." << rfi->second._answer_location <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
+          out << "//     " <<ClassName<< " ..." << rfi->second._answer_location <<" = "<< methodNameFromCppName(func,export_class_name, false) <<"\n";
           out << "//////////////////\n";
-          out << "static int " <<  func->_name << methodNameFromCppName(func,export_calss_name) << "( PyObject * self, Py_ssize_t index, PyObject *value)\n";
+          out << "static int " <<  func->_name << methodNameFromCppName(func,export_class_name, false) << "( PyObject * self, Py_ssize_t index, PyObject *value)\n";
           out << "{\n";
           out << "    PyObject *args = Py_BuildValue(\"(iO)\", index, value);\n";
           out << "    PyObject *result = " << func->_name <<"(self, args, NULL);\n";
@@ -1457,9 +1429,9 @@ write_module_class(ostream &out,  Object *obj) {
           Function *func = rfi->first;
           out << "//////////////////\n";
           out << "//  A wrapper function to satisfy Python's internal calling conventions. \n";
-          out << "//     " <<ClassName<< " ..." << rfi->second._answer_location <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
+          out << "//     " <<ClassName<< " ..." << rfi->second._answer_location <<" = "<< methodNameFromCppName(func,export_class_name, false) <<"\n";
           out << "//////////////////\n";
-          out << "static Py_ssize_t " <<  func->_name << methodNameFromCppName(func,export_calss_name) << "(PyObject *self)\n";
+          out << "static Py_ssize_t " <<  func->_name << methodNameFromCppName(func,export_class_name, false) << "(PyObject *self)\n";
           out << "{\n";
           out << "    PyObject *args = Py_BuildValue(\"()\");\n";
           out << "    PyObject *result = "<< func->_name <<"(self, args, NULL);\n";
@@ -1480,9 +1452,9 @@ write_module_class(ostream &out,  Object *obj) {
           Function *func = rfi->first;
           out << "//////////////////\n";
           out << "//  A wrapper function to satisfy Python's internal calling conventions. \n";
-          out << "//     " <<ClassName<< " ..." << rfi->second._answer_location <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
+          out << "//     " <<ClassName<< " ..." << rfi->second._answer_location <<" = "<< methodNameFromCppName(func,export_class_name, false) <<"\n";
           out << "//////////////////\n";
-          out << "static int " <<  func->_name << methodNameFromCppName(func,export_calss_name) << "( PyObject * self, PyObject * one, PyObject * two)\n";
+          out << "static int " <<  func->_name << methodNameFromCppName(func,export_class_name, false) << "( PyObject * self, PyObject * one, PyObject * two)\n";
           out << "{\n";
           out << "    PyObject *args = Py_BuildValue(\"(OO)\", one, two);\n";
           out << "    PyObject *result = " << func->_name <<"(self, args, NULL);\n";
@@ -1502,9 +1474,9 @@ write_module_class(ostream &out,  Object *obj) {
           Function *func = rfi->first;
           out << "//////////////////\n";
           out << "//  A wrapper function to satisfy Python's internal calling conventions. \n";
-          out << "//     " <<ClassName<< " ..." << rfi->second._answer_location <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
+          out << "//     " <<ClassName<< " ..." << rfi->second._answer_location <<" = "<< methodNameFromCppName(func,export_class_name, false) <<"\n";
           out << "//////////////////\n";
-          out << "static int " << func->_name << methodNameFromCppName(func,export_calss_name) << "(PyObject *self)\n";
+          out << "static int " << func->_name << methodNameFromCppName(func,export_class_name, false) << "(PyObject *self)\n";
           out << "{\n";
           out << "    PyObject *args = Py_BuildValue(\"()\");\n";
           out << "    PyObject *result = " << func->_name <<"(self, args, NULL);\n";
@@ -1582,12 +1554,12 @@ write_module_class(ostream &out,  Object *obj) {
         out << "     ostringstream os;\n";
         if (need_repr == 3) {
           out << "     _ext_" << ClassName << "_python_repr(local_this, os, \""
-              << classNameFromCppName(ClassName) << "\");\n";
+              << classNameFromCppName(ClassName, false) << "\");\n";
         } else if (need_repr == 2) {
           out << "     local_this->output(os);\n";
         } else {
           out << "     local_this->python_repr(os, \""
-              << classNameFromCppName(ClassName) << "\");\n";
+              << classNameFromCppName(ClassName, false) << "\");\n";
         }
         out << "     std::string ss = os.str();\n";
         out << "     return PyString_FromStringAndSize(ss.data(),ss.length());\n";
@@ -1668,15 +1640,13 @@ write_module_class(ostream &out,  Object *obj) {
   // get dictionary
   out << "        Dtool_" << ClassName << ".As_PyTypeObject().tp_dict = PyDict_New();\n";
   out << "        PyDict_SetItemString(Dtool_"<<ClassName <<".As_PyTypeObject().tp_dict,\"DtoolClassDict\",Dtool_"<<ClassName <<".As_PyTypeObject().tp_dict);\n";
-        
-
 
   // the standard call functions
   std::map<Function *, std::string >::iterator ofi;
   for(ofi = normal_Operator_functions.begin(); ofi != normal_Operator_functions.end(); ofi++)
     {
       Function *func = ofi->first;
-      out << "        // " << ofi->second <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
+      out << "        // " << ofi->second <<" = "<< methodNameFromCppName(func,export_class_name, false) <<"\n";
       out << "        Dtool_" << ClassName <<".As_PyTypeObject()." << ofi->second <<" = &" << func->_name <<";\n";
     }
 
@@ -1687,8 +1657,8 @@ write_module_class(ostream &out,  Object *obj) {
     for(rfi = wraped_Operator_functions.begin(); rfi != wraped_Operator_functions.end(); rfi++)
       {
         Function *func = rfi->first;
-        out << "        // " << rfi->second._answer_location <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
-        out << "        Dtool_" << ClassName <<".As_PyTypeObject()." << rfi->second._answer_location <<" = &" << func->_name << methodNameFromCppName(func,export_calss_name)<<";\n";
+        out << "        // " << rfi->second._answer_location <<" = "<< methodNameFromCppName(func,export_class_name, false) <<"\n";
+        out << "        Dtool_" << ClassName <<".As_PyTypeObject()." << rfi->second._answer_location <<" = &" << func->_name << methodNameFromCppName(func,export_class_name, false)<<";\n";
       }
   }
 
@@ -1734,7 +1704,12 @@ write_module_class(ostream &out,  Object *obj) {
           std::string ClassName2 = make_safe_name(nested_obj->_itype.get_name());
           out << "        // Nested Object   "<< ClassName1 << ";\n";
           out << "        Dtool_" << ClassName1 << "._Dtool_ClassInit(NULL);\n";
-          out << "        PyDict_SetItemString(Dtool_" << ClassName << ".As_PyTypeObject().tp_dict,\"" << classNameFromCppName(ClassName2) <<"\",(PyObject *)&Dtool_" << ClassName1 << ".As_PyTypeObject());\n";
+          string name1 = classNameFromCppName(ClassName2, false);
+          string name2 = classNameFromCppName(ClassName2, true);
+          out << "        PyDict_SetItemString(Dtool_" << ClassName << ".As_PyTypeObject().tp_dict,\"" << name1 <<"\",(PyObject *)&Dtool_" << ClassName1 << ".As_PyTypeObject());\n";
+          if (name1 != name2) {
+            out << "        PyDict_SetItemString(Dtool_" << ClassName << ".As_PyTypeObject().tp_dict,\"" << name2 <<"\",(PyObject *)&Dtool_" << ClassName1 << ".As_PyTypeObject());\n";
+          }
         }  
       else
         {
@@ -1742,9 +1717,15 @@ write_module_class(ostream &out,  Object *obj) {
             {
               out << "        // Enum  "<< nested_obj->_itype.get_scoped_name() << ";\n";
               int enum_count = nested_obj->_itype.number_of_enum_values();
-              for(int xx = 0; xx< enum_count; xx++)
-                out << "        PyDict_SetItemString(Dtool_" << ClassName << ".As_PyTypeObject().tp_dict,\"" << classNameFromCppName(nested_obj->_itype.get_enum_value_name(xx)) <<"\",PyInt_FromLong("<<  nested_obj->_itype.get_enum_value(xx) << "));\n";
-
+              for(int xx = 0; xx< enum_count; xx++) {
+                string name1 = classNameFromCppName(nested_obj->_itype.get_enum_value_name(xx), false);
+                string name2 = classNameFromCppName(nested_obj->_itype.get_enum_value_name(xx), true);
+                int enum_value = nested_obj->_itype.get_enum_value(xx);
+                out << "        PyDict_SetItemString(Dtool_" << ClassName << ".As_PyTypeObject().tp_dict,\"" << name1 <<"\",PyInt_FromLong("<< enum_value << "));\n";
+                if (name1 != name2) {
+                  out << "        PyDict_SetItemString(Dtool_" << ClassName << ".As_PyTypeObject().tp_dict,\"" << name2 <<"\",PyInt_FromLong("<< enum_value << "));\n";
+                }
+              }
             }
         }
     }
@@ -1757,19 +1738,29 @@ write_module_class(ostream &out,  Object *obj) {
   out << "        }\n";
 
   out << "        Py_INCREF(&Dtool_"<< ClassName << ".As_PyTypeObject());\n";
-  out << "        PyDict_SetItemString(Dtool_"<<ClassName <<".As_PyTypeObject().tp_dict,\""<<export_calss_name<< "\",&Dtool_"<<ClassName <<".As_PyObject());\n";
+
+  // Why make the class a member of itself?
+  //out << "        PyDict_SetItemString(Dtool_"<<ClassName <<".As_PyTypeObject().tp_dict,\""<<export_class_name<< "\",&Dtool_"<<ClassName <<".As_PyObject());\n";
 
   // static function into dictionary with bogus self..
   //
   std::map<int , Function * >::iterator sfi;
   for(sfi= static_functions.begin(); sfi != static_functions.end(); sfi++)
     {
-      out << "        //  Static Method " << methodNameFromCppName(sfi->second,export_calss_name) << "\n";
-      out << "        PyDict_SetItemString(Dtool_" << ClassName << ".As_PyTypeObject().tp_dict,\"" ;
-      out << methodNameFromCppName(sfi->second,export_calss_name) ;
-      out << "\",PyCFunction_New(&Dtool_Methods_"<< ClassName <<"[" << sfi->first << "],&Dtool_"<< ClassName<< ".As_PyObject()));\n";
+      out << "        //  Static Method " << methodNameFromCppName(sfi->second,export_class_name, false) << "\n";
+      string name1 = methodNameFromCppName(sfi->second,export_class_name, false);
+      string name2 = methodNameFromCppName(sfi->second,export_class_name, true);
+      out << "        PyDict_SetItemString(Dtool_" << ClassName
+          << ".As_PyTypeObject().tp_dict,\"" << name1
+          << "\",PyCFunction_New(&Dtool_Methods_"<< ClassName <<"[" << sfi->first
+          << "],&Dtool_"<< ClassName<< ".As_PyObject()));\n";
+      if (name1 != name2) {
+        out << "        PyDict_SetItemString(Dtool_" << ClassName
+            << ".As_PyTypeObject().tp_dict,\"" << name2
+            << "\",PyCFunction_New(&Dtool_Methods_"<< ClassName <<"[" << sfi->first
+            << "],&Dtool_"<< ClassName<< ".As_PyObject()));\n";
+      }
     }
-
 
   bool is_runtime_typed = IsPandaTypedObject(obj->_itype._cpptype->as_struct_type());
   if (HasAGetClassTypeFunction(obj->_itype)) {
@@ -1786,11 +1777,24 @@ write_module_class(ostream &out,  Object *obj) {
   out << "    if(module != NULL)\n";
   out << "    {\n";
   out << "        Py_INCREF(&Dtool_"<< ClassName << ".As_PyTypeObject());\n";
-  out << "        PyModule_AddObject(module, \""<<export_calss_name<<"\",(PyObject *)&Dtool_"<< ClassName << ".As_PyTypeObject());\n";
+  out << "        PyModule_AddObject(module, \""<<export_class_name<<"\",(PyObject *)&Dtool_"<< ClassName << ".As_PyTypeObject());\n";
+  if (export_class_name != export_class_name2) {
+    out << "        PyModule_AddObject(module, \""<<export_class_name2<<"\",(PyObject *)&Dtool_"<< ClassName << ".As_PyTypeObject());\n";
+  }
+
+  // Also write out the explicit alternate names.
+  int num_alt_names = obj->_itype.get_num_alt_names();
+  for (int i = 0; i < num_alt_names; ++i) {
+    string alt_name = make_safe_name(obj->_itype.get_alt_name(i));
+    if (export_class_name != alt_name) {
+      out << "        PyModule_AddObject(module, \"" << alt_name << "\",(PyObject *)&Dtool_"<< ClassName << ".As_PyTypeObject());\n";
+    }
+  }
+
   out << "    }\n";
   out << "}\n";
-
 }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: InterfaceMakerPythonNative::synthesize_this_parameter
 //       Access: Public, Virtual
@@ -1973,7 +1977,7 @@ write_function_for_name(ostream &out1, InterfaceMaker::Object *obj, InterfaceMak
     indent(out,8)<< "{\n";
     indent(out,12)
       << "PyErr_Format(PyExc_TypeError, \""
-      << methodNameFromCppName(func, "")
+      << methodNameFromCppName(func, "", false)
       << "() takes ";
 
     // We add one to the parameter count for "self", following the
@@ -2181,7 +2185,7 @@ write_function_forset(ostream &out, InterfaceMaker::Object *obj,
     if (isRemapLegal(*remap)) {
       int pn = 0;
       if (remap->_has_this) {
-        // Skip the "this" parameter.  It's never coerceable.
+        // Skip the "this" parameter.  It's never coercible.
         ++pn;
       }
       while (pn < (int)remap->_parameters.size()) {
@@ -2277,8 +2281,8 @@ write_function_forset(ostream &out, InterfaceMaker::Object *obj,
           string class_name = remap->_cpptype->get_simple_name();
           indent(out, indent_level + 2)
             << "                \"Cannot call "
-            << classNameFromCppName(class_name)
-            << "." << methodNameFromCppName(func, class_name)
+            << classNameFromCppName(class_name, false)
+            << "." << methodNameFromCppName(func, class_name, false)
             << "() on a const object.\");\n";
           indent(out, indent_level + 2)
             << "return (PyObject *) NULL;\n";
@@ -2386,7 +2390,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
   // simultaneously building the ParseTuple() function call and also
   // the parameter expression list for call_function().
 
-  expected_params += methodNameFromCppName(func1, "");
+  expected_params += methodNameFromCppName(func1, "", false);
   expected_params += "(";
 
   int pn;
@@ -2538,7 +2542,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
       } else {
         expected_params += "non-const ";
       }
-      expected_params += classNameFromCppName(obj_type->get_simple_name());
+      expected_params += classNameFromCppName(obj_type->get_simple_name(), false);
 
       if (!remap->_has_this || pn != 0) {
         indent(out, indent_level) 
@@ -2572,14 +2576,14 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
         string method_prefix;
         if (remap->_cpptype) {
           class_name = remap->_cpptype->get_simple_name();
-          method_prefix = classNameFromCppName(class_name) + string(".");
+          method_prefix = classNameFromCppName(class_name, false) + string(".");
         }
 
         ostringstream str;
         str << "DTOOL_Call_GetPointerThisClass(" << param_name 
             << ", &Dtool_" << make_safe_name(p_itype.get_scoped_name()) 
             << ", " << pn << ", \"" 
-            << method_prefix << methodNameFromCppName(func1, class_name)
+            << method_prefix << methodNameFromCppName(func1, class_name, false)
             << "\", " << const_ok;
         if (coercion_possible && !is_copy_constructor) {
           // We never attempt to coerce a copy constructor parameter.
@@ -2626,7 +2630,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
   // parameters, since we won't be getting any anyway.
   if (!func1->_ifunc.is_unary_op()) {
     std::string format_specifiers1 = format_specifiers + ":" + 
-      methodNameFromCppName(func1, "");
+      methodNameFromCppName(func1, "", false);
     indent(out,indent_level)
       << "static char * key_word_list[] = {" << keyword_list << "NULL};\n";
 
@@ -3048,8 +3052,8 @@ write_make_seq(ostream &out, Object *obj, const std::string &ClassName,
   out << " *******************************************************************/\n";
 
   out << "static PyObject *" << make_seq->_name + "(PyObject *self, PyObject *) {\n";
-  string num_name = methodNameFromCppName(make_seq->_num_name, ClassName);
-  string element_name = methodNameFromCppName(make_seq->_element_name, ClassName);
+  string num_name = methodNameFromCppName(make_seq->_num_name, ClassName, false);
+  string element_name = methodNameFromCppName(make_seq->_element_name, ClassName, false);
 
   out << "  return make_list_for_item(self, \"" << num_name 
       << "\", \"" << element_name << "\");\n";
@@ -3203,7 +3207,6 @@ void InterfaceMakerPythonNative::generate_wrappers()
 
   int num_global_elements = idb->get_num_global_elements();
   for (int gi = 0; gi < num_global_elements; ++gi) {
-    printf(" Global Type = %d",gi);
     TypeIndex type_index = idb->get_global_element(gi);
     record_object(type_index);
 
@@ -3233,8 +3236,6 @@ void InterfaceMakerPythonNative::generate_wrappers()
   int num_elements = idb->get_num_global_elements();
   for (int ei = 0; ei < num_elements; ei++) 
   {
-    printf(" Element %d\n",ei);
-
     ElementIndex element_index = idb->get_global_element(ei);
     const InterrogateElement &ielement = idb->get_element(element_index);
     if (ielement.has_getter()) 

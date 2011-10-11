@@ -36,7 +36,7 @@ XFileNormal() {
 void XFileNormal::
 set_from_egg(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
   if (egg_vertex->has_normal() || egg_prim->has_normal()) {
-    Normald norm;
+    LNormald norm;
     if (egg_vertex->has_normal()) {
       norm = egg_vertex->get_normal();
     } else {

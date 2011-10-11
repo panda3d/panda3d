@@ -98,7 +98,7 @@ public:
   TextureSwaps _textureSwaps;
 
 private:
-  void compute_size_from_uvs(const TexCoordd &min_uv, const TexCoordd &max_uv);
+  void compute_size_from_uvs(const LTexCoordd &min_uv, const LTexCoordd &max_uv);
 
   TextureImage *_texture;
   PaletteGroup *_group;

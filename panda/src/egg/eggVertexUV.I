@@ -70,10 +70,10 @@ has_w() const {
 //  Description: Returns the texture coordinate pair, if
 //               get_num_dimensions() is 2.
 ////////////////////////////////////////////////////////////////////
-INLINE TexCoordd EggVertexUV::
+INLINE LTexCoordd EggVertexUV::
 get_uv() const {
-  nassertr(!has_w(), TexCoordd::zero());
-  return TexCoordd(_uvw[0], _uvw[1]);
+  nassertr(!has_w(), LTexCoordd::zero());
+  return LTexCoordd(_uvw[0], _uvw[1]);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -84,7 +84,7 @@ get_uv() const {
 //               call if get_num_dimensions() is 2 (but the last
 //               dimension will be zero).
 ////////////////////////////////////////////////////////////////////
-INLINE const TexCoord3d &EggVertexUV::
+INLINE const LTexCoord3d &EggVertexUV::
 get_uvw() const {
   return _uvw;
 }
@@ -97,7 +97,7 @@ get_uvw() const {
 //               the usual case.
 ////////////////////////////////////////////////////////////////////
 INLINE void EggVertexUV::
-set_uv(const TexCoordd &uv) {
+set_uv(const LTexCoordd &uv) {
   _uvw.set(uv[0], uv[1], 0.0);
   _flags &= ~F_has_w;
 }
@@ -109,7 +109,7 @@ set_uv(const TexCoordd &uv) {
 //               texture coordinate a 3-d texture coordinate.
 ////////////////////////////////////////////////////////////////////
 INLINE void EggVertexUV::
-set_uvw(const TexCoord3d &uvw) {
+set_uvw(const LTexCoord3d &uvw) {
   _uvw = uvw;
   _flags |= F_has_w;
 }
@@ -129,7 +129,7 @@ has_tangent() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const Normald &EggVertexUV::
+INLINE const LNormald &EggVertexUV::
 get_tangent() const {
   nassertr(has_tangent(), _tangent);
   return _tangent;
@@ -141,7 +141,7 @@ get_tangent() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggVertexUV::
-set_tangent(const Normald &tangent) {
+set_tangent(const LNormald &tangent) {
   _tangent = tangent;
   _flags |= F_has_tangent;
 }
@@ -171,7 +171,7 @@ has_binormal() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const Normald &EggVertexUV::
+INLINE const LNormald &EggVertexUV::
 get_binormal() const {
   nassertr(has_binormal(), _binormal);
   return _binormal;
@@ -183,7 +183,7 @@ get_binormal() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggVertexUV::
-set_binormal(const Normald &binormal) {
+set_binormal(const LNormald &binormal) {
   _binormal = binormal;
   _flags |= F_has_binormal;
 }

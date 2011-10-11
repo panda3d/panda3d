@@ -402,8 +402,8 @@ hue2rgb(double m1, double m2, double h) {
   return m1;
 }
 
-static RGBColord
-hls2rgb(const RGBColord &hls) {
+static LRGBColord
+hls2rgb(const LRGBColord &hls) {
   double h = hls[0];
   double l = max(min(hls[1], 1.0), 0.0);
   double s = max(min(hls[2], 1.0), 0.0);
@@ -416,14 +416,14 @@ hls2rgb(const RGBColord &hls) {
   }
   double m1 = l * 2 - m2;
 
-  RGBColord rgb(hue2rgb(m1, m2, h + 1.0/3.0),
+  LRGBColord rgb(hue2rgb(m1, m2, h + 1.0/3.0),
                 hue2rgb(m1, m2, h),
                 hue2rgb(m1, m2, h - 1.0/3.0));
   return rgb;
 }
 
-static RGBColord
-rgb2hls(const RGBColord &rgb) {
+static LRGBColord
+rgb2hls(const LRGBColord &rgb) {
   double r = rgb[0];
   double g = rgb[1];
   double b = rgb[2];
@@ -438,7 +438,7 @@ rgb2hls(const RGBColord &rgb) {
   l = 0.5 * msum;
   if (maxval == minval) {
     // Grayscale.
-    return RGBColord(0.0, l, 0.0);
+    return LRGBColord(0.0, l, 0.0);
   }
 
   rnorm = (maxval - r) / mdiff;
@@ -463,7 +463,7 @@ rgb2hls(const RGBColord &rgb) {
     h -= 1.0;
   }
 
-  return RGBColord(h, l, s);
+  return LRGBColord(h, l, s);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -476,7 +476,7 @@ process_image(PNMImage &image) {
   if (_hls) {
     for (int yi = 0; yi < image.get_y_size(); ++yi) {
       for (int xi = 0; xi < image.get_x_size(); ++xi) {
-        RGBColord rgb = image.get_xel(xi, yi);
+        LRGBColord rgb = image.get_xel(xi, yi);
         rgb = hls2rgb(_mat.xform_point(rgb2hls(rgb)));
         image.set_xel(xi, yi, rgb);
       }
@@ -484,7 +484,7 @@ process_image(PNMImage &image) {
   } else {  
     for (int yi = 0; yi < image.get_y_size(); ++yi) {
       for (int xi = 0; xi < image.get_x_size(); ++xi) {
-        RGBColord rgb = image.get_xel(xi, yi);
+        LRGBColord rgb = image.get_xel(xi, yi);
         rgb = _mat.xform_point(rgb);
         image.set_xel(xi, yi, rgb);
       }
