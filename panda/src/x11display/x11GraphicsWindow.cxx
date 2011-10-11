@@ -921,7 +921,6 @@ open_window() {
     }
   }
 
-  cerr << "cursor_filename = " << _properties.get_cursor_filename() << "\n";
   if (_properties.get_cursor_hidden()) {
     XDefineCursor(_display, _xwindow, x11_pipe->get_hidden_cursor());
 
