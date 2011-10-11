@@ -406,7 +406,7 @@ void DAEToEggConverter::process_mesh(PT(EggGroup) parent, const FCDGeometryMesh*
     // Loop through the indices and add the vertices.
     for (size_t ix = 0; ix < pinput->GetIndexCount(); ++ix) {
       PT_EggVertex vertex = mesh_pool->make_new_vertex();
-      const PN_stdfloat* data = &vsource->GetData()[indices[ix]*3];
+      const float* data = &vsource->GetData()[indices[ix]*3];
       vertex->set_pos(LPoint3d(data[0], data[1], data[2]));
       // Process the normal
       if (nsource != NULL && ninput != NULL) {
@@ -529,7 +529,7 @@ void DAEToEggConverter::process_spline(PT(EggGroup) parent, const FCDSpline* spl
   //TODO: what value is this?
   nurbs_curve->setup(0, ((const FCDNURBSSpline*) spline)->GetKnotCount());
   for (size_t kn = 0; kn < ((const FCDNURBSSpline*) spline)->GetKnotCount(); ++kn) {
-    const PN_stdfloat* knot = ((const FCDNURBSSpline*) spline)->GetKnot(kn);
+    const float* knot = ((const FCDNURBSSpline*) spline)->GetKnot(kn);
     assert(knot != NULL);
     nurbs_curve->set_knot(kn, *knot);
   }
