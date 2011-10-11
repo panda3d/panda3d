@@ -15,6 +15,7 @@
 
 #include "cppType.h"
 #include "cppTypedef.h"
+#include <algorithm>
 
 CPPType::Types CPPType::_types;
 CPPType::PreferredNames CPPType::_preferred_names;
