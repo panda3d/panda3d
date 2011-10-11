@@ -4083,7 +4083,7 @@ bind_clip_plane(const NodePath &plane, int plane_id) {
   LMatrix4 rel_mat = plane_mat * LMatrix4::convert_mat(CS_yup_left, CS_default);
   const PlaneNode *plane_node;
   DCAST_INTO_V(plane_node, plane.node());
-  LPlane world_plane = plane_node->get_plane() * rel_mat;
+  LPlanef world_plane = LCAST(float, plane_node->get_plane() * rel_mat);
 
   HRESULT hr = _d3d_device->SetClipPlane(plane_id, world_plane.get_data());
   if (FAILED(hr)) {
