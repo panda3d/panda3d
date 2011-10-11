@@ -138,17 +138,29 @@ private:
       return "Packer";
     }
 
-    INLINE float maybe_scale_color(unsigned int value);
-    INLINE void maybe_scale_color(unsigned int a, unsigned int b);
-    INLINE void maybe_scale_color(unsigned int a, unsigned int b,
-                                  unsigned int c);
-    INLINE void maybe_scale_color(unsigned int a, unsigned int b,
-                                  unsigned int c, unsigned int d);
+    INLINE float maybe_scale_color_f(unsigned int value);
+    INLINE void maybe_scale_color_f(unsigned int a, unsigned int b);
+    INLINE void maybe_scale_color_f(unsigned int a, unsigned int b,
+                                    unsigned int c);
+    INLINE void maybe_scale_color_f(unsigned int a, unsigned int b,
+                                    unsigned int c, unsigned int d);
 
-    INLINE unsigned int maybe_unscale_color(float data);
-    INLINE void maybe_unscale_color(const LVecBase2f &data);
-    INLINE void maybe_unscale_color(const LVecBase3f &data);
-    INLINE void maybe_unscale_color(const LVecBase4f &data);
+    INLINE unsigned int maybe_unscale_color_f(float data);
+    INLINE void maybe_unscale_color_f(const LVecBase2f &data);
+    INLINE void maybe_unscale_color_f(const LVecBase3f &data);
+    INLINE void maybe_unscale_color_f(const LVecBase4f &data);
+
+    INLINE double maybe_scale_color_d(unsigned int value);
+    INLINE void maybe_scale_color_d(unsigned int a, unsigned int b);
+    INLINE void maybe_scale_color_d(unsigned int a, unsigned int b,
+                                    unsigned int c);
+    INLINE void maybe_scale_color_d(unsigned int a, unsigned int b,
+                                    unsigned int c, unsigned int d);
+
+    INLINE unsigned int maybe_unscale_color_d(double data);
+    INLINE void maybe_unscale_color_d(const LVecBase2d &data);
+    INLINE void maybe_unscale_color_d(const LVecBase3d &data);
+    INLINE void maybe_unscale_color_d(const LVecBase4d &data);
 
     const GeomVertexColumn *_column;
     LVecBase2f _v2;

@@ -353,7 +353,7 @@ float GeomVertexColumn::Packer::
 get_data1f(const unsigned char *pointer) {
   switch (_column->get_numeric_type()) {
   case NT_uint8:
-    return maybe_scale_color(*pointer);
+    return maybe_scale_color_f(*pointer);
 
   case NT_uint16:
     return *(const PN_uint16 *)pointer;
@@ -364,13 +364,13 @@ get_data1f(const unsigned char *pointer) {
   case NT_packed_dcba:
     {
       PN_uint32 dword = *(const PN_uint32 *)pointer;
-      return maybe_scale_color(GeomVertexData::unpack_abcd_d(dword));
+      return maybe_scale_color_f(GeomVertexData::unpack_abcd_d(dword));
     }
 
   case NT_packed_dabc:
     {
       PN_uint32 dword = *(const PN_uint32 *)pointer;
-      return maybe_scale_color(GeomVertexData::unpack_abcd_b(dword));
+      return maybe_scale_color_f(GeomVertexData::unpack_abcd_b(dword));
     }
 
   case NT_float32:
@@ -400,7 +400,7 @@ get_data2f(const unsigned char *pointer) {
   } else {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
-      maybe_scale_color(pointer[0], pointer[1]);
+      maybe_scale_color_f(pointer[0], pointer[1]);
       return _v2;
       
     case NT_uint16:
@@ -420,16 +420,16 @@ get_data2f(const unsigned char *pointer) {
     case NT_packed_dcba:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
-        maybe_scale_color(GeomVertexData::unpack_abcd_d(dword),
-                          GeomVertexData::unpack_abcd_c(dword));
+        maybe_scale_color_f(GeomVertexData::unpack_abcd_d(dword),
+                            GeomVertexData::unpack_abcd_c(dword));
       }
       return _v2;
       
     case NT_packed_dabc:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
-        maybe_scale_color(GeomVertexData::unpack_abcd_b(dword),
-                          GeomVertexData::unpack_abcd_c(dword));
+        maybe_scale_color_f(GeomVertexData::unpack_abcd_b(dword),
+                            GeomVertexData::unpack_abcd_c(dword));
       }
       return _v2;
       
@@ -477,7 +477,7 @@ get_data3f(const unsigned char *pointer) {
   default:
     switch (_column->get_numeric_type()) {
     case NT_uint8:
-      maybe_scale_color(pointer[0], pointer[1], pointer[2]);
+      maybe_scale_color_f(pointer[0], pointer[1], pointer[2]);
       return _v3;
       
     case NT_uint16:
@@ -497,18 +497,18 @@ get_data3f(const unsigned char *pointer) {
     case NT_packed_dcba:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
-        maybe_scale_color(GeomVertexData::unpack_abcd_d(dword),
-                          GeomVertexData::unpack_abcd_c(dword),
-                          GeomVertexData::unpack_abcd_b(dword));
+        maybe_scale_color_f(GeomVertexData::unpack_abcd_d(dword),
+                            GeomVertexData::unpack_abcd_c(dword),
+                            GeomVertexData::unpack_abcd_b(dword));
       }
       return _v3;
       
     case NT_packed_dabc:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
-        maybe_scale_color(GeomVertexData::unpack_abcd_b(dword),
-                          GeomVertexData::unpack_abcd_c(dword),
-                          GeomVertexData::unpack_abcd_d(dword));
+        maybe_scale_color_f(GeomVertexData::unpack_abcd_b(dword),
+                            GeomVertexData::unpack_abcd_c(dword),
+                            GeomVertexData::unpack_abcd_d(dword));
       }
       return _v3;
       
@@ -563,7 +563,7 @@ get_data4f(const unsigned char *pointer) {
   default:
     switch (_column->get_numeric_type()) {
     case NT_uint8:
-      maybe_scale_color(pointer[0], pointer[1], pointer[2], pointer[3]);
+      maybe_scale_color_f(pointer[0], pointer[1], pointer[2], pointer[3]);
       return _v4;
       
     case NT_uint16:
@@ -583,20 +583,20 @@ get_data4f(const unsigned char *pointer) {
     case NT_packed_dcba:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
-        maybe_scale_color(GeomVertexData::unpack_abcd_d(dword),
-                          GeomVertexData::unpack_abcd_c(dword),
-                          GeomVertexData::unpack_abcd_b(dword),
-                          GeomVertexData::unpack_abcd_a(dword));
+        maybe_scale_color_f(GeomVertexData::unpack_abcd_d(dword),
+                            GeomVertexData::unpack_abcd_c(dword),
+                            GeomVertexData::unpack_abcd_b(dword),
+                            GeomVertexData::unpack_abcd_a(dword));
       }
       return _v4;
       
     case NT_packed_dabc:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
-        maybe_scale_color(GeomVertexData::unpack_abcd_b(dword),
-                          GeomVertexData::unpack_abcd_c(dword),
-                          GeomVertexData::unpack_abcd_d(dword),
-                          GeomVertexData::unpack_abcd_a(dword));
+        maybe_scale_color_f(GeomVertexData::unpack_abcd_b(dword),
+                            GeomVertexData::unpack_abcd_c(dword),
+                            GeomVertexData::unpack_abcd_d(dword),
+                            GeomVertexData::unpack_abcd_a(dword));
       }
       return _v4;
       
@@ -631,7 +631,7 @@ double GeomVertexColumn::Packer::
 get_data1d(const unsigned char *pointer) {
   switch (_column->get_numeric_type()) {
   case NT_uint8:
-    return maybe_scale_color(*pointer);
+    return maybe_scale_color_d(*pointer);
 
   case NT_uint16:
     return *(const PN_uint16 *)pointer;
@@ -642,13 +642,13 @@ get_data1d(const unsigned char *pointer) {
   case NT_packed_dcba:
     {
       PN_uint32 dword = *(const PN_uint32 *)pointer;
-      return maybe_scale_color(GeomVertexData::unpack_abcd_d(dword));
+      return maybe_scale_color_d(GeomVertexData::unpack_abcd_d(dword));
     }
 
   case NT_packed_dabc:
     {
       PN_uint32 dword = *(const PN_uint32 *)pointer;
-      return maybe_scale_color(GeomVertexData::unpack_abcd_b(dword));
+      return maybe_scale_color_d(GeomVertexData::unpack_abcd_b(dword));
     }
 
   case NT_float32:
@@ -678,7 +678,7 @@ get_data2d(const unsigned char *pointer) {
   } else {
     switch (_column->get_numeric_type()) {
     case NT_uint8:
-      maybe_scale_color(pointer[0], pointer[1]);
+      maybe_scale_color_d(pointer[0], pointer[1]);
       return _v2d;
       
     case NT_uint16:
@@ -698,16 +698,16 @@ get_data2d(const unsigned char *pointer) {
     case NT_packed_dcba:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
-        maybe_scale_color(GeomVertexData::unpack_abcd_d(dword),
-                          GeomVertexData::unpack_abcd_c(dword));
+        maybe_scale_color_d(GeomVertexData::unpack_abcd_d(dword),
+                            GeomVertexData::unpack_abcd_c(dword));
       }
       return _v2d;
       
     case NT_packed_dabc:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
-        maybe_scale_color(GeomVertexData::unpack_abcd_b(dword),
-                          GeomVertexData::unpack_abcd_c(dword));
+        maybe_scale_color_d(GeomVertexData::unpack_abcd_b(dword),
+                            GeomVertexData::unpack_abcd_c(dword));
       }
       return _v2d;
       
@@ -755,7 +755,7 @@ get_data3d(const unsigned char *pointer) {
   default:
     switch (_column->get_numeric_type()) {
     case NT_uint8:
-      maybe_scale_color(pointer[0], pointer[1], pointer[2]);
+      maybe_scale_color_d(pointer[0], pointer[1], pointer[2]);
       return _v3d;
       
     case NT_uint16:
@@ -775,18 +775,18 @@ get_data3d(const unsigned char *pointer) {
     case NT_packed_dcba:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
-        maybe_scale_color(GeomVertexData::unpack_abcd_d(dword),
-                          GeomVertexData::unpack_abcd_c(dword),
-                          GeomVertexData::unpack_abcd_b(dword));
+        maybe_scale_color_d(GeomVertexData::unpack_abcd_d(dword),
+                            GeomVertexData::unpack_abcd_c(dword),
+                            GeomVertexData::unpack_abcd_b(dword));
       }
       return _v3d;
       
     case NT_packed_dabc:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
-        maybe_scale_color(GeomVertexData::unpack_abcd_b(dword),
-                          GeomVertexData::unpack_abcd_c(dword),
-                          GeomVertexData::unpack_abcd_d(dword));
+        maybe_scale_color_d(GeomVertexData::unpack_abcd_b(dword),
+                            GeomVertexData::unpack_abcd_c(dword),
+                            GeomVertexData::unpack_abcd_d(dword));
       }
       return _v3d;
       
@@ -841,7 +841,7 @@ get_data4d(const unsigned char *pointer) {
   default:
     switch (_column->get_numeric_type()) {
     case NT_uint8:
-      maybe_scale_color(pointer[0], pointer[1], pointer[2], pointer[3]);
+      maybe_scale_color_d(pointer[0], pointer[1], pointer[2], pointer[3]);
       return _v4d;
       
     case NT_uint16:
@@ -861,20 +861,20 @@ get_data4d(const unsigned char *pointer) {
     case NT_packed_dcba:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
-        maybe_scale_color(GeomVertexData::unpack_abcd_d(dword),
-                          GeomVertexData::unpack_abcd_c(dword),
-                          GeomVertexData::unpack_abcd_b(dword),
-                          GeomVertexData::unpack_abcd_a(dword));
+        maybe_scale_color_d(GeomVertexData::unpack_abcd_d(dword),
+                            GeomVertexData::unpack_abcd_c(dword),
+                            GeomVertexData::unpack_abcd_b(dword),
+                            GeomVertexData::unpack_abcd_a(dword));
       }
       return _v4d;
       
     case NT_packed_dabc:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
-        maybe_scale_color(GeomVertexData::unpack_abcd_b(dword),
-                          GeomVertexData::unpack_abcd_c(dword),
-                          GeomVertexData::unpack_abcd_d(dword),
-                          GeomVertexData::unpack_abcd_a(dword));
+        maybe_scale_color_d(GeomVertexData::unpack_abcd_b(dword),
+                            GeomVertexData::unpack_abcd_c(dword),
+                            GeomVertexData::unpack_abcd_d(dword),
+                            GeomVertexData::unpack_abcd_a(dword));
       }
       return _v4d;
       
@@ -1234,7 +1234,7 @@ set_data1f(unsigned char *pointer, float data) {
   case 1:
     switch (_column->get_numeric_type()) {
     case NT_uint8:
-      *pointer = maybe_unscale_color(data);
+      *pointer = maybe_unscale_color_f(data);
       break;
       
     case NT_uint16:
@@ -1291,7 +1291,7 @@ set_data2f(unsigned char *pointer, const LVecBase2f &data) {
   case 2:
     switch (_column->get_numeric_type()) {
     case NT_uint8:
-      maybe_unscale_color(data);
+      maybe_unscale_color_f(data);
       pointer[0] = _a;
       pointer[1] = _b;
       break;
@@ -1367,7 +1367,7 @@ set_data3f(unsigned char *pointer, const LVecBase3f &data) {
   case 3:
     switch (_column->get_numeric_type()) {
     case NT_uint8:
-      maybe_unscale_color(data);
+      maybe_unscale_color_f(data);
       pointer[0] = _a;
       pointer[1] = _b;
       pointer[2] = _c;
@@ -1448,7 +1448,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
   default:
     switch (_column->get_numeric_type()) {
     case NT_uint8:
-      maybe_unscale_color(data);
+      maybe_unscale_color_f(data);
       pointer[0] = _a;
       pointer[1] = _b;
       pointer[2] = _c;
@@ -1476,12 +1476,12 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
       break;
       
     case NT_packed_dcba:
-      maybe_unscale_color(data);
+      maybe_unscale_color_f(data);
       *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(_d, _c, _b, _a);
       break;
       
     case NT_packed_dabc:
-      maybe_unscale_color(data);
+      maybe_unscale_color_f(data);
       *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(_d, _a, _b, _c);
       break;
       
@@ -1523,7 +1523,7 @@ set_data1d(unsigned char *pointer, double data) {
   case 1:
     switch (_column->get_numeric_type()) {
     case NT_uint8:
-      *pointer = maybe_unscale_color(data);
+      *pointer = maybe_unscale_color_d(data);
       break;
       
     case NT_uint16:
@@ -1580,7 +1580,7 @@ set_data2d(unsigned char *pointer, const LVecBase2d &data) {
   case 2:
     switch (_column->get_numeric_type()) {
     case NT_uint8:
-      maybe_unscale_color(LCAST(float, data));
+      maybe_unscale_color_d(data);
       pointer[0] = _a;
       pointer[1] = _b;
       break;
@@ -1656,7 +1656,7 @@ set_data3d(unsigned char *pointer, const LVecBase3d &data) {
   case 3:
     switch (_column->get_numeric_type()) {
     case NT_uint8:
-      maybe_unscale_color(LCAST(float, data));
+      maybe_unscale_color_d(data);
       pointer[0] = _a;
       pointer[1] = _b;
       pointer[2] = _c;
@@ -1737,7 +1737,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
   default:
     switch (_column->get_numeric_type()) {
     case NT_uint8:
-      maybe_unscale_color(LCAST(float, data));
+      maybe_unscale_color_d(data);
       pointer[0] = _a;
       pointer[1] = _b;
       pointer[2] = _c;
@@ -1765,12 +1765,12 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
       break;
       
     case NT_packed_dcba:
-      maybe_unscale_color(LCAST(float, data));
+      maybe_unscale_color_d(data);
       *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(_d, _c, _b, _a);
       break;
       
     case NT_packed_dabc:
-      maybe_unscale_color(LCAST(float, data));
+      maybe_unscale_color_d(data);
       *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(_d, _a, _b, _c);
       break;
       
@@ -2164,7 +2164,7 @@ get_data4f(const unsigned char *pointer) {
   default:
     switch (_column->get_numeric_type()) {
     case NT_uint8:
-      maybe_scale_color(pointer[0], pointer[1], pointer[2], pointer[3]);
+      maybe_scale_color_f(pointer[0], pointer[1], pointer[2], pointer[3]);
       return _v4;
       
     case NT_uint16:
@@ -2184,20 +2184,20 @@ get_data4f(const unsigned char *pointer) {
     case NT_packed_dcba:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
-        maybe_scale_color(GeomVertexData::unpack_abcd_d(dword),
-                          GeomVertexData::unpack_abcd_c(dword),
-                          GeomVertexData::unpack_abcd_b(dword),
-                          GeomVertexData::unpack_abcd_a(dword));
+        maybe_scale_color_f(GeomVertexData::unpack_abcd_d(dword),
+                            GeomVertexData::unpack_abcd_c(dword),
+                            GeomVertexData::unpack_abcd_b(dword),
+                            GeomVertexData::unpack_abcd_a(dword));
       }
       return _v4;
       
     case NT_packed_dabc:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
-        maybe_scale_color(GeomVertexData::unpack_abcd_b(dword),
-                          GeomVertexData::unpack_abcd_c(dword),
-                          GeomVertexData::unpack_abcd_d(dword),
-                          GeomVertexData::unpack_abcd_a(dword));
+        maybe_scale_color_f(GeomVertexData::unpack_abcd_b(dword),
+                            GeomVertexData::unpack_abcd_c(dword),
+                            GeomVertexData::unpack_abcd_d(dword),
+                            GeomVertexData::unpack_abcd_a(dword));
       }
       return _v4;
       
@@ -2299,7 +2299,7 @@ get_data4d(const unsigned char *pointer) {
   default:
     switch (_column->get_numeric_type()) {
     case NT_uint8:
-      maybe_scale_color(pointer[0], pointer[1], pointer[2], pointer[3]);
+      maybe_scale_color_d(pointer[0], pointer[1], pointer[2], pointer[3]);
       return _v4d;
       
     case NT_uint16:
@@ -2319,20 +2319,20 @@ get_data4d(const unsigned char *pointer) {
     case NT_packed_dcba:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
-        maybe_scale_color(GeomVertexData::unpack_abcd_d(dword),
-                          GeomVertexData::unpack_abcd_c(dword),
-                          GeomVertexData::unpack_abcd_b(dword),
-                          GeomVertexData::unpack_abcd_a(dword));
+        maybe_scale_color_d(GeomVertexData::unpack_abcd_d(dword),
+                            GeomVertexData::unpack_abcd_c(dword),
+                            GeomVertexData::unpack_abcd_b(dword),
+                            GeomVertexData::unpack_abcd_a(dword));
       }
       return _v4d;
       
     case NT_packed_dabc:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
-        maybe_scale_color(GeomVertexData::unpack_abcd_b(dword),
-                          GeomVertexData::unpack_abcd_c(dword),
-                          GeomVertexData::unpack_abcd_d(dword),
-                          GeomVertexData::unpack_abcd_a(dword));
+        maybe_scale_color_d(GeomVertexData::unpack_abcd_b(dword),
+                            GeomVertexData::unpack_abcd_c(dword),
+                            GeomVertexData::unpack_abcd_d(dword),
+                            GeomVertexData::unpack_abcd_a(dword));
       }
       return _v4d;
       
@@ -2423,7 +2423,7 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
   default:
     switch (_column->get_numeric_type()) {
     case NT_uint8:
-      maybe_unscale_color(data);
+      maybe_unscale_color_f(data);
       pointer[0] = _a;
       pointer[1] = _b;
       pointer[2] = _c;
@@ -2451,12 +2451,12 @@ set_data4f(unsigned char *pointer, const LVecBase4f &data) {
       break;
       
     case NT_packed_dcba:
-      maybe_unscale_color(data);
+      maybe_unscale_color_f(data);
       *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(_d, _c, _b, _a);
       break;
       
     case NT_packed_dabc:
-      maybe_unscale_color(data);
+      maybe_unscale_color_f(data);
       *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(_d, _a, _b, _c);
       break;
       
@@ -2552,7 +2552,7 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
   default:
     switch (_column->get_numeric_type()) {
     case NT_uint8:
-      maybe_unscale_color(LCAST(float, data));
+      maybe_unscale_color_d(data);
       pointer[0] = _a;
       pointer[1] = _b;
       pointer[2] = _c;
@@ -2580,12 +2580,12 @@ set_data4d(unsigned char *pointer, const LVecBase4d &data) {
       break;
       
     case NT_packed_dcba:
-      maybe_unscale_color(LCAST(float, data));
+      maybe_unscale_color_d(data);
       *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(_d, _c, _b, _a);
       break;
       
     case NT_packed_dabc:
-      maybe_unscale_color(LCAST(float, data));
+      maybe_unscale_color_d(data);
       *(PN_uint32 *)pointer = GeomVertexData::pack_abcd(_d, _a, _b, _c);
       break;
       
@@ -2645,7 +2645,7 @@ get_data4f(const unsigned char *pointer) {
   default:
     switch (_column->get_numeric_type()) {
     case NT_uint8:
-      maybe_scale_color(pointer[0], pointer[1], pointer[2], pointer[3]);
+      maybe_scale_color_f(pointer[0], pointer[1], pointer[2], pointer[3]);
       return _v4;
       
     case NT_uint16:
@@ -2665,20 +2665,20 @@ get_data4f(const unsigned char *pointer) {
     case NT_packed_dcba:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
-        maybe_scale_color(GeomVertexData::unpack_abcd_d(dword),
-                          GeomVertexData::unpack_abcd_c(dword),
-                          GeomVertexData::unpack_abcd_b(dword),
-                          GeomVertexData::unpack_abcd_a(dword));
+        maybe_scale_color_f(GeomVertexData::unpack_abcd_d(dword),
+                            GeomVertexData::unpack_abcd_c(dword),
+                            GeomVertexData::unpack_abcd_b(dword),
+                            GeomVertexData::unpack_abcd_a(dword));
       }
       return _v4;
       
     case NT_packed_dabc:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
-        maybe_scale_color(GeomVertexData::unpack_abcd_b(dword),
-                          GeomVertexData::unpack_abcd_c(dword),
-                          GeomVertexData::unpack_abcd_d(dword),
-                          GeomVertexData::unpack_abcd_a(dword));
+        maybe_scale_color_f(GeomVertexData::unpack_abcd_b(dword),
+                            GeomVertexData::unpack_abcd_c(dword),
+                            GeomVertexData::unpack_abcd_d(dword),
+                            GeomVertexData::unpack_abcd_a(dword));
       }
       return _v4;
       
@@ -2733,7 +2733,7 @@ get_data4d(const unsigned char *pointer) {
   default:
     switch (_column->get_numeric_type()) {
     case NT_uint8:
-      maybe_scale_color(pointer[0], pointer[1], pointer[2], pointer[3]);
+      maybe_scale_color_d(pointer[0], pointer[1], pointer[2], pointer[3]);
       return _v4d;
       
     case NT_uint16:
@@ -2753,20 +2753,20 @@ get_data4d(const unsigned char *pointer) {
     case NT_packed_dcba:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
-        maybe_scale_color(GeomVertexData::unpack_abcd_d(dword),
-                          GeomVertexData::unpack_abcd_c(dword),
-                          GeomVertexData::unpack_abcd_b(dword),
-                          GeomVertexData::unpack_abcd_a(dword));
+        maybe_scale_color_d(GeomVertexData::unpack_abcd_d(dword),
+                            GeomVertexData::unpack_abcd_c(dword),
+                            GeomVertexData::unpack_abcd_b(dword),
+                            GeomVertexData::unpack_abcd_a(dword));
       }
       return _v4d;
       
     case NT_packed_dabc:
       {
         PN_uint32 dword = *(const PN_uint32 *)pointer;
-        maybe_scale_color(GeomVertexData::unpack_abcd_b(dword),
-                          GeomVertexData::unpack_abcd_c(dword),
-                          GeomVertexData::unpack_abcd_d(dword),
-                          GeomVertexData::unpack_abcd_a(dword));
+        maybe_scale_color_d(GeomVertexData::unpack_abcd_b(dword),
+                            GeomVertexData::unpack_abcd_c(dword),
+                            GeomVertexData::unpack_abcd_d(dword),
+                            GeomVertexData::unpack_abcd_a(dword));
       }
       return _v4d;
       
