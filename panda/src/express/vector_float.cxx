@@ -14,8 +14,8 @@
 
 #include "vector_float.h"
 
-#define EXPCL EXPCL_PANDA_PUTIL
-#define EXPTP EXPTP_PANDA_PUTIL
+#define EXPCL EXPCL_PANDAEXPRESS
+#define EXPTP EXPTP_PANDAEXPRESS
 #define TYPE float
 #define NAME vector_float
 

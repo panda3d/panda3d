@@ -27,6 +27,7 @@
 #include "thread.h"
 #include "referenceCount.h"
 #include "pointerTo.h"
+#include "vector_double.h"  // needed to see exported allocators for pdeque
 
 class EXPCL_PANDA_PUTIL TimeVal {
 PUBLISHED:

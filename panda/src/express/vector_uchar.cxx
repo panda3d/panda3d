@@ -14,8 +14,8 @@
 
 #include "vector_uchar.h"
 
-#define EXPCL EXPCL_PANDA
-#define EXPTP EXPTP_PANDA
+#define EXPCL EXPCL_PANDAEXPRESS
+#define EXPTP EXPTP_PANDAEXPRESS
 #define TYPE unsigned char
 #define NAME vector_uchar
 

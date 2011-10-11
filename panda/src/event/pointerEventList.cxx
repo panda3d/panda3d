@@ -16,8 +16,8 @@
 #include "indent.h"
 #include "config_event.h"
 #include "clockObject.h"
-#include "mathNumbers.h"
-#include <math.h>
+#include "deg_2_rad.h"
+#include "cmath.h"
 
 TypeHandle PointerEventList::_type_handle;
 
@@ -105,9 +105,9 @@ add_event(bool in_win, int xpos, int ypos, int seq, double time) {
     pe._dy = ypos - _events.back()._ypos;
     double ddx = pe._dx;
     double ddy = pe._dy;
-    pe._length = sqrt(ddx*ddx + ddy*ddy);
+    pe._length = csqrt(ddx*ddx + ddy*ddy);
     if (pe._length > 0.0) {
-      pe._direction = normalize_angle(atan2(-ddy,ddx) * (180.0 / MathNumbers::pi));
+      pe._direction = normalize_angle(rad_2_deg(catan2(-ddy,ddx)));
     } else {
       pe._direction = _events.back()._direction;
     }
@@ -137,7 +137,7 @@ encircles(int x, int y) const {
   int last = tot_events-1;
   double dx = _events[last]._xpos - x;
   double dy = _events[last]._ypos - y;
-  double lastang = atan2(dy, dx) * (180.0/MathNumbers::pi);
+  double lastang = rad_2_deg(catan2(dy, dx));
   double total = 0.0;
   for (int i=last; (i>=0) && (total < 360.0) && (total > -360.0); i--) {
     dx = _events[i]._xpos - x;
@@ -145,7 +145,7 @@ encircles(int x, int y) const {
     if ((dx==0.0)&&(dy==0.0)) {
       continue;
     }
-    double angle = atan2(dy,dx) * (180.0/MathNumbers::pi);
+    double angle = rad_2_deg(catan2(dy,dx));
     double deltang = delta_angle(lastang, angle);
     if (deltang * total < 0.0) {
       total = 0.0;
@@ -197,7 +197,7 @@ total_turns(double sec) const {
 double PointerEventList::
 match_pattern(const string &ascpat, double rot, double seglen) {
   // Convert the pattern from ascii to a more usable form.
-  pvector <double> pattern;
+  vector_double pattern;
   parse_pattern(ascpat, pattern);
   
   // Apply the rotation to the pattern.
@@ -214,7 +214,7 @@ match_pattern(const string &ascpat, double rot, double seglen) {
 //  Description: Parses a pattern as used by match_pattern.
 ////////////////////////////////////////////////////////////////////
 void PointerEventList::
-parse_pattern(const string &ascpat, pvector <double> &pattern) {
+parse_pattern(const string &ascpat, vector_double &pattern) {
   int chars = 0;
   double dir = 180.0;
   for (size_t i=0; i<ascpat.size(); i++) {

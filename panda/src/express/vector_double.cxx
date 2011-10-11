@@ -14,8 +14,8 @@
 
 #include "vector_double.h"
 
-#define EXPCL EXPCL_PANDA_PUTIL
-#define EXPTP EXPTP_PANDA_PUTIL
+#define EXPCL EXPCL_PANDAEXPRESS
+#define EXPTP EXPTP_PANDAEXPRESS
 #define TYPE double
 #define NAME vector_double
 

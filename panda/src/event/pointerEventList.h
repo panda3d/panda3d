@@ -20,7 +20,7 @@
 #include "pointerEvent.h"
 #include "typedReferenceCount.h"
 #include "eventParameter.h"
-#include "pvector.h"
+#include "vector_double.h"
 
 class ModifierPointers;
 class Datagram;
@@ -67,7 +67,7 @@ public:
   void write(ostream &out, int indent_level = 0) const;
 
 private:
-  void parse_pattern(const string &ascpat, pvector <double> &pattern);
+  void parse_pattern(const string &ascpat, vector_double &pattern);
   typedef pdeque<PointerEvent> Events;
   Events _events;
 
