@@ -22,6 +22,15 @@
 #include "config_glesgsg.h"
 
 #define GLP(name) gl##name
+
+#ifndef STDFLOAT_DOUBLE
+#define GLPf(name) gl ## name ## f
+#define GLPfv(name) gl ## name ## fv
+#else  // STDFLOAT_DOUBLE
+#define GLPf(name) gl ## name ## d
+#define GLPfv(name) gl ## name ## dv
+#endif  // STDFLOAT_DOUBLE
+
 #define CLP(name) GLES##name
 #define GLPREFIX_QUOTED "gl"
 #define CLASSPREFIX_QUOTED "GLES"
