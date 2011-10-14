@@ -3009,7 +3009,7 @@ do_issue_texture() {
                                           D3DTTFF_COUNT2);
       } else {
         LMatrix4f m = LCAST(float, tex_mat->get_mat());
-        _d3d_device->SetTransform(get_tex_mat_sym(si), (D3DMATRIX *)mf.get_data());
+        _d3d_device->SetTransform(get_tex_mat_sym(si), (D3DMATRIX *)m.get_data());
         DWORD transform_flags = texcoord_dimensions;
         if (m.get_col(3) != LVecBase4(0.0f, 0.0f, 0.0f, 1.0f)) {
           // If we have a projected texture matrix, we also need to
