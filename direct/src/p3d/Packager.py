@@ -15,11 +15,11 @@ import platform
 import struct
 from direct.p3d.FileSpec import FileSpec
 from direct.p3d.SeqValue import SeqValue
+from pandac.PandaModules import *
 from direct.showbase import Loader
 from direct.showbase import AppRunnerGlobal
 from direct.showutil import FreezeTool
 from direct.directnotify.DirectNotifyGlobal import *
-from pandac.PandaModules import *
 
 vfs = VirtualFileSystem.getGlobalPtr()
 
