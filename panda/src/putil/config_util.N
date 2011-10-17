@@ -4,6 +4,9 @@ ignoremember get_factory
 ignoretype FactoryBase
 ignoretype Factory<TypedWriteable>
 
+forcetype string
+renametype string CString
+
 forcetype DoubleBitMaskNative
 forcetype QuadBitMaskNative
 
