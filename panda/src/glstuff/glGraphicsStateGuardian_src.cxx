@@ -7051,7 +7051,7 @@ bind_clip_plane(const NodePath &plane, int plane_id) {
 #ifndef OPENGLES_2 // OpenGL ES 2.0 doesn't support clip planes at all.
 #ifdef OPENGLES
   // OpenGL ES uses a single-precision call.
-  LPlanef single_plane(LCAST(single, xformed_plane));
+  LPlanef single_plane(LCAST(float, xformed_plane));
   GLP(ClipPlanef)(id, single_plane.get_data());
 #else
   // Mainline OpenGL uses a double-precision call.
