@@ -3,6 +3,9 @@ within a Panda3D Multifile, which can be easily be downloaded and/or
 patched onto a client machine, for the purpose of running a large
 application. """
 
+# Important to import panda3d first, to avoid naming conflicts with
+# Python's "string" and "Loader" names that are imported later.
+from panda3d.core import *
 import sys
 import os
 import glob
@@ -15,7 +18,6 @@ import platform
 import struct
 from direct.p3d.FileSpec import FileSpec
 from direct.p3d.SeqValue import SeqValue
-from pandac.PandaModules import *
 from direct.showbase import Loader
 from direct.showbase import AppRunnerGlobal
 from direct.showutil import FreezeTool
