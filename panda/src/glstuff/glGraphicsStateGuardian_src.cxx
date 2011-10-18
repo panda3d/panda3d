@@ -6899,6 +6899,7 @@ enable_lighting(bool enable) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 set_ambient_light(const LColor &color) {
+#ifndef OPENGLES_2
   //  static PStatCollector _draw_set_state_light_ambient_pcollector("Draw:Set State:Light:Ambient");
   //  PStatTimer timer(_draw_set_state_light_ambient_pcollector);
   
@@ -6908,6 +6909,7 @@ set_ambient_light(const LColor &color) {
         c[2] * _light_color_scale[2],
         c[3] * _light_color_scale[3]);
   call_glLightModelfv(GL_LIGHT_MODEL_AMBIENT, c);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
