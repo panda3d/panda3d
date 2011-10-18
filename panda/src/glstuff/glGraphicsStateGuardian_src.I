@@ -601,12 +601,14 @@ enable_polygon_offset(bool val) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
 call_glFogfv(GLenum pname, const LColor &color) {
+#ifndef OPENGLES_2
 #ifndef STDFLOAT_DOUBLE
   GLP(Fogfv)(pname, color.get_data());
 #else  // STDFLOAT_DOUBLE
   LColorf fcolor = LCAST(float, color);
   GLP(Fogfv)(pname, fcolor.get_data());
 #endif  //  STDFLOAT_DOUBLE
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -617,12 +619,14 @@ call_glFogfv(GLenum pname, const LColor &color) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
 call_glMaterialfv(GLenum face, GLenum pname, const LColor &color) {
+#ifndef OPENGLES_2
 #ifndef STDFLOAT_DOUBLE
   GLP(Materialfv)(face, pname, color.get_data());
 #else  // STDFLOAT_DOUBLE
   LColorf fcolor = LCAST(float, color);
   GLP(Materialfv)(face, pname, fcolor.get_data());
 #endif  //  STDFLOAT_DOUBLE
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -633,12 +637,14 @@ call_glMaterialfv(GLenum face, GLenum pname, const LColor &color) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
 call_glLightfv(GLenum light, GLenum pname, const LVecBase4 &value) {
+#ifndef OPENGLES_2
 #ifndef STDFLOAT_DOUBLE
   GLP(Lightfv)(light, pname, value.get_data());
 #else  // STDFLOAT_DOUBLE
   LVecBase4f fvalue = LCAST(float, value);
   GLP(Lightfv)(light, pname, fvalue.get_data());
 #endif  //  STDFLOAT_DOUBLE
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -649,12 +655,14 @@ call_glLightfv(GLenum light, GLenum pname, const LVecBase4 &value) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
 call_glLightfv(GLenum light, GLenum pname, const LVecBase3 &value) {
+#ifndef OPENGLES_2
 #ifndef STDFLOAT_DOUBLE
   GLP(Lightfv)(light, pname, value.get_data());
 #else  // STDFLOAT_DOUBLE
   LVecBase3f fvalue = LCAST(float, value);
   GLP(Lightfv)(light, pname, fvalue.get_data());
 #endif  //  STDFLOAT_DOUBLE
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -683,12 +691,14 @@ call_glLightModelfv(GLenum pname, const LVecBase4 &value) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
 call_glTexEnvfv(GLenum target, GLenum pname, const LVecBase4 &value) {
+#ifndef OPENGLES_2
 #ifndef STDFLOAT_DOUBLE
   GLP(TexEnvfv)(target, pname, value.get_data());
 #else  // STDFLOAT_DOUBLE
   LVecBase4f fvalue = LCAST(float, value);
   GLP(TexEnvfv)(target, pname, fvalue.get_data());
 #endif  //  STDFLOAT_DOUBLE
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
