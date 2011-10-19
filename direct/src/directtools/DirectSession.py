@@ -1312,15 +1312,3 @@ class DisplayRegionList(DirectObject):
 
 # Create one
 __builtins__['direct'] = base.direct = DirectSession()
-
-
-
-
-
-
-
-
-
-
-
-
