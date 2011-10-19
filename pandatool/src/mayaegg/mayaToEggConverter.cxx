@@ -753,8 +753,8 @@ convert_char_chan(double start_frame, double end_frame, double frame_inc,
   MTime frame(start_frame, MTime::uiUnit());
   MTime frame_stop(end_frame, MTime::uiUnit());
   while (frame <= frame_stop) {
-    if (mayaegg_cat.is_debug()) {
-      mayaegg_cat.debug(false)
+    if (mayaegg_cat.is_spam()) {
+      mayaegg_cat.spam(false)
         << "frame " << frame.value() << "\n";
     } else {
       // We have to write to cerr instead of mayaegg_cat to allow
@@ -1945,11 +1945,11 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
       }
 
       // Go thru all the texture references for this primitive and set uvs
-      if (mayaegg_cat.is_debug()) {
+      if (mayaegg_cat.is_spam()) {
         if (shader != (MayaShader *)NULL) {
-          mayaegg_cat.debug() << "shader->_color.size is " << shader->_color.size() << endl;
+          mayaegg_cat.spam() << "shader->_color.size is " << shader->_color.size() << endl;
         }
-        mayaegg_cat.debug() << "primitive->tref.size is " << egg_poly->get_num_textures() << endl;
+        mayaegg_cat.spam() << "primitive->tref.size is " << egg_poly->get_num_textures() << endl;
       }
       for (size_t ti=0; ti< _shaders._uvset_names.size(); ++ti) {
         // get the eggTexture pointer
@@ -1958,8 +1958,8 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
         if (panda_uvset_name == "map1") {
           panda_uvset_name = "default";
         }
-        if (mayaegg_cat.is_debug()) {
-          mayaegg_cat.debug() << "--uvset_name :" << uvset_name << endl;
+        if (mayaegg_cat.is_spam()) {
+          mayaegg_cat.spam() << "--uvset_name :" << uvset_name << endl;
         }
         
         // get the shader color def that matches this EggTexture
@@ -1974,8 +1974,8 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
           for (size_t tj = 0; tj < shader->_all_maps.size(); ++tj) {
             MayaShaderColorDef *def = shader->_all_maps[tj];
             if (def->_uvset_name == uvset_name) {
-              if (mayaegg_cat.is_debug()) {
-                mayaegg_cat.debug() << "matched colordef idx: " << tj << endl;
+              if (mayaegg_cat.is_spam()) {
+                mayaegg_cat.spam() << "matched colordef idx: " << tj << endl;
               }
               keep_uv = true;
               if (def->has_projection()) {
