@@ -2261,7 +2261,7 @@ class Packager:
 
         # Binary files that are copied (and compressed) without
         # processing.
-        self.binaryExtensions = [ 'ttf', 'TTF', 'mid' ]
+        self.binaryExtensions = [ 'ttf', 'TTF', 'mid', 'ico' ]
 
         # Files that can have an existence in multiple different
         # packages simultaneously without conflict.
@@ -2301,7 +2301,7 @@ class Packager:
                 }
 
         # Files that should be extracted to disk.
-        self.extractExtensions = self.executableExtensions[:] + self.manifestExtensions[:]
+        self.extractExtensions = self.executableExtensions[:] + self.manifestExtensions[:] + [ 'ico' ]
 
         # Files that indicate a platform dependency.
         self.platformSpecificExtensions = self.executableExtensions[:]
