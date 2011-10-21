@@ -158,8 +158,8 @@ del getAncestry
 #####################################################################
 def getTightBounds(self):
         from pandac.PandaModules import Point3
-        v1 = Point3.Point3(0)
-        v2 = Point3.Point3(0)
+        v1 = Point3(0)
+        v2 = Point3(0)
         self.calcTightBounds(v1, v2)
         return v1, v2
 Dtool_funcToMethod(getTightBounds, NodePath)
