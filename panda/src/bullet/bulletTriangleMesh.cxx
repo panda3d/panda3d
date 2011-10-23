@@ -60,16 +60,16 @@ preallocate(int num_verts, int num_indices) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletTriangleMesh::
-add_triangle(const LPoint3f &p0, const LPoint3f &p1, const LPoint3f &p2, bool remove_duplicate_vertices) {
+add_triangle(const LPoint3 &p0, const LPoint3 &p1, const LPoint3 &p2, bool remove_duplicate_vertices) {
 
   nassertv(!p0.is_nan());
   nassertv(!p1.is_nan());
   nassertv(!p2.is_nan());
 
   _mesh->addTriangle(
-    LVecBase3f_to_btVector3(p0),
-    LVecBase3f_to_btVector3(p1),
-    LVecBase3f_to_btVector3(p2),
+    LVecBase3_to_btVector3(p0),
+    LVecBase3_to_btVector3(p1),
+    LVecBase3_to_btVector3(p2),
     remove_duplicate_vertices);
 }
 
@@ -79,7 +79,7 @@ add_triangle(const LPoint3f &p0, const LPoint3f &p1, const LPoint3f &p2, bool re
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletTriangleMesh::
-set_welding_distance(float distance) {
+set_welding_distance(PN_stdfloat distance) {
 
   _mesh->m_weldingThreshold = distance;
 }
@@ -89,7 +89,7 @@ set_welding_distance(float distance) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletTriangleMesh::
+PN_stdfloat BulletTriangleMesh::
 get_welding_distance() const {
 
   return _mesh->m_weldingThreshold;
@@ -104,23 +104,23 @@ void BulletTriangleMesh::
 add_geom(const Geom *geom, bool remove_duplicate_vertices) {
 
   // Collect points
-  pvector<LPoint3f> points;
+  pvector<LPoint3> points;
 
   CPT(GeomVertexData) vdata = geom->get_vertex_data();
   GeomVertexReader reader = GeomVertexReader(vdata, InternalName::get_vertex());
 
   while (!reader.is_at_end()) {
-    points.push_back(reader.get_data3f());
+    points.push_back(reader.get_data3());
   }
 
   // Convert points
   btVector3 *vertices = new btVector3[points.size()];
 
   int i = 0;
-  pvector<LPoint3f>::const_iterator it;
+  pvector<LPoint3>::const_iterator it;
   for (it=points.begin(); it!=points.end(); it++) {
-    LPoint3f v = *it;
-    vertices[i] = LVecBase3f_to_btVector3(v);
+    LPoint3 v = *it;
+    vertices[i] = LVecBase3_to_btVector3(v);
     i++;
   }
 
@@ -152,16 +152,16 @@ add_geom(const Geom *geom, bool remove_duplicate_vertices) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletTriangleMesh::
-add_array(const PTA_LVecBase3f &points, const PTA_int &indices, bool remove_duplicate_vertices) {
+add_array(const PTA_LVecBase3 &points, const PTA_int &indices, bool remove_duplicate_vertices) {
 
   // Convert vertices
   btVector3 *vertices = new btVector3[points.size()];
 
   int i = 0;
-  PTA_LVecBase3f::const_iterator it;
+  PTA_LVecBase3::const_iterator it;
   for (it=points.begin(); it!=points.end(); it++) {
-    LVecBase3f v = *it;
-    vertices[i] = LVecBase3f_to_btVector3(v);
+    LVecBase3 v = *it;
+    vertices[i] = LVecBase3_to_btVector3(v);
     i++;
   }
 

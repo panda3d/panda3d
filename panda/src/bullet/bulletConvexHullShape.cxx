@@ -49,9 +49,9 @@ ptr() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletConvexHullShape::
-add_point(const LPoint3f &p) {
+add_point(const LPoint3 &p) {
 
-  _shape->addPoint(LVecBase3f_to_btVector3(p));
+  _shape->addPoint(LVecBase3_to_btVector3(p));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -60,15 +60,15 @@ add_point(const LPoint3f &p) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletConvexHullShape::
-add_array(const PTA_LVecBase3f &points) {
+add_array(const PTA_LVecBase3 &points) {
 
   _shape = new btConvexHullShape(NULL, 0);
   _shape->setUserPointer(this);
 
-  PTA_LVecBase3f::const_iterator it;
+  PTA_LVecBase3::const_iterator it;
   for (it=points.begin(); it!=points.end(); it++) {
-    LVecBase3f v = *it;
-    _shape->addPoint(LVecBase3f_to_btVector3(v));
+    LVecBase3 v = *it;
+    _shape->addPoint(LVecBase3_to_btVector3(v));
   }
 }
 
@@ -81,22 +81,22 @@ void BulletConvexHullShape::
 add_geom(const Geom *geom) {
 
   // Collect points
-  pvector<LPoint3f> points;
+  pvector<LPoint3> points;
 
   CPT(GeomVertexData) vdata = geom->get_vertex_data();
   GeomVertexReader reader = GeomVertexReader(vdata, InternalName::get_vertex());
 
   while (!reader.is_at_end()) {
-    points.push_back(reader.get_data3f());
+    points.push_back(reader.get_data3());
   }
 
   // Create shape
   _shape = new btConvexHullShape(NULL, 0);
   _shape->setUserPointer(this);
 
-  pvector<LPoint3f>::const_iterator it;
+  pvector<LPoint3>::const_iterator it;
   for (it=points.begin(); it!=points.end(); it++) {
-    _shape->addPoint(LVecBase3f_to_btVector3(*it));
+    _shape->addPoint(LVecBase3_to_btVector3(*it));
   }
 }
 

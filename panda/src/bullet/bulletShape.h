@@ -38,16 +38,16 @@ PUBLISHED:
   INLINE bool is_non_moving() const;
   INLINE bool is_soft_body() const;
 
-  void set_margin(float margin);
+  void set_margin(PN_stdfloat margin);
   const char *get_name() const;
 
-  float get_margin() const;
+  PN_stdfloat get_margin() const;
 
 public:
   virtual btCollisionShape *ptr() const = 0;
 
-  LVecBase3f get_local_scale() const;
-  void set_local_scale(const LVecBase3f &scale);
+  LVecBase3 get_local_scale() const;
+  void set_local_scale(const LVecBase3 &scale);
 
 ////////////////////////////////////////////////////////////////////
 public:

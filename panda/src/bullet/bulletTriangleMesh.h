@@ -37,21 +37,21 @@ PUBLISHED:
   BulletTriangleMesh();
   INLINE ~BulletTriangleMesh();
 
-  void add_triangle(const LPoint3f &p0,
-                    const LPoint3f &p1,
-                    const LPoint3f &p2,
+  void add_triangle(const LPoint3 &p0,
+                    const LPoint3 &p1,
+                    const LPoint3 &p2,
                     bool remove_duplicate_vertices=false);
-  void add_array(const PTA_LVecBase3f &points,
+  void add_array(const PTA_LVecBase3 &points,
                  const PTA_int &indices,
                  bool remove_duplicate_vertices=false);
   void add_geom(const Geom *geom, 
                 bool remove_duplicate_vertices=false);
 
-  void set_welding_distance(float distance);
+  void set_welding_distance(PN_stdfloat distance);
   void preallocate(int num_verts, int num_indices);
 
   int get_num_triangles() const;
-  float get_welding_distance() const;
+  PN_stdfloat get_welding_distance() const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;

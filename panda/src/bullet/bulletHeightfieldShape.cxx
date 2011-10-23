@@ -22,7 +22,7 @@ TypeHandle BulletHeightfieldShape::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 BulletHeightfieldShape::
-BulletHeightfieldShape(const PNMImage &image, float max_height, BulletUpAxis up) {
+BulletHeightfieldShape(const PNMImage &image, PN_stdfloat max_height, BulletUpAxis up) {
 
   int num_rows = image.get_x_size();
   int num_columns = image.get_y_size();

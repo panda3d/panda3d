@@ -53,10 +53,10 @@ empty() {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE LPoint3f BulletSoftBodyNodeElement::
+INLINE LPoint3 BulletSoftBodyNodeElement::
 get_pos() const {
 
-  return btVector3_to_LPoint3f(_node.m_x);
+  return btVector3_to_LPoint3(_node.m_x);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -64,10 +64,10 @@ get_pos() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE LVector3f BulletSoftBodyNodeElement::
+INLINE LVector3 BulletSoftBodyNodeElement::
 get_normal() const {
 
-  return btVector3_to_LVector3f(_node.m_n);
+  return btVector3_to_LVector3(_node.m_n);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -75,10 +75,10 @@ get_normal() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE LVector3f BulletSoftBodyNodeElement::
+INLINE LVector3 BulletSoftBodyNodeElement::
 get_velocity() const {
 
-  return btVector3_to_LVector3f(_node.m_v);
+  return btVector3_to_LVector3(_node.m_v);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -86,10 +86,10 @@ get_velocity() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletSoftBodyNodeElement::
+INLINE PN_stdfloat BulletSoftBodyNodeElement::
 get_inv_mass() const {
 
-  return _node.m_im;
+  return (PN_stdfloat)_node.m_im;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -97,10 +97,10 @@ get_inv_mass() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletSoftBodyNodeElement::
+INLINE PN_stdfloat BulletSoftBodyNodeElement::
 get_area() const {
 
-  return _node.m_area;
+  return (PN_stdfloat)_node.m_area;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -111,6 +111,6 @@ get_area() const {
 INLINE int BulletSoftBodyNodeElement::
 is_attached() const {
 
-  return _node.m_battach;
+  return (PN_stdfloat)_node.m_battach;
 }
 

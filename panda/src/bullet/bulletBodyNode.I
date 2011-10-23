@@ -152,7 +152,7 @@ set_kinematic(bool value) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletBodyNode::
+INLINE PN_stdfloat BulletBodyNode::
 get_restitution() const {
 
   return get_object()->getRestitution();
@@ -164,7 +164,7 @@ get_restitution() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void BulletBodyNode::
-set_restitution(float restitution) {
+set_restitution(PN_stdfloat restitution) {
 
   return get_object()->setRestitution(restitution);
 }
@@ -174,7 +174,7 @@ set_restitution(float restitution) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletBodyNode::
+INLINE PN_stdfloat BulletBodyNode::
 get_friction() const {
 
   return get_object()->getFriction();
@@ -186,7 +186,7 @@ get_friction() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void BulletBodyNode::
-set_friction(float friction) {
+set_friction(PN_stdfloat friction) {
 
   return get_object()->setFriction(friction);
 }

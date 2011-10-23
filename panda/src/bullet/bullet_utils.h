@@ -28,22 +28,22 @@
 #include "nodePath.h"
 
 // Conversion from Panda3D to Bullet
-EXPCL_PANDABULLET btVector3 LVecBase3f_to_btVector3(const LVecBase3f &v);
-EXPCL_PANDABULLET btMatrix3x3 LMatrix3f_to_btMatrix3x3(const LMatrix3f &m);
-EXPCL_PANDABULLET btTransform LMatrix4f_to_btTrans(const LMatrix4f &m);
-EXPCL_PANDABULLET btQuaternion LQuaternionf_to_btQuat(const LQuaternionf &q);
+EXPCL_PANDABULLET btVector3 LVecBase3_to_btVector3(const LVecBase3 &v);
+EXPCL_PANDABULLET btMatrix3x3 LMatrix3_to_btMatrix3x3(const LMatrix3 &m);
+EXPCL_PANDABULLET btTransform LMatrix4_to_btTrans(const LMatrix4 &m);
+EXPCL_PANDABULLET btQuaternion LQuaternion_to_btQuat(const LQuaternion &q);
 
 // Conversion from Bullet to Panda3D
-EXPCL_PANDABULLET LVecBase3f btVector3_to_LVecBase3f(const btVector3 &v);
-EXPCL_PANDABULLET LVector3f btVector3_to_LVector3f(const btVector3 &v);
-EXPCL_PANDABULLET LPoint3f btVector3_to_LPoint3f(const btVector3 &p);
-EXPCL_PANDABULLET LMatrix3f btMatrix3x3_to_LMatrix3f(const btMatrix3x3 &m);
-EXPCL_PANDABULLET LMatrix4f btTrans_to_LMatrix4f(const btTransform &tf);
-EXPCL_PANDABULLET LQuaternionf btQuat_to_LQuaternionf(const btQuaternion &q);
+EXPCL_PANDABULLET LVecBase3 btVector3_to_LVecBase3(const btVector3 &v);
+EXPCL_PANDABULLET LVector3 btVector3_to_LVector3(const btVector3 &v);
+EXPCL_PANDABULLET LPoint3 btVector3_to_LPoint3(const btVector3 &p);
+EXPCL_PANDABULLET LMatrix3 btMatrix3x3_to_LMatrix3(const btMatrix3x3 &m);
+EXPCL_PANDABULLET LMatrix4 btTrans_to_LMatrix4(const btTransform &tf);
+EXPCL_PANDABULLET LQuaternion btQuat_to_LQuaternion(const btQuaternion &q);
 
 EXPCL_PANDABULLET CPT(TransformState) btTrans_to_TransformState(
   const btTransform &tf, 
-  const LVecBase3f &scale=LVecBase3f(1.0f, 1.0f, 1.0f));
+  const LVecBase3 &scale=LVecBase3(1.0f, 1.0f, 1.0f));
 
 EXPCL_PANDABULLET btTransform TransformState_to_btTrans(
   CPT(TransformState) ts);

@@ -45,8 +45,8 @@ PUBLISHED:
   INLINE BulletShape *get_shape(int idx) const;
   MAKE_SEQ(get_shapes, get_num_shapes, get_shape);
 
-  LPoint3f get_shape_pos(int idx) const;
-  LMatrix4f get_shape_mat(int idx) const;
+  LPoint3 get_shape_pos(int idx) const;
+  LMatrix4 get_shape_mat(int idx) const;
 
   void add_shapes_from_collision_solids(CollisionNode *cnode);
 
@@ -68,15 +68,15 @@ PUBLISHED:
 
   bool has_contact_response() const;
 
-  float get_contact_processing_threshold() const;
-  void set_contact_processing_threshold(float threshold);
+  PN_stdfloat get_contact_processing_threshold() const;
+  void set_contact_processing_threshold(PN_stdfloat threshold);
 
   // Deactivation
   bool is_active() const;
   void set_active(bool active, bool force=false);
 
-  void set_deactivation_time(float dt);
-  float get_deactivation_time() const;
+  void set_deactivation_time(PN_stdfloat dt);
+  PN_stdfloat get_deactivation_time() const;
 
   void set_deactivation_enabled(const bool enabled, const bool force=false);
   bool is_deactivation_enabled() const;
@@ -86,21 +86,21 @@ PUBLISHED:
   INLINE bool is_debug_enabled() const;
 
   // Friction and Restitution
-  INLINE float get_restitution() const;
-  INLINE void set_restitution(float restitution);
+  INLINE PN_stdfloat get_restitution() const;
+  INLINE void set_restitution(PN_stdfloat restitution);
 
-  INLINE float get_friction() const;
-  INLINE void set_friction(float friction);
+  INLINE PN_stdfloat get_friction() const;
+  INLINE void set_friction(PN_stdfloat friction);
 
   INLINE bool has_anisotropic_friction() const;
-  void set_anisotropic_friction(const LVecBase3f &friction);
-  LVecBase3f get_anisotropic_friction() const;
+  void set_anisotropic_friction(const LVecBase3 &friction);
+  LVecBase3 get_anisotropic_friction() const;
 
   // CCD
-  float get_ccd_swept_sphere_radius() const;
-  float get_ccd_motion_threshold() const;
-  void set_ccd_swept_sphere_radius(float radius);
-  void set_ccd_motion_threshold(float threshold);
+  PN_stdfloat get_ccd_swept_sphere_radius() const;
+  PN_stdfloat get_ccd_motion_threshold() const;
+  void set_ccd_swept_sphere_radius(PN_stdfloat radius);
+  void set_ccd_motion_threshold(PN_stdfloat threshold);
 
 public:
   virtual btCollisionObject *get_object() const = 0;

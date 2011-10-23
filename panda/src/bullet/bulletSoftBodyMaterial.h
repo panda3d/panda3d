@@ -29,13 +29,13 @@ PUBLISHED:
   INLINE ~BulletSoftBodyMaterial();
   INLINE static BulletSoftBodyMaterial empty();
 
-  INLINE void setLinearStiffness(float value);
-  INLINE void setAngularStiffness(float value);
-  INLINE void setVolumePreservation(float value);
+  INLINE void setLinearStiffness(PN_stdfloat value);
+  INLINE void setAngularStiffness(PN_stdfloat value);
+  INLINE void setVolumePreservation(PN_stdfloat value);
 
-  INLINE float getLinearStiffness() const;
-  INLINE float getAngularStiffness() const;
-  INLINE float getVolumePreservation() const;
+  INLINE PN_stdfloat getLinearStiffness() const;
+  INLINE PN_stdfloat getAngularStiffness() const;
+  INLINE PN_stdfloat getVolumePreservation() const;
 
 public:
   BulletSoftBodyMaterial(btSoftBody::Material &material);

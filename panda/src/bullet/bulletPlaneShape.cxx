@@ -22,9 +22,9 @@ TypeHandle BulletPlaneShape::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 BulletPlaneShape::
-BulletPlaneShape(const LVector3f &normal, float constant) {
+BulletPlaneShape(const LVector3 &normal, PN_stdfloat constant) {
 
-  btVector3 btNormal = LVecBase3f_to_btVector3(normal);
+  btVector3 btNormal = LVecBase3_to_btVector3(normal);
 
   _shape = new btStaticPlaneShape(btNormal, constant);
   _shape->setUserPointer(this);
@@ -49,8 +49,8 @@ ptr() const {
 BulletPlaneShape *BulletPlaneShape::
 make_from_solid(const CollisionPlane *solid) {
 
-  LVector3f normal = solid->get_normal();
-  float constant = solid->dist_to_plane(LPoint3f(0, 0, 0));
+  LVector3 normal = solid->get_normal();
+  PN_stdfloat constant = solid->dist_to_plane(LPoint3(0, 0, 0));
 
   return new BulletPlaneShape(normal, constant);
 }

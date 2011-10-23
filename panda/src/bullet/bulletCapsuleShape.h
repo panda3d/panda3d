@@ -28,11 +28,11 @@
 class EXPCL_PANDABULLET BulletCapsuleShape : public BulletShape {
 
 PUBLISHED:
-  BulletCapsuleShape(float radius, float height, BulletUpAxis up=Z_up);
+  BulletCapsuleShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up=Z_up);
   INLINE ~BulletCapsuleShape();
 
-  INLINE float get_radius() const;
-  INLINE float get_half_height() const;
+  INLINE PN_stdfloat get_radius() const;
+  INLINE PN_stdfloat get_half_height() const;
 
 public:
   virtual btCollisionShape *ptr() const;

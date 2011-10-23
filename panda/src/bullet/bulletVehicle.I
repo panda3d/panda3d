@@ -66,9 +66,9 @@ get_num_wheels() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletVehicleTuning::
-set_suspension_stiffness(float value) {
+set_suspension_stiffness(PN_stdfloat value) {
 
-  _.m_suspensionStiffness = value;
+  _.m_suspensionStiffness = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -77,9 +77,9 @@ set_suspension_stiffness(float value) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletVehicleTuning::
-set_suspension_compression(float value) {
+set_suspension_compression(PN_stdfloat value) {
 
-  _.m_suspensionCompression = value;
+  _.m_suspensionCompression = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -88,9 +88,9 @@ set_suspension_compression(float value) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletVehicleTuning::
-set_suspension_damping(float value) {
+set_suspension_damping(PN_stdfloat value) {
 
-  _.m_suspensionDamping = value;
+  _.m_suspensionDamping = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -99,9 +99,9 @@ set_suspension_damping(float value) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletVehicleTuning::
-set_max_suspension_travel_cm(float value) {
+set_max_suspension_travel_cm(PN_stdfloat value) {
 
-  _.m_maxSuspensionTravelCm = value;
+  _.m_maxSuspensionTravelCm = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -110,9 +110,9 @@ set_max_suspension_travel_cm(float value) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletVehicleTuning::
-set_friction_slip(float value) {
+set_friction_slip(PN_stdfloat value) {
 
-  _.m_frictionSlip = value;
+  _.m_frictionSlip = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -121,9 +121,9 @@ set_friction_slip(float value) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletVehicleTuning::
-set_max_suspension_force(float value) {
+set_max_suspension_force(PN_stdfloat value) {
 
-  _.m_maxSuspensionForce = value;
+  _.m_maxSuspensionForce = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -131,10 +131,10 @@ set_max_suspension_force(float value) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletVehicleTuning::
+PN_stdfloat BulletVehicleTuning::
 get_suspension_stiffness() const {
 
-  return _.m_suspensionStiffness;
+  return (PN_stdfloat)_.m_suspensionStiffness;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -142,10 +142,10 @@ get_suspension_stiffness() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletVehicleTuning::
+PN_stdfloat BulletVehicleTuning::
 get_suspension_compression() const {
 
-  return _.m_suspensionCompression;
+  return (PN_stdfloat)_.m_suspensionCompression;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -153,10 +153,10 @@ get_suspension_compression() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletVehicleTuning::
+PN_stdfloat BulletVehicleTuning::
 get_suspension_damping() const {
 
-  return _.m_suspensionDamping;
+  return (PN_stdfloat)_.m_suspensionDamping;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -164,10 +164,10 @@ get_suspension_damping() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletVehicleTuning::
+PN_stdfloat BulletVehicleTuning::
 get_max_suspension_travel_cm() const {
 
-  return _.m_maxSuspensionTravelCm;
+  return (PN_stdfloat)_.m_maxSuspensionTravelCm;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -175,10 +175,10 @@ get_max_suspension_travel_cm() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletVehicleTuning::
+PN_stdfloat BulletVehicleTuning::
 get_friction_slip() const {
 
-  return _.m_frictionSlip;
+  return (PN_stdfloat)_.m_frictionSlip;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -186,9 +186,9 @@ get_friction_slip() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletVehicleTuning::
+PN_stdfloat BulletVehicleTuning::
 get_max_suspension_force() const {
 
-  return _.m_maxSuspensionForce;
+  return (PN_stdfloat)_.m_maxSuspensionForce;
 }
 

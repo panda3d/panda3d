@@ -39,19 +39,19 @@ class BulletWheel;
 class BulletVehicleTuning {
 
 PUBLISHED:
-  INLINE void set_suspension_stiffness(float value);
-  INLINE void set_suspension_compression(float value);
-  INLINE void set_suspension_damping(float value);
-  INLINE void set_max_suspension_travel_cm(float value);
-  INLINE void set_friction_slip(float value);
-  INLINE void set_max_suspension_force(float value);
+  INLINE void set_suspension_stiffness(PN_stdfloat value);
+  INLINE void set_suspension_compression(PN_stdfloat value);
+  INLINE void set_suspension_damping(PN_stdfloat value);
+  INLINE void set_max_suspension_travel_cm(PN_stdfloat value);
+  INLINE void set_friction_slip(PN_stdfloat value);
+  INLINE void set_max_suspension_force(PN_stdfloat value);
 
-  INLINE float get_suspension_stiffness() const;
-  INLINE float get_suspension_compression() const;
-  INLINE float get_suspension_damping() const;
-  INLINE float get_max_suspension_travel_cm() const;
-  INLINE float get_friction_slip() const;
-  INLINE float get_max_suspension_force() const;
+  INLINE PN_stdfloat get_suspension_stiffness() const;
+  INLINE PN_stdfloat get_suspension_compression() const;
+  INLINE PN_stdfloat get_suspension_damping() const;
+  INLINE PN_stdfloat get_max_suspension_travel_cm() const;
+  INLINE PN_stdfloat get_friction_slip() const;
+  INLINE PN_stdfloat get_max_suspension_force() const;
 
 private:
   btRaycastVehicle::btVehicleTuning _;
@@ -70,17 +70,17 @@ PUBLISHED:
   INLINE ~BulletVehicle();
 
   void set_coordinate_system(BulletUpAxis up);
-  void set_steering_value(float steering, int idx);
-  void set_brake(float brake, int idx);
-  void set_pitch_control(float pitch);
+  void set_steering_value(PN_stdfloat steering, int idx);
+  void set_brake(PN_stdfloat brake, int idx);
+  void set_pitch_control(PN_stdfloat pitch);
 
   BulletRigidBodyNode *get_chassis();
-  float get_current_speed_km_hour() const;
-  float get_steering_value(int idx) const;
-  LVector3f get_forward_vector() const;
+  PN_stdfloat get_current_speed_km_hour() const;
+  PN_stdfloat get_steering_value(int idx) const;
+  LVector3 get_forward_vector() const;
 
   void reset_suspension();
-  void apply_engine_force(float force, int idx);
+  void apply_engine_force(PN_stdfloat force, int idx);
 
   // Wheels
   BulletWheel create_wheel();

@@ -39,7 +39,7 @@ BulletTriangleMeshShape(BulletTriangleMesh *mesh, bool dynamic, bool compress, b
   // Assert that mesh has at least one triangle
   if (mesh->get_num_triangles() == 0) {
     bullet_cat.warning() << "mesh has zero triangles! adding degenerated triangle." << endl;
-    mesh->add_triangle(LPoint3f::zero(), LPoint3f::zero(), LPoint3f::zero());
+    mesh->add_triangle(LPoint3::zero(), LPoint3::zero(), LPoint3::zero());
   }
 
   // Retain a pointer to the mesh, to prevent it from being deleted
@@ -90,14 +90,14 @@ ptr() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletTriangleMeshShape::
-refit_tree(const LPoint3f &aabb_min, const LPoint3f &aabb_max) {
+refit_tree(const LPoint3 &aabb_min, const LPoint3 &aabb_max) {
 
   nassertv(!aabb_max.is_nan());
   nassertv(!aabb_max.is_nan());
 
   nassertv(this->is_static());
 
-  _bvh_shape->refitTree(LVecBase3f_to_btVector3(aabb_min),
-                        LVecBase3f_to_btVector3(aabb_max));
+  _bvh_shape->refitTree(LVecBase3_to_btVector3(aabb_min),
+                        LVecBase3_to_btVector3(aabb_max));
 }
 

@@ -52,10 +52,10 @@ get_material() const {
 //       Access: Published
 //  Description: Getter for the property m_kLST.
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletSoftBodyMaterial::
+INLINE PN_stdfloat BulletSoftBodyMaterial::
 getLinearStiffness() const {
 
-  return _material.m_kLST;
+  return (PN_stdfloat)_material.m_kLST;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -64,9 +64,9 @@ getLinearStiffness() const {
 //  Description: Setter for the property m_kLST.
 ////////////////////////////////////////////////////////////////////
 INLINE void BulletSoftBodyMaterial::
-setLinearStiffness(float value) {
+setLinearStiffness(PN_stdfloat value) {
 
-  _material.m_kLST = value;
+  _material.m_kLST = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -74,10 +74,10 @@ setLinearStiffness(float value) {
 //       Access: Published
 //  Description: Getter for the property m_kAST.
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletSoftBodyMaterial::
+INLINE PN_stdfloat BulletSoftBodyMaterial::
 getAngularStiffness() const {
 
-  return _material.m_kAST;
+  return (PN_stdfloat)_material.m_kAST;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -86,9 +86,9 @@ getAngularStiffness() const {
 //  Description: Setter for the property m_kAST.
 ////////////////////////////////////////////////////////////////////
 INLINE void BulletSoftBodyMaterial::
-setAngularStiffness(float value) {
+setAngularStiffness(PN_stdfloat value) {
 
-  _material.m_kAST = value;
+  _material.m_kAST = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -96,10 +96,10 @@ setAngularStiffness(float value) {
 //       Access: Published
 //  Description: Getter for the property m_kVST.
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletSoftBodyMaterial::
+INLINE PN_stdfloat BulletSoftBodyMaterial::
 getVolumePreservation() const {
 
-  return _material.m_kVST;
+  return (PN_stdfloat)_material.m_kVST;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -108,8 +108,8 @@ getVolumePreservation() const {
 //  Description: Setter for the property m_kVST.
 ////////////////////////////////////////////////////////////////////
 INLINE void BulletSoftBodyMaterial::
-setVolumePreservation(float value) {
+setVolumePreservation(PN_stdfloat value) {
 
-  _material.m_kVST = value;
+  _material.m_kVST = (btScalar)value;
 }
 

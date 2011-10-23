@@ -31,11 +31,11 @@
 class EXPCL_PANDABULLET BulletBoxShape : public BulletShape {
 
 PUBLISHED:
-  BulletBoxShape(const LVecBase3f &halfExtents);
+  BulletBoxShape(const LVecBase3 &halfExtents);
   INLINE ~BulletBoxShape();
 
-  LVecBase3f get_half_extents_without_marging() const;
-  LVecBase3f get_half_extents_with_marging() const;
+  LVecBase3 get_half_extents_without_marging() const;
+  LVecBase3 get_half_extents_with_marging() const;
 
   static BulletBoxShape *make_from_solid(const CollisionBox *solid);
 

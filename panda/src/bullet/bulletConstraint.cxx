@@ -33,10 +33,10 @@ enable_feedback(bool value) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletConstraint::
+PN_stdfloat BulletConstraint::
 get_applied_impulse() const {
 
-  return ptr()->getAppliedImpulse();
+  return (PN_stdfloat)ptr()->getAppliedImpulse();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -45,9 +45,9 @@ get_applied_impulse() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletConstraint::
-set_debug_draw_size(float size) {
+set_debug_draw_size(PN_stdfloat size) {
 
-  ptr()->setDbgDrawSize(size);
+  ptr()->setDbgDrawSize((btScalar)size);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -55,10 +55,10 @@ set_debug_draw_size(float size) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletConstraint::
+PN_stdfloat BulletConstraint::
 get_debug_draw_size() {
 
-  return ptr()->getDbgDrawSize();
+  return (PN_stdfloat)ptr()->getDbgDrawSize();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -31,17 +31,17 @@ class EXPCL_PANDABULLET BulletSoftBodyWorldInfo {
 PUBLISHED:
   INLINE ~BulletSoftBodyWorldInfo();
 
-  void set_air_density(float density);
-  void set_water_density(float density);
-  void set_water_offset(float offset);
-  void set_water_normal(const LVector3f &normal);
-  void set_gravity(const LVector3f &gravity);
+  void set_air_density(PN_stdfloat density);
+  void set_water_density(PN_stdfloat density);
+  void set_water_offset(PN_stdfloat offset);
+  void set_water_normal(const LVector3 &normal);
+  void set_gravity(const LVector3 &gravity);
 
-  float get_air_density() const;
-  float get_water_density() const;
-  float get_water_offset() const;
-  LVector3f get_water_normal() const;
-  LVector3f get_gravity() const;
+  PN_stdfloat get_air_density() const;
+  PN_stdfloat get_water_density() const;
+  PN_stdfloat get_water_offset() const;
+  LVector3 get_water_normal() const;
+  LVector3 get_gravity() const;
 
   void garbage_collect(int lifetime=256);
 

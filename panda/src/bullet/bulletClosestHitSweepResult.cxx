@@ -61,10 +61,10 @@ has_hit() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletClosestHitSweepResult::
+PN_stdfloat BulletClosestHitSweepResult::
 get_hit_fraction() const {
 
-  return m_closestHitFraction;
+  return (PN_stdfloat)m_closestHitFraction;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -84,10 +84,10 @@ get_node() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-LPoint3f BulletClosestHitSweepResult::
+LPoint3 BulletClosestHitSweepResult::
 get_hit_pos() const {
 
-  return btVector3_to_LPoint3f(m_hitPointWorld);
+  return btVector3_to_LPoint3(m_hitPointWorld);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -95,10 +95,10 @@ get_hit_pos() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-LVector3f BulletClosestHitSweepResult::
+LVector3 BulletClosestHitSweepResult::
 get_hit_normal() const {
 
-  return btVector3_to_LVector3f(m_hitNormalWorld);
+  return btVector3_to_LVector3(m_hitNormalWorld);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -106,10 +106,10 @@ get_hit_normal() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-LPoint3f BulletClosestHitSweepResult::
+LPoint3 BulletClosestHitSweepResult::
 get_from_pos() const {
 
-  return btVector3_to_LPoint3f(m_convexFromWorld);
+  return btVector3_to_LPoint3(m_convexFromWorld);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -117,9 +117,9 @@ get_from_pos() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-LPoint3f BulletClosestHitSweepResult::
+LPoint3 BulletClosestHitSweepResult::
 get_to_pos() const {
 
-  return btVector3_to_LPoint3f(m_convexToWorld);
+  return btVector3_to_LPoint3(m_convexToWorld);
 }
 

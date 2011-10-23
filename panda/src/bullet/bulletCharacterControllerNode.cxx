@@ -22,7 +22,7 @@ TypeHandle BulletCharacterControllerNode::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 BulletCharacterControllerNode::
-BulletCharacterControllerNode(BulletShape *shape, float step_height, const char *name) : PandaNode(name) {
+BulletCharacterControllerNode(BulletShape *shape, PN_stdfloat step_height, const char *name) : PandaNode(name) {
 
   // Synchronised transform
   _sync = TransformState::make_identity();
@@ -177,7 +177,7 @@ safe_to_transform() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletCharacterControllerNode::
-set_linear_velocity(const LVector3f &velocity, bool is_local) {
+set_linear_velocity(const LVector3 &velocity, bool is_local) {
 
   nassertv(!velocity.is_nan());
 
@@ -191,7 +191,7 @@ set_linear_velocity(const LVector3f &velocity, bool is_local) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletCharacterControllerNode::
-set_angular_velocity(float omega) {
+set_angular_velocity(PN_stdfloat omega) {
 
   _angular_velocity = omega;
 }
@@ -202,7 +202,7 @@ set_angular_velocity(float omega) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletCharacterControllerNode::
-sync_p2b(float dt) {
+sync_p2b(PN_stdfloat dt) {
 
   // Synchronise global transform
   transform_changed();
@@ -222,10 +222,10 @@ sync_p2b(float dt) {
   if (_linear_velocity_is_local) {
     btTransform xform = _ghost->getWorldTransform();
     xform.setOrigin(btVector3(0.0f, 0.0f, 0.0f));
-    v = xform(LVecBase3f_to_btVector3(_linear_velocity));
+    v = xform(LVecBase3_to_btVector3(_linear_velocity));
   }
   else {
-    v = LVecBase3f_to_btVector3(_linear_velocity);
+    v = LVecBase3_to_btVector3(_linear_velocity);
   }
 
   //_character->setVelocityForTimeInterval(v, dt);
@@ -243,13 +243,13 @@ void BulletCharacterControllerNode::
 sync_b2p() {
 
   NodePath np = NodePath::any_path((PandaNode *)this);
-  LVecBase3f scale = np.get_net_transform()->get_scale();
+  LVecBase3 scale = np.get_net_transform()->get_scale();
 
   btTransform trans = _ghost->getWorldTransform();
   CPT(TransformState) ts = btTrans_to_TransformState(trans, scale);
 
-  LMatrix4f m_sync = _sync->get_mat();
-  LMatrix4f m_ts = ts->get_mat();
+  LMatrix4 m_sync = _sync->get_mat();
+  LMatrix4 m_ts = ts->get_mat();
 
   if (!m_sync.almost_equal(m_ts)) {
     _sync = ts;
@@ -272,19 +272,19 @@ transform_changed() {
   NodePath np = NodePath::any_path((PandaNode *)this);
   CPT(TransformState) ts = np.get_net_transform();
 
-  LMatrix4f m_sync = _sync->get_mat();
-  LMatrix4f m_ts = ts->get_mat();
+  LMatrix4 m_sync = _sync->get_mat();
+  LMatrix4 m_ts = ts->get_mat();
 
   if (!m_sync.almost_equal(m_ts)) {
     _sync = ts;
 
     // Get translation, heading and scale
-    LPoint3f pos = ts->get_pos();
-    float heading = ts->get_hpr().get_x();
-    LVecBase3f scale = ts->get_scale();
+    LPoint3 pos = ts->get_pos();
+    PN_stdfloat heading = ts->get_hpr().get_x();
+    LVecBase3 scale = ts->get_scale();
 
     // Set translation
-    _character->warp(LVecBase3f_to_btVector3(pos));
+    _character->warp(LVecBase3_to_btVector3(pos));
 
     // Set Heading
     btMatrix3x3 m = _ghost->getWorldTransform().getBasis();
@@ -349,9 +349,9 @@ do_jump() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletCharacterControllerNode::
-set_fall_speed(float fall_speed) {
+set_fall_speed(PN_stdfloat fall_speed) {
 
-  _character->setFallSpeed(fall_speed);
+  _character->setFallSpeed((btScalar)fall_speed);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -360,9 +360,9 @@ set_fall_speed(float fall_speed) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletCharacterControllerNode::
-set_jump_speed(float jump_speed) {
+set_jump_speed(PN_stdfloat jump_speed) {
 
-  _character->setJumpSpeed(jump_speed);
+  _character->setJumpSpeed((btScalar)jump_speed);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -371,9 +371,9 @@ set_jump_speed(float jump_speed) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletCharacterControllerNode::
-set_max_jump_height(float max_jump_height) {
+set_max_jump_height(PN_stdfloat max_jump_height) {
 
-  _character->setMaxJumpHeight(max_jump_height);
+  _character->setMaxJumpHeight((btScalar)max_jump_height);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -382,9 +382,9 @@ set_max_jump_height(float max_jump_height) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletCharacterControllerNode::
-set_max_slope(float max_slope) {
+set_max_slope(PN_stdfloat max_slope) {
 
-  _character->setMaxSlope(max_slope);
+  _character->setMaxSlope((btScalar)max_slope);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -392,20 +392,20 @@ set_max_slope(float max_slope) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletCharacterControllerNode::
+PN_stdfloat BulletCharacterControllerNode::
 get_max_slope() const {
 
-  return _character->getMaxSlope();
+  return (PN_stdfloat)_character->getMaxSlope();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletCharacterControllerNode::get_gravity
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletCharacterControllerNode::
+PN_stdfloat BulletCharacterControllerNode::
 get_gravity() const {
 
-  return _character->getGravity();
+  return (PN_stdfloat)_character->getGravity();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -413,9 +413,9 @@ get_gravity() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletCharacterControllerNode::
-set_gravity(float gravity) {
+set_gravity(PN_stdfloat gravity) {
 
-  _character->setGravity((btScalar) gravity);
+  _character->setGravity((btScalar)gravity);
 }
 
 

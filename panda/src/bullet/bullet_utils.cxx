@@ -17,118 +17,132 @@
 #include "transformState.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3f_to_btVector3
+//     Function: LVecBase3_to_btVector3
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-btVector3 LVecBase3f_to_btVector3(const LVecBase3f &v) {
+btVector3 LVecBase3_to_btVector3(const LVecBase3 &v) {
 
-  return btVector3(v.get_x(), v.get_y(), v.get_z());
+  return btVector3((btScalar)v.get_x(),
+                   (btScalar)v.get_y(),
+                   (btScalar)v.get_z());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: btVector3_to_LVecBase3f
+//     Function: btVector3_to_LVecBase3
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-LVecBase3f btVector3_to_LVecBase3f(const btVector3 &v) {
+LVecBase3 btVector3_to_LVecBase3(const btVector3 &v) {
 
-  return LVecBase3f(v.getX(), v.getY(), v.getZ());
+  return LVecBase3((PN_stdfloat)v.getX(),
+                   (PN_stdfloat)v.getY(),
+                   (PN_stdfloat)v.getZ());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: btVector3_to_LVector3f
+//     Function: btVector3_to_LVector3
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-LVector3f btVector3_to_LVector3f(const btVector3 &v) {
+LVector3 btVector3_to_LVector3(const btVector3 &v) {
 
-  return LVector3f(v.getX(), v.getY(), v.getZ());
+  return LVector3((PN_stdfloat)v.getX(),
+                  (PN_stdfloat)v.getY(),
+                  (PN_stdfloat)v.getZ());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: btVector3_to_LPoint3f
+//     Function: btVector3_to_LPoint3
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-LPoint3f btVector3_to_LPoint3f(const btVector3 &p) {
+LPoint3 btVector3_to_LPoint3(const btVector3 &p) {
 
-  return LPoint3f(p.getX(), p.getY(), p.getZ());
+  return LPoint3((PN_stdfloat)p.getX(),
+                 (PN_stdfloat)p.getY(),
+                 (PN_stdfloat)p.getZ());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LMatrix3f_to_btMatrix3x3
+//     Function: LMatrix3_to_btMatrix3x3
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-btMatrix3x3 LMatrix3f_to_btMatrix3x3(const LMatrix3f &m) {
+btMatrix3x3 LMatrix3_to_btMatrix3x3(const LMatrix3 &m) {
 
   btMatrix3x3 result;
-  result.setFromOpenGLSubMatrix(m.get_data());
+  result.setFromOpenGLSubMatrix((const btScalar *)m.get_data());
   return result;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: btMatrix3x3_to_LMatrix3f
+//     Function: btMatrix3x3_to_LMatrix3
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-LMatrix3f btMatrix3x3_to_LMatrix3f(const btMatrix3x3 &m) {
+LMatrix3 btMatrix3x3_to_LMatrix3(const btMatrix3x3 &m) {
 
-  float cells[9];
+  btScalar cells[9];
   m.getOpenGLSubMatrix(cells);
-  return LMatrix3f(cells[0], cells[1], cells[2],
-                   cells[3], cells[4], cells[5],
-                   cells[6], cells[7], cells[8]);
+  return LMatrix3((PN_stdfloat)cells[0], (PN_stdfloat)cells[1], (PN_stdfloat)cells[2],
+                  (PN_stdfloat)cells[3], (PN_stdfloat)cells[4], (PN_stdfloat)cells[5],
+                  (PN_stdfloat)cells[6], (PN_stdfloat)cells[7], (PN_stdfloat)cells[8]);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LQuaternionf_to_btQuat
+//     Function: LQuaternion_to_btQuat
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-btQuaternion LQuaternionf_to_btQuat(const LQuaternionf &q) {
+btQuaternion LQuaternion_to_btQuat(const LQuaternion &q) {
 
-  return btQuaternion(q.get_i(), q.get_j(), q.get_k(), q.get_r());
+  return btQuaternion((btScalar)q.get_i(),
+                      (btScalar)q.get_j(),
+                      (btScalar)q.get_k(),
+                      (btScalar)q.get_r());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: btQuat_to_LQuaternionf
+//     Function: btQuat_to_LQuaternion
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-LQuaternionf btQuat_to_LQuaternionf(const btQuaternion &q) {
+LQuaternion btQuat_to_LQuaternion(const btQuaternion &q) {
 
-  return LQuaternionf(q.getW(), q.getX(), q.getY(), q.getZ());
+  return LQuaternion((PN_stdfloat)q.getW(),
+                     (PN_stdfloat)q.getX(),
+                     (PN_stdfloat)q.getY(),
+                     (PN_stdfloat)q.getZ());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4f_to_btTrans
+//     Function: LMatrix4_to_btTrans
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-btTransform LMatrix4f_to_btTrans(const LMatrix4f &m) {
+btTransform LMatrix4_to_btTrans(const LMatrix4 &m) {
 
-  LQuaternionf quat;
+  LQuaternion quat;
   quat.set_from_matrix(m.get_upper_3());
 
-  btQuaternion btq = LQuaternionf_to_btQuat(quat);
-  btVector3 btv = LVecBase3f_to_btVector3(m.get_row3(3));
+  btQuaternion btq = LQuaternion_to_btQuat(quat);
+  btVector3 btv = LVecBase3_to_btVector3(m.get_row3(3));
 
   return btTransform(btq, btv);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: btTrans_to_LMatrix4f
+//     Function: btTrans_to_LMatrix4
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-LMatrix4f btTrans_to_LMatrix4f(const btTransform &trans) {
+LMatrix4 btTrans_to_LMatrix4(const btTransform &trans) {
 
   return TransformState::make_pos_quat_scale(
-    btVector3_to_LVector3f(trans.getOrigin()),
-    btQuat_to_LQuaternionf(trans.getRotation()),
-    LVector3f(1.0f, 1.0f, 1.0f))->get_mat();
+    btVector3_to_LVector3(trans.getOrigin()),
+    btQuat_to_LQuaternion(trans.getRotation()),
+    LVector3(1.0f, 1.0f, 1.0f))->get_mat();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: btTrans_to_TransformState
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-CPT(TransformState) btTrans_to_TransformState(const btTransform &trans, const LVecBase3f &scale) {
+CPT(TransformState) btTrans_to_TransformState(const btTransform &trans, const LVecBase3 &scale) {
 
-  LVecBase3f pos = btVector3_to_LVector3f(trans.getOrigin());
-  LQuaternionf quat = btQuat_to_LQuaternionf(trans.getRotation());
+  LVecBase3 pos = btVector3_to_LVector3(trans.getOrigin());
+  LQuaternion quat = btQuat_to_LQuaternion(trans.getRotation());
 
   return TransformState::make_pos_quat_scale(pos, quat, scale);
 }
@@ -141,13 +155,13 @@ btTransform TransformState_to_btTrans(CPT(TransformState) ts) {
 
   ts = ts->set_scale(1.0);
 
-  LMatrix4f m = ts->get_mat();
+  LMatrix4 m = ts->get_mat();
 
-  LQuaternionf quat;
+  LQuaternion quat;
   quat.set_from_matrix(m.get_upper_3());
 
-  btQuaternion btq = LQuaternionf_to_btQuat(quat);
-  btVector3 btv = LVecBase3f_to_btVector3(m.get_row3(3));
+  btQuaternion btq = LQuaternion_to_btQuat(quat);
+  btVector3 btv = LVecBase3_to_btVector3(m.get_row3(3));
 
   return btTransform(btq, btv);
 }
@@ -193,13 +207,13 @@ void get_node_transform(btTransform &trans, PandaNode *node) {
   ts = ts->set_scale(1.0);
 
   // Convert
-  LMatrix4f m = ts->get_mat();
+  LMatrix4 m = ts->get_mat();
 
-  LQuaternionf quat;
+  LQuaternion quat;
   quat.set_from_matrix(m.get_upper_3());
 
-  btQuaternion btq = LQuaternionf_to_btQuat(quat);
-  btVector3 btv = LVecBase3f_to_btVector3(m.get_row3(3));
+  btQuaternion btq = LQuaternion_to_btQuat(quat);
+  btVector3 btv = LVecBase3_to_btVector3(m.get_row3(3));
 
   trans.setRotation(btq);
   trans.setOrigin(btv);

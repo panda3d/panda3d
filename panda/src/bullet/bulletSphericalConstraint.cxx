@@ -24,10 +24,10 @@ TypeHandle BulletSphericalConstraint::_type_handle;
 ////////////////////////////////////////////////////////////////////
 BulletSphericalConstraint::
 BulletSphericalConstraint(const BulletRigidBodyNode *node_a, 
-                          const LPoint3f &pivot_a) {
+                          const LPoint3 &pivot_a) {
 
   btRigidBody *ptr_a = btRigidBody::upcast(node_a->get_object());
-  btVector3 pos_a = LVecBase3f_to_btVector3(pivot_a);
+  btVector3 pos_a = LVecBase3_to_btVector3(pivot_a);
 
   _constraint = new btPoint2PointConstraint(*ptr_a, pos_a);
 }
@@ -40,14 +40,14 @@ BulletSphericalConstraint(const BulletRigidBodyNode *node_a,
 BulletSphericalConstraint::
 BulletSphericalConstraint(const BulletRigidBodyNode *node_a,
                           const BulletRigidBodyNode *node_b,
-                          const LPoint3f &pivot_a,
-                          const LPoint3f &pivot_b) {
+                          const LPoint3 &pivot_a,
+                          const LPoint3 &pivot_b) {
 
   btRigidBody *ptr_a = btRigidBody::upcast(node_a->get_object());
-  btVector3 pos_a = LVecBase3f_to_btVector3(pivot_a);
+  btVector3 pos_a = LVecBase3_to_btVector3(pivot_a);
 
   btRigidBody *ptr_b = btRigidBody::upcast(node_b->get_object());
-  btVector3 pos_b = LVecBase3f_to_btVector3(pivot_b);
+  btVector3 pos_b = LVecBase3_to_btVector3(pivot_b);
 
   _constraint = new btPoint2PointConstraint(*ptr_a, *ptr_b, pos_a, pos_b);
 }
@@ -69,10 +69,10 @@ ptr() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletSphericalConstraint::
-set_pivot_a(const LPoint3f &pivot_a) {
+set_pivot_a(const LPoint3 &pivot_a) {
 
   nassertv(!pivot_a.is_nan());
-  _constraint->setPivotA(LVecBase3f_to_btVector3(pivot_a));
+  _constraint->setPivotA(LVecBase3_to_btVector3(pivot_a));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -81,10 +81,10 @@ set_pivot_a(const LPoint3f &pivot_a) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletSphericalConstraint::
-set_pivot_b(const LPoint3f &pivot_b) {
+set_pivot_b(const LPoint3 &pivot_b) {
 
   nassertv(!pivot_b.is_nan());
-  _constraint->setPivotA(LVecBase3f_to_btVector3(pivot_b));
+  _constraint->setPivotA(LVecBase3_to_btVector3(pivot_b));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -92,10 +92,10 @@ set_pivot_b(const LPoint3f &pivot_b) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-LPoint3f BulletSphericalConstraint::
+LPoint3 BulletSphericalConstraint::
 get_pivot_in_a() const {
 
-  return btVector3_to_LPoint3f(_constraint->getPivotInA());
+  return btVector3_to_LPoint3(_constraint->getPivotInA());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -103,9 +103,9 @@ get_pivot_in_a() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-LPoint3f BulletSphericalConstraint::
+LPoint3 BulletSphericalConstraint::
 get_pivot_in_b() const {
 
-  return btVector3_to_LPoint3f(_constraint->getPivotInB());
+  return btVector3_to_LPoint3(_constraint->getPivotInB());
 }
 

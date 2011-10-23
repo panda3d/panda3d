@@ -54,16 +54,16 @@ private:
   void sync_b2p(btDynamicsWorld *world);
 
   struct Line {
-    LVecBase3f _p0;
-    LVecBase3f _p1;
-    LColorf _color;
+    LVecBase3 _p0;
+    LVecBase3 _p1;
+    LColor _color;
   };
 
   struct Triangle {
-    LVecBase3f _p0;
-    LVecBase3f _p1;
-    LVecBase3f _p2;
-    LColorf _color;
+    LVecBase3 _p0;
+    LVecBase3 _p1;
+    LVecBase3 _p2;
+    LColor _color;
   };
 
   class DebugDraw : public btIDebugDraw {

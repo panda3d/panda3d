@@ -36,10 +36,10 @@ PUBLISHED:
   BulletRigidBodyNode *get_rigid_body_b();
 
   void enable_feedback(bool value);
-  void set_debug_draw_size(float size);
+  void set_debug_draw_size(PN_stdfloat size);
 
-  float get_applied_impulse() const;
-  float get_debug_draw_size();
+  PN_stdfloat get_applied_impulse() const;
+  PN_stdfloat get_debug_draw_size();
 
 public:
   virtual btTypedConstraint *ptr() const = 0;

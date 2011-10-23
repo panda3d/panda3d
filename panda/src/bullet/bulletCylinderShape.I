@@ -28,10 +28,10 @@ INLINE BulletCylinderShape::
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletCylinderShape::
+INLINE PN_stdfloat BulletCylinderShape::
 get_radius() const {
 
-  return _shape->getRadius();
+  return (PN_stdfloat)_shape->getRadius();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -39,10 +39,10 @@ get_radius() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE LVecBase3f BulletCylinderShape::
+INLINE LVecBase3 BulletCylinderShape::
 get_half_extents_without_marging() const {
 
-  return btVector3_to_LVecBase3f(_shape->getHalfExtentsWithoutMargin());
+  return btVector3_to_LVecBase3(_shape->getHalfExtentsWithoutMargin());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -50,9 +50,9 @@ get_half_extents_without_marging() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE LVecBase3f BulletCylinderShape::
+INLINE LVecBase3 BulletCylinderShape::
 get_half_extents_with_marging() const {
 
-  return btVector3_to_LVecBase3f(_shape->getHalfExtentsWithMargin());
+  return btVector3_to_LVecBase3(_shape->getHalfExtentsWithMargin());
 }
 

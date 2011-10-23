@@ -28,10 +28,10 @@ INLINE BulletPlaneShape::
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletPlaneShape::
+INLINE PN_stdfloat BulletPlaneShape::
 get_plane_constant() const {
 
-  return _shape->getPlaneConstant();
+  return (PN_stdfloat)_shape->getPlaneConstant();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -39,9 +39,9 @@ get_plane_constant() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE LVector3f BulletPlaneShape::
+INLINE LVector3 BulletPlaneShape::
 get_plane_normal() const {
 
-  return btVector3_to_LVector3f(_shape->getPlaneNormal());
+  return btVector3_to_LVector3(_shape->getPlaneNormal());
 }
 

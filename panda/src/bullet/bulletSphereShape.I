@@ -28,7 +28,7 @@ INLINE BulletSphereShape::
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletSphereShape::
+INLINE PN_stdfloat BulletSphereShape::
 get_radius() const {
 
   return _shape->getRadius();

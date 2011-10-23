@@ -318,10 +318,10 @@ is_identity(btTransform &trans) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-LPoint3f BulletBodyNode::
+LPoint3 BulletBodyNode::
 get_shape_pos(int idx) const {
 
-  nassertr(idx >= 0 && idx < (int)_shapes.size(), LPoint3f::zero());
+  nassertr(idx >= 0 && idx < (int)_shapes.size(), LPoint3::zero());
   return get_shape_mat(idx).get_row3(3);
 }
 
@@ -330,17 +330,17 @@ get_shape_pos(int idx) const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-LMatrix4f BulletBodyNode::
+LMatrix4 BulletBodyNode::
 get_shape_mat(int idx) const {
 
-  nassertr(idx >= 0 && idx < (int)_shapes.size(), LMatrix4f::ident_mat());
+  nassertr(idx >= 0 && idx < (int)_shapes.size(), LMatrix4::ident_mat());
 
   btCollisionShape *root = get_object()->getCollisionShape();
   if (root->getShapeType() == COMPOUND_SHAPE_PROXYTYPE) {
     btCompoundShape *compound = (btCompoundShape *)root;
 
     btTransform trans = compound->getChildTransform(idx);
-    return btTrans_to_LMatrix4f(trans);
+    return btTrans_to_LMatrix4(trans);
 
     // The above code assumes that shape's index in _shapes member
     // is the same as the shapes index within the compound. If it
@@ -351,13 +351,13 @@ get_shape_mat(int idx) const {
     for (int i=0; i<compound->getNumChildShapes(); i++) {
       if (compound->getChildShape(i) == shape) {
          btTransform trans = compound->getChildTransform(idx);
-         return btTrans_to_LMatrix4f(trans);
+         return btTrans_to_LMatrix4(trans);
       }
     }
     */
   }
 
-  return LMatrix4f::ident_mat();
+  return LMatrix4::ident_mat();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -379,7 +379,7 @@ shape_changed() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletBodyNode::
-set_deactivation_time(float dt) {
+set_deactivation_time(PN_stdfloat dt) {
 
   get_object()->setDeactivationTime(dt);
 }
@@ -389,7 +389,7 @@ set_deactivation_time(float dt) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletBodyNode::
+PN_stdfloat BulletBodyNode::
 get_deactivation_time() const {
 
   return get_object()->getDeactivationTime();
@@ -479,10 +479,10 @@ check_collision_with(PandaNode *node) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-LVecBase3f BulletBodyNode::
+LVecBase3 BulletBodyNode::
 get_anisotropic_friction() const {
 
-  return btVector3_to_LVecBase3f(get_object()->getAnisotropicFriction());
+  return btVector3_to_LVecBase3(get_object()->getAnisotropicFriction());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -491,10 +491,10 @@ get_anisotropic_friction() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletBodyNode::
-set_anisotropic_friction(const LVecBase3f &friction) {
+set_anisotropic_friction(const LVecBase3 &friction) {
 
   nassertv(!friction.is_nan());
-  get_object()->setAnisotropicFriction(LVecBase3f_to_btVector3(friction));
+  get_object()->setAnisotropicFriction(LVecBase3_to_btVector3(friction));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -513,7 +513,7 @@ has_contact_response() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletBodyNode::
+PN_stdfloat BulletBodyNode::
 get_contact_processing_threshold() const {
 
   return get_object()->getContactProcessingThreshold();
@@ -526,7 +526,7 @@ get_contact_processing_threshold() const {
 //               contacts, if the distance is above this threshold.
 ////////////////////////////////////////////////////////////////////
 void BulletBodyNode::
-set_contact_processing_threshold(float threshold) {
+set_contact_processing_threshold(PN_stdfloat threshold) {
 
   get_object()->setContactProcessingThreshold(threshold);
 }
@@ -536,7 +536,7 @@ set_contact_processing_threshold(float threshold) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletBodyNode::
+PN_stdfloat BulletBodyNode::
 get_ccd_swept_sphere_radius() const {
 
   return get_object()->getCcdSweptSphereRadius();
@@ -548,7 +548,7 @@ get_ccd_swept_sphere_radius() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletBodyNode::
-set_ccd_swept_sphere_radius(float radius) {
+set_ccd_swept_sphere_radius(PN_stdfloat radius) {
 
   return get_object()->setCcdSweptSphereRadius(radius);
 }
@@ -558,7 +558,7 @@ set_ccd_swept_sphere_radius(float radius) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletBodyNode::
+PN_stdfloat BulletBodyNode::
 get_ccd_motion_threshold() const {
 
   return get_object()->getCcdMotionThreshold();
@@ -570,7 +570,7 @@ get_ccd_motion_threshold() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletBodyNode::
-set_ccd_motion_threshold(float threshold) {
+set_ccd_motion_threshold(PN_stdfloat threshold) {
 
   return get_object()->setCcdMotionThreshold(threshold);
 }
@@ -621,9 +621,9 @@ add_shapes_from_collision_solids(CollisionNode *cnode) {
       }
 
       for (int i=2; i < polygon->get_num_points(); i++ ) {
-        LPoint3f p1 = polygon->get_point(0);
-        LPoint3f p2 = polygon->get_point(i-1);
-        LPoint3f p3 = polygon->get_point(i);
+        LPoint3 p1 = polygon->get_point(0);
+        LPoint3 p2 = polygon->get_point(i-1);
+        LPoint3 p3 = polygon->get_point(i);
 
         mesh->add_triangle(p1, p2, p3, true);
       }

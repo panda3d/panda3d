@@ -28,11 +28,11 @@
 class EXPCL_PANDABULLET BulletConeShape : public BulletShape {
 
 PUBLISHED:
-  BulletConeShape(float radius, float height, BulletUpAxis up=Z_up);
+  BulletConeShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up=Z_up);
   INLINE ~BulletConeShape();
 
-  INLINE float get_radius() const;
-  INLINE float get_height() const;
+  INLINE PN_stdfloat get_radius() const;
+  INLINE PN_stdfloat get_height() const;
 
 public:
   virtual btCollisionShape *ptr() const;

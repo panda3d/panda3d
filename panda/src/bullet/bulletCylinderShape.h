@@ -28,13 +28,13 @@
 class EXPCL_PANDABULLET BulletCylinderShape : public BulletShape {
 
 PUBLISHED:
-  BulletCylinderShape(const LVector3f &half_extents, BulletUpAxis up=Z_up);
-  BulletCylinderShape(float radius, float height, BulletUpAxis up=Z_up);
+  BulletCylinderShape(const LVector3 &half_extents, BulletUpAxis up=Z_up);
+  BulletCylinderShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up=Z_up);
   INLINE ~BulletCylinderShape();
 
-  INLINE float get_radius() const;
-  INLINE LVecBase3f get_half_extents_without_marging() const;
-  INLINE LVecBase3f get_half_extents_with_marging() const;
+  INLINE PN_stdfloat get_radius() const;
+  INLINE LVecBase3 get_half_extents_without_marging() const;
+  INLINE LVecBase3 get_half_extents_with_marging() const;
 
 public:
   virtual btCollisionShape *ptr() const;

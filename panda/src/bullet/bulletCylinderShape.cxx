@@ -22,9 +22,9 @@ TypeHandle BulletCylinderShape::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 BulletCylinderShape::
-BulletCylinderShape(const LVector3f &half_extents, BulletUpAxis up) {
+BulletCylinderShape(const LVector3 &half_extents, BulletUpAxis up) {
 
-  btVector3 btHalfExtents = LVecBase3f_to_btVector3(half_extents);
+  btVector3 btHalfExtents = LVecBase3_to_btVector3(half_extents);
 
   switch (up) {
   case X_up:
@@ -50,7 +50,7 @@ BulletCylinderShape(const LVector3f &half_extents, BulletUpAxis up) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 BulletCylinderShape::
-BulletCylinderShape(float radius, float height, BulletUpAxis up) {
+BulletCylinderShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up) {
 
   switch (up) {
   case X_up:

@@ -31,11 +31,11 @@
 class EXPCL_PANDABULLET BulletPlaneShape : public BulletShape {
 
 PUBLISHED:
-  BulletPlaneShape(const LVector3f &normal, float constant);
+  BulletPlaneShape(const LVector3 &normal, PN_stdfloat constant);
   INLINE ~BulletPlaneShape();
 
-  INLINE LVector3f get_plane_normal() const;
-  INLINE float get_plane_constant() const;
+  INLINE LVector3 get_plane_normal() const;
+  INLINE PN_stdfloat get_plane_constant() const;
 
   static BulletPlaneShape *make_from_solid(const CollisionPlane *solid);
 

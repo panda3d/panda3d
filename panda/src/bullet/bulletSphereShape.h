@@ -30,10 +30,10 @@
 class EXPCL_PANDABULLET BulletSphereShape : public BulletShape {
 
 PUBLISHED:
-  BulletSphereShape(float radius);
+  BulletSphereShape(PN_stdfloat radius);
   INLINE ~BulletSphereShape();
 
-  INLINE float get_radius() const;
+  INLINE PN_stdfloat get_radius() const;
 
   static BulletSphereShape *make_from_solid(const CollisionSphere *solid);
 

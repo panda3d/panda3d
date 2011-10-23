@@ -34,22 +34,22 @@
 class EXPCL_PANDABULLET BulletCharacterControllerNode : public PandaNode {
 
 PUBLISHED:
-  BulletCharacterControllerNode(BulletShape *shape, float step_height, const char *name="character");
+  BulletCharacterControllerNode(BulletShape *shape, PN_stdfloat step_height, const char *name="character");
   INLINE ~BulletCharacterControllerNode();
 
-  void set_linear_velocity(const LVector3f &velocity, bool is_local);
-  void set_angular_velocity(float omega);
+  void set_linear_velocity(const LVector3 &velocity, bool is_local);
+  void set_angular_velocity(PN_stdfloat omega);
 
   BulletShape *get_shape() const;
 
-  float get_gravity() const;
-  float get_max_slope() const;
+  PN_stdfloat get_gravity() const;
+  PN_stdfloat get_max_slope() const;
 
-  void set_fall_speed(float fall_speed);
-  void set_jump_speed(float jump_speed);
-  void set_max_jump_height(float max_jump_height);
-  void set_max_slope(float max_slope);
-  void set_gravity(float gravity);
+  void set_fall_speed(PN_stdfloat fall_speed);
+  void set_jump_speed(PN_stdfloat jump_speed);
+  void set_max_jump_height(PN_stdfloat max_jump_height);
+  void set_max_slope(PN_stdfloat max_slope);
+  void set_gravity(PN_stdfloat gravity);
   void set_use_ghost_sweep_test(bool value);
 
   bool is_on_ground() const;
@@ -69,7 +69,7 @@ public:
   INLINE btPairCachingGhostObject *get_ghost() const;
   INLINE btKinematicCharacterController *get_character() const;
 
-  void sync_p2b(float dt);
+  void sync_p2b(PN_stdfloat dt);
   void sync_b2p();
 
 protected:
@@ -86,9 +86,9 @@ private:
 
   PT(BulletShape) _shape;
 
-  LVector3f _linear_velocity;
+  LVector3 _linear_velocity;
   bool _linear_velocity_is_local;
-  float _angular_velocity;
+  PN_stdfloat _angular_velocity;
 
 ////////////////////////////////////////////////////////////////////
 public:

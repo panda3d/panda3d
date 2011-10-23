@@ -30,7 +30,7 @@
 class EXPCL_PANDABULLET BulletHeightfieldShape : public BulletShape {
 
 PUBLISHED:
-  BulletHeightfieldShape(const PNMImage &image, float max_height, BulletUpAxis up=Z_up);
+  BulletHeightfieldShape(const PNMImage &image, PN_stdfloat max_height, BulletUpAxis up=Z_up);
   INLINE ~BulletHeightfieldShape();
 
   void set_use_diamond_subdivision(bool flag=true);

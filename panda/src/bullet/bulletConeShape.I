@@ -28,10 +28,10 @@ INLINE BulletConeShape::
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletConeShape::
+INLINE PN_stdfloat BulletConeShape::
 get_radius() const {
 
-  return _shape->getRadius();
+  return (PN_stdfloat)_shape->getRadius();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -39,9 +39,9 @@ get_radius() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletConeShape::
+INLINE PN_stdfloat BulletConeShape::
 get_height() const {
 
-  return _shape->getHeight();
+  return (PN_stdfloat)_shape->getHeight();
 }
 

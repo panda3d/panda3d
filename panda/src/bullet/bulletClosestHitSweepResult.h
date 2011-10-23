@@ -33,15 +33,15 @@ struct EXPCL_PANDABULLET BulletClosestHitSweepResult : public btCollisionWorld::
 PUBLISHED:
   INLINE static BulletClosestHitSweepResult empty();
 
-  LPoint3f get_from_pos() const;
-  LPoint3f get_to_pos() const;
+  LPoint3 get_from_pos() const;
+  LPoint3 get_to_pos() const;
 
   bool has_hit() const;
 
   PandaNode *get_node() const;
-  LPoint3f get_hit_pos() const;
-  LVector3f get_hit_normal() const;
-  float get_hit_fraction() const;
+  LPoint3 get_hit_pos() const;
+  LVector3 get_hit_normal() const;
+  PN_stdfloat get_hit_fraction() const;
 
 public:
   virtual bool needsCollision(btBroadphaseProxy* proxy0) const;  

@@ -22,7 +22,7 @@ TypeHandle BulletSphereShape::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 BulletSphereShape::
-BulletSphereShape(float radius) {
+BulletSphereShape(PN_stdfloat radius) {
 
   _shape = new btSphereShape(radius);
   _shape->setUserPointer(this);

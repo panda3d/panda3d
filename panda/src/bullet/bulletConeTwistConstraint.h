@@ -40,19 +40,19 @@ PUBLISHED:
                             CPT(TransformState) frame_b);
   INLINE ~BulletConeTwistConstraint();
 
-  void set_limit(int index, float value);
-  void set_limit(float swing1, float swing2, float twist, float softness=1.0f, float bias=0.3f, float relaxation=1.0f);
+  void set_limit(int index, PN_stdfloat value);
+  void set_limit(PN_stdfloat swing1, PN_stdfloat swing2, PN_stdfloat twist, PN_stdfloat softness=1.0f, PN_stdfloat bias=0.3f, PN_stdfloat relaxation=1.0f);
 
-  void set_damping(float damping);
+  void set_damping(PN_stdfloat damping);
 
-  float get_fix_threshold() const;
-  void set_fix_threshold(float threshold);
+  PN_stdfloat get_fix_threshold() const;
+  void set_fix_threshold(PN_stdfloat threshold);
 
   void enable_motor(bool enable);
-  void set_max_motor_impulse(float max_impulse);
-  void set_max_motor_impulse_normalized(float max_impulse);
-  void set_motor_target(const LQuaternionf &quat);
-  void set_motor_target_in_constraint_space(const LQuaternionf &quat);
+  void set_max_motor_impulse(PN_stdfloat max_impulse);
+  void set_max_motor_impulse_normalized(PN_stdfloat max_impulse);
+  void set_motor_target(const LQuaternion &quat);
+  void set_motor_target_in_constraint_space(const LQuaternion &quat);
 
 public:
   virtual btTypedConstraint *ptr() const;

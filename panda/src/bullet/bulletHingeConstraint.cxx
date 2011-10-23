@@ -29,13 +29,13 @@ TypeHandle BulletHingeConstraint::_type_handle;
 ////////////////////////////////////////////////////////////////////
 BulletHingeConstraint::
 BulletHingeConstraint(const BulletRigidBodyNode *node_a, 
-                      const LPoint3f &pivot_a,
-                      const LVector3f &axis_a,
+                      const LPoint3 &pivot_a,
+                      const LVector3 &axis_a,
                       bool use_frame_a) {
 
   btRigidBody *ptr_a = btRigidBody::upcast(node_a->get_object());
-  btVector3 pos_a = LVecBase3f_to_btVector3(pivot_a);
-  btVector3 vec_a = LVecBase3f_to_btVector3(axis_a);
+  btVector3 pos_a = LVecBase3_to_btVector3(pivot_a);
+  btVector3 vec_a = LVecBase3_to_btVector3(axis_a);
 
   _constraint = new btHingeConstraint(*ptr_a, pos_a, vec_a, use_frame_a);
 }
@@ -54,19 +54,19 @@ BulletHingeConstraint(const BulletRigidBodyNode *node_a,
 BulletHingeConstraint::
 BulletHingeConstraint(const BulletRigidBodyNode *node_a,
                       const BulletRigidBodyNode *node_b,
-                      const LPoint3f &pivot_a,
-                      const LPoint3f &pivot_b,
-                      const LVector3f &axis_a,
-                      const LVector3f &axis_b,
+                      const LPoint3 &pivot_a,
+                      const LPoint3 &pivot_b,
+                      const LVector3 &axis_a,
+                      const LVector3 &axis_b,
                       bool use_frame_a) {
 
   btRigidBody *ptr_a = btRigidBody::upcast(node_a->get_object());
-  btVector3 pos_a = LVecBase3f_to_btVector3(pivot_a);
-  btVector3 vec_a = LVecBase3f_to_btVector3(axis_a);
+  btVector3 pos_a = LVecBase3_to_btVector3(pivot_a);
+  btVector3 vec_a = LVecBase3_to_btVector3(axis_a);
 
   btRigidBody *ptr_b = btRigidBody::upcast(node_b->get_object());
-  btVector3 pos_b = LVecBase3f_to_btVector3(pivot_b);
-  btVector3 vec_b = LVecBase3f_to_btVector3(axis_b);
+  btVector3 pos_b = LVecBase3_to_btVector3(pivot_b);
+  btVector3 vec_b = LVecBase3_to_btVector3(axis_b);
 
   _constraint = new btHingeConstraint(*ptr_a, *ptr_b, pos_a, pos_b, vec_a, vec_b, use_frame_a);
 }
@@ -111,7 +111,7 @@ get_angular_only() const {
 //               degrees.
 ////////////////////////////////////////////////////////////////////
 void BulletHingeConstraint::
-set_limit(float low, float high, float softness, float bias, float relaxation) {
+set_limit(PN_stdfloat low, PN_stdfloat high, PN_stdfloat softness, PN_stdfloat bias, PN_stdfloat relaxation) {
 
   low  = deg_2_rad(low);
   high = deg_2_rad(high);
@@ -126,11 +126,11 @@ set_limit(float low, float high, float softness, float bias, float relaxation) {
 //               coordinates.
 ////////////////////////////////////////////////////////////////////
 void BulletHingeConstraint::
-set_axis(const LVector3f &axis) {
+set_axis(const LVector3 &axis) {
 
   nassertv(!axis.is_nan());
 
-  btVector3 v = LVecBase3f_to_btVector3(axis);
+  btVector3 v = LVecBase3_to_btVector3(axis);
   _constraint->setAxis(v);
 }
 
@@ -139,7 +139,7 @@ set_axis(const LVector3f &axis) {
 //       Access: Published
 //  Description: Returns the lower angular limit in degrees.
 ////////////////////////////////////////////////////////////////////
-float BulletHingeConstraint::
+PN_stdfloat BulletHingeConstraint::
 get_lower_limit() const {
 
   return rad_2_deg(_constraint->getLowerLimit());
@@ -150,7 +150,7 @@ get_lower_limit() const {
 //       Access: Published
 //  Description: Returns the upper angular limit in degrees.
 ////////////////////////////////////////////////////////////////////
-float BulletHingeConstraint::
+PN_stdfloat BulletHingeConstraint::
 get_upper_limit() const {
 
   return rad_2_deg(_constraint->getUpperLimit());
@@ -162,7 +162,7 @@ get_upper_limit() const {
 //  Description: Returns the angle between node_a and node_b in
 //               degrees.
 ////////////////////////////////////////////////////////////////////
-float BulletHingeConstraint::
+PN_stdfloat BulletHingeConstraint::
 get_hinge_angle() {
 
   return rad_2_deg(_constraint->getHingeAngle());
@@ -178,7 +178,7 @@ get_hinge_angle() {
 //               velocity.
 ////////////////////////////////////////////////////////////////////
 void BulletHingeConstraint::
-enable_angular_motor(bool enable, float target_velocity, float max_impulse) {
+enable_angular_motor(bool enable, PN_stdfloat target_velocity, PN_stdfloat max_impulse) {
 
   _constraint->enableAngularMotor(enable, target_velocity, max_impulse);
 }
@@ -201,7 +201,7 @@ enable_motor(bool enable) {
 //               velocity set in enable_angular_motor.
 ////////////////////////////////////////////////////////////////////
 void BulletHingeConstraint::
-set_max_motor_impulse(float max_impulse) {
+set_max_motor_impulse(PN_stdfloat max_impulse) {
 
   _constraint->setMaxMotorImpulse(max_impulse);
 }
@@ -212,9 +212,9 @@ set_max_motor_impulse(float max_impulse) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletHingeConstraint::
-set_motor_target(const LQuaternionf &quat, float dt) {
+set_motor_target(const LQuaternion &quat, PN_stdfloat dt) {
 
-  _constraint->setMotorTarget(LQuaternionf_to_btQuat(quat), dt);
+  _constraint->setMotorTarget(LQuaternion_to_btQuat(quat), dt);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -223,7 +223,7 @@ set_motor_target(const LQuaternionf &quat, float dt) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletHingeConstraint::
-set_motor_target(float target_angle, float dt) {
+set_motor_target(PN_stdfloat target_angle, PN_stdfloat dt) {
 
   _constraint->setMotorTarget(target_angle, dt);
 }

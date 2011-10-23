@@ -37,45 +37,45 @@ PUBLISHED:
   INLINE ~BulletRigidBodyNode();
 
   // Mass & inertia
-  void set_mass(float mass);
-  float get_mass() const;
-  void set_inertia(const LVecBase3f &inertia);
-  LVector3f get_inertia() const;
+  void set_mass(PN_stdfloat mass);
+  PN_stdfloat get_mass() const;
+  void set_inertia(const LVecBase3 &inertia);
+  LVector3 get_inertia() const;
 
   // Velocity
-  LVector3f get_linear_velocity() const;
-  LVector3f get_angular_velocity() const;
-  void set_linear_velocity(const LVector3f &velocity);
-  void set_angular_velocity(const LVector3f &velocity);
+  LVector3 get_linear_velocity() const;
+  LVector3 get_angular_velocity() const;
+  void set_linear_velocity(const LVector3 &velocity);
+  void set_angular_velocity(const LVector3 &velocity);
 
   // Damping
-  INLINE float get_linear_damping() const;
-  INLINE float get_angular_damping() const;
-  INLINE void set_linear_damping(float value);
-  INLINE void set_angular_damping(float value);
+  INLINE PN_stdfloat get_linear_damping() const;
+  INLINE PN_stdfloat get_angular_damping() const;
+  INLINE void set_linear_damping(PN_stdfloat value);
+  INLINE void set_angular_damping(PN_stdfloat value);
 
   // Forces
   void clear_forces();
-  void apply_force(const LVector3f &force, const LPoint3f &pos);
-  void apply_central_force(const LVector3f &force);
-  void apply_impulse(const LVector3f &impulse, const LPoint3f &pos);
-  void apply_central_impulse(const LVector3f &impulse);
-  void apply_torque(const LVector3f &torque);
-  void apply_torque_impulse(const LVector3f &torque);
+  void apply_force(const LVector3 &force, const LPoint3 &pos);
+  void apply_central_force(const LVector3 &force);
+  void apply_impulse(const LVector3 &impulse, const LPoint3 &pos);
+  void apply_central_impulse(const LVector3 &impulse);
+  void apply_torque(const LVector3 &torque);
+  void apply_torque_impulse(const LVector3 &torque);
 
   // Deactivation thresholds
-  float get_linear_sleep_threshold() const;
-  float get_angular_sleep_threshold() const;
-  void set_linear_sleep_threshold(float threshold);
-  void set_angular_sleep_threshold(float threshold);
+  PN_stdfloat get_linear_sleep_threshold() const;
+  PN_stdfloat get_angular_sleep_threshold() const;
+  void set_linear_sleep_threshold(PN_stdfloat threshold);
+  void set_angular_sleep_threshold(PN_stdfloat threshold);
 
   // Gravity
-  void set_gravity(const LVector3f &gravity);
-  LVector3f get_gravity() const;
+  void set_gravity(const LVector3 &gravity);
+  LVector3 get_gravity() const;
 
   // Restrict movement
-  void set_linear_factor(const LVector3f &factor);
-  void set_angular_factor(const LVector3f &factor);
+  void set_linear_factor(const LVector3 &factor);
+  void set_angular_factor(const LVector3 &factor);
 
 public:
   virtual btCollisionObject *get_object() const;

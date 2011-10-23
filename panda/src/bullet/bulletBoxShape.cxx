@@ -23,9 +23,9 @@ TypeHandle BulletBoxShape::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 BulletBoxShape::
-BulletBoxShape(const LVecBase3f &halfExtents) {
+BulletBoxShape(const LVecBase3 &halfExtents) {
 
-  btVector3 btHalfExtents = LVecBase3f_to_btVector3(halfExtents);
+  btVector3 btHalfExtents = LVecBase3_to_btVector3(halfExtents);
 
   _shape = new btBoxShape(btHalfExtents);
   _shape->setUserPointer(this);
@@ -47,10 +47,10 @@ ptr() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-LVecBase3f BulletBoxShape::
+LVecBase3 BulletBoxShape::
 get_half_extents_without_marging() const {
 
-  return btVector3_to_LVecBase3f(_shape->getHalfExtentsWithoutMargin());
+  return btVector3_to_LVecBase3(_shape->getHalfExtentsWithoutMargin());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -58,10 +58,10 @@ get_half_extents_without_marging() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-LVecBase3f BulletBoxShape::
+LVecBase3 BulletBoxShape::
 get_half_extents_with_marging() const {
 
-  return btVector3_to_LVecBase3f(_shape->getHalfExtentsWithMargin());
+  return btVector3_to_LVecBase3(_shape->getHalfExtentsWithMargin());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -72,10 +72,10 @@ get_half_extents_with_marging() const {
 BulletBoxShape *BulletBoxShape::
 make_from_solid(const CollisionBox *solid) {
 
-  LPoint3f p0 = solid->get_min();
-  LPoint3f p1 = solid->get_max();
+  LPoint3 p0 = solid->get_min();
+  LPoint3 p1 = solid->get_max();
 
-  LVecBase3f extents(p1.get_x() - p0.get_x() / 2.0,
+  LVecBase3 extents(p1.get_x() - p0.get_x() / 2.0,
                      p1.get_y() - p0.get_y() / 2.0,
                      p1.get_z() - p0.get_z() / 2.0);
 

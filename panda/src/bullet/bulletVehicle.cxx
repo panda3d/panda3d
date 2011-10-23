@@ -68,10 +68,10 @@ set_coordinate_system(BulletUpAxis up) {
 //               actual direction of movement. The forward vetcor
 //               is given in global coordinates.
 ////////////////////////////////////////////////////////////////////
-LVector3f BulletVehicle::
+LVector3 BulletVehicle::
 get_forward_vector() const {
 
-  return btVector3_to_LVector3f(_vehicle->getForwardVector());
+  return btVector3_to_LVector3(_vehicle->getForwardVector());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -93,10 +93,10 @@ get_chassis() {
 //  Description: Returns the current speed in kilometers per hour.
 //               Convert to miles using: km/h * 0.62 = mph
 ////////////////////////////////////////////////////////////////////
-float BulletVehicle::
+PN_stdfloat BulletVehicle::
 get_current_speed_km_hour() const {
 
-  return _vehicle->getCurrentSpeedKmHour();
+  return (PN_stdfloat)_vehicle->getCurrentSpeedKmHour();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -116,7 +116,7 @@ reset_suspension() {
 //  Description: Returns the steering angle of the wheel with index
 //               idx in degrees.
 ////////////////////////////////////////////////////////////////////
-float BulletVehicle::
+PN_stdfloat BulletVehicle::
 get_steering_value(int idx) const {
 
   nassertr(idx < get_num_wheels(), 0.0f);
@@ -130,7 +130,7 @@ get_steering_value(int idx) const {
 //               with index idx.
 ////////////////////////////////////////////////////////////////////
 void BulletVehicle::
-set_steering_value(float steering, int idx) {
+set_steering_value(PN_stdfloat steering, int idx) {
 
   nassertv(idx < get_num_wheels());
   _vehicle->setSteeringValue(deg_2_rad(steering), idx);
@@ -143,7 +143,7 @@ set_steering_value(float steering, int idx) {
 //               acceleration.
 ////////////////////////////////////////////////////////////////////
 void BulletVehicle::
-apply_engine_force(float force, int idx) {
+apply_engine_force(PN_stdfloat force, int idx) {
 
   nassertv(idx < get_num_wheels());
   _vehicle->applyEngineForce(force, idx);
@@ -155,7 +155,7 @@ apply_engine_force(float force, int idx) {
 //  Description: Applies braking force to the wheel with index idx.
 ////////////////////////////////////////////////////////////////////
 void BulletVehicle::
-set_brake(float brake, int idx) {
+set_brake(PN_stdfloat brake, int idx) {
 
   nassertv(idx < get_num_wheels());
   _vehicle->setBrake(brake, idx);
@@ -167,7 +167,7 @@ set_brake(float brake, int idx) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletVehicle::
-set_pitch_control(float pitch) {
+set_pitch_control(PN_stdfloat pitch) {
 
   _vehicle->setPitchControl(pitch);
 }

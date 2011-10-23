@@ -44,12 +44,12 @@ PUBLISHED:
                           bool use_frame_a);
   INLINE ~BulletGenericConstraint();
 
-  void set_linear_limit(int axis, float low, float high);
-  void set_angular_limit(int axis, float low, float high);
+  void set_linear_limit(int axis, PN_stdfloat low, PN_stdfloat high);
+  void set_angular_limit(int axis, PN_stdfloat low, PN_stdfloat high);
 
-  LVector3f get_axis(int axis) const;
-  float get_pivot(int axis) const;
-  float get_angle(int axis) const;
+  LVector3 get_axis(int axis) const;
+  PN_stdfloat get_pivot(int axis) const;
+  PN_stdfloat get_angle(int axis) const;
 
 public:
   virtual btTypedConstraint *ptr() const;

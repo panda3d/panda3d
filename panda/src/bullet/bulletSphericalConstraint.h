@@ -39,18 +39,18 @@ class EXPCL_PANDABULLET BulletSphericalConstraint : public BulletConstraint {
 
 PUBLISHED:
   BulletSphericalConstraint(const BulletRigidBodyNode *node_a, 
-                            const LPoint3f &pivot_a);
+                            const LPoint3 &pivot_a);
   BulletSphericalConstraint(const BulletRigidBodyNode *node_a,
                             const BulletRigidBodyNode *node_b,
-                            const LPoint3f &pivot_a,
-                            const LPoint3f &pivot_b);
+                            const LPoint3 &pivot_a,
+                            const LPoint3 &pivot_b);
   INLINE ~BulletSphericalConstraint();
 
-  void set_pivot_a(const LPoint3f &pivot_a);
-  void set_pivot_b(const LPoint3f &pivot_b);
+  void set_pivot_a(const LPoint3 &pivot_a);
+  void set_pivot_b(const LPoint3 &pivot_b);
 
-  LPoint3f get_pivot_in_a() const;
-  LPoint3f get_pivot_in_b() const;
+  LPoint3 get_pivot_in_a() const;
+  LPoint3 get_pivot_in_b() const;
 
 public:
   virtual btTypedConstraint *ptr() const;

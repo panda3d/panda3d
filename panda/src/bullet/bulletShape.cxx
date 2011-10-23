@@ -33,7 +33,7 @@ get_name() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletShape::
+PN_stdfloat BulletShape::
 get_margin() const {
 
   return ptr()->getMargin();
@@ -45,7 +45,7 @@ get_margin() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletShape::
-set_margin(float margin) {
+set_margin(PN_stdfloat margin) {
 
   ptr()->setMargin(margin);
 }
@@ -55,10 +55,10 @@ set_margin(float margin) {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-LVecBase3f BulletShape::
+LVecBase3 BulletShape::
 get_local_scale() const {
 
-  return btVector3_to_LVecBase3f(ptr()->getLocalScaling());
+  return btVector3_to_LVecBase3(ptr()->getLocalScaling());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -67,9 +67,9 @@ get_local_scale() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletShape::
-set_local_scale(const LVecBase3f &scale) {
+set_local_scale(const LVecBase3 &scale) {
 
   nassertv(!scale.is_nan());
-  ptr()->setLocalScaling(LVecBase3f_to_btVector3(scale));
+  ptr()->setLocalScaling(LVecBase3_to_btVector3(scale));
 }
 

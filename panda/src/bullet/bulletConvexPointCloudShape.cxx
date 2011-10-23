@@ -24,17 +24,17 @@ TypeHandle BulletConvexPointCloudShape::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 BulletConvexPointCloudShape::
-BulletConvexPointCloudShape(const PTA_LVecBase3f &points, LVecBase3f scale) {
+BulletConvexPointCloudShape(const PTA_LVecBase3 &points, LVecBase3 scale) {
 
-  btVector3 btScale = LVecBase3f_to_btVector3(scale);
+  btVector3 btScale = LVecBase3_to_btVector3(scale);
 
   // Convert points
   btVector3 *btPoints = new btVector3[points.size()];
 
   int i = 0;
-  PTA_LVecBase3f::const_iterator it;
+  PTA_LVecBase3::const_iterator it;
   for (it=points.begin(); it!=points.end(); it++) {
-    btPoints[i] = LVecBase3f_to_btVector3(*it);
+    btPoints[i] = LVecBase3_to_btVector3(*it);
     i++;
   }
 
@@ -60,27 +60,27 @@ ptr() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 BulletConvexPointCloudShape::
-BulletConvexPointCloudShape(const Geom *geom, LVecBase3f scale) {
+BulletConvexPointCloudShape(const Geom *geom, LVecBase3 scale) {
 
-  btVector3 btScale = LVecBase3f_to_btVector3(scale);
+  btVector3 btScale = LVecBase3_to_btVector3(scale);
 
   // Collect points
-  pvector<LPoint3f> points;
+  pvector<LPoint3> points;
 
   CPT(GeomVertexData) vdata = geom->get_vertex_data();
   GeomVertexReader reader = GeomVertexReader(vdata, InternalName::get_vertex());
 
   while (!reader.is_at_end()) {
-    points.push_back(reader.get_data3f());
+    points.push_back(reader.get_data3());
   }
 
   // Convert points
   btVector3 *btPoints = new btVector3[points.size()];
 
   int i = 0;
-  pvector<LPoint3f>::const_iterator it;
+  pvector<LPoint3>::const_iterator it;
   for (it=points.begin(); it!=points.end(); it++) {
-    btPoints[i] = LVecBase3f_to_btVector3(*it);
+    btPoints[i] = LVecBase3_to_btVector3(*it);
     i++;
   }
 

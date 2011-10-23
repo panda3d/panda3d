@@ -52,11 +52,11 @@ PUBLISHED:
   BulletWorld();
   INLINE ~BulletWorld();
 
-  void set_gravity(const LVector3f &gravity);
-  void set_gravity(float gx, float gy, float gz);
-  const LVector3f get_gravity() const;
+  void set_gravity(const LVector3 &gravity);
+  void set_gravity(PN_stdfloat gx, PN_stdfloat gy, PN_stdfloat gz);
+  const LVector3 get_gravity() const;
 
-  void do_physics(float dt, int substeps=1, float stepsize=1.0f/60.0f);
+  void do_physics(PN_stdfloat dt, int substeps=1, PN_stdfloat stepsize=1.0f/60.0f);
 
   void set_debug_node(BulletDebugNode *node);
   void clear_debug_node();
@@ -113,13 +113,13 @@ PUBLISHED:
 
   // Raycast and other queries
   BulletClosestHitRayResult ray_test_closest(
-    const LPoint3f &from_pos,
-    const LPoint3f &to_pos,
+    const LPoint3 &from_pos,
+    const LPoint3 &to_pos,
     const CollideMask &mask=CollideMask::all_on()) const;
 
   BulletAllHitsRayResult ray_test_all(
-    const LPoint3f &from_pos,
-    const LPoint3f &to_pos,
+    const LPoint3 &from_pos,
+    const LPoint3 &to_pos,
     const CollideMask &mask=CollideMask::all_on()) const;
 
   BulletClosestHitSweepResult sweep_test_closest(
@@ -127,7 +127,7 @@ PUBLISHED:
     const TransformState &from_ts,
     const TransformState &to_ts,
     const CollideMask &mask=CollideMask::all_on(),
-    float penetration=0.0f) const;
+    PN_stdfloat penetration=0.0f) const;
 
   BulletContactResult contact_test(PandaNode *node) const;
   BulletContactResult contact_test_pair(PandaNode *node0, PandaNode *node1) const;
@@ -151,7 +151,7 @@ public:
   INLINE btDispatcher *get_dispatcher() const;
 
 private:
-  void sync_p2b(float dt);
+  void sync_p2b(PN_stdfloat dt);
   void sync_b2p();
 
   typedef PTA(PT(BulletRigidBodyNode)) BulletRigidBodies;

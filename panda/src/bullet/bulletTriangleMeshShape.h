@@ -34,7 +34,7 @@ PUBLISHED:
   BulletTriangleMeshShape(BulletTriangleMesh *mesh, bool dynamic, bool compress=true, bool bvh=true);
   INLINE ~BulletTriangleMeshShape();
 
-  void refit_tree(const LPoint3f &aabb_min, const LPoint3f &aabb_max);
+  void refit_tree(const LPoint3 &aabb_min, const LPoint3 &aabb_max);
 
   INLINE bool is_static() const;
   INLINE bool is_dynamic() const;

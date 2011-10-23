@@ -189,8 +189,8 @@ transform_changed() {
   NodePath np = NodePath::any_path((PandaNode *)this);
   CPT(TransformState) ts = np.get_net_transform();
 
-  LMatrix4f m_sync = _sync->get_mat();
-  LMatrix4f m_ts = ts->get_mat();
+  LMatrix4 m_sync = _sync->get_mat();
+  LMatrix4 m_ts = ts->get_mat();
 
   if (!m_sync.almost_equal(m_ts)) {
     _sync = ts;
@@ -201,8 +201,8 @@ transform_changed() {
     _soft->transform(trans);
 
     if (ts->has_scale()) {
-      LVecBase3f scale = ts->get_scale();
-      if (!scale.almost_equal(LVecBase3f(1.0f, 1.0f, 1.0f))) {
+      LVecBase3 scale = ts->get_scale();
+      if (!scale.almost_equal(LVecBase3(1.0f, 1.0f, 1.0f))) {
         for (int i=0; i<get_num_shapes(); i++) {
           PT(BulletShape) shape = _shapes[i];
           shape->set_local_scale(scale);
@@ -250,8 +250,8 @@ sync_b2p() {
 
       if (flips.get_data1i() > 0) n *= -1;
 
-      vertices.set_data3f(v.getX(), v.getY(), v.getZ());
-      normals.set_data3f(n.getX(), n.getY(), n.getZ());
+      vertices.set_data3((PN_stdfloat)v.getX(), (PN_stdfloat)v.getY(), (PN_stdfloat)v.getZ());
+      normals.set_data3((PN_stdfloat)n.getX(), (PN_stdfloat)n.getY(), (PN_stdfloat)n.getZ());
     }
   }
 
@@ -260,7 +260,7 @@ sync_b2p() {
 
     for (int i=0; i < nodes.size(); i++) {
       btVector3 pos = nodes[i].m_x;
-      _curve->set_vertex(i, btVector3_to_LPoint3f(pos));
+      _curve->set_vertex(i, btVector3_to_LPoint3(pos));
     }
   }
 
@@ -274,7 +274,7 @@ sync_b2p() {
     for (int u=0; u < num_u; u++) {
       for (int v=0; v < num_v; v++) {
         btVector3 pos = nodes[u * num_u + v].m_x;
-        _surface->set_vertex(u, v, btVector3_to_LPoint3f(pos));
+        _surface->set_vertex(u, v, btVector3_to_LPoint3(pos));
       }
     }
   }
@@ -283,10 +283,10 @@ sync_b2p() {
   // set_bounds does not store the pointer - it makes a copy using
   // volume->make_copy().
   BoundingBox bb = this->get_aabb();
-  LVecBase3f pos = bb.get_approx_center();
+  LVecBase3 pos = bb.get_approx_center();
 
   NodePath np = NodePath::any_path((PandaNode *)this);
-  LVecBase3f scale = np.get_net_transform()->get_scale();
+  LVecBase3 scale = np.get_net_transform()->get_scale();
 
   CPT(TransformState) ts = TransformState::make_pos(pos);
   ts = ts->set_scale(scale);
@@ -309,10 +309,10 @@ sync_b2p() {
 //               if local=false, and in local space if local=true.
 ////////////////////////////////////////////////////////////////////
 int BulletSoftBodyNode::
-get_closest_node_index(LVecBase3f point, bool local) {
+get_closest_node_index(LVecBase3 point, bool local) {
 
   btScalar max_dist_sqr = 1e30;
-  btVector3 point_x = LVecBase3f_to_btVector3(point);
+  btVector3 point_x = LVecBase3_to_btVector3(point);
 
   btTransform trans = btTransform::getIdentity();
   if (local == true) {
@@ -369,7 +369,7 @@ link_geom(Geom *geom) {
   GeomVertexRewriter indices(vdata, BulletHelper::get_sb_index());
 
   while (!vertices.is_at_end()) {
-    LVecBase3f point = vertices.get_data3f();
+    LVecBase3 point = vertices.get_data3();
     int node_idx = get_closest_node_index(point, true);
     indices.set_data1i(node_idx);
   }
@@ -448,8 +448,8 @@ get_aabb() const {
   _soft->getAabb(pMin, pMax);
 
   return BoundingBox(
-    btVector3_to_LPoint3f(pMin),
-    btVector3_to_LPoint3f(pMax)
+    btVector3_to_LPoint3(pMin),
+    btVector3_to_LPoint3(pMax)
     );
 }
 
@@ -459,7 +459,7 @@ get_aabb() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletSoftBodyNode::
-set_volume_mass(float mass) {
+set_volume_mass(PN_stdfloat mass) {
 
   _soft->setVolumeMass(mass);
 }
@@ -470,7 +470,7 @@ set_volume_mass(float mass) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletSoftBodyNode::
-set_total_mass(float mass, bool fromfaces) {
+set_total_mass(PN_stdfloat mass, bool fromfaces) {
 
   _soft->setTotalMass(mass, fromfaces);
 }
@@ -481,7 +481,7 @@ set_total_mass(float mass, bool fromfaces) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletSoftBodyNode::
-set_volume_density(float density) {
+set_volume_density(PN_stdfloat density) {
 
   _soft->setVolumeDensity(density);
 }
@@ -492,7 +492,7 @@ set_volume_density(float density) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletSoftBodyNode::
-set_total_density(float density) {
+set_total_density(PN_stdfloat density) {
 
   _soft->setTotalDensity(density);
 }
@@ -503,7 +503,7 @@ set_total_density(float density) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletSoftBodyNode::
-set_mass(int node, float mass) {
+set_mass(int node, PN_stdfloat mass) {
 
   _soft->setMass(node, mass);
 }
@@ -513,7 +513,7 @@ set_mass(int node, float mass) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletSoftBodyNode::
+PN_stdfloat BulletSoftBodyNode::
 get_mass(int node) const {
 
   return _soft->getMass(node);
@@ -524,7 +524,7 @@ get_mass(int node) const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletSoftBodyNode::
+PN_stdfloat BulletSoftBodyNode::
 get_total_mass() const {
 
   return _soft->getTotalMass();
@@ -535,7 +535,7 @@ get_total_mass() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletSoftBodyNode::
+PN_stdfloat BulletSoftBodyNode::
 get_volume() const {
 
   return _soft->getVolume();
@@ -547,10 +547,10 @@ get_volume() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletSoftBodyNode::
-add_force(const LVector3f &force) {
+add_force(const LVector3 &force) {
 
   nassertv(!force.is_nan());
-  _soft->addForce(LVecBase3f_to_btVector3(force));
+  _soft->addForce(LVecBase3_to_btVector3(force));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -559,10 +559,10 @@ add_force(const LVector3f &force) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletSoftBodyNode::
-add_force(const LVector3f &force, int node) {
+add_force(const LVector3 &force, int node) {
 
   nassertv(!force.is_nan());
-  _soft->addForce(LVecBase3f_to_btVector3(force), node);
+  _soft->addForce(LVecBase3_to_btVector3(force), node);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -571,10 +571,10 @@ add_force(const LVector3f &force, int node) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletSoftBodyNode::
-set_velocity(const LVector3f &velocity) {
+set_velocity(const LVector3 &velocity) {
 
   nassertv(!velocity.is_nan());
-  _soft->setVelocity(LVecBase3f_to_btVector3(velocity));
+  _soft->setVelocity(LVecBase3_to_btVector3(velocity));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -583,10 +583,10 @@ set_velocity(const LVector3f &velocity) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletSoftBodyNode::
-add_velocity(const LVector3f &velocity) {
+add_velocity(const LVector3 &velocity) {
 
   nassertv(!velocity.is_nan());
-  _soft->addVelocity(LVecBase3f_to_btVector3(velocity));
+  _soft->addVelocity(LVecBase3_to_btVector3(velocity));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -595,10 +595,10 @@ add_velocity(const LVector3f &velocity) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletSoftBodyNode::
-add_velocity(const LVector3f &velocity, int node) {
+add_velocity(const LVector3 &velocity, int node) {
 
   nassertv(!velocity.is_nan());
-  _soft->addVelocity(LVecBase3f_to_btVector3(velocity), node);
+  _soft->addVelocity(LVecBase3_to_btVector3(velocity), node);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -650,10 +650,10 @@ get_num_clusters() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-LVecBase3f BulletSoftBodyNode::
+LVecBase3 BulletSoftBodyNode::
 cluster_com(int cluster) const {
 
-  return btVector3_to_LVecBase3f(_soft->clusterCom(cluster));
+  return btVector3_to_LVecBase3(_soft->clusterCom(cluster));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -690,7 +690,7 @@ append_anchor(int node, BulletRigidBodyNode *body, bool disable) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletSoftBodyNode::
-append_anchor(int node, BulletRigidBodyNode *body, const LVector3f &pivot, bool disable) {
+append_anchor(int node, BulletRigidBodyNode *body, const LVector3 &pivot, bool disable) {
 
   nassertv(node < _soft->m_nodes.size())
   nassertv(body);
@@ -699,7 +699,7 @@ append_anchor(int node, BulletRigidBodyNode *body, const LVector3f &pivot, bool 
   body->sync_p2b();
 
   btRigidBody *ptr =(btRigidBody *)body->get_object();
-  _soft->appendAnchor(node, ptr, LVecBase3f_to_btVector3(pivot), disable);
+  _soft->appendAnchor(node, ptr, LVecBase3_to_btVector3(pivot), disable);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -721,11 +721,11 @@ BulletSoftBodyNodeElement(btSoftBody::Node &node) : _node(node) {
 //               is found -1 is returned.
 ////////////////////////////////////////////////////////////////////
 int BulletSoftBodyNode::
-get_point_index(LVecBase3f p, PTA_LVecBase3f points) {
+get_point_index(LVecBase3 p, PTA_LVecBase3 points) {
 
-  float eps = 1.0e-6f; // TODO make this a config option
+  PN_stdfloat eps = 1.0e-6f; // TODO make this a config option
 
-  for (PTA_LVecBase3f::size_type i=0; i<points.size(); i++) {
+  for (PTA_LVecBase3::size_type i=0; i<points.size(); i++) {
     if (points[i].almost_equal(p, eps)) {
       return i; // Found
     }
@@ -764,12 +764,12 @@ next_line(const char* buffer) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PT(BulletSoftBodyNode) BulletSoftBodyNode::
-make_rope(BulletSoftBodyWorldInfo &info, const LPoint3f &from, const LPoint3f &to, int res, int fixeds) {
+make_rope(BulletSoftBodyWorldInfo &info, const LPoint3 &from, const LPoint3 &to, int res, int fixeds) {
 
   btSoftBody *body = btSoftBodyHelpers::CreateRope(
     info.get_info(),
-    LVecBase3f_to_btVector3(from),
-    LVecBase3f_to_btVector3(to),
+    LVecBase3_to_btVector3(from),
+    LVecBase3_to_btVector3(to),
     res,
     fixeds);
 
@@ -784,14 +784,14 @@ make_rope(BulletSoftBodyWorldInfo &info, const LPoint3f &from, const LPoint3f &t
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PT(BulletSoftBodyNode) BulletSoftBodyNode::
-make_patch(BulletSoftBodyWorldInfo &info, const LPoint3f &corner00, const LPoint3f &corner10, const LPoint3f &corner01, const LPoint3f &corner11, int resx, int resy, int fixeds, bool gendiags) {
+make_patch(BulletSoftBodyWorldInfo &info, const LPoint3 &corner00, const LPoint3 &corner10, const LPoint3 &corner01, const LPoint3 &corner11, int resx, int resy, int fixeds, bool gendiags) {
 
   btSoftBody *body = btSoftBodyHelpers::CreatePatch(
     info.get_info(),
-    LVecBase3f_to_btVector3(corner00),
-    LVecBase3f_to_btVector3(corner10),
-    LVecBase3f_to_btVector3(corner01),
-    LVecBase3f_to_btVector3(corner11),
+    LVecBase3_to_btVector3(corner00),
+    LVecBase3_to_btVector3(corner10),
+    LVecBase3_to_btVector3(corner01),
+    LVecBase3_to_btVector3(corner11),
     resx,
     resy,
     fixeds,
@@ -808,12 +808,12 @@ make_patch(BulletSoftBodyWorldInfo &info, const LPoint3f &corner00, const LPoint
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PT(BulletSoftBodyNode) BulletSoftBodyNode::
-make_ellipsoid(BulletSoftBodyWorldInfo &info, const LPoint3f &center, const LVecBase3f &radius, int res) {
+make_ellipsoid(BulletSoftBodyWorldInfo &info, const LPoint3 &center, const LVecBase3 &radius, int res) {
 
   btSoftBody *body = btSoftBodyHelpers::CreateEllipsoid(
     info.get_info(),
-    LVecBase3f_to_btVector3(center),
-    LVecBase3f_to_btVector3(radius),
+    LVecBase3_to_btVector3(center),
+    LVecBase3_to_btVector3(radius),
     res);
 
   PT(BulletSoftBodyNode) node = new BulletSoftBodyNode(body);
@@ -827,16 +827,16 @@ make_ellipsoid(BulletSoftBodyWorldInfo &info, const LPoint3f &center, const LVec
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PT(BulletSoftBodyNode) BulletSoftBodyNode::
-make_tri_mesh(BulletSoftBodyWorldInfo &info, PTA_LVecBase3f points, PTA_int indices, bool randomizeConstraints) {
+make_tri_mesh(BulletSoftBodyWorldInfo &info, PTA_LVecBase3 points, PTA_int indices, bool randomizeConstraints) {
 
   // Eliminate duplicate vertices
-  PTA_LVecBase3f mapped_points;
+  PTA_LVecBase3 mapped_points;
   PTA_int mapped_indices;
 
   pmap<int, int> mapping;
 
-  for (PTA_LVecBase3f::size_type i=0; i<points.size(); i++) {
-    LVecBase3f p = points[i];
+  for (PTA_LVecBase3::size_type i=0; i<points.size(); i++) {
+    LVecBase3 p = points[i];
     int j = get_point_index(p, mapped_points);
     if (j < 0) {
       mapping[i] = mapped_points.size();
@@ -899,7 +899,7 @@ PT(BulletSoftBodyNode) BulletSoftBodyNode::
 make_tri_mesh(BulletSoftBodyWorldInfo &info, const Geom *geom, bool randomizeConstraints) {
 
   // Read vertex data
-  PTA_LVecBase3f points;
+  PTA_LVecBase3 points;
   PTA_int indices;
 
   CPT(GeomVertexData) vdata = geom->get_vertex_data();
@@ -909,7 +909,7 @@ make_tri_mesh(BulletSoftBodyWorldInfo &info, const Geom *geom, bool randomizeCon
   GeomVertexReader vreader(vdata, InternalName::get_vertex());
 
   while (!vreader.is_at_end()) {
-    LVecBase3f v = vreader.get_data3f();
+    LVecBase3 v = vreader.get_data3();
     points.push_back(v);
   }
 
@@ -940,14 +940,14 @@ make_tri_mesh(BulletSoftBodyWorldInfo &info, const Geom *geom, bool randomizeCon
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PT(BulletSoftBodyNode) BulletSoftBodyNode::
-make_tet_mesh(BulletSoftBodyWorldInfo &info, PTA_LVecBase3f points, PTA_int indices, bool tetralinks) {
+make_tet_mesh(BulletSoftBodyWorldInfo &info, PTA_LVecBase3 points, PTA_int indices, bool tetralinks) {
 
   // Points
   btAlignedObjectArray<btVector3> pos;
   pos.resize(points.size());
-  for (PTA_LVecBase3f::size_type i=0; i<points.size(); i++) {
-    LVecBase3f point = points[i];
-    pos[i] = LVecBase3f_to_btVector3(point);
+  for (PTA_LVecBase3::size_type i=0; i<points.size(); i++) {
+    LVecBase3 point = points[i];
+    pos[i] = LVecBase3_to_btVector3(point);
   }
 
   // Body
@@ -1005,7 +1005,7 @@ make_tet_mesh(BulletSoftBodyWorldInfo &info, const char *ele, const char *face, 
 
   for (int i=0; i<pos.size(); ++i) {
     int index = 0;
-    float x, y, z;
+    PN_stdfloat x, y, z;
 
     sscanf(node, "%d %f %f %f", &index, &x, &y, &z);
     node += next_line(node);

@@ -99,7 +99,7 @@ shape_changed() {
 //               zero can be considered an infinite mass.
 ////////////////////////////////////////////////////////////////////
 void BulletRigidBodyNode::
-set_mass(float mass) {
+set_mass(PN_stdfloat mass) {
 
   btScalar bt_mass = mass;
   btVector3 bt_inertia(0.0, 0.0, 0.0);
@@ -119,7 +119,7 @@ set_mass(float mass) {
 //               A value of zero means that the body is staic, i.e.
 //               has an infinite mass.
 ////////////////////////////////////////////////////////////////////
-float BulletRigidBodyNode::
+PN_stdfloat BulletRigidBodyNode::
 get_mass() const {
 
   btScalar inv_mass = _rigid->getInvMass();
@@ -145,7 +145,7 @@ get_mass() const {
 //               (c) the scale of the body changed.
 ////////////////////////////////////////////////////////////////////
 void BulletRigidBodyNode::
-set_inertia(const LVecBase3f &inertia) {
+set_inertia(const LVecBase3 &inertia) {
 
   btVector3 inv_inertia(
     inertia.get_x() == 0.0 ? btScalar(0.0) : btScalar(1.0 / inertia.get_x()),
@@ -165,11 +165,11 @@ set_inertia(const LVecBase3f &inertia) {
 //               value of zero means infinite inertia along this
 //               direction.
 ////////////////////////////////////////////////////////////////////
-LVector3f BulletRigidBodyNode::
+LVector3 BulletRigidBodyNode::
 get_inertia() const {
 
   btVector3 inv_inertia = _rigid->getInvInertiaDiagLocal();
-  LVector3f inertia(
+  LVector3 inertia(
     inv_inertia.x() == btScalar(0.0) ? 0.0 : 1.0 / inv_inertia.x(),
     inv_inertia.y() == btScalar(0.0) ? 0.0 : 1.0 / inv_inertia.y(),
     inv_inertia.z() == btScalar(0.0) ? 0.0 : 1.0 / inv_inertia.z()
@@ -184,13 +184,13 @@ get_inertia() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletRigidBodyNode::
-apply_force(const LVector3f &force, const LPoint3f &pos) {
+apply_force(const LVector3 &force, const LPoint3 &pos) {
 
   nassertv_always(!force.is_nan());
   nassertv_always(!pos.is_nan());
 
-  _rigid->applyForce(LVecBase3f_to_btVector3(force),
-                     LVecBase3f_to_btVector3(pos));
+  _rigid->applyForce(LVecBase3_to_btVector3(force),
+                     LVecBase3_to_btVector3(pos));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -199,11 +199,11 @@ apply_force(const LVector3f &force, const LPoint3f &pos) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletRigidBodyNode::
-apply_central_force(const LVector3f &force) {
+apply_central_force(const LVector3 &force) {
 
   nassertv_always(!force.is_nan());
 
-  _rigid->applyCentralForce(LVecBase3f_to_btVector3(force));
+  _rigid->applyCentralForce(LVecBase3_to_btVector3(force));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -212,11 +212,11 @@ apply_central_force(const LVector3f &force) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletRigidBodyNode::
-apply_torque(const LVector3f &torque) {
+apply_torque(const LVector3 &torque) {
 
   nassertv_always(!torque.is_nan());
 
-  _rigid->applyTorque(LVecBase3f_to_btVector3(torque));
+  _rigid->applyTorque(LVecBase3_to_btVector3(torque));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -225,11 +225,11 @@ apply_torque(const LVector3f &torque) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletRigidBodyNode::
-apply_torque_impulse(const LVector3f &torque) {
+apply_torque_impulse(const LVector3 &torque) {
 
   nassertv_always(!torque.is_nan());
 
-  _rigid->applyTorqueImpulse(LVecBase3f_to_btVector3(torque));
+  _rigid->applyTorqueImpulse(LVecBase3_to_btVector3(torque));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -238,13 +238,13 @@ apply_torque_impulse(const LVector3f &torque) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletRigidBodyNode::
-apply_impulse(const LVector3f &impulse, const LPoint3f &pos) {
+apply_impulse(const LVector3 &impulse, const LPoint3 &pos) {
 
   nassertv_always(!impulse.is_nan());
   nassertv_always(!pos.is_nan());
 
-  _rigid->applyImpulse(LVecBase3f_to_btVector3(impulse),
-                       LVecBase3f_to_btVector3(pos));
+  _rigid->applyImpulse(LVecBase3_to_btVector3(impulse),
+                       LVecBase3_to_btVector3(pos));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -253,11 +253,11 @@ apply_impulse(const LVector3f &impulse, const LPoint3f &pos) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletRigidBodyNode::
-apply_central_impulse(const LVector3f &impulse) {
+apply_central_impulse(const LVector3 &impulse) {
 
   nassertv_always(!impulse.is_nan());
 
-  _rigid->applyCentralImpulse(LVecBase3f_to_btVector3(impulse));
+  _rigid->applyCentralImpulse(LVecBase3_to_btVector3(impulse));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -273,8 +273,8 @@ transform_changed() {
   NodePath np = NodePath::any_path((PandaNode *)this);
   CPT(TransformState) ts = np.get_net_transform();
 
-  LMatrix4f m_sync = _sync->get_mat();
-  LMatrix4f m_ts = ts->get_mat();
+  LMatrix4 m_sync = _sync->get_mat();
+  LMatrix4 m_ts = ts->get_mat();
 
   if (!m_sync.almost_equal(m_ts)) {
     _sync = ts;
@@ -283,8 +283,8 @@ transform_changed() {
     _rigid->setCenterOfMassTransform(trans);
 
     if (ts->has_scale()) {
-      LVecBase3f scale = ts->get_scale();
-      if (!scale.almost_equal(LVecBase3f(1.0f, 1.0f, 1.0f))) {
+      LVecBase3 scale = ts->get_scale();
+      if (!scale.almost_equal(LVecBase3(1.0f, 1.0f, 1.0f))) {
         for (int i=0; i<get_num_shapes(); i++) {
           PT(BulletShape) shape = _shapes[i];
           shape->set_local_scale(scale);
@@ -321,13 +321,13 @@ void BulletRigidBodyNode::
 sync_b2p() {
 
   NodePath np = NodePath::any_path((PandaNode *)this);
-  LVecBase3f scale = np.get_net_transform()->get_scale();
+  LVecBase3 scale = np.get_net_transform()->get_scale();
 
   btTransform trans = _rigid->getWorldTransform();
   CPT(TransformState) ts = btTrans_to_TransformState(trans, scale);
 
-  LMatrix4f m_sync = _sync->get_mat();
-  LMatrix4f m_ts = ts->get_mat();
+  LMatrix4 m_sync = _sync->get_mat();
+  LMatrix4 m_ts = ts->get_mat();
 
   if (!m_sync.almost_equal(m_ts)) {
     _sync = ts;
@@ -342,10 +342,10 @@ sync_b2p() {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-LVector3f BulletRigidBodyNode::
+LVector3 BulletRigidBodyNode::
 get_linear_velocity() const {
 
-  return btVector3_to_LVector3f(_rigid->getLinearVelocity());
+  return btVector3_to_LVector3(_rigid->getLinearVelocity());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -353,10 +353,10 @@ get_linear_velocity() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-LVector3f BulletRigidBodyNode::
+LVector3 BulletRigidBodyNode::
 get_angular_velocity() const {
 
-  return btVector3_to_LVector3f(_rigid->getAngularVelocity());
+  return btVector3_to_LVector3(_rigid->getAngularVelocity());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -365,11 +365,11 @@ get_angular_velocity() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletRigidBodyNode::
-set_linear_velocity(const LVector3f &velocity) {
+set_linear_velocity(const LVector3 &velocity) {
 
   nassertv_always(!velocity.is_nan());
 
-  _rigid->setLinearVelocity(LVecBase3f_to_btVector3(velocity));
+  _rigid->setLinearVelocity(LVecBase3_to_btVector3(velocity));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -378,11 +378,11 @@ set_linear_velocity(const LVector3f &velocity) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletRigidBodyNode::
-set_angular_velocity(const LVector3f &velocity) {
+set_angular_velocity(const LVector3 &velocity) {
 
   nassertv_always(!velocity.is_nan());
 
-  _rigid->setAngularVelocity(LVecBase3f_to_btVector3(velocity));
+  _rigid->setAngularVelocity(LVecBase3_to_btVector3(velocity));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -401,7 +401,7 @@ clear_forces() {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletRigidBodyNode::
+PN_stdfloat BulletRigidBodyNode::
 get_linear_sleep_threshold() const {
 
   return _rigid->getLinearSleepingThreshold();
@@ -412,7 +412,7 @@ get_linear_sleep_threshold() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletRigidBodyNode::
+PN_stdfloat BulletRigidBodyNode::
 get_angular_sleep_threshold() const {
 
   return _rigid->getAngularSleepingThreshold();
@@ -424,7 +424,7 @@ get_angular_sleep_threshold() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletRigidBodyNode::
-set_linear_sleep_threshold(float threshold) {
+set_linear_sleep_threshold(PN_stdfloat threshold) {
 
   _rigid->setSleepingThresholds(_rigid->getLinearSleepingThreshold(), threshold);
 }
@@ -435,7 +435,7 @@ set_linear_sleep_threshold(float threshold) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletRigidBodyNode::
-set_angular_sleep_threshold(float threshold) {
+set_angular_sleep_threshold(PN_stdfloat threshold) {
 
   _rigid->setSleepingThresholds(threshold, _rigid->getAngularSleepingThreshold());
 }
@@ -446,11 +446,11 @@ set_angular_sleep_threshold(float threshold) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletRigidBodyNode::
-set_gravity(const LVector3f &gravity) {
+set_gravity(const LVector3 &gravity) {
 
   nassertv_always(!gravity.is_nan());
 
-  _rigid->setGravity(LVecBase3f_to_btVector3(gravity));
+  _rigid->setGravity(LVecBase3_to_btVector3(gravity));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -458,10 +458,10 @@ set_gravity(const LVector3f &gravity) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-LVector3f BulletRigidBodyNode::
+LVector3 BulletRigidBodyNode::
 get_gravity() const {
 
-  return btVector3_to_LVector3f(_rigid->getGravity());
+  return btVector3_to_LVector3(_rigid->getGravity());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -470,9 +470,9 @@ get_gravity() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletRigidBodyNode::
-set_linear_factor(const LVector3f &factor) {
+set_linear_factor(const LVector3 &factor) {
 
-  _rigid->setLinearFactor(LVecBase3f_to_btVector3(factor));
+  _rigid->setLinearFactor(LVecBase3_to_btVector3(factor));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -481,9 +481,9 @@ set_linear_factor(const LVector3f &factor) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletRigidBodyNode::
-set_angular_factor(const LVector3f &factor) {
+set_angular_factor(const LVector3 &factor) {
 
-  _rigid->setAngularFactor(LVecBase3f_to_btVector3(factor));
+  _rigid->setAngularFactor(LVecBase3_to_btVector3(factor));
 }
 
 ////////////////////////////////////////////////////////////////////

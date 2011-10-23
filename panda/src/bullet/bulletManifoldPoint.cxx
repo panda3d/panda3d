@@ -40,10 +40,10 @@ get_lift_time() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletManifoldPoint::
+PN_stdfloat BulletManifoldPoint::
 get_distance() const {
 
-  return _pt.getDistance();
+  return (PN_stdfloat)_pt.getDistance();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -51,10 +51,10 @@ get_distance() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletManifoldPoint::
+PN_stdfloat BulletManifoldPoint::
 get_applied_impulse() const {
 
-  return _pt.getAppliedImpulse();
+  return (PN_stdfloat)_pt.getAppliedImpulse();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -62,10 +62,10 @@ get_applied_impulse() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-LPoint3f BulletManifoldPoint::
+LPoint3 BulletManifoldPoint::
 get_position_world_on_a() const {
 
-  return btVector3_to_LPoint3f(_pt.getPositionWorldOnA());
+  return btVector3_to_LPoint3(_pt.getPositionWorldOnA());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -73,10 +73,10 @@ get_position_world_on_a() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-LPoint3f BulletManifoldPoint::
+LPoint3 BulletManifoldPoint::
 get_position_world_on_b() const {
 
-  return btVector3_to_LPoint3f(_pt.getPositionWorldOnB());
+  return btVector3_to_LPoint3(_pt.getPositionWorldOnB());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -84,10 +84,10 @@ get_position_world_on_b() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-LPoint3f BulletManifoldPoint::
+LPoint3 BulletManifoldPoint::
 get_local_point_a() const {
 
-  return btVector3_to_LPoint3f(_pt.m_localPointA);
+  return btVector3_to_LPoint3(_pt.m_localPointA);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -95,9 +95,9 @@ get_local_point_a() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-LPoint3f BulletManifoldPoint::
+LPoint3 BulletManifoldPoint::
 get_local_point_b() const {
 
-  return btVector3_to_LPoint3f(_pt.m_localPointB);
+  return btVector3_to_LPoint3(_pt.m_localPointB);
 }
 

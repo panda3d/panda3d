@@ -50,10 +50,10 @@ needsCollision(btBroadphaseProxy* proxy0) const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-LPoint3f BulletAllHitsRayResult::
+LPoint3 BulletAllHitsRayResult::
 get_from_pos() const {
 
-  return btVector3_to_LPoint3f(m_rayFromWorld);
+  return btVector3_to_LPoint3(m_rayFromWorld);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -61,10 +61,10 @@ get_from_pos() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-LPoint3f BulletAllHitsRayResult::
+LPoint3 BulletAllHitsRayResult::
 get_to_pos() const {
 
-  return btVector3_to_LPoint3f(m_rayToWorld);
+  return btVector3_to_LPoint3(m_rayToWorld);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -83,10 +83,10 @@ has_hits() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletAllHitsRayResult::
+PN_stdfloat BulletAllHitsRayResult::
 get_closest_hit_fraction() const {
 
-  return m_closestHitFraction;
+  return (PN_stdfloat)m_closestHitFraction;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -125,10 +125,10 @@ get_hit(int idx) const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletRayHit::
+PN_stdfloat BulletRayHit::
 get_hit_fraction() const {
 
-  return _fraction;
+  return (PN_stdfloat)_fraction;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -147,10 +147,10 @@ get_node() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-LPoint3f BulletRayHit::
+LPoint3 BulletRayHit::
 get_hit_pos() const {
 
-  return btVector3_to_LPoint3f(_pos);
+  return btVector3_to_LPoint3(_pos);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -158,9 +158,9 @@ get_hit_pos() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-LVector3f BulletRayHit::
+LVector3 BulletRayHit::
 get_hit_normal() const {
 
-  return btVector3_to_LVector3f(_normal);
+  return btVector3_to_LVector3(_normal);
 }
 

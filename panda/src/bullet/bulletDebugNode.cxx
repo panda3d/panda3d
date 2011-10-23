@@ -55,9 +55,9 @@ BulletDebugNode(const char *name) : GeomNode(name) {
 
   // Draw something in oder to prevent getting optimized away
   GeomVertexWriter vwriter(_vdata, InternalName::get_vertex());
-  vwriter.add_data3f(0.0, 0.0, 0.0);
-  vwriter.add_data3f(0.0, 0.0, 0.0);
-  vwriter.add_data3f(0.0, 0.0, 0.0);
+  vwriter.add_data3(0.0, 0.0, 0.0);
+  vwriter.add_data3(0.0, 0.0, 0.0);
+  vwriter.add_data3(0.0, 0.0, 0.0);
   _prim_lines->add_next_vertices(2);
   _prim_lines->close_primitive();
   _prim_triangles->add_next_vertices(3);
@@ -208,7 +208,7 @@ sync_b2p(btDynamicsWorld *world) {
 
   // Get inverse of this node's net transform
   NodePath np = NodePath::any_path((PandaNode *)this);
-  LMatrix4f m = np.get_net_transform()->get_mat();
+  LMatrix4 m = np.get_net_transform()->get_mat();
   m.invert_in_place();
 
   // Render collected data
@@ -226,10 +226,10 @@ sync_b2p(btDynamicsWorld *world) {
   for (lit = _drawer._lines.begin(); lit != _drawer._lines.end(); lit++) {
     Line line = *lit;
 
-    vwriter.add_data3f(m.xform_point(line._p0));
-    vwriter.add_data3f(m.xform_point(line._p1));
-    cwriter.add_data4f(line._color);
-    cwriter.add_data4f(line._color);
+    vwriter.add_data3(m.xform_point(line._p0));
+    vwriter.add_data3(m.xform_point(line._p1));
+    cwriter.add_data4(line._color);
+    cwriter.add_data4(line._color);
 
     _prim_lines->add_vertex(v++);
     _prim_lines->add_vertex(v++);
@@ -239,12 +239,12 @@ sync_b2p(btDynamicsWorld *world) {
   for (tit = _drawer._triangles.begin(); tit != _drawer._triangles.end(); tit++) {
     Triangle tri = *tit;
 
-    vwriter.add_data3f(m.xform_point(tri._p0));
-    vwriter.add_data3f(m.xform_point(tri._p1));
-    vwriter.add_data3f(m.xform_point(tri._p2));
-    cwriter.add_data4f(tri._color);
-    cwriter.add_data4f(tri._color);
-    cwriter.add_data4f(tri._color);
+    vwriter.add_data3(m.xform_point(tri._p0));
+    vwriter.add_data3(m.xform_point(tri._p1));
+    vwriter.add_data3(m.xform_point(tri._p2));
+    cwriter.add_data4(tri._color);
+    cwriter.add_data4(tri._color);
+    cwriter.add_data4(tri._color);
 
     _prim_triangles->add_vertex(v++);
     _prim_triangles->add_vertex(v++);
@@ -301,9 +301,9 @@ reportErrorWarning(const char *warning) {
 void BulletDebugNode::DebugDraw::
 drawLine(const btVector3 &from, const btVector3 &to, const btVector3 &color) {
 
-  float r = color.getX();
-  float g = color.getY();
-  float b = color.getZ();
+  PN_stdfloat r = color.getX();
+  PN_stdfloat g = color.getY();
+  PN_stdfloat b = color.getZ();
 
   // Hack to get rid of triangle normals. The hack is based on the
   // assumption that only normals are drawn in yellow.
@@ -311,9 +311,9 @@ drawLine(const btVector3 &from, const btVector3 &to, const btVector3 &color) {
 
   Line line;
 
-  line._p0 = LVecBase3f(from.getX(), from.getY(), from.getZ());
-  line._p1 = LVecBase3f(to.getX(), to.getY(), to.getZ());
-  line._color = LColorf(r, g, b, 1.0f);
+  line._p0 = LVecBase3(from.getX(), from.getY(), from.getZ());
+  line._p1 = LVecBase3(to.getX(), to.getY(), to.getZ());
+  line._color = LColor(r, g, b, 1.0f);
 
   _lines.push_back(line);
 }
@@ -326,16 +326,27 @@ drawLine(const btVector3 &from, const btVector3 &to, const btVector3 &color) {
 void BulletDebugNode::DebugDraw::
 drawTriangle(const btVector3 &v0, const btVector3 &v1, const btVector3 &v2, const btVector3 &color, btScalar) {
 
-  float r = color.getX();
-  float g = color.getY();
-  float b = color.getZ();
+  btScalar r = color.getX();
+  btScalar g = color.getY();
+  btScalar b = color.getZ();
 
   Triangle tri;
 
-  tri._p0 = LVecBase3f(v0.getX(), v0.getY(), v0.getZ());
-  tri._p1 = LVecBase3f(v1.getX(), v1.getY(), v1.getZ());
-  tri._p2 = LVecBase3f(v2.getX(), v2.getY(), v2.getZ());
-  tri._color = LColorf(r, g, b, 1.0f);
+  tri._p0 = LVecBase3((PN_stdfloat)v0.getX(),
+                      (PN_stdfloat)v0.getY(),
+                      (PN_stdfloat)v0.getZ());
+
+  tri._p1 = LVecBase3((PN_stdfloat)v1.getX(),
+                      (PN_stdfloat)v1.getY(),
+                      (PN_stdfloat)v1.getZ());
+
+  tri._p2 = LVecBase3((PN_stdfloat)v2.getX(),
+                      (PN_stdfloat)v2.getY(),
+                      (PN_stdfloat)v2.getZ());
+
+  tri._color = LColor((PN_stdfloat)r, 
+                      (PN_stdfloat)g, 
+                      (PN_stdfloat)b, 1.0f);
 
   _triangles.push_back(tri);
 

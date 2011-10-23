@@ -37,32 +37,32 @@ class EXPCL_PANDABULLET BulletHingeConstraint : public BulletConstraint {
 
 PUBLISHED:
   BulletHingeConstraint(const BulletRigidBodyNode *node_a, 
-                        const LPoint3f &pivot_a,
-                        const LVector3f &axis_a,
+                        const LPoint3 &pivot_a,
+                        const LVector3 &axis_a,
                         bool use_frame_a=false);
   BulletHingeConstraint(const BulletRigidBodyNode *node_a,
                         const BulletRigidBodyNode *node_b,
-                        const LPoint3f &pivot_a,
-                        const LPoint3f &pivot_b,
-                        const LVector3f &axis_a,
-                        const LVector3f &axis_b,
+                        const LPoint3 &pivot_a,
+                        const LPoint3 &pivot_b,
+                        const LVector3 &axis_a,
+                        const LVector3 &axis_b,
                         bool use_frame_a=false);
   INLINE ~BulletHingeConstraint();
 
-  float get_hinge_angle();
-  float get_lower_limit() const;
-  float get_upper_limit() const;
+  PN_stdfloat get_hinge_angle();
+  PN_stdfloat get_lower_limit() const;
+  PN_stdfloat get_upper_limit() const;
   bool get_angular_only() const;
 
   void set_angular_only(bool value);
-  void set_limit(float low, float high, float softness=0.9f, float bias=0.3f, float relaxation=1.0f);
-  void set_axis(const LVector3f &axis);
+  void set_limit(PN_stdfloat low, PN_stdfloat high, PN_stdfloat softness=0.9f, PN_stdfloat bias=0.3f, PN_stdfloat relaxation=1.0f);
+  void set_axis(const LVector3 &axis);
 
-  void enable_angular_motor(bool enable, float target_velocity, float max_impulse);
+  void enable_angular_motor(bool enable, PN_stdfloat target_velocity, PN_stdfloat max_impulse);
   void enable_motor(bool enable);
-  void set_max_motor_impulse(float max_impulse);
-  void set_motor_target(const LQuaternionf &quat, float dt);
-  void set_motor_target(float target_angle, float dt);
+  void set_max_motor_impulse(PN_stdfloat max_impulse);
+  void set_motor_target(const LQuaternion &quat, PN_stdfloat dt);
+  void set_motor_target(PN_stdfloat target_angle, PN_stdfloat dt);
 
 public:
   virtual btTypedConstraint *ptr() const;

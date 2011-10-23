@@ -34,9 +34,9 @@ PUBLISHED:
   INLINE static BulletRayHit empty();
 
   PandaNode *get_node() const;
-  LPoint3f get_hit_pos() const;
-  LVector3f get_hit_normal() const;
-  float get_hit_fraction() const;
+  LPoint3 get_hit_pos() const;
+  LVector3 get_hit_normal() const;
+  PN_stdfloat get_hit_fraction() const;
 
 private:
   btCollisionObject *_object; 
@@ -56,11 +56,11 @@ struct EXPCL_PANDABULLET BulletAllHitsRayResult : public btCollisionWorld::AllHi
 PUBLISHED:
   INLINE static BulletAllHitsRayResult empty();
 
-  LPoint3f get_from_pos() const;
-  LPoint3f get_to_pos() const;
+  LPoint3 get_from_pos() const;
+  LPoint3 get_to_pos() const;
 
   bool has_hits() const;
-  float get_closest_hit_fraction() const;
+  PN_stdfloat get_closest_hit_fraction() const;
 
   int get_num_hits() const;
   const BulletRayHit get_hit(int idx) const;

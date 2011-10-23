@@ -27,10 +27,10 @@ INLINE BulletSoftBodyConfig::
 //       Access: Published
 //  Description: Getter for property kVCF.
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletSoftBodyConfig::
+INLINE PN_stdfloat BulletSoftBodyConfig::
 get_velocities_correction_factor() const {
 
-  return _cfg.kVCF;
+  return (PN_stdfloat)_cfg.kVCF;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -39,9 +39,9 @@ get_velocities_correction_factor() const {
 //  Description: Setter for property kVCF.
 ////////////////////////////////////////////////////////////////////
 INLINE void BulletSoftBodyConfig::
-set_velocities_correction_factor(float value) {
+set_velocities_correction_factor(PN_stdfloat value) {
 
-  _cfg.kVCF = value;
+  _cfg.kVCF = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -49,10 +49,10 @@ set_velocities_correction_factor(float value) {
 //       Access: Published
 //  Description: Getter for property kDP.
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletSoftBodyConfig::
+INLINE PN_stdfloat BulletSoftBodyConfig::
 get_damping_coefficient() const {
 
-  return _cfg.kDP;
+  return (PN_stdfloat)_cfg.kDP;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -61,9 +61,9 @@ get_damping_coefficient() const {
 //  Description: Setter for property kDP.
 ////////////////////////////////////////////////////////////////////
 INLINE void BulletSoftBodyConfig::
-set_damping_coefficient(float value) {
+set_damping_coefficient(PN_stdfloat value) {
 
-  _cfg.kDP = value;
+  _cfg.kDP = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -71,10 +71,10 @@ set_damping_coefficient(float value) {
 //       Access: Published
 //  Description: Getter for property kDG.
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletSoftBodyConfig::
+INLINE PN_stdfloat BulletSoftBodyConfig::
 get_drag_coefficient() const {
 
-  return _cfg.kDG;
+  return (PN_stdfloat)_cfg.kDG;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -83,9 +83,9 @@ get_drag_coefficient() const {
 //  Description: Setter for property kDG.
 ////////////////////////////////////////////////////////////////////
 INLINE void BulletSoftBodyConfig::
-set_drag_coefficient(float value) {
+set_drag_coefficient(PN_stdfloat value) {
 
-  _cfg.kDG = value;
+  _cfg.kDG = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -93,10 +93,10 @@ set_drag_coefficient(float value) {
 //       Access: Published
 //  Description: Getter for property kLF.
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletSoftBodyConfig::
+INLINE PN_stdfloat BulletSoftBodyConfig::
 get_lift_coefficient() const {
 
-  return _cfg.kLF;
+  return (PN_stdfloat)_cfg.kLF;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -105,9 +105,9 @@ get_lift_coefficient() const {
 //  Description: Setter for property kLF.
 ////////////////////////////////////////////////////////////////////
 INLINE void BulletSoftBodyConfig::
-set_lift_coefficient(float value) {
+set_lift_coefficient(PN_stdfloat value) {
 
-  _cfg.kLF = value;
+  _cfg.kLF = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -115,10 +115,10 @@ set_lift_coefficient(float value) {
 //       Access: Published
 //  Description: Getter for property kPR.
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletSoftBodyConfig::
+INLINE PN_stdfloat BulletSoftBodyConfig::
 get_pressure_coefficient() const {
 
-  return _cfg.kPR;
+  return (PN_stdfloat)_cfg.kPR;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -127,9 +127,9 @@ get_pressure_coefficient() const {
 //  Description: Setter for property kPR.
 ////////////////////////////////////////////////////////////////////
 INLINE void BulletSoftBodyConfig::
-set_pressure_coefficient(float value) {
+set_pressure_coefficient(PN_stdfloat value) {
 
-  _cfg.kPR = value;
+  _cfg.kPR = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -137,10 +137,10 @@ set_pressure_coefficient(float value) {
 //       Access: Published
 //  Description: Getter for property kVC.
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletSoftBodyConfig::
+INLINE PN_stdfloat BulletSoftBodyConfig::
 get_volume_conversation_coefficient() const {
 
-  return _cfg.kVC;
+  return (PN_stdfloat)_cfg.kVC;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -149,9 +149,9 @@ get_volume_conversation_coefficient() const {
 //  Description: Setter for property kVC.
 ////////////////////////////////////////////////////////////////////
 INLINE void BulletSoftBodyConfig::
-set_volume_conversation_coefficient(float value) {
+set_volume_conversation_coefficient(PN_stdfloat value) {
 
-  _cfg.kVC = value;
+  _cfg.kVC = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -159,10 +159,10 @@ set_volume_conversation_coefficient(float value) {
 //       Access: Published
 //  Description: Getter for property kDF.
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletSoftBodyConfig::
+INLINE PN_stdfloat BulletSoftBodyConfig::
 get_dynamic_friction_coefficient() const {
 
-  return _cfg.kDF;
+  return (PN_stdfloat)_cfg.kDF;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -171,9 +171,9 @@ get_dynamic_friction_coefficient() const {
 //  Description: Setter for property kDF.
 ////////////////////////////////////////////////////////////////////
 INLINE void BulletSoftBodyConfig::
-set_dynamic_friction_coefficient(float value) {
+set_dynamic_friction_coefficient(PN_stdfloat value) {
 
-  _cfg.kDF = value;
+  _cfg.kDF = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -181,10 +181,10 @@ set_dynamic_friction_coefficient(float value) {
 //       Access: Published
 //  Description: Getter for property kMT.
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletSoftBodyConfig::
+INLINE PN_stdfloat BulletSoftBodyConfig::
 get_pose_matching_coefficient() const {
 
-  return _cfg.kMT;
+  return (PN_stdfloat)_cfg.kMT;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -193,9 +193,9 @@ get_pose_matching_coefficient() const {
 //  Description: Setter for property kMT.
 ////////////////////////////////////////////////////////////////////
 INLINE void BulletSoftBodyConfig::
-set_pose_matching_coefficient(float value) {
+set_pose_matching_coefficient(PN_stdfloat value) {
 
-  _cfg.kMT = value;
+  _cfg.kMT = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -203,10 +203,10 @@ set_pose_matching_coefficient(float value) {
 //       Access: Published
 //  Description: Getter for property kCHR.
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletSoftBodyConfig::
+INLINE PN_stdfloat BulletSoftBodyConfig::
 get_rigid_contacts_hardness() const {
 
-  return _cfg.kCHR;
+  return (PN_stdfloat)_cfg.kCHR;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -215,9 +215,9 @@ get_rigid_contacts_hardness() const {
 //  Description: Setter for property kCHR.
 ////////////////////////////////////////////////////////////////////
 INLINE void BulletSoftBodyConfig::
-set_rigid_contacts_hardness(float value) {
+set_rigid_contacts_hardness(PN_stdfloat value) {
 
-  _cfg.kCHR = value;
+  _cfg.kCHR = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -225,10 +225,10 @@ set_rigid_contacts_hardness(float value) {
 //       Access: Published
 //  Description: Getter for property kKHR.
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletSoftBodyConfig::
+INLINE PN_stdfloat BulletSoftBodyConfig::
 get_kinetic_contacts_hardness() const {
 
-  return _cfg.kKHR;
+  return (PN_stdfloat)_cfg.kKHR;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -237,9 +237,9 @@ get_kinetic_contacts_hardness() const {
 //  Description: Setter for property kKHR.
 ////////////////////////////////////////////////////////////////////
 INLINE void BulletSoftBodyConfig::
-set_kinetic_contacts_hardness(float value) {
+set_kinetic_contacts_hardness(PN_stdfloat value) {
 
-  _cfg.kKHR = value;
+  _cfg.kKHR = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -247,10 +247,10 @@ set_kinetic_contacts_hardness(float value) {
 //       Access: Published
 //  Description: Getter for property kSHR.
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletSoftBodyConfig::
+INLINE PN_stdfloat BulletSoftBodyConfig::
 get_soft_contacts_hardness() const {
 
-  return _cfg.kSHR;
+  return (PN_stdfloat)_cfg.kSHR;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -259,9 +259,9 @@ get_soft_contacts_hardness() const {
 //  Description: Setter for property kSHR.
 ////////////////////////////////////////////////////////////////////
 INLINE void BulletSoftBodyConfig::
-set_soft_contacts_hardness(float value) {
+set_soft_contacts_hardness(PN_stdfloat value) {
 
-  _cfg.kSHR = value;
+  _cfg.kSHR = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -269,10 +269,10 @@ set_soft_contacts_hardness(float value) {
 //       Access: Published
 //  Description: Getter for property kAHR.
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletSoftBodyConfig::
+INLINE PN_stdfloat BulletSoftBodyConfig::
 get_anchors_hardness() const {
 
-  return _cfg.kAHR;
+  return (PN_stdfloat)_cfg.kAHR;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -281,9 +281,9 @@ get_anchors_hardness() const {
 //  Description: Setter for property kAHR.
 ////////////////////////////////////////////////////////////////////
 INLINE void BulletSoftBodyConfig::
-set_anchors_hardness(float value) {
+set_anchors_hardness(PN_stdfloat value) {
 
-  _cfg.kAHR = value;
+  _cfg.kAHR = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -291,10 +291,10 @@ set_anchors_hardness(float value) {
 //       Access: Published
 //  Description: Getter for property kSRHR_CL.
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletSoftBodyConfig::
+INLINE PN_stdfloat BulletSoftBodyConfig::
 get_soft_vs_rigid_hardness() const {
 
-  return _cfg.kSRHR_CL;
+  return (PN_stdfloat)_cfg.kSRHR_CL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -303,9 +303,9 @@ get_soft_vs_rigid_hardness() const {
 //  Description: Setter for property kSRHR_CL.
 ////////////////////////////////////////////////////////////////////
 INLINE void BulletSoftBodyConfig::
-set_soft_vs_rigid_hardness(float value) {
+set_soft_vs_rigid_hardness(PN_stdfloat value) {
 
-  _cfg.kSRHR_CL = value;
+  _cfg.kSRHR_CL = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -313,10 +313,10 @@ set_soft_vs_rigid_hardness(float value) {
 //       Access: Published
 //  Description: Getter for property kSKHR_CL.
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletSoftBodyConfig::
+INLINE PN_stdfloat BulletSoftBodyConfig::
 get_soft_vs_kinetic_hardness() const {
 
-  return _cfg.kSKHR_CL;
+  return (PN_stdfloat)_cfg.kSKHR_CL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -325,9 +325,9 @@ get_soft_vs_kinetic_hardness() const {
 //  Description: Setter for property kSKHR_CL.
 ////////////////////////////////////////////////////////////////////
 INLINE void BulletSoftBodyConfig::
-set_soft_vs_kinetic_hardness(float value) {
+set_soft_vs_kinetic_hardness(PN_stdfloat value) {
 
-  _cfg.kSKHR_CL = value;
+  _cfg.kSKHR_CL = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -335,10 +335,10 @@ set_soft_vs_kinetic_hardness(float value) {
 //       Access: Published
 //  Description: Getter for property kSSHR_CL.
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletSoftBodyConfig::
+INLINE PN_stdfloat BulletSoftBodyConfig::
 get_soft_vs_soft_hardness() const {
 
-  return _cfg.kSSHR_CL;
+  return (PN_stdfloat)_cfg.kSSHR_CL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -347,9 +347,9 @@ get_soft_vs_soft_hardness() const {
 //  Description: Setter for property kSSHR_CL.
 ////////////////////////////////////////////////////////////////////
 INLINE void BulletSoftBodyConfig::
-set_soft_vs_soft_hardness(float value) {
+set_soft_vs_soft_hardness(PN_stdfloat value) {
 
-  _cfg.kSSHR_CL = value;
+  _cfg.kSSHR_CL = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -357,10 +357,10 @@ set_soft_vs_soft_hardness(float value) {
 //       Access: Published
 //  Description: Getter for property kSR_SPLT_CL.
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletSoftBodyConfig::
+INLINE PN_stdfloat BulletSoftBodyConfig::
 get_soft_vs_rigid_impulse_split() const {
 
-  return _cfg.kSR_SPLT_CL;
+  return (PN_stdfloat)_cfg.kSR_SPLT_CL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -369,9 +369,9 @@ get_soft_vs_rigid_impulse_split() const {
 //  Description: Setter for property kSR_SPLT_CL.
 ////////////////////////////////////////////////////////////////////
 INLINE void BulletSoftBodyConfig::
-set_soft_vs_rigid_impulse_split(float value) {
+set_soft_vs_rigid_impulse_split(PN_stdfloat value) {
 
-  _cfg.kSR_SPLT_CL = value;
+  _cfg.kSR_SPLT_CL = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -379,10 +379,10 @@ set_soft_vs_rigid_impulse_split(float value) {
 //       Access: Published
 //  Description: Getter for property kSK_SPLT_CL.
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletSoftBodyConfig::
+INLINE PN_stdfloat BulletSoftBodyConfig::
 get_soft_vs_kinetic_impulse_split() const {
 
-  return _cfg.kSK_SPLT_CL;
+  return (PN_stdfloat)_cfg.kSK_SPLT_CL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -391,9 +391,9 @@ get_soft_vs_kinetic_impulse_split() const {
 //  Description: Setter for property kSK_SPLT_CL.
 ////////////////////////////////////////////////////////////////////
 INLINE void BulletSoftBodyConfig::
-set_soft_vs_kinetic_impulse_split(float value) {
+set_soft_vs_kinetic_impulse_split(PN_stdfloat value) {
 
-  _cfg.kSK_SPLT_CL = value;
+  _cfg.kSK_SPLT_CL = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -401,10 +401,10 @@ set_soft_vs_kinetic_impulse_split(float value) {
 //       Access: Published
 //  Description: Getter for property kSS_SPLT_CL.
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletSoftBodyConfig::
+INLINE PN_stdfloat BulletSoftBodyConfig::
 get_soft_vs_soft_impulse_split() const {
 
-  return _cfg.kSS_SPLT_CL;
+  return (PN_stdfloat)_cfg.kSS_SPLT_CL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -413,9 +413,9 @@ get_soft_vs_soft_impulse_split() const {
 //  Description: Setter for property kSS_SPLT_CL.
 ////////////////////////////////////////////////////////////////////
 INLINE void BulletSoftBodyConfig::
-set_soft_vs_soft_impulse_split(float value) {
+set_soft_vs_soft_impulse_split(PN_stdfloat value) {
 
-  _cfg.kSS_SPLT_CL = value;
+  _cfg.kSS_SPLT_CL = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -423,10 +423,10 @@ set_soft_vs_soft_impulse_split(float value) {
 //       Access: Published
 //  Description: Getter for property maxvolume.
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletSoftBodyConfig::
+INLINE PN_stdfloat BulletSoftBodyConfig::
 get_maxvolume() const {
 
-  return _cfg.maxvolume;
+  return (PN_stdfloat)_cfg.maxvolume;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -435,9 +435,9 @@ get_maxvolume() const {
 //  Description: Setter for property maxvolume.
 ////////////////////////////////////////////////////////////////////
 INLINE void BulletSoftBodyConfig::
-set_maxvolume(float value) {
+set_maxvolume(PN_stdfloat value) {
 
-  _cfg.maxvolume = value;
+  _cfg.maxvolume = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -445,10 +445,10 @@ set_maxvolume(float value) {
 //       Access: Published
 //  Description: Getter for property timescale.
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletSoftBodyConfig::
+INLINE PN_stdfloat BulletSoftBodyConfig::
 get_timescale() const {
 
-  return _cfg.timescale;
+  return (PN_stdfloat)_cfg.timescale;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -457,9 +457,9 @@ get_timescale() const {
 //  Description: Setter for property timescale.
 ////////////////////////////////////////////////////////////////////
 INLINE void BulletSoftBodyConfig::
-set_timescale(float value) {
+set_timescale(PN_stdfloat value) {
 
-  _cfg.timescale = value;
+  _cfg.timescale = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////

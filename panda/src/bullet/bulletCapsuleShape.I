@@ -28,10 +28,10 @@ INLINE BulletCapsuleShape::
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletCapsuleShape::
+INLINE PN_stdfloat BulletCapsuleShape::
 get_radius() const {
 
-  return _shape->getRadius();
+  return (PN_stdfloat)_shape->getRadius();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -39,9 +39,9 @@ get_radius() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE float BulletCapsuleShape::
+INLINE PN_stdfloat BulletCapsuleShape::
 get_half_height() const {
 
-  return _shape->getHalfHeight();
+  return (PN_stdfloat)_shape->getHalfHeight();
 }
 

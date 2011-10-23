@@ -44,11 +44,11 @@ PUBLISHED:
   INLINE ~BulletSoftBodyNodeElement();
   INLINE static BulletSoftBodyNodeElement empty();
 
-  INLINE LPoint3f get_pos() const;
-  INLINE LVector3f get_velocity() const;
-  INLINE LVector3f get_normal() const;
-  INLINE float get_inv_mass() const;
-  INLINE float get_area() const;
+  INLINE LPoint3 get_pos() const;
+  INLINE LVector3 get_velocity() const;
+  INLINE LVector3 get_normal() const;
+  INLINE PN_stdfloat get_inv_mass() const;
+  INLINE PN_stdfloat get_area() const;
   INLINE int is_attached() const;
 
 public:
@@ -77,23 +77,23 @@ PUBLISHED:
   void randomize_constraints(); 
 
   // Mass, volume, density
-  void set_volume_mass(float mass);
-  void set_volume_density(float density);
-  void set_total_mass(float mass, bool fromfaces=false);
-  void set_total_density(float density);
-  void set_mass(int node, float mass);
+  void set_volume_mass(PN_stdfloat mass);
+  void set_volume_density(PN_stdfloat density);
+  void set_total_mass(PN_stdfloat mass, bool fromfaces=false);
+  void set_total_density(PN_stdfloat density);
+  void set_mass(int node, PN_stdfloat mass);
 
-  float get_mass(int node) const;
-  float get_total_mass() const;
-  float get_volume() const;
+  PN_stdfloat get_mass(int node) const;
+  PN_stdfloat get_total_mass() const;
+  PN_stdfloat get_volume() const;
 
   // Force
-  void add_force(const LVector3f &force);
-  void add_force(const LVector3f &force, int node);
+  void add_force(const LVector3 &force);
+  void add_force(const LVector3 &force, int node);
 
-  void set_velocity(const LVector3f &velocity);
-  void add_velocity(const LVector3f &velocity);
-  void add_velocity(const LVector3f &velocity, int node);
+  void set_velocity(const LVector3 &velocity);
+  void add_velocity(const LVector3 &velocity);
+  void add_velocity(const LVector3 &velocity, int node);
 
   void set_pose(bool bvolume, bool bframe);
 
@@ -104,7 +104,7 @@ PUBLISHED:
   void release_cluster(int index);
   void release_clusters();
   int get_num_clusters() const;
-  LVecBase3f cluster_com(int cluster) const;
+  LVecBase3 cluster_com(int cluster) const;
 
   // Rendering
   void link_geom(Geom *geom);
@@ -120,7 +120,7 @@ PUBLISHED:
   void append_anchor(int node, BulletRigidBodyNode *body, 
       bool disable=false);
   void append_anchor(int node, BulletRigidBodyNode *body, 
-      const LVector3f &pivot,
+      const LVector3 &pivot,
       bool disable=false);
 
   // Materials
@@ -135,22 +135,22 @@ PUBLISHED:
   BulletSoftBodyNodeElement get_node(int idx) const;
   MAKE_SEQ(get_nodes, get_num_nodes, get_node);
 
-  int get_closest_node_index(LVecBase3f point, bool local);
+  int get_closest_node_index(LVecBase3 point, bool local);
 
   // Factory
   static PT(BulletSoftBodyNode) make_rope(
       BulletSoftBodyWorldInfo &info,
-      const LPoint3f &from,
-      const LPoint3f &to,
+      const LPoint3 &from,
+      const LPoint3 &to,
       int res,
       int fixeds);
 
   static PT(BulletSoftBodyNode) make_patch(
       BulletSoftBodyWorldInfo &info,
-      const LPoint3f &corner00,
-      const LPoint3f &corner10,
-      const LPoint3f &corner01,
-      const LPoint3f &corner11,
+      const LPoint3 &corner00,
+      const LPoint3 &corner10,
+      const LPoint3 &corner01,
+      const LPoint3 &corner11,
       int resx,
       int resy,
       int fixeds,
@@ -158,8 +158,8 @@ PUBLISHED:
 
   static PT(BulletSoftBodyNode) make_ellipsoid(
       BulletSoftBodyWorldInfo &info,
-      const LPoint3f &center,
-      const LVecBase3f &radius,
+      const LPoint3 &center,
+      const LVecBase3 &radius,
       int res);
 
   static PT(BulletSoftBodyNode) make_tri_mesh(
@@ -169,13 +169,13 @@ PUBLISHED:
 
   static PT(BulletSoftBodyNode) make_tri_mesh(
       BulletSoftBodyWorldInfo &info,
-      PTA_LVecBase3f points, 
+      PTA_LVecBase3 points, 
       PTA_int indices,
       bool randomizeConstraints=true);
 
   static PT(BulletSoftBodyNode) make_tet_mesh(
       BulletSoftBodyWorldInfo &info,
-      PTA_LVecBase3f points,
+      PTA_LVecBase3 points,
       PTA_int indices,
       bool tetralinks=true);
 
@@ -204,7 +204,7 @@ private:
   PT(NurbsCurveEvaluator) _curve;
   PT(NurbsSurfaceEvaluator) _surface;
 
-  static int get_point_index(LVecBase3f p, PTA_LVecBase3f points);
+  static int get_point_index(LVecBase3 p, PTA_LVecBase3 points);
   static int next_line(const char *buffer);
 
 ////////////////////////////////////////////////////////////////////

@@ -39,8 +39,8 @@ PUBLISHED:
   BulletManifoldPoint *get_manifold_point(int idx) const;
   MAKE_SEQ(get_manifold_points, get_num_manifold_points, get_manifold_point);
 
-  float get_contact_breaking_threshold() const;
-  float get_contact_processing_threshold() const;
+  PN_stdfloat get_contact_breaking_threshold() const;
+  PN_stdfloat get_contact_processing_threshold() const;
 
   void clear_manifold();
 

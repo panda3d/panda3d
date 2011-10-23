@@ -70,14 +70,14 @@ ptr() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-LVector3f BulletGenericConstraint::
+LVector3 BulletGenericConstraint::
 get_axis(int axis) const {
 
-  nassertr(axis >= 0, LVector3f::zero());
-  nassertr(axis <= 3, LVector3f::zero());
+  nassertr(axis >= 0, LVector3::zero());
+  nassertr(axis <= 3, LVector3::zero());
 
   _constraint->buildJacobian();
-  return btVector3_to_LVector3f(_constraint->getAxis(axis));
+  return btVector3_to_LVector3(_constraint->getAxis(axis));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -85,7 +85,7 @@ get_axis(int axis) const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletGenericConstraint::
+PN_stdfloat BulletGenericConstraint::
 get_pivot(int axis) const {
 
   nassertr(axis >= 0, 0.0f);
@@ -100,7 +100,7 @@ get_pivot(int axis) const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletGenericConstraint::
+PN_stdfloat BulletGenericConstraint::
 get_angle(int axis) const {
 
   nassertr(axis >= 0, 0.0f);
@@ -116,7 +116,7 @@ get_angle(int axis) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletGenericConstraint::
-set_linear_limit(int axis, float low, float high) {
+set_linear_limit(int axis, PN_stdfloat low, PN_stdfloat high) {
 
   nassertv(axis >= 0);
   nassertv(axis <= 3);
@@ -131,7 +131,7 @@ set_linear_limit(int axis, float low, float high) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletGenericConstraint::
-set_angular_limit(int axis, float low, float high) {
+set_angular_limit(int axis, PN_stdfloat low, PN_stdfloat high) {
 
   nassertv(axis >= 0);
   nassertv(axis <= 3);

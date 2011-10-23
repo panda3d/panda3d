@@ -32,12 +32,12 @@ PUBLISHED:
   INLINE ~BulletManifoldPoint();
 
   int get_lift_time() const;
-  float get_distance() const;
-  float get_applied_impulse() const;
-  LPoint3f get_position_world_on_a() const;
-  LPoint3f get_position_world_on_b() const;
-  LPoint3f get_local_point_a() const;
-  LPoint3f get_local_point_b() const;
+  PN_stdfloat get_distance() const;
+  PN_stdfloat get_applied_impulse() const;
+  LPoint3 get_position_world_on_a() const;
+  LPoint3 get_position_world_on_b() const;
+  LPoint3 get_local_point_a() const;
+  LPoint3 get_local_point_b() const;
 
 public:
   BulletManifoldPoint(btManifoldPoint &pt);

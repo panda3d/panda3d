@@ -30,10 +30,10 @@ BulletWheel(btWheelInfo &info) : _info(info) {
 //  Description: Returns the length of the suspension when the
 //               vehicle is standing still.
 ////////////////////////////////////////////////////////////////////
-float BulletWheel::
+PN_stdfloat BulletWheel::
 get_suspension_rest_length() const {
 
-  return _info.getSuspensionRestLength();
+  return (PN_stdfloat)_info.getSuspensionRestLength();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -42,9 +42,9 @@ get_suspension_rest_length() const {
 //  Description: Sets how stiff the suspension shall be.
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
-set_suspension_stiffness(float value) {
+set_suspension_stiffness(PN_stdfloat value) {
 
-  _info.m_suspensionStiffness = value;
+  _info.m_suspensionStiffness = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -52,10 +52,10 @@ set_suspension_stiffness(float value) {
 //       Access: Published
 //  Description: Returns the stiffness of the suspension.
 ////////////////////////////////////////////////////////////////////
-float BulletWheel::
+PN_stdfloat BulletWheel::
 get_suspension_stiffness() const {
 
-  return _info.m_suspensionStiffness;
+  return (PN_stdfloat)_info.m_suspensionStiffness;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -65,9 +65,9 @@ get_suspension_stiffness() const {
 //               out of the resting position in centimeters.
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
-set_max_suspension_travel_cm(float value) {
+set_max_suspension_travel_cm(PN_stdfloat value) {
 
-  _info.m_maxSuspensionTravelCm = value;
+  _info.m_maxSuspensionTravelCm = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -75,10 +75,10 @@ set_max_suspension_travel_cm(float value) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletWheel::
+PN_stdfloat BulletWheel::
 get_max_suspension_travel_cm() const {
 
-  return _info.m_maxSuspensionTravelCm;
+  return (PN_stdfloat)_info.m_maxSuspensionTravelCm;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -87,9 +87,9 @@ get_max_suspension_travel_cm() const {
 //  Description: Sets the slipperyness of the tyre.
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
-set_friction_slip(float value) {
+set_friction_slip(PN_stdfloat value) {
 
-  _info.m_frictionSlip = value;
+  _info.m_frictionSlip = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -97,10 +97,10 @@ set_friction_slip(float value) {
 //       Access: Published
 //  Description: Returns how slippery the tyres are.
 ////////////////////////////////////////////////////////////////////
-float BulletWheel::
+PN_stdfloat BulletWheel::
 get_friction_slip() const {
 
-  return _info.m_frictionSlip;
+  return (PN_stdfloat)_info.m_frictionSlip;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -110,9 +110,9 @@ get_friction_slip() const {
 //               handle.
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
-set_max_suspension_force(float value) {
+set_max_suspension_force(PN_stdfloat value) {
 
-  _info.m_maxSuspensionForce = value;
+  _info.m_maxSuspensionForce = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -121,10 +121,10 @@ set_max_suspension_force(float value) {
 //  Description: Returns the maximum force (weight) the suspension
 //               can handle.
 ////////////////////////////////////////////////////////////////////
-float BulletWheel::
+PN_stdfloat BulletWheel::
 get_max_suspension_force() const {
 
-  return _info.m_maxSuspensionForce;
+  return (PN_stdfloat)_info.m_maxSuspensionForce;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -134,9 +134,9 @@ get_max_suspension_force() const {
 //               gets compressed.
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
-set_wheels_damping_compression(float value) {
+set_wheels_damping_compression(PN_stdfloat value) {
 
-  _info.m_wheelsDampingCompression = value;
+  _info.m_wheelsDampingCompression = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -145,10 +145,10 @@ set_wheels_damping_compression(float value) {
 //  Description: Returns the  damping applied to the compressing
 //               suspension.
 ////////////////////////////////////////////////////////////////////
-float BulletWheel::
+PN_stdfloat BulletWheel::
 get_wheels_damping_compression() const {
 
-  return _info.m_wheelsDampingCompression;
+  return (PN_stdfloat)_info.m_wheelsDampingCompression;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -158,9 +158,9 @@ get_wheels_damping_compression() const {
 //               relaxes.
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
-set_wheels_damping_relaxation(float value) {
+set_wheels_damping_relaxation(PN_stdfloat value) {
 
-  _info.m_wheelsDampingRelaxation = value;
+  _info.m_wheelsDampingRelaxation = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -169,10 +169,10 @@ set_wheels_damping_relaxation(float value) {
 //  Description: Returns the damping applied to the relaxing
 //               suspension.
 ////////////////////////////////////////////////////////////////////
-float BulletWheel::
+PN_stdfloat BulletWheel::
 get_wheels_damping_relaxation() const {
 
-  return _info.m_wheelsDampingRelaxation;
+  return (PN_stdfloat)_info.m_wheelsDampingRelaxation;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -185,9 +185,9 @@ get_wheels_damping_relaxation() const {
 //               of mass up and down.
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
-set_roll_influence(float value) {
+set_roll_influence(PN_stdfloat value) {
 
-  _info.m_rollInfluence = value;
+  _info.m_rollInfluence = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -196,10 +196,10 @@ set_roll_influence(float value) {
 //  Description: Returns the factor by which roll forces are scaled.
 //               See set_roll_influence.
 ////////////////////////////////////////////////////////////////////
-float BulletWheel::
+PN_stdfloat BulletWheel::
 get_roll_influence() const {
 
-  return _info.m_rollInfluence;
+  return (PN_stdfloat)_info.m_rollInfluence;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -208,9 +208,9 @@ get_roll_influence() const {
 //  Description: Sets the wheel radius.
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
-set_wheel_radius(float value) {
+set_wheel_radius(PN_stdfloat value) {
 
-  _info.m_wheelsRadius = value;
+  _info.m_wheelsRadius = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -218,10 +218,10 @@ set_wheel_radius(float value) {
 //       Access: Published
 //  Description: Returns the wheel radius.
 ////////////////////////////////////////////////////////////////////
-float BulletWheel::
+PN_stdfloat BulletWheel::
 get_wheel_radius() const {
 
-  return _info.m_wheelsRadius;
+  return (PN_stdfloat)_info.m_wheelsRadius;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -230,9 +230,9 @@ get_wheel_radius() const {
 //  Description: Sets the steering angle.
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
-set_steering(float value) {
+set_steering(PN_stdfloat value) {
 
-  _info.m_steering = value;
+  _info.m_steering = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -240,10 +240,10 @@ set_steering(float value) {
 //       Access: Published
 //  Description: Returns the steering angle in degrees.
 ////////////////////////////////////////////////////////////////////
-float BulletWheel::
+PN_stdfloat BulletWheel::
 get_steering() const {
 
-  return _info.m_steering;
+  return (PN_stdfloat)_info.m_steering;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -252,9 +252,9 @@ get_steering() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
-set_rotation(float value) {
+set_rotation(PN_stdfloat value) {
 
-  _info.m_rotation = value;
+  _info.m_rotation = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -262,10 +262,10 @@ set_rotation(float value) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletWheel::
+PN_stdfloat BulletWheel::
 get_rotation() const {
 
-  return _info.m_rotation;
+  return (PN_stdfloat)_info.m_rotation;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -274,9 +274,9 @@ get_rotation() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
-set_delta_rotation(float value) {
+set_delta_rotation(PN_stdfloat value) {
 
-  _info.m_deltaRotation = value;
+  _info.m_deltaRotation = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -284,10 +284,10 @@ set_delta_rotation(float value) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletWheel::
+PN_stdfloat BulletWheel::
 get_delta_rotation() const {
 
-  return _info.m_deltaRotation;
+  return (PN_stdfloat)_info.m_deltaRotation;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -297,9 +297,9 @@ get_delta_rotation() const {
 //               wheel.
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
-set_engine_force(float value) {
+set_engine_force(PN_stdfloat value) {
 
-  _info.m_engineForce = value;
+  _info.m_engineForce = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -308,10 +308,10 @@ set_engine_force(float value) {
 //  Description: Returns the amount of accelleration force currently
 //               applied.
 ////////////////////////////////////////////////////////////////////
-float BulletWheel::
+PN_stdfloat BulletWheel::
 get_engine_force() const {
 
-  return _info.m_engineForce;
+  return (PN_stdfloat)_info.m_engineForce;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -320,9 +320,9 @@ get_engine_force() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
-set_brake(float value) {
+set_brake(PN_stdfloat value) {
 
-  _info.m_brake = value;
+  _info.m_brake = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -331,10 +331,10 @@ set_brake(float value) {
 //  Description: Returns the amount of braking force currently
 //               applied.
 ////////////////////////////////////////////////////////////////////
-float BulletWheel::
+PN_stdfloat BulletWheel::
 get_brake() const {
 
-  return _info.m_brake;
+  return (PN_stdfloat)_info.m_brake;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -343,9 +343,9 @@ get_brake() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
-set_skid_info(float value) {
+set_skid_info(PN_stdfloat value) {
 
-  _info.m_skidInfo = value;
+  _info.m_skidInfo = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -353,10 +353,10 @@ set_skid_info(float value) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletWheel::
+PN_stdfloat BulletWheel::
 get_skid_info() const {
 
-  return _info.m_skidInfo;
+  return (PN_stdfloat)_info.m_skidInfo;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -365,9 +365,9 @@ get_skid_info() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
-set_wheels_suspension_force(float value) {
+set_wheels_suspension_force(PN_stdfloat value) {
 
-  _info.m_wheelsSuspensionForce = value;
+  _info.m_wheelsSuspensionForce = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -375,10 +375,10 @@ set_wheels_suspension_force(float value) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletWheel::
+PN_stdfloat BulletWheel::
 get_wheels_suspension_force() const {
 
-  return _info.m_wheelsSuspensionForce;
+  return (PN_stdfloat)_info.m_wheelsSuspensionForce;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -387,9 +387,9 @@ get_wheels_suspension_force() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
-set_suspension_relative_velocity(float value) {
+set_suspension_relative_velocity(PN_stdfloat value) {
 
-  _info.m_suspensionRelativeVelocity = value;
+  _info.m_suspensionRelativeVelocity = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -397,10 +397,10 @@ set_suspension_relative_velocity(float value) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletWheel::
+PN_stdfloat BulletWheel::
 get_suspension_relative_velocity() const {
 
-  return _info.m_suspensionRelativeVelocity;
+  return (PN_stdfloat)_info.m_suspensionRelativeVelocity;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -409,9 +409,9 @@ get_suspension_relative_velocity() const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
-set_clipped_inv_connection_point_cs(float value) {
+set_clipped_inv_connection_point_cs(PN_stdfloat value) {
 
-  _info.m_clippedInvContactDotSuspension = value;
+  _info.m_clippedInvContactDotSuspension = (btScalar)value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -419,10 +419,10 @@ set_clipped_inv_connection_point_cs(float value) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletWheel::
+PN_stdfloat BulletWheel::
 get_clipped_inv_connection_point_cs() const {
 
-  return _info.m_clippedInvContactDotSuspension;
+  return (PN_stdfloat)_info.m_clippedInvContactDotSuspension;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -432,10 +432,10 @@ get_clipped_inv_connection_point_cs() const {
 //               chassis.
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
-set_chassis_connection_point_cs(const LPoint3f &pos) {
+set_chassis_connection_point_cs(const LPoint3 &pos) {
 
   nassertv(!pos.is_nan());
-  _info.m_chassisConnectionPointCS = LVecBase3f_to_btVector3(pos);
+  _info.m_chassisConnectionPointCS = LVecBase3_to_btVector3(pos);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -444,10 +444,10 @@ set_chassis_connection_point_cs(const LPoint3f &pos) {
 //  Description: Returns the point where the wheel is connected to
 //               the chassis.
 ////////////////////////////////////////////////////////////////////
-LPoint3f BulletWheel::
+LPoint3 BulletWheel::
 get_chassis_connection_point_cs() const {
 
-  return btVector3_to_LPoint3f(_info.m_chassisConnectionPointCS);
+  return btVector3_to_LPoint3(_info.m_chassisConnectionPointCS);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -457,10 +457,10 @@ get_chassis_connection_point_cs() const {
 //               orthogonal to the axle vector.)
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
-set_wheel_direction_cs(const LVector3f &dir) {
+set_wheel_direction_cs(const LVector3 &dir) {
 
   nassertv(!dir.is_nan());
-  _info.m_wheelDirectionCS = LVecBase3f_to_btVector3(dir);
+  _info.m_wheelDirectionCS = LVecBase3_to_btVector3(dir);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -469,10 +469,10 @@ set_wheel_direction_cs(const LVector3f &dir) {
 //  Description: Returns the wheel's forward vector relative to the
 //               chassis.
 ////////////////////////////////////////////////////////////////////
-LVector3f BulletWheel::
+LVector3 BulletWheel::
 get_wheel_direction_cs() const {
 
-  return btVector3_to_LVector3f(_info.m_wheelDirectionCS);
+  return btVector3_to_LVector3(_info.m_wheelDirectionCS);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -481,10 +481,10 @@ get_wheel_direction_cs() const {
 //  Description: Determines the wheel axle normal vector.
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
-set_wheel_axle_cs(const LVector3f &axle) {
+set_wheel_axle_cs(const LVector3 &axle) {
 
   nassertv(!axle.is_nan());
-  _info.m_wheelAxleCS = LVecBase3f_to_btVector3(axle);
+  _info.m_wheelAxleCS = LVecBase3_to_btVector3(axle);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -492,10 +492,10 @@ set_wheel_axle_cs(const LVector3f &axle) {
 //       Access: Published
 //  Description: Returns the normal vector of the wheel axle.
 ////////////////////////////////////////////////////////////////////
-LVector3f BulletWheel::
+LVector3 BulletWheel::
 get_wheel_axle_cs() const {
 
-  return btVector3_to_LVector3f(_info.m_wheelAxleCS);
+  return btVector3_to_LVector3(_info.m_wheelAxleCS);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -504,10 +504,10 @@ get_wheel_axle_cs() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletWheel::
-set_world_transform(const LMatrix4f &mat) {
+set_world_transform(const LMatrix4 &mat) {
 
   nassertv(!mat.is_nan());
-  _info.m_worldTransform = LMatrix4f_to_btTrans(mat);
+  _info.m_worldTransform = LMatrix4_to_btTrans(mat);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -515,10 +515,10 @@ set_world_transform(const LMatrix4f &mat) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-LMatrix4f BulletWheel::
+LMatrix4 BulletWheel::
 get_world_transform() const {
 
-  return btTrans_to_LMatrix4f(_info.m_worldTransform);
+  return btTrans_to_LMatrix4(_info.m_worldTransform);
 }
 
 ////////////////////////////////////////////////////////////////////

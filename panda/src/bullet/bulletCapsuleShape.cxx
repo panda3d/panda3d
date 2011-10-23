@@ -22,7 +22,7 @@ TypeHandle BulletCapsuleShape::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 BulletCapsuleShape::
-BulletCapsuleShape(float radius, float height, BulletUpAxis up) {
+BulletCapsuleShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up) {
 
   switch (up) {
   case X_up:

@@ -22,17 +22,17 @@ TypeHandle BulletConeShape::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 BulletConeShape::
-BulletConeShape(float radius, float height, BulletUpAxis up) {
+BulletConeShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up) {
 
   switch (up) {
   case X_up:
-    _shape = new btConeShapeX(radius, height);
+    _shape = new btConeShapeX((btScalar)radius, (btScalar)height);
     break;
   case Y_up:
-    _shape = new btConeShape(radius, height);
+    _shape = new btConeShape((btScalar)radius, (btScalar)height);
     break;
   case Z_up:
-    _shape = new btConeShapeZ(radius, height);
+    _shape = new btConeShapeZ((btScalar)radius, (btScalar)height);
     break;
   default:
     bullet_cat.error() << "invalid up-axis:" << up << endl;

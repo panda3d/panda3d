@@ -42,34 +42,34 @@ PUBLISHED:
                          bool use_frame_a);
   INLINE ~BulletSliderConstraint();
 
-  float get_linear_pos() const;
-  float get_angular_pos() const;
+  PN_stdfloat get_linear_pos() const;
+  PN_stdfloat get_angular_pos() const;
 
   // Limits
-  float get_lower_linear_limit() const;
-  float get_upper_linear_limit() const;
-  float get_lower_angular_limit() const;
-  float get_upper_angular_limit() const;
-  void set_lower_linear_limit(float value);
-  void set_upper_linear_limit(float value);
-  void set_lower_angular_limit(float value);
-  void set_upper_angular_limit(float value);
+  PN_stdfloat get_lower_linear_limit() const;
+  PN_stdfloat get_upper_linear_limit() const;
+  PN_stdfloat get_lower_angular_limit() const;
+  PN_stdfloat get_upper_angular_limit() const;
+  void set_lower_linear_limit(PN_stdfloat value);
+  void set_upper_linear_limit(PN_stdfloat value);
+  void set_lower_angular_limit(PN_stdfloat value);
+  void set_upper_angular_limit(PN_stdfloat value);
 
   // Linear motor
   void set_powered_linear_motor(bool on);
-  void set_target_linear_motor_velocity (float target_velocity);
-  void set_max_linear_motor_force(float max_force);
+  void set_target_linear_motor_velocity (PN_stdfloat target_velocity);
+  void set_max_linear_motor_force(PN_stdfloat max_force);
   bool get_powered_linear_motor() const;
-  float get_target_linear_motor_velocity() const;
-  float get_max_linear_motor_force() const;
+  PN_stdfloat get_target_linear_motor_velocity() const;
+  PN_stdfloat get_max_linear_motor_force() const;
 
   // Angular motor
   void set_powered_angular_motor(bool on);
-  void set_target_angular_motor_velocity (float target_velocity);
-  void set_max_angular_motor_force(float max_force);
+  void set_target_angular_motor_velocity (PN_stdfloat target_velocity);
+  void set_max_angular_motor_force(PN_stdfloat max_force);
   bool get_powered_angular_motor() const;
-  float get_target_angular_motor_velocity() const;
-  float get_max_angular_motor_force() const;
+  PN_stdfloat get_target_angular_motor_velocity() const;
+  PN_stdfloat get_max_angular_motor_force() const;
 
 public:
   virtual btTypedConstraint *ptr() const;

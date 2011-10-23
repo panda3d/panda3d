@@ -213,8 +213,8 @@ make_geom(BulletSoftBodyNode *node, const GeomVertexFormat *format, bool two_sid
 
     v = trans.invXform(v);
 
-    vwriter.add_data3f(v.getX(), v.getY(), v.getZ());
-    nwriter.add_data3f(n.getX(), n.getY(), n.getZ());
+    vwriter.add_data3((PN_stdfloat)v.getX(), (PN_stdfloat)v.getY(), (PN_stdfloat)v.getZ());
+    nwriter.add_data3((PN_stdfloat)n.getX(), (PN_stdfloat)n.getY(), (PN_stdfloat)n.getZ());
     fwriter.add_data1i(0);
   }
 
@@ -223,8 +223,8 @@ make_geom(BulletSoftBodyNode *node, const GeomVertexFormat *format, bool two_sid
       btVector3 &v = nodes[j].m_x;
       btVector3 &n = nodes[j].m_n;
 
-      vwriter.add_data3f(v.getX(), v.getY(), v.getZ());
-      nwriter.add_data3f(n.getX(), n.getY(), n.getZ());
+      vwriter.add_data3((PN_stdfloat)v.getX(), (PN_stdfloat)v.getY(), (PN_stdfloat)v.getZ());
+      nwriter.add_data3((PN_stdfloat)n.getX(), (PN_stdfloat)n.getY(), (PN_stdfloat)n.getZ());
       fwriter.add_data1i(1);
     }
   }

@@ -92,8 +92,8 @@ transform_changed() {
   NodePath np = NodePath::any_path((PandaNode *)this);
   CPT(TransformState) ts = np.get_net_transform();
 
-  LMatrix4f m_sync = _sync->get_mat();
-  LMatrix4f m_ts = ts->get_mat();
+  LMatrix4 m_sync = _sync->get_mat();
+  LMatrix4 m_ts = ts->get_mat();
 
   if (!m_sync.almost_equal(m_ts)) {
     _sync = ts;
@@ -103,8 +103,8 @@ transform_changed() {
     _ghost->setInterpolationWorldTransform(trans);
 
     if (ts->has_scale()) {
-      LVecBase3f scale = ts->get_scale();
-      if (!scale.almost_equal(LVecBase3f(1.0f, 1.0f, 1.0f))) {
+      LVecBase3 scale = ts->get_scale();
+      if (!scale.almost_equal(LVecBase3(1.0f, 1.0f, 1.0f))) {
         for (int i=0; i<get_num_shapes(); i++) {
           PT(BulletShape) shape = _shapes[i];
           shape->set_local_scale(scale);
@@ -134,13 +134,13 @@ void BulletGhostNode::
 sync_b2p() {
 
   NodePath np = NodePath::any_path((PandaNode *)this);
-  LVecBase3f scale = np.get_net_transform()->get_scale();
+  LVecBase3 scale = np.get_net_transform()->get_scale();
 
   btTransform trans = _ghost->getWorldTransform();
   CPT(TransformState) ts = btTrans_to_TransformState(trans, scale);
 
-  LMatrix4f m_sync = _sync->get_mat();
-  LMatrix4f m_ts = ts->get_mat();
+  LMatrix4 m_sync = _sync->get_mat();
+  LMatrix4 m_ts = ts->get_mat();
 
   if (!m_sync.almost_equal(m_ts)) {
     _sync = ts;

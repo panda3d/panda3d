@@ -30,10 +30,10 @@ BulletPersistentManifold(btPersistentManifold *manifold) : _manifold(manifold) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletPersistentManifold::
+PN_stdfloat BulletPersistentManifold::
 get_contact_breaking_threshold() const {
 
-  return _manifold->getContactBreakingThreshold();
+  return (PN_stdfloat)_manifold->getContactBreakingThreshold();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -41,10 +41,10 @@ get_contact_breaking_threshold() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletPersistentManifold::
+PN_stdfloat BulletPersistentManifold::
 get_contact_processing_threshold() const {
 
-  return _manifold->getContactProcessingThreshold();
+  return (PN_stdfloat)_manifold->getContactProcessingThreshold();
 }
 
 ////////////////////////////////////////////////////////////////////

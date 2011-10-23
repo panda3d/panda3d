@@ -102,9 +102,9 @@ get_world_info() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletWorld::
-set_gravity(const LVector3f &gravity) {
+set_gravity(const LVector3 &gravity) {
 
-  _world->setGravity(LVecBase3f_to_btVector3(gravity));
+  _world->setGravity(LVecBase3_to_btVector3(gravity));
   _info.m_gravity = _world->getGravity();
 }
 
@@ -114,9 +114,9 @@ set_gravity(const LVector3f &gravity) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletWorld::
-set_gravity(float gx, float gy, float gz) {
+set_gravity(PN_stdfloat gx, PN_stdfloat gy, PN_stdfloat gz) {
 
-  _world->setGravity(btVector3(gx, gy, gz));
+  _world->setGravity(btVector3((btScalar)gx, (btScalar)gy, (btScalar)gz));
   _info.m_gravity = _world->getGravity();
 }
 
@@ -125,10 +125,10 @@ set_gravity(float gx, float gy, float gz) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-const LVector3f BulletWorld::
+const LVector3 BulletWorld::
 get_gravity() const {
 
-  return btVector3_to_LVector3f(_world->getGravity());
+  return btVector3_to_LVector3(_world->getGravity());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -137,7 +137,7 @@ get_gravity() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletWorld::
-do_physics(float dt, int substeps, float stepsize) {
+do_physics(PN_stdfloat dt, int substeps, PN_stdfloat stepsize) {
 
   _pstat_physics.start();
 
@@ -148,7 +148,7 @@ do_physics(float dt, int substeps, float stepsize) {
 
   // Simulation
   _pstat_simulation.start();
-  int n = _world->stepSimulation(dt, substeps, stepsize);
+  int n = _world->stepSimulation((btScalar)dt, substeps, (btScalar)stepsize);
   _pstat_simulation.stop();
 
   if (!n) {
@@ -181,7 +181,7 @@ do_physics(float dt, int substeps, float stepsize) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void BulletWorld::
-sync_p2b(float dt) {
+sync_p2b(PN_stdfloat dt) {
 
   for (int i=0; i < get_num_rigid_bodies(); i++) {
     get_rigid_body(i)->sync_p2b();
@@ -579,13 +579,13 @@ remove_constraint(BulletConstraint *constraint) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 BulletClosestHitRayResult BulletWorld::
-ray_test_closest(const LPoint3f &from_pos, const LPoint3f &to_pos, const CollideMask &mask) const {
+ray_test_closest(const LPoint3 &from_pos, const LPoint3 &to_pos, const CollideMask &mask) const {
 
   nassertr(!from_pos.is_nan(), BulletClosestHitRayResult::empty());
   nassertr(!to_pos.is_nan(), BulletClosestHitRayResult::empty());
 
-  const btVector3 from = LVecBase3f_to_btVector3(from_pos);
-  const btVector3 to = LVecBase3f_to_btVector3(to_pos);
+  const btVector3 from = LVecBase3_to_btVector3(from_pos);
+  const btVector3 to = LVecBase3_to_btVector3(to_pos);
 
   BulletClosestHitRayResult cb(from, to, mask);
   _world->rayTest(from, to, cb);
@@ -598,13 +598,13 @@ ray_test_closest(const LPoint3f &from_pos, const LPoint3f &to_pos, const Collide
 //  Description:
 ////////////////////////////////////////////////////////////////////
 BulletAllHitsRayResult BulletWorld::
-ray_test_all(const LPoint3f &from_pos, const LPoint3f &to_pos, const CollideMask &mask) const {
+ray_test_all(const LPoint3 &from_pos, const LPoint3 &to_pos, const CollideMask &mask) const {
 
   nassertr(!from_pos.is_nan(), BulletAllHitsRayResult::empty());
   nassertr(!to_pos.is_nan(), BulletAllHitsRayResult::empty());
 
-  const btVector3 from = LVecBase3f_to_btVector3(from_pos);
-  const btVector3 to = LVecBase3f_to_btVector3(to_pos);
+  const btVector3 from = LVecBase3_to_btVector3(from_pos);
+  const btVector3 to = LVecBase3_to_btVector3(to_pos);
 
   BulletAllHitsRayResult cb(from, to, mask);
   _world->rayTest(from, to, cb);
@@ -617,7 +617,7 @@ ray_test_all(const LPoint3f &from_pos, const LPoint3f &to_pos, const CollideMask
 //  Description:
 ////////////////////////////////////////////////////////////////////
 BulletClosestHitSweepResult BulletWorld::
-sweep_test_closest(BulletShape *shape, const TransformState &from_ts, const TransformState &to_ts, const CollideMask &mask, float penetration) const {
+sweep_test_closest(BulletShape *shape, const TransformState &from_ts, const TransformState &to_ts, const CollideMask &mask, PN_stdfloat penetration) const {
 
   nassertr(shape, BulletClosestHitSweepResult::empty());
   nassertr(shape->is_convex(), BulletClosestHitSweepResult::empty());
@@ -625,10 +625,10 @@ sweep_test_closest(BulletShape *shape, const TransformState &from_ts, const Tran
   nassertr(!to_ts.is_invalid(), BulletClosestHitSweepResult::empty());
 
   const btConvexShape *convex = (const btConvexShape *) shape->ptr();
-  const btVector3 from_pos = LVecBase3f_to_btVector3(from_ts.get_pos());
-  const btVector3 to_pos = LVecBase3f_to_btVector3(to_ts.get_pos());
-  const btTransform from_trans = LMatrix4f_to_btTrans(from_ts.get_mat());
-  const btTransform to_trans = LMatrix4f_to_btTrans(to_ts.get_mat());
+  const btVector3 from_pos = LVecBase3_to_btVector3(from_ts.get_pos());
+  const btVector3 to_pos = LVecBase3_to_btVector3(to_ts.get_pos());
+  const btTransform from_trans = LMatrix4_to_btTrans(from_ts.get_mat());
+  const btTransform to_trans = LMatrix4_to_btTrans(to_ts.get_mat());
 
   BulletClosestHitSweepResult cb(from_pos, to_pos, mask);
   _world->convexSweepTest(convex, from_trans, to_trans, cb, penetration);

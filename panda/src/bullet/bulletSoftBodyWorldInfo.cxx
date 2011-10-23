@@ -41,9 +41,9 @@ garbage_collect(int lifetime) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletSoftBodyWorldInfo::
-set_air_density(float density) {
+set_air_density(PN_stdfloat density) {
 
-  _info.air_density = density;
+  _info.air_density = (btScalar)density;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -52,9 +52,9 @@ set_air_density(float density) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletSoftBodyWorldInfo::
-set_water_density(float density) {
+set_water_density(PN_stdfloat density) {
 
-  _info.water_density = density;
+  _info.water_density = (btScalar)density;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -63,9 +63,9 @@ set_water_density(float density) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletSoftBodyWorldInfo::
-set_water_offset(float offset) {
+set_water_offset(PN_stdfloat offset) {
 
-  _info.water_offset = offset;
+  _info.water_offset = (btScalar)offset;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -74,10 +74,10 @@ set_water_offset(float offset) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletSoftBodyWorldInfo::
-set_water_normal(const LVector3f &normal) {
+set_water_normal(const LVector3 &normal) {
 
   nassertv(!normal.is_nan());
-  _info.water_normal = LVecBase3f_to_btVector3(normal);
+  _info.water_normal = LVecBase3_to_btVector3(normal);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -86,10 +86,10 @@ set_water_normal(const LVector3f &normal) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletSoftBodyWorldInfo::
-set_gravity(const LVector3f &gravity) {
+set_gravity(const LVector3 &gravity) {
 
   nassertv(!gravity.is_nan());
-  _info.m_gravity = LVecBase3f_to_btVector3(gravity);
+  _info.m_gravity = LVecBase3_to_btVector3(gravity);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -97,10 +97,10 @@ set_gravity(const LVector3f &gravity) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletSoftBodyWorldInfo::
+PN_stdfloat BulletSoftBodyWorldInfo::
 get_air_density() const {
 
-  return _info.air_density;
+  return (PN_stdfloat)_info.air_density;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -108,10 +108,10 @@ get_air_density() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletSoftBodyWorldInfo::
+PN_stdfloat BulletSoftBodyWorldInfo::
 get_water_density() const {
 
-  return _info.water_density;
+  return (PN_stdfloat)_info.water_density;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -119,10 +119,10 @@ get_water_density() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-float BulletSoftBodyWorldInfo::
+PN_stdfloat BulletSoftBodyWorldInfo::
 get_water_offset() const {
 
-  return _info.water_offset;
+  return (PN_stdfloat)_info.water_offset;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -130,10 +130,10 @@ get_water_offset() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-LVector3f BulletSoftBodyWorldInfo::
+LVector3 BulletSoftBodyWorldInfo::
 get_water_normal() const {
 
-  return btVector3_to_LVector3f(_info.water_normal);
+  return btVector3_to_LVector3(_info.water_normal);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -141,9 +141,9 @@ get_water_normal() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-LVector3f BulletSoftBodyWorldInfo::
+LVector3 BulletSoftBodyWorldInfo::
 get_gravity() const {
 
-  return btVector3_to_LVector3f(_info.m_gravity);
+  return btVector3_to_LVector3(_info.m_gravity);
 }
 
