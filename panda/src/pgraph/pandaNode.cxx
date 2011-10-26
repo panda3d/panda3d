@@ -4635,12 +4635,23 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::CData::
 inc_py_refs() {
-  PythonTagData::const_iterator ti;
-  for (ti = _python_tag_data.begin();
-       ti != _python_tag_data.end();
-       ++ti) {
-    PyObject *value = (*ti).second;
-    Py_XINCREF(value);
+  if (!_python_tag_data.empty()) {
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+    // This might happen at any time, so be sure the Python state is
+    // ready for it.
+    PyGILState_STATE gstate;
+    gstate = PyGILState_Ensure();
+#endif
+    PythonTagData::const_iterator ti;
+    for (ti = _python_tag_data.begin();
+         ti != _python_tag_data.end();
+         ++ti) {
+      PyObject *value = (*ti).second;
+      Py_XINCREF(value);
+    }
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+    PyGILState_Release(gstate);
+#endif
   }
 }
 #endif  // HAVE_PYTHON
@@ -4654,12 +4665,25 @@ inc_py_refs() {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::CData::
 dec_py_refs() {
-  PythonTagData::const_iterator ti;
-  for (ti = _python_tag_data.begin();
-       ti != _python_tag_data.end();
-       ++ti) {
-    PyObject *value = (*ti).second;
-    Py_XDECREF(value);
+  if (!_python_tag_data.empty()) {
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+    // This might happen at any time, so be sure the Python state is
+    // ready for it.
+    PyGILState_STATE gstate;
+    gstate = PyGILState_Ensure();
+#endif
+    
+    PythonTagData::const_iterator ti;
+    for (ti = _python_tag_data.begin();
+         ti != _python_tag_data.end();
+         ++ti) {
+      PyObject *value = (*ti).second;
+      Py_XDECREF(value);
+    }
+    
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+    PyGILState_Release(gstate);
+#endif
   }
 }
 #endif  // HAVE_PYTHON
