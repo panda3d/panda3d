@@ -27,7 +27,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PStatGraph::GuideBar::
-GuideBar(PN_stdfloat height, const string &label, PStatGraph::GuideBarStyle style) :
+GuideBar(double height, const string &label, PStatGraph::GuideBarStyle style) :
   _height(height),
   _label(label),
   _style(style)
@@ -124,7 +124,7 @@ get_num_user_guide_bars() const {
 ////////////////////////////////////////////////////////////////////
 PStatGraph::GuideBar PStatGraph::
 get_user_guide_bar(int n) const {
-  PN_stdfloat height = _monitor->get_server()->get_user_guide_bar_height(n);
+  double height = _monitor->get_server()->get_user_guide_bar_height(n);
   return make_guide_bar(height, GBS_user);
 }
 
@@ -134,7 +134,7 @@ get_user_guide_bar(int n) const {
 //  Description: Adjusts the height of the nth user-defined guide bar.
 ////////////////////////////////////////////////////////////////////
 void PStatGraph::
-move_user_guide_bar(int n, PN_stdfloat height) {
+move_user_guide_bar(int n, double height) {
   _monitor->get_server()->move_user_guide_bar(n, height);
 }
 
@@ -145,7 +145,7 @@ move_user_guide_bar(int n, PN_stdfloat height) {
 //               number.
 ////////////////////////////////////////////////////////////////////
 int PStatGraph::
-add_user_guide_bar(PN_stdfloat height) {
+add_user_guide_bar(double height) {
   return _monitor->get_server()->add_user_guide_bar(height);
 }
 
@@ -169,7 +169,7 @@ remove_user_guide_bar(int n) {
 //               -1 if no user guide bars fall within the range.
 ////////////////////////////////////////////////////////////////////
 int PStatGraph::
-find_user_guide_bar(PN_stdfloat from_height, PN_stdfloat to_height) const {
+find_user_guide_bar(double from_height, double to_height) const {
   return _monitor->get_server()->find_user_guide_bar(from_height, to_height);
 }
 
@@ -181,7 +181,7 @@ find_user_guide_bar(PN_stdfloat from_height, PN_stdfloat to_height) const {
 //               formatted for its range.
 ////////////////////////////////////////////////////////////////////
 string PStatGraph::
-format_number(PN_stdfloat value) {
+format_number(double value) {
   char buffer[128];
 
   if (value < 0.01) {
@@ -207,7 +207,7 @@ format_number(PN_stdfloat value) {
 //               as indicated.
 ////////////////////////////////////////////////////////////////////
 string PStatGraph::
-format_number(PN_stdfloat value, int guide_bar_units, const string &unit_name) {
+format_number(double value, int guide_bar_units, const string &unit_name) {
   string label;
 
   if ((guide_bar_units & GBU_named) != 0) {
@@ -222,7 +222,7 @@ format_number(PN_stdfloat value, int guide_bar_units, const string &unit_name) {
   } else {
     // Units are either milliseconds or hz, or both.
     if ((guide_bar_units & GBU_ms) != 0) {
-      PN_stdfloat ms = value * 1000.0;
+      double ms = value * 1000.0;
       label += format_number(ms);
       if ((guide_bar_units & GBU_show_units) != 0) {
         label += " ms";
@@ -230,7 +230,7 @@ format_number(PN_stdfloat value, int guide_bar_units, const string &unit_name) {
     }
 
     if ((guide_bar_units & GBU_hz) != 0) {
-      PN_stdfloat hz = 1.0 / value;
+      double hz = 1.0 / value;
 
       if ((guide_bar_units & GBU_ms) != 0) {
         label += " (";
@@ -254,7 +254,7 @@ format_number(PN_stdfloat value, int guide_bar_units, const string &unit_name) {
 //  Description: Resets the list of guide bars.
 ////////////////////////////////////////////////////////////////////
 void PStatGraph::
-update_guide_bars(int num_bars, PN_stdfloat scale) {
+update_guide_bars(int num_bars, double scale) {
   _guide_bars.clear();
 
   // We'd like to draw about num_bars bars on the chart.  But we also
@@ -265,9 +265,9 @@ update_guide_bars(int num_bars, PN_stdfloat scale) {
   // Choose a suitable harmonic of the target frame rate near the
   // bottom part of the chart.
 
-  PN_stdfloat bottom = (PN_stdfloat)num_bars / scale;
+  double bottom = (double)num_bars / scale;
 
-  PN_stdfloat harmonic;
+  double harmonic;
   if (_target_frame_rate < bottom) {
     // n * tfr
     harmonic = floor(bottom / _target_frame_rate + 0.5) * _target_frame_rate;
@@ -292,14 +292,14 @@ update_guide_bars(int num_bars, PN_stdfloat scale) {
 //               level units.
 ////////////////////////////////////////////////////////////////////
 PStatGraph::GuideBar PStatGraph::
-make_guide_bar(PN_stdfloat value, PStatGraph::GuideBarStyle style) const {
+make_guide_bar(double value, PStatGraph::GuideBarStyle style) const {
   string label = format_number(value, _guide_bar_units, _unit_name);
 
   if ((style == GBS_normal) &&
       (_guide_bar_units & GBU_named) == 0) {
     // If it's a time unit, check to see if it matches our target
     // frame rate.
-    PN_stdfloat hz = 1.0 / value;
+    double hz = 1.0 / value;
     if (IS_THRESHOLD_EQUAL(hz, _target_frame_rate, 0.001)) {
       style = GBS_target;
     }

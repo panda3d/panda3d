@@ -72,7 +72,7 @@ public:
   int get_menu_id(const MenuDef &menu_def);
 
   void set_time_units(int unit_mask);
-  void set_scroll_speed(PN_stdfloat scroll_speed);
+  void set_scroll_speed(double scroll_speed);
   void set_pause(bool pause);
   
 private:
@@ -106,7 +106,7 @@ private:
   HMENU _speed_menu;
   string _window_title;
   int _time_units;
-  PN_stdfloat _scroll_speed;
+  double _scroll_speed;
   bool _pause;
 
   static bool _window_class_registered;

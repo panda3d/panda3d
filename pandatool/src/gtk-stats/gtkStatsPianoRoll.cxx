@@ -150,7 +150,7 @@ clicked_label(int collector_index) {
 //               horizontal axis represents.  This may force a redraw.
 ////////////////////////////////////////////////////////////////////
 void GtkStatsPianoRoll::
-set_horizontal_scale(PN_stdfloat time_width) {
+set_horizontal_scale(double time_width) {
   PStatPianoRoll::set_horizontal_scale(time_width);
 
   gtk_widget_queue_draw(_graph_window);
@@ -258,8 +258,8 @@ consider_drag_start(int graph_x, int graph_y) {
     if (graph_x >= 0 && graph_x < get_xsize()) {
       // See if the mouse is over a user-defined guide bar.
       int x = graph_x;
-      PN_stdfloat from_height = pixel_to_height(x - 2);
-      PN_stdfloat to_height = pixel_to_height(x + 2);
+      double from_height = pixel_to_height(x - 2);
+      double to_height = pixel_to_height(x + 2);
       _drag_guide_bar = find_user_guide_bar(from_height, to_height);
       if (_drag_guide_bar >= 0) {
         return DM_guide_bar;
@@ -365,7 +365,7 @@ handle_motion(GtkWidget *widget, int graph_x, int graph_y) {
   }
 
   if (_drag_mode == DM_scale) {
-    PN_stdfloat ratio = (PN_stdfloat)graph_x / (PN_stdfloat)get_xsize();
+    double ratio = (double)graph_x / (double)get_xsize();
     if (ratio > 0.0f) {
       set_horizontal_scale(_drag_scale_start / ratio);
     }
@@ -506,8 +506,8 @@ draw_guide_label(const PStatGraph::GuideBar &bar) {
   pango_layout_get_pixel_size(layout, &width, &height);
 
   if (bar._style != GBS_user) {
-    PN_stdfloat from_height = pixel_to_height(x - width);
-    PN_stdfloat to_height = pixel_to_height(x + width);
+    double from_height = pixel_to_height(x - width);
+    double to_height = pixel_to_height(x + width);
     if (find_user_guide_bar(from_height, to_height) >= 0) {
       // Omit the label: there's a user-defined guide bar in the same space.
       g_object_unref(layout);

@@ -48,13 +48,13 @@ public:
 
   void update();
 
-  INLINE void set_horizontal_scale(PN_stdfloat time_width);
-  INLINE PN_stdfloat get_horizontal_scale() const;
+  INLINE void set_horizontal_scale(double time_width);
+  INLINE double get_horizontal_scale() const;
 
-  INLINE int timestamp_to_pixel(PN_stdfloat time) const;
-  INLINE PN_stdfloat pixel_to_timestamp(int x) const;
-  INLINE int height_to_pixel(PN_stdfloat value) const;
-  INLINE PN_stdfloat pixel_to_height(int y) const;
+  INLINE int timestamp_to_pixel(double time) const;
+  INLINE double pixel_to_timestamp(int x) const;
+  INLINE int height_to_pixel(double value) const;
+  INLINE double pixel_to_height(int y) const;
 
 protected:
   void changed_size(int xsize, int ysize);
@@ -75,13 +75,13 @@ protected:
   int _thread_index;
 
 private:
-  PN_stdfloat _time_width;
-  PN_stdfloat _start_time;
+  double _time_width;
+  double _start_time;
 
   class ColorBar {
   public:
-    PN_stdfloat _start;
-    PN_stdfloat _end;
+    double _start;
+    double _end;
   };
   typedef pvector<ColorBar> ColorBars;
 
@@ -89,8 +89,8 @@ private:
   public:
     BarBuilder();
     void clear();
-    void add_data_point(PN_stdfloat time, bool is_start);
-    void finish(PN_stdfloat time);
+    void add_data_point(double time, bool is_start);
+    void finish(double time);
 
     bool _is_new;
     ColorBars _color_bars;

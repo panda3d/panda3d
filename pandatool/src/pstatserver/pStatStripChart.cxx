@@ -104,7 +104,7 @@ update() {
       _next_frame = latest;
 
       // Clean out the old data.
-      PN_stdfloat oldest_time =
+      double oldest_time =
         thread_data->get_frame(latest).get_start() - _time_width;
 
       Data::iterator di;
@@ -185,16 +185,16 @@ void PStatStripChart::
 set_auto_vertical_scale() {
   const PStatThreadData *thread_data = _view.get_thread_data();
 
-  PN_stdfloat max_value = 0.0;
+  double max_value = 0.0;
 
   int frame_number = -1;
   for (int x = 0; x <= _xsize; x++) {
-    PN_stdfloat time = pixel_to_timestamp(x);
+    double time = pixel_to_timestamp(x);
     frame_number =
       thread_data->get_frame_number_at_time(time, frame_number);
 
     if (thread_data->has_frame(frame_number)) {
-      PN_stdfloat net_value = get_net_value(frame_number);
+      double net_value = get_net_value(frame_number);
       max_value = max(max_value, net_value);
     }
   }
@@ -219,7 +219,7 @@ int PStatStripChart::
 get_collector_under_pixel(int xpoint, int ypoint) {
   // First, we need to know what frame it was; to know that, we need
   // to determine the time corresponding to the x pixel.
-  PN_stdfloat time = pixel_to_timestamp(xpoint);
+  double time = pixel_to_timestamp(xpoint);
 
   // Now use that time to determine the frame.
   const PStatThreadData *thread_data = _view.get_thread_data();
@@ -227,13 +227,13 @@ get_collector_under_pixel(int xpoint, int ypoint) {
   // And now we can determine which collector within the frame,
   // based on the value height.
   if (_average_mode) {
-    PN_stdfloat start_time = pixel_to_timestamp(xpoint);
+    double start_time = pixel_to_timestamp(xpoint);
     int then_i = thread_data->get_frame_number_at_time(start_time - pstats_average_time);
     int now_i = thread_data->get_frame_number_at_time(start_time, then_i);
 
     FrameData fdata;
     compute_average_pixel_data(fdata, then_i, now_i, start_time);
-    PN_stdfloat overall_value = 0.0;
+    double overall_value = 0.0;
     int y = get_ysize();
     
     FrameData::const_iterator fi;
@@ -249,7 +249,7 @@ get_collector_under_pixel(int xpoint, int ypoint) {
   } else {
     int frame_number = thread_data->get_frame_number_at_time(time);
     const FrameData &fdata = get_frame_data(frame_number);
-    PN_stdfloat overall_value = 0.0;
+    double overall_value = 0.0;
     int y = get_ysize();
     
     FrameData::const_iterator fi;
@@ -323,7 +323,7 @@ is_title_unknown() const {
 ////////////////////////////////////////////////////////////////////
 void PStatStripChart::
 accumulate_frame_data(FrameData &fdata, const FrameData &additional, 
-                      PN_stdfloat weight) {
+                      double weight) {
   FrameData::iterator ai;
   FrameData::const_iterator bi;
 
@@ -417,7 +417,7 @@ accumulate_frame_data(FrameData &fdata, const FrameData &additional,
 //               in data.
 ////////////////////////////////////////////////////////////////////
 void PStatStripChart::
-scale_frame_data(FrameData &fdata, PN_stdfloat factor) {
+scale_frame_data(FrameData &fdata, double factor) {
   FrameData::iterator fi;
   for (fi = fdata.begin(); fi != fdata.end(); ++fi) {
     (*fi)._net_value *= factor;
@@ -491,7 +491,7 @@ get_frame_data(int frame_number) {
 ////////////////////////////////////////////////////////////////////
 void PStatStripChart::
 compute_average_pixel_data(PStatStripChart::FrameData &result, 
-                           int &then_i, int &now_i, PN_stdfloat now) {
+                           int &then_i, int &now_i, double now) {
   result.clear();
 
   const PStatThreadData *thread_data = _view.get_thread_data();
@@ -500,7 +500,7 @@ compute_average_pixel_data(PStatStripChart::FrameData &result,
     return;
   }
 
-  PN_stdfloat then = now - pstats_average_time;
+  double then = now - pstats_average_time;
 
   int latest_frame = thread_data->get_latest_frame_number();
   while (then_i <= latest_frame &&
@@ -521,7 +521,7 @@ compute_average_pixel_data(PStatStripChart::FrameData &result,
   // does fall within our "then to now" window.
   accumulate_frame_data(result, get_frame_data(then_i), 
                         thread_data->get_frame(then_i).get_end() - then);
-  PN_stdfloat last = thread_data->get_frame(then_i).get_end();
+  double last = thread_data->get_frame(then_i).get_end();
 
   // Then we get all of each of the middle frames.
   for (int frame_number = then_i + 1; 
@@ -546,12 +546,12 @@ compute_average_pixel_data(PStatStripChart::FrameData &result,
 //  Description: Returns the net value of the chart's collector for
 //               the indicated frame number.
 ////////////////////////////////////////////////////////////////////
-PN_stdfloat PStatStripChart::
+double PStatStripChart::
 get_net_value(int frame_number) const {
   const FrameData &frame = 
     ((PStatStripChart *)this)->get_frame_data(frame_number);
 
-  PN_stdfloat net_value = 0.0;
+  double net_value = 0.0;
   FrameData::const_iterator fi;
   for (fi = frame.begin(); fi != frame.end(); ++fi) {
     const ColorData &cd = (*fi);
@@ -567,15 +567,15 @@ get_net_value(int frame_number) const {
 //  Description: Computes the average value of the chart's collector
 //               over the past pstats_average_time number of seconds.
 ////////////////////////////////////////////////////////////////////
-PN_stdfloat PStatStripChart::
+double PStatStripChart::
 get_average_net_value() const {
   const PStatThreadData *thread_data = _view.get_thread_data();
   int now_i, then_i;
   if (!thread_data->get_elapsed_frames(then_i, now_i)) {
     return 0.0f;
   }
-  PN_stdfloat now = _time_width + _start_time;
-  PN_stdfloat then = now - pstats_average_time;
+  double now = _time_width + _start_time;
+  double then = now - pstats_average_time;
 
   int num_frames = now_i - then_i + 1;
 
@@ -587,9 +587,9 @@ get_average_net_value() const {
 
     const PStatFrameData &now_frame_data = thread_data->get_frame(now_i);
     const PStatFrameData &then_frame_data = thread_data->get_frame(then_i);
-    PN_stdfloat now = now_frame_data.get_end();
-    PN_stdfloat elapsed_time = (now - then_frame_data.get_start());
-    return elapsed_time / (PN_stdfloat)num_frames;
+    double now = now_frame_data.get_end();
+    double elapsed_time = (now - then_frame_data.get_start());
+    return elapsed_time / (double)num_frames;
 
   } else {
     // On the other hand, if we're showing the time for some
@@ -599,14 +599,14 @@ get_average_net_value() const {
 
     const PStatThreadData *thread_data = _view.get_thread_data();
     
-    PN_stdfloat net_value = 0.0f;
-    PN_stdfloat net_time = 0.0f;
+    double net_value = 0.0f;
+    double net_time = 0.0f;
 
     // We start with just the portion of frame then_i that actually
     // does fall within our "then to now" window (usually some portion
     // of it will).
     if (thread_data->get_frame(then_i).get_end() > then) {
-      PN_stdfloat this_time = (thread_data->get_frame(then_i).get_end() - then);
+      double this_time = (thread_data->get_frame(then_i).get_end() - then);
       net_value += get_net_value(then_i) * this_time;
       net_time += this_time;
     }
@@ -614,7 +614,7 @@ get_average_net_value() const {
     for (int frame_number = then_i + 1; 
          frame_number <= now_i; 
          frame_number++) {
-      PN_stdfloat this_time = thread_data->get_frame(frame_number).get_net_time();
+      double this_time = thread_data->get_frame(frame_number).get_net_time();
       net_value += get_net_value(frame_number) * this_time;
       net_time += this_time;
     }
@@ -645,7 +645,7 @@ changed_size(int xsize, int ysize) {
 
         } else {
           // Redraw the stats that were there before.
-          PN_stdfloat old_start_time = _start_time;
+          double old_start_time = _start_time;
 
           // Back up a bit to draw the stuff to the right of the cursor.
           _start_time -= _time_width;
@@ -892,7 +892,7 @@ draw_frames(int first_frame, int last_frame) {
       copy_region(slide_pixels, first_pixel, 0);
       first_pixel -= slide_pixels;
       last_pixel -= slide_pixels;
-      _start_time += (PN_stdfloat)slide_pixels / (PN_stdfloat)_xsize * _time_width;
+      _start_time += (double)slide_pixels / (double)_xsize * _time_width;
       draw_pixels(first_pixel, last_pixel);
 
     } else {
@@ -919,7 +919,7 @@ draw_pixels(int first_pixel, int last_pixel) {
 
   if (_average_mode && !thread_data->is_empty()) {
     // In average mode, we have to calculate the average value for each pixel.
-    PN_stdfloat start_time = pixel_to_timestamp(first_pixel);
+    double start_time = pixel_to_timestamp(first_pixel);
     int then_i = thread_data->get_frame_number_at_time(start_time - pstats_average_time);
     int now_i = thread_data->get_frame_number_at_time(start_time, then_i);
     for (int x = first_pixel; x <= last_pixel; x++) {
@@ -943,7 +943,7 @@ draw_pixels(int first_pixel, int last_pixel) {
         x++;
         
       } else {
-        PN_stdfloat time = pixel_to_timestamp(x);
+        double time = pixel_to_timestamp(x);
         frame_number = thread_data->get_frame_number_at_time(time, frame_number);
         int w = 1;
         int stop_pixel = last_pixel;

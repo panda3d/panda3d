@@ -243,7 +243,7 @@ idle() {
 
   // Update the frame rate label from the main thread (thread 0).
   const PStatThreadData *thread_data = get_client_data()->get_thread_data(0);
-  PN_stdfloat frame_rate = thread_data->get_frame_rate();
+  double frame_rate = thread_data->get_frame_rate();
   if (frame_rate != 0.0f) {
     char buffer[128];
     sprintf(buffer, "%0.1f ms / %0.1f Hz", 1000.0f / frame_rate, frame_rate);
@@ -364,7 +364,7 @@ set_time_units(int unit_mask) {
 //               speeds for all graphs to the indicated value.
 ////////////////////////////////////////////////////////////////////
 void GtkStatsMonitor::
-set_scroll_speed(PN_stdfloat scroll_speed) {
+set_scroll_speed(double scroll_speed) {
   _scroll_speed = scroll_speed;
 
   // First, change all of the open graphs appropriately.

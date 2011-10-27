@@ -45,10 +45,10 @@ public:
 
   void set_to_frame(const PStatFrameData &frame_data);
   INLINE void set_to_frame(int frame_number);
-  INLINE void set_to_time(PN_stdfloat time);
+  INLINE void set_to_time(double time);
 
   bool all_collectors_known() const;
-  PN_stdfloat get_net_value() const;
+  double get_net_value() const;
 
   const PStatViewLevel *get_top_level();
 

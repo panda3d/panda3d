@@ -188,7 +188,7 @@ set_time_units(int unit_mask) {
 //               speed for the graph to the indicated value.
 ////////////////////////////////////////////////////////////////////
 void GtkStatsStripChart::
-set_scroll_speed(PN_stdfloat scroll_speed) {
+set_scroll_speed(double scroll_speed) {
   // The speed factor indicates chart widths per minute.
   if (scroll_speed != 0.0f) {
     set_horizontal_scale(60.0f / scroll_speed);
@@ -235,7 +235,7 @@ clicked_label(int collector_index) {
 //               represents.  This may force a redraw.
 ////////////////////////////////////////////////////////////////////
 void GtkStatsStripChart::
-set_vertical_scale(PN_stdfloat value_height) {
+set_vertical_scale(double value_height) {
   PStatStripChart::set_vertical_scale(value_height);
 
   gtk_widget_queue_draw(_graph_window);
@@ -309,7 +309,7 @@ draw_slice(int x, int w, const PStatStripChart::FrameData &fdata) {
   gdk_draw_rectangle(_pixmap, _pixmap_gc, TRUE, x, 0, 
 		     w + 1, get_ysize());
 
-  PN_stdfloat overall_time = 0.0;
+  double overall_time = 0.0;
   int y = get_ysize();
 
   FrameData::const_iterator fi;
@@ -406,8 +406,8 @@ consider_drag_start(int graph_x, int graph_y) {
     if (graph_y >= 0 && graph_y < get_ysize()) {
       // See if the mouse is over a user-defined guide bar.
       int y = graph_y;
-      PN_stdfloat from_height = pixel_to_height(y + 2);
-      PN_stdfloat to_height = pixel_to_height(y - 2);
+      double from_height = pixel_to_height(y + 2);
+      double to_height = pixel_to_height(y - 2);
       _drag_guide_bar = find_user_guide_bar(from_height, to_height);
       if (_drag_guide_bar >= 0) {
         return DM_guide_bar;
@@ -541,7 +541,7 @@ handle_motion(GtkWidget *widget, int graph_x, int graph_y) {
   }
 
   if (_drag_mode == DM_scale) {
-    PN_stdfloat ratio = 1.0f - ((PN_stdfloat)graph_y / (PN_stdfloat)get_ysize());
+    double ratio = 1.0f - ((double)graph_y / (double)get_ysize());
     if (ratio > 0.0f) {
       set_vertical_scale(_drag_scale_start / ratio);
     }
@@ -654,8 +654,8 @@ draw_guide_label(const PStatGraph::GuideBar &bar, int last_y) {
   pango_layout_get_pixel_size(layout, &width, &height);
 
   if (bar._style != GBS_user) {
-    PN_stdfloat from_height = pixel_to_height(y + height);
-    PN_stdfloat to_height = pixel_to_height(y - height);
+    double from_height = pixel_to_height(y + height);
+    double to_height = pixel_to_height(y - height);
     if (find_user_guide_bar(from_height, to_height) >= 0) {
       // Omit the label: there's a user-defined guide bar in the same space.
       g_object_unref(layout);

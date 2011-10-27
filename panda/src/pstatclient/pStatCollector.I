@@ -485,7 +485,7 @@ start(const PStatThread &thread) {
 //               a monotonically increasing series of time values.
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
-start(const PStatThread &thread, PN_stdfloat as_of) {
+start(const PStatThread &thread, double as_of) {
   _client->start(_index, thread._index, as_of);
 }
 
@@ -509,7 +509,7 @@ stop(const PStatThread &thread) {
 //               a monotonically increasing series of time values.
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
-stop(const PStatThread &thread, PN_stdfloat as_of) {
+stop(const PStatThread &thread, double as_of) {
   _client->stop(_index, thread._index, as_of);
 }
 

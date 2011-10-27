@@ -76,7 +76,7 @@ get_label_color(int n) const {
 //               placement of guide bars.
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatGraph::
-set_target_frame_rate(PN_stdfloat frame_rate) {
+set_target_frame_rate(double frame_rate) {
   if (_target_frame_rate != frame_rate) {
     _target_frame_rate = frame_rate;
     normal_guide_bars();
@@ -89,7 +89,7 @@ set_target_frame_rate(PN_stdfloat frame_rate) {
 //  Description: Returns the indicated target frame rate in Hz.  See
 //               set_target_frame_rate().
 ////////////////////////////////////////////////////////////////////
-INLINE PN_stdfloat PStatGraph::
+INLINE double PStatGraph::
 get_target_frame_rate() const {
   return _target_frame_rate;
 }

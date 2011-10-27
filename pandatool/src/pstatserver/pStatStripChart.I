@@ -41,7 +41,7 @@ get_collector_index() const {
 //               horizontal axis represents.  This may force a redraw.
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatStripChart::
-set_horizontal_scale(PN_stdfloat time_width) {
+set_horizontal_scale(double time_width) {
   if (_time_width != time_width) {
     if (_scroll_mode) {
       _start_time += _time_width - time_width;
@@ -58,7 +58,7 @@ set_horizontal_scale(PN_stdfloat time_width) {
 //  Description: Returns the amount of total time the width of the
 //               horizontal axis represents.
 ////////////////////////////////////////////////////////////////////
-INLINE PN_stdfloat PStatStripChart::
+INLINE double PStatStripChart::
 get_horizontal_scale() const {
   return _time_width;
 }
@@ -70,7 +70,7 @@ get_horizontal_scale() const {
 //               represents.  This may force a redraw.
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatStripChart::
-set_vertical_scale(PN_stdfloat value_height) {
+set_vertical_scale(double value_height) {
   if (_value_height != value_height) {
     _value_height = value_height;
     normal_guide_bars();
@@ -84,7 +84,7 @@ set_vertical_scale(PN_stdfloat value_height) {
 //  Description: Returns total value the height of the vertical axis
 //               represents.
 ////////////////////////////////////////////////////////////////////
-INLINE PN_stdfloat PStatStripChart::
+INLINE double PStatStripChart::
 get_vertical_scale() const {
   return _value_height;
 }
@@ -158,8 +158,8 @@ get_average_mode() const {
 //  Description: Converts a timestamp to a horizontal pixel offset.
 ////////////////////////////////////////////////////////////////////
 INLINE int PStatStripChart::
-timestamp_to_pixel(PN_stdfloat time) const {
-  return (int)((PN_stdfloat)get_xsize() * (time - _start_time) / _time_width);
+timestamp_to_pixel(double time) const {
+  return (int)((double)get_xsize() * (time - _start_time) / _time_width);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -167,9 +167,9 @@ timestamp_to_pixel(PN_stdfloat time) const {
 //       Access: Public
 //  Description: Converts a horizontal pixel offset to a timestamp.
 ////////////////////////////////////////////////////////////////////
-INLINE PN_stdfloat PStatStripChart::
+INLINE double PStatStripChart::
 pixel_to_timestamp(int x) const {
-  return _time_width * (PN_stdfloat)x / (PN_stdfloat)get_xsize() + _start_time;
+  return _time_width * (double)x / (double)get_xsize() + _start_time;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -179,8 +179,8 @@ pixel_to_timestamp(int x) const {
 //               to a vertical pixel offset.
 ////////////////////////////////////////////////////////////////////
 INLINE int PStatStripChart::
-height_to_pixel(PN_stdfloat value) const {
-  return get_ysize() - (int)((PN_stdfloat)get_ysize() * value / _value_height);
+height_to_pixel(double value) const {
+  return get_ysize() - (int)((double)get_ysize() * value / _value_height);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -189,9 +189,9 @@ height_to_pixel(PN_stdfloat value) const {
 //  Description: Converts a vertical pixel offset to a value (a
 //               "height" in the strip chart).
 ////////////////////////////////////////////////////////////////////
-INLINE PN_stdfloat PStatStripChart::
+INLINE double PStatStripChart::
 pixel_to_height(int x) const {
-  return _value_height * (PN_stdfloat)(get_ysize() - x) / (PN_stdfloat)get_ysize();
+  return _value_height * (double)(get_ysize() - x) / (double)get_ysize();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -27,9 +27,9 @@
 //               represented by this Collector, including all values
 //               in its child Collectors.
 ////////////////////////////////////////////////////////////////////
-PN_stdfloat PStatViewLevel::
+double PStatViewLevel::
 get_net_value() const {
-  PN_stdfloat net = _value_alone;
+  double net = _value_alone;
 
   Children::const_iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {

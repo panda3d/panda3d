@@ -66,7 +66,7 @@ GtkStatsLabel(GtkStatsMonitor *monitor, GtkStatsGraph *graph,
   _bg_color.blue = (int)(rgb[2] * 65535.0f);
 
   // Should our foreground be black or white?
-  PN_stdfloat bright =
+  double bright =
     rgb[0] * 0.299 +
     rgb[1] * 0.587 +
     rgb[2] * 0.114;

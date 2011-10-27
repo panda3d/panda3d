@@ -154,9 +154,9 @@ get_collector_color(int collector_index) {
 
   // We didn't have a color for the collector; make one up.
   LRGBColor random_color;
-  random_color[0] = (PN_stdfloat)rand() / (PN_stdfloat)RAND_MAX;
-  random_color[1] = (PN_stdfloat)rand() / (PN_stdfloat)RAND_MAX;
-  random_color[2] = (PN_stdfloat)rand() / (PN_stdfloat)RAND_MAX;
+  random_color[0] = (double)rand() / (double)RAND_MAX;
+  random_color[1] = (double)rand() / (double)RAND_MAX;
+  random_color[2] = (double)rand() / (double)RAND_MAX;
 
   ci = _colors.insert(Colors::value_type(collector_index, random_color)).first;
   return (*ci).second;

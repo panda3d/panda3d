@@ -146,7 +146,7 @@ set_time_units(int unit_mask) {
 //               speed for the graph to the indicated value.
 ////////////////////////////////////////////////////////////////////
 void WinStatsGraph::
-set_scroll_speed(PN_stdfloat scroll_speed) {
+set_scroll_speed(double scroll_speed) {
 }
 
 ////////////////////////////////////////////////////////////////////

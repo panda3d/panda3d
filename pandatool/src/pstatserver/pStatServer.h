@@ -56,11 +56,11 @@ public:
   void release_udp_port(int port);
 
   int get_num_user_guide_bars() const;
-  PN_stdfloat get_user_guide_bar_height(int n) const;
-  void move_user_guide_bar(int n, PN_stdfloat height);
-  int add_user_guide_bar(PN_stdfloat height);
+  double get_user_guide_bar_height(int n) const;
+  void move_user_guide_bar(int n, double height);
+  int add_user_guide_bar(double height);
   void remove_user_guide_bar(int n);
-  int find_user_guide_bar(PN_stdfloat from_height, PN_stdfloat to_height) const;
+  int find_user_guide_bar(double from_height, double to_height) const;
 
   virtual bool is_thread_safe();
 

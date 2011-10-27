@@ -87,13 +87,13 @@ write_datagram(Datagram &destination) const {
   destination.add_int16(_index);
   destination.add_string(_name);
   destination.add_int16(_parent_index);
-  destination.add_stdfloat(_suggested_color.r);
-  destination.add_stdfloat(_suggested_color.g);
-  destination.add_stdfloat(_suggested_color.b);
+  destination.add_float32(_suggested_color.r);
+  destination.add_float32(_suggested_color.g);
+  destination.add_float32(_suggested_color.b);
   destination.add_int16(_sort);
   destination.add_string(_level_units);
-  destination.add_stdfloat(_suggested_scale);
-  destination.add_stdfloat(_factor);
+  destination.add_float32(_suggested_scale);
+  destination.add_float32(_factor);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -106,11 +106,11 @@ read_datagram(DatagramIterator &source, PStatClientVersion *) {
   _index = source.get_int16();
   _name = source.get_string();
   _parent_index = source.get_int16();
-  _suggested_color.r = source.get_stdfloat();
-  _suggested_color.g = source.get_stdfloat();
-  _suggested_color.b = source.get_stdfloat();
+  _suggested_color.r = source.get_float32();
+  _suggested_color.g = source.get_float32();
+  _suggested_color.b = source.get_float32();
   _sort = source.get_int16();
   _level_units = source.get_string();
-  _suggested_scale = source.get_stdfloat();
-  _factor = source.get_stdfloat();
+  _suggested_scale = source.get_float32();
+  _factor = source.get_float32();
 }

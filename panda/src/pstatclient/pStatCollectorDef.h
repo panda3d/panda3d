@@ -38,7 +38,7 @@ public:
   void read_datagram(DatagramIterator &source, PStatClientVersion *version);
 
   struct ColorDef {
-    PN_stdfloat r, g, b;
+    float r, g, b;
   };
 
   int _index;
