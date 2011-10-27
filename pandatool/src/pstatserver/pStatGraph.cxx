@@ -185,11 +185,11 @@ format_number(double value) {
   char buffer[128];
 
   if (value < 0.01) {
-    sprintf(buffer, "%0.4", value);
+    sprintf(buffer, "%0.4f", value);
   } else if (value < 0.1) {
-    sprintf(buffer, "%0.3", value);
+    sprintf(buffer, "%0.3f", value);
   } else if (value < 1.0) {
-    sprintf(buffer, "%0.2", value);
+    sprintf(buffer, "%0.2f", value);
   } else if (value < 10.0) {
     sprintf(buffer, "%0.1f", value);
   } else {
