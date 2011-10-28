@@ -1035,7 +1035,7 @@ class Packager:
             if Filename.fromOsSpecific(library).exists():
                 return Filename.fromOsSpecific(library)
 
-            # DSearchPath appears not to work well for directories.
+            # DSearchPath appears not to work for directories.
             fpath = []
             fpath.append(Filename("/Library/Frameworks"))
             fpath.append(Filename("/System/Library/Frameworks"))
@@ -1146,9 +1146,12 @@ class Packager:
                         # that those often contain absolute paths, they
                         # aren't commonly on the library path either.
                         filename = self.__locateFrameworkLibrary(filename)
+                        filename.setBinary()
                     else:
                         # It's just a normal library - find it on the path.
                         filename = Filename.fromOsSpecific(filename)
+                        filename.setBinary()
+
                         if filename.isLocal():
                             filename.resolveFilename(path)
                         else:
@@ -1165,7 +1168,7 @@ class Packager:
 
         def __parseDependenciesOSX(self, tempFile):
             """ Reads the indicated temporary file, the output from
-            otool -L, to determine the list of dylib's this
+            otool -L, to determine the list of dylibs this
             executable file depends on. """
 
             lines = open(tempFile.toOsSpecific(), 'rU').readlines()
@@ -1205,12 +1208,12 @@ class Packager:
                 return None
 
             if not ident.startswith("\177ELF"):
-                # Not an elf.  Beware of orcs.
+                # No elf magic!  Beware of orcs.
                 return None
 
             # Make sure we read in the correct endianness and integer size
             byteOrder = "<>"[ord(ident[5]) - 1]
-            elfClass = ord(ident[4]) - 1 # 32-bits, 64-bits
+            elfClass = ord(ident[4]) - 1 # 0 = 32-bits, 1 = 64-bits
             headerStruct = byteOrder + ("HHIIIIIHHHHHH", "HHIQQQIHHHHHH")[elfClass]
             sectionStruct = byteOrder + ("4xI8xIII8xI", "4xI16xQQI12xQ")[elfClass]
             dynamicStruct = byteOrder + ("iI", "qQ")[elfClass]
@@ -2354,6 +2357,7 @@ class Packager:
             GlobPattern('libnvidia*.so*'),
             GlobPattern('libpthread.so*'),
             GlobPattern('libthr.so*'),
+            GlobPattern('ld-linux.so*'),
             ]
 
         # A Loader for loading models.
