@@ -2330,6 +2330,7 @@ class Packager:
 
             'libsystem.b.dylib', 'libmathcommon.a.dylib', 'libmx.a.dylib',
             'libstdc++.6.dylib', 'libobjc.a.dylib', 'libauto.dylib',
+            'Tcl', 'Tk',
             ]
 
         # As above, but with filename globbing to catch a range of
