@@ -69,7 +69,7 @@ public:
   INLINE btPairCachingGhostObject *get_ghost() const;
   INLINE btKinematicCharacterController *get_character() const;
 
-  void sync_p2b(PN_stdfloat dt);
+  void sync_p2b(PN_stdfloat dt, int num_substeps);
   void sync_b2p();
 
 protected:

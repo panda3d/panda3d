@@ -19,6 +19,8 @@
 
 #include "collideMask.h"
 
+#define clamp(x, x_min, x_max) max(min(x, x_max), x_min)
+
 TypeHandle BulletWorld::_type_handle;
 
 PStatCollector BulletWorld::_pstat_physics("App:Bullet:DoPhysics");
@@ -136,28 +138,22 @@ get_gravity() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void BulletWorld::
-do_physics(PN_stdfloat dt, int substeps, PN_stdfloat stepsize) {
+int BulletWorld::
+do_physics(PN_stdfloat dt, int max_substeps, PN_stdfloat stepsize) {
 
   _pstat_physics.start();
 
+  int num_substeps = clamp(int(dt / stepsize), 1, max_substeps);
+
   // Synchronize Panda to Bullet
   _pstat_p2b.start();
-  sync_p2b(dt);
+  sync_p2b(dt, num_substeps);
   _pstat_p2b.stop();
 
   // Simulation
   _pstat_simulation.start();
-  int n = _world->stepSimulation((btScalar)dt, substeps, (btScalar)stepsize);
+  int n = _world->stepSimulation((btScalar)dt, max_substeps, (btScalar)stepsize);
   _pstat_simulation.stop();
-
-  if (!n) {
-    bullet_cat.debug() << "interpolated transforms!" << endl;
-  }
-
-  if (dt > substeps * stepsize) {
-    bullet_cat.debug() << "lost simulation time!" << endl;
-  }
 
   // Synchronize Bullet to Panda
   _pstat_b2p.start();
@@ -173,6 +169,8 @@ do_physics(PN_stdfloat dt, int substeps, PN_stdfloat stepsize) {
   }
 
   _pstat_physics.stop();
+
+  return n;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -181,7 +179,7 @@ do_physics(PN_stdfloat dt, int substeps, PN_stdfloat stepsize) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void BulletWorld::
-sync_p2b(PN_stdfloat dt) {
+sync_p2b(PN_stdfloat dt, int num_substeps) {
 
   for (int i=0; i < get_num_rigid_bodies(); i++) {
     get_rigid_body(i)->sync_p2b();
@@ -196,7 +194,7 @@ sync_p2b(PN_stdfloat dt) {
   }
 
   for (int i=0; i < get_num_characters(); i++) {
-    get_character(i)->sync_p2b(dt);
+    get_character(i)->sync_p2b(dt, num_substeps);
   }
 }
 

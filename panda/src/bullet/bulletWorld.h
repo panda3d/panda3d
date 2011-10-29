@@ -56,7 +56,7 @@ PUBLISHED:
   void set_gravity(PN_stdfloat gx, PN_stdfloat gy, PN_stdfloat gz);
   const LVector3 get_gravity() const;
 
-  void do_physics(PN_stdfloat dt, int substeps=1, PN_stdfloat stepsize=1.0f/60.0f);
+  int do_physics(PN_stdfloat dt, int max_substeps=1, PN_stdfloat stepsize=1.0f/60.0f);
 
   void set_debug_node(BulletDebugNode *node);
   void clear_debug_node();
@@ -151,7 +151,7 @@ public:
   INLINE btDispatcher *get_dispatcher() const;
 
 private:
-  void sync_p2b(PN_stdfloat dt);
+  void sync_p2b(PN_stdfloat dt, int num_substeps);
   void sync_b2p();
 
   typedef PTA(PT(BulletRigidBodyNode)) BulletRigidBodies;

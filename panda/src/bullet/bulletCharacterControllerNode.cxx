@@ -202,7 +202,7 @@ set_angular_velocity(PN_stdfloat omega) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletCharacterControllerNode::
-sync_p2b(PN_stdfloat dt) {
+sync_p2b(PN_stdfloat dt, int num_substeps) {
 
   // Synchronise global transform
   transform_changed();
@@ -218,19 +218,20 @@ sync_p2b(PN_stdfloat dt) {
   _ghost->getWorldTransform().setBasis(m);
 
   // Linear movement
+  LVector3 vp = _linear_velocity / (btScalar)num_substeps;
+
   btVector3 v;
   if (_linear_velocity_is_local) {
     btTransform xform = _ghost->getWorldTransform();
     xform.setOrigin(btVector3(0.0f, 0.0f, 0.0f));
-    v = xform(LVecBase3_to_btVector3(_linear_velocity));
+    v = xform(LVecBase3_to_btVector3(vp));
   }
   else {
-    v = LVecBase3_to_btVector3(_linear_velocity);
+    v = LVecBase3_to_btVector3(vp);
   }
 
   //_character->setVelocityForTimeInterval(v, dt);
   _character->setWalkDirection(v * dt);
-  //_character->setWalkDirection(v);
   _angular_velocity = 0.0f;
 }
 
