@@ -1083,6 +1083,7 @@ class Packager:
             # Alter the dependencies to have a relative path rather than absolute
             for filename in framework_deps:
                 loc = self.__locateFrameworkLibrary(filename)
+                print "DEBUG: loc", loc
                 if loc == file.filename:
                     os.system('install_name_tool -id "%s" "%s"' % (os.path.basename(filename), file.filename.toOsSpecific()))
                 elif loc.toOsSpecific().startswith("/System/"):
@@ -1151,10 +1152,6 @@ class Packager:
                         # aren't commonly on the library path either.
                         filename = self.__locateFrameworkLibrary(filename)
                         filename.setBinary()
-
-                        # Let's skip system frameworks
-                        if filename.toOsSpecific().startswith("/System/"):
-                            continue
                     else:
                         # It's just a normal library - find it on the path.
                         filename = Filename.fromOsSpecific(filename)
@@ -1169,6 +1166,11 @@ class Packager:
                                 f2 = Filename(self.packager.systemRoot + filename.cStr())
                                 if f2.exists():
                                     filename = f2
+
+                    # Skip libraries and frameworks in system directory
+                    if filename.toOsSpecific().startswith("/System/"):
+                        print "DEBUG: excluding", filename
+                        continue
 
                     newName = Filename(file.dependencyDir, filename.getBasename())
                     self.addFile(filename, newName = newName.cStr(),
