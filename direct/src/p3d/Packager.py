@@ -1082,8 +1082,12 @@ class Packager:
 
             # Alter the dependencies to have a relative path rather than absolute
             for filename in framework_deps:
-                if self.__locateFrameworkLibrary(filename) == file.filename:
+                loc = self.__locateFrameworkLibrary(filename)
+                if loc == file.filename:
                     os.system('install_name_tool -id "%s" "%s"' % (os.path.basename(filename), file.filename.toOsSpecific()))
+                elif loc.toOsSpecific().startswith("/System/"):
+                    # Let's keep references to system frameworks absolute
+                    os.system('install_name_tool -change "%s" "%s" "%s"' % (filename, loc.toOsSpecific(), file.filename.toOsSpecific()))
                 else:
                     os.system('install_name_tool -change "%s" "%s" "%s"' % (filename, os.path.basename(filename), file.filename.toOsSpecific()))
 
@@ -1147,6 +1151,10 @@ class Packager:
                         # aren't commonly on the library path either.
                         filename = self.__locateFrameworkLibrary(filename)
                         filename.setBinary()
+
+                        # Let's skip system frameworks
+                        if filename.toOsSpecific().startswith("/System/"):
+                            continue
                     else:
                         # It's just a normal library - find it on the path.
                         filename = Filename.fromOsSpecific(filename)
@@ -2333,7 +2341,6 @@ class Packager:
 
             'libsystem.b.dylib', 'libmathcommon.a.dylib', 'libmx.a.dylib',
             'libstdc++.6.dylib', 'libobjc.a.dylib', 'libauto.dylib',
-            'tcl', 'tk',
             ]
 
         # As above, but with filename globbing to catch a range of
