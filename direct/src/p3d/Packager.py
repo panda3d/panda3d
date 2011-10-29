@@ -120,7 +120,6 @@ class Packager:
 
             if self.newName.lower() in package.skipFilenames:
                 return True
-            print "DEBUG: checking if file %s is excluded" % self.newName
 
             if not self.explicit:
                 # Make sure it's not one of our auto-excluded system
@@ -130,7 +129,6 @@ class Packager:
                 basename = Filename(self.newName).getBasename()
                 if not package.packager.caseSensitive:
                     basename = basename.lower()
-                print "DEBUG: basename: %s" % basename
                 if basename in package.packager.excludeSystemFiles:
                     return True
                 for exclude in package.packager.excludeSystemGlobs:
@@ -850,7 +848,6 @@ class Packager:
 
             self.files.append(file)
             self.targetFilenames[lowerName] = file
-            print "DEBUG: adding file %s" % file
 
             return file
 
@@ -2323,7 +2320,7 @@ class Packager:
         self.unprocessedExtensions = []
 
         # System files that should never be packaged.  For
-        # case-insensitive filesystems (like Windows), put the
+        # case-insensitive filesystems (like Windows and OSX), put the
         # lowercase filename here.  Case-sensitive filesystems should
         # use the correct case.
         self.excludeSystemFiles = [
@@ -2336,7 +2333,7 @@ class Packager:
 
             'libsystem.b.dylib', 'libmathcommon.a.dylib', 'libmx.a.dylib',
             'libstdc++.6.dylib', 'libobjc.a.dylib', 'libauto.dylib',
-            'Tcl', 'Tk',
+            'tcl', 'tk',
             ]
 
         # As above, but with filename globbing to catch a range of
