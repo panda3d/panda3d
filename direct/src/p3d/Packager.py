@@ -120,6 +120,7 @@ class Packager:
 
             if self.newName.lower() in package.skipFilenames:
                 return True
+            print "DEBUG: checking if file %s is excluded" % self.newName
 
             if not self.explicit:
                 # Make sure it's not one of our auto-excluded system
@@ -129,6 +130,7 @@ class Packager:
                 basename = Filename(self.newName).getBasename()
                 if not package.packager.caseSensitive:
                     basename = basename.lower()
+                print "DEBUG: basename: %s" % basename
                 if basename in package.packager.excludeSystemFiles:
                     return True
                 for exclude in package.packager.excludeSystemGlobs:
@@ -848,6 +850,7 @@ class Packager:
 
             self.files.append(file)
             self.targetFilenames[lowerName] = file
+            print "DEBUG: adding file %s" % file
 
             return file
 
@@ -1083,9 +1086,9 @@ class Packager:
             # Alter the dependencies to have a relative path rather than absolute
             for filename in framework_deps:
                 if self.__locateFrameworkLibrary(filename) == file.filename:
-                    os.system('install_name_tool -id "%s" "%s"' % (os.path.basename(filename), tmpfile.toOsSpecific()))
+                    os.system('install_name_tool -id "%s" "%s"' % (os.path.basename(filename), file.filename.toOsSpecific()))
                 else:
-                    os.system('install_name_tool -change "%s" "%s" "%s"' % (filename, os.path.basename(filename), tmpfile.toOsSpecific()))
+                    os.system('install_name_tool -change "%s" "%s" "%s"' % (filename, os.path.basename(filename), file.filename.toOsSpecific()))
 
         def __addImplicitDependenciesOSX(self):
             """ Walks through the list of files, looking for dylib's
