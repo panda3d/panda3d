@@ -1083,10 +1083,10 @@ class Packager:
             # Alter the dependencies to have a relative path rather than absolute
             for filename in framework_deps:
                 loc = self.__locateFrameworkLibrary(filename)
-                print "DEBUG: loc", loc
+
                 if loc == file.filename:
                     os.system('install_name_tool -id "%s" "%s"' % (os.path.basename(filename), file.filename.toOsSpecific()))
-                elif loc.toOsSpecific().startswith("/System/"):
+                elif "/System/" in loc.toOsSpecific():
                     # Let's keep references to system frameworks absolute
                     os.system('install_name_tool -change "%s" "%s" "%s"' % (filename, loc.toOsSpecific(), file.filename.toOsSpecific()))
                 else:
@@ -1168,8 +1168,7 @@ class Packager:
                                     filename = f2
 
                     # Skip libraries and frameworks in system directory
-                    if filename.toOsSpecific().startswith("/System/"):
-                        print "DEBUG: excluding", filename
+                    if "/System/" in filename.toOsSpecific():
                         continue
 
                     newName = Filename(file.dependencyDir, filename.getBasename())
@@ -1188,8 +1187,6 @@ class Packager:
                 if line[0] not in string.whitespace:
                     continue
                 line = line.strip()
-                if line.startswith('/System/'):
-                    continue
                 s = line.find(' (compatibility')
                 if s != -1:
                     line = line[:s]
