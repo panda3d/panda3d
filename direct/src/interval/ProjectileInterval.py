@@ -206,10 +206,10 @@ class ProjectileInterval(Interval):
         else:
             self.notify.error('invalid set of inputs to ProjectileInterval')
 
-        self.parabola = Parabolaf(VBase3(0, 0, 0.5 * self.zAcc),
+        self.parabola = LParabola(VBase3(0, 0, 0.5 * self.zAcc),
                                   self.startVel,
                                   self.startPos)
-
+        
         if not self.endPos:
             self.endPos = self.__calcPos(self.duration)
             
