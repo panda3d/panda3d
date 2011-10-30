@@ -585,7 +585,6 @@ get_hash_impl() const {
 
     hash = pointer_hash::add_hash(hash, sn._stage);
     hash = pointer_hash::add_hash(hash, sn._texture);
-    hash = int_hash::add_hash(hash, sn._ff_tc_index);
     hash = int_hash::add_hash(hash, (int)sn._implicit_sort);
     hash = int_hash::add_hash(hash, sn._override);
   }
