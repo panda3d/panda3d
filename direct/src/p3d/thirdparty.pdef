@@ -37,8 +37,7 @@ class tk(package):
     module('direct.showbase.TkGlobal',
            'direct.tkpanels',
            'direct.tkwidgets',
-           'Pmw', 'Pmw.Pmw_1_2.lib.*',
-                  'Pmw.Pmw_1_3.lib.*')
+           'Pmw', 'Pmw.*')
 
 class sqlite(package):
     config(display_name = "SQLite Interface")
