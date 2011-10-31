@@ -675,7 +675,10 @@ class Freezer:
             if path == None:
                 return None
 
-        file, pathname, description = imp.find_module(baseName, path)
+        try:
+            file, pathname, description = imp.find_module(baseName, path)
+        except ImportError:
+            return None
 
         if not os.path.isdir(pathname):
             return None
