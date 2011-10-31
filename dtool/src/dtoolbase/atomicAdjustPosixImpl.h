@@ -30,7 +30,10 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DTOOL AtomicAdjustPosixImpl {
 public:
-  typedef int Integer;
+  // In Posix, "long" is generally the native word size (32- or
+  // 64-bit), which is what we'd prefer.
+  typedef long Integer;
+
   INLINE static void inc(TVOLATILE Integer &var);
   INLINE static bool dec(TVOLATILE Integer &var);
   INLINE static void add(TVOLATILE Integer &var, Integer delta);
