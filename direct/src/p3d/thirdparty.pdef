@@ -36,8 +36,11 @@ class tk(package):
            'tkMessageBox', 'tkSimpleDialog')
     module('direct.showbase.TkGlobal',
            'direct.tkpanels',
-           'direct.tkwidgets',
-           'Pmw', 'Pmw.*')
+           'direct.tkwidgets')
+
+    # Hack because Pmw uses weird import stuff
+    import Pmw
+    module('Pmw', 'Pmw.*')
 
 class sqlite(package):
     config(display_name = "SQLite Interface")
