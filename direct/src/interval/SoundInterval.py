@@ -54,6 +54,7 @@ class SoundInterval(Interval.Interval):
         if self._seamlessLoop:
             self._fLoop = True
         self._soundPlaying = False
+        self._reverse = False
         # If no duration given use sound's duration as interval's duration
         if float(duration) == 0.0 and self.sound != None:
             duration = max(self.soundDuration - self.startTime, 0)
@@ -87,6 +88,7 @@ class SoundInterval(Interval.Interval):
     def privInitialize(self, t):
         # If it's within a 10th of a second of the start,
         # start at the beginning
+        self._reverse = False
         t1 = t + self.startTime
         if (t1 < 0.1):
             t1 = 0.0
@@ -98,7 +100,14 @@ class SoundInterval(Interval.Interval):
         self.state = CInterval.SStarted
         self.currT = t
 
+    def privInstant(self):
+        pass
+
     def privStep(self, t):
+        ## if self._reverse:
+        ##     # Don't attempt to play the sound backwards.
+        ##     return
+        
         if self.state == CInterval.SPaused:
             # Restarting from a pause.
             t1 = t + self.startTime
@@ -132,6 +141,16 @@ class SoundInterval(Interval.Interval):
             self._soundPlaying = False
         self.currT = self.getDuration()
         self.state = CInterval.SFinal
+
+    def privReverseInitialize(self, t):
+        self._reverse = True
+
+    def privReverseInstant(self):
+        self.state = CInterval.SInitial
+
+    def privReverseFinalize(self):
+        self._reverse = False
+        self.state = CInterval.SInitial
 
     def privInterrupt(self):
         if self.sound != None:
