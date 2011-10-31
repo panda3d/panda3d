@@ -80,10 +80,10 @@ class panda3d(package):
     excludeModule('wx',
                   'direct.showbase.WxGlobal')
 
-    excludeModule('Tkinter',
+    excludeModule('Tkinter', 'Pmw',
                   'direct.showbase.TkGlobal',
-                  'direct.tkpanels',
-                  'direct.tkwidgets')
+                  'direct.tkpanels', 'direct.tkwidgets',
+                  'tkCommonDialog', 'tkMessageBox', 'tkSimpleDialog')
 
     # Most of the core Panda3D DLL's will be included implicitly due to
     # being referenced by the above Python code.  Here we name a few more
