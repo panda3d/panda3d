@@ -660,7 +660,8 @@ class Freezer:
         if module != None:
             for symbol in moduleName.split('.')[1:]:
                 module = getattr(module, symbol)
-            return module.__path__
+            if hasattr(module, '__path__'):
+                return module.__path__
 
         # If it didn't work--maybe the module is unimportable because
         # it makes certain assumptions about the builtins, or
