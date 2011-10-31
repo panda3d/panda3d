@@ -15,7 +15,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::Default Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase2)::
@@ -24,7 +24,7 @@ FLOATNAME(LVecBase2)() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::Copy Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase2)::
@@ -37,7 +37,7 @@ FLOATNAME(LVecBase2)(const FLOATNAME(LVecBase2) &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::Copy Assignment Operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase2) &FLOATNAME(LVecBase2)::
@@ -51,7 +51,7 @@ operator = (const FLOATNAME(LVecBase2) &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::Fill Assignment Operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase2) &FLOATNAME(LVecBase2)::
@@ -62,7 +62,7 @@ operator = (FLOATTYPE fill_value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase2)::
@@ -72,7 +72,7 @@ FLOATNAME(LVecBase2)(FLOATTYPE fill_value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase2)::
@@ -85,7 +85,7 @@ FLOATNAME(LVecBase2)(FLOATTYPE x, FLOATTYPE y) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::zero Named Constructor
-//       Access: Public
+//       Access: Published
 //  Description: Returns a zero-length vector.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH const FLOATNAME(LVecBase2) &FLOATNAME(LVecBase2)::
@@ -95,7 +95,7 @@ zero() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::unit_x Named Constructor
-//       Access: Public
+//       Access: Published
 //  Description: Returns a unit X vector.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH const FLOATNAME(LVecBase2) &FLOATNAME(LVecBase2)::
@@ -105,7 +105,7 @@ unit_x() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::unit_y Named Constructor
-//       Access: Public
+//       Access: Published
 //  Description: Returns a unit Y vector.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH const FLOATNAME(LVecBase2) &FLOATNAME(LVecBase2)::
@@ -115,7 +115,7 @@ unit_y() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::Destructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase2)::
@@ -124,7 +124,7 @@ INLINE_LINMATH FLOATNAME(LVecBase2)::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::Indexing Operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase2)::
@@ -135,7 +135,7 @@ operator [](int i) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::Indexing Operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE &FLOATNAME(LVecBase2)::
@@ -146,7 +146,7 @@ operator [](int i) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::size
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Returns 2: the number of components of a LVecBase2.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH int FLOATNAME(LVecBase2)::
@@ -156,7 +156,7 @@ size() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::is_nan
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if any component of the vector is
 //               not-a-number, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -168,7 +168,7 @@ is_nan() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::get_cell
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase2)::
@@ -179,7 +179,7 @@ get_cell(int i) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::get_x
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase2)::
@@ -189,7 +189,7 @@ get_x() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::get_y
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase2)::
@@ -199,7 +199,7 @@ get_y() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::set_cell
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase2)::
@@ -210,7 +210,7 @@ set_cell(int i, FLOATTYPE value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::set_x
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase2)::
@@ -220,7 +220,7 @@ set_x(FLOATTYPE value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::set_y
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase2)::
@@ -230,7 +230,7 @@ set_y(FLOATTYPE value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::add_to_cell
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase2)::
@@ -241,7 +241,7 @@ add_to_cell(int i, FLOATTYPE value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::add_x
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase2)::
@@ -251,7 +251,7 @@ add_x(FLOATTYPE value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::add_y
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase2)::
@@ -261,7 +261,7 @@ add_y(FLOATTYPE value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::get_data
-//       Access: Public
+//       Access: Published
 //  Description: Returns the address of the first of the two data
 //               elements in the vector.  The next element
 //               occupies the next position consecutively in memory.
@@ -273,7 +273,7 @@ get_data() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::get_num_components
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of elements in the vector, two.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH int FLOATNAME(LVecBase2)::
@@ -283,7 +283,7 @@ get_num_components() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::begin
-//       Access: Public
+//       Access: Published
 //  Description: Returns an iterator that may be used to traverse the
 //               elements of the matrix, STL-style.
 ////////////////////////////////////////////////////////////////////
@@ -294,7 +294,7 @@ begin() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::end
-//       Access: Public
+//       Access: Published
 //  Description: Returns an iterator that may be used to traverse the
 //               elements of the matrix, STL-style.
 ////////////////////////////////////////////////////////////////////
@@ -305,7 +305,7 @@ end() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::begin
-//       Access: Public
+//       Access: Published
 //  Description: Returns an iterator that may be used to traverse the
 //               elements of the matrix, STL-style.
 ////////////////////////////////////////////////////////////////////
@@ -316,7 +316,7 @@ begin() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::end
-//       Access: Public
+//       Access: Published
 //  Description: Returns an iterator that may be used to traverse the
 //               elements of the matrix, STL-style.
 ////////////////////////////////////////////////////////////////////
@@ -327,7 +327,7 @@ end() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::fill
-//       Access: Public
+//       Access: Published
 //  Description: Sets each element of the vector to the indicated
 //               fill_value.  This is particularly useful for
 //               initializing to zero.
@@ -341,7 +341,7 @@ fill(FLOATTYPE fill_value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::set
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase2)::
@@ -353,7 +353,7 @@ set(FLOATTYPE x, FLOATTYPE y) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::length
-//       Access: Public
+//       Access: Published
 //  Description: Returns the length of the vector, by the Pythagorean
 //               theorem.
 ////////////////////////////////////////////////////////////////////
@@ -364,7 +364,7 @@ length() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::length_squared
-//       Access: Public
+//       Access: Published
 //  Description: Returns the square of the vector's length, cheap and
 //               easy.
 ////////////////////////////////////////////////////////////////////
@@ -375,7 +375,7 @@ length_squared() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::normalize
-//       Access: Public
+//       Access: Published
 //  Description: Normalizes the vector in place.  Returns true if the
 //               vector was normalized, false if it was a zero-length
 //               vector.
@@ -396,7 +396,7 @@ normalize() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::dot
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase2)::
@@ -419,7 +419,7 @@ project(const FLOATNAME(LVecBase2) &onto) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::operator <
-//       Access: Public
+//       Access: Published
 //  Description: This performs a lexicographical comparison.  It's of
 //               questionable mathematical meaning, but sometimes has
 //               a practical purpose for sorting unique vectors,
@@ -434,7 +434,7 @@ operator < (const FLOATNAME(LVecBase2) &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::operator ==
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LVecBase2)::
@@ -446,7 +446,7 @@ operator == (const FLOATNAME(LVecBase2) &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::operator !=
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LVecBase2)::
@@ -456,7 +456,7 @@ operator != (const FLOATNAME(LVecBase2) &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::compare_to
-//       Access: Public
+//       Access: Published
 //  Description: This flavor of compare_to uses a default threshold
 //               value based on the numeric type.
 ////////////////////////////////////////////////////////////////////
@@ -468,7 +468,7 @@ compare_to(const FLOATNAME(LVecBase2) &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::compare_to
-//       Access: Public
+//       Access: Published
 //  Description: Sorts vectors lexicographically, componentwise.
 //               Returns a number less than 0 if this vector sorts
 //               before the other one, greater than zero if it sorts
@@ -489,7 +489,7 @@ compare_to(const FLOATNAME(LVecBase2) &other, FLOATTYPE threshold) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::get_hash
-//       Access: Public
+//       Access: Published
 //  Description: Returns a suitable hash for phash_map.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH size_t FLOATNAME(LVecBase2)::
@@ -500,7 +500,7 @@ get_hash() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::get_hash
-//       Access: Public
+//       Access: Published
 //  Description: Returns a suitable hash for phash_map.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH size_t FLOATNAME(LVecBase2)::
@@ -511,7 +511,7 @@ get_hash(FLOATTYPE threshold) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::add_hash
-//       Access: Public
+//       Access: Published
 //  Description: Adds the vector into the running hash.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH size_t FLOATNAME(LVecBase2)::
@@ -522,7 +522,7 @@ add_hash(size_t hash) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::add_hash
-//       Access: Public
+//       Access: Published
 //  Description: Adds the vector into the running hash.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH size_t FLOATNAME(LVecBase2)::
@@ -536,7 +536,7 @@ add_hash(size_t hash, FLOATTYPE threshold) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::unary -
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase2) FLOATNAME(LVecBase2)::
@@ -546,7 +546,7 @@ operator - () const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::vector + vector
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase2) FLOATNAME(LVecBase2)::
@@ -557,7 +557,7 @@ operator + (const FLOATNAME(LVecBase2) &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::vector - vector
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase2) FLOATNAME(LVecBase2)::
@@ -568,7 +568,7 @@ operator - (const FLOATNAME(LVecBase2) &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::vector * scalar
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase2) FLOATNAME(LVecBase2)::
@@ -579,7 +579,7 @@ operator * (FLOATTYPE scalar) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::vector / scalar
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase2) FLOATNAME(LVecBase2)::
@@ -591,7 +591,7 @@ operator / (FLOATTYPE scalar) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::operator +=
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase2)::
@@ -602,7 +602,7 @@ operator += (const FLOATNAME(LVecBase2) &other) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::operator -=
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase2)::
@@ -613,7 +613,7 @@ operator -= (const FLOATNAME(LVecBase2) &other) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::operator *=
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase2)::
@@ -624,7 +624,7 @@ operator *= (FLOATTYPE scalar) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::operator /=
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase2)::
@@ -636,7 +636,7 @@ operator /= (FLOATTYPE scalar) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::fmax
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase2) FLOATNAME(LVecBase2)::
@@ -648,7 +648,7 @@ fmax(const FLOATNAME(LVecBase2) &other) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::fmin
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase2) FLOATNAME(LVecBase2)::
@@ -660,7 +660,7 @@ fmin(const FLOATNAME(LVecBase2) &other) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::almost_equal
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if two vectors are memberwise equal
 //               within a specified tolerance.
 ////////////////////////////////////////////////////////////////////
@@ -673,7 +673,7 @@ almost_equal(const FLOATNAME(LVecBase2) &other, FLOATTYPE threshold) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::almost_equal
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if two vectors are memberwise equal
 //               within a default tolerance based on the numeric type.
 ////////////////////////////////////////////////////////////////////
@@ -685,7 +685,7 @@ almost_equal(const FLOATNAME(LVecBase2) &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::output
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase2)::
@@ -696,7 +696,7 @@ output(ostream &out) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::generate_hash
-//       Access: Public
+//       Access: Published
 //  Description: Adds the vector to the indicated hash generator.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase2)::
@@ -706,7 +706,7 @@ generate_hash(ChecksumHashGenerator &hashgen) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::generate_hash
-//       Access: Public
+//       Access: Published
 //  Description: Adds the vector to the indicated hash generator.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase2)::
@@ -716,12 +716,18 @@ generate_hash(ChecksumHashGenerator &hashgen, FLOATTYPE threshold) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LVecBase2::write_datagram
-//       Access: Public
-//  Description: Function to write itself into a datagram
+//     Function: LVecBase2::write_datagram_fixed
+//       Access: Published
+//  Description: Writes the vector to the Datagram using add_float32()
+//               or add_float64(), depending on the type of floats in
+//               the vector, regardless of the setting of
+//               Datagram::set_stdfloat_double().  This is appropriate
+//               when you want to write a fixed-width value to the
+//               datagram, especially when you are not writing a bam
+//               file.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase2)::
-write_datagram(Datagram &destination) const {
+write_datagram_fixed(Datagram &destination) const {
 #if FLOATTOKEN == 'f'
   destination.add_float32(_v.v._0);
   destination.add_float32(_v.v._1);
@@ -732,12 +738,13 @@ write_datagram(Datagram &destination) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LVecBase2::read_datagram
-//       Access: Public
-//  Description: Function to read itself from a datagramIterator
+//     Function: LVecBase2::read_datagram_fixed
+//       Access: Published
+//  Description: Reads the vector from the Datagram using get_float32()
+//               or get_float64().  See write_datagram_fixed().
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase2)::
-read_datagram(DatagramIterator &source) {
+read_datagram_fixed(DatagramIterator &source) {
 #if FLOATTOKEN == 'f'
   _v.v._0 = source.get_float32();
   _v.v._1 = source.get_float32();
@@ -747,3 +754,27 @@ read_datagram(DatagramIterator &source) {
 #endif
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase2::write_datagram
+//       Access: Published
+//  Description: Writes the vector to the Datagram using
+//               add_stdfloat().  This is appropriate when you want to
+//               write the vector using the standard width setting,
+//               especially when you are writing a bam file.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LVecBase2)::
+write_datagram(Datagram &destination) const {
+  destination.add_stdfloat(_v.v._0);
+  destination.add_stdfloat(_v.v._1);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase2::read_datagram
+//       Access: Published
+//  Description: Reads the vector from the Datagram using get_stdfloat().
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LVecBase2)::
+read_datagram(DatagramIterator &source) {
+  _v.v._0 = source.get_stdfloat();
+  _v.v._1 = source.get_stdfloat();
+}

@@ -70,6 +70,7 @@ PUBLISHED:
   int get_file_major_ver();
   int get_file_minor_ver();
   BamEndian get_file_endian() const;
+  bool get_file_stdfloat_double() const;
 
   int get_current_major_ver();
   int get_current_minor_ver();

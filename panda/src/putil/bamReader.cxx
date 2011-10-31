@@ -142,26 +142,6 @@ init() {
     _file_stdfloat_double = scan.get_bool();
   }
 
-#ifndef STDFLOAT_DOUBLE
-  bool need_stdfloat_double = false;
-#else
-  bool need_stdfloat_double = true;
-#endif
-  if (_file_stdfloat_double != need_stdfloat_double) {
-    if (_file_stdfloat_double) {
-      bam_cat.error()
-        << "This bam file was written with 64-bit floats.\n";
-      bam_cat.error()
-        << "This program can only read bam files with 32-bit floats.\n";
-    } else { 
-      bam_cat.error()
-        << "This bam file was written with 32-bit floats.\n";
-      bam_cat.error()
-        << "This program can only read bam files with 64-bit floats.\n";
-    }
-    return false;
-  }
-
   return true;
 }
 

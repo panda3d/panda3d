@@ -751,9 +751,11 @@ public:
   static void init_type() {
     TypedWritable::init_type();
     ReferenceCount::init_type();
+    Namable::init_type();
     register_type(_type_handle, "PandaNode",
                   TypedWritable::get_class_type(),
-                  ReferenceCount::get_class_type());
+                  ReferenceCount::get_class_type(),
+                  Namable::get_class_type());
     CData::init_type();
     Down::init_type();
     Up::init_type();

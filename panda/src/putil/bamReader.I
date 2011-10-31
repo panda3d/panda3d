@@ -127,9 +127,6 @@ get_file_endian() const {
 //               floats as 64-bit doubles, or false if they are 32-bit
 //               floats.  This is determined by the compilation flags
 //               of the version of Panda that generated this file.
-//
-//               If this doesn't match the current version of Panda,
-//               the file cannot be read.
 ////////////////////////////////////////////////////////////////////
 INLINE bool BamReader::
 get_file_stdfloat_double() const {
@@ -244,7 +241,12 @@ get_datagram(Datagram &datagram) {
     return false;
   }
 
-  return _source->get_datagram(datagram);
+  if (!_source->get_datagram(datagram)) {
+    return false;
+  }
+
+  datagram.set_stdfloat_double(_file_stdfloat_double);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

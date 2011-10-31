@@ -2272,6 +2272,10 @@ set_num_rows(int n) {
         pointer += stride;
       }
       break;
+
+    case NT_stdfloat:
+      // Shouldn't have this type in the format.
+      nassertr(false, false);
     }          
   }
 

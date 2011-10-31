@@ -299,16 +299,16 @@ get_float64() {
 //     Function: DatagramIterator::get_stdfloat
 //       Access: Public
 //  Description: Extracts either a 32-bit or a 64-bit floating-point
-//               number, according to the current Panda build
-//               configuration.
+//               number, according to Datagram::set_stdfloat_double().
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat DatagramIterator::
 get_stdfloat() {
-#ifndef STDFLOAT_DOUBLE
-  return get_float32();
-#else
-  return get_float64();
-#endif
+  nassertr(_datagram != (const Datagram *)NULL, 0.0);
+  if (_datagram->get_stdfloat_double()) {
+    return (PN_stdfloat)get_float64();
+  } else {
+    return (PN_stdfloat)get_float32();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

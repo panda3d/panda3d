@@ -503,28 +503,75 @@ back_sub_mat(int index[4], FLOATNAME(LMatrix4) &inv, int row) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LMatrix4::write_datagram
-//  Description: Writes the matrix to the datagram
+//     Function: LMatrix4::write_datagram_fixed
+//       Access: Published
+//  Description: Writes the matrix to the Datagram using add_float32()
+//               or add_float64(), depending on the type of floats in
+//               the matrix, regardless of the setting of
+//               Datagram::set_stdfloat_double().  This is appropriate
+//               when you want to write a fixed-width value to the
+//               datagram, especially when you are not writing a bam
+//               file.
 ////////////////////////////////////////////////////////////////////
 void FLOATNAME(LMatrix4)::
-write_datagram(Datagram &destination) const {
-  for(int i = 0; i < 4; i++) {
-    for(int j = 0; j < 4; j++) {
+write_datagram_fixed(Datagram &destination) const {
+  for (int i = 0; i < 4; ++i) {
+    for (int j = 0; j < 4; ++j) {
+#if FLOATTOKEN == 'f' 
       destination.add_float32(get_cell(i,j));
+#else
+      destination.add_float64(get_cell(i,j));
+#endif
     }
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::read_datagram_fixed
+//       Access: Published
+//  Description: Reads the matrix from the Datagram using get_float32()
+//               or get_float64().  See write_datagram_fixed().
+////////////////////////////////////////////////////////////////////
+void FLOATNAME(LMatrix4)::
+read_datagram_fixed(DatagramIterator &scan) {
+  for (int i = 0; i < 4; ++i) {
+    for (int j = 0; j < 4; ++j) {
+#if FLOATTOKEN == 'f'
+      set_cell(i, j, scan.get_float32());
+#else
+      set_cell(i, j, scan.get_float64());
+#endif
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::write_datagram
+//       Access: Published
+//  Description: Writes the matrix to the Datagram using
+//               add_stdfloat().  This is appropriate when you want to
+//               write the matrix using the standard width setting,
+//               especially when you are writing a bam file.
+////////////////////////////////////////////////////////////////////
+void FLOATNAME(LMatrix4)::
+write_datagram(Datagram &destination) const {
+  for (int i = 0; i < 4; ++i) {
+    for (int j = 0; j < 4; ++j) {
+      destination.add_stdfloat(get_cell(i,j));
+    }
+  }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::read_datagram
-//  Description: Reads itself out of the datagram
+//       Access: Published
+//  Description: Reads the matrix from the Datagram using get_stdfloat().
 ////////////////////////////////////////////////////////////////////
 void FLOATNAME(LMatrix4)::
 read_datagram(DatagramIterator &scan) {
-  for(int i = 0; i < 4; i++) {
-    for(int j = 0; j < 4; j++) {
-      set_cell(i, j, scan.get_float32());
+  for (int i = 0; i < 4; ++i) {
+    for (int j = 0; j < 4; ++j) {
+      set_cell(i, j, scan.get_stdfloat());
     }
   }
 }

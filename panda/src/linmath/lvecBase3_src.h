@@ -135,10 +135,14 @@ PUBLISHED:
   INLINE_LINMATH void output(ostream &out) const;
   EXTENSION(INLINE_LINMATH void python_repr(ostream &out, const string &class_name) const);
 
-public:
   INLINE_LINMATH void generate_hash(ChecksumHashGenerator &hashgen) const;
   INLINE_LINMATH void generate_hash(ChecksumHashGenerator &hashgen,
                                     FLOATTYPE threshold) const;
+
+  INLINE_LINMATH void write_datagram_fixed(Datagram &destination) const;
+  INLINE_LINMATH void read_datagram_fixed(DatagramIterator &source);
+  INLINE_LINMATH void write_datagram(Datagram &destination) const;
+  INLINE_LINMATH void read_datagram(DatagramIterator &source);
 
 public:
   union {
@@ -151,10 +155,6 @@ private:
   static const FLOATNAME(LVecBase3) _unit_x;
   static const FLOATNAME(LVecBase3) _unit_y;
   static const FLOATNAME(LVecBase3) _unit_z;
-
-public:
-  INLINE_LINMATH void write_datagram(Datagram &destination) const;
-  INLINE_LINMATH void read_datagram(DatagramIterator &source);
 
 public:
   static TypeHandle get_class_type() {

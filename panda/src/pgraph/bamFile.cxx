@@ -345,6 +345,25 @@ get_file_endian() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BamFile::get_file_stdfloat_double
+//       Access: Public
+//  Description: Returns true if the file stores all "standard"
+//               floats as 64-bit doubles, or false if they are 32-bit
+//               floats.
+////////////////////////////////////////////////////////////////////
+bool BamFile::
+get_file_stdfloat_double() const {
+  if (_writer != (BamWriter *)NULL) {
+    return _writer->get_file_stdfloat_double();
+  }
+  if (_reader != (BamReader *)NULL) {
+    return _reader->get_file_stdfloat_double();
+  }
+
+  return bam_stdfloat_double;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BamFile::get_current_major_ver
 //       Access: Public
 //  Description: Returns the system current major version number.

@@ -60,6 +60,19 @@ ConfigVariableEnum<BamEnums::BamEndian> bam_endian
           "may set it to \"littleendian\" or \"bigendian\" to target a "
           "particular platform."));
 
+ConfigVariableBool bam_stdfloat_double
+("bam-stdfloat-double", 
+#ifdef STDFLOAT_DOUBLE
+ true,
+#else
+ false,
+#endif
+ PRC_DESC("The default width of floating-point numbers to write to a bam "
+          "file.  Set this true to force doubles (64-bit floats), or false "
+          "to force sinles (32-bit floats).  The default is whichever width "
+          "Panda has been compiled to use natively.  Normally, this setting "
+          "should not be changed from the default."));
+
 ConfigVariableEnum<BamEnums::BamTextureMode> bam_texture_mode
 ("bam-texture-mode", BamEnums::BTM_relative,
  PRC_DESC("Set this to specify how textures should be written into Bam files."

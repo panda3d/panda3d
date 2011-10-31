@@ -45,11 +45,7 @@ BamWriter(DatagramSink *target) :
   _long_pta_id = false;
 
   _file_endian = bam_endian;
-#ifndef STDFLOAT_DOUBLE
-  _file_stdfloat_double = false;
-#else
-  _file_stdfloat_double = true;
-#endif
+  _file_stdfloat_double = bam_stdfloat_double;
   _file_texture_mode = bam_texture_mode;
 }
 
@@ -689,6 +685,7 @@ flush_queue() {
     }
 
     Datagram dg;
+    dg.set_stdfloat_double(_file_stdfloat_double);
     dg.add_uint8(_next_boc);
     _next_boc = BOC_adjunct;
 

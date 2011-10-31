@@ -864,7 +864,7 @@ output(ostream &out) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::generate_hash
-//       Access: Public
+//       Access: Published
 //  Description: Adds the vector to the indicated hash generator.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
@@ -875,7 +875,7 @@ generate_hash(ChecksumHashGenerator &hashgen) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::generate_hash
-//       Access: Public
+//       Access: Published
 //  Description: Adds the vector to the indicated hash generator.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
@@ -887,12 +887,18 @@ generate_hash(ChecksumHashGenerator &hashgen, FLOATTYPE threshold) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::write_datagram
-//       Access: Public
-//  Description: Function to write itself into a datagram
+//     Function: LVecBase3::write_datagram_fixed
+//       Access: Published
+//  Description: Writes the vector to the Datagram using add_float32()
+//               or add_float64(), depending on the type of floats in
+//               the vector, regardless of the setting of
+//               Datagram::set_stdfloat_double().  This is appropriate
+//               when you want to write a fixed-width value to the
+//               datagram, especially when you are not writing a bam
+//               file.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
-write_datagram(Datagram &destination) const {
+write_datagram_fixed(Datagram &destination) const {
 #if FLOATTOKEN == 'f'
   destination.add_float32(_v.v._0);
   destination.add_float32(_v.v._1);
@@ -905,12 +911,13 @@ write_datagram(Datagram &destination) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::read_datagram
-//       Access: Public
-//  Description: Function to read itself from a datagramIterator
+//     Function: LVecBase3::read_datagram_fixed
+//       Access: Published
+//  Description: Reads the vector from the Datagram using get_float32()
+//               or get_float64().  See write_datagram_fixed().
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
-read_datagram(DatagramIterator &source) {
+read_datagram_fixed(DatagramIterator &source) {
 #if FLOATTOKEN == 'f'
   _v.v._0 = source.get_float32();
   _v.v._1 = source.get_float32();
@@ -920,4 +927,31 @@ read_datagram(DatagramIterator &source) {
   _v.v._1 = source.get_float64();
   _v.v._2 = source.get_float64();
 #endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase3::write_datagram
+//       Access: Published
+//  Description: Writes the vector to the Datagram using
+//               add_stdfloat().  This is appropriate when you want to
+//               write the vector using the standard width setting,
+//               especially when you are writing a bam file.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LVecBase3)::
+write_datagram(Datagram &destination) const {
+  destination.add_stdfloat(_v.v._0);
+  destination.add_stdfloat(_v.v._1);
+  destination.add_stdfloat(_v.v._2);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase3::read_datagram
+//       Access: Published
+//  Description: Reads the vector from the Datagram using get_stdfloat().
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LVecBase3)::
+read_datagram(DatagramIterator &source) {
+  _v.v._0 = source.get_stdfloat();
+  _v.v._1 = source.get_stdfloat();
+  _v.v._2 = source.get_stdfloat();
 }

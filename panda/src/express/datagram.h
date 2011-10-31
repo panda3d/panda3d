@@ -99,6 +99,9 @@ PUBLISHED:
   INLINE CPTA_uchar get_array() const;
   INLINE PTA_uchar modify_array();
 
+  INLINE void set_stdfloat_double(bool stdfloat_double);
+  INLINE bool get_stdfloat_double() const;
+
   INLINE bool operator == (const Datagram &other) const;
   INLINE bool operator != (const Datagram &other) const;
   INLINE bool operator < (const Datagram &other) const;
@@ -108,7 +111,7 @@ PUBLISHED:
 
 private:
   PTA_uchar _data;
-
+  bool _stdfloat_double;
 
 public:
 

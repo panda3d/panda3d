@@ -125,8 +125,18 @@ get_info(const Filename &filename) {
     return false;
   }
 
+  const char *endian = "little-endian";
+  if (bam_file.get_file_endian() == BamEnums::BE_bigendian) {
+    endian = "big-endian";
+  }
+  int float_width = 32;
+  if (bam_file.get_file_stdfloat_double()) {
+    float_width = 64;
+  }
+
   nout << filename << " : Bam version " << bam_file.get_file_major_ver()
-       << "." << bam_file.get_file_minor_ver() << "\n";
+       << "." << bam_file.get_file_minor_ver() 
+       << ", " << endian << ", " << float_width << "-bit floats.\n";
 
   Objects objects;
   TypedWritable *object = bam_file.read_object();

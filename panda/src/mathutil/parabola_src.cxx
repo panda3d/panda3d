@@ -48,9 +48,43 @@ write(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LParabola::write_datagram_fixed
+//       Access: Public
+//  Description: Writes the parabola to the Datagram using add_float32()
+//               or add_float64(), depending on the type of floats in
+//               the parabola, regardless of the setting of
+//               Datagram::set_stdfloat_double().  This is appropriate
+//               when you want to write a fixed-width value to the
+//               datagram, especially when you are not writing a bam
+//               file.
+////////////////////////////////////////////////////////////////////
+void FLOATNAME(LParabola)::
+write_datagram_fixed(Datagram &destination) const {
+  _a.write_datagram_fixed(destination);
+  _b.write_datagram_fixed(destination);
+  _c.write_datagram_fixed(destination);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LParabola::read_datagram_fixed
+//       Access: Public
+//  Description: Reads the parabola from the Datagram using get_float32()
+//               or get_float64().  See write_datagram_fixed().
+////////////////////////////////////////////////////////////////////
+void FLOATNAME(LParabola)::
+read_datagram_fixed(DatagramIterator &source) {
+  _a.read_datagram_fixed(source);
+  _b.read_datagram_fixed(source);
+  _c.read_datagram_fixed(source);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LParabola::write_datagram
 //       Access: Public
-//  Description: Function to write itself into a datagram
+//  Description: Writes the parabola to the Datagram using
+//               add_stdfloat().  This is appropriate when you want to
+//               write the vector using the standard width setting,
+//               especially when you are writing a bam file.
 ////////////////////////////////////////////////////////////////////
 void FLOATNAME(LParabola)::
 write_datagram(Datagram &destination) const {
@@ -60,9 +94,9 @@ write_datagram(Datagram &destination) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LVecBase4::read_datagram
+//     Function: LParabola::read_datagram
 //       Access: Public
-//  Description: Function to read itself from a datagramIterator
+//  Description: Reads the parabola from the Datagram using get_stdfloat().
 ////////////////////////////////////////////////////////////////////
 void FLOATNAME(LParabola)::
 read_datagram(DatagramIterator &source) {

@@ -234,9 +234,13 @@ PUBLISHED:
   void write(ostream &out, int indent_level = 0) const;
   EXTENSION(void python_repr(ostream &out, const string &class_name) const);
 
-public:
   INLINE_LINMATH void generate_hash(ChecksumHashGenerator &hashgen) const;
   void generate_hash(ChecksumHashGenerator &hashgen, FLOATTYPE scale) const;
+
+  void write_datagram_fixed(Datagram &destination) const;
+  void read_datagram_fixed(DatagramIterator &scan);
+  void write_datagram(Datagram &destination) const;
+  void read_datagram(DatagramIterator &source);
 
 public:
   union {
@@ -264,11 +268,6 @@ private:
   static const FLOATNAME(LMatrix4) _flip_z_mat;
   static const FLOATNAME(LMatrix4) _lz_to_ry_mat;
   static const FLOATNAME(LMatrix4) _ly_to_rz_mat;
-
-  //Functionality for reading and writing from/to a binary source
-public:
-  void write_datagram(Datagram& destination) const;
-  void read_datagram(DatagramIterator& scan);
 
 public:
   static TypeHandle get_class_type() {

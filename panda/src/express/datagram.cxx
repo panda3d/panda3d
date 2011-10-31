@@ -168,6 +168,12 @@ append_data(const void *data, size_t size) {
                    (const unsigned char *)data + size);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Datagram::assign
+//       Access: Public
+//  Description: Replaces the datagram's data with the indicated
+//               block.
+////////////////////////////////////////////////////////////////////
 void Datagram::
 assign(const void *data, size_t size) {
   nassertv((int)size >= 0);
@@ -176,8 +182,9 @@ assign(const void *data, size_t size) {
   _data.v().insert(_data.v().end(), (const unsigned char *)data,
                    (const unsigned char *)data + size);
 }
+
 ////////////////////////////////////////////////////////////////////
-//     Function : output
+//     Function : Datagram::output
 //       Access : Public
 //  Description : Write a string representation of this instance to
 //                <out>.
@@ -190,7 +197,7 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : write
+//     Function : Datagram::write
 //       Access : Public
 //  Description : Write a string representation of this instance to
 //                <out>.

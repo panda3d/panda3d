@@ -15,7 +15,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::Default Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase4)::
@@ -24,7 +24,7 @@ FLOATNAME(LVecBase4)() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::Copy Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase4)::
@@ -39,7 +39,7 @@ FLOATNAME(LVecBase4)(const FLOATNAME(LVecBase4) &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::Copy Assignment Operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase4) &FLOATNAME(LVecBase4)::
@@ -55,7 +55,7 @@ operator = (const FLOATNAME(LVecBase4) &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::Fill Assignment Operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase4) &FLOATNAME(LVecBase4)::
@@ -66,7 +66,7 @@ operator = (FLOATTYPE fill_value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase4)::
@@ -76,7 +76,7 @@ FLOATNAME(LVecBase4)(FLOATTYPE fill_value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase4)::
@@ -91,7 +91,7 @@ FLOATNAME(LVecBase4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::Destructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase4)::
@@ -100,7 +100,7 @@ INLINE_LINMATH FLOATNAME(LVecBase4)::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::zero Named Constructor
-//       Access: Public
+//       Access: Published
 //  Description: Returns a zero-length vector.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH const FLOATNAME(LVecBase4) &FLOATNAME(LVecBase4)::
@@ -110,7 +110,7 @@ zero() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::unit_x Named Constructor
-//       Access: Public
+//       Access: Published
 //  Description: Returns a unit X vector.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH const FLOATNAME(LVecBase4) &FLOATNAME(LVecBase4)::
@@ -120,7 +120,7 @@ unit_x() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::unit_y Named Constructor
-//       Access: Public
+//       Access: Published
 //  Description: Returns a unit Y vector.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH const FLOATNAME(LVecBase4) &FLOATNAME(LVecBase4)::
@@ -130,7 +130,7 @@ unit_y() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::unit_z Named Constructor
-//       Access: Public
+//       Access: Published
 //  Description: Returns a unit Z vector.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH const FLOATNAME(LVecBase4) &FLOATNAME(LVecBase4)::
@@ -140,7 +140,7 @@ unit_z() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::unit_w Named Constructor
-//       Access: Public
+//       Access: Published
 //  Description: Returns a unit W vector.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH const FLOATNAME(LVecBase4) &FLOATNAME(LVecBase4)::
@@ -150,7 +150,7 @@ unit_w() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::Indexing Operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase4)::
@@ -161,7 +161,7 @@ operator [](int i) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::Indexing Operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE &FLOATNAME(LVecBase4)::
@@ -172,7 +172,7 @@ operator [](int i) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::size
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Returns 4: the number of components of a LVecBase4.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH int FLOATNAME(LVecBase4)::
@@ -182,7 +182,7 @@ size() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::is_nan
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if any component of the vector is
 //               not-a-number, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -194,7 +194,7 @@ is_nan() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::get_cell
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase4)::
@@ -205,7 +205,7 @@ get_cell(int i) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::get_x
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase4)::
@@ -215,7 +215,7 @@ get_x() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::get_y
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase4)::
@@ -225,7 +225,7 @@ get_y() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::get_z
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase4)::
@@ -235,7 +235,7 @@ get_z() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::get_w
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase4)::
@@ -245,7 +245,7 @@ get_w() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::set_cell
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase4)::
@@ -256,7 +256,7 @@ set_cell(int i, FLOATTYPE value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::set_x
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase4)::
@@ -266,7 +266,7 @@ set_x(FLOATTYPE value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::set_y
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase4)::
@@ -276,7 +276,7 @@ set_y(FLOATTYPE value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::set_z
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase4)::
@@ -286,7 +286,7 @@ set_z(FLOATTYPE value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::set_w
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase4)::
@@ -296,7 +296,7 @@ set_w(FLOATTYPE value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::add_to_cell
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase4)::
@@ -307,7 +307,7 @@ add_to_cell(int i, FLOATTYPE value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::add_x
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase4)::
@@ -317,7 +317,7 @@ add_x(FLOATTYPE value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::add_y
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase4)::
@@ -327,7 +327,7 @@ add_y(FLOATTYPE value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::add_z
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase4)::
@@ -337,7 +337,7 @@ add_z(FLOATTYPE value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::add_w
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase4)::
@@ -347,7 +347,7 @@ add_w(FLOATTYPE value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::get_data
-//       Access: Public
+//       Access: Published
 //  Description: Returns the address of the first of the four data
 //               elements in the vector.  The remaining elements
 //               occupy the next positions consecutively in memory.
@@ -359,7 +359,7 @@ get_data() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::get_num_components
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of elements in the vector, four.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH int FLOATNAME(LVecBase4)::
@@ -369,7 +369,7 @@ get_num_components() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::begin
-//       Access: Public
+//       Access: Published
 //  Description: Returns an iterator that may be used to traverse the
 //               elements of the matrix, STL-style.
 ////////////////////////////////////////////////////////////////////
@@ -380,7 +380,7 @@ begin() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::end
-//       Access: Public
+//       Access: Published
 //  Description: Returns an iterator that may be used to traverse the
 //               elements of the matrix, STL-style.
 ////////////////////////////////////////////////////////////////////
@@ -391,7 +391,7 @@ end() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::begin
-//       Access: Public
+//       Access: Published
 //  Description: Returns an iterator that may be used to traverse the
 //               elements of the matrix, STL-style.
 ////////////////////////////////////////////////////////////////////
@@ -402,7 +402,7 @@ begin() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::end
-//       Access: Public
+//       Access: Published
 //  Description: Returns an iterator that may be used to traverse the
 //               elements of the matrix, STL-style.
 ////////////////////////////////////////////////////////////////////
@@ -413,7 +413,7 @@ end() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::fill
-//       Access: Public
+//       Access: Published
 //  Description: Sets each element of the vector to the indicated
 //               fill_value.  This is particularly useful for
 //               initializing to zero.
@@ -429,7 +429,7 @@ fill(FLOATTYPE fill_value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::set
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase4)::
@@ -443,7 +443,7 @@ set(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::length
-//       Access: Public
+//       Access: Published
 //  Description: Returns the length of the vector, by the Pythagorean
 //               theorem.
 ////////////////////////////////////////////////////////////////////
@@ -454,7 +454,7 @@ length() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::length_squared
-//       Access: Public
+//       Access: Published
 //  Description: Returns the square of the vector's length, cheap and
 //               easy.
 ////////////////////////////////////////////////////////////////////
@@ -465,7 +465,7 @@ length_squared() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::normalize
-//       Access: Public
+//       Access: Published
 //  Description: Normalizes the vector in place.  Returns true if the
 //               vector was normalized, false if it was a zero-length
 //               vector.
@@ -486,7 +486,7 @@ normalize() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::dot
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase4)::
@@ -511,7 +511,7 @@ project(const FLOATNAME(LVecBase4) &onto) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::operator <
-//       Access: Public
+//       Access: Published
 //  Description: This performs a lexicographical comparison.  It's of
 //               questionable mathematical meaning, but sometimes has
 //               a practical purpose for sorting unique vectors,
@@ -526,7 +526,7 @@ operator < (const FLOATNAME(LVecBase4) &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::operator ==
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LVecBase4)::
@@ -540,7 +540,7 @@ operator == (const FLOATNAME(LVecBase4) &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::operator !=
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LVecBase4)::
@@ -550,7 +550,7 @@ operator != (const FLOATNAME(LVecBase4) &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::compare_to
-//       Access: Public
+//       Access: Published
 //  Description: This flavor of compare_to uses a default threshold
 //               value based on the numeric type.
 ////////////////////////////////////////////////////////////////////
@@ -562,7 +562,7 @@ compare_to(const FLOATNAME(LVecBase4) &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::compare_to
-//       Access: Public
+//       Access: Published
 //  Description: Sorts vectors lexicographically, componentwise.
 //               Returns a number less than 0 if this vector sorts
 //               before the other one, greater than zero if it sorts
@@ -589,7 +589,7 @@ compare_to(const FLOATNAME(LVecBase4) &other, FLOATTYPE threshold) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::get_hash
-//       Access: Public
+//       Access: Published
 //  Description: Returns a suitable hash for phash_map.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH size_t FLOATNAME(LVecBase4)::
@@ -600,7 +600,7 @@ get_hash() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::get_hash
-//       Access: Public
+//       Access: Published
 //  Description: Returns a suitable hash for phash_map.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH size_t FLOATNAME(LVecBase4)::
@@ -611,7 +611,7 @@ get_hash(FLOATTYPE threshold) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::add_hash
-//       Access: Public
+//       Access: Published
 //  Description: Adds the vector into the running hash.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH size_t FLOATNAME(LVecBase4)::
@@ -622,7 +622,7 @@ add_hash(size_t hash) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::add_hash
-//       Access: Public
+//       Access: Published
 //  Description: Adds the vector into the running hash.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH size_t FLOATNAME(LVecBase4)::
@@ -638,7 +638,7 @@ add_hash(size_t hash, FLOATTYPE threshold) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::unary -
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase4) FLOATNAME(LVecBase4)::
@@ -648,7 +648,7 @@ operator - () const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::vector + vector
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase4) FLOATNAME(LVecBase4)::
@@ -661,7 +661,7 @@ operator + (const FLOATNAME(LVecBase4) &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::vector - vector
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase4) FLOATNAME(LVecBase4)::
@@ -674,7 +674,7 @@ operator - (const FLOATNAME(LVecBase4) &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::vector * scalar
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase4) FLOATNAME(LVecBase4)::
@@ -687,7 +687,7 @@ operator * (FLOATTYPE scalar) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::vector / scalar
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase4) FLOATNAME(LVecBase4)::
@@ -701,7 +701,7 @@ operator / (FLOATTYPE scalar) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::operator +=
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase4)::
@@ -714,7 +714,7 @@ operator += (const FLOATNAME(LVecBase4) &other) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::operator -=
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase4)::
@@ -727,7 +727,7 @@ operator -= (const FLOATNAME(LVecBase4) &other) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::operator *=
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase4)::
@@ -740,7 +740,7 @@ operator *= (FLOATTYPE scalar) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::operator /=
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase4)::
@@ -754,7 +754,7 @@ operator /= (FLOATTYPE scalar) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::fmax
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase4) FLOATNAME(LVecBase4)::
@@ -768,7 +768,7 @@ fmax(const FLOATNAME(LVecBase4) &other) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::fmin
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase4) FLOATNAME(LVecBase4)::
@@ -782,7 +782,7 @@ fmin(const FLOATNAME(LVecBase4) &other) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::almost_equal
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if two vectors are memberwise equal
 //               within a specified tolerance.
 ////////////////////////////////////////////////////////////////////
@@ -797,7 +797,7 @@ almost_equal(const FLOATNAME(LVecBase4) &other, FLOATTYPE threshold) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::almost_equal
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if two vectors are memberwise equal
 //               within a default tolerance based on the numeric type.
 ////////////////////////////////////////////////////////////////////
@@ -809,7 +809,7 @@ almost_equal(const FLOATNAME(LVecBase4) &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::output
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase4)::
@@ -822,7 +822,7 @@ output(ostream &out) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::generate_hash
-//       Access: Public
+//       Access: Published
 //  Description: Adds the vector to the indicated hash generator.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase4)::
@@ -833,7 +833,7 @@ generate_hash(ChecksumHashGenerator &hashgen) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::generate_hash
-//       Access: Public
+//       Access: Published
 //  Description: Adds the vector to the indicated hash generator.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase4)::
@@ -846,12 +846,18 @@ generate_hash(ChecksumHashGenerator &hashgen, FLOATTYPE threshold) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LVecBase4::write_datagram
-//       Access: Public
-//  Description: Function to write itself into a datagram
+//     Function: LVecBase4::write_datagram_fixed
+//       Access: Published
+//  Description: Writes the vector to the Datagram using add_float32()
+//               or add_float64(), depending on the type of floats in
+//               the vector, regardless of the setting of
+//               Datagram::set_stdfloat_double().  This is appropriate
+//               when you want to write a fixed-width value to the
+//               datagram, especially when you are not writing a bam
+//               file.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase4)::
-write_datagram(Datagram &destination) const {
+write_datagram_fixed(Datagram &destination) const {
 #if FLOATTOKEN == 'f'
   destination.add_float32(_v.v._0);
   destination.add_float32(_v.v._1);
@@ -866,12 +872,13 @@ write_datagram(Datagram &destination) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LVecBase4::read_datagram
-//       Access: Public
-//  Description: Function to read itself from a datagramIterator
+//     Function: LVecBase4::read_datagram_fixed
+//       Access: Published
+//  Description: Reads the vector from the Datagram using get_float32()
+//               or get_float64().  See write_datagram_fixed().
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase4)::
-read_datagram(DatagramIterator &source) {
+read_datagram_fixed(DatagramIterator &source) {
 #if FLOATTOKEN == 'f'
   _v.v._0 = source.get_float32();
   _v.v._1 = source.get_float32();
@@ -883,4 +890,33 @@ read_datagram(DatagramIterator &source) {
   _v.v._2 = source.get_float64();
   _v.v._3 = source.get_float64();
 #endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase4::write_datagram
+//       Access: Published
+//  Description: Writes the vector to the Datagram using
+//               add_stdfloat().  This is appropriate when you want to
+//               write the vector using the standard width setting,
+//               especially when you are writing a bam file.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LVecBase4)::
+write_datagram(Datagram &destination) const {
+  destination.add_stdfloat(_v.v._0);
+  destination.add_stdfloat(_v.v._1);
+  destination.add_stdfloat(_v.v._2);
+  destination.add_stdfloat(_v.v._3);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase4::read_datagram
+//       Access: Published
+//  Description: Reads the vector from the Datagram using get_stdfloat().
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LVecBase4)::
+read_datagram(DatagramIterator &source) {
+  _v.v._0 = source.get_stdfloat();
+  _v.v._1 = source.get_stdfloat();
+  _v.v._2 = source.get_stdfloat();
+  _v.v._3 = source.get_stdfloat();
 }

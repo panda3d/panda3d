@@ -42,7 +42,8 @@ PUBLISHED:
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
 
-public:
+  void write_datagram_fixed(Datagram &destination) const;
+  void read_datagram_fixed(DatagramIterator &source);
   void write_datagram(Datagram &destination) const;
   void read_datagram(DatagramIterator &source);
 
