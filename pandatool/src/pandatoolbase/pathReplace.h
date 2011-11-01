@@ -22,6 +22,7 @@
 #include "filename.h"
 #include "dSearchPath.h"
 #include "pvector.h"
+#include "pmap.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PathReplace
@@ -74,6 +75,8 @@ public:
   // These are used to support store_path().
   PathStore _path_store;
   Filename _path_directory;
+  bool _copy_files;
+  Filename _copy_into_directory;
 
   // If this is this true, then the error flag is set (see had_error()
   // and clear_error()) if any Filename passed to match_path() or
@@ -86,6 +89,8 @@ public:
   bool _exists;
 
 private:
+  bool copy_this_file(Filename &filename);
+
   class Component {
   public:
     INLINE Component(const string &component);
@@ -116,6 +121,10 @@ private:
   Entries _entries;
 
   bool _error_flag;
+
+  typedef pmap<Filename, Filename> Copied;
+  Copied _orig_to_target;
+  Copied _target_to_orig;
 };
 
 #include "pathReplace.I"

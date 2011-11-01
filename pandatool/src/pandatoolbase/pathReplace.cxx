@@ -26,6 +26,7 @@
 PathReplace::
 PathReplace() {
   _path_store = PS_keep;
+  _copy_files = false;
   _noabs = false;
   _exists = false;
   _error_flag = false;
@@ -168,6 +169,10 @@ store_path(const Filename &orig_filename) {
   }
   Filename filename = orig_filename;
 
+  if (_copy_files) {
+    copy_this_file(filename);
+  }
+
   switch (_path_store) {
   case PS_relative:
     filename.make_absolute();
@@ -211,6 +216,10 @@ full_convert_path(const Filename &orig_filename,
                   const DSearchPath &additional_path,
                   Filename &resolved_path,
                   Filename &output_path) {
+  if (_path_directory.is_local()) {
+    _path_directory.make_absolute();
+  }
+
   Filename match;
   bool got_match = false;
 
@@ -311,13 +320,17 @@ full_convert_path(const Filename &orig_filename,
   // depends upon the path-store mode.
  calculate_output_path:
 
+  if (_copy_files) {
+    if (copy_this_file(resolved_path)) {
+      match = resolved_path;
+    }
+  }
+
   switch (_path_store) {
   case PS_relative:
     if (resolved_path.empty())
       output_path = resolved_path;
     else {
-      if (_path_directory.is_local())
-        _path_directory.make_absolute();
       output_path = resolved_path;
       output_path.make_absolute();
       output_path.make_relative_to(_path_directory);
@@ -337,8 +350,6 @@ full_convert_path(const Filename &orig_filename,
     if (resolved_path.empty())
       output_path = resolved_path;
     else {
-      if (_path_directory.is_local())
-        _path_directory.make_absolute();
       output_path = resolved_path;
       output_path.make_absolute();
       output_path.make_relative_to(_path_directory, false);
@@ -391,10 +402,74 @@ write(ostream &out, int indent_level) const {
     break;
   }
 
+  if (_copy_files) {
+    indent(out, indent_level)
+      << "-pc " << _copy_into_directory << "\n";
+  }
+
   if (_noabs) {
     indent(out, indent_level)
       << "-noabs\n";
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PathReplace::copy_this_file
+//       Access: Private
+//  Description: Copies the indicated file into the
+//               copy_into_directory, and adjusts filename to
+//               reference the new location.  Returns true if the copy
+//               is made and the filename is changed, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool PathReplace::
+copy_this_file(Filename &filename) {
+  if (_copy_into_directory.is_local()) {
+    _copy_into_directory = Filename(_path_directory, _copy_into_directory);
+  }
+
+  Copied::iterator ci = _orig_to_target.find(filename);
+  if (ci != _orig_to_target.end()) {
+    // This file has already been successfully copied, so we can
+    // quietly return its new target filename.
+    if (filename != (*ci).second) {
+      filename = (*ci).second;
+      return true;
+    }
+    return false;
+  }
+
+  Filename target_filename(_copy_into_directory, filename.get_basename());
+  ci = _target_to_orig.find(target_filename);
+  if (ci != _target_to_orig.end()) {
+    if ((*ci).second != filename) {
+      _error_flag = true;
+      pandatoolbase_cat.error()
+        << "Filename conflict!  Both " << (*ci).second << " and " 
+        << filename << " map to " << target_filename << "\n";
+    }
+
+    // Don't copy this one.
+    _orig_to_target[filename] = filename;
+    return false;
+  }
+
+  _orig_to_target[filename] = target_filename;
+  _target_to_orig[target_filename] = filename;
+
+  // Make the copy.
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  vfs->make_directory_full(_copy_into_directory);
+  if (!vfs->copy_file(filename, target_filename)) {
+    _error_flag = true;
+    pandatoolbase_cat.error()
+      << "Cannot copy file from " << filename << " to " << target_filename
+      << "\n";
+    _orig_to_target[filename] = filename;
+    return false;
+  }
+
+  filename = target_filename;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

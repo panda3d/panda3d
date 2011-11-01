@@ -192,8 +192,6 @@ public:
   bool _always_show_vertex_color;
   bool _keep_all_uvsets;
   bool _round_uvs;
-  bool _texture_copy;
-  Filename _texture_out_dir;
   bool _legacy_shader;
 
 

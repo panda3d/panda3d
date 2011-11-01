@@ -100,7 +100,6 @@ MayaToEggConverter(const string &program_name) :
   _always_show_vertex_color = maya_default_vertex_color;
   _keep_all_uvsets = false;
   _round_uvs = false;
-  _texture_copy = false;
   _legacy_shader = false;
 
   _transform_type = TT_model;
@@ -128,7 +127,6 @@ MayaToEggConverter(const MayaToEggConverter &copy) :
   _always_show_vertex_color(copy._always_show_vertex_color),
   _keep_all_uvsets(copy._keep_all_uvsets),
   _round_uvs(copy._round_uvs),
-  _texture_copy(copy._texture_copy),
   _legacy_shader(copy._legacy_shader),
   _transform_type(copy._transform_type)
 {
@@ -833,9 +831,6 @@ convert_hierarchy(EggGroupNode *egg_root) {
     mayaegg_cat.info() << "will keep_all_uvsets" << endl;
   }
   // give some feedback about whether special options are on
-  if (_texture_copy) {
-    mayaegg_cat.info() << "will copy textures to" <<_texture_out_dir<< endl;
-  }
   if (_legacy_shader) {
     mayaegg_cat.info() << "will disable modern Phong shader path. using legacy" << endl;
   }
@@ -1279,7 +1274,7 @@ make_nurbs_surface(MayaNodeDesc *node_desc, const MDagPath &dag_path,
       << surface.numSpansInV()
       << "\n";
   }
-  MayaShader *shader = _shaders.find_shader_for_node(surface.object(), _texture_copy, _texture_out_dir, _legacy_shader);
+  MayaShader *shader = _shaders.find_shader_for_node(surface.object(), _legacy_shader);
 
   if (_polygon_output) {
     // If we want polygon output only, tesselate the NURBS and output
@@ -1728,7 +1723,7 @@ make_nurbs_curve(const MDagPath &, const MFnNurbsCurve &curve,
       egg_curve->add_vertex(vpool->create_unique_vertex(vert));
     }
   }
-  MayaShader *shader = _shaders.find_shader_for_node(curve.object(), _texture_copy, _texture_out_dir, _legacy_shader);
+  MayaShader *shader = _shaders.find_shader_for_node(curve.object(), _legacy_shader);
   if (shader != (MayaShader *)NULL) {
     set_shader_attributes(*egg_curve, *shader);
   }
@@ -1870,7 +1865,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
       nassertv(shader_index >= 0 && shader_index < (int)shaders.length());
       MObject engine = shaders[shader_index];
       shader =
-        _shaders.find_shader_for_shading_engine(engine, _texture_copy, _texture_out_dir, _legacy_shader); //head out to the other classes
+        _shaders.find_shader_for_shading_engine(engine, _legacy_shader); //head out to the other classes
       //does this mean if we didn't find a Maya shader give it a default value anyway?
     } else if (default_shader != (MayaShader *)NULL) { 
       shader = default_shader;

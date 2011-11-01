@@ -115,10 +115,9 @@ MayaToEgg() :
      &MayaToEgg::dispatch_none, &_round_uvs);
 
   add_option
-    ("copytex","dir",0,
-    "copy the textures to a ""Textures"" sub directory relative to the written out egg file."
-    """dir"" is a sub directory in the same format as those used by -pr, etc." ,
-     &MayaToEgg::dispatch_filename, &_texture_copy, &_texture_out_dir);
+    ("copytex", "dir", 41,
+     "Legacy option.  Same as -pc.",
+     &MayaToEgg::dispatch_filename, &_legacy_copytex, &_legacy_copytex_dir);
 
   add_option
     ("trans", "type", 0,
@@ -215,16 +214,17 @@ run() {
     mayaegg_cat->set_severity(NS_info);
   }
 
+  if (_legacy_copytex && !_path_replace->_copy_files) {
+    _path_replace->_copy_files = true;
+    _path_replace->_copy_into_directory = _legacy_copytex_dir;
+  }
+
   // Let's convert the output file to a full path before we initialize
   // Maya, since Maya now has a nasty habit of changing the current
   // directory.
   if (_got_output_filename) {
     _output_filename.make_absolute();
-    //conjunct the relative output path with output file's dir weifengh
-    if (_texture_out_dir.is_local()) {
-      Filename tempdir = _output_filename.get_dirname() + "/";
-      _texture_out_dir = tempdir + _texture_out_dir;
-    }
+    _path_replace->_path_directory.make_absolute();
   }
 
   nout << "Initializing Maya.\n";
@@ -244,8 +244,6 @@ run() {
   converter._keep_all_uvsets = _keep_all_uvsets;
   converter._round_uvs = _round_uvs;
   converter._transform_type = _transform_type;
-  converter._texture_copy = _texture_copy;
-  converter._texture_out_dir = _texture_out_dir;
   converter._legacy_shader = _legacy_shader;
 
   vector_string::const_iterator si;

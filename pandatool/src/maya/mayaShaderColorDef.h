@@ -114,8 +114,8 @@ private:
   MObject *_color_object;
   
 private:
-  static void find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug inplug, bool _texture_copy, Filename tout_dir, bool is_alpha);
-  void find_textures_legacy(MayaShader *shader, MObject color, bool _texture_copy, Filename tout_dir, bool trans=false);
+  static void find_textures_modern(const string &shadername, MayaShaderColorList &list, MPlug inplug, bool is_alpha);
+  void find_textures_legacy(MayaShader *shader, MObject color, bool trans=false);
 
   void set_projection_type(const string &type);
 

@@ -33,8 +33,8 @@ class MayaShaders {
 public:
   MayaShaders();
   ~MayaShaders();
-  MayaShader *find_shader_for_node(MObject node, bool _texture_copy, Filename _tout_dir, bool _legacy_shader);
-  MayaShader *find_shader_for_shading_engine(MObject engine, bool _texture_copy, Filename _tout_dir, bool _legacy_shader);
+  MayaShader *find_shader_for_node(MObject node, bool legacy_shader);
+  MayaShader *find_shader_for_shading_engine(MObject engine, bool legacy_shader);
   
   int get_num_shaders() const;
   MayaShader *get_shader(int n) const;

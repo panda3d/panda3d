@@ -700,6 +700,14 @@ add_path_store_options() {
      "directory name is taken from the name of the output file.",
      &ProgramBase::dispatch_filename, &_got_path_directory, 
      &(_path_replace->_path_directory));
+
+  add_option
+    ("pc", "target_directory", 40,
+     "Copies textures and other dependent files into the indicated "
+     "directory.  If a relative pathname is specified, it is relative "
+     "to the directory specified with -pd, above.",
+     &ProgramBase::dispatch_filename, &(_path_replace->_copy_files), 
+     &(_path_replace->_copy_into_directory));
 }
 
 ////////////////////////////////////////////////////////////////////
