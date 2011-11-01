@@ -692,7 +692,7 @@ copy_file(const Filename &orig_filename, const Filename &new_filename) {
     return false;
   }
 
-  PT(VirtualFile) new_file = get_file(new_filename, true);
+  PT(VirtualFile) new_file = create_file(new_filename);
   if (new_file == (VirtualFile *)NULL) {
     return false;
   }
