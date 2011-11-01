@@ -31,7 +31,12 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DTOOL AtomicAdjustWin32Impl {
 public:
+#ifdef _WIN64
+  // For 64-bit builds, we'd prefer to use a 64-bit integer.
+  typedef LONGLONG Integer;
+#else
   typedef LONG Integer;
+#endif  // _WIN64
 
   INLINE static void inc(TVOLATILE Integer &var);
   INLINE static bool dec(TVOLATILE Integer &var);

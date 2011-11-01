@@ -20,7 +20,11 @@
 ////////////////////////////////////////////////////////////////////
 INLINE void AtomicAdjustWin32Impl::
 inc(TVOLATILE AtomicAdjustWin32Impl::Integer &var) {
+#ifdef _WIN64
+  InterlockedIncrement64(&var);
+#else
   InterlockedIncrement(&var);
+#endif  // _WIN64
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -32,7 +36,11 @@ inc(TVOLATILE AtomicAdjustWin32Impl::Integer &var) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool AtomicAdjustWin32Impl::
 dec(TVOLATILE AtomicAdjustWin32Impl::Integer &var) {
+#ifdef _WIN64
+  return (InterlockedDecrement64(&var) != 0);
+#else
   return (InterlockedDecrement(&var) != 0);
+#endif  // _WIN64
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -57,7 +65,11 @@ add(TVOLATILE AtomicAdjustWin32Impl::Integer &var, AtomicAdjustWin32Impl::Intege
 ////////////////////////////////////////////////////////////////////
 INLINE AtomicAdjustWin32Impl::Integer AtomicAdjustWin32Impl::
 set(TVOLATILE AtomicAdjustWin32Impl::Integer &var, AtomicAdjustWin32Impl::Integer new_value) {
+#ifdef _WIN64
+  return InterlockedExchange64(&var, new_value);
+#else
   return InterlockedExchange(&var, new_value);
+#endif  // _WIN64
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -125,7 +137,11 @@ compare_and_exchange(TVOLATILE AtomicAdjustWin32Impl::Integer &mem, AtomicAdjust
                      AtomicAdjustWin32Impl::Integer new_value) {
   // Note that the AtomicAdjust parameter order is different from
   // Windows convention!
+#ifdef _WIN64
+  return InterlockedCompareExchange64((TVOLATILE LONGLONG *)&mem, new_value, old_value);
+#else
   return InterlockedCompareExchange((TVOLATILE LONG *)&mem, new_value, old_value);
+#endif  // _WIN64
 }
 
 ////////////////////////////////////////////////////////////////////
