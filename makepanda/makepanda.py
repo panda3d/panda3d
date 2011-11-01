@@ -372,6 +372,9 @@ else:
 ##
 ########################################################################
 
+IncDirectory("ALWAYS", GetOutputDir()+"/tmp")
+IncDirectory("ALWAYS", GetOutputDir()+"/include")
+
 if (COMPILER=="MSVC"):
     PkgDisable("X11")
     PkgDisable("XRANDR")
@@ -696,8 +699,6 @@ if (COMPILER=="LINUX"):
 
 DefSymbol("ALWAYS", "MAKEPANDA", "")
 DefSymbol("WITHINPANDA", "WITHIN_PANDA", "1")
-IncDirectory("ALWAYS", GetOutputDir()+"/tmp")
-IncDirectory("ALWAYS", GetOutputDir()+"/include")
 if GetLinkAllStatic():
     DefSymbol("ALWAYS", "LINK_ALL_STATIC", "")
 
