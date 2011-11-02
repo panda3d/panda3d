@@ -3,7 +3,7 @@
 #begin bin_target
   #define TARGET maya2egg
   #define OTHER_LIBS \
-    dtoolbase:c dtoolutil:c dtool:m
+    dtoolbase:c dtoolutil:c dtool:m prc:c dtoolconfig:m
   #define SOURCES \
     mayapath.cxx
 #end bin_target
@@ -11,7 +11,7 @@
 #begin bin_target
   #define TARGET maya2egg_server
   #define OTHER_LIBS \
-    dtoolbase:c dtoolutil:c dtool:m
+    dtoolbase:c dtoolutil:c dtool:m prc:c dtoolconfig:m
   #define SOURCES \
     mayapath.cxx
 #end bin_target
@@ -82,7 +82,7 @@
 #begin bin_target
   #define TARGET egg2maya
   #define OTHER_LIBS \
-    dtoolbase:c dtoolutil:c dtool:m
+    dtoolbase:c dtoolutil:c dtool:m prc:c dtoolconfig:m
   #define SOURCES \
     mayapath.cxx
 #end bin_target
@@ -112,7 +112,7 @@
 #begin bin_target
   #define TARGET mayacopy
   #define OTHER_LIBS \
-    dtoolbase:c dtoolutil:c dtool:m
+    dtoolbase:c dtoolutil:c dtool:m prc:c dtoolconfig:m
   #define SOURCES \
     mayapath.cxx
 #end bin_target

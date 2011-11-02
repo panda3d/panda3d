@@ -18,6 +18,7 @@
 
 #include "dtoolbase.h"
 #include "filename.h"
+#include "globPattern.h"
 #include "dSearchPath.h"
 #include "executionEnvironment.h"
 #include <stdlib.h>
@@ -26,6 +27,22 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
+
+// Searches for python26.zip or whatever version it is.
+Filename
+find_pyzip(const Filename &maya_location) {
+  // This is where python26.zip appears on Windows.  Should it be in
+  // other locations on other platforms?
+  Filename dirname(maya_location, "bin");
+
+  vector_string results;
+  GlobPattern glob("python*.zip");
+  if (glob.match_files(results, dirname) != 0) {
+    return Filename(dirname, results[0]);
+  }
+
+  return Filename();
+}
 
 int 
 main(int argc, char *argv[]) {
@@ -95,6 +112,12 @@ main(int argc, char *argv[]) {
     putenv(putenv_cstr);
   }
 
+#ifdef WIN32
+  string sep = ";";
+#else
+  string sep = ":";
+#endif
+
   // Now set PYTHONHOME & PYTHONPATH.  Maya2008 requires this to be
   // set and pointing within $MAYA_LOCATION, or it might get itself
   // confused with another Python installation (e.g. Panda's).
@@ -107,6 +130,19 @@ main(int argc, char *argv[]) {
     }
     {
       string putenv_str = "PYTHONPATH=" + python.to_os_specific();
+
+      Filename pyzip = find_pyzip(maya_location);
+      if (!pyzip.empty() && pyzip.exists()) {
+        putenv_str += sep;
+        putenv_str += pyzip.to_os_specific();
+      }
+
+      Filename site_packages(python, "lib/site-packages");
+      if (site_packages.is_directory()) {
+        putenv_str += sep;
+        putenv_str += site_packages.to_os_specific();
+      }
+
       char *putenv_cstr = strdup(putenv_str.c_str());
       putenv(putenv_cstr);
     }
@@ -119,11 +155,6 @@ main(int argc, char *argv[]) {
     if (path == NULL) {
       path = "";
     }
-#ifdef WIN32
-    string sep = ";";
-#else
-    string sep = ":";
-#endif
     string putenv_str = "PATH=" + bin.to_os_specific() + sep + path;
     char *putenv_cstr = strdup(putenv_str.c_str());
     putenv(putenv_cstr);
