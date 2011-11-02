@@ -57,8 +57,11 @@ class DirectOptionMenu(DirectButton):
         # Check if item is highlighted on release and select it if it is
         self.popupMarker.bind(DGG.B1RELEASE, self.selectHighlightedIndex)
         # Make popup marker have the same click sound
-        self.popupMarker.guiItem.setSound(
-            DGG.B1PRESS + self.popupMarker.guiId, self['clickSound'])
+        if self['clickSound']:
+            self.popupMarker.guiItem.setSound(
+                DGG.B1PRESS + self.popupMarker.guiId, self['clickSound'])
+        else:
+            self.popupMarker.guiItem.clearSound(DGG.B1PRESS + self.popupMarker.guiId)
         # This is created when you set the menu's items
         self.popupMenu = None
         self.selectedIndex = None

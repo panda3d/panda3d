@@ -103,9 +103,6 @@ BUTTON_ROLLOVER_STATE  = PGButton.SRollover    # 2
 BUTTON_INACTIVE_STATE  = PGButton.SInactive    # 3
 
 def getDefaultRolloverSound():
-    global defaultRolloverSound
-    if defaultRolloverSound == None:
-        defaultRolloverSound = base.loadSfx("audio/sfx/GUI_rollover.wav")
     return defaultRolloverSound
 
 def setDefaultRolloverSound(newSound):
@@ -113,9 +110,6 @@ def setDefaultRolloverSound(newSound):
     defaultRolloverSound = newSound
 
 def getDefaultClickSound():
-    global defaultClickSound
-    if defaultClickSound == None:
-        defaultClickSound = base.loadSfx("audio/sfx/GUI_click.wav")
     return defaultClickSound
 
 def setDefaultClickSound(newSound):

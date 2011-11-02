@@ -199,7 +199,6 @@ class ShowBase(DirectObject.DirectObject):
         # stores a CollisionTraverser pointer here, we'll traverse it
         # in the collisionLoop task.
         self.shadowTrav = 0
-        # in the collisionLoop task.
         self.cTrav = 0
         self.cTravStack = Stack()
         # Ditto for an AppTraverser.
@@ -350,6 +349,12 @@ class ShowBase(DirectObject.DirectObject):
             if self.config.GetBool('track-gui-items', True):
                 # dict of guiId to gui item, for tracking down leaks
                 self.guiItems = {}
+
+        # optionally restore the default gui sounds from 1.7.2 and earlier
+        if ConfigVariableBool('orig-gui-sounds', False).getValue():
+            from direct.gui import DirectGuiGlobals as DGG
+            DGG.setDefaultClickSound(self.loader.loadSfx("audio/sfx/GUI_click.wav"))
+            DGG.setDefaultRolloverSound(self.loader.loadSfx("audio/sfx/GUI_rollover.wav"))
 
         # Now hang a hook on the window-event from Panda.  This allows
         # us to detect when the user resizes, minimizes, or closes the
