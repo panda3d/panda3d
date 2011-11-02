@@ -26,6 +26,7 @@
 #include "geomPoints.h"
 #include "geomTriangles.h"
 #include "geomVertexWriter.h"
+#include "lens.h"
 #include "look_at.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -521,6 +522,39 @@ xform(const LMatrix4 &transform) {
     }
 
     (*ti) = (*ti) * transform;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::project
+//       Access: Published
+//  Description: Adjusts each (x, y, z) point of the Pfm file by
+//               projecting it through the indicated lens, converting
+//               each point to a (u, v, 0) texture coordinate.  The
+//               resulting file can be generated to a mesh (with
+//               set_vis_inverse(true) and generate_vis_mesh(true))
+//               that will apply the lens distortion to an arbitrary
+//               texture image.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+project(const Lens *lens) {
+  nassertv(is_valid());
+
+  static LMatrix4 to_uv(0.5, 0.0, 0.0, 0.0,
+                        0.0, 0.5, 0.0, 0.0, 
+                        0.0, 0.0, 0.0, 0.0, 
+                        0.5, 0.5, 0.0, 1.0);
+  
+  Table::iterator ti;
+  for (ti = _table.begin(); ti != _table.end(); ++ti) {
+    if (_zero_special && (*ti) == LPoint3::zero()) {
+      continue;
+    }
+
+    LPoint3 &p = (*ti);
+    LPoint3 film;
+    lens->project(p, film);
+    p = to_uv.xform_point(film);
   }
 }
 

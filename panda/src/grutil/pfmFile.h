@@ -21,6 +21,7 @@
 #include "boundingHexahedron.h"
 
 class GeomNode;
+class Lens;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PfmFile
@@ -62,6 +63,7 @@ PUBLISHED:
   void resize(int new_x_size, int new_y_size);
   void reverse_rows();
   void xform(const LMatrix4 &transform);
+  void project(const Lens *lens);
 
   PT(BoundingHexahedron) compute_planar_bounds(double point_dist, double sample_radius) const;
 
