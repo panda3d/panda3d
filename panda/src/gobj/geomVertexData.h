@@ -229,7 +229,7 @@ public:
   // separate class so we can easily look up a new entry in the map,
   // without having to execute the relatively expensive CacheEntry
   // constructor.
-  class CacheKey {
+  class EXPCL_PANDA_GOBJ CacheKey {
   public:
     INLINE CacheKey(const GeomVertexFormat *modifier);
     INLINE bool operator < (const CacheKey &other) const;
@@ -237,7 +237,7 @@ public:
     CPT(GeomVertexFormat) _modifier;
   };
   // It is not clear why MSVC7 needs this class to be public.  
-  class CacheEntry : public GeomCacheEntry {
+  class EXPCL_PANDA_GOBJ CacheEntry : public GeomCacheEntry {
   public:
     INLINE CacheEntry(GeomVertexData *source,
                       const GeomVertexFormat *modifier);
