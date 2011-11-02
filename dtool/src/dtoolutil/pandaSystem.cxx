@@ -37,6 +37,10 @@ PandaSystem() :
   // (!NDEBUG) mode, and only if they are not already defined.
   _package_version_string = PANDA_PACKAGE_VERSION_STR;
   _package_host_url = PANDA_PACKAGE_HOST_URL;
+
+#ifdef STDFLOAT_DOUBLE
+  add_system("stdfloat-double");
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
