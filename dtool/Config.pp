@@ -999,7 +999,7 @@
 // positions and transforms, instead of the standard single-precision
 // "float" type.  This does not affect the default numeric type of
 // vertices, which is controlled by the runtime config variable
-// vertices-float64.  Presently *experimental*, do not use.
+// vertices-float64.
 #define STDFLOAT_DOUBLE
 
 // We use wxWidgets--the C++ library, not the Python library--for
