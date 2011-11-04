@@ -1136,6 +1136,14 @@ template_formal_parameter:
 {
   $$ = CPPType::new_type(new CPPClassTemplateParameter($2, $4));
 }
+        | KW_TYPENAME name
+{
+  $$ = CPPType::new_type(new CPPClassTemplateParameter($2));
+}
+        | KW_TYPENAME name '=' full_type
+{
+  $$ = CPPType::new_type(new CPPClassTemplateParameter($2, $4));
+}
         | template_formal_parameter_type formal_parameter_identifier template_parameter_maybe_initialize
 {
   CPPInstance *inst = new CPPInstance($1, $2, 0, @2.file);
@@ -1165,10 +1173,6 @@ template_formal_parameter_type:
 {
   $$ = $1->find_type(current_scope, global_scope, false, current_lexer);
   assert($$ != NULL);
-}
-        | KW_TYPENAME name
-{
-  $$ = CPPType::new_type(new CPPTBDType($2));
 }
         ;
 
