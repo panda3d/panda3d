@@ -422,7 +422,7 @@ class Actor(DirectObject, NodePath):
         if isIncluded:
             value = ''
             if hasattr(part, 'outputValue'):
-                lineStream = LineStream.LineStream()
+                lineStream = LineStream()
                 part.outputValue(lineStream)
                 value = lineStream.getLine()
 
