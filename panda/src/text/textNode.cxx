@@ -757,18 +757,17 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
 //               NodePath::prepare_scene() instead.
 ////////////////////////////////////////////////////////////////////
 void TextNode::
-r_prepare_scene(const RenderState *state,
-                PreparedGraphicsObjects *prepared_objects,
-                Thread *current_thread) {
+r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
+                GeomTransformer &transformer, Thread *current_thread) {
   check_rebuild();
 
   PandaNode *child = _internal_geom;
   if (child != (PandaNode *)NULL) {
-    CPT(RenderState) child_state = state->compose(child->get_state());
-    child->r_prepare_scene(child_state, prepared_objects, current_thread);
+    CPT(RenderState) child_state = node_state->compose(child->get_state());
+    child->r_prepare_scene(gsg, child_state, transformer, current_thread);
   }
   
-  PandaNode::r_prepare_scene(state, prepared_objects, current_thread);
+  PandaNode::r_prepare_scene(gsg, node_state, transformer, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////

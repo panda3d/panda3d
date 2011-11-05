@@ -77,8 +77,9 @@ protected:
                                        int pipeline_stage,
                                        Thread *current_thread) const;
 
-  virtual void r_prepare_scene(const RenderState *state,
-                               PreparedGraphicsObjects *prepared_objects,
+  virtual void r_prepare_scene(GraphicsStateGuardianBase *gsg,
+                               const RenderState *node_state,
+                               GeomTransformer &transformer,
                                Thread *current_thread);
 
 public:

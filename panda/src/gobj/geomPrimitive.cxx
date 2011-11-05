@@ -1309,7 +1309,9 @@ get_num_unused_vertices_per_primitive() const {
 ////////////////////////////////////////////////////////////////////
 void GeomPrimitive::
 prepare(PreparedGraphicsObjects *prepared_objects) {
-  prepared_objects->enqueue_index_buffer(this);
+  if (is_indexed()) {
+    prepared_objects->enqueue_index_buffer(this);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1348,6 +1350,8 @@ is_prepared(PreparedGraphicsObjects *prepared_objects) const {
 IndexBufferContext *GeomPrimitive::
 prepare_now(PreparedGraphicsObjects *prepared_objects, 
             GraphicsStateGuardianBase *gsg) {
+  nassertr(is_indexed(), NULL);
+
   Contexts::const_iterator ci;
   ci = _contexts.find(prepared_objects);
   if (ci != _contexts.end()) {

@@ -2261,15 +2261,15 @@ get_off_clip_planes(Thread *current_thread) const {
 //               but this may take some of the overhead away from that
 //               process.
 //
-//               In particular, this will ensure that textures within
-//               the scene are loaded in texture memory, and display
-//               lists are built up from static geometry.
+//               In particular, this will ensure that textures and
+//               vertex buffers within the scene are loaded into
+//               graphics memory.
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
-prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *net_state) {
+prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state) {
+  GeomTransformer transformer;
   Thread *current_thread = Thread::get_current_thread();
-  PreparedGraphicsObjects *prepared_objects = gsg->get_prepared_objects();
-  r_prepare_scene(net_state, prepared_objects, current_thread);
+  r_prepare_scene(gsg, node_state, transformer, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3046,24 +3046,23 @@ r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map,
 //               NodePath::prepare_scene() instead.
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
-r_prepare_scene(const RenderState *state,
-                PreparedGraphicsObjects *prepared_objects,
-                Thread *current_thread) {
+r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
+                GeomTransformer &transformer, Thread *current_thread) {
   Children children = get_children(current_thread);
   // We must call get_num_children() each time through the loop, in
   // case we're running SIMPLE_THREADS and we get interrupted.
   int i;
   for (i = 0; i < children.get_num_children(); i++) {
     PandaNode *child = children.get_child(i);
-    CPT(RenderState) child_state = state->compose(child->get_state());
-    child->r_prepare_scene(child_state, prepared_objects, current_thread);
+    CPT(RenderState) child_state = node_state->compose(child->get_state());
+    child->r_prepare_scene(gsg, child_state, transformer, current_thread);
   }
 
   Stashed stashed = get_stashed(current_thread);
   for (i = 0; i < stashed.get_num_stashed(); i++) {
     PandaNode *child = stashed.get_stashed(i);
-    CPT(RenderState) child_state = state->compose(child->get_state());
-    child->r_prepare_scene(child_state, prepared_objects, current_thread);
+    CPT(RenderState) child_state = node_state->compose(child->get_state());
+    child->r_prepare_scene(gsg, child_state, transformer, current_thread);
   }
 }
 

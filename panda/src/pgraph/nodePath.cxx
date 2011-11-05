@@ -6588,16 +6588,15 @@ premunge_scene(GraphicsStateGuardianBase *gsg) {
 //               but this may take some of the overhead away from that
 //               process.
 //
-//               In particular, this will ensure that textures within
-//               the scene are loaded in texture memory, and display
-//               lists are built up from static geometry.
+//               In particular, this will ensure that textures and
+//               vertex buffers within the scene are loaded into
+//               graphics memory.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 prepare_scene(GraphicsStateGuardianBase *gsg) {
   nassertv_always(!is_empty());
 
-  CPT(RenderState) net_state = get_net_state();
-  node()->prepare_scene(gsg, net_state);
+  node()->prepare_scene(gsg, get_net_state());
 }
 
 ////////////////////////////////////////////////////////////////////

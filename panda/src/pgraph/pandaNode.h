@@ -250,7 +250,7 @@ PUBLISHED:
   CollideMask get_net_collide_mask(Thread *current_thread = Thread::get_current_thread()) const;
   CPT(RenderAttrib) get_off_clip_planes(Thread *current_thread = Thread::get_current_thread()) const;
 
-  void prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *net_state);
+  void prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state);
 
   bool is_scene_root() const;
   bool is_under_scene_root() const;
@@ -343,8 +343,9 @@ protected:
   void set_cull_callback();
   void disable_cull_callback();
 public:
-  virtual void r_prepare_scene(const RenderState *state,
-                               PreparedGraphicsObjects *prepared_objects,
+  virtual void r_prepare_scene(GraphicsStateGuardianBase *gsg,
+                               const RenderState *node_state,
+                               GeomTransformer &transformer,
                                Thread *current_thread);
 
 protected:

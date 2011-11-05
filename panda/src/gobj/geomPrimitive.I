@@ -237,6 +237,7 @@ get_max_vertex() const {
 INLINE int GeomPrimitive::
 get_data_size_bytes() const {
   CDReader cdata(_cycler);
+  nassertr(!cdata->_vertices.is_null(), 0);
   return cdata->_vertices.get_read_pointer()->get_data_size_bytes();
 }
 

@@ -2785,16 +2785,16 @@ update_standard_vertex_arrays(bool force) {
 void CLP(GraphicsStateGuardian)::
 unbind_buffers() {
   if (_current_vbuffer_index != 0) {
-    if (GLCAT.is_debug() && CLP(debug_buffers)) {
-      GLCAT.debug()
+    if (GLCAT.is_spam() && CLP(debug_buffers)) {
+      GLCAT.spam()
         << "unbinding vertex buffer\n";
     }
     _glBindBuffer(GL_ARRAY_BUFFER, 0);
     _current_vbuffer_index = 0;
   }
   if (_current_ibuffer_index != 0) {
-    if (GLCAT.is_debug() && CLP(debug_buffers)) {
-      GLCAT.debug()
+    if (GLCAT.is_spam() && CLP(debug_buffers)) {
+      GLCAT.spam()
         << "unbinding index buffer\n";
     }
     _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -3579,6 +3579,7 @@ prepare_vertex_buffer(GeomVertexArrayData *data) {
     }
 
     report_my_gl_errors();
+    apply_vertex_buffer(gvbc, data->get_handle(), false);
     return gvbc;
   }
 
@@ -3600,8 +3601,8 @@ apply_vertex_buffer(VertexBufferContext *vbc,
   CLP(VertexBufferContext) *gvbc = DCAST(CLP(VertexBufferContext), vbc);
 
   if (_current_vbuffer_index != gvbc->_index) {
-    if (GLCAT.is_debug() && CLP(debug_buffers)) {
-      GLCAT.debug()
+    if (GLCAT.is_spam() && CLP(debug_buffers)) {
+      GLCAT.spam()
         << "binding vertex buffer " << gvbc->_index << "\n";
     }
     _glBindBuffer(GL_ARRAY_BUFFER, gvbc->_index);
@@ -3666,8 +3667,8 @@ release_vertex_buffer(VertexBufferContext *vbc) {
   // help out a flaky driver, and we need to keep our internal state
   // consistent anyway.
   if (_current_vbuffer_index == gvbc->_index) {
-    if (GLCAT.is_debug() && CLP(debug_buffers)) {
-      GLCAT.debug()
+    if (GLCAT.is_spam() && CLP(debug_buffers)) {
+      GLCAT.spam()
         << "unbinding vertex buffer\n";
     }
     _glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -3714,8 +3715,8 @@ setup_array_data(const unsigned char *&client_pointer,
     // The array specifies client rendering only, or buffer objects
     // are configured off.
     if (_current_vbuffer_index != 0) {
-      if (GLCAT.is_debug() && CLP(debug_buffers)) {
-        GLCAT.debug()
+      if (GLCAT.is_spam() && CLP(debug_buffers)) {
+        GLCAT.spam()
           << "unbinding vertex buffer\n";
       }
       _glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -3765,6 +3766,8 @@ prepare_index_buffer(GeomPrimitive *data) {
     }
 
     report_my_gl_errors();
+    GeomPrimitivePipelineReader reader(data, Thread::get_current_thread());
+    apply_index_buffer(gibc, &reader, false);
     return gibc;
   }
 
@@ -3787,8 +3790,8 @@ apply_index_buffer(IndexBufferContext *ibc,
   CLP(IndexBufferContext) *gibc = DCAST(CLP(IndexBufferContext), ibc);
 
   if (_current_ibuffer_index != gibc->_index) {
-    if (GLCAT.is_debug() && CLP(debug_buffers)) {
-      GLCAT.debug()
+    if (GLCAT.is_spam() && CLP(debug_buffers)) {
+      GLCAT.spam()
         << "binding index buffer " << gibc->_index << "\n";
     }
     _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gibc->_index);
@@ -3798,8 +3801,8 @@ apply_index_buffer(IndexBufferContext *ibc,
 
   if (gibc->was_modified(reader)) {
     int num_bytes = reader->get_data_size_bytes();
-    if (GLCAT.is_spam()) {
-      GLCAT.spam()
+    if (GLCAT.is_debug() && CLP(debug_buffers)) {
+      GLCAT.debug()
         << "copying " << num_bytes
         << " bytes into index buffer " << gibc->_index << "\n";
     }
@@ -3853,8 +3856,8 @@ release_index_buffer(IndexBufferContext *ibc) {
   // help out a flaky driver, and we need to keep our internal state
   // consistent anyway.
   if (_current_ibuffer_index == gibc->_index) {
-    if (GLCAT.is_debug() && CLP(debug_buffers)) {
-      GLCAT.debug()
+    if (GLCAT.is_spam() && CLP(debug_buffers)) {
+      GLCAT.spam()
         << "unbinding index buffer\n";
     }
     _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -3901,8 +3904,8 @@ setup_primitive(const unsigned char *&client_pointer,
     // The array specifies client rendering only, or buffer objects
     // are configured off.
     if (_current_ibuffer_index != 0) {
-      if (GLCAT.is_debug() && CLP(debug_buffers)) {
-        GLCAT.debug()
+      if (GLCAT.is_spam() && CLP(debug_buffers)) {
+        GLCAT.spam()
           << "unbinding index buffer\n";
       }
       _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
