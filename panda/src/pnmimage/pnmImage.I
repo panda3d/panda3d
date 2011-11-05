@@ -834,6 +834,71 @@ gaussian_filter(double radius) {
   gaussian_filter_from(radius, *this);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::gamma_correct
+//       Access: Published
+//  Description: Assuming the image was constructed with a gamma curve
+//               of from_gamma in the RGB channels, converts it to an
+//               image with a gamma curve of to_gamma in the RGB
+//               channels.  Does not affect the alpha channel.
+////////////////////////////////////////////////////////////////////
+INLINE void PNMImage::
+gamma_correct(double from_gamma, double to_gamma) {
+  apply_exponent(from_gamma / to_gamma);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::gamma_correct_alpha
+//       Access: Published
+//  Description: Assuming the image was constructed with a gamma curve
+//               of from_gamma in the alpha channel, converts it to an
+//               image with a gamma curve of to_gamma in the alpha
+//               channel.  Does not affect the RGB channels.
+////////////////////////////////////////////////////////////////////
+INLINE void PNMImage::
+gamma_correct_alpha(double from_gamma, double to_gamma) {
+  apply_exponent(1.0, from_gamma / to_gamma);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::apply_exponent
+//       Access: Published
+//  Description: Adjusts each channel of the image by raising the
+//               corresponding component value to the indicated
+//               exponent, such that L' = L ^ exponent.
+////////////////////////////////////////////////////////////////////
+INLINE void PNMImage::
+apply_exponent(double gray_exponent) {
+  apply_exponent(gray_exponent, gray_exponent, gray_exponent, 1.0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::apply_exponent
+//       Access: Published
+//  Description: Adjusts each channel of the image by raising the
+//               corresponding component value to the indicated
+//               exponent, such that L' = L ^ exponent.
+////////////////////////////////////////////////////////////////////
+INLINE void PNMImage::
+apply_exponent(double gray_exponent, double alpha_exponent) {
+  apply_exponent(gray_exponent, gray_exponent, gray_exponent, alpha_exponent);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::apply_exponent
+//       Access: Published
+//  Description: Adjusts each channel of the image by raising the
+//               corresponding component value to the indicated
+//               exponent, such that L' = L ^ exponent.  For a
+//               grayscale image, the blue_exponent value is used for
+//               the grayscale value, and red_exponent and
+//               green_exponent are unused.
+////////////////////////////////////////////////////////////////////
+INLINE void PNMImage::
+apply_exponent(double red_exponent, double green_exponent, double blue_exponent) {
+  apply_exponent(red_exponent, green_exponent, blue_exponent, 1.0);
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::allocate_array

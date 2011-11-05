@@ -43,6 +43,7 @@ INLINE float catan2(float y, float x);
 INLINE float casin(float v);
 INLINE float cacos(float v);
 INLINE float cmod(float x, float y);
+INLINE float cpow(float x, float y);
 
 INLINE double cfloor(double f);
 INLINE double cceil(double f);
@@ -58,6 +59,7 @@ INLINE double catan2(double y, double x);
 INLINE double casin(double v);
 INLINE double cacos(double v);
 INLINE double cmod(double x, double y);
+INLINE double cpow(double x, double y);
 
 // Returns true if the number is nan, false if it's a genuine number
 // or infinity.

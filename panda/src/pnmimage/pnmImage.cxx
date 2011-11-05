@@ -227,26 +227,6 @@ alpha_fill_val(xelval alpha) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PNMImage::remix_channels
-//       Access: Published
-//  Description: Transforms every pixel using the operation
-//               (Ro,Go,Bo) = conv.xform_point(Ri,Gi,Bi);
-//               Input must be a color image.
-////////////////////////////////////////////////////////////////////
-void PNMImage::
-remix_channels(const LMatrix4 &conv) {
-  int nchannels = get_num_channels();
-  nassertv((nchannels >= 3) && (nchannels <= 4));
-  for (int y = 0; y < get_y_size(); y++) {
-    for (int x = 0; x < get_x_size(); x++) {
-      LVector3 inv(get_red(x,y),get_green(x,y),get_blue(x,y));
-      LVector3 outv(conv.xform_point(inv));
-      set_xel(x,y,outv[0],outv[1],outv[2]);
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::read
 //       Access: Published
 //  Description: Reads the indicated image filename.  If type is
@@ -1292,6 +1272,122 @@ perlin_noise_fill(StackedPerlinNoise2 &perlin) {
     for (y = 0; y < _y_size; ++y) {
       noise = perlin.noise(x / (double) _x_size, y / (double) _y_size);
       set_xel(x, y, 0.5 * (noise + 1.0));
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::remix_channels
+//       Access: Published
+//  Description: Transforms every pixel using the operation
+//               (Ro,Go,Bo) = conv.xform_point(Ri,Gi,Bi);
+//               Input must be a color image.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+remix_channels(const LMatrix4 &conv) {
+  int nchannels = get_num_channels();
+  nassertv((nchannels >= 3) && (nchannels <= 4));
+  for (int y = 0; y < get_y_size(); y++) {
+    for (int x = 0; x < get_x_size(); x++) {
+      LVector3 inv(get_red(x,y), get_green(x,y), get_blue(x,y));
+      LVector3 outv(conv.xform_point(inv));
+      set_xel(x, y, outv[0], outv[1], outv[2]);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::apply_exponent
+//       Access: Published
+//  Description: Adjusts each channel of the image by raising the
+//               corresponding component value to the indicated
+//               exponent, such that L' = L ^ exponent.  For a
+//               grayscale image, the blue_exponent value is used for
+//               the grayscale value, and red_exponent and
+//               green_exponent are unused.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+apply_exponent(double red_exponent, double green_exponent, double blue_exponent, 
+               double alpha_exponent) {
+  int num_channels = _num_channels;
+  if (has_alpha() && alpha_exponent == 1.0) {
+    // If the alpha_exponent is 1, don't bother to apply it.
+    --num_channels;
+  }
+
+  int x, y;
+
+  if (red_exponent == 1.0 && green_exponent == 1.0 && blue_exponent == 1.0) {
+    // If the RGB components are all 1, apply only to the alpha channel.
+    switch (num_channels) {
+    case 1:
+    case 3:
+      break;
+
+    case 2:
+    case 4:
+      for (y = 0; y < _y_size; ++y) {
+        for (x = 0; x < _x_size; ++x) {
+          double alpha = get_alpha(x, y);
+          alpha = cpow(alpha, blue_exponent);
+          set_alpha(x, y, alpha);
+        }
+      }
+      break;
+    }
+
+  } else {
+    // Apply to the color and/or alpha channels.
+
+    switch (num_channels) {
+    case 1:
+      for (y = 0; y < _y_size; ++y) {
+        for (x = 0; x < _x_size; ++x) {
+          double gray = get_gray(x, y);
+          gray = cpow(gray, blue_exponent);
+          set_gray(x, y, gray);
+        }
+      }
+      break;
+
+    case 2:
+      for (y = 0; y < _y_size; ++y) {
+        for (x = 0; x < _x_size; ++x) {
+          double gray = get_gray(x, y);
+          gray = cpow(gray, blue_exponent);
+          set_gray(x, y, gray);
+
+          double alpha = get_alpha(x, y);
+          alpha = cpow(alpha, blue_exponent);
+          set_alpha(x, y, alpha);
+        }
+      }
+      break;
+
+    case 3:
+      for (y = 0; y < _y_size; ++y) {
+        for (x = 0; x < _x_size; ++x) {
+          LRGBColord color = get_xel(x, y);
+          color[0] = cpow(color[0], red_exponent);
+          color[1] = cpow(color[1], green_exponent);
+          color[2] = cpow(color[2], blue_exponent);
+          set_xel(x, y, color);
+        }
+      }
+      break;
+
+    case 4:
+      for (y = 0; y < _y_size; ++y) {
+        for (x = 0; x < _x_size; ++x) {
+          LColord color = get_xel_a(x, y);
+          color[0] = cpow(color[0], red_exponent);
+          color[1] = cpow(color[1], green_exponent);
+          color[2] = cpow(color[2], blue_exponent);
+          color[3] = cpow(color[3], alpha_exponent);
+          set_xel_a(x, y, color);
+        }
+      }
+      break;
     }
   }
 }

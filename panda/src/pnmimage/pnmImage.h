@@ -81,8 +81,6 @@ PUBLISHED:
   INLINE void fill(double red, double green, double blue);
   INLINE void fill(double gray = 0.0);
 
-  void remix_channels(const LMatrix4 &conv);
-
   void fill_val(xelval red, xelval green, xelval blue);
   INLINE void fill_val(xelval gray = 0);
 
@@ -235,6 +233,14 @@ PUBLISHED:
   void perlin_noise_fill(double sx, double sy, int table_size = 256,
                          unsigned long seed = 0);
   void perlin_noise_fill(StackedPerlinNoise2 &perlin);
+
+  void remix_channels(const LMatrix4 &conv);
+  INLINE void gamma_correct(double from_gamma, double to_gamma);
+  INLINE void gamma_correct_alpha(double from_gamma, double to_gamma);
+  INLINE void apply_exponent(double gray_exponent);
+  INLINE void apply_exponent(double gray_exponent, double alpha_exponent);
+  INLINE void apply_exponent(double red_exponent, double green_exponent, double blue_exponent);
+  void apply_exponent(double red_exponent, double green_exponent, double blue_exponent, double alpha_exponent);
 
   LRGBColord get_average_xel() const;
   LColord get_average_xel_a() const;
