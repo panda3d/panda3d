@@ -30,8 +30,9 @@
 ////////////////////////////////////////////////////////////////////
 INLINE bool Lens::
 extrude(const LPoint2 &point2d, LPoint3 &near_point, LPoint3 &far_point) const {
-  return extrude_impl(LPoint3(point2d[0], point2d[1], 0.0f),
-                      near_point, far_point);
+  CDReader cdata(_cycler);
+  return do_extrude(cdata, LPoint3(point2d[0], point2d[1], 0.0f),
+                    near_point, far_point);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -53,7 +54,8 @@ extrude(const LPoint2 &point2d, LPoint3 &near_point, LPoint3 &far_point) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool Lens::
 extrude(const LPoint3 &point2d, LPoint3 &near_point, LPoint3 &far_point) const {
-  return extrude_impl(point2d, near_point, far_point);
+  CDReader cdata(_cycler);
+  return do_extrude(cdata, point2d, near_point, far_point);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -76,7 +78,8 @@ extrude(const LPoint3 &point2d, LPoint3 &near_point, LPoint3 &far_point) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool Lens::
 extrude_vec(const LPoint2 &point2d, LVector3 &vec) const {
-  return extrude_vec_impl(LPoint3(point2d[0], point2d[1], 0.0f), vec);
+  CDReader cdata(_cycler);
+  return do_extrude_vec(cdata, LPoint3(point2d[0], point2d[1], 0.0f), vec);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -101,7 +104,8 @@ extrude_vec(const LPoint2 &point2d, LVector3 &vec) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool Lens::
 extrude_vec(const LPoint3 &point2d, LVector3 &vec) const {
-  return extrude_vec_impl(point2d, vec);
+  CDReader cdata(_cycler);
+  return do_extrude_vec(cdata, point2d, vec);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -120,8 +124,9 @@ extrude_vec(const LPoint3 &point2d, LVector3 &vec) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool Lens::
 project(const LPoint3 &point3d, LPoint2 &point2d) const {
+  CDReader cdata(_cycler);
   LPoint3 result;
-  bool okflag = project_impl(point3d, result);
+  bool okflag = do_project(cdata, point3d, result);
   point2d.set(result[0], result[1]);
   return okflag;
 }
@@ -146,7 +151,8 @@ project(const LPoint3 &point3d, LPoint2 &point2d) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool Lens::
 project(const LPoint3 &point3d, LPoint3 &point2d) const {
-  return project_impl(point3d, point2d);
+  CDReader cdata(_cycler);
+  return do_project(cdata, point3d, point2d);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -163,7 +169,8 @@ project(const LPoint3 &point3d, LPoint3 &point2d) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void Lens::
 set_change_event(const string &event) {
-  _change_event = event;
+  CDWriter cdata(_cycler, true);
+  cdata->_change_event = event;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -175,7 +182,8 @@ set_change_event(const string &event) {
 ////////////////////////////////////////////////////////////////////
 INLINE const string &Lens::
 get_change_event() const {
-  return _change_event;
+  CDReader cdata(_cycler);
+  return cdata->_change_event;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -187,7 +195,22 @@ get_change_event() const {
 ////////////////////////////////////////////////////////////////////
 INLINE CoordinateSystem Lens::
 get_coordinate_system() const {
-  return _cs;
+  CDReader cdata(_cycler);
+  return cdata->_cs;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::set_film_size
+//       Access: Published
+//  Description: Sets the horizontal size of the film without changing
+//               its shape.  The aspect ratio remains unchanged; this
+//               computes the vertical size of the film to
+//               automatically maintain the aspect ratio.
+////////////////////////////////////////////////////////////////////
+INLINE void Lens::
+set_film_size(PN_stdfloat width) {
+  CDWriter cdata(_cycler, true);
+  do_set_film_size(cdata, width);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -217,6 +240,45 @@ set_film_size(PN_stdfloat width, PN_stdfloat height) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Lens::set_film_size
+//       Access: Published
+//  Description: Sets the size and shape of the "film" within the
+//               lens.  This both establishes the units used by
+//               calls like set_focal_length(), and establishes the
+//               aspect ratio of the frame.
+//
+//               In a physical camera, the field of view of a lens is
+//               determined by the lens' focal length and by the size
+//               of the film area exposed by the lens.  For instance,
+//               a 35mm camera exposes a rectangle on the film about
+//               24mm x 36mm, which means a 50mm lens gives about a
+//               40-degree horizontal field of view.
+//
+//               In the virtual camera, you may set the film size to
+//               any units here, and specify a focal length in the
+//               same units to simulate the same effect.  Or, you may
+//               ignore this parameter, and specify the field of view
+//               and aspect ratio of the lens directly.
+////////////////////////////////////////////////////////////////////
+INLINE void Lens::
+set_film_size(const LVecBase2 &film_size) {
+  CDWriter cdata(_cycler, true);
+  do_set_film_size(cdata, film_size);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::get_film_size
+//       Access: Published
+//  Description: Returns the horizontal and vertical film size of
+//               the virtual film.  See set_film_size().
+////////////////////////////////////////////////////////////////////
+INLINE const LVecBase2 &Lens::
+get_film_size() const {
+  CDReader cdata(_cycler);
+  return do_get_film_size(cdata);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Lens::set_film_offset
 //       Access: Published
 //  Description: Sets the horizontal and vertical offset amounts of
@@ -241,9 +303,8 @@ set_film_offset(PN_stdfloat x, PN_stdfloat y) {
 ////////////////////////////////////////////////////////////////////
 INLINE void Lens::
 set_film_offset(const LVecBase2 &film_offset) {
-  _film_offset = film_offset;
-  adjust_comp_flags(CF_mat, 0);
-  throw_change_event();
+  CDWriter cdata(_cycler, true);
+  do_set_film_offset(cdata, film_offset);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -254,7 +315,52 @@ set_film_offset(const LVecBase2 &film_offset) {
 ////////////////////////////////////////////////////////////////////
 INLINE const LVector2 &Lens::
 get_film_offset() const {
-  return _film_offset;
+  CDReader cdata(_cycler);
+  return do_get_film_offset(cdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::set_focal_length
+//       Access: Published
+//  Description: Sets the focal length of the lens.  This may adjust
+//               the field-of-view correspondingly, and is an
+//               alternate way to specify field of view.
+//
+//               For certain kinds of lenses (e.g. OrthographicLens),
+//               the focal length has no meaning.
+////////////////////////////////////////////////////////////////////
+INLINE void Lens::
+set_focal_length(PN_stdfloat focal_length) {
+  CDWriter cdata(_cycler, true);
+  do_set_focal_length(cdata, focal_length);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::get_focal_length
+//       Access: Published
+//  Description: Returns the focal length of the lens.  This may have
+//               been set explicitly by a previous call to
+//               set_focal_length(), or it may be computed based on
+//               the lens' fov and film_size.  For certain kinds of
+//               lenses, the focal length has no meaning.
+////////////////////////////////////////////////////////////////////
+INLINE PN_stdfloat Lens::
+get_focal_length() const {
+  CDReader cdata(_cycler);
+  return do_get_focal_length(cdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::set_fov
+//       Access: Published
+//  Description: Sets the horizontal field of view of the lens without
+//               changing the aspect ratio.  The vertical field of
+//               view is adjusted to maintain the same aspect ratio.
+////////////////////////////////////////////////////////////////////
+INLINE void Lens::
+set_fov(PN_stdfloat hfov) {
+  CDWriter cdata(_cycler, true);
+  do_set_fov(cdata, hfov);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -272,6 +378,36 @@ get_film_offset() const {
 INLINE void Lens::
 set_fov(PN_stdfloat hfov, PN_stdfloat vfov) {
   set_fov(LVecBase2(hfov, vfov));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::set_fov
+//       Access: Published
+//  Description: Sets the field of view of the lens in both
+//               dimensions.  This establishes both the field of view
+//               and the aspect ratio of the lens.  This is one way to
+//               specify the field of view of a lens;
+//               set_focal_length() is another way.
+//
+//               For certain kinds of lenses (like OrthographicLens),
+//               the field of view has no meaning.
+////////////////////////////////////////////////////////////////////
+INLINE void Lens::
+set_fov(const LVecBase2 &fov) {
+  CDWriter cdata(_cycler, true);
+  do_set_fov(cdata, fov);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::get_fov
+//       Access: Published
+//  Description: Returns the horizontal and vertical film size of
+//               the virtual film.  See set_fov().
+////////////////////////////////////////////////////////////////////
+INLINE const LVecBase2 &Lens::
+get_fov() const {
+  CDReader cdata(_cycler);
+  return do_get_fov(cdata);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -297,6 +433,33 @@ get_vfov() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Lens::set_aspect_ratio
+//       Access: Published
+//  Description: Sets the aspect ratio of the lens.  This is the ratio
+//               of the height to the width of the generated image.
+//               Setting this overrides the two-parameter fov or film
+//               size setting.
+////////////////////////////////////////////////////////////////////
+INLINE void Lens::
+set_aspect_ratio(PN_stdfloat aspect_ratio) {
+  CDWriter cdata(_cycler, true);
+  do_set_aspect_ratio(cdata, aspect_ratio);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::get_aspect_ratio
+//       Access: Published
+//  Description: Returns the aspect ratio of the Lens.  This is
+//               determined based on the indicated film size; see
+//               set_film_size().
+////////////////////////////////////////////////////////////////////
+INLINE PN_stdfloat Lens::
+get_aspect_ratio() const {
+  CDReader cdata(_cycler);
+  return do_get_aspect_ratio(cdata);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Lens::set_near
 //       Access: Published
 //  Description: Defines the position of the near plane (or cylinder,
@@ -305,9 +468,8 @@ get_vfov() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void Lens::
 set_near(PN_stdfloat near_distance) {
-  _near_distance = near_distance;
-  adjust_comp_flags(CF_projection_mat | CF_projection_mat_inv, 0);
-  throw_change_event();
+  CDWriter cdata(_cycler, true);
+  do_set_near(cdata, near_distance);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -318,7 +480,8 @@ set_near(PN_stdfloat near_distance) {
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat Lens::
 get_near() const {
-  return _near_distance;
+  CDReader cdata(_cycler);
+  return do_get_near(cdata);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -330,9 +493,8 @@ get_near() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void Lens::
 set_far(PN_stdfloat far_distance) {
-  _far_distance = far_distance;
-  adjust_comp_flags(CF_projection_mat | CF_projection_mat_inv, 0);
-  throw_change_event();
+  CDWriter cdata(_cycler, true);
+  do_set_far(cdata, far_distance);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -343,7 +505,8 @@ set_far(PN_stdfloat far_distance) {
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat Lens::
 get_far() const {
-  return _far_distance;
+  CDReader cdata(_cycler);
+  return do_get_far(cdata);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -353,10 +516,8 @@ get_far() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void Lens::
 set_near_far(PN_stdfloat near_distance, PN_stdfloat far_distance) {
-  _near_distance = near_distance;
-  _far_distance = far_distance;
-  adjust_comp_flags(CF_projection_mat | CF_projection_mat_inv, 0);
-  throw_change_event();
+  CDWriter cdata(_cycler, true);
+  do_set_near_far(cdata, near_distance, far_distance);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -373,6 +534,7 @@ INLINE void Lens::
 set_view_hpr(PN_stdfloat h, PN_stdfloat p, PN_stdfloat r) {
   set_view_hpr(LVecBase3(h, p, r));
 }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: Lens::set_view_vector
 //       Access: Published
@@ -388,6 +550,111 @@ set_view_vector(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat i, PN_s
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Lens::set_interocular_distance
+//       Access: Published
+//  Description: Sets the distance between the left and right eyes of
+//               a stereo camera.  This distance is used to apply a
+//               stereo effect when the lens is rendered on a stereo
+//               display region.  It only has an effect on a
+//               PerspectiveLens.
+//
+//               The left eye and the right eye are each offset along
+//               the X axis by half of this distance, so that this
+//               parameter specifies the total distance between them.
+//
+//               Also see set_convergence_distance(), which relates.
+////////////////////////////////////////////////////////////////////
+INLINE void Lens::
+set_interocular_distance(PN_stdfloat interocular_distance) {
+  CDWriter cdata(_cycler, true);
+  do_set_interocular_distance(cdata, interocular_distance);
+  do_throw_change_event(cdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::get_interocular_distance
+//       Access: Published
+//  Description: See set_interocular_distance().
+////////////////////////////////////////////////////////////////////
+INLINE PN_stdfloat Lens::
+get_interocular_distance() const {
+  CDReader cdata(_cycler);
+  return cdata->_interocular_distance;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::set_convergence_distance
+//       Access: Published
+//  Description: Sets the distance between between the camera plane
+//               and the point in the distance that the left and right
+//               eyes are both looking at.  This distance is used to
+//               apply a stereo effect when the lens is rendered on a
+//               stereo display region.  It only has an effect on a
+//               PerspectiveLens.
+//
+//               This parameter must be greater than 0, but may be as
+//               large as you like.  It controls the amount to which
+//               the two eyes are directed inwards towards each other,
+//               which is a normal property of stereo vision.  It is a
+//               distance, not an angle; normally this should be set
+//               to the distance from the camera to the area of
+//               interest in your scene.  If you want to simulate
+//               parallel stereo, set this value to a very large
+//               number.
+//
+//               Also see set_interocular_distance(), which relates.
+////////////////////////////////////////////////////////////////////
+INLINE void Lens::
+set_convergence_distance(PN_stdfloat convergence_distance) {
+  CDWriter cdata(_cycler, true);
+  do_set_convergence_distance(cdata, convergence_distance);
+  do_throw_change_event(cdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::get_convergence_distance
+//       Access: Published
+//  Description: See set_convergence_distance().
+////////////////////////////////////////////////////////////////////
+INLINE PN_stdfloat Lens::
+get_convergence_distance() const {
+  CDReader cdata(_cycler);
+  return cdata->_convergence_distance;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::set_view_mat
+//       Access: Published
+//  Description: Sets an arbitrary transformation on the lens.  This
+//               replaces the individual transformation components
+//               like set_view_hpr().
+//
+//               Setting a transformation here will have a slightly
+//               different effect than putting one on the LensNode
+//               that contains this lens.  In particular, lighting and
+//               other effects computations will still be performed on
+//               the lens in its untransformed (facing forward)
+//               position, but the actual projection matrix will be
+//               transformed by this matrix.
+////////////////////////////////////////////////////////////////////
+INLINE void Lens::
+set_view_mat(const LMatrix4 &view_mat) {
+  CDWriter cdata(_cycler, true);
+  do_set_view_mat(cdata, view_mat);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::get_view_mat
+//       Access: Published
+//  Description: Returns the direction in which the lens is facing.
+////////////////////////////////////////////////////////////////////
+INLINE const LMatrix4 &Lens::
+get_view_mat() const {
+  CDReader cdata(_cycler);
+  return do_get_view_mat(cdata);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Lens::get_keystone
 //       Access: Published
 //  Description: Returns the keystone correction specified for the
@@ -395,7 +662,83 @@ set_view_vector(PN_stdfloat x, PN_stdfloat y, PN_stdfloat z, PN_stdfloat i, PN_s
 ////////////////////////////////////////////////////////////////////
 INLINE const LVecBase2 &Lens::
 get_keystone() const {
-  return _keystone;
+  CDReader cdata(_cycler);
+  return cdata->_keystone;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::get_projection_mat
+//       Access: Published
+//  Description: Returns the complete transformation matrix from a 3-d
+//               point in space to a point on the film, if such a
+//               matrix exists, or the identity matrix if the lens is
+//               nonlinear.
+////////////////////////////////////////////////////////////////////
+INLINE const LMatrix4 &Lens::
+get_projection_mat(StereoChannel channel) const {
+  CDReader cdata(_cycler);
+  return do_get_projection_mat(cdata, channel);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::get_projection_mat_inv
+//       Access: Published
+//  Description: Returns the matrix that transforms from a 2-d point
+//               on the film to a 3-d vector in space, if such a
+//               matrix exists.
+////////////////////////////////////////////////////////////////////
+INLINE const LMatrix4 &Lens::
+get_projection_mat_inv(StereoChannel stereo_channel) const {
+  CDReader cdata(_cycler);
+  return do_get_projection_mat_inv(cdata, stereo_channel);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::get_film_mat
+//       Access: Published
+//  Description: Returns the matrix that transforms from a point
+//               behind the lens to a point on the film.
+////////////////////////////////////////////////////////////////////
+INLINE const LMatrix4 &Lens::
+get_film_mat() const {
+  CDReader cdata(_cycler);
+  return do_get_film_mat(cdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::get_film_mat_inv
+//       Access: Published
+//  Description: Returns the matrix that transforms from a point on
+//               the film to a point behind the lens.
+////////////////////////////////////////////////////////////////////
+INLINE const LMatrix4 &Lens::
+get_film_mat_inv() const {
+  CDReader cdata(_cycler);
+  return do_get_film_mat_inv(cdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::get_lens_mat
+//       Access: Published
+//  Description: Returns the matrix that transforms from a point
+//               in front of the lens to a point in space.
+////////////////////////////////////////////////////////////////////
+INLINE const LMatrix4 &Lens::
+get_lens_mat() const {
+  CDReader cdata(_cycler);
+  return do_get_lens_mat(cdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::get_lens_mat_inv
+//       Access: Published
+//  Description: Returns the matrix that transforms from a point in
+//               space to a point in front of the lens.
+////////////////////////////////////////////////////////////////////
+INLINE const LMatrix4 &Lens::
+get_lens_mat_inv() const {
+  CDReader cdata(_cycler);
+  return do_get_lens_mat_inv(cdata);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -408,29 +751,109 @@ get_keystone() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const UpdateSeq &Lens::
 get_last_change() const {
-  return _last_change;
+  CDReader cdata(_cycler);
+  return cdata->_last_change;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Lens::adjust_user_flags
+//     Function: Lens::do_adjust_user_flags
 //       Access: Protected
 //  Description: Clears from _user_flags the bits in the first
 //               parameter, and sets the bits in the second parameter.
 ////////////////////////////////////////////////////////////////////
 INLINE void Lens::
-adjust_user_flags(int clear_flags, int set_flags) {
-  _user_flags = (_user_flags & ~clear_flags) | set_flags;
+do_adjust_user_flags(CData *cdata, int clear_flags, int set_flags) {
+  cdata->_user_flags = (cdata->_user_flags & ~clear_flags) | set_flags;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Lens::adjust_comp_flags
+//     Function: Lens::do_adjust_comp_flags
 //       Access: Protected
 //  Description: Clears from _comp_flags the bits in the first
 //               parameter, and sets the bits in the second parameter.
 ////////////////////////////////////////////////////////////////////
 INLINE void Lens::
-adjust_comp_flags(int clear_flags, int set_flags) {
-  _comp_flags = (_comp_flags & ~clear_flags) | set_flags;
+do_adjust_comp_flags(CData *cdata, int clear_flags, int set_flags) {
+  cdata->_comp_flags = (cdata->_comp_flags & ~clear_flags) | set_flags;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::do_set_film_offset
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void Lens::
+do_set_film_offset(CData *cdata, const LVecBase2 &film_offset) {
+  cdata->_film_offset = film_offset;
+  do_adjust_comp_flags(cdata, CF_mat, 0);
+  do_throw_change_event(cdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::do_get_film_offset
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE const LVector2 &Lens::
+do_get_film_offset(const CData *cdata) const {
+  return cdata->_film_offset;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::do_set_near
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void Lens::
+do_set_near(CData *cdata, PN_stdfloat near_distance) {
+  cdata->_near_distance = near_distance;
+  do_adjust_comp_flags(cdata, CF_projection_mat | CF_projection_mat_inv, 0);
+  do_throw_change_event(cdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::do_get_near
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PN_stdfloat Lens::
+do_get_near(const CData *cdata) const {
+  return cdata->_near_distance;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::do_set_far
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void Lens::
+do_set_far(CData *cdata, PN_stdfloat far_distance) {
+  cdata->_far_distance = far_distance;
+  do_adjust_comp_flags(cdata, CF_projection_mat | CF_projection_mat_inv, 0);
+  do_throw_change_event(cdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::do_get_far
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PN_stdfloat Lens::
+do_get_far(const CData *cdata) const {
+  return cdata->_far_distance;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::do_set_near_far
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void Lens::
+do_set_near_far(CData *cdata, PN_stdfloat near_distance, PN_stdfloat far_distance) {
+  cdata->_near_distance = near_distance;
+  cdata->_far_distance = far_distance;
+  do_adjust_comp_flags(cdata, CF_projection_mat | CF_projection_mat_inv, 0);
+  do_throw_change_event(cdata);
 }
 
 INLINE ostream &

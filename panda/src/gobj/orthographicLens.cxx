@@ -65,20 +65,20 @@ write(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: OrthographicLens::compute_projection_mat
+//     Function: OrthographicLens::do_compute_projection_mat
 //       Access: Protected, Virtual
 //  Description: Computes the complete transformation matrix from 3-d
 //               point to 2-d point, if the lens is linear.
 ////////////////////////////////////////////////////////////////////
 void OrthographicLens::
-compute_projection_mat() {
-  CoordinateSystem cs = _cs;
+do_compute_projection_mat(Lens::CData *lens_cdata) {
+  CoordinateSystem cs = lens_cdata->_cs;
   if (cs == CS_default) {
     cs = get_default_coordinate_system();
   }
 
-  PN_stdfloat a = 2.0f / (_far_distance - _near_distance);
-  PN_stdfloat b = -(_far_distance + _near_distance) / (_far_distance - _near_distance);
+  PN_stdfloat a = 2.0f / (lens_cdata->_far_distance - lens_cdata->_near_distance);
+  PN_stdfloat b = -(lens_cdata->_far_distance + lens_cdata->_near_distance) / (lens_cdata->_far_distance - lens_cdata->_near_distance);
 
   LMatrix4 canonical;
   switch (cs) {
@@ -116,12 +116,12 @@ compute_projection_mat() {
     canonical = LMatrix4::ident_mat();
   }
 
-  _projection_mat = get_lens_mat_inv() * canonical * get_film_mat();
-  _projection_mat_left = _projection_mat_right = _projection_mat;
+  lens_cdata->_projection_mat = do_get_lens_mat_inv(lens_cdata) * canonical * do_get_film_mat(lens_cdata);
+  lens_cdata->_projection_mat_left = lens_cdata->_projection_mat_right = lens_cdata->_projection_mat;
 
-  adjust_comp_flags(CF_projection_mat_inv | CF_projection_mat_left_inv | 
-                    CF_projection_mat_right_inv,
-                    CF_projection_mat);
+  do_adjust_comp_flags(lens_cdata, 
+                       CF_projection_mat_inv | CF_projection_mat_left_inv | CF_projection_mat_right_inv,
+                       CF_projection_mat);
 }
 
 ////////////////////////////////////////////////////////////////////

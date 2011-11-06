@@ -76,8 +76,9 @@ operator = (const MatrixLens &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE void MatrixLens::
 set_user_mat(const LMatrix4 &user_mat) {
+  Lens::CDWriter lens_cdata(Lens::_cycler, true);
   _user_mat = user_mat;
-  adjust_comp_flags(CF_mat, 0);
+  do_adjust_comp_flags(lens_cdata, CF_mat, 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -108,9 +109,10 @@ get_user_mat() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void MatrixLens::
 set_left_eye_mat(const LMatrix4 &left_eye_mat) {
+  Lens::CDWriter lens_cdata(Lens::_cycler, true);
   _left_eye_mat = left_eye_mat;
   _ml_flags |= MF_has_left_eye;
-  adjust_comp_flags(CF_mat, 0);
+  do_adjust_comp_flags(lens_cdata, CF_mat, 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -122,8 +124,9 @@ set_left_eye_mat(const LMatrix4 &left_eye_mat) {
 ////////////////////////////////////////////////////////////////////
 INLINE void MatrixLens::
 clear_left_eye_mat() {
+  Lens::CDWriter lens_cdata(Lens::_cycler, true);
   _ml_flags &= ~MF_has_left_eye;
-  adjust_comp_flags(CF_mat, 0);
+  do_adjust_comp_flags(lens_cdata, CF_mat, 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -170,9 +173,10 @@ get_left_eye_mat() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void MatrixLens::
 set_right_eye_mat(const LMatrix4 &right_eye_mat) {
+  Lens::CDWriter lens_cdata(Lens::_cycler, true);
   _right_eye_mat = right_eye_mat;
   _ml_flags |= MF_has_right_eye;
-  adjust_comp_flags(CF_mat, 0);
+  do_adjust_comp_flags(lens_cdata, CF_mat, 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -184,8 +188,9 @@ set_right_eye_mat(const LMatrix4 &right_eye_mat) {
 ////////////////////////////////////////////////////////////////////
 INLINE void MatrixLens::
 clear_right_eye_mat() {
+  Lens::CDWriter lens_cdata(Lens::_cycler, true);
   _ml_flags &= ~MF_has_right_eye;
-  adjust_comp_flags(CF_mat, 0);
+  do_adjust_comp_flags(lens_cdata, CF_mat, 0);
 }
 
 ////////////////////////////////////////////////////////////////////

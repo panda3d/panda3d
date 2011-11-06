@@ -34,7 +34,7 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CylindricalLens::extrude_impl
+//     Function: CylindricalLens::do_extrude
 //       Access: Protected, Virtual
 //  Description: Given a 2-d point in the range (-1,1) in both
 //               dimensions, where (0,0) is the center of the
@@ -51,12 +51,13 @@ make_copy() const {
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
 bool CylindricalLens::
-extrude_impl(const LPoint3 &point2d, LPoint3 &near_point, LPoint3 &far_point) const {
+do_extrude(const Lens::CData *lens_cdata, 
+           const LPoint3 &point2d, LPoint3 &near_point, LPoint3 &far_point) const {
   // Undo the shifting from film offsets, etc.  This puts the point
   // into the range [-film_size/2, film_size/2] in x and y.
-  LPoint3 f = point2d * get_film_mat_inv();
+  LPoint3 f = point2d * do_get_film_mat_inv(lens_cdata);
 
-  PN_stdfloat focal_length = get_focal_length();
+  PN_stdfloat focal_length = do_get_focal_length(lens_cdata);
   PN_stdfloat angle = f[0] * cylindrical_k / focal_length;
   PN_stdfloat sinAngle, cosAngle;
   csincos(deg_2_rad(angle), &sinAngle, &cosAngle);
@@ -67,15 +68,15 @@ extrude_impl(const LPoint3 &point2d, LPoint3 &near_point, LPoint3 &far_point) co
 
   // And we'll need to account for the lens's rotations, etc. at the
   // end of the day.
-  const LMatrix4 &lens_mat = get_lens_mat();
+  const LMatrix4 &lens_mat = do_get_lens_mat(lens_cdata);
 
-  near_point = (v * get_near()) * lens_mat;
-  far_point = (v * get_far()) * lens_mat;
+  near_point = (v * do_get_near(lens_cdata)) * lens_mat;
+  far_point = (v * do_get_far(lens_cdata)) * lens_mat;
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CylindricalLens::extrude_vec_impl
+//     Function: CylindricalLens::do_extrude_vec
 //       Access: Protected, Virtual
 //  Description: Given a 2-d point in the range (-1,1) in both
 //               dimensions, where (0,0) is the center of the
@@ -95,23 +96,23 @@ extrude_impl(const LPoint3 &point2d, LPoint3 &near_point, LPoint3 &far_point) co
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
 bool CylindricalLens::
-extrude_vec_impl(const LPoint3 &point2d, LVector3 &vec) const {
+do_extrude_vec(const Lens::CData *lens_cdata, const LPoint3 &point2d, LVector3 &vec) const {
   // Undo the shifting from film offsets, etc.  This puts the point
   // into the range [-film_size/2, film_size/2] in x and y.
-  LPoint3 f = point2d * get_film_mat_inv();
+  LPoint3 f = point2d * do_get_film_mat_inv(lens_cdata);
 
-  PN_stdfloat focal_length = get_focal_length();
+  PN_stdfloat focal_length = do_get_focal_length(lens_cdata);
   PN_stdfloat angle = f[0] * cylindrical_k / focal_length;
   PN_stdfloat sinAngle, cosAngle;
   csincos(deg_2_rad(angle), &sinAngle, &cosAngle);
 
-  vec = LVector3(sinAngle, cosAngle, 0.0f) * get_lens_mat();
+  vec = LVector3(sinAngle, cosAngle, 0.0f) * do_get_lens_mat(lens_cdata);
 
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CylindricalLens::project_impl
+//     Function: CylindricalLens::do_project
 //       Access: Protected, Virtual
 //  Description: Given a 3-d point in space, determine the 2-d point
 //               this maps to, in the range (-1,1) in both dimensions,
@@ -128,9 +129,9 @@ extrude_vec_impl(const LPoint3 &point2d, LVector3 &vec) const {
 //               is filled in), or false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool CylindricalLens::
-project_impl(const LPoint3 &point3d, LPoint3 &point2d) const {
+do_project(const Lens::CData *lens_cdata, const LPoint3 &point3d, LPoint3 &point2d) const {
   // First, account for any rotations, etc. on the lens.
-  LPoint3 p = point3d * get_lens_mat_inv();
+  LPoint3 p = point3d * do_get_lens_mat_inv(lens_cdata);
 
   // To compute the x position on the frame, we only need to consider
   // the angle of the vector about the Z axis.  Project the vector
@@ -145,7 +146,7 @@ project_impl(const LPoint3 &point3d, LPoint3 &point2d) const {
     return false;
   }
 
-  PN_stdfloat focal_length = get_focal_length();
+  PN_stdfloat focal_length = do_get_focal_length(lens_cdata);
 
   point2d.set
     (
@@ -155,12 +156,12 @@ project_impl(const LPoint3 &point3d, LPoint3 &point2d) const {
      // distance.
      p[2] * focal_length / pdist,
      // Z is the perspective distance scaled into the range (1, -1).
-     (get_near() - pdist) / (get_far() - get_near())
+     (do_get_near(lens_cdata) - pdist) / (do_get_far(lens_cdata) - do_get_near(lens_cdata))
      );
 
   // Now we have to transform the point according to the film
   // adjustments.
-  point2d = point2d * get_film_mat();
+  point2d = point2d * do_get_film_mat(lens_cdata);
 
   return
     point2d[0] >= -1.0f && point2d[0] <= 1.0f && 

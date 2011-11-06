@@ -96,6 +96,18 @@ operator const CycleDataType * () const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CycleDataReader::p (full)
+//       Access: Public
+//  Description: This allows the CycleDataReader to be passed to any
+//               function that expects a const CycleDataType pointer.
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE const CycleDataType *CycleDataReader<CycleDataType>::
+p() const {
+  return _pointer;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CycleDataReader::get_current_thread (full)
 //       Access: Public
 //  Description: Returns the Thread pointer of the currently-executing
@@ -175,6 +187,18 @@ operator -> () const {
 template<class CycleDataType>
 INLINE CycleDataReader<CycleDataType>::
 operator const CycleDataType * () const {
+  return _pointer;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CycleDataReader::p (trivial)
+//       Access: Public
+//  Description: This allows the CycleDataReader to be passed to any
+//               function that expects a const CycleDataType pointer.
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE const CycleDataType *CycleDataReader<CycleDataType>::
+p() const {
   return _pointer;
 }
 

@@ -52,6 +52,7 @@ public:
 
   INLINE const CycleDataType *operator -> () const;
   INLINE operator const CycleDataType * () const;
+  INLINE const CycleDataType *p() const;
 
   INLINE Thread *get_current_thread() const;
 

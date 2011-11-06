@@ -23,6 +23,10 @@
 #include "updateSeq.h"
 #include "geomVertexData.h"
 #include "pointerTo.h"
+#include "cycleData.h"
+#include "cycleDataReader.h"
+#include "cycleDataWriter.h"
+#include "pipelineCycler.h"
 
 class BoundingVolume;
 
@@ -32,11 +36,11 @@ class BoundingVolume;
 //               lenses, linear and otherwise.  Presently, this
 //               includes perspective and orthographic lenses.
 //
-//               A Lens object is the main part of a Camera node
-//               (defined in sgraph), which defines the fundamental
-//               interface to point-of-view for rendering.  Lenses are
-//               also used in other contexts, however; for instance, a
-//               Spotlight is also defined using a lens.
+//               A Lens object is the main part of a Camera node,
+//               which defines the fundamental interface to
+//               point-of-view for rendering.  Lenses are also used in
+//               other contexts, however; for instance, a Spotlight is
+//               also defined using a lens.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_GOBJ Lens : public TypedWritableReferenceCount {
 public:
@@ -71,29 +75,29 @@ PUBLISHED:
 
   void clear();
 
-  void set_film_size(PN_stdfloat width);
+  INLINE void set_film_size(PN_stdfloat width);
   INLINE void set_film_size(PN_stdfloat width, PN_stdfloat height);
-  void set_film_size(const LVecBase2 &film_size);
-  const LVecBase2 &get_film_size() const;
+  INLINE void set_film_size(const LVecBase2 &film_size);
+  INLINE const LVecBase2 &get_film_size() const;
 
   INLINE void set_film_offset(PN_stdfloat x, PN_stdfloat y);
   INLINE void set_film_offset(const LVecBase2 &film_offset);
   INLINE const LVector2 &get_film_offset() const;
 
-  void set_focal_length(PN_stdfloat focal_length);
-  PN_stdfloat get_focal_length() const;
+  INLINE void set_focal_length(PN_stdfloat focal_length);
+  INLINE PN_stdfloat get_focal_length() const;
 
   void set_min_fov(PN_stdfloat min_fov);
-  void set_fov(PN_stdfloat fov);
+  INLINE void set_fov(PN_stdfloat fov);
   INLINE void set_fov(PN_stdfloat hfov, PN_stdfloat vfov);
-  void set_fov(const LVecBase2 &fov);
-  const LVecBase2 &get_fov() const;
+  INLINE void set_fov(const LVecBase2 &fov);
+  INLINE const LVecBase2 &get_fov() const;
   INLINE PN_stdfloat get_hfov() const;
   INLINE PN_stdfloat get_vfov() const;
   PN_stdfloat get_min_fov() const;
 
-  void set_aspect_ratio(PN_stdfloat aspect_ratio);
-  PN_stdfloat get_aspect_ratio() const;
+  INLINE void set_aspect_ratio(PN_stdfloat aspect_ratio);
+  INLINE PN_stdfloat get_aspect_ratio() const;
 
   INLINE void set_near(PN_stdfloat near_distance);
   INLINE PN_stdfloat get_near() const;
@@ -113,13 +117,13 @@ PUBLISHED:
   const LVector3 &get_up_vector() const;
   LPoint3 get_nodal_point() const;
 
-  void set_interocular_distance(PN_stdfloat interocular_distance);
-  PN_stdfloat get_interocular_distance() const;
-  void set_convergence_distance(PN_stdfloat convergence_distance);
-  PN_stdfloat get_convergence_distance() const;
+  INLINE void set_interocular_distance(PN_stdfloat interocular_distance);
+  INLINE PN_stdfloat get_interocular_distance() const;
+  INLINE void set_convergence_distance(PN_stdfloat convergence_distance);
+  INLINE PN_stdfloat get_convergence_distance() const;
 
-  void set_view_mat(const LMatrix4 &view_mat);
-  const LMatrix4 &get_view_mat() const;
+  INLINE void set_view_mat(const LMatrix4 &view_mat);
+  INLINE const LMatrix4 &get_view_mat() const;
   void clear_view_mat();
 
   void set_keystone(const LVecBase2 &keystone);
@@ -150,14 +154,14 @@ PUBLISHED:
 
   virtual PT(BoundingVolume) make_bounds() const;
 
-  const LMatrix4 &get_projection_mat(StereoChannel channel = SC_mono) const;
-  const LMatrix4 &get_projection_mat_inv(StereoChannel channel = SC_mono) const;
+  INLINE const LMatrix4 &get_projection_mat(StereoChannel channel = SC_mono) const;
+  INLINE const LMatrix4 &get_projection_mat_inv(StereoChannel channel = SC_mono) const;
 
-  const LMatrix4 &get_film_mat() const;
-  const LMatrix4 &get_film_mat_inv() const;
+  INLINE const LMatrix4 &get_film_mat() const;
+  INLINE const LMatrix4 &get_film_mat_inv() const;
 
-  const LMatrix4 &get_lens_mat() const;
-  const LMatrix4 &get_lens_mat_inv() const;
+  INLINE const LMatrix4 &get_lens_mat() const;
+  INLINE const LMatrix4 &get_lens_mat_inv() const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
@@ -166,64 +170,83 @@ public:
   INLINE const UpdateSeq &get_last_change() const;
 
 protected:
-  INLINE void adjust_user_flags(int clear_flags, int set_flags);
-  INLINE void adjust_comp_flags(int clear_flags, int set_flags);
+  class CData;
 
-  void throw_change_event();
+  INLINE void do_adjust_user_flags(CData *cdata, int clear_flags, int set_flags);
+  INLINE void do_adjust_comp_flags(CData *cdata, int clear_flags, int set_flags);
 
-  virtual bool extrude_impl(const LPoint3 &point2d,
-                            LPoint3 &near_point, LPoint3 &far_point) const;
-  virtual bool extrude_vec_impl(const LPoint3 &point2d, LVector3 &vec) const;
-  virtual bool project_impl(const LPoint3 &point3d, LPoint3 &point2d) const;
+  void do_set_film_size(CData *cdata, PN_stdfloat width);
+  void do_set_film_size(CData *cdata, const LVecBase2 &film_size);
+  const LVecBase2 &do_get_film_size(const CData *cdata) const;
 
-  virtual void compute_film_size();
-  virtual void compute_focal_length();
-  virtual void compute_fov();
-  virtual void compute_aspect_ratio();
-  virtual void compute_view_hpr();
-  virtual void compute_view_vector();
-  virtual void compute_projection_mat();
-  virtual void compute_film_mat();
-  virtual void compute_lens_mat();
+  INLINE void do_set_film_offset(CData *cdata, const LVecBase2 &film_offset);
+  INLINE const LVector2 &do_get_film_offset(const CData *cdata) const;
+
+  void do_set_focal_length(CData *cdata, PN_stdfloat focal_length);
+  PN_stdfloat do_get_focal_length(const CData *cdata) const;
+
+  void do_set_fov(CData *cdata, PN_stdfloat fov);
+  void do_set_fov(CData *cdata, const LVecBase2 &fov);
+  const LVecBase2 &do_get_fov(const CData *cdata) const;
+
+  void do_set_aspect_ratio(CData *cdata, PN_stdfloat aspect_ratio);
+  PN_stdfloat do_get_aspect_ratio(const CData *cdata) const;
+
+  INLINE void do_set_near(CData *cdata, PN_stdfloat near_distance);
+  INLINE PN_stdfloat do_get_near(const CData *cdata) const;
+  INLINE void do_set_far(CData *cdata, PN_stdfloat far_distance);
+  INLINE PN_stdfloat do_get_far(const CData *cdata) const;
+  INLINE void do_set_near_far(CData *cdata, PN_stdfloat near_distance, PN_stdfloat far_distance);
+
+  const LMatrix4 &do_get_projection_mat(const CData *cdata, StereoChannel channel = SC_mono) const;
+  const LMatrix4 &do_get_projection_mat_inv(const CData *cdata, StereoChannel channel = SC_mono) const;
+
+  const LMatrix4 &do_get_film_mat(const CData *cdata) const;
+  const LMatrix4 &do_get_film_mat_inv(const CData *cdata) const;
+
+  const LMatrix4 &do_get_lens_mat(const CData *cdata) const;
+  const LMatrix4 &do_get_lens_mat_inv(const CData *cdata) const;
+
+  void do_set_interocular_distance(CData *cdata, PN_stdfloat interocular_distance);
+  void do_set_convergence_distance(CData *cdata, PN_stdfloat convergence_distance);
+
+  void do_set_view_mat(CData *cdata, const LMatrix4 &view_mat);
+  const LMatrix4 &do_get_view_mat(const CData *cdata) const;
+
+  void do_throw_change_event(CData *cdata);
+
+  virtual bool do_extrude(const CData *cdata, const LPoint3 &point2d,
+                          LPoint3 &near_point, LPoint3 &far_point) const;
+  virtual bool do_extrude_vec(const CData *cdata,
+                              const LPoint3 &point2d, LVector3 &vec) const;
+  virtual bool do_project(const CData *cdata,
+                          const LPoint3 &point3d, LPoint3 &point2d) const;
+
+  virtual void do_compute_film_size(CData *cdata);
+  virtual void do_compute_focal_length(CData *cdata);
+  virtual void do_compute_fov(CData *cdata);
+  virtual void do_compute_aspect_ratio(CData *cdata);
+  virtual void do_compute_view_hpr(CData *cdata);
+  virtual void do_compute_view_vector(CData *cdata);
+  virtual void do_compute_projection_mat(CData *cdata);
+  virtual void do_compute_film_mat(CData *cdata);
+  virtual void do_compute_lens_mat(CData *cdata);
 
   virtual PN_stdfloat fov_to_film(PN_stdfloat fov, PN_stdfloat focal_length, bool horiz) const;
   virtual PN_stdfloat fov_to_focal_length(PN_stdfloat fov, PN_stdfloat film_size, bool horiz) const;
   virtual PN_stdfloat film_to_fov(PN_stdfloat film_size, PN_stdfloat focal_length, bool horiz) const;
 
 private:
-  void resequence_fov_triad(char &newest, char &older_a, char &older_b) const;
-  int define_geom_data();
+  void do_resequence_fov_triad(const CData *cdata,
+                               char &newest, char &older_a, char &older_b) const;
+  int do_define_geom_data(CData *cdata);
   static void build_shear_mat(LMatrix4 &shear_mat,
                               const LPoint3 &cul, const LPoint3 &cur,
                               const LPoint3 &cll, const LPoint3 &clr);
   static PN_stdfloat sqr_dist_to_line(const LPoint3 &point, const LPoint3 &origin, 
-                                const LVector3 &vec);
+                                      const LVector3 &vec);
 
 protected:
-  string _change_event;
-  UpdateSeq _last_change;
-  CoordinateSystem _cs;
-
-  LVecBase2 _film_size;
-  LVector2 _film_offset;
-  PN_stdfloat _focal_length;
-  LVecBase2 _fov;
-  PN_stdfloat _min_fov;
-  PN_stdfloat _aspect_ratio;
-  PN_stdfloat _near_distance, _far_distance;
-
-  LVecBase3 _view_hpr;
-  LVector3 _view_vector, _up_vector;
-  PN_stdfloat _interocular_distance;
-  PN_stdfloat _convergence_distance;
-  LVecBase2 _keystone;
-
-  LMatrix4 _film_mat, _film_mat_inv;
-  LMatrix4 _lens_mat, _lens_mat_inv;
-  LMatrix4 _projection_mat, _projection_mat_inv;
-  LMatrix4 _projection_mat_left, _projection_mat_left_inv;
-  LMatrix4 _projection_mat_right, _projection_mat_right_inv;
-
   enum UserFlags {
     // Parameters the user may have explicitly specified.
     UF_film_width           = 0x0001,
@@ -260,16 +283,72 @@ protected:
     CF_focal_length        = 0x1000,
     CF_fov                 = 0x2000,
   };
-  short _user_flags;
-  short _comp_flags;
 
-  // The user may only specify two of these three parameters.
-  // Specifying the third parameter wipes out the first one specified.
-  // We therefore need to remember the order in which the user has
-  // specified these three parameters.  A bit of a mess.
-  char _focal_length_seq, _fov_seq, _film_size_seq;
+  // This is the data that must be cycled between pipeline stages.
+  class EXPCL_PANDA_GOBJ CData : public CycleData {
+  public:
+    CData();
+    CData(const CData &copy);
+    ALLOC_DELETED_CHAIN(CData);
+    virtual CycleData *make_copy() const;
+    virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
+    virtual void fillin(DatagramIterator &scan, BamReader *manager);
+    virtual TypeHandle get_parent_type() const {
+      return Lens::get_class_type();
+    }
 
-  PT(GeomVertexData) _geom_data;
+    void clear();
+
+    string _change_event;
+    UpdateSeq _last_change;
+    CoordinateSystem _cs;
+    
+    LVecBase2 _film_size;
+    LVector2 _film_offset;
+    PN_stdfloat _focal_length;
+    LVecBase2 _fov;
+    PN_stdfloat _min_fov;
+    PN_stdfloat _aspect_ratio;
+    PN_stdfloat _near_distance, _far_distance;
+    
+    LVecBase3 _view_hpr;
+    LVector3 _view_vector, _up_vector;
+    PN_stdfloat _interocular_distance;
+    PN_stdfloat _convergence_distance;
+    LVecBase2 _keystone;
+    
+    LMatrix4 _film_mat, _film_mat_inv;
+    LMatrix4 _lens_mat, _lens_mat_inv;
+    LMatrix4 _projection_mat, _projection_mat_inv;
+    LMatrix4 _projection_mat_left, _projection_mat_left_inv;
+    LMatrix4 _projection_mat_right, _projection_mat_right_inv;
+    
+    short _user_flags;
+    short _comp_flags;
+
+    // The user may only specify two of these three parameters.
+    // Specifying the third parameter wipes out the first one specified.
+    // We therefore need to remember the order in which the user has
+    // specified these three parameters.  A bit of a mess.
+    char _focal_length_seq, _fov_seq, _film_size_seq;
+    
+    PT(GeomVertexData) _geom_data;
+    
+  public:
+    static TypeHandle get_class_type() {
+      return _type_handle;
+    }
+    static void init_type() {
+      register_type(_type_handle, "Lens::CData");
+    }
+    
+  private:
+    static TypeHandle _type_handle;
+  };
+ 
+  PipelineCycler<CData> _cycler;
+  typedef CycleDataReader<CData> CDReader;
+  typedef CycleDataWriter<CData> CDWriter;
 
 public:
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
@@ -289,6 +368,7 @@ public:
     TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "Lens",
                   TypedWritableReferenceCount::get_class_type());
+    CData::init_type();
   }
 
 private:

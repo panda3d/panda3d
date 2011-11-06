@@ -47,7 +47,7 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FisheyeLens::extrude_impl
+//     Function: FisheyeLens::do_extrude
 //       Access: Protected, Virtual
 //  Description: Given a 2-d point in the range (-1,1) in both
 //               dimensions, where (0,0) is the center of the
@@ -64,10 +64,11 @@ make_copy() const {
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
 bool FisheyeLens::
-extrude_impl(const LPoint3 &point2d, LPoint3 &near_point, LPoint3 &far_point) const {
+do_extrude(const Lens::CData *lens_cdata, 
+           const LPoint3 &point2d, LPoint3 &near_point, LPoint3 &far_point) const {
   // Undo the shifting from film offsets, etc.  This puts the point
   // into the range [-film_size/2, film_size/2] in x and y.
-  LPoint3 f = point2d * get_film_mat_inv();
+  LPoint3 f = point2d * do_get_film_mat_inv(lens_cdata);
 
   // First, get the vector from the center of the film to the point,
   // and normalize it.
@@ -84,7 +85,7 @@ extrude_impl(const LPoint3 &point2d, LPoint3 &near_point, LPoint3 &far_point) co
     v2 /= r;
 
     // Now get the point r units around the circle in the YZ plane.
-    PN_stdfloat focal_length = get_focal_length();
+    PN_stdfloat focal_length = do_get_focal_length(lens_cdata);
     PN_stdfloat angle = r * fisheye_k / focal_length;
     PN_stdfloat sinAngle, cosAngle;
     csincos(deg_2_rad(angle), &sinAngle, &cosAngle);
@@ -99,15 +100,15 @@ extrude_impl(const LPoint3 &point2d, LPoint3 &near_point, LPoint3 &far_point) co
 
   // And we'll need to account for the lens's rotations, etc. at the
   // end of the day.
-  const LMatrix4 &lens_mat = get_lens_mat();
+  const LMatrix4 &lens_mat = do_get_lens_mat(lens_cdata);
 
-  near_point = (v * get_near()) * lens_mat;
-  far_point = (v * get_far()) * lens_mat;
+  near_point = (v * do_get_near(lens_cdata)) * lens_mat;
+  far_point = (v * do_get_far(lens_cdata)) * lens_mat;
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FisheyeLens::extrude_vec_impl
+//     Function: FisheyeLens::do_extrude_vec
 //       Access: Protected, Virtual
 //  Description: Given a 2-d point in the range (-1,1) in both
 //               dimensions, where (0,0) is the center of the
@@ -127,9 +128,9 @@ extrude_impl(const LPoint3 &point2d, LPoint3 &near_point, LPoint3 &far_point) co
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
 bool FisheyeLens::
-extrude_vec_impl(const LPoint3 &point2d, LVector3 &vec) const {
+do_extrude_vec(const Lens::CData *lens_cdata, const LPoint3 &point2d, LVector3 &vec) const {
   LPoint3 near_point, far_point;
-  if (!extrude_impl(point2d, near_point, far_point)) {
+  if (!do_extrude(lens_cdata, point2d, near_point, far_point)) {
     return false;
   }
 
@@ -139,7 +140,7 @@ extrude_vec_impl(const LPoint3 &point2d, LVector3 &vec) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FisheyeLens::project_impl
+//     Function: FisheyeLens::do_project
 //       Access: Protected, Virtual
 //  Description: Given a 3-d point in space, determine the 2-d point
 //               this maps to, in the range (-1,1) in both dimensions,
@@ -156,9 +157,9 @@ extrude_vec_impl(const LPoint3 &point2d, LVector3 &vec) const {
 //               is filled in), or false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool FisheyeLens::
-project_impl(const LPoint3 &point3d, LPoint3 &point2d) const {
+do_project(const Lens::CData *lens_cdata, const LPoint3 &point3d, LPoint3 &point2d) const {
   // First, account for any rotations, etc. on the lens.
-  LVector3 v2 = point3d * get_lens_mat_inv();
+  LVector3 v2 = point3d * do_get_lens_mat_inv(lens_cdata);
 
   // A fisheye lens projection has the property that the distance from
   // the center point to any other point on the projection is
@@ -181,7 +182,7 @@ project_impl(const LPoint3 &point3d, LPoint3 &point2d) const {
     // Special case.  This point is either directly ahead or directly
     // behind.
     point2d.set(0.0f, 0.0f, 
-                (get_near() - dist) / (get_far() - get_near()));
+                (do_get_near(lens_cdata) - dist) / (do_get_far(lens_cdata) - do_get_near(lens_cdata)));
     return v2[1] >= 0.0f;
   }
 
@@ -193,19 +194,19 @@ project_impl(const LPoint3 &point3d, LPoint3 &point2d) const {
   // along the great circle to the point.
   PN_stdfloat r = 90.0f - rad_2_deg(catan2(x[0], x[1]));
 
-  PN_stdfloat focal_length = get_focal_length();
+  PN_stdfloat focal_length = do_get_focal_length(lens_cdata);
   PN_stdfloat factor = r * focal_length / fisheye_k;
 
   point2d.set
     (y[0] * factor,
      y[1] * factor,
      // Z is the distance scaled into the range (1, -1).
-     (get_near() - dist) / (get_far() - get_near())
+     (do_get_near(lens_cdata) - dist) / (do_get_far(lens_cdata) - do_get_near(lens_cdata))
      );
 
   // Now we have to transform the point according to the film
   // adjustments.
-  point2d = point2d * get_film_mat();
+  point2d = point2d * do_get_film_mat(lens_cdata);
 
   return
     point2d[0] >= -1.0f && point2d[0] <= 1.0f && 

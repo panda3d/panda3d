@@ -39,10 +39,12 @@ public:
   virtual PT(Lens) make_copy() const;
 
 protected:
-  virtual bool extrude_impl(const LPoint3 &point2d,
-                            LPoint3 &near_point, LPoint3 &far_point) const;
-  virtual bool extrude_vec_impl(const LPoint3 &point2d, LVector3 &vec) const;
-  virtual bool project_impl(const LPoint3 &point3d, LPoint3 &point2d) const;
+  virtual bool do_extrude(const Lens::CData *lens_cdata, const LPoint3 &point2d, 
+                          LPoint3 &near_point, LPoint3 &far_point) const;
+  virtual bool do_extrude_vec(const Lens::CData *lens_cdata, const LPoint3 &point2d, 
+                              LVector3 &vec) const;
+  virtual bool do_project(const Lens::CData *lens_cdata, 
+                          const LPoint3 &point3d, LPoint3 &point2d) const;
 
   virtual PN_stdfloat fov_to_film(PN_stdfloat fov, PN_stdfloat focal_length, bool horiz) const;
   virtual PN_stdfloat fov_to_focal_length(PN_stdfloat fov, PN_stdfloat film_size, bool horiz) const;

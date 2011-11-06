@@ -3596,7 +3596,10 @@ bool CLP(GraphicsStateGuardian)::
 apply_vertex_buffer(VertexBufferContext *vbc,
                     const GeomVertexArrayDataHandle *reader, bool force) {
   nassertr(_supports_buffers, false);
-  nassertr(reader->get_modified() != UpdateSeq::initial(), false);
+  if (reader->get_modified() == UpdateSeq::initial()) {
+    // No need to re-apply.
+    return true;
+  }
 
   CLP(VertexBufferContext) *gvbc = DCAST(CLP(VertexBufferContext), vbc);
 
@@ -3785,7 +3788,10 @@ apply_index_buffer(IndexBufferContext *ibc,
                    const GeomPrimitivePipelineReader *reader,
                    bool force) {
   nassertr(_supports_buffers, false);
-  nassertr(reader->get_modified() != UpdateSeq::initial(), false);
+  if (reader->get_modified() == UpdateSeq::initial()) {
+    // No need to re-apply.
+    return true;
+  }
 
   CLP(IndexBufferContext) *gibc = DCAST(CLP(IndexBufferContext), ibc);
 

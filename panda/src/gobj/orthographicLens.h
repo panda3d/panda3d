@@ -47,7 +47,7 @@ public:
   virtual void write(ostream &out, int indent_level = 0) const;
 
 protected:
-  virtual void compute_projection_mat();
+  virtual void do_compute_projection_mat(Lens::CData *lens_cdata);
 
 public:
   static void register_with_read_factory();

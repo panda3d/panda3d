@@ -54,21 +54,21 @@ is_perspective() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PerspectiveLens::compute_projection_mat
+//     Function: PerspectiveLens::do_compute_projection_mat
 //       Access: Protected, Virtual
 //  Description: Computes the complete transformation matrix from 3-d
 //               point to 2-d point, if the lens is linear.
 ////////////////////////////////////////////////////////////////////
 void PerspectiveLens::
-compute_projection_mat() {
-  CoordinateSystem cs = _cs;
+do_compute_projection_mat(Lens::CData *lens_cdata) {
+  CoordinateSystem cs = lens_cdata->_cs;
   if (cs == CS_default) {
     cs = get_default_coordinate_system();
   }
 
-  PN_stdfloat fl = get_focal_length();
-  PN_stdfloat fFar = get_far();
-  PN_stdfloat fNear = get_near();
+  PN_stdfloat fl = do_get_focal_length(lens_cdata);
+  PN_stdfloat fFar = do_get_far(lens_cdata);
+  PN_stdfloat fNear = do_get_near(lens_cdata);
   PN_stdfloat far_minus_near = fFar-fNear;
   PN_stdfloat a = (fFar + fNear);
   PN_stdfloat b = -2.0f * fFar * fNear;
@@ -112,30 +112,30 @@ compute_projection_mat() {
     canonical = LMatrix4::ident_mat();
   }
 
-  _projection_mat = get_lens_mat_inv() * canonical * get_film_mat();
+  lens_cdata->_projection_mat = do_get_lens_mat_inv(lens_cdata) * canonical * do_get_film_mat(lens_cdata);
 
-  if ((_user_flags & UF_interocular_distance) == 0) {
-    _projection_mat_left = _projection_mat_right = _projection_mat;
+  if ((lens_cdata->_user_flags & UF_interocular_distance) == 0) {
+    lens_cdata->_projection_mat_left = lens_cdata->_projection_mat_right = lens_cdata->_projection_mat;
 
   } else {
     // Compute the left and right projection matrices in case this
     // lens is assigned to a stereo DisplayRegion.
 
-    LVector3 iod = _interocular_distance * 0.5f * LVector3::left(_cs);
-    _projection_mat_left = get_lens_mat_inv() * LMatrix4::translate_mat(-iod) * canonical * get_film_mat();
-    _projection_mat_right = get_lens_mat_inv() * LMatrix4::translate_mat(iod) * canonical * get_film_mat();
+    LVector3 iod = lens_cdata->_interocular_distance * 0.5f * LVector3::left(lens_cdata->_cs);
+    lens_cdata->_projection_mat_left = do_get_lens_mat_inv(lens_cdata) * LMatrix4::translate_mat(-iod) * canonical * do_get_film_mat(lens_cdata);
+    lens_cdata->_projection_mat_right = do_get_lens_mat_inv(lens_cdata) * LMatrix4::translate_mat(iod) * canonical * do_get_film_mat(lens_cdata);
     
-    if (_user_flags & UF_convergence_distance) {
-      nassertv(_convergence_distance != 0.0f);
-      LVector3 cd = (0.25f / _convergence_distance) * LVector3::left(_cs);
-      _projection_mat_left *= LMatrix4::translate_mat(cd);
-      _projection_mat_right *= LMatrix4::translate_mat(-cd);
+    if (lens_cdata->_user_flags & UF_convergence_distance) {
+      nassertv(lens_cdata->_convergence_distance != 0.0f);
+      LVector3 cd = (0.25f / lens_cdata->_convergence_distance) * LVector3::left(lens_cdata->_cs);
+      lens_cdata->_projection_mat_left *= LMatrix4::translate_mat(cd);
+      lens_cdata->_projection_mat_right *= LMatrix4::translate_mat(-cd);
     }
   }
 
-  adjust_comp_flags(CF_projection_mat_inv | CF_projection_mat_left_inv | 
-                    CF_projection_mat_right_inv,
-                    CF_projection_mat);
+  do_adjust_comp_flags(lens_cdata,
+                       CF_projection_mat_inv | CF_projection_mat_left_inv | CF_projection_mat_right_inv,
+                       CF_projection_mat);
 }
 
 ////////////////////////////////////////////////////////////////////

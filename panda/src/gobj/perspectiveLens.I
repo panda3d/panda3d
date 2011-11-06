@@ -28,7 +28,8 @@ PerspectiveLens() {
 ////////////////////////////////////////////////////////////////////
 INLINE PerspectiveLens::
 PerspectiveLens(PN_stdfloat hfov, PN_stdfloat vfov) {
-  _fov.set(hfov, vfov);
+  Lens::CDWriter lens_cdata(Lens::_cycler, true);
+  lens_cdata->_fov.set(hfov, vfov);
 }
 
 ////////////////////////////////////////////////////////////////////

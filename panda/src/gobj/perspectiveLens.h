@@ -39,7 +39,7 @@ public:
   virtual bool is_perspective() const;
 
 protected:
-  virtual void compute_projection_mat();
+  virtual void do_compute_projection_mat(Lens::CData *lens_cdata);
 
   virtual PN_stdfloat fov_to_film(PN_stdfloat fov, PN_stdfloat focal_length, bool horiz) const;
   virtual PN_stdfloat fov_to_focal_length(PN_stdfloat fov, PN_stdfloat film_size, bool horiz) const;
