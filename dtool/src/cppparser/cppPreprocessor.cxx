@@ -186,6 +186,7 @@ get() {
 ////////////////////////////////////////////////////////////////////
 CPPPreprocessor::
 CPPPreprocessor() {
+  _noangles = false;
   _state = S_eof;
   _paren_nesting = 0;
   _angle_bracket_found = false;
@@ -1375,7 +1376,12 @@ handle_include_directive(const string &args, int first_line,
       }
     } else if (expr[0] == '<' && expr[expr.size() - 1] == '>') {
       filename = expr.substr(1, expr.size() - 2);
-      angle_quotes = true;
+      if (!_noangles) {
+        // If _noangles is true, we don't make a distinction between
+        // angle brackets and quote marks--all #include statements are
+        // treated the same, as if they used quote marks.
+        angle_quotes = true;
+      }
       okflag = true;
 
       if (_files.size() == 1) {
@@ -1396,7 +1402,6 @@ handle_include_directive(const string &args, int first_line,
   CPPFile::Source source = CPPFile::S_none;
 
   if (okflag) {
-
     found_file = false;
 
     // Search the current directory.

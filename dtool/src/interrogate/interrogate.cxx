@@ -75,6 +75,7 @@ enum CommandOptions {
   CO_longlong,
   CO_promiscuous,
   CO_spam,
+  CO_noangles,
   CO_help,
 };
 
@@ -101,6 +102,7 @@ static struct option long_options[] = {
   { "longlong", required_argument, NULL, CO_longlong },
   { "promiscuous", no_argument, NULL, CO_promiscuous },
   { "spam", no_argument, NULL, CO_spam },
+  { "noangles", no_argument, NULL, CO_noangles },
   { "help", no_argument, NULL, CO_help },
   { NULL }
 };
@@ -275,7 +277,11 @@ void show_help() {
 
     << "  -spam\n"
     << "        Generate wrapper functions that report each invocation to Notify.\n"
-    << "        This can sometimes be useful for tracking down bugs.\n\n";
+    << "        This can sometimes be useful for tracking down bugs.\n\n"
+
+    << "  -noangles\n"
+    << "        Treat #include <file> the same as #include \"file\".  This means -I\n"
+    << "        and -S are equivalent.\n\n";
 }
 
 // handle commandline -D options
@@ -427,6 +433,10 @@ main(int argc, char *argv[]) {
 
     case CO_spam:
       generate_spam = true;
+      break;
+
+    case CO_noangles:
+      parser._noangles = true;
       break;
 
     case 'h':

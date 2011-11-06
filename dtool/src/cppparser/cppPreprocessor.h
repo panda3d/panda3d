@@ -72,8 +72,9 @@ public:
   Manifests _manifests;
 
   pvector<CPPFile::Source> _quote_include_kind;
-  DSearchPath              _quote_include_path;
-  DSearchPath              _angle_include_path;
+  DSearchPath _quote_include_path;
+  DSearchPath _angle_include_path;
+  bool _noangles;
   
   CPPComments _comments;
 
