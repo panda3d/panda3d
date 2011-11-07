@@ -125,9 +125,10 @@ get() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE OStreamWrapper::
-OStreamWrapper(ostream *stream, bool owns_pointer) :
+OStreamWrapper(ostream *stream, bool owns_pointer, bool stringstream_hack) :
   _ostream(stream),
-  _owns_pointer(owns_pointer)
+  _owns_pointer(owns_pointer),
+  _stringstream_hack(stringstream_hack)
 {
 }
 
@@ -139,7 +140,8 @@ OStreamWrapper(ostream *stream, bool owns_pointer) :
 INLINE OStreamWrapper::
 OStreamWrapper(ostream &stream) :
   _ostream(&stream),
-  _owns_pointer(false)
+  _owns_pointer(false),
+  _stringstream_hack(false)
 {
 }
 
@@ -175,9 +177,9 @@ put(char c) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE StreamWrapper::
-StreamWrapper(iostream *stream, bool owns_pointer) :
+StreamWrapper(iostream *stream, bool owns_pointer, bool stringstream_hack) :
   IStreamWrapper(stream, false),
-  OStreamWrapper(stream, false),
+  OStreamWrapper(stream, false, stringstream_hack),
   _iostream(stream),
   _owns_pointer(owns_pointer)
 {

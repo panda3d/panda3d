@@ -80,7 +80,7 @@ private:
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DTOOLCONFIG OStreamWrapper : virtual public StreamWrapperBase {
 public:
-  INLINE OStreamWrapper(ostream *stream, bool owns_pointer);
+  INLINE OStreamWrapper(ostream *stream, bool owns_pointer, bool stringstream_hack = false);
 PUBLISHED:
   INLINE OStreamWrapper(ostream &stream);
   ~OStreamWrapper();
@@ -98,6 +98,14 @@ public:
 private:
   ostream *_ostream;
   bool _owns_pointer;
+
+  // This flag is necessary to work around a weird quirk in the MSVS
+  // C++ runtime library: an empty stringstream cannot successfully
+  // seekp(0), until some data has been written to the stream.  When
+  // this flag is set true, we know we have a possibly-empty
+  // stringstream, so we allow seekp(0) to fail silently, knowing that
+  // there's no harm in this case.
+  bool _stringstream_hack;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -107,7 +115,7 @@ private:
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DTOOLCONFIG StreamWrapper : public IStreamWrapper, public OStreamWrapper {
 public:
-  INLINE StreamWrapper(iostream *stream, bool owns_pointer);
+  INLINE StreamWrapper(iostream *stream, bool owns_pointer, bool stringstream_hack = false);
 PUBLISHED:
   INLINE StreamWrapper(iostream &stream);
   ~StreamWrapper();

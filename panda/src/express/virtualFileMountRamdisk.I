@@ -40,7 +40,7 @@ operator < (const FileBase &other) const {
 INLINE VirtualFileMountRamdisk::File::
 File(const string &basename) : 
   FileBase(basename),
-  _wrapper(_data)
+  _wrapper(&_data, false, true)
 {
 }
 

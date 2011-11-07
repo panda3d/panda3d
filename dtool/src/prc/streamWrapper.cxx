@@ -211,6 +211,15 @@ seek_write(streamsize pos, const char *buffer, streamsize num_bytes,
   acquire();
   _ostream->clear();
   _ostream->seekp(pos);
+
+#ifdef WIN32_VC
+  if (_ostream->fail() && _stringstream_hack && pos == 0) {
+    // Ignore an unsuccessful attempt to seekp(0) if
+    // _stringstream_hack is true.
+    _ostream->clear();
+  }
+#endif // WIN32_VC
+
   _ostream->write(buffer, num_bytes);
   fail = _ostream->fail();
   release();
@@ -228,6 +237,15 @@ seek_eof_write(const char *buffer, streamsize num_bytes, bool &fail) {
   acquire();
   _ostream->clear();
   _ostream->seekp(0, ios::end);
+
+#ifdef WIN32_VC
+  if (_ostream->fail() && _stringstream_hack) {
+    // Ignore an unsuccessful attempt to seekp(0) if
+    // _stringstream_hack is true.
+    _ostream->clear();
+  }
+#endif // WIN32_VC
+
   _ostream->write(buffer, num_bytes);
   fail = _ostream->fail();
   release();
@@ -246,6 +264,17 @@ seek_ppos_eof() {
   streamsize pos;
   acquire();
   _ostream->seekp(0, ios::end);
+
+#ifdef WIN32_VC
+  if (_ostream->fail() && _stringstream_hack) {
+    // Ignore an unsuccessful attempt to seekp(0) if
+    // _stringstream_hack is true.
+    _ostream->clear();
+    release();
+    return 0;
+  }
+#endif // WIN32_VC
+
   pos = _ostream->tellp();
   release();
 
