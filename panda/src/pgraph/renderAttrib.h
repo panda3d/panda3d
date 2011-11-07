@@ -28,6 +28,7 @@ class AttribSlots;
 class GraphicsStateGuardianBase;
 class CullTraverser;
 class CullTraverserData;
+class RenderState;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : RenderAttrib
@@ -81,6 +82,7 @@ PUBLISHED:
   INLINE int compare_to(const RenderAttrib &other) const;
   INLINE size_t get_hash() const;
   INLINE CPT(RenderAttrib) get_unique() const;
+  INLINE CPT(RenderAttrib) get_auto_shader_attrib(const RenderState *state) const;
 
   virtual bool unref() const;
 
@@ -185,6 +187,7 @@ protected:
   virtual size_t get_hash_impl() const;
   virtual CPT(RenderAttrib) compose_impl(const RenderAttrib *other) const;
   virtual CPT(RenderAttrib) invert_compose_impl(const RenderAttrib *other) const;
+  virtual CPT(RenderAttrib) get_auto_shader_attrib_impl(const RenderState *state) const;
   void output_comparefunc(ostream &out, PandaCompareFunc fn) const;
 
 public:

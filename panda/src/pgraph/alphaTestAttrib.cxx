@@ -109,6 +109,16 @@ get_hash_impl() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AlphaTestAttrib::get_auto_shader_attrib_impl
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) AlphaTestAttrib::
+get_auto_shader_attrib_impl(const RenderState *state) const {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AlphaTestAttrib::register_with_read_factory
 //       Access: Public, Static
 //  Description: Tells the BamReader how to create objects of type

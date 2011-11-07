@@ -115,6 +115,16 @@ get_hash_impl() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AuxBitplaneAttrib::get_auto_shader_attrib_impl
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) AuxBitplaneAttrib::
+get_auto_shader_attrib_impl(const RenderState *state) const {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AuxBitplaneAttrib::register_with_read_factory
 //       Access: Public, Static
 //  Description: Tells the BamReader how to create objects of type

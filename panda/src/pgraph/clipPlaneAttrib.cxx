@@ -909,6 +909,16 @@ invert_compose_impl(const RenderAttrib *other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ClipPlaneAttrib::get_auto_shader_attrib_impl
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) ClipPlaneAttrib::
+get_auto_shader_attrib_impl(const RenderState *state) const {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ClipPlaneAttrib::sort_on_planes
 //       Access: Private
 //  Description: This is patterned after

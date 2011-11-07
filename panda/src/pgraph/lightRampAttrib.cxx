@@ -283,6 +283,16 @@ get_hash_impl() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LightRampAttrib::get_auto_shader_attrib_impl
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) LightRampAttrib::
+get_auto_shader_attrib_impl(const RenderState *state) const {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LightRampAttrib::register_with_read_factory
 //       Access: Public, Static
 //  Description: Tells the BamReader how to create objects of type

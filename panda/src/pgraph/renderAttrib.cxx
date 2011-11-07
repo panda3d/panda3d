@@ -141,6 +141,16 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderAttrib::get_auto_shader_attrib_impl
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) RenderAttrib::
+get_auto_shader_attrib_impl(const RenderState *state) const {
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderAttrib::unref
 //       Access: Published, Virtual
 //  Description: This method overrides ReferenceCount::unref() to

@@ -941,6 +941,16 @@ invert_compose_impl(const RenderAttrib *other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LightAttrib::get_auto_shader_attrib_impl
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) LightAttrib::
+get_auto_shader_attrib_impl(const RenderState *state) const {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LightAttrib::sort_on_lights
 //       Access: Private
 //  Description: This is patterned after

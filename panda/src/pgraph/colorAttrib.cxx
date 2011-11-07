@@ -154,6 +154,21 @@ get_hash_impl() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ColorAttrib::get_auto_shader_attrib_impl
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) ColorAttrib::
+get_auto_shader_attrib_impl(const RenderState *state) const {
+  // For a ColorAttrib, the only relevant information is the type: is
+  // it flat-shaded or vertex-shaded?  The actual color value is read
+  // by the shader from the graphics state.
+
+  ColorAttrib *attrib = new ColorAttrib(_type, LColor(1.0f, 1.0f, 1.0f, 1.0f));
+  return return_new(attrib);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ColorAttrib::quantize_color
 //       Access: Private
 //  Description: Quantizes the color color to the nearest multiple of

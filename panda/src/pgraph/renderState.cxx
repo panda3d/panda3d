@@ -69,6 +69,7 @@ TypeHandle RenderState::_type_handle;
 RenderState::
 RenderState() : 
   _flags(0),
+  _auto_shader_state(NULL),
   _lock("RenderState")
 {
   // Allocate the _attributes array.
@@ -99,6 +100,7 @@ RenderState::
 RenderState(const RenderState &copy) :
   _filled_slots(copy._filled_slots),
   _flags(0),
+  _auto_shader_state(NULL),
   _lock("RenderState")
 {
   // Allocate the _attributes array.
@@ -144,6 +146,14 @@ RenderState::
   // unref() should have cleared these.
   nassertv(_saved_entry == -1);
   nassertv(_composition_cache.is_empty() && _invert_composition_cache.is_empty());
+
+  // Make sure the _auto_shader_state cache pointer is cleared.
+  if (_auto_shader_state != (const RenderState *)NULL) {
+    if (_auto_shader_state != this) {
+      cache_unref_delete(_auto_shader_state);
+    }
+    _auto_shader_state = NULL;
+  }
 
   // If this was true at the beginning of the destructor, but is no
   // longer true now, probably we've been double-deleted.
@@ -844,8 +854,31 @@ get_invert_composition_cache() const {
 #endif  // HAVE_PYTHON
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_auto_shader_state
+//       Access: Published
+//  Description: Returns the base RenderState that should have the
+//               generated_shader stored within it, for generated
+//               shader states.  The returned object might be the same
+//               as this object, or it might be a different
+//               RenderState with certain attributes removed, or set
+//               to their default values.
+//
+//               The point is to avoid needless regeneration of the
+//               shader attrib by storing the generated shader on a
+//               common RenderState object, with all irrelevant
+//               attributes removed.
+////////////////////////////////////////////////////////////////////
+const RenderState *RenderState::
+get_auto_shader_state() const {
+  if (_auto_shader_state == (const RenderState *)NULL) {
+    ((RenderState *)this)->assign_auto_shader_state();
+  }
+  return _auto_shader_state;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderState::output
-//       Access: Published, Virtual
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void RenderState::
@@ -875,7 +908,7 @@ output(ostream &out) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderState::write
-//       Access: Published, Virtual
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void RenderState::
@@ -1490,6 +1523,58 @@ do_calc_hash() {
   _flags |= F_hash_known;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::assign_auto_shader_state
+//       Access: Private
+//  Description: Sets _auto_shader_state to the appropriate
+//               RenderState object pointer, either the same pointer
+//               as this object, or some other (simpler) RenderState.
+////////////////////////////////////////////////////////////////////
+void RenderState::
+assign_auto_shader_state() {
+  CPT(RenderState) state = do_calc_auto_shader_state();
+
+  {
+    LightReMutexHolder holder(*_states_lock);
+    if (_auto_shader_state == (const RenderState *)NULL) {
+      _auto_shader_state = state;
+      if (_auto_shader_state != this) {
+        _auto_shader_state->cache_ref();
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::do_calc_auto_shader_state
+//       Access: Private
+//  Description: Returns the appropriate RenderState that should be
+//               used to store the auto shader pointer for nodes that
+//               shader this RenderState.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) RenderState::
+do_calc_auto_shader_state() {
+  RenderState *state = new RenderState;
+
+  SlotMask mask = _filled_slots;
+  int slot = mask.get_lowest_on_bit();
+  while (slot >= 0) {
+    const Attribute &attrib = _attributes[slot];
+    nassertr(attrib._attrib != (RenderAttrib *)NULL, this);
+    CPT(RenderAttrib) new_attrib = attrib._attrib->get_auto_shader_attrib(this);
+    if (new_attrib != NULL) {
+      nassertr(new_attrib->get_slot() == slot, this);
+      state->_attributes[slot].set(new_attrib, 0);
+      state->_filled_slots.set_bit(slot);
+    }
+    
+    mask.clear_bit(slot);
+    slot = mask.get_lowest_on_bit();
+  }
+
+  return return_new(state);
+}
+
   
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderState::return_new
@@ -1940,6 +2025,14 @@ release_new() {
 void RenderState::
 remove_cache_pointers() {
   nassertv(_states_lock->debug_is_locked());
+
+  // First, make sure the _auto_shader_state cache pointer is cleared.
+  if (_auto_shader_state != (const RenderState *)NULL) {
+    if (_auto_shader_state != this) {
+      cache_unref_delete(_auto_shader_state);
+    }
+    _auto_shader_state = NULL;
+  }
 
   // Fortunately, since we added CompositionCache records in pairs, we
   // know exactly the set of RenderState objects that have us in their
