@@ -73,7 +73,13 @@ PUBLISHED:
   INLINE bool get_vis_2d() const;
 
   NodePath generate_vis_points() const;
-  NodePath generate_vis_mesh(bool double_sided) const;
+
+  enum MeshFace {
+    MF_front = 0x01,
+    MF_back  = 0x02,
+    MF_both  = 0x03,
+  };
+  NodePath generate_vis_mesh(MeshFace face = MF_front) const;
 
 private:
   void make_vis_mesh_geom(GeomNode *gnode, bool inverted) const;

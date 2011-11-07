@@ -532,7 +532,7 @@ xform(const LMatrix4 &transform) {
 //               projecting it through the indicated lens, converting
 //               each point to a (u, v, 0) texture coordinate.  The
 //               resulting file can be generated to a mesh (with
-//               set_vis_inverse(true) and generate_vis_mesh(true))
+//               set_vis_inverse(true) and generate_vis_mesh())
 //               that will apply the lens distortion to an arbitrary
 //               texture image.
 ////////////////////////////////////////////////////////////////////
@@ -719,14 +719,17 @@ generate_vis_points() const {
 //               pfm grid.
 ////////////////////////////////////////////////////////////////////
 NodePath PfmFile::
-generate_vis_mesh(bool double_sided) const {
+generate_vis_mesh(MeshFace face) const {
   nassertr(is_valid(), NodePath());
+  nassertr(face != 0, NodePath());
   
   PT(GeomNode) gnode = new GeomNode("");
 
-  make_vis_mesh_geom(gnode, false);
+  if (face & MF_front) {
+    make_vis_mesh_geom(gnode, false);
+  }
 
-  if (double_sided) {
+  if (face & MF_back) {
     make_vis_mesh_geom(gnode, true);
   }
 
