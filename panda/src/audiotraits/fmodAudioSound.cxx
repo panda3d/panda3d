@@ -26,6 +26,7 @@
 #include "fmodAudioSound.h"
 #include "string_utils.h"
 #include "subfileInfo.h"
+#include "reMutexHolder.h"
 
 TypeHandle FmodAudioSound::_type_handle;
 
@@ -39,6 +40,7 @@ TypeHandle FmodAudioSound::_type_handle;
 
 FmodAudioSound::
 FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) { 
+  ReMutexHolder holder(FmodAudioManager::_lock);
   audio_debug("FmodAudioSound::FmodAudioSound() Creating new sound, filename: " << file_name  );
 
   _active = manager->get_active();
@@ -212,6 +214,7 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
 ////////////////////////////////////////////////////////////////////
 FmodAudioSound::
 ~FmodAudioSound() {
+  ReMutexHolder holder(FmodAudioManager::_lock);
   FMOD_RESULT result;
 
   //Remove me from table of all sounds.
@@ -240,6 +243,7 @@ play() {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
 stop() {
+  ReMutexHolder holder(FmodAudioManager::_lock);
   FMOD_RESULT result;
 
   if (_channel != 0) {
@@ -295,7 +299,7 @@ get_loop() const {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
 set_loop_count(unsigned long loop_count) {
-
+  ReMutexHolder holder(FmodAudioManager::_lock);
   audio_debug("FmodAudioSound::set_loop_count()   Setting the sound's loop count to: " << loop_count);
 
   //LOCALS
@@ -328,6 +332,7 @@ set_loop_count(unsigned long loop_count) {
 ////////////////////////////////////////////////////////////////////
 unsigned long FmodAudioSound::
 get_loop_count() const {
+  ReMutexHolder holder(FmodAudioManager::_lock);
   FMOD_RESULT result;
   int loop_count;
 
@@ -350,6 +355,7 @@ get_loop_count() const {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
 set_time(PN_stdfloat start_time) {
+  ReMutexHolder holder(FmodAudioManager::_lock);
   _start_time = start_time;
 
   if (status() == PLAYING) {
@@ -365,6 +371,7 @@ set_time(PN_stdfloat start_time) {
 ////////////////////////////////////////////////////////////////////
 PN_stdfloat FmodAudioSound::
 get_time() const {
+  ReMutexHolder holder(FmodAudioManager::_lock);
   FMOD_RESULT result;
   unsigned int current_time;
 
@@ -389,6 +396,7 @@ get_time() const {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
 set_volume(PN_stdfloat vol) {
+  ReMutexHolder holder(FmodAudioManager::_lock);
   _volume = vol;
   set_volume_on_channel();
 }
@@ -410,6 +418,7 @@ get_volume() const {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
 start_playing() {
+  ReMutexHolder holder(FmodAudioManager::_lock);
   FMOD_RESULT result;
 
   if (!_active) {
@@ -469,6 +478,7 @@ start_playing() {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
 set_volume_on_channel() {
+  ReMutexHolder holder(FmodAudioManager::_lock);
   FMOD_RESULT result;
 
   if (_channel != 0) {
@@ -488,6 +498,7 @@ set_volume_on_channel() {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
 set_balance(PN_stdfloat bal) {
+  ReMutexHolder holder(FmodAudioManager::_lock);
   _balance = bal;
   set_speaker_mix_or_balance_on_channel();
 }
@@ -516,6 +527,7 @@ get_balance() const {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
 set_play_rate(PN_stdfloat rate) {
+  ReMutexHolder holder(FmodAudioManager::_lock);
   _playrate = rate;
   set_play_rate_on_channel();
 }
@@ -537,6 +549,7 @@ get_play_rate() const {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
 set_play_rate_on_channel() {
+  ReMutexHolder holder(FmodAudioManager::_lock);
   FMOD_RESULT result;
   PN_stdfloat frequency = _sampleFrequency * _playrate;
   
@@ -568,6 +581,7 @@ get_name() const {
 ////////////////////////////////////////////////////////////////////
 PN_stdfloat FmodAudioSound::
 length() const {
+  ReMutexHolder holder(FmodAudioManager::_lock);
   FMOD_RESULT result;
   unsigned int length;
 
@@ -594,6 +608,7 @@ length() const {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
 set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz) {
+  ReMutexHolder holder(FmodAudioManager::_lock);
   _location.x = px;
   _location.y = pz;
   _location.z = py;
@@ -612,6 +627,7 @@ set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
 set_3d_attributes_on_channel() {
+  ReMutexHolder holder(FmodAudioManager::_lock);
   FMOD_RESULT result;
   FMOD_MODE soundMode;
 
@@ -647,6 +663,7 @@ get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
 set_3d_min_distance(PN_stdfloat dist) {
+  ReMutexHolder holder(FmodAudioManager::_lock);
   FMOD_RESULT result;
 
   _min_dist = dist;
@@ -672,6 +689,7 @@ get_3d_min_distance() const {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
 set_3d_max_distance(PN_stdfloat dist) {
+  ReMutexHolder holder(FmodAudioManager::_lock);
   FMOD_RESULT result;
 
   _max_dist = dist;
@@ -703,6 +721,7 @@ get_3d_max_distance() const {
 ////////////////////////////////////////////////////////////////////
 PN_stdfloat FmodAudioSound::
 get_speaker_mix(AudioManager::SpeakerId speaker) {
+  ReMutexHolder holder(FmodAudioManager::_lock);
   if (_channel == 0) {
     return 0.0;
   }
@@ -751,6 +770,7 @@ get_speaker_mix(AudioManager::SpeakerId speaker) {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
 set_speaker_mix(PN_stdfloat frontleft, PN_stdfloat frontright, PN_stdfloat center, PN_stdfloat sub, PN_stdfloat backleft, PN_stdfloat backright, PN_stdfloat sideleft, PN_stdfloat  sideright) {
+  ReMutexHolder holder(FmodAudioManager::_lock);
   _mix[AudioManager::SPK_frontleft]  = frontleft;
   _mix[AudioManager::SPK_frontright] = frontright;
   _mix[AudioManager::SPK_center]     = center;
@@ -776,6 +796,7 @@ set_speaker_mix(PN_stdfloat frontleft, PN_stdfloat frontright, PN_stdfloat cente
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
 set_speaker_mix_or_balance_on_channel() {
+  ReMutexHolder holder(FmodAudioManager::_lock);
   FMOD_RESULT result;
   FMOD_MODE soundMode;
 
@@ -825,7 +846,7 @@ get_priority() {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
 set_priority(int priority) {
-  // intentionally blank
+  ReMutexHolder holder(FmodAudioManager::_lock);
 
   audio_debug("FmodAudioSound::set_priority()");
 
@@ -844,6 +865,7 @@ set_priority(int priority) {
 ////////////////////////////////////////////////////////////////////
 AudioSound::SoundStatus FmodAudioSound::
 status() const {
+  ReMutexHolder holder(FmodAudioManager::_lock);
   FMOD_RESULT result;
   bool playingState;
 
@@ -869,6 +891,7 @@ status() const {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
 set_active(bool active) {
+  ReMutexHolder holder(FmodAudioManager::_lock);
   if (_active != active) {
     _active = active;
     if (_active) {

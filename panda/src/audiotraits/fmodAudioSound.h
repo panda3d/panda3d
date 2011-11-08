@@ -76,6 +76,7 @@
 #ifdef HAVE_FMODEX //[
 
 #include "audioSound.h"
+#include "reMutex.h"
 
 #include <fmod.hpp>
 #include <fmod_errors.h>

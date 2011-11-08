@@ -26,9 +26,9 @@
 #include "config_util.h"
 #include "fmodAudioManager.h"
 #include "fmodAudioSound.h"
-//Needed so People use Panda's Generic UNIX Style Paths for Filename.
 #include "filename.h"
 #include "virtualFileSystem.h"
+#include "reMutexHolder.h"
 
 //FMOD Headers.
 #include <fmod.hpp>
@@ -38,6 +38,7 @@
 
 TypeHandle FmodAudioManager::_type_handle;
 
+ReMutex FmodAudioManager::_lock;
 FMOD::System *FmodAudioManager::_system; 
 
 pset<FmodAudioManager *> FmodAudioManager::_all_managers;
@@ -85,6 +86,7 @@ AudioManager *Create_FmodAudioManager() {
 ////////////////////////////////////////////////////////////////////
 FmodAudioManager::
 FmodAudioManager() {
+  ReMutexHolder holder(_lock);
   FMOD_RESULT result;
 
   //We need a varible temporary to check the FMOD Version.
@@ -187,6 +189,7 @@ FmodAudioManager() {
 ////////////////////////////////////////////////////////////////////
 FmodAudioManager::
 ~FmodAudioManager() {
+  ReMutexHolder holder(_lock);
   // Be sure to delete associated sounds before deleting the manager!
   FMOD_RESULT result;
 
@@ -222,6 +225,7 @@ is_valid() {
 ////////////////////////////////////////////////////////////////////
 FMOD::DSP *FmodAudioManager::
 make_dsp(const FilterProperties::FilterConfig &conf) {
+  ReMutexHolder holder(_lock);
   FMOD_DSP_TYPE dsptype;
   FMOD_RESULT result;
   FMOD::DSP *dsp;
@@ -348,6 +352,7 @@ make_dsp(const FilterProperties::FilterConfig &conf) {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
 update_dsp_chain(FMOD::DSP *head, FilterProperties *config) {
+  ReMutexHolder holder(_lock);
   const FilterProperties::ConfigVector &conf = config->get_config();
   FMOD_RESULT result;
 
@@ -391,6 +396,7 @@ update_dsp_chain(FMOD::DSP *head, FilterProperties *config) {
 ////////////////////////////////////////////////////////////////////
 bool FmodAudioManager::
 configure_filters(FilterProperties *config) {
+  ReMutexHolder holder(_lock);
   FMOD_RESULT result;
   FMOD::DSP *head;
   result = _channelgroup->getDSPHead(&head);
@@ -409,6 +415,7 @@ configure_filters(FilterProperties *config) {
 ////////////////////////////////////////////////////////////////////
 PT(AudioSound) FmodAudioManager::
 get_sound(const string &file_name, bool positional, int) {
+  ReMutexHolder holder(_lock);
   //Needed so People use Panda's Generic UNIX Style Paths for Filename.
   //path.to_os_specific() converts it back to the proper OS version later on.
   
@@ -446,6 +453,7 @@ get_sound(MovieAudio *source, bool positional, int) {
 ////////////////////////////////////////////////////////////////////
 int FmodAudioManager::
 getSpeakerSetup() {
+  ReMutexHolder holder(_lock);
   FMOD_RESULT result;
   FMOD_SPEAKERMODE speakerMode;
   int returnMode;
@@ -510,6 +518,7 @@ getSpeakerSetup() {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
 setSpeakerSetup(AudioManager::SpeakerModeCategory cat) {
+  ReMutexHolder holder(_lock);
   FMOD_RESULT result;
   FMOD_SPEAKERMODE speakerModeType = (FMOD_SPEAKERMODE)cat;
   result = _system->setSpeakerMode( speakerModeType);
@@ -524,6 +533,7 @@ setSpeakerSetup(AudioManager::SpeakerModeCategory cat) {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
 set_volume(PN_stdfloat volume) {
+  ReMutexHolder holder(_lock);
   FMOD_RESULT result;
   result = _channelgroup->setVolume(volume);
   fmod_audio_errcheck("_channelgroup->setVolume()", result);
@@ -536,6 +546,7 @@ set_volume(PN_stdfloat volume) {
 ////////////////////////////////////////////////////////////////////
 PN_stdfloat FmodAudioManager::
 get_volume() const {
+  ReMutexHolder holder(_lock);
   float volume;
   FMOD_RESULT result;
   result = _channelgroup->getVolume(&volume);
@@ -551,6 +562,7 @@ get_volume() const {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
 set_active(bool active) {
+  ReMutexHolder holder(_lock);
   if (_active != active) {
     _active = active;
 
@@ -580,6 +592,7 @@ get_active() const {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
 stop_all_sounds() {
+  ReMutexHolder holder(_lock);
   // We have to walk through this list with some care, since stopping
   // a sound may also remove it from the set (if there are no other
   // references to the sound).
@@ -601,6 +614,7 @@ stop_all_sounds() {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
 update() {
+  ReMutexHolder holder(_lock);
   _system->update();
 }
 
@@ -621,6 +635,7 @@ update() {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
 audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz, PN_stdfloat fx, PN_stdfloat fy, PN_stdfloat fz, PN_stdfloat ux, PN_stdfloat uy, PN_stdfloat uz) {
+  ReMutexHolder holder(_lock);
   audio_debug("FmodAudioManager::audio_3d_set_listener_attributes()");
 
   FMOD_RESULT result;
@@ -666,6 +681,7 @@ audio_3d_get_listener_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
 audio_3d_set_distance_factor(PN_stdfloat factor) {
+  ReMutexHolder holder(_lock);
   audio_debug( "FmodAudioManager::audio_3d_set_distance_factor( factor= " << factor << ")" );
   
   FMOD_RESULT result;
@@ -699,6 +715,7 @@ audio_3d_get_distance_factor() const {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
 audio_3d_set_doppler_factor(PN_stdfloat factor) {
+  ReMutexHolder holder(_lock);
   audio_debug("FmodAudioManager::audio_3d_set_doppler_factor(factor="<<factor<<")");
 
   FMOD_RESULT result;
@@ -730,6 +747,7 @@ audio_3d_get_doppler_factor() const {
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::
 audio_3d_set_drop_off_factor(PN_stdfloat factor) {
+  ReMutexHolder holder(_lock);
   audio_debug("FmodAudioManager::audio_3d_set_drop_off_factor("<<factor<<")");
 
   FMOD_RESULT result;
@@ -748,6 +766,7 @@ audio_3d_set_drop_off_factor(PN_stdfloat factor) {
 ////////////////////////////////////////////////////////////////////
 PN_stdfloat FmodAudioManager::
 audio_3d_get_drop_off_factor() const {
+  ReMutexHolder holder(_lock);
   audio_debug("FmodAudioManager::audio_3d_get_drop_off_factor()");
 
   return _drop_off_factor;

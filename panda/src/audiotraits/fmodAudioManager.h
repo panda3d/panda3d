@@ -169,7 +169,9 @@ private:
   virtual bool configure_filters(FilterProperties *config);
   
  private:
-  
+  // This global lock protects all access to FMod library interfaces.
+  static ReMutex _lock;
+
   static FMOD::System *_system;
   static pset<FmodAudioManager *> _all_managers;
 
