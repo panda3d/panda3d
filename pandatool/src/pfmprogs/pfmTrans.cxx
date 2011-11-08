@@ -149,7 +149,7 @@ process_pfm(const Filename &input_filename, PfmFile &file) {
   }
 
   if (_got_vis_filename) {
-    NodePath mesh = file.generate_vis_mesh(true);
+    NodePath mesh = file.generate_vis_mesh(PfmFile::MF_both);
     if (_got_vistex_filename) {
       PT(Texture) tex = TexturePool::load_texture(_vistex_filename);
       if (tex == NULL) {
