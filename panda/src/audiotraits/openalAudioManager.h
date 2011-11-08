@@ -25,6 +25,7 @@
 #include "pmap.h"
 #include "pset.h"
 #include "movieAudioCursor.h"
+#include "reMutex.h"
 
 // OSX uses the OpenAL framework
 #ifdef IS_OSX
@@ -135,6 +136,8 @@ private:
   void cleanup();
   
 private:
+  // This global lock protects all access to OpenAL library interfaces.
+  static ReMutex _lock;
 
   // An expiration queue is a list of SoundData
   // that are no longer being used.  They are kept

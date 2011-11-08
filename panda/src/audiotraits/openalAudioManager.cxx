@@ -25,11 +25,13 @@
 #include "openalAudioSound.h"
 #include "virtualFileSystem.h"
 #include "movieAudio.h"
+#include "reMutexHolder.h"
 
 #include <algorithm>
 
 TypeHandle OpenALAudioManager::_type_handle;
 
+ReMutex OpenALAudioManager::_lock;
 int OpenALAudioManager::_active_managers = 0;
 bool OpenALAudioManager::_openal_active = false;
 ALCdevice* OpenALAudioManager::_device = NULL;
@@ -78,6 +80,7 @@ AudioManager *Create_OpenALAudioManager() {
 ////////////////////////////////////////////////////////////////////
 OpenALAudioManager::
 OpenALAudioManager() {
+  ReMutexHolder holder(_lock);
   if (_managers == (Managers *)NULL) {
     _managers = new Managers;
     _al_sources = new SourceCache;
@@ -164,6 +167,7 @@ OpenALAudioManager() {
 ////////////////////////////////////////////////////////////////////
 OpenALAudioManager::
 ~OpenALAudioManager() {
+  ReMutexHolder holder(_lock);
   nassertv(_managers != (Managers *)NULL);
   Managers::iterator mi = _managers->find(this);
   nassertv(mi != _managers->end());
@@ -182,6 +186,7 @@ OpenALAudioManager::
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 shutdown() {
+  ReMutexHolder holder(_lock);
   if (_managers != (Managers *)NULL) {
     Managers::iterator mi;
     for (mi = _managers->begin(); mi != _managers->end(); ++mi) {
@@ -226,6 +231,7 @@ make_current() const {
 ////////////////////////////////////////////////////////////////////
 bool OpenALAudioManager::
 can_use_audio(MovieAudioCursor *source) {
+  ReMutexHolder holder(_lock);
   int channels = source->audio_channels();
   if ((channels != 1)&&(channels != 2)) {
     audio_error("Currently, only mono and stereo are supported.");
@@ -244,6 +250,7 @@ can_use_audio(MovieAudioCursor *source) {
 ////////////////////////////////////////////////////////////////////
 bool OpenALAudioManager::
 should_load_audio(MovieAudioCursor *source, int mode) {
+  ReMutexHolder holder(_lock);
   if (mode == SM_stream) {
     // If the user asked for streaming, give him streaming.
     return false;
@@ -280,6 +287,7 @@ should_load_audio(MovieAudioCursor *source, int mode) {
 ////////////////////////////////////////////////////////////////////
 OpenALAudioManager::SoundData *OpenALAudioManager::
 get_sound_data(MovieAudio *movie, int mode) {
+  ReMutexHolder holder(_lock);
   const Filename &path = movie->get_filename();
   
   // Search for an already-cached sample or an already-opened stream.
@@ -370,6 +378,7 @@ get_sound_data(MovieAudio *movie, int mode) {
 ////////////////////////////////////////////////////////////////////
 PT(AudioSound) OpenALAudioManager::
 get_sound(MovieAudio *sound, bool positional, int mode) {
+  ReMutexHolder holder(_lock);
   if(!is_valid()) {
     return get_null_sound();
   }
@@ -388,6 +397,7 @@ get_sound(MovieAudio *sound, bool positional, int mode) {
 ////////////////////////////////////////////////////////////////////
 PT(AudioSound) OpenALAudioManager::
 get_sound(const string &file_name, bool positional, int mode) {
+  ReMutexHolder holder(_lock);
   if(!is_valid()) {
     return get_null_sound();
   }
@@ -420,6 +430,7 @@ get_sound(const string &file_name, bool positional, int mode) {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 uncache_sound(const string& file_name) {
+  ReMutexHolder holder(_lock);
   assert(is_valid());
   Filename path = file_name;
   
@@ -444,6 +455,7 @@ uncache_sound(const string& file_name) {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 clear_cache() {
+  ReMutexHolder holder(_lock);
   discard_excess_cache(0);
 }
 
@@ -454,6 +466,7 @@ clear_cache() {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 set_cache_limit(unsigned int count) {
+  ReMutexHolder holder(_lock);
   _cache_limit=count;
   discard_excess_cache(count);
 }
@@ -475,6 +488,7 @@ get_cache_limit() const {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 release_sound(OpenALAudioSound* audioSound) {
+  ReMutexHolder holder(_lock);
   AllSounds::iterator ai = _all_sounds.find(audioSound);
   if (ai != _all_sounds.end()) {
     _all_sounds.erase(ai);
@@ -488,6 +502,7 @@ release_sound(OpenALAudioSound* audioSound) {
 //        Sets listener gain
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::set_volume(PN_stdfloat volume) {
+  ReMutexHolder holder(_lock);
   if (_volume!=volume) {
     _volume = volume;
 
@@ -526,6 +541,7 @@ get_volume() const {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 set_play_rate(PN_stdfloat play_rate) {
+  ReMutexHolder holder(_lock);
   if (_play_rate!=play_rate) {
     _play_rate = play_rate;
     // Tell our AudioSounds to adjust:
@@ -554,6 +570,7 @@ get_play_rate() const {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 set_active(bool active) {
+  ReMutexHolder holder(_lock);
   if (_active!=active) {
     _active=active;
     // Tell our AudioSounds to adjust:
@@ -591,6 +608,7 @@ get_active() const {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz, PN_stdfloat fx, PN_stdfloat fy, PN_stdfloat fz, PN_stdfloat ux, PN_stdfloat uy, PN_stdfloat uz) {
+  ReMutexHolder holder(_lock);
   _position[0] = px;
   _position[1] = pz;
   _position[2] = -py; 
@@ -626,6 +644,7 @@ audio_3d_set_listener_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz,
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 audio_3d_get_listener_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz, PN_stdfloat *fx, PN_stdfloat *fy, PN_stdfloat *fz, PN_stdfloat *ux, PN_stdfloat *uy, PN_stdfloat *uz) {
+  ReMutexHolder holder(_lock);
   *px = _position[0];
   *py = -_position[2];
   *pz = _position[1];
@@ -655,6 +674,7 @@ audio_3d_get_listener_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 audio_3d_set_distance_factor(PN_stdfloat factor) {
+  ReMutexHolder holder(_lock);
   _distance_factor = factor;
 
   make_current();
@@ -698,6 +718,7 @@ audio_3d_get_distance_factor() const {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 audio_3d_set_doppler_factor(PN_stdfloat factor) {
+  ReMutexHolder holder(_lock);
   _doppler_factor = factor;
 
   make_current();
@@ -725,6 +746,7 @@ audio_3d_get_doppler_factor() const {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 audio_3d_set_drop_off_factor(PN_stdfloat factor) {
+  ReMutexHolder holder(_lock);
   _drop_off_factor = factor;
 
   AllSounds::iterator i=_all_sounds.begin();
@@ -753,6 +775,7 @@ audio_3d_get_drop_off_factor() const {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 starting_sound(OpenALAudioSound* audio) {
+  ReMutexHolder holder(_lock);
   ALuint source=0;
   
   // If the sound already has a source, we don't need to do anything.
@@ -801,6 +824,7 @@ starting_sound(OpenALAudioSound* audio) {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 stopping_sound(OpenALAudioSound* audio) {
+  ReMutexHolder holder(_lock);
   if (audio->_source) {
     _al_sources->insert(audio->_source);
     audio->_source = 0;
@@ -815,6 +839,7 @@ stopping_sound(OpenALAudioSound* audio) {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 set_concurrent_sound_limit(unsigned int limit) {
+  ReMutexHolder holder(_lock);
   _concurrent_sound_limit = limit;
   reduce_sounds_playing_to(_concurrent_sound_limit);
 }
@@ -836,6 +861,7 @@ get_concurrent_sound_limit() const {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 reduce_sounds_playing_to(unsigned int count) {
+  ReMutexHolder holder(_lock);
   // first give all sounds that have finished a chance to stop, so that these get stopped first
   update();
 
@@ -861,6 +887,7 @@ reduce_sounds_playing_to(unsigned int count) {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 stop_all_sounds() {
+  ReMutexHolder holder(_lock);
   reduce_sounds_playing_to(0);
 }
 
@@ -871,6 +898,7 @@ stop_all_sounds() {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 update() {
+  ReMutexHolder holder(_lock);
 
   // See if any of our playing sounds have ended
   // we must first collect a seperate list of finished sounds and then
@@ -910,6 +938,7 @@ update() {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 cleanup() {
+  ReMutexHolder holder(_lock);
   if (!_cleanup_required) {
     return;
   }
@@ -991,6 +1020,7 @@ SoundData() :
 ////////////////////////////////////////////////////////////////////
 OpenALAudioManager::SoundData::
 ~SoundData() {
+  ReMutexHolder holder(OpenALAudioManager::_lock);
   if (_sample != 0) {
     if (_manager->_is_valid) {
       _manager->make_current();
@@ -1009,6 +1039,7 @@ OpenALAudioManager::SoundData::
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 increment_client_count(SoundData *sd) {
+  ReMutexHolder holder(_lock);
   sd->_client_count += 1;
   audio_debug("Incrementing: " << sd->_movie->get_filename().get_basename() << " " << sd->_client_count);
   if (sd->_client_count == 1) {
@@ -1031,6 +1062,7 @@ increment_client_count(SoundData *sd) {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 decrement_client_count(SoundData *sd) {
+  ReMutexHolder holder(_lock);
   sd->_client_count -= 1;
   audio_debug("Decrementing: " << sd->_movie->get_filename().get_basename() << " " << sd->_client_count);
   if (sd->_client_count == 0) {
@@ -1055,6 +1087,7 @@ decrement_client_count(SoundData *sd) {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioManager::
 discard_excess_cache(int sample_limit) {
+  ReMutexHolder holder(_lock);
   int stream_limit = 5;
 
   while (((int)_expiring_samples.size()) > sample_limit) {

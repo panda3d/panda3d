@@ -74,6 +74,8 @@ OpenALAudioSound(OpenALAudioManager* manager,
   _velocity[1] = 0.0f;
   _velocity[2] = 0.0f;
 
+  ReMutexHolder holder(OpenALAudioManager::_lock);
+
   require_sound_data();
   if (_manager == NULL) {
     return;
@@ -107,6 +109,7 @@ OpenALAudioSound::
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 cleanup() {
+  ReMutexHolder holder(OpenALAudioManager::_lock);
   if (_manager == 0) {
     return;
   }
@@ -128,6 +131,7 @@ cleanup() {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 play() {
+  ReMutexHolder holder(OpenALAudioManager::_lock);
   if (_manager == 0) return;
 
   PN_stdfloat px,py,pz,vx,vy,vz;
@@ -202,6 +206,7 @@ play() {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 stop() {
+  ReMutexHolder holder(OpenALAudioManager::_lock);
   if (_manager==0) return;
 
   if (_source) {
@@ -233,6 +238,7 @@ stop() {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 finished() {
+  ReMutexHolder holder(OpenALAudioManager::_lock);
   stop();
   _current_time = _length;
   if (!_finished_event.empty()) {
@@ -247,6 +253,7 @@ finished() {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 set_loop(bool loop) {
+  ReMutexHolder holder(OpenALAudioManager::_lock);
   set_loop_count((loop)?0:1);
 }
 
@@ -267,6 +274,7 @@ get_loop() const {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 set_loop_count(unsigned long loop_count) {
+  ReMutexHolder holder(OpenALAudioManager::_lock);
   if (_manager==0) return;
   
   if (loop_count >= 1000000000) {
@@ -298,6 +306,7 @@ get_loop_count() const {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 restart_stalled_audio() {
+  ReMutexHolder holder(OpenALAudioManager::_lock);
   ALenum status;
   if (_stream_queued.size() == 0) {
     return;
@@ -316,6 +325,7 @@ restart_stalled_audio() {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 queue_buffer(ALuint buffer, int samples, int loop_index, double time_offset) {
+  ReMutexHolder holder(OpenALAudioManager::_lock);
   // Now push the buffer into the stream queue.
   alGetError();
   alSourceQueueBuffers(_source,1,&buffer);
@@ -340,6 +350,7 @@ queue_buffer(ALuint buffer, int samples, int loop_index, double time_offset) {
 ////////////////////////////////////////////////////////////////////
 ALuint OpenALAudioSound::
 make_buffer(int samples, int channels, int rate, unsigned char *data) {
+  ReMutexHolder holder(OpenALAudioManager::_lock);
   
   // Allocate a buffer to hold the data.
   alGetError();
@@ -373,6 +384,7 @@ make_buffer(int samples, int channels, int rate, unsigned char *data) {
 ////////////////////////////////////////////////////////////////////
 int OpenALAudioSound::
 read_stream_data(int bytelen, unsigned char *buffer) {
+  ReMutexHolder holder(OpenALAudioManager::_lock);
 
   MovieAudioCursor *cursor = _sd->_stream;
   double length = cursor->length();
@@ -427,6 +439,7 @@ read_stream_data(int bytelen, unsigned char *buffer) {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 correct_calibrated_clock(double rtc, double t) {
+  ReMutexHolder holder(OpenALAudioManager::_lock);
   double cc = (rtc - _calibrated_clock_base) * _calibrated_clock_scale;
   double diff = cc-t;
   _calibrated_clock_decavg = (_calibrated_clock_decavg * 0.95) + (diff * 0.05);
@@ -459,6 +472,7 @@ correct_calibrated_clock(double rtc, double t) {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 pull_used_buffers() {
+  ReMutexHolder holder(OpenALAudioManager::_lock);
   while (_stream_queued.size()) {
     ALuint buffer = 0;
     alGetError();
@@ -493,6 +507,7 @@ pull_used_buffers() {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 push_fresh_buffers() {
+  ReMutexHolder holder(OpenALAudioManager::_lock);
   static unsigned char data[65536];
   
   if (_sd->_sample) {
@@ -536,6 +551,7 @@ push_fresh_buffers() {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 set_time(PN_stdfloat time) {
+  ReMutexHolder holder(OpenALAudioManager::_lock);
   _start_time = time;
 }
 
@@ -546,6 +562,7 @@ set_time(PN_stdfloat time) {
 ////////////////////////////////////////////////////////////////////
 PN_stdfloat OpenALAudioSound::
 get_time() const {
+  ReMutexHolder holder(OpenALAudioManager::_lock);
   if (_manager == 0) {
     return 0.0;
   }
@@ -559,6 +576,7 @@ get_time() const {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 cache_time(double rtc) {
+  ReMutexHolder holder(OpenALAudioManager::_lock);
   assert(_source != 0);
   double t=get_calibrated_clock(rtc);
   double max = _length * _playing_loops;
@@ -577,6 +595,7 @@ cache_time(double rtc) {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 set_volume(PN_stdfloat volume) {
+  ReMutexHolder holder(OpenALAudioManager::_lock);
   _volume=volume;
 
   if (_source) {
@@ -630,6 +649,7 @@ get_balance() const {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 set_play_rate(PN_stdfloat play_rate) {
+  ReMutexHolder holder(OpenALAudioManager::_lock);
   _play_rate = play_rate;
   if (_source) {
     alSourcef(_source, AL_PITCH, play_rate);
@@ -674,6 +694,7 @@ length() const {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx, PN_stdfloat vy, PN_stdfloat vz) {
+  ReMutexHolder holder(OpenALAudioManager::_lock);
   _location[0] = px;
   _location[1] = pz;
   _location[2] = -py; 
@@ -701,6 +722,7 @@ set_3d_attributes(PN_stdfloat px, PN_stdfloat py, PN_stdfloat pz, PN_stdfloat vx
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat *vx, PN_stdfloat *vy, PN_stdfloat *vz) {
+  ReMutexHolder holder(OpenALAudioManager::_lock);
   *px = _location[0];
   *py = -_location[2];
   *pz = _location[1];
@@ -718,6 +740,7 @@ get_3d_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *pz, PN_stdfloat
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 set_3d_min_distance(PN_stdfloat dist) {
+  ReMutexHolder holder(OpenALAudioManager::_lock);
   _min_dist = dist;
 
   if (_source) {
@@ -746,6 +769,7 @@ get_3d_min_distance() const {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 set_3d_max_distance(PN_stdfloat dist) {
+  ReMutexHolder holder(OpenALAudioManager::_lock);
   _max_dist = dist;
 
   if (_source) {
@@ -775,6 +799,7 @@ get_3d_max_distance() const {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 set_3d_drop_off_factor(PN_stdfloat factor) {
+  ReMutexHolder holder(OpenALAudioManager::_lock);
   _drop_off_factor = factor;
 
   if (_source) {
@@ -807,6 +832,7 @@ get_3d_drop_off_factor() const {
 ////////////////////////////////////////////////////////////////////
 void OpenALAudioSound::
 set_active(bool active) {
+  ReMutexHolder holder(OpenALAudioManager::_lock);
   if (_active!=active) {
     _active=active;
     if (_active) {
@@ -880,6 +906,7 @@ get_name() const {
 ////////////////////////////////////////////////////////////////////
 AudioSound::SoundStatus OpenALAudioSound::
 status() const {
+  ReMutexHolder holder(OpenALAudioManager::_lock);
   if (_source==0) {
     return AudioSound::READY;
   }
