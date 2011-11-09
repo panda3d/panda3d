@@ -16,6 +16,7 @@
 #include "compress_string.h"
 #include "pnotify.h"
 #include "panda_getopt.h"
+#include "preprocess_argv.h"
 
 void
 usage() {
@@ -55,7 +56,7 @@ usage() {
 }
 
 int
-main(int argc, char *argv[]) {
+main(int argc, char **argv) {
   extern char *optarg;
   extern int optind;
   const char *optstr = "o:c123456789h";
@@ -65,6 +66,7 @@ main(int argc, char *argv[]) {
   bool use_stdout = false;
   int compression_level = 6;
 
+  preprocess_argv(argc, argv);
   int flag = getopt(argc, argv, optstr);
 
   while (flag != EOF) {

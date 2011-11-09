@@ -3,7 +3,6 @@
 #include "configVariableString.cxx"
 #include "encryptStreamBuf.cxx"
 #include "encryptStream.cxx"
-#include "globPattern.cxx"
 #include "nativeNumericData.cxx"
 #include "notify.cxx"
 #include "notifyCategory.cxx"

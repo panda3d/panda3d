@@ -21,6 +21,7 @@
 #include "filename.h"
 #include "executionEnvironment.h"
 #include "panda_getopt.h"
+#include "preprocess_argv.h"
 
 #include <time.h>
 
@@ -285,7 +286,8 @@ usage() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 int
-main(int argc, char *argv[]) {
+main(int argc, char **argv) {
+  preprocess_argv(argc, argv);
   if (argv[0] != NULL && *argv[0]) {
     // Get the program name from the command-line arguments, if the OS
     // provides it.

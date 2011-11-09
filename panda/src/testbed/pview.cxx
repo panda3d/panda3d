@@ -24,6 +24,7 @@
 #include "bamCache.h"
 #include "virtualFileSystem.h"
 #include "panda_getopt.h"
+#include "preprocess_argv.h"
 
 // By including checkPandaVersion.h, we guarantee that runtime
 // attempts to run pview will fail if it inadvertently links with the
@@ -223,7 +224,8 @@ report_version() {
 }
 
 int
-main(int argc, char *argv[]) {
+main(int argc, char **argv) {
+  preprocess_argv(argc, argv);
   framework.open_framework(argc, argv);
   framework.set_window_title("Panda Viewer");
 

@@ -26,6 +26,7 @@
 #include "configVariableInt.h"
 #include "configVariableBool.h"
 #include "panda_getopt_long.h"
+#include "preprocess_argv.h"
 
 #include <stdlib.h>
 #include <algorithm>
@@ -198,8 +199,8 @@ show_text(const string &prefix, int indent_width, string text) {
 //               exit(1).
 ////////////////////////////////////////////////////////////////////
 void ProgramBase::
-parse_command_line(int argc, char *argv[]) {
-
+parse_command_line(int argc, char **argv) {
+  preprocess_argv(argc, argv);
 
   // Setting this variable to zero reinitializes the options parser
   // This is only necessary for processing multiple command lines in

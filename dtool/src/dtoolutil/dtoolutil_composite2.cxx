@@ -1,11 +1,11 @@
 #include "pandaFileStream.cxx"
 #include "pandaFileStreamBuf.cxx"
 #include "panda_getopt_impl.cxx"
-#include "executionEnvironment.cxx"
 #include "pfstream.cxx"
 #include "pfstreamBuf.cxx"
+#include "preprocess_argv.cxx"
 #include "stringDecoder.cxx"
 #include "textEncoder.cxx"
 #include "unicodeLatinMap.cxx"
 #include "vector_string.cxx"
-
+#include "win32ArgParser.cxx"

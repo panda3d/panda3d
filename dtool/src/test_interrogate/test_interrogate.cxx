@@ -20,6 +20,7 @@
 #include "filename.h"
 #include "pystub.h"
 #include "panda_getopt.h"
+#include "preprocess_argv.h"
 
 #include <stdlib.h>
 
@@ -516,7 +517,7 @@ usage() {
 }
 
 int
-main(int argc, char *argv[]) {
+main(int argc, char **argv) {
   extern char *optarg;
   extern int optind;
   const char *optstr = "p:ftqh";
@@ -524,6 +525,7 @@ main(int argc, char *argv[]) {
   bool all_functions = false;
   bool all_types = false;
   bool quick_load = false;
+  preprocess_argv(argc, argv);
   int flag = getopt(argc, argv, optstr);
 
   while (flag != EOF) {

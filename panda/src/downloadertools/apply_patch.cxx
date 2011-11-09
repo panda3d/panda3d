@@ -14,11 +14,14 @@
 
 #include "pandabase.h"
 #include "panda_getopt.h"
+#include "preprocess_argv.h"
 #include "patchfile.h"
 #include "filename.h"
 
 int
-main(int argc, char *argv[]) {
+main(int argc, char **argv) {
+  preprocess_argv(argc, argv);
+
   if (argc < 3) {
     cerr << "Usage: apply_patch <patch_file> <old_file>" << endl;
     cerr << "Will overwrite old_file" << endl;

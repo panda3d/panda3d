@@ -19,6 +19,7 @@
 #include "cppGlobals.h"
 #include "pnotify.h"
 #include "panda_getopt_long.h"
+#include "preprocess_argv.h"
 #include <time.h>
 
 CPPParser parser;
@@ -302,7 +303,8 @@ predefine_macro(CPPParser& parser, const string& inoption) {
 }
 
 int
-main(int argc, char *argv[]) {
+main(int argc, char **argv) {
+  preprocess_argv(argc, argv);
   string command_line;
   int i;
   for (i = 0; i < argc; i++) {

@@ -19,6 +19,7 @@
 #include "string_utils.h"
 #include "pvector.h"
 #include "panda_getopt.h"
+#include "preprocess_argv.h"
 
 #define RANDFRAC (rand()/(PN_stdfloat)(RAND_MAX))
 
@@ -382,9 +383,9 @@ load_gridded_models(WindowFramework *window,
 }
 
 int
-main(int argc, char *argv[]) {
+main(int argc, char **argv) {
+  preprocess_argv(argc, argv);
   PandaFramework framework;
-  vector_string args;
   framework.open_framework(argc, argv);
   framework.set_window_title("Gridded Object Viewer");
 

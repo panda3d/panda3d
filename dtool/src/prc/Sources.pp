@@ -27,7 +27,6 @@
     configVariableSearchPath.I configVariableSearchPath.h \
     configVariableString.I configVariableString.h \
     encryptStreamBuf.h encryptStreamBuf.I encryptStream.h encryptStream.I \
-    globPattern.I globPattern.h \
     littleEndian.h \
     nativeNumericData.I nativeNumericData.h \
     pnotify.I pnotify.h \
@@ -63,7 +62,6 @@
     configVariableSearchPath.cxx \
     configVariableString.cxx \
     encryptStreamBuf.cxx encryptStream.cxx \
-    globPattern.cxx \
     nativeNumericData.cxx \
     notify.cxx \
     notifyCategory.cxx \
@@ -93,7 +91,6 @@
     configVariableSearchPath.I configVariableSearchPath.h \
     configVariableString.I configVariableString.h \
     encryptStreamBuf.h encryptStreamBuf.I encryptStream.h encryptStream.I \
-    globPattern.I globPattern.h \
     littleEndian.h \
     nativeNumericData.I nativeNumericData.h \
     pnotify.I pnotify.h \

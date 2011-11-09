@@ -1,8 +1,10 @@
-#include "config_dtoolutil.cxx"
-#include "filename.cxx"
-#include "load_dso.cxx"
-#include "dSearchPath.cxx"
-#include "pandaSystem.cxx"
 #include "checkPandaVersion.cxx"
+#include "config_dtoolutil.cxx"
+#include "dSearchPath.cxx"
+#include "executionEnvironment.cxx"
+#include "filename.cxx"
+#include "globPattern.cxx"
+#include "load_dso.cxx"
+#include "pandaSystem.cxx"
 
 

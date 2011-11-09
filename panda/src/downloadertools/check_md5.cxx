@@ -16,6 +16,7 @@
 #include "hashVal.h"
 #include "filename.h"
 #include "panda_getopt.h"
+#include "preprocess_argv.h"
 
 bool output_decimal = false;
 bool suppress_filename = false;
@@ -65,7 +66,7 @@ output_hash(const string &filename, const HashVal &hash) {
   
 
 int
-main(int argc, char *argv[]) {
+main(int argc, char **argv) {
   extern char *optarg;
   extern int optind;
   const char *optstr = "i:db:qh";
@@ -74,6 +75,7 @@ main(int argc, char *argv[]) {
   string input_string;
   Filename binary_output_filename;
 
+  preprocess_argv(argc, argv);
   int flag = getopt(argc, argv, optstr);
 
   while (flag != EOF) {

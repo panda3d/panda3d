@@ -17,6 +17,7 @@
 #include "filename.h"
 #include "pvector.h"
 #include "panda_getopt.h"
+#include "preprocess_argv.h"
 #include <stdio.h>
 
 // Pick up the public key definitions.
@@ -317,7 +318,7 @@ usage() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 int
-main(int argc, char *argv[]) {
+main(int argc, char **argv) {
   extern char *optarg;
   extern int optind;
   const char *optstr = "a:b:p:h";
@@ -329,6 +330,7 @@ main(int argc, char *argv[]) {
   string pass_phrase;
   bool got_pass_phrase = false;
 
+  preprocess_argv(argc, argv);
   int flag = getopt(argc, argv, optstr);
 
   while (flag != EOF) {

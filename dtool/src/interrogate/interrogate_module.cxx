@@ -23,6 +23,7 @@
 #include "pystub.h"
 #include "pnotify.h"
 #include "panda_getopt_long.h"
+#include "preprocess_argv.h"
 #include "pset.h"
 
 Filename output_code_filename;
@@ -237,6 +238,7 @@ int main(int argc, char *argv[]) {
   extern int optind;
   int flag;
 
+  preprocess_argv(argc, argv);
   flag = getopt_long_only(argc, argv, short_options, long_options, NULL);
   while (flag != EOF) {
     switch (flag) {

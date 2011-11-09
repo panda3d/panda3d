@@ -34,7 +34,7 @@
 //               example, to scan a directory for all files matching a
 //               particular pattern.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DTOOLCONFIG GlobPattern {
+class EXPCL_DTOOL GlobPattern {
 PUBLISHED:
   INLINE GlobPattern(const string &pattern = string());
   INLINE GlobPattern(const GlobPattern &copy);

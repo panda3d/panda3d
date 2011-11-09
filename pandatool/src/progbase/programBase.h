@@ -46,7 +46,7 @@ public:
   INLINE void show_text(const string &text);
   void show_text(const string &prefix, int indent_width, string text);
 
-  virtual void parse_command_line(int argc, char *argv[]);
+  virtual void parse_command_line(int argc, char **argv);
 
   string get_exec_command() const;
 

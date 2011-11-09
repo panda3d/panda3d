@@ -14,6 +14,7 @@
 
 #include "pandabase.h"
 #include "panda_getopt.h"
+#include "preprocess_argv.h"
 #include "multifile.h"
 #include "pointerTo.h"
 #include "filename.h"
@@ -747,7 +748,8 @@ tokenize_extensions(const string &str, pset<string> &extensions) {
 }
 
 int
-main(int argc, char *argv[]) {
+main(int argc, char **argv) {
+  preprocess_argv(argc, argv);
   if (argc < 2) {
     usage();
     return 1;
