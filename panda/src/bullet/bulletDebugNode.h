@@ -20,10 +20,6 @@
 #include "bullet_includes.h"
 
 #include "geomNode.h"
-#include "geom.h"
-#include "geomVertexData.h"
-#include "geomLines.h"
-#include "geomTriangles.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BulletDebugNode
@@ -102,12 +98,6 @@ private:
   bool _wireframe;
   bool _constraints;
   bool _bounds;
-
-  PT(GeomVertexData) _vdata;
-  PT(Geom) _geom_lines;
-  PT(GeomLines) _prim_lines;
-  PT(Geom) _geom_triangles;
-  PT(GeomTriangles) _prim_triangles;
 
   friend class BulletWorld;
 

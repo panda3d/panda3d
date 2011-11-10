@@ -14,6 +14,9 @@
 
 #include "bulletDebugNode.h"
 
+#include "geomLines.h"
+#include "geomVertexData.h"
+#include "geomTriangles.h"
 #include "geomVertexFormat.h"
 #include "geomVertexWriter.h"
 #include "omniBoundingVolume.h"
@@ -33,40 +36,64 @@ BulletDebugNode(const char *name) : GeomNode(name) {
   _bounds = false;
   _drawer._normals = true;
 
-  _vdata = new GeomVertexData("", GeomVertexFormat::get_v3c4(), Geom::UH_stream);
-
-  // Lines
-  _prim_lines = new GeomLines(Geom::UH_stream);
-  _prim_lines->set_shade_model(Geom::SM_uniform);
-
-  _geom_lines = new Geom(_vdata);
-  _geom_lines->add_primitive(_prim_lines);
-
-  add_geom(_geom_lines);
-
-  // Triangles
-  _prim_triangles = new GeomTriangles(Geom::UH_stream);
-  _prim_triangles->set_shade_model(Geom::SM_uniform);
-
-  _geom_triangles = new Geom(_vdata);
-  _geom_triangles->add_primitive(_prim_triangles);
-
-  add_geom(_geom_triangles);
-
-  // Draw something in oder to prevent getting optimized away
-  GeomVertexWriter vwriter(_vdata, InternalName::get_vertex());
-  vwriter.add_data3(0.0, 0.0, 0.0);
-  vwriter.add_data3(0.0, 0.0, 0.0);
-  vwriter.add_data3(0.0, 0.0, 0.0);
-  _prim_lines->add_next_vertices(2);
-  _prim_lines->close_primitive();
-  _prim_triangles->add_next_vertices(3);
-  _prim_triangles->close_primitive();
-
   CPT (BoundingVolume) bounds = new OmniBoundingVolume();
   set_bounds(bounds);
   set_final(true);
   set_overall_hidden(true);
+
+  // Lines
+  {
+    PT(GeomVertexData) vdata;
+    PT(Geom) geom;
+    PT(GeomLines) prim;
+
+    vdata = new GeomVertexData("", GeomVertexFormat::get_v3c4(), Geom::UH_stream);
+
+    prim = new GeomLines(Geom::UH_stream);
+    prim->set_shade_model(Geom::SM_uniform);
+
+/*
+    // Draw something in oder to prevent getting optimized away
+    GeomVertexWriter vwriter(vdata, InternalName::get_vertex());
+    vwriter.add_data3(0.0, 0.0, 0.0);
+    vwriter.add_data3(0.0, 0.0, 0.0);
+    vwriter.add_data3(0.0, 0.0, 0.0);
+    prim->add_next_vertices(2);
+    prim->close_primitive();
+*/
+
+    geom = new Geom(vdata);
+    geom->add_primitive(prim);
+
+    this->add_geom(geom);
+  }
+
+  // Triangles
+  {
+    PT(GeomVertexData) vdata;
+    PT(Geom) geom;
+    PT(GeomTriangles) prim;
+
+    vdata = new GeomVertexData("", GeomVertexFormat::get_v3c4(), Geom::UH_stream);
+
+    prim = new GeomTriangles(Geom::UH_stream);
+    prim->set_shade_model(Geom::SM_uniform);
+
+/*
+    // Draw something in oder to prevent getting optimized away
+    GeomVertexWriter vwriter(vdata, InternalName::get_vertex());
+    vwriter.add_data3(0.0, 0.0, 0.0);
+    vwriter.add_data3(0.0, 0.0, 0.0);
+    vwriter.add_data3(0.0, 0.0, 0.0);
+    prim->add_next_vertices(3);
+    prim->close_primitive();
+*/
+
+    geom = new Geom(vdata);
+    geom->add_primitive(prim);
+
+    this->add_geom(geom);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -204,6 +231,9 @@ sync_b2p(btDynamicsWorld *world) {
   if (is_overall_hidden()) return;
 
   // Collect debug geometry data
+  _drawer._lines.clear();
+  _drawer._triangles.clear();
+
   world->debugDrawWorld();
 
   // Get inverse of this node's net transform
@@ -211,53 +241,68 @@ sync_b2p(btDynamicsWorld *world) {
   LMatrix4 m = np.get_net_transform()->get_mat();
   m.invert_in_place();
 
-  // Render collected data
-  _prim_lines->clear_vertices();
-  _prim_triangles->clear_vertices();
+  // Render lines
+  {
+    PT(Geom) geom = modify_geom(0); // TODO idx "0" is assumed
+    PT(GeomVertexData) vdata = geom->modify_vertex_data();
+    PT(GeomPrimitive) prim = geom->modify_primitive(0);
 
-  GeomVertexWriter vwriter(_vdata, InternalName::get_vertex());
-  GeomVertexWriter cwriter(_vdata, InternalName::get_color());
+    geom->clear_cache();
+    vdata->clear_rows();
+    prim->clear_vertices();
 
-  int v = 0;
+    GeomVertexWriter vwriter = GeomVertexWriter(vdata, InternalName::get_vertex());
+    GeomVertexWriter cwriter = GeomVertexWriter(vdata, InternalName::get_color());
 
-  pvector<Line>::const_iterator lit;
-  pvector<Triangle>::const_iterator tit;
+    int v = 0;
 
-  for (lit = _drawer._lines.begin(); lit != _drawer._lines.end(); lit++) {
-    Line line = *lit;
+    pvector<Line>::const_iterator lit;
+    for (lit = _drawer._lines.begin(); lit != _drawer._lines.end(); lit++) {
+      Line line = *lit;
 
-    vwriter.add_data3(m.xform_point(line._p0));
-    vwriter.add_data3(m.xform_point(line._p1));
-    cwriter.add_data4(line._color);
-    cwriter.add_data4(line._color);
+      vwriter.add_data3(m.xform_point(line._p0));
+      vwriter.add_data3(m.xform_point(line._p1));
+      cwriter.add_data4(line._color);
+      cwriter.add_data4(line._color);
 
-    _prim_lines->add_vertex(v++);
-    _prim_lines->add_vertex(v++);
-    _prim_lines->close_primitive();
+      prim->add_vertex(v++);
+      prim->add_vertex(v++);
+      prim->close_primitive();
+    }
   }
 
-  for (tit = _drawer._triangles.begin(); tit != _drawer._triangles.end(); tit++) {
-    Triangle tri = *tit;
+  // Render triangles
+  {
+    PT(Geom) geom = modify_geom(1); // TODO idx "1" is assumed
+    PT(GeomVertexData) vdata = geom->modify_vertex_data();
+    PT(GeomPrimitive) prim = geom->modify_primitive(0);
 
-    vwriter.add_data3(m.xform_point(tri._p0));
-    vwriter.add_data3(m.xform_point(tri._p1));
-    vwriter.add_data3(m.xform_point(tri._p2));
-    cwriter.add_data4(tri._color);
-    cwriter.add_data4(tri._color);
-    cwriter.add_data4(tri._color);
+    geom->clear_cache();
+    vdata->clear_rows();
+    prim->clear_vertices();
 
-    _prim_triangles->add_vertex(v++);
-    _prim_triangles->add_vertex(v++);
-    _prim_triangles->add_vertex(v++);
-    _prim_triangles->close_primitive();
+    GeomVertexWriter vwriter = GeomVertexWriter(vdata, InternalName::get_vertex());
+    GeomVertexWriter cwriter = GeomVertexWriter(vdata, InternalName::get_color());
+
+    int v = 0;
+
+    pvector<Triangle>::const_iterator tit;
+    for (tit = _drawer._triangles.begin(); tit != _drawer._triangles.end(); tit++) {
+      Triangle tri = *tit;
+
+      vwriter.add_data3(m.xform_point(tri._p0));
+      vwriter.add_data3(m.xform_point(tri._p1));
+      vwriter.add_data3(m.xform_point(tri._p2));
+      cwriter.add_data4(tri._color);
+      cwriter.add_data4(tri._color);
+      cwriter.add_data4(tri._color);
+
+      prim->add_vertex(v++);
+      prim->add_vertex(v++);
+      prim->add_vertex(v++);
+      prim->close_primitive();
+    }
   }
-
-  // Clear the collected data again
-  _drawer._lines.clear();
-  _drawer._triangles.clear();
-
-  // Force recompute of bounds
-  np.force_recompute_bounds();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -311,9 +356,15 @@ drawLine(const btVector3 &from, const btVector3 &to, const btVector3 &color) {
 
   Line line;
 
-  line._p0 = LVecBase3(from.getX(), from.getY(), from.getZ());
-  line._p1 = LVecBase3(to.getX(), to.getY(), to.getZ());
-  line._color = LColor(r, g, b, 1.0f);
+  line._p0 = LVecBase3((PN_stdfloat)from.getX(),
+                       (PN_stdfloat)from.getY(),
+                       (PN_stdfloat)from.getZ());
+  line._p1 = LVecBase3((PN_stdfloat)to.getX(),
+                       (PN_stdfloat)to.getY(),
+                       (PN_stdfloat)to.getZ());
+  line._color = LColor((PN_stdfloat)r,
+                       (PN_stdfloat)g, 
+                       (PN_stdfloat)b, 1.0f);
 
   _lines.push_back(line);
 }
