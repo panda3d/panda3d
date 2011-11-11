@@ -33,6 +33,7 @@ struct AVCodecContext;
 struct AVStream;
 struct AVPacket;
 struct AVFrame;
+struct SwsContext;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FfmpegVideoCursor
@@ -116,6 +117,8 @@ private:
   double _packet_time;
   AVFormatContext *_format_ctx;
   AVCodecContext *_video_ctx;
+  SwsContext *_convert_ctx;
+
   FfmpegVirtualFile _ffvfile;
   int _video_index;
   double _video_timebase;

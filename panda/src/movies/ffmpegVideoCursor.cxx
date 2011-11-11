@@ -52,6 +52,7 @@ FfmpegVideoCursor() :
   _packet1(NULL),
   _format_ctx(NULL),
   _video_ctx(NULL),
+  _convert_ctx(NULL),
   _video_index(-1),
   _frame(NULL),
   _frame_out(NULL),
@@ -133,14 +134,20 @@ init_from(FfmpegVideo *source) {
       cleanup();
       return;
     }
-  }
 
-  _size_x = _video_ctx->width;
-  _size_y = _video_ctx->height;
-  _num_components = 3; // Don't know how to implement RGBA movies yet.
-  _length = (_format_ctx->duration * 1.0) / AV_TIME_BASE;
-  _can_seek = true;
-  _can_seek_fast = true;
+    _size_x = _video_ctx->width;
+    _size_y = _video_ctx->height;
+    _num_components = 3; // Don't know how to implement RGBA movies yet.
+    _length = (_format_ctx->duration * 1.0) / AV_TIME_BASE;
+    _can_seek = true;
+    _can_seek_fast = true;
+
+#ifdef HAVE_SWSCALE
+    _convert_ctx = sws_getContext(_size_x, _size_y,
+                                  _video_ctx->pix_fmt, _size_x, _size_y,
+                                  PIX_FMT_BGR24, SWS_FAST_BILINEAR, NULL, NULL, NULL);
+#endif  // HAVE_SWSCALE
+  }
 
   _frame = avcodec_alloc_frame();
   _frame_out = avcodec_alloc_frame();
@@ -181,6 +188,7 @@ FfmpegVideoCursor(FfmpegVideo *src) :
   _packet1(NULL),
   _format_ctx(NULL),
   _video_ctx(NULL),
+  _convert_ctx(NULL),
   _video_index(-1),
   _frame(NULL),
   _frame_out(NULL),
@@ -493,15 +501,25 @@ cleanup() {
     _packet1 = NULL;
   }
 
-  if ((_video_ctx)&&(_video_ctx->codec)) {
+  {
     MutexHolder av_holder(_av_lock);
-    avcodec_close(_video_ctx);
-  }
-  _video_ctx = NULL;
-
-  if (_format_ctx) {
-    _ffvfile.close();
-    _format_ctx = NULL;
+    
+#ifdef HAVE_SWSCALE
+    if (_convert_ctx != NULL) {
+      sws_freeContext(_convert_ctx);
+    }
+    _convert_ctx = NULL;
+#endif  // HAVE_SWSCALE
+    
+    if ((_video_ctx)&&(_video_ctx->codec)) {
+      avcodec_close(_video_ctx);
+    }
+    _video_ctx = NULL;
+    
+    if (_format_ctx) {
+      _ffvfile.close();
+      _format_ctx = NULL;
+    }
   }
 
   _video_index = -1;
@@ -927,13 +945,9 @@ export_frame(MovieVideoCursor::Buffer *buffer) {
   buffer->_begin_time = _begin_time;
   buffer->_end_time = _end_time;
 #ifdef HAVE_SWSCALE
-  struct SwsContext *convert_ctx = sws_getContext(_size_x, _size_y,
-                                                  _video_ctx->pix_fmt, _size_x, _size_y,
-                                                  PIX_FMT_BGR24, SWS_FAST_BILINEAR, NULL, NULL, NULL);
-  nassertv(convert_ctx != NULL);
-  sws_scale(convert_ctx, _frame->data, _frame->linesize,
+  nassertv(_convert_ctx != NULL);
+  sws_scale(_convert_ctx, _frame->data, _frame->linesize,
             0, _size_y, _frame_out->data, _frame_out->linesize);
-  sws_freeContext(convert_ctx);
 #else
   img_convert((AVPicture *)_frame_out, PIX_FMT_BGR24, 
               (AVPicture *)_frame, _video_ctx->pix_fmt, _size_x, _size_y);
