@@ -328,7 +328,7 @@ fetch_buffer(double time) {
     vision_cat.error() << "Failed to dequeue buffer!\n";
     return NULL;
   }
-  nassertv(vbuf.index < _bufcount);
+  nassertr(vbuf.index < _bufcount, NULL);
   size_t bufsize = _buflens[vbuf.index];
   size_t old_bpl = _format->fmt.pix.bytesperline;
   size_t new_bpl = _size_x * 3;
