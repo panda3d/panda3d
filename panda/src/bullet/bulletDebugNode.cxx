@@ -52,20 +52,10 @@ BulletDebugNode(const char *name) : GeomNode(name) {
     prim = new GeomLines(Geom::UH_stream);
     prim->set_shade_model(Geom::SM_uniform);
 
-/*
-    // Draw something in oder to prevent getting optimized away
-    GeomVertexWriter vwriter(vdata, InternalName::get_vertex());
-    vwriter.add_data3(0.0, 0.0, 0.0);
-    vwriter.add_data3(0.0, 0.0, 0.0);
-    vwriter.add_data3(0.0, 0.0, 0.0);
-    prim->add_next_vertices(2);
-    prim->close_primitive();
-*/
-
     geom = new Geom(vdata);
     geom->add_primitive(prim);
 
-    this->add_geom(geom);
+    add_geom(geom);
   }
 
   // Triangles
@@ -79,20 +69,10 @@ BulletDebugNode(const char *name) : GeomNode(name) {
     prim = new GeomTriangles(Geom::UH_stream);
     prim->set_shade_model(Geom::SM_uniform);
 
-/*
-    // Draw something in oder to prevent getting optimized away
-    GeomVertexWriter vwriter(vdata, InternalName::get_vertex());
-    vwriter.add_data3(0.0, 0.0, 0.0);
-    vwriter.add_data3(0.0, 0.0, 0.0);
-    vwriter.add_data3(0.0, 0.0, 0.0);
-    prim->add_next_vertices(3);
-    prim->close_primitive();
-*/
-
     geom = new Geom(vdata);
     geom->add_primitive(prim);
 
-    this->add_geom(geom);
+    add_geom(geom);
   }
 }
 
@@ -230,6 +210,8 @@ sync_b2p(btDynamicsWorld *world) {
 
   if (is_overall_hidden()) return;
 
+  nassertv(get_num_geoms() == 2);
+
   // Collect debug geometry data
   _drawer._lines.clear();
   _drawer._triangles.clear();
@@ -243,13 +225,14 @@ sync_b2p(btDynamicsWorld *world) {
 
   // Render lines
   {
-    PT(Geom) geom = modify_geom(0); // TODO idx "0" is assumed
-    PT(GeomVertexData) vdata = geom->modify_vertex_data();
-    PT(GeomPrimitive) prim = geom->modify_primitive(0);
+    PT(GeomVertexData) vdata;
+    PT(Geom) geom;
+    PT(GeomLines) prim;
 
-    geom->clear_cache();
-    vdata->clear_rows();
-    prim->clear_vertices();
+    vdata = new GeomVertexData("", GeomVertexFormat::get_v3c4(), Geom::UH_stream);
+
+    prim = new GeomLines(Geom::UH_stream);
+    prim->set_shade_model(Geom::SM_uniform);
 
     GeomVertexWriter vwriter = GeomVertexWriter(vdata, InternalName::get_vertex());
     GeomVertexWriter cwriter = GeomVertexWriter(vdata, InternalName::get_color());
@@ -269,17 +252,23 @@ sync_b2p(btDynamicsWorld *world) {
       prim->add_vertex(v++);
       prim->close_primitive();
     }
+
+    geom = new Geom(vdata);
+    geom->add_primitive(prim);
+
+    set_geom(0, geom);
   }
 
   // Render triangles
   {
-    PT(Geom) geom = modify_geom(1); // TODO idx "1" is assumed
-    PT(GeomVertexData) vdata = geom->modify_vertex_data();
-    PT(GeomPrimitive) prim = geom->modify_primitive(0);
+    PT(GeomVertexData) vdata;
+    PT(Geom) geom;
+    PT(GeomTriangles) prim;
 
-    geom->clear_cache();
-    vdata->clear_rows();
-    prim->clear_vertices();
+    vdata = new GeomVertexData("", GeomVertexFormat::get_v3c4(), Geom::UH_stream);
+
+    prim = new GeomTriangles(Geom::UH_stream);
+    prim->set_shade_model(Geom::SM_uniform);
 
     GeomVertexWriter vwriter = GeomVertexWriter(vdata, InternalName::get_vertex());
     GeomVertexWriter cwriter = GeomVertexWriter(vdata, InternalName::get_color());
@@ -302,6 +291,11 @@ sync_b2p(btDynamicsWorld *world) {
       prim->add_vertex(v++);
       prim->close_primitive();
     }
+
+    geom = new Geom(vdata);
+    geom->add_primitive(prim);
+
+    set_geom(1, geom);
   }
 }
 
