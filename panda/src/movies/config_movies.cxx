@@ -45,15 +45,15 @@ ConfigureFn(config_movies) {
 }
 
 ConfigVariableInt ffmpeg_max_readahead_frames
-("ffmpeg-max-readahead-frames", 10,
+("ffmpeg-max-readahead-frames", 2,
  PRC_DESC("The maximum number of frames ahead which an ffmpeg decoder thread "
           "should read in advance of actual playback.  Set this to 0 to "
           "decode ffmpeg videos in the main thread."));
 
 ConfigVariableEnum<ThreadPriority> ffmpeg_thread_priority
 ("ffmpeg-thread-priority", TP_normal,
- PRC_DESC("The default thread priority at which to run the ffmpeg decoder thread "
-          "for a given video texture."));
+ PRC_DESC("The default thread priority at which to start ffmpeg decoder "
+          "threads."));
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libmovies

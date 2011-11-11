@@ -26,6 +26,7 @@
 #include "genericThread.h"
 #include "threadPriority.h"
 #include "pmutex.h"
+#include "reMutex.h"
 #include "conditionVar.h"
 
 struct AVFormatContext;
@@ -72,7 +73,7 @@ private:
   PT(GenericThread) _thread;
 
   // This global Mutex protects calls to avcodec_open/close/etc.
-  static Mutex _av_lock;
+  static ReMutex _av_lock;
 
   // Protects _readahead_frames, _recycled_buffers, and all the
   // immediately following members.
@@ -128,6 +129,7 @@ private:
   double _min_fseek;
   double _begin_time;
   double _end_time;
+  bool _frame_ready;
   
 public:
   static void register_with_read_factory();

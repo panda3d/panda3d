@@ -25,8 +25,10 @@ extern "C" {
 }
 #include "pStatCollector.h"
 #include "pStatTimer.h"
+#include "mutexHolder.h"
+#include "reMutexHolder.h"
 
-Mutex FfmpegVideoCursor::_av_lock;
+ReMutex FfmpegVideoCursor::_av_lock;
 TypeHandle FfmpegVideoCursor::_type_handle;
 
 
@@ -74,6 +76,10 @@ init_from(FfmpegVideo *source) {
   _source = source;
   _filename = _source->get_filename();
 
+  // Hold the global lock while we open the file and create avcodec
+  // objects.
+  ReMutexHolder av_holder(_av_lock);
+
   if (!_source->get_subfile_info().is_empty()) {
     // Read a subfile.
     if (!_ffvfile.open_subfile(_source->get_subfile_info())) {
@@ -119,42 +125,41 @@ init_from(FfmpegVideo *source) {
     return;
   }
 
-  {
-    MutexHolder av_holder(_av_lock);
-    AVCodec *pVideoCodec = avcodec_find_decoder(_video_ctx->codec_id);
-    if (pVideoCodec == NULL) {
-      movies_cat.info() 
-        << "Couldn't find codec\n";
-      cleanup();
-      return;
-    }
-    if (avcodec_open(_video_ctx, pVideoCodec) < 0) {
-      movies_cat.info() 
-        << "Couldn't open codec\n";
-      cleanup();
-      return;
-    }
-
-    _size_x = _video_ctx->width;
-    _size_y = _video_ctx->height;
-    _num_components = 3; // Don't know how to implement RGBA movies yet.
-    _length = (_format_ctx->duration * 1.0) / AV_TIME_BASE;
-    _can_seek = true;
-    _can_seek_fast = true;
-
-#ifdef HAVE_SWSCALE
-    _convert_ctx = sws_getContext(_size_x, _size_y,
-                                  _video_ctx->pix_fmt, _size_x, _size_y,
-                                  PIX_FMT_BGR24, SWS_FAST_BILINEAR, NULL, NULL, NULL);
-#endif  // HAVE_SWSCALE
+  AVCodec *pVideoCodec = avcodec_find_decoder(_video_ctx->codec_id);
+  if (pVideoCodec == NULL) {
+    movies_cat.info() 
+      << "Couldn't find codec\n";
+    cleanup();
+    return;
   }
+  if (avcodec_open(_video_ctx, pVideoCodec) < 0) {
+    movies_cat.info() 
+      << "Couldn't open codec\n";
+    cleanup();
+    return;
+  }
+  
+  _size_x = _video_ctx->width;
+  _size_y = _video_ctx->height;
+  _num_components = 3; // Don't know how to implement RGBA movies yet.
+  _length = (_format_ctx->duration * 1.0) / AV_TIME_BASE;
+  _can_seek = true;
+  _can_seek_fast = true;
+  
+#ifdef HAVE_SWSCALE
+  _convert_ctx = sws_getContext(_size_x, _size_y,
+                                _video_ctx->pix_fmt, _size_x, _size_y,
+                                PIX_FMT_BGR24, SWS_BILINEAR | SWS_PRINT_INFO, NULL, NULL, NULL);
+#endif  // HAVE_SWSCALE
 
   _frame = avcodec_alloc_frame();
   _frame_out = avcodec_alloc_frame();
+
   if ((_frame == 0)||(_frame_out == 0)) {
     cleanup();
     return;
   }
+
   _packet0 = new AVPacket;
   _packet1 = new AVPacket;
   memset(_packet0, 0, sizeof(AVPacket));
@@ -162,9 +167,7 @@ init_from(FfmpegVideo *source) {
   
   fetch_packet(0.0);
   _initial_dts = _packet0->dts;
-  _packet_time = 0.0;
-  _begin_time = -1.0;
-  _end_time = 0.0;
+  fetch_frame(-1);
 
 #ifdef HAVE_THREADS
   set_max_readahead_frames(ffmpeg_max_readahead_frames);
@@ -398,10 +401,11 @@ fetch_buffer(double time) {
   Buffer *frame = NULL;
   if (_thread_status == TS_stopped) {
     // Non-threaded case.  Just get the next frame directly.
-    frame = do_alloc_frame();
-    
     fetch_time(time);
-    export_frame(frame);
+    if (_frame_ready) {
+      frame = do_alloc_frame();
+      export_frame(frame);
+    }
 
   } else {
     // Threaded case.  Wait for the thread to serve up the required
@@ -473,6 +477,9 @@ release_buffer(Buffer *buffer) {
 void FfmpegVideoCursor::
 cleanup() {
   stop_thread();
+  
+  // Hold the global lock while we free avcodec objects.
+  ReMutexHolder av_holder(_av_lock);
 
   if (_frame) {
     av_free(_frame);
@@ -500,26 +507,22 @@ cleanup() {
     delete _packet1;
     _packet1 = NULL;
   }
-
-  {
-    MutexHolder av_holder(_av_lock);
-    
+  
 #ifdef HAVE_SWSCALE
-    if (_convert_ctx != NULL) {
-      sws_freeContext(_convert_ctx);
-    }
-    _convert_ctx = NULL;
+  if (_convert_ctx != NULL) {
+    sws_freeContext(_convert_ctx);
+  }
+  _convert_ctx = NULL;
 #endif  // HAVE_SWSCALE
-    
-    if ((_video_ctx)&&(_video_ctx->codec)) {
-      avcodec_close(_video_ctx);
-    }
-    _video_ctx = NULL;
-    
-    if (_format_ctx) {
-      _ffvfile.close();
-      _format_ctx = NULL;
-    }
+  
+  if ((_video_ctx)&&(_video_ctx->codec)) {
+    avcodec_close(_video_ctx);
+  }
+  _video_ctx = NULL;
+  
+  if (_format_ctx) {
+    _ffvfile.close();
+    _format_ctx = NULL;
   }
 
   _video_index = -1;
@@ -597,9 +600,15 @@ do_poll() {
       nassertr(frame != NULL, false);
       _lock.release();
       fetch_frame(-1);
-      export_frame(frame);
-      _lock.acquire();
-      _readahead_frames.push_back(frame);
+      if (_frame_ready) {
+        export_frame(frame);
+        _lock.acquire();
+        _readahead_frames.push_back(frame);
+      } else {
+        // No frame.
+        _lock.acquire();
+        do_recycle_frame(frame);
+      }
       return true;
     }
 
@@ -615,10 +624,17 @@ do_poll() {
       nassertr(frame != NULL, false);
       _lock.release();
       fetch_time(seek_time);
-      export_frame(frame);
-      _lock.acquire();
-      do_recycle_all_frames();
-      _readahead_frames.push_back(frame);
+      if (_frame_ready) {
+        export_frame(frame);
+        _lock.acquire();
+        do_recycle_all_frames();
+        _readahead_frames.push_back(frame);
+      } else {
+        _lock.acquire();
+        do_recycle_all_frames();
+        do_recycle_frame(frame);
+      }
+
       if (_thread_status == TS_seeking) {
         // After seeking, we automatically transition to readahead.
         _thread_status = TS_readahead;
@@ -752,8 +768,11 @@ fetch_frame(double time) {
     // Get the next packet.  The first packet beyond the time we're
     // looking for marks the point to stop.
     if (fetch_packet(time)) {
-      ffmpeg_cat.debug()
-        << "end of video\n";
+      if (ffmpeg_cat.is_debug()) {
+        ffmpeg_cat.debug()
+          << "end of video\n";
+      }
+      _frame_ready = false;
       return true;
     }
     while (_packet_time <= time) {
@@ -766,8 +785,11 @@ fetch_frame(double time) {
 #endif
       flip_packets();
       if (fetch_packet(time)) {
-        ffmpeg_cat.debug()
-          << "end of video\n";
+        if (ffmpeg_cat.is_debug()) {
+          ffmpeg_cat.debug()
+            << "end of video\n";
+        }
+        _frame_ready = false;
         return true;
       }
     }
@@ -798,8 +820,8 @@ fetch_frame(double time) {
   }
 
   _end_time = _packet_time;
-
-  return (finished != 0);
+  _frame_ready = true;
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -829,7 +851,9 @@ seek(double t) {
     return;
   }
   {
-    MutexHolder av_holder(_av_lock);
+    // Hold the global lock while we close and re-open the video
+    // stream.
+    ReMutexHolder av_holder(_av_lock);
 
     avcodec_close(_video_ctx);
     AVCodec *pVideoCodec = avcodec_find_decoder(_video_ctx->codec_id);
@@ -845,9 +869,12 @@ seek(double t) {
   }
 
   fetch_packet(t);
+  fetch_frame(-1);
+  /*
   if (_packet_time > t) {
     _packet_time = t;
   }
+  */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -940,14 +967,19 @@ export_frame(MovieVideoCursor::Buffer *buffer) {
   static PStatCollector export_frame_collector("*:FFMPEG Convert Video to BGR");
   PStatTimer timer(export_frame_collector);
 
+  if (!_frame_ready) {
+    // No frame data ready, just fill with black.
+    memset(buffer->_block, 0, buffer->_block_size);
+    return;
+  }
+
   _frame_out->data[0] = buffer->_block + ((_size_y - 1) * _size_x * 3);
   _frame_out->linesize[0] = _size_x * -3;
   buffer->_begin_time = _begin_time;
   buffer->_end_time = _end_time;
 #ifdef HAVE_SWSCALE
-  nassertv(_convert_ctx != NULL);
-  sws_scale(_convert_ctx, _frame->data, _frame->linesize,
-            0, _size_y, _frame_out->data, _frame_out->linesize);
+  nassertv(_convert_ctx != NULL && _frame != NULL && _frame_out != NULL);
+  sws_scale(_convert_ctx, _frame->data, _frame->linesize, 0, _size_y, _frame_out->data, _frame_out->linesize);
 #else
   img_convert((AVPicture *)_frame_out, PIX_FMT_BGR24, 
               (AVPicture *)_frame, _video_ctx->pix_fmt, _size_x, _size_y);
