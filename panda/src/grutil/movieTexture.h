@@ -43,6 +43,9 @@ PUBLISHED:
   INLINE double get_video_length() const;
   INLINE int get_video_width() const;
   INLINE int get_video_height() const;
+
+  INLINE MovieVideoCursor *get_color_cursor(int page);
+  INLINE MovieVideoCursor *get_alpha_cursor(int page);
   
   void   restart();
   void   stop();

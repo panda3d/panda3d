@@ -283,7 +283,7 @@ analyze(Texture *tex, bool do_flip_texture) {
   int pady = tex->get_pad_y_size();
   int xsize = tex->get_x_size() - padx;
   int ysize = tex->get_y_size() - pady;
-  int pagesize = xsize * ysize * 4;
+  //int pagesize = xsize * ysize * 4;
   nassertv((xsize > 0) && (ysize > 0));
 
   ARParam cparam;

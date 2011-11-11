@@ -136,7 +136,7 @@ class WebcamVideoCursorDS : public MovieVideoCursor
 public:
   WebcamVideoCursorDS(WebcamVideoDS *src);
   virtual ~WebcamVideoCursorDS();
-  virtual void fetch_into_buffer(double time, unsigned char *block, bool rgba);
+  virtual Buffer *fetch_buffer(double time);
 
 public:
   void cleanup();
@@ -654,17 +654,18 @@ WebcamVideoCursorDS::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoCursorDS::fetch_into_buffer
+//     Function: WebcamVideoCursorDS::fetch_buffer
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void WebcamVideoCursorDS::
-fetch_into_buffer(double time, unsigned char *block, bool bgra) {
-
+WebcamVideoCursor::Buffer *WebcamVideoCursorDS::
+fetch_buffer(double time) {
   if (!_ready) {
-    return;
+    return NULL;
   }
 
+  Buffer *buffer = get_standard_buffer();
+  unsigned char *block = buffer->_block;
 #ifdef LOCKING_MODE
   unsigned char *ptr;
   int pixels = _size_x * _size_y;
@@ -672,34 +673,17 @@ fetch_into_buffer(double time, unsigned char *block, bool bgra) {
   if (res == S_OK) {
     int size = _saved->GetActualDataLength();
     if (size == pixels * 3) {
-      if (bgra) {
-        for (int i=0; i<pixels; i++) {
-          block[i*4+0] = ptr[i*3+0];
-          block[i*4+1] = ptr[i*3+1];
-          block[i*4+2] = ptr[i*3+2];
-          block[i*4+3] = 255;
-        }
-      } else {
-        memcpy(block, ptr, pixels * 3);
-      }
+      memcpy(block, ptr, pixels * 3);
     }
   }
   _saved->Release();
 #else
   int pixels = _size_x * _size_y;
-  if (bgra) {
-    for (int i=0; i<pixels; i++) {
-      block[i*4+0] = _buffer[i*3+0];
-      block[i*4+1] = _buffer[i*3+1];
-      block[i*4+2] = _buffer[i*3+2];
-      block[i*4+3] = 255;
-    }
-  } else {
-    memcpy(block, _buffer, pixels * 3);
-  }
+  memcpy(block, _buffer, pixels * 3);
 #endif
 
   _ready = false;
+  return buffer;
 }
 
 

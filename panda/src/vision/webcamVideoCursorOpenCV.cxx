@@ -61,18 +61,20 @@ WebcamVideoCursorOpenCV::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WebcamVideoCursorOpenCV::fetch_into_buffer
+//     Function: WebcamVideoCursorOpenCV::fetch_buffer
 //       Access: Published, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void WebcamVideoCursorOpenCV::
-fetch_into_buffer(double time, unsigned char *block, bool bgra) {
+MovieVideoCursor::Buffer *WebcamVideoCursorOpenCV::
+fetch_buffer(double time) {
   if (!_ready) {
-    return;
+    return NULL;
   }
 
-  unsigned char *dest = block;
-  int num_components = bgra ? 4 : 3;
+  Buffer *buffer = get_standard_buffer();
+  unsigned char *dest = buffer->_block;
+  int num_components = get_num_components();
+  nassertr(num_components == 3, NULL);
   ssize_t dest_x_pitch = num_components;  // Assume component_width == 1
   ssize_t dest_y_pitch = _size_x * dest_x_pitch;
 
@@ -82,7 +84,7 @@ fetch_into_buffer(double time, unsigned char *block, bool bgra) {
     if (num_components == 3 && x_pitch == 3) {
       // The easy case--copy the whole thing in, row by row.
       ssize_t copy_bytes = _size_x * dest_x_pitch;
-      nassertv(copy_bytes <= dest_y_pitch && copy_bytes <= abs(y_pitch));
+      nassertr(copy_bytes <= dest_y_pitch && copy_bytes <= abs(y_pitch), NULL);
       
       for (int y = 0; y < _size_y; ++y) {
         memcpy(dest, r, copy_bytes);
@@ -111,6 +113,8 @@ fetch_into_buffer(double time, unsigned char *block, bool bgra) {
       }
     }
   }
+
+  return buffer;
 }
 
 ////////////////////////////////////////////////////////////////////

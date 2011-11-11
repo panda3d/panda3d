@@ -23,6 +23,9 @@
 #include "texture.h"
 #include "pointerTo.h"
 #include "ffmpegVirtualFile.h"
+#include "genericThread.h"
+#include "pmutex.h"
+#include "conditionVar.h"
 
 struct AVFormatContext;
 struct AVCodecContext;
@@ -35,28 +38,76 @@ struct AVFrame;
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_MOVIES FfmpegVideoCursor : public MovieVideoCursor {
-protected:
+private:
   FfmpegVideoCursor();
   void init_from(FfmpegVideo *src);
 
 PUBLISHED:
   FfmpegVideoCursor(FfmpegVideo *src);
   virtual ~FfmpegVideoCursor();
+
+  void set_max_readahead_frames(int max_readahead_frames);
+  int get_max_readahead_frames() const;
+
+  void start_thread();
+  BLOCKING void stop_thread();
+  bool is_thread_started() const;
   
 public:
-  virtual void fetch_into_texture(double time, Texture *t, int page);
-  virtual void fetch_into_buffer(double time, unsigned char *block, bool rgba);
+  virtual Buffer *fetch_buffer(double time);
+  virtual void release_buffer(Buffer *buffer);
 
-protected:
+private:
+  void cleanup();
+
+  Filename _filename;
+  string _sync_name;
+  int _max_readahead_frames;
+  PT(GenericThread) _thread;
+
+  // This global Mutex protects calls to avcodec_open/close/etc.
+  static Mutex _av_lock;
+
+  // Protects _readahead_frames, _recycled_buffers, and all the
+  // immediately following members.
+  Mutex _lock;
+
+  // Condition: the thread has something to do.
+  ConditionVar _action_cvar;
+
+  typedef pdeque<Buffer *> Buffers;
+  Buffers _readahead_frames;
+  Buffers _recycled_frames;
+  enum ThreadStatus {
+    TS_stopped,
+    TS_wait,
+    TS_readahead,
+    TS_seek,
+    TS_seeking,
+    TS_shutdown,
+  };
+  ThreadStatus _thread_status;
+  double _seek_time;
+  
+private:
+  // The following functions will be called in the sub-thread.
+  static void st_thread_main(void *self);
+  void thread_main();
+  bool do_poll();
+
+  Buffer *do_alloc_frame();
+  void do_recycle_frame(Buffer *frame);
+  void do_recycle_all_frames();
+
   bool fetch_packet(double default_time);
+  void flip_packets();
   bool fetch_frame(double time);
   void seek(double t);
   void fetch_time(double time);
-  void export_frame(unsigned char *data, bool bgra, int bufx);
-  void cleanup();
-  
-  Filename _filename;
-  AVPacket *_packet;
+  void export_frame(Buffer *buffer);
+
+  // The following data members will be accessed by the sub-thread.
+  AVPacket *_packet0, *_packet1;
   double _packet_time;
   AVFormatContext *_format_ctx;
   AVCodecContext *_video_ctx;
@@ -67,6 +118,8 @@ protected:
   AVFrame *_frame_out;
   int _initial_dts;
   double _min_fseek;
+  double _begin_time;
+  double _end_time;
   
 public:
   static void register_with_read_factory();

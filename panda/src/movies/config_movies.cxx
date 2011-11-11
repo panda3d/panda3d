@@ -44,6 +44,12 @@ ConfigureFn(config_movies) {
   init_libmovies();
 }
 
+ConfigVariableInt ffmpeg_max_readahead_frames
+("ffmpeg-max-readahead-frames", 10,
+ PRC_DESC("The maximum number of frames ahead which an ffmpeg decoder thread "
+          "should read in advance of actual playback.  Set this to 0 to "
+          "decode ffmpeg videos in the main thread."));
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libmovies
 //  Description: Initializes the library.  This must be called at

@@ -30,7 +30,6 @@ TypeHandle MovieVideoCursor::_type_handle;
 ////////////////////////////////////////////////////////////////////
 MovieVideoCursor::
 MovieVideoCursor(MovieVideo *src) :
-  _conversion_buffer(0),
   _source(src),
   _size_x(1),
   _size_y(1),
@@ -44,6 +43,7 @@ MovieVideoCursor(MovieVideo *src) :
   _streaming(false),
   _ready(false)
 {
+  _standard_buffer._block = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -53,22 +53,8 @@ MovieVideoCursor(MovieVideo *src) :
 ////////////////////////////////////////////////////////////////////
 MovieVideoCursor::
 ~MovieVideoCursor() {
-  if (_conversion_buffer != 0) {
-    delete[] _conversion_buffer;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MovieVideoCursor::allocate_conversion_buffer
-//       Access: Private
-//  Description: The generic implementations of fetch_into_texture
-//               and fetch_into_alpha require the use of a conversion
-//               buffer.  This allocates the buffer.
-////////////////////////////////////////////////////////////////////
-void MovieVideoCursor::
-allocate_conversion_buffer() {
-  if (_conversion_buffer == 0) {
-    _conversion_buffer = new unsigned char[size_x() * size_y() * 4];
+  if (_standard_buffer._block != NULL) {
+    PANDA_FREE_ARRAY(_standard_buffer._block);
   }
 }
   
@@ -98,19 +84,23 @@ setup_texture(Texture *tex) const {
 //  Description: Discards the next video frame.  Still sets
 //               last_start and next_start.
 //
-//               See fetch_into_buffer for more details.
+//               See fetch_buffer for more details.
 ////////////////////////////////////////////////////////////////////
 void MovieVideoCursor::
 fetch_into_bitbucket(double time) {
 
-  // This generic implementation is layered on fetch_into_buffer.
+  // This generic implementation is layered on fetch_buffer.
   // It will work for any derived class, so it is never necessary to
   // redefine this.  It is probably possible to make a faster
   // implementation, but since this function is rarely used, it
   // probably isn't worth the trouble.
 
-  allocate_conversion_buffer();
-  fetch_into_buffer(time, _conversion_buffer, false);
+  Buffer *buffer = fetch_buffer(time);
+  if (buffer != NULL) {
+    _last_start = buffer->_begin_time;
+    _next_start = buffer->_end_time;
+    release_buffer(buffer);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -119,14 +109,14 @@ fetch_into_bitbucket(double time) {
 //  Description: Reads the specified video frame into 
 //               the specified texture.
 //
-//               See fetch_into_buffer for more details.
+//               See fetch_buffer for more details.
 ////////////////////////////////////////////////////////////////////
-static PStatCollector fetch_into_texture_collector("*:Decode Video into Texture");
 void MovieVideoCursor::
 fetch_into_texture(double time, Texture *t, int page) {
+  static PStatCollector fetch_into_texture_collector("*:Decode Video into Texture");
   PStatTimer timer(fetch_into_texture_collector);
 
-  // This generic implementation is layered on fetch_into_buffer.
+  // This generic implementation is layered on fetch_buffer.
   // It will work for any derived class, so it is never necessary to
   // redefine this.  However, it may be possible to make a faster
   // implementation that uses fewer intermediate copies, depending
@@ -136,26 +126,50 @@ fetch_into_texture(double time, Texture *t, int page) {
   nassertv(t->get_y_size() >= size_y());
   nassertv((t->get_num_components() == 3) || (t->get_num_components() == 4));
   nassertv(t->get_component_width() == 1);
-  nassertv(page < t->get_z_size());
+  nassertv(page < t->get_num_pages());
   
+  t->set_keep_ram_image(true);
   PTA_uchar img = t->modify_ram_image();
   
   unsigned char *data = img.p() + page * t->get_expected_ram_page_size();
 
-  if (t->get_x_size() == size_x()) {
-    fetch_into_buffer(time, data, t->get_num_components() == 4);
+  Buffer *buffer = fetch_buffer(time);
+  if (buffer == NULL) {
+    // No image available.
+    return;
+  }
+
+  _last_start = buffer->_begin_time;
+  _next_start = buffer->_end_time;
+
+  if (t->get_x_size() == size_x() && t->get_num_components() == get_num_components()) {
+    memcpy(data, buffer->_block, size_x() * size_y() * get_num_components());
+
   } else {
-    allocate_conversion_buffer();
-    fetch_into_buffer(time, _conversion_buffer, t->get_num_components() == 4);
-    int src_stride = size_x() * t->get_num_components();
-    int dst_stride = t->get_x_size() * t->get_num_components();
-    unsigned char *p = _conversion_buffer;
-    for (int y=0; y<size_y(); y++) {
-      memcpy(data, p, src_stride);
-      data += dst_stride;
-      p += src_stride;
+    unsigned char *p = buffer->_block;
+    if (t->get_num_components() == get_num_components()) {
+      int src_stride = size_x() * get_num_components();
+      int dst_stride = t->get_x_size() * t->get_num_components();
+      for (int y=0; y<size_y(); y++) {
+        memcpy(data, p, src_stride);
+        data += dst_stride;
+        p += src_stride;
+      }
+    } else {
+      int src_width = get_num_components();
+      int dst_width = t->get_num_components();
+      for (int y = 0; y < size_y(); ++y) {
+        for (int x = 0; x < size_x(); ++x) {
+          data[0] = p[0];
+          data[1] = p[1];
+          data[2] = p[2];
+          data += dst_width;
+          p += src_width;
+        }
+      }
     }
   }
+  release_buffer(buffer);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -165,12 +179,12 @@ fetch_into_texture(double time, Texture *t, int page) {
 //               the alpha channel of the supplied texture.  The
 //               RGB channels of the texture are not touched.
 //
-//               See fetch_into_buffer for more details.
+//               See fetch_buffer for more details.
 ////////////////////////////////////////////////////////////////////
 void MovieVideoCursor::
 fetch_into_texture_alpha(double time, Texture *t, int page, int alpha_src) {
 
-  // This generic implementation is layered on fetch_into_buffer.
+  // This generic implementation is layered on fetch_buffer.
   // It will work for any derived class, so it is never necessary to
   // redefine this.  However, it may be possible to make a faster
   // implementation that uses fewer intermediate copies, depending
@@ -181,20 +195,26 @@ fetch_into_texture_alpha(double time, Texture *t, int page, int alpha_src) {
   nassertv(t->get_num_components() == 4);
   nassertv(t->get_component_width() == 1);
   nassertv(page < t->get_z_size());
-  nassertv((alpha_src >= 0) && (alpha_src <= 4));
+  nassertv((alpha_src >= 0) && (alpha_src <= get_num_components()));
 
-  allocate_conversion_buffer();
-  
-  fetch_into_buffer(time, _conversion_buffer, true);
-  
+  Buffer *buffer = fetch_buffer(time);
+  if (buffer == NULL) {
+    // No image available.
+    return;
+  }
+
+  _last_start = buffer->_begin_time;
+  _next_start = buffer->_end_time;
+
+  t->set_keep_ram_image(true);
   PTA_uchar img = t->modify_ram_image();
   
   unsigned char *data = img.p() + page * t->get_expected_ram_page_size();
   
-  int src_stride = size_x() * 4;
+  int src_stride = size_x() * get_num_components();
   int dst_stride = t->get_x_size() * 4;
   if (alpha_src == 0) {
-    unsigned char *p = _conversion_buffer;
+    unsigned char *p = buffer->_block;
     for (int y=0; y<size_y(); y++) {
       for (int x=0; x<size_x(); x++) {
         data[x*4+3] = (p[x*4+0] + p[x*4+1] + p[x*4+2]) / 3;
@@ -204,15 +224,18 @@ fetch_into_texture_alpha(double time, Texture *t, int page, int alpha_src) {
     }
   } else {
     alpha_src -= 1;
-    unsigned char *p = _conversion_buffer;
+    unsigned char *p = buffer->_block;
+    int src_width = get_num_components();
     for (int y=0; y<size_y(); y++) {
       for (int x=0; x<size_x(); x++) {
-        data[x*4+3] = p[x*4+alpha_src];
+        data[x*4+3] = p[x *src_width + alpha_src];
       }
       data += dst_stride;
       p += src_stride;
     }
   }
+
+  release_buffer(buffer);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -222,12 +245,12 @@ fetch_into_texture_alpha(double time, Texture *t, int page, int alpha_src) {
 //               the RGB channels of the supplied texture.  The alpha
 //               channel of the texture is not touched.
 //
-//               See fetch_into_buffer for more details.
+//               See fetch_buffer for more details.
 ////////////////////////////////////////////////////////////////////
 void MovieVideoCursor::
 fetch_into_texture_rgb(double time, Texture *t, int page) {
 
-  // This generic implementation is layered on fetch_into_buffer.
+  // This generic implementation is layered on fetch_buffer.
   // It will work for any derived class, so it is never necessary to
   // redefine this.  However, it may be possible to make a faster
   // implementation that uses fewer intermediate copies, depending
@@ -239,34 +262,48 @@ fetch_into_texture_rgb(double time, Texture *t, int page) {
   nassertv(t->get_component_width() == 1);
   nassertv(page < t->get_z_size());
 
-  allocate_conversion_buffer();
-  
-  fetch_into_buffer(time, _conversion_buffer, true);
-  
+  Buffer *buffer = fetch_buffer(time);
+  if (buffer == NULL) {
+    // No image available.
+    return;
+  }
+
+  _last_start = buffer->_begin_time;
+  _next_start = buffer->_end_time;
+
+  t->set_keep_ram_image(true);
   PTA_uchar img = t->modify_ram_image();
   
   unsigned char *data = img.p() + page * t->get_expected_ram_page_size();
   
-  int src_stride = size_x() * 4;
+  int src_stride = size_x() * get_num_components();
+  int src_width = get_num_components();
   int dst_stride = t->get_x_size() * 4;
-  unsigned char *p = _conversion_buffer;
+  unsigned char *p = buffer->_block;
   for (int y=0; y<size_y(); y++) {
     for (int x=0; x<size_x(); x++) {
-      data[x*4+0] = p[x*4+0];
-      data[x*4+1] = p[x*4+1];
-      data[x*4+2] = p[x*4+2];
+      data[x * 4 + 0] = p[x * src_width + 0];
+      data[x * 4 + 1] = p[x * src_width + 1];
+      data[x * 4 + 2] = p[x * src_width + 2];
     }
     data += dst_stride;
     p += src_stride;
   }
+
+  release_buffer(buffer);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovieVideoCursor::fetch_into_buffer
+//     Function: MovieVideoCursor::fetch_buffer
 //       Access: Published, Virtual
-//  Description: Reads the specified video frame into the supplied
-//               BGR or BGRA buffer.  The frame's begin and end
-//               times are stored in last_start and next_start.
+//  Description: Reads the specified video frame and returns it in a
+//               pre-allocated buffer.  The frame's begin and end
+//               times are stored in _begin_time and _end_time, within
+//               the buffer.  After you have copied the data from the
+//               buffer, you should call release_buffer() to make the
+//               space available again to populate the next frame.
+//               You may not call fetch_buffer() again until you have
+//               called release_buffer().
 //
 //               If the movie reports that it can_seek, you may
 //               also specify a timestamp less than next_start.
@@ -279,30 +316,102 @@ fetch_into_texture_rgb(double time, Texture *t, int page) {
 //               desired location.  Only if can_seek_fast returns
 //               true can it seek rapidly.
 ////////////////////////////////////////////////////////////////////
-void MovieVideoCursor::
-fetch_into_buffer(double time, unsigned char *data, bool bgra) {
-  
+MovieVideoCursor::Buffer *MovieVideoCursor::
+fetch_buffer(double time) {
+  Buffer *buffer = get_standard_buffer();
+
   // The following is the implementation of the null video stream, ie,
   // a stream of blinking red and blue frames.  This method must be
   // overridden by the subclass.
   
-  _last_start = floor(time);
-  _next_start = _last_start + 1;
+  buffer->_begin_time = floor(time);
+  buffer->_end_time = buffer->_begin_time + 1;
+  int flash = ((int)buffer->_begin_time) & 1;
 
-  if (((int)_last_start) & 1) {
-    data[0] = 255;
-    data[1] = 128;
-    data[2] = 128;
-  } else {
-    data[0] = 128;
-    data[1] = 128;
-    data[2] = 255;
+  unsigned char *p = buffer->_block;
+  int src_width = get_num_components();
+  for (int y = 0; y < size_y(); ++y) {
+    for (int x = 0; x < size_x(); ++x) {
+      if (flash) {
+        p[0] = 255;
+        p[1] = 128;
+        p[2] = 128;
+      } else {
+        p[0] = 128;
+        p[1] = 128;
+        p[2] = 255;
+      }
+      if (src_width == 4) {
+        p[3] = 255;
+      }
+      p += src_width;
+    }
   }
-  if (bgra) {
-    data[3] = 255;
-  }
+
+  return buffer;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideoCursor::release_buffer
+//       Access: Public, Virtual
+//  Description: Should be called after processing the Buffer object
+//               returned by fetch_buffer(), this releases the Buffer
+//               for future use again.
+////////////////////////////////////////////////////////////////////
+void MovieVideoCursor::
+release_buffer(Buffer *buffer) {
+  nassertv(buffer == &_standard_buffer);
+  nassertv(buffer->_begin_time == _last_start && buffer->_end_time == _next_start);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideoCursor::get_standard_buffer
+//       Access: Protected
+//  Description: May be called by a derived class to return a single
+//               standard Buffer object to easily implement
+//               fetch_buffer().  The default release_buffer()
+//               implementation assumes this method is used.
+////////////////////////////////////////////////////////////////////
+MovieVideoCursor::Buffer *MovieVideoCursor::
+get_standard_buffer() {
+  if (_standard_buffer._block == NULL) {
+    _standard_buffer._block_size = size_x() * size_y() * get_num_components();
+    _standard_buffer._block = (unsigned char *)PANDA_MALLOC_ARRAY(_standard_buffer._block_size);
+    _standard_buffer._begin_time = -1.0;
+    _standard_buffer._end_time = 0.0;
+  }
+  return &_standard_buffer;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideoCursor::internal_alloc_buffer
+//       Access: Protected
+//  Description: May be called by a derived class to allocate a new
+//               Buffer object.  The caller is responsible for
+//               eventually passing this object to
+//               internal_free_buffer().
+////////////////////////////////////////////////////////////////////
+MovieVideoCursor::Buffer *MovieVideoCursor::
+internal_alloc_buffer() {
+  Buffer *buffer = new Buffer;
+  buffer->_block_size = size_x() * size_y() * get_num_components();
+  buffer->_block = (unsigned char *)PANDA_MALLOC_ARRAY(buffer->_block_size);
+  buffer->_begin_time = -1.0;
+  buffer->_end_time = 0.0;
+  return buffer;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideoCursor::internal_free_buffer
+//       Access: Protected
+//  Description: Frees a Buffer object allocated via
+//               internal_alloc_buffer().
+////////////////////////////////////////////////////////////////////
+void MovieVideoCursor::
+internal_free_buffer(Buffer *buffer) {
+  PANDA_FREE_ARRAY(buffer->_block);
+  delete buffer;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MovieVideoCursor::write_datagram

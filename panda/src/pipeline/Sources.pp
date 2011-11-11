@@ -37,6 +37,7 @@
     cycleDataWriter.h cycleDataWriter.I \
     cyclerHolder.h cyclerHolder.I \
     externalThread.h \
+    genericThread.h genericThread.I \
     lightMutex.I lightMutex.h \
     lightMutexDirect.h lightMutexDirect.I \
     lightMutexHolder.I lightMutexHolder.h \
@@ -98,6 +99,7 @@
     cycleDataWriter.cxx \
     cyclerHolder.cxx \
     externalThread.cxx \
+    genericThread.cxx \
     lightMutex.cxx \
     lightMutexDirect.cxx \
     lightMutexHolder.cxx \
@@ -155,6 +157,7 @@
     cycleDataWriter.h cycleDataWriter.I \
     cyclerHolder.h cyclerHolder.I \
     externalThread.h \
+    genericThread.h genericThread.I \
     lightMutex.I lightMutex.h \
     lightMutexDirect.h lightMutexDirect.I \
     lightMutexHolder.I lightMutexHolder.h \

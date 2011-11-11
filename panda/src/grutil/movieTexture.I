@@ -52,3 +52,31 @@ get_video_height() const {
   return cdata->_video_height;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::get_color_cursor
+//       Access: Published
+//  Description: Returns the MovieVideoCursor that is feeding the
+//               color channels for the indicated page, where 0 <=
+//               page < get_num_pages().
+////////////////////////////////////////////////////////////////////
+INLINE MovieVideoCursor *MovieTexture::
+get_color_cursor(int page) {
+  CDReader cdata(_cycler);
+  nassertr(page >= 0 && page < (int)cdata->_pages.size(), NULL);
+  return cdata->_pages[page]._color;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::get_alpha_cursor
+//       Access: Published
+//  Description: Returns the MovieVideoCursor that is feeding the
+//               alpha channel for the indicated page, where 0 <=
+//               page < get_num_pages().
+////////////////////////////////////////////////////////////////////
+INLINE MovieVideoCursor *MovieTexture::
+get_alpha_cursor(int page) {
+  CDReader cdata(_cycler);
+  nassertr(page >= 0 && page < (int)cdata->_pages.size(), NULL);
+  return cdata->_pages[page]._alpha;
+}
+

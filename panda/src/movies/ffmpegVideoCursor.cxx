@@ -26,7 +26,9 @@ extern "C" {
 #include "pStatCollector.h"
 #include "pStatTimer.h"
 
+Mutex FfmpegVideoCursor::_av_lock;
 TypeHandle FfmpegVideoCursor::_type_handle;
+
 
 #if LIBAVFORMAT_VERSION_MAJOR < 53
   #define AVMEDIA_TYPE_VIDEO CODEC_TYPE_VIDEO
@@ -34,13 +36,19 @@ TypeHandle FfmpegVideoCursor::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FfmpegVideoCursor::Default Constructor
-//       Access: Protected
+//       Access: Private
 //  Description: This constructor is only used when reading from a bam
 //               file.
 ////////////////////////////////////////////////////////////////////
 FfmpegVideoCursor::
 FfmpegVideoCursor() :
-  _packet(NULL),
+  _max_readahead_frames(0),
+  _lock("FfmpegVideoCursor::_lock"),
+  _action_cvar(_lock),
+  _thread_status(TS_stopped),
+  _seek_time(0.0),
+  _packet0(NULL),
+  _packet1(NULL),
   _format_ctx(NULL),
   _video_ctx(NULL),
   _video_index(-1),
@@ -52,13 +60,14 @@ FfmpegVideoCursor() :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FfmpegVideoCursor::init_from
-//       Access: Protected
+//       Access: Private
 //  Description: Specifies the source of the video cursor.  This is
 //               normally called only by the constructor or when
 //               reading from a bam file.
 ////////////////////////////////////////////////////////////////////
 void FfmpegVideoCursor::
 init_from(FfmpegVideo *source) {
+  nassertv(_thread == NULL && _thread_status == TS_stopped);
   nassertv(source != NULL);
   _source = source;
   _filename = _source->get_filename();
@@ -108,18 +117,21 @@ init_from(FfmpegVideo *source) {
     return;
   }
 
-  AVCodec *pVideoCodec = avcodec_find_decoder(_video_ctx->codec_id);
-  if (pVideoCodec == NULL) {
-    movies_cat.info() 
-      << "Couldn't find codec\n";
-    cleanup();
-    return;
-  }
-  if (avcodec_open(_video_ctx, pVideoCodec) < 0) {
-    movies_cat.info() 
-      << "Couldn't open codec\n";
-    cleanup();
-    return;
+  {
+    MutexHolder av_holder(_av_lock);
+    AVCodec *pVideoCodec = avcodec_find_decoder(_video_ctx->codec_id);
+    if (pVideoCodec == NULL) {
+      movies_cat.info() 
+        << "Couldn't find codec\n";
+      cleanup();
+      return;
+    }
+    if (avcodec_open(_video_ctx, pVideoCodec) < 0) {
+      movies_cat.info() 
+        << "Couldn't open codec\n";
+      cleanup();
+      return;
+    }
   }
 
   _size_x = _video_ctx->width;
@@ -129,30 +141,42 @@ init_from(FfmpegVideo *source) {
   _can_seek = true;
   _can_seek_fast = true;
 
-  _packet = new AVPacket;
   _frame = avcodec_alloc_frame();
   _frame_out = avcodec_alloc_frame();
-  if ((_packet == 0)||(_frame == 0)||(_frame_out == 0)) {
+  if ((_frame == 0)||(_frame_out == 0)) {
     cleanup();
     return;
   }
-  memset(_packet, 0, sizeof(AVPacket));
+  _packet0 = new AVPacket;
+  _packet1 = new AVPacket;
+  memset(_packet0, 0, sizeof(AVPacket));
+  memset(_packet1, 0, sizeof(AVPacket));
   
   fetch_packet(0.0);
-  _initial_dts = _packet->dts;
+  _initial_dts = _packet0->dts;
   _packet_time = 0.0;
-  _last_start = -1.0;
-  _next_start = 0.0;
+  _begin_time = -1.0;
+  _end_time = 0.0;
+
+#ifdef HAVE_THREADS
+  set_max_readahead_frames(ffmpeg_max_readahead_frames);
+#endif  // HAVE_THREADS
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FfmpegVideoCursor::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 FfmpegVideoCursor::
-FfmpegVideoCursor(FfmpegVideo *src) :
-  _packet(NULL),
+FfmpegVideoCursor(FfmpegVideo *src) : 
+  _max_readahead_frames(0),
+  _lock("FfmpegVideoCursor::_lock"),
+  _action_cvar(_lock),
+  _thread_status(TS_stopped),
+  _seek_time(0.0),
+  _packet0(NULL),
+  _packet1(NULL),
   _format_ctx(NULL),
   _video_ctx(NULL),
   _video_index(-1),
@@ -165,8 +189,8 @@ FfmpegVideoCursor(FfmpegVideo *src) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FfmpegVideoCursor::Destructor
-//       Access: Public
-//  Description: xxx
+//       Access: Published
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 FfmpegVideoCursor::
 ~FfmpegVideoCursor() {
@@ -174,12 +198,237 @@ FfmpegVideoCursor::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::set_max_readahead_frames
+//       Access: Published
+//  Description: Specifies the maximum number of frames that a
+//               sub-thread will attempt to read ahead of the current
+//               frame.  Setting this to a nonzero allows the video
+//               decoding to take place in a sub-thread, which
+//               smoothes out the video decoding time by spreading it
+//               evenly over several frames.  Set this number larger
+//               to increase the buffer between the currently visible
+//               frame and the first undecoded frame; set it smaller
+//               to reduce memory consumption.
+//
+//               Setting this to zero forces the video to be decoded
+//               in the main thread.  If threading is not available in
+//               the Panda build, this value is always zero.
+////////////////////////////////////////////////////////////////////
+void FfmpegVideoCursor::
+set_max_readahead_frames(int max_readahead_frames) {
+#ifndef HAVE_THREADS
+  if (max_readahead_frames > 0) {
+    ffmpeg_cat.warning()
+      << "Couldn't set max_readahead_frames to " << max_readahead_frames
+      << ": threading not available.\n";
+    max_readahead_frames = 0;
+  }
+#endif  // HAVE_THREADS
+
+  _max_readahead_frames = max_readahead_frames;
+  if (_max_readahead_frames > 0) {
+    if (_thread_status == TS_stopped) {
+      start_thread();
+    }
+  } else {
+    if (_thread_status != TS_stopped) {
+      stop_thread();
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::get_max_readahead_frames
+//       Access: Published
+//  Description: Returns the maximum number of frames that a
+//               sub-thread will attempt to read ahead of the current
+//               frame.  See set_max_readahead_frames().
+////////////////////////////////////////////////////////////////////
+int FfmpegVideoCursor::
+get_max_readahead_frames() const {
+  return _max_readahead_frames;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::start_thread
+//       Access: Published
+//  Description: Explicitly starts the ffmpeg decoding thread after it
+//               has been stopped by a call to stop_thread().  The
+//               thread is normally started automatically, so there is
+//               no need to call this method unless you have
+//               previously called stop_thread() for some reason.
+////////////////////////////////////////////////////////////////////
+void FfmpegVideoCursor::
+start_thread() {
+  MutexHolder holder(_lock);
+
+  if (_thread_status == TS_stopped && _max_readahead_frames > 0) {
+    // Get a unique name for the thread's sync name.
+    ostringstream strm;
+    strm << (void *)this;
+    _sync_name = strm.str();
+
+    // Create and start the thread object.
+    _thread_status = TS_wait;
+    _thread = new GenericThread(_filename.get_basename(), _sync_name, st_thread_main, this);
+    if (!_thread->start(TP_normal, true)) {
+      // Couldn't start the thread.
+      _thread = NULL;
+      _thread_status = TS_stopped;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::stop_thread
+//       Access: Published
+//  Description: Explicitly stops the ffmpeg decoding thread.  There
+//               is normally no reason to do this unless you want to
+//               maintain precise control over what threads are
+//               consuming CPU resources.  Calling this method will
+//               make the video update in the main thread, regardless
+//               of the setting of max_readahead_frames, until you
+//               call start_thread() again.
+////////////////////////////////////////////////////////////////////
+void FfmpegVideoCursor::
+stop_thread() {
+  if (_thread_status != TS_stopped) {
+    PT(GenericThread) thread = _thread;
+    {
+      MutexHolder holder(_lock);
+      if (_thread_status != TS_stopped) {
+        _thread_status = TS_shutdown;
+      }
+      _action_cvar.notify();
+      _thread = NULL;
+    }
+
+    // Now that we've released the lock, we can join the thread.
+    thread->join();
+  }
+
+  // This is a good time to clean up all of the allocated frame
+  // objects.  It's not really necessary to be holding the lock, since
+  // the thread is gone, but we'll grab it anyway just in case someone
+  // else starts the thread up again.
+  MutexHolder holder(_lock);
+
+  Buffers::iterator bi;
+  for (bi = _readahead_frames.begin(); bi != _readahead_frames.end(); ++bi) {
+    internal_free_buffer(*bi);
+  }
+  _readahead_frames.clear();
+  for (bi = _recycled_frames.begin(); bi != _recycled_frames.end(); ++bi) {
+    internal_free_buffer(*bi);
+  }
+  _recycled_frames.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::is_thread_started
+//       Access: Published
+//  Description: Returns true if the thread has been started, false if
+//               not.  This will always return false if
+//               max_readahead_frames is 0.
+////////////////////////////////////////////////////////////////////
+bool FfmpegVideoCursor::
+is_thread_started() const {
+  return (_thread_status != TS_stopped);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::fetch_buffer
+//       Access: Public, Virtual
+//  Description: See MovieVideoCursor::fetch_buffer.
+////////////////////////////////////////////////////////////////////
+MovieVideoCursor::Buffer *FfmpegVideoCursor::
+fetch_buffer(double time) {
+  MutexHolder holder(_lock);
+  
+  // If there was an error at any point, just return NULL.
+  if (_format_ctx == (AVFormatContext *)NULL) {
+    return NULL;
+  }
+
+  Buffer *frame = NULL;
+  if (_thread_status == TS_stopped) {
+    // Non-threaded case.  Just get the next frame directly.
+    frame = do_alloc_frame();
+    
+    fetch_time(time);
+    export_frame(frame);
+
+  } else {
+    // Threaded case.  Wait for the thread to serve up the required
+    // frames.
+    if (!_readahead_frames.empty()) {
+      frame = _readahead_frames.front();
+      _readahead_frames.pop_front();
+      _action_cvar.notify();
+      while (frame->_end_time < time && !_readahead_frames.empty()) {
+        // This frame is too old.  Discard it.
+        if (ffmpeg_cat.is_debug()) {
+          ffmpeg_cat.debug()
+            << "ffmpeg for " << _filename.get_basename()
+            << " at time " << time << ", discarding frame at "
+            << frame->_begin_time << "\n";
+        }
+        do_recycle_frame(frame);
+        frame = _readahead_frames.front();
+        _readahead_frames.pop_front();
+      }
+      if (frame->_begin_time > time) {
+        // This frame is too new.  Empty all remaining frames and seek
+        // backwards.
+        do_recycle_all_frames();
+        if (_thread_status == TS_wait || _thread_status == TS_seek || _thread_status == TS_readahead) {
+          _thread_status = TS_seek;
+          _seek_time = time;
+          _action_cvar.notify();
+        }
+      }
+    }
+    if (frame == NULL || frame->_end_time < time) {
+      // No frame available, or the frame is too old.  Seek.
+      if (_thread_status == TS_wait || _thread_status == TS_seek || _thread_status == TS_readahead) {
+        _thread_status = TS_seek;
+        _seek_time = time;
+        _action_cvar.notify();
+      }
+    }
+  }
+
+  if (frame != NULL && (frame->_end_time < time || frame->_begin_time > time)) {
+    // The frame is too old or too new.  Just recycle it.
+    do_recycle_frame(frame);
+    frame = NULL;
+  }
+  
+  return frame;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::release_buffer
+//       Access: Public, Virtual
+//  Description: Should be called after processing the Buffer object
+//               returned by fetch_buffer(), this releases the Buffer
+//               for future use again.
+////////////////////////////////////////////////////////////////////
+void FfmpegVideoCursor::
+release_buffer(Buffer *buffer) {
+  MutexHolder holder(_lock);
+  do_recycle_frame(buffer);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FfmpegVideoCursor::cleanup
-//       Access: Public
+//       Access: Private
 //  Description: Reset to a standard inactive state.
 ////////////////////////////////////////////////////////////////////
 void FfmpegVideoCursor::
 cleanup() {
+  stop_thread();
+
   if (_frame) {
     av_free(_frame);
     _frame = NULL;
@@ -191,15 +440,24 @@ cleanup() {
     _frame_out = NULL;
   }
 
-  if (_packet) {
-    if (_packet->data) {
-      av_free_packet(_packet);
+  if (_packet0) {
+    if (_packet0->data) {
+      av_free_packet(_packet0);
     }
-    delete _packet;
-    _packet = NULL;
+    delete _packet0;
+    _packet0 = NULL;
+  }
+
+  if (_packet1) {
+    if (_packet1->data) {
+      av_free_packet(_packet1);
+    }
+    delete _packet1;
+    _packet1 = NULL;
   }
 
   if ((_video_ctx)&&(_video_ctx->codec)) {
+    MutexHolder av_holder(_av_lock);
     avcodec_close(_video_ctx);
   }
   _video_ctx = NULL;
@@ -213,101 +471,245 @@ cleanup() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVideoCursor::export_frame
-//       Access: Public, Virtual
-//  Description: Exports the contents of the frame buffer into the
-//               user's target buffer.
+//     Function: FfmpegVideoCursor::st_thread_main
+//       Access: Private, Static
+//  Description: The thread main function, static version (for passing
+//               to GenericThread).
 ////////////////////////////////////////////////////////////////////
-static PStatCollector export_frame_collector("*:FFMPEG Convert Video to BGR");
 void FfmpegVideoCursor::
-export_frame(unsigned char *data, bool bgra, int bufx) {
-  PStatTimer timer(export_frame_collector);
-  if (bgra) {
-    _frame_out->data[0] = data + ((_size_y - 1) * bufx * 4);
-    _frame_out->linesize[0] = bufx * -4;
-#ifdef HAVE_SWSCALE
-    struct SwsContext *convert_ctx = sws_getContext(_size_x, _size_y,
-                               _video_ctx->pix_fmt, _size_x, _size_y,
-                               PIX_FMT_BGRA, SWS_FAST_BILINEAR, NULL, NULL, NULL);
-    nassertv(convert_ctx != NULL);
-    sws_scale(convert_ctx, _frame->data, _frame->linesize,
-              0, _size_y, _frame_out->data, _frame_out->linesize);
-    sws_freeContext(convert_ctx);
-#else
-    img_convert((AVPicture *)_frame_out, PIX_FMT_BGRA, 
-                (AVPicture *)_frame, _video_ctx->pix_fmt, _size_x, _size_y);
-#endif
-  } else {
-    _frame_out->data[0] = data + ((_size_y - 1) * bufx * 3);
-    _frame_out->linesize[0] = bufx * -3;
-#ifdef HAVE_SWSCALE
-    struct SwsContext *convert_ctx = sws_getContext(_size_x, _size_y,
-                               _video_ctx->pix_fmt, _size_x, _size_y,
-                               PIX_FMT_BGR24, SWS_FAST_BILINEAR, NULL, NULL, NULL);
-    nassertv(convert_ctx != NULL);
-    sws_scale(convert_ctx, _frame->data, _frame->linesize,
-              0, _size_y, _frame_out->data, _frame_out->linesize);
-    sws_freeContext(convert_ctx);
-#else
-    img_convert((AVPicture *)_frame_out, PIX_FMT_BGR24, 
-                (AVPicture *)_frame, _video_ctx->pix_fmt, _size_x, _size_y);
-#endif
+st_thread_main(void *self) {
+  ((FfmpegVideoCursor *)self)->thread_main();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::thread_main
+//       Access: Private
+//  Description: The thread main function.
+////////////////////////////////////////////////////////////////////
+void FfmpegVideoCursor::
+thread_main() {
+  MutexHolder holder(_lock);
+  if (ffmpeg_cat.is_debug()) {
+    ffmpeg_cat.debug()
+      << "ffmpeg thread for " << _filename.get_basename() << " starting.\n";
+  }
+  
+  // Repeatedly wait for something interesting to do, until we're told
+  // to shut down.
+  while (_thread_status != TS_shutdown) {
+    nassertv(_thread_status != TS_stopped);
+    _action_cvar.wait();
+
+    while (do_poll()) {
+      // Keep doing stuff as long as there's something to do.
+      PStatClient::thread_tick(_sync_name);
+      Thread::consider_yield();
+    }
+  }
+
+  _thread_status = TS_stopped;
+  if (ffmpeg_cat.is_debug()) {
+    ffmpeg_cat.debug()
+      << "ffmpeg thread for " << _filename.get_basename() << " stopped.\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::do_poll
+//       Access: Private
+//  Description: Called within the sub-thread.  Assumes the lock is
+//               already held.  If there is something for the thread
+//               to do, does it and returns true.  If there is nothing
+//               for the thread to do, returns false.
+////////////////////////////////////////////////////////////////////
+bool FfmpegVideoCursor::
+do_poll() {
+  switch (_thread_status) {
+  case TS_stopped:
+  case TS_seeking:
+    // This shouldn't be possible while the thread is running.
+    nassertr(false, false);
+    return false;
+    
+  case TS_wait:
+    // The video hasn't started playing yet.
+    return false;
+
+  case TS_readahead:
+    if ((int)_readahead_frames.size() < _max_readahead_frames) {
+      // Time to read the next frame.
+      Buffer *frame = do_alloc_frame();
+      nassertr(frame != NULL, false);
+      _lock.release();
+      fetch_frame(-1);
+      export_frame(frame);
+      _lock.acquire();
+      _readahead_frames.push_back(frame);
+      return true;
+    }
+
+    // No room for the next frame yet.  Wait for more.
+    return false;
+
+  case TS_seek:
+    // Seek to a specific time.
+    {
+      double seek_time = _seek_time;
+      _thread_status = TS_seeking;
+      Buffer *frame = do_alloc_frame();
+      nassertr(frame != NULL, false);
+      _lock.release();
+      fetch_time(seek_time);
+      export_frame(frame);
+      _lock.acquire();
+      do_recycle_all_frames();
+      _readahead_frames.push_back(frame);
+      if (_thread_status == TS_seeking) {
+        // After seeking, we automatically transition to readahead.
+        _thread_status = TS_readahead;
+      }
+    }
+    return true;
+
+  case TS_shutdown:
+    // Time to stop the thread.
+    return false;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::do_alloc_frame
+//       Access: Private
+//  Description: Allocates a new Buffer object, or returns a
+//               previously-recycled object.  Assumes the lock is
+//               held.
+////////////////////////////////////////////////////////////////////
+MovieVideoCursor::Buffer *FfmpegVideoCursor::
+do_alloc_frame() {
+  if (!_recycled_frames.empty()) {
+    Buffer *frame = _recycled_frames.front();
+    _recycled_frames.pop_front();
+    return frame;
+  }
+  return internal_alloc_buffer();
+}
+ 
+////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::do_recycle_frame
+//       Access: Private
+//  Description: Recycles a previously-allocated Buffer object for
+//               future reuse.  Assumes the lock is held.
+////////////////////////////////////////////////////////////////////
+void FfmpegVideoCursor::
+do_recycle_frame(Buffer *frame) {
+  _recycled_frames.push_back(frame);
+}
+ 
+////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::do_recycle_all_frames
+//       Access: Private
+//  Description: Empties the entire readahead_frames queue into the
+//               recycle bin.  Assumes the lock is held.
+////////////////////////////////////////////////////////////////////
+void FfmpegVideoCursor::
+do_recycle_all_frames() {
+  while (!_readahead_frames.empty()) {
+    Buffer *frame = _readahead_frames.front();
+    _readahead_frames.pop_front();
+    if (ffmpeg_cat.is_debug()) {
+      ffmpeg_cat.debug()
+        << "ffmpeg for " << _filename.get_basename()
+        << " recycling frame at " << frame->_begin_time << "\n";
+    }
+    _recycled_frames.push_back(frame);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FfmpegVideoCursor::fetch_packet
-//       Access: Protected
-//  Description: Fetches a video packet and stores it in the 
-//               packet buffer.  Sets packet_time to the packet's
-//               timestamp.  If a packet could not be read, the
-//               packet is cleared and the packet_time is set to
-//               the specified default value.  Returns true on
+//       Access: Private
+//  Description: Called within the sub-thread.  Fetches a video packet
+//               and stores it in the packet0 buffer.  Sets packet_time
+//               to the packet's timestamp.  If a packet could not be
+//               read, the packet is cleared and the packet_time is
+//               set to the specified default value.  Returns true on
 //               failure (such as the end of the video), or false on
 //               success.
 ////////////////////////////////////////////////////////////////////
 bool FfmpegVideoCursor::
 fetch_packet(double default_time) {
-  if (_packet->data) {
-    av_free_packet(_packet);
+  if (_packet0->data) {
+    av_free_packet(_packet0);
   }
-  while (av_read_frame(_format_ctx, _packet) >= 0) {
-    if (_packet->stream_index == _video_index) {
-      _packet_time = _packet->dts * _video_timebase;
+  while (av_read_frame(_format_ctx, _packet0) >= 0) {
+    if (_packet0->stream_index == _video_index) {
+      _packet_time = _packet0->dts * _video_timebase;
       return false;
     }
-    av_free_packet(_packet);
+    av_free_packet(_packet0);
   }
-  _packet->data = 0;
+  _packet0->data = 0;
   _packet_time = default_time;
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::flip_packets
+//       Access: Private
+//  Description: Called within the sub-thread.  Reverses _packet0 and _packet1.
+////////////////////////////////////////////////////////////////////
+void FfmpegVideoCursor::
+flip_packets() {
+  AVPacket *t = _packet0;
+  _packet0 = _packet1;
+  _packet1 = t;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FfmpegVideoCursor::fetch_frame
-//       Access: Protected
-//  Description: Slides forward until the indicated time, then fetches
-//               a frame from the stream and stores it in the frame
-//               buffer.  Sets last_start and next_start to indicate
-//               the extents of the frame.  Returns true if the end of
-//               the video is reached.
+//       Access: Private
+//  Description: Called within the sub-thread.  Slides forward until
+//               the indicated time, then fetches a frame from the
+//               stream and stores it in the frame buffer.  Sets
+//               last_start and next_start to indicate the extents of
+//               the frame.  Returns true if the end of the video is
+//               reached.
 ////////////////////////////////////////////////////////////////////
 bool FfmpegVideoCursor::
 fetch_frame(double time) {
+  static PStatCollector fetch_buffer_pcollector("*:FFMPEG Video Decoding:Fetch");
+  PStatTimer timer(fetch_buffer_pcollector);
+
   int finished = 0;
-  _last_start = _packet_time;
+  _begin_time = _packet_time;
 
   if (_packet_time <= time) {
     static PStatCollector seek_pcollector("*:FFMPEG Video Decoding:Seek");
     PStatTimer timer(seek_pcollector);
+
     _video_ctx->skip_frame = AVDISCARD_BIDIR;
+    // Put the current packet aside in case we discover it's the
+    // packet to keep.
+    flip_packets();
+    
+    // Get the next packet.  The first packet beyond the time we're
+    // looking for marks the point to stop.
+    if (fetch_packet(time)) {
+      ffmpeg_cat.debug()
+        << "end of video\n";
+      return true;
+    }
     while (_packet_time <= time) {
+      // Decode and discard the previous packet.
 #if LIBAVCODEC_VERSION_INT < 3414272
       avcodec_decode_video(_video_ctx, _frame,
-                           &finished, _packet->data, _packet->size);
+                           &finished, _packet1->data, _packet1->size);
 #else
-      avcodec_decode_video2(_video_ctx, _frame, &finished, _packet);
+      avcodec_decode_video2(_video_ctx, _frame, &finished, _packet1);
 #endif
+      flip_packets();
       if (fetch_packet(time)) {
         ffmpeg_cat.debug()
           << "end of video\n";
@@ -315,32 +717,48 @@ fetch_frame(double time) {
       }
     }
     _video_ctx->skip_frame = AVDISCARD_DEFAULT;
-  }
-    
-  finished = 0;
-  while (!finished && _packet->data) {
+
+    // At this point, _packet0 contains the *next* packet to be
+    // decoded next frame, and _packet1 contains the packet to decode
+    // for this frame.
 #if LIBAVCODEC_VERSION_INT < 3414272
     avcodec_decode_video(_video_ctx, _frame,
-                          &finished, _packet->data, _packet->size);
+                         &finished, _packet1->data, _packet1->size);
 #else
-    avcodec_decode_video2(_video_ctx, _frame, &finished, _packet);
+    avcodec_decode_video2(_video_ctx, _frame, &finished, _packet1);
 #endif
-    fetch_packet(_last_start + 1.0);
+    
+  } else {
+    // Just get the next frame.
+    finished = 0;
+    while (!finished && _packet0->data) {
+#if LIBAVCODEC_VERSION_INT < 3414272
+      avcodec_decode_video(_video_ctx, _frame,
+                           &finished, _packet0->data, _packet0->size);
+#else
+      avcodec_decode_video2(_video_ctx, _frame, &finished, _packet0);
+#endif
+      fetch_packet(_begin_time + 1.0);
+    }
   }
-  _next_start = _packet_time;
+
+  _end_time = _packet_time;
 
   return (finished != 0);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FfmpegVideoCursor::seek
-//       Access: Protected
-//  Description: Seeks to a target location.  Afterward, the
-//               packet_time is guaranteed to be less than or 
-//               equal to the specified time.
+//       Access: Private
+//  Description: Called within the sub-thread. Seeks to a target
+//               location.  Afterward, the packet_time is guaranteed
+//               to be less than or equal to the specified time.
 ////////////////////////////////////////////////////////////////////
 void FfmpegVideoCursor::
 seek(double t) {
+  static PStatCollector seek_pcollector("*:FFMPEG Video Decoding:Seek");
+  PStatTimer timer(seek_pcollector);
+
   PN_int64 target_ts = (PN_int64)(t / _video_timebase);
   if (target_ts < (PN_int64)(_initial_dts)) {
     // Attempts to seek before the first packet will fail.
@@ -355,16 +773,22 @@ seek(double t) {
     _packet_time = t;
     return;
   }
-  avcodec_close(_video_ctx);
-  AVCodec *pVideoCodec=avcodec_find_decoder(_video_ctx->codec_id);
-  if(pVideoCodec == 0) {
-    cleanup();
-    return;
+  {
+    MutexHolder av_holder(_av_lock);
+
+    avcodec_close(_video_ctx);
+    AVCodec *pVideoCodec = avcodec_find_decoder(_video_ctx->codec_id);
+    if (pVideoCodec == 0) {
+      cleanup();
+      return;
+    }
+
+    if (avcodec_open(_video_ctx, pVideoCodec)<0) {
+      cleanup();
+      return;
+    }
   }
-  if(avcodec_open(_video_ctx, pVideoCodec)<0) {
-    cleanup();
-    return;
-  }
+
   fetch_packet(t);
   if (_packet_time > t) {
     _packet_time = t;
@@ -373,17 +797,20 @@ seek(double t) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FfmpegVideoCursor::fetch_time
-//       Access: Public, Virtual
-//  Description: Advance until the specified time is in the 
-//               export buffer.
+//       Access: Private 
+//  Description: Called within the sub-thread.  Advance until the
+//               specified time is in the export buffer.
 ////////////////////////////////////////////////////////////////////
 void FfmpegVideoCursor::
 fetch_time(double time) {
-  if (time < _last_start) {
+  static PStatCollector fetch_buffer_pcollector("*:FFMPEG Video Decoding:Fetch");
+  PStatTimer timer(fetch_buffer_pcollector);
+
+  if (time < _begin_time) {
     // Time is in the past.
     if (ffmpeg_cat.is_debug()) {
       ffmpeg_cat.debug()
-        << "Seeking backward to " << time << " from " << _last_start << "\n";
+        << "Seeking backward to " << time << " from " << _begin_time << "\n";
     }
     seek(time);
     if (_packet_time > time) {
@@ -397,14 +824,14 @@ fetch_time(double time) {
     }
     fetch_frame(time);
 
-  } else if (time < _next_start) {
+  } else if (time < _end_time) {
     // Time is in the present: already have the frame.
     if (ffmpeg_cat.is_debug()) {
       ffmpeg_cat.debug()
         << "Currently have " << time << "\n";
     }
 
-  } else if (time < _next_start + _min_fseek) {
+  } else if (time < _end_time + _min_fseek) {
     // Time is in the near future.
     if (ffmpeg_cat.is_debug()) {
       ffmpeg_cat.debug()
@@ -423,7 +850,7 @@ fetch_time(double time) {
     
     if (ffmpeg_cat.is_debug()) {
       ffmpeg_cat.debug()
-        << "Jumping forward to " << time << " from " << _last_start << "\n";
+        << "Jumping forward to " << time << " from " << _begin_time << "\n";
     }
     double base = _packet_time;
     seek(time);
@@ -448,61 +875,32 @@ fetch_time(double time) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVideoCursor::fetch_into_texture
-//       Access: Public, Virtual
-//  Description: See MovieVideoCursor::fetch_into_texture.
+//     Function: FfmpegVideoCursor::export_frame
+//       Access: Private
+//  Description: Called within the sub-thread.  Exports the contents
+//               of the frame buffer into the indicated target buffer.
 ////////////////////////////////////////////////////////////////////
 void FfmpegVideoCursor::
-fetch_into_texture(double time, Texture *t, int page) {
-  static PStatCollector fetch_into_texture_pcollector("*:FFMPEG Video Decoding:Fetch");
-  PStatTimer timer(fetch_into_texture_pcollector);
-  
-  nassertv(t->get_x_size() >= size_x());
-  nassertv(t->get_y_size() >= size_y());
-  nassertv((t->get_num_components() == 3) || (t->get_num_components() == 4));
-  nassertv(t->get_component_width() == 1);
-  nassertv(page < t->get_num_pages());
-  
-  PTA_uchar img = t->modify_ram_image();
-  
-  unsigned char *data = img.p() + page * t->get_expected_ram_page_size();
-  
-  // If there was an error at any point, synthesize black.
-  if (_format_ctx==0) {
-    if (data) {
-      memset(data,0,t->get_x_size() * t->get_y_size() * t->get_num_components());
-    }
-    _last_start = time;
-    _next_start = time + 1.0;
-    return;
-  }
-  
-  fetch_time(time);
-  export_frame(data, (t->get_num_components()==4), t->get_x_size());
-}
+export_frame(MovieVideoCursor::Buffer *buffer) {
+  static PStatCollector export_frame_collector("*:FFMPEG Convert Video to BGR");
+  PStatTimer timer(export_frame_collector);
 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVideoCursor::fetch_into_buffer
-//       Access: Public, Virtual
-//  Description: See MovieVideoCursor::fetch_into_buffer.
-////////////////////////////////////////////////////////////////////
-void FfmpegVideoCursor::
-fetch_into_buffer(double time, unsigned char *data, bool bgra) {
-  static PStatCollector fetch_into_buffer_pcollector("*:FFMPEG Video Decoding:Fetch");
-  PStatTimer timer(fetch_into_buffer_pcollector);
-  
-  // If there was an error at any point, synthesize black.
-  if (_format_ctx==0) {
-    if (data) {
-      memset(data,0,size_x()*size_y()*(bgra?4:3));
-    }
-    _last_start = time;
-    _next_start = time + 1.0;
-    return;
-  }
-
-  fetch_time(time);
-  export_frame(data, bgra, _size_x);
+  _frame_out->data[0] = buffer->_block + ((_size_y - 1) * _size_x * 3);
+  _frame_out->linesize[0] = _size_x * -3;
+  buffer->_begin_time = _begin_time;
+  buffer->_end_time = _end_time;
+#ifdef HAVE_SWSCALE
+  struct SwsContext *convert_ctx = sws_getContext(_size_x, _size_y,
+                                                  _video_ctx->pix_fmt, _size_x, _size_y,
+                                                  PIX_FMT_BGR24, SWS_FAST_BILINEAR, NULL, NULL, NULL);
+  nassertv(convert_ctx != NULL);
+  sws_scale(convert_ctx, _frame->data, _frame->linesize,
+            0, _size_y, _frame_out->data, _frame_out->linesize);
+  sws_freeContext(convert_ctx);
+#else
+  img_convert((AVPicture *)_frame_out, PIX_FMT_BGR24, 
+              (AVPicture *)_frame, _video_ctx->pix_fmt, _size_x, _size_y);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -549,7 +947,7 @@ finalize(BamReader *) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FfmpegVideoCursor::make_from_bam
-//       Access: Protected, Static
+//       Access: Private, Static
 //  Description: This function is called by the BamReader's factory
 //               when a new object of type FfmpegVideo is encountered
 //               in the Bam file.  It should create the FfmpegVideo
@@ -569,7 +967,7 @@ make_from_bam(const FactoryParams &params) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FfmpegVideoCursor::fillin
-//       Access: Protected
+//       Access: Private
 //  Description: This internal function is called by make_from_bam to
 //               read in all of the relevant data from the BamFile for
 //               the new FfmpegVideo.

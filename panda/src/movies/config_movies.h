@@ -25,6 +25,8 @@ ConfigureDecl(config_movies, EXPCL_PANDA_MOVIES, EXPTP_PANDA_MOVIES);
 NotifyCategoryDecl(movies, EXPCL_PANDA_MOVIES, EXPTP_PANDA_MOVIES);
 NotifyCategoryDecl(ffmpeg, EXPCL_PANDA_MOVIES, EXPTP_PANDA_MOVIES);
 
+extern ConfigVariableInt ffmpeg_max_readahead_frames;
+
 extern EXPCL_PANDA_MOVIES void init_libmovies();
 
 #endif /* __CONFIG_MOVIES_H__ */

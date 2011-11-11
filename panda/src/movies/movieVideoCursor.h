@@ -18,6 +18,7 @@
 #include "pandabase.h"
 #include "texture.h"
 #include "pointerTo.h"
+#include "memoryBase.h"
 
 class MovieVideo;
 class FactoryParams;
@@ -63,11 +64,20 @@ PUBLISHED:
   virtual void fetch_into_texture_alpha(double time, Texture *t, int page, int alpha_src);
 
 public:
-  virtual void fetch_into_buffer(double time, unsigned char *block, bool bgra);
+  class Buffer : public MemoryBase {
+  public:
+    unsigned char *_block;
+    size_t _block_size;
+    double _begin_time;
+    double _end_time;
+  };
+  virtual Buffer *fetch_buffer(double time);
+  virtual void release_buffer(Buffer *buffer);
   
-private:
-  void allocate_conversion_buffer();
-  unsigned char *_conversion_buffer;
+protected:
+  Buffer *get_standard_buffer();
+  Buffer *internal_alloc_buffer();
+  void internal_free_buffer(Buffer *buffer);
   
 protected:
   PT(MovieVideo) _source;
@@ -82,6 +92,8 @@ protected:
   double _next_start;
   bool _streaming;
   bool _ready;
+
+  Buffer _standard_buffer;
 
 public:
   virtual void write_datagram(BamWriter *manager, Datagram &dg);

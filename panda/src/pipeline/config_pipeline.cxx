@@ -16,6 +16,7 @@
 #include "asyncTaskBase.h"
 #include "mainThread.h"
 #include "externalThread.h"
+#include "genericThread.h"
 #include "thread.h"
 #include "pythonThread.h"
 #include "pandaSystem.h"
@@ -73,6 +74,7 @@ init_libpipeline() {
   AsyncTaskBase::init_type();
   MainThread::init_type();
   ExternalThread::init_type();
+  GenericThread::init_type();
   Thread::init_type();
 #ifdef HAVE_PYTHON
   PythonThread::init_type();

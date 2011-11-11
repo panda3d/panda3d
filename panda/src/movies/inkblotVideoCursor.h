@@ -32,7 +32,7 @@ class EXPCL_PANDA_MOVIES InkblotVideoCursor : public MovieVideoCursor {
   virtual ~InkblotVideoCursor();
   
  public:
-  virtual void fetch_into_buffer(double time, unsigned char *block, bool rgba);
+  virtual Buffer *fetch_buffer(double time);
   
  protected:
   unsigned char *_cells;

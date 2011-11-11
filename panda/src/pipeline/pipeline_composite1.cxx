@@ -20,6 +20,7 @@
 #include "cycleDataWriter.cxx"
 #include "cyclerHolder.cxx"
 #include "externalThread.cxx"
+#include "genericThread.cxx"
 #include "lightMutexDirect.cxx"
 #include "lightMutexHolder.cxx"
 #include "lightReMutexDirect.cxx"
