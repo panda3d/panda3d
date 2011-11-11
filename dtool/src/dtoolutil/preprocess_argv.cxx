@@ -36,6 +36,8 @@ preprocess_argv(int &argc, char **&argv) {
 #ifndef _WIN32
   // Not Windows: do nothing.
 #else  // _WIN32
+  // Temporarily commenting out to fix build.  Revisit shortly.
+  /*
   static Win32ArgParser parser;
   if (parser.is_cygwin_shell()) {
     // Running within Cygwin: do nothing.
@@ -46,5 +48,6 @@ preprocess_argv(int &argc, char **&argv) {
   parser.set_system_command_line();
   argc = parser.get_argc();
   argv = parser.get_argv();
+  */
 #endif  // _WIN32
 }
