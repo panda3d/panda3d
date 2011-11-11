@@ -658,7 +658,7 @@ WebcamVideoCursorDS::
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-WebcamVideoCursor::Buffer *WebcamVideoCursorDS::
+MovieVideoCursor::Buffer *WebcamVideoCursorDS::
 fetch_buffer(double time) {
   if (!_ready) {
     return NULL;
