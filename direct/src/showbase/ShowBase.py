@@ -149,6 +149,7 @@ class ShowBase(DirectObject.DirectObject):
         # *all* windows.  Similarly with base.camList.
         self.win = None
         self.frameRateMeter = None
+        self.sceneGraphAnalyzerMeter = None
         self.winList = []
         self.winControls = []
         self.mainWinMinimized = 0
@@ -704,6 +705,9 @@ class ShowBase(DirectObject.DirectObject):
             if self.frameRateMeter:
                 self.frameRateMeter.clearWindow()
                 self.frameRateMeter = None
+            if self.sceneGraphAnalyzerMeter:
+                self.sceneGraphAnalyzerMeter.clearWindow()
+                self.sceneGraphAnalyzerMeter = None
 
         messenger.send('close_window', [win, mainWindow])
         if mainWindow:
@@ -856,6 +860,8 @@ class ShowBase(DirectObject.DirectObject):
                 # set.
                 flag = True
             self.setFrameRateMeter(flag)
+            flag = self.config.GetBool('show-scene-graph-analyzer-meter', False)
+            self.setSceneGraphAnalyzerMeter(flag)
         return success
 
     def setSleep(self, amount):
@@ -891,6 +897,20 @@ class ShowBase(DirectObject.DirectObject):
             if self.frameRateMeter:
                 self.frameRateMeter.clearWindow()
                 self.frameRateMeter = None
+
+    def setSceneGraphAnalyzerMeter(self, flag):
+        """
+        Turns on or off (according to flag) a standard frame rate
+        meter in the upper-right corner of the main window.
+        """
+        if flag:
+            if not self.sceneGraphAnalyzerMeter:
+                self.sceneGraphAnalyzerMeter = SceneGraphAnalyzerMeter('sceneGraphAnalyzerMeter', self.render.node())
+                self.sceneGraphAnalyzerMeter.setupWindow(self.win)
+        else:
+            if self.sceneGraphAnalyzerMeter:
+                self.sceneGraphAnalyzerMeter.clearWindow()
+                self.sceneGraphAnalyzerMeter = None
 
     # [gjeon] now you can add more winControls after creating a showbase instance
     def setupWindowControls(self, winCtrl=None):
