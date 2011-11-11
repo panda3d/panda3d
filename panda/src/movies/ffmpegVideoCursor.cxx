@@ -43,6 +43,7 @@ TypeHandle FfmpegVideoCursor::_type_handle;
 FfmpegVideoCursor::
 FfmpegVideoCursor() :
   _max_readahead_frames(0),
+  _thread_priority(ffmpeg_thread_priority),
   _lock("FfmpegVideoCursor::_lock"),
   _action_cvar(_lock),
   _thread_status(TS_stopped),
@@ -171,6 +172,7 @@ init_from(FfmpegVideo *source) {
 FfmpegVideoCursor::
 FfmpegVideoCursor(FfmpegVideo *src) : 
   _max_readahead_frames(0),
+  _thread_priority(ffmpeg_thread_priority),
   _lock("FfmpegVideoCursor::_lock"),
   _action_cvar(_lock),
   _thread_status(TS_stopped),
@@ -250,6 +252,41 @@ get_max_readahead_frames() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::set_thread_priority
+//       Access: Published
+//  Description: Changes the thread priority of the thread that
+//               decodes the ffmpeg video stream (if
+//               max_readahead_frames is nonzero).  Normally you
+//               shouldn't mess with this, but there may be special
+//               cases where a precise balance of CPU utilization
+//               between the main thread and the various ffmpeg
+//               service threads may be needed.
+////////////////////////////////////////////////////////////////////
+void FfmpegVideoCursor::
+set_thread_priority(ThreadPriority thread_priority) {
+  if (_thread_priority != thread_priority) {
+    _thread_priority = thread_priority;
+    if (is_thread_started()) {
+      stop_thread();
+      start_thread();
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::get_thread_priority
+//       Access: Published
+//  Description: Returns the current thread priority of the thread that
+//               decodes the ffmpeg video stream (if
+//               max_readahead_frames is nonzero).  See
+//               set_thread_priority().
+////////////////////////////////////////////////////////////////////
+ThreadPriority FfmpegVideoCursor::
+get_thread_priority() const {
+  return _thread_priority;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FfmpegVideoCursor::start_thread
 //       Access: Published
 //  Description: Explicitly starts the ffmpeg decoding thread after it
@@ -271,7 +308,7 @@ start_thread() {
     // Create and start the thread object.
     _thread_status = TS_wait;
     _thread = new GenericThread(_filename.get_basename(), _sync_name, st_thread_main, this);
-    if (!_thread->start(TP_normal, true)) {
+    if (!_thread->start(_thread_priority, true)) {
       // Couldn't start the thread.
       _thread = NULL;
       _thread_status = TS_stopped;

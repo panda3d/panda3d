@@ -24,6 +24,7 @@
 #include "pointerTo.h"
 #include "ffmpegVirtualFile.h"
 #include "genericThread.h"
+#include "threadPriority.h"
 #include "pmutex.h"
 #include "conditionVar.h"
 
@@ -49,6 +50,9 @@ PUBLISHED:
   void set_max_readahead_frames(int max_readahead_frames);
   int get_max_readahead_frames() const;
 
+  void set_thread_priority(ThreadPriority thread_priority);
+  ThreadPriority get_thread_priority() const;
+
   void start_thread();
   BLOCKING void stop_thread();
   bool is_thread_started() const;
@@ -63,6 +67,7 @@ private:
   Filename _filename;
   string _sync_name;
   int _max_readahead_frames;
+  ThreadPriority _thread_priority;
   PT(GenericThread) _thread;
 
   // This global Mutex protects calls to avcodec_open/close/etc.
