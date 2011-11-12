@@ -757,9 +757,6 @@ fetch_frame(double time) {
   _begin_time = _packet_time;
 
   if (_packet_time <= time) {
-    static PStatCollector seek_pcollector("*:FFMPEG Video Decoding:Seek");
-    PStatTimer timer(seek_pcollector);
-
     _video_ctx->skip_frame = AVDISCARD_BIDIR;
     // Put the current packet aside in case we discover it's the
     // packet to keep.
@@ -776,6 +773,9 @@ fetch_frame(double time) {
       return true;
     }
     while (_packet_time <= time) {
+      static PStatCollector seek_pcollector("*:FFMPEG Video Decoding:Seek");
+      PStatTimer timer(seek_pcollector);
+
       // Decode and discard the previous packet.
 #if LIBAVCODEC_VERSION_INT < 3414272
       avcodec_decode_video(_video_ctx, _frame,
