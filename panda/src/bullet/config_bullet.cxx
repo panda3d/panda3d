@@ -73,6 +73,11 @@ ConfigVariableEnum<BulletWorld::BroadphaseAlgorithm> bullet_broadphase_algorithm
 PRC_DESC("Specifies the broadphase algorithm to be used by the physics "
          "engine. Default value is 'aabb' (dynamic aabb tree)."));
 
+ConfigVariableEnum<BulletWorld::FilterAlgorithm> bullet_filter_algorithm
+("bullet-filter-algorithm", BulletWorld::FA_mask,
+PRC_DESC("Specifies the algorithm to be used by the physics engine for "
+         "collision filtering. Default value is 'mask'."));
+
 ConfigVariableDouble bullet_sap_extents
 ("bullet-sap-extents", 1000.0,
 PRC_DESC("Specifies the world extent in all directions. The config variable "

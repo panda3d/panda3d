@@ -31,6 +31,7 @@ NotifyCategoryDecl(bullet, EXPCL_PANDABULLET, EXPTP_PANDABULLET);
 extern ConfigVariableInt bullet_max_objects;
 extern ConfigVariableInt bullet_gc_lifetime;
 extern ConfigVariableEnum<BulletWorld::BroadphaseAlgorithm> bullet_broadphase_algorithm;
+extern ConfigVariableEnum<BulletWorld::FilterAlgorithm> bullet_filter_algorithm;
 extern ConfigVariableDouble bullet_sap_extents;
 extern ConfigVariableBool bullet_enable_contact_events;
 extern ConfigVariableInt bullet_solver_iterations;

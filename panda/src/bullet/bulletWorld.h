@@ -137,10 +137,19 @@ PUBLISHED:
   BulletPersistentManifold *get_manifold(int idx) const;
   MAKE_SEQ(get_manifolds, get_num_manifolds, get_manifold);
 
+  // Collision filtering
+  void set_group_collision_flag(unsigned int group1, unsigned int group2, bool enable);
+  bool get_group_collision_flag(unsigned int group1, unsigned int group2) const;
+
   // Configuration
   enum BroadphaseAlgorithm {
     BA_sweep_and_prune,
     BA_dynamic_aabb_tree,
+  };
+
+  enum FilterAlgorithm {
+    FA_mask,
+    FA_groups_mask,
   };
 
 public:
@@ -167,10 +176,18 @@ private:
   static PStatCollector _pstat_p2b;
   static PStatCollector _pstat_b2p;
 
-  struct btFilterCallback : public btOverlapFilterCallback {
+  struct btFilterCallback1 : public btOverlapFilterCallback {
     virtual bool needBroadphaseCollision(
       btBroadphaseProxy* proxy0,
       btBroadphaseProxy* proxy1) const;
+  };
+
+  struct btFilterCallback2 : public btOverlapFilterCallback {
+    virtual bool needBroadphaseCollision(
+      btBroadphaseProxy* proxy0,
+      btBroadphaseProxy* proxy1) const;
+
+    CollideMask _collide[32];
   };
 
   btBroadphaseInterface *_broadphase;
@@ -179,8 +196,10 @@ private:
   btConstraintSolver *_solver;
   btSoftRigidDynamicsWorld *_world;
 
-  btGhostPairCallback *_ghost_cb;
-  btFilterCallback *_filter_cb;
+  btGhostPairCallback _ghost_cb;
+
+  btFilterCallback1 _filter_cb1;
+  btFilterCallback2 _filter_cb2;
 
   btSoftBodyWorldInfo _info;
 
@@ -219,6 +238,11 @@ EXPCL_PANDABULLET ostream &
 operator << (ostream &out, BulletWorld::BroadphaseAlgorithm algorithm);
 EXPCL_PANDABULLET istream &
 operator >> (istream &in, BulletWorld::BroadphaseAlgorithm &algorithm);
+
+EXPCL_PANDABULLET ostream &
+operator << (ostream &out, BulletWorld::FilterAlgorithm algorithm);
+EXPCL_PANDABULLET istream &
+operator >> (istream &in, BulletWorld::FilterAlgorithm &algorithm);
 
 #include "bulletWorld.I"
 

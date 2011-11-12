@@ -47,9 +47,6 @@ INLINE BulletWorld::
 
   _info.m_sparsesdf.Reset();
 
-  delete _ghost_cb;
-  delete _filter_cb;
-
   delete _world;
   delete _solver;
   delete _configuration;

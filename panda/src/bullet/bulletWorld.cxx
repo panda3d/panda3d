@@ -37,9 +37,11 @@ PStatCollector BulletWorld::_pstat_b2p("App:Bullet:DoPhysics:SyncB2P");
 BulletWorld::
 BulletWorld() {
 
-  // Callbacks
-  _ghost_cb = new btGhostPairCallback();
-  _filter_cb = new btFilterCallback();
+  // Init groups filter matrix
+  for (int i=0; i<32; i++) {
+    _filter_cb2._collide[i].clear();
+    _filter_cb2._collide[i].set_bit(i);
+  }
 
   // Broadphase
   btScalar dx(bullet_sap_extents);
@@ -67,9 +69,22 @@ BulletWorld() {
 
   // World
   _world = new btSoftRigidDynamicsWorld(_dispatcher, _broadphase, _solver, _configuration);
-  _world->getPairCache()->setInternalGhostPairCallback(_ghost_cb);
-  _world->getPairCache()->setOverlapFilterCallback(_filter_cb);
   _world->setGravity(btVector3(0.0f, 0.0f, 0.0f));
+
+  // Ghost-pair callback
+  _world->getPairCache()->setInternalGhostPairCallback(&_ghost_cb);
+
+  // Filter callback
+  switch (bullet_filter_algorithm) {
+    case FA_mask:
+      _world->getPairCache()->setOverlapFilterCallback(&_filter_cb1);
+      break;
+    case FA_groups_mask:
+      _world->getPairCache()->setOverlapFilterCallback(&_filter_cb2);
+      break;
+    default:
+      bullet_cat.error() << "no proper filter algorithm!" << endl;
+  }
 
   // SoftBodyWorldInfo
   _info.m_dispatcher = _dispatcher;
@@ -711,11 +726,38 @@ get_collision_object(PandaNode *node) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::FilterCallback::needBroadphaseCollision
+//     Function: BulletWorld::get_collision_object
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void BulletWorld::
+set_group_collision_flag(unsigned int group1, unsigned int group2, bool enable) {
+
+  if (bullet_filter_algorithm != FA_groups_mask) {
+    bullet_cat.warning() << "filter algorithm is not 'groups-mask'" << endl;
+  }
+
+  _filter_cb2._collide[group1].set_bit_to(group2, enable);
+  _filter_cb2._collide[group2].set_bit_to(group1, enable);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletWorld::get_collision_object
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool BulletWorld::
+get_group_collision_flag(unsigned int group1, unsigned int group2) const {
+
+  return _filter_cb2._collide[group1].get_bit(group2);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletWorld::FilterCallback1::needBroadphaseCollision
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-bool BulletWorld::btFilterCallback::
+bool BulletWorld::btFilterCallback1::
 needBroadphaseCollision(btBroadphaseProxy* proxy0, btBroadphaseProxy* proxy1) const {
 
   btCollisionObject *obj0 = (btCollisionObject *) proxy0->m_clientObject;
@@ -734,6 +776,39 @@ needBroadphaseCollision(btBroadphaseProxy* proxy0, btBroadphaseProxy* proxy1) co
   CollideMask mask1 = node1->get_into_collide_mask();
 
   return (mask0 & mask1) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletWorld::FilterCallback2::needBroadphaseCollision
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+bool BulletWorld::btFilterCallback2::
+needBroadphaseCollision(btBroadphaseProxy* proxy0, btBroadphaseProxy* proxy1) const {
+
+  btCollisionObject *obj0 = (btCollisionObject *) proxy0->m_clientObject;
+  btCollisionObject *obj1 = (btCollisionObject *) proxy1->m_clientObject;
+
+  nassertr(obj0, false);
+  nassertr(obj1, false);
+
+  PandaNode *node0 = (PandaNode *) obj0->getUserPointer();
+  PandaNode *node1 = (PandaNode *) obj1->getUserPointer();
+
+  nassertr(node0, false);
+  nassertr(node1, false);
+
+  CollideMask mask0 = node0->get_into_collide_mask();
+  CollideMask mask1 = node1->get_into_collide_mask();
+
+  for (int i=0; i<32; i++) {
+    if (mask0.get_bit(i)) {
+      if ((_collide[i] & mask1) != 0)
+        return true;
+    }
+  }
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -773,6 +848,48 @@ operator >> (istream &in, BulletWorld::BroadphaseAlgorithm &algorithm) {
     bullet_cat.error()
       << "Invalid BulletWorld::BroadphaseAlgorithm: " << word << "\n";
     algorithm = BulletWorld::BA_dynamic_aabb_tree;
+  }
+
+  return in;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletWorld::FilterAlgorithm ostream operator
+//  Description:
+////////////////////////////////////////////////////////////////////
+ostream &
+operator << (ostream &out, BulletWorld::FilterAlgorithm algorithm) {
+
+  switch (algorithm) {
+  case BulletWorld::FA_mask:
+    return out << "mask";
+
+  case BulletWorld::FA_groups_mask:
+    return out << "groups-mask";
+  };
+
+  return out << "**invalid BulletWorld::FilterAlgorithm(" << (int)algorithm << ")**";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletWorld::FilterAlgorithm istream operator
+//  Description:
+////////////////////////////////////////////////////////////////////
+istream &
+operator >> (istream &in, BulletWorld::FilterAlgorithm &algorithm) {
+  string word;
+  in >> word;
+
+  if (word == "mask") {
+    algorithm = BulletWorld::FA_mask;
+  }
+  else if (word == "groups-mask") {
+    algorithm = BulletWorld::FA_groups_mask;
+  } 
+  else {
+    bullet_cat.error()
+      << "Invalid BulletWorld::FilterAlgorithm: " << word << "\n";
+    algorithm = BulletWorld::FA_mask;
   }
 
   return in;
