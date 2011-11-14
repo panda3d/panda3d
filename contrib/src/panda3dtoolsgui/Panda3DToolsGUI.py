@@ -91,8 +91,8 @@ using popen.poll() to retrieve output
 """
 
 #best layout size for Windows. Needs testing on Linux
-WINDOW_HEIGHT = 940
-WINDOW_WIDTH = 860
+WINDOW_WIDTH = 920
+WINDOW_HEIGHT = 1000
 
 #custom dialog that is shown for simple mode
 class OutputDialog(wx.Dialog):
@@ -117,7 +117,7 @@ class OutputDialog(wx.Dialog):
         # begin wxGlade: OutputDialog.__set_properties
         self.SetTitle("Exporter Output")
         self.SetSize((530, 405))
-        self.dlgOutText.SetMinSize((500, 300))
+        self.dlgOutText.SetSize((500, 300))
         # end wxGlade
 
     def __do_layout(self):
@@ -170,8 +170,8 @@ class OutputDialogpview(wx.Dialog):
         # begin wxGlade: OutputDialog.__set_properties
         self.SetTitle("Pview")
         self.SetSize((400, 133))
-        self.egg.SetMinSize((350, 30))
-        self.egganim.SetMinSize((400, 30))
+        self.egg.SetSize((350, 30))
+        self.egganim.SetSize((400, 30))
         # end wxGlade
 
     def __do_layout(self):
@@ -294,7 +294,6 @@ class main(wx.Frame):
         self.simple_animOptChoice = wx.RadioBox(self.simple_options_panel, -1, "animation-mode", choices=["none", "model", "chan", "both"], majorDimension=4, style=wx.RA_SPECIFY_COLS)
         self.simple_runExportBtn = wx.Button(self.simple_options_panel, ID_RUNSIMPLEEXPORT, "Run Export")
 
-
         #define advanced interface elements
         self.main_panel = wx.Panel(self.tab_panel, -1, style=wx.NO_BORDER|wx.TAB_TRAVERSAL)
 
@@ -306,7 +305,7 @@ class main(wx.Frame):
 
         # batch list
         self.batch_panel = wx.Panel(self.main_panel, -1)
-        self.batch_static_sizer_staticbox = wx.StaticBox(self.batch_panel, 1, "Batch List")
+        self.batch_static_sizer_staticbox = wx.StaticBox(self.batch_panel, -1, "Batch List")
 
         self.loadBatchButton = wx.Button(self.batch_panel, ID_LOADBATCH, "Load Batch")
         self.saveBatchButton = wx.Button(self.batch_panel, ID_SAVEBATCH, "Save Batch")
@@ -402,7 +401,7 @@ class main(wx.Frame):
         self.e2b_exportDestLbl = wx.StaticText(self.egg2bam_panel, -1, "Export Destination")
         self.e2b_exportDestTxt = wx.TextCtrl(self.egg2bam_panel, -1, "")
         self.e2b_exportDestBtn = wx.Button(self.egg2bam_panel, -1, "Choose..")
-        
+
         self.e2b_bamBatchOutputLbl = wx.StaticText(self.egg2bam_panel, -1, "Bam Output Files from the Current Batch")
         self.e2b_bamBatchOutputBtn = wx.Button(self.egg2bam_panel, -1, "Bam Batch Output")
 
@@ -614,24 +613,19 @@ class main(wx.Frame):
         self.simple_mayaVerComboBox.SetSelection(9)
         self.simple_animOptChoice.SetSelection(1)
         self.statusBar.SetStatusWidths([-1])
-        self.simple_panel.SetMaxSize((400,400))
-
-        #batch panel
-        self.toolComboBox.SetSelection(0)
-        self.consoleOutputTxt.SetMinSize((820, 150))
-        self.consoleOutputTxt.SetBackgroundColour(wx.Colour(192, 192, 192))
-        self.consoleOutputTxt.SetToolTipString("maya2egg console output appears here when batch process is running")
-        self.consoleOutputTxt.Enable(True)
-        self.batchTree.SetMinSize((390,534))
+        #self.simple_panel.SetMaxSize((400,400))
+        self.simple_mayaFileBtn.SetMinSize((-1, 23))
+        self.simple_exportDestBtn.SetMinSize((-1, 23))
+        self.simple_runExportBtn.SetMinSize((-1, 23))
 
         self.batchItemNameTxt.SetMinSize((210, 21))
-
+        self.addToBatchBtn.SetMinSize((-1, 23))
 
         # Maya2Egg panel
-        self.maya2egg_panel.SetMinSize((400, 530))
-        self.m2e_options_panel.SetMinSize((400,166))
-        self.m2e_anim_options_panel.SetMinSize((400,175))
-        self.m2e_tex_options_panel.SetMinSize((400,86))
+        #self.maya2egg_panel.SetMinSize((420, 530))
+        #self.m2e_options_panel.SetMinSize((420,166))
+        #self.m2e_anim_options_panel.SetMinSize((400,175))
+        #self.m2e_tex_options_panel.SetMinSize((400,86))
         self.m2e_mayaFileTxt.SetMinSize((230, 21))
         self.m2e_exportDestTxt.SetMinSize((230, 21))
         self.m2e_mayaVerComboBox.SetSelection(1)
@@ -644,6 +638,16 @@ class main(wx.Frame):
         self.m2e_charNameTxt.SetMinSize((283, 21))
         self.m2e_copyTexPathTxt.SetMinSize((218, 21))
         self.m2e_pathReplaceTxt.SetMinSize((218, 21))
+
+        self.m2e_mayaFileBtn.SetMinSize((-1, 23))
+        self.m2e_exportDestBtn.SetMinSize((-1, 23))
+        self.m2e_copyTexPathBtn.SetMinSize((-1, 23))
+        self.m2e_pathReplaceBtn.SetMinSize((-1, 23))
+        
+        self.m2e_startFrameSpin.SetMinSize((-1, 21))
+        self.m2e_endFrameSpin.SetMinSize((-1, 21))
+        self.m2e_frameRateInSpin.SetMinSize((-1, 21))
+        self.m2e_frameRateOutSpin.SetMinSize((-1, 21))
         #self.m2e_addEgg2BamChk.SetValue(1)
 
         self.m2e_mayaFileLbl.SetToolTipString("Maya file to be exported")
@@ -683,13 +687,17 @@ class main(wx.Frame):
 
 
         # Egg2Bam panel
-        self.egg2bam_panel.SetMinSize((400,166))
-        self.e2b_options_panel.SetMinSize((400, 80))
+        #self.egg2bam_panel.SetMinSize((400,166))
+        #self.e2b_options_panel.SetMinSize((400, 80))
         self.e2b_useCurrEggChk.SetValue(0)
         self.e2b_useCurrEggChk.Enable(True)
         self.e2b_eggFileTxt.SetMinSize((230, 21))
         self.e2b_exportDestTxt.SetMinSize((230, 21))
         self.egg2bam_panel.SetBackgroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_3DFACE))
+        
+        self.e2b_eggFileBtn.SetMinSize((-1, 23))
+        self.e2b_exportDestBtn.SetMinSize((-1, 23))
+        self.e2b_bamBatchOutputBtn.SetMinSize((-1, 23))
 
         self.e2b_bamBatchOutputLbl.SetToolTipString("Generate and add to batch bam2egg commands from currently selected batch items' outputs")
         self.e2b_bamBatchOutputBtn.SetToolTipString("Generate and add to batch bam2egg commands from currently selected batch items' outputs")
@@ -705,19 +713,26 @@ class main(wx.Frame):
 
 
         # Egg-Rename panel
-        self.eggRename_panel.SetMinSize((400,240))
         self.eggRename_panel.SetBackgroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_3DFACE))
-        self.rename_options_panel.SetMinSize((400, 45))
+        #self.eggRename_panel.SetMinSize((400,240))
+        #self.rename_options_panel.SetMinSize((400, 45))
         self.rename_eggFilesTree.SetMinSize((230,120))
         self.rename_exportDirTxt.SetMinSize((230, 21))
         self.rename_exportFileTxt.SetMinSize((230, 21))
         self.rename_stripPrefixTxt.SetMinSize((260, 21))
+        
+        self.rename_addEggBtn.SetMinSize((-1, 23))
+        self.rename_addFromBatchBtn.SetMinSize((-1, 23))
+        self.rename_removeEggBtn.SetMinSize((-1, 23))
+        self.rename_removeAllEggsBtn.SetMinSize((-1, 23))
+        self.rename_exportDirBtn.SetMinSize((-1, 23))
+        self.rename_exportFileBtn.SetMinSize((-1, 23))
 
 
         # Egg-Optchar panel
-        self.eggOptChar_panel.SetMinSize((400,366))
         self.eggOptChar_panel.SetBackgroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_3DFACE))
-        self.optchar_options_panel.SetMinSize((400, 171))
+        #self.eggOptChar_panel.SetMinSize((400,366))
+        #self.optchar_options_panel.SetMinSize((400, 171))
         self.optchar_eggFilesTree.SetMinSize((230,120))
         self.optchar_exportDirTxt.SetMinSize((230, 21))
         self.optchar_exportFileTxt.SetMinSize((230, 21))
@@ -725,7 +740,13 @@ class main(wx.Frame):
         self.optchar_dropJointsTxt.SetMinSize((248, 21))
         self.optchar_exposeJointsTxt.SetMinSize((248, 21))
         self.optchar_flagGeometryTxt.SetMinSize((248, 21))
-
+        
+        self.optchar_addEggBtn.SetMinSize((-1, 23))
+        self.optchar_addFromBatchBtn.SetMinSize((-1, 23))
+        self.optchar_removeEggBtn.SetMinSize((-1, 23))
+        self.optchar_removeAllEggsBtn.SetMinSize((-1, 23))
+        self.optchar_exportDirBtn.SetMinSize((-1, 23))
+        self.optchar_exportFileBtn.SetMinSize((-1, 23))
 
         #self.palettize_.SetToolTipString("
         self.optchar_exportInPlaceChk.SetToolTipString("Input egg files will be rewritten in place with the results (original input files are lost)")
@@ -738,9 +759,9 @@ class main(wx.Frame):
 
 
         # Egg-Palettize panel
-        self.eggPalettize_panel.SetMinSize((400,443))
         self.eggPalettize_panel.SetBackgroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_3DFACE))
-        self.palettize_options_panel.SetMinSize((400, 225))
+        #self.eggPalettize_panel.SetMinSize((400,443))
+        #self.palettize_options_panel.SetMinSize((400, 225))
         self.palettize_eggFilesTree.SetMinSize((230,120))
         self.palettize_exportDirTxt.SetMinSize((230, 21))
         self.palettize_exportFileTxt.SetMinSize((230, 21))
@@ -755,6 +776,18 @@ class main(wx.Frame):
         self.palettize_greenTxt.SetMinSize((60,21))
         self.palettize_blueTxt.SetMinSize((60,21))
         self.palettize_alphaTxt.SetMinSize((60,21))
+        self.palettize_marginTxt.SetMinSize((-1, 21))
+        self.palettize_coverageTxt.SetMinSize((-1, 21))
+
+        self.palettize_addEggBtn.SetMinSize((-1, 23))
+        self.palettize_addFromBatchBtn.SetMinSize((-1, 23))
+        self.palettize_removeEggBtn.SetMinSize((-1, 23))
+        self.palettize_removeAllEggsBtn.SetMinSize((-1, 23))
+        self.palettize_exportDirBtn.SetMinSize((-1, 23))
+        self.palettize_exportFileBtn.SetMinSize((-1, 23))
+        self.palettize_exportTexBtn.SetMinSize((-1, 23))
+        self.palettize_saveTxaBtn.SetMinSize((-1, 23))
+        self.palettize_loadTxaBtn.SetMinSize((-1, 23))
 
         self.palettize_exportInPlaceChk.SetToolTipString("Input egg files will be rewritten in place with the results (original input files are lost)")
         self.palettize_exportDirLbl.SetToolTipString("Destination directory for the exported files")
@@ -798,16 +831,39 @@ class main(wx.Frame):
         self.palettize_loadTxaBtn.SetToolTipString("Choose attributes file (.txa)")
         self.palettize_saveTxaBtn.SetToolTipString("Save current attributes to the .txa file")
 
+        self.toolComboBox.SetSelection(0)
+
+        # batch panel
+        self.batch_panel.SetMinSize((1000, 608))
+        self.batchTree.SetMinSize((1000,524))
+        self.loadBatchButton.SetMinSize((-1, 23))
+        self.saveBatchButton.SetMinSize((-1, 23))
+        self.sortBatchButton.SetMinSize((-1, 23))
+        self.editSelBatchButton.SetMinSize((-1, 23))
+        self.removeSelBatchButton.SetMinSize((-1, 23))
+        self.removeAllBatchButton.SetMinSize((-1, 23))
+
+        # console panel
+        self.console_panel.SetMinSize((1445, -1))
+        self.consoleOutputTxt.SetMinSize((1445, 100))
+        self.consoleOutputTxt.SetBackgroundColour(wx.Colour(192, 192, 192))
+        self.consoleOutputTxt.SetToolTipString("maya2egg console output appears here when batch process is running")
+        self.consoleOutputTxt.Enable(True)
+        
+        self.runBatchButton.SetMinSize((-1, 23))
+        self.clearConsoleButton.SetMinSize((-1, 23))
+        self.runPviewButton.SetMinSize((-1, 23))
 
         self.ignoreModDates.SetValue(True)
-        self.pandaPathTxt.SetMinSize((200,21))
+        self.pandaPathTxt.SetMinSize((200, 21))
+        self.loadPandaPathBtn.SetMinSize((-1, 23))
         self.pandaPathTxt.SetBackgroundColour(wx.Colour(192, 192, 192))
         self.ignoreModDates.SetToolTipString("Use this check box to export all the mb files regardless if they have been modified since the last export")
         self.pandaPathTxt.SetToolTipString("Select the particular installed version of Panda3D, if not chosen the first entry in the system path is used")
 
         self.main_panel.SetBackgroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_3DFACE))
         self.simple_panel.SetBackgroundColour(wx.SystemSettings_GetColour(wx.SYS_COLOUR_3DFACE))
-        
+
         self.SetStatusText('Welcome to Panda3D Tools GUI')
         # end wxGlade
 
@@ -824,20 +880,17 @@ class main(wx.Frame):
         simple_sizer = wx.FlexGridSizer(1,1,0,0)
         simple_options_static_sizer = wx.StaticBoxSizer(self.simple_options_sizer_staticbox, wx.VERTICAL)
 
-        file_flex_grid_sizer = wx.FlexGridSizer(2,3,0,0)
+        file_flex_grid_sizer = wx.FlexGridSizer(3,3,0,0)
         file_flex_grid_sizer.Add(self.simple_mayaFileLbl, -1, wx.TOP, 5)
         file_flex_grid_sizer.Add(self.simple_mayaFileTxt, -1, wx.ALL, 1)
         file_flex_grid_sizer.Add(self.simple_mayaFileBtn, -1, 0, 0)
         file_flex_grid_sizer.Add(self.simple_exportDestLbl, -1, wx.TOP, 5)
         file_flex_grid_sizer.Add(self.simple_exportDestTxt, -1, wx.ALL, 1)
         file_flex_grid_sizer.Add(self.simple_exportDestBtn, -1, 0, 0)
+        file_flex_grid_sizer.Add(self.simple_mayaVerLbl, 1, wx.TOP, 5)
+        file_flex_grid_sizer.Add(self.simple_mayaVerComboBox, 1, wx.ALL, 1)
+        file_flex_grid_sizer.Add(self.simple_runExportBtn, -1, 0, 0)
         simple_options_static_sizer.Add(file_flex_grid_sizer)
-
-        maya_ver_sizer = wx.FlexGridSizer(1,3,0,0)
-        maya_ver_sizer.Add(self.simple_mayaVerLbl, 1, wx.TOP|wx.RIGHT, 3)
-        maya_ver_sizer.Add(self.simple_mayaVerComboBox, 1, wx.LEFT, 3)
-        maya_ver_sizer.Add(self.simple_runExportBtn, -1, wx.LEFT , 146)
-        simple_options_static_sizer.Add(maya_ver_sizer, -1, wx.TOP, 3)
         simple_options_static_sizer.Add(self.simple_animOptChoice)
 
         self.simple_options_panel.SetSizer(simple_options_static_sizer)
@@ -847,11 +900,11 @@ class main(wx.Frame):
         # main panel
         main_sizer = wx.FlexGridSizer(4,1,0,0)
         top_sizer = wx.FlexGridSizer(1,2,0,0)
-        main_sizer.Add(top_sizer, 0, 0, 0)
+        main_sizer.Add(top_sizer, 0, wx.EXPAND, 0)
         top_left_sizer = wx.FlexGridSizer(3,1,0,0)
         top_right_sizer = wx.FlexGridSizer(3,1,0,0)
-        top_sizer.Add(top_left_sizer, 0, wx.ALL, 5)
-        top_sizer.Add(top_right_sizer, 0, wx.ALL, 5)
+        top_sizer.Add(top_left_sizer, 0, wx.ALL|wx.EXPAND, 5)
+        top_sizer.Add(top_right_sizer, 0, wx.ALL|wx.EXPAND, 5)
 
         top_left_sizer.Add(self.toolComboBox, 0, wx.ALL, 5)
 
@@ -874,7 +927,7 @@ class main(wx.Frame):
         maya_ver_sizer.Add(self.m2e_mayaVerComboBox, 1, wx.LEFT, 3)
         maya2egg_grid_sizer.Add(maya_ver_sizer, 1, wx.TOP, 3)
         self.maya2egg_panel.SetSizer(maya2egg_grid_sizer)
-        self.tool_options_static_sizer.Add(self.maya2egg_panel, 1, wx.ALL, 0)
+        self.tool_options_static_sizer.Add(self.maya2egg_panel, 1, wx.ALL|wx.EXPAND, 0)
 
         self.m2e_options_panel_sizer_staticbox.Lower()
         general_options_static_sizer = wx.StaticBoxSizer(self.m2e_options_panel_sizer_staticbox, wx.VERTICAL)
@@ -888,21 +941,18 @@ class main(wx.Frame):
         general_options_grid_sizer.Add(self.m2e_backfaceChk, 1, wx.ALL, 3)
         general_options_grid_sizer.Add(self.m2e_polygonOutputChk, 1, wx.ALL, 3)
         general_options_grid_sizer.Add(self.m2e_tbnallChk, 1, wx.ALL, 3)
-        subroots_sizer = wx.FlexGridSizer(1,2,0,0)
+
+        subroots_sizer = wx.FlexGridSizer(3,2,0,0)
         subroots_sizer.Add(self.m2e_subrootsChk, 1, wx.ALL, 3)
-        subroots_sizer.Add(self.m2e_subrootsTxt, 1, wx.LEFT, 2)
+        subroots_sizer.Add(self.m2e_subrootsTxt, 1, wx.LEFT, 1)
+        subroots_sizer.Add(self.m2e_subsetsChk, 1, wx.ALL, 3)
+        subroots_sizer.Add(self.m2e_subsetsTxt, 1, wx.LEFT, 1)
+        subroots_sizer.Add(self.m2e_excludesChk, 1, wx.ALL, 3)
+        subroots_sizer.Add(self.m2e_excludesTxt, 1, wx.LEFT, 1)
         general_options_grid_sizer.Add(subroots_sizer, 1, wx.ALL, 0)
-        subsets_sizer = wx.FlexGridSizer(1,2,0,0)
-        subsets_sizer.Add(self.m2e_subsetsChk, 1, wx.ALL, 3)
-        subsets_sizer.Add(self.m2e_subsetsTxt, 1, wx.LEFT, 7)
-        general_options_grid_sizer.Add(subsets_sizer, 1, wx.ALL, 0)
-        excludes_sizer = wx.FlexGridSizer(1,2,0,0)
-        excludes_sizer.Add(self.m2e_excludesChk, 1, wx.ALL, 3)
-        excludes_sizer.Add(self.m2e_excludesTxt, 1, wx.LEFT, 2)
-        general_options_grid_sizer.Add(excludes_sizer, 1, wx.ALL, 0)
         general_options_static_sizer.Add(general_options_grid_sizer)
         self.m2e_options_panel.SetSizer(general_options_static_sizer)
-        maya2egg_grid_sizer.Add(self.m2e_options_panel, 1, wx.TOP, 10)
+        maya2egg_grid_sizer.Add(self.m2e_options_panel, 1, wx.TOP|wx.EXPAND, 10)
 
         self.m2e_anim_options_sizer_staticbox.Lower()
         animation_options_static_sizer = wx.StaticBoxSizer(self.m2e_anim_options_sizer_staticbox, wx.VERTICAL)
@@ -924,7 +974,7 @@ class main(wx.Frame):
         animation_options_grid_sizer.Add(names_grid_sizer, 1, wx.ALL, 0)
         animation_options_static_sizer.Add(animation_options_grid_sizer)
         self.m2e_anim_options_panel.SetSizer(animation_options_static_sizer)
-        maya2egg_grid_sizer.Add(self.m2e_anim_options_panel, 1, wx.TOP, 10)
+        maya2egg_grid_sizer.Add(self.m2e_anim_options_panel, 1, wx.TOP|wx.EXPAND, 10)
 
         self.m2e_tex_options_sizer_staticbox.Lower()
         tex_options_static_sizer = wx.StaticBoxSizer(self.m2e_tex_options_sizer_staticbox, wx.VERTICAL)
@@ -941,12 +991,12 @@ class main(wx.Frame):
         tex_options_grid_sizer.Add(copytex_sizer, 1, wx.ALL, 0)
         tex_options_static_sizer.Add(tex_options_grid_sizer)
         self.m2e_tex_options_panel.SetSizer(tex_options_static_sizer)
-        maya2egg_grid_sizer.Add(self.m2e_tex_options_panel, 1, wx.TOP, 10)
-        
+        maya2egg_grid_sizer.Add(self.m2e_tex_options_panel, 1, wx.TOP|wx.EXPAND, 10)
+
         #maya2egg_grid_sizer.Add(self.m2e_addEgg2BamChk, 1, wx.TOP|wx.ALIGN_RIGHT, 3)
 
         self.tool_options_panel.SetSizer(self.tool_options_static_sizer)
-        top_left_sizer.Add(self.tool_options_panel, 1, wx.ALL, 0)
+        top_left_sizer.Add(self.tool_options_panel, 1, wx.ALL|wx.EXPAND, 0)
 
         # batch item details
         batch_item_grid_sizer = wx.FlexGridSizer(1,3,0,0)
@@ -967,7 +1017,7 @@ class main(wx.Frame):
         egg2bam_grid_sizer.Add(file_flex_grid_sizer, 1, wx.ALL, 0)
         self.egg2bam_panel.SetSizer(egg2bam_grid_sizer)
         self.tool_options_static_sizer.Add(self.egg2bam_panel, 1, wx.ALL, 0)
-        
+
         bam_batch_sizer = wx.FlexGridSizer(1,2,0,0)
         bam_batch_sizer.Add(self.e2b_bamBatchOutputLbl, 1, wx.TOP, 4)
         bam_batch_sizer.Add(self.e2b_bamBatchOutputBtn, 1, wx.LEFT|wx.RIGHT, 3)
@@ -981,8 +1031,8 @@ class main(wx.Frame):
         e2b_options_grid_sizer.Add(self.e2b_embedTexChk, 1, wx.ALL, 3)
         e2b_options_static_sizer.Add(e2b_options_grid_sizer)
         self.e2b_options_panel.SetSizer(e2b_options_static_sizer)
-        egg2bam_grid_sizer.Add(self.e2b_options_panel, 1, wx.TOP, 10)
-        
+        egg2bam_grid_sizer.Add(self.e2b_options_panel, 1, wx.TOP|wx.EXPAND, 10)
+
         # Egg-Rename
         eggRename_grid_sizer = wx.FlexGridSizer(8, 1, 0, 0)
         file_flex_grid_sizer = wx.FlexGridSizer(4, 3, 0, 0)
@@ -1007,12 +1057,12 @@ class main(wx.Frame):
 
         eggRename_grid_sizer.Add(file_flex_grid_sizer, 1, wx.ALL, 0)
         self.eggRename_panel.SetSizer(eggRename_grid_sizer)
-        self.tool_options_static_sizer.Add(self.eggRename_panel, 1, wx.ALL, 0)
-        
+        self.tool_options_static_sizer.Add(self.eggRename_panel, 1, wx.ALL|wx.EXPAND, 0)
+
         self.rename_options_sizer_staticbox.Lower()
         rename_options_static_sizer = wx.StaticBoxSizer(self.rename_options_sizer_staticbox, wx.VERTICAL)
         rename_options_grid_sizer = wx.FlexGridSizer(6,1,0,0)
-        
+
         prefix_sizer = wx.FlexGridSizer(2,2,0,0)
         prefix_sizer.Add(self.rename_stripPrefixChk, 1, wx.ALL, 3)
         prefix_sizer.Add(self.rename_stripPrefixTxt, 1, wx.LEFT, 2)
@@ -1020,7 +1070,7 @@ class main(wx.Frame):
 
         rename_options_static_sizer.Add(rename_options_grid_sizer)
         self.rename_options_panel.SetSizer(rename_options_static_sizer)
-        eggRename_grid_sizer.Add(self.rename_options_panel, 1, wx.TOP, 10)
+        eggRename_grid_sizer.Add(self.rename_options_panel, 1, wx.TOP|wx.EXPAND, 10)
 
         # Egg-Optchar
         eggOptChar_grid_sizer = wx.FlexGridSizer(8, 1, 0, 0)
@@ -1046,7 +1096,7 @@ class main(wx.Frame):
 
         eggOptChar_grid_sizer.Add(file_flex_grid_sizer, 1, wx.ALL, 0)
         self.eggOptChar_panel.SetSizer(eggOptChar_grid_sizer)
-        self.tool_options_static_sizer.Add(self.eggOptChar_panel, 1, wx.ALL, 0)
+        self.tool_options_static_sizer.Add(self.eggOptChar_panel, 1, wx.ALL|wx.EXPAND, 0)
 
         self.optchar_options_sizer_staticbox.Lower()
         optchar_options_static_sizer = wx.StaticBoxSizer(self.optchar_options_sizer_staticbox, wx.VERTICAL)
@@ -1067,7 +1117,7 @@ class main(wx.Frame):
         optchar_options_grid_sizer.Add(self.optchar_dartChoice, 1, wx.ALL, 0)
         optchar_options_static_sizer.Add(optchar_options_grid_sizer)
         self.optchar_options_panel.SetSizer(optchar_options_static_sizer)
-        eggOptChar_grid_sizer.Add(self.optchar_options_panel, 1, wx.TOP, 10)
+        eggOptChar_grid_sizer.Add(self.optchar_options_panel, 1, wx.TOP|wx.EXPAND, 10)
 
         # Egg-palettize
         eggPalettize_grid_sizer = wx.FlexGridSizer(8, 1, 0, 0)
@@ -1096,14 +1146,14 @@ class main(wx.Frame):
 
         eggPalettize_grid_sizer.Add(file_flex_grid_sizer, 1, wx.ALL, 0)
         self.eggPalettize_panel.SetSizer(eggPalettize_grid_sizer)
-        self.tool_options_static_sizer.Add(self.eggPalettize_panel, 1, wx.ALL, 0)
+        self.tool_options_static_sizer.Add(self.eggPalettize_panel, 1, wx.ALL|wx.EXPAND, 0)
 
         self.palettize_options_sizer_staticbox.Lower()
         palettize_options_static_sizer = wx.StaticBoxSizer(self.palettize_options_sizer_staticbox, wx.VERTICAL)
         palettize_options_grid_sizer = wx.FlexGridSizer(6,1,0,0)
 
         save_flex_grid_sizer = wx.FlexGridSizer(2, 3, 0, 0)
-        save_flex_grid_sizer.Add(self.palettize_saveTxaLbl, 0, wx.TOP, 5)
+        save_flex_grid_sizer.Add(self.palettize_saveTxaLbl, 0, wx.TOP, 3)
         save_flex_grid_sizer.Add(self.palettize_saveTxaTxt, 0, wx.ALL, 1)
         save_flex_grid_sizer.Add(self.palettize_loadTxaBtn, 0, 0, 0)
         save_flex_grid_sizer.Add((10,2),0,0)
@@ -1123,7 +1173,7 @@ class main(wx.Frame):
         txa_grid_sizer.Add(palettize_size_sizer, 0, wx.ALL, 1)
 
         #palettize_options_grid_sizer.Add(self.palettize_imageTypeChoice, 1, wx.ALL, 0)
-        txa_grid_sizer.Add(self.palettize_imageTypeLbl, 1, wx.TOP|wx.ALIGN_RIGHT, 15)
+        txa_grid_sizer.Add(self.palettize_imageTypeLbl, 1, wx.TOP|wx.ALIGN_RIGHT, 16)
         txa_grid_sizer.Add(self.palettize_imageTypeChoice, 1, wx.ALL, 0)
 
         self.palettize_color_sizer_staticbox.Lower()
@@ -1138,61 +1188,53 @@ class main(wx.Frame):
         color_flex_grid_sizer.Add(self.palettize_alphaLbl, 0, wx.TOP, 3)
         color_flex_grid_sizer.Add(self.palettize_alphaTxt, 0,wx.RIGHT, 6)
         color_static_sizer.Add(color_flex_grid_sizer, 1, 0, 0)
-        #palettize_options_grid_sizer.Add(color_static_sizer, 1, wx.ALL, 0)
         txa_grid_sizer.Add(self.palettize_colorLbl, 1, wx.TOP|wx.ALIGN_RIGHT, 13)
         txa_grid_sizer.Add(color_static_sizer, 1, wx.ALL, 0)
 
-        #margin_flex_grid_sizer = wx.FlexGridSizer(1, 5, 0, 0)
-        #margin_flex_grid_sizer.Add(self.palettize_marginLbl, 0, wx.TOP|wx.LEFT, 3)
-        #margin_flex_grid_sizer.Add(self.palettize_marginTxt, 0, wx.LEFT|wx.RIGHT, 3)
-        #margin_flex_grid_sizer.Add((15,2), 0, 0)
-        #margin_flex_grid_sizer.Add(self.palettize_coverageLbl, 0, wx.TOP, 3)
-        #margin_flex_grid_sizer.Add(self.palettize_coverageTxt, 0, wx.LEFT|wx.RIGHT, 3)
-        #palettize_options_grid_sizer.Add(margin_flex_grid_sizer, 1, wx.TOP, 6)
         txa_grid_sizer.Add(self.palettize_marginLbl, 1, wx.TOP|wx.ALIGN_RIGHT, 8)
         txa_grid_sizer.Add(self.palettize_marginTxt, 1, wx.TOP, 5)
         txa_grid_sizer.Add(self.palettize_coverageLbl, 1, wx.TOP|wx.ALIGN_RIGHT, 8)
         txa_grid_sizer.Add(self.palettize_coverageTxt, 1, wx.TOP, 5)
-        
+
         palettize_options_grid_sizer.Add(txa_grid_sizer, 1, wx.ALL, 0)
 
         palettize_options_static_sizer.Add(palettize_options_grid_sizer)
         self.palettize_options_panel.SetSizer(palettize_options_static_sizer)
-        eggPalettize_grid_sizer.Add(self.palettize_options_panel, 1, wx.TOP, 10)
+        eggPalettize_grid_sizer.Add(self.palettize_options_panel, 1, wx.TOP|wx.EXPAND, 10)
 
         # Batch List
         self.batch_static_sizer_staticbox.Lower()
         batch_static_sizer = wx.StaticBoxSizer(self.batch_static_sizer_staticbox, wx.VERTICAL)
         batch_grid_sizer = wx.FlexGridSizer(3,1,0,0)
         batch_buttons_sizer = wx.FlexGridSizer(1,6,0,0)
-        batch_buttons_sizer.Add(self.loadBatchButton, -1, wx.ALL, 2)
-        batch_buttons_sizer.Add(self.saveBatchButton, -1, wx.ALL, 2)
-        batch_buttons_sizer.Add(self.sortBatchButton, -1, wx.ALL, 2)
+        batch_buttons_sizer.Add(self.loadBatchButton, 1, wx.ALL, 2)
+        batch_buttons_sizer.Add(self.saveBatchButton, 1, wx.ALL, 2)
+        batch_buttons_sizer.Add(self.sortBatchButton, 1, wx.ALL, 2)
         batch_buttons_sizer.Add((25,0),0,0)
-        batch_grid_sizer.Add(batch_buttons_sizer, -1, wx.ALIGN_LEFT, 0)
-        batch_grid_sizer.Add(self.batchTree, 1, wx.ALL|wx.ALIGN_LEFT, 2)
+        batch_grid_sizer.Add(batch_buttons_sizer, 1, wx.ALIGN_LEFT, 0)
+        batch_grid_sizer.Add(self.batchTree, 1, wx.ALL|wx.ALIGN_LEFT|wx.EXPAND, 2)
         batch_controls_sizer = wx.FlexGridSizer(1,3,0,0)
-        batch_controls_sizer.Add(self.editSelBatchButton, -1, wx.ALL, 2)
-        batch_controls_sizer.Add(self.removeSelBatchButton, -1, wx.ALL, 2)
-        batch_controls_sizer.Add(self.removeAllBatchButton, -1, wx.ALL, 2)
+        batch_controls_sizer.Add(self.editSelBatchButton, 1, wx.ALL, 2)
+        batch_controls_sizer.Add(self.removeSelBatchButton, 1, wx.ALL, 2)
+        batch_controls_sizer.Add(self.removeAllBatchButton, 1, wx.ALL, 2)
         batch_grid_sizer.Add(batch_controls_sizer, 1, wx.ALIGN_LEFT, 0)
-        batch_static_sizer.Add(batch_grid_sizer)
+        batch_static_sizer.Add(batch_grid_sizer,1 , wx.EXPAND)
         self.batch_panel.SetSizer(batch_static_sizer)
-        top_right_sizer.Add(self.batch_panel, 1, wx.ALIGN_TOP, 0)
+        top_right_sizer.Add(self.batch_panel, 1, wx.ALIGN_TOP|wx.EXPAND, 0)
 
         # Console Output
         self.console_static_sizer_staticbox.Lower()
         console_static_sizer = wx.StaticBoxSizer(self.console_static_sizer_staticbox, wx.VERTICAL)
         console_grid_sizer = wx.FlexGridSizer(2,1,0,0)
-        console_grid_sizer.Add(self.consoleOutputTxt, 1, wx.ALIGN_LEFT, 0)
-        console_controls_sizer = wx.FlexGridSizer(1,6,0,0)
-        console_controls_sizer.Add(self.runBatchButton, 1, wx.ALL, 2)
-        console_controls_sizer.Add(self.clearConsoleButton, 1, wx.ALL, 2)
-        console_controls_sizer.Add(self.runPviewButton, 1, wx.ALL, 2)
-        console_grid_sizer.Add(console_controls_sizer, 1, wx.ALIGN_LEFT, 0)
-        console_static_sizer.Add(console_grid_sizer)
-        self.console_panel.SetSizer(console_static_sizer)
-        main_sizer.Add(self.console_panel, -1, wx.ALIGN_TOP, 0)
+        console_grid_sizer.Add(self.consoleOutputTxt, 1, wx.ALIGN_LEFT|wx.EXPAND, 0)
+
+        console_controls_sizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        console_buttons_sizer = wx.FlexGridSizer(1,6,0,0)
+        console_buttons_sizer.Add(self.runBatchButton, 1, wx.ALL, 2)
+        console_buttons_sizer.Add(self.clearConsoleButton, 1, wx.ALL, 2)
+        console_buttons_sizer.Add(self.runPviewButton, 1, wx.ALL, 2)
+        console_controls_sizer.Add(console_buttons_sizer)
 
         console_options_sizer = wx.FlexGridSizer(2,1,0,0)
         console_options_sizer.Add(self.ignoreModDates, 0, wx.ALL, 0)
@@ -1201,7 +1243,12 @@ class main(wx.Frame):
         panda_dir_sizer.Add(self.pandaPathTxt, 0, wx.TOP, 1)
         panda_dir_sizer.Add(self.loadPandaPathBtn, 0, wx.ALL, 0)
         console_options_sizer.Add(panda_dir_sizer, 0, 0, 0)
-        console_controls_sizer.Add(console_options_sizer, 0, wx.LEFT, 225)
+        console_controls_sizer.Add(console_options_sizer, 0, wx.LEFT|wx.ALIGN_RIGHT, 25)
+        
+        main_sizer.Add(self.console_panel, -1, wx.ALIGN_TOP|wx.EXPAND|wx.RIGHT, 5)
+        self.console_panel.SetSizer(console_static_sizer)
+        console_grid_sizer.Add(console_controls_sizer, 1, wx.ALIGN_LEFT, 0)
+        console_static_sizer.Add(console_grid_sizer, 1, wx.EXPAND)
 
         self.main_panel.SetSizer(main_sizer)
 
@@ -1215,7 +1262,6 @@ class main(wx.Frame):
         self.SetSizer(tab_panel_sizer)
         tab_panel_sizer.Fit(self)
 
-        self.SetMinSize((WINDOW_WIDTH, WINDOW_HEIGHT))
         self.SetSize((WINDOW_WIDTH, WINDOW_HEIGHT))
         self.Layout()
 
@@ -1424,7 +1470,7 @@ class main(wx.Frame):
         dlg = wx.FileDialog(self, "Choose an Egg file to BAM", dirname, "", "*.egg", wx.OPEN)
         if dlg.ShowModal() == wx.ID_OK: #if the user clicked ok then we grabbed a file so load it
             self.filename = dlg.GetFilename()
-            dirname = dlg.GetDirectory()            
+            dirname = dlg.GetDirectory()
             self.e2b_eggFileTxt.SetValue(os.path.join(dirname + os.sep , self.filename)) #this is for a text control
         dlg.Destroy() #otherwise just kill the file dialog
 
@@ -2204,7 +2250,7 @@ class main(wx.Frame):
 
     def RunCommand(self, command, batchmode):
         #run command lines
-        if batchmode:
+        if batchmode and self.pandaPathTxt.GetValue()!='':
             PATH = self.pandaPathTxt.GetValue() + os.sep + 'bin' + os.sep
         else:
             PATH = ''
@@ -2213,7 +2259,7 @@ class main(wx.Frame):
             self.consoleOutputTxt.AppendText(command+'\n')
 
         try:
-            p = subprocess.Popen(command, shell = True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines = True )
+            p = subprocess.Popen(PATH+command, shell = True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines = True )
         except:
             dlg = wx.MessageDialog(self,"Failed To Find Or run the Exporter Application" ,"ERROR", wx.OK )
             dlg.ShowModal()
@@ -2732,7 +2778,7 @@ class main(wx.Frame):
         genitem.appendChild(subnamesElem)
         genitem.appendChild(excludesElem)
         genitem.appendChild(exnamesElem)
-        
+
         
         modeloptsElem = newdoc.createElement('modelopts')
         cnElem = newdoc.createElement('cn')
