@@ -48,7 +48,7 @@ MAYA_VERSIONS = ['MAYA VERSION',
                  '2008',
                  '2009',
                  '2010',
-                 '2012'] 
+                 '2012']
 
 TOOLS = ['maya2egg',
          'egg2bam',
@@ -56,7 +56,7 @@ TOOLS = ['maya2egg',
          'egg-optchar',
          'egg-palettize']
 
-DEFAULT_PANDA_DIR = ''
+DEFAULT_PANDA_DIR = 'D:\cvsroot\SourceCode\simBuilt\win'
 
 UNIT_TYPES = ["mm",
               "cm",
@@ -155,47 +155,42 @@ class OutputDialogpview(wx.Dialog):
         self.p = wx.Panel(self)
 
         #create the controls
-        self.pview_static_sizer_staticbox = wx.StaticBox(self, -1, "Pview")
-        self.egg = FileBrowseButton(self.p,labelText="Select egg file:")#,fileMask="*.egg"
-        self.egganim = FileBrowseButton(self.p,labelText="Select animation egg file:")
-        self.btn = wx.Button(self.p, -1, "Pview")
+        self.pview_modelFile = FileBrowseButton(self.p,labelText="Model File", buttonText="Choose..")
+        self.pview_animFile = FileBrowseButton(self.p,labelText="Animation File", buttonText="Choose..")
+        self.pview_run = wx.Button(self.p, -1, "Pview")
 
         self.__set_properties()
         self.__do_layout()
 
-        self.Bind(wx.EVT_BUTTON, self.RunPview, self.btn)
+        self.Bind(wx.EVT_BUTTON, self.RunPview, self.pview_run)
         # end wxGlade
 
     def __set_properties(self):
         # begin wxGlade: OutputDialog.__set_properties
         self.SetTitle("Pview")
-        self.SetSize((400, 133))
-        self.egg.SetSize((350, 30))
-        self.egganim.SetSize((400, 30))
+        self.SetSize((400, 100))
+        self.pview_modelFile.SetMinSize((350, 23))
+        self.pview_animFile.SetMinSize((400, 23))
         # end wxGlade
 
     def __do_layout(self):
         # begin wxGlade: OutputDialog.__do_layout
-        self.pview_static_sizer_staticbox.Lower()
-        pview_static_sizer = wx.StaticBoxSizer(self.pview_static_sizer_staticbox, wx.HORIZONTAL)
         pview_main_flex_sizer = wx.FlexGridSizer(4, 1, 0, 0)
-        pview_main_flex_sizer.Add(self.egg, 1, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL)
-        pview_main_flex_sizer.Add(self.egganim, 1, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL)
-        pview_main_flex_sizer.Add(self.btn, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_CENTER_HORIZONTAL|wx.LEFT,20)
-        self.p.SetSizer(pview_main_flex_sizer)
-        pview_static_sizer.Add(self.p, 1, wx.EXPAND, 0)
-        self.SetSizer(pview_static_sizer)
+        pview_main_flex_sizer.Add(self.pview_modelFile, 1, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL)
+        pview_main_flex_sizer.Add(self.pview_animFile, 1, wx.EXPAND|wx.ALIGN_CENTER_VERTICAL)
+        pview_main_flex_sizer.Add(self.pview_run, 0, wx.ALIGN_RIGHT|wx.RIGHT, 3)
+        self.SetSizer(pview_main_flex_sizer)
         self.Layout()
         self.Centre()
         # end wxGlade
 
     def RunPview(self,e):#pview function
-        filename = self.egg.GetValue()
-        anim_filename = self.egganim.GetValue()
+        filename = self.pview_modelFile.GetValue()
+        anim_filename = self.pview_animFile.GetValue()
         args = {}
         args['filename'] = str(filename)
         args['animfilename'] = str(anim_filename)
-        
+
         if sys.platform == "win32":
             extension = ".exe"
         elif sys.platform == "darwin": #OSX
@@ -213,13 +208,65 @@ class OutputDialogpview(wx.Dialog):
             dlg.Destroy()
 #End dialog outputpview class
 
+#custom dialog that is shown for pview
+class OutputDialogPaths(wx.Dialog):
+    def __init__(self, main, *args, **kwds):
+        # begin wxGlade: OutputDialog.__init__
+        kwds["style"] = wx.DEFAULT_DIALOG_STYLE
+        wx.Dialog.__init__(self, main, *args, **kwds)
+        self.p = wx.Panel(self)
+        self.callback = None
+
+        #create the controls
+        self.paths_inputLbl = wx.StaticText(self.p, -1, "Input")
+        self.paths_inputTxt = wx.TextCtrl(self.p,-1,'')
+        self.paths_outputLbl = wx.StaticText(self.p, -1, "Output")
+        self.paths_outputTxt = wx.TextCtrl(self.p, -1, '')
+        self.paths_done = wx.Button(self.p, -1, "Done")
+
+        self.__set_properties()
+        self.__do_layout()
+
+        self.Bind(wx.EVT_BUTTON, self.RunPaths, self.paths_done)
+        # end wxGlade
+        
+    def setCallback(self, callback):
+        self.callback = callback
+
+    def __set_properties(self):
+        # begin wxGlade: OutputDialog.__set_properties
+        self.SetTitle("Change Paths")
+        self.SetSize((400, 100))
+        self.paths_inputTxt.SetMinSize((350, 21))
+        self.paths_outputTxt.SetMinSize((350, 21))
+        # end wxGlade
+
+    def __do_layout(self):
+        # begin wxGlade: OutputDialog.__do_layout
+        paths_sizer = wx.BoxSizer(wx.VERTICAL)
+        paths_main_flex_sizer = wx.FlexGridSizer(4, 2, 0, 0)
+        paths_main_flex_sizer.Add(self.paths_inputLbl, 1, wx.TOP|wx.LEFT, 3)
+        paths_main_flex_sizer.Add(self.paths_inputTxt, 1, wx.ALL, 1)
+        paths_main_flex_sizer.Add(self.paths_outputLbl, 1, wx.TOP|wx.LEFT, 3)
+        paths_main_flex_sizer.Add(self.paths_outputTxt, 1, wx.ALL, 1)
+        paths_sizer.Add(paths_main_flex_sizer)
+        paths_sizer.Add(self.paths_done, 0, wx.RIGHT|wx.ALIGN_RIGHT, 4)
+        self.SetSizer(paths_sizer)
+        self.Layout()
+        self.Centre()
+        # end wxGlade
+
+    def RunPaths(self,e):#pview function
+        self.callback(self.paths_inputTxt.GetValue(), self.paths_outputTxt.GetValue())
+        self.Destroy()
+
 
 class main(wx.Frame):
     def __init__(self, *args, **kwds):
         # begin wxGlade: main.__init__
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, *args, **kwds)
-        
+
         self.pandaPathDir = ''
 
         #self.batchList is the global list of batch items waiting to be run
@@ -310,6 +357,7 @@ class main(wx.Frame):
         self.loadBatchButton = wx.Button(self.batch_panel, ID_LOADBATCH, "Load Batch")
         self.saveBatchButton = wx.Button(self.batch_panel, ID_SAVEBATCH, "Save Batch")
         self.sortBatchButton = wx.Button(self.batch_panel, ID_SORTBATCH, "Sort Batch")
+        self.changePathsButton = wx.Button(self.batch_panel, ID_SORTBATCH, "Change Paths")
         self.editSelBatchButton = wx.Button(self.batch_panel, ID_EDITSELBATCH, "Edit Selected")
         self.removeSelBatchButton = wx.Button(self.batch_panel, ID_REMOVESELBATCH, "Remove Selected")
         self.removeAllBatchButton = wx.Button(self.batch_panel, ID_REMOVEALLBATCH, "Remove All")
@@ -429,7 +477,7 @@ class main(wx.Frame):
         self.rename_exportFileLbl = wx.StaticText(self.eggRename_panel, -1, "File")
         self.rename_exportFileTxt = wx.TextCtrl(self.eggRename_panel, -1, "")
         self.rename_exportFileBtn = wx.Button(self.eggRename_panel, -1, "Choose..")
-        
+
         self.rename_options_panel = wx.Panel(self.eggRename_panel, -1)
         self.rename_options_sizer_staticbox = wx.StaticBox(self.rename_options_panel, 1, "General Options")
         self.rename_stripPrefixChk = wx.CheckBox(self.rename_options_panel, -1, "Strip Specified Prefix")
@@ -596,6 +644,7 @@ class main(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.OnLoadBatch, id=ID_LOADBATCH)
         self.Bind(wx.EVT_BUTTON, self.OnSaveBatch, id=ID_SAVEBATCH)
         self.Bind(wx.EVT_BUTTON, self.OnSortBatch, id=ID_SORTBATCH)
+        self.Bind(wx.EVT_BUTTON, self.OnChangePaths, self.changePathsButton)
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnBatchItemSelection, self.batchTree)
 
         # console panel
@@ -736,10 +785,10 @@ class main(wx.Frame):
         self.optchar_eggFilesTree.SetMinSize((230,120))
         self.optchar_exportDirTxt.SetMinSize((230, 21))
         self.optchar_exportFileTxt.SetMinSize((230, 21))
-        self.optchar_keepJointsTxt.SetMinSize((248, 21))
-        self.optchar_dropJointsTxt.SetMinSize((248, 21))
-        self.optchar_exposeJointsTxt.SetMinSize((248, 21))
-        self.optchar_flagGeometryTxt.SetMinSize((248, 21))
+        self.optchar_keepJointsTxt.SetMinSize((245, 21))
+        self.optchar_dropJointsTxt.SetMinSize((245, 21))
+        self.optchar_exposeJointsTxt.SetMinSize((245, 21))
+        self.optchar_flagGeometryTxt.SetMinSize((245, 21))
         
         self.optchar_addEggBtn.SetMinSize((-1, 23))
         self.optchar_addFromBatchBtn.SetMinSize((-1, 23))
@@ -839,6 +888,7 @@ class main(wx.Frame):
         self.loadBatchButton.SetMinSize((-1, 23))
         self.saveBatchButton.SetMinSize((-1, 23))
         self.sortBatchButton.SetMinSize((-1, 23))
+        self.changePathsButton.SetMinSize((-1, 23))
         self.editSelBatchButton.SetMinSize((-1, 23))
         self.removeSelBatchButton.SetMinSize((-1, 23))
         self.removeAllBatchButton.SetMinSize((-1, 23))
@@ -849,7 +899,7 @@ class main(wx.Frame):
         self.consoleOutputTxt.SetBackgroundColour(wx.Colour(192, 192, 192))
         self.consoleOutputTxt.SetToolTipString("maya2egg console output appears here when batch process is running")
         self.consoleOutputTxt.Enable(True)
-        
+
         self.runBatchButton.SetMinSize((-1, 23))
         self.clearConsoleButton.SetMinSize((-1, 23))
         self.runPviewButton.SetMinSize((-1, 23))
@@ -1210,6 +1260,7 @@ class main(wx.Frame):
         batch_buttons_sizer.Add(self.loadBatchButton, 1, wx.ALL, 2)
         batch_buttons_sizer.Add(self.saveBatchButton, 1, wx.ALL, 2)
         batch_buttons_sizer.Add(self.sortBatchButton, 1, wx.ALL, 2)
+        batch_buttons_sizer.Add(self.changePathsButton, 1, wx.ALL, 2)
         batch_buttons_sizer.Add((25,0),0,0)
         batch_grid_sizer.Add(batch_buttons_sizer, 1, wx.ALIGN_LEFT, 0)
         batch_grid_sizer.Add(self.batchTree, 1, wx.ALL|wx.ALIGN_LEFT|wx.EXPAND, 2)
@@ -1268,12 +1319,12 @@ class main(wx.Frame):
     def ShowInitialEnv(self):#show the initial environment of the GUI
         self.consoleOutputTxt.AppendText(WELCOME_MSG)
         self.pandaPathDir = DEFAULT_PANDA_DIR
-        self.consoleOutputTxt.AppendText( "\nPanda initial path: " + self.pandaPathDir.rstrip('\\bin\\'))
+        self.consoleOutputTxt.AppendText( "\nPanda initial path: " + self.pandaPathDir)
         self.consoleOutputTxt.AppendText("\nIf this is not correct please use the Path options to change.")
         self.m2e_mayaVerComboBox.SetSelection(len(MAYA_VERSIONS)-1)
         self.consoleOutputTxt.AppendText("\nUsing Maya Version " + MAYA_VERSIONS[len(MAYA_VERSIONS)-1])
         self.consoleOutputTxt.AppendText("\nIf this is not correct please use the Path options to change.")
-        #self.pandaPathTxt.SetValue(self.pandaPathDir)
+        self.pandaPathTxt.SetValue(self.pandaPathDir)
 
         self.egg2bam_panel.Show(False)
         self.eggRename_panel.Show(False)
@@ -2344,6 +2395,29 @@ class main(wx.Frame):
                 eggPalettizeCommands.append(item)
         self.batchList = maya2eggCommands + eggRenameCommands + eggOptcharCommands + eggPalettizeCommands + egg2bamCommands
         self.UpdateBatchDisplay()
+
+    def OnChangePaths(self, event):
+        self.paths = OutputDialogPaths(self)
+        self.paths.setCallback(self.ChangeBatchPaths)
+        self.paths.Show()
+
+    def ChangeBatchPaths(self, fromStr, toStr):
+        for item in self.batchList:
+            # check input file path
+            item['finput'] = item['finput'].replace(fromStr, toStr)
+            # check output file path
+            item['foutput'] = item['foutput'].replace(fromStr, toStr)
+            # paths inside of arguments
+            if item['args'].has_key('d'):
+                item['args']['d'] = item['args']['d'].replace(fromStr, toStr)
+            if item['args'].has_key('copytex'):
+                item['args']['copytex'] = item['args']['copytex'].replace(fromStr, toStr)
+            if item['args'].has_key('dm'):
+                item['args']['dm'] = item['args']['dm'].replace(fromStr, toStr)
+            if item['args'].has_key('af'):
+                item['args']['af'] = item['args']['af'].replace(fromStr, toStr)
+        self.UpdateBatchDisplay()
+
 
     def PrefixReplaceInBatch(self, inPrefix, outPrefix):
         for batchItem in self.batchList:
