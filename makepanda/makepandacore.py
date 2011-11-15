@@ -273,7 +273,7 @@ def oscmd(cmd, ignoreError = False):
         if "interrogate" in cmd.split(" ", 1)[0] and GetVerbose():
             print GetColor("red") + "Interrogate failed, retrieving debug output..." + GetColor()
             os.system(cmd.split(" ", 1)[0] + " -v " + cmd.split(" ", 1)[1])
-        exit("")
+        exit("The following command returned a non-zero value: " + str(cmd))
     return res
 
 ########################################################################
