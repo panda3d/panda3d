@@ -61,8 +61,19 @@ PUBLISHED:
   bool is_thread_started() const;
   
 public:
-  virtual Buffer *fetch_buffer(double time);
+  virtual bool set_time(double time, int loop_count);
+  virtual PT(Buffer) fetch_buffer();
   virtual void release_buffer(Buffer *buffer);
+
+protected:
+  class FfmpegBuffer : public Buffer {
+  public:
+    INLINE FfmpegBuffer(size_t block_size);
+    int _begin_frame;
+    int _end_frame;
+  };
+
+  virtual PT(Buffer) make_new_buffer();
 
 private:
   bool open_stream();
@@ -85,7 +96,7 @@ private:
   // Condition: the thread has something to do.
   ConditionVar _action_cvar;
 
-  typedef pdeque<Buffer *> Buffers;
+  typedef pdeque<PT(FfmpegBuffer) > Buffers;
   Buffers _readahead_frames;
   Buffers _recycled_frames;
   enum ThreadStatus {
@@ -97,7 +108,10 @@ private:
     TS_shutdown,
   };
   ThreadStatus _thread_status;
-  double _seek_time;
+  int _seek_frame;
+
+  int _current_frame;
+  PT(FfmpegBuffer) _current_frame_buffer;
   
 private:
   // The following functions will be called in the sub-thread.
@@ -105,21 +119,22 @@ private:
   void thread_main();
   bool do_poll();
 
-  Buffer *do_alloc_frame();
-  void do_recycle_frame(Buffer *frame);
+  PT(FfmpegBuffer) do_alloc_frame();
+  void do_recycle_frame(FfmpegBuffer *frame);
   void do_recycle_all_frames();
 
-  bool fetch_packet(double default_time);
+  bool fetch_packet(int default_frame);
   void flip_packets();
-  bool fetch_frame(double time);
-  void seek(double t, bool backward);
-  void fetch_time(double time);
+  void fetch_frame(int frame);
+  void seek(int frame, bool backward);
+  int binary_seek(int min_frame, int max_frame, int target_frame, int num_iterations);
+  void advance_to_frame(int frame);
   void reset_stream();
-  void export_frame(Buffer *buffer);
+  void export_frame(FfmpegBuffer *buffer);
 
   // The following data members will be accessed by the sub-thread.
   AVPacket *_packet0, *_packet1;
-  double _packet_time;
+  int _packet_frame;
   AVFormatContext *_format_ctx;
   AVCodecContext *_video_ctx;
   SwsContext *_convert_ctx;
@@ -131,10 +146,11 @@ private:
   AVFrame *_frame_out;
   int _initial_dts;
   double _min_fseek;
-  double _begin_time;
-  double _end_time;
+  int _begin_frame;
+  int _end_frame;
   bool _frame_ready;
-  bool _eof_reached;
+  bool _eof_known;
+  int _eof_frame;
   
 public:
   static void register_with_read_factory();

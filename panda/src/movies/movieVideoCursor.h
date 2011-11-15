@@ -53,31 +53,31 @@ PUBLISHED:
   INLINE bool can_seek() const;
   INLINE bool can_seek_fast() const;
   INLINE bool aborted() const;
-  INLINE double last_start() const;
-  INLINE double next_start() const;
+
   INLINE bool ready() const;
   INLINE bool streaming() const;
   void setup_texture(Texture *tex) const;
-  virtual void fetch_into_bitbucket(double time);
-  virtual void fetch_into_texture(double time, Texture *t, int page);
-  virtual void fetch_into_texture_rgb(double time, Texture *t, int page);
-  virtual void fetch_into_texture_alpha(double time, Texture *t, int page, int alpha_src);
+
+  virtual bool set_time(double time, int loop_count);
+  virtual void fetch_into_bitbucket();
+  virtual void fetch_into_texture(Texture *t, int page);
+  virtual void fetch_into_texture_rgb(Texture *t, int page);
+  virtual void fetch_into_texture_alpha(Texture *t, int page, int alpha_src);
 
 public:
-  class Buffer : public MemoryBase {
+  class Buffer : public ReferenceCount {
   public:
+    INLINE Buffer(size_t block_size);
+    INLINE virtual ~Buffer();
     unsigned char *_block;
     size_t _block_size;
-    double _begin_time;
-    double _end_time;
   };
-  virtual Buffer *fetch_buffer(double time);
+  virtual PT(Buffer) fetch_buffer();
   virtual void release_buffer(Buffer *buffer);
   
 protected:
   Buffer *get_standard_buffer();
-  Buffer *internal_alloc_buffer();
-  void internal_free_buffer(Buffer *buffer);
+  virtual PT(Buffer) make_new_buffer();
   
 protected:
   PT(MovieVideo) _source;
@@ -88,12 +88,10 @@ protected:
   bool _can_seek;
   bool _can_seek_fast;
   bool _aborted;
-  double _last_start;
-  double _next_start;
   bool _streaming;
   bool _ready;
 
-  Buffer _standard_buffer;
+  PT(Buffer) _standard_buffer;
 
 public:
   virtual void write_datagram(BamWriter *manager, Datagram &dg);

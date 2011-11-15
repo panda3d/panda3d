@@ -351,42 +351,33 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
   CDReader cdata(_cycler);
   
   double offset;
+  int true_loop_count = 1;
   if (cdata->_synchronize != 0) {
     offset = cdata->_synchronize->get_time();
   } else {
     // Calculate the cursor position modulo the length of the movie.
     double now = ClockObject::get_global_clock()->get_frame_time();
-    double clock = cdata->_clock;
+    offset = cdata->_clock;
     if (cdata->_playing) {
-      clock += now * cdata->_play_rate;
+      offset += now * cdata->_play_rate;
     }
-    int true_loop_count = cdata->_loops_total;
-    if (true_loop_count <= 0) {
-      true_loop_count = 1000000000;
-    }
-    if (clock >= cdata->_video_length * true_loop_count) {
-      offset = cdata->_video_length;
-    } else {
-      offset = fmod(clock, cdata->_video_length);
-    }
+    true_loop_count = cdata->_loops_total;
   }
   
   for (int i=0; i<((int)(cdata->_pages.size())); i++) {
     MovieVideoCursor *color = cdata->_pages[i]._color;
     MovieVideoCursor *alpha = cdata->_pages[i]._alpha;
     if (color && alpha) {
-      if ((offset >= color->next_start())||
-          ((offset < color->last_start()) && (color->can_seek()))) {
-        color->fetch_into_texture_rgb(offset, (MovieTexture*)this, i);
+      if (color->set_time(offset, true_loop_count)) {
+        color->fetch_into_texture_rgb((MovieTexture*)this, i);
       }
-      if ((offset >= alpha->next_start())||
-          ((offset < alpha->last_start()) && (alpha->can_seek()))) {
-        alpha->fetch_into_texture_alpha(offset, (MovieTexture*)this, i, cdata_tex->_alpha_file_channel);
+      if (alpha->set_time(offset, true_loop_count)) {
+        alpha->fetch_into_texture_alpha((MovieTexture*)this, i, cdata_tex->_alpha_file_channel);
       }
     } else if (color) {
-      if ((offset >= color->next_start())||
-          ((offset < color->last_start()) && (color->can_seek()))) {
-        color->fetch_into_texture(offset, (MovieTexture*)this, i);
+      bool result = color->set_time(offset, true_loop_count);
+      if (result) {
+        color->fetch_into_texture((MovieTexture*)this, i);
       }
     }
   }

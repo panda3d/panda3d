@@ -38,12 +38,9 @@ MovieVideoCursor(MovieVideo *src) :
   _can_seek(true),
   _can_seek_fast(true),
   _aborted(false),
-  _last_start(-1.0),
-  _next_start(0.0),
   _streaming(false),
   _ready(false)
 {
-  _standard_buffer._block = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -53,9 +50,6 @@ MovieVideoCursor(MovieVideo *src) :
 ////////////////////////////////////////////////////////////////////
 MovieVideoCursor::
 ~MovieVideoCursor() {
-  if (_standard_buffer._block != NULL) {
-    PANDA_FREE_ARRAY(_standard_buffer._block);
-  }
 }
   
 ////////////////////////////////////////////////////////////////////
@@ -79,15 +73,32 @@ setup_texture(Texture *tex) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MovieVideoCursor::set_time
+//       Access: Published, Virtual
+//  Description: Updates the cursor to the indicated time.  If
+//               loop_count >= 1, the time is clamped to the movie's
+//               length * loop_count.  If loop_count <= 0, the time is
+//               understood to be modulo the movie's length.
+
+//               Returns true if a new frame is now available, false
+//               otherwise.  If this returns true, you should
+//               immediately follow this with exactly *one* call to
+//               one of the fetch_*() methods.
+////////////////////////////////////////////////////////////////////
+bool MovieVideoCursor::
+set_time(double time, int loop_count) {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MovieVideoCursor::fetch_into_bitbucket
 //       Access: Published, Virtual
-//  Description: Discards the next video frame.  Still sets
-//               last_start and next_start.
+//  Description: Discards the next video frame.
 //
 //               See fetch_buffer for more details.
 ////////////////////////////////////////////////////////////////////
 void MovieVideoCursor::
-fetch_into_bitbucket(double time) {
+fetch_into_bitbucket() {
 
   // This generic implementation is layered on fetch_buffer.
   // It will work for any derived class, so it is never necessary to
@@ -95,10 +106,8 @@ fetch_into_bitbucket(double time) {
   // implementation, but since this function is rarely used, it
   // probably isn't worth the trouble.
 
-  Buffer *buffer = fetch_buffer(time);
+  PT(Buffer) buffer = fetch_buffer();
   if (buffer != NULL) {
-    _last_start = buffer->_begin_time;
-    _next_start = buffer->_end_time;
     release_buffer(buffer);
   }
 }
@@ -112,7 +121,7 @@ fetch_into_bitbucket(double time) {
 //               See fetch_buffer for more details.
 ////////////////////////////////////////////////////////////////////
 void MovieVideoCursor::
-fetch_into_texture(double time, Texture *t, int page) {
+fetch_into_texture(Texture *t, int page) {
   static PStatCollector fetch_into_texture_collector("*:Decode Video into Texture");
   PStatTimer timer(fetch_into_texture_collector);
 
@@ -133,14 +142,11 @@ fetch_into_texture(double time, Texture *t, int page) {
   
   unsigned char *data = img.p() + page * t->get_expected_ram_page_size();
 
-  Buffer *buffer = fetch_buffer(time);
+  PT(Buffer) buffer = fetch_buffer();
   if (buffer == NULL) {
     // No image available.
     return;
   }
-
-  _last_start = buffer->_begin_time;
-  _next_start = buffer->_end_time;
 
   if (t->get_x_size() == size_x() && t->get_num_components() == get_num_components()) {
     memcpy(data, buffer->_block, size_x() * size_y() * get_num_components());
@@ -182,7 +188,7 @@ fetch_into_texture(double time, Texture *t, int page) {
 //               See fetch_buffer for more details.
 ////////////////////////////////////////////////////////////////////
 void MovieVideoCursor::
-fetch_into_texture_alpha(double time, Texture *t, int page, int alpha_src) {
+fetch_into_texture_alpha(Texture *t, int page, int alpha_src) {
 
   // This generic implementation is layered on fetch_buffer.
   // It will work for any derived class, so it is never necessary to
@@ -197,14 +203,11 @@ fetch_into_texture_alpha(double time, Texture *t, int page, int alpha_src) {
   nassertv(page < t->get_z_size());
   nassertv((alpha_src >= 0) && (alpha_src <= get_num_components()));
 
-  Buffer *buffer = fetch_buffer(time);
+  PT(Buffer) buffer = fetch_buffer();
   if (buffer == NULL) {
     // No image available.
     return;
   }
-
-  _last_start = buffer->_begin_time;
-  _next_start = buffer->_end_time;
 
   t->set_keep_ram_image(true);
   PTA_uchar img = t->modify_ram_image();
@@ -248,7 +251,7 @@ fetch_into_texture_alpha(double time, Texture *t, int page, int alpha_src) {
 //               See fetch_buffer for more details.
 ////////////////////////////////////////////////////////////////////
 void MovieVideoCursor::
-fetch_into_texture_rgb(double time, Texture *t, int page) {
+fetch_into_texture_rgb(Texture *t, int page) {
 
   // This generic implementation is layered on fetch_buffer.
   // It will work for any derived class, so it is never necessary to
@@ -262,14 +265,11 @@ fetch_into_texture_rgb(double time, Texture *t, int page) {
   nassertv(t->get_component_width() == 1);
   nassertv(page < t->get_z_size());
 
-  Buffer *buffer = fetch_buffer(time);
+  PT(Buffer) buffer = fetch_buffer();
   if (buffer == NULL) {
     // No image available.
     return;
   }
-
-  _last_start = buffer->_begin_time;
-  _next_start = buffer->_end_time;
 
   t->set_keep_ram_image(true);
   PTA_uchar img = t->modify_ram_image();
@@ -297,13 +297,11 @@ fetch_into_texture_rgb(double time, Texture *t, int page) {
 //     Function: MovieVideoCursor::fetch_buffer
 //       Access: Published, Virtual
 //  Description: Reads the specified video frame and returns it in a
-//               pre-allocated buffer.  The frame's begin and end
-//               times are stored in _begin_time and _end_time, within
-//               the buffer.  After you have copied the data from the
-//               buffer, you should call release_buffer() to make the
-//               space available again to populate the next frame.
-//               You may not call fetch_buffer() again until you have
-//               called release_buffer().
+//               pre-allocated buffer.  After you have copied the data
+//               from the buffer, you should call release_buffer() to
+//               make the space available again to populate the next
+//               frame.  You may not call fetch_buffer() again until
+//               you have called release_buffer().
 //
 //               If the movie reports that it can_seek, you may
 //               also specify a timestamp less than next_start.
@@ -316,39 +314,9 @@ fetch_into_texture_rgb(double time, Texture *t, int page) {
 //               desired location.  Only if can_seek_fast returns
 //               true can it seek rapidly.
 ////////////////////////////////////////////////////////////////////
-MovieVideoCursor::Buffer *MovieVideoCursor::
-fetch_buffer(double time) {
-  Buffer *buffer = get_standard_buffer();
-
-  // The following is the implementation of the null video stream, ie,
-  // a stream of blinking red and blue frames.  This method must be
-  // overridden by the subclass.
-  
-  buffer->_begin_time = floor(time);
-  buffer->_end_time = buffer->_begin_time + 1;
-  int flash = ((int)buffer->_begin_time) & 1;
-
-  unsigned char *p = buffer->_block;
-  int src_width = get_num_components();
-  for (int y = 0; y < size_y(); ++y) {
-    for (int x = 0; x < size_x(); ++x) {
-      if (flash) {
-        p[0] = 255;
-        p[1] = 128;
-        p[2] = 128;
-      } else {
-        p[0] = 128;
-        p[1] = 128;
-        p[2] = 255;
-      }
-      if (src_width == 4) {
-        p[3] = 255;
-      }
-      p += src_width;
-    }
-  }
-
-  return buffer;
+PT(MovieVideoCursor::Buffer) MovieVideoCursor::
+fetch_buffer() {
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -360,8 +328,7 @@ fetch_buffer(double time) {
 ////////////////////////////////////////////////////////////////////
 void MovieVideoCursor::
 release_buffer(Buffer *buffer) {
-  nassertv(buffer == &_standard_buffer);
-  nassertv(buffer->_begin_time == _last_start && buffer->_end_time == _next_start);
+  nassertv(buffer == _standard_buffer);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -374,43 +341,21 @@ release_buffer(Buffer *buffer) {
 ////////////////////////////////////////////////////////////////////
 MovieVideoCursor::Buffer *MovieVideoCursor::
 get_standard_buffer() {
-  if (_standard_buffer._block == NULL) {
-    _standard_buffer._block_size = size_x() * size_y() * get_num_components();
-    _standard_buffer._block = (unsigned char *)PANDA_MALLOC_ARRAY(_standard_buffer._block_size);
-    _standard_buffer._begin_time = -1.0;
-    _standard_buffer._end_time = 0.0;
+  if (_standard_buffer == NULL) {
+    _standard_buffer = make_new_buffer();
   }
-  return &_standard_buffer;
+  return _standard_buffer;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovieVideoCursor::internal_alloc_buffer
-//       Access: Protected
+//     Function: MovieVideoCursor::make_new_buffer
+//       Access: Protected, Virtual
 //  Description: May be called by a derived class to allocate a new
-//               Buffer object.  The caller is responsible for
-//               eventually passing this object to
-//               internal_free_buffer().
+//               Buffer object.
 ////////////////////////////////////////////////////////////////////
-MovieVideoCursor::Buffer *MovieVideoCursor::
-internal_alloc_buffer() {
-  Buffer *buffer = new Buffer;
-  buffer->_block_size = size_x() * size_y() * get_num_components();
-  buffer->_block = (unsigned char *)PANDA_MALLOC_ARRAY(buffer->_block_size);
-  buffer->_begin_time = -1.0;
-  buffer->_end_time = 0.0;
-  return buffer;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MovieVideoCursor::internal_free_buffer
-//       Access: Protected
-//  Description: Frees a Buffer object allocated via
-//               internal_alloc_buffer().
-////////////////////////////////////////////////////////////////////
-void MovieVideoCursor::
-internal_free_buffer(Buffer *buffer) {
-  PANDA_FREE_ARRAY(buffer->_block);
-  delete buffer;
+PT(MovieVideoCursor::Buffer) MovieVideoCursor::
+make_new_buffer() {
+  return new Buffer(size_x() * size_y() * get_num_components());
 }
 
 ////////////////////////////////////////////////////////////////////

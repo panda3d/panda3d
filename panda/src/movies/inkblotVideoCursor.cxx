@@ -67,7 +67,8 @@ InkblotVideoCursor(InkblotVideo *src) :
   memset(_cells2, 255, padx * pady);
   _can_seek = true;
   _can_seek_fast = false;
-  _frames_read = 0;
+  _current_frame = 0;
+  _last_frame = -1;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -82,32 +83,42 @@ InkblotVideoCursor::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: InkblotVideoCursor::set_time
+//       Access: Published, Virtual
+//  Description: See MovieVideoCursor::set_time().
+////////////////////////////////////////////////////////////////////
+bool InkblotVideoCursor::
+set_time(double time, int loop_count) {
+  int frame = (int)(time / _fps);
+  if (frame == _current_frame) {
+    return false;
+  }
+
+  _current_frame = frame;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: InkblotVideoCursor::fetch_buffer
 //       Access: Published, Virtual
 //  Description: See MovieVideoCursor::fetch_buffer.
 ////////////////////////////////////////////////////////////////////
-MovieVideoCursor::Buffer *InkblotVideoCursor::
-fetch_buffer(double time) {
-  Buffer *buffer = get_standard_buffer();
+PT(MovieVideoCursor::Buffer) InkblotVideoCursor::
+fetch_buffer() {
+  PT(Buffer) buffer = get_standard_buffer();
 
   int padx = size_x() + 2;
   int pady = size_y() + 2;
   
-  if (time < _next_start) {
+  if (_current_frame < _last_frame) {
     // Rewind to beginning.
     memset(_cells, 255, padx * pady);
     memset(_cells2, 255, padx * pady);
-    _last_start = -1.0;
-    _next_start = 0.0;
-    _frames_read = 0;
+    _last_frame = 0;
   }
   
-  nassertr(time >= _next_start, NULL);
-  
-  while (_next_start <= time) {
-    _last_start = (_frames_read * 1.0) / _fps;
-    _frames_read += 1;
-    _next_start = (_frames_read * 1.0) / _fps;
+  while (_last_frame <= _current_frame) {
+    ++_last_frame;
     for (int y=1; y<pady-1; y++) {
       for (int x=1; x<padx-1; x++) {
         int tot =
@@ -142,8 +153,6 @@ fetch_buffer(double time) {
     }
   }
 
-  buffer->_begin_time = _last_start;
-  buffer->_end_time = _next_start;
   return buffer;
 }
 

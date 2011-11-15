@@ -31,7 +31,7 @@ class WebcamVideoCursorOpenCV : public MovieVideoCursor {
 public:
   WebcamVideoCursorOpenCV(WebcamVideoOpenCV *src);
   virtual ~WebcamVideoCursorOpenCV();
-  virtual Buffer *fetch_buffer(double time);
+  virtual PT(Buffer) fetch_buffer();
 
 private:
   bool get_frame_data(const unsigned char *&r,

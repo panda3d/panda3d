@@ -34,8 +34,6 @@ WebcamVideoCursorOpenCV(WebcamVideoOpenCV *src) : MovieVideoCursor(src) {
   _can_seek = false;
   _can_seek_fast = false;
   _aborted = false;
-  _last_start = -1.0;
-  _next_start = 0.0;
   _streaming = true;
   _ready = false;
 
@@ -65,13 +63,13 @@ WebcamVideoCursorOpenCV::
 //       Access: Published, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-MovieVideoCursor::Buffer *WebcamVideoCursorOpenCV::
-fetch_buffer(double time) {
+PT(MovieVideoCursor::Buffer) WebcamVideoCursorOpenCV::
+fetch_buffer() {
   if (!_ready) {
     return NULL;
   }
 
-  Buffer *buffer = get_standard_buffer();
+  PT(Buffer) buffer = get_standard_buffer();
   unsigned char *dest = buffer->_block;
   int num_components = get_num_components();
   nassertr(num_components == 3, NULL);

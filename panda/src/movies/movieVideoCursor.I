@@ -131,34 +131,6 @@ aborted() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovieVideoCursor::last_start
-//       Access: Published
-//  Description: Returns the start time of the last frame you read.
-//
-//               MovieVideoCursor streams have variable frame rates.  Each
-//               frame will specify how long it is to be displayed.
-//               These lengths may not be equal from frame to frame.
-////////////////////////////////////////////////////////////////////
-INLINE double MovieVideoCursor::
-last_start() const {
-  return _last_start;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MovieVideoCursor::next_start
-//       Access: Published
-//  Description: Returns the start time of the next frame you can read.
-//
-//               MovieVideoCursor streams have variable frame rates.  Each
-//               frame will specify how long it is to be displayed.
-//               These lengths may not be equal from frame to frame.
-////////////////////////////////////////////////////////////////////
-INLINE double MovieVideoCursor::
-next_start() const {
-  return _next_start;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: MovieVideoCursor::streaming
 //       Access: Published
 //  Description: Returns true if the video frames are being "pushed"
@@ -191,3 +163,25 @@ ready() const {
   return _ready;
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideoCursor::Buffer::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE MovieVideoCursor::Buffer::
+Buffer(size_t block_size) :
+  _block_size(block_size)
+{
+  _block = (unsigned char *)PANDA_MALLOC_ARRAY(_block_size);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideoCursor::Buffer::Destructor
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE MovieVideoCursor::Buffer::
+~Buffer() {
+  PANDA_FREE_ARRAY(_block);
+}

@@ -137,8 +137,6 @@ WebcamVideoCursorV4L(WebcamVideoV4L *src) : MovieVideoCursor(src) {
   _can_seek = false;
   _can_seek_fast = false;
   _aborted = false;
-  _last_start = -1.0;
-  _next_start = 0.0;
   _streaming = true;
   _ready = false;
   _format = (struct v4l2_format *) malloc(sizeof(struct v4l2_format));
@@ -312,13 +310,13 @@ WebcamVideoCursorV4L::
 //       Access: Published, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-MovieVideoCursor::Buffer *WebcamVideoCursorV4L::
-fetch_buffer(double time) {
+PT(MovieVideoCursor::Buffer) WebcamVideoCursorV4L::
+fetch_buffer() {
   if (!_ready) {
     return NULL;
   }
 
-  Buffer *buffer = get_standard_buffer();
+  PT(Buffer) buffer = get_standard_buffer();
   unsigned char *block = buffer->_block;
   struct v4l2_buffer vbuf;
   memset(&vbuf, 0, sizeof vbuf);
