@@ -952,6 +952,10 @@ seek(int frame, bool backward) {
   static PStatCollector seek_pcollector("*:FFMPEG Video Decoding:Seek");
   PStatTimer timer(seek_pcollector);
 
+  // Protect the call to av_seek_frame() in a global lock, just to be
+  // paranoid.
+  ReMutexHolder av_holder(_av_lock);
+
   PN_int64 target_ts = (PN_int64)frame;
   if (target_ts < (PN_int64)(_initial_dts)) {
     // Attempts to seek before the first packet will fail.
@@ -992,8 +996,6 @@ seek(int frame, bool backward) {
     // it, and don't do this.
 
     /*
-    ReMutexHolder av_holder(_av_lock);
-
     avcodec_close(_video_ctx);
     AVCodec *pVideoCodec = avcodec_find_decoder(_video_ctx->codec_id);
     if (pVideoCodec == 0) {
