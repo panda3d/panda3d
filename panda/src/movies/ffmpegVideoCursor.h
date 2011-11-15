@@ -28,6 +28,7 @@
 #include "pmutex.h"
 #include "reMutex.h"
 #include "conditionVar.h"
+#include "pdeque.h"
 
 struct AVFormatContext;
 struct AVCodecContext;
