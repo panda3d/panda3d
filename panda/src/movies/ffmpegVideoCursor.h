@@ -64,6 +64,8 @@ public:
   virtual void release_buffer(Buffer *buffer);
 
 private:
+  bool open_stream();
+  void close_stream();
   void cleanup();
 
   Filename _filename;
@@ -109,8 +111,9 @@ private:
   bool fetch_packet(double default_time);
   void flip_packets();
   bool fetch_frame(double time);
-  void seek(double t);
+  void seek(double t, bool backward);
   void fetch_time(double time);
+  void reset_stream();
   void export_frame(Buffer *buffer);
 
   // The following data members will be accessed by the sub-thread.
@@ -130,6 +133,7 @@ private:
   double _begin_time;
   double _end_time;
   bool _frame_ready;
+  bool _eof_reached;
   
 public:
   static void register_with_read_factory();

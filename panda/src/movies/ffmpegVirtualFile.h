@@ -50,6 +50,7 @@ public:
   bool open_subfile(const SubfileInfo &info);
   void close();
 
+  INLINE bool is_open() const;
   INLINE AVFormatContext *get_format_context() const;
 
   static void register_protocol();

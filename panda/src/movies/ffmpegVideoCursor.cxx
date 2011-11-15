@@ -76,77 +76,15 @@ init_from(FfmpegVideo *source) {
   _source = source;
   _filename = _source->get_filename();
 
-  // Hold the global lock while we open the file and create avcodec
-  // objects.
+  if (!open_stream()) {
+    cleanup();
+    return;
+  }
+
   ReMutexHolder av_holder(_av_lock);
-
-  if (!_source->get_subfile_info().is_empty()) {
-    // Read a subfile.
-    if (!_ffvfile.open_subfile(_source->get_subfile_info())) {
-      movies_cat.info() 
-        << "Couldn't open " << _source->get_subfile_info() << "\n";
-      cleanup();
-      return;
-    }
-
-  } else {
-    // Read a filename.
-    if (!_ffvfile.open_vfs(_filename)) {
-      movies_cat.info() 
-        << "Couldn't open " << _filename << "\n";
-      cleanup();
-      return;
-    }
-  }
-
-  _format_ctx = _ffvfile.get_format_context();
-  nassertv(_format_ctx != NULL);
-
-  if (av_find_stream_info(_format_ctx) < 0) {
-    movies_cat.info() 
-      << "Couldn't find stream info\n";
-    cleanup();
-    return;
-  }
-  
-  // Find the video stream
-  for (int i = 0; i < (int)_format_ctx->nb_streams; ++i) {
-    if (_format_ctx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
-      _video_index = i;
-      _video_ctx = _format_ctx->streams[i]->codec;
-      _video_timebase = av_q2d(_format_ctx->streams[i]->time_base);
-    }
-  }
-  
-  if (_video_ctx == 0) {
-    movies_cat.info() 
-      << "Couldn't find video_ctx\n";
-    cleanup();
-    return;
-  }
-
-  AVCodec *pVideoCodec = avcodec_find_decoder(_video_ctx->codec_id);
-  if (pVideoCodec == NULL) {
-    movies_cat.info() 
-      << "Couldn't find codec\n";
-    cleanup();
-    return;
-  }
-  if (avcodec_open(_video_ctx, pVideoCodec) < 0) {
-    movies_cat.info() 
-      << "Couldn't open codec\n";
-    cleanup();
-    return;
-  }
-  
-  _size_x = _video_ctx->width;
-  _size_y = _video_ctx->height;
-  _num_components = 3; // Don't know how to implement RGBA movies yet.
-  _length = (_format_ctx->duration * 1.0) / AV_TIME_BASE;
-  _can_seek = true;
-  _can_seek_fast = true;
   
 #ifdef HAVE_SWSCALE
+  nassertv(_convert_ctx == NULL);
   _convert_ctx = sws_getContext(_size_x, _size_y,
                                 _video_ctx->pix_fmt, _size_x, _size_y,
                                 PIX_FMT_BGR24, SWS_BILINEAR | SWS_PRINT_INFO, NULL, NULL, NULL);
@@ -470,6 +408,114 @@ release_buffer(Buffer *buffer) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::open_stream
+//       Access: Private
+//  Description: Opens the stream for the first time, or when needed
+//               internally.
+////////////////////////////////////////////////////////////////////
+bool FfmpegVideoCursor::
+open_stream() {
+  nassertr(!_ffvfile.is_open(), false);
+
+  // Hold the global lock while we open the file and create avcodec
+  // objects.
+  ReMutexHolder av_holder(_av_lock);
+
+  if (!_source->get_subfile_info().is_empty()) {
+    // Read a subfile.
+    if (!_ffvfile.open_subfile(_source->get_subfile_info())) {
+      movies_cat.info() 
+        << "Couldn't open " << _source->get_subfile_info() << "\n";
+      close_stream();
+      return false;
+    }
+
+  } else {
+    // Read a filename.
+    if (!_ffvfile.open_vfs(_filename)) {
+      movies_cat.info() 
+        << "Couldn't open " << _filename << "\n";
+      close_stream();
+      return false;
+    }
+  }
+
+  nassertr(_format_ctx == NULL, false);
+  _format_ctx = _ffvfile.get_format_context();
+  nassertr(_format_ctx != NULL, false);
+
+  if (av_find_stream_info(_format_ctx) < 0) {
+    movies_cat.info() 
+      << "Couldn't find stream info\n";
+    close_stream();
+    return false;
+  }
+  
+  // Find the video stream
+  nassertr(_video_ctx == NULL, false);
+  for (int i = 0; i < (int)_format_ctx->nb_streams; ++i) {
+    if (_format_ctx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
+      _video_index = i;
+      _video_ctx = _format_ctx->streams[i]->codec;
+      _video_timebase = av_q2d(_format_ctx->streams[i]->time_base);
+    }
+  }
+  
+  if (_video_ctx == NULL) {
+    movies_cat.info() 
+      << "Couldn't find video_ctx\n";
+    close_stream();
+    return false;
+  }
+
+  AVCodec *pVideoCodec = avcodec_find_decoder(_video_ctx->codec_id);
+  if (pVideoCodec == NULL) {
+    movies_cat.info() 
+      << "Couldn't find codec\n";
+    close_stream();
+    return false;
+  }
+  if (avcodec_open(_video_ctx, pVideoCodec) < 0) {
+    movies_cat.info() 
+      << "Couldn't open codec\n";
+    close_stream();
+    return false;
+  }
+  
+  _size_x = _video_ctx->width;
+  _size_y = _video_ctx->height;
+  _num_components = 3; // Don't know how to implement RGBA movies yet.
+  _length = (_format_ctx->duration * 1.0) / AV_TIME_BASE;
+  _can_seek = true;
+  _can_seek_fast = true;
+  _eof_reached = false;
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::close_stream
+//       Access: Private
+//  Description: Closes the stream, during cleanup or when needed
+//               internally.
+////////////////////////////////////////////////////////////////////
+void FfmpegVideoCursor::
+close_stream() {
+  // Hold the global lock while we free avcodec objects.
+  ReMutexHolder av_holder(_av_lock);
+  
+  if ((_video_ctx)&&(_video_ctx->codec)) {
+    avcodec_close(_video_ctx);
+  }
+  _video_ctx = NULL;
+  
+  _ffvfile.close();
+  _format_ctx = NULL;
+
+  _video_index = -1;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FfmpegVideoCursor::cleanup
 //       Access: Private
 //  Description: Reset to a standard inactive state.
@@ -477,9 +523,16 @@ release_buffer(Buffer *buffer) {
 void FfmpegVideoCursor::
 cleanup() {
   stop_thread();
-  
-  // Hold the global lock while we free avcodec objects.
+  close_stream();
+
   ReMutexHolder av_holder(_av_lock);
+
+#ifdef HAVE_SWSCALE
+  if (_convert_ctx != NULL) {
+    sws_freeContext(_convert_ctx);
+  }
+  _convert_ctx = NULL;
+#endif  // HAVE_SWSCALE
 
   if (_frame) {
     av_free(_frame);
@@ -507,25 +560,6 @@ cleanup() {
     delete _packet1;
     _packet1 = NULL;
   }
-  
-#ifdef HAVE_SWSCALE
-  if (_convert_ctx != NULL) {
-    sws_freeContext(_convert_ctx);
-  }
-  _convert_ctx = NULL;
-#endif  // HAVE_SWSCALE
-  
-  if ((_video_ctx)&&(_video_ctx->codec)) {
-    avcodec_close(_video_ctx);
-  }
-  _video_ctx = NULL;
-  
-  if (_format_ctx) {
-    _ffvfile.close();
-    _format_ctx = NULL;
-  }
-
-  _video_index = -1;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -723,6 +757,11 @@ fetch_packet(double default_time) {
   }
   _packet0->data = 0;
   _packet_time = default_time;
+  _eof_reached = false;
+  if (ffmpeg_cat.is_debug()) {
+    ffmpeg_cat.debug()
+      << "end of video\n";
+  }
   return true;
 }
 
@@ -744,7 +783,7 @@ flip_packets() {
 //  Description: Called within the sub-thread.  Slides forward until
 //               the indicated time, then fetches a frame from the
 //               stream and stores it in the frame buffer.  Sets
-//               last_start and next_start to indicate the extents of
+//               _begin_time and _end_time to indicate the extents of
 //               the frame.  Returns true if the end of the video is
 //               reached.
 ////////////////////////////////////////////////////////////////////
@@ -754,7 +793,6 @@ fetch_frame(double time) {
   PStatTimer timer(fetch_buffer_pcollector);
 
   int finished = 0;
-  _begin_time = _packet_time;
 
   if (_packet_time <= time) {
     _video_ctx->skip_frame = AVDISCARD_BIDIR;
@@ -764,11 +802,8 @@ fetch_frame(double time) {
     
     // Get the next packet.  The first packet beyond the time we're
     // looking for marks the point to stop.
+    _begin_time = _packet_time;
     if (fetch_packet(time)) {
-      if (ffmpeg_cat.is_debug()) {
-        ffmpeg_cat.debug()
-          << "end of video\n";
-      }
       _frame_ready = false;
       return true;
     }
@@ -784,11 +819,8 @@ fetch_frame(double time) {
       avcodec_decode_video2(_video_ctx, _frame, &finished, _packet1);
 #endif
       flip_packets();
+      _begin_time = _packet_time;
       if (fetch_packet(time)) {
-        if (ffmpeg_cat.is_debug()) {
-          ffmpeg_cat.debug()
-            << "end of video\n";
-        }
         _frame_ready = false;
         return true;
       }
@@ -807,6 +839,7 @@ fetch_frame(double time) {
     
   } else {
     // Just get the next frame.
+    _begin_time = _packet_time;
     finished = 0;
     while (!finished && _packet0->data) {
 #if LIBAVCODEC_VERSION_INT < 3414272
@@ -832,7 +865,7 @@ fetch_frame(double time) {
 //               to be less than or equal to the specified time.
 ////////////////////////////////////////////////////////////////////
 void FfmpegVideoCursor::
-seek(double t) {
+seek(double t, bool backward) {
   static PStatCollector seek_pcollector("*:FFMPEG Video Decoding:Seek");
   PStatTimer timer(seek_pcollector);
 
@@ -841,18 +874,30 @@ seek(double t) {
     // Attempts to seek before the first packet will fail.
     target_ts = _initial_dts;
   }
-  if (av_seek_frame(_format_ctx, _video_index, target_ts, AVSEEK_FLAG_BACKWARD) < 0) {
-    if (t >= _packet_time) {
-      return;
-    }
-    movies_cat.error() << "Seek failure. Shutting down movie.\n";
-    cleanup();
-    _packet_time = t;
-    return;
+  int flags = 0;
+  if (backward) {
+    flags = AVSEEK_FLAG_BACKWARD;
+    //reset_stream();
   }
+
+  
+  if (av_seek_frame(_format_ctx, _video_index, target_ts, flags) < 0) {
+    if (ffmpeg_cat.is_debug()) {
+      ffmpeg_cat.debug()
+        << "Seek failure.\n";
+    }
+    reset_stream();
+    
+    av_seek_frame(_format_ctx, _video_index, target_ts, 0);
+  }
+
   {
-    // Hold the global lock while we close and re-open the video
-    // stream.
+    // Close and re-open the codec (presumably to flush the queue).
+    // Actually, this causes the stream to fail in certain video
+    // files, and doesn't seem to have any useful benefit.  So screw
+    // it, and don't do this.
+
+    /*
     ReMutexHolder av_holder(_av_lock);
 
     avcodec_close(_video_ctx);
@@ -866,15 +911,37 @@ seek(double t) {
       cleanup();
       return;
     }
+    */
   }
 
-  fetch_packet(t);
+  fetch_packet(0);
   fetch_frame(-1);
-  /*
-  if (_packet_time > t) {
-    _packet_time = t;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::reset_stream
+//       Access: Private
+//  Description: Resets the stream to its initial, first-opened state
+//               by closing and re-opening it.
+////////////////////////////////////////////////////////////////////
+void FfmpegVideoCursor::
+reset_stream() {
+  if (ffmpeg_cat.is_debug()) {
+    ffmpeg_cat.debug()
+      << "Resetting ffmpeg stream.\n";
   }
-  */
+
+  close_stream();
+  if (!open_stream()) {
+    ffmpeg_cat.error()
+      << "Stream error, invalidating movie.\n";
+    cleanup();
+    return;
+  }
+
+  fetch_packet(0.0);
+  _initial_dts = _packet0->dts;
+  fetch_frame(-1);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -890,21 +957,41 @@ fetch_time(double time) {
 
   if (time < _begin_time) {
     // Time is in the past.
-    if (ffmpeg_cat.is_debug()) {
-      ffmpeg_cat.debug()
-        << "Seeking backward to " << time << " from " << _begin_time << "\n";
+    if (_eof_reached) {
+      // Go ahead and reset the video when we back up after having
+      // reached the end.  This avoids potential probelsm with
+      // unseekable streams.
+      if (ffmpeg_cat.is_debug()) {
+        ffmpeg_cat.debug()
+          << "Resetting to " << time << " after eof\n";
+      }
+      reset_stream();
+
+    } else {
+      if (ffmpeg_cat.is_debug()) {
+        ffmpeg_cat.debug()
+          << "Seeking backward to " << time << " from " << _begin_time << "\n";
+      }
+      seek(time, true);
+      if (_begin_time > time) {
+        if (ffmpeg_cat.is_debug()) {
+          ffmpeg_cat.debug()
+            << "Ended up at " << _begin_time << ", not far enough back!\n";
+        }
+        reset_stream();
+        if (ffmpeg_cat.is_debug()) {
+          ffmpeg_cat.debug()
+            << "Reseek to 0, got " << _begin_time << "\n";
+        }
+      }
     }
-    seek(time);
-    if (_packet_time > time) {
-      ffmpeg_cat.debug()
-        << "Not far enough back!\n";
-      seek(0);
+    if (time < _begin_time) {
+      if (ffmpeg_cat.is_debug()) {
+        ffmpeg_cat.debug()
+          << "Now sliding forward to " << time << " from " << _begin_time << "\n";
+      }
+      fetch_frame(time);
     }
-    if (ffmpeg_cat.is_debug()) {
-      ffmpeg_cat.debug()
-        << "Correcting, sliding forward to " << time << " from " << _packet_time << "\n";
-    }
-    fetch_frame(time);
 
   } else if (time < _end_time) {
     // Time is in the present: already have the frame.
@@ -917,7 +1004,7 @@ fetch_time(double time) {
     // Time is in the near future.
     if (ffmpeg_cat.is_debug()) {
       ffmpeg_cat.debug()
-        << "Sliding forward to " << time << " from " << _packet_time << "\n";
+        << "Sliding forward to " << time << " from " << _begin_time << "\n";
     }
     fetch_frame(time);
 
@@ -934,25 +1021,27 @@ fetch_time(double time) {
       ffmpeg_cat.debug()
         << "Jumping forward to " << time << " from " << _begin_time << "\n";
     }
-    double base = _packet_time;
-    seek(time);
-    if (_packet_time < base) {
-      _min_fseek += (base - _packet_time);
+    double base = _begin_time;
+    seek(time, false);
+    if (_begin_time < base) {
+      _min_fseek += (base - _begin_time);
       if (ffmpeg_cat.is_debug()) {
         ffmpeg_cat.debug()
           << "Wrong way!  Increasing _min_fseek to " << _min_fseek << "\n";
       }
     }
-    if (ffmpeg_cat.is_debug()) {
-      ffmpeg_cat.debug()
-        << "Correcting, sliding forward to " << time << " from " << _packet_time << "\n";
+    if (time < _begin_time) {
+      if (ffmpeg_cat.is_debug()) {
+        ffmpeg_cat.debug()
+          << "Correcting, sliding forward to " << time << " from " << _begin_time << "\n";
+      }
+      fetch_frame(time);
     }
-    fetch_frame(time);
   }
 
   if (ffmpeg_cat.is_debug()) {
     ffmpeg_cat.debug()
-      << "Wanted " << time << ", got " << _packet_time << "\n";
+      << "Wanted " << time << ", got " << _begin_time << "\n";
   }
 }
 
@@ -969,6 +1058,11 @@ export_frame(MovieVideoCursor::Buffer *buffer) {
 
   if (!_frame_ready) {
     // No frame data ready, just fill with black.
+    if (ffmpeg_cat.is_debug()) {
+      ffmpeg_cat.debug()
+        << "ffmpeg for " << _filename.get_basename()
+        << ", no frame available.\n";
+    }
     memset(buffer->_block, 0, buffer->_block_size);
     return;
   }
