@@ -50,6 +50,14 @@ ConfigVariableInt ffmpeg_max_readahead_frames
           "should read in advance of actual playback.  Set this to 0 to "
           "decode ffmpeg videos in the main thread."));
 
+ConfigVariableBool ffmpeg_support_seek
+("ffmpeg-support-seek", true,
+ PRC_DESC("True to use the av_seek_frame() function to seek within ffmpeg "
+          "video files.  If this is false, Panda will only seek within a "
+          "file by reading it from the beginning until the desired point, "
+          "which can be much slower.  Set this false only if you suspect "
+          "a problem with av_seek_frame()."));
+
 ConfigVariableEnum<ThreadPriority> ffmpeg_thread_priority
 ("ffmpeg-thread-priority", TP_normal,
  PRC_DESC("The default thread priority at which to start ffmpeg decoder "

@@ -19,6 +19,7 @@
 #include "notifyCategoryProxy.h"
 #include "configVariableEnum.h"
 #include "configVariableInt.h"
+#include "configVariableBool.h"
 #include "threadPriority.h"
 #include "dconfig.h"
 
@@ -27,6 +28,7 @@ NotifyCategoryDecl(movies, EXPCL_PANDA_MOVIES, EXPTP_PANDA_MOVIES);
 NotifyCategoryDecl(ffmpeg, EXPCL_PANDA_MOVIES, EXPTP_PANDA_MOVIES);
 
 extern ConfigVariableInt ffmpeg_max_readahead_frames;
+extern ConfigVariableBool ffmpeg_support_seek;
 extern ConfigVariableEnum<ThreadPriority> ffmpeg_thread_priority;
 
 extern EXPCL_PANDA_MOVIES void init_libmovies();

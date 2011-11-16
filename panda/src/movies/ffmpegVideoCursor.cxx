@@ -104,8 +104,8 @@ init_from(FfmpegVideo *source) {
   memset(_packet1, 0, sizeof(AVPacket));
   
   fetch_packet(0);
-  _initial_dts = _packet0->dts;
   fetch_frame(-1);
+  _initial_dts = _begin_frame;
 
   _current_frame = -1;
   _eof_known = false;
@@ -341,7 +341,10 @@ set_time(double time, int loop_count) {
     }
   }
 
-  if (ffmpeg_cat.is_spam() /* && frame != _current_frame*/) {
+  // No point in trying to position before the first frame.
+  frame = max(frame, _initial_dts);
+
+  if (ffmpeg_cat.is_spam() && frame != _current_frame) {
     ffmpeg_cat.spam()
       << "set_time(" << time << "): " << frame << ", loop_count = " << loop_count << "\n";
   }
@@ -655,8 +658,16 @@ thread_main() {
     ffmpeg_cat.spam()
       << "ffmpeg thread for " << _filename.get_basename() << " starting.\n";
   }
+
+  // First, push the first frame onto the readahead queue.
+  if (_frame_ready) {
+    PT(FfmpegBuffer) frame = do_alloc_frame();
+    export_frame(frame);
+    MutexHolder holder(_lock);
+    _readahead_frames.push_back(frame);
+  }
   
-  // Repeatedly wait for something interesting to do, until we're told
+  // Now repeatedly wait for something interesting to do, until we're told
   // to shut down.
   while (_thread_status != TS_shutdown) {
     nassertv(_thread_status != TS_stopped);
@@ -952,66 +963,54 @@ seek(int frame, bool backward) {
   static PStatCollector seek_pcollector("*:FFMPEG Video Decoding:Seek");
   PStatTimer timer(seek_pcollector);
 
-  // Protect the call to av_seek_frame() in a global lock, just to be
-  // paranoid.
-  ReMutexHolder av_holder(_av_lock);
-
-  PN_int64 target_ts = (PN_int64)frame;
-  if (target_ts < (PN_int64)(_initial_dts)) {
-    // Attempts to seek before the first packet will fail.
-    target_ts = _initial_dts;
-  }
-  int flags = 0;
-  if (backward) {
-    flags = AVSEEK_FLAG_BACKWARD;
-    //reset_stream();
-  }
-
-  if (av_seek_frame(_format_ctx, _video_index, target_ts, flags) < 0) {
-    if (ffmpeg_cat.is_spam()) {
-      ffmpeg_cat.spam()
-        << "Seek failure.\n";
+  if (ffmpeg_support_seek) {
+    // Protect the call to av_seek_frame() in a global lock, just to be
+    // paranoid.
+    ReMutexHolder av_holder(_av_lock);
+    
+    PN_int64 target_ts = (PN_int64)frame;
+    if (target_ts < (PN_int64)(_initial_dts)) {
+      // Attempts to seek before the first packet will fail.
+      target_ts = _initial_dts;
     }
-
+    int flags = 0;
     if (backward) {
-      // Now try to seek forward.
-      reset_stream();
-      return seek(frame, false);
+      flags = AVSEEK_FLAG_BACKWARD;
     }
-
-    // Try a binary search to get a little closer.
-    if (binary_seek(_initial_dts, frame, frame, 1) < 0) {
+    
+    if (av_seek_frame(_format_ctx, _video_index, target_ts, flags) < 0) {
       if (ffmpeg_cat.is_spam()) {
         ffmpeg_cat.spam()
-          << "Seek double failure.\n";
+          << "Seek failure.\n";
       }
+      
+      if (backward) {
+        // Now try to seek forward.
+        reset_stream();
+        seek(frame, false);
+        return;
+      }
+      
+      // Try a binary search to get a little closer.
+      if (binary_seek(_initial_dts, frame, frame, 1) < 0) {
+        if (ffmpeg_cat.is_spam()) {
+          ffmpeg_cat.spam()
+            << "Seek double failure.\n";
+        }
+        reset_stream();
+        return;
+      }
+    }
+
+    fetch_packet(0);
+    fetch_frame(-1);
+
+  } else {
+    // If seeking isn't supported, close-and-reopen.
+    if (backward) {
       reset_stream();
     }
   }
-
-  {
-    // Close and re-open the codec (presumably to flush the queue).
-    // Actually, this causes the stream to fail in certain video
-    // files, and doesn't seem to have any useful benefit.  So screw
-    // it, and don't do this.
-
-    /*
-    avcodec_close(_video_ctx);
-    AVCodec *pVideoCodec = avcodec_find_decoder(_video_ctx->codec_id);
-    if (pVideoCodec == 0) {
-      cleanup();
-      return;
-    }
-
-    if (avcodec_open(_video_ctx, pVideoCodec)<0) {
-      cleanup();
-      return;
-    }
-    */
-  }
-
-  fetch_packet(0);
-  fetch_frame(-1);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1065,7 +1064,6 @@ reset_stream() {
   }
 
   fetch_packet(0);
-  _initial_dts = _packet0->dts;
   fetch_frame(-1);
 }
 
