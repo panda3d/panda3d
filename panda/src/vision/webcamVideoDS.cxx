@@ -589,8 +589,6 @@ WebcamVideoCursorDS(WebcamVideoDS *src) :
   _can_seek = false;
   _can_seek_fast = false;
   _aborted = false;
-  _last_start = -1.0;
-  _next_start = 0.0;
   _streaming = true;
   _buffer = new unsigned char[_size_x * _size_y * 3];
   _ready = false;
