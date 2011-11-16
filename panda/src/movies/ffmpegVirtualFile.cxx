@@ -378,8 +378,9 @@ log_callback(void *ptr, int level, const char *fmt, va_list v1) {
 
   if (ffmpeg_cat.is_on(severity)) {
     static const size_t buffer_size = 4096;
-    static char buffer[buffer_size];
+    char *buffer = (char *)alloca(buffer_size);
     vsnprintf(buffer, buffer_size, fmt, v1);
+    nassertv(strlen(buffer) < buffer_size);
     ffmpeg_cat.out(severity, true)
       << buffer;
   }
