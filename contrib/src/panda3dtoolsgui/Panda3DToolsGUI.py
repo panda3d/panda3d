@@ -267,6 +267,8 @@ class main(wx.Frame):
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, *args, **kwds)
 
+        self.SetIcon(wx.Icon("pandaIcon.ico", wx.BITMAP_TYPE_ICO))
+
         self.pandaPathDir = ''
 
         #self.batchList is the global list of batch items waiting to be run
@@ -274,7 +276,7 @@ class main(wx.Frame):
         self.optchar_eggList = []
         self.palettize_eggList = []
         self.rename_eggList = []
-        
+
         #store folders of the last import/export locationfor ease of navigation
         self.srcProjectFolder = ''
         self.destProjectFolder = ''
@@ -581,7 +583,7 @@ class main(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnLoadPrefs, self.prefsLoadButton)
         self.Bind(wx.EVT_MENU, self.OnSavePrefs, self.savePrefsButton)
         self.Bind(wx.EVT_MENU, self.OnExit, self.exitButton)
-        self.Bind(wx.EVT_MENU, self.OnShowHelp,self.HelpMenuButton)
+        #self.Bind(wx.EVT_MENU, self.OnShowHelp,self.HelpMenuButton)
 
         #batch panel
         self.Bind(wx.EVT_COMBOBOX, self.OnTool, self.toolComboBox)
@@ -883,8 +885,8 @@ class main(wx.Frame):
         self.toolComboBox.SetSelection(0)
 
         # batch panel
-        self.batch_panel.SetMinSize((1000, 608))
-        self.batchTree.SetMinSize((1000,524))
+        self.batch_panel.SetMinSize((2000, 608))
+        self.batchTree.SetMinSize((2000,524))
         self.loadBatchButton.SetMinSize((-1, 23))
         self.saveBatchButton.SetMinSize((-1, 23))
         self.sortBatchButton.SetMinSize((-1, 23))
@@ -894,8 +896,8 @@ class main(wx.Frame):
         self.removeAllBatchButton.SetMinSize((-1, 23))
 
         # console panel
-        self.console_panel.SetMinSize((1445, -1))
-        self.consoleOutputTxt.SetMinSize((1445, 100))
+        self.console_panel.SetMinSize((2000, 1000))
+        self.consoleOutputTxt.SetMinSize((2000, 1000))
         self.consoleOutputTxt.SetBackgroundColour(wx.Colour(192, 192, 192))
         self.consoleOutputTxt.SetToolTipString("maya2egg console output appears here when batch process is running")
         self.consoleOutputTxt.Enable(True)
@@ -1070,7 +1072,7 @@ class main(wx.Frame):
 
         bam_batch_sizer = wx.FlexGridSizer(1,2,0,0)
         bam_batch_sizer.Add(self.e2b_bamBatchOutputLbl, 1, wx.TOP, 4)
-        bam_batch_sizer.Add(self.e2b_bamBatchOutputBtn, 1, wx.LEFT|wx.RIGHT, 3)
+        bam_batch_sizer.Add(self.e2b_bamBatchOutputBtn, 1, wx.LEFT, 3)
         egg2bam_grid_sizer.Add(bam_batch_sizer, 1, wx.TOP|wx.ALIGN_RIGHT, 5)
 
         self.e2b_options_sizer_staticbox.Lower()
@@ -1277,7 +1279,6 @@ class main(wx.Frame):
         self.console_static_sizer_staticbox.Lower()
         console_static_sizer = wx.StaticBoxSizer(self.console_static_sizer_staticbox, wx.VERTICAL)
         console_grid_sizer = wx.FlexGridSizer(2,1,0,0)
-        console_grid_sizer.Add(self.consoleOutputTxt, 1, wx.ALIGN_LEFT|wx.EXPAND, 0)
 
         console_controls_sizer = wx.BoxSizer(wx.HORIZONTAL)
 
@@ -1295,10 +1296,11 @@ class main(wx.Frame):
         panda_dir_sizer.Add(self.loadPandaPathBtn, 0, wx.ALL, 0)
         console_options_sizer.Add(panda_dir_sizer, 0, 0, 0)
         console_controls_sizer.Add(console_options_sizer, 0, wx.LEFT|wx.ALIGN_RIGHT, 25)
-        
-        main_sizer.Add(self.console_panel, -1, wx.ALIGN_TOP|wx.EXPAND|wx.RIGHT, 5)
+
+        main_sizer.Add(self.console_panel, -1, wx.ALIGN_TOP|wx.EXPAND|wx.RIGHT|wx.BOTTOM, 5)
         self.console_panel.SetSizer(console_static_sizer)
         console_grid_sizer.Add(console_controls_sizer, 1, wx.ALIGN_LEFT, 0)
+        console_grid_sizer.Add(self.consoleOutputTxt, 1, wx.ALIGN_LEFT|wx.EXPAND|wx.TOP|wx.BOTTOM, 3)
         console_static_sizer.Add(console_grid_sizer, 1, wx.EXPAND)
 
         self.main_panel.SetSizer(main_sizer)
@@ -1624,8 +1626,10 @@ class main(wx.Frame):
     def OnRenameInPlace(self, event):
         #check if we want to use a custom egg file or not for egg-rename panel
         if (self.rename_exportInPlaceChk.GetValue()):
+            self.rename_exportDirTxt.SetValue("")
             self.rename_exportDirTxt.Disable()
             self.rename_exportDirBtn.Disable()
+            self.rename_exportFileTxt.SetValue("")
             self.rename_exportFileTxt.Disable()
             self.rename_exportFileBtn.Disable()
         else:
@@ -1730,8 +1734,10 @@ class main(wx.Frame):
     def OnOptcharInPlace(self, event):
         #check if we want to use a custom egg file or not for egg-optchar panel
         if (self.optchar_exportInPlaceChk.GetValue()):
+            self.optchar_exportDirTxt.SetValue("")
             self.optchar_exportDirTxt.Disable()
             self.optchar_exportDirBtn.Disable()
+            self.optchar_exportFileTxt.SetValue("")
             self.optchar_exportFileTxt.Disable()
             self.optchar_exportFileBtn.Disable()
         else:
@@ -1825,8 +1831,10 @@ class main(wx.Frame):
     def OnPalettizeInPlace(self, event):
         #check if we want to use a custom egg file or not for egg-palettize panel
         if (self.palettize_exportInPlaceChk.GetValue()):
+            self.palettize_exportDirTxt.SetValue("")
             self.palettize_exportDirTxt.Disable()
             self.palettize_exportDirBtn.Disable()
+            self.palettize_exportFileTxt.SetValue("")
             self.palettize_exportFileTxt.Disable()
             self.palettize_exportFileBtn.Disable()
         else:
@@ -1958,9 +1966,12 @@ class main(wx.Frame):
             
         return batchList
 
-    def GetOutputFromBatch(self):
+    def GetOutputFromBatch(self, index=-1):
         #Extract all output files from selected items in the batch
-        batchList = self.GetSelectedBatchList()
+        if (index != -1):
+            batchList = [self.batchList[index]]
+        else:
+            batchList = self.GetSelectedBatchList()
         outputFiles = []
         for batchItem in batchList:
             if batchItem['cmd'].count('maya2egg'):
@@ -2027,7 +2038,7 @@ class main(wx.Frame):
         else:
             self.batchList.append(batchItemInfo)
             self.AddToBatchDisplay(batchItemInfo)
-            
+
     def addEgg2BamToBatch(self, editItemIndex=-1):
         #add command line to batch list for egg2bam panel
         finput = ''
@@ -2045,7 +2056,7 @@ class main(wx.Frame):
         batchItemInfo = {}
         batchItemInfo['label'] = self.batchItemNameTxt.GetValue()
         batchItemInfo['cmd'] = 'egg2bam'
-        batchItemInfo['args'] = elf.BuildEgg2BamArgs()
+        batchItemInfo['args'] = self.BuildEgg2BamArgs()
         batchItemInfo['finput'] = str(finput)
         batchItemInfo['foutput'] = str(foutput)
 
@@ -2571,7 +2582,6 @@ class main(wx.Frame):
             self.SetStatusText("Running Batch export please be patient...")
             for item in self.batchList:
                 if currNode:
-                    self.batchTree.SetItemTextColour(currNode, wx.Colour(0,175,0))
                     currNode = self.batchTree.GetNextSibling(currNode)
                 else:
                     currNode, cookie = self.batchTree.GetFirstChild(self.treeRoot)
@@ -2581,10 +2591,13 @@ class main(wx.Frame):
                 index += 1
                 if (self.ignoreModDates.GetValue()): #do we want to just egg them regardless if they're newer?
                     self.RunCommand(self.BuildCommand(item),True)
+                    self.batchTree.SetItemTextColour(currNode, wx.Colour(0,175,0))
                 else:
                     if self.CheckModDates(item):
                         self.RunCommand(self.BuildCommand(item),True)
-            self.batchTree.SetItemTextColour(currNode, wx.Colour(0,175,0))
+                        self.batchTree.SetItemTextColour(currNode, wx.Colour(0,175,0))
+                    else:
+                        self.batchTree.SetItemTextColour(currNode, wx.Colour(0,0,175))
 
             self.batchProgress.Destroy()
             dlg = wx.MessageDialog(self,"Export Complete","Complete", wx.OK )
@@ -2601,15 +2614,86 @@ class main(wx.Frame):
     def CheckModDates(self, item):
         finput = item['finput']
         foutput = item['foutput']
-        if (item['cmd'].count('maya2egg') or item['cmd'].count('egg2bam')):
-            try:
+        if 1:
+            if (item['cmd'].count('maya2egg') or item['cmd'].count('egg2bam')):
                 inputTime = os.path.getmtime(finput)
                 outputTime = os.path.getmtime(foutput)
+                item['changed'] = (inputTime > outputTime)
                 return (inputTime > outputTime) # True if file was modified
-            except:
-                return True
+            elif (item['cmd'] in ['egg-rename', 'egg-optchar', 'egg-palettize']):
+                if item['args'].has_key('inplace'): # hard to check these
+                    index = self.batchList.index(item)
+                    # look for the input of the file
+                    inputFiles = item['finput'].split('|')
+                    for inFile in inputFiles:
+                        if (inFile != ''):
+                            inputFound = False
+                            inputChanged = False
+                            filename = inFile.split('\\')[-1]
+                            for i in range(0, index):
+                                idx = index - (i+1)
+                                outputFiles = self.GetOutputFromBatch(idx)
+                                if inFile in outputFiles:
+                                    inputFound = True
+                                    if self.batchList[idx]['cmd'].count('maya2egg'):
+                                        inputFile = self.batchList[idx]['finput']
+                                        inputTime = os.path.getmtime(inputFile)
+                                        outputTime = os.path.getmtime(inFile)
+                                        inputChanged = (inputTime > outputTime)
+                                    else:
+                                        if self.batchList[idx]['args'].has_key('inplace'):
+                                            inputChanged = self.batchList[idx]['changed']
+                                        elif self.batchList[idx]['args'].has_key('d'):
+                                            inputChanged = self.batchList[idx]['changed']
+                                            '''
+                                            inputs = self.batchList[idx]['finput'].split('|')
+                                            for inputFile in inputs:
+                                                if (inputFile != ''):
+                                                    inputFilename = inputFile.split('\\')[-1]
+                                                    print "Compare: ", inFile, filename, inputFile, inputFilename
+                                                    if inputFilename == filename:
+                                                        inputTime = os.path.getmtime(inputFile)
+                                                        outputTime = os.path.getmtime(inFile)
+                                                        print "Matched: ", (inputTime > outputTime)
+                                                        inputChanged = (inputTime > outputTime)
+                                                        break
+                                            '''
+                                        else:
+                                            inputFile = self.batchList[idx]['finput']
+                                            inputTime = os.path.getmtime(finput)
+                                            outputTime = os.path.getmtime(inFile)
+                                            inputChanged = (inputTime > outputTime)
+                                    break
+                            if not inputFound:
+                                item['changed'] = True
+                                return True
+                            if inputChanged:
+                                item['changed'] = True
+                                return True
+                    item['changed'] = False
+                    return False
+                if item['args'].has_key('d'): # compare files in the directory
+                    inputFiles = item['finput'].split('|')
+                    filesChanged = False
+                    for inFile in inputFiles:
+                        if (inFile != ''):
+                            filename = inFile.split('\\')[-1]
+                            directory = item['args']['d']
+                            inputTime = os.path.getmtime(inFile)
+                            outputTime = os.path.getmtime(directory+'\\'+filename)
+                            filesChanged = filesChanged or (inputTime > outputTime)
+                    item['changed'] = filesChanged
+                    return filesChanged
+                else:
+                    inputTime = os.path.getmtime(finput)
+                    outputTime = os.path.getmtime(foutput)
+                    item['changed'] = (inputTime > outputTime)
+                    return (inputTime > outputTime) # True if file was modified
+        else:
+            item['changed'] = True
+            return True
+        item['changed'] = True
         return True
-        
 
 
     def OnBatchItemSelection(self, event):
