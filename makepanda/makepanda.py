@@ -983,7 +983,7 @@ def CompileLink(dll, obj, opts):
             cmd += " /MACHINE:X64"
         if ("MFC" not in opts):
             cmd += " /NOD:MFC90.LIB /NOD:MFC80.LIB /NOD:LIBCMT"
-        cmd += " /NOD:LIBCI.LIB /DEBUG"
+        cmd += " /NOD:LIBCI.LIB /DEBUG /MANIFEST"
         cmd += " /nod:libc /nod:libcmtd /nod:atlthunk /nod:atls"
         if (GetOrigExt(dll) != ".exe"): cmd += " /DLL"
         optlevel = GetOptimizeOption(opts)
@@ -1024,7 +1024,7 @@ def CompileLink(dll, obj, opts):
         mtcmd = "mt -manifest " + dll + ".manifest -outputresource:" + dll
         if (dll.endswith(".exe")==0): mtcmd = mtcmd + ";2"
         else:                          mtcmd = mtcmd + ";1"
-        oscmd(mtcmd)
+        oscmd(mtcmd, ignoreError=True) # HACK: For some reason, mt sometimes gives a non-zero return value, even when it works
     if (COMPILER=="LINUX"):
         cxx = os.environ.get('CXX', 'g++')
         if (GetOrigExt(dll)==".exe"): cmd = cxx + ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp -L/usr/X11R6/lib'
@@ -1182,7 +1182,7 @@ def FreezePy(target, inputs, opts):
         del os.environ["LINK_PYTHON_STATIC"]
 
     if (not os.path.exists(target)):
-        exit("")
+        exit("FREEZER_ERROR")
 
 ##########################################################################################
 #
@@ -1508,7 +1508,7 @@ DTOOL_CONFIG=[
     ("HAVE_FCOLLADA",                  'UNDEF',                  'UNDEF'),
     ("HAVE_OPENAL_FRAMEWORK",          'UNDEF',                  'UNDEF'),
     ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
-    ("_SECURE_SCL",                    '1',                      'UNDEF'),
+    ("_SECURE_SCL",                    '0',                      'UNDEF'),
     ("_SECURE_SCL_THROWS",             '0',                      'UNDEF'),
     ("HAVE_P3D_PLUGIN",                'UNDEF',                  'UNDEF'),
 ]
