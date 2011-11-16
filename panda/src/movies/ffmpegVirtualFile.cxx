@@ -77,6 +77,11 @@ bool FfmpegVirtualFile::
 open_vfs(const Filename &filename) {
   close();
 
+  if (ffmpeg_cat.is_debug()) {
+    ffmpeg_cat.debug()
+      << "ffmpeg open_vfs(" << filename << ")\n";
+  }
+
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   Filename fname = filename;
   fname.set_binary();
@@ -134,6 +139,10 @@ open_subfile(const SubfileInfo &info) {
   fname.set_binary();
   if (!fname.open_read(_file_in)) {
     return false;
+  }
+  if (ffmpeg_cat.is_debug()) {
+    ffmpeg_cat.debug()
+      << "ffmpeg open_subfile(" << fname << ")\n";
   }
 
   _in = &_file_in;
@@ -289,7 +298,7 @@ pandavfs_read(URLContext *h, unsigned char *buf, int size) {
 ////////////////////////////////////////////////////////////////////
 int FfmpegVirtualFile::
 pandavfs_write(URLContext *h, const unsigned char *buf, int size) {
-  movies_cat.warning()
+  ffmpeg_cat.warning()
     << "ffmpeg is trying to write to the VFS.\n";
   return -1;
 }
@@ -323,7 +332,7 @@ pandavfs_seek(URLContext *h, int64_t pos, int whence) {
     return self->_size; 
 
   default:
-    movies_cat.error() 
+    ffmpeg_cat.error() 
       << "Illegal parameter to seek in ffmpegVirtualFile\n";
     in->clear();
     return -1;
