@@ -136,7 +136,7 @@ class WebcamVideoCursorDS : public MovieVideoCursor
 public:
   WebcamVideoCursorDS(WebcamVideoDS *src);
   virtual ~WebcamVideoCursorDS();
-  virtual Buffer *fetch_buffer(double time);
+  virtual PT(Buffer) fetch_buffer();
 
 public:
   void cleanup();
@@ -656,8 +656,8 @@ WebcamVideoCursorDS::
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-MovieVideoCursor::Buffer *WebcamVideoCursorDS::
-fetch_buffer(double time) {
+PT(MovieVideoCursor::Buffer) WebcamVideoCursorDS::
+fetch_buffer() {
   if (!_ready) {
     return NULL;
   }
