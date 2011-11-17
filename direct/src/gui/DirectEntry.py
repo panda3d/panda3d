@@ -325,8 +325,25 @@ class DirectEntry(DirectFrame):
 
         self.ll.set(left, 0.0, bottom)
         self.ur.set(right, 0.0, top)
-        self.ll = mat.xformPoint(self.ll)
-        self.ur = mat.xformPoint(self.ur)
+        self.ll = mat.xformPoint(Point3.rfu(left, 0.0, bottom))
+        self.ur = mat.xformPoint(Point3.rfu(right, 0.0, top))
+
+        vec_right = Vec3.right()
+        vec_up = Vec3.up()
+        left = (vec_right[0] * self.ll[0]
+              + vec_right[1] * self.ll[1]
+              + vec_right[2] * self.ll[2])
+        right = (vec_right[0] * self.ur[0]
+               + vec_right[1] * self.ur[1]
+               + vec_right[2] * self.ur[2])
+        bottom = (vec_up[0] * self.ll[0]
+                + vec_up[1] * self.ll[1]
+                + vec_up[2] * self.ll[2])
+        top = (vec_up[0] * self.ur[0]
+             + vec_up[1] * self.ur[1]
+             + vec_up[2] * self.ur[2])
+        self.ll = Point3(left, 0.0, bottom)
+        self.ur = Point3(right, 0.0, top)
 
         # Scale bounds to give a pad around graphics.  We also want to
         # scale around the border width.

@@ -59,6 +59,10 @@ PGEntry(const string &name) :
   _blink_rate = 1.0f;
 
   _text_render_root = NodePath("text_root");
+
+  CPT(TransformState) transform = TransformState::make_mat(LMatrix4::convert_mat(CS_default, CS_zup_right));
+  _text_render_root.set_transform(transform);
+
   _cursor_scale = _text_render_root.attach_new_node("cursor_scale");
   _cursor_def = _cursor_scale.attach_new_node("cursor");
   _cursor_visible = true;
@@ -569,26 +573,45 @@ setup(PN_stdfloat width, int num_lines) {
   PN_stdfloat line_height = text_node->get_line_height();
 
   // Determine the four corners of the frame.
-  LPoint3 ll(0.0f, 0.0f, -0.3 * line_height - (line_height * (num_lines - 1)));
-  LPoint3 ur(width, 0.0f, line_height);
-  LPoint3 lr(ur[0], 0.0f, ll[2]);
-  LPoint3 ul(ll[0], 0.0f, ur[2]);
-
+  float bottom = -0.3f * line_height - (line_height * (num_lines - 1));
   // Transform each corner by the TextNode's transform.
   LMatrix4 mat = text_node->get_transform();
-  ll = ll * mat;
-  ur = ur * mat;
-  lr = lr * mat;
-  ul = ul * mat;
+  LPoint3 ll = LPoint3::rfu(0.0f, 0.0f, bottom) * mat;
+  LPoint3 ur = LPoint3::rfu(width, 0.0f, line_height) * mat;
+  LPoint3 lr = LPoint3::rfu(width, 0.0f, bottom) * mat;
+  LPoint3 ul = LPoint3::rfu(0.0f, 0.0f, line_height) * mat;
+
+  LVector3 up = LVector3::up();
+  int up_axis;
+  if (up[1]) {
+    up_axis = 1;
+  }
+  else if (up[2]) {
+    up_axis = 2;
+  }
+  else {
+    up_axis = 0;
+  }
+  LVector3 right = LVector3::right();
+  int right_axis;
+  if (right[0]) {
+    right_axis = 0;
+  }
+  else if (right[2]) {
+    right_axis = 2;
+  }
+  else {
+    right_axis = 1;
+  }
 
   // And get the new minmax to define the frame.  We do all this work
   // instead of just using the lower-left and upper-right corners,
   // just in case the text was rotated.
   LVecBase4 frame;
-  frame[0] = min(min(ll[0], ur[0]), min(lr[0], ul[0]));
-  frame[1] = max(max(ll[0], ur[0]), max(lr[0], ul[0]));
-  frame[2] = min(min(ll[2], ur[2]), min(lr[2], ul[2]));
-  frame[3] = max(max(ll[2], ur[2]), max(lr[2], ul[2]));
+  frame[0] = min(min(ll[right_axis], ur[right_axis]), min(lr[right_axis], ul[right_axis]));
+  frame[1] = max(max(ll[right_axis], ur[right_axis]), max(lr[right_axis], ul[right_axis]));
+  frame[2] = min(min(ll[up_axis], ur[up_axis]), min(lr[up_axis], ul[up_axis]));
+  frame[3] = max(max(ll[up_axis], ur[up_axis]), max(lr[up_axis], ul[up_axis]));
 
   switch (text_node->get_align()) {
   case TextNode::A_left:
@@ -875,8 +898,8 @@ update_text() {
 
       _current_text.set_x(_current_text.get_x() - _current_padding);
       _current_text.set_scissor(NodePath(this),
-        LPoint3(0, 0, -0.5), LPoint3(_max_width, 0, -0.5),
-        LPoint3(_max_width, 0, 1.5), LPoint3(0, 0, 1.5));
+      LPoint3::rfu(0, 0, -0.5), LPoint3::rfu(_max_width, 0, -0.5),
+      LPoint3::rfu(_max_width, 0, 1.5), LPoint3::rfu(0, 0, 1.5));
     }
 
     _text_geom_stale = false;

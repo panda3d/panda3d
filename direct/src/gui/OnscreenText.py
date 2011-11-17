@@ -323,9 +323,9 @@ class OnscreenText(DirectObject, NodePath):
     def updateTransformMat(self):
         assert(isinstance(self.textNode, TextNode))
         mat = (
-            Mat4.scaleMat(self.scale[0], 1, self.scale[1]) *
-            Mat4.rotateMat(self.roll, Vec3(0, -1, 0)) *
-            Mat4.translateMat(self.pos[0], 0, self.pos[1])
+            Mat4.scaleMat(Vec3.rfu(self.scale[0], 1, self.scale[1])) *
+            Mat4.rotateMat(self.roll, Vec3.back()) *
+            Mat4.translateMat(Point3.rfu(self.pos[0], 0, self.pos[1]))
             )
         self.textNode.setTransform(mat)
 
