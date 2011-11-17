@@ -312,6 +312,21 @@
 #define NATIVE_WORDSIZE 32
 #endif
 
+/* Some byte-alignment macros. */
+#ifdef CPPPARSER
+#define ALIGN_4BYTE
+#define ALIGN_8BYTE
+#elif defined(WIN32_VC)
+#define ALIGN_4BYTE __declspec(align(4))
+#define ALIGN_8BYTE __declspec(align(8))
+#elif defined(__GNUC__)
+#define ALIGN_4BYTE __attribute__ ((aligned (4)))
+#define ALIGN_8BYTE __attribute__ ((aligned (8)))
+#else
+#define ALIGN_4BYTE
+#define ALIGN_8BYTE
+#endif
+
 
 /*
  We define the macros BEGIN_PUBLISH and END_PUBLISH to bracket

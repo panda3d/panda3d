@@ -21,6 +21,7 @@
 #include "lvecBase3.h"
 #include "filterProperties.h"
 #include "movieAudio.h"
+#include "atomicAdjust.h"
 
 typedef AudioManager *Create_AudioManager_proc();
 
@@ -205,7 +206,7 @@ protected:
   // best flexibility.
   
   static Create_AudioManager_proc* _create_AudioManager;
-  AudioSound *_null_sound;
+  AtomicAdjust::Pointer _null_sound;
 
   AudioManager();
 

@@ -70,7 +70,7 @@ void ReferenceCount::
 create_weak_list() {
   WeakReferenceList *weak_list = new WeakReferenceList;
   void *orig = 
-    AtomicAdjust::compare_and_exchange_ptr((void *&)_weak_list, NULL, weak_list);
+    AtomicAdjust::compare_and_exchange_ptr(_weak_list, NULL, weak_list);
   if (orig != (void *)NULL) {
     // Someone else created it first.
     delete weak_list;

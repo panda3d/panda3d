@@ -18,6 +18,7 @@
 #include "pandabase.h"
 #include "pnotify.h"
 #include "memoryBase.h"
+#include "atomicAdjust.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PointerToVoid
@@ -62,7 +63,7 @@ protected:
   // from ReferenceCount.  (You can't downcast past a virtual
   // inheritance level, but you can always cross-cast from a void
   // pointer.)
-  void *_void_ptr;
+  AtomicAdjust::Pointer _void_ptr;
 };
 
 #include "pointerToVoid.I"

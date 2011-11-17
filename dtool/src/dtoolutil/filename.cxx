@@ -51,10 +51,10 @@
 
 TextEncoder::Encoding Filename::_filesystem_encoding = TextEncoder::E_utf8;
 
-Filename *Filename::_home_directory;
-Filename *Filename::_temp_directory;
-Filename *Filename::_user_appdata_directory;
-Filename *Filename::_common_appdata_directory;
+TVOLATILE AtomicAdjust::Pointer Filename::_home_directory;
+TVOLATILE AtomicAdjust::Pointer Filename::_temp_directory;
+TVOLATILE AtomicAdjust::Pointer Filename::_user_appdata_directory;
+TVOLATILE AtomicAdjust::Pointer Filename::_common_appdata_directory;
 TypeHandle Filename::_type_handle;
 
 #ifdef WIN32
@@ -506,7 +506,7 @@ temporary(const string &dirname, const string &prefix, const string &suffix,
 ////////////////////////////////////////////////////////////////////
 const Filename &Filename::
 get_home_directory() {
-  if (AtomicAdjust::get_ptr((void * TVOLATILE &)_home_directory) == NULL) {
+  if (AtomicAdjust::get_ptr(_home_directory) == NULL) {
     Filename home_directory;
 
     // In all environments, check $HOME first.
@@ -549,14 +549,14 @@ get_home_directory() {
     }
 
     Filename *newdir = new Filename(home_directory);
-    if (AtomicAdjust::compare_and_exchange_ptr((void * TVOLATILE &)_home_directory, NULL, newdir) != NULL) {
+    if (AtomicAdjust::compare_and_exchange_ptr(_home_directory, NULL, newdir) != NULL) {
       // Didn't store it.  Must have been stored by someone else.
       assert(_home_directory != NULL);
       delete newdir;
     }
   }
   
-  return (*_home_directory);
+  return (*(Filename *)_home_directory);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -567,7 +567,7 @@ get_home_directory() {
 ////////////////////////////////////////////////////////////////////
 const Filename &Filename::
 get_temp_directory() {
-  if (AtomicAdjust::get_ptr((void * TVOLATILE &)_temp_directory) == NULL) {
+  if (AtomicAdjust::get_ptr(_temp_directory) == NULL) {
     Filename temp_directory;
 
 #ifdef WIN32
@@ -596,14 +596,14 @@ get_temp_directory() {
     }
 
     Filename *newdir = new Filename(temp_directory);
-    if (AtomicAdjust::compare_and_exchange_ptr((void * TVOLATILE &)_temp_directory, NULL, newdir) != NULL) {
+    if (AtomicAdjust::compare_and_exchange_ptr(_temp_directory, NULL, newdir) != NULL) {
       // Didn't store it.  Must have been stored by someone else.
       assert(_temp_directory != NULL);
       delete newdir;
     }
   }
 
-  return (*_temp_directory);
+  return (*(Filename *)_temp_directory);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -616,7 +616,7 @@ get_temp_directory() {
 ////////////////////////////////////////////////////////////////////
 const Filename &Filename::
 get_user_appdata_directory() {
-  if (AtomicAdjust::get_ptr((void * TVOLATILE &)_user_appdata_directory) == NULL) {
+  if (AtomicAdjust::get_ptr(_user_appdata_directory) == NULL) {
     Filename user_appdata_directory;
 
 #ifdef WIN32
@@ -646,14 +646,14 @@ get_user_appdata_directory() {
     }
 
     Filename *newdir = new Filename(user_appdata_directory);
-    if (AtomicAdjust::compare_and_exchange_ptr((void * TVOLATILE &)_user_appdata_directory, NULL, newdir) != NULL) {
+    if (AtomicAdjust::compare_and_exchange_ptr(_user_appdata_directory, NULL, newdir) != NULL) {
       // Didn't store it.  Must have been stored by someone else.
       assert(_user_appdata_directory != NULL);
       delete newdir;
     }
   }
 
-  return (*_user_appdata_directory);
+  return (*(Filename *)_user_appdata_directory);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -665,7 +665,7 @@ get_user_appdata_directory() {
 ////////////////////////////////////////////////////////////////////
 const Filename &Filename::
 get_common_appdata_directory() {
-  if (AtomicAdjust::get_ptr((void * TVOLATILE &)_common_appdata_directory) == NULL) {
+  if (AtomicAdjust::get_ptr(_common_appdata_directory) == NULL) {
     Filename common_appdata_directory;
 
 #ifdef WIN32
@@ -694,14 +694,14 @@ get_common_appdata_directory() {
     }
 
     Filename *newdir = new Filename(common_appdata_directory);
-    if (AtomicAdjust::compare_and_exchange_ptr((void * TVOLATILE &)_common_appdata_directory, NULL, newdir) != NULL) {
+    if (AtomicAdjust::compare_and_exchange_ptr(_common_appdata_directory, NULL, newdir) != NULL) {
       // Didn't store it.  Must have been stored by someone else.
       assert(_common_appdata_directory != NULL);
       delete newdir;
     }
   }
 
-  return (*_common_appdata_directory);
+  return (*(Filename *)_common_appdata_directory);
 }
 
 ////////////////////////////////////////////////////////////////////

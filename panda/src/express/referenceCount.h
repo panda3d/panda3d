@@ -88,7 +88,7 @@ private:
   };
 
   AtomicAdjust::Integer _ref_count;
-  WeakReferenceList *_weak_list;
+  AtomicAdjust::Pointer _weak_list;  // WeakReferenceList *
 
 public:
   static TypeHandle get_class_type() {

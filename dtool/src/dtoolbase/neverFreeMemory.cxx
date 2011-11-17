@@ -27,7 +27,7 @@ static const size_t min_page_size = 128 * 1024;  // 128K
 
 // We always allocate integer multiples of this many bytes, to
 // guarantee this minimum alignment.
-static const size_t alignment_size = sizeof(long);
+static const size_t alignment_size = sizeof(void *);
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NeverFreeMemory::Constructor

@@ -20,6 +20,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE void AtomicAdjustI386Impl::
 inc(TVOLATILE AtomicAdjustI386Impl::Integer &var) {
+  assert((((size_t)&var) & (sizeof(Integer) - 1)) == 0);
 #ifdef _M_IX86
   // Windows case
   TVOLATILE Integer *var_ptr = &var;
@@ -44,6 +45,7 @@ inc(TVOLATILE AtomicAdjustI386Impl::Integer &var) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool AtomicAdjustI386Impl::
 dec(TVOLATILE AtomicAdjustI386Impl::Integer &var) {
+  assert((((size_t)&var) & (sizeof(Integer) - 1)) == 0);
   unsigned char c;
 #ifdef _M_IX86
   // Windows case
@@ -70,6 +72,7 @@ dec(TVOLATILE AtomicAdjustI386Impl::Integer &var) {
 ////////////////////////////////////////////////////////////////////
 INLINE void AtomicAdjustI386Impl::
 add(TVOLATILE AtomicAdjustI386Impl::Integer &var, AtomicAdjustI386Impl::Integer delta) {
+  assert((((size_t)&var) & (sizeof(Integer) - 1)) == 0);
   Integer orig_value = var;
   while (compare_and_exchange(var, orig_value, orig_value + delta) != orig_value) {
     orig_value = var;
@@ -83,7 +86,9 @@ add(TVOLATILE AtomicAdjustI386Impl::Integer &var, AtomicAdjustI386Impl::Integer 
 //               returns the original value.
 ////////////////////////////////////////////////////////////////////
 INLINE AtomicAdjustI386Impl::Integer AtomicAdjustI386Impl::
-set(TVOLATILE AtomicAdjustI386Impl::Integer &var, AtomicAdjustI386Impl::Integer new_value) {
+set(TVOLATILE AtomicAdjustI386Impl::Integer &var, 
+    AtomicAdjustI386Impl::Integer new_value) {
+  assert((((size_t)&var) & (sizeof(Integer) - 1)) == 0);
   Integer orig_value = var;
   var = new_value;
   return orig_value;
@@ -100,6 +105,7 @@ set(TVOLATILE AtomicAdjustI386Impl::Integer &var, AtomicAdjustI386Impl::Integer 
 ////////////////////////////////////////////////////////////////////
 INLINE AtomicAdjustI386Impl::Integer AtomicAdjustI386Impl::
 get(const TVOLATILE AtomicAdjustI386Impl::Integer &var) {
+  assert((((size_t)&var) & (sizeof(Integer) - 1)) == 0);
   return var;
 }
 
@@ -109,9 +115,11 @@ get(const TVOLATILE AtomicAdjustI386Impl::Integer &var) {
 //  Description: Atomically changes the indicated variable and
 //               returns the original value.
 ////////////////////////////////////////////////////////////////////
-INLINE void *AtomicAdjustI386Impl::
-set_ptr(void * TVOLATILE &var, void *new_value) {
-  void *orig_value = var;
+INLINE AtomicAdjustI386Impl::Pointer AtomicAdjustI386Impl::
+set_ptr(TVOLATILE AtomicAdjustI386Impl::Pointer &var, 
+        AtomicAdjustI386Impl::Pointer new_value) {
+  assert((((size_t)&var) & (sizeof(Pointer) - 1)) == 0);
+  Pointer orig_value = var;
   var = new_value;
   return orig_value;
 }
@@ -125,8 +133,9 @@ set_ptr(void * TVOLATILE &var, void *new_value) {
 //               asynchronously setting, incrementing, or decrementing
 //               (via other AtomicAjust methods).
 ////////////////////////////////////////////////////////////////////
-INLINE void *AtomicAdjustI386Impl::
-get_ptr(void * const TVOLATILE &var) {
+INLINE AtomicAdjustI386Impl::Pointer AtomicAdjustI386Impl::
+get_ptr(const TVOLATILE AtomicAdjustI386Impl::Pointer &var) {
+  assert((((size_t)&var) & (sizeof(Pointer) - 1)) == 0);
   return var;
 }
 
@@ -150,8 +159,10 @@ get_ptr(void * const TVOLATILE &var) {
 //
 ////////////////////////////////////////////////////////////////////
 INLINE AtomicAdjustI386Impl::Integer AtomicAdjustI386Impl::
-compare_and_exchange(TVOLATILE AtomicAdjustI386Impl::Integer &mem, AtomicAdjustI386Impl::Integer old_value,
+compare_and_exchange(TVOLATILE AtomicAdjustI386Impl::Integer &mem, 
+                     AtomicAdjustI386Impl::Integer old_value,
                      AtomicAdjustI386Impl::Integer new_value) {
+  assert((((size_t)&mem) & (sizeof(Integer) - 1)) == 0);
   Integer prev;
 #ifdef _M_IX86
   // Windows case
@@ -180,13 +191,15 @@ compare_and_exchange(TVOLATILE AtomicAdjustI386Impl::Integer &mem, AtomicAdjustI
 //
 //               As above, but works on pointers instead of integers.
 ////////////////////////////////////////////////////////////////////
-INLINE void *AtomicAdjustI386Impl::
-compare_and_exchange_ptr(void * TVOLATILE &mem, void *old_value,
-                         void *new_value) {
-  void *prev;
+INLINE AtomicAdjustI386Impl::Pointer AtomicAdjustI386Impl::
+compare_and_exchange_ptr(TVOLATILE AtomicAdjustI386Impl::Pointer &mem, 
+                         AtomicAdjustI386Impl::Pointer old_value,
+                         AtomicAdjustI386Impl::Pointer new_value) {
+  assert((((size_t)&mem) & (sizeof(Pointer) - 1)) == 0);
+  Pointer prev;
 #ifdef _M_IX86
   // Windows case
-  void * TVOLATILE *mem_ptr = &mem;
+  TVOLATILE Pointer *mem_ptr = &mem;
   __asm {
     mov edx, mem_ptr;
     mov ecx, new_value;

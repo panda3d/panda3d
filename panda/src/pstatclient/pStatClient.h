@@ -191,7 +191,7 @@ private:
     PerThread _per_thread;
   };
   typedef Collector *CollectorPointer;
-  void *_collectors;  // CollectorPointer *_collectors;
+  AtomicAdjust::Pointer _collectors;  // CollectorPointer *_collectors;
   AtomicAdjust::Integer _collectors_size;  // size of the allocated array
   AtomicAdjust::Integer _num_collectors;   // number of in-use elements within the array
 
@@ -219,7 +219,7 @@ private:
     LightMutex _thread_lock;
   };
   typedef InternalThread *ThreadPointer;
-  void *_threads;  // ThreadPointer *_threads;
+  AtomicAdjust::Pointer _threads;  // ThreadPointer *_threads;
   AtomicAdjust::Integer _threads_size;  // size of the allocated array
   AtomicAdjust::Integer _num_threads;   // number of in-use elements within the array
 

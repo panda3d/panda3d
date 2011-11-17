@@ -130,7 +130,7 @@ ReferenceCount::
 
   // Tell our weak reference holders that we're going away now.
   if (_weak_list != (WeakReferenceList *)NULL) {
-    delete _weak_list;
+    delete (WeakReferenceList *)_weak_list;
     _weak_list = (WeakReferenceList *)NULL;
   }
 
@@ -305,10 +305,10 @@ has_weak_list() const {
 ////////////////////////////////////////////////////////////////////
 INLINE WeakReferenceList *ReferenceCount::
 get_weak_list() const {
-  if (_weak_list == (WeakReferenceList *)NULL) {
+  if (AtomicAdjust::get_ptr(_weak_list) == (WeakReferenceList *)NULL) {
     ((ReferenceCount *)this)->create_weak_list();
   }
-  return _weak_list;
+  return (WeakReferenceList *)AtomicAdjust::get_ptr(_weak_list);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -334,7 +334,7 @@ INLINE void ReferenceCount::
 weak_unref(WeakPointerToVoid *ptv) {
   TAU_PROFILE("void ReferenceCount::weak_unref()", " ", TAU_USER);
   nassertv(has_weak_list());
-  _weak_list->clear_reference(ptv);
+  ((WeakReferenceList *)_weak_list)->clear_reference(ptv);
 }
 
 ////////////////////////////////////////////////////////////////////

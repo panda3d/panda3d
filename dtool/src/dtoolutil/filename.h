@@ -256,10 +256,10 @@ protected:
   int _flags;
 
   static TextEncoder::Encoding _filesystem_encoding;
-  static Filename *_home_directory;
-  static Filename *_temp_directory;
-  static Filename *_user_appdata_directory;
-  static Filename *_common_appdata_directory;
+  static TVOLATILE AtomicAdjust::Pointer _home_directory;
+  static TVOLATILE AtomicAdjust::Pointer _temp_directory;
+  static TVOLATILE AtomicAdjust::Pointer _user_appdata_directory;
+  static TVOLATILE AtomicAdjust::Pointer _common_appdata_directory;
 
 public:
   static TypeHandle get_class_type() {

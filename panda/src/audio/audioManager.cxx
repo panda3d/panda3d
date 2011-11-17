@@ -106,7 +106,7 @@ PT(AudioManager) AudioManager::create_AudioManager() {
 AudioManager::
 ~AudioManager() {
   if (_null_sound != (AudioSound *)NULL) {
-    unref_delete(_null_sound);
+    unref_delete((AudioSound *)_null_sound);
   }
 }
 
@@ -146,7 +146,7 @@ get_null_sound() {
   if (_null_sound == (AudioSound *)NULL) {
     AudioSound *new_sound = new NullAudioSound;
     new_sound->ref();
-    void *result = AtomicAdjust::compare_and_exchange_ptr((void * TVOLATILE &)_null_sound, (void *)NULL, (void *)new_sound);
+    void *result = AtomicAdjust::compare_and_exchange_ptr(_null_sound, (void *)NULL, (void *)new_sound);
     if (result != NULL) {
       // Someone else must have assigned the AudioSound first.  OK.
       nassertr(_null_sound != new_sound, NULL);
@@ -155,7 +155,7 @@ get_null_sound() {
     nassertr(_null_sound != NULL, NULL);
   }
   
-  return _null_sound;
+  return (AudioSound *)_null_sound;
 }
 
 ////////////////////////////////////////////////////////////////////

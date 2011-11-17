@@ -79,9 +79,10 @@ get(const TVOLATILE AtomicAdjustDummyImpl::Integer &var) {
 //  Description: Atomically changes the indicated variable and
 //               returns the original value.
 ////////////////////////////////////////////////////////////////////
-INLINE void *AtomicAdjustDummyImpl::
-set_ptr(void * TVOLATILE &var, void *new_value) {
-  void *orig_value = var;
+INLINE AtomicAdjustDummyImpl::Pointer AtomicAdjustDummyImpl::
+set_ptr(TVOLATILE AtomicAdjustDummyImpl::Pointer &var, 
+        AtomicAdjustDummyImpl::Pointer new_value) {
+  Pointer orig_value = var;
   var = new_value;
   return orig_value;
 }
@@ -95,8 +96,8 @@ set_ptr(void * TVOLATILE &var, void *new_value) {
 //               asynchronously setting, incrementing, or decrementing
 //               (via other AtomicAjust methods).
 ////////////////////////////////////////////////////////////////////
-INLINE void *AtomicAdjustDummyImpl::
-get_ptr(void * const TVOLATILE &var) {
+INLINE AtomicAdjustDummyImpl::Pointer AtomicAdjustDummyImpl::
+get_ptr(const TVOLATILE AtomicAdjustDummyImpl::Pointer &var) {
   return var;
 }
 
@@ -111,7 +112,8 @@ get_ptr(void * const TVOLATILE &var) {
 //               return_value == old_value.
 ////////////////////////////////////////////////////////////////////
 INLINE AtomicAdjustDummyImpl::Integer AtomicAdjustDummyImpl::
-compare_and_exchange(TVOLATILE AtomicAdjustDummyImpl::Integer &mem, AtomicAdjustDummyImpl::Integer old_value,
+compare_and_exchange(TVOLATILE AtomicAdjustDummyImpl::Integer &mem, 
+                     AtomicAdjustDummyImpl::Integer old_value,
                      AtomicAdjustDummyImpl::Integer new_value) {
   Integer orig_value = mem;
   if (mem == old_value) {
@@ -127,10 +129,11 @@ compare_and_exchange(TVOLATILE AtomicAdjustDummyImpl::Integer &mem, AtomicAdjust
 //
 //               As above, but works on pointers instead of integers.
 ////////////////////////////////////////////////////////////////////
-INLINE void *AtomicAdjustDummyImpl::
-compare_and_exchange_ptr(void * TVOLATILE &mem, void *old_value,
-                         void *new_value) {
-  void *orig_value = mem;
+INLINE AtomicAdjustDummyImpl::Pointer AtomicAdjustDummyImpl::
+compare_and_exchange_ptr(TVOLATILE AtomicAdjustDummyImpl::Pointer &mem, 
+                         AtomicAdjustDummyImpl::Pointer old_value,
+                         AtomicAdjustDummyImpl::Pointer new_value) {
+  Pointer orig_value = mem;
   if (mem == old_value) {
     mem = new_value;
   }
