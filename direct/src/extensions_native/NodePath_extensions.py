@@ -494,7 +494,7 @@ def lerpColorRGBA(self, r, g, b, a, time,
             from pandac.PandaModules import ColorLerpFunctor
             # just end rgba values, use current color rgba values for start
             startColor = self.getColor()
-            functor = ColorLerpFunctor.ColorLerpFunctor(
+            functor = ColorLerpFunctor(
                 self,
                 startColor[0], startColor[1],
                 startColor[2], startColor[3],
@@ -520,7 +520,7 @@ def lerpColorRGBARGBA(self, sr, sg, sb, sa, er, eg, eb, ea, time,
                         er = er, eg = eg, eb = eb, ea = ea):
             from pandac.PandaModules import ColorLerpFunctor
             # start and end rgba values
-            functor = ColorLerpFunctor.ColorLerpFunctor(self, sr, sg, sb, sa,
+            functor = ColorLerpFunctor(self, sr, sg, sb, sa,
                                                         er, eg, eb, ea)
             return functor
         #determine whether to use auto, spawned, or blocking lerp
@@ -543,7 +543,7 @@ def lerpColorVBase4(self, endColor, time,
             from pandac.PandaModules import ColorLerpFunctor
             # just end vec4, use current color for start
             startColor = self.getColor()
-            functor = ColorLerpFunctor.ColorLerpFunctor(
+            functor = ColorLerpFunctor(
                 self, startColor, endColor)
             return functor
         #determine whether to use auto, spawned, or blocking lerp
@@ -566,7 +566,7 @@ def lerpColorVBase4VBase4(self, startColor, endColor, time,
                         endColor = endColor):
             from pandac.PandaModules import ColorLerpFunctor
             # start color and end vec
-            functor = ColorLerpFunctor.ColorLerpFunctor(
+            functor = ColorLerpFunctor(
                 self, startColor, endColor)
             return functor
         #determine whether to use auto, spawned, or blocking lerp
@@ -612,7 +612,7 @@ def lerpColorScaleRGBA(self, r, g, b, a, time,
             from pandac.PandaModules import ColorScaleLerpFunctor
             # just end rgba values, use current color rgba values for start
             startColor = self.getColor()
-            functor = ColorScaleLerpFunctor.ColorScaleLerpFunctor(
+            functor = ColorScaleLerpFunctor(
                 self,
                 startColor[0], startColor[1],
                 startColor[2], startColor[3],
@@ -638,7 +638,7 @@ def lerpColorScaleRGBARGBA(self, sr, sg, sb, sa, er, eg, eb, ea, time,
                         er = er, eg = eg, eb = eb, ea = ea):
             from pandac.PandaModules import ColorScaleLerpFunctor
             # start and end rgba values
-            functor = ColorScaleLerpFunctor.ColorScaleLerpFunctor(self, sr, sg, sb, sa,
+            functor = ColorScaleLerpFunctor(self, sr, sg, sb, sa,
                                                         er, eg, eb, ea)
             return functor
         #determine whether to use auto, spawned, or blocking lerp
@@ -661,7 +661,7 @@ def lerpColorScaleVBase4(self, endColor, time,
             from pandac.PandaModules import ColorScaleLerpFunctor
             # just end vec4, use current color for start
             startColor = self.getColor()
-            functor = ColorScaleLerpFunctor.ColorScaleLerpFunctor(
+            functor = ColorScaleLerpFunctor(
                 self, startColor, endColor)
             return functor
         #determine whether to use auto, spawned, or blocking lerp
@@ -684,7 +684,7 @@ def lerpColorScaleVBase4VBase4(self, startColor, endColor, time,
                         endColor = endColor):
             from pandac.PandaModules import ColorScaleLerpFunctor
             # start color and end vec
-            functor = ColorScaleLerpFunctor.ColorScaleLerpFunctor(
+            functor = ColorScaleLerpFunctor(
                 self, startColor, endColor)
             return functor
         #determine whether to use auto, spawned, or blocking lerp
@@ -731,7 +731,7 @@ def lerpHprHPR(self, h, p, r, time, other=None,
             if (other != None):
                 # lerp wrt other
                 startHpr = self.getHpr(other)
-                functor = HprLerpFunctor.HprLerpFunctor(
+                functor = HprLerpFunctor(
                     self,
                     startHpr[0], startHpr[1], startHpr[2],
                     h, p, r, other)
@@ -739,7 +739,7 @@ def lerpHprHPR(self, h, p, r, time, other=None,
                     functor.takeShortest()
             else:
                 startHpr = self.getHpr()
-                functor = HprLerpFunctor.HprLerpFunctor(
+                functor = HprLerpFunctor(
                     self,
                     startHpr[0], startHpr[1], startHpr[2],
                     h, p, r)
@@ -769,12 +769,12 @@ def lerpHprVBase3(self, hpr, time, other=None,
             # it's a vbase3 hpr
             if (other != None):
                 # lerp wrt other
-                functor = HprLerpFunctor.HprLerpFunctor(
+                functor = HprLerpFunctor(
                     self, (self.getHpr(other)), hpr, other)
                 if shortest:
                     functor.takeShortest()
             else:
-                functor = HprLerpFunctor.HprLerpFunctor(
+                functor = HprLerpFunctor(
                     self, (self.getHpr()), hpr)
                 if shortest:
                     functor.takeShortest()
@@ -820,12 +820,12 @@ def lerpPosXYZ(self, x, y, z, time, other=None,
             if (other != None):
                 # lerp wrt other
                 startPos = self.getPos(other)
-                functor = PosLerpFunctor.PosLerpFunctor(self,
+                functor = PosLerpFunctor(self,
                                          startPos[0], startPos[1], startPos[2],
                                          x, y, z, other)
             else:
                 startPos = self.getPos()
-                functor = PosLerpFunctor.PosLerpFunctor(self, startPos[0],
+                functor = PosLerpFunctor(self, startPos[0],
                                          startPos[1], startPos[2], x, y, z)
             return functor
         #determine whether to use auto, spawned, or blocking lerp
@@ -849,10 +849,10 @@ def lerpPosPoint3(self, pos, time, other=None,
             from pandac.PandaModules import PosLerpFunctor
             if (other != None):
                 #lerp wrt other
-                functor = PosLerpFunctor.PosLerpFunctor(
+                functor = PosLerpFunctor(
                     self, (self.getPos(other)), pos, other)
             else:
-                functor = PosLerpFunctor.PosLerpFunctor(
+                functor = PosLerpFunctor(
                     self, (self.getPos()), pos)
             return functor
         #determine whether to use auto, spawned, or blocking lerp
@@ -897,7 +897,7 @@ def lerpPosHprPoint3VBase3(self, pos, hpr, time, other=None,
                 # lerp wrt other
                 startPos = self.getPos(other)
                 startHpr = self.getHpr(other)
-                functor = PosHprLerpFunctor.PosHprLerpFunctor(
+                functor = PosHprLerpFunctor(
                     self, startPos, pos,
                     startHpr, hpr, other)
                 if shortest:
@@ -905,7 +905,7 @@ def lerpPosHprPoint3VBase3(self, pos, hpr, time, other=None,
             else:
                 startPos = self.getPos()
                 startHpr = self.getHpr()
-                functor = PosHprLerpFunctor.PosHprLerpFunctor(
+                functor = PosHprLerpFunctor(
                     self, startPos, pos,
                     startHpr, hpr)
                 if shortest:
@@ -934,7 +934,7 @@ def lerpPosHprXYZHPR(self, x, y, z, h, p, r, time, other=None,
                 # lerp wrt other
                 startPos = self.getPos(other)
                 startHpr = self.getHpr(other)
-                functor = PosHprLerpFunctor.PosHprLerpFunctor(self,
+                functor = PosHprLerpFunctor(self,
                                             startPos[0], startPos[1],
                                             startPos[2], x, y, z,
                                             startHpr[0], startHpr[1],
@@ -945,7 +945,7 @@ def lerpPosHprXYZHPR(self, x, y, z, h, p, r, time, other=None,
             else:
                 startPos = self.getPos()
                 startHpr = self.getHpr()
-                functor = PosHprLerpFunctor.PosHprLerpFunctor(self,
+                functor = PosHprLerpFunctor(self,
                                             startPos[0], startPos[1],
                                             startPos[2], x, y, z,
                                             startHpr[0], startHpr[1],
@@ -980,7 +980,7 @@ def lerpPosHprScale(self, pos, hpr, scale, time, other=None,
                 startPos = self.getPos(other)
                 startHpr = self.getHpr(other)
                 startScale = self.getScale(other)
-                functor = PosHprScaleLerpFunctor.PosHprScaleLerpFunctor(self,
+                functor = PosHprScaleLerpFunctor(self,
                                                  startPos, pos,
                                                  startHpr, hpr,
                                                  startScale, scale, other)
@@ -990,7 +990,7 @@ def lerpPosHprScale(self, pos, hpr, scale, time, other=None,
                 startPos = self.getPos()
                 startHpr = self.getHpr()
                 startScale = self.getScale()
-                functor = PosHprScaleLerpFunctor.PosHprScaleLerpFunctor(self,
+                functor = PosHprScaleLerpFunctor(self,
                                                  startPos, pos,
                                                  startHpr, hpr,
                                                  startScale, scale)
@@ -1036,11 +1036,11 @@ def lerpScaleVBase3(self, scale, time, other=None,
             from pandac.PandaModules import ScaleLerpFunctor
             if (other != None):
                 # lerp wrt other
-                functor = ScaleLerpFunctor.ScaleLerpFunctor(self,
+                functor = ScaleLerpFunctor(self,
                                            (self.getScale(other)),
                                            scale, other)
             else:
-                functor = ScaleLerpFunctor.ScaleLerpFunctor(self,
+                functor = ScaleLerpFunctor(self,
                                            (self.getScale()), scale)
 
             return functor
@@ -1065,12 +1065,12 @@ def lerpScaleXYZ(self, sx, sy, sz, time, other=None,
             if (other != None):
                 # lerp wrt other
                 startScale = self.getScale(other)
-                functor = ScaleLerpFunctor.ScaleLerpFunctor(self,
+                functor = ScaleLerpFunctor(self,
                                            startScale[0], startScale[1],
                                            startScale[2], sx, sy, sz, other)
             else:
                 startScale = self.getScale()
-                functor = ScaleLerpFunctor.ScaleLerpFunctor(self,
+                functor = ScaleLerpFunctor(self,
                                            startScale[0], startScale[1],
                                            startScale[2], sx, sy, sz)
             return functor
