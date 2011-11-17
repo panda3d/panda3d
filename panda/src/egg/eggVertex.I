@@ -196,6 +196,17 @@ has_uv() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::has_aux
+//       Access: Published
+//  Description: Returns true if the vertex has any auxiliary
+//               data, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool EggVertex::
+has_aux() const {
+  return (_aux_map.size() != 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::get_uv
 //       Access: Published
 //  Description: Returns the unnamed UV coordinate pair on the
@@ -240,6 +251,16 @@ clear_uv() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::clear_aux
+//       Access: Published
+//  Description: Removes all auxiliary data from the vertex.
+////////////////////////////////////////////////////////////////////
+INLINE void EggVertex::
+clear_aux() {
+  _aux_map.clear();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::uv_begin
 //       Access: Public
 //  Description: Returns an iterator that allows walking through the
@@ -251,6 +272,20 @@ clear_uv() {
 INLINE EggVertex::const_uv_iterator EggVertex::
 uv_begin() const {
   return _uv_map.begin();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::aux_begin
+//       Access: Public
+//  Description: Returns an iterator that allows walking through the
+//               complete set of auxiliary data on the vertex.
+//
+//               This interface is not safe to use outside of
+//               PANDAEGG.DLL.
+////////////////////////////////////////////////////////////////////
+INLINE EggVertex::const_aux_iterator EggVertex::
+aux_begin() const {
+  return _aux_map.begin();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -268,6 +303,20 @@ uv_end() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::aux_end
+//       Access: Public
+//  Description: Returns an iterator that allows walking through the
+//               complete set of auxiliary data on the vertex.
+//
+//               This interface is not safe to use outside of
+//               PANDAEGG.DLL.
+////////////////////////////////////////////////////////////////////
+INLINE EggVertex::const_aux_iterator EggVertex::
+aux_end() const {
+  return _aux_map.end();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::uv_size
 //       Access: Public
 //  Description: Returns the number of named UV's on the vertex.
@@ -275,6 +324,16 @@ uv_end() const {
 INLINE EggVertex::uv_size_type EggVertex::
 uv_size() const {
   return _uv_map.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::aux_size
+//       Access: Public
+//  Description: Returns the number of auxiliary datas on the vertex.
+////////////////////////////////////////////////////////////////////
+INLINE EggVertex::aux_size_type EggVertex::
+aux_size() const {
+  return _aux_map.size();
 }
 
 ////////////////////////////////////////////////////////////////////

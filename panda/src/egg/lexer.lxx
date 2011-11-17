@@ -351,6 +351,10 @@ NUMERIC         ([+-]?(([0-9]+[.]?)|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   accept();
   return ANIMPRELOAD;
 }
+"<AUX>" {
+  accept();
+  return AUX;
+}
 "<BEZIERCURVE>" {
   accept();
   return BEZIERCURVE;

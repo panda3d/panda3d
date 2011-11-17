@@ -20,6 +20,7 @@
 #include "eggVertex.cxx"
 #include "eggVertexPool.cxx"
 #include "eggVertexUV.cxx"
+#include "eggVertexAux.cxx"
 #include "eggXfmAnimData.cxx"
 #include "eggXfmSAnim.cxx"
 #include "pt_EggMaterial.cxx"

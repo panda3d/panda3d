@@ -720,6 +720,18 @@ appear before they are referenced.
     <UV> [name] { u v [w] <Tangent> { x y z } <Binormal> { x y z } }
 
 
+    <AUX> name { x y z w }
+
+    This specifies some named per-vertex auxiliary data which is
+    imported from the egg file without further interpretation by
+    Panda.  The auxiliary data is copied to the vertex data under a
+    column with the specified name.  Presumably the data will have
+    meaning to custom code or a custom shader.  Like named UV's, there
+    may be multiple Aux entries for a given vertex, each with a
+    different name.
+    
+
+
 <DynamicVertexPool> name { vertices }
 
   A dynamic vertex pool is similar to a vertex pool in most respects,

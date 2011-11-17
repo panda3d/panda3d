@@ -52,6 +52,7 @@
 #include "eggVertex.h"
 #include "eggVertexPool.h"
 #include "eggVertexUV.h"
+#include "eggVertexAux.h"
 #include "eggXfmAnimData.h"
 #include "eggXfmSAnim.h"
 
@@ -207,6 +208,7 @@ init_libegg() {
   EggVertex::init_type();
   EggVertexPool::init_type();
   EggVertexUV::init_type();
+  EggVertexAux::init_type();
   EggXfmAnimData::init_type();
   EggXfmSAnim::init_type();
 }

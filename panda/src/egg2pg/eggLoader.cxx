@@ -2243,6 +2243,15 @@ make_vertex_data(const EggRenderState *render_state,
       (iname, 3, Geom::NT_stdfloat, Geom::C_vector);
   }
 
+  vector_string aux_names;
+  vertex_pool->get_aux_names(aux_names);
+  for (ni = aux_names.begin(); ni != aux_names.end(); ++ni) {
+    string name = (*ni);
+    PT(InternalName) iname = InternalName::make(name);
+    array_format->add_column
+      (iname, 4, Geom::NT_stdfloat, Geom::C_other);
+  }
+
   PT(GeomVertexFormat) temp_format = new GeomVertexFormat(array_format);
 
   PT(TransformBlendTable) blend_table;
@@ -2452,6 +2461,18 @@ make_vertex_data(const EggRenderState *render_state,
           gvw.add_data3d(binormal);
         }          
       }
+    }
+
+    EggVertex::const_aux_iterator auxi;
+    for (auxi = vertex->aux_begin(); auxi != vertex->aux_end(); ++auxi) {
+      EggVertexAux *egg_aux = (*auxi);
+      LVecBase4d aux = egg_aux->get_aux();
+
+      string name = egg_aux->get_name();
+      PT(InternalName) iname = InternalName::make(name);
+      gvw.set_column(iname);
+
+      gvw.set_data4d(aux);
     }
 
     if (is_dynamic) {

@@ -328,6 +328,25 @@ has_uvs() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggVertexPool::has_aux
+//       Access: Public
+//  Description: Returns true if any vertex in the pool has
+//               auxiliary data defined, false if none of them do.
+////////////////////////////////////////////////////////////////////
+bool EggVertexPool::
+has_aux() const {
+  IndexVertices::const_iterator ivi;
+  for (ivi = _index_vertices.begin(); ivi != _index_vertices.end(); ++ivi) {
+    EggVertex *vertex = (*ivi).second;
+    if (vertex->has_aux()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggVertexPool::get_uv_names
 //       Access: Public
 //  Description: Returns the list of UV names that are defined by any
@@ -367,6 +386,31 @@ get_uv_names(vector_string &uv_names, vector_string &uvw_names,
   }
   for (si = tbn_names_set.begin(); si != tbn_names_set.end(); ++si) {
     tbn_names.push_back(*si);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertexPool::get_aux_names
+//       Access: Public
+//  Description: Returns the list of auxiliary data names that are
+//               defined by any vertices in the pool.
+////////////////////////////////////////////////////////////////////
+void EggVertexPool::
+get_aux_names(vector_string &aux_names) const {
+  pset<string> aux_names_set;
+  IndexVertices::const_iterator ivi;
+  for (ivi = _index_vertices.begin(); ivi != _index_vertices.end(); ++ivi) {
+    EggVertex *vertex = (*ivi).second;
+    EggVertex::const_aux_iterator uvi;
+    for (uvi = vertex->aux_begin(); uvi != vertex->aux_end(); ++uvi) {
+      EggVertexAux *aux_obj = (*uvi);
+      aux_names_set.insert(aux_obj->get_name());
+    }
+  }
+
+  pset<string>::const_iterator si;
+  for (si = aux_names_set.begin(); si != aux_names_set.end(); ++si) {
+    aux_names.push_back(*si);
   }
 }
 

@@ -14,6 +14,7 @@
 #include "eggVertex.h"
 #include "eggVertexPool.h"
 #include "eggVertexUV.h"
+#include "eggVertexAux.h"
 #include "eggPolygon.h"
 #include "eggCompositePrimitive.h"
 #include "eggTriangleFan.h"
@@ -172,7 +173,7 @@ egg_cleanup_parser() {
 %token SANIM SCALAR SCALE SEQUENCE SHADING SWITCH SWITCHCONDITION
 %token TABLE TABLE_V TAG TANGENT TEXLIST TEXTURE TLENGTHS TRANSFORM TRANSLATE
 %token TREF TRIANGLEFAN TRIANGLESTRIP 
-%token TRIM TXT UKNOTS UV VKNOTS VERTEX VERTEXANIM
+%token TRIM TXT UKNOTS UV AUX VKNOTS VERTEX VERTEXANIM
 %token VERTEXPOOL VERTEXREF
 %token XFMANIM XFMSANIM
 
@@ -1000,6 +1001,21 @@ vertex_body:
 {
   egg_stack.pop_back();
 }
+        | vertex_body AUX required_name '{'
+{
+  EggVertex *vertex = DCAST(EggVertex, egg_stack.back());
+  EggVertexAux *aux = new EggVertexAux($3, LVecBase4d::zero());
+  egg_stack.push_back(aux);
+  if (vertex->has_aux($3)) {
+    eggyywarning("Ignoring repeated Aux name " + $3);
+  } else {
+    vertex->set_aux_obj(aux);
+  }
+}
+         vertex_aux_body '}'
+{
+  egg_stack.pop_back();
+}
         | vertex_body NORMAL '{' vertex_normal_body '}'
         | vertex_body RGBA '{' vertex_color_body '}'
         | vertex_body DXYZ string '{' real real real '}'
@@ -1084,6 +1100,20 @@ vertex_uv_body:
   if (!inserted) {
     eggyywarning("Ignoring repeated morph name " + $4);
   }
+}
+        ;
+
+/*
+ * vertex_aux_body
+ *
+ * enter: TOS is EggVertex.
+ * exit: vertex Aux value has been filled.
+ *
+ */
+vertex_aux_body:
+        | real real real real
+{
+  DCAST(EggVertexAux, egg_stack.back())->set_aux(LVecBase4d($1, $2, $3, $4));
 }
         ;
 

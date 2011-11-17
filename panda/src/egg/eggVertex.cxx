@@ -59,7 +59,8 @@ EggVertex(const EggVertex &copy)
     _external_index(copy._external_index),
     _pos(copy._pos),
     _num_dimensions(copy._num_dimensions),
-    _uv_map(copy._uv_map)
+    _uv_map(copy._uv_map),
+    _aux_map(copy._aux_map)
 {
   _pool = NULL;
   _forward_reference = false;
@@ -84,6 +85,7 @@ operator = (const EggVertex &copy) {
   _pos = copy._pos;
   _num_dimensions = copy._num_dimensions;
   _uv_map = copy._uv_map;
+  _aux_map = copy._aux_map;
 
   test_pref_integrity();
   test_gref_integrity();
@@ -144,10 +146,26 @@ has_uvw(const string &name) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::has_aux
+//       Access: Published
+//  Description: Returns true if the vertex has the named
+//               auxiliary data quadruple.
+////////////////////////////////////////////////////////////////////
+bool EggVertex::
+has_aux(const string &name) const {
+  AuxMap::const_iterator xi = _aux_map.find(name);
+  if (xi != _aux_map.end()) {
+    EggVertexAux *aux_obj = (*xi).second;
+    return true;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::get_uv
 //       Access: Published
 //  Description: Returns the named UV coordinate pair on the vertex.
-//               vertex.  It is an error to call this if has_uv(name)
+//               It is an error to call this if has_uv(name)
 //               returned false.
 ////////////////////////////////////////////////////////////////////
 LTexCoordd EggVertex::
@@ -161,7 +179,7 @@ get_uv(const string &name) const {
 //     Function: EggVertex::get_uvw
 //       Access: Published
 //  Description: Returns the named UV coordinate triple on the vertex.
-//               vertex.  It is an error to call this if has_uvw(name)
+//               It is an error to call this if has_uvw(name)
 //               returned false.
 ////////////////////////////////////////////////////////////////////
 const LTexCoord3d &EggVertex::
@@ -169,6 +187,20 @@ get_uvw(const string &name) const {
   UVMap::const_iterator ui = _uv_map.find(EggVertexUV::filter_name(name));
   nassertr(ui != _uv_map.end(), LTexCoord3d::zero());
   return (*ui).second->get_uvw();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::get_aux
+//       Access: Published
+//  Description: Returns the named auxiliary data quadruple on the
+//               vertex. It is an error to call this if has_aux(name)
+//               returned false.
+////////////////////////////////////////////////////////////////////
+const LVecBase4d &EggVertex::
+get_aux(const string &name) const {
+  AuxMap::const_iterator xi = _aux_map.find(name);
+  nassertr(xi != _aux_map.end(), LVecBase4d::zero());
+  return (*xi).second->get_aux();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -217,6 +249,27 @@ set_uvw(const string &name, const LTexCoord3d &uvw) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::set_aux
+//       Access: Published
+//  Description: Sets the indicated auxiliary data quadruple on the
+//               vertex. This replaces any auxiliary data with the
+//               same name already on the vertex.
+////////////////////////////////////////////////////////////////////
+void EggVertex::
+set_aux(const string &name, const LVecBase4d &aux) {
+  PT(EggVertexAux) &aux_obj = _aux_map[name];
+
+  if (aux_obj.is_null()) {
+    aux_obj = new EggVertexAux(name, aux);
+  } else {
+    aux_obj = new EggVertexAux(*aux_obj);
+    aux_obj->set_aux(aux);
+  }
+
+  nassertv(get_aux(name) == aux);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::get_uv_obj
 //       Access: Published
 //  Description: Returns the named EggVertexUV object, which defines
@@ -231,6 +284,24 @@ get_uv_obj(const string &name) const {
   UVMap::const_iterator ui = _uv_map.find(EggVertexUV::filter_name(name));
   if (ui != _uv_map.end()) {
     return (*ui).second;
+  }
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::get_aux_obj
+//       Access: Published
+//  Description: Returns the named EggVertexAux object, which defines
+//               the auxiliary data for this name. This object might
+//               be shared between multiple vertices.  You should not
+//               attempt to modify this object; instead, call
+//               modify_aux_object to return a modifiable pointer.
+////////////////////////////////////////////////////////////////////
+const EggVertexAux *EggVertex::
+get_aux_obj(const string &name) const {
+  AuxMap::const_iterator xi = _aux_map.find(name);
+  if (xi != _aux_map.end()) {
+    return (*xi).second;
   }
   return NULL;
 }
@@ -258,6 +329,28 @@ modify_uv_obj(const string &name) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::modify_aux_obj
+//       Access: Published
+//  Description: Returns a modifiable pointer to the named EggVertexAux
+//               object, which defines the auxiliary data for
+//               this name.  Returns NULL if there is no such
+//               named UV object.
+////////////////////////////////////////////////////////////////////
+EggVertexAux *EggVertex::
+modify_aux_obj(const string &name) {
+  AuxMap::iterator xi = _aux_map.find(name);
+  if (xi != _aux_map.end()) {
+    if ((*xi).second->get_ref_count() != 1) {
+      // Copy on write.
+      (*xi).second = new EggVertexAux(*(*xi).second);
+    }
+    return (*xi).second;
+  }
+
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::set_uv_obj
 //       Access: Published
 //  Description: Sets the indicated EggVertexUV on the vertex.
@@ -270,6 +363,18 @@ set_uv_obj(EggVertexUV *uv) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::set_aux_obj
+//       Access: Published
+//  Description: Sets the indicated EggVertexAux on the vertex.
+//               This replaces any auxiliary data with the same
+//               name already on the vertex.
+////////////////////////////////////////////////////////////////////
+void EggVertex::
+set_aux_obj(EggVertexAux *aux) {
+  _aux_map[aux->get_name()] = aux;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::clear_uv
 //       Access: Published
 //  Description: Removes the named UV coordinate pair from the vertex,
@@ -278,6 +383,16 @@ set_uv_obj(EggVertexUV *uv) {
 void EggVertex::
 clear_uv(const string &name) {
   _uv_map.erase(EggVertexUV::filter_name(name));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::clear_aux
+//       Access: Published
+//  Description: Removes the named auxiliary data from the vertex.
+///////////////////////////////////////////////////////////////////
+void EggVertex::
+clear_aux(const string &name) {
+  _aux_map.erase(name);
 }
 
 
@@ -333,6 +448,11 @@ write(ostream &out, int indent_level) const {
   UVMap::const_iterator ui;
   for (ui = _uv_map.begin(); ui != _uv_map.end(); ++ui) {
     (*ui).second->write(out, indent_level + 2);
+  }
+
+  AuxMap::const_iterator xi;
+  for (xi = _aux_map.begin(); xi != _aux_map.end(); ++xi) {
+    (*xi).second->write(out, indent_level + 2);
   }
 
   EggAttributes::write(out, indent_level+2);
@@ -424,6 +544,33 @@ compare_to(const EggVertex &other) const {
     return -1;
   }
   if (ai != _uv_map.end()) {
+    return 1;
+  }
+
+  // Merge-compare the aux maps.
+  AuxMap::const_iterator ci, di;
+  ci = _aux_map.begin();
+  di = other._aux_map.begin();
+  while (ci != _aux_map.end() && di != other._aux_map.end()) {
+    if ((*ci).first < (*di).first) {
+      return -1;
+
+    } else if ((*di).first < (*ci).first) {
+      return 1;
+
+    } else {
+      int compare = (*ci).second->compare_to(*(*di).second);
+      if (compare != 0) {
+        return compare;
+      }
+    }
+    ++ci;
+    ++di;
+  }
+  if (di != other._aux_map.end()) {
+    return -1;
+  }
+  if (ci != _aux_map.end()) {
     return 1;
   }
 

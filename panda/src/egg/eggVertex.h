@@ -21,6 +21,7 @@
 #include "eggAttributes.h"
 #include "eggMorphList.h"
 #include "eggVertexUV.h"
+#include "eggVertexAux.h"
 
 #include "referenceCount.h"
 #include "luse.h"
@@ -42,10 +43,16 @@ public:
   typedef pset<EggGroup *> GroupRef;
   typedef pmultiset<EggPrimitive *> PrimitiveRef;
   typedef pmap< string, PT(EggVertexUV) > UVMap;
+  typedef pmap< string, PT(EggVertexAux) > AuxMap;
 
   typedef second_of_pair_iterator<UVMap::const_iterator> uv_iterator;
   typedef uv_iterator const_uv_iterator;
   typedef UVMap::size_type uv_size_type;
+
+  typedef second_of_pair_iterator<AuxMap::const_iterator> aux_iterator;
+  typedef aux_iterator const_aux_iterator;
+  typedef AuxMap::size_type aux_size_type;
+
 
 PUBLISHED:
   EggVertex();
@@ -92,10 +99,24 @@ PUBLISHED:
   void set_uv_obj(EggVertexUV *vertex_uv);
   void clear_uv(const string &name);
 
+  INLINE bool has_aux() const;
+  INLINE void clear_aux();
+  bool has_aux(const string &name) const;
+  const LVecBase4d &get_aux(const string &name) const;
+  void set_aux(const string &name, const LVecBase4d &aux);
+  const EggVertexAux *get_aux_obj(const string &name) const;
+  EggVertexAux *modify_aux_obj(const string &name);
+  void set_aux_obj(EggVertexAux *vertex_aux);
+  void clear_aux(const string &name);
+
 public:
   INLINE const_uv_iterator uv_begin() const;
   INLINE const_uv_iterator uv_end() const;
   INLINE uv_size_type uv_size() const;
+
+  INLINE const_aux_iterator aux_begin() const;
+  INLINE const_aux_iterator aux_end() const;
+  INLINE aux_size_type aux_size() const;
 
 PUBLISHED:
   INLINE int get_index() const;
@@ -152,6 +173,7 @@ private:
   PrimitiveRef _pref;
 
   UVMap _uv_map;
+  AuxMap _aux_map;
 
 public:
   static TypeHandle get_class_type() {
