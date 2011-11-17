@@ -188,43 +188,110 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
             GLCAT.error() << "Unrecognized uniform name '" << param_name << "'!\n";
             continue;
           }
-          switch (param_type) {
+
+          if (param_size==1) {
+            switch (param_type) {
 #ifndef OPENGLES
-            case GL_SAMPLER_1D_SHADOW:
-            case GL_SAMPLER_1D: {
-              Shader::ShaderTexSpec bind;
-              bind._id = arg_id;
-              bind._name = inputname;
-              bind._desired_type = Texture::TT_1d_texture;
-              bind._stage = texunitno++;
-              s->_tex_spec.push_back(bind);
-              continue; }
-            case GL_SAMPLER_2D_SHADOW:
+              case GL_SAMPLER_1D_SHADOW:
+              case GL_SAMPLER_1D: {
+                Shader::ShaderTexSpec bind;
+                bind._id = arg_id;
+                bind._name = inputname;
+                bind._desired_type = Texture::TT_1d_texture;
+                bind._stage = texunitno++;
+                s->_tex_spec.push_back(bind);
+                continue; }
+              case GL_SAMPLER_2D_SHADOW:
 #endif
-            case GL_SAMPLER_2D: {
-              Shader::ShaderTexSpec bind;
-              bind._id = arg_id;
-              bind._name = inputname;
-              bind._desired_type = Texture::TT_2d_texture;
-              bind._stage = texunitno++;
-              s->_tex_spec.push_back(bind);
-              continue; }
-            case GL_SAMPLER_3D: {
-              Shader::ShaderTexSpec bind;
-              bind._id = arg_id;
-              bind._name = inputname;
-              bind._desired_type = Texture::TT_3d_texture;
-              bind._stage = texunitno++;
-              s->_tex_spec.push_back(bind);
-              continue; }
-            case GL_SAMPLER_CUBE: {
-              Shader::ShaderTexSpec bind;
-              bind._id = arg_id;
-              bind._name = inputname;
-              bind._desired_type = Texture::TT_cube_map;
-              bind._stage = texunitno++;
-              s->_tex_spec.push_back(bind);
-              continue; }
+              case GL_SAMPLER_2D: {
+                Shader::ShaderTexSpec bind;
+                bind._id = arg_id;
+                bind._name = inputname;
+                bind._desired_type = Texture::TT_2d_texture;
+                bind._stage = texunitno++;
+                s->_tex_spec.push_back(bind);
+                continue; }
+              case GL_SAMPLER_3D: {
+                Shader::ShaderTexSpec bind;
+                bind._id = arg_id;
+                bind._name = inputname;
+                bind._desired_type = Texture::TT_3d_texture;
+                bind._stage = texunitno++;
+                s->_tex_spec.push_back(bind);
+                continue; }
+              case GL_SAMPLER_CUBE: {
+                Shader::ShaderTexSpec bind;
+                bind._id = arg_id;
+                bind._name = inputname;
+                bind._desired_type = Texture::TT_cube_map;
+                bind._stage = texunitno++;
+                s->_tex_spec.push_back(bind);
+                continue; }
+              case GL_FLOAT_MAT2:
+              case GL_FLOAT_MAT3:
+#ifndef OPENGLES
+              case GL_FLOAT_MAT2x3:
+              case GL_FLOAT_MAT2x4:
+              case GL_FLOAT_MAT3x2:
+              case GL_FLOAT_MAT3x4:
+              case GL_FLOAT_MAT4x2:
+              case GL_FLOAT_MAT4x3:
+#endif
+                GLCAT.warning() << "GLSL shader requested an unrecognized matrix type\n";
+                continue;
+              case GL_FLOAT_MAT4: {
+                Shader::ShaderMatSpec bind;
+                bind._id = arg_id;
+                bind._piece = Shader::SMP_whole;
+                bind._func = Shader::SMF_first;
+                bind._part[0] = Shader::SMO_mat_constant_x;
+                bind._arg[0] = inputname;
+                bind._part[1] = Shader::SMO_identity;
+                bind._arg[1] = NULL;
+                bind._dep[0]  = Shader::SSD_general | Shader::SSD_shaderinputs;
+                bind._dep[1]  = Shader::SSD_general | Shader::SSD_NONE;
+                s->_mat_spec.push_back(bind);
+                continue; }
+              case GL_BOOL:
+              case GL_BOOL_VEC2:
+              case GL_BOOL_VEC3:
+              case GL_BOOL_VEC4:
+              case GL_FLOAT:
+              case GL_FLOAT_VEC2:
+              case GL_FLOAT_VEC3:
+              case GL_FLOAT_VEC4: {
+                Shader::ShaderMatSpec bind;
+                bind._id = arg_id;
+                switch (param_type) {
+                case GL_BOOL:
+                case GL_FLOAT:      bind._piece = Shader::SMP_row3x1; break;
+                case GL_BOOL_VEC2:
+                case GL_FLOAT_VEC2: bind._piece = Shader::SMP_row3x2; break;
+                case GL_BOOL_VEC3:
+                case GL_FLOAT_VEC3: bind._piece = Shader::SMP_row3x3; break;
+                case GL_BOOL_VEC4:
+                case GL_FLOAT_VEC4: bind._piece = Shader::SMP_row3  ; break;
+                }
+                bind._func = Shader::SMF_first;
+                bind._part[0] = Shader::SMO_vec_constant_x;
+                bind._arg[0] = inputname;
+                bind._part[1] = Shader::SMO_identity;
+                bind._arg[1] = NULL;
+                bind._dep[0]  = Shader::SSD_general | Shader::SSD_shaderinputs;
+                bind._dep[1]  = Shader::SSD_general | Shader::SSD_NONE;
+                s->_mat_spec.push_back(bind);
+                continue; }
+              case GL_INT:
+              case GL_INT_VEC2:
+              case GL_INT_VEC3:
+              case GL_INT_VEC4:
+                GLCAT.warning() << "Panda does not support passing integers to shaders (yet)!\n";
+                continue;
+              default:
+                GLCAT.warning() << "Ignoring unrecognized GLSL parameter type!\n";
+            }
+          } else {
+            switch (param_type) {
             case GL_FLOAT_MAT2:
             case GL_FLOAT_MAT3:
 #ifndef OPENGLES
@@ -235,18 +302,10 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
             case GL_FLOAT_MAT4x2:
             case GL_FLOAT_MAT4x3:
 #endif
-              GLCAT.warning() << "GLSL shader requested an unrecognized matrix type\n";
+              GLCAT.warning() << "GLSL shader requested an unrecognized matrix array type\n";
               continue;
             case GL_FLOAT_MAT4: {
-              Shader::ShaderMatSpec bind;
-              bind._id = arg_id;
-              bind._piece = Shader::SMP_whole;
-              bind._func = Shader::SMF_first;
-              bind._part[0] = Shader::SMO_mat_constant_x;
-              bind._arg[0] = inputname;
-              bind._part[1] = Shader::SMO_identity;
-              bind._arg[1] = NULL;
-              s->_mat_spec.push_back(bind);
+              GLCAT.warning() << "GLSL shader does not yet support passing matrix arrays\n";
               continue; }
             case GL_BOOL:
             case GL_BOOL_VEC2:
@@ -256,33 +315,33 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
             case GL_FLOAT_VEC2:
             case GL_FLOAT_VEC3:
             case GL_FLOAT_VEC4: {
-              Shader::ShaderMatSpec bind;
+              Shader::ShaderPtrSpec bind;
               bind._id = arg_id;
               switch (param_type) {
-              case GL_BOOL:
-              case GL_FLOAT:      bind._piece = Shader::SMP_row3x1; break;
-              case GL_BOOL_VEC2:
-              case GL_FLOAT_VEC2: bind._piece = Shader::SMP_row3x2; break;
-              case GL_BOOL_VEC3:
-              case GL_FLOAT_VEC3: bind._piece = Shader::SMP_row3x3; break;
-              case GL_BOOL_VEC4:
-              case GL_FLOAT_VEC4: bind._piece = Shader::SMP_row3  ; break;
+                case GL_BOOL:
+                case GL_FLOAT:      bind._dim[1] = 1; break;
+                case GL_BOOL_VEC2:
+                case GL_FLOAT_VEC2: bind._dim[1] = 2; break;
+                case GL_BOOL_VEC3:
+                case GL_FLOAT_VEC3: bind._dim[1] = 3; break;
+                case GL_BOOL_VEC4:
+                case GL_FLOAT_VEC4: bind._dim[1] = 4; break;
               }
-              bind._func = Shader::SMF_first;
-              bind._part[0] = Shader::SMO_vec_constant_x;
-              bind._arg[0] = inputname;
-              bind._part[1] = Shader::SMO_identity;
-              bind._arg[1] = NULL;
-              s->_mat_spec.push_back(bind);
+              bind._arg = inputname;
+              bind._dim[0] = param_size;
+              bind._dep[0] = Shader::SSD_general | Shader::SSD_shaderinputs;
+              bind._dep[1] = Shader::SSD_general | Shader::SSD_NONE;
+              s->_ptr_spec.push_back(bind);
               continue; }
             case GL_INT:
             case GL_INT_VEC2:
             case GL_INT_VEC3:
             case GL_INT_VEC4:
-              GLCAT.warning() << "Panda does not support passing integers to shaders (yet)!\n";
+              GLCAT.warning() << "Panda does not support passing integer arrays to shaders (yet)!\n";
               continue;
             default:
-              GLCAT.warning() << "Ignoring unrecognized GLSL parameter type!\n";
+              GLCAT.warning() << "Ignoring unrecognized GLSL parameter array type!\n";
+            }
           }
         }
       }
@@ -511,7 +570,7 @@ unbind(GSG *gsg) {
 //               transforms.
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
-                        issue_parameters(GSG *gsg, int altered) {
+issue_parameters(GSG *gsg, int altered) {
   _last_gsg = gsg;
 
   PStatTimer timer(gsg->_draw_set_state_shader_parameters_pcollector);
@@ -522,11 +581,22 @@ void CLP(ShaderContext)::
 
   // Iterate through _ptr parameters
   for (int i=0; i<(int)_shader->_ptr_spec.size(); i++) {
-    if(altered & (_shader->_ptr_spec[i]._dep[0] | _shader->_ptr_spec[i]._dep[1])){
-      if (_shader->get_language() == Shader::SL_GLSL){ 
-        GLCAT.error() << _shader->_ptr_spec[i]._id._name << ": parameter type supported only in Cg\n";
-        release_resources(gsg);
-        return;
+    if(altered & (_shader->_ptr_spec[i]._dep[0] | _shader->_ptr_spec[i]._dep[1])) {
+      if (_shader->get_language() == Shader::SL_GLSL) {
+        const Shader::ShaderPtrSpec& _ptr = _shader->_ptr_spec[i];
+        Shader::ShaderPtrData* _ptr_data =
+          const_cast< Shader::ShaderPtrData*>(gsg->fetch_ptr_parameter(_ptr));
+        if (_ptr_data == NULL) { //the input is not contained in ShaderPtrData
+          release_resources(gsg);
+          return;
+        }
+        GLint p = _shader->_glsl_parameter_map[_shader->_ptr_spec[i]._id._seqno];
+        switch(_ptr._dim[1]) {
+          case 1: gsg->_glUniform4fv(p, _ptr._dim[0], (float*)_ptr_data->_ptr); continue;
+          case 2: gsg->_glUniform4fv(p, _ptr._dim[0], (float*)_ptr_data->_ptr); continue;
+          case 3: gsg->_glUniform4fv(p, _ptr._dim[0], (float*)_ptr_data->_ptr); continue;
+          case 4: gsg->_glUniform4fv(p, _ptr._dim[0], (float*)_ptr_data->_ptr); continue;
+        }
       }
 #if defined(HAVE_CG) && !defined(OPENGLES)
       else if (_shader->get_language() == Shader::SL_Cg) {
