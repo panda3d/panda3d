@@ -827,6 +827,22 @@ do_recycle_all_frames() {
 ////////////////////////////////////////////////////////////////////
 bool FfmpegVideoCursor::
 fetch_packet(int default_frame) {
+  if (ffmpeg_global_lock) {
+    ReMutexHolder av_holder(_av_lock);
+    return do_fetch_packet(default_frame);
+  } else {
+    return do_fetch_packet(default_frame);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::do_fetch_packet
+//       Access: Private
+//  Description: As above, with the ffmpeg global lock held (if
+//               configured on).
+////////////////////////////////////////////////////////////////////
+bool FfmpegVideoCursor::
+do_fetch_packet(int default_frame) {
   if (_packet0->data) {
     av_free_packet(_packet0);
   }
@@ -906,12 +922,7 @@ fetch_frame(int frame) {
       PStatTimer timer(seek_pcollector);
 
       // Decode and discard the previous packet.
-#if LIBAVCODEC_VERSION_INT < 3414272
-      avcodec_decode_video(_video_ctx, _frame,
-                           &finished, _packet1->data, _packet1->size);
-#else
-      avcodec_decode_video2(_video_ctx, _frame, &finished, _packet1);
-#endif
+      decode_frame(finished, _packet1);
       flip_packets();
       _begin_frame = _packet_frame;
       if (fetch_packet(frame)) {
@@ -925,23 +936,13 @@ fetch_frame(int frame) {
     // At this point, _packet0 contains the *next* packet to be
     // decoded next frame, and _packet1 contains the packet to decode
     // for this frame.
-#if LIBAVCODEC_VERSION_INT < 3414272
-    avcodec_decode_video(_video_ctx, _frame,
-                         &finished, _packet1->data, _packet1->size);
-#else
-    avcodec_decode_video2(_video_ctx, _frame, &finished, _packet1);
-#endif
+    decode_frame(finished, _packet1);
     
   } else {
     // Just get the next frame.
     finished = 0;
     while (!finished && _packet0->data) {
-#if LIBAVCODEC_VERSION_INT < 3414272
-      avcodec_decode_video(_video_ctx, _frame,
-                           &finished, _packet0->data, _packet0->size);
-#else
-      avcodec_decode_video2(_video_ctx, _frame, &finished, _packet0);
-#endif
+      decode_frame(finished, _packet0);
       _begin_frame = _packet_frame;
       fetch_packet(_begin_frame + 1);
     }
@@ -949,6 +950,38 @@ fetch_frame(int frame) {
 
   _end_frame = _packet_frame;
   _frame_ready = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::decode_frame
+//       Access: Private
+//  Description: Called within the sub-thread.  Decodes the data in
+//               the specified packet into _frame.
+////////////////////////////////////////////////////////////////////
+void FfmpegVideoCursor::
+decode_frame(int &finished, AVPacket *packet) {
+  if (ffmpeg_global_lock) {
+    ReMutexHolder av_holder(_av_lock);
+    do_decode_frame(finished, packet);
+  } else {
+    do_decode_frame(finished, packet);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::do_decode_frame
+//       Access: Private
+//  Description: As above, with the ffmpeg global lock held (if
+//               configured on).
+////////////////////////////////////////////////////////////////////
+void FfmpegVideoCursor::
+do_decode_frame(int &finished, AVPacket *packet) {
+#if LIBAVCODEC_VERSION_INT < 3414272
+  avcodec_decode_video(_video_ctx, _frame,
+                       &finished, packet->data, packet->size);
+#else
+  avcodec_decode_video2(_video_ctx, _frame, &finished, packet);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1182,13 +1215,25 @@ export_frame(FfmpegBuffer *buffer) {
   _frame_out->linesize[0] = _size_x * -3;
   buffer->_begin_frame = _begin_frame;
   buffer->_end_frame = _end_frame;
+
+  if (ffmpeg_global_lock) {
+    ReMutexHolder av_holder(_av_lock);
 #ifdef HAVE_SWSCALE
-  nassertv(_convert_ctx != NULL && _frame != NULL && _frame_out != NULL);
-  sws_scale(_convert_ctx, _frame->data, _frame->linesize, 0, _size_y, _frame_out->data, _frame_out->linesize);
+    nassertv(_convert_ctx != NULL && _frame != NULL && _frame_out != NULL);
+    sws_scale(_convert_ctx, _frame->data, _frame->linesize, 0, _size_y, _frame_out->data, _frame_out->linesize);
 #else
-  img_convert((AVPicture *)_frame_out, PIX_FMT_BGR24, 
-              (AVPicture *)_frame, _video_ctx->pix_fmt, _size_x, _size_y);
+    img_convert((AVPicture *)_frame_out, PIX_FMT_BGR24, 
+                (AVPicture *)_frame, _video_ctx->pix_fmt, _size_x, _size_y);
 #endif
+  } else {
+#ifdef HAVE_SWSCALE
+    nassertv(_convert_ctx != NULL && _frame != NULL && _frame_out != NULL);
+    sws_scale(_convert_ctx, _frame->data, _frame->linesize, 0, _size_y, _frame_out->data, _frame_out->linesize);
+#else
+    img_convert((AVPicture *)_frame_out, PIX_FMT_BGR24, 
+                (AVPicture *)_frame, _video_ctx->pix_fmt, _size_x, _size_y);
+#endif
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

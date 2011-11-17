@@ -58,6 +58,16 @@ ConfigVariableBool ffmpeg_support_seek
           "which can be much slower.  Set this false only if you suspect "
           "a problem with av_seek_frame()."));
 
+ConfigVariableBool ffmpeg_global_lock
+("ffmpeg-global-lock", false,
+ PRC_DESC("Set this true to enable a single global mutex across *all* ffmpeg "
+          "operations.  Leave this false to use the mutex only for "
+          "the ffmpeg operations that are generally known to be "
+          "not thread-safe.  This will negatively affect ffmpeg performance, "
+          "especially when decoding multiple videos at once (including the "
+          "left and right channels of a stereo video).  Set this true only "
+          "if you suspect a problem with ffmpeg's own thread-safe nature."));
+
 ConfigVariableEnum<ThreadPriority> ffmpeg_thread_priority
 ("ffmpeg-thread-priority", TP_normal,
  PRC_DESC("The default thread priority at which to start ffmpeg decoder "
