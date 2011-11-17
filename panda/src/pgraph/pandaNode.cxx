@@ -38,7 +38,7 @@ TypeHandle PandaNode::BamReaderAuxDataDown::_type_handle;
 
 PandaNode::SceneRootFunc *PandaNode::_scene_root_func;
 
-PandaNodeChain PandaNode::_dirty_prev_transforms;
+PandaNodeChain PandaNode::_dirty_prev_transforms("_dirty_prev_transforms");
 DrawMask PandaNode::_overall_bit = DrawMask::bit(31);
 
 PStatCollector PandaNode::_reset_prev_pcollector("App:Collisions:Reset");
@@ -108,7 +108,12 @@ PandaNode::
     pgraph_cat.debug()
       << "Destructing " << (void *)this << ", " << get_name() << "\n";
   }
-  clear_dirty_prev_transform();
+
+  if (_dirty_prev_transform) {
+    // Need to have this held before we grab any other locks.
+    LightMutexHolder holder(_dirty_prev_transforms._lock);
+    do_clear_dirty_prev_transform();
+  }
 
   // We shouldn't have any parents left by the time we destruct, or
   // there's a refcount fault somewhere.
@@ -155,6 +160,9 @@ PandaNode(const PandaNode &copy) :
   _unexpected_change_flags = 0;
 #endif // !NDEBUG
 
+  // Need to have this held before we grab any other locks.
+  LightMutexHolder holder(_dirty_prev_transforms._lock);
+
   // Copy the other node's state.
   {
     CDReader copy_cdata(copy._cycler);
@@ -163,7 +171,7 @@ PandaNode(const PandaNode &copy) :
     cdata->_transform = copy_cdata->_transform;
     cdata->_prev_transform = copy_cdata->_prev_transform;
     if (cdata->_transform != cdata->_prev_transform) {
-      set_dirty_prev_transform();
+      do_set_dirty_prev_transform();
     }
 
     cdata->_effects = copy_cdata->_effects;
@@ -1336,6 +1344,9 @@ set_effects(const RenderEffects *effects, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 set_transform(const TransformState *transform, Thread *current_thread) {
+  // Need to have this held before we grab any other locks.
+  LightMutexHolder holder(_dirty_prev_transforms._lock);
+
   // Apply this operation to the current stage as well as to all
   // upstream stages.
   bool any_changed = false;
@@ -1348,7 +1359,7 @@ set_transform(const TransformState *transform, Thread *current_thread) {
 
       if (pipeline_stage == 0) {
         if (cdata->_transform != cdata->_prev_transform) {
-          set_dirty_prev_transform();
+          do_set_dirty_prev_transform();
         }
       }
     }
@@ -1372,6 +1383,9 @@ set_transform(const TransformState *transform, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 set_prev_transform(const TransformState *transform, Thread *current_thread) {
+  // Need to have this held before we grab any other locks.
+  LightMutexHolder holder(_dirty_prev_transforms._lock);
+
   // Apply this operation to the current stage as well as to all
   // upstream stages.
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
@@ -1379,9 +1393,9 @@ set_prev_transform(const TransformState *transform, Thread *current_thread) {
     cdata->_prev_transform = transform;
     if (pipeline_stage == 0) {
       if (cdata->_transform != cdata->_prev_transform) {
-        set_dirty_prev_transform();
+        do_set_dirty_prev_transform();
       } else {
-        clear_dirty_prev_transform();
+        do_clear_dirty_prev_transform();
       }
     }
   }
@@ -1399,9 +1413,12 @@ set_prev_transform(const TransformState *transform, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 reset_prev_transform(Thread *current_thread) {
+  // Need to have this held before we grab any other locks.
+  LightMutexHolder holder(_dirty_prev_transforms._lock);
+  do_clear_dirty_prev_transform();
+
   // Apply this operation to the current stage as well as to all
   // upstream stages.
-  clear_dirty_prev_transform();
 
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
@@ -1800,6 +1817,9 @@ copy_all_properties(PandaNode *other) {
     return;
   }
 
+  // Need to have this held before we grab any other locks.
+  LightMutexHolder holder(_dirty_prev_transforms._lock);
+
   bool any_transform_changed = false;
   bool any_state_changed = false;
   bool any_draw_mask_changed = false;
@@ -1871,7 +1891,7 @@ copy_all_properties(PandaNode *other) {
 
     if (pipeline_stage == 0) {
       if (cdataw->_transform != cdataw->_prev_transform) {
-        set_dirty_prev_transform();
+        do_set_dirty_prev_transform();
       }
     }
   }

@@ -19,8 +19,9 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNodeChain::
-PandaNodeChain() :
-  LinkedListNode(true)  // This object is the root of a list of PandaNodes.
+PandaNodeChain(const char *lock_name) :
+  LinkedListNode(true),  // This object is the root of a list of PandaNodes.
+ _lock(lock_name)
 {
 }
 

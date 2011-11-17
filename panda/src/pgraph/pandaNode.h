@@ -416,8 +416,8 @@ private:
   void fix_path_lengths(int pipeline_stage, Thread *current_thread);
   void r_list_descendants(ostream &out, int indent_level) const;
   
-  INLINE void set_dirty_prev_transform();
-  INLINE void clear_dirty_prev_transform();
+  INLINE void do_set_dirty_prev_transform();
+  INLINE void do_clear_dirty_prev_transform();
 
 public:
   // This must be declared public so that VC6 will allow the nested

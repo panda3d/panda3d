@@ -848,36 +848,34 @@ verify_child_no_cycles(PandaNode *child_node) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::set_dirty_prev_transform
+//     Function: PandaNode::do_set_dirty_prev_transform
 //       Access: Private
 //  Description: Sets the dirty_prev_transform flag, and adds the node
-//               to the _dirty_prev_transforms chain.
+//               to the _dirty_prev_transforms chain.  Assumes
+//               _dirty_prev_transforms._lock is already held.
 ////////////////////////////////////////////////////////////////////
 INLINE void PandaNode::
-set_dirty_prev_transform() {
+do_set_dirty_prev_transform() {
+  nassertv(_dirty_prev_transforms._lock.debug_is_locked());
   if (!_dirty_prev_transform) {
-    LightMutexHolder holder(_dirty_prev_transforms._lock);
-    if (!_dirty_prev_transform) {
-      LinkedListNode::insert_before(&_dirty_prev_transforms);
-      _dirty_prev_transform = true;
-    }
+    LinkedListNode::insert_before(&_dirty_prev_transforms);
+    _dirty_prev_transform = true;
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::clear_dirty_prev_transform
+//     Function: PandaNode::do_clear_dirty_prev_transform
 //       Access: Private
 //  Description: Clears the dirty_prev_transform flag, and removes the node
-//               from the _dirty_prev_transforms chain.
+//               from the _dirty_prev_transforms chain.  Assumes
+//               _dirty_prev_transforms._lock is already held.
 ////////////////////////////////////////////////////////////////////
 INLINE void PandaNode::
-clear_dirty_prev_transform() {
+do_clear_dirty_prev_transform() {
+  nassertv(_dirty_prev_transforms._lock.debug_is_locked());
   if (_dirty_prev_transform) {
-    LightMutexHolder holder(_dirty_prev_transforms._lock);
-    if (_dirty_prev_transform) {
-      LinkedListNode::remove_from_list();
-      _dirty_prev_transform = false;
-    }
+    LinkedListNode::remove_from_list();
+    _dirty_prev_transform = false;
   }
 }
 

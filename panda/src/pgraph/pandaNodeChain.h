@@ -30,7 +30,7 @@ class PandaNode;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PGRAPH PandaNodeChain : private LinkedListNode {
 public:
-  INLINE PandaNodeChain();
+  INLINE PandaNodeChain(const char *lock_name);
   INLINE ~PandaNodeChain();
 
   LightMutex _lock;
