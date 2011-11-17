@@ -216,6 +216,11 @@ register_protocol() {
   // Here's a good place to call this global ffmpeg initialization
   // function.
   av_register_all();
+  
+  // And this one.
+#if LIBAVFORMAT_VERSION_INT >= 0x351400
+  avformat_network_init();
+#endif
 
   static URLProtocol protocol;
   protocol.name = "pandavfs";

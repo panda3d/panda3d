@@ -997,46 +997,12 @@ seek(int frame, bool backward) {
   PStatTimer timer(seek_pcollector);
 
   if (ffmpeg_support_seek) {
-    // Protect the call to av_seek_frame() in a global lock, just to be
-    // paranoid.
-    ReMutexHolder av_holder(_av_lock);
-    
-    PN_int64 target_ts = (PN_int64)frame;
-    if (target_ts < (PN_int64)(_initial_dts)) {
-      // Attempts to seek before the first packet will fail.
-      target_ts = _initial_dts;
+    if (ffmpeg_global_lock) {
+      ReMutexHolder av_holder(_av_lock);
+      do_seek(frame, backward);
+    } else {
+      do_seek(frame, backward);
     }
-    int flags = 0;
-    if (backward) {
-      flags = AVSEEK_FLAG_BACKWARD;
-    }
-    
-    if (av_seek_frame(_format_ctx, _video_index, target_ts, flags) < 0) {
-      if (ffmpeg_cat.is_spam()) {
-        ffmpeg_cat.spam()
-          << "Seek failure.\n";
-      }
-      
-      if (backward) {
-        // Now try to seek forward.
-        reset_stream();
-        seek(frame, false);
-        return;
-      }
-      
-      // Try a binary search to get a little closer.
-      if (binary_seek(_initial_dts, frame, frame, 1) < 0) {
-        if (ffmpeg_cat.is_spam()) {
-          ffmpeg_cat.spam()
-            << "Seek double failure.\n";
-        }
-        reset_stream();
-        return;
-      }
-    }
-
-    fetch_packet(0);
-    fetch_frame(-1);
 
   } else {
     // If seeking isn't supported, close-and-reopen.
@@ -1044,6 +1010,53 @@ seek(int frame, bool backward) {
       reset_stream();
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::do_seek
+//       Access: Private
+//  Description: As above, with the ffmpeg global lock held (if
+//               configured on).  Also only if ffmpeg-support-seek is
+//               on.
+////////////////////////////////////////////////////////////////////
+void FfmpegVideoCursor::
+do_seek(int frame, bool backward) {
+  PN_int64 target_ts = (PN_int64)frame;
+  if (target_ts < (PN_int64)(_initial_dts)) {
+    // Attempts to seek before the first packet will fail.
+    target_ts = _initial_dts;
+  }
+  int flags = 0;
+  if (backward) {
+    flags = AVSEEK_FLAG_BACKWARD;
+  }
+    
+  if (av_seek_frame(_format_ctx, _video_index, target_ts, flags) < 0) {
+    if (ffmpeg_cat.is_spam()) {
+      ffmpeg_cat.spam()
+        << "Seek failure.\n";
+    }
+      
+    if (backward) {
+      // Now try to seek forward.
+      reset_stream();
+      seek(frame, false);
+      return;
+    }
+      
+    // Try a binary search to get a little closer.
+    if (binary_seek(_initial_dts, frame, frame, 1) < 0) {
+      if (ffmpeg_cat.is_spam()) {
+        ffmpeg_cat.spam()
+          << "Seek double failure.\n";
+      }
+      reset_stream();
+      return;
+    }
+  }
+
+  fetch_packet(0);
+  fetch_frame(-1);
 }
 
 ////////////////////////////////////////////////////////////////////
