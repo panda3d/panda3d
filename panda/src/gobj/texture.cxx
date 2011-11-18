@@ -3945,8 +3945,10 @@ do_reload_ram_image(CData *cdata, bool allow_compression) {
           CDReader cdata_tex(tex->_cycler);
           cdata->_x_size = cdata_tex->_x_size;
           cdata->_y_size = cdata_tex->_y_size;
-          cdata->_num_components = cdata_tex->_num_components;
-          cdata->_format = cdata_tex->_format;
+          if (cdata->_num_components != cdata_tex->_num_components) {
+            cdata->_num_components = cdata_tex->_num_components;
+            cdata->_format = cdata_tex->_format;
+          }
           cdata->_component_type = cdata_tex->_component_type;
           cdata->_compression = cdata_tex->_compression;
           cdata->_ram_image_compression = cdata_tex->_ram_image_compression;
@@ -4975,8 +4977,17 @@ do_set_compression(CData *cdata, Texture::CompressionMode compression) {
   if (cdata->_compression != compression) {
     ++(cdata->_properties_modified);
     cdata->_compression = compression;
+
     if (do_has_ram_image(cdata)) {
-      do_reload(cdata);
+      bool has_compression = do_has_compression(cdata);
+      bool has_ram_image_compression = (cdata->_ram_image_compression != CM_off);
+      if (has_compression != has_ram_image_compression ||
+          has_compression) {
+        // Reload if we're turning compression on or off, or if we're
+        // changing the compression mode to a different kind of
+        // compression.
+        do_reload(cdata);
+      }
     }
   }
 }
