@@ -23,7 +23,9 @@
   #define INCLUDED_SOURCES  \
      config_pstats.cxx pStatClient.cxx pStatClientImpl.cxx \
      pStatClientVersion.cxx  \
-     pStatClientControlMessage.cxx pStatCollectorDef.cxx  \
+     pStatClientControlMessage.cxx \
+     pStatCollector.cxx \
+     pStatCollectorDef.cxx  \
      pStatCollectorForward.cxx \
      pStatFrameData.cxx pStatProperties.cxx  \
      pStatServerControlMessage.cxx \

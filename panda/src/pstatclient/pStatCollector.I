@@ -472,6 +472,7 @@ is_started(const PStatThread &thread) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatCollector::
 start(const PStatThread &thread) {
+  nassertv(_client != NULL);
   _client->start(_index, thread._index);
 }
 

@@ -155,6 +155,11 @@ private:
   bool _frame_ready;
   bool _eof_known;
   int _eof_frame;
+
+  // PStat collectors.
+  static PStatCollector _fetch_buffer_pcollector;
+  static PStatCollector _seek_pcollector;
+  static PStatCollector _export_frame_pcollector;
   
 public:
   static void register_with_read_factory();

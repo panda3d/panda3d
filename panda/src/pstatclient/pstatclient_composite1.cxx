@@ -4,3 +4,4 @@
 #include "pStatClientImpl.cxx"
 #include "pStatClientVersion.cxx"
 #include "pStatClientControlMessage.cxx"
+#include "pStatCollector.cxx"

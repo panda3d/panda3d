@@ -31,6 +31,10 @@ extern "C" {
 ReMutex FfmpegVideoCursor::_av_lock;
 TypeHandle FfmpegVideoCursor::_type_handle;
 
+PStatCollector FfmpegVideoCursor::_fetch_buffer_pcollector("*:FFMPEG Video Decoding:Fetch");
+PStatCollector FfmpegVideoCursor::_seek_pcollector("*:FFMPEG Video Decoding:Seek");
+PStatCollector FfmpegVideoCursor::_export_frame_pcollector("*:FFMPEG Convert Video to BGR");
+
 
 #if LIBAVFORMAT_VERSION_MAJOR < 53
   #define AVMEDIA_TYPE_VIDEO CODEC_TYPE_VIDEO
@@ -898,8 +902,7 @@ flip_packets() {
 ////////////////////////////////////////////////////////////////////
 void FfmpegVideoCursor::
 fetch_frame(int frame) {
-  static PStatCollector fetch_buffer_pcollector("*:FFMPEG Video Decoding:Fetch");
-  PStatTimer timer(fetch_buffer_pcollector);
+  PStatTimer timer(_fetch_buffer_pcollector);
 
   int finished = 0;
 
@@ -918,8 +921,7 @@ fetch_frame(int frame) {
       return;
     }
     while (_packet_frame <= frame) {
-      static PStatCollector seek_pcollector("*:FFMPEG Video Decoding:Seek");
-      PStatTimer timer(seek_pcollector);
+      PStatTimer timer(_seek_pcollector);
 
       // Decode and discard the previous packet.
       decode_frame(finished, _packet1);
@@ -993,8 +995,7 @@ do_decode_frame(int &finished, AVPacket *packet) {
 ////////////////////////////////////////////////////////////////////
 void FfmpegVideoCursor::
 seek(int frame, bool backward) {
-  static PStatCollector seek_pcollector("*:FFMPEG Video Decoding:Seek");
-  PStatTimer timer(seek_pcollector);
+  PStatTimer timer(_seek_pcollector);
 
   if (ffmpeg_support_seek) {
     if (ffmpeg_global_lock) {
@@ -1121,8 +1122,7 @@ reset_stream() {
 ////////////////////////////////////////////////////////////////////
 void FfmpegVideoCursor::
 advance_to_frame(int frame) {
-  static PStatCollector fetch_buffer_pcollector("*:FFMPEG Video Decoding:Fetch");
-  PStatTimer timer(fetch_buffer_pcollector);
+  PStatTimer timer(_fetch_buffer_pcollector);
 
   if (frame < _begin_frame) {
     // Frame is in the past.
@@ -1210,8 +1210,7 @@ advance_to_frame(int frame) {
 ////////////////////////////////////////////////////////////////////
 void FfmpegVideoCursor::
 export_frame(FfmpegBuffer *buffer) {
-  static PStatCollector export_frame_collector("*:FFMPEG Convert Video to BGR");
-  PStatTimer timer(export_frame_collector);
+  PStatTimer timer(_export_frame_pcollector);
 
   if (!_frame_ready) {
     // No frame data ready, just fill with black.
