@@ -57,7 +57,10 @@ add(TVOLATILE AtomicAdjustWin32Impl::Integer &var, AtomicAdjustWin32Impl::Intege
 #ifdef _WIN64
   InterlockedAdd64(&var, delta);
 #else
-  InterlockedAdd(&var, delta);
+  AtomicAdjustWin32Impl::Integer orig_value = var;
+  while (compare_and_exchange(var, orig_value, orig_value + delta) != orig_value) {
+    orig_value = var;
+  }
 #endif  // _WIN64
 }
 
@@ -89,12 +92,13 @@ set(TVOLATILE AtomicAdjustWin32Impl::Integer &var,
 ////////////////////////////////////////////////////////////////////
 INLINE AtomicAdjustWin32Impl::Integer AtomicAdjustWin32Impl::
 get(const TVOLATILE AtomicAdjustWin32Impl::Integer &var) {
+  // On Intel platforms, word-aligned loads are atomic (if performed
+  // in a single instruction).  We can't guarantee the compiler will
+  // generate a single instruction to load this value, but it
+  // certainly won't happen if its address isn't word-aligned, so make
+  // sure that's the case.
   assert((((size_t)&var) & (sizeof(Integer) - 1)) == 0);
-#ifdef _WIN64
-  return InterlockedAdd64((TVOLATILE AtomicAdjustWin32Impl::Integer *)&var, 0);
-#else
-  return InterlockedAdd((TVOLATILE AtomicAdjustWin32Impl::Integer *)&var, 0);
-#endif  // _WIN64
+  return var;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -117,12 +121,13 @@ set_ptr(TVOLATILE AtomicAdjustWin32Impl::Pointer &var,
 //               indicated variable.  This is the only guaranteed safe
 //               way to retrieve the value that other threads might be
 //               asynchronously setting, incrementing, or decrementing
-//               (via other AtomicAdjust methods).
+//               (via other AtomicAjust methods).
 ////////////////////////////////////////////////////////////////////
 INLINE AtomicAdjustWin32Impl::Pointer AtomicAdjustWin32Impl::
 get_ptr(const TVOLATILE AtomicAdjustWin32Impl::Pointer &var) {
-  assert(sizeof(Pointer) == sizeof(Integer));
-  return (Pointer)get(*(const TVOLATILE Integer *)&var);
+  // As in get(), make sure the address is word-aligned.
+  assert((((size_t)&var) & (sizeof(Pointer) - 1)) == 0);
+  return var;
 }
 
 ////////////////////////////////////////////////////////////////////
