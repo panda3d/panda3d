@@ -653,7 +653,6 @@ st_thread_main(void *self) {
 ////////////////////////////////////////////////////////////////////
 void FfmpegVideoCursor::
 thread_main() {
-  MutexHolder holder(_lock);
   if (ffmpeg_cat.is_spam()) {
     ffmpeg_cat.spam()
       << "ffmpeg thread for " << _filename.get_basename() << " starting.\n";
@@ -669,6 +668,7 @@ thread_main() {
   
   // Now repeatedly wait for something interesting to do, until we're told
   // to shut down.
+  MutexHolder holder(_lock);
   while (_thread_status != TS_shutdown) {
     nassertv(_thread_status != TS_stopped);
     _action_cvar.wait();
