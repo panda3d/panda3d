@@ -260,11 +260,11 @@
   #define LDFLAGS_OPT3 /NODEFAULTLIB:MSVCRTD.LIB /OPT:REF
   #define LDFLAGS_OPT4 /NODEFAULTLIB:MSVCRTD.LIB /OPT:REF $[LDFLAGS_OPT4]
 
-  #define COMMONFLAGS /DHAVE_DINKUM /Zc:forScope
+  // use /bigobj in 64-bit environment
+  #define COMMONFLAGS /DHAVE_DINKUM /Zc:forScope $[if $[eq $[USE_COMPILER],MSVC9x64], /bigobj,]
 
   // use "unsafe" QIfist flt->int rounding only if FAST_FLT_TO_INT is defined
-  // use /bigobj in 64-bit environment
-  #define REGULAR_OPTFLAGS $[if $[eq $[USE_COMPILER],MSVC9x64], /bigobj,] /O2 /Ob2 $[if $[ne $[FAST_FLT_TO_INT],], /QIfist,]
+  #define REGULAR_OPTFLAGS /O2 /Ob2 $[if $[ne $[FAST_FLT_TO_INT],], /QIfist,]
 
   #defer OPTFLAGS $[if $[OPT_MINSIZE],/Ox /Og /Ob1 /Oi /Os /Oy /GL,$[REGULAR_OPTFLAGS]]
 
