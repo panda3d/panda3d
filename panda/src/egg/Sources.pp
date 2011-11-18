@@ -49,7 +49,9 @@
      eggTransform.I eggTransform.h \
      eggUserData.I eggUserData.h \
      eggUtilities.I eggUtilities.h \
-     eggVertex.I eggVertex.h eggVertexPool.I eggVertexPool.h \
+     eggVertex.I eggVertex.h \
+     eggVertexAux.I eggVertexAux.h \
+     eggVertexPool.I eggVertexPool.h \
      eggVertexUV.I eggVertexUV.h \
      eggXfmAnimData.I  \
      eggXfmAnimData.h eggXfmSAnim.I eggXfmSAnim.h parserDefs.h  \
@@ -83,7 +85,9 @@
      eggTriangleFan.cxx \
      eggTriangleStrip.cxx \
      eggUserData.cxx \
-     eggUtilities.cxx eggVertex.cxx eggVertexPool.cxx eggVertexUV.cxx \
+     eggUtilities.cxx eggVertex.cxx \
+     eggVertexAux.cxx \
+     eggVertexPool.cxx eggVertexUV.cxx \
      eggXfmAnimData.cxx eggXfmSAnim.cxx pt_EggMaterial.cxx  \
      vector_PT_EggMaterial.cxx pt_EggTexture.cxx  \
      vector_PT_EggTexture.cxx pt_EggVertex.cxx  \
@@ -116,7 +120,9 @@
     eggTriangleFan.I eggTriangleFan.h \
     eggTriangleStrip.I eggTriangleStrip.h \
     eggUserData.I eggUserData.h \
-    eggUtilities.I eggUtilities.h eggVertex.I eggVertex.h \
+    eggUtilities.I eggUtilities.h \
+    eggVertex.I eggVertex.h \
+    eggVertexAux.I eggVertexAux.h \
     eggVertexPool.I eggVertexPool.h \
     eggVertexUV.I eggVertexUV.h \
     eggXfmAnimData.I eggXfmAnimData.h \
