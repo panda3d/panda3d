@@ -322,6 +322,8 @@ private:
   int _num_rows;
   wstring _wordwrapped_wtext;
 
+  static PStatCollector _text_generate_pcollector;
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

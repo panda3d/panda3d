@@ -989,6 +989,9 @@ private:
   ErrorType _error_type;
   static int _max_search_depth;
 
+  static PStatCollector _get_transform_pcollector;
+  static PStatCollector _verify_complete_pcollector;
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

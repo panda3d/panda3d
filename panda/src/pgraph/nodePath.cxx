@@ -80,6 +80,8 @@
 int NodePath::_max_search_depth = 7000; 
 TypeHandle NodePath::_type_handle;
 
+PStatCollector NodePath::_get_transform_pcollector("*:NodePath:get_transform");
+PStatCollector NodePath::_verify_complete_pcollector("*:NodePath:verify_complete");
 
 #ifdef HAVE_PYTHON
 #include "py_panda.h"  
@@ -1097,7 +1099,6 @@ get_transform(Thread *current_thread) const {
 CPT(TransformState) NodePath::
 get_transform(const NodePath &other, Thread *current_thread) const {
   nassertr(_error_type == ET_ok && other._error_type == ET_ok, TransformState::make_identity());
-  static PStatCollector _get_transform_pcollector("*:NodePath:get_transform");
   PStatTimer timer(_get_transform_pcollector);
 
   if (other.is_empty()) {
@@ -6509,7 +6510,6 @@ verify_complete(Thread *current_thread) const {
   }
 #endif  // HAVE_THREADS
 
-  static PStatCollector _verify_complete_pcollector("*:NodePath:verify_complete");
   PStatTimer timer(_verify_complete_pcollector);
 
   const NodePathComponent *comp = _head;
