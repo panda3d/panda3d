@@ -426,7 +426,7 @@ get_angular_sleep_threshold() const {
 void BulletRigidBodyNode::
 set_linear_sleep_threshold(PN_stdfloat threshold) {
 
-  _rigid->setSleepingThresholds(_rigid->getLinearSleepingThreshold(), threshold);
+  _rigid->setSleepingThresholds(threshold, _rigid->getAngularSleepingThreshold());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -437,7 +437,7 @@ set_linear_sleep_threshold(PN_stdfloat threshold) {
 void BulletRigidBodyNode::
 set_angular_sleep_threshold(PN_stdfloat threshold) {
 
-  _rigid->setSleepingThresholds(threshold, _rigid->getAngularSleepingThreshold());
+  _rigid->setSleepingThresholds(_rigid->getLinearSleepingThreshold(), threshold);
 }
 
 ////////////////////////////////////////////////////////////////////
