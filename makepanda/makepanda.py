@@ -1508,8 +1508,8 @@ DTOOL_CONFIG=[
     ("HAVE_FCOLLADA",                  'UNDEF',                  'UNDEF'),
     ("HAVE_OPENAL_FRAMEWORK",          'UNDEF',                  'UNDEF'),
     ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
-    ("_SECURE_SCL",                    '0',                      'UNDEF'),
-    ("_SECURE_SCL_THROWS",             '0',                      'UNDEF'),
+#    ("_SECURE_SCL",                    '0',                      'UNDEF'),
+#    ("_SECURE_SCL_THROWS",             '0',                      'UNDEF'),
     ("HAVE_P3D_PLUGIN",                'UNDEF',                  'UNDEF'),
 ]
 
