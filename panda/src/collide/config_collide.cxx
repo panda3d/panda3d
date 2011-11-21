@@ -102,6 +102,12 @@ ConfigVariableInt fluid_cap_amount
 ("fluid-cap-amount", 100,
  PRC_DESC("ensures that fluid pos doesn't check beyond X feet"));
 
+ConfigVariableBool pushers_horizontal
+("pushers-horizontal", false,
+ PRC_DESC("Set this true to make all CollisionHandlerPushers have the "
+          "set_horizontal() flag by default, false to let the move "
+          "in three dimensions by default."));
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libcollide
 //  Description: Initializes the library.  This must be called at

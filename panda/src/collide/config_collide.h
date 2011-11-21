@@ -30,6 +30,7 @@ extern EXPCL_PANDA_COLLIDE ConfigVariableBool flatten_collision_nodes;
 extern EXPCL_PANDA_COLLIDE ConfigVariableDouble collision_parabola_bounds_threshold;
 extern EXPCL_PANDA_COLLIDE ConfigVariableInt collision_parabola_bounds_sample;
 extern EXPCL_PANDA_COLLIDE ConfigVariableInt fluid_cap_amount;
+extern EXPCL_PANDA_COLLIDE ConfigVariableBool pushers_horizontal;
 
 extern EXPCL_PANDA_COLLIDE void init_libcollide();
 
