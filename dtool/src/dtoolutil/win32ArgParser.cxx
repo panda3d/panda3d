@@ -81,11 +81,7 @@ set_command_line(const string &command_line) {
   
   const char *p = command_line.c_str();
   while (*p != '\0') {
-    if (*p == '"') {
-      parse_quoted_arg(p);
-    } else {
-      parse_unquoted_arg(p);
-    }
+    parse_unquoted_arg(p);
 
     // Skip whitespace.
     while (*p != '\0' && isspace(*p)) {
@@ -159,17 +155,19 @@ get_argc() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Win32ArgParser::is_cygwin_shell
+//     Function: Win32ArgParser::do_glob
 //       Access: Public, Static
-//  Description: Tries to determine if this program was launched from
-//               a Cygwin shell.  Returns true if so, false otherwise.
+//  Description: Returns true if we should attempt to process (and
+//               apply glob matching) to the command line, or false if
+//               we should not (for instance, because it has already
+//               been done by the shell).
 ////////////////////////////////////////////////////////////////////
 bool Win32ArgParser::
-is_cygwin_shell() {
-  // First, we check for the PANDA_CYGWIN environment variable.  If
-  // this is present, it overrides any other checks: "0" means not
-  // Cygwin, "1" means Cygwin.
-  string envvar = ExecutionEnvironment::get_environment_variable("PANDA_CYGWIN");
+do_glob() {
+  // First, we check for the PANDA_GLOB environment variable.  If this
+  // is present, it overrides any other checks: "0" means not to do
+  // the glob, "1" means to do it.
+  string envvar = ExecutionEnvironment::get_environment_variable("PANDA_GLOB");
   if (!envvar.empty()) {
     istringstream strm(envvar);
     int value;
@@ -179,13 +177,16 @@ is_cygwin_shell() {
     }
   }
 
-  // Nothing explicit, so we have to determine Cygwin status
-  // implicitly.
+  // Nothing explicit, so the default is to perform globbing only if
+  // we were launched from the Windows default command shell, cmd.exe.
+  // Presumably if we were launched from something else, like Python,
+  // the caller won't expect globbing to be performed; and if we were
+  // launched from a Cygwin shell, it will already have been
+  // performed.
 
-  // Our strategy is to check the parent process name for one of the
-  // known Cygwin shells.  Unfortunately, it is surprisingly difficult
-  // to determine the parent process in Windows.  We have to enumerate
-  // all of the processes to find it.
+  // Unfortunately, it is surprisingly difficult to determine the
+  // parent process in Windows.  We have to enumerate all of the
+  // processes to find it.
 
   HANDLE toolhelp = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 
@@ -221,30 +222,21 @@ is_cygwin_shell() {
 
   CloseHandle(toolhelp);
   string basename = parent_exe.get_basename();
-  if (basename == "sh.exe" || basename == "bash.exe" ||
-      basename == "csh.exe" || basename == "tcsh.exe" || 
-      basename == "zsh.exe" || basename == "ash.exe") {
-    // These are the standard Unix shell names.  Assume one of these
-    // as the parent process name means we were launched from a Cygwin
-    // shell.  Even if it's from something other than the Cygwin
-    // implementation, these filenames suggests a smart shell that
-    // will have already pre-processed the command line.
+  if (basename == "cmd.exe") {
     return true;
   }
 
-  // Something else means a standard Windows shell that doesn't
-  // process the command line.
   return false;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Win32ArgParser::parse_quoted_arg
 //       Access: Private
-//  Description: Parses the quoted argument beginning at p and saves
-//               it in _char_args.  Advances p to the first character
-//               following the close quote.
+//  Description: Parses the quoted argument beginning at p and returns
+//               it.  Advances p to the first character following the
+//               close quote.
 ////////////////////////////////////////////////////////////////////
-void Win32ArgParser::
+string Win32ArgParser::
 parse_quoted_arg(const char *&p) {
   char quote = *p;
   ++p;
@@ -273,8 +265,7 @@ parse_quoted_arg(const char *&p) {
         // the closing quote and we're done.
         if ((num_slashes & 1) == 0) {
           ++p;
-          save_arg(result);
-          return;
+          return result;
         }
         
         // But if there's an odd backslash, it simply escapes the
@@ -303,7 +294,7 @@ parse_quoted_arg(const char *&p) {
     ++p;
   }
 
-  save_arg(result);
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -316,17 +307,25 @@ parse_quoted_arg(const char *&p) {
 void Win32ArgParser::
 parse_unquoted_arg(const char *&p) {
   string result;
+  bool contains_quotes = false;
   while (*p != '\0' && !isspace(*p)) {
-    result += *p;
-    ++p;
+    if (*p == '"') {
+      // Begin a quoted sequence.
+      contains_quotes = true;
+      result += parse_quoted_arg(p);
+    } else {
+      // A regular character.
+      result += *p;
+      ++p;
+    }
   }
 
   Filename filename = Filename::from_os_specific(result);
   GlobPattern glob(filename);
-  if (glob.has_glob_characters()) {
-    // If the arg contains one or more glob characters, we attempt to
-    // expand the files.  This means we interpret it as a
-    // Windows-specific filename.
+  if (!contains_quotes && glob.has_glob_characters()) {
+    // If the arg contains one or more glob characters (and no
+    // quotation marks), we attempt to expand the files.  This means
+    // we interpret it as a Windows-specific filename.
     vector_string expand;
     if (glob.match_files(expand) != 0) {
       // The files matched.  Add the expansions.
@@ -340,9 +339,11 @@ parse_unquoted_arg(const char *&p) {
       // string, like bash does.
       save_arg(result);
     }
-
+    
   } else {
-    // No glob characters means we just store it directly.
+    // No glob characters means we just store it directly.  Also, an
+    // embedded quoted string, anywhere within the arg, means we can't
+    // expand the glob characters.
     save_arg(result);
   }
 }

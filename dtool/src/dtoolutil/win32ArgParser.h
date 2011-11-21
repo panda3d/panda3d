@@ -48,10 +48,10 @@ public:
   char **get_argv();
   int get_argc();
 
-  static bool is_cygwin_shell();
+  static bool do_glob();
 
 private:
-  void parse_quoted_arg(const char *&p);
+  string parse_quoted_arg(const char *&p);
   void parse_unquoted_arg(const char *&p);
   void save_arg(const string &arg);
 

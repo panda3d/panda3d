@@ -37,17 +37,15 @@ preprocess_argv(int &argc, char **&argv) {
   // Not Windows: do nothing.
 #else  // _WIN32
   // Temporarily commenting out to fix build.  Revisit shortly.
-  /*
   static Win32ArgParser parser;
-  if (parser.is_cygwin_shell()) {
-    // Running within Cygwin: do nothing.
+  if (!parser.do_glob()) {
+    // No globbing required.
     return;
   }
 
-  // On Windows, and not within Cygwin.  Process the args.
+  // Globbing is required.  Process the args.
   parser.set_system_command_line();
   argc = parser.get_argc();
   argv = parser.get_argv();
-  */
 #endif  // _WIN32
 }
