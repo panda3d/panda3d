@@ -1818,6 +1818,11 @@
       0 1 0
     }
   }
+  <Group> 32 {
+    <PointLight> {
+      <VertexRef> { 160 <Ref> { vpool } }
+    }
+  }
   <Group> 33 {
     <Polygon> {
       <TRef> { chars }

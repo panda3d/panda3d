@@ -70,6 +70,14 @@ StaticTextFont(PandaNode *font_def) {
 
   find_characters(font_def, RenderState::make_empty());
   _is_valid = !_glyphs.empty();
+  
+  // Check for an explicit space width.
+  int character = 32;
+  Glyphs::iterator gi = _glyphs.find(character);
+  if (gi != _glyphs.end()) {
+    TextGlyph *glyph = (*gi).second;
+    _space_advance = glyph->get_advance();
+  }
 
   set_name(font_def->get_name());
 }
@@ -287,14 +295,15 @@ find_characters(PandaNode *root, const RenderState *net_state) {
     CPT(Geom) dot;
     const RenderState *state = NULL;
     find_character_gsets(root, ch, dot, state, next_net_state);
-    if (ch != (Geom *)NULL && dot != (Geom *)NULL) {
+    PN_stdfloat width = 0.0;
+    if (dot != (Geom *)NULL) {
       // Get the first vertex from the "dot" geoset.  This will be the
       // origin of the next character.
       GeomVertexReader reader(dot->get_vertex_data(), InternalName::get_vertex());
-      PN_stdfloat width = reader.get_data1f();
-
-      _glyphs[character] = new TextGlyph(character, ch, state, width);
+      width = reader.get_data1f();
     }
+
+    _glyphs[character] = new TextGlyph(character, ch, state, width);
 
   } else if (name == "ds") {
     // The group "ds" is a special node that indicates the font's
