@@ -28,6 +28,7 @@ NotifyCategoryDecl(movies, EXPCL_PANDA_MOVIES, EXPTP_PANDA_MOVIES);
 NotifyCategoryDecl(ffmpeg, EXPCL_PANDA_MOVIES, EXPTP_PANDA_MOVIES);
 
 extern ConfigVariableInt ffmpeg_max_readahead_frames;
+extern ConfigVariableBool ffmpeg_show_seek_frames;
 extern ConfigVariableBool ffmpeg_support_seek;
 extern ConfigVariableBool ffmpeg_global_lock;
 extern ConfigVariableEnum<ThreadPriority> ffmpeg_thread_priority;

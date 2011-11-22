@@ -50,6 +50,16 @@ ConfigVariableInt ffmpeg_max_readahead_frames
           "should read in advance of actual playback.  Set this to 0 to "
           "decode ffmpeg videos in the main thread."));
 
+ConfigVariableBool ffmpeg_show_seek_frames
+("ffmpeg-show-seek-frames", true,
+ PRC_DESC("Set this true to allow showing the intermediate results of seeking "
+          "through the ffmpeg stream to a target frame, or false to hold the "
+          "current frame until the target frame is achieved.  This has the "
+          "biggest effect on videos that are too expensive to decode in real "
+          "time: when this is true, the video can be seen to animate at least "
+          "a little bit; when it is false, you may get long periods of one "
+          "held frame."));
+
 ConfigVariableBool ffmpeg_support_seek
 ("ffmpeg-support-seek", true,
  PRC_DESC("True to use the av_seek_frame() function to seek within ffmpeg "

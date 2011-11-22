@@ -434,10 +434,14 @@ fetch_buffer() {
     }
   }
 
-  if (frame != NULL && (frame->_end_frame < _current_frame || frame->_begin_frame > _current_frame)) {
-    // The frame is too old or too new.  Just recycle it.
-    do_recycle_frame(frame);
-    frame = NULL;
+  if (frame != NULL) {
+    bool too_old = (frame->_end_frame < _current_frame && !ffmpeg_show_seek_frames);
+    bool too_new = frame->_begin_frame > _current_frame;
+    if (too_old || too_new) {
+      // The frame is too old or too new.  Just recycle it.
+      do_recycle_frame(frame);
+      frame = NULL;
+    }
   }
 
   if (frame != NULL) {
