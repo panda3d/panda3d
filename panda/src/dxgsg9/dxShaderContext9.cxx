@@ -629,6 +629,9 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg, bool force) {
               case 3:
                 vertex_element_array->add_uvw_vertex_element(array_index, start, slot);
                 break;
+              case 4:
+                vertex_element_array->add_xyzw_vertex_element(array_index, start, slot);
+                break;
               default:
                 dxgsg9_cat.error() << "VE ERROR: invalid number of vertex texture coordinate elements " << num_values <<  "\n";
                 break;

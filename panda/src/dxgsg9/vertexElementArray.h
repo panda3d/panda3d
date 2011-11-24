@@ -50,6 +50,7 @@ public:
   void add_u_vertex_element (int stream_index, int offset, int texture_stage);
   void add_uv_vertex_element (int stream_index, int offset, int texture_stage);
   void add_uvw_vertex_element (int stream_index, int offset, int texture_stage);
+  void add_xyzw_vertex_element (int stream_index, int offset, int texture_stage);
 
   bool add_end_vertex_element (void);
 

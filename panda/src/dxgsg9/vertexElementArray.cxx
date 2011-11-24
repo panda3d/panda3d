@@ -208,6 +208,24 @@ void VertexElementArray::add_uvw_vertex_element(int stream_index, int offset, in
   _total_elements++;
 }
 
+void VertexElementArray::add_xyzw_vertex_element(int stream_index, int offset, int texture_stage) {
+  if (_total_elements >= _maximum_vertex_elements) {
+    return;
+  }
+
+  LPD3DVERTEXELEMENT9 vertex_element = &_vertex_element_array[_total_elements];
+
+  vertex_element->Stream = stream_index;
+  vertex_element->Offset = offset;
+  vertex_element->Type = D3DDECLTYPE_FLOAT4;
+  vertex_element->Method = D3DDECLMETHOD_DEFAULT;
+
+  vertex_element->Usage = D3DDECLUSAGE_TEXCOORD;
+  vertex_element->UsageIndex = texture_stage;
+
+  _total_elements++;
+}
+
 bool VertexElementArray::add_end_vertex_element(void) {
   if (_total_elements >= _maximum_vertex_elements) {
     return false;
