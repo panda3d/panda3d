@@ -31,5 +31,15 @@ typedef unsigned short int uint16_t;
 typedef unsigned int uint32_t;
 typedef unsigned long long int uint64_t;
 
+typedef long long int intmax_t;
+typedef unsigned long long int uintmax_t;
+
+#if __WORDSIZE == 64
+typedef int64_t intptr_t;
+typedef uint64_t uintptr_t;
+#else
+typedef int32_t intptr_t;
+typedef uint32_t uintptr_t;
 #endif
 
+#endif
