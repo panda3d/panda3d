@@ -379,6 +379,8 @@ private:
   static PStatCollector _test_plane_pcollector;
   static PStatCollector _volume_sphere_pcollector;
   static PStatCollector _test_sphere_pcollector;
+  static PStatCollector _volume_box_pcollector;
+  static PStatCollector _test_box_pcollector;
   static PStatCollector _volume_tube_pcollector;
   static PStatCollector _test_tube_pcollector;
   static PStatCollector _volume_inv_sphere_pcollector;
