@@ -15,6 +15,8 @@
 
 #ifndef CPPPARSER
 IMPORT_THIS struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase2);
+IMPORT_THIS struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase3);
+IMPORT_THIS struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase4);
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -85,6 +87,21 @@ __getattr__, const string &attr_name) {
     vec->_v.v._0 = this->_v.data[attr_name[0] - 'x'];
     vec->_v.v._1 = this->_v.data[attr_name[1] - 'x'];
     return DTool_CreatePyInstance((void *)vec, FLOATNAME(Dtool_LVecBase2), true, false);
+
+  } else if (attr_name.size() == 3) {
+    FLOATNAME(LVecBase3) *vec = new FLOATNAME(LVecBase3);
+    vec->_v.v._0 = this->_v.data[attr_name[0] - 'x'];
+    vec->_v.v._1 = this->_v.data[attr_name[1] - 'x'];
+    vec->_v.v._2 = this->_v.data[attr_name[2] - 'x'];
+    return DTool_CreatePyInstance((void *)vec, FLOATNAME(Dtool_LVecBase3), true, false);
+
+  } else if (attr_name.size() == 4) {
+    FLOATNAME(LVecBase4) *vec = new FLOATNAME(LVecBase4);
+    vec->_v.v._0 = this->_v.data[attr_name[0] - 'x'];
+    vec->_v.v._1 = this->_v.data[attr_name[1] - 'x'];
+    vec->_v.v._2 = this->_v.data[attr_name[2] - 'x'];
+    vec->_v.v._3 = this->_v.data[attr_name[3] - 'x'];
+    return DTool_CreatePyInstance((void *)vec, FLOATNAME(Dtool_LVecBase4), true, false);
   }
 
   return NULL;
@@ -170,4 +187,3 @@ __setattr__, PyObject *self, const string &attr_name, PyObject *assign) {
 
   return 0;
 }
-

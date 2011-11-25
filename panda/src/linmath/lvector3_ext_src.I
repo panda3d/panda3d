@@ -16,6 +16,7 @@
 #ifndef CPPPARSER
 IMPORT_THIS struct Dtool_PyTypedObject FLOATNAME(Dtool_LVector2);
 IMPORT_THIS struct Dtool_PyTypedObject FLOATNAME(Dtool_LVector3);
+IMPORT_THIS struct Dtool_PyTypedObject FLOATNAME(Dtool_LVector4);
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -60,6 +61,14 @@ __getattr__, const string &attr_name) {
     vec->_v.v._1 = this->_v.data[attr_name[1] - 'x'];
     vec->_v.v._2 = this->_v.data[attr_name[2] - 'x'];
     return DTool_CreatePyInstance((void *)vec, FLOATNAME(Dtool_LVector3), true, false);
+
+  } else if (attr_name.size() == 4) {
+    FLOATNAME(LVector4) *vec = new FLOATNAME(LVector4);
+    vec->_v.v._0 = this->_v.data[attr_name[0] - 'x'];
+    vec->_v.v._1 = this->_v.data[attr_name[1] - 'x'];
+    vec->_v.v._2 = this->_v.data[attr_name[2] - 'x'];
+    vec->_v.v._3 = this->_v.data[attr_name[3] - 'x'];
+    return DTool_CreatePyInstance((void *)vec, FLOATNAME(Dtool_LVector4), true, false);
   }
 
   return NULL;
