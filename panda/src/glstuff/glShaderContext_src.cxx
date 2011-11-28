@@ -354,13 +354,14 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
       for (int i = 0; i < param_count; ++i) {
         gsg->_glGetActiveAttrib(_glsl_program, i, param_maxlength, NULL, &param_size, &param_type, param_name);
         PT(InternalName) inputname = InternalName::make(param_name);
-        if (inputname->get_name().substr(0, 4) == "p3d_") {
+
+        if (inputname->get_name().substr(0, 4) == "gl_") {
+          // We shouldn't bind anything to these.
+        } else if (inputname->get_name().substr(0, 4) == "p3d_") {
           noprefix = inputname->get_name().substr(4);
           Shader::ShaderVarSpec bind;
-          Shader::ShaderArgId arg_id;
-          arg_id._name  = param_name;
-          arg_id._seqno = -1;
           bind._append_uv = -1;
+
           if (noprefix == "Vertex") {
             bind._name = InternalName::get_vertex();
             s->_var_spec.push_back(bind);
@@ -406,6 +407,12 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
           }
           GLCAT.error() << "Unrecognized vertex attrib '" << param_name << "'!\n";
           continue;
+        } else {
+          Shader::ShaderVarSpec bind;
+          bind._name = inputname;
+          bind._append_uv = -1;
+          s->_var_spec.push_back(bind);
+          gsg->_glBindAttribLocation(_glsl_program, i, param_name);
         }
       }
       delete[] param_name;
