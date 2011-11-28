@@ -122,7 +122,6 @@ protected:
     double _clock;
     bool _playing;
     int _loop_count;
-    int _loops_total;
     double _play_rate;
     PT(AudioSound) _synchronize;
   };

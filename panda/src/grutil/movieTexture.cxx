@@ -68,7 +68,6 @@ CData() :
   _clock(0.0),
   _playing(false),
   _loop_count(1),
-  _loops_total(1),
   _play_rate(1.0)
 {
 }
@@ -87,7 +86,6 @@ CData(const CData &copy) :
   _clock(0.0),
   _playing(false),
   _loop_count(1),
-  _loops_total(1),
   _play_rate(1.0)
 {
 }
@@ -361,7 +359,7 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
     if (cdata->_playing) {
       offset += now * cdata->_play_rate;
     }
-    true_loop_count = cdata->_loops_total;
+    true_loop_count = cdata->_loop_count;
   }
   
   for (int i=0; i<((int)(cdata->_pages.size())); i++) {
@@ -549,7 +547,6 @@ play() {
   double now = ClockObject::get_global_clock()->get_frame_time();
   cdata->_clock = 0.0 - (now * cdata->_play_rate);
   cdata->_playing = true;
-  cdata->_loops_total = cdata->_loop_count;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -587,11 +584,7 @@ get_time() const {
     double now = ClockObject::get_global_clock()->get_frame_time();
     clock += (now * cdata->_play_rate);
   }
-  if (clock >= cdata->_video_length * cdata->_loops_total) {
-    return cdata->_video_length;
-  } else {
-    return fmod(clock, cdata->_video_length);
-  }
+  return clock;
 }
 
 ////////////////////////////////////////////////////////////////////
