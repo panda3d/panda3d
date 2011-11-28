@@ -29,7 +29,7 @@ Shader::ShaderTable Shader::_load_table;
 Shader::ShaderTable Shader::_make_table;
 Shader::ShaderCaps Shader::_default_caps;
 int Shader::_shaders_generated;
-ShaderUtilization Shader::_shader_utilization = SUT_UNSPECIFIED;
+ShaderUtilization Shader::_shader_utilization = SUT_unspecified;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::cp_report_error

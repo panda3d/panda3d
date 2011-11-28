@@ -10,6 +10,7 @@
   
   #define SOURCES \
     animInterface.h animInterface.I \
+    autoTextureScale.h \
     bam.h \
     bamCache.h bamCache.I \
     bamCacheIndex.h bamCacheIndex.I \
@@ -73,6 +74,7 @@
     
  #define INCLUDED_SOURCES \
     animInterface.cxx \
+    autoTextureScale.cxx \
     bamCache.cxx \
     bamCacheIndex.cxx \
     bamCacheRecord.cxx \
@@ -119,6 +121,7 @@
 
   #define INSTALL_HEADERS \
     animInterface.h animInterface.I \
+    autoTextureScale.h \
     bam.h \
     bamCache.h bamCache.I \
     bamCacheIndex.h bamCacheIndex.I \

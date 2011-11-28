@@ -102,7 +102,7 @@ set_shader_utilization(ShaderUtilization sut) {
 ////////////////////////////////////////////////////////////////////
 INLINE ShaderUtilization Shader::
 get_shader_utilization() {
-  if (_shader_utilization == SUT_UNSPECIFIED) {
+  if (_shader_utilization == SUT_unspecified) {
     return shader_utilization;
   } else {
     return _shader_utilization;
@@ -119,7 +119,7 @@ get_shader_utilization() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool Shader::
 have_shader_utilization() {
-  return (_shader_utilization != SUT_UNSPECIFIED);
+  return (_shader_utilization != SUT_unspecified);
 }
 
 ////////////////////////////////////////////////////////////////////

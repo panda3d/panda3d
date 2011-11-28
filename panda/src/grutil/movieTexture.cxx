@@ -196,17 +196,12 @@ bool MovieTexture::
 do_adjust_this_size(const Texture::CData *cdata_tex,
                     int &x_size, int &y_size, const string &name,
                     bool for_padding) const {
-  if (cdata_tex->_texture_type == TT_cube_map) {
-    // Texture must be square.
-    x_size = y_size = max(x_size, y_size);
+  AutoTextureScale ats = do_get_auto_texture_scale(cdata_tex);
+  if (ats != ATS_none) {
+    ats = ATS_pad;
   }
 
-  if (Texture::get_textures_power_2() != ATS_none) {
-    x_size = up_to_power_2(x_size);
-    y_size = up_to_power_2(y_size);
-  }
-
-  return true;
+  return adjust_size(x_size, y_size, name, for_padding, ats);
 }
 
 ////////////////////////////////////////////////////////////////////

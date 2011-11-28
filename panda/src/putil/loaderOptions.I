@@ -22,7 +22,8 @@ INLINE LoaderOptions::
 LoaderOptions(int flags, int texture_flags) : 
   _flags(flags), 
   _texture_flags(texture_flags),
-  _texture_num_views(0)
+  _texture_num_views(0),
+  _auto_texture_scale(ATS_unspecified)
 {
 }
 
@@ -35,7 +36,8 @@ INLINE LoaderOptions::
 LoaderOptions(const LoaderOptions &copy) :
   _flags(copy._flags),
   _texture_flags(copy._texture_flags),
-  _texture_num_views(copy._texture_num_views)
+  _texture_num_views(copy._texture_num_views),
+  _auto_texture_scale(copy._auto_texture_scale)
 {
 }
 
@@ -49,6 +51,7 @@ operator = (const LoaderOptions &copy) {
   _flags = copy._flags;
   _texture_flags = copy._texture_flags;
   _texture_num_views = copy._texture_num_views;
+  _auto_texture_scale = copy._auto_texture_scale;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -116,4 +119,27 @@ set_texture_num_views(int texture_num_views) {
 INLINE int LoaderOptions::
 get_texture_num_views() const {
   return _texture_num_views;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LoaderOptions::set_auto_texture_scale
+//       Access: Published
+//  Description: Set this flag to ATS_none, ATS_up, ATS_down, or
+//               ATS_pad to control how a texture is scaled from
+//               disk when it is subsequently loaded.  Set it to
+//               ATS_unspecified to restore the default behavior.
+////////////////////////////////////////////////////////////////////
+INLINE void LoaderOptions::
+set_auto_texture_scale(AutoTextureScale scale) {
+  _auto_texture_scale = scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LoaderOptions::get_auto_texture_scale
+//       Access: Published
+//  Description: See set_auto_texture_scale().
+////////////////////////////////////////////////////////////////////
+INLINE AutoTextureScale LoaderOptions::
+get_auto_texture_scale() const {
+  return _auto_texture_scale;
 }

@@ -1,4 +1,5 @@
 #include "animInterface.cxx"
+#include "autoTextureScale.cxx"
 #include "bamCache.cxx"
 #include "bamCacheIndex.cxx"
 #include "bamCacheRecord.cxx"

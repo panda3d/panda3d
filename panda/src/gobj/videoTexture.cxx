@@ -213,6 +213,25 @@ do_can_reload(const Texture::CData *cdata) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VideoTexture::do_adjust_this_size
+//       Access: Protected, Virtual
+//  Description: Works like adjust_size, but also considers the
+//               texture class.  Movie textures, for instance, always
+//               pad outwards, never scale down.
+////////////////////////////////////////////////////////////////////
+bool VideoTexture::
+do_adjust_this_size(const Texture::CData *cdata_tex,
+                    int &x_size, int &y_size, const string &name,
+                    bool for_padding) const {
+  AutoTextureScale ats = do_get_auto_texture_scale(cdata_tex);
+  if (ats != ATS_none) {
+    ats = ATS_pad;
+  }
+
+  return adjust_size(x_size, y_size, name, for_padding, ats);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VideoTexture::consider_update
 //       Access: Protected, Virtual
 //  Description: Calls update_frame() if the current frame has

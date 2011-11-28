@@ -386,6 +386,10 @@ PUBLISHED:
   INLINE UpdateSeq get_image_modified() const;
   INLINE UpdateSeq get_simple_image_modified() const;
 
+  INLINE void set_auto_texture_scale(AutoTextureScale scale);
+  INLINE AutoTextureScale get_auto_texture_scale() const;
+  INLINE bool has_auto_texture_scale() const;
+
   void prepare(PreparedGraphicsObjects *prepared_objects);
   bool is_prepared(PreparedGraphicsObjects *prepared_objects) const;
   bool was_image_modified(PreparedGraphicsObjects *prepared_objects) const;
@@ -406,7 +410,7 @@ PUBLISHED:
 
   INLINE static void set_textures_power_2(AutoTextureScale scale);
   INLINE static AutoTextureScale get_textures_power_2();
-  INLINE static bool have_textures_power_2();
+  INLINE static bool has_textures_power_2();
 
 PUBLISHED:
   // These are published, but in general, you shouldn't be mucking
@@ -465,7 +469,7 @@ PUBLISHED:
   static int down_to_power_2(int value);
 
   void consider_rescale(PNMImage &pnmimage);
-  static void consider_rescale(PNMImage &pnmimage, const string &name);
+  static void consider_rescale(PNMImage &pnmimage, const string &name, AutoTextureScale auto_texture_scale = ATS_unspecified);
   INLINE bool rescale_texture();
 
   static string format_texture_type(TextureType tt);
@@ -503,7 +507,7 @@ public:
   static bool has_binary_alpha(Format format);
 
   static bool adjust_size(int &x_size, int &y_size, const string &name,
-                          bool for_padding);
+                          bool for_padding, AutoTextureScale auto_texture_scale = ATS_unspecified);
   INLINE bool adjust_this_size(int &x_size, int &y_size, const string &name,
                                bool for_padding) const;
 
@@ -629,6 +633,8 @@ protected:
   void do_set_pad_size(CData *cdata, int x, int y, int z);
   virtual bool do_can_reload(const CData *cdata) const;
   bool do_reload(CData *cdata);
+
+  INLINE AutoTextureScale do_get_auto_texture_scale(const CData *cdata) const;
 
   virtual bool do_has_bam_rawdata(const CData *cdata) const;
   virtual void do_get_bam_rawdata(CData *cdata);
@@ -800,6 +806,7 @@ protected:
     int _orig_file_x_size;
     int _orig_file_y_size;
   
+    AutoTextureScale _auto_texture_scale;
     CompressionMode _ram_image_compression;
 
     // There is usually one RamImage for the mipmap level 0 (the base

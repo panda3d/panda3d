@@ -1880,6 +1880,90 @@ get_simple_image_modified() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_auto_texture_scale
+//       Access: Published
+//  Description: Specifies the power-of-2 texture-scaling mode that
+//               will be applied to this particular texture when it is
+//               next loaded from disk.  See set_textures_power_2().
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+set_auto_texture_scale(AutoTextureScale scale) {
+  CDWriter cdata(_cycler, true);
+  cdata->_auto_texture_scale = scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_auto_texture_scale
+//       Access: Published
+//  Description: Returns the power-of-2 texture-scaling mode that will
+//               be applied to this particular texture when it is next
+//               loaded from disk.  See set_textures_power_2().
+////////////////////////////////////////////////////////////////////
+INLINE AutoTextureScale Texture::
+get_auto_texture_scale() const {
+  CDReader cdata(_cycler);
+  return do_get_auto_texture_scale(cdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::has_auto_texture_scale
+//       Access: Published
+//  Description: Returns true if set_auto_texture_scale() has been set
+//               to something other than ATS_unspecified for this
+//               particular texture.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+has_auto_texture_scale() const {
+  CDReader cdata(_cycler);
+  return (cdata->_auto_texture_scale != ATS_unspecified);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_textures_power_2
+//       Access: Published, Static
+//  Description: Set this flag to ATS_none, ATS_up, ATS_down, or
+//               ATS_pad to control the scaling of textures in
+//               general, if a particular texture does not override
+//               this.  See also set_auto_texture_scale() for the
+//               per-texture override.
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+set_textures_power_2(AutoTextureScale scale) {
+  _textures_power_2 = scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_textures_power_2
+//       Access: Published, Static
+//  Description: This flag returns ATS_none, ATS_up, or ATS_down
+//               and controls the scaling of textures in general.  It
+//               is initialized from the config variable of the same
+//               name, but it can be subsequently adjusted.  See also
+//               get_auto_texture_scale().
+////////////////////////////////////////////////////////////////////
+INLINE AutoTextureScale Texture::
+get_textures_power_2() {
+  if (_textures_power_2 == ATS_unspecified) {
+    return textures_power_2;
+  } else {
+    return _textures_power_2;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::has_textures_power_2
+//       Access: Published, Static
+//  Description: If true, then get_textures_power_2 has been
+//               set using set_textures_power_2.
+//               If false, then get_textures_power_2 simply
+//               returns the config variable of the same name.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+has_textures_power_2() {
+  return (_textures_power_2 != ATS_unspecified);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::set_filename
 //       Access: Published
 //  Description: Sets the name of the file that contains the image's
@@ -2342,6 +2426,20 @@ do_clear_ram_image(CData *cdata) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_get_auto_texture_scale
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE AutoTextureScale Texture::
+do_get_auto_texture_scale(const CData *cdata) const {
+  if (cdata->_auto_texture_scale == ATS_unspecified) {
+    return get_textures_power_2();
+  } else {
+    return cdata->_auto_texture_scale;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::store_unscaled_byte
 //       Access: Private, Static
 //  Description: This is used by load() to store the next consecutive
@@ -2467,47 +2565,6 @@ is_dds_filename(const Filename &fullpath) {
   }
 #endif  // HAVE_ZLIB
   return (downcase(extension) == "dds");
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::set_textures_power_2
-//       Access: Published, Static
-//  Description: Set this flag to ATS_none, ATS_up, or ATS_down
-//               to control the scaling of textures.
-////////////////////////////////////////////////////////////////////
-INLINE void Texture::
-set_textures_power_2(AutoTextureScale scale) {
-  _textures_power_2 = scale;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::get_textures_power_2
-//       Access: Published, Static
-//  Description: This flag returns ATS_none, ATS_up, or ATS_down
-//               and controls the scaling of textures.  It is
-//               initialized from the config variable of the same
-//               name, but it can be subsequently adjusted.
-////////////////////////////////////////////////////////////////////
-INLINE AutoTextureScale Texture::
-get_textures_power_2() {
-  if (_textures_power_2 == ATS_UNSPECIFIED) {
-    return textures_power_2;
-  } else {
-    return _textures_power_2;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::have_textures_power_2
-//       Access: Published, Static
-//  Description: If true, then get_textures_power_2 has been
-//               set using set_textures_power_2.
-//               If false, then get_textures_power_2 simply
-//               returns the config variable of the same name.
-////////////////////////////////////////////////////////////////////
-INLINE bool Texture::
-have_textures_power_2() {
-  return (_textures_power_2 != ATS_UNSPECIFIED);
 }
 
 ////////////////////////////////////////////////////////////////////

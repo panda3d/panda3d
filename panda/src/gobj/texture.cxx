@@ -89,7 +89,7 @@ ConfigVariableInt texture_anisotropic_degree
 PStatCollector Texture::_texture_read_pcollector("*:Texture:Read");
 TypeHandle Texture::_type_handle;
 TypeHandle Texture::CData::_type_handle;
-AutoTextureScale Texture::_textures_power_2 = ATS_UNSPECIFIED;
+AutoTextureScale Texture::_textures_power_2 = ATS_unspecified;
 
 // Stuff to read and write DDS files.
 
@@ -1751,7 +1751,7 @@ write(ostream &out, int indent_level) const {
 void Texture::
 set_size_padded(int x, int y, int z) {
   CDWriter cdata(_cycler, true);
-  if (get_textures_power_2() != ATS_none) {
+  if (do_get_auto_texture_scale(cdata) != ATS_none) {
     do_set_x_size(cdata, up_to_power_2(x));
     do_set_y_size(cdata, up_to_power_2(y));
     do_set_z_size(cdata, up_to_power_2(z));
@@ -1884,7 +1884,7 @@ down_to_power_2(int value) {
 ////////////////////////////////////////////////////////////////////
 void Texture::
 consider_rescale(PNMImage &pnmimage) {
-  consider_rescale(pnmimage, get_name());
+  consider_rescale(pnmimage, get_name(), get_auto_texture_scale());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1899,10 +1899,10 @@ consider_rescale(PNMImage &pnmimage) {
 //               pnmimage.read().  Also see rescale_texture().
 ////////////////////////////////////////////////////////////////////
 void Texture::
-consider_rescale(PNMImage &pnmimage, const string &name) {
+consider_rescale(PNMImage &pnmimage, const string &name, AutoTextureScale auto_texture_scale) {
   int new_x_size = pnmimage.get_x_size();
   int new_y_size = pnmimage.get_y_size();
-  if (adjust_size(new_x_size, new_y_size, name, false)) {
+  if (adjust_size(new_x_size, new_y_size, name, false, auto_texture_scale)) {
     pnmimage.set_read_size(new_x_size, new_y_size);
   }
 }
@@ -2523,7 +2523,7 @@ has_binary_alpha(Format format) {
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 adjust_size(int &x_size, int &y_size, const string &name,
-            bool for_padding) {
+            bool for_padding, AutoTextureScale auto_texture_scale) {
   bool exclude = false;
   int num_excludes = exclude_texture_scale.get_num_unique_values();
   for (int i = 0; i < num_excludes && !exclude; ++i) {
@@ -2546,7 +2546,10 @@ adjust_size(int &x_size, int &y_size, const string &name,
     new_y_size = min(max(new_y_size, (int)texture_scale_limit), y_size);
   }
 
-  AutoTextureScale ats = get_textures_power_2();
+  AutoTextureScale ats = auto_texture_scale;
+  if (ats == ATS_unspecified) {
+    ats = textures_power_2;
+  }
   if (!for_padding && ats == ATS_pad) {
     // If we're not calculating the padding size--that is, we're
     // calculating the initial scaling size instead--then ignore
@@ -2567,7 +2570,7 @@ adjust_size(int &x_size, int &y_size, const string &name,
     break;
 
   case ATS_none:
-  case ATS_UNSPECIFIED:
+  case ATS_unspecified:
     break;
   }
 
@@ -2586,7 +2589,7 @@ adjust_size(int &x_size, int &y_size, const string &name,
     break;
 
   case ATS_none:
-  case ATS_UNSPECIFIED:
+  case ATS_unspecified:
     break;
   }
 
@@ -2635,7 +2638,7 @@ reconsider_dirty() {
 bool Texture::
 do_adjust_this_size(const CData *cdata, int &x_size, int &y_size, const string &name,
                     bool for_padding) const {
-  return adjust_size(x_size, y_size, name, for_padding);
+  return adjust_size(x_size, y_size, name, for_padding, cdata->_auto_texture_scale);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2650,6 +2653,10 @@ do_read(CData *cdata, const Filename &fullpath, const Filename &alpha_fullpath,
         int z, int n, bool read_pages, bool read_mipmaps,
         const LoaderOptions &options, BamCacheRecord *record) {
   PStatTimer timer(_texture_read_pcollector);
+
+  if (options.get_auto_texture_scale() != ATS_unspecified) {
+    cdata->_auto_texture_scale = options.get_auto_texture_scale();
+  }
 
   bool header_only = ((options.get_texture_flags() & (LoaderOptions::TF_preload | LoaderOptions::TF_preload_simple)) == 0);
   if (record != (BamCacheRecord *)NULL) {
@@ -2910,7 +2917,7 @@ do_read_one(CData *cdata, const Filename &fullpath, const Filename &alpha_fullpa
       y_size = 1;
 
     } else {
-      consider_rescale(image, fullpath.get_basename());
+      consider_rescale(image, fullpath.get_basename(), do_get_auto_texture_scale(cdata));
       x_size = image.get_read_x_size();
       y_size = image.get_read_y_size();
     }
@@ -2932,7 +2939,7 @@ do_read_one(CData *cdata, const Filename &fullpath, const Filename &alpha_fullpa
     if (z == 0 && n == 0) {
       cdata->_orig_file_x_size = image.get_x_size();
       cdata->_orig_file_y_size = image.get_y_size();
-      consider_rescale(image, fullpath.get_basename());
+      consider_rescale(image, fullpath.get_basename(), do_get_auto_texture_scale(cdata));
     } else {
       image.set_read_size(do_get_expected_mipmap_x_size(cdata, n),
                           do_get_expected_mipmap_y_size(cdata, n));
@@ -3087,7 +3094,7 @@ do_read_one(CData *cdata, const Filename &fullpath, const Filename &alpha_fullpa
   // image.
   int pad_x_size = 0;
   int pad_y_size = 0;
-  if (get_textures_power_2() == ATS_pad) {
+  if (do_get_auto_texture_scale(cdata) == ATS_pad) {
     int new_x_size = image.get_x_size();
     int new_y_size = image.get_y_size();
     if (do_adjust_this_size(cdata, new_x_size, new_y_size, fullpath.get_basename(), true)) {
@@ -4582,7 +4589,7 @@ do_rescale_texture(CData *cdata) {
   // Maybe we should pad the image.
   int pad_x_size = 0;
   int pad_y_size = 0;
-  if (get_textures_power_2() == ATS_pad) {
+  if (do_get_auto_texture_scale(cdata) == ATS_pad) {
     new_x_size = cdata->_x_size;
     new_y_size = cdata->_y_size;
     if (do_adjust_this_size(cdata, new_x_size, new_y_size, get_name(), true)) {
@@ -7111,6 +7118,7 @@ do_write_datagram_body(CData *cdata, BamWriter *manager, Datagram &me) {
   me.add_uint8(cdata->_format);
   me.add_uint8(cdata->_num_components);
 
+  me.add_uint8(cdata->_auto_texture_scale);
   me.add_uint32(cdata->_orig_file_x_size);
   me.add_uint32(cdata->_orig_file_y_size);
 
@@ -7225,9 +7233,11 @@ make_this_from_bam(const FactoryParams &params) {
     // pointer as a temporary object to read all of the attributes
     // from the bam stream.
     Texture *dummy = this;
+    AutoTextureScale auto_texture_scale = ATS_unspecified;
     {
       CDWriter cdata_dummy(dummy->_cycler, true);
       dummy->do_fillin_body(cdata_dummy, scan, manager);
+      auto_texture_scale = cdata_dummy->_auto_texture_scale;
     }
 
     if (filename.empty()) {
@@ -7253,6 +7263,7 @@ make_this_from_bam(const FactoryParams &params) {
       if (dummy->uses_mipmaps()) {
         options.set_texture_flags(options.get_texture_flags() | LoaderOptions::TF_generate_mipmaps);
       }
+      options.set_auto_texture_scale(auto_texture_scale);
 
       switch (texture_type) {
       case TT_1d_texture:
@@ -7321,7 +7332,13 @@ do_fillin_body(CData *cdata, DatagramIterator &scan, BamReader *manager) {
 
   cdata->_format = (Format)scan.get_uint8();
   cdata->_num_components = scan.get_uint8();
+
   ++(cdata->_properties_modified);
+
+  cdata->_auto_texture_scale = ATS_unspecified;
+  if (manager->get_file_minor_ver() >= 28) {
+    cdata->_auto_texture_scale = (AutoTextureScale)scan.get_uint8();
+  }
 
   bool has_simple_ram_image = false;
   if (manager->get_file_minor_ver() >= 18) {
@@ -7481,6 +7498,7 @@ CData() {
   _keep_ram_image = true;
   _border_color.set(0.0f, 0.0f, 0.0f, 1.0f);
   _compression = CM_default;
+  _auto_texture_scale = ATS_unspecified;
   _ram_image_compression = CM_off;
   _render_to_texture = false;
   _match_framebuffer_format = false;
@@ -7589,6 +7607,7 @@ do_assign(const Texture::CData *copy) {
   _compression = copy->_compression;
   _match_framebuffer_format = copy->_match_framebuffer_format;
   _quality_level = copy->_quality_level;
+  _auto_texture_scale = copy->_auto_texture_scale;
   _ram_image_compression = copy->_ram_image_compression;
   _ram_images = copy->_ram_images;
   _simple_x_size = copy->_simple_x_size;

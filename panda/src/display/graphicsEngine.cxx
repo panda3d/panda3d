@@ -2130,7 +2130,7 @@ auto_adjust_capabilities(GraphicsStateGuardian *gsg) {
     textures_power_2 = ATS_down; // Not a fix.  Just suppresses further error messages.
   }
   
-  if (textures_auto_power_2 && !Texture::have_textures_power_2()) {
+  if (textures_auto_power_2 && !Texture::has_textures_power_2()) {
     if (gsg->get_supports_tex_non_pow2()) {
       Texture::set_textures_power_2(ATS_none);
     } else {

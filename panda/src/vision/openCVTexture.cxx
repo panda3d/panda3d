@@ -233,11 +233,7 @@ do_reconsider_video_properties(Texture::CData *cdata,
 
   int x_size = width;
   int y_size = height;
-
-  if (Texture::get_textures_power_2() != ATS_none) {
-    x_size = up_to_power_2(width);
-    y_size = up_to_power_2(height);
-  }
+  do_adjust_this_size(cdata, x_size, y_size, get_name(), true);
 
   if (vision_cat.is_debug()) {
     vision_cat.debug()

@@ -53,6 +53,10 @@ protected:
   virtual void do_reload_ram_image(Texture::CData *cdata, bool allow_compression);
   virtual bool do_can_reload(const Texture::CData *cdata) const;
 
+  virtual bool do_adjust_this_size(const Texture::CData *cdata, 
+                                   int &x_size, int &y_size, const string &name, 
+                                   bool for_padding) const;
+
   virtual void consider_update();
   INLINE void clear_current_frame();
   virtual void do_update_frame(Texture::CData *cdata_tex, int frame)=0;

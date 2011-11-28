@@ -16,6 +16,7 @@
 #define LOADEROPTIONS_H
 
 #include "pandabase.h"
+#include "autoTextureScale.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LoaderOptions
@@ -60,6 +61,9 @@ PUBLISHED:
   INLINE void set_texture_num_views(int num_views);
   INLINE int get_texture_num_views() const;
 
+  INLINE void set_auto_texture_scale(AutoTextureScale scale);
+  INLINE AutoTextureScale get_auto_texture_scale() const;
+
   void output(ostream &out) const;
 
 private:
@@ -70,6 +74,7 @@ private:
   int _flags;
   int _texture_flags;
   int _texture_num_views;
+  AutoTextureScale _auto_texture_scale;
 };
 
 INLINE ostream &operator << (ostream &out, const LoaderOptions &opts) {

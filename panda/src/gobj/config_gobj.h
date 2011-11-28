@@ -23,27 +23,19 @@
 #include "configVariableDouble.h"
 #include "configVariableFilename.h"
 #include "configVariableString.h"
+#include "autoTextureScale.h"
 
 NotifyCategoryDecl(gobj, EXPCL_PANDA_GOBJ, EXPTP_PANDA_GOBJ);
 
 BEGIN_PUBLISH
-enum AutoTextureScale {
-  ATS_none,
-  ATS_down,
-  ATS_up,
-  ATS_pad,
-  ATS_UNSPECIFIED,
-};
 enum ShaderUtilization {
   SUT_none,
   SUT_basic,
   SUT_advanced,
-  SUT_UNSPECIFIED,
+  SUT_unspecified,
 };
 END_PUBLISH
 
-EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, AutoTextureScale ats);
-EXPCL_PANDA_GOBJ istream &operator >> (istream &in, AutoTextureScale &ats);
 EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, ShaderUtilization sut);
 EXPCL_PANDA_GOBJ istream &operator >> (istream &in, ShaderUtilization &sut);
 

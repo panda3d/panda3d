@@ -63,10 +63,7 @@ void MovieVideoCursor::
 setup_texture(Texture *tex) const {
   int fullx = size_x();
   int fully = size_y();
-  if (Texture::get_textures_power_2()) {
-    fullx = Texture::up_to_power_2(fullx);
-    fully = Texture::up_to_power_2(fully);
-  }
+  tex->adjust_this_size(fullx, fully, tex->get_name(), true);
   Texture::Format fmt = (get_num_components() == 4) ? Texture::F_rgba : Texture::F_rgb;
   tex->setup_texture(Texture::TT_2d_texture, fullx, fully, 1, Texture::T_unsigned_byte, fmt);
   tex->set_pad_size(fullx - size_x(), fully - size_y());
