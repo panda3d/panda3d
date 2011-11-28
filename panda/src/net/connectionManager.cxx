@@ -234,6 +234,14 @@ open_TCP_client_connection(const NetAddress &address, int timeout_ms) {
     }
   }
 
+  if (okflag) {
+    // So, the connect() operation finished, but did it succeed or fail?
+    if (socket->GetPeerName().GetIPAddressRaw() == 0) {
+      // No peer means it failed.
+      okflag = false;
+    }
+  }
+
   if (!okflag) {
     net_cat.error()
       << "Unable to open TCP connection to server "
