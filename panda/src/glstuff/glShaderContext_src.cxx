@@ -379,6 +379,24 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
             gsg->_glBindAttribLocation(_glsl_program, i, param_name);
             continue;
           }
+          if (noprefix.substr(0, 7)  == "Tangent") {
+            bind._name = InternalName::get_tangent();
+            if (noprefix.size() > 7) {
+              bind._append_uv = atoi(noprefix.substr(7).c_str());
+            }
+            s->_var_spec.push_back(bind);
+            gsg->_glBindAttribLocation(_glsl_program, i, param_name);
+            continue;
+          }
+          if (noprefix.substr(0, 8)  == "Binormal") {
+            bind._name = InternalName::get_binormal();
+            if (noprefix.size() > 8) {
+              bind._append_uv = atoi(noprefix.substr(8).c_str());
+            }
+            s->_var_spec.push_back(bind);
+            gsg->_glBindAttribLocation(_glsl_program, i, param_name);
+            continue;
+          }
           if (noprefix.substr(0, 13)  == "MultiTexCoord") {
             bind._name = InternalName::get_texcoord();
             bind._append_uv = atoi(inputname->get_name().substr(13).c_str());

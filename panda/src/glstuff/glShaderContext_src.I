@@ -39,15 +39,11 @@ valid() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLShaderContext::uses_custom_vertex_arrays
 //       Access: Public
-//  Description: Returns false in case of GLSL, true in case of Cg.
+//  Description: Always true, for now.
 ////////////////////////////////////////////////////////////////////
 INLINE bool CLP(ShaderContext)::
 uses_custom_vertex_arrays() {
-#ifdef OPENGLES_2
   return true;
-#else
-  return (_shader->get_language() == Shader::SL_Cg);
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////
