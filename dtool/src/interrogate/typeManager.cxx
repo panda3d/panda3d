@@ -566,6 +566,53 @@ is_string(CPPType *type) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_wchar
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is wchar_t or const
+//               wchar_t.  We don't mind signed or unsigned wchar_t.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_wchar(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_wchar(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_simple:
+    {
+      CPPSimpleType *simple_type = type->as_simple_type();
+      if (simple_type != (CPPSimpleType *)NULL) {
+        return simple_type->_type == CPPSimpleType::T_wchar_t;
+      }
+    }
+
+  default:
+    break;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_wchar_pointer
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is wchar_t * or const
+//               wchar_t * or some such.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_wchar_pointer(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_wchar_pointer(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_pointer:
+    return is_wchar(type->as_pointer_type()->_pointing_at);
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TypeManager::is_basic_string_wchar
 //       Access: Public, Static
 //  Description: Returns true if the type is basic_string<wchar_t>.  This

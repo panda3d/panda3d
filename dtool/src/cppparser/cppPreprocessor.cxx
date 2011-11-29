@@ -1567,12 +1567,27 @@ get_identifier(int c) {
   CPPFile first_file = get_file();
   int first_line = get_line_number();
   int first_col = get_col_number();
+
   string name(1, (char)c);
 
   c = get();
   while (c != EOF && (isalnum(c) || c == '_')) {
     name += c;
     c = get();
+  }
+  if (c == '\'' || c == '"') {
+    // This is actually a wide-character or wide-string literal or
+    // some such: a string with an alphanumeric prefix.  We don't
+    // necessarily try to parse it correctly; for most purposes, we
+    // don't care.
+    CPPToken token(0);
+    if (c == '\'') {
+      token = get_quoted_char(c);
+    } else {
+      token = get_quoted_string(c);
+    }
+    token._lloc.first_column = first_col;
+    return token;
   }
 
   _last_c = c;

@@ -2096,6 +2096,7 @@ int     GetParnetDepth(CPPType  *type)
     } else if (TypeManager::is_integer(type)) {
     } else if (TypeManager::is_float(type)) {
     } else if (TypeManager::is_char_pointer(type)) {
+    } else if (TypeManager::is_wchar_pointer(type)) {
     } else if (TypeManager::is_pointer_to_PyObject(type)) {
     } else if (TypeManager::is_pointer(type) ||TypeManager::is_reference(type) || TypeManager::is_struct(type) ) 
     {
@@ -2192,6 +2193,7 @@ write_function_forset(ostream &out, InterfaceMaker::Object *obj,
         CPPType *type = remap->_parameters[pn]._remap->get_new_type();
 
         if (TypeManager::is_char_pointer(type)) {
+        } else if (TypeManager::is_wchar_pointer(type)) {
         } else if (TypeManager::is_pointer_to_PyObject(type)) {
         } else if (TypeManager::is_pointer(type)) {
           // This is a pointer to an object, so we
@@ -2417,6 +2419,16 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
         indent(out,indent_level)<< "char *" << param_name;
         format_specifiers += "s";
         parameter_list += ", &" + param_name;
+        
+      } else if (TypeManager::is_wchar_pointer(orig_type)) {
+        indent(out,indent_level) << "PyUnicodeObject *" << param_name << "\n";
+        format_specifiers += "U";
+        parameter_list += ", &" + param_name;
+
+        extra_convert += " int " + param_name + "_len = PyUnicode_GetSize((PyObject *)" + param_name + "); wchar_t *" + param_name + "_str = new wchar_t[" + param_name + "_len + 1]; PyUnicode_AsWideChar(" + param_name + ", " + param_name + "_str, " + param_name + "_len); " + param_name + "_str[" + param_name + "_len] = 0;";
+
+        pexpr_string = param_name + "_str";
+        extra_cleanup += " delete[] " + param_name + "_str;";
         
       } else if (TypeManager::is_wstring(orig_type)) {
         indent(out,indent_level) << "PyUnicodeObject *" << param_name << "\n";
@@ -2842,6 +2854,16 @@ void InterfaceMakerPythonNative::pack_return_value(ostream &out, int indent_leve
       indent(out, indent_level)
         << "return PyString_FromString(" << return_expr << ");\n";
 
+    } else if (TypeManager::is_wchar_pointer(orig_type)) {
+      indent(out, indent_level)<<"if("<< return_expr<< " == NULL)\n";
+      indent(out, indent_level)<<"{\n";
+      indent(out, indent_level)<<"    Py_INCREF(Py_None);\n";
+      indent(out, indent_level)<<"    return Py_None;\n";
+      indent(out, indent_level)<<"}\n";
+      indent(out, indent_level)
+        << "return PyUnicode_FromWideChar(" 
+        << return_expr << ", wcslen(" << return_expr << "));\n";
+
     } else if (TypeManager::is_wstring(orig_type)) {
       indent(out, indent_level)
         << "return PyUnicode_FromWideChar("
@@ -2907,27 +2929,33 @@ void InterfaceMakerPythonNative::pack_return_value(ostream &out, int indent_leve
     indent(out, indent_level)<<"}\n";
     indent(out, indent_level)
       << "return PyString_FromString(" << return_expr << ");\n";
+    
+  } else if (TypeManager::is_wchar_pointer(type)) {
+    indent(out, indent_level)<<"if("<< return_expr<< " == NULL)\n";
+    indent(out, indent_level)<<"{\n";
+    indent(out, indent_level)<<"    Py_INCREF(Py_None);\n";
+    indent(out, indent_level)<<"    return Py_None;\n";
+    indent(out, indent_level)<<"}\n";
+    indent(out, indent_level)
+      << "return PyUnicode_FromWideChar(" 
+      << return_expr << ", wcslen(" << return_expr << "));\n";
 
-  }
-  else if (TypeManager::is_pointer_to_PyObject(type)) 
-  {
+  } else if (TypeManager::is_pointer_to_PyObject(type)) {
     indent(out, indent_level)
       << "return  "<< return_expr << ";\n";
     
-  }
-  else if (TypeManager::is_pointer(type)) 
-  {
-      string const_flag;
-      if (TypeManager::is_const_pointer_to_anything(type)) {
-        const_flag = "true";
-      } else {
-        const_flag = "false";
-      }
-
-      if (TypeManager::is_struct(orig_type) || TypeManager::is_ref_to_anything(orig_type)) 
+  } else if (TypeManager::is_pointer(type)) {
+    string const_flag;
+    if (TypeManager::is_const_pointer_to_anything(type)) {
+      const_flag = "true";
+    } else {
+      const_flag = "false";
+    }
+    
+    if (TypeManager::is_struct(orig_type) || TypeManager::is_ref_to_anything(orig_type)) 
       {
         if( TypeManager::is_ref_to_anything(orig_type))
-        {
+          {
             TypeIndex type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(type)),false);
             InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
             const InterrogateType &itype = idb->get_type(type_index);    

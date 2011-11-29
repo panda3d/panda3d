@@ -383,6 +383,9 @@ remap_parameter(CPPType *struct_type, CPPType *param_type) {
     if (TypeManager::is_char_pointer(param_type)) {
       return new ParameterRemapCharStarToString(param_type);
     }
+    if (TypeManager::is_wchar_pointer(param_type)) {
+      return new ParameterRemapWCharStarToWString(param_type);
+    }
 
     // If we're exporting a method of basic_string<char> itself, don't
     // convert basic_string<char>'s to atomic strings.
