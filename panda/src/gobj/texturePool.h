@@ -130,7 +130,8 @@ private:
   TextureCollection ns_find_all_textures(const string &name) const;
   PT(Texture) ns_make_texture(const string &extension) const;
 
-  void resolve_filename(Filename &new_filename, const Filename &orig_filename);
+  void resolve_filename(Filename &new_filename, const Filename &orig_filename,
+                        bool read_mipmaps, const LoaderOptions &options);
 
   void try_load_cache(PT(Texture) &tex, BamCache *cache, 
                       const Filename &filename, PT(BamCacheRecord) &record, 

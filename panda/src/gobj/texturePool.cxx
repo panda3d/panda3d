@@ -190,7 +190,7 @@ ns_has_texture(const Filename &orig_filename) {
   MutexHolder holder(_lock);
 
   Filename filename;
-  resolve_filename(filename, orig_filename);
+  resolve_filename(filename, orig_filename, false, LoaderOptions());
 
   Textures::const_iterator ti;
   ti = _textures.find(filename);
@@ -214,7 +214,7 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
 
   {
     MutexHolder holder(_lock);
-    resolve_filename(filename, orig_filename);
+    resolve_filename(filename, orig_filename, read_mipmaps, options);
     Textures::const_iterator ti;
     ti = _textures.find(filename);
     if (ti != _textures.end()) {
@@ -378,8 +378,8 @@ ns_load_texture(const Filename &orig_filename,
 
   {
     MutexHolder holder(_lock);
-    resolve_filename(filename, orig_filename);
-    resolve_filename(alpha_filename, orig_alpha_filename);
+    resolve_filename(filename, orig_filename, read_mipmaps, options);
+    resolve_filename(alpha_filename, orig_alpha_filename, read_mipmaps, options);
 
     Textures::const_iterator ti;
     ti = _textures.find(filename);
@@ -503,7 +503,7 @@ ns_load_3d_texture(const Filename &filename_pattern,
   Filename filename;
   {
     MutexHolder holder(_lock);
-    resolve_filename(filename, orig_filename);
+    resolve_filename(filename, orig_filename, read_mipmaps, options);
 
     Textures::const_iterator ti;
     ti = _textures.find(filename);
@@ -607,7 +607,7 @@ ns_load_2d_texture_array(const Filename &filename_pattern,
   Filename unique_filename; //differentiate 3d-textures from 2d-texture arrays
   {
     MutexHolder holder(_lock);
-    resolve_filename(filename, orig_filename);
+    resolve_filename(filename, orig_filename, read_mipmaps, options);
     // Differentiate from preloaded 3d textures
     unique_filename = filename + ".2DARRAY";
 
@@ -712,7 +712,7 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
   Filename filename;
   {
     MutexHolder holder(_lock);
-    resolve_filename(filename, orig_filename);
+    resolve_filename(filename, orig_filename, read_mipmaps, options);
 
     Textures::const_iterator ti;
     ti = _textures.find(filename);
@@ -1053,7 +1053,8 @@ ns_make_texture(const string &extension) const {
 //               optimization.  Assumes _lock is held.
 ////////////////////////////////////////////////////////////////////
 void TexturePool::
-resolve_filename(Filename &new_filename, const Filename &orig_filename) {
+resolve_filename(Filename &new_filename, const Filename &orig_filename,
+                 bool read_mipmaps, const LoaderOptions &options) {
   if (!_fake_texture_image.empty()) {
     new_filename = _fake_texture_image;
     return;
@@ -1066,6 +1067,10 @@ resolve_filename(Filename &new_filename, const Filename &orig_filename) {
   }
 
   new_filename = orig_filename;
+  if (read_mipmaps || (options.get_texture_flags() & LoaderOptions::TF_multiview)) {
+    new_filename.set_pattern(true);
+  }
+
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   vfs->resolve_filename(new_filename, get_model_path());
 
