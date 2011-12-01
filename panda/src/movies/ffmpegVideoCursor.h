@@ -64,7 +64,8 @@ public:
   virtual bool set_time(double timestamp, int loop_count);
   virtual PT(Buffer) fetch_buffer();
 
-protected:
+public:
+  // Nested class must be public for PT(FfmpegBuffer) to work correctly.
   class FfmpegBuffer : public Buffer {
   public:
     ALLOC_DELETED_CHAIN(FfmpegBuffer);
@@ -94,6 +95,7 @@ protected:
     static TypeHandle _type_handle;
   };
 
+protected:
   virtual PT(Buffer) make_new_buffer();
 
 private:
