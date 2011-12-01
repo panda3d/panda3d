@@ -63,7 +63,7 @@ PUBLISHED:
 
   virtual bool set_time(double timestamp, int loop_count);
 
-  class Buffer : public TypedReferenceCount {
+  class EXPCL_PANDA_MOVIES Buffer : public TypedReferenceCount {
   public:
     ALLOC_DELETED_CHAIN(Buffer);
     Buffer(size_t block_size);

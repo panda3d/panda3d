@@ -66,7 +66,7 @@ public:
 
 public:
   // Nested class must be public for PT(FfmpegBuffer) to work correctly.
-  class FfmpegBuffer : public Buffer {
+  class EXPCL_PANDA_MOVIES FfmpegBuffer : public Buffer {
   public:
     ALLOC_DELETED_CHAIN(FfmpegBuffer);
     INLINE FfmpegBuffer(size_t block_size, double video_timebase);
