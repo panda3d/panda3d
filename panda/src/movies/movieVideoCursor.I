@@ -163,25 +163,3 @@ ready() const {
   return _ready;
 }
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: MovieVideoCursor::Buffer::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE MovieVideoCursor::Buffer::
-Buffer(size_t block_size) :
-  _block_size(block_size)
-{
-  _block = (unsigned char *)PANDA_MALLOC_ARRAY(_block_size);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MovieVideoCursor::Buffer::Destructor
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE MovieVideoCursor::Buffer::
-~Buffer() {
-  PANDA_FREE_ARRAY(_block);
-}

@@ -84,6 +84,17 @@ ConfigVariableInt pfm_vis_max_indices
           "a single generated mesh.  If the mesh would require more than that, "
           "the mesh is subdivided into smaller pieces."));
 
+ConfigVariableBool movies_sync_pages
+("movies-sync-pages", true,
+ PRC_DESC("Set this true to force multi-page MovieTextures to hold pages "
+          "back if necessary until all pages are ready to render at once, "
+          "so that the multiple pages of a single movie are always in sync "
+          "with each other.  Set this false to allow individual pages to be "
+          "visible as soon as they come available, which means pages might "
+          "sometimes be out of sync.  This only affects multi-page MovieTextures "
+          "such as cube maps, 3-d textures, or stereo textures, or textures "
+          "with separate color and alpha channel movie sources."));
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libgrutil
 //  Description: Initializes the library.  This must be called at

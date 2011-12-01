@@ -30,6 +30,7 @@ extern "C" {
 
 ReMutex FfmpegVideoCursor::_av_lock;
 TypeHandle FfmpegVideoCursor::_type_handle;
+TypeHandle FfmpegVideoCursor::FfmpegBuffer::_type_handle;
 
 PStatCollector FfmpegVideoCursor::_fetch_buffer_pcollector("*:FFMPEG Video Decoding:Fetch");
 PStatCollector FfmpegVideoCursor::_seek_pcollector("*:FFMPEG Video Decoding:Seek");
@@ -308,7 +309,6 @@ stop_thread() {
   MutexHolder holder(_lock);
 
   _readahead_frames.clear();
-  _recycled_frames.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -329,8 +329,8 @@ is_thread_started() const {
 //  Description: See MovieVideoCursor::set_time().
 ////////////////////////////////////////////////////////////////////
 bool FfmpegVideoCursor::
-set_time(double time, int loop_count) {
-  int frame = (int)(time / _video_timebase + 0.5);
+set_time(double timestamp, int loop_count) {
+  int frame = (int)(timestamp / _video_timebase + 0.5);
 
   if (_eof_known) {
     if (loop_count == 0) {
@@ -403,7 +403,6 @@ fetch_buffer() {
             << " at frame " << _current_frame << ", discarding frame at "
             << frame->_begin_frame << "\n";
         }
-        do_recycle_frame(frame);
         frame = _readahead_frames.front();
         _readahead_frames.pop_front();
       }
@@ -416,7 +415,7 @@ fetch_buffer() {
             << " at frame " << _current_frame << ", encountered too-new frame at "
             << frame->_begin_frame << "\n";
         }
-        do_recycle_all_frames();
+        do_clear_all_frames();
         if (_thread_status == TS_wait || _thread_status == TS_seek || _thread_status == TS_readahead) {
           _thread_status = TS_seek;
           _seek_frame = _current_frame;
@@ -439,15 +438,11 @@ fetch_buffer() {
     bool too_new = frame->_begin_frame > _current_frame;
     if (too_old || too_new) {
       // The frame is too old or too new.  Just recycle it.
-      do_recycle_frame(frame);
       frame = NULL;
     }
   }
 
   if (frame != NULL) {
-    if (_current_frame_buffer != NULL) {
-      do_recycle_frame(_current_frame_buffer);
-    }
     _current_frame_buffer = frame;
     if (ffmpeg_cat.is_debug()) {
       ffmpeg_cat.debug()
@@ -466,17 +461,6 @@ fetch_buffer() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVideoCursor::release_buffer
-//       Access: Public, Virtual
-//  Description: Should be called after processing the Buffer object
-//               returned by fetch_buffer(), this releases the Buffer
-//               for future use again.
-////////////////////////////////////////////////////////////////////
-void FfmpegVideoCursor::
-release_buffer(Buffer *buffer) {
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: FfmpegVideoCursor::make_new_buffer
 //       Access: Protected, Virtual
 //  Description: May be called by a derived class to allocate a new
@@ -484,7 +468,7 @@ release_buffer(Buffer *buffer) {
 ////////////////////////////////////////////////////////////////////
 PT(MovieVideoCursor::Buffer) FfmpegVideoCursor::
 make_new_buffer() {
-  PT(FfmpegBuffer) frame = new FfmpegBuffer(size_x() * size_y() * get_num_components());
+  PT(FfmpegBuffer) frame = new FfmpegBuffer(size_x() * size_y() * get_num_components(), _video_timebase);
   return frame.p();
 }
 
@@ -683,8 +667,10 @@ thread_main() {
 
     while (do_poll()) {
       // Keep doing stuff as long as there's something to do.
+      _lock.release();
       PStatClient::thread_tick(_sync_name);
       Thread::consider_yield();
+      _lock.acquire();
     }
   }
 
@@ -730,7 +716,6 @@ do_poll() {
       } else {
         // No frame.
         _lock.acquire();
-        do_recycle_frame(frame);
       }
       return true;
     }
@@ -750,12 +735,11 @@ do_poll() {
       if (_frame_ready) {
         export_frame(frame);
         _lock.acquire();
-        do_recycle_all_frames();
+        do_clear_all_frames();
         _readahead_frames.push_back(frame);
       } else {
         _lock.acquire();
-        do_recycle_all_frames();
-        do_recycle_frame(frame);
+        do_clear_all_frames();
       }
 
       if (_thread_status == TS_seeking) {
@@ -776,50 +760,24 @@ do_poll() {
 ////////////////////////////////////////////////////////////////////
 //     Function: FfmpegVideoCursor::do_alloc_frame
 //       Access: Private
-//  Description: Allocates a new Buffer object, or returns a
-//               previously-recycled object.  Assumes the lock is
+//  Description: Allocates a new Buffer object.  Assumes the lock is
 //               held.
 ////////////////////////////////////////////////////////////////////
 PT(FfmpegVideoCursor::FfmpegBuffer) FfmpegVideoCursor::
 do_alloc_frame() {
-  if (!_recycled_frames.empty()) {
-    PT(FfmpegBuffer) frame = _recycled_frames.front();
-    _recycled_frames.pop_front();
-    return frame;
-  }
   PT(Buffer) buffer = make_new_buffer();
   return (FfmpegBuffer *)buffer.p();
 }
  
 ////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVideoCursor::do_recycle_frame
+//     Function: FfmpegVideoCursor::do_clear_all_frames
 //       Access: Private
-//  Description: Recycles a previously-allocated Buffer object for
-//               future reuse.  Assumes the lock is held.
+//  Description: Empties the entire readahead_frames queue.
+//               Assumes the lock is held.
 ////////////////////////////////////////////////////////////////////
 void FfmpegVideoCursor::
-do_recycle_frame(FfmpegBuffer *frame) {
-  _recycled_frames.push_back(frame);
-}
- 
-////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVideoCursor::do_recycle_all_frames
-//       Access: Private
-//  Description: Empties the entire readahead_frames queue into the
-//               recycle bin.  Assumes the lock is held.
-////////////////////////////////////////////////////////////////////
-void FfmpegVideoCursor::
-do_recycle_all_frames() {
-  while (!_readahead_frames.empty()) {
-    PT(FfmpegBuffer) frame = _readahead_frames.front();
-    _readahead_frames.pop_front();
-    if (ffmpeg_cat.is_spam()) {
-      ffmpeg_cat.spam()
-        << "ffmpeg for " << _filename.get_basename()
-        << " recycling frame at " << frame->_begin_frame << "\n";
-    }
-    _recycled_frames.push_back(frame);
-  }
+do_clear_all_frames() {
+  _readahead_frames.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1329,6 +1287,45 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   // need a finalize callback so we can initialize ourselves once that
   // has been read completely.
   manager->register_finalize(this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::FfmpegBuffer::compare_timestamp
+//       Access: Published, Virtual
+//  Description: Used to sort different buffers to ensure they
+//               correspond to the same source frame, particularly
+//               important when synchronizing the different pages of a
+//               multi-page texture.
+//
+//               Returns 0 if the two buffers are of the same frame,
+//               <0 if this one comes earlier than the other one, and
+//               >0 if the other one comes earlier.
+////////////////////////////////////////////////////////////////////
+int FfmpegVideoCursor::FfmpegBuffer::
+compare_timestamp(const Buffer *other) const {
+  const FfmpegBuffer *fother;
+  DCAST_INTO_R(fother, other, 0);
+  if (_end_frame * _video_timebase <= fother->_begin_frame * fother->_video_timebase) {
+    return -1;
+  } else if (_begin_frame * _video_timebase >= fother->_end_frame * fother->_video_timebase) {
+    return 1;
+  }
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideoCursor::FfmpegBuffer::get_timestamp
+//       Access: Published, Virtual
+//  Description: Returns the nearest timestamp value of this
+//               particular buffer.  Ideally,
+//               MovieVideoCursor::set_time() for this timestamp would
+//               return this buffer again.  This need be defined only
+//               if compare_timestamp() is also defined.
+////////////////////////////////////////////////////////////////////
+double FfmpegVideoCursor::FfmpegBuffer::
+get_timestamp() const {
+  int mid_frame = (_begin_frame + _end_frame - 1) / 2;
+  return mid_frame * _video_timebase;
 }
 
 #endif // HAVE_FFMPEG

@@ -19,7 +19,12 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
+PStatCollector MovieVideoCursor::_copy_pcollector("*:Copy Video into Texture");
+PStatCollector MovieVideoCursor::_copy_pcollector_ram("*:Copy Video into Texture:modify_ram_image");
+PStatCollector MovieVideoCursor::_copy_pcollector_copy("*:Copy Video into Texture:copy");
+
 TypeHandle MovieVideoCursor::_type_handle;
+TypeHandle MovieVideoCursor::Buffer::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MovieVideoCursor::Default Constructor
@@ -76,57 +81,58 @@ setup_texture(Texture *tex) const {
 //               loop_count >= 1, the time is clamped to the movie's
 //               length * loop_count.  If loop_count <= 0, the time is
 //               understood to be modulo the movie's length.
-
+//
 //               Returns true if a new frame is now available, false
 //               otherwise.  If this returns true, you should
 //               immediately follow this with exactly *one* call to
-//               one of the fetch_*() methods.
+//               fetch_buffer().
+//
+//               If the movie reports that it can_seek, you may also
+//               specify a time value less than the previous value you
+//               passed to set_time().  Otherwise, you may only
+//               specify a time value greater than or equal to
+//               the previous value.
+//
+//               If the movie reports that it can_seek, it doesn't
+//               mean that it can do so quickly.  It may have to
+//               rewind the movie and then fast forward to the
+//               desired location.  Only if can_seek_fast returns
+//               true can it seek rapidly.
 ////////////////////////////////////////////////////////////////////
 bool MovieVideoCursor::
-set_time(double time, int loop_count) {
+set_time(double timestamp, int loop_count) {
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovieVideoCursor::fetch_into_bitbucket
+//     Function: MovieVideoCursor::fetch_buffer
 //       Access: Published, Virtual
-//  Description: Discards the next video frame.
+//  Description: Gets the current video frame (as specified by
+//               set_time()) from the movie and returns it in a
+//               pre-allocated buffer.  You may simply let the buffer
+//               dereference and delete itself when you are done with
+//               it.
 //
-//               See fetch_buffer for more details.
+//               This may return NULL (even if set_time() returned
+//               true) if the frame is not available for some reason.
 ////////////////////////////////////////////////////////////////////
-void MovieVideoCursor::
-fetch_into_bitbucket() {
-
-  // This generic implementation is layered on fetch_buffer.
-  // It will work for any derived class, so it is never necessary to
-  // redefine this.  It is probably possible to make a faster
-  // implementation, but since this function is rarely used, it
-  // probably isn't worth the trouble.
-
-  PT(Buffer) buffer = fetch_buffer();
-  if (buffer != NULL) {
-    release_buffer(buffer);
-  }
+PT(MovieVideoCursor::Buffer) MovieVideoCursor::
+fetch_buffer() {
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovieVideoCursor::fetch_into_texture
+//     Function: MovieVideoCursor::apply_to_texture
 //       Access: Published, Virtual
-//  Description: Reads the specified video frame into 
-//               the specified texture.
-//
-//               See fetch_buffer for more details.
+//  Description: Stores this buffer's contents in the indicated texture.
 ////////////////////////////////////////////////////////////////////
 void MovieVideoCursor::
-fetch_into_texture(Texture *t, int page) {
-  static PStatCollector fetch_into_texture_collector("*:Decode Video into Texture");
-  PStatTimer timer(fetch_into_texture_collector);
+apply_to_texture(const Buffer *buffer, Texture *t, int page) {
+  if (buffer == NULL) {
+    return;
+  }
 
-  // This generic implementation is layered on fetch_buffer.
-  // It will work for any derived class, so it is never necessary to
-  // redefine this.  However, it may be possible to make a faster
-  // implementation that uses fewer intermediate copies, depending
-  // on the capabilities of the underlying codec software.
+  PStatTimer timer(_copy_pcollector);
 
   nassertv(t->get_x_size() >= size_x());
   nassertv(t->get_y_size() >= size_y());
@@ -134,20 +140,19 @@ fetch_into_texture(Texture *t, int page) {
   nassertv(t->get_component_width() == 1);
   nassertv(page < t->get_num_pages());
   
-  t->set_keep_ram_image(true);
-  PTA_uchar img = t->modify_ram_image();
+  PTA_uchar img;
+  {
+    PStatTimer timer2(_copy_pcollector_ram);
+    t->set_keep_ram_image(true);
+    img = t->modify_ram_image();
+  }
   
   unsigned char *data = img.p() + page * t->get_expected_ram_page_size();
 
-  PT(Buffer) buffer = fetch_buffer();
-  if (buffer == NULL) {
-    // No image available.
-    return;
-  }
-
+  PStatTimer timer2(_copy_pcollector_copy);
   if (t->get_x_size() == size_x() && t->get_num_components() == get_num_components()) {
     memcpy(data, buffer->_block, size_x() * size_y() * get_num_components());
-
+    
   } else {
     unsigned char *p = buffer->_block;
     if (t->get_num_components() == get_num_components()) {
@@ -172,26 +177,22 @@ fetch_into_texture(Texture *t, int page) {
       }
     }
   }
-  release_buffer(buffer);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovieVideoCursor::fetch_into_texture_alpha
+//     Function: MovieVideoCursor::apply_to_texture_alpha
 //       Access: Published, Virtual
-//  Description: Reads the specified video frame into 
-//               the alpha channel of the supplied texture.  The
-//               RGB channels of the texture are not touched.
-//
-//               See fetch_buffer for more details.
+//  Description: Copies this buffer's contents into the alpha channel
+//               of the supplied texture.  The RGB channels of the
+//               texture are not touched.
 ////////////////////////////////////////////////////////////////////
 void MovieVideoCursor::
-fetch_into_texture_alpha(Texture *t, int page, int alpha_src) {
+apply_to_texture_alpha(const Buffer *buffer, Texture *t, int page, int alpha_src) {
+  if (buffer == NULL) {
+    return;
+  }
 
-  // This generic implementation is layered on fetch_buffer.
-  // It will work for any derived class, so it is never necessary to
-  // redefine this.  However, it may be possible to make a faster
-  // implementation that uses fewer intermediate copies, depending
-  // on the capabilities of the underlying codec software.
+  PStatTimer timer(_copy_pcollector);
 
   nassertv(t->get_x_size() >= size_x());
   nassertv(t->get_y_size() >= size_y());
@@ -200,17 +201,16 @@ fetch_into_texture_alpha(Texture *t, int page, int alpha_src) {
   nassertv(page < t->get_z_size());
   nassertv((alpha_src >= 0) && (alpha_src <= get_num_components()));
 
-  PT(Buffer) buffer = fetch_buffer();
-  if (buffer == NULL) {
-    // No image available.
-    return;
+  PTA_uchar img;
+  {
+    PStatTimer timer2(_copy_pcollector_ram);
+    t->set_keep_ram_image(true);
+    img = t->modify_ram_image();
   }
-
-  t->set_keep_ram_image(true);
-  PTA_uchar img = t->modify_ram_image();
   
   unsigned char *data = img.p() + page * t->get_expected_ram_page_size();
   
+  PStatTimer timer2(_copy_pcollector_copy);
   int src_stride = size_x() * get_num_components();
   int dst_stride = t->get_x_size() * 4;
   if (alpha_src == 0) {
@@ -234,45 +234,39 @@ fetch_into_texture_alpha(Texture *t, int page, int alpha_src) {
       p += src_stride;
     }
   }
-
-  release_buffer(buffer);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovieVideoCursor::fetch_into_texture_rgb
+//     Function: MovieVideoCursor::apply_to_texture_rgb
 //       Access: Published, Virtual
-//  Description: Reads the specified video frame into
-//               the RGB channels of the supplied texture.  The alpha
-//               channel of the texture is not touched.
-//
-//               See fetch_buffer for more details.
+//  Description: Copies this buffer's contents into the RGB channels
+//               of the supplied texture.  The alpha channel of the
+//               texture is not touched.
 ////////////////////////////////////////////////////////////////////
 void MovieVideoCursor::
-fetch_into_texture_rgb(Texture *t, int page) {
+apply_to_texture_rgb(const Buffer *buffer, Texture *t, int page) {
+  if (buffer == NULL) {
+    return;
+  }
 
-  // This generic implementation is layered on fetch_buffer.
-  // It will work for any derived class, so it is never necessary to
-  // redefine this.  However, it may be possible to make a faster
-  // implementation that uses fewer intermediate copies, depending
-  // on the capabilities of the underlying codec software.
+  PStatTimer timer(_copy_pcollector);
 
   nassertv(t->get_x_size() >= size_x());
   nassertv(t->get_y_size() >= size_y());
   nassertv(t->get_num_components() == 4);
   nassertv(t->get_component_width() == 1);
   nassertv(page < t->get_z_size());
-
-  PT(Buffer) buffer = fetch_buffer();
-  if (buffer == NULL) {
-    // No image available.
-    return;
+  
+  PTA_uchar img;
+  {
+    PStatTimer timer2(_copy_pcollector_ram);
+    t->set_keep_ram_image(true);
+    img = t->modify_ram_image();
   }
-
-  t->set_keep_ram_image(true);
-  PTA_uchar img = t->modify_ram_image();
   
   unsigned char *data = img.p() + page * t->get_expected_ram_page_size();
   
+  PStatTimer timer2(_copy_pcollector_copy);
   int src_stride = size_x() * get_num_components();
   int src_width = get_num_components();
   int dst_stride = t->get_x_size() * 4;
@@ -286,46 +280,6 @@ fetch_into_texture_rgb(Texture *t, int page) {
     data += dst_stride;
     p += src_stride;
   }
-
-  release_buffer(buffer);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MovieVideoCursor::fetch_buffer
-//       Access: Published, Virtual
-//  Description: Reads the specified video frame and returns it in a
-//               pre-allocated buffer.  After you have copied the data
-//               from the buffer, you should call release_buffer() to
-//               make the space available again to populate the next
-//               frame.  You may not call fetch_buffer() again until
-//               you have called release_buffer().
-//
-//               If the movie reports that it can_seek, you may
-//               also specify a timestamp less than next_start.
-//               Otherwise, you may only specify a timestamp
-//               greater than or equal to next_start.
-//
-//               If the movie reports that it can_seek, it doesn't
-//               mean that it can do so quickly.  It may have to
-//               rewind the movie and then fast forward to the
-//               desired location.  Only if can_seek_fast returns
-//               true can it seek rapidly.
-////////////////////////////////////////////////////////////////////
-PT(MovieVideoCursor::Buffer) MovieVideoCursor::
-fetch_buffer() {
-  return NULL;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MovieVideoCursor::release_buffer
-//       Access: Public, Virtual
-//  Description: Should be called after processing the Buffer object
-//               returned by fetch_buffer(), this releases the Buffer
-//               for future use again.
-////////////////////////////////////////////////////////////////////
-void MovieVideoCursor::
-release_buffer(Buffer *buffer) {
-  nassertv(buffer == _standard_buffer);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -333,8 +287,7 @@ release_buffer(Buffer *buffer) {
 //       Access: Protected
 //  Description: May be called by a derived class to return a single
 //               standard Buffer object to easily implement
-//               fetch_buffer().  The default release_buffer()
-//               implementation assumes this method is used.
+//               fetch_buffer().
 ////////////////////////////////////////////////////////////////////
 MovieVideoCursor::Buffer *MovieVideoCursor::
 get_standard_buffer() {
@@ -396,4 +349,58 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritableReferenceCount::fillin(scan, manager);
 
   manager->read_pointer(scan);  // _source
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideoCursor::Buffer::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+MovieVideoCursor::Buffer::
+Buffer(size_t block_size) :
+  _block_size(block_size)
+{
+  _deleted_chain = memory_hook->get_deleted_chain(_block_size);
+  _block = (unsigned char *)_deleted_chain->allocate(_block_size, get_class_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideoCursor::Buffer::Destructor
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+MovieVideoCursor::Buffer::
+~Buffer() {
+  _deleted_chain->deallocate(_block, get_class_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideoCursor::Buffer::compare_timestamp
+//       Access: Published, Virtual
+//  Description: Used to sort different buffers to ensure they
+//               correspond to the same source frame, particularly
+//               important when synchronizing the different pages of a
+//               multi-page texture.
+//
+//               Returns 0 if the two buffers are of the same frame,
+//               <0 if this one comes earlier than the other one, and
+//               >0 if the other one comes earlier.
+////////////////////////////////////////////////////////////////////
+int MovieVideoCursor::Buffer::
+compare_timestamp(const Buffer *other) const {
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieVideoCursor::Buffer::get_timestamp
+//       Access: Published, Virtual
+//  Description: Returns the nearest timestamp value of this
+//               particular buffer.  Ideally,
+//               MovieVideoCursor::set_time() for this timestamp would
+//               return this buffer again.  This need be defined only
+//               if compare_timestamp() is also defined.
+////////////////////////////////////////////////////////////////////
+double MovieVideoCursor::Buffer::
+get_timestamp() const {
+  return 0.0;
 }

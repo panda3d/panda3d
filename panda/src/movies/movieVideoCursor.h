@@ -19,6 +19,9 @@
 #include "texture.h"
 #include "pointerTo.h"
 #include "memoryBase.h"
+#include "pStatCollector.h"
+#include "deletedChain.h"
+#include "typedReferenceCount.h"
 
 class MovieVideo;
 class FactoryParams;
@@ -58,22 +61,48 @@ PUBLISHED:
   INLINE bool streaming() const;
   void setup_texture(Texture *tex) const;
 
-  virtual bool set_time(double time, int loop_count);
-  virtual void fetch_into_bitbucket();
-  virtual void fetch_into_texture(Texture *t, int page);
-  virtual void fetch_into_texture_rgb(Texture *t, int page);
-  virtual void fetch_into_texture_alpha(Texture *t, int page, int alpha_src);
+  virtual bool set_time(double timestamp, int loop_count);
 
-public:
-  class Buffer : public ReferenceCount {
+  class Buffer : public TypedReferenceCount {
   public:
-    INLINE Buffer(size_t block_size);
-    INLINE virtual ~Buffer();
+    ALLOC_DELETED_CHAIN(Buffer);
+    Buffer(size_t block_size);
+
+  PUBLISHED:
+    virtual ~Buffer();
+
+    virtual int compare_timestamp(const Buffer *other) const;
+    virtual double get_timestamp() const;
+
+  public:
     unsigned char *_block;
     size_t _block_size;
+
+  private:
+    DeletedBufferChain *_deleted_chain;
+
+  public:
+    static TypeHandle get_class_type() {
+      return _type_handle;
+    }
+    static void init_type() {
+      TypedReferenceCount::init_type();
+      register_type(_type_handle, "MovieVideoCursor::Buffer",
+                    TypedReferenceCount::get_class_type());
+    }
+    virtual TypeHandle get_type() const {
+      return get_class_type();
+    }
+    virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+  private:
+    static TypeHandle _type_handle;
   };
   virtual PT(Buffer) fetch_buffer();
-  virtual void release_buffer(Buffer *buffer);
+
+  virtual void apply_to_texture(const Buffer *buffer, Texture *t, int page);
+  virtual void apply_to_texture_rgb(const Buffer *buffer, Texture *t, int page);
+  virtual void apply_to_texture_alpha(const Buffer *buffer, Texture *t, int page, int alpha_src);
   
 protected:
   Buffer *get_standard_buffer();
@@ -93,6 +122,10 @@ protected:
 
   PT(Buffer) _standard_buffer;
 
+  static PStatCollector _copy_pcollector;
+  static PStatCollector _copy_pcollector_ram;
+  static PStatCollector _copy_pcollector_copy;
+
 public:
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
   virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
@@ -108,6 +141,7 @@ public:
     TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "MovieVideoCursor",
                   TypedWritableReferenceCount::get_class_type());
+    Buffer::init_type();
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

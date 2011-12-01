@@ -61,16 +61,37 @@ PUBLISHED:
   bool is_thread_started() const;
   
 public:
-  virtual bool set_time(double time, int loop_count);
+  virtual bool set_time(double timestamp, int loop_count);
   virtual PT(Buffer) fetch_buffer();
-  virtual void release_buffer(Buffer *buffer);
 
 protected:
   class FfmpegBuffer : public Buffer {
   public:
-    INLINE FfmpegBuffer(size_t block_size);
+    ALLOC_DELETED_CHAIN(FfmpegBuffer);
+    INLINE FfmpegBuffer(size_t block_size, double video_timebase);
+    virtual int compare_timestamp(const Buffer *other) const;
+    virtual double get_timestamp() const;
+
     int _begin_frame;
     int _end_frame;
+    double _video_timebase;
+
+  public:
+    static TypeHandle get_class_type() {
+      return _type_handle;
+    }
+    static void init_type() {
+      Buffer::init_type();
+      register_type(_type_handle, "FfmpegVideoCursor::FfmpegBuffer",
+                    Buffer::get_class_type());
+    }
+    virtual TypeHandle get_type() const {
+      return get_class_type();
+    }
+    virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+  private:
+    static TypeHandle _type_handle;
   };
 
   virtual PT(Buffer) make_new_buffer();
@@ -89,8 +110,8 @@ private:
   // This global Mutex protects calls to avcodec_open/close/etc.
   static ReMutex _av_lock;
 
-  // Protects _readahead_frames, _recycled_buffers, and all the
-  // immediately following members.
+  // Protects _readahead_frames and all the immediately following
+  // members.
   Mutex _lock;
 
   // Condition: the thread has something to do.
@@ -98,7 +119,6 @@ private:
 
   typedef pdeque<PT(FfmpegBuffer) > Buffers;
   Buffers _readahead_frames;
-  Buffers _recycled_frames;
   enum ThreadStatus {
     TS_stopped,
     TS_wait,
@@ -120,8 +140,7 @@ private:
   bool do_poll();
 
   PT(FfmpegBuffer) do_alloc_frame();
-  void do_recycle_frame(FfmpegBuffer *frame);
-  void do_recycle_all_frames();
+  void do_clear_all_frames();
 
   bool fetch_packet(int default_frame);
   bool do_fetch_packet(int default_frame);
@@ -179,6 +198,7 @@ public:
     MovieVideoCursor::init_type();
     register_type(_type_handle, "FfmpegVideoCursor",
                   MovieVideoCursor::get_class_type());
+    FfmpegBuffer::init_type();
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

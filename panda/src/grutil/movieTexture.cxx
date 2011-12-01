@@ -68,7 +68,8 @@ CData() :
   _clock(0.0),
   _playing(false),
   _loop_count(1),
-  _play_rate(1.0)
+  _play_rate(1.0),
+  _has_offset(false)
 {
 }
 
@@ -86,7 +87,8 @@ CData(const CData &copy) :
   _clock(0.0),
   _playing(false),
   _loop_count(1),
-  _play_rate(1.0)
+  _play_rate(1.0),
+  _has_offset(false)
 {
 }
 
@@ -342,38 +344,60 @@ bool MovieTexture::
 cull_callback(CullTraverser *, const CullTraverserData &) const {
   Texture::CDReader cdata_tex(Texture::_cycler);
   CDReader cdata(_cycler);
-  
-  double offset;
-  int true_loop_count = 1;
-  if (cdata->_synchronize != 0) {
-    offset = cdata->_synchronize->get_time();
-  } else {
-    // Calculate the cursor position modulo the length of the movie.
-    double now = ClockObject::get_global_clock()->get_frame_time();
-    offset = cdata->_clock;
-    if (cdata->_playing) {
-      offset += now * cdata->_play_rate;
+
+  if (!cdata->_has_offset) {
+    // If we don't have a previously-computed timestamp (offset)
+    // cached, then compute a new one.
+    double offset;
+    int true_loop_count = 1;
+    if (cdata->_synchronize != 0) {
+      offset = cdata->_synchronize->get_time();
+    } else {
+      // Calculate the cursor position modulo the length of the movie.
+      double now = ClockObject::get_global_clock()->get_frame_time();
+      offset = cdata->_clock;
+      if (cdata->_playing) {
+        offset += now * cdata->_play_rate;
+      }
+      true_loop_count = cdata->_loop_count;
     }
-    true_loop_count = cdata->_loop_count;
+    ((CData *)cdata.p())->_offset = offset;
+    ((CData *)cdata.p())->_true_loop_count = true_loop_count;
+    ((CData *)cdata.p())->_has_offset = true;
   }
-  
-  for (int i=0; i<((int)(cdata->_pages.size())); i++) {
-    MovieVideoCursor *color = cdata->_pages[i]._color;
-    MovieVideoCursor *alpha = cdata->_pages[i]._alpha;
-    if (color && alpha) {
-      if (color->set_time(offset, true_loop_count)) {
-        color->fetch_into_texture_rgb((MovieTexture*)this, i);
+
+  bool in_sync = do_update_frames(cdata);
+  if (!in_sync) {
+    // If it didn't successfully sync, try again--once.  The second
+    // time it might be able to fill in some more recent frames.
+    in_sync = do_update_frames(cdata);
+  }
+
+  if (in_sync) {
+    // Now go back through and apply all the frames to the texture.
+    Pages::const_iterator pi;
+    for (pi = cdata->_pages.begin(); pi != cdata->_pages.end(); ++pi) {
+      const VideoPage &page = (*pi);
+      MovieVideoCursor *color = page._color;
+      MovieVideoCursor *alpha = page._alpha;
+      size_t i = pi - cdata->_pages.begin();
+      
+      if (color != NULL && alpha != NULL) {
+        color->apply_to_texture_rgb(page._cbuffer, (MovieTexture*)this, i);
+        alpha->apply_to_texture_alpha(page._abuffer, (MovieTexture*)this, i, cdata_tex->_alpha_file_channel);
+        
+      } else if (color != NULL) {
+        color->apply_to_texture(page._cbuffer, (MovieTexture*)this, i);
       }
-      if (alpha->set_time(offset, true_loop_count)) {
-        alpha->fetch_into_texture_alpha((MovieTexture*)this, i, cdata_tex->_alpha_file_channel);
-      }
-    } else if (color) {
-      bool result = color->set_time(offset, true_loop_count);
-      if (result) {
-        color->fetch_into_texture((MovieTexture*)this, i);
-      }
+      
+      ((VideoPage &)page)._cbuffer.clear();
+      ((VideoPage &)page)._abuffer.clear();
     }
+
+    // Clear the cached offset so we can update the frame next time.
+    ((CData *)cdata.p())->_has_offset = false;
   }
+    
   return true;
 }
 
@@ -691,6 +715,134 @@ void MovieTexture::
 unsynchronize() {
   CDWriter cdata(_cycler);
   cdata->_synchronize = 0;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::do_update_frames
+//       Access: Private
+//  Description: Called internally to sync all of the frames to the
+//               current time.  Returns true if successful, or false
+//               of some of the frames are out-of-date with each
+//               other.
+////////////////////////////////////////////////////////////////////
+bool MovieTexture::
+do_update_frames(const CData *cdata) const {
+  // Throughout this method, we cast the VideoPage to non-const to
+  // update the _cbuffer or _abuffer member.  We can do this safely
+  // because this is only a transparent cache value.
+  nassertr(cdata->_has_offset, false);
+
+  // First, go through and get all of the current frames.
+  Pages::const_iterator pi;
+  for (pi = cdata->_pages.begin(); pi != cdata->_pages.end(); ++pi) {
+    const VideoPage &page = (*pi);
+    MovieVideoCursor *color = page._color;
+    MovieVideoCursor *alpha = page._alpha;
+
+    if (color != NULL && page._cbuffer == NULL) {
+      if (color->set_time(cdata->_offset, cdata->_true_loop_count)) {
+        ((VideoPage &)page)._cbuffer = color->fetch_buffer();
+      }
+    }
+    if (alpha != NULL && page._abuffer == NULL) {
+      if (alpha->set_time(cdata->_offset, cdata->_true_loop_count)) {
+        ((VideoPage &)page)._abuffer = alpha->fetch_buffer();
+      }
+    }
+  }
+
+  if (!movies_sync_pages) {
+    // If movies-sync-pages is configured off, we don't care about
+    // syncing the pages, and we always return true here to render the
+    // pages we've got.
+    return true;
+  }
+
+  // Now make sure all of the frames are in sync with each other.
+  bool in_sync = true;
+  bool any_frames = false;
+  bool any_dropped = false;
+  PT(MovieVideoCursor::Buffer) newest;
+  for (pi = cdata->_pages.begin(); pi != cdata->_pages.end(); ++pi) {
+    const VideoPage &page = (*pi);
+    if (page._cbuffer == NULL) {
+      if (page._color != NULL) {
+        // This page isn't ready at all.
+        in_sync = false;
+      }
+    } else {
+      nassertr(page._color != NULL, true);
+      any_frames = true;
+      if (newest == NULL) {
+        newest = page._cbuffer;
+      } else {
+        int ref = newest->compare_timestamp(page._cbuffer);
+        if (ref != 0) {
+          // This page is ready, but out-of-date.
+          in_sync = false;
+          any_dropped = true;
+          if (ref < 0) {
+            newest = page._cbuffer;
+          }
+        }
+      }
+    }
+    if (page._abuffer == NULL) {
+      if (page._alpha != NULL) {
+        in_sync = false;
+      }
+    } else {
+      nassertr(page._alpha != NULL, true);
+      any_frames = true;
+      if (newest == NULL) {
+        newest = page._abuffer;
+      } else {
+        int ref = newest->compare_timestamp(page._abuffer);
+        if (ref != 0) {
+          in_sync = false;
+          any_dropped = true;
+          if (ref < 0) {
+            newest = page._abuffer;
+          }
+        }
+      }
+    }
+  }
+
+  if (!any_frames) {
+    // If no frames at all are ready yet, just carry on.
+    return true;
+  }
+
+  if (!in_sync) {
+    // If we're not in sync, throw away pages that are older than the
+    // newest available frame.
+    if (newest != NULL) {
+      Pages::const_iterator pi;
+      for (pi = cdata->_pages.begin(); pi != cdata->_pages.end(); ++pi) {
+        const VideoPage &page = (*pi);
+        if (page._cbuffer != NULL && newest->compare_timestamp(page._cbuffer) > 0) {
+          ((VideoPage &)page)._cbuffer.clear();
+          any_dropped = true;
+        }
+        if (page._abuffer != NULL && newest->compare_timestamp(page._abuffer) > 0) {
+          ((VideoPage &)page)._abuffer.clear();
+          any_dropped = true;
+        }
+      }
+
+      if (any_dropped) {
+        // If we dropped one or more frames for being out-of-sync,
+        // implying that compare_timestamp() is implemented, then we
+        // also want to update our internal offset value so that
+        // future frames will get the same value.
+        ((CData *)cdata)->_offset = newest->get_timestamp();
+      }
+    }
+  }
+
+  return in_sync;
 }
 
 ////////////////////////////////////////////////////////////////////

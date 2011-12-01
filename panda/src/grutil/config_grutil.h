@@ -40,6 +40,8 @@ extern ConfigVariableBool pfm_reverse_dimensions;
 extern ConfigVariableInt pfm_vis_max_vertices;
 extern ConfigVariableInt pfm_vis_max_indices;
 
+extern ConfigVariableBool movies_sync_pages;
+
 extern EXPCL_PANDA_GRUTIL void init_libgrutil();
 
 #endif

@@ -101,6 +101,10 @@ protected:
   public:
     PT(MovieVideoCursor) _color;
     PT(MovieVideoCursor) _alpha;
+
+    // The current (but not yet applied) frame for each video.
+    PT(MovieVideoCursor::Buffer) _cbuffer;
+    PT(MovieVideoCursor::Buffer) _abuffer;
   };
   
   typedef pvector<VideoPage> Pages;
@@ -124,6 +128,12 @@ protected:
     int _loop_count;
     double _play_rate;
     PT(AudioSound) _synchronize;
+
+    // The remaining values represent a local cache only; it is not
+    // preserved through the pipeline.
+    bool _has_offset;
+    double _offset;
+    int _true_loop_count;
   };
 
   PipelineCycler<CData> _cycler;
@@ -132,6 +142,9 @@ protected:
   
   void do_recalculate_image_properties(CData *cdata, Texture::CData *cdata_tex, 
                                        const LoaderOptions &options);
+
+private:
+  bool do_update_frames(const CData *cdata) const;
 
 public:
   static void register_with_read_factory();
