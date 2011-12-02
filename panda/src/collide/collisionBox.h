@@ -1,3 +1,4 @@
+
 // Filename: collisionBox.h
 // Created by:  amith tudur( 31Jul09 )
 //
@@ -30,8 +31,6 @@ class EXPCL_PANDA_COLLIDE CollisionBox : public CollisionSolid {
 PUBLISHED:
   INLINE CollisionBox(const LPoint3 &center, 
                       PN_stdfloat x, PN_stdfloat y, PN_stdfloat z);
-  INLINE CollisionBox(PN_stdfloat cx, PN_stdfloat cy,   PN_stdfloat cz,
-                      PN_stdfloat x,  PN_stdfloat y,  PN_stdfloat z);
   INLINE CollisionBox(const LPoint3 &min, const LPoint3 &max);
 
   virtual LPoint3 get_collision_origin() const;

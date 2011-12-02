@@ -55,17 +55,6 @@ CollisionBox(const LPoint3 &min, const LPoint3 &max) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionBox::Constructor
-//       Access: Public
-//  Description: Center as three separate co-ordinate points
-////////////////////////////////////////////////////////////////////
-INLINE CollisionBox::
-CollisionBox(PN_stdfloat cx, PN_stdfloat cy, PN_stdfloat cz, PN_stdfloat x, PN_stdfloat y, PN_stdfloat z) 
-{
-  CollisionBox(LPoint3(cx, cy, cz), x, y, z);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CollisionBox::Default constructor
 //       Access: Protected
 //  Description: Creates an invalid Box.  Only used when reading
