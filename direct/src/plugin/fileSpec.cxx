@@ -302,6 +302,33 @@ full_verify(const string &package_dir) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FileSpec::force_get_actual_file
+//       Access: Public
+//  Description: Returns a FileSpec that represents the actual data
+//               read on disk.  This will read the disk to determine
+//               the data if necessary.
+////////////////////////////////////////////////////////////////////
+const FileSpec *FileSpec::
+force_get_actual_file(const string &pathname) {
+  if (_actual_file == NULL) {
+#ifdef _WIN32
+    struct _stat st;
+    wstring pathname_w;
+    if (string_to_wstring(pathname_w, pathname)) {
+      _wstat(pathname_w.c_str(), &st);
+    }
+#else // _WIN32
+    struct stat st;
+    stat(pathname.c_str(), &st);
+#endif  // _WIN32
+
+    priv_check_hash(pathname, &st);
+  }
+
+  return _actual_file;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FileSpec::check_hash
 //       Access: Public
 //  Description: Returns true if the file has the expected md5 hash,

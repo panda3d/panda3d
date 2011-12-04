@@ -47,6 +47,7 @@ public:
   bool quick_verify_pathname(const string &pathname);
   bool full_verify(const string &package_dir);
   inline const FileSpec *get_actual_file() const;
+  const FileSpec *force_get_actual_file(const string &pathname);
   
   bool check_hash(const string &pathname) const;
   bool read_hash(const string &pathname);

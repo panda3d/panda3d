@@ -1670,12 +1670,20 @@ downloaded_plugin(const string &filename) {
   // Make sure the DLL was correctly downloaded before continuing.
   if (!_coreapi_dll.quick_verify_pathname(filename)) {
     nout << "After download, " << _coreapi_dll.get_filename() << " is no good.\n";
+    nout << "Expected:\n";
+    _coreapi_dll.write(nout);
+    const FileSpec *actual = _coreapi_dll.force_get_actual_file(filename);
+    if (actual != NULL) {
+      nout << "Found:\n";
+      actual->write(nout);
+    }
 
     // That DLL came out wrong.  Try the next URL.
     if (!_core_urls.empty()) {
       string url = _core_urls.back();
       _core_urls.pop_back();
-      
+
+      _core_dll_temp_file.cleanup();
       PPDownloadRequest *req = new PPDownloadRequest(PPDownloadRequest::RT_core_dll);
       start_download(url, req);
       return;
@@ -3260,7 +3268,13 @@ open() {
 bool PPInstance::StreamTempFile::
 feed(size_t total_expected_data, const void *this_data,
      size_t this_data_size) {
-  assert(!_finished);
+  if (_finished) {
+    nout << "feed(" << total_expected_data << ", " << (void *)this_data
+         << ", " << this_data_size << ") to " << _filename
+         << ", but already finished at " << _current_size << "\n";
+    return false;
+  }
+
   if (!_opened) {
     open();
   }
