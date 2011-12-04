@@ -106,10 +106,6 @@ open_framework(int &argc, char **&argv) {
   init_libtinydisplay();
   #endif
 
-  // Get the available image types too.
-  extern EXPCL_PANDA_PNMIMAGETYPES void init_libpnmimagetypes();
-  init_libpnmimagetypes();
-
   // Ensure the animation subsystem is available.
   extern EXPCL_PANDA_CHAR void init_libchar();
   init_libchar();
@@ -121,6 +117,11 @@ open_framework(int &argc, char **&argv) {
   #endif
 
 #endif
+
+  // Let's explicitly make a call to the image type library to ensure
+  // it gets pulled in by the dynamic linker.
+  extern EXPCL_PANDA_PNMIMAGETYPES void init_libpnmimagetypes();
+  init_libpnmimagetypes();
 
   reset_frame_rate();
 
