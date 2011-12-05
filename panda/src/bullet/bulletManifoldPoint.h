@@ -39,6 +39,11 @@ PUBLISHED:
   LPoint3 get_local_point_a() const;
   LPoint3 get_local_point_b() const;
 
+  int get_part_id0() const;
+  int get_part_id1() const;
+  int get_index0() const;
+  int get_index1() const;
+
 public:
   BulletManifoldPoint(btManifoldPoint &pt);
 
