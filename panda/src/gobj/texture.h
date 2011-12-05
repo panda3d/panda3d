@@ -235,35 +235,35 @@ PUBLISHED:
   void generate_normalization_cube_map(int size);
   void generate_alpha_scale_map();
 
-  bool read(const Filename &fullpath, const LoaderOptions &options = LoaderOptions());
-  bool read(const Filename &fullpath, const Filename &alpha_fullpath,
-            int primary_file_num_channels, int alpha_file_channel,
-            const LoaderOptions &options = LoaderOptions());
-  bool read(const Filename &fullpath, int z, int n, 
-            bool read_pages, bool read_mipmaps,
-            const LoaderOptions &options = LoaderOptions());
-  bool read(const Filename &fullpath, const Filename &alpha_fullpath,
-            int primary_file_num_channels, int alpha_file_channel,
-            int z, int n, bool read_pages, bool read_mipmaps,
-            BamCacheRecord *record = NULL,
-            const LoaderOptions &options = LoaderOptions());
+  BLOCKING bool read(const Filename &fullpath, const LoaderOptions &options = LoaderOptions());
+  BLOCKING bool read(const Filename &fullpath, const Filename &alpha_fullpath,
+                     int primary_file_num_channels, int alpha_file_channel,
+                     const LoaderOptions &options = LoaderOptions());
+  BLOCKING bool read(const Filename &fullpath, int z, int n, 
+                     bool read_pages, bool read_mipmaps,
+                     const LoaderOptions &options = LoaderOptions());
+  BLOCKING bool read(const Filename &fullpath, const Filename &alpha_fullpath,
+                     int primary_file_num_channels, int alpha_file_channel,
+                     int z, int n, bool read_pages, bool read_mipmaps,
+                     BamCacheRecord *record = NULL,
+                     const LoaderOptions &options = LoaderOptions());
 
-  INLINE bool write(const Filename &fullpath);
-  INLINE bool write(const Filename &fullpath, int z, int n, 
-                    bool write_pages, bool write_mipmaps);
+  BLOCKING INLINE bool write(const Filename &fullpath);
+  BLOCKING INLINE bool write(const Filename &fullpath, int z, int n, 
+                             bool write_pages, bool write_mipmaps);
 
-  bool read_txo(istream &in, const string &filename = "");
-  static PT(Texture) make_from_txo(istream &in, const string &filename = "");
-  bool write_txo(ostream &out, const string &filename = "") const;
-  bool read_dds(istream &in, const string &filename = "", bool header_only = false);
+  BLOCKING bool read_txo(istream &in, const string &filename = "");
+  BLOCKING static PT(Texture) make_from_txo(istream &in, const string &filename = "");
+  BLOCKING bool write_txo(ostream &out, const string &filename = "") const;
+  BLOCKING bool read_dds(istream &in, const string &filename = "", bool header_only = false);
 
-  INLINE bool load(const PNMImage &pnmimage, const LoaderOptions &options = LoaderOptions());
-  INLINE bool load(const PNMImage &pnmimage, int z, int n, const LoaderOptions &options = LoaderOptions());
-  INLINE bool store(PNMImage &pnmimage) const;
-  INLINE bool store(PNMImage &pnmimage, int z, int n) const;
+  BLOCKING INLINE bool load(const PNMImage &pnmimage, const LoaderOptions &options = LoaderOptions());
+  BLOCKING INLINE bool load(const PNMImage &pnmimage, int z, int n, const LoaderOptions &options = LoaderOptions());
+  BLOCKING INLINE bool store(PNMImage &pnmimage) const;
+  BLOCKING INLINE bool store(PNMImage &pnmimage, int z, int n) const;
 
-  INLINE bool reload();
-  Texture *load_related(const InternalName *suffix) const;
+  BLOCKING INLINE bool reload();
+  BLOCKING Texture *load_related(const InternalName *suffix) const;
 
   INLINE bool has_filename() const;
   INLINE const Filename &get_filename() const;
