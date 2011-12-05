@@ -16,8 +16,8 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DFileParams::get_p3d_filename
 //       Access: Public
-//  Description: Returns the p3d filename that was passed to the
-//               constructor.
+//  Description: Returns the filename that was passed to
+//               set_p3d_filename().
 ////////////////////////////////////////////////////////////////////
 inline const string &P3DFileParams::
 get_p3d_filename() const {
@@ -33,6 +33,16 @@ get_p3d_filename() const {
 inline int P3DFileParams::
 get_p3d_offset() const {
   return _p3d_offset;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DFileParams::get_p3d_url
+//       Access: Public
+//  Description: Returns the string that was passed to set_p3d_url().
+////////////////////////////////////////////////////////////////////
+inline const string &P3DFileParams::
+get_p3d_url() const {
+  return _p3d_url;
 }
 
 ////////////////////////////////////////////////////////////////////

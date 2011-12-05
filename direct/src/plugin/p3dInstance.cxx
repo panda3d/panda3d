@@ -228,6 +228,8 @@ P3DInstance(P3D_request_ready_func *func,
   _main_object->set_string_property("coreapiTimestampString", timestamp_string);
   _main_object->set_string_property("coreapiVersionString", inst_mgr->get_coreapi_set_ver());
 
+  _main_object->set_bool_property("trustedEnvironment", (int)inst_mgr->get_trusted_environment());
+  _main_object->set_bool_property("consoleEnvironment", (int)inst_mgr->get_console_environment());
 
   // We'll start off with the "download" image displayed in the splash
   // window (when it opens), until we get stuff downloaded.
@@ -409,6 +411,7 @@ set_p3d_url(const string &p3d_url) {
     set_failed();
     return;
   }
+  _fparams.set_p3d_url(p3d_url);
 
   // Save the last part of the URL as the p3d_basename, for reporting
   // purposes or whatever.
@@ -452,6 +455,8 @@ set_p3d_url(const string &p3d_url) {
 ////////////////////////////////////////////////////////////////////
 int P3DInstance::
 make_p3d_stream(const string &p3d_url) {
+  _fparams.set_p3d_url(p3d_url);
+
   // Save the last part of the URL as the p3d_basename, for reporting
   // purposes or whatever.
   determine_p3d_basename(p3d_url);

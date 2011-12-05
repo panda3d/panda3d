@@ -33,6 +33,7 @@ P3DFileParams::
 P3DFileParams(const P3DFileParams &copy) :
   _p3d_filename(copy._p3d_filename),
   _p3d_offset(copy._p3d_offset),
+  _p3d_url(copy._p3d_url),
   _tokens(copy._tokens),
   _args(copy._args)
 {
@@ -47,6 +48,7 @@ void P3DFileParams::
 operator = (const P3DFileParams &other) {
   _p3d_filename = other._p3d_filename;
   _p3d_offset = other._p3d_offset;
+  _p3d_url = other._p3d_url;
   _tokens = other._tokens;
   _args = other._args;
 }
@@ -62,7 +64,7 @@ set_p3d_filename(const string &p3d_filename) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DFileParams::set_p3d_filename
+//     Function: P3DFileParams::set_p3d_offset
 //       Access: Public
 //  Description: Specifies the location in the file where
 //               the p3d file data starts.
@@ -70,6 +72,18 @@ set_p3d_filename(const string &p3d_filename) {
 void P3DFileParams::
 set_p3d_offset(const int &p3d_offset) {
   _p3d_offset = p3d_offset;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DFileParams::set_p3d_url
+//       Access: Public
+//  Description: Specifies the original URL that hosted the p3d file,
+//               if any.  This is for documentation purposes only; it
+//               is communicated to the child Panda3D process.
+////////////////////////////////////////////////////////////////////
+void P3DFileParams::
+set_p3d_url(const string &p3d_url) {
+  _p3d_url = p3d_url;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -179,6 +193,7 @@ make_xml() {
 
   xfparams->SetAttribute("p3d_filename", _p3d_filename);
   xfparams->SetAttribute("p3d_offset", _p3d_offset);
+  xfparams->SetAttribute("p3d_url", _p3d_url);
 
   Tokens::const_iterator ti;
   for (ti = _tokens.begin(); ti != _tokens.end(); ++ti) {

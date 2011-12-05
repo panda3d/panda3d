@@ -111,6 +111,8 @@ class AppRunner(DirectObject):
         self.packedAppEnvironmentInitialized = False
         self.gotWindow = False
         self.gotP3DFilename = False
+        self.p3dFilename = None
+        self.p3dUrl = None
         self.started = False
         self.windowOpened = False
         self.windowPrc = None
@@ -872,7 +874,7 @@ class AppRunner(DirectObject):
             initAppForGui()
 
     def setP3DFilename(self, p3dFilename, tokens, argv, instanceId,
-                       interactiveConsole, p3dOffset = 0):
+                       interactiveConsole, p3dOffset, p3dUrl):
         """ Called by the browser to specify the p3d file that
         contains the application itself, along with the web tokens
         and/or command-line arguments.  Once this method has been
@@ -913,6 +915,7 @@ class AppRunner(DirectObject):
             raise ArgumentError, "No such file: %s" % (p3dFilename)
 
         fname.makeAbsolute()
+        fname.setBinary()
         mf = Multifile()
         if p3dOffset == 0:
             if not mf.openRead(fname):
@@ -976,6 +979,13 @@ class AppRunner(DirectObject):
 
         self.loadMultifilePrcFiles(mf, self.multifileRoot)
         self.gotP3DFilename = True
+        self.p3dFilename = fname
+        if p3dUrl:
+            # The url from which the p3d file was downloaded is
+            # provided if available.  It is only for documentation
+            # purposes; the actual p3d file has already been
+            # downloaded to p3dFilename.
+            self.p3dUrl = PandaModules.URLSpec(p3dUrl)
 
         # Send this call to the main thread; don't call it directly.
         messenger.send('AppRunner_startIfReady', taskChain = 'default')

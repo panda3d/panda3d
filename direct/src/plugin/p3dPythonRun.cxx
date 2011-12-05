@@ -1324,6 +1324,12 @@ set_p3d_filename(P3DCInstance *inst, TiXmlElement *xfparams) {
   int p3d_offset = 0;
   xfparams->Attribute("p3d_offset", &p3d_offset);
 
+  string p3d_url;
+  const char *p3d_url_c = xfparams->Attribute("p3d_url");
+  if (p3d_url_c != NULL) {
+    p3d_url = p3d_url_c;
+  }
+
   PyObject *token_list = PyList_New(0);
   TiXmlElement *xtoken = xfparams->FirstChildElement("token");
   while (xtoken != NULL) {
@@ -1363,8 +1369,9 @@ set_p3d_filename(P3DCInstance *inst, TiXmlElement *xfparams) {
   }
 
   PyObject *result = PyObject_CallMethod
-    (_runner, (char *)"setP3DFilename", (char *)"sOOiii", p3d_filename.c_str(),
-     token_list, arg_list, inst->get_instance_id(), _interactive_console, p3d_offset);
+    (_runner, (char *)"setP3DFilename", (char *)"sOOiiis", p3d_filename.c_str(),
+     token_list, arg_list, inst->get_instance_id(), _interactive_console, p3d_offset,
+     p3d_url.c_str());
   Py_DECREF(token_list);
   Py_DECREF(arg_list);
 
