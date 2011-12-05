@@ -24,6 +24,7 @@
 #include "pointerTo.h"
 #include "thread.h"
 #include "pmutex.h"
+#include "reMutex.h"
 #include "lightReMutex.h"
 #include "conditionVar.h"
 #include "pStatCollector.h"
@@ -323,7 +324,7 @@ private:
   bool _singular_warning_last_frame;
   bool _singular_warning_this_frame;
 
-  Mutex _lock;
+  ReMutex _lock;
 
   class LoadedTexture {
   public:

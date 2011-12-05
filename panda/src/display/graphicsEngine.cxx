@@ -27,6 +27,7 @@
 #include "pStatClient.h"
 #include "pStatCollector.h"
 #include "mutexHolder.h"
+#include "reMutexHolder.h"
 #include "lightReMutexHolder.h"
 #include "cullFaceAttrib.h"
 #include "string_utils.h"
@@ -201,7 +202,7 @@ set_threading_model(const GraphicsThreadingModel &threading_model) {
       << "Danger!  Creating requested render threads anyway!\n";
   }
 #endif  // THREADED_PIPELINE
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
   _threading_model = threading_model;
 }
 
@@ -215,7 +216,7 @@ GraphicsThreadingModel GraphicsEngine::
 get_threading_model() const {
   GraphicsThreadingModel result;
   {
-    MutexHolder holder(_lock);
+    ReMutexHolder holder(_lock);
     result = _threading_model;
   }
   return result;
@@ -471,7 +472,7 @@ remove_window(GraphicsOutput *window) {
   PT(GraphicsOutput) ptwin = window;
   size_t count;
   {
-    MutexHolder holder(_lock, current_thread);
+    ReMutexHolder holder(_lock, current_thread);
     if (!_windows_sorted) {
       do_resort_windows();
     }
@@ -492,7 +493,7 @@ remove_window(GraphicsOutput *window) {
       // context.
       bool any_common = false;
       {
-        MutexHolder holder(_lock, current_thread);
+        ReMutexHolder holder(_lock, current_thread);
         Windows::iterator wi;
         for (wi = _windows.begin(); wi != _windows.end() && !any_common; ++wi) {
           GraphicsStateGuardian *gsg2 = (*wi)->get_gsg();
@@ -670,7 +671,7 @@ render_frame() {
   }
 
   {
-    MutexHolder holder(_lock, current_thread);
+    ReMutexHolder holder(_lock, current_thread);
 
     if (!_windows_sorted) {
       do_resort_windows();
@@ -907,7 +908,7 @@ void GraphicsEngine::
 open_windows() {
   Thread *current_thread = Thread::get_current_thread();
 
-  MutexHolder holder(_lock, current_thread);
+  ReMutexHolder holder(_lock, current_thread);
 
   if (!_windows_sorted) {
     do_resort_windows();
@@ -950,7 +951,7 @@ open_windows() {
 void GraphicsEngine::
 sync_frame() {
   Thread *current_thread = Thread::get_current_thread();
-  MutexHolder holder(_lock, current_thread);
+  ReMutexHolder holder(_lock, current_thread);
 
   if (_flip_state == FS_draw) {
     do_sync_frame(current_thread);
@@ -975,7 +976,7 @@ sync_frame() {
 void GraphicsEngine::
 ready_flip() {
   Thread *current_thread = Thread::get_current_thread();
-  MutexHolder holder(_lock, current_thread);
+  ReMutexHolder holder(_lock, current_thread);
 
   if (_flip_state == FS_draw) {
     do_ready_flip(current_thread);
@@ -994,7 +995,7 @@ ready_flip() {
 void GraphicsEngine::
 flip_frame() {
   Thread *current_thread = Thread::get_current_thread();
-  MutexHolder holder(_lock, current_thread);
+  ReMutexHolder holder(_lock, current_thread);
 
   if (_flip_state != FS_flip) {
     do_flip_frame(current_thread);
@@ -1032,7 +1033,7 @@ flip_frame() {
 ////////////////////////////////////////////////////////////////////
 bool GraphicsEngine::
 extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg) {
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
 
   string draw_name = gsg->get_threading_model().get_draw_name();
   if (draw_name.empty()) {
@@ -1213,7 +1214,7 @@ is_scene_root(const PandaNode *node) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 set_window_sort(GraphicsOutput *window, int sort) {
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
   window->_sort = sort;
   _windows_sorted = false;
 }
@@ -1922,7 +1923,7 @@ void GraphicsEngine::
 do_add_window(GraphicsOutput *window,
               const GraphicsThreadingModel &threading_model) {
   nassertv(window != NULL);
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
   nassertv(window->get_engine() == this);
 
   // We have a special counter that is unique per window that allows
@@ -1988,7 +1989,7 @@ do_add_window(GraphicsOutput *window,
 void GraphicsEngine::
 do_add_gsg(GraphicsStateGuardian *gsg, GraphicsPipe *pipe,
            const GraphicsThreadingModel &threading_model) {
-  MutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
 
   nassertv(gsg->get_pipe() == pipe && gsg->get_engine() == this);
   gsg->_threading_model = threading_model;
@@ -2219,7 +2220,7 @@ auto_adjust_capabilities(GraphicsStateGuardian *gsg) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 terminate_threads(Thread *current_thread) {
-  MutexHolder holder(_lock, current_thread);
+  ReMutexHolder holder(_lock, current_thread);
 
   // We spend almost our entire time in this method just waiting for
   // threads.  Time it appropriately.

@@ -369,9 +369,10 @@ internal_open_window() {
   // Create a buffer with the same properties as the window.
   int flags = _creation_flags;
   flags = ((flags & ~GraphicsPipe::BF_require_window) | GraphicsPipe::BF_refuse_window);
+  WindowProperties win_props = WindowProperties::size(_properties.get_x_size(), _properties.get_y_size());
 
   GraphicsOutput *buffer = 
-    _engine->make_output(_pipe, _name, 0, _fb_properties, _properties, 
+    _engine->make_output(_pipe, _name, 0, _fb_properties, win_props, 
                          flags, _gsg, _host);
   if (buffer != NULL) {
     _buffer = DCAST(GraphicsBuffer, buffer);
