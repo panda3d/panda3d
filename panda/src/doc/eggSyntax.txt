@@ -484,6 +484,8 @@ appear before they are referenced.
       BLEND_NO_OCCLUDE
       MS
       MS_MASK
+      BINARY
+      DUAL
 
     If alpha-type is OFF, it means not to enable transparency, even if
     the image contains an alpha channel or the format is RGBA.  If
@@ -499,12 +501,20 @@ appear before they are referenced.
     polygon itself.  See the description for bin under polygon
     attributes.
 
-  <Scalar> draw_order { number }
+  <Scalar> draw-order { number }
 
     This specifies the fixed drawing order of all polygons with this
     texture applied, in the absence of a drawing order specified on
-    the polygon itself.  See the description for draw_order under
+    the polygon itself.  See the description for draw-order under
     polygon attributes.
+
+  <Scalar> depth-offset { number }
+  <Scalar> depth-write { mode }
+  <Scalar> depth-test { mode }
+
+    Specifies special depth buffer properties of all polygons with this
+    texture applied.  See the descriptions for the individual
+    attributes under polygon attributes.
 
   <Scalar> quality-level { quality }
 
@@ -841,7 +851,7 @@ GEOMETRY ENTRIES
     It is sometimes important to control the order in which objects
     are rendered, particularly when transparency is in use.  In Panda,
     this is achieved via the use of named bins and, within certain
-    kinds of bins, sometimes an explicit draw_order is also used (see
+    kinds of bins, sometimes an explicit draw-order is also used (see
     below).
 
     In the normal (state-sorting) mode, Panda renders its geometry by
@@ -855,22 +865,43 @@ GEOMETRY ENTRIES
     to the default bin, which renders all opaque geometry sorted by
     state, followed by all transparent geometry sorted back-to-front.
 
-    See also draw_order, below.
+    See also draw-order, below.
 
 
-  <Scalar> draw_order { number }
+  <Scalar> draw-order { number }
 
     This works in conjunction with bin, above, to further refine the
     order in which this polygon is drawn, relative to other geometry
     in the same bin.  If (and only if) the bin type named in the bin
-    scalar is a CullBinFixed, this draw_order is used to define the
+    scalar is a CullBinFixed, this draw-order is used to define the
     fixed order that all geometry in the same will be rendered, from
     smaller numbers to larger numbers.
 
-    If the draw_order scalar is specified but no bin scalar is
+    If the draw-order scalar is specified but no bin scalar is
     specified, the default is a bin named "fixed", which is a
     CullBinFixed object that always exists by default.
 
+  <Scalar> depth-offset { number }
+
+    Specifies a special depth offset to be applied to the polygon.
+    This must be an integer value between 0 and 16 or so.  The default
+    value is 0; values larger than 0 will cause the polygon to appear
+    closer to the camera for purposes of evaluating the depth buffer.
+    This can be a simple way to resolve Z-fighting between coplanar
+    polygons: with two or more coplanar polygons, the polygon with the
+    highest depth-offset value will appear to be visible on top.  Note
+    that this effect doesn't necessarily work well when the polygons
+    are viewed from a steep angle.
+
+  <Scalar> depth-write { mode }
+
+    Specifies the mode for writing to the depth buffer.  This may be
+    ON or OFF.  The default is ON.
+
+  <Scalar> depth-test { mode }
+
+    Specifies the mode for testing against the depth buffer.  This may
+    be ON or OFF.  The default is ON.
 
   <Scalar> visibility { hidden | normal }
 
@@ -880,7 +911,7 @@ GEOMETRY ENTRIES
     primitive is not converted at all; otherwise, it is converted as a
     "stashed" node.
 
-    This, like the other rendering flags alpha, draw_order, and bin,
+    This, like the other rendering flags alpha, draw-order, and bin,
     may be specified at the group level, within the primitive level,
     or even within a texture.
 
@@ -895,7 +926,7 @@ GEOMETRY ENTRIES
 
   A PointLight is a set of single points.  One point is drawn for each
   vertex listed in the <VertexRef>.  Normals, textures, and colors may
-  be specified for PointLights, as well as draw_order, plus one
+  be specified for PointLights, as well as draw-order, plus one
   additional attribute valid only for PointLights and Lines:
 
   <Scalar> thick { number }
@@ -928,7 +959,7 @@ GEOMETRY ENTRIES
   vertex 1, vertex 1 and vertex 2, etc.  The line is not implicitly
   closed; if you wish to represent a loop, you must repeat vertex 0 at
   the end.  As with a PointLight, normals, textures, colors,
-  draw_order, and the "thick" attribute are all valid (but not
+  draw-order, and the "thick" attribute are all valid (but not
   "perspective").  Also, since a Line (with more than two vertices) is
   made up of multiple line segments, it may contain a number of
   <Component> entries, to set a different color and/or normal for each
@@ -1072,7 +1103,7 @@ surfaces.  External tools like egg-qtess, however, may respect them.
   A NURBS surface is an extension of a NURBS curve into two parametric
   dimensions, u and v.  NURBS surfaces may be given the same set of
   attributes assigned to polygons, except for normals: <TRef>,
-  <Texture>, <MRef>, <RGBA>, and draw_order are all valid attributes
+  <Texture>, <MRef>, <RGBA>, and draw-order are all valid attributes
   for NURBS.  NURBS vertices, similarly, may be colored or morphed,
   but <Normal> and <UV> entries do not apply to NURBS vertices.  The
   attributes may also include <NURBSCurve> and <Trim> entries; see
@@ -1286,11 +1317,19 @@ GROUPING ENTRIES
     that do not explicitly set their own bin.  See the description of
     bin for geometry attributes, above.
 
-  <Scalar> draw_order { number }
+  <Scalar> draw-order { number }
 
     This specifies the drawing order for all polygons at or below this
     node that do not explicitly set their own drawing order.  See the
-    description of draw_order for geometry attributes, above.
+    description of draw-order for geometry attributes, above.
+
+  <Scalar> depth-offset { number }
+  <Scalar> depth-write { mode }
+  <Scalar> depth-test { mode }
+
+    Specifies special depth buffer properties of all polygons at or
+    below this node that do not override this.  See the descriptions
+    for the individual attributes under polygon attributes.
 
   <Scalar> visibility { hidden | normal }
 
