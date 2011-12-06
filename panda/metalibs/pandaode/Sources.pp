@@ -9,7 +9,7 @@
 #define BUILDING_DLL BUILDING_PANDAODE
  
 #define COMPONENT_LIBS \
-    pode
+    p3ode
 
 #define LOCAL_LIBS p3pgraph
 #define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
