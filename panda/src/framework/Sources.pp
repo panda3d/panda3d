@@ -1,12 +1,12 @@
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m prc:c
+#define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+                   p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c
 
 #begin lib_target
-  #define TARGET framework
+  #define TARGET p3framework
   #define BUILDING_DLL BUILDING_FRAMEWORK
   #define LOCAL_LIBS \
-    recorder pgui pgraph putil collide chan text \
-    pnmimage pnmimagetypes event char
+    p3recorder p3pgui p3pgraph p3putil p3collide p3chan p3text \
+    p3pnmimage p3pnmimagetypes p3event p3char
 
 #if $[LINK_ALL_STATIC]
   // If we're statically linking, we need to explicitly link with
@@ -18,10 +18,10 @@
   #elif $[HAVE_DX8]
     #define LOCAL_LIBS pandadx8 $[LOCAL_LIBS]
   #elif $[HAVE_TINYDISPLAY]
-    #define LOCAL_LIBS tinydisplay $[LOCAL_LIBS]
+    #define LOCAL_LIBS p3tinydisplay $[LOCAL_LIBS]
   #endif
 
-  // And we might like to have the egg loader available.
+  // And we might like to have the p3egg loader available.
   #if $[HAVE_EGG]
     #define LOCAL_LIBS pandaegg $[LOCAL_LIBS]
   #endif

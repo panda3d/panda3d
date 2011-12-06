@@ -1,12 +1,12 @@
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m prc:c
+#define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+                   p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c
 //#define OSX_SYS_LIBS mx
 #define USE_PACKAGES zlib cg squish
 
 #begin lib_target
-  #define TARGET gobj
+  #define TARGET p3gobj
   #define LOCAL_LIBS \
-    pstatclient event linmath mathutil pnmimage gsgbase putil
+    p3pstatclient p3event p3linmath p3mathutil p3pnmimage p3gsgbase p3putil
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
 
@@ -227,7 +227,7 @@
 #begin test_bin_target
   #define TARGET test_gobj
   #define LOCAL_LIBS \
-    gobj putil
+    p3gobj p3putil
 
   #define SOURCES \
     test_gobj.cxx

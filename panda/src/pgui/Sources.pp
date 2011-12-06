@@ -1,11 +1,11 @@
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m prc:c
+#define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+                   p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c
 
 #begin lib_target
-  #define TARGET pgui
+  #define TARGET p3pgui
   #define LOCAL_LIBS \
-    audio grutil text tform linmath event putil gobj \
-    mathutil
+    p3audio p3grutil p3text p3tform p3linmath p3event p3putil p3gobj \
+    p3mathutil
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
 
@@ -77,13 +77,13 @@
 #begin test_bin_target
   #define TARGET test_pgentry
 
-  #define OTHER_LIBS $[OTHER_LIBS] pystub
+  #define OTHER_LIBS $[OTHER_LIBS] p3pystub
 
   #define LOCAL_LIBS \
-    framework putil collide pgraph chan text \
-    pnmimage pnmimagetypes event gobj display \
-    mathutil putil express dgraph device tform \
-    linmath pstatclient panda
+    p3framework p3putil p3collide p3pgraph p3chan p3text \
+    p3pnmimage p3pnmimagetypes p3event p3gobj p3display \
+    p3mathutil p3putil p3express p3dgraph p3device p3tform \
+    p3linmath p3pstatclient panda
 
   #define UNIX_SYS_LIBS m
 

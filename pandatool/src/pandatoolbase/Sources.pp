@@ -1,11 +1,11 @@
 #define OTHER_LIBS \
-   pipeline:c panda:m \
-   express:c putil:c pandabase:c pandaexpress:m \
-   interrogatedb:c prc:c dconfig:c dtoolconfig:m \
-   dtoolutil:c dtoolbase:c dtool:m
+   p3pipeline:c panda:m \
+   p3express:c p3putil:c p3pandabase:c pandaexpress:m \
+   p3interrogatedb:c p3prc:c p3dconfig:c p3dtoolconfig:m \
+   p3dtoolutil:c p3dtoolbase:c p3dtool:m
 
 #begin ss_lib_target
-  #define TARGET pandatoolbase
+  #define TARGET p3pandatoolbase
   
   #define SOURCES \
     animationConvert.cxx animationConvert.h \

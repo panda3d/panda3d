@@ -1,13 +1,13 @@
 #define OTHER_LIBS \
-  egg:c pandaegg:m \
-  pipeline:c event:c panda:m \
-  mathutil:c linmath:c putil:c express:c pandabase:c \
-  interrogatedb:c prc:c dconfig:c dtoolconfig:m \
-  dtoolutil:c dtoolbase:c dtool:m
+  p3egg:c pandaegg:m \
+  p3pipeline:c p3event:c panda:m \
+  p3mathutil:c p3linmath:c p3putil:c p3express:c p3pandabase:c \
+  p3interrogatedb:c p3prc:c p3dconfig:c p3dtoolconfig:m \
+  p3dtoolutil:c p3dtoolbase:c p3dtool:m
 
 #begin ss_lib_target
-  #define TARGET converter
-  #define LOCAL_LIBS pandatoolbase
+  #define TARGET p3converter
+  #define LOCAL_LIBS p3pandatoolbase
   #define UNIX_SYS_LIBS \
     m
 

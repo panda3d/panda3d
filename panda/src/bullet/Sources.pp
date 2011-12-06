@@ -1,12 +1,12 @@
 #define BUILD_DIRECTORY $[HAVE_BULLET]
 #define BUILDING_DLL BUILDING_PANDABULLET
 
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m dtoolutil:c dtoolbase:c dtool:m prc:c
+#define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c
 
 #begin lib_target
-  #define TARGET bullet
-  #define LOCAL_LIBS pgraph linmath grutil
-  #define USE_PACKAGES bullet
+  #define TARGET p3bullet
+  #define LOCAL_LIBS p3pgraph p3linmath p3grutil
+  #define USE_PACKAGES p3bullet
   #define COMBINED_SOURCES $[TARGET]_composite.cxx
 
   #define SOURCES \
@@ -131,7 +131,7 @@
     bulletVehicle.cxx \
     bulletWheel.cxx \
     bulletWorld.cxx \
-    bullet_composite.cxx \
+    p3bullet_composite.cxx \
     bullet_utils.cxx \
     config_bullet.cxx \
 

@@ -1,8 +1,8 @@
 #define BUILDING_DLL BUILDING_DTOOLCONFIG
-#define LOCAL_LIBS dtoolbase
+#define LOCAL_LIBS p3dtoolbase
 
 #begin lib_target
-  #define TARGET pystub
+  #define TARGET p3pystub
   
   #define SOURCES \
     pystub.cxx pystub.h

@@ -2,20 +2,20 @@
 #define USE_PACKAGES fftw
 
 #define OTHER_LIBS \
-    egg:c pandaegg:m \
-    pipeline:c event:c pstatclient:c panda:m \
-    pandabase:c pnmimage:c mathutil:c linmath:c putil:c express:c \
+    p3egg:c pandaegg:m \
+    p3pipeline:c p3event:c p3pstatclient:c panda:m \
+    p3pandabase:c p3pnmimage:c p3mathutil:c p3linmath:c p3putil:c p3express:c \
     pandaexpress:m \
-    interrogatedb:c prc:c dconfig:c dtoolconfig:m \
-    dtoolutil:c dtoolbase:c dtool:m \
-    $[if $[WANT_NATIVE_NET],nativenet:c] \
-    $[if $[and $[HAVE_NET],$[WANT_NATIVE_NET]],net:c downloader:c] \
-    pystub
+    p3interrogatedb:c p3prc:c p3dconfig:c p3dtoolconfig:m \
+    p3dtoolutil:c p3dtoolbase:c p3dtool:m \
+    $[if $[WANT_NATIVE_NET],p3nativenet:c] \
+    $[if $[and $[HAVE_NET],$[WANT_NATIVE_NET]],p3net:c p3downloader:c] \
+    p3pystub
 
 #begin bin_target
   #define TARGET dxf-points
   #define LOCAL_LIBS \
-    progbase dxf
+    p3progbase p3dxf
 
   #define SOURCES \
     dxfPoints.cxx dxfPoints.h
@@ -24,7 +24,7 @@
 
 #begin bin_target
   #define TARGET dxf2egg
-  #define LOCAL_LIBS dxf dxfegg eggbase progbase
+  #define LOCAL_LIBS p3dxf p3dxfegg p3eggbase p3progbase
 
   #define SOURCES \
     dxfToEgg.cxx dxfToEgg.h
@@ -33,7 +33,7 @@
 
 #begin bin_target
   #define TARGET egg2dxf
-  #define LOCAL_LIBS dxf eggbase progbase
+  #define LOCAL_LIBS p3dxf p3eggbase p3progbase
 
   #define SOURCES \
     eggToDXF.cxx eggToDXF.h \

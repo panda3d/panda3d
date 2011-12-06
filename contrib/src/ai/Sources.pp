@@ -1,16 +1,16 @@
-#define LOCAL_LIBS contribbase
+#define LOCAL_LIBS p3contribbase
 #define BUILDING_DLL BUILDING_PANDAAI
 
 #define OTHER_LIBS \
    panda:c \
-   express:c putil:c pandabase:c pandaexpress:m \
-   interrogatedb:c prc:c dconfig:c dtoolconfig:m \
-   dtoolutil:c dtoolbase:c dtool:m
+   p3express:c p3putil:c p3pandabase:c pandaexpress:m \
+   p3interrogatedb:c p3prc:c p3dconfig:c p3dtoolconfig:m \
+   p3dtoolutil:c p3dtoolbase:c p3dtool:m
 
 #begin lib_target
   #define TARGET pandaai
 
-  #define COMBINED_SOURCES ai_composite1.cxx
+  #define COMBINED_SOURCES p3ai_composite1.cxx
 
   #define SOURCES \
     aiBehaviors.h \
@@ -39,8 +39,8 @@
     aiNode.cxx \
     aiPathFinder.cxx \
     aiWorld.cxx \
-    ai_composite.cxx \
-    ai_composite1.cxx \
+    p3ai_composite.cxx \
+    p3ai_composite1.cxx \
     arrival.cxx \
     config_ai.cxx \
     evade.cxx \

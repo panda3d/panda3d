@@ -9,23 +9,23 @@
 #define USE_PACKAGES native_net
 
 #define COMPONENT_LIBS \
-  directbase dcparser showbase deadrec directd interval distributed motiontrail http
+  p3directbase p3dcparser p3showbase p3deadrec p3directd p3interval p3distributed p3motiontrail p3http
 
 #define OTHER_LIBS \
   panda:m \
   pandaexpress:m \
-  parametrics:c \
-  interrogatedb:c dconfig:c dtoolconfig:m \
-  dtoolutil:c dtoolbase:c dtool:m \
-  express:c pstatclient:c prc:c pandabase:c linmath:c \
-  putil:c display:c event:c pgraph:c pgraphnodes:c \
-  gsgbase:c gobj:c mathutil:c \
-  lerp:c downloader:c pnmimage:c chan:c \
-  pipeline:c cull:c \
-  $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c]
+  p3parametrics:c \
+  p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+  p3dtoolutil:c p3dtoolbase:c p3dtool:m \
+  p3express:c p3pstatclient:c p3prc:c p3pandabase:c p3linmath:c \
+  p3putil:c p3display:c p3event:c p3pgraph:c p3pgraphnodes:c \
+  p3gsgbase:c p3gobj:c p3mathutil:c \
+  p3lerp:c p3downloader:c p3pnmimage:c p3chan:c \
+  p3pipeline:c p3cull:c \
+  $[if $[HAVE_NET],p3net:c] $[if $[WANT_NATIVE_NET],p3nativenet:c]
 
 #begin metalib_target
-  #define TARGET direct
+  #define TARGET p3direct
 
   #define SOURCES direct.cxx
 #end metalib_target

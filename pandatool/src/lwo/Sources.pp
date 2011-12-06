@@ -1,14 +1,14 @@
-#define LOCAL_LIBS pandatoolbase
+#define LOCAL_LIBS p3pandatoolbase
 #define OTHER_LIBS \
-  mathutil:c linmath:c putil:c pipeline:c event:c \
+  p3mathutil:c p3linmath:c p3putil:c p3pipeline:c p3event:c \
   panda:m \
-  pandabase:c express:c pandaexpress:m \
-  interrogatedb:c prc:c dconfig:c dtoolconfig:m \
-  dtoolutil:c dtoolbase:c dtool:m
+  p3pandabase:c p3express:c pandaexpress:m \
+  p3interrogatedb:c p3prc:c p3dconfig:c p3dtoolconfig:m \
+  p3dtoolutil:c p3dtoolbase:c p3dtool:m
 #define UNIX_SYS_LIBS m
 
 #begin ss_lib_target
-  #define TARGET lwo
+  #define TARGET p3lwo
   
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx   
 

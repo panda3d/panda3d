@@ -1,14 +1,14 @@
-#define LOCAL_LIBS express pandabase
+#define LOCAL_LIBS p3express p3pandabase
 
 #define OTHER_LIBS \
-    interrogatedb:c dconfig:c dtoolconfig:m \
-    dtoolutil:c dtoolbase:c prc:c dtool:m
+    p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+    p3dtoolutil:c p3dtoolbase:c p3prc:c p3dtool:m
 
 #define BUILD_DIRECTORY $[WANT_NATIVE_NET]
 #define USE_PACKAGES native_net openssl
 
 #begin lib_target
-  #define TARGET nativenet
+  #define TARGET p3nativenet
   
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
 

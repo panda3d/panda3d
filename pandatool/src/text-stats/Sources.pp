@@ -3,14 +3,14 @@
 #begin bin_target
   #define TARGET text-stats
   #define LOCAL_LIBS \
-    progbase pstatserver
+    p3progbase p3pstatserver
   #define OTHER_LIBS \
-    pstatclient:c linmath:c putil:c pipeline:c event:c \
-    pnmimage:c mathutil:c \
-    downloader:c $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c] \
+    p3pstatclient:c p3linmath:c p3putil:c p3pipeline:c p3event:c \
+    p3pnmimage:c p3mathutil:c \
+    p3downloader:c $[if $[HAVE_NET],p3net:c] $[if $[WANT_NATIVE_NET],p3nativenet:c] \
     panda:m \
-    pandabase:c express:c pandaexpress:m \
-    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
+    p3pandabase:c p3express:c pandaexpress:m \
+    p3interrogatedb:c p3dtoolutil:c p3dtoolbase:c p3prc:c p3dconfig:c p3dtoolconfig:m p3dtool:m p3pystub
 
   #define SOURCES \
     textMonitor.cxx textMonitor.h textMonitor.I \

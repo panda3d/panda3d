@@ -1,5 +1,5 @@
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m prc:c
+#define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+                   p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c
 
 #define USE_PACKAGES opencv artoolkit jpeg
 
@@ -8,9 +8,9 @@
 #begin lib_target
   #define TARGET p3vision
   #define LOCAL_LIBS \
-    display text pgraph gobj linmath putil audio movies
+    p3display p3text p3pgraph p3gobj p3linmath p3putil p3audio p3movies
 
-  #define COMBINED_SOURCES vision_composite1.cxx
+  #define COMBINED_SOURCES p3vision_composite1.cxx
 
   #define SOURCES \
     arToolKit.I arToolKit.h \

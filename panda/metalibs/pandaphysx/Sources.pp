@@ -8,10 +8,10 @@
 #define BUILD_DIRECTORY $[HAVE_PHYSX]
 #define BUILDING_DLL BUILDING_PANDAPHYSX
 
-#define COMPONENT_LIBS physx
-#define LOCAL_LIBS linmath putil express
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m prc:c
+#define COMPONENT_LIBS p3physx
+#define LOCAL_LIBS p3linmath p3putil p3express
+#define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+                   p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c
 
 #begin metalib_target
     #define TARGET pandaphysx

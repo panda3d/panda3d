@@ -1,12 +1,12 @@
 #define LOCAL_LIBS \
-  converter eggbase progbase
+  p3converter p3eggbase p3progbase
 #define OTHER_LIBS \
-  egg:c pandaegg:m \
-  event:c pipeline:c pstatclient:c downloader:c net:c nativenet:c \
-  pnmimagetypes:c pnmimage:c mathutil:c linmath:c putil:c \
+  p3egg:c pandaegg:m \
+  p3event:c p3pipeline:c p3pstatclient:c p3downloader:c p3net:c p3nativenet:c \
+  p3pnmimagetypes:c p3pnmimage:c p3mathutil:c p3linmath:c p3putil:c \
   panda:m \
-  pandabase:c express:c pandaexpress:m \
-  interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
+  p3pandabase:c p3express:c pandaexpress:m \
+  p3interrogatedb:c p3dtoolutil:c p3dtoolbase:c p3prc:c p3dconfig:c p3dtoolconfig:m p3dtool:m p3pystub
 #define UNIX_SYS_LIBS m
 
 #begin bin_target
@@ -50,7 +50,7 @@
 #end bin_target
 
 #begin bin_target
-  #define LOCAL_LIBS eggcharbase $[LOCAL_LIBS]
+  #define LOCAL_LIBS p3eggcharbase $[LOCAL_LIBS]
   #define TARGET egg-topstrip
 
   #define SOURCES \
@@ -59,7 +59,7 @@
 #end bin_target
 
 #begin bin_target
-  #define LOCAL_LIBS eggcharbase $[LOCAL_LIBS]
+  #define LOCAL_LIBS p3eggcharbase $[LOCAL_LIBS]
   #define TARGET egg-retarget-anim
 
   #define SOURCES \

@@ -4,13 +4,13 @@
 #define USE_PACKAGES zlib
 
 #begin ss_lib_target
-  #define TARGET xfile
-  #define LOCAL_LIBS pandatoolbase
+  #define TARGET p3xfile
+  #define LOCAL_LIBS p3pandatoolbase
   #define OTHER_LIBS \
-    event:c putil:c pipeline:c mathutil:c linmath:c panda:m \
-    pandabase:c express:c pandaexpress:m \
-    interrogatedb:c prc:c dconfig:c dtoolconfig:m \
-    dtoolutil:c dtoolbase:c dtool:m
+    p3event:c p3putil:c p3pipeline:c p3mathutil:c p3linmath:c panda:m \
+    p3pandabase:c p3express:c pandaexpress:m \
+    p3interrogatedb:c p3prc:c p3dconfig:c p3dtoolconfig:m \
+    p3dtoolutil:c p3dtoolbase:c p3dtool:m
 
   #define USE_PACKAGES zlib
 

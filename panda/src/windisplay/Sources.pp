@@ -1,7 +1,7 @@
 #define BUILD_DIRECTORY $[WINDOWS_PLATFORM]
 
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m
+#define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+                   p3dtoolutil:c p3dtoolbase:c p3dtool:m
 #define WIN_SYS_LIBS Imm32.lib
 
 #define BUILDING_DLL BUILDING_PANDAWIN
@@ -9,9 +9,9 @@
 #define USE_PACKAGES dx8 dx9
 
 #begin lib_target
-  #define TARGET windisplay
+  #define TARGET p3windisplay
   #define LOCAL_LIBS \
-    display putil
+    p3display p3putil
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx winDetectDx9.cxx winDetectDx8.cxx
 

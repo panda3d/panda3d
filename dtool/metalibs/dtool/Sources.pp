@@ -7,10 +7,10 @@
 #define DIR_TYPE metalib
 #define BUILDING_DLL BUILDING_DTOOL
 
-#define COMPONENT_LIBS dtoolutil dtoolbase
+#define COMPONENT_LIBS p3dtoolutil p3dtoolbase
 
 #begin metalib_target
-  #define TARGET dtool
+  #define TARGET p3dtool
 
   #define SOURCES dtool.cxx
 #end metalib_target

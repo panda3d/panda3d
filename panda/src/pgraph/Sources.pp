@@ -1,12 +1,12 @@
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m prc:c
+#define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+                   p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c
 #define LOCAL_LIBS \
-    lerp event gsgbase gobj putil linmath \
-    downloader express pandabase pstatclient 
+    p3lerp p3event p3gsgbase p3gobj p3putil p3linmath \
+    p3downloader p3express p3pandabase p3pstatclient 
 #define USE_PACKAGES python
  
 #begin lib_target
-  #define TARGET pgraph
+  #define TARGET p3pgraph
 
   // This directory is too big to combine into a single composite
   // file--at least on Windows.
@@ -315,7 +315,7 @@
   #define IGATESCAN all
 
 // Uncomment these lines to compile everything individually instead of
-// combining into pgraph_composite*.cxx.
+// combining into p3pgraph_composite*.cxx.
 
 //  #define COMBINED_SOURCES
 //  #define SOURCES $[SOURCES] $[INCLUDED_SOURCES]
@@ -329,7 +329,7 @@
   #define SOURCES \
     test_pgraph.cxx
 
-  #define LOCAL_LIBS $[LOCAL_LIBS] pgraph
-  #define OTHER_LIBS $[OTHER_LIBS] pystub
+  #define LOCAL_LIBS $[LOCAL_LIBS] p3pgraph
+  #define OTHER_LIBS $[OTHER_LIBS] p3pystub
 
 #end test_bin_target

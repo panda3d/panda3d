@@ -1,16 +1,16 @@
 #define BUILD_DIRECTORY $[HAVE_AWESOMIUM]
 #define BUILDING_DLL BUILDING_PANDAAWESOMIUM
 
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m prc:c
+#define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+                   p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c
 
 #begin lib_target
-  //I don't understand why ode can have TARGET as just pode, here it needs pandaawesomium
+  //I don't understand why ode can have TARGET as just p3ode, here it needs pandaawesomium
   #define TARGET pandaawesomium
   #define LOCAL_LIBS \
-    pgraph physics
+    p3pgraph p3physics
 
-  #define USE_PACKAGES awesomium
+  #define USE_PACKAGES p3awesomium
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
 

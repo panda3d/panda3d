@@ -1,8 +1,8 @@
-#define LOCAL_LIBS dtoolutil dtoolbase
+#define LOCAL_LIBS p3dtoolutil p3dtoolbase
 #define USE_PACKAGES openssl
 
 #begin lib_target
-  #define TARGET prc
+  #define TARGET p3prc
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx  $[TARGET]_composite2.cxx
   

@@ -1,10 +1,10 @@
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m prc:c
+#define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+                   p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c
 
 #begin lib_target
-  #define TARGET lerp
+  #define TARGET p3lerp
   #define LOCAL_LIBS \
-    event linmath putil
+    p3event p3linmath p3putil
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
 

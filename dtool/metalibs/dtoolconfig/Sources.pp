@@ -7,12 +7,12 @@
 #define DIR_TYPE metalib
 #define BUILDING_DLL BUILDING_DTOOLCONFIG
 
-#define COMPONENT_LIBS interrogatedb dconfig prc
-#define LOCAL_LIBS dtoolutil dtoolbase
+#define COMPONENT_LIBS p3interrogatedb p3dconfig p3prc
+#define LOCAL_LIBS p3dtoolutil p3dtoolbase
 #define USE_PACKAGES python ssl
 
 #begin metalib_target
-  #define TARGET dtoolconfig
+  #define TARGET p3dtoolconfig
 
   #define SOURCES dtoolconfig.cxx \
      $[if $[HAVE_PYTHON], pydtool.cxx]

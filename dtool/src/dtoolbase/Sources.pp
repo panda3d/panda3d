@@ -2,7 +2,7 @@
 #define USE_PACKAGES threads
 
 #begin lib_target
-  #define TARGET dtoolbase
+  #define TARGET p3dtoolbase
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
   

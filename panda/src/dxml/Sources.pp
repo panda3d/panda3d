@@ -44,14 +44,14 @@
 #endif  // $[P3D_PLUGIN_MT]
 
 #begin lib_target
-  #define TARGET dxml
+  #define TARGET p3dxml
 
-  #define LOCAL_LIBS pandabase
+  #define LOCAL_LIBS p3pandabase
   #define OTHER_LIBS \
-    interrogatedb:c dconfig:c dtoolconfig:m \
-    dtoolutil:c dtoolbase:c prc:c dtool:m
+    p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+    p3dtoolutil:c p3dtoolbase:c p3prc:c p3dtool:m
 
-  #define COMBINED_SOURCES dxml_composite1.cxx
+  #define COMBINED_SOURCES p3dxml_composite1.cxx
 
   #define SOURCES \
     config_dxml.h tinyxml.h

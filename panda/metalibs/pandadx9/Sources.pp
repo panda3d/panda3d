@@ -10,9 +10,9 @@
 #define BUILDING_DLL BUILDING_PANDADX
 
 #define COMPONENT_LIBS \
-    dxgsg9
-#define LOCAL_LIBS gsgbase display express gobj
-#define OTHER_LIBS dtoolconfig dtool
+    p3dxgsg9
+#define LOCAL_LIBS p3gsgbase p3display p3express p3gobj
+#define OTHER_LIBS p3dtoolconfig p3dtool
 
 #begin metalib_target
   #define TARGET pandadx9

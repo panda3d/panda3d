@@ -1,14 +1,14 @@
 #define BUILD_DIRECTORY $[HAVE_FCOLLADA]
 
 #define OTHER_LIBS \
-  egg:c pandaegg:m \
-  pipeline:c pnmimage:c putil:c event:c mathutil:c linmath:c panda:m \
-  pandabase:c express:c pandaexpress:m \
-  interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
+  p3egg:c pandaegg:m \
+  p3pipeline:c p3pnmimage:c p3putil:c p3event:c p3mathutil:c p3linmath:c panda:m \
+  p3pandabase:c p3express:c pandaexpress:m \
+  p3interrogatedb:c p3dtoolutil:c p3dtoolbase:c p3prc:c p3dconfig:c p3dtoolconfig:m p3dtool:m p3pystub
 
 #begin bin_target
   #define TARGET dae2egg
-  #define LOCAL_LIBS daeegg eggbase progbase
+  #define LOCAL_LIBS p3daeegg p3eggbase p3progbase
 
   #define SOURCES \
     daeToEgg.cxx daeToEgg.h
@@ -17,7 +17,7 @@
 
 //#begin bin_target
 //  #define TARGET egg2dae
-//  #define LOCAL_LIBS daeegg eggbase progbase
+//  #define LOCAL_LIBS p3daeegg p3eggbase p3progbase
 //
 //  #define SOURCES \
 //    eggToDAE.cxx eggToDAE.h

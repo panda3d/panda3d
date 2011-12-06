@@ -1,10 +1,10 @@
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-     dtoolutil:c dtoolbase:c dtool:m prc:c
+#define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+     p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c
 #define BUILD_DIRECTORY $[HAVE_AUDIO]
 
 #begin lib_target
-  #define TARGET audio
-  #define LOCAL_LIBS putil event movies linmath
+  #define TARGET p3audio
+  #define LOCAL_LIBS p3putil p3event p3movies p3linmath
   
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx
 
@@ -41,9 +41,9 @@
 #begin test_bin_target
   #define TARGET test_audio
   #define LOCAL_LIBS \
-    audio
+    p3audio
   #define OTHER_LIBS \
-    $[OTHER_LIBS] pystub
+    $[OTHER_LIBS] p3pystub
 
   #define SOURCES \
     test_audio.cxx

@@ -31,12 +31,12 @@ aux-display pandagl
 aux-display pandadx8
 #endif
 #if $[HAVE_TINYDISPLAY]
-aux-display tinydisplay
+aux-display p3tinydisplay
 #endif
 
 # Define an appropriate default audio library.
 #if $[HAVE_RAD_MSS]
-audio-library-name miles_audio
+audio-library-name p3miles_audio
 #elif $[HAVE_FMODEX]
 audio-library-name p3fmod_audio
 #elif $[HAVE_OPENAL]

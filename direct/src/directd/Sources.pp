@@ -4,13 +4,13 @@
 #define BUILD_DIRECTORY $[and $[WINDOWS_PLATFORM],$[HAVE_NET],$[HAVE_DIRECTD]]
 
 #define LOCAL_LIBS \
-    directbase
+    p3directbase
 #define OTHER_LIBS \
-    $[if $[HAVE_NET],net:c] linmath:c putil:c express:c panda:m pandaexpress:m dtoolconfig dtool
+    $[if $[HAVE_NET],p3net:c] p3linmath:c p3putil:c p3express:c panda:m pandaexpress:m p3dtoolconfig p3dtool
 #define WIN_SYS_LIBS $[WIN_SYS_LIBS] user32.lib //advapi32.lib
 
 #begin lib_target
-  #define TARGET directd
+  #define TARGET p3directd
 
   #define SOURCES \
     directd.h directd.cxx

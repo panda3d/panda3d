@@ -1,15 +1,15 @@
 #define BUILD_DIRECTORY $[and $[IS_OSX],$[HAVE_GL]]
 
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m prc:c 
+#define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+                   p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c 
 
 #define OSX_SYS_FRAMEWORKS ApplicationServices Carbon AGL CoreServices Cocoa  
 #define USE_PACKAGES gl cggl 
 
 #begin lib_target
-  #define TARGET osxdisplay
+  #define TARGET p3osxdisplay
   #define LOCAL_LIBS \
-    display putil glgsg
+    p3display p3putil p3glgsg
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx
   

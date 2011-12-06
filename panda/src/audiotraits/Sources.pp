@@ -1,5 +1,5 @@
-#define OTHER_LIBS dtoolconfig dtool dtoolbase:c dtoolutil:c \
-    putil:c prc:c interrogatedb:c dconfig:c
+#define OTHER_LIBS p3dtoolconfig p3dtool p3dtoolbase:c p3dtoolutil:c \
+    p3putil:c p3prc:c p3interrogatedb:c p3dconfig:c
 
 #define BUILD_DIRECTORY $[HAVE_AUDIO]
 
@@ -8,7 +8,7 @@
   #define BUILD_TARGET $[HAVE_RAD_MSS]
   #define USE_PACKAGES rad_mss
   #define BUILDING_DLL BUILDING_MILES_AUDIO
-  #define LOCAL_LIBS audio event pipeline
+  #define LOCAL_LIBS p3audio p3event p3pipeline
   #define WIN_SYS_LIBS $[WIN_SYS_LIBS] user32.lib advapi32.lib winmm.lib
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx
@@ -34,7 +34,7 @@
   #define BUILD_TARGET $[HAVE_FMODEX]
   #define USE_PACKAGES fmodex
   #define BUILDING_DLL BUILDING_FMOD_AUDIO
-  #define LOCAL_LIBS audio event
+  #define LOCAL_LIBS p3audio p3event
   #define WIN_SYS_LIBS $[WIN_SYS_LIBS] user32.lib advapi32.lib winmm.lib
 
   #define COMBINED_SOURCES fmod_audio_composite1.cxx
@@ -54,7 +54,7 @@
   #define BUILD_TARGET $[HAVE_OPENAL]
   #define USE_PACKAGES openal
   #define BUILDING_DLL BUILDING_OPENAL_AUDIO
-  #define LOCAL_LIBS audio event
+  #define LOCAL_LIBS p3audio p3event
   #define WIN_SYS_LIBS $[WIN_SYS_LIBS] user32.lib advapi32.lib winmm.lib
 
   #define COMBINED_SOURCES openal_audio_composite1.cxx
@@ -73,7 +73,7 @@
 //  #define TARGET audio_linux
 //  #define BUILDING_DLL BUILDING_MISC
 //  //#define LOCAL_LIBS \
-//  //  audio
+//  //  p3audio
 //
 //  #define SOURCES \
 //    $[if $[HAVE_SYS_SOUNDCARD_H], \

@@ -8,10 +8,10 @@
 #define BUILDING_DLL BUILDING_PANDAFX
 
 #define COMPONENT_LIBS \
-    distort effects
-#define LOCAL_LIBS putil express
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-    dtoolbase:c dtoolutil:c dtool:m prc:c
+    p3distort p3effects
+#define LOCAL_LIBS p3putil p3express
+#define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+    p3dtoolbase:c p3dtoolutil:c p3dtool:m p3prc:c
 
 #begin metalib_target
   #define TARGET pandafx

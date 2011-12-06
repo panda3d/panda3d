@@ -1,11 +1,11 @@
-#define LOCAL_LIBS express pandabase
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m prc:c
+#define LOCAL_LIBS p3express p3pandabase
+#define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+                   p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c
 
 #define SELECT_TAU select.tau
 
 #begin lib_target
-  #define TARGET pipeline
+  #define TARGET p3pipeline
   #define USE_PACKAGES threads
   
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
@@ -198,10 +198,10 @@
 
 #begin test_bin_target
   #define TARGET test_threaddata
-  #define LOCAL_LIBS $[LOCAL_LIBS] pipeline
+  #define LOCAL_LIBS $[LOCAL_LIBS] p3pipeline
   #define OTHER_LIBS \
-   interrogatedb:c dconfig:c dtoolbase:c prc:c \
-   dtoolutil:c dtool:m dtoolconfig:m pystub
+   p3interrogatedb:c p3dconfig:c p3dtoolbase:c p3prc:c \
+   p3dtoolutil:c p3dtool:m p3dtoolconfig:m p3pystub
 
   #define SOURCES \
     test_threaddata.cxx
@@ -211,10 +211,10 @@
 
 #begin test_bin_target
   #define TARGET test_diners
-  #define LOCAL_LIBS $[LOCAL_LIBS] pipeline
+  #define LOCAL_LIBS $[LOCAL_LIBS] p3pipeline
   #define OTHER_LIBS \
-   interrogatedb:c dconfig:c dtoolbase:c prc:c \
-   dtoolutil:c dtool:m dtoolconfig:m pystub
+   p3interrogatedb:c p3dconfig:c p3dtoolbase:c p3prc:c \
+   p3dtoolutil:c p3dtool:m p3dtoolconfig:m p3pystub
 
   #define SOURCES \
     test_diners.cxx
@@ -224,10 +224,10 @@
 
 #begin test_bin_target
   #define TARGET test_mutex
-  #define LOCAL_LIBS $[LOCAL_LIBS] pipeline
+  #define LOCAL_LIBS $[LOCAL_LIBS] p3pipeline
   #define OTHER_LIBS \
-   interrogatedb:c dconfig:c dtoolbase:c prc:c \
-   dtoolutil:c dtool:m dtoolconfig:m pystub
+   p3interrogatedb:c p3dconfig:c p3dtoolbase:c p3prc:c \
+   p3dtoolutil:c p3dtool:m p3dtoolconfig:m p3pystub
 
   #define SOURCES \
     test_mutex.cxx
@@ -237,10 +237,10 @@
 
 #begin test_bin_target
   #define TARGET test_concurrency
-  #define LOCAL_LIBS $[LOCAL_LIBS] pipeline
+  #define LOCAL_LIBS $[LOCAL_LIBS] p3pipeline
   #define OTHER_LIBS \
-   interrogatedb:c dconfig:c dtoolbase:c prc:c \
-   dtoolutil:c dtool:m dtoolconfig:m pystub
+   p3interrogatedb:c p3dconfig:c p3dtoolbase:c p3prc:c \
+   p3dtoolutil:c p3dtool:m p3dtoolconfig:m p3pystub
 
   #define SOURCES \
     test_concurrency.cxx
@@ -250,10 +250,10 @@
 
 #begin test_bin_target
   #define TARGET test_delete
-  #define LOCAL_LIBS $[LOCAL_LIBS] pipeline
+  #define LOCAL_LIBS $[LOCAL_LIBS] p3pipeline
   #define OTHER_LIBS \
-   interrogatedb:c dconfig:c dtoolbase:c prc:c \
-   dtoolutil:c dtool:m dtoolconfig:m pystub
+   p3interrogatedb:c p3dconfig:c p3dtoolbase:c p3prc:c \
+   p3dtoolutil:c p3dtool:m p3dtoolconfig:m p3pystub
 
   #define SOURCES \
     test_delete.cxx
@@ -263,10 +263,10 @@
 
 #begin test_bin_target
   #define TARGET test_atomic
-  #define LOCAL_LIBS $[LOCAL_LIBS] pipeline
+  #define LOCAL_LIBS $[LOCAL_LIBS] p3pipeline
   #define OTHER_LIBS \
-   interrogatedb:c dconfig:c dtoolbase:c prc:c \
-   dtoolutil:c dtool:m dtoolconfig:m pystub
+   p3interrogatedb:c p3dconfig:c p3dtoolbase:c p3prc:c \
+   p3dtoolutil:c p3dtool:m p3dtoolconfig:m p3pystub
 
   #define SOURCES \
     test_atomic.cxx
@@ -277,10 +277,10 @@
 
 #begin test_bin_target
   #define TARGET test_setjmp
-  #define LOCAL_LIBS $[LOCAL_LIBS] pipeline
+  #define LOCAL_LIBS $[LOCAL_LIBS] p3pipeline
   #define OTHER_LIBS \
-   interrogatedb:c dconfig:c dtoolbase:c prc:c \
-   dtoolutil:c dtool:m dtoolconfig:m pystub
+   p3interrogatedb:c p3dconfig:c p3dtoolbase:c p3prc:c \
+   p3dtoolutil:c p3dtool:m p3dtoolconfig:m p3pystub
 
   #define SOURCES \
     test_setjmp.cxx

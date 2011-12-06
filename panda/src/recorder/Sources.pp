@@ -1,9 +1,9 @@
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                  dtoolutil:c dtoolbase:c dtool:m prc:c
-#define LOCAL_LIBS dgraph putil express pandabase
+#define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+                  p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c
+#define LOCAL_LIBS p3dgraph p3putil p3express p3pandabase
 
 #begin lib_target
-  #define TARGET recorder
+  #define TARGET p3recorder
  
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx   
   

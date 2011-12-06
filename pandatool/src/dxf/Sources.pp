@@ -1,12 +1,12 @@
 #begin ss_lib_target
-  #define TARGET dxf
-  #define LOCAL_LIBS pandatoolbase
+  #define TARGET p3dxf
+  #define LOCAL_LIBS p3pandatoolbase
 
   #define OTHER_LIBS \
-    pipeline:c event:c putil:c mathutil:c linmath:c \
+    p3pipeline:c p3event:c p3putil:c p3mathutil:c p3linmath:c \
     panda:m \
-    pandabase:c express:c pandaexpress:m \
-    dtoolutil:c dconfig:c prc:c interrogatedb:c dtoolbase:c dtool:m
+    p3pandabase:c p3express:c pandaexpress:m \
+    p3dtoolutil:c p3dconfig:c p3prc:c p3interrogatedb:c p3dtoolbase:c p3dtool:m
   
   #define SOURCES \
     dxfFile.cxx dxfFile.h dxfLayer.h dxfLayer.cxx \

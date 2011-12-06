@@ -2,17 +2,17 @@
 
 #begin lib_target
   #define BUILD_TARGET $[HAVE_PYTHON]
-  #define USE_PACKAGES openssl native_net net
+  #define USE_PACKAGES openssl native_net p3net
 
-  #define TARGET distributed
+  #define TARGET p3distributed
   #define LOCAL_LIBS \
-    directbase dcparser
+    p3directbase p3dcparser
   #define OTHER_LIBS \
-    event:c downloader:c panda:m express:c pandaexpress:m \
-    interrogatedb:c dconfig:c dtoolconfig:m \
-    dtoolutil:c dtoolbase:c dtool:m \
-    prc:c pstatclient:c pandabase:c linmath:c putil:c \
-    pipeline:c $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c]
+    p3event:c p3downloader:c panda:m p3express:c pandaexpress:m \
+    p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+    p3dtoolutil:c p3dtoolbase:c p3dtool:m \
+    p3prc:c p3pstatclient:c p3pandabase:c p3linmath:c p3putil:c \
+    p3pipeline:c $[if $[HAVE_NET],p3net:c] $[if $[WANT_NATIVE_NET],p3nativenet:c]
 
   #define SOURCES \
     config_distributed.cxx config_distributed.h \

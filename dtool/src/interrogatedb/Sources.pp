@@ -1,7 +1,7 @@
-#define LOCAL_LIBS dconfig dtoolutil dtoolbase
+#define LOCAL_LIBS p3dconfig p3dtoolutil p3dtoolbase
 
 #begin lib_target
-  #define TARGET interrogatedb
+  #define TARGET p3interrogatedb
   
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
   

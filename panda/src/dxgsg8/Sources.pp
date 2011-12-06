@@ -1,16 +1,16 @@
 #define BUILD_DIRECTORY $[HAVE_DX8]
 
 #define OTHER_LIBS \
-   interrogatedb:c dconfig:c dtoolconfig:m \
-   dtoolutil:c dtoolbase:c dtool:m
+   p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+   p3dtoolutil:c p3dtoolbase:c p3dtool:m
    
 #define USE_PACKAGES dx8
 
 #begin lib_target
-  #define TARGET dxgsg8
+  #define TARGET p3dxgsg8
   #define LOCAL_LIBS \
-    gsgbase gobj display windisplay \
-    putil linmath mathutil pnmimage event
+    p3gsgbase p3gobj p3display p3windisplay \
+    p3putil p3linmath p3mathutil p3pnmimage p3event
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx     
 

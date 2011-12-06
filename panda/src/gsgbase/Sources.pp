@@ -1,10 +1,10 @@
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m prc:c
+#define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+                   p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c
 
 #begin lib_target
-  #define TARGET gsgbase
+  #define TARGET p3gsgbase
   #define LOCAL_LIBS \
-    putil linmath
+    p3putil p3linmath
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx     
 
@@ -32,7 +32,7 @@
 #begin test_bin_target
   #define TARGET test_gsgbase
   #define LOCAL_LIBS \
-    gsgbase
+    p3gsgbase
 
   #define SOURCES \
     test_gsgbase.cxx

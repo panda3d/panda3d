@@ -90,7 +90,7 @@ class panda3d(package):
     # that are also needed, but aren't referenced by any code.  Again,
     # note that the .dll extension is automatically replaced with the
     # platform-specific extension for an executable.
-    file('libpandagl.dll', 'libtinydisplay.dll')
+    file('libpandagl.dll', 'libp3tinydisplay.dll')
     if platform.startswith('win'):
         file('libpandadx8.dll', 'libpandadx9.dll')
 
@@ -101,12 +101,12 @@ class panda3d(package):
 aux-display pandagl
 aux-display pandadx9
 aux-display pandadx8
-aux-display tinydisplay
+aux-display p3tinydisplay
 """
     else:
         auxDisplays = """
 aux-display pandagl
-aux-display tinydisplay
+aux-display p3tinydisplay
 """
 
     file('Config.prc', extract = True, text = """

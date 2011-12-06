@@ -2,14 +2,14 @@
 
 #begin lib_target
   #define USE_PACKAGES softimage
-  #define TARGET softegg
+  #define TARGET p3softegg
   #define LOCAL_LIBS \
-    converter pandatoolbase
+    p3converter p3pandatoolbase
   #define OTHER_LIBS \
-    egg:c pandaegg:m \
-    linmath:c putil:c panda:m \
-    express:c pandaexpress:m \
-    dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m
+    p3egg:c pandaegg:m \
+    p3linmath:c p3putil:c panda:m \
+    p3express:c pandaexpress:m \
+    p3dtoolutil:c p3dtoolbase:c p3prc:c p3dconfig:c p3dtoolconfig:m p3dtool:m
 
   #define BUILDING_DLL BUILDING_MISC
   #define UNIX_SYS_LIBS \

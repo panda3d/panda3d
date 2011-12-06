@@ -1,16 +1,16 @@
 #begin lib_target
-  #define TARGET interval
+  #define TARGET p3interval
   #define LOCAL_LIBS \
-    directbase
+    p3directbase
   #define OTHER_LIBS \
-    downloader:c linmath:c lerp:c \
-    chan:c event:c gobj:c pnmimage:c mathutil:c \
-    pgraph:c putil:c panda:m express:c pandaexpress:m \
-    interrogatedb:c dconfig:c dtoolconfig:m \
-    dtoolutil:c dtoolbase:c dtool:m \
-    pandabase:c prc:c gsgbase:c pstatclient:c \
-    $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c] \
-    pipeline:c
+    p3downloader:c p3linmath:c p3lerp:c \
+    p3chan:c p3event:c p3gobj:c p3pnmimage:c p3mathutil:c \
+    p3pgraph:c p3putil:c panda:m p3express:c pandaexpress:m \
+    p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+    p3dtoolutil:c p3dtoolbase:c p3dtool:m \
+    p3pandabase:c p3prc:c p3gsgbase:c p3pstatclient:c \
+    $[if $[HAVE_NET],p3net:c] $[if $[WANT_NATIVE_NET],p3nativenet:c] \
+    p3pipeline:c
 
   #define SOURCES \
     config_interval.cxx config_interval.h \

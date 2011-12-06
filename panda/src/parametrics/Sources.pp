@@ -1,10 +1,10 @@
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m prc:c
+#define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+                   p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c
 
 #begin lib_target
-  #define TARGET parametrics
+  #define TARGET p3parametrics
   #define LOCAL_LIBS \
-    pgraph linmath express putil pandabase
+    p3pgraph p3linmath p3express p3putil p3pandabase
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
 
@@ -68,7 +68,7 @@
 #begin test_bin_target
   #define TARGET test_parametrics
   #define LOCAL_LIBS \
-    parametrics
+    p3parametrics
 
   #define SOURCES \
     test_parametrics.cxx

@@ -1,13 +1,13 @@
 #define BUILD_DIRECTORY $[HAVE_PHYSX]
 #define BUILDING_DLL BUILDING_PANDAPHYSX
 
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m prc:c
+#define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+                   p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c
 
 #begin lib_target
-  #define TARGET physx
-  #define LOCAL_LIBS pgraph linmath grutil
-  #define USE_PACKAGES physx
+  #define TARGET p3physx
+  #define LOCAL_LIBS p3pgraph p3linmath p3grutil
+  #define USE_PACKAGES p3physx
   #define COMBINED_SOURCES $[TARGET]_composite.cxx
 
   #define SOURCES \

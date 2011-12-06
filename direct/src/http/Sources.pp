@@ -2,21 +2,21 @@
 #define USE_PACKAGES native_net
 
 #define OTHER_LIBS \
-    express:c pandaexpress:m \
-    pstatclient:c pipeline:c panda:m \
-    interrogatedb:c dconfig:c dtoolconfig:m \
-    dtoolutil:c dtoolbase:c dtool:m prc:c pandabase:c \
-    $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c] \
-    linmath:c putil:c
+    p3express:c pandaexpress:m \
+    p3pstatclient:c p3pipeline:c panda:m \
+    p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+    p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c p3pandabase:c \
+    $[if $[HAVE_NET],p3net:c] $[if $[WANT_NATIVE_NET],p3nativenet:c] \
+    p3linmath:c p3putil:c
 
 #define LOCAL_LIBS \
-    directbase
+    p3directbase
 #define C++FLAGS -DWITHIN_PANDA
 #define UNIX_SYS_LIBS m
 #define USE_PACKAGES python
 
 #begin lib_target
-  #define TARGET  http
+  #define TARGET  p3http
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx  
 

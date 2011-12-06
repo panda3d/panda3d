@@ -1,11 +1,11 @@
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m prc:c 
+#define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+                   p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c 
 
 #begin lib_target
   #define LOCAL_LIBS \
-    net putil express
+    p3net p3putil p3express
 
-  #define TARGET pstatclient
+  #define TARGET p3pstatclient
   
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx   
 
@@ -49,9 +49,9 @@
 
 #begin test_bin_target
   #define LOCAL_LIBS \
-    pstatclient 
+    p3pstatclient 
   #define OTHER_LIBS \
-    $[OTHER_LIBS] pystub
+    $[OTHER_LIBS] p3pystub
 
   #define TARGET test_client
 

@@ -1,14 +1,14 @@
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m prc:c
+#define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+                   p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c
 
 #begin lib_target
   #define USE_PACKAGES freetype zlib
 
-  #define TARGET text
+  #define TARGET p3text
   #define LOCAL_LIBS \
-    putil gobj pgraph linmath \
-    pnmtext pnmimage gsgbase mathutil \
-    parametrics
+    p3putil p3gobj p3pgraph p3linmath \
+    p3pnmtext p3pnmimage p3gsgbase p3mathutil \
+    p3parametrics
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
 

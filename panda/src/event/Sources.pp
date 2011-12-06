@@ -1,9 +1,9 @@
-#define LOCAL_LIBS putil express pandabase pstatclient linmath
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m prc:c
+#define LOCAL_LIBS p3putil p3express p3pandabase p3pstatclient p3linmath
+#define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+                   p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c
 
 #begin lib_target
-  #define TARGET event
+  #define TARGET p3event
   
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
   
@@ -67,10 +67,10 @@
 
 #begin test_bin_target
   #define TARGET test_task
-  #define LOCAL_LIBS $[LOCAL_LIBS] mathutil
+  #define LOCAL_LIBS $[LOCAL_LIBS] p3mathutil
   #define OTHER_LIBS \
-   interrogatedb:c dconfig:c dtoolbase:c prc:c \
-   dtoolutil:c dtool:m dtoolconfig:m pystub
+   p3interrogatedb:c p3dconfig:c p3dtoolbase:c p3prc:c \
+   p3dtoolutil:c p3dtool:m p3dtoolconfig:m p3pystub
 
   #define SOURCES \
     test_task.cxx

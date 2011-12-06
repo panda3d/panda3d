@@ -1,14 +1,14 @@
 #define BUILD_DIRECTORY $[HAVE_EGG]
 
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m prc:c
+#define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+                   p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c
 
 #define USE_PACKAGES nurbspp
 
 #begin lib_target
-  #define TARGET egg2pg
+  #define TARGET p3egg2pg
   #define LOCAL_LIBS \
-    parametrics collide egg pgraph chan char
+    p3parametrics p3collide p3egg p3pgraph p3chan p3char
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
 

@@ -6,10 +6,10 @@
 
 #define DIR_TYPE metalib
 #define BUILDING_DLL BUILDING_PANDAEXPRESS
-#define USE_PACKAGES net
+#define USE_PACKAGES p3net
 
-#define COMPONENT_LIBS downloader express pandabase
-#define OTHER_LIBS dconfig:c prc:c interrogatedb:c dtoolutil:c dtoolbase:c dtoolconfig:m dtool:m
+#define COMPONENT_LIBS p3downloader p3express p3pandabase
+#define OTHER_LIBS p3dconfig:c p3prc:c p3interrogatedb:c p3dtoolutil:c p3dtoolbase:c p3dtoolconfig:m p3dtool:m
 
 #begin metalib_target
   #define TARGET pandaexpress

@@ -1,5 +1,5 @@
 #define BUILD_DIRECTORY $[HAVE_INTERROGATE]
-#define LOCAL_LIBS interrogatedb dconfig dtoolutil dtoolbase pystub
+#define LOCAL_LIBS p3interrogatedb p3dconfig p3dtoolutil p3dtoolbase p3pystub
 #define USE_PACKAGES openssl
 
 #begin bin_target

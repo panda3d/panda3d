@@ -9,11 +9,11 @@
 #define BUILD_DIRECTORY $[HAVE_GLES]
 
 #define COMPONENT_LIBS \
-    glesgsg egldisplay
+    p3glesgsg p3egldisplay
 
-#define LOCAL_LIBS gsgbase display express
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m prc:c
+#define LOCAL_LIBS p3gsgbase p3display p3express
+#define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+                   p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c
 
 #begin metalib_target
   #define TARGET pandagles

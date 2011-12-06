@@ -1,10 +1,10 @@
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m prc:c
+#define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+                   p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c
 
 #begin lib_target
-  #define TARGET physics
+  #define TARGET p3physics
   #define LOCAL_LIBS \
-    pgraph linmath collide
+    p3pgraph p3linmath p3collide
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
  
@@ -72,7 +72,7 @@
 #begin test_bin_target
   #define TARGET test_physics
   #define LOCAL_LIBS \
-    linmath physics collide
+    p3linmath p3physics p3collide
 
   #define SOURCES \
     test_physics.cxx

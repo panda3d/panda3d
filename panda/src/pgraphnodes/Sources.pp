@@ -1,12 +1,12 @@
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m prc:c
+#define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+                   p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c
 #define LOCAL_LIBS \
-    lerp event gsgbase gobj putil linmath \
-    downloader express pandabase pstatclient pgraph
+    p3lerp p3event p3gsgbase p3gobj p3putil p3linmath \
+    p3downloader p3express p3pandabase p3pstatclient p3pgraph
 #define USE_PACKAGES python
  
 #begin lib_target
-  #define TARGET pgraphnodes
+  #define TARGET p3pgraphnodes
 
   #define COMBINED_SOURCES \
     $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx

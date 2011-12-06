@@ -3,21 +3,21 @@
 #begin bin_target
   #define TARGET egg-qtess
   #define LOCAL_LIBS \
-    eggbase progbase
+    p3eggbase p3progbase
   #define OTHER_LIBS \
-    egg2pg:c egg:c pandaegg:m \
-    chan:c char:c downloader:c event:c lerp:c \
-    tform:c grutil:c text:c dgraph:c display:c gsgbase:c \
-    collide:c gobj:c cull:c device:c \
-    parametrics:c pgraph:c pgraphnodes:c pipeline:c pstatclient:c chan:c \
-    pnmimagetypes:c pnmimage:c mathutil:c linmath:c putil:c \
-    movies:c \
-    $[if $[HAVE_FREETYPE],pnmtext:c] \
-    $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c] \
-    $[if $[HAVE_AUDIO],audio:c] \
+    p3egg2pg:c p3egg:c pandaegg:m \
+    p3chan:c p3char:c p3downloader:c p3event:c p3lerp:c \
+    p3tform:c p3grutil:c p3text:c p3dgraph:c p3display:c p3gsgbase:c \
+    p3collide:c p3gobj:c p3cull:c p3device:c \
+    p3parametrics:c p3pgraph:c p3pgraphnodes:c p3pipeline:c p3pstatclient:c p3chan:c \
+    p3pnmimagetypes:c p3pnmimage:c p3mathutil:c p3linmath:c p3putil:c \
+    p3movies:c \
+    $[if $[HAVE_FREETYPE],p3pnmtext:c] \
+    $[if $[HAVE_NET],p3net:c] $[if $[WANT_NATIVE_NET],p3nativenet:c] \
+    $[if $[HAVE_AUDIO],p3audio:c] \
     panda:m \
-    pandabase:c express:c pandaexpress:m \
-    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
+    p3pandabase:c p3express:c pandaexpress:m \
+    p3interrogatedb:c p3dtoolutil:c p3dtoolbase:c p3prc:c p3dconfig:c p3dtoolconfig:m p3dtool:m p3pystub
   #define UNIX_SYS_LIBS m
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx     

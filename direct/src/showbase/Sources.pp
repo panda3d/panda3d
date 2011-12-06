@@ -1,16 +1,16 @@
 #begin lib_target
-  #define TARGET showbase
+  #define TARGET p3showbase
   #define LOCAL_LIBS \
-    directbase
+    p3directbase
   #define OTHER_LIBS \
-    pgraph:c pgraphnodes:c gsgbase:c gobj:c mathutil:c pstatclient:c \
-    lerp:c downloader:c pandabase:c pnmimage:c prc:c \
-    pipeline:c cull:c \
-    $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c] \
-    display:c linmath:c event:c putil:c panda:m \
-    express:c pandaexpress:m \
-    interrogatedb:c dconfig:c dtoolconfig:m \
-    dtoolutil:c dtoolbase:c dtool:m
+    p3pgraph:c p3pgraphnodes:c p3gsgbase:c p3gobj:c p3mathutil:c p3pstatclient:c \
+    p3lerp:c p3downloader:c p3pandabase:c p3pnmimage:c p3prc:c \
+    p3pipeline:c p3cull:c \
+    $[if $[HAVE_NET],p3net:c] $[if $[WANT_NATIVE_NET],p3nativenet:c] \
+    p3display:c p3linmath:c p3event:c p3putil:c panda:m \
+    p3express:c pandaexpress:m \
+    p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+    p3dtoolutil:c p3dtoolbase:c p3dtool:m
 
   #define WIN_SYS_LIBS \
     User32.lib
@@ -26,7 +26,7 @@
 // This is a pure C module; it involves no Panda code or C++ code.
 #begin lib_target
   #define BUILD_TARGET $[HAVE_PYTHON]
-  #define TARGET extend_frozen
+  #define TARGET p3extend_frozen
   #define LIB_PREFIX
   #if $[OSX_PLATFORM]
     #define LINK_AS_BUNDLE 1

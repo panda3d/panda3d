@@ -2,8 +2,8 @@
 #define BUILDING_DLL BUILDING_TINYDISPLAY
 
 #define OSX_SYS_FRAMEWORKS $[if $[not $[BUILD_IPHONE]],ApplicationServices Carbon CoreServices Cocoa ]
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m prc:c 
+#define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+                   p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c 
 
 #define USE_PACKAGES sdl
 #if $[UNIX_PLATFORM]
@@ -11,10 +11,10 @@
 #endif
 
 #begin lib_target
-  #define TARGET tinydisplay
+  #define TARGET p3tinydisplay
   #define LOCAL_LIBS \
-    gsgbase gobj display \
-    putil linmath mathutil pnmimage windisplay x11display
+    p3gsgbase p3gobj p3display \
+    p3putil p3linmath p3mathutil p3pnmimage p3windisplay p3x11display
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
 

@@ -6,29 +6,29 @@
 
 #define DIR_TYPE metalib
 #define BUILDING_DLL BUILDING_PANDA
-#define USE_PACKAGES net
+#define USE_PACKAGES p3net
 
 #define COMPONENT_LIBS \
-    recorder pgraph pgraphnodes pipeline \
-    pvrpn grutil chan pstatclient \
-    char collide cull device \
-    dgraph display event gobj gsgbase \
-    linmath mathutil movies net nativenet\
-    parametrics \
-    pnmimagetypes pnmimage \
-    pnmtext text tform lerp putil \
-    audio pgui pandabase dxml
+    p3recorder p3pgraph p3pgraphnodes p3pipeline \
+    p3vrpn p3grutil p3chan p3pstatclient \
+    p3char p3collide p3cull p3device \
+    p3dgraph p3display p3event p3gobj p3gsgbase \
+    p3linmath p3mathutil p3movies p3net nativenet\
+    p3parametrics \
+    p3pnmimagetypes p3pnmimage \
+    p3pnmtext p3text p3tform p3lerp p3putil \
+    p3audio p3pgui p3pandabase p3dxml
 
 #define LOCAL_LIBS \
-  downloader express pandabase
+  p3downloader p3express p3pandabase
 #define OTHER_LIBS \
   pandaexpress:m \
-  interrogatedb:c dconfig:c dtoolconfig:m \
-  dtoolutil:c dtoolbase:c dtool:m prc:c
+  p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+  p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c
 
 #if $[LINK_IN_PHYSX]
   #define BUILDING_DLL $[BUILDING_DLL] BUILDING_PANDAPHYSX
-  #define COMPONENT_LIBS $[COMPONENT_LIBS] physx
+  #define COMPONENT_LIBS $[COMPONENT_LIBS] p3physx
 #endif
 
 #begin metalib_target

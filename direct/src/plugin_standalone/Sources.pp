@@ -11,10 +11,10 @@
   #define LOCAL_LIBS plugin_common
 
   #define OTHER_LIBS \
-    prc:c dtoolutil:c dtoolbase:c dtool:m \
-    interrogatedb:c dconfig:c dtoolconfig:m \
-    pandabase:c downloader:c express:c pandaexpress:m \
-    pystub p3tinyxml
+    p3prc:c p3dtoolutil:c p3dtoolbase:c p3dtool:m \
+    p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+    p3pandabase:c p3downloader:c p3express:c pandaexpress:m \
+    p3pystub p3tinyxml
 
   #define OSX_SYS_FRAMEWORKS Foundation AppKit Carbon
 
@@ -39,10 +39,10 @@
   #define LOCAL_LIBS plugin_common
 
   #define OTHER_LIBS \
-    prc:c dtoolutil:c dtoolbase:c dtool:m \
-    interrogatedb:c dconfig:c dtoolconfig:m \
-    pandabase:c downloader:c express:c pandaexpress:m \
-    pystub p3tinyxml
+    p3prc:c p3dtoolutil:c p3dtoolbase:c p3dtool:m \
+    p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+    p3pandabase:c p3downloader:c p3express:c pandaexpress:m \
+    p3pystub p3tinyxml
 
   #define OSX_SYS_FRAMEWORKS Foundation AppKit Carbon
 
@@ -68,10 +68,10 @@
   #define LOCAL_LIBS plugin_common
 
   #define OTHER_LIBS \
-    prc:c dtoolutil:c dtoolbase:c dtool:m \
-    interrogatedb:c dconfig:c dtoolconfig:m \
-    pandabase:c downloader:c express:c pandaexpress:m \
-    pystub p3tinyxml
+    p3prc:c p3dtoolutil:c p3dtoolbase:c p3dtool:m \
+    p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+    p3pandabase:c p3downloader:c p3express:c pandaexpress:m \
+    p3pystub p3tinyxml
 
   #define OSX_SYS_FRAMEWORKS Foundation AppKit Carbon
 
@@ -94,11 +94,11 @@
   #define EXTRA_CDEFS BUILDING_P3D_PLUGIN
 
   #define OTHER_LIBS \
-    prc:c dtoolutil:c dtoolbase:c dtool:m \
-    interrogatedb:c dconfig:c dtoolconfig:m \
-    pandabase:c downloader:c express:c pandaexpress:m \
-    pystub p3tinyxml \
-    $[if $[OSX_PLATFORM],subprocbuffer]
+    p3prc:c p3dtoolutil:c p3dtoolbase:c p3dtool:m \
+    p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+    p3pandabase:c p3downloader:c p3express:c pandaexpress:m \
+    p3pystub p3tinyxml \
+    $[if $[OSX_PLATFORM],p3subprocbuffer]
 
   #define OSX_SYS_FRAMEWORKS Foundation AppKit Carbon
 
@@ -126,10 +126,10 @@
   #define EXTRA_CDEFS BUILDING_P3D_PLUGIN P3DEMBEDW
 
   #define OTHER_LIBS \
-    prc:c dtoolutil:c dtoolbase:c dtool:m \
-    interrogatedb:c dconfig:c dtoolconfig:m \
-    pandabase:c downloader:c express:c pandaexpress:m \
-    pystub p3tinyxml
+    p3prc:c p3dtoolutil:c p3dtoolbase:c p3dtool:m \
+    p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+    p3pandabase:c p3downloader:c p3express:c pandaexpress:m \
+    p3pystub p3tinyxml
 
   #define SOURCES \
     panda3dBase.cxx panda3dBase.h panda3dBase.I \

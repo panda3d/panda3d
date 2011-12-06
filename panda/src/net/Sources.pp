@@ -1,13 +1,13 @@
 #define OTHER_LIBS \
-   interrogatedb:c dconfig:c dtoolconfig:m \
-   dtoolutil:c dtoolbase:c prc:c dtool:m
+   p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+   p3dtoolutil:c p3dtoolbase:c p3prc:c p3dtool:m
 #define BUILD_DIRECTORY $[and $[HAVE_NET],$[WANT_NATIVE_NET]]
-#define USE_PACKAGES net
+#define USE_PACKAGES p3net
 
 #begin lib_target
-  #define TARGET net
+  #define TARGET p3net
   #define LOCAL_LIBS \
-    express downloader pandabase nativenet pipeline
+    p3express p3downloader p3pandabase p3nativenet p3pipeline
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
 
@@ -57,8 +57,8 @@
 
 #begin test_bin_target
   #define TARGET test_datagram
-  #define LOCAL_LIBS net
-  #define OTHER_LIBS $[OTHER_LIBS] pystub
+  #define LOCAL_LIBS p3net
+  #define OTHER_LIBS $[OTHER_LIBS] p3pystub
 
   #define SOURCES \
     test_datagram.cxx
@@ -67,8 +67,8 @@
 
 #begin test_bin_target
   #define TARGET test_spam_client
-  #define LOCAL_LIBS net putil
-  #define OTHER_LIBS $[OTHER_LIBS] pystub
+  #define LOCAL_LIBS p3net p3putil
+  #define OTHER_LIBS $[OTHER_LIBS] p3pystub
 
   #define SOURCES \
     datagram_ui.cxx datagram_ui.h test_spam_client.cxx
@@ -77,8 +77,8 @@
 
 #begin test_bin_target
   #define TARGET test_spam_server
-  #define LOCAL_LIBS net putil
-  #define OTHER_LIBS $[OTHER_LIBS] pystub
+  #define LOCAL_LIBS p3net p3putil
+  #define OTHER_LIBS $[OTHER_LIBS] p3pystub
 
   #define SOURCES \
     datagram_ui.cxx datagram_ui.h test_spam_server.cxx
@@ -87,8 +87,8 @@
 
 #begin test_bin_target
   #define TARGET test_tcp_client
-  #define LOCAL_LIBS net
-  #define OTHER_LIBS $[OTHER_LIBS] pystub
+  #define LOCAL_LIBS p3net
+  #define OTHER_LIBS $[OTHER_LIBS] p3pystub
 
   #define SOURCES \
     datagram_ui.cxx datagram_ui.h test_tcp_client.cxx
@@ -97,8 +97,8 @@
 
 #begin test_bin_target
   #define TARGET test_tcp_server
-  #define LOCAL_LIBS net
-  #define OTHER_LIBS $[OTHER_LIBS] pystub
+  #define LOCAL_LIBS p3net
+  #define OTHER_LIBS $[OTHER_LIBS] p3pystub
 
   #define SOURCES \
     datagram_ui.cxx datagram_ui.h test_tcp_server.cxx
@@ -107,8 +107,8 @@
 
 #begin test_bin_target
   #define TARGET test_raw_server
-  #define LOCAL_LIBS net
-  #define OTHER_LIBS $[OTHER_LIBS] pystub
+  #define LOCAL_LIBS p3net
+  #define OTHER_LIBS $[OTHER_LIBS] p3pystub
 
   #define SOURCES \
     test_raw_server.cxx
@@ -117,8 +117,8 @@
 
 #begin test_bin_target
   #define TARGET test_udp
-  #define LOCAL_LIBS net
-  #define OTHER_LIBS $[OTHER_LIBS] pystub
+  #define LOCAL_LIBS p3net
+  #define OTHER_LIBS $[OTHER_LIBS] p3pystub
 
   #define SOURCES \
     datagram_ui.cxx datagram_ui.h test_udp.cxx
@@ -127,8 +127,8 @@
 
 #begin test_bin_target
   #define TARGET fake_http_server
-  #define LOCAL_LIBS net
-  #define OTHER_LIBS $[OTHER_LIBS] pystub
+  #define LOCAL_LIBS p3net
+  #define OTHER_LIBS $[OTHER_LIBS] p3pystub
 
   #define SOURCES \
     fake_http_server.cxx

@@ -1,27 +1,27 @@
 #define USE_PACKAGES cg  // from gobj.
 
 #begin lib_target
-  #define TARGET ptloader
+  #define TARGET p3ptloader
   #define BUILDING_DLL BUILDING_PTLOADER
   #define LOCAL_LIBS \
-    fltegg flt lwoegg lwo dxfegg dxf vrmlegg pvrml xfileegg xfile \
-    objegg \
-    converter pandatoolbase $[if $[HAVE_FCOLLADA],daeegg]
+    p3fltegg p3flt p3lwoegg p3lwo p3dxfegg p3dxf p3vrmlegg p3vrml p3xfileegg p3xfile \
+    p3objegg \
+    p3converter p3pandatoolbase $[if $[HAVE_FCOLLADA],p3daeegg]
   #define OTHER_LIBS \
-    egg2pg:c egg:c pandaegg:m \
-    pstatclient:c mathutil:c linmath:c putil:c \
-    gobj:c chan:c parametrics:c pgraph:c pgraphnodes:c \
-    pnmimage:c grutil:c collide:c tform:c text:c \
-    char:c dgraph:c display:c device:c cull:c \
-    downloader:c pipeline:c \
-    event:c gsgbase:c lerp:c movies:c \
-    $[if $[HAVE_FREETYPE],pnmtext:c] \
-    $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c] \
-    $[if $[HAVE_AUDIO],audio:c] \
+    p3egg2pg:c p3egg:c pandaegg:m \
+    p3pstatclient:c p3mathutil:c p3linmath:c p3putil:c \
+    p3gobj:c p3chan:c p3parametrics:c p3pgraph:c p3pgraphnodes:c \
+    p3pnmimage:c p3grutil:c p3collide:c p3tform:c p3text:c \
+    p3char:c p3dgraph:c p3display:c p3device:c p3cull:c \
+    p3downloader:c p3pipeline:c \
+    p3event:c p3gsgbase:c p3lerp:c p3movies:c \
+    $[if $[HAVE_FREETYPE],p3pnmtext:c] \
+    $[if $[HAVE_NET],p3net:c] $[if $[WANT_NATIVE_NET],p3nativenet:c] \
+    $[if $[HAVE_AUDIO],p3audio:c] \
     panda:m \
-    pandabase:c express:c pandaexpress:m \
-    interrogatedb:c prc:c dconfig:c dtoolconfig:m \
-    dtoolutil:c dtoolbase:c dtool:m
+    p3pandabase:c p3express:c pandaexpress:m \
+    p3interrogatedb:c p3prc:c p3dconfig:c p3dtoolconfig:m \
+    p3dtoolutil:c p3dtoolbase:c p3dtool:m
   #define UNIX_SYS_LIBS \
     m
 

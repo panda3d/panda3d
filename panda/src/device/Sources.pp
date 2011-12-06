@@ -1,10 +1,10 @@
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m prc:c
+#define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+                   p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c
                    
 #begin lib_target
-  #define TARGET device
+  #define TARGET p3device
   #define LOCAL_LIBS \
-    dgraph display gobj gsgbase mathutil linmath putil
+    p3dgraph p3display p3gobj p3gsgbase p3mathutil p3linmath p3putil
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
 

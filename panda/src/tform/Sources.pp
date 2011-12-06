@@ -1,11 +1,11 @@
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m prc:c
+#define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+                   p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c
 
 #begin lib_target
-  #define TARGET tform
+  #define TARGET p3tform
   #define LOCAL_LIBS \
-    grutil dgraph pgraph linmath display event putil gobj gsgbase \
-    mathutil device
+    p3grutil p3dgraph p3pgraph p3linmath p3display p3event p3putil p3gobj p3gsgbase \
+    p3mathutil p3device
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
 

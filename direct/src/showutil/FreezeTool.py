@@ -10,11 +10,11 @@ import platform
 import types
 from distutils.sysconfig import PREFIX, get_python_inc, get_python_version
 
-# Temporary (?) try..except to protect against unbuilt extend_frozen.
+# Temporary (?) try..except to protect against unbuilt p3extend_frozen.
 try:
-    import extend_frozen
+    import p3extend_frozen
 except ImportError:
-    extend_frozen = None
+    p3extend_frozen = None
 
 import direct
 from pandac.PandaModules import *
@@ -1371,7 +1371,7 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
                 # though.
                 raise
 
-            if extend_frozen and extend_frozen.is_frozen_module(name):
+            if p3extend_frozen and p3extend_frozen.is_frozen_module(name):
                 # It's a frozen module.
                 return (None, name, ('', '', imp.PY_FROZEN))
 
@@ -1390,7 +1390,7 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
     def load_module(self, fqname, fp, pathname, (suffix, mode, type)):
         if type == imp.PY_FROZEN:
             # It's a frozen module.
-            co, isPackage = extend_frozen.get_frozen_module_code(pathname)
+            co, isPackage = p3extend_frozen.get_frozen_module_code(pathname)
             m = self.add_module(fqname)
             m.__file__ = '<frozen>'
             if isPackage:

@@ -1,10 +1,10 @@
 #define BUILD_DIRECTORY $[HAVE_INTERROGATE]
 
-#define LOCAL_LIBS dtoolutil dtoolbase
+#define LOCAL_LIBS p3dtoolutil p3dtoolbase
 #define YACC_PREFIX cppyy
 
 #begin static_lib_target
-  #define TARGET cppParser
+  #define TARGET p3cppParser
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx  $[TARGET]_composite2.cxx  
   

@@ -3,7 +3,7 @@
 #define BUILD_DIRECTORY $[CTPROJS]
 #if $[CTPROJS]
 
-  #define LOCAL_LIBS dtoolbase pystub
+  #define LOCAL_LIBS p3dtoolbase p3pystub
 
   #begin bin_target
     #define TARGET newheader

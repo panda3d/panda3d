@@ -13,11 +13,11 @@
 
 #define OTHER_LIBS \
   pandaexpress:m \
-  dconfig:c dtoolconfig:m \
-  dtoolutil:c dtoolbase:c prc:c dtool:m
+  p3dconfig:c p3dtoolconfig:m \
+  p3dtoolutil:c p3dtoolbase:c p3prc:c p3dtool:m
 
 #begin metalib_target
-  #define TARGET heapq
+  #define TARGET p3heapq
 
   // Tell ppremake to treat this file as if it had been generated via
   // interrogate.  On OSX, this will move it into the .so, instead of

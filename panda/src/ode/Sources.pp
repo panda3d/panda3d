@@ -1,13 +1,13 @@
 #define BUILD_DIRECTORY $[HAVE_ODE]
 #define BUILDING_DLL BUILDING_PANDAODE
 
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m prc:c
+#define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
+                   p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c
 
 #begin lib_target
-  #define TARGET pode
+  #define TARGET p3ode
   #define LOCAL_LIBS \
-    pgraph physics
+    p3pgraph p3physics
 
   #define USE_PACKAGES ode
     

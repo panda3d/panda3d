@@ -2,15 +2,15 @@
 
 #begin ss_lib_target
   #define USE_PACKAGES fcollada
-  #define TARGET daeegg
-  #define LOCAL_LIBS converter pandatoolbase
+  #define TARGET p3daeegg
+  #define LOCAL_LIBS p3converter p3pandatoolbase
   #define OTHER_LIBS \
-    egg:c pandaegg:m \
-    pandabase:c express:c pandaexpress:m \
-    pipeline:c mathutil:c linmath:c putil:c event:c \
+    p3egg:c pandaegg:m \
+    p3pandabase:c p3express:c pandaexpress:m \
+    p3pipeline:c p3mathutil:c p3linmath:c p3putil:c p3event:c \
     panda:m \
-    interrogatedb:c prc:c dconfig:c dtoolconfig:m \
-    dtoolutil:c dtoolbase:c dtool:m
+    p3interrogatedb:c p3prc:c p3dconfig:c p3dtoolconfig:m \
+    p3dtoolutil:c p3dtoolbase:c p3dtool:m
 
   #define SOURCES \
     config_daeegg.cxx config_daeegg.h \

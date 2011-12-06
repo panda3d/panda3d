@@ -1,14 +1,14 @@
 #define BUILD_DIRECTORY $[and $[WINDOWS_PLATFORM],$[HAVE_NET]]
-#define USE_PACKAGES net
+#define USE_PACKAGES p3net
 
 #begin bin_target
   #define TARGET pstats
   #define LOCAL_LIBS \
-    progbase pstatserver
+    p3progbase p3pstatserver
   #define OTHER_LIBS \
-    pstatclient:c linmath:c putil:c net:c express:c pandaexpress:m panda:m \
-    dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m \
-    pystub
+    p3pstatclient:c p3linmath:c p3putil:c p3net:c p3express:c pandaexpress:m panda:m \
+    p3dtoolutil:c p3dtoolbase:c p3prc:c p3dconfig:c p3dtoolconfig:m p3dtool:m \
+    p3pystub
 
   #define SOURCES \
     winStats.cxx \
