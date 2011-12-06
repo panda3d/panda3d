@@ -2750,6 +2750,7 @@ if (not RUNTIME):
 if (not RUNTIME):
   OPTS=['DIR:panda/src/movies', 'BUILDING:PANDA', 'FFMPEG']
   TargetAdd('p3movies_composite1.obj', opts=OPTS, input='p3movies_composite1.cxx')
+  TargetAdd('p3movies_composite2.obj', opts=OPTS, input='p3movies_composite2.cxx')
   IGATEFILES=GetDirectoryContents('panda/src/movies', ["*.h", "*_composite.cxx"])
   TargetAdd('libp3movies.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3movies.in', opts=['IMOD:panda', 'ILIB:libp3movies', 'SRCDIR:panda/src/movies'])
@@ -2933,6 +2934,7 @@ if (not RUNTIME):
   TargetAdd('libpanda.dll', input='p3cull_composite1.obj')
   TargetAdd('libpanda.dll', input='p3cull_composite2.obj')
   TargetAdd('libpanda.dll', input='p3movies_composite1.obj')
+  TargetAdd('libpanda.dll', input='p3movies_composite2.obj')
   TargetAdd('libpanda.dll', input='libp3movies_igate.obj')
   TargetAdd('libpanda.dll', input='p3grutil_multitexReducer.obj')
   TargetAdd('libpanda.dll', input='p3grutil_composite1.obj')

@@ -9,7 +9,8 @@
   #define LOCAL_LIBS \
         p3gobj
     
-  #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
+  #define COMBINED_SOURCES \
+    $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
 
   #define SOURCES \
     movieAudio.h movieAudio.I \

@@ -12,9 +12,11 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "ffmpegAudioCursor.h"
+
 #ifdef HAVE_FFMPEG
 
-#include "ffmpegAudioCursor.h"
+#include "ffmpegAudio.h"
 extern "C" {
   #include "libavcodec/avcodec.h"
   #include "libavformat/avformat.h"

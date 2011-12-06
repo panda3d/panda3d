@@ -12,10 +12,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "ffmpegVideoCursor.h"
+
 #ifdef HAVE_FFMPEG
 
-#include "ffmpegVideoCursor.h"
 #include "config_movies.h"
+#include "pStatCollector.h"
+#include "pStatTimer.h"
+#include "mutexHolder.h"
+#include "reMutexHolder.h"
+#include "ffmpegVideo.h"
+#include "bamReader.h"
 extern "C" {
   #include "libavcodec/avcodec.h"
   #include "libavformat/avformat.h"
@@ -23,10 +30,6 @@ extern "C" {
   #include "libswscale/swscale.h"
 #endif
 }
-#include "pStatCollector.h"
-#include "pStatTimer.h"
-#include "mutexHolder.h"
-#include "reMutexHolder.h"
 
 ReMutex FfmpegVideoCursor::_av_lock;
 TypeHandle FfmpegVideoCursor::_type_handle;
@@ -350,7 +353,8 @@ set_time(double timestamp, int loop_count) {
 
   if (ffmpeg_cat.is_spam() && frame != _current_frame) {
     ffmpeg_cat.spam()
-      << "set_time(" << time << "): " << frame << ", loop_count = " << loop_count << "\n";
+      << "set_time(" << timestamp << "): " << frame
+      << ", loop_count = " << loop_count << "\n";
   }
 
   _current_frame = frame;

@@ -12,12 +12,18 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "pandabase.h"
+
 #ifdef HAVE_FFMPEG
 
-#include "pandabase.h"
 #include "config_movies.h"
 #include "ffmpegVirtualFile.h"
 #include "virtualFileSystem.h"
+
+extern "C" {
+  #include "libavcodec/avcodec.h"
+  #include "libavformat/avformat.h"
+}
 
 #ifndef AVSEEK_SIZE
   #define AVSEEK_SIZE 0x10000

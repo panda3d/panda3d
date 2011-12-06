@@ -23,10 +23,10 @@
 #include "filename.h"
 #include "subfileInfo.h"
 
+#include <stdarg.h>
 extern "C" {
   #include "libavformat/avio.h"
 }
-#include <stdarg.h>
 
 struct URLContext;
 struct AVFormatContext;

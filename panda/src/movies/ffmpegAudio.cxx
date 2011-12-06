@@ -12,9 +12,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "ffmpegAudio.h"
+
 #ifdef HAVE_FFMPEG
 
-#include "ffmpegAudio.h"
 #include "ffmpegAudioCursor.h"
 
 TypeHandle FfmpegAudio::_type_handle;

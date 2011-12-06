@@ -14,21 +14,19 @@
 
 #include "config_movies.h"
 #include "dconfig.h"
-
 #include "movieVideo.h"
 #include "movieVideoCursor.h"
-
 #include "movieAudio.h"
 #include "movieAudioCursor.h"
-
 #include "inkblotVideo.h"
 #include "inkblotVideoCursor.h"
-
 #include "ffmpegVideo.h"
 #include "ffmpegVideoCursor.h"
-
 #include "ffmpegAudio.h"
 #include "ffmpegAudioCursor.h"
+#include "userDataAudio.h"
+#include "userDataAudioCursor.h"
+#include "microphoneAudio.h"
 
 #ifdef HAVE_FFMPEG
 extern "C" {

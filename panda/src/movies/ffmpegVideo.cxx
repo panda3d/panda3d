@@ -12,11 +12,13 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "ffmpegVideo.h"
+
 #ifdef HAVE_FFMPEG
 
-#include "ffmpegVideo.h"
 #include "ffmpegVideoCursor.h"
 #include "config_movies.h"
+#include "bamReader.h"
 
 TypeHandle FfmpegVideo::_type_handle;
 

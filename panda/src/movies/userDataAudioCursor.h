@@ -19,6 +19,8 @@
 #include "luse.h"
 #include "pointerTo.h"
 #include "pointerToArray.h"
+#include "movieAudioCursor.h"
+
 class UserDataAudio;
 
 ////////////////////////////////////////////////////////////////////

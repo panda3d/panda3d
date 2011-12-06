@@ -25,6 +25,7 @@
 #include "pointerTo.h"
 #include "ffmpegVirtualFile.h"
 
+class FfmpegAudio;
 struct AVFormatContext;
 struct AVCodecContext;
 struct AVStream;

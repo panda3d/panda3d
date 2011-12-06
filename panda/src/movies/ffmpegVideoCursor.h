@@ -30,6 +30,7 @@
 #include "conditionVar.h"
 #include "pdeque.h"
 
+class FfmpegVideo;
 struct AVFormatContext;
 struct AVCodecContext;
 struct AVStream;
