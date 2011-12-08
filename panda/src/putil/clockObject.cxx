@@ -75,6 +75,28 @@ ClockObject() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ClockObject::Copy Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+ClockObject::
+ClockObject(const ClockObject &copy) :
+  _true_clock(copy._true_clock),
+  _mode(copy._mode),
+  _start_short_time(copy._start_short_time),
+  _start_long_time(copy._start_long_time),
+  _actual_frame_time(copy._actual_frame_time),
+  _max_dt(copy._max_dt),
+  _user_frame_rate(copy._user_frame_rate),
+  _degrade_factor(copy._degrade_factor),
+  _error_count(copy._error_count),
+  _average_frame_rate_interval(copy._average_frame_rate_interval),
+  _ticks(copy._ticks),
+  _cycler(copy._cycler) 
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ClockObject::set_mode
 //       Access: Published
 //  Description: Changes the mode of the clock.  Normally, the clock

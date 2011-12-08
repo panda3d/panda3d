@@ -77,6 +77,7 @@ PUBLISHED:
   };
 
   ClockObject();
+  ClockObject(const ClockObject &copy);
   INLINE ~ClockObject();
 
   void set_mode(Mode mode);
