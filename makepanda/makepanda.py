@@ -21,6 +21,15 @@ except:
 
 from makepandacore import *
 from installpanda import *
+import time
+import os
+import sys
+
+## jGenPyCode tries to get the directory for Direct from the sys.path. This only works if you 
+## have installed the sdk using a installer. This would not work if the installer was 
+## never used and everything was grabbed into a virign environment using cvs.
+sys.path.append( os.getcwd() )
+import __builtin__
 
 ########################################################################
 ##
@@ -53,6 +62,9 @@ COREAPI_VERSION=None
 PLUGIN_VERSION=None
 OSXTARGET=None
 HOST_URL="https://runtime.panda3d.org/"
+global STRDXSDKVERSION, STRMSPLATFORMVERSION
+STRDXSDKVERSION = 'default'
+STRMSPLATFORMVERSION = 'default'
 
 if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
     OSXTARGET=os.environ["MACOSX_DEPLOYMENT_TARGET"]
@@ -61,17 +73,20 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "GL", "GLES", "GLES2"] + DXVERSIONS + ["TINYDISPLAY", "NVIDIACG", # 3D graphics
   "EGL",                                               # OpenGL (ES) integration
   "OPENAL", "FMODEX", "FFMPEG",                        # Multimedia
-  "ODE", "PHYSX", "BULLET",                            # Physics
+  "ODE", "PHYSX", "BULLET", "PANDAPHYSICS",            # Physics
   "SPEEDTREE",                                         # SpeedTree
   "ZLIB", "PNG", "JPEG", "TIFF", "SQUISH", "FREETYPE", # 2D Formats support
   ] + MAYAVERSIONS + MAXVERSIONS + [ "FCOLLADA",       # 3D Formats support
   "VRPN", "OPENSSL",                                   # Transport
   "FFTW", "SWSCALE",                                   # Algorithm helpers
-  "ARTOOLKIT", "OPENCV", "DIRECTCAM",                  # Augmented Reality
+  "ARTOOLKIT", "OPENCV", "DIRECTCAM", "VISION",        # Augmented Reality
   "NPAPI", "AWESOMIUM",                                # Browser embedding
   "GTK2", "WX", "FLTK",                                # Toolkit support
   "OSMESA", "X11", "XF86DGA", "XRANDR", "XCURSOR",     # Unix platform support
   "PANDATOOL", "PVIEW", "DEPLOYTOOLS",                 # Toolchain
+  "SKELETON",                                          # Example skeleton project
+  "PANDADISTORTFX",                                    # Some distortion special lenses 
+  "PANDAPARTICLESYSTEM",							   # Built in particle system
   "CONTRIB"                                            # Experimental
 ])
 
@@ -119,6 +134,8 @@ def usage(problem):
     print ""
     print "  --nothing         (disable every third-party lib)"
     print "  --everything      (enable every third-party lib)"
+    print "  --dxSdk=X         (specify version of Dx9 SDK to use: jun2010, aug2009, mar2009, aug2006)"
+    print "  --MSPlatSdk=X     (specify MSPlatSdk to use: win71, win61, win60A, winserver2003r2"
     print ""
     print "The simplest way to compile panda is to just type:"
     print ""
@@ -130,11 +147,13 @@ def parseopts(args):
     global INSTALLER,RTDIST,RUNTIME,GENMAN,DISTRIBUTOR,VERSION
     global COMPRESSOR,THREADCOUNT,OSXTARGET,HOST_URL
     global DEBVERSION,RPMRELEASE,P3DSUFFIX
+    global STRDXSDKVERSION, STRMSPLATFORMVERSION
     longopts = [
         "help","distributor=","verbose","runtime","osxtarget=",
         "optimize=","everything","nothing","installer","rtdist","nocolor",
         "version=","lzma","no-python","threads=","outputdir=","override=",
-        "static","host=","debversion=","rpmrelease=","p3dsuffix="]
+        "static","host=","debversion=","rpmrelease=","p3dsuffix=",
+        "dxSdk=", "MSPlatSdk="]
     anything = 0
     optimize = ""
     for pkg in PkgListGet(): longopts.append("no-"+pkg.lower())
@@ -169,6 +188,16 @@ def parseopts(args):
             # Backward compatibility, OPENGL was renamed to GL
             elif (option=="--use-opengl"): PkgEnable("GL")
             elif (option=="--no-opengl"): PkgDisable("GL")
+            elif (option=="--dxSdk"):
+                STRDXSDKVERSION = value.strip().lower()
+                if STRDXSDKVERSION == '':
+                    print "No DirectX SDK version specified. Using 'default' DirectX SDK search"
+                    STRDXSDKVERSION = 'default'
+            elif (option=="--MSPlatSdk"): 
+                STRMSPLATFORMVERSION = value.strip().lower()
+                if STRMSPLATFORMVERSION == '':
+                    print "No MS Platform SDK version specified. Using 'default' MS Platform SDK search"
+                    STRMSPLATFORMVERSION = 'default'
             else:
                 for pkg in PkgListGet():
                     if (option=="--use-"+pkg.lower()):
@@ -318,13 +347,13 @@ LoadDependencyCache()
 
 MakeBuildTree()
 
-SdkLocateDirectX()
+SdkLocateDirectX( STRDXSDKVERSION )
 SdkLocateMaya()
 SdkLocateMax()
 SdkLocateMacOSX(OSXTARGET)
 SdkLocatePython(RTDIST)
 SdkLocateVisualStudio()
-SdkLocateMSPlatform()
+SdkLocateMSPlatform( STRMSPLATFORMVERSION )
 SdkLocatePhysX()
 SdkLocateSpeedTree()
 
@@ -770,10 +799,11 @@ def CompileCxx(obj,src,opts):
 
         # Enables Windows 7 mode if SDK is detected.
         # But only if it is Windows 7 (0x601) and not e. g. Vista (0x600)
-        platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v7.0", "InstallationFolder")
-        winver = sys.getwindowsversion()
-        if platsdk and os.path.isdir(platsdk) and winver[0] >= 6 and winver[1] >= 1:
-            cmd += "/DPANDA_WIN7 /DWINVER=0x601 "
+        if (STRMSPLATFORMVERSION not in ['winserver2003r2', 'win60A']):
+            platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v7.1", "InstallationFolder")
+            winver = sys.getwindowsversion()
+            if platsdk and os.path.isdir(platsdk) and winver[0] >= 6 and winver[1] >= 1:
+                cmd += "/DPANDA_WIN7 /DWINVER=0x601 "
 
         cmd += "/Fo" + obj + " /nologo /c"
         for x in ipath: cmd += " /I" + x
@@ -785,9 +815,13 @@ def CompileCxx(obj,src,opts):
         if (opts.count('MSFORSCOPE')): cmd += ' /Zc:forScope-'
         optlevel = GetOptimizeOption(opts)
         if (optlevel==1): cmd += " /MDd /Zi /RTCs /GS"
-        if (optlevel==2): cmd += " /MDd /Zi"
-        if (optlevel==3): cmd += " /MD /Zi /O2 /Ob2 /DFORCE_INLINING"
-        if (optlevel==4): cmd += " /MD /Zi /Ox /Ob2 /DFORCE_INLINING /DNDEBUG /GL"
+        if (optlevel==2): cmd += " /MDd /Zi /arch:SSE2"
+        if (optlevel==3): cmd += " /MD /Zi /O2 /Ob2 /Oi /Ot /arch:SSE2 /fp:fast /DFORCE_INLINING"
+        if (optlevel==4): 
+           cmd += " /MD /Zi /Ox /Ob2 /Oi /Ot /arch:SSE2 /fp:fast /DFORCE_INLINING /DNDEBUG /GL"
+           cmd += " /Oy"		# jcr add
+           cmd += " /Zp16"		# jcr add # Is this necessary with /Ox?
+
         cmd += " /Fd" + os.path.splitext(obj)[0] + ".pdb"
         building = GetValueOption(opts, "BUILDING:")
         if (building): cmd += " /DBUILDING_" + building
@@ -972,6 +1006,22 @@ def CompileLib(lib, obj, opts):
 
 ########################################################################
 ##
+## CompileLink implicitly checks whether or not a file like libpanda.lib exists
+## This is not explicitly checked stated in the dependency, but is necessary on windows to link in a dll
+##
+########################################################################
+
+def CompileLink_DoesImplicitLibExist(dll, obj, opts):
+    for x in obj:
+        if (x.endswith(".dll")):
+            baseStr = GetOutputDir() + '/lib/' + os.path.splitext(os.path.basename(x))[0] + ".lib"
+            strFullPath = os.path.join( os.getcwd(), baseStr )
+            if not os.path.exists( strFullPath ):
+                return False
+    return True
+
+########################################################################
+##
 ## CompileLink
 ##
 ########################################################################
@@ -983,7 +1033,7 @@ def CompileLink(dll, obj, opts):
             cmd += " /MACHINE:X64"
         if ("MFC" not in opts):
             cmd += " /NOD:MFC90.LIB /NOD:MFC80.LIB /NOD:LIBCMT"
-        cmd += " /NOD:LIBCI.LIB /DEBUG /MANIFEST"
+        cmd += " /NOD:LIBCI.LIB /DEBUG"
         cmd += " /nod:libc /nod:libcmtd /nod:atlthunk /nod:atls"
         if (GetOrigExt(dll) != ".exe"): cmd += " /DLL"
         optlevel = GetOptimizeOption(opts)
@@ -1157,6 +1207,10 @@ def RunGenPyCode(target, inputs, opts):
     for i in inputs:
         if (GetOrigExt(i)==".dll"):
             cmdstr += " " + os.path.basename(os.path.splitext(i)[0].replace("_d","").replace(GetOutputDir()+"/lib/",""))
+    
+    ## On a win7 64 bit system, dir/dir/python.exe doesn't work. Needs dir\\dir\\python.exe
+    if sys.platform.startswith("win"):
+        cmdstr = cmdstr.replace('/','\\')
 
     oscmd(cmdstr)
 
@@ -2043,7 +2097,8 @@ CopyAllHeaders('panda/src/device')
 CopyAllHeaders('panda/src/pnmtext')
 CopyAllHeaders('panda/src/text')
 CopyAllHeaders('panda/src/grutil')
-CopyAllHeaders('panda/src/vision')
+if (PkgSkip("VISION")==0):
+    CopyAllHeaders('panda/src/vision')
 CopyAllHeaders('panda/src/awesomium')
 CopyAllHeaders('panda/src/tform')
 CopyAllHeaders('panda/src/collide')
@@ -2051,12 +2106,15 @@ CopyAllHeaders('panda/src/parametrics')
 CopyAllHeaders('panda/src/pgui')
 CopyAllHeaders('panda/src/pnmimagetypes')
 CopyAllHeaders('panda/src/recorder')
-CopyAllHeaders('panda/src/vrpn')
+if (PkgSkip("VRPN")==0):
+    CopyAllHeaders('panda/src/vrpn')
 CopyAllHeaders('panda/src/wgldisplay')
 CopyAllHeaders('panda/src/ode')
 CopyAllHeaders('panda/metalibs/pandaode')
-CopyAllHeaders('panda/src/physics')
-CopyAllHeaders('panda/src/particlesystem')
+if (PkgSkip("PANDAPHYSICS")==0):
+    CopyAllHeaders('panda/src/physics')
+if (PkgSkip("PANDAPARTICLESYSTEM")==0):
+    CopyAllHeaders('panda/src/particlesystem')
 CopyAllHeaders('panda/src/dxml')
 CopyAllHeaders('panda/metalibs/panda')
 CopyAllHeaders('panda/src/audiotraits')
@@ -2089,8 +2147,6 @@ CopyAllHeaders('panda/metalibs/pandagl')
 CopyAllHeaders('panda/metalibs/pandagles')
 CopyAllHeaders('panda/metalibs/pandagles2')
 
-CopyAllHeaders('panda/src/physics')
-CopyAllHeaders('panda/src/particlesystem')
 CopyAllHeaders('panda/metalibs/pandaphysics')
 CopyAllHeaders('panda/src/testbed')
 
@@ -3036,7 +3092,7 @@ if (not RUNTIME):
 # DIRECTORY: panda/src/vision/
 #
 
-if (not RUNTIME):
+if (PkgSkip("VISION") ==0) & (not RUNTIME):
   OPTS=['DIR:panda/src/vision', 'BUILDING:VISION', 'ARTOOLKIT', 'OPENCV', 'DX9', 'DIRECTCAM', 'JPEG']
   TargetAdd('p3vision_composite1.obj', opts=OPTS, input='p3vision_composite1.cxx')
   IGATEFILES=GetDirectoryContents('panda/src/vision', ["*.h", "*_composite.cxx"])
@@ -3080,7 +3136,7 @@ if PkgSkip("AWESOMIUM") == 0 and not RUNTIME:
 # DIRECTORY: panda/src/p3skel
 #
 
-if (not RUNTIME):
+if (PkgSkip('SKELETON')==0) & (not RUNTIME):
   OPTS=['DIR:panda/src/skel', 'BUILDING:PANDASKEL', 'ADVAPI']
   TargetAdd('p3skel_composite1.obj', opts=OPTS, input='p3skel_composite1.cxx')
   IGATEFILES=GetDirectoryContents("panda/src/skel", ["*.h", "*_composite.cxx"])
@@ -3092,7 +3148,7 @@ if (not RUNTIME):
 # DIRECTORY: panda/src/p3skel
 #
 
-if (not RUNTIME):
+if (PkgSkip('SKELETON')==0) & (not RUNTIME):
   OPTS=['BUILDING:PANDASKEL', 'ADVAPI']
 
   TargetAdd('libpandaskel_module.obj', input='libp3skel.in')
@@ -3109,7 +3165,7 @@ if (not RUNTIME):
 # DIRECTORY: panda/src/distort/
 #
 
-if (not RUNTIME):
+if (PkgSkip('PANDADISTORTFX')==0) & (not RUNTIME):
   OPTS=['DIR:panda/src/distort', 'BUILDING:PANDAFX']
   TargetAdd('p3distort_composite1.obj', opts=OPTS, input='p3distort_composite1.cxx')
   IGATEFILES=GetDirectoryContents('panda/src/distort', ["*.h", "*_composite.cxx"])
@@ -3121,7 +3177,7 @@ if (not RUNTIME):
 # DIRECTORY: panda/metalibs/pandafx/
 #
 
-if (not RUNTIME):
+if (PkgSkip('PANDADISTORTFX')==0) & (not RUNTIME):
   OPTS=['DIR:panda/metalibs/pandafx', 'DIR:panda/src/distort', 'BUILDING:PANDAFX',  'NVIDIACG']
   TargetAdd('pandafx_pandafx.obj', opts=OPTS, input='pandafx.cxx')
 
@@ -3387,7 +3443,8 @@ if (not sys.platform.startswith("win") and PkgSkip("GL")==0 and PkgSkip("OSMESA"
   OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAMESA', 'NVIDIACG', 'GL']
   TargetAdd('libpandamesa.dll', input='p3mesadisplay_composite1.obj')
   TargetAdd('libpandamesa.dll', input='libp3glstuff.dll')
-  TargetAdd('libpandamesa.dll', input='libpandafx.dll')
+  if (PkgSkip('PANDADISTORTFX')==0):
+    TargetAdd('libpandamesa.dll', input='libpandafx.dll')
   TargetAdd('libpandamesa.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libpandamesa.dll', opts=['MODULE', 'GL', 'OSMESA'])
 
@@ -3433,7 +3490,8 @@ if (sys.platform == 'darwin' and PkgSkip("GL")==0 and not RUNTIME):
   TargetAdd('libpandagl.dll', input='p3osxdisplay_composite1.obj')
   TargetAdd('libpandagl.dll', input='p3osxdisplay_osxGraphicsWindow.obj')
   TargetAdd('libpandagl.dll', input='libp3glstuff.dll')
-  TargetAdd('libpandagl.dll', input='libpandafx.dll')
+  if (PkgSkip('PANDADISTORTFX')==0):
+    TargetAdd('libpandagl.dll', input='libpandafx.dll')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'NVIDIACG', 'CGGL', 'CARBON', 'AGL', 'COCOA'])
 
@@ -3452,7 +3510,8 @@ if (sys.platform == "win32" and PkgSkip("GL")==0 and not RUNTIME):
   TargetAdd('libpandagl.dll', input='p3wgldisplay_composite1.obj')
   TargetAdd('libpandagl.dll', input='libp3windisplay.dll')
   TargetAdd('libpandagl.dll', input='libp3glstuff.dll')
-  TargetAdd('libpandagl.dll', input='libpandafx.dll')
+  if (PkgSkip('PANDADISTORTFX')==0):
+    TargetAdd('libpandagl.dll', input='libpandafx.dll')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libpandagl.dll', opts=['MODULE', 'WINGDI', 'GL', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM',  'NVIDIACG', 'CGGL'])
 
@@ -3596,7 +3655,7 @@ if (PkgSkip("PHYSX")==0):
 # DIRECTORY: panda/src/physics/
 #
 
-if (not RUNTIME):
+if (PkgSkip("PANDAPHYSICS")==0) & (not RUNTIME):
   OPTS=['DIR:panda/src/physics', 'BUILDING:PANDAPHYSICS']
   TargetAdd('p3physics_composite1.obj', opts=OPTS, input='p3physics_composite1.cxx')
   TargetAdd('p3physics_composite2.obj', opts=OPTS, input='p3physics_composite2.cxx')
@@ -3627,12 +3686,13 @@ if (not RUNTIME):
 # DIRECTORY: panda/metalibs/pandaphysics/
 #
 
-if (not RUNTIME):
+if (PkgSkip("PANDAPHYSICS")==0) & (not RUNTIME):
   OPTS=['DIR:panda/metalibs/pandaphysics', 'BUILDING:PANDAPHYSICS']
   TargetAdd('pandaphysics_pandaphysics.obj', opts=OPTS, input='pandaphysics.cxx')
 
   TargetAdd('libpandaphysics_module.obj', input='libp3physics.in')
-  TargetAdd('libpandaphysics_module.obj', input='libp3particlesystem.in')
+  if (PkgSkip("PANDAPARTICLESYSTEM")==0):
+    TargetAdd('libpandaphysics_module.obj', input='libp3particlesystem.in')
   TargetAdd('libpandaphysics_module.obj', opts=OPTS)
   TargetAdd('libpandaphysics_module.obj', opts=['IMOD:pandaphysics', 'ILIB:libpandaphysics'])
 
@@ -5012,12 +5072,16 @@ if (PkgSkip("PYTHON")==0 and not RUNTIME):
   # add new libraries here. See direct/src/ffi/panda3d.py
   TargetAdd('PandaModules.py', input='libpandaexpress.dll')
   TargetAdd('PandaModules.py', input='libpanda.dll')
-  TargetAdd('PandaModules.py', input='libpandaphysics.dll')
-  TargetAdd('PandaModules.py', input='libpandafx.dll')
+  if (PkgSkip("PANDAPHYSICS")==0):
+    TargetAdd('PandaModules.py', input='libpandaphysics.dll')
+  if (PkgSkip('PANDADISTORTFX')==0):
+    TargetAdd('PandaModules.py', input='libpandafx.dll')
   if (PkgSkip("DIRECT")==0):
     TargetAdd('PandaModules.py', input='libp3direct.dll')
-  TargetAdd('PandaModules.py', input='libp3vision.dll')
-  TargetAdd('PandaModules.py', input='libpandaskel.dll')
+  if (PkgSkip("VISION")==0):  
+    TargetAdd('PandaModules.py', input='libp3vision.dll')
+  if (PkgSkip("SKELETON")==0):
+    TargetAdd('PandaModules.py', input='libpandaskel.dll')
   TargetAdd('PandaModules.py', input='libpandaegg.dll')
   if (PkgSkip("AWESOMIUM")==0):
     TargetAdd('PandaModules.py', input='libp3awesomium.dll')
@@ -5130,6 +5194,10 @@ def AllSourcesReady(task, pending):
     for x in sources:
         if (x in pending):
             return 0
+    sources = task[1][1]
+    for x in sources:
+        if (x in pending):
+            return 0
     altsources = task[4]
     for x in altsources:
         if (x in pending):
@@ -5141,6 +5209,23 @@ def ParallelMake(tasklist):
     donequeue=Queue.Queue()
     taskqueue=Queue.Queue()
     # Build up a table listing all the pending targets
+    #task = [CompileAnything, [name, inputs, opts], [name], deps, []]
+    # task[2] = [name]
+    # task[3] = deps
+    # import pdb
+    # for task in tasklist:
+        # for targets in task[2]:
+            # # if 'libpanda.dll' in targets:
+                # # print "\n\n\n"
+                # # print task
+                # # print "\n\n\n"
+                # # pdb.set_trace()
+            # if 'libpandaskel.dll' in targets:
+                # print "\n\n\n"
+                # print task
+                # print "\n\n\n"
+                # pdb.set_trace()
+    iNumStartingTasks = len(tasklist)
     pending = {}
     for task in tasklist:
         for target in task[2]:
@@ -5153,10 +5238,10 @@ def ParallelMake(tasklist):
     # Feed tasks to the workers.
     tasksqueued = 0
     while (1):
-        if (tasksqueued < THREADCOUNT*2):
+        if (tasksqueued < THREADCOUNT):
             extras = []
             for task in tasklist:
-                if (tasksqueued < THREADCOUNT*3) & (AllSourcesReady(task, pending)):
+                if (tasksqueued < THREADCOUNT) & (AllSourcesReady(task, pending)):
                     if (NeedsBuild(task[2], task[3])):
                         tasksqueued += 1
                         taskqueue.put(task)
@@ -5166,6 +5251,7 @@ def ParallelMake(tasklist):
                 else:
                     extras.append(task)
             tasklist = extras
+            print '**Number of tasks left', len(tasklist), 'out of ', iNumStartingTasks, ' starting tasks'
         sys.stdout.flush()
         if (tasksqueued == 0): break
         donetask = donequeue.get()
@@ -5186,6 +5272,7 @@ def ParallelMake(tasklist):
 
 def SequentialMake(tasklist):
     i = 0
+    print '--->Number of tasks', len(tasklist)
     for task in tasklist:
         if (NeedsBuild(task[2], task[3])):
             apply(task[0], task[1] + [(i * 100.0) / len(tasklist)])
