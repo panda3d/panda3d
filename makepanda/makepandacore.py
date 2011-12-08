@@ -1573,6 +1573,7 @@ def SdkLocateVisualStudio():
 
 def SdkLocateMSPlatform( strMode = 'default'):
     print '\nWindows Platform SDK:'
+    if (sys.platform != "win32"): return
     platsdk = 0
     if (strMode == 'default'):
         print '\tSearching for the latest version'
