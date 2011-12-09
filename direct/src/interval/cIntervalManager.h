@@ -22,8 +22,7 @@
 #include "pmap.h"
 #include "vector_int.h"
 #include "pmutex.h"
-
-class EventQueue;
+#include "eventQueue.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CIntervalManager
