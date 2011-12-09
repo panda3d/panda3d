@@ -125,7 +125,7 @@ def usage(problem):
     print "  --host URL        (set the host url (runtime build only))"
     print "  --threads N       (use the multithreaded build system. see manual)"
     print "  --osxtarget N     (the OSX version number to build for (OSX only))"
-    print "  --override \"O=V\"  (override dtool_config/p3prc option value)"
+    print "  --override \"O=V\"  (override dtool_config/prc option value)"
     print "  --static          (builds libraries for static linking)"
     print ""
     for pkg in PkgListGet():
@@ -1966,8 +1966,8 @@ else:
 if (sys.platform.startswith("win")):
     configprc = configprc.replace("$HOME/.panda3d", "$USER_APPDATA/Panda3D-%s" % MAJOR_VERSION)
 else:
-    configprc = configprc.replace("aux-p3display pandadx9", "")
-    configprc = configprc.replace("aux-p3display pandadx8", "")
+    configprc = configprc.replace("aux-display pandadx9", "")
+    configprc = configprc.replace("aux-display pandadx8", "")
 
 if (sys.platform == "darwin"):
     configprc = configprc.replace(".panda3d/cache", "Library/Caches/Panda3D-%s" % MAJOR_VERSION)
@@ -2445,7 +2445,7 @@ TargetAdd('p3pandabase_pandabase.obj', opts=OPTS, input='pandabase.cxx')
 OPTS=['DIR:panda/src/express', 'BUILDING:PANDAEXPRESS', 'OPENSSL', 'ZLIB']
 TargetAdd('p3express_composite1.obj', opts=OPTS, input='p3express_composite1.cxx')
 TargetAdd('p3express_composite2.obj', opts=OPTS, input='p3express_composite2.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/express', ["*.h", "*_composite.cxx"])
+IGATEFILES=GetDirectoryContents('panda/src/express', ["*.h", "*_composite*.cxx"])
 TargetAdd('libp3express.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libp3express.in', opts=['IMOD:pandaexpress', 'ILIB:libp3express', 'SRCDIR:panda/src/express'])
 TargetAdd('libp3express_igate.obj', input='libp3express.in', opts=["DEPENDENCYONLY"])
@@ -2457,7 +2457,7 @@ TargetAdd('libp3express_igate.obj', input='libp3express.in', opts=["DEPENDENCYON
 OPTS=['DIR:panda/src/downloader', 'BUILDING:PANDAEXPRESS', 'OPENSSL', 'ZLIB']
 TargetAdd('p3downloader_composite1.obj', opts=OPTS, input='p3downloader_composite1.cxx')
 TargetAdd('p3downloader_composite2.obj', opts=OPTS, input='p3downloader_composite2.cxx')
-IGATEFILES=GetDirectoryContents('panda/src/downloader', ["*.h", "*_composite.cxx"])
+IGATEFILES=GetDirectoryContents('panda/src/downloader', ["*.h", "*_composite*.cxx"])
 TargetAdd('libp3downloader.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libp3downloader.in', opts=['IMOD:pandaexpress', 'ILIB:libp3downloader', 'SRCDIR:panda/src/downloader'])
 TargetAdd('libp3downloader_igate.obj', input='libp3downloader.in', opts=["DEPENDENCYONLY"])
@@ -2494,7 +2494,7 @@ if (not RUNTIME):
   TargetAdd('p3pipeline_composite1.obj', opts=OPTS, input='p3pipeline_composite1.cxx')
   TargetAdd('p3pipeline_composite2.obj', opts=OPTS, input='p3pipeline_composite2.cxx')
   TargetAdd('p3pipeline_contextSwitch.obj', opts=OPTS, input='contextSwitch.c')
-  IGATEFILES=GetDirectoryContents('panda/src/pipeline', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/pipeline', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3pipeline.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3pipeline.in', opts=['IMOD:panda', 'ILIB:libp3pipeline', 'SRCDIR:panda/src/pipeline'])
   TargetAdd('libp3pipeline_igate.obj', input='libp3pipeline.in', opts=["DEPENDENCYONLY"])
@@ -2507,7 +2507,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/putil', 'BUILDING:PANDA',  'ZLIB']
   TargetAdd('p3putil_composite1.obj', opts=OPTS, input='p3putil_composite1.cxx')
   TargetAdd('p3putil_composite2.obj', opts=OPTS, input='p3putil_composite2.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/putil', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/putil', ["*.h", "*_composite*.cxx"])
   IGATEFILES.remove("test_bam.h")
   TargetAdd('libp3putil.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3putil.in', opts=['IMOD:panda', 'ILIB:libp3putil', 'SRCDIR:panda/src/putil'])
@@ -2533,7 +2533,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/event', 'BUILDING:PANDA']
   TargetAdd('p3event_composite1.obj', opts=OPTS, input='p3event_composite1.cxx')
   TargetAdd('p3event_composite2.obj', opts=OPTS, input='p3event_composite2.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/event', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/event', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3event.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3event.in', opts=['IMOD:panda', 'ILIB:libp3event', 'SRCDIR:panda/src/event'])
   TargetAdd('libp3event_igate.obj', input='libp3event.in', opts=["DEPENDENCYONLY"])
@@ -2546,7 +2546,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/linmath', 'BUILDING:PANDA']
   TargetAdd('p3linmath_composite1.obj', opts=OPTS, input='p3linmath_composite1.cxx')
   TargetAdd('p3linmath_composite2.obj', opts=OPTS, input='p3linmath_composite2.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/linmath', ["*.h", "*_ext.I", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/linmath', ["*.h", "*_ext.I", "*_composite*.cxx"])
   IGATEFILES.remove('lmat_ops_src.h')
   IGATEFILES.remove('cast_to_double.h')
   IGATEFILES.remove('lmat_ops.h')
@@ -2563,7 +2563,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/mathutil', 'BUILDING:PANDA', 'FFTW']
   TargetAdd('p3mathutil_composite1.obj', opts=OPTS, input='p3mathutil_composite1.cxx')
   TargetAdd('p3mathutil_composite2.obj', opts=OPTS, input='p3mathutil_composite2.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/mathutil', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/mathutil', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3mathutil.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3mathutil.in', opts=['IMOD:panda', 'ILIB:libp3mathutil', 'SRCDIR:panda/src/mathutil'])
   TargetAdd('libp3mathutil_igate.obj', input='libp3mathutil.in', opts=["DEPENDENCYONLY"])
@@ -2575,7 +2575,7 @@ if (not RUNTIME):
 if (not RUNTIME):
   OPTS=['DIR:panda/src/gsgbase', 'BUILDING:PANDA']
   TargetAdd('p3gsgbase_composite1.obj', opts=OPTS, input='p3gsgbase_composite1.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/gsgbase', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/gsgbase', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3gsgbase.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3gsgbase.in', opts=['IMOD:panda', 'ILIB:libp3gsgbase', 'SRCDIR:panda/src/gsgbase'])
   TargetAdd('libp3gsgbase_igate.obj', input='libp3gsgbase.in', opts=["DEPENDENCYONLY"])
@@ -2588,7 +2588,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/pnmimage', 'BUILDING:PANDA',  'ZLIB']
   TargetAdd('p3pnmimage_composite1.obj', opts=OPTS, input='p3pnmimage_composite1.cxx')
   TargetAdd('p3pnmimage_composite2.obj', opts=OPTS, input='p3pnmimage_composite2.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/pnmimage', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/pnmimage', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3pnmimage.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3pnmimage.in', opts=['IMOD:panda', 'ILIB:libp3pnmimage', 'SRCDIR:panda/src/pnmimage'])
   TargetAdd('libp3pnmimage_igate.obj', input='libp3pnmimage.in', opts=["DEPENDENCYONLY"])
@@ -2600,7 +2600,7 @@ if (not RUNTIME):
 if (not RUNTIME):
   OPTS=['DIR:panda/src/nativenet', 'OPENSSL', 'BUILDING:PANDA']
   TargetAdd('p3nativenet_composite1.obj', opts=OPTS, input='p3nativenet_composite1.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/nativenet', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/nativenet', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3nativenet.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3nativenet.in', opts=['IMOD:panda', 'ILIB:libp3nativenet', 'SRCDIR:panda/src/nativenet'])
   TargetAdd('libp3nativenet_igate.obj', input='libp3nativenet.in', opts=["DEPENDENCYONLY"])
@@ -2613,7 +2613,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/net', 'BUILDING:PANDA']
   TargetAdd('p3net_composite1.obj', opts=OPTS, input='p3net_composite1.cxx')
   TargetAdd('p3net_composite2.obj', opts=OPTS, input='p3net_composite2.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/net', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/net', ["*.h", "*_composite*.cxx"])
   IGATEFILES.remove("datagram_ui.h")
   TargetAdd('libp3net.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3net.in', opts=['IMOD:panda', 'ILIB:libp3net', 'SRCDIR:panda/src/net'])
@@ -2627,7 +2627,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/pstatclient', 'BUILDING:PANDA']
   TargetAdd('p3pstatclient_composite1.obj', opts=OPTS, input='p3pstatclient_composite1.cxx')
   TargetAdd('p3pstatclient_composite2.obj', opts=OPTS, input='p3pstatclient_composite2.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/pstatclient', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/pstatclient', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3pstatclient.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3pstatclient.in', opts=['IMOD:panda', 'ILIB:libp3pstatclient', 'SRCDIR:panda/src/pstatclient'])
   TargetAdd('libp3pstatclient_igate.obj', input='libp3pstatclient.in', opts=["DEPENDENCYONLY"])
@@ -2640,7 +2640,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/gobj', 'BUILDING:PANDA',  'NVIDIACG', 'ZLIB', 'SQUISH', "BIGOBJ"]
   TargetAdd('p3gobj_composite1.obj', opts=OPTS, input='p3gobj_composite1.cxx')
   TargetAdd('p3gobj_composite2.obj', opts=OPTS, input='p3gobj_composite2.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/gobj', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/gobj', ["*.h", "*_composite*.cxx"])
   if ("cgfx_states.h" in IGATEFILES): IGATEFILES.remove("cgfx_states.h")
   TargetAdd('libp3gobj.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3gobj.in', opts=['IMOD:panda', 'ILIB:libp3gobj', 'SRCDIR:panda/src/gobj'])
@@ -2653,7 +2653,7 @@ if (not RUNTIME):
 if (not RUNTIME):
   OPTS=['DIR:panda/src/lerp', 'BUILDING:PANDA']
   TargetAdd('p3lerp_composite1.obj', opts=OPTS, input='p3lerp_composite1.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/lerp', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/lerp', ["*.h", "*_composite*.cxx"])
   IGATEFILES.remove("lerpchans.h")
   TargetAdd('libp3lerp.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3lerp.in', opts=['IMOD:panda', 'ILIB:libp3lerp', 'SRCDIR:panda/src/lerp'])
@@ -2667,7 +2667,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/pgraphnodes', 'BUILDING:PANDA', "BIGOBJ"]
   TargetAdd('p3pgraphnodes_composite1.obj', opts=OPTS, input='p3pgraphnodes_composite1.cxx')
   TargetAdd('p3pgraphnodes_composite2.obj', opts=OPTS, input='p3pgraphnodes_composite2.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/pgraphnodes', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/pgraphnodes', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3pgraphnodes.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3pgraphnodes.in', opts=['IMOD:panda', 'ILIB:libp3pgraphnodes', 'SRCDIR:panda/src/pgraphnodes'])
   TargetAdd('libp3pgraphnodes_igate.obj', input='libp3pgraphnodes.in', opts=["DEPENDENCYONLY"])
@@ -2683,7 +2683,7 @@ if (not RUNTIME):
   TargetAdd('p3pgraph_composite2.obj', opts=OPTS, input='p3pgraph_composite2.cxx')
   TargetAdd('p3pgraph_composite3.obj', opts=OPTS, input='p3pgraph_composite3.cxx')
   TargetAdd('p3pgraph_composite4.obj', opts=OPTS, input='p3pgraph_composite4.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/pgraph', ["*.h", "nodePath.cxx", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/pgraph', ["*.h", "nodePath.cxx", "*_composite*.cxx"])
   TargetAdd('libp3pgraph.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3pgraph.in', opts=['IMOD:panda', 'ILIB:libp3pgraph', 'SRCDIR:panda/src/pgraph'])
   TargetAdd('libp3pgraph_igate.obj', input='libp3pgraph.in', opts=["DEPENDENCYONLY","BIGOBJ"])
@@ -2696,7 +2696,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/cull', 'BUILDING:PANDA', 'BIGOBJ']
   TargetAdd('p3cull_composite1.obj', opts=OPTS, input='p3cull_composite1.cxx')
   TargetAdd('p3cull_composite2.obj', opts=OPTS, input='p3cull_composite2.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/cull', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/cull', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3cull.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3cull.in', opts=['IMOD:panda', 'ILIB:libp3cull', 'SRCDIR:panda/src/cull'])
   TargetAdd('libp3cull_igate.obj', input='libp3cull.in', opts=["DEPENDENCYONLY"])
@@ -2709,7 +2709,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/chan', 'BUILDING:PANDA', 'BIGOBJ']
   TargetAdd('p3chan_composite1.obj', opts=OPTS, input='p3chan_composite1.cxx')
   TargetAdd('p3chan_composite2.obj', opts=OPTS, input='p3chan_composite2.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/chan', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/chan', ["*.h", "*_composite*.cxx"])
   IGATEFILES.remove('movingPart.h')
   IGATEFILES.remove('animChannelFixed.h')
   TargetAdd('libp3chan.in', opts=OPTS, input=IGATEFILES)
@@ -2724,7 +2724,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/char', 'BUILDING:PANDA', 'BIGOBJ']
   TargetAdd('p3char_composite1.obj', opts=OPTS, input='p3char_composite1.cxx')
   TargetAdd('p3char_composite2.obj', opts=OPTS, input='p3char_composite2.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/char', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/char', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3char.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3char.in', opts=['IMOD:panda', 'ILIB:libp3char', 'SRCDIR:panda/src/char'])
   TargetAdd('libp3char_igate.obj', input='libp3char.in', opts=["DEPENDENCYONLY"])
@@ -2737,7 +2737,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/dgraph', 'BUILDING:PANDA']
   TargetAdd('p3dgraph_composite1.obj', opts=OPTS, input='p3dgraph_composite1.cxx')
   TargetAdd('p3dgraph_composite2.obj', opts=OPTS, input='p3dgraph_composite2.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/dgraph', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/dgraph', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3dgraph.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3dgraph.in', opts=['IMOD:panda', 'ILIB:libp3dgraph', 'SRCDIR:panda/src/dgraph'])
   TargetAdd('libp3dgraph_igate.obj', input='libp3dgraph.in', opts=["DEPENDENCYONLY"])
@@ -2750,7 +2750,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/display', 'BUILDING:PANDA', 'BIGOBJ']
   TargetAdd('p3display_composite1.obj', opts=OPTS, input='p3display_composite1.cxx')
   TargetAdd('p3display_composite2.obj', opts=OPTS, input='p3display_composite2.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/display', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/display', ["*.h", "*_composite*.cxx"])
   IGATEFILES.remove("renderBuffer.h")
   TargetAdd('libp3display.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3display.in', opts=['IMOD:panda', 'ILIB:libp3display', 'SRCDIR:panda/src/display'])
@@ -2769,7 +2769,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/device', 'BUILDING:PANDA', 'BIGOBJ']
   TargetAdd('p3device_composite1.obj', opts=OPTS, input='p3device_composite1.cxx')
   TargetAdd('p3device_composite2.obj', opts=OPTS, input='p3device_composite2.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/device', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/device', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3device.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3device.in', opts=['IMOD:panda', 'ILIB:libp3device', 'SRCDIR:panda/src/device'])
   TargetAdd('libp3device_igate.obj', input='libp3device.in', opts=["DEPENDENCYONLY"])
@@ -2781,7 +2781,7 @@ if (not RUNTIME):
 if (PkgSkip("FREETYPE")==0 and not RUNTIME):
   OPTS=['DIR:panda/src/pnmtext', 'BUILDING:PANDA',  'FREETYPE']
   TargetAdd('p3pnmtext_composite1.obj', opts=OPTS, input='p3pnmtext_composite1.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/pnmtext', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/pnmtext', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3pnmtext.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3pnmtext.in', opts=['IMOD:panda', 'ILIB:libp3pnmtext', 'SRCDIR:panda/src/pnmtext'])
   TargetAdd('libp3pnmtext_igate.obj', input='libp3pnmtext.in', opts=["DEPENDENCYONLY"])
@@ -2794,7 +2794,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/text', 'BUILDING:PANDA', 'ZLIB',  'FREETYPE', 'BIGOBJ']
   TargetAdd('p3text_composite1.obj', opts=OPTS, input='p3text_composite1.cxx')
   TargetAdd('p3text_composite2.obj', opts=OPTS, input='p3text_composite2.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/text', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/text', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3text.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3text.in', opts=['IMOD:panda', 'ILIB:libp3text', 'SRCDIR:panda/src/text'])
   TargetAdd('libp3text_igate.obj', input='libp3text.in', opts=["DEPENDENCYONLY"])
@@ -2807,7 +2807,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/movies', 'BUILDING:PANDA', 'FFMPEG']
   TargetAdd('p3movies_composite1.obj', opts=OPTS, input='p3movies_composite1.cxx')
   TargetAdd('p3movies_composite2.obj', opts=OPTS, input='p3movies_composite2.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/movies', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/movies', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3movies.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3movies.in', opts=['IMOD:panda', 'ILIB:libp3movies', 'SRCDIR:panda/src/movies'])
   TargetAdd('libp3movies_igate.obj', input='libp3movies.in', opts=["DEPENDENCYONLY"])
@@ -2821,7 +2821,7 @@ if (not RUNTIME):
   TargetAdd('p3grutil_multitexReducer.obj', opts=OPTS, input='multitexReducer.cxx')
   TargetAdd('p3grutil_composite1.obj', opts=OPTS, input='p3grutil_composite1.cxx')
   TargetAdd('p3grutil_composite2.obj', opts=OPTS, input='p3grutil_composite2.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/grutil', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/grutil', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3grutil.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3grutil.in', opts=['IMOD:panda', 'ILIB:libp3grutil', 'SRCDIR:panda/src/grutil'])
   TargetAdd('libp3grutil_igate.obj', input='libp3grutil.in', opts=["DEPENDENCYONLY"])
@@ -2834,7 +2834,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/tform', 'BUILDING:PANDA', 'BIGOBJ']
   TargetAdd('p3tform_composite1.obj', opts=OPTS, input='p3tform_composite1.cxx')
   TargetAdd('p3tform_composite2.obj', opts=OPTS, input='p3tform_composite2.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/tform', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/tform', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3tform.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3tform.in', opts=['IMOD:panda', 'ILIB:libp3tform', 'SRCDIR:panda/src/tform'])
   TargetAdd('libp3tform_igate.obj', input='libp3tform.in', opts=["DEPENDENCYONLY"])
@@ -2847,7 +2847,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/collide', 'BUILDING:PANDA', 'BIGOBJ']
   TargetAdd('p3collide_composite1.obj', opts=OPTS, input='p3collide_composite1.cxx')
   TargetAdd('p3collide_composite2.obj', opts=OPTS, input='p3collide_composite2.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/collide', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/collide', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3collide.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3collide.in', opts=['IMOD:panda', 'ILIB:libp3collide', 'SRCDIR:panda/src/collide'])
   TargetAdd('libp3collide_igate.obj', input='libp3collide.in', opts=["DEPENDENCYONLY"])
@@ -2860,7 +2860,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/parametrics', 'BUILDING:PANDA', 'BIGOBJ']
   TargetAdd('p3parametrics_composite1.obj', opts=OPTS, input='p3parametrics_composite1.cxx')
   TargetAdd('p3parametrics_composite2.obj', opts=OPTS, input='p3parametrics_composite2.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/parametrics', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/parametrics', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3parametrics.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3parametrics.in', opts=['IMOD:panda', 'ILIB:libp3parametrics', 'SRCDIR:panda/src/parametrics'])
   TargetAdd('libp3parametrics_igate.obj', input='libp3parametrics.in', opts=["DEPENDENCYONLY"])
@@ -2873,7 +2873,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/pgui', 'BUILDING:PANDA', 'BIGOBJ']
   TargetAdd('p3pgui_composite1.obj', opts=OPTS, input='p3pgui_composite1.cxx')
   TargetAdd('p3pgui_composite2.obj', opts=OPTS, input='p3pgui_composite2.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/pgui', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/pgui', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3pgui.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3pgui.in', opts=['IMOD:panda', 'ILIB:libp3pgui', 'SRCDIR:panda/src/pgui'])
   TargetAdd('libp3pgui_igate.obj', input='libp3pgui.in', opts=["DEPENDENCYONLY"])
@@ -2895,7 +2895,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/recorder', 'BUILDING:PANDA']
   TargetAdd('p3recorder_composite1.obj', opts=OPTS, input='p3recorder_composite1.cxx')
   TargetAdd('p3recorder_composite2.obj', opts=OPTS, input='p3recorder_composite2.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/recorder', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/recorder', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3recorder.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3recorder.in', opts=['IMOD:panda', 'ILIB:libp3recorder', 'SRCDIR:panda/src/recorder'])
   TargetAdd('libp3recorder_igate.obj', input='libp3recorder.in', opts=["DEPENDENCYONLY"])
@@ -2907,7 +2907,7 @@ if (not RUNTIME):
 if (PkgSkip("VRPN")==0 and not RUNTIME):
   OPTS=['DIR:panda/src/vrpn', 'BUILDING:PANDA',  'VRPN']
   TargetAdd('p3vrpn_composite1.obj', opts=OPTS, input='p3vrpn_composite1.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/vrpn', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/vrpn', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3vrpn.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3vrpn.in', opts=['IMOD:panda', 'ILIB:libp3vrpn', 'SRCDIR:panda/src/vrpn'])
   TargetAdd('libp3vrpn_igate.obj', input='libp3vrpn.in', opts=["DEPENDENCYONLY"])
@@ -3095,7 +3095,7 @@ if (not RUNTIME):
 if (PkgSkip("VISION") ==0) & (not RUNTIME):
   OPTS=['DIR:panda/src/vision', 'BUILDING:VISION', 'ARTOOLKIT', 'OPENCV', 'DX9', 'DIRECTCAM', 'JPEG']
   TargetAdd('p3vision_composite1.obj', opts=OPTS, input='p3vision_composite1.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/vision', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/vision', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3vision.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3vision.in', opts=['IMOD:p3vision', 'ILIB:libp3vision', 'SRCDIR:panda/src/vision'])
   TargetAdd('libp3vision_igate.obj', input='libp3vision.in', opts=["DEPENDENCYONLY"])
@@ -3139,7 +3139,7 @@ if PkgSkip("AWESOMIUM") == 0 and not RUNTIME:
 if (PkgSkip('SKELETON')==0) & (not RUNTIME):
   OPTS=['DIR:panda/src/skel', 'BUILDING:PANDASKEL', 'ADVAPI']
   TargetAdd('p3skel_composite1.obj', opts=OPTS, input='p3skel_composite1.cxx')
-  IGATEFILES=GetDirectoryContents("panda/src/skel", ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents("panda/src/skel", ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3skel.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3skel.in', opts=['IMOD:pandaskel', 'ILIB:libp3skel', 'SRCDIR:panda/src/skel'])
   TargetAdd('libp3skel_igate.obj', input='libp3skel.in', opts=["DEPENDENCYONLY"])
@@ -3168,7 +3168,7 @@ if (PkgSkip('SKELETON')==0) & (not RUNTIME):
 if (PkgSkip('PANDADISTORTFX')==0) & (not RUNTIME):
   OPTS=['DIR:panda/src/distort', 'BUILDING:PANDAFX']
   TargetAdd('p3distort_composite1.obj', opts=OPTS, input='p3distort_composite1.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/distort', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/distort', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3distort.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3distort.in', opts=['IMOD:pandafx', 'ILIB:libp3distort', 'SRCDIR:panda/src/distort'])
   TargetAdd('libp3distort_igate.obj', input='libp3distort.in', opts=["DEPENDENCYONLY"])
@@ -3339,7 +3339,7 @@ if (not RUNTIME):
   TargetAdd('p3egg_lexer.obj', opts=OPTS, input='lexer.lxx')
   TargetAdd('p3egg_composite1.obj', opts=OPTS, input='p3egg_composite1.cxx')
   TargetAdd('p3egg_composite2.obj', opts=OPTS, input='p3egg_composite2.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/egg', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/egg', ["*.h", "*_composite*.cxx"])
   if "parser.h" in IGATEFILES: IGATEFILES.remove("parser.h")
   TargetAdd('libp3egg.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3egg.in', opts=['IMOD:pandaegg', 'ILIB:libp3egg', 'SRCDIR:panda/src/egg'])
@@ -3563,7 +3563,7 @@ if (PkgSkip("ODE")==0 and not RUNTIME):
   TargetAdd('p3ode_composite1.obj', opts=OPTS, input='p3ode_composite1.cxx')
   TargetAdd('p3ode_composite2.obj', opts=OPTS, input='p3ode_composite2.cxx')
   TargetAdd('p3ode_composite3.obj', opts=OPTS, input='p3ode_composite3.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/ode', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/ode', ["*.h", "*_composite*.cxx"])
   IGATEFILES.remove("odeConvexGeom.h")
   IGATEFILES.remove("odeHeightFieldGeom.h")
   IGATEFILES.remove("odeHelperStructs.h")
@@ -3597,7 +3597,7 @@ if (PkgSkip("ODE")==0 and not RUNTIME):
 if (PkgSkip("BULLET")==0 and not RUNTIME):
   OPTS=['DIR:panda/src/bullet', 'BUILDING:PANDABULLET', 'BULLET']
   TargetAdd('p3bullet_composite.obj', opts=OPTS, input='p3bullet_composite.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/bullet', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/bullet', ["*.h", "*_composite*.cxx"])
   TargetAdd('libpandabullet.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libpandabullet.in', opts=['IMOD:pandabullet', 'ILIB:libpandabullet', 'SRCDIR:panda/src/bullet'])
   TargetAdd('libpandabullet_igate.obj', input='libpandabullet.in', opts=["DEPENDENCYONLY"])
@@ -3627,7 +3627,7 @@ if (PkgSkip("BULLET")==0 and not RUNTIME):
 if (PkgSkip("PHYSX")==0):
   OPTS=['DIR:panda/src/physx', 'BUILDING:PANDAPHYSX', 'PHYSX', 'NOPPC']
   TargetAdd('p3physx_composite.obj', opts=OPTS, input='p3physx_composite.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/physx', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/physx', ["*.h", "*_composite*.cxx"])
   TargetAdd('libpandaphysx.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libpandaphysx.in', opts=['IMOD:pandaphysx', 'ILIB:libpandaphysx', 'SRCDIR:panda/src/physx'])
   TargetAdd('libpandaphysx_igate.obj', input='libpandaphysx.in', opts=["DEPENDENCYONLY"])
@@ -3659,7 +3659,7 @@ if (PkgSkip("PANDAPHYSICS")==0) & (not RUNTIME):
   OPTS=['DIR:panda/src/physics', 'BUILDING:PANDAPHYSICS']
   TargetAdd('p3physics_composite1.obj', opts=OPTS, input='p3physics_composite1.cxx')
   TargetAdd('p3physics_composite2.obj', opts=OPTS, input='p3physics_composite2.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/physics', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/physics', ["*.h", "*_composite*.cxx"])
   IGATEFILES.remove("forces.h")
   TargetAdd('libp3physics.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3physics.in', opts=['IMOD:pandaphysics', 'ILIB:libp3physics', 'SRCDIR:panda/src/physics'])
@@ -3673,7 +3673,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/particlesystem', 'BUILDING:PANDAPHYSICS']
   TargetAdd('p3particlesystem_composite1.obj', opts=OPTS, input='p3particlesystem_composite1.cxx')
   TargetAdd('p3particlesystem_composite2.obj', opts=OPTS, input='p3particlesystem_composite2.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/particlesystem', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/particlesystem', ["*.h", "*_composite*.cxx"])
   IGATEFILES.remove('orientedParticle.h')
   IGATEFILES.remove('orientedParticleFactory.h')
   IGATEFILES.remove('particlefactories.h')
@@ -3714,7 +3714,7 @@ if (PkgSkip("PANDAPHYSICS")==0) & (not RUNTIME):
 if (PkgSkip("SPEEDTREE")==0):
   OPTS=['DIR:panda/src/speedtree', 'BUILDING:PANDASPEEDTREE', 'SPEEDTREE']
   TargetAdd('pandaspeedtree_composite1.obj', opts=OPTS, input='pandaspeedtree_composite1.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/speedtree', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/speedtree', ["*.h", "*_composite*.cxx"])
   TargetAdd('libpandaspeedtree.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libpandaspeedtree.in', opts=['IMOD:pandaspeedtree', 'ILIB:libpandaspeedtree', 'SRCDIR:panda/src/speedtree'])
   TargetAdd('libpandaspeedtree_igate.obj', input='libpandaspeedtree.in', opts=["DEPENDENCYONLY"])
@@ -3807,7 +3807,7 @@ if (PkgSkip("DIRECT")==0):
   TargetAdd('p3dcparser_dcLexer.obj', opts=OPTS, input='dcLexer.lxx')
   TargetAdd('p3dcparser_composite1.obj', opts=OPTS, input='p3dcparser_composite1.cxx')
   TargetAdd('p3dcparser_composite2.obj', opts=OPTS, input='p3dcparser_composite2.cxx')
-  IGATEFILES=GetDirectoryContents('direct/src/dcparser', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('direct/src/dcparser', ["*.h", "*_composite*.cxx"])
   if "dcParser.h" in IGATEFILES: IGATEFILES.remove("dcParser.h")
   if "dcmsgtypes.h" in IGATEFILES: IGATEFILES.remove('dcmsgtypes.h')
   TargetAdd('libp3dcparser.in', opts=OPTS, input=IGATEFILES)
@@ -3821,7 +3821,7 @@ if (PkgSkip("DIRECT")==0):
 if (PkgSkip("DIRECT")==0):
   OPTS=['DIR:direct/src/deadrec', 'BUILDING:DIRECT']
   TargetAdd('p3deadrec_composite1.obj', opts=OPTS, input='p3deadrec_composite1.cxx')
-  IGATEFILES=GetDirectoryContents('direct/src/deadrec', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('direct/src/deadrec', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3deadrec.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3deadrec.in', opts=['IMOD:p3direct', 'ILIB:libp3deadrec', 'SRCDIR:direct/src/deadrec'])
   TargetAdd('libp3deadrec_igate.obj', input='libp3deadrec.in', opts=["DEPENDENCYONLY"])
@@ -3847,7 +3847,7 @@ if (PkgSkip("DIRECT")==0):
 if (PkgSkip("DIRECT")==0):
   OPTS=['DIR:direct/src/interval', 'BUILDING:DIRECT']
   TargetAdd('p3interval_composite1.obj', opts=OPTS, input='p3interval_composite1.cxx')
-  IGATEFILES=GetDirectoryContents('direct/src/interval', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('direct/src/interval', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3interval.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3interval.in', opts=['IMOD:p3direct', 'ILIB:libp3interval', 'SRCDIR:direct/src/interval'])
   TargetAdd('libp3interval_igate.obj', input='libp3interval.in', opts=["DEPENDENCYONLY"])
@@ -5049,7 +5049,7 @@ for VER in MAYAVERSIONS:
 if (PkgSkip("CONTRIB")==0 and not RUNTIME):
   OPTS=['DIR:contrib/src/ai', 'BUILDING:PANDAAI']
   TargetAdd('p3ai_composite1.obj', opts=OPTS, input='p3ai_composite1.cxx')
-  IGATEFILES=GetDirectoryContents('contrib/src/ai', ["*.h", "*_composite.cxx"])
+  IGATEFILES=GetDirectoryContents('contrib/src/ai', ["*.h", "*_composite*.cxx"])
   TargetAdd('libpandaai.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libpandaai.in', opts=['IMOD:pandaai', 'ILIB:libpandaai', 'SRCDIR:contrib/src/ai'])
   TargetAdd('libpandaai_igate.obj', input='libpandaai.in', opts=["DEPENDENCYONLY"])

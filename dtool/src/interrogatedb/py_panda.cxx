@@ -718,7 +718,7 @@ PyObject *copy_from_make_copy(PyObject *self) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: copy_from_make_copy
+//     Function: copy_from_copy_constructor
 //  Description: This is a support function for a synthesized
 //               __copy__() method from a C++ copy constructor.
 ////////////////////////////////////////////////////////////////////
@@ -734,7 +734,7 @@ PyObject *copy_from_copy_constructor(PyObject *self) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: copy_from_make_copy
+//     Function: map_deepcopy_to_copy
 //  Description: This is a support function for a synthesized
 //               __deepcopy__() method for any class that has a
 //               __copy__() method.  The sythethic method simply
