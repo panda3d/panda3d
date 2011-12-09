@@ -36,12 +36,12 @@ PUBLISHED:
   CDistributedSmoothNodeBase();
   ~CDistributedSmoothNodeBase();
   
-  INLINE static void
+  INLINE void
   set_repository(CConnectionRepository *repository,
                  bool is_ai, CHANNEL_TYPE ai_id);
 
 #ifdef HAVE_PYTHON
-  INLINE static void
+  INLINE void
   set_clock_delta(PyObject *clock_delta);
 #endif
 
@@ -88,11 +88,11 @@ private:
   DCClass *_dclass;
   CHANNEL_TYPE _do_id;
 
-  static CConnectionRepository *_repository;
-  static bool _is_ai;
-  static CHANNEL_TYPE _ai_id;
+  CConnectionRepository *_repository;
+  bool _is_ai;
+  CHANNEL_TYPE _ai_id;
 #ifdef HAVE_PYTHON
-  static PyObject *_clock_delta;
+  PyObject *_clock_delta;
 #endif
 
   LPoint3 _store_xyz;

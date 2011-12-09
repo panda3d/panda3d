@@ -16,7 +16,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CDistributedSmoothNodeBase::set_repository
 //       Access: Published, Static
-//  Description: Tells the C++ class definition about the AI or Client
+//  Description: Tells the C++ instance definition about the AI or Client
 //               repository, used for sending datagrams.
 ////////////////////////////////////////////////////////////////////
 INLINE void CDistributedSmoothNodeBase::
@@ -31,7 +31,7 @@ set_repository(CConnectionRepository *repository,
 ////////////////////////////////////////////////////////////////////
 //     Function: CDistributedSmoothNodeBase::set_clock_delta
 //       Access: Published, Static
-//  Description: Tells the C++ class definition about the global
+//  Description: Tells the C++ instance definition about the global
 //               ClockDelta object.
 ////////////////////////////////////////////////////////////////////
 INLINE void CDistributedSmoothNodeBase::
