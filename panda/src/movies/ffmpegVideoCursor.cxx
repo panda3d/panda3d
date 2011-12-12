@@ -58,8 +58,7 @@ FfmpegVideoCursor() :
   _action_cvar(_lock),
   _thread_status(TS_stopped),
   _seek_frame(0),
-  _packet0(NULL),
-  _packet1(NULL),
+  _packet(NULL),
   _format_ctx(NULL),
   _video_ctx(NULL),
   _convert_ctx(NULL),
@@ -106,10 +105,8 @@ init_from(FfmpegVideo *source) {
     return;
   }
 
-  _packet0 = new AVPacket;
-  _packet1 = new AVPacket;
-  memset(_packet0, 0, sizeof(AVPacket));
-  memset(_packet1, 0, sizeof(AVPacket));
+  _packet = new AVPacket;
+  memset(_packet, 0, sizeof(AVPacket));
   
   fetch_packet(0);
   fetch_frame(-1);
@@ -137,8 +134,7 @@ FfmpegVideoCursor(FfmpegVideo *src) :
   _action_cvar(_lock),
   _thread_status(TS_stopped),
   _seek_frame(0),
-  _packet0(NULL),
-  _packet1(NULL),
+  _packet(NULL),
   _format_ctx(NULL),
   _video_ctx(NULL),
   _convert_ctx(NULL),
@@ -614,20 +610,12 @@ cleanup() {
     _frame_out = NULL;
   }
 
-  if (_packet0) {
-    if (_packet0->data) {
-      av_free_packet(_packet0);
+  if (_packet) {
+    if (_packet->data) {
+      av_free_packet(_packet);
     }
-    delete _packet0;
-    _packet0 = NULL;
-  }
-
-  if (_packet1) {
-    if (_packet1->data) {
-      av_free_packet(_packet1);
-    }
-    delete _packet1;
-    _packet1 = NULL;
+    delete _packet;
+    _packet = NULL;
   }
 }
 
@@ -813,17 +801,17 @@ fetch_packet(int default_frame) {
 ////////////////////////////////////////////////////////////////////
 bool FfmpegVideoCursor::
 do_fetch_packet(int default_frame) {
-  if (_packet0->data) {
-    av_free_packet(_packet0);
+  if (_packet->data) {
+    av_free_packet(_packet);
   }
-  while (av_read_frame(_format_ctx, _packet0) >= 0) {
-    if (_packet0->stream_index == _video_index) {
-      _packet_frame = _packet0->dts;
+  while (av_read_frame(_format_ctx, _packet) >= 0) {
+    if (_packet->stream_index == _video_index) {
+      _packet_frame = _packet->dts;
       return false;
     }
-    av_free_packet(_packet0);
+    av_free_packet(_packet);
   }
-  _packet0->data = 0;
+  _packet->data = 0;
 
   if (!_eof_known && default_frame != 0) {
     _eof_frame = _packet_frame;
@@ -844,18 +832,6 @@ do_fetch_packet(int default_frame) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FfmpegVideoCursor::flip_packets
-//       Access: Private
-//  Description: Called within the sub-thread.  Reverses _packet0 and _packet1.
-////////////////////////////////////////////////////////////////////
-void FfmpegVideoCursor::
-flip_packets() {
-  AVPacket *t = _packet0;
-  _packet0 = _packet1;
-  _packet1 = t;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: FfmpegVideoCursor::fetch_frame
 //       Access: Private
 //  Description: Called within the sub-thread.  Slides forward until
@@ -873,25 +849,15 @@ fetch_frame(int frame) {
   int finished = 0;
 
   if (_packet_frame <= frame) {
-    _video_ctx->skip_frame = AVDISCARD_BIDIR;
-    // Put the current packet aside in case we discover it's the
-    // packet to keep.
-    flip_packets();
-    
+    finished = 0;
+
     // Get the next packet.  The first packet beyond the frame we're
     // looking for marks the point to stop.
-    _begin_frame = _packet_frame;
-    if (fetch_packet(frame)) {
-      _end_frame = _packet_frame;
-      _frame_ready = false;
-      return;
-    }
     while (_packet_frame <= frame) {
       PStatTimer timer(_seek_pcollector);
 
-      // Decode and discard the previous packet.
-      decode_frame(finished, _packet1);
-      flip_packets();
+      // Decode the previous packet, and get the next one.
+      decode_frame(finished);
       _begin_frame = _packet_frame;
       if (fetch_packet(frame)) {
         _end_frame = _packet_frame;
@@ -899,18 +865,12 @@ fetch_frame(int frame) {
         return;
       }
     }
-    _video_ctx->skip_frame = AVDISCARD_DEFAULT;
 
-    // At this point, _packet0 contains the *next* packet to be
-    // decoded next frame, and _packet1 contains the packet to decode
-    // for this frame.
-    decode_frame(finished, _packet1);
-    
   } else {
     // Just get the next frame.
     finished = 0;
-    while (!finished && _packet0->data) {
-      decode_frame(finished, _packet0);
+    while (!finished && _packet->data) {
+      decode_frame(finished);
       _begin_frame = _packet_frame;
       fetch_packet(_begin_frame + 1);
     }
@@ -927,12 +887,12 @@ fetch_frame(int frame) {
 //               the specified packet into _frame.
 ////////////////////////////////////////////////////////////////////
 void FfmpegVideoCursor::
-decode_frame(int &finished, AVPacket *packet) {
+decode_frame(int &finished) {
   if (ffmpeg_global_lock) {
     ReMutexHolder av_holder(_av_lock);
-    do_decode_frame(finished, packet);
+    do_decode_frame(finished);
   } else {
-    do_decode_frame(finished, packet);
+    do_decode_frame(finished);
   }
 }
 
@@ -943,12 +903,12 @@ decode_frame(int &finished, AVPacket *packet) {
 //               configured on).
 ////////////////////////////////////////////////////////////////////
 void FfmpegVideoCursor::
-do_decode_frame(int &finished, AVPacket *packet) {
+do_decode_frame(int &finished) {
 #if LIBAVCODEC_VERSION_INT < 3414272
   avcodec_decode_video(_video_ctx, _frame,
-                       &finished, packet->data, packet->size);
+                       &finished, _packet->data, _packet->size);
 #else
-  avcodec_decode_video2(_video_ctx, _frame, &finished, packet);
+  avcodec_decode_video2(_video_ctx, _frame, &finished, _packet);
 #endif
 }
 

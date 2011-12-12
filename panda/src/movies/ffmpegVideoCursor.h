@@ -147,10 +147,9 @@ private:
 
   bool fetch_packet(int default_frame);
   bool do_fetch_packet(int default_frame);
-  void flip_packets();
   void fetch_frame(int frame);
-  void decode_frame(int &finished, AVPacket *packet);
-  void do_decode_frame(int &finished, AVPacket *packet);
+  void decode_frame(int &finished);
+  void do_decode_frame(int &finished);
   void seek(int frame, bool backward);
   void do_seek(int frame, bool backward);
   int binary_seek(int min_frame, int max_frame, int target_frame, int num_iterations);
@@ -159,7 +158,7 @@ private:
   void export_frame(FfmpegBuffer *buffer);
 
   // The following data members will be accessed by the sub-thread.
-  AVPacket *_packet0, *_packet1;
+  AVPacket *_packet;
   int _packet_frame;
   AVFormatContext *_format_ctx;
   AVCodecContext *_video_ctx;
