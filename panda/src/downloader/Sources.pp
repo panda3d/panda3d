@@ -1,7 +1,7 @@
 #define LOCAL_LIBS p3express p3pandabase
 #define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
                    p3dtoolutil:c p3dtoolbase:c p3prc:c p3dtool:m
-#define USE_PACKAGES zlib p3net openssl
+#define USE_PACKAGES zlib net openssl
 
 #begin lib_target
   #define TARGET p3downloader

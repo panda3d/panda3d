@@ -7,7 +7,7 @@
 #begin lib_target
   #define TARGET p3physx
   #define LOCAL_LIBS p3pgraph p3linmath p3grutil
-  #define USE_PACKAGES p3physx
+  #define USE_PACKAGES physx
   #define COMBINED_SOURCES $[TARGET]_composite.cxx
 
   #define SOURCES \

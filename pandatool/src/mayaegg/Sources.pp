@@ -1,7 +1,7 @@
 #define BUILD_DIRECTORY $[HAVE_MAYA]
 
 #begin ss_lib_target
-  #define USE_PACKAGES p3maya
+  #define USE_PACKAGES maya
   #define TARGET p3mayaegg
   #define LOCAL_LIBS \
     mayabase p3converter p3pandatoolbase

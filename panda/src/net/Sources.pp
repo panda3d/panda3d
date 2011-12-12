@@ -2,7 +2,7 @@
    p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
    p3dtoolutil:c p3dtoolbase:c p3prc:c p3dtool:m
 #define BUILD_DIRECTORY $[and $[HAVE_NET],$[WANT_NATIVE_NET]]
-#define USE_PACKAGES p3net
+#define USE_PACKAGES net
 
 #begin lib_target
   #define TARGET p3net

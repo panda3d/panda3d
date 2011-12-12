@@ -6,7 +6,7 @@
 #begin lib_target
   #define TARGET p3bullet
   #define LOCAL_LIBS p3pgraph p3linmath p3grutil
-  #define USE_PACKAGES p3bullet
+  #define USE_PACKAGES bullet
   #define COMBINED_SOURCES $[TARGET]_composite.cxx
 
   #define SOURCES \

@@ -2,7 +2,7 @@
 
 #begin lib_target
   #define BUILD_TARGET $[HAVE_PYTHON]
-  #define USE_PACKAGES openssl native_net p3net
+  #define USE_PACKAGES openssl native_net net
 
   #define TARGET p3distributed
   #define LOCAL_LIBS \

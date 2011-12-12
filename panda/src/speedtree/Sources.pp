@@ -3,7 +3,7 @@
 #define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
                    p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c
 
-#define USE_PACKAGES p3speedtree $[if $[eq $[SPEEDTREE_API],OpenGL],gl cg cggl] $[if $[eq $[SPEEDTREE_API],DirectX9],dx9 cg cgdx9]
+#define USE_PACKAGES speedtree $[if $[eq $[SPEEDTREE_API],OpenGL],gl cg cggl] $[if $[eq $[SPEEDTREE_API],DirectX9],dx9 cg cgdx9]
 #define BUILDING_DLL BUILDING_PANDASPEEDTREE
 
 #begin lib_target

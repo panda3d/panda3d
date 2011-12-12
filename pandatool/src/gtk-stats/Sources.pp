@@ -1,5 +1,5 @@
 #define BUILD_DIRECTORY $[and $[HAVE_GTK],$[HAVE_NET]]
-#define USE_PACKAGES p3net gtk
+#define USE_PACKAGES net gtk
 
 #begin bin_target
   // We suspect gtk will not be built universal on OSX.  Don't try.

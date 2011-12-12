@@ -10,7 +10,7 @@
   #define LOCAL_LIBS \
     p3pgraph p3physics
 
-  #define USE_PACKAGES p3awesomium
+  #define USE_PACKAGES awesomium
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
 

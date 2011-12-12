@@ -17,7 +17,7 @@
 #end bin_target
 
 #begin bin_target
-  #define USE_PACKAGES p3maya
+  #define USE_PACKAGES maya
   #define TARGET maya2egg_bin
   #define LOCAL_LIBS \
     mayabase p3mayaegg p3eggbase p3progbase
@@ -38,7 +38,7 @@
 #end bin_target
 
 #begin bin_target
-  #define USE_PACKAGES p3maya
+  #define USE_PACKAGES maya
   #define TARGET maya2egg_server_bin
   #define LOCAL_LIBS \
     mayabase p3mayaegg p3eggbase p3progbase
@@ -59,7 +59,7 @@
 #end bin_target
 
 #begin bin_target
-  #define USE_PACKAGES p3maya
+  #define USE_PACKAGES maya
   #define TARGET maya2egg_client
   #define LOCAL_LIBS \
     mayabase p3mayaegg p3eggbase p3progbase
@@ -88,7 +88,7 @@
 #end bin_target
 
 #begin bin_target
-  #define USE_PACKAGES p3maya
+  #define USE_PACKAGES maya
   #define TARGET egg2maya_bin
   #define LOCAL_LIBS \
     mayabase p3mayaegg p3eggbase p3progbase
@@ -118,7 +118,7 @@
 #end bin_target
 
 #begin bin_target
-  #define USE_PACKAGES p3maya
+  #define USE_PACKAGES maya
   #define TARGET mayacopy_bin
   #define LOCAL_LIBS p3cvscopy mayabase p3progbase
 
@@ -141,7 +141,7 @@
 
 #begin lib_target
   #define BUILD_TARGET $[not $[LINK_ALL_STATIC]]
-  #define USE_PACKAGES p3maya
+  #define USE_PACKAGES maya
   #define TARGET mayapview
   #define LOCAL_LIBS mayabase p3mayaegg
   #define OTHER_LIBS \
@@ -168,7 +168,7 @@
 
 #begin lib_target
   #define BUILD_TARGET $[not $[LINK_ALL_STATIC]]
-  #define USE_PACKAGES p3maya
+  #define USE_PACKAGES maya
   #define TARGET mayasavepview
 
   #if $[WINDOWS_PLATFORM]
@@ -181,7 +181,7 @@
 
 #begin lib_target
   #define BUILD_TARGET $[not $[LINK_ALL_STATIC]]
-  #define USE_PACKAGES p3maya
+  #define USE_PACKAGES maya
   #define TARGET mayaEggImport
   #define LOCAL_LIBS mayabase p3mayaegg
   #define OTHER_LIBS \
@@ -204,7 +204,7 @@
 #end lib_target
 
 #begin lib_target
-  #define USE_PACKAGES p3maya
+  #define USE_PACKAGES maya
   #define TARGET mayaloader
   #define BUILDING_DLL BUILDING_MISC
   #define LOCAL_LIBS \
@@ -226,7 +226,7 @@
 #end lib_target
 
 #begin test_bin_target
-  #define USE_PACKAGES p3maya
+  #define USE_PACKAGES maya
   #define TARGET normal_test
 
   #define SOURCES \

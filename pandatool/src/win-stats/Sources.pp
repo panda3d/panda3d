@@ -1,5 +1,5 @@
 #define BUILD_DIRECTORY $[and $[WINDOWS_PLATFORM],$[HAVE_NET]]
-#define USE_PACKAGES p3net
+#define USE_PACKAGES net
 
 #begin bin_target
   #define TARGET pstats

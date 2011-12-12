@@ -6,7 +6,7 @@
 
 #define DIR_TYPE metalib
 #define BUILDING_DLL BUILDING_PANDA
-#define USE_PACKAGES p3net
+#define USE_PACKAGES net
 
 #define COMPONENT_LIBS \
     p3recorder p3pgraph p3pgraphnodes p3pipeline \

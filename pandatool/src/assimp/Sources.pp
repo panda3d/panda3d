@@ -5,7 +5,7 @@
   #define BUILDING_DLL BUILDING_ASSIMP
   #define LOCAL_LIBS \
     p3pandatoolbase
-  #define USE_PACKAGES p3assimp
+  #define USE_PACKAGES assimp
 
   #define OTHER_LIBS \
     p3egg2pg:c p3egg:c pandaegg:m \
