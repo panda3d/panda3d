@@ -13,7 +13,7 @@
     p3vrpn p3grutil p3chan p3pstatclient \
     p3char p3collide p3cull p3device \
     p3dgraph p3display p3event p3gobj p3gsgbase \
-    p3linmath p3mathutil p3movies p3net nativenet\
+    p3linmath p3mathutil p3movies p3net p3nativenet \
     p3parametrics \
     p3pnmimagetypes p3pnmimage \
     p3pnmtext p3text p3tform p3lerp p3putil \
