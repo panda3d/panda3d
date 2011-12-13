@@ -240,6 +240,18 @@ CycleDataWriter(PipelineCycler<CycleDataType> &cycler, bool, Thread *) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CycleDataWriter::Constructor (trivial)
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+template<class CycleDataType>
+INLINE CycleDataWriter<CycleDataType>::
+CycleDataWriter(PipelineCycler<CycleDataType> &, CycleDataType *locked_cdata, 
+                Thread *) {
+  _pointer = locked_cdata;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CycleDataWriter::Copy Constructor (trivial)
 //       Access: Public
 //  Description:
