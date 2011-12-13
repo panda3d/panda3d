@@ -93,6 +93,7 @@
 #include "thread.h"
 #include "uvScrollNode.h"
 #include "textureStagePool.h"
+#include "cmath.h"
 
 #include <ctype.h>
 #include <algorithm>
@@ -2487,10 +2488,14 @@ make_vertex_data(const EggRenderState *render_state,
       } else {
         // If the vertex does have an explicit membership, ignore its
         // parentage and assign it where it wants to be.
+        double quantize = egg_vertex_membership_quantize;
         EggVertex::GroupRef::const_iterator gri;
         for (gri = vertex->gref_begin(); gri != vertex->gref_end(); ++gri) {
           EggGroup *egg_joint = (*gri);
           double membership = egg_joint->get_vertex_membership(vertex);
+          if (quantize != 0.0) {
+            membership = cfloor(membership / quantize + 0.5) * quantize;
+          }
           
           PT(VertexTransform) vt = character_maker->egg_to_transform(egg_joint);
           nassertr(vt != (VertexTransform *)NULL, vertex_data);

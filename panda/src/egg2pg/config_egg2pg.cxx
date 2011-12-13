@@ -169,6 +169,14 @@ ConfigVariableBool egg_preload_simple_textures
           "fact, the egg loader will generate simple texture images if "
           "either this or preload-simple-textures is true."));
 
+ConfigVariableDouble egg_vertex_membership_quantize
+("egg-vertex-membership-quantize", 0.01,
+ PRC_DESC("Specifies the nearest amount to round each vertex joint "
+          "membership value when loading an egg file.  This affects animated "
+          "egg files only.  There is a substantial runtime "
+          "performance advantage for reducing trivial differences in joint "
+          "membership.  Set this to 0 to leave joint membership as it is."));
+
 ConfigureFn(config_egg2pg) {
   init_libegg2pg();
 }
