@@ -86,7 +86,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "PANDATOOL", "PVIEW", "DEPLOYTOOLS",                 # Toolchain
   "SKELETON",                                          # Example skeleton project
   "PANDADISTORTFX",                                    # Some distortion special lenses 
-  "PANDAPARTICLESYSTEM",							   # Built in particle system
+  "PANDAPARTICLESYSTEM",                               # Built in particle system
   "CONTRIB"                                            # Experimental
 ])
 
@@ -819,8 +819,8 @@ def CompileCxx(obj,src,opts):
         if (optlevel==3): cmd += " /MD /Zi /O2 /Ob2 /Oi /Ot /arch:SSE2 /fp:fast /DFORCE_INLINING"
         if (optlevel==4): 
            cmd += " /MD /Zi /Ox /Ob2 /Oi /Ot /arch:SSE2 /fp:fast /DFORCE_INLINING /DNDEBUG /GL"
-           cmd += " /Oy"		# jcr add
-           cmd += " /Zp16"		# jcr add # Is this necessary with /Ox?
+           cmd += " /Oy"                # jcr add
+           cmd += " /Zp16"              # jcr add # Is this necessary with /Ox?
 
         cmd += " /Fd" + os.path.splitext(obj)[0] + ".pdb"
         building = GetValueOption(opts, "BUILDING:")
@@ -2113,8 +2113,8 @@ CopyAllHeaders('panda/src/ode')
 CopyAllHeaders('panda/metalibs/pandaode')
 if (PkgSkip("PANDAPHYSICS")==0):
     CopyAllHeaders('panda/src/physics')
-if (PkgSkip("PANDAPARTICLESYSTEM")==0):
-    CopyAllHeaders('panda/src/particlesystem')
+    if (PkgSkip("PANDAPARTICLESYSTEM")==0):
+        CopyAllHeaders('panda/src/particlesystem')
 CopyAllHeaders('panda/src/dxml')
 CopyAllHeaders('panda/metalibs/panda')
 CopyAllHeaders('panda/src/audiotraits')
@@ -3092,7 +3092,7 @@ if (not RUNTIME):
 # DIRECTORY: panda/src/vision/
 #
 
-if (PkgSkip("VISION") ==0) & (not RUNTIME):
+if (PkgSkip("VISION") ==0) and (not RUNTIME):
   OPTS=['DIR:panda/src/vision', 'BUILDING:VISION', 'ARTOOLKIT', 'OPENCV', 'DX9', 'DIRECTCAM', 'JPEG']
   TargetAdd('p3vision_composite1.obj', opts=OPTS, input='p3vision_composite1.cxx')
   IGATEFILES=GetDirectoryContents('panda/src/vision', ["*.h", "*_composite*.cxx"])
@@ -3136,7 +3136,7 @@ if PkgSkip("AWESOMIUM") == 0 and not RUNTIME:
 # DIRECTORY: panda/src/p3skel
 #
 
-if (PkgSkip('SKELETON')==0) & (not RUNTIME):
+if (PkgSkip('SKELETON')==0) and (not RUNTIME):
   OPTS=['DIR:panda/src/skel', 'BUILDING:PANDASKEL', 'ADVAPI']
   TargetAdd('p3skel_composite1.obj', opts=OPTS, input='p3skel_composite1.cxx')
   IGATEFILES=GetDirectoryContents("panda/src/skel", ["*.h", "*_composite*.cxx"])
@@ -3148,7 +3148,7 @@ if (PkgSkip('SKELETON')==0) & (not RUNTIME):
 # DIRECTORY: panda/src/p3skel
 #
 
-if (PkgSkip('SKELETON')==0) & (not RUNTIME):
+if (PkgSkip('SKELETON')==0) and (not RUNTIME):
   OPTS=['BUILDING:PANDASKEL', 'ADVAPI']
 
   TargetAdd('libpandaskel_module.obj', input='libp3skel.in')
@@ -3165,7 +3165,7 @@ if (PkgSkip('SKELETON')==0) & (not RUNTIME):
 # DIRECTORY: panda/src/distort/
 #
 
-if (PkgSkip('PANDADISTORTFX')==0) & (not RUNTIME):
+if (PkgSkip('PANDADISTORTFX')==0) and (not RUNTIME):
   OPTS=['DIR:panda/src/distort', 'BUILDING:PANDAFX']
   TargetAdd('p3distort_composite1.obj', opts=OPTS, input='p3distort_composite1.cxx')
   IGATEFILES=GetDirectoryContents('panda/src/distort', ["*.h", "*_composite*.cxx"])
@@ -3177,7 +3177,7 @@ if (PkgSkip('PANDADISTORTFX')==0) & (not RUNTIME):
 # DIRECTORY: panda/metalibs/pandafx/
 #
 
-if (PkgSkip('PANDADISTORTFX')==0) & (not RUNTIME):
+if (PkgSkip('PANDADISTORTFX')==0) and (not RUNTIME):
   OPTS=['DIR:panda/metalibs/pandafx', 'DIR:panda/src/distort', 'BUILDING:PANDAFX',  'NVIDIACG']
   TargetAdd('pandafx_pandafx.obj', opts=OPTS, input='pandafx.cxx')
 
@@ -3655,7 +3655,7 @@ if (PkgSkip("PHYSX")==0):
 # DIRECTORY: panda/src/physics/
 #
 
-if (PkgSkip("PANDAPHYSICS")==0) & (not RUNTIME):
+if (PkgSkip("PANDAPHYSICS")==0) and (not RUNTIME):
   OPTS=['DIR:panda/src/physics', 'BUILDING:PANDAPHYSICS']
   TargetAdd('p3physics_composite1.obj', opts=OPTS, input='p3physics_composite1.cxx')
   TargetAdd('p3physics_composite2.obj', opts=OPTS, input='p3physics_composite2.cxx')
@@ -3669,7 +3669,7 @@ if (PkgSkip("PANDAPHYSICS")==0) & (not RUNTIME):
 # DIRECTORY: panda/src/particlesystem/
 #
 
-if (not RUNTIME):
+if (PkgSkip("PANDAPHYSICS")==0) and (PkgSkip("PANDAPARTICLESYSTEM")==0) and (not RUNTIME):
   OPTS=['DIR:panda/src/particlesystem', 'BUILDING:PANDAPHYSICS']
   TargetAdd('p3particlesystem_composite1.obj', opts=OPTS, input='p3particlesystem_composite1.cxx')
   TargetAdd('p3particlesystem_composite2.obj', opts=OPTS, input='p3particlesystem_composite2.cxx')
@@ -3686,7 +3686,7 @@ if (not RUNTIME):
 # DIRECTORY: panda/metalibs/pandaphysics/
 #
 
-if (PkgSkip("PANDAPHYSICS")==0) & (not RUNTIME):
+if (PkgSkip("PANDAPHYSICS")==0) and (not RUNTIME):
   OPTS=['DIR:panda/metalibs/pandaphysics', 'BUILDING:PANDAPHYSICS']
   TargetAdd('pandaphysics_pandaphysics.obj', opts=OPTS, input='pandaphysics.cxx')
 
@@ -5241,7 +5241,7 @@ def ParallelMake(tasklist):
         if (tasksqueued < THREADCOUNT):
             extras = []
             for task in tasklist:
-                if (tasksqueued < THREADCOUNT) & (AllSourcesReady(task, pending)):
+                if (tasksqueued < THREADCOUNT) and (AllSourcesReady(task, pending)):
                     if (NeedsBuild(task[2], task[3])):
                         tasksqueued += 1
                         taskqueue.put(task)
