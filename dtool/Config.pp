@@ -438,8 +438,8 @@
 #define HAVE_STL_HASH
 
 // Is OpenSSL installed, and where?
-#define OPENSSL_IPATH /usr/local/ssl/include
-#define OPENSSL_LPATH /usr/local/ssl/lib
+#define OPENSSL_IPATH
+#define OPENSSL_LPATH
 #define OPENSSL_LIBS ssl crypto
 #defer HAVE_OPENSSL $[libtest $[OPENSSL_LPATH],$[OPENSSL_LIBS]]
 
