@@ -324,6 +324,7 @@ private:
   PStatCollector _char_pcollector;
   PStatCollector _skinning_pcollector;
   PStatCollector _morphs_pcollector;
+  PStatCollector _blends_pcollector;
 
 public:
   static void register_with_read_factory();

@@ -45,7 +45,8 @@ GeomVertexData::
 GeomVertexData() :
   _char_pcollector(_animation_pcollector, "unnamed"),
   _skinning_pcollector(_char_pcollector, "Skinning"),
-  _morphs_pcollector(_char_pcollector, "Morphs")
+  _morphs_pcollector(_char_pcollector, "Morphs"),
+  _blends_pcollector(_char_pcollector, "Calc blends")
 {
 }
 
@@ -71,7 +72,8 @@ GeomVertexData(const string &name,
   _name(name),
   _char_pcollector(PStatCollector(_animation_pcollector, name)),
   _skinning_pcollector(_char_pcollector, "Skinning"),
-  _morphs_pcollector(_char_pcollector, "Morphs")
+  _morphs_pcollector(_char_pcollector, "Morphs"),
+  _blends_pcollector(_char_pcollector, "Calc blends")
 {
   nassertv(format->is_registered());
 
@@ -103,7 +105,8 @@ GeomVertexData(const GeomVertexData &copy) :
   _cycler(copy._cycler),
   _char_pcollector(copy._char_pcollector),
   _skinning_pcollector(copy._skinning_pcollector),
-  _morphs_pcollector(copy._morphs_pcollector)
+  _morphs_pcollector(copy._morphs_pcollector),
+  _blends_pcollector(copy._blends_pcollector)
 {
   OPEN_ITERATE_ALL_STAGES(_cycler) {
     CDStageWriter cdata(_cycler, pipeline_stage);
@@ -130,7 +133,8 @@ GeomVertexData(const GeomVertexData &copy,
   _cycler(copy._cycler),
   _char_pcollector(copy._char_pcollector),
   _skinning_pcollector(copy._skinning_pcollector),
-  _morphs_pcollector(copy._morphs_pcollector)
+  _morphs_pcollector(copy._morphs_pcollector),
+  _blends_pcollector(copy._blends_pcollector)
 {
   nassertv(format->is_registered());
 
@@ -174,6 +178,7 @@ operator = (const GeomVertexData &copy) {
   _char_pcollector = copy._char_pcollector;
   _skinning_pcollector = copy._skinning_pcollector;
   _morphs_pcollector = copy._morphs_pcollector;
+  _blends_pcollector = copy._blends_pcollector;
 
   OPEN_ITERATE_ALL_STAGES(_cycler) {
     CDStageWriter cdata(_cycler, pipeline_stage);
@@ -244,6 +249,7 @@ set_name(const string &name) {
   _char_pcollector = PStatCollector(_animation_pcollector, name);
   _skinning_pcollector = PStatCollector(_char_pcollector, "Skinning");
   _morphs_pcollector = PStatCollector(_char_pcollector, "Morphs");
+  _blends_pcollector = PStatCollector(_char_pcollector, "Calc blends");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1024,6 +1030,8 @@ animate_vertices(bool force, Thread *current_thread) const {
   }
 #endif  // DO_PIPELINING
 
+  PStatTimer timer(((GeomVertexData *)this)->_char_pcollector, current_thread);
+
   // Now that we've short-circuited the short route, we reasonably
   // believe the vdata is animated.  Grab the mutex and make sure it's
   // still animated after we've acquired it.
@@ -1033,22 +1041,25 @@ animate_vertices(bool force, Thread *current_thread) const {
   }
 
   UpdateSeq modified;
-  if (!cdata->_transform_blend_table.is_null()) {
-    if (cdata->_slider_table != (SliderTable *)NULL) {
-      modified = 
-        max(cdata->_transform_blend_table.get_read_pointer()->get_modified(current_thread),
-            cdata->_slider_table->get_modified(current_thread));
+  {
+    PStatTimer timer2(((GeomVertexData *)this)->_blends_pcollector, current_thread);
+    if (!cdata->_transform_blend_table.is_null()) {
+      if (cdata->_slider_table != (SliderTable *)NULL) {
+        modified = 
+          max(cdata->_transform_blend_table.get_read_pointer()->get_modified(current_thread),
+              cdata->_slider_table->get_modified(current_thread));
+      } else {
+        modified = cdata->_transform_blend_table.get_read_pointer()->get_modified(current_thread);
+      }
+      
+    } else if (cdata->_slider_table != (SliderTable *)NULL) {
+      modified = cdata->_slider_table->get_modified(current_thread);
+      
     } else {
-      modified = cdata->_transform_blend_table.get_read_pointer()->get_modified(current_thread);
+      // No transform blend table or slider table--ergo, no vertex
+      // animation.
+      return this;
     }
-
-  } else if (cdata->_slider_table != (SliderTable *)NULL) {
-    modified = cdata->_slider_table->get_modified(current_thread);
-
-  } else {
-    // No transform blend table or slider table--ergo, no vertex
-    // animation.
-    return this;
   }
 
   if (cdata->_animated_vertices_modified == modified &&
@@ -1427,6 +1438,8 @@ uint8_rgba_to_packed_argb(unsigned char *to, int to_stride,
 ////////////////////////////////////////////////////////////////////
 void GeomVertexData::
 update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
+  PStatTimer timer(_char_pcollector, current_thread);
+
   int num_rows = get_num_rows();
 
   if (gobj_cat.is_debug()) {
@@ -1434,8 +1447,6 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
       << "Animating " << num_rows << " vertices for " << get_name()
       << "\n";
   }
-
-  PStatTimer timer(_char_pcollector, current_thread);
 
   const GeomVertexFormat *orig_format = cdata->_format;
   CPT(GeomVertexFormat) new_format = orig_format;
