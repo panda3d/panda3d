@@ -6,7 +6,7 @@
   #define OTHER_LIBS \
     p3pstatclient:c p3downloader:c p3net:c p3putil:c p3pipeline:c \
     panda:m \
-    p3pandabase:c p3express:c pandaexpress:m \
+    p3pandabase:c p3express:c p3linmath:c pandaexpress:m \
     $[if $[HAVE_NET],p3net:c] $[if $[WANT_NATIVE_NET],p3nativenet:c] \
     p3interrogatedb:c p3dtoolutil:c p3dtoolbase:c p3prc:c p3dconfig:c p3dtoolconfig:m p3dtool:m
 
