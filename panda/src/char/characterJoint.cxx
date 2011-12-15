@@ -425,6 +425,11 @@ get_transform(LMatrix4 &transform) const {
   transform = _value;
 }
 
+CPT(TransformState) CharacterJoint::
+get_transform_state() const {
+    return TransformState::make_mat( _value );
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterJoint::get_net_transform
 //       Access: Published

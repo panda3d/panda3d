@@ -16,6 +16,7 @@
 #define CHARACTERJOINT_H
 
 #include "pandabase.h"
+#include "transformState.h"
 
 #include "movingPartMatrix.h"
 #include "pandaNode.h"
@@ -64,6 +65,9 @@ PUBLISHED:
   NodePathCollection get_local_transforms();
 
   void get_transform(LMatrix4 &transform) const;
+  INLINE const LMatrix4 &get_transform() const;  
+  CPT(TransformState) get_transform_state() const;  
+  
   void get_net_transform(LMatrix4 &transform) const;
 
   Character *get_character() const;
