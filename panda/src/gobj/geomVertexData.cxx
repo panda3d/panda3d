@@ -35,6 +35,7 @@ PStatCollector GeomVertexData::_scale_color_pcollector("*:Munge:Scale color");
 PStatCollector GeomVertexData::_set_color_pcollector("*:Munge:Set color");
 PStatCollector GeomVertexData::_animation_pcollector("*:Animation");
 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::Default Constructor
 //       Access: Private
@@ -1100,6 +1101,49 @@ clear_animated_vertices() {
   cdata->_animated_vertices.clear();
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::transform_vertices
+//       Access: Published
+//  Description: Applies the indicated transform matrix to all of the
+//               vertices in the GeomVertexData.  The transform is
+//               applied to all "point" and "vector" type columns
+//               described in the format.
+////////////////////////////////////////////////////////////////////
+void GeomVertexData::
+transform_vertices(const LMatrix4 &mat) {
+  transform_vertices(mat, 0, get_num_rows());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::transform_vertices
+//       Access: Published
+//  Description: Applies the indicated transform matrix to all of the
+//               vertices from begin_row up to but not including
+//               end_row.  The transform is applied to all "point" and
+//               "vector" type columns described in the format.
+////////////////////////////////////////////////////////////////////
+void GeomVertexData::
+transform_vertices(const LMatrix4 &mat, int begin_row, int end_row) {
+  if (end_row <= begin_row) {
+    // Trivial no-op.
+    return;
+  }
+
+  const GeomVertexFormat *format = get_format();
+
+  int ci;
+  for (ci = 0; ci < format->get_num_points(); ci++) {
+    GeomVertexRewriter data(this, format->get_point(ci));
+    do_transform_point_column(format, data, mat, begin_row, end_row);
+  }
+  
+  for (ci = 0; ci < format->get_num_vectors(); ci++) {
+    GeomVertexRewriter data(this, format->get_vector(ci));
+    do_transform_vector_column(format, data, mat, begin_row, end_row);
+  }
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::bytewise_copy
 //       Access: Private, Static
@@ -1552,17 +1596,18 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
   // Then apply the transforms.
   CPT(TransformBlendTable) tb_table = cdata->_transform_blend_table.get_read_pointer();
   if (tb_table != (TransformBlendTable *)NULL) {
-    PStatTimer timer3(_skinning_pcollector);
-
     // Recompute all the blends up front, so we don't have to test
     // each one for staleness at each vertex.
-    int num_blends = tb_table->get_num_blends();
-    int bi;
-    for (bi = 0; bi < num_blends; bi++) {
-      tb_table->get_blend(bi).update_blend(current_thread);
+    {
+      PStatTimer timer4(_blends_pcollector);
+      int num_blends = tb_table->get_num_blends();
+      for (int bi = 0; bi < num_blends; bi++) {
+        tb_table->get_blend(bi).update_blend(current_thread);
+      }
     }
 
     // Now go through and apply the transforms.
+    PStatTimer timer3(_skinning_pcollector);
 
     const SparseArray &rows = tb_table->get_rows();
     int num_subranges = rows.get_num_subranges();
@@ -1577,8 +1622,7 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
 
     CPT(GeomVertexArrayFormat) blend_array_format = orig_format->get_array(blend_array_index);
 
-    if (blend_array_format->get_num_columns() == 1 && 
-        blend_array_format->get_stride() == 2 && 
+    if (blend_array_format->get_stride() == 2 && 
         blend_array_format->get_column(0)->get_component_bytes() == 2) {
       // The blend indices are a table of ushorts.  Optimize this
       // common case.
@@ -1588,98 +1632,80 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
       int ci;
       for (ci = 0; ci < new_format->get_num_points(); ci++) {
         GeomVertexRewriter data(new_data, new_format->get_point(ci));
-        const GeomVertexColumn *data_column = data.get_column();
-        if (data_column->get_num_values() == 3 &&
-            data_column->get_numeric_type() == NT_float32) {
-          // Table of points is a table of LPoint3f's.  Optimize this
-          // common case.
-          int data_index = new_format->get_array_with(new_format->get_point(ci));
-          PT(GeomVertexArrayData) data_array = new_data->modify_array(data_index);
-          PT(GeomVertexArrayDataHandle) data_handle = data_array->modify_handle();
-          unsigned char *datat = data_handle->get_write_pointer();
-          datat += data_column->get_start();
-          size_t stride = data_array->get_array_format()->get_stride();
 
-          for (int i = 0; i < num_subranges; ++i) {
-            int begin = rows.get_subrange_begin(i);
-            int end = rows.get_subrange_end(i);
-            for (int j = begin; j < end; ++j) {
-              LPoint3f &vertex = *(LPoint3f *)(&datat[j * stride]);
-              int bi = blendt[j];
-              tb_table->get_blend(bi).transform_point(vertex, current_thread);
-            }
-          }
+        for (int i = 0; i < num_subranges; ++i) {
+          int begin = rows.get_subrange_begin(i);
+          int end = rows.get_subrange_end(i);
+          nassertv(begin < end);
 
-        } else if (data_column->get_num_values() == 4) {
-          // Use the GeomVertexRewriter to adjust the 4-component
-          // points.
-          for (int i = 0; i < num_subranges; ++i) {
-            int begin = rows.get_subrange_begin(i);
-            int end = rows.get_subrange_end(i);
-            data.set_row_unsafe(begin);
-            for (int j = begin; j < end; ++j) {
-              LPoint4 vertex = data.get_data4();
-              int bi = blendt[j];
-              tb_table->get_blend(bi).transform_point(vertex, current_thread);
-              data.set_data4(vertex);
-            }
-          }
+          int first_vertex = begin;
+          int first_bi = blendt[first_vertex];
           
-        } else {
-          // Use the GeomVertexRewriter to adjust the 3-component
-          // points.
-          for (int i = 0; i < num_subranges; ++i) {
-            int begin = rows.get_subrange_begin(i);
-            int end = rows.get_subrange_end(i);
-            data.set_row_unsafe(begin);
-            for (int j = begin; j < end; ++j) {
-              LPoint3 vertex = data.get_data3();
-              int bi = blendt[j];
-              tb_table->get_blend(bi).transform_point(vertex, current_thread);
-              data.set_data3(vertex);
+          while (first_vertex < end) {
+            // At this point, first_vertex is the first of a series of
+            // vertices that shares the blend index first_bi.
+            
+            // Scan for the end of this series of vertices--we're
+            // looking for the next vertex with a different blend index.
+            int next_vertex = first_vertex;
+            int next_bi = first_bi;
+            ++next_vertex;
+            while (next_vertex < end) {
+              next_bi = blendt[next_vertex];
+              if (next_bi != first_bi) {
+                break;
+              }
+              ++next_vertex;
             }
+            
+            // We've just reached the end of the vertices with a matching
+            // blend index.  Transform all those vertices as a block.
+            LMatrix4 mat;
+            tb_table->get_blend(first_bi).get_blend(mat, current_thread);
+            new_data->do_transform_point_column(new_format, data, mat, first_vertex, next_vertex);
+            
+            first_vertex = next_vertex;
+            first_bi = next_bi;
           }
         }
       }
 
-      // Also process vectors: normals, etc.
       for (ci = 0; ci < new_format->get_num_vectors(); ci++) {
         GeomVertexRewriter data(new_data, new_format->get_vector(ci));
-        const GeomVertexColumn *data_column = data.get_column();
-        if (data_column->get_num_values() == 3 &&
-            data_column->get_numeric_type() == NT_float32) {
-          // Table of vectors is a table of LVector3f's.  Optimize this
-          // common case.
-          int data_index = new_format->get_array_with(new_format->get_vector(ci));
-          PT(GeomVertexArrayData) data_array = new_data->modify_array(data_index);
-          PT(GeomVertexArrayDataHandle) data_handle = data_array->modify_handle();
-          unsigned char *datat = data_handle->get_write_pointer();
-          datat += data_column->get_start();
-          size_t stride = data_array->get_array_format()->get_stride();
 
-          for (int i = 0; i < num_subranges; ++i) {
-            int begin = rows.get_subrange_begin(i);
-            int end = rows.get_subrange_end(i);
-            for (int j = begin; j < end; ++j) {
-              LVector3f &vertex = *(LVector3f *)(&datat[j * stride]);
-              int bi = blendt[j];
-              tb_table->get_blend(bi).transform_vector(vertex, current_thread);
-            }
-          }
+        for (int i = 0; i < num_subranges; ++i) {
+          int begin = rows.get_subrange_begin(i);
+          int end = rows.get_subrange_end(i);
+          nassertv(begin < end);
+
+          int first_vertex = begin;
+          int first_bi = blendt[first_vertex];
           
-        } else {
-          // Use the GeomVertexRewriter to adjust the vectors.
-
-          for (int i = 0; i < num_subranges; ++i) {
-            int begin = rows.get_subrange_begin(i);
-            int end = rows.get_subrange_end(i);
-            data.set_row_unsafe(begin);
-            for (int j = begin; j < end; ++j) {
-              LVector3 vertex = data.get_data3();
-              int bi = blendt[j];
-              tb_table->get_blend(bi).transform_vector(vertex, current_thread);
-              data.set_data3(vertex);
+          while (first_vertex < end) {
+            // At this point, first_vertex is the first of a series of
+            // vertices that shares the blend index first_bi.
+            
+            // Scan for the end of this series of vertices--we're
+            // looking for the next vertex with a different blend index.
+            int next_vertex = first_vertex;
+            int next_bi = first_bi;
+            ++next_vertex;
+            while (next_vertex < end) {
+              next_bi = blendt[next_vertex];
+              if (next_bi != first_bi) {
+                break;
+              }
+              ++next_vertex;
             }
+            
+            // We've just reached the end of the vertices with a matching
+            // blend index.  Transform all those vertices as a block.
+            LMatrix4 mat;
+            tb_table->get_blend(first_bi).get_blend(mat, current_thread);
+            new_data->do_transform_vector_column(new_format, data, mat, first_vertex, next_vertex);
+            
+            first_vertex = next_vertex;
+            first_bi = next_bi;
           }
         }
       }
@@ -1693,51 +1719,174 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
       int ci;
       for (ci = 0; ci < new_format->get_num_points(); ci++) {
         GeomVertexRewriter data(new_data, new_format->get_point(ci));
-        const GeomVertexColumn *data_column = data.get_column();
-        
-        if (data_column->get_num_values() == 4) {
-          for (int i = 0; i < num_subranges; ++i) {
-            int begin = rows.get_subrange_begin(i);
-            int end = rows.get_subrange_end(i);
-            data.set_row_unsafe(begin);
-            blendi.set_row_unsafe(begin);
-            for (int j = begin; j < end; ++j) {
-              LPoint4 vertex = data.get_data4();
-              int bi = blendi.get_data1i();
-              tb_table->get_blend(bi).transform_point(vertex, current_thread);
-              data.set_data4(vertex);
-            }
-          }
-        } else {
-          for (int i = 0; i < num_subranges; ++i) {
-            int begin = rows.get_subrange_begin(i);
-            int end = rows.get_subrange_end(i);
-            data.set_row_unsafe(begin);
-            blendi.set_row_unsafe(begin);
-            for (int j = begin; j < end; ++j) {
-              LPoint3 vertex = data.get_data3();
-              int bi = blendi.get_data1i();
-              tb_table->get_blend(bi).transform_point(vertex, current_thread);
-              data.set_data3(vertex);
-            }
-          }
-        }
-      }
-      for (ci = 0; ci < new_format->get_num_vectors(); ci++) {
-        GeomVertexRewriter data(new_data, new_format->get_vector(ci));
+
         for (int i = 0; i < num_subranges; ++i) {
           int begin = rows.get_subrange_begin(i);
           int end = rows.get_subrange_end(i);
-          data.set_row_unsafe(begin);
+          nassertv(begin < end);
           blendi.set_row_unsafe(begin);
-          for (int j = begin; j < end; ++j) {
-            LVector3 vertex = data.get_data3();
-            int bi = blendi.get_data1i();
-            tb_table->get_blend(bi).transform_vector(vertex, current_thread);
-            data.set_data3(vertex);
+          
+          int first_vertex = begin;
+          int first_bi = blendi.get_data1i();
+          
+          while (first_vertex < end) {
+            // At this point, first_vertex is the first of a series of
+            // vertices that shares the blend index first_bi.
+            
+            // Scan for the end of this series of vertices--we're
+            // looking for the next vertex with a different blend index.
+            int next_vertex = first_vertex;
+            int next_bi = first_bi;
+            ++next_vertex;
+            while (next_vertex < end) {
+              next_bi = blendi.get_data1i();
+              if (next_bi != first_bi) {
+                break;
+              }
+              ++next_vertex;
+            }
+            
+            // We've just reached the end of the vertices with a matching
+            // blend index.  Transform all those vertices as a block.
+            LMatrix4 mat;
+            tb_table->get_blend(first_bi).get_blend(mat, current_thread);
+            new_data->do_transform_point_column(new_format, data, mat, first_vertex, next_vertex);
+            
+            first_vertex = next_vertex;
+            first_bi = next_bi;
           }
         }
       }
+
+      for (ci = 0; ci < new_format->get_num_vectors(); ci++) {
+        GeomVertexRewriter data(new_data, new_format->get_vector(ci));
+
+        for (int i = 0; i < num_subranges; ++i) {
+          int begin = rows.get_subrange_begin(i);
+          int end = rows.get_subrange_end(i);
+          nassertv(begin != end);
+          blendi.set_row_unsafe(begin);
+          
+          int first_vertex = begin;
+          int first_bi = blendi.get_data1i();
+          
+          while (first_vertex < end) {
+            // At this point, first_vertex is the first of a series of
+            // vertices that shares the blend index first_bi.
+            
+            // Scan for the end of this series of vertices--we're
+            // looking for the next vertex with a different blend index.
+            int next_vertex = first_vertex;
+            int next_bi = first_bi;
+            ++next_vertex;
+            while (next_vertex < end) {
+              next_bi = blendi.get_data1i();
+              if (next_bi != first_bi) {
+                break;
+              }
+              ++next_vertex;
+            }
+            
+            // We've just reached the end of the vertices with a matching
+            // blend index.  Transform all those vertices as a block.
+            LMatrix4 mat;
+            tb_table->get_blend(first_bi).get_blend(mat, current_thread);
+            new_data->do_transform_vector_column(new_format, data, mat, first_vertex, next_vertex);
+            
+            first_vertex = next_vertex;
+            first_bi = next_bi;
+          }
+        }
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::do_transform_point_column
+//       Access: Private
+//  Description: Transforms a range of vertices for one particular
+//               column, as a point.
+////////////////////////////////////////////////////////////////////
+void GeomVertexData::
+do_transform_point_column(const GeomVertexFormat *format, GeomVertexRewriter &data,
+                          const LMatrix4 &mat, int begin_row, int end_row) {
+  const GeomVertexColumn *data_column = data.get_column();
+
+  if (data_column->get_num_values() == 3 &&
+      data_column->get_numeric_type() == NT_float32) {
+    // The table of points is a table of LPoint3f's.  Optimize this
+    // common case.
+    PT(GeomVertexArrayDataHandle) data_handle = data.get_array_handle();
+    PT(GeomVertexArrayData) data_array = data_handle->get_object();
+
+    unsigned char *datat = data_handle->get_write_pointer();
+    datat += data_column->get_start();
+    size_t stride = data_array->get_array_format()->get_stride();
+
+    LMatrix4f matf = LCAST(float, mat);
+    for (int j = begin_row; j < end_row; ++j) {
+      LPoint3f &vertex = *(LPoint3f *)(&datat[j * stride]);
+      vertex = vertex * matf;
+    }
+    
+  } else if (data_column->get_num_values() == 4) {
+    // Use the GeomVertexRewriter to adjust the 4-component
+    // points.
+  
+    data.set_row_unsafe(begin_row);
+    for (int j = begin_row; j < end_row; ++j) {
+      LPoint4 vertex = data.get_data4();
+      data.set_data4(vertex * mat);
+    }
+
+  } else {
+    // Use the GeomVertexRewriter to adjust the 3-component
+    // points.
+
+    data.set_row_unsafe(begin_row);
+    for (int j = begin_row; j < end_row; ++j) {
+      LPoint3 vertex = data.get_data3();
+      data.set_data3(vertex * mat);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::do_transform_vector_column
+//       Access: Private
+//  Description: Transforms a range of vertices for one particular
+//               column, as a vector.
+////////////////////////////////////////////////////////////////////
+void GeomVertexData::
+do_transform_vector_column(const GeomVertexFormat *format, GeomVertexRewriter &data,
+                          const LMatrix4 &mat, int begin_row, int end_row) {
+  const GeomVertexColumn *data_column = data.get_column();
+
+  if (data_column->get_num_values() == 3 &&
+      data_column->get_numeric_type() == NT_float32) {
+    // The table of vectors is a table of LVector3f's.  Optimize this
+    // common case.
+    PT(GeomVertexArrayDataHandle) data_handle = data.get_array_handle();
+    PT(GeomVertexArrayData) data_array = data_handle->get_object();
+
+    unsigned char *datat = data_handle->get_write_pointer();
+    datat += data_column->get_start();
+    size_t stride = data_array->get_array_format()->get_stride();
+
+    LMatrix4f matf = LCAST(float, mat);
+    for (int j = begin_row; j < end_row; ++j) {
+      LVector3f &vector = *(LVector3f *)(&datat[j * stride]);
+      vector = vector * matf;
+    }
+
+  } else {
+    // Use the GeomVertexRewriter to transform the vectors.
+
+    data.set_row_unsafe(begin_row);
+    for (int j = begin_row; j < end_row; ++j) {
+      LVector3 vertex = data.get_data3();
+      data.set_data3(vertex * mat);
     }
   }
 }

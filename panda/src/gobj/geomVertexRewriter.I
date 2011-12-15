@@ -160,6 +160,20 @@ get_array_data() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexRewriter::get_array_handle
+//       Access: Published
+//  Description: Returns the write handle to the array object that the
+//               rewriter is currently processing.  This low-level call
+//               should be used with caution; be careful with
+//               modifying the data in the handle out from under the
+//               GeomVertexRewriter.
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexArrayDataHandle *GeomVertexRewriter::
+get_array_handle() const {
+  return GeomVertexWriter::get_array_handle();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexRewriter::set_column
 //       Access: Published
 //  Description: Sets up the rewriter to use the nth data type of the

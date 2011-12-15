@@ -170,12 +170,19 @@ ConfigVariableBool egg_preload_simple_textures
           "either this or preload-simple-textures is true."));
 
 ConfigVariableDouble egg_vertex_membership_quantize
-("egg-vertex-membership-quantize", 0.01,
+("egg-vertex-membership-quantize", 0.1,
  PRC_DESC("Specifies the nearest amount to round each vertex joint "
           "membership value when loading an egg file.  This affects animated "
           "egg files only.  There is a substantial runtime "
           "performance advantage for reducing trivial differences in joint "
           "membership.  Set this to 0 to leave joint membership as it is."));
+
+ConfigVariableInt egg_vertex_max_num_joints
+("egg-vertex-max-num-joints", 4,
+ PRC_DESC("Specifies the maximum number of distinct joints that are allowed "
+          "to control any one vertex.  If a vertex requests assignment to "
+          "more than this number of joints, the joints with the lesser membership "
+          "value are ignored.  Set this to -1 to allow any number of joints."));
 
 ConfigureFn(config_egg2pg) {
   init_libegg2pg();

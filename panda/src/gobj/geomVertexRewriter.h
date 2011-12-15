@@ -53,6 +53,7 @@ PUBLISHED:
 
   INLINE GeomVertexData *get_vertex_data() const;
   INLINE GeomVertexArrayData *get_array_data() const;
+  INLINE GeomVertexArrayDataHandle *get_array_handle() const;
 
   INLINE bool set_column(int column);
   INLINE bool set_column(const string &name);

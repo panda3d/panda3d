@@ -800,6 +800,53 @@ transform(const LMatrix4d &mat) {
 }
 
 
+// A function object for sort_by_external_index(), below.
+class SortByExternalIndex {
+public:
+  bool operator () (EggVertex *a, EggVertex *b) const {
+    int ai = a->get_external_index();
+    int bi = b->get_external_index();
+    if (ai != bi) {
+      return ai < bi;
+    }
+    return a->get_index() < b->get_index();
+  }
+};
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertexPool::sort_by_external_index
+//       Access: Published
+//  Description: Re-orders (and re-numbers) the vertices in this
+//               vertex pool so that they appear in increasing order
+//               by the optional external_index that has been assigned
+//               to each vertex.
+////////////////////////////////////////////////////////////////////
+void EggVertexPool::
+sort_by_external_index() {
+  // Copy the vertices into a vector for sorting.
+  typedef pvector<EggVertex *> SortedVertices;
+  SortedVertices sorted_vertices;
+  sorted_vertices.reserve(size());
+  iterator i;
+  for (i = begin(); i != end(); ++i) {
+    sorted_vertices.push_back(*i);
+  }
+
+  ::sort(sorted_vertices.begin(), sorted_vertices.end(), SortByExternalIndex());
+
+  // Now reassign the indices, and copy them into a new index map.
+  IndexVertices new_index_vertices;
+  int vi;
+  for (vi = 0; vi < (int)sorted_vertices.size(); ++vi) {
+    EggVertex *vertex = sorted_vertices[vi];
+    vertex->_index = vi;
+    new_index_vertices[vi] = vertex;
+  }
+
+  // Finally, assign the new index map.
+  _index_vertices.swap(new_index_vertices);
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertexPool::write
 //       Access: Public

@@ -143,8 +143,11 @@ private:
                           bool &any_hidden);
   PT(GeomVertexData) make_vertex_data
   (const EggRenderState *render_state, EggVertexPool *vertex_pool, 
-   EggNode *primitive_home, const LMatrix4d &transform, bool is_dynamic, 
-   CharacterMaker *character_maker, bool ignore_color);
+   EggNode *primitive_home, const LMatrix4d &transform, TransformBlendTable *blend_table,
+   bool is_dynamic, CharacterMaker *character_maker, bool ignore_color);
+  PT(TransformBlendTable) make_blend_table
+  (EggVertexPool *vertex_bool, EggNode *primitive_home,
+   CharacterMaker *character_maker);
   void record_morph
   (GeomVertexArrayFormat *array_format,
    CharacterMaker *character_maker, const string &morph_name, 

@@ -202,6 +202,20 @@ get_array_data() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::get_array_handle
+//       Access: Published
+//  Description: Returns the write handle to the array object that the
+//               writer is currently processing.  This low-level call
+//               should be used with caution; be careful with
+//               modifying the data in the handle out from under the
+//               GeomVertexWriter.
+////////////////////////////////////////////////////////////////////
+INLINE GeomVertexArrayDataHandle *GeomVertexWriter::
+get_array_handle() const {
+  return _handle;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexWriter::get_current_thread
 //       Access: Published
 //  Description: Returns the Thread pointer of the currently-executing

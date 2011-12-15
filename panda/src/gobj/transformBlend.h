@@ -57,6 +57,7 @@ PUBLISHED:
 
   void add_transform(const VertexTransform *transform, PN_stdfloat weight);
   void remove_transform(const VertexTransform *transform);
+  void limit_transforms(int max_transforms);
   void normalize_weights();
   bool has_transform(const VertexTransform *transform) const;
   PN_stdfloat get_weight(const VertexTransform *transform) const;

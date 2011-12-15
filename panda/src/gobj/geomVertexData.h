@@ -42,6 +42,7 @@
 
 class FactoryParams;
 class GeomVertexColumn;
+class GeomVertexRewriter;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GeomVertexData
@@ -152,6 +153,8 @@ PUBLISHED:
 
   CPT(GeomVertexData) animate_vertices(bool force, Thread *current_thread) const;
   void clear_animated_vertices();
+  void transform_vertices(const LMatrix4 &mat);
+  void transform_vertices(const LMatrix4 &mat, int begin_row, int end_row);
 
   PT(GeomVertexData) 
     replace_column(InternalName *name, int num_components,
@@ -315,6 +318,10 @@ private:
 
 private:
   void update_animated_vertices(CData *cdata, Thread *current_thread);
+  void do_transform_point_column(const GeomVertexFormat *format, GeomVertexRewriter &data,
+                                 const LMatrix4 &mat, int begin_row, int end_row);
+  void do_transform_vector_column(const GeomVertexFormat *format, GeomVertexRewriter &data,
+                                  const LMatrix4 &mat, int begin_row, int end_row);
 
   static PStatCollector _convert_pcollector;
   static PStatCollector _scale_color_pcollector;

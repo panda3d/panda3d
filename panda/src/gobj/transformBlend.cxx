@@ -79,7 +79,7 @@ add_transform(const VertexTransform *transform, PN_stdfloat weight) {
 ////////////////////////////////////////////////////////////////////
 //     Function: TransformBlend::remove_transform
 //       Access: Published
-//  Description: Removes the indicated transform to the blend.
+//  Description: Removes the indicated transform from the blend.
 ////////////////////////////////////////////////////////////////////
 void TransformBlend::
 remove_transform(const VertexTransform *transform) {
@@ -92,6 +92,38 @@ remove_transform(const VertexTransform *transform) {
   }
   Thread *current_thread = Thread::get_current_thread();
   clear_result(current_thread);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformBlend::limit_transforms
+//       Access: Published
+//  Description: If the total number of transforms in the blend
+//               exceeds max_transforms, removes the n least-important
+//               transforms as needed to reduce the number of
+//               transforms to max_transforms.
+////////////////////////////////////////////////////////////////////
+void TransformBlend::
+limit_transforms(int max_transforms) {
+  if (max_transforms <= 0) {
+    _entries.clear();
+    return;
+  }
+
+  while (_entries.size() > max_transforms) {
+    // Repeatedly find and remove the least-important transform.
+    nassertv(!_entries.empty());
+    Entries::iterator ei_least = _entries.begin();
+    Entries::iterator ei = ei_least;
+    ++ei;
+    while (ei != _entries.end()) {
+      if ((*ei)._weight < (*ei_least)._weight) {
+        ei_least = ei;
+      }
+      ++ei;
+    }
+
+    _entries.erase(ei_least);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

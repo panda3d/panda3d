@@ -133,6 +133,7 @@ PUBLISHED:
   void add_unused_vertices_to_prim(EggPrimitive *prim);
 
   void transform(const LMatrix4d &mat);
+  void sort_by_external_index();
 
   void write(ostream &out, int indent_level) const;
 

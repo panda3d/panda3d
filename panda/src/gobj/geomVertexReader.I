@@ -207,6 +207,18 @@ get_array_data() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexReader::get_array_handle
+//       Access: Published
+//  Description: Returns the read handle to the array object that the
+//               read is currently processing.  This low-level call
+//               should be used with caution.
+////////////////////////////////////////////////////////////////////
+INLINE const GeomVertexArrayDataHandle *GeomVertexReader::
+get_array_handle() const {
+  return _handle;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexReader::get_current_thread
 //       Access: Published
 //  Description: Returns the Thread pointer of the currently-executing
