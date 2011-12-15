@@ -10,11 +10,15 @@ from FunctionInterval import *
 from LerpInterval import *
 from IndirectInterval import *
 from MopathInterval import *
-from ParticleInterval import *
+import pandac.PandaModules
+##Some people may have the particle system compiled out
+if hasattr( pandac.PandaModules, 'ParticleSystem' ):
+    from ParticleInterval import *
 from SoundInterval import *
 from ProjectileInterval import *
 from MetaInterval import *
 from IntervalManager import *
 if __debug__:
-    from TestInterval import *
+    if hasattr( pandac.PandaModules, 'ParticleSystem' ):
+        from TestInterval import *
 from pandac.PandaModules import WaitInterval
