@@ -62,7 +62,7 @@ xform(const FLOATNAME(LVecBase3) &v) const {
   FLOATNAME(LQuaternion) v_quat(0.0f, v[0], v[1], v[2]);
 
   FLOATNAME(LQuaternion) conjugate(
-    _v.data[0], -_v.data[1], -_v.data[2], -_v.data[3]);
+    _v(0), -_v(1), -_v(2), -_v(3));
   v_quat = conjugate * v_quat * (*this);
 
   return FLOATNAME(LVecBase3)(v_quat[1], v_quat[2], v_quat[3]);
@@ -78,7 +78,7 @@ xform(const FLOATNAME(LVecBase4) &v) const {
   FLOATNAME(LQuaternion) v_quat(v[0], v[1], v[2], v[3]);
 
   FLOATNAME(LQuaternion) conjugate(
-    _v.data[0], -_v.data[1], -_v.data[2], -_v.data[3]);
+    _v(0), -_v(1), -_v(2), -_v(3));
   v_quat = conjugate * v_quat * (*this);
 
   return FLOATNAME(LVecBase4)(v_quat);
@@ -91,10 +91,10 @@ xform(const FLOATNAME(LVecBase4) &v) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LQuaternion) FLOATNAME(LQuaternion)::
 multiply(const FLOATNAME(LQuaternion) &rhs) const {
-  FLOATTYPE r = (rhs._v.v._0 * _v.v._0) - (rhs._v.v._1 * _v.v._1) - (rhs._v.v._2 * _v.v._2) - (rhs._v.v._3 * _v.v._3);
-  FLOATTYPE i = (rhs._v.v._1 * _v.v._0) + (rhs._v.v._0 * _v.v._1) - (rhs._v.v._3 * _v.v._2) + (rhs._v.v._2 * _v.v._3);
-  FLOATTYPE j = (rhs._v.v._2 * _v.v._0) + (rhs._v.v._3 * _v.v._1) + (rhs._v.v._0 * _v.v._2) - (rhs._v.v._1 * _v.v._3);
-  FLOATTYPE k = (rhs._v.v._3 * _v.v._0) - (rhs._v.v._2 * _v.v._1) + (rhs._v.v._1 * _v.v._2) + (rhs._v.v._0 * _v.v._3);
+  FLOATTYPE r = (rhs._v(0) * _v(0)) - (rhs._v(1) * _v(1)) - (rhs._v(2) * _v(2)) - (rhs._v(3) * _v(3));
+  FLOATTYPE i = (rhs._v(1) * _v(0)) + (rhs._v(0) * _v(1)) - (rhs._v(3) * _v(2)) + (rhs._v(2) * _v(3));
+  FLOATTYPE j = (rhs._v(2) * _v(0)) + (rhs._v(3) * _v(1)) + (rhs._v(0) * _v(2)) - (rhs._v(1) * _v(3));
+  FLOATTYPE k = (rhs._v(3) * _v(0)) - (rhs._v(2) * _v(1)) + (rhs._v(1) * _v(2)) + (rhs._v(0) * _v(3));
 
   return FLOATNAME(LQuaternion)(r, i, j, k);
 }
@@ -245,10 +245,10 @@ almost_equal(const FLOATNAME(LQuaternion) &other) const {
 INLINE_LINMATH bool FLOATNAME(LQuaternion)::
 almost_equal(const FLOATNAME(LQuaternion) &other,
              FLOATTYPE threshold) const {
-  return (IS_THRESHOLD_EQUAL(_v.data[0], other._v.data[0], threshold) &&
-          IS_THRESHOLD_EQUAL(_v.data[1], other._v.data[1], threshold) &&
-          IS_THRESHOLD_EQUAL(_v.data[2], other._v.data[2], threshold) &&
-          IS_THRESHOLD_EQUAL(_v.data[3], other._v.data[3], threshold));
+  return (IS_THRESHOLD_EQUAL(_v(0), other._v(0), threshold) &&
+          IS_THRESHOLD_EQUAL(_v(1), other._v(1), threshold) &&
+          IS_THRESHOLD_EQUAL(_v(2), other._v(2), threshold) &&
+          IS_THRESHOLD_EQUAL(_v(3), other._v(3), threshold));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -282,10 +282,10 @@ almost_same_direction(const FLOATNAME(LQuaternion) &other,
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LQuaternion)::
 output(ostream& os) const {
-  os << MAYBE_ZERO(_v.data[0]) << " + "
-     << MAYBE_ZERO(_v.data[1]) << "i + "
-     << MAYBE_ZERO(_v.data[2]) << "j + "
-     << MAYBE_ZERO(_v.data[3]) << "k";
+  os << MAYBE_ZERO(_v(0)) << " + "
+     << MAYBE_ZERO(_v(1)) << "i + "
+     << MAYBE_ZERO(_v(2)) << "j + "
+     << MAYBE_ZERO(_v(3)) << "k";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -308,7 +308,7 @@ set_from_matrix(const FLOATNAME(LMatrix4) &m) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LQuaternion)::
 get_axis() const {
-  return FLOATNAME(LVector3)(_v.data[1], _v.data[2], _v.data[3]);
+  return FLOATNAME(LVector3)(_v(1), _v(2), _v(3));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -339,7 +339,7 @@ get_axis_normalized() const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LQuaternion)::
 get_angle_rad() const {
-  return acos(_v.data[0]) * 2.0;
+  return acos(_v(0)) * 2.0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -369,10 +369,10 @@ INLINE_LINMATH void FLOATNAME(LQuaternion)::
 set_from_axis_angle_rad(FLOATTYPE angle_rad, const FLOATNAME(LVector3) &axis) {
   nassertv(IS_THRESHOLD_EQUAL(axis.length(), 1.0f, 0.001f));
   FLOATTYPE sinHalfAngle = sin(angle_rad * 0.5);
-  _v.data[0] = cos(angle_rad * 0.5);
-  _v.data[1] = axis[0] * sinHalfAngle;
-  _v.data[2] = axis[1] * sinHalfAngle;
-  _v.data[3] = axis[2] * sinHalfAngle;
+  _v(0) = cos(angle_rad * 0.5);
+  _v(1) = axis[0] * sinHalfAngle;
+  _v(2) = axis[1] * sinHalfAngle;
+  _v(3) = axis[2] * sinHalfAngle;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -427,7 +427,7 @@ get_forward(CoordinateSystem cs) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LQuaternion)::
 get_r() const {
-  return _v.data[0];
+  return _v(0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -437,7 +437,7 @@ get_r() const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LQuaternion)::
 get_i() const {
-  return _v.data[1];
+  return _v(1);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -447,7 +447,7 @@ get_i() const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LQuaternion)::
 get_j() const {
-  return _v.data[2];
+  return _v(2);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -457,7 +457,7 @@ get_j() const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LQuaternion)::
 get_k() const {
-  return _v.data[3];
+  return _v(3);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -467,7 +467,7 @@ get_k() const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LQuaternion)::
 set_r(FLOATTYPE r) {
-  _v.data[0] = r;
+  _v(0) = r;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -477,7 +477,7 @@ set_r(FLOATTYPE r) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LQuaternion)::
 set_i(FLOATTYPE i) {
-  _v.data[1] = i;
+  _v(1) = i;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -487,7 +487,7 @@ set_i(FLOATTYPE i) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LQuaternion)::
 set_j(FLOATTYPE j) {
-  _v.data[2] = j;
+  _v(2) = j;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -497,7 +497,7 @@ set_j(FLOATTYPE j) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LQuaternion)::
 set_k(FLOATTYPE k) {
-  _v.data[3] = k;
+  _v(3) = k;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -524,7 +524,7 @@ normalize() {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LQuaternion) FLOATNAME(LQuaternion)::
 conjugate() const {
-  return FLOATNAME(LQuaternion)(_v.v._0, -_v.v._1, -_v.v._2, -_v.v._3);
+  return FLOATNAME(LQuaternion)(_v(0), -_v(1), -_v(2), -_v(3));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -545,7 +545,7 @@ conjugate() const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LQuaternion)::
 conjugate_from(const FLOATNAME(LQuaternion) &other) {
-  set(other._v.v._0, -other._v.v._1, -other._v.v._2, -other._v.v._3);
+  set(other._v(0), -other._v(1), -other._v(2), -other._v(3));
   return true;
 }
 
@@ -558,10 +558,10 @@ conjugate_from(const FLOATNAME(LQuaternion) &other) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LQuaternion)::
 conjugate_in_place() {
-  // _v.v._0 = _v.v._0;
-  _v.v._1 = -_v.v._1;
-  _v.v._2 = -_v.v._2;
-  _v.v._3 = -_v.v._3;
+  // _v(0) = _v(0);
+  _v(1) = -_v(1);
+  _v(2) = -_v(2);
+  _v(3) = -_v(3);
   return true;
 }
 
@@ -583,7 +583,7 @@ conjugate_in_place() {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LQuaternion)::
 invert_from(const FLOATNAME(LQuaternion) &other) {
-  set(-other._v.v._0, other._v.v._1, other._v.v._2, other._v.v._3);
+  set(-other._v(0), other._v(1), other._v(2), other._v(3));
   return true;
 }
 
@@ -596,7 +596,7 @@ invert_from(const FLOATNAME(LQuaternion) &other) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LQuaternion)::
 invert_in_place() {
-  _v.v._0 = -_v.v._0;
+  _v(0) = -_v(0);
   return true;
 }
 
@@ -619,8 +619,8 @@ is_identity() const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LQuaternion)::
 is_almost_identity(FLOATTYPE tolerance) const {
-  return (IS_THRESHOLD_EQUAL(_v.v._0, -1.0f, tolerance) || 
-          IS_THRESHOLD_EQUAL(_v.v._0, 1.0f, tolerance));
+  return (IS_THRESHOLD_EQUAL(_v(0), -1.0f, tolerance) || 
+          IS_THRESHOLD_EQUAL(_v(0), 1.0f, tolerance));
 }
 
 ////////////////////////////////////////////////////////////////////

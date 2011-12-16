@@ -1,0 +1,6 @@
+namespace Eigen {
+   template <class type, int rows, int cols>
+   class Matrix {
+   };
+};
+

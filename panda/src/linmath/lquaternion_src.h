@@ -16,7 +16,7 @@
 //       Class : FLOATNAME(LQuaternion)
 // Description : This is the base quaternion class
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_LINMATH FLOATNAME(LQuaternion) : public FLOATNAME(LVecBase4) {
+class EXPCL_PANDA_LINMATH LINMATH_ALIGN FLOATNAME(LQuaternion) : public FLOATNAME(LVecBase4) {
 PUBLISHED:
   INLINE_LINMATH FLOATNAME(LQuaternion)();
   INLINE_LINMATH FLOATNAME(LQuaternion)(const FLOATNAME(LVecBase4) &copy);
@@ -127,7 +127,7 @@ private:
 };
 
 
-INLINE_LINMATH ostream& operator<<(ostream& os, const FLOATNAME(LQuaternion)& q) {
+INLINE ostream& operator<<(ostream& os, const FLOATNAME(LQuaternion)& q) {
   q.output(os);
   return os;
 }

@@ -281,8 +281,8 @@ ShaderPtrData(const LVecBase4f &vec) :
   PTA_float pta = PTA_float::empty_array(4);
   _pta = pta.v0();
   _ptr = pta.p();
-  nassertv(sizeof(vec._v.data) == pta.size() * sizeof(pta[0]));
-  memcpy(_ptr, vec._v.data, sizeof(vec._v.data));
+  nassertv(sizeof(vec[0]) * vec.size() == pta.size() * sizeof(pta[0]));
+  memcpy(_ptr, vec.get_data(), sizeof(vec[0]) * vec.size());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -299,8 +299,8 @@ ShaderPtrData(const LVecBase3f &vec) :
   PTA_float pta = PTA_float::empty_array(3);
   _pta = pta.v0();
   _ptr = pta.p();
-  nassertv(sizeof(vec._v.data) == pta.size() * sizeof(pta[0]));
-  memcpy(_ptr, vec._v.data, sizeof(vec._v.data));
+  nassertv(sizeof(vec[0]) * vec.size() == pta.size() * sizeof(pta[0]));
+  memcpy(_ptr, vec.get_data(), sizeof(vec[0]) * vec.size());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -317,8 +317,8 @@ ShaderPtrData(const LVecBase2f &vec) :
   PTA_float pta = PTA_float::empty_array(2);
   _pta = pta.v0();
   _ptr = pta.p();
-  nassertv(sizeof(vec._v.data) == pta.size() * sizeof(pta[0]));
-  memcpy(_ptr, vec._v.data, sizeof(vec._v.data));
+  nassertv(sizeof(vec[0]) * vec.size() == pta.size() * sizeof(pta[0]));
+  memcpy(_ptr, vec.get_data(), sizeof(vec[0]) * vec.size());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -335,8 +335,8 @@ ShaderPtrData(const LMatrix4f &mat) :
   PTA_float pta = PTA_float::empty_array(16);
   _pta = pta.v0();
   _ptr = pta.p();
-  nassertv(sizeof(mat._m.data) == pta.size() * sizeof(pta[0]));
-  memcpy(_ptr, mat._m.data, sizeof(mat._m.data));
+  nassertv(sizeof(mat(0, 0)) * mat.size() == pta.size() * sizeof(pta[0]));
+  memcpy(_ptr, mat.get_data(), sizeof(mat(0, 0)) * mat.size());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -353,8 +353,8 @@ ShaderPtrData(const LMatrix3f &mat) :
   PTA_float pta = PTA_float::empty_array(9);
   _pta = pta.v0();
   _ptr = pta.p();
-  nassertv(sizeof(mat._m.data) == pta.size() * sizeof(pta[0]));
-  memcpy(_ptr, mat._m.data, sizeof(mat._m.data));
+  nassertv(sizeof(mat(0, 0)) * mat.size() == pta.size() * sizeof(pta[0]));
+  memcpy(_ptr, mat.get_data(), sizeof(mat(0, 0)) * mat.size());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -461,8 +461,8 @@ ShaderPtrData(const LVecBase4d &vec) :
   PTA_double pta = PTA_double::empty_array(4);
   _pta = pta.v0();
   _ptr = pta.p();
-  nassertv(sizeof(vec._v.data) == pta.size() * sizeof(pta[0]));
-  memcpy(_ptr, vec._v.data, sizeof(vec._v.data));
+  nassertv(sizeof(vec[0]) * vec.size() == pta.size() * sizeof(pta[0]));
+  memcpy(_ptr, vec.get_data(), sizeof(vec[0]) * vec.size());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -479,8 +479,8 @@ ShaderPtrData(const LVecBase3d &vec) :
   PTA_double pta = PTA_double::empty_array(3);
   _pta = pta.v0();
   _ptr = pta.p();
-  nassertv(sizeof(vec._v.data) == pta.size() * sizeof(pta[0]));
-  memcpy(_ptr, vec._v.data, sizeof(vec._v.data));
+  nassertv(sizeof(vec[0]) * vec.size() == pta.size() * sizeof(pta[0]));
+  memcpy(_ptr, vec.get_data(), sizeof(vec[0]) * vec.size());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -497,8 +497,8 @@ ShaderPtrData(const LVecBase2d &vec) :
   PTA_double pta = PTA_double::empty_array(2);
   _pta = pta.v0();
   _ptr = pta.p();
-  nassertv(sizeof(vec._v.data) == pta.size() * sizeof(pta[0]));
-  memcpy(_ptr, vec._v.data, sizeof(vec._v.data));
+  nassertv(sizeof(vec[0]) * vec.size() == pta.size() * sizeof(pta[0]));
+  memcpy(_ptr, vec.get_data(), sizeof(vec[0]) * vec.size());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -515,8 +515,8 @@ ShaderPtrData(const LMatrix4d &mat) :
   PTA_double pta = PTA_double::empty_array(16);
   _pta = pta.v0();
   _ptr = pta.p();
-  nassertv(sizeof(mat._m.data) == pta.size() * sizeof(pta[0]));
-  memcpy(_ptr, mat._m.data, sizeof(mat._m.data));
+  nassertv(sizeof(mat(0, 0)) * mat.size() == pta.size() * sizeof(pta[0]));
+  memcpy(_ptr, mat.get_data(), sizeof(mat(0, 0)) * mat.size());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -533,6 +533,6 @@ ShaderPtrData(const LMatrix3d &mat) :
   PTA_double pta = PTA_double::empty_array(9);
   _pta = pta.v0();
   _ptr = pta.p();
-  nassertv(sizeof(mat._m.data) == pta.size() * sizeof(pta[0]));
-  memcpy(_ptr, mat._m.data, sizeof(mat._m.data));
+  nassertv(sizeof(mat(0, 0)) * mat.size() == pta.size() * sizeof(pta[0]));
+  memcpy(_ptr, mat.get_data(), sizeof(mat(0, 0)) * mat.size());
 }

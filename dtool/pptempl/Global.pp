@@ -73,6 +73,9 @@
 #define stl_cflags $[STL_CFLAGS]
 #define stl_libs $[STL_LIBS]
 
+#define eigen_ipath $[wildcard $[EIGEN_IPATH]]
+#define eigen_cflags $[EIGEN_CFLAGS]
+
 #if $[HAVE_PYTHON]
   #define python_ipath $[wildcard $[PYTHON_IPATH]]
   #define python_lpath $[wildcard $[PYTHON_LPATH]]
@@ -672,7 +675,7 @@
 // require.
 #defun get_cflags
   // hack to add stl,python.  should be removed
-  #define alt_cflags $[if $[IGNORE_LIB_DEFAULTS_HACK],,$[stl_cflags] $[python_cflags]]
+  #define alt_cflags $[if $[IGNORE_LIB_DEFAULTS_HACK],,$[stl_cflags] $[python_cflags] $[if $[HAVE_EIGEN],$[eigen_cflags]]]
 
   #foreach package $[use_packages]
     #set alt_cflags $[alt_cflags] $[$[package]_cflags]
@@ -701,7 +704,7 @@
 // names only; the -I switch is not included here.
 #defun get_ipath
   // hack to add stl,python.  should be removed
-  #define alt_ipath $[if $[IGNORE_LIB_DEFAULTS_HACK],,$[stl_ipath] $[python_ipath] $[tau_ipath]]
+  #define alt_ipath $[if $[IGNORE_LIB_DEFAULTS_HACK],,$[stl_ipath] $[python_ipath] $[tau_ipath] $[if $[HAVE_EIGEN],$[eigen_ipath]]]
 
   #foreach package $[use_packages]
     #set alt_ipath $[alt_ipath] $[$[package]_ipath]

@@ -251,10 +251,7 @@ recompute_result(CData *cdata, Thread *current_thread) {
     // We do need to recompute.
     cdata->_modified = seq;
 
-    cdata->_result.set(0.0f, 0.0f, 0.0f, 0.0f,
-                       0.0f, 0.0f, 0.0f, 0.0f,
-                       0.0f, 0.0f, 0.0f, 0.0f,
-                       0.0f, 0.0f, 0.0f, 0.0f);
+    cdata->_result = LMatrix4::zeros_mat();
     for (ei = _entries.begin(); ei != _entries.end(); ++ei) {
       (*ei)._transform->accumulate_matrix(cdata->_result, (*ei)._weight);
     }

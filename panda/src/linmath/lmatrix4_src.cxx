@@ -141,9 +141,11 @@ compare_to(const FLOATNAME(LMatrix4) &other, FLOATTYPE threshold) const {
   TAU_PROFILE("int LMatrix4::compare_to(const LMatrix4 &, FLOATTYPE)", " ", TAU_USER);
   // We compare values in reverse order, since the last row of the
   // matrix is most likely to be different between different matrices.
-  for (int i = 15; i >= 0; i--) {
-    if (!IS_THRESHOLD_COMPEQ(_m.data[i], other._m.data[i], threshold)) {
-      return (_m.data[i] < other._m.data[i]) ? -1 : 1;
+  for (int r = 3; r >= 0; --r) {
+    for (int c = 0; c < 4; ++c) {
+      if (!IS_THRESHOLD_COMPEQ(_m(r, c), other._m(r, c), threshold)) {
+        return (_m(r, c) < other._m(r, c)) ? -1 : 1;
+      }
     }
   }
   return 0;
@@ -171,9 +173,9 @@ set_rotate_mat(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
     angle = -angle;
   }
 
-  FLOATTYPE axis_0 = axis._v.v._0;
-  FLOATTYPE axis_1 = axis._v.v._1;
-  FLOATTYPE axis_2 = axis._v.v._2;
+  FLOATTYPE axis_0 = axis._v(0);
+  FLOATTYPE axis_1 = axis._v(1);
+  FLOATTYPE axis_2 = axis._v(2);
 
   // Normalize the axis.
   FLOATTYPE length_sq = axis_0 * axis_0 + axis_1 * axis_1 + axis_2 * axis_2;
@@ -198,26 +200,26 @@ set_rotate_mat(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
   s1 = s * axis_1;
   s2 = s * axis_2;
 
-  _m.m._00 = t0 * axis_0 + c;
-  _m.m._01 = t0 * axis_1 + s2;
-  _m.m._02 = t0 * axis_2 - s1;
+  _m(0, 0) = t0 * axis_0 + c;
+  _m(0, 1) = t0 * axis_1 + s2;
+  _m(0, 2) = t0 * axis_2 - s1;
 
-  _m.m._10 = t1 * axis_0 - s2;
-  _m.m._11 = t1 * axis_1 + c;
-  _m.m._12 = t1 * axis_2 + s0;
+  _m(1, 0) = t1 * axis_0 - s2;
+  _m(1, 1) = t1 * axis_1 + c;
+  _m(1, 2) = t1 * axis_2 + s0;
 
-  _m.m._20 = t2 * axis_0 + s1;
-  _m.m._21 = t2 * axis_1 - s0;
-  _m.m._22 = t2 * axis_2 + c;
+  _m(2, 0) = t2 * axis_0 + s1;
+  _m(2, 1) = t2 * axis_1 - s0;
+  _m(2, 2) = t2 * axis_2 + c;
 
-  _m.m._03 = 0.0f;
-  _m.m._13 = 0.0f;
-  _m.m._23 = 0.0f;
+  _m(0, 3) = 0.0f;
+  _m(1, 3) = 0.0f;
+  _m(2, 3) = 0.0f;
 
-  _m.m._30 = 0.0f;
-  _m.m._31 = 0.0f;
-  _m.m._32 = 0.0f;
-  _m.m._33 = 1.0f;
+  _m(3, 0) = 0.0f;
+  _m(3, 1) = 0.0f;
+  _m(3, 2) = 0.0f;
+  _m(3, 3) = 1.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -241,9 +243,9 @@ set_rotate_mat_normaxis(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
     angle = -angle;
   }
 
-  FLOATTYPE axis_0 = axis._v.v._0;
-  FLOATTYPE axis_1 = axis._v.v._1;
-  FLOATTYPE axis_2 = axis._v.v._2;
+  FLOATTYPE axis_0 = axis._v(0);
+  FLOATTYPE axis_1 = axis._v(1);
+  FLOATTYPE axis_2 = axis._v(2);
 
   FLOATTYPE angle_rad=deg_2_rad(angle);
   FLOATTYPE s,c;
@@ -259,26 +261,26 @@ set_rotate_mat_normaxis(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
   s1 = s * axis_1;
   s2 = s * axis_2;
 
-  _m.m._00 = t0 * axis_0 + c;
-  _m.m._01 = t0 * axis_1 + s2;
-  _m.m._02 = t0 * axis_2 - s1;
+  _m(0, 0) = t0 * axis_0 + c;
+  _m(0, 1) = t0 * axis_1 + s2;
+  _m(0, 2) = t0 * axis_2 - s1;
 
-  _m.m._10 = t1 * axis_0 - s2;
-  _m.m._11 = t1 * axis_1 + c;
-  _m.m._12 = t1 * axis_2 + s0;
+  _m(1, 0) = t1 * axis_0 - s2;
+  _m(1, 1) = t1 * axis_1 + c;
+  _m(1, 2) = t1 * axis_2 + s0;
 
-  _m.m._20 = t2 * axis_0 + s1;
-  _m.m._21 = t2 * axis_1 - s0;
-  _m.m._22 = t2 * axis_2 + c;
+  _m(2, 0) = t2 * axis_0 + s1;
+  _m(2, 1) = t2 * axis_1 - s0;
+  _m(2, 2) = t2 * axis_2 + c;
 
-  _m.m._03 = 0.0f;
-  _m.m._13 = 0.0f;
-  _m.m._23 = 0.0f;
+  _m(0, 3) = 0.0f;
+  _m(1, 3) = 0.0f;
+  _m(2, 3) = 0.0f;
 
-  _m.m._30 = 0.0f;
-  _m.m._31 = 0.0f;
-  _m.m._32 = 0.0f;
-  _m.m._33 = 1.0f;
+  _m(3, 0) = 0.0f;
+  _m(3, 1) = 0.0f;
+  _m(3, 2) = 0.0f;
+  _m(3, 3) = 1.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -317,25 +319,25 @@ almost_equal(const FLOATNAME(LMatrix4) &other, FLOATTYPE threshold) const {
 void FLOATNAME(LMatrix4)::
 output(ostream &out) const {
   out << "[ "
-      << MAYBE_ZERO(_m.m._00) << " "
-      << MAYBE_ZERO(_m.m._01) << " "
-      << MAYBE_ZERO(_m.m._02) << " "
-      << MAYBE_ZERO(_m.m._03)
+      << MAYBE_ZERO(_m(0, 0)) << " "
+      << MAYBE_ZERO(_m(0, 1)) << " "
+      << MAYBE_ZERO(_m(0, 2)) << " "
+      << MAYBE_ZERO(_m(0, 3))
       << " ] [ "
-      << MAYBE_ZERO(_m.m._10) << " "
-      << MAYBE_ZERO(_m.m._11) << " "
-      << MAYBE_ZERO(_m.m._12) << " "
-      << MAYBE_ZERO(_m.m._13)
+      << MAYBE_ZERO(_m(1, 0)) << " "
+      << MAYBE_ZERO(_m(1, 1)) << " "
+      << MAYBE_ZERO(_m(1, 2)) << " "
+      << MAYBE_ZERO(_m(1, 3))
       << " ] [ "
-      << MAYBE_ZERO(_m.m._20) << " "
-      << MAYBE_ZERO(_m.m._21) << " "
-      << MAYBE_ZERO(_m.m._22) << " "
-      << MAYBE_ZERO(_m.m._23)
+      << MAYBE_ZERO(_m(2, 0)) << " "
+      << MAYBE_ZERO(_m(2, 1)) << " "
+      << MAYBE_ZERO(_m(2, 2)) << " "
+      << MAYBE_ZERO(_m(2, 3))
       << " ] [ "
-      << MAYBE_ZERO(_m.m._30) << " "
-      << MAYBE_ZERO(_m.m._31) << " "
-      << MAYBE_ZERO(_m.m._32) << " "
-      << MAYBE_ZERO(_m.m._33)
+      << MAYBE_ZERO(_m(3, 0)) << " "
+      << MAYBE_ZERO(_m(3, 1)) << " "
+      << MAYBE_ZERO(_m(3, 2)) << " "
+      << MAYBE_ZERO(_m(3, 3))
       << " ]";
 }
 
@@ -347,28 +349,28 @@ output(ostream &out) const {
 void FLOATNAME(LMatrix4)::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
-    << MAYBE_ZERO(_m.m._00) << " "
-    << MAYBE_ZERO(_m.m._01) << " "
-    << MAYBE_ZERO(_m.m._02) << " "
-    << MAYBE_ZERO(_m.m._03)
+    << MAYBE_ZERO(_m(0, 0)) << " "
+    << MAYBE_ZERO(_m(0, 1)) << " "
+    << MAYBE_ZERO(_m(0, 2)) << " "
+    << MAYBE_ZERO(_m(0, 3))
     << "\n";
   indent(out, indent_level)
-    << MAYBE_ZERO(_m.m._10) << " "
-    << MAYBE_ZERO(_m.m._11) << " "
-    << MAYBE_ZERO(_m.m._12) << " "
-    << MAYBE_ZERO(_m.m._13)
+    << MAYBE_ZERO(_m(1, 0)) << " "
+    << MAYBE_ZERO(_m(1, 1)) << " "
+    << MAYBE_ZERO(_m(1, 2)) << " "
+    << MAYBE_ZERO(_m(1, 3))
     << "\n";
   indent(out, indent_level)
-    << MAYBE_ZERO(_m.m._20) << " "
-    << MAYBE_ZERO(_m.m._21) << " "
-    << MAYBE_ZERO(_m.m._22) << " "
-    << MAYBE_ZERO(_m.m._23)
+    << MAYBE_ZERO(_m(2, 0)) << " "
+    << MAYBE_ZERO(_m(2, 1)) << " "
+    << MAYBE_ZERO(_m(2, 2)) << " "
+    << MAYBE_ZERO(_m(2, 3))
     << "\n";
   indent(out, indent_level)
-    << MAYBE_ZERO(_m.m._30) << " "
-    << MAYBE_ZERO(_m.m._31) << " "
-    << MAYBE_ZERO(_m.m._32) << " "
-    << MAYBE_ZERO(_m.m._33)
+    << MAYBE_ZERO(_m(3, 0)) << " "
+    << MAYBE_ZERO(_m(3, 1)) << " "
+    << MAYBE_ZERO(_m(3, 2)) << " "
+    << MAYBE_ZERO(_m(3, 3))
     << "\n";
 }
 

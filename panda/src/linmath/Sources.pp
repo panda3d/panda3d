@@ -12,7 +12,8 @@
      aa_luse.h \
      compose_matrix.h compose_matrix_src.I  \
      compose_matrix_src.cxx compose_matrix_src.h config_linmath.h  \
-     coordinateSystem.h dbl2fltnames.h dblnames.h deg_2_rad.h  \
+     coordinateSystem.h dbl2fltnames.h dblnames.h \
+     deg_2_rad.h deg_2_rad.I \
      flt2dblnames.h fltnames.h lcast_to.h lcast_to_src.h  \
      lcast_to_src.I lmatrix.h lmatrix_ext.I lmatrix3_src.I  \
      lmatrix3_src.cxx lmatrix3_src.h lmatrix4_src.I  \
@@ -23,7 +24,9 @@
      lpoint4.h lpoint4_src.I lpoint4_src.cxx lpoint4_src.h  \
      lquaternion.h lquaternion_src.I lquaternion_src.cxx  \
      lquaternion_src.h lrotation.h lrotation_src.I  \
-     lrotation_src.cxx lrotation_src.h luse.I luse.N luse.h  \
+     lrotation_src.cxx lrotation_src.h \
+     lsimpleMatrix.h lsimpleMatrix.I \
+     luse.I luse.N luse.h  \
      lvec2_ops.h lvec2_ops_src.I lvec2_ops_src.h lvec3_ops.h  \
      lvec3_ops_src.I lvec3_ops_src.h lvec4_ops.h lvec4_ops_src.I  \
      lvec4_ops_src.h \
@@ -51,7 +54,8 @@
     aa_luse.h \
     compose_matrix.h compose_matrix_src.I \
     compose_matrix_src.h config_linmath.h coordinateSystem.h \
-    dbl2fltnames.h dblnames.h deg_2_rad.h \
+    dbl2fltnames.h dblnames.h \
+    deg_2_rad.h deg_2_rad.I \
     flt2dblnames.h fltnames.h lcast_to.h lcast_to_src.I lcast_to_src.h \
     lmat_ops.h lmat_ops_src.I lmat_ops_src.h lmatrix.h \
     lmatrix3_src.I lmatrix3_src.h lmatrix4_src.I \
@@ -59,7 +63,9 @@
     lorientation_src.h lpoint2.h lpoint2_src.I lpoint2_src.h lpoint3.h \
     lpoint3_src.I lpoint3_src.h lpoint4.h lpoint4_src.I lpoint4_src.h \
     lquaternion.h lquaternion_src.I lquaternion_src.h lrotation.h \
-    lrotation_src.I lrotation_src.h luse.I luse.h lvec2_ops.h \
+    lrotation_src.I lrotation_src.h \
+    lsimpleMatrix.I lsimpleMatrix.h \
+    luse.I luse.h lvec2_ops.h \
     lvec2_ops_src.I lvec2_ops_src.h lvec3_ops.h lvec3_ops_src.I \
     lvec3_ops_src.h lvec4_ops.h lvec4_ops_src.I lvec4_ops_src.h \
     lvecBase2.h lvecBase2_src.I lvecBase2_src.h lvecBase3.h \

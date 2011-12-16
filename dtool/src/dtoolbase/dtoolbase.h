@@ -109,6 +109,11 @@
 #include "pyconfig.h"
 #endif
 
+#ifndef HAVE_EIGEN
+// If we don't have the Eigen library, don't define LINMATH_VECTORIZE.
+#undef LINMATH_VECTORIZE
+#endif
+
 #include "dtoolsymbols.h"
 
 // always include assert.h until drose unbreaks it for opt4
@@ -316,15 +321,19 @@
 #ifdef CPPPARSER
 #define ALIGN_4BYTE
 #define ALIGN_8BYTE
+#define ALIGN_16BYTE
 #elif defined(WIN32_VC)
 #define ALIGN_4BYTE __declspec(align(4))
 #define ALIGN_8BYTE __declspec(align(8))
+#define ALIGN_16BYTE __declspec(align(16))
 #elif defined(__GNUC__)
 #define ALIGN_4BYTE __attribute__ ((aligned (4)))
 #define ALIGN_8BYTE __attribute__ ((aligned (8)))
+#define ALIGN_16BYTE __attribute__ ((aligned (16)))
 #else
 #define ALIGN_4BYTE
 #define ALIGN_8BYTE
+#define ALIGN_16BYTE
 #endif
 
 

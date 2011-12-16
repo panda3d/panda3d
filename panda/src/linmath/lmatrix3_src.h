@@ -22,7 +22,7 @@ class FLOATNAME(LMatrix4);
 //               (rotation, scale, translation) in 2-d, e.g. for a
 //               texture matrix.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_LINMATH FLOATNAME(LMatrix3) {
+class EXPCL_PANDA_LINMATH LINMATH_ALIGN FLOATNAME(LMatrix3) {
 public:
   typedef const FLOATTYPE *iterator;
   typedef const FLOATTYPE *const_iterator;
@@ -280,22 +280,13 @@ PUBLISHED:
   void read_datagram(DatagramIterator &source);
 
 public:
-  union {
-    struct {
-      FLOATTYPE  _00, _01, _02;
-      FLOATTYPE  _10, _11, _12;
-      FLOATTYPE  _20, _21, _22;
-    } m;
-    
-    FLOATTYPE data[3 * 3];
-  } _m;
+  // The underlying implementation is via the Eigen library, if available.
+  typedef LINMATH_MATRIX(FLOATTYPE, 3, 3) EMatrix3;
+  EMatrix3 _m;
+
+  INLINE_LINMATH FLOATNAME(LMatrix3)(const EMatrix3 &m) : _m(m) { }
 
 private:
-  INLINE_LINMATH FLOATTYPE mult_cel(
-    const FLOATNAME(LMatrix3) &other, int x, int y) const;
-  INLINE_LINMATH FLOATTYPE det2(
-    FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e10, FLOATTYPE e11) const;
-
   static const FLOATNAME(LMatrix3) _ident_mat;
   static const FLOATNAME(LMatrix3) _y_to_z_up_mat;
   static const FLOATNAME(LMatrix3) _z_to_y_up_mat;
@@ -315,8 +306,7 @@ private:
 };
 
 
-INLINE_LINMATH ostream &operator << (
-    ostream &out, const FLOATNAME(LMatrix3) &mat) {
+INLINE ostream &operator << (ostream &out, const FLOATNAME(LMatrix3) &mat) {
   mat.output(out);
   return out;
 }

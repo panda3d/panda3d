@@ -11,6 +11,16 @@
 
 #print
 #print Configuring support for the following optional third-party packages:
+#if $[HAVE_EIGEN]
+#print + Eigen linear algebra library
+#if $[LINMATH_VECTORIZE]
+#print +   (vectorization enabled in build)
+#else
+#print -   (vectorization NOT enabled in build)
+#endif
+#else
+#print - Did not find Eigen linear algebra library
+#endif
 #if $[HAVE_OPENSSL]
 #print + OpenSSL
 #else
@@ -261,6 +271,10 @@
 #endif
 $[cdefine _DEBUG]
 $[cdefine NDEBUG]
+
+/* Define if we have Eigen available. */
+$[cdefine HAVE_EIGEN]
+$[cdefine LINMATH_VECTORIZE]
 
 /* Define if we have Python installed.  */
 $[cdefine HAVE_PYTHON]

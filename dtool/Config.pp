@@ -317,6 +317,20 @@
 // What is the name of the C# compiler binary?
 #define CSHARP csc
 
+// This defines the include path to the Eigen linear algebra library.
+// If this is provided, Panda will use this library as the fundamental
+// implementation of its own linmath library; otherwise, it will use
+// its own internal implementation.  The primary advantage of using
+// Eigen is SSE2 support, which is only activated if LINMATH_VECTORIZE
+// is also enabled.  (However, activating LINMATH_VECTORIZE does
+// constrain most objects in Panda to 16-byte alignment, which could
+// impact memory usage on very-low-memory platforms.)  Currently
+// experimental.
+#define EIGEN_IPATH 
+#define EIGEN_CFLAGS
+#define HAVE_EIGEN
+#define LINMATH_VECTORIZE 1
+
 // Is Python installed, and should Python interfaces be generated?  If
 // Python is installed, which directory is it in?
 #define PYTHON_IPATH /usr/include/python2.6

@@ -17,7 +17,7 @@
 // Description : This is the base class for all three-component
 //               vectors and points.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_LINMATH FLOATNAME(LVecBase3) {
+class EXPCL_PANDA_LINMATH LINMATH_ALIGN FLOATNAME(LVecBase3) {
 PUBLISHED:
   typedef const FLOATTYPE *iterator;
   typedef const FLOATTYPE *const_iterator;
@@ -145,10 +145,11 @@ PUBLISHED:
   INLINE_LINMATH void read_datagram(DatagramIterator &source);
 
 public:
-  union {
-        FLOATTYPE data[3];
-        struct {FLOATTYPE _0, _1, _2;} v;
-   } _v;
+  // The underlying implementation is via the Eigen library, if available.
+  typedef LINMATH_MATRIX(FLOATTYPE, 1, 3) EVector3;
+  EVector3 _v;
+
+  INLINE_LINMATH FLOATNAME(LVecBase3)(const EVector3 &v) : _v(v) { }
 
 private:
   static const FLOATNAME(LVecBase3) _zero;
@@ -161,13 +162,13 @@ public:
     return _type_handle;
   }
   static void init_type();
-
+ 
 private:
   static TypeHandle _type_handle;
 };
 
 
-INLINE_LINMATH ostream &operator << (ostream &out, const FLOATNAME(LVecBase3) &vec) {
+INLINE ostream &operator << (ostream &out, const FLOATNAME(LVecBase3) &vec) {
   vec.output(out);
   return out;
 };

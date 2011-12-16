@@ -749,6 +749,12 @@ extern "C" {
   are optimized for the case of 8-byte alignment.
 */
 
+#ifdef LINMATH_VECTORIZE
+// drose: We require 16-byte alignment of certain structures, to
+// support SSE2.  We don't strictly have to align *everything*, but
+// it's just easier to do so.
+#define MALLOC_ALIGNMENT ((size_t)16U)
+#endif
 
 #ifndef MALLOC_ALIGNMENT
 #define MALLOC_ALIGNMENT       (2 * SIZE_SZ)

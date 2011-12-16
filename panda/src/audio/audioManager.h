@@ -18,7 +18,7 @@
 
 #include "config_audio.h"
 #include "audioSound.h"
-#include "lvecBase3.h"
+#include "luse.h"
 #include "filterProperties.h"
 #include "movieAudio.h"
 #include "atomicAdjust.h"

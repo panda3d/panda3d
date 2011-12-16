@@ -43,6 +43,39 @@ dec_heap(size_t size) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MemoryHook::get_memory_alignment
+//       Access: Public, Static
+//  Description: Returns the global memory alignment.  This is the
+//               number of bytes at which each allocated memory
+//               pointer will be aligned.
+////////////////////////////////////////////////////////////////////
+INLINE size_t MemoryHook::
+get_memory_alignment() {
+#ifdef LINMATH_VECTORIZE
+  // We require 16-byte alignment of certain structures, to support
+  // SSE2.  We don't strictly have to align *everything*, but it's just
+  // easier to do so.
+  const size_t alignment_size = 16;
+#else
+  // Otherwise, use word alignment.
+  const size_t alignment_size = sizeof(void *);
+#endif
+  return alignment_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryHook::get_header_reserved_bytes
+//       Access: Public, Static
+//  Description: Returns the number of additional bytes that are
+//               reserved at the beginning of every allocated block to
+//               store a size_t.
+////////////////////////////////////////////////////////////////////
+INLINE size_t MemoryHook::
+get_header_reserved_bytes() {
+  return _header_reserved_bytes;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MemoryHook::get_page_size
 //       Access: Public
 //  Description: Returns the operating system page size.  This is the
@@ -76,7 +109,7 @@ round_up_to_page_size(size_t size) const {
 INLINE size_t MemoryHook::
 inflate_size(size_t size) {
 #ifdef DO_MEMORY_USAGE
-  return size + sizeof(size_t);
+  return size + _header_reserved_bytes;
 #else
   return size;
 #endif  // DO_MEMORY_USAGE
@@ -94,7 +127,7 @@ alloc_to_ptr(void *alloc, size_t size) {
 #ifdef DO_MEMORY_USAGE
   size_t *root = (size_t *)alloc;
   root[0] = size;
-  return (void *)(root + 1);
+  return (void *)((char *)root + _header_reserved_bytes);
 #else
   return alloc;
 #endif  // DO_MEMORY_USAGE
@@ -110,8 +143,7 @@ alloc_to_ptr(void *alloc, size_t size) {
 INLINE void *MemoryHook::
 ptr_to_alloc(void *ptr, size_t &size) {
 #ifdef DO_MEMORY_USAGE
-  size_t *root = (size_t *)ptr;
-  root -= 1;
+  size_t *root = (size_t *)((char *)ptr - _header_reserved_bytes);
   size = root[0];
   return (void *)root;
 #else

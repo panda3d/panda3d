@@ -1,5 +1,5 @@
-// Filename: deg_2_rad.h
-// Created by:  drose (29Sep99)
+// Filename: deg_2_rad.I
+// Created by:  drose (14Dec11)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,22 +12,18 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef DEG_2_RAD_H
-#define DEG_2_RAD_H
+INLINE_LINMATH double deg_2_rad(double f) { 
+  return f * MathNumbers::deg_2_rad_d; 
+}
 
-#include "pandabase.h"
+INLINE_LINMATH double rad_2_deg(double f) { 
+  return f * MathNumbers::rad_2_deg_d; 
+}
 
-#include "mathNumbers.h"
+INLINE_LINMATH float deg_2_rad(float f) { 
+  return f * MathNumbers::deg_2_rad_f; 
+}
 
-BEGIN_PUBLISH
-INLINE_LINMATH double deg_2_rad(double f);
-INLINE_LINMATH double rad_2_deg(double f);
-
-INLINE_LINMATH float deg_2_rad(float f);
-INLINE_LINMATH float rad_2_deg(float f);
-END_PUBLISH
-
-#include "deg_2_rad.I"
-
-#endif
-
+INLINE_LINMATH float rad_2_deg(float f) { 
+  return f * MathNumbers::rad_2_deg_f; 
+}

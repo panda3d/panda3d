@@ -42,10 +42,10 @@ extract_to_matrix(FLOATNAME(LMatrix3) &m) const {
   FLOATTYPE s = (N == 0.0f) ? 0.0f : (2.0f / N);
   FLOATTYPE xs, ys, zs, wx, wy, wz, xx, xy, xz, yy, yz, zz;
 
-  xs = _v.data[1] * s;   ys = _v.data[2] * s;   zs = _v.data[3] * s;
-  wx = _v.data[0] * xs;  wy = _v.data[0] * ys;  wz = _v.data[0] * zs;
-  xx = _v.data[1] * xs;  xy = _v.data[1] * ys;  xz = _v.data[1] * zs;
-  yy = _v.data[2] * ys;  yz = _v.data[2] * zs;  zz = _v.data[3] * zs;
+  xs = _v(1) * s;   ys = _v(2) * s;   zs = _v(3) * s;
+  wx = _v(0) * xs;  wy = _v(0) * ys;  wz = _v(0) * zs;
+  xx = _v(1) * xs;  xy = _v(1) * ys;  xz = _v(1) * zs;
+  yy = _v(2) * ys;  yz = _v(2) * zs;  zz = _v(3) * zs;
 
   m.set((1.0f - (yy + zz)), (xy + wz), (xz - wy),
         (xy - wz), (1.0f - (xx + zz)), (yz + wx),
@@ -63,10 +63,10 @@ extract_to_matrix(FLOATNAME(LMatrix4) &m) const {
   FLOATTYPE s = (N == 0.0f) ? 0.0f : (2.0f / N);
   FLOATTYPE xs, ys, zs, wx, wy, wz, xx, xy, xz, yy, yz, zz;
 
-  xs = _v.data[1] * s;   ys = _v.data[2] * s;   zs = _v.data[3] * s;
-  wx = _v.data[0] * xs;  wy = _v.data[0] * ys;  wz = _v.data[0] * zs;
-  xx = _v.data[1] * xs;  xy = _v.data[1] * ys;  xz = _v.data[1] * zs;
-  yy = _v.data[2] * ys;  yz = _v.data[2] * zs;  zz = _v.data[3] * zs;
+  xs = _v(1) * s;   ys = _v(2) * s;   zs = _v(3) * s;
+  wx = _v(0) * xs;  wy = _v(0) * ys;  wz = _v(0) * zs;
+  xx = _v(1) * xs;  xy = _v(1) * ys;  xz = _v(1) * zs;
+  yy = _v(2) * ys;  yz = _v(2) * zs;  zz = _v(3) * zs;
 
   m.set((1.0f - (yy + zz)), (xy + wz), (xz - wy), 0.0f,
         (xy - wz), (1.0f - (xx + zz)), (yz + wx), 0.0f,
@@ -154,18 +154,18 @@ get_hpr(CoordinateSystem cs) const {
 
   if (cs == CS_zup_right) {
     FLOATTYPE N =
-        (_v.data[0] * _v.data[0]) +
-        (_v.data[1] * _v.data[1]) +
-        (_v.data[2] * _v.data[2]) +
-        (_v.data[3] * _v.data[3]);
+        (_v(0) * _v(0)) +
+        (_v(1) * _v(1)) +
+        (_v(2) * _v(2)) +
+        (_v(3) * _v(3));
     FLOATTYPE s = (N == 0.0f) ? 0.0f : (2.0f / N);
     FLOATTYPE xs, ys, zs, wx, wy, wz, xx, xy, xz, yy, yz, zz, c1, c2, c3, c4;
     FLOATTYPE cr, sr, cp, sp, ch, sh;
     
-    xs = _v.data[1] * s;   ys = _v.data[2] * s;   zs = _v.data[3] * s;
-    wx = _v.data[0] * xs;  wy = _v.data[0] * ys;  wz = _v.data[0] * zs;
-    xx = _v.data[1] * xs;  xy = _v.data[1] * ys;  xz = _v.data[1] * zs;
-    yy = _v.data[2] * ys;  yz = _v.data[2] * zs;  zz = _v.data[3] * zs;
+    xs = _v(1) * s;   ys = _v(2) * s;   zs = _v(3) * s;
+    wx = _v(0) * xs;  wy = _v(0) * ys;  wz = _v(0) * zs;
+    xx = _v(1) * xs;  xy = _v(1) * ys;  xz = _v(1) * zs;
+    yy = _v(2) * ys;  yz = _v(2) * zs;  zz = _v(3) * zs;
     c1 = xz - wy;
     c2 = 1.0f - (xx + yy);
     c3 = 1.0f - (yy + zz);
@@ -254,11 +254,11 @@ set_from_matrix(const FLOATNAME(LMatrix3) &m) {
   if (trace > 0.0f) {
     // The easy case.
     FLOATTYPE S = csqrt(trace + 1.0f);
-    _v.data[0] = S * 0.5f;
+    _v(0) = S * 0.5f;
     S = 0.5f / S;
-    _v.data[1] = (m12 - m21) * S;
-    _v.data[2] = (m20 - m02) * S;
-    _v.data[3] = (m01 - m10) * S;
+    _v(1) = (m12 - m21) * S;
+    _v(2) = (m20 - m02) * S;
+    _v(3) = (m01 - m10) * S;
 
   } else {
     // The harder case.  First, figure out which column to take as
@@ -279,33 +279,33 @@ set_from_matrix(const FLOATNAME(LMatrix3) &m) {
       FLOATTYPE S = 1.0f + m00 - (m11 + m22);
       nassertv(S > 0.0f);
       S = csqrt(S);
-      _v.data[1] = S * 0.5f;
+      _v(1) = S * 0.5f;
       S = 0.5f / S;
-      _v.data[2] = (m01 + m10) * S;
-      _v.data[3] = (m02 + m20) * S;
-      _v.data[0] = (m12 - m21) * S;
+      _v(2) = (m01 + m10) * S;
+      _v(3) = (m02 + m20) * S;
+      _v(0) = (m12 - m21) * S;
 
     } else if (m11 > m22) {
       // m11 is larger than m00 and m22.
       FLOATTYPE S = 1.0f + m11 - (m22 + m00);
       nassertv(S > 0.0f);
       S = csqrt(S);
-      _v.data[2] = S * 0.5f;
+      _v(2) = S * 0.5f;
       S = 0.5f / S;
-      _v.data[3] = (m12 + m21) * S;
-      _v.data[1] = (m10 + m01) * S;
-      _v.data[0] = (m20 - m02) * S;
+      _v(3) = (m12 + m21) * S;
+      _v(1) = (m10 + m01) * S;
+      _v(0) = (m20 - m02) * S;
 
     } else {
       // m22 is larger than m00 and m11.
       FLOATTYPE S = 1.0f + m22 - (m00 + m11);
       nassertv(S > 0.0f);
       S = csqrt(S);
-      _v.data[3] = S * 0.5f;
+      _v(3) = S * 0.5f;
       S = 0.5f / S;
-      _v.data[1] = (m20 + m02) * S;
-      _v.data[2] = (m21 + m12) * S;
-      _v.data[0] = (m01 - m10) * S;
+      _v(1) = (m20 + m02) * S;
+      _v(2) = (m21 + m12) * S;
+      _v(0) = (m01 - m10) * S;
     }
   }
 }

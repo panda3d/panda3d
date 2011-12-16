@@ -39,8 +39,8 @@ set_parameters(dReal themass,
                const LMatrix3f &i) {
   set_parameters(themass,
                  center[0], center[1], center[2], 
-                 i._m.data[0], i._m.data[4], i._m.data[8],
-                 i._m.data[1], i._m.data[2], i._m.data[5]);
+                 i(0, 0), i(1, 1), i(2, 2),
+                 i(0, 1), i(0, 2), i(1, 2));
 }
 
 INLINE void OdeMass::
@@ -130,9 +130,9 @@ translate(const LVecBase3f &pos) {
 
 INLINE void OdeMass::
 rotate(const LMatrix3f &r) {
-  dMatrix3 rot = { r._m.data[0], r._m.data[1], r._m.data[2], 0,
-                   r._m.data[3], r._m.data[4], r._m.data[5], 0,
-                   r._m.data[6], r._m.data[7], r._m.data[8], 0 };
+  dMatrix3 rot = { r(0, 0), r(0, 1), r(0, 2), 0,
+                   r(1, 0), r(1, 1), r(1, 2), 0,
+                   r(2, 0), r(2, 1), r(2, 2), 0 };
   _mass.rotate(rot);
 }
 

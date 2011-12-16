@@ -27,10 +27,10 @@ IMPORT_THIS struct Dtool_PyTypedObject FLOATNAME(Dtool_LVector4);
 INLINE void EXT_CONST_METHOD_ARGS(FLOATNAME(LVector4),
 python_repr, ostream &out, const string &class_name) {
   out << class_name << "("
-      << MAYBE_ZERO(this->_v.v._0) << ", "
-      << MAYBE_ZERO(this->_v.v._1) << ", "
-      << MAYBE_ZERO(this->_v.v._2) << ", "
-      << MAYBE_ZERO(this->_v.v._3) << ")";
+      << MAYBE_ZERO(this->_v(0)) << ", "
+      << MAYBE_ZERO(this->_v(1)) << ", "
+      << MAYBE_ZERO(this->_v(2)) << ", "
+      << MAYBE_ZERO(this->_v(3)) << ")";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -49,30 +49,30 @@ __getattr__, const string &attr_name) {
 
   if (attr_name.size() == 1) {
     if (attr_name[0] == 'w') {
-      return PyFloat_FromDouble(this->_v.data[3]);
+      return PyFloat_FromDouble(this->_v(3));
     } else {
-      return PyFloat_FromDouble(this->_v.data[attr_name[0] - 'x']);
+      return PyFloat_FromDouble(this->_v(attr_name[0] - 'x'));
     }
 
   } else if (attr_name.size() == 2) {
     FLOATNAME(LVector2) *vec = new FLOATNAME(LVector2);
-    vec->_v.v._0 = this->_v.data[(attr_name[0] == 'w') ? 3 : attr_name[0] - 'x'];
-    vec->_v.v._1 = this->_v.data[(attr_name[1] == 'w') ? 3 : attr_name[1] - 'x'];
+    vec->_v(0) = this->_v((attr_name[0] == 'w') ? 3 : attr_name[0] - 'x');
+    vec->_v(1) = this->_v((attr_name[1] == 'w') ? 3 : attr_name[1] - 'x');
     return DTool_CreatePyInstance((void *)vec, FLOATNAME(Dtool_LVector2), true, false);
 
   } else if (attr_name.size() == 3) {
     FLOATNAME(LVector3) *vec = new FLOATNAME(LVector3);
-    vec->_v.v._0 = this->_v.data[(attr_name[0] == 'w') ? 3 : attr_name[0] - 'x'];
-    vec->_v.v._1 = this->_v.data[(attr_name[1] == 'w') ? 3 : attr_name[1] - 'x'];
-    vec->_v.v._2 = this->_v.data[(attr_name[2] == 'w') ? 3 : attr_name[2] - 'x'];
+    vec->_v(0) = this->_v((attr_name[0] == 'w') ? 3 : attr_name[0] - 'x');
+    vec->_v(1) = this->_v((attr_name[1] == 'w') ? 3 : attr_name[1] - 'x');
+    vec->_v(2) = this->_v((attr_name[2] == 'w') ? 3 : attr_name[2] - 'x');
     return DTool_CreatePyInstance((void *)vec, FLOATNAME(Dtool_LVector3), true, false);
 
   } else if (attr_name.size() == 4) {
     FLOATNAME(LVector4) *vec = new FLOATNAME(LVector4);
-    vec->_v.v._0 = this->_v.data[(attr_name[0] == 'w') ? 3 : attr_name[0] - 'x'];
-    vec->_v.v._1 = this->_v.data[(attr_name[1] == 'w') ? 3 : attr_name[1] - 'x'];
-    vec->_v.v._2 = this->_v.data[(attr_name[2] == 'w') ? 3 : attr_name[2] - 'x'];
-    vec->_v.v._3 = this->_v.data[(attr_name[3] == 'w') ? 3 : attr_name[3] - 'x'];
+    vec->_v(0) = this->_v((attr_name[0] == 'w') ? 3 : attr_name[0] - 'x');
+    vec->_v(1) = this->_v((attr_name[1] == 'w') ? 3 : attr_name[1] - 'x');
+    vec->_v(2) = this->_v((attr_name[2] == 'w') ? 3 : attr_name[2] - 'x');
+    vec->_v(3) = this->_v((attr_name[3] == 'w') ? 3 : attr_name[3] - 'x');
     return DTool_CreatePyInstance((void *)vec, FLOATNAME(Dtool_LVector4), true, false);
   }
 

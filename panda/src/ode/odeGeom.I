@@ -69,9 +69,9 @@ set_position(const LVecBase3f &pos) {
 
 INLINE void OdeGeom::
 set_rotation(const LMatrix3f &r) {
-  dMatrix3 rot = { r._m.data[0], r._m.data[1], r._m.data[2], 0,
-                   r._m.data[3], r._m.data[4], r._m.data[5], 0,
-                   r._m.data[6], r._m.data[7], r._m.data[8], 0 };
+  dMatrix3 rot = { r(0, 0), r(0, 1), r(0, 2), 0,
+                   r(1, 0), r(1, 1), r(1, 2), 0,
+                   r(2, 0), r(2, 1), r(2, 2), 0 };
   dGeomSetRotation(_id, rot);
 }
 
@@ -167,9 +167,9 @@ set_offset_position(const LVecBase3f &pos) {
 
 INLINE void OdeGeom::
 set_offset_rotation(const LMatrix3f &r) {
-  dMatrix3 rot = { r._m.data[0], r._m.data[1], r._m.data[2], 0,
-                   r._m.data[3], r._m.data[4], r._m.data[5], 0,
-                   r._m.data[6], r._m.data[7], r._m.data[8], 0 };
+  dMatrix3 rot = { r(0, 0), r(0, 1), r(0, 2), 0,
+                   r(1, 0), r(1, 1), r(1, 2), 0,
+                   r(2, 0), r(2, 1), r(2, 2), 0 };
   dGeomSetOffsetRotation(_id, rot);
 }
 
@@ -191,9 +191,9 @@ set_offset_world_position(const LVecBase3f &pos) {
 
 INLINE void OdeGeom::
 set_offset_world_rotation(const LMatrix3f &r) {
-  dMatrix3 rot = { r._m.data[0], r._m.data[1], r._m.data[2], 0,
-                   r._m.data[3], r._m.data[4], r._m.data[5], 0,
-                   r._m.data[6], r._m.data[7], r._m.data[8], 0 };
+  dMatrix3 rot = { r(0, 0), r(0, 1), r(0, 2), 0,
+                   r(1, 0), r(1, 1), r(1, 2), 0,
+                   r(2, 0), r(2, 1), r(2, 2), 0 };
   dGeomSetOffsetWorldRotation(_id, rot);
 }
 

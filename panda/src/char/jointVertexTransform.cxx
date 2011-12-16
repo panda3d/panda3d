@@ -100,25 +100,7 @@ void JointVertexTransform::
 accumulate_matrix(LMatrix4 &accum, PN_stdfloat weight) const {
   check_matrix();
 
-  accum._m.m._00 += _matrix._m.m._00 * weight;
-  accum._m.m._01 += _matrix._m.m._01 * weight;
-  accum._m.m._02 += _matrix._m.m._02 * weight;
-  accum._m.m._03 += _matrix._m.m._03 * weight;
-  
-  accum._m.m._10 += _matrix._m.m._10 * weight;
-  accum._m.m._11 += _matrix._m.m._11 * weight;
-  accum._m.m._12 += _matrix._m.m._12 * weight;
-  accum._m.m._13 += _matrix._m.m._13 * weight;
-  
-  accum._m.m._20 += _matrix._m.m._20 * weight;
-  accum._m.m._21 += _matrix._m.m._21 * weight;
-  accum._m.m._22 += _matrix._m.m._22 * weight;
-  accum._m.m._23 += _matrix._m.m._23 * weight;
-  
-  accum._m.m._30 += _matrix._m.m._30 * weight;
-  accum._m.m._31 += _matrix._m.m._31 * weight;
-  accum._m.m._32 += _matrix._m.m._32 * weight;
-  accum._m.m._33 += _matrix._m.m._33 * weight;
+  accum.accumulate(_matrix, weight);
 }
 
 ////////////////////////////////////////////////////////////////////

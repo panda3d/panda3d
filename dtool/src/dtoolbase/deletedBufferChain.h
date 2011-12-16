@@ -100,6 +100,12 @@ private:
   size_t _buffer_size;
   size_t _alloc_size;
 
+#ifdef USE_DELETEDCHAINFLAG
+  // The number of extra bytes reserved at the beginning of each
+  // buffer for the _flag, above.
+  static size_t _flag_reserved_bytes;
+#endif
+
   friend class MemoryHook;
 };
 

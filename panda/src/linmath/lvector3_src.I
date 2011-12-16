@@ -123,7 +123,7 @@ unit_z() {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector2) FLOATNAME(LVector3)::
 get_xy() const {
-  return FLOATNAME(LVector2)(_v.v._0, _v.v._1);
+  return FLOATNAME(LVector2)(_v(0), _v(1));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -134,7 +134,7 @@ get_xy() const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector2) FLOATNAME(LVector3)::
 get_xz() const {
-  return FLOATNAME(LVector2)(_v.v._0, _v.v._2);
+  return FLOATNAME(LVector2)(_v(0), _v(2));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -145,7 +145,7 @@ get_xz() const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector2) FLOATNAME(LVector3)::
 get_yz() const {
-  return FLOATNAME(LVector2)(_v.v._1, _v.v._2);
+  return FLOATNAME(LVector2)(_v(1), _v(2));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -297,7 +297,7 @@ signed_angle_deg(const FLOATNAME(LVector3) &other,
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVector3)::
 relative_angle_rad(const FLOATNAME(LVector3) &other) const {
-  return atan2((_v.v._0*other._v.v._1)-(_v.v._1*other._v.v._0), dot(other));
+  return atan2((_v(0)*other._v(1))-(_v(1)*other._v(0)), dot(other));
 }
 
 ////////////////////////////////////////////////////////////////////

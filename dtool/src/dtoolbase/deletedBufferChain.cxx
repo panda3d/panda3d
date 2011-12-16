@@ -13,6 +13,11 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "deletedBufferChain.h"
+#include "memoryHook.h"
+
+#ifdef USE_DELETEDCHAINFLAG
+size_t DeletedBufferChain::_flag_reserved_bytes = max(MemoryHook::get_memory_alignment(), (size_t)sizeof(AtomicAdjust::Integer));
+#endif  // USE_DELETEDCHAINFLAG
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DeletedBufferChain::Constructor
@@ -28,8 +33,8 @@ DeletedBufferChain(size_t buffer_size) {
 
 #ifdef USE_DELETEDCHAINFLAG
   // In development mode, we also need to reserve space for _flag.
-  _alloc_size += sizeof(AtomicAdjust::Integer);
-#endif  // NDEBUG
+  _alloc_size += _flag_reserved_bytes;
+#endif  // USE_DELETEDCHAINFLAG
 
   // We must allocate at least this much space for bookkeeping
   // reasons.
@@ -61,7 +66,7 @@ allocate(size_t size, TypeHandle type_handle) {
 #ifdef USE_DELETEDCHAINFLAG
     assert(obj->_flag == (AtomicAdjust::Integer)DCF_deleted);
     obj->_flag = DCF_alive;
-#endif  // NDEBUG
+#endif  // USE_DELETEDCHAINFLAG
 
     void *ptr = node_to_buffer(obj);
 
@@ -125,7 +130,7 @@ deallocate(void *ptr, TypeHandle type_handle) {
   // If this assertion is triggered, you tried to delete an object
   // that was never allocated, or you have heap corruption.
   assert(orig_flag == (AtomicAdjust::Integer)DCF_alive);
-#endif  // NDEBUG
+#endif  // USE_DELETEDCHAINFLAG
 
   _lock.acquire();
 

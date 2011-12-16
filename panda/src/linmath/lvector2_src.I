@@ -195,7 +195,7 @@ project(const FLOATNAME(LVecBase2) &onto) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVector2)::
 signed_angle_rad(const FLOATNAME(LVector2) &other) const {
-  return catan2((_v.v._0*other._v.v._1)-(_v.v._1*other._v.v._0), dot(other));
+  return catan2((_v(0)*other._v(1))-(_v(1)*other._v(0)), dot(other));
 }
 
 ////////////////////////////////////////////////////////////////////

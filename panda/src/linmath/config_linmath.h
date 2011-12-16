@@ -18,6 +18,7 @@
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
 #include "configVariableBool.h"
+#include "lsimpleMatrix.h"
 
 NotifyCategoryDecl(linmath, EXPCL_PANDA_LINMATH, EXPTP_PANDA_LINMATH);
 

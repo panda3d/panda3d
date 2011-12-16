@@ -17,7 +17,7 @@
 //       Class : LMatrix4
 // Description : This is a 4-by-4 transform matrix.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_LINMATH FLOATNAME(LMatrix4) {
+class EXPCL_PANDA_LINMATH LINMATH_ALIGN FLOATNAME(LMatrix4) {
 public:
   typedef const FLOATTYPE *iterator;
   typedef const FLOATTYPE *const_iterator;
@@ -161,6 +161,8 @@ PUBLISHED:
   INLINE_LINMATH bool invert_affine_from(const FLOATNAME(LMatrix4) &other);
   INLINE_LINMATH bool invert_in_place();
 
+  INLINE_LINMATH void accumulate(const FLOATNAME(LMatrix4) &other, FLOATTYPE weight);
+
   INLINE_LINMATH static const FLOATNAME(LMatrix4) &ident_mat();
   INLINE_LINMATH static const FLOATNAME(LMatrix4) &ones_mat();
   INLINE_LINMATH static const FLOATNAME(LMatrix4) &zeros_mat();
@@ -243,19 +245,13 @@ PUBLISHED:
   void read_datagram(DatagramIterator &source);
 
 public:
-  union {
-    struct {
-      FLOATTYPE  _00, _01, _02, _03;
-      FLOATTYPE  _10, _11, _12, _13;
-      FLOATTYPE  _20, _21, _22, _23;
-      FLOATTYPE  _30, _31, _32, _33;
-    } m;
-    
-    FLOATTYPE data[4 * 4];
-  } _m;
+  // The underlying implementation is via the Eigen library, if available.
+  typedef LINMATH_MATRIX(FLOATTYPE, 4, 4) EMatrix4;
+  EMatrix4 _m;
+
+  INLINE_LINMATH FLOATNAME(LMatrix4)(const EMatrix4 &m) : _m(m) { }
 
 private:
-  INLINE_LINMATH FLOATTYPE mult_cel(const FLOATNAME(LMatrix4) &other, int x, int y) const;
   bool decompose_mat(int index[4]);
   bool back_sub_mat(int index[4], FLOATNAME(LMatrix4) &inv, int row) const;
 
@@ -280,7 +276,7 @@ private:
 };
 
 
-INLINE_LINMATH ostream &operator << (ostream &out, const FLOATNAME(LMatrix4) &mat) {
+INLINE ostream &operator << (ostream &out, const FLOATNAME(LMatrix4) &mat) {
   mat.output(out);
   return out;
 }

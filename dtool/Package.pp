@@ -125,6 +125,9 @@
 
 // Now evaluate all of our deferred variable definitions from
 // Config.pp.
+#set EIGEN_IPATH $[unixfilename $[EIGEN_IPATH]]
+#set HAVE_EIGEN $[HAVE_EIGEN]
+
 #set PYTHON_IPATH $[unixfilename $[PYTHON_IPATH]]
 #set PYTHON_LPATH $[unixfilename $[PYTHON_LPATH]]
 #set PYTHON_FPATH $[unixfilename $[PYTHON_FPATH]]

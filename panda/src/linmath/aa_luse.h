@@ -23,6 +23,7 @@
 
 #include "pandabase.h"
 
+#include "lsimpleMatrix.h"
 #include "stl_compares.h"
 #include "lvec2_ops.h"
 #include "lvec3_ops.h"

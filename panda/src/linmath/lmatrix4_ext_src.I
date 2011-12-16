@@ -42,10 +42,10 @@ __reduce__, PyObject *self) {
   }
 
   PyObject *result = Py_BuildValue("(O(ffffffffffffffff))", this_class, 
-    this->_m.m._00, this->_m.m._01, this->_m.m._02, this->_m.m._03,
-    this->_m.m._10, this->_m.m._11, this->_m.m._12, this->_m.m._13,
-    this->_m.m._20, this->_m.m._21, this->_m.m._22, this->_m.m._23,
-    this->_m.m._30, this->_m.m._31, this->_m.m._32, this->_m.m._33);
+    this->_m(0, 0), this->_m(0, 1), this->_m(0, 2), this->_m(0, 3),
+    this->_m(1, 0), this->_m(1, 1), this->_m(1, 2), this->_m(1, 3),
+    this->_m(2, 0), this->_m(2, 1), this->_m(2, 2), this->_m(2, 3),
+    this->_m(3, 0), this->_m(3, 1), this->_m(3, 2), this->_m(3, 3));
 
   Py_DECREF(this_class);
   return result;
@@ -59,24 +59,24 @@ __reduce__, PyObject *self) {
 void EXT_CONST_METHOD_ARGS(FLOATNAME(LMatrix4),
 python_repr, ostream &out, const string &class_name) {
   out << class_name << "(" 
-      << MAYBE_ZERO(this->_m.m._00) << ", "
-      << MAYBE_ZERO(this->_m.m._01) << ", "
-      << MAYBE_ZERO(this->_m.m._02) << ", "
-      << MAYBE_ZERO(this->_m.m._03) << ", "
+      << MAYBE_ZERO(this->_m(0, 0)) << ", "
+      << MAYBE_ZERO(this->_m(0, 1)) << ", "
+      << MAYBE_ZERO(this->_m(0, 2)) << ", "
+      << MAYBE_ZERO(this->_m(0, 3)) << ", "
 
-      << MAYBE_ZERO(this->_m.m._10) << ", "
-      << MAYBE_ZERO(this->_m.m._11) << ", "
-      << MAYBE_ZERO(this->_m.m._12) << ", "
-      << MAYBE_ZERO(this->_m.m._13) << ", "
+      << MAYBE_ZERO(this->_m(1, 0)) << ", "
+      << MAYBE_ZERO(this->_m(1, 1)) << ", "
+      << MAYBE_ZERO(this->_m(1, 2)) << ", "
+      << MAYBE_ZERO(this->_m(1, 3)) << ", "
 
-      << MAYBE_ZERO(this->_m.m._20) << ", "
-      << MAYBE_ZERO(this->_m.m._21) << ", "
-      << MAYBE_ZERO(this->_m.m._22) << ", "
-      << MAYBE_ZERO(this->_m.m._23) << ", "
+      << MAYBE_ZERO(this->_m(2, 0)) << ", "
+      << MAYBE_ZERO(this->_m(2, 1)) << ", "
+      << MAYBE_ZERO(this->_m(2, 2)) << ", "
+      << MAYBE_ZERO(this->_m(2, 3)) << ", "
 
-      << MAYBE_ZERO(this->_m.m._30) << ", "
-      << MAYBE_ZERO(this->_m.m._31) << ", "
-      << MAYBE_ZERO(this->_m.m._32) << ", "
-      << MAYBE_ZERO(this->_m.m._33) << ")";
+      << MAYBE_ZERO(this->_m(3, 0)) << ", "
+      << MAYBE_ZERO(this->_m(3, 1)) << ", "
+      << MAYBE_ZERO(this->_m(3, 2)) << ", "
+      << MAYBE_ZERO(this->_m(3, 3)) << ")";
 }
 

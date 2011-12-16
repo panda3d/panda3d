@@ -123,7 +123,7 @@ unit_z() {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LPoint2) FLOATNAME(LPoint3)::
 get_xy() const {
-  return FLOATNAME(LPoint2)(_v.v._0, _v.v._1);
+  return FLOATNAME(LPoint2)(_v(0), _v(1));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -134,7 +134,7 @@ get_xy() const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LPoint2) FLOATNAME(LPoint3)::
 get_xz() const {
-  return FLOATNAME(LPoint2)(_v.v._0, _v.v._2);
+  return FLOATNAME(LPoint2)(_v(0), _v(2));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -145,7 +145,7 @@ get_xz() const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LPoint2) FLOATNAME(LPoint3)::
 get_yz() const {
-  return FLOATNAME(LPoint2)(_v.v._1, _v.v._2);
+  return FLOATNAME(LPoint2)(_v(1), _v(2));
 }
 
 ////////////////////////////////////////////////////////////////////

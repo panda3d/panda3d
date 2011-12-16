@@ -25,9 +25,9 @@ noise(const LVecBase3d &value) const {
   // Convert the vector to our local coordinate space.
   LVecBase3d vec = _input_xform.xform_point(value);
 
-  double x = vec._v.v._0;
-  double y = vec._v.v._1;
-  double z = vec._v.v._2;
+  double x = vec[0];
+  double y = vec[1];
+  double z = vec[2];
 
   // Find unit cube that contains point.
   double xf = cfloor(x);

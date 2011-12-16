@@ -68,49 +68,49 @@ set_scale_shear_mat(const FLOATNAME(LVecBase3) &scale,
   switch (cs) {
   case CS_zup_right:
     if (temp_hpr_fix) {
-      set(scale._v.v._0, shear._v.v._0 * scale._v.v._0, 0.0f,
-          0.0f, scale._v.v._1, 0.0f,
-          shear._v.v._1 * scale._v.v._2, shear._v.v._2 * scale._v.v._2, scale._v.v._2);
+      set(scale._v(0), shear._v(0) * scale._v(0), 0.0f,
+          0.0f, scale._v(1), 0.0f,
+          shear._v(1) * scale._v(2), shear._v(2) * scale._v(2), scale._v(2));
     } else {
-      set(scale._v.v._0, 0.0f, 0.0f,
-          shear._v.v._0 * scale._v.v._1, scale._v.v._1, 0.0f,
-          shear._v.v._1 * scale._v.v._2, shear._v.v._2 * scale._v.v._2, scale._v.v._2);
+      set(scale._v(0), 0.0f, 0.0f,
+          shear._v(0) * scale._v(1), scale._v(1), 0.0f,
+          shear._v(1) * scale._v(2), shear._v(2) * scale._v(2), scale._v(2));
     }
     break;
     
   case CS_zup_left:
     if (temp_hpr_fix) {
-      set(scale._v.v._0, shear._v.v._0 * scale._v.v._0, 0.0f,
-          0.0f, scale._v.v._1, 0.0f,
-          -shear._v.v._1 * scale._v.v._2, -shear._v.v._2 * scale._v.v._2, scale._v.v._2);
+      set(scale._v(0), shear._v(0) * scale._v(0), 0.0f,
+          0.0f, scale._v(1), 0.0f,
+          -shear._v(1) * scale._v(2), -shear._v(2) * scale._v(2), scale._v(2));
     } else {
-      set(scale._v.v._0, 0.0f, 0.0f,
-          shear._v.v._0 * scale._v.v._1, scale._v.v._1, 0.0f,
-          -shear._v.v._1 * scale._v.v._2, -shear._v.v._2 * scale._v.v._2, scale._v.v._2);
+      set(scale._v(0), 0.0f, 0.0f,
+          shear._v(0) * scale._v(1), scale._v(1), 0.0f,
+          -shear._v(1) * scale._v(2), -shear._v(2) * scale._v(2), scale._v(2));
     }
     break;
     
   case CS_yup_right:
     if (temp_hpr_fix) {
-      set(scale._v.v._0, 0.0f, shear._v.v._1 * scale._v.v._0,
-          shear._v.v._0 * scale._v.v._1, scale._v.v._1, shear._v.v._2 * scale._v.v._1,
-          0.0f, 0.0f, scale._v.v._2);
+      set(scale._v(0), 0.0f, shear._v(1) * scale._v(0),
+          shear._v(0) * scale._v(1), scale._v(1), shear._v(2) * scale._v(1),
+          0.0f, 0.0f, scale._v(2));
     } else {
-      set(scale._v.v._0, 0.0f, 0.0f,
-          shear._v.v._0 * scale._v.v._1, scale._v.v._1, shear._v.v._2 * scale._v.v._1,
-          shear._v.v._1 * scale._v.v._2, 0.0f, scale._v.v._2);
+      set(scale._v(0), 0.0f, 0.0f,
+          shear._v(0) * scale._v(1), scale._v(1), shear._v(2) * scale._v(1),
+          shear._v(1) * scale._v(2), 0.0f, scale._v(2));
     }
     break;
     
   case CS_yup_left:
     if (temp_hpr_fix) {
-      set(scale._v.v._0, 0.0f, -shear._v.v._1 * scale._v.v._0,
-          shear._v.v._0 * scale._v.v._1, scale._v.v._1, -shear._v.v._2 * scale._v.v._1,
-          0.0f, 0.0f, scale._v.v._2);
+      set(scale._v(0), 0.0f, -shear._v(1) * scale._v(0),
+          shear._v(0) * scale._v(1), scale._v(1), -shear._v(2) * scale._v(1),
+          0.0f, 0.0f, scale._v(2));
     } else {
-      set(scale._v.v._0, 0.0f, 0.0f,
-          shear._v.v._0 * scale._v.v._1, scale._v.v._1, -shear._v.v._2 * scale._v.v._1,
-          -shear._v.v._1 * scale._v.v._2, 0.0f, scale._v.v._2);
+      set(scale._v(0), 0.0f, 0.0f,
+          shear._v(0) * scale._v(1), scale._v(1), -shear._v(2) * scale._v(1),
+          -shear._v(1) * scale._v(2), 0.0f, scale._v(2));
     }
     break;
     
@@ -199,9 +199,13 @@ convert_mat(CoordinateSystem from, CoordinateSystem to) {
 void FLOATNAME(LMatrix3)::
 fill(FLOATTYPE fill_value) {
   TAU_PROFILE("void LMatrix3::fill(FLOATTYPE)", " ", TAU_USER);
+#ifdef HAVE_EIGEN
+  _m = EMatrix3::Constant(fill_value);
+#else
   set(fill_value, fill_value, fill_value,
       fill_value, fill_value, fill_value,
       fill_value, fill_value, fill_value);
+#endif  // HAVE_EIGEN
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -216,9 +220,11 @@ fill(FLOATTYPE fill_value) {
 int FLOATNAME(LMatrix3)::
 compare_to(const FLOATNAME(LMatrix3) &other, FLOATTYPE threshold) const {
   TAU_PROFILE("int LMatrix3::compare_to(const LMatrix3 &, FLOATTYPE)", " ", TAU_USER);
-  for (int i = 0; i < 9; i++) {
-    if (!IS_THRESHOLD_COMPEQ(_m.data[i], other._m.data[i], threshold)) {
-      return (_m.data[i] < other._m.data[i]) ? -1 : 1;
+  for (int r = 0; r < 3; ++r) {
+    for (int c = 0; c < 3; ++c) {
+      if (!IS_THRESHOLD_COMPEQ(_m(r, c), other._m(r, c), threshold)) {
+        return (_m(r, c) < other._m(r, c)) ? -1 : 1;
+      }
     }
   }
   return 0;
@@ -245,9 +251,9 @@ set_rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
     angle = -angle;
   }
 
-  FLOATTYPE axis_0 = axis._v.v._0;
-  FLOATTYPE axis_1 = axis._v.v._1;
-  FLOATTYPE axis_2 = axis._v.v._2;
+  FLOATTYPE axis_0 = axis._v(0);
+  FLOATTYPE axis_1 = axis._v(1);
+  FLOATTYPE axis_2 = axis._v(2);
 
   // Normalize the axis.
   FLOATTYPE length_sq = axis_0 * axis_0 + axis_1 * axis_1 + axis_2 * axis_2;
@@ -272,17 +278,17 @@ set_rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
   s1 = s * axis_1;
   s2 = s * axis_2;
 
-  _m.m._00 = t0 * axis_0 + c;
-  _m.m._01 = t0 * axis_1 + s2;
-  _m.m._02 = t0 * axis_2 - s1;
+  _m(0, 0) = t0 * axis_0 + c;
+  _m(0, 1) = t0 * axis_1 + s2;
+  _m(0, 2) = t0 * axis_2 - s1;
 
-  _m.m._10 = t1 * axis_0 - s2;
-  _m.m._11 = t1 * axis_1 + c;
-  _m.m._12 = t1 * axis_2 + s0;
+  _m(1, 0) = t1 * axis_0 - s2;
+  _m(1, 1) = t1 * axis_1 + c;
+  _m(1, 2) = t1 * axis_2 + s0;
 
-  _m.m._20 = t2 * axis_0 + s1;
-  _m.m._21 = t2 * axis_1 - s0;
-  _m.m._22 = t2 * axis_2 + c;
+  _m(2, 0) = t2 * axis_0 + s1;
+  _m(2, 1) = t2 * axis_1 - s0;
+  _m(2, 2) = t2 * axis_2 + c;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -306,9 +312,9 @@ set_rotate_mat_normaxis(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
     angle = -angle;
   }
 
-  FLOATTYPE axis_0 = axis._v.v._0;
-  FLOATTYPE axis_1 = axis._v.v._1;
-  FLOATTYPE axis_2 = axis._v.v._2;
+  FLOATTYPE axis_0 = axis._v(0);
+  FLOATTYPE axis_1 = axis._v(1);
+  FLOATTYPE axis_2 = axis._v(2);
 
   FLOATTYPE angle_rad = deg_2_rad(angle);
   FLOATTYPE s, c;
@@ -324,17 +330,17 @@ set_rotate_mat_normaxis(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
   s1 = s * axis_1;
   s2 = s * axis_2;
 
-  _m.m._00 = t0 * axis_0 + c;
-  _m.m._01 = t0 * axis_1 + s2;
-  _m.m._02 = t0 * axis_2 - s1;
+  _m(0, 0) = t0 * axis_0 + c;
+  _m(0, 1) = t0 * axis_1 + s2;
+  _m(0, 2) = t0 * axis_2 - s1;
 
-  _m.m._10 = t1 * axis_0 - s2;
-  _m.m._11 = t1 * axis_1 + c;
-  _m.m._12 = t1 * axis_2 + s0;
+  _m(1, 0) = t1 * axis_0 - s2;
+  _m(1, 1) = t1 * axis_1 + c;
+  _m(1, 2) = t1 * axis_2 + s0;
 
-  _m.m._20 = t2 * axis_0 + s1;
-  _m.m._21 = t2 * axis_1 - s0;
-  _m.m._22 = t2 * axis_2 + c;
+  _m(2, 0) = t2 * axis_0 + s1;
+  _m(2, 1) = t2 * axis_1 - s0;
+  _m(2, 2) = t2 * axis_2 + c;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -366,17 +372,17 @@ almost_equal(const FLOATNAME(LMatrix3) &other, FLOATTYPE threshold) const {
 void FLOATNAME(LMatrix3)::
 output(ostream &out) const {
   out << "[ "
-      << MAYBE_ZERO(_m.m._00) << " "
-      << MAYBE_ZERO(_m.m._01) << " "
-      << MAYBE_ZERO(_m.m._02)
+      << MAYBE_ZERO(_m(0, 0)) << " "
+      << MAYBE_ZERO(_m(0, 1)) << " "
+      << MAYBE_ZERO(_m(0, 2))
       << " ] [ "
-      << MAYBE_ZERO(_m.m._10) << " "
-      << MAYBE_ZERO(_m.m._11) << " "
-      << MAYBE_ZERO(_m.m._12)
+      << MAYBE_ZERO(_m(1, 0)) << " "
+      << MAYBE_ZERO(_m(1, 1)) << " "
+      << MAYBE_ZERO(_m(1, 2))
       << " ] [ "
-      << MAYBE_ZERO(_m.m._20) << " "
-      << MAYBE_ZERO(_m.m._21) << " "
-      << MAYBE_ZERO(_m.m._22)
+      << MAYBE_ZERO(_m(2, 0)) << " "
+      << MAYBE_ZERO(_m(2, 1)) << " "
+      << MAYBE_ZERO(_m(2, 2))
       << " ]";
 }
 
@@ -388,19 +394,19 @@ output(ostream &out) const {
 void FLOATNAME(LMatrix3)::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
-    << MAYBE_ZERO(_m.m._00) << " "
-    << MAYBE_ZERO(_m.m._01) << " "
-    << MAYBE_ZERO(_m.m._02)
+    << MAYBE_ZERO(_m(0, 0)) << " "
+    << MAYBE_ZERO(_m(0, 1)) << " "
+    << MAYBE_ZERO(_m(0, 2))
     << "\n";
   indent(out, indent_level)
-    << MAYBE_ZERO(_m.m._10) << " "
-    << MAYBE_ZERO(_m.m._11) << " "
-    << MAYBE_ZERO(_m.m._12)
+    << MAYBE_ZERO(_m(1, 0)) << " "
+    << MAYBE_ZERO(_m(1, 1)) << " "
+    << MAYBE_ZERO(_m(1, 2))
     << "\n";
   indent(out, indent_level)
-    << MAYBE_ZERO(_m.m._20) << " "
-    << MAYBE_ZERO(_m.m._21) << " "
-    << MAYBE_ZERO(_m.m._22)
+    << MAYBE_ZERO(_m(2, 0)) << " "
+    << MAYBE_ZERO(_m(2, 1)) << " "
+    << MAYBE_ZERO(_m(2, 2))
     << "\n";
 }
 

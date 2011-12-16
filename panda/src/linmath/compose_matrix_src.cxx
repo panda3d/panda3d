@@ -45,8 +45,6 @@ static void
 unwind_yup_rotation_old_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr) {
   TAU_PROFILE("void unwind_yup_rotation_old_hpr(LMatrix3 &, LVecBase3 &)", " ", TAU_USER);
 
-  typedef FLOATNAME(LMatrix3) Matrix;
-
   // Extract the axes from the matrix.
   FLOATNAME(LVector3) x, y, z;
   mat.get_row(x,0);
@@ -61,7 +59,7 @@ unwind_yup_rotation_old_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   FLOATTYPE roll = rad_2_deg(((FLOATTYPE)catan2(xy[1], xy[0])));
   
   // Unwind the roll from the axes, and continue.
-  Matrix rot_z;
+  FLOATNAME(LMatrix3) rot_z;
   rot_z.set_rotate_mat_normaxis(-roll, FLOATNAME(LVector3)(0.0f, 0.0f, 1.0f),
                                 CS_yup_right);
   
@@ -78,7 +76,7 @@ unwind_yup_rotation_old_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   FLOATTYPE heading = rad_2_deg(((FLOATTYPE)-catan2(xz[1], xz[0])));
   
   // Unwind the heading, and continue.
-  Matrix rot_y;
+  FLOATNAME(LMatrix3) rot_y;
   rot_y.set_rotate_mat_normaxis(-heading, FLOATNAME(LVector3)(0.0f, 1.0f, 0.0f),
                                 CS_yup_right);
   
@@ -94,7 +92,7 @@ unwind_yup_rotation_old_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   FLOATTYPE pitch = rad_2_deg(((FLOATTYPE)-catan2(yz[0], yz[1])));
   
   // Unwind the pitch.
-  Matrix rot_x;
+  FLOATNAME(LMatrix3) rot_x;
   rot_x.set_rotate_mat_normaxis(-pitch, FLOATNAME(LVector3)(1.0f, 0.0f, 0.0f),
                                 CS_yup_right);
   
@@ -125,8 +123,6 @@ unwind_yup_rotation_old_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
 static void
 unwind_zup_rotation_old_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr) {
   TAU_PROFILE("void unwind_zup_rotation_old_hpr(LMatrix3 &, LVecBase3 &)", " ", TAU_USER);
-  typedef FLOATNAME(LMatrix3) Matrix;
-  
   // Extract the axes from the matrix.
   FLOATNAME(LVector3) x, y, z;
   mat.get_row(x,0);
@@ -150,7 +146,7 @@ unwind_zup_rotation_old_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   }
   
   // Unwind the roll from the axes, and continue.
-  Matrix rot_y;
+  FLOATNAME(LMatrix3) rot_y;
   rot_y.set_rotate_mat_normaxis(roll, FLOATNAME(LVector3)(0.0f, 1.0f, 0.0f),
                                 CS_zup_right);
   
@@ -167,7 +163,7 @@ unwind_zup_rotation_old_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   FLOATTYPE heading = rad_2_deg(((FLOATTYPE)catan2(xy[1], xy[0])));
   
   // Unwind the heading, and continue.
-  Matrix rot_z;
+  FLOATNAME(LMatrix3) rot_z;
   rot_z.set_rotate_mat_normaxis(-heading, FLOATNAME(LVector3)(0.0f, 0.0f, 1.0f),
                                 CS_zup_right);
   
@@ -183,7 +179,7 @@ unwind_zup_rotation_old_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   FLOATTYPE pitch = rad_2_deg(((FLOATTYPE)catan2(yz[1], yz[0])));
   
   // Unwind the pitch.
-  Matrix rot_x;
+  FLOATNAME(LMatrix3) rot_x;
   rot_x.set_rotate_mat_normaxis(-pitch, FLOATNAME(LVector3)(1.0f, 0.0f, 0.0f),
                                 CS_zup_right);
   
@@ -246,10 +242,10 @@ decompose_matrix_old_hpr(const FLOATNAME(LMatrix3) &mat,
 
   case CS_zup_left:
     {
-      new_mat._m.m._02 = -new_mat._m.m._02;
-      new_mat._m.m._12 = -new_mat._m.m._12;
-      new_mat._m.m._20 = -new_mat._m.m._20;
-      new_mat._m.m._21 = -new_mat._m.m._21;
+      new_mat._m(0, 2) = -new_mat._m(0, 2);
+      new_mat._m(1, 2) = -new_mat._m(1, 2);
+      new_mat._m(2, 0) = -new_mat._m(2, 0);
+      new_mat._m(2, 1) = -new_mat._m(2, 1);
       /*
         FLOATNAME(LMatrix3) lm(mat(0, 0), mat(0, 1), -mat(0, 2),
         mat(1, 0), mat(1, 1), -mat(1, 2),
@@ -263,10 +259,10 @@ decompose_matrix_old_hpr(const FLOATNAME(LMatrix3) &mat,
 
   case CS_yup_left:
     {
-      new_mat._m.m._02 = -new_mat._m.m._02;
-      new_mat._m.m._12 = -new_mat._m.m._12;
-      new_mat._m.m._20 = -new_mat._m.m._20;
-      new_mat._m.m._21 = -new_mat._m.m._21;
+      new_mat._m(0, 2) = -new_mat._m(0, 2);
+      new_mat._m(1, 2) = -new_mat._m(1, 2);
+      new_mat._m(2, 0) = -new_mat._m(2, 0);
+      new_mat._m(2, 1) = -new_mat._m(2, 1);
       /*
         FLOATNAME(LMatrix3) lm(mat(0, 0), mat(0, 1), -mat(0, 2),
         mat(1, 0), mat(1, 1), -mat(1, 2),
@@ -355,8 +351,6 @@ static void
 unwind_yup_rotation_new_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr) {
   TAU_PROFILE("void unwind_yup_rotation_new_hpr(LMatrix3 &, LVecBase3 &)", " ", TAU_USER);
 
-  typedef FLOATNAME(LMatrix3) Matrix;
-
   // Extract the axes from the matrix.
   FLOATNAME(LVector3) x, y, z;
   mat.get_row(x,0);
@@ -372,7 +366,7 @@ unwind_yup_rotation_new_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   FLOATTYPE heading = rad_2_deg(((FLOATTYPE)catan2(xz[0], xz[1])));
   
   // Unwind the heading, and continue.
-  Matrix rot_y;
+  FLOATNAME(LMatrix3) rot_y;
   rot_y.set_rotate_mat_normaxis(-heading, FLOATNAME(LVector3)(0.0f, 1.0f, 0.0f),
                                 CS_yup_right);
   
@@ -388,7 +382,7 @@ unwind_yup_rotation_new_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   FLOATTYPE pitch = rad_2_deg((FLOATTYPE)(-catan2(yz[0], yz[1])));
   
   // Unwind the pitch.
-  Matrix rot_x;
+  FLOATNAME(LMatrix3) rot_x;
   rot_x.set_rotate_mat_normaxis(-pitch, FLOATNAME(LVector3)(1.0f, 0.0f, 0.0f),
                                 CS_yup_right);
   
@@ -404,7 +398,7 @@ unwind_yup_rotation_new_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   FLOATTYPE roll = -rad_2_deg(((FLOATTYPE)catan2(xy[1], xy[0])));
   
   // Unwind the roll from the axes, and continue.
-  Matrix rot_z;
+  FLOATNAME(LMatrix3) rot_z;
   rot_z.set_rotate_mat_normaxis(roll, FLOATNAME(LVector3)(0.0f, 0.0f, 1.0f),
                                 CS_yup_right);
   
@@ -435,8 +429,6 @@ unwind_yup_rotation_new_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
 static void
 unwind_zup_rotation_new_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr) {
   TAU_PROFILE("void unwind_zup_rotation_new_hpr(LMatrix3 &, LVecBase3 &)", " ", TAU_USER);
-  typedef FLOATNAME(LMatrix3) Matrix;
-
   // Extract the axes from the matrix.
   FLOATNAME(LVector3) x, y, z;
   mat.get_row(x,0);
@@ -452,7 +444,7 @@ unwind_zup_rotation_new_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   FLOATTYPE heading = -rad_2_deg(((FLOATTYPE)catan2(xy[0], xy[1])));
   
   // Unwind the heading, and continue.
-  Matrix rot_z;
+  FLOATNAME(LMatrix3) rot_z;
   rot_z.set_rotate_mat_normaxis(-heading, FLOATNAME(LVector3)(0.0f, 0.0f, 1.0f),
                                 CS_zup_right);
   
@@ -468,7 +460,7 @@ unwind_zup_rotation_new_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   FLOATTYPE pitch = rad_2_deg(((FLOATTYPE)catan2(yz[1], yz[0])));
   
   // Unwind the pitch.
-  Matrix rot_x;
+  FLOATNAME(LMatrix3) rot_x;
   rot_x.set_rotate_mat_normaxis(-pitch, FLOATNAME(LVector3)(1.0f, 0.0f, 0.0f),
                                 CS_zup_right);
   
@@ -484,7 +476,7 @@ unwind_zup_rotation_new_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   FLOATTYPE roll = -rad_2_deg(((FLOATTYPE)catan2(xz[1], xz[0])));
   
   // Unwind the roll from the axes, and continue.
-  Matrix rot_y;
+  FLOATNAME(LMatrix3) rot_y;
   rot_y.set_rotate_mat_normaxis(-roll, FLOATNAME(LVector3)(0.0f, 1.0f, 0.0f),
                                 CS_zup_right);
   
@@ -547,10 +539,10 @@ decompose_matrix_new_hpr(const FLOATNAME(LMatrix3) &mat,
 
   case CS_zup_left:
     {
-      new_mat._m.m._02 = -new_mat._m.m._02;
-      new_mat._m.m._12 = -new_mat._m.m._12;
-      new_mat._m.m._20 = -new_mat._m.m._20;
-      new_mat._m.m._21 = -new_mat._m.m._21;
+      new_mat._m(0, 2) = -new_mat._m(0, 2);
+      new_mat._m(1, 2) = -new_mat._m(1, 2);
+      new_mat._m(2, 0) = -new_mat._m(2, 0);
+      new_mat._m(2, 1) = -new_mat._m(2, 1);
       /*
         FLOATNAME(LMatrix3) lm(mat(0, 0), mat(0, 1), -mat(0, 2),
         mat(1, 0), mat(1, 1), -mat(1, 2),
@@ -564,10 +556,10 @@ decompose_matrix_new_hpr(const FLOATNAME(LMatrix3) &mat,
 
   case CS_yup_left:
     {
-      new_mat._m.m._02 = -new_mat._m.m._02;
-      new_mat._m.m._12 = -new_mat._m.m._12;
-      new_mat._m.m._20 = -new_mat._m.m._20;
-      new_mat._m.m._21 = -new_mat._m.m._21;
+      new_mat._m(0, 2) = -new_mat._m(0, 2);
+      new_mat._m(1, 2) = -new_mat._m(1, 2);
+      new_mat._m(2, 0) = -new_mat._m(2, 0);
+      new_mat._m(2, 1) = -new_mat._m(2, 1);
       /*
         FLOATNAME(LMatrix3) lm(mat(0, 0), mat(0, 1), -mat(0, 2),
         mat(1, 0), mat(1, 1), -mat(1, 2),

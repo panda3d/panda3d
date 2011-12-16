@@ -19,8 +19,8 @@
 #include "boundingPlane.h"
 #include "config_mathutil.h"
 #include "dcast.h"
+#include "cmath.h"
 
-#include <math.h>
 #include <algorithm>
 
 TypeHandle BoundingSphere::_type_handle;
@@ -104,30 +104,18 @@ xform(const LMatrix4 &mat) {
     // First, determine the longest axis of the matrix, in case it
     // contains a non-uniform scale.
 
-/*
-    LVector3 x,y,z;
-        mat.get_row3(x,0);
-        mat.get_row3(y,1);
-        mat.get_row3(z,2);
+    LVecBase3 x, y, z;
+    mat.get_row3(x, 0);
+    mat.get_row3(y, 1);
+    mat.get_row3(z, 2);
 
     PN_stdfloat xd = dot(x, x);
     PN_stdfloat yd = dot(y, y);
     PN_stdfloat zd = dot(z, z);
-*/
-    PN_stdfloat xd,yd,zd,scale;
 
-#define ROW_DOTTED(mat,ROWNUM)                        \
-            (mat._m.m._##ROWNUM##0*mat._m.m._##ROWNUM##0 +    \
-             mat._m.m._##ROWNUM##1*mat._m.m._##ROWNUM##1 +    \
-             mat._m.m._##ROWNUM##2*mat._m.m._##ROWNUM##2)
-    
-    xd = ROW_DOTTED(mat,0);
-    yd = ROW_DOTTED(mat,1);
-    zd = ROW_DOTTED(mat,2);
-
-    scale = max(xd,yd);
-    scale = max(scale,zd);
-    scale = sqrtf(scale);
+    PN_stdfloat scale = max(xd, yd);
+    scale = max(scale, zd);
+    scale = csqrt(scale);
 
     // Transform the radius
     _radius *= scale;
@@ -215,7 +203,7 @@ extend_by_point(const LPoint3 &point) {
     LVector3 v = point - _center;
     PN_stdfloat dist2 = dot(v, v);
     if (dist2 > _radius * _radius) {
-      _radius = sqrtf(dist2);
+      _radius = csqrt(dist2);
     }
   }
   return true;
@@ -380,7 +368,7 @@ around_points(const LPoint3 *first, const LPoint3 *last) {
       max_dist2 = max(max_dist2, dist2);
     }
 
-    _radius = sqrtf(max_dist2);
+    _radius = csqrt(max_dist2);
   }
 
 #ifndef NDEBUG
@@ -593,8 +581,8 @@ contains_lineseg(const LPoint3 &a, const LPoint3 &b) const {
       return IF_no_intersection;
     }
 
-        PN_stdfloat reciprocal_2A = 1.0f/(2.0f*A);
-    PN_stdfloat sqrt_radical = sqrtf(radical);
+    PN_stdfloat reciprocal_2A = 1.0f/(2.0f*A);
+    PN_stdfloat sqrt_radical = csqrt(radical);
 
     t1 = ( -B - sqrt_radical ) * reciprocal_2A;
     t2 = ( -B + sqrt_radical ) * reciprocal_2A;

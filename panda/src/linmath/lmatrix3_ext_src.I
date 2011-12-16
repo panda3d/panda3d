@@ -42,9 +42,9 @@ __reduce__, PyObject *self) {
   }
 
   PyObject *result = Py_BuildValue("(O(fffffffff))", this_class, 
-    this->_m.m._00, this->_m.m._01, this->_m.m._02,
-    this->_m.m._10, this->_m.m._11, this->_m.m._12,
-    this->_m.m._20, this->_m.m._21, this->_m.m._22);
+    this->_m(0, 0), this->_m(0, 1), this->_m(0, 2),
+    this->_m(1, 0), this->_m(1, 1), this->_m(1, 2),
+    this->_m(2, 0), this->_m(2, 1), this->_m(2, 2));
 
   Py_DECREF(this_class);
   return result;
@@ -58,16 +58,16 @@ __reduce__, PyObject *self) {
 void EXT_CONST_METHOD_ARGS(FLOATNAME(LMatrix3),
 python_repr, ostream &out, const string &class_name) {
   out << class_name << "(" 
-      << MAYBE_ZERO(this->_m.m._00) << ", "
-      << MAYBE_ZERO(this->_m.m._01) << ", "
-      << MAYBE_ZERO(this->_m.m._02) << ", "
+      << MAYBE_ZERO(this->_m(0, 0)) << ", "
+      << MAYBE_ZERO(this->_m(0, 1)) << ", "
+      << MAYBE_ZERO(this->_m(0, 2)) << ", "
 
-      << MAYBE_ZERO(this->_m.m._10) << ", "
-      << MAYBE_ZERO(this->_m.m._11) << ", "
-      << MAYBE_ZERO(this->_m.m._12) << ", "
+      << MAYBE_ZERO(this->_m(1, 0)) << ", "
+      << MAYBE_ZERO(this->_m(1, 1)) << ", "
+      << MAYBE_ZERO(this->_m(1, 2)) << ", "
 
-      << MAYBE_ZERO(this->_m.m._20) << ", "
-      << MAYBE_ZERO(this->_m.m._21) << ", "
-      << MAYBE_ZERO(this->_m.m._22) << ")";
+      << MAYBE_ZERO(this->_m(2, 0)) << ", "
+      << MAYBE_ZERO(this->_m(2, 1)) << ", "
+      << MAYBE_ZERO(this->_m(2, 2)) << ")";
 }
 

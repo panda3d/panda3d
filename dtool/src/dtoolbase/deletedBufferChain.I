@@ -59,7 +59,7 @@ node_to_buffer(DeletedBufferChain::ObjectNode *node) {
 #if defined(USE_DELETEDCHAINFLAG) && defined(USE_DELETED_CHAIN)
   // In development mode, we increment the pointer so that the
   // returned data does not overlap our _flag member.
-  return (void *)(((AtomicAdjust::Integer *)node) + 1);
+  return (void *)(((char *)node) + _flag_reserved_bytes);
 #else
   return (void *)node;
 #endif  // NDEBUG
@@ -75,7 +75,7 @@ buffer_to_node(void *ptr) {
 #if defined(USE_DELETEDCHAINFLAG) && defined(USE_DELETED_CHAIN)
   // In development mode, we decrement the pointer to undo the
   // increment we did above.
-  return (ObjectNode *)(((AtomicAdjust::Integer *)ptr) - 1);
+  return (ObjectNode *)(((char *)ptr) - _flag_reserved_bytes);
 #else
   return (ObjectNode *)ptr;
 #endif  // NDEBUG

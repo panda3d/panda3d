@@ -21,10 +21,10 @@
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL FLOATNAME(LPlane)::
 FLOATNAME(LPlane)() {
-  _v.v._0 = 0.0f;
-  _v.v._1 = 0.0f;
-  _v.v._2 = 1.0f;
-  _v.v._3 = 0.0f;
+  _v(0) = 0.0f;
+  _v(1) = 0.0f;
+  _v(2) = 1.0f;
+  _v(3) = 0.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -53,10 +53,10 @@ FLOATNAME(LPlane)(const FLOATNAME(LPoint3) &a, const FLOATNAME(LPoint3) &b,
   FLOATNAME(LVector3) v = c - a;
   FLOATNAME(LVector3) p = ::normalize(cross(u, v));
 
-  _v.v._0 = p[0];
-  _v.v._1 = p[1];
-  _v.v._2 = p[2];
-  _v.v._3 = -::dot(p, a);
+  _v(0) = p[0];
+  _v(1) = p[1];
+  _v(2) = p[2];
+  _v(3) = -::dot(p, a);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -70,10 +70,10 @@ FLOATNAME(LPlane)(const FLOATNAME(LVector3) &normal,
                  const FLOATNAME(LPoint3) &point) {
   FLOATNAME(LVector3) p = ::normalize(normal);
 
-  _v.v._0 = p[0];
-  _v.v._1 = p[1];
-  _v.v._2 = p[2];
-  _v.v._3 = -::dot(p, point);
+  _v(0) = p[0];
+  _v(1) = p[1];
+  _v(2) = p[2];
+  _v(3) = -::dot(p, point);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -138,7 +138,7 @@ xform(const FLOATNAME(LMatrix4) &mat) {
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL FLOATNAME(LPlane) FLOATNAME(LPlane)::
 operator - () const {
-  return FLOATNAME(LPlane)(-_v.v._0, -_v.v._1, -_v.v._2, -_v.v._3);
+  return FLOATNAME(LPlane)(-_v(0), -_v(1), -_v(2), -_v(3));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -148,7 +148,7 @@ operator - () const {
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL FLOATNAME(LVector3) FLOATNAME(LPlane)::
 get_normal() const {
-  return FLOATNAME(LVector3)(_v.v._0, _v.v._1, _v.v._2);
+  return FLOATNAME(LVector3)(_v(0), _v(1), _v(2));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -163,7 +163,7 @@ get_normal() const {
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL FLOATTYPE FLOATNAME(LPlane)::
 dist_to_plane(const FLOATNAME(LPoint3) &point) const {
-  return (_v.v._0 * point[0] + _v.v._1 * point[1] + _v.v._2 * point[2] + _v.v._3);
+  return (_v(0) * point[0] + _v(1) * point[1] + _v(2) * point[2] + _v(3));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -185,9 +185,9 @@ project(const FLOATNAME(LPoint3) &point) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL void FLOATNAME(LPlane)::
 flip() {
-  _v.v._0 = -_v.v._0;
-  _v.v._1 = -_v.v._1;
-  _v.v._2 = -_v.v._2;
+  _v(0) = -_v(0);
+  _v(1) = -_v(1);
+  _v(2) = -_v(2);
   // We don't flip D, that would make the plane flip over the origin.
 }
 
