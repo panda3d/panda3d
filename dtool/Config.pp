@@ -328,7 +328,7 @@
 // experimental.
 #define EIGEN_IPATH 
 #define EIGEN_CFLAGS
-#define HAVE_EIGEN
+#defer HAVE_EIGEN $[isdir $[EIGEN_IPATH]/Eigen]
 #define LINMATH_VECTORIZE 1
 
 // Is Python installed, and should Python interfaces be generated?  If
