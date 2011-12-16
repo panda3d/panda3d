@@ -743,29 +743,39 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
       return false;
     }
 
-    presentation_params->PresentationInterval = 0;
+    //From d3d8caps.h
+    //D3DPRESENT_INTERVAL_DEFAULT  = 0x00000000L 
+    //#define D3DPRESENT_INTERVAL_ONE         0x00000001L
+    //Next line is really sloppy, should either be D3DPRESENT_INTERVAL_DEFAULT or D3DPRESENT_INTERVAL_ONE
+    //not a direct number! but I'm not going to touch it because it's working as is. Zhao 12/15/2011
+    presentation_params->PresentationInterval = 0;    
 
-    if (supported_multisamples<2) {
-      if (do_sync) {
-  // It turns out that COPY_VSYNC has real performance problems
-  // on many nVidia cards--it syncs at some random interval,
-  // possibly skipping over several video syncs.  Screw it,
-  // we'll effectively disable sync-video with windowed mode
-  // using DirectX8.
-        //presentation_params->SwapEffect = D3DSWAPEFFECT_COPY_VSYNC;
-        presentation_params->SwapEffect = D3DSWAPEFFECT_DISCARD;
-      } else {
-        presentation_params->SwapEffect = D3DSWAPEFFECT_DISCARD;
-      }
-
-      // override presentation parameters for windowed mode, render and display at maximum speed
-      if (do_sync == false) {
-        presentation_params->SwapEffect = D3DSWAPEFFECT_FLIP;
+    //ATI 5450 doesn't like D3DSWAPEFFECT_FLIP
+    presentation_params->SwapEffect = D3DSWAPEFFECT_DISCARD;
+    if (do_sync == false) {
         presentation_params->PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
-      }
-    } else {
-      presentation_params->SwapEffect = D3DSWAPEFFECT_DISCARD;
     }
+    // if (supported_multisamples<2) {
+      // if (do_sync) {
+  // // It turns out that COPY_VSYNC has real performance problems
+  // // on many nVidia cards--it syncs at some random interval,
+  // // possibly skipping over several video syncs.  Screw it,
+  // // we'll effectively disable sync-video with windowed mode
+  // // using DirectX8.
+        // //presentation_params->SwapEffect = D3DSWAPEFFECT_COPY_VSYNC;
+        // presentation_params->SwapEffect = D3DSWAPEFFECT_DISCARD;
+      // } else {
+        // presentation_params->SwapEffect = D3DSWAPEFFECT_DISCARD;
+      // }
+
+      // // override presentation parameters for windowed mode, render and display at maximum speed
+      // if (do_sync == false) {
+        // presentation_params->SwapEffect = D3DSWAPEFFECT_FLIP;
+        // presentation_params->PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
+      // }
+    // } else {
+      // presentation_params->SwapEffect = D3DSWAPEFFECT_DISCARD;
+    // }
 
     //assert((dwRenderWidth == presentation_params->BackBufferWidth)&&(dwRenderHeight == presentation_params->BackBufferHeight));
 
