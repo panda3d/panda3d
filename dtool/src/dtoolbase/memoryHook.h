@@ -70,7 +70,7 @@ public:
 
   DeletedBufferChain *get_deleted_chain(size_t buffer_size);
 
-  virtual void alloc_fail();
+  virtual void alloc_fail(size_t attempted_size);
 
 private:
   INLINE static size_t inflate_size(size_t size);

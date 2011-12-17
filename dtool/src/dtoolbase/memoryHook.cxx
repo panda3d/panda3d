@@ -188,22 +188,24 @@ MemoryHook::
 ////////////////////////////////////////////////////////////////////
 void *MemoryHook::
 heap_alloc_single(size_t size) {
+  size_t inflated_size = inflate_size(size);
+
 #ifdef MEMORY_HOOK_MALLOC_LOCK
   _lock.acquire();
-  void *alloc = call_malloc(inflate_size(size));
+  void *alloc = call_malloc(inflated_size);
   _lock.release();
 #else
-  void *alloc = call_malloc(inflate_size(size));
+  void *alloc = call_malloc(inflated_size);
 #endif
 
   while (alloc == (void *)NULL) {
-    alloc_fail();
+    alloc_fail(inflated_size);
 #ifdef MEMORY_HOOK_MALLOC_LOCK
     _lock.acquire();
-    alloc = call_malloc(inflate_size(size));
+    alloc = call_malloc(inflated_size);
     _lock.release();
 #else
-    alloc = call_malloc(inflate_size(size));
+    alloc = call_malloc(inflated_size);
 #endif
   }
 
@@ -260,22 +262,24 @@ heap_free_single(void *ptr) {
 ////////////////////////////////////////////////////////////////////
 void *MemoryHook::
 heap_alloc_array(size_t size) {
+  size_t inflated_size = inflate_size(size);
+
 #ifdef MEMORY_HOOK_MALLOC_LOCK
   _lock.acquire();
-  void *alloc = call_malloc(inflate_size(size));
+  void *alloc = call_malloc(inflated_size);
   _lock.release();
 #else
-  void *alloc = call_malloc(inflate_size(size));
+  void *alloc = call_malloc(inflated_size);
 #endif
 
   while (alloc == (void *)NULL) {
-    alloc_fail();
+    alloc_fail(inflated_size);
 #ifdef MEMORY_HOOK_MALLOC_LOCK
     _lock.acquire();
-    alloc = call_malloc(inflate_size(size));
+    alloc = call_malloc(inflated_size);
     _lock.release();
 #else
-    alloc = call_malloc(inflate_size(size));
+    alloc = call_malloc(inflated_size);
 #endif
   }
 
@@ -309,26 +313,28 @@ heap_realloc_array(void *ptr, size_t size) {
   AtomicAdjust::add(_total_heap_array_size, (AtomicAdjust::Integer)size-(AtomicAdjust::Integer)orig_size);
 #endif  // DO_MEMORY_USAGE
 
+  size_t inflated_size = inflate_size(size);
+
 #ifdef MEMORY_HOOK_MALLOC_LOCK
   _lock.acquire();
-  alloc = call_realloc(alloc, inflate_size(size));
+  alloc = call_realloc(alloc, inflated_size);
   _lock.release();
 #else
-  alloc = call_realloc(alloc, inflate_size(size));
+  alloc = call_realloc(alloc, inflated_size);
 #endif
 
   while (alloc == (void *)NULL) {
-    alloc_fail();
+    alloc_fail(inflated_size);
     
     // Recover the original pointer.
     alloc = ptr_to_alloc(ptr, orig_size);
 
 #ifdef MEMORY_HOOK_MALLOC_LOCK
     _lock.acquire();
-    alloc = call_realloc(alloc, inflate_size(size));
+    alloc = call_realloc(alloc, inflated_size);
     _lock.release();
 #else
-    alloc = call_realloc(alloc, inflate_size(size));
+    alloc = call_realloc(alloc, inflated_size);
 #endif
   }
 
@@ -546,8 +552,8 @@ get_deleted_chain(size_t buffer_size) {
 //               just to display a message and abort.
 ////////////////////////////////////////////////////////////////////
 void MemoryHook::
-alloc_fail() {
-  cerr << "Out of memory!\n";
+alloc_fail(size_t attempted_size) {
+  cerr << "Out of memory allocating " << attempted_size << " bytes\n";
   abort();
 }
 
