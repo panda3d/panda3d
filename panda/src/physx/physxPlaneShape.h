@@ -16,7 +16,7 @@
 #define PHYSXPLANESHAPE_H
 
 #include "pandabase.h"
-#include "lvector3.h"
+#include "luse.h"
 
 #include "physxShape.h"
 #include "physx_includes.h"

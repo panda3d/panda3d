@@ -16,7 +16,7 @@
 #define PHYSXSPHEREFORCEFIELDSHAPE_H
 
 #include "pandabase.h"
-#include "lvector3.h"
+#include "luse.h"
 
 #include "physxForceFieldShape.h"
 #include "physx_includes.h"

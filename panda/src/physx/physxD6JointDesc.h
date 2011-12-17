@@ -16,9 +16,7 @@
 #define PHYSXD6JOINTDESC_H
 
 #include "pandabase.h"
-#include "lvector3.h"
-#include "lpoint3.h"
-#include "lquaternion.h"
+#include "luse.h"
 
 #include "physxJointDesc.h"
 #include "physx_includes.h"

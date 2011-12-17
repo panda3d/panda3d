@@ -18,7 +18,7 @@
 #include "pandabase.h"
 #include "physxShapeDesc.h"
 
-#include "lvector3.h"
+#include "luse.h"
 
 #include "physx_includes.h"
 

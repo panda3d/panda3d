@@ -16,7 +16,7 @@
 #define PHYSXHEIGHTFIELD_H
 
 #include "pandabase.h"
-#include "lvector3.h"
+#include "luse.h"
 
 #include "physxObject.h"
 #include "physxContactReport.h"

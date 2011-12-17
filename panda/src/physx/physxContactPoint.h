@@ -16,8 +16,7 @@
 #define PHYSXCONTACTPOINT_H
 
 #include "pandabase.h"
-#include "lvector3.h"
-#include "lpoint3.h"
+#include "luse.h"
 #include "typedObject.h"
 
 #include "config_physx.h"

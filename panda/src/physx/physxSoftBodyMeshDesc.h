@@ -16,7 +16,7 @@
 #define PHYSXSOFTBODYMESHDESC_H
 
 #include "pandabase.h"
-#include "lpoint3.h"
+#include "luse.h"
 
 #include "physx_includes.h"
 

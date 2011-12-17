@@ -16,8 +16,7 @@
 #define PHYSXSHAPEDESC_H
 
 #include "pandabase.h"
-#include "lpoint3.h"
-#include "lmatrix.h"
+#include "luse.h"
 
 #include "physxEnums.h"
 #include "physx_includes.h"

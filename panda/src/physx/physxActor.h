@@ -17,10 +17,7 @@
 
 #include "pandabase.h"
 #include "nodePath.h"
-#include "lmatrix.h"
-#include "lvector3.h"
-#include "lpoint3.h"
-#include "lquaternion.h"
+#include "luse.h"
 
 #include "physxObject.h"
 #include "physxObjectCollection.h"

@@ -16,7 +16,7 @@
 #define PHYSXBOXCONTROLLERDESC_H
 
 #include "pandabase.h"
-#include "lvector3.h"
+#include "luse.h"
 
 #include "physxControllerDesc.h"
 #include "physx_includes.h"

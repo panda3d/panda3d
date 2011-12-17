@@ -16,8 +16,8 @@
 #define PHYSXTRIANGLEMESHDESC_H
 
 #include "pandabase.h"
-#include "lpoint3.h"
 #include "nodePath.h"
+#include "luse.h"
 
 #include "physx_includes.h"
 

@@ -16,7 +16,7 @@
 #define PHYSXBOXFORCEFIELDSHAPEDESC_H
 
 #include "pandabase.h"
-#include "lvector3.h"
+#include "luse.h"
 
 #include "physxForceFieldShapeDesc.h"
 #include "physx_includes.h"

@@ -17,9 +17,7 @@
 
 #include "pandabase.h"
 #include "pointerTo.h"
-#include "lpoint3.h"
-#include "lmatrix.h"
-#include "lquaternion.h"
+#include "luse.h"
 
 #include "physxObject.h"
 #include "physxEnums.h"

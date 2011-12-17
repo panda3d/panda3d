@@ -16,9 +16,7 @@
 #define PHYSXFORCEFIELDDESC_H
 
 #include "pandabase.h"
-#include "lvector3.h"
-#include "lpoint3.h"
-#include "lmatrix.h"
+#include "luse.h"
 
 #include "physxEnums.h"
 #include "physx_includes.h"

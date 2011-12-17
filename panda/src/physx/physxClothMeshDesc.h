@@ -16,8 +16,7 @@
 #define PHYSXCLOTHMESHDESC_H
 
 #include "pandabase.h"
-#include "lpoint3.h"
-#include "lpoint2.h"
+#include "luse.h"
 #include "nodePath.h"
 #include "plist.h"
 

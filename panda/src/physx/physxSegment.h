@@ -16,7 +16,7 @@
 #define PHYSXSEGMENT_H
 
 #include "pandabase.h"
-#include "lpoint3.h"
+#include "luse.h"
 
 #include "config_physx.h"
 

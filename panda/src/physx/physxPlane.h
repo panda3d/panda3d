@@ -16,9 +16,7 @@
 #define PHYSXPLANE_H
 
 #include "pandabase.h"
-#include "lpoint3.h"
-#include "lvector3.h"
-#include "lmatrix.h"
+#include "luse.h"
 
 #include "config_physx.h"
 

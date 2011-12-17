@@ -16,8 +16,7 @@
 #define PHYSXRAYCASTHIT_H
 
 #include "pandabase.h"
-#include "lvector3.h"
-#include "lpoint3.h"
+#include "luse.h"
 
 #include "config_physx.h"
 
