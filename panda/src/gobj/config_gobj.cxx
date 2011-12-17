@@ -273,10 +273,15 @@ ConfigVariableBool vertices_float64
           "slower."));
 
 ConfigVariableInt vertex_column_alignment
-("vertex-column-alignment", 0,
+("vertex-column-alignment", 1,
  PRC_DESC("This specifies the default byte alignment for each column of "
           "data within a GeomVertexData when it is assembled using the default "
-          "interfaces.  See GeomVertexFormat::set_column_alignment()."));
+          "interfaces.  Normally, you should not change this config variable "
+          "(which would change this value globally), but instead specify any "
+          "alignment requirements on a per-column basis as you construct a "
+          "GeomVertexFormat.  Setting this value globally could result in "
+          "much needless wasted space in all vertex data objects, but it "
+          "could be useful for simple experiments."));
 
 ConfigVariableEnum<AutoTextureScale> textures_power_2
 ("textures-power-2", ATS_down,

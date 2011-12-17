@@ -34,7 +34,6 @@ GeomVertexArrayFormat::
 GeomVertexArrayFormat() :
   _is_registered(false),
   _stride(0),
-  _column_alignment(vertex_column_alignment),
   _total_bytes(0),
   _pad_to(1),
   _columns_unsorted(false)
@@ -52,7 +51,6 @@ GeomVertexArrayFormat(InternalName *name0, int num_components0,
                       GeomVertexArrayFormat::Contents contents0) :
   _is_registered(false),
   _stride(0),
-  _column_alignment(vertex_column_alignment),
   _total_bytes(0),
   _pad_to(1),
   _columns_unsorted(false)
@@ -74,7 +72,6 @@ GeomVertexArrayFormat(InternalName *name0, int num_components0,
                       GeomVertexArrayFormat::Contents contents1) :
   _is_registered(false),
   _stride(0),
-  _column_alignment(vertex_column_alignment),
   _total_bytes(0),
   _pad_to(1),
   _columns_unsorted(false)
@@ -100,7 +97,6 @@ GeomVertexArrayFormat(InternalName *name0, int num_components0,
                       GeomVertexArrayFormat::Contents contents2) :
   _is_registered(false),
   _stride(0),
-  _column_alignment(vertex_column_alignment),
   _total_bytes(0),
   _pad_to(1),
   _columns_unsorted(false)
@@ -130,7 +126,6 @@ GeomVertexArrayFormat(InternalName *name0, int num_components0,
                       GeomVertexArrayFormat::Contents contents3) :
   _is_registered(false),
   _stride(0),
-  _column_alignment(vertex_column_alignment),
   _total_bytes(0),
   _pad_to(1),
   _columns_unsorted(false)
@@ -150,7 +145,6 @@ GeomVertexArrayFormat::
 GeomVertexArrayFormat(const GeomVertexArrayFormat &copy) :
   _is_registered(false),
   _stride(copy._stride),
-  _column_alignment(copy._column_alignment),
   _total_bytes(copy._total_bytes),
   _pad_to(copy._pad_to),
   _columns_unsorted(copy._columns_unsorted)
@@ -170,7 +164,6 @@ void GeomVertexArrayFormat::
 operator = (const GeomVertexArrayFormat &copy) {
   nassertv(!_is_registered);
   _stride = copy._stride;
-  _column_alignment = copy._column_alignment;
   _total_bytes = copy._total_bytes;
   _pad_to = copy._pad_to;
 
@@ -237,22 +230,14 @@ unref() const {
 int GeomVertexArrayFormat::
 add_column(InternalName *name, int num_components, 
            GeomVertexArrayFormat::NumericType numeric_type, 
-           GeomVertexArrayFormat::Contents contents, int start) {
+           GeomVertexArrayFormat::Contents contents, int start,
+           int column_alignment) {
   if (start < 0) {
     start = _total_bytes;
-    if (_column_alignment > 1) {
-      // Round up to the next multiple of _column_alignment.
-      start = ((start + (_column_alignment - 1)) / _column_alignment) * _column_alignment;
-    }
-
-    GeomVertexColumn temp_column
-      (name, num_components, numeric_type, contents, 0);
-    int pad_to = temp_column.get_component_bytes();
-    start = ((start + pad_to - 1) / pad_to) * pad_to;
   }
 
-  return add_column(GeomVertexColumn(name, num_components, 
-                                     numeric_type, contents, start));
+  return add_column(GeomVertexColumn(name, num_components, numeric_type, contents, 
+                                     start, column_alignment));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -286,18 +271,11 @@ add_column(const GeomVertexColumn &column) {
     orig_column = get_column(column.get_start(), column.get_total_bytes());
   }
 
-  int column_bytes = column.get_total_bytes();
-  if (_column_alignment > 1 && (column.get_start() % _column_alignment == 0)) {
-    // Round up to the next multiple of _column_alignment.
-    column_bytes = ((column_bytes + _column_alignment - 1) / _column_alignment) * _column_alignment;
-  }
-
-  _total_bytes = max(_total_bytes, column.get_start() + column_bytes);
-  _pad_to = max(_pad_to, column.get_component_bytes());
+  _total_bytes = max(_total_bytes, column.get_start() + column.get_total_bytes());
+  _pad_to = max(_pad_to, column.get_column_alignment());
   _stride = max(_stride, _total_bytes);
-  _stride = ((_stride + _pad_to - 1) / _pad_to) * _pad_to;
-  if (_column_alignment > 1) {
-    _stride = ((_stride + _column_alignment - 1) / _column_alignment) * _column_alignment;
+  if (_pad_to > 1) {
+    _stride = ((_stride + _pad_to - 1) / _pad_to) * _pad_to;
   }
 
   GeomVertexColumn *new_column = new GeomVertexColumn(column);
@@ -575,14 +553,6 @@ compare_to(const GeomVertexArrayFormat &other) const {
   if (_stride != other._stride) {
     return _stride - other._stride;
   }
-  /*
-    // We don't compare column_alignment.  That's a setting used only
-    // when constructing the format, and no longer relevant after it's
-    // been constructed.
-  if (_column_alignment != other._column_alignment) {
-    return _column_alignment - other._column_alignment;
-  }
-  */
   if (_total_bytes != other._total_bytes) {
     return _total_bytes - other._total_bytes;
   }
@@ -760,7 +730,6 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   TypedWritableReferenceCount::fillin(scan, manager);
   nassertv(!_is_registered);
 
-  // Maybe we should record _column_alignment, but we don't.
   _stride = scan.get_uint16();
   _total_bytes = scan.get_uint16();
   _pad_to = scan.get_uint8();

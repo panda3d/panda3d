@@ -33,12 +33,13 @@ GeomVertexColumn() :
 INLINE GeomVertexColumn::
 GeomVertexColumn(InternalName *name, int num_components,
                  NumericType numeric_type, Contents contents,
-                 int start) :
+                 int start, int column_alignment) :
   _name(name),
   _num_components(num_components),
   _numeric_type(numeric_type),
   _contents(contents),
   _start(start),
+  _column_alignment(column_alignment),
   _packer(NULL)
 {
   setup();
@@ -56,6 +57,7 @@ GeomVertexColumn(const GeomVertexColumn &copy) :
   _numeric_type(copy._numeric_type),
   _contents(copy._contents),
   _start(copy._start),
+  _column_alignment(copy._column_alignment),
   _packer(NULL)
 {
   setup();
@@ -146,6 +148,21 @@ get_contents() const {
 INLINE int GeomVertexColumn::
 get_start() const {
   return _start;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexColumn::get_column_alignment
+//       Access: Published
+//  Description: Returns the alignment requirements for this column.
+//               If this is greater than 1, it restricts the column to
+//               appear only on memory addresses that are integer
+//               multiples of this value; this has implications for
+//               this column's start value, as well as the stride of
+//               the resulting array.
+////////////////////////////////////////////////////////////////////
+INLINE int GeomVertexColumn::
+get_column_alignment() const {
+  return _column_alignment;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -273,6 +290,9 @@ compare_to(const GeomVertexColumn &other) const {
   }
   if (_start != other._start) {
     return _start - other._start;
+  }
+  if (_column_alignment != other._column_alignment) {
+    return _column_alignment - other._column_alignment;
   }
   return 0;
 }

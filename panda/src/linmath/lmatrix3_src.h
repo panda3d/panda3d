@@ -140,6 +140,21 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVecBase3)
   xform_vec_general(const FLOATNAME(LVecBase3) &v) const;
 
+  INLINE_LINMATH void
+  xform_in_place(FLOATNAME(LVecBase3) &v) const;
+
+  INLINE_LINMATH void
+  xform_point_in_place(FLOATNAME(LVecBase2) &v) const;
+
+  INLINE_LINMATH void
+  xform_vec_in_place(FLOATNAME(LVecBase2) &v) const;
+
+  INLINE_LINMATH void
+  xform_vec_in_place(FLOATNAME(LVecBase3) &v) const;
+
+  INLINE_LINMATH void
+  xform_vec_general_in_place(FLOATNAME(LVecBase3) &v) const;
+
   // this = other1 * other2
   INLINE_LINMATH void multiply(
     const FLOATNAME(LMatrix3) &other1, const FLOATNAME(LMatrix3) &other2);

@@ -219,6 +219,19 @@ get_array_handle() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexReader::get_stride
+//       Access: Published
+//  Description: Returns the per-row stride (bytes between consecutive
+//               rows) of the underlying vertex array.  This low-level
+//               information is normally not needed to use the
+//               GeomVertexReader directly.
+////////////////////////////////////////////////////////////////////
+INLINE size_t GeomVertexReader::
+get_stride() const {
+  return _stride;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexReader::get_current_thread
 //       Access: Published
 //  Description: Returns the Thread pointer of the currently-executing

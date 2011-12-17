@@ -72,44 +72,38 @@ set_stride(int stride) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayFormat::get_column_alignment
+//     Function: GeomVertexArrayFormat::get_pad_to
 //       Access: Published
-//  Description: See set_column_alignment().
+//  Description: Returns the byte divisor to which the data record
+//               must be padded to meet hardware limitations.  For
+//               instance, if this is 4, the stride will be
+//               automatically rounded up to the next multiple of 4
+//               bytes.  This value is automatically increased as
+//               needed to ensure the individual numeric components in
+//               the array are word-aligned.
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomVertexArrayFormat::
-get_column_alignment() const {
-  return _column_alignment;
+get_pad_to() const {
+  return _pad_to;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayFormat::set_column_alignment
+//     Function: GeomVertexArrayFormat::set_pad_to
 //       Access: Published
-//  Description: This specifies the byte alignment for each
-//               column of data within the format when add_column() is
-//               subsequently called with default parameters.
-//               Normally this is 0 or 1 to specify no particular
-//               alignment, but you may specify a higher number, for
-//               instace 4 to guarantee that all columns start at a
-//               word alignment, or 16 to align all columns for SSE2
-//               processing.  This will introduce unused bytes between
-//               columns as needed to guarantee the requested
-//               alignment.  
-//
-//               Note that this does not change existing columns, only
-//               subsequent columns; and if you specify the start byte
-//               explicitly in add_column(), it will override this
-//               setting.  Note also that there is no point in
-//               exceeding the memory alignment of Panda3D itself,
-//               which is compiled into Panda and can be determined by
-//               MemoryHook::get_memory_alignment().
-//
-//               Also see the config variable vertex-column-alignment
-//               for a way to change the global default.
+//  Description: Explicitly sets the byte divisor to which the data
+//               record must be padded to meet hardware limitations.
+//               See get_pad_to().  Normally it is not necessary to
+//               call this unless you have some specific requirements
+//               for row-to-row data alignment.  Note that this value
+//               may be automatically increased at each subsequent
+//               call to add_column().
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexArrayFormat::
-set_column_alignment(int column_alignment) {
-  nassertv(!_is_registered);
-  _column_alignment = column_alignment;
+set_pad_to(int pad_to) {
+  nassertv(pad_to >= 1);
+
+  _pad_to = pad_to;
+  _stride = ((_stride + _pad_to - 1) / _pad_to) * _pad_to;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -122,20 +116,6 @@ set_column_alignment(int column_alignment) {
 INLINE int GeomVertexArrayFormat::
 get_total_bytes() const {
   return _total_bytes;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeomVertexArrayFormat::get_pad_to
-//       Access: Published
-//  Description: Returns the byte divisor to which the data record
-//               must be padded to meet hardware limitations.  For
-//               instance, if this is 4, the stride will be
-//               automatically rounded up to the next multiple of 4
-//               bytes.
-////////////////////////////////////////////////////////////////////
-INLINE int GeomVertexArrayFormat::
-get_pad_to() const {
-  return _pad_to;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -44,7 +44,7 @@ private:
 PUBLISHED:
   INLINE GeomVertexColumn(InternalName *name, int num_components,
                           NumericType numeric_type, Contents contents,
-                          int start);
+                          int start, int column_alignment = 0);
   INLINE GeomVertexColumn(const GeomVertexColumn &copy);
   void operator = (const GeomVertexColumn &copy);
   INLINE ~GeomVertexColumn();
@@ -55,6 +55,7 @@ PUBLISHED:
   INLINE NumericType get_numeric_type() const;
   INLINE Contents get_contents() const;
   INLINE int get_start() const;
+  INLINE int get_column_alignment() const;
   INLINE int get_component_bytes() const;
   INLINE int get_total_bytes() const;
   INLINE bool has_homogeneous_coord() const;
@@ -91,6 +92,7 @@ private:
   NumericType _numeric_type;
   Contents _contents;
   int _start;
+  int _column_alignment;
   int _component_bytes;
   int _total_bytes;
   Packer *_packer;

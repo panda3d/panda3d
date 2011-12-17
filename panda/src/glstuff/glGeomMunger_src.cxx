@@ -96,7 +96,7 @@ munge_format_impl(const GeomVertexFormat *orig,
     // Replace the existing color format with the new format.
     new_array_format->add_column
       (InternalName::get_color(), 4, NT_uint8,
-       C_color, color_type->get_start());
+       C_color, color_type->get_start(), color_type->get_column_alignment());
   }
 
   if (animation.get_animation_type() == AT_hardware) {
@@ -144,7 +144,8 @@ munge_format_impl(const GeomVertexFormat *orig,
       const GeomVertexColumn *column = format->get_column(i);
       PT(GeomVertexArrayFormat) new_array_format = new GeomVertexArrayFormat;
       new_array_format->add_column(column->get_name(), column->get_num_components(),
-                                   column->get_numeric_type(), column->get_contents());
+                                   column->get_numeric_type(), column->get_contents(),
+                                   -1, column->get_column_alignment());
       new_format->add_array(new_array_format);
     }
     format = GeomVertexFormat::register_format(new_format);
@@ -158,7 +159,8 @@ munge_format_impl(const GeomVertexFormat *orig,
     if (column != (const GeomVertexColumn *)NULL) {
       new_array_format->add_column
         (column->get_name(), column->get_num_components(), 
-         column->get_numeric_type(), column->get_contents());
+         column->get_numeric_type(), column->get_contents(),
+         -1, column->get_column_alignment());
       new_format->remove_column(column->get_name());
     }
 
@@ -166,7 +168,8 @@ munge_format_impl(const GeomVertexFormat *orig,
     if (column != (const GeomVertexColumn *)NULL) {
       new_array_format->add_column
         (column->get_name(), column->get_num_components(), 
-         column->get_numeric_type(), column->get_contents());
+         column->get_numeric_type(), column->get_contents(),
+         -1, column->get_column_alignment());
       new_format->remove_column(column->get_name());
     }
 
@@ -174,7 +177,8 @@ munge_format_impl(const GeomVertexFormat *orig,
     if (column != (const GeomVertexColumn *)NULL) {
       new_array_format->add_column
         (column->get_name(), column->get_num_components(), 
-         column->get_numeric_type(), column->get_contents());
+         column->get_numeric_type(), column->get_contents(),
+         -1, column->get_column_alignment());
       new_format->remove_column(column->get_name());
     }
 
@@ -196,7 +200,8 @@ munge_format_impl(const GeomVertexFormat *orig,
             
             if (texcoord_type != (const GeomVertexColumn *)NULL) {
               new_array_format->add_column
-                (name, texcoord_type->get_num_values(), NT_stdfloat, C_texcoord);
+                (name, texcoord_type->get_num_values(), NT_stdfloat, C_texcoord,
+                 -1, texcoord_type->get_column_alignment());
             } else {
               // We have to add something as a placeholder, even if the
               // texture coordinates aren't defined.
@@ -237,7 +242,7 @@ premunge_format_impl(const GeomVertexFormat *orig) {
     // Replace the existing color format with the new format.
     new_array_format->add_column
       (InternalName::get_color(), 4, NT_uint8,
-       C_color, color_type->get_start());
+       C_color, color_type->get_start(), color_type->get_column_alignment());
   }
 
   CPT(GeomVertexFormat) format = GeomVertexFormat::register_format(new_format);
@@ -249,7 +254,8 @@ premunge_format_impl(const GeomVertexFormat *orig) {
       const GeomVertexColumn *column = format->get_column(i);
       PT(GeomVertexArrayFormat) new_array_format = new GeomVertexArrayFormat;
       new_array_format->add_column(column->get_name(), column->get_num_components(),
-                                   column->get_numeric_type(), column->get_contents());
+                                   column->get_numeric_type(), column->get_contents(),
+                                   -1, column->get_column_alignment());
       new_format->add_array(new_array_format);
     }
     format = GeomVertexFormat::register_format(new_format);
@@ -268,7 +274,8 @@ premunge_format_impl(const GeomVertexFormat *orig) {
     if (column != (const GeomVertexColumn *)NULL) {
       new_array_format->add_column
         (column->get_name(), column->get_num_components(), 
-         column->get_numeric_type(), column->get_contents());
+         column->get_numeric_type(), column->get_contents(),
+         -1, column->get_column_alignment());
       new_format->remove_column(column->get_name());
     }
 
@@ -276,7 +283,8 @@ premunge_format_impl(const GeomVertexFormat *orig) {
     if (column != (const GeomVertexColumn *)NULL) {
       new_array_format->add_column
         (column->get_name(), column->get_num_components(), 
-         column->get_numeric_type(), column->get_contents());
+         column->get_numeric_type(), column->get_contents(),
+         -1, column->get_column_alignment());
       new_format->remove_column(column->get_name());
     }
 
@@ -284,7 +292,8 @@ premunge_format_impl(const GeomVertexFormat *orig) {
     if (column != (const GeomVertexColumn *)NULL) {
       new_array_format->add_column
         (column->get_name(), column->get_num_components(), 
-         column->get_numeric_type(), column->get_contents());
+         column->get_numeric_type(), column->get_contents(),
+         -1, column->get_column_alignment());
       new_format->remove_column(column->get_name());
     }
 
@@ -307,7 +316,8 @@ premunge_format_impl(const GeomVertexFormat *orig) {
             
             if (texcoord_type != (const GeomVertexColumn *)NULL) {
               new_array_format->add_column
-                (name, texcoord_type->get_num_values(), NT_stdfloat, C_texcoord);
+                (name, texcoord_type->get_num_values(), NT_stdfloat, C_texcoord,
+                 -1, texcoord_type->get_column_alignment());
             } else {
               // We have to add something as a placeholder, even if the
               // texture coordinates aren't defined.
@@ -320,7 +330,8 @@ premunge_format_impl(const GeomVertexFormat *orig) {
     }
 
     // Now go through the remaining arrays and make sure they are
-    // tightly packed.  If not, repack them.
+    // tightly packed (with the column alignment restrictions).  If
+    // not, repack them.
     for (int i = 0; i < new_format->get_num_arrays(); ++i) {
       CPT(GeomVertexArrayFormat) orig_a = new_format->get_array(i);
       if (orig_a->count_unused_space() != 0) {
@@ -328,7 +339,8 @@ premunge_format_impl(const GeomVertexFormat *orig) {
         for (int j = 0; j < orig_a->get_num_columns(); ++j) {
           const GeomVertexColumn *column = orig_a->get_column(j);
           new_a->add_column(column->get_name(), column->get_num_components(),
-                            column->get_numeric_type(), column->get_contents());
+                            column->get_numeric_type(), column->get_contents(),
+                            -1, column->get_column_alignment());
         }
         new_format->set_array(i, new_a);
       }

@@ -1425,10 +1425,10 @@ release_all() {
 CPT(GeomVertexArrayFormat) GeomPrimitive::
 get_index_format() const {
   PT(GeomVertexArrayFormat) format = new GeomVertexArrayFormat;
-  // It's important that the index format not attempt to have any kind
-  // of SSE2 alignment or whatever.  It needs to be tightly packed.
-  format->set_column_alignment(1);
-  format->add_column(InternalName::get_index(), 1, get_index_type(), C_index);
+  // It's important that the index format *not* respect the global
+  // setting of vertex-column-alignment.  It needs to be tightly
+  // packed, so we specify an explict column_alignment of 1.
+  format->add_column(InternalName::get_index(), 1, get_index_type(), C_index, 0, 1);
   return GeomVertexArrayFormat::register_format(format);
 }
 

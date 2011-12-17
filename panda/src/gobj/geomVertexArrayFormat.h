@@ -85,15 +85,14 @@ PUBLISHED:
   INLINE int get_stride() const;
   INLINE void set_stride(int stride);
 
-  INLINE int get_column_alignment() const;
-  INLINE void set_column_alignment(int column_alignment);
+  INLINE int get_pad_to() const;
+  INLINE void set_pad_to(int pad_to);
 
   INLINE int get_total_bytes() const;
-  INLINE int get_pad_to() const;
 
   int add_column(InternalName *name, int num_components,
                  NumericType numeric_type, Contents contents,
-                 int start = -1);
+                 int start = -1, int column_alignment = 0);
   int add_column(const GeomVertexColumn &column);
   void remove_column(const InternalName *name);
   void clear_columns();
@@ -131,7 +130,6 @@ private:
 
   bool _is_registered;
   int _stride;
-  int _column_alignment;
   int _total_bytes;
   int _pad_to;
 

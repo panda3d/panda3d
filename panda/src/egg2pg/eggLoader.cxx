@@ -2213,15 +2213,36 @@ make_vertex_data(const EggRenderState *render_state,
     return (*di).second;
   }
 
+  bool align_16 = false;
+  if (is_dynamic) {
+    align_16 = egg_vertex_animation_align_16;
+  }
+  
   PT(GeomVertexArrayFormat) array_format = new GeomVertexArrayFormat;
-  array_format->add_column
-    (InternalName::get_vertex(), vertex_pool->get_num_dimensions(),
-     Geom::NT_stdfloat, Geom::C_point);
+  if (align_16) {
+    // Enforce a 4-component float and a 16-byte alignment.
+    array_format->add_column
+      (InternalName::get_vertex(), 4,
+       Geom::NT_stdfloat, Geom::C_point, -1, 16);
+  } else {
+    // Allow a tightly-packed 3-component float.
+    array_format->add_column
+      (InternalName::get_vertex(), vertex_pool->get_num_dimensions(),
+       Geom::NT_stdfloat, Geom::C_point);
+  }
 
   if (vertex_pool->has_normals()) {
-    array_format->add_column
-      (InternalName::get_normal(), 3, 
-       Geom::NT_stdfloat, Geom::C_vector);
+    if (align_16) {
+      // Enforce a 4-component float and a 16-byte alignment.
+      array_format->add_column
+        (InternalName::get_normal(), 4,
+         Geom::NT_stdfloat, Geom::C_vector, -1, 16);
+    } else {
+      // Allow a tightly-packed 3-component float.
+      array_format->add_column
+        (InternalName::get_normal(), 3,
+         Geom::NT_stdfloat, Geom::C_vector);
+    }
   }
 
   if (!ignore_color) {

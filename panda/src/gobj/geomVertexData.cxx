@@ -1802,6 +1802,7 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
   }
 }
 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::do_transform_point_column
 //       Access: Private
@@ -1812,22 +1813,24 @@ void GeomVertexData::
 do_transform_point_column(const GeomVertexFormat *format, GeomVertexRewriter &data,
                           const LMatrix4 &mat, int begin_row, int end_row) {
   const GeomVertexColumn *data_column = data.get_column();
+  PT(GeomVertexArrayDataHandle) data_handle = data.get_array_handle();
 
-  if (data_column->get_num_values() == 3 &&
+  if ((data_column->get_num_values() == 3 || data_column->get_num_values() == 4) &&
       data_column->get_numeric_type() == NT_float32) {
-    // The table of points is a table of LPoint3f's.  Optimize this
-    // common case.
+    // The table of points is a table of LPoint3f's or LPoint4f's.
+    // Optimize this common case.
     PT(GeomVertexArrayDataHandle) data_handle = data.get_array_handle();
-    PT(GeomVertexArrayData) data_array = data_handle->get_object();
 
+    size_t stride = data.get_stride();
+    size_t num_rows = end_row - begin_row;
     unsigned char *datat = data_handle->get_write_pointer();
-    datat += data_column->get_start();
-    size_t stride = data_array->get_array_format()->get_stride();
-
+    datat += data_column->get_start() + begin_row * stride;
     LMatrix4f matf = LCAST(float, mat);
-    for (int j = begin_row; j < end_row; ++j) {
-      LPoint3f &vertex = *(LPoint3f *)(&datat[j * stride]);
-      vertex = vertex * matf;
+
+    if (data_column->get_num_values() == 3) {
+      table_xform_point3f(datat, num_rows, stride, matf);
+    } else {
+      table_xform_vecbase4f(datat, num_rows, stride, matf);
     }
     
   } else if (data_column->get_num_values() == 4) {
@@ -1863,21 +1866,22 @@ do_transform_vector_column(const GeomVertexFormat *format, GeomVertexRewriter &d
                           const LMatrix4 &mat, int begin_row, int end_row) {
   const GeomVertexColumn *data_column = data.get_column();
 
-  if (data_column->get_num_values() == 3 &&
+  if ((data_column->get_num_values() == 3 || data_column->get_num_values() == 4) &&
       data_column->get_numeric_type() == NT_float32) {
-    // The table of vectors is a table of LVector3f's.  Optimize this
-    // common case.
+    // The table of vectors is a table of LVector3f's or LVector4f's.
+    // Optimize this common case.
     PT(GeomVertexArrayDataHandle) data_handle = data.get_array_handle();
-    PT(GeomVertexArrayData) data_array = data_handle->get_object();
 
+    size_t stride = data.get_stride();
+    size_t num_rows = end_row - begin_row;
     unsigned char *datat = data_handle->get_write_pointer();
-    datat += data_column->get_start();
-    size_t stride = data_array->get_array_format()->get_stride();
-
+    datat += data_column->get_start() + begin_row * stride;
     LMatrix4f matf = LCAST(float, mat);
-    for (int j = begin_row; j < end_row; ++j) {
-      LVector3f &vector = *(LVector3f *)(&datat[j * stride]);
-      vector = vector * matf;
+
+    if (data_column->get_num_values() == 3) {
+      table_xform_vector3f(datat, num_rows, stride, matf);
+    } else {
+      table_xform_vecbase4f(datat, num_rows, stride, matf);
     }
 
   } else {
@@ -1888,6 +1892,72 @@ do_transform_vector_column(const GeomVertexFormat *format, GeomVertexRewriter &d
       LVector3 vertex = data.get_data3();
       data.set_data3(vertex * mat);
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::table_xform_point3f
+//       Access: Private, Static
+//  Description: Transforms each of the LPoint3f objects in the
+//               indicated table by the indicated matrix.
+////////////////////////////////////////////////////////////////////
+void GeomVertexData::
+table_xform_point3f(unsigned char *datat, size_t num_rows, size_t stride,
+                    const LMatrix4f &matf) {
+  // We don't bother checking for the unaligned case here, because in
+  // practice it doesn't matter with a 3-component point.
+  for (size_t i = 0; i < num_rows; ++i) {
+    LPoint3f &vertex = *(LPoint3f *)(&datat[i * stride]);
+    vertex *= matf;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::table_xform_vector3f
+//       Access: Private, Static
+//  Description: Transforms each of the LVector3f objects in the
+//               indicated table by the indicated matrix.
+////////////////////////////////////////////////////////////////////
+void GeomVertexData::
+table_xform_vector3f(unsigned char *datat, size_t num_rows, size_t stride,
+                     const LMatrix4f &matf) {
+  // We don't bother checking for the unaligned case here, because in
+  // practice it doesn't matter with a 3-component vector.
+  for (size_t i = 0; i < num_rows; ++i) {
+    LVector3f &vertex = *(LVector3f *)(&datat[i * stride]);
+    vertex *= matf;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::table_xform_vecbase4f
+//       Access: Private, Static
+//  Description: Transforms each of the LVecBase4f objects in the
+//               indicated table by the indicated matrix.
+////////////////////////////////////////////////////////////////////
+void GeomVertexData::
+table_xform_vecbase4f(unsigned char *datat, size_t num_rows, size_t stride,
+                      const LMatrix4f &matf) {
+#if defined(HAVE_EIGEN) && defined(LINMATH_VECTORIZE)
+  // Check if the table is unaligned.  If it is, we can't use the
+  // LVecBase4f object directly, which assumes 16-byte alignment.
+  if (((size_t)datat & 0xf) != 0 || (stride & 0xf) != 0) {
+    // Instead, we'll use low-level Eigen calls to multiply out the
+    // unaligned memory.
+    Eigen::Map<Eigen::Matrix<float, Eigen::Dynamic, 4, Eigen::RowMajor>, Eigen::Unaligned, Eigen::OuterStride<> > table((float *)datat, num_rows, 4, Eigen::OuterStride<>(stride / sizeof(float)));
+    for (size_t i = 0; i < num_rows; ++i) {
+      table.row(i) *= matf._m;
+    }
+    return;
+  }
+#endif  // HAVE_EIGEN
+
+  // If the table is properly aligned (or we don't require alignment),
+  // we can directly use the high-level LVecBase4f object, which will
+  // do the right thing.
+  for (size_t i = 0; i < num_rows; ++i) {
+    LVecBase4f &vertex = *(LVecBase4f *)(&datat[i * stride]);
+    vertex *= matf;
   }
 }
 
@@ -2273,7 +2343,6 @@ get_normal_info(const GeomVertexArrayDataHandle *&array_reader,
   int array_index = _cdata->_format->get_normal_array_index();
   if (array_index >= 0) {
     const GeomVertexColumn *column = _cdata->_format->get_normal_column();
-    nassertr(column->get_num_values() == 3, false);
 
     array_reader = _array_readers[array_index];
     numeric_type = column->get_numeric_type();

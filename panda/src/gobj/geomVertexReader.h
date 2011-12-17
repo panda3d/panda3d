@@ -83,6 +83,7 @@ PUBLISHED:
   INLINE const GeomVertexData *get_vertex_data() const;
   INLINE const GeomVertexArrayData *get_array_data() const;
   INLINE const GeomVertexArrayDataHandle *get_array_handle() const;
+  INLINE size_t get_stride() const;
   INLINE Thread *get_current_thread() const;
 
   INLINE void set_force(bool force);

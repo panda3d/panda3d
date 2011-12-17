@@ -174,6 +174,33 @@ get_array_handle() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexRewriter::get_stride
+//       Access: Published
+//  Description: Returns the per-row stride (bytes between consecutive
+//               rows) of the underlying vertex array.  This low-level
+//               information is normally not needed to use the
+//               GeomVertexRewriter directly.
+////////////////////////////////////////////////////////////////////
+INLINE size_t GeomVertexRewriter::
+get_stride() const {
+  nassertr(GeomVertexWriter::get_stride() == GeomVertexReader::get_stride(), 0);
+  return GeomVertexWriter::get_stride();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexRewriter::get_current_thread
+//       Access: Published
+//  Description: Returns the Thread pointer of the currently-executing
+//               thread, as passed to the constructor of this object.
+////////////////////////////////////////////////////////////////////
+INLINE Thread *GeomVertexRewriter::
+get_current_thread() const {
+  nassertr(GeomVertexWriter::get_current_thread() == 
+           GeomVertexReader::get_current_thread(), NULL);
+  return GeomVertexWriter::get_current_thread();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexRewriter::set_column
 //       Access: Published
 //  Description: Sets up the rewriter to use the nth data type of the

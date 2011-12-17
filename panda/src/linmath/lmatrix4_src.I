@@ -884,6 +884,77 @@ xform_vec_general(const FLOATNAME(LVecBase3) &v) const {
 #endif  // HAVE_EIGEN
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::xform_in_place
+//       Access: Public
+//  Description: 4-component vector or point times matrix.  This is a
+//               fully general operation.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LMatrix4)::
+xform_in_place(FLOATNAME(LVecBase4) &v) const {
+  TAU_PROFILE("void LMatrix4::xform_in_place(LVecBase3 &)", " ", TAU_USER);
+
+#ifdef HAVE_EIGEN
+  v._v = v._v * _m;
+#else  
+  v = xform(v);
+#endif  // HAVE_EIGEN
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::xform_point_in_place
+//       Access: Public
+//  Description: The matrix transforms a 3-component point (including
+//               translation component).  This assumes the matrix is
+//               an affine transform.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LMatrix4)::
+xform_point_in_place(FLOATNAME(LVecBase3) &v) const {
+  TAU_PROFILE("void LMatrix4::xform_point_in_place(LVecBase3 &)", " ", TAU_USER);
+  // v._v(3) == 1.0f for this case
+
+#ifdef HAVE_EIGEN
+  v._v = v._v * _m.block<3, 3>(0, 0) + _m.block<1, 3>(3, 0);
+#else  
+  v = xform_point(v);
+#endif  // HAVE_EIGEN
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::xform_vec_in_place
+//       Access: Public
+//  Description: The matrix transforms a 3-component vector (without
+//               translation component).  This assumes the matrix is
+//               an orthonormal transform.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LMatrix4)::
+xform_vec_in_place(FLOATNAME(LVecBase3) &v) const {
+  TAU_PROFILE("void LMatrix4::xform_vec_in_place(LVecBase3 &)", " ", TAU_USER);
+  // v._v(3) == 0.0f for this case
+  
+#ifdef HAVE_EIGEN
+  v._v = v._v * _m.block<3, 3>(0, 0);
+#else  
+  v = xform_vec(v);
+#endif  // HAVE_EIGEN
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::xform_vec_general_in_place
+//       Access: Public
+//  Description: The matrix transforms a 3-component vector (without
+//               translation component), as a fully general operation.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LMatrix4)::
+xform_vec_general_in_place(FLOATNAME(LVecBase3) &v) const {
+  TAU_PROFILE("void LMatrix4::xform_vec_general_in_place(LVecBase3 &)", " ", TAU_USER);
+#ifdef HAVE_EIGEN
+  v._v = v._v * _m.block<3, 3>(0, 0).inverse().transpose();
+#else
+  v = xform_vec_general(v);
+#endif  // HAVE_EIGEN
+}
+
 #define MATRIX4_PRODUCT(res, a, b)                                          \
 res._m(0, 0) = a._m(0, 0)*b._m(0, 0) + a._m(0, 1)*b._m(1, 0) + a._m(0, 2)*b._m(2, 0) + a._m(0, 3)*b._m(3, 0);   \
 res._m(0, 1) = a._m(0, 0)*b._m(0, 1) + a._m(0, 1)*b._m(1, 1) + a._m(0, 2)*b._m(2, 1) + a._m(0, 3)*b._m(3, 1);   \

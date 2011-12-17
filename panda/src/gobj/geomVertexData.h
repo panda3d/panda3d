@@ -322,6 +322,12 @@ private:
                                  const LMatrix4 &mat, int begin_row, int end_row);
   void do_transform_vector_column(const GeomVertexFormat *format, GeomVertexRewriter &data,
                                   const LMatrix4 &mat, int begin_row, int end_row);
+  static void table_xform_point3f(unsigned char *datat, size_t num_rows, 
+                                  size_t stride, const LMatrix4f &matf);
+  static void table_xform_vector3f(unsigned char *datat, size_t num_rows, 
+                                   size_t stride, const LMatrix4f &matf);
+  static void table_xform_vecbase4f(unsigned char *datat, size_t num_rows, 
+                                    size_t stride, const LMatrix4f &matf);
 
   static PStatCollector _convert_pcollector;
   static PStatCollector _scale_color_pcollector;

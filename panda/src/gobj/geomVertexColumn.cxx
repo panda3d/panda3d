@@ -29,6 +29,7 @@ operator = (const GeomVertexColumn &copy) {
   _numeric_type = copy._numeric_type;
   _contents = copy._contents;
   _start = copy._start;
+  _column_alignment = copy._column_alignment;
 
   delete _packer;
   _packer = NULL;
@@ -132,6 +133,16 @@ setup() {
     nassertv(false);
     break;
   }
+
+  if (_column_alignment < 1) {
+    // The default column alignment is to align to the individual
+    // numeric components, or to vertex_column_alignment, whichever is
+    // greater.
+    _column_alignment = max(_component_bytes, (int)vertex_column_alignment);
+  }
+
+  // Enforce the column alignment requirements on the _start byte.
+  _start = ((_start + _column_alignment - 1) / _column_alignment) * _column_alignment;
 
   _total_bytes = _component_bytes * _num_components;
 
