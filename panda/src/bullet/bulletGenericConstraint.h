@@ -22,8 +22,7 @@
 #include "bulletConstraint.h"
 
 #include "transformState.h"
-#include "lpoint3.h"
-#include "lvector3.h"
+#include "luse.h"
 
 class BulletRigidBodyNode;
 

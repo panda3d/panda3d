@@ -21,7 +21,7 @@
 #include "bullet_utils.h"
 #include "bulletConstraint.h"
 
-#include "lpoint3.h"
+#include "luse.h"
 
 class BulletRigidBodyNode;
 

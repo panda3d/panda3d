@@ -20,9 +20,7 @@
 #include "bullet_includes.h"
 #include "bullet_utils.h"
 
-#include "lvector3.h"
-#include "lpoint3.h"
-#include "lmatrix.h"
+#include "luse.h"
 #include "pandaNode.h"
 
 ////////////////////////////////////////////////////////////////////

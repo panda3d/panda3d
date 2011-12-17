@@ -19,10 +19,7 @@
 
 #include "bullet_includes.h"
 
-#include "lpoint3.h"
-#include "lvector3.h"
-#include "lmatrix.h"
-#include "lquaternion.h"
+#include "luse.h"
 #include "pointerTo.h"
 #include "pandaNode.h"
 #include "nodePath.h"

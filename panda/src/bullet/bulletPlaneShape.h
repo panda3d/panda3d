@@ -22,7 +22,7 @@
 #include "bulletShape.h"
 
 #include "collisionPlane.h"
-#include "lvector3.h"
+#include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BulletPlaneShape

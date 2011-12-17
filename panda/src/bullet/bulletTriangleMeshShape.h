@@ -20,7 +20,7 @@
 #include "bullet_includes.h"
 #include "bulletShape.h"
 
-#include "lpoint3.h"
+#include "luse.h"
 
 class BulletTriangleMesh;
 

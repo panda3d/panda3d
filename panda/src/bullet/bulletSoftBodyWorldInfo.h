@@ -20,7 +20,7 @@
 #include "bullet_includes.h"
 #include "bullet_utils.h"
 
-#include "lvector3.h"
+#include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BulletSoftBodyWorldInfo

@@ -20,7 +20,7 @@
 #include "bullet_includes.h"
 #include "bullet_utils.h"
 
-#include "lpoint3.h"
+#include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BulletManifoldPoint

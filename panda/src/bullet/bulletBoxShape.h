@@ -20,7 +20,7 @@
 #include "bullet_includes.h"
 #include "bulletShape.h"
 
-#include "lvector3.h"
+#include "luse.h"
 
 #include "collisionBox.h"
 

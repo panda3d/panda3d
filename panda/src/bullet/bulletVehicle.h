@@ -21,8 +21,7 @@
 #include "bullet_utils.h"
 
 #include "typedReferenceCount.h"
-#include "lpoint3.h"
-#include "lvector3.h"
+#include "luse.h"
 
 class BulletWorld;
 class BulletRigidBodyNode;
