@@ -1813,13 +1813,13 @@ void GeomVertexData::
 do_transform_point_column(const GeomVertexFormat *format, GeomVertexRewriter &data,
                           const LMatrix4 &mat, int begin_row, int end_row) {
   const GeomVertexColumn *data_column = data.get_column();
-  PT(GeomVertexArrayDataHandle) data_handle = data.get_array_handle();
+  int num_values = data_column->get_num_values();
 
-  if ((data_column->get_num_values() == 3 || data_column->get_num_values() == 4) &&
+  if ((num_values == 3 || num_values == 4) &&
       data_column->get_numeric_type() == NT_float32) {
     // The table of points is a table of LPoint3f's or LPoint4f's.
     // Optimize this common case.
-    PT(GeomVertexArrayDataHandle) data_handle = data.get_array_handle();
+    GeomVertexArrayDataHandle *data_handle = data.get_array_handle();
 
     size_t stride = data.get_stride();
     size_t num_rows = end_row - begin_row;
@@ -1827,13 +1827,13 @@ do_transform_point_column(const GeomVertexFormat *format, GeomVertexRewriter &da
     datat += data_column->get_start() + begin_row * stride;
     LMatrix4f matf = LCAST(float, mat);
 
-    if (data_column->get_num_values() == 3) {
+    if (num_values == 3) {
       table_xform_point3f(datat, num_rows, stride, matf);
     } else {
       table_xform_vecbase4f(datat, num_rows, stride, matf);
     }
     
-  } else if (data_column->get_num_values() == 4) {
+  } else if (num_values == 4) {
     // Use the GeomVertexRewriter to adjust the 4-component
     // points.
   
@@ -1865,12 +1865,13 @@ void GeomVertexData::
 do_transform_vector_column(const GeomVertexFormat *format, GeomVertexRewriter &data,
                           const LMatrix4 &mat, int begin_row, int end_row) {
   const GeomVertexColumn *data_column = data.get_column();
+  int num_values = data_column->get_num_values();
 
-  if ((data_column->get_num_values() == 3 || data_column->get_num_values() == 4) &&
+  if ((num_values == 3 || num_values == 4) &&
       data_column->get_numeric_type() == NT_float32) {
     // The table of vectors is a table of LVector3f's or LVector4f's.
     // Optimize this common case.
-    PT(GeomVertexArrayDataHandle) data_handle = data.get_array_handle();
+    GeomVertexArrayDataHandle *data_handle = data.get_array_handle();
 
     size_t stride = data.get_stride();
     size_t num_rows = end_row - begin_row;
@@ -1878,7 +1879,7 @@ do_transform_vector_column(const GeomVertexFormat *format, GeomVertexRewriter &d
     datat += data_column->get_start() + begin_row * stride;
     LMatrix4f matf = LCAST(float, mat);
 
-    if (data_column->get_num_values() == 3) {
+    if (num_values == 3) {
       table_xform_vector3f(datat, num_rows, stride, matf);
     } else {
       table_xform_vecbase4f(datat, num_rows, stride, matf);
