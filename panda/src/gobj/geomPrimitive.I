@@ -416,19 +416,6 @@ add_vertices(int v1, int v2, int v3, int v4) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomPrimitive::get_index_format
-//       Access: Public
-//  Description: Returns a registered format appropriate for using to
-//               store the index table.
-////////////////////////////////////////////////////////////////////
-INLINE CPT(GeomVertexArrayFormat) GeomPrimitive::
-get_index_format() const {
-  return GeomVertexArrayFormat::register_format
-    (new GeomVertexArrayFormat(InternalName::get_index(), 1, 
-                               get_index_type(), C_index));
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::make_index_data
 //       Access: Public
 //  Description: Creates and returns a new, empty index table.

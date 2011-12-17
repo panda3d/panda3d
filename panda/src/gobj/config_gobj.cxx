@@ -272,6 +272,12 @@ ConfigVariableBool vertices_float64
           "driver to downsample the vertices at load time, making everything "
           "slower."));
 
+ConfigVariableInt vertex_column_alignment
+("vertex-column-alignment", 0,
+ PRC_DESC("This specifies the default byte alignment for each column of "
+          "data within a GeomVertexData when it is assembled using the default "
+          "interfaces.  See GeomVertexFormat::set_column_alignment()."));
+
 ConfigVariableEnum<AutoTextureScale> textures_power_2
 ("textures-power-2", ATS_down,
  PRC_DESC("Specify whether textures should automatically be constrained to "

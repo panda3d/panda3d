@@ -1417,6 +1417,22 @@ release_all() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitive::get_index_format
+//       Access: Public
+//  Description: Returns a registered format appropriate for using to
+//               store the index table.
+////////////////////////////////////////////////////////////////////
+CPT(GeomVertexArrayFormat) GeomPrimitive::
+get_index_format() const {
+  PT(GeomVertexArrayFormat) format = new GeomVertexArrayFormat;
+  // It's important that the index format not attempt to have any kind
+  // of SSE2 alignment or whatever.  It needs to be tightly packed.
+  format->set_column_alignment(1);
+  format->add_column(InternalName::get_index(), 1, get_index_type(), C_index);
+  return GeomVertexArrayFormat::register_format(format);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::clear_prepared
 //       Access: Private
 //  Description: Removes the indicated PreparedGraphicsObjects table

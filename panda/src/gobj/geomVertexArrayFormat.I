@@ -60,12 +60,56 @@ get_stride() const {
 //     Function: GeomVertexArrayFormat::set_stride
 //       Access: Published
 //  Description: Changes the total number of bytes reserved in the
-//               array for each vertex.
+//               array for each vertex.  You may not reduce this below
+//               get_total_bytes(), but you may increase it
+//               arbitrarily.
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexArrayFormat::
 set_stride(int stride) {
   nassertv(!_is_registered);
+  nassertv(_stride >= _total_bytes);
   _stride = stride;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayFormat::get_column_alignment
+//       Access: Published
+//  Description: See set_column_alignment().
+////////////////////////////////////////////////////////////////////
+INLINE int GeomVertexArrayFormat::
+get_column_alignment() const {
+  return _column_alignment;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayFormat::set_column_alignment
+//       Access: Published
+//  Description: This specifies the byte alignment for each
+//               column of data within the format when add_column() is
+//               subsequently called with default parameters.
+//               Normally this is 0 or 1 to specify no particular
+//               alignment, but you may specify a higher number, for
+//               instace 4 to guarantee that all columns start at a
+//               word alignment, or 16 to align all columns for SSE2
+//               processing.  This will introduce unused bytes between
+//               columns as needed to guarantee the requested
+//               alignment.  
+//
+//               Note that this does not change existing columns, only
+//               subsequent columns; and if you specify the start byte
+//               explicitly in add_column(), it will override this
+//               setting.  Note also that there is no point in
+//               exceeding the memory alignment of Panda3D itself,
+//               which is compiled into Panda and can be determined by
+//               MemoryHook::get_memory_alignment().
+//
+//               Also see the config variable vertex-column-alignment
+//               for a way to change the global default.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexArrayFormat::
+set_column_alignment(int column_alignment) {
+  nassertv(!_is_registered);
+  _column_alignment = column_alignment;
 }
 
 ////////////////////////////////////////////////////////////////////

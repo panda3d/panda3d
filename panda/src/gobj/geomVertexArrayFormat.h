@@ -85,6 +85,9 @@ PUBLISHED:
   INLINE int get_stride() const;
   INLINE void set_stride(int stride);
 
+  INLINE int get_column_alignment() const;
+  INLINE void set_column_alignment(int column_alignment);
+
   INLINE int get_total_bytes() const;
   INLINE int get_pad_to() const;
 
@@ -128,6 +131,7 @@ private:
 
   bool _is_registered;
   int _stride;
+  int _column_alignment;
   int _total_bytes;
   int _pad_to;
 
