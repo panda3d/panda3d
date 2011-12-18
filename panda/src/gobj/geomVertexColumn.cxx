@@ -309,6 +309,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_uint8(_numeric_type);
   dg.add_uint8(_contents);
   dg.add_uint16(_start);
+  dg.add_uint8(_column_alignment);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -342,6 +343,11 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _numeric_type = (NumericType)scan.get_uint8();
   _contents = (Contents)scan.get_uint8();
   _start = scan.get_uint16();
+
+  _column_alignment = 1;
+  if (manager->get_file_minor_ver() >= 29) {
+    _column_alignment = scan.get_uint8();
+  }
 
   setup();
 }
