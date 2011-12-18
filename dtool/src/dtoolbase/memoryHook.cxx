@@ -224,7 +224,9 @@ heap_alloc_single(size_t size) {
   }
 #endif  // DO_MEMORY_USAGE
 
-  return alloc_to_ptr(alloc, size);
+  void *ptr = alloc_to_ptr(alloc, size);
+  assert(ptr >= alloc && (char *)ptr + size <= (char *)alloc + inflated_size);
+  return ptr;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -298,7 +300,9 @@ heap_alloc_array(size_t size) {
   }
 #endif  // DO_MEMORY_USAGE
 
-  return alloc_to_ptr(alloc, size);
+  void *ptr = alloc_to_ptr(alloc, size);
+  assert(ptr >= alloc && (char *)ptr + size <= (char *)alloc + inflated_size);
+  return ptr;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -319,30 +323,42 @@ heap_realloc_array(void *ptr, size_t size) {
 
   size_t inflated_size = inflate_size(size);
 
+  void *alloc1 = alloc;
 #ifdef MEMORY_HOOK_MALLOC_LOCK
   _lock.acquire();
-  alloc = call_realloc(alloc, inflated_size);
+  alloc1 = call_realloc(alloc1, inflated_size);
   _lock.release();
 #else
-  alloc = call_realloc(alloc, inflated_size);
+  alloc1 = call_realloc(alloc1, inflated_size);
 #endif
 
-  while (alloc == (void *)NULL) {
+  while (alloc1 == (void *)NULL) {
     alloc_fail(inflated_size);
     
     // Recover the original pointer.
-    alloc = ptr_to_alloc(ptr, orig_size);
+    alloc1 = alloc;
 
 #ifdef MEMORY_HOOK_MALLOC_LOCK
     _lock.acquire();
-    alloc = call_realloc(alloc, inflated_size);
+    alloc1 = call_realloc(alloc1, inflated_size);
     _lock.release();
 #else
-    alloc = call_realloc(alloc, inflated_size);
+    alloc1 = call_realloc(alloc1, inflated_size);
 #endif
   }
 
-  return alloc_to_ptr(alloc, size);
+  void *ptr1 = alloc_to_ptr(alloc1, size);
+  assert(ptr1 >= alloc1 && (char *)ptr1 + size <= (char *)alloc1 + inflated_size);
+#if defined(MEMORY_HOOK_DO_ALIGN)
+  // We might have to shift the memory to account for the new offset
+  // due to the alignment.
+  size_t orig_delta = (char *)ptr - (char *)alloc;
+  size_t new_delta = (char *)ptr1 - (char *)alloc1;
+  if (orig_delta != new_delta) {
+    memmove((char *)alloc1 + new_delta, (char *)alloc1 + orig_delta, min(size, orig_size));
+  }
+#endif  // MEMORY_HOOK_DO_ALIGN
+  return ptr1;
 }
 
 ////////////////////////////////////////////////////////////////////

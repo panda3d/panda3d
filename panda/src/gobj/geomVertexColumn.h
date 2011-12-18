@@ -102,7 +102,7 @@ private:
   // for implementing the common, very direct code paths (for
   // instance, 3-component float32 to LVecBase3f) as quickly as
   // possible.
-  class Packer {
+  class Packer : public MemoryBase {
   public:
     virtual ~Packer();
 

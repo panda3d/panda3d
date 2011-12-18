@@ -218,7 +218,7 @@ private:
   };
   typedef pmap<GeomCollectorKey, GeomCollector> GeomCollectorMap;
 
-  class GlyphPlacement {
+  class GlyphPlacement : public MemoryBase {
   public:
     INLINE void add_piece(Geom *geom, const RenderState *state);
     void calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
