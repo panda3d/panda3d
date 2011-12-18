@@ -22,7 +22,7 @@ class FLOATNAME(LMatrix4);
 //               (rotation, scale, translation) in 2-d, e.g. for a
 //               texture matrix.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_LINMATH LINMATH_ALIGN FLOATNAME(LMatrix3) {
+class EXPCL_PANDA_LINMATH ALIGN_LINMATH FLOATNAME(LMatrix3) {
 public:
   typedef const FLOATTYPE *iterator;
   typedef const FLOATTYPE *const_iterator;

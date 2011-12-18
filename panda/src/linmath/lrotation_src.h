@@ -16,7 +16,7 @@
 //       Class : LRotation
 // Description : This is a unit quaternion representing a rotation.
 ////////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_LINMATH LINMATH_ALIGN FLOATNAME(LRotation) : public FLOATNAME(LQuaternion) {
+class EXPCL_PANDA_LINMATH ALIGN_LINMATH FLOATNAME(LRotation) : public FLOATNAME(LQuaternion) {
 PUBLISHED:
   INLINE_LINMATH FLOATNAME(LRotation)();
   INLINE_LINMATH FLOATNAME(LRotation)(const FLOATNAME(LQuaternion) &);

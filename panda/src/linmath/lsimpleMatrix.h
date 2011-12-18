@@ -59,9 +59,9 @@ private:
 
 // This is as good a place as any to define this alignment macro.
 #ifdef LINMATH_ALIGN
-#define LINMATH_ALIGN ALIGN_16BYTE
+#define ALIGN_LINMATH ALIGN_16BYTE
 #else
-#define LINMATH_ALIGN 
+#define ALIGN_LINMATH 
 #endif  // LINMATH_ALIGN
 
 #endif
