@@ -108,9 +108,18 @@ round_up_to_page_size(size_t size) const {
 ////////////////////////////////////////////////////////////////////
 INLINE size_t MemoryHook::
 inflate_size(size_t size) {
-#ifdef DO_MEMORY_USAGE
-  return size + _header_reserved_bytes;
+#if defined(MEMORY_HOOK_DO_ALIGN)
+  // If we're aligning, we need to request the header size, plus extra
+  // bytes to give us wiggle room to adjust the pointer.
+  return size + _header_reserved_bytes + get_memory_alignment() - 1;
+#elif defined(DO_MEMORY_USAGE)
+  // If we're not aligning, but we're tracking memory allocations, we
+  // just need the header size extra (this gives us a place to store
+  // the size of the allocated block).
+  return size + _header_reserved_bytes;  
 #else
+  // If we're not doing any of that, we can just allocate the precise
+  // requested amount.
   return size;
 #endif  // DO_MEMORY_USAGE
 }
@@ -124,7 +133,15 @@ inflate_size(size_t size) {
 ////////////////////////////////////////////////////////////////////
 INLINE void *MemoryHook::
 alloc_to_ptr(void *alloc, size_t size) {
-#ifdef DO_MEMORY_USAGE
+#if defined(MEMORY_HOOK_DO_ALIGN)
+  size_t alignment = get_memory_alignment();
+  // Move the allocated pointer up to the next even alignment.
+  void *new_ptr = (void *)((((size_t)alloc + alignment - 1) / alignment) * alignment);
+  size_t *root = (size_t *)new_ptr;
+  root[0] = size;
+  root[1] = (size_t)alloc;  // Save the pointer we originally allocated.
+  return (void *)((char *)new_ptr + _header_reserved_bytes);
+#elif defined(DO_MEMORY_USAGE) 
   size_t *root = (size_t *)alloc;
   root[0] = size;
   return (void *)((char *)root + _header_reserved_bytes);
@@ -142,7 +159,11 @@ alloc_to_ptr(void *alloc, size_t size) {
 ////////////////////////////////////////////////////////////////////
 INLINE void *MemoryHook::
 ptr_to_alloc(void *ptr, size_t &size) {
-#ifdef DO_MEMORY_USAGE
+#if defined(MEMORY_HOOK_DO_ALIGN)
+  size_t *root = (size_t *)((char *)ptr - _header_reserved_bytes);
+  size = root[0];
+  return (void *)root[1];  // Return the pointer we originally allocated.
+#elif defined(DO_MEMORY_USAGE) 
   size_t *root = (size_t *)((char *)ptr - _header_reserved_bytes);
   size = root[0];
   return (void *)root;
