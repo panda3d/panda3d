@@ -51,7 +51,7 @@ dec_heap(size_t size) {
 ////////////////////////////////////////////////////////////////////
 INLINE size_t MemoryHook::
 get_memory_alignment() {
-#ifdef LINMATH_VECTORIZE
+#ifdef LINMATH_ALIGN
   // We require 16-byte alignment of certain structures, to support
   // SSE2.  We don't strictly have to align *everything*, but it's just
   // easier to do so.

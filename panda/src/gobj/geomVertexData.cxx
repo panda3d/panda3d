@@ -1939,7 +1939,7 @@ table_xform_vector3f(unsigned char *datat, size_t num_rows, size_t stride,
 void GeomVertexData::
 table_xform_vecbase4f(unsigned char *datat, size_t num_rows, size_t stride,
                       const LMatrix4f &matf) {
-#if defined(HAVE_EIGEN) && defined(LINMATH_VECTORIZE)
+#if defined(HAVE_EIGEN) && defined(LINMATH_ALIGN)
   // Check if the table is unaligned.  If it is, we can't use the
   // LVecBase4f object directly, which assumes 16-byte alignment.
   if (((size_t)datat & 0xf) != 0 || (stride & 0xf) != 0) {

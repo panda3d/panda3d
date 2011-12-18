@@ -47,22 +47,22 @@ private:
 
 // Now, do we actually use LSimpleMatrix, or do we use Eigen::Matrix?
 #ifdef HAVE_EIGEN
-#ifdef LINMATH_VECTORIZE
+#ifdef LINMATH_ALIGN
 #define LINMATH_MATRIX(FloatType, NumRows, NumCols) Eigen::Matrix<FloatType, NumRows, NumCols, Eigen::RowMajor>
-#else  // LINMATH_VECTORIZE
+#else  // LINMATH_ALIGN
 #define LINMATH_MATRIX(FloatType, NumRows, NumCols) Eigen::Matrix<FloatType, NumRows, NumCols, Eigen::DontAlign | Eigen::RowMajor>
-#endif  // LINMATH_VECTORIZE
+#endif  // LINMATH_ALIGN
 
 #else  // HAVE_EIGEN
 #define LINMATH_MATRIX(FloatType, NumRows, NumCols) LSimpleMatrix<FloatType, NumRows, NumCols>
 #endif  // HAVE_EIGEN
 
 // This is as good a place as any to define this alignment macro.
-#ifdef LINMATH_VECTORIZE
+#ifdef LINMATH_ALIGN
 #define LINMATH_ALIGN ALIGN_16BYTE
 #else
 #define LINMATH_ALIGN 
-#endif  // LINMATH_VECTORIZE
+#endif  // LINMATH_ALIGN
 
 #endif
 

@@ -186,7 +186,7 @@ ConfigVariableInt egg_vertex_max_num_joints
 
 ConfigVariableBool egg_vertex_animation_align_16
 ("egg-vertex-animation-align-16", 
-#ifdef LINMATH_VECTORIZE
+#ifdef LINMATH_ALIGN
  true,
 #else
  false,

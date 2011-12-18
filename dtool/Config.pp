@@ -321,15 +321,15 @@
 // If this is provided, Panda will use this library as the fundamental
 // implementation of its own linmath library; otherwise, it will use
 // its own internal implementation.  The primary advantage of using
-// Eigen is SSE2 support, which is only activated if LINMATH_VECTORIZE
-// is also enabled.  (However, activating LINMATH_VECTORIZE does
+// Eigen is SSE2 support, which is only activated if LINMATH_ALIGN
+// is also enabled.  (However, activating LINMATH_ALIGN does
 // constrain most objects in Panda to 16-byte alignment, which could
 // impact memory usage on very-low-memory platforms.)  Currently
 // experimental.
 #define EIGEN_IPATH 
 #define EIGEN_CFLAGS
 #defer HAVE_EIGEN $[isdir $[EIGEN_IPATH]/Eigen]
-#define LINMATH_VECTORIZE 1
+#define LINMATH_ALIGN 1
 
 // Is Python installed, and should Python interfaces be generated?  If
 // Python is installed, which directory is it in?

@@ -110,8 +110,8 @@
 #endif
 
 #ifndef HAVE_EIGEN
-// If we don't have the Eigen library, don't define LINMATH_VECTORIZE.
-#undef LINMATH_VECTORIZE
+// If we don't have the Eigen library, don't define LINMATH_ALIGN.
+#undef LINMATH_ALIGN
 #endif
 
 #include "dtoolsymbols.h"

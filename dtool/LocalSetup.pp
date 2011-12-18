@@ -13,7 +13,7 @@
 #print Configuring support for the following optional third-party packages:
 #if $[HAVE_EIGEN]
 #print + Eigen linear algebra library
-#if $[LINMATH_VECTORIZE]
+#if $[LINMATH_ALIGN]
 #print +   (vectorization enabled in build)
 #else
 #print -   (vectorization NOT enabled in build)
@@ -274,7 +274,7 @@ $[cdefine NDEBUG]
 
 /* Define if we have Eigen available. */
 $[cdefine HAVE_EIGEN]
-$[cdefine LINMATH_VECTORIZE]
+$[cdefine LINMATH_ALIGN]
 
 /* Define if we have Python installed.  */
 $[cdefine HAVE_PYTHON]

@@ -449,7 +449,7 @@ DEFAULT_MMAP_THRESHOLD       default: 256K
 
 */
 
-#ifdef LINMATH_VECTORIZE
+#ifdef LINMATH_ALIGN
 // drose: We require 16-byte alignment of certain structures, to
 // support SSE2.  We don't strictly have to align *everything*, but
 // it's just easier to do so.

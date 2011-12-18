@@ -36,7 +36,7 @@ class DeletedBufferChain;
 // alignment.
 #undef MEMORY_HOOK_DO_ALIGN
 
-#elif !defined(LINMATH_VECTORIZE)
+#elif !defined(LINMATH_ALIGN)
 // We don't actually require any special memory-alignment beyond what
 // the underlying implementation is likely to provide anyway.
 #undef MEMORY_HOOK_DO_ALIGN
