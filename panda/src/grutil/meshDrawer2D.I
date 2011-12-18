@@ -98,10 +98,10 @@ set_clip(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h) {
 //               Ignores the cliping rectangle
 ////////////////////////////////////////////////////////////////////
 INLINE void MeshDrawer2D::
-quad_raw(LVector3 v1, LVector4 c1, LVector2 uv1,
-     LVector3 v2, LVector4 c2, LVector2 uv2,
-     LVector3 v3, LVector4 c3, LVector2 uv3,
-     LVector3 v4, LVector4 c4, LVector2 uv4
+quad_raw(const LVector3 &v1, const LVector4 &c1, const LVector2 &uv1,
+     const LVector3 &v2, const LVector4 &c2, const LVector2 &uv2,
+     const LVector3 &v3, const LVector4 &c3, const LVector2 &uv3,
+     const LVector3 &v4, const LVector4 &c4, const LVector2 &uv4
 ) {
 
   if( _clear_index > _end_clear_index) return;
@@ -129,7 +129,7 @@ quad_raw(LVector3 v1, LVector4 c1, LVector2 uv1,
 INLINE void MeshDrawer2D::
 rectangle_raw(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h, 
      PN_stdfloat u, PN_stdfloat v, PN_stdfloat us, PN_stdfloat vs, 
-     LVector4 color
+     const LVector4 &color
 ) {
     
   quad_raw( 
@@ -148,7 +148,7 @@ rectangle_raw(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h,
 INLINE void MeshDrawer2D::
 rectangle(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h, 
      PN_stdfloat u, PN_stdfloat v, PN_stdfloat us, PN_stdfloat vs, 
-     LVector4 color
+     const LVector4 &color
 ) {
     
   if( w == 0 &&  h == 0 ) return; // no size return 

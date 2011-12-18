@@ -58,10 +58,10 @@ PUBLISHED:
   PolylightNode(const string &name);
   INLINE void enable();
   INLINE void disable();
-  INLINE void set_pos(LVecBase3 position);
+  INLINE void set_pos(const LVecBase3 &position);
   INLINE void set_pos(PN_stdfloat x,PN_stdfloat y, PN_stdfloat z);
   INLINE LVecBase3 get_pos() const;
-  INLINE void set_color(LColor color);
+  INLINE void set_color(const LColor &color);
   INLINE void set_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b);
   INLINE LColor get_color() const;
   INLINE LColor get_color_scenegraph() const;

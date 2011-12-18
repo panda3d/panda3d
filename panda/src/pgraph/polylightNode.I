@@ -85,7 +85,7 @@ disable(){
 //  Description: Set this light's position
 ////////////////////////////////////////////////////////////////////
 INLINE void PolylightNode::
-set_pos(LVecBase3 position){
+set_pos(const LVecBase3 &position){
   _position = position;
 }
 
@@ -354,7 +354,7 @@ get_step_size() const {
 //  Description: Set the light's color... 
 ////////////////////////////////////////////////////////////////////
 INLINE void PolylightNode::
-set_color(LColor color) {
+set_color(const LColor &color) {
   //PandaNode::set_attrib(ColorAttrib::make_flat(color));
   _color = color;
 }

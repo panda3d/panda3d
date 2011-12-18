@@ -51,13 +51,13 @@ protected:
 
 PUBLISHED:
   static CPT(RenderEffect) make();
-  static CPT(RenderEffect) make(PN_stdfloat weight, ContribType contrib, LPoint3 effect_center);
-  static CPT(RenderEffect) make(PN_stdfloat weight, ContribType contrib, LPoint3 effect_center, const LightGroup &lights);
+  static CPT(RenderEffect) make(PN_stdfloat weight, ContribType contrib, const LPoint3 &effect_center);
+  static CPT(RenderEffect) make(PN_stdfloat weight, ContribType contrib, const LPoint3 &effect_center, const LightGroup &lights);
   CPT(RenderEffect) add_light(const NodePath &newlight) const;
   CPT(RenderEffect) remove_light(const NodePath &newlight) const;
   CPT(RenderEffect) set_weight(PN_stdfloat w) const;
   CPT(RenderEffect) set_contrib(ContribType c) const;
-  CPT(RenderEffect) set_effect_center(LPoint3 ec) const;
+  CPT(RenderEffect) set_effect_center(const LPoint3 &ec) const;
   INLINE PN_stdfloat get_weight() const;
   INLINE ContribType get_contrib() const;
   INLINE LPoint3 get_effect_center()const;

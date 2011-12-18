@@ -14,7 +14,6 @@
     p3pnmimage:c \
     $[if $[HAVE_NET],p3net:c] $[if $[WANT_NATIVE_NET],p3nativenet:c] \
     p3pgraph:c \
-    p3lerp:c \
     panda:m \
     p3express:c \
     p3downloader:c \

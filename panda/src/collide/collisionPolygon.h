@@ -110,7 +110,7 @@ private:
     LPoint2 _p;  // the point in 2-d space
     LVector2 _v; // the normalized vector to the next point
   };
-  typedef pvector<PointDef> Points;
+  typedef epvector<PointDef> Points;
 
   static void compute_vectors(Points &points);
   void draw_polygon(GeomNode *viz_geom_node, GeomNode *bounds_viz_geom_node,

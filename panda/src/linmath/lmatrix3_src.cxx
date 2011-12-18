@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 TypeHandle FLOATNAME(LMatrix3)::_type_handle;
+TypeHandle FLOATNAME(UnalignedLMatrix3)::_type_handle;
 
 const FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::_ident_mat =
   FLOATNAME(LMatrix3)(1.0f, 0.0f, 0.0f,
@@ -238,7 +239,7 @@ compare_to(const FLOATNAME(LMatrix3) &other, FLOATTYPE threshold) const {
 //               vector.
 ////////////////////////////////////////////////////////////////////
 void FLOATNAME(LMatrix3)::
-set_rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
+set_rotate_mat(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
                CoordinateSystem cs) {
   TAU_PROFILE("void LMatrix3::set_rotate_mat(FLOATTYPE, LVecBase3, CoordinateSystem)", " ", TAU_USER);
   if (cs == CS_default) {
@@ -510,6 +511,21 @@ init_type() {
   if (_type_handle == TypeHandle::none()) {
     // Format a string to describe the type.
     string name = "LMatrix3";
+    name += FLOATTOKEN;
+    register_type(_type_handle, name);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: UnalignedLMatrix3::init_type
+//       Access: Published, Static
+//  Description:
+////////////////////////////////////////////////////////////////////
+void FLOATNAME(UnalignedLMatrix3)::
+init_type() {
+  if (_type_handle == TypeHandle::none()) {
+    // Format a string to describe the type.
+    string name = "UnalignedLMatrix3";
     name += FLOATTOKEN;
     register_type(_type_handle, name);
   }

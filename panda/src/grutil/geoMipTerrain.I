@@ -140,19 +140,19 @@ set_focal_point(double x, double y) {
   _focal_is_temporary = true;
 }
 INLINE void GeoMipTerrain::
-set_focal_point(LPoint2d fp) {
+set_focal_point(const LPoint2d &fp) {
   set_focal_point(fp.get_x(), fp.get_y());
 }
 INLINE void GeoMipTerrain::
-set_focal_point(LPoint2f fp) {
+set_focal_point(const LPoint2f &fp) {
   set_focal_point(double(fp.get_x()), double(fp.get_y()));
 }
 INLINE void GeoMipTerrain::
-set_focal_point(LPoint3d fp) {
+set_focal_point(const LPoint3d &fp) {
   set_focal_point(fp.get_x(), fp.get_y());
 }
 INLINE void GeoMipTerrain::
-set_focal_point(LPoint3f fp) {
+set_focal_point(const LPoint3f &fp) {
   set_focal_point(double(fp.get_x()), double(fp.get_y()));
 }
 INLINE void GeoMipTerrain::

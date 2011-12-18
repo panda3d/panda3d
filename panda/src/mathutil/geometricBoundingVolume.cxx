@@ -47,7 +47,7 @@ extend_by_point(const LPoint3 &) {
 //               identified by an STL-style begin/end list.
 ////////////////////////////////////////////////////////////////////
 bool GeometricBoundingVolume::
-around_points(const LPoint3 *, const LPoint3 *) {
+around_points(const UnalignedLVecBase3 *, const UnalignedLVecBase3 *) {
   _flags = F_empty;
   return false;
 }

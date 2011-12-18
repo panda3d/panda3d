@@ -83,7 +83,7 @@ private:
   // We pre-compose the basis matrix and the geometry vectors, so we
   // have these handy for evaluation.  There is one entry in the
   // _composed for each entry in basis._segments.
-  typedef pvector<LMatrix4> ComposedGeom;
+  typedef epvector<LMatrix4> ComposedGeom;
   ComposedGeom _composed;
 
   int _last_segment;
@@ -96,7 +96,7 @@ private:
     PN_stdfloat _t;
     LPoint3 _point;
   };
-  typedef pvector<AdaptiveSample> AdaptiveResult;
+  typedef epvector<AdaptiveSample> AdaptiveResult;
   AdaptiveResult _adaptive_result;
 };
 

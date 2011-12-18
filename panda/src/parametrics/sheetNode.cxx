@@ -266,7 +266,7 @@ do_recompute_bounds(const NodePath &rel_to, int pipeline_stage,
   
   NurbsSurfaceEvaluator *surface = get_surface();
   if (surface != (NurbsSurfaceEvaluator *)NULL) {
-    pvector<LPoint3> verts;
+    NurbsSurfaceEvaluator::Vert3Array verts;
     get_surface()->get_vertices(verts, rel_to);
     
     GeometricBoundingVolume *gbv;

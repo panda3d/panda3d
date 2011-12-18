@@ -43,10 +43,10 @@ get_num_vertices() const {
 //       Access: Published
 //  Description: Returns the nth vertex.
 ////////////////////////////////////////////////////////////////////
-INLINE const LPoint2d &Triangulator::
+INLINE LPoint2d Triangulator::
 get_vertex(int n) const {
   nassertr(n >= 0 && n < (int)_vertices.size(), LPoint2d::zero());
-  return _vertices[n];
+  return LPoint2d(_vertices[n]);
 }
 
 ////////////////////////////////////////////////////////////////////

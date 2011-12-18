@@ -26,15 +26,19 @@
 //               to use a pta of this type (whether they need to
 //               export it or not) should include this header file,
 //               rather than defining the pta again.
+//
+//               We actually wrap UnalignedLMatrix4f, in case we are
+//               building with SSE2 and LMatrix4f requires strict
+//               alignment.
 ////////////////////////////////////////////////////////////////////
 
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToBase<ReferenceCountedVector<LMatrix4f> >)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToArrayBase<LMatrix4f>)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToArray<LMatrix4f>)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, ConstPointerToArray<LMatrix4f>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToBase<ReferenceCountedVector<UnalignedLMatrix4f> >)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToArrayBase<UnalignedLMatrix4f>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToArray<UnalignedLMatrix4f>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, ConstPointerToArray<UnalignedLMatrix4f>)
 
-typedef PointerToArray<LMatrix4f> PTA_LMatrix4f;
-typedef ConstPointerToArray<LMatrix4f> CPTA_LMatrix4f;
+typedef PointerToArray<UnalignedLMatrix4f> PTA_LMatrix4f;
+typedef ConstPointerToArray<UnalignedLMatrix4f> CPTA_LMatrix4f;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PTA_LMatrix4d
@@ -43,15 +47,19 @@ typedef ConstPointerToArray<LMatrix4f> CPTA_LMatrix4f;
 //               to use a pta of this type (whether they need to
 //               export it or not) should include this header file,
 //               rather than defining the pta again.
+//
+//               We actually wrap UnalignedLMatrix4d, in case we are
+//               building with SSE2 and LMatrix4d requires strict
+//               alignment.
 ////////////////////////////////////////////////////////////////////
 
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToBase<ReferenceCountedVector<LMatrix4d> >)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToArrayBase<LMatrix4d>)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToArray<LMatrix4d>)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, ConstPointerToArray<LMatrix4d>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToBase<ReferenceCountedVector<UnalignedLMatrix4d> >)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToArrayBase<UnalignedLMatrix4d>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToArray<UnalignedLMatrix4d>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, ConstPointerToArray<UnalignedLMatrix4d>)
 
-typedef PointerToArray<LMatrix4d> PTA_LMatrix4d;
-typedef ConstPointerToArray<LMatrix4d> CPTA_LMatrix4d;
+typedef PointerToArray<UnalignedLMatrix4d> PTA_LMatrix4d;
+typedef ConstPointerToArray<UnalignedLMatrix4d> CPTA_LMatrix4d;
 
 #ifndef STDFLOAT_DOUBLE
 typedef PTA_LMatrix4f PTA_LMatrix4;

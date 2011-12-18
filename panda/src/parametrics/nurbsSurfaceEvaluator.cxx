@@ -229,7 +229,7 @@ evaluate(const NodePath &rel_to) const {
   }
 
   // First, transform the vertices as appropriate.
-  pvector<LVecBase4> vecs;
+  Vert4Array vecs;
   get_vertices(vecs, rel_to);
 
   // And apply those transformed vertices to the basis matrices to
@@ -262,7 +262,7 @@ output(ostream &out) const {
 //               coordinate changing more rapidly.
 ////////////////////////////////////////////////////////////////////
 void NurbsSurfaceEvaluator::
-get_vertices(pvector<LVecBase4> &verts, const NodePath &rel_to) const {
+get_vertices(NurbsSurfaceEvaluator::Vert4Array &verts, const NodePath &rel_to) const {
   int num_vertices = (int)_vertices.size();
   verts.reserve(verts.size() + num_vertices);
   int vi;
@@ -291,7 +291,7 @@ get_vertices(pvector<LVecBase4> &verts, const NodePath &rel_to) const {
 //               coordinate changing more rapidly.
 ////////////////////////////////////////////////////////////////////
 void NurbsSurfaceEvaluator::
-get_vertices(pvector<LPoint3> &verts, const NodePath &rel_to) const {
+get_vertices(NurbsSurfaceEvaluator::Vert3Array &verts, const NodePath &rel_to) const {
   int num_vertices = (int)_vertices.size();
   verts.reserve(verts.size() + num_vertices);
   int vi;

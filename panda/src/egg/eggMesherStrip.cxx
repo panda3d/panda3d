@@ -83,7 +83,9 @@ EggMesherStrip(const EggPrimitive *prim, int index,
     // Although for the most part we ignore the actual value of the
     // vertices, we will ask the polygon for its plane equation
     // (i.e. its normal).
-    if (DCAST(EggPolygon, prim)->calculate_normal(_plane_normal)) {
+    LNormald normal;
+    if (DCAST(EggPolygon, prim)->calculate_normal(normal)) {
+      _plane_normal = normal;
       _planar = true;
       LPoint3d p1 = prim->get_vertex(0)->get_pos3();
       _plane_offset = -dot(_plane_normal, p1);
@@ -822,7 +824,7 @@ convex_quad(EggMesherEdge *common_edge, EggMesherStrip &front,
 
   nassertr(front._planar, false);
 
-  const LNormald &n = front._plane_normal;
+  LNormald n(front._plane_normal);
   int xi, yi;
 
   // Find the largest dimension of the normal.
@@ -1415,8 +1417,8 @@ pick_sheet_mate(const EggMesherStrip &a_strip,
                 const EggMesherStrip &b_strip) const {
   // First, try to get the poly which is closest to our own normal.
   if (_planar && a_strip._planar && b_strip._planar) {
-    double a_diff = dot(_plane_normal, a_strip._plane_normal);
-    double b_diff = dot(_plane_normal, b_strip._plane_normal);
+    double a_diff = dot(LNormald(_plane_normal), LNormald(a_strip._plane_normal));
+    double b_diff = dot(LNormald(_plane_normal), LNormald(b_strip._plane_normal));
 
     if (fabs(a_diff - b_diff) > 0.0001) {
       return a_diff > b_diff;

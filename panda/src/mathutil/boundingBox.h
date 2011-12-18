@@ -76,8 +76,8 @@ protected:
   virtual bool extend_by_hexahedron(const BoundingHexahedron *hexahedron);
   bool extend_by_finite(const FiniteBoundingVolume *volume);
 
-  virtual bool around_points(const LPoint3 *first,
-                             const LPoint3 *last);
+  virtual bool around_points(const UnalignedLVecBase3 *first,
+                             const UnalignedLVecBase3 *last);
   virtual bool around_spheres(const BoundingVolume **first,
                               const BoundingVolume **last);
   virtual bool around_boxes(const BoundingVolume **first,

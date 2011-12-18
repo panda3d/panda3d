@@ -63,7 +63,7 @@ around(const GeometricBoundingVolume **first,
 //               indicated.
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL bool GeometricBoundingVolume::
-around(const LPoint3 *first, const LPoint3 *last) {
+around(const UnalignedLVecBase3 *first, const UnalignedLVecBase3 *last) {
   _flags = F_empty;
   if (first != last) {
     return around_points(first, last);

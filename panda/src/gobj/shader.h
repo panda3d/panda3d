@@ -461,7 +461,7 @@ public:
 
  public:
   pvector <ShaderPtrSpec> _ptr_spec; 
-  pvector <ShaderMatSpec> _mat_spec;
+  epvector <ShaderMatSpec> _mat_spec;
   pvector <ShaderTexSpec> _tex_spec;
   pvector <ShaderVarSpec> _var_spec;
   

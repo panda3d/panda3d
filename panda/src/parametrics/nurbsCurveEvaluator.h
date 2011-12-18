@@ -81,8 +81,10 @@ PUBLISHED:
   void output(ostream &out) const;
 
 public:
-  void get_vertices(pvector<LVecBase4> &verts, const NodePath &rel_to) const;
-  void get_vertices(pvector<LPoint3> &verts, const NodePath &rel_to) const;
+  typedef epvector<LVecBase4> Vert4Array;
+  typedef pvector<UnalignedLVecBase3> Vert3Array;
+  void get_vertices(Vert4Array &verts, const NodePath &rel_to) const;
+  void get_vertices(Vert3Array &verts, const NodePath &rel_to) const;
 
 private:
   void recompute_knots();
@@ -90,7 +92,7 @@ private:
 
   int _order;
 
-  typedef pvector<NurbsVertex> Vertices;
+  typedef epvector<NurbsVertex> Vertices;
   Vertices _vertices;
 
   bool _knots_dirty;

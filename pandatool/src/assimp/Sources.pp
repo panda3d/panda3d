@@ -14,7 +14,7 @@
     p3pnmimage:c p3grutil:c p3collide:c p3tform:c p3text:c \
     p3char:c p3dgraph:c p3display:c p3device:c p3cull:c \
     p3downloader:c p3pipeline:c \
-    p3event:c p3gsgbase:c p3lerp:c p3movies:c \
+    p3event:c p3gsgbase:c p3movies:c \
     panda:m \
     p3pandabase:c p3express:c pandaexpress:m \
     p3interrogatedb:c p3prc:c p3dconfig:c p3dtoolconfig:m \

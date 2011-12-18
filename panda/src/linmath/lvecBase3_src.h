@@ -12,6 +12,9 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
+class FLOATNAME(UnalignedLVecBase3);
+
 ////////////////////////////////////////////////////////////////////
 //       Class : LVecBase3
 // Description : This is the base class for all three-component
@@ -24,7 +27,9 @@ PUBLISHED:
 
   INLINE_LINMATH FLOATNAME(LVecBase3)();
   INLINE_LINMATH FLOATNAME(LVecBase3)(const FLOATNAME(LVecBase3) &copy);
+  INLINE_LINMATH FLOATNAME(LVecBase3)(const FLOATNAME(UnalignedLVecBase3) &copy);
   INLINE_LINMATH FLOATNAME(LVecBase3) &operator = (const FLOATNAME(LVecBase3) &copy);
+  INLINE_LINMATH FLOATNAME(LVecBase3) &operator = (const FLOATNAME(UnalignedLVecBase3) &copy);
   INLINE_LINMATH FLOATNAME(LVecBase3) &operator = (FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LVecBase3)(FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LVecBase3)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z);
@@ -163,6 +168,53 @@ public:
   }
   static void init_type();
  
+private:
+  static TypeHandle _type_handle;
+};
+
+
+////////////////////////////////////////////////////////////////////
+//       Class : UnalignedLVecBase3
+// Description : This is an "unaligned" LVecBase3.  It has no
+//               functionality other than to store numbers, and it
+//               will pack them in as tightly as possible, avoiding
+//               any SSE2 alignment requirements shared by the primary
+//               LVecBase3 class.
+//
+//               Use it only when you need to pack numbers tightly
+//               without respect to alignment, and then copy it to a
+//               proper LVecBase3 to get actual use from it.
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDA_LINMATH FLOATNAME(UnalignedLVecBase3) {
+PUBLISHED:
+  INLINE_LINMATH FLOATNAME(UnalignedLVecBase3)();
+  INLINE_LINMATH FLOATNAME(UnalignedLVecBase3)(const FLOATNAME(LVecBase3) &copy);
+  INLINE_LINMATH FLOATNAME(UnalignedLVecBase3)(const FLOATNAME(UnalignedLVecBase3) &copy);
+  INLINE_LINMATH FLOATNAME(UnalignedLVecBase3) &operator = (const FLOATNAME(LVecBase3) &copy);
+  INLINE_LINMATH FLOATNAME(UnalignedLVecBase3) &operator = (const FLOATNAME(UnalignedLVecBase3) &copy);
+  INLINE_LINMATH FLOATNAME(UnalignedLVecBase3)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z);
+
+  INLINE_LINMATH void set(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z);
+
+  INLINE_LINMATH FLOATTYPE operator [](int i) const;
+  INLINE_LINMATH FLOATTYPE &operator [](int i);
+
+  EXTENSION(INLINE_LINMATH void __setitem__(int i, FLOATTYPE v));
+  INLINE_LINMATH static int size();
+
+  INLINE_LINMATH const FLOATTYPE *get_data() const;
+  INLINE_LINMATH int get_num_components() const;
+
+public:
+  typedef SIMPLE_MATRIX(FLOATTYPE, 1, 3) UVector3;
+  UVector3 _v;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type();
+
 private:
   static TypeHandle _type_handle;
 };

@@ -205,7 +205,7 @@ xform(const LMatrix4 &mat) {
     LMatrix4 to_3d_mat;
     rederive_to_3d_mat(to_3d_mat);
 
-    pvector<LPoint3> verts;
+    epvector<LPoint3> verts;
     verts.reserve(_points.size());
     Points::const_iterator pi;
     for (pi = _points.begin(); pi != _points.end(); ++pi) {
@@ -1491,7 +1491,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
       LMatrix4 to_3d_mat;
       rederive_to_3d_mat(to_3d_mat);
       
-      pvector<LPoint3> verts;
+      epvector<LPoint3> verts;
       verts.reserve(_points.size());
       Points::const_iterator pi;
       for (pi = _points.begin(); pi != _points.end(); ++pi) {

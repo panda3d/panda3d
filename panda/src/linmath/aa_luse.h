@@ -120,6 +120,12 @@ typedef LTexCoord3f LTexCoord3;
 typedef LColorf LColor;
 typedef LRGBColorf LRGBColor;
 
+typedef UnalignedLVecBase2f UnalignedLVecBase2;
+typedef UnalignedLVecBase3f UnalignedLVecBase3;
+typedef UnalignedLVecBase4f UnalignedLVecBase4;
+typedef UnalignedLMatrix3f UnalignedLMatrix3;
+typedef UnalignedLMatrix4f UnalignedLMatrix4;
+
 // Bogus typedefs for interrogate and legacy Python code.
 #ifdef CPPPARSER
 typedef LMatrix4f Mat4;
@@ -160,6 +166,12 @@ typedef LTexCoordd LTexCoord;
 typedef LTexCoord3d LTexCoord3;
 typedef LColord LColor;
 typedef LRGBColord LRGBColor;
+
+typedef UnalignedLVecBase2d UnalignedLVecBase2;
+typedef UnalignedLVecBase3d UnalignedLVecBase3;
+typedef UnalignedLVecBase4d UnalignedLVecBase4;
+typedef UnalignedLMatrix3d UnalignedLMatrix3;
+typedef UnalignedLMatrix4d UnalignedLMatrix4;
 
 // Bogus typedefs for interrogate and legacy Python code.
 #ifdef CPPPARSER

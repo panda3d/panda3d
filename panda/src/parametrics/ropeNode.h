@@ -170,7 +170,7 @@ private:
     PN_stdfloat _thickness;
     PN_stdfloat _t;
   };
-  typedef pvector<CurveVertex> CurveSegment;
+  typedef epvector<CurveVertex> CurveSegment;
   typedef pvector<CurveSegment> CurveSegments;
 
   int get_connected_segments(CurveSegments &curve_segments,

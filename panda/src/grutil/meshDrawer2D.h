@@ -56,41 +56,41 @@ PUBLISHED:
   INLINE NodePath get_root();
 
   INLINE void quad_raw(
-    LVector3 v1, LVector4 c1, LVector2 uv1,
-    LVector3 v2, LVector4 c2, LVector2 uv2,
-    LVector3 v3, LVector4 c3, LVector2 uv3,
-    LVector3 v4, LVector4 c4, LVector2 uv4);
+    const LVector3 &v1, const LVector4 &c1, const LVector2 &uv1,
+    const LVector3 &v2, const LVector4 &c2, const LVector2 &uv2,
+    const LVector3 &v3, const LVector4 &c3, const LVector2 &uv3,
+    const LVector3 &v4, const LVector4 &c4, const LVector2 &uv4);
 
   INLINE void rectangle_raw(
     PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h,
     PN_stdfloat u, PN_stdfloat v, PN_stdfloat us, PN_stdfloat vs,
-    LVector4 color);
+    const LVector4 &color);
 
   INLINE void set_clip(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h);
 
   INLINE void rectangle(
     PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h,
     PN_stdfloat u, PN_stdfloat v, PN_stdfloat us, PN_stdfloat vs,
-    LVector4 color);
+    const LVector4 &color);
 
   void rectangle_border(
       PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h,
       PN_stdfloat r, PN_stdfloat t, PN_stdfloat l, PN_stdfloat b,
       PN_stdfloat tr, PN_stdfloat tt, PN_stdfloat tl, PN_stdfloat tb,
       PN_stdfloat u, PN_stdfloat v, PN_stdfloat us, PN_stdfloat vs,
-      LVector4 color);
+      const LVector4 &color);
 
   void rectangle_border_tiled(
       PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h,
       PN_stdfloat r, PN_stdfloat t, PN_stdfloat l, PN_stdfloat b,
       PN_stdfloat tr, PN_stdfloat tt, PN_stdfloat tl, PN_stdfloat tb,
       PN_stdfloat u, PN_stdfloat v, PN_stdfloat us, PN_stdfloat vs,
-      LVector4 color);
+      const LVector4 &color);
 
   void rectangle_tiled(
     PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h,
     PN_stdfloat u, PN_stdfloat v, PN_stdfloat us, PN_stdfloat vs,
-    LVector4 color);
+    const LVector4 &color);
 
   void begin();
   void end();

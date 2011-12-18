@@ -75,7 +75,7 @@ public:
     LVecBase3 _hpr_tangent;
   };
 
-  typedef pvector<DataPoint> Data;
+  typedef epvector<DataPoint> Data;
   Data _data;
 
   bool _got_xyz;

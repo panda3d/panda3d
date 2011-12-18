@@ -154,7 +154,7 @@ protected:
     UpdateSeq _bounds_seq;
     bool _verify_ok;
   };
-  typedef pvector<Switch> SwitchVector;
+  typedef epvector<Switch> SwitchVector;
 
 private:
   class EXPCL_PANDA_PGRAPH CData : public CycleData {

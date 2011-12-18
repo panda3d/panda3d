@@ -44,7 +44,7 @@ PUBLISHED:
   INLINE int add_vertex(double x, double y);
 
   INLINE int get_num_vertices() const;
-  INLINE const LPoint2d &get_vertex(int n) const;
+  INLINE LPoint2d get_vertex(int n) const;
   MAKE_SEQ(get_vertices, get_num_vertices, get_vertex);
 
   void clear_polygon();
@@ -62,7 +62,7 @@ PUBLISHED:
   int get_triangle_v2(int n) const;
 
 private:
-  typedef pvector<LPoint2d> Vertices;
+  typedef pvector<UnalignedLVecBase2d> Vertices;
   Vertices _vertices;
 
   vector_int _polygon;

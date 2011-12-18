@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 TypeHandle FLOATNAME(LVecBase4)::_type_handle;
+TypeHandle FLOATNAME(UnalignedLVecBase4)::_type_handle;
 
 const FLOATNAME(LVecBase4) FLOATNAME(LVecBase4)::_zero =
   FLOATNAME(LVecBase4)(0.0f, 0.0f, 0.0f, 0.0f);
@@ -35,6 +36,22 @@ init_type() {
   if (_type_handle == TypeHandle::none()) {
     // Format a string to describe the type.
     string name = "LVecBase4";
+    name += FLOATTOKEN;
+    register_type(_type_handle, name);
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: UnalignedLVecBase4::init_type
+//       Access: Public, Static
+//  Description:
+////////////////////////////////////////////////////////////////////
+void FLOATNAME(UnalignedLVecBase4)::
+init_type() {
+  if (_type_handle == TypeHandle::none()) {
+    // Format a string to describe the type.
+    string name = "UnalignedLVecBase4";
     name += FLOATTOKEN;
     register_type(_type_handle, name);
   }

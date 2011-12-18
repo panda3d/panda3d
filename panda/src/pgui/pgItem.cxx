@@ -459,7 +459,7 @@ activate_region(const LMatrix4 &transform, int sort,
     // Apply the clip plane(s) and/or scissor region now that we are
     // here in world space.
     
-    pvector<LPoint2> points;
+    ClipPoints points;
     points.reserve(4);
     points.push_back(LPoint2(ll[right_axis], ll[up_axis]));
     points.push_back(LPoint2(lr[right_axis], lr[up_axis]));
@@ -483,7 +483,7 @@ activate_region(const LMatrix4 &transform, int sort,
       return false;
     }
 
-    pvector<LPoint2>::iterator pi;
+    ClipPoints::iterator pi;
     pi = points.begin();
     frame.set((*pi)[0], (*pi)[0], (*pi)[1], (*pi)[1]);
     ++pi;
@@ -1376,7 +1376,7 @@ mark_frames_stale() {
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool PGItem::
-clip_frame(pvector<LPoint2> &source_points, const LPlane &plane) const {
+clip_frame(ClipPoints &source_points, const LPlane &plane) const {
   if (source_points.empty()) {
     return true;
   }
@@ -1410,15 +1410,15 @@ clip_frame(pvector<LPoint2> &source_points, const LPlane &plane) const {
   // We might increase the number of vertices by as many as 1, if the
   // plane clips off exactly one corner.  (We might also decrease the
   // number of vertices, or keep them the same number.)
-  pvector<LPoint2> new_points;
+  ClipPoints new_points;
   new_points.reserve(source_points.size() + 1);
 
-  LPoint2 last_point = source_points.back();
+  LPoint2 last_point(source_points.back());
   bool last_is_in = is_right(last_point - from2d, delta2d);
   bool all_in = last_is_in;
-  pvector<LPoint2>::const_iterator pi;
+  ClipPoints::const_iterator pi;
   for (pi = source_points.begin(); pi != source_points.end(); ++pi) {
-    const LPoint2 &this_point = (*pi);
+    LPoint2 this_point(*pi);
     bool this_is_in = is_right(this_point - from2d, delta2d);
 
     // There appears to be a compiler bug in gcc 4.0: we need to

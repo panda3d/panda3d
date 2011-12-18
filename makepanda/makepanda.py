@@ -2085,7 +2085,6 @@ CopyAllHeaders('panda/src/net')
 CopyAllHeaders('panda/src/pstatclient')
 CopyAllHeaders('panda/src/gobj')
 CopyAllHeaders('panda/src/movies')
-CopyAllHeaders('panda/src/lerp')
 CopyAllHeaders('panda/src/pgraphnodes')
 CopyAllHeaders('panda/src/pgraph')
 CopyAllHeaders('panda/src/cull')
@@ -2647,19 +2646,6 @@ if (not RUNTIME):
   TargetAdd('libp3gobj_igate.obj', input='libp3gobj.in', opts=["DEPENDENCYONLY"])
 
 #
-# DIRECTORY: panda/src/lerp/
-#
-
-if (not RUNTIME):
-  OPTS=['DIR:panda/src/lerp', 'BUILDING:PANDA']
-  TargetAdd('p3lerp_composite1.obj', opts=OPTS, input='p3lerp_composite1.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/lerp', ["*.h", "*_composite*.cxx"])
-  IGATEFILES.remove("lerpchans.h")
-  TargetAdd('libp3lerp.in', opts=OPTS, input=IGATEFILES)
-  TargetAdd('libp3lerp.in', opts=['IMOD:panda', 'ILIB:libp3lerp', 'SRCDIR:panda/src/lerp'])
-  TargetAdd('libp3lerp_igate.obj', input='libp3lerp.in', opts=["DEPENDENCYONLY"])
-
-#
 # DIRECTORY: panda/src/pgraphnodes/
 #
 
@@ -2964,7 +2950,6 @@ if (not RUNTIME):
   TargetAdd('libpanda_module.obj', input='libp3pnmimage.in')
   TargetAdd('libpanda_module.obj', input='libp3text.in')
   TargetAdd('libpanda_module.obj', input='libp3tform.in')
-  TargetAdd('libpanda_module.obj', input='libp3lerp.in')
   TargetAdd('libpanda_module.obj', input='libp3putil.in')
   TargetAdd('libpanda_module.obj', input='libp3audio.in')
   TargetAdd('libpanda_module.obj', input='libp3nativenet.in')
@@ -3049,8 +3034,6 @@ if (not RUNTIME):
   TargetAdd('libpanda.dll', input='p3tform_composite1.obj')
   TargetAdd('libpanda.dll', input='p3tform_composite2.obj')
   TargetAdd('libpanda.dll', input='libp3tform_igate.obj')
-  TargetAdd('libpanda.dll', input='p3lerp_composite1.obj')
-  TargetAdd('libpanda.dll', input='libp3lerp_igate.obj')
   TargetAdd('libpanda.dll', input='p3putil_composite1.obj')
   TargetAdd('libpanda.dll', input='p3putil_composite2.obj')
   TargetAdd('libpanda.dll', input='libp3putil_igate.obj')

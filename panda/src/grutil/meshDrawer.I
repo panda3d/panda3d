@@ -86,9 +86,9 @@ get_budget() {
 //       Access: Published
 //  Description: Draws a triangle with the given parameters.
 ////////////////////////////////////////////////////////////////////
-INLINE void MeshDrawer::tri(LVector3 v1, LVector4 c1, LVector2 uv1,
-                            LVector3 v2, LVector4 c2, LVector2 uv2,
-                            LVector3 v3, LVector4 c3, LVector2 uv3) {
+INLINE void MeshDrawer::tri(const LVector3 &v1, const LVector4 &c1, const LVector2 &uv1,
+                            const LVector3 &v2, const LVector4 &c2, const LVector2 &uv2,
+                            const LVector3 &v3, const LVector4 &c3, const LVector2 &uv3) {
 
   if( _clear_index > _end_clear_index) return;
 

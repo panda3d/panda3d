@@ -1309,7 +1309,7 @@ rebuild_vertex_pools(EggVertexPools &vertex_pools, unsigned int max_vertices,
         vertices.push_back(*pi);
       }
 
-      typedef pvector<EggAttributes> Attributes;
+      typedef epvector<EggAttributes> Attributes;
       Attributes attributes;
 
       if (prim->is_of_type(EggCompositePrimitive::get_class_type())) {

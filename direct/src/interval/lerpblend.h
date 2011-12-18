@@ -15,10 +15,10 @@
 #ifndef __LERPBLEND_H__
 #define __LERPBLEND_H__
 
-#include "pandabase.h"
+#include "directbase.h"
 #include "typedReferenceCount.h"
 
-class EXPCL_PANDA_LERP LerpBlendType : public TypedReferenceCount {
+class EXPCL_DIRECT LerpBlendType : public TypedReferenceCount {
 PUBLISHED:
   LerpBlendType() {}
   virtual ~LerpBlendType();
@@ -48,7 +48,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-class EXPCL_PANDA_LERP EaseInBlendType : public LerpBlendType {
+class EXPCL_DIRECT EaseInBlendType : public LerpBlendType {
 PUBLISHED:
   EaseInBlendType() {}
   virtual ~EaseInBlendType();
@@ -78,7 +78,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-class EXPCL_PANDA_LERP EaseOutBlendType : public LerpBlendType {
+class EXPCL_DIRECT EaseOutBlendType : public LerpBlendType {
 PUBLISHED:
   EaseOutBlendType() {}
   virtual ~EaseOutBlendType();
@@ -108,7 +108,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-class EXPCL_PANDA_LERP EaseInOutBlendType : public LerpBlendType {
+class EXPCL_DIRECT EaseInOutBlendType : public LerpBlendType {
 PUBLISHED:
   EaseInOutBlendType() {}
   virtual ~EaseInOutBlendType();
@@ -137,7 +137,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-class EXPCL_PANDA_LERP NoBlendType : public LerpBlendType {
+class EXPCL_DIRECT NoBlendType : public LerpBlendType {
 PUBLISHED:
   NoBlendType() {}
   virtual ~NoBlendType();

@@ -55,8 +55,8 @@ public:
   ~PortalClipper();
 
   INLINE bool is_partial_portal_in_view();
-  INLINE bool is_facing_view(LPlane portal_plane);
-  INLINE bool is_whole_portal_in_view(LMatrix4 cmat);
+  INLINE bool is_facing_view(const LPlane &portal_plane);
+  INLINE bool is_whole_portal_in_view(const LMatrix4 &cmat);
 
   bool prepare_portal(const NodePath &node_path);
   
@@ -108,7 +108,7 @@ private:
     LColor _color;
   };
 
-  typedef pvector<Point> SegmentList;
+  typedef epvector<Point> SegmentList;
   typedef pvector<SegmentList> LineList;
 
   LineList _list;

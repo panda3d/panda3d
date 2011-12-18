@@ -136,6 +136,16 @@ FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix4) &copy) : _m(copy._m) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::Copy Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LMatrix4)::
+FLOATNAME(LMatrix4)(const FLOATNAME(UnalignedLMatrix4) &copy) {
+  operator = (copy);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::Copy Assignment Operator
 //       Access: Public
 //  Description:
@@ -144,6 +154,19 @@ INLINE_LINMATH FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 operator = (const FLOATNAME(LMatrix4) &copy) {
   TAU_PROFILE("void LMatrix4::operator = (const LMatrix4 &)", " ", TAU_USER);
   _m = copy._m;
+  return *this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::Copy Assignment Operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
+operator = (const FLOATNAME(UnalignedLMatrix4) &copy) {
+  TAU_PROFILE("void LMatrix4::operator = (const UnalignedLMatrix4 &)", " ", TAU_USER);
+
+  memcpy(&_m(0, 0), copy.get_data(), sizeof(FLOATTYPE) * get_num_components());
   return *this;
 }
 
@@ -1713,3 +1736,148 @@ invert(const FLOATNAME(LMatrix4) &a) {
   return result;
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: UnalignedLMatrix4::Default Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)::
+FLOATNAME(UnalignedLMatrix4)() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: UnalignedLMatrix4::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)::
+FLOATNAME(UnalignedLMatrix4)(const FLOATNAME(LMatrix4) &copy) {
+  operator = (copy);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: UnalignedLMatrix4::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)::
+FLOATNAME(UnalignedLMatrix4)(const FLOATNAME(UnalignedLMatrix4) &copy) : _m(copy._m) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: UnalignedLMatrix4::Copy Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(UnalignedLMatrix4) &FLOATNAME(UnalignedLMatrix4)::
+operator = (const FLOATNAME(LMatrix4) &copy) {
+  memcpy(&_m(0, 0), copy.get_data(), sizeof(FLOATTYPE) * get_num_components());
+  return *this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: UnalignedLMatrix4::Copy Assignment Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(UnalignedLMatrix4) &FLOATNAME(UnalignedLMatrix4)::
+operator = (const FLOATNAME(UnalignedLMatrix4) &copy) {
+  TAU_PROFILE("void UnalignedLMatrix4::operator =(UnalignedLMatrix4 &)", " ", TAU_USER);
+  _m = copy._m;
+  return *this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: UnalignedLMatrix4::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(UnalignedLMatrix4)::
+FLOATNAME(UnalignedLMatrix4)(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02, FLOATTYPE e03,
+                             FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12, FLOATTYPE e13,
+                             FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22, FLOATTYPE e23,
+                             FLOATTYPE e30, FLOATTYPE e31, FLOATTYPE e32, FLOATTYPE e33) {
+  TAU_PROFILE("UnalignedLMatrix4::UnalignedLMatrix4(FLOATTYPE, ...)", " ", TAU_USER);
+  set(e00, e01, e02, e03,
+      e10, e11, e12, e13,
+      e20, e21, e22, e23,
+      e30, e31, e32, e33);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: UnalignedLMatrix4::set
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(UnalignedLMatrix4)::
+set(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02, FLOATTYPE e03,
+    FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12, FLOATTYPE e13,
+    FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22, FLOATTYPE e23,
+    FLOATTYPE e30, FLOATTYPE e31, FLOATTYPE e32, FLOATTYPE e33) {
+  TAU_PROFILE("void UnalignedLMatrix4::set()", " ", TAU_USER);
+
+  _m(0, 0) = e00;
+  _m(0, 1) = e01;
+  _m(0, 2) = e02;
+  _m(0, 3) = e03;
+
+  _m(1, 0) = e10;
+  _m(1, 1) = e11;
+  _m(1, 2) = e12;
+  _m(1, 3) = e13;
+
+  _m(2, 0) = e20;
+  _m(2, 1) = e21;
+  _m(2, 2) = e22;
+  _m(2, 3) = e23;
+
+  _m(3, 0) = e30;
+  _m(3, 1) = e31;
+  _m(3, 2) = e32;
+  _m(3, 3) = e33;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: UnalignedLMatrix4::Indexing operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATTYPE &FLOATNAME(UnalignedLMatrix4)::
+operator () (int row, int col) {
+  nassertr(row >= 0 && row < 4 && col >= 0 && col < 4, _m(0, 0));
+  return _m(row, col);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: UnalignedLMatrix4::Indexing operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATTYPE FLOATNAME(UnalignedLMatrix4)::
+operator () (int row, int col) const {
+  nassertr(row >= 0 && row < 4 && col >= 0 && col < 4, 0.0);
+  return _m(row, col);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: UnalignedLMatrix4::get_data
+//       Access: Published
+//  Description: Returns the address of the first of the nine data
+//               elements in the matrix.  The remaining elements
+//               occupy the next eight positions in row-major order.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH const FLOATTYPE *FLOATNAME(UnalignedLMatrix4)::
+get_data() const {
+  return &_m(0, 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: UnalignedLMatrix4::get_num_components
+//       Access: Published
+//  Description: Returns the number of elements in the matrix, sixteen.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH int FLOATNAME(UnalignedLMatrix4)::
+get_num_components() const {
+  return 16;
+}

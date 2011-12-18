@@ -45,7 +45,7 @@ make() {
 //  Description: Constructs a new PolylightEffect object.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderEffect) PolylightEffect::
-make(PN_stdfloat weight, ContribType contrib, LPoint3 effect_center) {
+make(PN_stdfloat weight, ContribType contrib, const LPoint3 &effect_center) {
   PolylightEffect *effect = new PolylightEffect;
   effect->_contribution_type = contrib;
   effect->_weight = weight;
@@ -59,7 +59,7 @@ make(PN_stdfloat weight, ContribType contrib, LPoint3 effect_center) {
 //  Description: Constructs a new PolylightEffect object.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderEffect) PolylightEffect::
-make(PN_stdfloat weight, ContribType contrib, LPoint3 effect_center,
+make(PN_stdfloat weight, ContribType contrib, const LPoint3 &effect_center,
      const LightGroup &lights) {
   PolylightEffect *effect = new PolylightEffect;
   effect->_contribution_type = contrib;
@@ -480,7 +480,7 @@ set_contrib(ContribType ct) const {
 //               Here, we just pass that to the make
 ////////////////////////////////////////////////////////////////////
 CPT(RenderEffect) PolylightEffect::
-set_effect_center(LPoint3 ec) const{
+set_effect_center(const LPoint3 &ec) const{
   PolylightEffect *effect = new PolylightEffect(*this);
   effect->_effect_center = ec;
   return return_new(effect);

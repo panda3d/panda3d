@@ -14,7 +14,7 @@
     p3pnmimage:c p3grutil:c p3collide:c p3tform:c p3text:c \
     p3char:c p3dgraph:c p3display:c p3device:c p3cull:c \
     p3downloader:c p3pipeline:c \
-    p3event:c p3gsgbase:c p3lerp:c p3movies:c \
+    p3event:c p3gsgbase:c p3movies:c \
     $[if $[HAVE_FREETYPE],p3pnmtext:c] \
     $[if $[HAVE_NET],p3net:c] $[if $[WANT_NATIVE_NET],p3nativenet:c] \
     $[if $[HAVE_AUDIO],p3audio:c] \

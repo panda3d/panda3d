@@ -199,7 +199,7 @@ score_reparent_to(EggJointData *new_parent, EggCharacterDb &db) {
   // would receive in all frames of all models, were it reparented to
   // the indicated joint.
   vector_stdfloat i, j, k, a, b, c, x, y, z;
-  pvector<LVecBase3> hprs;
+  pvector<UnalignedLVecBase3> hprs;
   int num_rows = 0;
 
   int num_models = get_num_models();

@@ -131,7 +131,7 @@ xform(const LMatrix4 &mat) {
   for (Vertices::iterator vi = _vertices.begin();
        vi != _vertices.end();
        ++vi) {
-    (*vi) = (*vi) * mat;
+    (*vi) = LPoint3(*vi) * mat;
   }
 }
 
@@ -233,8 +233,8 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
   // Now actually compute the bounding volume by putting it around all
   // of our vertices.
   if (!_vertices.empty()) {
-    const LPoint3 *vertices_begin = &_vertices[0];
-    const LPoint3 *vertices_end = vertices_begin + _vertices.size();
+    const UnalignedLVecBase3 *vertices_begin = &_vertices[0];
+    const UnalignedLVecBase3 *vertices_end = vertices_begin + _vertices.size();
     gbv->around(vertices_begin, vertices_end);
   }
 
@@ -262,7 +262,10 @@ get_occluder_viz(CullTraverser *trav, CullTraverserData &data) {
       (get_name(), GeomVertexFormat::get_v3n3t2(), Geom::UH_static);
     
     // Compute the polygon normal from the first three vertices.
-    LPlane plane(_vertices[0], _vertices[1], _vertices[2]);
+    LPoint3 a(_vertices[0]);
+    LPoint3 b(_vertices[1]);
+    LPoint3 c(_vertices[2]);
+    LPlane plane(a, b, c);
     LVector3 poly_normal = plane.get_normal();
     
     GeomVertexWriter vertex(vdata, InternalName::get_vertex());
@@ -388,7 +391,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   for (Vertices::const_iterator vi = _vertices.begin();
        vi != _vertices.end();
        ++vi) {
-    (*vi).write_datagram(dg);
+    LPoint3(*vi).write_datagram(dg);
   }
 }
 

@@ -81,10 +81,10 @@ PUBLISHED:
   // highest quality (lowest level of detail). Parts farther away from
   // the focal point will have a lower quality (higher level of detail).
   // The focal point is not taken in respect if bruteforce is set true.
-  INLINE void set_focal_point(LPoint2d fp);
-  INLINE void set_focal_point(LPoint2f fp);
-  INLINE void set_focal_point(LPoint3d fp);
-  INLINE void set_focal_point(LPoint3f fp);
+  INLINE void set_focal_point(const LPoint2d &fp);
+  INLINE void set_focal_point(const LPoint2f &fp);
+  INLINE void set_focal_point(const LPoint3d &fp);
+  INLINE void set_focal_point(const LPoint3f &fp);
   INLINE void set_focal_point(double x, double y);
   INLINE void set_focal_point(NodePath fnp);
   INLINE NodePath get_focal_point() const;

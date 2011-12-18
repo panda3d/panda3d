@@ -89,7 +89,6 @@
 #include "texGenAttrib.h"
 #include "transformState.h"
 #include "transparencyAttrib.h"
-#include "nodePathLerps.h"
 
 #include "dconfig.h"
 
@@ -508,14 +507,6 @@ init_libpgraph() {
   TexGenAttrib::init_type();
   TransformState::init_type();
   TransparencyAttrib::init_type();
-  PosLerpFunctor::init_type();
-  HprLerpFunctor::init_type();
-  ScaleLerpFunctor::init_type();
-  PosHprLerpFunctor::init_type();
-  HprScaleLerpFunctor::init_type();
-  PosHprScaleLerpFunctor::init_type();
-  ColorLerpFunctor::init_type();
-  ColorScaleLerpFunctor::init_type();
 
   AlphaTestAttrib::register_with_read_factory();
   AntialiasAttrib::register_with_read_factory();

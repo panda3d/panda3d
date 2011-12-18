@@ -246,7 +246,7 @@
     p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
     p3express:c pandaexpress:m p3dxml:c \
     p3pgraph:c p3pgraphnodes:c p3cull:c p3gsgbase:c p3gobj:c \
-    p3mathutil:c p3lerp:c p3downloader:c p3pnmimage:c \
+    p3mathutil:c p3downloader:c p3pnmimage:c \
     p3prc:c p3pstatclient:c p3pandabase:c p3linmath:c p3putil:c \
     p3pipeline:c p3event:c p3display:c panda:m \
     $[if $[WANT_NATIVE_NET],p3nativenet:c] \
@@ -296,7 +296,7 @@
     p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
     p3express:c pandaexpress:m p3dxml:c \
     p3pgraph:c p3pgraphnodes:c p3cull:c p3gsgbase:c p3gobj:c \
-    p3mathutil:c p3lerp:c p3downloader:c p3pnmimage:c \
+    p3mathutil:c p3downloader:c p3pnmimage:c \
     p3prc:c p3pstatclient:c p3pandabase:c p3linmath:c p3putil:c \
     p3pipeline:c p3event:c p3display:c panda:m \
     $[if $[WANT_NATIVE_NET],p3nativenet:c] \
@@ -342,7 +342,7 @@
     p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
     p3express:c pandaexpress:m p3dxml:c \
     p3pgraph:c p3pgraphnodes:c p3cull:c p3gsgbase:c p3gobj:c \
-    p3mathutil:c p3lerp:c p3downloader:c p3pnmimage:c \
+    p3mathutil:c p3downloader:c p3pnmimage:c \
     p3prc:c p3pstatclient:c p3pandabase:c p3linmath:c p3putil:c \
     p3pipeline:c p3event:c p3display:c panda:m \
     $[if $[WANT_NATIVE_NET],p3nativenet:c] \

@@ -77,7 +77,7 @@ private:
 private:
   bool _screen;
   LVecBase4 _frame;
-  typedef pvector<PointDef> Points;
+  typedef epvector<PointDef> Points;
   Points _points;
   bool _clip;
 

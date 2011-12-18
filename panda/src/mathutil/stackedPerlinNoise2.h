@@ -52,7 +52,7 @@ private:
     double _amp;
   };
 
-  typedef pvector<Noise> Noises;
+  typedef epvector<Noise> Noises;
   Noises _noises;
 };
 

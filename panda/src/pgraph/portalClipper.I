@@ -174,7 +174,7 @@ get_reduced_viewport(LPoint2& min, LPoint2& max) const  {
 //               is facing the camera's near plane
 ////////////////////////////////////////////////////////////////////
 INLINE bool PortalClipper::
-is_facing_view(LPlane portal_plane) {
+is_facing_view(const LPlane &portal_plane) {
   portal_cat.debug() << "portal plane check value: " << portal_plane[3] << "\n";
   return (portal_plane[3] > 0);
 }
@@ -187,7 +187,7 @@ is_facing_view(LPlane portal_plane) {
 //               is a 2nd level test to weed out most of the portals
 ////////////////////////////////////////////////////////////////////
 INLINE bool PortalClipper::
-is_whole_portal_in_view(LMatrix4 cmat) {
+is_whole_portal_in_view(const LMatrix4 &cmat) {
   // I am about to xform this gbv, so lets make a copy
   const BoundingVolume *bv = _portal_node->get_bounds();
   BoundingVolume *cbv = bv->make_copy();

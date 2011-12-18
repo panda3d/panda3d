@@ -83,8 +83,10 @@ PUBLISHED:
   void output(ostream &out) const;
 
 public:
-  void get_vertices(pvector<LVecBase4> &verts, const NodePath &rel_to) const;
-  void get_vertices(pvector<LPoint3> &verts, const NodePath &rel_to) const;
+  typedef epvector<LVecBase4> Vert4Array;
+  typedef pvector<UnalignedLVecBase3> Vert3Array;
+  void get_vertices(Vert4Array &verts, const NodePath &rel_to) const;
+  void get_vertices(Vert3Array &verts, const NodePath &rel_to) const;
 
 private:
   INLINE NurbsVertex &vert(int ui, int vi);
@@ -98,7 +100,7 @@ private:
   int _u_order;
   int _v_order;
 
-  typedef pvector<NurbsVertex> Vertices;
+  typedef epvector<NurbsVertex> Vertices;
   Vertices _vertices;
   int _num_u_vertices;
   int _num_v_vertices;

@@ -201,7 +201,8 @@ private:
                                      PN_stdfloat &largest_area, 
                                      const LVecBase4 *new_frame);
 
-  bool clip_frame(pvector<LPoint2> &source_points, const LPlane &plane) const;
+  typedef pvector<UnalignedLVecBase2> ClipPoints;
+  bool clip_frame(ClipPoints &source_points, const LPlane &plane) const;
 
 protected:
   LightReMutex _lock;
@@ -231,7 +232,7 @@ private:
     NodePath _frame;
     bool _frame_stale;
   };
-  typedef pvector<StateDef> StateDefs;
+  typedef epvector<StateDef> StateDefs;
   StateDefs _state_defs;
 
 #ifdef HAVE_AUDIO

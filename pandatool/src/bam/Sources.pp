@@ -5,7 +5,7 @@
   p3dgraph:c p3downloader:c p3recorder:c \
   p3pnmimagetypes:c p3pnmimage:c p3pgraph:c p3display:c \
   p3pgraphnodes:c p3gobj:c p3putil:c \
-  p3lerp:c p3mathutil:c p3linmath:c p3event:c p3pstatclient:c \
+  p3mathutil:c p3linmath:c p3event:c p3pstatclient:c \
   p3gsgbase:c p3grutil:c p3text:c p3cull:c \
   p3tform:c p3device:c p3movies:c \
   $[if $[HAVE_FREETYPE],p3pnmtext:c] \

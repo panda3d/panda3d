@@ -1328,7 +1328,7 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
           // Indexed case.
           GeomVertexReader index(tris->get_vertices(), 0);
           while (!index.is_at_end()) {
-            LVertex v[3];
+            UnalignedLVecBase3 v[3];
             
             vertex.set_row_unsafe(index.get_data1i());
             v[0] = vertex.get_data3();
@@ -1339,7 +1339,7 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
             
             // Generate a temporary CollisionGeom on the fly for each
             // triangle in the Geom.
-            if (CollisionPolygon::verify_points(v[0], v[1], v[2])) {
+            if (CollisionPolygon::verify_points(LVecBase3(v[0]), LVecBase3(v[1]), LVecBase3(v[2]))) {
               bool within_solid_bounds = true;
               if (from_node_gbv != (GeometricBoundingVolume *)NULL) {
                 PT(BoundingSphere) sphere = new BoundingSphere;
@@ -1350,7 +1350,7 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
 #endif  // DO_PSTATS
               }
               if (within_solid_bounds) {
-                PT(CollisionGeom) cgeom = new CollisionGeom(v[0], v[1], v[2]);
+                PT(CollisionGeom) cgeom = new CollisionGeom(LVecBase3(v[0]), LVecBase3(v[1]), LVecBase3(v[2]));
                 entry._into = cgeom;
                 entry.test_intersection((*ci).second, this);
               }
@@ -1361,7 +1361,7 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
           vertex.set_row_unsafe(primitive->get_first_vertex());
           int num_vertices = primitive->get_num_vertices();
           for (int i = 0; i < num_vertices; i += 3) {
-            LVertex v[3];
+            UnalignedLVecBase3 v[3];
             
             v[0] = vertex.get_data3();
             v[1] = vertex.get_data3();
@@ -1369,7 +1369,7 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
             
             // Generate a temporary CollisionGeom on the fly for each
             // triangle in the Geom.
-            if (CollisionPolygon::verify_points(v[0], v[1], v[2])) {
+            if (CollisionPolygon::verify_points(LVecBase3(v[0]), LVecBase3(v[1]), LVecBase3(v[2]))) {
               bool within_solid_bounds = true;
               if (from_node_gbv != (GeometricBoundingVolume *)NULL) {
                 PT(BoundingSphere) sphere = new BoundingSphere;
@@ -1380,7 +1380,7 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
 #endif  // DO_PSTATS
               }
               if (within_solid_bounds) {
-                PT(CollisionGeom) cgeom = new CollisionGeom(v[0], v[1], v[2]);
+                PT(CollisionGeom) cgeom = new CollisionGeom(LVecBase3(v[0]), LVecBase3(v[1]), LVecBase3(v[2]));
                 entry._into = cgeom;
                 entry.test_intersection((*ci).second, this);
               }

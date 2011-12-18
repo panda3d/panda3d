@@ -71,7 +71,7 @@ private:
     LMatrix4 _basis;
   };
 
-  typedef pvector<Segment> Segments;
+  typedef epvector<Segment> Segments;
   Segments _segments;
 };
 

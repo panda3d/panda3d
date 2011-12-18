@@ -2,7 +2,7 @@
 
 #define OTHER_LIBS \
   p3egg:c pandaegg:m \
-  p3pgraph:c p3pgraphnodes:c p3gobj:c p3lerp:c p3linmath:c p3putil:c \
+  p3pgraph:c p3pgraphnodes:c p3gobj:c p3linmath:c p3putil:c \
   p3pnmimage:c p3pnmimagetypes:c p3display:c p3pipeline:c \
   p3event:c p3mathutil:c p3cull:c p3gsgbase:c p3pstatclient:c \
   $[if $[HAVE_NET],p3net:c] $[if $[WANT_NATIVE_NET],p3nativenet:c] \

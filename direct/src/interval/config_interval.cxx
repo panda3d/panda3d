@@ -26,6 +26,7 @@
 #include "showInterval.h"
 #include "hideInterval.h"
 #include "waitInterval.h"
+#include "lerpblend.h"
 
 #include "dconfig.h"
 
@@ -76,5 +77,10 @@ init_libinterval() {
   ShowInterval::init_type();
   HideInterval::init_type();
   WaitInterval::init_type();
+  LerpBlendType::init_type();
+  EaseInBlendType::init_type();
+  EaseOutBlendType::init_type();
+  EaseInOutBlendType::init_type();
+  NoBlendType::init_type();
 }
 

@@ -160,7 +160,7 @@ evaluate(const NodePath &rel_to) const {
   }
 
   // First, transform the vertices as appropriate.
-  pvector<LVecBase4> vecs;
+  Vert4Array vecs;
   get_vertices(vecs, rel_to);
 
   // And apply those transformed vertices to the basis matrices to
@@ -185,11 +185,11 @@ evaluate(const NodePath &rel_to, const LMatrix4 &mat) const {
   }
 
   // First, transform the vertices as appropriate.
-  pvector<LVecBase4> vecs;
+  Vert4Array vecs;
   get_vertices(vecs, rel_to);
 
   // And then apply the indicated matrix.
-  pvector<LVecBase4>::iterator vi;
+  Vert4Array::iterator vi;
   for (vi = vecs.begin(); vi != vecs.end(); ++vi) {
     (*vi) = (*vi) * mat;
   }
@@ -220,7 +220,7 @@ output(ostream &out) const {
 //               homogenous space.
 ////////////////////////////////////////////////////////////////////
 void NurbsCurveEvaluator::
-get_vertices(pvector<LVecBase4> &verts, const NodePath &rel_to) const {
+get_vertices(NurbsCurveEvaluator::Vert4Array &verts, const NodePath &rel_to) const {
   int num_vertices = (int)_vertices.size();
   verts.reserve(verts.size() + num_vertices);
   int vi;
@@ -238,7 +238,7 @@ get_vertices(pvector<LVecBase4> &verts, const NodePath &rel_to) const {
 //               space.
 ////////////////////////////////////////////////////////////////////
 void NurbsCurveEvaluator::
-get_vertices(pvector<LPoint3> &verts, const NodePath &rel_to) const {
+get_vertices(NurbsCurveEvaluator::Vert3Array &verts, const NodePath &rel_to) const {
   int num_vertices = (int)_vertices.size();
   verts.reserve(verts.size() + num_vertices);
   int vi;

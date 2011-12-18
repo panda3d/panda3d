@@ -90,7 +90,7 @@ private:
                               PN_stdfloat length);
 
   bool intersects_line(double &t1, double &t2,
-                       LPoint3 from, LVector3 delta,
+                       const LPoint3 &from, const LVector3 &delta,
                        PN_stdfloat inflate_radius) const;
   bool sphere_intersects_line(double &t1, double &t2, PN_stdfloat center_y,
                               const LPoint3 &from, const LVector3 &delta,

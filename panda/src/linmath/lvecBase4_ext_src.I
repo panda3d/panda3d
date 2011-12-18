@@ -194,3 +194,14 @@ __setattr__, PyObject *self, const string &attr_name, PyObject *assign) {
   return 0;
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: UnalignedLVecBase4::__setitem__
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void EXT_METHOD_ARGS(FLOATNAME(UnalignedLVecBase4),
+__setitem__, int i, FLOATTYPE v) {
+  nassertv(i >= 0 && i < 4);
+  this->_v(i) = v;
+}

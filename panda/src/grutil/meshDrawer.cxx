@@ -155,8 +155,8 @@ void MeshDrawer::end() {
 //               but has an extra rotation component.
 //               Frame contains u,v,u-size,v-size quadruple.
 ////////////////////////////////////////////////////////////////////
-void MeshDrawer::particle(LVector3 pos, LVector4 frame, PN_stdfloat size, 
-  LVector4 color, PN_stdfloat rotation) {
+void MeshDrawer::particle(const LVector3 &pos, const LVector4 &frame, PN_stdfloat size, 
+  const LVector4 &color, PN_stdfloat rotation) {
 
   rotation = rotation / 57.29578;
 
@@ -187,14 +187,15 @@ void MeshDrawer::particle(LVector3 pos, LVector4 frame, PN_stdfloat size,
 //               a blend (from 0 to 1) component between them
 //               Frame contains u,v,u-size,v-size quadruple.
 ////////////////////////////////////////////////////////////////////
-void MeshDrawer::blended_particle(LVector3 pos, LVector4 frame1, 
-  LVector4 frame2, PN_stdfloat blend, PN_stdfloat size, LVector4 color, PN_stdfloat rotation) {
+void MeshDrawer::blended_particle(const LVector3 &pos, const LVector4 &frame1, 
+  const LVector4 &frame2, PN_stdfloat blend, PN_stdfloat size, const LVector4 &color, PN_stdfloat rotation) {
 
-  PN_stdfloat original_w = color.get_w();
-  color.set_w((1.f-blend)*original_w);
-  particle(pos,frame1,size,color,rotation);
-  color.set_w(blend*original_w);
-  particle(pos,frame2,size,color,rotation);
+  LVector4 c2 = color;
+  PN_stdfloat original_w = c2.get_w();
+  c2.set_w((1.f-blend)*original_w);
+  particle(pos,frame1,size,c2,rotation);
+  c2.set_w(blend*original_w);
+  particle(pos,frame2,size,c2,rotation);
 
 }
 
@@ -205,8 +206,8 @@ void MeshDrawer::blended_particle(LVector3 pos, LVector4 frame1,
 //               Billboards always face the camera.
 //               Frame contains u,v,u-size,v-size quadruple.
 ////////////////////////////////////////////////////////////////////
-void MeshDrawer::billboard(LVector3 pos, LVector4 frame, PN_stdfloat size, 
-  LVector4 _color) {
+void MeshDrawer::billboard(const LVector3 &pos, const LVector4 &frame, PN_stdfloat size, 
+  const LVector4 &_color) {
 
   LVector3 v1 = pos + _b1*size;
   LVector3 v2 = pos + _b2*size;
@@ -236,8 +237,8 @@ void MeshDrawer::billboard(LVector3 pos, LVector4 frame, PN_stdfloat size,
 //               billboarding effect.
 //               Frame contains u,v,u-size,v-size quadruple.
 ////////////////////////////////////////////////////////////////////
-void MeshDrawer::segment(LVector3 start, LVector3 stop, LVector4 frame,
-                         PN_stdfloat thickness, LVector4 color) {
+void MeshDrawer::segment(const LVector3 &start, const LVector3 &stop, const LVector4 &frame,
+                         PN_stdfloat thickness, const LVector4 &color) {
   link_segment(start, frame, thickness, color);
   link_segment(stop, frame, thickness, color);
   link_segment_end(frame, color);
@@ -251,8 +252,8 @@ void MeshDrawer::segment(LVector3 start, LVector3 stop, LVector4 frame,
 //               Stars at start and ends at stop.
 //               Frame contains u,v,u-size,v-size quadruple.
 ////////////////////////////////////////////////////////////////////
-void MeshDrawer::cross_segment(LVector3 start, LVector3 stop, LVector4 frame,
-                               PN_stdfloat thickness, LVector4 color) {
+void MeshDrawer::cross_segment(const LVector3 &start, const LVector3 &stop, const LVector4 &frame,
+                               PN_stdfloat thickness, const LVector4 &color) {
   
   PN_stdfloat u = frame.get_x();
   PN_stdfloat v = frame.get_y();
@@ -296,9 +297,9 @@ void MeshDrawer::cross_segment(LVector3 start, LVector3 stop, LVector4 frame,
 //               Stars at start and ends at stop.
 //               Frame contains u,v,u-size,v-size quadruple.
 ////////////////////////////////////////////////////////////////////
-void MeshDrawer::uneven_segment(LVector3 start, LVector3 stop,
-  LVector4 frame, PN_stdfloat thickness_start, LVector4 color_start,
-  PN_stdfloat thickness_stop, LVector4 color_stop) {
+void MeshDrawer::uneven_segment(const LVector3 &start, const LVector3 &stop,
+  const LVector4 &frame, PN_stdfloat thickness_start, const LVector4 &color_start,
+  PN_stdfloat thickness_stop, const LVector4 &color_stop) {
 
   PN_stdfloat u = frame.get_x();
   PN_stdfloat v = frame.get_y();
@@ -337,7 +338,7 @@ void MeshDrawer::uneven_segment(LVector3 start, LVector3 stop,
 //               Frame contains u,v,u-size,v-size quadruple.
 ////////////////////////////////////////////////////////////////////
 void MeshDrawer::explosion(
-  LVector3 pos, LVector4 frame, PN_stdfloat size, LVector4 _color,
+  const LVector3 &pos, const LVector4 &frame, PN_stdfloat size, const LVector4 &_color,
   int seed, int number, PN_stdfloat distance) {
   srand(seed);
   LVector3 relative_pos;
@@ -356,7 +357,7 @@ void MeshDrawer::explosion(
 //               shift dictated by the offset.
 //               Frame contains u,v,u-size,v-size quadruple.
 ////////////////////////////////////////////////////////////////////
-void MeshDrawer::stream(LVector3 start, LVector3 stop, LVector4 frame, PN_stdfloat size, LVector4 _color,
+void MeshDrawer::stream(const LVector3 &start, const LVector3 &stop, const LVector4 &frame, PN_stdfloat size, const LVector4 &_color,
         int number, PN_stdfloat offset) {
 
   offset = offset-floor(offset);
@@ -448,8 +449,8 @@ void MeshDrawer::geometry(NodePath draw_node) {
 //               Frame contains u,v,u-size,v-size quadruple.
 ////////////////////////////////////////////////////////////////////
 void MeshDrawer::
-link_segment(LVector3 pos, LVector4 frame,
-         PN_stdfloat thickness, LVector4 color) {
+link_segment(const LVector3 &pos, const LVector4 &frame,
+         PN_stdfloat thickness, const LVector4 &color) {
   assert(_render.get_error_type() == NodePath::ET_ok);
   assert(_camera.get_error_type() == NodePath::ET_ok);
   /*
@@ -550,7 +551,7 @@ link_segment(LVector3 pos, LVector4 frame,
 //               the linked segment.
 //               Frame contains u,v,u-size,v-size quadruple.
 ////////////////////////////////////////////////////////////////////
-void MeshDrawer::link_segment_end(LVector4 frame, LVector4 color)
+void MeshDrawer::link_segment_end(const LVector4 &frame, const LVector4 &color)
 {
   PN_stdfloat u = frame.get_x();
   PN_stdfloat v = frame.get_y();

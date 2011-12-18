@@ -55,13 +55,12 @@ make_copy() {
 ////////////////////////////////////////////////////////////////////
 void CollisionFloorMesh::
 xform(const LMatrix4 &mat) {
-
-  pvector<LPoint3>::iterator vi;
+  Vertices::iterator vi;
   for (vi=_vertices.begin();vi!=_vertices.end();++vi) {
     LPoint3 pt = (*vi) * mat;
     (*vi).set(pt[0],pt[1],pt[2]);
   }
-  pvector<CollisionFloorMesh::TriangleIndices>::iterator ti;
+  Triangles::iterator ti;
   for (ti=_triangles.begin();ti!=_triangles.end();++ti) {
     CollisionFloorMesh::TriangleIndices tri = *ti;
     LPoint3 v1 = _vertices[tri.p1];
@@ -113,8 +112,7 @@ compute_internal_bounds() const {
     return new BoundingBox;
   }
 
-
-  pvector<LPoint3>::const_iterator pi = _vertices.begin();
+  Vertices::const_iterator pi = _vertices.begin();
   LPoint3 p = (*pi);
 
   LPoint3 x = p;
@@ -295,8 +293,8 @@ fill_viz_geom() {
 
   PT(GeomTriangles) mesh = new GeomTriangles(Geom::UH_static);
   PT(GeomLinestrips) wire = new GeomLinestrips(Geom::UH_static);
-  pvector<CollisionFloorMesh::TriangleIndices>::iterator ti;
-  pvector<LPoint3>::iterator vi;
+  Triangles::iterator ti;
+  Vertices::iterator vi;
   for (vi = _vertices.begin(); vi != _vertices.end(); vi++) {
     LPoint3 vert = *vi;
     vertex.add_data3(vert);

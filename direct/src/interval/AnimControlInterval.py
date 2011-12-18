@@ -6,7 +6,6 @@ from pandac.PandaModules import *
 from direct.directnotify.DirectNotifyGlobal import *
 import Interval
 import math
-from direct.showbase import LerpBlendHelpers
 
 class AnimControlInterval(Interval.Interval):
 

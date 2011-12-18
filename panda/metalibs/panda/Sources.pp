@@ -16,7 +16,7 @@
     p3linmath p3mathutil p3movies p3net p3nativenet \
     p3parametrics \
     p3pnmimagetypes p3pnmimage \
-    p3pnmtext p3text p3tform p3lerp p3putil \
+    p3pnmtext p3text p3tform p3putil \
     p3audio p3pgui p3pandabase p3dxml
 
 #define LOCAL_LIBS \

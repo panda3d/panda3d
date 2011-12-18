@@ -57,6 +57,8 @@ private:
 #define LINMATH_MATRIX(FloatType, NumRows, NumCols) LSimpleMatrix<FloatType, NumRows, NumCols>
 #endif  // HAVE_EIGEN
 
+#define SIMPLE_MATRIX(FloatType, NumRows, NumCols) LSimpleMatrix<FloatType, NumRows, NumCols>
+
 // This is as good a place as any to define this alignment macro.
 #ifdef LINMATH_ALIGN
 #define ALIGN_LINMATH ALIGN_16BYTE

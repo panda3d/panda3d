@@ -333,8 +333,8 @@ check_left_winding(const vector_int &range) const {
   double area = 0.0;
   size_t j = range.size() - 1;
   for (size_t i = 0; i < range.size(); ++i) {
-    const LPoint2d &p0 = _vertices[range[j]];
-    const LPoint2d &p1 = _vertices[range[i]];
+    const UnalignedLVecBase2d &p0 = _vertices[range[j]];
+    const UnalignedLVecBase2d &p1 = _vertices[range[i]];
     area += p0[0] * p1[1] - p0[1] * p1[0];
     j = i;
   }

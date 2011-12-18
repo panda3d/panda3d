@@ -50,5 +50,10 @@ public:
 };
 
 #endif  // USE_STL_ALLOCATOR
+
+// Temporary.  We'll replace this with a vector that uses Eigen's
+// allocator to avoid Win32 issues.
+#define epvector pvector
+
 #endif
 

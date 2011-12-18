@@ -66,26 +66,26 @@ PUBLISHED:
   INLINE NodePath get_root();
 
   void begin(NodePath camera, NodePath render);
-  INLINE void tri(LVector3 v1, LVector4 c1, LVector2 uv1,
-                  LVector3 v2, LVector4 c2, LVector2 uv2,
-                  LVector3 v3, LVector4 c3, LVector2 uv3);
+  INLINE void tri(const LVector3 &v1, const LVector4 &c1, const LVector2 &uv1,
+                  const LVector3 &v2, const LVector4 &c2, const LVector2 &uv2,
+                  const LVector3 &v3, const LVector4 &c3, const LVector2 &uv3);
                   
-  void particle(LVector3 pos, LVector4 frame, PN_stdfloat size, LVector4 color, PN_stdfloat rotation);
-  void blended_particle(LVector3 pos, LVector4 frame1, LVector4 frame2,
-    PN_stdfloat blend, PN_stdfloat size, LVector4 color, PN_stdfloat rotation);
-  void billboard(LVector3 pos, LVector4 frame, PN_stdfloat size, LVector4 color);
-  void segment(LVector3 start, LVector3 stop, LVector4 frame, PN_stdfloat thickness, LVector4 color);
-  void cross_segment(LVector3 start, LVector3 stop, LVector4 frame, PN_stdfloat thickness, LVector4 color);
-  void uneven_segment(LVector3 start, LVector3 stop,
-    LVector4 frame, PN_stdfloat thickness_start, LVector4 color_start,
-    PN_stdfloat thickness_stop, LVector4 color_stop);
+  void particle(const LVector3 &pos, const LVector4 &frame, PN_stdfloat size, const LVector4 &color, PN_stdfloat rotation);
+  void blended_particle(const LVector3 &pos, const LVector4 &frame1, const LVector4 &frame2,
+    PN_stdfloat blend, PN_stdfloat size, const LVector4 &color, PN_stdfloat rotation);
+  void billboard(const LVector3 &pos, const LVector4 &frame, PN_stdfloat size, const LVector4 &color);
+  void segment(const LVector3 &start, const LVector3 &stop, const LVector4 &frame, PN_stdfloat thickness, const LVector4 &color);
+  void cross_segment(const LVector3 &start, const LVector3 &stop, const LVector4 &frame, PN_stdfloat thickness, const LVector4 &color);
+  void uneven_segment(const LVector3 &start, const LVector3 &stop,
+    const LVector4 &frame, PN_stdfloat thickness_start, const LVector4 &color_start,
+    PN_stdfloat thickness_stop, const LVector4 &color_stop);
 
-  void link_segment(LVector3 pos, LVector4 frame, PN_stdfloat thickness, LVector4 color);
-  void link_segment_end(LVector4 frame, LVector4 color);
+  void link_segment(const LVector3 &pos, const LVector4 &frame, PN_stdfloat thickness, const LVector4 &color);
+  void link_segment_end(const LVector4 &frame, const LVector4 &color);
 
-  void explosion(LVector3 pos, LVector4 frame, PN_stdfloat size, LVector4 color,
+  void explosion(const LVector3 &pos, const LVector4 &frame, PN_stdfloat size, const LVector4 &color,
     int seed, int number, PN_stdfloat distance);
-  void stream(LVector3 start, LVector3 stop, LVector4 frame, PN_stdfloat size, LVector4 color,
+  void stream(const LVector3 &start, const LVector3 &stop, const LVector4 &frame, PN_stdfloat size, const LVector4 &color,
     int number, PN_stdfloat offset);
   void geometry(NodePath node);
   void end();

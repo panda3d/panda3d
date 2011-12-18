@@ -79,7 +79,7 @@ private:
     LColor _color;
   };
 
-  typedef pvector<Point> SegmentList;
+  typedef epvector<Point> SegmentList;
   typedef pvector<SegmentList> LineList;
 
   LineList _list;

@@ -216,7 +216,7 @@
     p3dtoolconfig p3dtool \
     p3event:c p3gobj:c p3chan:c p3pgraph:c p3parametrics:c p3char:c p3prc:c p3dtoolutil:c \
     p3interrogatedb:c p3dtoolbase:c p3collide:c p3pnmimage:c p3dgraph:c p3tform:c \
-    p3pipeline:c p3pstatclient:c p3grutil:c p3gsgbase:c p3net:c p3lerp:c p3display:c \
+    p3pipeline:c p3pstatclient:c p3grutil:c p3gsgbase:c p3net:c p3display:c \
     p3cull:c p3text:c p3nativenet:c p3movies:c p3audio:c \
     $[if $[HAVE_FREETYPE],p3pnmtext:c]
 

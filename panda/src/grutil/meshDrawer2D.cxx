@@ -146,7 +146,7 @@ void MeshDrawer2D::end() {
 void MeshDrawer2D::
 rectangle_tiled(PN_stdfloat x, PN_stdfloat y, PN_stdfloat w, PN_stdfloat h, 
      PN_stdfloat u, PN_stdfloat v, PN_stdfloat us, PN_stdfloat vs, 
-     LVector4 color
+     const LVector4 &color
 ) {
 
   PN_stdfloat x_fit = w/us;
@@ -202,7 +202,7 @@ rectangle_border(
     PN_stdfloat r, PN_stdfloat t, PN_stdfloat l, PN_stdfloat b,
     PN_stdfloat tr, PN_stdfloat tt, PN_stdfloat tl, PN_stdfloat tb,
     PN_stdfloat u, PN_stdfloat v, PN_stdfloat us, PN_stdfloat vs, 
-    LVector4 color){
+    const LVector4 &color){
     
     rectangle(x,y,w,h,u,v,us,vs,color); // center
     
@@ -234,7 +234,7 @@ rectangle_border_tiled(
     PN_stdfloat r, PN_stdfloat t, PN_stdfloat l, PN_stdfloat b,
     PN_stdfloat tr, PN_stdfloat tt, PN_stdfloat tl, PN_stdfloat tb,
     PN_stdfloat u, PN_stdfloat v, PN_stdfloat us, PN_stdfloat vs, 
-    LVector4 color){
+    const LVector4 &color){
     
     rectangle_tiled(x,y,w,h,u,v,us,vs,color); // center
     

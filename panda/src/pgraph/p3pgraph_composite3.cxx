@@ -16,7 +16,6 @@
 #include "modelRoot.cxx"
 #include "nodePathCollection.cxx"
 #include "nodePathComponent.cxx"
-#include "nodePathLerps.cxx"
 #include "occluderEffect.cxx"
 #include "occluderNode.cxx"
 #include "pandaNode.cxx"

@@ -26,15 +26,19 @@
 //               to use a pta of this type (whether they need to
 //               export it or not) should include this header file,
 //               rather than defining the pta again.
+//
+//               We actually wrap UnalignedLVecBase3f, in case we are
+//               building with SSE2 and LVecBase3f requires strict
+//               alignment.
 ////////////////////////////////////////////////////////////////////
 
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToBase<ReferenceCountedVector<LVecBase3f> >)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToArrayBase<LVecBase3f>)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToArray<LVecBase3f>)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, ConstPointerToArray<LVecBase3f>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToBase<ReferenceCountedVector<UnalignedLVecBase3f> >)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToArrayBase<UnalignedLVecBase3f>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToArray<UnalignedLVecBase3f>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, ConstPointerToArray<UnalignedLVecBase3f>)
 
-typedef PointerToArray<LVecBase3f> PTA_LVecBase3f;
-typedef ConstPointerToArray<LVecBase3f> CPTA_LVecBase3f;
+typedef PointerToArray<UnalignedLVecBase3f> PTA_LVecBase3f;
+typedef ConstPointerToArray<UnalignedLVecBase3f> CPTA_LVecBase3f;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PTA_LVecBase3d
@@ -43,15 +47,19 @@ typedef ConstPointerToArray<LVecBase3f> CPTA_LVecBase3f;
 //               to use a pta of this type (whether they need to
 //               export it or not) should include this header file,
 //               rather than defining the pta again.
+//
+//               We actually wrap UnalignedLVecBase3d, in case we are
+//               building with SSE2 and LVecBase3d requires strict
+//               alignment.
 ////////////////////////////////////////////////////////////////////
 
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToBase<ReferenceCountedVector<LVecBase3d> >)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToArrayBase<LVecBase3d>)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToArray<LVecBase3d>)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, ConstPointerToArray<LVecBase3d>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToBase<ReferenceCountedVector<UnalignedLVecBase3d> >)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToArrayBase<UnalignedLVecBase3d>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToArray<UnalignedLVecBase3d>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, ConstPointerToArray<UnalignedLVecBase3d>)
 
-typedef PointerToArray<LVecBase3d> PTA_LVecBase3d;
-typedef ConstPointerToArray<LVecBase3d> CPTA_LVecBase3d;
+typedef PointerToArray<UnalignedLVecBase3d> PTA_LVecBase3d;
+typedef ConstPointerToArray<UnalignedLVecBase3d> CPTA_LVecBase3d;
 
 #ifndef STDFLOAT_DOUBLE
 typedef PTA_LVecBase3f PTA_LVecBase3;

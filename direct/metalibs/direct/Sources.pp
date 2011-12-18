@@ -20,7 +20,7 @@
   p3express:c p3pstatclient:c p3prc:c p3pandabase:c p3linmath:c \
   p3putil:c p3display:c p3event:c p3pgraph:c p3pgraphnodes:c \
   p3gsgbase:c p3gobj:c p3mathutil:c \
-  p3lerp:c p3downloader:c p3pnmimage:c p3chan:c \
+  p3downloader:c p3pnmimage:c p3chan:c \
   p3pipeline:c p3cull:c \
   $[if $[HAVE_NET],p3net:c] $[if $[WANT_NATIVE_NET],p3nativenet:c]
 

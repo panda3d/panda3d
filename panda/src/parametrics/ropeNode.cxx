@@ -315,15 +315,15 @@ do_recompute_bounds(const NodePath &rel_to, int pipeline_stage,
   
   NurbsCurveEvaluator *curve = get_curve();
   if (curve != (NurbsCurveEvaluator *)NULL) {
-    pvector<LPoint3> verts;
+    NurbsCurveEvaluator::Vert3Array verts;
     get_curve()->get_vertices(verts, rel_to);
 
     if (has_matrix()) {
       // And then apply the indicated matrix.
       const LMatrix4 &mat = get_matrix();
-      pvector<LPoint3>::iterator vi;
+      NurbsCurveEvaluator::Vert3Array::iterator vi;
       for (vi = verts.begin(); vi != verts.end(); ++vi) {
-        (*vi) = (*vi) * mat;
+        (*vi) = LPoint3(*vi) * mat;
       }
     }
     

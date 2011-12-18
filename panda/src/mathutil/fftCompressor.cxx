@@ -389,7 +389,7 @@ write_reals(Datagram &datagram, const PN_stdfloat *array, int length) {
 //               datagram.
 ////////////////////////////////////////////////////////////////////
 void FFTCompressor::
-write_hprs(Datagram &datagram, const LVecBase3 *array, int length) {
+write_hprs(Datagram &datagram, const UnalignedLVecBase3 *array, int length) {
 #ifndef NDEBUG
   if (_quality >= 104) {
     // If quality level is at least 104, we don't even convert hpr at
@@ -689,7 +689,7 @@ read_reals(DatagramIterator &di, vector_stdfloat &array) {
 //               calculation.  See temp_hpr_fix.
 ////////////////////////////////////////////////////////////////////
 bool FFTCompressor::
-read_hprs(DatagramIterator &di, pvector<LVecBase3> &array, bool new_hpr) {
+read_hprs(DatagramIterator &di, pvector<UnalignedLVecBase3> &array, bool new_hpr) {
 #ifndef NDEBUG
   if (_quality >= 104) {
     // If quality level is at least 104, we don't even convert hpr to
@@ -819,7 +819,7 @@ read_hprs(DatagramIterator &di, pvector<LVecBase3> &array, bool new_hpr) {
 //               ensure that the array is initially empty.
 ////////////////////////////////////////////////////////////////////
 bool FFTCompressor::
-read_hprs(DatagramIterator &di, pvector<LVecBase3> &array) {
+read_hprs(DatagramIterator &di, pvector<UnalignedLVecBase3> &array) {
   return read_hprs(di, array, temp_hpr_fix);
 }
 

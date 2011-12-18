@@ -71,6 +71,11 @@ init_liblinmath() {
   LPoint4f::init_type();
   LMatrix3f::init_type();
   LMatrix4f::init_type();
+  UnalignedLVecBase2f::init_type();
+  UnalignedLVecBase3f::init_type();
+  UnalignedLVecBase4f::init_type();
+  UnalignedLMatrix3f::init_type();
+  UnalignedLMatrix4f::init_type();
 
   LVecBase2d::init_type();
   LVecBase3d::init_type();
@@ -83,6 +88,11 @@ init_liblinmath() {
   LPoint4d::init_type();
   LMatrix3d::init_type();
   LMatrix4d::init_type();
+  UnalignedLVecBase2d::init_type();
+  UnalignedLVecBase3d::init_type();
+  UnalignedLVecBase4d::init_type();
+  UnalignedLMatrix3d::init_type();
+  UnalignedLMatrix4d::init_type();
 
   LQuaternionf::init_type();
   LRotationf::init_type();

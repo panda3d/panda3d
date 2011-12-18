@@ -83,7 +83,7 @@ private:
   public:
     LMatrix4 _x, _y, _z, _w;
   };
-  typedef pvector<ComposedMats> ComposedGeom;
+  typedef epvector<ComposedMats> ComposedGeom;
   ComposedGeom _composed;
 
 

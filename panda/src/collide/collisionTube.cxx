@@ -132,7 +132,7 @@ compute_internal_bounds() const {
     if (vec.normalize()) {
       // The bounding volume includes both endpoints, plus a little
       // bit more to include the radius in both directions.
-      LPoint3 points[2];
+      UnalignedLVecBase3 points[2];
       points[0] = _a - vec * _radius;
       points[1] = _b + vec * _radius;
 
@@ -625,11 +625,12 @@ calc_sphere2_vertex(int ri, int si, int num_rings, int num_slices,
 ////////////////////////////////////////////////////////////////////
 bool CollisionTube::
 intersects_line(double &t1, double &t2,
-                LPoint3 from, LVector3 delta, PN_stdfloat inflate_radius) const {
+                const LPoint3 &from0, const LVector3 &delta0, 
+                PN_stdfloat inflate_radius) const {
   // Convert the line into our canonical coordinate space: the tube is
   // aligned with the y axis.
-  from = from * _inv_mat;
-  delta = delta * _inv_mat;
+  LPoint3 from = from0 * _inv_mat;
+  LVector3 delta = delta0 * _inv_mat;
 
   PN_stdfloat radius = _radius + inflate_radius;
 

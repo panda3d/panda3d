@@ -1,7 +1,7 @@
 #define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \
                    p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c
 #define LOCAL_LIBS \
-    p3lerp p3event p3gsgbase p3gobj p3putil p3linmath \
+    p3event p3gsgbase p3gobj p3putil p3linmath \
     p3downloader p3express p3pandabase p3pstatclient 
 #define USE_PACKAGES python
  
@@ -73,7 +73,6 @@
     nodePath.I nodePath.h nodePath.cxx \
     nodePathCollection.I nodePathCollection.h \
     nodePathComponent.I nodePathComponent.h \
-    nodePathLerps.h \
     occluderEffect.I occluderEffect.h \
     occluderNode.I occluderNode.h \
     pandaNode.I pandaNode.h \
@@ -173,7 +172,6 @@
     modelRoot.cxx \
     nodePathCollection.cxx \
     nodePathComponent.cxx \
-    nodePathLerps.cxx \
     occluderEffect.cxx \
     occluderNode.cxx \
     pandaNode.cxx \
@@ -270,7 +268,6 @@
     nodePath.I nodePath.h \
     nodePathCollection.I nodePathCollection.h \
     nodePathComponent.I nodePathComponent.h \
-    nodePathLerps.h \
     occluderEffect.I occluderEffect.h \
     occluderNode.I occluderNode.h \
     pandaNode.I pandaNode.h \
