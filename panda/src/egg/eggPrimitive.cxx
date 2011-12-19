@@ -1223,7 +1223,7 @@ void EggPrimitive::
 r_set_connected_shading(int stack_depth, EggPrimitive::Shading shading, 
                         const EggAttributes *neighbor, 
                         ConnectedShadingNodes &next_nodes) {
-  if (stack_depth > 10000) {
+  if (stack_depth > egg_recursion_limit) {
     // Too deep.  Limit recursion.
     ConnectedShadingNode next;
     next._shading = shading;
