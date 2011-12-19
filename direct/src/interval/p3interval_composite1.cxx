@@ -13,3 +13,4 @@
 #include "hideInterval.cxx"
 #include "showInterval.cxx"
 #include "waitInterval.cxx"
+#include "lerpblend.cxx"
