@@ -416,6 +416,7 @@ if (COMPILER=="MSVC"):
     if (PkgSkip("PYTHON")==0):
         IncDirectory("ALWAYS", SDK["PYTHON"] + "/include")
         LibDirectory("ALWAYS", SDK["PYTHON"] + "/libs")
+    SmartPkgEnable("EIGEN",     "",          (), ("Eigen/Dense",), target_pkg = 'ALWAYS')
     for pkg in PkgListGet():
         if (PkgSkip(pkg)==0):
             if (pkg[:4]=="MAYA"):

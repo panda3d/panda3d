@@ -1403,7 +1403,8 @@ def SdkLocateDirectX( strMode = 'default' ):
                             SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
                             print '\t\t\tFound default Dx9 Sdk from the uninstaller keys in the registery'
         if ("DX9" not in SDK):
-            exit("\t\tCouldn't find a DirectX SDK")
+            print "\t\tCouldn't find a DirectX SDK"
+            return
     elif strMode == 'jun2010':
         if ("DX9" not in SDK):
             dir = GetRegistryKey("SOFTWARE\\Wow6432Node\\Microsoft\\DirectX\\Microsoft DirectX SDK (June 2010)", "InstallPath")
