@@ -72,6 +72,7 @@ if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
 PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "GL", "GLES", "GLES2"] + DXVERSIONS + ["TINYDISPLAY", "NVIDIACG", # 3D graphics
   "EGL",                                               # OpenGL (ES) integration
+  "EIGEN",                                             # Linear algebra acceleration
   "OPENAL", "FMODEX", "FFMPEG",                        # Multimedia
   "ODE", "PHYSX", "BULLET", "PANDAPHYSICS",            # Physics
   "SPEEDTREE",                                         # SpeedTree
@@ -593,6 +594,7 @@ if (COMPILER=="LINUX"):
 
     #         Name         pkg-config   libs, include(dir)s
     if (not RUNTIME):
+        SmartPkgEnable("EIGEN",     "",          (), ("Eigen/Dense",), target_pkg = 'ALWAYS')
         SmartPkgEnable("ARTOOLKIT", "",          ("AR"), "AR/ar.h")
         SmartPkgEnable("FCOLLADA",  "",          ChooseLib(*fcollada_libs), ("FCollada", "FCollada.h"))
         SmartPkgEnable("FFMPEG",    ffmpeg_libs, ffmpeg_libs, ffmpeg_libs)
@@ -849,7 +851,7 @@ def CompileCxx(obj,src,opts):
             else:
                 cmd += " -arch i386"
                 if ("NOPPC" not in opts): cmd += " -arch ppc"
-        cmd += " -pthread"
+        cmd += " -pthread -msse2"
         optlevel = GetOptimizeOption(opts)
         if (optlevel==1): cmd += " -ggdb -D_DEBUG"
         if (optlevel==2): cmd += " -O1 -D_DEBUG"
@@ -1527,6 +1529,8 @@ DTOOL_CONFIG=[
     ("USE_MEMORY_DLMALLOC",            'UNDEF',                  'UNDEF'),
     ("USE_MEMORY_PTMALLOC2",           '1',                      'UNDEF'),
     ("USE_MEMORY_MALLOC",              'UNDEF',                  '1'),
+    ("HAVE_EIGEN",                     'UNDEF',                  'UNDEF'),
+    ("LINMATH_ALIGN",                  '1',                      '1'),
     ("HAVE_ZLIB",                      'UNDEF',                  'UNDEF'),
     ("HAVE_PNG",                       'UNDEF',                  'UNDEF'),
     ("HAVE_JPEG",                      'UNDEF',                  'UNDEF'),

@@ -327,7 +327,7 @@
 // impact memory usage on very-low-memory platforms.)  Currently
 // experimental.
 #define EIGEN_IPATH 
-#define EIGEN_CFLAGS
+#defer EIGEN_CFLAGS $[if $[WINDOWS_PLATFORM],/arch:SSE2,-msse2]
 #defer HAVE_EIGEN $[isdir $[EIGEN_IPATH]/Eigen]
 #define LINMATH_ALIGN 1
 

@@ -41,6 +41,15 @@ PandaSystem() :
 #ifdef STDFLOAT_DOUBLE
   add_system("stdfloat-double");
 #endif
+
+#ifdef HAVE_EIGEN
+  add_system("eigen");
+#ifdef LINMATH_VECTORIZE
+  set_system_tag("eigen", "vectorize", "1");
+#else
+  set_system_tag("eigen", "vectorize", "0");
+#endif
+#endif  // HAVE_EIGEN
 }
 
 ////////////////////////////////////////////////////////////////////
