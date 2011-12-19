@@ -47,17 +47,18 @@ private:
 
 // Now, do we actually use LSimpleMatrix, or do we use Eigen::Matrix?
 #ifdef HAVE_EIGEN
+#define UNALIGNED_LINMATH_MATRIX(FloatType, NumRows, NumCols) Eigen::Matrix<FloatType, NumRows, NumCols, Eigen::DontAlign | Eigen::RowMajor>
+
 #ifdef LINMATH_ALIGN
 #define LINMATH_MATRIX(FloatType, NumRows, NumCols) Eigen::Matrix<FloatType, NumRows, NumCols, Eigen::RowMajor>
 #else  // LINMATH_ALIGN
-#define LINMATH_MATRIX(FloatType, NumRows, NumCols) Eigen::Matrix<FloatType, NumRows, NumCols, Eigen::DontAlign | Eigen::RowMajor>
+#define LINMATH_MATRIX(FloatType, NumRows, NumCols) UNALIGNED_LINMATH_MATRIX(FloatType, NumRows, NumCols) 
 #endif  // LINMATH_ALIGN
 
 #else  // HAVE_EIGEN
-#define LINMATH_MATRIX(FloatType, NumRows, NumCols) LSimpleMatrix<FloatType, NumRows, NumCols>
+#define UNALIGNED_LINMATH_MATRIX(FloatType, NumRows, NumCols) LSimpleMatrix<FloatType, NumRows, NumCols>
+#define LINMATH_MATRIX(FloatType, NumRows, NumCols) UNALIGNED_LINMATH_MATRIX(FloatType, NumRows, NumCols) 
 #endif  // HAVE_EIGEN
-
-#define SIMPLE_MATRIX(FloatType, NumRows, NumCols) LSimpleMatrix<FloatType, NumRows, NumCols>
 
 // This is as good a place as any to define this alignment macro.
 #ifdef LINMATH_ALIGN

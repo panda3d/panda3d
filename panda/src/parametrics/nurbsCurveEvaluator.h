@@ -82,7 +82,7 @@ PUBLISHED:
 
 public:
   typedef epvector<LVecBase4> Vert4Array;
-  typedef pvector<UnalignedLVecBase3> Vert3Array;
+  typedef pvector<LPoint3> Vert3Array;
   void get_vertices(Vert4Array &verts, const NodePath &rel_to) const;
   void get_vertices(Vert3Array &verts, const NodePath &rel_to) const;
 

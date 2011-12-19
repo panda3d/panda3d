@@ -147,6 +147,11 @@ PUBLISHED:
 
 public:
   // The underlying implementation is via the Eigen library, if available.
+
+  // Unlike LVecBase2 and LVecBase3, we fully align LVecBase4 to
+  // 16-byte boundaries, to take advantage of SSE2 optimizations when
+  // available.  Sometimes this alignment requirement is inconvenient,
+  // so we also provide UnalignedLVecBase4, below.
   typedef LINMATH_MATRIX(FLOATTYPE, 1, 4) EVector4;
   EVector4 _v;
 
@@ -202,7 +207,7 @@ PUBLISHED:
   INLINE_LINMATH int get_num_components() const;
 
 public:
-  typedef SIMPLE_MATRIX(FLOATTYPE, 1, 4) UVector4;
+  typedef UNALIGNED_LINMATH_MATRIX(FLOATTYPE, 1, 4) UVector4;
   UVector4 _v;
 
 public:

@@ -31,16 +31,6 @@ FLOATNAME(LVecBase3)(const FLOATNAME(LVecBase3) &copy) : _v(copy._v) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LVecBase3)::
-FLOATNAME(LVecBase3)(const FLOATNAME(UnalignedLVecBase3) &copy) {
-  set(copy[0], copy[1], copy[2]);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::Copy Assignment Operator
 //       Access: Public
 //  Description:
@@ -49,17 +39,6 @@ INLINE_LINMATH FLOATNAME(LVecBase3) &FLOATNAME(LVecBase3)::
 operator = (const FLOATNAME(LVecBase3) &copy) {
   TAU_PROFILE("void LVecBase3::operator =(LVecBase3 &)", " ", TAU_USER);
   _v = copy._v;
-  return *this;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase3::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LVecBase3) &FLOATNAME(LVecBase3)::
-operator = (const FLOATNAME(UnalignedLVecBase3) &copy) {
-  set(copy[0], copy[1], copy[2]);
   return *this;
 }
 
@@ -1015,133 +994,4 @@ read_datagram(DatagramIterator &source) {
   _v(0) = source.get_stdfloat();
   _v(1) = source.get_stdfloat();
   _v(2) = source.get_stdfloat();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLVecBase3::Default Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(UnalignedLVecBase3)::
-FLOATNAME(UnalignedLVecBase3)() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLVecBase3::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(UnalignedLVecBase3)::
-FLOATNAME(UnalignedLVecBase3)(const FLOATNAME(LVecBase3) &copy) {
-  set(copy[0], copy[1], copy[2]);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLVecBase3::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(UnalignedLVecBase3)::
-FLOATNAME(UnalignedLVecBase3)(const FLOATNAME(UnalignedLVecBase3) &copy) : _v(copy._v) {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLVecBase3::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(UnalignedLVecBase3) &FLOATNAME(UnalignedLVecBase3)::
-operator = (const FLOATNAME(LVecBase3) &copy) {
-  set(copy[0], copy[1], copy[2]);
-  return *this;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLVecBase3::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(UnalignedLVecBase3) &FLOATNAME(UnalignedLVecBase3)::
-operator = (const FLOATNAME(UnalignedLVecBase3) &copy) {
-  TAU_PROFILE("void UnalignedLVecBase3::operator =(UnalignedLVecBase3 &)", " ", TAU_USER);
-  _v = copy._v;
-  return *this;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLVecBase3::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(UnalignedLVecBase3)::
-FLOATNAME(UnalignedLVecBase3)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z) {
-  TAU_PROFILE("UnalignedLVecBase3::UnalignedLVecBase3(FLOATTYPE, ...)", " ", TAU_USER);
-  set(x, y, z);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLVecBase3::set
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH void FLOATNAME(UnalignedLVecBase3)::
-set(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z) {
-  TAU_PROFILE("void UnalignedLVecBase3::set()", " ", TAU_USER);
-  _v(0) = x;
-  _v(1) = y;
-  _v(2) = z;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLVecBase3::Indexing Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATTYPE FLOATNAME(UnalignedLVecBase3)::
-operator [](int i) const {
-  nassertr(i >= 0 && i < 3, 0.0);
-  return _v(i);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLVecBase3::Indexing Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATTYPE &FLOATNAME(UnalignedLVecBase3)::
-operator [](int i) {
-  nassertr(i >= 0 && i < 3, _v(0));
-  return _v(i);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLVecBase3::size
-//       Access: Public, Static
-//  Description: Returns 3: the number of components of a LVecBase3.
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH int FLOATNAME(UnalignedLVecBase3)::
-size() {
-  return 3;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLVecBase3::get_data
-//       Access: Public
-//  Description: Returns the address of the first of the three data
-//               elements in the vector.  The remaining elements
-//               occupy the next positions consecutively in memory.
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH const FLOATTYPE *FLOATNAME(UnalignedLVecBase3)::
-get_data() const {
-  return &_v(0);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLVecBase3::get_num_components
-//       Access: Public
-//  Description: Returns the number of elements in the vector, 3.
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH int FLOATNAME(UnalignedLVecBase3)::
-get_num_components() const {
-  return 3;
 }

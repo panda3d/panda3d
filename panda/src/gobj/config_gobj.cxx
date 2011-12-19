@@ -281,7 +281,9 @@ ConfigVariableInt vertex_column_alignment
           "alignment requirements on a per-column basis as you construct a "
           "GeomVertexFormat.  Setting this value globally could result in "
           "much needless wasted space in all vertex data objects, but it "
-          "could be useful for simple experiments."));
+          "could be useful for simple experiments.  Also see "
+          "egg-vertex-animation-align-16 for a variable that controls "
+          "this alignment for the vertex-animation columns only."));
 
 ConfigVariableEnum<AutoTextureScale> textures_power_2
 ("textures-power-2", ATS_down,

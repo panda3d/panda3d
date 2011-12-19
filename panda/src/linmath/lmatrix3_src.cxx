@@ -13,7 +13,6 @@
 ////////////////////////////////////////////////////////////////////
 
 TypeHandle FLOATNAME(LMatrix3)::_type_handle;
-TypeHandle FLOATNAME(UnalignedLMatrix3)::_type_handle;
 
 const FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::_ident_mat =
   FLOATNAME(LMatrix3)(1.0f, 0.0f, 0.0f,
@@ -511,21 +510,6 @@ init_type() {
   if (_type_handle == TypeHandle::none()) {
     // Format a string to describe the type.
     string name = "LMatrix3";
-    name += FLOATTOKEN;
-    register_type(_type_handle, name);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: UnalignedLMatrix3::init_type
-//       Access: Published, Static
-//  Description:
-////////////////////////////////////////////////////////////////////
-void FLOATNAME(UnalignedLMatrix3)::
-init_type() {
-  if (_type_handle == TypeHandle::none()) {
-    // Format a string to describe the type.
-    string name = "UnalignedLMatrix3";
     name += FLOATTOKEN;
     register_type(_type_handle, name);
   }

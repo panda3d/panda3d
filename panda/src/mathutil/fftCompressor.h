@@ -59,13 +59,13 @@ public:
 
   void write_header(Datagram &datagram);
   void write_reals(Datagram &datagram, const PN_stdfloat *array, int length);
-  void write_hprs(Datagram &datagram, const UnalignedLVecBase3 *array, int length);
+  void write_hprs(Datagram &datagram, const LVecBase3 *array, int length);
 
   bool read_header(DatagramIterator &di, int bam_minor_version);
   bool read_reals(DatagramIterator &di, vector_stdfloat &array);
-  bool read_hprs(DatagramIterator &di, pvector<UnalignedLVecBase3> &array,
+  bool read_hprs(DatagramIterator &di, pvector<LVecBase3> &array,
                  bool new_hpr);
-  bool read_hprs(DatagramIterator &di, pvector<UnalignedLVecBase3> &array);
+  bool read_hprs(DatagramIterator &di, pvector<LVecBase3> &array);
 
   static void free_storage();
 

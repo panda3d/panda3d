@@ -732,7 +732,7 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
   // measured it.
   check_measure();
 
-  UnalignedLVecBase3 vertices[8];
+  LPoint3 vertices[8];
   vertices[0].set(_ul3d[0], _ul3d[1], _ul3d[2]);
   vertices[1].set(_ul3d[0], _ul3d[1], _lr3d[2]);
   vertices[2].set(_ul3d[0], _lr3d[1], _ul3d[2]);

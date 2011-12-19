@@ -140,7 +140,7 @@ public:
   MesherStatus _status;
 
   bool _planar;
-  UnalignedLVecBase3d _plane_normal;
+  LNormald _plane_normal;
   PN_stdfloat _plane_offset;
   int _row_id, _row_distance;
   MesherOrigin _origin;

@@ -201,7 +201,7 @@ private:
                                      PN_stdfloat &largest_area, 
                                      const LVecBase4 *new_frame);
 
-  typedef pvector<UnalignedLVecBase2> ClipPoints;
+  typedef pvector<LVecBase2> ClipPoints;
   bool clip_frame(ClipPoints &source_points, const LPlane &plane) const;
 
 protected:

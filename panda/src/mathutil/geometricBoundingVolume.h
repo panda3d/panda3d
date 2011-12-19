@@ -41,8 +41,7 @@ PUBLISHED:
   // impossible for virtual functions.
   INLINE_MATHUTIL bool around(const GeometricBoundingVolume **first,
                               const GeometricBoundingVolume **last);
-  INLINE_MATHUTIL bool around(const UnalignedLVecBase3 *first, 
-                              const UnalignedLVecBase3 *last);
+  INLINE_MATHUTIL bool around(const LPoint3 *first, const LPoint3 *last);
 
   INLINE_MATHUTIL int contains(const GeometricBoundingVolume *vol) const;
   INLINE_MATHUTIL int contains(const LPoint3 &point) const;
@@ -59,8 +58,8 @@ protected:
   // operations on points in 3-d space.
 
   virtual bool extend_by_point(const LPoint3 &point);
-  virtual bool around_points(const UnalignedLVecBase3 *first,
-                             const UnalignedLVecBase3 *last);
+  virtual bool around_points(const LPoint3 *first,
+                             const LPoint3 *last);
   virtual int contains_point(const LPoint3 &point) const;
   virtual int contains_lineseg(const LPoint3 &a, const LPoint3 &b) const;
 

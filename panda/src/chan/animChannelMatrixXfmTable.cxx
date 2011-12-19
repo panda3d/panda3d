@@ -407,7 +407,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
 
     // Now, write out the joint angles.  For these we need to build up
     // a HPR array.
-    pvector<UnalignedLVecBase3> hprs;
+    pvector<LVecBase3> hprs;
     int hprs_length = max(max(_tables[6].size(), _tables[7].size()), _tables[8].size());
     hprs.reserve(hprs_length);
     for (i = 0; i < hprs_length; i++) {
@@ -416,7 +416,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
       PN_stdfloat r = _tables[8].empty() ? 0.0f : _tables[8][i % _tables[8].size()];
       hprs.push_back(LVecBase3(h, p, r));
     }
-    const UnalignedLVecBase3 *hprs_array = NULL;
+    const LVecBase3 *hprs_array = NULL;
     if (hprs_length != 0) {
       hprs_array = &hprs[0];
     }
@@ -518,7 +518,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     }
 
     // Read in the HPR array and store it back in the joint angles.
-    pvector<UnalignedLVecBase3> hprs;
+    pvector<LVecBase3> hprs;
     compressor.read_hprs(scan, hprs, new_hpr);
     PTA_stdfloat h_table = PTA_stdfloat::empty_array(hprs.size(), get_class_type());
     PTA_stdfloat p_table = PTA_stdfloat::empty_array(hprs.size(), get_class_type());

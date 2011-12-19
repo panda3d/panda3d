@@ -297,17 +297,17 @@ extend_by_finite(const FiniteBoundingVolume *volume) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 bool BoundingSphere::
-around_points(const UnalignedLVecBase3 *first, const UnalignedLVecBase3 *last) {
+around_points(const LPoint3 *first, const LPoint3 *last) {
   nassertr(first != last, false);
 
   // First, get the box of all the points to construct a bounding
   // box.
-  const UnalignedLVecBase3 *p = first;
+  const LPoint3 *p = first;
 
 #ifndef NDEBUG
   // Skip any NaN points.
   int skipped_nan = 0;
-  while (p != last && LPoint3(*p).is_nan()) {
+  while (p != last && (*p).is_nan()) {
     ++p;
     ++skipped_nan;
   }
@@ -324,7 +324,7 @@ around_points(const UnalignedLVecBase3 *first, const UnalignedLVecBase3 *last) {
 
 #ifndef NDEBUG
   // Skip more NaN points.
-  while (p != last && LPoint3(*p).is_nan()) {
+  while (p != last && (*p).is_nan()) {
     ++p;
     ++skipped_nan;
   }
@@ -342,7 +342,7 @@ around_points(const UnalignedLVecBase3 *first, const UnalignedLVecBase3 *last) {
     while (p != last) {
 #ifndef NDEBUG
       // Skip more NaN points.
-      if (LPoint3(*p).is_nan()) {
+      if ((*p).is_nan()) {
         ++skipped_nan;
       } else
 #endif
@@ -363,7 +363,7 @@ around_points(const UnalignedLVecBase3 *first, const UnalignedLVecBase3 *last) {
     // Now walk back through to get the max distance from center.
     PN_stdfloat max_dist2 = 0.0f;
     for (p = first; p != last; ++p) {
-      LVector3 v = LPoint3(*p) - _center;
+      LVector3 v = (*p) - _center;
       PN_stdfloat dist2 = dot(v, v);
       max_dist2 = max(max_dist2, dist2);
     }

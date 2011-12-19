@@ -139,7 +139,7 @@ extend_by_hexahedron(const BoundingHexahedron *) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool OmniBoundingVolume::
-around_points(const UnalignedLVecBase3 *, const UnalignedLVecBase3 *) {
+around_points(const LPoint3 *, const LPoint3 *) {
   return true;
 }
 

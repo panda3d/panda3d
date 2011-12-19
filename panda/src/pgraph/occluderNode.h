@@ -58,7 +58,7 @@ PUBLISHED:
   INLINE void set_vertices(const LPoint3 &v0, const LPoint3 &v1,
                            const LPoint3 &v2, const LPoint3 &v3);
   INLINE int get_num_vertices() const;
-  INLINE LPoint3 get_vertex(int n) const;
+  INLINE const LPoint3 &get_vertex(int n) const;
   MAKE_SEQ(get_vertices, get_num_vertices, get_vertex);
 
 protected:
@@ -73,7 +73,7 @@ protected:
 private:
   bool _double_sided;
   PN_stdfloat _min_coverage;
-  typedef pvector<UnalignedLVecBase3> Vertices;
+  typedef pvector<LPoint3> Vertices;
   Vertices _vertices;
 
   PT(Geom) _occluder_viz, _frame_viz;

@@ -16,7 +16,7 @@
 //       Class : LPoint4
 // Description : This is a four-component point in space.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_LINMATH ALIGN_LINMATH FLOATNAME(LPoint4) : public FLOATNAME(LVecBase4) {
+class EXPCL_PANDA_LINMATH FLOATNAME(LPoint4) : public FLOATNAME(LVecBase4) {
 PUBLISHED:
   INLINE_LINMATH FLOATNAME(LPoint4)();
   INLINE_LINMATH FLOATNAME(LPoint4)(const FLOATNAME(LVecBase4) &copy);

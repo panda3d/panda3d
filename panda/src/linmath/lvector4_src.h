@@ -16,7 +16,7 @@
 //       Class : LVector4
 // Description : This is a four-component vector distance.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_LINMATH ALIGN_LINMATH FLOATNAME(LVector4) : public FLOATNAME(LVecBase4) {
+class EXPCL_PANDA_LINMATH FLOATNAME(LVector4) : public FLOATNAME(LVecBase4) {
 PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVector4)();
   INLINE_LINMATH FLOATNAME(LVector4)(const FLOATNAME(LVecBase4) &copy);

@@ -13,23 +13,19 @@
 ////////////////////////////////////////////////////////////////////
 
 
-class FLOATNAME(UnalignedLVecBase2);
-
 ////////////////////////////////////////////////////////////////////
 //       Class : LVecBase2
 // Description : This is the base class for all two-component
 //               vectors and points.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_LINMATH ALIGN_LINMATH FLOATNAME(LVecBase2) {
+class EXPCL_PANDA_LINMATH FLOATNAME(LVecBase2) {
 PUBLISHED:
   typedef const FLOATTYPE *iterator;
   typedef const FLOATTYPE *const_iterator;
 
   INLINE_LINMATH FLOATNAME(LVecBase2)();
   INLINE_LINMATH FLOATNAME(LVecBase2)(const FLOATNAME(LVecBase2) &copy);
-  INLINE_LINMATH FLOATNAME(LVecBase2)(const FLOATNAME(UnalignedLVecBase2) &copy);
   INLINE_LINMATH FLOATNAME(LVecBase2) &operator = (const FLOATNAME(LVecBase2) &copy);
-  INLINE_LINMATH FLOATNAME(LVecBase2) &operator = (const FLOATNAME(UnalignedLVecBase2) &copy);
   INLINE_LINMATH FLOATNAME(LVecBase2) &operator = (FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LVecBase2)(FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LVecBase2)(FLOATTYPE x, FLOATTYPE y);
@@ -138,7 +134,15 @@ PUBLISHED:
 
 public:
   // The underlying implementation is via the Eigen library, if available.
-  typedef LINMATH_MATRIX(FLOATTYPE, 1, 2) EVector2;
+
+  // We don't bother to align LVecBase2.  The float version is too
+  // small to benefit from SSE2 optimizations.  The double version
+  // *would* benefit, but we use this class infrequently throughout
+  // the Panda codebase, and the nuisance value of maintaining aligned
+  // and unaligned versions of this class outweighs the benefits of
+  // having SSE2 optimizations in the stdfloat-double compilation
+  // mode.
+  typedef UNALIGNED_LINMATH_MATRIX(FLOATTYPE, 1, 2) EVector2;
   EVector2 _v;
 
   INLINE_LINMATH FLOATNAME(LVecBase2)(const EVector2 &v) : _v(v) { }
@@ -157,53 +161,6 @@ public:
 private:
   static TypeHandle _type_handle;
 };
-
-////////////////////////////////////////////////////////////////////
-//       Class : UnalignedLVecBase2
-// Description : This is an "unaligned" LVecBase2.  It has no
-//               functionality other than to store numbers, and it
-//               will pack them in as tightly as possible, avoiding
-//               any SSE2 alignment requirements shared by the primary
-//               LVecBase2 class.
-//
-//               Use it only when you need to pack numbers tightly
-//               without respect to alignment, and then copy it to a
-//               proper LVecBase2 to get actual use from it.
-////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_LINMATH FLOATNAME(UnalignedLVecBase2) {
-PUBLISHED:
-  INLINE_LINMATH FLOATNAME(UnalignedLVecBase2)();
-  INLINE_LINMATH FLOATNAME(UnalignedLVecBase2)(const FLOATNAME(LVecBase2) &copy);
-  INLINE_LINMATH FLOATNAME(UnalignedLVecBase2)(const FLOATNAME(UnalignedLVecBase2) &copy);
-  INLINE_LINMATH FLOATNAME(UnalignedLVecBase2) &operator = (const FLOATNAME(LVecBase2) &copy);
-  INLINE_LINMATH FLOATNAME(UnalignedLVecBase2) &operator = (const FLOATNAME(UnalignedLVecBase2) &copy);
-  INLINE_LINMATH FLOATNAME(UnalignedLVecBase2)(FLOATTYPE x, FLOATTYPE y);
-
-  INLINE_LINMATH void set(FLOATTYPE x, FLOATTYPE y);
-
-  INLINE_LINMATH FLOATTYPE operator [](int i) const;
-  INLINE_LINMATH FLOATTYPE &operator [](int i);
-
-  EXTENSION(INLINE_LINMATH void __setitem__(int i, FLOATTYPE v));
-  INLINE_LINMATH static int size();
-
-  INLINE_LINMATH const FLOATTYPE *get_data() const;
-  INLINE_LINMATH int get_num_components() const;
-
-public:
-  typedef SIMPLE_MATRIX(FLOATTYPE, 1, 2) UVector2;
-  UVector2 _v;
-
-public:
-  static TypeHandle get_class_type() {
-    return _type_handle;
-  }
-  static void init_type();
-
-private:
-  static TypeHandle _type_handle;
-};
-
 
 INLINE ostream &operator << (ostream &out, const FLOATNAME(LVecBase2) &vec) {
   vec.output(out);

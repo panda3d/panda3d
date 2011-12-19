@@ -17,7 +17,7 @@
 //       Class : LPoint2
 // Description : This is a two-component point in space.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_LINMATH ALIGN_LINMATH FLOATNAME(LPoint2) : public FLOATNAME(LVecBase2) {
+class EXPCL_PANDA_LINMATH FLOATNAME(LPoint2) : public FLOATNAME(LVecBase2) {
 PUBLISHED:
   INLINE_LINMATH FLOATNAME(LPoint2)();
   INLINE_LINMATH FLOATNAME(LPoint2)(const FLOATNAME(LVecBase2) &copy);

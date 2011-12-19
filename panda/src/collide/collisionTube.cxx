@@ -132,7 +132,7 @@ compute_internal_bounds() const {
     if (vec.normalize()) {
       // The bounding volume includes both endpoints, plus a little
       // bit more to include the radius in both directions.
-      UnalignedLVecBase3 points[2];
+      LPoint3 points[2];
       points[0] = _a - vec * _radius;
       points[1] = _b + vec * _radius;
 

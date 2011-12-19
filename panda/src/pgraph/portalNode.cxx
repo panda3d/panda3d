@@ -62,7 +62,7 @@ PortalNode(const string &name) :
 //               to create an arbitrary portal and setup from Python
 ////////////////////////////////////////////////////////////////////
 PortalNode::
-PortalNode(const string &name, const LPoint3 &pos, PN_stdfloat scale) :
+PortalNode(const string &name, LPoint3 pos, PN_stdfloat scale) :
   PandaNode(name),
   _from_portal_mask(PortalMask::all_on()),
   _into_portal_mask(PortalMask::all_on()),
@@ -394,8 +394,8 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
   // Now actually compute the bounding volume by putting it around all
   // of our vertices.
 
-  const UnalignedLVecBase3 *vertices_begin = &_vertices[0];
-  const UnalignedLVecBase3 *vertices_end = vertices_begin + _vertices.size();
+  const LPoint3 *vertices_begin = &_vertices[0];
+  const LPoint3 *vertices_end = vertices_begin + _vertices.size();
 
   // Now actually compute the bounding volume by putting it around all
   gbv->around(vertices_begin, vertices_end);
@@ -452,7 +452,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   for (Vertices::const_iterator vi = _vertices.begin();
        vi != _vertices.end();
        ++vi) {
-    LPoint3(*vi).write_datagram(dg);
+    (*vi).write_datagram(dg);
   }
 }
 

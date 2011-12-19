@@ -47,7 +47,7 @@ get_num_vertices() const {
 //       Access: Published
 //  Description: Returns the nth vertex of the occluder polygon.
 ////////////////////////////////////////////////////////////////////
-INLINE LPoint3 OccluderNode::
+INLINE const LPoint3 &OccluderNode::
 get_vertex(int n) const {
   nassertr(n >= 0 && n < (int)_vertices.size(), LPoint3::zero());
   return LPoint3(_vertices[n]);

@@ -13,7 +13,6 @@
 ////////////////////////////////////////////////////////////////////
 
 class FLOATNAME(LMatrix4);
-class FLOATNAME(UnalignedLMatrix3);
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LMatrix3
@@ -23,7 +22,7 @@ class FLOATNAME(UnalignedLMatrix3);
 //               (rotation, scale, translation) in 2-d, e.g. for a
 //               texture matrix.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_LINMATH ALIGN_LINMATH FLOATNAME(LMatrix3) {
+class EXPCL_PANDA_LINMATH FLOATNAME(LMatrix3) {
 public:
   typedef const FLOATTYPE *iterator;
   typedef const FLOATTYPE *const_iterator;
@@ -55,11 +54,8 @@ PUBLISHED:
 
   INLINE_LINMATH FLOATNAME(LMatrix3)();
   INLINE_LINMATH FLOATNAME(LMatrix3)(const FLOATNAME(LMatrix3) &other);
-  INLINE_LINMATH FLOATNAME(LMatrix3)(const FLOATNAME(UnalignedLMatrix3) &other);
   INLINE_LINMATH FLOATNAME(LMatrix3) &operator = (
       const FLOATNAME(LMatrix3) &other);
-  INLINE_LINMATH FLOATNAME(LMatrix3) &operator = (
-      const FLOATNAME(UnalignedLMatrix3) &other);
   INLINE_LINMATH FLOATNAME(LMatrix3) &operator = (FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LMatrix3)(
     FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02,
@@ -300,7 +296,10 @@ PUBLISHED:
 
 public:
   // The underlying implementation is via the Eigen library, if available.
-  typedef LINMATH_MATRIX(FLOATTYPE, 3, 3) EMatrix3;
+
+  // We don't bother to align LMatrix3, since it won't benefit from
+  // SSE2 optimizations anyway (it's an add number of floats).
+  typedef UNALIGNED_LINMATH_MATRIX(FLOATTYPE, 3, 3) EMatrix3;
   EMatrix3 _m;
 
   INLINE_LINMATH FLOATNAME(LMatrix3)(const EMatrix3 &m) : _m(m) { }
@@ -323,54 +322,6 @@ public:
 private:
   static TypeHandle _type_handle;
 };
-
-////////////////////////////////////////////////////////////////////
-//       Class : UnalignedLMatrix3
-// Description : This is an "unaligned" LMatrix3.  It has no
-//               functionality other than to store numbers, and it
-//               will pack them in as tightly as possible, avoiding
-//               any SSE2 alignment requirements shared by the primary
-//               LMatrix3 class.
-//
-//               Use it only when you need to pack numbers tightly
-//               without respect to alignment, and then copy it to a
-//               proper LMatrix3 to get actual use from it.
-////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_LINMATH FLOATNAME(UnalignedLMatrix3) {
-PUBLISHED:
-  INLINE_LINMATH FLOATNAME(UnalignedLMatrix3)();
-  INLINE_LINMATH FLOATNAME(UnalignedLMatrix3)(const FLOATNAME(LMatrix3) &copy);
-  INLINE_LINMATH FLOATNAME(UnalignedLMatrix3)(const FLOATNAME(UnalignedLMatrix3) &copy);
-  INLINE_LINMATH FLOATNAME(UnalignedLMatrix3) &operator = (const FLOATNAME(LMatrix3) &copy);
-  INLINE_LINMATH FLOATNAME(UnalignedLMatrix3) &operator = (const FLOATNAME(UnalignedLMatrix3) &copy);
-  INLINE_LINMATH FLOATNAME(UnalignedLMatrix3)(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02,
-                                              FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12,
-                                              FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22);
-
-  INLINE_LINMATH void set(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02,
-                          FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12,
-                          FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22);
-
-  INLINE_LINMATH FLOATTYPE &operator () (int row, int col);
-  INLINE_LINMATH FLOATTYPE operator () (int row, int col) const;
-
-  INLINE_LINMATH const FLOATTYPE *get_data() const;
-  INLINE_LINMATH int get_num_components() const;
-
-public:
-  typedef SIMPLE_MATRIX(FLOATTYPE, 3, 3) UMatrix3;
-  UMatrix3 _m;
-
-public:
-  static TypeHandle get_class_type() {
-    return _type_handle;
-  }
-  static void init_type();
-
-private:
-  static TypeHandle _type_handle;
-};
-
 
 INLINE ostream &operator << (ostream &out, const FLOATNAME(LMatrix3) &mat) {
   mat.output(out);

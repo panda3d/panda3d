@@ -22,7 +22,7 @@
 //               vector, while addition of a vector and a point yields
 //               a point.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_LINMATH ALIGN_LINMATH FLOATNAME(LVector3) : public FLOATNAME(LVecBase3) {
+class EXPCL_PANDA_LINMATH FLOATNAME(LVector3) : public FLOATNAME(LVecBase3) {
 PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVector3)();
   INLINE_LINMATH FLOATNAME(LVector3)(const FLOATNAME(LVecBase3) &copy);

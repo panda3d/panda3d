@@ -263,6 +263,11 @@ PUBLISHED:
 
 public:
   // The underlying implementation is via the Eigen library, if available.
+
+  // Unlike LMatrix3, we fully align LMatrix4 to 16-byte boundaries,
+  // to take advantage of SSE2 optimizations when available.
+  // Sometimes this alignment requirement is inconvenient, so we also
+  // provide UnalignedLMatrix4, below.
   typedef LINMATH_MATRIX(FLOATTYPE, 4, 4) EMatrix4;
   EMatrix4 _m;
 
@@ -328,7 +333,7 @@ PUBLISHED:
   INLINE_LINMATH int get_num_components() const;
 
 public:
-  typedef SIMPLE_MATRIX(FLOATTYPE, 4, 4) UMatrix4;
+  typedef UNALIGNED_LINMATH_MATRIX(FLOATTYPE, 4, 4) UMatrix4;
   UMatrix4 _m;
 
 public:

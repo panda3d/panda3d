@@ -51,6 +51,7 @@ PUBLISHED:
   INLINE LPoint3 get_point(int n) const;
   MAKE_SEQ(get_points, get_num_points, get_point);
 
+
   INLINE static bool verify_points(const LPoint3 &a, const LPoint3 &b,
                                    const LPoint3 &c);
   INLINE static bool verify_points(const LPoint3 &a, const LPoint3 &b,

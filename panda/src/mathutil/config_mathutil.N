@@ -7,8 +7,8 @@ forcetype PointerToArrayBase<UnalignedLMatrix4f>
 forcetype PTA_LMatrix4f
 forcetype CPTA_LMatrix4f
 
-forcetype PointerToBase<ReferenceCountedVector<UnalignedLMatrix3f> >
-forcetype PointerToArrayBase<UnalignedLMatrix3f>
+forcetype PointerToBase<ReferenceCountedVector<LMatrix3f> >
+forcetype PointerToArrayBase<LMatrix3f>
 forcetype PTA_LMatrix3f
 forcetype CPTA_LMatrix3f
 
@@ -17,13 +17,13 @@ forcetype PointerToArrayBase<UnalignedLVecBase4f>
 forcetype PTA_LVecBase4f
 forcetype CPTA_LVecBase4f
 
-forcetype PointerToBase<ReferenceCountedVector<UnalignedLVecBase3f> >
-forcetype PointerToArrayBase<UnalignedLVecBase3f>
+forcetype PointerToBase<ReferenceCountedVector<LVecBase3f> >
+forcetype PointerToArrayBase<LVecBase3f>
 forcetype PTA_LVecBase3f
 forcetype CPTA_LVecBase3f
 
-forcetype PointerToBase<ReferenceCountedVector<UnalignedLVecBase2f> >
-forcetype PointerToArrayBase<UnalignedLVecBase2f>
+forcetype PointerToBase<ReferenceCountedVector<LVecBase2f> >
+forcetype PointerToArrayBase<LVecBase2f>
 forcetype PTA_LVecBase2f
 forcetype CPTA_LVecBase2f
 
@@ -32,8 +32,8 @@ forcetype PointerToArrayBase<UnalignedLMatrix4d>
 forcetype PTA_LMatrix4d
 forcetype CPTA_LMatrix4d
 
-forcetype PointerToBase<ReferenceCountedVector<UnalignedLMatrix3d> >
-forcetype PointerToArrayBase<UnalignedLMatrix3d>
+forcetype PointerToBase<ReferenceCountedVector<LMatrix3d> >
+forcetype PointerToArrayBase<LMatrix3d>
 forcetype PTA_LMatrix3d
 forcetype CPTA_LMatrix3d
 
@@ -42,12 +42,12 @@ forcetype PointerToArrayBase<UnalignedLVecBase4d>
 forcetype PTA_LVecBase4d
 forcetype CPTA_LVecBase4d
 
-forcetype PointerToBase<ReferenceCountedVector<UnalignedLVecBase3d> >
-forcetype PointerToArrayBase<UnalignedLVecBase3d>
+forcetype PointerToBase<ReferenceCountedVector<LVecBase3d> >
+forcetype PointerToArrayBase<LVecBase3d>
 forcetype PTA_LVecBase3d
 forcetype CPTA_LVecBase3d
 
-forcetype PointerToBase<ReferenceCountedVector<UnalignedLVecBase2d> >
-forcetype PointerToArrayBase<UnalignedLVecBase2d>
+forcetype PointerToBase<ReferenceCountedVector<LVecBase2d> >
+forcetype PointerToArrayBase<LVecBase2d>
 forcetype PTA_LVecBase2d
 forcetype CPTA_LVecBase2d
