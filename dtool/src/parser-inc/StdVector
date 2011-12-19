@@ -1,0 +1,6 @@
+namespace Eigen {
+  template<class Type>
+  class aligned_allocator {
+  };
+};
+
