@@ -202,7 +202,7 @@ private:
     LNormald _normal;
     size_t _vertex;
   };
-  typedef epvector<NVertexReference> NVertexGroup;
+  typedef pvector<NVertexReference> NVertexGroup;
   typedef pmap<LVertexd, NVertexGroup> NVertexCollection;
 
   void r_collect_vertex_normals(NVertexCollection &collection,
@@ -226,7 +226,7 @@ private:
     LTexCoordd _uv;
     bool _facing;
   };
-  typedef epvector<TBNVertexReference> TBNVertexGroup;
+  typedef pvector<TBNVertexReference> TBNVertexGroup;
   typedef pmap<TBNVertexValue, TBNVertexGroup> TBNVertexCollection;
 
   void r_collect_tangent_binormal(const GlobPattern &uv_name,

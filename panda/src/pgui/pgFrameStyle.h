@@ -51,7 +51,7 @@ PUBLISHED:
 
   INLINE void set_color(PN_stdfloat r, PN_stdfloat g, PN_stdfloat b, PN_stdfloat a);
   INLINE void set_color(const LColor &color);
-  INLINE const LColor &get_color() const;
+  INLINE LColor get_color() const;
 
   INLINE void set_texture(Texture *texture);
   INLINE bool has_texture() const;
@@ -87,7 +87,7 @@ private:
 
 private:
   Type _type;
-  LColor _color;
+  UnalignedLVecBase4 _color;
   PT(Texture) _texture;
   LVecBase2 _width;
   LVecBase2 _uv_width;

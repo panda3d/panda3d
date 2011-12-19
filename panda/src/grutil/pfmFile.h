@@ -104,7 +104,7 @@ private:
                       int xi, int yi, int dist, int ti) const;
 
 private:
-  typedef epvector<LPoint3> Table;
+  typedef pvector<LPoint3> Table;
   Table _table;
 
   int _x_size;

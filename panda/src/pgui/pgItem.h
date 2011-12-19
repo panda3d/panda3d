@@ -232,7 +232,7 @@ private:
     NodePath _frame;
     bool _frame_stale;
   };
-  typedef epvector<StateDef> StateDefs;
+  typedef pvector<StateDef> StateDefs;
   StateDefs _state_defs;
 
 #ifdef HAVE_AUDIO

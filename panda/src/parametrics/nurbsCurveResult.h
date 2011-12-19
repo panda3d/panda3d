@@ -96,7 +96,7 @@ private:
     PN_stdfloat _t;
     LPoint3 _point;
   };
-  typedef epvector<AdaptiveSample> AdaptiveResult;
+  typedef pvector<AdaptiveSample> AdaptiveResult;
   AdaptiveResult _adaptive_result;
 };
 

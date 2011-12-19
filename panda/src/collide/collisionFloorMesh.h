@@ -85,8 +85,8 @@ protected:
   virtual void fill_viz_geom();
 
 private:
-  typedef epvector<LPoint3> Vertices;
-  typedef epvector<TriangleIndices> Triangles;
+  typedef pvector<LPoint3> Vertices;
+  typedef pvector<TriangleIndices> Triangles;
 
   Vertices _vertices;
   Triangles _triangles;

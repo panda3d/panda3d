@@ -178,7 +178,7 @@ private:
     LPoint2 _p;
     LVector2 _in, _out;  // tangents into and out of the vertex.
   };
-  typedef epvector<ContourPoint> Points;
+  typedef pvector<ContourPoint> Points;
 
   class Contour {
   public:

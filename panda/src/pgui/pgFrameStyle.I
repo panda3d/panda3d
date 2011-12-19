@@ -112,7 +112,7 @@ set_color(const LColor &color) {
 //       Access: Published
 //  Description: Returns the dominant color of the frame.
 ////////////////////////////////////////////////////////////////////
-INLINE const LColor &PGFrameStyle::
+INLINE LColor PGFrameStyle::
 get_color() const {
   return _color;
 }

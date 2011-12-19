@@ -80,7 +80,7 @@ private:
     LVector3 _surface_normal;
     LPoint3 _interior_point;
   };
-  typedef epvector<CollisionPoint> Points;
+  typedef pvector<CollisionPoint> Points;
 
   class VizInfo {
   public:

@@ -309,8 +309,8 @@ public:
     ShaderMatInput    _part[2];
     PT(InternalName)  _arg[2];
     int               _dep[2];
-    LMatrix4         _cache[2];
-    LMatrix4         _value;
+    LMatrix4          _cache[2];
+    LMatrix4          _value;
     ShaderMatPiece    _piece;
   };
 

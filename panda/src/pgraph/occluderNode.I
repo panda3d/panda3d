@@ -50,7 +50,7 @@ get_num_vertices() const {
 INLINE const LPoint3 &OccluderNode::
 get_vertex(int n) const {
   nassertr(n >= 0 && n < (int)_vertices.size(), LPoint3::zero());
-  return LPoint3(_vertices[n]);
+  return _vertices[n];
 }
 
 ////////////////////////////////////////////////////////////////////

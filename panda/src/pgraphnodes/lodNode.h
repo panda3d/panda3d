@@ -145,7 +145,7 @@ protected:
     PN_stdfloat _in;
     PN_stdfloat _out;
     bool _shown;
-    LColor _show_color;
+    UnalignedLVecBase4 _show_color;
     PT(PandaNode) _ring_viz;
     PT(PandaNode) _spindle_viz;
     CPT(RenderState) _viz_model_state;
@@ -154,7 +154,7 @@ protected:
     UpdateSeq _bounds_seq;
     bool _verify_ok;
   };
-  typedef epvector<Switch> SwitchVector;
+  typedef pvector<Switch> SwitchVector;
 
 private:
   class EXPCL_PANDA_PGRAPH CData : public CycleData {

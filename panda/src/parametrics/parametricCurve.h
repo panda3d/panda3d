@@ -105,7 +105,7 @@ public:
     LVecBase3 _v[4];
     PN_stdfloat _t;
   };
-  typedef epvector<BezierSeg> BezierSegs;
+  typedef pvector<BezierSeg> BezierSegs;
 
   virtual bool get_bezier_segs(BezierSegs &) const;
   virtual bool get_bezier_seg(BezierSeg &) const;

@@ -76,10 +76,10 @@ private:
     INLINE void operator = (const Point &copy);
 
     LVertex _point;
-    LColor _color;
+    UnalignedLVecBase4 _color;
   };
 
-  typedef epvector<Point> SegmentList;
+  typedef pvector<Point> SegmentList;
   typedef pvector<SegmentList> LineList;
 
   LineList _list;
