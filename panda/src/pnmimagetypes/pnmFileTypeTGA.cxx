@@ -315,7 +315,7 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
 
     _x_size = cols;
     _y_size = rows;
-    _num_channels = 3;
+    //_num_channels = 3;
 
 }
 
