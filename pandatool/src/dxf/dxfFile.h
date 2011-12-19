@@ -36,7 +36,7 @@ static const int DXF_num_colors = 256;
 //               appropriate functions overridden (particularly
 //               DoneEntity()).
 ////////////////////////////////////////////////////////////////////
-class DXFFile {
+class DXFFile : public MemoryBase {
 public:
   DXFFile();
   virtual ~DXFFile();

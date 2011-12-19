@@ -26,7 +26,7 @@
 //               The name is either empty or nonempty, but it is never
 //               NULL.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS Namable {
+class EXPCL_PANDAEXPRESS Namable : public MemoryBase {
 PUBLISHED:
   INLINE Namable(const string &initial_name = "");
   INLINE Namable(const Namable &copy);

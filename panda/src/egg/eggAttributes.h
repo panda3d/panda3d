@@ -34,7 +34,7 @@
 //               appearances of the EggObject base class.  And making
 //               EggObject a virtual base class is just no fun.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEGG EggAttributes {
+class EXPCL_PANDAEGG EggAttributes : public MemoryBase {
 PUBLISHED:
   EggAttributes();
   EggAttributes(const EggAttributes &copy);
