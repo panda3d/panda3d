@@ -2212,37 +2212,16 @@ make_vertex_data(const EggRenderState *render_state,
   if (di != _vertex_pool_data.end()) {
     return (*di).second;
   }
-
-  bool align_16 = false;
-  if (is_dynamic) {
-    align_16 = egg_vertex_animation_align_16;
-  }
   
   PT(GeomVertexArrayFormat) array_format = new GeomVertexArrayFormat;
-  if (align_16) {
-    // Enforce a 4-component float and a 16-byte alignment.
-    array_format->add_column
-      (InternalName::get_vertex(), 4,
-       Geom::NT_stdfloat, Geom::C_point, -1, 16);
-  } else {
-    // Allow a tightly-packed 3-component float.
-    array_format->add_column
-      (InternalName::get_vertex(), vertex_pool->get_num_dimensions(),
-       Geom::NT_stdfloat, Geom::C_point);
-  }
+  array_format->add_column
+    (InternalName::get_vertex(), vertex_pool->get_num_dimensions(),
+     Geom::NT_stdfloat, Geom::C_point);
 
   if (vertex_pool->has_normals()) {
-    if (align_16) {
-      // Enforce a 4-component float and a 16-byte alignment.
-      array_format->add_column
-        (InternalName::get_normal(), 4,
-         Geom::NT_stdfloat, Geom::C_vector, -1, 16);
-    } else {
-      // Allow a tightly-packed 3-component float.
-      array_format->add_column
-        (InternalName::get_normal(), 3,
-         Geom::NT_stdfloat, Geom::C_vector);
-    }
+    array_format->add_column
+      (InternalName::get_normal(), 3,
+       Geom::NT_stdfloat, Geom::C_vector);
   }
 
   if (!ignore_color) {
@@ -2274,17 +2253,10 @@ make_vertex_data(const EggRenderState *render_state,
     PT(InternalName) iname_t = InternalName::get_tangent_name(name);
     PT(InternalName) iname_b = InternalName::get_binormal_name(name);
 
-    if (align_16) {
-      array_format->add_column
-        (iname_t, 4, Geom::NT_stdfloat, Geom::C_vector, -1, 16);
-      array_format->add_column
-        (iname_b, 4, Geom::NT_stdfloat, Geom::C_vector, -1, 16);
-    } else {
-      array_format->add_column
-        (iname_t, 3, Geom::NT_stdfloat, Geom::C_vector);
-      array_format->add_column
-        (iname_b, 3, Geom::NT_stdfloat, Geom::C_vector);
-    }
+    array_format->add_column
+      (iname_t, 3, Geom::NT_stdfloat, Geom::C_vector);
+    array_format->add_column
+      (iname_b, 3, Geom::NT_stdfloat, Geom::C_vector);
   }
 
   vector_string aux_names;
@@ -2378,6 +2350,8 @@ make_vertex_data(const EggRenderState *render_state,
     // will show up in PStats.
     name = character_maker->get_name();
   }
+
+  temp_format->maybe_align_columns_for_animation();
 
   CPT(GeomVertexFormat) format =
     GeomVertexFormat::register_format(temp_format);

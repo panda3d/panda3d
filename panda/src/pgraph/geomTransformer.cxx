@@ -131,25 +131,7 @@ transform_vertices(Geom *geom, const LMatrix4 &mat) {
   if (new_data._vdata.is_null()) {
     // We have not yet converted these vertices.  Do so now.
     PT(GeomVertexData) new_vdata = new GeomVertexData(*sv._vertex_data);
-    CPT(GeomVertexFormat) format = new_vdata->get_format();
-    
-    int ci;
-    for (ci = 0; ci < format->get_num_points(); ci++) {
-      GeomVertexRewriter data(new_vdata, format->get_point(ci));
-      
-      while (!data.is_at_end()) {
-        const LPoint3 &point = data.get_data3();
-        data.set_data3(point * mat);
-      }
-    }
-    for (ci = 0; ci < format->get_num_vectors(); ci++) {
-      GeomVertexRewriter data(new_vdata, format->get_vector(ci));
-      
-      while (!data.is_at_end()) {
-        const LVector3 &vector = data.get_data3();
-        data.set_data3(normalize(vector * mat));
-      }
-    }
+    new_vdata->transform_vertices(mat);
     new_data._vdata = new_vdata;
   }
   

@@ -365,6 +365,41 @@ pack_columns() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayFormat::align_columns_for_animation
+//       Access: Published
+//  Description: Reprocesses the columns in the format to align the
+//               C_point and C_vector columns to 16-byte boundaries to
+//               allow for the more efficient SSE2 operations
+//               (assuming SSE2 is enabled in the build).
+//
+//               The caller is responsible for testing
+//               vertex_animation_align_16 to decide whether to call
+//               this method.
+////////////////////////////////////////////////////////////////////
+void GeomVertexArrayFormat::
+align_columns_for_animation() {
+  nassertv(!_is_registered);
+
+  Columns orig_columns;
+  orig_columns.swap(_columns);
+  clear_columns();
+
+  Columns::const_iterator ci;
+  for (ci = orig_columns.begin(); ci != orig_columns.end(); ++ci) {
+    GeomVertexColumn *column = (*ci);
+    if ((column->get_contents() == C_point || column->get_contents() == C_vector) &&
+        (column->get_numeric_type() == NT_float32 || column->get_numeric_type() == NT_float64) &&
+        column->get_num_components() >= 3) {
+      add_column(column->get_name(), 4, column->get_numeric_type(), column->get_contents(), -1, 16);
+    } else {
+      add_column(column->get_name(), column->get_num_components(),
+                 column->get_numeric_type(), column->get_contents());
+    }
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayFormat::get_column
 //       Access: Published
 //  Description: Returns the specification with the indicated name, or

@@ -566,6 +566,41 @@ pack_columns() {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexFormat::align_columns_for_animation
+//       Access: Published
+//  Description: Reprocesses the columns in the format to align the
+//               C_point and C_vector columns to 16-byte boundaries to
+//               allow for the more efficient SSE2 operations
+//               (assuming SSE2 is enabled in the build).
+//
+//               Also see maybe_align_columns_for_animation().
+////////////////////////////////////////////////////////////////////
+void GeomVertexFormat::
+align_columns_for_animation() {
+  nassertv(!_is_registered);
+  Arrays::iterator ai;
+  for (ai = _arrays.begin(); ai != _arrays.end(); ++ai) {
+    if ((*ai)->is_registered()) {
+      (*ai) = new GeomVertexArrayFormat(*(*ai));
+    }
+    (*ai)->align_columns_for_animation();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexFormat::maybe_align_columns_for_animation
+//       Access: Published
+//  Description: Calls align_columns_for_animation() if this format's
+//               AnimationSpec indicates that it contains animated
+//               vertices, and if vertex-animation-align-16 is true.
+////////////////////////////////////////////////////////////////////
+void GeomVertexFormat::
+maybe_align_columns_for_animation() {
+  if (_animation.get_animation_type() == AT_panda && vertex_animation_align_16) {
+    align_columns_for_animation();
+  }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexFormat::output
@@ -608,7 +643,7 @@ write(ostream &out, int indent_level) const {
 
   if (_animation.get_animation_type() != AT_none) {
     indent(out, indent_level)
-      << "anim " << _animation;
+      << "anim " << _animation << "\n";
   }
 }
 

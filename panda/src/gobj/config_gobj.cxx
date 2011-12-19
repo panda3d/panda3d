@@ -282,8 +282,25 @@ ConfigVariableInt vertex_column_alignment
           "GeomVertexFormat.  Setting this value globally could result in "
           "much needless wasted space in all vertex data objects, but it "
           "could be useful for simple experiments.  Also see "
-          "egg-vertex-animation-align-16 for a variable that controls "
-          "this alignment for the vertex-animation columns only."));
+          "vertex-animation-align-16 for a variable that controls "
+          "this alignment for the vertex animation columns only."));
+
+ConfigVariableBool vertex_animation_align_16
+("vertex-animation-align-16", 
+#ifdef LINMATH_ALIGN
+ true,
+#else
+ false,
+#endif
+ PRC_DESC("If this is true, then animated vertices will be created with 4-component "
+          "floats and aligned to 16-byte boundaries, to allow efficient vectorization "
+          "(e.g. SSE2) operations when computing animations.  If this is false, "
+          "animated vertices will be packed as tightly as possible, in the normal way, "
+          "which will optimize the amount of memory that must be sent to the graphics "
+          "card, but prevent the use of SSE2 to calculate animation.  This does not "
+          "affect unanimated vertices, which are always packed tightly.  This also "
+          "impacts only vertex formats created within Panda subsystems; custom "
+          "vertex formats are not affected."));
 
 ConfigVariableEnum<AutoTextureScale> textures_power_2
 ("textures-power-2", ATS_down,

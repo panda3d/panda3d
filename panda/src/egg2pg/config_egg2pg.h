@@ -54,7 +54,6 @@ extern EXPCL_PANDAEGG ConfigVariableBool egg_emulate_bface;
 extern EXPCL_PANDAEGG ConfigVariableBool egg_preload_simple_textures;
 extern EXPCL_PANDAEGG ConfigVariableDouble egg_vertex_membership_quantize;
 extern EXPCL_PANDAEGG ConfigVariableInt egg_vertex_max_num_joints;
-extern EXPCL_PANDAEGG ConfigVariableBool egg_vertex_animation_align_16;
 
 extern EXPCL_PANDAEGG void init_libegg2pg();
 

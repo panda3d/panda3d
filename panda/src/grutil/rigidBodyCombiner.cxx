@@ -252,6 +252,7 @@ convert_vd(const VertexTransform *transform, const GeomVertexData *orig) {
   GeomVertexAnimationSpec spec;
   spec.set_panda();
   format->set_animation(spec);
+  format->maybe_align_columns_for_animation();
 
   CPT(GeomVertexFormat) new_format = GeomVertexFormat::register_format(format);
   CPT(GeomVertexData) converted = orig->convert_to(new_format);

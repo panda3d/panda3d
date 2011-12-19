@@ -100,6 +100,8 @@ PUBLISHED:
 
   void remove_column(const InternalName *name);
   void pack_columns();
+  void align_columns_for_animation();
+  void maybe_align_columns_for_animation();
 
   INLINE int get_num_points() const;
   INLINE const InternalName *get_point(int n) const;

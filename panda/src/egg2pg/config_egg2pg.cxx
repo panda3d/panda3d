@@ -184,21 +184,6 @@ ConfigVariableInt egg_vertex_max_num_joints
           "more than this number of joints, the joints with the lesser membership "
           "value are ignored.  Set this to -1 to allow any number of joints."));
 
-ConfigVariableBool egg_vertex_animation_align_16
-("egg-vertex-animation-align-16", 
-#ifdef LINMATH_ALIGN
- true,
-#else
- false,
-#endif
- PRC_DESC("If this is true, then animated vertices will be created with 4-component "
-          "floats and aligned to 16-byte boundaries, to allow efficient vectorization "
-          "(e.g. SSE2) operations when computing animations.  If this is false, "
-          "animated vertices will be packed as tightly as possible, in the normal way, "
-          "which will optimize the amount of memory that must be sent to the graphics "
-          "card, but prevent the use of SSE2 to calculate animation.  This does not "
-          "affect unanimated vertices, which are always packed tightly."));
-
 ConfigureFn(config_egg2pg) {
   init_libegg2pg();
 }
