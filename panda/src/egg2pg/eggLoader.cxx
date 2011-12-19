@@ -2271,12 +2271,20 @@ make_vertex_data(const EggRenderState *render_state,
   for (ni = tbn_names.begin(); ni != tbn_names.end(); ++ni) {
     string name = (*ni);
 
-    PT(InternalName) iname = InternalName::get_tangent_name(name);
-    array_format->add_column
-      (iname, 3, Geom::NT_stdfloat, Geom::C_vector);
-    iname = InternalName::get_binormal_name(name);
-    array_format->add_column
-      (iname, 3, Geom::NT_stdfloat, Geom::C_vector);
+    PT(InternalName) iname_t = InternalName::get_tangent_name(name);
+    PT(InternalName) iname_b = InternalName::get_binormal_name(name);
+
+    if (align_16) {
+      array_format->add_column
+        (iname_t, 4, Geom::NT_stdfloat, Geom::C_vector, -1, 16);
+      array_format->add_column
+        (iname_b, 4, Geom::NT_stdfloat, Geom::C_vector, -1, 16);
+    } else {
+      array_format->add_column
+        (iname_t, 3, Geom::NT_stdfloat, Geom::C_vector);
+      array_format->add_column
+        (iname_b, 3, Geom::NT_stdfloat, Geom::C_vector);
+    }
   }
 
   vector_string aux_names;
