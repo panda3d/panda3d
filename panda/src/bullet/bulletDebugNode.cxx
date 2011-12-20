@@ -245,8 +245,8 @@ sync_b2p(btDynamicsWorld *world) {
 
       vwriter.add_data3(m.xform_point(line._p0));
       vwriter.add_data3(m.xform_point(line._p1));
-      cwriter.add_data4(line._color);
-      cwriter.add_data4(line._color);
+      cwriter.add_data4(LVecBase4(line._color));
+      cwriter.add_data4(LVecBase4(line._color));
 
       prim->add_vertex(v++);
       prim->add_vertex(v++);
@@ -282,9 +282,9 @@ sync_b2p(btDynamicsWorld *world) {
       vwriter.add_data3(m.xform_point(tri._p0));
       vwriter.add_data3(m.xform_point(tri._p1));
       vwriter.add_data3(m.xform_point(tri._p2));
-      cwriter.add_data4(tri._color);
-      cwriter.add_data4(tri._color);
-      cwriter.add_data4(tri._color);
+      cwriter.add_data4(LVecBase4(tri._color));
+      cwriter.add_data4(LVecBase4(tri._color));
+      cwriter.add_data4(LVecBase4(tri._color));
 
       prim->add_vertex(v++);
       prim->add_vertex(v++);
@@ -356,9 +356,9 @@ drawLine(const btVector3 &from, const btVector3 &to, const btVector3 &color) {
   line._p1 = LVecBase3((PN_stdfloat)to.getX(),
                        (PN_stdfloat)to.getY(),
                        (PN_stdfloat)to.getZ());
-  line._color = LColor((PN_stdfloat)r,
-                       (PN_stdfloat)g, 
-                       (PN_stdfloat)b, 1.0f);
+  line._color = UnalignedLVecBase4((PN_stdfloat)r,
+                                   (PN_stdfloat)g, 
+                                   (PN_stdfloat)b, 1.0f);
 
   _lines.push_back(line);
 }
@@ -389,9 +389,9 @@ drawTriangle(const btVector3 &v0, const btVector3 &v1, const btVector3 &v2, cons
                       (PN_stdfloat)v2.getY(),
                       (PN_stdfloat)v2.getZ());
 
-  tri._color = LColor((PN_stdfloat)r, 
-                      (PN_stdfloat)g, 
-                      (PN_stdfloat)b, 1.0f);
+  tri._color = UnalignedLVecBase4((PN_stdfloat)r, 
+                                  (PN_stdfloat)g, 
+                                  (PN_stdfloat)b, 1.0f);
 
   _triangles.push_back(tri);
 

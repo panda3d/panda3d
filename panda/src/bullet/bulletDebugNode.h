@@ -52,14 +52,14 @@ private:
   struct Line {
     LVecBase3 _p0;
     LVecBase3 _p1;
-    LColor _color;
+    UnalignedLVecBase4 _color;
   };
 
   struct Triangle {
     LVecBase3 _p0;
     LVecBase3 _p1;
     LVecBase3 _p2;
-    LColor _color;
+    UnalignedLVecBase4 _color;
   };
 
   class DebugDraw : public btIDebugDraw {
