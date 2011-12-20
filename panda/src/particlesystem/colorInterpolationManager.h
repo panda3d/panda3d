@@ -66,11 +66,11 @@ class ColorInterpolationFunctionConstant : public ColorInterpolationFunction {
 PUBLISHED:
   INLINE LColor get_color_a() const;
 
-  INLINE void set_color_a(const LColor c);
+  INLINE void set_color_a(const LColor &c);
 
 public:
   ColorInterpolationFunctionConstant();
-  ColorInterpolationFunctionConstant(const LColor color_a);
+  ColorInterpolationFunctionConstant(const LColor &color_a);
 
 protected:
   virtual LColor interpolate(const PN_stdfloat t = 0) const;
@@ -107,11 +107,11 @@ class ColorInterpolationFunctionLinear : public ColorInterpolationFunctionConsta
 PUBLISHED:
   INLINE LColor get_color_b() const;
 
-  INLINE void set_color_b(const LColor c);
+  INLINE void set_color_b(const LColor &c);
 
 public:
   ColorInterpolationFunctionLinear();
-  ColorInterpolationFunctionLinear(const LColor color_a, const LColor color_b);
+  ColorInterpolationFunctionLinear(const LColor &color_a, const LColor &color_b);
 
 protected:
   LColor interpolate(const PN_stdfloat t = 0) const;
@@ -157,7 +157,7 @@ PUBLISHED:
 
 public:
   ColorInterpolationFunctionStepwave();
-  ColorInterpolationFunctionStepwave(const LColor color_a, const LColor color_b, const PN_stdfloat width_a, const PN_stdfloat width_b);
+  ColorInterpolationFunctionStepwave(const LColor &color_a, const LColor &color_b, const PN_stdfloat width_a, const PN_stdfloat width_b);
 
 protected:
   LColor interpolate(const PN_stdfloat t = 0) const;
@@ -203,7 +203,7 @@ PUBLISHED:
 
 public:
   ColorInterpolationFunctionSinusoid();
-  ColorInterpolationFunctionSinusoid(const LColor color_a, const LColor color_b, const PN_stdfloat period);
+  ColorInterpolationFunctionSinusoid(const LColor &color_a, const LColor &color_b, const PN_stdfloat period);
 
 protected:
   LColor interpolate(const PN_stdfloat t = 0) const;
@@ -287,10 +287,10 @@ ColorInterpolationManager();
   ColorInterpolationManager(const ColorInterpolationManager& copy);    
   virtual ~ColorInterpolationManager();
 
-  int add_constant(const PN_stdfloat time_begin = 0.0f, const PN_stdfloat time_end = 1.0f, const LColor color = LColor(1.0f,1.0f,1.0f,1.0f), const bool is_modulated = true);
-  int add_linear(const PN_stdfloat time_begin = 0.0f, const PN_stdfloat time_end = 1.0f, const LColor color_a = LColor(1.0f,0.0f,0.0f,1.0f), const LColor color_b = LColor(0.0f,1.0f,0.0f,1.0f), const bool is_modulated = true);
-  int add_stepwave(const PN_stdfloat time_begin = 0.0f, const PN_stdfloat time_end = 1.0f, const LColor color_a = LColor(1.0f,0.0f,0.0f,1.0f), const LColor color_b = LColor(0.0f,1.0f,0.0f,1.0f), const PN_stdfloat width_a = 0.5f, const PN_stdfloat width_b = 0.5f, const bool is_modulated = true);
-  int add_sinusoid(const PN_stdfloat time_begin = 0.0f, const PN_stdfloat time_end = 1.0f, const LColor color_a = LColor(1.0f,0.0f,0.0f,1.0f), const LColor color_b = LColor(0.0f,1.0f,0.0f,1.0f), const PN_stdfloat period = 1.0f, const bool is_modulated = true);
+  int add_constant(const PN_stdfloat time_begin = 0.0f, const PN_stdfloat time_end = 1.0f, const LColor &color = LColor(1.0f,1.0f,1.0f,1.0f), const bool is_modulated = true);
+  int add_linear(const PN_stdfloat time_begin = 0.0f, const PN_stdfloat time_end = 1.0f, const LColor &color_a = LColor(1.0f,0.0f,0.0f,1.0f), const LColor &color_b = LColor(0.0f,1.0f,0.0f,1.0f), const bool is_modulated = true);
+  int add_stepwave(const PN_stdfloat time_begin = 0.0f, const PN_stdfloat time_end = 1.0f, const LColor &color_a = LColor(1.0f,0.0f,0.0f,1.0f), const LColor &color_b = LColor(0.0f,1.0f,0.0f,1.0f), const PN_stdfloat width_a = 0.5f, const PN_stdfloat width_b = 0.5f, const bool is_modulated = true);
+  int add_sinusoid(const PN_stdfloat time_begin = 0.0f, const PN_stdfloat time_end = 1.0f, const LColor &color_a = LColor(1.0f,0.0f,0.0f,1.0f), const LColor &color_b = LColor(0.0f,1.0f,0.0f,1.0f), const PN_stdfloat period = 1.0f, const bool is_modulated = true);
 
   INLINE void set_default_color(const LColor &c);
   INLINE ColorInterpolationSegment* get_segment(const int seg_id);

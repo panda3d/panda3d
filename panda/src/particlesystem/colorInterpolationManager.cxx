@@ -58,7 +58,7 @@ ColorInterpolationFunctionConstant() :
 ////////////////////////////////////////////////////////////////////
 
 ColorInterpolationFunctionConstant::
-ColorInterpolationFunctionConstant(const LColor color_a) :
+ColorInterpolationFunctionConstant(const LColor &color_a) :
   _c_a(color_a) {
 }
 
@@ -91,8 +91,8 @@ ColorInterpolationFunctionLinear() :
 ////////////////////////////////////////////////////////////////////
 
 ColorInterpolationFunctionLinear::
-ColorInterpolationFunctionLinear(const LColor color_a, 
-                                 const LColor color_b) :
+ColorInterpolationFunctionLinear(const LColor &color_a, 
+                                 const LColor &color_b) :
   ColorInterpolationFunctionConstant(color_a),
   _c_b(color_b) {
 }
@@ -127,8 +127,8 @@ ColorInterpolationFunctionStepwave() :
 ////////////////////////////////////////////////////////////////////
 
 ColorInterpolationFunctionStepwave::
-ColorInterpolationFunctionStepwave(const LColor color_a,
-                                   const LColor color_b, 
+ColorInterpolationFunctionStepwave(const LColor &color_a,
+                                   const LColor &color_b, 
                                    const PN_stdfloat width_a,
                                    const PN_stdfloat width_b) :
   ColorInterpolationFunctionLinear(color_a,color_b),
@@ -168,8 +168,8 @@ ColorInterpolationFunctionSinusoid() :
 ////////////////////////////////////////////////////////////////////
 
 ColorInterpolationFunctionSinusoid::
-ColorInterpolationFunctionSinusoid(const LColor color_a, 
-                                   const LColor color_b, 
+ColorInterpolationFunctionSinusoid(const LColor &color_a, 
+                                   const LColor &color_b, 
                                    const PN_stdfloat period) :
   ColorInterpolationFunctionLinear(color_a,color_b),
   _period(period) {
@@ -307,7 +307,7 @@ ColorInterpolationManager::
 ////////////////////////////////////////////////////////////////////
 
 int ColorInterpolationManager::
-add_constant(const PN_stdfloat time_begin, const PN_stdfloat time_end, const LColor color, const bool is_modulated) {
+add_constant(const PN_stdfloat time_begin, const PN_stdfloat time_end, const LColor &color, const bool is_modulated) {
   PT(ColorInterpolationFunctionConstant) fPtr = new ColorInterpolationFunctionConstant(color);
   PT(ColorInterpolationSegment) sPtr = new ColorInterpolationSegment(fPtr,time_begin,time_end,is_modulated,_id_generator);
 
@@ -324,7 +324,7 @@ add_constant(const PN_stdfloat time_begin, const PN_stdfloat time_end, const LCo
 ////////////////////////////////////////////////////////////////////
 
 int ColorInterpolationManager::
-add_linear(const PN_stdfloat time_begin, const PN_stdfloat time_end, const LColor color_a, const LColor color_b, const bool is_modulated) {
+add_linear(const PN_stdfloat time_begin, const PN_stdfloat time_end, const LColor &color_a, const LColor &color_b, const bool is_modulated) {
   PT(ColorInterpolationFunctionLinear) fPtr = new ColorInterpolationFunctionLinear(color_a, color_b);
   PT(ColorInterpolationSegment) sPtr = new ColorInterpolationSegment(fPtr,time_begin,time_end,is_modulated,_id_generator);
 
@@ -341,7 +341,7 @@ add_linear(const PN_stdfloat time_begin, const PN_stdfloat time_end, const LColo
 ////////////////////////////////////////////////////////////////////
 
 int ColorInterpolationManager::
-add_stepwave(const PN_stdfloat time_begin, const PN_stdfloat time_end, const LColor color_a, const LColor color_b, const PN_stdfloat width_a, const PN_stdfloat width_b,const bool is_modulated) {
+add_stepwave(const PN_stdfloat time_begin, const PN_stdfloat time_end, const LColor &color_a, const LColor &color_b, const PN_stdfloat width_a, const PN_stdfloat width_b,const bool is_modulated) {
   PT(ColorInterpolationFunctionStepwave) fPtr = new ColorInterpolationFunctionStepwave(color_a, color_b, width_a, width_b);
   PT(ColorInterpolationSegment) sPtr = new ColorInterpolationSegment(fPtr,time_begin,time_end,is_modulated,_id_generator);
 
@@ -359,7 +359,7 @@ add_stepwave(const PN_stdfloat time_begin, const PN_stdfloat time_end, const LCo
 ////////////////////////////////////////////////////////////////////
 
 int ColorInterpolationManager::
-add_sinusoid(const PN_stdfloat time_begin, const PN_stdfloat time_end, const LColor color_a, const LColor color_b, const PN_stdfloat period,const bool is_modulated) {
+add_sinusoid(const PN_stdfloat time_begin, const PN_stdfloat time_end, const LColor &color_a, const LColor &color_b, const PN_stdfloat period,const bool is_modulated) {
   PT(ColorInterpolationFunctionSinusoid) fPtr = new ColorInterpolationFunctionSinusoid(color_a, color_b, period);
   PT(ColorInterpolationSegment) sPtr = new ColorInterpolationSegment(fPtr,time_begin,time_end,is_modulated,_id_generator);
 

@@ -32,7 +32,7 @@ get_color_a() const {
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ColorInterpolationFunctionConstant::
-set_color_a(const LColor c) {
+set_color_a(const LColor &c) {
   _c_a = c;
 }
 
@@ -54,7 +54,7 @@ get_color_b() const {
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ColorInterpolationFunctionLinear::
-set_color_b(const LColor c) {
+set_color_b(const LColor &c) {
   _c_b = c;
 }
 
