@@ -42,7 +42,7 @@ private:
   void get_coord_values();
   void get_polys();
   void get_vrml_colors(const VrmlNode *color_node, double transparency,
-                       pvector<LColor> &color_list);
+                       pvector<UnalignedLVecBase4> &color_list);
   void get_vrml_normals(const VrmlNode *normal_node, 
                         pvector<LNormald> &normal_list);
   void get_vrml_uvs(const VrmlNode *texCoord_node, 
@@ -69,7 +69,7 @@ private:
     epvector<VrmlVertex> _verts;
   };
   pvector<LVertexd> _coord_values;
-  pvector<VrmlPolygon> _polys;
+  epvector<VrmlPolygon> _polys;
   pvector<LTexCoordd> _per_vertex_uvs;
   pvector<LNormald> _per_vertex_normals;
 

@@ -94,10 +94,10 @@ get_splat_layer_tiling(int n) const {
 //               is used just to match the color of the grass to its
 //               terrain.
 ////////////////////////////////////////////////////////////////////
-INLINE const LVecBase4 &STTerrain::
+INLINE LColor STTerrain::
 get_splat_layer_color(int n) const {
   nassertr(n >= 0 && n < (int)_splat_layers.size(), _splat_layers[0]._color);
-  return _splat_layers[n]._color;
+  return LVecBase4(_splat_layers[n]._color);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -54,7 +54,7 @@ PUBLISHED:
   INLINE int get_num_splat_layers() const;
   INLINE const Filename &get_splat_layer(int n) const;
   INLINE PN_stdfloat get_splat_layer_tiling(int n) const;
-  INLINE const LVecBase4 &get_splat_layer_color(int n) const;
+  INLINE LColor get_splat_layer_color(int n) const;
 
   INLINE const GeomVertexFormat *get_vertex_format();
 
@@ -93,7 +93,7 @@ protected:
   public:
     Filename _filename;
     PN_stdfloat _tiling;
-    LVecBase4 _color;
+    UnalignedLVecBase4 _color;
   };
   typedef pvector<SplatLayer> SplatLayers;
 

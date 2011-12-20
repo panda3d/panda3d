@@ -60,7 +60,7 @@ public:
     LMatrix4d _mat;
   };
 
-  typedef pvector<FrameEntry> FrameEntries;
+  typedef epvector<FrameEntry> FrameEntries;
 
   class FrameData {
   public:

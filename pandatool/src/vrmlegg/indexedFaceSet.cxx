@@ -114,7 +114,7 @@ get_polys() {
 ////////////////////////////////////////////////////////////////////
 void IndexedFaceSet::
 get_vrml_colors(const VrmlNode *color_node, double transparency,
-                pvector<LColor> &color_list) {
+                pvector<UnalignedLVecBase4> &color_list) {
   const MFArray *color = color_node->get_value("color")._mf;
   MFArray::const_iterator ci;
   for (ci = color->begin(); ci != color->end(); ++ci) {
@@ -171,7 +171,7 @@ get_colors() {
   const VrmlNode *color = _geometry->get_value("color")._sfnode._p;
   if (color != NULL) {
     // Vertex or face colors.
-    pvector<LColor> color_list;
+    pvector<UnalignedLVecBase4> color_list;
     get_vrml_colors(color, _appearance._transparency, color_list);
     
     bool colorPerVertex = _geometry->get_value("colorPerVertex")._sfbool;

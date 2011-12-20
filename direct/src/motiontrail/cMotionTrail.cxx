@@ -359,7 +359,7 @@ update_motion_trail (PN_stdfloat current_time, LMatrix4 *transform) {
 
   total_frames = _frame_list.size ( );
   if (total_frames >= 1) {
-    list <CMotionTrailFrame>::iterator frame_iterator;
+    FrameList::iterator frame_iterator;
     CMotionTrailFrame motion_trail_frame;
  
     frame_iterator = _frame_list.begin ( );
@@ -419,7 +419,7 @@ update_motion_trail (PN_stdfloat current_time, LMatrix4 *transform) {
     motion_trail_frame._time = current_time;
     motion_trail_frame._transform = *transform;
 
-    _frame_list.push_front (motion_trail_frame);
+    _frame_list.push_front(motion_trail_frame);
   }
 
   // convert frames and vertices to geometry
@@ -435,7 +435,7 @@ update_motion_trail (PN_stdfloat current_time, LMatrix4 *transform) {
     PN_stdfloat delta_time;
     CMotionTrailFrame last_motion_trail_frame;
 
-    list <CMotionTrailVertex>::iterator vertex_iterator;    
+    VertexList::iterator vertex_iterator;    
 
     // convert vertex list to vertex array
     int index = 0;
@@ -494,7 +494,7 @@ update_motion_trail (PN_stdfloat current_time, LMatrix4 *transform) {
       
       segment_index = 0;
 
-      list <CMotionTrailFrame>::iterator frame_iterator;
+      FrameList::iterator frame_iterator;
       frame_iterator = _frame_list.begin ( );
       while (segment_index < total_segments) {
         int vertex_segement_index;
@@ -747,7 +747,7 @@ update_motion_trail (PN_stdfloat current_time, LMatrix4 *transform) {
       CMotionTrailFrame motion_trail_frame_end;
                     
       segment_index = 0;
-      list <CMotionTrailFrame>::iterator frame_iterator;
+      FrameList::iterator frame_iterator;
       frame_iterator = _frame_list.begin ( );
       while (segment_index < total_segments) {
       

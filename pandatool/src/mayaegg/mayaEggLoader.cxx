@@ -952,14 +952,14 @@ public:
   TVertTable _tvert_tab;
   CVertTable _cvert_tab;
   
-  int GetTVert(LTexCoordd uv);
-  int GetCVert(LColor col);
+  int GetTVert(const LTexCoordd &uv);
+  int GetCVert(const LColor &col);
   int AddFace(unsigned numVertices, MIntArray mvertIndices, MIntArray mtvertIndices, MayaEggTex *tex);
 
   void ConnectTextures(void);
 };
 
-int MayaEggMesh::GetTVert(LTexCoordd uv)
+int MayaEggMesh::GetTVert(const LTexCoordd &uv)
 {
   if (_tvert_tab.count(uv)) {
     if (mayaloader_cat.is_spam()) {
@@ -977,7 +977,7 @@ int MayaEggMesh::GetTVert(LTexCoordd uv)
   return idx;
 }
 
-int MayaEggMesh::GetCVert(LColor col)
+int MayaEggMesh::GetCVert(const LColor &col)
 {
   //  if (_cvert_tab.count(col))
   //    return _cvert_tab[col];

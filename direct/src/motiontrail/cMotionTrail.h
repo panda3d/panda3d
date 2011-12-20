@@ -23,25 +23,23 @@
 #include "geomTriangles.h"
 #include "luse.h"
 #include "nurbsCurveEvaluator.h"
-
-#include <list>
+#include "plist.h"
+#include "pvector.h"
 
 class CMotionTrailVertex {
-
 public:
-  LVector4 _vertex;
-  LVector4 _start_color;
-  LVector4 _end_color;
+  LPoint4 _vertex;
+  LVecBase4 _start_color;
+  LVecBase4 _end_color;
   PN_stdfloat _v;
   
   PT(NurbsCurveEvaluator) _nurbs_curve_evaluator;
 };
 
 class CMotionTrailFrame {
-
 public:
+  UnalignedLMatrix4 _transform;
   PN_stdfloat _time;
-  LMatrix4 _transform;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -126,8 +124,10 @@ public:
 
   PN_stdfloat _last_update_time;
 
-  list <CMotionTrailVertex> _vertex_list;
-  list <CMotionTrailFrame> _frame_list;
+  typedef epvector<CMotionTrailVertex> VertexList;
+  VertexList _vertex_list;
+  typedef plist<CMotionTrailFrame> FrameList;
+  FrameList _frame_list;
 
   // parameters
   PN_stdfloat _color_scale;
