@@ -90,7 +90,7 @@ private:
                         const unsigned char *&r,
                         const unsigned char *&g,
                         const unsigned char *&b,
-                        ssize_t &x_pitch, ssize_t &y_pitch);
+                        int &x_pitch, int &y_pitch);
 
     CvCapture *_capture;
     Filename _filename;

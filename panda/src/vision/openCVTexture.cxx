@@ -310,14 +310,14 @@ do_update_frame(Texture::CData *cdata, int frame, int z) {
     do_modify_ram_image(cdata);
     ++(cdata->_image_modified);
   }
-  ssize_t dest_x_pitch = cdata->_num_components * cdata->_component_width;
-  ssize_t dest_y_pitch = cdata->_x_size * dest_x_pitch;
+  int dest_x_pitch = cdata->_num_components * cdata->_component_width;
+  int dest_y_pitch = cdata->_x_size * dest_x_pitch;
 
   if (page._color.is_valid()) {
     nassertv(get_num_components() >= 3 && get_component_width() == 1);
 
     const unsigned char *r, *g, *b;
-    ssize_t x_pitch, y_pitch;
+    int x_pitch, y_pitch;
     if (page._color.get_frame_data(frame, r, g, b, x_pitch, y_pitch)) {
       nassertv(get_video_width() <= cdata->_x_size && get_video_height() <= cdata->_y_size);
       nassertv(!cdata->_ram_images.empty())
@@ -325,7 +325,7 @@ do_update_frame(Texture::CData *cdata, int frame, int z) {
 
       if (cdata->_num_components == 3 && x_pitch == 3) {
         // The easy case--copy the whole thing in, row by row.
-        ssize_t copy_bytes = get_video_width() * dest_x_pitch;
+        int copy_bytes = get_video_width() * dest_x_pitch;
         nassertv(copy_bytes <= dest_y_pitch && copy_bytes <= abs(y_pitch));
 
         for (int y = 0; y < get_video_height(); ++y) {
@@ -339,8 +339,8 @@ do_update_frame(Texture::CData *cdata, int frame, int z) {
         // pixel, possibly leaving room for alpha.
 
         for (int y = 0; y < get_video_height(); ++y) {
-          ssize_t dx = 0;
-          ssize_t sx = 0;
+          int dx = 0;
+          int sx = 0;
           for (int x = 0; x < get_video_width(); ++x) {
             dest[dx] = r[sx];
             dest[dx + 1] = g[sx];
@@ -360,7 +360,7 @@ do_update_frame(Texture::CData *cdata, int frame, int z) {
     nassertv(get_component_width() == 1);
 
     const unsigned char *source[3];
-    ssize_t x_pitch, y_pitch;
+    int x_pitch, y_pitch;
     if (page._alpha.get_frame_data(frame, source[0], source[1], source[2],
                                    x_pitch, y_pitch)) {
       nassertv(get_video_width() <= cdata->_x_size && get_video_height() <= cdata->_y_size);
@@ -378,8 +378,8 @@ do_update_frame(Texture::CData *cdata, int frame, int z) {
       for (int y = 0; y < get_video_height(); ++y) {
         // Start dx at _num_components - 1, which writes to the last
         // channel, i.e. the alpha channel.
-        ssize_t dx = (cdata->_num_components - 1) * cdata->_component_width; 
-        ssize_t sx = 0;
+        int dx = (cdata->_num_components - 1) * cdata->_component_width; 
+        int sx = 0;
         for (int x = 0; x < get_video_width(); ++x) {
           dest[dx] = sch[sx];
           dx += dest_x_pitch;
@@ -586,7 +586,7 @@ get_frame_data(int frame,
                const unsigned char *&r,
                const unsigned char *&g,
                const unsigned char *&b,
-               ssize_t &x_pitch, ssize_t &y_pitch) {
+               int &x_pitch, int &y_pitch) {
   nassertr(is_valid(), false);
 
   if (is_from_file() && _next_frame != frame) {
