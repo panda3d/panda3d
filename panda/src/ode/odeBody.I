@@ -128,7 +128,7 @@ set_position(const LVecBase3f &pos) {
 }
 
 INLINE void OdeBody::
-set_rotation(const LMatrix3f r) {
+set_rotation(const LMatrix3f &r) {
   dMatrix3 mat3 = { r(0, 0), r(0, 1), r(0, 2), 0,
                     r(1, 0), r(1, 1), r(1, 2), 0,
                     r(2, 0), r(2, 1), r(2, 2), 0 };
@@ -137,7 +137,7 @@ set_rotation(const LMatrix3f r) {
 }
 
 INLINE void OdeBody::
-set_quaternion(const LQuaternionf q) {
+set_quaternion(const LQuaternionf &q) {
   dQuaternion quat = { q[0], q[1], q[2], q[3] };
   dBodySetQuaternion(_id, quat);
 }

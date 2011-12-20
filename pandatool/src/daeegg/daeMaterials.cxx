@@ -374,7 +374,7 @@ convert_filter_type(const FUDaeTextureFilterFunction::FilterFunction orig_type) 
 //  Description: Converts collada blend attribs to Panda's equivalents.
 ////////////////////////////////////////////////////////////////////
 PT(DaeMaterials::DaeBlendSettings) DaeMaterials::
-convert_blend(FCDEffectStandard::TransparencyMode mode, LColor transparent, double transparency) {
+convert_blend(FCDEffectStandard::TransparencyMode mode, const LColor &transparent, double transparency) {
   // Create the DaeBlendSettings and fill it with some defaults.
   PT(DaeBlendSettings) blend = new DaeBlendSettings();
   blend->_enabled = true;

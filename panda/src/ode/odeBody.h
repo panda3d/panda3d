@@ -62,8 +62,8 @@ PUBLISHED:
 
   INLINE void set_position(dReal x, dReal y, dReal z);
   INLINE void set_position(const LVecBase3f &pos);
-  INLINE void set_rotation(const LMatrix3f r);
-  INLINE void set_quaternion(const LQuaternionf q);
+  INLINE void set_rotation(const LMatrix3f &r);
+  INLINE void set_quaternion(const LQuaternionf &q);
   INLINE void set_linear_vel(dReal x, dReal y, dReal z);
   INLINE void set_linear_vel(const LVecBase3f &vel);
   INLINE void set_angular_vel(dReal x, dReal y, dReal z);

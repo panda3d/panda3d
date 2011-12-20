@@ -727,12 +727,13 @@ get_color_name(int color_index) const {
 //               including alpha.
 ////////////////////////////////////////////////////////////////////
 int FltHeader::
-get_closest_color(LColor color) const {
+get_closest_color(const LColor &color0) const {
   // Since the colortable stores the brightest colors, with
   // num_color_shades scaled versions of each color implicitly
   // available, we really only care about the relative brightnesses of
   // the various components.  Normalize the color in terms of the
   // largest of these.
+  LColor color = color0;
 
   double scale = 1.0;
 
@@ -792,13 +793,14 @@ get_closest_color(LColor color) const {
 //               ignoring alpha.
 ////////////////////////////////////////////////////////////////////
 int FltHeader::
-get_closest_rgb(LRGBColor color) const {
+get_closest_rgb(const LRGBColor &color0) const {
   // Since the colortable stores the brightest colors, with
   // num_color_shades scaled versions of each color implicitly
   // available, we really only care about the relative brightnesses of
   // the various components.  Normalize the color in terms of the
   // largest of these.
 
+  LRGBColor color = color0;
   double scale = 1.0;
 
   if (color[0] == 0.0 && color[1] == 0.0 && color[2] == 0.0) {

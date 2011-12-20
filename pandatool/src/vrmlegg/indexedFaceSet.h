@@ -66,7 +66,7 @@ private:
   class VrmlPolygon {
   public:
     EggPolygon _attrib;
-    pvector<VrmlVertex> _verts;
+    epvector<VrmlVertex> _verts;
   };
   pvector<LVertexd> _coord_values;
   pvector<VrmlPolygon> _polys;

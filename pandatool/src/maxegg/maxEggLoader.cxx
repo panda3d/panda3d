@@ -364,8 +364,8 @@ public:
   CVertTable _cvert_tab;
   
   int GetVert(EggVertex *vert, EggGroup *context);
-  int GetTVert(LTexCoordd uv);
-  int GetCVert(LColor col);
+  int GetTVert(const LTexCoordd &uv);
+  int GetCVert(const LColor &col);
   int AddFace(int v0, int v1, int v2, int tv0, int tv1, int tv2, int cv0, int cv1, int cv2, int tex);
   EggGroup *GetControlJoint(void);
 };
@@ -404,7 +404,7 @@ int MaxEggMesh::GetVert(EggVertex *vert, EggGroup *context)
   return vtx._index;
 }
 
-int MaxEggMesh::GetTVert(LTexCoordd uv)
+int MaxEggMesh::GetTVert(const LTexCoordd &uv)
 {
   if (_tvert_tab.count(uv))
     return _tvert_tab[uv];
@@ -418,7 +418,7 @@ int MaxEggMesh::GetTVert(LTexCoordd uv)
   return idx;
 }
 
-int MaxEggMesh::GetCVert(LColor col)
+int MaxEggMesh::GetCVert(const LColor &col)
 {
   if (_cvert_tab.count(col))
     return _cvert_tab[col];

@@ -187,8 +187,8 @@ public:
   bool has_color_name(int color_index) const;
   string get_color_name(int color_index) const;
 
-  int get_closest_color(LColor color) const;
-  int get_closest_rgb(LRGBColor color) const;
+  int get_closest_color(const LColor &color) const;
+  int get_closest_rgb(const LRGBColor &color) const;
 
   int get_num_color_entries() const;
   int get_num_color_shades() const;

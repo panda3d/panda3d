@@ -79,7 +79,7 @@ private:
   
   void process_texture_bucket(const string semantic, const FCDEffectStandard* effect_common, FUDaeTextureChannel::Channel bucket, EggTexture::EnvType envtype = EggTexture::ET_unspecified, EggTexture::Format format = EggTexture::F_unspecified);
   void process_extra(const string semantic, const FCDExtra* extra);
-  static PT(DaeBlendSettings) convert_blend(FCDEffectStandard::TransparencyMode mode, LColor transparent, double transparency);
+  static PT(DaeBlendSettings) convert_blend(FCDEffectStandard::TransparencyMode mode, const LColor &transparent, double transparency);
   
   pmap<const string, PT(DaeMaterial)> _materials;
   
