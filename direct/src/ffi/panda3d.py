@@ -149,13 +149,16 @@ class panda3d_submodule(type(sys)):
             for obj in dir(mod):
                 if not obj.startswith("__"):
                     everything.append(obj)
+            self.__all__ = everything
             return everything
         elif name == "__library__":
             return self.__library__
         elif name == "__libraries__":
             return self.__libraries__
         elif name in dir(mod):
-            return mod.__dict__[name]
+            value = mod.__dict__[name]
+            setattr(self, name, value)
+            return value
 
         # Not found? Raise the error that Python would normally raise.
         raise AttributeError, "'module' object has no attribute '%s'" % name
@@ -189,6 +192,7 @@ class panda3d_multisubmodule(type(sys)):
                 for obj in dir(self.__manager__.libimport(lib)):
                     if not obj.startswith("__"):
                         everything.append(obj)
+            self.__all__ = everything
             return everything
         elif name == "__libraries__":
             return self.__libraries__
@@ -196,7 +200,9 @@ class panda3d_multisubmodule(type(sys)):
         for lib in self.__libraries__:
             mod = self.__manager__.libimport(lib)
             if name in dir(mod):
-                return mod.__dict__[name]
+                value = mod.__dict__[name]
+                setattr(self, name, value)
+                return value
 
         # Not found? Raise the error that Python would normally raise.
         raise AttributeError, "'module' object has no attribute '%s'" % name
@@ -222,11 +228,14 @@ class panda3d_module(type(sys)):
 
     def __getattr__(self, name):
         if name == "__all__":
+            self.__all__ = name
             return self.modules.keys()
         elif name == "__file__":
             return self.__file__
         elif name in self.modules:
-            return self.__manager__.sys.modules["panda3d.%s" % name]
+            value = self.__manager__.sys.modules["panda3d.%s" % name]
+            setattr(self, name, value)
+            return value
 
         # Not found? Raise the error that Python would normally raise.
         raise AttributeError, "'module' object has no attribute '%s'" % name
