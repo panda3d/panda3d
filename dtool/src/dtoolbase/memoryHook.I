@@ -137,7 +137,7 @@ alloc_to_ptr(void *alloc, size_t size) {
   size_t alignment = get_memory_alignment();
   // Move the allocated pointer up to the next even alignment.
   size_t *root = (size_t *)((((size_t)alloc + alignment - 1) / alignment) * alignment);
-  assert(alloc <= root && (char *)root - (char *)alloc < alignment);
+  assert(alloc <= root && (size_t)((char *)root - (char *)alloc) < alignment);
   root[0] = size;
   root[1] = (size_t)alloc;  // Save the pointer we originally allocated.
   return (void *)((char *)root + _header_reserved_bytes);
@@ -163,7 +163,7 @@ ptr_to_alloc(void *ptr, size_t &size) {
   size_t *root = (size_t *)((char *)ptr - _header_reserved_bytes);
   size = root[0];
   void *alloc = (void *)root[1]; // Get the pointer we originally allocated.
-  assert(alloc <= root && (char *)root - (char *)alloc < get_memory_alignment());
+  assert(alloc <= root && (size_t)((char *)root - (char *)alloc) < get_memory_alignment());
   return alloc;
 #elif defined(DO_MEMORY_USAGE) 
   size_t *root = (size_t *)((char *)ptr - _header_reserved_bytes);
