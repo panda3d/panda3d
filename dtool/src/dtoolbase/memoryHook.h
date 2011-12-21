@@ -23,37 +23,6 @@
 
 class DeletedBufferChain;
 
-
-// Do we need to implement memory-alignment enforcement within the
-// MemoryHook class, or will the underlying malloc implementation
-// provide it automatically?
-#if !defined(LINMATH_ALIGN)
-// We don't actually require any special memory-alignment beyond what
-// the underlying implementation is likely to provide anyway.
-#undef MEMORY_HOOK_DO_ALIGN
-
-#elif defined(USE_MEMORY_DLMALLOC)
-// This specialized malloc implementation can perform the required
-// alignment.
-#undef MEMORY_HOOK_DO_ALIGN
-
-#elif defined(USE_MEMORY_PTMALLOC2)
-// But not this one.  For some reason it crashes when we try to build
-// it with alignment 16.  So if we're using ptmalloc2, we need to
-// enforce alignment externally.
-#define MEMORY_HOOK_DO_ALIGN 1
-
-#elif defined(IS_OSX) || defined(_WIN64)
-// The OS-provided malloc implementation will do the required
-// alignment.
-#undef MEMORY_HOOK_DO_ALIGN
-
-#else
-// Whoops, we need memory alignment, and we have to provide it ourselves.
-#define MEMORY_HOOK_DO_ALIGN 1
-
-#endif
-
 ////////////////////////////////////////////////////////////////////
 //       Class : MemoryHook
 // Description : This class provides a wrapper around the various
