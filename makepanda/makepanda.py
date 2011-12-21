@@ -109,7 +109,8 @@ signal.signal(signal.SIGINT, keyboardInterruptHandler)
 def usage(problem):
     if (problem):
         print ""
-        print problem
+        print "Error parsing commandline input", problem
+
     print ""
     print "Makepanda generates a 'built' subdirectory containing a"
     print "compiled copy of Panda3D.  Command-line arguments are:"
@@ -118,7 +119,9 @@ def usage(problem):
     print "  --verbose         (print out more information)"
     print "  --runtime         (build a runtime build instead of an SDK build)"
     print "  --installer       (build an installer)"
-    print "  --optimize X      (optimization level can be 1,2,3,4)"
+    print "  --optimize X      (optimization level can be 1,2,3,4"
+    print "                     C++ application developers on Windows may prefer OPTIMIZE 2"
+    print "                     as this allows your own application to be compiled with a debug heap)"
     print "  --version X       (set the panda version number)"
     print "  --lzma            (use lzma compression when building Windows installer)"
     print "  --distributor X   (short string identifying the distributor of the build)"
@@ -211,7 +214,9 @@ def parseopts(args):
             if  (option=="--everything" or option.startswith("--use-")
               or option=="--nothing" or option.startswith("--no-")):
               anything = 1
-    except: usage(0)
+    except: 
+        usage(0)
+        print "Exception while parsing commandline:", sys.exc_info()[0]
     if (anything==0): usage(0)
     if (RTDIST and RUNTIME):
         usage("Options --runtime and --rtdist cannot be specified at the same time!")
@@ -4680,6 +4685,7 @@ for VER in MAYAVERSIONS:
 for VER in MAXVERSIONS:
   VNUM=VER[3:]
   if (PkgSkip(VER)==0) and (PkgSkip("PANDATOOL")==0):
+    print '==>Making Pluging for 3dsmax:', VER
     OPTS=['DIR:pandatool/src/maxegg', VER,  "WINCOMCTL", "WINCOMDLG", "WINUSER", "MSFORSCOPE"]
     TargetAdd('maxEgg'+VNUM+'.res', opts=OPTS, input='maxEgg.rc')
     TargetAdd('maxegg'+VNUM+'_loader.obj', opts=OPTS, input='maxEggLoader.cxx')
@@ -5199,20 +5205,23 @@ def ParallelMake(tasklist):
     #task = [CompileAnything, [name, inputs, opts], [name], deps, []]
     # task[2] = [name]
     # task[3] = deps
-    # import pdb
-    # for task in tasklist:
-        # for targets in task[2]:
-            # # if 'libpanda.dll' in targets:
-                # # print "\n\n\n"
-                # # print task
-                # # print "\n\n\n"
-                # # pdb.set_trace()
-            # if 'libpandaskel.dll' in targets:
-                # print "\n\n\n"
-                # print task
-                # print "\n\n\n"
-                # pdb.set_trace()
+    # The python tool package, in particular fltegg seems to throw parallelmake off
+    # A hack for now is to divide the tasklist into two parts, one to be built in parallel
+    # and another subpart to be built sequentially. The most time consuming part of the process
+    # is the c++ code generation anyways.
+    print '-->Total number of tasks: ', len(tasklist)  
+    tasklist_seq = []
+    i = 0
+    while i < len(tasklist):
+        if tasklist[i][2][0].endswith('.egg') | tasklist[i][2][0].endswith('.egg.pz'):
+            break
+        i += 1
+    if i < len(tasklist):
+        tasklist_seq = tasklist[i:]
+        tasklist = tasklist[:i]
     iNumStartingTasks = len(tasklist)
+    print '-->Number of jobs that can be processed in parallel:  ', len(tasklist)
+    print '-->Number of jobs that will be processed sequentially: ', len(tasklist_seq)
     pending = {}
     for task in tasklist:
         for target in task[2]:
@@ -5224,6 +5233,7 @@ def ParallelMake(tasklist):
         th.start()
     # Feed tasks to the workers.
     tasksqueued = 0
+    booStopParallel = False
     while (1):
         if (tasksqueued < THREADCOUNT):
             extras = []
@@ -5238,7 +5248,7 @@ def ParallelMake(tasklist):
                 else:
                     extras.append(task)
             tasklist = extras
-            print '**Number of tasks left', len(tasklist), 'out of ', iNumStartingTasks, ' starting tasks'
+            print '**Number of tasks left', len(tasklist), 'out of ', iNumStartingTasks, ' starting parallel tasks'
         sys.stdout.flush()
         if (tasksqueued == 0): break
         donetask = donequeue.get()
@@ -5254,12 +5264,15 @@ def ParallelMake(tasklist):
         taskqueue.put(0)
     # Make sure there aren't any unsatisfied tasks
     if (len(tasklist)>0):
-        exit("Dependency problem - task unsatisfied: "+str(tasklist[0][2]))
+        exit("Dependency problems: " + str(len(tasklist)) + " tasks not finished. First task unsatisfied: "+str(tasklist[0][2]))
+    print '-->Switching to sequential make for remaining tasks'        
+    SequentialMake(tasklist_seq)
 
 
 def SequentialMake(tasklist):
     i = 0
-    print '--->Number of tasks', len(tasklist)
+    print '--->Number of (possible) tasks left', len(tasklist)
+    print '      (These tasks maybe done already)'
     for task in tasklist:
         if (NeedsBuild(task[2], task[3])):
             apply(task[0], task[1] + [(i * 100.0) / len(tasklist)])
