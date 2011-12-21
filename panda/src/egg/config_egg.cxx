@@ -152,7 +152,7 @@ ConfigVariableInt egg_test_vref_integrity
           "This is meaningful in non-production builds only."));
 
 ConfigVariableInt egg_recursion_limit
-("egg-recursion-limit", 5000,
+("egg-recursion-limit", 1000,
  PRC_DESC("The maximum number of levels that recursive algorithms within "
           "the egg library are allowed to traverse.  This is a simple hack "
           "to prevent deeply-recursive algorithms from triggering a stack "
