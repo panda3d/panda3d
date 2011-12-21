@@ -336,6 +336,18 @@
 #define ALIGN_16BYTE
 #endif
 
+/* Determine our memory-allocation requirements. */
+#if defined(USE_MEMORY_PTMALLOC2) || defined(USE_MEMORY_DLMALLOC) || defined(DO_MEMORY_USAGE)
+/* If we are using our own alternative malloc, or if we're building
+   with DO_MEMORY_USAGE in effect, it follows we need to use our
+   custom STL allocator. */
+#define USE_STL_ALLOCATOR 1
+#else 
+/* Otherwise, if we have no custom memory management needs at all, we
+   might as well turn it all off and go straight to the OS-level
+   calls. */
+#define USE_MEMORY_NOWRAPPERS 1
+#endif
 
 /*
  We define the macros BEGIN_PUBLISH and END_PUBLISH to bracket

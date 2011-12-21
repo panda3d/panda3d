@@ -501,6 +501,10 @@ $[cdefine SIMULATE_NETWORK_DELAY]
 /* Define if we want to allow immediate mode OpenGL rendering.  */
 $[cdefine SUPPORT_IMMEDIATE_MODE]
 
+/* Define for either of the alternative malloc schemes. */
+$[cdefine USE_MEMORY_DLMALLOC]
+$[cdefine USE_MEMORY_PTMALLOC2]
+
 /* Define if we want to compile in support for pipelining.  */
 $[cdefine DO_PIPELINING]
 
@@ -695,38 +699,6 @@ $[cdefine USE_TAU]
 /* Define if needed to have 64-bit file i/o */
 $[cdefine __USE_LARGEFILE64]
 
-/* Which memory allocation scheme should we use? */
-#define USE_MEMORY_DLMALLOC
-#define USE_MEMORY_PTMALLOC2
-#define USE_MEMORY_MALLOC
-#define USE_MEMORY_NOWRAPPERS
-#if $[ALTERNATIVE_MALLOC]
-  #if $[and $[WIN32_PLATFORM], $[HAVE_THREADS], $[not $[SIMPLE_THREADS]]]
-    // A fast thread-safe alternative implementation, but which only
-    // seems to be a good choice on Windows.  (It crashes on Linux and
-    // isn't thread-safe on OSX).
-    #set USE_MEMORY_PTMALLOC2 1
-  #else
-    // A faster, but non-thread-safe, alternative implementation.
-    // When threading support is compiled in, we use a global mutex to
-    // protect it.
-    #set USE_MEMORY_DLMALLOC 1
-  #endif
-#else
-  #if $[DO_MEMORY_USAGE]
-    // Redefine new and delete to malloc(), and also provide hooks for
-    // the benefit of the MemoryUsage class.
-    #set USE_MEMORY_MALLOC 1
-  #else
-    // Don't redefine new and delete at all.
-    #set USE_MEMORY_NOWRAPPERS 1
-  #endif
-#endif
-$[cdefine USE_MEMORY_DLMALLOC]
-$[cdefine USE_MEMORY_PTMALLOC2]
-$[cdefine USE_MEMORY_MALLOC]
-$[cdefine USE_MEMORY_NOWRAPPERS]
-
 // To activate the DELETED_CHAIN macros.
 $[cdefine USE_DELETED_CHAIN]
 
@@ -739,10 +711,6 @@ $[cdefine WANT_NATIVE_NET]
         $[cdefine _CRT_SECURE_NO_WARNINGS]
         # pragma warning( disable : 4996 4275 4267 4099 4049 4013 4005 )
 #endif
-
-
-/* Can we define a modern-style STL allocator? */
-$[cdefine USE_STL_ALLOCATOR]
 
 /* Static linkage instead of the normal dynamic linkage? */
 $[cdefine LINK_ALL_STATIC]

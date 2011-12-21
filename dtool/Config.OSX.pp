@@ -277,10 +277,6 @@
 // Do we have RTTI (and <typeinfo>)?
 #define HAVE_RTTI 1
 
-// Modern versions of gcc do support the latest STL allocator
-// definitions.
-#define USE_STL_ALLOCATOR 1
-
 // Do we have <stdint.h>?
 #define PHAVE_STDINT_H 1
 

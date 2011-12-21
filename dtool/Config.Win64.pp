@@ -160,9 +160,6 @@
 // Do we have <stdint.h>?
 #define PHAVE_STDINT_H
 
-// MSVC7 does support the latest STL allocator definitions.
-#define USE_STL_ALLOCATOR 1
-
 // can Intel C++ build this directory successfully (if not, change CC to msvc)
 #define NOT_INTEL_BUILDABLE false
 

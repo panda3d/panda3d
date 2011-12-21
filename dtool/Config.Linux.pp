@@ -332,10 +332,6 @@
 // We need 64-bit file i/o
 #define __USE_LARGEFILE64 1
 
-// Modern versions of gcc do support the latest STL allocator
-// definitions.
-#define USE_STL_ALLOCATOR 1
-
 // The dynamic library file extension (usually .so .dll or .dylib):
 #define DYNAMIC_LIB_EXT .so
 #define STATIC_LIB_EXT .a

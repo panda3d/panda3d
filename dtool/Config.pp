@@ -381,6 +381,13 @@
 // on DirectX rendering.
 #defer SUPPORT_IMMEDIATE_MODE $[<= $[OPTIMIZE], 3]
 
+// These are two optional alternative memory-allocation schemes
+// available within Panda.  You can experiment with either of them to
+// see if they give better performance than the system malloc(), but
+// at the time of this writing, it doesn't appear that they do.
+#define USE_MEMORY_DLMALLOC
+#define USE_MEMORY_PTMALLOC2
+
 // Panda contains some experimental code to compile for IPhone.  This
 // requires the Apple IPhone SDK, which is currently only available
 // for OS X platforms.  Set this to either "iPhoneSimulator" or
