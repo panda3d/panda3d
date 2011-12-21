@@ -12,6 +12,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include <time.h>
+
 typedef struct {
   D3DFORMAT d3d_format;
   int bits_per_pixel;
