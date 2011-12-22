@@ -54,7 +54,7 @@ typedef double GLdouble;
 // system GL version matches or exceeds the GL version in which these
 // functions are defined, and the system gl.h sometimes doesn't
 // declare these typedefs.
-#ifndef __EDG__  // Protect the following from the Tau instrumentor.
+#if !defined( __EDG__ ) || defined( __INTEL_COMPILER )  // Protect the following from the Tau instrumentor and expose it for the intel compiler.
 typedef void (APIENTRYP PFNGLGETCOMPRESSEDTEXIMAGEPROC) (GLenum target, GLint level, GLvoid *img);
 typedef void (APIENTRYP PFNGLGENQUERIESPROC) (GLsizei n, GLuint *ids);
 typedef void (APIENTRYP PFNGLBEGINQUERYPROC) (GLenum target, GLuint id);
