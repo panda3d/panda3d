@@ -360,9 +360,15 @@
 // alignment.
 #undef MEMORY_HOOK_DO_ALIGN
 
+#elif defined(MEMORY_HOOK_DO_ALIGN)
+// We need memory alignment, and we're willing to provide it ourselves.
+
 #else
-// Whoops, we need memory alignment, and we have to provide it ourselves.
-#define MEMORY_HOOK_DO_ALIGN 1
+// We need memory alignment, and we haven't specified whether it
+// should be provided on top of the existing malloc library, or
+// otherwise.  Let's rely on dlmalloc to provide it, it seems to be
+// the most memory-efficient option.
+#define USE_MEMORY_DLMALLOC 1
 
 #endif
 

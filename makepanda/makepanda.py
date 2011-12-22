@@ -814,6 +814,8 @@ def CompileCxx(obj,src,opts):
                 cmd += "/DPANDA_WIN7 /DWINVER=0x601 "
 
         cmd += "/Fo" + obj + " /nologo /c"
+        if (not is_64):
+            cmd += " /arch:SSE2"
         for x in ipath: cmd += " /I" + x
         for (opt,dir) in INCDIRECTORIES:
             if (opt=="ALWAYS") or (opt in opts): cmd += " /I" + BracketNameWithQuotes(dir)
@@ -823,10 +825,10 @@ def CompileCxx(obj,src,opts):
         if (opts.count('MSFORSCOPE')): cmd += ' /Zc:forScope-'
         optlevel = GetOptimizeOption(opts)
         if (optlevel==1): cmd += " /MDd /Zi /RTCs /GS"
-        if (optlevel==2): cmd += " /MDd /Zi /arch:SSE2"
-        if (optlevel==3): cmd += " /MD /Zi /O2 /Ob2 /Oi /Ot /arch:SSE2 /fp:fast /DFORCE_INLINING"
+        if (optlevel==2): cmd += " /MDd /Zi"
+        if (optlevel==3): cmd += " /MD /Zi /O2 /Ob2 /Oi /Ot /fp:fast /DFORCE_INLINING"
         if (optlevel==4): 
-           cmd += " /MD /Zi /Ox /Ob2 /Oi /Ot /arch:SSE2 /fp:fast /DFORCE_INLINING /DNDEBUG /GL"
+           cmd += " /MD /Zi /Ox /Ob2 /Oi /Ot /fp:fast /DFORCE_INLINING /DNDEBUG /GL"
            cmd += " /Oy"                # jcr add
            cmd += " /Zp16"              # jcr add # Is this necessary with /Ox?
 
@@ -1533,6 +1535,9 @@ DTOOL_CONFIG=[
     ("GLOBAL_OPERATOR_NEW_EXCEPTIONS", 'UNDEF',                  '1'),
     ("HAVE_EIGEN",                     'UNDEF',                  'UNDEF'),
     ("LINMATH_ALIGN",                  '1',                      '1'),
+    ("MEMORY_HOOK_DO_ALIGN",           'UNDEF',                  'UNDEF'),
+    ("USE_MEMORY_DLMALLOC",            'UNDEF',                  'UNDEF'),
+    ("USE_MEMORY_PTMALLOC2",           'UNDEF',                  'UNDEF'),
     ("HAVE_ZLIB",                      'UNDEF',                  'UNDEF'),
     ("HAVE_PNG",                       'UNDEF',                  'UNDEF'),
     ("HAVE_JPEG",                      'UNDEF',                  'UNDEF'),

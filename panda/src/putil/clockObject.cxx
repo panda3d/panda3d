@@ -31,7 +31,7 @@ TypeHandle ClockObject::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 ClockObject::
-ClockObject() {
+ClockObject() : _ticks(get_class_type()) {
   _true_clock = TrueClock::get_global_ptr();
 
   // Each clock except for the application global clock is created in

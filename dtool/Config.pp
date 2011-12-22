@@ -388,6 +388,13 @@
 #define USE_MEMORY_DLMALLOC
 #define USE_MEMORY_PTMALLOC2
 
+// Set this true if you prefer to use the system malloc library even
+// if 16-byte alignment must be performed on top of it, wasting up to
+// 30% of memory usage.  If you do not set this, and 16-byte alignment
+// is required and not provided by the system malloc library, then an
+// alternative malloc system (above) will be used instead.
+#define MEMORY_HOOK_DO_ALIGN
+
 // Panda contains some experimental code to compile for IPhone.  This
 // requires the Apple IPhone SDK, which is currently only available
 // for OS X platforms.  Set this to either "iPhoneSimulator" or
