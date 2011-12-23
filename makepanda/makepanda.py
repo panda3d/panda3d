@@ -836,8 +836,7 @@ def CompileCxx(obj,src,opts):
             if (optlevel==3): cmd += " /MD /Zi /O2 /Ob2 /Oi /Ot /fp:fast /DFORCE_INLINING"
             if (optlevel==4): 
                cmd += " /MD /Zi /Ox /Ob2 /Oi /Ot /fp:fast /DFORCE_INLINING /DNDEBUG /GL"
-               cmd += " /Oy"                # jcr add
-               cmd += " /Zp16"              # jcr add # Is this necessary with /Ox?
+               cmd += " /Oy /Zp16"      # jean-claude add /Zp16 insures correct static alignment for SSEx
 
             cmd += " /Fd" + os.path.splitext(obj)[0] + ".pdb"
             building = GetValueOption(opts, "BUILDING:")
@@ -878,17 +877,12 @@ def CompileCxx(obj,src,opts):
             if (optlevel==3):
                 cmd += " /MD /Zi /O2 /Oi /Ot /arch:SSE3"
                 cmd += " /Ob0"
-                cmd += " /Qipo-"							# beware of IPO !!!  
+                cmd += " /Qipo-"                            # beware of IPO !!!  
             ##      Lesson learned: Don't use /GL flag -> end result is MESSY
             ## ----------------------------------------------------------------
-            ##        if (optlevel==4): cmd += " /MD /Zi /O3 /Oi /Ot /arch:SSE3 /Yc /DNDEBUG"     
             if (optlevel==4):
-                cmd += " /MD /Zi /O3 /Oi /Ot /Ob0 /Yc /DNDEBUG"  # /Ob0 a ete rajoute en cours de route a 47%
-                # cmd += " /MD /Zi /Ox /Oi /Ot /Ob0 /Yc /DNDEBUG"  # /Ob0 a ete rajoute en cours de route a 47% test Ox
-                
-                # cmd += " /Qipo-"          
-                # cmd += " /Qip"          					# optimization mono file
-                cmd += " /Qipo"          					# optimization multi file
+                cmd += " /MD /Zi /O3 /Oi /Ot /Ob0 /Yc /DNDEBUG"  # /Ob0 a ete rajoute en cours de route a 47%                
+                cmd += " /Qipo"                              # optimization multi file
 
             # for 3 & 4 optimization levels
             # -----------------------------
@@ -896,33 +890,32 @@ def CompileCxx(obj,src,opts):
                 cmd += " /fp:fast=2"
                 cmd += " /Qftz"
                 cmd += " /Qfp-speculation:fast"
-                cmd += " /Qopt-matmul"						# needs /O2
+                cmd += " /Qopt-matmul"                        # needs /O2 or /O3
                 cmd += " /Qprec-div-"
                 cmd += " /Qsimd"
                 
-                cmd += " /QxHost"							# compile for target host
-                cmd += " /Quse-intel-optimized-headers"		# use intel optimized headers
-                cmd += " /Qparallel"						# enable parallelization
-                cmd += " /Qvc9"							    # for Microsoft Visual C++ 2008
-
-            # cmd += " /Qopt-report:2 /Qopt-report-phase:hlo /Qopt-report-phase:hpo"	# some optimization reports
+                cmd += " /QxHost"                            # compile for target host; Compiling for distribs should probably strictly enforce /arch:..
+                cmd += " /Quse-intel-optimized-headers"        # use intel optimized headers
+                cmd += " /Qparallel"                        # enable parallelization
+                cmd += " /Qvc9"                                # for Microsoft Visual C++ 2008
 
             ## PCH files coexistence: the /Qpchi option causes the Intel C++ Compiler to name its
             ## PCH files with a .pchi filename suffix and reduce build time.
             ## The /Qpchi option is on by default but interferes with Microsoft libs; so use /Qpchi- to turn it off. 
-            cmd += " /Qpchi-"							     # keep it this way!
+            ## I need to have a deeper look at this since the compile time is quite influenced by this setting !!!
+            cmd += " /Qpchi-"                                 # keep it this way!
 
-            ## Inlining seems to be an issue here !
+            ## Inlining seems to be an issue here ! (the linker doesn't find necessary info later on)
             ## ------------------------------------
-            ## so don't use cmd += " /DFORCE_INLINING"		(need to check why with Panda developpers!)
-            ## Inline expansion  /Ob1	:	Allow functions marked inline to be inline.
-            ## Inline any        /Ob2	:	Inline functions deemed appropriate by compiler.
+            ## so don't use cmd += " /DFORCE_INLINING"        (need to check why with Panda developpers!)
+            ## Inline expansion  /Ob1    :    Allow functions marked inline to be inlined.
+            ## Inline any        /Ob2    :    Inline functions deemed appropriate by compiler.
 
-            ## Ctor displacement /vd0	:	Disable constructor displacement.
+            ## Ctor displacement /vd0    :    Disable constructor displacement.
             ## Choose this option only if no class constructors or destructors call virtual functions.
             ## Use /vd1 (default) to enable. Alternate: #pragma vtordisp
 
-            ## Best case ptrs    /vmb	:	Use best case "pointer to class member" representation.
+            ## Best case ptrs    /vmb    :    Use best case "pointer to class member" representation.
             ## Use this option if you always define a class before you declare a pointer to a member of the class.
             ## The compiler will issue an error if it encounters a pointer declaration before the class is defined.
             ## Alternate: #pragma pointers_to_members
@@ -933,11 +926,16 @@ def CompileCxx(obj,src,opts):
             if ("BIGOBJ" in opts) or (is_64):
                 cmd += " /bigobj"
 
-            # level of warnings
-            cmd += " /EHa /Zm300 /DWIN32_VC /DWIN32 /W3 " + BracketNameWithQuotes(src)
-            # cmd += " /EHa /Zm300 /DWIN32_VC /DWIN32 /W4 " + BracketNameWithQuotes(src)
-            # cmd += " /EHa /Zm300 /DWIN32_VC /DWIN32 /Wall " + BracketNameWithQuotes(src)
+            # level of warnings and optimization reports
+            if GetVerbose(): 
+                cmd += " /W3 " # or /W4 or /Wall
+                cmd += " /Qopt-report:2 /Qopt-report-phase:hlo /Qopt-report-phase:hpo"    # some optimization reports
+            else:            
+                cmd += " /W1 "
+            cmd += " /EHa /Zm300 /DWIN32_VC /DWIN32 " + BracketNameWithQuotes(src)
+
             oscmd(cmd)
+            
     if (COMPILER=="LINUX"):
         cc = os.environ.get('CC', 'gcc')
         cxx = os.environ.get('CXX', 'g++')
@@ -1183,7 +1181,8 @@ def CompileLink(dll, obj, opts):
             else:                          mtcmd = mtcmd + ";1"
             oscmd(mtcmd, ignoreError=True) # HACK: For some reason, mt sometimes gives a non-zero return value, even when it works
         else:
-            cmd = "xilink /verbose:lib"
+            cmd = "xilink"
+            if GetVerbose(): cmd += " /verbose:lib"            
             if (is_64):
                 cmd += " /MACHINE:X64"
             if ("MFC" not in opts):
