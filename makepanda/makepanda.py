@@ -27,7 +27,7 @@ import sys
 
 ## jGenPyCode tries to get the directory for Direct from the sys.path. This only works if you 
 ## have installed the sdk using a installer. This would not work if the installer was 
-## never used and everything was grabbed into a virign environment using cvs.
+## never used and everything was grabbed into a virgin environment using cvs.
 sys.path.append( os.getcwd() )
 import __builtin__
 
@@ -62,9 +62,10 @@ COREAPI_VERSION=None
 PLUGIN_VERSION=None
 OSXTARGET=None
 HOST_URL="https://runtime.panda3d.org/"
-global STRDXSDKVERSION, STRMSPLATFORMVERSION
+global STRDXSDKVERSION, STRMSPLATFORMVERSION, BOOUSEINTELCOMPILER
 STRDXSDKVERSION = 'default'
 STRMSPLATFORMVERSION = 'default'
+BOOUSEINTELCOMPILER = False
 
 if "MACOSX_DEPLOYMENT_TARGET" in os.environ:
     OSXTARGET=os.environ["MACOSX_DEPLOYMENT_TARGET"]
@@ -140,6 +141,10 @@ def usage(problem):
     print "  --everything      (enable every third-party lib)"
     print "  --dxSdk=X         (specify version of Dx9 SDK to use: jun2010, aug2009, mar2009, aug2006)"
     print "  --MSPlatSdk=X     (specify MSPlatSdk to use: win71, win61, win60A, winserver2003r2"
+    print "  --MSVC_Intel      (experimental setting to use an intel compiler instead of MSVC. win-only"
+    print "                     Novice users of this option should only use it inconjunction with the latest SDKs"
+    print "                     and have installed Intell Parallel Studios 2011 SP1. Use of the directcam and vision modules"
+    print "                     will require additional modifications to the build system."
     print ""
     print "The simplest way to compile panda is to just type:"
     print ""
@@ -151,13 +156,13 @@ def parseopts(args):
     global INSTALLER,RTDIST,RUNTIME,GENMAN,DISTRIBUTOR,VERSION
     global COMPRESSOR,THREADCOUNT,OSXTARGET,HOST_URL
     global DEBVERSION,RPMRELEASE,P3DSUFFIX
-    global STRDXSDKVERSION, STRMSPLATFORMVERSION
+    global STRDXSDKVERSION, STRMSPLATFORMVERSION, BOOUSEINTELCOMPILER
     longopts = [
         "help","distributor=","verbose","runtime","osxtarget=",
         "optimize=","everything","nothing","installer","rtdist","nocolor",
         "version=","lzma","no-python","threads=","outputdir=","override=",
         "static","host=","debversion=","rpmrelease=","p3dsuffix=",
-        "dxSdk=", "MSPlatSdk="]
+        "dxSdk=", "MSPlatSdk=", "MSVC_Intel"]
     anything = 0
     optimize = ""
     for pkg in PkgListGet(): longopts.append("no-"+pkg.lower())
@@ -202,6 +207,7 @@ def parseopts(args):
                 if STRMSPLATFORMVERSION == '':
                     print "No MS Platform SDK version specified. Using 'default' MS Platform SDK search"
                     STRMSPLATFORMVERSION = 'default'
+            elif (option=="--MSVC_Intel"): BOOUSEINTELCOMPILER = True
             else:
                 for pkg in PkgListGet():
                     if (option=="--use-"+pkg.lower()):
@@ -800,45 +806,138 @@ def BracketNameWithQuotes(name):
 def CompileCxx(obj,src,opts):
     ipath = GetListOption(opts, "DIR:")
     if (COMPILER=="MSVC"):
-        cmd = "cl "
-        if (is_64):
-            cmd += "/favor:blend "
-        cmd += "/wd4996 /wd4275 /wd4267 /wd4101 /wd4273 "
+        if not BOOUSEINTELCOMPILER:
+            cmd = "cl "
+            if (is_64):
+                cmd += "/favor:blend "
+            cmd += "/wd4996 /wd4275 /wd4267 /wd4101 /wd4273 "
 
-        # Enables Windows 7 mode if SDK is detected.
-        # But only if it is Windows 7 (0x601) and not e. g. Vista (0x600)
-        if (STRMSPLATFORMVERSION not in ['winserver2003r2', 'win60A']):
-            platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v7.1", "InstallationFolder")
-            winver = sys.getwindowsversion()
-            if platsdk and os.path.isdir(platsdk) and winver[0] >= 6 and winver[1] >= 1:
-                cmd += "/DPANDA_WIN7 /DWINVER=0x601 "
+            # Enables Windows 7 mode if SDK is detected.
+            # But only if it is Windows 7 (0x601) and not e. g. Vista (0x600)
+            if (STRMSPLATFORMVERSION not in ['winserver2003r2', 'win60A']):
+                platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v7.1", "InstallationFolder")
+                winver = sys.getwindowsversion()
+                if platsdk and os.path.isdir(platsdk) and winver[0] >= 6 and winver[1] >= 1:
+                    cmd += "/DPANDA_WIN7 /DWINVER=0x601 "
 
-        cmd += "/Fo" + obj + " /nologo /c"
-        if (not is_64):
-            cmd += " /arch:SSE2"
-        for x in ipath: cmd += " /I" + x
-        for (opt,dir) in INCDIRECTORIES:
-            if (opt=="ALWAYS") or (opt in opts): cmd += " /I" + BracketNameWithQuotes(dir)
-        for (opt,var,val) in DEFSYMBOLS:
-            if (opt=="ALWAYS") or (opt in opts): cmd += " /D" + var + "=" + val
-        if (opts.count('NOFLOATWARN')): cmd += ' /wd4244 /wd4305'
-        if (opts.count('MSFORSCOPE')): cmd += ' /Zc:forScope-'
-        optlevel = GetOptimizeOption(opts)
-        if (optlevel==1): cmd += " /MDd /Zi /RTCs /GS"
-        if (optlevel==2): cmd += " /MDd /Zi"
-        if (optlevel==3): cmd += " /MD /Zi /O2 /Ob2 /Oi /Ot /fp:fast /DFORCE_INLINING"
-        if (optlevel==4): 
-           cmd += " /MD /Zi /Ox /Ob2 /Oi /Ot /fp:fast /DFORCE_INLINING /DNDEBUG /GL"
-           cmd += " /Oy"                # jcr add
-           cmd += " /Zp16"              # jcr add # Is this necessary with /Ox?
+            cmd += "/Fo" + obj + " /nologo /c"
+            if (not is_64):
+                cmd += " /arch:SSE2"            
+            for x in ipath: cmd += " /I" + x
+            for (opt,dir) in INCDIRECTORIES:
+                if (opt=="ALWAYS") or (opt in opts): cmd += " /I" + BracketNameWithQuotes(dir)
+            for (opt,var,val) in DEFSYMBOLS:
+                if (opt=="ALWAYS") or (opt in opts): cmd += " /D" + var + "=" + val
+            if (opts.count('NOFLOATWARN')): cmd += ' /wd4244 /wd4305'
+            if (opts.count('MSFORSCOPE')): cmd += ' /Zc:forScope-'
+            optlevel = GetOptimizeOption(opts)
+            if (optlevel==1): cmd += " /MDd /Zi /RTCs /GS"
+            if (optlevel==2): cmd += " /MDd /Zi"
+            if (optlevel==3): cmd += " /MD /Zi /O2 /Ob2 /Oi /Ot /fp:fast /DFORCE_INLINING"
+            if (optlevel==4): 
+               cmd += " /MD /Zi /Ox /Ob2 /Oi /Ot /fp:fast /DFORCE_INLINING /DNDEBUG /GL"
+               cmd += " /Oy"                # jcr add
+               cmd += " /Zp16"              # jcr add # Is this necessary with /Ox?
 
-        cmd += " /Fd" + os.path.splitext(obj)[0] + ".pdb"
-        building = GetValueOption(opts, "BUILDING:")
-        if (building): cmd += " /DBUILDING_" + building
-        if ("BIGOBJ" in opts) or (is_64):
-            cmd += " /bigobj"
-        cmd += " /EHa /Zm300 /DWIN32_VC /DWIN32 /W3 " + BracketNameWithQuotes(src)
-        oscmd(cmd)
+            cmd += " /Fd" + os.path.splitext(obj)[0] + ".pdb"
+            building = GetValueOption(opts, "BUILDING:")
+            if (building): cmd += " /DBUILDING_" + building
+            if ("BIGOBJ" in opts) or (is_64):
+                cmd += " /bigobj"
+            cmd += " /EHa /Zm300 /DWIN32_VC /DWIN32 /W3 " + BracketNameWithQuotes(src)
+            oscmd(cmd)
+        else:
+            cmd = "icl "
+            if (is_64):
+                cmd += "/favor:blend "
+            cmd += "/wd4996 /wd4275 /wd4267 /wd4101 /wd4273 "
+
+            # Enables Windows 7 mode if SDK is detected.
+            # But only if it is Windows 7 (0x601) and not e. g. Vista (0x600)
+            if (STRMSPLATFORMVERSION not in ['winserver2003r2', 'win60A']):
+                platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v7.1", "InstallationFolder")
+                winver = sys.getwindowsversion()
+                if platsdk and os.path.isdir(platsdk) and winver[0] >= 6 and winver[1] >= 1:
+                    cmd += "/DPANDA_WIN7 /DWINVER=0x601 "
+
+            cmd += "/Fo" + obj + " /c"
+            for x in ipath: cmd += " /I" + x
+            for (opt,dir) in INCDIRECTORIES:
+                if (opt=="ALWAYS") or (opt in opts): cmd += " /I" + BracketNameWithQuotes(dir)
+            for (opt,var,val) in DEFSYMBOLS:
+                if (opt=="ALWAYS") or (opt in opts): cmd += " /D" + var + "=" + val
+            if (opts.count('NOFLOATWARN')): cmd += ' /wd4244 /wd4305'
+            if (opts.count('MSFORSCOPE')):  cmd += ' /Zc:forScope-'
+            optlevel = GetOptimizeOption(opts)
+            if (optlevel==1): cmd += " /MDd /Zi /RTCs /GS"
+            if (optlevel==2): cmd += " /MDd /Zi /arch:SSE3"
+            # core changes from jean-claude (dec 2011)
+            # ----------------------------------------
+            # performance will be seeked at level 3 & 4
+            # -----------------------------------------
+            if (optlevel==3):
+                cmd += " /MD /Zi /O2 /Oi /Ot /arch:SSE3"
+                cmd += " /Ob0"
+                cmd += " /Qipo-"							# beware of IPO !!!  
+            ##      Lesson learned: Don't use /GL flag -> end result is MESSY
+            ## ----------------------------------------------------------------
+            ##        if (optlevel==4): cmd += " /MD /Zi /O3 /Oi /Ot /arch:SSE3 /Yc /DNDEBUG"     
+            if (optlevel==4):
+                cmd += " /MD /Zi /O3 /Oi /Ot /Ob0 /Yc /DNDEBUG"  # /Ob0 a ete rajoute en cours de route a 47%
+                # cmd += " /MD /Zi /Ox /Oi /Ot /Ob0 /Yc /DNDEBUG"  # /Ob0 a ete rajoute en cours de route a 47% test Ox
+                
+                # cmd += " /Qipo-"          
+                # cmd += " /Qip"          					# optimization mono file
+                cmd += " /Qipo"          					# optimization multi file
+
+            # for 3 & 4 optimization levels
+            # -----------------------------
+            if (optlevel>=3):
+                cmd += " /fp:fast=2"
+                cmd += " /Qftz"
+                cmd += " /Qfp-speculation:fast"
+                cmd += " /Qopt-matmul"						# needs /O2
+                cmd += " /Qprec-div-"
+                cmd += " /Qsimd"
+                
+                cmd += " /QxHost"							# compile for target host
+                cmd += " /Quse-intel-optimized-headers"		# use intel optimized headers
+                cmd += " /Qparallel"						# enable parallelization
+                cmd += " /Qvc9"							    # for Microsoft Visual C++ 2008
+
+            # cmd += " /Qopt-report:2 /Qopt-report-phase:hlo /Qopt-report-phase:hpo"	# some optimization reports
+
+            ## PCH files coexistence: the /Qpchi option causes the Intel C++ Compiler to name its
+            ## PCH files with a .pchi filename suffix and reduce build time.
+            ## The /Qpchi option is on by default but interferes with Microsoft libs; so use /Qpchi- to turn it off. 
+            cmd += " /Qpchi-"							     # keep it this way!
+
+            ## Inlining seems to be an issue here !
+            ## ------------------------------------
+            ## so don't use cmd += " /DFORCE_INLINING"		(need to check why with Panda developpers!)
+            ## Inline expansion  /Ob1	:	Allow functions marked inline to be inline.
+            ## Inline any        /Ob2	:	Inline functions deemed appropriate by compiler.
+
+            ## Ctor displacement /vd0	:	Disable constructor displacement.
+            ## Choose this option only if no class constructors or destructors call virtual functions.
+            ## Use /vd1 (default) to enable. Alternate: #pragma vtordisp
+
+            ## Best case ptrs    /vmb	:	Use best case "pointer to class member" representation.
+            ## Use this option if you always define a class before you declare a pointer to a member of the class.
+            ## The compiler will issue an error if it encounters a pointer declaration before the class is defined.
+            ## Alternate: #pragma pointers_to_members
+      
+            cmd += " /Fd" + os.path.splitext(obj)[0] + ".pdb"
+            building = GetValueOption(opts, "BUILDING:")
+            if (building): cmd += " /DBUILDING_" + building
+            if ("BIGOBJ" in opts) or (is_64):
+                cmd += " /bigobj"
+
+            # level of warnings
+            cmd += " /EHa /Zm300 /DWIN32_VC /DWIN32 /W3 " + BracketNameWithQuotes(src)
+            # cmd += " /EHa /Zm300 /DWIN32_VC /DWIN32 /W4 " + BracketNameWithQuotes(src)
+            # cmd += " /EHa /Zm300 /DWIN32_VC /DWIN32 /Wall " + BracketNameWithQuotes(src)
+            oscmd(cmd)
     if (COMPILER=="LINUX"):
         cc = os.environ.get('CC', 'gcc')
         cxx = os.environ.get('CXX', 'g++')
@@ -998,12 +1097,25 @@ def CompileImod(wobj, wsrc, opts):
 
 def CompileLib(lib, obj, opts):
     if (COMPILER=="MSVC"):
-        cmd = 'link /lib /nologo '
-        if (is_64):
-            cmd += "/MACHINE:X64 "
-        cmd += '/OUT:' + BracketNameWithQuotes(lib)
-        for x in obj: cmd += ' ' + BracketNameWithQuotes(x)
-        oscmd(cmd)
+        if not BOOUSEINTELCOMPILER:
+            #Use MSVC Linker
+            cmd = 'link /lib /nologo '
+            if (is_64):
+                cmd += "/MACHINE:X64 "
+            cmd += '/OUT:' + BracketNameWithQuotes(lib)
+            for x in obj: cmd += ' ' + BracketNameWithQuotes(x)
+            oscmd(cmd)
+        else:
+            # Choose Intel linker; from Jean-Claude
+            cmd = 'xilink /verbose:lib /lib '
+            if (is_64):
+                cmd += "/MACHINE:X64 "
+            cmd += '/OUT:' + BracketNameWithQuotes(lib)
+            for x in obj: cmd += ' ' + BracketNameWithQuotes(x)
+            cmd += ' /LIBPATH:"C:\Program Files (x86)\Intel\Composer XE 2011 SP1\ipp\lib\ia32"'
+            cmd += ' /LIBPATH:"C:\Program Files (x86)\Intel\Composer XE 2011 SP1\TBB\Lib\ia32\vc9"'
+            cmd += ' /LIBPATH:"C:\Program Files (x86)\Intel\Composer XE 2011 SP1\compiler\lib\ia32"'
+            oscmd(cmd)
     if (COMPILER=="LINUX"):
         if sys.platform == 'darwin':
             cmd = 'libtool -static -o ' + BracketNameWithQuotes(lib)
@@ -1016,75 +1128,111 @@ def CompileLib(lib, obj, opts):
 
 ########################################################################
 ##
-## CompileLink implicitly checks whether or not a file like libpanda.lib exists
-## This is not explicitly checked stated in the dependency, but is necessary on windows to link in a dll
-##
-########################################################################
-
-def CompileLink_DoesImplicitLibExist(dll, obj, opts):
-    for x in obj:
-        if (x.endswith(".dll")):
-            baseStr = GetOutputDir() + '/lib/' + os.path.splitext(os.path.basename(x))[0] + ".lib"
-            strFullPath = os.path.join( os.getcwd(), baseStr )
-            if not os.path.exists( strFullPath ):
-                return False
-    return True
-
-########################################################################
-##
 ## CompileLink
 ##
 ########################################################################
 
 def CompileLink(dll, obj, opts):
     if (COMPILER=="MSVC"):
-        cmd = "link /nologo"
-        if (is_64):
-            cmd += " /MACHINE:X64"
-        if ("MFC" not in opts):
-            cmd += " /NOD:MFC90.LIB /NOD:MFC80.LIB /NOD:LIBCMT"
-        cmd += " /NOD:LIBCI.LIB /DEBUG"
-        cmd += " /nod:libc /nod:libcmtd /nod:atlthunk /nod:atls"
-        if (GetOrigExt(dll) != ".exe"): cmd += " /DLL"
-        optlevel = GetOptimizeOption(opts)
-        if (optlevel==1): cmd += " /MAP /MAPINFO:EXPORTS /NOD:MSVCRT.LIB /NOD:MSVCPRT.LIB /NOD:MSVCIRT.LIB"
-        if (optlevel==2): cmd += " /MAP:NUL /NOD:MSVCRT.LIB /NOD:MSVCPRT.LIB /NOD:MSVCIRT.LIB"
-        if (optlevel==3): cmd += " /MAP:NUL /NOD:MSVCRTD.LIB /NOD:MSVCPRTD.LIB /NOD:MSVCIRTD.LIB"
-        if (optlevel==4): cmd += " /MAP:NUL /LTCG /NOD:MSVCRTD.LIB /NOD:MSVCPRTD.LIB /NOD:MSVCIRTD.LIB"
-        if ("MFC" in opts):
-            if (optlevel<=2): cmd += " /NOD:MSVCRTD.LIB mfcs90d.lib MSVCRTD.lib"
-            else: cmd += " /NOD:MSVCRT.LIB mfcs90.lib MSVCRT.lib"
-        cmd += " /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO "
-        cmd += ' /OUT:' + BracketNameWithQuotes(dll)
-        subsystem = GetValueOption(opts, "SUBSYSTEM:")
-        if (subsystem): cmd += " /SUBSYSTEM:" + subsystem
-        if (dll.endswith(".dll")):
-            cmd += ' /IMPLIB:' + GetOutputDir() + '/lib/'+os.path.splitext(os.path.basename(dll))[0]+".lib"
-        for (opt, dir) in LIBDIRECTORIES:
-            if (opt=="ALWAYS") or (opt in opts): cmd += ' /LIBPATH:' + BracketNameWithQuotes(dir)
-        for x in obj:
-            if (x.endswith(".dll")):
-                cmd += ' ' + GetOutputDir() + '/lib/' + os.path.splitext(os.path.basename(x))[0] + ".lib"
-            elif (x.endswith(".lib")):
-                dname = os.path.splitext(dll)[0]+".dll"
-                if (GetOrigExt(x) != ".ilb" and os.path.exists(GetOutputDir()+"/bin/" + os.path.splitext(os.path.basename(x))[0] + ".dll")):
-                    exit("Error: in makepanda, specify "+dname+", not "+x)
-                cmd += ' ' + BracketNameWithQuotes(x)
-            elif (x.endswith(".def")):
-                cmd += ' /DEF:' + BracketNameWithQuotes(x)
-            elif (x.endswith(".dat")):
-                pass
-            else: cmd += ' ' + BracketNameWithQuotes(x)
-        if (GetOrigExt(dll)==".exe" and "NOICON" not in opts):
-            cmd += " " + GetOutputDir() + "/tmp/pandaIcon.res"
-        for (opt, name) in LIBNAMES:
-            if (opt=="ALWAYS") or (opt in opts): cmd += " " + BracketNameWithQuotes(name)
-        oscmd(cmd)
-        SetVC90CRTVersion(dll+".manifest")
-        mtcmd = "mt -manifest " + dll + ".manifest -outputresource:" + dll
-        if (dll.endswith(".exe")==0): mtcmd = mtcmd + ";2"
-        else:                          mtcmd = mtcmd + ";1"
-        oscmd(mtcmd, ignoreError=True) # HACK: For some reason, mt sometimes gives a non-zero return value, even when it works
+        if not BOOUSEINTELCOMPILER:
+            cmd = "link /nologo"
+            if (is_64):
+                cmd += " /MACHINE:X64"
+            if ("MFC" not in opts):
+                cmd += " /NOD:MFC90.LIB /NOD:MFC80.LIB /NOD:LIBCMT"
+            cmd += " /NOD:LIBCI.LIB /DEBUG"
+            cmd += " /nod:libc /nod:libcmtd /nod:atlthunk /nod:atls"
+            if (GetOrigExt(dll) != ".exe"): cmd += " /DLL"
+            optlevel = GetOptimizeOption(opts)
+            if (optlevel==1): cmd += " /MAP /MAPINFO:EXPORTS /NOD:MSVCRT.LIB /NOD:MSVCPRT.LIB /NOD:MSVCIRT.LIB"
+            if (optlevel==2): cmd += " /MAP:NUL /NOD:MSVCRT.LIB /NOD:MSVCPRT.LIB /NOD:MSVCIRT.LIB"
+            if (optlevel==3): cmd += " /MAP:NUL /NOD:MSVCRTD.LIB /NOD:MSVCPRTD.LIB /NOD:MSVCIRTD.LIB"
+            if (optlevel==4): cmd += " /MAP:NUL /LTCG /NOD:MSVCRTD.LIB /NOD:MSVCPRTD.LIB /NOD:MSVCIRTD.LIB"
+            if ("MFC" in opts):
+                if (optlevel<=2): cmd += " /NOD:MSVCRTD.LIB mfcs90d.lib MSVCRTD.lib"
+                else: cmd += " /NOD:MSVCRT.LIB mfcs90.lib MSVCRT.lib"
+            cmd += " /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO "
+            cmd += ' /OUT:' + BracketNameWithQuotes(dll)
+            subsystem = GetValueOption(opts, "SUBSYSTEM:")
+            if (subsystem): cmd += " /SUBSYSTEM:" + subsystem
+            if (dll.endswith(".dll")):
+                cmd += ' /IMPLIB:' + GetOutputDir() + '/lib/'+os.path.splitext(os.path.basename(dll))[0]+".lib"
+            for (opt, dir) in LIBDIRECTORIES:
+                if (opt=="ALWAYS") or (opt in opts): cmd += ' /LIBPATH:' + BracketNameWithQuotes(dir)
+            for x in obj:
+                if (x.endswith(".dll")):
+                    cmd += ' ' + GetOutputDir() + '/lib/' + os.path.splitext(os.path.basename(x))[0] + ".lib"
+                elif (x.endswith(".lib")):
+                    dname = os.path.splitext(dll)[0]+".dll"
+                    if (GetOrigExt(x) != ".ilb" and os.path.exists(GetOutputDir()+"/bin/" + os.path.splitext(os.path.basename(x))[0] + ".dll")):
+                        exit("Error: in makepanda, specify "+dname+", not "+x)
+                    cmd += ' ' + BracketNameWithQuotes(x)
+                elif (x.endswith(".def")):
+                    cmd += ' /DEF:' + BracketNameWithQuotes(x)
+                elif (x.endswith(".dat")):
+                    pass
+                else: cmd += ' ' + BracketNameWithQuotes(x)
+            if (GetOrigExt(dll)==".exe" and "NOICON" not in opts):
+                cmd += " " + GetOutputDir() + "/tmp/pandaIcon.res"
+            for (opt, name) in LIBNAMES:
+                if (opt=="ALWAYS") or (opt in opts): cmd += " " + BracketNameWithQuotes(name)
+            oscmd(cmd)
+            SetVC90CRTVersion(dll+".manifest")
+            mtcmd = "mt -manifest " + dll + ".manifest -outputresource:" + dll
+            if (dll.endswith(".exe")==0): mtcmd = mtcmd + ";2"
+            else:                          mtcmd = mtcmd + ";1"
+            oscmd(mtcmd, ignoreError=True) # HACK: For some reason, mt sometimes gives a non-zero return value, even when it works
+        else:
+            cmd = "xilink /verbose:lib"
+            if (is_64):
+                cmd += " /MACHINE:X64"
+            if ("MFC" not in opts):
+                cmd += " /NOD:MFC90.LIB /NOD:MFC80.LIB /NOD:LIBCMT"
+            cmd += " /NOD:LIBCI.LIB /DEBUG"
+            cmd += " /nod:libc /nod:libcmtd /nod:atlthunk /nod:atls"
+            cmd += ' /LIBPATH:"C:\Program Files (x86)\Intel\Composer XE 2011 SP1\ipp\lib\ia32"'
+            cmd += ' /LIBPATH:"C:\Program Files (x86)\Intel\Composer XE 2011 SP1\TBB\Lib\ia32\vc9"'
+            cmd += ' /LIBPATH:"C:\Program Files (x86)\Intel\Composer XE 2011 SP1\compiler\lib\ia32"'
+            if (GetOrigExt(dll) != ".exe"): cmd += " /DLL"
+            optlevel = GetOptimizeOption(opts)
+            if (optlevel==1): cmd += " /MAP /MAPINFO:EXPORTS /NOD:MSVCRT.LIB /NOD:MSVCPRT.LIB /NOD:MSVCIRT.LIB"
+            if (optlevel==2): cmd += " /MAP:NUL /NOD:MSVCRT.LIB /NOD:MSVCPRT.LIB /NOD:MSVCIRT.LIB"
+            if (optlevel==3): cmd += " /MAP:NUL /NOD:MSVCRTD.LIB /NOD:MSVCPRTD.LIB /NOD:MSVCIRTD.LIB"
+            if (optlevel==4): cmd += " /MAP:NUL /LTCG /NOD:MSVCRTD.LIB /NOD:MSVCPRTD.LIB /NOD:MSVCIRTD.LIB"
+            if ("MFC" in opts):
+                if (optlevel<=2): cmd += " /NOD:MSVCRTD.LIB mfcs90d.lib MSVCRTD.lib"
+                else: cmd += " /NOD:MSVCRT.LIB mfcs90.lib MSVCRT.lib"
+            cmd += " /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO "
+            cmd += ' /OUT:' + BracketNameWithQuotes(dll)
+            subsystem = GetValueOption(opts, "SUBSYSTEM:")
+            if (subsystem): cmd += " /SUBSYSTEM:" + subsystem
+            if (dll.endswith(".dll")):
+                cmd += ' /IMPLIB:' + GetOutputDir() + '/lib/'+os.path.splitext(os.path.basename(dll))[0]+".lib"
+            for (opt, dir) in LIBDIRECTORIES:
+                if (opt=="ALWAYS") or (opt in opts): cmd += ' /LIBPATH:' + BracketNameWithQuotes(dir)
+            for x in obj:
+                if (x.endswith(".dll")):
+                    cmd += ' ' + GetOutputDir() + '/lib/' + os.path.splitext(os.path.basename(x))[0] + ".lib"
+                elif (x.endswith(".lib")):
+                    dname = os.path.splitext(dll)[0]+".dll"
+                    if (GetOrigExt(x) != ".ilb" and os.path.exists(GetOutputDir()+"/bin/" + os.path.splitext(os.path.basename(x))[0] + ".dll")):
+                        exit("Error: in makepanda, specify "+dname+", not "+x)
+                    cmd += ' ' + BracketNameWithQuotes(x)
+                elif (x.endswith(".def")):
+                    cmd += ' /DEF:' + BracketNameWithQuotes(x)
+                elif (x.endswith(".dat")):
+                    pass
+                else: cmd += ' ' + BracketNameWithQuotes(x)
+            if (GetOrigExt(dll)==".exe" and "NOICON" not in opts):
+                cmd += " " + GetOutputDir() + "/tmp/pandaIcon.res"
+            for (opt, name) in LIBNAMES:
+                if (opt=="ALWAYS") or (opt in opts): cmd += " " + BracketNameWithQuotes(name)
+            oscmd(cmd)
+            SetVC90CRTVersion(dll+".manifest")
+            mtcmd = "mt -manifest " + dll + ".manifest -outputresource:" + dll
+            if (dll.endswith(".exe")==0): mtcmd = mtcmd + ";2"
+            else:                          mtcmd = mtcmd + ";1"
+            oscmd(mtcmd, ignoreError=True) # HACK: For some reason, mt sometimes gives a non-zero return value, even when it works
     if (COMPILER=="LINUX"):
         cxx = os.environ.get('CXX', 'g++')
         if (GetOrigExt(dll)==".exe"): cmd = cxx + ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp -L/usr/X11R6/lib'
@@ -1535,9 +1683,6 @@ DTOOL_CONFIG=[
     ("GLOBAL_OPERATOR_NEW_EXCEPTIONS", 'UNDEF',                  '1'),
     ("HAVE_EIGEN",                     'UNDEF',                  'UNDEF'),
     ("LINMATH_ALIGN",                  '1',                      '1'),
-    ("MEMORY_HOOK_DO_ALIGN",           'UNDEF',                  'UNDEF'),
-    ("USE_MEMORY_DLMALLOC",            'UNDEF',                  'UNDEF'),
-    ("USE_MEMORY_PTMALLOC2",           'UNDEF',                  'UNDEF'),
     ("HAVE_ZLIB",                      'UNDEF',                  'UNDEF'),
     ("HAVE_PNG",                       'UNDEF',                  'UNDEF'),
     ("HAVE_JPEG",                      'UNDEF',                  'UNDEF'),
@@ -5238,7 +5383,6 @@ def ParallelMake(tasklist):
         th.start()
     # Feed tasks to the workers.
     tasksqueued = 0
-    booStopParallel = False
     while (1):
         if (tasksqueued < THREADCOUNT):
             extras = []
