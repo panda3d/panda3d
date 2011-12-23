@@ -224,7 +224,7 @@ read_data(domSource &source) {
     LVecBase4f v (0, 0, 0, 1);
     for (domUint p = 0; p < params.getCount(); ++p) {
       if (params[c]->getName()) {
-        v._v.data[c++] = floats[pos + p];
+        v[c++] = floats[pos + p];
       }
     }
     _data.push_back(v);
