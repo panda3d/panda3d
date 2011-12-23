@@ -18,8 +18,7 @@
     panda:m \
     p3pandabase:c p3express:c pandaexpress:m \
     p3interrogatedb:c p3prc:c p3dconfig:c p3dtoolconfig:m \
-    p3dtoolutil:c p3dtoolbase:c p3dtool:m \
-    p3assimp:c
+    p3dtoolutil:c p3dtoolbase:c p3dtool:m
 
   #define SOURCES \
     assimpLoader.cxx assimpLoader.h \
