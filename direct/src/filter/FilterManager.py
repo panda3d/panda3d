@@ -74,7 +74,7 @@ class FilterManager(DirectObject):
         self.nextsort = self.win.getSort() - 1000
         self.basex = 0
         self.basey = 0
-        self.accept("window-event", self.resizeBuffers)
+        self.accept("window-event", self.windowEvent)
 
 
     def getClears(self,region):
@@ -308,7 +308,7 @@ class FilterManager(DirectObject):
         """ When the window changes size, automatically resize all buffers """
         self.resizeBuffers()
 
-    def resizeBuffers(self, win):
+    def resizeBuffers(self):
         """ Resize all buffers to match the size of the window. """
         for i in range(len(self.buffers)):
             (mul, div, align) = self.sizes[i]
