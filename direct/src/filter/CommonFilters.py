@@ -36,7 +36,7 @@ float4 cartoon_c3 = tex2D(k_txaux, cartoon_p3.xy);
 float4 cartoon_mx = max(cartoon_c0,max(cartoon_c1,max(cartoon_c2,cartoon_c3)));
 float4 cartoon_mn = min(cartoon_c0,min(cartoon_c1,min(cartoon_c2,cartoon_c3)));
 float cartoon_thresh = saturate(dot(cartoon_mx - cartoon_mn, float4(3,3,0,0)) - 0.5);
-o_color = lerp(o_color, float4(0,0,0,1), cartoon_thresh);
+o_color = lerp(o_color, k_cartooncolor, cartoon_thresh);
 """
 
 class FilterConfig:
@@ -226,6 +226,7 @@ class CommonFilters:
                 text += "uniform sampler2D k_tx" + key + ",\n"
             if (configuration.has_key("CartoonInk")):
                 text += "uniform float4 k_cartoonseparation,\n"
+                text += "uniform float4 k_cartooncolor,\n"
             if (configuration.has_key("VolumetricLighting")):
                 text += "uniform float4 k_casterpos,\n"
                 text += "uniform float4 k_vlparams,\n"
@@ -271,8 +272,9 @@ class CommonFilters:
         
         if (changed == "CartoonInk") or fullrebuild:
             if (configuration.has_key("CartoonInk")):
-                separation = configuration["CartoonInk"]
-                self.finalQuad.setShaderInput("cartoonseparation", Vec4(separation,0,separation,0))
+                c = configuration["CartoonInk"]
+                self.finalQuad.setShaderInput("cartoonseparation", Vec4(c.separation, 0, c.separation, 0))
+                self.finalQuad.setShaderInput("cartooncolor", c.color)
 
         if (changed == "BlurSharpen") or fullrebuild:
             if (configuration.has_key("BlurSharpen")):
@@ -314,9 +316,12 @@ class CommonFilters:
         if task != None:
             return task.cont
 
-    def setCartoonInk(self, separation=1):
+    def setCartoonInk(self, separation=1, color=(0, 0, 0, 1)):
         fullrebuild = (self.configuration.has_key("CartoonInk") == False)
-        self.configuration["CartoonInk"] = separation
+        newconfig = FilterConfig()
+        newconfig.separation = separation
+        newconfig.color = color
+        self.configuration["CartoonInk"] = newconfig
         return self.reconfigure(fullrebuild, "CartoonInk")
 
     def delCartoonInk(self):
