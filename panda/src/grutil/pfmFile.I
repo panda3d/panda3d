@@ -109,6 +109,7 @@ get_point(int x, int y) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PfmFile::
 set_point(int x, int y, const LVecBase3 &point) {
+  nassertv(!point.is_nan());
   nassertv(x >= 0 && x < _x_size);
   nassertv(y >= 0 && y < _y_size);
   _table[y * _x_size + x] = point;

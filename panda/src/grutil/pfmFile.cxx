@@ -208,7 +208,9 @@ read(istream &in) {
         LittleEndian value(&data, sizeof(data));
         PN_float32 result;
         value.store_value(&result, sizeof(result));
-        point[ci] = result;
+        if (!cnan(result)) {
+          point[ci] = result;
+        }
       }
       _table.push_back(point);
     }
@@ -221,7 +223,9 @@ read(istream &in) {
         BigEndian value(&data, sizeof(data));
         PN_float32 result;
         value.store_value(&result, sizeof(result));
-        point[ci] = result;
+        if (!cnan(result)) {
+          point[ci] = result;
+        }
       }
       _table.push_back(point);
     }
@@ -841,7 +845,7 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
         for (int xi = x_begin; xi < x_end; ++xi) {
           const LPoint3 &point = get_point(xi, yi);
           LPoint2 uv(PN_stdfloat(xi) / PN_stdfloat(_x_size - 1),
-                      PN_stdfloat(yi) / PN_stdfloat(_y_size - 1));
+                     PN_stdfloat(yi) / PN_stdfloat(_y_size - 1));
 
           if (_vis_inverse) {
             vertex.add_data2(uv);
@@ -879,6 +883,7 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
               n[2] += v0[0] * v1[1] - v0[1] * v1[0];
             }
             n.normalize();
+            nassertv(!n.is_nan());
             if (inverted) {
               n = -n;
             }
