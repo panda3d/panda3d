@@ -366,6 +366,7 @@ make_output(GraphicsPipe *pipe,
     buffer->_sort = sort;
     do_add_window(buffer, threading_model);
     do_add_gsg(host->get_gsg(), pipe, threading_model);
+    display_cat.info() << "Created output of type ParasiteBuffer\n";
     return buffer;
   }
 
@@ -377,6 +378,7 @@ make_output(GraphicsPipe *pipe,
     buffer->_sort = sort;
     do_add_window(buffer, threading_model);
     do_add_gsg(host->get_gsg(), pipe, threading_model);
+    display_cat.info() << "Created output of type ParasiteBuffer\n";
     return buffer;
   }
 
@@ -397,6 +399,9 @@ make_output(GraphicsPipe *pipe,
       open_windows();
       if (window->is_valid()) {
         do_add_gsg(window->get_gsg(), pipe, threading_model);
+        display_cat.info()
+          << "Created output of type " << window->get_type() << "\n";
+
         if (window->get_fb_properties().subsumes(fb_prop)) {
           return window;
         } else {
@@ -431,6 +436,7 @@ make_output(GraphicsPipe *pipe,
     buffer->_sort = sort;
     do_add_window(buffer, threading_model);
     do_add_gsg(host->get_gsg(), pipe, threading_model);
+    display_cat.info() << "Created output of type ParasiteBuffer\n";
     return buffer;
   }
 
