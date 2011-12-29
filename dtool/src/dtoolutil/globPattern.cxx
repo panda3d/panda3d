@@ -17,7 +17,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GlobPattern::has_glob_characters
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the pattern includes any special
 //               globbing characters, or false if it is just a literal
 //               string.
@@ -46,7 +46,7 @@ has_glob_characters() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GlobPattern::get_const_prefix
-//       Access: Public
+//       Access: Published
 //  Description: Returns the initial part of the pattern before the
 //               first glob character.  Since many glob patterns begin
 //               with a sequence of static characters and end with one
@@ -79,7 +79,7 @@ get_const_prefix() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GlobPattern::match_files
-//       Access: Public
+//       Access: Published
 //  Description: Treats the GlobPattern as a filename pattern, and
 //               returns a list of any actual files that match the
 //               pattern.  This is the behavior of the standard Posix
@@ -96,7 +96,7 @@ get_const_prefix() const {
 //               which are added to the results vector.
 ////////////////////////////////////////////////////////////////////
 int GlobPattern::
-match_files(vector_string &results, const Filename &cwd) {
+match_files(vector_string &results, const Filename &cwd) const {
   string prefix, pattern, suffix;
 
   string source = _pattern;
@@ -117,6 +117,29 @@ match_files(vector_string &results, const Filename &cwd) {
   GlobPattern glob(pattern);
   return glob.r_match_files(prefix, suffix, results, cwd);
 }
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: GlobPattern::match_files
+//       Access: Published
+//  Description: This variant on match_files returns a Python list
+//               of strings.
+////////////////////////////////////////////////////////////////////
+PyObject *GlobPattern::
+match_files(const Filename &cwd) const {
+  vector_string contents;
+  match_files(contents, cwd);
+
+  PyObject *result = PyList_New(contents.size());
+  for (size_t i = 0; i < contents.size(); ++i) {
+    const string &filename = contents[i];
+    PyObject *str = PyString_FromStringAndSize(filename.data(), filename.size());
+    PyList_SET_ITEM(result, i, str);
+  }
+
+  return result;
+}
+#endif  // HAVE_PYTHON
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GlobPattern::r_match_files
