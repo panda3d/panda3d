@@ -224,15 +224,11 @@ class file:
     xreadlines = readlines
 
     def seek(self, offset, whence = 0):
-        print "seek(%s)" % (offset)
         if self.__stream:
-            print "clear"
             self.__stream.clear()  # clear eof flag
         if self.__reader:
-            print "seekg"
             self.__stream.seekg(offset, whence)
         if self.__writer:
-            print "seekp"
             self.__stream.seekp(offset, whence)
 
     def tell(self):
