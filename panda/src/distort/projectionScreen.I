@@ -173,8 +173,38 @@ get_frame_color() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ProjectionScreen::set_auto_recompute
+//       Access: Published
+//  Description: Sets the auto_recompute flag.  When this is true,
+//               the ProjectionScreen will always be recomputed if
+//               necessary before the frame is drawn; when it is
+//               false, an explicit call to recompute_if_stale() may
+//               be required.
+////////////////////////////////////////////////////////////////////
+INLINE void ProjectionScreen::
+set_auto_recompute(bool auto_recompute) {
+  _auto_recompute = auto_recompute;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: ProjectionScreen::set_auto_recompute
+//       Access: Published
+//  Description: Returns the auto_recompute flag.  When this is true,
+//               the ProjectionScreen will always be recomputed if
+//               necessary before the frame is drawn; when it is
+//               false, an explicit call to recompute_if_stale() may
+//               be required.
+////////////////////////////////////////////////////////////////////
+INLINE bool ProjectionScreen::
+get_auto_recompute() const {
+  return _auto_recompute;
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: ProjectionScreen::get_last_screen
-//       Access: Public
+//       Access: Published
 //  Description: Returns an UpdateSeq corresponding to the last time a
 //               screen mesh was generated for the ProjectionScreen.
 //               Each time generate_screen() is called, this number is
@@ -186,3 +216,4 @@ INLINE const UpdateSeq &ProjectionScreen::
 get_last_screen() const {
   return _last_screen;
 }
+

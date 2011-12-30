@@ -45,6 +45,7 @@ ProjectionScreen(const string &name) : PandaNode(name)
   _frame_color.set(1.0f, 1.0f, 1.0f, 1.0f);
   _computed_rel_top_mat = false;
   _stale = true;
+  _auto_recompute = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -69,7 +70,8 @@ ProjectionScreen(const ProjectionScreen &copy) :
   _texcoord_name(copy._texcoord_name),
   _vignette_on(copy._vignette_on),
   _vignette_color(copy._vignette_color),
-  _frame_color(copy._frame_color)
+  _frame_color(copy._frame_color),
+  _auto_recompute(copy._auto_recompute)
 {
   _computed_rel_top_mat = false;
   _stale = true;
@@ -115,7 +117,9 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 bool ProjectionScreen::
 cull_callback(CullTraverser *, CullTraverserData &data) {
-  recompute_if_stale(data._node_path.get_node_path());
+  if (_auto_recompute) {
+    recompute_if_stale(data._node_path.get_node_path());
+  }
   return true;
 }
 
@@ -337,7 +341,21 @@ recompute() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ProjectionScreen::recompute_if_stale
-//       Access: Public
+//       Access: Published
+//  Description: Calls recompute() only if the relative transform
+//               between the ProjectionScreen and the projector has
+//               changed, or if any other relevant property has
+//               changed.
+////////////////////////////////////////////////////////////////////
+void ProjectionScreen::
+recompute_if_stale() {
+  NodePath this_np(NodePath::any_path(this));
+  recompute_if_stale(this_np);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ProjectionScreen::recompute_if_stale
+//       Access: Published
 //  Description: Calls recompute() only if the relative transform
 //               between the ProjectionScreen and the projector has
 //               changed, or if any other relevant property has

@@ -90,10 +90,12 @@ PUBLISHED:
   INLINE void set_frame_color(const LColor &frame_color);
   INLINE const LColor &get_frame_color() const;
 
-  void recompute();
+  INLINE void set_auto_recompute(bool auto_recompute);
+  INLINE bool get_auto_recompute() const;
 
-public:
+  void recompute();
   INLINE const UpdateSeq &get_last_screen() const;
+  void recompute_if_stale();
   void recompute_if_stale(const NodePath &this_np);
 
 private:
@@ -130,6 +132,7 @@ private:
   bool _stale;
   UpdateSeq _projector_lens_change;
   UpdateSeq _last_screen;
+  bool _auto_recompute;
 
 public:
   static TypeHandle get_class_type() {
