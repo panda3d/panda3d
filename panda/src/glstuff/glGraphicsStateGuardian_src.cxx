@@ -276,6 +276,16 @@ fix_component_ordering(PTA_uchar &new_image,
   return result;
 }
 
+//#--- Zhao Nov/2011
+string CLP(GraphicsStateGuardian)::get_driver_vendor() { return _gl_vendor; }
+string CLP(GraphicsStateGuardian)::get_driver_renderer() { return _gl_renderer; }
+
+string CLP(GraphicsStateGuardian)::get_driver_version() { return _gl_version; }
+int CLP(GraphicsStateGuardian)::get_driver_version_major() { return _gl_version_major; }
+int CLP(GraphicsStateGuardian)::get_driver_version_minor() { return _gl_version_minor; }
+int CLP(GraphicsStateGuardian)::get_driver_shader_version_major() { return _gl_shadlang_ver_major; }
+int CLP(GraphicsStateGuardian)::get_driver_shader_version_minor() { return _gl_shadlang_ver_minor; }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::Constructor
 //       Access: Public
@@ -5397,6 +5407,24 @@ query_gl_version() {
         << "GL_VERSION = " << version << ", decoded to "
         << _gl_version_major << "." << _gl_version_minor
         << "\n";
+    }
+
+    if (_gl_version_major==1) {
+        const char *extstr = (const char *) GLP(GetString)(GL_EXTENSIONS);
+        if (extstr != NULL) {
+            if (strstr( extstr, "GL_ARB_shading_language_100") != NULL)
+            {
+                _gl_shadlang_ver_major = 1;
+                _gl_shadlang_ver_minor = 0;
+            }
+        }
+    } 
+    else if (_gl_version_major >= 2) {
+        const char *verstr = (const char *) GLP(GetString)(GL_SHADING_LANGUAGE_VERSION);
+        if ((verstr == NULL) || (sscanf(verstr, "%d.%d", &_gl_shadlang_ver_major, &_gl_shadlang_ver_minor) != 2))
+        {
+            GLCAT.warning()  << "Invalid GL_SHADING_LANGUAGE_VERSION format.\n";            
+        }
     }
   }
 }

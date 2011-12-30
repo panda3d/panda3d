@@ -186,6 +186,15 @@ public:
   CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe);
   virtual ~CLP(GraphicsStateGuardian)();
 
+  //#--- Zhao Nov/2011
+  virtual string get_driver_vendor();
+  virtual string get_driver_renderer();
+  virtual string get_driver_version();
+  virtual int get_driver_version_major();
+  virtual int get_driver_version_minor();
+  virtual int get_driver_shader_version_major();
+  virtual int get_driver_shader_version_minor();
+  
   virtual void reset();
 
   virtual void prepare_display_region(DisplayRegionPipelineReader *dr);
@@ -520,6 +529,8 @@ protected:
   string _gl_renderer;
   string _gl_version;
   int _gl_version_major, _gl_version_minor;
+  //#--- Zhao Nov/2011
+  int _gl_shadlang_ver_major, _gl_shadlang_ver_minor;
   pset<string> _extensions;
 
 public:

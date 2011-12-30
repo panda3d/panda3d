@@ -130,6 +130,7 @@ TypeHandle GraphicsStateGuardian::_type_handle;
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
+
 GraphicsStateGuardian::
 GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
                       GraphicsEngine *engine, GraphicsPipe *pipe) :
@@ -2663,4 +2664,53 @@ make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host) {
   
   return tex;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_driver_vendor
+//       Access: Public, Virtual
+//  Description: Returns the vendor of the video card driver 
+////////////////////////////////////////////////////////////////////
+string GraphicsStateGuardian::get_driver_vendor() { return string("0"); }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_driver_vendor
+//       Access: Public, Virtual
+//  Description: Returns GL_Renderer
+////////////////////////////////////////////////////////////////////
+string GraphicsStateGuardian::get_driver_renderer() { return string("0"); }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_driver_version
+//       Access: Public, Virtual
+//  Description: Returns driver version
+////////////////////////////////////////////////////////////////////
+string GraphicsStateGuardian::get_driver_version() { return string("0"); }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_driver_version_major
+//       Access: Public, Virtual
+//  Description: Returns major version of the video driver
+////////////////////////////////////////////////////////////////////
+int GraphicsStateGuardian::get_driver_version_major() { return -1; }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_driver_version_minor
+//       Access: Public, Virtual
+//  Description: Returns the minor version of the video driver
+////////////////////////////////////////////////////////////////////
+int GraphicsStateGuardian::get_driver_version_minor() { return -1; }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_driver_shader_version_major
+//       Access: Public, Virtual
+//  Description: Returns the major version of the shader model
+////////////////////////////////////////////////////////////////////
+int GraphicsStateGuardian::get_driver_shader_version_major() { return -1; }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_driver_shader_version_minor
+//       Access: Public, Virtual
+//  Description: Returns the minor version of the shader model
+////////////////////////////////////////////////////////////////////
+int GraphicsStateGuardian::get_driver_shader_version_minor() { return -1; }
 

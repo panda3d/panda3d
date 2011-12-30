@@ -191,6 +191,15 @@ PUBLISHED:
 #endif
 
 PUBLISHED:
+
+  virtual string get_driver_vendor();
+  virtual string get_driver_renderer();
+  virtual string get_driver_version();
+  virtual int get_driver_version_major();
+  virtual int get_driver_version_minor();
+  virtual int get_driver_shader_version_major();
+  virtual int get_driver_shader_version_minor();
+  
   bool set_scene(SceneSetup *scene_setup);
   virtual SceneSetup *get_scene() const;
 
