@@ -246,6 +246,12 @@ rebuild_bitplanes() {
     glgsg->bind_fbo(_fbo);
 
     // Calculate bitplane size.  This can be larger than the buffer.
+	//Early out, we're not rebinding the textures to this FBO over and over
+	//Note that _initial_clear is used here to indicate whether or not the fbo is initialized
+	//A better version is to rewrite add_render_texture to add a 'modified flag' and check for that
+	// if (!(_initial_clear || (_creation_flags & GraphicsPipe::BF_size_track_host))) {
+		// return ;
+	// }
 
     if (_creation_flags & GraphicsPipe::BF_size_track_host) {
       if ((_host->get_x_size() != _x_size)||
@@ -268,20 +274,24 @@ rebuild_bitplanes() {
       rb_resize = true;
     }
 
-    // These variables indicate what should be bound to each bitplane.
+	//  Early out, we're not rebinding the textures to this FBO over and over
+	// if (!(_initial_clear || rb_resize)) {
+		// return ;
+	// }
+    //  These variables indicate what should be bound to each bitplane.
 
-    Texture *attach[RTP_COUNT];
-    attach[RTP_color] = 0;
-    attach[RTP_depth] = 0;
-    attach[RTP_depth_stencil] = 0;
+    Texture *pTexAttach[RTP_COUNT];
+    pTexAttach[RTP_color] = 0;
+    pTexAttach[RTP_depth] = 0;
+    pTexAttach[RTP_depth_stencil] = 0;
     for (int i=0; i<_fb_properties.get_aux_rgba(); i++) {
-      attach[RTP_aux_rgba_0+i] = 0;
+      pTexAttach[RTP_aux_rgba_0+i] = 0;
     }
     for (int i=0; i<_fb_properties.get_aux_hrgba(); i++) {
-      attach[RTP_aux_hrgba_0+i] = 0;
+      pTexAttach[RTP_aux_hrgba_0+i] = 0;
     }
     for (int i=0; i<_fb_properties.get_aux_float(); i++) {
-      attach[RTP_aux_float_0+i] = 0;
+      pTexAttach[RTP_aux_float_0+i] = 0;
     }
 
     // Sort the textures list into appropriate slots.
@@ -308,41 +318,59 @@ rebuild_bitplanes() {
         // If I can't find an appropriate slot, or if there's
         // already a texture bound to this slot, then punt
         // this texture.
-        if (attach[plane]) {
+        if (pTexAttach[plane]) {
           CDWriter cdataw(_cycler, cdata, false);
           nassertv(cdata->_textures.size() == cdataw->_textures.size());
           cdataw->_textures[i]._rtm_mode = RTM_copy_texture;
           continue;
         }
         // Assign the texture to this slot.
-        attach[plane] = tex;
+        pTexAttach[plane] = tex;
       }
     }
 
     // Having both a depth texture and a depth_stencil texture is invalid: depth_stencil implies
     // depth, and we can't bind them both.  Detect that case, normalize it, and complain.
-    if (( attach[RTP_depth] != NULL ) && ( attach[RTP_depth_stencil] != NULL )) {
-      attach[RTP_depth] = NULL;
+	// These next 0s should be null?
+    if (( pTexAttach[RTP_depth] != 0 ) && ( pTexAttach[RTP_depth_stencil] != 0 )) {
+      pTexAttach[RTP_depth] = 0;
       GLCAT.warning() << "Attempt to bind both Depth and DepthStencil bitplanes.\n";
     }
 
     // For all slots, update the slot.
 
-    bind_slot(rb_resize, attach, RTP_depth_stencil, GL_DEPTH_ATTACHMENT_EXT);
-    bind_slot(rb_resize, attach, RTP_depth, GL_DEPTH_ATTACHMENT_EXT);
-    bind_slot(rb_resize, attach, RTP_color, GL_COLOR_ATTACHMENT0_EXT);
+    //bind_slot(rb_resize, attach, RTP_depth_stencil, GL_DEPTH_ATTACHMENT_EXT);
+    //bind_slot(rb_resize, attach, RTP_depth, GL_DEPTH_ATTACHMENT_EXT);
+    //bind_slot(rb_resize, attach, RTP_color, GL_COLOR_ATTACHMENT0_EXT);
+
+    if ((_fb_properties.get_stencil_bits() != 0) || (pTexAttach[RTP_depth_stencil] != 0)) {
+		//GLCAT.error() << " Got here1!!!! Binding depth:  " << _fb_properties.get_stencil_bits() << "\n";
+		bind_slot(rb_resize, pTexAttach, RTP_depth_stencil, GL_DEPTH_ATTACHMENT_EXT);
+	} else {
+		//GLCAT.error() << " Got here2!!!! Binding depth \n";
+		if ((_fb_properties.get_depth_bits() != 0) || ( pTexAttach[RTP_depth] != 0 )) {
+			//GLCAT.error() << " Binding depth \n";
+			bind_slot(rb_resize, pTexAttach, RTP_depth, GL_DEPTH_ATTACHMENT_EXT);
+		}
+	}
+
+	int next = GL_COLOR_ATTACHMENT0_EXT;
+	if (pTexAttach[RTP_color] != 0) {
+		bind_slot(rb_resize, pTexAttach, RTP_color, GL_COLOR_ATTACHMENT0_EXT);
+		next += 1;
+	}
+	
 #ifndef OPENGLES
-    int next = GL_COLOR_ATTACHMENT1_EXT;
     for (int i=0; i<_fb_properties.get_aux_rgba(); i++) {
-      bind_slot(rb_resize, attach, (RenderTexturePlane)(RTP_aux_rgba_0+i), next);
+      bind_slot(rb_resize, pTexAttach, (RenderTexturePlane)(RTP_aux_rgba_0+i), next);
       next += 1;
     }
     for (int i=0; i<_fb_properties.get_aux_hrgba(); i++) {
-      bind_slot(rb_resize, attach, (RenderTexturePlane)(RTP_aux_hrgba_0+i), next);
+      bind_slot(rb_resize, pTexAttach, (RenderTexturePlane)(RTP_aux_hrgba_0+i), next);
       next += 1;
     }
     for (int i=0; i<_fb_properties.get_aux_float(); i++) {
-      bind_slot(rb_resize, attach, (RenderTexturePlane)(RTP_aux_float_0+i), next);
+      bind_slot(rb_resize, pTexAttach, (RenderTexturePlane)(RTP_aux_float_0+i), next);
       next += 1;
     }
     // Setup any required multisample buffers.
@@ -351,19 +379,19 @@ rebuild_bitplanes() {
         glgsg->_glGenFramebuffers(1, &_fbo_multisample);
       }
       glgsg->bind_fbo(_fbo_multisample);
-      bind_slot_multisample(rb_resize, attach, RTP_depth, GL_DEPTH_ATTACHMENT_EXT);
-      bind_slot_multisample(rb_resize, attach, RTP_color, GL_COLOR_ATTACHMENT0_EXT);
+      bind_slot_multisample(rb_resize, pTexAttach, RTP_depth, GL_DEPTH_ATTACHMENT_EXT);
+      bind_slot_multisample(rb_resize, pTexAttach, RTP_color, GL_COLOR_ATTACHMENT0_EXT);
       int next = GL_COLOR_ATTACHMENT1_EXT;
       for (int i=0; i<_fb_properties.get_aux_rgba(); i++) {
-        bind_slot_multisample(rb_resize, attach, (RenderTexturePlane)(RTP_aux_rgba_0+i), next);
+        bind_slot_multisample(rb_resize, pTexAttach, (RenderTexturePlane)(RTP_aux_rgba_0+i), next);
         next += 1;
       }
       for (int i=0; i<_fb_properties.get_aux_hrgba(); i++) {
-        bind_slot_multisample(rb_resize, attach, (RenderTexturePlane)(RTP_aux_hrgba_0+i), next);
+        bind_slot_multisample(rb_resize, pTexAttach, (RenderTexturePlane)(RTP_aux_hrgba_0+i), next);
         next += 1;
       }
       for (int i=0; i<_fb_properties.get_aux_float(); i++) {
-        bind_slot_multisample(rb_resize, attach, (RenderTexturePlane)(RTP_aux_float_0+i), next);
+        bind_slot_multisample(rb_resize, pTexAttach, (RenderTexturePlane)(RTP_aux_float_0+i), next);
         next += 1;
       }
       glEnable(GL_MULTISAMPLE);
@@ -455,14 +483,25 @@ rebuild_bitplanes() {
   }
 
 #ifndef OPENGLES
-  if ((_fb_properties.get_rgb_color() > 0) ||
-      (_fb_properties.get_aux_hrgba() > 0)) {
-    glDrawBuffer(GL_COLOR_ATTACHMENT0_EXT);
-    glReadBuffer(GL_COLOR_ATTACHMENT0_EXT);
-  } else {
+  // if ((_fb_properties.get_rgb_color() > 0) ||
+      // (_fb_properties.get_aux_hrgba() > 0)) {
+    // glDrawBuffer(GL_COLOR_ATTACHMENT0_EXT);
+    // glReadBuffer(GL_COLOR_ATTACHMENT0_EXT);
+  // } else {
+    // glDrawBuffer(GL_NONE);
+    // glReadBuffer(GL_NONE);
+  // }
+  
+  //The following is necessary to make the FBO specification complete for depth rendering only.
+  if ((_fb_properties.get_rgb_color() == 0) && (_fb_properties.get_aux_hrgba() == 0) && (_fb_properties.get_aux_rgba() == 0) && (_fb_properties.get_aux_float() == 0)) {
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
+  } else {
+    glDrawBuffer(GL_COLOR_ATTACHMENT0_EXT);
+    glReadBuffer(GL_COLOR_ATTACHMENT0_EXT);
   }
+
+  
 #endif
 
   _cube_face_active = 0;
@@ -476,7 +515,7 @@ rebuild_bitplanes() {
 //               specified bitplane.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsBuffer)::
-bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum attachpoint) {
+bind_slot(bool rb_resize, Texture **pTexAttach, RenderTexturePlane slot, GLenum attachpoint) {
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_V(glgsg, _gsg);
 
@@ -484,23 +523,15 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
   GLuint glFormat = GL_RGBA4;
 #else
   GLuint glFormat = GL_RGBA;
-  switch (slot) {
-    case RTP_aux_rgba_0:
-    case RTP_aux_rgba_1:
-    case RTP_aux_rgba_2:
-    case RTP_aux_rgba_3:
-      glFormat = GL_RGBA;
-      break;
-    case RTP_aux_hrgba_0:
-    case RTP_aux_hrgba_1:
-    case RTP_aux_hrgba_2:
-    case RTP_aux_hrgba_3:
-      glFormat = GL_RGBA16F_ARB;
-      break;
-  };
+  if ((slot == RTP_aux_hrgba_0) || (slot == RTP_aux_hrgba_1) || (slot == RTP_aux_hrgba_2) || (slot == RTP_aux_hrgba_3))
+  {
+	glFormat = GL_RGBA16F_ARB;
+  } else if ((slot == RTP_aux_float_0) || (slot == RTP_aux_float_1) || (slot == RTP_aux_float_2) || (slot == RTP_aux_float_3)) {
+	glFormat = GL_RGBA32F_ARB;
+  }
 #endif
 
-  Texture *tex = attach[slot];
+  Texture *tex = pTexAttach[slot];
   if (tex) {
     // If the texture is already bound to the slot, and it's
     // the right size, then no update of this slot is needed.
@@ -553,6 +584,8 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
 #else
       if (glFormat == GL_RGBA16F_ARB) {
         tex->set_format(Texture::F_rgba16);
+      } else if (glFormat == GL_RGBA32F_ARB) {
+        tex->set_format(Texture::F_rgba32);
       } else {
         tex->set_format(Texture::F_rgba);
       }
@@ -585,7 +618,7 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
     }
 
   } else {
-
+    // No texture is declared declared for this slot...
     // Disconnect from any texture that was previously bound to this slot.
     _tex[slot] = 0;
 
@@ -601,7 +634,8 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
     // then we DON'T want to create a depth_stencil buffer here (because depth is
     // a subset of depth_stencil).
     if (( slot == RTP_depth_stencil ) && ( _gsg->get_supports_depth_stencil() != false ) &&
-        ( attach[RTP_depth] != NULL )) {
+        //( pTexAttach[RTP_depth] != NULL )) {
+		( pTexAttach[RTP_depth] != 0 )) {
         return;
     }
 #endif
@@ -640,7 +674,7 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
           // This is the uber-tricky case, where we DON'T want to bind a depth buffer
           // if there's already any form of depth_stencil buffer bound (because depth_stencil
           // is a superset that includes depth).
-          if (( _rb[RTP_depth_stencil] != 0 ) || ( attach[RTP_depth_stencil] != NULL )) {
+          if (( _rb[RTP_depth_stencil] != 0 ) || ( pTexAttach[RTP_depth_stencil] != 0 )) {
             return;
           }
 
@@ -688,7 +722,7 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
 //               multisample graphics buffer.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsBuffer)::
-bind_slot_multisample(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum attachpoint) {
+bind_slot_multisample(bool rb_resize, Texture **pTexAttach, RenderTexturePlane slot, GLenum attachpoint) {
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_V(glgsg, _gsg);
 
@@ -702,7 +736,7 @@ bind_slot_multisample(bool rb_resize, Texture **attach, RenderTexturePlane slot,
   glgsg->_glBindFramebuffer(GL_FRAMEBUFFER_EXT, _fbo_multisample);
   glgsg->_glGenRenderbuffers(1, &(_rbm[slot]));
   // Allocate and bind the renderbuffer.
-  Texture *tex = attach[slot]; // If there is a texture map, use it's format as needed.
+  Texture *tex = pTexAttach[slot]; // If there is a texture map, use it's format as needed.
 
   if (attachpoint == GL_DEPTH_ATTACHMENT_EXT) {
 #ifndef OPENGLES_2
@@ -756,7 +790,7 @@ bind_slot_multisample(bool rb_resize, Texture **attach, RenderTexturePlane slot,
                                         GL_RENDERBUFFER_EXT, _rbm[slot]);
     }
   } else {
-    Texture *Tex = attach[slot];
+    Texture *Tex = pTexAttach[slot];
     GLuint glFormat = GL_RGBA;
 #ifndef OPENGLES
     switch (slot) {
@@ -968,10 +1002,10 @@ open_buffer() {
   nassertr(_host != 0, false);
 
   // Count total color buffers.
-  int totalcolor = 1 +
-    _fb_properties.get_aux_rgba() +
-    _fb_properties.get_aux_hrgba() +
-    _fb_properties.get_aux_float();
+  // int totalcolor = 1 +
+    // _fb_properties.get_aux_rgba() +
+    // _fb_properties.get_aux_hrgba() +
+    // _fb_properties.get_aux_float();
 
   // Check for support of relevant extensions.
   CLP(GraphicsStateGuardian) *glgsg;
@@ -980,6 +1014,9 @@ open_buffer() {
     return false;
   }
 
+  // zhao: 11/30 Why is this section even here? 
+  // What's the point of asking for the framebuffer properties, if we just override it anyway?
+  //
   // Describe the framebuffer properties of the FBO.
   //
   // The rule is that the properties should be as close
@@ -989,22 +1026,22 @@ open_buffer() {
   // tell the truth about what we actually provide by setting
   // the _fb_properties accurately.
 
-  _fb_properties.set_depth_bits(1);
-  _fb_properties.set_color_bits(1);
-  _fb_properties.set_alpha_bits(_host->get_fb_properties().get_alpha_bits());
-  if (_gsg->get_supports_depth_stencil()) {
-    _fb_properties.set_stencil_bits(1);
-  } else {
-    _fb_properties.set_stencil_bits(0);
-  }
-  _fb_properties.set_accum_bits(0);
-  _fb_properties.set_multisamples(_host->get_fb_properties().get_multisamples());
-  _fb_properties.set_back_buffers(0);
-  _fb_properties.set_indexed_color(0);
-  _fb_properties.set_rgb_color(1);
-  _fb_properties.set_stereo(0);
-  _fb_properties.set_force_hardware(_host->get_fb_properties().get_force_hardware());
-  _fb_properties.set_force_software(_host->get_fb_properties().get_force_software());
+  // _fb_properties.set_depth_bits(1);
+  // _fb_properties.set_color_bits(1);
+  // _fb_properties.set_alpha_bits(_host->get_fb_properties().get_alpha_bits());
+  // if (_gsg->get_supports_depth_stencil()) {
+    // _fb_properties.set_stencil_bits(1);
+  // } else {
+    // _fb_properties.set_stencil_bits(0);
+  // }
+  // _fb_properties.set_accum_bits(0);
+  // _fb_properties.set_multisamples(_host->get_fb_properties().get_multisamples());
+  // _fb_properties.set_back_buffers(0);
+  // _fb_properties.set_indexed_color(0);
+  // _fb_properties.set_rgb_color(1);
+  // _fb_properties.set_stereo(0);
+  // _fb_properties.set_force_hardware(_host->get_fb_properties().get_force_hardware());
+  // _fb_properties.set_force_software(_host->get_fb_properties().get_force_software());
 
   _is_valid = true;
   report_my_gl_errors();

@@ -347,12 +347,7 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
               (plane == RTP_aux_float_1)||
               (plane == RTP_aux_float_2)||
               (plane == RTP_aux_float_3)) {
-    // defaults to rgba16 unless rgba32 is set. Since many older hardware doesn't
-    // support 32 or filtering on 32
-    tex->set_component_type(Texture::T_float);
-    if( tex->get_format() != Texture::F_rgba32 ){
-      tex->set_format(Texture::F_rgba16);
-    }
+    tex->set_format(Texture::F_rgba32);
     tex->set_match_framebuffer_format(true);
   } else {
     display_cat.error() <<
