@@ -2562,6 +2562,7 @@ class Packager:
         globals = {}
         globals['__name__'] = packageDef.getBasenameWoExtension()
         globals['__dir__'] = Filename(packageDef.getDirname()).toOsSpecific()
+        globals['__file__'] = packageDef.toOsSpecific()
         globals['packageDef'] = packageDef
 
         globals['platform'] = self.platform

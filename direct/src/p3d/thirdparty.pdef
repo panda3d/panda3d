@@ -38,9 +38,14 @@ class tk(package):
            'direct.tkpanels',
            'direct.tkwidgets')
 
-    # Hack because Pmw uses weird import stuff
-    import Pmw
-    module('Pmw', 'Pmw.*')
+    # Hack because Pmw uses weird import stuff.
+    try:
+        import Pmw
+    except ImportError:
+        # Don't fail if Pmw isn't installed.
+        Pmw = None
+    if Pmw:
+        module('Pmw', 'Pmw.*')
 
 class sqlite(package):
     config(display_name = "SQLite Interface")
