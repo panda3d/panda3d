@@ -14,6 +14,7 @@
 
 #include "config_dxml.h"
 #include "dconfig.h"
+#include <stdio.h>
 
 BEGIN_PUBLISH
 #include "tinyxml.h"
@@ -70,5 +71,32 @@ BEGIN_PUBLISH
 void
 write_xml_stream(ostream &out, TiXmlDocument *doc) {
   out << *doc;
+}
+END_PUBLISH
+
+BEGIN_PUBLISH
+////////////////////////////////////////////////////////////////////
+//     Function: print_xml
+//  Description: Writes an XML object to stdout, with formatting.
+////////////////////////////////////////////////////////////////////
+void
+print_xml(TiXmlNode *xnode) {
+  xnode->Print(stdout, 0);
+}
+END_PUBLISH
+
+BEGIN_PUBLISH
+////////////////////////////////////////////////////////////////////
+//     Function: print_xml_to_file
+//  Description: Writes an XML object to the indicated file, with
+//               formatting.  Unfortunately the VFS cannot be
+//               supported; the file must be a real filename on disk.
+////////////////////////////////////////////////////////////////////
+void
+print_xml_to_file(const Filename &filename, TiXmlNode *xnode) {
+  string os_name = filename.to_os_specific();
+  FILE *file = fopen(os_name.c_str(), "w");
+  xnode->Print(file, 0);
+  fclose(file);
 }
 END_PUBLISH
