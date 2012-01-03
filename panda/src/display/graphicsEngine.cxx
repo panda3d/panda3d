@@ -645,6 +645,7 @@ get_window(int n) const {
 void GraphicsEngine::
 render_frame() {
   Thread *current_thread = Thread::get_current_thread();
+  ReMutexHolder public_holder(_public_lock);
 
   // Since this gets called every frame, we should take advantage of
   // the opportunity to flush the cache if necessary.

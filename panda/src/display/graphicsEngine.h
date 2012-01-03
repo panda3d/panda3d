@@ -63,6 +63,8 @@ PUBLISHED:
   void set_threading_model(const GraphicsThreadingModel &threading_model);
   GraphicsThreadingModel get_threading_model() const;
 
+  INLINE const ReMutex &get_render_lock() const;
+
   INLINE void set_auto_flip(bool auto_flip);
   INLINE bool get_auto_flip() const;
 
@@ -325,6 +327,7 @@ private:
   bool _singular_warning_this_frame;
 
   ReMutex _lock;
+  ReMutex _public_lock;
 
   class LoadedTexture {
   public:

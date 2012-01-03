@@ -14,6 +14,20 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::get_render_lock
+//       Access: Published
+//  Description: Returns a ReMutex object that is held by the
+//               GraphicsEngine during the entire call to
+//               render_frame().  While you hold this lock you can be
+//               confident that no part of the frame will be rendered
+//               (at least by the app thread).
+////////////////////////////////////////////////////////////////////
+INLINE const ReMutex &GraphicsEngine::
+get_render_lock() const {
+  return _public_lock;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::set_auto_flip
 //       Access: Published
 //  Description: Set this flag true to indicate the GraphicsEngine
