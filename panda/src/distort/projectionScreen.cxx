@@ -345,12 +345,13 @@ recompute() {
 //  Description: Calls recompute() only if the relative transform
 //               between the ProjectionScreen and the projector has
 //               changed, or if any other relevant property has
-//               changed.
+//               changed.  Returns true if recomputed, false
+//               otherwise.
 ////////////////////////////////////////////////////////////////////
-void ProjectionScreen::
+bool ProjectionScreen::
 recompute_if_stale() {
   NodePath this_np(NodePath::any_path(this));
-  recompute_if_stale(this_np);
+  return recompute_if_stale(this_np);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -359,17 +360,19 @@ recompute_if_stale() {
 //  Description: Calls recompute() only if the relative transform
 //               between the ProjectionScreen and the projector has
 //               changed, or if any other relevant property has
-//               changed.
+//               changed.  Returns true if recomputed, false
+//               otherwise.
 ////////////////////////////////////////////////////////////////////
-void ProjectionScreen::
+bool ProjectionScreen::
 recompute_if_stale(const NodePath &this_np) {
-  nassertv(!this_np.is_empty() && this_np.node() == this);
+  nassertr(!this_np.is_empty() && this_np.node() == this, false);
 
   if (_projector_node != (LensNode *)NULL && 
       _projector_node->get_lens() != (Lens *)NULL) {
     UpdateSeq lens_change = _projector_node->get_lens()->get_last_change();
     if (_stale || lens_change != _projector_lens_change) {
       recompute();
+      return true;
 
     } else {
       // Get the relative transform to ensure it hasn't changed.
@@ -379,9 +382,12 @@ recompute_if_stale(const NodePath &this_np) {
         _rel_top_mat = top_mat;
         _computed_rel_top_mat = true;
         do_recompute(this_np);
+        return true;
       }
     }
   }
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

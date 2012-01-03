@@ -95,8 +95,8 @@ PUBLISHED:
 
   void recompute();
   INLINE const UpdateSeq &get_last_screen() const;
-  void recompute_if_stale();
-  void recompute_if_stale(const NodePath &this_np);
+  bool recompute_if_stale();
+  bool recompute_if_stale(const NodePath &this_np);
 
 private:
   void do_recompute(const NodePath &this_np);
