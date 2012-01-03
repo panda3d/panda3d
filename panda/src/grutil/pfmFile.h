@@ -37,10 +37,10 @@ PUBLISHED:
   void clear();
   void clear(int x_size, int y_size, int num_channels);
 
-  bool read(const Filename &fullpath);
-  bool read(istream &in);
-  bool write(const Filename &fullpath);
-  bool write(ostream &out);
+  BLOCKING bool read(const Filename &fullpath);
+  BLOCKING bool read(istream &in);
+  BLOCKING bool write(const Filename &fullpath);
+  BLOCKING bool write(ostream &out);
 
   INLINE bool is_valid() const;
 
@@ -54,32 +54,32 @@ PUBLISHED:
   INLINE void set_point(int x, int y, const LVecBase3 &point);
   INLINE LPoint3 &modify_point(int x, int y);
 
-  bool calc_average_point(LPoint3 &result, double x, double y, double radius) const;
-  bool calc_min_max(LVecBase3 &min_points, LVecBase3 &max_points) const;
+  BLOCKING bool calc_average_point(LPoint3 &result, double x, double y, double radius) const;
+  BLOCKING bool calc_min_max(LVecBase3 &min_points, LVecBase3 &max_points) const;
 
   INLINE void set_zero_special(bool zero_special);
   INLINE bool get_zero_special() const;
 
-  void resize(int new_x_size, int new_y_size);
-  void reverse_rows();
-  void xform(const LMatrix4 &transform);
-  void project(const Lens *lens);
+  BLOCKING void resize(int new_x_size, int new_y_size);
+  BLOCKING void reverse_rows();
+  BLOCKING void xform(const LMatrix4 &transform);
+  BLOCKING void project(const Lens *lens);
 
-  PT(BoundingHexahedron) compute_planar_bounds(double point_dist, double sample_radius) const;
+  BLOCKING PT(BoundingHexahedron) compute_planar_bounds(double point_dist, double sample_radius) const;
 
   INLINE void set_vis_inverse(bool vis_inverse);
   INLINE bool get_vis_inverse() const;
   INLINE void set_vis_2d(bool vis_2d);
   INLINE bool get_vis_2d() const;
 
-  NodePath generate_vis_points() const;
+  BLOCKING NodePath generate_vis_points() const;
 
   enum MeshFace {
     MF_front = 0x01,
     MF_back  = 0x02,
     MF_both  = 0x03,
   };
-  NodePath generate_vis_mesh(MeshFace face = MF_front) const;
+  BLOCKING NodePath generate_vis_mesh(MeshFace face = MF_front) const;
 
 private:
   void make_vis_mesh_geom(GeomNode *gnode, bool inverted) const;
