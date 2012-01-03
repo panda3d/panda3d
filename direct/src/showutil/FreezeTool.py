@@ -599,10 +599,15 @@ class Freezer:
             try:
                 module = __import__(sourceTree)
             except:
-                module = None
+                pass
+
+        # Actually, make sure we know how to find all of the
+        # already-imported modules.  (Some of them might do their own
+        # special path mangling.)
+        for moduleName, module in sys.modules.items():
             if module and hasattr(module, '__path__'):
                 path = getattr(module, '__path__')
-                modulefinder.AddPackagePath(sourceTree, path[0])
+                modulefinder.AddPackagePath(moduleName, path[0])
 
     def excludeFrom(self, freezer):
         """ Excludes all modules that have already been processed by
@@ -890,7 +895,7 @@ class Freezer:
                 continue
             if origName in self.modules:
                 continue
-
+                
             # This module is missing.  Let it be missing in the
             # runtime also.
             self.modules[origName] = self.ModuleDef(origName, exclude = True,
