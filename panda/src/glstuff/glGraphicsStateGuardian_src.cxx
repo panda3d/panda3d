@@ -5408,7 +5408,7 @@ query_gl_version() {
         << _gl_version_major << "." << _gl_version_minor
         << "\n";
     }
-
+#ifndef OPENGLES
     if (_gl_version_major==1) {
         const char *extstr = (const char *) GLP(GetString)(GL_EXTENSIONS);
         if (extstr != NULL) {
@@ -5426,6 +5426,7 @@ query_gl_version() {
             GLCAT.warning()  << "Invalid GL_SHADING_LANGUAGE_VERSION format.\n";            
         }
     }
+#endif
   }
 }
 
