@@ -865,50 +865,57 @@ class Installer:
         nsi = open(nsifile.toOsSpecific(), "w")
 
         # Some global info
-        nsi.write('Name "%s"\n' % self.fullname)
-        nsi.write('OutFile "%s"\n' % output.toOsSpecific())
-        nsi.write('InstallDir "$PROGRAMFILES\\%s"\n' % self.fullname)
-        nsi.write('SetCompress auto\n')
-        nsi.write('SetCompressor lzma\n')
-        nsi.write('ShowInstDetails nevershow\n')
-        nsi.write('ShowUninstDetails nevershow\n')
-        nsi.write('InstType "Typical"\n')
+        print >>nsi, 'Name "%s"' % self.fullname
+        print >>nsi, 'OutFile "%s"' % output.toOsSpecific()
+        print >>nsi, 'InstallDir "$PROGRAMFILES\\%s"' % self.fullname
+        print >>nsi, 'SetCompress auto'
+        print >>nsi, 'SetCompressor lzma'
+        print >>nsi, 'ShowInstDetails nevershow'
+        print >>nsi, 'ShowUninstDetails nevershow'
+        print >>nsi, 'InstType "Typical"'
 
         # Tell Vista that we require admin rights
-        nsi.write('RequestExecutionLevel admin\n')
-        nsi.write('\n')
-        nsi.write('Function launch\n')
-        nsi.write('  ExecShell "open" "$INSTDIR\\%s.exe"\n' % self.shortname)
-        nsi.write('FunctionEnd\n')
-        nsi.write('\n')
-        nsi.write('!include "MUI2.nsh"\n')
-        nsi.write('!define MUI_ABORTWARNING\n')
-        nsi.write('!define MUI_FINISHPAGE_RUN\n')
-        nsi.write('!define MUI_FINISHPAGE_RUN_FUNCTION launch\n')
-        nsi.write('!define MUI_FINISHPAGE_RUN_TEXT "Run %s"\n' % self.fullname)
-        nsi.write('\n')
-        nsi.write('Var StartMenuFolder\n')
-        nsi.write('!insertmacro MUI_PAGE_WELCOME\n')
+        print >>nsi, 'RequestExecutionLevel admin'
+        print >>nsi
+        print >>nsi, 'Function launch'
+        print >>nsi, '  ExecShell "open" "$INSTDIR\\%s.exe"' % self.shortname
+        print >>nsi, 'FunctionEnd'
+        print >>nsi
+        print >>nsi, 'Function desktopshortcut'
+        print >>nsi, '  CreateShortcut "$DESKTOP\\%s.lnk" "$INSTDIR\\%s.exe"' % (self.fullname, self.shortname)
+        print >>nsi, 'FunctionEnd'
+        print >>nsi
+        print >>nsi, '!include "MUI2.nsh"'
+        print >>nsi, '!define MUI_ABORTWARNING'
+        print >>nsi, '!define MUI_FINISHPAGE_RUN'
+        print >>nsi, '!define MUI_FINISHPAGE_RUN_FUNCTION launch'
+        print >>nsi, '!define MUI_FINISHPAGE_RUN_TEXT "Run %s"' % self.fullname
+        print >>nsi, '!define MUI_FINISHPAGE_SHOWREADME ""'
+        print >>nsi, '!define MUI_FINISHPAGE_SHOWREADME_TEXT "Create Desktop Shortcut"'
+        print >>nsi, '!define MUI_FINISHPAGE_SHOWREADME_FUNCTION desktopshortcut'
+        print >>nsi
+        print >>nsi, 'Var StartMenuFolder'
+        print >>nsi, '!insertmacro MUI_PAGE_WELCOME'
         if not self.licensefile.empty():
             abs = Filename(self.licensefile)
             abs.makeAbsolute()
-            nsi.write('!insertmacro MUI_PAGE_LICENSE "%s"\n' % abs.toOsSpecific())
-        nsi.write('!insertmacro MUI_PAGE_DIRECTORY\n')
-        nsi.write('!insertmacro MUI_PAGE_STARTMENU Application $StartMenuFolder\n')
-        nsi.write('!insertmacro MUI_PAGE_INSTFILES\n')
-        nsi.write('!insertmacro MUI_PAGE_FINISH\n')
-        nsi.write('!insertmacro MUI_UNPAGE_WELCOME\n')
-        nsi.write('!insertmacro MUI_UNPAGE_CONFIRM\n')
-        nsi.write('!insertmacro MUI_UNPAGE_INSTFILES\n')
-        nsi.write('!insertmacro MUI_UNPAGE_FINISH\n')
-        nsi.write('!insertmacro MUI_LANGUAGE "English"\n')
+            print >>nsi, '!insertmacro MUI_PAGE_LICENSE "%s"' % abs.toOsSpecific()
+        print >>nsi, '!insertmacro MUI_PAGE_DIRECTORY'
+        print >>nsi, '!insertmacro MUI_PAGE_STARTMENU Application $StartMenuFolder'
+        print >>nsi, '!insertmacro MUI_PAGE_INSTFILES'
+        print >>nsi, '!insertmacro MUI_PAGE_FINISH'
+        print >>nsi, '!insertmacro MUI_UNPAGE_WELCOME'
+        print >>nsi, '!insertmacro MUI_UNPAGE_CONFIRM'
+        print >>nsi, '!insertmacro MUI_UNPAGE_INSTFILES'
+        print >>nsi, '!insertmacro MUI_UNPAGE_FINISH'
+        print >>nsi, '!insertmacro MUI_LANGUAGE "English"'
 
         # This section defines the installer.
-        nsi.write('Section "" SecCore\n')
-        nsi.write('  SetOutPath "$INSTDIR"\n')
-        nsi.write('  File "%s"\n' % exefile.toOsSpecific())
+        print >>nsi, 'Section "" SecCore'
+        print >>nsi, '  SetOutPath "$INSTDIR"'
+        print >>nsi, '  File "%s"' % exefile.toOsSpecific()
         for f in extrafiles:
-            nsi.write('  File "%s"\n' % f.toOsSpecific())
+            print >>nsi, '  File "%s"' % f.toOsSpecific()
         curdir = ""
         for root, dirs, files in self.os_walk(hostDir.toOsSpecific()):
             for name in files:
@@ -917,30 +924,30 @@ class Installer:
                 file.makeRelativeTo(hostDir)
                 outdir = file.getDirname().replace('/', '\\')
                 if curdir != outdir:
-                    nsi.write('  SetOutPath "$INSTDIR\\%s"\n' % outdir)
+                    print >>nsi, '  SetOutPath "$INSTDIR\\%s"' % outdir
                     curdir = outdir
-                nsi.write('  File "%s"\n' % os.path.join(root, name))
-        nsi.write('  WriteUninstaller "$INSTDIR\\Uninstall.exe"\n')
-        nsi.write('  ; Start menu items\n')
-        nsi.write('  !insertmacro MUI_STARTMENU_WRITE_BEGIN Application\n')
-        nsi.write('    CreateDirectory "$SMPROGRAMS\\$StartMenuFolder"\n')
-        nsi.write('    CreateShortCut "$SMPROGRAMS\\$StartMenuFolder\\%s.lnk" "$INSTDIR\\%s.exe"\n' % (self.fullname, self.shortname))
-        nsi.write('    CreateShortCut "$SMPROGRAMS\\$StartMenuFolder\\Uninstall.lnk" "$INSTDIR\\Uninstall.exe"\n')
-        nsi.write('  !insertmacro MUI_STARTMENU_WRITE_END\n')
-        nsi.write('SectionEnd\n')
+                print >>nsi, '  File "%s"' % os.path.join(root, name)
+        print >>nsi, '  WriteUninstaller "$INSTDIR\\Uninstall.exe"'
+        print >>nsi, '  ; Start menu items'
+        print >>nsi, '  !insertmacro MUI_STARTMENU_WRITE_BEGIN Application'
+        print >>nsi, '    CreateDirectory "$SMPROGRAMS\\$StartMenuFolder"'
+        print >>nsi, '    CreateShortCut "$SMPROGRAMS\\$StartMenuFolder\\%s.lnk" "$INSTDIR\\%s.exe"' % (self.fullname, self.shortname)
+        print >>nsi, '    CreateShortCut "$SMPROGRAMS\\$StartMenuFolder\\Uninstall.lnk" "$INSTDIR\\Uninstall.exe"'
+        print >>nsi, '  !insertmacro MUI_STARTMENU_WRITE_END'
+        print >>nsi, 'SectionEnd'
 
         # This section defines the uninstaller.
-        nsi.write('Section Uninstall\n')
-        nsi.write('  Delete "$INSTDIR\\%s.exe"\n' % self.shortname)
+        print >>nsi, 'Section Uninstall'
+        print >>nsi, '  Delete "$INSTDIR\\%s.exe"' % self.shortname
         for f in extrafiles:
-            nsi.write('  Delete "%s"\n' % f.getBasename())
-        nsi.write('  Delete "$INSTDIR\\Uninstall.exe"\n')
-        nsi.write('  RMDir /r "$INSTDIR"\n')
-        nsi.write('  ; Start menu items\n')
-        nsi.write('  !insertmacro MUI_STARTMENU_GETFOLDER Application $StartMenuFolder\n')
-        nsi.write('  Delete "$SMPROGRAMS\\$StartMenuFolder\\Uninstall.lnk"\n')
-        nsi.write('  RMDir "$SMPROGRAMS\\$StartMenuFolder"\n')
-        nsi.write('SectionEnd')
+            print >>nsi, '  Delete "%s"' % f.getBasename()
+        print >>nsi, '  Delete "$INSTDIR\\Uninstall.exe"'
+        print >>nsi, '  RMDir /r "$INSTDIR"'
+        print >>nsi, '  ; Start menu items'
+        print >>nsi, '  !insertmacro MUI_STARTMENU_GETFOLDER Application $StartMenuFolder'
+        print >>nsi, '  Delete "$SMPROGRAMS\\$StartMenuFolder\\Uninstall.lnk"'
+        print >>nsi, '  RMDir "$SMPROGRAMS\\$StartMenuFolder"'
+        print >>nsi, 'SectionEnd'
         nsi.close()
 
         cmd = [makensis]
