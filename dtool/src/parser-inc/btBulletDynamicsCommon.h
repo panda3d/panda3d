@@ -49,6 +49,7 @@ class btKinematicCharacterController;
 class btManifoldPoint;
 class btMatrix3x3;
 class btMotionState;
+class btMultiSphereShape;
 class btOverlapFilterCallback;
 class btPairCachingGhostObject;
 class btParalleSequentialImpulseSolver;

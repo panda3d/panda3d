@@ -29,6 +29,7 @@
 #include "bulletGhostNode.h"
 #include "bulletHeightfieldShape.h"
 #include "bulletHingeConstraint.h"
+#include "bulletMultiSphereShape.h"
 #include "bulletPlaneShape.h"
 #include "bulletRigidBodyNode.h"
 #include "bulletShape.h"
@@ -159,6 +160,7 @@ init_libbullet() {
   BulletGhostNode::init_type();
   BulletHeightfieldShape::init_type();
   BulletHingeConstraint::init_type();
+  BulletMultiSphereShape::init_type();
   BulletPlaneShape::init_type();
   BulletRigidBodyNode::init_type();
   BulletShape::init_type();
