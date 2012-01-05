@@ -133,7 +133,8 @@ from direct.p3d.DeploymentTools import Standalone, Installer
 from pandac.PandaModules import Filename, PandaSystem
 
 def usage(code, msg = ''):
-    print >> sys.stderr, usageText % {'prog' : os.path.split(sys.argv[0])[1]}
+    if not msg:
+        print >> sys.stderr, usageText % {'prog' : os.path.split(sys.argv[0])[1]}
     print >> sys.stderr, msg
     sys.exit(code)
 
@@ -154,7 +155,7 @@ includeRequires = False
 try:
     opts, args = getopt.getopt(sys.argv[1:], 'n:N:v:o:t:P:csl:L:a:A:e:h')
 except getopt.error, msg:
-    usage(1, msg)
+    usage(1, msg or 'Invalid option')
 
 for opt, arg in opts:
     if opt == '-n':
@@ -188,11 +189,14 @@ for opt, arg in opts:
     elif opt == '-h':
         usage(0)
     else:
-        print 'illegal option: ' + flag
-        sys.exit(1)
+        msg = 'illegal option: ' + flag
+        print msg
+        sys.exit(1, msg)
 
 if not args or len(args) != 2:
-    usage(1)
+    msg = 'Wrong number of arguments, received %s, expected 2' % (
+        len(args or []))
+    usage(1, msg)
 
 appFilename = Filename.fromOsSpecific(args[0])
 if appFilename.getExtension().lower() != 'p3d':
