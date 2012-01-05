@@ -330,7 +330,7 @@ class Installer:
         # Load the p3d file to read out the required packages
         mf = Multifile()
         if not mf.openRead(p3dfile):
-            Installer.notify.error("Not a Panda3D application: %s" % (p3dFilename))
+            Installer.notify.error("Not a Panda3D application: %s" % (p3dfile))
             return
 
         # Now load the p3dInfo file.
@@ -966,6 +966,8 @@ class Installer:
             self.notify.warning("Unable to invoke NSIS command.")
 
         nsifile.unlink()
+        # TODO: should empty hostDir here to clean up after ourselves.
+        
         return output
 
     def os_walk(self, top):
