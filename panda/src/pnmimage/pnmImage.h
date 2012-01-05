@@ -116,7 +116,7 @@ PUBLISHED:
   void make_grayscale(double rc, double gc, double bc);
   INLINE void make_rgb();
 
-  void set_maxval(xelval maxval);
+  BLOCKING void set_maxval(xelval maxval);
 
   // The *_val() functions return or set the color values in the range
   // [0..get_maxval()].  This range may be different for different
