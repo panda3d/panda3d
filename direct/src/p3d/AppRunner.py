@@ -874,7 +874,7 @@ class AppRunner(DirectObject):
             initAppForGui()
 
     def setP3DFilename(self, p3dFilename, tokens, argv, instanceId,
-                       interactiveConsole, p3dOffset, p3dUrl):
+                       interactiveConsole, p3dOffset = 0, p3dUrl = None):
         """ Called by the browser to specify the p3d file that
         contains the application itself, along with the web tokens
         and/or command-line arguments.  Once this method has been
