@@ -7,69 +7,78 @@ from PythonUtil import *
 from direct.directnotify import DirectNotifyGlobal
 import types
 
-# This one line will replace the cheesy hack below, when we remove the
-# hack.
-#from direct.stdpy.threading import Lock
+from libpandaexpress import ConfigVariableBool
 
-class Lock:
-    """ This is a cheesy delayed implementation of Lock, designed to
-    support the Toontown ActiveX launch, which must import Messenger
-    before it has downloaded the rest of Panda.  This is a TEMPORARY
-    HACK, to be removed when the ActiveX launch is retired. """
+# If using the Toontown ActiveX launcher, this must be set true.
+# Also, Panda must be compiled with SIMPLE_THREADS or no HAVE_THREADS
+# at all.  In the normal Panda case, this should be set false.
+if ConfigVariableBool('delay-messenger-lock', False).getValue():
+    class Lock:
+        """ This is a cheesy delayed implementation of Lock, designed to
+        support the Toontown ActiveX launch, which must import Messenger
+        before it has downloaded the rest of Panda.  Note that this
+        cheesy lock isn't thread-safe if the application starts any
+        threads before acquiring the Messenger lock the first time.
+        (However, it's mostly thread-safe if Panda is compiled with
+        SIMPLE_THREADS.) """
 
-    notify = DirectNotifyGlobal.directNotify.newCategory("Messenger.Lock")
+        notify = DirectNotifyGlobal.directNotify.newCategory("Messenger.Lock")
 
-    def __init__(self):
-        self.locked = 0
+        def __init__(self):
+            self.locked = 0
 
-    def acquire(self):
-        # Before we download Panda, we can't use any threading
-        # interfaces.  So don't, until we observe that we have some
-        # actual contention on the lock.
+        def acquire(self):
+            # Before we download Panda, we can't use any threading
+            # interfaces.  So don't, until we observe that we have some
+            # actual contention on the lock.
 
-        if self.locked:
-            # We have contention.
-            return self.__getLock()
-        
-        # This relies on the fact that any individual Python statement
-        # is atomic.
-        self.locked += 1
-        if self.locked > 1:
-            # Whoops, we have contention.
-            self.locked -= 1
-            return self.__getLock()
+            if self.locked:
+                # We have contention.
+                return self.__getLock()
 
-    def release(self):
-        if self.locked:
-            # Still using the old, cheesy lock.
-            self.locked -= 1
-            return
+            # This relies on the fact that any individual Python statement
+            # is atomic.
+            self.locked += 1
+            if self.locked > 1:
+                # Whoops, we have contention.
+                self.locked -= 1
+                return self.__getLock()
 
-        # The new lock must have been put in place.
-        self.release = self.lock.release
-        return self.lock.release()
+        def release(self):
+            if self.locked:
+                # Still using the old, cheesy lock.
+                self.locked -= 1
+                return
 
-    def __getLock(self):
-        # Now that we've started Panda, it's safe to import the Mutex
-        # class, which becomes our actual lock.
-        # From now on, this lock will be used.
+            # The new lock must have been put in place.
+            self.release = self.lock.release
+            return self.lock.release()
 
-        self.notify.info("Acquiring Panda lock for the first time.")
+        def __getLock(self):
+            # Now that we've started Panda, it's safe to import the Mutex
+            # class, which becomes our actual lock.
+            # From now on, this lock will be used.
 
-        from pandac.PandaModules import Thread, Mutex
-        self.__dict__.setdefault('lock', Mutex('Messenger'))
-        self.lock.acquire()
-        
-        self.acquire = self.lock.acquire
+            self.notify.info("Acquiring Panda lock for the first time.")
 
-        # Wait for the cheesy lock to be released before we return.
-        self.notify.info("Waiting for cheesy lock to be released.")
-        while self.locked:
-            Thread.forceYield()
-        self.notify.info("Got cheesy lock.")
+            from pandac.PandaModules import Thread, Mutex
+            self.__dict__.setdefault('lock', Mutex('Messenger'))
+            self.lock.acquire()
 
-        # We return with the lock acquired.
-            
+            self.acquire = self.lock.acquire
+
+            # Wait for the cheesy lock to be released before we return.
+            self.notify.info("Waiting for cheesy lock to be released.")
+            while self.locked:
+                Thread.forceYield()
+            self.notify.info("Got cheesy lock.")
+
+            # We return with the lock acquired.
+else:            
+    # In the normal case, there's no reason not to import all of
+    # libpanda right away, and so we can just use Lock directly.  This
+    # is perfectly thread-safe.
+    from direct.stdpy.threading import Lock
 
 class Messenger:
 
