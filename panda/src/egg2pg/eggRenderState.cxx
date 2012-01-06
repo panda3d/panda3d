@@ -247,10 +247,15 @@ fill_state(EggPrimitive *egg_prim) {
   }
 
   if (egg_prim->has_material()) {
+    PT(EggMaterial) material = egg_prim->get_material();
     CPT(RenderAttrib) mt =
-      get_material_attrib(egg_prim->get_material(),
-                          egg_prim->get_bface_flag());
+      get_material_attrib(material, egg_prim->get_bface_flag());
     add_attrib(mt);
+
+    if (material->has_diff() && material->get_diff()[3] != 1.0) {
+      implicit_alpha = true;
+      binary_alpha_only = false;
+    }
   }
 
 
@@ -294,11 +299,13 @@ fill_state(EggPrimitive *egg_prim) {
   case EggRenderMode::AM_ms:
   case EggRenderMode::AM_ms_mask:
   case EggRenderMode::AM_dual:
-    // Any of these modes gets implicitly downgraded to AM_binary, if
-    // all of the alpha sources only contribute a binary value to
-    // alpha.
-    if (binary_alpha_only) {
-      am = EggRenderMode::AM_binary;
+    if (egg_implicit_alpha_binary) {
+      // Any of these modes gets implicitly downgraded to AM_binary, if
+      // all of the alpha sources only contribute a binary value to
+      // alpha.
+      if (binary_alpha_only) {
+        am = EggRenderMode::AM_binary;
+      }
     }
     break;
 

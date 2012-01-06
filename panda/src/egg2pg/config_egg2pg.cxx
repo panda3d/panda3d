@@ -184,6 +184,13 @@ ConfigVariableInt egg_vertex_max_num_joints
           "more than this number of joints, the joints with the lesser membership "
           "value are ignored.  Set this to -1 to allow any number of joints."));
 
+ConfigVariableBool egg_implicit_alpha_binary
+("egg-implicit-alpha-binary", false,
+ PRC_DESC("If this is true, then a <Scalar> alpha value appearing in an egg "
+          "file that appears to specify only a binary (0 or 1) value for alpha "
+          "will automatically be downgraded to alpha type \"binary\" instead of "
+          "whatever appears in the egg file."));
+
 ConfigureFn(config_egg2pg) {
   init_libegg2pg();
 }
