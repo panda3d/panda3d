@@ -377,6 +377,12 @@
 #set ARTOOLKIT_LIBS $[ARTOOLKIT_LIBS]
 #set HAVE_ARTOOLKIT $[HAVE_ARTOOLKIT]
 
+#set ROCKET_IPATH $[unixfilename $[ROCKET_IPATH]]
+#set ROCKET_LPATH $[unixfilename $[ROCKET_LPATH]]
+#set ROCKET_LIBS $[ROCKET_LIBS]
+#set HAVE_ROCKET $[HAVE_ROCKET]
+#set HAVE_ROCKET_PYTHON $[HAVE_ROCKET_PYTHON]
+
 // Now infer a few more variables based on what was defined.
 #if $[and $[HAVE_GTK],$[PKG_CONFIG]]
   #define cflags $[shell $[PKG_CONFIG] gtk+-2.0 --cflags]

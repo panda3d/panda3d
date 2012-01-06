@@ -230,6 +230,15 @@
 #else
 #print - Did not find ARToolKit
 #endif
+#if $[HAVE_ROCKET]
+#if $[HAVE_ROCKET_PYTHON]
+#print + libRocket with Python bindings
+#else
+#print + libRocket without Python bindings
+#endif
+#else
+#print - Did not find libRocket
+#endif
 
 #print
 #if $[and $[HAVE_INTERROGATE],$[HAVE_PYTHON]]
@@ -306,6 +315,9 @@ $[cdefine STDFLOAT_DOUBLE]
 /* Define if we have Maya available. */
 $[cdefine HAVE_MAYA]
 $[cdefine MAYA_PRE_5_0]
+
+/* Define if we have libRocket available and built with Python support. */
+$[cdefine HAVE_ROCKET_PYTHON]
 
 /* Define if we have SoftImage available. */
 $[cdefine HAVE_SOFTIMAGE]

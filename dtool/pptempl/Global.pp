@@ -497,6 +497,12 @@
   #define artoolkit_libs $[ARTOOLKIT_LIBS]
 #endif
 
+#if $[HAVE_ROCKET]
+  #define rocket_ipath $[wildcard $[ROCKET_IPATH]]
+  #define rocket_lpath $[wildcard $[ROCKET_LPATH]]
+  #define rocket_libs $[ROCKET_LIBS]
+#endif
+
 // We define these two variables true here in the global scope; a
 // particular Sources.pp file can redefine these to be false to
 // prevent a particular directory or target from being built in
@@ -941,7 +947,7 @@ Warning: Variable $[upcase $[tree]]_INSTALL is not set!
 
 // Caution!  interrogate_ipath might be redefined in the
 // Global.platform.pp file.
-#defer interrogate_ipath $[install_parser_inc_dir:%=-S%] $[target_ipath:%=-I%]
+#defer interrogate_ipath $[install_parser_inc_dir:%=-S%] $[INTERROGATE_SYSTEM_IPATH:%=-S%] $[target_ipath:%=-I%]
 
 #defer interrogate_options \
     -DCPPPARSER -D__STDC__=1 -D__cplusplus $[SYSTEM_IGATE_FLAGS] \

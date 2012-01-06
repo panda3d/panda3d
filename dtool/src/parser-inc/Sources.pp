@@ -25,6 +25,5 @@
     WebCore.h WebView.h WebViewListener.h \
     Core/Core.h Forest/Forest.h Renderers/OpenGL/OpenGLRenderer.h \
     Renderers/DirectX9/DirectX9Renderer.h \
-    glew/glew.h Eigen/Dense Eigen/StdVector
-
-
+    glew/glew.h Eigen/Dense Eigen/StdVector \
+    Rocket/Core/RenderInterface.h

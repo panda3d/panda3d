@@ -1105,6 +1105,14 @@
 #define ARTOOLKIT_LIBS $[if $[WINDOWS_PLATFORM],libAR.lib,AR]
 #defer HAVE_ARTOOLKIT $[libtest $[ARTOOLKIT_LPATH],$[ARTOOLKIT_LIBS]]
 
+// libRocket is a GUI library
+#define ROCKET_IPATH /usr/local/include
+#define ROCKET_LPATH /usr/local/lib
+#define ROCKET_LIBS RocketCore boost_python
+#defer HAVE_ROCKET $[libtest $[ROCKET_LPATH],$[ROCKET_LIBS]]
+// Unset this if you built libRocket without Python bindings
+#defer HAVE_ROCKET_PYTHON $[and $[HAVE_ROCKET],$[HAVE_PYTHON]]
+
 // Define this to explicitly indicate the given platform string within
 // the resulting Panda runtime.  Normally it is best to leave this
 // undefined, in which case Panda will determine the best value
