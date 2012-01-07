@@ -355,7 +355,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
         gsg->_glGetActiveAttrib(_glsl_program, i, param_maxlength, NULL, &param_size, &param_type, param_name);
         PT(InternalName) inputname = InternalName::make(param_name);
 
-        if (inputname->get_name().substr(0, 4) == "gl_") {
+        if (inputname->get_name().substr(0, 3) == "gl_") {
           // We shouldn't bind anything to these.
         } else if (inputname->get_name().substr(0, 4) == "p3d_") {
           noprefix = inputname->get_name().substr(4);
