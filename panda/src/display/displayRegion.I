@@ -53,8 +53,8 @@ get_dimensions(PN_stdfloat &l, PN_stdfloat &r, PN_stdfloat &b, PN_stdfloat &t) c
   b = cdata->_dimensions[2];
   t = cdata->_dimensions[3];
 }
-///////////////////////////////////////////////////////////////////
 
+///////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::get_dimensions
 //       Access: Published
 //  Description: Retrieves the coordinates of the DisplayRegion's
@@ -510,6 +510,17 @@ get_cull_region_pcollector() {
 INLINE PStatCollector &DisplayRegion::
 get_draw_region_pcollector() {
   return _draw_region_pcollector;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::pixel_size_changed
+//       Access: Private, Virtual
+//  Description: Called when the size in pixels of this region
+//               has changed.  Also called the first time the
+//               pixel size is known.
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegion::
+pixel_size_changed(int x_size, int y_size) {
 }
 
 ////////////////////////////////////////////////////////////////////

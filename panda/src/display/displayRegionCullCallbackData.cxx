@@ -60,7 +60,5 @@ upcall() {
   DisplayRegion *dr = _scene_setup->get_display_region();
   GraphicsStateGuardian *gsg = dr->get_window()->get_gsg();
 
-  GraphicsEngine::do_cull(_cull_handler, _scene_setup,
-                          gsg, current_thread);
+  dr->do_cull(_cull_handler, _scene_setup, gsg, current_thread);
 }
-

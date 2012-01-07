@@ -1103,6 +1103,7 @@ texture_uploaded(Texture *tex) {
   LoadedTexture &lt = _loaded_textures.back();
   lt._tex = tex;
   lt._image_modified = tex->get_image_modified();
+//               Usually only called by DisplayRegion::do_cull.
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1334,7 +1335,7 @@ cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr,
         
       } else {
         // Perform the cull normally.
-        do_cull(&cull_handler, scene_setup, gsg, current_thread);
+        dr->do_cull(&cull_handler, scene_setup, gsg, current_thread);
       }
 
       gsg->end_scene();
@@ -1452,7 +1453,7 @@ cull_to_bins(GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread) {
 
     } else {
       // Perform the cull normally.
-      do_cull(&cull_handler, scene_setup, gsg, current_thread);
+      dr->do_cull(&cull_handler, scene_setup, gsg, current_thread);
     }
 
     PStatTimer timer(_cull_sort_pcollector, current_thread);

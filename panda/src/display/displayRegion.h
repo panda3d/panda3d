@@ -162,6 +162,11 @@ private:
   void win_display_regions_changed();
   void do_compute_pixels(int x_size, int y_size, CData *cdata);
   void set_active_index(int index);
+  INLINE virtual void pixel_size_changed(int x_size, int y_size);
+
+protected:
+  virtual void do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
+                       GraphicsStateGuardian *gsg, Thread *current_thread);
 
 protected:
   // The associated window is a permanent property of the
@@ -261,7 +266,9 @@ public:
 private:
   static TypeHandle _type_handle;
 
+  friend class GraphicsEngine;
   friend class GraphicsOutput;
+  friend class DisplayRegionCullCallbackData;
   friend class DisplayRegionPipelineReader;
 };
 

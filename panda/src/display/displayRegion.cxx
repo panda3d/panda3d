@@ -14,6 +14,7 @@
 
 #include "displayRegion.h"
 #include "stereoDisplayRegion.h"
+#include "graphicsEngine.h"
 #include "graphicsOutput.h"
 #include "config_display.h"
 #include "texture.h"
@@ -43,6 +44,8 @@ DisplayRegion(GraphicsOutput *window, const LVecBase4 &dimensions) :
   _draw_buffer_type = window->get_draw_buffer_type();
   set_dimensions(dimensions);
   compute_pixels_all_stages();
+
+  _window->add_display_region(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -738,6 +741,9 @@ do_compute_pixels(int x_size, int y_size, CData *cdata) {
       << "DisplayRegion::do_compute_pixels(" << x_size << ", " << y_size << ")\n";
   }
 
+  int old_w = cdata->_pr - cdata->_pl;
+  int old_h = cdata->_pt - cdata->_pb;
+
   cdata->_pl = int((cdata->_dimensions[0] * x_size) + 0.5);
   cdata->_pr = int((cdata->_dimensions[1] * x_size) + 0.5);
 
@@ -755,6 +761,12 @@ do_compute_pixels(int x_size, int y_size, CData *cdata) {
     cdata->_pt = int((cdata->_dimensions[3] * y_size) + 0.5);
     cdata->_pbi = int(((1.0f - cdata->_dimensions[2]) * y_size) + 0.5);
     cdata->_pti = int(((1.0f - cdata->_dimensions[3]) * y_size) + 0.5);
+  }
+
+  int w = cdata->_pr - cdata->_pl;
+  int h = cdata->_pt - cdata->_pb;
+  if (old_w != w || old_h != h) {
+    pixel_size_changed(w, h);
   }
 }
 
@@ -780,6 +792,19 @@ set_active_index(int index) {
   _cull_region_pcollector = PStatCollector(_window->get_cull_window_pcollector(), name);
   _draw_region_pcollector = PStatCollector(_window->get_draw_window_pcollector(), name);
 #endif  // DO_PSTATS
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::do_cull
+//       Access: Protected, Virtual
+//  Description: Performs a cull traversal.  The default
+//               implementation simply calls GraphicsEngine::do_cull.
+////////////////////////////////////////////////////////////////////
+void DisplayRegion::
+do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
+        GraphicsStateGuardian *gsg, Thread *current_thread) {
+
+  GraphicsEngine::do_cull(cull_handler, scene_setup, gsg, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////

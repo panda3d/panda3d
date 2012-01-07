@@ -671,7 +671,7 @@ make_mono_display_region(const LVecBase4 &dimensions) {
     return dr;
   }
 
-  return add_display_region(new DisplayRegion(this, dimensions));
+  return new DisplayRegion(this, dimensions);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -720,9 +720,6 @@ make_stereo_display_region(const LVecBase4 &dimensions) {
 
   PT(StereoDisplayRegion) stereo = new StereoDisplayRegion(this, dimensions,
                                                            left, right);
-  add_display_region(stereo);
-  add_display_region(left);
-  add_display_region(right);
 
   return stereo;
 }
@@ -1592,7 +1589,7 @@ create_texture_card_vdata(int x, int y) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::add_display_region
 //       Access: Private
-//  Description: Called by one of the make_display_region() methods to
+//  Description: Called by the DisplayRegion constructor to
 //               add the new DisplayRegion to the list.
 ////////////////////////////////////////////////////////////////////
 DisplayRegion *GraphicsOutput::
