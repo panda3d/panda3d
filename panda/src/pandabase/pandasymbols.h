@@ -232,6 +232,14 @@
   #define EXPTP_PANDAX11 extern
 #endif
 
+#ifdef BUILDING_ROCKET
+  #define EXPCL_ROCKET __declspec(dllexport)
+  #define EXPTP_ROCKET
+#else
+  #define EXPCL_ROCKET __declspec(dllimport)
+  #define EXPTP_ROCKET extern
+#endif
+
 #ifdef BUILDING_SHADER
   #define EXPCL_SHADER __declspec(dllexport)
   #define EXPTP_SHADER
@@ -338,6 +346,9 @@
 
 #define EXPCL_PANDAX11
 #define EXPTP_PANDAX11
+
+#define EXPCL_ROCKET
+#define EXPTP_ROCKET
 
 #define EXPCL_SHADER
 #define EXPTP_SHADER
