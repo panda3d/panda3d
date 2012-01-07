@@ -84,10 +84,11 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "ARTOOLKIT", "OPENCV", "DIRECTCAM", "VISION",        # Augmented Reality
   "NPAPI", "AWESOMIUM",                                # Browser embedding
   "GTK2", "WX", "FLTK",                                # Toolkit support
+  "ROCKET",                                            # GUI libraries
   "OSMESA", "X11", "XF86DGA", "XRANDR", "XCURSOR",     # Unix platform support
   "PANDATOOL", "PVIEW", "DEPLOYTOOLS",                 # Toolchain
-  "SKELETON",                                          # Example skeleton project
-  "PANDADISTORTFX",                                    # Some distortion special lenses 
+  "SKEL",                                              # Example SKEL project
+  "PANDAFX",                                           # Some distortion special lenses 
   "PANDAPARTICLESYSTEM",                               # Built in particle system
   "CONTRIB"                                            # Experimental
 ])
@@ -120,9 +121,7 @@ def usage(problem):
     print "  --verbose         (print out more information)"
     print "  --runtime         (build a runtime build instead of an SDK build)"
     print "  --installer       (build an installer)"
-    print "  --optimize X      (optimization level can be 1,2,3,4"
-    print "                     C++ application developers on Windows may prefer OPTIMIZE 2"
-    print "                     as this allows your own application to be compiled with a debug heap)"
+    print "  --optimize X      (optimization level can be 1,2,3,4)"
     print "  --version X       (set the panda version number)"
     print "  --lzma            (use lzma compression when building Windows installer)"
     print "  --distributor X   (short string identifying the distributor of the build)"
@@ -139,12 +138,9 @@ def usage(problem):
     print ""
     print "  --nothing         (disable every third-party lib)"
     print "  --everything      (enable every third-party lib)"
-    print "  --dxSdk=X         (specify version of Dx9 SDK to use: jun2010, aug2009, mar2009, aug2006)"
-    print "  --MSPlatSdk=X     (specify MSPlatSdk to use: win71, win61, win60A, winserver2003r2"
-    print "  --MSVC_Intel      (experimental setting to use an intel compiler instead of MSVC. win-only"
-    print "                     Novice users of this option should only use it inconjunction with the latest SDKs"
-    print "                     and have installed Intell Parallel Studios 2011 SP1. Use of the directcam and vision modules"
-    print "                     will require additional modifications to the build system."
+    print "  --directx-sdk=X   (specify version of Dx9 SDK to use: jun2010, aug2009, mar2009, aug2006)"
+    print "  --platform-sdk=X  (specify MSPlatSdk to use: win71, win61, win60A, winserver2003r2"
+    print "  --use-icl         (experimental setting to use an intel compiler instead of MSVC on Windows)"
     print ""
     print "The simplest way to compile panda is to just type:"
     print ""
@@ -162,7 +158,7 @@ def parseopts(args):
         "optimize=","everything","nothing","installer","rtdist","nocolor",
         "version=","lzma","no-python","threads=","outputdir=","override=",
         "static","host=","debversion=","rpmrelease=","p3dsuffix=",
-        "dxSdk=", "MSPlatSdk=", "MSVC_Intel"]
+        "directx-sdk=", "platform-sdk=", "use-icl"]
     anything = 0
     optimize = ""
     for pkg in PkgListGet(): longopts.append("no-"+pkg.lower())
@@ -197,17 +193,17 @@ def parseopts(args):
             # Backward compatibility, OPENGL was renamed to GL
             elif (option=="--use-opengl"): PkgEnable("GL")
             elif (option=="--no-opengl"): PkgDisable("GL")
-            elif (option=="--dxSdk"):
+            elif (option=="--directx-sdk"):
                 STRDXSDKVERSION = value.strip().lower()
                 if STRDXSDKVERSION == '':
                     print "No DirectX SDK version specified. Using 'default' DirectX SDK search"
                     STRDXSDKVERSION = 'default'
-            elif (option=="--MSPlatSdk"): 
+            elif (option=="--platform-sdk"): 
                 STRMSPLATFORMVERSION = value.strip().lower()
                 if STRMSPLATFORMVERSION == '':
                     print "No MS Platform SDK version specified. Using 'default' MS Platform SDK search"
                     STRMSPLATFORMVERSION = 'default'
-            elif (option=="--MSVC_Intel"): BOOUSEINTELCOMPILER = True
+            elif (option=="--use-icl"): BOOUSEINTELCOMPILER = True
             else:
                 for pkg in PkgListGet():
                     if (option=="--use-"+pkg.lower()):
@@ -509,6 +505,8 @@ if (COMPILER=="MSVC"):
     if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   GetThirdpartyDir() + "ffmpeg/lib/avformat.lib")
     if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   GetThirdpartyDir() + "ffmpeg/lib/avutil.lib")
     if (PkgSkip("SWSCALE")==0):  LibName("SWSCALE",  GetThirdpartyDir() + "ffmpeg/lib/swscale.lib")
+    if (PkgSkip("ROCKET")==0):   LibName("ROCKET",   GetThirdpartyDir() + "rocket/lib/RocketCore.lib")
+    if (PkgSkip("ROCKET")==0):   LibName("ROCKET",   GetThirdpartyDir() + "rocket/lib/RocketControls.lib")
     if (PkgSkip("OPENAL")==0):
         if (os.path.exists(GetThirdpartyDir() + "openal/lib/pandaopenal32.lib")):
             LibName("OPENAL",   GetThirdpartyDir() + "openal/lib/pandaopenal32.lib")
@@ -627,6 +625,7 @@ if (COMPILER=="LINUX"):
         SmartPkgEnable("TIFF",      "",          ("tiff"), "tiff.h")
         SmartPkgEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
         SmartPkgEnable("BULLET", "bullet", ("BulletSoftBody", "BulletDynamics", "BulletCollision", "LinearMath"), ("bullet", "bullet/btBulletDynamicsCommon.h"))
+        SmartPkgEnable("ROCKET",    "",          ("RocketCore", "RocketControls"), "Rocket/Core.h")
     SmartPkgEnable("GTK2",      "gtk+-2.0")
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
     SmartPkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
@@ -2263,6 +2262,8 @@ CopyAllHeaders('panda/src/parametrics')
 CopyAllHeaders('panda/src/pgui')
 CopyAllHeaders('panda/src/pnmimagetypes')
 CopyAllHeaders('panda/src/recorder')
+if (PkgSkip("ROCKET")==0):
+    CopyAllHeaders('panda/src/rocket')
 if (PkgSkip("VRPN")==0):
     CopyAllHeaders('panda/src/vrpn')
 CopyAllHeaders('panda/src/wgldisplay')
@@ -3252,6 +3253,28 @@ if (PkgSkip("VISION") ==0) and (not RUNTIME):
   TargetAdd('libp3vision.dll', opts=OPTS)
 
 #
+# DIRECTORY: panda/src/rocket/
+#
+
+if (PkgSkip("ROCKET") ==0) and (not RUNTIME):
+  OPTS=['DIR:panda/src/rocket', 'BUILDING:ROCKET', 'ROCKET']
+  TargetAdd('p3rocket_composite1.obj', opts=OPTS, input='p3rocket_composite1.cxx')
+  IGATEFILES=GetDirectoryContents('panda/src/rocket', ["rocketInputHandler*", "rocketRegion*"])
+  TargetAdd('libp3rocket.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libp3rocket.in', opts=['IMOD:p3rocket', 'ILIB:libp3rocket', 'SRCDIR:panda/src/rocket'])
+  TargetAdd('libp3rocket_igate.obj', input='libp3rocket.in', opts=["DEPENDENCYONLY"])
+
+  TargetAdd('libp3rocket_module.obj', input='libp3rocket.in')
+  TargetAdd('libp3rocket_module.obj', opts=OPTS)
+  TargetAdd('libp3rocket_module.obj', opts=['IMOD:p3rocket', 'ILIB:libp3rocket'])
+
+  TargetAdd('libp3rocket.dll', input='p3rocket_composite1.obj')
+  TargetAdd('libp3rocket.dll', input='libp3rocket_igate.obj')
+  TargetAdd('libp3rocket.dll', input='libp3rocket_module.obj')
+  TargetAdd('libp3rocket.dll', input=COMMON_PANDA_LIBS)
+  TargetAdd('libp3rocket.dll', opts=OPTS)
+
+#
 # DIRECTORY: panda/src/p3awesomium
 #
 if PkgSkip("AWESOMIUM") == 0 and not RUNTIME:
@@ -3277,7 +3300,7 @@ if PkgSkip("AWESOMIUM") == 0 and not RUNTIME:
 # DIRECTORY: panda/src/p3skel
 #
 
-if (PkgSkip('SKELETON')==0) and (not RUNTIME):
+if (PkgSkip('SKEL')==0) and (not RUNTIME):
   OPTS=['DIR:panda/src/skel', 'BUILDING:PANDASKEL', 'ADVAPI']
   TargetAdd('p3skel_composite1.obj', opts=OPTS, input='p3skel_composite1.cxx')
   IGATEFILES=GetDirectoryContents("panda/src/skel", ["*.h", "*_composite*.cxx"])
@@ -3289,7 +3312,7 @@ if (PkgSkip('SKELETON')==0) and (not RUNTIME):
 # DIRECTORY: panda/src/p3skel
 #
 
-if (PkgSkip('SKELETON')==0) and (not RUNTIME):
+if (PkgSkip('SKEL')==0) and (not RUNTIME):
   OPTS=['BUILDING:PANDASKEL', 'ADVAPI']
 
   TargetAdd('libpandaskel_module.obj', input='libp3skel.in')
@@ -3306,7 +3329,7 @@ if (PkgSkip('SKELETON')==0) and (not RUNTIME):
 # DIRECTORY: panda/src/distort/
 #
 
-if (PkgSkip('PANDADISTORTFX')==0) and (not RUNTIME):
+if (PkgSkip('PANDAFX')==0) and (not RUNTIME):
   OPTS=['DIR:panda/src/distort', 'BUILDING:PANDAFX']
   TargetAdd('p3distort_composite1.obj', opts=OPTS, input='p3distort_composite1.cxx')
   IGATEFILES=GetDirectoryContents('panda/src/distort', ["*.h", "*_composite*.cxx"])
@@ -3318,7 +3341,7 @@ if (PkgSkip('PANDADISTORTFX')==0) and (not RUNTIME):
 # DIRECTORY: panda/metalibs/pandafx/
 #
 
-if (PkgSkip('PANDADISTORTFX')==0) and (not RUNTIME):
+if (PkgSkip('PANDAFX')==0) and (not RUNTIME):
   OPTS=['DIR:panda/metalibs/pandafx', 'DIR:panda/src/distort', 'BUILDING:PANDAFX',  'NVIDIACG']
   TargetAdd('pandafx_pandafx.obj', opts=OPTS, input='pandafx.cxx')
 
@@ -3584,7 +3607,7 @@ if (not sys.platform.startswith("win") and PkgSkip("GL")==0 and PkgSkip("OSMESA"
   OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAMESA', 'NVIDIACG', 'GL']
   TargetAdd('libpandamesa.dll', input='p3mesadisplay_composite1.obj')
   TargetAdd('libpandamesa.dll', input='libp3glstuff.dll')
-  if (PkgSkip('PANDADISTORTFX')==0):
+  if (PkgSkip('PANDAFX')==0):
     TargetAdd('libpandamesa.dll', input='libpandafx.dll')
   TargetAdd('libpandamesa.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libpandamesa.dll', opts=['MODULE', 'GL', 'OSMESA'])
@@ -3631,7 +3654,7 @@ if (sys.platform == 'darwin' and PkgSkip("GL")==0 and not RUNTIME):
   TargetAdd('libpandagl.dll', input='p3osxdisplay_composite1.obj')
   TargetAdd('libpandagl.dll', input='p3osxdisplay_osxGraphicsWindow.obj')
   TargetAdd('libpandagl.dll', input='libp3glstuff.dll')
-  if (PkgSkip('PANDADISTORTFX')==0):
+  if (PkgSkip('PANDAFX')==0):
     TargetAdd('libpandagl.dll', input='libpandafx.dll')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'NVIDIACG', 'CGGL', 'CARBON', 'AGL', 'COCOA'])
@@ -3651,7 +3674,7 @@ if (sys.platform == "win32" and PkgSkip("GL")==0 and not RUNTIME):
   TargetAdd('libpandagl.dll', input='p3wgldisplay_composite1.obj')
   TargetAdd('libpandagl.dll', input='libp3windisplay.dll')
   TargetAdd('libpandagl.dll', input='libp3glstuff.dll')
-  if (PkgSkip('PANDADISTORTFX')==0):
+  if (PkgSkip('PANDAFX')==0):
     TargetAdd('libpandagl.dll', input='libpandafx.dll')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libpandagl.dll', opts=['MODULE', 'WINGDI', 'GL', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM',  'NVIDIACG', 'CGGL'])
@@ -5216,13 +5239,13 @@ if (PkgSkip("PYTHON")==0 and not RUNTIME):
   TargetAdd('PandaModules.py', input='libpanda.dll')
   if (PkgSkip("PANDAPHYSICS")==0):
     TargetAdd('PandaModules.py', input='libpandaphysics.dll')
-  if (PkgSkip('PANDADISTORTFX')==0):
+  if (PkgSkip('PANDAFX')==0):
     TargetAdd('PandaModules.py', input='libpandafx.dll')
   if (PkgSkip("DIRECT")==0):
     TargetAdd('PandaModules.py', input='libp3direct.dll')
   if (PkgSkip("VISION")==0):  
     TargetAdd('PandaModules.py', input='libp3vision.dll')
-  if (PkgSkip("SKELETON")==0):
+  if (PkgSkip("SKEL")==0):
     TargetAdd('PandaModules.py', input='libpandaskel.dll')
   TargetAdd('PandaModules.py', input='libpandaegg.dll')
   if (PkgSkip("AWESOMIUM")==0):
