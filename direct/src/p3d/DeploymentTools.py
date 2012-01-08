@@ -872,7 +872,7 @@ class Installer:
         print >>plist, '\t<string>%s</string>' % exefile.getBasename()
         if hasIcon:
             print >>plist, '\t<key>CFBundleIconFile</key>'
-            print >>plist, '\t<string>%s</string>' % self.shortname
+            print >>plist, '\t<string>%s.icns</string>' % self.shortname
         print >>plist, '\t<key>CFBundleIdentifier</key>'
         print >>plist, '\t<string>%s.%s</string>' % (self.authorid, self.shortname)
         print >>plist, '\t<key>CFBundleInfoDictionaryVersion</key>'
