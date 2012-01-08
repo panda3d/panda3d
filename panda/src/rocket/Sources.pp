@@ -11,7 +11,7 @@
   #define LOCAL_LIBS \
     p3display p3pgraph p3gobj p3linmath p3putil p3dgraph
 
-  #define COMBINED_SOURCES rocket_composite1.cxx
+  #define COMBINED_SOURCES p3rocket_composite1.cxx
 
   #define SOURCES \
     config_rocket.h \
