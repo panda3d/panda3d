@@ -1071,7 +1071,7 @@ class Installer:
             icofile = Filename(Filename.getTempDirectory(), self.shortname + ".ico")
             icofile.unlink()
             Installer.notify.info("Generating %s.ico..." % self.shortname)
-            if not self.icon.writeICO(icofile):
+            if not self.icon.makeICO(icofile):
                 icofile = None
 
         # Create the .nsi installer script
