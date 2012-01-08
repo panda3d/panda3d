@@ -119,6 +119,18 @@ Options:
      is username@hostname.
      Only relevant when generating a graphical installer.
 
+  -i "path/icon32.png" -i "path/icon48.png" -i "path/icon128.png"
+     This option should be repeated several times with different square
+     image sizes.  These images will then be combined to form an icon
+     file that will be used to represent the installed application.
+     To support all platforms, it is recommended to supply images of
+     the sizes 16x16, 32x32, 48x48, 128x128, 256x256, and 512x512.
+     The larger icon sizes can be omitted can safely be omitted if
+     you cannot provide images in that resolution.
+     It is recommended to use .png images for correct transparency.
+     If no images are provided, no icon will be generated.
+     Only relevant when generating a graphical installer.
+
   -h
      Display this help
 
@@ -150,6 +162,7 @@ licensefile = Filename()
 authorid = ""
 authorname = ""
 authoremail = ""
+iconFiles = []
 includeRequires = False
 
 try:
@@ -185,6 +198,8 @@ for opt, arg in opts:
         authorname = arg.strip()
     elif opt == '-e':
         authoremail = arg.strip()
+    elif opt == '-i':
+        iconFiles.append(Filename.fromOsSpecific(arg))
 
     elif opt == '-h':
         usage(0)
@@ -264,6 +279,16 @@ elif deploy_mode == 'installer':
         print "Using author \"%s\" <%s> with ID %s" % \
             (i.authorname, i.authoremail, i.authorid)
 
+    # Add the supplied icon images
+    failed = False
+    for iconFile in iconFiles:
+        if not i.icon.addImage(iconFile):
+            print '\nFailed to add icon image "%s"!\n' % iconFile
+            failed = True
+    if failed:
+        sys.exit(1)
+
+    # Now build for the requested platforms.
     if currentPlatform:
         platform = PandaSystem.getPlatform()
         if platform.startswith("win"):
@@ -277,6 +302,8 @@ elif deploy_mode == 'installer':
             output = Filename(outputDir, platform + "/")
             output.makeDir()
             i.build(output, platform)
+
+    del i
 
 elif deploy_mode == 'html':
     w, h = tokens.get("width", 640), tokens.get("height", 480)

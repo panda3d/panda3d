@@ -4,12 +4,14 @@ to build for as many platforms as possible. """
 
 __all__ = ["Standalone", "Installer"]
 
-import os, sys, subprocess, tarfile, shutil, time, zipfile, glob, socket, getpass
+import os, sys, subprocess, tarfile, shutil, time, zipfile, glob, socket, getpass, struct
 from cStringIO import StringIO
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase.AppRunnerGlobal import appRunner
 from pandac.PandaModules import PandaSystem, HTTPClient, Filename, VirtualFileSystem, Multifile
 from pandac.PandaModules import TiXmlDocument, TiXmlDeclaration, TiXmlElement, readXmlStream
+from pandac.PandaModules import PNMImage, PNMFileTypeRegistry
+from direct.stdpy.file import *
 from direct.p3d.HostInfo import HostInfo
 # This is important for some reason
 import encodings
@@ -126,7 +128,8 @@ class Standalone:
             # Figure out where p3dembed might be now.
             if package.platform.startswith("win"):
                 # Use p3dembedw unless console_environment was set.
-                if extraTokens.get("console_environment", self.tokens.get("console_environment", 0)) != 0:
+                cEnv = extraTokens.get("console_environment", self.tokens.get("console_environment", 0))
+                if cEnv != "" and int(cEnv) != 0:
                     p3dembed = Filename(self.host.hostDir, "p3dembed/%s/p3dembed.exe" % package.platform)
                 else:
                     p3dembed = Filename(self.host.hostDir, "p3dembed/%s/p3dembedw.exe" % package.platform)
@@ -287,6 +290,155 @@ class PackageTree:
         return package
 
 
+class Icon:
+    """ This class is used to create an icon for various platforms. """
+    notify = directNotify.newCategory("Icon")
+
+    def __init__(self):
+        self.images = {}
+    
+    def addImage(self, image):
+        """ Adds an image to the icon.  Returns False on failure, True on success.
+        Only one image per size can be loaded, and the image size must be square. """
+
+        if not isinstance(image, PNMImage):
+            fn = image
+            if not isinstance(fn, Filename):
+                fn = Filename.fromOsSpecific(fn)
+
+            image = PNMImage()
+            if not image.read(fn):
+                Icon.notify.warning("Image '%s' could not be read" % fn.getBasename())
+                return False
+
+        if image.getXSize() != image.getYSize():
+            Icon.notify.warning("Ignoring image without square size")
+            return False
+
+        self.images[image.getXSize()] = image
+
+        return True
+
+    def makeICO(self, fn):
+        """ Writes the images to a Windows ICO file.  Returns True on success. """
+
+        if not isinstance(fn, Filename):
+            fn = Filename.fromOsSpecific(fn)
+        fn.setBinary()
+
+        count = 0
+        for size in self.images.keys():
+            if size <= 256:
+                count += 1
+
+        ico = open(fn, 'wb')
+        ico.write(struct.pack('<HHH', 0, 1, count))
+
+        # Write the directory
+        for size, image in self.images.items():
+            if size == 256:
+                ico.write('\0\0')
+            else:
+                ico.write(struct.pack('<BB', size, size))
+            bpp = 32 if image.hasAlpha() else 24
+            ico.write(struct.pack('<BBHHII', 0, 0, 1, bpp, 0, 0))
+
+        # Now write the actual icons
+        ptr = 14
+        for size, image in self.images.items():
+            loc = ico.tell()
+            bpp = 32 if image.hasAlpha() else 24
+            ico.write(struct.pack('<IiiHHIIiiII', 40, size, size * 2, 1, bpp, 0, 0, 0, 0, 0, 0))
+
+            # XOR mask
+            if bpp == 24:
+                # Align rows to 4-byte boundary
+                rowalign = '\0' * (-(size * 3) & 3)
+                for y in xrange(size):
+                    for x in xrange(size):
+                        r, g, b = image.getXel(x, size - y - 1)
+                        ico.write(struct.pack('<BBB', int(b * 255), int(g * 255), int(r * 255)))
+                    ico.write(rowalign)
+            else:
+                for y in xrange(size):
+                    for x in xrange(size):
+                        r, g, b, a = image.getXelA(x, size - y - 1)
+                        ico.write(struct.pack('<BBBB', int(b * 255), int(g * 255), int(r * 255), int(a * 255)))
+
+            # Empty AND mask, aligned to 4-byte boundary
+            #TODO: perhaps we should convert alpha into an AND mask
+            # to support older versions of Windows that don't support alpha.
+            ico.write('\0' * (size * (size / 8 + (-((size / 8) * 3) & 3))))
+
+            # Go back to write the location
+            dataend = ico.tell()
+            ico.seek(ptr)
+            ico.write(struct.pack('<II', dataend - loc, loc))
+            ico.seek(dataend)
+            ptr += 16
+
+        ico.close()
+
+        return True
+
+    def makeICNS(self, fn):
+        """ Writes the images to an Apple ICNS file.  Returns True on success. """
+
+        if not isinstance(fn, Filename):
+            fn = Filename.fromOsSpecific(fn)
+        fn.setBinary()
+
+        vfs = VirtualFileSystem.getGlobalPtr()
+        stream = vfs.openWriteFile(fn, False, True)
+        icns = open(stream, 'wb')
+        icns.write('icns\0\0\0\0')
+
+        icon_types = {16: 'is32', 32: 'il32', 48: 'ih32', 128: 'it32'}
+        mask_types = {16: 's8mk', 32: 'l8mk', 48: 'h8mk', 128: 't8mk'}
+        png_types = {256: 'ic08', 512: 'ic09'}
+
+        pngtype = PNMFileTypeRegistry.getGlobalPtr().getTypeFromExtension("png")
+
+        for size, image in self.images.items():
+            if size in png_types:
+                if pngtype is None:
+                    continue
+                icns.write(png_types[size])
+                icns.write('\0\0\0\0')
+                start = icns.tell()
+
+                image.write(stream, "", pngtype)
+                pngsize = icns.tell() - start
+                icns.seek(start - 4)
+                icns.write(struct.pack('>I', pngsize + 8))
+                icns.seek(start + pngsize)
+
+            elif size in icon_types:
+                icns.write(icon_types[size])
+                icns.write(struct.pack('>I', size * size * 4 + 8))
+
+                for y in xrange(size):
+                    for x in xrange(size):
+                        r, g, b = image.getXel(x, y)
+                        icns.write(struct.pack('>BBBB', 0, int(r * 255), int(g * 255), int(b * 255)))
+
+                if not image.hasAlpha():
+                    continue
+                icns.write(mask_types[size])
+                icns.write(struct.pack('>I', size * size + 8))
+
+                for y in xrange(size):
+                    for x in xrange(size):
+                        icns.write(struct.pack('<B', int(image.getAlpha(x, y) * 255)))
+
+        length = icns.tell()
+        icns.seek(4)
+        icns.write(struct.pack('>I', length))
+        icns.close()
+
+        return True
+
+
 class Installer:
     """ This class creates a (graphical) installer from a given .p3d file. """
     notify = directNotify.newCategory("Installer")
@@ -303,6 +455,7 @@ class Installer:
         self.authorid = "org.panda3d"
         self.authorname = os.environ.get("DEBFULLNAME", "")
         self.authoremail = os.environ.get("DEBEMAIL", "")
+        self.icon = None
 
         # Try to determine a default author name ourselves.
         uname = None
@@ -413,6 +566,7 @@ class Installer:
                 mf.repack()
 
                 # If we have no subfiles left, we can just remove the multifile.
+                #XXX rdb: it seems that removing it causes trouble, so let's not.
                 #if mf.getNumSubfiles() == 0:
                 #    Installer.notify.info("Removing empty archive %s" % (package.uncompressedArchive.filename))
                 #    mf.close()
@@ -505,8 +659,51 @@ class Installer:
             shutil.copyfile(self.licensefile.toOsSpecific(), Filename(tempdir, "usr/share/doc/%s/copyright" % self.shortname.lower()).toOsSpecific())
             shutil.copyfile(self.licensefile.toOsSpecific(), Filename(tempdir, "usr/share/doc/%s/LICENSE" % self.shortname.lower()).toOsSpecific())
 
+        # Add an image file to /usr/share/pixmaps/
+        iconFile = None
+        if self.icon is not None:
+            iconImage = None
+            if 48 in self.icon.images:
+                iconImage = self.icon.images[48]
+            elif 64 in self.icon.images:
+                iconImage = self.icon.images[64]
+            elif 32 in self.icon.images:
+                iconImage = self.icon.images[32]
+            else:
+                Installer.notify.warning("No suitable icon image for Linux provided, should preferably be 48x48 in size")
+
+            if iconImage is not None:
+                iconFile = Filename(tempdir, "usr/share/pixmaps/%s.png" % self.shortname)
+                iconFile.setBinary()
+                iconFile.makeDir()
+                if not iconImage.write(iconFile):
+                    Installer.notify.warning("Failed to write icon file for Linux")
+                    iconFile.unlink()
+                    iconFile = None
+
+        # Write a .desktop file to /usr/share/applications/
+        desktopFile = Filename(tempdir, "usr/share/applications/%s.desktop" % self.shortname.lower())
+        desktopFile.setText()
+        desktopFile.makeDir()
+        desktop = open(desktopFile.toOsSpecific(), 'w')
+        print >>desktop, "[Desktop Entry]"
+        print >>desktop, "Name=%s" % self.fullname
+        print >>desktop, "Exec=%s" % self.shortname.lower()
+        if iconFile is not None:
+            print >>desktop, "Icon=%s" % iconFile.getBasename()
+
+        # Set the "Terminal" option based on whether or not a console env is requested
+        cEnv = self.standalone.tokens.get("console_environment", "")
+        if cEnv == "" or int(cEnv) == 0:
+            print >>desktop, "Terminal=false"
+        else:
+            print >>desktop, "Terminal=true"
+
+        print >>desktop, "Type=Application"
+        desktop.close()
+
         if self.includeRequires:
-            hostDir = Filename(tempdir, "usr/lib/" + self.shortname.lower())
+            hostDir = Filename(tempdir, "usr/lib/%s/" % self.shortname.lower())
             hostDir.makeDir()
             self.installPackagesInto(hostDir, platform)
 
@@ -654,6 +851,11 @@ class Installer:
         hostDir.makeDir()
         self.installPackagesInto(hostDir, platform)
 
+        hasIcon = False
+        if self.icon is not None:
+            Installer.notify.info("Generating %s.icns..." % self.shortname)
+            hasIcon = self.icon.writeICNS(Filename(hostDir, "%s.icns" % self.shortname))
+
         # Create the application plist file.
         # Although it might make more sense to use Python's plistlib module here,
         # it is not available on non-OSX systems before Python 2.6.
@@ -668,6 +870,9 @@ class Installer:
         print >>plist, '\t<string>%s</string>' % self.fullname
         print >>plist, '\t<key>CFBundleExecutable</key>'
         print >>plist, '\t<string>%s</string>' % exefile.getBasename()
+        if hasIcon:
+            print >>plist, '\t<key>CFBundleIconFile</key>'
+            print >>plist, '\t<string>%s</string>' % self.shortname
         print >>plist, '\t<key>CFBundleIdentifier</key>'
         print >>plist, '\t<string>%s.%s</string>' % (self.authorid, self.shortname)
         print >>plist, '\t<key>CFBundleInfoDictionaryVersion</key>'
@@ -860,6 +1065,16 @@ class Installer:
             hostDir.makeDir()
             self.installPackagesInto(hostDir, platform)
 
+        # See if we can generate an icon
+        icofile = None
+        if self.icon is not None:
+            icofile = Filename(Filename.getTempDirectory(), self.shortname + ".ico")
+            icofile.unlink()
+            Installer.notify.info("Generating %s.ico..." % self.shortname)
+            if not self.icon.writeICO(icofile):
+                icofile = None
+
+        # Create the .nsi installer script
         nsifile = Filename(Filename.getTempDirectory(), self.shortname + ".nsi")
         nsifile.unlink()
         nsi = open(nsifile.toOsSpecific(), "w")
@@ -882,7 +1097,10 @@ class Installer:
         print >>nsi, 'FunctionEnd'
         print >>nsi
         print >>nsi, 'Function desktopshortcut'
-        print >>nsi, '  CreateShortcut "$DESKTOP\\%s.lnk" "$INSTDIR\\%s.exe"' % (self.fullname, self.shortname)
+        if icofile is None:
+            print >>nsi, '  CreateShortcut "$DESKTOP\\%s.lnk" "$INSTDIR\\%s.exe"' % (self.fullname, self.shortname)
+        else:
+            print >>nsi, '  CreateShortcut "$DESKTOP\\%s.lnk" "$INSTDIR\\%s.exe" "" "$INSTDIR\\%s.ico"' % (self.fullname, self.shortname, self.shortname)
         print >>nsi, 'FunctionEnd'
         print >>nsi
         print >>nsi, '!include "MUI2.nsh"'
@@ -914,6 +1132,8 @@ class Installer:
         print >>nsi, 'Section "" SecCore'
         print >>nsi, '  SetOutPath "$INSTDIR"'
         print >>nsi, '  File "%s"' % exefile.toOsSpecific()
+        if icofile is not None:
+            print >>nsi, '  File "%s"' % icofile.toOsSpecific()
         for f in extrafiles:
             print >>nsi, '  File "%s"' % f.toOsSpecific()
         curdir = ""
@@ -931,7 +1151,10 @@ class Installer:
         print >>nsi, '  ; Start menu items'
         print >>nsi, '  !insertmacro MUI_STARTMENU_WRITE_BEGIN Application'
         print >>nsi, '    CreateDirectory "$SMPROGRAMS\\$StartMenuFolder"'
-        print >>nsi, '    CreateShortCut "$SMPROGRAMS\\$StartMenuFolder\\%s.lnk" "$INSTDIR\\%s.exe"' % (self.fullname, self.shortname)
+        if icofile is None:
+            print >>nsi, '    CreateShortCut "$SMPROGRAMS\\$StartMenuFolder\\%s.lnk" "$INSTDIR\\%s.exe"' % (self.fullname, self.shortname)
+        else:
+            print >>nsi, '    CreateShortCut "$SMPROGRAMS\\$StartMenuFolder\\%s.lnk" "$INSTDIR\\%s.exe" "" "$INSTDIR\\%s.ico"' % (self.fullname, self.shortname, self.shortname)
         print >>nsi, '    CreateShortCut "$SMPROGRAMS\\$StartMenuFolder\\Uninstall.lnk" "$INSTDIR\\Uninstall.exe"'
         print >>nsi, '  !insertmacro MUI_STARTMENU_WRITE_END'
         print >>nsi, 'SectionEnd'
@@ -939,6 +1162,8 @@ class Installer:
         # This section defines the uninstaller.
         print >>nsi, 'Section Uninstall'
         print >>nsi, '  Delete "$INSTDIR\\%s.exe"' % self.shortname
+        if icofile is not None:
+            print >>nsi, '  Delete "$INSTDIR\\%s.ico"' % self.shortname
         for f in extrafiles:
             print >>nsi, '  Delete "%s"' % f.getBasename()
         print >>nsi, '  Delete "$INSTDIR\\Uninstall.exe"'
@@ -966,7 +1191,8 @@ class Installer:
             self.notify.warning("Unable to invoke NSIS command.")
 
         nsifile.unlink()
-        # TODO: should empty hostDir here to clean up after ourselves.
+        if icofile is not None:
+            icofile.unlink()
         
         return output
 
