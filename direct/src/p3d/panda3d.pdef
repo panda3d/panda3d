@@ -58,7 +58,7 @@ class panda3d(package):
 
     # Include various standard Python encodings.  The rest is in morepy.
     module('encodings', 'encodings.utf_8', 'encodings.ascii',
-           'encodings.string_escape', 'encodings.mbcs')
+           'encodings.string_escape', 'encodings.mbcs', 'io')
 
     # Pick up the shader files that appear in direct/src/filter.
     import direct
@@ -138,7 +138,7 @@ class morepy(package):
            'bsddb', 'dumbdbm', 'zlib', 'gzip', 'bz2', 'zipfile',
            'tarfile', 'csv', 'ConfigParser', 'robotparser', 'netrc',
            'xdrlib', 'plistlib', 'hashlib', 'hmac', 'md5', 'sha', 'os',
-           'io', 'time', 'optparse', 'getopt', 'logging', 'logging.*')
+           'time', 'optparse', 'getopt', 'logging', 'logging.*')
     module('getpass', 'curses', 'curses.textpad', 'curses.wrapper',
            'curses.ascii', 'curses.panel', 'platform', 'errno',
            'ctypes', 'select', 'threading', 'thread',
