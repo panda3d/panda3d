@@ -2,6 +2,7 @@
                    p3dtoolutil:c p3dtoolbase:c p3dtool:m p3prc:c
 
 #define USE_PACKAGES rocket
+#define BUILD_DIRECTORY $[HAVE_ROCKET]
 
 #define BUILDING_DLL BUILDING_ROCKET
 
