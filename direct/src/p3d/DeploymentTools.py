@@ -854,7 +854,7 @@ class Installer:
         hasIcon = False
         if self.icon is not None:
             Installer.notify.info("Generating %s.icns..." % self.shortname)
-            hasIcon = self.icon.writeICNS(Filename(hostDir, "%s.icns" % self.shortname))
+            hasIcon = self.icon.makeICNS(Filename(hostDir, "%s.icns" % self.shortname))
 
         # Create the application plist file.
         # Although it might make more sense to use Python's plistlib module here,
@@ -1168,8 +1168,11 @@ class Installer:
             print >>nsi, '  Delete "%s"' % f.getBasename()
         print >>nsi, '  Delete "$INSTDIR\\Uninstall.exe"'
         print >>nsi, '  RMDir /r "$INSTDIR"'
+        print >>nsi, '  ; Desktop icon'
+        print >>nsi, '  Delete "$DESKTOP\\%s.lnk"' % self.fullname
         print >>nsi, '  ; Start menu items'
         print >>nsi, '  !insertmacro MUI_STARTMENU_GETFOLDER Application $StartMenuFolder'
+        print >>nsi, '  Delete "$SMPROGRAMS\\$StartMenuFolder\\%s.lnk"' % self.fullname
         print >>nsi, '  Delete "$SMPROGRAMS\\$StartMenuFolder\\Uninstall.lnk"'
         print >>nsi, '  RMDir "$SMPROGRAMS\\$StartMenuFolder"'
         print >>nsi, 'SectionEnd'
