@@ -1,5 +1,5 @@
 #define DIR_TYPE models
-#define INSTALL_TO p3icons
+#define INSTALL_TO icons
 
 #define fltfiles $[wildcard *.flt]
 #begin flt_egg
@@ -12,9 +12,9 @@
 #end maya_egg
 
 #define eggfiles $[wildcard *.egg]
-#begin p3egg
+#begin egg
   #define SOURCES $[eggfiles]
-#end p3egg
+#end egg
 
 #begin install_icons
   #define SOURCES \

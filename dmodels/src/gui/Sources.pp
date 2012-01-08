@@ -1,5 +1,5 @@
 #define DIR_TYPE models
-#define INSTALL_TO models/p3gui
+#define INSTALL_TO models/gui
 
 #begin flt_egg
   #define SOURCES $[wildcard *.flt]
@@ -10,5 +10,5 @@
 #end install_egg
 
 #begin install_egg
-  #define SOURCES radio_button_gui.p3egg
+  #define SOURCES radio_button_gui.egg
 #end install_egg
