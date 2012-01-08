@@ -2191,6 +2191,8 @@ MakeDirectory(GetOutputDir()+'/include/parser-inc/Renderers/OpenGL')
 MakeDirectory(GetOutputDir()+'/include/parser-inc/Renderers/DirectX9')
 MakeDirectory(GetOutputDir()+'/include/parser-inc/glew')
 MakeDirectory(GetOutputDir()+'/include/parser-inc/Eigen')
+MakeDirectory(GetOutputDir()+'/include/parser-inc/Rocket')
+MakeDirectory(GetOutputDir()+'/include/parser-inc/Rocket/Core')
 CopyAllFiles(GetOutputDir()+'/include/parser-inc/openssl/','dtool/src/parser-inc/')
 CopyAllFiles(GetOutputDir()+'/include/parser-inc/netinet/','dtool/src/parser-inc/')
 CopyFile(GetOutputDir()+'/include/parser-inc/Cg/','dtool/src/parser-inc/cg.h')
@@ -2202,6 +2204,7 @@ CopyFile(GetOutputDir()+'/include/parser-inc/Renderers/DirectX9/','dtool/src/par
 CopyFile(GetOutputDir()+'/include/parser-inc/glew/','dtool/src/parser-inc/glew.h')
 CopyFile(GetOutputDir()+'/include/parser-inc/Eigen/','dtool/src/parser-inc/Dense')
 CopyFile(GetOutputDir()+'/include/parser-inc/Eigen/','dtool/src/parser-inc/StdVector')
+CopyFile(GetOutputDir()+'/include/parser-inc/Rocket/Core/','dtool/src/parser-inc/RenderInterface.h')
 DeleteCVS(GetOutputDir()+'/include/parser-inc')
 
 ########################################################################
