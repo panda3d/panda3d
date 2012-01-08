@@ -141,7 +141,7 @@ DEPLOY_MODES = ["standalone", "installer", "html"]
 import sys
 import os
 import getopt
-from direct.p3d.DeploymentTools import Standalone, Installer
+from direct.p3d.DeploymentTools import Standalone, Installer, Icon
 from pandac.PandaModules import Filename, PandaSystem
 
 def usage(code, msg = ''):
@@ -280,13 +280,15 @@ elif deploy_mode == 'installer':
             (i.authorname, i.authoremail, i.authorid)
 
     # Add the supplied icon images
-    failed = False
-    for iconFile in iconFiles:
-        if not i.icon.addImage(iconFile):
-            print '\nFailed to add icon image "%s"!\n' % iconFile
-            failed = True
-    if failed:
-        sys.exit(1)
+    if len(iconFiles) > 0:
+        failed = False
+        i.icon = Icon()
+        for iconFile in iconFiles:
+            if not i.icon.addImage(iconFile):
+                print '\nFailed to add icon image "%s"!\n' % iconFile
+                failed = True
+        if failed:
+            sys.exit(1)
 
     # Now build for the requested platforms.
     if currentPlatform:
