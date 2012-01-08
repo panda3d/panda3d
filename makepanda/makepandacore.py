@@ -274,7 +274,10 @@ def oscmd(cmd, ignoreError = False):
     if res != 0 and not ignoreError:
         if "interrogate" in cmd.split(" ", 1)[0] and GetVerbose():
             print GetColor("red") + "Interrogate failed, retrieving debug output..." + GetColor()
-            os.system(cmd.split(" ", 1)[0] + " -v " + cmd.split(" ", 1)[1])
+            if sys.platform == "win32":
+                os.spawnl(os.P_WAIT, exe, cmd.split(" ", 1)[0] + " -v " + cmd.split(" ", 1)[1])
+            else:
+                os.system(cmd.split(" ", 1)[0] + " -v " + cmd.split(" ", 1)[1])
         exit("The following command returned a non-zero value: " + str(cmd))
     return res
 
@@ -1334,54 +1337,46 @@ def GetSdkDir(sdkname, sdkkey = None):
 
 def SdkLocateDirectX( strMode = 'default' ):
     if (sys.platform != "win32"): return
-    print '\nDirectX SDK:'
     if strMode == 'default':
         GetSdkDir("directx8", "DX8")
         GetSdkDir("directx9", "DX9")
         if ("DX9" not in SDK):
             strMode = 'latest'
     if strMode == 'latest':
-        print '\tLooking for the latest DirectX SDK'
         ## We first try to locate the August SDK in 64 bits, then 32.
         if ("DX9" not in SDK):
             dir = GetRegistryKey("SOFTWARE\\Wow6432Node\\Microsoft\\DirectX\\Microsoft DirectX SDK (June 2010)", "InstallPath")
             if (dir != 0):
-                print "\t\tUsing DirectX SDK June 2010"
+                print "Using DirectX SDK June 2010"
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
                 SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
             dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (June 2010)", "InstallPath")
             if (dir != 0):
-                print "\t\tUsing DirectX SDK June 2010"
+                print "Using DirectX SDK June 2010"
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
                 SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
             dir = GetRegistryKey("SOFTWARE\\Wow6432Node\\Microsoft\\DirectX\\Microsoft DirectX SDK (August 2009)", "InstallPath")
             if (dir != 0):
-                print "\t\tUsing DirectX SDK Aug 2009"
+                print "Using DirectX SDK Aug 2009"
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
                 SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
             dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (August 2009)", "InstallPath")
             if (dir != 0):
-                print "\t\tUsing DirectX SDK Aug 2009"
+                print "Using DirectX SDK Aug 2009"
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
                 SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
             ## Try to locate the key within the "new" March 2009 location in the registry (yecch):
             dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (March 2009)", "InstallPath")
             if (dir != 0):
-                print "\t\tUsing DirectX SDK March 2009"
+                print "Using DirectX SDK March 2009"
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
         archStr = "x86"
         if (is_64): archStr = "x64"
         if ("DX9" not in SDK) or ("DX8" not in SDK):
-            if 'DX9' in SDK:
-                print "\t\tLooking for the Dx8 SDK in the registry uninstaller keys"
-            if 'DX8' in SDK:
-                print "\t\tLooking for the Dx9 SDK in the registry uninstaller keys"
-            if ("DX9" not in SDK) & ("DX8" not in SDK):
-                print "\t\tLooking for the Dx8,9 SDKs in the register uninstaller keys"
             uninstaller = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
             for subdir in ListRegistryKeys(uninstaller):
                 if (subdir[0]=="{"):
@@ -1393,7 +1388,6 @@ def SdkLocateDirectX( strMode = 'default' ):
                             (os.path.isfile(dir+"\\Lib\\d3d8.lib")) and
                             (os.path.isfile(dir+"\\Lib\\d3dx8.lib"))):
                             SDK["DX8"] = dir.replace("\\", "/").rstrip("/")
-                            print '\t\t\tFound Default Dx8 Sdk from the uninstaller keys in the registry!'
                         if (("DX9" not in SDK) and
                             (os.path.isfile(dir+"\\Include\\d3d9.h")) and
                             (os.path.isfile(dir+"\\Include\\d3dx9.h")) and
@@ -1401,21 +1395,19 @@ def SdkLocateDirectX( strMode = 'default' ):
                             (os.path.isfile(dir+"\\Lib\\" + archStr + "\\d3d9.lib")) and
                             (os.path.isfile(dir+"\\Lib\\" + archStr + "\\d3dx9.lib"))):
                             SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
-                            print '\t\t\tFound default Dx9 Sdk from the uninstaller keys in the registery'
         if ("DX9" not in SDK):
-            print "\t\tCouldn't find a DirectX SDK"
             return
     elif strMode == 'jun2010':
         if ("DX9" not in SDK):
             dir = GetRegistryKey("SOFTWARE\\Wow6432Node\\Microsoft\\DirectX\\Microsoft DirectX SDK (June 2010)", "InstallPath")
             if (dir != 0):
-                print "\t\tFound DirectX SDK June 2010"
+                print "Found DirectX SDK June 2010"
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
                 SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
             dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (June 2010)", "InstallPath")
             if (dir != 0):
-                print "\t\tFound DirectX SDK June 2010"
+                print "Found DirectX SDK June 2010"
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
                 SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
@@ -1424,13 +1416,13 @@ def SdkLocateDirectX( strMode = 'default' ):
         if ("DX9" not in SDK):
             dir = GetRegistryKey("SOFTWARE\\Wow6432Node\\Microsoft\\DirectX\\Microsoft DirectX SDK (August 2009)", "InstallPath")
             if (dir != 0):
-                print "\t\tFound DirectX SDK Aug 2009"
+                print "Found DirectX SDK Aug 2009"
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
                 SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
             dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (August 2009)", "InstallPath")
             if (dir != 0):
-                print "\t\tFound DirectX SDK Aug 2009"
+                print "Found DirectX SDK Aug 2009"
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
                 SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
@@ -1440,7 +1432,7 @@ def SdkLocateDirectX( strMode = 'default' ):
             ## Try to locate the key within the "new" March 2009 location in the registry (yecch):
             dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (March 2009)", "InstallPath")
             if (dir != 0):
-                print "\t\tFound DirectX SDK March 2009"
+                print "Found DirectX SDK March 2009"
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
         if ("DX9" not in SDK):
             exit("Couldn't find DirectX March 2009 SDK")
@@ -1448,7 +1440,6 @@ def SdkLocateDirectX( strMode = 'default' ):
         archStr = "x86"
         if (is_64): archStr = "x64"
         if ("DX9" not in SDK) or ("DX8" not in SDK):
-            print "\t\tLooking for the DirectX SDK  in registry uninstaller keys"
             uninstaller = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
             for subdir in ListRegistryKeys(uninstaller):
                 if (subdir[0]=="{"):
@@ -1460,7 +1451,6 @@ def SdkLocateDirectX( strMode = 'default' ):
                             (os.path.isfile(dir+"\\Lib\\d3d8.lib")) and
                             (os.path.isfile(dir+"\\Lib\\d3dx8.lib"))):
                             SDK["DX8"] = dir.replace("\\", "/").rstrip("/")
-                            print '\t\t\tFound Dx8 Sdk in registry uninstaller keys'
                         if (("DX9" not in SDK) and
                             (os.path.isfile(dir+"\\Include\\d3d9.h")) and
                             (os.path.isfile(dir+"\\Include\\d3dx9.h")) and
@@ -1468,16 +1458,10 @@ def SdkLocateDirectX( strMode = 'default' ):
                             (os.path.isfile(dir+"\\Lib\\" + archStr + "\\d3d9.lib")) and
                             (os.path.isfile(dir+"\\Lib\\" + archStr + "\\d3dx9.lib"))):
                             SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
-                            print '\t\t\tFound Dx9 Sdk in registry uninstaller keys'
         if ("DX9" not in SDK):
             exit("Couldn't find a DirectX Aug 2006 SDK")
     if ("DX9" in SDK):
         SDK["DIRECTCAM"] = SDK["DX9"]
-    else:
-        print "\tCouldn't find a DirectX 9 SDK"
-    if ("DX8" not in SDK):
-        print "\tCouldn't find a DirectX 8 SDK"
-    print "\n"
 
 def SdkLocateMaya():
     for (ver,key) in MAYAVERSIONINFO:
@@ -1573,53 +1557,33 @@ def SdkLocateVisualStudio():
         SDK["VISUALSTUDIO"] = vcdir
 
 def SdkLocateMSPlatform( strMode = 'default'):
-    print '\nWindows Platform SDK:'
     if (sys.platform != "win32"): return
     platsdk = 0
     if (strMode == 'default'):
-        print '\tSearching for the latest version'
         platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v7.1", "InstallationFolder")
         if (platsdk and not os.path.isdir(platsdk)):
             platsdk = 0
-        if platsdk:
-            print "\tWindows 7.1 SDK detected. Enabling special features (multi-touch)."
             
         if (platsdk == 0):
             platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\MicrosoftSDK\\InstalledSDKs\\D2FF9F89-8AA2-4373-8A31-C838BF4DBBE1", "Install Dir")
             if (platsdk and not os.path.isdir(platsdk)): 
                 platsdk = 0
-            if platsdk:
-                print "\tFound Windows Server 2003 R2 SDK from registry key"
                 
         if (platsdk == 0):
             platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v6.1","InstallationFolder")
             if (platsdk and not os.path.isdir(platsdk)): 
                 platsdk = 0
-            if platsdk:
-                print "\tFound Win 6.1 Platform SDK"
                 
         if (platsdk == 0):
             platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v6.0A","InstallationFolder")
             if (platsdk and not os.path.isdir(platsdk)):           
                 platsdk = 0
-            if platsdk:
-                print "\tFound Win 6.0A Platform SDK"
                 
         if (platsdk == 0 and os.path.isdir(os.path.join(GetProgramFiles(), "Microsoft Platform SDK for Windows Server 2003 R2"))):
             if (not is_64 or os.path.isdir(os.path.join(GetProgramFiles(), "Microsoft Platform SDK for Windows Server 2003 R2", "Lib", "AMD64"))):
                 platsdk = os.path.join(GetProgramFiles(), "Microsoft Platform SDK for Windows Server 2003 R2")
                 if (not os.path.isdir(platsdk)): 
                     platsdk = 0
-                if platsdk:
-                    print "\tFound Microsoft Platform SDK for Windows Server 2003 R2 from GetProgramFiles()"   
-                    
-        if (platsdk == 0 and os.path.isdir("C:/Program Files/Microsoft Platform SDK for Windows Server 2003 R2")):
-            if (not is_64 or os.path.isdir(os.path.join("C:/Program Files/Microsoft Platform SDK for Windows Server 2003 R2", "Lib", "AMD64"))):
-                platsdk = os.path.join("C:/Program Files/Microsoft Platform SDK for Windows Server 2003 R2")
-                if (not os.path.isdir(platsdk)): 
-                    platsdk = 0
-                if platsdk:
-                    print "\tFound Microsoft Platform SDK for Windows Server 2003 R2 from C:/Program Files/..."
 
         # Doesn't work with the Express versions, so we're checking for the "atlmfc" dir, which is not in the Express
         if (platsdk == 0 and os.path.isdir(os.path.join(GetProgramFiles(), "Microsoft Visual Studio 9\\VC\\atlmfc"))
@@ -1627,60 +1591,45 @@ def SdkLocateMSPlatform( strMode = 'default'):
             platsdk = os.path.join(GetProgramFiles(), "Microsoft Visual Studio 9\\VC\\PlatformSDK")
             if (not os.path.isdir(platsdk)): 
                 platsdk = 0
-            if platsdk:
-                print "\tUsing the VC 9.0 platform SDK"
 
         # This may not be the best idea but it does give a warning
         if (platsdk == 0):
             if ("WindowsSdkDir" in os.environ):
                 WARNINGS.append("Windows SDK directory not found in registry, found in Environment variables instead")
                 platsdk = os.environ["WindowsSdkDir"]
-                print "\tUsing Win PlatformSDK from os.environ"
                 
     elif (strMode == 'win71'):
         platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v7.1", "InstallationFolder")
         if (platsdk and not os.path.isdir(platsdk)):
             platsdk = 0
-        if platsdk:
-            print "\tWindows 7.1 SDK detected. Enabling special features (multi-touch)."
-        else:
+        if not platsdk:
             exit("Couldn't find Win7.1 Platform SDK")
     elif (strMode == 'win61'):
         platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v6.1","InstallationFolder")
         if (platsdk and not os.path.isdir(platsdk)):
             platsdk = 0
-        if platsdk:
-            print "\tWindows 6.1 SDK detected."
-        else:
+        if not platsdk:
             exit("Couldn't find Win6.1 Platform SDK")
     elif (strMode == 'win60A'):
         platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v6.0A","InstallationFolder")
         if (platsdk and not os.path.isdir(platsdk)):           
             platsdk = 0
-        if platsdk:
-            print "\tWin 6.0A Platform SDK detected."                        
-        else:
+        if not platsdk:
             exit("Couldn't find Win6.0 Platform SDK")
     elif (strMode == 'winserver2003r2'):
         platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\MicrosoftSDK\\InstalledSDKs\\D2FF9F89-8AA2-4373-8A31-C838BF4DBBE1", "Install Dir")
         if (platsdk and not os.path.isdir(platsdk)): 
             platsdk = 0
-        if platsdk:
-            print "\tFound Windows Server 2003 R2 Platform SDK from registry key \\D2FF...."
         if (platsdk == 0 and os.path.isdir(os.path.join(GetProgramFiles(), "Microsoft Platform SDK for Windows Server 2003 R2"))):
             if (not is_64 or os.path.isdir(os.path.join(GetProgramFiles(), "Microsoft Platform SDK for Windows Server 2003 R2", "Lib", "AMD64"))):
                 platsdk = os.path.join(GetProgramFiles(), "Microsoft Platform SDK for Windows Server 2003 R2")
                 if (not os.path.isdir(platsdk)): 
                     platsdk = 0
-                if platsdk:
-                    print "\tUsing Microsoft Platform SDK for Windows Server 2003 R2 from GetProgramFiles()"    
         if (platsdk == 0 and os.path.isdir("C:/Program Files/Microsoft Platform SDK for Windows Server 2003 R2")):
             if (not is_64 or os.path.isdir(os.path.join("C:/Program Files/Microsoft Platform SDK for Windows Server 2003 R2", "Lib", "AMD64"))):
                 platsdk = os.path.join("C:/Program Files/Microsoft Platform SDK for Windows Server 2003 R2")
                 if (not os.path.isdir(platsdk)): 
                     platsdk = 0
-                if platsdk:
-                    print "\tUsing Microsoft Platform SDK for Windows Server 2003 R2 from C:/Progra Files/..."
         if not platsdk:
             exit("Couldn't find Windows Server 2003 R2 PlatformSDK")                
                 
@@ -1688,10 +1637,8 @@ def SdkLocateMSPlatform( strMode = 'default'):
         if (not platsdk.endswith("\\")):
             platsdk += "\\"
         SDK["MSPLATFORM"] = platsdk
-    else:
-        print "\tCouldn't locate a windows platform SDK."
 
-def SdkLocateMacOSX(osxtarget=None):
+def SdkLocateMacOSX(osxtarget = None):
     if (sys.platform != "darwin"): return
     if (osxtarget != None):
         if (os.path.exists("/Developer/SDKs/MacOSX%su.sdk" % osxtarget)):

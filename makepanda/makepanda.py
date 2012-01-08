@@ -4857,7 +4857,6 @@ for VER in MAYAVERSIONS:
 for VER in MAXVERSIONS:
   VNUM=VER[3:]
   if (PkgSkip(VER)==0) and (PkgSkip("PANDATOOL")==0):
-    print '==>Making Pluging for 3dsmax:', VER
     OPTS=['DIR:pandatool/src/maxegg', VER,  "WINCOMCTL", "WINCOMDLG", "WINUSER", "MSFORSCOPE"]
     TargetAdd('maxEgg'+VNUM+'.res', opts=OPTS, input='maxEgg.rc')
     TargetAdd('maxegg'+VNUM+'_loader.obj', opts=OPTS, input='maxEggLoader.cxx')
@@ -5381,7 +5380,7 @@ def ParallelMake(tasklist):
     # A hack for now is to divide the tasklist into two parts, one to be built in parallel
     # and another subpart to be built sequentially. The most time consuming part of the process
     # is the c++ code generation anyways.
-    print '-->Total number of tasks: ', len(tasklist)  
+
     tasklist_seq = []
     i = 0
     while i < len(tasklist):
@@ -5392,8 +5391,7 @@ def ParallelMake(tasklist):
         tasklist_seq = tasklist[i:]
         tasklist = tasklist[:i]
     iNumStartingTasks = len(tasklist)
-    print '-->Number of jobs that can be processed in parallel:  ', len(tasklist)
-    print '-->Number of jobs that will be processed sequentially: ', len(tasklist_seq)
+
     pending = {}
     for task in tasklist:
         for target in task[2]:
@@ -5419,7 +5417,6 @@ def ParallelMake(tasklist):
                 else:
                     extras.append(task)
             tasklist = extras
-            print '**Number of tasks left', len(tasklist), 'out of ', iNumStartingTasks, ' starting parallel tasks'
         sys.stdout.flush()
         if (tasksqueued == 0): break
         donetask = donequeue.get()
@@ -5436,14 +5433,11 @@ def ParallelMake(tasklist):
     # Make sure there aren't any unsatisfied tasks
     if (len(tasklist)>0):
         exit("Dependency problems: " + str(len(tasklist)) + " tasks not finished. First task unsatisfied: "+str(tasklist[0][2]))
-    print '-->Switching to sequential make for remaining tasks'        
     SequentialMake(tasklist_seq)
 
 
 def SequentialMake(tasklist):
     i = 0
-    print '--->Number of (possible) tasks left', len(tasklist)
-    print '      (These tasks maybe done already)'
     for task in tasklist:
         if (NeedsBuild(task[2], task[3])):
             apply(task[0], task[1] + [(i * 100.0) / len(tasklist)])
@@ -6060,4 +6054,3 @@ WARNINGS.append("Elapsed Time: "+PrettyTime(time.time() - STARTTIME))
 
 printStatus("Makepanda Final Status Report", WARNINGS)
 print GetColor("green") + "Build successfully finished, elapsed time: " + PrettyTime(time.time() - STARTTIME) + GetColor()
-
