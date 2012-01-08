@@ -166,7 +166,7 @@ iconFiles = []
 includeRequires = False
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'n:N:v:o:t:P:csl:L:a:A:e:h')
+    opts, args = getopt.getopt(sys.argv[1:], 'n:N:v:o:t:P:csl:L:a:A:e:i:h')
 except getopt.error, msg:
     usage(1, msg or 'Invalid option')
 
