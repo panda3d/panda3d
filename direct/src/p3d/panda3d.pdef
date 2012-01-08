@@ -370,8 +370,7 @@ class pdeploy(p3d):
     config(display_name = "Panda3D Deployment Tool",
            hidden = True, platform_specific = False,
            keep_user_env = True)
-    require('panda3d')
+    require('panda3d', 'morepy')
 
-    module('encodings', 'encodings.zlib_codec', 'encodings.bz2_codec')
     mainModule('direct.p3d.pdeploy')
 
