@@ -56,14 +56,3 @@ get_window_handle() const {
   return _window_handle;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::add_input_device
-//       Access: Protected
-//  Description: Adds a GraphicsWindowInputDevice to the vector.
-////////////////////////////////////////////////////////////////////
-INLINE void GraphicsWindow::
-add_input_device(const GraphicsWindowInputDevice &device) {
-  _input_devices.push_back(device);
-  _input_devices.back().set_device_index(_input_devices.size()-1);
-}
-

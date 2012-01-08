@@ -336,12 +336,35 @@ make_output(GraphicsPipe *pipe,
     nassertr(threading_model.get_draw_name() ==
              gsg->get_threading_model().get_draw_name(), NULL);
   }
+
+  // Are we really asking for a callback window?
+  if ((flags & GraphicsPipe::BF_require_callback_window)!=0) {
+    PT(GraphicsStateGuardian) this_gsg = gsg;
+    if (this_gsg == (GraphicsStateGuardian *)NULL) {
+      // If we don't already have a GSG, we have to ask the pipe to
+      // make a new one, unencumbered by window dressing.
+      this_gsg = pipe->make_callback_gsg(this);
+    }
+    if (this_gsg != (GraphicsStateGuardian *)NULL) {
+      CallbackGraphicsWindow *window = new CallbackGraphicsWindow(this, pipe, name, fb_prop, win_prop, flags, this_gsg);
+      window->_sort = sort;
+      do_add_window(window, threading_model);
+      do_add_gsg(window->get_gsg(), pipe, threading_model);
+      display_cat.info() << "Created output of type CallbackGraphicsWindow\n";
+      return window;
+    }
+
+    // Couldn't make a callback window, because the pipe wouldn't make
+    // an unencumbered GSG.
+    return NULL;
+  }
   
   // Determine if a parasite buffer meets the user's specs.
 
   bool can_use_parasite = false;
   if ((host != 0)&&
       ((flags&GraphicsPipe::BF_require_window)==0)&&
+      ((flags&GraphicsPipe::BF_require_callback_window)==0)&&
       ((flags&GraphicsPipe::BF_refuse_parasite)==0)&&
       ((flags&GraphicsPipe::BF_can_bind_color)==0)&&
       ((flags&GraphicsPipe::BF_can_bind_every)==0)&&
@@ -1998,7 +2021,6 @@ void GraphicsEngine::
 do_add_gsg(GraphicsStateGuardian *gsg, GraphicsPipe *pipe,
            const GraphicsThreadingModel &threading_model) {
   ReMutexHolder holder(_lock);
-
   nassertv(gsg->get_pipe() == pipe && gsg->get_engine() == this);
   gsg->_threading_model = threading_model;
   if (!_default_loader.is_null()) {

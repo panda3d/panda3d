@@ -71,7 +71,7 @@ public:
   bool has_pointer_event() const;
   PT(PointerEventList) get_pointer_events();
 
-public:
+PUBLISHED:
   // The following interface is for the various kinds of
   // GraphicsWindows to record the data incoming on the device.
   void button_down(ButtonHandle button, double time = ClockObject::get_global_clock()->get_frame_time());

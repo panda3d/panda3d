@@ -1,4 +1,5 @@
 #include "config_display.cxx"
+#include "callbackGraphicsWindow.cxx"
 #include "displayInformation.cxx"
 #include "displayRegion.cxx"
 #include "displayRegionCullCallbackData.cxx"

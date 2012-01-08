@@ -2398,8 +2398,7 @@ determine_target_texture() {
 
   nassertv(target_texture != (TextureAttrib *)NULL &&
            target_tex_gen != (TexGenAttrib *)NULL);
-  int max_texture_stages = get_max_texture_stages();
-  _target_texture = target_texture->filter_to_max(max_texture_stages);
+  _target_texture = target_texture;
   _target_tex_gen = target_tex_gen;
   
   if (_has_texture_alpha_scale) {
@@ -2411,6 +2410,8 @@ determine_target_texture() {
                                (stage, TexGenAttrib::M_constant, LTexCoord3(_current_color_scale[3], 0.0f, 0.0f)));
   }
 
+  int max_texture_stages = get_max_texture_stages();
+  _target_texture = _target_texture->filter_to_max(max_texture_stages);
   nassertv(_target_texture->get_num_on_stages() <= max_texture_stages);
 }
 

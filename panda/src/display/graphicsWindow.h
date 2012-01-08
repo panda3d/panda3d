@@ -141,7 +141,7 @@ protected:
   void system_changed_size(int x_size, int y_size);
 
 protected:
-  INLINE void add_input_device(const GraphicsWindowInputDevice &device);
+  int add_input_device(const GraphicsWindowInputDevice &device);
   typedef vector_GraphicsWindowInputDevice InputDevices;
   InputDevices _input_devices;
   LightMutex _input_lock;

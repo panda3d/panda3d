@@ -559,11 +559,18 @@ class ShowBase(DirectObject.DirectObject):
     def openWindow(self, props = None, pipe = None, gsg = None,
                    type = None, name = None, size = None, aspectRatio = None,
                    makeCamera = 1, keepCamera = 0,
-                   scene = None, stereo = None, rawmice = 0):
+                   scene = None, stereo = None, rawmice = 0,
+                   callbackWindowDict = None):
         """
         Creates a window and adds it to the list of windows that are
         to be updated every frame.
+
+        If callbackWindowDict is not None, a CallbackGraphicWindow is
+        created instead, which allows the caller to create the actual
+        window with its own OpenGL context, and direct Panda's
+        rendering into that window.
         """
+
         if pipe == None:
             pipe = self.pipe
 
@@ -614,6 +621,9 @@ class ShowBase(DirectObject.DirectObject):
         elif type == 'offscreen':
             flags = flags | GraphicsPipe.BFRefuseWindow
 
+        if callbackWindowDict:
+            flags = flags | GraphicsPipe.BFRequireCallbackWindow
+
         if gsg:
             win = self.graphicsEngine.makeOutput(pipe, name, 0, fbprops,
                                                  props, flags, gsg)
@@ -624,6 +634,23 @@ class ShowBase(DirectObject.DirectObject):
         if win == None:
             # Couldn't create a window!
             return None
+
+        if callbackWindowDict:
+            # If we asked for (and received) a CallbackGraphicsWindow,
+            # we now have to assign the callbacks, before we start
+            # trying to do anything with the window.
+            for callbackName in ['Events', 'Properties', 'Render']:
+                func = callbackWindowDict.get(callbackName, None)
+                if not func:
+                    continue
+                
+                setCallbackName = 'set%sCallback' % (callbackName)
+                setCallback = getattr(win, setCallbackName)
+                setCallback(PythonCallbackObject(func))
+
+            # We also need to set up the mouse/keyboard objects.
+            for inputName in callbackWindowDict.get('inputDevices', ['mouse']):
+                win.createInputDevice(inputName)
 
         if hasattr(win, "requestProperties"):
             win.requestProperties(props)

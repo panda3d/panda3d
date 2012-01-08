@@ -854,6 +854,21 @@ system_changed_size(int x_size, int y_size) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::add_input_device
+//       Access: Protected
+//  Description: Adds a GraphicsWindowInputDevice to the vector.
+//               Returns the index of the new device.
+////////////////////////////////////////////////////////////////////
+int GraphicsWindow::
+add_input_device(const GraphicsWindowInputDevice &device) {
+  LightMutexHolder holder(_input_lock);
+  int index = (int)_input_devices.size();
+  _input_devices.push_back(device);
+  _input_devices.back().set_device_index(index);
+  return index;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::mouse_mode_relative
 //       Access: Protected, Virtual
 //  Description: detaches mouse. Only mouse delta from now on. 

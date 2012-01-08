@@ -78,6 +78,7 @@ PUBLISHED:
     BF_require_parasite    = 0x0002,
     BF_refuse_window       = 0x0004,
     BF_require_window      = 0x0008,
+    BF_require_callback_window = 0x0010,
 
     // Miscellaneous control flags.
     BF_can_bind_color      = 0x0040, // Need capability: bind the color bitplane to a tex.
@@ -124,6 +125,7 @@ protected:
                                          GraphicsOutput *host,
                                          int retry,
                                          bool &precertify);
+  virtual PT(GraphicsStateGuardian) make_callback_gsg(GraphicsEngine *engine);
   
   LightMutex _lock;
 

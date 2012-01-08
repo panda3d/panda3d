@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_display.h"
+#include "callbackGraphicsWindow.h"
 #include "displayRegion.h"
 #include "displayRegionCullCallbackData.h"
 #include "displayRegionDrawCallbackData.h"
@@ -449,6 +450,7 @@ init_libdisplay() {
   }
   initialized = true;
 
+  CallbackGraphicsWindow::init_type();
   DisplayRegion::init_type();
   DisplayRegionCullCallbackData::init_type();
   DisplayRegionDrawCallbackData::init_type();

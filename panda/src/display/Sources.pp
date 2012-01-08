@@ -14,6 +14,7 @@
     standardMunger.I standardMunger.h \
     config_display.h \
     $[if $[HAVE_PYTHON], pythonGraphicsWindowProc.h] \
+    callbackGraphicsWindow.I callbackGraphicsWindow.h \
     drawableRegion.I drawableRegion.h \
     displayRegion.I displayRegion.h  \
     displayRegionCullCallbackData.I displayRegionCullCallbackData.h \
@@ -53,6 +54,7 @@
     standardMunger.cxx \
     config_display.cxx \
     $[if $[HAVE_PYTHON], pythonGraphicsWindowProc.cxx] \
+    callbackGraphicsWindow.cxx \
     drawableRegion.cxx \
     displayRegion.cxx \
     displayRegionCullCallbackData.cxx \
@@ -85,6 +87,7 @@
     standardMunger.I standardMunger.h \
     config_display.h \
     $[if $[HAVE_PYTHON], pythonGraphicsWindowProc.h] \
+    callbackGraphicsWindow.I callbackGraphicsWindow.h \
     drawableRegion.I drawableRegion.h \
     displayInformation.h \
     displayRegion.I displayRegion.h \
