@@ -125,8 +125,8 @@ Options:
      file that will be used to represent the installed application.
      To support all platforms, it is recommended to supply images of
      the sizes 16x16, 32x32, 48x48, 128x128, 256x256, and 512x512.
-     The larger icon sizes can be omitted can safely be omitted if
-     you cannot provide images in that resolution.
+     The larger icon sizes can safely be omitted if you cannot
+     provide images in that resolution.
      It is recommended to use .png images for correct transparency.
      If no images are provided, no icon will be generated.
      Only relevant when generating a graphical installer.

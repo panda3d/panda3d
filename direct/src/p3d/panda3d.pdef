@@ -57,8 +57,9 @@ class panda3d(package):
     module('panda3d')
 
     # Include various standard Python encodings.  The rest is in morepy.
-    module('encodings', 'encodings.utf_8', 'encodings.ascii',
-           'encodings.string_escape', 'encodings.mbcs', 'io')
+    module('encodings', 'encodings.aliases', 'encodings.undefined,'
+           'encodings.utf_8', 'encodings.ascii', 'encodings.string_escape',
+           'encodings.mbcs', 'encodings.latin_1', 'io')
 
     # Pick up the shader files that appear in direct/src/filter.
     import direct
