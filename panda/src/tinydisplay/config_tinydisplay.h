@@ -24,7 +24,7 @@
 NotifyCategoryDecl(tinydisplay, EXPCL_TINYDISPLAY, EXPTP_TINYDISPLAY);
 
 extern EXPCL_TINYDISPLAY void init_libtinydisplay();
-extern "C" EXPCL_TINYDISPLAY int get_pipe_type_tinydisplay();
+extern "C" EXPCL_TINYDISPLAY int get_pipe_type_p3tinydisplay();
 
 extern ConfigVariableBool show_resize_box;
 extern ConfigVariableBool osx_disable_event_loop;
