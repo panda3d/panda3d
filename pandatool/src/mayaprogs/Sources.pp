@@ -25,7 +25,7 @@
     p3egg:c pandaegg:m \
     p3linmath:c p3putil:c panda:m \
     p3express:c pandaexpress:m \
-    p3interrogatedb:c p3dtoolutil:c p3dtoolbase:c p3prc:c p3dconfig:c p3dtoolconfig:m p3dtool:m $[if $[WINDOWS_PLATFORM],pystub,] \
+    p3interrogatedb:c p3dtoolutil:c p3dtoolbase:c p3prc:c p3dconfig:c p3dtoolconfig:m p3dtool:m $[if $[WINDOWS_PLATFORM],p3pystub,] \
     p3pipeline:c p3pnmimage:c
 
   // Irix requires this to be named explicitly.
@@ -46,7 +46,7 @@
     p3egg:c pandaegg:m \
     p3linmath:c p3putil:c panda:m \
     p3express:c pandaexpress:m \
-    p3interrogatedb:c p3dtoolutil:c p3dtoolbase:c p3prc:c p3dconfig:c p3dtoolconfig:m p3dtool:m $[if $[WINDOWS_PLATFORM],pystub,] \
+    p3interrogatedb:c p3dtoolutil:c p3dtoolbase:c p3prc:c p3dconfig:c p3dtoolconfig:m p3dtool:m $[if $[WINDOWS_PLATFORM],p3pystub,] \
     p3pipeline:c p3pnmimage:c
 
   // Irix requires this to be named explicitly.
@@ -67,7 +67,7 @@
     p3egg:c pandaegg:m \
     p3linmath:c p3putil:c panda:m \
     p3express:c pandaexpress:m \
-    p3interrogatedb:c p3dtoolutil:c p3dtoolbase:c p3prc:c p3dconfig:c p3dtoolconfig:m p3dtool:m $[if $[WINDOWS_PLATFORM],pystub,] \
+    p3interrogatedb:c p3dtoolutil:c p3dtoolbase:c p3prc:c p3dconfig:c p3dtoolconfig:m p3dtool:m $[if $[WINDOWS_PLATFORM],p3pystub,] \
     p3pipeline:c p3pnmimage:c
 
   // Irix requires this to be named explicitly.
@@ -96,7 +96,7 @@
     p3egg:c pandaegg:m \
     p3linmath:c p3putil:c panda:m \
     p3express:c pandaexpress:m \
-    p3interrogatedb:c p3dtoolutil:c p3dtoolbase:c p3prc:c p3dconfig:c p3dtoolconfig:m p3dtool:m $[if $[WINDOWS_PLATFORM],pystub,] \
+    p3interrogatedb:c p3dtoolutil:c p3dtoolbase:c p3prc:c p3dconfig:c p3dtoolconfig:m p3dtool:m $[if $[WINDOWS_PLATFORM],p3pystub,] \
     p3pipeline:c p3pnmimage:c
 
   // Irix requires this to be named explicitly.
@@ -126,7 +126,7 @@
     p3egg:c pandaegg:m \
     p3linmath:c panda:m \
     p3express:c pandaexpress:m \
-    p3interrogatedb:c p3dtoolutil:c p3dtoolbase:c p3prc:c p3dconfig:c p3dtoolconfig:m p3dtool:m $[if $[WINDOWS_PLATFORM],pystub,] \
+    p3interrogatedb:c p3dtoolutil:c p3dtoolbase:c p3prc:c p3dconfig:c p3dtoolconfig:m p3dtool:m $[if $[WINDOWS_PLATFORM],p3pystub,] \
     p3putil:c p3pipeline:c p3pnmimage:c
 
   // Irix requires this to be named explicitly.
@@ -149,7 +149,7 @@
     p3framework:m \
     p3linmath:c p3putil:c panda:m \
     p3express:c pandaexpress:m \
-    p3interrogatedb:c p3dtoolutil:c p3dtoolbase:c p3prc:c p3dconfig:c p3dtoolconfig:m p3dtool:m $[if $[WINDOWS_PLATFORM],pystub,] \
+    p3interrogatedb:c p3dtoolutil:c p3dtoolbase:c p3prc:c p3dconfig:c p3dtoolconfig:m p3dtool:m $[if $[WINDOWS_PLATFORM],p3pystub,] \
     p3pipeline:c
 
   #define BUILDING_DLL BUILDING_MISC
@@ -189,7 +189,7 @@
     p3framework:m \
     p3linmath:c p3putil:c panda:m \
     p3express:c pandaexpress:m \
-    p3interrogatedb:c p3dtoolutil:c p3dtoolbase:c p3prc:c p3dconfig:c p3dtoolconfig:m p3dtool:m $[if $[WINDOWS_PLATFORM],pystub,] \
+    p3interrogatedb:c p3dtoolutil:c p3dtoolbase:c p3prc:c p3dconfig:c p3dtoolconfig:m p3dtool:m $[if $[WINDOWS_PLATFORM],p3pystub,] \
     p3pipeline:c
 
   #define BUILDING_DLL BUILDING_MISC
