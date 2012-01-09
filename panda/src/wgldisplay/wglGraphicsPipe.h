@@ -44,6 +44,7 @@ protected:
                                          GraphicsOutput *host,
                                          int retry,
                                          bool &precertify);
+  virtual PT(GraphicsStateGuardian) make_callback_gsg(GraphicsEngine *engine);
 
 private:
 
