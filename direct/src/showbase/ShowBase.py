@@ -55,10 +55,12 @@ class ShowBase(DirectObject.DirectObject):
     notify = directNotify.newCategory("ShowBase")
 
     def __init__(self, fStartDirect = True, windowType = None):
-        __builtin__.__dev__ = config.GetBool('want-dev', 0)
-        logStackDump = (config.GetBool('log-stack-dump', 0) or
-                        config.GetBool('client-log-stack-dump', 0))
-        uploadStackDump = config.GetBool('upload-stack-dump', 0)
+        self.__dev__ = config.GetBool('want-dev', True)
+        __builtin__.__dev__ = self.__dev__
+        
+        logStackDump = (config.GetBool('log-stack-dump', False) or
+                        config.GetBool('client-log-stack-dump', False))
+        uploadStackDump = config.GetBool('upload-stack-dump', False)
         if logStackDump or uploadStackDump:
             ExceptionVarDump.install(logStackDump, uploadStackDump)
 
@@ -125,7 +127,7 @@ class ShowBase(DirectObject.DirectObject):
         # has to run before libpanda is even loaded).
         taskMgr.resumeFunc = PStatClient.resumeAfterPause
 
-        if(self.config.GetBool("want-dev",0)):
+        if self.__dev__:
             import profile, pstats        
             profile.Profile.bias = float(self.config.GetString("profile-bias","0"))
             
@@ -343,7 +345,7 @@ class ShowBase(DirectObject.DirectObject):
             __builtin__.aspect2dp = self.aspect2dp
             __builtin__.pixel2dp = self.pixel2dp
 
-        if not __dev__:
+        if __dev__:
             ShowBase.notify.debug('__dev__ == %s' % __dev__)
         else:
             ShowBase.notify.info('__dev__ == %s' % __dev__)
