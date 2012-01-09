@@ -23,7 +23,7 @@ TypeHandle MouseAndKeyboard::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseAndKeyboard::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 MouseAndKeyboard::
@@ -46,7 +46,7 @@ MouseAndKeyboard(GraphicsWindow *window, int device, const string &name) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseAndKeyboard::set_source
-//       Access: Public
+//       Access: Published
 //  Description: Redirects the class to get the data from the mouse
 //               and keyboard associated with a different window
 //               and/or device number.
@@ -59,7 +59,7 @@ set_source(GraphicsWindow *window, int device) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseAndKeyboard::get_source_window
-//       Access: Public
+//       Access: Published
 //  Description: Returns the associated source window.
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsWindow) MouseAndKeyboard::
@@ -69,7 +69,7 @@ get_source_window() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseAndKeyboard::get_source_device
-//       Access: Public
+//       Access: Published
 //  Description: Returns the associated source device.
 ////////////////////////////////////////////////////////////////////
 int MouseAndKeyboard::

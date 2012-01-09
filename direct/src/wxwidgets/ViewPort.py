@@ -12,6 +12,7 @@ from direct.showbase.DirectObject import DirectObject
 from direct.directtools.DirectGrid import DirectGrid
 from direct.showbase.ShowBase import WindowControls
 from direct.directtools.DirectGlobals import *
+from WxPandaWindow import WxPandaWindow
 from pandac.PandaModules import WindowProperties, OrthographicLens, Point3, Plane, CollisionPlane, CollisionNode, NodePath
 import wx
 
@@ -46,7 +47,7 @@ class ViewportManager:
     for v in ViewportManager.viewports:
       v.Layout(*args, **kwargs)
 
-class Viewport(wx.Panel, DirectObject):
+class Viewport(WxPandaWindow, DirectObject):
   """Class representing a 3D Viewport."""
   CREATENEW  = CREATENEW
   VPLEFT     = VPLEFT
@@ -56,10 +57,14 @@ class Viewport(wx.Panel, DirectObject):
   def __init__(self, name, *args, **kwargs):
     self.name = name
     DirectObject.__init__(self)
-    wx.Panel.__init__(self, *args, **kwargs)
+
+    kwargs['gsg'] = ViewportManager.gsg
+    WxPandaWindow.__init__(self, *args, **kwargs)
 
     ViewportManager.viewports.append(self)
-    self.win = None
+    if ViewportManager.gsg == None:
+      ViewportManager.gsg = self.win.getGsg()
+
     self.camera = None
     self.lens = None
     self.camPos = None
@@ -70,23 +75,10 @@ class Viewport(wx.Panel, DirectObject):
 
   def initialize(self):
     self.Update()
-    wp = WindowProperties()
-    wp.setOrigin(0, 0)
-    wp.setSize(self.ClientSize.GetWidth(), self.ClientSize.GetHeight())
-    assert self.GetHandle() != 0
-    wp.setParentWindow(self.GetHandle())
-
-    # initializing panda window
-    base.windowType = "onscreen"
-    props = WindowProperties.getDefault()
-    props.addProperties(wp)
-    self.win = base.openWindow(props = props, gsg = ViewportManager.gsg)
     if self.win:
       self.cam2d = base.makeCamera2d(self.win)
       self.cam2d.node().setCameraMask(LE_CAM_MASKS[self.name])
       
-    if ViewportManager.gsg == None:
-      ViewportManager.gsg = self.win.getGsg()
     self.cam = base.camList[-1]
     self.camera = render.attachNewNode(self.name)
     #self.camera.setName(self.name)
@@ -135,18 +127,16 @@ class Viewport(wx.Panel, DirectObject):
     """Closes the viewport."""
     if self.initialized:
        wx.Window.Close(self)
-    base.closeWindow(self.win)
+    #base.closeWindow(self.win)
     ViewportManager.viewports.remove(self)
   
   def onSize(self, evt):
     """Invoked when the viewport is resized."""
+    WxPandaWindow.onSize(self, evt)
+    
     if self.win != None:
-      wp = WindowProperties()
-      wp.setOrigin(0, 0)
       newWidth = self.ClientSize.GetWidth()
       newHeight = self.ClientSize.GetHeight()
-      wp.setSize(newWidth, newHeight)
-      self.win.requestProperties(wp)
 
       if hasattr(base, "direct") and base.direct:
         for dr in base.direct.drList:

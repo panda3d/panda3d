@@ -17,33 +17,60 @@ from panda3d.core import *
 
 __all__ = ['WxPandaWindow']
 
-if platform.system() != 'Darwin':
-    class EmbeddedPandaWindow(wx.Window):
-        """ This class implements a Panda3D window that is directly
-        embedded within the frame.  It is fully supported on Windows,
-        partially supported on Linux, and not at all on OSX. """
+class EmbeddedPandaWindow(wx.Window):
+    """ This class implements a Panda3D window that is directly
+    embedded within the frame.  It is fully supported on Windows,
+    partially supported on Linux, and not at all on OSX. """
 
-        def __init__(self, *args, **kw):
-            wx.Window.__init__(self, *args, **kw)
+    def __init__(self, *args, **kw):
+        gsg = None
+        if 'gsg' in kw:
+            gsg = kw['gsg']
+            del kw['gsg']
 
-            wp = WindowProperties.getDefault()
+        base.startWx()
+        wx.Window.__init__(self, *args, **kw)
+
+        wp = WindowProperties.getDefault()
+        if platform.system() != 'Darwin':
             wp.setParentWindow(self.GetHandle())
 
-            if base.win:
-                self.win = base.openWindow(props = wp)
-            else:
-                base.openDefaultWindow(props = wp)
-                self.win = base.win
+        if base.win:
+            self.win = base.openWindow(props = wp, gsg = gsg, type = 'onscreen')
+        else:
+            base.openDefaultWindow(props = wp, gsg = gsg, type = 'onscreen')
+            self.win = base.win
 
-            self.Bind(wx.EVT_SIZE, self.__resized)
+        self.Bind(wx.EVT_SIZE, self.onSize)
 
-        def __resized(self, event):
-            wp = WindowProperties()
-            wp.setOrigin(0, 0)
-            wp.setSize(*self.GetClientSizeTuple())
-            self.win.requestProperties(wp)
+        # This doesn't actually do anything, since wx won't call
+        # EVT_CLOSE on a child window, only on the toplevel window
+        # that contains it.
+        self.Bind(wx.EVT_CLOSE, self.__closeEvent)
 
-if hasattr(wxgl, 'GLCanvas'):
+    def __closeEvent(self, event):
+        self.cleanup()
+        event.Skip()
+
+    def cleanup(self):
+        """ Parent windows should call cleanp() to clean up the
+        wxPandaWindow explicitly (since we can't catch EVT_CLOSE
+        directly). """
+        if self.win:
+            base.closeWindow(self.win)
+            self.win = None
+        self.Destroy()
+
+    def onSize(self, event):
+        wp = WindowProperties()
+        wp.setOrigin(0, 0)
+        wp.setSize(*self.GetClientSizeTuple())
+        self.win.requestProperties(wp)
+        event.Skip()
+
+if not hasattr(wxgl, 'GLCanvas'):
+    OpenGLPandaWindow = None
+else:
     class OpenGLPandaWindow(wxgl.GLCanvas):
         """ This class implements a Panda3D "window" that actually draws
         within the wx GLCanvas object.  It is supported whenever OpenGL is
@@ -88,7 +115,17 @@ if hasattr(wxgl, 'GLCanvas'):
             }
 
         def __init__(self, *args, **kw):
+            gsg = None
+            if 'gsg' in kw:
+                gsg = kw['gsg']
+                del kw['gsg']
+                
+            base.startWx()
             wxgl.GLCanvas.__init__(self, *args, **kw)
+
+            # Can't share the GSG when a new wxgl.GLContext is created
+            # automatically.
+            gsg = None
 
             callbackWindowDict = {
                 'Events' : self.__eventsCallback,
@@ -111,14 +148,14 @@ if hasattr(wxgl, 'GLCanvas'):
 
             self.SetCurrent()
             if base.win:
-                self.win = base.openWindow(callbackWindowDict = callbackWindowDict, pipe = pipe)
+                self.win = base.openWindow(callbackWindowDict = callbackWindowDict, pipe = pipe, gsg = gsg, type = 'onscreen')
             else:
-                base.openDefaultWindow(callbackWindowDict = callbackWindowDict, pipe = pipe)
+                base.openDefaultWindow(callbackWindowDict = callbackWindowDict, pipe = pipe, gsg = gsg, type = 'onscreen')
                 self.win = base.win
 
             self.inputDevice = self.win.getInputDevice(0)
 
-            self.Bind(wx.EVT_SIZE, self.__resized)
+            self.Bind(wx.EVT_SIZE, self.onSize)
             self.Bind(wx.EVT_LEFT_DOWN, lambda event: self.__buttonDown(MouseButton.one()))
             self.Bind(wx.EVT_LEFT_UP, lambda event: self.__buttonUp(MouseButton.one()))
             self.Bind(wx.EVT_MIDDLE_DOWN, lambda event: self.__buttonDown(MouseButton.two()))
@@ -130,6 +167,24 @@ if hasattr(wxgl, 'GLCanvas'):
             self.Bind(wx.EVT_KEY_DOWN, self.__keyDown)
             self.Bind(wx.EVT_KEY_UP, self.__keyUp)
             self.Bind(wx.EVT_CHAR, self.__keystroke)
+
+            # This doesn't actually do anything, since wx won't call
+            # EVT_CLOSE on a child window, only on the toplevel window
+            # that contains it.
+            self.Bind(wx.EVT_CLOSE, self.__closeEvent)
+
+        def __closeEvent(self, event):
+            self.cleanup()
+            event.Skip()
+
+        def cleanup(self):
+            """ Parent windows should call cleanp() to clean up the
+            wxPandaWindow explicitly (since we can't catch EVT_CLOSE
+            directly). """
+            if self.win:
+                base.closeWindow(self.win)
+                self.win = None
+            self.Destroy()
 
         def __buttonDown(self, button):
             self.inputDevice.buttonDown(button)
@@ -189,18 +244,23 @@ if hasattr(wxgl, 'GLCanvas'):
             cbType = data.getCallbackType()
             if cbType == CallbackGraphicsWindow.RCTBeginFrame:
                 self.SetCurrent()
+                if not self.IsShownOnScreen():
+                    return False
             elif cbType == CallbackGraphicsWindow.RCTEndFlip:
                 self.SwapBuffers()
 
             data.upcall()
 
-        def __resized(self, event):
+        def onSize(self, event):
             wp = WindowProperties()
             wp.setSize(*self.GetClientSizeTuple())
             self.win.requestProperties(wp)
+            event.Skip()
 
 # Choose the best implementation of WxPandaWindow for the platform.
+WxPandaWindow = None
 if platform.system() == 'Darwin':
     WxPandaWindow = OpenGLPandaWindow
-else:
+
+if not WxPandaWindow:
     WxPandaWindow = EmbeddedPandaWindow

@@ -49,7 +49,6 @@ PUBLISHED:
   MouseAndKeyboard(GraphicsWindow *window, int device, const string &name);
   void set_source(GraphicsWindow *window, int device);
 
-public:
   PT(GraphicsWindow) get_source_window() const;
   int                get_source_device() const;
   

@@ -102,6 +102,8 @@ class ShowBase(DirectObject.DirectObject):
         self.sfxManagerIsValidList = []
 
         self.wantStats = self.config.GetBool('want-pstats', 0)
+        self.wantTk = False
+        self.wantWx = False
 
         # Fill this in with a function to invoke when the user "exits"
         # the program by closing the main window.
@@ -341,7 +343,10 @@ class ShowBase(DirectObject.DirectObject):
             __builtin__.aspect2dp = self.aspect2dp
             __builtin__.pixel2dp = self.pixel2dp
 
-        ShowBase.notify.info('__dev__ == %s' % __dev__)
+        if not __dev__:
+            ShowBase.notify.debug('__dev__ == %s' % __dev__)
+        else:
+            ShowBase.notify.info('__dev__ == %s' % __dev__)
 
         # set up recording of Functor creation stacks in __dev__
         PythonUtil.recordFunctorCreationStacks()
@@ -366,8 +371,9 @@ class ShowBase(DirectObject.DirectObject):
         import Transitions
         self.transitions = Transitions.Transitions(self.loader)
 
-        # Setup the window controls - handy for multiwindow applications
-        self.setupWindowControls()
+        if self.win:
+            # Setup the window controls - handy for multiwindow applications
+            self.setupWindowControls()
 
         # Client sleep
         sleepTime = self.config.GetFloat('client-sleep', 0.0)
@@ -2643,20 +2649,21 @@ class ShowBase(DirectObject.DirectObject):
         sys.exit()
 
     # [gjeon] start wxPyhton
-    def startWx(self, fWantWx = 1):
-        self.wantWx = fWantWx
-        if self.wantWx:
-            initAppForGui()
-            from direct.showbase import WxGlobal
-            taskMgr.remove('wxLoop')
-            WxGlobal.spawnWxLoop()
+    def startWx(self, fWantWx = True):
+        fWantWx = bool(fWantWx)
+        if self.wantWx != fWantWx:
+            self.wantWx = fWantWx
+            if self.wantWx:
+                initAppForGui()
+                from direct.showbase import WxGlobal
+                WxGlobal.spawnWxLoop()
 
-    def startTk(self, fWantTk = 1):
-        self.wantTk = fWantTk
-        if self.wantTk:
+    def startTk(self, fWantTk = True):
+        fWantTk = bool(fWantTk)
+        if self.wantTk != fWantTk:
+            self.wantTk = fWantTk
             initAppForGui()
             from direct.showbase import TkGlobal
-            taskMgr.remove('tkLoop')
             TkGlobal.spawnTkLoop()
 
     def startDirect(self, fWantDirect = 1, fWantTk = 1, fWantWx = 0):

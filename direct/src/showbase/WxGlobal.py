@@ -18,4 +18,5 @@ def spawnWxLoop():
         base.wxApp = wx.PySimpleApp(redirect = False)
 
     # Spawn this task
+    taskMgr.remove('wxLoop')
     taskMgr.add(wxLoop, "wxLoop")

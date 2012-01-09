@@ -9,7 +9,7 @@ from direct.directtools.DirectGlobals import *
 try:
     base
 except NameError:
-    base = ShowBase(False)
+    base = ShowBase(False, windowType = 'none')
 
 from WxAppShell import *
 from ViewPort import *
@@ -196,7 +196,7 @@ class WxPandaShell(WxAppShell):
 
         else:
             base.direct=None
-        base.closeWindow(base.win)
+        #base.closeWindow(base.win)
         base.win = base.winList[3]        
 
     def wxStep(self, task = None):

@@ -38,6 +38,11 @@ CallbackGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
 #endif
+
+  // Let's ensure that these properties are set to *something*
+  // initially.
+  _properties.set_origin(0, 0);
+  _properties.set_size(0, 0);
 }
 
 ////////////////////////////////////////////////////////////////////
