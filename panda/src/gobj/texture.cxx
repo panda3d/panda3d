@@ -7202,6 +7202,14 @@ make_this_from_bam(const FactoryParams &params) {
   int alpha_file_channel = scan.get_uint8();
   bool has_rawdata = scan.get_bool();
   TextureType texture_type = (TextureType)scan.get_uint8();
+  if (manager->get_file_minor_ver() < 25) {
+    // Between Panda3D releases 1.7.2 and 1.8.0 (bam versions 6.24 and
+    // 6.25), we added TT_2d_texture_array, shifting the definition
+    // for TT_cube_map.
+    if (texture_type == TT_2d_texture_array) {
+      texture_type = TT_cube_map;
+    }
+  }
 
   Texture *me = NULL;
   if (has_rawdata) {
