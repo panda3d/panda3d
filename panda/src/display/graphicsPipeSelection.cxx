@@ -355,6 +355,8 @@ load_aux_modules() {
 ////////////////////////////////////////////////////////////////////
 bool GraphicsPipeSelection::
 add_pipe_type(TypeHandle type, PipeConstructorFunc *func) {
+  nassertr(func != NULL, false);
+
   if (!type.is_derived_from(GraphicsPipe::get_class_type())) {
     display_cat.warning()
       << "Attempt to register " << type << " as a GraphicsPipe type.\n";
@@ -373,6 +375,11 @@ add_pipe_type(TypeHandle type, PipeConstructorFunc *func) {
         << " more than once.\n";
       return false;
     }
+  }
+
+  if (display_cat.is_debug()) {
+    display_cat.debug()
+      << "Registering " << type << " as a GraphicsPipe type.\n";
   }
 
   // Ok, now add a new entry.
@@ -455,39 +462,43 @@ load_named_module(const string &name) {
       << "symbol of " << symbol_name << " = " << dso_symbol << "\n";
   }
 
+  TypeHandle pipe_type = TypeHandle::none();
+
   if (dso_symbol == (void *)NULL) {
     // Couldn't find the module function.
-    unload_dso(handle);
-    return TypeHandle::none();
-  }
-  
-  // We successfully loaded the module, and we found the
-  // get_pipe_type_* recommendation function.  Call it to figure
-  // out what pipe type we should expect.
-  typedef int FuncType();
-  int pipe_type_index = (*(FuncType *)dso_symbol)();
-  if (display_cat.is_debug()) {
-    display_cat.debug()
-      << "pipe_type_index = " << pipe_type_index << "\n";
-  }
+    display_cat.warning()
+      << "Unable to find " << symbol_name << " in " << dlname.get_basename()
+      << "\n";
 
-  if (pipe_type_index == 0) {
-    // The recommendation function had no advice, weird.
-    unload_dso(handle);
-    return TypeHandle::none();
+  } else {
+    // We successfully loaded the module, and we found the
+    // get_pipe_type_* recommendation function.  Call it to figure
+    // out what pipe type we should expect.
+    typedef int FuncType();
+    int pipe_type_index = (*(FuncType *)dso_symbol)();
+    if (display_cat.is_debug()) {
+      display_cat.debug()
+        << "pipe_type_index = " << pipe_type_index << "\n";
+    }
+    
+    if (pipe_type_index != 0) {
+      TypeRegistry *type_reg = TypeRegistry::ptr();
+      pipe_type = type_reg->find_type_by_id(pipe_type_index);
+      if (display_cat.is_debug()) {
+        display_cat.debug()
+          << "pipe_type = " << pipe_type << "\n";
+      }
+    }
   }
-
-  TypeRegistry *type_reg = TypeRegistry::ptr();
-  TypeHandle pipe_type = type_reg->find_type_by_id(pipe_type_index);
-  if (display_cat.is_debug()) {
-    display_cat.debug()
-      << "pipe_type = " << pipe_type << "\n";
-  }
-
+    
   if (pipe_type == TypeHandle::none()) {
-    // The recommendation function returned a bogus type index, weird.
-    unload_dso(handle);
-    return TypeHandle::none();
+    // The recommendation function returned a bogus type index, or the
+    // function didn't work at all.  We can't safely unload the
+    // module, though, because it may have assigned itself into the
+    // GraphicsPipeSelection table.  So we carry on.
+    display_cat.warning()
+      << "No default pipe type available for " << dlname.get_basename()
+      << "\n";
   }
 
   LoadedModule &module = _loaded_modules[name];
