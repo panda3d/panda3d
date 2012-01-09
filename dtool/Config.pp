@@ -735,7 +735,7 @@
 // How about GLX?
 #define GLX_IPATH
 #define GLX_LPATH
-#defer HAVE_GLX $[and $[HAVE_GL],$[UNIX_PLATFORM]]
+#defer HAVE_GLX $[and $[HAVE_GL],$[HAVE_X11]]
 
 // glXGetProcAddress() is the function used to query OpenGL extensions
 // under X.  However, this function is itself an extension function,
