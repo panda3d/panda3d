@@ -221,7 +221,7 @@ clear_control_effects() {
     cdataw->_blend.clear();
     cdataw->_net_blend = 0.0f;
     cdataw->_anim_changed = true;
-    determine_effective_channels(cdata);
+    determine_effective_channels(cdataw);
   }
 }
 
