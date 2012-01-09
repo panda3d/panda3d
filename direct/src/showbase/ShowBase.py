@@ -784,7 +784,7 @@ class ShowBase(DirectObject.DirectObject):
             self.notify.info("Window did not open, removing.")
             self.closeWindow(self.win)
 
-        if self.win == None:
+        if self.win == None and not kw.get('pipe', None):
             # Try a little harder if the window wouldn't open.
             self.makeAllPipes()
             try:
