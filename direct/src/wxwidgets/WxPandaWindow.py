@@ -119,10 +119,19 @@ else:
             if 'gsg' in kw:
                 gsg = kw['gsg']
                 del kw['gsg']
+
+            attribList = kw.get('attribList', None)
+            if attribList is None:
+                attribList = [
+                    wxgl.WX_GL_RGBA, True,
+                    wxgl.WX_GL_LEVEL, 0,
+                    wxgl.WX_GL_DOUBLEBUFFER, True,
+                    ]
+                kw['attribList'] = attribList
                 
             base.startWx()
             wxgl.GLCanvas.__init__(self, *args, **kw)
-
+                
             # Can't share the GSG when a new wxgl.GLContext is created
             # automatically.
             gsg = None
@@ -259,7 +268,7 @@ else:
 
 # Choose the best implementation of WxPandaWindow for the platform.
 WxPandaWindow = None
-if platform.system() == 'Darwin':
+if platform.system() == 'Darwin':  # or platform.system() == 'Linux':
     WxPandaWindow = OpenGLPandaWindow
 
 if not WxPandaWindow:

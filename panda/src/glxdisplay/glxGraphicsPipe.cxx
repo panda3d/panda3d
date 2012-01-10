@@ -205,3 +205,17 @@ make_output(const string &name,
   // Nothing else left to try.
   return NULL;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsPipe::make_callback_gsg
+//       Access: Protected, Virtual
+//  Description: This is called when make_output() is used to create a
+//               CallbackGraphicsWindow.  If the GraphicsPipe can
+//               construct a GSG that's not associated with any
+//               particular window object, do so now, assuming the
+//               correct graphics context has been set up externally.
+////////////////////////////////////////////////////////////////////
+PT(GraphicsStateGuardian) glxGraphicsPipe::
+make_callback_gsg(GraphicsEngine *engine) {
+  return new glxGraphicsStateGuardian(engine, this, NULL);
+}
