@@ -1452,7 +1452,7 @@ begin_frame(Thread *current_thread) {
   _state_rs = RenderState::make_empty();
   _state_mask.clear();
 
-  return true;
+  return !_needs_reset;
 }
 
 ////////////////////////////////////////////////////////////////////

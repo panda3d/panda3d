@@ -64,7 +64,7 @@ class EmbeddedPandaWindow(wx.Window):
     def onSize(self, event):
         wp = WindowProperties()
         wp.setOrigin(0, 0)
-        wp.setSize(*self.GetClientSizeTuple())
+        wp.setSize(*self.GetClientSize())
         self.win.requestProperties(wp)
         event.Skip()
 
@@ -165,6 +165,7 @@ else:
             self.inputDevice = self.win.getInputDevice(0)
 
             self.Bind(wx.EVT_SIZE, self.onSize)
+            self.Bind(wx.EVT_IDLE, self.onIdle)
             self.Bind(wx.EVT_LEFT_DOWN, lambda event: self.__buttonDown(MouseButton.one()))
             self.Bind(wx.EVT_LEFT_UP, lambda event: self.__buttonUp(MouseButton.one()))
             self.Bind(wx.EVT_MIDDLE_DOWN, lambda event: self.__buttonDown(MouseButton.two()))
@@ -262,13 +263,35 @@ else:
 
         def onSize(self, event):
             wp = WindowProperties()
-            wp.setSize(*self.GetClientSizeTuple())
+            wp.setSize(*self.GetClientSize())
             self.win.requestProperties(wp)
+
+            # Apparently, sometimes on Linux we get the onSize event
+            # before the size has actually changed, and the size we
+            # report in GetClientSize() is the *previous* size.  To
+            # work around this unfortunate circumstance, we'll also
+            # ensure an idle event comes in later, and check the size
+            # again then.
+            wx.WakeUpIdle()
+            
             event.Skip()
+
+        def onIdle(self, event):
+            size = None
+            properties = self.win.getProperties()
+            if properties.hasSize():
+                size = (properties.getXSize(), properties.getYSize())
+
+            if tuple(self.GetClientSize()) != size:
+                # The window has changed size during the idle call.
+                # This seems to be possible in Linux.
+                wp = WindowProperties()
+                wp.setSize(*self.GetClientSize())
+                self.win.requestProperties(wp)
 
 # Choose the best implementation of WxPandaWindow for the platform.
 WxPandaWindow = None
-if platform.system() == 'Darwin':  # or platform.system() == 'Linux':
+if platform.system() == 'Darwin' or platform.system() == 'Linux':
     WxPandaWindow = OpenGLPandaWindow
 
 if not WxPandaWindow:

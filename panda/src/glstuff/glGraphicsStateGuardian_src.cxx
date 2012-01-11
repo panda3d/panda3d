@@ -380,6 +380,12 @@ reset() {
   // Output the vendor and version strings.
   query_gl_version();
 
+  if (_gl_version_major == 0) {
+    // Couldn't get GL.  Fail.
+    mark_new();
+    return;
+  }
+
   // Save the extensions tokens.
   save_extensions((const char *)GLP(GetString)(GL_EXTENSIONS));
   get_extra_extensions();
@@ -5338,8 +5344,10 @@ show_gl_string(const string &name, GLenum id) {
   const GLubyte *text = GLP(GetString)(id);
 
   if (text == (const GLubyte *)NULL) {
-    GLCAT.warning()
-      << "Unable to query " << name << "\n";
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "Unable to query " << name << "\n";
+    }
   } else {
     result = (const char *)text;
     if (GLCAT.is_debug()) {
