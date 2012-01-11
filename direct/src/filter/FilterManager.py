@@ -276,7 +276,8 @@ class FilterManager(DirectObject):
 
         winprops = WindowProperties()
         winprops.setSize(xsize, ysize)
-        props = FrameBufferProperties(self.win.getFbProperties())
+        props = FrameBufferProperties()
+        props.setRgbColor(1)
         props.setDepthBits(depthbits)
         depthtex, colortex, auxtex0, auxtex1 = texgroup
         if (auxtex0 != None):
@@ -331,3 +332,4 @@ class FilterManager(DirectObject):
         self.nextsort = self.win.getSort() - 1000
         self.basex = 0
         self.basey = 0
+
