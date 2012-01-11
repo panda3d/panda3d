@@ -33,8 +33,8 @@ PUBLISHED:
   INLINE ~BulletCylinderShape();
 
   INLINE PN_stdfloat get_radius() const;
-  INLINE LVecBase3 get_half_extents_without_marging() const;
-  INLINE LVecBase3 get_half_extents_with_marging() const;
+  INLINE LVecBase3 get_half_extents_without_margin() const;
+  INLINE LVecBase3 get_half_extents_with_margin() const;
 
 public:
   virtual btCollisionShape *ptr() const;

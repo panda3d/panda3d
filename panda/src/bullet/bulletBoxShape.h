@@ -34,8 +34,8 @@ PUBLISHED:
   BulletBoxShape(const LVecBase3 &halfExtents);
   INLINE ~BulletBoxShape();
 
-  LVecBase3 get_half_extents_without_marging() const;
-  LVecBase3 get_half_extents_with_marging() const;
+  LVecBase3 get_half_extents_without_margin() const;
+  LVecBase3 get_half_extents_with_margin() const;
 
   static BulletBoxShape *make_from_solid(const CollisionBox *solid);
 

@@ -43,23 +43,23 @@ ptr() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletBoxShape::get_half_extents_without_marging
+//     Function: BulletBoxShape::get_half_extents_without_margin
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 LVecBase3 BulletBoxShape::
-get_half_extents_without_marging() const {
+get_half_extents_without_margin() const {
 
   return btVector3_to_LVecBase3(_shape->getHalfExtentsWithoutMargin());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletBoxShape::get_half_extents_with_marging
+//     Function: BulletBoxShape::get_half_extents_with_margin
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 LVecBase3 BulletBoxShape::
-get_half_extents_with_marging() const {
+get_half_extents_with_margin() const {
 
   return btVector3_to_LVecBase3(_shape->getHalfExtentsWithMargin());
 }
