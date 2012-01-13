@@ -174,6 +174,7 @@ class ShowBase(DirectObject.DirectObject):
         self.camNode = None
         self.camLens = None
         self.camFrustumVis = None
+        self.direct = None
 
         # This is used for syncing multiple PCs in a distributed cluster
         try:
