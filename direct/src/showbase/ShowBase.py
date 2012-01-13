@@ -246,6 +246,13 @@ class ShowBase(DirectObject.DirectObject):
                 props.setRawMice(1)
             self.openDefaultWindow(startDirect = False, props=props)
 
+        # The default is trackball mode, which is more convenient for
+        # ad-hoc development in Python using ShowBase.  Applications
+        # can explicitly call base.useDrive() if they prefer a drive
+        # interface.
+        self.mouseInterface = self.trackball
+        self.useTrackball()
+
         self.loader = Loader.Loader(self)
         self.graphicsEngine.setDefaultLoader(self.loader.loader)
             
@@ -566,19 +573,102 @@ class ShowBase(DirectObject.DirectObject):
 
     def openWindow(self, props = None, pipe = None, gsg = None,
                    type = None, name = None, size = None, aspectRatio = None,
-                   makeCamera = 1, keepCamera = 0,
-                   scene = None, stereo = None, rawmice = 0,
-                   callbackWindowDict = None):
+                   makeCamera = True, keepCamera = False,
+                   scene = None, stereo = None, 
+                   callbackWindowDict = None, requireWindow = None):
         """
         Creates a window and adds it to the list of windows that are
         to be updated every frame.
+
+        props is the WindowProperties that describes the window.
+
+        type is either 'onscreen', 'offscreen', or 'none'.
+
+        If keepCamera is true, the existing base.cam is set up to
+        render into the new window.
+
+        If keepCamera is false but makeCamera is true, a new camera is
+        set up to render into the new window.
 
         If callbackWindowDict is not None, a CallbackGraphicWindow is
         created instead, which allows the caller to create the actual
         window with its own OpenGL context, and direct Panda's
         rendering into that window.
+
+        If requireWindow is true, it means that the function should
+        raise an exception if the window fails to open correctly.
+        
         """
 
+        # Save this lambda here for convenience; we'll use it to call
+        # down to the underlying _doOpenWindow() with all of the above
+        # parameters.
+        func = lambda : self._doOpenWindow(
+            props = props, pipe = pipe, gsg = gsg,
+            type = type, name = name, size = size, aspectRatio = aspectRatio,
+            makeCamera = makeCamera, keepCamera = keepCamera,
+            scene = scene, stereo = stereo, 
+            callbackWindowDict = callbackWindowDict)
+        
+        if self.win:
+            # If we've already opened a window before, this is just a
+            # pass-through to _doOpenWindow().
+            win = func()
+            self.graphicsEngine.openWindows()
+            return win
+        
+        if type is None:
+            type = self.windowType
+        if requireWindow is None:
+            requireWindow = self.requireWindow
+            
+        win = func()
+
+        # Give the window a chance to truly open.
+        self.graphicsEngine.openWindows()
+        if win != None and not win.isValid():
+            self.notify.info("Window did not open, removing.")
+            self.closeWindow(win)
+            win = None
+
+        if win == None and pipe == None:
+            # Try a little harder if the window wouldn't open.
+            self.makeAllPipes()
+            try:
+                self.pipeList.remove(self.pipe)
+            except ValueError:
+                pass
+            while self.win == None and self.pipeList:
+                self.pipe = self.pipeList[0]
+                self.notify.info("Trying pipe type %s (%s)" % (
+                    self.pipe.getType(), self.pipe.getInterfaceName()))
+                win = func()
+
+                self.graphicsEngine.openWindows()
+                if win != None and not win.isValid():
+                    self.notify.info("Window did not open, removing.")
+                    self.closeWindow(win)
+                    win = None
+                if win == None:
+                    self.pipeList.remove(self.pipe)
+
+        if win == None:
+            self.notify.warning("Unable to open '%s' window." % (type))
+            if requireWindow:
+                # Unless require-window is set to false, it is an
+                # error not to open a window.
+                raise StandardError, 'Could not open window.'
+        else:
+            self.notify.info("Successfully opened window of type %s (%s)" % (
+                win.getType(), win.getPipe().getInterfaceName()))
+
+        return win
+
+    def _doOpenWindow(self, props = None, pipe = None, gsg = None,
+                      type = None, name = None, size = None, aspectRatio = None,
+                      makeCamera = True, keepCamera = False,
+                      scene = None, stereo = None, 
+                      callbackWindowDict = None):
         if pipe == None:
             pipe = self.pipe
 
@@ -769,68 +859,12 @@ class ShowBase(DirectObject.DirectObject):
         if 'startDirect' in kw:
             del kw['startDirect']
 
-        if self.win:
-            # If we've already opened a window before, this does
-            # little more work than openMainWindow() alone.
-            self.openMainWindow(*args, **kw)
-            self.graphicsEngine.openWindows()
-            return
-            
         self.openMainWindow(*args, **kw)
-
-        # Give the window a chance to truly open.
-        self.graphicsEngine.openWindows()
-        if self.win != None and not self.isMainWindowOpen():
-            self.notify.info("Window did not open, removing.")
-            self.closeWindow(self.win)
-
-        if self.win == None and not kw.get('pipe', None):
-            # Try a little harder if the window wouldn't open.
-            self.makeAllPipes()
-            try:
-                self.pipeList.remove(self.pipe)
-            except ValueError:
-                pass
-            while self.win == None and self.pipeList:
-                self.pipe = self.pipeList[0]
-                self.notify.info("Trying pipe type %s (%s)" % (
-                    self.pipe.getType(), self.pipe.getInterfaceName()))
-                self.openMainWindow(*args, **kw)
-
-                self.graphicsEngine.openWindows()
-                if self.win != None and not self.isMainWindowOpen():
-                    self.notify.info("Window did not open, removing.")
-                    self.closeWindow(self.win)
-                if self.win == None:
-                    self.pipeList.remove(self.pipe)
-
-        if self.win == None:
-            self.notify.warning("Unable to open '%s' window." % (
-                self.windowType))
-            if self.requireWindow:
-                # Unless require-window is set to false, it is an
-                # error not to open a window.
-                raise StandardError, 'Could not open window.'
-        else:
-            self.notify.info("Successfully opened window of type %s (%s)" % (
-                self.win.getType(), self.win.getPipe().getInterfaceName()))
-
-        # The default is trackball mode, which is more convenient for
-        # ad-hoc development in Python using ShowBase.  Applications
-        # can explicitly call base.useDrive() if they prefer a drive
-        # interface.
-        self.mouseInterface = self.trackball
-        self.useTrackball()
 
         if startDirect:
             self.__doStartDirect()
 
         return self.win != None
-
-    def isMainWindowOpen(self):
-        if self.win != None:
-            return self.win.isValid()
-        return 0
 
     def openMainWindow(self, *args, **kw):
         """
@@ -1148,11 +1182,7 @@ class ShowBase(DirectObject.DirectObject):
             win = self.win
 
         if win != None and win.hasSize():
-            # Temporary hasattr for old Pandas
-            if not hasattr(win, 'getSbsLeftXSize'):
-                aspectRatio = float(win.getXSize()) / float(win.getYSize())
-            else:
-                aspectRatio = float(win.getSbsLeftXSize()) / float(win.getSbsLeftYSize())
+            aspectRatio = float(win.getSbsLeftXSize()) / float(win.getSbsLeftYSize())
 
         else:
             if win == None or not hasattr(win, "getRequestedProperties"):
@@ -1215,6 +1245,8 @@ class ShowBase(DirectObject.DirectObject):
             self.camera = self.render.attachNewNode(ModelNode('camera'))
             self.camera.node().setPreserveTransform(ModelNode.PTLocal)
             __builtin__.camera = self.camera
+
+            self.mouse2cam.node().setNode(self.camera.node())
 
         if useCamera:
             # Use the existing camera node.
@@ -1381,7 +1413,13 @@ class ShowBase(DirectObject.DirectObject):
         self.dataRoot = NodePath('dataRoot')
         # Cache the node so we do not ask for it every frame
         self.dataRootNode = self.dataRoot.node()
-        self.dataUnused = NodePath('dataUnused')
+
+        # Now we have the main trackball & drive interfaces.
+        # useTrackball() and useDrive() switch these in and out; only
+        # one is in use at a given time.
+        self.trackball = NodePath(Trackball('trackball'))
+        self.drive = NodePath(DriveInterface('drive'))
+        self.mouse2cam = NodePath(Transform2SG('mouse2cam'))
 
     # [gjeon] now you can create multiple mouse watchers to support multiple windows
     def setupMouse(self, win, fMultiWin=False):
@@ -1389,6 +1427,15 @@ class ShowBase(DirectObject.DirectObject):
         Creates the structures necessary to monitor the mouse input,
         using the indicated window.  If the mouse has already been set
         up for a different window, those structures are deleted first.
+
+        The return value is the ButtonThrower NodePath created for
+        this window.
+
+        If fMultiWin is true, then the previous mouse structures are
+        not deleted; instead, multiple windows are allowed to monitor
+        the mouse input.  However, in this case, the trackball
+        controls are not set up, and must be set up by hand if
+        desired.
         """
         if not fMultiWin and self.buttonThrowers != None:
             for bt in self.buttonThrowers:
@@ -1409,6 +1456,9 @@ class ShowBase(DirectObject.DirectObject):
         self.mouseWatcher = self.buttonThrowers[0].getParent()
         self.mouseWatcherNode = self.mouseWatcher.node()  
 
+        if self.mouseInterface:
+            self.mouseInterface.reparentTo(self.mouseWatcher)
+
         if self.recorder:
             # If we have a recorder, the mouseWatcher belongs under a
             # special MouseRecorder node, which may intercept the
@@ -1419,14 +1469,6 @@ class ShowBase(DirectObject.DirectObject):
                 'mouse', mouseRecorder.upcastToRecorderBase())
             np = mw.getParent().attachNewNode(mouseRecorder)
             mw.reparentTo(np)
-
-        # Now we have the main trackball & drive interfaces.
-        # useTrackball() and useDrive() switch these in and out; only
-        # one is in use at a given time.
-        self.trackball = self.dataUnused.attachNewNode(Trackball('trackball'))
-        self.drive = self.dataUnused.attachNewNode(DriveInterface('drive'))
-        self.mouse2cam = self.dataUnused.attachNewNode(Transform2SG('mouse2cam'))
-        self.mouse2cam.node().setNode(self.camera.node())
 
         # A special ButtonThrower to generate keyboard events and
         # include the time from the OS.  This is separate only to
@@ -1444,6 +1486,8 @@ class ShowBase(DirectObject.DirectObject):
         self.pixel2d.node().setMouseWatcher(mw.node())
         self.pixel2dp.node().setMouseWatcher(mw.node())
         mw.node().addRegion(PGMouseWatcherBackground())
+
+        return self.buttonThrowers[0]
 
     # [gjeon] this function is seperated from setupMouse to allow multiple mouse watchers
     def setupMouseCB(self, win):
@@ -1471,8 +1515,7 @@ class ShowBase(DirectObject.DirectObject):
             mk = self.dataRoot.attachNewNode(MouseAndKeyboard(win, i, name))
             mw = mk.attachNewNode(MouseWatcher("watcher%s" % (i)))
 
-            # Temporary hasattr for old Pandas
-            if hasattr(win, 'getSideBySideStereo') and win.getSideBySideStereo():
+            if win.getSideBySideStereo():
                 # If the window has side-by-side stereo enabled, then
                 # we should constrain the MouseWatcher to the window's
                 # DisplayRegion.  This will enable the MouseWatcher to
@@ -1991,7 +2034,7 @@ class ShowBase(DirectObject.DirectObject):
         # object out of there, so we won't be updating the camera any
         # more.
         if self.mouse2cam:
-            self.mouse2cam.reparentTo(self.dataUnused)
+            self.mouse2cam.detachNode()
 
     def enableMouse(self):
         """
@@ -2029,12 +2072,13 @@ class ShowBase(DirectObject.DirectObject):
         Switch mouse action
         """
         # Get rid of the prior interface:
-        self.mouseInterface.reparentTo(self.dataUnused)
+        self.mouseInterface.detachNode()
         # Update the mouseInterface to point to the drive
         self.mouseInterface = changeTo
         self.mouseInterfaceNode = self.mouseInterface.node()
         # Hookup the drive to the camera.
-        self.mouseInterface.reparentTo(self.mouseWatcher)
+        if self.mouseWatcher:
+            self.mouseInterface.reparentTo(self.mouseWatcher)
         if self.mouse2cam:
             self.mouse2cam.reparentTo(self.mouseInterface)
 
@@ -2157,7 +2201,7 @@ class ShowBase(DirectObject.DirectObject):
             self.oobeLens.setNearFar(0.1, 10000.0)
             self.oobeLens.setMinFov(40)
 
-            self.oobeTrackball = self.dataUnused.attachNewNode(Trackball('oobeTrackball'), 1)
+            self.oobeTrackball = NodePath(Trackball('oobeTrackball'), 1)
             self.oobe2cam = self.oobeTrackball.attachNewNode(Transform2SG('oobe2cam'))
             self.oobe2cam.node().setNode(self.oobeCameraTrackball.node())
 

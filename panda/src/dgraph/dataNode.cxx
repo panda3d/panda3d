@@ -52,7 +52,9 @@ transmit_data(DataGraphTraverser *trav,
     const DataConnection &connect = (*ci);
     const EventParameter &data = 
       inputs[connect._parent_index].get_data(connect._output_index);
-    new_input.set_data(connect._input_index, data);
+    if (!data.is_empty()) {
+      new_input.set_data(connect._input_index, data);
+    }
   }
 
   #ifndef NDEBUG
@@ -308,7 +310,7 @@ reconnect() {
             dgraph_cat.warning()
               << "Ignoring mismatched type for connection " << name 
               << " between " << *data_node << " and " << *this << "\n";
-          } else if (num_found == 1) {
+          } else {
             DataConnection dc;
             dc._parent_index = i;
             dc._output_index = output_def._index;
@@ -320,9 +322,11 @@ reconnect() {
     }
 
     if (num_found > 1) {
-      dgraph_cat.warning()
-        << "Multiple connections found for " << name << " into " << *this
-        << "\n";
+      if (dgraph_cat.is_debug()) {
+        dgraph_cat.debug()
+          << "Multiple connections found for " << name << " into " << *this
+          << "\n";
+      }
     }
   }
             

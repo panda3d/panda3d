@@ -35,12 +35,7 @@ class EmbeddedPandaWindow(wx.Window):
         if platform.system() != 'Darwin':
             wp.setParentWindow(self.GetHandle())
 
-        if base.win:
-            self.win = base.openWindow(props = wp, gsg = gsg, type = 'onscreen')
-        else:
-            base.openDefaultWindow(props = wp, gsg = gsg, type = 'onscreen')
-            self.win = base.win
-
+        self.win = base.openWindow(props = wp, gsg = gsg, type = 'onscreen')
         self.Bind(wx.EVT_SIZE, self.onSize)
 
         # This doesn't actually do anything, since wx won't call

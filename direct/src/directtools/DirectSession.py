@@ -1184,7 +1184,7 @@ class DisplayRegionContext(DirectObject):
 
         # Values for this frame
         # This ranges from -1 to 1
-        if (base.mouseWatcherNode.hasMouse()):
+        if base.mouseWatcherNode and base.mouseWatcherNode.hasMouse():
             self.mouseX = base.mouseWatcherNode.getMouseX()
             self.mouseY = base.mouseWatcherNode.getMouseY()
             self.mouseX = (self.mouseX-self.originX)*self.scaleX

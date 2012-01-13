@@ -14,7 +14,7 @@ from ObjectPaletteBase import ObjectGen
 # python wrapper around a panda.NodePath object
 class PythonNodePath(NodePath):
     def __init__(self,node):
-        NodePath.NodePath.__init__(self,node)
+        NodePath.__init__(self,node)
 
 class ObjectMgrBase:
     """ ObjectMgr will create, manage, update objects in the scene """
