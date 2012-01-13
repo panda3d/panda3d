@@ -286,7 +286,10 @@ void CallbackGraphicsWindow::RenderCallbackData::
 upcall() {
   switch (_callback_type) {
   case RCT_begin_frame:
-    _window->GraphicsWindow::begin_frame(_frame_mode, Thread::get_current_thread());
+    {
+      bool render_flag = _window->GraphicsWindow::begin_frame(_frame_mode, Thread::get_current_thread());
+      set_render_flag(render_flag);
+    }
     break;
 
   case RCT_end_frame:

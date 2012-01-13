@@ -33,7 +33,12 @@ class EmbeddedPandaWindow(wx.Window):
 
         wp = WindowProperties.getDefault()
         if platform.system() != 'Darwin':
-            wp.setParentWindow(self.GetHandle())
+            try:
+                wp.setParentWindow(self.GetHandle())
+            except OverflowError:
+                # Sheesh, a negative value from GetHandle().  This can
+                # only happen on 32-bit Windows.
+                wp.setParentWindow(self.GetHandle() & 0xffffffff)
 
         self.win = base.openWindow(props = wp, gsg = gsg, type = 'onscreen')
         self.Bind(wx.EVT_SIZE, self.onSize)
@@ -130,7 +135,12 @@ else:
                     attribList.append(True)
                 if fbprops.getDepthBits() > 0:
                     attribList.append(wxgl.WX_GL_DEPTH_SIZE)
-                    attribList.append(fbprops.getDepthBits())
+                    if fbprops.getDepthBits() <= 16:
+                        attribList.append(16)
+                    elif fbprops.getDepthBits() <= 24:
+                        attribList.append(24)
+                    else:
+                        attribList.append(32)
 
                 kw['attribList'] = attribList
                 
@@ -160,13 +170,8 @@ else:
             if pipe.getInterfaceName() != 'OpenGL':
                 raise StandardError, "Couldn't get an OpenGL pipe."
 
-            self.SetCurrent()
-            if base.win:
-                self.win = base.openWindow(callbackWindowDict = callbackWindowDict, pipe = pipe, gsg = gsg, type = 'onscreen')
-            else:
-                base.openDefaultWindow(callbackWindowDict = callbackWindowDict, pipe = pipe, gsg = gsg, type = 'onscreen')
-                self.win = base.win
 
+            self.win = base.openWindow(callbackWindowDict = callbackWindowDict, pipe = pipe, gsg = gsg, type = 'onscreen')
             self.inputDevice = self.win.getInputDevice(0)
 
             self.Bind(wx.EVT_SIZE, self.onSize)
@@ -258,9 +263,14 @@ else:
         def __renderCallback(self, data):
             cbType = data.getCallbackType()
             if cbType == CallbackGraphicsWindow.RCTBeginFrame:
-                self.SetCurrent()
                 if not self.IsShownOnScreen():
-                    return False
+                    data.setRenderFlag(False)
+                    return
+                self.SetCurrent()
+
+                # Don't upcall() in this case.
+                return
+            
             elif cbType == CallbackGraphicsWindow.RCTEndFlip:
                 self.SwapBuffers()
 

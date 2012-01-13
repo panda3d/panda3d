@@ -1503,7 +1503,7 @@ draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
   size_t wlist_size = wlist.size();
   for (size_t wi = 0; wi < wlist_size; ++wi) {
     GraphicsOutput *win = wlist[wi];
-    if (win->is_active() && win->get_gsg()->is_active()) {
+    if (win->is_active()) {
       if (win->flip_ready()) {
         {
           PStatTimer timer(GraphicsEngine::_flip_begin_pcollector, current_thread);
