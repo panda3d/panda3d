@@ -571,7 +571,7 @@ class ShowBase(DirectObject.DirectObject):
                     self.notify.info("Could not make graphics pipe %s." % (
                         pipeType.getName()))
 
-    def openWindow(self, props = None, pipe = None, gsg = None,
+    def openWindow(self, props = None, fbprops = None, pipe = None, gsg = None,
                    type = None, name = None, size = None, aspectRatio = None,
                    makeCamera = True, keepCamera = False,
                    scene = None, stereo = None, 
@@ -604,7 +604,7 @@ class ShowBase(DirectObject.DirectObject):
         # down to the underlying _doOpenWindow() with all of the above
         # parameters.
         func = lambda : self._doOpenWindow(
-            props = props, pipe = pipe, gsg = gsg,
+            props = props, fbprops = fbprops, pipe = pipe, gsg = gsg,
             type = type, name = name, size = size, aspectRatio = aspectRatio,
             makeCamera = makeCamera, keepCamera = keepCamera,
             scene = scene, stereo = stereo, 
@@ -664,7 +664,7 @@ class ShowBase(DirectObject.DirectObject):
 
         return win
 
-    def _doOpenWindow(self, props = None, pipe = None, gsg = None,
+    def _doOpenWindow(self, props = None, fbprops = None, pipe = None, gsg = None,
                       type = None, name = None, size = None, aspectRatio = None,
                       makeCamera = True, keepCamera = False,
                       scene = None, stereo = None, 
@@ -699,6 +699,9 @@ class ShowBase(DirectObject.DirectObject):
         if props == None:
             props = WindowProperties.getDefault()
 
+        if fbprops == None:
+            fbprops = FrameBufferProperties.getDefault()
+
         if size != None:
             # If we were given an explicit size, use it; otherwise,
             # the size from the properties is used.
@@ -710,8 +713,6 @@ class ShowBase(DirectObject.DirectObject):
             self.nextWindowIndex += 1
 
         win = None
-
-        fbprops = FrameBufferProperties.getDefault()
 
         flags = GraphicsPipe.BFFbPropsOptional
         if type == 'onscreen':

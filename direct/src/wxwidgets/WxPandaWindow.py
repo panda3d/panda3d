@@ -115,13 +115,23 @@ else:
                 gsg = kw['gsg']
                 del kw['gsg']
 
+            fbprops = kw.get('fbprops', None)
+            if fbprops == None:
+                fbprops = FrameBufferProperties.getDefault()
+
             attribList = kw.get('attribList', None)
             if attribList is None:
                 attribList = [
                     wxgl.WX_GL_RGBA, True,
                     wxgl.WX_GL_LEVEL, 0,
-                    wxgl.WX_GL_DOUBLEBUFFER, True,
                     ]
+                if not fbprops.isSingleBuffered():
+                    attribList.append(wxgl.WX_GL_DOUBLEBUFFER)
+                    attribList.append(True)
+                if fbprops.getDepthBits() > 0:
+                    attribList.append(wxgl.WX_GL_DEPTH_SIZE)
+                    attribList.append(fbprops.getDepthBits())
+
                 kw['attribList'] = attribList
                 
             base.startWx()
@@ -283,6 +293,8 @@ else:
                 wp = WindowProperties()
                 wp.setSize(*self.GetClientSize())
                 self.win.requestProperties(wp)
+
+            event.Skip()
 
 # Choose the best implementation of WxPandaWindow for the platform.
 WxPandaWindow = None
