@@ -128,13 +128,7 @@ class ShowBase(DirectObject.DirectObject):
         taskMgr.resumeFunc = PStatClient.resumeAfterPause
 
         if self.__dev__:
-            import profile, pstats        
-            profile.Profile.bias = float(self.config.GetString("profile-bias","0"))
-            
-               
-            def f8(x):
-                return ("%"+"8.%df"%base.config.GetInt("profile-decimals",3)) % x
-            pstats.f8=f8
+            self.__setupProfile()
 
         # If the aspect ratio is 0 or None, it means to infer the
         # aspect ratio from the window size.
@@ -425,6 +419,21 @@ class ShowBase(DirectObject.DirectObject):
         self.cTrav = cTrav
     def popCTrav(self):
         self.cTrav = self.cTravStack.pop()
+
+    def __setupProfile(self):
+        """ Sets up the Python profiler, if avaialable, according to
+        some Panda config settings. """
+        
+        try:
+            import profile, pstats
+        except ImportError:
+            return
+
+        profile.Profile.bias = float(self.config.GetString("profile-bias","0"))
+
+        def f8(x):
+            return ("%"+"8.%df"%base.config.GetInt("profile-decimals",3)) % x
+        pstats.f8=f8
 
     # temp; see ToonBase.py
     def getExitErrorCode(self):
