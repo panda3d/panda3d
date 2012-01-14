@@ -2717,6 +2717,11 @@ class ShowBase(DirectObject.DirectObject):
                 self.spawnWxLoop()
 
     def spawnWxLoop(self):
+        """ Call this method to hand the main loop over to wxPython.
+        This sets up a wxTimer callback so that Panda still gets
+        updated, but wxPython owns the main loop (which seems to make
+        it happier than the other way around). """
+        
         if self.wxApp:
             # Don't do this twice.
             return
@@ -2734,11 +2739,27 @@ class ShowBase(DirectObject.DirectObject):
         self.run = self.wxRun
         self.taskMgr.run = self.wxRun
         __builtin__.run = self.wxRun
+        if self.appRunner:
+            self.appRunner.run = self.wxRun
 
     def __wxTimerCallback(self, event):
+        if Thread.getCurrentThread().getCurrentTask():
+            # This happens when the wxTimer expires while igLoop is
+            # rendering.  Ignore it.
+            return
+        
         self.taskMgr.step()
 
     def wxRun(self):
+        """ This method replaces base.run() after we have called
+        spawnWxLoop().  Since at this point wxPython now owns the main
+        loop, this method is a call to wxApp.MainLoop(). """
+        
+        if Thread.getCurrentThread().getCurrentTask():
+            # This happens in the p3d environment during startup.
+            # Ignore it.
+            return
+        
         self.wxApp.MainLoop()
 
     def startTk(self, fWantTk = True):

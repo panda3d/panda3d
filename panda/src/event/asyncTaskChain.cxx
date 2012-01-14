@@ -1269,11 +1269,9 @@ do_poll() {
   }
 
   if (_num_busy_threads != 0) {
-    // We are recursively nested within another task.  Return quietly.
-    if (task_cat.is_debug()) {
-      task_cat.debug()
-        << "Ignoring recursive poll() within another task.\n";
-    }
+    // We are recursively nested within another task.  Return, with a warning.
+    task_cat.warning()
+      << "Ignoring recursive poll() within another task.\n";
     return;
   }
 
