@@ -175,6 +175,7 @@ class ShowBase(DirectObject.DirectObject):
         self.camLens = None
         self.camFrustumVis = None
         self.direct = None
+        self.wxApp = None
 
         # This is used for syncing multiple PCs in a distributed cluster
         try:
@@ -2713,7 +2714,32 @@ class ShowBase(DirectObject.DirectObject):
             if self.wantWx:
                 initAppForGui()
                 from direct.showbase import WxGlobal
-                WxGlobal.spawnWxLoop()
+                self.spawnWxLoop()
+
+    def spawnWxLoop(self):
+        if self.wxApp:
+            # Don't do this twice.
+            return
+
+        import wx
+        # Create a new base.wxApp.
+        self.wxApp = wx.PySimpleApp(redirect = False)
+
+        # Set a timer to run the Panda frame 60 times per second.
+        self.wxTimer = wx.Timer(self.wxApp)
+        self.wxTimer.Start(1000.0/60.0)
+        self.wxApp.Bind(wx.EVT_TIMER, self.__wxTimerCallback)
+
+        # wx is now the main loop, not us any more.
+        self.run = self.wxRun
+        self.taskMgr.run = self.wxRun
+        __builtin__.run = self.wxRun
+
+    def __wxTimerCallback(self, event):
+        self.taskMgr.step()
+
+    def wxRun(self):
+        self.wxApp.MainLoop()
 
     def startTk(self, fWantTk = True):
         fWantTk = bool(fWantTk)

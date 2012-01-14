@@ -1268,12 +1268,14 @@ do_poll() {
     return;
   }
 
-#ifndef NDEBUG
   if (_num_busy_threads != 0) {
-    nassert_raise("You may not recursively invoke the TaskManager from within a task");
+    // We are recursively nested within another task.  Return quietly.
+    if (task_cat.is_debug()) {
+      task_cat.debug()
+        << "Ignoring recursive poll() within another task.\n";
+    }
     return;
   }
-#endif
 
   nassertv(!_pickup_mode);
 
