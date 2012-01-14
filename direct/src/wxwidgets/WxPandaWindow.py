@@ -268,7 +268,7 @@ else:
         def __renderCallback(self, data):
             cbType = data.getCallbackType()
             if cbType == CallbackGraphicsWindow.RCTBeginFrame:
-                if not self.visible or not self.IsShownOnScreen():
+                if not self.visible:
                     data.setRenderFlag(False)
                     return
                 self.SetCurrent()
@@ -278,6 +278,12 @@ else:
             
             elif cbType == CallbackGraphicsWindow.RCTEndFlip:
                 self.SwapBuffers()
+
+                # Now that we've swapped, ask for a refresh, so we'll
+                # get another paint message if the window is still
+                # visible onscreen.
+                self.Refresh()
+                self.visible = False
 
             data.upcall()
 
@@ -302,7 +308,10 @@ else:
             actually been manifested onscreen.  (In X11, there appears
             to be no way to know this otherwise.) """
             self.visible = True
-            event.Skip()
+
+            # Important not to Skip this event, so the window
+            # subsystem believes we've drawn the window.
+            #event.Skip()
 
         def onIdle(self, event):
             size = None
