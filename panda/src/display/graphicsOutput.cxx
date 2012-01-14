@@ -937,6 +937,14 @@ make_texture_buffer(const string &name, int x_size, int y_size,
                 flags, get_gsg(), get_host());
 
   if (buffer != (GraphicsOutput *)NULL) {
+    if (buffer->get_gsg() == (GraphicsStateGuardian *)NULL || 
+        buffer->get_gsg()->get_prepared_objects() != get_gsg()->get_prepared_objects()) {
+      // If the newly-created buffer doesn't share texture objects
+      // with the current GSG, then we will have to force the texture
+      // copy to go through RAM.
+      to_ram = true;
+    }
+
     buffer->add_render_texture(tex, to_ram ? RTM_copy_ram : RTM_bind_or_copy);
     return buffer;
   }

@@ -416,6 +416,8 @@ make_output(GraphicsPipe *pipe,
       if ((precertify) && (gsg != 0) && (window->get_gsg()==gsg)) {
         do_add_window(window, threading_model);
         do_add_gsg(window->get_gsg(), pipe, threading_model);
+        display_cat.info()
+          << "Created output of type " << window->get_type() << "\n";
         return window;
       }
       do_add_window(window, threading_model);

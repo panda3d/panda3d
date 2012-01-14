@@ -230,6 +230,15 @@ bool CallbackGraphicsWindow::
 open_window() {
   // In this case, we assume the callback has handled the window
   // opening.
+
+  // We also assume the callback has given us an accurate
+  // FramebufferProperties, but we do go ahead and assume some certain
+  // minimum properties.
+  _fb_properties.set_rgb_color(1);
+
+  if (_fb_properties.get_color_bits() == 0) {
+    _fb_properties.set_color_bits(16);
+  }
   return true;
 }
 
