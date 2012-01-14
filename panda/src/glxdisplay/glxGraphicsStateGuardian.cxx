@@ -30,7 +30,7 @@ TypeHandle glxGraphicsStateGuardian::_type_handle;
 glxGraphicsStateGuardian::
 glxGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
                          glxGraphicsStateGuardian *share_with) :
-  GLGraphicsStateGuardian(engine, pipe)
+  PosixGraphicsStateGuardian(engine, pipe)
 {
   _share_context=0;
   _context=0;
@@ -53,7 +53,6 @@ glxGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
     _share_context = share_with->_context;
   }
   
-  _libgl_handle = NULL;
   _checked_get_proc_address = false;
   _glXGetProcAddress = NULL;
   _temp_context = (GLXContext)NULL;
@@ -75,9 +74,6 @@ glxGraphicsStateGuardian::
   if (_context != (GLXContext)NULL) {
     glXDestroyContext(_display, _context);
     _context = (GLXContext)NULL;
-  }
-  if (_libgl_handle != (void *)NULL) {
-    dlclose(_libgl_handle);
   }
 }
 
@@ -399,7 +395,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsStateGuardian::
 reset() {
-  GLGraphicsStateGuardian::reset();
+  PosixGraphicsStateGuardian::reset();
 
   _supports_swap_control = has_extension("GLX_SGI_swap_control");
 
@@ -564,7 +560,7 @@ void glxGraphicsStateGuardian::
 gl_flush() const {
   // This call requires synchronization with X.
   LightReMutexHolder holder(glxGraphicsPipe::_x_mutex);
-  GLGraphicsStateGuardian::gl_flush();
+  PosixGraphicsStateGuardian::gl_flush();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -576,7 +572,7 @@ GLenum glxGraphicsStateGuardian::
 gl_get_error() const {
   // This call requires synchronization with X.
   LightReMutexHolder holder(glxGraphicsPipe::_x_mutex);
-  return GLGraphicsStateGuardian::gl_get_error();
+  return PosixGraphicsStateGuardian::gl_get_error();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -586,7 +582,7 @@ gl_get_error() const {
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsStateGuardian::
 query_gl_version() {
-  GLGraphicsStateGuardian::query_gl_version();
+  PosixGraphicsStateGuardian::query_gl_version();
 
   show_glx_client_string("GLX_VENDOR", GLX_VENDOR);
   show_glx_client_string("GLX_VERSION", GLX_VERSION);
@@ -683,45 +679,8 @@ do_get_extension_func(const char *prefix, const char *name) {
 #endif // HAVE_GLXGETPROCADDRESS
   }
 
-  if (glx_get_os_address) {
-    // Otherwise, fall back to the OS-provided calls.
-    return get_system_func(fullname.c_str());
-  }
-
-  return NULL;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsStateGuardian::get_system_func
-//       Access: Private
-//  Description: Support for get_extension_func(), above, that uses
-//               system calls to find a GL or GLX function (in the
-//               absence of a working glxGetProcAddress() function to
-//               call).
-////////////////////////////////////////////////////////////////////
-void *glxGraphicsStateGuardian::
-get_system_func(const char *name) {
-  if (_libgl_handle == (void *)NULL) {
-    // We open the current executable, rather than naming a particular
-    // library.  Presumably libGL.so (or whatever the library should
-    // be called) is already available in the current executable
-    // address space, so this is more portable than insisting on a
-    // particular shared library name.
-    _libgl_handle = dlopen(NULL, RTLD_LAZY);
-    nassertr(_libgl_handle != (void *)NULL, NULL);
-
-    // If that doesn't locate the symbol we expected, then fall back
-    // to loading the GL library by its usual name.
-    if (dlsym(_libgl_handle, name) == NULL) {
-      dlclose(_libgl_handle);
-      glxdisplay_cat.warning()
-        << name << " not found in executable; looking in libGL.so instead.\n";
-      _libgl_handle = dlopen("libGL.so", RTLD_LAZY);
-      nassertr(_libgl_handle != (void *)NULL, NULL);
-    }
-  }
-
-  return dlsym(_libgl_handle, name);
+  // Otherwise, fall back to the OS-provided calls.
+  return PosixGraphicsStateGuardian::do_get_extension_func(prefix, name);
 }
 
 ////////////////////////////////////////////////////////////////////

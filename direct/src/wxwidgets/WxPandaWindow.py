@@ -146,6 +146,7 @@ else:
                 
             base.startWx()
             wxgl.GLCanvas.__init__(self, *args, **kw)
+            self.visible = False
                 
             # Can't share the GSG when a new wxgl.GLContext is created
             # automatically.
@@ -170,23 +171,27 @@ else:
             if pipe.getInterfaceName() != 'OpenGL':
                 raise StandardError, "Couldn't get an OpenGL pipe."
 
-
             self.win = base.openWindow(callbackWindowDict = callbackWindowDict, pipe = pipe, gsg = gsg, type = 'onscreen')
-            self.inputDevice = self.win.getInputDevice(0)
+            self.inputDevice = None
+            if hasattr(self.win, 'getInputDevice'):
+                self.inputDevice = self.win.getInputDevice(0)
 
             self.Bind(wx.EVT_SIZE, self.onSize)
+            self.Bind(wx.EVT_PAINT, self.onPaint)
             self.Bind(wx.EVT_IDLE, self.onIdle)
-            self.Bind(wx.EVT_LEFT_DOWN, lambda event: self.__buttonDown(MouseButton.one()))
-            self.Bind(wx.EVT_LEFT_UP, lambda event: self.__buttonUp(MouseButton.one()))
-            self.Bind(wx.EVT_MIDDLE_DOWN, lambda event: self.__buttonDown(MouseButton.two()))
-            self.Bind(wx.EVT_MIDDLE_UP, lambda event: self.__buttonUp(MouseButton.two()))
-            self.Bind(wx.EVT_RIGHT_DOWN, lambda event: self.__buttonDown(MouseButton.three()))
-            self.Bind(wx.EVT_RIGHT_UP, lambda event: self.__buttonUp(MouseButton.three()))
-            self.Bind(wx.EVT_MOTION, self.__mouseMotion)
-            self.Bind(wx.EVT_LEAVE_WINDOW, self.__mouseLeaveWindow)
-            self.Bind(wx.EVT_KEY_DOWN, self.__keyDown)
-            self.Bind(wx.EVT_KEY_UP, self.__keyUp)
-            self.Bind(wx.EVT_CHAR, self.__keystroke)
+
+            if self.inputDevice:
+                self.Bind(wx.EVT_LEFT_DOWN, lambda event: self.__buttonDown(MouseButton.one()))
+                self.Bind(wx.EVT_LEFT_UP, lambda event: self.__buttonUp(MouseButton.one()))
+                self.Bind(wx.EVT_MIDDLE_DOWN, lambda event: self.__buttonDown(MouseButton.two()))
+                self.Bind(wx.EVT_MIDDLE_UP, lambda event: self.__buttonUp(MouseButton.two()))
+                self.Bind(wx.EVT_RIGHT_DOWN, lambda event: self.__buttonDown(MouseButton.three()))
+                self.Bind(wx.EVT_RIGHT_UP, lambda event: self.__buttonUp(MouseButton.three()))
+                self.Bind(wx.EVT_MOTION, self.__mouseMotion)
+                self.Bind(wx.EVT_LEAVE_WINDOW, self.__mouseLeaveWindow)
+                self.Bind(wx.EVT_KEY_DOWN, self.__keyDown)
+                self.Bind(wx.EVT_KEY_UP, self.__keyUp)
+                self.Bind(wx.EVT_CHAR, self.__keystroke)
 
             # This doesn't actually do anything, since wx won't call
             # EVT_CLOSE on a child window, only on the toplevel window
@@ -263,7 +268,7 @@ else:
         def __renderCallback(self, data):
             cbType = data.getCallbackType()
             if cbType == CallbackGraphicsWindow.RCTBeginFrame:
-                if not self.IsShownOnScreen():
+                if not self.visible or not self.IsShownOnScreen():
                     data.setRenderFlag(False)
                     return
                 self.SetCurrent()
@@ -289,6 +294,14 @@ else:
             # again then.
             wx.WakeUpIdle()
             
+            event.Skip()
+
+        def onPaint(self, event):
+            """ This is called whenever we get the fisrt paint event,
+            at which point we can conclude that the window has
+            actually been manifested onscreen.  (In X11, there appears
+            to be no way to know this otherwise.) """
+            self.visible = True
             event.Skip()
 
         def onIdle(self, event):

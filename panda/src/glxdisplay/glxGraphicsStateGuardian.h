@@ -19,6 +19,7 @@
 
 #include "glgsg.h"
 #include "glxGraphicsPipe.h"
+#include "posixGraphicsStateGuardian.h"
 
 #if defined(GLX_VERSION_1_4)
 // If the system header files give us version 1.4, we can assume it's
@@ -74,7 +75,7 @@ typedef void (* PFNGLXDESTROYPBUFFERPROC) (X11_Display *dpy, GLXPbuffer pbuf);
 // Description : A tiny specialization on GLGraphicsStateGuardian to
 //               add some glx-specific information.
 ////////////////////////////////////////////////////////////////////
-class glxGraphicsStateGuardian : public GLGraphicsStateGuardian {
+class glxGraphicsStateGuardian : public PosixGraphicsStateGuardian {
 public:
   INLINE const FrameBufferProperties &get_fb_properties() const;
   void get_properties(FrameBufferProperties &properties, XVisualInfo *visual);
@@ -134,7 +135,6 @@ protected:
   virtual void *do_get_extension_func(const char *prefix, const char *name);
 
 private:
-  void *get_system_func(const char *name);
   void show_glx_client_string(const string &name, int id);
   void show_glx_server_string(const string &name, int id);
   void choose_temp_visual(const FrameBufferProperties &properties);
@@ -143,7 +143,6 @@ private:
 
   int _glx_version_major, _glx_version_minor;
 
-  void *_libgl_handle;
   bool _checked_get_proc_address;
   PFNGLXGETPROCADDRESSPROC _glXGetProcAddress;
 
@@ -156,9 +155,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    GLGraphicsStateGuardian::init_type();
+    PosixGraphicsStateGuardian::init_type();
     register_type(_type_handle, "glxGraphicsStateGuardian",
-                  GLGraphicsStateGuardian::get_class_type());
+                  PosixGraphicsStateGuardian::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

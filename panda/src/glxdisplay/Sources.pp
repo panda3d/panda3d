@@ -20,6 +20,8 @@
     glxGraphicsWindow.h glxGraphicsWindow.cxx \
     glxGraphicsStateGuardian.h glxGraphicsStateGuardian.I \
     glxGraphicsStateGuardian.cxx \
+    posixGraphicsStateGuardian.h posixGraphicsStateGuardian.I \
+    posixGraphicsStateGuardian.cxx \
     panda_glxext.h
 
   #define INSTALL_HEADERS \

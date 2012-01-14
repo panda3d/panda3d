@@ -19,6 +19,7 @@
 #include "glxGraphicsBuffer.h"
 #include "glxGraphicsWindow.h"
 #include "glxGraphicsStateGuardian.h"
+#include "posixGraphicsStateGuardian.h"
 #include "graphicsPipeSelection.h"
 #include "dconfig.h"
 #include "pandaSystem.h"
@@ -94,6 +95,7 @@ init_libglxdisplay() {
   glxGraphicsBuffer::init_type();
   glxGraphicsWindow::init_type();
   glxGraphicsStateGuardian::init_type();
+  PosixGraphicsStateGuardian::init_type();
 
   GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();
   selection->add_pipe_type(glxGraphicsPipe::get_class_type(),

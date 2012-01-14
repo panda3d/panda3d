@@ -17,6 +17,7 @@
 #include "glxGraphicsBuffer.h"
 #include "glxGraphicsPixmap.h"
 #include "glxGraphicsStateGuardian.h"
+#include "posixGraphicsStateGuardian.h"
 #include "config_glxdisplay.h"
 #include "frameBufferProperties.h"
 
@@ -217,5 +218,8 @@ make_output(const string &name,
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsStateGuardian) glxGraphicsPipe::
 make_callback_gsg(GraphicsEngine *engine) {
-  return new glxGraphicsStateGuardian(engine, this, NULL);
+  // We create a PosixGraphicsStateGuardian instead of a
+  // glxGraphicsStateGuardian, because the externally-created context
+  // might not have anything to do with the glx interface.
+  return new PosixGraphicsStateGuardian(engine, this);
 }
