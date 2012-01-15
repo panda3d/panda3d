@@ -9486,6 +9486,9 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     break;
 #endif
   case GL_DEPTH_COMPONENT:
+  case GL_DEPTH_COMPONENT16:
+  case GL_DEPTH_COMPONENT24:
+  case GL_DEPTH_COMPONENT32:
     type = Texture::T_float;
     format = Texture::F_depth_component;
     break;
