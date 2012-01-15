@@ -4,3 +4,4 @@
 #include "glxGraphicsPixmap.cxx"
 #include "glxGraphicsStateGuardian.cxx"
 #include "glxGraphicsWindow.cxx"
+#include "posixGraphicsStateGuardian.cxx"

@@ -12,17 +12,26 @@
   #define LOCAL_LIBS \
     p3glgsg p3x11display
 
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx
+ 
   #define SOURCES \
-    config_glxdisplay.cxx config_glxdisplay.h \
-    glxGraphicsBuffer.h glxGraphicsBuffer.I glxGraphicsBuffer.cxx \
-    glxGraphicsPipe.cxx glxGraphicsPipe.h glxGraphicsPipe.I \
-    glxGraphicsPixmap.h glxGraphicsPixmap.I glxGraphicsPixmap.cxx \
-    glxGraphicsWindow.h glxGraphicsWindow.cxx \
+    config_glxdisplay.h \
+    glxGraphicsBuffer.h glxGraphicsBuffer.I \
+    glxGraphicsPipe.h glxGraphicsPipe.I \
+    glxGraphicsPixmap.h glxGraphicsPixmap.I \
+    glxGraphicsWindow.h \
     glxGraphicsStateGuardian.h glxGraphicsStateGuardian.I \
-    glxGraphicsStateGuardian.cxx \
     posixGraphicsStateGuardian.h posixGraphicsStateGuardian.I \
-    posixGraphicsStateGuardian.cxx \
     panda_glxext.h
+ 
+  #define INCLUDED_SOURCES \
+    config_glxdisplay.cxx \
+    glxGraphicsBuffer.cxx \
+    glxGraphicsPipe.cxx \
+    glxGraphicsPixmap.cxx \
+    glxGraphicsWindow.cxx \
+    glxGraphicsStateGuardian.cxx \
+    posixGraphicsStateGuardian.cxx
 
   #define INSTALL_HEADERS \
     glxGraphicsBuffer.I glxGraphicsBuffer.h \
