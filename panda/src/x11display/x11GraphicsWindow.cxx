@@ -388,6 +388,7 @@ process_events() {
       break;
 
     case FocusOut:
+      _input_devices[0].focus_lost();
       properties.set_foreground(false);
       system_changed_properties(properties);
       break;
