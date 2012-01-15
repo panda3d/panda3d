@@ -92,12 +92,13 @@ GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
   _creation_flags = flags;
   _x_size = _y_size = 0;
   _has_size = win_prop.has_size();
+  _is_nonzero_size = false;
   if (_has_size) {
     _x_size = win_prop.get_x_size();
     _y_size = win_prop.get_y_size();
+    _is_nonzero_size = (_x_size > 0 && _y_size > 0);
   }
   _is_valid = false;
-  _is_nonzero_size = false;
   _flip_ready = false;
   _cube_map_index = -1;
   _cube_map_dr = NULL;

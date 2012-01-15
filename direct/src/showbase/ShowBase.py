@@ -585,7 +585,7 @@ class ShowBase(DirectObject.DirectObject):
     def openWindow(self, props = None, fbprops = None, pipe = None, gsg = None,
                    type = None, name = None, size = None, aspectRatio = None,
                    makeCamera = True, keepCamera = False,
-                   scene = None, stereo = None, 
+                   scene = None, stereo = None, unexposedDraw = None,
                    callbackWindowDict = None, requireWindow = None):
         """
         Creates a window and adds it to the list of windows that are
@@ -600,6 +600,9 @@ class ShowBase(DirectObject.DirectObject):
 
         If keepCamera is false but makeCamera is true, a new camera is
         set up to render into the new window.
+
+        If unexposedDraw is not None, it specifies the initial value
+        of GraphicsWindow.setUnexposedDraw().
 
         If callbackWindowDict is not None, a CallbackGraphicWindow is
         created instead, which allows the caller to create the actual
@@ -618,7 +621,7 @@ class ShowBase(DirectObject.DirectObject):
             props = props, fbprops = fbprops, pipe = pipe, gsg = gsg,
             type = type, name = name, size = size, aspectRatio = aspectRatio,
             makeCamera = makeCamera, keepCamera = keepCamera,
-            scene = scene, stereo = stereo, 
+            scene = scene, stereo = stereo, unexposedDraw = unexposedDraw,
             callbackWindowDict = callbackWindowDict)
         
         if self.win:
@@ -678,7 +681,7 @@ class ShowBase(DirectObject.DirectObject):
     def _doOpenWindow(self, props = None, fbprops = None, pipe = None, gsg = None,
                       type = None, name = None, size = None, aspectRatio = None,
                       makeCamera = True, keepCamera = False,
-                      scene = None, stereo = None, 
+                      scene = None, stereo = None, unexposedDraw = None,
                       callbackWindowDict = None):
         if pipe == None:
             pipe = self.pipe
@@ -744,6 +747,9 @@ class ShowBase(DirectObject.DirectObject):
         if win == None:
             # Couldn't create a window!
             return None
+
+        if unexposedDraw is not None and hasattr(win, 'setUnexposedDraw'):
+            win.setUnexposedDraw(unexposedDraw)
 
         if callbackWindowDict:
             # If we asked for (and received) a CallbackGraphicsWindow,

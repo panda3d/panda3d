@@ -845,8 +845,10 @@ clear_cube_map_selection() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::trigger_flip
-//       Access: Public
-//  Description: Set the flip_ready flag, only if legal to do so.
+//       Access: Protected
+//  Description: To be called at the end of the frame, after the
+//               window has successfully been drawn and is ready to be
+//               flipped (if appropriate).
 ////////////////////////////////////////////////////////////////////
 INLINE void GraphicsOutput::
 trigger_flip() {

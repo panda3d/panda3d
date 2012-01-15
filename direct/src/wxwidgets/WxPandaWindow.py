@@ -40,7 +40,8 @@ class EmbeddedPandaWindow(wx.Window):
                 # only happen on 32-bit Windows.
                 wp.setParentWindow(self.GetHandle() & 0xffffffff)
 
-        self.win = base.openWindow(props = wp, gsg = gsg, type = 'onscreen')
+        self.win = base.openWindow(props = wp, gsg = gsg, type = 'onscreen',
+                                   unexposedDraw = False)
         self.Bind(wx.EVT_SIZE, self.onSize)
 
         # This doesn't actually do anything, since wx won't call

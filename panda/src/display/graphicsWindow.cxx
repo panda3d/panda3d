@@ -62,6 +62,8 @@ GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   request_properties(win_prop);
 
   _window_event = "window-event";
+  _got_expose_event = false;
+  _unexposed_draw = win_unexposed_draw;
   set_pixel_zoom(pixel_zoom);
 }
 

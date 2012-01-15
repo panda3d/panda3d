@@ -66,6 +66,19 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   if (_gsg == (GraphicsStateGuardian *)NULL) {
     return false;
   }
+
+  if (!get_unexposed_draw() && !_got_expose_event) {
+    if (wgldisplay_cat.is_spam()) {
+      wgldisplay_cat.spam()
+        << "Not drawing " << this << ": unexposed.\n";
+    }
+    return false;
+  }
+
+  if (wgldisplay_cat.is_spam()) {
+    wgldisplay_cat.spam()
+      << "Drawing " << this << ": exposed.\n";
+  }
   
   wglGraphicsStateGuardian *wglgsg;
   DCAST_INTO_R(wglgsg, _gsg, false);
@@ -93,7 +106,6 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
-
   end_frame_spam(mode);
 
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);

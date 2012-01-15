@@ -97,6 +97,14 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     return false;
   }
 
+  if (!get_unexposed_draw() && !_got_expose_event) {
+    if (wdxdisplay9_cat.is_spam()) {
+      wdxdisplay9_cat.spam()
+        << "Not drawing " << this << ": unexposed.\n";
+    }
+    return false;
+  }
+
   if (_awaiting_restore) {
     // The fullscreen window was recently restored; we can't continue
     // until the GSG says we can.
@@ -129,7 +137,6 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsWindow9::
 end_frame(FrameMode mode, Thread *current_thread) {
-
   end_frame_spam(mode);
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
 
@@ -160,7 +167,7 @@ end_flip() {
   if (_dxgsg != (DXGraphicsStateGuardian9 *)NULL && is_active()) {
     _dxgsg->show_frame();
   }
-  GraphicsWindow::end_flip();
+  WinGraphicsWindow::end_flip();
 }
 
 ////////////////////////////////////////////////////////////////////

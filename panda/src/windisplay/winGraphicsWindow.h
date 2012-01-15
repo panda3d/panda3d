@@ -88,6 +88,7 @@ public:
   virtual TouchInfo get_touch_info(int index);
 
 protected:
+  void trigger_flip();
   virtual void close_window();
   virtual bool open_window();
   virtual void fullscreen_minimized(WindowProperties &properties);

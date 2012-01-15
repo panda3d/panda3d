@@ -364,6 +364,30 @@ set_properties_now(WindowProperties &properties) {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::trigger_flip
+//       Access: Protected
+//  Description: To be called at the end of the frame, after the
+//               window has successfully been drawn and is ready to be
+//               flipped (if appropriate).
+////////////////////////////////////////////////////////////////////
+void WinGraphicsWindow::
+trigger_flip() {
+  GraphicsWindow::trigger_flip();
+
+  if (!get_unexposed_draw()) {
+    // Now that we've drawn or whatever, invalidate the rectangle so
+    // we won't redraw again until we get the WM_PAINT message.
+
+    InvalidateRect(_hWnd, NULL, FALSE);
+    _got_expose_event = false;
+
+    if (windisplay_cat.is_spam()) {
+      windisplay_cat.spam()
+        << "InvalidateRect: " << this << "\n";
+    }
+  }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: WinGraphicsWindow::close_window
@@ -1450,13 +1474,26 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       handle_reshape();
     }
     break;
-    
+
   case WM_EXITSIZEMOVE:
     handle_reshape();
     break;
 
   case WM_WINDOWPOSCHANGED:
     adjust_z_order();
+    break;
+
+  case WM_PAINT:
+    // In response to WM_PAINT, we check to see if there are any
+    // update regions at all; if there are, we declare the window
+    // exposed.  This is used to implement !_unexposed_draw.
+    if (GetUpdateRect(_hWnd, NULL, false)) {
+      if (windisplay_cat.is_spam()) {
+        windisplay_cat.spam()
+          << "Got update regions: " << this << "\n";
+      }
+      _got_expose_event = true;
+    }
     break;
     
   case WM_LBUTTONDOWN:

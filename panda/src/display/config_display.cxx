@@ -336,6 +336,11 @@ ConfigVariableInt parent_window_handle
           "an HWND on Windows, or the NSWindow pointer or XWindow pointer "
           "converted to an integer, on OSX and X11."));
 
+ConfigVariableBool win_unexposed_draw
+("win-unexposed-draw", true,
+ PRC_DESC("Specifies the default setting of GraphicsWindow::set_unexposed_draw().  "
+          "See that method for more information."));
+
 ConfigVariableFilename subprocess_window
 ("subprocess-window", "",
  PRC_DESC("The filename of a SubprocessWindowBuffer's temporary mmap file, "

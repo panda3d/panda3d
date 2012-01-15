@@ -72,6 +72,14 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     return false;
   }
 
+  if (!get_unexposed_draw() && !_got_expose_event) {
+    if (tinydisplay_cat.is_spam()) {
+      tinydisplay_cat.spam()
+        << "Not drawing " << this << ": unexposed.\n";
+    }
+    return false;
+  }
+
   TinyGraphicsStateGuardian *tinygsg;
   DCAST_INTO_R(tinygsg, _gsg, false);
 

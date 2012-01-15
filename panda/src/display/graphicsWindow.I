@@ -41,6 +41,36 @@ is_fullscreen() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::set_unexposed_draw
+//       Access: Published
+//  Description: If this flag is false, the window is redrawn only
+//               after it has received a recent "unexpose" or "draw"
+//               event from the underlying windowing systme.  If this
+//               flag is true, the window is redrawn every frame
+//               regardless.  Setting this false may prevent the
+//               window from redrawing unnecessarily when it is
+//               hidden, and may play nicer with other windows on the
+//               desktop, but may adversely affect frame rate even
+//               when the window is fully visible; setting it true will
+//               ensure that the window contents are always current.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsWindow::
+set_unexposed_draw(bool unexposed_draw) {
+  _unexposed_draw = unexposed_draw;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::get_unexposed_draw
+//       Access: Published
+//  Description: See set_unexposed_draw().
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsWindow::
+get_unexposed_draw() const {
+  return _unexposed_draw;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::get_window_handle
 //       Access: Published
 //  Description: Returns the WindowHandle corresponding to this window
