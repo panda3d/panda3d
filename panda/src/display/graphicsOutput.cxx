@@ -97,6 +97,7 @@ GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
     _y_size = win_prop.get_y_size();
   }
   _is_valid = false;
+  _is_nonzero_size = false;
   _flip_ready = false;
   _cube_map_index = -1;
   _cube_map_dr = NULL;
@@ -1206,6 +1207,8 @@ set_size_and_recalc(int x, int y) {
   _x_size = x;
   _y_size = y;
   _has_size = true;
+
+  _is_nonzero_size = (_x_size > 0 && _y_size > 0);
 
   int fb_x_size = get_fb_x_size();
   int fb_y_size = get_fb_y_size();

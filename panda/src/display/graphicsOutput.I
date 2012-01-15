@@ -296,7 +296,19 @@ has_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool GraphicsOutput::
 is_valid() const {
-  return _is_valid;
+  return _is_valid && _is_nonzero_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::is_nonzero_size
+//       Access: Published
+//  Description: Returns true if the output has a nonzero size in both
+//               X and Y, or false if it is zero (and therefore
+//               invalid).
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsOutput::
+is_nonzero_size() const {
+  return _is_nonzero_size;
 }
 
 ////////////////////////////////////////////////////////////////////

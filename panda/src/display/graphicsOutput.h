@@ -123,6 +123,7 @@ PUBLISHED:
   INLINE int get_sbs_right_y_size() const;
   INLINE bool has_size() const;
   INLINE bool is_valid() const;
+  INLINE bool is_nonzero_size() const;
 
   void set_active(bool active);
   virtual bool is_active() const;
@@ -356,6 +357,7 @@ protected:
   int _y_size;
   bool _has_size;
   bool _is_valid;
+  bool _is_nonzero_size;
 
   static PStatCollector _make_current_pcollector;
   static PStatCollector _copy_texture_pcollector;

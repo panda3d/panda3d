@@ -1168,7 +1168,6 @@ consider_device(wdxGraphicsPipe9 *dxpipe, DXDeviceInfo *device_info) {
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsWindow9::
 reset_device_resize_window(UINT new_xsize, UINT new_ysize) {
-  nassertr((new_xsize > 0) && (new_ysize > 0), false);
   bool retval = true;
 
   DXScreenData *screen = NULL;
