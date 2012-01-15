@@ -14,45 +14,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WinGraphicsWindow::handle_keypress
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void WinGraphicsWindow::
-handle_keypress(ButtonHandle key, int x, int y, double time) {
-  _input_devices[0].set_pointer_in_window(x, y);
-  if (key != ButtonHandle::none()) {
-    _input_devices[0].button_down(key, time);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: WinGraphicsWindow::handle_keyresume
-//       Access: Private
-//  Description: Indicates we detected a key was already down when the
-//               focus is restored to the window.  Mainly useful for
-//               tracking the state of modifier keys.
-////////////////////////////////////////////////////////////////////
-INLINE void WinGraphicsWindow::
-handle_keyresume(ButtonHandle key, double time) {
-  if (key != ButtonHandle::none()) {
-    _input_devices[0].button_resume_down(key, time);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: WinGraphicsWindow::handle_keyrelease
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void WinGraphicsWindow::
-handle_keyrelease(ButtonHandle key, double time) {
-  if (key != ButtonHandle::none()) {
-    _input_devices[0].button_up(key, time);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: WinGraphicsWindow::translate_mouse
 //       Access: Private
 //  Description: Translates the mouse pixel coordinate (either x or y)

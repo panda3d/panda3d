@@ -127,9 +127,9 @@ private:
 
   static void process_1_event();
 
-  INLINE void handle_keypress(ButtonHandle key, int x, int y, double time);
-  INLINE void handle_keyresume(ButtonHandle key, double time);
-  INLINE void handle_keyrelease(ButtonHandle key, double time);
+  void handle_keypress(ButtonHandle key, int x, int y, double time);
+  void handle_keyresume(ButtonHandle key, double time);
+  void handle_keyrelease(ButtonHandle key, double time);
   ButtonHandle lookup_key(WPARAM wparam) const;
   INLINE int translate_mouse(int pos) const;
   INLINE void set_cursor_in_window();
@@ -138,6 +138,7 @@ private:
   INLINE static double get_message_time();
 
   void resend_lost_keypresses();
+  void release_all_buttons();
   static void update_cursor_window(WinGraphicsWindow *to_window);
   static void hide_or_show_cursor(bool hide_cursor);
 
@@ -160,20 +161,6 @@ private:
   HCURSOR _cursor;
   DEVMODE _fullscreen_display_mode;
 
-  // This is used to remember the state of the keyboard when keyboard
-  // focus is lost.
-  enum { num_virtual_keys = 256 };
-  // You might be wondering why the above is an enum. Originally the line
-  // read "static const int num_virtual_keys = 256"
-  // but in trying to support the MSVC6 compiler, we found that you
-  // were not allowed to define the value of a const within a class like
-  // that. Defining the value outside the class helps, but then we can't
-  // use the value to define the length of the _keyboard_state array, and
-  // also it creates multiply defined symbol errors when you link, because
-  // other files include this header file. This enum is a clever solution
-  // to work around the problem.
-
-  BYTE _keyboard_state[num_virtual_keys];
   bool _lost_keypresses;
 
   // These are used to store the status of the individual left and right

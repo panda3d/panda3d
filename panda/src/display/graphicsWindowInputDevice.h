@@ -79,7 +79,8 @@ PUBLISHED:
   void button_up(ButtonHandle button, double time = ClockObject::get_global_clock()->get_frame_time());
   void keystroke(int keycode, double time = ClockObject::get_global_clock()->get_frame_time());
   void candidate(const wstring &candidate_string, size_t highlight_start, 
-                 size_t higlight_end, size_t cursor_pos);
+                 size_t highlight_end, size_t cursor_pos);
+  void focus_lost(double time = ClockObject::get_global_clock()->get_frame_time());
 
   INLINE void set_pointer_in_window(int x, int y, double time = ClockObject::get_global_clock()->get_frame_time());
   INLINE void set_pointer_out_of_window(double time = ClockObject::get_global_clock()->get_frame_time());
@@ -120,6 +121,8 @@ private:
   ButtonEvents _button_events;
   PT(PointerEventList) _pointer_events;
 
+  typedef pset<ButtonHandle> ButtonsHeld;
+  ButtonsHeld _buttons_held;
 };
 
 #include "graphicsWindowInputDevice.I"

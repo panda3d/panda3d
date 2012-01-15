@@ -291,6 +291,7 @@ void GraphicsWindowInputDevice::
 button_down(ButtonHandle button, double time) {
   LightMutexHolder holder(_lock);
   _button_events.push_back(ButtonEvent(button, ButtonEvent::T_down, time));
+  _buttons_held.insert(button);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -304,7 +305,9 @@ button_down(ButtonHandle button, double time) {
 void GraphicsWindowInputDevice::
 button_resume_down(ButtonHandle button, double time) {
   LightMutexHolder holder(_lock);
-  _button_events.push_back(ButtonEvent(button, ButtonEvent::T_resume_down, time));
+  _button_events.push_back(ButtonEvent(button, ButtonEvent::T_resume_down, time)
+);
+  _buttons_held.insert(button);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -316,6 +319,7 @@ void GraphicsWindowInputDevice::
 button_up(ButtonHandle button, double time) {
   LightMutexHolder holder(_lock);
   _button_events.push_back(ButtonEvent(button, ButtonEvent::T_up, time));
+  _buttons_held.erase(button);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -345,4 +349,25 @@ candidate(const wstring &candidate_string, size_t highlight_start,
   _button_events.push_back(ButtonEvent(candidate_string, 
                                        highlight_start, highlight_end,
                                        cursor_pos));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindowInputDevice::focus_lost
+//       Access: Public
+//  Description: This should be called when the window focus is lost,
+//               so that we may miss upcoming button events
+//               (especially "up" events) for the next period of time.
+//               It generates keyboard and mouse "up" events for those
+//               buttons that we previously sent unpaired "down"
+//               events, so that the Panda application will believe
+//               all buttons are now released.
+////////////////////////////////////////////////////////////////////
+void GraphicsWindowInputDevice::
+focus_lost(double time) {
+  LightMutexHolder holder(_lock);
+  ButtonsHeld::iterator bi;
+  for (bi = _buttons_held.begin(); bi != _buttons_held.end(); ++bi) {
+    _button_events.push_back(ButtonEvent(*bi, ButtonEvent::T_up, time));
+  }
+  _buttons_held.clear();
 }
