@@ -1739,7 +1739,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     }
     if (windisplay_cat.is_debug()) {
       windisplay_cat.debug()
-        << "keydown: " << wparam << " (" << lookup_key(wparam) << ")\n";
+        << "syskeydown: " << wparam << " (" << lookup_key(wparam) << ")\n";
     }
     {
       // Alt and F10 are sent as WM_SYSKEYDOWN instead of WM_KEYDOWN
