@@ -68,8 +68,8 @@ do_extrude(const Lens::CData *lens_cdata,
 
   near_point = (v * do_get_near(lens_cdata));
   far_point = (v * do_get_far(lens_cdata));
-  near_point[2] = f[1] / focal_length;
-  far_point[2] = f[1] / focal_length;
+  near_point[2] = f[1];
+  far_point[2] = f[1];
 
   // And we'll need to account for the lens's rotations, etc. at the
   // end of the day.
@@ -121,8 +121,7 @@ do_project(const Lens::CData *lens_cdata, const LPoint3 &point3d, LPoint3 &point
      // The x position is the angle about the Z axis.
      rad_2_deg(catan2(xy[0], xy[1])) * focal_length / ospherical_k,
      // The y position is the Z height.
-     // distance.
-     p[2] * focal_length,
+     p[2],
      // Z is the distance scaled into the range (1, -1).
      (do_get_near(lens_cdata) - dist) / (do_get_far(lens_cdata) - do_get_near(lens_cdata))
      );
