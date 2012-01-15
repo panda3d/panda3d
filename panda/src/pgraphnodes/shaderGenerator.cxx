@@ -639,7 +639,8 @@ synthesize_shader(const RenderState *rs) {
   char *hbinormal_vreg = 0;
   pvector<char *> texcoord_vreg;
   pvector<char *> texcoord_freg;
-  pvector<char *> tslightvec_freg;
+  pvector<char *> dlightcoord_freg;
+  pvector<char *> slightcoord_freg;
   char *world_position_freg = 0;
   char *world_normal_freg = 0;
   char *eye_position_freg = 0;
@@ -724,14 +725,20 @@ synthesize_shader(const RenderState *rs) {
     if (_shadows && _auto_shadow_on) {
       for (int i=0; i<(int)_dlights.size(); i++) {
         if (_dlights[i]->_shadow_caster) {
+          dlightcoord_freg.push_back(alloc_freg());
           text << "\t uniform float4x4 trans_model_to_clip_of_dlight" << i << ",\n";
-          text << "\t out float4 l_dlightcoord" << i << ",\n";
+          text << "\t out float4 l_dlightcoord" << i << " : " << dlightcoord_freg[i] << ",\n";
+        } else {
+          dlightcoord_freg.push_back(NULL);
         }
       }
       for (int i=0; i<(int)_slights.size(); i++) {
         if (_slights[i]->_shadow_caster) {
+          slightcoord_freg.push_back(alloc_freg());
           text << "\t uniform float4x4 trans_model_to_clip_of_slight" << i << ",\n";
-          text << "\t out float4 l_slightcoord" << i << ",\n";
+          text << "\t out float4 l_slightcoord" << i << " : " << slightcoord_freg[i] << ",\n";
+        } else {
+          slightcoord_freg.push_back(NULL);
         }
       }
     }
@@ -847,7 +854,7 @@ synthesize_shader(const RenderState *rs) {
         } else {
           text << "\t uniform sampler2D k_dlighttex" << i << ",\n";
         }
-        text << "\t float4 l_dlightcoord" << i << ",\n";
+        text << "\t in float4 l_dlightcoord" << i << " : " << dlightcoord_freg[i] << ",\n";
       }
     }
     for (int i=0; i<(int)_plights.size(); i++) {
@@ -862,7 +869,7 @@ synthesize_shader(const RenderState *rs) {
         } else {
           text << "\t uniform sampler2D k_slighttex" << i << ",\n";
         }
-        text << "\t float4 l_slightcoord" << i << ",\n";
+        text << "\t in float4 l_slightcoord" << i << " : " << slightcoord_freg[i] << ",\n";
       }
     }
     if (_need_material_props) {
