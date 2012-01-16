@@ -9485,7 +9485,9 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     format = Texture::F_color_index;
     break;
 #endif
+#if GL_DEPTH_COMPONENT != GL_DEPTH_COMPONENT24
   case GL_DEPTH_COMPONENT:
+#endif
   case GL_DEPTH_COMPONENT16:
   case GL_DEPTH_COMPONENT24:
   case GL_DEPTH_COMPONENT32:
