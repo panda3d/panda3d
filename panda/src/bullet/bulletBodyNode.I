@@ -29,6 +29,32 @@ INLINE BulletBodyNode::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BulletBodyNode::set_into_collide_mask
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void BulletBodyNode::
+set_into_collide_mask(CollideMask mask) {
+
+  PandaNode::set_into_collide_mask(mask);
+
+/*
+  TODO: we would need a handle to the BulletWorld first
+        possible, but has to be set/cleared upon attach/remove to world
+
+  if (!_world) return;
+
+  btBroadphaseProxy* proxy = get_object()->getBroadphaseHandle();
+  if (proxy) {
+    btBroadphaseInterface *broadphase = _world->get_broadphase();
+    btDispatcher *dispatcher = _world->get_dispatcher();
+
+    broadphase->getOverlappingPairCache()->cleanProxyFromPairs(proxy, dispatcher);
+  }
+*/
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BulletBodyNode::notify_collisions
 //       Access: Published
 //  Description:

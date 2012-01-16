@@ -37,8 +37,8 @@ PUBLISHED:
   BulletCharacterControllerNode(BulletShape *shape, PN_stdfloat step_height, const char *name="character");
   INLINE ~BulletCharacterControllerNode();
 
-  void set_linear_velocity(const LVector3 &velocity, bool is_local);
-  void set_angular_velocity(PN_stdfloat omega);
+  void set_linear_movement(const LVector3 &velocity, bool is_local);
+  void set_angular_movement(PN_stdfloat omega);
 
   BulletShape *get_shape() const;
 
@@ -86,9 +86,9 @@ private:
 
   PT(BulletShape) _shape;
 
-  LVector3 _linear_velocity;
-  bool _linear_velocity_is_local;
-  PN_stdfloat _angular_velocity;
+  LVector3 _linear_movement;
+  bool _linear_movement_is_local;
+  PN_stdfloat _angular_movement;
 
 ////////////////////////////////////////////////////////////////////
 public:

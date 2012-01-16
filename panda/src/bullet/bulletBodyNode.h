@@ -58,6 +58,8 @@ PUBLISHED:
   INLINE void set_kinematic(bool value);
 
   // Contacts
+  INLINE void set_into_collide_mask(CollideMask mask);
+
   INLINE void notify_collisions(bool value);
   INLINE bool notifies_collisions() const;
 

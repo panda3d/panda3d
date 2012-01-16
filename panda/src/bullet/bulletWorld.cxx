@@ -725,6 +725,25 @@ get_collision_object(PandaNode *node) {
   return NULL;
 }
 
+/*
+////////////////////////////////////////////////////////////////////
+//     Function: BulletWorld::clean_manifolds_for_node
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void BulletWorld::
+clean_manifolds_for_node(PandaNode *node) {
+
+  btCollisionObject *object = get_collision_object(node);
+  if (object) {
+    btBroadphaseProxy* proxy = object->getBroadphaseHandle();
+    if (proxy) {
+      _world->getPairCache()->cleanProxyFromPairs(proxy, _dispatcher);
+    }
+  }
+}
+*/
+
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWorld::get_collision_object
 //       Access: Public
@@ -774,6 +793,11 @@ needBroadphaseCollision(btBroadphaseProxy* proxy0, btBroadphaseProxy* proxy1) co
 
   CollideMask mask0 = node0->get_into_collide_mask();
   CollideMask mask1 = node1->get_into_collide_mask();
+
+// TODO
+cout << node0->get_name() << "  " << node1->get_name() << endl;
+cout << mask0 << "  " << mask1 << endl;
+cout << ((mask0 & mask1) != 0) << endl;
 
   return (mask0 & mask1) != 0;
 }

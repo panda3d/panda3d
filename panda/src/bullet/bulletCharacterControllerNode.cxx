@@ -52,9 +52,9 @@ BulletCharacterControllerNode(BulletShape *shape, PN_stdfloat step_height, const
   _up = get_default_up_axis();
 
   // Initialise movement
-  _linear_velocity_is_local = false;
-  _linear_velocity.set(0.0f, 0.0f, 0.0f);
-  _angular_velocity = 0.0f;
+  _linear_movement_is_local = false;
+  _linear_movement.set(0.0f, 0.0f, 0.0f);
+  _angular_movement = 0.0f;
 
   // Character controller
   _character = new btKinematicCharacterController(_ghost, convex, step_height, _up);
@@ -172,28 +172,28 @@ safe_to_transform() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletCharacterControllerNode::set_linear_velocity
+//     Function: BulletCharacterControllerNode::set_linear_movement
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletCharacterControllerNode::
-set_linear_velocity(const LVector3 &velocity, bool is_local) {
+set_linear_movement(const LVector3 &movement, bool is_local) {
 
-  nassertv(!velocity.is_nan());
+  nassertv(!movement.is_nan());
 
-  _linear_velocity = velocity;
-  _linear_velocity_is_local = is_local;
+  _linear_movement = movement;
+  _linear_movement_is_local = is_local;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletCharacterControllerNode::set_angular_velocity
+//     Function: BulletCharacterControllerNode::set_angular_movement
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletCharacterControllerNode::
-set_angular_velocity(PN_stdfloat omega) {
+set_angular_movement(PN_stdfloat omega) {
 
-  _angular_velocity = omega;
+  _angular_movement = omega;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -208,7 +208,7 @@ sync_p2b(PN_stdfloat dt, int num_substeps) {
   transform_changed();
 
   // Angular rotation
-  btScalar angle = dt * deg_2_rad(_angular_velocity);
+  btScalar angle = dt * deg_2_rad(_angular_movement);
 
   btMatrix3x3 m = _ghost->getWorldTransform().getBasis();
   btVector3 up = m[_up];
@@ -218,10 +218,10 @@ sync_p2b(PN_stdfloat dt, int num_substeps) {
   _ghost->getWorldTransform().setBasis(m);
 
   // Linear movement
-  LVector3 vp = _linear_velocity / (btScalar)num_substeps;
+  LVector3 vp = _linear_movement / (btScalar)num_substeps;
 
   btVector3 v;
-  if (_linear_velocity_is_local) {
+  if (_linear_movement_is_local) {
     btTransform xform = _ghost->getWorldTransform();
     xform.setOrigin(btVector3(0.0f, 0.0f, 0.0f));
     v = xform(LVecBase3_to_btVector3(vp));
@@ -232,7 +232,7 @@ sync_p2b(PN_stdfloat dt, int num_substeps) {
 
   //_character->setVelocityForTimeInterval(v, dt);
   _character->setWalkDirection(v * dt);
-  _angular_velocity = 0.0f;
+  _angular_movement = 0.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
