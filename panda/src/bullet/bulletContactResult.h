@@ -30,8 +30,8 @@ struct EXPCL_PANDABULLET BulletContact {
 
 PUBLISHED:
   INLINE const BulletManifoldPoint *get_manifold_point() const;
-  INLINE const PandaNode *get_node0() const;
-  INLINE const PandaNode *get_node1() const;
+  INLINE PandaNode *get_node0() const;
+  INLINE PandaNode *get_node1() const;
   INLINE const int get_idx0() const;
   INLINE const int get_idx1() const;
   INLINE const int get_part_id0() const;

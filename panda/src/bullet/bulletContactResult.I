@@ -18,7 +18,7 @@
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const PandaNode *BulletContact::
+INLINE PandaNode *BulletContact::
 get_node0() const {
 
   return _obj0 ? (PandaNode *)_obj0->getUserPointer() : NULL;
@@ -29,7 +29,7 @@ get_node0() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const PandaNode *BulletContact::
+INLINE PandaNode *BulletContact::
 get_node1() const {
 
   return _obj1 ? (PandaNode *)_obj1->getUserPointer() : NULL;
