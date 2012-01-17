@@ -794,11 +794,6 @@ needBroadphaseCollision(btBroadphaseProxy* proxy0, btBroadphaseProxy* proxy1) co
   CollideMask mask0 = node0->get_into_collide_mask();
   CollideMask mask1 = node1->get_into_collide_mask();
 
-// TODO
-cout << node0->get_name() << "  " << node1->get_name() << endl;
-cout << mask0 << "  " << mask1 << endl;
-cout << ((mask0 & mask1) != 0) << endl;
-
   return (mask0 & mask1) != 0;
 }
 
