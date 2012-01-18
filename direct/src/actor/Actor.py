@@ -2235,10 +2235,10 @@ class Actor(DirectObject, NodePath):
         """unloadAnims(self, string:string{}, string='modelRoot',
         string='lodRoot')
         Actor anim unloader. Takes an optional partName (defaults to
-        'modelRoot' for non-multipart actors) and lodName (defaults
-        to 'lodRoot' for non-LOD actors) and dict of corresponding
-        anims in the form animName:animPath{}. Deletes the anim control
-        for the given animation and parts/lods.
+        'modelRoot' for non-multipart actors) and lodName (defaults to
+        'lodRoot' for non-LOD actors) and list of animation
+        names. Deletes the anim control for the given animation and
+        parts/lods.
 
         If any parameter is None or omitted, it means all of them.
         """
