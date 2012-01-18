@@ -54,13 +54,12 @@ class EmbeddedPandaWindow(wx.Window):
         event.Skip()
 
     def cleanup(self):
-        """ Parent windows should call cleanp() to clean up the
+        """ Parent windows should call cleanup() to clean up the
         wxPandaWindow explicitly (since we can't catch EVT_CLOSE
         directly). """
         if self.win:
             base.closeWindow(self.win)
             self.win = None
-        self.Destroy()
 
     def onSize(self, event):
         wp = WindowProperties()
@@ -76,6 +75,8 @@ else:
         """ This class implements a Panda3D "window" that actually draws
         within the wx GLCanvas object.  It is supported whenever OpenGL is
         Panda's rendering engine, and GLCanvas is available in wx. """
+
+        removeCallbackWindow = ConfigVariableBool('remove-callback-window', True)
 
         Keymap = {
             wx.WXK_BACK : KeyboardButton.backspace(),
@@ -204,13 +205,15 @@ else:
             event.Skip()
 
         def cleanup(self):
-            """ Parent windows should call cleanp() to clean up the
+            """ Parent windows should call cleanup() to clean up the
             wxPandaWindow explicitly (since we can't catch EVT_CLOSE
             directly). """
             if self.win:
-                base.closeWindow(self.win)
+                self.win.clearEventsCallback()
+                self.win.clearPropertiesCallback()
+                self.win.clearRenderCallback()
+                base.closeWindow(self.win, removeWindow = self.removeCallbackWindow)
                 self.win = None
-            self.Destroy()
 
         def __buttonDown(self, button):
             self.inputDevice.buttonDown(button)
@@ -304,7 +307,7 @@ else:
             event.Skip()
 
         def onPaint(self, event):
-            """ This is called whenever we get the fisrt paint event,
+            """ This is called whenever we get the first paint event,
             at which point we can conclude that the window has
             actually been manifested onscreen.  (In X11, there appears
             to be no way to know this otherwise.) """
@@ -315,17 +318,18 @@ else:
             #event.Skip()
 
         def onIdle(self, event):
-            size = None
-            properties = self.win.getProperties()
-            if properties.hasSize():
-                size = (properties.getXSize(), properties.getYSize())
+            if self.win:
+                size = None
+                properties = self.win.getProperties()
+                if properties.hasSize():
+                    size = (properties.getXSize(), properties.getYSize())
 
-            if tuple(self.GetClientSize()) != size:
-                # The window has changed size during the idle call.
-                # This seems to be possible in Linux.
-                wp = WindowProperties()
-                wp.setSize(*self.GetClientSize())
-                self.win.requestProperties(wp)
+                if tuple(self.GetClientSize()) != size:
+                    # The window has changed size during the idle call.
+                    # This seems to be possible in Linux.
+                    wp = WindowProperties()
+                    wp.setSize(*self.GetClientSize())
+                    self.win.requestProperties(wp)
 
             event.Skip()
 

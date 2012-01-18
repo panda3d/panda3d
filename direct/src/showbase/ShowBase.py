@@ -792,12 +792,14 @@ class ShowBase(DirectObject.DirectObject):
 
         return win
 
-    def closeWindow(self, win, keepCamera = 0):
+    def closeWindow(self, win, keepCamera = False, removeWindow = True):
         """
         Closes the indicated window and removes it from the list of
         windows.  If it is the main window, clears the main window
         pointer to None.
         """
+        win.setActive(False)
+        
         # First, remove all of the cameras associated with display
         # regions on the window.
         numRegions = win.getNumDisplayRegions()        
@@ -838,7 +840,8 @@ class ShowBase(DirectObject.DirectObject):
                 self.winControls.remove(winCtrl)
                 break
         # Now we can actually close the window.
-        self.graphicsEngine.removeWindow(win)
+        if removeWindow:
+            self.graphicsEngine.removeWindow(win)
         self.winList.remove(win)
 
         mainWindow = False
@@ -896,7 +899,7 @@ class ShowBase(DirectObject.DirectObject):
         which case base.win may be either None, or the previous,
         closed window).
         """
-        keepCamera = kw.get('keepCamera', 0)
+        keepCamera = kw.get('keepCamera', False)
         
         success = 1
         oldWin = self.win
