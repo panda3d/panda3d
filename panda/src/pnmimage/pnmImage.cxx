@@ -485,6 +485,34 @@ make_grayscale(double rc, double gc, double bc) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::reverse_rows
+//       Access: Published
+//  Description: Performs an in-place reversal of the row (y) data.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+reverse_rows() {
+  if (_array != NULL) {
+    xel *new_array = (xel *)PANDA_MALLOC_ARRAY(_x_size * _y_size * sizeof(xel));
+    for (int y = 0; y < _y_size; y++) {
+      int new_y = _y_size - 1 - y;
+      memcpy(new_array + new_y * _x_size, _array + y * _x_size, _x_size * sizeof(xel));
+    }
+    PANDA_FREE_ARRAY(_array);
+    _array = new_array;
+  }
+
+  if (_alpha != NULL) {
+    xelval *new_alpha = (xelval *)PANDA_MALLOC_ARRAY(_x_size * _y_size * sizeof(xelval));
+    for (int y = 0; y < _y_size; y++) {
+      int new_y = _y_size - 1 - y;
+      memcpy(new_alpha + new_y * _x_size, _alpha + y * _x_size, _x_size * sizeof(xelval));
+    }
+    PANDA_FREE_ARRAY(_alpha);
+    _alpha = new_alpha;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::set_maxval
 //       Access: Published
 //  Description: Rescales the image to the indicated maxval.

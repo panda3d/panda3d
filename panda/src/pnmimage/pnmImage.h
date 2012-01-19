@@ -116,6 +116,8 @@ PUBLISHED:
   void make_grayscale(double rc, double gc, double bc);
   INLINE void make_rgb();
 
+  BLOCKING void reverse_rows();
+
   BLOCKING void set_maxval(xelval maxval);
 
   // The *_val() functions return or set the color values in the range
