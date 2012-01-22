@@ -308,6 +308,17 @@ class vision(package):
 
     file('libp3vision.dll', required = True)
 
+class rocket(package):
+    # This package contains the code for libRocket integration.
+    # As not every application uses libRocket GUI, and to cut down
+    # the download size, it is provided as separate package.
+
+    config(display_name = "Panda3D libRocket support")
+    require('panda3d')
+
+    module('_rocketcore', '_rocketcontrols')
+    file('libp3rocket.dll', required = True)
+
 
 class packp3d(p3d):
     # This application is a command-line convenience for building a p3d
