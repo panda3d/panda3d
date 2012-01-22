@@ -81,6 +81,7 @@ public:
   NodePath get_render();
   NodePath get_render_2d();
   NodePath get_aspect_2d();
+  NodePath get_pixel_2d();
   NodePath get_mouse();
   NodePath get_button_thrower();
 
@@ -101,7 +102,7 @@ public:
   void next_anim_control();
   void set_anim_controls(bool enable);
   INLINE bool get_anim_controls() const;
-  void adjust_aspect_ratio();
+  void adjust_dimensions();
 
   enum BackgroundType {
     BT_other = 0,
@@ -174,6 +175,7 @@ private:
   NodePath _render;
   NodePath _render_2d;
   NodePath _aspect_2d;
+  NodePath _pixel_2d;
 
   AnimControlCollection _anim_controls;
   bool _anim_controls_enabled;

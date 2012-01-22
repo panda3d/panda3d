@@ -349,6 +349,37 @@ get_aspect_2d() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::get_pixel_2d
+//       Access: Public
+//  Description: Returns a special root that uses units in pixels that
+//               are relative to the window. The upperleft corner of
+//               the window is (0, 0), the lowerleft corner is
+//               (xsize, -ysize), in this coordinate system.
+////////////////////////////////////////////////////////////////////
+NodePath WindowFramework::
+get_pixel_2d() {
+  if (_pixel_2d.is_empty()) {
+    PGTop *top = new PGTop("pixel_2d");
+    _pixel_2d = get_render_2d().attach_new_node(top);
+    _pixel_2d.set_pos(-1, 0, 1);
+  
+    if (_window->has_size()) {
+      int x_size = _window->get_sbs_left_x_size();
+      int y_size = _window->get_sbs_left_y_size();
+      if (x_size > 0){
+        _pixel_2d.set_sx(2.0f / (float)x_size);
+      }
+      _pixel_2d.set_sy(1.0f);
+      if (y_size > 0){
+        _pixel_2d.set_sz(2.0f / (float)y_size);
+      }
+    }
+  }
+
+  return _pixel_2d;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WindowFramework::get_mouse
 //       Access: Public
 //  Description: Returns the node in the data graph corresponding to
@@ -796,33 +827,46 @@ set_anim_controls(bool enable) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WindowFramework::adjust_aspect_ratio
+//     Function: WindowFramework::adjust_dimensions
 //       Access: Public
-//  Description: Reevaluates the aspect ratio of the window,
+//  Description: Reevaluates the dimensions of the window,
 //               presumably after the window has been resized by the
 //               user or some other force.  Adjusts the render film
-//               size and aspect2d scale as necessary according to the
+//               size, aspect2d scale (aspect ratio) and the
+//               dimensionsas of pixel_2d according to the
 //               new window shape, or new config setting.
 ////////////////////////////////////////////////////////////////////
 void WindowFramework::
-adjust_aspect_ratio() {
+adjust_dimensions() {
   PN_stdfloat this_aspect_ratio = aspect_ratio;
+
   int x_size = 0, y_size = 0;
+  if (_window->has_size()) {
+    x_size = _window->get_sbs_left_x_size();
+    y_size = _window->get_sbs_left_y_size();
+  }
+  
   if (this_aspect_ratio == 0.0f) {
     // An aspect ratio of 0.0 means to try to infer it.
     this_aspect_ratio = 1.0f;
-    
-    if (_window->has_size()) {
-      x_size = _window->get_sbs_left_x_size();
-      y_size = _window->get_sbs_left_y_size();
-      if (y_size != 0) {
-        this_aspect_ratio = (PN_stdfloat)x_size / (PN_stdfloat)y_size;
-      }
+    if (y_size != 0) {
+      this_aspect_ratio = (float)x_size / (float)y_size;
     }
   }
 
   if (!_aspect_2d.is_empty()) {
     _aspect_2d.set_scale(1.0f / this_aspect_ratio, 1.0f, 1.0f);
+  }
+
+  if (!_pixel_2d.is_empty()) {
+    // Adjust the pixel 2d scale
+    if (x_size > 0){
+      _pixel_2d.set_sx(2.0f / (float)x_size);
+    }
+    _pixel_2d.set_sy(1.0f);
+    if (y_size > 0){
+      _pixel_2d.set_sz(2.0f / (float)y_size);
+    }
   }
 
   Cameras::iterator ci;

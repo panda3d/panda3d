@@ -1527,7 +1527,7 @@ event_window_event(const Event *event, void *data) {
         // Adjust aspect ratio.
         for (int n = 0; n < (int)self->_windows.size(); n++) {
           if (self->_windows[n]->get_graphics_output() == win) {
-            return self->_windows[n]->adjust_aspect_ratio();
+            self->_windows[n]->adjust_dimensions();
           }
         }
       }
