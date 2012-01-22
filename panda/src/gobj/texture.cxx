@@ -7146,6 +7146,11 @@ do_write_datagram_rawdata(CData *cdata, BamWriter *manager, Datagram &me) {
   me.add_uint32(cdata->_x_size);
   me.add_uint32(cdata->_y_size);
   me.add_uint32(cdata->_z_size);
+
+  me.add_uint32(cdata->_pad_x_size);
+  me.add_uint32(cdata->_pad_y_size);
+  me.add_uint32(cdata->_pad_z_size);
+
   me.add_uint32(cdata->_num_views);
   me.add_uint8(cdata->_component_type);
   me.add_uint8(cdata->_component_width);
@@ -7384,6 +7389,15 @@ do_fillin_rawdata(CData *cdata, DatagramIterator &scan, BamReader *manager) {
   cdata->_x_size = scan.get_uint32();
   cdata->_y_size = scan.get_uint32();
   cdata->_z_size = scan.get_uint32();
+
+  if (manager->get_file_minor_ver() >= 30) {
+    cdata->_pad_x_size = scan.get_uint32();
+    cdata->_pad_y_size = scan.get_uint32();
+    cdata->_pad_z_size = scan.get_uint32();
+  } else {
+    do_set_pad_size(cdata, 0, 0, 0);
+  }
+
   cdata->_num_views = 1;
   if (manager->get_file_minor_ver() >= 26) {
     cdata->_num_views = scan.get_uint32();
@@ -7419,7 +7433,6 @@ do_fillin_rawdata(CData *cdata, DatagramIterator &scan, BamReader *manager) {
     cdata->_ram_images[n]._image = image;
   }
   cdata->_loaded_from_image = true;
-  do_set_pad_size(cdata, 0, 0, 0);
   ++(cdata->_image_modified);
 }
 
