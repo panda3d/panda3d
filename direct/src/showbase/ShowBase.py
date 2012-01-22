@@ -2802,8 +2802,10 @@ class ShowBase(DirectObject.DirectObject):
         fWantTk = bool(fWantTk)
         if self.wantTk != fWantTk:
             self.wantTk = fWantTk
-            initAppForGui()
+            # We need to import this before initAppForGui,
+            # in order to prevent a low-level crash on OSX
             from direct.showbase import TkGlobal
+            initAppForGui()
             TkGlobal.spawnTkLoop()
 
     def startDirect(self, fWantDirect = 1, fWantTk = 1, fWantWx = 0):
