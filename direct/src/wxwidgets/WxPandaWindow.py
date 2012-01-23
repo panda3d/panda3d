@@ -174,6 +174,7 @@ else:
                 raise StandardError, "Couldn't get an OpenGL pipe."
 
             self.win = base.openWindow(callbackWindowDict = callbackWindowDict, pipe = pipe, gsg = gsg, type = 'onscreen')
+            self.hasCapture = False
             self.inputDevice = None
             if hasattr(self.win, 'getInputDevice'):
                 self.inputDevice = self.win.getInputDevice(0)
@@ -216,9 +217,16 @@ else:
                 self.win = None
 
         def __buttonDown(self, button):
+            self.SetFocus()
+            if not self.hasCapture:
+                self.CaptureMouse()
+                self.hasCapture = True
             self.inputDevice.buttonDown(button)
 
         def __buttonUp(self, button):
+            if self.hasCapture:
+                self.ReleaseMouse()
+                self.hasCapture = False
             self.inputDevice.buttonUp(button)
 
         def __mouseMotion(self, event):
