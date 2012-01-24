@@ -81,6 +81,17 @@ PUBLISHED:
 
   /// **** Misc ****
 
+  enum ControlMode {
+    CM_default,
+    CM_truck,  // Normally mouse 1
+    CM_pan,    // Normally mouse 2
+    CM_dolly,  // Normally mouse 3
+    CM_roll,   // Normally mouse 2 + 3
+  };
+
+  void set_control_mode(ControlMode control_mode);
+  ControlMode get_control_mode() const;
+
   void set_invert(bool flag);
   bool get_invert() const;
 
@@ -113,6 +124,7 @@ private:
   bool _invert;
   NodePath _rel_to;
   CoordinateSystem _cs;
+  ControlMode _control_mode;
 
 protected:
   // Inherited from DataNode

@@ -57,6 +57,7 @@ Trackball(const string &name) :
   _orig = LMatrix4::ident_mat();
   _invert = true;
   _cs = get_default_coordinate_system();
+  _control_mode = CM_default;
 
   // We want to track the state of these buttons.
   watch_button(MouseButton::one());
@@ -337,6 +338,32 @@ get_invert() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Trackball::set_control_mode
+//       Access: Published
+//  Description: Sets the control mode.  Normally this is CM_default,
+//               which means each mouse button serves its normal
+//               function.  When it is CM_truck, CM_pan, CM_dolly, or
+//               CM_roll, all of the mouse buttons serve the indicated
+//               function instead of their normal function.  This can
+//               be used in conjunction with some external way of
+//               changing modes.
+////////////////////////////////////////////////////////////////////
+void Trackball::
+set_control_mode(ControlMode control_mode) {
+  _control_mode = control_mode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Trackball::get_control_mode
+//       Access: Published
+//  Description: Returns the control mode.  See set_control_mode().
+////////////////////////////////////////////////////////////////////
+Trackball::ControlMode Trackball::
+get_control_mode() const {
+  return _control_mode;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Trackball::set_rel_to
 //       Access: Published
 //  Description: Sets the NodePath that all trackball manipulations
@@ -446,6 +473,34 @@ apply(double x, double y, int button) {
     // translation to be in those local coordinates.
     reextract();
   }
+
+  if (button == B1_MASK && _control_mode != CM_default) {
+    // We have a control mode set; this may change the meaning of
+    // button 1.  Remap button to match the current control mode
+    // setting.
+    switch (_control_mode) {
+    case CM_truck:
+      button = B1_MASK;
+      break;
+
+    case CM_pan:
+      button = B2_MASK;
+      break;
+
+    case CM_dolly:
+      button = B3_MASK;
+      break;
+
+    case CM_roll:
+      button = B2_MASK | B3_MASK;
+      break;
+
+    case CM_default:
+      // Not possible due to above logic.
+      nassertv(false);
+    }
+  }
+
   if (button == B1_MASK) {
     // Button 1: translate in plane parallel to screen.
 
