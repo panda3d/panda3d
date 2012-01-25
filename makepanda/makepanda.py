@@ -625,7 +625,7 @@ if (COMPILER=="LINUX"):
         SmartPkgEnable("TIFF",      "",          ("tiff"), "tiff.h")
         SmartPkgEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
         SmartPkgEnable("BULLET", "bullet", ("BulletSoftBody", "BulletDynamics", "BulletCollision", "LinearMath"), ("bullet", "bullet/btBulletDynamicsCommon.h"))
-        SmartPkgEnable("ROCKET",    "",          ("RocketCore", "RocketControls"), "Rocket/Core.h")
+        SmartPkgEnable("ROCKET",    "",          ("RocketCore", "RocketControls", "boost_python"), "Rocket/Core.h")
     SmartPkgEnable("GTK2",      "gtk+-2.0")
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
     SmartPkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
