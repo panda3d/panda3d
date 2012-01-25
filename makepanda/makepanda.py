@@ -1715,6 +1715,7 @@ DTOOL_CONFIG=[
     ("HAVE_SQUISH",                    'UNDEF',                  'UNDEF'),
     ("HAVE_FCOLLADA",                  'UNDEF',                  'UNDEF'),
     ("HAVE_OPENAL_FRAMEWORK",          'UNDEF',                  'UNDEF'),
+    ("HAVE_ROCKET_PYTHON",             '1',                      '1'),
     ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
 #    ("_SECURE_SCL",                    '0',                      'UNDEF'),
 #    ("_SECURE_SCL_THROWS",             '0',                      'UNDEF'),
@@ -1804,6 +1805,11 @@ def WriteConfigSettings():
 
     if (GetOptimize() <= 2 and sys.platform.startswith("win")):
         dtool_config["USE_DEBUG_PYTHON"] = '1'
+
+    # This should probably be more sophisticated, such as based
+    # on whether the libRocket Python modules are available.
+    if (PkgSkip("PYTHON") != 0):
+        dtool_config["HAVE_ROCKET_PYTHON"] = 'UNDEF'
 
     if (GetOptimize() <= 3):
         if (dtool_config["HAVE_NET"] != 'UNDEF'):
