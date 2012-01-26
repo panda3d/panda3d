@@ -284,6 +284,11 @@ do_load_one(Texture::CData *cdata_tex,
   cdata->_pages[z]._color = color;
   cdata->_pages[z]._alpha = alpha;
   do_recalculate_image_properties(cdata, cdata_tex, options);
+
+  // Make sure the image data is initially black, which is nice for
+  // padded textures.
+  PTA_uchar image = make_ram_image();
+  memset(image.p(), 0, image.size());
   
   return true;
 }
