@@ -250,7 +250,7 @@ class Interval(DirectObject):
     def privReverseInstant(self):
         # Subclasses may redefine this function
         self.state = CInterval.SStarted
-        self.privStep(self.getDuration())
+        self.privStep(0)
         self.state = CInterval.SInitial
 
     def privReverseFinalize(self):
