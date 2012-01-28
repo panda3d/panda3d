@@ -162,7 +162,6 @@ private:
   void win_display_regions_changed();
   void do_compute_pixels(int x_size, int y_size, CData *cdata);
   void set_active_index(int index);
-  INLINE virtual void pixel_size_changed(int x_size, int y_size);
 
 protected:
   virtual void do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,

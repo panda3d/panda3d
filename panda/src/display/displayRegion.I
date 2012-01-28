@@ -513,17 +513,6 @@ get_draw_region_pcollector() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::pixel_size_changed
-//       Access: Private, Virtual
-//  Description: Called when the size in pixels of this region
-//               has changed.  Also called the first time the
-//               pixel size is known.
-////////////////////////////////////////////////////////////////////
-INLINE void DisplayRegion::
-pixel_size_changed(int x_size, int y_size) {
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::CDataCull::Constructor
 //       Access: Public
 //  Description:

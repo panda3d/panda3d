@@ -24,6 +24,11 @@
 
 #include <Rocket/Core/RenderInterface.h>
 
+////////////////////////////////////////////////////////////////////
+//       Class : RocketRenderInterface
+// Description : Class that provides the main render interface for
+//               libRocket integration.
+////////////////////////////////////////////////////////////////////
 class RocketRenderInterface : public Rocket::Core::RenderInterface {
 public:
   void render(Rocket::Core::Context* context, CullTraverser *trav);
@@ -56,10 +61,15 @@ protected:
 private:
   Mutex _lock;
 
+  // Hold the scissor settings and whether or not to enable scissoring.
+  bool _enable_scissor;
+  LVecBase4f _scissor;
+
   // These are temporarily filled in by render().
   CullTraverser *_trav;
   CPT(TransformState) _net_transform;
   CPT(RenderState) _net_state;
+  Rocket::Core::Vector2i _dimensions;
 };
 
 #endif

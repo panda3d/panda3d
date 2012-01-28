@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "rocketRegion.h"
+#include <Rocket/Core/Context.h>
 
 #ifndef CPPPARSER
 #undef this
@@ -31,14 +32,18 @@
 ////////////////////////////////////////////////////////////////////
 PyObject* EXT_CONST_METHOD(RocketRegion,
 get_context) {
-  python::object py_context;
-
   try {
     Rocket::Core::Context* context = _ext_this->get_context();
-    py_context = Rocket::Core::Python::Utilities::MakeObject(context);
-  } catch (const python::error_already_set& e) {
-    return NULL;
-  }
+    python::object py_context = Rocket::Core::Python::Utilities::MakeObject(context);
 
-  return py_context.ptr();
+    // Make sure the context won't be destroyed before both the Python
+    // references and the C++ references to it are completely gone.
+    Py_INCREF(py_context.ptr());
+    context->AddReference();
+    return py_context.ptr();
+
+  } catch (const python::error_already_set& e) {
+    // Return NULL, which will trigger the exception in Python
+  }
+  return NULL;
 }

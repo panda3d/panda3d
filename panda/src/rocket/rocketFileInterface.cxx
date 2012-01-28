@@ -35,6 +35,8 @@ RocketFileInterface(VirtualFileSystem *vfs) : _vfs(vfs) {
 ////////////////////////////////////////////////////////////////////
 Rocket::Core::FileHandle RocketFileInterface::
 Open(const Rocket::Core::String& path) {
+  rocket_cat.debug() << "Opening " << path.CString() << "\n";
+
   // A FileHandle is actually just a void pointer
   return (Rocket::Core::FileHandle)
     _vfs->open_read_file(Filename::from_os_specific(path.CString()), true);

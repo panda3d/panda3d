@@ -32,14 +32,12 @@ protected:
   RocketRegion(GraphicsOutput *window, const LVecBase4 &dimensions,
                const string &context_name);
 
-  virtual void pixel_size_changed(int x_size, int y_size);
   virtual void do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
                        GraphicsStateGuardian *gsg, Thread *current_thread);
 
-public:
+PUBLISHED:
   virtual ~RocketRegion();
 
-PUBLISHED:
   INLINE static RocketRegion* make(const string &context_name,
                                    GraphicsOutput *window);
   INLINE static RocketRegion* make(const string &context_name,
@@ -58,8 +56,7 @@ PUBLISHED:
 private:
   RocketRenderInterface _interface;
   Rocket::Core::Context* _context;
-  Rocket::Core::Vector2i _dimensions;
-  OrthographicLens* _lens;
+  PT(OrthographicLens) _lens;
   PT(RocketInputHandler) _input_handler;
 
 public:

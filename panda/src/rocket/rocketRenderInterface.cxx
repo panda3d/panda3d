@@ -20,13 +20,14 @@
 #include "internalName.h"
 #include "geomVertexWriter.h"
 #include "geomTriangles.h"
-#include "texture.h"
-#include "textureAttrib.h"
-#include "texturePool.h"
 #include "colorBlendAttrib.h"
 #include "cullBinAttrib.h"
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
+#include "scissorAttrib.h"
+#include "texture.h"
+#include "textureAttrib.h"
+#include "texturePool.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RocketRenderInterface::render
@@ -39,11 +40,6 @@ render(Rocket::Core::Context* context, CullTraverser *trav) {
   nassertv(context != NULL);
   MutexHolder holder(_lock);
 
-  const Rocket::Core::Vector2i &dimensions = context->GetDimensions();
-  //CPT(TransformState) scale = TransformState::make_scale(
-  //  LVector3::right() * (1.0 / dimensions.x) +
-  //  LVector3::down()  * (1.0 / dimensions.y));
-
   _trav = trav;
   _net_transform = trav->get_world_transform();
   _net_state = RenderState::make(
@@ -55,6 +51,7 @@ render(Rocket::Core::Context* context, CullTraverser *trav) {
       ColorBlendAttrib::O_one_minus_incoming_alpha
     )
   );
+  _dimensions = context->GetDimensions();
 
   context->Render();
 
@@ -114,9 +111,17 @@ void RocketRenderInterface::
 render_geom(const Geom* geom, const RenderState* state, const Rocket::Core::Vector2f& translation) {
   LVector3 offset = LVector3::right() * translation.x + LVector3::up() * translation.y;
 
-  rocket_cat.spam()
-    << "Rendering geom " << geom << " with state "
-    << *state << " and translation " << offset << "\n";
+  if (_enable_scissor) {
+    state = state->add_attrib(ScissorAttrib::make(_scissor));
+    rocket_cat.spam()
+      << "Rendering geom " << geom << " with state "
+      << *state << ", translation (" << offset << "), "
+      << "scissor region (" << _scissor << ")\n";
+  } else {
+    rocket_cat.spam()
+      << "Rendering geom " << geom << " with state "
+      << *state << ", translation (" << offset << ")\n";
+  }
 
   CPT(TransformState) net_transform, modelview_transform;
   net_transform = _net_transform->compose(TransformState::make_pos(offset));
@@ -289,6 +294,7 @@ ReleaseTexture(Rocket::Core::TextureHandle texture_handle) {
 ////////////////////////////////////////////////////////////////////
 void RocketRenderInterface::
 EnableScissorRegion(bool enable) {
+  _enable_scissor = enable;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -299,4 +305,8 @@ EnableScissorRegion(bool enable) {
 ////////////////////////////////////////////////////////////////////
 void RocketRenderInterface::
 SetScissorRegion(int x, int y, int width, int height) {
+  _scissor[0] = x / (PN_stdfloat) _dimensions.x;
+  _scissor[1] = (x + width) / (PN_stdfloat) _dimensions.x;
+  _scissor[2] = 1.0f - ((y + height) / (PN_stdfloat) _dimensions.y);
+  _scissor[3] = 1.0f - (y / (PN_stdfloat) _dimensions.y);
 }

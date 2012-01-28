@@ -762,12 +762,6 @@ do_compute_pixels(int x_size, int y_size, CData *cdata) {
     cdata->_pbi = int(((1.0f - cdata->_dimensions[2]) * y_size) + 0.5);
     cdata->_pti = int(((1.0f - cdata->_dimensions[3]) * y_size) + 0.5);
   }
-
-  int w = cdata->_pr - cdata->_pl;
-  int h = cdata->_pt - cdata->_pb;
-  if (old_w != w || old_h != h) {
-    pixel_size_changed(w, h);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////

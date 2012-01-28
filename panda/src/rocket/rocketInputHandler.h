@@ -17,12 +17,13 @@
 
 #include "config_rocket.h"
 #include "dataNode.h"
+#include "buttonHandle.h"
 
 namespace Rocket {
   namespace Core {
     class Context;
   }
-};
+}
 
 ////////////////////////////////////////////////////////////////////
 //       Class : RocketInputHandler
@@ -33,6 +34,8 @@ class EXPCL_ROCKET RocketInputHandler : public DataNode {
 PUBLISHED:
   RocketInputHandler(const string &name = string());
   virtual ~RocketInputHandler();
+
+  static int get_rocket_key(const ButtonHandle handle);
 
 public:
   void update_context(Rocket::Core::Context *context, int xoffs, int yoffs);
@@ -57,6 +60,7 @@ private:
   typedef pmap<int, bool> ButtonActivityMap;
   ButtonActivityMap _mouse_buttons;
   ButtonActivityMap _keys;
+  pvector<int> _repeated_keys;
   pvector<short> _text_input;
 
 public:

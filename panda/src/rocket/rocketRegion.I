@@ -48,9 +48,10 @@ make(const string &context_name, GraphicsOutput *window,
 //     Function: RocketRegion::get_context
 //       Access: Published
 //  Description: Returns a pointer to the Rocket context associated
-//               with this region.  Will only be valid as long as
-//               this region still exists, so be sure to toss it
-//               when you toss the region itself.
+//               with this region.  Does not increase the reference
+//               count, so if you want to preserve it for longer
+//               than this region exists, be sure to call
+//               AddReference() and RemoveReference() yourself.
 ////////////////////////////////////////////////////////////////////
 Rocket::Core::Context* RocketRegion::
 get_context() const {
