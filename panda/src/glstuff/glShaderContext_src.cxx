@@ -642,7 +642,7 @@ issue_parameters(GSG *gsg, int altered) {
         int input_size = _ptr._dim[0] * _ptr._dim[1] * _ptr._dim[2];
 
         // dimension is negative only if the parameter had the (deprecated)k_ prefix.
-        if ((input_size != ptr_data->_size) && (_ptr._dim[0] > 0)) { 
+        if ((input_size > ptr_data->_size) && (_ptr._dim[0] > 0)) { 
           GLCAT.error() << _ptr._id._name << ": incorrect number of elements, expected " 
                         <<  input_size <<" got " <<  ptr_data->_size << "\n";
           release_resources(gsg);
