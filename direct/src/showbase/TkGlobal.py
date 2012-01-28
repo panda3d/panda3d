@@ -7,5 +7,5 @@ import sys, Pmw
 if '_Pmw' in sys.modules:
     sys.modules['_Pmw'].__name__ = '_Pmw'
 
-def spawnWxLoop():
-    base.spawnWxLoop()
+def spawnTkLoop():
+    base.spawnTkLoop()
