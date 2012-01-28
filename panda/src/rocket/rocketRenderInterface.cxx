@@ -256,11 +256,16 @@ GenerateTexture(Rocket::Core::TextureHandle& texture_handle,
   PTA_uchar image = tex->modify_ram_image();
 
   // Convert RGBA to BGRA
-  for (size_t i = 0; i < image.size(); i += 4) {
-    image[i] = source[i + 2];
-    image[i + 1] = source[i + 1];
-    image[i + 2] = source[i];
-    image[i + 3] = source[i + 3];
+  size_t row_size = source_dimensions.x * 4;
+  size_t y2 = image.size();
+  for (size_t y = 0; y < image.size(); y += row_size) {
+    y2 -= row_size;
+    for (size_t i = 0; i < row_size; i += 4) {
+      image[y2 + i + 0] = source[y + i + 2];
+      image[y2 + i + 1] = source[y + i + 1];
+      image[y2 + i + 2] = source[y + i];
+      image[y2 + i + 3] = source[y + i + 3];
+    }
   }
 
   tex->set_wrap_u(Texture::WM_clamp);
