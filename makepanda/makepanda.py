@@ -2145,13 +2145,18 @@ ConditionalWriteFile(GetOutputDir()+"/etc/Confauto.prc", confautoprc)
 ##########################################################################################
 
 for pkg in PkgListGet():
-    if (PkgSkip(pkg)==0):
-        if (COMPILER == "MSVC"):
-            if (os.path.exists(GetThirdpartyDir()+pkg.lower()+"/bin")):
-                CopyAllFiles(GetOutputDir()+"/bin/",GetThirdpartyDir()+pkg.lower()+"/bin/")
-        if (COMPILER == "LINUX"):
-            if (os.path.exists(GetThirdpartyDir()+pkg.lower()+"/lib")):
-                CopyAllFiles(GetOutputDir()+"/lib/",GetThirdpartyDir()+pkg.lower()+"/lib/")
+    if (PkgSkip(pkg)!=0):
+        continue
+    if (COMPILER == "MSVC"):
+        if (os.path.exists(GetThirdpartyDir()+pkg.lower()+"/bin")):
+            CopyAllFiles(GetOutputDir()+"/bin/",GetThirdpartyDir()+pkg.lower()+"/bin/")
+            if (PkgSkip("PYTHON")==0 and os.path.exists(GetThirdpartyDir()+pkg.lower()+"/bin/"+SDK["PYTHONVERSION"])):
+                CopyAllFiles(GetOutputDir()+"/bin/",GetThirdpartyDir()+pkg.lower()+"/bin/"+SDK["PYTHONVERSION"]+"/")
+    if (COMPILER == "LINUX"):
+        if (os.path.exists(GetThirdpartyDir()+pkg.lower()+"/lib")):
+            CopyAllFiles(GetOutputDir()+"/lib/",GetThirdpartyDir()+pkg.lower()+"/lib/")
+            if (PkgSkip("PYTHON")==0 and os.path.exists(GetThirdpartyDir()+pkg.lower()+"/lib/"+SDK["PYTHONVERSION"])):
+                CopyAllFiles(GetOutputDir()+"/lib/",GetThirdpartyDir()+pkg.lower()+"/lib/"+SDK["PYTHONVERSION"]+"/")
 
 if (COMPILER=="MSVC"):
     CopyAllFiles(GetOutputDir()+"/bin/", GetThirdpartyDir()+"extras"+"/bin/")

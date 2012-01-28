@@ -1185,6 +1185,9 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
     if (os.path.isdir(GetThirdpartyDir() + pkg.lower())):
         IncDirectory(target_pkg, GetThirdpartyDir() + pkg.lower() + "/include")
         LibDirectory(target_pkg, GetThirdpartyDir() + pkg.lower() + "/lib")
+        if (PkgSkip("PYTHON") == 0):
+            LibDirectory(target_pkg, GetThirdpartyDir() + pkg.lower() + "/lib/" + SDK["PYTHONVERSION"])
+
         # TODO: check for a .pc file in the lib/pkg-config/ dir
         if (tool != None and os.path.isfile(GetThirdpartyDir() + pkg.lower() + "/bin/" + tool)):
             tool = GetThirdpartyDir() + pkg.lower() + "/bin/" + tool
@@ -1193,6 +1196,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
             for i, j in PkgConfigGetDefSymbols(None, tool).items():
                 DefSymbol(target_pkg, i, j)
             return
+
         for l in libs:
             libname = l
             if (l.startswith("lib")):
@@ -1202,6 +1206,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
                 len(glob.glob(GetThirdpartyDir() + pkg.lower() + "/lib/lib%s.*" % libname)) == 0):
                 libname = "panda" + libname
             LibName(target_pkg, "-l" + libname)
+
         for d, v in defs.values():
             DefSymbol(target_pkg, d, v)
         return
