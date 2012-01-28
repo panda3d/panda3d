@@ -176,6 +176,7 @@ class ShowBase(DirectObject.DirectObject):
         self.camFrustumVis = None
         self.direct = None
         self.wxApp = None
+        self.tkRoot = None
 
         # This is used for syncing multiple PCs in a distributed cluster
         try:
@@ -2721,14 +2722,12 @@ class ShowBase(DirectObject.DirectObject):
     def finalizeExit(self):
         sys.exit()
 
-    # [gjeon] start wxPyhton
+    # [gjeon] start wxPython
     def startWx(self, fWantWx = True):
         fWantWx = bool(fWantWx)
         if self.wantWx != fWantWx:
             self.wantWx = fWantWx
             if self.wantWx:
-                initAppForGui()
-                from direct.showbase import WxGlobal
                 self.spawnWxLoop()
 
     def spawnWxLoop(self):
@@ -2741,6 +2740,8 @@ class ShowBase(DirectObject.DirectObject):
             # Don't do this twice.
             return
 
+        initAppForGui()
+
         import wx
         # Create a new base.wxApp.
         self.wxApp = wx.PySimpleApp(redirect = False)
@@ -2751,8 +2752,9 @@ class ShowBase(DirectObject.DirectObject):
             # work properly unless this is true.
             
             # Set a timer to run the Panda frame 60 times per second.
+            wxFrameRate = ConfigVariableDouble('wx-frame-rate', 60.0)
             self.wxTimer = wx.Timer(self.wxApp)
-            self.wxTimer.Start(1000.0/60.0)
+            self.wxTimer.Start(1000.0 / wxFrameRate)
             self.wxApp.Bind(wx.EVT_TIMER, self.__wxTimerCallback)
 
             # wx is now the main loop, not us any more.
@@ -2776,7 +2778,7 @@ class ShowBase(DirectObject.DirectObject):
 
                 return task.again
 
-            taskMgr.add(wxLoop, 'wxLoop')
+            self.taskMgr.add(wxLoop, 'wxLoop')
 
     def __wxTimerCallback(self, event):
         if Thread.getCurrentThread().getCurrentTask():
@@ -2802,11 +2804,77 @@ class ShowBase(DirectObject.DirectObject):
         fWantTk = bool(fWantTk)
         if self.wantTk != fWantTk:
             self.wantTk = fWantTk
-            # We need to import this before initAppForGui,
-            # in order to prevent a low-level crash on OSX
-            from direct.showbase import TkGlobal
-            initAppForGui()
-            TkGlobal.spawnTkLoop()
+            if self.wantTk:
+                self.spawnTkLoop()
+
+    def spawnTkLoop(self):
+        """ Call this method to hand the main loop over to Tkinter.
+        This sets up a timer callback so that Panda still gets
+        updated, but Tkinter owns the main loop (which seems to make
+        it happier than the other way around). """
+        
+        if self.tkRoot:
+            # Don't do this twice.
+            return
+
+        from Tkinter import tkinter
+        import Pmw
+
+        # Create a new Tk root.
+        self.tkRoot = Pmw.initialise()
+        __builtin__.tkroot = self.tkRoot
+
+        initAppForGui()
+
+        if ConfigVariableBool('tk-main-loop', True):
+            # Put Tkinter in charge of the main loop.  It really
+            # seems to like this better; the GUI otherwise becomes
+            # largely unresponsive on Mac OS X unless this is true.
+            
+            # Set a timer to run the Panda frame 60 times per second.
+            tkFrameRate = ConfigVariableDouble('tk-frame-rate', 60.0)
+            self.tkDelay = int(1000.0 / tkFrameRate.getValue())
+            self.tkRoot.after(self.tkDelay, self.__tkTimerCallback)
+
+            # wx is now the main loop, not us any more.
+            self.run = self.tkRun
+            self.taskMgr.run = self.tkRun
+            __builtin__.run = self.tkRun
+            if self.appRunner:
+                self.appRunner.run = self.tkRun
+
+        else:
+            # Leave Panda in charge of the main loop.  This is
+            # friendlier for IDE's and interactive editing in general.
+            def tkLoop(task):
+                # Do all the tkinter events waiting on this frame
+                # dooneevent will return 0 if there are no more events
+                # waiting or 1 if there are still more.
+                # DONT_WAIT tells tkinter not to block waiting for events
+                while tkinter.dooneevent(tkinter.ALL_EVENTS | tkinter.DONT_WAIT):
+                    pass
+
+                return task.again
+
+            self.taskMgr.add(tkLoop, 'tkLoop')
+
+    def __tkTimerCallback(self):
+        if not Thread.getCurrentThread().getCurrentTask():
+            self.taskMgr.step()
+
+        self.tkRoot.after(self.tkDelay, self.__tkTimerCallback)
+
+    def tkRun(self):
+        """ This method replaces base.run() after we have called
+        spawnTkLoop().  Since at this point Tkinter now owns the main
+        loop, this method is a call to tkRoot.mainloop(). """
+        
+        if Thread.getCurrentThread().getCurrentTask():
+            # This happens in the p3d environment during startup.
+            # Ignore it.
+            return
+        
+        self.tkRoot.mainloop()
 
     def startDirect(self, fWantDirect = 1, fWantTk = 1, fWantWx = 0):
         self.startTk(fWantTk)
