@@ -31,7 +31,14 @@
 ////////////////////////////////////////////////////////////////////
 PyObject* EXT_CONST_METHOD(RocketRegion,
 get_context) {
-  Rocket::Core::Context* context = _ext_this->get_context();
-  python::object py_context = Rocket::Core::Python::Utilities::MakeObject(context);
+  python::object py_context;
+
+  try {
+    Rocket::Core::Context* context = _ext_this->get_context();
+    py_context = Rocket::Core::Python::Utilities::MakeObject(context);
+  } catch (const python::error_already_set& e) {
+    return NULL;
+  }
+
   return py_context.ptr();
 }
