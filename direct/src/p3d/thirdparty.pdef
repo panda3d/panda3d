@@ -13,6 +13,8 @@
 
 # Also see panda3d.pdef.
 
+import sys
+
 class wx(package):
     config(display_name = "wxPython GUI Toolkit")
     #config(gui_app = True)
