@@ -38,8 +38,15 @@ class tk(package):
            'direct.tkpanels',
            'direct.tkwidgets')
 
-    module('Pmw.Pmw_1_3.lib.*', 'Pmw.Pmw_1_2.lib.*')
-    module('Pmw')
+    try:
+        import Pmw
+    except ImportError:
+        Pmw = None
+
+    if Pmw is not None:
+        sys.modules['Pmw'] = sys.modules['_Pmw']
+        sys.modules['Pmw'].__name__ = 'Pmw'
+        module('Pmw', 'Pmw.*')
 
 class sqlite(package):
     config(display_name = "SQLite Interface")
