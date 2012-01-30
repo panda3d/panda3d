@@ -685,12 +685,20 @@ generate_vis_points() const {
   vdata->set_num_rows(_x_size * _y_size);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
+
+  LPoint2 uv_scale(1.0, 1.0);
+  if (_x_size > 1) {
+    uv_scale[0] = 1.0f / PN_stdfloat(_x_size - 1);
+  }
+  if (_y_size > 1) {
+    uv_scale[1] = 1.0f / PN_stdfloat(_y_size - 1);
+  }
   
   for (int yi = 0; yi < _y_size; ++yi) {
     for (int xi = 0; xi < _x_size; ++xi) {
       const LPoint3 &point = get_point(xi, yi);
-      LPoint2 uv(PN_stdfloat(xi) / PN_stdfloat(_x_size - 1),
-                  PN_stdfloat(yi) / PN_stdfloat(_y_size - 1));
+      LPoint2 uv(PN_stdfloat(xi) * uv_scale[0],
+                 PN_stdfloat(yi) * uv_scale[1]);
       if (_vis_inverse) {
         vertex.add_data2(uv);
         texcoord.add_data3(point);
@@ -726,6 +734,11 @@ NodePath PfmFile::
 generate_vis_mesh(MeshFace face) const {
   nassertr(is_valid(), NodePath());
   nassertr(face != 0, NodePath());
+
+  if (_x_size == 1 || _y_size == 1) {
+    // Can't generate a 1-d mesh, so generate points in this case.
+    return generate_vis_points();
+  }
   
   PT(GeomNode) gnode = new GeomNode("");
 
@@ -756,6 +769,10 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
 
   // This is the number of independent vertices we will require.
   int num_vertices = x_size * y_size;
+  if (num_vertices == 0) {
+    // Trivial no-op.
+    return;
+  }
 
   // This is the max number of vertex indices we might add to the
   // GeomTriangles.  (We might actually add fewer than this due to
