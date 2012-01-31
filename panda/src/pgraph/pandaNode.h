@@ -292,6 +292,7 @@ PUBLISHED:
 
   virtual bool is_geom_node() const;
   virtual bool is_lod_node() const;
+  virtual bool is_collision_node() const;
   virtual Light *as_light();
   virtual bool is_ambient_light() const;
 

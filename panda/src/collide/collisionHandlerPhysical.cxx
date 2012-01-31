@@ -113,7 +113,7 @@ end_group() {
 ////////////////////////////////////////////////////////////////////
 void CollisionHandlerPhysical::
 add_collider(const NodePath &collider, const NodePath &target) {
-  nassertv(!collider.is_empty() && collider.node()->is_of_type(CollisionNode::get_class_type()));
+  nassertv(!collider.is_empty() && collider.node()->is_collision_node());
   nassertv(validate_target(target));
   _colliders[collider].set_target(target);
 }
@@ -134,7 +134,7 @@ add_collider(const NodePath &collider, const NodePath &target) {
 void CollisionHandlerPhysical::
 add_collider(const NodePath &collider, const NodePath &target,
              DriveInterface *drive_interface) {
-  nassertv(!collider.is_empty() && collider.node()->is_of_type(CollisionNode::get_class_type()));
+  nassertv(!collider.is_empty() && collider.node()->is_collision_node());
   nassertv(validate_target(target));
   _colliders[collider].set_target(target, drive_interface);
 }

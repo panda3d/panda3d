@@ -109,7 +109,7 @@ CollisionTraverser::
 void CollisionTraverser::
 add_collider(const NodePath &collider, CollisionHandler *handler) {
   nassertv(_ordered_colliders.size() == _colliders.size());
-  nassertv(!collider.is_empty() && collider.node()->is_of_type(CollisionNode::get_class_type()));
+  nassertv(!collider.is_empty() && collider.node()->is_collision_node());
   nassertv(handler != (CollisionHandler *)NULL);
 
   Colliders::iterator ci = _colliders.find(collider);
@@ -500,8 +500,7 @@ write(ostream &out, int indent_level) const {
       out << " ignored\n";
     }
 
-    if (!cnode_path.is_empty() && cnode_path.node()->is_of_type(
-        CollisionNode::get_class_type())) {
+    if (!cnode_path.is_empty() && cnode_path.node()->is_collision_node()) {
       CollisionNode *cnode = DCAST(CollisionNode, cnode_path.node());
       
       int num_solids = cnode->get_num_solids();
@@ -608,7 +607,7 @@ r_traverse_single(CollisionLevelStateSingle &level_state, size_t pass) {
   }
 
   PandaNode *node = level_state.node();
-  if (node->is_exact_type(CollisionNode::get_class_type())) {
+  if (node->is_collision_node()) {
     CollisionNode *cnode;
     DCAST_INTO_V(cnode, node);
     CPT(BoundingVolume) node_bv = cnode->get_bounds();
@@ -827,7 +826,7 @@ r_traverse_double(CollisionLevelStateDouble &level_state, size_t pass) {
   }
 
   PandaNode *node = level_state.node();
-  if (node->is_exact_type(CollisionNode::get_class_type())) {
+  if (node->is_collision_node()) {
     CollisionNode *cnode;
     DCAST_INTO_V(cnode, node);
     CPT(BoundingVolume) node_bv = cnode->get_bounds();
@@ -1046,7 +1045,7 @@ r_traverse_quad(CollisionLevelStateQuad &level_state, size_t pass) {
   }
 
   PandaNode *node = level_state.node();
-  if (node->is_exact_type(CollisionNode::get_class_type())) {
+  if (node->is_collision_node()) {
     CollisionNode *cnode;
     DCAST_INTO_V(cnode, node);
     CPT(BoundingVolume) node_bv = cnode->get_bounds();

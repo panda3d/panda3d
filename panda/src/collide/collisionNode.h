@@ -47,6 +47,7 @@ public:
 
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
   virtual bool is_renderable() const;
+  virtual bool is_collision_node() const;
 
   virtual void output(ostream &out) const;
 

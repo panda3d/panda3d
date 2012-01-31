@@ -2662,6 +2662,21 @@ is_lod_node() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::is_collision_node
+//       Access: Published, Virtual
+//  Description: A simple downcast check.  Returns true if this kind
+//               of node happens to inherit from CollisionNode, false
+//               otherwise.
+//
+//               This is provided as a a faster alternative to calling
+//               is_of_type(CollisionNode::get_class_type()).
+////////////////////////////////////////////////////////////////////
+bool PandaNode::
+is_collision_node() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::as_light
 //       Access: Published, Virtual
 //  Description: Cross-casts the node to a Light pointer, if it is one

@@ -1723,7 +1723,7 @@ int Lens::
 do_define_geom_data(CData *cdata) {
   int num_segments = 1;
   if (!is_linear()) {
-    num_segments = 10;
+    num_segments = lens_geom_segments;
   }
   
   if (cdata->_geom_data == (GeomVertexData *)NULL) {

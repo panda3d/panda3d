@@ -269,6 +269,21 @@ is_renderable() const {
   return true;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionNode::is_collision_node
+//       Access: Published, Virtual
+//  Description: A simple downcast check.  Returns true if this kind
+//               of node happens to inherit from CollisionNode, false
+//               otherwise.
+//
+//               This is provided as a a faster alternative to calling
+//               is_of_type(CollisionNode::get_class_type()).
+////////////////////////////////////////////////////////////////////
+bool CollisionNode::
+is_collision_node() const {
+  return false;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionNode::output

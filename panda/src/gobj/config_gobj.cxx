@@ -498,7 +498,16 @@ PRC_DESC("If this is nonzero, it represents an artificial delay, "
          "delay is per-model, and all aync loads will be queued "
          "up behind the delay--it is as if the time it takes to read a "
          "file is increased by this amount per read."));
- 
+
+ConfigVariableInt lens_geom_segments
+("lens-geom-segments", 50,
+ PRC_DESC("This is the number of times to subdivide the visualization "
+          "wireframe created when Lens::make_geometry() (or "
+          "LensNode::show_frustum()) is called, for representing accurate "
+          "curves.  Note that this is only "
+          "used for a nonlinear lens such as a cylindrical or fisheye "
+          "lens; for a normal perspective or orthographic lens, the "
+          "wireframe is not subdivided."));
 
 ConfigureFn(config_gobj) {
   AnimateVerticesRequest::init_type();
