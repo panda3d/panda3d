@@ -2754,7 +2754,7 @@ class ShowBase(DirectObject.DirectObject):
             # Set a timer to run the Panda frame 60 times per second.
             wxFrameRate = ConfigVariableDouble('wx-frame-rate', 60.0)
             self.wxTimer = wx.Timer(self.wxApp)
-            self.wxTimer.Start(1000.0 / wxFrameRate)
+            self.wxTimer.Start(1000.0 / wxFrameRate.getValue())
             self.wxApp.Bind(wx.EVT_TIMER, self.__wxTimerCallback)
 
             # wx is now the main loop, not us any more.
