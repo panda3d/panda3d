@@ -177,6 +177,8 @@ write(ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "recorded " << format_timestamp(_recorded_time) << "\n";
 
+  indent(out, indent_level)
+    << _files.size() << " dependent files.\n";
   DependentFiles::const_iterator fi;
   for (fi = _files.begin(); fi != _files.end(); ++fi) {
     const DependentFile &dfile = (*fi);
