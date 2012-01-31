@@ -25,6 +25,8 @@ class panda3d_import_manager:
     sys = sys
     imp = imp
 
+    __libraries__ = {}
+
     # Figure out the dll suffix (commonly, _d for windows debug builds),
     # and the dll extension.
     dll_suffix = ''
@@ -100,6 +102,9 @@ class panda3d_import_manager:
         """ Imports and returns the specified library name. The
         provided library name has to be without dll extension. """
 
+        if name in cls.__libraries__:
+            return cls.__libraries__[name]
+
         if not cls.prepared: cls.__prepare()
 
         # Try to import it normally first.
@@ -125,7 +130,9 @@ class panda3d_import_manager:
         target = cls.os.path.abspath(target)
 
         # Now import the file explicitly.
-        return cls.imp.load_dynamic(name, target)
+        lib = cls.imp.load_dynamic(name, target)
+        cls.__libraries__[name] = lib
+        return lib
 
 class panda3d_submodule(type(sys)):
     """ Represents a submodule of 'panda3d' that represents a dynamic
