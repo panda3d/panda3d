@@ -458,8 +458,15 @@ resize(int new_x_size, int new_y_size) {
 
   double from_x0, from_x1, from_y0, from_y1;
 
-  double x_scale = (double)(_x_size - 1) / (double)(new_x_size - 1);
-  double y_scale = (double)(_y_size - 1) / (double)(new_y_size - 1);
+  double x_scale = 1.0;
+  double y_scale = 1.0;
+
+  if (new_x_size > 1) {
+    x_scale = (double)(_x_size - 1) / (double)(new_x_size - 1);
+  }
+  if (new_y_size > 1) {
+    y_scale = (double)(_y_size - 1) / (double)(new_y_size - 1);
+  }
 
   from_y0 = 0.0;
   for (int to_y = 0; to_y < new_y_size; ++to_y) {
@@ -992,7 +999,10 @@ box_filter_region(LPoint3 &result,
   result = LPoint3::zero();
   double coverage = 0.0;
 
-  assert(y0 >= 0.0 && y1 >= 0.0);
+  if (x1 < x0 || y1 < y0) {
+    return;
+  }
+  nassertv(y0 >= 0.0 && y1 >= 0.0);
 
   int y = (int)y0;
   // Get the first (partial) row
