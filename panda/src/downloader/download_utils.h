@@ -16,10 +16,9 @@
 #define DOWNLOAD_UTILS_H
 
 #include "pandabase.h"
+#include "filename.h"
 
 #ifdef HAVE_ZLIB
-
-#include "filename.h"
 
 BEGIN_PUBLISH
 
