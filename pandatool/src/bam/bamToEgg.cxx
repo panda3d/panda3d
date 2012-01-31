@@ -39,6 +39,8 @@
 #include "geomNode.h"
 #include "geom.h"
 #include "geomTriangles.h"
+#include "geomPoints.h"
+#include "geomLines.h"
 #include "geomVertexReader.h"
 #include "transformTable.h"
 #include "modelNode.h"
@@ -57,6 +59,8 @@
 #include "eggVertex.h"
 #include "eggPrimitive.h"
 #include "eggPolygon.h"
+#include "eggPoint.h"
+#include "eggLine.h"
 #include "eggTexture.h"
 #include "eggMaterial.h"
 #include "eggRenderMode.h"
@@ -578,13 +582,10 @@ convert_geom_node(GeomNode *node, const WorkingNodePath &node_path,
     for (int j = 0; j < num_primitives; ++j) {
       const GeomPrimitive *primitive = geom->get_primitive(j);
       CPT(GeomPrimitive) simple = primitive->decompose();
-      if (simple->is_of_type(GeomTriangles::get_class_type())) {
-        CPT(GeomVertexData) vdata = geom->get_vertex_data();
-        //        vdata = vdata->animate_vertices(true, Thread::get_current_thread());
-        convert_triangles(vdata,
-                          DCAST(GeomTriangles, simple), geom_state,
-                          net_mat, egg_parent, jointMap);
-      }
+      CPT(GeomVertexData) vdata = geom->get_vertex_data();
+      //        vdata = vdata->animate_vertices(true, Thread::get_current_thread());
+      convert_primitive(vdata, simple, geom_state,
+                        net_mat, egg_parent, jointMap);
     }
   }
   
@@ -592,13 +593,13 @@ convert_geom_node(GeomNode *node, const WorkingNodePath &node_path,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BamToEgg::convert_triangles
+//     Function: BamToEgg::convert_primitive
 //       Access: Private
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void BamToEgg::
-convert_triangles(const GeomVertexData *vertex_data,
-                  const GeomTriangles *primitive, 
+convert_primitive(const GeomVertexData *vertex_data,
+                  const GeomPrimitive *primitive,
                   const RenderState *net_state, 
                   const LMatrix4 &net_mat, EggGroupNode *egg_parent,
                   CharacterJointMap *jointMap) {
@@ -739,28 +740,44 @@ convert_triangles(const GeomVertexData *vertex_data,
   LColor color;
   CPT(TransformBlendTable) transformBlendTable = vertex_data->get_transform_blend_table();
 
-  int nprims = primitive->get_num_primitives();
-  for (int i = 0; i < nprims; ++i) {
-    EggPolygon *egg_poly = new EggPolygon;
-    egg_parent->add_child(egg_poly);
+  int num_primitives = primitive->get_num_primitives();
+  int num_vertices = primitive->get_num_vertices_per_primitive();
+
+  EggPrimitive *(*make_func)(void);
+
+  if (primitive->is_of_type(GeomTriangles::get_class_type())) {
+    make_func = make_egg_polygon;
+  } else if (primitive->is_of_type(GeomPoints::get_class_type())) {
+    make_func = make_egg_point;
+  } else if (primitive->is_of_type(GeomLines::get_class_type())) {
+    make_func = make_egg_line;
+  } else {
+    // Huh, an unknown geometry type.
+    return;
+  }
+  
+  for (int i = 0; i < num_primitives; ++i) {
+    PT(EggPrimitive) egg_prim = (*make_func)();
+
+    egg_parent->add_child(egg_prim);
     if (egg_tex != (EggTexture *)NULL) {
-      egg_poly->set_texture(egg_tex);
+      egg_prim->set_texture(egg_tex);
     }
-
+    
     if (bface) {
-      egg_poly->set_bface_flag(true);
+      egg_prim->set_bface_flag(true);
     }
 
-    for (int j = 0; j < 3; j++) {
+    for (int j = 0; j < num_vertices; j++) {
       EggVertex egg_vert;
-
+        
       // Get per-vertex properties.
-      reader.set_row(primitive->get_vertex(i * 3 + j));
-
+      reader.set_row(primitive->get_vertex(i * num_vertices + j));
+        
       reader.set_column(InternalName::get_vertex());
       LVertex vertex = reader.get_data3();
       egg_vert.set_pos(LCAST(double, vertex * net_mat));
-
+        
       if (vertex_data->has_column(InternalName::get_normal())) {
         reader.set_column(InternalName::get_normal());
         LNormal normal = reader.get_data3();
@@ -768,7 +785,7 @@ convert_triangles(const GeomVertexData *vertex_data,
       }
       if (has_color_override) {
         egg_vert.set_color(color_override);
-
+          
       } else if (!has_color_off) {
         LColor color(1.0f, 1.0f, 1.0f, 1.0f);
         if (vertex_data->has_column(InternalName::get_color())) {
@@ -780,17 +797,17 @@ convert_triangles(const GeomVertexData *vertex_data,
                                   color[2] * color_scale[2],
                                   color[3] * color_scale[3]));
       }
-
+        
       if (vertex_data->has_column(InternalName::get_texcoord())) {
         reader.set_column(InternalName::get_texcoord());
         LTexCoord uv = reader.get_data2();
         egg_vert.set_uv(LCAST(double, uv));
       }
-
+        
       EggVertex *new_egg_vert = _vpool->create_unique_vertex(egg_vert);
-
+        
       if ((vertex_data->has_column(InternalName::get_transform_blend())) && 
-      (jointMap!=NULL) && (transformBlendTable!=NULL)) {
+          (jointMap!=NULL) && (transformBlendTable!=NULL)) {
         reader.set_column(InternalName::get_transform_blend());
         int idx = reader.get_data1i();
         const TransformBlend &blend = transformBlendTable->get_blend(idx);
@@ -813,7 +830,7 @@ convert_triangles(const GeomVertexData *vertex_data,
         }
       }
 
-      egg_poly->add_vertex(new_egg_vert);
+      egg_prim->add_vertex(new_egg_vert);
     }
   }
 }
@@ -1129,6 +1146,35 @@ get_egg_texture(Texture *tex) {
   return NULL;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BamToEgg::make_egg_polygon
+//       Access: Public, Static
+//  Description: A factory function to make a new EggPolygon instance.
+////////////////////////////////////////////////////////////////////
+EggPrimitive *BamToEgg::
+make_egg_polygon() {
+  return new EggPolygon;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamToEgg::make_egg_point
+//       Access: Public, Static
+//  Description: A factory function to make a new EggPoint instance.
+////////////////////////////////////////////////////////////////////
+EggPrimitive *BamToEgg::
+make_egg_point() {
+  return new EggPoint;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamToEgg::make_egg_line
+//       Access: Public, Static
+//  Description: A factory function to make a new EggLine instance.
+////////////////////////////////////////////////////////////////////
+EggPrimitive *BamToEgg::
+make_egg_line() {
+  return new EggLine;
+}
 
 int main(int argc, char *argv[]) {
   // A call to pystub() to force libpystub.so to be linked in.

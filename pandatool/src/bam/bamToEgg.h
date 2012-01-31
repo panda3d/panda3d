@@ -36,9 +36,8 @@ class Character;
 class PartGroup;
 class CollisionNode;
 class GeomNode;
-class GeomTri;
 class GeomVertexData;
-class GeomTriangles;
+class GeomPrimitive;
 class PandaNode;
 class RenderState;
 class Texture;
@@ -78,8 +77,8 @@ private:
                         EggGroupNode *egg_parent, bool has_decal);
   void convert_geom_node(GeomNode *node, const WorkingNodePath &node_path, 
                          EggGroupNode *egg_parent, bool has_decal, CharacterJointMap *jointMap=NULL);
-  void convert_triangles(const GeomVertexData *vertex_data,
-                         const GeomTriangles *primitive, 
+  void convert_primitive(const GeomVertexData *vertex_data,
+                         const GeomPrimitive *primitive, 
                          const RenderState *net_state, 
                          const LMatrix4 &net_mat, EggGroupNode *egg_parent,
                          CharacterJointMap *jointMap);
@@ -91,6 +90,10 @@ private:
   bool apply_tag(EggGroup *egg_group, PandaNode *node, const string &tag);
 
   EggTexture *get_egg_texture(Texture *tex);
+
+  static EggPrimitive *make_egg_polygon();
+  static EggPrimitive *make_egg_point();
+  static EggPrimitive *make_egg_line();
 
   EggVertexPool *_vpool;
   EggTextureCollection _textures;
