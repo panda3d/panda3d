@@ -19,6 +19,7 @@
 #include "load_egg_file.h"
 #include "eggData.h"
 #include "loaderOptions.h"
+#include "bamCacheRecord.h"
 
 TypeHandle LoaderFileTypePandatool::_type_handle;
 
@@ -107,6 +108,10 @@ resolve_filename(Filename &path) const {
 PT(PandaNode) LoaderFileTypePandatool::
 load_file(const Filename &path, const LoaderOptions &options,
           BamCacheRecord *record) const {
+  if (record != (BamCacheRecord *)NULL) {
+    record->add_dependent_file(path);
+  }
+
   PT(PandaNode) result;
 
   PT(EggData) egg_data = new EggData;
