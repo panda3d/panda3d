@@ -64,6 +64,7 @@ PUBLISHED:
   BLOCKING void reverse_rows();
   BLOCKING void xform(const LMatrix4 &transform);
   BLOCKING void project(const Lens *lens);
+  BLOCKING void merge(const PfmFile &other);
 
   BLOCKING PT(BoundingHexahedron) compute_planar_bounds(double point_dist, double sample_radius) const;
 

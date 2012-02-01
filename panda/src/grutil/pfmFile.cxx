@@ -570,6 +570,31 @@ project(const Lens *lens) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::merge
+//       Access: Published
+//  Description: Wherever there is missing data in this PfmFile (that
+//               is, wherever has_point() returns false), copy data
+//               from the other PfmFile, which must be exactly the
+//               same dimensions as this one.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+merge(const PfmFile &other) {
+  nassertv(is_valid() && other.is_valid());
+  nassertv(other._x_size == _x_size && other._y_size == _y_size);
+
+  if (!_zero_special) {
+    // Trivial no-op.
+    return;
+  }
+
+  for (size_t i = 0; i < _table.size(); ++i) {
+    if (_table[i] == LPoint3::zero()) {
+      _table[i] = other._table[i];
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::compute_planar_bounds
 //       Access: Published
 //  Description: Computes the minmax bounding volume of the points in
