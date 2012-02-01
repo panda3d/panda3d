@@ -242,7 +242,7 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
 
       case ButtonEvent::T_keystroke:
         // Ignore control characters; otherwise, they actually get added to strings in the UI.
-        if (be._keycode > 0x1F and (be._keycode < 0x7F or be._keycode > 0x9F)) {
+        if (be._keycode > 0x1F && (be._keycode < 0x7F || be._keycode > 0x9F)) {
           _text_input.push_back(be._keycode);
         }
         break;
