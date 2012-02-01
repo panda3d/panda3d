@@ -281,7 +281,7 @@ is_renderable() const {
 ////////////////////////////////////////////////////////////////////
 bool CollisionNode::
 is_collision_node() const {
-  return false;
+  return true;
 }
 
 
