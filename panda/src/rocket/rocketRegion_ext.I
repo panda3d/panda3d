@@ -13,10 +13,10 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "rocketRegion.h"
-#include <Rocket/Core/Context.h>
 
 #ifndef CPPPARSER
 #undef this
+#include <Rocket/Core/Context.h>
 #include <Rocket/Core/Python/Utilities.h>
 #endif
 
