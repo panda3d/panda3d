@@ -168,7 +168,7 @@ CompileGeometry(Rocket::Core::Vertex* vertices, int num_vertices, int* indices, 
 
   if ((Texture*) texture != (Texture*) NULL) {
     PT(TextureStage) stage = new TextureStage("");
-    stage->set_mode(TextureStage::M_replace);
+    stage->set_mode(TextureStage::M_modulate);
 
     CPT(TextureAttrib) attr = DCAST(TextureAttrib, TextureAttrib::make());
     attr = DCAST(TextureAttrib, attr->add_on_stage(stage, (Texture*) texture));
