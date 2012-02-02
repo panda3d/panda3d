@@ -70,9 +70,33 @@ Filename(const Filename &copy) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename Filename::
+text_filename(const Filename &filename) {
+  Filename result(filename);
+  result.set_text();
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::text_filename named constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE Filename Filename::
 text_filename(const string &filename) {
   Filename result(filename);
   result.set_text();
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::binary_filename named constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE Filename Filename::
+binary_filename(const Filename &filename) {
+  Filename result(filename);
+  result.set_binary();
   return result;
 }
 

@@ -5176,55 +5176,64 @@ for VER in MAYAVERSIONS:
     TargetAdd('libmayapview'+VNUM+'.mll', opts=['ADVAPI', VER])
 
     TargetAdd('maya2egg'+VNUM+'_mayaToEgg.obj', opts=OPTS, input='mayaToEgg.cxx')
-    TargetAdd('maya2egg'+VNUM+'-wrapped.exe', input='maya2egg'+VNUM+'_mayaToEgg.obj')
-    TargetAdd('maya2egg'+VNUM+'-wrapped.exe', input='libmayaegg'+VNUM+'.lib')
-    TargetAdd('maya2egg'+VNUM+'-wrapped.exe', input='libmaya'+VNUM+'.lib')
+    TargetAdd('maya2egg'+VNUM+'_bin.exe', input='maya2egg'+VNUM+'_mayaToEgg.obj')
+    TargetAdd('maya2egg'+VNUM+'_bin.exe', input='libmayaegg'+VNUM+'.lib')
+    TargetAdd('maya2egg'+VNUM+'_bin.exe', input='libmaya'+VNUM+'.lib')
     if (sys.platform.startswith("win")):
-      TargetAdd('maya2egg'+VNUM+'-wrapped.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+      TargetAdd('maya2egg'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     else:
-      TargetAdd('maya2egg'+VNUM+'-wrapped.exe', input=COMMON_EGG2X_LIBS)
+      TargetAdd('maya2egg'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS)
     if (sys.platform == "darwin" and int(VNUM) >= 2009):
-      TargetAdd('maya2egg'+VNUM+'-wrapped.exe', opts=['ADVAPI', 'NOPPC', VER])
+      TargetAdd('maya2egg'+VNUM+'_bin.exe', opts=['ADVAPI', 'NOPPC', VER])
     else:
-      TargetAdd('maya2egg'+VNUM+'-wrapped.exe', opts=['ADVAPI', VER])
+      TargetAdd('maya2egg'+VNUM+'_bin.exe', opts=['ADVAPI', VER])
 
     TargetAdd('egg2maya'+VNUM+'_eggToMaya.obj', opts=OPTS, input='eggToMaya.cxx')
-    TargetAdd('egg2maya'+VNUM+'-wrapped.exe', input='egg2maya'+VNUM+'_eggToMaya.obj')
-    TargetAdd('egg2maya'+VNUM+'-wrapped.exe', input='libmayaegg'+VNUM+'.lib')
-    TargetAdd('egg2maya'+VNUM+'-wrapped.exe', input='libmaya'+VNUM+'.lib')
+    TargetAdd('egg2maya'+VNUM+'_bin.exe', input='egg2maya'+VNUM+'_eggToMaya.obj')
+    TargetAdd('egg2maya'+VNUM+'_bin.exe', input='libmayaegg'+VNUM+'.lib')
+    TargetAdd('egg2maya'+VNUM+'_bin.exe', input='libmaya'+VNUM+'.lib')
     if (sys.platform.startswith("win")):
-      TargetAdd('egg2maya'+VNUM+'-wrapped.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+      TargetAdd('egg2maya'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     else:
-      TargetAdd('egg2maya'+VNUM+'-wrapped.exe', input=COMMON_EGG2X_LIBS)
+      TargetAdd('egg2maya'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS)
     if (sys.platform == "darwin" and int(VNUM) >= 2009):
-      TargetAdd('egg2maya'+VNUM+'-wrapped.exe', opts=['ADVAPI', 'NOPPC', VER])
+      TargetAdd('egg2maya'+VNUM+'_bin.exe', opts=['ADVAPI', 'NOPPC', VER])
     else:
-      TargetAdd('egg2maya'+VNUM+'-wrapped.exe', opts=['ADVAPI', VER])
+      TargetAdd('egg2maya'+VNUM+'_bin.exe', opts=['ADVAPI', VER])
 
     TargetAdd('mayacopy'+VNUM+'_mayaCopy.obj', opts=OPTS, input='mayaCopy.cxx')
-    TargetAdd('mayacopy'+VNUM+'-wrapped.exe', input='mayacopy'+VNUM+'_mayaCopy.obj')
-    TargetAdd('mayacopy'+VNUM+'-wrapped.exe', input='libp3cvscopy.lib')
-    TargetAdd('mayacopy'+VNUM+'-wrapped.exe', input='libmaya'+VNUM+'.lib')
+    TargetAdd('mayacopy'+VNUM+'_bin.exe', input='mayacopy'+VNUM+'_mayaCopy.obj')
+    TargetAdd('mayacopy'+VNUM+'_bin.exe', input='libp3cvscopy.lib')
+    TargetAdd('mayacopy'+VNUM+'_bin.exe', input='libmaya'+VNUM+'.lib')
     if sys.platform == "win32":
-      TargetAdd('mayacopy'+VNUM+'-wrapped.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+      TargetAdd('mayacopy'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     else:
-      TargetAdd('mayacopy'+VNUM+'-wrapped.exe', input=COMMON_EGG2X_LIBS)
+      TargetAdd('mayacopy'+VNUM+'_bin.exe', input=COMMON_EGG2X_LIBS)
     if (sys.platform == "darwin" and int(VNUM) >= 2009):
-      TargetAdd('mayacopy'+VNUM+'-wrapped.exe', opts=['ADVAPI', 'NOPPC', VER])
+      TargetAdd('mayacopy'+VNUM+'_bin.exe', opts=['ADVAPI', 'NOPPC', VER])
     else:
-      TargetAdd('mayacopy'+VNUM+'-wrapped.exe', opts=['ADVAPI', VER])
+      TargetAdd('mayacopy'+VNUM+'_bin.exe', opts=['ADVAPI', VER])
 
     TargetAdd('mayasavepview'+VNUM+'_mayaSavePview.obj', opts=OPTS, input='mayaSavePview.cxx')
     TargetAdd('libmayasavepview'+VNUM+'.mll', input='mayasavepview'+VNUM+'_mayaSavePview.obj')
     TargetAdd('libmayasavepview'+VNUM+'.mll', opts=['ADVAPI',  VER])
 
-    TargetAdd('mayaWrapper'+VNUM+'.obj', opts=OPTS, input='mayaWrapper.cxx')
+    TargetAdd('mayapath'+VNUM+'.obj', opts=OPTS, input='mayapath.cxx')
 
-    TargetAdd('maya2egg'+VNUM+'.exe', input='mayaWrapper'+VNUM+'.obj')
+    TargetAdd('maya2egg'+VNUM+'.exe', input='mayapath'+VNUM+'.obj')
     TargetAdd('maya2egg'+VNUM+'.exe', opts=['ADVAPI'])
+    TargetAdd('maya2egg'+VNUM+'.exe', input=COMMON_DTOOL_LIBS)
+    TargetAdd('maya2egg'+VNUM+'.exe', input='libpandaexpress.dll')
 
-    TargetAdd('mayacopy'+VNUM+'.exe', input='mayaWrapper'+VNUM+'.obj')
+    TargetAdd('egg2maya'+VNUM+'.exe', input='mayapath'+VNUM+'.obj')
+    TargetAdd('egg2maya'+VNUM+'.exe', opts=['ADVAPI'])
+    TargetAdd('egg2maya'+VNUM+'.exe', input=COMMON_DTOOL_LIBS)
+    TargetAdd('egg2maya'+VNUM+'.exe', input='libpandaexpress.dll')
+
+    TargetAdd('mayacopy'+VNUM+'.exe', input='mayapath'+VNUM+'.obj')
     TargetAdd('mayacopy'+VNUM+'.exe', opts=['ADVAPI'])
+    TargetAdd('mayacopy'+VNUM+'.exe', input=COMMON_DTOOL_LIBS)
+    TargetAdd('mayacopy'+VNUM+'.exe', input='libpandaexpress.dll')
 
 #
 # DIRECTORY: contrib/src/ai/

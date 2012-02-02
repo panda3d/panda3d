@@ -1335,6 +1335,7 @@ do_get_file(const Filename &filename, int open_flags) const {
   }
   pathname.standardize();
   Filename strpath = pathname.get_filename_index(0).get_fullpath().substr(1);
+  strpath.set_type(filename.get_type());
   // Also transparently look for a regular file suffixed .pz.
   Filename strpath_pz = strpath + ".pz";
 

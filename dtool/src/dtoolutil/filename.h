@@ -75,7 +75,9 @@ PUBLISHED:
   // Static constructors to explicitly create a filename that refers
   // to a text or binary file.  This is in lieu of calling set_text()
   // or set_binary() or set_type().
+  INLINE static Filename text_filename(const Filename &filename);
   INLINE static Filename text_filename(const string &filename);
+  INLINE static Filename binary_filename(const Filename &filename);
   INLINE static Filename binary_filename(const string &filename);
   INLINE static Filename dso_filename(const string &filename);
   INLINE static Filename executable_filename(const string &filename);

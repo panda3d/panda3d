@@ -5,7 +5,8 @@
 #begin bin_target
   #define TARGET maya2egg
   #define OTHER_LIBS \
-    p3dtoolbase:c p3dtoolutil:c p3dtool:m p3prc:c p3dtoolconfig:m
+    p3dtoolbase:c p3dtoolutil:c p3dtool:m p3prc:c p3dtoolconfig:m \
+    p3express:c pandaexpress:m 
   #define SOURCES \
     mayapath.cxx
 #end bin_target
@@ -13,7 +14,8 @@
 #begin bin_target
   #define TARGET maya2egg_server
   #define OTHER_LIBS \
-    p3dtoolbase:c p3dtoolutil:c p3dtool:m p3prc:c p3dtoolconfig:m
+    p3dtoolbase:c p3dtoolutil:c p3dtool:m p3prc:c p3dtoolconfig:m \
+    p3express:c pandaexpress:m 
   #define SOURCES \
     mayapath.cxx
 #end bin_target
@@ -84,7 +86,8 @@
 #begin bin_target
   #define TARGET egg2maya
   #define OTHER_LIBS \
-    p3dtoolbase:c p3dtoolutil:c p3dtool:m p3prc:c p3dtoolconfig:m
+    p3dtoolbase:c p3dtoolutil:c p3dtool:m p3prc:c p3dtoolconfig:m \
+    p3express:c pandaexpress:m 
   #define SOURCES \
     mayapath.cxx
 #end bin_target
@@ -114,7 +117,8 @@
 #begin bin_target
   #define TARGET mayacopy
   #define OTHER_LIBS \
-    p3dtoolbase:c p3dtoolutil:c p3dtool:m p3prc:c p3dtoolconfig:m
+    p3dtoolbase:c p3dtoolutil:c p3dtool:m p3prc:c p3dtoolconfig:m \
+    p3express:c pandaexpress:m 
   #define SOURCES \
     mayapath.cxx
 #end bin_target
