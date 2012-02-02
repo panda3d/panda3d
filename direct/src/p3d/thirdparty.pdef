@@ -46,9 +46,11 @@ class tk(package):
         Pmw = None
 
     if Pmw is not None:
-        sys.modules['Pmw'] = sys.modules['_Pmw']
+        Pmw = sys.modules['_Pmw']
+        sys.modules['Pmw'] = Pmw
         sys.modules['Pmw'].__name__ = 'Pmw'
-        module('Pmw', 'Pmw.Pmw_1_2.lib.*', 'Pmw.Pmw_1_3.lib.*')
+        module('Pmw', 'Pmw.Pmw_1_3.lib.*')
+        file(Filename(Pmw.__path__[0], 'Pmw_1_3/lib/Pmw.def'), newDir = 'Pmw/Pmw_1_3/lib')
 
 class sqlite(package):
     config(display_name = "SQLite Interface")
