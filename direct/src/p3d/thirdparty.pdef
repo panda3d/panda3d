@@ -13,6 +13,7 @@
 
 # Also see panda3d.pdef.
 
+from pandac.PandaModules import Filename
 import sys
 
 class wx(package):
