@@ -625,7 +625,11 @@ if (COMPILER=="LINUX"):
         SmartPkgEnable("TIFF",      "",          ("tiff"), "tiff.h")
         SmartPkgEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
         SmartPkgEnable("BULLET", "bullet", ("BulletSoftBody", "BulletDynamics", "BulletCollision", "LinearMath"), ("bullet", "bullet/btBulletDynamicsCommon.h"))
-        SmartPkgEnable("ROCKET",    "",          ("RocketCore", "RocketControls", "boost_python"), "Rocket/Core.h")
+        if sys.platform == "darwin":
+            # We use a statically linked libboost_python on OSX
+            SmartPkgEnable("ROCKET",    "",          ("RocketCore", "RocketControls"), "Rocket/Core.h")
+        else:
+            SmartPkgEnable("ROCKET",    "",          ("RocketCore", "RocketControls", "boost_python"), "Rocket/Core.h")
     SmartPkgEnable("GTK2",      "gtk+-2.0")
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
     SmartPkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
