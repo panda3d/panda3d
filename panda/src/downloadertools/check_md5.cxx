@@ -90,7 +90,7 @@ main(int argc, char **argv) {
       break;
 
     case 'b':
-      binary_output_filename = Filename::binary_filename(optarg);
+      binary_output_filename = Filename::binary_filename(string(optarg));
       break;
 
     case 'q':
