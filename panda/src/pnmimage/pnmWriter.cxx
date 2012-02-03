@@ -87,6 +87,21 @@ supports_write_row() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PNMWriter::supports_grayscale
+//       Access: Public, Virtual
+//  Description: Returns true if this particular PNMWriter understands
+//               grayscale images.  If this is false, then the rgb
+//               values of the xel array will be pre-filled with the
+//               same value across all three channels, to allow the
+//               writer to simply write out RGB data for a grayscale
+//               image.
+////////////////////////////////////////////////////////////////////
+bool PNMWriter::
+supports_grayscale() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PNMWriter::write_header
 //       Access: Public, Virtual
 //  Description: If supports_write_row(), above, returns true, this

@@ -634,4 +634,19 @@ write_data(xel *array, xelval *) {
   return _y_size;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeBMP::Writer::supports_grayscale
+//       Access: Public, Virtual
+//  Description: Returns true if this particular PNMWriter understands
+//               grayscale images.  If this is false, then the rgb
+//               values of the xel array will be pre-filled with the
+//               same value across all three channels, to allow the
+//               writer to simply write out RGB data for a grayscale
+//               image.
+////////////////////////////////////////////////////////////////////
+bool PNMFileTypeBMP::Writer::
+supports_grayscale() const {
+  return false;
+}
+
 #endif  // HAVE_BMP

@@ -70,6 +70,7 @@ public:
     Writer(PNMFileType *type, ostream *file, bool owns_file);
 
     virtual int write_data(xel *array, xelval *alpha);
+    virtual bool supports_grayscale() const;
   };
 
 

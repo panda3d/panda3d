@@ -400,6 +400,15 @@ write(PNMWriter *writer) const {
   }
 
   writer->copy_header_from(*this);
+  if (is_grayscale() && !writer->supports_grayscale()) {
+    // Copy the gray values to all channels to help out the writer.
+    for (int y = 0; y < get_y_size(); y++) {
+      for (int x = 0; x<get_x_size(); x++) {
+        ((PNMImage *)this)->set_xel_val(x, y, get_gray_val(x, y));
+      }
+    }
+  }
+
   int result = writer->write_data(_array, _alpha);
   delete writer;
 

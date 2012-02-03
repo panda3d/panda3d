@@ -50,6 +50,7 @@ public:
 
   virtual int write_data(xel *array, xelval *alpha);
   virtual bool supports_write_row() const;
+  virtual bool supports_grayscale() const;
   virtual bool write_header();
   virtual bool write_row(xel *array, xelval *alpha);
 
