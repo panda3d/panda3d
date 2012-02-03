@@ -61,6 +61,7 @@ PUBLISHED:
                                                      int timeout_ms);
 
   bool close_connection(const PT(Connection) &connection);
+  BLOCKING bool wait_for_readers(double timeout);
 
   static string get_host_name();
 

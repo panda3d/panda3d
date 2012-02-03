@@ -133,6 +133,7 @@ private:
                                         int current_thread_index);
 
   void rebuild_select_list();
+  void accumulate_fdset(Socket_fdset &fdset);
 
 private:
   bool _raw_mode;

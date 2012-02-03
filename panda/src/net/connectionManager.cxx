@@ -27,7 +27,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConnectionManager::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 ConnectionManager::
@@ -37,7 +37,7 @@ ConnectionManager() : _set_mutex("ConnectionManager::_set_mutex")
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConnectionManager::Destructor
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
 ConnectionManager::
@@ -56,7 +56,7 @@ ConnectionManager::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConnectionManager::open_UDP_connection
-//       Access: Public
+//       Access: Published
 //  Description: Opens a socket for sending and/or receiving UDP
 //               packets.  If the port number is greater than zero,
 //               the UDP connection will be opened for listening on
@@ -105,7 +105,7 @@ open_UDP_connection(int port) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConnectionManager::open_TCP_server_rendezvous
-//       Access: Public
+//       Access: Published
 //  Description: Creates a socket to be used as a rendezvous socket
 //               for a server to listen for TCP connections.  The
 //               socket returned by this call should only be added to
@@ -128,7 +128,7 @@ open_TCP_server_rendezvous(int port, int backlog) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConnectionManager::open_TCP_server_rendezvous
-//       Access: Public
+//       Access: Published
 //  Description: Creates a socket to be used as a rendezvous socket
 //               for a server to listen for TCP connections.  The
 //               socket returned by this call should only be added to
@@ -158,7 +158,7 @@ open_TCP_server_rendezvous(const string &hostname, int port, int backlog) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConnectionManager::open_TCP_server_rendezvous
-//       Access: Public
+//       Access: Published
 //  Description: Creates a socket to be used as a rendezvous socket
 //               for a server to listen for TCP connections.  The
 //               socket returned by this call should only be added to
@@ -200,7 +200,7 @@ open_TCP_server_rendezvous(const NetAddress &address, int backlog) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConnectionManager::open_TCP_client_connection
-//       Access: Public
+//       Access: Published
 //  Description: Attempts to establish a TCP client connection to a
 //               server at the indicated address.  If the connection
 //               is not established within timeout_ms milliseconds, a
@@ -269,7 +269,7 @@ open_TCP_client_connection(const NetAddress &address, int timeout_ms) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConnectionManager::open_TCP_client_connection
-//       Access: Public
+//       Access: Published
 //  Description: This is a shorthand version of the function to
 //               directly establish communications to a named host and
 //               port.
@@ -287,7 +287,7 @@ open_TCP_client_connection(const string &hostname, int port,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConnectionManager::close_connection
-//       Access: Public
+//       Access: Published
 //  Description: Terminates a UDP or TCP socket previously opened.
 //               This also removes it from any associated
 //               ConnectionReader or ConnectionListeners.
@@ -340,9 +340,104 @@ close_connection(const PT(Connection) &connection) {
   return true;
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConnectionManager::wait_for_readers
+//       Access: Published
+//  Description: Blocks the process for timeout number of seconds, or
+//               until any data is available on any of the
+//               non-threaded ConnectionReaders or
+//               ConnectionListeners, whichever comes first.  The
+//               return value is true if there is data available (but
+//               you have to iterate through all readers to find it),
+//               or false if the timeout occurred without any data.
+//
+//               If the timeout value is negative, this will block
+//               forever or until data is available.
+//
+//               This only works if all ConnectionReaders and
+//               ConnectionListeners are non-threaded.  If any
+//               threaded ConnectionReaders are part of the
+//               ConnectionManager, the timeout value is implicitly
+//               treated as 0.
+////////////////////////////////////////////////////////////////////
+bool ConnectionManager::
+wait_for_readers(double timeout) {
+  bool block_forever = false;
+  if (timeout < 0.0) {
+    block_forever = true;
+    timeout = 0.0;
+  }
+
+  TrueClock *clock = TrueClock::get_global_ptr();
+  double now = clock->get_short_time();
+  double stop = now + timeout;
+  do {
+    Socket_fdset fdset;
+    fdset.clear();
+    bool any_threaded = false;
+    
+    {
+      LightMutexHolder holder(_set_mutex);
+      
+      Readers::iterator ri;
+      for (ri = _readers.begin(); ri != _readers.end(); ++ri) {
+        ConnectionReader *reader = (*ri);
+        if (reader->is_polling()) {
+          // If it's a polling reader, we can wait for its socket.
+          // (If it's a threaded reader, we can't do anything here.)
+          reader->accumulate_fdset(fdset);
+        } else {
+          any_threaded = true;
+          stop = now;
+          block_forever = false;
+        }
+      }
+    }
+
+    double wait_timeout = get_net_max_block();
+    if (!block_forever) { 
+      wait_timeout = min(wait_timeout, stop - now);
+    }
+
+    PN_uint32 wait_timeout_ms = (PN_uint32)(wait_timeout * 1000.0);
+    if (any_threaded) {
+      // If there are any threaded ConnectionReaders, we can't block
+      // at all.
+      wait_timeout_ms = 0;
+    }
+#if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
+    // In the presence of SIMPLE_THREADS, we never wait at all,
+    // but rather we yield the thread if we come up empty (so that
+    // we won't block the entire process).
+    wait_timeout_ms = 0;
+#endif
+    int num_results = fdset.WaitForRead(false, wait_timeout_ms);
+    if (num_results != 0) {
+      // If we got an answer (or an error), return success.  The
+      // caller can then figure out what happened.
+      if (num_results < 0) {
+        // Go ahead and yield the timeslice if we got an error.
+        Thread::force_yield();
+      }
+      return true;
+    }
+
+    // No answer yet, so yield and wait some more.  We don't actually
+    // block forever, even in the threaded case, so we can detect
+    // ConnectionReaders being added and removed and such.
+    Thread::force_yield();
+
+    now = clock->get_short_time();
+  } while (now < stop || block_forever);
+
+  // Timeout occurred; no data.
+  return false;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: ConnectionManager::get_host_name
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Returns the name of this particular machine on the
 //               network, if available, or the empty string if the
 //               hostname cannot be determined.

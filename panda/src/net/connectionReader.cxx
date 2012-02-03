@@ -29,8 +29,6 @@
 
 static const int read_buffer_size = maximum_udp_datagram + datagram_udp_header_size;
 
-static const int max_timeout_ms = 100;
-
 ////////////////////////////////////////////////////////////////////
 //     Function: ConnectionReader::SocketInfo::Constructor
 //       Access: Public
@@ -296,7 +294,7 @@ poll() {
 
   SocketInfo *sinfo = get_next_available_socket(false, -2);
   if (sinfo != (SocketInfo *)NULL) {
-    double max_poll_cycle = get_max_poll_cycle();
+    double max_poll_cycle = get_net_max_poll_cycle();
     if (max_poll_cycle < 0.0) {
       // Continue to read all data.
       while (sinfo != (SocketInfo *)NULL) {
@@ -921,7 +919,7 @@ get_next_available_socket(bool allow_block, int current_thread_index) {
       _next_index = 0;
 
       if (!_shutdown) {
-        PN_uint32 timeout = max_timeout_ms;
+        PN_uint32 timeout = (PN_uint32)(get_net_max_block() * 1000.0);
         if (!allow_block) {
           timeout = 0;
         }
@@ -936,14 +934,16 @@ get_next_available_socket(bool allow_block, int current_thread_index) {
       }
 
       if (_num_results == 0 && allow_block) {
-        // If we reached max_timeout_ms, go back and reconsider.  (We
+        // If we reached net_max_block, go back and reconsider.  (We
         // never timeout indefinitely, so we can check the shutdown
         // flag every once in a while.)
         interrupted = true;
         Thread::force_yield();
 
       } else if (_num_results < 0) {
-        // If we had an error, just return.
+        // If we had an error, just return.  But yield the timeslice
+        // first.
+        Thread::force_yield();
         return (SocketInfo *)NULL;
       }
     } while (!_shutdown && interrupted);
@@ -993,5 +993,25 @@ rebuild_select_list() {
       }
     }
     _removed_sockets.swap(still_busy_sockets);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConnectionReader::accumulate_fdset
+//       Access: Private
+//  Description: Adds the sockets from this ConnectionReader (or
+//               ConnectionListener) to the indicated fdset.  This is
+//               used by ConnectionManager::block() to build an fdset
+//               of all attached readers.
+////////////////////////////////////////////////////////////////////
+void ConnectionReader::
+accumulate_fdset(Socket_fdset &fdset) {
+  LightMutexHolder holder(_sockets_mutex);
+  Sockets::const_iterator si;
+  for (si = _sockets.begin(); si != _sockets.end(); ++si) {
+    SocketInfo *sinfo = (*si);
+    if (!sinfo->_busy && !sinfo->_error) {
+      fdset.setForSocket(*sinfo->get_socket());
+    }
   }
 }

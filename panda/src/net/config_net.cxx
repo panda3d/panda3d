@@ -77,12 +77,12 @@ get_net_error_abort() {
 }
 
 double
-get_max_poll_cycle() {
-  static ConfigVariableDouble *max_poll_cycle = NULL;
+get_net_max_poll_cycle() {
+  static ConfigVariableDouble *net_max_poll_cycle = NULL;
 
-  if (max_poll_cycle == (ConfigVariableDouble *)NULL) {
-    max_poll_cycle = new ConfigVariableDouble
-      ("max-poll-cycle", 0.2,
+  if (net_max_poll_cycle == (ConfigVariableDouble *)NULL) {
+    net_max_poll_cycle = new ConfigVariableDouble
+      ("net-max-poll-cycle", 0.2,
        PRC_DESC("Specifies the maximum amount of time, in seconds, to "
                 "continue to read data within one cycle of the poll() "
                 "call.  If this is negative, the program will wait as "
@@ -92,7 +92,26 @@ get_max_poll_cycle() {
                 "in faster than it can be processed."));
   }
 
-  return *max_poll_cycle;
+  return *net_max_poll_cycle;
+}
+
+double
+get_net_max_block() {
+  static ConfigVariableDouble *net_max_block = NULL;
+
+  if (net_max_block == (ConfigVariableDouble *)NULL) {
+    net_max_block = new ConfigVariableDouble
+      ("net-max-block", 0.01,
+       PRC_DESC("Specifies the maximum amount of time, in seconds, to "
+                "completely block the process during any blocking wait "
+                "in the net subsystem.  This is an internal timeout only, "
+                "and gives the net subsystem a chance to detect things "
+                "like explicitly-closed connections in another thread; it "
+                "does not affect the blocking behavior at the high "
+                "level.")); 
+  }
+
+  return *net_max_block;
 }
 
 // This function is used in the ReaderThread and WriterThread
