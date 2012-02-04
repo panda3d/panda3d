@@ -45,6 +45,7 @@ private:
   bool _got_zero_special;
   bool _got_output_filename;
   Filename _output_filename;
+  int _reorder_index;
 };
 
 #endif
