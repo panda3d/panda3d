@@ -65,6 +65,13 @@ parse_coordinate_system_string(const string &str) {
   return CS_invalid;
 }
 
+string
+format_coordinate_system(CoordinateSystem cs) {
+  ostringstream strm;
+  strm << cs;
+  return strm.str();
+}
+
 bool
 is_right_handed(CoordinateSystem cs) {
   if (cs == CS_default) {

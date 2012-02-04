@@ -40,11 +40,11 @@ enum CoordinateSystem {
 };
 
 EXPCL_PANDA_LINMATH CoordinateSystem get_default_coordinate_system();
+EXPCL_PANDA_LINMATH CoordinateSystem parse_coordinate_system_string(const string &str);
+EXPCL_PANDA_LINMATH string format_coordinate_system(CoordinateSystem cs);
+EXPCL_PANDA_LINMATH bool is_right_handed(CoordinateSystem cs = CS_default);
 
 END_PUBLISH
-
-EXPCL_PANDA_LINMATH CoordinateSystem parse_coordinate_system_string(const string &str);
-EXPCL_PANDA_LINMATH bool is_right_handed(CoordinateSystem cs = CS_default);
 
 #define IS_LEFT_HANDED_COORDSYSTEM(cs) ((cs==CS_zup_left) || (cs==CS_yup_left))
 
