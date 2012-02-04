@@ -1951,7 +1951,7 @@ string_texture_type(const string &str) {
   }
 
   gobj_cat->error()
-    << "Invalid Texture::TextureLevel value: " << str << "\n";
+    << "Invalid Texture::TextureType value: " << str << "\n";
   return TT_2d_texture;
 }
 
