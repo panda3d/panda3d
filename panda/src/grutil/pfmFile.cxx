@@ -646,8 +646,8 @@ compute_planar_bounds(double point_dist, double sample_radius) const {
   rinv.set_row(3, -trans);
   rotate.invert_from(rinv);
 
-  // Now determine the minmax in the XZ plane.
-  PN_stdfloat min_x, min_z, max_x, max_z;
+  // Now determine the minmax.
+  PN_stdfloat min_x, min_y, min_z, max_x, max_y, max_z;
   bool got_point = false;
   Table::const_iterator ti;
   for (ti = _table.begin(); ti != _table.end(); ++ti) {
@@ -657,27 +657,33 @@ compute_planar_bounds(double point_dist, double sample_radius) const {
     LPoint3 point = (*ti) * rinv;
     if (!got_point) {
       min_x = point[0];
+      min_y = point[1];
       min_z = point[2];
       max_x = point[0];
+      max_y = point[1];
       max_z = point[2];
       got_point = true;
     } else {
       min_x = min(min_x, point[0]);
+      min_y = min(min_y, point[0]);
       min_z = min(min_z, point[2]);
       max_x = max(max_x, point[0]);
+      max_y = max(max_y, point[0]);
       max_z = max(max_z, point[2]);
     }
   }
 
   PT(BoundingHexahedron) bounds = new BoundingHexahedron
-    (LPoint3(min_x, 0, min_z), LPoint3(max_x, 0, min_z),
-     LPoint3(min_x, 0, max_z), LPoint3(max_x, 0, max_z),
-     LPoint3(min_x, 0, min_z), LPoint3(max_x, 0, min_z),
-     LPoint3(min_x, 0, max_z), LPoint3(max_x, 0, max_z));
+    (LPoint3(min_x, min_y, min_z), LPoint3(max_x, min_y, min_z),
+     LPoint3(min_x, min_y, max_z), LPoint3(max_x, min_y, max_z),
+     LPoint3(min_x, max_y, min_z), LPoint3(max_x, max_y, min_z),
+     LPoint3(min_x, max_y, max_z), LPoint3(max_x, max_y, max_z));
+  bounds->write(cerr);
 
   // Rotate the bounding volume back into the original space of the
   // screen.
   bounds->xform(rotate);
+  bounds->write(cerr);
 
   return bounds;
 }
