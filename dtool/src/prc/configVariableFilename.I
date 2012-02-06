@@ -61,8 +61,8 @@ operator = (const Filename &value) {
 //  Description: Returns the variable's value as a Filename.
 ////////////////////////////////////////////////////////////////////
 INLINE ConfigVariableFilename::
-operator const Filename & () const {
-  return get_value();
+operator const Filename &() const {
+  return get_ref_value();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -72,7 +72,7 @@ operator const Filename & () const {
 ////////////////////////////////////////////////////////////////////
 INLINE const char *ConfigVariableFilename::
 c_str() const {
-  return get_value().c_str();
+  return get_ref_value().c_str();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -82,7 +82,7 @@ c_str() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigVariableFilename::
 empty() const {
-  return get_value().empty();
+  return get_ref_value().empty();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -92,7 +92,7 @@ empty() const {
 ////////////////////////////////////////////////////////////////////
 INLINE size_t ConfigVariableFilename::
 length() const {
-  return get_value().length();
+  return get_ref_value().length();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -102,7 +102,7 @@ length() const {
 ////////////////////////////////////////////////////////////////////
 INLINE char ConfigVariableFilename::
 operator [] (int n) const {
-  return get_value()[n];
+  return get_ref_value()[n];
 }
 
 
@@ -116,7 +116,7 @@ operator [] (int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE string ConfigVariableFilename::
 get_fullpath() const {
-  return get_value().get_fullpath();
+  return get_ref_value().get_fullpath();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -128,7 +128,7 @@ get_fullpath() const {
 ////////////////////////////////////////////////////////////////////
 INLINE string ConfigVariableFilename::
 get_dirname() const {
-  return get_value().get_dirname();
+  return get_ref_value().get_dirname();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -140,7 +140,7 @@ get_dirname() const {
 ////////////////////////////////////////////////////////////////////
 INLINE string ConfigVariableFilename::
 get_basename() const {
-  return get_value().get_basename();
+  return get_ref_value().get_basename();
 }
 
 
@@ -152,7 +152,7 @@ get_basename() const {
 ////////////////////////////////////////////////////////////////////
 INLINE string ConfigVariableFilename::
 get_fullpath_wo_extension() const {
-  return get_value().get_fullpath_wo_extension();
+  return get_ref_value().get_fullpath_wo_extension();
 }
 
 
@@ -164,7 +164,7 @@ get_fullpath_wo_extension() const {
 ////////////////////////////////////////////////////////////////////
 INLINE string ConfigVariableFilename::
 get_basename_wo_extension() const {
-  return get_value().get_basename_wo_extension();
+  return get_ref_value().get_basename_wo_extension();
 }
 
 
@@ -177,7 +177,7 @@ get_basename_wo_extension() const {
 ////////////////////////////////////////////////////////////////////
 INLINE string ConfigVariableFilename::
 get_extension() const {
-  return get_value().get_extension();
+  return get_ref_value().get_extension();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -187,7 +187,7 @@ get_extension() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigVariableFilename::
 operator == (const Filename &other) const {
-  return get_value() == other;
+  return get_ref_value() == other;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -197,7 +197,7 @@ operator == (const Filename &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigVariableFilename::
 operator != (const Filename &other) const {
-  return get_value() != other;
+  return get_ref_value() != other;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -207,7 +207,7 @@ operator != (const Filename &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigVariableFilename::
 operator < (const Filename &other) const {
-  return get_value() < other;
+  return get_ref_value() < other;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -225,13 +225,13 @@ set_value(const Filename &value) {
 //       Access: Published
 //  Description: Returns the variable's value.
 ////////////////////////////////////////////////////////////////////
-INLINE const Filename &ConfigVariableFilename::
+INLINE Filename ConfigVariableFilename::
 get_value() const {
-  TAU_PROFILE("const Filename &ConfigVariableFilename::get_value() const", " ", TAU_USER);
-  if (!is_cache_valid(_local_modified)) {
-    ((ConfigVariableFilename *)this)->reload_cache();
-  }
-  return _cache;
+  // This returns a concrete rather than a reference by design, to
+  // avoid problems with scope.  When we call this method from Python,
+  // we'd like to be able to keep the Filename value around longer
+  // than the lifetime of the config variable itself.
+  return get_ref_value();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -267,4 +267,21 @@ get_word(int n) const {
 INLINE void ConfigVariableFilename::
 set_word(int n, const Filename &value) {
   set_string_word(n, value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableFilename::get_ref_value
+//       Access: Private
+//  Description: Returns the variable's value, as a reference into the
+//               config variable itself.  This is the internal method
+//               that implements get_value(), which returns a
+//               concrete.
+////////////////////////////////////////////////////////////////////
+INLINE const Filename &ConfigVariableFilename::
+get_ref_value() const {
+  TAU_PROFILE("const Filename &ConfigVariableFilename::get_ref_value() const", " ", TAU_USER);
+  if (!is_cache_valid(_local_modified)) {
+    ((ConfigVariableFilename *)this)->reload_cache();
+  }
+  return _cache;
 }

@@ -56,7 +56,7 @@ PUBLISHED:
   INLINE bool operator < (const Filename &other) const;
 
   INLINE void set_value(const Filename &value);
-  INLINE const Filename &get_value() const;
+  INLINE Filename get_value() const;
   INLINE Filename get_default_value() const;
 
   INLINE Filename get_word(int n) const;
@@ -64,6 +64,7 @@ PUBLISHED:
 
 private:
   void reload_cache();
+  INLINE const Filename &get_ref_value() const;
 
 private:
   AtomicAdjust::Integer _local_modified;
