@@ -665,10 +665,10 @@ compute_planar_bounds(double point_dist, double sample_radius) const {
       got_point = true;
     } else {
       min_x = min(min_x, point[0]);
-      min_y = min(min_y, point[0]);
+      min_y = min(min_y, point[1]);
       min_z = min(min_z, point[2]);
       max_x = max(max_x, point[0]);
-      max_y = max(max_y, point[0]);
+      max_y = max(max_y, point[1]);
       max_z = max(max_z, point[2]);
     }
   }
