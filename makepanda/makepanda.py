@@ -1613,6 +1613,7 @@ DTOOL_CONFIG=[
     ("HAVE_AUDIO",                     '1',                      '1'),
     ("NOTIFY_DEBUG",                   'UNDEF',                  'UNDEF'),
     ("DO_PSTATS",                      'UNDEF',                  'UNDEF'),
+    ("DO_DCAST",                       'UNDEF',                  'UNDEF'),
     ("DO_COLLISION_RECORDING",         'UNDEF',                  'UNDEF'),
     ("SUPPORT_IMMEDIATE_MODE",         '1',                      '1'),
     ("TRACK_IN_INTERPRETER",           'UNDEF',                  'UNDEF'),
@@ -1818,6 +1819,9 @@ def WriteConfigSettings():
     if (GetOptimize() <= 3):
         if (dtool_config["HAVE_NET"] != 'UNDEF'):
             dtool_config["DO_PSTATS"] = '1'
+
+    if (GetOptimize() <= 3):
+        dtool_config["DO_DCAST"] = '1'
 
     if (GetOptimize() <= 3):
         dtool_config["DO_COLLISION_RECORDING"] = '1'
