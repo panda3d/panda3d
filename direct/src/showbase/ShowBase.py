@@ -2188,7 +2188,7 @@ class ShowBase(DirectObject.DirectObject):
         dr.setCamera(self.showVertices)
         
 
-    def oobe(self):
+    def oobe(self, cam = None):
         """
         Enable a special "out-of-body experience" mouse-interface
         mode.  This can be used when a "god" camera is needed; it
@@ -2209,6 +2209,9 @@ class ShowBase(DirectObject.DirectObject):
         This is a toggle; the second time this function is called, it
         disables the mode.
         """
+        if cam is None:
+            cam = self.cam
+            
         # If oobeMode was never set, set it to false and create the
         # structures we need to implement OOBE.
         try:
@@ -2223,7 +2226,7 @@ class ShowBase(DirectObject.DirectObject):
             self.oobeLens.setNearFar(0.1, 10000.0)
             self.oobeLens.setMinFov(40)
 
-            self.oobeTrackball = NodePath(Trackball('oobeTrackball'), 1)
+            self.oobeTrackball = NodePath(Trackball('oobeTrackball'))
             self.oobe2cam = self.oobeTrackball.attachNewNode(Transform2SG('oobe2cam'))
             self.oobe2cam.node().setNode(self.oobeCameraTrackball.node())
 
@@ -2259,8 +2262,9 @@ class ShowBase(DirectObject.DirectObject):
             bt.setButtonRepeatEvent('')
             bt.setButtonUpEvent('')
 
-            self.cam.reparentTo(self.camera)
-            self.camNode.setLens(self.camLens)
+            cam.reparentTo(self.camera)
+            #if cam == self.cam:
+            #    self.camNode.setLens(self.camLens)
             self.oobeCamera.reparentTo(self.hidden)
             self.oobeMode = 0
             bboard.post('oobeEnabled', False)
@@ -2287,7 +2291,7 @@ class ShowBase(DirectObject.DirectObject):
             mat.invertInPlace()
             self.oobeTrackball.node().setMat(mat)
 
-            self.cam.reparentTo(self.oobeCameraTrackball)
+            cam.reparentTo(self.oobeCameraTrackball)
 
             # Temporarily disable button events by routing them
             # through the oobe filters.
@@ -2298,7 +2302,8 @@ class ShowBase(DirectObject.DirectObject):
             bt.setButtonUpEvent('oobe-up')
 
             # Don't change the camera lens--keep it with the original lens.
-            #self.camNode.setLens(self.oobeLens)
+            #if cam == self.cam:
+            #    self.camNode.setLens(self.oobeLens)
 
             if self.oobeVis:
                 self.oobeVis.reparentTo(self.camera)
