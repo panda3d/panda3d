@@ -743,13 +743,13 @@ get_lens_mat_inv() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Lens::get_last_change
-//       Access: Public
+//       Access: Published
 //  Description: Returns the UpdateSeq that is incremented whenever
 //               the lens properties are changed.  As long as this
 //               number remains the same, you may assume the lens
 //               properties are unchanged.
 ////////////////////////////////////////////////////////////////////
-INLINE const UpdateSeq &Lens::
+INLINE UpdateSeq Lens::
 get_last_change() const {
   CDReader cdata(_cycler);
   return cdata->_last_change;

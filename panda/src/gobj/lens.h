@@ -166,8 +166,7 @@ PUBLISHED:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
 
-public:
-  INLINE const UpdateSeq &get_last_change() const;
+  INLINE UpdateSeq get_last_change() const;
 
 protected:
   class CData;
