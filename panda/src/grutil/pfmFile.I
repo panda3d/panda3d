@@ -183,6 +183,45 @@ get_vis_inverse() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::set_flat_texcoord_name
+//       Access: Published
+//  Description: If the flat_texcoord_name is specified, it is the
+//               name of an additional vertex column that will be
+//               created for the "flat" texture coordinates, i.e. the
+//               original 0..1 values that correspond to the 2-D index
+//               position of each point in the original pfm file.
+//
+//               These are the same values that will be assigned to
+//               the default texture coordinates if the vis_inverse
+//               flag is *not* true.
+////////////////////////////////////////////////////////////////////
+INLINE void PfmFile::
+set_flat_texcoord_name(InternalName *flat_texcoord_name) {
+  _flat_texcoord_name = flat_texcoord_name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::clear_flat_texcoord_name
+//       Access: Published
+//  Description: Resets the flat_texcoord_name to empty, so that
+//               additional texture coordinates are not created.
+////////////////////////////////////////////////////////////////////
+INLINE void PfmFile::
+clear_flat_texcoord_name() {
+  _flat_texcoord_name = NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::get_flat_texcoord_name
+//       Access: Published
+//  Description: Returns the flat_texcoord_name.  See set_flat_texcoord_name().
+////////////////////////////////////////////////////////////////////
+INLINE InternalName *PfmFile::
+get_flat_texcoord_name() const {
+  return _flat_texcoord_name;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::set_vis_2d
 //       Access: Published
 //  Description: Sets the vis_2d flag.  When this flag is true,

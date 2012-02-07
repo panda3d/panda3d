@@ -246,6 +246,11 @@ ConfigVariableDouble sbs_right_dimensions
           "four numbers, in the form left right top bottom, similar to a "
           "normal DisplayRegion layout."));
 
+ConfigVariableBool swap_eyes
+("swap-eyes", false,
+ PRC_DESC("Set this true to reverse the left and right channel output of "
+          "stereo DisplayRegions."));
+
 ConfigVariableBool default_stereo_camera
 ("default-stereo-camera", true,
  PRC_DESC("When this is true, the default DisplayRegion created for "

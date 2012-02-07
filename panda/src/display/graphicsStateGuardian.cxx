@@ -1318,7 +1318,24 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
 
   _stereo_buffer_mask = ~0;
 
-  switch (dr->get_stereo_channel()) {
+  Lens::StereoChannel output_channel = dr->get_stereo_channel();
+  if (dr->get_window()->get_swap_eyes()) {
+    // Reverse the output channel.
+    switch (output_channel) {
+    case Lens::SC_left:
+      output_channel = Lens::SC_right;
+      break;
+
+    case Lens::SC_right:
+      output_channel = Lens::SC_left;
+      break;
+
+    default:
+      break;
+    }
+  }
+
+  switch (output_channel) {
   case Lens::SC_left:
     _color_write_mask = dr->get_window()->get_left_eye_color_mask();
     if (_current_properties->is_stereo()) {

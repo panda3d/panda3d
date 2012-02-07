@@ -107,6 +107,7 @@ GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
   _got_child_sort = false;
   _internal_sort_index = 0;
   _inverted = window_inverted;
+  _swap_eyes = swap_eyes;
   _red_blue_stereo = false;
   _left_eye_color_mask = 0x0f;
   _right_eye_color_mask = 0x0f;
@@ -698,9 +699,9 @@ make_stereo_display_region(const LVecBase4 &dimensions) {
     PN_stdfloat left_w = _sbs_left_dimensions[1] - _sbs_left_dimensions[0];
     PN_stdfloat left_h = _sbs_left_dimensions[3] - _sbs_left_dimensions[2];
     LVecBase4 left_dimensions(dimensions[0] * left_w + left_l,
-                               dimensions[1] * left_w + left_l,
-                               dimensions[2] * left_h + left_b,
-                               dimensions[3] * left_h + left_b);
+                              dimensions[1] * left_w + left_l,
+                              dimensions[2] * left_h + left_b,
+                              dimensions[3] * left_h + left_b);
     left = new DisplayRegion(this, left_dimensions);
 
     PN_stdfloat right_l = _sbs_right_dimensions[0];
@@ -708,10 +709,16 @@ make_stereo_display_region(const LVecBase4 &dimensions) {
     PN_stdfloat right_w = _sbs_right_dimensions[1] - _sbs_right_dimensions[0];
     PN_stdfloat right_h = _sbs_right_dimensions[3] - _sbs_right_dimensions[2];
     LVecBase4 right_dimensions(dimensions[0] * right_w + right_l,
-                                dimensions[1] * right_w + right_l,
-                                dimensions[2] * right_h + right_b,
-                                dimensions[3] * right_h + right_b);
+                               dimensions[1] * right_w + right_l,
+                               dimensions[2] * right_h + right_b,
+                               dimensions[3] * right_h + right_b);
     right = new DisplayRegion(this, right_dimensions);
+
+    if (_swap_eyes) {
+      DisplayRegion *t = left;
+      left = right;
+      right = t;
+    }
 
   } else {
     // Not a side-by-side stereo window; thus, both the left and right

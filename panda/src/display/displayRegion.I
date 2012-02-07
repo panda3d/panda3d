@@ -753,7 +753,7 @@ get_sort() const {
 //               set_stereo_channel().
 ////////////////////////////////////////////////////////////////////
 INLINE Lens::StereoChannel DisplayRegionPipelineReader::
-get_stereo_channel() {
+get_stereo_channel() const {
   return _cdata->_stereo_channel;
 }
 

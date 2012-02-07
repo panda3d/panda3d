@@ -840,26 +840,38 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
       << " pieces.\n";
   }
 
-  CPT(GeomVertexFormat) format;
+  PT(GeomVertexArrayFormat) array_format;
+
   if (_vis_2d) {
     // No normals needed if we're just generating a 2-d mesh.
-    format = GeomVertexFormat::get_v3t2();
+    array_format = new GeomVertexArrayFormat
+      (InternalName::get_vertex(), 3, Geom::NT_stdfloat, Geom::C_point,
+       InternalName::get_texcoord(), 2, Geom::NT_stdfloat, Geom::C_texcoord);
+
   } else {
     if (_vis_inverse) {
       // We need a 3-d texture coordinate if we're inverting the vis
       // and it's 3-d.  But we still don't need normals in that case.
-      GeomVertexArrayFormat *v3t3 = new GeomVertexArrayFormat
-        (InternalName::get_vertex(), 3, 
-         Geom::NT_stdfloat, Geom::C_point,
-         InternalName::get_texcoord(), 3, 
-         Geom::NT_stdfloat, Geom::C_texcoord);
-      format = GeomVertexFormat::register_format(v3t3);
+      array_format = new GeomVertexArrayFormat
+        (InternalName::get_vertex(), 3, Geom::NT_stdfloat, Geom::C_point,
+         InternalName::get_texcoord(), 3, Geom::NT_stdfloat, Geom::C_texcoord);
     } else {
       // Otherwise, we only need a 2-d texture coordinate, and we do
       // want normals.
-      format = GeomVertexFormat::get_v3n3t2();
+      array_format = new GeomVertexArrayFormat
+        (InternalName::get_vertex(), 3, Geom::NT_stdfloat, Geom::C_point,
+         InternalName::get_normal(), 3, Geom::NT_stdfloat, Geom::C_vector,
+         InternalName::get_texcoord(), 2, Geom::NT_stdfloat, Geom::C_texcoord);
     }
   }
+
+  if (_flat_texcoord_name != (InternalName *)NULL) {
+    // We need an additional texcoord column for the flat texcoords.
+    array_format->add_column(_flat_texcoord_name, 2, 
+                             Geom::NT_stdfloat, Geom::C_texcoord);
+  }
+
+  CPT(GeomVertexFormat) format = GeomVertexFormat::register_format(array_format);
 
   for (int yci = 0; yci < num_y_cells; ++yci) {
     int y_begin = (yci * _y_size) / num_y_cells;
@@ -895,6 +907,7 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
       GeomVertexWriter vertex(vdata, InternalName::get_vertex());
       GeomVertexWriter normal(vdata, InternalName::get_normal());
       GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
+      GeomVertexWriter texcoord2(vdata, _flat_texcoord_name);
 
       for (int yi = y_begin; yi < y_end; ++yi) {
         for (int xi = x_begin; xi < x_end; ++xi) {
@@ -943,6 +956,10 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
               n = -n;
             }
             normal.add_data3(n);
+          }
+
+          if (_flat_texcoord_name != (InternalName *)NULL) {
+            texcoord2.add_data2(uv);
           }
         }
       }

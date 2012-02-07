@@ -325,6 +325,33 @@ get_inverted() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::set_swap_eyes
+//       Access: Public
+//  Description: Changes the "swap eyes" flag.  This flag is normally
+//               false.  When it is true, the left and right channels
+//               of a stereo DisplayRegion are sent to the opposite
+//               channels in the rendering backend.  This is meant to
+//               work around hardware that inadvertently swaps the
+//               output channels, or hardware for which it cannot be
+//               determined which channel is which until runtime.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsOutput::
+set_swap_eyes(bool swap_eyes) {
+  _swap_eyes = swap_eyes;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_swap_eyes
+//       Access: Public
+//  Description: Returns the current setting of the "swap eyes" flag.
+//               See set_swap_eyes().
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsOutput::
+get_swap_eyes() const {
+  return _swap_eyes;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::set_red_blue_stereo
 //       Access: Published
 //  Description: Enables red-blue stereo mode on this particular

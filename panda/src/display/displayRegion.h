@@ -305,7 +305,7 @@ public:
   INLINE NodePath get_camera() const;
   INLINE bool is_active() const;
   INLINE int get_sort() const;
-  INLINE Lens::StereoChannel get_stereo_channel();
+  INLINE Lens::StereoChannel get_stereo_channel() const;
   INLINE int get_tex_view_offset();
   INLINE bool get_clear_depth_between_eyes() const;
   INLINE int get_cube_map_index() const;

@@ -19,6 +19,7 @@
 #include "luse.h"
 #include "nodePath.h"
 #include "boundingHexahedron.h"
+#include "internalName.h"
 
 class GeomNode;
 class Lens;
@@ -70,6 +71,9 @@ PUBLISHED:
 
   INLINE void set_vis_inverse(bool vis_inverse);
   INLINE bool get_vis_inverse() const;
+  INLINE void set_flat_texcoord_name(InternalName *flat_texcoord_name);
+  INLINE void clear_flat_texcoord_name();
+  INLINE InternalName *get_flat_texcoord_name() const;
   INLINE void set_vis_2d(bool vis_2d);
   INLINE bool get_vis_2d() const;
 
@@ -115,6 +119,7 @@ private:
 
   bool _zero_special;
   bool _vis_inverse;
+  PT(InternalName) _flat_texcoord_name;
   bool _vis_2d;
 };
 

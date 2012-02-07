@@ -134,6 +134,9 @@ PUBLISHED:
   void set_inverted(bool inverted);
   INLINE bool get_inverted() const;
 
+  INLINE void set_swap_eyes(bool swap_eyes);
+  INLINE bool get_swap_eyes() const;
+
   INLINE void set_red_blue_stereo(bool red_blue_stereo,
                                   unsigned int left_eye_color_mask,
                                   unsigned int right_eye_color_mask);
@@ -305,6 +308,7 @@ private:
 
 protected:
   bool _inverted;
+  bool _swap_eyes;
   bool _red_blue_stereo;
   unsigned int _left_eye_color_mask;
   unsigned int _right_eye_color_mask;
