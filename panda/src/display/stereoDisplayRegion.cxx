@@ -33,6 +33,7 @@ StereoDisplayRegion(GraphicsOutput *window,
   nassertv(window == left->get_window() &&
            window == right->get_window());
   set_stereo_channel(Lens::SC_stereo);
+  set_sort(0);
 }
 
 ////////////////////////////////////////////////////////////////////
