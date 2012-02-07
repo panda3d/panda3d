@@ -423,7 +423,7 @@ close_api() {
 U32 AILCALLBACK GlobalMilesManager::
 open_callback(char const *filename, UINTa *file_handle) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  istream *strm = vfs->open_read_file(Filename::binary_filename(filename), true);
+  istream *strm = vfs->open_read_file(Filename::binary_filename(string(filename)), true);
   if (strm == NULL) {
     // Failure.
     return 0;
