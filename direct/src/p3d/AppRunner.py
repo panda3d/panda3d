@@ -703,6 +703,7 @@ class AppRunner(DirectObject):
             __builtin__.open = file.open
             os.listdir = file.listdir
             os.walk = file.walk
+            os.path.join = file.join
             os.path.isfile = file.isfile
             os.path.isdir = file.isdir
             os.path.exists = file.exists
