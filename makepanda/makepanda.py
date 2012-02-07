@@ -507,6 +507,7 @@ if (COMPILER=="MSVC"):
     if (PkgSkip("SWSCALE")==0):  LibName("SWSCALE",  GetThirdpartyDir() + "ffmpeg/lib/swscale.lib")
     if (PkgSkip("ROCKET")==0):   LibName("ROCKET",   GetThirdpartyDir() + "rocket/lib/RocketCore.lib")
     if (PkgSkip("ROCKET")==0):   LibName("ROCKET",   GetThirdpartyDir() + "rocket/lib/RocketControls.lib")
+    if (PkgSkip("ROCKET")==0):   LibName("ROCKET",   GetThirdpartyDir() + "rocket/lib/boost_python-vc90-mt-1_48.lib")
     if (PkgSkip("OPENAL")==0):
         if (os.path.exists(GetThirdpartyDir() + "openal/lib/pandaopenal32.lib")):
             LibName("OPENAL",   GetThirdpartyDir() + "openal/lib/pandaopenal32.lib")
