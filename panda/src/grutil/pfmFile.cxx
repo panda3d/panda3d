@@ -602,10 +602,10 @@ merge(const PfmFile &other) {
 //               mostly-planar surface.
 //
 //               This algorithm works by sampling the (square)
-//               sample_radius pixels at three of the four point_dist
-//               corners around the center (cx - pd, cx + pd) and so
-//               on, to determine the plane of the surface.  Then all
-//               of the points are projected into that plane and the
+//               sample_radius pixels at the four point_dist corners
+//               around the center (cx - pd, cx + pd) and so on, to
+//               approximate the plane of the surface.  Then all of
+//               the points are projected into that plane and the
 //               bounding volume within that plane is determined.
 //
 //               point_dist and sample_radius are in UV space, i.e. in
@@ -613,10 +613,11 @@ merge(const PfmFile &other) {
 ////////////////////////////////////////////////////////////////////
 PT(BoundingHexahedron) PfmFile::
 compute_planar_bounds(double point_dist, double sample_radius) const {
-  LPoint3 p0, p1, p2;
+  LPoint3 p0, p1, p2, p3;
   compute_sample_point(p0, 0.5 + point_dist, 0.5 - point_dist, sample_radius);
   compute_sample_point(p1, 0.5 + point_dist, 0.5 + point_dist, sample_radius);
   compute_sample_point(p2, 0.5 - point_dist, 0.5 + point_dist, sample_radius);
+  compute_sample_point(p3, 0.5 - point_dist, 0.5 - point_dist, sample_radius);
 
   LPoint3 normal;
 
@@ -628,9 +629,13 @@ compute_planar_bounds(double point_dist, double sample_radius) const {
   normal[1] += p1[2] * p2[0] - p1[0] * p2[2];
   normal[2] += p1[0] * p2[1] - p1[1] * p2[0];
 
-  normal[0] += p2[1] * p0[2] - p2[2] * p0[1];
-  normal[1] += p2[2] * p0[0] - p2[0] * p0[2];
-  normal[2] += p2[0] * p0[1] - p2[1] * p0[0];
+  normal[0] += p2[1] * p3[2] - p2[2] * p3[1];
+  normal[1] += p2[2] * p3[0] - p2[0] * p3[2];
+  normal[2] += p2[0] * p3[1] - p2[1] * p3[0];
+
+  normal[0] += p3[1] * p0[2] - p3[2] * p0[1];
+  normal[1] += p3[2] * p0[0] - p3[0] * p0[2];
+  normal[2] += p3[0] * p0[1] - p3[1] * p0[0];
 
   normal.normalize();
 
