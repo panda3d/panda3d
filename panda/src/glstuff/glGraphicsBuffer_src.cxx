@@ -146,8 +146,8 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
   // Figure out the desired size of the  buffer.
   if (mode == FM_render) {
-    rebuild_bitplanes();
     clear_cube_map_selection();
+    rebuild_bitplanes();
     if (!check_fbo()) {
       if (GLCAT.is_debug()) {
         GLCAT.debug()
@@ -234,8 +234,12 @@ rebuild_bitplanes() {
   if (tex == 0) {
     return;
   }
+  RenderTextureMode rtm_mode = get_rtm_mode(0);
 
-  if (tex->get_texture_type() != Texture::TT_cube_map) {
+  if (tex->get_texture_type() != Texture::TT_cube_map || 
+      rtm_mode != RTM_bind_or_copy) {
+    // We're not rendering directly to a cube map, so set up the
+    // framebuffers normally.
     if (_fbo == 0) {
       glgsg->_glGenFramebuffers(1, &_fbo);
       if (_fbo == 0) {
@@ -287,7 +291,7 @@ rebuild_bitplanes() {
     // Sort the textures list into appropriate slots.
 
     {
-      CDLockedReader cdata(_cycler);
+      CDReader cdata(_cycler);
       for (size_t i = 0; i != cdata->_textures.size(); ++i) {
         const RenderTexture &rt = cdata->_textures[i];
         RenderTextureMode rtm_mode = rt._rtm_mode;
@@ -298,20 +302,16 @@ rebuild_bitplanes() {
         RenderTexturePlane plane = rt._plane;
 
         // If it's a not a 2D texture or a cube map, punt it.
-        if ((tex->get_texture_type() != Texture::TT_2d_texture)&&
+        if ((tex->get_texture_type() != Texture::TT_2d_texture) &&
             (tex->get_texture_type() != Texture::TT_cube_map)) {
-          CDWriter cdataw(_cycler, cdata, false);
-          nassertv(cdata->_textures.size() == cdataw->_textures.size());
-          cdataw->_textures[i]._rtm_mode = RTM_copy_texture;
+          ((CData *)cdata.p())->_textures[i]._rtm_mode = RTM_copy_texture;
           continue;
         }
         // If I can't find an appropriate slot, or if there's
         // already a texture bound to this slot, then punt
         // this texture.
         if (attach[plane]) {
-          CDWriter cdataw(_cycler, cdata, false);
-          nassertv(cdata->_textures.size() == cdataw->_textures.size());
-          cdataw->_textures[i]._rtm_mode = RTM_copy_texture;
+          ((CData *)cdata.p())->_textures[i]._rtm_mode = RTM_copy_texture;
           continue;
         }
         // Assign the texture to this slot.
@@ -529,7 +529,7 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
       GLclampf priority = 1.0f;
       glPrioritizeTextures(1, &gtc->_index, &priority);
 #endif
-      if (tex->get_texture_type() == Texture::TT_2d_texture) {
+      if (_cube_map_index < 0) {
         glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
                                        GL_TEXTURE_2D, gtc->_index, 0);
       } else {
@@ -538,7 +538,7 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
                                        gtc->_index, 0);
       }
       if (_use_depth_stencil) {
-        if (tex->get_texture_type() == Texture::TT_2d_texture) {
+        if (_cube_map_index < 0) {
           glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
                                          GL_TEXTURE_2D, gtc->_index, 0);
         } else {
@@ -568,7 +568,7 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
       glPrioritizeTextures(1, &gtc->_index, &priority);
 #endif
       glgsg->update_texture(tc, true);
-      if (tex->get_texture_type() == Texture::TT_2d_texture) {
+      if (_cube_map_index < 0) {
         glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, attachpoint,
                                        GL_TEXTURE_2D, gtc->_index, 0);
       } else {
