@@ -1324,10 +1324,6 @@ class ShowBase(DirectObject.DirectObject):
         # we will if clearDepth is specified.
         if clearDepth:
             dr.setClearDepthActive(1)
-        elif dr.isStereo():
-            # If it's a stereo DisplayRegion, we clear the right
-            # channel by default.
-            dr.getRightEye().setClearDepthActive(1)
             
         if clearColor:
             dr.setClearColorActive(1)

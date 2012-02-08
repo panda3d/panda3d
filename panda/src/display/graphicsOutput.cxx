@@ -725,6 +725,16 @@ make_stereo_display_region(const LVecBase4 &dimensions) {
     // eyes are the same region: the region specified.
     left = new DisplayRegion(this, dimensions);
     right = new DisplayRegion(this, dimensions);
+
+    // In this case, we assume that the two eyes will share the same
+    // depth buffer, which means the right eye should clear the depth
+    // buffer by default.
+    if (get_clear_depth_active()) {
+      right->set_clear_depth_active(true);
+    }
+    if (get_clear_stencil_active()) {
+      right->set_clear_stencil_active(true);
+    }
   }
 
   PT(StereoDisplayRegion) stereo = new StereoDisplayRegion(this, dimensions,
