@@ -31,6 +31,8 @@ class EXPCL_PANDABULLET BulletHeightfieldShape : public BulletShape {
 
 PUBLISHED:
   BulletHeightfieldShape(const PNMImage &image, PN_stdfloat max_height, BulletUpAxis up=Z_up);
+  INLINE BulletHeightfieldShape(const BulletHeightfieldShape &copy);
+  INLINE void operator = (const BulletHeightfieldShape &copy);
   INLINE ~BulletHeightfieldShape();
 
   void set_use_diamond_subdivision(bool flag=true);
@@ -39,6 +41,8 @@ public:
   virtual btCollisionShape *ptr() const;
 
 private:
+  int _num_rows;
+  int _num_cols;
   float *_data;
   btHeightfieldTerrainShape *_shape;
 

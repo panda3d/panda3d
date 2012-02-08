@@ -24,19 +24,20 @@ TypeHandle BulletHeightfieldShape::_type_handle;
 BulletHeightfieldShape::
 BulletHeightfieldShape(const PNMImage &image, PN_stdfloat max_height, BulletUpAxis up) {
 
-  int num_rows = image.get_x_size();
-  int num_columns = image.get_y_size();
+  _num_rows = image.get_x_size();
+  _num_cols = image.get_y_size();
 
-  _data = new float[num_rows * num_columns];
+  _data = new float[_num_rows * _num_cols];
 
-  for (int row=0; row < num_rows; row++) {
-    for (int column=0; column < num_columns; column++) {
-      _data[num_columns * row + column] = 
-        max_height * image.get_bright(column, num_columns - row - 1);
+  for (int row=0; row < _num_rows; row++) {
+    for (int column=0; column < _num_cols; column++) {
+      _data[_num_cols * row + column] = 
+        max_height * image.get_bright(column, _num_cols - row - 1);
     }
   }
 
-  _shape = new btHeightfieldTerrainShape(num_rows, num_columns,
+  _shape = new btHeightfieldTerrainShape(_num_rows,
+                                         _num_cols,
                                          _data,
                                          max_height,
                                          up,

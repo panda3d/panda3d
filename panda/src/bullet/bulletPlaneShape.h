@@ -32,6 +32,8 @@ class EXPCL_PANDABULLET BulletPlaneShape : public BulletShape {
 
 PUBLISHED:
   BulletPlaneShape(const LVector3 &normal, PN_stdfloat constant);
+  INLINE BulletPlaneShape(const BulletPlaneShape &copy);
+  INLINE void operator = (const BulletPlaneShape &copy);
   INLINE ~BulletPlaneShape();
 
   INLINE LVector3 get_plane_normal() const;

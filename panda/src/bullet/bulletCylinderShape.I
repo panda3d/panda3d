@@ -24,6 +24,26 @@ INLINE BulletCylinderShape::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BulletCylinderShape::Copy Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE BulletCylinderShape::
+BulletCylinderShape(const BulletCylinderShape &copy) :
+  _shape(copy._shape) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletCylinderShape::Copy Assignment Operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void BulletCylinderShape::
+operator = (const BulletCylinderShape &copy) {
+  _shape = copy._shape;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BulletCylinderShape::get_radius
 //       Access: Published
 //  Description:

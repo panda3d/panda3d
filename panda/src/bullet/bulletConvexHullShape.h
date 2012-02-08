@@ -32,6 +32,8 @@ class EXPCL_PANDABULLET BulletConvexHullShape : public BulletShape {
 
 PUBLISHED:
   BulletConvexHullShape();
+  INLINE BulletConvexHullShape(const BulletConvexHullShape &copy);
+  INLINE void operator = (const BulletConvexHullShape &copy);
   INLINE ~BulletConvexHullShape();
 
   void add_point(const LPoint3 &p);

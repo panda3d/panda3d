@@ -24,6 +24,26 @@ INLINE BulletPlaneShape::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BulletPlaneShape::Copy Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE BulletPlaneShape::
+BulletPlaneShape(const BulletPlaneShape &copy) :
+  _shape(copy._shape) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletPlaneShape::Copy Assignment Operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void BulletPlaneShape::
+operator = (const BulletPlaneShape &copy) {
+  _shape = copy._shape;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BulletPlaneShape::get_plane_constant
 //       Access: Published
 //  Description:

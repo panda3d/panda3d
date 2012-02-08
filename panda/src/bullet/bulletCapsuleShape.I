@@ -24,6 +24,26 @@ INLINE BulletCapsuleShape::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BulletCapsuleShape::Copy Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE BulletCapsuleShape::
+BulletCapsuleShape(const BulletCapsuleShape &copy) :
+  _shape(copy._shape) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletCapsuleShape::Copy Assignment Operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void BulletCapsuleShape::
+operator = (const BulletCapsuleShape &copy) {
+  _shape = copy._shape;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BulletCapsuleShape::get_radius
 //       Access: Published
 //  Description:

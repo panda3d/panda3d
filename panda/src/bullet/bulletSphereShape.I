@@ -24,6 +24,26 @@ INLINE BulletSphereShape::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BulletSphereShape::Copy Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE BulletSphereShape::
+BulletSphereShape(const BulletSphereShape &copy) :
+  _shape(copy._shape) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletSphereShape::Copy Assignment Operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void BulletSphereShape::
+operator = (const BulletSphereShape &copy) {
+  _shape = copy._shape;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BulletSphereShape::get_radius
 //       Access: Published
 //  Description:

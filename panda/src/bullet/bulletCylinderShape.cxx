@@ -54,13 +54,13 @@ BulletCylinderShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up) {
 
   switch (up) {
   case X_up:
-    _shape = new btCylinderShapeX(btVector3(0.5 * height, radius, 0.0f));
+    _shape = new btCylinderShapeX(btVector3(0.5 * height, radius, radius));
     break;
   case Y_up:
-    _shape = new btCylinderShape(btVector3(radius, 0.5 * height, 0.0f));
+    _shape = new btCylinderShape(btVector3(radius, 0.5 * height, radius));
     break;
   case Z_up:
-    _shape = new btCylinderShapeZ(btVector3(radius, 0.0f, 0.5 * height));
+    _shape = new btCylinderShapeZ(btVector3(radius, radius, 0.5 * height));
     break;
   default:
     bullet_cat.error() << "invalid up-axis:" << up << endl;

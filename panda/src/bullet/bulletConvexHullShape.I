@@ -23,3 +23,23 @@ INLINE BulletConvexHullShape::
   delete _shape;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BulletConvexHullShape::Copy Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE BulletConvexHullShape::
+BulletConvexHullShape(const BulletConvexHullShape &copy) :
+  _shape(copy._shape) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletConvexHullShape::Copy Assignment Operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void BulletConvexHullShape::
+operator = (const BulletConvexHullShape &copy) {
+  _shape = copy._shape;
+}
+

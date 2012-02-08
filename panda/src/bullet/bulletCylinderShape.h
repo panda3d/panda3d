@@ -28,8 +28,10 @@
 class EXPCL_PANDABULLET BulletCylinderShape : public BulletShape {
 
 PUBLISHED:
-  BulletCylinderShape(const LVector3 &half_extents, BulletUpAxis up=Z_up);
   BulletCylinderShape(PN_stdfloat radius, PN_stdfloat height, BulletUpAxis up=Z_up);
+  BulletCylinderShape(const LVector3 &half_extents, BulletUpAxis up=Z_up);
+  INLINE BulletCylinderShape(const BulletCylinderShape &copy);
+  INLINE void operator = (const BulletCylinderShape &copy);
   INLINE ~BulletCylinderShape();
 
   INLINE PN_stdfloat get_radius() const;

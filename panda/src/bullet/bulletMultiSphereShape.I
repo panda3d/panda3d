@@ -24,6 +24,26 @@ INLINE BulletMultiSphereShape::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BulletMultiSphereShape::Copy Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE BulletMultiSphereShape::
+BulletMultiSphereShape(const BulletMultiSphereShape &copy) :
+  _shape(copy._shape) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletMultiSphereShape::Copy Assignment Operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void BulletMultiSphereShape::
+operator = (const BulletMultiSphereShape &copy) {
+  _shape = copy._shape;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BulletMultiSphereShape::get_sphere_count
 //       Access: Published
 //  Description:

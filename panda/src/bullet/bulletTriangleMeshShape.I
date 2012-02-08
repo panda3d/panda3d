@@ -13,6 +13,31 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BulletTriangleMeshShape::Copy Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE BulletTriangleMeshShape::
+BulletTriangleMeshShape(const BulletTriangleMeshShape &copy) :
+  _bvh_shape(copy._bvh_shape),
+  _gimpact_shape(copy._gimpact_shape),
+  _mesh(copy._mesh) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletTriangleMeshShape::Copy Assignment Operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void BulletTriangleMeshShape::
+operator = (const BulletTriangleMeshShape &copy) {
+
+  _bvh_shape = copy._bvh_shape;
+  _gimpact_shape = copy._gimpact_shape;
+  _mesh = copy._mesh;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BulletTriangleMeshShape::Destructor
 //       Access: Published
 //  Description:
