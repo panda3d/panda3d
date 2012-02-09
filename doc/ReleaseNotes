@@ -1,3 +1,18 @@
+------------------------  RELEASE 1.8.0  ------------------------
+
+This is a major release, with several big new features.  As such,
+it is likely to contain bugs.
+
+* Support for the Bullet physics engine
+* Support for the libRocket GUI library
+* Added fog support to the shader generator
+* Occlusion culling classes added
+* Ambient acclusion generation for terrain
+* Fixed bug where Windows installer wipes %PATH% when it's too long
+* Can be compiled with SpeedTree support
+* TGA files with alpha channel now load correctly
+* Added a custom color option to the cartoon filter
+
 ------------------------  RELEASE 1.7.2  ------------------------
 
 This release fixes several bugs that were found in 1.7.1.
