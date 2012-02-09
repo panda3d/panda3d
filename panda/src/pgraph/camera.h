@@ -63,6 +63,9 @@ PUBLISHED:
   INLINE void set_cull_center(const NodePath &cull_center);
   INLINE const NodePath &get_cull_center() const;
 
+  INLINE void set_cull_bounds(BoundingVolume *cull_bounds);
+  INLINE BoundingVolume *get_cull_bounds() const;
+
   INLINE void set_lod_center(const NodePath &lod_center);
   INLINE const NodePath &get_lod_center() const;
 
@@ -90,6 +93,7 @@ private:
   bool _active;
   NodePath _scene;
   NodePath _cull_center;
+  PT(BoundingVolume) _cull_bounds;
   NodePath _lod_center;
 
   DrawMask _camera_mask;

@@ -149,6 +149,34 @@ get_cull_center() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Camera::set_cull_bounds
+//       Access: Published
+//  Description: Specifies the bounding volume that should be used to
+//               perform culling from this camera.  Normally, this is
+//               the bounding volume returned from the active lens'
+//               make_bounds() call, but you may override this to
+//               specify a custom volume if you require.  The
+//               specified bounding volume will be understood to be in
+//               the coordinate space of the get_cull_center() node.
+////////////////////////////////////////////////////////////////////
+INLINE void Camera::
+set_cull_bounds(BoundingVolume *cull_bounds) {
+  _cull_bounds = cull_bounds;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Camera::get_cull_bounds
+//       Access: Published
+//  Description: Returns the custom cull volume that was set by
+//               set_cull_bounds(), if any, or NULL if no custom cull
+//               volume was set.
+////////////////////////////////////////////////////////////////////
+INLINE BoundingVolume *Camera::
+get_cull_bounds() const {
+  return _cull_bounds;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Camera::set_lod_center
 //       Access: Published
 //  Description: Specifies the point from which the LOD distances

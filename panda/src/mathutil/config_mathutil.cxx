@@ -22,12 +22,18 @@
 #include "boundingHexahedron.h"
 #include "boundingLine.h"
 #include "boundingPlane.h"
+#include "unionBoundingVolume.h"
+#include "intersectionBoundingVolume.h"
 #include "linmath_events.h"
 #include "dconfig.h"
 #include "pandaSystem.h"
 
 Configure(config_mathutil);
 NotifyCategoryDef(mathutil, "");
+
+ConfigureFn(config_mathutil) {
+  init_libmathutil();
+}
 
 ConfigVariableDouble fft_offset
 ("fft-offset", 0.001);
@@ -47,7 +53,22 @@ ConfigVariableEnum<BoundingVolume::BoundsType> bounds_type
           "by Panda to enclose geometry.  Use 'sphere' or 'box', or use "
           "'best' to let Panda decide which is most appropriate."));
 
-ConfigureFn(config_mathutil) {
+////////////////////////////////////////////////////////////////////
+//     Function: init_libmathutil
+//  Description: Initializes the library.  This must be called at
+//               least once before any of the functions or classes in
+//               this library can be used.  Normally it will be
+//               called by the static initializers and need not be
+//               called explicitly, but special cases exist.
+////////////////////////////////////////////////////////////////////
+void
+init_libmathutil() {
+  static bool initialized = false;
+  if (initialized) {
+    return;
+  }
+  initialized = true;
+
   BoundingHexahedron::init_type();
   BoundingSphere::init_type();
   BoundingBox::init_type();
@@ -55,6 +76,8 @@ ConfigureFn(config_mathutil) {
   FiniteBoundingVolume::init_type();
   GeometricBoundingVolume::init_type();
   OmniBoundingVolume::init_type();
+  UnionBoundingVolume::init_type();
+  IntersectionBoundingVolume::init_type();
   BoundingLine::init_type();
   BoundingPlane::init_type();
   EventStoreVec2::init_type("EventStoreVec2");

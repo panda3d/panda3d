@@ -20,6 +20,7 @@
     fftCompressor.h finiteBoundingVolume.h frustum.h  \
     frustum_src.I frustum_src.h geometricBoundingVolume.I  \
     geometricBoundingVolume.h \
+    intersectionBoundingVolume.h intersectionBoundingVolume.I \
     linmath_events.h \
     look_at.h look_at_src.I  \
     look_at_src.cxx look_at_src.h \
@@ -38,7 +39,8 @@
     rotate_to.h rotate_to_src.cxx \
     stackedPerlinNoise2.h stackedPerlinNoise2.I \
     stackedPerlinNoise3.h stackedPerlinNoise3.I \
-    triangulator.h triangulator.I
+    triangulator.h triangulator.I \
+    unionBoundingVolume.h unionBoundingVolume.I
 
   #define INCLUDED_SOURCES \
     boundingHexahedron.cxx boundingLine.cxx \
@@ -47,6 +49,7 @@
     boundingSphere.cxx  \
     boundingVolume.cxx config_mathutil.cxx fftCompressor.cxx  \
     finiteBoundingVolume.cxx geometricBoundingVolume.cxx  \
+    intersectionBoundingVolume.cxx \
     look_at.cxx \
     linmath_events.cxx \
     mersenne.cxx \
@@ -62,7 +65,8 @@
     rotate_to.cxx \
     stackedPerlinNoise2.cxx \
     stackedPerlinNoise3.cxx \
-    triangulator.cxx
+    triangulator.cxx \
+    unionBoundingVolume.cxx
 
   #define INSTALL_HEADERS \
     boundingHexahedron.I boundingHexahedron.h boundingLine.I \
@@ -75,6 +79,7 @@
     pta_LVecBase4.h pta_LVecBase2.h \
     finiteBoundingVolume.h frustum.h frustum_src.I frustum_src.h \
     geometricBoundingVolume.I geometricBoundingVolume.h look_at.h \
+    intersectionBoundingVolume.h intersectionBoundingVolume.I \
     look_at_src.I look_at_src.h \
     linmath_events.h \
     mersenne.h \
@@ -88,7 +93,8 @@
     rotate_to.h rotate_to_src.cxx \
     stackedPerlinNoise2.h stackedPerlinNoise2.I \
     stackedPerlinNoise3.h stackedPerlinNoise3.I \
-    triangulator.h triangulator.I
+    triangulator.h triangulator.I \
+    unionBoundingVolume.h unionBoundingVolume.I
 
 
 

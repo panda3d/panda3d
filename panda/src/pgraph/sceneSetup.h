@@ -60,6 +60,7 @@ PUBLISHED:
   INLINE bool get_inverted() const;
 
   INLINE const NodePath &get_cull_center() const;
+  INLINE PT(BoundingVolume) get_cull_bounds() const;
 
   INLINE void set_initial_state(const RenderState *initial_state);
   INLINE const RenderState *get_initial_state() const;

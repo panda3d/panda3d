@@ -29,6 +29,8 @@ extern ConfigVariableDouble fft_exponent;
 extern ConfigVariableDouble fft_error_threshold;
 extern EXPCL_PANDA_MATHUTIL ConfigVariableEnum<BoundingVolume::BoundsType> bounds_type;
 
+extern EXPCL_PANDA_MATHUTIL void init_libmathutil();
+
 #endif
 
 

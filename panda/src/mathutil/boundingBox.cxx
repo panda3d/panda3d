@@ -204,16 +204,6 @@ extend_by_point(const LPoint3 &point) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BoundingBox::extend_by_sphere
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-bool BoundingBox::
-extend_by_sphere(const BoundingSphere *sphere) {
-  return extend_by_finite(sphere);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: BoundingBox::extend_by_box
 //       Access: Protected, Virtual
 //  Description: 
@@ -240,23 +230,13 @@ extend_by_box(const BoundingBox *box) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BoundingBox::extend_by_hexahedron
+//     Function: BoundingBox::extend_by_finite
 //       Access: Protected, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 bool BoundingBox::
-extend_by_hexahedron(const BoundingHexahedron *hexahedron) {
-  return extend_by_finite(hexahedron);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingBox::extend_by_finite
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
-bool BoundingBox::
 extend_by_finite(const FiniteBoundingVolume *volume) {
-  nassertr(!volume->is_empty(), false);
+  nassertr(!volume->is_empty() && !volume->is_infinite(), false);
 
   LVector3 min1 = volume->get_min();
   LVector3 max1 = volume->get_max();
@@ -348,46 +328,13 @@ around_points(const LPoint3 *first, const LPoint3 *last) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BoundingBox::around_spheres
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-bool BoundingBox::
-around_spheres(const BoundingVolume **first,
-               const BoundingVolume **last) {
-  return around_finite(first, last);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingBox::around_boxes
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-bool BoundingBox::
-around_boxes(const BoundingVolume **first,
-             const BoundingVolume **last) {
-  return around_finite(first, last);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingBox::around_hexahedrons
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-bool BoundingBox::
-around_hexahedrons(const BoundingVolume **first,
-                   const BoundingVolume **last) {
-  return around_finite(first, last);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: BoundingBox::around_finite
-//       Access: Protected
+//       Access: Protected, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 bool BoundingBox::
 around_finite(const BoundingVolume **first,
-              const BoundingVolume **last) {
+                 const BoundingVolume **last) {
   nassertr(first != last, false);
 
   // We're given a set of bounding volumes, at least the first one of
@@ -539,18 +486,6 @@ contains_lineseg(const LPoint3 &a, const LPoint3 &b) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BoundingBox::contains_sphere
-//       Access: Protected, Virtual
-//  Description: Double-dispatch support: called by contains_other()
-//               when the type we're testing for intersection is known
-//               to be a sphere.
-////////////////////////////////////////////////////////////////////
-int BoundingBox::
-contains_sphere(const BoundingSphere *sphere) const {
-  return contains_finite(sphere);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: BoundingBox::contains_box
 //       Access: Protected, Virtual
 //  Description: Double-dispatch support: called by contains_other()
@@ -630,7 +565,7 @@ contains_plane(const BoundingPlane *plane) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BoundingBox::contains_finite
-//       Access: Protected
+//       Access: Protected, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 int BoundingBox::

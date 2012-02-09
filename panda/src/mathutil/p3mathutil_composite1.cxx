@@ -6,6 +6,8 @@
 #include "boundingVolume.cxx"
 #include "finiteBoundingVolume.cxx"
 #include "geometricBoundingVolume.cxx"
+#include "intersectionBoundingVolume.cxx"
 #include "omniBoundingVolume.cxx"
+#include "unionBoundingVolume.cxx"
 #include "parabola.cxx"
 #include "config_mathutil.cxx"

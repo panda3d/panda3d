@@ -42,8 +42,8 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 LPoint3 BoundingSphere::
 get_min() const {
-  nassertr(!is_empty(), LPoint3(0.0f, 0.0f, 0.0f));
-  nassertr(!is_infinite(), LPoint3(0.0f, 0.0f, 0.0f));
+  nassertr(!is_empty(), LPoint3::zero());
+  nassertr(!is_infinite(), LPoint3::zero());
   return LPoint3(_center[0] - _radius,
                   _center[1] - _radius,
                   _center[2] - _radius);
@@ -56,8 +56,8 @@ get_min() const {
 ////////////////////////////////////////////////////////////////////
 LPoint3 BoundingSphere::
 get_max() const {
-  nassertr(!is_empty(), LPoint3(0.0f, 0.0f, 0.0f));
-  nassertr(!is_infinite(), LPoint3(0.0f, 0.0f, 0.0f));
+  nassertr(!is_empty(), LPoint3::zero());
+  nassertr(!is_infinite(), LPoint3::zero());
   return LPoint3(_center[0] + _radius,
                   _center[1] + _radius,
                   _center[2] + _radius);
@@ -86,8 +86,8 @@ get_volume() const {
 ////////////////////////////////////////////////////////////////////
 LPoint3 BoundingSphere::
 get_approx_center() const {
-  nassertr(!is_empty(), LPoint3(0.0f, 0.0f, 0.0f));
-  nassertr(!is_infinite(), LPoint3(0.0f, 0.0f, 0.0f));
+  nassertr(!is_empty(), LPoint3::zero());
+  nassertr(!is_infinite(), LPoint3::zero());
   return get_center();
 }
 
@@ -382,39 +382,6 @@ around_points(const LPoint3 *first, const LPoint3 *last) {
   _flags = 0;
 
   return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingSphere::around_spheres
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-bool BoundingSphere::
-around_spheres(const BoundingVolume **first,
-               const BoundingVolume **last) {
-  return around_finite(first, last);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingSphere::around_boxes
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-bool BoundingSphere::
-around_boxes(const BoundingVolume **first,
-             const BoundingVolume **last) {
-  return around_finite(first, last);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: BoundingSphere::around_hexahedrons
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-bool BoundingSphere::
-around_hexahedrons(const BoundingVolume **first,
-                   const BoundingVolume **last) {
-  return around_finite(first, last);
 }
 
 ////////////////////////////////////////////////////////////////////

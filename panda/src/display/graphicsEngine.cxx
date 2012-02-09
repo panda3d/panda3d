@@ -1153,7 +1153,7 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
 
     // First, we have to get the current viewing frustum, which comes
     // from the lens.
-    PT(BoundingVolume) bv = scene_setup->get_lens()->make_bounds();
+    PT(BoundingVolume) bv = scene_setup->get_cull_bounds();
 
     if (bv != (BoundingVolume *)NULL &&
         bv->is_of_type(GeometricBoundingVolume::get_class_type())) {

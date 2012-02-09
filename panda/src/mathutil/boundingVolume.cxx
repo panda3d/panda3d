@@ -14,6 +14,8 @@
 
 #include "boundingVolume.h"
 #include "finiteBoundingVolume.h"
+#include "unionBoundingVolume.h"
+#include "intersectionBoundingVolume.h"
 
 #include "indent.h"
 
@@ -192,11 +194,8 @@ string_bounds_type(const string &str) {
 //               sphere.
 ////////////////////////////////////////////////////////////////////
 bool BoundingVolume::
-extend_by_sphere(const BoundingSphere *) {
-  mathutil_cat.warning()
-    << get_type() << "::extend_by_sphere() called\n";
-  _flags = F_infinite;
-  return false;
+extend_by_sphere(const BoundingSphere *sphere) {
+  return extend_by_finite(sphere);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -207,11 +206,8 @@ extend_by_sphere(const BoundingSphere *) {
 //               box.
 ////////////////////////////////////////////////////////////////////
 bool BoundingVolume::
-extend_by_box(const BoundingBox *) {
-  mathutil_cat.warning()
-    << get_type() << "::extend_by_box() called\n";
-  _flags = F_infinite;
-  return false;
+extend_by_box(const BoundingBox *box) {
+  return extend_by_finite(box);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -222,11 +218,8 @@ extend_by_box(const BoundingBox *) {
 //               hexahedron.
 ////////////////////////////////////////////////////////////////////
 bool BoundingVolume::
-extend_by_hexahedron(const BoundingHexahedron *) {
-  mathutil_cat.warning()
-    << get_type() << "::extend_by_hexahedron() called\n";
-  _flags = F_infinite;
-  return false;
+extend_by_hexahedron(const BoundingHexahedron *hexahedron) {
+  return extend_by_finite(hexahedron);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -237,11 +230,8 @@ extend_by_hexahedron(const BoundingHexahedron *) {
 //               line.
 ////////////////////////////////////////////////////////////////////
 bool BoundingVolume::
-extend_by_line(const BoundingLine *) {
-  mathutil_cat.warning()
-    << get_type() << "::extend_by_line() called\n";
-  _flags = F_infinite;
-  return false;
+extend_by_line(const BoundingLine *line) {
+  return extend_by_geometric(line);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -252,9 +242,53 @@ extend_by_line(const BoundingLine *) {
 //               plane.
 ////////////////////////////////////////////////////////////////////
 bool BoundingVolume::
-extend_by_plane(const BoundingPlane *) {
+extend_by_plane(const BoundingPlane *plane) {
+  return extend_by_geometric(plane);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingVolume::extend_by_union
+//       Access: Protected, Virtual
+//  Description: Double-dispatch support: called by extend_other()
+//               when the type we're extending by is known to be a
+//               union.
+////////////////////////////////////////////////////////////////////
+bool BoundingVolume::
+extend_by_union(const UnionBoundingVolume *unionv) {
+  return extend_by_geometric(unionv);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingVolume::extend_by_intersection
+//       Access: Protected, Virtual
+//  Description: Double-dispatch support: called by extend_other()
+//               when the type we're extending by is known to be a
+//               intersection.
+////////////////////////////////////////////////////////////////////
+bool BoundingVolume::
+extend_by_intersection(const IntersectionBoundingVolume *intersection) {
+  return extend_by_geometric(intersection);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingVolume::extend_by_finite
+//       Access: Protected, Virtual
+//  Description: Generic handler for a FiniteBoundingVolume.
+////////////////////////////////////////////////////////////////////
+bool BoundingVolume::
+extend_by_finite(const FiniteBoundingVolume *volume) {
+  return extend_by_geometric(volume);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingVolume::extend_by_geometric
+//       Access: Protected, Virtual
+//  Description: Generic handler for a GeometricBoundingVolume.
+////////////////////////////////////////////////////////////////////
+bool BoundingVolume::
+extend_by_geometric(const GeometricBoundingVolume *volume) {
   mathutil_cat.warning()
-    << get_type() << "::extend_by_plane() called\n";
+    << get_type() << "::extend_by_geometric() called with " << volume->get_type() << "\n";
   _flags = F_infinite;
   return false;
 }
@@ -267,11 +301,8 @@ extend_by_plane(const BoundingPlane *) {
 //               known to be a nonempty sphere.
 ////////////////////////////////////////////////////////////////////
 bool BoundingVolume::
-around_spheres(const BoundingVolume **, const BoundingVolume **) {
-  mathutil_cat.warning()
-    << get_type() << "::around_spheres() called\n";
-  _flags = F_infinite;
-  return false;
+around_spheres(const BoundingVolume **first, const BoundingVolume **last) {
+  return around_finite(first, last);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -282,11 +313,8 @@ around_spheres(const BoundingVolume **, const BoundingVolume **) {
 //               known to be a nonempty box.
 ////////////////////////////////////////////////////////////////////
 bool BoundingVolume::
-around_boxes(const BoundingVolume **, const BoundingVolume **) {
-  mathutil_cat.warning()
-    << get_type() << "::around_boxes() called\n";
-  _flags = F_infinite;
-  return false;
+around_boxes(const BoundingVolume **first, const BoundingVolume **last) {
+  return around_finite(first, last);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -297,11 +325,8 @@ around_boxes(const BoundingVolume **, const BoundingVolume **) {
 //               known to be a nonempty hexahedron.
 ////////////////////////////////////////////////////////////////////
 bool BoundingVolume::
-around_hexahedrons(const BoundingVolume **, const BoundingVolume **) {
-  mathutil_cat.warning()
-    << get_type() << "::around_hexahedrons() called\n";
-  _flags = F_infinite;
-  return false;
+around_hexahedrons(const BoundingVolume **first, const BoundingVolume **last) {
+  return around_finite(first, last);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -312,15 +337,8 @@ around_hexahedrons(const BoundingVolume **, const BoundingVolume **) {
 //               known to be a nonempty line.
 ////////////////////////////////////////////////////////////////////
 bool BoundingVolume::
-around_lines(const BoundingVolume **, const BoundingVolume **) {
-  _flags = F_infinite;
-
-  mathutil_cat.warning()
-    << get_type() << "::around_lines() called\n";
-
-  // If we get here, the function isn't defined by a subclass, so we
-  // return false to indicate this.
-  return false;
+around_lines(const BoundingVolume **first, const BoundingVolume **last) {
+  return around_geometric(first, last);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -331,14 +349,54 @@ around_lines(const BoundingVolume **, const BoundingVolume **) {
 //               known to be a nonempty plane.
 ////////////////////////////////////////////////////////////////////
 bool BoundingVolume::
-around_planes(const BoundingVolume **, const BoundingVolume **) {
-  _flags = F_infinite;
+around_planes(const BoundingVolume **first, const BoundingVolume **last) {
+  return around_geometric(first, last);
+}
 
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingVolume::around_unions
+//       Access: Protected, Virtual
+//  Description: Double-dispatch support: called by around_other()
+//               when the type of the first element in the list is
+//               known to be a union object.
+////////////////////////////////////////////////////////////////////
+bool BoundingVolume::
+around_unions(const BoundingVolume **first, const BoundingVolume **last) {
+  return around_geometric(first, last);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingVolume::around_intersections
+//       Access: Protected, Virtual
+//  Description: Double-dispatch support: called by around_other()
+//               when the type of the first element in the list is
+//               known to be an intersection object.
+////////////////////////////////////////////////////////////////////
+bool BoundingVolume::
+around_intersections(const BoundingVolume **first, const BoundingVolume **last) {
+  return around_geometric(first, last);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingVolume::around_finite
+//       Access: Protected, Virtual
+//  Description: Generic handler for a FiniteBoundingVolume.
+////////////////////////////////////////////////////////////////////
+bool BoundingVolume::
+around_finite(const BoundingVolume **first, const BoundingVolume **last) {
+  return around_geometric(first, last);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingVolume::around_geometric
+//       Access: Protected, Virtual
+//  Description: Generic handler for a GeometricBoundingVolume.
+////////////////////////////////////////////////////////////////////
+bool BoundingVolume::
+around_geometric(const BoundingVolume **first, const BoundingVolume **last) {
   mathutil_cat.warning()
-    << get_type() << "::around_planes() called\n";
-
-  // If we get here, the function isn't defined by a subclass, so we
-  // return false to indicate this.
+    << get_type() << "::extend_by_geometric() called with " << first[0]->get_type() << "\n";
+  _flags = F_infinite;
   return false;
 }
 
@@ -350,10 +408,8 @@ around_planes(const BoundingVolume **, const BoundingVolume **) {
 //               to be a sphere.
 ////////////////////////////////////////////////////////////////////
 int BoundingVolume::
-contains_sphere(const BoundingSphere *) const {
-  mathutil_cat.warning()
-    << get_type() << "::contains_sphere() called\n";
-  return IF_dont_understand;
+contains_sphere(const BoundingSphere *sphere) const {
+  return contains_finite(sphere);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -364,10 +420,8 @@ contains_sphere(const BoundingSphere *) const {
 //               to be a box.
 ////////////////////////////////////////////////////////////////////
 int BoundingVolume::
-contains_box(const BoundingBox *) const {
-  mathutil_cat.warning()
-    << get_type() << "::contains_box() called\n";
-  return IF_dont_understand;
+contains_box(const BoundingBox *box) const {
+  return contains_finite(box);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -378,10 +432,8 @@ contains_box(const BoundingBox *) const {
 //               to be a hexahedron.
 ////////////////////////////////////////////////////////////////////
 int BoundingVolume::
-contains_hexahedron(const BoundingHexahedron *) const {
-  mathutil_cat.warning()
-    << get_type() << "::contains_hexahedron() called\n";
-  return IF_dont_understand;
+contains_hexahedron(const BoundingHexahedron *hexahedron) const {
+  return contains_finite(hexahedron);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -392,10 +444,8 @@ contains_hexahedron(const BoundingHexahedron *) const {
 //               to be a line.
 ////////////////////////////////////////////////////////////////////
 int BoundingVolume::
-contains_line(const BoundingLine *) const {
-  mathutil_cat.warning()
-    << get_type() << "::contains_line() called\n";
-  return IF_dont_understand;
+contains_line(const BoundingLine *line) const {
+  return contains_geometric(line);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -406,9 +456,53 @@ contains_line(const BoundingLine *) const {
 //               to be a plane.
 ////////////////////////////////////////////////////////////////////
 int BoundingVolume::
-contains_plane(const BoundingPlane *) const {
+contains_plane(const BoundingPlane *plane) const {
+  return contains_geometric(plane);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingVolume::contains_union
+//       Access: Protected, Virtual
+//  Description: Double-dispatch support: called by contains_other()
+//               when the type we're testing for intersection is known
+//               to be a union object.
+////////////////////////////////////////////////////////////////////
+int BoundingVolume::
+contains_union(const UnionBoundingVolume *unionv) const {
+  return unionv->other_contains_union(this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingVolume::contains_intersection
+//       Access: Protected, Virtual
+//  Description: Double-dispatch support: called by contains_other()
+//               when the type we're testing for intersection is known
+//               to be an intersection object.
+////////////////////////////////////////////////////////////////////
+int BoundingVolume::
+contains_intersection(const IntersectionBoundingVolume *intersection) const {
+  return intersection->other_contains_intersection(this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingVolume::contains_finite
+//       Access: Protected, Virtual
+//  Description: Generic handler for a FiniteBoundingVolume.
+////////////////////////////////////////////////////////////////////
+int BoundingVolume::
+contains_finite(const FiniteBoundingVolume *volume) const {
+  return contains_geometric(volume);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BoundingVolume::contains_geometric
+//       Access: Protected, Virtual
+//  Description: Generic handler for a GeometricBoundingVolume.
+////////////////////////////////////////////////////////////////////
+int BoundingVolume::
+contains_geometric(const GeometricBoundingVolume *volume) const {
   mathutil_cat.warning()
-    << get_type() << "::contains_plane() called\n";
+    << get_type() << "::contains_geometric() called with " << volume->get_type() << "\n";
   return IF_dont_understand;
 }
 

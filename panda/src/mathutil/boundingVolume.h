@@ -28,6 +28,8 @@ class BoundingBox;
 class BoundingHexahedron;
 class BoundingLine;
 class BoundingPlane;
+class UnionBoundingVolume;
+class IntersectionBoundingVolume;
 
 
 ////////////////////////////////////////////////////////////////////
@@ -143,6 +145,10 @@ protected:
   virtual bool extend_by_hexahedron(const BoundingHexahedron *hexahedron);
   virtual bool extend_by_line(const BoundingLine *line);
   virtual bool extend_by_plane(const BoundingPlane *plane);
+  virtual bool extend_by_union(const UnionBoundingVolume *unionv);
+  virtual bool extend_by_intersection(const IntersectionBoundingVolume *intersection);
+  virtual bool extend_by_finite(const FiniteBoundingVolume *volume);
+  virtual bool extend_by_geometric(const GeometricBoundingVolume *volume);
 
   virtual bool around_spheres(const BoundingVolume **first,
                               const BoundingVolume **last);
@@ -153,13 +159,25 @@ protected:
   virtual bool around_lines(const BoundingVolume **first,
                             const BoundingVolume **last);
   virtual bool around_planes(const BoundingVolume **first,
-                            const BoundingVolume **last);
+                             const BoundingVolume **last);
+  virtual bool around_unions(const BoundingVolume **first,
+                             const BoundingVolume **last);
+  virtual bool around_intersections(const BoundingVolume **first,
+                                    const BoundingVolume **last);
+  virtual bool around_finite(const BoundingVolume **first,
+                             const BoundingVolume **last);
+  virtual bool around_geometric(const BoundingVolume **first,
+                                const BoundingVolume **last);
 
   virtual int contains_sphere(const BoundingSphere *sphere) const;
   virtual int contains_box(const BoundingBox *box) const;
   virtual int contains_hexahedron(const BoundingHexahedron *hexahedron) const;
   virtual int contains_line(const BoundingLine *line) const;
   virtual int contains_plane(const BoundingPlane *plane) const;
+  virtual int contains_union(const UnionBoundingVolume *unionv) const;
+  virtual int contains_intersection(const IntersectionBoundingVolume *intersection) const;
+  virtual int contains_finite(const FiniteBoundingVolume *volume) const;
+  virtual int contains_geometric(const GeometricBoundingVolume *volume) const;
 
 
 public:
@@ -184,6 +202,8 @@ private:
   friend class BoundingHexahedron;
   friend class BoundingLine;
   friend class BoundingPlane;
+  friend class UnionBoundingVolume;
+  friend class IntersectionBoundingVolume;
 };
 
 INLINE_MATHUTIL ostream &operator << (ostream &out, const BoundingVolume &bound);
