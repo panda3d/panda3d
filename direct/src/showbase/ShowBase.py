@@ -2210,9 +2210,7 @@ class ShowBase(DirectObject.DirectObject):
             
         # If oobeMode was never set, set it to false and create the
         # structures we need to implement OOBE.
-        try:
-            self.oobeMode
-        except:
+        if not hasattr(self, 'oobeMode'):
             self.oobeMode = 0
 
             self.oobeCamera = self.hidden.attachNewNode('oobeCamera')
@@ -2228,11 +2226,14 @@ class ShowBase(DirectObject.DirectObject):
 
             self.oobeVis = loader.loadModel('models/misc/camera', okMissing = True)
             if not self.oobeVis:
+                # Sometimes we have default-model-extension set to
+                # egg, but the file might be a bam file.
+                self.oobeVis = loader.loadModel('models/misc/camera.bam', okMissing = True)
+            if not self.oobeVis:
                 self.oobeVis = NodePath('oobeVis')
             self.oobeVis.node().setFinal(1)
             self.oobeVis.setLightOff(1)
             self.oobeCullFrustum = None
-            self.oobeCullFrustumVis = None
 
             self.accept('oobe-down', self.__oobeButton, extraArgs = [''])
             self.accept('oobe-repeat', self.__oobeButton, extraArgs = ['-repeat'])
@@ -2242,7 +2243,7 @@ class ShowBase(DirectObject.DirectObject):
             # Disable OOBE mode.
             if self.oobeCullFrustum != None:
                 # First, disable OOBE cull mode.
-                self.oobeCull()
+                self.oobeCull(cam = cam)
 
             if self.oobeVis:
                 self.oobeVis.reparentTo(self.hidden)
@@ -2313,47 +2314,38 @@ class ShowBase(DirectObject.DirectObject):
         # Transmit other buttons.
         messenger.send(button + suffix)
 
-    def oobeCull(self):
+    def oobeCull(self, cam = None):
         """
         While in OOBE mode (see above), cull the viewing frustum as if
         it were still attached to our original camera.  This allows us
         to visualize the effectiveness of our bounding volumes.
         """
         # First, make sure OOBE mode is enabled.
-        try:
-            if not self.oobeMode:
-                self.oobe()
-        except:
-            self.oobe()
+        if not getattr(self, 'oobeMode', False):
+            self.oobe(cam = cam)
 
         if self.oobeCullFrustum == None:
             # Enable OOBE culling.
             pnode = LensNode('oobeCull')
             pnode.setLens(self.camLens)
+            pnode.showFrustum()
             self.oobeCullFrustum = self.camera.attachNewNode(pnode)
-
-            # Create a visible representation of the frustum.
-            geom = self.camLens.makeGeometry()
-            if geom != None:
-                gn = GeomNode('frustum')
-                gn.addGeom(geom)
-                self.oobeCullFrustumVis = self.oobeVis.attachNewNode(gn)
 
             # Tell the camera to cull from here instead of its own
             # origin.
-            for cam in base.camList:
-                cam.node().setCullCenter(self.oobeCullFrustum)
+            for c in base.camList:
+                c.node().setCullCenter(self.oobeCullFrustum)
+            for c in cam.findAllMatches('**/+Camera'):
+                c.node().setCullCenter(self.oobeCullFrustum)
         else:
             # Disable OOBE culling.
 
-            for cam in base.camList:
-                cam.node().setCullCenter(NodePath())
+            for c in base.camList:
+                c.node().setCullCenter(NodePath())
+            for c in cam.findAllMatches('**/+Camera'):
+                c.node().setCullCenter(NodePath())
             self.oobeCullFrustum.removeNode()
             self.oobeCullFrustum = None
-
-            if self.oobeCullFrustumVis != None:
-                self.oobeCullFrustumVis.removeNode()
-                self.oobeCullFrustumVis = None
 
     def showCameraFrustum(self):
         # Create a visible representation of the frustum.
