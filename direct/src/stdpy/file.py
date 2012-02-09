@@ -322,8 +322,19 @@ def walk(top, topdown = True, onerror = None, followlinks = True):
     if not topdown:
         yield (top, dirnames, filenames)
 
-def join(a, b):
-    return '%s/%s' % (a, b)
+def join(path, *args):
+    for part in args:
+        if part == '':
+            continue
+
+        if part.startswith('/'):
+            path = part
+        elif path.endswith('/'):
+            path = path + part
+        else:
+            path = '/'.join((path, part))
+
+    return path
 
 def isfile(path):
     return _vfs.isRegularFile(pm.Filename.fromOsSpecific(path))
