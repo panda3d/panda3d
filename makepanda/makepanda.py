@@ -1833,11 +1833,11 @@ def WriteConfigSettings():
     if (GetOptimize() <= 3):
         dtool_config["DO_MEMORY_USAGE"] = '1'
 
-    #if (GetOptimize() <= 1):
-    #    dtool_config["DO_PIPELINING"] = '1'
-
     if (GetOptimize() <= 3):
         dtool_config["NOTIFY_DEBUG"] = '1'
+
+    if (GetOptimize() >= 4):
+        dtool_config["PRC_SAVE_DESCRIPTIONS"] = 'UNDEF'
 
     # Now that we have OS_SIMPLE_THREADS, we can support
     # SIMPLE_THREADS on exotic architectures like win64, so we no
