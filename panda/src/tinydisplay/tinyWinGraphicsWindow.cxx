@@ -116,21 +116,22 @@ end_frame(FrameMode mode, Thread *current_thread) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TinyWinGraphicsWindow::begin_flip
+//     Function: TinyWinGraphicsWindow::end_flip
 //       Access: Public, Virtual
 //  Description: This function will be called within the draw thread
-//               after end_frame() has been called on all windows, to
-//               initiate the exchange of the front and back buffers.
+//               after begin_flip() has been called on all windows, to
+//               finish the exchange of the front and back buffers.
 //
-//               This should instruct the window to prepare for the
-//               flip at the next video sync, but it should not wait.
-//
-//               We have the two separate functions, begin_flip() and
-//               end_flip(), to make it easier to flip all of the
-//               windows at the same time.
+//               This should cause the window to wait for the flip, if
+//               necessary.
 ////////////////////////////////////////////////////////////////////
 void TinyWinGraphicsWindow::
-begin_flip() {
+end_flip() {
+  if (!_flip_ready) {
+    GraphicsWindow::end_flip();
+    return;
+  }
+
   HBITMAP bm = CreateCompatibleBitmap(_hdc, _frame_buffer->xsize, _frame_buffer->ysize);
   HDC bmdc = CreateCompatibleDC(_hdc);
   SelectObject(bmdc, bm);
@@ -155,6 +156,7 @@ begin_flip() {
   DeleteDC(bmdc);
   DeleteObject(bm);
   GdiFlush();
+  GraphicsWindow::end_flip();
 }
 
 ////////////////////////////////////////////////////////////////////

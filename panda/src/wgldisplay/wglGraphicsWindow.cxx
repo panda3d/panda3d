@@ -138,19 +138,6 @@ end_frame(FrameMode mode, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::
 begin_flip() {
-  if (_hdc) {
-    // The documentation on SwapBuffers() is not at all clear on
-    // whether the GL context needs to be current before it can be
-    // called.  Empirically, it appears that it is not necessary in
-    // many cases, but it definitely is necessary at least in the case
-    // of Mesa on Windows.
-    wglGraphicsStateGuardian *wglgsg;
-    DCAST_INTO_V(wglgsg, _gsg);
-    HGLRC context = wglgsg->get_context(_hdc);
-    nassertv(context);
-    wglGraphicsPipe::wgl_make_current(_hdc, context, &_make_current_pcollector);
-    SwapBuffers(_hdc);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -182,6 +169,34 @@ ready_flip() {
     wglGraphicsPipe::wgl_make_current(_hdc, context, &_make_current_pcollector);
     wglgsg->finish();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsWindow::end_flip
+//       Access: Public, Virtual
+//  Description: This function will be called within the draw thread
+//               after begin_flip() has been called on all windows, to
+//               finish the exchange of the front and back buffers.
+//
+//               This should cause the window to wait for the flip, if
+//               necessary.
+////////////////////////////////////////////////////////////////////
+void wglGraphicsWindow::
+end_flip() {
+  if (_hdc != NULL && _flip_ready) {
+    // The documentation on SwapBuffers() is not at all clear on
+    // whether the GL context needs to be current before it can be
+    // called.  Empirically, it appears that it is not necessary in
+    // many cases, but it definitely is necessary at least in the case
+    // of Mesa on Windows.
+    wglGraphicsStateGuardian *wglgsg;
+    DCAST_INTO_V(wglgsg, _gsg);
+    HGLRC context = wglgsg->get_context(_hdc);
+    nassertv(context);
+    wglGraphicsPipe::wgl_make_current(_hdc, context, &_make_current_pcollector);
+    SwapBuffers(_hdc);
+  }
+  WinGraphicsWindow::end_flip();
 }
 
 ////////////////////////////////////////////////////////////////////

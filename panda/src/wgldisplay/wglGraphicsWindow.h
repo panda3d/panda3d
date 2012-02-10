@@ -39,6 +39,7 @@ public:
 
   virtual void begin_flip();
   virtual void ready_flip();
+  virtual void end_flip();
 
 protected:
   virtual void close_window();

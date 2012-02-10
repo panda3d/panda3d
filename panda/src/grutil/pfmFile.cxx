@@ -602,7 +602,7 @@ merge(const PfmFile &other) {
 ////////////////////////////////////////////////////////////////////
 PT(BoundingHexahedron) PfmFile::
 compute_planar_bounds(PN_stdfloat point_dist, PN_stdfloat sample_radius) const {
-  return compute_planar_bounds(LPoint2::zero(), point_dist, sample_radius, false);
+  return compute_planar_bounds(LPoint2(0.5, 0.5), point_dist, sample_radius, false);
 }
 
 

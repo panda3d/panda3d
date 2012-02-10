@@ -1624,20 +1624,28 @@ process_events(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 flip_windows(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
-  Windows::const_iterator wi;
-  for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
-    GraphicsOutput *win = (*wi);
+  size_t num_windows = wlist.size();
+  size_t warray_size = num_windows * sizeof(GraphicsOutput *);
+  size_t warray_count = 0;
+  GraphicsOutput **warray = (GraphicsOutput **)alloca(warray_size);
+
+  size_t i;
+  for (i = 0; i < num_windows; ++i) {
+    GraphicsOutput *win = wlist[i];
     if (win->flip_ready()) {
+      nassertv(warray_count < num_windows);
+      warray[warray_count] = win;
+      ++warray_count;
+
       PStatTimer timer(GraphicsEngine::_flip_begin_pcollector, current_thread);
       win->begin_flip();
     }
   }
-  for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
-    GraphicsOutput *win = (*wi);
-    if (win->flip_ready()) {
-      PStatTimer timer(GraphicsEngine::_flip_end_pcollector, current_thread);
-      win->end_flip();
-    }
+
+  for (i = 0; i < warray_count; ++i) {
+    GraphicsOutput *win = warray[i];
+    PStatTimer timer(GraphicsEngine::_flip_end_pcollector, current_thread);
+    win->end_flip();
   }
 }
 

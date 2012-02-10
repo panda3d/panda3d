@@ -104,22 +104,18 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsWindow::begin_flip
+//     Function: glxGraphicsWindow::end_flip
 //       Access: Public, Virtual
 //  Description: This function will be called within the draw thread
-//               after end_frame() has been called on all windows, to
-//               initiate the exchange of the front and back buffers.
+//               after begin_flip() has been called on all windows, to
+//               finish the exchange of the front and back buffers.
 //
-//               This should instruct the window to prepare for the
-//               flip at the next video sync, but it should not wait.
-//
-//               We have the two separate functions, begin_flip() and
-//               end_flip(), to make it easier to flip all of the
-//               windows at the same time.
+//               This should cause the window to wait for the flip, if
+//               necessary.
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsWindow::
-begin_flip() {
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
+end_flip() {
+  if (_gsg != (GraphicsStateGuardian *)NULL && _flip_ready) {
 
     // It doesn't appear to be necessary to ensure the graphics
     // context is current before flipping the windows, and insisting
@@ -130,6 +126,7 @@ begin_flip() {
     LightReMutexHolder holder(glxGraphicsPipe::_x_mutex);
     glXSwapBuffers(_display, _xwindow);
   }
+  GraphicsWindow::end_flip();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -140,22 +140,19 @@ end_frame(FrameMode mode, Thread *current_thread) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsWindow::begin_flip
+//     Function: TinyXGraphicsWindow::end_flip
 //       Access: Public, Virtual
 //  Description: This function will be called within the draw thread
-//               after end_frame() has been called on all windows, to
-//               initiate the exchange of the front and back buffers.
+//               after begin_flip() has been called on all windows, to
+//               finish the exchange of the front and back buffers.
 //
-//               This should instruct the window to prepare for the
-//               flip at the next video sync, but it should not wait.
-//
-//               We have the two separate functions, begin_flip() and
-//               end_flip(), to make it easier to flip all of the
-//               windows at the same time.
+//               This should cause the window to wait for the flip, if
+//               necessary.
 ////////////////////////////////////////////////////////////////////
 void TinyXGraphicsWindow::
-begin_flip() {
-  if (_xwindow == (X11_Window)NULL) {
+end_flip() {
+  if (_xwindow == (X11_Window)NULL || !_flip_ready) {
+    GraphicsWindow::end_flip();
     return;
   }
 
@@ -177,6 +174,7 @@ begin_flip() {
   XPutImage(_display, _xwindow, _gc, _ximage, 0, 0, 0, 0,
             _full_frame_buffer->xsize, _full_frame_buffer->ysize);
   XFlush(_display);
+  GraphicsWindow::end_flip();
 }
 
 ////////////////////////////////////////////////////////////////////

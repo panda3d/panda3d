@@ -111,21 +111,22 @@ end_frame(FrameMode mode, Thread *current_thread) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TinySDLGraphicsWindow::begin_flip
+//     Function: TinySDLGraphicsWindow::end_flip
 //       Access: Public, Virtual
 //  Description: This function will be called within the draw thread
-//               after end_frame() has been called on all windows, to
-//               initiate the exchange of the front and back buffers.
+//               after begin_flip() has been called on all windows, to
+//               finish the exchange of the front and back buffers.
 //
-//               This should instruct the window to prepare for the
-//               flip at the next video sync, but it should not wait.
-//
-//               We have the two separate functions, begin_flip() and
-//               end_flip(), to make it easier to flip all of the
-//               windows at the same time.
+//               This should cause the window to wait for the flip, if
+//               necessary.
 ////////////////////////////////////////////////////////////////////
 void TinySDLGraphicsWindow::
-begin_flip() {
+end_flip() {
+  if (!_flip_ready) {
+    GraphicsWindow::end_flip();
+    return;
+  }
+
   int fb_xsize = get_fb_x_size();
   int fb_ysize = get_fb_y_size();
 
@@ -154,6 +155,7 @@ begin_flip() {
   }
 
   SDL_Flip(_screen);
+  GraphicsWindow::end_flip();
 }
 
 ////////////////////////////////////////////////////////////////////
