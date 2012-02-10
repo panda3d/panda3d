@@ -55,7 +55,7 @@ PUBLISHED:
   INLINE void set_point(int x, int y, const LVecBase3 &point);
   INLINE LPoint3 &modify_point(int x, int y);
 
-  BLOCKING bool calc_average_point(LPoint3 &result, double x, double y, double radius) const;
+  BLOCKING bool calc_average_point(LPoint3 &result, PN_stdfloat x, PN_stdfloat y, PN_stdfloat radius) const;
   BLOCKING bool calc_min_max(LVecBase3 &min_points, LVecBase3 &max_points) const;
 
   INLINE void set_zero_special(bool zero_special);
@@ -67,7 +67,10 @@ PUBLISHED:
   BLOCKING void project(const Lens *lens);
   BLOCKING void merge(const PfmFile &other);
 
-  BLOCKING PT(BoundingHexahedron) compute_planar_bounds(double point_dist, double sample_radius) const;
+  BLOCKING PT(BoundingHexahedron) compute_planar_bounds(PN_stdfloat point_dist, PN_stdfloat sample_radius) const;
+  BLOCKING PT(BoundingHexahedron) compute_planar_bounds(const LPoint2 &center, PN_stdfloat point_dist, PN_stdfloat sample_radius, bool points_only) const;
+  void compute_sample_point(LPoint3 &result,
+                            PN_stdfloat x, PN_stdfloat y, PN_stdfloat sample_radius) const;
 
   INLINE void set_vis_inverse(bool vis_inverse);
   INLINE bool get_vis_inverse() const;
@@ -89,14 +92,12 @@ PUBLISHED:
 private:
   void make_vis_mesh_geom(GeomNode *gnode, bool inverted) const;
 
-  void compute_sample_point(LPoint3 &result,
-                            double x, double y, double sample_radius) const;
   void box_filter_region(LPoint3 &result,
-                         double x0, double y0, double x1, double y1) const;
-  void box_filter_line(LPoint3 &result, double &coverage,
-                       double x0, int y, double x1, double y_contrib) const;
-  void box_filter_point(LPoint3 &result, double &coverage,
-                        int x, int y, double x_contrib, double y_contrib) const;
+                         PN_stdfloat x0, PN_stdfloat y0, PN_stdfloat x1, PN_stdfloat y1) const;
+  void box_filter_line(LPoint3 &result, PN_stdfloat &coverage,
+                       PN_stdfloat x0, int y, PN_stdfloat x1, PN_stdfloat y_contrib) const;
+  void box_filter_point(LPoint3 &result, PN_stdfloat &coverage,
+                        int x, int y, PN_stdfloat x_contrib, PN_stdfloat y_contrib) const;
 
   class MiniGridCell {
   public:

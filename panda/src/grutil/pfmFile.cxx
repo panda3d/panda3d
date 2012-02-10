@@ -318,7 +318,7 @@ write(ostream &out) {
 //               value cannot be determined.
 ////////////////////////////////////////////////////////////////////
 bool PfmFile::
-calc_average_point(LPoint3 &result, double x, double y, double radius) const {
+calc_average_point(LPoint3 &result, PN_stdfloat x, PN_stdfloat y, PN_stdfloat radius) const {
   result = LPoint3::zero();
 
   int min_x = int(ceil(x - radius));
@@ -456,27 +456,27 @@ resize(int new_x_size, int new_y_size) {
   Table new_data;
   new_data.reserve(new_x_size * new_y_size);
 
-  double from_x0, from_x1, from_y0, from_y1;
+  PN_stdfloat from_x0, from_x1, from_y0, from_y1;
 
-  double x_scale = 1.0;
-  double y_scale = 1.0;
+  PN_stdfloat x_scale = 1.0;
+  PN_stdfloat y_scale = 1.0;
 
   if (new_x_size > 1) {
-    x_scale = (double)(_x_size - 1) / (double)(new_x_size - 1);
+    x_scale = (PN_stdfloat)(_x_size - 1) / (PN_stdfloat)(new_x_size - 1);
   }
   if (new_y_size > 1) {
-    y_scale = (double)(_y_size - 1) / (double)(new_y_size - 1);
+    y_scale = (PN_stdfloat)(_y_size - 1) / (PN_stdfloat)(new_y_size - 1);
   }
 
   from_y0 = 0.0;
   for (int to_y = 0; to_y < new_y_size; ++to_y) {
     from_y1 = (to_y + 0.5) * y_scale;
-    from_y1 = min(from_y1, (double) _y_size);
+    from_y1 = min(from_y1, (PN_stdfloat) _y_size);
 
     from_x0 = 0.0;
     for (int to_x = 0; to_x < new_x_size; ++to_x) {
       from_x1 = (to_x + 0.5) * x_scale;
-      from_x1 = min(from_x1, (double) _x_size);
+      from_x1 = min(from_x1, (PN_stdfloat) _x_size);
 
       // Now the box from (from_x0, from_y0) - (from_x1, from_y1)
       // but not including (from_x1, from_y1) maps to the pixel (to_x, to_y).
@@ -597,6 +597,18 @@ merge(const PfmFile &other) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::compute_planar_bounds
 //       Access: Published
+//  Description: This version of this method exists for temporary
+//               backward compatibility only.
+////////////////////////////////////////////////////////////////////
+PT(BoundingHexahedron) PfmFile::
+compute_planar_bounds(PN_stdfloat point_dist, PN_stdfloat sample_radius) const {
+  return compute_planar_bounds(LPoint2::zero(), point_dist, sample_radius, false);
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::compute_planar_bounds
+//       Access: Published
 //  Description: Computes the minmax bounding volume of the points in
 //               3-D space, assuming the points represent a
 //               mostly-planar surface.
@@ -606,18 +618,20 @@ merge(const PfmFile &other) {
 //               around the center (cx - pd, cx + pd) and so on, to
 //               approximate the plane of the surface.  Then all of
 //               the points are projected into that plane and the
-//               bounding volume within that plane is determined.
+//               bounding volume of the entire mesh within that plane
+//               is determined.  If points_only is true, the bounding
+//               volume of only those four points is determined.
 //
-//               point_dist and sample_radius are in UV space, i.e. in
-//               the range 0..1.
+//               center, point_dist and sample_radius are in UV space,
+//               i.e. in the range 0..1.
 ////////////////////////////////////////////////////////////////////
 PT(BoundingHexahedron) PfmFile::
-compute_planar_bounds(double point_dist, double sample_radius) const {
+compute_planar_bounds(const LPoint2 &center, PN_stdfloat point_dist, PN_stdfloat sample_radius, bool points_only) const {
   LPoint3 p0, p1, p2, p3;
-  compute_sample_point(p0, 0.5 + point_dist, 0.5 - point_dist, sample_radius);
-  compute_sample_point(p1, 0.5 + point_dist, 0.5 + point_dist, sample_radius);
-  compute_sample_point(p2, 0.5 - point_dist, 0.5 + point_dist, sample_radius);
-  compute_sample_point(p3, 0.5 - point_dist, 0.5 - point_dist, sample_radius);
+  compute_sample_point(p0, center[0] + point_dist, center[1] - point_dist, sample_radius);
+  compute_sample_point(p1, center[0] + point_dist, center[1] + point_dist, sample_radius);
+  compute_sample_point(p2, center[0] - point_dist, center[1] + point_dist, sample_radius);
+  compute_sample_point(p3, center[0] - point_dist, center[1] - point_dist, sample_radius);
 
   LPoint3 normal;
 
@@ -639,59 +653,110 @@ compute_planar_bounds(double point_dist, double sample_radius) const {
 
   normal.normalize();
 
+  LVector3 up = (p1 - p0) + (p2 - p3);
+  LPoint3 pcenter = ((p0 + p1 + p2 + p3) * 0.25);
+
   // Compute the transform necessary to rotate all of the points into
   // the Y = 0 plane.
   LMatrix4 rotate;
-  look_at(rotate, normal, p1 - p0);
+  look_at(rotate, normal, up);
 
   LMatrix4 rinv;
   rinv.invert_from(rotate);
 
-  LPoint3 trans = p0 * rinv;
+  LPoint3 trans = pcenter * rinv;
   rinv.set_row(3, -trans);
   rotate.invert_from(rinv);
 
   // Now determine the minmax.
   PN_stdfloat min_x, min_y, min_z, max_x, max_y, max_z;
   bool got_point = false;
-  Table::const_iterator ti;
-  for (ti = _table.begin(); ti != _table.end(); ++ti) {
-    if (_zero_special && (*ti) == LPoint3::zero()) {
-      continue;
+  if (points_only) {
+    LPoint3 points[4] = {
+      p0 * rinv,
+      p1 * rinv,
+      p2 * rinv,
+      p3 * rinv,
+    };
+    for (int i = 0; i < 4; ++i) {
+      const LPoint3 &point = points[i];
+      if (!got_point) {
+        min_x = point[0];
+        min_y = point[1];
+        min_z = point[2];
+        max_x = point[0];
+        max_y = point[1];
+        max_z = point[2];
+        got_point = true;
+      } else {
+        min_x = min(min_x, point[0]);
+        min_y = min(min_y, point[1]);
+        min_z = min(min_z, point[2]);
+        max_x = max(max_x, point[0]);
+        max_y = max(max_y, point[1]);
+        max_z = max(max_z, point[2]);
+      }
     }
-    LPoint3 point = (*ti) * rinv;
-    if (!got_point) {
-      min_x = point[0];
-      min_y = point[1];
-      min_z = point[2];
-      max_x = point[0];
-      max_y = point[1];
-      max_z = point[2];
-      got_point = true;
-    } else {
-      min_x = min(min_x, point[0]);
-      min_y = min(min_y, point[1]);
-      min_z = min(min_z, point[2]);
-      max_x = max(max_x, point[0]);
-      max_y = max(max_y, point[1]);
-      max_z = max(max_z, point[2]);
+
+  } else {
+    Table::const_iterator ti;
+    for (ti = _table.begin(); ti != _table.end(); ++ti) {
+      if (_zero_special && (*ti) == LPoint3::zero()) {
+        continue;
+      }
+      LPoint3 point = (*ti) * rinv;
+      if (!got_point) {
+        min_x = point[0];
+        min_y = point[1];
+        min_z = point[2];
+        max_x = point[0];
+        max_y = point[1];
+        max_z = point[2];
+        got_point = true;
+      } else {
+        min_x = min(min_x, point[0]);
+        min_y = min(min_y, point[1]);
+        min_z = min(min_z, point[2]);
+        max_x = max(max_x, point[0]);
+        max_y = max(max_y, point[1]);
+        max_z = max(max_z, point[2]);
+      }
     }
   }
-
+    
   PT(BoundingHexahedron) bounds = new BoundingHexahedron
     (LPoint3(min_x, min_y, min_z), LPoint3(max_x, min_y, min_z),
      LPoint3(min_x, min_y, max_z), LPoint3(max_x, min_y, max_z),
      LPoint3(min_x, max_y, min_z), LPoint3(max_x, max_y, min_z),
      LPoint3(min_x, max_y, max_z), LPoint3(max_x, max_y, max_z));
-  bounds->write(cerr);
 
   // Rotate the bounding volume back into the original space of the
   // screen.
   bounds->xform(rotate);
-  bounds->write(cerr);
 
   return bounds;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::compute_sample_point
+//       Access: Published
+//  Description: Computes the average of all the point within
+//               sample_radius (manhattan distance) and the indicated
+//               point.
+//
+//               The point coordinates are given in UV space, in the
+//               range 0..1.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+compute_sample_point(LPoint3 &result,
+                     PN_stdfloat x, PN_stdfloat y, PN_stdfloat sample_radius) const {
+  x *= _x_size;
+  y *= _y_size;
+  PN_stdfloat xr = sample_radius * _x_size;
+  PN_stdfloat yr = sample_radius * _y_size;
+  box_filter_region(result, x - xr, y - yr, x + xr, y + yr);
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::generate_vis_points
@@ -1017,27 +1082,6 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::compute_sample_point
-//       Access: Private
-//  Description: Computes the average of all the point within
-//               sample_radius (manhattan distance) and the indicated
-//               point.
-//
-//               Unlike box_filter_*(), these point values are given
-//               in UV space, in the range 0..1.
-////////////////////////////////////////////////////////////////////
-void PfmFile::
-compute_sample_point(LPoint3 &result,
-                     double x, double y, double sample_radius) const {
-  x *= _x_size;
-  y *= _y_size;
-  double xr = sample_radius * _x_size;
-  double yr = sample_radius * _y_size;
-  box_filter_region(result, x - xr, y - yr, x + xr, y + yr);
-}
-
-
-////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::box_filter_region
 //       Access: Private
 //  Description: Averages all the points in the rectangle from x0
@@ -1048,9 +1092,9 @@ compute_sample_point(LPoint3 &result,
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
 box_filter_region(LPoint3 &result,
-                  double x0, double y0, double x1, double y1) const {
+                  PN_stdfloat x0, PN_stdfloat y0, PN_stdfloat x1, PN_stdfloat y1) const {
   result = LPoint3::zero();
-  double coverage = 0.0;
+  PN_stdfloat coverage = 0.0;
 
   if (x1 < x0 || y1 < y0) {
     return;
@@ -1059,7 +1103,7 @@ box_filter_region(LPoint3 &result,
 
   int y = (int)y0;
   // Get the first (partial) row
-  box_filter_line(result, coverage, x0, y, x1, (double)(y+1)-y0);
+  box_filter_line(result, coverage, x0, y, x1, (PN_stdfloat)(y+1)-y0);
 
   int y_last = (int)y1;
   if (y < y_last) {
@@ -1071,7 +1115,7 @@ box_filter_region(LPoint3 &result,
     }
 
     // Get the final (partial) row
-    double y_contrib = y1 - (double)y_last;
+    PN_stdfloat y_contrib = y1 - (PN_stdfloat)y_last;
     if (y_contrib > 0.0001) {
       box_filter_line(result, coverage, x0, y, x1, y_contrib);
     }
@@ -1088,11 +1132,11 @@ box_filter_region(LPoint3 &result,
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
-box_filter_line(LPoint3 &result, double &coverage,
-                double x0, int y, double x1, double y_contrib) const {
+box_filter_line(LPoint3 &result, PN_stdfloat &coverage,
+                PN_stdfloat x0, int y, PN_stdfloat x1, PN_stdfloat y_contrib) const {
   int x = (int)x0;
   // Get the first (partial) xel
-  box_filter_point(result, coverage, x, y, (double)(x+1)-x0, y_contrib);
+  box_filter_point(result, coverage, x, y, (PN_stdfloat)(x+1)-x0, y_contrib);
 
   int x_last = (int)x1;
   if (x < x_last) {
@@ -1104,7 +1148,7 @@ box_filter_line(LPoint3 &result, double &coverage,
     }
 
     // Get the final (partial) xel
-    double x_contrib = x1 - (double)x_last;
+    PN_stdfloat x_contrib = x1 - (PN_stdfloat)x_last;
     if (x_contrib > 0.0001) {
       box_filter_point(result, coverage, x, y, x_contrib, y_contrib);
     }
@@ -1117,14 +1161,14 @@ box_filter_line(LPoint3 &result, double &coverage,
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
-box_filter_point(LPoint3 &result, double &coverage,
-                 int x, int y, double x_contrib, double y_contrib) const {
+box_filter_point(LPoint3 &result, PN_stdfloat &coverage,
+                 int x, int y, PN_stdfloat x_contrib, PN_stdfloat y_contrib) const {
   const LPoint3 &point = get_point(x, y);
   if (_zero_special && point == LPoint3::zero()) {
     return;
   }
 
-  double contrib = x_contrib * y_contrib;
+  PN_stdfloat contrib = x_contrib * y_contrib;
   result += point * contrib;
   coverage += contrib;
 }
