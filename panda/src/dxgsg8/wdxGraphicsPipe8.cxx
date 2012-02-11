@@ -157,7 +157,7 @@ make_output(const string &name,
     if ((gsg != 0)&&
         (gsg->is_valid())&&
         (!gsg->needs_reset())&&
-        (gsg->get_supports_render_texture())) {
+        (DCAST(DXGraphicsStateGuardian8, gsg)->get_supports_render_texture())) {
       precertify = true;
     }
     return new wdxGraphicsBuffer8(engine, this, name, fb_prop, win_prop,
