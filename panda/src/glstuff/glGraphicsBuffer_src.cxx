@@ -359,6 +359,7 @@ rebuild_bitplanes() {
     }
   }
 
+#ifndef OPENGLES
   // Setup any required multisample buffers.
   if (_requested_multisamples) {
     if (_fbo_multisample == 0) {
@@ -367,7 +368,7 @@ rebuild_bitplanes() {
     glgsg->bind_fbo(_fbo_multisample);
     bind_slot_multisample(rb_resize, attach, RTP_depth, GL_DEPTH_ATTACHMENT_EXT);
     bind_slot_multisample(rb_resize, attach, RTP_color, GL_COLOR_ATTACHMENT0_EXT);
-#ifndef OPENGLES
+
     int next = GL_COLOR_ATTACHMENT1_EXT;
     for (int i=0; i<_fb_properties.get_aux_rgba(); i++) {
       bind_slot_multisample(rb_resize, attach, (RenderTexturePlane)(RTP_aux_rgba_0+i), next);
@@ -381,7 +382,6 @@ rebuild_bitplanes() {
       bind_slot_multisample(rb_resize, attach, (RenderTexturePlane)(RTP_aux_float_0+i), next);
       next += 1;
     }
-#endif  // OPENGLES
     glEnable(GL_MULTISAMPLE);
 
     if (_initial_clear) {
@@ -391,6 +391,7 @@ rebuild_bitplanes() {
   } else {
     glDisable(GL_MULTISAMPLE);
   }
+#endif  // OPENGLES
 
   _initial_clear = false;
 
