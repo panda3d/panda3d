@@ -1,6 +1,7 @@
 #include "config_bullet.cxx"
 #include "bullet_utils.cxx"
 #include "bulletAllHitsRayResult.cxx"
+#include "bulletBaseCharacterControllerNode.cxx"
 #include "bulletBodyNode.cxx"
 #include "bulletBoxShape.cxx"
 #include "bulletCapsuleShape.cxx"

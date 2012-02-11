@@ -69,7 +69,7 @@ parents_changed() {
     if (BulletRigidBodyNode::get_class_type() == type ||
         BulletSoftBodyNode::get_class_type() == type ||
         BulletGhostNode::get_class_type() == type ||
-        BulletCharacterControllerNode::get_class_type() == type) {
+        type.is_derived_from(BulletBaseCharacterControllerNode::get_class_type())) {
 
       _sync_local = true;
       return;

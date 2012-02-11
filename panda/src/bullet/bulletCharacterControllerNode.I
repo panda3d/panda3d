@@ -39,7 +39,7 @@ get_ghost() const {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE btKinematicCharacterController *BulletCharacterControllerNode::
+INLINE btCharacterControllerInterface *BulletCharacterControllerNode::
 get_character() const {
 
   return _character;

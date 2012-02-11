@@ -14,6 +14,7 @@
 
 #include "config_bullet.h"
 
+#include "bulletBaseCharacterControllerNode.h"
 #include "bulletBodyNode.h"
 #include "bulletBoxShape.h"
 #include "bulletCapsuleShape.h"
@@ -144,6 +145,7 @@ init_libbullet() {
 
   // Initialize types
   //
+  BulletBaseCharacterControllerNode::init_type();
   BulletBodyNode::init_type();
   BulletBoxShape::init_type();
   BulletCapsuleShape::init_type();

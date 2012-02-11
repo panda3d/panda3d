@@ -172,7 +172,7 @@ get_num_characters() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE BulletCharacterControllerNode *BulletWorld::
+INLINE BulletBaseCharacterControllerNode *BulletWorld::
 get_character(int idx) const {
 
   nassertr(idx >= 0 && idx < (int)_characters.size(), NULL);

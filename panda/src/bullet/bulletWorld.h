@@ -25,7 +25,7 @@
 #include "bulletClosestHitSweepResult.h"
 #include "bulletContactResult.h"
 #include "bulletDebugNode.h"
-#include "bulletCharacterControllerNode.h"
+#include "bulletBaseCharacterControllerNode.h"
 #include "bulletConstraint.h"
 #include "bulletGhostNode.h"
 #include "bulletRigidBodyNode.h"
@@ -88,11 +88,11 @@ PUBLISHED:
   MAKE_SEQ(get_soft_bodies, get_num_soft_bodies, get_soft_body);
 
   // Character controller
-  void attach_character(BulletCharacterControllerNode *node);
-  void remove_character(BulletCharacterControllerNode *node);
+  void attach_character(BulletBaseCharacterControllerNode *node);
+  void remove_character(BulletBaseCharacterControllerNode *node);
 
   INLINE int get_num_characters() const;
-  INLINE BulletCharacterControllerNode *get_character(int idx) const;
+  INLINE BulletBaseCharacterControllerNode *get_character(int idx) const;
   MAKE_SEQ(get_characters, get_num_characters, get_character);
 
   // Vehicle
@@ -166,7 +166,7 @@ private:
   typedef PTA(PT(BulletRigidBodyNode)) BulletRigidBodies;
   typedef PTA(PT(BulletSoftBodyNode)) BulletSoftBodies;
   typedef PTA(PT(BulletGhostNode)) BulletGhosts;
-  typedef PTA(PT(BulletCharacterControllerNode)) BulletCharacterControllers;
+  typedef PTA(PT(BulletBaseCharacterControllerNode)) BulletCharacterControllers;
   typedef PTA(PT(BulletVehicle)) BulletVehicles;
   typedef PTA(PT(BulletConstraint)) BulletConstraints;
 

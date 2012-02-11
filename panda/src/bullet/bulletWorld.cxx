@@ -446,12 +446,12 @@ remove_ghost(BulletGhostNode *node) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletWorld::
-attach_character(BulletCharacterControllerNode *node) {
+attach_character(BulletBaseCharacterControllerNode *node) {
 
   nassertv(node);
 
   BulletCharacterControllers::iterator found;
-  PT(BulletCharacterControllerNode) ptnode = node;
+  PT(BulletBaseCharacterControllerNode) ptnode = node;
   found = find(_characters.begin(), _characters.end(), ptnode);
 
   if (found == _characters.end()) {
@@ -474,12 +474,12 @@ attach_character(BulletCharacterControllerNode *node) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletWorld::
-remove_character(BulletCharacterControllerNode *node) {
+remove_character(BulletBaseCharacterControllerNode *node) {
 
   nassertv(node);
 
   BulletCharacterControllers::iterator found;
-  PT(BulletCharacterControllerNode) ptnode = node;
+  PT(BulletBaseCharacterControllerNode) ptnode = node;
   found = find(_characters.begin(), _characters.end(), ptnode);
 
   if (found == _characters.end()) {
@@ -715,8 +715,8 @@ get_collision_object(PandaNode *node) {
   else if (node->is_of_type(BulletGhostNode::get_class_type())) {
     return ((BulletGhostNode *)node)->get_object();
   }
-  else if (node->is_of_type(BulletCharacterControllerNode::get_class_type())) {
-    return ((BulletCharacterControllerNode *)node)->get_ghost();
+  else if (node->is_of_type(BulletBaseCharacterControllerNode::get_class_type())) {
+    return ((BulletBaseCharacterControllerNode *)node)->get_ghost();
   }
   else if (node->is_of_type(BulletSoftBodyNode::get_class_type())) {
     return ((BulletSoftBodyNode *)node)->get_object();

@@ -20,9 +20,8 @@
 #include "bullet_includes.h"
 #include "bullet_utils.h"
 #include "bulletShape.h"
+#include "bulletBaseCharacterControllerNode.h"
 
-#include "pandaNode.h"
-#include "collideMask.h"
 #include "luse.h"
 #include "transformState.h"
 #include "nodePath.h"
@@ -31,7 +30,7 @@
 //       Class : BulletCharacterControllerNode
 // Description : 
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDABULLET BulletCharacterControllerNode : public PandaNode {
+class EXPCL_PANDABULLET BulletCharacterControllerNode : public BulletBaseCharacterControllerNode {
 
 PUBLISHED:
   BulletCharacterControllerNode(BulletShape *shape, PN_stdfloat step_height, const char *name="character");
@@ -57,20 +56,11 @@ PUBLISHED:
   void do_jump();
 
 public:
-  virtual CollideMask get_legal_collide_mask() const;
+  INLINE virtual btPairCachingGhostObject *get_ghost() const;
+  INLINE virtual btCharacterControllerInterface *get_character() const;
 
-  virtual bool safe_to_flatten() const;
-  virtual bool safe_to_transform() const;
-  virtual bool safe_to_modify_transform() const;
-  virtual bool safe_to_combine() const;
-  virtual bool safe_to_combine_children() const;
-  virtual bool safe_to_flatten_below() const;
-
-  INLINE btPairCachingGhostObject *get_ghost() const;
-  INLINE btKinematicCharacterController *get_character() const;
-
-  void sync_p2b(PN_stdfloat dt, int num_substeps);
-  void sync_b2p();
+  virtual void sync_p2b(PN_stdfloat dt, int num_substeps);
+  virtual void sync_b2p();
 
 protected:
   virtual void transform_changed();
@@ -96,9 +86,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    PandaNode::init_type();
+    BulletBaseCharacterControllerNode::init_type();
     register_type(_type_handle, "BulletCharacterControllerNode", 
-                  PandaNode::get_class_type());
+                  BulletBaseCharacterControllerNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
