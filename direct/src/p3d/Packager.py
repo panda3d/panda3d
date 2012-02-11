@@ -2318,9 +2318,11 @@ class Packager:
 
         # Binary files that are considered uncompressible, and are
         # copied without compression.
-        self.uncompressibleExtensions = [ 'mp3', 'ogg', 'wav' ]
+        self.uncompressibleExtensions = [ 'mp3', 'ogg', 'wav', 'rml', 'rcss', 'otf' ]
         # wav files are compressible, but p3openal_audio won't load
         # them compressed.
+        # rml, rcss and otf files must be added here because
+        # libRocket wants to be able to seek in these files.
 
         # Files which are not to be processed further, but which
         # should be added exactly byte-for-byte as they are.
