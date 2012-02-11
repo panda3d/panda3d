@@ -3,15 +3,49 @@
 This is a major release, with several big new features.  As such,
 it is likely to contain bugs.
 
+* True threading support now enabled in the default build
+* Pipelined rendering: app, cull, and draw can run in parallel, each
+  in their own thread
+* Web plugin is more robust, and better supports Safari and Chrome
+* Plugin runs properly when the username contains non-ASCII characters on Windows
+* Added appRunner.p3dFilename and appRunner.p3dUrl to provide p3d
+  location
+* Multifiles (and p3d files) now make a distinction between binary and
+  text files
+* OccluderNode added for explicit occlusion culling
+* Ambient occlusion generation for terrain
+* Fixed bug where Windows installer wipes %PATH% when it's too long
+* Added fog support to the shader generator
+* Added a custom color option to the cartoon filter
+* Support for texture arrays in shaders
+* Better shader support in pandadx9
+* Can be compiled to use double-precision floats throughout, instead
+  of the default of single-precision floats.  (Graphics drivers still
+  use single-precision floats, of course.)
+* Can be compiled with the optional Eigen library to provide SSE2 support
+* Can be compiled with SpeedTree support
+* Can be compiled on MSVS2010, and/or Win64.  (These builds not
+  provided by default.)
 * Support for the Bullet physics engine
 * Support for the libRocket GUI library
-* Added fog support to the shader generator
-* Occlusion culling classes added
-* Ambient acclusion generation for terrain
-* Fixed bug where Windows installer wipes %PATH% when it's too long
-* Can be compiled with SpeedTree support
+* Support for stereo/multiview textures
+* Substantial performance improvements to movie textures
 * TGA files with alpha channel now load correctly
-* Added a custom color option to the cartoon filter
+* New "Ramdisk" mount type available for the VFS
+* The VFS is now writable for ramdisk files and true on-disk files
+* pdeploy -i generates a custom icon for the installed game
+* wx and tk work better on OSX.
+* Panda windows can be embedded within wxPython windows on all
+  platforms (including OSX) with the new WxPandaWindow class
+* Added base.pixel2d for pixel-based 2-D coordinates
+* Python-based swizzling of Panda vectors, e.g. vec2.xyxy
+* Python programmers can now optionally use the original unmangled C++
+  name for methods and classes, e.g. model.set_pos(LPoint3f(1, 2, 3)).
+* Command-line filename globbing now supported on Win32, e.g. egg-texture-cards *.png
+* DirectGui works with nonstandard coordinate-system in effect
+* Egg loader handles double-sided polygons a little differently by
+  default now, for better render performance but more memory usage
+  (use "egg-emulate-bface 1" to restore the old behavior if needed).
 
 ------------------------  RELEASE 1.7.2  ------------------------
 
