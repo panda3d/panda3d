@@ -34,7 +34,7 @@ it is likely to contain bugs.
 * New "Ramdisk" mount type available for the VFS
 * The VFS is now writable for ramdisk files and true on-disk files
 * pdeploy -i generates a custom icon for the installed game
-* wx and tk work better on OSX.
+* wx and tk work better on OSX
 * Panda windows can be embedded within wxPython windows on all
   platforms (including OSX) with the new WxPandaWindow class
 * Added base.pixel2d for pixel-based 2-D coordinates
@@ -45,7 +45,7 @@ it is likely to contain bugs.
 * DirectGui works with nonstandard coordinate-system in effect
 * Egg loader handles double-sided polygons a little differently by
   default now, for better render performance but more memory usage
-  (use "egg-emulate-bface 1" to restore the old behavior if needed).
+  (use "egg-emulate-bface 0" to restore the old behavior if needed).
 
 ------------------------  RELEASE 1.7.2  ------------------------
 
