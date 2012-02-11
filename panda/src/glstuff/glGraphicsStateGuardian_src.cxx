@@ -9888,13 +9888,11 @@ get_supports_cg_profile(const string &name) const {
 void CLP(GraphicsStateGuardian)::
 bind_fbo(GLuint fbo) {
   nassertv(_glBindFramebuffer != 0);
-#ifdef OPENGLES_2
+#if defined(OPENGLES_2)
   _glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-#endif
-#ifdef OPENGLES_1
+#elif defined(OPENGLES_1)
   _glBindFramebuffer(GL_FRAMEBUFFER_OES, fbo);
-#endif
-#ifndef OPENGLES
+#else
   _glBindFramebuffer(GL_FRAMEBUFFER_EXT, fbo);
 #endif
   _current_fbo = fbo;

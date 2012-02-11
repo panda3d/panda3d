@@ -40,6 +40,7 @@
 #include "cycleDataReader.h"
 #include "cycleDataWriter.h"
 #include "pipelineCycler.h"
+#include "updateSeq.h"
 
 class PNMImage;
 class GraphicsEngine;
@@ -345,6 +346,7 @@ protected:
     }
 
     RenderTextures _textures;
+    UpdateSeq _textures_seq;
     bool _active;
     int _one_shot_frame;
     ActiveDisplayRegions _active_display_regions;

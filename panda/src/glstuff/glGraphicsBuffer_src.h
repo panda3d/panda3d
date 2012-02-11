@@ -90,29 +90,44 @@ protected:
 
 private:
   
-  void bind_slot(bool rb_resize, Texture **attach,
+  void bind_slot(int face, bool rb_resize, Texture **attach,
                  RenderTexturePlane plane, GLenum attachpoint);
   void bind_slot_multisample(bool rb_resize, Texture **attach,
                  RenderTexturePlane plane, GLenum attachpoint);
   bool check_fbo();
   void generate_mipmaps();
   void rebuild_bitplanes();
-  
-  GLuint      _fbo; // allows for textures to be attached for render to texture.
-  GLuint      _fbo_multisample; // all render buffers, resolves to _fbo at end of frame.
+  void resolve_multisamples();
+
+  // We create one FBO for each cube map face we'll be rendering to.
+  // If we aren't rendering to any cube maps, we use only _fbo[0].
+  GLuint _fbo[6];
+  int _num_faces;
+
+  // For multisample we render first to a multisample buffer, then
+  // filter it to _fbo[face] at the end of the frame.
+  GLuint      _fbo_multisample;
   int         _requested_multisamples;
   int         _requested_coverage_samples;
   bool        _use_depth_stencil;
-  bool        _initial_clear;
 
   int         _rb_size_x;
   int         _rb_size_y;
-  int         _cube_face_active;
+
+  // The texture or render buffer bound to each plane.
   PT(Texture) _tex[RTP_COUNT];
   GLuint      _rb[RTP_COUNT];
-  GLuint      _rbm[RTP_COUNT];  // A mirror of _rb, for the multisample FBO.
 
-  GLuint      _cubemap_fbo [6];
+  // The render buffer for _fbo_multisample.
+  GLuint      _rbm[RTP_COUNT];
+
+  // The cube map face we are currently drawing to or have just
+  // finished drawing to, or -1 if we are not drawing to a cube map.
+  int _active_cube_map_index;
+
+  bool _initial_clear;
+  bool _needs_rebuild;
+  UpdateSeq _last_textures_seq;
   
   CLP(GraphicsBuffer) *_shared_depth_buffer;
   list <CLP(GraphicsBuffer) *> _shared_depth_buffer_list;

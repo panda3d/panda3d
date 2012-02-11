@@ -245,6 +245,7 @@ void GraphicsOutput::
 clear_render_textures() {
   CDWriter cdata(_cycler, true);
   cdata->_textures.clear();
+  ++(cdata->_textures_seq);
   throw_event("render-texture-targets-changed");
 }
 
@@ -388,6 +389,7 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
   result._plane = plane;
   result._rtm_mode = mode;
   cdata->_textures.push_back(result);
+  ++(cdata->_textures_seq);
 
   throw_event("render-texture-targets-changed");
 }
