@@ -90,7 +90,8 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "SKEL",                                              # Example SKEL project
   "PANDAFX",                                           # Some distortion special lenses 
   "PANDAPARTICLESYSTEM",                               # Built in particle system
-  "CONTRIB"                                            # Experimental
+  "CONTRIB",                                           # Experimental
+  "SSE2"                                               # Compiler features
 ])
 
 CheckPandaSourceTree()
@@ -825,7 +826,7 @@ def CompileCxx(obj,src,opts):
                     cmd += "/DPANDA_WIN7 /DWINVER=0x601 "
 
             cmd += "/Fo" + obj + " /nologo /c"
-            if (not is_64):
+            if (not is_64 and PkgSkip("SSE2") == 0):
                 cmd += " /arch:SSE2"            
             for x in ipath: cmd += " /I" + x
             for (opt,dir) in INCDIRECTORIES:
@@ -960,7 +961,9 @@ def CompileCxx(obj,src,opts):
             else:
                 cmd += " -arch i386"
                 if ("NOPPC" not in opts): cmd += " -arch ppc"
-        cmd += " -pthread -msse2"
+        cmd += " -pthread"
+        if PkgSkip("SSE2") == 0:
+            cmd += " -msse2"
         optlevel = GetOptimizeOption(opts)
         if (optlevel==1): cmd += " -ggdb -D_DEBUG"
         if (optlevel==2): cmd += " -O1 -D_DEBUG"
