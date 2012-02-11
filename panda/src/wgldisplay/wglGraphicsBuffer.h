@@ -53,6 +53,8 @@ public:
 
   virtual void process_events();
 
+  virtual bool get_supports_render_texture() const;
+
 protected:
   virtual void close_buffer();
   virtual bool open_buffer();

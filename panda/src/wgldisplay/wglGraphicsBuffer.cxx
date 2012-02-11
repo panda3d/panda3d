@@ -254,6 +254,25 @@ process_events() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsBuffer::get_supports_render_texture
+//       Access: Published, Virtual
+//  Description: Returns true if this particular GraphicsOutput can
+//               render directly into a texture, or false if it must
+//               always copy-to-texture at the end of each frame to
+//               achieve this effect.
+////////////////////////////////////////////////////////////////////
+bool wglGraphicsBuffer::
+get_supports_render_texture() const {
+  if (_gsg == (GraphicsStateGuardian *)NULL) {
+    return false;
+  }
+
+  wglGraphicsStateGuardian *wglgsg;
+  DCAST_INTO_R(wglgsg, _gsg, false);
+  return wglgsg->get_supports_wgl_render_texture();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: wglGraphicsBuffer::close_buffer
 //       Access: Protected, Virtual
 //  Description: Closes the buffer right now.  Called from the window

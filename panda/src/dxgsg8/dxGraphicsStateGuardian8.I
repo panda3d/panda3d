@@ -144,3 +144,16 @@ get_safe_buffer_start() {
 
   return _safe_buffer_start;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian8::get_supports_render_texture
+//       Access: Published
+//  Description: Returns true if this particular GSG can render
+//               from a wdxGraphicsBuffer8 directly into a texture, or
+//               false if it must always copy-to-texture at the end of
+//               each frame to achieve this effect.
+////////////////////////////////////////////////////////////////////
+INLINE bool DXGraphicsStateGuardian8::
+get_supports_render_texture() const {
+  return _supports_render_texture;
+}

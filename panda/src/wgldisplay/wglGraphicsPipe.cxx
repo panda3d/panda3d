@@ -126,7 +126,7 @@ make_output(const string &name,
   support_rtt = false;
   if (wglgsg) {
      support_rtt = 
-      wglgsg -> get_supports_render_texture() && 
+      wglgsg -> get_supports_wgl_render_texture() && 
       support_render_texture;
   }
 

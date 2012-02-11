@@ -213,6 +213,8 @@ PUBLISHED:
   virtual bool share_depth_buffer(GraphicsOutput *graphics_output);
   virtual void unshare_depth_buffer();
 
+  virtual bool get_supports_render_texture() const;
+
 public:
   // These are not intended to be called directly by the user.
   virtual bool flip_ready() const;

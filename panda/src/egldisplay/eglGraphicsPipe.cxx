@@ -232,11 +232,15 @@ make_output(const string &name,
 
   bool support_rtt;
   support_rtt = false;
+  /*
+    Currently, no support for eglGraphicsBuffer render-to-texture.
   if (eglgsg) {
      support_rtt =
       eglgsg -> get_supports_render_texture() &&
       support_render_texture;
   }
+  */
+
   // First thing to try: an eglGraphicsWindow
 
   if (retry == 0) {

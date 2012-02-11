@@ -213,3 +213,16 @@ set_sampler_state (DWORD sampler, D3DSAMPLERSTATETYPE type, DWORD value)
   return hr;
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian9::get_supports_render_texture
+//       Access: Published
+//  Description: Returns true if this particular GSG can render
+//               from a wdxGraphicsBuffer9 directly into a texture, or
+//               false if it must always copy-to-texture at the end of
+//               each frame to achieve this effect.
+////////////////////////////////////////////////////////////////////
+INLINE bool DXGraphicsStateGuardian9::
+get_supports_render_texture() const {
+  return _supports_render_texture;
+}

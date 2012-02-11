@@ -158,14 +158,12 @@ begin_frame(FrameMode mode, Thread *current_thread) {
       }
     }
 
-    if (_needs_rebuild) {
-      rebuild_bitplanes();
+    rebuild_bitplanes();
       
-      if (_needs_rebuild) {
-        // If we still need rebuild, something went wrong with
-        // rebuild_bitplanes().
-        return false;
-      }
+    if (_needs_rebuild) {
+      // If we still need rebuild, something went wrong with
+      // rebuild_bitplanes().
+      return false;
     }
   }
 
@@ -237,12 +235,13 @@ rebuild_bitplanes() {
     return;
   }
 
-  if (!_needs_rebuild) {
-    return;
-  }
-
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_V(glgsg, _gsg);
+
+  if (!_needs_rebuild) {
+    glgsg->bind_fbo(_fbo[0]);
+    return;
+  }
   
   // Calculate bitplane size.  This can be larger than the buffer.
   if (_creation_flags & GraphicsPipe::BF_size_track_host) {
@@ -290,10 +289,6 @@ rebuild_bitplanes() {
         continue;
       }
 
-      if (tex->get_texture_type() == Texture::TT_cube_map) {
-        any_cube_maps = true;
-      }
-
       // If I can't find an appropriate slot, or if there's
       // already a texture bound to this slot, then punt
       // this texture.
@@ -301,8 +296,12 @@ rebuild_bitplanes() {
         ((CData *)cdata.p())->_textures[i]._rtm_mode = RTM_copy_texture;
         continue;
       }
+
       // Assign the texture to this slot.
       attach[plane] = tex;
+      if (tex->get_texture_type() == Texture::TT_cube_map) {
+        any_cube_maps = true;
+      }
     }
   }
   
@@ -1016,6 +1015,20 @@ unshare_depth_buffer() {
     _shared_depth_buffer = 0;
     _needs_rebuild = true;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glGraphicsBuffer::get_supports_render_texture
+//       Access: Published, Virtual
+//  Description: Returns true if this particular GraphicsOutput can
+//               render directly into a texture, or false if it must
+//               always copy-to-texture at the end of each frame to
+//               achieve this effect.
+////////////////////////////////////////////////////////////////////
+bool CLP(GraphicsBuffer)::
+get_supports_render_texture() const {
+  // FBO-based buffers, by their nature, can always bind-to-texture.
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

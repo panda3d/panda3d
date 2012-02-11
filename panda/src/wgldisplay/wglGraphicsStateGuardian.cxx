@@ -45,6 +45,7 @@ wglGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
   _supports_pbuffer = false;
   _supports_pixel_format = false;
   _supports_wgl_multisample = false;
+  _supports_wgl_render_texture = false;
   
   get_gamma_table();
   atexit(atexit_function);
@@ -518,9 +519,9 @@ reset() {
 
   _supports_wgl_multisample = has_extension("WGL_ARB_multisample");
 
-  _supports_render_texture = has_extension("WGL_ARB_render_texture");
+  _supports_wgl_render_texture = has_extension("WGL_ARB_render_texture");
 
-  if (_supports_render_texture) {
+  if (_supports_wgl_render_texture) {
     _wglBindTexImageARB = 
       (PFNWGLBINDTEXIMAGEARBPROC)wglGetProcAddress("wglBindTexImageARB");
     _wglReleaseTexImageARB = 
@@ -532,7 +533,7 @@ reset() {
         _wglSetPbufferAttribARB == NULL) {
       wgldisplay_cat.error()
         << "Driver claims to support WGL_ARB_render_texture, but does not define all functions.\n";
-      _supports_render_texture = false;
+      _supports_wgl_render_texture = false;
     }
   }
 }

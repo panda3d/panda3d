@@ -115,6 +115,7 @@ DXGraphicsStateGuardian9(GraphicsEngine *engine, GraphicsPipe *pipe) :
   _vertex_blending_enabled = false;
   _overlay_windows_supported = false;
   _tex_stats_retrieval_impossible = false;
+  _supports_render_texture = false;
 
   _active_ibuffer = NULL;
 

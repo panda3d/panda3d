@@ -100,3 +100,15 @@ get_twindow_dc() {
   return _twindow_dc;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsStateGuardian::get_supports_wgl_render_texture
+//       Access: Published
+//  Description: Returns true if this particular GSG can render
+//               from a wglGraphicsBuffer directly into a texture, or
+//               false if it must always copy-to-texture at the end of
+//               each frame to achieve this effect.
+////////////////////////////////////////////////////////////////////
+INLINE bool wglGraphicsStateGuardian::
+get_supports_wgl_render_texture() const {
+  return _supports_wgl_render_texture;
+}

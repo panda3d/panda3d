@@ -122,6 +122,7 @@ public:
   virtual void set_state_and_transform(const RenderState *state,
                                        const TransformState *transform);
   LPDIRECT3DDEVICE8 get_d3d_device();
+  INLINE bool get_supports_render_texture() const;
 
   static bool get_gamma_table(void);
   static bool static_set_gamma(bool restore, PN_stdfloat gamma);
@@ -225,6 +226,7 @@ protected:
   HRESULT _last_testcooplevel_result;
 
   bool _vertex_blending_enabled;
+  bool _supports_render_texture;
 
   RenderBuffer::Type _cur_read_pixel_buffer;  // source for copy_pixel_buffer operation
   bool _auto_rescale_normal;

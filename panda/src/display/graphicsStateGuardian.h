@@ -139,7 +139,6 @@ PUBLISHED:
   INLINE bool get_copy_texture_inverted() const;
   virtual bool get_supports_multisample() const;
   INLINE bool get_supports_generate_mipmap() const;
-  INLINE bool get_supports_render_texture() const;
   INLINE bool get_supports_depth_texture() const;
   INLINE bool get_supports_depth_stencil() const;
   INLINE bool get_supports_shadow_filter() const;
@@ -478,7 +477,6 @@ protected:
   bool _copy_texture_inverted;
   bool _supports_multisample;
   bool _supports_generate_mipmap;
-  bool _supports_render_texture;
   bool _supports_depth_texture;
   bool _supports_depth_stencil;
   bool _supports_shadow_filter;

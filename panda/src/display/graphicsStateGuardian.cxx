@@ -210,7 +210,6 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   // Similarly with these capabilities flags.
   _supports_multisample = false;
   _supports_generate_mipmap = false;
-  _supports_render_texture = false;
   _supports_depth_texture = false;
   _supports_depth_stencil = false;
   _supports_shadow_filter = false;

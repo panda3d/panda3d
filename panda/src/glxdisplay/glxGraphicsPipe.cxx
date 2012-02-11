@@ -95,11 +95,15 @@ make_output(const string &name,
 
   bool support_rtt;
   support_rtt = false;
+  /*
+    Currently, no support for glxGraphicsBuffer render-to-texture.
   if (glxgsg) {
      support_rtt = 
       glxgsg -> get_supports_render_texture() && 
       support_render_texture;
   }  
+  */
+
   // First thing to try: a glxGraphicsWindow
 
   if (retry == 0) {

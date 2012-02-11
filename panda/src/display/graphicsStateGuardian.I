@@ -585,19 +585,6 @@ get_supports_generate_mipmap() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_supports_render_texture
-//       Access: Published
-//  Description: Returns true if this particular GSG can render
-//               directly into a texture, or false if it must always
-//               copy-to-texture at the end of each frame to achieve
-//               this effect.
-////////////////////////////////////////////////////////////////////
-INLINE bool GraphicsStateGuardian::
-get_supports_render_texture() const {
-  return _supports_render_texture;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_supports_depth_texture
 //       Access: Published
 //  Description: Returns true if this particular GSG supports

@@ -47,12 +47,14 @@ public:
   virtual void reset();
 
   INLINE HDC get_twindow_dc();
+  INLINE bool get_supports_wgl_render_texture() const;
 
   static bool get_gamma_table(void);
   static bool static_set_gamma(bool restore, PN_stdfloat gamma);
   bool set_gamma(PN_stdfloat gamma);
   void restore_gamma();
   static void atexit_function(void);
+
 
 protected:
   virtual void get_extra_extensions();
@@ -84,7 +86,6 @@ private:
   FrameBufferProperties _pre_pfnum_properties;
   int _pre_pfnum;
 
-  
   bool _made_context;
   HGLRC _context;
 
@@ -112,6 +113,7 @@ public:
 
   bool _supports_wgl_multisample;
 
+  bool _supports_wgl_render_texture;
   PFNWGLBINDTEXIMAGEARBPROC _wglBindTexImageARB;
   PFNWGLRELEASETEXIMAGEARBPROC _wglReleaseTexImageARB;
   PFNWGLSETPBUFFERATTRIBARBPROC _wglSetPbufferAttribARB;

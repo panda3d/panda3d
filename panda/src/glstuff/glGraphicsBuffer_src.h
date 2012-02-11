@@ -77,6 +77,8 @@ public:
   virtual bool share_depth_buffer(GraphicsOutput *graphics_output);
   virtual void unshare_depth_buffer();
 
+  virtual bool get_supports_render_texture() const;
+
   void register_shared_depth_buffer(GraphicsOutput *graphics_output);
   void unregister_shared_depth_buffer(GraphicsOutput *graphics_output);
 

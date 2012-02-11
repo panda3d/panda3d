@@ -365,15 +365,10 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
   tex->set_size_padded(get_x_size(), get_y_size());
 
   if (mode == RTM_bind_or_copy) {
-    // Binding is not supported or it is disabled, so just fall back
-    // to copy instead.
-    if (!support_render_texture) {
+    if (!support_render_texture || !get_supports_render_texture()) {
+      // Binding is not supported or it is disabled, so just fall back
+      // to copy instead.
       mode = RTM_copy_texture;
-    } else {
-      nassertv(_gsg != NULL);
-      if (!_gsg->get_supports_render_texture()) {
-        mode = RTM_copy_texture;
-      }
     }
   }
 
@@ -1126,6 +1121,19 @@ share_depth_buffer(GraphicsOutput *graphics_output) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
 unshare_depth_buffer() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_supports_render_texture
+//       Access: Published, Virtual
+//  Description: Returns true if this particular GraphicsOutput can
+//               render directly into a texture, or false if it must
+//               always copy-to-texture at the end of each frame to
+//               achieve this effect.
+////////////////////////////////////////////////////////////////////
+bool GraphicsOutput::
+get_supports_render_texture() const {
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
