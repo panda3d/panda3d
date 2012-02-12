@@ -2638,34 +2638,59 @@ PT(Texture) GraphicsStateGuardian::
 make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host) {
   // Make sure everything is valid.
   nassertr(light_np.node()->is_of_type(DirectionalLight::get_class_type()) ||
+           light_np.node()->is_of_type(PointLight::get_class_type()) ||
            light_np.node()->is_of_type(Spotlight::get_class_type()), NULL);
+
   PT(LightLensNode) light = DCAST(LightLensNode, light_np.node());
   if (light == NULL || !light->_shadow_caster) {
     return NULL;
   }
-  
+
+  bool is_point = light->is_of_type(PointLight::get_class_type());
+
   nassertr(light->_sbuffers.count(this) == 0, NULL);
-  
+
   display_cat.debug() << "Constructing shadow buffer for light '" << light->get_name()
     << "', size=" << light->_sb_xsize << "x" << light->_sb_ysize
     << ", sort=" << light->_sb_sort << "\n";
+
+  // Setup some flags and properties
   FrameBufferProperties fbp;
   fbp.set_depth_bits(1); // We only need depth
+  WindowProperties props = WindowProperties::size(light->_sb_xsize, light->_sb_ysize);
+  int flags = GraphicsPipe::BF_refuse_window;
+  if (is_point) {
+    flags |= GraphicsPipe::BF_size_square;
+  }
+
+  // Create the buffer
   PT(GraphicsOutput) sbuffer = get_engine()->make_output(get_pipe(), light->get_name(),
-      light->_sb_sort, fbp, WindowProperties::size(light->_sb_xsize, light->_sb_ysize),
-      GraphicsPipe::BF_refuse_window, this, DCAST(GraphicsOutput, host));
+      light->_sb_sort, fbp, props, flags, this, DCAST(GraphicsOutput, host));
   nassertr(sbuffer != NULL, NULL);
-  
+
   // Create a texture and fill it in with some data to workaround an OpenGL error
   PT(Texture) tex = new Texture(light->get_name());
-  tex->setup_2d_texture(light->_sb_xsize, light->_sb_ysize, Texture::T_float, Texture::F_depth_component);
+  if (is_point) {
+    if (light->_sb_xsize != light->_sb_ysize) {
+      display_cat.error()
+        << "PointLight shadow buffers must have an equal width and height!\n";
+    }
+    tex->setup_cube_map(light->_sb_xsize, Texture::T_float, Texture::F_depth_component);
+  } else {
+    tex->setup_2d_texture(light->_sb_xsize, light->_sb_ysize, Texture::T_float, Texture::F_depth_component);
+  }
   tex->make_ram_image();
-  sbuffer->add_render_texture(tex, GraphicsOutput::RTM_bind_or_copy,
-                                   GraphicsOutput::RTP_depth);
-  // Set the wrap mode to BORDER_COLOR
-  tex->set_wrap_u(Texture::WM_border_color);
-  tex->set_wrap_v(Texture::WM_border_color);
-  tex->set_border_color(LVecBase4(1, 1, 1, 1));
+  sbuffer->add_render_texture(tex, GraphicsOutput::RTM_bind_or_copy, GraphicsOutput::RTP_depth);
+
+  // Set the wrap mode
+  if (is_point) {
+    tex->set_wrap_u(Texture::WM_clamp);
+    tex->set_wrap_v(Texture::WM_clamp);
+  } else {
+    tex->set_wrap_u(Texture::WM_border_color);
+    tex->set_wrap_v(Texture::WM_border_color);
+    tex->set_border_color(LVecBase4(1, 1, 1, 1));
+  }
 
   if (get_supports_shadow_filter()) {
     // If we have the ARB_shadow extension, enable shadow filtering.
@@ -2676,9 +2701,23 @@ make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host) {
     tex->set_minfilter(Texture::FT_linear);
     tex->set_magfilter(Texture::FT_linear);
   }
-  sbuffer->make_display_region(0, 1, 0, 1)->set_camera(light_np);
+
+  // Assign display region(s) to the buffer and camera
+  if (is_point) {
+    for (int i = 0; i < 6; ++i) {
+      PT(DisplayRegion) dr = sbuffer->make_mono_display_region(0, 1, 0, 1);
+      dr->set_lens_index(i);
+      dr->set_cube_map_index(i);
+      dr->set_camera(light_np);
+      dr->set_clear_depth_active(true);
+    }
+  } else {
+    PT(DisplayRegion) dr = sbuffer->make_mono_display_region(0, 1, 0, 1);
+    dr->set_camera(light_np);
+    dr->set_clear_depth_active(true);
+  }
   light->_sbuffers[this] = sbuffer;
-  
+
   return tex;
 }
 
@@ -2687,47 +2726,66 @@ make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host) {
 //       Access: Public, Virtual
 //  Description: Returns the vendor of the video card driver 
 ////////////////////////////////////////////////////////////////////
-string GraphicsStateGuardian::get_driver_vendor() { return string("0"); }
+string GraphicsStateGuardian::
+get_driver_vendor() {
+  return string("0");
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_driver_vendor
 //       Access: Public, Virtual
 //  Description: Returns GL_Renderer
 ////////////////////////////////////////////////////////////////////
-string GraphicsStateGuardian::get_driver_renderer() { return string("0"); }
+string GraphicsStateGuardian::get_driver_renderer() {
+  return string("0");
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_driver_version
 //       Access: Public, Virtual
 //  Description: Returns driver version
 ////////////////////////////////////////////////////////////////////
-string GraphicsStateGuardian::get_driver_version() { return string("0"); }
+string GraphicsStateGuardian::
+get_driver_version() {
+  return string("0");
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_driver_version_major
 //       Access: Public, Virtual
 //  Description: Returns major version of the video driver
 ////////////////////////////////////////////////////////////////////
-int GraphicsStateGuardian::get_driver_version_major() { return -1; }
+int GraphicsStateGuardian::
+get_driver_version_major() {
+  return -1;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_driver_version_minor
 //       Access: Public, Virtual
 //  Description: Returns the minor version of the video driver
 ////////////////////////////////////////////////////////////////////
-int GraphicsStateGuardian::get_driver_version_minor() { return -1; }
+int GraphicsStateGuardian::
+get_driver_version_minor() {
+  return -1;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_driver_shader_version_major
 //       Access: Public, Virtual
 //  Description: Returns the major version of the shader model
 ////////////////////////////////////////////////////////////////////
-int GraphicsStateGuardian::get_driver_shader_version_major() { return -1; }
+int GraphicsStateGuardian::
+get_driver_shader_version_major() {
+  return -1;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_driver_shader_version_minor
 //       Access: Public, Virtual
 //  Description: Returns the minor version of the shader model
 ////////////////////////////////////////////////////////////////////
-int GraphicsStateGuardian::get_driver_shader_version_minor() { return -1; }
-
+int GraphicsStateGuardian::
+get_driver_shader_version_minor() {
+  return -1;
+}
