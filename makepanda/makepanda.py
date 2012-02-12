@@ -646,7 +646,10 @@ if (COMPILER=="LINUX"):
         SmartPkgEnable("WX",    tool = "wx-config")
         SmartPkgEnable("FLTK", "", ("fltk"), ("Fl/Fl.H"), tool = "fltk-config")
     if (RUNTIME):
-        if (sys.platform.startswith("freebsd")):
+        if (sys.platform == 'darwin'):
+            SmartPkgEnable("NPAPI", "", ("WebKit"), ("npapi.h"), framework = "WebKit")
+            IncDirectory("NPAPI", "/System/Library/Frameworks/WebKit.framework/Headers")
+        elif (sys.platform.startswith("freebsd")):
             SmartPkgEnable("NPAPI", "mozilla-plugin", (), ("libxul/stable", "libxul/stable/npapi.h", "nspr/prtypes.h", "nspr"))
         else:
             SmartPkgEnable("NPAPI", "mozilla-plugin", (), ("xulrunner-*/stable", "xulrunner-*/stable/npapi.h", "nspr*/prtypes.h", "nspr*"))
@@ -663,8 +666,11 @@ if (COMPILER=="LINUX"):
     if (RUNTIME):
         # For the runtime, all packages are required
         for pkg in ["OPENSSL", "ZLIB", "NPAPI", "JPEG", "PNG"]:
+            skips = []
             if (pkg in PkgListGet() and PkgSkip(pkg)==1):
-                exit("Runtime must be compiled with OpenSSL, ZLib, NPAPI, JPEG and PNG support!")
+                skips.append(pkg)
+            if skips:
+                exit("Runtime must be compiled with OpenSSL, ZLib, NPAPI, JPEG and PNG support (missing %s)" % (', '.join(skips)))
 
     if (not RUNTIME and not LocateBinary("bison")):
         exit("Could not locate bison!")
