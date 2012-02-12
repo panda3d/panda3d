@@ -92,7 +92,6 @@ protected:
 #endif  // DO_MEMORY_USAGE
 
 private:
-  static size_t _header_reserved_bytes;
   size_t _page_size;
 
   typedef map<size_t, DeletedBufferChain *> DeletedChains;

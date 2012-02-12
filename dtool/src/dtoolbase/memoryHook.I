@@ -72,7 +72,27 @@ get_memory_alignment() {
 ////////////////////////////////////////////////////////////////////
 INLINE size_t MemoryHook::
 get_header_reserved_bytes() {
-  return _header_reserved_bytes;
+  // We need to figure out the minimum amount of additional space we
+  // need in order to place a single word at the start of each
+  // allocated block, to store the size of the block.
+
+#ifdef LINMATH_ALIGN
+  // If we're doing SSE2 alignment, we must reserve a full 16-byte
+  // block, since anything less than that will spoil the alignment.
+  static const size_t header_reserved_bytes = 16;
+
+#elif defined(MEMORY_HOOK_DO_ALIGN)
+  // If we're just aligning to words, we reserve a block as big as two
+  // words, to allow us wiggle room to align the word precisely within
+  // that block.
+  static const size_t header_reserved_bytes = sizeof(size_t) + sizeof(size_t);
+
+#else
+  // If we're not aligning, we just need space for the word itself.
+  static const size_t header_reserved_bytes = sizeof(size_t);
+#endif
+
+  return header_reserved_bytes;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -111,12 +131,12 @@ inflate_size(size_t size) {
 #if defined(MEMORY_HOOK_DO_ALIGN)
   // If we're aligning, we need to request the header size, plus extra
   // bytes to give us wiggle room to adjust the pointer.
-  return size + _header_reserved_bytes + get_memory_alignment() - 1;
+  return size + get_header_reserved_bytes() + get_memory_alignment() - 1;
 #elif defined(DO_MEMORY_USAGE)
   // If we're not aligning, but we're tracking memory allocations, we
   // just need the header size extra (this gives us a place to store
   // the size of the allocated block).
-  return size + _header_reserved_bytes;  
+  return size + get_header_reserved_bytes();  
 #else
   // If we're not doing any of that, we can just allocate the precise
   // requested amount.
@@ -140,11 +160,11 @@ alloc_to_ptr(void *alloc, size_t size) {
   assert(alloc <= root && (size_t)((char *)root - (char *)alloc) < alignment);
   root[0] = size;
   root[1] = (size_t)alloc;  // Save the pointer we originally allocated.
-  return (void *)((char *)root + _header_reserved_bytes);
+  return (void *)((char *)root + get_header_reserved_bytes());
 #elif defined(DO_MEMORY_USAGE) 
   size_t *root = (size_t *)alloc;
   root[0] = size;
-  return (void *)((char *)root + _header_reserved_bytes);
+  return (void *)((char *)root + get_header_reserved_bytes());
 #else
   return alloc;
 #endif  // DO_MEMORY_USAGE
@@ -160,13 +180,13 @@ alloc_to_ptr(void *alloc, size_t size) {
 INLINE void *MemoryHook::
 ptr_to_alloc(void *ptr, size_t &size) {
 #if defined(MEMORY_HOOK_DO_ALIGN)
-  size_t *root = (size_t *)((char *)ptr - _header_reserved_bytes);
+  size_t *root = (size_t *)((char *)ptr - get_header_reserved_bytes());
   size = root[0];
   void *alloc = (void *)root[1]; // Get the pointer we originally allocated.
   assert(alloc <= root && (size_t)((char *)root - (char *)alloc) < get_memory_alignment());
   return alloc;
 #elif defined(DO_MEMORY_USAGE) 
-  size_t *root = (size_t *)((char *)ptr - _header_reserved_bytes);
+  size_t *root = (size_t *)((char *)ptr - get_header_reserved_bytes());
   size = root[0];
   return (void *)root;
 #else

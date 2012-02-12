@@ -15,10 +15,6 @@
 #include "deletedBufferChain.h"
 #include "memoryHook.h"
 
-#ifdef USE_DELETEDCHAINFLAG
-size_t DeletedBufferChain::_flag_reserved_bytes = max(MemoryHook::get_memory_alignment(), (size_t)sizeof(AtomicAdjust::Integer));
-#endif  // USE_DELETEDCHAINFLAG
-
 ////////////////////////////////////////////////////////////////////
 //     Function: DeletedBufferChain::Constructor
 //       Access: Protected
@@ -33,7 +29,7 @@ DeletedBufferChain(size_t buffer_size) {
 
 #ifdef USE_DELETEDCHAINFLAG
   // In development mode, we also need to reserve space for _flag.
-  _alloc_size += _flag_reserved_bytes;
+  _alloc_size += get_flag_reserved_bytes();
 #endif  // USE_DELETEDCHAINFLAG
 
   // We must allocate at least this much space for bookkeeping

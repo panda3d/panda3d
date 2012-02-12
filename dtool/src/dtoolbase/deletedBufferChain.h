@@ -93,18 +93,13 @@ private:
 
   static INLINE void *node_to_buffer(ObjectNode *node);
   static INLINE ObjectNode *buffer_to_node(void *buffer);
+  static INLINE size_t get_flag_reserved_bytes();
 
   ObjectNode *_deleted_chain;
   
   MutexImpl _lock;
   size_t _buffer_size;
   size_t _alloc_size;
-
-#ifdef USE_DELETEDCHAINFLAG
-  // The number of extra bytes reserved at the beginning of each
-  // buffer for the _flag, above.
-  static size_t _flag_reserved_bytes;
-#endif
 
   friend class MemoryHook;
 };

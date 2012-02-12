@@ -107,14 +107,6 @@
 
 #endif  // USE_MEMORY_*
 
-// Reserve enough bytes at the beginning of each allocated record to
-// store its allocated size.
-#ifdef MEMORY_HOOK_DO_ALIGN
-size_t MemoryHook::_header_reserved_bytes = max(MemoryHook::get_memory_alignment(), (size_t)(sizeof(size_t) + sizeof(size_t)));
-#else
-size_t MemoryHook::_header_reserved_bytes = max(MemoryHook::get_memory_alignment(), (size_t)sizeof(size_t));
-#endif  // MEMORY_HOOK_DO_ALIGN
-
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryHook::Constructor
 //       Access: Public
