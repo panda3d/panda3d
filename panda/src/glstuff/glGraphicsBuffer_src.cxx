@@ -157,7 +157,14 @@ begin_frame(FrameMode mode, Thread *current_thread) {
         _needs_rebuild = true;
       }
     }
-
+    if (_creation_flags & GraphicsPipe::BF_size_track_host) {
+      if ((_host->get_x_size() != _x_size)||
+          (_host->get_y_size() != _y_size)) {
+        // We also need to rebuild if we need to change size.
+        _needs_rebuild = true;
+      }
+    }
+        
     rebuild_bitplanes();
       
     if (_needs_rebuild) {

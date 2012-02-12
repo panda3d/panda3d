@@ -98,6 +98,12 @@ GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
     _y_size = win_prop.get_y_size();
     _is_nonzero_size = (_x_size > 0 && _y_size > 0);
   }
+  if (_creation_flags & GraphicsPipe::BF_size_track_host) {
+    // If we're tracking the host size, we assume we'll be nonzero
+    // eventually.
+    _is_nonzero_size = true;
+  }
+
   _is_valid = false;
   _flip_ready = false;
   _cube_map_index = -1;
