@@ -19,6 +19,7 @@ it is likely to contain bugs.
 * Added a custom color option to the cartoon filter
 * Support for texture arrays in shaders
 * Better shader support in pandadx9
+* Fix some issues with cube map buffers
 * Can be compiled to use double-precision floats throughout, instead
   of the default of single-precision floats.  (Graphics drivers still
   use single-precision floats, of course.)
