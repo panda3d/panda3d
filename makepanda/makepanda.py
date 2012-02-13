@@ -647,8 +647,9 @@ if (COMPILER=="LINUX"):
         SmartPkgEnable("FLTK", "", ("fltk"), ("Fl/Fl.H"), tool = "fltk-config")
     if (RUNTIME):
         if (sys.platform == 'darwin'):
-            SmartPkgEnable("NPAPI", "", ("WebKit"), ("npapi.h"), framework = "WebKit")
-            IncDirectory("NPAPI", "/System/Library/Frameworks/WebKit.framework/Headers")
+            SmartPkgEnable("NPAPI", "", (), ("npapi.h"))
+            if (not os.path.isdir(GetThirdpartyDir() + "npapi")):
+                IncDirectory("NPAPI", "/System/Library/Frameworks/WebKit.framework/Headers")
         elif (sys.platform.startswith("freebsd")):
             SmartPkgEnable("NPAPI", "mozilla-plugin", (), ("libxul/stable", "libxul/stable/npapi.h", "nspr/prtypes.h", "nspr"))
         else:
@@ -736,6 +737,7 @@ if (COMPILER=="LINUX"):
             LibName(pkg, "-lIMFbase")
             if (sys.platform == "darwin"):
                 LibName(pkg, "-dylib_file /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
+
     if (PkgSkip("PHYSX")==0):
         IncDirectory("PHYSX", SDK["PHYSX"] + "/Physics/include")
         IncDirectory("PHYSX", SDK["PHYSX"] + "/PhysXLoader/include")
