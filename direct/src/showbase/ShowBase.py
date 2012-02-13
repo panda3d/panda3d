@@ -55,7 +55,7 @@ class ShowBase(DirectObject.DirectObject):
     notify = directNotify.newCategory("ShowBase")
 
     def __init__(self, fStartDirect = True, windowType = None):
-        self.__dev__ = config.GetBool('want-dev', True)
+        self.__dev__ = config.GetBool('want-dev', __debug__)
         __builtin__.__dev__ = self.__dev__
         
         logStackDump = (config.GetBool('log-stack-dump', False) or
