@@ -14,10 +14,11 @@ class BufferViewer(DirectObject):
     def __init__(self):
         """Access: private.  Constructor."""
         self.enabled = 0
-        self.sizex = 0
-        self.sizey = 0
-        self.position = "lrcorner"
-        self.layout = "hline"
+        size = ConfigVariableInt('buffer-viewer-size', '0 0')
+        self.sizex = size[0]
+        self.sizey = size[1]
+        self.position = ConfigVariableString('buffer-viewer-position', "lrcorner").getValue()
+        self.layout = ConfigVariableString('buffer-viewer-layout', "hline").getValue()
         self.include = "all"
         self.exclude = "none"
         self.cullbin = "fixed"
