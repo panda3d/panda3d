@@ -1903,6 +1903,7 @@ class Packager:
             symbols are meaningful at runtime. """
 
             # First, read in the dc file
+            from panda3d.direct import DCFile
             dcFile = DCFile()
             if not dcFile.read(file.filename):
                 self.notify.error("Unable to parse %s." % (file.filename))
@@ -1919,6 +1920,7 @@ class Packager:
             """ Adds the Python modules named by the indicated dc
             file. """
 
+            from panda3d.direct import DCFile
             dcFile = DCFile()
             if not dcFile.read(file.filename):
                 self.notify.error("Unable to parse %s." % (file.filename))
