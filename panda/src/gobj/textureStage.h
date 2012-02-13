@@ -65,6 +65,7 @@ PUBLISHED:
     M_gloss,        // Rarely used: modulate_gloss is more efficient.
     M_height,       // Rarely used: normal_height  is more efficient.
     M_selector,
+    M_normal_gloss,
   };
   
   enum CombineMode {

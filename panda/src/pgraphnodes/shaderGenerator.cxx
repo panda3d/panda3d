@@ -290,7 +290,9 @@ analyze_renderstate(const RenderState *rs) {
   for (int i=0; i<_num_textures; i++) {
     TextureStage *stage = texture->get_on_stage(i);
     TextureStage::Mode mode = stage->get_mode();
-    if ((mode == TextureStage::M_normal)||(mode == TextureStage::M_normal_height)) {
+    if ((mode == TextureStage::M_normal)||
+        (mode == TextureStage::M_normal_height)||
+        (mode == TextureStage::M_normal_gloss)) {
       _map_index_normal = i;
     }
     if ((mode == TextureStage::M_height)||(mode == TextureStage::M_normal_height)) {
@@ -299,7 +301,9 @@ analyze_renderstate(const RenderState *rs) {
     if ((mode == TextureStage::M_glow)||(mode == TextureStage::M_modulate_glow)) {
       _map_index_glow = i;
     }
-    if ((mode == TextureStage::M_gloss)||(mode == TextureStage::M_modulate_gloss)) {
+    if ((mode == TextureStage::M_gloss)||
+        (mode == TextureStage::M_modulate_gloss)||
+        (mode == TextureStage::M_normal_gloss)) {
       _map_index_gloss = i;
     }
     if (mode == TextureStage::M_height) {

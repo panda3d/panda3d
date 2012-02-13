@@ -16,6 +16,7 @@ it is likely to contain bugs.
 * Ambient occlusion generation for terrain
 * Fixed bug where Windows installer wipes %PATH% when it's too long
 * Added fog support to the shader generator
+* Added normal_gloss texture mode
 * Added a custom color option to the cartoon filter
 * Support for texture arrays in shaders
 * Better shader support in pandadx9

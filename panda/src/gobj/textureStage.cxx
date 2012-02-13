@@ -542,6 +542,9 @@ operator << (ostream &out, TextureStage::Mode mode) {
   
   case TextureStage::M_selector:
     return out << "selector";
+
+  case TextureStage::M_normal_gloss:
+    return out << "normal_gloss";
   }
 
   return out << "**invalid Mode(" << (int)mode << ")**";

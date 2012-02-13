@@ -774,7 +774,8 @@ recompute_tangent_binormal_auto() {
   for (eti = texs.begin(); eti != texs.end(); eti++) {
     EggTexture *eggtex = (*eti);
     if ((eggtex->get_env_type() == EggTexture::ET_normal)||
-        (eggtex->get_env_type() == EggTexture::ET_normal_height)) {
+        (eggtex->get_env_type() == EggTexture::ET_normal_height)||
+        (eggtex->get_env_type() == EggTexture::ET_normal_gloss)) {
       string uv = eggtex->get_uv_name();
       vector_string::iterator it = find(names.begin(), names.end(), uv);
       if (it == names.end()) {
