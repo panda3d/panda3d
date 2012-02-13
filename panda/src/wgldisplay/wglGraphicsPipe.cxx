@@ -204,6 +204,12 @@ make_output(const string &name,
         ((flags&BF_require_window)!=0)) {
       return NULL;
     }
+    if ((wglgsg != 0) &&
+        (wglgsg->is_valid()) &&
+        (!wglgsg->needs_reset()) &&
+	!wglgsg->_supports_pbuffer) {
+      return NULL;
+    }
 
     if (!support_rtt) {
       if (((flags&BF_rtt_cumulative)!=0)||

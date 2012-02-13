@@ -76,6 +76,11 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   wglGraphicsStateGuardian *wglgsg;
   DCAST_INTO_R(wglgsg, _gsg, false);
 
+  HGLRC context = wglgsg->get_context(_pbuffer_dc);
+  if (context == 0) {
+    return false;
+  }
+
   if (_fb_properties.is_single_buffered()) {
     wglgsg->_wglReleaseTexImageARB(_pbuffer, WGL_FRONT_LEFT_ARB);
   } else {
@@ -87,7 +92,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     return false;
   }
   
-  wglGraphicsPipe::wgl_make_current(_pbuffer_dc, wglgsg->get_context(_pbuffer_dc),
+  wglGraphicsPipe::wgl_make_current(_pbuffer_dc, context,
                                     &_make_current_pcollector);
   
   if (mode == FM_render) {
@@ -336,14 +341,21 @@ open_buffer() {
   HDC twindow_dc = wglgsg->get_twindow_dc();
   if (twindow_dc == 0) {
     // If we couldn't make a window, we can't get a GL context.
+    _gsg = NULL;
     return false;
   }
-  wglGraphicsPipe::wgl_make_current(twindow_dc, wglgsg->get_context(twindow_dc),
+  HGLRC context = wglgsg->get_context(twindow_dc);
+  if (context == 0) {
+    _gsg = NULL;
+    return false;
+  }
+  wglGraphicsPipe::wgl_make_current(twindow_dc, context,
                                     &_make_current_pcollector);
   wglgsg->reset_if_new();
   wglgsg->report_my_gl_errors();
   if (!wglgsg->get_fb_properties().verify_hardware_software
       (_fb_properties,wglgsg->get_gl_renderer())) {
+    _gsg = NULL;
     return false;
   }
   _fb_properties = wglgsg->get_fb_properties();
@@ -354,6 +366,7 @@ open_buffer() {
 
   if (!rebuild_bitplanes()) {
     wglGraphicsPipe::wgl_make_current(0, 0, &_make_current_pcollector);
+    _gsg = NULL;
     return false;
   }
   
@@ -519,7 +532,11 @@ rebuild_bitplanes() {
     return false;
   }
   
-  wglGraphicsPipe::wgl_make_current(twindow_dc, wglgsg->get_context(twindow_dc),
+  HGLRC context = wglgsg->get_context(twindow_dc);
+  if (context == 0) {
+    return false;
+  }
+  wglGraphicsPipe::wgl_make_current(twindow_dc, context,
                                     &_make_current_pcollector);
 
   _pbuffer = wglgsg->_wglCreatePbufferARB(twindow_dc, pfnum, 

@@ -610,6 +610,7 @@ make_context(HDC hdc) {
   if (_context == NULL) {
     wgldisplay_cat.error()
       << "Could not create GL context.\n";
+    _is_valid = false;
     return;
   }
 
@@ -627,6 +628,7 @@ make_context(HDC hdc) {
           << "Could not share texture contexts between wglGraphicsStateGuardians.\n";
         // Too bad we couldn't detect this error sooner.  Now there's
         // really no way to tell the application it's hosed.
+	_is_valid = false;
 
       } else {
         _prepared_objects = _share_with->get_prepared_objects();
