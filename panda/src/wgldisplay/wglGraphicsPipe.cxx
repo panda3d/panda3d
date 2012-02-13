@@ -176,6 +176,13 @@ make_output(const string &name,
         return NULL;
       }
     }
+    if ((wglgsg != 0) &&
+        (wglgsg->is_valid()) &&
+        (!wglgsg->needs_reset()) &&
+	!wglgsg->_supports_framebuffer_object) {
+      return NULL;
+    }
+
     // Early success - if we are sure that this buffer WILL
     // meet specs, we can precertify it.
     if ((wglgsg != 0) &&
