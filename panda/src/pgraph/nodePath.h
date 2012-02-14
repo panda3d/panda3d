@@ -721,7 +721,8 @@ PUBLISHED:
   RenderAttrib::TexGenMode get_tex_gen(TextureStage *stage) const;
   NodePath get_tex_gen_light(TextureStage *stage) const;
 
-  void set_tex_projector(TextureStage *stage, const NodePath &from, const NodePath &to);
+  void set_tex_projector(TextureStage *stage, const NodePath &from, const NodePath &to,
+                         int lens_index = 0);
   void clear_tex_projector(TextureStage *stage);
   void clear_tex_projector();
   bool has_tex_projector(TextureStage *stage) const;

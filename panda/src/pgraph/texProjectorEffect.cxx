@@ -66,14 +66,16 @@ make() {
 //
 //               Furthermore, if the "to" node is a LensNode, its
 //               projection matrix is also applied to the texture
-//               transform.
+//               transform.  In this case, the lens_index may be used
+//               to select the particular lens that should be used.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderEffect) TexProjectorEffect::
-add_stage(TextureStage *stage, const NodePath &from, const NodePath &to) const {
+add_stage(TextureStage *stage, const NodePath &from, const NodePath &to, int lens_index) const {
   TexProjectorEffect *effect = new TexProjectorEffect(*this);
   StageDef &def = effect->_stages[stage];
   def.set_from(from);
   def.set_to(to);
+  def.set_lens_index(lens_index);
   return return_new(effect);
 }
 
@@ -152,6 +154,22 @@ get_to(TextureStage *stage) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TexProjectorEffect::get_lens_index
+//       Access: Published
+//  Description: Returns the lens_index associated with the
+//               TexProjectorEffect on the indicated stage.  This is
+//               only used if the "to" node is a LensNode, in which
+//               case it specifies the particular lens that should be
+//               used.
+////////////////////////////////////////////////////////////////////
+int TexProjectorEffect::
+get_lens_index(TextureStage *stage) const {
+  Stages::const_iterator mi = _stages.find(stage);
+  nassertr(mi != _stages.end(), 0);
+  return (*mi).second._lens_index;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TexProjectorEffect::output
 //       Access: Public, Virtual
 //  Description: 
@@ -165,7 +183,7 @@ output(ostream &out) const {
     TextureStage *stage = (*mi).first;
     const StageDef &def = (*mi).second;
     out << " " << stage->get_name() << "(" << def._to
-        << ", " << def._from << ")";
+        << ", " << def._from << ", " << def._lens_index << ")";
   }
 }
 
@@ -217,21 +235,24 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
         def._to_lens_node->get_lens() != (Lens *)NULL) {
       
       // Get the lens's projection matrix, as a TransformState.
-      CPT(TransformState) projmat = TransformState::make_mat(def._to_lens_node->get_lens()->get_projection_mat());
+      Lens *lens = def._to_lens_node->get_lens(def._lens_index);
+      if (lens != NULL) {
+        CPT(TransformState) projmat = TransformState::make_mat(lens->get_projection_mat());
 
-      // We need a special transform to convert the -0.5, 0.5
-      // centering of the lens's projection matrix to UV's in the
-      // range of (0, 1).
-      static CPT(TransformState) fixmat;
-      if (fixmat == (TransformState *)NULL) {
-        fixmat = TransformState::make_pos_hpr_scale
-          (LVecBase3(0.5f, 0.5f, 0.0f),
-           LVecBase3(0.0f, 0.0f, 0.0f),
-           LVecBase3(0.5f, 0.5f, 1.0f));
+        // We need a special transform to convert the -0.5, 0.5
+        // centering of the lens's projection matrix to UV's in the
+        // range of (0, 1).
+        static CPT(TransformState) fixmat;
+        if (fixmat == (TransformState *)NULL) {
+          fixmat = TransformState::make_pos_hpr_scale
+            (LVecBase3(0.5f, 0.5f, 0.0f),
+             LVecBase3(0.0f, 0.0f, 0.0f),
+             LVecBase3(0.5f, 0.5f, 1.0f));
+        }
+        
+        // Now apply both to the current transform.
+        transform = fixmat->compose(projmat)->compose(transform);
       }
-
-      // Now apply both to the current transform.
-      transform = fixmat->compose(projmat)->compose(transform);
     }
 
     if (!transform->is_identity()) {

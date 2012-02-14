@@ -4661,9 +4661,14 @@ get_tex_gen_light(TextureStage *stage) const {
 //               texture transform to particular node's position in
 //               space, allowing a LerpInterval (for instance) to
 //               adjust this node's texture coordinates.
+//
+//               If to is a LensNode, then the fourth parameter,
+//               lens_index, can be provided to select a particular
+//               lens to apply.  Otherwise lens_index is not used.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_tex_projector(TextureStage *stage, const NodePath &from, const NodePath &to) {
+set_tex_projector(TextureStage *stage, const NodePath &from, const NodePath &to,
+                  int lens_index) {
   nassertv_always(!is_empty());
 
   const RenderEffect *effect =
@@ -4678,7 +4683,7 @@ set_tex_projector(TextureStage *stage, const NodePath &from, const NodePath &to)
     tpe = DCAST(TexProjectorEffect, TexProjectorEffect::make());
   }
 
-  node()->set_effect(tpe->add_stage(stage, from, to));
+  node()->set_effect(tpe->add_stage(stage, from, to, lens_index));
 }
 
 ////////////////////////////////////////////////////////////////////

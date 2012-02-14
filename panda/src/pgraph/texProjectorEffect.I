@@ -57,6 +57,16 @@ set_from(const NodePath &from) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TexProjectorEffect::StageDef::set_lens_index
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void TexProjectorEffect::StageDef::
+set_lens_index(int lens_index) {
+  _lens_index = lens_index;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TexProjectorEffect::StageDef::compare_to
 //       Access: Public
 //  Description: 
@@ -66,6 +76,10 @@ compare_to(const TexProjectorEffect::StageDef &other) const {
   int compare = _to.compare_to(other._to);
   if (compare != 0) {
     return compare;
+  }
+
+  if (_lens_index != other._lens_index) {
+    return _lens_index - other._lens_index;
   }
 
   return _from.compare_to(other._from);

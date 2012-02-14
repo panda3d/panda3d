@@ -1738,8 +1738,8 @@ do_define_geom_data(CData *cdata) {
     PN_stdfloat t = 2.0f * (PN_stdfloat)si / (PN_stdfloat)num_segments;
 
     // Upper left, top edge.
-    LPoint2 p1(-1.0f + t, 1.0f);
-    if (!extrude(p1, near_point, far_point)) {
+    LPoint3 p1(-1.0f + t, 1.0f, 0.0f);
+    if (!do_extrude(cdata, p1, near_point, far_point)) {
       // Hey, this point is off the lens!  Can't do a frustum.
       return 0;
     }
@@ -1747,8 +1747,8 @@ do_define_geom_data(CData *cdata) {
     vertex.add_data3(far_point);
 
     // Upper right, right edge.
-    LPoint2 p2(1.0f, 1.0f - t);
-    if (!extrude(p2, near_point, far_point)) {
+    LPoint3 p2(1.0f, 1.0f - t, 0.0f);
+    if (!do_extrude(cdata, p2, near_point, far_point)) {
       // Hey, this point is off the lens!  Can't do a frustum.
       return 0;
     }
@@ -1756,8 +1756,8 @@ do_define_geom_data(CData *cdata) {
     vertex.add_data3(far_point);
 
     // Lower right, bottom edge.
-    LPoint2 p3(1.0f - t, -1.0f);
-    if (!extrude(p3, near_point, far_point)) {
+    LPoint3 p3(1.0f - t, -1.0f, 0.0f);
+    if (!do_extrude(cdata, p3, near_point, far_point)) {
       // Hey, this point is off the lens!  Can't do a frustum.
       return 0;
     }
@@ -1765,8 +1765,8 @@ do_define_geom_data(CData *cdata) {
     vertex.add_data3(far_point);
 
     // Lower left, left edge.
-    LPoint2 p4(-1.0f, -1.0f + t);
-    if (!extrude(p4, near_point, far_point)) {
+    LPoint3 p4(-1.0f, -1.0f + t, 0.0f);
+    if (!do_extrude(cdata, p4, near_point, far_point)) {
       // Hey, this point is off the lens!  Can't do a frustum.
       return 0;
     }
@@ -1774,14 +1774,16 @@ do_define_geom_data(CData *cdata) {
     vertex.add_data3(far_point);
   }
 
-  // Finally, add one more pair for the viewing axis.
-  LPoint3 near_axis = LPoint3::origin(cdata->_cs) + LVector3::forward(cdata->_cs) * cdata->_near_distance;
-  LPoint3 far_axis = LPoint3::origin(cdata->_cs) + LVector3::forward(cdata->_cs) * cdata->_far_distance;
-  const LMatrix4 &lens_mat = do_get_lens_mat(cdata);
-  near_axis = near_axis * lens_mat;
-  far_axis = far_axis * lens_mat;
-  vertex.add_data3(near_axis);
-  vertex.add_data3(far_axis);
+  // Finally, add one more pair for the viewing axis (or more
+  // specifically, the center of the lens).
+  LPoint3 pc(-cdata->_film_offset[0], -cdata->_film_offset[1], 0.0f);
+  if (!do_extrude(cdata, pc, near_point, far_point)) {
+    vertex.add_data3(0.0f, 0.0f, 0.0f);
+    vertex.add_data3(0.0f, 0.0f, 0.0f);
+  } else {
+    vertex.add_data3(near_point);
+    vertex.add_data3(far_point);
+  }
 
   return num_segments;
 }

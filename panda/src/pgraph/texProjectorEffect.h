@@ -67,7 +67,7 @@ public:
 PUBLISHED:
   static CPT(RenderEffect) make();
 
-  CPT(RenderEffect) add_stage(TextureStage *stage, const NodePath &from, const NodePath &to) const;
+  CPT(RenderEffect) add_stage(TextureStage *stage, const NodePath &from, const NodePath &to, int lens_index = 0) const;
   CPT(RenderEffect) remove_stage(TextureStage *stage) const;
 
   bool is_empty() const;
@@ -75,6 +75,7 @@ PUBLISHED:
 
   NodePath get_from(TextureStage *stage) const;
   NodePath get_to(TextureStage *stage) const;
+  int get_lens_index(TextureStage *stage) const;
 
 public:
   virtual void output(ostream &out) const;
@@ -93,12 +94,14 @@ private:
     INLINE StageDef();
     INLINE void set_from(const NodePath &from);
     void set_to(const NodePath &to);
+    INLINE void set_lens_index(int lens_index);
 
     INLINE int compare_to(const StageDef &other) const;
 
     NodePath _from;
     NodePath _to;
     LensNode *_to_lens_node;
+    int _lens_index;
   };
 
   typedef pmap<PT(TextureStage), StageDef> Stages;
