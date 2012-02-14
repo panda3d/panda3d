@@ -1139,14 +1139,15 @@ class Installer:
         curdir = ""
         for root, dirs, files in self.os_walk(hostDir.toOsSpecific()):
             for name in files:
-                file = Filename.fromOsSpecific(os.path.join(root, name))
+                basefile = Filename.fromOsSpecific(os.path.join(root, name))
+                file = Filename(basefile)
                 file.makeAbsolute()
                 file.makeRelativeTo(hostDir)
                 outdir = file.getDirname().replace('/', '\\')
                 if curdir != outdir:
                     print >>nsi, '  SetOutPath "$INSTDIR\\%s"' % outdir
                     curdir = outdir
-                print >>nsi, '  File "%s"' % os.path.join(root, name)
+                print >>nsi, '  File "%s"' % (basefile.toOsSpecific())
         print >>nsi, '  WriteUninstaller "$INSTDIR\\Uninstall.exe"'
         print >>nsi, '  ; Start menu items'
         print >>nsi, '  !insertmacro MUI_STARTMENU_WRITE_BEGIN Application'
