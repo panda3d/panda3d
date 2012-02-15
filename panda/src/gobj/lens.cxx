@@ -2019,6 +2019,11 @@ CData(const Lens::CData &copy) {
   _convergence_distance = copy._convergence_distance;
   _keystone = copy._keystone;
 
+  // This matrix might have been explicitly set by the user (if
+  // UF_view_mat is applied), so we must preserve it.  Other matrices
+  // are implicitly computed.
+  _lens_mat = copy._lens_mat;
+
   _user_flags = copy._user_flags;
   _comp_flags = 0;
 
