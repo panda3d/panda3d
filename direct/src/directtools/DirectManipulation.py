@@ -430,7 +430,6 @@ class DirectManipulationControl(DirectObject):
         taskMgr.remove('manip-move-wait')
         taskMgr.remove('manip-watch-mouse')
         taskMgr.remove('highlightWidgetTask')
-        taskMgr.remove('resizeObjectHandles')
 
     def toggleObjectHandlesMode(self):
         if self.fMovable:
@@ -1388,24 +1387,24 @@ class ObjectHandles(NodePath, DirectObject):
         self.setScale(1)
 
     def multiplyScalingFactorBy(self, factor):
-        taskMgr.remove('resizeObjectHandles')
         self.ohScalingFactor = self.ohScalingFactor * factor
         sf = self.ohScalingFactor * self.directScalingFactor
-        self.scalingNode.lerpScale(sf, sf, sf, 0.5,
-                                   blendType = 'easeInOut',
-                                   task = 'resizeObjectHandles')
+        ival = self.scalingNode.scaleInterval(0.5, (sf, sf, sf), 
+                                              blendType = 'easeInOut',
+                                              name = 'resizeObjectHandles')
+        ival.start()
 
     def growToFit(self):
-        taskMgr.remove('resizeObjectHandles')
         # Increase handles scale until they cover 30% of the min dimension
         pos = base.direct.widget.getPos(base.direct.camera)
         minDim = min(base.direct.dr.nearWidth, base.direct.dr.nearHeight)
         sf = 0.15 * minDim * (pos[1]/base.direct.dr.near)
         self.ohScalingFactor = sf
         sf = sf * self.directScalingFactor
-        self.scalingNode.lerpScale(sf, sf, sf, 0.5,
-                                   blendType = 'easeInOut',
-                                   task = 'resizeObjectHandles')
+        ival = self.scalingNode.scaleInterval(0.5, (sf, sf, sf),
+                                              blendType = 'easeInOut',
+                                              name = 'resizeObjectHandles')
+        ival.start()
 
     def createObjectHandleLines(self):
         # X post

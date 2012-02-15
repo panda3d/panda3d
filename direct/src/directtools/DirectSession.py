@@ -22,6 +22,7 @@ from direct.cluster.ClusterServer import ClusterServer
 ## from direct.tkwidgets import SceneGraphExplorer
 from direct.gui import OnscreenText
 from direct.showbase import Loader
+from direct.interval.IntervalGlobal import *
 
 class DirectSession(DirectObject):
 
@@ -400,13 +401,12 @@ class DirectSession(DirectObject):
         if self.oobeMode:
             # Position a target point to lerp the oobe camera to
             base.direct.cameraControl.camManipRef.iPosHpr(self.trueCamera)
-            t = self.oobeCamera.lerpPosHpr(
-                Point3(0), Vec3(0), 2.0,
+            ival = self.oobeCamera.posHprInterval(
+                2.0, pos = Point3(0), hpr = Vec3(0), 
                 other = base.direct.cameraControl.camManipRef,
-                task = 'manipulateCamera',
                 blendType = 'easeInOut')
-            # When move is done, switch to oobe mode
-            t.setUponDeath(self.endOOBE)
+            ival = Sequence(ival, Func(self.endOOBE), name = 'oobeTransition')
+            ival.start()
         else:
             # Place camera marker at true camera location
             self.oobeVis.reparentTo(self.trueCamera)
@@ -423,21 +423,20 @@ class DirectSession(DirectObject):
             base.direct.cameraControl.camManipRef.setPos(
                 self.trueCamera, Vec3(-2, -20, 5))
             base.direct.cameraControl.camManipRef.lookAt(self.trueCamera)
-            t = self.oobeCamera.lerpPosHpr(
-                Point3(0), Vec3(0), 2.0,
+            ival = self.oobeCamera.posHprInterval(
+                2.0, pos = Point3(0), hpr = Vec3(0), 
                 other = base.direct.cameraControl.camManipRef,
-                task = 'manipulateCamera',
                 blendType = 'easeInOut')
-            # When move is done, switch to oobe mode
-            t.setUponDeath(self.beginOOBE)
+            ival = Sequence(ival, Func(self.beginOOBE), name = 'oobeTransition')
+            ival.start()
 
-    def beginOOBE(self, state):
+    def beginOOBE(self):
         # Make sure we've reached our final destination
         self.oobeCamera.iPosHpr(base.direct.cameraControl.camManipRef)
         base.direct.camera = self.oobeCamera
         self.oobeMode = 1
 
-    def endOOBE(self, state):
+    def endOOBE(self):
         # Make sure we've reached our final destination
         self.oobeCamera.iPosHpr(self.trueCamera)
         # Disable OOBE mode.
