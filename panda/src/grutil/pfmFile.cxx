@@ -541,7 +541,7 @@ xform(const LMatrix4 &transform) {
 //       Access: Published
 //  Description: Adjusts each (x, y, z) point of the Pfm file by
 //               projecting it through the indicated lens, converting
-//               each point to a (u, v, 0) texture coordinate.  The
+//               each point to a (u, v, w) texture coordinate.  The
 //               resulting file can be generated to a mesh (with
 //               set_vis_inverse(true) and generate_vis_mesh())
 //               that will apply the lens distortion to an arbitrary
@@ -553,7 +553,7 @@ project(const Lens *lens) {
 
   static LMatrix4 to_uv(0.5, 0.0, 0.0, 0.0,
                         0.0, 0.5, 0.0, 0.0, 
-                        0.0, 0.0, 0.0, 0.0, 
+                        0.0, 0.0, 1.0, 0.0, 
                         0.5, 0.5, 0.0, 1.0);
   
   Table::iterator ti;
