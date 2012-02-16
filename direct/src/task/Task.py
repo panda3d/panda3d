@@ -502,6 +502,9 @@ class TaskManager:
                         self.step()
                 except KeyboardInterrupt:
                     self.stop()
+                except SystemExit:
+                    self.stop()
+                    raise
                 except IOError, ioError:
                     code, message = self._unpackIOError(ioError)
                     # Since upgrading to Python 2.4.1, pausing the execution

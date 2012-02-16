@@ -420,8 +420,17 @@ do_python_task() {
   }
 
   if (result == (PyObject *)NULL) {
-    task_cat.error()
-      << "Exception occurred in " << *this << "\n";
+    if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_SystemExit)) {
+      // Don't print an error message for SystemExit.  Or rather, make
+      // it a debug message.
+      if (task_cat.is_debug()) {
+        task_cat.debug()
+          << "SystemExit occurred in " << *this << "\n";
+      }
+    } else {
+      task_cat.error()
+        << "Exception occurred in " << *this << "\n";
+    }
     return DS_interrupt;
   }
 

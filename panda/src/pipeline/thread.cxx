@@ -309,18 +309,24 @@ call_python_func(PyObject *function, PyObject *args) {
     result = PyObject_Call(function, args, NULL);
 
     if (result == (PyObject *)NULL) {
-      // Temporarily save and restore the exception state so we can print a
-      // callback on-the-spot.
-      PyObject *exc, *val, *tb;
-      PyErr_Fetch(&exc, &val, &tb);
-      
-      Py_XINCREF(exc);
-      Py_XINCREF(val);
-      Py_XINCREF(tb);
-      PyErr_Restore(exc, val, tb);
-      PyErr_Print();
-      
-      PyErr_Restore(exc, val, tb);
+      if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_SystemExit)) {
+        // If we caught SystemExit, let it pass by without bothering
+        // to print a callback.
+
+      } else {
+        // Temporarily save and restore the exception state so we can
+        // print a callback on-the-spot.
+        PyObject *exc, *val, *tb;
+        PyErr_Fetch(&exc, &val, &tb);
+        
+        Py_XINCREF(exc);
+        Py_XINCREF(val);
+        Py_XINCREF(tb);
+        PyErr_Restore(exc, val, tb);
+        PyErr_Print();
+        
+        PyErr_Restore(exc, val, tb);
+      }
     }
 
   } else {

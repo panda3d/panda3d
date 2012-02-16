@@ -147,6 +147,7 @@ extern "C" {
   EXPCL_DTOOLCONFIG extern void *PyExc_RuntimeError;
   EXPCL_DTOOLCONFIG extern void *PyExc_StandardError;
   EXPCL_DTOOLCONFIG extern void *PyExc_StopIteration;
+  EXPCL_DTOOLCONFIG extern void *PyExc_SystemExit;
   EXPCL_DTOOLCONFIG extern void *PyExc_TypeError;
   EXPCL_DTOOLCONFIG extern void *PyExc_ValueError;
   EXPCL_DTOOLCONFIG extern void *_Py_NoneStruct;
@@ -290,6 +291,7 @@ void *PyExc_IndexError = (void *)NULL;
 void *PyExc_RuntimeError = (void *)NULL;
 void *PyExc_StandardError = (void *)NULL;
 void *PyExc_StopIteration = (void *)NULL;
+void *PyExc_SystemExit = (void *)NULL;
 void *PyExc_TypeError = (void *)NULL;
 void *PyExc_ValueError = (void *)NULL;
 void *_Py_NoneStruct = (void *)NULL;
