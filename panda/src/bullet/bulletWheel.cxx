@@ -25,6 +25,27 @@ BulletWheel(btWheelInfo &info) : _info(info) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BulletWheelRaycastInfo::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+BulletWheelRaycastInfo::
+BulletWheelRaycastInfo(btWheelInfo::RaycastInfo &info) : _info(info) {
+
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletWheel::get_raycast_info
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+BulletWheelRaycastInfo BulletWheel::
+get_raycast_info() const {
+
+  return BulletWheelRaycastInfo(_info.m_raycastInfo);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BulletWheel::get_suspension_rest_length
 //       Access: Published
 //  Description: Returns the length of the suspension when the

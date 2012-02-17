@@ -75,7 +75,11 @@ class btTypedConstraint;
 class btTypedObject;
 class btVector3;
 class btVehicleRaycaster;
-class btWheelInfo;
+
+class btWheelInfo {
+public:
+  class RaycastInfo;
+};
 
 class btCollisionWorld {
 public:

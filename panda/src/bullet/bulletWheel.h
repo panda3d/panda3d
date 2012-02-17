@@ -24,6 +24,31 @@
 #include "pandaNode.h"
 
 ////////////////////////////////////////////////////////////////////
+//       Class : BulletWheelRaycastInfo
+// Description : 
+////////////////////////////////////////////////////////////////////
+class EXPCL_PANDABULLET BulletWheelRaycastInfo {
+
+PUBLISHED:
+  INLINE ~BulletWheelRaycastInfo();
+
+  INLINE bool is_in_contact() const;
+  INLINE PN_stdfloat get_suspension_length() const;
+  INLINE LVector3 get_contact_normal_ws() const;
+  INLINE LVector3 get_wheel_direction_ws() const;
+  INLINE LVector3 get_wheel_axle_ws() const;
+  INLINE LPoint3 get_contact_point_ws() const;
+  INLINE LPoint3 get_hard_point_ws() const;
+  INLINE PandaNode *get_ground_object() const;
+
+public:
+  BulletWheelRaycastInfo(btWheelInfo::RaycastInfo &info);
+
+private:
+  btWheelInfo::RaycastInfo &_info;
+};
+
+////////////////////////////////////////////////////////////////////
 //       Class : BulletWheel
 // Description : One wheel of a BulletVehicle. Instances should not
 //               be created directly but using the factory method
@@ -82,6 +107,7 @@ PUBLISHED:
   LMatrix4 get_world_transform() const;
   bool is_front_wheel() const;
   PandaNode *get_node() const;
+  BulletWheelRaycastInfo get_raycast_info() const;
 
 public:
   BulletWheel(btWheelInfo &info);
