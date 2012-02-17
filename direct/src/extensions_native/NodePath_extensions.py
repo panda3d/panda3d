@@ -454,7 +454,7 @@ def __autoLerp(self, functorFunc, time, blendType, taskName):
         from direct.showbase import LerpBlendHelpers
         # make a lerp that lives in C++ land
         functor = functorFunc()
-        lerp = AutonomousLerp.AutonomousLerp(functor, time,
+        lerp = AutonomousLerp(functor, time,
                               LerpBlendHelpers.getBlend(blendType),
                               base.eventHandler)
         lerp.start()
@@ -1266,8 +1266,8 @@ del colorScaleInterval
 def attachCollisionSphere(self, name, cx, cy, cz, r, fromCollide, intoCollide):
         from pandac.PandaModules import CollisionSphere
         from pandac.PandaModules import CollisionNode
-        coll = CollisionSphere.CollisionSphere(cx, cy, cz, r)
-        collNode = CollisionNode.CollisionNode(name)
+        coll = CollisionSphere(cx, cy, cz, r)
+        collNode = CollisionNode(name)
         collNode.addSolid(coll)
         collNode.setFromCollideMask(fromCollide)
         collNode.setIntoCollideMask(intoCollide)
@@ -1280,8 +1280,8 @@ del attachCollisionSphere
 def attachCollisionSegment(self, name, ax, ay, az, bx, by, bz, fromCollide, intoCollide):
         from pandac.PandaModules import CollisionSegment
         from pandac.PandaModules import CollisionNode
-        coll = CollisionSegment.CollisionSegment(ax, ay, az, bx, by, bz)
-        collNode = CollisionNode.CollisionNode(name)
+        coll = CollisionSegment(ax, ay, az, bx, by, bz)
+        collNode = CollisionNode(name)
         collNode.addSolid(coll)
         collNode.setFromCollideMask(fromCollide)
         collNode.setIntoCollideMask(intoCollide)
@@ -1294,8 +1294,8 @@ del attachCollisionSegment
 def attachCollisionRay(self, name, ox, oy, oz, dx, dy, dz, fromCollide, intoCollide):
         from pandac.PandaModules import CollisionRay
         from pandac.PandaModules import CollisionNode
-        coll = CollisionRay.CollisionRay(ox, oy, oz, dx, dy, dz)
-        collNode = CollisionNode.CollisionNode(name)
+        coll = CollisionRay(ox, oy, oz, dx, dy, dz)
+        collNode = CollisionNode(name)
         collNode.addSolid(coll)
         collNode.setFromCollideMask(fromCollide)
         collNode.setIntoCollideMask(intoCollide)
@@ -1308,7 +1308,7 @@ del attachCollisionRay
 def flattenMultitex(self, stateFrom = None, target = None,
                         useGeom = 0, allowTexMat = 0, win = None):
         from pandac.PandaModules import MultitexReducer
-        mr = MultitexReducer.MultitexReducer()
+        mr = MultitexReducer()
         if target != None:
             mr.setTarget(target)
         mr.setUseGeom(useGeom)
