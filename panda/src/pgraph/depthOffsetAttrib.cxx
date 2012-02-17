@@ -32,7 +32,26 @@ int DepthOffsetAttrib::_attrib_slot;
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) DepthOffsetAttrib::
 make(int offset) {
-  DepthOffsetAttrib *attrib = new DepthOffsetAttrib(offset);
+  DepthOffsetAttrib *attrib = new DepthOffsetAttrib(offset, 0.0f, 1.0f);
+  return return_new(attrib);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DepthOffsetAttrib::make
+//       Access: Published, Static
+//  Description: Constructs a new DepthOffsetAttrib object that
+//               indicates the bias, and also specifies a minimum and
+//               maximum (or, more precisely, nearest and farthest)
+//               values to write to the depth buffer, in the range 0
+//               .. 1.  This range is 0, 1 by default; setting it to
+//               some other range can be used to create additional
+//               depth buffer effects.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) DepthOffsetAttrib::
+make(int offset, PN_stdfloat min_value, PN_stdfloat max_value) {
+  nassertr(min_value >= 0.0f && min_value <= 1.0f, NULL);
+  nassertr(max_value >= 0.0f && max_value <= 1.0f, NULL);
+  DepthOffsetAttrib *attrib = new DepthOffsetAttrib(offset, min_value, max_value);
   return return_new(attrib);
 }
 
@@ -45,7 +64,7 @@ make(int offset) {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) DepthOffsetAttrib::
 make_default() {
-  return return_new(new DepthOffsetAttrib(0));
+  return return_new(new DepthOffsetAttrib(0, 0.0f, 1.0f));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -55,7 +74,8 @@ make_default() {
 ////////////////////////////////////////////////////////////////////
 void DepthOffsetAttrib::
 output(ostream &out) const {
-  out << get_type() << ":(" << get_offset() << ")";
+  out << get_type() << ":(" << get_offset() << ", " << get_min_value()
+      << ", " << get_max_value() << ")";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -77,7 +97,16 @@ int DepthOffsetAttrib::
 compare_to_impl(const RenderAttrib *other) const {
   const DepthOffsetAttrib *ta;
   DCAST_INTO_R(ta, other, 0);
-  return _offset - ta->_offset;
+  if (_offset != ta->_offset) {
+    return _offset - ta->_offset;
+  }
+  if (_min_value != ta->_min_value) {
+    return _min_value < ta->_min_value ? -1 : 1;
+  }
+  if (_max_value != ta->_max_value) {
+    return _max_value < ta->_max_value ? -1 : 1;
+  }
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -94,6 +123,8 @@ size_t DepthOffsetAttrib::
 get_hash_impl() const {
   size_t hash = 0;
   hash = int_hash::add_hash(hash, _offset);
+  hash = float_hash().add_hash(hash, _min_value);
+  hash = float_hash().add_hash(hash, _max_value);
   return hash;
 }
 
@@ -120,7 +151,7 @@ compose_impl(const RenderAttrib *other) const {
   DCAST_INTO_R(ta, other, 0);
   int new_offset = ta->_offset + _offset;
 
-  DepthOffsetAttrib *attrib = new DepthOffsetAttrib(new_offset);
+  DepthOffsetAttrib *attrib = new DepthOffsetAttrib(new_offset, ta->_min_value, ta->_max_value);
   return return_new(attrib);
 }
 
@@ -139,7 +170,7 @@ invert_compose_impl(const RenderAttrib *other) const {
   DCAST_INTO_R(ta, other, 0);
   int new_offset = ta->_offset - _offset;
 
-  DepthOffsetAttrib *attrib = new DepthOffsetAttrib(new_offset);
+  DepthOffsetAttrib *attrib = new DepthOffsetAttrib(new_offset, ta->_min_value, ta->_max_value);
   return return_new(attrib);
 }
 
@@ -165,6 +196,8 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   RenderAttrib::write_datagram(manager, dg);
 
   dg.add_int32(_offset);
+  dg.add_stdfloat(_min_value);
+  dg.add_stdfloat(_max_value);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -177,7 +210,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 ////////////////////////////////////////////////////////////////////
 TypedWritable *DepthOffsetAttrib::
 make_from_bam(const FactoryParams &params) {
-  DepthOffsetAttrib *attrib = new DepthOffsetAttrib(0);
+  DepthOffsetAttrib *attrib = new DepthOffsetAttrib(0, 0.0f, 1.0f);
   DatagramIterator scan;
   BamReader *manager;
 
@@ -199,4 +232,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
 
   _offset = scan.get_int32();
+  _min_value = 0.0f;
+  _max_value = 1.0f;
+  if (manager->get_file_minor_ver() >= 31) {
+    _min_value = scan.get_stdfloat();
+    _max_value = scan.get_stdfloat();
+  }
 }

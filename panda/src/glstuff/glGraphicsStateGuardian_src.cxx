@@ -1915,6 +1915,10 @@ clear(DrawableRegion *clearable) {
 #else
     GLP(ClearDepth)(clearable->get_clear_depth());
 #endif  // OPENGLES
+#ifdef GSG_VERBOSE
+    GLCAT.spam()
+      << "glDepthMask(GL_TRUE)" << endl;
+#endif
     GLP(DepthMask)(GL_TRUE);
     _state_mask.clear_bit(DepthWriteAttrib::get_class_slot());
     mask |= GL_DEPTH_BUFFER_BIT;
@@ -2244,7 +2248,7 @@ end_frame(Thread *current_thread) {
            ++ddli) {
         if (GLCAT.is_debug()) {
           GLCAT.debug()
-            << "releasing display list index " << (*ddli) << "\n";
+            << "releasing display list index " << (int)(*ddli) << "\n";
         }
         GLP(DeleteLists)((*ddli), 1);
       }
@@ -2259,7 +2263,7 @@ end_frame(Thread *current_thread) {
            ++ddli) {
         if (GLCAT.is_debug()) {
           GLCAT.debug()
-            << "releasing query index " << (*ddli) << "\n";
+            << "releasing query index " << (int)(*ddli) << "\n";
         }
         _glDeleteQueries(1, &(*ddli));
       }
@@ -2458,7 +2462,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
       // If it hasn't been modified, just play the display list again.
       if (GLCAT.is_spam()) {
         GLCAT.spam()
-          << "calling display list " << _geom_display_list << "\n";
+          << "calling display list " << (int)_geom_display_list << "\n";
       }
 
       GLP(CallList)(_geom_display_list);
@@ -2479,7 +2483,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
     if (GLCAT.is_debug()) {
       GLCAT.debug()
-        << "compiling display list " << _geom_display_list << "\n";
+        << "compiling display list " << (int)_geom_display_list << "\n";
     }
 
     // If it has been modified, or this is the first time, then we
@@ -3589,7 +3593,7 @@ prepare_vertex_buffer(GeomVertexArrayData *data) {
 
     if (GLCAT.is_debug() && CLP(debug_buffers)) {
       GLCAT.debug()
-        << "creating vertex buffer " << gvbc->_index << ": "
+        << "creating vertex buffer " << (int)gvbc->_index << ": "
         << data->get_num_rows() << " vertices "
         << *data->get_array_format() << "\n";
     }
@@ -3622,7 +3626,7 @@ apply_vertex_buffer(VertexBufferContext *vbc,
   if (_current_vbuffer_index != gvbc->_index) {
     if (GLCAT.is_spam() && CLP(debug_buffers)) {
       GLCAT.spam()
-        << "binding vertex buffer " << gvbc->_index << "\n";
+        << "binding vertex buffer " << (int)gvbc->_index << "\n";
     }
     _glBindBuffer(GL_ARRAY_BUFFER, gvbc->_index);
     _current_vbuffer_index = gvbc->_index;
@@ -3634,7 +3638,7 @@ apply_vertex_buffer(VertexBufferContext *vbc,
     if (GLCAT.is_debug() && CLP(debug_buffers)) {
       GLCAT.debug()
         << "copying " << num_bytes
-        << " bytes into vertex buffer " << gvbc->_index << "\n";
+        << " bytes into vertex buffer " << (int)gvbc->_index << "\n";
     }
     if (num_bytes != 0) {
       const unsigned char *client_pointer = reader->get_read_pointer(force);
@@ -3678,7 +3682,7 @@ release_vertex_buffer(VertexBufferContext *vbc) {
 
   if (GLCAT.is_debug() && CLP(debug_buffers)) {
     GLCAT.debug()
-      << "deleting vertex buffer " << gvbc->_index << "\n";
+      << "deleting vertex buffer " << (int)gvbc->_index << "\n";
   }
 
   // Make sure the buffer is unbound before we delete it.  Not
@@ -3778,7 +3782,7 @@ prepare_index_buffer(GeomPrimitive *data) {
 
     if (GLCAT.is_debug() && CLP(debug_buffers)) {
       GLCAT.debug()
-        << "creating index buffer " << gibc->_index << ": "
+        << "creating index buffer " << (int)gibc->_index << ": "
         << data->get_num_vertices() << " indices ("
         << data->get_vertices()->get_array_format()->get_column(0)->get_numeric_type()
         << ")\n";
@@ -3814,7 +3818,7 @@ apply_index_buffer(IndexBufferContext *ibc,
   if (_current_ibuffer_index != gibc->_index) {
     if (GLCAT.is_spam() && CLP(debug_buffers)) {
       GLCAT.spam()
-        << "binding index buffer " << gibc->_index << "\n";
+        << "binding index buffer " << (int)gibc->_index << "\n";
     }
     _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gibc->_index);
     _current_ibuffer_index = gibc->_index;
@@ -3826,7 +3830,7 @@ apply_index_buffer(IndexBufferContext *ibc,
     if (GLCAT.is_debug() && CLP(debug_buffers)) {
       GLCAT.debug()
         << "copying " << num_bytes
-        << " bytes into index buffer " << gibc->_index << "\n";
+        << " bytes into index buffer " << (int)gibc->_index << "\n";
     }
     if (num_bytes != 0) {
       const unsigned char *client_pointer = reader->get_read_pointer(force);
@@ -3870,7 +3874,7 @@ release_index_buffer(IndexBufferContext *ibc) {
 
   if (GLCAT.is_debug() && CLP(debug_buffers)) {
     GLCAT.debug()
-      << "deleting index buffer " << gibc->_index << "\n";
+      << "deleting index buffer " << (int)gibc->_index << "\n";
   }
 
   // Make sure the buffer is unbound before we delete it.  Not
@@ -3979,7 +3983,7 @@ begin_occlusion_query() {
 
   if (GLCAT.is_debug()) {
     GLCAT.debug()
-      << "beginning occlusion query index " << query->_index << "\n";
+      << "beginning occlusion query index " << (int)query->_index << "\n";
   }
 
   _glBeginQuery(GL_SAMPLES_PASSED, query->_index);
@@ -4012,7 +4016,7 @@ end_occlusion_query() {
     
   if (GLCAT.is_debug()) {
     GLCAT.debug()
-      << "ending occlusion query index " << index << "\n";
+      << "ending occlusion query index " << (int)index << "\n";
   }
 
   _current_occlusion_query = NULL;
@@ -4709,8 +4713,16 @@ do_issue_depth_write() {
   const DepthWriteAttrib *target_depth_write = DCAST(DepthWriteAttrib, _target_rs->get_attrib_def(DepthWriteAttrib::get_class_slot()));
   DepthWriteAttrib::Mode mode = target_depth_write->get_mode();
   if (mode == DepthWriteAttrib::M_off) {
+#ifdef GSG_VERBOSE
+    GLCAT.spam()
+      << "glDepthMask(GL_FALSE)" << endl;
+#endif
     GLP(DepthMask)(GL_FALSE);
   } else {
+#ifdef GSG_VERBOSE
+    GLCAT.spam()
+      << "glDepthMask(GL_TRUE)" << endl;
+#endif
     GLP(DepthMask)(GL_TRUE);
   }
   report_my_gl_errors();
@@ -4784,6 +4796,20 @@ do_issue_depth_offset() {
   } else {
     enable_polygon_offset(false);
   }
+
+  PN_stdfloat min_value = target_depth_offset->get_min_value();
+  PN_stdfloat max_value = target_depth_offset->get_max_value();
+#ifdef GSG_VERBOSE
+    GLCAT.spam()
+      << "glDepthRange(" << min_value << ", " << max_value << ")" << endl;
+#endif
+#ifdef OPENGLES
+  // OpenGL ES uses a single-precision call.
+  GLP(DepthRangef)((GLclampf)min_value, (GLclampf)max_value);
+#else
+  // Mainline OpenGL uses a double-precision call.
+  GLP(DepthRange)((GLclampd)min_value, (GLclampd)max_value);
+#endif  // OPENGLES
 
   report_my_gl_errors();
 }
@@ -10090,19 +10116,19 @@ do_issue_stencil() {
     if (false) {
       GLCAT.debug() << "STENCIL STATE CHANGE\n";
       GLCAT.debug() << "\n"
-                    << "SRS_front_enable " << stencil -> get_render_state (StencilAttrib::SRS_front_enable) << "\n"
-                    << "SRS_back_enable " << stencil -> get_render_state (StencilAttrib::SRS_back_enable) << "\n"
-                    << "SRS_front_comparison_function " << stencil -> get_render_state (StencilAttrib::SRS_front_comparison_function) << "\n"
-                    << "SRS_front_stencil_fail_operation " << stencil -> get_render_state (StencilAttrib::SRS_front_stencil_fail_operation) << "\n"
-                    << "SRS_front_stencil_pass_z_fail_operation " << stencil -> get_render_state (StencilAttrib::SRS_front_stencil_pass_z_fail_operation) << "\n"
-                    << "SRS_front_stencil_pass_z_pass_operation " << stencil -> get_render_state (StencilAttrib::SRS_front_stencil_pass_z_pass_operation) << "\n"
-                    << "SRS_reference " << stencil -> get_render_state (StencilAttrib::SRS_reference) << "\n"
-                    << "SRS_read_mask " << stencil -> get_render_state (StencilAttrib::SRS_read_mask) << "\n"
-                    << "SRS_write_mask " << stencil -> get_render_state (StencilAttrib::SRS_write_mask) << "\n"
-                    << "SRS_back_comparison_function " << stencil -> get_render_state (StencilAttrib::SRS_back_comparison_function) << "\n"
-                    << "SRS_back_stencil_fail_operation " << stencil -> get_render_state (StencilAttrib::SRS_back_stencil_fail_operation) << "\n"
-                    << "SRS_back_stencil_pass_z_fail_operation " << stencil -> get_render_state (StencilAttrib::SRS_back_stencil_pass_z_fail_operation) << "\n"
-                    << "SRS_back_stencil_pass_z_pass_operation " << stencil -> get_render_state (StencilAttrib::SRS_back_stencil_pass_z_pass_operation) << "\n";
+                    << "SRS_front_enable " << (int)stencil -> get_render_state (StencilAttrib::SRS_front_enable) << "\n"
+                    << "SRS_back_enable " << (int)stencil -> get_render_state (StencilAttrib::SRS_back_enable) << "\n"
+                    << "SRS_front_comparison_function " << (int)stencil -> get_render_state (StencilAttrib::SRS_front_comparison_function) << "\n"
+                    << "SRS_front_stencil_fail_operation " << (int)stencil -> get_render_state (StencilAttrib::SRS_front_stencil_fail_operation) << "\n"
+                    << "SRS_front_stencil_pass_z_fail_operation " << (int)stencil -> get_render_state (StencilAttrib::SRS_front_stencil_pass_z_fail_operation) << "\n"
+                    << "SRS_front_stencil_pass_z_pass_operation " << (int)stencil -> get_render_state (StencilAttrib::SRS_front_stencil_pass_z_pass_operation) << "\n"
+                    << "SRS_reference " << (int)stencil -> get_render_state (StencilAttrib::SRS_reference) << "\n"
+                    << "SRS_read_mask " << (int)stencil -> get_render_state (StencilAttrib::SRS_read_mask) << "\n"
+                    << "SRS_write_mask " << (int)stencil -> get_render_state (StencilAttrib::SRS_write_mask) << "\n"
+                    << "SRS_back_comparison_function " << (int)stencil -> get_render_state (StencilAttrib::SRS_back_comparison_function) << "\n"
+                    << "SRS_back_stencil_fail_operation " << (int)stencil -> get_render_state (StencilAttrib::SRS_back_stencil_fail_operation) << "\n"
+                    << "SRS_back_stencil_pass_z_fail_operation " << (int)stencil -> get_render_state (StencilAttrib::SRS_back_stencil_pass_z_fail_operation) << "\n"
+                    << "SRS_back_stencil_pass_z_pass_operation " << (int)stencil -> get_render_state (StencilAttrib::SRS_back_stencil_pass_z_pass_operation) << "\n";
     }
 
     {

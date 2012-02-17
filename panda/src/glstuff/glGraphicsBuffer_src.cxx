@@ -216,7 +216,7 @@ check_fbo() {
       GLCAT.error() << "FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_EXT"; break;
 #endif
     default:
-      GLCAT.error() << "UNKNOWN PROBLEM " << status; break;
+      GLCAT.error() << "UNKNOWN PROBLEM " << (int)status; break;
     }
     GLCAT.error(false) << " for " << get_name() << "\n";
 
@@ -1080,7 +1080,7 @@ report_my_errors(int line, const char *file) {
   if (_gsg == 0) {
     GLenum error_code = glGetError();
     if (error_code != GL_NO_ERROR) {
-      GLCAT.error() << file << ", line " << line << ": GL error " << error_code << "\n";
+      GLCAT.error() << file << ", line " << line << ": GL error " << (int)error_code << "\n";
     }
   } else {
     CLP(GraphicsStateGuardian) *glgsg;

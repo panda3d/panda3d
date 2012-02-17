@@ -20,8 +20,10 @@
 //               DepthOffsetAttrib object.
 ////////////////////////////////////////////////////////////////////
 INLINE DepthOffsetAttrib::
-DepthOffsetAttrib(int offset) :
-  _offset(offset)
+DepthOffsetAttrib(int offset, PN_stdfloat min_value, PN_stdfloat max_value) :
+  _offset(offset),
+  _min_value(min_value),
+  _max_value(max_value)
 {
 }
 
@@ -33,4 +35,28 @@ DepthOffsetAttrib(int offset) :
 INLINE int DepthOffsetAttrib::
 get_offset() const {
   return _offset;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DepthOffsetAttrib::get_min_value
+//       Access: Published
+//  Description: Returns the value for the minimum (closest) depth
+//               value to be stored in the buffer, in the range 0
+//               .. 1.
+////////////////////////////////////////////////////////////////////
+INLINE PN_stdfloat DepthOffsetAttrib::
+get_min_value() const {
+  return _min_value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DepthOffsetAttrib::get_max_value
+//       Access: Published
+//  Description: Returns the value for the maximum (farthest) depth
+//               value to be stored in the buffer, in the range 0
+//               .. 1.
+////////////////////////////////////////////////////////////////////
+INLINE PN_stdfloat DepthOffsetAttrib::
+get_max_value() const {
+  return _max_value;
 }

@@ -57,7 +57,7 @@ is_answer_ready() const {
 
   if (GLCAT.is_debug()) {
     GLCAT.debug()
-      << "occlusion query " << _index << " ready = " << result << "\n";
+      << "occlusion query " << (int)_index << " ready = " << (int)result << "\n";
   }
 
   return (result != 0);
@@ -106,7 +106,7 @@ get_num_fragments() const {
 
   if (GLCAT.is_debug()) {
     GLCAT.debug()
-      << "occlusion query " << _index << " reports " << result
+      << "occlusion query " << (int)_index << " reports " << (int)result
       << " fragments.\n";
   }
 

@@ -57,6 +57,9 @@ void glInit(GLContext *c, ZBuffer *zbuffer)
   /* depth test */
   c->depth_test = 0;
   c->zbias = 0;
+  c->has_zrange = 0;
+  c->zmin = 0.0;
+  c->zrange = 1.0;
 }
 
 void glClose(GLContext *c)

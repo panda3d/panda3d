@@ -2117,6 +2117,16 @@ do_issue_depth_offset() {
   const DepthOffsetAttrib *target_depth_offset = DCAST(DepthOffsetAttrib, _target_rs->get_attrib_def(DepthOffsetAttrib::get_class_slot()));
   int offset = target_depth_offset->get_offset();
   _c->zbias = offset;
+
+  PN_stdfloat min_value = target_depth_offset->get_min_value();
+  PN_stdfloat max_value = target_depth_offset->get_max_value();
+  if (min_value == 0.0f && max_value == 1.0f) {
+    _c->has_zrange = false;
+  } else {
+    _c->has_zrange = true;
+    _c->zmin = min_value;
+    _c->zrange = max_value - min_value;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

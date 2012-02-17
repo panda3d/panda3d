@@ -33,6 +33,13 @@ void gl_transform_to_viewport(GLContext *c,GLVertex *v)
   } else {
     v->zp.z = z;
   }
+  if (c->has_zrange) {
+    // Rescale the Z value into the specified range.
+    static const int z_range = (1 << (ZB_Z_BITS + ZB_POINT_Z_FRAC_BITS)) - 1;
+    double z = 1.0 - (double)(v->zp.z) / (double)(z_range);
+    z = z * c->zrange + c->zmin;
+    v->zp.z = (int)((1.0 - z) * (double)(z_range)) + 1;
+  }
 
   /* color */
   v->zp.r=(int)(v->color.v[0] * (ZB_POINT_RED_MAX - ZB_POINT_RED_MIN) 

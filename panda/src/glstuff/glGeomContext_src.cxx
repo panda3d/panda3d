@@ -85,7 +85,7 @@ release_display_lists() {
 
     if (GLCAT.is_debug()) {
       GLCAT.debug()
-        << "releasing index " << dl._index << "\n";
+        << "releasing index " << (int)dl._index << "\n";
     }
     GLP(DeleteLists)(dl._index, 1);
   }

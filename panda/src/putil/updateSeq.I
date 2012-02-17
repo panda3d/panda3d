@@ -286,7 +286,7 @@ output(ostream &out) const {
     break;
 
   default:
-    out << (unsigned int)seq;
+    out << (int)seq;
   }
 }
 

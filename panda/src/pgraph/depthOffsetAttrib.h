@@ -49,16 +49,25 @@ class FactoryParams;
 //               lower override parameter.)  The net value should
 //               probably not exceed 16 or drop below 0 for maximum
 //               portability.
+//
+//               Also, and only tangentially related, the
+//               DepthOffsetAttrib can be used to constrain the Z
+//               output value to a subset of the usual [0, 1] range
+//               (or reversing its direction) by specifying a new
+//               min_value and max_value.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PGRAPH DepthOffsetAttrib : public RenderAttrib {
 private:
-  INLINE DepthOffsetAttrib(int offset);
+  INLINE DepthOffsetAttrib(int offset, PN_stdfloat min_value, PN_stdfloat max_value);
 
 PUBLISHED:
   static CPT(RenderAttrib) make(int offset = 1);
+  static CPT(RenderAttrib) make(int offset, PN_stdfloat min_value, PN_stdfloat max_value);
   static CPT(RenderAttrib) make_default();
 
   INLINE int get_offset() const;
+  INLINE PN_stdfloat get_min_value() const;
+  INLINE PN_stdfloat get_max_value() const;
 
 public:
   virtual void output(ostream &out) const;
@@ -71,6 +80,8 @@ protected:
 
 private:
   int _offset;
+  PN_stdfloat _min_value;
+  PN_stdfloat _max_value;
 
 PUBLISHED:
   static int get_class_slot() {
