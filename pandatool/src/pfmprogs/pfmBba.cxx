@@ -93,7 +93,7 @@ process_pfm(const Filename &input_filename, PfmFile &file) {
     for (int i = 0; i < 8; ++i) {
       points[i] = bounds->get_point(i);
     }
-    LPlanef plane(points[0], points[1], points[2]);
+    LPlane plane(points[0], points[1], points[2]);
     LVector3 normal = plane.get_normal();
 
     static const PN_stdfloat scale = 20.0f;
