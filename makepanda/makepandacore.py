@@ -1910,7 +1910,7 @@ def CheckLinkerLibraryPath():
 ##
 ########################################################################
 
-def CopyFile(dstfile,srcfile):
+def CopyFile(dstfile, srcfile):
     if (dstfile[-1]=='/'):
         dstdir = dstfile
         fnl = srcfile.rfind("/")
@@ -1933,13 +1933,23 @@ def CopyAllHeaders(dir, skip=[]):
             WriteFile(dstfile,ReadFile(srcfile))
             JustBuilt([dstfile],[srcfile])
 
-def CopyTree(dstdir,srcdir):
-    if (os.path.isdir(dstdir)): return 0
-    if (sys.platform == "win32"):
-        cmd = 'xcopy /I/Y/E/Q "' + srcdir + '" "' + dstdir + '"'
+def CopyTree(dstdir, srcdir, omitCVS=True):
+    if (os.path.isdir(dstdir)):
+        for entry in os.listdir(srcdir):
+            srcpth = os.path.join(srcdir, entry)
+            dstpth = os.path.join(dstdir, entry)
+            if (os.path.isfile(srcpth)):
+                if (not omitCVS or entry != ".cvsignore"):
+                    CopyFile(dstpth, srcpth)
+            else:
+                if (not omitCVS or entry != "CVS"):
+                    CopyTree(dstpth, srcpth)
     else:
-        cmd = 'cp -R -f ' + srcdir + ' ' + dstdir
-    oscmd(cmd)
+        if (sys.platform == "win32"):
+            cmd = 'xcopy /I/Y/E/Q "' + srcdir + '" "' + dstdir + '"'
+        else:
+            cmd = 'cp -R -f ' + srcdir + ' ' + dstdir
+        oscmd(cmd)
 
 ########################################################################
 ##
