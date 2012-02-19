@@ -316,7 +316,10 @@ $[cdefine STDFLOAT_DOUBLE]
 $[cdefine HAVE_MAYA]
 $[cdefine MAYA_PRE_5_0]
 
-/* Define if we have libRocket available and built with Python support. */
+/* Define if we have libRocket available and built with the Rocket Debugger. */
+$[cdefine HAVE_ROCKET_DEBUGGER]
+
+/* Define if we have built libRocket available and built with Python support. */
 $[cdefine HAVE_ROCKET_PYTHON]
 
 /* Define if we have SoftImage available. */

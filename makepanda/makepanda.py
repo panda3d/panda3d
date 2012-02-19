@@ -506,9 +506,12 @@ if (COMPILER=="MSVC"):
     if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   GetThirdpartyDir() + "ffmpeg/lib/avformat.lib")
     if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   GetThirdpartyDir() + "ffmpeg/lib/avutil.lib")
     if (PkgSkip("SWSCALE")==0):  LibName("SWSCALE",  GetThirdpartyDir() + "ffmpeg/lib/swscale.lib")
-    if (PkgSkip("ROCKET")==0):   LibName("ROCKET",   GetThirdpartyDir() + "rocket/lib/RocketCore.lib")
-    if (PkgSkip("ROCKET")==0):   LibName("ROCKET",   GetThirdpartyDir() + "rocket/lib/RocketControls.lib")
-    if (PkgSkip("ROCKET")==0):   LibName("ROCKET",   GetThirdpartyDir() + "rocket/lib/boost_python-vc90-mt-1_48.lib")
+    if (PkgSkip("ROCKET")==0):
+        LibName("ROCKET", GetThirdpartyDir() + "rocket/lib/RocketCore.lib")
+        LibName("ROCKET", GetThirdpartyDir() + "rocket/lib/RocketControls.lib")
+        LibName("ROCKET", GetThirdpartyDir() + "rocket/lib/boost_python-vc90-mt-1_48.lib")
+        if (GetOptimize() <= 3):
+            LibName("ROCKET", GetThirdpartyDir() + "rocket/lib/RocketDebugger.lib")
     if (PkgSkip("OPENAL")==0):
         if (os.path.exists(GetThirdpartyDir() + "openal/lib/pandaopenal32.lib")):
             LibName("OPENAL",   GetThirdpartyDir() + "openal/lib/pandaopenal32.lib")
@@ -627,11 +630,15 @@ if (COMPILER=="LINUX"):
         SmartPkgEnable("TIFF",      "",          ("tiff"), "tiff.h")
         SmartPkgEnable("VRPN",      "",          ("vrpn", "quat"), ("vrpn", "quat.h", "vrpn/vrpn_Types.h"))
         SmartPkgEnable("BULLET", "bullet", ("BulletSoftBody", "BulletDynamics", "BulletCollision", "LinearMath"), ("bullet", "bullet/btBulletDynamicsCommon.h"))
-        if sys.platform == "darwin":
+
+        rocket_libs = ("RocketCore", "RocketControls")
+        if (GetOptimize() <= 3):
+            rocket_libs += ("RocketDebugger",)
+        if (sys.platform != "darwin"):
             # We use a statically linked libboost_python on OSX
-            SmartPkgEnable("ROCKET",    "",          ("RocketCore", "RocketControls"), "Rocket/Core.h")
-        else:
-            SmartPkgEnable("ROCKET",    "",          ("RocketCore", "RocketControls", "boost_python"), "Rocket/Core.h")
+            rocket_libs += ("boost_python",)
+        SmartPkgEnable("ROCKET",    "",          rocket_libs, "Rocket/Core.h")
+
     SmartPkgEnable("GTK2",      "gtk+-2.0")
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
     SmartPkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
@@ -1733,6 +1740,7 @@ DTOOL_CONFIG=[
     ("HAVE_FCOLLADA",                  'UNDEF',                  'UNDEF'),
     ("HAVE_OPENAL_FRAMEWORK",          'UNDEF',                  'UNDEF'),
     ("HAVE_ROCKET_PYTHON",             '1',                      '1'),
+    ("HAVE_ROCKET_DEBUGGER",           'UNDEF',                  'UNDEF'),
     ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
 #    ("_SECURE_SCL",                    '0',                      'UNDEF'),
 #    ("_SECURE_SCL_THROWS",             '0',                      'UNDEF'),
@@ -1827,6 +1835,9 @@ def WriteConfigSettings():
     # on whether the libRocket Python modules are available.
     if (PkgSkip("PYTHON") != 0):
         dtool_config["HAVE_ROCKET_PYTHON"] = 'UNDEF'
+
+    if (GetOptimize() <= 3):
+        dtool_config["HAVE_ROCKET_DEBUGGER"] = '1'
 
     if (GetOptimize() <= 3):
         if (dtool_config["HAVE_NET"] != 'UNDEF'):

@@ -53,6 +53,10 @@ PUBLISHED:
   INLINE void set_input_handler(RocketInputHandler *handler);
   INLINE RocketInputHandler *get_input_handler() const;
 
+  bool init_debugger();
+  void set_debugger_visible(bool visible);
+  bool is_debugger_visible() const;
+
 private:
   RocketRenderInterface _interface;
   Rocket::Core::Context* _context;

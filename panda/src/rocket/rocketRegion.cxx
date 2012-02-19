@@ -17,6 +17,10 @@
 #include "orthographicLens.h"
 #include "pStatTimer.h"
 
+#ifdef HAVE_ROCKET_DEBUGGER
+#include <Rocket/Debugger.h>
+#endif
+
 TypeHandle RocketRegion::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -126,4 +130,47 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
 #endif
 
   trav->end_traverse();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RocketRegion::init_debugger
+//       Access: Published
+//  Description: Initializes the libRocket debugger.  This will
+//               return false if the debugger failed to initialize,
+//               or if support for the debugger has not been built
+//               in (for example in an optimize=4 build).
+////////////////////////////////////////////////////////////////////
+bool RocketRegion::
+init_debugger() {
+#ifdef HAVE_ROCKET_DEBUGGER
+  return Rocket::Debugger::Initialise(_context);
+#else
+  return false;
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RocketRegion::set_debugger_visible
+//       Access: Published
+//  Description: Sets whether the debugger should be visible.
+////////////////////////////////////////////////////////////////////
+void RocketRegion::
+set_debugger_visible(bool visible) {
+#ifdef HAVE_ROCKET_DEBUGGER
+  Rocket::Debugger::SetVisible(visible);
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RocketRegion::is_debugger_visible
+//       Access: Published
+//  Description: Returns true if the debugger is visible.
+////////////////////////////////////////////////////////////////////
+bool RocketRegion::
+is_debugger_visible() const {
+#ifdef HAVE_ROCKET_DEBUGGER
+  return Rocket::Debugger::IsVisible();
+#else
+  return false;
+#endif
 }
