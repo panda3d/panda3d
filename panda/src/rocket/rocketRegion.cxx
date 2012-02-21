@@ -17,7 +17,7 @@
 #include "orthographicLens.h"
 #include "pStatTimer.h"
 
-#ifdef HAVE_ROCKET_DEBUGGER
+#if defined(HAVE_ROCKET_DEBUGGER) && !defined(CPPPARSER)
 #include <Rocket/Debugger.h>
 #endif
 
