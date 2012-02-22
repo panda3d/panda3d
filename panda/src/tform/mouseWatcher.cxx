@@ -70,6 +70,7 @@ MouseWatcher(const string &name) :
   _button_down = false;
   _eh = (EventHandler *)NULL;
   _display_region = (DisplayRegion *)NULL;
+  _button_down_display_region = (DisplayRegion *)NULL;
 
   _frame.set(-1.0f, 1.0f, -1.0f, 1.0f);
   
@@ -1657,7 +1658,7 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::constrain_display_region
-//       Access: Private, Static
+//       Access: Private
 //  Description: Constrains the mouse coordinates to within the
 //               indicated DisplayRegion.  If the mouse pointer does
 //               indeed fall within the DisplayRegion, rescales f and
@@ -1669,14 +1670,25 @@ bool MouseWatcher::
 constrain_display_region(DisplayRegion *display_region, 
                          LVecBase2 &f, LVecBase2 &p,
                          Thread *current_thread) {
-  // If it's a stereo DisplayRegion, we should actually call this
-  // method twice, once for each eye, in case we have side-by-side
-  // stereo.
-  if (display_region->is_stereo()) {
-    StereoDisplayRegion *stereo_display_region;
-    DCAST_INTO_R(stereo_display_region, display_region, false);
-    return constrain_display_region(stereo_display_region->get_left_eye(), f, p, current_thread) ||
-      constrain_display_region(stereo_display_region->get_right_eye(), f, p, current_thread);
+  if (!_button_down) {
+    _button_down_display_region = NULL;
+  }
+  if (_button_down_display_region != NULL) {
+    // If the button went down over this DisplayRegion, we consider
+    // the button within the same DisplayRegion until it is released
+    // (even if it wanders outside the borders).
+    display_region = _button_down_display_region;
+
+  } else {
+    // If it's a stereo DisplayRegion, we should actually call this
+    // method twice, once for each eye, in case we have side-by-side
+    // stereo.
+    if (display_region->is_stereo()) {
+      StereoDisplayRegion *stereo_display_region;
+      DCAST_INTO_R(stereo_display_region, display_region, false);
+      return constrain_display_region(stereo_display_region->get_left_eye(), f, p, current_thread) ||
+        constrain_display_region(stereo_display_region->get_right_eye(), f, p, current_thread);
+    }
   }
 
   DisplayRegionPipelineReader dr_reader(display_region, current_thread);
@@ -1686,14 +1698,17 @@ constrain_display_region(DisplayRegion *display_region,
   // Need to translate this into DisplayRegion [0, 1] space
   PN_stdfloat x = (f[0] + 1.0f) / 2.0f;
   PN_stdfloat y = (f[1] + 1.0f) / 2.0f;
-  
-  if (x < left || x >= right || 
-      y < bottom || y >= top) {
+
+  if (_button_down_display_region == NULL &&
+      (x < left || x >= right || y < bottom || y >= top)) {
     // The mouse is outside the display region.
     return false;
   }
-    
+
   // The mouse is within the display region; rescale it.
+  if (_button_down) {
+    _button_down_display_region = display_region;
+  }
   
   // Scale in DR space
   PN_stdfloat xp = (x - left) / (right - left);

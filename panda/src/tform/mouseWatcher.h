@@ -207,9 +207,9 @@ private:
   void discard_excess_trail_log();
   void update_trail_node();
 
-  static bool constrain_display_region(DisplayRegion *display_region, 
-                                       LVecBase2 &f, LVecBase2 &p,
-                                       Thread *current_thread);
+  bool constrain_display_region(DisplayRegion *display_region, 
+                                LVecBase2 &f, LVecBase2 &p,
+                                Thread *current_thread);
   
 private:
   // This wants to be a set, but because you cannot export sets across
@@ -252,6 +252,7 @@ private:
   EventHandler *_eh;
   ModifierButtons _mods;
   DisplayRegion *_display_region;
+  DisplayRegion *_button_down_display_region;
 
   bool _has_inactivity_timeout;
   double _inactivity_timeout;

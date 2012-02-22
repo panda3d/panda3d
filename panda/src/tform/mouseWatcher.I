@@ -506,6 +506,7 @@ get_modifier_buttons() const {
 INLINE void MouseWatcher::
 set_display_region(DisplayRegion *dr) {
   _display_region = dr;
+  _button_down_display_region = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -518,6 +519,7 @@ set_display_region(DisplayRegion *dr) {
 INLINE void MouseWatcher::
 clear_display_region() {
   _display_region = NULL;
+  _button_down_display_region = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
