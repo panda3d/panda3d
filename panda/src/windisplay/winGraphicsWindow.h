@@ -181,7 +181,7 @@ private:
   typedef pset<GraphicsWindowProc*> WinProcClasses;
   WinProcClasses _window_proc_classes;
 
-#ifdef PANDA_WIN7
+#ifdef HAVE_WIN_TOUCHINPUT
   UINT _numTouches;
   TOUCHINPUT _touches[MAX_TOUCHES];
 #endif

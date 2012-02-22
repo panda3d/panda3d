@@ -425,6 +425,11 @@
 // suspect a bug in Panda's memory management code.
 #define USE_DELETED_CHAIN 1
 
+// Define this if you are building on Windows 7 or better, and you
+// want your Panda build to run only on Windows 7 or better, and you
+// need to use the Windows touchinput interfaces.
+#define HAVE_WIN_TOUCHINPUT
+
 // Define this true to build the low-level native network
 // implementation.  Normally this should be set true.
 #define WANT_NATIVE_NET 1

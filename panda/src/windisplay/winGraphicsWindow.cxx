@@ -104,7 +104,7 @@ WinGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   _lalt_down = false;
   _ralt_down = false;
   _hparent = NULL;
-#ifdef PANDA_WIN7
+#ifdef HAVE_WIN_TOUCHINPUT
   _numTouches = 0;
 #endif
 }
@@ -515,7 +515,7 @@ open_window() {
   set_focus();
 
   // Register for Win7 touch events.
-#ifdef PANDA_WIN7
+#ifdef HAVE_WIN_TOUCHINPUT
   RegisterTouchWindow(_hWnd, 0);
 #endif
   
@@ -2072,7 +2072,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     system_changed_properties(properties);
     break;
 
-#ifdef PANDA_WIN7
+#ifdef HAVE_WIN_TOUCHINPUT
   case WM_TOUCH:
         _numTouches = LOWORD(wparam);
         if(_numTouches > MAX_TOUCHES)
@@ -2830,7 +2830,7 @@ bool WinGraphicsWindow::supports_window_procs() const{
 ////////////////////////////////////////////////////////////////////
 bool WinGraphicsWindow::
 is_touch_event(GraphicsWindowProcCallbackData* callbackData){
-#ifdef PANDA_WIN7
+#ifdef HAVE_WIN_TOUCHINPUT
   return callbackData->get_msg() == WM_TOUCH;
 #else
   return false;
@@ -2845,7 +2845,7 @@ is_touch_event(GraphicsWindowProcCallbackData* callbackData){
 ////////////////////////////////////////////////////////////////////
 int WinGraphicsWindow::
 get_num_touches(){
-#ifdef PANDA_WIN7
+#ifdef HAVE_WIN_TOUCHINPUT
   return _numTouches;
 #else
   return 0;
@@ -2860,7 +2860,7 @@ get_num_touches(){
 ////////////////////////////////////////////////////////////////////
 TouchInfo WinGraphicsWindow::
 get_touch_info(int index){
-#ifdef PANDA_WIN7
+#ifdef HAVE_WIN_TOUCHINPUT
   TOUCHINPUT ti = _touches[index];
   POINT point;
   point.x = TOUCH_COORD_TO_PIXEL(ti.x);

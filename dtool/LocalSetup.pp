@@ -717,6 +717,9 @@ $[cdefine __USE_LARGEFILE64]
 // To activate the DELETED_CHAIN macros.
 $[cdefine USE_DELETED_CHAIN]
 
+// To build the Windows TOUCHINPUT interfaces (requires Windows 7).
+$[cdefine HAVE_WIN_TOUCHINPUT]
+
 // If we are to build the native net interfaces.
 $[cdefine WANT_NATIVE_NET]
 

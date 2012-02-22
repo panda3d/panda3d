@@ -91,7 +91,8 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "PANDAFX",                                           # Some distortion special lenses 
   "PANDAPARTICLESYSTEM",                               # Built in particle system
   "CONTRIB",                                           # Experimental
-  "SSE2"                                               # Compiler features
+  "SSE2",                                              # Compiler features
+  "TOUCHINPUT",                                        # Touchinput interface (requires Windows 7)
 ])
 
 CheckPandaSourceTree()
@@ -240,6 +241,16 @@ def parseopts(args):
         assert GetOptimize() in [1, 2, 3, 4]
     except:
         usage("Invalid setting for OPTIMIZE")
+
+    is_win7 = False
+    if sys.platform.startswith("win"):
+        if (STRMSPLATFORMVERSION not in ['winserver2003r2', 'win60A']):
+            platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v7.1", "InstallationFolder")
+            winver = sys.getwindowsversion()
+            if platsdk and os.path.isdir(platsdk) and winver[0] >= 6 and winver[1] >= 1:
+                is_win7 = True
+    if not is_win7:
+        PkgDisable("TOUCHINPUT")
 
 parseopts(sys.argv[1:])
 
@@ -832,14 +843,9 @@ def CompileCxx(obj,src,opts):
                 cmd += "/favor:blend "
             cmd += "/wd4996 /wd4275 /wd4267 /wd4101 /wd4273 "
 
-            # Enables Windows 7 mode if SDK is detected.
-            # But only if it is Windows 7 (0x601) and not e. g. Vista (0x600)
-            if (STRMSPLATFORMVERSION not in ['winserver2003r2', 'win60A']):
-                platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v7.1", "InstallationFolder")
-                winver = sys.getwindowsversion()
-                if platsdk and os.path.isdir(platsdk) and winver[0] >= 6 and winver[1] >= 1:
-                    cmd += "/DPANDA_WIN7 /DWINVER=0x601 "
-
+            # Enable Windows 7 interfaces if we need Touchinput.
+            if PkgSkip("TOUCHINPUT") == 0:
+                cmd += "/DWINVER=0x601 "
             cmd += "/Fo" + obj + " /nologo /c"
             if (not is_64 and PkgSkip("SSE2") == 0):
                 cmd += " /arch:SSE2"            
@@ -871,14 +877,9 @@ def CompileCxx(obj,src,opts):
                 cmd += "/favor:blend "
             cmd += "/wd4996 /wd4275 /wd4267 /wd4101 /wd4273 "
 
-            # Enables Windows 7 mode if SDK is detected.
-            # But only if it is Windows 7 (0x601) and not e. g. Vista (0x600)
-            if (STRMSPLATFORMVERSION not in ['winserver2003r2', 'win60A']):
-                platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v7.1", "InstallationFolder")
-                winver = sys.getwindowsversion()
-                if platsdk and os.path.isdir(platsdk) and winver[0] >= 6 and winver[1] >= 1:
-                    cmd += "/DPANDA_WIN7 /DWINVER=0x601 "
-
+            # Enable Windows 7 interfaces if we need Touchinput.
+            if PkgSkip("TOUCHINPUT") == 0:
+                cmd += "/DWINVER=0x601 "
             cmd += "/Fo" + obj + " /c"
             for x in ipath: cmd += " /I" + x
             for (opt,dir) in INCDIRECTORIES:
@@ -1612,6 +1613,7 @@ DTOOL_CONFIG=[
     ("REPORT_OPENSSL_ERRORS",          '1',                      '1'),
     ("USE_PANDAFILESTREAM",            '1',                      '1'),
     ("USE_DELETED_CHAIN",              '1',                      '1'),
+    ("HAVE_WIN_TOUCHINPUT",            'UNDEF',                  'UNDEF'),
     ("HAVE_GL",                        '1',                      'UNDEF'),
     ("HAVE_GLES",                      'UNDEF',                  'UNDEF'),
     ("HAVE_GLES2",                     'UNDEF',                  'UNDEF'),
@@ -1836,6 +1838,9 @@ def WriteConfigSettings():
     if (PkgSkip("PYTHON") != 0):
         dtool_config["HAVE_ROCKET_PYTHON"] = 'UNDEF'
 
+    if (PkgSkip("TOUCHINPUT") == 0 and sys.platform.startswith("win")):
+        dtool_config["HAVE_WIN_TOUCHINPUT"] = '1'
+    
     if (GetOptimize() <= 3):
         dtool_config["HAVE_ROCKET_DEBUGGER"] = '1'
 
