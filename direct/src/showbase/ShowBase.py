@@ -2320,6 +2320,9 @@ class ShowBase(DirectObject.DirectObject):
         it were still attached to our original camera.  This allows us
         to visualize the effectiveness of our bounding volumes.
         """
+        if cam is None:
+            cam = self.cam
+
         # First, make sure OOBE mode is enabled.
         if not getattr(self, 'oobeMode', False):
             self.oobe(cam = cam)
@@ -2335,6 +2338,8 @@ class ShowBase(DirectObject.DirectObject):
             # origin.
             for c in base.camList:
                 c.node().setCullCenter(self.oobeCullFrustum)
+            if cam.node().isOfType(Camera):
+                cam.node().setCullCenter(self.oobeCullFrustum)
             for c in cam.findAllMatches('**/+Camera'):
                 c.node().setCullCenter(self.oobeCullFrustum)
         else:
@@ -2342,6 +2347,8 @@ class ShowBase(DirectObject.DirectObject):
 
             for c in base.camList:
                 c.node().setCullCenter(NodePath())
+            if cam.node().isOfType(Camera):
+                cam.node().setCullCenter(self.oobeCullFrustum)
             for c in cam.findAllMatches('**/+Camera'):
                 c.node().setCullCenter(NodePath())
             self.oobeCullFrustum.removeNode()
