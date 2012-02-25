@@ -917,10 +917,10 @@ do_read_record(const Filename &cache_pathname, bool read_data) {
   }
   
   // Also get the total file size.
+  PT(VirtualFile) vfile = din.get_vfile();
   istream &in = din.get_stream();
   in.clear();
-  in.seekg(0, ios::end);
-  record->_record_size = in.tellg();
+  record->_record_size = vfile->get_file_size(&in);
 
   // And the last access time is now, duh.
   record->_record_access_time = time(NULL);

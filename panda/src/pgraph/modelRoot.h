@@ -31,11 +31,15 @@
 class EXPCL_PANDA_PGRAPH ModelRoot : public ModelNode {
 PUBLISHED:
   INLINE ModelRoot(const string &name);
+  INLINE ModelRoot(const Filename &fulllpath, time_t timestamp);
 
   INLINE int get_model_ref_count() const;
 
   INLINE const Filename &get_fullpath() const;
   INLINE void set_fullpath(const Filename &fullpath);
+
+  INLINE time_t get_timestamp() const;
+  INLINE void set_timestamp(time_t timestamp);
 
   // This class is used to unify references to the same model.
   class ModelReference : public ReferenceCount {
@@ -54,6 +58,7 @@ public:
 
 private:
   Filename _fullpath;
+  time_t _timestamp;
   PT(ModelReference) _reference;
 
 public:

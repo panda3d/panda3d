@@ -45,6 +45,7 @@ open(const FileReference *file) {
     // No such file.
     return false;
   }
+  _timestamp = _vfile->get_timestamp();
   _in = _vfile->open_read_file(true);
   _owns_in = (_in != (istream *)NULL);
   return _owns_in && !_in->fail();
@@ -66,6 +67,7 @@ open(istream &in, const Filename &filename) {
   _in = &in;
   _owns_in = false;
   _filename = filename;
+  _timestamp = 0;
 
   if (!filename.empty()) {
     _file = new FileReference(filename);
@@ -92,6 +94,7 @@ close() {
 
   _file.clear();
   _filename = Filename();
+  _timestamp = 0;
 
   _read_first_datagram = false;
   _error = false;
@@ -307,6 +310,18 @@ is_error() {
 const Filename &DatagramInputFile::
 get_filename() {
   return _filename;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DatagramInputFile::get_timestamp
+//       Access: Published, Virtual
+//  Description: Returns the on-disk timestamp of the file that was
+//               read, at the time it was opened, if that is
+//               available, or 0 if it is not.
+////////////////////////////////////////////////////////////////////
+time_t DatagramInputFile::
+get_timestamp() const {
+  return _timestamp;
 }
 
 ////////////////////////////////////////////////////////////////////

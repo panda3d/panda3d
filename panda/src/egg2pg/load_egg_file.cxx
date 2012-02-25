@@ -90,9 +90,18 @@ load_egg_file(const Filename &filename, CoordinateSystem cs,
   loader._data->set_coordinate_system(cs);
   loader._record = record;
 
+  PT(VirtualFile) vfile = vfs->get_file(egg_filename);
+  if (vfile == NULL) {
+    return NULL;
+  }
+
+  loader._data->set_egg_timestamp(vfile->get_timestamp());
+
   bool okflag;
-  istream *istr = vfs->open_read_file(egg_filename, true);
+  istream *istr = vfile->open_read_file(true);
   if (istr == (istream *)NULL) {
+    egg2pg_cat.error()
+      << "Couldn't read " << egg_filename << "\n";
     return NULL;
   }
 
@@ -100,7 +109,7 @@ load_egg_file(const Filename &filename, CoordinateSystem cs,
     << "Reading " << egg_filename << "\n";
 
   okflag = loader._data->read(*istr);
-  vfs->close_read_file(istr);
+  vfile->close_read_file(istr);
 
   if (!okflag) {
     egg2pg_cat.error()

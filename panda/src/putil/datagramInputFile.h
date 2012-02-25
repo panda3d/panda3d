@@ -47,6 +47,7 @@ PUBLISHED:
   virtual bool is_error();
 
   virtual const Filename &get_filename();
+  virtual time_t get_timestamp() const;
   virtual const FileReference *get_file();
   virtual VirtualFile *get_vfile();
   virtual streampos get_file_pos();
@@ -59,6 +60,7 @@ private:
   istream *_in;
   bool _owns_in;
   Filename _filename;
+  time_t _timestamp;
 };
 
 #include "datagramInputFile.I"

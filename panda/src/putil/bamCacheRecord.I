@@ -70,6 +70,19 @@ get_cache_filename() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BamCacheRecord::get_source_timestamp
+//       Access: Published
+//  Description: Returns the file timestamp of the original source
+//               file that generated this cache record, if available.
+//               In some cases the original file timestamp is not
+//               available, and this will return 0.
+////////////////////////////////////////////////////////////////////
+INLINE time_t BamCacheRecord::
+get_source_timestamp() const {
+  return _source_timestamp;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BamCacheRecord::get_recorded_time
 //       Access: Published
 //  Description: Returns the time at which this particular record was

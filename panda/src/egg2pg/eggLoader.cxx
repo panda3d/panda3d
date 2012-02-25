@@ -209,7 +209,7 @@ build_graph() {
   //  ((EggGroupNode *)_data)->write(cerr, 0);
 
   // Now build up the scene graph.
-  _root = new ModelRoot(_data->get_egg_filename().get_basename());
+  _root = new ModelRoot(_data->get_egg_filename(), _data->get_egg_timestamp());
   make_node(_data, _root);
 
   reparent_decals();

@@ -60,9 +60,6 @@ open_read(const Filename &bam_filename, bool report_errors) {
     return false;
   }
 
-  loader_cat.info()
-    << "Reading " << bam_filename << "\n";
-
   return continue_open_read(bam_filename, report_errors);
 }
 
@@ -219,8 +216,6 @@ read_node(bool report_errors) {
 bool BamFile::
 open_write(const Filename &bam_filename, bool report_errors) {
   close();
-
-  loader_cat.info() << "Writing " << bam_filename << "\n";
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   vfs->delete_file(bam_filename);
@@ -422,6 +417,11 @@ bool BamFile::
 continue_open_read(const string &bam_filename, bool report_errors) {
   _bam_filename = bam_filename;
 
+  if (!_bam_filename.empty()) {
+    loader_cat.info()
+      << "Reading " << _bam_filename << "\n";
+  }
+
   string head;
   if (!_din.read_header(head, _bam_header.size())) {
     if (report_errors) {
@@ -456,6 +456,10 @@ continue_open_read(const string &bam_filename, bool report_errors) {
 bool BamFile::
 continue_open_write(const string &bam_filename, bool report_errors) {
   _bam_filename = bam_filename;
+
+  if (!_bam_filename.empty()) {
+    loader_cat.info() << "Writing " << _bam_filename << "\n";
+  }
 
   if (!_dout.write_header(_bam_header)) {
     if (report_errors) {

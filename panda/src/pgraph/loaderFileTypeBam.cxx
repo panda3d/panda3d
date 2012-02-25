@@ -76,11 +76,21 @@ load_file(const Filename &path, const LoaderOptions &options,
   }
 
   bool report_errors = (options.get_flags() & LoaderOptions::LF_report_errors) != 0;
+
   BamFile bam_file;
   if (!bam_file.open_read(path, report_errors)) {
     return NULL;
   }
   bam_file.get_reader()->set_loader_options(options);
-  return bam_file.read_node(report_errors);
+  time_t timestamp = bam_file.get_reader()->get_source()->get_timestamp();
+
+  PT(PandaNode) node = bam_file.read_node(report_errors);
+  if (node->is_of_type(ModelRoot::get_class_type())) {
+    ModelRoot *model_root = DCAST(ModelRoot, node.p());
+    model_root->set_fullpath(path);
+    model_root->set_timestamp(timestamp);
+  }
+
+  return node;
 }
 

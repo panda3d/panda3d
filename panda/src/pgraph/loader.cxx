@@ -295,6 +295,12 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
             << "Model " << pathname << " found in disk cache.\n";
         }
         PT(PandaNode) result = DCAST(PandaNode, record->get_data());
+        if (result->is_of_type(ModelRoot::get_class_type())) {
+          ModelRoot *model_root = DCAST(ModelRoot, result.p());
+          model_root->set_fullpath(pathname);
+          model_root->set_timestamp(record->get_source_timestamp());
+        }
+
         if (premunge_data) {
           SceneGraphReducer sgr;
           sgr.premunge(result, RenderState::make_empty());

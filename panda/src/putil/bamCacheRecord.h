@@ -52,6 +52,7 @@ PUBLISHED:
 
   INLINE const Filename &get_source_pathname() const;
   INLINE const Filename &get_cache_filename() const;
+  INLINE time_t get_source_timestamp() const;
   INLINE time_t get_recorded_time() const;
 
   INLINE int get_num_dependent_files() const;
@@ -84,6 +85,7 @@ private:
   Filename _cache_filename;
   time_t _recorded_time;
   off_t _record_size;  // this is accurate only in the index file.
+  time_t _source_timestamp;  // Not record to the cache file.
 
   class DependentFile {
   public:

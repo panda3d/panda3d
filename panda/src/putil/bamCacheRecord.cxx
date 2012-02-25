@@ -28,6 +28,7 @@ BamCacheRecord::
 BamCacheRecord() :
   _recorded_time(0),
   _record_size(0),
+  _source_timestamp(0),
   _ptr(NULL),
   _ref_ptr(NULL),
   _record_access_time(0)
@@ -46,6 +47,7 @@ BamCacheRecord(const Filename &source_pathname,
   _cache_filename(cache_filename),
   _recorded_time(0),
   _record_size(0),
+  _source_timestamp(0),
   _ptr(NULL),
   _ref_ptr(NULL),
   _record_access_time(0)
@@ -64,6 +66,7 @@ BamCacheRecord(const BamCacheRecord &copy) :
   _cache_filename(copy._cache_filename),
   _recorded_time(copy._recorded_time),
   _record_size(copy._record_size),
+  _source_timestamp(copy._source_timestamp),
   _ptr(NULL),
   _ref_ptr(NULL),
   _record_access_time(copy._record_access_time)
@@ -152,6 +155,10 @@ add_dependent_file(const Filename &pathname) {
   } else {
     dfile._timestamp = file->get_timestamp();
     dfile._size = file->get_file_size();
+
+    if (dfile._pathname == _source_pathname) {
+      _source_timestamp = dfile._timestamp;
+    }
   }
 }
 
@@ -174,6 +181,8 @@ void BamCacheRecord::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "BamCacheRecord " << get_source_pathname() << "\n";
+  indent(out, indent_level)
+    << "source " << format_timestamp(_source_timestamp) << "\n";
   indent(out, indent_level)
     << "recorded " << format_timestamp(_recorded_time) << "\n";
 
@@ -299,5 +308,11 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     file._pathname = scan.get_string();
     file._timestamp = scan.get_uint32();
     file._size = scan.get_uint64();
+
+    // If we come across the original source file (we normally expect
+    // to), record that as its timestamp.
+    if (file._pathname == _source_pathname) {
+      _source_timestamp = file._timestamp;
+    }
   }
 }

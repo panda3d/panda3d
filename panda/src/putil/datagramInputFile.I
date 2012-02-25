@@ -24,6 +24,7 @@ DatagramInputFile() {
   _read_first_datagram = false;
   _in = (istream *)NULL;
   _owns_in = false;
+  _timestamp = 0;
 }
 
 ////////////////////////////////////////////////////////////////////

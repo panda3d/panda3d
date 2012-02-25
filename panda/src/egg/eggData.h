@@ -69,6 +69,9 @@ PUBLISHED:
   INLINE void set_egg_filename(const Filename &egg_filename);
   INLINE const Filename &get_egg_filename() const;
 
+  INLINE void set_egg_timestamp(time_t egg_timestamp);
+  INLINE time_t get_egg_timestamp() const;
+
   INLINE void recompute_vertex_normals(double threshold);
   INLINE void recompute_polygon_normals();
   INLINE void strip_normals();
@@ -84,6 +87,7 @@ private:
   bool _had_absolute_pathnames;
   CoordinateSystem _coordsys;
   Filename _egg_filename;
+  time_t _egg_timestamp;
 
 public:
   static TypeHandle get_class_type() {

@@ -41,6 +41,7 @@ PUBLISHED:
   virtual bool is_error() = 0;
 
   virtual const Filename &get_filename();
+  virtual time_t get_timestamp() const;
   virtual const FileReference *get_file();
   virtual VirtualFile *get_vfile();
   virtual streampos get_file_pos();

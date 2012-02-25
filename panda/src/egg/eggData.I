@@ -23,6 +23,7 @@ EggData() {
   _auto_resolve_externals = false;
   _had_absolute_pathnames = false;
   _coordsys = CS_default;
+  _egg_timestamp = 0;
 }
 
 
@@ -37,7 +38,8 @@ EggData(const EggData &copy) :
   _auto_resolve_externals(copy._auto_resolve_externals),
   _had_absolute_pathnames(copy._had_absolute_pathnames),
   _coordsys(copy._coordsys),
-  _egg_filename(copy._egg_filename) 
+  _egg_filename(copy._egg_filename),
+  _egg_timestamp(copy._egg_timestamp)
 {
 }
 
@@ -53,6 +55,7 @@ operator = (const EggData &copy) {
   _had_absolute_pathnames = copy._had_absolute_pathnames;
   _coordsys = copy._coordsys;
   _egg_filename = copy._egg_filename;
+  _egg_timestamp = copy._egg_timestamp;
   return *this;
 }
 
@@ -131,6 +134,30 @@ set_egg_filename(const Filename &egg_filename) {
 INLINE const Filename &EggData::
 get_egg_filename() const {
   return _egg_filename;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggData::set_egg_timestamp
+//       Access: Public
+//  Description: Sets the timestamp of the egg file on disk, at the
+//               time it was opened for reading.  This is also
+//               implicitly set by read().
+////////////////////////////////////////////////////////////////////
+INLINE void EggData::
+set_egg_timestamp(time_t egg_timestamp) {
+  _egg_timestamp = egg_timestamp;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggData::get_egg_timestamp
+//       Access: Public
+//  Description: Returns the timestamp of the egg file on disk, at the
+//               time it was opened for reading, or 0 if this
+//               information is not available.
+////////////////////////////////////////////////////////////////////
+INLINE time_t EggData::
+get_egg_timestamp() const {
+  return _egg_timestamp;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -64,6 +64,18 @@ get_filename() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DatagramGenerator::get_timestamp
+//       Access: Published, Virtual
+//  Description: Returns the on-disk timestamp of the file that was
+//               read, at the time it was opened, if that is
+//               available, or 0 if it is not.
+////////////////////////////////////////////////////////////////////
+time_t DatagramGenerator::
+get_timestamp() const {
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DatagramGenerator::get_file
 //       Access: Published, Virtual
 //  Description: Returns the FileReference that provides the source for

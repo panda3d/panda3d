@@ -22,6 +22,21 @@ INLINE ModelRoot::
 ModelRoot(const string &name) :
   ModelNode(name),
   _fullpath(name),
+  _timestamp(0),
+  _reference(new ModelRoot::ModelReference)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ModelRoot::Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE ModelRoot::
+ModelRoot(const Filename &fullpath, time_t timestamp) :
+  ModelNode(fullpath.get_basename()),
+  _fullpath(fullpath),
+  _timestamp(timestamp),
   _reference(new ModelRoot::ModelReference)
 {
 }
@@ -74,6 +89,34 @@ set_fullpath(const Filename &fullpath) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ModelRoot::get_timestamp
+//       Access: Published
+//  Description: Returns the timestamp of the file on disk that was
+//               read for this model, at the time it was read, if it
+//               is known.  Returns 0 if the timestamp is not known or
+//               could not be provided.  This can be used as a quick
+//               (but fallible) check to verify whether the file might
+//               have changed since the model was read.
+////////////////////////////////////////////////////////////////////
+INLINE time_t ModelRoot::
+get_timestamp() const {
+  return _timestamp;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ModelRoot::set_timestamp
+//       Access: Published
+//  Description: Sets the timestamp of the file on disk that was read
+//               for this model.  This is normally set automatically
+//               when a model is loaded, and should not be set
+//               directly by the user.
+////////////////////////////////////////////////////////////////////
+INLINE void ModelRoot::
+set_timestamp(time_t timestamp) {
+  _timestamp = timestamp;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ModelRoot::get_reference
 //       Access: Published
 //  Description: Returns the pointer that represents the object shared
@@ -110,6 +153,7 @@ INLINE ModelRoot::
 ModelRoot(const ModelRoot &copy) :
   ModelNode(copy),
   _fullpath(copy._fullpath),
+  _timestamp(copy._timestamp),
   _reference(copy._reference)
 {
 }

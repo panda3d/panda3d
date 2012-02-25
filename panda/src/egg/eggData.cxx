@@ -77,8 +77,15 @@ read(Filename filename, string display_name) {
   }
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-    
-  istream *file = vfs->open_read_file(filename, true);
+
+  PT(VirtualFile) vfile = vfs->get_file(filename);
+  if (vfile == NULL) {
+    egg_cat.error() << "Could not find " << display_name << "\n";
+    return false;
+  }
+  set_egg_timestamp(vfile->get_timestamp());
+
+  istream *file = vfile->open_read_file(true);
   if (file == (istream *)NULL) {
     egg_cat.error() << "Unable to open " << display_name << "\n";
     return false;
@@ -88,7 +95,7 @@ read(Filename filename, string display_name) {
     << "Reading " << display_name << "\n";
   
   bool read_ok = read(*file);
-  vfs->close_read_file(file);
+  vfile->close_read_file(file);
   return read_ok;
 }
 
