@@ -19,3 +19,12 @@
     objToEgg.cxx objToEgg.h
 
 #end bin_target
+
+#begin bin_target
+  #define TARGET egg2obj
+  #define LOCAL_LIBS p3eggbase p3progbase
+
+  #define SOURCES \
+    eggToObj.cxx eggToObj.h
+
+#end bin_target

@@ -354,7 +354,7 @@ process_g(vector_string &words) {
 
   // Thus, iterate from the back to the front.
   size_t i = words.size();
-  while (i != 0) {
+  while (i > 1) {
     --i;
     EggNode *child = group->find_child(words[i]);
     if (child == NULL || !child->is_of_type(EggGroup::get_class_type())) {

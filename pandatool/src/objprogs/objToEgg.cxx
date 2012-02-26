@@ -34,7 +34,7 @@ ObjToEgg() :
   set_program_description
     ("This program converts obj files to egg.  It "
      "only converts polygon data, with no fancy tricks.  "
-     "Very bare-bones at the moment, not even texture maps are supported.");
+     "Very bare-bones at the moment; not even texture maps are supported.");
 
   redescribe_option
     ("cs",
