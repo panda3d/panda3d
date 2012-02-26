@@ -30,9 +30,15 @@ has_model(const Filename &filename) {
 //  Description: Loads the given filename up as a model, if it has
 //               not already been loaded, and returns true to indicate
 //               success, or false to indicate failure.  If this
-//               returns true, it is guaranteed that a subsequent call
+//               returns true, it is probable that a subsequent call
 //               to load_model() with the same model name will
-//               return a valid Node pointer.
+//               return a valid PandaNode.
+//
+//               However, even if this returns true, it is still
+//               possible for a subsequent call to load_model() to
+//               fail.  This can happen if cache-check-timestamps is
+//               true, and the on-disk file is subsequently modified
+//               to replace it with an invalid model.
 ////////////////////////////////////////////////////////////////////
 INLINE bool ModelPool::
 verify_model(const Filename &filename) {
@@ -45,8 +51,11 @@ verify_model(const Filename &filename) {
 //  Description: Loads the given filename up as a model, if it has
 //               not already been loaded, and returns the new model.
 //               If a model with the same filename was previously
-//               loaded, returns that one instead.  If the model
-//               file cannot be found, returns NULL.
+//               loaded, returns that one instead (unless
+//               cache-check-timestamps is true and the file has
+//               recently changed).  If the model file cannot be
+//               found, or cannot be loaded for some reason, returns
+//               NULL.
 ////////////////////////////////////////////////////////////////////
 INLINE ModelRoot *ModelPool::
 load_model(const Filename &filename, const LoaderOptions &options) {
@@ -57,9 +66,8 @@ load_model(const Filename &filename, const LoaderOptions &options) {
 //     Function: ModelPool::add_model
 //       Access: Public, Static
 //  Description: Adds the indicated already-loaded model to the
-//               pool.  The model will always replace any
-//               previously-loaded model in the pool that had the
-//               same filename.
+//               pool.  The model will replace any previously-loaded
+//               model in the pool that had the same filename.
 //
 //               This two-parameter version of this method is
 //               deprecated; use the one-parameter add_model(model)
@@ -91,9 +99,8 @@ release_model(const Filename &filename) {
 //     Function: ModelPool::add_model
 //       Access: Public, Static
 //  Description: Adds the indicated already-loaded model to the
-//               pool.  The model will always replace any
-//               previously-loaded model in the pool that had the
-//               same filename.
+//               pool.  The model will replace any previously-loaded
+//               model in the pool that had the same filename.
 ////////////////////////////////////////////////////////////////////
 INLINE void ModelPool::
 add_model(ModelRoot *model) {
@@ -105,9 +112,10 @@ add_model(ModelRoot *model) {
 //       Access: Public, Static
 //  Description: Removes the indicated model from the pool,
 //               indicating it will never be loaded again; the model
-//               may then be freed.  If this function is never called,
-//               a reference count will be maintained on every model
-//               every loaded, and models will never be freed.
+//               may then be freed.  If this function (and
+//               garbage_collect()) is never called, a reference count
+//               will be maintained on every model every loaded, and
+//               models will never be freed.
 //
 //               The model's get_fullpath() value should not have been
 //               changed during its lifetime, or this function may

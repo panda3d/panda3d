@@ -57,16 +57,67 @@ ns_has_model(const Filename &filename) {
 ////////////////////////////////////////////////////////////////////
 ModelRoot *ModelPool::
 ns_load_model(const Filename &filename, const LoaderOptions &options) {
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
+  PT(ModelRoot) cached_model;
+  bool got_cached_model = false;
+
   {
     LightMutexHolder holder(_lock);
     Models::const_iterator ti;
     ti = _models.find(filename);
     if (ti != _models.end()) {
-      // This model was previously loaded.
-      return (*ti).second;
+      // This filename was previously loaded.
+      cached_model = (*ti).second;
+      got_cached_model = true;
     }
   }
 
+  if (got_cached_model) {
+    if (pgraph_cat.is_debug()) {
+      pgraph_cat.debug()
+        << "ModelPool found " << cached_model << " for " << filename << "\n";
+    }
+
+    if (cached_model == NULL) {
+      // This filename was previously attempted, but it did not
+      // exist (or the model could not be loaded for some reason).
+      if (cache_check_timestamps) {
+        // Check to see if there is a file there now.
+        if (vfs->exists(filename)) {
+          // There is, so try to load it.
+          got_cached_model = false;
+        }
+      }
+    } else {
+      // This filename was previously attempted, and successfully
+      // loaded.
+      if (cache_check_timestamps && cached_model->get_timestamp() != 0 && 
+          !cached_model->get_fullpath().empty()) {
+        // Compare the timestamp to the file on-disk.
+        PT(VirtualFile) vfile = vfs->get_file(cached_model->get_fullpath());
+        if (vfile == NULL) {
+          // The file has disappeared!  Look further along the model-path.
+          got_cached_model = false;
+
+        } else if (vfile->get_timestamp() > cached_model->get_timestamp()) {
+          // The file still exists, but it has a newer timestamp than
+          // the one we previously loaded.  Force it to re-load.
+          got_cached_model = false;
+        }
+      }
+    }
+  }
+
+  if (got_cached_model) {
+    if (pgraph_cat.is_debug()) {
+      pgraph_cat.debug()
+        << "ModelPool returning " << cached_model << " for " << filename << "\n";
+    }
+    return cached_model;
+  }
+
+  // Look on disk for the current file.
   LoaderOptions new_options(options);
   new_options.set_flags((new_options.get_flags() | LoaderOptions::LF_no_ram_cache) &
                         ~(LoaderOptions::LF_search | LoaderOptions::LF_report_errors));
@@ -97,11 +148,15 @@ ns_load_model(const Filename &filename, const LoaderOptions &options) {
     // another thread.
     Models::const_iterator ti;
     ti = _models.find(filename);
-    if (ti != _models.end()) {
+    if (ti != _models.end() && (*ti).second != cached_model) {
       // This model was previously loaded.
       return (*ti).second;
     }
 
+    if (pgraph_cat.is_debug()) {
+      pgraph_cat.debug()
+        << "ModelPool storing " << node << " for " << filename << "\n";
+    }
     _models[filename] = node;
   }
 
