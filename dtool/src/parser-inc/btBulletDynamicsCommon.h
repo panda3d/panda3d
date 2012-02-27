@@ -76,6 +76,8 @@ class btTypedObject;
 class btVector3;
 class btVehicleRaycaster;
 
+template <typename T> class btAlignedObjectArray;
+
 class btWheelInfo {
 public:
   class RaycastInfo;

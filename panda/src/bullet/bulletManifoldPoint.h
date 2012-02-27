@@ -31,7 +31,7 @@ class EXPCL_PANDABULLET BulletManifoldPoint {
 PUBLISHED:
   INLINE ~BulletManifoldPoint();
 
-  int get_lift_time() const;
+  int get_life_time() const;
   PN_stdfloat get_distance() const;
   PN_stdfloat get_applied_impulse() const;
   LPoint3 get_position_world_on_a() const;
@@ -45,10 +45,10 @@ PUBLISHED:
   int get_index1() const;
 
 public:
-  BulletManifoldPoint(btManifoldPoint &pt);
+  BulletManifoldPoint(const btManifoldPoint &pt);
 
 private:
-  btManifoldPoint &_pt;
+  const btManifoldPoint _pt;
 };
 
 #include "bulletManifoldPoint.I"

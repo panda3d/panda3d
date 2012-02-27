@@ -38,7 +38,7 @@ PUBLISHED:
   INLINE const int get_part_id1() const;
 
 private:
-  btManifoldPoint *_mp;
+  btManifoldPoint _mp;
   const btCollisionObject *_obj0;
   const btCollisionObject *_obj1;
   int _part_id0;
@@ -71,7 +71,7 @@ protected:
 private:
   static BulletContact _empty;
 
-  pvector<BulletContact> _contacts;
+  btAlignedObjectArray<BulletContact> _contacts;
 
   friend class BulletWorld;
 };

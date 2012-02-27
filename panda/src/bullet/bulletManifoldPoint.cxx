@@ -20,7 +20,7 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 BulletManifoldPoint::
-BulletManifoldPoint(btManifoldPoint &pt) : _pt(pt) {
+BulletManifoldPoint(const btManifoldPoint &pt) : _pt(pt) {
 
 }
 
@@ -30,7 +30,7 @@ BulletManifoldPoint(btManifoldPoint &pt) : _pt(pt) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 int BulletManifoldPoint::
-get_lift_time() const {
+get_life_time() const {
 
   return _pt.getLifeTime();
 }

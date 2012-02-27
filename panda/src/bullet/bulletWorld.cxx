@@ -64,6 +64,29 @@ BulletWorld() {
   // Dispatcher
   _dispatcher = new btCollisionDispatcher(_configuration);
 
+/*
+  _dispatcher.registerCollisionCreateFunc(
+    BroadphaseNativeType.ConvexTriangleMeshShape,
+    BroadphaseNativeType.ConvexTriangleMeshShape,
+    dcc.GetCollisionAlgorithmCreateFunc(
+      BroadphaseNativeType.TriangleMeshShape,
+      BroadphaseNativeType.TriangleMeshShape));
+
+  _dispatcher.registerCollisionCreateFunc(
+      BroadphaseNativeType.TriangleMeshShape,
+      BroadphaseNativeType.TriangleMeshShape,
+      dcc.GetCollisionAlgorithmCreateFunc(
+        BroadphaseNativeType.ConvexTriangleMeshShape,
+        BroadphaseNativeType.ConvexTriangleMeshShape));
+
+  _dispatcher.registerCollisionCreateFunc(
+     BroadphaseNativeType.ConvexTriangleMeshShape,
+     BroadphaseNativeType.ConvexTriangleMeshShape,
+     dcc.GetCollisionAlgorithmCreateFunc(
+       BroadphaseNativeType.ConvexTriangleMeshShape,
+       BroadphaseNativeType.ConvexTriangleMeshShape));
+*/
+
   // Solver
   _solver = new btSequentialImpulseConstraintSolver;
 

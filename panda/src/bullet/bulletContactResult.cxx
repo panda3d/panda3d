@@ -36,10 +36,9 @@ addSingleResult(btManifoldPoint &mp,
                 const btCollisionObject *obj0, int part_id0, int idx0,
                 const btCollisionObject *obj1, int part_id1, int idx1) {
 
-
   BulletContact contact;
 
-  contact._mp = &mp;
+  contact._mp = mp;
   contact._obj0 = obj0;
   contact._obj1 = obj1;
   contact._part_id0 = part_id0;
