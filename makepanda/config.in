@@ -16,7 +16,7 @@ load-display pandagl
 #load-display pandadx9
 #load-display pandadx8
 #load-display pandagles
-#load-display tinydisplay
+#load-display p3tinydisplay
 
 # These control the placement and size of the default rendering window.
 # A value of -2 for the origin means to center it on the screen,
