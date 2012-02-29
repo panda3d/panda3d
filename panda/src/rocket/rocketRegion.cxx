@@ -33,6 +33,12 @@ RocketRegion(GraphicsOutput *window, const LVecBase4 &dr_dimensions,
              const string &context_name) :
   DisplayRegion(window, dr_dimensions) {
 
+  // A hack I don't like.  libRocket's decorator system has
+  // a bug somewhere, and this seems to be a workaround.
+  if (Rocket::Core::GetRenderInterface() == NULL) {
+    Rocket::Core::SetRenderInterface(&_interface);
+  }
+
   int pl, pr, pb, pt;
   get_pixels(pl, pr, pb, pt);
   Rocket::Core::Vector2i dimensions (pr - pl, pt - pb);
@@ -59,6 +65,10 @@ RocketRegion(GraphicsOutput *window, const LVecBase4 &dr_dimensions,
 ////////////////////////////////////////////////////////////////////
 RocketRegion::
 ~RocketRegion() {
+  if (Rocket::Core::GetRenderInterface() == &_interface) {
+    Rocket::Core::SetRenderInterface(NULL);
+  }
+
   if (_context != NULL) {
     if (_context->GetReferenceCount() > 1) {
       _context->RemoveReference();
