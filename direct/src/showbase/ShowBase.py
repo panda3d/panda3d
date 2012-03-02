@@ -1189,6 +1189,12 @@ class ShowBase(DirectObject.DirectObject):
         if xsize > 0 and ysize > 0:
             self.pixel2dp.setScale(2.0 / xsize, 1.0, 2.0 / ysize)
 
+    def setAspectRatio(self, aspectRatio):
+        """ Sets the global aspect ratio of the main window.  Set it
+        to None to restore automatic scaling. """
+        self.__configAspectRatio = aspectRatio
+        self.adjustWindowAspectRatio(self.getAspectRatio())
+
     def getAspectRatio(self, win = None):
         # Returns the actual aspect ratio of the indicated (or main
         # window), or the default aspect ratio if there is not yet a
@@ -2646,71 +2652,73 @@ class ShowBase(DirectObject.DirectObject):
         the aspect ratio of the render/render2d DisplayRegion, by a
         class that has redefined these. """
         
-        if not self.__configAspectRatio:
-            if aspectRatio != self.__oldAspectRatio:
-                self.__oldAspectRatio = aspectRatio
-                # Fix up some anything that depends on the aspectRatio
-                self.camLens.setAspectRatio(aspectRatio)
-                if aspectRatio < 1:
-                    # If the window is TALL, lets expand the top and bottom
-                    self.aspect2d.setScale(1.0, 1.0, aspectRatio)
-                    self.a2dTop = 1.0 / aspectRatio
-                    self.a2dBottom = - 1.0 / aspectRatio
-                    self.a2dLeft = -1
-                    self.a2dRight = 1.0
-                    # Don't forget 2dp
-                    self.aspect2dp.setScale(1.0, 1.0, aspectRatio)
-                    self.a2dpTop = 1.0 / aspectRatio
-                    self.a2dpBottom = - 1.0 / aspectRatio
-                    self.a2dpLeft = -1
-                    self.a2dpRight = 1.0
+        if self.__configAspectRatio:
+            aspectRatio = self.__configAspectRatio
 
-                else:
-                    # If the window is WIDE, lets expand the left and right
-                    self.aspect2d.setScale(1.0 / aspectRatio, 1.0, 1.0)
-                    self.a2dTop = 1.0
-                    self.a2dBottom = -1.0
-                    self.a2dLeft = -aspectRatio
-                    self.a2dRight = aspectRatio
-                    # Don't forget 2dp
-                    self.aspect2dp.setScale(1.0 / aspectRatio, 1.0, 1.0)
-                    self.a2dpTop = 1.0
-                    self.a2dpBottom = -1.0
-                    self.a2dpLeft = -aspectRatio
-                    self.a2dpRight = aspectRatio                        
+        if aspectRatio != self.__oldAspectRatio:
+            self.__oldAspectRatio = aspectRatio
+            # Fix up some anything that depends on the aspectRatio
+            self.camLens.setAspectRatio(aspectRatio)
+            if aspectRatio < 1:
+                # If the window is TALL, lets expand the top and bottom
+                self.aspect2d.setScale(1.0, aspectRatio, aspectRatio)
+                self.a2dTop = 1.0 / aspectRatio
+                self.a2dBottom = - 1.0 / aspectRatio
+                self.a2dLeft = -1
+                self.a2dRight = 1.0
+                # Don't forget 2dp
+                self.aspect2dp.setScale(1.0, aspectRatio, aspectRatio)
+                self.a2dpTop = 1.0 / aspectRatio
+                self.a2dpBottom = - 1.0 / aspectRatio
+                self.a2dpLeft = -1
+                self.a2dpRight = 1.0
 
-                # Reposition the aspect2d marker nodes
-                self.a2dTopCenter.setPos(0, 0, self.a2dTop)
-                self.a2dBottomCenter.setPos(0, 0, self.a2dBottom)
-                self.a2dLeftCenter.setPos(self.a2dLeft, 0, 0)
-                self.a2dRightCenter.setPos(self.a2dRight, 0, 0)                    
-                self.a2dTopLeft.setPos(self.a2dLeft, 0, self.a2dTop)
-                self.a2dTopRight.setPos(self.a2dRight, 0, self.a2dTop)
-                self.a2dBottomLeft.setPos(self.a2dLeft, 0, self.a2dBottom)
-                self.a2dBottomRight.setPos(self.a2dRight, 0, self.a2dBottom)
+            else:
+                # If the window is WIDE, lets expand the left and right
+                self.aspect2d.setScale(1.0 / aspectRatio, 1.0, 1.0)
+                self.a2dTop = 1.0
+                self.a2dBottom = -1.0
+                self.a2dLeft = -aspectRatio
+                self.a2dRight = aspectRatio
+                # Don't forget 2dp
+                self.aspect2dp.setScale(1.0 / aspectRatio, 1.0, 1.0)
+                self.a2dpTop = 1.0
+                self.a2dpBottom = -1.0
+                self.a2dpLeft = -aspectRatio
+                self.a2dpRight = aspectRatio                        
 
-                # Reposition the aspect2d marker nodes
-                self.a2dTopCenterNs.setPos(0, 0, self.a2dTop)
-                self.a2dBottomCenterNs.setPos(0, 0, self.a2dBottom)
-                self.a2dLeftCenterNs.setPos(self.a2dLeft, 0, 0)
-                self.a2dRightCenterNs.setPos(self.a2dRight, 0, 0)                    
-                self.a2dTopLeftNs.setPos(self.a2dLeft, 0, self.a2dTop)
-                self.a2dTopRightNs.setPos(self.a2dRight, 0, self.a2dTop)
-                self.a2dBottomLeftNs.setPos(self.a2dLeft, 0, self.a2dBottom)
-                self.a2dBottomRightNs.setPos(self.a2dRight, 0, self.a2dBottom)                    
+            # Reposition the aspect2d marker nodes
+            self.a2dTopCenter.setPos(0, self.a2dTop, self.a2dTop)
+            self.a2dBottomCenter.setPos(0, self.a2dBottom, self.a2dBottom)
+            self.a2dLeftCenter.setPos(self.a2dLeft, 0, 0)
+            self.a2dRightCenter.setPos(self.a2dRight, 0, 0)                    
+            self.a2dTopLeft.setPos(self.a2dLeft, self.a2dTop, self.a2dTop)
+            self.a2dTopRight.setPos(self.a2dRight, self.a2dTop, self.a2dTop)
+            self.a2dBottomLeft.setPos(self.a2dLeft, self.a2dBottom, self.a2dBottom)
+            self.a2dBottomRight.setPos(self.a2dRight, self.a2dBottom, self.a2dBottom)
 
-                # Reposition the aspect2dp marker nodes
-                self.a2dpTopCenter.setPos(0, 0, self.a2dpTop)
-                self.a2dpBottomCenter.setPos(0, 0, self.a2dpBottom)
-                self.a2dpLeftCenter.setPos(self.a2dpLeft, 0, 0)
-                self.a2dpRightCenter.setPos(self.a2dpRight, 0, 0)                  
-                self.a2dpTopLeft.setPos(self.a2dpLeft, 0, self.a2dpTop)
-                self.a2dpTopRight.setPos(self.a2dpRight, 0, self.a2dpTop)
-                self.a2dpBottomLeft.setPos(self.a2dpLeft, 0, self.a2dpBottom)
-                self.a2dpBottomRight.setPos(self.a2dpRight, 0, self.a2dpBottom)
+            # Reposition the aspect2d marker nodes
+            self.a2dTopCenterNs.setPos(0, self.a2dTop, self.a2dTop)
+            self.a2dBottomCenterNs.setPos(0, self.a2dBottom, self.a2dBottom)
+            self.a2dLeftCenterNs.setPos(self.a2dLeft, 0, 0)
+            self.a2dRightCenterNs.setPos(self.a2dRight, 0, 0)                    
+            self.a2dTopLeftNs.setPos(self.a2dLeft, self.a2dTop, self.a2dTop)
+            self.a2dTopRightNs.setPos(self.a2dRight, self.a2dTop, self.a2dTop)
+            self.a2dBottomLeftNs.setPos(self.a2dLeft, self.a2dBottom, self.a2dBottom)
+            self.a2dBottomRightNs.setPos(self.a2dRight, self.a2dBottom, self.a2dBottom)                    
 
-                # If anybody needs to update their GUI, put a callback on this event
-                messenger.send("aspectRatioChanged")
+            # Reposition the aspect2dp marker nodes
+            self.a2dpTopCenter.setPos(0, self.a2dpTop, self.a2dpTop)
+            self.a2dpBottomCenter.setPos(0, self.a2dpBottom, self.a2dpBottom)
+            self.a2dpLeftCenter.setPos(self.a2dpLeft, 0, 0)
+            self.a2dpRightCenter.setPos(self.a2dpRight, 0, 0)                  
+            self.a2dpTopLeft.setPos(self.a2dpLeft, self.a2dpTop, self.a2dpTop)
+            self.a2dpTopRight.setPos(self.a2dpRight, self.a2dpTop, self.a2dpTop)
+            self.a2dpBottomLeft.setPos(self.a2dpLeft, self.a2dpBottom, self.a2dpBottom)
+            self.a2dpBottomRight.setPos(self.a2dpRight, self.a2dpBottom, self.a2dpBottom)
+
+            # If anybody needs to update their GUI, put a callback on this event
+            messenger.send("aspectRatioChanged")
         
     def userExit(self):
         # The user has requested we exit the program.  Deal with this.
