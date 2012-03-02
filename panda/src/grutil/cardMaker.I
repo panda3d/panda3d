@@ -63,10 +63,10 @@ set_has_3d_uvs(bool flag) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CardMaker::
 set_frame(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top) {
-  _ll_pos.set(left,  0.0f, bottom);
-  _lr_pos.set(right, 0.0f, bottom);
-  _ur_pos.set(right, 0.0f, top);
-  _ul_pos.set(left,  0.0f, top);
+  _ll_pos = LVector3::rfu(left,  0.0f, bottom);
+  _lr_pos = LVector3::rfu(right, 0.0f, bottom);
+  _ur_pos = LVector3::rfu(right, 0.0f, top);
+  _ul_pos = LVector3::rfu(left,  0.0f, top);
 } 
 
 ////////////////////////////////////////////////////////////////////
@@ -85,8 +85,7 @@ set_frame(const LVecBase4 &frame) {
 //  Description: Sets the size of the card.
 ////////////////////////////////////////////////////////////////////
 INLINE void CardMaker::
-set_frame(const LVertex &ll, const LVertex &lr, const LVertex &ur, const LVertex &ul)
-{
+set_frame(const LVertex &ll, const LVertex &lr, const LVertex &ur, const LVertex &ul) {
   _ll_pos = ll;
   _lr_pos = lr;
   _ur_pos = ur;
@@ -101,9 +100,8 @@ set_frame(const LVertex &ll, const LVertex &lr, const LVertex &ur, const LVertex
 //               as a fullscreen quad.
 ////////////////////////////////////////////////////////////////////
 INLINE void CardMaker::
-set_frame_fullscreen_quad()
-{
-  set_frame(-1,1,-1,1);
+set_frame_fullscreen_quad() {
+  set_frame(-1.0f, 1.0f, -1.0f, 1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -29,18 +29,8 @@
 ////////////////////////////////////////////////////////////////////
 void CardMaker::
 reset() {
-  _has_uvs = true;
-  _has_3d_uvs = false;
-
-  _ll_pos.set(0.0f, 0.0f, 0.0f);
-  _lr_pos.set(1.0f, 0.0f, 0.0f);
-  _ur_pos.set(1.0f, 0.0f, 1.0f);
-  _ul_pos.set(0.0f, 0.0f, 1.0f);
-
-  _ll_tex.set(0.0f, 0.0f, 0.0f);
-  _lr_tex.set(1.0f, 0.0f, 0.0f);
-  _ur_tex.set(1.0f, 1.0f, 0.0f);
-  _ul_tex.set(0.0f, 1.0f, 0.0f);
+  set_frame(0.0f, 1.0f, 0.0f, 1.0f);
+  set_uv_range(LTexCoord(0.0f, 0.0f), LTexCoord(1.0f, 1.0f));
 
   _has_color = false;
   _color.set(1.0f, 1.0f, 1.0f, 1.0f);
