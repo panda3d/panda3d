@@ -805,15 +805,28 @@ read_record(const Filename &source_pathname,
   
   if (!cache_pathname.exists()) {
     // There is no such cache file already.  Declare it.
+    if (util_cat.is_debug()) {
+      util_cat.debug()
+        << "Declaring new cache file " << cache_pathname << " for " << source_pathname << "\n";
+    }
     PT(BamCacheRecord) record =
       new BamCacheRecord(source_pathname, cache_filename);
     record->_cache_pathname = cache_pathname;
     return record;
   }
 
+  if (util_cat.is_debug()) {
+    util_cat.debug()
+      << "Reading cache file " << cache_pathname << " for " << source_pathname << "\n";
+  }
+
   PT(BamCacheRecord) record = do_read_record(cache_pathname, true);
   if (record == (BamCacheRecord *)NULL) {
     // Well, it was invalid, so blow it away, and make a new one.
+    if (util_cat.is_debug()) {
+      util_cat.debug()
+        << "Deleting invalid cache file " << cache_pathname << "\n";
+    }
     vfs->delete_file(cache_pathname);
     remove_from_index(source_pathname);
 
@@ -825,10 +838,12 @@ read_record(const Filename &source_pathname,
 
   if (record->get_source_pathname() != source_pathname) {
     // This might be just a hash conflict.
-    util_cat.debug()
-      << "Cache file " << cache_pathname << " references "
-      << record->get_source_pathname() << ", not "
-      << source_pathname << "\n";
+    if (util_cat.is_debug()) {
+      util_cat.debug()
+        << "Cache file " << cache_pathname << " references "
+        << record->get_source_pathname() << ", not "
+        << source_pathname << "\n";
+    }
     return NULL;
   }
 
@@ -850,21 +865,27 @@ PT(BamCacheRecord) BamCache::
 do_read_record(const Filename &cache_pathname, bool read_data) {
   DatagramInputFile din;
   if (!din.open(cache_pathname)) {
-    util_cat.debug()
-      << "Could not read cache file: " << cache_pathname << "\n";
+    if (util_cat.is_debug()) {
+      util_cat.debug()
+        << "Could not read cache file: " << cache_pathname << "\n";
+    }
     return NULL;
   }
   
   string head;
   if (!din.read_header(head, _bam_header.size())) {
-    util_cat.debug()
-      << cache_pathname << " is not a cache file.\n";
+    if (util_cat.is_debug()) {
+      util_cat.debug()
+        << cache_pathname << " is not a cache file.\n";
+    }
     return NULL;
   }
   
   if (head != _bam_header) {
-    util_cat.debug()
-      << cache_pathname << " is not a cache file.\n";
+    if (util_cat.is_debug()) {
+      util_cat.debug()
+        << cache_pathname << " is not a cache file.\n";
+    }
     return NULL;
   }
   
@@ -875,21 +896,27 @@ do_read_record(const Filename &cache_pathname, bool read_data) {
   
   TypedWritable *object = reader.read_object();
   if (object == (TypedWritable *)NULL) {
-    util_cat.debug()
-      << cache_pathname << " is empty.\n";
+    if (util_cat.is_debug()) {
+      util_cat.debug()
+        << cache_pathname << " is empty.\n";
+    }
     return NULL;
     
   } else if (!object->is_of_type(BamCacheRecord::get_class_type())) {
-    util_cat.debug()
-      << "Cache file " << cache_pathname << " contains a "
-      << object->get_type() << ", not a BamCacheRecord.\n";
+    if (util_cat.is_debug()) {
+      util_cat.debug()
+        << "Cache file " << cache_pathname << " contains a "
+        << object->get_type() << ", not a BamCacheRecord.\n";
+    }
     return NULL;
   }
   
   PT(BamCacheRecord) record = DCAST(BamCacheRecord, object);
   if (!reader.resolve()) {
-    util_cat.debug()
-      << "Unable to fully resolve cache record in " << cache_pathname << "\n";
+    if (util_cat.is_debug()) {
+      util_cat.debug()
+        << "Unable to fully resolve cache record in " << cache_pathname << "\n";
+    }
     return NULL;
   }
 
@@ -906,8 +933,10 @@ do_read_record(const Filename &cache_pathname, bool read_data) {
 
     if (reader.read_object(ptr, ref_ptr)) {
       if (!reader.resolve()) {
-        util_cat.debug()
-          << "Unable to fully resolve cached object in " << cache_pathname << "\n";
+        if (util_cat.is_debug()) {
+          util_cat.debug()
+            << "Unable to fully resolve cached object in " << cache_pathname << "\n";
+        }
         delete object;
       } else {
         // The object is valid.  Store it in the record.

@@ -94,6 +94,11 @@ bool BamCacheRecord::
 dependents_unchanged() const {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
 
+  if (util_cat.is_debug()) {
+    util_cat.debug()
+      << "Validating dependents for " << get_source_pathname() << "\n";
+  }
+
   DependentFiles::const_iterator fi;
   for (fi = _files.begin(); fi != _files.end(); ++fi) {
     const DependentFile &dfile = (*fi);
@@ -101,17 +106,34 @@ dependents_unchanged() const {
     if (file == (VirtualFile *)NULL) {
       // No such file.
       if (dfile._timestamp != 0) {
+        if (util_cat.is_debug()) {
+          util_cat.debug()
+            << dfile._pathname << " does not exist.\n";
+        }
         return false;
       }
     } else {
       if (file->get_timestamp() != dfile._timestamp ||
           file->get_file_size() != dfile._size) {
         // File has changed timestamp or size.
+        if (util_cat.is_debug()) {
+          util_cat.debug()
+            << dfile._pathname << " has changed timestamp or size.\n";
+        }
         return false;
       }
     }
     
     // Presumably, the file is unchanged.
+    if (util_cat.is_debug()) {
+      util_cat.debug()
+        << dfile._pathname << " is unchanged.\n";
+    }
+  }
+
+  if (util_cat.is_debug()) {
+    util_cat.debug()
+      << "Dependents valid.\n";
   }
 
   return true;
@@ -145,8 +167,9 @@ add_dependent_file(const Filename &pathname) {
   _files.push_back(DependentFile());
   DependentFile &dfile = _files.back();
   dfile._pathname = pathname;
+  dfile._pathname.make_absolute();
 
-  PT(VirtualFile) file = vfs->get_file(pathname);
+  PT(VirtualFile) file = vfs->get_file(dfile._pathname);
   if (file == (VirtualFile *)NULL) {
     // No such file.
     dfile._timestamp = 0;

@@ -274,6 +274,10 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
       PT(PandaNode) node = ModelPool::load_model(pathname, options);
       if (node != (PandaNode *)NULL &&
           (options.get_flags() & LoaderOptions::LF_allow_instance) == 0) {
+        if (loader_cat.is_debug()) {
+          loader_cat.debug()
+            << "Model " << pathname << " found in ModelPool.\n";
+        }
         // But return a deep copy of the shared model.
         node = node->copy_subgraph();
       }
@@ -281,7 +285,7 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
     }
   }
 
-  bool report_errors = (options.get_flags() & LoaderOptions::LF_report_errors) != 0;
+  bool report_errors = ((options.get_flags() & LoaderOptions::LF_report_errors) != 0 || loader_cat.is_debug());
 
   PT(BamCacheRecord) record;
   if (cache->get_cache_models() && requested_type->get_allow_disk_cache(options)) {
@@ -308,6 +312,11 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
         return result;
       }
     }
+  }
+
+  if (loader_cat.is_debug()) {
+    loader_cat.debug()
+      << "Model " << pathname << " not found in cache.\n";
   }
   
   if (!cache_only) {
