@@ -195,7 +195,7 @@ garbage_collect() {
   Cache::iterator ci;
   for (ci = _cache.begin(); ci != _cache.end(); ++ci) {
     DynamicTextGlyph *glyph = (*ci).second;
-    if (glyph->_geom_count != 0) {
+    if (glyph == (DynamicTextGlyph *)NULL || glyph->_geom_count != 0) {
       // Keep this one.
       new_cache.insert(new_cache.end(), (*ci));
     } else {
