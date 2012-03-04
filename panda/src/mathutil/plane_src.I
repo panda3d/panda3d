@@ -188,7 +188,7 @@ flip() {
   _v(0) = -_v(0);
   _v(1) = -_v(1);
   _v(2) = -_v(2);
-  // We don't flip D, that would make the plane flip over the origin.
+  _v(3) = -_v(3);
 }
 
 ////////////////////////////////////////////////////////////////////
