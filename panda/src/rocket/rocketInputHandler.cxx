@@ -182,6 +182,9 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
         } else if (be._button == KeyboardButton::meta()) {
           _modifiers |= KM_META;
 
+        } else if (be._button == KeyboardButton::enter()) {
+          _text_input.push_back('\n');
+
         } else if (be._button == MouseButton::wheel_up()) {
           _wheel_delta -= 1;
         } else if (be._button == MouseButton::wheel_down()) {
@@ -206,6 +209,10 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
         break;
 
       case ButtonEvent::T_repeat:
+        if (be._button == KeyboardButton::enter()) {
+          _text_input.push_back('\n');
+        }
+
         rocket_key = get_rocket_key(be._button);
         if (rocket_key != KI_UNKNOWN) {
           _repeated_keys.push_back(rocket_key);
