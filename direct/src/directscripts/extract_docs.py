@@ -17,40 +17,6 @@ All use of this software is subject to the terms of the revised BSD
 license.  You should have received a copy of this license along
 with this source code in a file named \"LICENSE.\"""".split("\n")
 
-# Copied from interrogateMakerPythonNative.cxx.
-CLASS_REMAP = {
-    "Loader"       : "PandaLoader",
-    "LMatrix4f"    : "Mat4",
-    "LMatrix3f"    : "Mat3",
-    "LVecBase4f"   : "VBase4",
-    "LVector4f"    : "Vec4",
-    "LPoint4f"     : "Point4",
-    "LVecBase3f"   : "VBase3",
-    "LVector3f"    : "Vec3",
-    "LPoint3f"     : "Point3",
-    "LVecBase2f"   : "VBase2",
-    "LVector2f"    : "Vec2",
-    "LPoint2f"     : "Point2",
-    "LQuaternionf" : "Quat",
-    "LMatrix4d"    : "Mat4D",
-    "LMatrix3d"    : "Mat3D",
-    "LVecBase4d"   : "VBase4D",
-    "LVector4d"    : "Vec4D",
-    "LPoint4d"     : "Point4D",
-    "LVecBase3d"   : "VBase3D",
-    "LVector3d"    : "Vec3D",
-    "LPoint3d"     : "Point3D",
-    "LVecBase2d"   : "VBase2D",
-    "LVector2d"    : "Vec2D",
-    "LPoint2d"     : "Point2D",
-    "LQuaterniond" : "QuatD",
-    "Plane"        : "PlaneBase",
-    "Planef"       : "Plane",
-    "Planed"       : "PlaneD",
-    "Frustum"      : "FrustumBase",
-    "Frustumf"     : "Frustum",
-    "Frustumd"     : "FrustumD" }
-
 libraries = {}
 for m, lib in panda3d.modules.items():
     if not isinstance(lib, str):
@@ -88,7 +54,6 @@ def comment(code):
         return ""
 
 def translateFunctionName(name):
-    name = CLASS_REMAP.get(name, name)
     new = ""
     for i in name.split("_"):
         if new == "":
@@ -103,12 +68,6 @@ def translateFunctionName(name):
 
 def translated_type_name(type):
     typename = interrogate_type_name(type)
-    for old, new in CLASS_REMAP.items():
-        if typename == old:
-            typename = new
-        else:
-            typename = re.sub("\\b%s\\b" % old, new, typename)
-
     typename = typename.replace("< ", "").replace(" >", "")
     return typename
 
@@ -117,10 +76,6 @@ def translateTypeSpec(name):
     name = name.replace("BitMask< unsigned int, 32 >", "BitMask32")
     name = name.replace("atomic ", "")
     name = name.replace("< ", "").replace(" >", "")
-    for old, new in CLASS_REMAP.items():
-        if name == old:
-            return new
-        name = re.sub("\\b%s\\b" % old, new, name)
     return name
 
 def processFunction(handle, function, isConstructor = False):
@@ -137,7 +92,10 @@ def processFunction(handle, function, isConstructor = False):
                 print >>handle, translateTypeSpec(translated_type_name(interrogate_wrapper_return_type(wrapper))),
             else:
                 pass#print >>handle, "void",
-        print >>handle, translateFunctionName(interrogate_function_name(function)) + "(",
+
+            print >>handle, translateFunctionName(interrogate_function_name(function)) + "(",
+        else:
+            print >>handle, "__init__(",
         
         first = True
         for i_param in range(interrogate_wrapper_number_of_parameters(wrapper)):
