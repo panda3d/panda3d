@@ -2548,7 +2548,7 @@ adjust_size(int &x_size, int &y_size, const string &name,
 
   AutoTextureScale ats = auto_texture_scale;
   if (ats == ATS_unspecified) {
-    ats = textures_power_2;
+    ats = get_textures_power_2();
   }
   if (!for_padding && ats == ATS_pad) {
     // If we're not calculating the padding size--that is, we're
