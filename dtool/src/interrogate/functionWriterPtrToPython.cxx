@@ -73,7 +73,7 @@ write_code(ostream &out) {
       << "  PyObject *classobj = " << classobj_func << "();\n"
       << "  PyInstanceObject *instance = (PyInstanceObject *)PyInstance_New(classobj, (PyObject *)NULL, (PyObject *)NULL);\n"
       << "  if (instance != (PyInstanceObject *)NULL) {\n"
-      << "    PyObject *thisptr = PyInt_FromLong((long)addr);\n"
+      << "    PyObject *thisptr = PyLong_FromVoidPtr((void*)addr);\n"
       << "    PyDict_SetItemString(instance->in_dict, \"this\", thisptr);\n"
       << "  }\n"
       << "  return (PyObject *)instance;\n"
