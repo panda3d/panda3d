@@ -502,7 +502,7 @@ pack_return_value(ostream &out, int indent_level,
     
   } else if (TypeManager::is_pointer(type)) {
     indent(out, indent_level)
-      << "return PyInt_FromLong((int)" << return_expr << ");\n";
+      << "return PyLong_FromVoidPtr((void*)" << return_expr << ");\n";
 
   } else {
     // Return None.

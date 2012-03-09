@@ -18,7 +18,7 @@
 #ifdef HAVE_PYTHON
 
 PyMemberDef standard_type_members[] = {
-  {(char *)"this", T_INT, offsetof(Dtool_PyInstDef,_ptr_to_object),READONLY, (char *)"C++ This if any"},
+  {(char *)"this", T_ULONG, offsetof(Dtool_PyInstDef,_ptr_to_object),READONLY, (char *)"C++ 'this' pointer, if any"},
 //  {(char *)"this_ownership", T_INT, offsetof(Dtool_PyInstDef, _memory_rules), READONLY, (char *)"C++ 'this' ownership rules"},
 //  {(char *)"this_const", T_INT, offsetof(Dtool_PyInstDef, _is_const), READONLY, (char *)"C++ 'this' const flag"},
 //  {(char *)"this_signature", T_INT, offsetof(Dtool_PyInstDef, _signature), READONLY, (char *)"A type check signature"},
