@@ -478,7 +478,7 @@ class Installer:
         self.standalone = Standalone(p3dfile, tokens)
         self.tempDir = Filename.temporary("", self.shortname, "") + "/"
         self.tempDir.makeDir()
-        self.__linuxRoot = None
+        self.__tempRoots = {}
 
         # Load the p3d file to read out the required packages
         mf = Multifile()
@@ -642,8 +642,8 @@ class Installer:
         """ Builds a filesystem for Linux.  Used so that buildDEB,
         buildRPM and buildArch can share the same temp directory. """
 
-        if self.__linuxRoot is not None:
-            return self.__linuxRoot
+        if platform in self.__tempRoots:
+            return self.__tempRoots[platform]
 
         tempdir = Filename(self.tempDir, platform)
         tempdir.makeDir()
@@ -712,8 +712,8 @@ class Installer:
             for name in files:
                 totsize += os.path.getsize(os.path.join(root, name))
 
-        self.__linuxRoot = (tempdir, totsize)
-        return self.__linuxRoot
+        self.__tempRoots[platform] = (tempdir, totsize)
+        return self.__tempRoots[platform]
 
     def buildDEB(self, output, platform):
         """ Builds a .deb archive and stores it in the path indicated
