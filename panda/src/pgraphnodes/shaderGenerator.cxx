@@ -1268,26 +1268,17 @@ synthesize_shader(const RenderState *rs) {
     TextureStage *stage = texture->get_on_stage(i);
     switch (stage->get_mode()) {
     case TextureStage::M_modulate:
-      //if the format of the texture is RGB, we simply multiply results
-      //RGB by the texture's RGB
-      if (texture->get_on_texture(texture->get_on_stage(i))->get_format() == Texture::F_rgb){
-        text << "\t result.rgb *= tex" << i << ";\n";
-      }
-      //if it's an RGBA texture...multiply by the whole set of values (R,G,B,A) together
-      //NOTE: if you want an RGBA map as an additional transparency map then this
-      //will not work correctly. You must store the transparency information either in the alpha channel
-      //of the color map, or use a separate alpha may with no color info at all (thus it gets treated as
-      //as F_alpha, not F_RGBA). Also, you can store the alpha map file inside a standard RGB map by
-      //using the same prefix for both textures.  This is equivalent to RGBA.
-      else if (texture->get_on_texture(texture->get_on_stage(i))->get_format() == Texture::F_rgba){
-        text << "\t result.rgba *= tex" << i << ";\n";
-      }
-      //if it's an alpha formatted texture (ie. an alpha or mask in a separate texture Ref) then 
-      //multiply the alpha channels only. That way color of the result is preserved
-      else if (texture->get_on_texture(texture->get_on_stage(i))->get_format() == Texture::F_alpha){
+      int num_components = texture->get_on_texture(texture->get_on_stage(i))->get_num_components();
+
+      if (num_components == 1) {
         text << "\t result.a *= tex" << i << ".a;\n";
+      } else if (num_components == 3) {
+        text << "\t result.rgb *= tex" << i << ".rgb;\n";
+      } else {
+        text << "\t result.rgba *= tex" << i << ".rgba;\n";
       }
-      break;
+
+      break; }
     case TextureStage::M_modulate_glow:
     case TextureStage::M_modulate_gloss:
       //in the case of glow or spec we currently see the specularity evenly across the surface
