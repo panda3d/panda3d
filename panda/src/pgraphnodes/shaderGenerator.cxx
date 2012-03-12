@@ -1267,7 +1267,7 @@ synthesize_shader(const RenderState *rs) {
   for (int i=0; i<_num_textures; i++) {
     TextureStage *stage = texture->get_on_stage(i);
     switch (stage->get_mode()) {
-    case TextureStage::M_modulate:
+    case TextureStage::M_modulate: {
       int num_components = texture->get_on_texture(texture->get_on_stage(i))->get_num_components();
 
       if (num_components == 1) {
