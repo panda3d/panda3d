@@ -59,7 +59,10 @@ PUBLISHED:
   BLOCKING bool calc_min_max(LVecBase3 &min_points, LVecBase3 &max_points) const;
 
   INLINE void set_zero_special(bool zero_special);
-  INLINE bool get_zero_special() const;
+  INLINE void set_no_data_value(const LPoint3 &no_data_value);
+  INLINE void clear_no_data_value();
+  INLINE bool has_no_data_value() const;
+  INLINE const LPoint3 &get_no_data_value() const;
 
   BLOCKING void resize(int new_x_size, int new_y_size);
   BLOCKING void reverse_rows();
@@ -118,7 +121,8 @@ private:
   PN_stdfloat _scale;
   int _num_channels;
 
-  bool _zero_special;
+  bool _has_no_data_value;
+  LPoint3 _no_data_value;
   bool _vis_inverse;
   PT(InternalName) _flat_texcoord_name;
   bool _vis_2d;

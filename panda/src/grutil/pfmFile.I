@@ -73,15 +73,15 @@ get_num_channels() const {
 //     Function: PfmFile::has_point
 //       Access: Published
 //  Description: Returns true if there is a valid point at x, y.  This
-//               always returns true unless the zero_special flag is
-//               enabled, in which case it returns false if the point
-//               at x, y is zero.
+//               always returns true unless a "no data" value has been
+//               set, in which case it returns false if the point at
+//               x, y is the "no data" value.
 ////////////////////////////////////////////////////////////////////
 INLINE bool PfmFile::
 has_point(int x, int y) const {
   if ((x >= 0 && x < _x_size) && 
       (y >= 0 && y < _y_size)) {
-    return (!_zero_special || _table[y * _x_size + x] != LPoint3::zero());
+    return (!_has_no_data_value || _table[y * _x_size + x] != _no_data_value);
   }
   return false;
 }
@@ -138,22 +138,64 @@ modify_point(int x, int y) {
 //  Description: Sets the zero_special flag.  When this flag is true,
 //               values of (0, 0, 0) in the pfm file are treated as a
 //               special case, and are not processed.
+//
+//               This is a special case of set_no_data_value().
 ////////////////////////////////////////////////////////////////////
 INLINE void PfmFile::
 set_zero_special(bool zero_special) {
-  _zero_special = zero_special;
+  if (zero_special) {
+    set_no_data_value(LPoint3::zero());
+  } else {
+    clear_no_data_value();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::get_zero_special
+//     Function: PfmFile::set_no_data_value
 //       Access: Published
-//  Description: Returns the zero_special flag.  When this flag is true,
-//               values of (0, 0, 0) in the pfm file are treated as a
-//               special case, and are not processed.
+//  Description: Sets the special value that means "no data" when it
+//               appears in the pfm file.
+////////////////////////////////////////////////////////////////////
+INLINE void PfmFile::
+set_no_data_value(const LPoint3 &no_data_value) {
+  _has_no_data_value = true;
+  _no_data_value = no_data_value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::set_no_data_value
+//       Access: Published
+//  Description: Removes the special value that means "no data" when it
+//               appears in the pfm file.  All points will thus be
+//               considered valid.
+////////////////////////////////////////////////////////////////////
+INLINE void PfmFile::
+clear_no_data_value() {
+  _has_no_data_value = false;
+  _no_data_value = LPoint3::zero();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::has_no_data_value
+//       Access: Published
+//  Description: Returns whether a "no data" value has been
+//               established by set_no_data_value().
 ////////////////////////////////////////////////////////////////////
 INLINE bool PfmFile::
-get_zero_special() const {
-  return _zero_special;
+has_no_data_value() const {
+  return _has_no_data_value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::get_no_data_value
+//       Access: Published
+//  Description: If has_no_data_value() returns true, this returns the
+//               particular "no data" value.
+////////////////////////////////////////////////////////////////////
+INLINE const LPoint3 &PfmFile::
+get_no_data_value() const {
+  nassertr(_has_no_data_value, LPoint3::zero());
+  return _no_data_value;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -36,7 +36,8 @@
 ////////////////////////////////////////////////////////////////////
 PfmFile::
 PfmFile() {
-  _zero_special = false;
+  _has_no_data_value = false;
+  _no_data_value = LPoint3::zero();
   _vis_inverse = false;
   _vis_2d = false;
   clear();
@@ -54,7 +55,8 @@ PfmFile(const PfmFile &copy) :
   _y_size(copy._y_size),
   _scale(copy._scale),
   _num_channels(copy._num_channels),
-  _zero_special(copy._zero_special),
+  _has_no_data_value(copy._has_no_data_value),
+  _no_data_value(copy._no_data_value),
   _vis_inverse(copy._vis_inverse),
   _vis_2d(copy._vis_2d)
 {
@@ -72,7 +74,8 @@ operator = (const PfmFile &copy) {
   _y_size = copy._y_size;
   _scale = copy._scale;
   _num_channels = copy._num_channels;
-  _zero_special = copy._zero_special;
+  _has_no_data_value = copy._has_no_data_value;
+  _no_data_value = copy._no_data_value;
   _vis_inverse = copy._vis_inverse;
   _vis_2d = copy._vis_2d;
 }
@@ -352,7 +355,7 @@ calc_average_point(LPoint3 &result, PN_stdfloat x, PN_stdfloat y, PN_stdfloat ra
   for (yi = min_y; yi <= max_y; ++yi) {
     for (xi = min_x; xi <= max_x; ++xi) {
       const LPoint3 &p = _table[yi * _x_size + xi];
-      if (_zero_special && p == LPoint3::zero()) {
+      if (_has_no_data_value && p == _no_data_value) {
         continue;
       }
 
@@ -413,7 +416,7 @@ calc_min_max(LVecBase3 &min_depth, LVecBase3 &max_depth) const {
   Table::const_iterator ti;
   for (ti = _table.begin(); ti != _table.end(); ++ti) {
     const LPoint3 &p = (*ti);
-    if (_zero_special && p == LPoint3::zero()) {
+    if (_has_no_data_value && p == _no_data_value) {
       continue;
     }
     
@@ -528,7 +531,7 @@ xform(const LMatrix4 &transform) {
 
   Table::iterator ti;
   for (ti = _table.begin(); ti != _table.end(); ++ti) {
-    if (_zero_special && (*ti) == LPoint3::zero()) {
+    if (_has_no_data_value && (*ti) == _no_data_value) {
       continue;
     }
 
@@ -558,7 +561,7 @@ project(const Lens *lens) {
   
   Table::iterator ti;
   for (ti = _table.begin(); ti != _table.end(); ++ti) {
-    if (_zero_special && (*ti) == LPoint3::zero()) {
+    if (_has_no_data_value && (*ti) == _no_data_value) {
       continue;
     }
 
@@ -582,13 +585,13 @@ merge(const PfmFile &other) {
   nassertv(is_valid() && other.is_valid());
   nassertv(other._x_size == _x_size && other._y_size == _y_size);
 
-  if (!_zero_special) {
+  if (!_has_no_data_value) {
     // Trivial no-op.
     return;
   }
 
   for (size_t i = 0; i < _table.size(); ++i) {
-    if (_table[i] == LPoint3::zero()) {
+    if (_table[i] == _no_data_value) {
       _table[i] = other._table[i];
     }
   }
@@ -701,7 +704,7 @@ compute_planar_bounds(const LPoint2 &center, PN_stdfloat point_dist, PN_stdfloat
   } else {
     Table::const_iterator ti;
     for (ti = _table.begin(); ti != _table.end(); ++ti) {
-      if (_zero_special && (*ti) == LPoint3::zero()) {
+      if (_has_no_data_value && (*ti) == _no_data_value) {
         continue;
       }
       LPoint3 point = (*ti) * rinv;
@@ -1042,11 +1045,11 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
       for (int yi = y_begin; yi < y_end - 1; ++yi) {
         for (int xi = x_begin; xi < x_end - 1; ++xi) {
 
-          if (_zero_special) {
-            if (get_point(xi, yi) == LPoint3::zero() ||
-                get_point(xi, yi + 1) == LPoint3::zero() ||
-                get_point(xi + 1, yi + 1) == LPoint3::zero() ||
-                get_point(xi + 1, yi) == LPoint3::zero()) {
+          if (_has_no_data_value) {
+            if (get_point(xi, yi) == _no_data_value ||
+                get_point(xi, yi + 1) == _no_data_value ||
+                get_point(xi + 1, yi + 1) == _no_data_value ||
+                get_point(xi + 1, yi) == _no_data_value) {
               continue;
             }
           }
@@ -1164,7 +1167,7 @@ void PfmFile::
 box_filter_point(LPoint3 &result, PN_stdfloat &coverage,
                  int x, int y, PN_stdfloat x_contrib, PN_stdfloat y_contrib) const {
   const LPoint3 &point = get_point(x, y);
-  if (_zero_special && point == LPoint3::zero()) {
+  if (_has_no_data_value && point == _no_data_value) {
     return;
   }
 
