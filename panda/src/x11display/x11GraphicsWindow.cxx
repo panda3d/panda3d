@@ -1883,8 +1883,9 @@ get_cursor(const Filename &filename) {
   }
 
   // If it wasn't found, resolve the filename and search for that.
-  Filename resolved = filename;
-  if (!resolved.resolve_filename(get_model_path())) {
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  Filename resolved (filename);
+  if (!vfs->resolve_filename(resolved, get_model_path())) {
     // The filename doesn't exist.
     x11display_cat.warning()
       << "Could not find cursor filename " << filename << "\n";
@@ -1897,7 +1898,6 @@ get_cursor(const Filename &filename) {
   }
 
   // Open the file through the virtual file system.
-  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   istream *str = vfs->open_read_file(resolved, true);
   if (str == NULL) {
     x11display_cat.warning()
