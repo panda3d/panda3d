@@ -543,7 +543,7 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
   trav->_geoms_pcollector.add_level(num_geoms);
   CPT(TransformState) net_transform = data.get_net_transform(trav);
   CPT(TransformState) modelview_transform = data.get_modelview_transform(trav);
-  CPT(TransformState) internal_transform = trav->get_gsg()->get_cs_transform()->compose(modelview_transform);
+  CPT(TransformState) internal_transform = trav->get_scene()->get_cs_transform()->compose(modelview_transform);
 
   for (int i = 0; i < num_geoms; i++) {
     const Geom *geom = geoms.get_geom(i);

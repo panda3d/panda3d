@@ -384,7 +384,7 @@ render_thread(CullTraverser *trav, CullTraverserData &data,
     new CullableObject(geom, state,
                        data.get_net_transform(trav),
                        data.get_modelview_transform(trav),
-                       trav->get_gsg());
+                       trav->get_scene());
   trav->get_cull_handler()->record_object(object, trav);
 }
 
@@ -436,7 +436,7 @@ render_tape(CullTraverser *trav, CullTraverserData &data,
     new CullableObject(geom, state,
                        data.get_net_transform(trav),
                        data.get_modelview_transform(trav),
-                       trav->get_gsg());
+                       trav->get_scene());
   trav->get_cull_handler()->record_object(object, trav);
 }
 
@@ -495,7 +495,7 @@ render_billboard(CullTraverser *trav, CullTraverserData &data,
     new CullableObject(geom, state,
                        data.get_net_transform(trav),
                        data.get_modelview_transform(trav),
-                       trav->get_gsg());
+                       trav->get_scene());
   trav->get_cull_handler()->record_object(object, trav);
 }
 
@@ -561,7 +561,7 @@ render_tube(CullTraverser *trav, CullTraverserData &data,
     new CullableObject(geom, state,
                        data.get_net_transform(trav),
                        data.get_modelview_transform(trav),
-                       trav->get_gsg());
+                       trav->get_scene());
   trav->get_cull_handler()->record_object(object, trav);
 }
 

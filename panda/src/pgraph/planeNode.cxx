@@ -170,7 +170,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     new CullableObject(get_viz(trav, data), data._state, 
                        data.get_net_transform(trav),
                        data.get_modelview_transform(trav),
-                       trav->get_gsg());
+                       trav->get_scene());
   trav->get_cull_handler()->record_object(plane_viz, trav);
 
   // Now carry on to render our child nodes.

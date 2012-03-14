@@ -59,7 +59,7 @@ upcall() {
         new CullableObject(NULL, _data._state,
                            _data.get_net_transform(_trav),
                            _data.get_modelview_transform(_trav),
-                           _trav->get_gsg());
+                           _trav->get_scene());
       object->set_draw_callback(cbobj);
       _trav->get_cull_handler()->record_object(object, _trav);
     }

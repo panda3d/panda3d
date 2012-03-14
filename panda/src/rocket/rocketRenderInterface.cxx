@@ -130,7 +130,7 @@ render_geom(const Geom* geom, const RenderState* state, const Rocket::Core::Vect
   CullableObject *object =
     new CullableObject(geom, _net_state->compose(state),
                        net_transform, modelview_transform,
-                       _trav->get_gsg());
+                       _trav->get_scene());
   _trav->get_cull_handler()->record_object(object, _trav);
 }
 

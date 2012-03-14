@@ -320,12 +320,12 @@ draw_bounding_volume(const BoundingVolume *vol,
     _geoms_pcollector.add_level(2);
     CullableObject *outer_viz = 
       new CullableObject(bounds_viz, get_bounds_outer_viz_state(), 
-                         net_transform, modelview_transform, get_gsg());
+                         net_transform, modelview_transform, get_scene());
     _cull_handler->record_object(outer_viz, this);
     
     CullableObject *inner_viz = 
       new CullableObject(bounds_viz, get_bounds_inner_viz_state(), 
-                         net_transform, modelview_transform, get_gsg());
+                         net_transform, modelview_transform, get_scene());
     _cull_handler->record_object(inner_viz, this);
   }
 }
@@ -363,7 +363,7 @@ show_bounds(CullTraverserData &data, bool tight) {
       CullableObject *outer_viz = 
         new CullableObject(bounds_viz, get_bounds_outer_viz_state(), 
                            net_transform, modelview_transform,
-                           get_gsg());
+                           get_scene());
       _cull_handler->record_object(outer_viz, this);
     }
     
@@ -706,7 +706,7 @@ start_decal(const CullTraverserData &data) {
   _geoms_pcollector.add_level(num_geoms);
   CPT(TransformState) net_transform = data.get_net_transform(this);
   CPT(TransformState) modelview_transform = data.get_modelview_transform(this);
-  CPT(TransformState) internal_transform = get_gsg()->get_cs_transform()->compose(modelview_transform);
+  CPT(TransformState) internal_transform = _scene_setup->get_cs_transform()->compose(modelview_transform);
   
   for (int i = num_geoms - 1; i >= 0; i--) {
     const Geom *geom = geoms.get_geom(i);
@@ -819,7 +819,7 @@ r_get_decals(CullTraverserData &data, CullableObject *decals) {
       _geoms_pcollector.add_level(num_geoms);
       CPT(TransformState) net_transform = data.get_net_transform(this);
       CPT(TransformState) modelview_transform = data.get_modelview_transform(this);
-      CPT(TransformState) internal_transform = get_gsg()->get_cs_transform()->compose(modelview_transform);
+      CPT(TransformState) internal_transform = _scene_setup->get_cs_transform()->compose(modelview_transform);
 
       for (int i = num_geoms - 1; i >= 0; i--) {
         const Geom *geom = geoms.get_geom(i);

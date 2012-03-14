@@ -162,7 +162,7 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
       new CullableObject(NULL, data._state,
                          data.get_net_transform(trav),
                          data.get_modelview_transform(trav),
-                         trav->get_gsg());
+                         trav->get_scene());
     object->set_draw_callback(cbobj);
     trav->get_cull_handler()->record_object(object, trav);
   }

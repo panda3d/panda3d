@@ -168,7 +168,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     new CullableObject(get_occluder_viz(trav, data), get_occluder_viz_state(trav, data), 
                        data.get_net_transform(trav),
                        data.get_modelview_transform(trav),
-                       trav->get_gsg());
+                       trav->get_scene());
   trav->get_cull_handler()->record_object(occluder_viz, trav);
 
   // Also get the frame.
@@ -177,7 +177,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     new CullableObject(_frame_viz, get_frame_viz_state(trav, data), 
                        data.get_net_transform(trav),
                        data.get_modelview_transform(trav),
-                       trav->get_gsg());
+                       trav->get_scene());
   trav->get_cull_handler()->record_object(frame_viz, trav);
 
   // Now carry on to render our child nodes.

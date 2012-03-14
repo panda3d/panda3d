@@ -208,7 +208,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
             new CullableObject(geom, point_state, 
                                xform_data.get_net_transform(trav),
                                xform_data.get_modelview_transform(trav),
-                               trav->get_gsg());
+                               trav->get_scene());
           
           trav->get_cull_handler()->record_object(object, trav);
         }
@@ -239,7 +239,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
             new CullableObject(geom, empty_state, 
                                xform_data.get_net_transform(trav),
                                xform_data.get_modelview_transform(trav),
-                               trav->get_gsg());
+                               trav->get_scene());
           
           trav->get_cull_handler()->record_object(object, trav);
         }

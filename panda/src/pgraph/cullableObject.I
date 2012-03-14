@@ -37,12 +37,12 @@ INLINE CullableObject::
 CullableObject(const Geom *geom, const RenderState *state,
                const TransformState *net_transform,
                const TransformState *modelview_transform,
-               const GraphicsStateGuardianBase *gsg) :
+               SceneSetup *scene_setup) :
   _geom(geom),
   _state(state),
   _net_transform(net_transform),
   _modelview_transform(modelview_transform),
-  _internal_transform(gsg->get_cs_transform()->compose(modelview_transform)),
+  _internal_transform(scene_setup->get_cs_transform()->compose(modelview_transform)),
   _fancy(false)
 {
 #ifdef DO_MEMORY_USAGE

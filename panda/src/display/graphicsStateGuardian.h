@@ -296,6 +296,7 @@ public:
   INLINE int get_current_tex_view_offset() const;
   INLINE const Lens *get_current_lens() const;
 
+  virtual const TransformState *get_cs_transform_for(CoordinateSystem cs) const;
   virtual const TransformState *get_cs_transform() const;
   INLINE const TransformState *get_inv_cs_transform() const;
 

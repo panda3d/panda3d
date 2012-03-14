@@ -1884,6 +1884,9 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
   scene_setup->set_camera_transform(camera_transform);
   scene_setup->set_world_transform(world_transform);
 
+  CPT(TransformState) cs_transform = gsg->get_cs_transform_for(lens->get_coordinate_system());
+  scene_setup->set_cs_transform(cs_transform);
+
   return scene_setup;
 }
 

@@ -29,6 +29,7 @@
 #include "pStatCollector.h"
 #include "deletedChain.h"
 #include "graphicsStateGuardianBase.h"
+#include "sceneSetup.h"
 #include "lightMutex.h"
 #include "callbackObject.h"
 
@@ -51,7 +52,7 @@ public:
   INLINE CullableObject(const Geom *geom, const RenderState *state,
                         const TransformState *net_transform,
                         const TransformState *modelview_transform,
-                        const GraphicsStateGuardianBase *gsg);
+                        SceneSetup *scene_setup);
   INLINE CullableObject(const Geom *geom, const RenderState *state,
                         const TransformState *net_transform,
                         const TransformState *modelview_transform,

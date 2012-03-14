@@ -341,10 +341,15 @@ get_supports_cg_profile(const string &name) const {
 //               used by the scene graph, external to to GSG.
 //
 //               Normally, this will be the default coordinate system,
-//               but it might be set differently at runtime.
+//               but it might be set differently at runtime.  It will
+//               automatically be copied from the current lens's
+//               coordinate system as each DisplayRegion is rendered.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 set_coordinate_system(CoordinateSystem cs) {
+  if (cs == CS_default) {
+    cs = get_default_coordinate_system();
+  }
   _coordinate_system = cs;
 
   // Changing the external coordinate system changes the cs_transform.
@@ -555,6 +560,8 @@ set_scene(SceneSetup *scene_setup) {
   if (_current_lens == (Lens *)NULL) {
     return false;
   }
+
+  set_coordinate_system(_current_lens->get_coordinate_system());
 
   _projection_mat = calc_projection_mat(_current_lens);
   if (_projection_mat == 0) {
@@ -1854,6 +1861,27 @@ clear(DrawableRegion *clearable) {
 RenderBuffer GraphicsStateGuardian::
 get_render_buffer(int buffer_type, const FrameBufferProperties &prop) {
   return RenderBuffer(this, buffer_type & prop.get_buffer_mask() & _stereo_buffer_mask);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_cs_transform_for
+//       Access: Public, Virtual
+//  Description: Returns what the cs_transform would be set to after a
+//               call to set_coordinate_system(cs).  This is another
+//               way of saying the cs_transform when rendering the
+//               scene for a camera with the indicated coordinate
+//               system.
+////////////////////////////////////////////////////////////////////
+const TransformState *GraphicsStateGuardian::
+get_cs_transform_for(CoordinateSystem cs) const {
+  if (_internal_coordinate_system == CS_default ||
+      _internal_coordinate_system == cs) {
+    return TransformState::make_identity();
+
+  } else {
+    return TransformState::make_mat
+      (LMatrix4::convert_mat(cs, _internal_coordinate_system));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

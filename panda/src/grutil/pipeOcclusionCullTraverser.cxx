@@ -650,7 +650,7 @@ perform_occlusion_test(const Geom *geom, const TransformState *net_transform,
 
   CullableObject *viz = 
     new CullableObject(geom, _solid_test_state,
-                       net_transform, modelview_transform, gsg);
+                       net_transform, modelview_transform, get_scene());
 
   static ConfigVariableBool test_occlude("test-occlude", false);
   if (test_occlude) {
@@ -702,13 +702,13 @@ show_results(int num_fragments, const Geom *geom,
 
   CullableObject *internal_viz = 
     new CullableObject(geom, state,
-                       net_transform, modelview_transform, gsg);
+                       net_transform, modelview_transform, get_scene());
   _internal_cull_handler->record_object(internal_viz, _internal_trav);
 
   // Also render the viz in the main scene.
   modelview_transform = get_world_transform()->compose(net_transform);
   CullableObject *main_viz = 
     new CullableObject(geom, state,
-                       net_transform, modelview_transform, gsg);
+                       net_transform, modelview_transform, get_scene());
   _true_cull_handler->record_object(main_viz, this);
 }

@@ -984,7 +984,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
   // Compute the modelview and camera transforms, to pass to the
   // SpeedTree CView structure.
   CPT(TransformState) orig_modelview = data.get_modelview_transform(trav);
-  CPT(TransformState) modelview = gsg->get_cs_transform()->compose(orig_modelview);
+  CPT(TransformState) modelview = trav->get_scene()->get_cs_transform()->compose(orig_modelview);
   CPT(TransformState) camera_transform = modelview->invert_compose(TransformState::make_identity());
   LMatrix4f modelview_mat = LCAST(float, modelview->get_mat());
   const LPoint3 &camera_pos = camera_transform->get_pos();
@@ -1122,7 +1122,7 @@ add_for_draw(CullTraverser *trav, CullTraverserData &data) {
       new CullableObject(NULL, data._state,
                          TransformState::make_identity(),
                          TransformState::make_identity(),
-                         trav->get_gsg());
+                         trav->get_scene());
     object->set_draw_callback(new DrawCallback(this));
     trav->get_cull_handler()->record_object(object, trav);
   }
