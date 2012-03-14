@@ -1527,16 +1527,29 @@ do_compute_view_vector(CData *cdata) {
 //               point to 2-d point, if the lens is linear.
 ////////////////////////////////////////////////////////////////////
 void Lens::
-do_compute_projection_mat(CData *cdata) {
-  cdata->_projection_mat = 
-    cdata->_projection_mat_left = 
-    cdata->_projection_mat_right =
-    cdata->_projection_mat_inv = 
-    cdata->_projection_mat_left_inv = 
-    cdata->_projection_mat_right_inv = 
-    LMatrix4::ident_mat();
-  do_adjust_comp_flags(cdata, 0, CF_projection_mat | CF_projection_mat_inv |
-                       CF_projection_mat_left_inv |CF_projection_mat_right_inv);
+do_compute_projection_mat(CData *lens_cdata) {
+  // This is the implementation used by non-linear lenses.  The linear
+  // lenses (PerspectiveLens and OrthographicLens) will customize this
+  // method appropriate for themselves.
+
+  // By convention, the coordinate-system conversion is baked into the
+  // projection mat.  Our non-linear lenses are implemented with code
+  // that assumes CS_zup_right, so we bake the appropriate rotation in
+  // here.
+  CoordinateSystem cs = lens_cdata->_cs;
+  if (cs == CS_default) {
+    cs = get_default_coordinate_system();
+  }
+  lens_cdata->_projection_mat = LMatrix4::convert_mat(cs, CS_zup_right);
+  lens_cdata->_projection_mat_inv = LMatrix4::convert_mat(CS_zup_right, cs);
+
+  // We don't apply any left/right offsets for non-linear lenses by
+  // default, at least not here in the projection matrix.
+  lens_cdata->_projection_mat_left = lens_cdata->_projection_mat_right = lens_cdata->_projection_mat;
+  lens_cdata->_projection_mat_left_inv = lens_cdata->_projection_mat_right_inv = lens_cdata->_projection_mat_inv;
+
+  do_adjust_comp_flags(lens_cdata, 0, CF_projection_mat | CF_projection_mat_inv |
+                       CF_projection_mat_left_inv | CF_projection_mat_right_inv);
 }
 
 ////////////////////////////////////////////////////////////////////

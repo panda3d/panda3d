@@ -474,6 +474,7 @@ rfu(FLOATTYPE right_v, FLOATTYPE fwd_v, FLOATTYPE up_v,
   case CS_zup_left:
     vy = -fwd_v;
     vz = up_v;
+    break;
 
   default:
     linmath_cat.error()

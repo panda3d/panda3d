@@ -102,7 +102,11 @@ set_hpr(const FLOATNAME(LVecBase3) &hpr, CoordinateSystem cs) {
   csincos(a, &s, &c);
   quat_r.set(c, v[0] * s, v[1] * s, v[2] * s);
 
-  (*this) = quat_r * quat_p * quat_h;
+  if (is_right_handed(cs)) {
+    (*this) = quat_r * quat_p * quat_h;
+  } else {
+    (*this) = invert(quat_h * quat_p * quat_r);
+  }
 
   if (!temp_hpr_fix) {
     // Compute the old, broken hpr.

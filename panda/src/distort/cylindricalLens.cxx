@@ -69,9 +69,10 @@ do_extrude(const Lens::CData *lens_cdata,
   // And we'll need to account for the lens's rotations, etc. at the
   // end of the day.
   const LMatrix4 &lens_mat = do_get_lens_mat(lens_cdata);
+  const LMatrix4 &proj_inv_mat = do_get_projection_mat_inv(lens_cdata);
 
-  near_point = (v * do_get_near(lens_cdata)) * lens_mat;
-  far_point = (v * do_get_far(lens_cdata)) * lens_mat;
+  near_point = (v * do_get_near(lens_cdata)) * proj_inv_mat * lens_mat;
+  far_point = (v * do_get_far(lens_cdata)) * proj_inv_mat * lens_mat;
   return true;
 }
 
@@ -106,7 +107,7 @@ do_extrude_vec(const Lens::CData *lens_cdata, const LPoint3 &point2d, LVector3 &
   PN_stdfloat sinAngle, cosAngle;
   csincos(deg_2_rad(angle), &sinAngle, &cosAngle);
 
-  vec = LVector3(sinAngle, cosAngle, 0.0f) * do_get_lens_mat(lens_cdata);
+  vec = LVector3(sinAngle, cosAngle, 0.0f) * do_get_projection_mat_inv(lens_cdata) * do_get_lens_mat(lens_cdata);
 
   return true;
 }
@@ -131,7 +132,7 @@ do_extrude_vec(const Lens::CData *lens_cdata, const LPoint3 &point2d, LVector3 &
 bool CylindricalLens::
 do_project(const Lens::CData *lens_cdata, const LPoint3 &point3d, LPoint3 &point2d) const {
   // First, account for any rotations, etc. on the lens.
-  LPoint3 p = point3d * do_get_lens_mat_inv(lens_cdata);
+  LPoint3 p = point3d * do_get_lens_mat_inv(lens_cdata) * do_get_projection_mat(lens_cdata);
 
   // To compute the x position on the frame, we only need to consider
   // the angle of the vector about the Z axis.  Project the vector

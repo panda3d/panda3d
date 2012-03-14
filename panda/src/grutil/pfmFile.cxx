@@ -726,12 +726,45 @@ compute_planar_bounds(const LPoint2 &center, PN_stdfloat point_dist, PN_stdfloat
       }
     }
   }
-    
-  PT(BoundingHexahedron) bounds = new BoundingHexahedron
-    (LPoint3(min_x, min_y, min_z), LPoint3(max_x, min_y, min_z),
-     LPoint3(min_x, min_y, max_z), LPoint3(max_x, min_y, max_z),
-     LPoint3(min_x, max_y, min_z), LPoint3(max_x, max_y, min_z),
-     LPoint3(min_x, max_y, max_z), LPoint3(max_x, max_y, max_z));
+
+  PT(BoundingHexahedron) bounds;
+  
+  // We create a BoundingHexahedron with the points in a particular
+  // well-defined order, based on the current coordinate system.
+  CoordinateSystem cs = get_default_coordinate_system();
+  switch (cs) {
+  case CS_yup_right:
+    bounds = new BoundingHexahedron
+      (LPoint3(min_x, min_y, min_z), LPoint3(max_x, min_y, min_z),
+       LPoint3(min_x, max_y, min_z), LPoint3(max_x, max_y, min_z),
+       LPoint3(min_x, min_y, max_z), LPoint3(max_x, min_y, max_z),
+       LPoint3(min_x, max_y, max_z), LPoint3(max_x, max_y, max_z));
+    break;
+
+  case CS_zup_right:
+    bounds = new BoundingHexahedron
+      (LPoint3(min_x, min_y, min_z), LPoint3(max_x, min_y, min_z),
+       LPoint3(min_x, min_y, max_z), LPoint3(max_x, min_y, max_z),
+       LPoint3(min_x, max_y, min_z), LPoint3(max_x, max_y, min_z),
+       LPoint3(min_x, max_y, max_z), LPoint3(max_x, max_y, max_z));
+    break;
+
+  case CS_yup_left:
+    bounds = new BoundingHexahedron
+      (LPoint3(max_x, min_y, max_z), LPoint3(min_x, min_y, max_z),
+       LPoint3(max_x, max_y, max_z), LPoint3(min_x, max_y, max_z),
+       LPoint3(max_x, min_y, min_z), LPoint3(min_x, min_y, min_z),
+       LPoint3(max_x, max_y, min_z), LPoint3(min_x, max_y, min_z));
+    break;
+
+  case CS_zup_left:
+    bounds = new BoundingHexahedron
+      (LPoint3(max_x, max_y, min_z), LPoint3(min_x, max_y, min_z),
+       LPoint3(max_x, max_y, max_z), LPoint3(min_x, max_y, max_z),
+       LPoint3(max_x, min_y, min_z), LPoint3(min_x, min_y, min_z),
+       LPoint3(max_x, min_y, max_z), LPoint3(min_x, min_y, max_z));
+    break;
+  }
 
   // Rotate the bounding volume back into the original space of the
   // screen.
@@ -885,6 +918,12 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
     return;
   }
 
+  bool reverse_normals = inverted;
+  bool reverse_faces = inverted;
+  if (!is_right_handed(get_default_coordinate_system())) {
+    reverse_faces = !reverse_faces;
+  }
+
   // This is the max number of vertex indices we might add to the
   // GeomTriangles.  (We might actually add fewer than this due to
   // omitting the occasional missing data point.)
@@ -1025,7 +1064,7 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
             }
             n.normalize();
             nassertv(!n.is_nan());
-            if (inverted) {
+            if (reverse_normals) {
               n = -n;
             }
             normal.add_data3(n);
@@ -1062,7 +1101,7 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
           int vi2 = ((xi0 + 1) + (yi0 + 1) * x_size);
           int vi3 = ((xi0 + 1) + (yi0) * x_size);
           
-          if (inverted) {
+          if (reverse_faces) {
             tris->add_vertices(vi2, vi0, vi1);
             tris->close_primitive();
             

@@ -101,9 +101,10 @@ do_extrude(const Lens::CData *lens_cdata,
   // And we'll need to account for the lens's rotations, etc. at the
   // end of the day.
   const LMatrix4 &lens_mat = do_get_lens_mat(lens_cdata);
+  const LMatrix4 &proj_inv_mat = do_get_projection_mat_inv(lens_cdata);
 
-  near_point = (v * do_get_near(lens_cdata)) * lens_mat;
-  far_point = (v * do_get_far(lens_cdata)) * lens_mat;
+  near_point = (v * do_get_near(lens_cdata)) * proj_inv_mat * lens_mat;
+  far_point = (v * do_get_far(lens_cdata)) * proj_inv_mat * lens_mat;
   return true;
 }
 
@@ -159,7 +160,7 @@ do_extrude_vec(const Lens::CData *lens_cdata, const LPoint3 &point2d, LVector3 &
 bool FisheyeLens::
 do_project(const Lens::CData *lens_cdata, const LPoint3 &point3d, LPoint3 &point2d) const {
   // First, account for any rotations, etc. on the lens.
-  LVector3 v2 = point3d * do_get_lens_mat_inv(lens_cdata);
+  LVector3 v2 = point3d * do_get_lens_mat_inv(lens_cdata) * do_get_projection_mat(lens_cdata);
 
   // A fisheye lens projection has the property that the distance from
   // the center point to any other point on the projection is
