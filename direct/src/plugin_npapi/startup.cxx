@@ -116,9 +116,9 @@ open_logfile() {
 //               get the mimetypes and extensions this plugin is
 //               supposed to handle.
 ////////////////////////////////////////////////////////////////////
-char*
+const char*
 NP_GetMIMEDescription(void) {
-  return (char*) "application/x-panda3d:p3d:Panda3D applet;";
+  return (const char*) "application/x-panda3d:p3d:Panda3D applet;";
 }
 
 ////////////////////////////////////////////////////////////////////
