@@ -42,6 +42,13 @@ class tk(package):
            'direct.tkwidgets')
 
     try:
+        from Tkinter import Tcl
+        dir = Filename.fromOsSpecific(Tcl().eval("info library"))
+        file(Filename(dir, "*.tcl"), extract = True)
+    except ImportError:
+        pass
+
+    try:
         import Pmw
     except ImportError:
         Pmw = None
@@ -51,7 +58,8 @@ class tk(package):
         sys.modules['Pmw'] = Pmw
         sys.modules['Pmw'].__name__ = 'Pmw'
         module('Pmw', 'Pmw.Pmw_1_3.lib.*')
-        file(Filename(Pmw.__path__[0], 'Pmw_1_3/lib/Pmw.def'), newDir = 'Pmw/Pmw_1_3/lib')
+        path = Filename.fromOsSpecific(Pmw.__path__[0])
+        file(Filename(path, 'Pmw_1_3/lib/Pmw.def'), newDir = 'Pmw/Pmw_1_3/lib')
 
 class sqlite(package):
     config(display_name = "SQLite Interface")
