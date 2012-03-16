@@ -44,8 +44,8 @@ private:
 PUBLISHED:
   INLINE MutexDirect &get_mutex() const;
 
-  INLINE void wait();
-  INLINE void wait(double timeout);
+  BLOCKING INLINE void wait();
+  BLOCKING INLINE void wait(double timeout);
   INLINE void notify();
   INLINE void notify_all();
   void output(ostream &out) const;

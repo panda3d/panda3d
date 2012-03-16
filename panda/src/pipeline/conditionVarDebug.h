@@ -44,8 +44,8 @@ private:
 PUBLISHED:
   INLINE MutexDebug &get_mutex() const;
 
-  void wait();
-  void wait(double timeout);
+  BLOCKING void wait();
+  BLOCKING void wait(double timeout);
   void notify();
   virtual void output(ostream &out) const;
 
