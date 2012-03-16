@@ -976,6 +976,7 @@ class AppRunner(DirectObject):
 
         # Mount the Multifile under self.multifileRoot.
         vfs.mount(mf, self.multifileRoot, vfs.MFReadOnly)
+        self.p3dMultifile = mf
         VFSImporter.reloadSharedPackages()
 
         self.loadMultifilePrcFiles(mf, self.multifileRoot)
