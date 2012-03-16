@@ -1120,7 +1120,7 @@ def CompileLib(lib, obj, opts):
     if (COMPILER=="MSVC"):
         if not BOOUSEINTELCOMPILER:
             #Use MSVC Linker
-            cmd = 'link /lib /nologo '
+            cmd = 'link /lib /nologo /MANIFEST '
             if (is_64):
                 cmd += "/MACHINE:X64 "
             cmd += '/OUT:' + BracketNameWithQuotes(lib)
@@ -1156,7 +1156,7 @@ def CompileLib(lib, obj, opts):
 def CompileLink(dll, obj, opts):
     if (COMPILER=="MSVC"):
         if not BOOUSEINTELCOMPILER:
-            cmd = "link /nologo"
+            cmd = "link /nologo /manifest "
             if (is_64):
                 cmd += " /MACHINE:X64"
             if ("MFC" not in opts):
