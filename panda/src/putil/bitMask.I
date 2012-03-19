@@ -822,6 +822,18 @@ operator >>= (int shift) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BitMask::operator WType
+//       Access: Published
+//  Description: Used to cast this BitMask back into the
+//               underlying integer type.
+////////////////////////////////////////////////////////////////////
+template<class WType, int nbits>
+INLINE BitMask<WType, nbits>::
+operator WType () const {
+  return _word;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BitMask::get_key
 //       Access: Published
 //  Description: Returns a mostly unique integer key per unique
