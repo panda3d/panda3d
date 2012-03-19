@@ -118,8 +118,6 @@ PUBLISHED:
   INLINE void operator <<= (int shift);
   INLINE void operator >>= (int shift);
 
-  INLINE operator WType () const;
-
   INLINE void flood_down_in_place();
   INLINE void flood_up_in_place();
   INLINE BitMask<WType, nbits> flood_bits_down() const;
