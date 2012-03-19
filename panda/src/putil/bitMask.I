@@ -834,17 +834,6 @@ operator WType () const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BitMask::operator bool
-//       Access: Published
-//  Description: Will return true, unless all bits are off.
-////////////////////////////////////////////////////////////////////
-template<class WType, int nbits>
-INLINE BitMask<WType, nbits>::
-operator bool () const {
-  return (_word != 0);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: BitMask::get_key
 //       Access: Published
 //  Description: Returns a mostly unique integer key per unique
