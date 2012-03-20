@@ -94,6 +94,11 @@ PUBLISHED:
   INLINE bool operator < (const BitMask<WType, nbits> &other) const;
   INLINE int compare_to(const BitMask<WType, nbits> &other) const;
 
+  INLINE bool operator == (WordType other) const;
+  INLINE bool operator != (WordType other) const;
+  INLINE bool operator < (WordType other) const;
+  INLINE int compare_to(WordType other) const;
+
   INLINE BitMask<WType, nbits>
   operator & (const BitMask<WType, nbits> &other) const;
 
