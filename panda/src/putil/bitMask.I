@@ -691,65 +691,6 @@ compare_to(const BitMask<WType, nbits> &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BitMask::operator ==
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-template<class WType, int nbits>
-INLINE bool BitMask<WType, nbits>::
-operator == (WordType other) const {
-  return _word == other;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::operator !=
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-template<class WType, int nbits>
-INLINE bool BitMask<WType, nbits>::
-operator != (WordType other) const {
-  return _word != other;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::operator <
-//       Access: Published
-//  Description: The ordering operator is of limited usefulness with a
-//               BitMask, however, it has a definition which places
-//               all unique BitMasks into a unique ordering.  It may
-//               be useful when defining ordered STL containers of
-//               BitMasks, for instance; and it's required in order to
-//               export any STL container (ordered or unordered) of
-//               BitMask under Windows.
-////////////////////////////////////////////////////////////////////
-template<class WType, int nbits>
-INLINE bool BitMask<WType, nbits>::
-operator < (WordType other) const {
-  return _word < other;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::compare_to
-//       Access: Published
-//  Description: Returns a number less than zero if this BitMask sorts
-//               before the indicated other BitMask, greater than zero
-//               if it sorts after, or 0 if they are equivalent.  This
-//               is based on the same ordering defined by operator <.
-////////////////////////////////////////////////////////////////////
-template<class WType, int nbits>
-INLINE int BitMask<WType, nbits>::
-compare_to(WordType other) const {
-  if ((*this) < other) {
-    return -1;
-  } else if (other < (*this)) {
-    return 1;
-  } else {
-    return 0;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: BitMask::operator &
 //       Access: Published
 //  Description:
@@ -878,18 +819,6 @@ template<class WType, int nbits>
 INLINE void BitMask<WType, nbits>::
 operator >>= (int shift) {
   _word >>= shift;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: BitMask::operator WType
-//       Access: Published
-//  Description: Used to cast this BitMask back into the
-//               underlying integer type.
-////////////////////////////////////////////////////////////////////
-template<class WType, int nbits>
-INLINE BitMask<WType, nbits>::
-operator WType () const {
-  return _word;
 }
 
 ////////////////////////////////////////////////////////////////////
