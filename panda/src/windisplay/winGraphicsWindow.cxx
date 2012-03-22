@@ -713,9 +713,40 @@ do_reshape_request(int x_origin, int y_origin, bool has_origin,
 void WinGraphicsWindow::
 handle_reshape() {
   RECT view_rect;
-  GetClientRect(_hWnd, &view_rect);
-  ClientToScreen(_hWnd, (POINT*)&view_rect.left);   // translates top,left pnt
-  ClientToScreen(_hWnd, (POINT*)&view_rect.right);  // translates right,bottom pnt
+  if (!GetClientRect(_hWnd, &view_rect)) {
+    // Sometimes we get a "reshape" before the window is fully
+    // created, in which case GetClientRect() ought to fail.  Ignore
+    // this.
+    if (windisplay_cat.is_debug()) {
+      windisplay_cat.debug()
+        << "GetClientRect() failed in handle_reshape.  Ignoring.\n";
+    }
+    return;
+  }
+
+  // But in practice, GetClientRect() doesn't really fail, but just
+  // returns all zeroes.  Ignore this too.
+  if (view_rect.left == 0 && view_rect.right == 0 && 
+      view_rect.bottom == 0 && view_rect.top == 0) {
+    if (windisplay_cat.is_debug()) {
+      windisplay_cat.debug()
+        << "GetClientRect() returned all zeroes in handle_reshape.  Ignoring.\n";
+    }
+    return;
+  }
+
+  bool result = ClientToScreen(_hWnd, (POINT*)&view_rect.left);   // translates top,left pnt
+  if (result) {
+    result = ClientToScreen(_hWnd, (POINT*)&view_rect.right);  // translates right,bottom pnt
+  }
+
+  if (!result) {
+    if (windisplay_cat.is_debug()) {
+      windisplay_cat.debug()
+        << "ClientToScreen() failed in handle_reshape.  Ignoring.\n";
+    }
+    return;
+  }
   
   WindowProperties properties;
   properties.set_size((view_rect.right - view_rect.left), 
