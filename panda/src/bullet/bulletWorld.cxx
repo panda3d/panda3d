@@ -19,6 +19,14 @@
 
 #include "collideMask.h"
 
+#ifdef HAVE_PYTHON
+  #include "py_panda.h"
+  #include "typedReferenceCount.h"
+  #ifndef CPPPARSER
+    extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_PandaNode;
+  #endif
+#endif
+
 #define clamp(x, x_min, x_max) max(min(x, x_max), x_min)
 
 TypeHandle BulletWorld::_type_handle;
@@ -104,6 +112,9 @@ BulletWorld() {
       break;
     case FA_groups_mask:
       _world->getPairCache()->setOverlapFilterCallback(&_filter_cb2);
+      break;
+    case FA_python_callback:
+      _world->getPairCache()->setOverlapFilterCallback(&_filter_cb3);
       break;
     default:
       bullet_cat.error() << "no proper filter algorithm!" << endl;
@@ -748,27 +759,8 @@ get_collision_object(PandaNode *node) {
   return NULL;
 }
 
-/*
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::clean_manifolds_for_node
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void BulletWorld::
-clean_manifolds_for_node(PandaNode *node) {
-
-  btCollisionObject *object = get_collision_object(node);
-  if (object) {
-    btBroadphaseProxy* proxy = object->getBroadphaseHandle();
-    if (proxy) {
-      _world->getPairCache()->cleanProxyFromPairs(proxy, _dispatcher);
-    }
-  }
-}
-*/
-
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::get_collision_object
+//     Function: BulletWorld::set_group_collision_flag
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -793,6 +785,31 @@ get_group_collision_flag(unsigned int group1, unsigned int group2) const {
 
   return _filter_cb2._collide[group1].get_bit(group2);
 }
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: BulletWorld::set_python_filter_callback
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletWorld::
+set_python_filter_callback(PyObject *callback) {
+
+  nassertv(callback != NULL);
+
+  if (!PyCallable_Check(callback)) {
+    PyErr_Format(PyExc_TypeError, "'%s' object is not callable", callback->ob_type->tp_name);
+    return;
+  }
+
+  if (bullet_filter_algorithm != FA_python_callback) {
+    bullet_cat.warning() << "filter algorithm is not 'python-callback'" << endl;
+  }
+
+  _filter_cb3._python_callback = callback;
+  Py_XINCREF(_filter_cb3._python_callback);
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWorld::FilterCallback1::needBroadphaseCollision
@@ -853,6 +870,61 @@ needBroadphaseCollision(btBroadphaseProxy* proxy0, btBroadphaseProxy* proxy1) co
   return false;
 }
 
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: BulletWorld::FilterCallback3::needBroadphaseCollision
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+bool BulletWorld::btFilterCallback3::
+needBroadphaseCollision(btBroadphaseProxy* proxy0, btBroadphaseProxy* proxy1) const {
+
+  nassertr(_python_callback, false);
+
+  btCollisionObject *obj0 = (btCollisionObject *) proxy0->m_clientObject;
+  btCollisionObject *obj1 = (btCollisionObject *) proxy1->m_clientObject;
+
+  nassertr(obj0, false);
+  nassertr(obj1, false);
+
+  PandaNode *node0 = (PandaNode *) obj0->getUserPointer();
+  PandaNode *node1 = (PandaNode *) obj1->getUserPointer();
+
+  nassertr(node0, false);
+  nassertr(node1, false);
+
+  PyObject *p0 = DTool_CreatePyInstanceTyped(node0, Dtool_PandaNode, true, false, node0->get_type_index());
+  PyObject *p1 = DTool_CreatePyInstanceTyped(node1, Dtool_PandaNode, true, false, node1->get_type_index());
+
+  PyObject *result = PyEval_CallFunction(_python_callback, "OO", p0, p1);
+
+  bool collide = false;
+
+  if (!result) {
+    bullet_cat.error() << "An error occurred while calling python function!" << endl;
+    PyErr_Print();
+  }
+  else {
+    int v = PyObject_IsTrue(result);
+    if (v == 1) {
+      collide = true;
+    }
+    else if (v == 0) {
+      collide = false;
+    }
+    else {
+      bullet_cat.error() << "Python callback function must return a bool object" << endl;
+    }
+    Py_DECREF(result);
+  }
+
+  //Py_XDECREF(p0);
+  //Py_XDECREF(p1);
+
+  return collide;
+}
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWorld::BroadphaseAlgorithm ostream operator
 //  Description:
@@ -908,8 +980,12 @@ operator << (ostream &out, BulletWorld::FilterAlgorithm algorithm) {
 
   case BulletWorld::FA_groups_mask:
     return out << "groups-mask";
-  };
 
+#ifdef HAVE_PYTHON
+  case BulletWorld::FA_python_callback:
+    return out << "python-callback";
+#endif
+  };
   return out << "**invalid BulletWorld::FilterAlgorithm(" << (int)algorithm << ")**";
 }
 
@@ -928,6 +1004,11 @@ operator >> (istream &in, BulletWorld::FilterAlgorithm &algorithm) {
   else if (word == "groups-mask") {
     algorithm = BulletWorld::FA_groups_mask;
   } 
+#ifdef HAVE_PYTHON
+  else if (word == "python-callback") {
+    algorithm = BulletWorld::FA_python_callback;
+  }
+#endif
   else {
     bullet_cat.error()
       << "Invalid BulletWorld::FilterAlgorithm: " << word << "\n";

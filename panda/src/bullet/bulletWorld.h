@@ -38,6 +38,11 @@
 #include "collideMask.h"
 #include "luse.h"
 
+#ifdef HAVE_PYTHON
+  #include "py_panda.h"
+  #include "Python.h"
+#endif
+
 class BulletPersistentManifold;
 class BulletShape;
 class BulletSoftBodyWorldInfo;
@@ -150,7 +155,14 @@ PUBLISHED:
   enum FilterAlgorithm {
     FA_mask,
     FA_groups_mask,
+#ifdef HAVE_PYTHON
+    FA_python_callback,
+#endif
   };
+
+#ifdef HAVE_PYTHON
+  void set_python_filter_callback(PyObject *callback);
+#endif
 
 public:
   static btCollisionObject *get_collision_object(PandaNode *node);
@@ -190,6 +202,16 @@ private:
     CollideMask _collide[32];
   };
 
+#ifdef HAVE_PYTHON
+  struct btFilterCallback3 : public btOverlapFilterCallback {
+    virtual bool needBroadphaseCollision(
+      btBroadphaseProxy* proxy0,
+      btBroadphaseProxy* proxy1) const;
+
+    PyObject *_python_callback;
+  };
+#endif
+
   btBroadphaseInterface *_broadphase;
   btCollisionConfiguration *_configuration;
   btCollisionDispatcher *_dispatcher;
@@ -200,6 +222,10 @@ private:
 
   btFilterCallback1 _filter_cb1;
   btFilterCallback2 _filter_cb2;
+
+#ifdef HAVE_PYTHON
+  btFilterCallback3 _filter_cb3;
+#endif
 
   btSoftBodyWorldInfo _info;
 
