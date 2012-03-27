@@ -38,7 +38,7 @@ PUBLISHED:
 
   INLINE static bool has_font(const string &filename);
   INLINE static bool verify_font(const string &filename);
-  INLINE static TextFont *load_font(const string &filename);
+  BLOCKING INLINE static TextFont *load_font(const string &filename);
   INLINE static void add_font(const string &filename, TextFont *font);
   INLINE static void release_font(const string &filename);
   INLINE static void release_all_fonts();

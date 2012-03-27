@@ -32,7 +32,7 @@ class EXPCL_PANDA_PGRAPH ShaderPool {
 PUBLISHED:
   INLINE static bool has_shader(const Filename &filename);
   INLINE static bool verify_shader(const Filename &filename);
-  INLINE static CPT(Shader) load_shader(const Filename &filename);
+  BLOCKING INLINE static CPT(Shader) load_shader(const Filename &filename);
   INLINE static void add_shader(const Filename &filename, Shader *shader);
   INLINE static void release_shader(const Filename &filename);
   INLINE static void release_all_shaders();
