@@ -31,6 +31,7 @@ PfmTrans::
 PfmTrans() {
   _got_transform = false;
   _transform = LMatrix4::ident_mat();
+  _rotate = 0;
 
   add_transform_options();
 
@@ -38,11 +39,6 @@ PfmTrans() {
     ("pfm-trans reads an pfm file and transforms it, filters it, "
      "operates on it, writing the output to another pfm file.  A pfm "
      "file contains a 2-d table of floating-point values.");
-
-  add_option
-    ("r", "", 0,
-     "Reverses the rows of the pfm data vertically.",
-     &PfmTrans::dispatch_none, &_got_reverse);
 
   add_option
     ("z", "", 0,
@@ -56,6 +52,22 @@ PfmTrans() {
      "with -TS, which scales the individual point values, but doesn't "
      "change the number of points.",
      &PfmTrans::dispatch_int_pair, &_got_resize, &_resize);
+
+  add_option
+    ("rotate", "degrees", 0,
+     "Rotates the pfm file the specified number of degrees counterclockwise, "
+     "which must be a multiple of 90.",
+     &PfmTrans::dispatch_int, NULL, &_rotate);
+
+  add_option
+    ("mirror_x", "", 0,
+     "Flips the pfm file about the x axis.",
+     &PfmTrans::dispatch_none, &_got_mirror_x);
+
+  add_option
+    ("mirror_y", "", 0,
+     "Flips the pfm file about the y axis.",
+     &PfmTrans::dispatch_none, &_got_mirror_y);
 
   add_option
     ("o", "filename", 50,
@@ -104,6 +116,11 @@ PfmTrans() {
 ////////////////////////////////////////////////////////////////////
 void PfmTrans::
 run() {
+  if ((int)(_rotate / 90) * 90 != _rotate) {
+    nout << "-rotate can only accept a multiple of 90 degrees.\n";
+    exit(1);
+  }
+
   if (_got_vis_filename) {
     _mesh_root = NodePath("mesh_root");
   }
@@ -140,8 +157,37 @@ process_pfm(const Filename &input_filename, PfmFile &file) {
     file.resize(_resize[0], _resize[1]);
   }
 
-  if (_got_reverse) {
-    file.reverse_rows();
+  if (_rotate != 0) {
+    int r = (_rotate / 90) % 4;
+    if (r < 0) {
+      r += 4;
+    }
+    switch (r) {
+    case 0:
+      break;
+    case 1:
+      // Rotate 90 degrees ccw.
+      file.flip(true, false, true);
+      break;
+    case 2:
+      // Rotate 180 degrees.
+      file.flip(true, true, false);
+      break;
+    case 3:
+      // Rotate 90 degrees cw.
+      file.flip(false, true, true);
+      break;
+    default:
+      nassertr(false, false);
+    }
+  }
+
+  if (_got_mirror_x) {
+    file.flip(true, false, false);
+  }
+
+  if (_got_mirror_y) {
+    file.flip(false, true, false);
   }
 
   if (_got_transform) {

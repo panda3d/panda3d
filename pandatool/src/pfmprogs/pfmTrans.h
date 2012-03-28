@@ -51,12 +51,14 @@ private:
   typedef pvector<Filename> Filenames;
   Filenames _input_filenames;
 
-  bool _got_reverse;
   bool _got_zero_special;
   bool _got_vis_inverse;
   bool _got_vis_2d;
   bool _got_resize;
   int _resize[2];
+  int _rotate;
+  bool _got_mirror_x;
+  bool _got_mirror_y;
 
   bool _got_output_filename;
   Filename _output_filename;
