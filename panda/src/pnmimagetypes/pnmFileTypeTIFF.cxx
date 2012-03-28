@@ -899,6 +899,7 @@ write_data(xel *array, xelval *alpha) {
 
   switch ( get_color_type() ) {
   case CT_color:
+  case CT_grayscale:
     // This call is a bit of fakery to convert our proper 2-d array of
     // xels to an indirect 2-d array of pixels.  We make it look like a
     // single row of _x_size * _y_size pixels.
@@ -907,7 +908,7 @@ write_data(xel *array, xelval *alpha) {
     // regardless of the number of colors we can read.
     chv = ppm_computecolorhist( (pixel **)&array, _x_size * _y_size, 1,
                                 256, &colors );
-    if ( chv == (colorhist_vector) 0 ) {
+    if ( chv == (colorhist_vector) 0 || true) {
       pnmimage_tiff_cat.debug()
         << colors << " colors found; too many for a palette.\n"
         << "Writing a 24-bit RGB file.\n";
@@ -936,10 +937,12 @@ write_data(xel *array, xelval *alpha) {
     grayscale = false;
     break;
 
+    /*
   case CT_grayscale:
     chv = (colorhist_vector) 0;
     grayscale = true;
     break;
+    */
 
   default:
     break;

@@ -863,6 +863,21 @@ xform_point(const FLOATNAME(LVecBase3) &v) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::xform_point_general
+//       Access: Public
+//  Description: The matrix transforms a 3-component point (including
+//               translation component) and returns the result, as a
+//               fully general operation.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LMatrix4)::
+xform_point_general(const FLOATNAME(LVecBase3) &v) const {
+  TAU_PROFILE("LVecBase3 LMatrix4::xform_point_general(const LVecBase3 &)", " ", TAU_USER);
+  FLOATNAME(LVecBase4) v4(v[0], v[1], v[2], 1.0);
+  v4 = xform(v4);
+  return FLOATNAME(LVecBase3)(v4[0] / v4[3], v4[1] / v4[3], v4[2] / v4[3]);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::xform_vec
 //       Access: Public
 //  Description: The matrix transforms a 3-component vector (without
@@ -941,6 +956,18 @@ xform_point_in_place(FLOATNAME(LVecBase3) &v) const {
 #else  
   v = xform_point(v);
 #endif  // HAVE_EIGEN
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::xform_point_general_in_place
+//       Access: Public
+//  Description: The matrix transforms a 3-component point (including
+//               translation component), as a fully general operation.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LMatrix4)::
+xform_point_general_in_place(FLOATNAME(LVecBase3) &v) const {
+  TAU_PROFILE("void LMatrix4::xform_point_general_in_place(LVecBase3 &)", " ", TAU_USER);
+  v = xform_point_general(v);
 }
 
 ////////////////////////////////////////////////////////////////////

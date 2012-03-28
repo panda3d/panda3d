@@ -534,8 +534,7 @@ xform(const LMatrix4 &transform) {
     if (_has_no_data_value && (*ti) == _no_data_value) {
       continue;
     }
-
-    (*ti) = (*ti) * transform;
+    transform.xform_point_general_in_place(*ti);
   }
 }
 
