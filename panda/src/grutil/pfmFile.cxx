@@ -520,6 +520,55 @@ reverse_rows() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::flip
+//       Access: Published
+//  Description: Reverses, transposes, and/or rotates the table
+//               in-place according to the specified parameters.  If
+//               flip_x is true, the x axis is reversed; if flip_y is
+//               true, the y axis is reversed.  Then, if transpose is
+//               true, the x and y axes are exchanged.  These
+//               parameters can be used to select any combination of
+//               90-degree or 180-degree rotations and flips.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+flip(bool flip_x, bool flip_y, bool transpose) {
+  nassertv(is_valid());
+
+  Table flipped;
+  flipped.reserve(_table.size());
+
+  if (transpose) {
+    // Transposed case.  X becomes Y, Y becomes X.
+    for (int xi = 0; xi < _x_size; ++xi) {
+      int source_xi = flip_x ? xi : _x_size - 1 - xi;
+      for (int yi = 0; yi < _y_size; ++yi) {
+        int source_yi = flip_y ? yi : _y_size - 1 - yi;
+        const LPoint3 &p = _table[source_yi * _x_size + source_xi];
+        flipped.push_back(p);
+      }
+    }
+
+    int t = _x_size;
+    _x_size = _y_size;
+    _y_size = t;
+
+  } else {
+    // Non-transposed.  X is X, Y is Y.
+    for (int yi = 0; yi < _y_size; ++yi) {
+      int source_yi = flip_y ? yi : _y_size - 1 - yi;
+      for (int xi = 0; xi < _x_size; ++xi) {
+        int source_xi = flip_x ? xi : _x_size - 1 - xi;
+        const LPoint3 &p = _table[source_yi * _x_size + source_xi];
+        flipped.push_back(p);
+      }
+    }
+  }
+
+  nassertv(flipped.size() == _table.size());
+  _table.swap(flipped);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::xform
 //       Access: Published
 //  Description: Applies the indicated transform matrix to all points

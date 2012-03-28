@@ -66,6 +66,7 @@ PUBLISHED:
 
   BLOCKING void resize(int new_x_size, int new_y_size);
   BLOCKING void reverse_rows();
+  BLOCKING void flip(bool flip_x, bool flip_y, bool transpose);
   BLOCKING void xform(const LMatrix4 &transform);
   BLOCKING void project(const Lens *lens);
   BLOCKING void merge(const PfmFile &other);
