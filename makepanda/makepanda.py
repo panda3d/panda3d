@@ -4587,6 +4587,10 @@ if (PkgSkip("PANDATOOL")==0):
   TargetAdd('obj2egg.exe', input='libp3objegg.lib')
   TargetAdd('obj2egg.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
 
+  TargetAdd('egg2obj_eggToObj.obj', opts=OPTS, input='eggToObj.cxx')
+  TargetAdd('egg2obj.exe', input='egg2obj_eggToObj.obj')
+  TargetAdd('egg2obj.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+
 #
 # DIRECTORY: pandatool/src/palettizer/
 #
