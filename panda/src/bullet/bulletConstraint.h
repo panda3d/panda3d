@@ -41,6 +41,16 @@ PUBLISHED:
   PN_stdfloat get_applied_impulse() const;
   PN_stdfloat get_debug_draw_size();
 
+  enum ConstraintParam {
+    CP_erp = 1,
+    CP_stop_erp,
+    CP_cfm,
+    CP_stop_cfm
+  };
+
+  void set_param(ConstraintParam num, PN_stdfloat value, int axis=-1);
+  PN_stdfloat get_param(ConstraintParam num, int axis=-1);
+
 public:
   virtual btTypedConstraint *ptr() const = 0;
 

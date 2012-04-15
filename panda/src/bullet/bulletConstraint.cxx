@@ -83,3 +83,25 @@ get_rigid_body_b() {
   return (BulletRigidBodyNode *)ptr()->getRigidBodyB().getUserPointer();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BulletConstraint::set_param
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletConstraint::
+set_param(ConstraintParam num, PN_stdfloat value, int axis) {
+
+  ptr()->setParam((btConstraintParams)num, (btScalar)value, axis);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletConstraint::get_param
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+PN_stdfloat BulletConstraint::
+get_param(ConstraintParam num, int axis) {
+
+  return (PN_stdfloat)ptr()->getParam((btConstraintParams)num, axis);
+}
+
