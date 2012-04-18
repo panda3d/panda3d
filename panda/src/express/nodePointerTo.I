@@ -119,7 +119,7 @@ p() const {
 template<class T>
 INLINE NodePointerTo<T> &NodePointerTo<T>::
 operator = (To *ptr) {
-  reassign(ptr);
+  this->reassign(ptr);
   return *this;
 }
 #endif  // CPPPARSER
@@ -133,7 +133,7 @@ operator = (To *ptr) {
 template<class T>
 INLINE NodePointerTo<T> &NodePointerTo<T>::
 operator = (const NodePointerTo<T> &copy) {
-  reassign((const NodePointerToBase<T> &)copy);
+  this->reassign((const NodePointerToBase<T> &)copy);
   return *this;
 }
 #endif  // CPPPARSER
@@ -261,7 +261,7 @@ p() const {
 template<class T>
 INLINE NodeConstPointerTo<T> &NodeConstPointerTo<T>::
 operator = (const To *ptr) {
-  reassign((To *)ptr);
+  this->reassign((To *)ptr);
   return *this;
 }
 #endif  // CPPPARSER
@@ -275,7 +275,7 @@ operator = (const To *ptr) {
 template<class T>
 INLINE NodeConstPointerTo<T> &NodeConstPointerTo<T>::
 operator = (const NodePointerTo<T> &copy) {
-  reassign((const NodePointerToBase<T> &)copy);
+  this->reassign((const NodePointerToBase<T> &)copy);
   return *this;
 }
 #endif  // CPPPARSER
@@ -289,7 +289,7 @@ operator = (const NodePointerTo<T> &copy) {
 template<class T>
 INLINE NodeConstPointerTo<T> &NodeConstPointerTo<T>::
 operator = (const NodeConstPointerTo<T> &copy) {
-  reassign((const NodePointerToBase<T> &)copy);
+  this->reassign((const NodePointerToBase<T> &)copy);
   return *this;
 }
 #endif  // CPPPARSER
