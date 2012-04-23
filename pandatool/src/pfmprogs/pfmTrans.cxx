@@ -171,7 +171,12 @@ process_pfm(const Filename &input_filename, PfmFile &file) {
       break;
     case 2:
       // Rotate 180 degrees.
-      file.flip(true, true, false);
+
+      // Not sure right now why we can't flip both axes at once.  But
+      // it works if we do one at a time.
+      //file.flip(true, true, false);
+      file.flip(true, false, false);
+      file.flip(false, true, false);
       break;
     case 3:
       // Rotate 90 degrees cw.
