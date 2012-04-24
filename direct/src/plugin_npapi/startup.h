@@ -29,7 +29,13 @@ extern "C" {
                                NPPluginFuncs *pluginFuncs);
 #endif
 
-  const char* NP_GetMIMEDescription(void);
+#if NP_VERSION_MAJOR == 0 && NP_VERSION_MINOR <= 22
+  // Until at least 0.22, this function was declared to return a char *.
+  char *NP_GetMIMEDescription(void);
+#else
+  // At some point after 0.22, it was corrected to return a const char *.
+  const char *NP_GetMIMEDescription(void);
+#endif
   NPError NP_GetValue(void*, NPPVariable variable, void* value);
   NPError OSCALL NP_GetEntryPoints(NPPluginFuncs *pluginFuncs);
   NPError OSCALL NP_Shutdown(void);
