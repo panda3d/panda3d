@@ -164,12 +164,17 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built"):
     #    if ((base != "extensions") and (base != "extensions_native")):
     #        compileall.compile_dir(destdir+prefix+"/share/panda3d/direct/"+base)
     #compileall.compile_dir(destdir+prefix+"/share/panda3d/Pmw")
-    DeleteCVS(destdir)
-    DeleteBuildFiles(destdir)
-    DeleteEmptyDirs(destdir)
+
+    DeleteCVS(destdir+prefix+"/share/panda3d")
+    DeleteBuildFiles(destdir+prefix+"/share/panda3d")
+    DeleteEmptyDirs(destdir+prefix+"/share/panda3d")
+    DeleteCVS(destdir+prefix+"/include/panda3d")
+    DeleteBuildFiles(destdir+prefix+"/include/panda3d")
+    DeleteEmptyDirs(destdir+prefix+"/include/panda3d")
+
     # rpmlint doesn't like this file, for some reason.
     if (os.path.isfile(destdir+prefix+"/share/panda3d/direct/leveleditor/copyfiles.pl")):
-      os.remove(destdir+prefix+"/share/panda3d/direct/leveleditor/copyfiles.pl")
+        os.remove(destdir+prefix+"/share/panda3d/direct/leveleditor/copyfiles.pl")
 
 def InstallRuntime(destdir="", prefix="/usr", outputdir="built"):
     if (not prefix.startswith("/")): prefix = "/" + prefix
