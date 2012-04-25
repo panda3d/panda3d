@@ -654,7 +654,7 @@ if (COMPILER=="LINUX"):
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
     SmartPkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
     SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h")
-    SmartPkgEnable("ZLIB",      "",          ("z"), "zlib.h")
+    SmartPkgEnable("ZLIB",      "zlib",      ("z"), "zlib.h")
     if (RTDIST and sys.platform == "darwin" and "PYTHONVERSION" in SDK):
         # Don't use the framework for the OSX rtdist build. I'm afraid it gives problems somewhere.
         SmartPkgEnable("PYTHON",    "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config")
