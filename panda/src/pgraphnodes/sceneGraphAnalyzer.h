@@ -74,12 +74,14 @@ PUBLISHED:
   INLINE int get_num_tris() const;
   INLINE int get_num_lines() const;
   INLINE int get_num_points() const;
+  INLINE int get_num_patches() const;
 
   INLINE int get_num_individual_tris() const;
   INLINE int get_num_tristrips() const;
   INLINE int get_num_triangles_in_strips() const;
   INLINE int get_num_trifans() const;
   INLINE int get_num_triangles_in_fans() const;
+  INLINE int get_num_vertices_in_patches() const;
 
   INLINE int get_texture_bytes() const;
 
@@ -141,12 +143,14 @@ private:
   int _num_tris;
   int _num_lines;
   int _num_points;
+  int _num_patches;
 
   int _num_individual_tris;
   int _num_tristrips;
   int _num_triangles_in_strips;
   int _num_trifans;
   int _num_triangles_in_fans;
+  int _num_vertices_in_patches;
 
   int _texture_bytes;
 

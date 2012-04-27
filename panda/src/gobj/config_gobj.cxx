@@ -23,6 +23,7 @@
 #include "geomTriangles.h"
 #include "geomTristrips.h"
 #include "geomTrifans.h"
+#include "geomPatches.h"
 #include "geomLines.h"
 #include "geomLinestrips.h"
 #include "geomPoints.h"
@@ -525,6 +526,7 @@ ConfigureFn(config_gobj) {
   GeomTriangles::init_type();
   GeomTrifans::init_type();
   GeomTristrips::init_type();
+  GeomPatches::init_type();
   GeomVertexArrayData::init_type();
   GeomVertexArrayDataHandle::init_type();
   GeomVertexArrayFormat::init_type();
@@ -570,6 +572,7 @@ ConfigureFn(config_gobj) {
   GeomTriangles::register_with_read_factory();
   GeomTrifans::register_with_read_factory();
   GeomTristrips::register_with_read_factory();
+  GeomPatches::register_with_read_factory();
   GeomVertexArrayData::register_with_read_factory();
   GeomVertexArrayFormat::register_with_read_factory();
   GeomVertexData::register_with_read_factory();

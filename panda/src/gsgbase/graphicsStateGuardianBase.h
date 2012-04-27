@@ -200,6 +200,7 @@ public:
   virtual bool draw_triangles(const GeomPrimitivePipelineReader *reader, bool force)=0;
   virtual bool draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force)=0;
   virtual bool draw_trifans(const GeomPrimitivePipelineReader *reader, bool force)=0;
+  virtual bool draw_patches(const GeomPrimitivePipelineReader *reader, bool force)=0;
   virtual bool draw_lines(const GeomPrimitivePipelineReader *reader, bool force)=0;
   virtual bool draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force)=0;
   virtual bool draw_points(const GeomPrimitivePipelineReader *reader, bool force)=0;

@@ -12,6 +12,7 @@
 #include "geomLines.cxx"
 #include "geomLinestrips.cxx"
 #include "geomMunger.cxx"
+#include "geomPatches.cxx"
 #include "geomPoints.cxx"
 #include "geomPrimitive.cxx"
 #include "geomTriangles.cxx"

@@ -170,7 +170,8 @@ PUBLISHED:
     PT_none,
     PT_polygons,
     PT_lines,
-    PT_points
+    PT_points,
+    PT_patches
   };
 
   // The numeric type determines what physical representation is used

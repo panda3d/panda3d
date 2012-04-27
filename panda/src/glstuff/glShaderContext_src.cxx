@@ -59,6 +59,8 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
   _glsl_vshader = 0;
   _glsl_fshader = 0;
   _glsl_gshader = 0;
+  _glsl_tcshader = 0;
+  _glsl_teshader = 0;
 #if defined(HAVE_CG) && !defined(OPENGLES)
   _cg_context = 0;
   if (s->get_language() == Shader::SL_Cg) {
@@ -116,6 +118,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
   if (s->get_language() == Shader::SL_GLSL) {
     // We compile and analyze the shader here, instead of in shader.cxx, to avoid gobj getting a dependency on GL stuff.
     if (_glsl_program == 0) {
+      gsg->report_my_gl_errors();
       if (!glsl_compile_shader(gsg)) {
         release_resources(gsg);
         s->_error_flag = true;
@@ -130,19 +133,22 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
       GLenum param_type;
       gsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_UNIFORMS, &param_count);
       gsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &param_maxlength);
-      char* param_name = new char[param_maxlength];
+      char* param_name_cstr = (char *)alloca(param_maxlength);
       for (int i = 0; i < param_count; ++i) {
-        gsg->_glGetActiveUniform(_glsl_program, i, param_maxlength, NULL, &param_size, &param_type, param_name);
-        GLint p = gsg->_glGetUniformLocation(_glsl_program, param_name);
+        gsg->_glGetActiveUniform(_glsl_program, i, param_maxlength, NULL, &param_size, &param_type, param_name_cstr);
+        string param_name(param_name_cstr);
+        GLint p = gsg->_glGetUniformLocation(_glsl_program, param_name_cstr);
         if (p > -1) {
           Shader::ShaderArgId arg_id;
           arg_id._name  = param_name;
           arg_id._seqno = seqno++;
           s->_glsl_parameter_map.push_back(p);
-          PT(InternalName) inputname = InternalName::make(param_name);
-          if (inputname->get_name().substr(0, 4) == "p3d_" || inputname->get_name().substr(0, 3) == "gl_") {
-            if (inputname->get_name().substr(0, 3) == "gl_") noprefix = inputname->get_name().substr(3);
-            else noprefix = inputname->get_name().substr(4);
+          if (param_name.substr(0, 4) == "p3d_" || param_name.substr(0, 3) == "gl_") {
+            if (param_name.substr(0, 3) == "gl_") {
+              noprefix = param_name.substr(3);
+            } else {
+              noprefix = param_name.substr(4);
+            }
             
             if (noprefix == "ModelViewProjectionMatrix") {
               Shader::ShaderMatSpec bind;
@@ -151,8 +157,10 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
               bind._func = Shader::SMF_compose;
               bind._part[0] = Shader::SMO_model_to_view;
               bind._arg[0] = NULL;
+              bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
               bind._part[1] = Shader::SMO_view_to_apiclip;
               bind._arg[1] = NULL;
+              bind._dep[1] = Shader::SSD_general | Shader::SSD_transform;
               s->_mat_spec.push_back(bind);
               continue;
             }
@@ -163,6 +171,10 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
               bind._func = Shader::SMF_first;
               bind._part[0] = Shader::SMO_model_to_view;
               bind._arg[0] = NULL;
+              bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
+              bind._part[1] = Shader::SMO_identity;
+              bind._arg[1] = NULL;
+              bind._dep[1] = Shader::SSD_NONE;
               s->_mat_spec.push_back(bind);
               continue;
             }
@@ -173,6 +185,10 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
               bind._func = Shader::SMF_first;
               bind._part[0] = Shader::SMO_view_to_apiclip;
               bind._arg[0] = NULL;
+              bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
+              bind._part[1] = Shader::SMO_identity;
+              bind._arg[1] = NULL;
+              bind._dep[1] = Shader::SSD_NONE;
               s->_mat_spec.push_back(bind);
               continue;
             }
@@ -185,7 +201,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
               s->_tex_spec.push_back(bind);
               continue;
             }
-            GLCAT.error() << "Unrecognized uniform name '" << param_name << "'!\n";
+            GLCAT.error() << "Unrecognized uniform name '" << param_name_cstr << "'!\n";
             continue;
           }
 
@@ -196,7 +212,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
               case GL_SAMPLER_1D: {
                 Shader::ShaderTexSpec bind;
                 bind._id = arg_id;
-                bind._name = inputname;
+                bind._name = InternalName::make(param_name);;
                 bind._desired_type = Texture::TT_1d_texture;
                 bind._stage = texunitno++;
                 s->_tex_spec.push_back(bind);
@@ -206,7 +222,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
               case GL_SAMPLER_2D: {
                 Shader::ShaderTexSpec bind;
                 bind._id = arg_id;
-                bind._name = inputname;
+                bind._name = InternalName::make(param_name);;
                 bind._desired_type = Texture::TT_2d_texture;
                 bind._stage = texunitno++;
                 s->_tex_spec.push_back(bind);
@@ -214,7 +230,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
               case GL_SAMPLER_3D: {
                 Shader::ShaderTexSpec bind;
                 bind._id = arg_id;
-                bind._name = inputname;
+                bind._name = InternalName::make(param_name);;
                 bind._desired_type = Texture::TT_3d_texture;
                 bind._stage = texunitno++;
                 s->_tex_spec.push_back(bind);
@@ -222,7 +238,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
               case GL_SAMPLER_CUBE: {
                 Shader::ShaderTexSpec bind;
                 bind._id = arg_id;
-                bind._name = inputname;
+                bind._name = InternalName::make(param_name);;
                 bind._desired_type = Texture::TT_cube_map;
                 bind._stage = texunitno++;
                 s->_tex_spec.push_back(bind);
@@ -245,11 +261,12 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
                 bind._piece = Shader::SMP_whole;
                 bind._func = Shader::SMF_first;
                 bind._part[0] = Shader::SMO_mat_constant_x;
-                bind._arg[0] = inputname;
+                bind._arg[0] = InternalName::make(param_name);;
                 bind._part[1] = Shader::SMO_identity;
                 bind._arg[1] = NULL;
+                bind._part[1] = Shader::SMO_identity;
                 bind._dep[0]  = Shader::SSD_general | Shader::SSD_shaderinputs;
-                bind._dep[1]  = Shader::SSD_general | Shader::SSD_NONE;
+                bind._dep[1]  = Shader::SSD_NONE;
                 s->_mat_spec.push_back(bind);
                 continue; }
               case GL_BOOL:
@@ -274,11 +291,11 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
                 }
                 bind._func = Shader::SMF_first;
                 bind._part[0] = Shader::SMO_vec_constant_x;
-                bind._arg[0] = inputname;
+                bind._arg[0] = InternalName::make(param_name);;
+                bind._dep[0]  = Shader::SSD_general | Shader::SSD_shaderinputs;
                 bind._part[1] = Shader::SMO_identity;
                 bind._arg[1] = NULL;
-                bind._dep[0]  = Shader::SSD_general | Shader::SSD_shaderinputs;
-                bind._dep[1]  = Shader::SSD_general | Shader::SSD_NONE;
+                bind._dep[1]  = Shader::SSD_NONE;
                 s->_mat_spec.push_back(bind);
                 continue; }
               case GL_INT:
@@ -327,10 +344,10 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
                 case GL_BOOL_VEC4:
                 case GL_FLOAT_VEC4: bind._dim[1] = 4; break;
               }
-              bind._arg = inputname;
+              bind._arg = InternalName::make(param_name);;
               bind._dim[0] = param_size;
               bind._dep[0] = Shader::SSD_general | Shader::SSD_shaderinputs;
-              bind._dep[1] = Shader::SSD_general | Shader::SSD_NONE;
+              bind._dep[1] = Shader::SSD_NONE;
               s->_ptr_spec.push_back(bind);
               continue; }
             case GL_INT:
@@ -345,39 +362,40 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
           }
         }
       }
-      delete[] param_name;
       
       // Now we've processed the uniforms, we'll process the attribs.
       gsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_ATTRIBUTES, &param_count);
       gsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &param_maxlength);
-      param_name = new char[param_maxlength];
+      param_name_cstr = (char *)alloca(param_maxlength);
       for (int i = 0; i < param_count; ++i) {
-        gsg->_glGetActiveAttrib(_glsl_program, i, param_maxlength, NULL, &param_size, &param_type, param_name);
-        PT(InternalName) inputname = InternalName::make(param_name);
+        gsg->_glGetActiveAttrib(_glsl_program, i, param_maxlength, NULL, &param_size, &param_type, param_name_cstr);
+        string param_name(param_name_cstr);
 
-        if (inputname->get_name().substr(0, 3) == "gl_") {
+        if (param_name.substr(0, 3) == "gl_") {
           // We shouldn't bind anything to these.
-        } else if (inputname->get_name().substr(0, 4) == "p3d_") {
-          noprefix = inputname->get_name().substr(4);
+
+        } else if (param_name.substr(0, 4) == "p3d_") {
+          noprefix = param_name.substr(4);
+
           Shader::ShaderVarSpec bind;
           bind._append_uv = -1;
 
           if (noprefix == "Vertex") {
             bind._name = InternalName::get_vertex();
             s->_var_spec.push_back(bind);
-            gsg->_glBindAttribLocation(_glsl_program, i, param_name);
+            gsg->_glBindAttribLocation(_glsl_program, i, param_name_cstr);
             continue;
           }
           if (noprefix == "Normal") {
             bind._name = InternalName::get_normal();
             s->_var_spec.push_back(bind);
-            gsg->_glBindAttribLocation(_glsl_program, i, param_name);
+            gsg->_glBindAttribLocation(_glsl_program, i, param_name_cstr);
             continue;
           }
           if (noprefix == "Color") {
             bind._name = InternalName::get_color();
             s->_var_spec.push_back(bind);
-            gsg->_glBindAttribLocation(_glsl_program, i, param_name);
+            gsg->_glBindAttribLocation(_glsl_program, i, param_name_cstr);
             continue;
           }
           if (noprefix.substr(0, 7)  == "Tangent") {
@@ -386,7 +404,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
               bind._append_uv = atoi(noprefix.substr(7).c_str());
             }
             s->_var_spec.push_back(bind);
-            gsg->_glBindAttribLocation(_glsl_program, i, param_name);
+            gsg->_glBindAttribLocation(_glsl_program, i, param_name_cstr);
             continue;
           }
           if (noprefix.substr(0, 8)  == "Binormal") {
@@ -395,27 +413,27 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
               bind._append_uv = atoi(noprefix.substr(8).c_str());
             }
             s->_var_spec.push_back(bind);
-            gsg->_glBindAttribLocation(_glsl_program, i, param_name);
+            gsg->_glBindAttribLocation(_glsl_program, i, param_name_cstr);
             continue;
           }
           if (noprefix.substr(0, 13)  == "MultiTexCoord") {
             bind._name = InternalName::get_texcoord();
-            bind._append_uv = atoi(inputname->get_name().substr(13).c_str());
+            bind._append_uv = atoi(noprefix.substr(13).c_str());
             s->_var_spec.push_back(bind);
-            gsg->_glBindAttribLocation(_glsl_program, i, param_name);
+            gsg->_glBindAttribLocation(_glsl_program, i, param_name_cstr);
             continue;
           }
           GLCAT.error() << "Unrecognized vertex attrib '" << param_name << "'!\n";
           continue;
+
         } else {
           Shader::ShaderVarSpec bind;
-          bind._name = inputname;
+          bind._name = InternalName::make(param_name);
           bind._append_uv = -1;
           s->_var_spec.push_back(bind);
-          gsg->_glBindAttribLocation(_glsl_program, i, param_name);
+          gsg->_glBindAttribLocation(_glsl_program, i, param_name_cstr);
         }
       }
-      delete[] param_name;
     }
     
     // Finally, re-link the program, or otherwise the glBindAttribLocation
@@ -485,6 +503,12 @@ release_resources(GSG *gsg) {
     if (_glsl_gshader != 0) {
       gsg->_glDetachShader(_glsl_program, _glsl_gshader);
     }
+    if (_glsl_tcshader != 0) {
+      gsg->_glDetachShader(_glsl_program, _glsl_tcshader);
+    }
+    if (_glsl_teshader != 0) {
+      gsg->_glDetachShader(_glsl_program, _glsl_teshader);
+    }
     gsg->_glDeleteProgram(_glsl_program);
     _glsl_program = 0;
   }
@@ -499,6 +523,14 @@ release_resources(GSG *gsg) {
   if (_glsl_gshader != 0) {
     gsg->_glDeleteShader(_glsl_gshader);
     _glsl_gshader = 0;
+  }
+  if (_glsl_tcshader != 0) {
+    gsg->_glDeleteShader(_glsl_tcshader);
+    _glsl_tcshader = 0;
+  }
+  if (_glsl_teshader != 0) {
+    gsg->_glDeleteShader(_glsl_teshader);
+    _glsl_teshader = 0;
   }
   
   gsg->report_my_gl_errors();
@@ -1111,7 +1143,7 @@ glsl_report_program_errors(GSG *gsg, unsigned int program) {
 ////////////////////////////////////////////////////////////////////
 unsigned int CLP(ShaderContext)::
 glsl_compile_entry_point(GSG *gsg, Shader::ShaderType type) {
-  unsigned int handle;
+  unsigned int handle = 0;
   switch (type) {
     case Shader::ST_vertex:
       handle = gsg->_glCreateShader(GL_VERTEX_SHADER);
@@ -1120,26 +1152,44 @@ glsl_compile_entry_point(GSG *gsg, Shader::ShaderType type) {
       handle = gsg->_glCreateShader(GL_FRAGMENT_SHADER);
       break;
     case Shader::ST_geometry:
-      handle = gsg->_glCreateShader(GL_GEOMETRY_SHADER_EXT);
+      if (gsg->get_supports_geometry_shaders()) {
+        handle = gsg->_glCreateShader(GL_GEOMETRY_SHADER);
+      }
       break;
-    default:
-      return 0;
+    case Shader::ST_tess_control:
+      if (gsg->get_supports_tessellation_shaders()) {
+        handle = gsg->_glCreateShader(GL_TESS_CONTROL_SHADER);
+      }
+      break;
+    case Shader::ST_tess_evaluation:
+      if (gsg->get_supports_tessellation_shaders()) {
+        handle = gsg->_glCreateShader(GL_TESS_EVALUATION_SHADER);
+      }
+      break;
   }
   if (!handle) {
+    gsg->report_my_gl_errors();
     return 0;
   }
+
   string text_str = _shader->get_text(type);
   const char* text = text_str.c_str();
   gsg->_glShaderSource(handle, 1, &text, NULL);
   gsg->_glCompileShader(handle);
   GLint status;
   gsg->_glGetShaderiv(handle, GL_COMPILE_STATUS, &status);
+  
   if (status != GL_TRUE) {
-    GLCAT.error() << "An error occurred while compiling shader!\n";
+    GLCAT.error() 
+      << "An error occurred while compiling shader " 
+      << _shader->get_filename(type) << "\n";
     glsl_report_shader_errors(gsg, handle);
     gsg->_glDeleteShader(handle);
+    gsg->report_my_gl_errors();
     return 0;
   }
+
+  gsg->report_my_gl_errors();
   return handle;
 }
 
@@ -1169,16 +1219,29 @@ glsl_compile_shader(GSG *gsg) {
     _glsl_gshader = glsl_compile_entry_point(gsg, Shader::ST_geometry);
     if (!_glsl_gshader) return false;
     gsg->_glAttachShader(_glsl_program, _glsl_gshader);
-    
+
 #ifdef OPENGLES
     nassertr(false, false); // OpenGL ES has no geometry shaders.
 #else
     // Set the vertex output limit to the maximum
     nassertr(gsg->_glProgramParameteri != NULL, false);
     GLint max_vertices;
-    glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES_EXT, &max_vertices);
-    gsg->_glProgramParameteri(_glsl_program, GL_GEOMETRY_VERTICES_OUT_EXT, max_vertices); 
+    glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES, &max_vertices);
+    gsg->_glProgramParameteri(_glsl_program, GL_GEOMETRY_VERTICES_OUT_ARB, max_vertices); 
 #endif
+    gsg->report_my_gl_errors();
+  }
+
+  if (!_shader->get_text(Shader::ST_tess_control).empty()) {
+    _glsl_tcshader = glsl_compile_entry_point(gsg, Shader::ST_tess_control);
+    if (!_glsl_tcshader) return false;
+    gsg->_glAttachShader(_glsl_program, _glsl_tcshader);
+  }
+
+  if (!_shader->get_text(Shader::ST_tess_evaluation).empty()) {
+    _glsl_teshader = glsl_compile_entry_point(gsg, Shader::ST_tess_evaluation);
+    if (!_glsl_teshader) return false;
+    gsg->_glAttachShader(_glsl_program, _glsl_teshader);
   }
   
   // There might be warnings. Only report them for one shader program.
@@ -1188,6 +1251,10 @@ glsl_compile_shader(GSG *gsg) {
     glsl_report_shader_errors(gsg, _glsl_fshader);
   } else if (_glsl_gshader != 0) {
     glsl_report_shader_errors(gsg, _glsl_gshader);
+  } else if (_glsl_tcshader != 0) {
+    glsl_report_shader_errors(gsg, _glsl_tcshader);
+  } else if (_glsl_teshader != 0) {
+    glsl_report_shader_errors(gsg, _glsl_teshader);
   }
 
   gsg->_glLinkProgram(_glsl_program);

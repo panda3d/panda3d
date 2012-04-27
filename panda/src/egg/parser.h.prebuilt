@@ -1,24 +1,22 @@
-/* A Bison parser, made by GNU Bison 2.3.  */
+/* A Bison parser, made by GNU Bison 2.4.2.  */
 
 /* Skeleton interface for Bison's Yacc-like parsers in C
-
-   Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004, 2005, 2006
-   Free Software Foundation, Inc.
-
-   This program is free software; you can redistribute it and/or modify
+   
+      Copyright (C) 1984, 1989-1990, 2000-2006, 2009-2010 Free Software
+   Foundation, Inc.
+   
+   This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
-
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+   
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-
+   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor,
-   Boston, MA 02110-1301, USA.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 /* As a special exception, you may create a larger work that contains
    part or all of the Bison parser skeleton and distribute that work
@@ -29,9 +27,10 @@
    special exception, which will cause the skeleton and the resulting
    Bison output files to be licensed under the GNU General Public
    License without this special exception.
-
+   
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
+
 
 /* Tokens.  */
 #ifndef YYTOKENTYPE
@@ -84,49 +83,50 @@
      OBJECTTYPE = 300,
      ORDER = 301,
      OUTTANGENT = 302,
-     POINTLIGHT = 303,
-     POLYGON = 304,
-     REF = 305,
-     RGBA = 306,
-     ROTATE = 307,
-     ROTX = 308,
-     ROTY = 309,
-     ROTZ = 310,
-     SANIM = 311,
-     SCALAR = 312,
-     SCALE = 313,
-     SEQUENCE = 314,
-     SHADING = 315,
-     SWITCH = 316,
-     SWITCHCONDITION = 317,
-     TABLE = 318,
-     TABLE_V = 319,
-     TAG = 320,
-     TANGENT = 321,
-     TEXLIST = 322,
-     TEXTURE = 323,
-     TLENGTHS = 324,
-     TRANSFORM = 325,
-     TRANSLATE = 326,
-     TREF = 327,
-     TRIANGLEFAN = 328,
-     TRIANGLESTRIP = 329,
-     TRIM = 330,
-     TXT = 331,
-     UKNOTS = 332,
-     UV = 333,
-     AUX = 334,
-     VKNOTS = 335,
-     VERTEX = 336,
-     VERTEXANIM = 337,
-     VERTEXPOOL = 338,
-     VERTEXREF = 339,
-     XFMANIM = 340,
-     XFMSANIM = 341,
-     START_EGG = 342,
-     START_GROUP_BODY = 343,
-     START_TEXTURE_BODY = 344,
-     START_PRIMITIVE_BODY = 345
+     PATCH = 303,
+     POINTLIGHT = 304,
+     POLYGON = 305,
+     REF = 306,
+     RGBA = 307,
+     ROTATE = 308,
+     ROTX = 309,
+     ROTY = 310,
+     ROTZ = 311,
+     SANIM = 312,
+     SCALAR = 313,
+     SCALE = 314,
+     SEQUENCE = 315,
+     SHADING = 316,
+     SWITCH = 317,
+     SWITCHCONDITION = 318,
+     TABLE = 319,
+     TABLE_V = 320,
+     TAG = 321,
+     TANGENT = 322,
+     TEXLIST = 323,
+     TEXTURE = 324,
+     TLENGTHS = 325,
+     TRANSFORM = 326,
+     TRANSLATE = 327,
+     TREF = 328,
+     TRIANGLEFAN = 329,
+     TRIANGLESTRIP = 330,
+     TRIM = 331,
+     TXT = 332,
+     UKNOTS = 333,
+     UV = 334,
+     AUX = 335,
+     VKNOTS = 336,
+     VERTEX = 337,
+     VERTEXANIM = 338,
+     VERTEXPOOL = 339,
+     VERTEXREF = 340,
+     XFMANIM = 341,
+     XFMSANIM = 342,
+     START_EGG = 343,
+     START_GROUP_BODY = 344,
+     START_TEXTURE_BODY = 345,
+     START_PRIMITIVE_BODY = 346
    };
 #endif
 /* Tokens.  */
@@ -175,59 +175,60 @@
 #define OBJECTTYPE 300
 #define ORDER 301
 #define OUTTANGENT 302
-#define POINTLIGHT 303
-#define POLYGON 304
-#define REF 305
-#define RGBA 306
-#define ROTATE 307
-#define ROTX 308
-#define ROTY 309
-#define ROTZ 310
-#define SANIM 311
-#define SCALAR 312
-#define SCALE 313
-#define SEQUENCE 314
-#define SHADING 315
-#define SWITCH 316
-#define SWITCHCONDITION 317
-#define TABLE 318
-#define TABLE_V 319
-#define TAG 320
-#define TANGENT 321
-#define TEXLIST 322
-#define TEXTURE 323
-#define TLENGTHS 324
-#define TRANSFORM 325
-#define TRANSLATE 326
-#define TREF 327
-#define TRIANGLEFAN 328
-#define TRIANGLESTRIP 329
-#define TRIM 330
-#define TXT 331
-#define UKNOTS 332
-#define UV 333
-#define AUX 334
-#define VKNOTS 335
-#define VERTEX 336
-#define VERTEXANIM 337
-#define VERTEXPOOL 338
-#define VERTEXREF 339
-#define XFMANIM 340
-#define XFMSANIM 341
-#define START_EGG 342
-#define START_GROUP_BODY 343
-#define START_TEXTURE_BODY 344
-#define START_PRIMITIVE_BODY 345
+#define PATCH 303
+#define POINTLIGHT 304
+#define POLYGON 305
+#define REF 306
+#define RGBA 307
+#define ROTATE 308
+#define ROTX 309
+#define ROTY 310
+#define ROTZ 311
+#define SANIM 312
+#define SCALAR 313
+#define SCALE 314
+#define SEQUENCE 315
+#define SHADING 316
+#define SWITCH 317
+#define SWITCHCONDITION 318
+#define TABLE 319
+#define TABLE_V 320
+#define TAG 321
+#define TANGENT 322
+#define TEXLIST 323
+#define TEXTURE 324
+#define TLENGTHS 325
+#define TRANSFORM 326
+#define TRANSLATE 327
+#define TREF 328
+#define TRIANGLEFAN 329
+#define TRIANGLESTRIP 330
+#define TRIM 331
+#define TXT 332
+#define UKNOTS 333
+#define UV 334
+#define AUX 335
+#define VKNOTS 336
+#define VERTEX 337
+#define VERTEXANIM 338
+#define VERTEXPOOL 339
+#define VERTEXREF 340
+#define XFMANIM 341
+#define XFMSANIM 342
+#define START_EGG 343
+#define START_GROUP_BODY 344
+#define START_TEXTURE_BODY 345
+#define START_PRIMITIVE_BODY 346
 
 
 
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef int YYSTYPE;
+
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
-# define YYSTYPE_IS_TRIVIAL 1
 #endif
 
 extern YYSTYPE eggyylval;
+
 

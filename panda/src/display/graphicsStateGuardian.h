@@ -143,6 +143,8 @@ PUBLISHED:
   INLINE bool get_supports_depth_stencil() const;
   INLINE bool get_supports_shadow_filter() const;
   INLINE bool get_supports_basic_shaders() const;
+  INLINE bool get_supports_geometry_shaders() const;
+  INLINE bool get_supports_tessellation_shaders() const;
   INLINE bool get_supports_glsl() const;
   INLINE bool get_supports_stencil() const;
   INLINE bool get_supports_two_sided_stencil() const;
@@ -273,6 +275,8 @@ public:
   virtual bool draw_tristrips(const GeomPrimitivePipelineReader *reader,
                               bool force);
   virtual bool draw_trifans(const GeomPrimitivePipelineReader *reader,
+                            bool force);
+  virtual bool draw_patches(const GeomPrimitivePipelineReader *reader,
                             bool force);
   virtual bool draw_lines(const GeomPrimitivePipelineReader *reader,
                           bool force);
@@ -482,6 +486,8 @@ protected:
   bool _supports_depth_stencil;
   bool _supports_shadow_filter;
   bool _supports_basic_shaders;
+  bool _supports_geometry_shaders;
+  bool _supports_tessellation_shaders;
   bool _supports_glsl;
   bool _supports_framebuffer_multisample;
   bool _supports_framebuffer_blit;
@@ -534,10 +540,12 @@ public:
   static PStatCollector _primitive_batches_tristrip_pcollector;
   static PStatCollector _primitive_batches_trifan_pcollector;
   static PStatCollector _primitive_batches_tri_pcollector;
+  static PStatCollector _primitive_batches_patch_pcollector;
   static PStatCollector _primitive_batches_other_pcollector;
   static PStatCollector _vertices_tristrip_pcollector;
   static PStatCollector _vertices_trifan_pcollector;
   static PStatCollector _vertices_tri_pcollector;
+  static PStatCollector _vertices_patch_pcollector;
   static PStatCollector _vertices_other_pcollector;
   static PStatCollector _vertices_indexed_tristrip_pcollector;
   static PStatCollector _state_pcollector;

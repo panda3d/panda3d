@@ -40,6 +40,7 @@
 #include "geomLines.h"
 #include "geomLinestrips.h"
 #include "geomPoints.h"
+#include "geomPatches.h"
 #include "sequenceNode.h"
 #include "switchNode.h"
 #include "portalNode.h"
@@ -50,6 +51,7 @@
 #include "modelRoot.h"
 #include "string_utils.h"
 #include "eggPrimitive.h"
+#include "eggPatch.h"
 #include "eggPoint.h"
 #include "eggLine.h"
 #include "eggTextureCollection.h"
@@ -356,7 +358,7 @@ make_polyset(EggBin *egg_bin, PandaNode *parent, const LMatrix4d *transform,
   egg_bin->apply_first_attribute(false);
   egg_bin->post_apply_flat_attribute(false);
 
-  //  egg_bin->write(cerr, 0);
+  //egg_bin->write(cerr, 0);
 
   PT(GeomNode) geom_node;
 
@@ -1742,6 +1744,7 @@ make_node(EggBin *egg_bin, PandaNode *parent) {
   // node (a parent of one or more similar EggPrimitives).
   switch (egg_bin->get_bin_number()) {
   case EggBinner::BN_polyset:
+  case EggBinner::BN_patches:
     make_polyset(egg_bin, parent, NULL, _dynamic_override, _dynamic_override_char_maker);
     return NULL;
 
@@ -2615,6 +2618,10 @@ make_primitive(const EggRenderState *render_state, EggPrimitive *egg_prim,
 
   } else if (egg_prim->is_of_type(EggPoint::get_class_type())) {
     primitive = new GeomPoints(Geom::UH_static);
+
+  } else if (egg_prim->is_of_type(EggPatch::get_class_type())) {
+    int num_vertices = egg_prim->size();
+    primitive = new GeomPatches(num_vertices, Geom::UH_static);
   }
 
   if (primitive == (GeomPrimitive *)NULL) {

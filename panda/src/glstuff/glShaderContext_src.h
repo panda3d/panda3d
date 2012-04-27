@@ -64,6 +64,8 @@ private:
   GLuint _glsl_vshader;
   GLuint _glsl_fshader;
   GLuint _glsl_gshader;
+  GLuint _glsl_tcshader;
+  GLuint _glsl_teshader;
 
   int _stage_offset;
   // Avoid using this! It merely exists so the

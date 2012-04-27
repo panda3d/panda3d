@@ -916,6 +916,26 @@ GEOMETRY ENTRIES
     or even within a texture.
 
 
+<Patch> name { 
+    [attributes] 
+    <VertexRef> { 
+        indices 
+        <Ref> { pool-name } 
+    } 
+}
+
+  A patch is similar to a polygon, but it is a special primitive that
+  can only be rendered with the use of a tessellation shader.  Each
+  patch consists of an arbitrary number of vertices; all patches with
+  the same number of vertices are collected together into the same
+  GeomPatches object to be delivered to the shader in a single batch.
+  It is then up to the shader to create the correct set of triangles
+  from the patch data.
+
+  All of the attributes that are valid for Polygon, above, may also be
+  specified for Patch.
+
+
 <PointLight> name { 
     [attributes] 
     <VertexRef> { 
@@ -942,7 +962,6 @@ GEOMETRY ENTRIES
     as a size in 3-d spatial units, rather than a size in pixels, and
     the point should be scaled according to its distance from the
     viewer normally.
-
 
 
 <Line> name { 

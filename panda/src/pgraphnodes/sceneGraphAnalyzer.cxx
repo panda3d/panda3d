@@ -27,6 +27,7 @@
 #include "geomTriangles.h"
 #include "geomTristrips.h"
 #include "geomTrifans.h"
+#include "geomPatches.h"
 #include "transformState.h"
 #include "textureAttrib.h"
 #include "pta_ushort.h"
@@ -88,12 +89,14 @@ clear() {
   _num_tris = 0;
   _num_lines = 0;
   _num_points = 0;
+  _num_patches = 0;
 
   _num_individual_tris = 0;
   _num_tristrips = 0;
   _num_triangles_in_strips = 0;
   _num_trifans = 0;
   _num_triangles_in_fans = 0;
+  _num_vertices_in_patches = 0;
 
   _texture_bytes = 0;
 
@@ -253,6 +256,13 @@ write(ostream &out, int indent_level) const {
   indent(out, indent_level + 2)
     << _num_individual_tris
     << " of these are independent triangles.\n";
+
+  if (_num_patches != 0) {
+    indent(out, indent_level)
+      << _num_patches << " patches ("
+      << (double)_num_vertices_in_patches / (double)_num_patches
+      << " average verts per patch).\n";
+  }
 
   if (_num_lines != 0 || _num_points != 0) {
     indent(out, indent_level)
@@ -473,6 +483,10 @@ collect_statistics(const Geom *geom) {
       _num_tris += prim->get_num_faces();
       _num_trifans += prim->get_num_primitives();
       _num_triangles_in_fans += prim->get_num_faces();
+
+    } else if (prim->is_of_type(GeomPatches::get_class_type())) {
+      _num_patches += prim->get_num_primitives();
+      _num_vertices_in_patches += prim->get_num_vertices();
 
     } else {
       pgraph_cat.warning()

@@ -59,6 +59,12 @@ get_text(const ShaderType &type) const {
       case ST_geometry:
         return _text->_geometry;
         break;
+      case ST_tess_control:
+        return _text->_tess_control;
+        break;
+      case ST_tess_evaluation:
+        return _text->_tess_evaluation;
+        break;
       default:
         return _text->_shared;
     }

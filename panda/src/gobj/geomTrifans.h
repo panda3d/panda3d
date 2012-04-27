@@ -27,6 +27,7 @@ PUBLISHED:
   GeomTrifans(UsageHint usage_hint);
   GeomTrifans(const GeomTrifans &copy);
   virtual ~GeomTrifans();
+  ALLOC_DELETED_CHAIN(GeomTrifans);
 
 public:
   virtual PT(GeomPrimitive) make_copy() const;

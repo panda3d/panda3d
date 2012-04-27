@@ -634,6 +634,28 @@ get_supports_basic_shaders() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_geometry_shaders
+//       Access: Published
+//  Description: Returns true if this particular GSG supports
+//               geometry shaders.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_supports_geometry_shaders() const {
+  return _supports_geometry_shaders;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_tessellation_shaders
+//       Access: Published
+//  Description: Returns true if this particular GSG supports
+//               tesselation shaders.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_supports_tessellation_shaders() const {
+  return _supports_tessellation_shaders;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_supports_glsl
 //       Access: Published
 //  Description: Returns true if this particular GSG supports

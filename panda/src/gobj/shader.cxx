@@ -1384,6 +1384,12 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps, ShaderType typ
     ultimate = caps._ultimate_gprofile;
     break;
 
+  case ST_tess_evaluation:
+  case ST_tess_control:
+    active   = caps._active_tprofile;
+    ultimate = caps._ultimate_tprofile;
+    break;
+
   case ST_none:
   default:
     active   = CG_PROFILE_UNKNOWN;
@@ -1875,6 +1881,7 @@ Shader(CPT(ShaderFile) filename, CPT(ShaderFile) text, const ShaderLanguage &lan
   if (_default_caps._ultimate_vprofile == 0 || _default_caps._ultimate_vprofile == CG_PROFILE_UNKNOWN) {
     _default_caps._active_vprofile = CG_PROFILE_UNKNOWN;
     _default_caps._active_fprofile = CG_PROFILE_UNKNOWN;
+    _default_caps._active_gprofile = CG_PROFILE_UNKNOWN;
     _default_caps._ultimate_vprofile = cgGetProfile("glslv");
     _default_caps._ultimate_fprofile = cgGetProfile("glslf");
     _default_caps._ultimate_gprofile = cgGetProfile("glslg");
@@ -2090,9 +2097,11 @@ load(const Filename &file, const ShaderLanguage &lang) {
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   if (!vfs->read_file(file, sbody->_shared, true)) {
-    gobj_cat.error() << "Could not read shader file: " << file << "\n";
+    gobj_cat.error()
+      << "Could not read shader file: " << file << "\n";
     return NULL;
   }
+
   PT(Shader) result = new Shader(sfile, sbody, lang);
   result->_loaded = true;
   _load_table[sfile] = result;
@@ -2106,26 +2115,43 @@ load(const Filename &file, const ShaderLanguage &lang) {
 //               programs separately.
 ////////////////////////////////////////////////////////////////////
 PT(Shader) Shader::
-load(const ShaderLanguage &lang, const Filename &vertex, const Filename &fragment, const Filename &geometry) {
-  PT(ShaderFile) sfile = new ShaderFile(vertex, fragment, geometry);
+load(const ShaderLanguage &lang, const Filename &vertex, 
+     const Filename &fragment, const Filename &geometry, 
+     const Filename &tess_control, const Filename &tess_evaluation) {
+  PT(ShaderFile) sfile = new ShaderFile(vertex, fragment, geometry, tess_control, tess_evaluation);
   ShaderTable::const_iterator i = _load_table.find(sfile);
   if (i != _load_table.end() && (lang == SL_none || lang == i->second->_language)) {
     return i->second;
   }
-  PT(ShaderFile) sbody = new ShaderFile("", "", "");
+
+  PT(ShaderFile) sbody = new ShaderFile("", "", "", "", "");
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   if (!vertex.empty() && !vfs->read_file(vertex, sbody->_vertex, true)) {
-    gobj_cat.error() << "Could not read vertex shader file: " << vertex << "\n";
+    gobj_cat.error()
+      << "Could not read vertex shader file: " << vertex << "\n";
     return NULL;
   }
   if (!fragment.empty() && !vfs->read_file(fragment, sbody->_fragment, true)) {
-    gobj_cat.error() << "Could not read fragment shader file: " << vertex << "\n";
+    gobj_cat.error()
+      << "Could not read fragment shader file: " << fragment << "\n";
     return NULL;
   }
   if (!geometry.empty() && !vfs->read_file(geometry, sbody->_geometry, true)) {
-    gobj_cat.error() << "Could not read geometry shader file: " << vertex << "\n";
+    gobj_cat.error()
+      << "Could not read geometry shader file: " << geometry << "\n";
     return NULL;
   }
+  if (!tess_control.empty() && !vfs->read_file(tess_control, sbody->_tess_control, true)) {
+    gobj_cat.error()
+      << "Could not read tess_control shader file: " << tess_control << "\n";
+    return NULL;
+  }
+  if (!tess_evaluation.empty() && !vfs->read_file(tess_evaluation, sbody->_tess_evaluation, true)) {
+    gobj_cat.error()
+      << "Could not read tess_evaluation shader file: " << tess_evaluation << "\n";
+    return NULL;
+  }
+
   PT(Shader) result = new Shader(sfile, sbody, lang);
   result->_loaded = true;
   _load_table[sfile] = result;
@@ -2167,12 +2193,16 @@ make(const string &body, const ShaderLanguage &lang) {
 //  Description: Loads the shader, using the strings as shader bodies.
 //////////////////////////////////////////////////////////////////////
 PT(Shader) Shader::
-make(const ShaderLanguage &lang, const string &vertex, const string &fragment, const string &geometry) {
-  PT(ShaderFile) sbody = new ShaderFile(vertex, fragment, geometry);
+make(const ShaderLanguage &lang, const string &vertex, const string &fragment, 
+     const string &geometry, const string &tess_control, 
+     const string &tess_evaluation) {
+  PT(ShaderFile) sbody = new ShaderFile(vertex, fragment, geometry, tess_control, tess_evaluation);
+
   ShaderTable::const_iterator i = _make_table.find(sbody);
   if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
     return i->second;
   }
+
   PT(ShaderFile) sfile = new ShaderFile("created-shader");
   PT(Shader) result = new Shader(sfile, sbody, lang);
   _make_table[sbody] = result;
@@ -2425,9 +2455,11 @@ clear() {
   _active_vprofile = CG_PROFILE_UNKNOWN;
   _active_fprofile = CG_PROFILE_UNKNOWN;
   _active_gprofile = CG_PROFILE_UNKNOWN;
+  _active_fprofile = CG_PROFILE_UNKNOWN;
   _ultimate_vprofile = CG_PROFILE_UNKNOWN;
   _ultimate_fprofile = CG_PROFILE_UNKNOWN;
   _ultimate_gprofile = CG_PROFILE_UNKNOWN;
+  _ultimate_fprofile = CG_PROFILE_UNKNOWN;
 #endif
 }
 

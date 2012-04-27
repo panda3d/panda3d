@@ -59,6 +59,8 @@ PUBLISHED:
     ST_vertex,
     ST_fragment,
     ST_geometry,
+    ST_tess_control,
+    ST_tess_evaluation,
   };
 
   enum AutoShaderSwitch {
@@ -79,8 +81,16 @@ PUBLISHED:
 
   static PT(Shader) load(const Filename &file, const ShaderLanguage &lang = SL_none);
   static PT(Shader) make(const string &body, const ShaderLanguage &lang = SL_none);
-  static PT(Shader) load(const ShaderLanguage &lang, const Filename &vertex, const Filename &fragment, const Filename &geometry = "");
-  static PT(Shader) make(const ShaderLanguage &lang, const string &vertex, const string &fragment, const string &geometry = "");
+  static PT(Shader) load(const ShaderLanguage &lang, 
+                         const Filename &vertex, const Filename &fragment, 
+                         const Filename &geometry = "",
+                         const Filename &tess_control = "",
+                         const Filename &tess_evaluation = "");
+  static PT(Shader) make(const ShaderLanguage &lang, 
+                         const string &vertex, const string &fragment, 
+                         const string &geometry = "",
+                         const string &tess_control = "",
+                         const string &tess_evaluation = "");
 
   INLINE const Filename get_filename(const ShaderType &type = ST_none) const;
   INLINE const string &get_text(const ShaderType &type = ST_none) const;
@@ -336,36 +346,57 @@ public:
     ShaderArgInfo     _info;
   };
 
-  struct ShaderCaps {
+  class ShaderCaps {
+  public:
+    void clear();
+    INLINE bool operator == (const ShaderCaps &other) const;
+    INLINE ShaderCaps();
+
+  public:
     bool _supports_glsl;
 
 #ifdef HAVE_CG
     int _active_vprofile;
     int _active_fprofile;
     int _active_gprofile;
+    int _active_tprofile;
 
     int _ultimate_vprofile;
     int _ultimate_fprofile;
     int _ultimate_gprofile;
+    int _ultimate_tprofile;
 
     pset <ShaderBug> _bug_list;
 #endif
-    void clear();
-    INLINE bool operator == (const ShaderCaps &other) const;
-    INLINE ShaderCaps();
   };
 
-  struct ShaderFile : public ReferenceCount {
-    ShaderFile(string shared) { _separate = false; _shared = shared; }
-    ShaderFile(string vertex, string fragment, string geometry = "") {
-      _separate = true;     _vertex   = vertex;
-      _fragment = fragment; _geometry = geometry;
+  class ShaderFile : public ReferenceCount {
+  public:
+    ShaderFile(const string &shared) { 
+      _separate = false; 
+      _shared = shared; 
     }
+    ShaderFile(const string &vertex, 
+               const string &fragment, 
+               const string &geometry,
+               const string &tess_control,
+               const string &tess_evaluation) {
+      _separate = true;
+      _vertex = vertex;
+      _fragment = fragment;
+      _geometry = geometry;
+      _tess_control = tess_control;
+      _tess_evaluation = tess_evaluation;
+    }
+
+  public:
     bool _separate;
     string _shared;
     string _vertex;
     string _fragment;
     string _geometry;
+    string _tess_control;
+    string _tess_evaluation;
   };
 
  private:

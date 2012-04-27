@@ -92,6 +92,7 @@ private:
   EggTexture *get_egg_texture(Texture *tex);
 
   static EggPrimitive *make_egg_polygon();
+  static EggPrimitive *make_egg_patch();
   static EggPrimitive *make_egg_point();
   static EggPrimitive *make_egg_line();
 

@@ -39,6 +39,7 @@
 #include "geomNode.h"
 #include "geom.h"
 #include "geomTriangles.h"
+#include "geomPatches.h"
 #include "geomPoints.h"
 #include "geomLines.h"
 #include "geomVertexReader.h"
@@ -59,6 +60,7 @@
 #include "eggVertex.h"
 #include "eggPrimitive.h"
 #include "eggPolygon.h"
+#include "eggPatch.h"
 #include "eggPoint.h"
 #include "eggLine.h"
 #include "eggTexture.h"
@@ -747,6 +749,8 @@ convert_primitive(const GeomVertexData *vertex_data,
 
   if (primitive->is_of_type(GeomTriangles::get_class_type())) {
     make_func = make_egg_polygon;
+  } else if (primitive->is_of_type(GeomPatches::get_class_type())) {
+    make_func = make_egg_patch;
   } else if (primitive->is_of_type(GeomPoints::get_class_type())) {
     make_func = make_egg_point;
   } else if (primitive->is_of_type(GeomLines::get_class_type())) {
@@ -1154,6 +1158,16 @@ get_egg_texture(Texture *tex) {
 EggPrimitive *BamToEgg::
 make_egg_polygon() {
   return new EggPolygon;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamToEgg::make_egg_patch
+//       Access: Public, Static
+//  Description: A factory function to make a new EggPatch instance.
+////////////////////////////////////////////////////////////////////
+EggPrimitive *BamToEgg::
+make_egg_patch() {
+  return new EggPatch;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -80,10 +80,12 @@ PStatCollector GraphicsStateGuardian::_primitive_batches_pcollector("Primitive b
 PStatCollector GraphicsStateGuardian::_primitive_batches_tristrip_pcollector("Primitive batches:Triangle strips");
 PStatCollector GraphicsStateGuardian::_primitive_batches_trifan_pcollector("Primitive batches:Triangle fans");
 PStatCollector GraphicsStateGuardian::_primitive_batches_tri_pcollector("Primitive batches:Triangles");
+PStatCollector GraphicsStateGuardian::_primitive_batches_patch_pcollector("Primitive batches:Patches");
 PStatCollector GraphicsStateGuardian::_primitive_batches_other_pcollector("Primitive batches:Other");
 PStatCollector GraphicsStateGuardian::_vertices_tristrip_pcollector("Vertices:Triangle strips");
 PStatCollector GraphicsStateGuardian::_vertices_trifan_pcollector("Vertices:Triangle fans");
 PStatCollector GraphicsStateGuardian::_vertices_tri_pcollector("Vertices:Triangles");
+PStatCollector GraphicsStateGuardian::_vertices_patch_pcollector("Vertices:Patches");
 PStatCollector GraphicsStateGuardian::_vertices_other_pcollector("Vertices:Other");
 PStatCollector GraphicsStateGuardian::_state_pcollector("State changes");
 PStatCollector GraphicsStateGuardian::_transform_state_pcollector("State changes:Transforms");
@@ -214,6 +216,8 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _supports_depth_stencil = false;
   _supports_shadow_filter = false;
   _supports_basic_shaders = false;
+  _supports_geometry_shaders = false;
+  _supports_tessellation_shaders = false;
   _supports_glsl = false;
 
   _supports_stencil = false;
@@ -1554,10 +1558,12 @@ end_frame(Thread *current_thread) {
   _primitive_batches_tristrip_pcollector.flush_level();
   _primitive_batches_trifan_pcollector.flush_level();
   _primitive_batches_tri_pcollector.flush_level();
+  _primitive_batches_patch_pcollector.flush_level();
   _primitive_batches_other_pcollector.flush_level();
   _vertices_tristrip_pcollector.flush_level();
   _vertices_trifan_pcollector.flush_level();
   _vertices_tri_pcollector.flush_level();
+  _vertices_patch_pcollector.flush_level();
   _vertices_other_pcollector.flush_level();
 
   _state_pcollector.flush_level();
@@ -1717,6 +1723,17 @@ draw_tristrips(const GeomPrimitivePipelineReader *, bool) {
 ////////////////////////////////////////////////////////////////////
 bool GraphicsStateGuardian::
 draw_trifans(const GeomPrimitivePipelineReader *, bool) {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::draw_patches
+//       Access: Public, Virtual
+//  Description: Draws a series of "patches", which can only be
+//               processed by a tessellation shader.
+////////////////////////////////////////////////////////////////////
+bool GraphicsStateGuardian::
+draw_patches(const GeomPrimitivePipelineReader *, bool) {
   return false;
 }
 
@@ -2241,10 +2258,12 @@ init_frame_pstats() {
     _primitive_batches_tristrip_pcollector.clear_level();
     _primitive_batches_trifan_pcollector.clear_level();
     _primitive_batches_tri_pcollector.clear_level();
+    _primitive_batches_patch_pcollector.clear_level();
     _primitive_batches_other_pcollector.clear_level();
     _vertices_tristrip_pcollector.clear_level();
     _vertices_trifan_pcollector.clear_level();
     _vertices_tri_pcollector.clear_level();
+    _vertices_patch_pcollector.clear_level();
     _vertices_other_pcollector.clear_level();
 
     _state_pcollector.clear_level();

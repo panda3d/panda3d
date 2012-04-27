@@ -22,6 +22,7 @@
     geomEnums.h \
     geomMunger.h geomMunger.I \
     geomPrimitive.h geomPrimitive.I \
+    geomPatches.h \
     geomTriangles.h \
     geomTristrips.h \
     geomTrifans.h \
@@ -91,6 +92,7 @@
     geomEnums.cxx \
     geomMunger.cxx \
     geomPrimitive.cxx \
+    geomPatches.cxx \
     geomTriangles.cxx \
     geomTristrips.cxx \
     geomTrifans.cxx \
@@ -162,6 +164,7 @@
     geomEnums.h \
     geomMunger.h geomMunger.I \
     geomPrimitive.h geomPrimitive.I \
+    geomPatches.h \
     geomTriangles.h \
     geomTristrips.h \
     geomTrifans.h \

@@ -401,7 +401,7 @@ setup_antialias_point() {
 //     Function: GLGraphicsStateGuardian::setup_antialias_polygon
 //       Access: Protected
 //  Description: Sets the appropriate antialiasing modes to render a
-//               series of point primitives, according to
+//               series of polygon primitives, according to
 //               _auto_antialias_mode.
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::

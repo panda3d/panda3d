@@ -27,6 +27,7 @@ PUBLISHED:
   GeomTriangles(UsageHint usage_hint);
   GeomTriangles(const GeomTriangles &copy);
   virtual ~GeomTriangles();
+  ALLOC_DELETED_CHAIN(GeomTriangles);
 
 public:
   virtual PT(GeomPrimitive) make_copy() const;

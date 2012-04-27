@@ -36,6 +36,7 @@
 #include "eggNurbsCurve.h"
 #include "eggNurbsSurface.h"
 #include "eggObject.h"
+#include "eggPatch.h"
 #include "eggPoint.h"
 #include "eggPolygon.h"
 #include "eggPolysetMaker.h"
@@ -199,6 +200,7 @@ init_libegg() {
   EggNurbsCurve::init_type();
   EggNurbsSurface::init_type();
   EggObject::init_type();
+  EggPatch::init_type();
   EggPoint::init_type();
   EggPolygon::init_type();
   EggPolysetMaker::init_type();

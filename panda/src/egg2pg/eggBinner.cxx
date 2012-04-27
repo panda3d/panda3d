@@ -17,6 +17,7 @@
 #include "eggPrimitive.h"
 #include "eggNurbsSurface.h"
 #include "eggNurbsCurve.h"
+#include "eggPatch.h"
 #include "eggSwitchCondition.h"
 #include "eggGroup.h"
 #include "dcast.h"
@@ -62,6 +63,9 @@ get_bin_number(const EggNode *node) {
   } else if (node->is_of_type(EggNurbsCurve::get_class_type())) {
     return (int)BN_nurbs_curve;
 
+  } else if (node->is_of_type(EggPatch::get_class_type())) {
+    return (int)BN_patches;
+
   } else if (node->is_of_type(EggPrimitive::get_class_type())) {
     return (int)BN_polyset;
 
@@ -84,7 +88,7 @@ get_bin_number(const EggNode *node) {
 ////////////////////////////////////////////////////////////////////
 string EggBinner::
 get_bin_name(int bin_number, const EggNode *child) { 
-  if (bin_number == BN_polyset) {
+  if (bin_number == BN_polyset || bin_number == BN_patches) {
     return DCAST(EggPrimitive, child)->get_sort_name();
   }
 
@@ -100,6 +104,7 @@ bool EggBinner::
 sorts_less(int bin_number, const EggNode *a, const EggNode *b) {
   switch (bin_number) {
   case BN_polyset:
+  case BN_patches:
     {
       const EggPrimitive *pa, *pb;
       DCAST_INTO_R(pa, a, false);
@@ -112,6 +117,16 @@ sorts_less(int bin_number, const EggNode *a, const EggNode *b) {
       int compare = rsa->compare_to(*rsb);
       if (compare != 0) {
         return (compare < 0);
+      }
+
+      if (bin_number == BN_patches) {
+        // For patches only, we group together patches of similar size.
+        const EggPatch *patch_a, *patch_b;
+        DCAST_INTO_R(patch_a, a, false);
+        DCAST_INTO_R(patch_b, b, false);
+        if (patch_a->size() != patch_b->size()) {
+          return patch_a->size() < patch_b->size();
+        }
       }
 
       // Also, if the primitive was given a name (that does not begin

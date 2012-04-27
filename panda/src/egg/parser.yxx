@@ -19,6 +19,7 @@
 #include "eggCompositePrimitive.h"
 #include "eggTriangleFan.h"
 #include "eggTriangleStrip.h"
+#include "eggPatch.h"
 #include "eggPoint.h"
 #include "eggLine.h"
 #include "eggNurbsSurface.h"
@@ -169,7 +170,7 @@ egg_cleanup_parser() {
 %token JOINT KNOTS INCLUDE
 %token INSTANCE LINE LOOP MATERIAL MATRIX3 MATRIX4 MODEL MREF NORMAL
 %token NURBSCURVE NURBSSURFACE OBJECTTYPE ORDER
-%token OUTTANGENT POINTLIGHT POLYGON REF RGBA ROTATE ROTX ROTY ROTZ
+%token OUTTANGENT PATCH POINTLIGHT POLYGON REF RGBA ROTATE ROTX ROTY ROTZ
 %token SANIM SCALAR SCALE SEQUENCE SHADING SWITCH SWITCHCONDITION
 %token TABLE TABLE_V TAG TANGENT TEXLIST TEXTURE TLENGTHS TRANSFORM TRANSLATE
 %token TREF TRIANGLEFAN TRIANGLESTRIP 
@@ -199,6 +200,7 @@ egg_cleanup_parser() {
 %type <_egg> polygon
 %type <_egg> trianglefan
 %type <_egg> trianglestrip
+%type <_egg> patch
 %type <_egg> point_light
 %type <_egg> nurbs_surface
 %type <_egg> nurbs_curve
@@ -272,6 +274,7 @@ node:
         | polygon
         | trianglefan
         | trianglestrip
+        | patch
         | point_light
         | line
         | nurbs_surface
@@ -1878,6 +1881,25 @@ trianglestrip:
         TRIANGLESTRIP optional_name
 {
   egg_stack.push_back(new EggTriangleStrip($2));
+}
+        '{' primitive_body '}'
+{
+  $$ = egg_stack.back();
+  egg_stack.pop_back();
+}
+        ;
+
+/*
+ * patch
+ *
+ * enter:
+ * exit: returns a new EggPatch.
+ *
+ */
+patch:
+        PATCH optional_name
+{
+  egg_stack.push_back(new EggPatch($2));
 }
         '{' primitive_body '}'
 {

@@ -955,7 +955,9 @@ reset() {
   #ifdef OPENGLES_1
     _supports_glsl = false;
   #else
-    _supports_glsl = is_at_least_gl_version(2, 0);
+    _supports_glsl = is_at_least_gl_version(2, 0) || has_extension("GL_ARB_shading_language_100");
+    _supports_geometry_shaders = is_at_least_gl_version(3, 2) || has_extension("GL_ARB_geometry_shader4");
+    _supports_tessellation_shaders = is_at_least_gl_version(4, 0) || has_extension("GL_ARB_tessellation_shader");
   #endif
 #endif
   _shader_caps._supports_glsl = _supports_glsl;
@@ -1034,15 +1036,10 @@ reset() {
        get_extension_func(GLPREFIX_QUOTED, "ValidateProgram");
     _glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)
        get_extension_func(GLPREFIX_QUOTED, "VertexAttribPointer");
-  }
-#endif
-
-#ifndef OPENGLES
-  if (has_extension("GL_EXT_geometry_shader4")) {
-    _glProgramParameteri = (PFNGLPROGRAMPARAMETERIEXTPROC)
-      get_extension_func(GLPREFIX_QUOTED, "ProgramParameteriEXT");
-  } else {
-    _glProgramParameteri = NULL;
+    _glProgramParameteri = (PFNGLPROGRAMPARAMETERIPROC)
+      get_extension_func(GLPREFIX_QUOTED, "ProgramParameteri");
+    _glPatchParameteri = (PFNGLPATCHPARAMETERIPROC)
+       get_extension_func(GLPREFIX_QUOTED, "PatchParameteri");
   }
 #endif
 
@@ -2314,6 +2311,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   if (_auto_antialias_mode) {
     switch (geom_reader->get_primitive_type()) {
     case GeomPrimitive::PT_polygons:
+    case GeomPrimitive::PT_patches:
       setup_antialias_polygon();
       break;
     case GeomPrimitive::PT_points:
@@ -3133,6 +3131,80 @@ draw_trifans(const GeomPrimitivePipelineReader *reader, bool force) {
                           ends[i] - start);
         }
         start = ends[i];
+      }
+    }
+  }
+
+  report_my_gl_errors();
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::draw_patches
+//       Access: Public, Virtual
+//  Description: Draws a series of "patches", which can only be
+//               processed by a tessellation shader.
+////////////////////////////////////////////////////////////////////
+bool CLP(GraphicsStateGuardian)::
+draw_patches(const GeomPrimitivePipelineReader *reader, bool force) {
+  //PStatTimer timer(_draw_primitive_pcollector, reader->get_current_thread());
+
+#ifndef NDEBUG
+  if (GLCAT.is_spam()) {
+    GLCAT.spam() << "draw_patches: " << *(reader->get_object()) << "\n";
+  }
+#endif  // NDEBUG
+
+  if (!get_supports_tessellation_shaders()) {
+    return false;
+  }
+
+  _glPatchParameteri(GL_PATCH_VERTICES, reader->get_object()->get_num_vertices_per_primitive());
+
+#ifdef SUPPORT_IMMEDIATE_MODE
+  if (_use_sender) {
+    draw_immediate_simple_primitives(reader, GL_PATCHES);
+
+  } else
+#endif  // SUPPORT_IMMEDIATE_MODE
+  {
+    int num_vertices = reader->get_num_vertices();
+    _vertices_patch_pcollector.add_level(num_vertices);
+    _primitive_batches_patch_pcollector.add_level(1);
+
+    if (reader->is_indexed()) {
+      const unsigned char *client_pointer;
+      if (!setup_primitive(client_pointer, reader, force)) {
+        return false;
+      }
+
+#ifndef OPENGLES
+      if (_supports_geometry_instancing && _instance_count > 0) {
+        _glDrawElementsInstanced(GL_PATCHES, num_vertices,
+                                 get_numeric_type(reader->get_index_type()),
+                                 client_pointer, _instance_count);
+      } else
+#endif
+      {
+        _glDrawRangeElements(GL_PATCHES,
+                             reader->get_min_vertex(),
+                             reader->get_max_vertex(),
+                             num_vertices,
+                             get_numeric_type(reader->get_index_type()),
+                             client_pointer);
+      }
+    } else {
+#ifndef OPENGLES
+      if (_supports_geometry_instancing && _instance_count > 0) {
+        _glDrawArraysInstanced(GL_PATCHES,
+                               reader->get_first_vertex(),
+                               num_vertices, _instance_count);
+      } else
+#endif
+      {
+        GLP(DrawArrays)(GL_PATCHES,
+                        reader->get_first_vertex(),
+                        num_vertices);
       }
     }
   }

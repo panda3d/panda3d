@@ -27,6 +27,7 @@ PUBLISHED:
   GeomPoints(UsageHint usage_hint);
   GeomPoints(const GeomPoints &copy);
   virtual ~GeomPoints();
+  ALLOC_DELETED_CHAIN(GeomPoints);
 
 public:
   virtual PT(GeomPrimitive) make_copy() const;

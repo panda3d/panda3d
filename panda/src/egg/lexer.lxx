@@ -523,6 +523,10 @@ NUMERIC         ([+-]?(([0-9]+[.]?)|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   accept();
   return OUTTANGENT;
 }
+"<PATCH>" {
+  accept();
+  return PATCH;
+}
 "<POINTLIGHT>" {
   accept();
   return POINTLIGHT;

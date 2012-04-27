@@ -1,5 +1,5 @@
-// Filename: geomLines.h
-// Created by:  drose (22Mar05)
+// Filename: geomPatches.h
+// Created by:  drose (27Apr12)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,42 +12,45 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef GEOMLINES_H
-#define GEOMLINES_H
+#ifndef GEOMPATCHES_H
+#define GEOMPATCHES_H
 
 #include "pandabase.h"
 #include "geomPrimitive.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : GeomLines
-// Description : Defines a series of disconnected line segments.
+//       Class : GeomPatches
+// Description : Defines a series of "patches", fixed-size groupings
+//               of vertices that must be processed by a tessellation
+//               shader.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_GOBJ GeomLines : public GeomPrimitive {
+class EXPCL_PANDA_GOBJ GeomPatches : public GeomPrimitive {
 PUBLISHED:
-  GeomLines(UsageHint usage_hint);
-  GeomLines(const GeomLines &copy);
-  virtual ~GeomLines();
-  ALLOC_DELETED_CHAIN(GeomLines);
+  GeomPatches(int num_vertices_per_patch, UsageHint usage_hint);
+  GeomPatches(const GeomPatches &copy);
+  virtual ~GeomPatches();
+  ALLOC_DELETED_CHAIN(GeomPatches);
 
 public:
   virtual PT(GeomPrimitive) make_copy() const;
   virtual PrimitiveType get_primitive_type() const;
 
   virtual int get_num_vertices_per_primitive() const;
-  virtual int get_min_num_vertices_per_primitive() const;
 
 public:
   virtual bool draw(GraphicsStateGuardianBase *gsg,
                     const GeomPrimitivePipelineReader *reader,
                     bool force) const;
 
-protected:
-  virtual CPT(GeomVertexArrayData) rotate_impl() const;
+private:
+  int _num_vertices_per_patch;
 
 public:
   static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
 
 protected:
+  void fillin(DatagramIterator &scan, BamReader *manager);
   static TypedWritable *make_from_bam(const FactoryParams &params);
 
 public:
@@ -56,7 +59,7 @@ public:
   }
   static void init_type() {
     GeomPrimitive::init_type();
-    register_type(_type_handle, "GeomLines",
+    register_type(_type_handle, "GeomPatches",
                   GeomPrimitive::get_class_type());
   }
   virtual TypeHandle get_type() const {

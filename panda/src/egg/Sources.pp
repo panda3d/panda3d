@@ -37,7 +37,9 @@
      eggNamedObject.I eggNamedObject.h eggNameUniquifier.h  \
      eggNode.I eggNode.h eggNurbsCurve.I eggNurbsCurve.h  \
      eggNurbsSurface.I eggNurbsSurface.h eggObject.I eggObject.h  \
-     eggParameters.h eggPoint.I eggPoint.h eggPolygon.I  \
+     eggParameters.h \
+     eggPatch.I eggPatch.h \
+     eggPoint.I eggPoint.h eggPolygon.I  \
      eggPolygon.h eggPolysetMaker.h eggPoolUniquifier.h \
      eggPrimitive.I eggPrimitive.h \
      eggRenderMode.I eggRenderMode.h  \
@@ -77,7 +79,9 @@
      eggMiscFuncs.cxx eggMorphList.cxx  \
      eggNamedObject.cxx eggNameUniquifier.cxx eggNode.cxx  \
      eggNurbsCurve.cxx eggNurbsSurface.cxx eggObject.cxx  \
-     eggParameters.cxx eggPoint.cxx eggPolygon.cxx eggPolysetMaker.cxx  \
+     eggParameters.cxx \
+     eggPatch.cxx \
+     eggPoint.cxx eggPolygon.cxx eggPolysetMaker.cxx  \
      eggPoolUniquifier.cxx eggPrimitive.cxx eggRenderMode.cxx  \
      eggSAnimData.cxx eggSurface.cxx eggSwitchCondition.cxx  \
      eggTable.cxx eggTexture.cxx eggTextureCollection.cxx  \
@@ -110,7 +114,9 @@
     eggMorph.I eggMorph.h eggMorphList.I eggMorphList.h \
     eggNamedObject.I eggNamedObject.h eggNameUniquifier.h eggNode.I eggNode.h \
     eggNurbsCurve.I eggNurbsCurve.h eggNurbsSurface.I eggNurbsSurface.h \
-    eggObject.I eggObject.h eggParameters.h eggPoint.I eggPoint.h \
+    eggObject.I eggObject.h eggParameters.h \
+    eggPatch.I eggPatch.h \
+    eggPoint.I eggPoint.h \
     eggPolygon.I eggPolygon.h eggPolysetMaker.h eggPoolUniquifier.h \
     eggPrimitive.I eggPrimitive.h eggRenderMode.I eggRenderMode.h \
     eggSAnimData.I eggSAnimData.h eggSurface.I eggSurface.h \

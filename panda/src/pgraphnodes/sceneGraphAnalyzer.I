@@ -204,6 +204,16 @@ get_num_points() const {
   return _num_points;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphAnalyzer::get_num_patches
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int SceneGraphAnalyzer::
+get_num_patches() const {
+  return _num_patches;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneGraphAnalyzer::get_num_individual_tris
@@ -253,6 +263,16 @@ get_num_trifans() const {
 int SceneGraphAnalyzer::
 get_num_triangles_in_fans() const {
   return _num_triangles_in_fans;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphAnalyzer::get_num_vertices_in_patches
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+int SceneGraphAnalyzer::
+get_num_vertices_in_patches() const {
+  return _num_vertices_in_patches;
 }
 
 

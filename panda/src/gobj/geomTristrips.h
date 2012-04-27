@@ -27,6 +27,7 @@ PUBLISHED:
   GeomTristrips(UsageHint usage_hint);
   GeomTristrips(const GeomTristrips &copy);
   virtual ~GeomTristrips();
+  ALLOC_DELETED_CHAIN(GeomTristrips);
 
 public:
   virtual PT(GeomPrimitive) make_copy() const;

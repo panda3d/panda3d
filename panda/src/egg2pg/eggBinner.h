@@ -41,6 +41,7 @@ public:
     BN_lod,
     BN_nurbs_surface,
     BN_nurbs_curve,
+    BN_patches,
   };
 
   EggBinner(EggLoader &loader);

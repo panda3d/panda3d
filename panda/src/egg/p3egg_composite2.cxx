@@ -1,5 +1,6 @@
 #include "eggObject.cxx"
 #include "eggParameters.cxx"
+#include "eggPatch.cxx"
 #include "eggPoint.cxx"
 #include "eggPolygon.cxx"
 #include "eggPolysetMaker.cxx"
