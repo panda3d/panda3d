@@ -31,6 +31,7 @@ class NxCapsuleForceFieldShape;
 class NxCapsuleForceFieldShapeDesc;
 class NxCapsuleShape;
 class NxCapsuleShapeDesc;
+class NxCCDSkeleton;
 class NxConvexMesh;
 class NxConvexMeshDesc;
 class NxConvexForceFieldShape;
@@ -113,6 +114,7 @@ class NxConstraintDominance;
 class NxRemoteDebugger;
 class NxGroupsMask;
 class NxSceneStats2;
+class NxSimpleTriangleMesh;
 
 class NxSoftBody;
 class NxSoftBodyDesc;

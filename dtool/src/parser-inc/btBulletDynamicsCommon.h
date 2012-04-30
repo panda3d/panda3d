@@ -46,6 +46,7 @@ class btHingeConstraint;
 class btHinge2Constraint;
 class btIDebugDraw;
 class btKinematicCharacterController;
+class btManifoldArray;
 class btManifoldPoint;
 class btMatrix3x3;
 class btMotionState;

@@ -32,6 +32,7 @@ class PhysxBox;
 class PhysxCapsule;
 class PhysxRay;
 class PhysxRaycastHit;
+class PhysxCcdSkeleton;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxShape
@@ -53,6 +54,7 @@ PUBLISHED:
   void set_material(const PhysxMaterial &material);
   void set_material_index(unsigned short idx);
   void set_groups_mask(const PhysxGroupsMask &mask);
+  void set_ccd_skeleton(PhysxCcdSkeleton *skel);
 
   const char *get_name() const;
   bool get_flag(const PhysxShapeFlag flag) const;
@@ -63,6 +65,7 @@ PUBLISHED:
   unsigned short get_material_index() const;
   PhysxGroupsMask get_groups_mask() const;
   PhysxBounds3 get_world_bounds() const;
+  PhysxCcdSkeleton *get_ccd_skeleton() const;
 
   bool check_overlap_aabb(const PhysxBounds3 &world_bounds) const;
   bool check_overlap_capsule(const PhysxCapsule &world_capsule) const;
@@ -86,6 +89,7 @@ protected:
 
 private:
   string _name;
+  PT(PhysxCcdSkeleton) _skel;
 
 ////////////////////////////////////////////////////////////////////
 public:

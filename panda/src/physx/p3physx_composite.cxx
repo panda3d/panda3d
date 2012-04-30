@@ -17,6 +17,7 @@
 #include "physxCapsuleForceFieldShapeDesc.cxx"
 #include "physxCapsuleShape.cxx"
 #include "physxCapsuleShapeDesc.cxx"
+#include "physxCcdSkeleton.cxx"
 #include "physxCloth.cxx"
 #include "physxClothDesc.cxx"
 #include "physxClothMesh.cxx"

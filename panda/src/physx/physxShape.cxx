@@ -30,6 +30,7 @@
 #include "physxCapsule.h"
 #include "physxRay.h"
 #include "physxRaycastHit.h"
+#include "physxCcdSkeleton.h"
 
 TypeHandle PhysxShape::_type_handle;
 
@@ -459,5 +460,32 @@ raycast(const PhysxRay &worldRay, bool firstHit, bool smoothNormal) const {
 
   ptr()->raycast(worldRay._ray, worldRay._length, hints, hit, firstHit);
   return PhysxRaycastHit(hit);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxShape::set_ccd_skeleton
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void PhysxShape::
+set_ccd_skeleton(PhysxCcdSkeleton *skel) {
+
+  nassertv(_error_type == ET_ok);
+
+  ptr()->setCCDSkeleton(skel->ptr());
+  _skel = skel;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxShape::get_ccd_skeleton
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PhysxCcdSkeleton *PhysxShape::
+get_ccd_skeleton() const {
+
+  nassertr(_error_type == ET_ok, NULL);
+
+  return _skel;
 }
 

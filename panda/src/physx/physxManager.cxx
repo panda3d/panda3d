@@ -320,6 +320,52 @@ get_soft_body_mesh(unsigned int idx) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PhysxManager::get_num_ccd_skeletons
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+unsigned int PhysxManager::
+get_num_ccd_skeletons() {
+
+  return _sdk->getNbCCDSkeletons();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxManager::create_ccd_skeleton
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PhysxCcdSkeleton *PhysxManager::
+create_ccd_skeleton(PhysxTriangleMeshDesc &desc) {
+
+  nassertr(desc.is_valid(), NULL);
+  nassertr(desc.get_desc().numVertices < 64, NULL);
+
+  PhysxCcdSkeleton *skel = new PhysxCcdSkeleton();
+  nassertr(skel, NULL);
+
+  NxCCDSkeleton *skelPtr = _sdk->createCCDSkeleton(desc.get_desc());
+  nassertr(skelPtr, NULL);
+
+  skel->link(skelPtr);
+
+  return skel;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxManager::get_ccd_skeleton
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PhysxCcdSkeleton *PhysxManager::
+get_ccd_skeleton(unsigned int idx) {
+
+  nassertr_always(idx < _sdk->getNbCCDSkeletons(), NULL);
+
+  return (PhysxCcdSkeleton *)_ccd_skeletons[idx];
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PhysxManager::is_hardware_available
 //       Access: Published
 //  Description: Returns TRUE if a physcis hardware is available

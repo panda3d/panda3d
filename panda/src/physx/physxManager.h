@@ -32,6 +32,8 @@ class PhysxConvexMesh;
 class PhysxClothMesh;
 class PhysxSoftBodyMesh;
 class PhysxOutputStream;
+class PhysxCcdSkeleton;
+class PhysxTriangleMeshDesc;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxManager
@@ -84,6 +86,11 @@ PUBLISHED:
   PhysxSoftBodyMesh *get_soft_body_mesh(unsigned int idx);
   MAKE_SEQ(get_soft_body_meshes, get_num_soft_body_meshes, get_soft_body_mesh);
 
+  unsigned int get_num_ccd_skeletons();
+  PhysxCcdSkeleton *create_ccd_skeleton(PhysxTriangleMeshDesc &desc);
+  PhysxCcdSkeleton *get_ccd_skeleton(unsigned int idx);
+  MAKE_SEQ(get_ccd_skeletons, get_num_ccd_skeletons, get_ccd_skeleton);
+
   INLINE void ls() const;
   INLINE void ls(ostream &out, int indent_level=0) const;
 
@@ -96,6 +103,7 @@ public:
   PhysxObjectCollection<PhysxTriangleMesh> _triangle_meshes;
   PhysxObjectCollection<PhysxClothMesh> _cloth_meshes;
   PhysxObjectCollection<PhysxSoftBodyMesh> _softbody_meshes;
+  PhysxObjectCollection<PhysxCcdSkeleton> _ccd_skeletons;
 
   INLINE static NxVec3 vec3_to_nxVec3(const LVector3f &v);
   INLINE static LVector3f nxVec3_to_vec3(const NxVec3 &v);
