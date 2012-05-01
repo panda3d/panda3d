@@ -30,6 +30,8 @@
     physxCapsuleForceFieldShapeDesc.I physxCapsuleForceFieldShapeDesc.h \
     physxCapsuleShape.I physxCapsuleShape.h \
     physxCapsuleShapeDesc.I physxCapsuleShapeDesc.h \
+    physxCcdSkeleton.I physxCcdSkeleton.h \
+    physxCcdSkeletonDesc.I physxCcdSkeletonDesc.h \
     physxCloth.I physxCloth.h \
     physxClothDesc.I physxClothDesc.h \
     physxClothMesh.I physxClothMesh.h \
@@ -157,6 +159,8 @@
     physxCapsuleForceFieldShapeDesc.cxx \
     physxCapsuleShape.cxx \
     physxCapsuleShapeDesc.cxx \
+    physxCcdSkeleton.cxx \
+    physxCcdSkeletonDesc.cxx \
     physxCloth.cxx \
     physxClothDesc.cxx \
     physxClothMesh.cxx \
@@ -284,6 +288,8 @@
     physxCapsuleForceFieldShapeDesc.I physxCapsuleForceFieldShapeDesc.h \
     physxCapsuleShape.I physxCapsuleShape.h \
     physxCapsuleShapeDesc.I physxCapsuleShapeDesc.h \
+    physxCcdSkeleton.I physxCcdSkeleton.h \
+    physxCcdSkeletonDesc.I physxCcdSkeletonDesc.h \
     physxCloth.I physxCloth.h \
     physxClothDesc.I physxClothDesc.h \
     physxClothMesh.I physxClothMesh.h \

@@ -22,6 +22,7 @@
 #include "physxCapsuleController.h"
 #include "physxCapsuleForceFieldShape.h"
 #include "physxCapsuleShape.h"
+#include "physxCcdSkeleton.h"
 #include "physxCloth.h"
 #include "physxClothMesh.h"
 #include "physxClothNode.h"
@@ -123,6 +124,7 @@ init_libphysx() {
   PhysxCapsuleController::init_type();
   PhysxCapsuleForceFieldShape::init_type();
   PhysxCapsuleShape::init_type();
+  PhysxCcdSkeleton::init_type();
   PhysxCloth::init_type();
   PhysxClothMesh::init_type();
   PhysxClothNode::init_type();

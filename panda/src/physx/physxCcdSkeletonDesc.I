@@ -1,4 +1,4 @@
-// Filename: physxCcdSkeleton.I
+// Filename: physxCcdSkeletonDesc.I
 // Created by:  enn0x (01May12)
 //
 ////////////////////////////////////////////////////////////////////
@@ -13,47 +13,49 @@
 ////////////////////////////////////////////////////////////////////
 
 
-
 ////////////////////////////////////////////////////////////////////
-//     Function: PhysxCcdSkeleton::Constructor
+//     Function: PhysxCcdSkeletonDesc::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE PhysxCcdSkeleton::
-PhysxCcdSkeleton() : PhysxObject() {
+INLINE PhysxCcdSkeletonDesc::
+PhysxCcdSkeletonDesc() {
 
+  _desc.flags = 0;
+  _desc.pointStrideBytes = sizeof(NxVec3);
+  _desc.triangleStrideBytes = 3*sizeof(NxU32);
+  _desc.points = NULL;
+  _desc.triangles = NULL;
+
+  _vertices = NULL;
+  _triangles = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PhysxCcdSkeleton::Destructor
+//     Function: PhysxCcdSkeletonDesc::Destructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE PhysxCcdSkeleton::
-~PhysxCcdSkeleton() {
+INLINE PhysxCcdSkeletonDesc::
+~PhysxCcdSkeletonDesc() {
 
+  if (_vertices) {
+    delete [] _vertices;
+  }
+
+  if (_triangles) {
+    delete [] _triangles;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PhysxCcdSkeleton::ls
+//     Function: PhysxCcdSkeletonDesc::is_valid
 //       Access: Published
-//  Description: 
+//  Description: Returns true if the descriptor is valid.
 ////////////////////////////////////////////////////////////////////
-INLINE void PhysxCcdSkeleton::
-ls() const {
+INLINE bool PhysxCcdSkeletonDesc::
+is_valid() const {
 
-  ls(nout);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PhysxCcdSkeleton::ls
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE void PhysxCcdSkeleton::
-ls(ostream &out, int indent_level) const {
-
-  indent(out, indent_level) << get_type().get_name()
-                            << " (at 0x" << this << ")\n";
+  return _desc.isValid();
 }
 

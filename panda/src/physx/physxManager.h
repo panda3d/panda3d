@@ -33,7 +33,7 @@ class PhysxClothMesh;
 class PhysxSoftBodyMesh;
 class PhysxOutputStream;
 class PhysxCcdSkeleton;
-class PhysxTriangleMeshDesc;
+class PhysxCcdSkeletonDesc;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysxManager
@@ -87,7 +87,7 @@ PUBLISHED:
   MAKE_SEQ(get_soft_body_meshes, get_num_soft_body_meshes, get_soft_body_mesh);
 
   unsigned int get_num_ccd_skeletons();
-  PhysxCcdSkeleton *create_ccd_skeleton(PhysxTriangleMeshDesc &desc);
+  PhysxCcdSkeleton *create_ccd_skeleton(PhysxCcdSkeletonDesc &desc);
   PhysxCcdSkeleton *get_ccd_skeleton(unsigned int idx);
   MAKE_SEQ(get_ccd_skeletons, get_num_ccd_skeletons, get_ccd_skeleton);
 

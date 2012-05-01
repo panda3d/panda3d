@@ -1,5 +1,5 @@
 // Filename: physxCcdSkeleton.cxx
-// Created by:  enn0x (13Oct09)
+// Created by:  enn0x (01May12)
 //
 ////////////////////////////////////////////////////////////////////
 //

@@ -336,7 +336,7 @@ get_num_ccd_skeletons() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 PhysxCcdSkeleton *PhysxManager::
-create_ccd_skeleton(PhysxTriangleMeshDesc &desc) {
+create_ccd_skeleton(PhysxCcdSkeletonDesc &desc) {
 
   nassertr(desc.is_valid(), NULL);
   nassertr(desc.get_desc().numVertices < 64, NULL);
