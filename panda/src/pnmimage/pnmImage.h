@@ -199,6 +199,10 @@ PUBLISHED:
                        int xfrom = 0, int yfrom = 0,
                        int x_size = -1, int y_size = -1,
                        double pixel_scale = 1.0);
+  void add_sub_image(const PNMImage &copy, int xto, int yto,
+                     int xfrom = 0, int yfrom = 0,
+                     int x_size = -1, int y_size = -1,
+                     double pixel_scale = 1.0);
   void darken_sub_image(const PNMImage &copy, int xto, int yto,
                         int xfrom = 0, int yfrom = 0,
                         int x_size = -1, int y_size = -1,
