@@ -1103,14 +1103,14 @@ glsl_report_shader_errors(GSG *gsg, unsigned int shader) {
 
   gsg->_glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
 
-  if (length > 0) {
+  if (length > 1) {
     info_log = (char *) malloc(length);
     gsg->_glGetShaderInfoLog(shader, length, &num_chars, info_log);
     if (strcmp(info_log, "Success.\n") != 0) {
       GLCAT.error(false) << info_log << "\n";
     }
+    free(info_log);
   }
-  delete[] info_log;
 }
 
 ////////////////////////////////////////////////////////////////////
