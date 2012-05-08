@@ -435,7 +435,7 @@ if (COMPILER=="MSVC"):
     if (PkgSkip("PYTHON")==0):
         IncDirectory("ALWAYS", SDK["PYTHON"] + "/include")
         LibDirectory("ALWAYS", SDK["PYTHON"] + "/libs")
-    SmartPkgEnable("EIGEN",     "",          (), ("Eigen/Dense",), target_pkg = 'ALWAYS')
+    SmartPkgEnable("EIGEN",     "eigen3",     (), ("Eigen", "Eigen/Dense"), target_pkg = 'ALWAYS')
     for pkg in PkgListGet():
         if (PkgSkip(pkg)==0):
             if (pkg[:4]=="MAYA"):
@@ -620,7 +620,7 @@ if (COMPILER=="LINUX"):
 
     #         Name         pkg-config   libs, include(dir)s
     if (not RUNTIME):
-        SmartPkgEnable("EIGEN",     "",          (), ("Eigen/Dense",), target_pkg = 'ALWAYS')
+        SmartPkgEnable("EIGEN",     "eigen3",    (), ("Eigen", "Eigen/Dense"), target_pkg = 'ALWAYS')
         SmartPkgEnable("ARTOOLKIT", "",          ("AR"), "AR/ar.h")
         SmartPkgEnable("FCOLLADA",  "",          ChooseLib(*fcollada_libs), ("FCollada", "FCollada.h"))
         SmartPkgEnable("FFMPEG",    ffmpeg_libs, ffmpeg_libs, ffmpeg_libs)
