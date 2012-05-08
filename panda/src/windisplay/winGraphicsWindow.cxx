@@ -2613,6 +2613,11 @@ get_icon(const Filename &filename) {
 ////////////////////////////////////////////////////////////////////
 HCURSOR WinGraphicsWindow::
 get_cursor(const Filename &filename) {
+  // The empty filename means to disable a custom cursor.
+  if (filename.empty()) {
+    return 0;
+  }
+
   // First, look for the unresolved filename in our index.
   IconFilenames::iterator fi = _cursor_filenames.find(filename);
   if (fi != _cursor_filenames.end()) {
