@@ -1082,6 +1082,20 @@ class PackageInfo:
         envvar = '%s_ROOT' % (self.packageName.upper())
         ExecutionEnvironment.setEnvironmentVariable(envvar, osRoot)
 
+        # Add the package root to the system paths.
+        if sys.platform.startswith('win'):
+            path = os.environ.get('PATH', '')
+            os.environ['PATH'] = "%s;%s" % (osRoot, path)
+        else:
+            path = os.environ.get('PATH', '')
+            os.environ['PATH'] = "%s:%s" % (osRoot, path)
+            path = os.environ.get('LD_LIBRARY_PATH', '')
+            os.environ['LD_LIBRARY_PATH'] = "%s:%s" % (osRoot, path)
+
+        if sys.platform == "darwin":
+            path = os.environ.get('DYLD_LIBRARY_PATH', '')
+            os.environ['DYLD_LIBRARY_PATH'] = "%s:%s" % (osRoot, path)
+
         # Now that the environment variable is set, read all of the
         # prc files in the package.
         appRunner.loadMultifilePrcFiles(mf, self.getPackageDir())
