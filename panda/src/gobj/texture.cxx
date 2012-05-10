@@ -1878,9 +1878,12 @@ down_to_power_2(int value) {
 //               the image, according to the whims of the Config.prc
 //               file.
 //
-//               This method should be called after
-//               pnmimage.read_header() has been called, but before
-//               pnmimage.read().  Also see rescale_texture().
+//               For most efficient results, this method should be
+//               called after pnmimage.read_header() has been called,
+//               but before pnmimage.read().  This method may also be
+//               called after pnmimage.read(), i.e. when the pnmimage
+//               is already loaded; in this case it will rescale the
+//               image on the spot.  Also see rescale_texture().
 ////////////////////////////////////////////////////////////////////
 void Texture::
 consider_rescale(PNMImage &pnmimage) {
@@ -1894,16 +1897,29 @@ consider_rescale(PNMImage &pnmimage) {
 //               the image, according to the whims of the Config.prc
 //               file.
 //
-//               This method should be called after
-//               pnmimage.read_header() has been called, but before
-//               pnmimage.read().  Also see rescale_texture().
+//               For most efficient results, this method should be
+//               called after pnmimage.read_header() has been called,
+//               but before pnmimage.read().  This method may also be
+//               called after pnmimage.read(), i.e. when the pnmimage
+//               is already loaded; in this case it will rescale the
+//               image on the spot.  Also see rescale_texture().
 ////////////////////////////////////////////////////////////////////
 void Texture::
 consider_rescale(PNMImage &pnmimage, const string &name, AutoTextureScale auto_texture_scale) {
   int new_x_size = pnmimage.get_x_size();
   int new_y_size = pnmimage.get_y_size();
   if (adjust_size(new_x_size, new_y_size, name, false, auto_texture_scale)) {
-    pnmimage.set_read_size(new_x_size, new_y_size);
+    if (pnmimage.is_valid()) {
+      // The image is already loaded.  Rescale on the spot.
+      PNMImage new_image(new_x_size, new_y_size, pnmimage.get_num_channels(),
+                         pnmimage.get_maxval());
+      new_image.quick_filter_from(pnmimage);
+      pnmimage.take_from(new_image);
+    } else {
+      // Rescale while reading.  Some image types (e.g. jpeg) can take
+      // advantage of this.
+      pnmimage.set_read_size(new_x_size, new_y_size);
+    }
   }
 }
 
@@ -4579,6 +4595,8 @@ do_rescale_texture(CData *cdata) {
 
     do_clear_ram_image(cdata);
     ++(cdata->_image_modified);
+    cdata->_x_size = new_x_size;
+    cdata->_y_size = new_y_size;
     if (!do_load_one(cdata, new_image, get_name(), 0, 0, LoaderOptions())) {
       return false;
     }
