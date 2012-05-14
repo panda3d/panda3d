@@ -199,6 +199,12 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   ColorMap = NULL;
   AlphaMap = NULL;
 
+  Red = 0;
+  Grn = 0;
+  Blu = 0;
+  Alpha = 0;
+  l = 0;
+
     /* Read the Targa file header. */
     readtga( file, tga_head, magic_number );
     /*
@@ -701,10 +707,7 @@ get_map_entry( istream *ifp, pixel *Value, int Size, gray *Alpha ) {
 
 void PNMFileTypeTGA::Reader::
 get_pixel( istream *ifp, pixel *dest, int Size, gray *alpha_p) {
-    static pixval Red, Grn, Blu;
-    static pixval Alpha;
     unsigned char j, k;
-    static unsigned int l;
 
     /* Check if run length encoded. */
     if ( rlencoded )

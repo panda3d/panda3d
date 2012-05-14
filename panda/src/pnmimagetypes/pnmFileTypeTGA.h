@@ -66,6 +66,10 @@ public:
     pixel *ColorMap;
     gray *AlphaMap;
     int RLE_count, RLE_flag;
+
+    pixval Red, Grn, Blu;
+    pixval Alpha;
+    unsigned int l;
   };
 
   class Writer : public PNMWriter {
