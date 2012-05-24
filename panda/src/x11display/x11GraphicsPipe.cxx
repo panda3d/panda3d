@@ -105,6 +105,8 @@ x11GraphicsPipe(const string &display) {
       dm->width = xrrs[i].width;
       dm->height = xrrs[i].height;
       dm->refresh_rate = rates[j];
+      dm->bits_per_pixel = -1;
+      dm->fullscreen_only = false;
       ++counter;
     }
   }
