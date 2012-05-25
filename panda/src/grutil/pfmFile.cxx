@@ -885,10 +885,15 @@ generate_vis_points() const {
   if (_y_size > 1) {
     uv_scale[1] = 1.0f / PN_stdfloat(_y_size - 1);
   }
-  
+
+  int num_points = 0;
   for (int yi = 0; yi < _y_size; ++yi) {
     for (int xi = 0; xi < _x_size; ++xi) {
       const LPoint3 &point = get_point(xi, yi);
+      if (_has_no_data_value && point == _no_data_value) {
+        continue;
+      }
+
       LPoint2 uv(PN_stdfloat(xi) * uv_scale[0],
                  PN_stdfloat(yi) * uv_scale[1]);
       if (_vis_inverse) {
@@ -901,12 +906,13 @@ generate_vis_points() const {
         vertex.add_data3(point);
         texcoord.add_data2(uv);
       }
+      ++num_points;
     }
   }
   
   PT(Geom) geom = new Geom(vdata);
   PT(GeomPoints) points = new GeomPoints(Geom::UH_static);
-  points->add_next_vertices(_x_size * _y_size);
+  points->add_next_vertices(num_points);
   geom->add_primitive(points);
   
   PT(GeomNode) gnode = new GeomNode("");
