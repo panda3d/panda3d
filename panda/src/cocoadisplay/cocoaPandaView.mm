@@ -25,10 +25,18 @@
     << "Created CocoaPandaView " << self << " for GraphicsWindow " << window << "\n";
   _graphicsWindow = window;
 
-  // Make sure that the view automatically resizes with the window
-  //[self setAutoresizingMask: NSViewWidthSizable | NSViewHeightSizable];
-
   return self;
+}
+
+- (void) finalize {
+  _graphicsWindow->handle_close_event();
+  [super finalize];
+}
+
+- (BOOL) isFlipped {
+  // Apple uses a coordinate system where the lower-left corner
+  // represents (0, 0).  In Panda, this is the upper-left corner.
+  return YES;
 }
 
 - (BOOL) acceptsFirstResponder {
@@ -45,9 +53,8 @@
 
 - (void) setFrame: (NSRect) frame {
   [super setFrame: frame];
-  [_context update];
-
-  _graphicsWindow->handle_resize_event();
+  //[_context update];
+  //_graphicsWindow->handle_resize_event();
 }
 
 - (void) keyDown: (NSEvent *) event {
@@ -75,13 +82,13 @@
 }
 
 - (void) mouseMoved: (NSEvent *) event {
-  NSPoint loc = [self convertPoint: [event locationInWindow] fromView: nil];
-  BOOL inside = [self mouse: loc inRect: [self bounds]];
+  NSPoint loc = [self convertPoint:[event locationInWindow] fromView:nil];
+  BOOL inside = [self mouse:loc inRect:[self bounds]];
 
   if (_graphicsWindow->get_properties().get_mouse_mode() == WindowProperties::M_relative) {
     _graphicsWindow->handle_mouse_moved_event(inside, [event deltaX], [event deltaY], false);
   } else {
-    _graphicsWindow->handle_mouse_moved_event(inside, loc.x, [self bounds].size.height - loc.y, true);
+    _graphicsWindow->handle_mouse_moved_event(inside, loc.x, loc.y, true);
   }
 }
 

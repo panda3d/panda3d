@@ -39,6 +39,9 @@ public:
   CocoaGraphicsPipe(NSScreen *screen);
   virtual ~CocoaGraphicsPipe();
 
+  INLINE CGDirectDisplayID get_display_id() const;
+  INLINE NSScreen *get_nsscreen() const;
+
   virtual string get_interface_name() const;
   static PT(GraphicsPipe) pipe_constructor();
 

@@ -30,11 +30,14 @@
 #import "cocoaPandaView.h"
 #import "cocoaPandaWindow.h"
 
+#import <ApplicationServices/ApplicationServices.h>
 #import <Foundation/NSAutoreleasePool.h>
 #import <AppKit/NSApplication.h>
 #import <AppKit/NSCursor.h>
 #import <AppKit/NSEvent.h>
 #import <AppKit/NSScreen.h>
+#import <OpenGL/OpenGL.h>
+#import <Carbon/Carbon.h>
 
 TypeHandle CocoaGraphicsWindow::_type_handle;
 
@@ -57,6 +60,9 @@ CocoaGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   _view = nil;
   _modifier_keys = 0;
   _mouse_hidden = false;
+  _context_needs_update = true;
+  _fullscreen_mode = NULL;
+  _windowed_mode = NULL;
 
   GraphicsWindowInputDevice device =
     GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard_mouse");
@@ -126,11 +132,10 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   CocoaGraphicsStateGuardian *cocoagsg;
   DCAST_INTO_R(cocoagsg, _gsg, false);
   nassertr(cocoagsg->_context != nil, false);
+  nassertr(_view != nil, false);
 
-  // Let's not bother drawing to ta miniaturized window, eh?
-  if (_properties.get_minimized()) {
-    return false;
-  }
+  // Place a lock on the context.
+  CGLLockContext((CGLContextObj) [cocoagsg->_context CGLContextObj]);
 
   // Set the drawable.
   if (_properties.get_fullscreen()) {
@@ -138,7 +143,19 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     [cocoagsg->_context setFullScreen];
   } else {
     nassertr([_view lockFocusIfCanDraw], false);
-    [cocoagsg->_context setView: _view];
+    // Although not recommended, it is technically possible to
+    // use the same context with multiple different-sized windows.
+    // If that happens, the context needs to be updated accordingly.
+    if ([cocoagsg->_context view] != _view) {
+      _context_needs_update = true;
+      [cocoagsg->_context setView:_view];
+    }
+  }
+
+  // Update the context if necessary, to make it reallocate buffers etc.
+  if (_context_needs_update) {
+    [cocoagsg->_context update];
+    _context_needs_update = false;
   }
 
   // Make the context current.
@@ -198,12 +215,6 @@ void CocoaGraphicsWindow::
 end_flip() {
   if (_gsg != (GraphicsStateGuardian *)NULL && _flip_ready) {
 
-    // It doesn't appear to be necessary to ensure the graphics
-    // context is current before flipping the windows, and insisting
-    // on doing so can be a significant performance hit.
-
-    //make_current();
-
     CocoaGraphicsStateGuardian *cocoagsg;
     DCAST_INTO_V(cocoagsg, _gsg);
 
@@ -211,6 +222,9 @@ end_flip() {
     if (!_properties.get_fullscreen()) {
       [_view unlockFocus];
     }
+
+    // Release the context.
+    CGLUnlockContext((CGLContextObj) [cocoagsg->_context CGLContextObj]);
   }
   GraphicsWindow::end_flip();
 }
@@ -313,101 +327,260 @@ open_window() {
     _properties.set_cursor_hidden(false);
   }
 
-  // Configure the window decorations
-  NSUInteger windowStyle;
-  if (_properties.get_undecorated()) {
-    windowStyle = NSBorderlessWindowMask;
-  } else if (_properties.get_fixed_size()) {
-    // Fixed size windows should not show the resize button.
-    windowStyle = NSTitledWindowMask | NSClosableWindowMask |
-                  NSMiniaturizableWindowMask;
-  } else {
-    windowStyle = NSTitledWindowMask | NSClosableWindowMask |
-                  NSMiniaturizableWindowMask | NSResizableWindowMask;
+  // Check if we have a parent view.
+  NSView *parent_nsview = nil;
+  HIViewRef parent_hiview = NULL;
+  _parent_window_handle = NULL;
+
+  WindowHandle *window_handle = _properties.get_parent_window();
+  if (window_handle != NULL) {
+    cocoadisplay_cat.info()
+      << "Got parent_window " << *window_handle << "\n";
+
+    WindowHandle::OSHandle *os_handle = window_handle->get_os_handle();
+    if (os_handle != NULL) {
+      cocoadisplay_cat.info()
+        << "os_handle type " << os_handle->get_type() << "\n";
+
+      void *ptr_handle;
+
+      // Depending on whether the window handle comes from a Carbon or a Cocoa
+      // application, it could be either a HIViewRef or an NSView or NSWindow.
+      // We try to find out which it is, and if it is a HIView, we use the
+      // HICocoaView functions to create a wrapper view to host our own Cocoa view.
+
+      if (os_handle->is_of_type(NativeWindowHandle::IntHandle::get_class_type())) {
+        NativeWindowHandle::IntHandle *int_handle = DCAST(NativeWindowHandle::IntHandle, os_handle);
+        ptr_handle = (void*) int_handle->get_handle();
+      }
+
+      if (ptr_handle != NULL) {
+        // Check if it is actually a valid Carbon ControlRef.
+        ControlRef control = (ControlRef)ptr_handle;
+        ControlKind kind;
+        if (IsValidControlHandle(control) &&
+            GetControlKind(control, &kind) == 0 &&
+            kind.signature == kControlKindSignatureApple) {
+
+          // Now verify that it is also a valid HIViewRef.
+          parent_hiview = (HIViewRef)control;
+          HIViewKind viewkind;
+          if (HIViewIsValid(parent_hiview) &&
+              HIViewGetKind(parent_hiview, &viewkind) == 0 &&
+              viewkind.signature == kHIViewKindSignatureApple) {
+
+            _parent_window_handle = window_handle;
+            cocoadisplay_cat.info()
+              << "Parent window handle is a valid HIViewRef\n";
+          } else {
+            parent_hiview = NULL;
+            cocoadisplay_cat.error()
+              << "Parent window handle is a valid ControlRef, but not a valid HIViewRef!\n";
+            return false;
+          }
+        } else {
+          // If it is not a Carbon ControlRef, perhaps it is a Cocoa NSView.
+          // Unfortunately, there's no reliable way to check if it is actually
+          // an NSObject in the first place, so this may crash - which is why
+          // this case is a last resort.
+          NSObject *nsobj = (NSObject *)ptr_handle;
+          if ([nsobj isKindOfClass:[NSView class]]) {
+            // Yep.
+            parent_nsview = (NSView *)nsobj;
+            _parent_window_handle = window_handle;
+            cocoadisplay_cat.info()
+              << "Parent window handle is a valid NSView pointer\n";
+          } else {
+            cocoadisplay_cat.error()
+              << "Parent window handle is not a valid HIViewRef or NSView pointer!\n";
+            return false;
+          }
+        }
+      }
+    }
   }
 
   // Center the window if coordinates were set to -1 or -2
-  NSRect screenFrame = [cocoa_pipe->_screen frame];
+  NSRect container;
+  if (parent_nsview != NULL) {
+    container = [parent_nsview bounds];
+  } else if (parent_hiview != NULL) {
+    HIRect hirect;
+    HIViewGetBounds(parent_hiview, &hirect);
+    container = NSRectFromCGRect(hirect);
+  } else {
+    container = [cocoa_pipe->_screen frame];
+    container.origin = NSMakePoint(0, 0);
+  }
   int x = _properties.get_x_origin();
   int y = _properties.get_y_origin();
+
   if (x < 0) {
-    x = floor(screenFrame.size.width / 2 - _properties.get_x_size() / 2);
+    x = floor(container.size.width / 2 - _properties.get_x_size() / 2);
   }
   if (y < 0) {
-    y = floor(screenFrame.size.height / 2 - _properties.get_y_size() / 2);
+    y = floor(container.size.height / 2 - _properties.get_y_size() / 2);
   }
   _properties.set_origin(x, y);
 
-  // Content rectangle
-  NSRect rect = NSMakeRect(_properties.get_x_origin(),
-                           screenFrame.size.height - _properties.get_y_origin(),
-                           _properties.get_x_size(), _properties.get_y_size());
+  if (_parent_window_handle == (WindowHandle *)NULL) {
+    // Content rectangle
+    NSRect rect;
+    if (_properties.get_fullscreen()) {
+      rect = container;
+    } else {
+      rect = NSMakeRect(x, container.size.height - _properties.get_y_size() - y,
+                        _properties.get_x_size(), _properties.get_y_size());
+    }
 
-  // Create the window.
-  if (cocoadisplay_cat.is_debug()) {
-    NSString *str = NSStringFromRect(rect);
-    cocoadisplay_cat.debug()
-      << "Creating NSWindow with content rect " << [str UTF8String] << "\n";
-  }
-  _window = [[CocoaPandaWindow alloc]
-             initWithContentRect: rect
-             styleMask:windowStyle
-             screen:cocoa_pipe->_screen
-             window:this];
+    // Configure the window decorations
+    NSUInteger windowStyle;
+    if (_properties.get_undecorated() || _properties.get_fullscreen()) {
+      windowStyle = NSBorderlessWindowMask;
+    } else if (_properties.get_fixed_size()) {
+      // Fixed size windows should not show the resize button.
+      windowStyle = NSTitledWindowMask | NSClosableWindowMask |
+                    NSMiniaturizableWindowMask;
+    } else {
+      windowStyle = NSTitledWindowMask | NSClosableWindowMask |
+                    NSMiniaturizableWindowMask | NSResizableWindowMask;
+    }
 
-  if (_window == nil) {
-    cocoadisplay_cat.error()
-      << "Failed to create Cocoa window.\n";
-    return false;
+    // Create the window.
+    if (cocoadisplay_cat.is_debug()) {
+      NSString *str = NSStringFromRect(rect);
+      cocoadisplay_cat.debug()
+        << "Creating NSWindow with content rect " << [str UTF8String] << "\n";
+    }
+
+    _window = [[CocoaPandaWindow alloc]
+               initWithContentRect: rect
+               styleMask:windowStyle
+               screen:cocoa_pipe->_screen
+               window:this];
+
+    if (_window == nil) {
+      cocoadisplay_cat.error()
+        << "Failed to create Cocoa window.\n";
+      return false;
+    }
   }
+
+  // Lock the context, so we can safely operate on it.
+  CGLLockContext((CGLContextObj) [cocoagsg->_context CGLContextObj]);
 
   // Create the NSView to render to.
+  NSRect rect = NSMakeRect(0, 0, _properties.get_x_size(), _properties.get_y_size());
   _view = [[CocoaPandaView alloc] initWithFrame:rect context:cocoagsg->_context window:this];
-  [_window setContentView:_view];
-  [_window setReleasedWhenClosed:YES];
-  [_window makeFirstResponder:_view];
+  if (_parent_window_handle == (WindowHandle *)NULL) {
+    [_window setContentView:_view];
+    [_window makeFirstResponder:_view];
+  }
 
-  // Create a WindowHandle for ourselves
-  // I'd rather store a window number than an NSWindow pointer,
-  // but wxWidgets seems to use the NSWindow/NSView pointer approach,
+  // Check if we have a parent HIView to create a wrapper for.
+  if (parent_hiview != NULL) {
+    HIViewRef hiview;
+    if (HICocoaViewCreate(_view, 0, &hiview) == 0) {
+      cocoadisplay_cat.debug()
+        << "Successfully created HICocoaView " << hiview << ".\n";
+
+      if (HIViewAddSubview(parent_hiview, hiview) != 0) {
+        cocoadisplay_cat.error()
+          << "Failed to attach HICocoaView " << hiview
+          << " to parent HIView " << parent_hiview << "!\n";
+        return false;
+      }
+      HIViewSetVisible(hiview, TRUE);
+      HIRect hirect;
+      HIViewGetBounds(parent_hiview, &hirect);
+      HIViewSetFrame(hiview, &hirect);
+    } else {
+      cocoadisplay_cat.error()
+        << "Failed to create HICocoaView.\n";
+    }
+  }
+
+  // Check if we have an NSView to attach our NSView to.
+  if (parent_nsview != NULL) {
+    [parent_nsview addSubview:_view];
+  }
+
+  // Create a WindowHandle for ourselves.
+  // wxWidgets seems to use the NSView pointer approach,
   // so let's do the same here.
-  _window_handle = NativeWindowHandle::make_int((size_t) _window);
+  _window_handle = NativeWindowHandle::make_int((size_t) _view);
+
+  // And tell our parent window that we're now its child.
+  if (_parent_window_handle != (WindowHandle *)NULL) {
+    _parent_window_handle->attach_child(_window_handle);
+  }
 
   // Set the properties
-  if (_properties.has_title()) {
-    [_window setTitle: [NSString stringWithUTF8String: _properties.get_title().c_str()]];
+  if (_window != nil) {
+    if (_properties.has_title()) {
+      [_window setTitle: [NSString stringWithUTF8String: _properties.get_title().c_str()]];
+    }
+
+    [_window setShowsResizeIndicator: !_properties.get_fixed_size()];
+
+    if (_properties.get_fullscreen()) {
+     [_window makeKeyAndOrderFront: nil];
+     } else if (_properties.get_minimized()) {
+      [_window makeKeyAndOrderFront: nil];
+      [_window miniaturize: nil];
+    } else if (_properties.get_foreground()) {
+      [_window makeKeyAndOrderFront: nil];
+    } else {
+      [_window orderBack: nil];
+    }
+
+    if (_properties.get_fullscreen()) {
+      [_window setLevel: NSMainMenuWindowLevel + 1];
+    } else {
+      switch (_properties.get_z_order()) {
+      case WindowProperties::Z_bottom:
+        // Seems to work!
+        [_window setLevel: NSNormalWindowLevel - 1];
+        break;
+
+      case WindowProperties::Z_normal:
+        [_window setLevel: NSNormalWindowLevel];
+        break;
+
+      case WindowProperties::Z_top:
+        [_window setLevel: NSPopUpMenuWindowLevel];
+        break;
+      }
+    }
   }
 
-  [_window setShowsResizeIndicator: !_properties.get_fixed_size()];
+  if (_properties.get_fullscreen()) {
+    // Change the display mode.
+    CGDisplayModeRef mode = find_display_mode(_properties.get_x_size(),
+                                              _properties.get_y_size());
 
-  if (_properties.get_minimized()) {
-    [_window makeKeyAndOrderFront: nil];
-    [_window miniaturize: nil];
-  } else if (_properties.get_foreground()) {
-    [_window makeKeyAndOrderFront: nil];
-  } else {
-    [_window orderBack: nil];
-  }
+    if (mode == NULL) {
+      cocoadisplay_cat.error()
+        << "Could not find a suitable display mode!\n";
+      return false;
 
-  switch (_properties.get_z_order()) {
-  case WindowProperties::Z_bottom:
-    [_window setLevel: NSNormalWindowLevel - 1];
-    break;
-
-  case WindowProperties::Z_normal:
-    [_window setLevel: NSNormalWindowLevel];
-    break;
-
-  case WindowProperties::Z_top:
-    [_window setLevel: NSPopUpMenuWindowLevel];
-    break;
+    } else if (!do_switch_fullscreen(mode)) {
+      cocoadisplay_cat.error()
+        << "Failed to change display mode.\n";
+      return false;
+    }
   }
 
   // Make the context current.
+  _context_needs_update = false;
   [cocoagsg->_context update];
   [cocoagsg->_context makeCurrentContext];
 
   cocoagsg->reset_if_new();
+
+  // Release the context.
+  CGLUnlockContext((CGLContextObj) [cocoagsg->_context CGLContextObj]);
+
   if (!cocoagsg->is_valid()) {
     close_window();
     return false;
@@ -420,11 +593,6 @@ open_window() {
   }
   _fb_properties = cocoagsg->get_fb_properties();
 
-  // And tell our parent window that we're now its child.
-  //if (_parent_window_handle != (WindowHandle *)NULL) {
-  //  _parent_window_handle->attach_child(_window_handle);
-  //
-
   //TODO: update initial mouse position in the case that
   // the NSWindow delegate doesn't send the make key event, ie
   // if setParentWindow was used.
@@ -435,10 +603,6 @@ open_window() {
   if (_properties.has_mouse_mode() &&
       _properties.get_mouse_mode() == WindowProperties::M_relative) {
     mouse_mode_relative();
-  }
-
-  if (_properties.get_fullscreen() && !_properties.get_minimized()) {
-    CGDisplayCapture(_display);
   }
 
   return true;
@@ -462,7 +626,9 @@ close_window() {
     cocoagsg = DCAST(CocoaGraphicsStateGuardian, _gsg);
 
     if (cocoagsg != NULL && cocoagsg->_context != nil) {
+      CGLLockContext((CGLContextObj) [cocoagsg->_context CGLContextObj]);
       [cocoagsg->_context clearDrawable];
+      CGLUnlockContext((CGLContextObj) [cocoagsg->_context CGLContextObj]);
     }
     _gsg.clear();
   }
@@ -532,118 +698,186 @@ set_properties_now(WindowProperties &properties) {
     return;
   }
 
-  // The window is already open; we are limited to what we can change
-  // on the fly.
+  if (properties.has_fullscreen()) {
+    if (_properties.get_fullscreen() != properties.get_fullscreen()) {
+      if (properties.get_fullscreen()) {
+        int width, height;
+        if (properties.has_size()) {
+          width = properties.get_x_size();
+          height = properties.get_y_size();
+        } else {
+          width = _properties.get_x_size();
+          height = _properties.get_y_size();
+        }
 
-  if (properties.has_minimized()) {
+        CGDisplayModeRef mode = find_display_mode(width, height);
+
+        if (mode == NULL) {
+          cocoadisplay_cat.error()
+            << "Could not find a suitable display mode with size " << width
+            << "x" << height << "!\n";
+
+        } else if (do_switch_fullscreen(mode)) {
+          if (_window != nil) {
+            // For some reason, setting the style mask
+            // makes it give up its first-responder status.
+            [_window setStyleMask:NSBorderlessWindowMask];
+            [_window makeFirstResponder:_view];
+            [_window setLevel:NSMainMenuWindowLevel+1];
+            [_window makeKeyAndOrderFront:nil];
+          }
+
+          // We've already set the size property this way; clear it.
+          properties.clear_size();
+          _properties.set_size(width, height);
+          properties.clear_origin();
+          _properties.set_origin(0, 0);
+          properties.clear_fullscreen();
+          _properties.set_fullscreen(true);
+
+        } else {
+          cocoadisplay_cat.error()
+            << "Failed to change display mode.\n";
+        }
+
+      } else {
+        do_switch_fullscreen(NULL);
+        _properties.set_fullscreen(false);
+
+        // Force properties to be reset to their actual values
+        properties.set_undecorated(_properties.get_undecorated());
+        properties.set_z_order(_properties.get_z_order());
+        properties.clear_fullscreen();
+      }
+    }
+    _context_needs_update = true;
+  }
+
+  if (properties.has_minimized() && !_properties.get_fullscreen() && _window != nil) {
     _properties.set_minimized(properties.get_minimized());
     if (properties.get_minimized()) {
-      [_window miniaturize: nil];
+      [_window miniaturize:nil];
     } else {
-      [_window deminiaturize: nil];
-    }
-    if (_properties.get_fullscreen()) {
-      if (properties.get_minimized()) {
-        CGDisplayRelease(_display);
-      } else {
-        CGDisplayCapture(_display);
-      }
+      [_window deminiaturize:nil];
     }
     properties.clear_minimized();
   }
 
-  if (properties.has_fullscreen()) {
-    if (_properties.get_fullscreen() != properties.get_fullscreen()) {
-      if (properties.get_fullscreen()) {
-        // Capture the display
-        if (!_properties.get_minimized()) {
-          CGDisplayCapture(_display);
-        }
+  if (properties.has_size()) {
+    int width = properties.get_x_size();
+    int height = properties.get_y_size();
+
+    if (!_properties.get_fullscreen()) {
+      _properties.set_size(width, height);
+      if (_window != nil) {
+        [_window setContentSize:NSMakeSize(width, height)];
+      }
+      [_view setFrameSize:NSMakeSize(width, height)];
+
+      cocoadisplay_cat.debug()
+        << "Setting size to " << width << ", " << height << "\n";
+
+      _context_needs_update = true;
+      properties.clear_size();
+
+    } else {
+      CGDisplayModeRef mode = find_display_mode(width, height);
+
+      if (mode == NULL) {
+        cocoadisplay_cat.error()
+          << "Could not find a suitable display mode with size " << width
+          << "x" << height << "!\n";
+
+      } else if (do_switch_fullscreen(mode)) {
+        // Yay!  Our resolution has changed.
+        _properties.set_size(width, height);
+        properties.clear_size();
 
       } else {
-        // Release the display
-        CGDisplayRelease(_display);
+        cocoadisplay_cat.error()
+          << "Failed to change display mode.\n";
       }
-      _properties.set_fullscreen(properties.get_fullscreen());
     }
-    properties.clear_fullscreen();
   }
 
-  if (properties.has_origin()) {
+  if (properties.has_origin() && !_properties.get_fullscreen()) {
     int x = properties.get_x_origin();
     int y = properties.get_y_origin();
+    
+    //TODO: what if parent window was set
 
     // Get the frame for the screen
-    NSRect frame = [_window frame];
-    NSScreen *screen = [_window screen];
-    nassertv(screen != nil);
-    NSRect screenFrame = [screen frame];
+    NSRect frame;
+    NSRect container;
+    if (_window != nil) {
+      frame = [_window contentRectForFrameRect:[_window frame]];
+      NSScreen *screen = [_window screen];
+      nassertv(screen != nil);
+      container = [screen frame];
+    } else {
+      frame = [_view frame];
+      container = [[_view superview] frame];
+    }
 
     if (x < 0) {
-      x = floor(screenFrame.size.width / 2 - _properties.get_x_size() / 2);
+      x = floor(container.size.width / 2 - frame.size.width / 2);
     }
     if (y < 0) {
-      y = floor(screenFrame.size.height / 2 - _properties.get_y_size() / 2);
+      y = floor(container.size.height / 2 - frame.size.height / 2);
     }
     _properties.set_origin(x, y);
 
     if (!_properties.get_fullscreen()) {
-      // Convert to content rect, change pos, convert back.
       // Remember, Mac OS X coordinates are flipped in the vertical axis.
-      NSRect content = [_window contentRectForFrameRect: frame];
-      content.origin.x = screenFrame.origin.x + x;
-      content.origin.y = screenFrame.origin.y + screenFrame.size.height - y - content.size.height;
-      frame = [_window frameRectForContentRect: content];
+      frame.origin.x = x;
+      frame.origin.y = container.size.height - y - frame.size.height;
 
       cocoadisplay_cat.debug()
-        << "Setting frame origin to " << screenFrame.origin.x << ", " << screenFrame.origin.y << "\n";
+        << "Setting window content origin to " << frame.origin.x << ", " << frame.origin.y << "\n";
 
-      [_window setFrame: frame display: NO];
+      if (_window != nil) {
+        [_window setFrame:[_window frameRectForContentRect:frame] display:NO];
+      } else {
+        [_view setFrame:frame];
+      }
     }
     properties.clear_origin();
   }
 
-  if (properties.has_size()) {
-    _properties.set_size(properties.get_x_size(), properties.get_y_size());
-    if (!_properties.get_fullscreen()) {
-      [_window setContentSize: NSMakeSize(properties.get_x_size(), properties.get_y_size())];
-    }
-    properties.clear_size();
-  }
-
   //TODO: mouse mode
 
-  if (properties.has_title()) {
+  if (properties.has_title() && _window != nil) {
     _properties.set_title(properties.get_title());
-    [_window setTitle: [NSString stringWithUTF8String: properties.get_title().c_str()]];
+    [_window setTitle:[NSString stringWithUTF8String:properties.get_title().c_str()]];
     properties.clear_title();
   }
 
-  if (properties.has_fixed_size()) {
+  if (properties.has_fixed_size() && _window != nil) {
     _properties.set_fixed_size(properties.get_fixed_size());
-    [_window setShowsResizeIndicator: !properties.get_fixed_size()];
+    [_window setShowsResizeIndicator:!properties.get_fixed_size()];
     
     if (!_properties.get_fullscreen()) {
       // If our window is decorated, change the style mask
       // to show or hide the resize button appropriately.
       // However, if we're specifying the 'undecorated' property also,
-      // then we'll be setting the style mask about 20 LOC further down,
+      // then we'll be setting the style mask about 25 LOC further down,
       // so we won't need to bother setting it here.
       if (!properties.has_undecorated() && !_properties.get_undecorated()) {
         if (properties.get_fixed_size()) {
-          [_window setStyleMask: NSTitledWindowMask | NSClosableWindowMask |
-                                 NSMiniaturizableWindowMask ];
+          [_window setStyleMask:NSTitledWindowMask | NSClosableWindowMask |
+                                NSMiniaturizableWindowMask ];
         } else {
-          [_window setStyleMask: NSTitledWindowMask | NSClosableWindowMask |
-                                 NSMiniaturizableWindowMask | NSResizableWindowMask ];
+          [_window setStyleMask:NSTitledWindowMask | NSClosableWindowMask |
+                                NSMiniaturizableWindowMask | NSResizableWindowMask ];
         }
+        [_window makeFirstResponder:_view];
       }
     }
 
     properties.clear_fixed_size();
   }
 
-  if (properties.has_undecorated()) {
+  if (properties.has_undecorated() && _window != nil) {
     _properties.set_undecorated(properties.get_undecorated());
 
     if (!_properties.get_fullscreen()) {
@@ -657,12 +891,13 @@ set_properties_now(WindowProperties &properties) {
         [_window setStyleMask: NSTitledWindowMask | NSClosableWindowMask |
                                NSMiniaturizableWindowMask | NSResizableWindowMask ];
       }
+      [_window makeFirstResponder:_view];
     }
 
     properties.clear_undecorated();
   }
 
-  if (properties.has_foreground()) {
+  if (properties.has_foreground() && !_properties.get_fullscreen() && _window != nil) {
     _properties.set_foreground(properties.get_foreground());
     if (!_properties.get_minimized()) {
       if (properties.get_foreground()) {
@@ -700,7 +935,7 @@ set_properties_now(WindowProperties &properties) {
 
   //XXX cursor filename
 
-  if (properties.has_z_order()) {
+  if (properties.has_z_order() && _window != nil) {
     _properties.set_z_order(properties.get_z_order());
     
     if (!_properties.get_fullscreen()) {
@@ -729,6 +964,110 @@ set_properties_now(WindowProperties &properties) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CocoaGraphicsWindow::find_display_mode
+//       Access: Protected
+//  Description: Returns an appropriate CGDisplayModeRef for the
+//               given width and height, or NULL if none was found.
+////////////////////////////////////////////////////////////////////
+CGDisplayModeRef CocoaGraphicsWindow::
+find_display_mode(int width, int height) {
+  CFArrayRef modes = CGDisplayCopyAllDisplayModes(_display, NULL);
+  size_t num_modes = CFArrayGetCount(modes);
+  CGDisplayModeRef mode;
+
+  // Get the current refresh rate and pixel encoding.
+  CFStringRef current_pixel_encoding;
+  int refresh_rate;
+  mode = CGDisplayCopyDisplayMode(_display);
+  
+  // First check if the current mode is adequate.
+  if (CGDisplayModeGetWidth(mode) == width &&
+      CGDisplayModeGetHeight(mode) == height) {
+    return mode;
+  }
+  
+  current_pixel_encoding = CGDisplayModeCopyPixelEncoding(mode);
+  refresh_rate = CGDisplayModeGetRefreshRate(mode);
+  CGDisplayModeRelease(mode);
+
+  for (size_t i = 0; i < num_modes; ++i) {
+    mode = (CGDisplayModeRef) CFArrayGetValueAtIndex(modes, i);
+
+    CFStringRef pixel_encoding = CGDisplayModeCopyPixelEncoding(mode);
+
+    if (CGDisplayModeGetWidth(mode) == width &&
+        CGDisplayModeGetHeight(mode) == height &&
+        CGDisplayModeGetRefreshRate(mode) == refresh_rate &&
+        CFStringCompare(pixel_encoding, current_pixel_encoding, 0) == kCFCompareEqualTo) {
+
+      CFRetain(mode);
+      CFRelease(pixel_encoding);
+      CFRelease(current_pixel_encoding);
+      CFRelease(modes);
+      return mode;
+    }
+  }
+
+  CFRelease(current_pixel_encoding);
+  CFRelease(modes);
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CocoaGraphicsWindow::do_switch_fullscreen
+//       Access: Protected
+//  Description: Switches to the indicated fullscreen mode, or
+//               back to windowed if NULL was given.  Returns true
+//               on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool CocoaGraphicsWindow::
+do_switch_fullscreen(CGDisplayModeRef mode) {
+  if (mode == NULL) {
+    if (_windowed_mode == NULL) {
+      // Already windowed.
+      return true;
+    }
+
+    // Switch back to the mode we were in when we were still windowed.
+    CGDisplaySetDisplayMode(_display, _windowed_mode, NULL);
+    CGDisplayModeRelease(_windowed_mode);
+    CGDisplayRelease(_display);
+    _windowed_mode = NULL;
+    _context_needs_update = true;
+
+  } else {
+    if (_windowed_mode != NULL && _fullscreen_mode == mode) {
+      // Already fullscreen in that size.
+      return true;
+    }
+    _windowed_mode = CGDisplayCopyDisplayMode(_display);
+    _fullscreen_mode = mode;
+    _context_needs_update = true;
+
+    if (CGDisplaySetDisplayMode(_display, _fullscreen_mode, NULL) != kCGErrorSuccess) {
+      return false;
+    }
+
+    CGDisplayCaptureWithOptions(_display, kCGCaptureNoFill);
+
+    NSRect frame = [[[_view window] screen] frame];
+    if (cocoadisplay_cat.is_debug()) {
+      NSString *str = NSStringFromRect(frame);
+      cocoadisplay_cat.debug()
+        << "Switched to fullscreen, screen rect is now " << [str UTF8String] << "\n";
+    }
+
+    if (_window != nil) {
+      [_window setFrame:frame display:YES];
+      [_view setFrame:NSMakeRect(0, 0, frame.size.width, frame.size.height)];
+      [_window update];
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CocoaGraphicsWindow::handle_move_event
 //       Access: Public
 //  Description: Called by CocoaPandaView or the window delegate
@@ -736,22 +1075,28 @@ set_properties_now(WindowProperties &properties) {
 ////////////////////////////////////////////////////////////////////
 void CocoaGraphicsWindow::
 handle_move_event() {
-  NSRect frame = [_window frame];
-  NSRect screenFrame = [[_window screen] frame];
-  NSRect content = [_window contentRectForFrameRect: frame];
-
   // Remember, Mac OS X uses flipped coordinates
-  WindowProperties properties;
-  properties.set_origin(content.origin.x - screenFrame.origin.x,
-    screenFrame.size.height - content.size.height - (content.origin.y - screenFrame.origin.y));
+  NSRect frame;
+  int x, y;
+  if (_window == nil) {
+    frame = [_view frame];
+    x = frame.origin.x;
+    y = [[_view superview] bounds].size.height - frame.origin.y - frame.size.height;
+  } else {
+    frame = [_window contentRectForFrameRect:[_window frame]];
+    x = frame.origin.x;
+    y = [[_window screen] frame].size.height - frame.origin.y - frame.size.height;
+  }
 
-  if (properties.get_x_origin() != _properties.get_x_origin() ||
-      properties.get_y_origin() != _properties.get_y_origin()) {
+  if (x != _properties.get_x_origin() ||
+      y != _properties.get_y_origin()) {
+
+    WindowProperties properties;
+    properties.set_origin(x, y);
 
     if (cocoadisplay_cat.is_spam()) {
       cocoadisplay_cat.spam()
-        << "Window changed origin to (" << properties.get_x_origin()
-        << ", " << properties.get_y_origin() << ")\n";
+        << "Window changed origin to (" << x << ", " << y << ")\n";
     }
     system_changed_properties(properties);
   }
@@ -765,23 +1110,28 @@ handle_move_event() {
 ////////////////////////////////////////////////////////////////////
 void CocoaGraphicsWindow::
 handle_resize_event() {
-  NSRect frame = [_window frame];
-  NSRect screenFrame = [[_window screen] frame];
-  NSRect content = [_window contentRectForFrameRect: frame];
+  if (_window != nil) {
+    NSRect contentRect = [_window contentRectForFrameRect:[_window frame]];
+    [_view setFrameSize:contentRect.size];
+  }
 
-  WindowProperties properties;
-  properties.set_size(content.size.width, content.size.height);
+  NSRect frame = [_view convertRect:[_view bounds] toView:nil];
 
-  if (properties.get_x_size() != _properties.get_x_size() ||
-      properties.get_y_size() != _properties.get_y_size()) {
+  if (frame.size.width != _properties.get_x_size() ||
+      frame.size.height != _properties.get_y_size()) {
+
+    WindowProperties properties;
+    properties.set_size(frame.size.width, frame.size.height);
 
     if (cocoadisplay_cat.is_spam()) {
       cocoadisplay_cat.spam()
-        << "Window changed size to (" << properties.get_x_size()
-       << ", " << properties.get_y_size() << ")\n";
+        << "Window changed size to (" << frame.size.width
+       << ", " << frame.size.height << ")\n";
     }
     system_changed_properties(properties);
   }
+
+  _context_needs_update = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -799,14 +1149,6 @@ handle_minimize_event(bool minimized) {
   WindowProperties properties;
   properties.set_minimized(minimized);
   system_changed_properties(properties);
-
-  if (_properties.get_fullscreen()) {
-    if (minimized) {
-      CGDisplayRelease(_display);
-    } else {
-      CGDisplayCapture(_display);
-    }
-  }
 
   if (cocoadisplay_cat.is_debug()) {
     if (minimized) {
@@ -840,15 +1182,12 @@ handle_foreground_event(bool foreground) {
   if (foreground && _properties.get_mouse_mode() != WindowProperties::M_relative) {
     // The mouse position may have changed during
     // the time that we were not the key window.
-    NSPoint pos = [NSEvent mouseLocation];
-    NSRect frame = [_window frame];
-    pos.x -= frame.origin.x;
-    pos.y -= frame.origin.y;
+    NSPoint pos = [_window mouseLocationOutsideOfEventStream];
 
-    NSPoint loc = [_view convertPoint: pos fromView: nil];
-    BOOL inside = [_view mouse: loc inRect: [_view bounds]];
+    NSPoint loc = [_view convertPoint:pos fromView:nil];
+    BOOL inside = [_view mouse:loc inRect:[_view bounds]];
 
-    handle_mouse_moved_event(inside, loc.x, [_view bounds].size.height - loc.y, true);
+    handle_mouse_moved_event(inside, loc.x, loc.y, true);
   }
 }
 
@@ -895,8 +1234,6 @@ void CocoaGraphicsWindow::
 handle_close_event() {
   cocoadisplay_cat.debug() << "Window is about to close\n";
 
-  // Make sure that the window gets released
-  [_window setReleasedWhenClosed: YES];
   _window = nil;
 
   // Get rid of the GSG
@@ -905,7 +1242,9 @@ handle_close_event() {
     cocoagsg = DCAST(CocoaGraphicsStateGuardian, _gsg);
 
     if (cocoagsg != NULL && cocoagsg->_context != nil) {
+      CGLLockContext((CGLContextObj) [cocoagsg->_context CGLContextObj]);
       [cocoagsg->_context clearDrawable];
+      CGLUnlockContext((CGLContextObj) [cocoagsg->_context CGLContextObj]);
     }
     _gsg.clear();
   }
@@ -1078,19 +1417,21 @@ handle_mouse_button_event(int button, bool down) {
 ////////////////////////////////////////////////////////////////////
 void CocoaGraphicsWindow::
 handle_mouse_moved_event(bool in_window, int x, int y, bool absolute) {
-  if (cocoadisplay_cat.is_spam()) {
-    if (in_window != _input_devices[0].get_pointer().get_in_window()) {
-      if (in_window) {
-        cocoadisplay_cat.spam() << "Mouse pointer entered window\n";
-      } else {
-        cocoadisplay_cat.spam() << "Mouse pointer exited window\n";
+  if (absolute) {
+    if (cocoadisplay_cat.is_spam()) {
+      if (in_window != _input_devices[0].get_pointer().get_in_window()) {
+        if (in_window) {
+          cocoadisplay_cat.spam() << "Mouse pointer entered window\n";
+        } else {
+          cocoadisplay_cat.spam() << "Mouse pointer exited window\n";
+        }
       }
     }
-  }
 
-  if (absolute) {
-    _input_devices[0].set_pointer(in_window, x, y,
+    // Strangely enough, in Cocoa, mouse Y coordinates are 1-based.
+    _input_devices[0].set_pointer(in_window, x, y - 1,
       ClockObject::get_global_clock()->get_frame_time());
+
   } else {
     //TODO: also get initial mouse position
     MouseData md = _input_devices[0].get_pointer();
@@ -1117,7 +1458,25 @@ handle_mouse_moved_event(bool in_window, int x, int y, bool absolute) {
 ////////////////////////////////////////////////////////////////////
 void CocoaGraphicsWindow::
 handle_wheel_event(double x, double y) {
-  //TODO
+  cocoadisplay_cat.spam()
+    << "Wheel delta " << x << ", " << y << "\n";
+
+  if (y > 0.0) {
+    _input_devices[0].button_down(MouseButton::wheel_up());
+    _input_devices[0].button_up(MouseButton::wheel_up());
+  } else if (y < 0.0) {
+    _input_devices[0].button_down(MouseButton::wheel_down());
+    _input_devices[0].button_up(MouseButton::wheel_down());
+  }
+
+  //TODO: check if this is correct
+  if (x > 0.0) {
+    _input_devices[0].button_down(MouseButton::wheel_right());
+    _input_devices[0].button_up(MouseButton::wheel_right());
+  } else if (y < 0.0) {
+    _input_devices[0].button_down(MouseButton::wheel_left());
+    _input_devices[0].button_up(MouseButton::wheel_left());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

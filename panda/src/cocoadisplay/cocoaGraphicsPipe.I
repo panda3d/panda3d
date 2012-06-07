@@ -13,24 +13,24 @@
 ////////////////////////////////////////////////////////////////////
 
 
-/*////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsPipe::get_display
-//       Access: Public
-//  Description: Returns a pointer to the X display associated with
-//               the pipe: the display on which to create the windows.
 ////////////////////////////////////////////////////////////////////
-INLINE X11_Display *CocoaGraphicsPipe::
-get_display() const {
+//     Function: CocoaGraphicsPipe::get_display_id
+//       Access: Public
+//  Description: Returns the Quartz display ID associated with
+//               this graphics pipe.
+////////////////////////////////////////////////////////////////////
+INLINE CGDirectDisplayID CocoaGraphicsPipe::
+get_display_id() const {
   return _display;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsPipe::get_screen
+//     Function: CocoaGraphicsPipe::get_nsscreen
 //       Access: Public
-//  Description: Returns the X screen number associated with the pipe.
+//  Description: Returns the Cocoa NSScreen pointer associated with
+//               this graphics pipe.
 ////////////////////////////////////////////////////////////////////
-INLINE int CocoaGraphicsPipe::
-get_screen() const {
+INLINE NSScreen *CocoaGraphicsPipe::
+get_nsscreen() const {
   return _screen;
 }
-*/

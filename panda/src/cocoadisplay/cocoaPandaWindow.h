@@ -22,6 +22,10 @@ class CocoaGraphicsWindow;
 }
 
 - (id) initWithContentRect:(NSRect)rect styleMask:(NSUInteger)styleMask screen:(NSScreen*)screen window:(CocoaGraphicsWindow*)window;
-- (BOOL)canBecomeKeyWindow;
+- (BOOL) canBecomeKeyWindow;
+- (BOOL) canBecomeMainWindow;
+- (BOOL) acceptsFirstResponder;
+- (BOOL) becomeFirstResponder;
+- (BOOL) resignFirstResponder;
 
 @end

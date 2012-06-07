@@ -176,7 +176,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
   }
 
   if (need_window) {
-    //TODO: fullscreen != window on OSX
+    //TODO: when to request fullscreen on Cocoa?
     attribs.push_back(NSOpenGLPFAWindow);
     //attribs.push_back(NSOpenGLPFAFullScreen);
   }
@@ -215,6 +215,27 @@ choose_pixel_format(const FrameBufferProperties &properties,
 
   cocoadisplay_cat.debug()
     << "Created context " << _context << ": " << _fbprops << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CocoaGraphicsStateGuardian::query_gl_version
+//       Access: Protected, Virtual
+//  Description: Queries the runtime version of OpenGL in use.
+////////////////////////////////////////////////////////////////////
+void CocoaGraphicsStateGuardian::
+query_gl_version() {
+  GLGraphicsStateGuardian::query_gl_version();
+
+  // We output to glgsg_cat instead of glxdisplay_cat, since this is
+  // where the GL version has been output, and it's nice to see the
+  // two of these together.
+  if (glgsg_cat.is_debug()) {
+    //GLint major, minor;
+    //NSOpenGLGetVersion(&major, &minor);
+
+    //glgsg_cat.debug()
+    //  << "NSOpenGLVersion = " << major << "." << minor << "\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

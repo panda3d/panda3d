@@ -28,6 +28,7 @@
     CocoaPandaWindowDelegate *delegate = [[CocoaPandaWindowDelegate alloc] initWithGraphicsWindow:window];
     [self setDelegate:delegate];
     [self setOpaque:YES];
+    [self setReleasedWhenClosed:YES];
 
     // Necessary to be able to accept mouseMoved in the NSView
     [self setAcceptsMouseMovedEvents:YES];
@@ -38,6 +39,22 @@
 
 - (BOOL) canBecomeKeyWindow {
   // Otherwise borderless windows won't be able to get keyboard events.
+  return YES;
+}
+
+- (BOOL) canBecomeMainWindow {
+  return YES;
+}
+
+- (BOOL) acceptsFirstResponder {
+  return YES;
+}
+
+- (BOOL) becomeFirstResponder {
+  return YES;
+}
+
+- (BOOL) resignFirstResponder {
   return YES;
 }
 

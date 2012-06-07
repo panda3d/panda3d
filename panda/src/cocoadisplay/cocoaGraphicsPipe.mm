@@ -29,11 +29,9 @@ static void init_app() {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     [NSApplication sharedApplication];
 
-    [NSApp setActivationPolicy: nil];
+    [NSApp setActivationPolicy:nil];
     [NSApp finishLaunching];
-    [NSApp activateIgnoringOtherApps: YES];
-
-    //[pool release];
+    [NSApp activateIgnoringOtherApps:YES];
   }
 }
 

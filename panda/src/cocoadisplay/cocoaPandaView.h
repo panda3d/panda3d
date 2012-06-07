@@ -23,6 +23,8 @@ class CocoaGraphicsWindow;
 }
 
 - (id) initWithFrame:(NSRect)frameRect context:(NSOpenGLContext*)context window:(CocoaGraphicsWindow*)window;
+- (void) finalize;
+- (BOOL) isFlipped;
 - (BOOL) acceptsFirstResponder;
 - (BOOL) becomeFirstResponder;
 - (BOOL) resignFirstResponder;
