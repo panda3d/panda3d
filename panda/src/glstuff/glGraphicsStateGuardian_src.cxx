@@ -951,9 +951,11 @@ reset() {
 
 #ifdef OPENGLES_2
   _supports_glsl = true;
+  _supports_tessellation_shaders = false;
 #else
   #ifdef OPENGLES_1
     _supports_glsl = false;
+    _supports_tessellation_shaders = false;
   #else
     _supports_glsl = is_at_least_gl_version(2, 0) || has_extension("GL_ARB_shading_language_100");
     _supports_geometry_shaders = is_at_least_gl_version(3, 2) || has_extension("GL_ARB_geometry_shader4");
@@ -3159,6 +3161,7 @@ draw_patches(const GeomPrimitivePipelineReader *reader, bool force) {
     return false;
   }
 
+#ifndef OPENGLES
   _glPatchParameteri(GL_PATCH_VERTICES, reader->get_object()->get_num_vertices_per_primitive());
 
 #ifdef SUPPORT_IMMEDIATE_MODE
@@ -3208,6 +3211,8 @@ draw_patches(const GeomPrimitivePipelineReader *reader, bool force) {
       }
     }
   }
+
+#endif // OPENGLES
 
   report_my_gl_errors();
   return true;
