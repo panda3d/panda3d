@@ -17,11 +17,6 @@ from distutils.sysconfig import get_python_lib
 from optparse import OptionParser
 from makepandacore import *
 
-if (platform.architecture()[0] == "64bit" and not sys.platform.startswith("freebsd")):
-  libdir = "/lib64"
-else:
-  libdir = "/lib"
-
 MIME_INFO = (
   ("egg", "model/x-egg", "EGG model file", "pview"),
   ("bam", "model/x-bam", "Panda3D binary model file", "pview"),
@@ -114,7 +109,7 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built"):
     oscmd("mkdir -m 0755 -p "+destdir+prefix+"/share/mime/packages")
     oscmd("mkdir -m 0755 -p "+destdir+prefix+"/share/application-registry")
     oscmd("mkdir -m 0755 -p "+destdir+prefix+"/share/applications")
-    oscmd("mkdir -m 0755 -p "+destdir+prefix+libdir+"/panda3d")
+    oscmd("mkdir -m 0755 -p "+destdir+prefix+"/lib/panda3d")
     oscmd("mkdir -m 0755 -p "+destdir+PPATH)
     if (sys.platform.startswith("freebsd")):
         oscmd("mkdir -m 0755 -p "+destdir+prefix+"/etc")
@@ -147,18 +142,18 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built"):
     oscmd("cp doc/LICENSE                       "+destdir+prefix+"/include/panda3d/LICENSE")
     oscmd("cp doc/ReleaseNotes                  "+destdir+prefix+"/share/panda3d/ReleaseNotes")
     oscmd("echo '"+prefix+"/share/panda3d' >    "+destdir+PPATH+"/panda3d.pth")
-    oscmd("echo '"+prefix+libdir+"/panda3d'>>   "+destdir+PPATH+"/panda3d.pth")
+    oscmd("echo '"+prefix+"/lib/panda3d'>>   "+destdir+PPATH+"/panda3d.pth")
     if (sys.platform.startswith("freebsd")):
-        oscmd("echo '"+prefix+libdir+"/panda3d'>    "+destdir+"/usr/local/libdata/ldconfig/panda3d")
+        oscmd("echo '"+prefix+"/lib/panda3d'>    "+destdir+"/usr/local/libdata/ldconfig/panda3d")
     else:
-        oscmd("echo '"+prefix+libdir+"/panda3d'>    "+destdir+"/etc/ld.so.conf.d/panda3d.conf")
+        oscmd("echo '"+prefix+"/lib/panda3d'>    "+destdir+"/etc/ld.so.conf.d/panda3d.conf")
         oscmd("chmod +x "+destdir+"/etc/ld.so.conf.d/panda3d.conf")
     oscmd("ln -s "+PEXEC+"                      "+destdir+prefix+"/bin/ppython")
     oscmd("cp "+outputdir+"/bin/*               "+destdir+prefix+"/bin/")
     for base in os.listdir(outputdir+"/lib"):
         if (not base.endswith(".a")):
             # We really need to specify -R in order not to follow symlinks on non-GNU
-            oscmd("cp -R -P "+outputdir+"/lib/"+base+" "+destdir+prefix+libdir+"/panda3d/"+base)
+            oscmd("cp -R -P "+outputdir+"/lib/"+base+" "+destdir+prefix+"/lib/panda3d/"+base)
     # rpmlint doesn't like it if we compile pyc.
     #for base in os.listdir(destdir+prefix+"/share/panda3d/direct"):
     #    if ((base != "extensions") and (base != "extensions_native")):
@@ -184,20 +179,20 @@ def InstallRuntime(destdir="", prefix="/usr", outputdir="built"):
     oscmd("mkdir -m 0755 -p "+destdir+prefix+"/share/application-registry")
     oscmd("mkdir -m 0755 -p "+destdir+prefix+"/share/applications")
     if (os.path.exists(outputdir+"/plugins/nppanda3d.so")):
-        oscmd("mkdir -m 0755 -p "+destdir+prefix+libdir)
-        oscmd("cp "+outputdir+"/plugins/nppanda3d.so "+destdir+prefix+libdir+"/nppanda3d.so")
+        oscmd("mkdir -m 0755 -p "+destdir+prefix+"/lib")
+        oscmd("cp "+outputdir+"/plugins/nppanda3d.so "+destdir+prefix+"/lib/nppanda3d.so")
         if sys.platform.startswith("freebsd"):
-            oscmd("mkdir -m 0755 -p "+destdir+prefix+libdir+"/browser_plugins/symlinks/gecko19")
-            oscmd("mkdir -m 0755 -p "+destdir+prefix+libdir+"/libxul/plugins")
-            oscmd("ln -s "+prefix+libdir+"/nppanda3d.so  "+destdir+prefix+libdir+"/browser_plugins/symlinks/gecko19/nppanda3d.so")
-            oscmd("ln -s "+prefix+libdir+"/nppanda3d.so  "+destdir+prefix+libdir+"/libxul/plugins/nppanda3d.so")
+            oscmd("mkdir -m 0755 -p "+destdir+prefix+"/lib/browser_plugins/symlinks/gecko19")
+            oscmd("mkdir -m 0755 -p "+destdir+prefix+"/lib/libxul/plugins")
+            oscmd("ln -s "+prefix+"/lib/nppanda3d.so  "+destdir+prefix+"/lib/browser_plugins/symlinks/gecko19/nppanda3d.so")
+            oscmd("ln -s "+prefix+"/lib/nppanda3d.so  "+destdir+prefix+"/lib/libxul/plugins/nppanda3d.so")
         else:
-            oscmd("mkdir -m 0755 -p "+destdir+prefix+libdir+"/mozilla/plugins")
-            oscmd("mkdir -m 0755 -p "+destdir+prefix+libdir+"/mozilla-firefox/plugins")
-            oscmd("mkdir -m 0755 -p "+destdir+prefix+libdir+"/xulrunner-addons/plugins")
-            oscmd("ln -s "+prefix+libdir+"/nppanda3d.so  "+destdir+prefix+libdir+"/mozilla/plugins/nppanda3d.so")
-            oscmd("ln -s "+prefix+libdir+"/nppanda3d.so  "+destdir+prefix+libdir+"/mozilla-firefox/plugins/nppanda3d.so")
-            oscmd("ln -s "+prefix+libdir+"/nppanda3d.so  "+destdir+prefix+libdir+"/xulrunner-addons/plugins/nppanda3d.so")
+            oscmd("mkdir -m 0755 -p "+destdir+prefix+"/lib/mozilla/plugins")
+            oscmd("mkdir -m 0755 -p "+destdir+prefix+"/lib/mozilla-firefox/plugins")
+            oscmd("mkdir -m 0755 -p "+destdir+prefix+"/lib/xulrunner-addons/plugins")
+            oscmd("ln -s "+prefix+"/lib/nppanda3d.so  "+destdir+prefix+"/lib/mozilla/plugins/nppanda3d.so")
+            oscmd("ln -s "+prefix+"/lib/nppanda3d.so  "+destdir+prefix+"/lib/mozilla-firefox/plugins/nppanda3d.so")
+            oscmd("ln -s "+prefix+"/lib/nppanda3d.so  "+destdir+prefix+"/lib/xulrunner-addons/plugins/nppanda3d.so")
     WriteMimeFile(destdir+prefix+"/share/mime-info/panda3d-runtime.mime", MIME_INFO_PLUGIN)
     WriteKeysFile(destdir+prefix+"/share/mime-info/panda3d-runtime.keys", MIME_INFO_PLUGIN)
     WriteMimeXMLFile(destdir+prefix+"/share/mime/packages/panda3d-runtime.xml", MIME_INFO_PLUGIN)
