@@ -5755,15 +5755,15 @@ def MakeInstallerLinux():
         WriteFile("targetroot/debian/control", "")
         if (RUNTIME):
             oscmd("ln -s .. targetroot/debian/panda3d-runtime")
-            oscmd("cd targetroot ; dpkg-shlibdeps -xpanda3d-runtime debian/panda3d-runtime/usr/lib*/*.so* debian/panda3d-runtime/usr/bin/*")
+            oscmd("cd targetroot ; dpkg-shlibdeps -xpanda3d-runtime debian/panda3d-runtime/usr/lib/*.so* debian/panda3d-runtime/usr/bin/*")
             depends = ReadFile("targetroot/debian/substvars").replace("shlibs:Depends=", "").strip()
             WriteFile("targetroot/DEBIAN/control", txt.replace("DEPENDS", depends))
         else:
             oscmd("ln -s .. targetroot/debian/panda3d" + MAJOR_VERSION)
-            oscmd("cd targetroot ; dpkg-gensymbols -v%s -ppanda3d%s -eusr%s/panda3d/lib*.so* -ODEBIAN/symbols >/dev/null" % (DEBVERSION, MAJOR_VERSION, libdir))
+            oscmd("cd targetroot ; dpkg-gensymbols -v%s -ppanda3d%s -eusr/lib/panda3d/lib*.so* -ODEBIAN/symbols >/dev/null" % (DEBVERSION, MAJOR_VERSION))
             # Library dependencies are required, binary dependencies are recommended. Dunno why -xlibphysx-extras is needed, prolly a bug in their package
-            oscmd("cd targetroot ; LD_LIBRARY_PATH=usr%s/panda3d dpkg-shlibdeps --ignore-missing-info --warnings=2 -xpanda3d%s -xlibphysx-extras -Tdebian/substvars_dep debian/panda3d%s/usr/lib*/panda3d/lib*.so*" % (libdir, MAJOR_VERSION, MAJOR_VERSION))
-            oscmd("cd targetroot ; LD_LIBRARY_PATH=usr%s/panda3d dpkg-shlibdeps --ignore-missing-info --warnings=2 -xpanda3d%s -Tdebian/substvars_rec debian/panda3d%s/usr/bin/*" % (libdir, MAJOR_VERSION, MAJOR_VERSION))
+            oscmd("cd targetroot ; LD_LIBRARY_PATH=usr/lib/panda3d dpkg-shlibdeps --ignore-missing-info --warnings=2 -xpanda3d%s -xlibphysx-extras -Tdebian/substvars_dep debian/panda3d%s/usr/lib/panda3d/lib*.so*" % (MAJOR_VERSION, MAJOR_VERSION))
+            oscmd("cd targetroot ; LD_LIBRARY_PATH=usr/lib/panda3d dpkg-shlibdeps --ignore-missing-info --warnings=2 -xpanda3d%s -Tdebian/substvars_rec debian/panda3d%s/usr/bin/*" % (MAJOR_VERSION, MAJOR_VERSION))
             depends = ReadFile("targetroot/debian/substvars_dep").replace("shlibs:Depends=", "").strip()
             recommends = ReadFile("targetroot/debian/substvars_rec").replace("shlibs:Depends=", "").strip()
             if PkgSkip("PYTHON")==0:
