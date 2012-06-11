@@ -7112,6 +7112,7 @@ do_write_datagram_header(CData *cdata, BamWriter *manager, Datagram &me, bool &h
   me.add_uint8(cdata->_alpha_file_channel);
   me.add_bool(has_rawdata);
   me.add_uint8(cdata->_texture_type);
+  me.add_bool(cdata->_has_read_mipmaps);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -7233,6 +7234,7 @@ make_this_from_bam(const FactoryParams &params) {
       texture_type = TT_cube_map;
     }
   }
+  bool has_read_mipmaps = scan.get_bool();
 
   Texture *me = NULL;
   if (has_rawdata) {
@@ -7248,6 +7250,7 @@ make_this_from_bam(const FactoryParams &params) {
     cdata_me->_primary_file_num_channels = primary_file_num_channels;
     cdata_me->_alpha_file_channel = alpha_file_channel;
     cdata_me->_texture_type = texture_type;
+    cdata_me->_has_read_mipmaps = has_read_mipmaps;
 
     // Read the texture attributes directly from the bam stream.
     me->do_fillin_body(cdata_me, scan, manager);
@@ -7301,25 +7304,25 @@ make_this_from_bam(const FactoryParams &params) {
       case TT_2d_texture:
         if (alpha_filename.empty()) {
           me = TexturePool::load_texture(filename, primary_file_num_channels,
-                                         false, options);
+                                         has_read_mipmaps, options);
         } else {
           me = TexturePool::load_texture(filename, alpha_filename,
                                          primary_file_num_channels,
                                          alpha_file_channel,
-                                         false, options);
+                                         has_read_mipmaps, options);
         }
         break;
 
       case TT_3d_texture:
-        me = TexturePool::load_3d_texture(filename, false, options);
+        me = TexturePool::load_3d_texture(filename, has_read_mipmaps, options);
         break;
 
       case TT_2d_texture_array:
-        me = TexturePool::load_2d_texture_array(filename, false, options);
+        me = TexturePool::load_2d_texture_array(filename, has_read_mipmaps, options);
         break;
 
       case TT_cube_map:
-        me = TexturePool::load_cube_map(filename, false, options);
+        me = TexturePool::load_cube_map(filename, has_read_mipmaps, options);
         break;
       }
     }
