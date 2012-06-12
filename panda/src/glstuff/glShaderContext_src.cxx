@@ -1151,6 +1151,7 @@ glsl_compile_entry_point(GSG *gsg, Shader::ShaderType type) {
     case Shader::ST_fragment:
       handle = gsg->_glCreateShader(GL_FRAGMENT_SHADER);
       break;
+#ifndef OPENGLES
     case Shader::ST_geometry:
       if (gsg->get_supports_geometry_shaders()) {
         handle = gsg->_glCreateShader(GL_GEOMETRY_SHADER);
@@ -1166,6 +1167,7 @@ glsl_compile_entry_point(GSG *gsg, Shader::ShaderType type) {
         handle = gsg->_glCreateShader(GL_TESS_EVALUATION_SHADER);
       }
       break;
+#endif
   }
   if (!handle) {
     gsg->report_my_gl_errors();
