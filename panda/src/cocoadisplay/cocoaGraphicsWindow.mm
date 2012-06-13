@@ -26,6 +26,7 @@
 #include "throw_event.h"
 #include "lightReMutexHolder.h"
 #include "nativeWindowHandle.h"
+#include "virtualFileSystem.h"
 
 #import "cocoaPandaView.h"
 #import "cocoaPandaWindow.h"
@@ -35,6 +36,7 @@
 #import <AppKit/NSApplication.h>
 #import <AppKit/NSCursor.h>
 #import <AppKit/NSEvent.h>
+#import <AppKit/NSImage.h>
 #import <AppKit/NSScreen.h>
 #import <OpenGL/OpenGL.h>
 #import <Carbon/Carbon.h>
@@ -58,6 +60,7 @@ CocoaGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
 {
   _window = nil;
   _view = nil;
+  _cursor = nil;
   _modifier_keys = 0;
   _mouse_hidden = false;
   _context_needs_update = true;
@@ -329,7 +332,6 @@ open_window() {
 
   // Check if we have a parent view.
   NSView *parent_nsview = nil;
-  HIViewRef parent_hiview = NULL;
   _parent_window_handle = NULL;
 
   WindowHandle *window_handle = _properties.get_parent_window();
@@ -346,8 +348,8 @@ open_window() {
 
       // Depending on whether the window handle comes from a Carbon or a Cocoa
       // application, it could be either a HIViewRef or an NSView or NSWindow.
-      // We try to find out which it is, and if it is a HIView, we use the
-      // HICocoaView functions to create a wrapper view to host our own Cocoa view.
+      // Currently, we only support a Cocoa NSView, but we may in the future
+      // add support for Carbon parents using HICocoaView.
 
       if (os_handle->is_of_type(NativeWindowHandle::IntHandle::get_class_type())) {
         NativeWindowHandle::IntHandle *int_handle = DCAST(NativeWindowHandle::IntHandle, os_handle);
@@ -355,46 +357,16 @@ open_window() {
       }
 
       if (ptr_handle != NULL) {
-        // Check if it is actually a valid Carbon ControlRef.
-        ControlRef control = (ControlRef)ptr_handle;
-        ControlKind kind;
-        if (IsValidControlHandle(control) &&
-            GetControlKind(control, &kind) == 0 &&
-            kind.signature == kControlKindSignatureApple) {
-
-          // Now verify that it is also a valid HIViewRef.
-          parent_hiview = (HIViewRef)control;
-          HIViewKind viewkind;
-          if (HIViewIsValid(parent_hiview) &&
-              HIViewGetKind(parent_hiview, &viewkind) == 0 &&
-              viewkind.signature == kHIViewKindSignatureApple) {
-
-            _parent_window_handle = window_handle;
-            cocoadisplay_cat.info()
-              << "Parent window handle is a valid HIViewRef\n";
-          } else {
-            parent_hiview = NULL;
-            cocoadisplay_cat.error()
-              << "Parent window handle is a valid ControlRef, but not a valid HIViewRef!\n";
-            return false;
-          }
+        NSObject *nsobj = (NSObject *)ptr_handle;
+        if ([nsobj isKindOfClass:[NSView class]]) {
+          parent_nsview = (NSView *)nsobj;
+          _parent_window_handle = window_handle;
+          cocoadisplay_cat.info()
+            << "Parent window handle is a valid NSView pointer\n";
         } else {
-          // If it is not a Carbon ControlRef, perhaps it is a Cocoa NSView.
-          // Unfortunately, there's no reliable way to check if it is actually
-          // an NSObject in the first place, so this may crash - which is why
-          // this case is a last resort.
-          NSObject *nsobj = (NSObject *)ptr_handle;
-          if ([nsobj isKindOfClass:[NSView class]]) {
-            // Yep.
-            parent_nsview = (NSView *)nsobj;
-            _parent_window_handle = window_handle;
-            cocoadisplay_cat.info()
-              << "Parent window handle is a valid NSView pointer\n";
-          } else {
-            cocoadisplay_cat.error()
-              << "Parent window handle is not a valid HIViewRef or NSView pointer!\n";
-            return false;
-          }
+          cocoadisplay_cat.error()
+            << "Parent window handle is not a valid NSView pointer!\n";
+          return false;
         }
       }
     }
@@ -404,10 +376,6 @@ open_window() {
   NSRect container;
   if (parent_nsview != NULL) {
     container = [parent_nsview bounds];
-  } else if (parent_hiview != NULL) {
-    HIRect hirect;
-    HIViewGetBounds(parent_hiview, &hirect);
-    container = NSRectFromCGRect(hirect);
   } else {
     container = [cocoa_pipe->_screen frame];
     container.origin = NSMakePoint(0, 0);
@@ -477,29 +445,6 @@ open_window() {
     [_window makeFirstResponder:_view];
   }
 
-  // Check if we have a parent HIView to create a wrapper for.
-  if (parent_hiview != NULL) {
-    HIViewRef hiview;
-    if (HICocoaViewCreate(_view, 0, &hiview) == 0) {
-      cocoadisplay_cat.debug()
-        << "Successfully created HICocoaView " << hiview << ".\n";
-
-      if (HIViewAddSubview(parent_hiview, hiview) != 0) {
-        cocoadisplay_cat.error()
-          << "Failed to attach HICocoaView " << hiview
-          << " to parent HIView " << parent_hiview << "!\n";
-        return false;
-      }
-      HIViewSetVisible(hiview, TRUE);
-      HIRect hirect;
-      HIViewGetBounds(parent_hiview, &hirect);
-      HIViewSetFrame(hiview, &hirect);
-    } else {
-      cocoadisplay_cat.error()
-        << "Failed to create HICocoaView.\n";
-    }
-  }
-
   // Check if we have an NSView to attach our NSView to.
   if (parent_nsview != NULL) {
     [parent_nsview addSubview:_view];
@@ -515,6 +460,35 @@ open_window() {
     _parent_window_handle->attach_child(_window_handle);
   }
 
+  if (_properties.has_icon_filename()) {
+    NSImage *image = load_image(_properties.get_icon_filename());
+    if (image != nil) {
+      // We're technically changing the application icon,
+      // but this is most likely what the developer means.
+      // There isn't really a "window icon" in Mac OS X.
+      [NSApp setApplicationIconImage:image];
+    } else {
+      _properties.clear_icon_filename();
+    }
+  }
+
+  if (_properties.has_cursor_filename()) {
+    NSImage *image = load_image(_properties.get_cursor_filename());
+    NSCursor *cursor = nil;
+    //TODO: allow setting the hotspot, read it from file when loading .cur.
+    if (image != nil) {
+      cursor = [[NSCursor alloc] initWithImage:image hotSpot:NSMakePoint(0, 0)];
+    }
+    if (cursor != nil) {
+      _cursor = cursor;
+    } else {
+      _properties.clear_cursor_filename();
+    }
+    // This will ensure that NSView's resetCursorRects gets
+    // called, which sets the appropriate cursor rects.
+    [[_view window] invalidateCursorRectsForView:_view];
+  }
+
   // Set the properties
   if (_window != nil) {
     if (_properties.has_title()) {
@@ -524,7 +498,7 @@ open_window() {
     [_window setShowsResizeIndicator: !_properties.get_fixed_size()];
 
     if (_properties.get_fullscreen()) {
-     [_window makeKeyAndOrderFront: nil];
+      [_window makeKeyAndOrderFront: nil];
      } else if (_properties.get_minimized()) {
       [_window makeKeyAndOrderFront: nil];
       [_window miniaturize: nil];
@@ -593,11 +567,11 @@ open_window() {
   }
   _fb_properties = cocoagsg->get_fb_properties();
 
-  //TODO: update initial mouse position in the case that
-  // the NSWindow delegate doesn't send the make key event, ie
-  // if setParentWindow was used.
-
-  //TODO: cursor image, app icon
+  // Get the initial mouse position.
+  NSPoint pos = [_window mouseLocationOutsideOfEventStream];
+  NSPoint loc = [_view convertPoint:pos fromView:nil];
+  BOOL inside = [_view mouse:loc inRect:[_view bounds]];
+  handle_mouse_moved_event(inside, loc.x, loc.y, true);
 
   // Enable relative mouse mode, if this was requested.
   if (_properties.has_mouse_mode() &&
@@ -619,6 +593,11 @@ close_window() {
   if (_mouse_hidden) {
     [NSCursor unhide];
     _mouse_hidden = false;
+  }
+
+  if (_cursor != nil) {
+    [_cursor release];
+    _cursor = nil;
   }
 
   if (_gsg != (GraphicsStateGuardian *)NULL) {
@@ -803,8 +782,6 @@ set_properties_now(WindowProperties &properties) {
   if (properties.has_origin() && !_properties.get_fullscreen()) {
     int x = properties.get_x_origin();
     int y = properties.get_y_origin();
-    
-    //TODO: what if parent window was set
 
     // Get the frame for the screen
     NSRect frame;
@@ -926,14 +903,50 @@ set_properties_now(WindowProperties &properties) {
   }
 
   if (properties.has_icon_filename()) {
-    //_properties.set_icon_filename(properties.get_icon_filename());
-    //properties.clear_icon_filename();
-    //TODO: setMiniwindowImage
-    //You can also call this method as needed to change the minimized window image. Typically, you would specify a custom image immediately prior to a window being minimized—when the system posts an NSWindowWillMiniaturizeNotification. You can call this method while the window is minimized to update the current image in the Dock. However, this method is not recommended for creating complex animations in the Dock.
-    //Support for custom images is disabled by default. To enable support, set the AppleDockIconEnabled key to YES when first registering your application’s user defaults. You must set this key prior to calling the init method of NSApplication, which reads the current value of the key.
+    Filename icon_filename = properties.get_icon_filename();
+    NSImage *image = load_image(icon_filename);
+
+    if (image != nil || icon_filename.empty()) {
+      // We're technically changing the application icon,
+      // but this is most likely what the developer means.
+      // There isn't really a "window icon" in Mac OS X.
+      [NSApp setApplicationIconImage:image];
+      _properties.set_icon_filename(icon_filename);
+      properties.clear_icon_filename();
+    }
   }
 
-  //XXX cursor filename
+  if (properties.has_cursor_filename()) {
+    Filename cursor_filename = properties.get_cursor_filename();
+
+    if (cursor_filename.empty()) {
+      // Release the existing cursor.
+      if (_cursor != nil) {
+        [_cursor release];
+        _cursor = nil;
+      }
+      properties.set_cursor_filename(cursor_filename);
+      properties.clear_cursor_filename();
+    } else {
+      NSImage *image = load_image(cursor_filename);
+      if (image != nil) {
+        NSCursor *cursor;
+        cursor = [[NSCursor alloc] initWithImage:image hotSpot:NSMakePoint(0, 0)];
+        if (cursor != nil) {
+          // Replace the existing cursor.
+          if (_cursor != nil) {
+            [_cursor release];
+          }
+          _cursor = cursor;
+          _properties.set_cursor_filename(cursor_filename);
+          properties.clear_cursor_filename();
+        }
+      }
+    }
+    // This will ensure that NSView's resetCursorRects gets
+    // called, which sets the appropriate cursor rects.
+    [[_view window] invalidateCursorRectsForView:_view];
+  }
 
   if (properties.has_z_order() && _window != nil) {
     _properties.set_z_order(properties.get_z_order());
@@ -954,12 +967,6 @@ set_properties_now(WindowProperties &properties) {
       }
     }
     properties.clear_z_order();
-  }
-
-  //TODO: parent window
-  if (properties.has_parent_window()) {
-    _properties.set_parent_window(properties.get_parent_window());
-    properties.clear_parent_window();
   }
 }
 
@@ -1065,6 +1072,77 @@ do_switch_fullscreen(CGDisplayModeRef mode) {
   }
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CocoaGraphicsWindow::load_image
+//       Access: Private
+//  Description: Loads the indicated filename and returns an NSImage
+//               pointer, or NULL on failure.
+//               Must be called from the window thread.
+////////////////////////////////////////////////////////////////////
+NSImage *CocoaGraphicsWindow::
+load_image(const Filename &filename) {
+  if (filename.empty()) {
+    return nil;
+  }
+
+  // Note: perhaps eventually we will need to create
+  // an NSImageRep implementation, but for now, Apple
+  // seems to support the major image formats.
+
+  // Resolve the filename on the model path.
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  Filename resolved (filename);
+  if (!vfs->resolve_filename(resolved, get_model_path())) {
+    // The filename doesn't exist.
+    cocoadisplay_cat.warning()
+      << "Could not find filename " << filename << "\n";
+    return 0;
+  }
+
+  // Look in our index.
+  NSImage *image = nil;
+  IconImages::const_iterator it = _images.find(resolved);
+  if (it != _images.end()) {
+    // Found it.
+    return (*it).second;
+  }
+
+  cocoadisplay_cat.info()
+    << "Loading NSImage from file " << resolved << "\n";
+
+  PT(VirtualFile) vfile = vfs->get_file(filename);
+  if (vfile == NULL) {
+    return nil;
+  }
+  istream *str = vfile->open_read_file(true);
+  if (str == NULL) {
+    cocoadisplay_cat.error()
+      << "Could not open file " << filename << " for reading\n";
+    return nil;
+  }
+
+  size_t size = vfile->get_file_size(str);
+  char* buffer = (char*) malloc(size);
+  str->read(buffer, size);
+  vfile->close_read_file(str);
+
+  NSData *data = [NSData dataWithBytesNoCopy:buffer length:size];
+  if (data == nil) {
+    return nil;
+  }
+
+  image = [[NSImage alloc] initWithData:data];
+  [data release];
+  if (image == nil) {
+    cocoadisplay_cat.error()
+      << "Could not load image from file " << filename << "\n";
+    return nil;
+  }
+
+  _images[resolved] = image;
+  return image;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1261,6 +1339,12 @@ handle_close_event() {
     _mouse_hidden = false;
   }
 
+  // Release the cursor.
+  if (_cursor != nil) {
+    [_cursor release];
+    _cursor = nil;
+  }
+
   WindowProperties properties;
   properties.set_open(false);
   properties.set_cursor_hidden(false);
@@ -1433,7 +1517,7 @@ handle_mouse_moved_event(bool in_window, int x, int y, bool absolute) {
       ClockObject::get_global_clock()->get_frame_time());
 
   } else {
-    //TODO: also get initial mouse position
+    // We received deltas, so add it to the current mouse position.
     MouseData md = _input_devices[0].get_pointer();
     _input_devices[0].set_pointer_in_window(md.get_x() + x, md.get_y() + y);
   }

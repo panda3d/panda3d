@@ -21,8 +21,12 @@
 #include "lightMutex.h"
 #include "lightReMutex.h"
 
+#ifdef __OBJC__
 #import <AppKit/NSScreen.h>
-#import <ApplicationServices/ApplicationServices.h>
+#else
+struct NSScreen;
+#endif
+#include <ApplicationServices/ApplicationServices.h>
 
 class FrameBufferProperties;
 

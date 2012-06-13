@@ -22,6 +22,8 @@
 #import <Foundation/NSAutoreleasePool.h>
 #import <AppKit/NSApplication.h>
 
+#include <mach-o/arch.h>
+
 TypeHandle CocoaGraphicsPipe::_type_handle;
 
 static void init_app() {
@@ -50,7 +52,7 @@ CocoaGraphicsPipe() {
 
   _screen = [NSScreen mainScreen];
   NSNumber *num = [[_screen deviceDescription] objectForKey: @"NSScreenNumber"];
-  _display = (CGDirectDisplayID) [num pointerValue];
+  _display = (CGDirectDisplayID) [num longValue];
 
   _display_width = CGDisplayPixelsWide(_display);
   _display_height = CGDisplayPixelsHigh(_display);
@@ -78,7 +80,7 @@ CocoaGraphicsPipe(CGDirectDisplayID display) {
   NSEnumerator *e = [[NSScreen screens] objectEnumerator];
   while (NSScreen *screen = (NSScreen *) [e nextObject]) {
     NSNumber *num = [[screen deviceDescription] objectForKey: @"NSScreenNumber"];
-    if (display == (CGDirectDisplayID) [num pointerValue]) {
+    if (display == (CGDirectDisplayID) [num longValue]) {
       _screen = screen;
       break;
     }
@@ -111,7 +113,7 @@ CocoaGraphicsPipe(NSScreen *screen) {
     _screen = screen;
   }
   NSNumber *num = [[_screen deviceDescription] objectForKey: @"NSScreenNumber"];
-  _display = (CGDirectDisplayID) [num pointerValue];
+  _display = (CGDirectDisplayID) [num longValue];
 
   _display_width = CGDisplayPixelsWide(_display);
   _display_height = CGDisplayPixelsHigh(_display);
@@ -129,7 +131,6 @@ CocoaGraphicsPipe(NSScreen *screen) {
 ////////////////////////////////////////////////////////////////////
 void CocoaGraphicsPipe::
 load_display_information() {
-  //TODO: read display modes and display information.
   _display_information->_vendor_id = CGDisplayVendorNumber(_display);
   //_display_information->_device_id = CGDisplayUnitNumber(_display);
   //_display_information->_device_id = CGDisplaySerialNumber(_display);
@@ -203,8 +204,18 @@ load_display_information() {
   }
 #endif
 
-  //XXX remove when done
-  cerr << *_display_information << "\n";
+  // Get processor information
+  const NXArchInfo *ainfo = NXGetLocalArchInfo();
+  _display_information->_cpu_brand_string = strdup(ainfo->description);
+
+  // Get version of Mac OS X
+  SInt32 major, minor, bugfix;
+  Gestalt(gestaltSystemVersionMajor, &major);
+  Gestalt(gestaltSystemVersionMinor, &minor);
+  Gestalt(gestaltSystemVersionBugFix, &bugfix);
+  _display_information->_os_version_major = major;
+  _display_information->_os_version_minor = minor;
+  _display_information->_os_version_build = bugfix;
 }
 
 ////////////////////////////////////////////////////////////////////

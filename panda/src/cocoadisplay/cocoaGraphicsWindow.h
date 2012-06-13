@@ -73,8 +73,7 @@ protected:
   virtual void mouse_mode_relative();
 
 private:
-  void set_wm_properties(const WindowProperties &properties,
-                         bool already_mapped);
+  NSImage *load_image(const Filename &filename);
 
   ButtonHandle map_function_key(unsigned short keycode);
 
@@ -87,6 +86,13 @@ private:
   CGDisplayModeRef _windowed_mode;
   bool _mouse_hidden;
   bool _context_needs_update;
+
+  typedef pmap<Filename, NSImage*> IconImages;
+  IconImages _images;
+
+public:
+  // Just so CocoaPandaView can access it.
+  NSCursor *_cursor;
 
 public:
   static TypeHandle get_class_type() {

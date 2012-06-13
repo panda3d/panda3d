@@ -28,6 +28,7 @@ class CocoaGraphicsWindow;
 - (BOOL) acceptsFirstResponder;
 - (BOOL) becomeFirstResponder;
 - (BOOL) resignFirstResponder;
+- (void) resetCursorRects;
 
 - (void) setFrame: (NSRect) frame;
 

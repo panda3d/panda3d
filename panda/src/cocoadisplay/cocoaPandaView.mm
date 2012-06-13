@@ -51,6 +51,12 @@
   return YES;
 }
 
+- (void) resetCursorRects {
+  if (_graphicsWindow->_cursor != nil) {
+    [self addCursorRect:[self bounds] cursor:_graphicsWindow->_cursor];
+  }
+}
+
 - (void) setFrame: (NSRect) frame {
   [super setFrame: frame];
   //[_context update];
