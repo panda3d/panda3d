@@ -372,7 +372,8 @@ make_geometry(EggNode *egg_node) {
     EggBin *egg_bin = DCAST(EggBin, egg_node);
 
     if (!egg_bin->empty() && 
-        egg_bin->get_bin_number() == EggBinner::BN_polyset) {
+        (egg_bin->get_bin_number() == EggBinner::BN_polyset ||
+         egg_bin->get_bin_number() == EggBinner::BN_patches)) {
       EggGroupNode *bin_home = determine_bin_home(egg_bin);
 
       bool is_dynamic;
