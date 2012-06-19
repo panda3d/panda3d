@@ -109,7 +109,7 @@ clear(int x_size, int y_size, int num_channels) {
   _x_size = x_size;
   _y_size = y_size;
   _scale = 1.0;
-  _num_channels = _num_channels;
+  _num_channels = num_channels;
 
   _table.clear();
   int size = _x_size * _y_size;
@@ -417,11 +417,21 @@ store(PNMImage &pnmimage) const {
     return false;
   }
 
-  pnmimage.clear(get_x_size(), get_y_size(), get_num_channels(), PGM_MAXMAXVAL);
-  for (int yi = 0; yi < get_y_size(); ++yi) {
-    for (int xi = 0; xi < get_x_size(); ++xi) {
-      LPoint3 point = get_point(xi, yi);
-      pnmimage.set_xel(xi, yi, point[0], point[1], point[2]);
+  int num_channels = get_num_channels();
+  pnmimage.clear(get_x_size(), get_y_size(), num_channels, PGM_MAXMAXVAL);
+  if (num_channels == 1) {
+    for (int yi = 0; yi < get_y_size(); ++yi) {
+      for (int xi = 0; xi < get_x_size(); ++xi) {
+        LPoint3 point = get_point(xi, yi);
+        pnmimage.set_gray(xi, yi, point[0]);
+      }
+    }
+  } else {
+    for (int yi = 0; yi < get_y_size(); ++yi) {
+      for (int xi = 0; xi < get_x_size(); ++xi) {
+        LPoint3 point = get_point(xi, yi);
+        pnmimage.set_xel(xi, yi, point[0], point[1], point[2]);
+      }
     }
   }
   return true;
