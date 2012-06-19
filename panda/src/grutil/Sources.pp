@@ -26,6 +26,7 @@
     multitexReducer.I multitexReducer.h multitexReducer.cxx \
     nodeVertexTransform.I nodeVertexTransform.h \
     pfmFile.I pfmFile.h \
+    pnmFileTypePfm.h \
     rigidBodyCombiner.I rigidBodyCombiner.h
     
   #define INCLUDED_SOURCES \
@@ -41,6 +42,7 @@
     heightfieldTesselator.cxx \
     nodeVertexTransform.cxx \    
     pfmFile.cxx \
+    pnmFileTypePfm.cxx \
     pipeOcclusionCullTraverser.cxx \
     lineSegs.cxx \
     rigidBodyCombiner.cxx
@@ -59,6 +61,7 @@
     multitexReducer.I multitexReducer.h \
     nodeVertexTransform.I nodeVertexTransform.h \
     pfmFile.I pfmFile.h \
+    pnmFileTypePfm.h \
     rigidBodyCombiner.I rigidBodyCombiner.h
 
   #define IGATESCAN all

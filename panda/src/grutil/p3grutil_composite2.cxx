@@ -5,3 +5,4 @@
 #include "meshDrawer.cxx"
 #include "meshDrawer2D.cxx"
 #include "pfmFile.cxx"
+#include "pnmFileTypePfm.cxx"

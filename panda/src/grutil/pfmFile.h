@@ -39,9 +39,13 @@ PUBLISHED:
   void clear(int x_size, int y_size, int num_channels);
 
   BLOCKING bool read(const Filename &fullpath);
-  BLOCKING bool read(istream &in);
+  BLOCKING bool read(istream &in, const Filename &fullpath = Filename(),
+                     const string &magic_number = string());
   BLOCKING bool write(const Filename &fullpath);
-  BLOCKING bool write(ostream &out);
+  BLOCKING bool write(ostream &out, const Filename &fullpath = Filename());
+
+  BLOCKING bool load(const PNMImage &pnmimage);
+  BLOCKING bool store(PNMImage &pnmimage) const;
 
   INLINE bool is_valid() const;
 

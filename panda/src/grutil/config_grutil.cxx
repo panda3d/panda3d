@@ -24,6 +24,8 @@
 #include "nodeVertexTransform.h"
 #include "rigidBodyCombiner.h"
 #include "pipeOcclusionCullTraverser.h"
+#include "pnmFileTypePfm.h"
+#include "pnmFileTypeRegistry.h"
 
 #include "dconfig.h"
 
@@ -132,5 +134,10 @@ init_libgrutil() {
   TexturePool *ts = TexturePool::get_global_ptr();
   ts->register_texture_type(MovieTexture::make_texture, "avi mov mpg mpeg mp4 wmv asf flv nut ogm mkv");
 #endif  // HAVE_FFMPEG
+
+  PNMFileTypeRegistry *tr = PNMFileTypeRegistry::get_global_ptr();
+  PNMFileTypePfm::init_type();
+  PNMFileTypePfm::register_with_read_factory();
+  tr->register_type(new PNMFileTypePfm);
 }
 

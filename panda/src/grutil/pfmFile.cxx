@@ -26,6 +26,9 @@
 #include "geomPoints.h"
 #include "geomTriangles.h"
 #include "geomVertexWriter.h"
+#include "pnmImage.h"
+#include "pnmWriter.h"
+#include "string_utils.h"
 #include "lens.h"
 #include "look_at.h"
 
@@ -118,6 +121,10 @@ clear(int x_size, int y_size, int num_channels) {
 //       Access: Published
 //  Description: Reads the PFM data from the indicated file, returning
 //               true on success, false on failure.
+//
+//               This can also handle reading a standard image file
+//               supported by PNMImage; it will be quietly converted
+//               to a floating-point type.
 ////////////////////////////////////////////////////////////////////
 bool PfmFile::
 read(const Filename &fullpath) {
@@ -138,7 +145,7 @@ read(const Filename &fullpath) {
   }
 
   istream *in = file->open_read_file(true);
-  bool success = read(*in);
+  bool success = read(*in, fullpath);
   vfs->close_read_file(in);
 
   return success;
@@ -149,22 +156,41 @@ read(const Filename &fullpath) {
 //       Access: Published
 //  Description: Reads the PFM data from the indicated stream,
 //               returning true on success, false on failure.
+//
+//               This can also handle reading a standard image file
+//               supported by PNMImage; it will be quietly converted
+//               to a floating-point type.
 ////////////////////////////////////////////////////////////////////
 bool PfmFile::
-read(istream &in) {
+read(istream &in, const Filename &fullpath, const string &magic_number) {
   clear();
 
-  string identifier;
-  in >> identifier;
+  string identifier = magic_number;
+  PNMImageHeader::read_magic_number(&in, identifier, 2);
 
   if (identifier == "PF") {
     _num_channels = 3;
   } else if (identifier == "Pf") {
     _num_channels = 1;
   } else {
-    grutil_cat.error()
-      << "Not a pfm file.\n";
-    return false;
+    // Not a PFM file.  Maybe it's a more conventional image file that
+    // we can read into a PFM.
+    PNMImage pnm;
+    PNMReader *reader = pnm.make_reader
+      (&in, false, fullpath, identifier, NULL, false);
+    if (reader == (PNMReader *)NULL) {
+      grutil_cat.error()
+        << "Not a PFM file or known image file type: " << fullpath << "\n";
+      return false;
+    }
+
+    if (!pnm.read(reader)) {
+      grutil_cat.error()
+        << "Invalid image file: " << fullpath << "\n";
+      return false;
+    }
+
+    return load(pnm);
   }
 
   int width, height;
@@ -172,7 +198,7 @@ read(istream &in) {
   in >> width >> height >> scale;
   if (!in) {
     grutil_cat.error()
-      << "Error parsing pfm header.\n";
+      << "Error parsing PFM header: " << fullpath << "\n";
     return false;
   }
 
@@ -247,9 +273,21 @@ read(istream &in) {
 //       Access: Published
 //  Description: Writes the PFM data to the indicated file, returning
 //               true on success, false on failure.
+//
+//               This can also handle writing a standard image file
+//               supported by PNMImage, if the filename extension is
+//               some image type's extension fother than "pfm"; it
+//               will be quietly converted to the appropriate integer
+//               type.
 ////////////////////////////////////////////////////////////////////
 bool PfmFile::
 write(const Filename &fullpath) {
+  if (!is_valid()) {
+    grutil_cat.error()
+      << "PFM file is invalid.\n";
+    return false;
+  }
+
   Filename filename = Filename::binary_filename(fullpath);
   pofstream out;
   if (!filename.open_write(out)) {
@@ -258,12 +296,27 @@ write(const Filename &fullpath) {
     return false;
   }
 
+  string extension = downcase(fullpath.get_extension());
+  if (extension != "pfm") {
+    // Maybe we're trying to write a different kind of image file.
+    PNMImage pnm;
+    PNMWriter *writer = pnm.make_writer(&out, false, fullpath, NULL);
+    if (writer != (PNMWriter *)NULL) {
+      // Yep.
+      if (store(pnm)) {
+        return pnm.write(writer);
+      }
+      // Couldn't make an image.  Carry on directly.
+      delete writer;
+    }
+  }
+  
   if (grutil_cat.is_debug()) {
     grutil_cat.debug()
       << "Writing PFM file " << filename << "\n";
   }
 
-  return write(out);
+  return write(out, fullpath);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -273,7 +326,7 @@ write(const Filename &fullpath) {
 //               returning true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool PfmFile::
-write(ostream &out) {
+write(ostream &out, const Filename &fullpath) {
   nassertr(is_valid(), false);
 
   if (_num_channels == 1) {
@@ -307,6 +360,70 @@ write(ostream &out) {
     return false;
   }
   nassertr(sizeof(PN_float32) == 4, false);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::load
+//       Access: Published
+//  Description: Fills the PfmFile with the data from the indicated
+//               PNMImage, converted to floating-point values.
+////////////////////////////////////////////////////////////////////
+bool PfmFile::
+load(const PNMImage &pnmimage) {
+  if (!pnmimage.is_valid()) {
+    clear();
+    return false;
+  }
+
+  // Get the number of channels, ignoring alpha.
+  int num_channels;
+  if (pnmimage.get_num_channels() >= 3) {
+    num_channels = 3;
+  } else {
+    num_channels = 1;
+  }
+
+  clear(pnmimage.get_x_size(), pnmimage.get_y_size(), num_channels);
+  if (num_channels == 1) {
+    for (int yi = 0; yi < pnmimage.get_y_size(); ++yi) {
+      for (int xi = 0; xi < pnmimage.get_x_size(); ++xi) {
+        double gray = pnmimage.get_gray(xi, yi);
+        set_point(xi, yi, LVecBase3(gray, gray, gray));
+      }
+    }
+  } else {
+    for (int yi = 0; yi < pnmimage.get_y_size(); ++yi) {
+      for (int xi = 0; xi < pnmimage.get_x_size(); ++xi) {
+        LRGBColord xel = pnmimage.get_xel(xi, yi);
+        set_point(xi, yi, LVecBase3(xel[0], xel[1], xel[2]));
+      }
+    }
+  }
+  return true;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::store
+//       Access: Published
+//  Description: Copies the data to the indicated PNMImage, converting
+//               to RGB values.
+////////////////////////////////////////////////////////////////////
+bool PfmFile::
+store(PNMImage &pnmimage) const {
+  if (!is_valid()) {
+    pnmimage.clear();
+    return false;
+  }
+
+  pnmimage.clear(get_x_size(), get_y_size(), get_num_channels(), PGM_MAXMAXVAL);
+  for (int yi = 0; yi < get_y_size(); ++yi) {
+    for (int xi = 0; xi < get_x_size(); ++xi) {
+      LPoint3 point = get_point(xi, yi);
+      pnmimage.set_xel(xi, yi, point[0], point[1], point[2]);
+    }
+  }
   return true;
 }
 

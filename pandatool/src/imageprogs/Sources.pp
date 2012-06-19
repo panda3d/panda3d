@@ -2,7 +2,8 @@
   p3imagebase p3progbase
 
 #define OTHER_LIBS \
-    p3pipeline:c p3event:c p3pstatclient:c panda:m \
+    p3pipeline:c p3event:c p3pstatclient:c p3grutil:c \
+    panda:m \
     p3pandabase:c p3pnmimage:c p3pnmimagetypes:c \
     p3mathutil:c p3linmath:c p3putil:c p3express:c \
     pandaexpress:m \
