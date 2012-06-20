@@ -20,6 +20,7 @@
 #include "pnotify.h"
 #include "panda_getopt_long.h"
 #include "preprocess_argv.h"
+#include "pystub.h"
 #include <time.h>
 
 CPPParser parser;

@@ -109,4 +109,10 @@
 
 #endif  /* WIN32_VC */
 
+/* These two are always defined empty, because pystub is statically
+   built.  But we leave the symbol around in case we change our minds
+   to make pystub once again be a dynamic library. */
+#define EXPCL_PYSTUB
+#define EXPTP_PYSTUB
+
 #endif

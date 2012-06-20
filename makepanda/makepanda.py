@@ -2461,9 +2461,9 @@ COMMON_EGG2X_LIBS=[
     'libpandaegg.dll',
 ] + COMMON_PANDA_LIBS
 
-COMMON_DTOOL_LIBS_PYSTUB = COMMON_DTOOL_LIBS + ['libp3pystub.dll']
-COMMON_PANDA_LIBS_PYSTUB = COMMON_PANDA_LIBS + ['libp3pystub.dll']
-COMMON_EGG2X_LIBS_PYSTUB = COMMON_EGG2X_LIBS + ['libp3pystub.dll']
+COMMON_DTOOL_LIBS_PYSTUB = COMMON_DTOOL_LIBS + ['libp3pystub.lib']
+COMMON_PANDA_LIBS_PYSTUB = COMMON_PANDA_LIBS + ['libp3pystub.lib']
+COMMON_EGG2X_LIBS_PYSTUB = COMMON_EGG2X_LIBS + ['libp3pystub.lib']
 
 ########################################################################
 #
@@ -2584,11 +2584,11 @@ TargetAdd('libp3dtoolconfig.dll', opts=['ADVAPI',  'OPENSSL'])
 # DIRECTORY: dtool/src/pystub/
 #
 
-OPTS=['DIR:dtool/src/pystub', 'BUILDING:DTOOLCONFIG']
+OPTS=['DIR:dtool/src/pystub']
 TargetAdd('p3pystub_pystub.obj', opts=OPTS, input='pystub.cxx')
-TargetAdd('libp3pystub.dll', input='p3pystub_pystub.obj')
-TargetAdd('libp3pystub.dll', input='libp3dtool.dll')
-TargetAdd('libp3pystub.dll', opts=['ADVAPI'])
+TargetAdd('libp3pystub.lib', input='p3pystub_pystub.obj')
+#TargetAdd('libp3pystub.lib', input='libp3dtool.dll')
+TargetAdd('libp3pystub.lib', opts=['ADVAPI'])
 
 #
 # DIRECTORY: dtool/src/interrogate/
@@ -4317,7 +4317,7 @@ if (RUNTIME):
   TargetAdd('panda3d.exe', input='libpandaexpress.dll')
   TargetAdd('panda3d.exe', input='libp3dtoolconfig.dll')
   TargetAdd('panda3d.exe', input='libp3dtool.dll')
-  TargetAdd('panda3d.exe', input='libp3pystub.dll')
+  TargetAdd('panda3d.exe', input='libp3pystub.lib')
   TargetAdd('panda3d.exe', input='libp3tinyxml.ilb')
   TargetAdd('panda3d.exe', opts=['NOICON', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
 
@@ -4331,7 +4331,7 @@ if (RUNTIME):
     TargetAdd('Panda3D.app', input='libpandaexpress.dll')
     TargetAdd('Panda3D.app', input='libp3dtoolconfig.dll')
     TargetAdd('Panda3D.app', input='libp3dtool.dll')
-    TargetAdd('Panda3D.app', input='libp3pystub.dll')
+    TargetAdd('Panda3D.app', input='libp3pystub.lib')
     TargetAdd('Panda3D.app', input='libp3tinyxml.ilb')
     TargetAdd('Panda3D.app', input='panda3d_mac.plist', ipath=OPTS)
     TargetAdd('Panda3D.app', input='models/plugin_images/panda3d.icns')
@@ -4346,7 +4346,7 @@ if (RUNTIME):
     TargetAdd('panda3dw.exe', input='libpandaexpress.dll')
     TargetAdd('panda3dw.exe', input='libp3dtoolconfig.dll')
     TargetAdd('panda3dw.exe', input='libp3dtool.dll')
-    TargetAdd('panda3dw.exe', input='libp3pystub.dll')
+    TargetAdd('panda3dw.exe', input='libp3pystub.lib')
     TargetAdd('panda3dw.exe', input='libp3tinyxml.ilb')
     TargetAdd('panda3dw.exe', opts=['OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2', 'WINOLE', 'CARBON'])
 
@@ -4803,7 +4803,7 @@ if (PkgSkip("PANDATOOL")==0):
   TargetAdd('image-info.exe', input='libp3pandatoolbase.lib')
   TargetAdd('image-info.exe', input='libpandaegg.dll')
   TargetAdd('image-info.exe', input=COMMON_PANDA_LIBS)
-  TargetAdd('image-info.exe', input='libp3pystub.dll')
+  TargetAdd('image-info.exe', input='libp3pystub.lib')
   TargetAdd('image-info.exe', opts=['ADVAPI'])
 
   TargetAdd('image-resize_imageResize.obj', opts=OPTS, input='imageResize.cxx')
@@ -4813,7 +4813,7 @@ if (PkgSkip("PANDATOOL")==0):
   TargetAdd('image-resize.exe', input='libp3pandatoolbase.lib')
   TargetAdd('image-resize.exe', input='libpandaegg.dll')
   TargetAdd('image-resize.exe', input=COMMON_PANDA_LIBS)
-  TargetAdd('image-resize.exe', input='libp3pystub.dll')
+  TargetAdd('image-resize.exe', input='libp3pystub.lib')
   TargetAdd('image-resize.exe', opts=['ADVAPI'])
 
   TargetAdd('image-trans_imageTrans.obj', opts=OPTS, input='imageTrans.cxx')
@@ -4823,7 +4823,7 @@ if (PkgSkip("PANDATOOL")==0):
   TargetAdd('image-trans.exe', input='libp3pandatoolbase.lib')
   TargetAdd('image-trans.exe', input='libpandaegg.dll')
   TargetAdd('image-trans.exe', input=COMMON_PANDA_LIBS)
-  TargetAdd('image-trans.exe', input='libp3pystub.dll')
+  TargetAdd('image-trans.exe', input='libp3pystub.lib')
   TargetAdd('image-trans.exe', opts=['ADVAPI'])
 
 #
@@ -4837,7 +4837,7 @@ if (PkgSkip("PANDATOOL")==0):
   TargetAdd('pfm-trans.exe', input='libp3progbase.lib')
   TargetAdd('pfm-trans.exe', input='libp3pandatoolbase.lib')
   TargetAdd('pfm-trans.exe', input=COMMON_PANDA_LIBS)
-  TargetAdd('pfm-trans.exe', input='libp3pystub.dll')
+  TargetAdd('pfm-trans.exe', input='libp3pystub.lib')
   TargetAdd('pfm-trans.exe', opts=['ADVAPI'])
 
 #
@@ -4871,7 +4871,7 @@ if (PkgSkip("PANDATOOL")==0):
   TargetAdd('lwo-scan.exe', input='libp3pandatoolbase.lib')
   TargetAdd('lwo-scan.exe', input='libpandaegg.dll')
   TargetAdd('lwo-scan.exe', input=COMMON_PANDA_LIBS)
-  TargetAdd('lwo-scan.exe', input='libp3pystub.dll')
+  TargetAdd('lwo-scan.exe', input='libp3pystub.lib')
   TargetAdd('lwo-scan.exe', opts=['ADVAPI'])
 
   TargetAdd('lwo2egg_lwoToEgg.obj', opts=OPTS, input='lwoToEgg.cxx')
@@ -5041,7 +5041,7 @@ if (PkgSkip("PANDATOOL")==0):
     TargetAdd('bin2c.exe', input='libp3progbase.lib')
     TargetAdd('bin2c.exe', input='libp3pandatoolbase.lib')
     TargetAdd('bin2c.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('bin2c.exe', input='libp3pystub.dll')
+    TargetAdd('bin2c.exe', input='libp3pystub.lib')
     TargetAdd('bin2c.exe', opts=['ADVAPI'])
 
 #
@@ -5067,7 +5067,7 @@ if (PkgSkip("PANDATOOL")==0):
     TargetAdd('softcvs.exe', input='libp3pandatoolbase.lib')
     TargetAdd('softcvs.exe', input='libpandaegg.dll')
     TargetAdd('softcvs.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('softcvs.exe', input='libp3pystub.dll')
+    TargetAdd('softcvs.exe', input='libp3pystub.lib')
     TargetAdd('softcvs.exe', opts=['ADVAPI'])
 
 #
@@ -5085,7 +5085,7 @@ if (PkgSkip("PANDATOOL")==0):
     TargetAdd('text-stats.exe', input='libp3pandatoolbase.lib')
     TargetAdd('text-stats.exe', input='libpandaegg.dll')
     TargetAdd('text-stats.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('text-stats.exe', input='libp3pystub.dll')
+    TargetAdd('text-stats.exe', input='libp3pystub.lib')
     TargetAdd('text-stats.exe', opts=['ADVAPI'])
 
 #
@@ -5100,7 +5100,7 @@ if (PkgSkip("PANDATOOL")==0):
     TargetAdd('vrml-trans.exe', input='libp3progbase.lib')
     TargetAdd('vrml-trans.exe', input='libp3pandatoolbase.lib')
     TargetAdd('vrml-trans.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('vrml-trans.exe', input='libp3pystub.dll')
+    TargetAdd('vrml-trans.exe', input='libp3pystub.lib')
     TargetAdd('vrml-trans.exe', opts=['ADVAPI'])
 
     TargetAdd('vrml2egg_vrmlToEgg.obj', opts=OPTS, input='vrmlToEgg.cxx')
@@ -5127,7 +5127,7 @@ if (PkgSkip("PANDATOOL")==0 and (sys.platform.startswith("win") or PkgSkip("GTK2
     TargetAdd('pstats.exe', input='libp3progbase.lib')
     TargetAdd('pstats.exe', input='libp3pandatoolbase.lib')
     TargetAdd('pstats.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('pstats.exe', input='libp3pystub.dll')
+    TargetAdd('pstats.exe', input='libp3pystub.lib')
     TargetAdd('pstats.exe', opts=['WINSOCK', 'WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM', 'GTK2'])
 
 #
@@ -5149,7 +5149,7 @@ if (PkgSkip("PANDATOOL")==0):
     TargetAdd('x-trans.exe', input='libp3xfile.lib')
     TargetAdd('x-trans.exe', input='libp3pandatoolbase.lib')
     TargetAdd('x-trans.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('x-trans.exe', input='libp3pystub.dll')
+    TargetAdd('x-trans.exe', input='libp3pystub.lib')
     TargetAdd('x-trans.exe', opts=['ADVAPI'])
 
     TargetAdd('x2egg_xFileToEgg.obj', opts=OPTS, input='xFileToEgg.cxx')
@@ -5173,7 +5173,7 @@ for VER in MAYAVERSIONS:
     TargetAdd('mayaeggimport'+VNUM+'.mll', input='libpandaegg.dll')
     TargetAdd('mayaeggimport'+VNUM+'.mll', input=COMMON_PANDA_LIBS)
     if sys.platform.startswith("win32"):
-      TargetAdd('mayaeggimport'+VNUM+'.mll', input='libp3pystub.dll')
+      TargetAdd('mayaeggimport'+VNUM+'.mll', input='libp3pystub.lib')
     TargetAdd('mayaeggimport'+VNUM+'.mll', opts=['ADVAPI', VER])
 
     TargetAdd('mayaloader'+VNUM+'_config_mayaloader.obj', opts=OPTS, input='config_mayaloader.cxx')

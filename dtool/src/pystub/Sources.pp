@@ -1,7 +1,7 @@
-#define BUILDING_DLL BUILDING_DTOOLCONFIG
+//#define BUILDING_DLL BUILDING_PYSTUB
 #define LOCAL_LIBS p3dtoolbase
 
-#begin lib_target
+#begin static_lib_target
   #define TARGET p3pystub
   
   #define SOURCES \
@@ -10,4 +10,4 @@
   #define INSTALL_HEADERS \
     pystub.h
 
-#end lib_target
+#end static_lib_target
