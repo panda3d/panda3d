@@ -7234,7 +7234,10 @@ make_this_from_bam(const FactoryParams &params) {
       texture_type = TT_cube_map;
     }
   }
-  bool has_read_mipmaps = scan.get_bool();
+  bool has_read_mipmaps = false;
+  if (manager->get_file_minor_ver() >= 32) {
+    has_read_mipmaps = scan.get_bool();
+  }
 
   Texture *me = NULL;
   if (has_rawdata) {
