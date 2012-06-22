@@ -509,8 +509,12 @@ recompute_geom_node(const WorkingNodePath &np, LMatrix4 &rel_mat,
 
   int num_geoms = node->get_num_geoms();
   for (int i = 0; i < num_geoms; i++) {
-    Geom *geom = node->modify_geom(i);
-    recompute_geom(geom, rel_mat);
+    PT(Geom) geom = node->modify_geom(i);
+    distort_cat.debug() 
+      << "  " << *node << " got geom " << geom
+      << ", cache_ref = " << geom->get_cache_ref_count() << "\n";
+    geom->test_ref_count_integrity();
+    //recompute_geom(geom, rel_mat);
   }
 }
 

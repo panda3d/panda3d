@@ -947,7 +947,7 @@ r_make_nonindexed(PandaNode *node, int nonindexed_bits) {
       if ((nonindexed_bits & this_geom_bits) == 0) {
         // The geom meets the user's qualifications for making
         // nonindexed, so do it.
-        Geom *mgeom = DCAST(Geom, geom_node->modify_geom(i));
+        PT(Geom) mgeom = geom_node->modify_geom(i);
         num_changed += mgeom->make_nonindexed((nonindexed_bits & MN_composite_only) != 0);
       }
     }
