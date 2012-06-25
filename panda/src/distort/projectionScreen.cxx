@@ -514,7 +514,7 @@ recompute_geom_node(const WorkingNodePath &np, LMatrix4 &rel_mat,
       << "  " << *node << " got geom " << geom
       << ", cache_ref = " << geom->get_cache_ref_count() << "\n";
     geom->test_ref_count_integrity();
-    //recompute_geom(geom, rel_mat);
+    recompute_geom(geom, rel_mat);
   }
 }
 
