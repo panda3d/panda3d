@@ -133,6 +133,23 @@ modify_point(int x, int y) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::calc_autocrop
+//       Access: Published
+//  Description: Computes the minimum range of x and y across the PFM
+//               file that include all points.  If there are no points
+//               with no_data_value in the grid--that is, all points
+//               are included--then this will return (0, get_x_size(),
+//               0, get_y_size()).
+////////////////////////////////////////////////////////////////////
+INLINE bool PfmFile::
+calc_autocrop(LVecBase4 &range) const {
+  int x_begin, x_end, y_begin, y_end;
+  bool result = calc_autocrop(x_begin, x_end, y_begin, y_end);
+  range.set(x_begin, x_end, y_begin, y_end);
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::set_zero_special
 //       Access: Published
 //  Description: Sets the zero_special flag.  When this flag is true,

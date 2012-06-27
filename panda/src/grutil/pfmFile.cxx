@@ -565,6 +565,97 @@ calc_min_max(LVecBase3 &min_depth, LVecBase3 &max_depth) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::calc_autocrop
+//       Access: Published
+//  Description: Computes the minimum range of x and y across the PFM
+//               file that include all points.  If there are no points
+//               with no_data_value in the grid--that is, all points
+//               are included--then this will return (0, get_x_size(),
+//               0, get_y_size()).
+////////////////////////////////////////////////////////////////////
+bool PfmFile::
+calc_autocrop(int &x_begin, int &x_end, int &y_begin, int &y_end) const {
+  y_begin = 0;
+  while (is_row_empty(y_begin, 0, _x_size)) {
+    ++y_begin;
+    if (y_begin >= _y_size) {
+      // We've reached the end; the entire grid is empty.
+      x_begin = x_end = y_begin = y_end = 0;
+      return false;
+    }
+  }
+
+  y_end = _y_size;
+  while (is_row_empty(y_end - 1, 0, _x_size)) {
+    --y_end;
+    nassertr(y_end > y_begin, false);
+  }
+
+  // Now we've got the top and bottom bounds.
+  x_begin = 0;
+  while (is_column_empty(x_begin, y_begin, y_end)) {
+    ++x_begin;
+    nassertr(x_begin < _x_size, false);
+  }
+
+  x_end = _x_size;
+  while (is_column_empty(x_end - 1, y_begin, y_end)) {
+    --x_end;
+    nassertr(x_end > x_begin, false);
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::is_row_empty
+//       Access: Published
+//  Description: Returns true if all of the points on row y, in the range
+//               [x_begin, x_end), are the no_data value, or false if
+//               any one of these points has a value.
+////////////////////////////////////////////////////////////////////
+bool PfmFile::
+is_row_empty(int y, int x_begin, int x_end) const {
+  nassertr(y >= 0 && y < _y_size && 
+           x_begin >= 0 && x_begin <= x_end && x_end <= _x_size, false);
+
+  if (!_has_no_data_value) {
+    return false;
+  }
+  for (int x = x_begin; x < x_end; ++x) {
+    if (_table[y * _x_size + x] != _no_data_value) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::is_column_empty
+//       Access: Published
+//  Description: Returns true if all of the points on column x, from
+//               [y_begin, y_end), are the no_data value, or false if
+//               any one of these points has a value.
+////////////////////////////////////////////////////////////////////
+bool PfmFile::
+is_column_empty(int x, int y_begin, int y_end) const {
+  nassertr(x >= 0 && x < _x_size && 
+           y_begin >= 0 && y_begin <= y_end && y_end <= _y_size, false);
+
+  if (!_has_no_data_value) {
+    return false;
+  }
+  for (int y = y_begin; y < y_end; ++y) {
+    if (_table[y * _x_size + x] != _no_data_value) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::resize
 //       Access: Published
 //  Description: Applies a simple filter to resample the pfm file
@@ -770,6 +861,35 @@ merge(const PfmFile &other) {
       _table[i] = other._table[i];
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::apply_crop
+//       Access: Published
+//  Description: Reduces the PFM file to the cells in the rectangle
+//               bounded by (x_begin, x_end, y_begin, y_end), where
+//               the _end cells are not included.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+apply_crop(int x_begin, int x_end, int y_begin, int y_end) {
+  nassertv(x_begin >= 0 && x_begin <= x_end && x_end <= _x_size);
+  nassertv(y_begin >= 0 && y_begin <= y_end && y_end <= _y_size);
+
+  int new_x_size = x_end - x_begin;
+  int new_y_size = y_end - y_begin;
+  Table new_table;
+  int new_size = new_x_size * new_y_size;
+  new_table.insert(new_table.end(), new_size, LPoint3::zero());
+
+  for (int yi = 0; yi < new_y_size; ++yi) {
+    memcpy(&new_table[yi * new_x_size],
+           &_table[(yi + y_begin) * _x_size + x_begin],
+           new_x_size * sizeof(LPoint3));
+  }
+
+  _table.swap(new_table);
+  _x_size = new_x_size;
+  _y_size = new_y_size;
 }
 
 ////////////////////////////////////////////////////////////////////

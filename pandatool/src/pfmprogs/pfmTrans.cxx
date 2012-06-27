@@ -54,6 +54,17 @@ PfmTrans() {
      &PfmTrans::dispatch_int_pair, &_got_resize, &_resize);
 
   add_option
+    ("crop", "xbegin,xend,ybegin,yend", 0,
+     "Crops the pfm file to the indicated subregion.",
+     &PfmTrans::dispatch_int_quad, &_got_crop, &_crop);
+
+  add_option
+    ("autocrop", "", 0,
+     "Automatically crops to the smallest possible rectangle that includes "
+     "all points.  Requires -z.",
+     &PfmTrans::dispatch_none, &_got_autocrop);
+
+  add_option
     ("rotate", "degrees", 0,
      "Rotates the pfm file the specified number of degrees counterclockwise, "
      "which must be a multiple of 90.",
@@ -152,6 +163,14 @@ process_pfm(const Filename &input_filename, PfmFile &file) {
   file.set_zero_special(_got_zero_special);
   file.set_vis_inverse(_got_vis_inverse);
   file.set_vis_2d(_got_vis_2d);
+
+  if (_got_autocrop) {
+    _got_crop = file.calc_autocrop(_crop[0], _crop[1], _crop[2], _crop[3]);
+  }
+
+  if (_got_crop) {
+    file.apply_crop(_crop[0], _crop[1], _crop[2], _crop[3]);
+  }    
 
   if (_got_resize) {
     file.resize(_resize[0], _resize[1]);

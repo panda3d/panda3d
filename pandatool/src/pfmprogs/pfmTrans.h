@@ -56,6 +56,9 @@ private:
   bool _got_vis_2d;
   bool _got_resize;
   int _resize[2];
+  bool _got_crop;
+  int _crop[4];
+  bool _got_autocrop;
   int _rotate;
   bool _got_mirror_x;
   bool _got_mirror_y;

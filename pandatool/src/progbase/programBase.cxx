@@ -831,6 +831,38 @@ dispatch_int_pair(const string &opt, const string &arg, void *var) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ProgramBase::dispatch_int_quad
+//       Access: Protected, Static
+//  Description: Standard dispatch function for an option that takes
+//               a quad of integer parameters.  The data pointer is to
+//               an array of four integers.
+////////////////////////////////////////////////////////////////////
+bool ProgramBase::
+dispatch_int_quad(const string &opt, const string &arg, void *var) {
+  int *ip = (int *)var;
+
+  vector_string words;
+  tokenize(arg, words, ",");
+
+  bool okflag = false;
+  if (words.size() == 4) {
+    okflag =
+      string_to_int(words[0], ip[0]) &&
+      string_to_int(words[1], ip[1]) &&
+      string_to_int(words[1], ip[2]) &&
+      string_to_int(words[1], ip[3]);
+  }
+
+  if (!okflag) {
+    nout << "-" << opt
+         << " requires a quad of integers separated by a comma.\n";
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ProgramBase::dispatch_double
 //       Access: Protected, Static
 //  Description: Standard dispatch function for an option that takes

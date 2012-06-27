@@ -87,6 +87,7 @@ protected:
   static bool dispatch_count(const string &opt, const string &arg, void *var);
   static bool dispatch_int(const string &opt, const string &arg, void *var);
   static bool dispatch_int_pair(const string &opt, const string &arg, void *var);
+  static bool dispatch_int_quad(const string &opt, const string &arg, void *var);
   static bool dispatch_double(const string &opt, const string &arg, void *var);
   static bool dispatch_double_pair(const string &opt, const string &arg, void *var);
   static bool dispatch_double_triple(const string &opt, const string &arg, void *var);

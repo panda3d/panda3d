@@ -62,6 +62,11 @@ PUBLISHED:
 
   BLOCKING bool calc_average_point(LPoint3 &result, PN_stdfloat x, PN_stdfloat y, PN_stdfloat radius) const;
   BLOCKING bool calc_min_max(LVecBase3 &min_points, LVecBase3 &max_points) const;
+  BLOCKING bool calc_autocrop(int &x_begin, int &x_end, int &y_begin, int &y_end) const;
+  BLOCKING INLINE bool calc_autocrop(LVecBase4 &range) const;
+ 
+  bool is_row_empty(int y, int x_begin, int x_end) const;
+  bool is_column_empty(int x, int y_begin, int y_end) const;
 
   INLINE void set_zero_special(bool zero_special);
   INLINE void set_no_data_value(const LPoint3 &no_data_value);
@@ -75,6 +80,7 @@ PUBLISHED:
   BLOCKING void xform(const LMatrix4 &transform);
   BLOCKING void project(const Lens *lens);
   BLOCKING void merge(const PfmFile &other);
+  BLOCKING void apply_crop(int x_begin, int x_end, int y_begin, int y_end);
 
   BLOCKING PT(BoundingHexahedron) compute_planar_bounds(PN_stdfloat point_dist, PN_stdfloat sample_radius) const;
   BLOCKING PT(BoundingHexahedron) compute_planar_bounds(const LPoint2 &center, PN_stdfloat point_dist, PN_stdfloat sample_radius, bool points_only) const;
