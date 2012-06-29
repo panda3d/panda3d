@@ -225,6 +225,7 @@
   #define opencv_lpath $[wildcard $[OPENCV_LPATH]]
   #define opencv_cflags $[OPENCV_CFLAGS]
   #define opencv_libs $[OPENCV_LIBS]
+  #define opencv_framework $[OPENCV_FRAMEWORK]
 #endif
 
 #if $[HAVE_FFMPEG]
