@@ -1595,10 +1595,9 @@ operator ~ () const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::operator +=
 //       Access: Published
-//  Description: Returns a new PNMImage in which each pixel value
-//               is the sum of the corresponding pixel values
-//               in the two given images.
-//               Only valid when both images have the same size.
+//  Description: Sets each pixel value to the sum of the corresponding
+//               pixel values in the two given images.  Only valid
+//               when both images have the same size.
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
 operator += (const PNMImage &other) {
@@ -1629,8 +1628,7 @@ operator += (const PNMImage &other) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::operator +=
 //       Access: Published
-//  Description: Returns a new PNMImage in which the provided color
-//               is added to each pixel in the provided image.
+//  Description: Adds the provided color to each pixel in this image.
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
 operator += (const LColord &other) {
@@ -1664,10 +1662,9 @@ operator += (const LColord &other) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::operator -=
 //       Access: Published
-//  Description: Returns a new PNMImage in which each pixel value
-//               from the right image is subtracted from each
-//               pixel value from the left image.
-//               Only valid when both images have the same size.
+//  Description: Subtracts each pixel from the right image from each
+//               pixel value in this image.  Only valid when both
+//               images have the same size.
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
 operator -= (const PNMImage &other) {
@@ -1698,8 +1695,8 @@ operator -= (const PNMImage &other) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::operator -=
 //       Access: Published
-//  Description: Returns a new PNMImage in which the provided color
-//               is subtracted from each pixel in the provided image.
+//  Description: Subtracts the provided color from each pixel in this
+//               image.
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
 operator -= (const LColord &other) {
@@ -1709,8 +1706,7 @@ operator -= (const LColord &other) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::operator *=
 //       Access: Published
-//  Description: Returns a new PNMImage in which each pixel value
-//               from the left image is multiplied by each
+//  Description: Multiples each pixel in this image by each
 //               pixel value from the right image. Note that the
 //               floating-point values in the 0..1 range are
 //               multiplied, not in the 0..maxval range.
@@ -1767,6 +1763,36 @@ operator *= (double multiplier) {
   } else if (_alpha != NULL) {
     for (size_t i = 0; i < array_size; ++i) {
       _alpha[i] = clamp_val(_alpha[i] * multiplier);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::operator *=
+//       Access: Published
+//  Description: Multiples the provided color to each pixel in this
+//               image.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+operator *= (const LColord &other) {
+  size_t array_size = _x_size * _y_size;
+
+  if (_array != NULL && _alpha != NULL) {
+    for (size_t i = 0; i < array_size; ++i) {
+      _array[i].r = clamp_val(_array[i].r * other[0]);
+      _array[i].g = clamp_val(_array[i].g * other[1]);
+      _array[i].b = clamp_val(_array[i].b * other[2]);
+      _alpha[i] = clamp_val(_alpha[i] * other[3]);
+    }
+  } else if (_array != NULL) {
+    for (size_t i = 0; i < array_size; ++i) {
+      _array[i].r = clamp_val(_array[i].r * other[0]);
+      _array[i].g = clamp_val(_array[i].g * other[1]);
+      _array[i].b = clamp_val(_array[i].b * other[2]);
+    }
+  } else if (_alpha != NULL) {
+    for (size_t i = 0; i < array_size; ++i) {
+      _alpha[i] = clamp_val(_alpha[i] * other[3]);
     }
   }
 }

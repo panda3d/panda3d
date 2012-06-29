@@ -278,12 +278,14 @@ PUBLISHED:
   INLINE PNMImage operator - (const LColord &other) const;
   INLINE PNMImage operator * (const PNMImage &other) const;
   INLINE PNMImage operator * (double multiplier) const;
+  INLINE PNMImage operator * (const LColord &other) const;
   void operator += (const PNMImage &other);
   void operator += (const LColord &other);
   void operator -= (const PNMImage &other);
   void operator -= (const LColord &other);
   void operator *= (const PNMImage &other);
   void operator *= (double multiplier);
+  void operator *= (const LColord &other);
 
 private:
   xel *_array;

@@ -1105,3 +1105,16 @@ operator * (double multiplier) const {
   target *= multiplier;
   return target;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::operator *
+//       Access: Published
+//  Description: Returns a new PNMImage in which the provided color
+//               is multiplied to each pixel in the provided image.
+////////////////////////////////////////////////////////////////////
+INLINE PNMImage PNMImage::
+operator * (const LColord &other) const {
+  PNMImage target (*this);
+  target *= other;
+  return target;
+}
