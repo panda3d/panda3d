@@ -834,6 +834,17 @@ get_key() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BitMask::__nonzero__
+//       Access: Published
+//  Description: Returns true if the bitmask is not zero.
+////////////////////////////////////////////////////////////////////
+template<class WType, int nbits>
+INLINE bool BitMask<WType, nbits>::
+__nonzero__() const {
+  return _word != 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BitMask::generate_hash
 //       Access: Public
 //  Description: Adds the bitmask to the indicated hash generator.
@@ -949,8 +960,8 @@ INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
 keep_next_highest_bit(int index) const {
   BitMask<WType, nbits> mask,temp;
   nassertr(index >= 0 && index < num_bits, mask);
-  
-  mask.set_bit(index); 
+
+  mask.set_bit(index);
   mask.flood_down_in_place();
   mask.invert_in_place();
   mask &= *this;
@@ -960,7 +971,7 @@ keep_next_highest_bit(int index) const {
   mask.flood_up_in_place();
   mask.invert_in_place();
   mask &= temp;
-  
+
   return mask;
 }
 
@@ -975,8 +986,8 @@ INLINE BitMask<WType, nbits> BitMask<WType, nbits>::
 keep_next_lowest_bit(int index) const {
   BitMask<WType, nbits> mask, temp;
   nassertr(index >= 0 && index < num_bits, mask);
-  
-  mask.set_bit(index); 
+
+  mask.set_bit(index);
   mask.flood_up_in_place();
   mask.invert_in_place();
   mask &= *this;
@@ -986,7 +997,7 @@ keep_next_lowest_bit(int index) const {
   mask.flood_down_in_place();
   mask.invert_in_place();
   mask &= temp;
-  
+
   return mask;
 }
 
@@ -994,8 +1005,8 @@ keep_next_lowest_bit(int index) const {
 //     Function: BitMask::keep_next_highest_bit
 //       Access: Published
 //  Description: Returns a BitMask with only the next highest "on"
-//               bit above all "on" bits in the passed in bitmask, or 
-//               all_off. If there are no "on" bits in the passed in 
+//               bit above all "on" bits in the passed in bitmask, or
+//               all_off. If there are no "on" bits in the passed in
 //               bitmask, it will return keep_next_highest_bit().
 ////////////////////////////////////////////////////////////////////
 template<class WType, int nbits>
@@ -1013,8 +1024,8 @@ keep_next_highest_bit(const BitMask<WType, nbits> &other) const {
 //     Function: BitMask::keep_next_lowest_bit
 //       Access: Published
 //  Description: Returns a BitMask with only the next lowest "on"
-//               bit below all "on" bits in the passed in bitmask, or 
-//               all_off. If there are no "on" bits in the passed in 
+//               bit below all "on" bits in the passed in bitmask, or
+//               all_off. If there are no "on" bits in the passed in
 //               bitmask, it will return keep_next_lowest_bit().
 ////////////////////////////////////////////////////////////////////
 template<class WType, int nbits>
