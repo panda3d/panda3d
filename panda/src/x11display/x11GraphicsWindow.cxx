@@ -60,7 +60,7 @@ static int xcursor_seek(XcursorFile *file, long offset, int whence) {
   case SEEK_END:
     str->seekg(offset, istream::end);
   }
-  
+
   return str->tellg();
 }
 #endif
@@ -75,7 +75,7 @@ TypeHandle x11GraphicsWindow::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 x11GraphicsWindow::
-x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe, 
+x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                   const string &name,
                   const FrameBufferProperties &fb_prop,
                   const WindowProperties &win_prop,
@@ -91,9 +91,15 @@ x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   _xwindow = (X11_Window)NULL;
   _ic = (XIC)NULL;
   _visual_info = NULL;
+
 #ifdef HAVE_XRANDR
   _orig_size_id = -1;
+  int event, error;
+  _have_xrandr = XRRQueryExtension(_display, &event, &error);
+#else
+  _have_xrandr = false;
 #endif
+
   _awaiting_configure = false;
   _dga_mouse_enabled = false;
   _wm_delete_window = x11_pipe->_wm_delete_window;
@@ -130,7 +136,7 @@ x11GraphicsWindow::
 //     Function: x11GraphicsWindow::move_pointer
 //       Access: Published, Virtual
 //  Description: Forces the pointer to the indicated position within
-//               the window, if possible.  
+//               the window, if possible.
 //
 //               Returns true if successful, false on failure.  This
 //               may fail if the mouse is not currently within the
@@ -190,17 +196,17 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     // window and we haven't got the notification back yet.
     return false;
   }
-  
+
   // Reset the GSG state if this is the first time it has been used.
   // (We can't just call reset() when we construct the GSG, because
   // reset() requires having a current context.)
   _gsg->reset_if_new();
-  
+
   if (mode == FM_render) {
     // begin_render_texture();
     clear_cube_map_selection();
   }
-  
+
   _gsg->set_current_properties(&get_fb_properties());
   return _gsg->begin_frame(current_thread);
 }
@@ -249,9 +255,9 @@ process_events() {
   if (_xwindow == (X11_Window)0) {
     return;
   }
-  
+
   poll_raw_mice();
-  
+
   XEvent event;
   XKeyEvent keyrelease_event;
   bool got_keyrelease_event = false;
@@ -338,7 +344,7 @@ process_events() {
       }
       _input_devices[0].button_down(button);
       break;
-      
+
     case ButtonRelease:
       button = get_mouse_button(event.xbutton);
       if (!_dga_mouse_enabled) {
@@ -476,54 +482,56 @@ set_properties_now(WindowProperties &properties) {
 
   x11GraphicsPipe *x11_pipe;
   DCAST_INTO_V(x11_pipe, _pipe);
-  
+
   // Handle fullscreen mode.
   if (properties.has_fullscreen()) {
     if (properties.get_fullscreen()) {
+      if (_have_xrandr) {
 #ifdef HAVE_XRANDR
-      XRRScreenConfiguration* conf = XRRGetScreenInfo(_display, x11_pipe->get_root());
-      if (_orig_size_id == (SizeID) -1) {
-        _orig_size_id = XRRConfigCurrentConfiguration(conf, &_orig_rotation);
-      }
-      int num_sizes, reqsizex, reqsizey, new_size_id = -1;
-      if (properties.has_size()) {
-        reqsizex = properties.get_x_size();
-        reqsizey = properties.get_y_size();
-      } else {
-        reqsizex = _properties.get_x_size();
-        reqsizey = _properties.get_y_size();
-      }
-      XRRScreenSize *xrrs;
-      xrrs = XRRSizes(_display, 0, &num_sizes);
-      for (int i = 0; i < num_sizes; ++i) {
-        if (xrrs[i].width == properties.get_x_size() && 
-            xrrs[i].height == properties.get_y_size()) {
-          new_size_id = i;
+        XRRScreenConfiguration* conf = XRRGetScreenInfo(_display, x11_pipe->get_root());
+        if (_orig_size_id == (SizeID) -1) {
+          _orig_size_id = XRRConfigCurrentConfiguration(conf, &_orig_rotation);
         }
-      }
-      if (new_size_id == -1) {
-        x11display_cat.error() 
-          << "Videocard has no supported display resolutions at specified res ("
-          << reqsizex << " x " << reqsizey <<")\n";
-        _orig_size_id = -1;
-      } else {
-        if (new_size_id != _orig_size_id) {
-          XRRSetScreenConfig(_display, conf, x11_pipe->get_root(), new_size_id, _orig_rotation, CurrentTime);
+        int num_sizes, reqsizex, reqsizey, new_size_id = -1;
+        if (properties.has_size()) {
+          reqsizex = properties.get_x_size();
+          reqsizey = properties.get_y_size();
         } else {
-          _orig_size_id = -1;
+          reqsizex = _properties.get_x_size();
+          reqsizey = _properties.get_y_size();
         }
-      }
-#else
-      // If we don't have Xrandr support, we fake the fullscreen
-      // support by setting the window size to the desktop size.
-      properties.set_size(x11_pipe->get_display_width(),
-                          x11_pipe->get_display_height());
+        XRRScreenSize *xrrs;
+        xrrs = XRRSizes(_display, 0, &num_sizes);
+        for (int i = 0; i < num_sizes; ++i) {
+          if (xrrs[i].width == properties.get_x_size() &&
+              xrrs[i].height == properties.get_y_size()) {
+            new_size_id = i;
+          }
+        }
+        if (new_size_id == -1) {
+          x11display_cat.error()
+            << "Videocard has no supported display resolutions at specified res ("
+            << reqsizex << " x " << reqsizey <<")\n";
+          _orig_size_id = -1;
+        } else {
+          if (new_size_id != _orig_size_id) {
+            XRRSetScreenConfig(_display, conf, x11_pipe->get_root(), new_size_id, _orig_rotation, CurrentTime);
+          } else {
+            _orig_size_id = -1;
+          }
+        }
 #endif
+      } else {
+        // If we don't have Xrandr support, we fake the fullscreen
+        // support by setting the window size to the desktop size.
+        properties.set_size(x11_pipe->get_display_width(),
+                            x11_pipe->get_display_height());
+      }
     } else {
 #ifdef HAVE_XRANDR
       // Change the resolution back to what it was.
       // Don't remove the SizeID typecast!
-      if (_orig_size_id != (SizeID) -1) {
+      if (_have_xrandr && _orig_size_id != (SizeID) -1) {
         XRRScreenConfiguration* conf = XRRGetScreenInfo(_display, x11_pipe->get_root());
         XRRSetScreenConfig(_display, conf, x11_pipe->get_root(), _orig_size_id, _orig_rotation, CurrentTime);
         _orig_size_id = -1;
@@ -535,7 +543,7 @@ set_properties_now(WindowProperties &properties) {
       }
     }
   }
-  
+
   if (properties.has_origin()) {
     // A coordinate of -2 means to center the window on screen.
     if (properties.get_x_origin() == -2 || properties.get_y_origin() == -2) {
@@ -559,7 +567,7 @@ set_properties_now(WindowProperties &properties) {
       properties.set_origin(x_origin, y_origin);
     }
   }
-  
+
   GraphicsWindow::set_properties_now(properties);
   if (!properties.is_any_specified()) {
     // The base class has already handled this case.
@@ -579,20 +587,20 @@ set_properties_now(WindowProperties &properties) {
     _properties.set_title(properties.get_title());
     properties.clear_title();
   }
-  
+
   // Same for fullscreen.
   if (properties.has_fullscreen()) {
     _properties.set_fullscreen(properties.get_fullscreen());
     properties.clear_fullscreen();
   }
-  
+
   // The size and position of an already-open window are changed via
   // explicit X calls.  These may still get intercepted by the window
   // manager.  Rather than changing _properties immediately, we'll
   // wait for the ConfigureNotify message to come back.
   XWindowChanges changes;
   int value_mask = 0;
-  
+
   if (_properties.get_fullscreen()) {
     changes.x = 0;
     changes.y = 0;
@@ -605,14 +613,14 @@ set_properties_now(WindowProperties &properties) {
     if (changes.y != -1) value_mask |= CWY;
     properties.clear_origin();
   }
-  
+
   if (properties.has_size()) {
     changes.width = properties.get_x_size();
     changes.height = properties.get_y_size();
     value_mask |= (CWWidth | CWHeight);
     properties.clear_size();
   }
-  
+
   if (properties.has_z_order()) {
     // We'll send the classic stacking request through the standard
     // interface, for users of primitive window managers; but we'll
@@ -758,7 +766,7 @@ close_window() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
     _gsg.clear();
   }
-  
+
   if (_ic != (XIC)NULL) {
     XDestroyIC(_ic);
     _ic = (XIC)NULL;
@@ -776,7 +784,7 @@ close_window() {
 #ifdef HAVE_XRANDR
   // Change the resolution back to what it was.
   // Don't remove the SizeID typecast!
-  if (_orig_size_id != (SizeID) -1) {
+  if (_have_xrandr && _orig_size_id != (SizeID) -1) {
     X11_Window root;
     if (_pipe != NULL) {
       x11GraphicsPipe *x11_pipe;
@@ -812,19 +820,19 @@ open_window() {
       << "No X visual: cannot open window.\n";
     return false;
   }
-  
+
   x11GraphicsPipe *x11_pipe;
   DCAST_INTO_R(x11_pipe, _pipe, false);
-  
+
   if (!_properties.has_origin()) {
     _properties.set_origin(0, 0);
   }
   if (!_properties.has_size()) {
     _properties.set_size(100, 100);
   }
-  
+
 #ifdef HAVE_XRANDR
-  if (_properties.get_fullscreen()) {
+  if (_properties.get_fullscreen() && _have_xrandr) {
     XRRScreenConfiguration* conf = XRRGetScreenInfo(_display, x11_pipe->get_root());
     if (_orig_size_id == (SizeID) -1) {
       _orig_size_id = XRRConfigCurrentConfiguration(conf, &_orig_rotation);
@@ -833,13 +841,13 @@ open_window() {
     XRRScreenSize *xrrs;
     xrrs = XRRSizes(_display, 0, &num_sizes);
     for (int i = 0; i < num_sizes; ++i) {
-      if (xrrs[i].width == _properties.get_x_size() && 
+      if (xrrs[i].width == _properties.get_x_size() &&
           xrrs[i].height == _properties.get_y_size()) {
         new_size_id = i;
       }
     }
     if (new_size_id == -1) {
-      x11display_cat.error() 
+      x11display_cat.error()
         << "Videocard has no supported display resolutions at specified res ("
         << _properties.get_x_size() << " x " << _properties.get_y_size() <<")\n";
       _orig_size_id = -1;
@@ -852,7 +860,7 @@ open_window() {
     }
   }
 #endif
-  
+
   X11_Window parent_window = x11_pipe->get_root();
   WindowHandle *window_handle = _properties.get_parent_window();
   if (window_handle != NULL) {
@@ -862,7 +870,7 @@ open_window() {
     if (os_handle != NULL) {
       x11display_cat.info()
         << "os_handle type " << os_handle->get_type() << "\n";
-      
+
       if (os_handle->is_of_type(NativeWindowHandle::X11Handle::get_class_type())) {
         NativeWindowHandle::X11Handle *x11_handle = DCAST(NativeWindowHandle::X11Handle, os_handle);
         parent_window = x11_handle->get_handle();
@@ -873,7 +881,7 @@ open_window() {
     }
   }
   _parent_window_handle = window_handle;
-  
+
   _event_mask =
     ButtonPressMask | ButtonReleaseMask |
     KeyPressMask | KeyReleaseMask |
@@ -888,7 +896,7 @@ open_window() {
   wa.colormap = _colormap;
   wa.event_mask = _event_mask;
 
-  unsigned long attrib_mask = 
+  unsigned long attrib_mask =
     CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
 
   _xwindow = XCreateWindow
@@ -930,7 +938,7 @@ open_window() {
     X11_Cursor cursor = get_cursor(_properties.get_cursor_filename());
     XDefineCursor(_display, _xwindow, cursor);
   }
-  
+
   XMapWindow(_display, _xwindow);
 
   if (_properties.get_raw_mice()) {
@@ -949,7 +957,7 @@ open_window() {
   if (_parent_window_handle != (WindowHandle *)NULL) {
     _parent_window_handle->attach_child(_window_handle);
   }
-  
+
   return true;
 }
 
@@ -1119,7 +1127,7 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
 
     x11GraphicsPipe *x11_pipe;
     DCAST_INTO_V(x11_pipe, _pipe);
-  
+
     for (int i = 0; i < next_set_data; ++i) {
       XClientMessageEvent event;
       memset(&event, 0, sizeof(event));
@@ -1159,7 +1167,7 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
     _wm_delete_window,
   };
 
-  XSetWMProtocols(_display, _xwindow, protocols, 
+  XSetWMProtocols(_display, _xwindow, protocols,
                   sizeof(protocols) / sizeof(Atom));
 }
 
@@ -1189,7 +1197,7 @@ open_raw_mice() {
 #ifdef HAVE_LINUX_INPUT_H
   bool any_present = false;
   bool any_mice = false;
-  
+
   for (int i=0; i<64; i++) {
     uint8_t evtypes[EV_MAX/8 + 1];
     ostringstream fnb;
@@ -1241,17 +1249,17 @@ open_raw_mice() {
         break;
       } else {
         any_present = true;
-        x11display_cat.error() << 
+        x11display_cat.error() <<
           "Opening raw mice: " << strerror(errno) << " " << fn << "\n";
       }
     }
   }
-  
+
   if (!any_present) {
-    x11display_cat.error() << 
+    x11display_cat.error() <<
       "Opening raw mice: files not found: /dev/input/event*\n";
   } else if (!any_mice) {
-    x11display_cat.error() << 
+    x11display_cat.error() <<
       "Opening raw mice: no mouse devices detected in /dev/input/event*\n";
   }
 #else
@@ -1289,7 +1297,7 @@ poll_raw_mice()
         }
       }
     }
-    
+
     // Process events.
     int nevents = inf._io_buffer.size() / sizeof(struct input_event);
     if (nevents == 0) {
@@ -1347,7 +1355,7 @@ handle_keystroke(XKeyEvent &event) {
       x11display_cat.error()
         << "Overflowed input buffer.\n";
     }
-    
+
     // Now each of the returned wide characters represents a
     // keystroke.
     for (int i = 0; i < len; i++) {
@@ -1481,7 +1489,7 @@ get_button(XKeyEvent &key_event, bool allow_shift) {
 
     default:
       break;
-    } 
+    }
   }
 
   if (allow_shift) {
@@ -1904,7 +1912,7 @@ get_cursor(const Filename &filename) {
       << "Could not open cursor file " << filename << "\n";
     return None;
   }
-  
+
   // Check the first four bytes to see what kind of file it is.
   char magic[4];
   str->read(magic, 4);

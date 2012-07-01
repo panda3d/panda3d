@@ -32,7 +32,7 @@ typedef unsigned short SizeID;
 ////////////////////////////////////////////////////////////////////
 class x11GraphicsWindow : public GraphicsWindow {
 public:
-  x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe, 
+  x11GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                     const string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
@@ -79,7 +79,7 @@ private:
 #ifdef HAVE_XCURSOR
   X11_Cursor read_ico(istream &ico);
 #endif
-  
+
 protected:
   X11_Display *_display;
   int _screen;
@@ -87,7 +87,8 @@ protected:
   Colormap _colormap;
   XIC _ic;
   XVisualInfo *_visual_info;
-  
+
+  bool _have_xrandr;
 #ifdef HAVE_XRANDR
   Rotation _orig_rotation;
   SizeID _orig_size_id;
@@ -113,7 +114,7 @@ protected:
     string _io_buffer;
   };
   pvector<MouseDeviceInfo> _mouse_device_info;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -130,7 +131,7 @@ public:
 
 private:
   static TypeHandle _type_handle;
-  
+
   // Since the Panda API requests icons and cursors by filename, we
   // need a table mapping filenames to handles, so we can avoid
   // re-reading the file each time we change icons.
