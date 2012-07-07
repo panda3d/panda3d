@@ -69,10 +69,8 @@ add_physicals_from(const PhysicalNode &other) {
   _physicals.insert(_physicals.end(),
                     other._physicals.begin(), other._physicals.end());
 
-  NodePath node_path(this);
   for (; last != _physicals.end(); last++) {
     (*last)->_physical_node = this;
-    (*last)->_physical_node_path = node_path;
   }
 }
 
@@ -103,7 +101,6 @@ remove_physical(int index) {
   pvector< PT(Physical) >::iterator remove;
   remove = _physicals.begin() + index;
   (*remove)->_physical_node = (PhysicalNode *) NULL;
-  (*remove)->_physical_node_path = NodePath();
 
   _physicals.erase(remove);
 }

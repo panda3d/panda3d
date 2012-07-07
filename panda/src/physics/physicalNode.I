@@ -49,5 +49,4 @@ INLINE void PhysicalNode::
 add_physical(Physical *physical) {
   _physicals.push_back(physical);
   physical->_physical_node = this;
-  physical->_physical_node_path = NodePath(this);
 }
