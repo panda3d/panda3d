@@ -110,7 +110,6 @@ protected:
 private:
   PhysicsManager *_physics_manager;
   PhysicalNode *_physical_node;
-  NodePath _physical_node_path;
 
 public:
   static TypeHandle get_class_type() {
