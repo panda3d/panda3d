@@ -148,7 +148,7 @@ get_physical_node() const {
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath Physical::
 get_physical_node_path() const {
-  return NodePath(_physical_node);
+  return NodePath((PandaNode*) _physical_node);
 }
 
 ////////////////////////////////////////////////////////////////////
