@@ -774,10 +774,13 @@
 // the default for 64-bit windows.
 #defer USE_GENERIC_DXERR_LIBRARY $[WIN64_PLATFORM]
 
+// Do we have at least OpenCV 2.3?
+#define OPENCV_VER_23 1
+
 // Is OpenCV installed, and where?
-#define OPENCV_IPATH /usr/local/include/opencv
-#define OPENCV_LPATH /usr/local/lib
-#define OPENCV_LIBS $[if $[WINDOWS_PLATFORM],cv.lib highgui.lib cxcore.lib,cv highgui cxcore]
+#define OPENCV_IPATH
+#define OPENCV_LPATH
+#defer OPENCV_LIBS $[if $[OPENCV_VER_23], opencv_highgui opencv_core, cv highgui cxcore]
 #defer HAVE_OPENCV $[libtest $[OPENCV_LPATH],$[OPENCV_LIBS]]
 
 // Is FFMPEG installed, and where?

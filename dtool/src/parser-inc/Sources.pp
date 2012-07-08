@@ -9,7 +9,8 @@
     nurbs.hh stddef.h krb5.h MainHelix.h dllpath.h hxcom.h \
     hxcomm.h hxcore.h hxengin.h hxerror.h hxfiles.h hxtbuf.h \
     hxtbuff.h hxwin.h pyconfig.h Python.h py_panda.h Cg/cg.h Cg/cgGL.h \
-    cv.h cvtypes.h cxcore.h cxerror.h cxtypes.h highgui.h \
+    opencv/cv.h opencv/cxcore.h opencv/highgui.h \
+    opencv2/core/core.hpp opencv2/highgui/highgui.hpp \
     avcodec.h avformat.h avio.h avutil.h swscale.h integer.h \
     intfloat_readwrite.h mathematics.h rational.h rtp.h \
     rtsp.h rtspcodes.h setjmp.h tinyxml.h winsock2.h \

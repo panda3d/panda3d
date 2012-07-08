@@ -20,9 +20,21 @@
 
 #include "videoTexture.h"
 
-#include <cxcore.h>
+// This symbol is predefined by the Panda3D build system to select
+// whether we are using the OpenCV 2.3 or later interface, or if it is
+// not defined, we are using the original interface.
+#ifdef OPENCV_VER_23
+
+#include <opencv2/core/core.hpp>
+//#include <opencv2/video/video.hpp>
+#include <opencv2/highgui/highgui.hpp>
+
+#else
 #include <cv.h>
+#include <cxcore.h>
 #include <highgui.h>
+
+#endif  // OPENCV_VER_23
 
 ////////////////////////////////////////////////////////////////////
 //       Class : OpenCVTexture

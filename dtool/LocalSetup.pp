@@ -410,6 +410,7 @@ $[cdefine HAVE_GLES2]
 
 /* Define if we have OpenCV installed and want to build for OpenCV.  */
 $[cdefine HAVE_OPENCV]
+$[cdefine OPENCV_VER_23]
 
 /* Define if we have FFMPEG installed and want to build for FFMPEG.  */
 $[cdefine HAVE_FFMPEG]
