@@ -39,8 +39,27 @@ extern EXPCL_PANDA_AUDIO ConfigVariableString audio_library_name;
 
 // Config vars for Fmod:
 
+// Values match FMOD_SPEAKERMODE enum.
+enum FmodSpeakerMode {
+  FSM_raw,
+  FSM_mono,
+  FSM_stereo,
+  FSM_quad,
+  FSM_surround,
+  FSM_5point1,
+  FSM_7point1,
+  FSM_prologic,
+
+  // For backward compatibility
+  FSM_unspecified
+};
+
+EXPCL_FMOD_AUDIO ostream &operator << (ostream &out, FmodSpeakerMode sm);
+EXPCL_FMOD_AUDIO istream &operator >> (istream &in, FmodSpeakerMode &sm);
+
 extern EXPCL_PANDA_AUDIO ConfigVariableInt fmod_number_of_sound_channels;
 extern EXPCL_PANDA_AUDIO ConfigVariableBool fmod_use_surround_sound;
+extern EXPCL_PANDA_AUDIO ConfigVariableEnum<FmodSpeakerMode> fmod_speaker_mode;
 
 // Config vars for OpenAL:
 

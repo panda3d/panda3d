@@ -128,10 +128,18 @@ FmodAudioManager() {
       audio_error("You are using an old version of FMOD.  This program requires:" << FMOD_VERSION);
     }
 
-    //Stick Surround Sound 5.1 thing Here.
-    if (fmod_use_surround_sound) {
-      audio_debug("Setting FMOD to use 5.1 Surround Sound.");
-      result = _system->setSpeakerMode(FMOD_SPEAKERMODE_5POINT1);
+    // Set speaker mode.
+    if (fmod_speaker_mode.get_value() == FSM_unspecified) {
+      if (fmod_use_surround_sound) {
+        // fmod-use-surround-sound is the old variable, now replaced
+        // by fmod-speaker-mode.  This is for backward compatibility.
+        result = _system->setSpeakerMode(FMOD_SPEAKERMODE_5POINT1);
+        fmod_audio_errcheck("_system->setSpeakerMode()", result);
+      }
+    } else {
+      FMOD_SPEAKERMODE speakerMode;
+      speakerMode = (FMOD_SPEAKERMODE) fmod_speaker_mode.get_value();
+      result = _system->setSpeakerMode(speakerMode);
       fmod_audio_errcheck("_system->setSpeakerMode()", result);
     }
 
