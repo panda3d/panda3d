@@ -454,10 +454,6 @@ class ShowBase(DirectObject.DirectObject):
            print getModelPath()
            #print "* dna path:"
            #print getDnaPath()
-           print "* texture path:"
-           print getTexturePath()
-           print "* sound path:"
-           print getSoundPath()
            print "}"
 
     def destroy(self):
