@@ -101,7 +101,12 @@ get_welding_distance() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletTriangleMesh::
-add_geom(const Geom *geom, bool remove_duplicate_vertices) {
+add_geom(const Geom *geom, bool remove_duplicate_vertices, CPT(TransformState) ts) {
+
+  nassertv(geom);
+  nassertv(ts);
+
+  LMatrix4 m = ts->get_mat();
 
   // Collect points
   pvector<LPoint3> points;
@@ -110,7 +115,7 @@ add_geom(const Geom *geom, bool remove_duplicate_vertices) {
   GeomVertexReader reader = GeomVertexReader(vdata, InternalName::get_vertex());
 
   while (!reader.is_at_end()) {
-    points.push_back(reader.get_data3());
+    points.push_back(m.xform_point(reader.get_data3()));
   }
 
   // Convert points

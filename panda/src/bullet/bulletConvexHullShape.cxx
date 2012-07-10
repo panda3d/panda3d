@@ -78,7 +78,12 @@ add_array(const PTA_LVecBase3 &points) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletConvexHullShape::
-add_geom(const Geom *geom) {
+add_geom(const Geom *geom, CPT(TransformState) ts) {
+
+  nassertv(geom);
+  nassertv(ts);
+
+  LMatrix4 m = ts->get_mat();
 
   // Collect points
   pvector<LPoint3> points;
@@ -87,7 +92,7 @@ add_geom(const Geom *geom) {
   GeomVertexReader reader = GeomVertexReader(vdata, InternalName::get_vertex());
 
   while (!reader.is_at_end()) {
-    points.push_back(reader.get_data3());
+    points.push_back(m.xform_point(reader.get_data3()));
   }
 
   // Create shape

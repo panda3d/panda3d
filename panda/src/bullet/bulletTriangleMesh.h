@@ -45,7 +45,8 @@ PUBLISHED:
                  const PTA_int &indices,
                  bool remove_duplicate_vertices=false);
   void add_geom(const Geom *geom, 
-                bool remove_duplicate_vertices=false);
+                bool remove_duplicate_vertices=false,
+                CPT(TransformState) ts=TransformState::make_identity());
 
   void set_welding_distance(PN_stdfloat distance);
   void preallocate(int num_verts, int num_indices);
