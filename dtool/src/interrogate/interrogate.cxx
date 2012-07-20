@@ -305,6 +305,9 @@ predefine_macro(CPPParser& parser, const string& inoption) {
 
 int
 main(int argc, char **argv) {
+  // A call to pystub() to force libpystub.so to be linked in.
+  pystub();
+
   preprocess_argv(argc, argv);
   string command_line;
   int i;
