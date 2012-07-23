@@ -896,7 +896,7 @@ flip(bool flip_x, bool flip_y, bool transpose) {
 //               in-place.
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
-xform(const LMatrix4 &transform) {
+xform(const LMatrix4f &transform) {
   nassertv(is_valid());
 
   for (int yi = 0; yi < _y_size; ++yi) {
@@ -925,7 +925,7 @@ void PfmFile::
 project(const Lens *lens) {
   nassertv(is_valid());
 
-  static LMatrix4 to_uv(0.5, 0.0, 0.0, 0.0,
+  static LMatrix4f to_uv(0.5, 0.0, 0.0, 0.0,
                         0.0, 0.5, 0.0, 0.0, 
                         0.0, 0.0, 1.0, 0.0, 
                         0.5, 0.5, 0.0, 1.0);
@@ -937,9 +937,9 @@ project(const Lens *lens) {
       }
       LPoint3f &p = modify_point(xi, yi);
 
-      LPoint3f film;
-      lens->project(p, film);
-      p = to_uv.xform_point(film);
+      LPoint3 film;
+      lens->project(LCAST(PN_stdfloat, p), film);
+      p = to_uv.xform_point(LCAST(float, film));
     }
   }
 }
@@ -1009,7 +1009,7 @@ apply_crop(int x_begin, int x_end, int y_begin, int y_end) {
 ////////////////////////////////////////////////////////////////////
 PT(BoundingHexahedron) PfmFile::
 compute_planar_bounds(PN_float32 point_dist, PN_float32 sample_radius) const {
-  return compute_planar_bounds(LPoint2(0.5, 0.5), point_dist, sample_radius, false);
+  return compute_planar_bounds(LPoint2f(0.5, 0.5), point_dist, sample_radius, false);
 }
 
 
@@ -1033,7 +1033,7 @@ compute_planar_bounds(PN_float32 point_dist, PN_float32 sample_radius) const {
 //               i.e. in the range 0..1.
 ////////////////////////////////////////////////////////////////////
 PT(BoundingHexahedron) PfmFile::
-compute_planar_bounds(const LPoint2 &center, PN_float32 point_dist, PN_float32 sample_radius, bool points_only) const {
+compute_planar_bounds(const LPoint2f &center, PN_float32 point_dist, PN_float32 sample_radius, bool points_only) const {
   LPoint3f p0, p1, p2, p3;
   compute_sample_point(p0, center[0] + point_dist, center[1] - point_dist, sample_radius);
   compute_sample_point(p1, center[0] + point_dist, center[1] + point_dist, sample_radius);
@@ -1060,15 +1060,15 @@ compute_planar_bounds(const LPoint2 &center, PN_float32 point_dist, PN_float32 s
 
   normal.normalize();
 
-  LVector3 up = (p1 - p0) + (p2 - p3);
+  LVector3f up = (p1 - p0) + (p2 - p3);
   LPoint3f pcenter = ((p0 + p1 + p2 + p3) * 0.25);
 
   // Compute the transform necessary to rotate all of the points into
   // the Y = 0 plane.
-  LMatrix4 rotate;
+  LMatrix4f rotate;
   look_at(rotate, normal, up);
 
-  LMatrix4 rinv;
+  LMatrix4f rinv;
   rinv.invert_from(rotate);
 
   LPoint3f trans = pcenter * rinv;
@@ -1141,40 +1141,40 @@ compute_planar_bounds(const LPoint2 &center, PN_float32 point_dist, PN_float32 s
   switch (cs) {
   case CS_yup_right:
     bounds = new BoundingHexahedron
-      (LPoint3f(min_x, min_y, min_z), LPoint3f(max_x, min_y, min_z),
-       LPoint3f(min_x, max_y, min_z), LPoint3f(max_x, max_y, min_z),
-       LPoint3f(min_x, min_y, max_z), LPoint3f(max_x, min_y, max_z),
-       LPoint3f(min_x, max_y, max_z), LPoint3f(max_x, max_y, max_z));
+      (LPoint3(min_x, min_y, min_z), LPoint3(max_x, min_y, min_z),
+       LPoint3(min_x, max_y, min_z), LPoint3(max_x, max_y, min_z),
+       LPoint3(min_x, min_y, max_z), LPoint3(max_x, min_y, max_z),
+       LPoint3(min_x, max_y, max_z), LPoint3(max_x, max_y, max_z));
     break;
 
   case CS_zup_right:
     bounds = new BoundingHexahedron
-      (LPoint3f(min_x, min_y, min_z), LPoint3f(max_x, min_y, min_z),
-       LPoint3f(min_x, min_y, max_z), LPoint3f(max_x, min_y, max_z),
-       LPoint3f(min_x, max_y, min_z), LPoint3f(max_x, max_y, min_z),
-       LPoint3f(min_x, max_y, max_z), LPoint3f(max_x, max_y, max_z));
+      (LPoint3(min_x, min_y, min_z), LPoint3(max_x, min_y, min_z),
+       LPoint3(min_x, min_y, max_z), LPoint3(max_x, min_y, max_z),
+       LPoint3(min_x, max_y, min_z), LPoint3(max_x, max_y, min_z),
+       LPoint3(min_x, max_y, max_z), LPoint3(max_x, max_y, max_z));
     break;
 
   case CS_yup_left:
     bounds = new BoundingHexahedron
-      (LPoint3f(max_x, min_y, max_z), LPoint3f(min_x, min_y, max_z),
-       LPoint3f(max_x, max_y, max_z), LPoint3f(min_x, max_y, max_z),
-       LPoint3f(max_x, min_y, min_z), LPoint3f(min_x, min_y, min_z),
-       LPoint3f(max_x, max_y, min_z), LPoint3f(min_x, max_y, min_z));
+      (LPoint3(max_x, min_y, max_z), LPoint3(min_x, min_y, max_z),
+       LPoint3(max_x, max_y, max_z), LPoint3(min_x, max_y, max_z),
+       LPoint3(max_x, min_y, min_z), LPoint3(min_x, min_y, min_z),
+       LPoint3(max_x, max_y, min_z), LPoint3(min_x, max_y, min_z));
     break;
 
   case CS_zup_left:
     bounds = new BoundingHexahedron
-      (LPoint3f(max_x, max_y, min_z), LPoint3f(min_x, max_y, min_z),
-       LPoint3f(max_x, max_y, max_z), LPoint3f(min_x, max_y, max_z),
-       LPoint3f(max_x, min_y, min_z), LPoint3f(min_x, min_y, min_z),
-       LPoint3f(max_x, min_y, max_z), LPoint3f(min_x, min_y, max_z));
+      (LPoint3(max_x, max_y, min_z), LPoint3(min_x, max_y, min_z),
+       LPoint3(max_x, max_y, max_z), LPoint3(min_x, max_y, max_z),
+       LPoint3(max_x, min_y, min_z), LPoint3(min_x, min_y, min_z),
+       LPoint3(max_x, min_y, max_z), LPoint3(min_x, min_y, max_z));
     break;
   }
 
   // Rotate the bounding volume back into the original space of the
   // screen.
-  bounds->xform(rotate);
+  bounds->xform(LCAST(PN_stdfloat, rotate));
 
   return bounds;
 }
@@ -1238,7 +1238,7 @@ generate_vis_points() const {
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
 
-  LPoint2 uv_scale(1.0, 1.0);
+  LPoint2f uv_scale(1.0, 1.0);
   if (_x_size > 1) {
     uv_scale[0] = 1.0f / PN_float32(_x_size - 1);
   }
@@ -1254,8 +1254,8 @@ generate_vis_points() const {
       }
 
       const LPoint3f &point = get_point(xi, yi);
-      LPoint2 uv(PN_float32(xi) * uv_scale[0],
-                 PN_float32(yi) * uv_scale[1]);
+      LPoint2f uv(PN_float32(xi) * uv_scale[0],
+                  PN_float32(yi) * uv_scale[1]);
       if (_vis_inverse) {
         vertex.add_data2f(uv);
         texcoord.add_data3f(point);
@@ -1438,8 +1438,8 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
       for (int yi = y_begin; yi < y_end; ++yi) {
         for (int xi = x_begin; xi < x_end; ++xi) {
           const LPoint3f &point = get_point(xi, yi);
-          LPoint2 uv(PN_float32(xi) / PN_float32(_x_size - 1),
-                     PN_float32(yi) / PN_float32(_y_size - 1));
+          LPoint2f uv(PN_float32(xi) / PN_float32(_x_size - 1),
+                      PN_float32(yi) / PN_float32(_y_size - 1));
 
           if (_vis_inverse) {
             vertex.add_data2f(uv);
@@ -1468,7 +1468,7 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
               v[0] = get_point(xi, yi - 1);
             }
         
-            LVector3 n = LVector3::zero();
+            LVector3f n = LVector3f::zero();
             for (int i = 0; i < 3; ++i) {
               const LPoint3f &v0 = v[i];
               const LPoint3f &v1 = v[(i + 1) % 3];

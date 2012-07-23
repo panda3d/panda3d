@@ -215,7 +215,7 @@ process_pfm(const Filename &input_filename, PfmFile &file) {
   }
 
   if (_got_transform) {
-    file.xform(_transform);
+    file.xform(LCAST(PN_float32, _transform));
   }
 
   if (_got_vis_filename) {

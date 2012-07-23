@@ -82,13 +82,13 @@ PUBLISHED:
   BLOCKING void resize(int new_x_size, int new_y_size);
   BLOCKING void reverse_rows();
   BLOCKING void flip(bool flip_x, bool flip_y, bool transpose);
-  BLOCKING void xform(const LMatrix4 &transform);
+  BLOCKING void xform(const LMatrix4f &transform);
   BLOCKING void project(const Lens *lens);
   BLOCKING void merge(const PfmFile &other);
   BLOCKING void apply_crop(int x_begin, int x_end, int y_begin, int y_end);
 
   BLOCKING PT(BoundingHexahedron) compute_planar_bounds(PN_float32 point_dist, PN_float32 sample_radius) const;
-  BLOCKING PT(BoundingHexahedron) compute_planar_bounds(const LPoint2 &center, PN_float32 point_dist, PN_float32 sample_radius, bool points_only) const;
+  BLOCKING PT(BoundingHexahedron) compute_planar_bounds(const LPoint2f &center, PN_float32 point_dist, PN_float32 sample_radius, bool points_only) const;
   void compute_sample_point(LPoint3f &result,
                             PN_float32 x, PN_float32 y, PN_float32 sample_radius) const;
 
