@@ -901,6 +901,82 @@ apply_exponent(double red_exponent, double green_exponent, double blue_exponent)
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::get_array
+//       Access: Public
+//  Description: Directly access the underlying PNMImage array.  Know
+//               what you are doing!
+////////////////////////////////////////////////////////////////////
+INLINE xel *PNMImage::
+get_array() {
+  return _array;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::get_array
+//       Access: Public
+//  Description: Directly access the underlying PNMImage array.  Know
+//               what you are doing!
+////////////////////////////////////////////////////////////////////
+INLINE const xel *PNMImage::
+get_array() const {
+  return _array;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::get_alpha_array
+//       Access: Public
+//  Description: Directly access the underlying PNMImage array of
+//               alpha values.  Know what you are doing!
+////////////////////////////////////////////////////////////////////
+INLINE xelval *PNMImage::
+get_alpha_array() {
+  return _alpha;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::get_alpha_array
+//       Access: Public
+//  Description: Directly access the underlying PNMImage array of
+//               alpha values.  Know what you are doing!
+////////////////////////////////////////////////////////////////////
+INLINE const xelval *PNMImage::
+get_alpha_array() const {
+  return _alpha;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::take_array
+//       Access: Public
+//  Description: Returns the underlying PNMImage array and removes it
+//               from the PNMImage.  You become the owner of this
+//               array and must eventually free it with
+//               PANDA_FREE_ARRAY() (or pass it to another PNMImage
+//               with set_array()).  Know what you are doing!
+////////////////////////////////////////////////////////////////////
+INLINE xel *PNMImage::
+take_array() {
+  xel *array = _array;
+  _array = NULL;
+  return array;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::take_alpha_array
+//       Access: Public
+//  Description: Returns the underlying PNMImage array and removes it
+//               from the PNMImage.  You become the owner of this
+//               array and must eventually free it with
+//               PANDA_FREE_ARRAY() (or pass it to another PNMImage
+//               with set_alpha_array()).  Know what you are doing!
+////////////////////////////////////////////////////////////////////
+INLINE xelval *PNMImage::
+take_alpha_array() {
+  xelval *alpha = _alpha;
+  _alpha = NULL;
+  return alpha;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::allocate_array
 //       Access: Private
 //  Description: Allocates the internal memory for the RGB or

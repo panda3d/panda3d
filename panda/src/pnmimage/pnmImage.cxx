@@ -717,6 +717,46 @@ blend(int x, int y, double r, double g, double b, double alpha) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::set_array
+//       Access: Public
+//  Description: Replaces the underlying PNMImage array with the
+//               indicated pointer.  Know what you are doing!  The new
+//               array must be the correct size and must have been
+//               allocated via PANDA_MALLOC_ARRAY().  The PNMImage
+//               object becomes the owner of this pointer and will
+//               eventually free it with PANDA_FREE_ARRAY().  The
+//               previous array, if any, will be freed with
+//               PANDA_FREE_ARRAY() when this call is made.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+set_array(xel *array) {
+  if (_array != (xel *)NULL) {
+    PANDA_FREE_ARRAY(_array);
+  }
+  _array = array;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::set_alpha_array
+//       Access: Public
+//  Description: Replaces the underlying PNMImage alpha array with the
+//               indicated pointer.  Know what you are doing!  The new
+//               array must be the correct size and must have been
+//               allocated via PANDA_MALLOC_ARRAY().  The PNMImage
+//               object becomes the owner of this pointer and will
+//               eventually free it with PANDA_FREE_ARRAY().  The
+//               previous array, if any, will be freed with
+//               PANDA_FREE_ARRAY() when this call is made.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+set_alpha_array(xelval *alpha) {
+  if (_alpha != (xelval *)NULL) {
+    PANDA_FREE_ARRAY(_alpha);
+  }
+  _alpha = alpha;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::copy_sub_image
 //       Access: Published
 //  Description: Copies a rectangular area of another image into a

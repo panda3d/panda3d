@@ -252,6 +252,19 @@ PUBLISHED:
   LColord get_average_xel_a() const;
   double get_average_gray() const;
 
+public:
+  // Know what you are doing if you access the underlying data arrays
+  // directly.
+  INLINE xel *get_array();
+  INLINE const xel *get_array() const;
+  INLINE xelval *get_alpha_array();
+  INLINE const xelval *get_alpha_array() const;
+
+  INLINE xel *take_array();
+  INLINE xelval *take_alpha_array();
+  void set_array(xel *array);
+  void set_alpha_array(xelval *alpha);
+
 private:
   INLINE void allocate_array();
   INLINE void allocate_alpha();
