@@ -28,7 +28,8 @@ class PNMImage;
 ////////////////////////////////////////////////////////////////////
 //       Class : PfmFile
 // Description : Defines a pfm file, a 2-d table of floating-point
-//               numbers, either 3-component or 1-component.
+//               numbers, either 3-component or 1-component, or with a
+//               special extension, 4-component.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_GRUTIL PfmFile {
 PUBLISHED:
@@ -52,16 +53,19 @@ PUBLISHED:
 
   INLINE int get_x_size() const;
   INLINE int get_y_size() const;
-  INLINE PN_stdfloat get_scale() const;
+  INLINE PN_float32 get_scale() const;
   INLINE int get_num_channels() const;
 
   INLINE bool has_point(int x, int y) const;
-  INLINE const LPoint3 &get_point(int x, int y) const;
-  INLINE void set_point(int x, int y, const LVecBase3 &point);
-  INLINE LPoint3 &modify_point(int x, int y);
+  INLINE const LPoint3f &get_point(int x, int y) const;
+  INLINE void set_point(int x, int y, const LVecBase3f &point);
+  INLINE LPoint3f &modify_point(int x, int y);
+  INLINE const LPoint4f &get_point4(int x, int y) const;
+  INLINE void set_point4(int x, int y, const LVecBase4f &point);
+  INLINE LPoint4f &modify_point4(int x, int y);
 
-  BLOCKING bool calc_average_point(LPoint3 &result, PN_stdfloat x, PN_stdfloat y, PN_stdfloat radius) const;
-  BLOCKING bool calc_min_max(LVecBase3 &min_points, LVecBase3 &max_points) const;
+  BLOCKING bool calc_average_point(LPoint3f &result, PN_float32 x, PN_float32 y, PN_float32 radius) const;
+  BLOCKING bool calc_min_max(LVecBase3f &min_points, LVecBase3f &max_points) const;
   BLOCKING bool calc_autocrop(int &x_begin, int &x_end, int &y_begin, int &y_end) const;
   BLOCKING INLINE bool calc_autocrop(LVecBase4 &range) const;
  
@@ -69,10 +73,11 @@ PUBLISHED:
   bool is_column_empty(int x, int y_begin, int y_end) const;
 
   INLINE void set_zero_special(bool zero_special);
-  INLINE void set_no_data_value(const LPoint3 &no_data_value);
+  INLINE void set_no_data_chan4(bool chan4);
+  void set_no_data_value(const LPoint4f &no_data_value);
   INLINE void clear_no_data_value();
   INLINE bool has_no_data_value() const;
-  INLINE const LPoint3 &get_no_data_value() const;
+  INLINE const LPoint4f &get_no_data_value() const;
 
   BLOCKING void resize(int new_x_size, int new_y_size);
   BLOCKING void reverse_rows();
@@ -82,10 +87,10 @@ PUBLISHED:
   BLOCKING void merge(const PfmFile &other);
   BLOCKING void apply_crop(int x_begin, int x_end, int y_begin, int y_end);
 
-  BLOCKING PT(BoundingHexahedron) compute_planar_bounds(PN_stdfloat point_dist, PN_stdfloat sample_radius) const;
-  BLOCKING PT(BoundingHexahedron) compute_planar_bounds(const LPoint2 &center, PN_stdfloat point_dist, PN_stdfloat sample_radius, bool points_only) const;
-  void compute_sample_point(LPoint3 &result,
-                            PN_stdfloat x, PN_stdfloat y, PN_stdfloat sample_radius) const;
+  BLOCKING PT(BoundingHexahedron) compute_planar_bounds(PN_float32 point_dist, PN_float32 sample_radius) const;
+  BLOCKING PT(BoundingHexahedron) compute_planar_bounds(const LPoint2 &center, PN_float32 point_dist, PN_float32 sample_radius, bool points_only) const;
+  void compute_sample_point(LPoint3f &result,
+                            PN_float32 x, PN_float32 y, PN_float32 sample_radius) const;
 
   INLINE void set_vis_inverse(bool vis_inverse);
   INLINE bool get_vis_inverse() const;
@@ -107,37 +112,47 @@ PUBLISHED:
 private:
   void make_vis_mesh_geom(GeomNode *gnode, bool inverted) const;
 
-  void box_filter_region(LPoint3 &result,
-                         PN_stdfloat x0, PN_stdfloat y0, PN_stdfloat x1, PN_stdfloat y1) const;
-  void box_filter_line(LPoint3 &result, PN_stdfloat &coverage,
-                       PN_stdfloat x0, int y, PN_stdfloat x1, PN_stdfloat y_contrib) const;
-  void box_filter_point(LPoint3 &result, PN_stdfloat &coverage,
-                        int x, int y, PN_stdfloat x_contrib, PN_stdfloat y_contrib) const;
+  void box_filter_region(LPoint4f &result,
+                         PN_float32 x0, PN_float32 y0, PN_float32 x1, PN_float32 y1) const;
+  void box_filter_line(LPoint4f &result, PN_float32 &coverage,
+                       PN_float32 x0, int y, PN_float32 x1, PN_float32 y_contrib) const;
+  void box_filter_point(LPoint4f &result, PN_float32 &coverage,
+                        int x, int y, PN_float32 x_contrib, PN_float32 y_contrib) const;
 
   class MiniGridCell {
   public:
-    MiniGridCell() : _ti(-1), _dist(-1) { }
-    int _ti;
+    MiniGridCell() : _sxi(-1), _syi(-1), _dist(-1) { }
+    int _sxi, _syi;
     int _dist;
   };
 
   void fill_mini_grid(MiniGridCell *mini_grid, int x_size, int y_size, 
-                      int xi, int yi, int dist, int ti) const;
+                      int xi, int yi, int dist, int sxi, int syi) const;
+
+  static bool has_point_noop(const PfmFile *file, int x, int y);
+  static bool has_point_1(const PfmFile *file, int x, int y);
+  static bool has_point_3(const PfmFile *file, int x, int y);
+  static bool has_point_4(const PfmFile *file, int x, int y);
+  static bool has_point_chan4(const PfmFile *file, int x, int y);
 
 private:
-  typedef pvector<LPoint3> Table;
+  typedef pvector<PN_float32> Table;
   Table _table;
 
   int _x_size;
   int _y_size;
-  PN_stdfloat _scale;
+  PN_float32 _scale;
   int _num_channels;
 
   bool _has_no_data_value;
-  LPoint3 _no_data_value;
+  LPoint4f _no_data_value;
   bool _vis_inverse;
   PT(InternalName) _flat_texcoord_name;
   bool _vis_2d;
+
+  typedef bool HasPointFunc(const PfmFile *file, int x, int y);
+  HasPointFunc *_has_point;
+  
 };
 
 #include "pfmFile.I"

@@ -20,7 +20,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE bool PfmFile::
 is_valid() const {
-  return _num_channels != 0 && (_x_size * _y_size == (int)_table.size());
+  return _num_channels != 0 && (_x_size * _y_size * _num_channels == (int)_table.size());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -49,7 +49,7 @@ get_y_size() const {
 //  Description: The "scale" is reported in the pfm header and is
 //               probably meaningless.
 ////////////////////////////////////////////////////////////////////
-INLINE PN_stdfloat PfmFile::
+INLINE PN_float32 PfmFile::
 get_scale() const {
   return _scale;
 }
@@ -79,11 +79,7 @@ get_num_channels() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool PfmFile::
 has_point(int x, int y) const {
-  if ((x >= 0 && x < _x_size) && 
-      (y >= 0 && y < _y_size)) {
-    return (!_has_no_data_value || _table[y * _x_size + x] != _no_data_value);
-  }
-  return false;
+  return _has_point(this, x, y);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -93,11 +89,11 @@ has_point(int x, int y) const {
 //               point.  In a 1-channel image, the channel value is in
 //               the x component.
 ////////////////////////////////////////////////////////////////////
-INLINE const LPoint3 &PfmFile::
+INLINE const LPoint3f &PfmFile::
 get_point(int x, int y) const {
-  nassertr(x >= 0 && x < _x_size, LPoint3::zero());
-  nassertr(y >= 0 && y < _y_size, LPoint3::zero());
-  return _table[y * _x_size + x];
+  nassertr(x >= 0 && x < _x_size, LPoint3f::zero());
+  nassertr(y >= 0 && y < _y_size, LPoint3f::zero());
+  return *(LPoint3f *)&_table[(y * _x_size + x) * _num_channels];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -108,11 +104,20 @@ get_point(int x, int y) const {
 //               the x component.
 ////////////////////////////////////////////////////////////////////
 INLINE void PfmFile::
-set_point(int x, int y, const LVecBase3 &point) {
+set_point(int x, int y, const LVecBase3f &point) {
   nassertv(!point.is_nan());
   nassertv(x >= 0 && x < _x_size);
   nassertv(y >= 0 && y < _y_size);
-  _table[y * _x_size + x] = point;
+  switch (_num_channels) {
+  case 1:
+    _table[(y * _x_size + x)] = point[0];
+    break;
+
+  case 3:
+  case 4:
+    *(LPoint3f *)&_table[(y * _x_size + x) * _num_channels] = point;
+    break;
+  } 
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -121,15 +126,73 @@ set_point(int x, int y, const LVecBase3 &point) {
 //  Description: Returns a modifiable 3-component point value at the
 //               indicated point.
 ////////////////////////////////////////////////////////////////////
-INLINE LPoint3 &PfmFile::
+INLINE LPoint3f &PfmFile::
 modify_point(int x, int y) {
 #ifndef NDEBUG
-  static LPoint3 dummy_value = LPoint3::zero();
+  static LPoint3f dummy_value = LPoint3f::zero();
   nassertr(x >= 0 && x < _x_size, dummy_value);
   nassertr(y >= 0 && y < _y_size, dummy_value);
 #endif
 
-  return _table[y * _x_size + x];
+  return *(LPoint3f *)&_table[(y * _x_size + x) * _num_channels];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::get_point4
+//       Access: Published
+//  Description: Returns the 4-component point value at the indicated
+//               point.  In a 1-channel image, the channel value is in
+//               the x component.
+////////////////////////////////////////////////////////////////////
+INLINE const LPoint4f &PfmFile::
+get_point4(int x, int y) const {
+  nassertr(x >= 0 && x < _x_size, LPoint4f::zero());
+  nassertr(y >= 0 && y < _y_size, LPoint4f::zero());
+  return *(LPoint4f *)&_table[(y * _x_size + x) * _num_channels];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::set_point4
+//       Access: Published
+//  Description: Replaces the 4-component point value at the indicated
+//               point.  In a 1-channel image, the channel value is in
+//               the x component.
+////////////////////////////////////////////////////////////////////
+INLINE void PfmFile::
+set_point4(int x, int y, const LVecBase4f &point) {
+  nassertv(!point.is_nan());
+  nassertv(x >= 0 && x < _x_size);
+  nassertv(y >= 0 && y < _y_size);
+  switch (_num_channels) {
+  case 1:
+    _table[(y * _x_size + x)] = point[0];
+    break;
+
+  case 3:
+    (*(LPoint3f *)&_table[(y * _x_size + x) * _num_channels]).set(point[0], point[1], point[2]);
+    break;
+
+  case 4:
+    *(LPoint4f *)&_table[(y * _x_size + x) * _num_channels] = point;
+    break;
+  } 
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::modify_point4
+//       Access: Published
+//  Description: Returns a modifiable 4-component point value at the
+//               indicated point.
+////////////////////////////////////////////////////////////////////
+INLINE LPoint4f &PfmFile::
+modify_point4(int x, int y) {
+#ifndef NDEBUG
+  static LPoint4f dummy_value = LPoint4f::zero();
+  nassertr(x >= 0 && x < _x_size, dummy_value);
+  nassertr(y >= 0 && y < _y_size, dummy_value);
+#endif
+
+  return *(LPoint4f *)&_table[(y * _x_size + x) * _num_channels];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -161,22 +224,32 @@ calc_autocrop(LVecBase4 &range) const {
 INLINE void PfmFile::
 set_zero_special(bool zero_special) {
   if (zero_special) {
-    set_no_data_value(LPoint3::zero());
+    set_no_data_value(LPoint4f::zero());
   } else {
     clear_no_data_value();
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::set_no_data_value
+//     Function: PfmFile::set_no_data_chan4
 //       Access: Published
-//  Description: Sets the special value that means "no data" when it
-//               appears in the pfm file.
+//  Description: Sets the no_data_chan4 flag.  When this flag is true,
+//               and the pfm file has 4 channels, then a negative
+//               value in the fourth channel indicates no data.  When
+//               it is false, a zero or positive value in the fourth
+//               channel indicates valid data.
+//
+//               This is a special case of set_no_data_value().
 ////////////////////////////////////////////////////////////////////
 INLINE void PfmFile::
-set_no_data_value(const LPoint3 &no_data_value) {
-  _has_no_data_value = true;
-  _no_data_value = no_data_value;
+set_no_data_chan4(bool chan4) {
+  if (chan4 && _num_channels == 4) {
+    _has_no_data_value = true;
+    _no_data_value = LPoint4f::zero();
+    _has_point = has_point_chan4;
+  } else {
+    clear_no_data_value();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -189,7 +262,8 @@ set_no_data_value(const LPoint3 &no_data_value) {
 INLINE void PfmFile::
 clear_no_data_value() {
   _has_no_data_value = false;
-  _no_data_value = LPoint3::zero();
+  _no_data_value = LPoint4f::zero();
+  _has_point = has_point_noop;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -209,9 +283,9 @@ has_no_data_value() const {
 //  Description: If has_no_data_value() returns true, this returns the
 //               particular "no data" value.
 ////////////////////////////////////////////////////////////////////
-INLINE const LPoint3 &PfmFile::
+INLINE const LPoint4f &PfmFile::
 get_no_data_value() const {
-  nassertr(_has_no_data_value, LPoint3::zero());
+  nassertr(_has_no_data_value, LPoint4f::zero());
   return _no_data_value;
 }
 

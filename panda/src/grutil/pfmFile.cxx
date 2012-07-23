@@ -40,7 +40,8 @@
 PfmFile::
 PfmFile() {
   _has_no_data_value = false;
-  _no_data_value = LPoint3::zero();
+  _no_data_value = LPoint4f::zero();
+  _has_point = has_point_noop;
   _vis_inverse = false;
   _vis_2d = false;
   clear();
@@ -60,6 +61,7 @@ PfmFile(const PfmFile &copy) :
   _num_channels(copy._num_channels),
   _has_no_data_value(copy._has_no_data_value),
   _no_data_value(copy._no_data_value),
+  _has_point(copy._has_point),
   _vis_inverse(copy._vis_inverse),
   _vis_2d(copy._vis_2d)
 {
@@ -79,6 +81,7 @@ operator = (const PfmFile &copy) {
   _num_channels = copy._num_channels;
   _has_no_data_value = copy._has_no_data_value;
   _no_data_value = copy._no_data_value;
+  _has_point = copy._has_point;
   _vis_inverse = copy._vis_inverse;
   _vis_2d = copy._vis_2d;
 }
@@ -95,6 +98,7 @@ clear() {
   _scale = 1.0;
   _num_channels = 3;
   _table.clear();
+  clear_no_data_value();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -112,8 +116,9 @@ clear(int x_size, int y_size, int num_channels) {
   _num_channels = num_channels;
 
   _table.clear();
-  int size = _x_size * _y_size;
-  _table.insert(_table.end(), size, LPoint3::zero());
+  int size = _x_size * _y_size * _num_channels;
+  _table.insert(_table.end(), size, (PN_float32)0.0);
+  clear_no_data_value();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -168,10 +173,22 @@ read(istream &in, const Filename &fullpath, const string &magic_number) {
   string identifier = magic_number;
   PNMImageHeader::read_magic_number(&in, identifier, 2);
 
+  if (identifier == "pf") {
+    // In this case, we're probably reading a special-extension
+    // 4-channel pfm file, and we need a four-byte magic number to
+    // confirm this and fully identify the file format.
+    PNMImageHeader::read_magic_number(&in, identifier, 4);
+  }
+
   if (identifier == "PF") {
     _num_channels = 3;
+
   } else if (identifier == "Pf") {
     _num_channels = 1;
+
+  } else if (identifier == "pf4c") {
+    _num_channels = 4;
+    
   } else {
     // Not a PFM file.  Maybe it's a more conventional image file that
     // we can read into a PFM.
@@ -194,7 +211,7 @@ read(istream &in, const Filename &fullpath, const string &magic_number) {
   }
 
   int width, height;
-  PN_stdfloat scale;
+  PN_float32 scale;
   in >> width >> height >> scale;
   if (!in) {
     grutil_cat.error()
@@ -225,46 +242,28 @@ read(istream &in, const Filename &fullpath, const string &magic_number) {
   _scale = scale;
 
   // So far, so good.  Now read the data.
-  int size = _x_size * _y_size;
-  _table.reserve(size);
+  int size = _x_size * _y_size * _num_channels;
+  _table.insert(_table.end(), size, (PN_float32)0.0);
 
-  if (little_endian) {
-    for (int i = 0; i < size; ++i) {
-      LPoint3 point = LPoint3::zero();
-      for (int ci = 0; ci < _num_channels; ++ci) {
-        PN_float32 data;
-        in.read((char *)&data, sizeof(data));
-        LittleEndian value(&data, sizeof(data));
-        PN_float32 result;
-        value.store_value(&result, sizeof(result));
-        if (!cnan(result)) {
-          point[ci] = result;
-        }
-      }
-      _table.push_back(point);
-    }
-  } else {
-    for (int i = 0; i < size; ++i) {
-      LPoint3 point = LPoint3::zero();
-      for (int ci = 0; ci < _num_channels; ++ci) {
-        PN_float32 data;
-        in.read((char *)&data, sizeof(data));
-        BigEndian value(&data, sizeof(data));
-        PN_float32 result;
-        value.store_value(&result, sizeof(result));
-        if (!cnan(result)) {
-          point[ci] = result;
-        }
-      }
-      _table.push_back(point);
-    }
-  }
-
+  in.read((char *)&_table[0], sizeof(PN_float32) * size);
   if (in.fail() && !in.eof()) {
     return false;
   }
 
-  nassertr(sizeof(PN_float32) == 4, false);
+  // Now we may have to endian-reverse the data.
+#ifdef WORDS_BIGENDIAN
+  bool endian_reversed = little_endian;
+#else
+  bool endian_reversed = !little_endian;
+#endif
+
+  if (endian_reversed) {
+    for (int ti = 0; ti < size; ++ti) {
+      ReversedNumericData nd(&_table[ti], sizeof(PN_float32));
+      nd.store_value(&_table[ti], sizeof(PN_float32));
+    }
+  }
+
   return true;
 }
 
@@ -276,7 +275,7 @@ read(istream &in, const Filename &fullpath, const string &magic_number) {
 //
 //               This can also handle writing a standard image file
 //               supported by PNMImage, if the filename extension is
-//               some image type's extension fother than "pfm"; it
+//               some image type's extension other than "pfm"; it
 //               will be quietly converted to the appropriate integer
 //               type.
 ////////////////////////////////////////////////////////////////////
@@ -329,14 +328,25 @@ bool PfmFile::
 write(ostream &out, const Filename &fullpath) {
   nassertr(is_valid(), false);
 
-  if (_num_channels == 1) {
+  switch (_num_channels) {
+  case 1:
     out << "Pf\n";
-  } else {
+    break;
+
+  case 3:
     out << "PF\n";
+    break;
+
+  case 4:
+    out << "pf4c\n";
+    break;
+
+  default:
+    nassertr(false, false);
   }
   out << _x_size << " " << _y_size << "\n";
 
-  PN_stdfloat scale = cabs(_scale);
+  PN_float32 scale = cabs(_scale);
   if (scale == 0.0f) {
     scale = 1.0f;
   }
@@ -347,14 +357,8 @@ write(ostream &out, const Filename &fullpath) {
 #endif
   out << scale << "\n";
 
-  int size = _x_size * _y_size;
-  for (int i = 0; i < size; ++i) {
-    const LPoint3 &point = _table[i];
-    for (int ci = 0; ci < _num_channels; ++ci) {
-      PN_float32 data = point[ci];
-      out.write((const char *)&data, sizeof(data));
-    }
-  }
+  int size = _x_size * _y_size * _num_channels;
+  out.write((const char *)&_table[0], sizeof(PN_float32) * size);
 
   if (out.fail()) {
     return false;
@@ -378,27 +382,67 @@ load(const PNMImage &pnmimage) {
 
   // Get the number of channels, ignoring alpha.
   int num_channels;
-  if (pnmimage.get_num_channels() >= 3) {
+  switch (pnmimage.get_num_channels()) {
+  case 4:
+    num_channels = 4;
+    break;
+
+  case 3:
     num_channels = 3;
-  } else {
+    break;
+
+  case 2:
+  case 1:
     num_channels = 1;
+    break;
+
+  default:
+    num_channels = 3;
   }
 
   clear(pnmimage.get_x_size(), pnmimage.get_y_size(), num_channels);
-  if (num_channels == 1) {
-    for (int yi = 0; yi < pnmimage.get_y_size(); ++yi) {
-      for (int xi = 0; xi < pnmimage.get_x_size(); ++xi) {
-        double gray = pnmimage.get_gray(xi, yi);
-        set_point(xi, yi, LVecBase3(gray, gray, gray));
+  switch (num_channels) {
+  case 1:
+    {
+      for (int yi = 0; yi < pnmimage.get_y_size(); ++yi) {
+        for (int xi = 0; xi < pnmimage.get_x_size(); ++xi) {
+          _table[yi * _x_size + xi] = pnmimage.get_gray(xi, yi);
+        }
       }
     }
-  } else {
-    for (int yi = 0; yi < pnmimage.get_y_size(); ++yi) {
-      for (int xi = 0; xi < pnmimage.get_x_size(); ++xi) {
-        LRGBColord xel = pnmimage.get_xel(xi, yi);
-        set_point(xi, yi, LVecBase3(xel[0], xel[1], xel[2]));
+    break;
+
+  case 3:
+    {
+      for (int yi = 0; yi < pnmimage.get_y_size(); ++yi) {
+        for (int xi = 0; xi < pnmimage.get_x_size(); ++xi) {
+          PN_float32 *point = &_table[(yi * _x_size + xi) * _num_channels];
+          LRGBColord xel = pnmimage.get_xel(xi, yi);
+          point[0] = xel[0];
+          point[1] = xel[1];
+          point[2] = xel[2];
+        }
       }
     }
+    break;
+
+  case 4:
+    {
+      for (int yi = 0; yi < pnmimage.get_y_size(); ++yi) {
+        for (int xi = 0; xi < pnmimage.get_x_size(); ++xi) {
+          PN_float32 *point = &_table[(yi * _x_size + xi) * _num_channels];
+          LRGBColord xel = pnmimage.get_xel(xi, yi);
+          point[0] = xel[0];
+          point[1] = xel[1];
+          point[2] = xel[2];
+          point[3] = pnmimage.get_alpha(xi, yi);
+        }
+      }
+    }
+    break;
+
+  default:
+    nassertr(false, false);
   }
   return true;
 }
@@ -419,20 +463,42 @@ store(PNMImage &pnmimage) const {
 
   int num_channels = get_num_channels();
   pnmimage.clear(get_x_size(), get_y_size(), num_channels, PGM_MAXMAXVAL);
-  if (num_channels == 1) {
-    for (int yi = 0; yi < get_y_size(); ++yi) {
-      for (int xi = 0; xi < get_x_size(); ++xi) {
-        LPoint3 point = get_point(xi, yi);
-        pnmimage.set_gray(xi, yi, point[0]);
+  switch (num_channels) {
+  case 1:
+    {
+      for (int yi = 0; yi < get_y_size(); ++yi) {
+        for (int xi = 0; xi < get_x_size(); ++xi) {
+          pnmimage.set_gray(xi, yi, _table[yi * _x_size + xi]);
+        }
       }
     }
-  } else {
-    for (int yi = 0; yi < get_y_size(); ++yi) {
-      for (int xi = 0; xi < get_x_size(); ++xi) {
-        LPoint3 point = get_point(xi, yi);
-        pnmimage.set_xel(xi, yi, point[0], point[1], point[2]);
+    break;
+
+  case 3:
+    {
+      for (int yi = 0; yi < get_y_size(); ++yi) {
+        for (int xi = 0; xi < get_x_size(); ++xi) {
+          const LPoint3f &point = get_point(xi, yi);
+          pnmimage.set_xel(xi, yi, point[0], point[1], point[2]);
+        }
       }
     }
+    break;
+
+  case 4:
+    {
+      for (int yi = 0; yi < get_y_size(); ++yi) {
+        for (int xi = 0; xi < get_x_size(); ++xi) {
+          const LPoint4f &point = get_point4(xi, yi);
+          pnmimage.set_xel(xi, yi, point[0], point[1], point[2]);
+          pnmimage.set_alpha(xi, yi, point[3]);
+        }
+      }
+    }
+    break;
+
+  default:
+    nassertr(false, false);
   }
   return true;
 }
@@ -448,8 +514,8 @@ store(PNMImage &pnmimage) const {
 //               value cannot be determined.
 ////////////////////////////////////////////////////////////////////
 bool PfmFile::
-calc_average_point(LPoint3 &result, PN_stdfloat x, PN_stdfloat y, PN_stdfloat radius) const {
-  result = LPoint3::zero();
+calc_average_point(LPoint3f &result, PN_float32 x, PN_float32 y, PN_float32 radius) const {
+  result = LPoint3f::zero();
 
   int min_x = int(ceil(x - radius));
   int min_y = int(ceil(y - radius));
@@ -481,14 +547,15 @@ calc_average_point(LPoint3 &result, PN_stdfloat x, PN_stdfloat y, PN_stdfloat ra
   int xi, yi;
   for (yi = min_y; yi <= max_y; ++yi) {
     for (xi = min_x; xi <= max_x; ++xi) {
-      const LPoint3 &p = _table[yi * _x_size + xi];
-      if (_has_no_data_value && p == _no_data_value) {
+      if (!has_point(xi, yi)) {
         continue;
       }
 
+      const LPoint3f &p = get_point(xi, yi);
       int gi = (yi - min_y) * y_size + (xi - min_x);
       nassertr(gi >= 0 && gi < size, false);
-      mini_grid[gi]._ti = yi * _x_size + xi;
+      mini_grid[gi]._sxi = xi;
+      mini_grid[gi]._syi = yi;
       mini_grid[gi]._dist = 0;
       got_any = true;
     }
@@ -503,11 +570,12 @@ calc_average_point(LPoint3 &result, PN_stdfloat x, PN_stdfloat y, PN_stdfloat ra
     for (xi = 0; xi < x_size; ++xi) {
       int gi = yi * x_size + xi;
       if (mini_grid[gi]._dist == 0) {
-        int ti = mini_grid[gi]._ti;
-        fill_mini_grid(&mini_grid[0], x_size, y_size, xi + 1, yi, 1, ti);
-        fill_mini_grid(&mini_grid[0], x_size, y_size, xi - 1, yi, 1, ti);
-        fill_mini_grid(&mini_grid[0], x_size, y_size, xi, yi + 1, 1, ti);
-        fill_mini_grid(&mini_grid[0], x_size, y_size, xi, yi - 1, 1, ti);
+        int sxi = mini_grid[gi]._sxi;
+        int syi = mini_grid[gi]._syi;
+        fill_mini_grid(&mini_grid[0], x_size, y_size, xi + 1, yi, 1, sxi, syi);
+        fill_mini_grid(&mini_grid[0], x_size, y_size, xi - 1, yi, 1, sxi, syi);
+        fill_mini_grid(&mini_grid[0], x_size, y_size, xi, yi + 1, 1, sxi, syi);
+        fill_mini_grid(&mini_grid[0], x_size, y_size, xi, yi - 1, 1, sxi, syi);
       }
     }
   }
@@ -515,12 +583,13 @@ calc_average_point(LPoint3 &result, PN_stdfloat x, PN_stdfloat y, PN_stdfloat ra
   // Now the mini-grid is completely filled, so we can compute the
   // average.
   for (int gi = 0; gi < size; ++gi) {
-    int ti = mini_grid[gi]._ti;
-    nassertr(ti >= 0 && ti < (int)_table.size(), false);
-    result += _table[ti];
+    int sxi = mini_grid[gi]._sxi;
+    int syi = mini_grid[gi]._syi;
+    const LPoint3f &p = get_point(sxi, syi);
+    result += p;
   }
 
-  result /= PN_stdfloat(size);
+  result /= PN_float32(size);
   return true;
 }
 
@@ -534,33 +603,34 @@ calc_average_point(LPoint3 &result, PN_stdfloat x, PN_stdfloat y, PN_stdfloat ra
 //               mesh contains no points.
 ////////////////////////////////////////////////////////////////////
 bool PfmFile::
-calc_min_max(LVecBase3 &min_depth, LVecBase3 &max_depth) const {
+calc_min_max(LVecBase3f &min_depth, LVecBase3f &max_depth) const {
   bool any_points = false;
 
-  min_depth = LVecBase3::zero();
-  max_depth = LVecBase3::zero();
+  min_depth = LVecBase3f::zero();
+  max_depth = LVecBase3f::zero();
 
-  Table::const_iterator ti;
-  for (ti = _table.begin(); ti != _table.end(); ++ti) {
-    const LPoint3 &p = (*ti);
-    if (_has_no_data_value && p == _no_data_value) {
-      continue;
-    }
-    
-    if (!any_points) {
-      min_depth = p;
-      max_depth = p;
-      any_points = true;
-    } else {
-      min_depth[0] = min(min_depth[0], p[0]);
-      min_depth[1] = min(min_depth[1], p[1]);
-      min_depth[2] = min(min_depth[2], p[2]);
-      max_depth[0] = max(max_depth[0], p[0]);
-      max_depth[1] = max(max_depth[1], p[1]);
-      max_depth[2] = max(max_depth[2], p[2]);
+  for (int yi = 0; yi < _y_size; ++yi) {
+    for (int xi = 0; xi < _x_size; ++xi) {
+      if (!has_point(xi, yi)) {
+        continue;
+      }
+      
+      const LPoint3f &p = get_point(xi, yi);
+      if (!any_points) {
+        min_depth = p;
+        max_depth = p;
+        any_points = true;
+      } else {
+        min_depth[0] = min(min_depth[0], p[0]);
+        min_depth[1] = min(min_depth[1], p[1]);
+        min_depth[2] = min(min_depth[2], p[2]);
+        max_depth[0] = max(max_depth[0], p[0]);
+        max_depth[1] = max(max_depth[1], p[1]);
+        max_depth[2] = max(max_depth[2], p[2]);
+      }
     }
   }
-
+    
   return any_points;
 }
 
@@ -623,7 +693,7 @@ is_row_empty(int y, int x_begin, int x_end) const {
     return false;
   }
   for (int x = x_begin; x < x_end; ++x) {
-    if (_table[y * _x_size + x] != _no_data_value) {
+    if (has_point(x, y)) {
       return false;
     }
   }
@@ -647,12 +717,37 @@ is_column_empty(int x, int y_begin, int y_end) const {
     return false;
   }
   for (int y = y_begin; y < y_end; ++y) {
-    if (_table[y * _x_size + x] != _no_data_value) {
+    if (has_point(x, y)) {
       return false;
     }
   }
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::set_no_data_value
+//       Access: Published
+//  Description: Sets the special value that means "no data" when it
+//               appears in the pfm file.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+set_no_data_value(const LPoint4f &no_data_value) {
+  _has_no_data_value = true;
+  _no_data_value = no_data_value;
+  switch (_num_channels) {
+  case 1:
+    _has_point = has_point_1;
+    break;
+  case 3:
+    _has_point = has_point_3;
+    break;
+  case 4:
+    _has_point = has_point_4;
+    break;
+  default:
+    nassertv(false);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -675,41 +770,44 @@ resize(int new_x_size, int new_y_size) {
   }
 
   Table new_data;
-  new_data.reserve(new_x_size * new_y_size);
+  new_data.reserve(new_x_size * new_y_size * _num_channels);
 
-  PN_stdfloat from_x0, from_x1, from_y0, from_y1;
+  PN_float32 from_x0, from_x1, from_y0, from_y1;
 
-  PN_stdfloat x_scale = 1.0;
-  PN_stdfloat y_scale = 1.0;
+  PN_float32 x_scale = 1.0;
+  PN_float32 y_scale = 1.0;
 
   if (new_x_size > 1) {
-    x_scale = (PN_stdfloat)(_x_size - 1) / (PN_stdfloat)(new_x_size - 1);
+    x_scale = (PN_float32)(_x_size - 1) / (PN_float32)(new_x_size - 1);
   }
   if (new_y_size > 1) {
-    y_scale = (PN_stdfloat)(_y_size - 1) / (PN_stdfloat)(new_y_size - 1);
+    y_scale = (PN_float32)(_y_size - 1) / (PN_float32)(new_y_size - 1);
   }
 
   from_y0 = 0.0;
   for (int to_y = 0; to_y < new_y_size; ++to_y) {
     from_y1 = (to_y + 0.5) * y_scale;
-    from_y1 = min(from_y1, (PN_stdfloat) _y_size);
+    from_y1 = min(from_y1, (PN_float32) _y_size);
 
     from_x0 = 0.0;
     for (int to_x = 0; to_x < new_x_size; ++to_x) {
       from_x1 = (to_x + 0.5) * x_scale;
-      from_x1 = min(from_x1, (PN_stdfloat) _x_size);
+      from_x1 = min(from_x1, (PN_float32) _x_size);
 
       // Now the box from (from_x0, from_y0) - (from_x1, from_y1)
       // but not including (from_x1, from_y1) maps to the pixel (to_x, to_y).
-      LPoint3 result;
+      LPoint4f result;
       box_filter_region(result, from_x0, from_y0, from_x1, from_y1);
-      new_data.push_back(result);
+      for (int ci = 0; ci < _num_channels; ++ci) {
+        new_data.push_back(result[ci]);
+      }
 
       from_x0 = from_x1;
     }
     from_y0 = from_y1;
   }
 
+  nassertv(new_data.size() == new_x_size * new_y_size * _num_channels);
   _table.swap(new_data);
   _x_size = new_x_size;
   _y_size = new_y_size;
@@ -726,11 +824,12 @@ reverse_rows() {
 
   Table reversed;
   reversed.reserve(_table.size());
+  int row_size = _x_size * _num_channels;
   for (int yi = 0; yi < _y_size; ++yi) {
     int source_yi = _y_size - 1 - yi;
-    int start = source_yi * _x_size;
+    int start = source_yi * row_size;
     reversed.insert(reversed.end(), 
-                    _table.begin() + start, _table.begin() + start + _x_size);
+                    _table.begin() + start, _table.begin() + start + row_size);
   }
 
   nassertv(reversed.size() == _table.size());
@@ -761,8 +860,10 @@ flip(bool flip_x, bool flip_y, bool transpose) {
       int source_xi = flip_x ? xi : _x_size - 1 - xi;
       for (int yi = 0; yi < _y_size; ++yi) {
         int source_yi = flip_y ? yi : _y_size - 1 - yi;
-        const LPoint3 &p = _table[source_yi * _x_size + source_xi];
-        flipped.push_back(p);
+        const PN_float32 *p = &_table[(source_yi * _x_size + source_xi) * _num_channels];
+        for (int ci = 0; ci < _num_channels; ++ci) {
+          flipped.push_back(p[ci]);
+        }
       }
     }
 
@@ -776,8 +877,10 @@ flip(bool flip_x, bool flip_y, bool transpose) {
       int source_yi = flip_y ? yi : _y_size - 1 - yi;
       for (int xi = 0; xi < _x_size; ++xi) {
         int source_xi = flip_x ? xi : _x_size - 1 - xi;
-        const LPoint3 &p = _table[source_yi * _x_size + source_xi];
-        flipped.push_back(p);
+        const PN_float32 *p = &_table[(source_yi * _x_size + source_xi) * _num_channels];
+        for (int ci = 0; ci < _num_channels; ++ci) {
+          flipped.push_back(p[ci]);
+        }
       }
     }
   }
@@ -796,12 +899,14 @@ void PfmFile::
 xform(const LMatrix4 &transform) {
   nassertv(is_valid());
 
-  Table::iterator ti;
-  for (ti = _table.begin(); ti != _table.end(); ++ti) {
-    if (_has_no_data_value && (*ti) == _no_data_value) {
-      continue;
+  for (int yi = 0; yi < _y_size; ++yi) {
+    for (int xi = 0; xi < _x_size; ++xi) {
+      if (!has_point(xi, yi)) {
+        continue;
+      }
+      LPoint3f &p = modify_point(xi, yi);
+      transform.xform_point_general_in_place(p);
     }
-    transform.xform_point_general_in_place(*ti);
   }
 }
 
@@ -825,16 +930,17 @@ project(const Lens *lens) {
                         0.0, 0.0, 1.0, 0.0, 
                         0.5, 0.5, 0.0, 1.0);
   
-  Table::iterator ti;
-  for (ti = _table.begin(); ti != _table.end(); ++ti) {
-    if (_has_no_data_value && (*ti) == _no_data_value) {
-      continue;
-    }
+  for (int yi = 0; yi < _y_size; ++yi) {
+    for (int xi = 0; xi < _x_size; ++xi) {
+      if (!has_point(xi, yi)) {
+        continue;
+      }
+      LPoint3f &p = modify_point(xi, yi);
 
-    LPoint3 &p = (*ti);
-    LPoint3 film;
-    lens->project(p, film);
-    p = to_uv.xform_point(film);
+      LPoint3f film;
+      lens->project(p, film);
+      p = to_uv.xform_point(film);
+    }
   }
 }
 
@@ -856,9 +962,11 @@ merge(const PfmFile &other) {
     return;
   }
 
-  for (size_t i = 0; i < _table.size(); ++i) {
-    if (_table[i] == _no_data_value) {
-      _table[i] = other._table[i];
+  for (int yi = 0; yi < _y_size; ++yi) {
+    for (int xi = 0; xi < _x_size; ++xi) {
+      if (!has_point(xi, yi)) {
+        set_point(xi, yi, other.get_point(xi, yi));
+      }
     }
   }
 }
@@ -878,15 +986,16 @@ apply_crop(int x_begin, int x_end, int y_begin, int y_end) {
   int new_x_size = x_end - x_begin;
   int new_y_size = y_end - y_begin;
   Table new_table;
-  int new_size = new_x_size * new_y_size;
-  new_table.insert(new_table.end(), new_size, LPoint3::zero());
+  int new_size = new_x_size * new_y_size * _num_channels;
+  new_table.insert(new_table.end(), new_size, (PN_float32)0.0);
 
   for (int yi = 0; yi < new_y_size; ++yi) {
-    memcpy(&new_table[yi * new_x_size],
-           &_table[(yi + y_begin) * _x_size + x_begin],
-           new_x_size * sizeof(LPoint3));
+    memcpy(&new_table[(yi * new_x_size) * _num_channels],
+           &_table[((yi + y_begin) * _x_size + x_begin) * _num_channels],
+           new_x_size * sizeof(PN_float32) * _num_channels);
   }
 
+  nassertv(new_table.size() == new_x_size * new_y_size * _num_channels);
   _table.swap(new_table);
   _x_size = new_x_size;
   _y_size = new_y_size;
@@ -899,7 +1008,7 @@ apply_crop(int x_begin, int x_end, int y_begin, int y_end) {
 //               backward compatibility only.
 ////////////////////////////////////////////////////////////////////
 PT(BoundingHexahedron) PfmFile::
-compute_planar_bounds(PN_stdfloat point_dist, PN_stdfloat sample_radius) const {
+compute_planar_bounds(PN_float32 point_dist, PN_float32 sample_radius) const {
   return compute_planar_bounds(LPoint2(0.5, 0.5), point_dist, sample_radius, false);
 }
 
@@ -924,14 +1033,14 @@ compute_planar_bounds(PN_stdfloat point_dist, PN_stdfloat sample_radius) const {
 //               i.e. in the range 0..1.
 ////////////////////////////////////////////////////////////////////
 PT(BoundingHexahedron) PfmFile::
-compute_planar_bounds(const LPoint2 &center, PN_stdfloat point_dist, PN_stdfloat sample_radius, bool points_only) const {
-  LPoint3 p0, p1, p2, p3;
+compute_planar_bounds(const LPoint2 &center, PN_float32 point_dist, PN_float32 sample_radius, bool points_only) const {
+  LPoint3f p0, p1, p2, p3;
   compute_sample_point(p0, center[0] + point_dist, center[1] - point_dist, sample_radius);
   compute_sample_point(p1, center[0] + point_dist, center[1] + point_dist, sample_radius);
   compute_sample_point(p2, center[0] - point_dist, center[1] + point_dist, sample_radius);
   compute_sample_point(p3, center[0] - point_dist, center[1] - point_dist, sample_radius);
 
-  LPoint3 normal;
+  LPoint3f normal;
 
   normal[0] = p0[1] * p1[2] - p0[2] * p1[1];
   normal[1] = p0[2] * p1[0] - p0[0] * p1[2];
@@ -952,7 +1061,7 @@ compute_planar_bounds(const LPoint2 &center, PN_stdfloat point_dist, PN_stdfloat
   normal.normalize();
 
   LVector3 up = (p1 - p0) + (p2 - p3);
-  LPoint3 pcenter = ((p0 + p1 + p2 + p3) * 0.25);
+  LPoint3f pcenter = ((p0 + p1 + p2 + p3) * 0.25);
 
   // Compute the transform necessary to rotate all of the points into
   // the Y = 0 plane.
@@ -962,22 +1071,22 @@ compute_planar_bounds(const LPoint2 &center, PN_stdfloat point_dist, PN_stdfloat
   LMatrix4 rinv;
   rinv.invert_from(rotate);
 
-  LPoint3 trans = pcenter * rinv;
+  LPoint3f trans = pcenter * rinv;
   rinv.set_row(3, -trans);
   rotate.invert_from(rinv);
 
   // Now determine the minmax.
-  PN_stdfloat min_x, min_y, min_z, max_x, max_y, max_z;
+  PN_float32 min_x, min_y, min_z, max_x, max_y, max_z;
   bool got_point = false;
   if (points_only) {
-    LPoint3 points[4] = {
+    LPoint3f points[4] = {
       p0 * rinv,
       p1 * rinv,
       p2 * rinv,
       p3 * rinv,
     };
     for (int i = 0; i < 4; ++i) {
-      const LPoint3 &point = points[i];
+      const LPoint3f &point = points[i];
       if (!got_point) {
         min_x = point[0];
         min_y = point[1];
@@ -997,27 +1106,29 @@ compute_planar_bounds(const LPoint2 &center, PN_stdfloat point_dist, PN_stdfloat
     }
 
   } else {
-    Table::const_iterator ti;
-    for (ti = _table.begin(); ti != _table.end(); ++ti) {
-      if (_has_no_data_value && (*ti) == _no_data_value) {
-        continue;
-      }
-      LPoint3 point = (*ti) * rinv;
-      if (!got_point) {
-        min_x = point[0];
-        min_y = point[1];
-        min_z = point[2];
-        max_x = point[0];
-        max_y = point[1];
-        max_z = point[2];
-        got_point = true;
-      } else {
-        min_x = min(min_x, point[0]);
-        min_y = min(min_y, point[1]);
-        min_z = min(min_z, point[2]);
-        max_x = max(max_x, point[0]);
-        max_y = max(max_y, point[1]);
-        max_z = max(max_z, point[2]);
+    for (int yi = 0; yi < _y_size; ++yi) {
+      for (int xi = 0; xi < _x_size; ++xi) {
+        if (!has_point(xi, yi)) {
+          continue;
+        }
+
+        LPoint3f point = get_point(xi, yi) * rinv;
+        if (!got_point) {
+          min_x = point[0];
+          min_y = point[1];
+          min_z = point[2];
+          max_x = point[0];
+          max_y = point[1];
+          max_z = point[2];
+          got_point = true;
+        } else {
+          min_x = min(min_x, point[0]);
+          min_y = min(min_y, point[1]);
+          min_z = min(min_z, point[2]);
+          max_x = max(max_x, point[0]);
+          max_y = max(max_y, point[1]);
+          max_z = max(max_z, point[2]);
+        }
       }
     }
   }
@@ -1030,34 +1141,34 @@ compute_planar_bounds(const LPoint2 &center, PN_stdfloat point_dist, PN_stdfloat
   switch (cs) {
   case CS_yup_right:
     bounds = new BoundingHexahedron
-      (LPoint3(min_x, min_y, min_z), LPoint3(max_x, min_y, min_z),
-       LPoint3(min_x, max_y, min_z), LPoint3(max_x, max_y, min_z),
-       LPoint3(min_x, min_y, max_z), LPoint3(max_x, min_y, max_z),
-       LPoint3(min_x, max_y, max_z), LPoint3(max_x, max_y, max_z));
+      (LPoint3f(min_x, min_y, min_z), LPoint3f(max_x, min_y, min_z),
+       LPoint3f(min_x, max_y, min_z), LPoint3f(max_x, max_y, min_z),
+       LPoint3f(min_x, min_y, max_z), LPoint3f(max_x, min_y, max_z),
+       LPoint3f(min_x, max_y, max_z), LPoint3f(max_x, max_y, max_z));
     break;
 
   case CS_zup_right:
     bounds = new BoundingHexahedron
-      (LPoint3(min_x, min_y, min_z), LPoint3(max_x, min_y, min_z),
-       LPoint3(min_x, min_y, max_z), LPoint3(max_x, min_y, max_z),
-       LPoint3(min_x, max_y, min_z), LPoint3(max_x, max_y, min_z),
-       LPoint3(min_x, max_y, max_z), LPoint3(max_x, max_y, max_z));
+      (LPoint3f(min_x, min_y, min_z), LPoint3f(max_x, min_y, min_z),
+       LPoint3f(min_x, min_y, max_z), LPoint3f(max_x, min_y, max_z),
+       LPoint3f(min_x, max_y, min_z), LPoint3f(max_x, max_y, min_z),
+       LPoint3f(min_x, max_y, max_z), LPoint3f(max_x, max_y, max_z));
     break;
 
   case CS_yup_left:
     bounds = new BoundingHexahedron
-      (LPoint3(max_x, min_y, max_z), LPoint3(min_x, min_y, max_z),
-       LPoint3(max_x, max_y, max_z), LPoint3(min_x, max_y, max_z),
-       LPoint3(max_x, min_y, min_z), LPoint3(min_x, min_y, min_z),
-       LPoint3(max_x, max_y, min_z), LPoint3(min_x, max_y, min_z));
+      (LPoint3f(max_x, min_y, max_z), LPoint3f(min_x, min_y, max_z),
+       LPoint3f(max_x, max_y, max_z), LPoint3f(min_x, max_y, max_z),
+       LPoint3f(max_x, min_y, min_z), LPoint3f(min_x, min_y, min_z),
+       LPoint3f(max_x, max_y, min_z), LPoint3f(min_x, max_y, min_z));
     break;
 
   case CS_zup_left:
     bounds = new BoundingHexahedron
-      (LPoint3(max_x, max_y, min_z), LPoint3(min_x, max_y, min_z),
-       LPoint3(max_x, max_y, max_z), LPoint3(min_x, max_y, max_z),
-       LPoint3(max_x, min_y, min_z), LPoint3(min_x, min_y, min_z),
-       LPoint3(max_x, min_y, max_z), LPoint3(min_x, min_y, max_z));
+      (LPoint3f(max_x, max_y, min_z), LPoint3f(min_x, max_y, min_z),
+       LPoint3f(max_x, max_y, max_z), LPoint3f(min_x, max_y, max_z),
+       LPoint3f(max_x, min_y, min_z), LPoint3f(min_x, min_y, min_z),
+       LPoint3f(max_x, min_y, max_z), LPoint3f(min_x, min_y, max_z));
     break;
   }
 
@@ -1079,13 +1190,15 @@ compute_planar_bounds(const LPoint2 &center, PN_stdfloat point_dist, PN_stdfloat
 //               range 0..1.
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
-compute_sample_point(LPoint3 &result,
-                     PN_stdfloat x, PN_stdfloat y, PN_stdfloat sample_radius) const {
+compute_sample_point(LPoint3f &result,
+                     PN_float32 x, PN_float32 y, PN_float32 sample_radius) const {
   x *= _x_size;
   y *= _y_size;
-  PN_stdfloat xr = sample_radius * _x_size;
-  PN_stdfloat yr = sample_radius * _y_size;
-  box_filter_region(result, x - xr, y - yr, x + xr, y + yr);
+  PN_float32 xr = sample_radius * _x_size;
+  PN_float32 yr = sample_radius * _y_size;
+  LPoint4f result4;
+  box_filter_region(result4, x - xr, y - yr, x + xr, y + yr);
+  result.set(result4[0], result4[1], result4[2]);
 }
 
 
@@ -1127,31 +1240,31 @@ generate_vis_points() const {
 
   LPoint2 uv_scale(1.0, 1.0);
   if (_x_size > 1) {
-    uv_scale[0] = 1.0f / PN_stdfloat(_x_size - 1);
+    uv_scale[0] = 1.0f / PN_float32(_x_size - 1);
   }
   if (_y_size > 1) {
-    uv_scale[1] = 1.0f / PN_stdfloat(_y_size - 1);
+    uv_scale[1] = 1.0f / PN_float32(_y_size - 1);
   }
 
   int num_points = 0;
   for (int yi = 0; yi < _y_size; ++yi) {
     for (int xi = 0; xi < _x_size; ++xi) {
-      const LPoint3 &point = get_point(xi, yi);
-      if (_has_no_data_value && point == _no_data_value) {
+      if (!has_point(xi, yi)) {
         continue;
       }
 
-      LPoint2 uv(PN_stdfloat(xi) * uv_scale[0],
-                 PN_stdfloat(yi) * uv_scale[1]);
+      const LPoint3f &point = get_point(xi, yi);
+      LPoint2 uv(PN_float32(xi) * uv_scale[0],
+                 PN_float32(yi) * uv_scale[1]);
       if (_vis_inverse) {
-        vertex.add_data2(uv);
-        texcoord.add_data3(point);
+        vertex.add_data2f(uv);
+        texcoord.add_data3f(point);
       } else if (_vis_2d) {
-        vertex.add_data2(point[0], point[1]);
-        texcoord.add_data2(uv);
+        vertex.add_data2f(point[0], point[1]);
+        texcoord.add_data2f(uv);
       } else {
-        vertex.add_data3(point);
-        texcoord.add_data2(uv);
+        vertex.add_data3f(point);
+        texcoord.add_data2f(uv);
       }
       ++num_points;
     }
@@ -1324,22 +1437,22 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
 
       for (int yi = y_begin; yi < y_end; ++yi) {
         for (int xi = x_begin; xi < x_end; ++xi) {
-          const LPoint3 &point = get_point(xi, yi);
-          LPoint2 uv(PN_stdfloat(xi) / PN_stdfloat(_x_size - 1),
-                     PN_stdfloat(yi) / PN_stdfloat(_y_size - 1));
+          const LPoint3f &point = get_point(xi, yi);
+          LPoint2 uv(PN_float32(xi) / PN_float32(_x_size - 1),
+                     PN_float32(yi) / PN_float32(_y_size - 1));
 
           if (_vis_inverse) {
-            vertex.add_data2(uv);
-            texcoord.add_data3(point);
+            vertex.add_data2f(uv);
+            texcoord.add_data3f(point);
           } else if (_vis_2d) {
-            vertex.add_data2(point[0], point[1]);
-            texcoord.add_data2(uv);
+            vertex.add_data2f(point[0], point[1]);
+            texcoord.add_data2f(uv);
           } else {
-            vertex.add_data3(point);
-            texcoord.add_data2(uv);
+            vertex.add_data3f(point);
+            texcoord.add_data2f(uv);
             
             // Calculate the normal based on two neighboring vertices.
-            LPoint3 v[3];
+            LPoint3f v[3];
             v[0] = get_point(xi, yi);
             if (xi + 1 < _x_size) {
               v[1] = get_point(xi + 1, yi);
@@ -1357,8 +1470,8 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
         
             LVector3 n = LVector3::zero();
             for (int i = 0; i < 3; ++i) {
-              const LPoint3 &v0 = v[i];
-              const LPoint3 &v1 = v[(i + 1) % 3];
+              const LPoint3f &v0 = v[i];
+              const LPoint3f &v1 = v[(i + 1) % 3];
               n[0] += v0[1] * v1[2] - v0[2] * v1[1];
               n[1] += v0[2] * v1[0] - v0[0] * v1[2];
               n[2] += v0[0] * v1[1] - v0[1] * v1[0];
@@ -1368,11 +1481,11 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
             if (reverse_normals) {
               n = -n;
             }
-            normal.add_data3(n);
+            normal.add_data3f(n);
           }
 
           if (_flat_texcoord_name != (InternalName *)NULL) {
-            texcoord2.add_data2(uv);
+            texcoord2.add_data2f(uv);
           }
         }
       }
@@ -1386,10 +1499,10 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
         for (int xi = x_begin; xi < x_end - 1; ++xi) {
 
           if (_has_no_data_value) {
-            if (get_point(xi, yi) == _no_data_value ||
-                get_point(xi, yi + 1) == _no_data_value ||
-                get_point(xi + 1, yi + 1) == _no_data_value ||
-                get_point(xi + 1, yi) == _no_data_value) {
+            if (!has_point(xi, yi) ||
+                !has_point(xi, yi + 1) ||
+                !has_point(xi + 1, yi + 1) ||
+                !has_point(xi + 1, yi)) {
               continue;
             }
           }
@@ -1434,10 +1547,10 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
 //               included point.
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
-box_filter_region(LPoint3 &result,
-                  PN_stdfloat x0, PN_stdfloat y0, PN_stdfloat x1, PN_stdfloat y1) const {
-  result = LPoint3::zero();
-  PN_stdfloat coverage = 0.0;
+box_filter_region(LPoint4f &result,
+                  PN_float32 x0, PN_float32 y0, PN_float32 x1, PN_float32 y1) const {
+  result = LPoint4f::zero();
+  PN_float32 coverage = 0.0;
 
   if (x1 < x0 || y1 < y0) {
     return;
@@ -1446,7 +1559,7 @@ box_filter_region(LPoint3 &result,
 
   int y = (int)y0;
   // Get the first (partial) row
-  box_filter_line(result, coverage, x0, y, x1, (PN_stdfloat)(y+1)-y0);
+  box_filter_line(result, coverage, x0, y, x1, (PN_float32)(y+1)-y0);
 
   int y_last = (int)y1;
   if (y < y_last) {
@@ -1458,7 +1571,7 @@ box_filter_region(LPoint3 &result,
     }
 
     // Get the final (partial) row
-    PN_stdfloat y_contrib = y1 - (PN_stdfloat)y_last;
+    PN_float32 y_contrib = y1 - (PN_float32)y_last;
     if (y_contrib > 0.0001) {
       box_filter_line(result, coverage, x0, y, x1, y_contrib);
     }
@@ -1475,11 +1588,11 @@ box_filter_region(LPoint3 &result,
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
-box_filter_line(LPoint3 &result, PN_stdfloat &coverage,
-                PN_stdfloat x0, int y, PN_stdfloat x1, PN_stdfloat y_contrib) const {
+box_filter_line(LPoint4f &result, PN_float32 &coverage,
+                PN_float32 x0, int y, PN_float32 x1, PN_float32 y_contrib) const {
   int x = (int)x0;
   // Get the first (partial) xel
-  box_filter_point(result, coverage, x, y, (PN_stdfloat)(x+1)-x0, y_contrib);
+  box_filter_point(result, coverage, x, y, (PN_float32)(x+1)-x0, y_contrib);
 
   int x_last = (int)x1;
   if (x < x_last) {
@@ -1491,7 +1604,7 @@ box_filter_line(LPoint3 &result, PN_stdfloat &coverage,
     }
 
     // Get the final (partial) xel
-    PN_stdfloat x_contrib = x1 - (PN_stdfloat)x_last;
+    PN_float32 x_contrib = x1 - (PN_float32)x_last;
     if (x_contrib > 0.0001) {
       box_filter_point(result, coverage, x, y, x_contrib, y_contrib);
     }
@@ -1504,14 +1617,14 @@ box_filter_line(LPoint3 &result, PN_stdfloat &coverage,
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
-box_filter_point(LPoint3 &result, PN_stdfloat &coverage,
-                 int x, int y, PN_stdfloat x_contrib, PN_stdfloat y_contrib) const {
-  const LPoint3 &point = get_point(x, y);
-  if (_has_no_data_value && point == _no_data_value) {
+box_filter_point(LPoint4f &result, PN_float32 &coverage,
+                 int x, int y, PN_float32 x_contrib, PN_float32 y_contrib) const {
+  if (!has_point(x, y)) {
     return;
   }
+  const LPoint4f &point = get_point4(x, y);
 
-  PN_stdfloat contrib = x_contrib * y_contrib;
+  PN_float32 contrib = x_contrib * y_contrib;
   result += point * contrib;
   coverage += contrib;
 }
@@ -1525,7 +1638,7 @@ box_filter_point(LPoint3 &result, PN_stdfloat &coverage,
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
 fill_mini_grid(MiniGridCell *mini_grid, int x_size, int y_size, 
-               int xi, int yi, int dist, int ti) const {
+               int xi, int yi, int dist, int sxi, int syi) const {
   if (xi < 0 || xi >= x_size || yi < 0 || yi >= y_size) {
     // Out of bounds.
     return;
@@ -1535,10 +1648,83 @@ fill_mini_grid(MiniGridCell *mini_grid, int x_size, int y_size,
   if (mini_grid[gi]._dist == -1 || mini_grid[gi]._dist > dist) {
     // Here's an undefined value that we need to populate.
     mini_grid[gi]._dist = dist;
-    mini_grid[gi]._ti = ti;
-    fill_mini_grid(mini_grid, x_size, y_size, xi + 1, yi, dist + 1, ti);
-    fill_mini_grid(mini_grid, x_size, y_size, xi - 1, yi, dist + 1, ti);
-    fill_mini_grid(mini_grid, x_size, y_size, xi, yi + 1, dist + 1, ti);
-    fill_mini_grid(mini_grid, x_size, y_size, xi, yi - 1, dist + 1, ti);
+    mini_grid[gi]._sxi = sxi;
+    mini_grid[gi]._syi = syi;
+    fill_mini_grid(mini_grid, x_size, y_size, xi + 1, yi, dist + 1, sxi, syi);
+    fill_mini_grid(mini_grid, x_size, y_size, xi - 1, yi, dist + 1, sxi, syi);
+    fill_mini_grid(mini_grid, x_size, y_size, xi, yi + 1, dist + 1, sxi, syi);
+    fill_mini_grid(mini_grid, x_size, y_size, xi, yi - 1, dist + 1, sxi, syi);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::has_point_noop
+//       Access: Private, Static
+//  Description: The implementation of has_point() for 
+//               files without a no_data_value.
+////////////////////////////////////////////////////////////////////
+bool PfmFile::
+has_point_noop(const PfmFile *self, int x, int y) {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::has_point_1
+//       Access: Private, Static
+//  Description: The implementation of has_point() for 1-component
+//               files with a no_data_value.
+////////////////////////////////////////////////////////////////////
+bool PfmFile::
+has_point_1(const PfmFile *self, int x, int y) {
+  if ((x >= 0 && x < self->_x_size) && 
+      (y >= 0 && y < self->_y_size)) {
+    return self->_table[(y * self->_x_size + x)] != self->_no_data_value[0];
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::has_point_3
+//       Access: Private, Static
+//  Description: The implementation of has_point() for 3-component
+//               files with a no_data_value.
+////////////////////////////////////////////////////////////////////
+bool PfmFile::
+has_point_3(const PfmFile *self, int x, int y) {
+  if ((x >= 0 && x < self->_x_size) && 
+      (y >= 0 && y < self->_y_size)) {
+    return *(LPoint3f *)&self->_table[(y * self->_x_size + x) * 3] != *(LPoint3f *)&self->_no_data_value;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::has_point_4
+//       Access: Private, Static
+//  Description: The implementation of has_point() for 4-component
+//               files with a no_data_value.
+////////////////////////////////////////////////////////////////////
+bool PfmFile::
+has_point_4(const PfmFile *self, int x, int y) {
+  if ((x >= 0 && x < self->_x_size) && 
+      (y >= 0 && y < self->_y_size)) {
+    return *(LPoint4f *)&self->_table[(y * self->_x_size + x) * 4] != *(LPoint4f *)&self->_no_data_value;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::has_point_chan4
+//       Access: Private, Static
+//  Description: The implementation of has_point() for 4-component
+//               files with set_no_data_chan4() in effect.  This means
+//               that the data is valid iff the fourth channel >= 0.
+////////////////////////////////////////////////////////////////////
+bool PfmFile::
+has_point_chan4(const PfmFile *self, int x, int y) {
+  if ((x >= 0 && x < self->_x_size) && 
+      (y >= 0 && y < self->_y_size)) {
+    return self->_table[(y * self->_x_size + x) * 4 + 3] >= 0.0;
+  }
+  return false;
 }

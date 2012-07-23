@@ -95,8 +95,9 @@ has_magic_number() const {
 bool PNMFileTypePfm::
 matches_magic_number(const string &magic_number) const {
   return (magic_number.size() >= 2) &&
-    magic_number[0] == 'P' &&
-    (magic_number[1] == 'F' || magic_number[1] == 'f');
+    (magic_number.substr(0, 2) == "PF" ||
+     magic_number.substr(0, 2) == "Pf" ||
+     magic_number.substr(0, 2) == "pf");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -164,8 +165,13 @@ read_data(xel *array, xelval *alpha) {
 
   nassertr(_image.get_x_size() == get_x_size() &&
            _image.get_y_size() == get_y_size(), 0);
-  memcpy(array, _image[0], get_x_size() * get_y_size() * sizeof(xel));
-  nassertr(!has_alpha(), 0);
+
+  memcpy(array, _image.get_array(), get_x_size() * get_y_size() * sizeof(xel));
+
+  if (has_alpha()) {
+    memcpy(alpha, _image.get_alpha_array(), get_x_size() * get_y_size() * sizeof(xelval));
+  }
+
   return get_y_size();
 }
 
@@ -213,8 +219,10 @@ write_data(xel *array, xelval *alpha) {
   image.copy_header_from(*this);
   nassertr(image.get_x_size() == get_x_size() && 
            image.get_y_size() == get_y_size(), 0);
-  memcpy(image[0], array, get_x_size() * get_y_size() * sizeof(xel));
-  nassertr(!has_alpha(), 0);
+  memcpy(image.get_array(), array, get_x_size() * get_y_size() * sizeof(xel));
+  if (has_alpha()) {
+    memcpy(image.get_alpha_array(), alpha, get_x_size() * get_y_size() * sizeof(xelval));
+  }
 
   PfmFile pfm;
   if (!pfm.load(image)) {
