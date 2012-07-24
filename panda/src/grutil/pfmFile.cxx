@@ -1004,18 +1004,6 @@ apply_crop(int x_begin, int x_end, int y_begin, int y_end) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::compute_planar_bounds
 //       Access: Published
-//  Description: This version of this method exists for temporary
-//               backward compatibility only.
-////////////////////////////////////////////////////////////////////
-PT(BoundingHexahedron) PfmFile::
-compute_planar_bounds(PN_float32 point_dist, PN_float32 sample_radius) const {
-  return compute_planar_bounds(LPoint2f(0.5, 0.5), point_dist, sample_radius, false);
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::compute_planar_bounds
-//       Access: Published
 //  Description: Computes the minmax bounding volume of the points in
 //               3-D space, assuming the points represent a
 //               mostly-planar surface.

@@ -59,15 +59,18 @@ PUBLISHED:
   INLINE bool has_point(int x, int y) const;
   INLINE const LPoint3f &get_point(int x, int y) const;
   INLINE void set_point(int x, int y, const LVecBase3f &point);
+  INLINE void set_point(int x, int y, const LVecBase3d &point);
   INLINE LPoint3f &modify_point(int x, int y);
   INLINE const LPoint4f &get_point4(int x, int y) const;
   INLINE void set_point4(int x, int y, const LVecBase4f &point);
+  INLINE void set_point4(int x, int y, const LVecBase4d &point);
   INLINE LPoint4f &modify_point4(int x, int y);
 
   BLOCKING bool calc_average_point(LPoint3f &result, PN_float32 x, PN_float32 y, PN_float32 radius) const;
   BLOCKING bool calc_min_max(LVecBase3f &min_points, LVecBase3f &max_points) const;
   BLOCKING bool calc_autocrop(int &x_begin, int &x_end, int &y_begin, int &y_end) const;
-  BLOCKING INLINE bool calc_autocrop(LVecBase4 &range) const;
+  BLOCKING INLINE bool calc_autocrop(LVecBase4f &range) const;
+  BLOCKING INLINE bool calc_autocrop(LVecBase4d &range) const;
  
   bool is_row_empty(int y, int x_begin, int x_end) const;
   bool is_column_empty(int x, int y_begin, int y_end) const;
@@ -75,6 +78,7 @@ PUBLISHED:
   INLINE void set_zero_special(bool zero_special);
   INLINE void set_no_data_chan4(bool chan4);
   void set_no_data_value(const LPoint4f &no_data_value);
+  INLINE void set_no_data_value(const LPoint4d &no_data_value);
   INLINE void clear_no_data_value();
   INLINE bool has_no_data_value() const;
   INLINE const LPoint4f &get_no_data_value() const;
@@ -83,12 +87,13 @@ PUBLISHED:
   BLOCKING void reverse_rows();
   BLOCKING void flip(bool flip_x, bool flip_y, bool transpose);
   BLOCKING void xform(const LMatrix4f &transform);
+  INLINE BLOCKING void xform(const LMatrix4d &transform);
   BLOCKING void project(const Lens *lens);
   BLOCKING void merge(const PfmFile &other);
   BLOCKING void apply_crop(int x_begin, int x_end, int y_begin, int y_end);
 
-  BLOCKING PT(BoundingHexahedron) compute_planar_bounds(PN_float32 point_dist, PN_float32 sample_radius) const;
   BLOCKING PT(BoundingHexahedron) compute_planar_bounds(const LPoint2f &center, PN_float32 point_dist, PN_float32 sample_radius, bool points_only) const;
+  INLINE BLOCKING PT(BoundingHexahedron) compute_planar_bounds(const LPoint2d &center, PN_float32 point_dist, PN_float32 sample_radius, bool points_only) const;
   void compute_sample_point(LPoint3f &result,
                             PN_float32 x, PN_float32 y, PN_float32 sample_radius) const;
 
