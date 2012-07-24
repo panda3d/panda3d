@@ -20,7 +20,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE bool PfmFile::
 is_valid() const {
-  return _num_channels != 0 && (_x_size * _y_size * _num_channels == (int)_table.size());
+  return _num_channels != 0 && (_x_size * _y_size * _num_channels <= (int)_table.size());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -80,6 +80,33 @@ get_num_channels() const {
 INLINE bool PfmFile::
 has_point(int x, int y) const {
   return _has_point(this, x, y);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::get_point1
+//       Access: Published
+//  Description: Returns the 1-component point value at the indicated
+//               point.
+////////////////////////////////////////////////////////////////////
+INLINE PN_float32 PfmFile::
+get_point1(int x, int y) const {
+  nassertr(x >= 0 && x < _x_size, 0.0);
+  nassertr(y >= 0 && y < _y_size, 0.0);
+  return _table[(y * _x_size + x) * _num_channels];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::set_point1
+//       Access: Published
+//  Description: Replaces the 1-component point value at the indicated
+//               point.
+////////////////////////////////////////////////////////////////////
+INLINE void PfmFile::
+set_point1(int x, int y, PN_float32 point) {
+  nassertv(!cnan(point));
+  nassertv(x >= 0 && x < _x_size);
+  nassertv(y >= 0 && y < _y_size);
+  _table[(y * _x_size + x) * _num_channels] = point;
 }
 
 ////////////////////////////////////////////////////////////////////

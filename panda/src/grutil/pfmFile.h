@@ -57,6 +57,8 @@ PUBLISHED:
   INLINE int get_num_channels() const;
 
   INLINE bool has_point(int x, int y) const;
+  INLINE PN_float32 get_point1(int x, int y) const;
+  INLINE void set_point1(int x, int y, PN_float32 point);
   INLINE const LPoint3f &get_point(int x, int y) const;
   INLINE void set_point(int x, int y, const LVecBase3f &point);
   INLINE void set_point(int x, int y, const LVecBase3d &point);
@@ -117,10 +119,22 @@ PUBLISHED:
 private:
   void make_vis_mesh_geom(GeomNode *gnode, bool inverted) const;
 
+  void box_filter_region(PN_float32 &result,
+                         PN_float32 x0, PN_float32 y0, PN_float32 x1, PN_float32 y1) const;
+  void box_filter_region(LPoint3f &result,
+                         PN_float32 x0, PN_float32 y0, PN_float32 x1, PN_float32 y1) const;
   void box_filter_region(LPoint4f &result,
                          PN_float32 x0, PN_float32 y0, PN_float32 x1, PN_float32 y1) const;
+  void box_filter_line(PN_float32 &result, PN_float32 &coverage,
+                       PN_float32 x0, int y, PN_float32 x1, PN_float32 y_contrib) const;
+  void box_filter_line(LPoint3f &result, PN_float32 &coverage,
+                       PN_float32 x0, int y, PN_float32 x1, PN_float32 y_contrib) const;
   void box_filter_line(LPoint4f &result, PN_float32 &coverage,
                        PN_float32 x0, int y, PN_float32 x1, PN_float32 y_contrib) const;
+  void box_filter_point(PN_float32 &result, PN_float32 &coverage,
+                        int x, int y, PN_float32 x_contrib, PN_float32 y_contrib) const;
+  void box_filter_point(LPoint3f &result, PN_float32 &coverage,
+                        int x, int y, PN_float32 x_contrib, PN_float32 y_contrib) const;
   void box_filter_point(LPoint4f &result, PN_float32 &coverage,
                         int x, int y, PN_float32 x_contrib, PN_float32 y_contrib) const;
 

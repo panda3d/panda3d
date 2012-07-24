@@ -117,7 +117,12 @@ clear(int x_size, int y_size, int num_channels) {
 
   _table.clear();
   int size = _x_size * _y_size * _num_channels;
-  _table.insert(_table.end(), size, (PN_float32)0.0);
+
+  // We allocate a little bit bigger to allow safe overflow: you can
+  // call get_point3() or get_point4() on the last point of a 1- or
+  // 3-channel image.
+  _table.insert(_table.end(), size + 4, (PN_float32)0.0);
+
   clear_no_data_value();
 }
 
@@ -243,7 +248,11 @@ read(istream &in, const Filename &fullpath, const string &magic_number) {
 
   // So far, so good.  Now read the data.
   int size = _x_size * _y_size * _num_channels;
-  _table.insert(_table.end(), size, (PN_float32)0.0);
+
+  // We allocate a little bit bigger to allow safe overflow: you can
+  // call get_point3() or get_point4() on the last point of a 1- or
+  // 3-channel image.
+  _table.insert(_table.end(), size + 4, (PN_float32)0.0);
 
   in.read((char *)&_table[0], sizeof(PN_float32) * size);
   if (in.fail() && !in.eof()) {
@@ -784,27 +793,89 @@ resize(int new_x_size, int new_y_size) {
     y_scale = (PN_float32)(_y_size - 1) / (PN_float32)(new_y_size - 1);
   }
 
-  from_y0 = 0.0;
-  for (int to_y = 0; to_y < new_y_size; ++to_y) {
-    from_y1 = (to_y + 0.5) * y_scale;
-    from_y1 = min(from_y1, (PN_float32) _y_size);
-
-    from_x0 = 0.0;
-    for (int to_x = 0; to_x < new_x_size; ++to_x) {
-      from_x1 = (to_x + 0.5) * x_scale;
-      from_x1 = min(from_x1, (PN_float32) _x_size);
-
-      // Now the box from (from_x0, from_y0) - (from_x1, from_y1)
-      // but not including (from_x1, from_y1) maps to the pixel (to_x, to_y).
-      LPoint4f result;
-      box_filter_region(result, from_x0, from_y0, from_x1, from_y1);
-      for (int ci = 0; ci < _num_channels; ++ci) {
-        new_data.push_back(result[ci]);
+  switch (_num_channels) {
+  case 1:
+    {
+      from_y0 = 0.0;
+      for (int to_y = 0; to_y < new_y_size; ++to_y) {
+        from_y1 = (to_y + 0.5) * y_scale;
+        from_y1 = min(from_y1, (PN_float32) _y_size);
+        
+        from_x0 = 0.0;
+        for (int to_x = 0; to_x < new_x_size; ++to_x) {
+          from_x1 = (to_x + 0.5) * x_scale;
+          from_x1 = min(from_x1, (PN_float32) _x_size);
+          
+          // Now the box from (from_x0, from_y0) - (from_x1, from_y1)
+          // but not including (from_x1, from_y1) maps to the pixel (to_x, to_y).
+          PN_float32 result;
+          box_filter_region(result, from_x0, from_y0, from_x1, from_y1);
+          new_data.push_back(result);
+          
+          from_x0 = from_x1;
+        }
+        from_y0 = from_y1;
       }
-
-      from_x0 = from_x1;
     }
-    from_y0 = from_y1;
+    break;
+
+  case 3:
+    {
+      from_y0 = 0.0;
+      for (int to_y = 0; to_y < new_y_size; ++to_y) {
+        from_y1 = (to_y + 0.5) * y_scale;
+        from_y1 = min(from_y1, (PN_float32) _y_size);
+        
+        from_x0 = 0.0;
+        for (int to_x = 0; to_x < new_x_size; ++to_x) {
+          from_x1 = (to_x + 0.5) * x_scale;
+          from_x1 = min(from_x1, (PN_float32) _x_size);
+          
+          // Now the box from (from_x0, from_y0) - (from_x1, from_y1)
+          // but not including (from_x1, from_y1) maps to the pixel (to_x, to_y).
+          LPoint3f result;
+          box_filter_region(result, from_x0, from_y0, from_x1, from_y1);
+          new_data.push_back(result[0]);
+          new_data.push_back(result[1]);
+          new_data.push_back(result[2]);
+          
+          from_x0 = from_x1;
+        }
+        from_y0 = from_y1;
+      }
+    }
+    break;
+
+  case 4:
+    {
+      from_y0 = 0.0;
+      for (int to_y = 0; to_y < new_y_size; ++to_y) {
+        from_y1 = (to_y + 0.5) * y_scale;
+        from_y1 = min(from_y1, (PN_float32) _y_size);
+        
+        from_x0 = 0.0;
+        for (int to_x = 0; to_x < new_x_size; ++to_x) {
+          from_x1 = (to_x + 0.5) * x_scale;
+          from_x1 = min(from_x1, (PN_float32) _x_size);
+          
+          // Now the box from (from_x0, from_y0) - (from_x1, from_y1)
+          // but not including (from_x1, from_y1) maps to the pixel (to_x, to_y).
+          LPoint4f result;
+          box_filter_region(result, from_x0, from_y0, from_x1, from_y1);
+          new_data.push_back(result[0]);
+          new_data.push_back(result[1]);
+          new_data.push_back(result[2]);
+          new_data.push_back(result[3]);
+          
+          from_x0 = from_x1;
+        }
+        from_y0 = from_y1;
+      }
+    }
+    break;
+    
+  default:
+    nassertv(false);
   }
 
   nassertv(new_data.size() == new_x_size * new_y_size * _num_channels);
@@ -832,7 +903,10 @@ reverse_rows() {
                     _table.begin() + start, _table.begin() + start + row_size);
   }
 
-  nassertv(reversed.size() == _table.size());
+  nassertv(reversed.size() <= _table.size());
+  // Also add in the extra buffer at the end.
+  reversed.insert(reversed.end(), _table.size() - reversed.size(), (PN_float32)0.0);
+
   _table.swap(reversed);
 }
 
@@ -987,7 +1061,11 @@ apply_crop(int x_begin, int x_end, int y_begin, int y_end) {
   int new_y_size = y_end - y_begin;
   Table new_table;
   int new_size = new_x_size * new_y_size * _num_channels;
-  new_table.insert(new_table.end(), new_size, (PN_float32)0.0);
+
+  // We allocate a little bit bigger to allow safe overflow: you can
+  // call get_point3() or get_point4() on the last point of a 1- or
+  // 3-channel image.
+  new_table.insert(new_table.end(), new_size + 4, (PN_float32)0.0);
 
   for (int yi = 0; yi < new_y_size; ++yi) {
     memcpy(&new_table[(yi * new_x_size) * _num_channels],
@@ -1184,9 +1262,31 @@ compute_sample_point(LPoint3f &result,
   y *= _y_size;
   PN_float32 xr = sample_radius * _x_size;
   PN_float32 yr = sample_radius * _y_size;
-  LPoint4f result4;
-  box_filter_region(result4, x - xr, y - yr, x + xr, y + yr);
-  result.set(result4[0], result4[1], result4[2]);
+
+  switch (_num_channels) {
+  case 1:
+    {
+      PN_float32 result1;
+      box_filter_region(result1, x - xr, y - yr, x + xr, y + yr);
+      result.set(result1, 0.0, 0.0);
+    }
+    break;
+
+  case 3:
+    box_filter_region(result, x - xr, y - yr, x + xr, y + yr);
+    break;
+
+  case 4:
+    {
+      LPoint4f result4;
+      box_filter_region(result4, x - xr, y - yr, x + xr, y + yr);
+      result.set(result4[0], result4[1], result4[2]);
+    }
+    break;
+
+  default:
+    nassertv(false);
+  }
 }
 
 
@@ -1535,6 +1635,96 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
 //               included point.
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
+box_filter_region(PN_float32 &result,
+                  PN_float32 x0, PN_float32 y0, PN_float32 x1, PN_float32 y1) const {
+  result = 0.0;
+  PN_float32 coverage = 0.0;
+
+  if (x1 < x0 || y1 < y0) {
+    return;
+  }
+  nassertv(y0 >= 0.0 && y1 >= 0.0);
+
+  int y = (int)y0;
+  // Get the first (partial) row
+  box_filter_line(result, coverage, x0, y, x1, (PN_float32)(y+1)-y0);
+
+  int y_last = (int)y1;
+  if (y < y_last) {
+    y++;
+    while (y < y_last) {
+      // Get each consecutive (complete) row
+      box_filter_line(result, coverage, x0, y, x1, 1.0);
+      y++;
+    }
+
+    // Get the final (partial) row
+    PN_float32 y_contrib = y1 - (PN_float32)y_last;
+    if (y_contrib > 0.0001) {
+      box_filter_line(result, coverage, x0, y, x1, y_contrib);
+    }
+  }
+
+  if (coverage != 0.0) {
+    result /= coverage;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::box_filter_region
+//       Access: Private
+//  Description: Averages all the points in the rectangle from x0
+//               .. y0 to x1 .. y1 into result.  The region may be
+//               defined by floating-point boundaries; the result will
+//               be weighted by the degree of coverage of each
+//               included point.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+box_filter_region(LPoint3f &result,
+                  PN_float32 x0, PN_float32 y0, PN_float32 x1, PN_float32 y1) const {
+  result = LPoint3f::zero();
+  PN_float32 coverage = 0.0;
+
+  if (x1 < x0 || y1 < y0) {
+    return;
+  }
+  nassertv(y0 >= 0.0 && y1 >= 0.0);
+
+  int y = (int)y0;
+  // Get the first (partial) row
+  box_filter_line(result, coverage, x0, y, x1, (PN_float32)(y+1)-y0);
+
+  int y_last = (int)y1;
+  if (y < y_last) {
+    y++;
+    while (y < y_last) {
+      // Get each consecutive (complete) row
+      box_filter_line(result, coverage, x0, y, x1, 1.0);
+      y++;
+    }
+
+    // Get the final (partial) row
+    PN_float32 y_contrib = y1 - (PN_float32)y_last;
+    if (y_contrib > 0.0001) {
+      box_filter_line(result, coverage, x0, y, x1, y_contrib);
+    }
+  }
+
+  if (coverage != 0.0) {
+    result /= coverage;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::box_filter_region
+//       Access: Private
+//  Description: Averages all the points in the rectangle from x0
+//               .. y0 to x1 .. y1 into result.  The region may be
+//               defined by floating-point boundaries; the result will
+//               be weighted by the degree of coverage of each
+//               included point.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
 box_filter_region(LPoint4f &result,
                   PN_float32 x0, PN_float32 y0, PN_float32 x1, PN_float32 y1) const {
   result = LPoint4f::zero();
@@ -1576,6 +1766,64 @@ box_filter_region(LPoint4f &result,
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
+box_filter_line(PN_float32 &result, PN_float32 &coverage,
+                PN_float32 x0, int y, PN_float32 x1, PN_float32 y_contrib) const {
+  int x = (int)x0;
+  // Get the first (partial) xel
+  box_filter_point(result, coverage, x, y, (PN_float32)(x+1)-x0, y_contrib);
+
+  int x_last = (int)x1;
+  if (x < x_last) {
+    x++;
+    while (x < x_last) {
+      // Get each consecutive (complete) xel
+      box_filter_point(result, coverage, x, y, 1.0, y_contrib);
+      x++;
+    }
+
+    // Get the final (partial) xel
+    PN_float32 x_contrib = x1 - (PN_float32)x_last;
+    if (x_contrib > 0.0001) {
+      box_filter_point(result, coverage, x, y, x_contrib, y_contrib);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::box_filter_line
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+box_filter_line(LPoint3f &result, PN_float32 &coverage,
+                PN_float32 x0, int y, PN_float32 x1, PN_float32 y_contrib) const {
+  int x = (int)x0;
+  // Get the first (partial) xel
+  box_filter_point(result, coverage, x, y, (PN_float32)(x+1)-x0, y_contrib);
+
+  int x_last = (int)x1;
+  if (x < x_last) {
+    x++;
+    while (x < x_last) {
+      // Get each consecutive (complete) xel
+      box_filter_point(result, coverage, x, y, 1.0, y_contrib);
+      x++;
+    }
+
+    // Get the final (partial) xel
+    PN_float32 x_contrib = x1 - (PN_float32)x_last;
+    if (x_contrib > 0.0001) {
+      box_filter_point(result, coverage, x, y, x_contrib, y_contrib);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::box_filter_line
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void PfmFile::
 box_filter_line(LPoint4f &result, PN_float32 &coverage,
                 PN_float32 x0, int y, PN_float32 x1, PN_float32 y_contrib) const {
   int x = (int)x0;
@@ -1597,6 +1845,42 @@ box_filter_line(LPoint4f &result, PN_float32 &coverage,
       box_filter_point(result, coverage, x, y, x_contrib, y_contrib);
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::box_filter_point
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+box_filter_point(PN_float32 &result, PN_float32 &coverage,
+                 int x, int y, PN_float32 x_contrib, PN_float32 y_contrib) const {
+  if (!has_point(x, y)) {
+    return;
+  }
+  PN_float32 point = get_point1(x, y);
+
+  PN_float32 contrib = x_contrib * y_contrib;
+  result += point * contrib;
+  coverage += contrib;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::box_filter_point
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+box_filter_point(LPoint3f &result, PN_float32 &coverage,
+                 int x, int y, PN_float32 x_contrib, PN_float32 y_contrib) const {
+  if (!has_point(x, y)) {
+    return;
+  }
+  const LPoint3f &point = get_point(x, y);
+
+  PN_float32 contrib = x_contrib * y_contrib;
+  result += point * contrib;
+  coverage += contrib;
 }
 
 ////////////////////////////////////////////////////////////////////
