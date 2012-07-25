@@ -107,6 +107,8 @@ class CommonFilters:
                 auxbits |= AuxBitplaneAttrib.ABOGlow
             if (configuration.has_key("ViewGlow")):
                 auxbits |= AuxBitplaneAttrib.ABOGlow
+            if (configuration.has_key("VolumetricLighting")):
+                needtex[configuration["VolumetricLighting"].source] = True
             for tex in needtex:
                 self.textures[tex] = Texture("scene-"+tex)
                 self.textures[tex].setWrapU(Texture.WMClamp)
@@ -252,9 +254,9 @@ class CommonFilters:
                 text += "lightdir *= k_vlparams.x;\n"
                 text += "half4 sample = tex2D(k_txcolor, curcoord);\n"
                 text += "float3 vlcolor = sample.rgb * sample.a;\n"
-                text += "for (int i = 0; i < %s; i++) {\n" % int(configuration["VolumetricLighting"].numsamples)
+                text += "for (int i = 0; i < %s; i++) {\n" % (int(configuration["VolumetricLighting"].numsamples))
                 text += "  curcoord -= lightdir;\n"
-                text += "  sample = tex2D(k_txcolor, curcoord);\n"
+                text += "  sample = tex2D(k_tx%s, curcoord);\n" % (configuration["VolumetricLighting"].source)
                 text += "  sample *= sample.a * decay;//*weight\n"
                 text += "  vlcolor += sample.rgb;\n"
                 text += "  decay *= k_vlparams.y;\n"
@@ -308,6 +310,7 @@ class CommonFilters:
     def update(self, task = None):
         """Updates the shader inputs that need to be updated every frame.
         Normally, you shouldn't call this, it's being called in a task."""
+
         if self.configuration.has_key("VolumetricLighting"):
             caster = self.configuration["VolumetricLighting"].caster
             casterpos = Point2()
@@ -392,10 +395,10 @@ class CommonFilters:
             return self.reconfigure(True, "Inverted")
         return True
 
-    def setVolumetricLighting(self, caster, numsamples = 32, density = 5.0, decay = 0.1, exposure = 0.1):
+    def setVolumetricLighting(self, caster, numsamples = 32, density = 5.0, decay = 0.1, exposure = 0.1, source = "color"):
         oldconfig = self.configuration.get("VolumetricLighting", None)
         fullrebuild = True
-        if (oldconfig) and (oldconfig.caster == caster):
+        if (oldconfig) and (oldconfig.source == source) and (oldconfig.numsamples == int(numsamples)):
             fullrebuild = False
         newconfig = FilterConfig()
         newconfig.caster = caster
@@ -403,6 +406,7 @@ class CommonFilters:
         newconfig.density = density
         newconfig.decay = decay
         newconfig.exposure = exposure
+        newconfig.source = source
         self.configuration["VolumetricLighting"] = newconfig
         return self.reconfigure(fullrebuild, "VolumetricLighting")
 
