@@ -684,14 +684,16 @@ def ReadFile(wfile):
         data = srchandle.read()
         srchandle.close()
         return data
-    except: exit("Cannot read "+wfile)
+    except Exception, ex:
+        exit("Cannot read %s: %s" % (wfile, ex))
 
-def WriteFile(wfile,data):
+def WriteFile(wfile, data):
     try:
         dsthandle = open(wfile, "wb")
         dsthandle.write(data)
         dsthandle.close()
-    except: exit("Cannot write "+wfile)
+    except Exception, ex:
+        exit("Cannot write to %s: %s" % (wfile, ex))
 
 def ConditionalWriteFile(dest,desiredcontents):
     try:
@@ -1183,8 +1185,11 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
         return
 
     if (os.path.isdir(GetThirdpartyDir() + pkg.lower())):
-        IncDirectory(target_pkg, GetThirdpartyDir() + pkg.lower() + "/include")
-        LibDirectory(target_pkg, GetThirdpartyDir() + pkg.lower() + "/lib")
+        if os.path.isdir(GetThirdpartyDir() + pkg.lower() + "/include"):
+            IncDirectory(target_pkg, GetThirdpartyDir() + pkg.lower() + "/include")
+        if os.path.isdir(GetThirdpartyDir() + pkg.lower() + "/lib"):
+            LibDirectory(target_pkg, GetThirdpartyDir() + pkg.lower() + "/lib")
+
         if (PkgSkip("PYTHON") == 0):
             LibDirectory(target_pkg, GetThirdpartyDir() + pkg.lower() + "/lib/" + SDK["PYTHONVERSION"])
 
@@ -1652,8 +1657,16 @@ def SdkLocateMacOSX(osxtarget = None):
             SDK["MACOSX"] = "/Developer/SDKs/MacOSX%s.sdk" % osxtarget
         elif (os.path.exists("/Developer/SDKs/MacOSX%s.0.sdk" % osxtarget)):
             SDK["MACOSX"] = "/Developer/SDKs/MacOSX%s.0.sdk" % osxtarget
+        elif (os.path.exists("/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX%s.sdk" % osxtarget)):
+            SDK["MACOSX"] = "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX%s.sdk" % osxtarget
         else:
-            exit("Couldn't find any MacOSX SDK for OSX version %s!" % osxtarget)
+            handle = os.popen("xcode-select -print-path")
+            result = handle.read().strip().rstrip('/')
+            handle.close()
+            if (os.path.exists("%s/Platforms/MacOSX.platform/Developer/SDKs/MacOSX%s.sdk" % (result, osxtarget))):
+                SDK["MACOSX"] = "%s/Platforms/MacOSX.platform/Developer/SDKs/MacOSX%s.sdk" % (result, osxtarget)
+            else:
+                exit("Couldn't find any MacOSX SDK for OSX version %s!" % osxtarget)
     else:
         SDK["MACOSX"] = ""
 
