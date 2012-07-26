@@ -375,6 +375,19 @@ get_no_data_value() const {
 //               in-place.
 ////////////////////////////////////////////////////////////////////
 INLINE void PfmFile::
+xform(const TransformState *transform) {
+  if (!transform->is_identity()) {
+    xform(transform->get_mat());
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::xform
+//       Access: Published
+//  Description: Applies the indicated transform matrix to all points
+//               in-place.
+////////////////////////////////////////////////////////////////////
+INLINE void PfmFile::
 xform(const LMatrix4d &transform) {
   xform(LCAST(PN_float32, transform));
 }
@@ -412,10 +425,14 @@ compute_planar_bounds(const LPoint2d &center, PN_float32 point_dist, PN_float32 
 //               false, meshes are generated normally, with the 3-d
 //               depth value in the vertex position and the 2-d index
 //               value in the texture coordinates.
+//
+//               This may be used in lieu of the lower-level
+//               add_vis_column().
 ////////////////////////////////////////////////////////////////////
 INLINE void PfmFile::
 set_vis_inverse(bool vis_inverse) {
   _vis_inverse = vis_inverse;
+  clear_vis_columns();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -440,10 +457,14 @@ get_vis_inverse() const {
 //               These are the same values that will be assigned to
 //               the default texture coordinates if the vis_inverse
 //               flag is *not* true.
+//
+//               This may be used in lieu of the lower-level
+//               add_vis_column().
 ////////////////////////////////////////////////////////////////////
 INLINE void PfmFile::
 set_flat_texcoord_name(InternalName *flat_texcoord_name) {
   _flat_texcoord_name = flat_texcoord_name;
+  clear_vis_columns();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -451,6 +472,9 @@ set_flat_texcoord_name(InternalName *flat_texcoord_name) {
 //       Access: Published
 //  Description: Resets the flat_texcoord_name to empty, so that
 //               additional texture coordinates are not created.
+//
+//               This may be used in lieu of the lower-level
+//               add_vis_column().
 ////////////////////////////////////////////////////////////////////
 INLINE void PfmFile::
 clear_flat_texcoord_name() {
@@ -474,10 +498,14 @@ get_flat_texcoord_name() const {
 //               only the first two (x, y) value of each depth point
 //               is considered meaningful; the z component is ignored.
 //               This is only relevant for generating visualizations.
+//
+//               This may be used in lieu of the lower-level
+//               add_vis_column().
 ////////////////////////////////////////////////////////////////////
 INLINE void PfmFile::
 set_vis_2d(bool vis_2d) {
   _vis_2d = vis_2d;
+  clear_vis_columns();
 }
 
 ////////////////////////////////////////////////////////////////////

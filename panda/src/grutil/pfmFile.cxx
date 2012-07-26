@@ -1289,6 +1289,43 @@ compute_sample_point(LPoint3f &result,
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::clear_vis_columns
+//       Access: Published
+//  Description: Removes all of the previously-added vis columns in
+//               preparation for building a new list.  See
+//               add_vis_column().
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+clear_vis_columns() {
+  _vis_columns.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::add_vis_column
+//       Access: Published
+//  Description: Adds a new vis column specification to the list of
+//               vertex data columns that will be generated at the
+//               next call to generate_vis_points() or
+//               generate_vis_mesh().  This advanced interface
+//               supercedes the higher-level set_vis_inverse(),
+//               set_flat_texcoord_name(), and set_vis_2d().
+//
+//               If you use this advanced interface, you must specify
+//               explicitly the complete list of data columns to be
+//               created in the resulting GeomVertexData, by calling
+//               add_vis_column() each time.  For each column, you
+//               specify the source of the column in the PFMFile, the
+//               target column and name in the GeomVertexData, and an
+//               optional transform matrix and/or lens to transform
+//               and project the point before generating it.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+add_vis_column(ColumnType source, ColumnType target,
+               InternalName *name, const TransformState *transform,
+               const Lens *lens) {
+  add_vis_column(_vis_columns, source, target, name, transform, lens);
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::generate_vis_points
@@ -1454,38 +1491,12 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
       << " pieces.\n";
   }
 
-  PT(GeomVertexArrayFormat) array_format;
-
-  if (_vis_2d) {
-    // No normals needed if we're just generating a 2-d mesh.
-    array_format = new GeomVertexArrayFormat
-      (InternalName::get_vertex(), 3, Geom::NT_stdfloat, Geom::C_point,
-       InternalName::get_texcoord(), 2, Geom::NT_stdfloat, Geom::C_texcoord);
-
-  } else {
-    if (_vis_inverse) {
-      // We need a 3-d texture coordinate if we're inverting the vis
-      // and it's 3-d.  But we still don't need normals in that case.
-      array_format = new GeomVertexArrayFormat
-        (InternalName::get_vertex(), 3, Geom::NT_stdfloat, Geom::C_point,
-         InternalName::get_texcoord(), 3, Geom::NT_stdfloat, Geom::C_texcoord);
-    } else {
-      // Otherwise, we only need a 2-d texture coordinate, and we do
-      // want normals.
-      array_format = new GeomVertexArrayFormat
-        (InternalName::get_vertex(), 3, Geom::NT_stdfloat, Geom::C_point,
-         InternalName::get_normal(), 3, Geom::NT_stdfloat, Geom::C_vector,
-         InternalName::get_texcoord(), 2, Geom::NT_stdfloat, Geom::C_texcoord);
-    }
+  VisColumns vis_columns = _vis_columns;
+  if (vis_columns.empty()) {
+    build_auto_vis_columns(vis_columns, true);
   }
 
-  if (_flat_texcoord_name != (InternalName *)NULL) {
-    // We need an additional texcoord column for the flat texcoords.
-    array_format->add_column(_flat_texcoord_name, 2, 
-                             Geom::NT_stdfloat, Geom::C_texcoord);
-  }
-
-  CPT(GeomVertexFormat) format = GeomVertexFormat::register_format(array_format);
+  CPT(GeomVertexFormat) format = make_array_format(vis_columns);
 
   for (int yci = 0; yci < num_y_cells; ++yci) {
     int y_begin = (yci * _y_size) / num_y_cells;
@@ -1518,62 +1529,19 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
         (mesh_name.str(), format, Geom::UH_static);
 
       vdata->set_num_rows(num_vertices);
-      GeomVertexWriter vertex(vdata, InternalName::get_vertex());
-      GeomVertexWriter normal(vdata, InternalName::get_normal());
-      GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
-      GeomVertexWriter texcoord2(vdata, _flat_texcoord_name);
+      GeomVertexWriter vwriter(vdata);
 
+      int vi = 0;
       for (int yi = y_begin; yi < y_end; ++yi) {
         for (int xi = x_begin; xi < x_end; ++xi) {
-          const LPoint3f &point = get_point(xi, yi);
-          LPoint2f uv(PN_float32(xi) / PN_float32(_x_size - 1),
-                      PN_float32(yi) / PN_float32(_y_size - 1));
+          vwriter.set_row(vi);
+          ++vi;
 
-          if (_vis_inverse) {
-            vertex.add_data2f(uv);
-            texcoord.add_data3f(point);
-          } else if (_vis_2d) {
-            vertex.add_data2f(point[0], point[1]);
-            texcoord.add_data2f(uv);
-          } else {
-            vertex.add_data3f(point);
-            texcoord.add_data2f(uv);
-            
-            // Calculate the normal based on two neighboring vertices.
-            LPoint3f v[3];
-            v[0] = get_point(xi, yi);
-            if (xi + 1 < _x_size) {
-              v[1] = get_point(xi + 1, yi);
-            } else {
-              v[1] = v[0];
-              v[0] = get_point(xi - 1, yi);
-            }
-            
-            if (yi + 1 < _y_size) {
-              v[2] = get_point(xi, yi + 1);
-            } else {
-              v[2] = v[0];
-              v[0] = get_point(xi, yi - 1);
-            }
-        
-            LVector3f n = LVector3f::zero();
-            for (int i = 0; i < 3; ++i) {
-              const LPoint3f &v0 = v[i];
-              const LPoint3f &v1 = v[(i + 1) % 3];
-              n[0] += v0[1] * v1[2] - v0[2] * v1[1];
-              n[1] += v0[2] * v1[0] - v0[0] * v1[2];
-              n[2] += v0[0] * v1[1] - v0[1] * v1[0];
-            }
-            n.normalize();
-            nassertv(!n.is_nan());
-            if (reverse_normals) {
-              n = -n;
-            }
-            normal.add_data3f(n);
-          }
-
-          if (_flat_texcoord_name != (InternalName *)NULL) {
-            texcoord2.add_data2f(uv);
+          for (VisColumns::const_iterator vci = vis_columns.begin();
+               vci != vis_columns.end();
+               ++vci) {
+            const VisColumn &column = *vci;
+            column.add_data(*this, vwriter, xi, yi, reverse_normals);
           }
         }
       }
@@ -1902,6 +1870,121 @@ box_filter_point(LPoint4f &result, PN_float32 &coverage,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::add_vis_column
+//       Access: Private, Static
+//  Description: The private implementation of the public
+//               add_vis_column(), this adds the column to the
+//               indicated specific vector.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+add_vis_column(VisColumns &vis_columns, ColumnType source, ColumnType target,
+               InternalName *name, const TransformState *transform,
+               const Lens *lens) {
+  VisColumn column;
+  column._source = source;
+  column._target = target;
+  column._name = name;
+  column._transform = transform;
+  if (transform == NULL) {
+    column._transform = TransformState::make_identity();
+  }
+  column._lens = lens;
+  vis_columns.push_back(column);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::build_auto_vis_columns
+//       Access: Private
+//  Description: This function is called internally to construct the
+//               list of vis_columns automatically from the high-level
+//               interfaces such as set_vis_inverse(),
+//               set_flat_texcoord_name(), and set_vis_2d().  It's not
+//               called if the list has been build explicitly.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+build_auto_vis_columns(VisColumns &vis_columns, bool for_points) const {
+  vis_columns.clear();
+
+  if (_vis_2d) {
+    // No normals needed if we're just generating a 2-d mesh.
+    add_vis_column(vis_columns, CT_vertex3, CT_vertex3, InternalName::get_vertex());
+    add_vis_column(vis_columns, CT_texcoord2, CT_texcoord2, InternalName::get_texcoord());
+
+  } else {
+    if (_vis_inverse) {
+      // We need a 3-d texture coordinate if we're inverting the vis
+      // and it's 3-d.  But we still don't need normals in that case.
+      add_vis_column(vis_columns, CT_texcoord3, CT_vertex3, InternalName::get_vertex());
+      add_vis_column(vis_columns, CT_vertex3, CT_texcoord3, InternalName::get_texcoord());
+    } else {
+      // Otherwise, we only need a 2-d texture coordinate, and we do
+      // want normals.
+      add_vis_column(vis_columns, CT_vertex3, CT_vertex3, InternalName::get_vertex());
+      add_vis_column(vis_columns, CT_normal3, CT_normal3, InternalName::get_normal());
+      add_vis_column(vis_columns, CT_texcoord2, CT_texcoord2, InternalName::get_texcoord());
+    }
+  }
+
+  if (_flat_texcoord_name != (InternalName *)NULL) {
+    // We need an additional texcoord column for the flat texcoords.
+    add_vis_column(vis_columns, CT_texcoord2, CT_texcoord2, _flat_texcoord_name);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::make_array_format
+//       Access: Private
+//  Description: Constructs a GeomVertexFormat that corresponds to the
+//               vis_columns list.
+////////////////////////////////////////////////////////////////////
+CPT(GeomVertexFormat) PfmFile::
+make_array_format(const VisColumns &vis_columns) const {
+  PT(GeomVertexArrayFormat) array_format = new GeomVertexArrayFormat;
+
+  for (VisColumns::const_iterator vci = vis_columns.begin();
+       vci != vis_columns.end();
+       ++vci) {
+    const VisColumn &column = *vci;
+    InternalName *name = column._name;
+
+    int num_components = 0;
+    GeomEnums::NumericType numeric_type = GeomEnums::NT_float32;
+    GeomEnums::Contents contents = GeomEnums::C_point;
+    switch (column._target) {
+    case CT_texcoord2:
+      num_components = 2;
+      numeric_type = GeomEnums::NT_float32;
+      contents = GeomEnums::C_texcoord;
+      break;
+
+    case CT_texcoord3:
+      num_components = 3;
+      numeric_type = GeomEnums::NT_float32;
+      contents = GeomEnums::C_texcoord;
+      break;
+
+    case CT_vertex2:
+    case CT_vertex3:
+      num_components = 3;
+      numeric_type = GeomEnums::NT_float32;
+      contents = GeomEnums::C_point;
+      break;
+
+    case CT_normal3:
+      num_components = 3;
+      numeric_type = GeomEnums::NT_float32;
+      contents = GeomEnums::C_vector;
+      break;
+    }
+    nassertr(num_components != 0, NULL);
+    
+    array_format->add_column(name, num_components, numeric_type, contents);
+  }
+
+  return GeomVertexFormat::register_format(array_format);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::fill_mini_grid
 //       Access: Private
 //  Description: A support function for calc_average_point(), this
@@ -1999,4 +2082,134 @@ has_point_chan4(const PfmFile *self, int x, int y) {
     return self->_table[(y * self->_x_size + x) * 4 + 3] >= 0.0;
   }
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::VisColumn::add_data
+//       Access: Public
+//  Description: Adds the data for this column to the appropriate
+//               column of the GeomVertexWriter.
+////////////////////////////////////////////////////////////////////
+void PfmFile::VisColumn::
+add_data(const PfmFile &file, GeomVertexWriter &vwriter, int xi, int yi, bool reverse_normals) const {
+  vwriter.set_column(_name);
+
+  switch (_source) {
+  case CT_texcoord2:
+    { 
+      LPoint2f uv(PN_float32(xi) / PN_float32(file._x_size - 1),
+                  PN_float32(yi) / PN_float32(file._y_size - 1));
+      transform_point(uv);
+      vwriter.add_data2f(uv);
+    }
+    break;
+
+  case CT_texcoord3:
+    {
+      LPoint3f uv(PN_float32(xi) / PN_float32(file._x_size - 1),
+                  PN_float32(yi) / PN_float32(file._y_size - 1), 
+                  0.0f);
+      transform_point(uv);
+      vwriter.add_data3f(uv);
+    }
+    break;
+
+  case CT_vertex2:
+    {
+      const LPoint3f &point3 = file.get_point(xi, yi);
+      LPoint2f point(point3[0], point3[1]);
+      transform_point(point);
+      vwriter.add_data2f(point);
+    }
+    break;
+
+  case CT_vertex3:
+    {
+      LPoint3f point = file.get_point(xi, yi);
+      transform_point(point);
+      vwriter.add_data3f(point);
+    }
+    break;
+
+  case CT_normal3:
+    {
+      // Calculate the normal based on two neighboring vertices.
+      LPoint3f v[3];
+      v[0] = file.get_point(xi, yi);
+      if (xi + 1 < file._x_size) {
+        v[1] = file.get_point(xi + 1, yi);
+      } else {
+        v[1] = v[0];
+        v[0] = file.get_point(xi - 1, yi);
+      }
+                
+      if (yi + 1 < file._y_size) {
+        v[2] = file.get_point(xi, yi + 1);
+      } else {
+        v[2] = v[0];
+        v[0] = file.get_point(xi, yi - 1);
+      }
+                
+      LVector3f n = LVector3f::zero();
+      for (int i = 0; i < 3; ++i) {
+        const LPoint3f &v0 = v[i];
+        const LPoint3f &v1 = v[(i + 1) % 3];
+        n[0] += v0[1] * v1[2] - v0[2] * v1[1];
+        n[1] += v0[2] * v1[0] - v0[0] * v1[2];
+        n[2] += v0[0] * v1[1] - v0[1] * v1[0];
+      }
+      n.normalize();
+      nassertv(!n.is_nan());
+      if (reverse_normals) {
+        n = -n;
+      }
+      transform_vector(n);
+      vwriter.add_data3f(n);
+    }
+    break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::VisColumn::transform_point
+//       Access: Public
+//  Description: Transforms the indicated point as specified by the
+//               VisColumn.
+////////////////////////////////////////////////////////////////////
+void PfmFile::VisColumn::
+transform_point(LPoint2f &point) const {
+  if (!_transform->is_identity()) {
+    LCAST(PN_float32, _transform->get_mat3()).xform_point_in_place(point);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::VisColumn::transform_point
+//       Access: Public
+//  Description: Transforms the indicated point as specified by the
+//               VisColumn.
+////////////////////////////////////////////////////////////////////
+void PfmFile::VisColumn::
+transform_point(LPoint3f &point) const {
+  if (!_transform->is_identity()) {
+    LCAST(PN_float32, _transform->get_mat()).xform_point_in_place(point);
+  }
+  if (_lens != (Lens *)NULL) {
+    LPoint3 film;
+    _lens->project(LCAST(PN_stdfloat, point), film);
+    point = LCAST(PN_float32, film);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::VisColumn::transform_vector
+//       Access: Public
+//  Description: Transforms the indicated vector as specified by the
+//               VisColumn.
+////////////////////////////////////////////////////////////////////
+void PfmFile::VisColumn::
+transform_vector(LVector3f &vec) const {
+  if (!_transform->is_identity()) {
+    LCAST(PN_float32, _transform->get_mat()).xform_vec_in_place(vec);
+  }
 }

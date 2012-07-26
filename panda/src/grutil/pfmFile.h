@@ -20,10 +20,12 @@
 #include "nodePath.h"
 #include "boundingHexahedron.h"
 #include "internalName.h"
+#include "lens.h"
 
 class GeomNode;
 class Lens;
 class PNMImage;
+class GeomVertexWriter;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PfmFile
@@ -88,6 +90,7 @@ PUBLISHED:
   BLOCKING void resize(int new_x_size, int new_y_size);
   BLOCKING void reverse_rows();
   BLOCKING void flip(bool flip_x, bool flip_y, bool transpose);
+  INLINE BLOCKING void xform(const TransformState *transform);
   BLOCKING void xform(const LMatrix4f &transform);
   INLINE BLOCKING void xform(const LMatrix4d &transform);
   BLOCKING void project(const Lens *lens);
@@ -106,6 +109,18 @@ PUBLISHED:
   INLINE InternalName *get_flat_texcoord_name() const;
   INLINE void set_vis_2d(bool vis_2d);
   INLINE bool get_vis_2d() const;
+
+  enum ColumnType {
+    CT_texcoord2,
+    CT_texcoord3,
+    CT_vertex2,
+    CT_vertex3,
+    CT_normal3,
+  };
+  void clear_vis_columns();
+  void add_vis_column(ColumnType source, ColumnType target,
+                      InternalName *name, 
+                      const TransformState *transform = NULL, const Lens *lens = NULL);
 
   BLOCKING NodePath generate_vis_points() const;
 
@@ -138,6 +153,29 @@ private:
   void box_filter_point(LPoint4f &result, PN_float32 &coverage,
                         int x, int y, PN_float32 x_contrib, PN_float32 y_contrib) const;
 
+  class VisColumn {
+  public:
+    void add_data(const PfmFile &file, GeomVertexWriter &vwriter, int xi, int yi, bool reverse_normals) const;
+    void transform_point(LPoint2f &point) const;
+    void transform_point(LPoint3f &point) const;
+    void transform_vector(LVector3f &vec) const;
+
+  public:
+    ColumnType _source;
+    ColumnType _target;
+    PT(InternalName) _name;
+    CPT(TransformState) _transform;
+    CPT(Lens) _lens;
+  };
+  typedef pvector<VisColumn> VisColumns;
+
+  static void add_vis_column(VisColumns &vis_columns, 
+                             ColumnType source, ColumnType target,
+                             InternalName *name, 
+                             const TransformState *transform = NULL, const Lens *lens = NULL);
+  void build_auto_vis_columns(VisColumns &vis_columns, bool for_points) const;
+  CPT(GeomVertexFormat) make_array_format(const VisColumns &vis_columns) const;
+
   class MiniGridCell {
   public:
     MiniGridCell() : _sxi(-1), _syi(-1), _dist(-1) { }
@@ -169,9 +207,12 @@ private:
   PT(InternalName) _flat_texcoord_name;
   bool _vis_2d;
 
+  VisColumns _vis_columns;
+
   typedef bool HasPointFunc(const PfmFile *file, int x, int y);
   HasPointFunc *_has_point;
-  
+
+  friend class VisColumn;
 };
 
 #include "pfmFile.I"
