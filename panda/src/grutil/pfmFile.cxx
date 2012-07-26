@@ -1013,7 +1013,7 @@ project(const Lens *lens) {
 
       LPoint3 film;
       lens->project(LCAST(PN_stdfloat, p), film);
-      p = to_uv.xform_point(LCAST(float, film));
+      p = to_uv.xform_point(LCAST(PN_float32, film));
     }
   }
 }
@@ -1529,18 +1529,17 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
         (mesh_name.str(), format, Geom::UH_static);
 
       vdata->set_num_rows(num_vertices);
-      GeomVertexWriter vwriter(vdata);
 
-      int vi = 0;
-      for (int yi = y_begin; yi < y_end; ++yi) {
-        for (int xi = x_begin; xi < x_end; ++xi) {
-          vwriter.set_row(vi);
-          ++vi;
+      // Fill in all of the vertices.
+      for (VisColumns::const_iterator vci = vis_columns.begin();
+           vci != vis_columns.end();
+           ++vci) {
+        const VisColumn &column = *vci;
+        GeomVertexWriter vwriter(vdata, column._name);
+        vwriter.set_row(0);
 
-          for (VisColumns::const_iterator vci = vis_columns.begin();
-               vci != vis_columns.end();
-               ++vci) {
-            const VisColumn &column = *vci;
+        for (int yi = y_begin; yi < y_end; ++yi) {
+          for (int xi = x_begin; xi < x_end; ++xi) {
             column.add_data(*this, vwriter, xi, yi, reverse_normals);
           }
         }
@@ -1591,7 +1590,6 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
     }
   }
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::box_filter_region
@@ -2092,15 +2090,13 @@ has_point_chan4(const PfmFile *self, int x, int y) {
 ////////////////////////////////////////////////////////////////////
 void PfmFile::VisColumn::
 add_data(const PfmFile &file, GeomVertexWriter &vwriter, int xi, int yi, bool reverse_normals) const {
-  vwriter.set_column(_name);
-
   switch (_source) {
   case CT_texcoord2:
     { 
       LPoint2f uv(PN_float32(xi) / PN_float32(file._x_size - 1),
                   PN_float32(yi) / PN_float32(file._y_size - 1));
       transform_point(uv);
-      vwriter.add_data2f(uv);
+      vwriter.set_data2f(uv);
     }
     break;
 
@@ -2110,7 +2106,7 @@ add_data(const PfmFile &file, GeomVertexWriter &vwriter, int xi, int yi, bool re
                   PN_float32(yi) / PN_float32(file._y_size - 1), 
                   0.0f);
       transform_point(uv);
-      vwriter.add_data3f(uv);
+      vwriter.set_data3f(uv);
     }
     break;
 
@@ -2119,7 +2115,7 @@ add_data(const PfmFile &file, GeomVertexWriter &vwriter, int xi, int yi, bool re
       const LPoint3f &point3 = file.get_point(xi, yi);
       LPoint2f point(point3[0], point3[1]);
       transform_point(point);
-      vwriter.add_data2f(point);
+      vwriter.set_data2f(point);
     }
     break;
 
@@ -2127,7 +2123,7 @@ add_data(const PfmFile &file, GeomVertexWriter &vwriter, int xi, int yi, bool re
     {
       LPoint3f point = file.get_point(xi, yi);
       transform_point(point);
-      vwriter.add_data3f(point);
+      vwriter.set_data3f(point);
     }
     break;
 
@@ -2164,7 +2160,7 @@ add_data(const PfmFile &file, GeomVertexWriter &vwriter, int xi, int yi, bool re
         n = -n;
       }
       transform_vector(n);
-      vwriter.add_data3f(n);
+      vwriter.set_data3f(n);
     }
     break;
   }
@@ -2195,9 +2191,13 @@ transform_point(LPoint3f &point) const {
     LCAST(PN_float32, _transform->get_mat()).xform_point_in_place(point);
   }
   if (_lens != (Lens *)NULL) {
+    static LMatrix4f to_uv(0.5, 0.0, 0.0, 0.0,
+                           0.0, 0.5, 0.0, 0.0, 
+                           0.0, 0.0, 1.0, 0.0, 
+                           0.5, 0.5, 0.0, 1.0);
     LPoint3 film;
     _lens->project(LCAST(PN_stdfloat, point), film);
-    point = LCAST(PN_float32, film);
+    point = to_uv.xform_point(LCAST(PN_float32, film));
   }
 }
 
