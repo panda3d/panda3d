@@ -2032,6 +2032,7 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
       }
 
       vert.set_external_index(pi.vertexIndex(i, &status));
+      vert.set_external_index2(pi.normalIndex(i, &status));
 
       egg_poly->add_vertex(vpool->create_unique_vertex(vert));
     }
@@ -2166,6 +2167,30 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
               if (!delta.almost_equal(LVector3d::zero())) {
                 EggMorphVertex dxyz(blend_desc->get_name(), delta);
                 vert->_dxyzs.insert(dxyz);
+              }
+            }
+          }
+
+          MFloatVectorArray norms;
+          status = blend_mesh.getNormals(norms, MSpace::kWorld);
+          if (!status) {
+            status.perror("MFnMesh::getNormals");
+          } else {
+            int num_norms = (int)norms.length();
+            EggVertexPool::iterator vi;
+            for (vi = vpool->begin(); vi != vpool->end(); ++vi) {
+              EggVertex *vert = (*vi);
+              int maya_vi = vert->get_external_index2();
+              nassertv(maya_vi >= 0 && maya_vi < num_norms);
+              
+              const MFloatVector &m = norms[maya_vi];
+              LVector3d m3d(m[0], m[1], m[2]);
+              m3d = m3d * vertex_frame_inv;
+              
+              LNormald delta = m3d - vert->get_normal();
+              if (!delta.almost_equal(LVector3d::zero())) {
+                EggMorphNormal dnormal(blend_desc->get_name(), delta);
+                vert->_dnormals.insert(dnormal);
               }
             }
           }

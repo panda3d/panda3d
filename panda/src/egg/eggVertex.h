@@ -123,6 +123,8 @@ PUBLISHED:
 
   INLINE void set_external_index(int external_index);
   INLINE int get_external_index() const;
+  INLINE void set_external_index2(int external_index2);
+  INLINE int get_external_index2() const;
 
   void write(ostream &out, int indent_level) const;
   INLINE bool sorts_less_than(const EggVertex &other) const;
@@ -166,7 +168,7 @@ private:
   EggVertexPool *_pool;
   bool _forward_reference;
   int _index;
-  int _external_index;
+  int _external_index, _external_index2;
   LPoint4d _pos;
   short _num_dimensions;
   GroupRef _gref;

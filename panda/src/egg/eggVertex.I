@@ -378,6 +378,31 @@ get_external_index() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::set_external_index2
+//       Access: Published
+//  Description: Similar to set_external_index(), but this is a
+//               different number which may be used for a different
+//               purpose by the calling code.  The egg library does
+//               not assign any meaning to this number or use it in
+//               any way.
+////////////////////////////////////////////////////////////////////
+INLINE void EggVertex::
+set_external_index2(int external_index2) {
+  _external_index2 = external_index2;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::get_external_index2
+//       Access: Published
+//  Description: Returns the number set by set_external_index2().  See
+//               set_external_index2().
+////////////////////////////////////////////////////////////////////
+INLINE int EggVertex::
+get_external_index2() const {
+  return _external_index2;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::sorts_less_than
 //       Access: Published
 //  Description: An ordering operator to compare two vertices for

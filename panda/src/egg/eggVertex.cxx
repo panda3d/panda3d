@@ -41,6 +41,7 @@ EggVertex() {
   _forward_reference = false;
   _index = -1;
   _external_index = -1;
+  _external_index2 = -1;
   set_pos(LPoint3d(0.0, 0.0, 0.0));
   test_pref_integrity();
   test_gref_integrity();
@@ -57,6 +58,7 @@ EggVertex(const EggVertex &copy)
   : EggObject(copy), EggAttributes(copy),
     _dxyzs(copy._dxyzs),
     _external_index(copy._external_index),
+    _external_index2(copy._external_index2),
     _pos(copy._pos),
     _num_dimensions(copy._num_dimensions),
     _uv_map(copy._uv_map),
@@ -82,6 +84,7 @@ operator = (const EggVertex &copy) {
   EggAttributes::operator = (copy);
   _dxyzs = copy._dxyzs;
   _external_index = copy._external_index;
+  _external_index2 = copy._external_index2;
   _pos = copy._pos;
   _num_dimensions = copy._num_dimensions;
   _uv_map = copy._uv_map;
@@ -505,6 +508,9 @@ int EggVertex::
 compare_to(const EggVertex &other) const {
   if (_external_index != other._external_index) {
     return (int)_external_index - (int)other._external_index;
+  }
+  if (_external_index2 != other._external_index2) {
+    return (int)_external_index2 - (int)other._external_index2;
   }
   if (_num_dimensions != other._num_dimensions) {
     return (int)_num_dimensions - (int)other._num_dimensions;
