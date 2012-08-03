@@ -12,6 +12,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "pystub.h"
 #include "filename.h"
 #include "encrypt_string.h"
 #include "pnotify.h"
@@ -46,6 +47,9 @@ usage() {
 
 int
 main(int argc, char **argv) {
+  // A call to pystub() to force libpystub.so to be linked in.
+  pystub();
+
   extern char *optarg;
   extern int optind;
   const char *optstr = "o:p:h";

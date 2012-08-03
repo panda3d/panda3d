@@ -12,6 +12,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "pystub.h"
 #include "filename.h"
 #include "encrypt_string.h"
 #include "pnotify.h"

@@ -14,6 +14,7 @@
 
 #include "pandaFramework.h"
 #include "pandaSystem.h"
+#include "pystub.h"
 #include "textNode.h"
 #include "configVariableBool.h"
 #include "texturePool.h"
@@ -225,6 +226,9 @@ report_version() {
 
 int
 main(int argc, char **argv) {
+  // A call to pystub() to force libpystub.so to be linked in.
+  pystub();
+
   preprocess_argv(argc, argv);
   framework.open_framework(argc, argv);
   framework.set_window_title("Panda Viewer");
