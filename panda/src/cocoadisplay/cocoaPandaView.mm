@@ -21,11 +21,29 @@
 - (id) initWithFrame:(NSRect)frameRect context:(NSOpenGLContext*)context window:(CocoaGraphicsWindow*)window {
   self = [super initWithFrame: frameRect];
 
+  _context = context;
+  [self setCanDrawConcurrently:YES];
+
   cocoadisplay_cat.debug()
     << "Created CocoaPandaView " << self << " for GraphicsWindow " << window << "\n";
   _graphicsWindow = window;
 
   return self;
+}
+
+- (NSOpenGLContext*) openGLContext {
+  return _context;
+}
+
+- (GraphicsWindow*) graphicsWindow {
+  return _graphicsWindow;
+}
+
+- (void) drawRect:(NSRect)dirtyRect {
+  // Do nothing.  We draw from another thread.
+
+  cocoadisplay_cat.spam()
+    << "drawRect was called.\n";
 }
 
 - (void) finalize {
@@ -37,6 +55,11 @@
   // Apple uses a coordinate system where the lower-left corner
   // represents (0, 0).  In Panda, this is the upper-left corner.
   return YES;
+}
+
+- (BOOL) needsDisplay {
+  // Never, we don't use drawRect.  We draw from elsewhere.
+  return NO;
 }
 
 - (BOOL) acceptsFirstResponder {
@@ -59,7 +82,6 @@
 
 - (void) setFrame: (NSRect) frame {
   [super setFrame: frame];
-  //[_context update];
   //_graphicsWindow->handle_resize_event();
 }
 
@@ -111,7 +133,7 @@
 }
 
 - (void) otherMouseDown: (NSEvent *) event {
-  // 2 and 3 are swapped, for consistency with X11 implementation
+  // 1 and 2 are swapped, for consistency with X11 implementation
   if ([event buttonNumber] == 2) {
     _graphicsWindow->handle_mouse_button_event(1, true);
   } else {
@@ -124,7 +146,7 @@
 }
 
 - (void) otherMouseUp: (NSEvent *) event {
-  // 2 and 3 are swapped, for consistency with X11 implementation
+  // 1 and 2 are swapped, for consistency with X11 implementation
   if ([event buttonNumber] == 2) {
     _graphicsWindow->handle_mouse_button_event(1, false);
   } else {

@@ -17,6 +17,7 @@
 #include "lightReMutexHolder.h"
 
 #include <mach-o/dyld.h>
+#import <AppKit/AppKit.h>
 #import <OpenGL/CGLRenderers.h>
 
 TypeHandle CocoaGraphicsStateGuardian::_type_handle;
@@ -69,20 +70,20 @@ get_properties(FrameBufferProperties &properties, NSOpenGLPixelFormat* pixel_for
     depth_size, stencil_size, accum_size, sample_buffers, samples,
     renderer_id, accelerated, window, pbuffer;
 
-  [pixel_format getValues: &double_buffer forAttribute: NSOpenGLPFADoubleBuffer forVirtualScreen: screen];
-  [pixel_format getValues: &stereo forAttribute: NSOpenGLPFAStereo forVirtualScreen: screen];
-  [pixel_format getValues: &aux_buffers forAttribute: NSOpenGLPFAAuxBuffers forVirtualScreen: screen];
-  [pixel_format getValues: &color_size forAttribute: NSOpenGLPFAColorSize forVirtualScreen: screen];
-  [pixel_format getValues: &alpha_size forAttribute: NSOpenGLPFAAlphaSize forVirtualScreen: screen];
-  [pixel_format getValues: &depth_size forAttribute: NSOpenGLPFADepthSize forVirtualScreen: screen];
-  [pixel_format getValues: &stencil_size forAttribute: NSOpenGLPFAStencilSize forVirtualScreen: screen];
-  [pixel_format getValues: &accum_size forAttribute: NSOpenGLPFAAccumSize forVirtualScreen: screen];
-  [pixel_format getValues: &sample_buffers forAttribute: NSOpenGLPFASampleBuffers forVirtualScreen: screen];
-  [pixel_format getValues: &samples forAttribute: NSOpenGLPFASamples forVirtualScreen: screen];
-  [pixel_format getValues: &renderer_id forAttribute: NSOpenGLPFARendererID forVirtualScreen: screen];
-  [pixel_format getValues: &accelerated forAttribute: NSOpenGLPFAAccelerated forVirtualScreen: screen];
-  [pixel_format getValues: &window forAttribute: NSOpenGLPFAWindow forVirtualScreen: screen];
-  [pixel_format getValues: &pbuffer forAttribute: NSOpenGLPFAPixelBuffer forVirtualScreen: screen];
+  [pixel_format getValues:&double_buffer  forAttribute:NSOpenGLPFADoubleBuffer  forVirtualScreen:screen];
+  [pixel_format getValues:&stereo         forAttribute:NSOpenGLPFAStereo        forVirtualScreen:screen];
+  [pixel_format getValues:&aux_buffers    forAttribute:NSOpenGLPFAAuxBuffers    forVirtualScreen:screen];
+  [pixel_format getValues:&color_size     forAttribute:NSOpenGLPFAColorSize     forVirtualScreen:screen];
+  [pixel_format getValues:&alpha_size     forAttribute:NSOpenGLPFAAlphaSize     forVirtualScreen:screen];
+  [pixel_format getValues:&depth_size     forAttribute:NSOpenGLPFADepthSize     forVirtualScreen:screen];
+  [pixel_format getValues:&stencil_size   forAttribute:NSOpenGLPFAStencilSize   forVirtualScreen:screen];
+  [pixel_format getValues:&accum_size     forAttribute:NSOpenGLPFAAccumSize     forVirtualScreen:screen];
+  [pixel_format getValues:&sample_buffers forAttribute:NSOpenGLPFASampleBuffers forVirtualScreen:screen];
+  [pixel_format getValues:&samples        forAttribute:NSOpenGLPFASamples       forVirtualScreen:screen];
+  [pixel_format getValues:&renderer_id    forAttribute:NSOpenGLPFARendererID    forVirtualScreen:screen];
+  [pixel_format getValues:&accelerated    forAttribute:NSOpenGLPFAAccelerated   forVirtualScreen:screen];
+  [pixel_format getValues:&window         forAttribute:NSOpenGLPFAWindow        forVirtualScreen:screen];
+  [pixel_format getValues:&pbuffer        forAttribute:NSOpenGLPFAPixelBuffer   forVirtualScreen:screen];
 
   properties.set_back_buffers(double_buffer);
   properties.set_stereo(stereo);
@@ -97,11 +98,16 @@ get_properties(FrameBufferProperties &properties, NSOpenGLPixelFormat* pixel_for
   }
   //TODO: add aux buffers
 
+  // Extract the renderer ID bits and check if our
+  // renderer matches the known software renderers.
+  renderer_id &= kCGLRendererIDMatchingMask;
   if (renderer_id == kCGLRendererGenericID ||
       renderer_id == kCGLRendererGenericFloatID ||
       renderer_id == kCGLRendererAppleSWID) {
+
     properties.set_force_software(1);
   }
+
   if (accelerated) {
     properties.set_force_hardware(1);
   }
@@ -117,16 +123,16 @@ get_properties(FrameBufferProperties &properties, NSOpenGLPixelFormat* pixel_for
 void CocoaGraphicsStateGuardian::
 choose_pixel_format(const FrameBufferProperties &properties,
                     CGDirectDisplayID display,
-                    bool need_window, bool need_pbuffer) {
+                    bool need_pbuffer) {
 
   _context = nil;
   _fbprops.clear();
 
   // Neither Cocoa nor CGL seem to have a mechanism to query the available
-  // pixel formats, unfortunately, so the only thing we can do is ask for one
-  // with the properties we have requested.
+  // pixel formats, unfortunately, so the only thing we can do is ask for
+  // one with the properties we have requested.
   pvector<NSOpenGLPixelFormatAttribute> attribs;
-  attribs.reserve(13);
+  attribs.reserve(15);
 
   // Picked this up from the pyglet source - seems
   // to be necessary to support RAGE-II, which is not compliant.
@@ -135,8 +141,9 @@ choose_pixel_format(const FrameBufferProperties &properties,
   // Don't let it fall back to a different renderer.
   attribs.push_back(NSOpenGLPFANoRecovery);
   
-  // Selection policy.
-  //attribs.push_back(NSOpenGLPFAMinimumPolicy);
+  // Consider pixel formats with properties equal
+  // to or better than we requested.
+  attribs.push_back(NSOpenGLPFAMinimumPolicy);
 
   if (!properties.is_single_buffered()) {
     attribs.push_back(NSOpenGLPFADoubleBuffer);
@@ -151,12 +158,21 @@ choose_pixel_format(const FrameBufferProperties &properties,
   attribs.push_back(aux_buffers);
   attribs.push_back(NSOpenGLPFAColorSize);
   attribs.push_back(properties.get_color_bits());
-  attribs.push_back(NSOpenGLPFAAlphaSize);
-  attribs.push_back(properties.get_alpha_bits());
   attribs.push_back(NSOpenGLPFADepthSize);
   attribs.push_back(properties.get_depth_bits());
   attribs.push_back(NSOpenGLPFAStencilSize);
   attribs.push_back(properties.get_stencil_bits());
+
+  // Curious case - if we request anything less than 8 alpha bits,
+  // then on some ATI cards, it will grab a pixel format with just
+  // 2 alpha bits, which just shows a white window and nothing else.
+  // Might have something to do with the compositing window manager.
+  // Omitting it altogether seems to make it grab one with 8 bits, though.
+  // Dirty hack.  Needs more research.
+  if (properties.get_alpha_bits() > 0) {
+    attribs.push_back(NSOpenGLPFAAlphaSize);
+    attribs.push_back(max(8, properties.get_alpha_bits()));
+  }
 
   if (properties.get_multisamples() > 0) {
     attribs.push_back(NSOpenGLPFASampleBuffers);
@@ -167,19 +183,16 @@ choose_pixel_format(const FrameBufferProperties &properties,
   }
 
   if (properties.get_force_software()) {
+    // Request the generic software renderer.
     attribs.push_back(NSOpenGLPFARendererID);
-    attribs.push_back(kCGLRendererAppleSWID);
+    attribs.push_back(kCGLRendererGenericFloatID);
   }
   
   if (properties.get_force_hardware()) {
     attribs.push_back(NSOpenGLPFAAccelerated);
   }
 
-  if (need_window) {
-    //TODO: when to request fullscreen on Cocoa?
-    attribs.push_back(NSOpenGLPFAWindow);
-    //attribs.push_back(NSOpenGLPFAFullScreen);
-  }
+  attribs.push_back(NSOpenGLPFAWindow);
 
   if (need_pbuffer) {
     attribs.push_back(NSOpenGLPFAPixelBuffer);
@@ -189,19 +202,25 @@ choose_pixel_format(const FrameBufferProperties &properties,
   attribs.push_back(NSOpenGLPFAScreenMask);
   attribs.push_back(CGDisplayIDToOpenGLDisplayMask(display));
 
+  // End of the array
   attribs.push_back((NSOpenGLPixelFormatAttribute) nil);
 
   // Create the format.
-  NSOpenGLPixelFormat* format = [[NSOpenGLPixelFormat alloc] initWithAttributes: &attribs[0]];
+  NSOpenGLPixelFormat* format = [[NSOpenGLPixelFormat alloc] initWithAttributes:&attribs[0]];
   if (format == nil) {
     cocoadisplay_cat.error() <<
       "Could not find a usable pixel format.\n";
     return;
   }
 
-  //XXX not sure what to do with virtual_screen, let's just set it to 0.
+  // For now, I'm just using the first virtual screen.
+  cocoadisplay_cat.debug() <<
+    "Pixel format has " << [format numberOfVirtualScreens] << " virtual screens.\n";
   get_properties(_fbprops, format, 0);
-  _context = [[NSOpenGLContext alloc] initWithFormat: format shareContext: _share_context];
+
+  //TODO: print out renderer
+
+  _context = [[NSOpenGLContext alloc] initWithFormat:format shareContext:_share_context];
   [format release];
   if (_context == nil) {
     cocoadisplay_cat.error() <<
@@ -230,6 +249,9 @@ query_gl_version() {
   // where the GL version has been output, and it's nice to see the
   // two of these together.
   if (glgsg_cat.is_debug()) {
+    //XXX this is supposed to work, but the NSOpenGLGetVersion
+    // symbol cannot be found when I do this
+
     //GLint major, minor;
     //NSOpenGLGetVersion(&major, &minor);
 
@@ -264,7 +286,7 @@ do_get_extension_func(const char *prefix, const char *name) {
     return (void *) NSAddressOfSymbol(symbol);
   }
 
-  cocoadisplay_cat.error() <<
+  cocoadisplay_cat.warning() <<
     "do_get_extension_func failed for " << prefix << name << "!\n";
 
   free(fullname);

@@ -21,6 +21,7 @@
 
 #import <Foundation/NSAutoreleasePool.h>
 #import <AppKit/NSApplication.h>
+#import <AppKit/NSRunningApplication.h>
 
 #include <mach-o/arch.h>
 
@@ -31,9 +32,15 @@ static void init_app() {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     [NSApplication sharedApplication];
 
-    [NSApp setActivationPolicy:nil];
+    [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
     [NSApp finishLaunching];
     [NSApp activateIgnoringOtherApps:YES];
+    
+    // Put Cocoa into thread-safe mode
+    // by spawning a thread which immediately exits.
+    NSThread* thread = [[NSThread alloc] init];
+    [thread start];
+    [thread autorelease]; 
   }
 }
 
@@ -264,7 +271,7 @@ pipe_constructor() {
 ////////////////////////////////////////////////////////////////////
 GraphicsPipe::PreferredWindowThread
 CocoaGraphicsPipe::get_preferred_window_thread() const {
-  // The NSView and NSWindow classes are not thread-safe,
+  // The NSView and NSWindow classes are not completely thread-safe,
   // they can only be called from the main thread!
   return PWT_app;
 }
@@ -309,8 +316,8 @@ make_output(const string &name,
     return new CocoaGraphicsWindow(engine, this, name, fb_prop, win_prop,
                                    flags, gsg, host);
   }
-/*
-  // Second thing to try: a GLES(2)GraphicsBuffer
+
+  // Second thing to try: a GLGraphicsBuffer
   if (retry == 1) {
     if ((host==0)||
   //        (!gl_support_fbo)||
@@ -334,7 +341,7 @@ make_output(const string &name,
         (cocoagsg->is_valid()) &&
         (!cocoagsg->needs_reset()) &&
         (cocoagsg->_supports_framebuffer_object) &&
-        (cocoagsg->_glDrawBuffers != 0)&&
+        (cocoagsg->_glDrawBuffers != 0) &&
         (fb_prop.is_basic())) {
       precertify = true;
     }
@@ -342,7 +349,7 @@ make_output(const string &name,
     return new GLGraphicsBuffer(engine, this, name, fb_prop, win_prop,
                                 flags, gsg, host);
   }
-
+/*
   // Third thing to try: a CocoaGraphicsBuffer
   if (retry == 2) {
     if (((flags&BF_require_parasite)!=0)||

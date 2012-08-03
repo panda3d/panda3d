@@ -29,6 +29,7 @@
     [self setDelegate:delegate];
     [self setOpaque:YES];
     [self setReleasedWhenClosed:YES];
+    [self setAllowsConcurrentViewDrawing:YES];
 
     // Necessary to be able to accept mouseMoved in the NSView
     [self setAcceptsMouseMovedEvents:YES];

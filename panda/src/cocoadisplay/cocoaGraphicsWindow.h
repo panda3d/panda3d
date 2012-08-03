@@ -56,7 +56,7 @@ public:
   void handle_close_event();
   void handle_key_event(NSEvent *event);
   void handle_mouse_button_event(int button, bool down);
-  void handle_mouse_moved_event(bool in_window, int x, int y, bool absolute);
+  void handle_mouse_moved_event(bool in_window, double x, double y, bool absolute);
   void handle_wheel_event(double x, double y);
 
   INLINE NSWindow *get_nswindow() const;

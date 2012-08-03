@@ -33,7 +33,7 @@ public:
                       NSOpenGLPixelFormat *pixel_format, int virtual_screen);
   void choose_pixel_format(const FrameBufferProperties &properties,
                            CGDirectDisplayID display,
-                           bool need_window, bool need_pbuffer);
+                           bool need_pbuffer);
 
   CocoaGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
                              CocoaGraphicsStateGuardian *share_with);

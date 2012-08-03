@@ -39,7 +39,7 @@
 #import <AppKit/NSImage.h>
 #import <AppKit/NSScreen.h>
 #import <OpenGL/OpenGL.h>
-#import <Carbon/Carbon.h>
+//#import <Carbon/Carbon.h>
 
 TypeHandle CocoaGraphicsWindow::_type_handle;
 
@@ -97,20 +97,35 @@ CocoaGraphicsWindow::
 ////////////////////////////////////////////////////////////////////
 bool CocoaGraphicsWindow::
 move_pointer(int device, int x, int y) {
+  //Hack!  Will go away when we have floating-point mouse pos.
+  MouseData md = get_pointer(device);
+  if (md.get_x() == x && md.get_y() == y) {
+    return true;
+  }
+
   if (device == 0) {
     CGPoint point;
     if (_properties.get_fullscreen()) {
-      point = CGPointMake(x, y);
+      point = CGPointMake(x, y + 1);
     } else {
       point = CGPointMake(x + _properties.get_x_origin(),
-                          y + _properties.get_y_origin());
+                          y + _properties.get_y_origin() + 1);
     }
 
-    return (CGDisplayMoveCursorToPoint(_display, point) == kCGErrorSuccess);
+    // I don't know what the difference between these two methods is.
+    //if (CGWarpMouseCursorPosition(point) == kCGErrorSuccess) {
+    if (CGDisplayMoveCursorToPoint(_display, point) == kCGErrorSuccess) {
+      // Generate a mouse event.
+      NSPoint pos = [_window mouseLocationOutsideOfEventStream];
+      NSPoint loc = [_view convertPoint:pos fromView:nil];
+      BOOL inside = [_view mouse:loc inRect:[_view bounds]];
+      handle_mouse_moved_event(inside, loc.x, loc.y, true);
+      return true;
+    }
   } else {
     // No support for raw mice at the moment.
-    return false;
   }
+  return false;
 }
 
 
@@ -145,13 +160,16 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     // Fullscreen.
     [cocoagsg->_context setFullScreen];
   } else {
-    nassertr([_view lockFocusIfCanDraw], false);
     // Although not recommended, it is technically possible to
     // use the same context with multiple different-sized windows.
     // If that happens, the context needs to be updated accordingly.
     if ([cocoagsg->_context view] != _view) {
+      //XXX I'm not 100% sure that changing the view requires it to update.
       _context_needs_update = true;
       [cocoagsg->_context setView:_view];
+
+      cocoadisplay_cat.spam()
+        << "Switching context to view " << _view << "\n";
     }
   }
 
@@ -159,6 +177,11 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   if (_context_needs_update) {
     [cocoagsg->_context update];
     _context_needs_update = false;
+  }
+
+  // Lock the view for drawing.
+  if (!_properties.get_fullscreen()) {
+    nassertr([_view lockFocusIfCanDraw], false);
   }
 
   // Make the context current.
@@ -191,6 +214,15 @@ end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
 
+  if (!_properties.get_fullscreen()) {
+    [_view unlockFocus];
+  }
+  // Release the context.
+  CocoaGraphicsStateGuardian *cocoagsg;
+  DCAST_INTO_V(cocoagsg, _gsg);
+  
+  CGLUnlockContext((CGLContextObj) [cocoagsg->_context CGLContextObj]);
+
   if (mode == FM_render) {
     // end_render_texture();
     copy_to_textures();
@@ -221,12 +253,14 @@ end_flip() {
     CocoaGraphicsStateGuardian *cocoagsg;
     DCAST_INTO_V(cocoagsg, _gsg);
 
-    [cocoagsg->_context flushBuffer];
-    if (!_properties.get_fullscreen()) {
-      [_view unlockFocus];
-    }
+    CGLLockContext((CGLContextObj) [cocoagsg->_context CGLContextObj]);
 
-    // Release the context.
+    // Swap the front and back buffer.
+    [cocoagsg->_context flushBuffer];
+
+    // Flush the window
+    [[_view window] flushWindow];
+
     CGLUnlockContext((CGLContextObj) [cocoagsg->_context CGLContextObj]);
   }
   GraphicsWindow::end_flip();
@@ -247,15 +281,14 @@ process_events() {
   GraphicsWindow::process_events();
 
   NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-
   NSEvent *event = nil;
 
   while (true) {
     event = [NSApp
-      nextEventMatchingMask: NSAnyEventMask
-      untilDate: nil
-      inMode: NSDefaultRunLoopMode
-      dequeue: YES];
+      nextEventMatchingMask:NSAnyEventMask
+      untilDate:nil
+      inMode:NSDefaultRunLoopMode
+      dequeue:YES];
 
     if (event == nil) {
       break;
@@ -288,7 +321,7 @@ open_window() {
   if (_gsg == 0) {
     // There is no old gsg.  Create a new one.
     cocoagsg = new CocoaGraphicsStateGuardian(_engine, _pipe, NULL);
-    cocoagsg->choose_pixel_format(_fb_properties, cocoa_pipe->_display, true, false);
+    cocoagsg->choose_pixel_format(_fb_properties, cocoa_pipe->_display, false);
     _gsg = cocoagsg;
   } else {
     // If the old gsg has the wrong pixel format, create a
@@ -296,7 +329,7 @@ open_window() {
     DCAST_INTO_R(cocoagsg, _gsg, false);
     if (!cocoagsg->get_fb_properties().subsumes(_fb_properties)) {
       cocoagsg = new CocoaGraphicsStateGuardian(_engine, _pipe, cocoagsg);
-      cocoagsg->choose_pixel_format(_fb_properties, cocoa_pipe->_display, true, false);
+      cocoagsg->choose_pixel_format(_fb_properties, cocoa_pipe->_display, false);
       _gsg = cocoagsg;
     }
   }
@@ -348,7 +381,7 @@ open_window() {
 
       // Depending on whether the window handle comes from a Carbon or a Cocoa
       // application, it could be either a HIViewRef or an NSView or NSWindow.
-      // Currently, we only support a Cocoa NSView, but we may in the future
+      // Currently, we only support a Cocoa NSView, but we could in the future
       // add support for Carbon parents using HICocoaView.
 
       if (os_handle->is_of_type(NativeWindowHandle::IntHandle::get_class_type())) {
@@ -373,6 +406,8 @@ open_window() {
   }
 
   // Center the window if coordinates were set to -1 or -2
+  //TODO: perhaps in future, in the case of -1, it should use the origin
+  // used in a previous run of Panda
   NSRect container;
   if (parent_nsview != NULL) {
     container = [parent_nsview bounds];
@@ -498,14 +533,14 @@ open_window() {
     [_window setShowsResizeIndicator: !_properties.get_fixed_size()];
 
     if (_properties.get_fullscreen()) {
-      [_window makeKeyAndOrderFront: nil];
+      [_window makeKeyAndOrderFront:nil];
      } else if (_properties.get_minimized()) {
-      [_window makeKeyAndOrderFront: nil];
-      [_window miniaturize: nil];
+      [_window makeKeyAndOrderFront:nil];
+      [_window miniaturize:nil];
     } else if (_properties.get_foreground()) {
-      [_window makeKeyAndOrderFront: nil];
+      [_window makeKeyAndOrderFront:nil];
     } else {
-      [_window orderBack: nil];
+      [_window orderBack:nil];
     }
 
     if (_properties.get_fullscreen()) {
@@ -547,8 +582,9 @@ open_window() {
 
   // Make the context current.
   _context_needs_update = false;
-  [cocoagsg->_context update];
   [cocoagsg->_context makeCurrentContext];
+  [cocoagsg->_context setView:_view];
+  [cocoagsg->_context update];
 
   cocoagsg->reset_if_new();
 
@@ -820,8 +856,6 @@ set_properties_now(WindowProperties &properties) {
     }
     properties.clear_origin();
   }
-
-  //TODO: mouse mode
 
   if (properties.has_title() && _window != nil) {
     _properties.set_title(properties.get_title());
@@ -1224,10 +1258,6 @@ handle_minimize_event(bool minimized) {
     return;
   }
 
-  WindowProperties properties;
-  properties.set_minimized(minimized);
-  system_changed_properties(properties);
-
   if (cocoadisplay_cat.is_debug()) {
     if (minimized) {
       cocoadisplay_cat.debug() << "Window was miniaturized\n";
@@ -1235,6 +1265,10 @@ handle_minimize_event(bool minimized) {
       cocoadisplay_cat.debug() << "Window was deminiaturized\n";
     }
   }
+
+  WindowProperties properties;
+  properties.set_minimized(minimized);
+  system_changed_properties(properties);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1245,10 +1279,6 @@ handle_minimize_event(bool minimized) {
 ////////////////////////////////////////////////////////////////////
 void CocoaGraphicsWindow::
 handle_foreground_event(bool foreground) {
-  WindowProperties properties;
-  properties.set_foreground(foreground);
-  system_changed_properties(properties);
-
   if (cocoadisplay_cat.is_debug()) {
     if (foreground) {
       cocoadisplay_cat.debug() << "Window became key\n";
@@ -1256,6 +1286,10 @@ handle_foreground_event(bool foreground) {
       cocoadisplay_cat.debug() << "Window resigned key\n";
     }
   }
+
+  WindowProperties properties;
+  properties.set_foreground(foreground);
+  system_changed_properties(properties);
 
   if (foreground && _properties.get_mouse_mode() != WindowProperties::M_relative) {
     // The mouse position may have changed during
@@ -1500,7 +1534,7 @@ handle_mouse_button_event(int button, bool down) {
 //               Should only be called by CocoaPandaView.
 ////////////////////////////////////////////////////////////////////
 void CocoaGraphicsWindow::
-handle_mouse_moved_event(bool in_window, int x, int y, bool absolute) {
+handle_mouse_moved_event(bool in_window, double x, double y, bool absolute) {
   if (absolute) {
     if (cocoadisplay_cat.is_spam()) {
       if (in_window != _input_devices[0].get_pointer().get_in_window()) {
@@ -1553,11 +1587,11 @@ handle_wheel_event(double x, double y) {
     _input_devices[0].button_up(MouseButton::wheel_down());
   }
 
-  //TODO: check if this is correct
+  //TODO: check if this is correct, I don't own a MacBook
   if (x > 0.0) {
     _input_devices[0].button_down(MouseButton::wheel_right());
     _input_devices[0].button_up(MouseButton::wheel_right());
-  } else if (y < 0.0) {
+  } else if (x < 0.0) {
     _input_devices[0].button_down(MouseButton::wheel_left());
     _input_devices[0].button_up(MouseButton::wheel_left());
   }
@@ -1659,6 +1693,7 @@ map_function_key(unsigned short keycode) {
   case NSUserFunctionKey:
   case NSSystemFunctionKey:
   case NSPrintFunctionKey:
+    break;
   case NSClearLineFunctionKey:
     return KeyboardButton::num_lock();
   case NSClearDisplayFunctionKey:
@@ -1673,6 +1708,7 @@ map_function_key(unsigned short keycode) {
   case NSUndoFunctionKey:
   case NSRedoFunctionKey:
   case NSFindFunctionKey:
+    break;
   case NSHelpFunctionKey:
     return KeyboardButton::help();
   case NSModeSwitchFunctionKey:
