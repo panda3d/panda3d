@@ -55,7 +55,7 @@ operator = (const MouseData &copy) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE int MouseData::
+INLINE double MouseData::
 get_x() const {
   return _xpos;
 }
@@ -65,7 +65,7 @@ get_x() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE int MouseData::
+INLINE double MouseData::
 get_y() const {
   return _ypos;
 }

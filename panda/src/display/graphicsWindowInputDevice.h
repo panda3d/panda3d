@@ -82,9 +82,9 @@ PUBLISHED:
                  size_t highlight_end, size_t cursor_pos);
   void focus_lost(double time = ClockObject::get_global_clock()->get_frame_time());
 
-  INLINE void set_pointer_in_window(int x, int y, double time = ClockObject::get_global_clock()->get_frame_time());
+  INLINE void set_pointer_in_window(double x, double y, double time = ClockObject::get_global_clock()->get_frame_time());
   INLINE void set_pointer_out_of_window(double time = ClockObject::get_global_clock()->get_frame_time());
-  void set_pointer(bool inwin, int x, int y, double time);
+  void set_pointer(bool inwin, double x, double y, double time);
 
 public:
   // We need these methods to make VC++ happy when we try to
@@ -112,8 +112,6 @@ private:
   
   bool   _pointer_mode_enable;
   double _pointer_speed;
-  double _pointer_true_x;
-  double _pointer_true_y;
   
   bool _enable_pointer_events;
   MouseData _mouse_data;

@@ -31,16 +31,16 @@ PUBLISHED:
   INLINE MouseData(const MouseData &copy);
   INLINE void operator = (const MouseData &copy);
 
-  INLINE int get_x() const;
-  INLINE int get_y() const;
+  INLINE double get_x() const;
+  INLINE double get_y() const;
   INLINE bool get_in_window() const;
 
   void output(ostream &out) const;
 
 public:
   bool _in_window;
-  int _xpos;
-  int _ypos;
+  double _xpos;
+  double _ypos;
 };
 
 INLINE ostream &operator << (ostream &out, const MouseData &md);

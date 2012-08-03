@@ -125,7 +125,7 @@ disable_pointer_events() {
 //               the given pixel coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE void GraphicsWindowInputDevice::
-set_pointer_in_window(int x, int y, double time) {
+set_pointer_in_window(double x, double y, double time) {
  // mutex is handled in set pointer .. convience function
   set_pointer(true, x, y, time);
 }

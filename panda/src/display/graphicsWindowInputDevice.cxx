@@ -49,8 +49,6 @@ GraphicsWindowInputDevice(GraphicsWindow *host, const string &name, int flags) :
   _event_sequence(0),
   _pointer_mode_enable(false),
   _pointer_speed(1.0),
-  _pointer_true_x(0.0),
-  _pointer_true_y(0.0),
   _enable_pointer_events(false)
 {
 }
@@ -117,8 +115,6 @@ operator = (const GraphicsWindowInputDevice &copy)
   _event_sequence = copy._event_sequence;
   _pointer_mode_enable = copy._pointer_mode_enable;
   _pointer_speed = copy._pointer_speed;
-  _pointer_true_x = copy._pointer_true_x;
-  _pointer_true_y = copy._pointer_true_y;
   _enable_pointer_events = copy._enable_pointer_events;
   _mouse_data = copy._mouse_data;
   _true_mouse_data = copy._true_mouse_data;
@@ -216,11 +212,9 @@ enable_pointer_mode(double speed) {
   nassertv(_device_index != 0);
   _pointer_mode_enable = true;
   _pointer_speed = speed;
-  _pointer_true_x = _host->get_x_size() * 0.5;
-  _pointer_true_y = _host->get_y_size() * 0.5;
+  _mouse_data._xpos = _host->get_x_size() * 0.5;
+  _mouse_data._ypos = _host->get_y_size() * 0.5;
   _mouse_data._in_window = true;
-  _mouse_data._xpos = int(_pointer_true_x + 0.5);
-  _mouse_data._ypos = int(_pointer_true_y + 0.5);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -234,8 +228,6 @@ disable_pointer_mode() {
   nassertv(_device_index != 0);
   _pointer_mode_enable = false;
   _pointer_speed = 1.0;
-  _pointer_true_x = 0.0;
-  _pointer_true_y = 0.0;
   _mouse_data = _true_mouse_data;
 }
 
@@ -245,27 +237,29 @@ disable_pointer_mode() {
 //  Description: Records that a mouse movement has taken place.
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindowInputDevice::
-set_pointer(bool inwin, int x, int y, double time) {
+set_pointer(bool inwin, double x, double y, double time) {
   LightMutexHolder holder(_lock);
 
-  int delta_x = x - _true_mouse_data._xpos;
-  int delta_y = y - _true_mouse_data._ypos;
+  double delta_x = x - _true_mouse_data._xpos;
+  double delta_y = y - _true_mouse_data._ypos;
   _true_mouse_data._in_window = inwin;
   _true_mouse_data._xpos = x;
   _true_mouse_data._ypos = y;
 
   if (_pointer_mode_enable) {
-    _pointer_true_x += (delta_x * _pointer_speed);
-    _pointer_true_y += (delta_y * _pointer_speed);
+    double pointer_x = _mouse_data._xpos;
+    double pointer_y = _mouse_data._ypos;
+    pointer_x += (delta_x * _pointer_speed);
+    pointer_y += (delta_y * _pointer_speed);
     double xhi = _host->get_x_size();
     double yhi = _host->get_y_size();
-    if (_pointer_true_x < 0.0) _pointer_true_x = 0.0;
-    if (_pointer_true_y < 0.0) _pointer_true_y = 0.0;
-    if (_pointer_true_x > xhi) _pointer_true_x = xhi;
-    if (_pointer_true_y > yhi) _pointer_true_y = yhi;
+    if (pointer_x < 0.0) pointer_x = 0.0;
+    if (pointer_y < 0.0) pointer_y = 0.0;
+    if (pointer_x > xhi) pointer_x = xhi;
+    if (pointer_y > yhi) pointer_y = yhi;
     _mouse_data._in_window = true;
-    _mouse_data._xpos = int(_pointer_true_x + 0.5);
-    _mouse_data._ypos = int(_pointer_true_y + 0.5);
+    _mouse_data._xpos = pointer_x;
+    _mouse_data._ypos = pointer_y;
   } else {
     _mouse_data = _true_mouse_data;
   }
