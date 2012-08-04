@@ -214,6 +214,8 @@ PUBLISHED:
   void threshold(const PNMImage &select_image, int channel, double threshold,
                  const PNMImage &lt, const PNMImage &ge);
 
+  void rescale(double min_val, double max_val);
+
   void copy_channel(const PNMImage &copy, int xto, int yto, int cto,
                     int xfrom = 0, int yfrom = 0, int cfrom = 0,
                     int x_size = -1, int y_size = -1);

@@ -1160,6 +1160,41 @@ threshold(const PNMImage &select_image, int channel, double threshold,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::rescale
+//       Access: Published
+//  Description: Rescales the RGB channel values so that any values in
+//               the original image between min_val and max_val are
+//               expanded to the range 0 .. 1.  Values below min_val
+//               are set to 0, and values above max_val are set to 1.
+//               Does not affect the alpha channel, if any.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+rescale(double min_val, double max_val) {
+  double scale = max_val - min_val;
+
+  if (_num_channels <= 2) {
+    // Grayscale.
+    for (int y = 0; y < get_y_size(); y++) {
+      for (int x = 0; x < get_x_size(); x++) {
+        double val = get_gray(x, y);
+        set_gray(x, y, (val - min_val) / scale);
+      }
+    }
+  } else {
+    // RGB(A).
+    for (int y = 0; y < get_y_size(); y++) {
+      for (int x = 0; x < get_x_size(); x++) {
+        LRGBColord xel = get_xel(x, y);
+        set_xel(x, y, 
+                (xel[0] - min_val) / scale,
+                (xel[1] - min_val) / scale,
+                (xel[2] - min_val) / scale);
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::copy_channel
 //       Access: Published
 //  Description: Copies just a single channel from the source image
