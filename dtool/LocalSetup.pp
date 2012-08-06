@@ -260,6 +260,14 @@
 #print Configuring Panda without threading support.
 #endif
 
+#if $[OSX_PLATFORM]
+#if $[UNIVERSAL_BINARIES]
+#print Compilation will create universal binaries.
+#else
+#print Compilation will not create universal binaries.
+#endif
+#endif
+
 #print
 #print See dtool_config.h for more details about the specified configuration.
 
@@ -736,6 +744,10 @@ $[cdefine LINK_ALL_STATIC]
 
 /* Define to compile the plugin code. */
 $[cdefine HAVE_P3D_PLUGIN]
+
+/* Define to compile for Cocoa or Carbon on Mac OS X. */
+$[cdefine HAVE_COCOA]
+$[cdefine HAVE_CARBON]
 
 /* Platform-identifying defines. */
 $[cdefine IS_OSX]

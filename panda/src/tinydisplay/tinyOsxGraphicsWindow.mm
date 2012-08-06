@@ -11,7 +11,7 @@
 
 #include "pandabase.h"
 
-#if defined(IS_OSX) && !defined(BUILD_IPHONE)
+#if defined(IS_OSX) && !defined(BUILD_IPHONE) && defined(HAVE_CARBON)
 
 #include <Carbon/Carbon.h>
 #include <Cocoa/Cocoa.h>
@@ -48,7 +48,7 @@ struct work1
 };
 
 #define PANDA_CREATE_WINDOW  101
-static void Post_Event_Wiait(unsigned short type, unsigned int data1 , unsigned int data2 , int target_window ) {
+static void Post_Event_Wait(unsigned short type, unsigned int data1 , unsigned int data2 , int target_window ) {
     work1 w;
     w.work_done = false;
     NSEvent *ev = [NSEvent otherEventWithType:NSApplicationDefined
@@ -58,8 +58,8 @@ static void Post_Event_Wiait(unsigned short type, unsigned int data1 , unsigned 
                                  windowNumber:target_window
                                       context:nil
                                       subtype:type
-                                        data1:data1
-                                        data2:(int)&w];
+                                        data1:(NSInteger)data1
+                                        data2:(NSInteger)&w];
 
     [NSApp postEvent:ev atStart:NO];
     while (!w.work_done)
@@ -1050,7 +1050,7 @@ bool TinyOsxGraphicsWindow::OSOpenWindow(WindowProperties &req_properties) {
       //    NSWindow*    childWindow            =    [[NSWindow alloc] initWithWindowRef:_osx_window];
 
 
-          Post_Event_Wiait(PANDA_CREATE_WINDOW,(unsigned long) _osx_window,1,[parentWindow windowNumber]);
+          Post_Event_Wait(PANDA_CREATE_WINDOW,(unsigned long) _osx_window,1,[parentWindow windowNumber]);
 
       //    [childWindow setFrameOrigin:origin];
       //    [childWindow setAcceptsMouseMovedEvents:YES];

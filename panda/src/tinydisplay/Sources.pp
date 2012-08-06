@@ -33,7 +33,7 @@
     tinyOffscreenGraphicsPipe.I tinyOffscreenGraphicsPipe.h \
     tinyOsxGraphicsPipe.I tinyOsxGraphicsPipe.h \
     tinyOsxGraphicsWindow.h tinyOsxGraphicsWindow.I \
-    $[if $[IS_OSX],tinyOsxGraphicsWindow.mm,] \
+    $[if $[and $[IS_OSX],$[HAVE_CARBON]],tinyOsxGraphicsWindow.mm,] \
     zbuffer.h zfeatures.h zgl.h \
     zline.h zmath.h \
     ztriangle_1.cxx ztriangle_2.cxx \

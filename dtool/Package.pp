@@ -9,7 +9,7 @@
 //
 // This is the package-specific file, which should be at the top of
 // every source hierarchy.  It generally gets the ball rolling, and is
-// responsible for explicitly including all of the relevent Config.pp
+// responsible for explicitly including all of the relevant Config.pp
 // files.
 
 // Check the version of ppremake in use.
@@ -252,6 +252,9 @@
 #set HAVE_EGL $[HAVE_EGL]
 
 #set HAVE_WGL $[HAVE_WGL]
+
+#set HAVE_COCOA $[HAVE_COCOA]
+#set HAVE_CARBON $[HAVE_CARBON]
 
 #set DX8_IPATH $[unixfilename $[DX8_IPATH]]
 #set DX8_LPATH $[unixfilename $[DX8_LPATH]]

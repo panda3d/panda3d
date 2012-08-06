@@ -12,7 +12,12 @@
 #include "wglGraphicsPipe.h"
 #endif
 
-#ifdef IS_OSX
+#ifdef HAVE_COCOA
+#include "config_cocoadisplay.h"
+#include "cocoaGraphicsPipe.h"
+#endif
+
+#ifdef HAVE_CARBON
 #include "config_osxdisplay.h"
 #include "osxGraphicsPipe.h"
 #endif
@@ -22,8 +27,8 @@
 #include "glxGraphicsPipe.h"
 #endif
 
-#if !defined(HAVE_WGL) && !defined(IS_OSX) && !defined(HAVE_GLX)
-#error One of HAVE_WGL, IS_OSX or HAVE_GLX must be defined when compiling pandagl!
+#if !defined(HAVE_WGL) && !defined(HAVE_COCOA) && !defined(HAVE_CARBON) && !defined(HAVE_GLX)
+#error One of HAVE_WGL, HAVE_COCOA, HAVE_CARBON or HAVE_GLX must be defined when compiling pandagl!
 #endif
 
 // By including checkPandaVersion.h, we guarantee that runtime
@@ -48,7 +53,11 @@ init_libpandagl() {
   init_libwgldisplay();
 #endif  // HAVE_GL
 
-#ifdef IS_OSX
+#ifdef HAVE_COCOA
+  init_libcocoadisplay();
+#endif
+
+#ifdef HAVE_CARBON
   init_libosxdisplay();
 #endif
 
@@ -68,7 +77,9 @@ get_pipe_type_pandagl() {
   return wglGraphicsPipe::get_class_type().get_index();
 #endif
 
-#ifdef IS_OSX
+#if defined(HAVE_COCOA)
+  return CocoaGraphicsPipe::get_class_type().get_index();
+#elif defined(HAVE_CARBON)
   return osxGraphicsPipe::get_class_type().get_index();
 #endif
 

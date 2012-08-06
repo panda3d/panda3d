@@ -10,7 +10,7 @@
 
 #define COMPONENT_LIBS \
     p3glgsg p3x11display p3glxdisplay  \
-    p3wgldisplay p3osxdisplay
+    p3wgldisplay p3osxdisplay p3cocoadisplay
 
 #define LOCAL_LIBS p3gsgbase p3display p3express
 #define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \

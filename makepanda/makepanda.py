@@ -61,6 +61,7 @@ MAJOR_VERSION=None
 COREAPI_VERSION=None
 PLUGIN_VERSION=None
 OSXTARGET=None
+UNIVERSAL=False
 HOST_URL="https://runtime.panda3d.org/"
 global STRDXSDKVERSION, STRMSPLATFORMVERSION, BOOUSEINTELCOMPILER
 STRDXSDKVERSION = 'default'
@@ -85,6 +86,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "NPAPI", "AWESOMIUM",                                # Browser embedding
   "GTK2", "WX", "FLTK",                                # Toolkit support
   "ROCKET",                                            # GUI libraries
+  "CARBON", "COCOA",                                   # Mac OS X toolkits
   "OSMESA", "X11", "XF86DGA", "XRANDR", "XCURSOR",     # Unix platform support
   "PANDATOOL", "PVIEW", "DEPLOYTOOLS",                 # Toolchain
   "SKEL",                                              # Example SKEL project
@@ -131,6 +133,7 @@ def usage(problem):
     print "  --host URL        (set the host url (runtime build only))"
     print "  --threads N       (use the multithreaded build system. see manual)"
     print "  --osxtarget N     (the OSX version number to build for (OSX only))"
+    print "  --universal       (build universal binaries (OSX only))"
     print "  --override \"O=V\"  (override dtool_config/prc option value)"
     print "  --static          (builds libraries for static linking)"
     print ""
@@ -181,6 +184,7 @@ def parseopts(args):
             elif (option=="--threads"): THREADCOUNT=int(value)
             elif (option=="--outputdir"): SetOutputDir(value.strip())
             elif (option=="--osxtarget"): OSXTARGET=value.strip()
+            elif (option=="--universal"): UNIVERSAL=True
             elif (option=="--nocolor"): DisableColors()
             elif (option=="--version"):
                 VERSION=value
@@ -432,6 +436,8 @@ if (COMPILER=="MSVC"):
     PkgDisable("GLES")
     PkgDisable("GLES2")
     PkgDisable("EGL")
+    PkgDisable("CARBON")
+    PkgDisable("COCOA")
     if (PkgSkip("PYTHON")==0):
         IncDirectory("ALWAYS", SDK["PYTHON"] + "/include")
         LibDirectory("ALWAYS", SDK["PYTHON"] + "/libs")
@@ -591,6 +597,10 @@ if (COMPILER=="MSVC"):
 
 if (COMPILER=="LINUX"):
     PkgDisable("AWESOMIUM")
+    if (sys.platform != "darwin"):
+        PkgDisable("CARBON")
+        PkgDisable("COCOA")
+
     if (PkgSkip("PYTHON")==0):
         IncDirectory("ALWAYS", SDK["PYTHON"])
     if (sys.platform == "darwin"):
@@ -653,7 +663,7 @@ if (COMPILER=="LINUX"):
     SmartPkgEnable("GTK2",      "gtk+-2.0")
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
     SmartPkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
-    SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h")
+    SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
     SmartPkgEnable("ZLIB",      "zlib",      ("z"), "zlib.h")
     if (RTDIST and sys.platform == "darwin" and "PYTHONVERSION" in SDK):
         # Don't use the framework for the OSX rtdist build. I'm afraid it gives problems somewhere.
@@ -967,16 +977,22 @@ def CompileCxx(obj,src,opts):
         for (opt,var,val) in DEFSYMBOLS:
             if (opt=="ALWAYS") or (opt in opts): cmd += ' -D' + var + '=' + val
         for x in ipath: cmd += ' -I' + x
+
+        # Mac-specific flags.
         if (sys.platform == "darwin"):
             cmd += " -Wno-deprecated-declarations"
             if (OSXTARGET != None):
                 cmd += " -isysroot " + SDK["MACOSX"]
                 cmd += " -mmacosx-version-min=" + OSXTARGET
-            if is_64:
-                cmd += " -arch x86_64"
-            else:
+            if (UNIVERSAL):
                 cmd += " -arch i386"
-                if ("NOPPC" not in opts): cmd += " -arch ppc"
+                if int(platform.mac_ver()[0][3]) >= 5 and not RTDIST and not RUNTIME:
+                    #XXX we don't support 64-bits rtdist or plugin at the moment.
+                    # 10.5 supports building 64-bits Cocoa apps.
+                    cmd += " -arch x86_64"
+                if ("NOPPC" not in opts):
+                    cmd += " -arch ppc"
+
         cmd += " -pthread"
         if PkgSkip("SSE2") == 0:
             cmd += " -msse2"
@@ -1285,11 +1301,14 @@ def CompileLink(dll, obj, opts):
             if (OSXTARGET != None):
                 cmd += " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"]
                 cmd += " -mmacosx-version-min=" + OSXTARGET
-            if is_64:
-                cmd += " -arch x86_64"
-            else:
+            if (UNIVERSAL):
                 cmd += " -arch i386"
-                if ("NOPPC" not in opts): cmd += " -arch ppc"
+                if int(platform.mac_ver()[0][3]) >= 5 and not RTDIST and not RUNTIME:
+                    #XXX we don't support 64-bits rtdist or plugin at the moment.
+                    # 10.5 supports building 64-bits Cocoa apps.
+                    cmd += " -arch x86_64"
+                if ("NOPPC" not in opts):
+                    cmd += " -arch ppc"
         if (LDFLAGS !=""): cmd += " " + LDFLAGS
 
         for (opt, dir) in LIBDIRECTORIES:
@@ -1740,6 +1759,8 @@ DTOOL_CONFIG=[
     ("HAVE_DIRECTCAM",                 'UNDEF',                  'UNDEF'),
     ("HAVE_SQUISH",                    'UNDEF',                  'UNDEF'),
     ("HAVE_FCOLLADA",                  'UNDEF',                  'UNDEF'),
+    ("HAVE_CARBON",                    'UNDEF',                  'UNDEF'),
+    ("HAVE_COCOA",                     'UNDEF',                  'UNDEF'),
     ("HAVE_OPENAL_FRAMEWORK",          'UNDEF',                  'UNDEF'),
     ("HAVE_ROCKET_PYTHON",             '1',                      '1'),
     ("HAVE_ROCKET_DEBUGGER",           'UNDEF',                  'UNDEF'),
@@ -1807,6 +1828,10 @@ def WriteConfigSettings():
         dtool_config["PHAVE_MALLOC_H"] = 'UNDEF'
         dtool_config["PHAVE_SYS_MALLOC_H"] = '1'
         dtool_config["HAVE_OPENAL_FRAMEWORK"] = '1'
+        if not RTDIST and not RUNTIME:
+            dtool_config["HAVE_COCOA"] = '1'
+        if not (UNIVERSAL or is_64):
+            dtool_config["HAVE_CARBON"] = '1'
         dtool_config["HAVE_X11"] = 'UNDEF'  # We might have X11, but we don't need it.
         dtool_config["HAVE_XRANDR"] = 'UNDEF'
         dtool_config["HAVE_XF86DGA"] = 'UNDEF'
@@ -2347,6 +2372,7 @@ if (sys.platform.startswith("win")):
     CopyAllHeaders('panda/src/wgldisplay')
 elif (sys.platform == "darwin"):
     CopyAllHeaders('panda/src/osxdisplay')
+    CopyAllHeaders('panda/src/cocoadisplay')
 else:
     CopyAllHeaders('panda/src/x11display')
     CopyAllHeaders('panda/src/glxdisplay')
@@ -2717,6 +2743,7 @@ if (not RUNTIME):
   TargetAdd('p3putil_composite2.obj', opts=OPTS, input='p3putil_composite2.cxx')
   IGATEFILES=GetDirectoryContents('panda/src/putil', ["*.h", "*_composite*.cxx"])
   IGATEFILES.remove("test_bam.h")
+  IGATEFILES.remove("paramValue.h")
   TargetAdd('libp3putil.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3putil.in', opts=['IMOD:panda', 'ILIB:libp3putil', 'SRCDIR:panda/src/putil'])
   TargetAdd('libp3putil_igate.obj', input='libp3putil.in', opts=["DEPENDENCYONLY"])
@@ -3017,6 +3044,7 @@ if (not RUNTIME):
   TargetAdd('p3grutil_composite1.obj', opts=OPTS, input='p3grutil_composite1.cxx')
   TargetAdd('p3grutil_composite2.obj', opts=OPTS, input='p3grutil_composite2.cxx')
   IGATEFILES=GetDirectoryContents('panda/src/grutil', ["*.h", "*_composite*.cxx"])
+  IGATEFILES.remove("convexHull.h")
   TargetAdd('libp3grutil.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3grutil.in', opts=['IMOD:panda', 'ILIB:libp3grutil', 'SRCDIR:panda/src/grutil'])
   TargetAdd('libp3grutil_igate.obj', input='libp3grutil.in', opts=["DEPENDENCYONLY"])
@@ -3690,10 +3718,29 @@ if (sys.platform != "win32" and sys.platform != "darwin" and PkgSkip("GL")==0 an
   TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'NVIDIACG', 'CGGL', 'X11', 'XRANDR', 'XF86DGA', 'XCURSOR'])
 
 #
+# DIRECTORY: panda/src/cocoadisplay/
+#
+
+if (sys.platform == 'darwin' and PkgSkip("COCOA")==0 and PkgSkip("GL")==0 and not RUNTIME):
+  OPTS=['DIR:panda/src/cocoadisplay', 'BUILDING:PANDAGL', 'GL', 'NVIDIACG', 'CGGL']
+  TargetAdd('p3cocoadisplay_composite1.obj', opts=OPTS, input='p3cocoadisplay_composite1.mm')
+  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGL', 'GL', 'NVIDIACG', 'CGGL']
+  TargetAdd('pandagl_pandagl.obj', opts=OPTS, input='pandagl.cxx')
+  TargetAdd('libpandagl.dll', input='pandagl_pandagl.obj')
+  TargetAdd('libpandagl.dll', input='p3glgsg_config_glgsg.obj')
+  TargetAdd('libpandagl.dll', input='p3glgsg_glgsg.obj')
+  TargetAdd('libpandagl.dll', input='p3cocoadisplay_composite1.obj')
+  TargetAdd('libpandagl.dll', input='libp3glstuff.dll')
+  if (PkgSkip('PANDAFX')==0):
+    TargetAdd('libpandagl.dll', input='libpandafx.dll')
+  TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
+  TargetAdd('libpandagl.dll', opts=['MODULE', 'GL', 'NVIDIACG', 'CGGL', 'COCOA'])
+
+#
 # DIRECTORY: panda/src/osxdisplay/
 #
 
-if (sys.platform == 'darwin' and PkgSkip("GL")==0 and not RUNTIME):
+if (sys.platform == 'darwin' and PkgSkip("CARBON")==0 and PkgSkip("GL")==0 and not RUNTIME):
   OPTS=['DIR:panda/src/osxdisplay', 'BUILDING:PANDAGL',  'GL', 'NVIDIACG', 'CGGL']
   TargetAdd('p3osxdisplay_composite1.obj', opts=OPTS, input='p3osxdisplay_composite1.cxx')
   TargetAdd('p3osxdisplay_osxGraphicsWindow.obj', opts=OPTS, input='osxGraphicsWindow.mm')
@@ -5954,8 +6001,13 @@ def MakeInstallerOSX():
         plist.close()
         if not os.path.isdir("dstroot/" + pkg):
             os.makedirs("dstroot/" + pkg)
+
         if os.path.exists("/Developer/usr/bin/packagemaker"):
             cmd = '/Developer/usr/bin/packagemaker --info /tmp/Info_plist --version ' + VERSION + ' --out dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/' + pkg + '.pkg --target 10.4 --domain system --root dstroot/' + pkg + '/ --no-relocate'
+            if os.path.isdir("dstroot/scripts/" + pkg):
+                cmd += ' --scripts dstroot/scripts/' + pkg
+        elif os.path.exists("/Applications/Xcode.app/Contents/Applications/PackageMaker.app/Contents/MacOS/PackageMaker"):
+            cmd = '/Applications/Xcode.app/Contents/Applications/PackageMaker.app/Contents/MacOS/PackageMaker --info /tmp/Info_plist --version ' + VERSION + ' --out dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/' + pkg + '.pkg --target 10.4 --domain system --root dstroot/' + pkg + '/ --no-relocate'
             if os.path.isdir("dstroot/scripts/" + pkg):
                 cmd += ' --scripts dstroot/scripts/' + pkg
         elif os.path.exists("/Developer/Tools/packagemaker"):

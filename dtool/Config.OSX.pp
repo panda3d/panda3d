@@ -28,9 +28,14 @@
 #define C++FLAGS_GEN -ftemplate-depth-30
 
 // Configure for universal binaries on OSX.
-#defer ARCH_FLAGS $[if $[UNIVERSAL_BINARIES],-arch i386 -arch ppc,]
+#defer ARCH_FLAGS $[if $[UNIVERSAL_BINARIES],-arch i386 -arch ppc -arch x86_64,]
 #define OSX_CDEFS
 #define OSX_CFLAGS -Wno-deprecated-declarations
+
+// Whether to build for Cocoa, Carbon or both.  64-bits systems do not
+// have Carbon.  We also disable it for universal and 64-bits builds.
+#define HAVE_COCOA 1
+#defer HAVE_CARBON $[not $[or $[eq $[shell uname -m], x86_64],$[UNIVERSAL_BINARIES]]]
 
 // How to compile a C or C++ file into a .o file.  $[target] is the
 // name of the .o file, $[source] is the name of the source file,
