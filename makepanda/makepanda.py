@@ -163,7 +163,7 @@ def parseopts(args):
         "optimize=","everything","nothing","installer","rtdist","nocolor",
         "version=","lzma","no-python","threads=","outputdir=","override=",
         "static","host=","debversion=","rpmrelease=","p3dsuffix=",
-        "directx-sdk=", "platform-sdk=", "use-icl"]
+        "directx-sdk=", "platform-sdk=", "use-icl", "universal"]
     anything = 0
     optimize = ""
     for pkg in PkgListGet(): longopts.append("no-"+pkg.lower())
@@ -2743,7 +2743,6 @@ if (not RUNTIME):
   TargetAdd('p3putil_composite2.obj', opts=OPTS, input='p3putil_composite2.cxx')
   IGATEFILES=GetDirectoryContents('panda/src/putil', ["*.h", "*_composite*.cxx"])
   IGATEFILES.remove("test_bam.h")
-  IGATEFILES.remove("paramValue.h")
   TargetAdd('libp3putil.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3putil.in', opts=['IMOD:panda', 'ILIB:libp3putil', 'SRCDIR:panda/src/putil'])
   TargetAdd('libp3putil_igate.obj', input='libp3putil.in', opts=["DEPENDENCYONLY"])
@@ -3044,7 +3043,6 @@ if (not RUNTIME):
   TargetAdd('p3grutil_composite1.obj', opts=OPTS, input='p3grutil_composite1.cxx')
   TargetAdd('p3grutil_composite2.obj', opts=OPTS, input='p3grutil_composite2.cxx')
   IGATEFILES=GetDirectoryContents('panda/src/grutil', ["*.h", "*_composite*.cxx"])
-  IGATEFILES.remove("convexHull.h")
   TargetAdd('libp3grutil.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3grutil.in', opts=['IMOD:panda', 'ILIB:libp3grutil', 'SRCDIR:panda/src/grutil'])
   TargetAdd('libp3grutil_igate.obj', input='libp3grutil.in', opts=["DEPENDENCYONLY"])
