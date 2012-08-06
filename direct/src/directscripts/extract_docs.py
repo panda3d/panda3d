@@ -129,6 +129,7 @@ def processType(handle, type):
             classtype = "union"
         else:
             print "I don't know what type %s is" % typename
+            return
         
         if len(derivations) > 0:
             print >>handle, "%s %s : public %s {" % (classtype, typename, ", public ".join(derivations))
