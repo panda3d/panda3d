@@ -211,24 +211,24 @@ apply_to_texture_alpha(const Buffer *buffer, Texture *t, int page, int alpha_src
   unsigned char *data = img.p() + page * t->get_expected_ram_page_size();
   
   PStatTimer timer2(_copy_pcollector_copy);
-  int src_stride = size_x() * get_num_components();
+  int src_width = get_num_components();
+  int src_stride = size_x() * src_width;
   int dst_stride = t->get_x_size() * 4;
+  unsigned char *p = buffer->_block;
   if (alpha_src == 0) {
-    unsigned char *p = buffer->_block;
     for (int y=0; y<size_y(); y++) {
       for (int x=0; x<size_x(); x++) {
-        data[x*4+3] = (p[x*4+0] + p[x*4+1] + p[x*4+2]) / 3;
+        unsigned char *pp = &p[x * src_width];
+        data[x*4+3] = (pp[0] + pp[1] + pp[2]) / 3;
       }
       data += dst_stride;
       p += src_stride;
     }
   } else {
     alpha_src -= 1;
-    unsigned char *p = buffer->_block;
-    int src_width = get_num_components();
     for (int y=0; y<size_y(); y++) {
       for (int x=0; x<size_x(); x++) {
-        data[x*4+3] = p[x *src_width + alpha_src];
+        data[x*4+3] = p[x * src_width + alpha_src];
       }
       data += dst_stride;
       p += src_stride;
