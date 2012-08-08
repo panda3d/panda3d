@@ -756,6 +756,10 @@
 // Should we try to build the WGL interface?
 #defer HAVE_WGL $[and $[HAVE_GL],$[WINDOWS_PLATFORM]]
 
+// These interfaces are for OSX only.
+#define HAVE_COCOA
+#define HAVE_CARBON
+
 // Is DirectX8 available, and should we try to build with it?
 #define DX8_IPATH
 #define DX8_LPATH
