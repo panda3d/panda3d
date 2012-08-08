@@ -22,15 +22,11 @@
 #include "pmap.h"
 #include "numeric_types.h"
 
-
 #include "ode_includes.h"
 #include "odeHelperStructs.h"
 
 class OdeBody;
 class OdeJoint;
-    
-
-
 
 ////////////////////////////////////////////////////////////////////
 //       Class : OdeWorld
@@ -54,7 +50,6 @@ PUBLISHED:
   INLINE void set_quick_step_w(dReal over_relaxation);
   INLINE void set_contact_max_correcting_vel(dReal vel);
   INLINE void set_contact_surface_layer(dReal depth);
-  INLINE void set_auto_enable_depth_sf1(int auto_enable_depth);
   INLINE void set_auto_disable_linear_threshold(dReal linear_threshold);
   INLINE void set_auto_disable_angular_threshold(dReal angular_threshold);
   INLINE void set_auto_disable_steps(int steps);
@@ -68,7 +63,6 @@ PUBLISHED:
   INLINE dReal get_quick_step_w() const;
   INLINE dReal get_contact_max_correcting_vel() const;
   INLINE dReal get_contact_surface_layer() const;
-  INLINE int get_auto_enable_depth_sf1() const;
   INLINE dReal get_auto_disable_linear_threshold() const;
   INLINE dReal get_auto_disable_angular_threshold() const;
   INLINE int get_auto_disable_steps() const;
@@ -82,7 +76,6 @@ PUBLISHED:
 
   INLINE void step(dReal stepsize);
   INLINE void quick_step(dReal stepsize);
-  INLINE void step_fast1(dReal stepsize, int maxiterations);
 
   INLINE int compare_to(const OdeWorld &other) const;
 
@@ -139,4 +132,3 @@ private:
 #include "odeWorld.I"
 
 #endif
-

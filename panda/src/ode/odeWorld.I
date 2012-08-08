@@ -145,21 +145,6 @@ get_contact_surface_layer() const {
   return dWorldGetContactSurfaceLayer(_id);
 }
 
-INLINE void OdeWorld::
-step_fast1(dReal stepsize, int maxiterations) {
-  dWorldStepFast1(_id, stepsize, maxiterations);
-}
-
-INLINE void OdeWorld::
-set_auto_enable_depth_sf1(int auto_enable_depth) {
-  dWorldSetAutoEnableDepthSF1(_id, auto_enable_depth);
-}
-
-INLINE int OdeWorld::
-get_auto_enable_depth_sf1() const {
-  return dWorldGetAutoEnableDepthSF1(_id);
-}
-
 INLINE dReal OdeWorld::
 get_auto_disable_linear_threshold() const {
   return dWorldGetAutoDisableLinearThreshold(_id);
