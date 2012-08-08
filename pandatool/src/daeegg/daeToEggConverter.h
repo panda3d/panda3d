@@ -55,8 +55,9 @@ public:
   
   virtual bool convert_file(const Filename &filename);
 
+  bool _invert_transparency;
+
 private:
-  
   PT(EggTable) _table;
   FCDocument* _document;
   FUErrorSimpleHandler* _error_handler;

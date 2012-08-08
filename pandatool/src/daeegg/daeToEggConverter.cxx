@@ -60,6 +60,7 @@ DAEToEggConverter() {
   _table = NULL;
   _frame_rate = -1;
   _error_handler = NULL;
+  _invert_transparency = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -356,7 +357,7 @@ void DAEToEggConverter::process_mesh(PT(EggGroup) parent, const FCDGeometryMesh*
     primitive_holders[gr] = primitiveholder;
     // Apply the per-group data of the materials, if we have it.
     if (materials != NULL) {
-      materials->apply_to(FROM_FSTRING(polygons->GetMaterialSemantic()), primitiveholder);
+      materials->apply_to_group(FROM_FSTRING(polygons->GetMaterialSemantic()), primitiveholder, _invert_transparency);
     }
     // Find the position sources
     const FCDGeometryPolygonsInput* pinput = polygons->FindInput(FUDaeGeometryInput::POSITION);
@@ -492,7 +493,7 @@ void DAEToEggConverter::process_mesh(PT(EggGroup) parent, const FCDGeometryMesh*
       if (primitive != NULL) {
         primitive_holders[gr]->add_child(primitive);
         if (materials != NULL) {
-          materials->apply_to(FROM_FSTRING(polygons->GetMaterialSemantic()), primitive);
+          materials->apply_to_primitive(FROM_FSTRING(polygons->GetMaterialSemantic()), primitive);
         }
         for (size_t ve = 0; ve < polygons->GetFaceVertexCount(fa); ++ve) {
           assert(mesh_pool->has_vertex(ve + polygons->GetFaceVertexOffset() + offset));

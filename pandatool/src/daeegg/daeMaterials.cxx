@@ -221,7 +221,7 @@ process_extra(const string semantic, const FCDExtra* extra) {
 //  Description: Applies the stuff to the given EggPrimitive.
 ////////////////////////////////////////////////////////////////////
 void DaeMaterials::
-apply_to(const string semantic, const PT(EggPrimitive) to) {
+apply_to_primitive(const string semantic, const PT(EggPrimitive) to) {
   if (_materials.count(semantic) > 0) {
     to->set_material(_materials[semantic]->_egg_material);
     for (pvector<PT_EggTexture>::iterator it = _materials[semantic]->_egg_textures.begin(); it != _materials[semantic]->_egg_textures.end(); ++it) {
@@ -238,14 +238,24 @@ apply_to(const string semantic, const PT(EggPrimitive) to) {
 //  Description: Applies the colorblend stuff to the given EggGroup.
 ////////////////////////////////////////////////////////////////////
 void DaeMaterials::
-apply_to(const string semantic, const PT(EggGroup) to) {
+apply_to_group(const string semantic, const PT(EggGroup) to, bool invert_transparency) {
   if (_materials.count(semantic) > 0) {
     PT(DaeBlendSettings) blend = _materials[semantic]->_blend;
     if (blend && blend->_enabled) {
       to->set_blend_mode(EggGroup::BM_add);
       to->set_blend_color(blend->_color);
-      to->set_blend_operand_a(blend->_operand_a);
-      to->set_blend_operand_b(blend->_operand_b);
+      if (invert_transparency) {
+        to->set_blend_operand_a(blend->_operand_b);
+        to->set_blend_operand_b(blend->_operand_a);
+      } else {
+        to->set_blend_operand_a(blend->_operand_a);
+        to->set_blend_operand_b(blend->_operand_b);
+      }
+    } else if (blend && invert_transparency) {
+      to->set_blend_mode(EggGroup::BM_add);
+      to->set_blend_color(blend->_color);
+      to->set_blend_operand_a(blend->_operand_b);
+      to->set_blend_operand_b(blend->_operand_a);
     }
   }
 }
@@ -410,34 +420,30 @@ convert_blend(FCDEffectStandard::TransparencyMode mode, const LColor &transparen
   
   // See if we can optimize out the color.
   if (blend->_operand_a == EggGroup::BO_constant_color) {
-    if ((blend->_color[0] == 0) && (blend->_color[1] == 0) && (blend->_color[2] == 0) && (blend->_color[3] == 0)) {
+    if (blend->_color == LColor::zero()) {
       blend->_operand_a = EggGroup::BO_zero;
-    }
-    if ((blend->_color[0] == 1) && (blend->_color[1] == 1) && (blend->_color[2] == 1) && (blend->_color[3] == 1)) {
+    } else if (blend->_color == LColor(1, 1, 1, 1)) {
       blend->_operand_a = EggGroup::BO_one;
     }
   }
   if (blend->_operand_b == EggGroup::BO_constant_color) {
-    if ((blend->_color[0] == 0) && (blend->_color[1] == 0) && (blend->_color[2] == 0) && (blend->_color[3] == 0)) {
+    if (blend->_color == LColor::zero()) {
       blend->_operand_b = EggGroup::BO_zero;
-    }
-    if ((blend->_color[0] == 1) && (blend->_color[1] == 1) && (blend->_color[2] == 1) && (blend->_color[3] == 1)) {
+    } else if (blend->_color == LColor(1, 1, 1, 1)) {
       blend->_operand_b = EggGroup::BO_one;
     }
   }
   if (blend->_operand_a == EggGroup::BO_one_minus_constant_color) {
-    if ((blend->_color[0] == 0) && (blend->_color[1] == 0) && (blend->_color[2] == 0) && (blend->_color[3] == 0)) {
+    if (blend->_color == LColor::zero()) {
       blend->_operand_a = EggGroup::BO_one;
-    }
-    if ((blend->_color[0] == 1) && (blend->_color[1] == 1) && (blend->_color[2] == 1) && (blend->_color[3] == 1)) {
+    } else if (blend->_color == LColor(1, 1, 1, 1)) {
       blend->_operand_a = EggGroup::BO_zero;
     }
   }
   if (blend->_operand_b == EggGroup::BO_one_minus_constant_color) {
-    if ((blend->_color[0] == 0) && (blend->_color[1] == 0) && (blend->_color[2] == 0) && (blend->_color[3] == 0)) {
+    if (blend->_color == LColor::zero()) {
       blend->_operand_b = EggGroup::BO_one;
-    }
-    if ((blend->_color[0] == 1) && (blend->_color[1] == 1) && (blend->_color[2] == 1) && (blend->_color[3] == 1)) {
+    } else if (blend->_color == LColor(1, 1, 1, 1)) {
       blend->_operand_b = EggGroup::BO_zero;
     }
   }

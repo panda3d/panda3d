@@ -44,8 +44,8 @@ public:
   virtual ~DaeMaterials() {};
   
   void add_material_instance(const FCDMaterialInstance* instance);
-  void apply_to(const string semantic, const PT(EggPrimitive) to);
-  void apply_to(const string semantic, const PT(EggGroup) to);
+  void apply_to_primitive(const string semantic, const PT(EggPrimitive) to);
+  void apply_to_group(const string semantic, const PT(EggGroup) to, bool invert_transparency=false);
   const string get_uvset_name(const string semantic, FUDaeGeometryInput::Semantic input_semantic, int32 input_set);
   
   static EggTexture::TextureType convert_texture_type(const FCDEffectParameterSampler::SamplerType orig_type);

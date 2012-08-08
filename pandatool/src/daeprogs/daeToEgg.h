@@ -30,6 +30,9 @@ public:
   DAEToEgg();
 
   void run();
+
+private:
+  bool _invert_transparency;
 };
 
 #endif

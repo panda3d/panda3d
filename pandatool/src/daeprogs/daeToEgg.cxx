@@ -30,6 +30,13 @@ DAEToEgg():
   add_normals_options();
   add_transform_options();
 
+  add_option
+    ("invtrans", "", false,
+     "Import the .dae file using inverted transparency. "
+     "This is useful when importing COLLADA files from some authoring tools "
+     "that export models with inverted transparency, such as Google SketchUp.",
+     &SomethingToEgg::dispatch_none, &_invert_transparency);
+
   set_program_description
     ("This program converts .dae files (COLLADA Digital Asset Exchange) to .egg.");
 
@@ -50,6 +57,7 @@ run() {
   DAEToEggConverter converter;
   converter.set_egg_data(_data);
   converter._allow_errors = _allow_errors;
+  converter._invert_transparency = _invert_transparency;
 
   apply_parameters(converter);
 
