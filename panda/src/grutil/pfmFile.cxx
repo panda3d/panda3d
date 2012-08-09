@@ -999,10 +999,10 @@ void PfmFile::
 project(const Lens *lens) {
   nassertv(is_valid());
 
-  static LMatrix4f to_uv(0.5, 0.0, 0.0, 0.0,
-                        0.0, 0.5, 0.0, 0.0, 
-                        0.0, 0.0, 1.0, 0.0, 
-                        0.5, 0.5, 0.0, 1.0);
+  static LMatrix4f to_uv(0.5f, 0.0f, 0.0f, 0.0f,
+                         0.0f, 0.5f, 0.0f, 0.0f, 
+                         0.0f, 0.0f, 0.5f, 0.0f, 
+                         0.5f, 0.5f, 0.5f, 1.0f);
   
   for (int yi = 0; yi < _y_size; ++yi) {
     for (int xi = 0; xi < _x_size; ++xi) {
