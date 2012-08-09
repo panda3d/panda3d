@@ -1364,11 +1364,11 @@ generate_vis_points() const {
   GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
 
   LPoint2f uv_scale(1.0, 1.0);
-  if (_x_size > 1) {
-    uv_scale[0] = 1.0f / PN_float32(_x_size - 1);
+  if (_x_size > 0) {
+    uv_scale[0] = 1.0f / PN_float32(_x_size);
   }
-  if (_y_size > 1) {
-    uv_scale[1] = 1.0f / PN_float32(_y_size - 1);
+  if (_y_size > 0) {
+    uv_scale[1] = 1.0f / PN_float32(_y_size);
   }
 
   int num_points = 0;
@@ -1379,8 +1379,8 @@ generate_vis_points() const {
       }
 
       const LPoint3f &point = get_point(xi, yi);
-      LPoint2f uv(PN_float32(xi) * uv_scale[0],
-                  PN_float32(yi) * uv_scale[1]);
+      LPoint2f uv((PN_float32(xi) + 0.5) * uv_scale[0],
+                  (PN_float32(yi) + 0.5) * uv_scale[1]);
       if (_vis_inverse) {
         vertex.add_data2f(uv);
         texcoord.add_data3f(point);
@@ -2093,8 +2093,8 @@ add_data(const PfmFile &file, GeomVertexWriter &vwriter, int xi, int yi, bool re
   switch (_source) {
   case CT_texcoord2:
     { 
-      LPoint2f uv(PN_float32(xi) / PN_float32(file._x_size - 1),
-                  PN_float32(yi) / PN_float32(file._y_size - 1));
+      LPoint2f uv((PN_float32(xi) + 0.5) / PN_float32(file._x_size),
+                  (PN_float32(yi) + 0.5) / PN_float32(file._y_size));
       transform_point(uv);
       vwriter.set_data2f(uv);
     }
@@ -2102,8 +2102,8 @@ add_data(const PfmFile &file, GeomVertexWriter &vwriter, int xi, int yi, bool re
 
   case CT_texcoord3:
     {
-      LPoint3f uv(PN_float32(xi) / PN_float32(file._x_size - 1),
-                  PN_float32(yi) / PN_float32(file._y_size - 1), 
+      LPoint3f uv((PN_float32(xi) + 0.5) / PN_float32(file._x_size),
+                  (PN_float32(yi) + 0.5) / PN_float32(file._y_size), 
                   0.0f);
       transform_point(uv);
       vwriter.set_data3f(uv);
