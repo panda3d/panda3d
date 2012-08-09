@@ -82,6 +82,9 @@ PUBLISHED:
   INLINE void set_invert_uvs(bool invert_uvs);
   INLINE bool get_invert_uvs() const;
 
+  INLINE void set_texcoord_3d(bool texcoord_3d);
+  INLINE bool get_texcoord_3d() const;
+
   INLINE void set_vignette_on(bool vignette_on);
   INLINE bool get_vignette_on() const;
 
@@ -123,6 +126,7 @@ private:
   PT(LensNode) _projector_node;
   PT(InternalName) _texcoord_name;
   bool _invert_uvs;
+  bool _texcoord_3d;
   bool _vignette_on;
   LColor _vignette_color;
   LColor _frame_color;

@@ -87,6 +87,33 @@ get_invert_uvs() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ProjectionScreen::set_texcoord_3d
+//       Access: Published
+//  Description: Set this true to force 3-D texture coordinates to be
+//               created for the geometry.  When this is true and the
+//               geometry has only 2-D texture coordinates, those
+//               texture coordinates are dumped in favor of 3-D
+//               coordinates.  When this is false, whatever texture
+//               coordinates already exist are preserved as-is.
+////////////////////////////////////////////////////////////////////
+INLINE void ProjectionScreen::
+set_texcoord_3d(bool texcoord_3d) {
+  _texcoord_3d = texcoord_3d;
+  _stale = true;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: ProjectionScreen::get_texcoord_3d
+//       Access: Published
+//  Description: See set_texcoord_3d().
+////////////////////////////////////////////////////////////////////
+INLINE bool ProjectionScreen::
+get_texcoord_3d() const {
+  return _texcoord_3d;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ProjectionScreen::set_vignette_on
 //       Access: Published
 //  Description: Specifies whether vertex-based vignetting should be

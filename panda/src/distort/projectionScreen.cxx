@@ -40,6 +40,7 @@ ProjectionScreen(const string &name) : PandaNode(name)
   _texcoord_name = InternalName::get_texcoord();
 
   _invert_uvs = project_invert_uvs;
+  _texcoord_3d = false;
   _vignette_on = false;
   _vignette_color.set(0.0f, 0.0f, 0.0f, 1.0f);
   _frame_color.set(1.0f, 1.0f, 1.0f, 1.0f);
@@ -547,7 +548,8 @@ recompute_geom(Geom *geom, const LMatrix4 &rel_mat) {
   // Iterate through all the vertices in the Geom.
 
   CPT(GeomVertexData) vdata = geom->get_vertex_data();
-  if (!vdata->has_column(_texcoord_name)) {
+  CPT(GeomVertexFormat) vformat = vdata->get_format();
+  if (!vformat->has_column(_texcoord_name) || (_texcoord_3d && vformat->get_column(_texcoord_name)->get_num_components() < 3)) {
     // We need to add a new column for the new texcoords.
     vdata = vdata->replace_column
       (_texcoord_name, 3, Geom::NT_stdfloat, Geom::C_texcoord);
