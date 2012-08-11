@@ -990,6 +990,7 @@ def OverrideValue(parameter, value):
 
 def PkgConfigHavePkg(pkgname, tool = "pkg-config"):
     """Returns a bool whether the pkg-config package is installed."""
+
     if (sys.platform == "win32" or not LocateBinary(tool)):
         return False
     if (tool == "pkg-config"):
@@ -1004,6 +1005,7 @@ def PkgConfigHavePkg(pkgname, tool = "pkg-config"):
 
 def PkgConfigGetLibs(pkgname, tool = "pkg-config"):
     """Returns a list of libs for the package, prefixed by -l."""
+
     if (sys.platform == "win32" or not LocateBinary(tool)):
         return []
     if (tool == "pkg-config"):
@@ -1034,6 +1036,7 @@ def PkgConfigGetLibs(pkgname, tool = "pkg-config"):
 
 def PkgConfigGetIncDirs(pkgname, tool = "pkg-config"):
     """Returns a list of includes for the package, NOT prefixed by -I."""
+
     if (sys.platform == "win32" or not LocateBinary(tool)):
         return []
     if (tool == "pkg-config"):
@@ -1051,11 +1054,12 @@ def PkgConfigGetIncDirs(pkgname, tool = "pkg-config"):
 
 def PkgConfigGetLibDirs(pkgname, tool = "pkg-config"):
     """Returns a list of library paths for the package, NOT prefixed by -L."""
+
     if (sys.platform == "win32" or not LocateBinary(tool)):
         return []
     if (tool == "pkg-config"):
         handle = os.popen(LocateBinary("pkg-config") + " --silence-errors --libs-only-L " + pkgname)
-    elif (tool == "wx-config"):
+    elif (tool == "wx-config" or tool == "ode-config"):
         return []
     else:
         handle = os.popen(LocateBinary(tool) + " --ldflags")
@@ -1070,6 +1074,7 @@ def PkgConfigGetLibDirs(pkgname, tool = "pkg-config"):
 
 def PkgConfigGetDefSymbols(pkgname, tool = "pkg-config"):
     """Returns a dictionary of preprocessor definitions."""
+
     if (sys.platform == "win32" or not LocateBinary(tool)):
         return []
     if (tool == "pkg-config"):
@@ -2134,7 +2139,7 @@ def CalcLocation(fn, ipath):
         if (fn.endswith(".plist")): return CxxFindSource(fn, ipath)
         if (fn.endswith(".obj")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".o"
         if (fn.endswith(".dll")):   return OUTPUTDIR+"/lib/"+fn[:-4]+".dylib"
-        if (fn.endswith(".pyd")):   return OUTPUTDIR+"/lib/"+fn[:-4]+".dylib"
+        if (fn.endswith(".pyd")):   return OUTPUTDIR+"/lib/"+fn[:-4]+".so"
         if (fn.endswith(".mll")):   return OUTPUTDIR+"/plugins/"+fn
         if (fn.endswith(".exe")):   return OUTPUTDIR+"/bin/"+fn[:-4]
         if (fn.endswith(".lib")):   return OUTPUTDIR+"/lib/"+fn[:-4]+".a"

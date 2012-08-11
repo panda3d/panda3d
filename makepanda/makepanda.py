@@ -600,6 +600,12 @@ if (COMPILER=="LINUX"):
     if (sys.platform != "darwin"):
         PkgDisable("CARBON")
         PkgDisable("COCOA")
+    elif (RTDIST or RUNTIME):
+        # We don't support Cocoa in the runtime yet.
+        PkgDisable("COCOA")
+    elif (is_64 and not UNIVERSAL):
+        # 64-bits OS X doesn't have Carbon.
+        PkgDisable("CARBON")
 
     if (PkgSkip("PYTHON")==0):
         IncDirectory("ALWAYS", SDK["PYTHON"])
@@ -624,7 +630,7 @@ if (COMPILER=="LINUX"):
     if (os.path.isdir("/usr/lib64/gtk-2.0/include")):
         IncDirectory("GTK2", "/usr/lib64/gtk-2.0/include")
 
-    fcollada_libs = ("FColladaD", "FColladaSD")
+    fcollada_libs = ("FColladaD", "FColladaSD", "FColladaS")
     # WARNING! The order of the ffmpeg libraries matters!
     ffmpeg_libs = ("libavformat", "libavcodec", "libavutil")
 
@@ -644,7 +650,7 @@ if (COMPILER=="LINUX"):
         SmartPkgEnable("EGL",       "egl",       ("EGL"), ("EGL/egl.h"))
         SmartPkgEnable("OSMESA",    "osmesa",    ("OSMesa"), ("GL/osmesa.h"))
         SmartPkgEnable("NVIDIACG",  "",          ("Cg"), "Cg/cg.h", framework = "Cg")
-        SmartPkgEnable("ODE",       "",          ("ode"), "ode/ode.h")
+        SmartPkgEnable("ODE",       "",          ("ode"), "ode/ode.h", tool = "ode-config")
         SmartPkgEnable("OPENAL",    "openal",    ("openal"), "AL/al.h", framework = "OpenAL")
         SmartPkgEnable("OPENCV",    "opencv",    ("cv", "highgui", "cvaux", "ml", "cxcore"), ("opencv", "opencv/cv.h"))
         SmartPkgEnable("SQUISH",    "",          ("squish"), "squish.h")
@@ -1828,10 +1834,6 @@ def WriteConfigSettings():
         dtool_config["PHAVE_MALLOC_H"] = 'UNDEF'
         dtool_config["PHAVE_SYS_MALLOC_H"] = '1'
         dtool_config["HAVE_OPENAL_FRAMEWORK"] = '1'
-        if not RTDIST and not RUNTIME:
-            dtool_config["HAVE_COCOA"] = '1'
-        if not (UNIVERSAL or is_64):
-            dtool_config["HAVE_CARBON"] = '1'
         dtool_config["HAVE_X11"] = 'UNDEF'  # We might have X11, but we don't need it.
         dtool_config["HAVE_XRANDR"] = 'UNDEF'
         dtool_config["HAVE_XF86DGA"] = 'UNDEF'
@@ -5983,6 +5985,8 @@ def MakeInstallerOSX():
     oscmd("chmod +x dstroot/scripts/uninstall16/preflight")
 
     oscmd("chmod -R 0775 dstroot/*")
+    DeleteCVS("dstroot")
+    DeleteBuildFiles("dstroot")
     # We need to be root to perform a chown. Bleh.
     # Fortunately PackageMaker does it for us, on 10.5 and above.
     #oscmd("chown -R root:admin dstroot/*", True)
@@ -6017,6 +6021,7 @@ def MakeInstallerOSX():
     if os.path.isfile("/tmp/Info_plist"):
         oscmd("rm -f /tmp/Info_plist")
 
+    # Now that we've built all of the individual packages, build the metapackage.
     dist = open("dstroot/Panda3D/Panda3D.mpkg/Contents/distribution.dist", "w")
     print >>dist, '<?xml version="1.0" encoding="utf-8"?>'
     print >>dist, '<installer-script minSpecVersion="1.000000" authoringTool="com.apple.PackageMaker" authoringToolVersion="3.0.3" authoringToolBuild="174">'
