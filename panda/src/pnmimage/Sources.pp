@@ -11,6 +11,8 @@
 
   #define SOURCES \
      config_pnmimage.h \
+     pfmFile.I pfmFile.h \
+     pnmFileTypePfm.h \
      pnmbitio.h \
      pnmBrush.h pnmBrush.I \
      pnmFileType.h pnmFileTypeRegistry.h pnmImage.I  \
@@ -22,6 +24,8 @@
 
   #define INCLUDED_SOURCES \
      config_pnmimage.cxx \
+     pfmFile.cxx \
+     pnmFileTypePfm.cxx \
      pnm-image-filter.cxx \
      pnmbitio.cxx \
      pnmBrush.cxx \
@@ -33,6 +37,8 @@
 
   #define INSTALL_HEADERS \
      config_pnmimage.h \
+     pfmFile.I pfmFile.h \
+     pnmFileTypePfm.h \
      pnmBrush.h pnmBrush.I \
      pnmFileType.h pnmFileTypeRegistry.h pnmImage.I \
      pnmImage.h pnmImageHeader.I pnmImageHeader.h \

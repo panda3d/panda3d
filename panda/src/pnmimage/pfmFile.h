@@ -33,7 +33,7 @@ class GeomVertexWriter;
 //               numbers, either 3-component or 1-component, or with a
 //               special extension, 4-component.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_GRUTIL PfmFile {
+class EXPCL_PANDA_PNMIMAGE PfmFile {
 PUBLISHED:
   PfmFile();
   PfmFile(const PfmFile &copy);

@@ -13,7 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pnmFileTypePfm.h"
-#include "config_grutil.h"
+#include "config_pnmimage.h"
 
 #include "pnmFileTypeRegistry.h"
 #include "bamReader.h"

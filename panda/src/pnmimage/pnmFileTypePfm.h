@@ -18,6 +18,7 @@
 #include "pandabase.h"
 
 #include "pnmFileType.h"
+#include "pnmImage.h"
 #include "pnmReader.h"
 #include "pnmWriter.h"
 
@@ -26,7 +27,7 @@
 // Description : For reading and writing PFM files using the basic
 //               PNMImage interface, as if they were basic RGB files.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_GRUTIL PNMFileTypePfm : public PNMFileType {
+class EXPCL_PANDA_PNMIMAGE PNMFileTypePfm : public PNMFileType {
 public:
   PNMFileTypePfm();
 

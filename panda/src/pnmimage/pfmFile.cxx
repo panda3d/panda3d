@@ -12,7 +12,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_grutil.h"
+#include "config_pnmimage.h"
 #include "pfmFile.h"
 #include "virtualFileSystem.h"
 #include "pandaFileStream.h"
@@ -144,13 +144,13 @@ read(const Filename &fullpath) {
   PT(VirtualFile) file = vfs->get_file(filename);
   if (file == (VirtualFile *)NULL) {
     // No such file.
-    grutil_cat.error()
+    pnmimage_cat.error()
       << "Could not find " << fullpath << "\n";
     return false;
   }
 
-  if (grutil_cat.is_debug()) {
-    grutil_cat.debug()
+  if (pnmimage_cat.is_debug()) {
+    pnmimage_cat.debug()
       << "Reading PFM file " << filename << "\n";
   }
 
@@ -201,13 +201,13 @@ read(istream &in, const Filename &fullpath, const string &magic_number) {
     PNMReader *reader = pnm.make_reader
       (&in, false, fullpath, identifier, NULL, false);
     if (reader == (PNMReader *)NULL) {
-      grutil_cat.error()
+      pnmimage_cat.error()
         << "Not a PFM file or known image file type: " << fullpath << "\n";
       return false;
     }
 
     if (!pnm.read(reader)) {
-      grutil_cat.error()
+      pnmimage_cat.error()
         << "Invalid image file: " << fullpath << "\n";
       return false;
     }
@@ -219,7 +219,7 @@ read(istream &in, const Filename &fullpath, const string &magic_number) {
   PN_float32 scale;
   in >> width >> height >> scale;
   if (!in) {
-    grutil_cat.error()
+    pnmimage_cat.error()
       << "Error parsing PFM header: " << fullpath << "\n";
     return false;
   }
@@ -291,7 +291,7 @@ read(istream &in, const Filename &fullpath, const string &magic_number) {
 bool PfmFile::
 write(const Filename &fullpath) {
   if (!is_valid()) {
-    grutil_cat.error()
+    pnmimage_cat.error()
       << "PFM file is invalid.\n";
     return false;
   }
@@ -299,7 +299,7 @@ write(const Filename &fullpath) {
   Filename filename = Filename::binary_filename(fullpath);
   pofstream out;
   if (!filename.open_write(out)) {
-    grutil_cat.error()
+    pnmimage_cat.error()
       << "Unable to open " << filename << "\n";
     return false;
   }
@@ -319,8 +319,8 @@ write(const Filename &fullpath) {
     }
   }
   
-  if (grutil_cat.is_debug()) {
-    grutil_cat.debug()
+  if (pnmimage_cat.is_debug()) {
+    pnmimage_cat.debug()
       << "Writing PFM file " << filename << "\n";
   }
 
@@ -1485,8 +1485,8 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
   }
 
   // OK, now we know how many cells we need.
-  if (grutil_cat.is_debug()) {
-    grutil_cat.debug()
+  if (pnmimage_cat.is_debug()) {
+    pnmimage_cat.debug()
       << "Generating mesh with " << num_x_cells << " x " << num_y_cells
       << " pieces.\n";
   }

@@ -17,8 +17,15 @@
 
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
+#include "configVariableInt.h"
+#include "configVariableBool.h"
 
 NotifyCategoryDecl(pnmimage, EXPCL_PANDA_PNMIMAGE, EXPTP_PANDA_PNMIMAGE);
+
+extern ConfigVariableBool pfm_force_littleendian;
+extern ConfigVariableBool pfm_reverse_dimensions;
+extern ConfigVariableInt pfm_vis_max_vertices;
+extern ConfigVariableInt pfm_vis_max_indices;
 
 extern EXPCL_PANDA_PNMIMAGE void init_libpnmimage();
 
