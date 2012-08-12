@@ -18,7 +18,7 @@
 #include "pandabase.h"
 
 #include "pnmImageHeader.h"
-
+class PfmFile;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PNMReader
@@ -39,6 +39,8 @@ public:
   INLINE PNMFileType *get_type() const;
 
   virtual void prepare_read();
+  virtual bool is_floating_point();
+  virtual bool read_pfm(PfmFile &pfm);
   virtual int read_data(xel *array, xelval *alpha);
   virtual bool supports_read_row() const;
   virtual bool read_row(xel *array, xelval *alpha, int x_size, int y_size);

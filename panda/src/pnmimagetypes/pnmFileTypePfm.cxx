@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pnmFileTypePfm.h"
+#include "pfmFile.h"
 #include "config_pnmimage.h"
 
 #include "pnmFileTypeRegistry.h"
@@ -134,45 +135,115 @@ PNMFileTypePfm::Reader::
 Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
 {
-  PfmFile pfm;
-  if (!pfm.read(*file, Filename(), magic_number)) {
+  read_magic_number(_file, magic_number, 2);
+
+  if (magic_number == "pf") {
+    // In this case, we're probably reading a special-extension
+    // 4-channel pfm file, and we need a four-byte magic number to
+    // confirm this and fully identify the file format.
+    read_magic_number(_file, magic_number, 4);
+  }
+
+  if (magic_number == "PF") {
+    _num_channels = 3;
+
+  } else if (magic_number == "Pf") {
+    _num_channels = 1;
+
+  } else if (magic_number == "pf4c") {
+    // Special DRZ extension.
+    _num_channels = 4;
+    
+  } else {
+    pnmimage_cat.debug()
+      << "Not a PFM file\n";
     _is_valid = false;
     return;
   }
 
-  pfm.store(_image);
-  PNMImageHeader::operator = (_image);
+  (*_file) >> _x_size >> _y_size >> _scale;
+  if (!(*_file)) {
+    pnmimage_cat.debug()
+      << "Error parsing PFM header\n";
+    _is_valid = false;
+    return;
+  }
+
+  // Skip the last newline/whitespace character before the raw data
+  // begins.
+  (*_file).get();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePfm::Reader::read_data
+//     Function: PNMFileTypePfm::Reader::is_floating_point
 //       Access: Public, Virtual
-//  Description: Reads in an entire image all at once, storing it in
-//               the pre-allocated _x_size * _y_size array and alpha
-//               pointers.  (If the image type has no alpha channel,
-//               alpha is ignored.)  Returns the number of rows
-//               correctly read.
-//
-//               Derived classes need not override this if they
-//               instead provide supports_read_row() and read_row(),
-//               below.
+//  Description: Returns true if this PNMFileType represents a
+//               floating-point image type, false if it is a normal,
+//               integer type.  If this returns true, read_pfm() is
+//               implemented instead of read_data().
 ////////////////////////////////////////////////////////////////////
-int PNMFileTypePfm::Reader::
-read_data(xel *array, xelval *alpha) {
+bool PNMFileTypePfm::Reader::
+is_floating_point() {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypePfm::Reader::read_pfm
+//       Access: Public, Virtual
+//  Description: Reads floating-point data directly into the indicated
+//               PfmFile.  Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool PNMFileTypePfm::Reader::
+read_pfm(PfmFile &pfm) {
   if (!is_valid()) {
-    return 0;
+    return false;
   }
 
-  nassertr(_image.get_x_size() == get_x_size() &&
-           _image.get_y_size() == get_y_size(), 0);
-
-  memcpy(array, _image.get_array(), get_x_size() * get_y_size() * sizeof(xel));
-
-  if (has_alpha()) {
-    memcpy(alpha, _image.get_alpha_array(), get_x_size() * get_y_size() * sizeof(xelval));
+  bool little_endian = false;
+  if (_scale < 0) {
+    _scale = -_scale;
+    little_endian = true;
+  }
+  if (pfm_force_littleendian) {
+    little_endian = true;
+  }
+  if (pfm_reverse_dimensions) {
+    int t = _x_size;
+    _x_size = _y_size;
+    _y_size = t;
   }
 
-  return get_y_size();
+  pfm.clear(_x_size, _y_size, _num_channels);
+  pfm.set_scale(_scale);
+
+  // So far, so good.  Now read the data.
+  int size = _x_size * _y_size * _num_channels;
+
+  pvector<PN_float32> table;
+  pfm.swap_table(table);
+
+  (*_file).read((char *)&table[0], sizeof(PN_float32) * size);
+  if ((*_file).fail() && !(*_file).eof()) {
+    pfm.clear();
+    return false;
+  }
+
+  // Now we may have to endian-reverse the data.
+#ifdef WORDS_BIGENDIAN
+  bool endian_reversed = little_endian;
+#else
+  bool endian_reversed = !little_endian;
+#endif
+
+  if (endian_reversed) {
+    for (int ti = 0; ti < size; ++ti) {
+      ReversedNumericData nd(&table[ti], sizeof(PN_float32));
+      nd.store_value(&table[ti], sizeof(PN_float32));
+    }
+  }
+
+  pfm.swap_table(table);
+  return true;
 }
 
 
@@ -188,52 +259,79 @@ Writer(PNMFileType *type, ostream *file, bool owns_file) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PNMFileTypePfm::write_data
+//     Function: PNMFileTypePfm::Writer::supports_floating_point
 //       Access: Public, Virtual
-//  Description: Writes out an entire image all at once, including the
-//               header, based on the image data stored in the given
-//               _x_size * _y_size array and alpha pointers.  (If the
-//               image type has no alpha channel, alpha is ignored.)
-//               Returns the number of rows correctly written.
-//
-//               It is the user's responsibility to fill in the header
-//               data via calls to set_x_size(), set_num_channels(),
-//               etc., or copy_header_from(), before calling
-//               write_data().
-//
-//               It is important to delete the PNMWriter class after
-//               successfully writing the data.  Failing to do this
-//               may result in some data not getting flushed!
-//
-//               Derived classes need not override this if they
-//               instead provide supports_streaming() and write_row(),
-//               below.
+//  Description: Returns true if this PNMFileType can accept a
+//               floating-point image type, false if it can only
+//               accept a normal, integer type.  If this returns true,
+//               write_pfm() is implemented.
 ////////////////////////////////////////////////////////////////////
-int PNMFileTypePfm::Writer::
-write_data(xel *array, xelval *alpha) {
-  if (_x_size <= 0 || _y_size <= 0) {
-    return 0;
-  }
+bool PNMFileTypePfm::Writer::
+supports_floating_point() {
+  return true;
+}
 
-  PNMImage image;
-  image.copy_header_from(*this);
-  nassertr(image.get_x_size() == get_x_size() && 
-           image.get_y_size() == get_y_size(), 0);
-  memcpy(image.get_array(), array, get_x_size() * get_y_size() * sizeof(xel));
-  if (has_alpha()) {
-    memcpy(image.get_alpha_array(), alpha, get_x_size() * get_y_size() * sizeof(xelval));
-  }
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypePfm::Writer::supports_integer
+//       Access: Public, Virtual
+//  Description: Returns true if this PNMFileType can accept an
+//               integer image type, false if it can only
+//               accept a floating-point type.  If this returns true,
+//               write_data() or write_row() is implemented.
+////////////////////////////////////////////////////////////////////
+bool PNMFileTypePfm::Writer::
+supports_integer() {
+  return false;
+}
 
-  PfmFile pfm;
-  if (!pfm.load(image)) {
-    return 0;
-  }
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypePfm::Writer::write_pfm
+//       Access: Public, Virtual
+//  Description: Writes floating-point data from the indicated
+//               PfmFile.  Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool PNMFileTypePfm::Writer::
+write_pfm(const PfmFile &pfm) {
+  nassertr(pfm.is_valid(), false);
 
-  if (!pfm.write(*_file)) {
-    return 0;
-  }
+  switch (pfm.get_num_channels()) {
+  case 1:
+    (*_file) << "Pf\n";
+    break;
 
-  return get_y_size();
+  case 3:
+    (*_file) << "PF\n";
+    break;
+
+  case 4:
+    (*_file) << "pf4c\n";
+    break;
+
+  default:
+    nassertr(false, false);
+  }
+  (*_file) << pfm.get_x_size() << " " << pfm.get_y_size() << "\n";
+
+  PN_float32 scale = cabs(pfm.get_scale());
+  if (scale == 0.0f) {
+    scale = 1.0f;
+  }
+#ifndef WORDS_BIGENDIAN
+  // Little-endian computers must write a negative scale to indicate
+  // the little-endian nature of the output.
+  scale = -scale;
+#endif
+  (*_file) << scale << "\n";
+
+  int size = pfm.get_x_size() * pfm.get_y_size() * pfm.get_num_channels();
+  const pvector<PN_float32> &table = pfm.get_table();
+  (*_file).write((const char *)&table[0], sizeof(PN_float32) * size);
+
+  if ((*_file).fail()) {
+    return false;
+  }
+  nassertr(sizeof(PN_float32) == 4, false);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

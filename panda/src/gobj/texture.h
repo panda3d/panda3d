@@ -41,6 +41,7 @@
 #include "pipelineCycler.h"
 
 class PNMImage;
+class PfmFile;
 class TextureContext;
 class FactoryParams;
 class PreparedGraphicsObjects;
@@ -541,6 +542,9 @@ protected:
   virtual bool do_load_one(CData *cdata,
                            const PNMImage &pnmimage, const string &name,
                            int z, int n, const LoaderOptions &options);
+  virtual bool do_load_one(CData *cdata,
+                           const PfmFile &pfm, const string &name,
+                           int z, int n, const LoaderOptions &options);
   bool do_read_txo_file(CData *cdata, const Filename &fullpath);
   bool do_read_txo(CData *cdata, istream &in, const string &filename);
   bool do_read_dds_file(CData *cdata, const Filename &fullpath, bool header_only);
@@ -550,6 +554,7 @@ protected:
                 bool write_pages, bool write_mipmaps);
   bool do_write_one(CData *cdata, const Filename &fullpath, int z, int n);
   bool do_store_one(CData *cdata, PNMImage &pnmimage, int z, int n);
+  bool do_store_one(CData *cdata, PfmFile &pfm, int z, int n);
   bool do_write_txo_file(const CData *cdata, const Filename &fullpath) const;
   bool do_write_txo(const CData *cdata, ostream &out, const string &filename) const;
 
@@ -656,10 +661,17 @@ private:
   static void convert_from_pnmimage(PTA_uchar &image, size_t page_size, 
                                     int z, const PNMImage &pnmimage,
                                     int num_components, int component_width);
+  static void convert_from_pfm(PTA_uchar &image, size_t page_size, 
+                               int z, const PfmFile &pfm, 
+                               int num_components, int component_width);
   static bool convert_to_pnmimage(PNMImage &pnmimage, int x_size, int y_size,
                                   int num_components, int component_width,
                                   CPTA_uchar image, size_t page_size, 
                                   int z);
+  static bool convert_to_pfm(PfmFile &pfm, int x_size, int y_size,
+                             int num_components, int component_width,
+                             CPTA_uchar image, size_t page_size, 
+                             int z);
   static PTA_uchar read_dds_level_bgr8(Texture *tex, CData *cdata, const DDSHeader &header, 
                                        int n, istream &in);
   static PTA_uchar read_dds_level_rgb8(Texture *tex, CData *cdata, const DDSHeader &header, 

@@ -28,6 +28,8 @@
 #include "string_utils.h"
 #include "preparedGraphicsObjects.h"
 #include "pnmImage.h"
+#include "pnmReader.h"
+#include "pfmFile.h"
 #include "virtualFileSystem.h"
 #include "datagramInputFile.h"
 #include "datagramOutputFile.h"
@@ -2913,12 +2915,40 @@ do_read_one(CData *cdata, const Filename &fullpath, const Filename &alpha_fullpa
   }
 
   PNMImage image;
-  if (header_only || textures_header_only) {
-    if (!image.read_header(fullpath)) {
-      gobj_cat.error()
-        << "Texture::read() - couldn't read: " << fullpath << endl;
-      return false;
+  PfmFile pfm;
+  PNMReader *image_reader = image.make_reader(fullpath, NULL, false);
+  if (image_reader == NULL) {
+    gobj_cat.error()
+      << "Texture::read() - couldn't read: " << fullpath << endl;
+    return false;
+  }
+  image.copy_header_from(*image_reader);
+
+  // If it's a single-channel floating-point image file, read it by
+  // default into a floating-point texture.  (Multi-channel image
+  // files are ready as integers by default, since current graphics
+  // API's don't support multi-channel float textures.)
+  bool read_floating_point;
+  int texture_load_type = (options.get_texture_flags() & (LoaderOptions::TF_integer | LoaderOptions::TF_float));
+  switch (texture_load_type) {
+  case LoaderOptions::TF_integer:
+    read_floating_point = false;
+    break;
+
+  case LoaderOptions::TF_float:
+    read_floating_point = true;
+    break;
+
+  default:
+    // Neither TF_integer nor TF_float was specified; determine which
+    // way the texture wants to be loaded.
+    read_floating_point = (image_reader->is_floating_point() && image_reader->get_num_channels() == 1);
+    if (!alpha_fullpath.empty()) {
+      read_floating_point = false;
     }
+  }
+
+  if (header_only || textures_header_only) {
     int x_size = image.get_x_size();
     int y_size = image.get_y_size();
     if (z == 0 && n == 0) {
@@ -2938,20 +2968,19 @@ do_read_one(CData *cdata, const Filename &fullpath, const Filename &alpha_fullpa
       y_size = image.get_read_y_size();
     }
 
-    image = PNMImage(x_size, y_size, image.get_num_channels(),
-                     image.get_maxval(), image.get_type());
-    image.fill(0.2, 0.3, 1.0);
-    if (image.has_alpha()) {
-      image.alpha_fill(1.0);
+    if (read_floating_point) {
+      pfm.clear(x_size, y_size, image.get_num_channels());
+    } else {
+      image = PNMImage(x_size, y_size, image.get_num_channels(),
+                       image.get_maxval(), image.get_type());
+      image.fill(0.2, 0.3, 1.0);
+      if (image.has_alpha()) {
+        image.alpha_fill(1.0);
+      }
     }
+    delete image_reader;
 
   } else {
-    if (!image.read_header(fullpath, NULL, false)) {
-      gobj_cat.error()
-        << "Texture::read() - couldn't read: " << fullpath << endl;
-      return false;
-    }
-
     if (z == 0 && n == 0) {
       cdata->_orig_file_x_size = image.get_x_size();
       cdata->_orig_file_y_size = image.get_y_size();
@@ -2970,7 +2999,14 @@ do_read_one(CData *cdata, const Filename &fullpath, const Filename &alpha_fullpa
         << "\n";
     }
 
-    if (!image.read(fullpath, NULL, false)) {
+    bool success;
+    if (read_floating_point) {
+      success = pfm.read(image_reader);
+    } else {
+      success = image.read(image_reader);
+    }
+
+    if (!success) {
       gobj_cat.error()
         << "Texture::read() - couldn't read: " << fullpath << endl;
       return false;
@@ -2980,16 +3016,19 @@ do_read_one(CData *cdata, const Filename &fullpath, const Filename &alpha_fullpa
 
   PNMImage alpha_image;
   if (!alpha_fullpath.empty()) {
+    PNMReader *alpha_image_reader = alpha_image.make_reader(alpha_fullpath, NULL, false);
+    if (alpha_image_reader == NULL) {
+      gobj_cat.error()
+        << "Texture::read() - couldn't read: " << alpha_fullpath << endl;
+      return false;
+    }
+    alpha_image.copy_header_from(*alpha_image_reader);
+
     if (record != (BamCacheRecord *)NULL) {
       record->add_dependent_file(alpha_fullpath);
     }
 
     if (header_only || textures_header_only) {
-      if (!alpha_image.read_header(alpha_fullpath)) {
-        gobj_cat.error()
-          << "Texture::read() - couldn't read: " << alpha_fullpath << endl;
-        return false;
-      }
       int x_size = image.get_x_size();
       int y_size = image.get_y_size();
       alpha_image = PNMImage(x_size, y_size, alpha_image.get_num_channels(),
@@ -2998,14 +3037,9 @@ do_read_one(CData *cdata, const Filename &fullpath, const Filename &alpha_fullpa
       if (alpha_image.has_alpha()) {
         alpha_image.alpha_fill(1.0);
       }
+      delete alpha_image_reader;
 
     } else {
-      if (!alpha_image.read_header(alpha_fullpath, NULL, true)) {
-        gobj_cat.error()
-          << "Texture::read() - couldn't read (alpha): " << alpha_fullpath << endl;
-        return false;
-      }
-
       if (image.get_x_size() != alpha_image.get_x_size() ||
           image.get_y_size() != alpha_image.get_y_size()) {
         gobj_cat.info()
@@ -3016,7 +3050,7 @@ do_read_one(CData *cdata, const Filename &fullpath, const Filename &alpha_fullpa
         alpha_image.set_read_size(image.get_x_size(), image.get_y_size());
       }
 
-      if (!alpha_image.read(alpha_fullpath, NULL, true)) {
+      if (!alpha_image.read(alpha_image_reader)) {
         gobj_cat.error()
           << "Texture::read() - couldn't read (alpha): " << alpha_fullpath << endl;
         return false;
@@ -3106,28 +3140,34 @@ do_read_one(CData *cdata, const Filename &fullpath, const Filename &alpha_fullpa
     }
   }
 
-  // Now see if we want to pad the image within a larger power-of-2
-  // image.
-  int pad_x_size = 0;
-  int pad_y_size = 0;
-  if (do_get_auto_texture_scale(cdata) == ATS_pad) {
-    int new_x_size = image.get_x_size();
-    int new_y_size = image.get_y_size();
-    if (do_adjust_this_size(cdata, new_x_size, new_y_size, fullpath.get_basename(), true)) {
-      pad_x_size = new_x_size - image.get_x_size();
-      pad_y_size = new_y_size - image.get_y_size();
-      PNMImage new_image(new_x_size, new_y_size, image.get_num_channels(),
-                         image.get_maxval());
-      new_image.copy_sub_image(image, 0, new_y_size - image.get_y_size());
-      image.take_from(new_image);
+  if (read_floating_point) {
+    if (!do_load_one(cdata, pfm, fullpath.get_basename(), z, n, options)) {
+      return false;
     }
-  }
+  } else {
+    // Now see if we want to pad the image within a larger power-of-2
+    // image.
+    int pad_x_size = 0;
+    int pad_y_size = 0;
+    if (do_get_auto_texture_scale(cdata) == ATS_pad) {
+      int new_x_size = image.get_x_size();
+      int new_y_size = image.get_y_size();
+      if (do_adjust_this_size(cdata, new_x_size, new_y_size, fullpath.get_basename(), true)) {
+        pad_x_size = new_x_size - image.get_x_size();
+        pad_y_size = new_y_size - image.get_y_size();
+        PNMImage new_image(new_x_size, new_y_size, image.get_num_channels(),
+                           image.get_maxval());
+        new_image.copy_sub_image(image, 0, new_y_size - image.get_y_size());
+        image.take_from(new_image);
+      }
+    }
+    
+    if (!do_load_one(cdata, image, fullpath.get_basename(), z, n, options)) {
+      return false;
+    }
 
-  if (!do_load_one(cdata, image, fullpath.get_basename(), z, n, options)) {
-    return false;
+    do_set_pad_size(cdata, pad_x_size, pad_y_size, 0);
   }
-
-  do_set_pad_size(cdata, pad_x_size, pad_y_size, 0);
   return true;
 }
 
@@ -3199,6 +3239,74 @@ do_load_one(CData *cdata, const PNMImage &pnmimage, const string &name, int z, i
     convert_from_pnmimage(cdata->_ram_images[n]._image,
                           do_get_expected_ram_mipmap_page_size(cdata, n), z,
                           pnmimage, cdata->_num_components, cdata->_component_width);
+  }
+  Thread::consider_yield();
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_load_one
+//       Access: Protected, Virtual
+//  Description: Internal method to load a single page or mipmap
+//               level.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+do_load_one(CData *cdata, const PfmFile &pfm, const string &name, int z, int n,
+            const LoaderOptions &options) {
+  if (cdata->_ram_images.size() <= 1 && n == 0) {
+    // A special case for mipmap level 0.  When we load mipmap level
+    // 0, unless we already have mipmap levels, it determines the
+    // image properties like size and number of components.
+    if (!do_reconsider_z_size(cdata, z, options)) {
+      return false;
+    }
+    nassertr(z >= 0 && z < cdata->_z_size * cdata->_num_views, false);
+
+    if (z == 0) {
+      ComponentType component_type = T_float;
+      if (!do_reconsider_image_properties(cdata, pfm.get_x_size(), pfm.get_y_size(),
+                                          pfm.get_num_channels(), component_type,
+                                          z, options)) {
+        return false;
+      }
+    }
+
+    do_modify_ram_image(cdata);
+    cdata->_loaded_from_image = true;
+  }
+
+  do_modify_ram_mipmap_image(cdata, n);
+
+  // Ensure the PfmFile is an appropriate size.
+  int x_size = do_get_expected_mipmap_x_size(cdata, n);
+  int y_size = do_get_expected_mipmap_y_size(cdata, n);
+  if (pfm.get_x_size() != x_size ||
+      pfm.get_y_size() != y_size) {
+    gobj_cat.info()
+      << "Automatically rescaling " << name;
+    if (n != 0) {
+      gobj_cat.info(false)
+        << " mipmap level " << n;
+    }
+    gobj_cat.info(false)
+      << " from " << pfm.get_x_size() << " by "
+      << pfm.get_y_size() << " to " << x_size << " by "
+      << y_size << "\n";
+
+    PfmFile scaled(pfm);
+    scaled.resize(x_size, y_size);
+    Thread::consider_yield();
+
+    convert_from_pfm(cdata->_ram_images[n]._image,
+                     do_get_expected_ram_mipmap_page_size(cdata, n), z,
+                     scaled, cdata->_num_components, cdata->_component_width);
+  } else {
+    // Now copy the pixel data from the PfmFile into our internal
+    // cdata->_image component.
+    convert_from_pfm(cdata->_ram_images[n]._image,
+                     do_get_expected_ram_mipmap_page_size(cdata, n), z,
+                     pfm, cdata->_num_components, cdata->_component_width);
   }
   Thread::consider_yield();
 
@@ -3691,16 +3799,29 @@ do_write_one(CData *cdata, const Filename &fullpath, int z, int n) {
 
   nassertr(cdata->_ram_image_compression == CM_off, false);
 
-  PNMImage pnmimage;
-  if (!do_store_one(cdata, pnmimage, z, n)) {
-    return false;
+  bool success;
+  if (cdata->_component_type == T_float) {
+    // Writing a floating-point texture.
+    PfmFile pfm;
+    if (!do_store_one(cdata, pfm, z, n)) {
+      return false;
+    }
+    success = pfm.write(fullpath);
+  } else {
+    // Writing a normal, integer texture.
+    PNMImage pnmimage;
+    if (!do_store_one(cdata, pnmimage, z, n)) {
+      return false;
+    }
+    success = pnmimage.write(fullpath);
   }
 
-  if (!pnmimage.write(fullpath)) {
+  if (!success) {
     gobj_cat.error()
       << "Texture::write() - couldn't write: " << fullpath << endl;
     return false;
   }
+
   return true;
 }
 
@@ -3728,6 +3849,32 @@ do_store_one(CData *cdata, PNMImage &pnmimage, int z, int n) {
                              cdata->_num_components, cdata->_component_width,
                              cdata->_ram_images[n]._image,
                              do_get_ram_mipmap_page_size(cdata, n), z);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_store_one
+//       Access: Protected
+//  Description: Internal method to copy a page and/or mipmap level to
+//               a PfmFile.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+do_store_one(CData *cdata, PfmFile &pfm, int z, int n) {
+  // First, reload the ram image if necessary.
+  do_get_uncompressed_ram_image(cdata);
+
+  if (!do_has_ram_mipmap_image(cdata, n)) {
+    return false;
+  }
+
+  nassertr(z >= 0 && z < do_get_expected_mipmap_num_pages(cdata, n), false);
+  nassertr(cdata->_ram_image_compression == CM_off, false);
+
+  return convert_to_pfm(pfm,
+                        do_get_expected_mipmap_x_size(cdata, n),
+                        do_get_expected_mipmap_y_size(cdata, n),
+                        cdata->_num_components, cdata->_component_width,
+                        cdata->_ram_images[n]._image,
+                        do_get_ram_mipmap_page_size(cdata, n), z);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4497,28 +4644,32 @@ bool Texture::
 do_reconsider_image_properties(CData *cdata, int x_size, int y_size, int num_components,
                                Texture::ComponentType component_type, int z,
                                const LoaderOptions &options) {
-  if (!cdata->_loaded_from_image || num_components != cdata->_num_components) {
+  if (!cdata->_loaded_from_image || num_components != cdata->_num_components || component_type != cdata->_component_type) {
     // Come up with a default format based on the number of channels.
     // But only do this the first time the file is loaded, or if the
     // number of channels in the image changes on subsequent loads.
 
     switch (num_components) {
     case 1:
-      cdata->_format = F_luminance;
+      if (component_type == T_float) {
+        cdata->_format = F_depth_component;
+      } else {
+        cdata->_format = F_luminance;
+      }
       break;
-
+      
     case 2:
       cdata->_format = F_luminance_alpha;
       break;
-
+      
     case 3:
       cdata->_format = F_rgb;
       break;
-
+      
     case 4:
       cdata->_format = F_rgba;
       break;
-
+      
     default:
       // Eh?
       nassertr(false, false);
@@ -5712,6 +5863,35 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size, int z,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::convert_from_pfm
+//       Access: Private, Static
+//  Description: Internal method to convert pixel data from the
+//               indicated PfmFile into the given ram_image.
+////////////////////////////////////////////////////////////////////
+void Texture::
+convert_from_pfm(PTA_uchar &image, size_t page_size, int z,
+                 const PfmFile &pfm, int num_components, int component_width) {
+  nassertv(component_width == 4);  // Currently only PN_float32 is expected.
+  int x_size = pfm.get_x_size();
+  int y_size = pfm.get_y_size();
+
+  int idx = page_size * z;
+  nassertv(idx + page_size <= image.size());
+  PN_float32 *p = (PN_float32 *)&image[idx];
+
+  for (int j = y_size-1; j >= 0; j--) {
+    for (int i = 0; i < x_size; i++) {
+      for (int c = 0; c < num_components; ++c) {
+        *p = pfm.get_component(i, j, c);
+        ++p;
+      }
+    }
+  }
+
+  nassertv((unsigned char *)p == &image[idx] + page_size);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::convert_to_pnmimage
 //       Access: Private, Static
 //  Description: Internal method to convert pixel data to the
@@ -5766,6 +5946,36 @@ convert_to_pnmimage(PNMImage &pnmimage, int x_size, int y_size,
   }
 
   nassertr(p == &image[idx] + page_size, false);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::convert_to_pfm
+//       Access: Private, Static
+//  Description: Internal method to convert pixel data to the
+//               indicated PfmFile from the given ram_image.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+convert_to_pfm(PfmFile &pfm, int x_size, int y_size,
+               int num_components, int component_width,
+               CPTA_uchar image, size_t page_size, int z) {
+  nassertr(component_width == 4, false);  // Currently only PN_float32 is expected.
+  pfm.clear(x_size, y_size, num_components);
+
+  int idx = page_size * z;
+  nassertr(idx + page_size <= image.size(), false);
+  const PN_float32 *p = (const PN_float32 *)&image[idx];
+
+  for (int j = y_size-1; j >= 0; j--) {
+    for (int i = 0; i < x_size; i++) {
+      for (int c = 0; c < num_components; ++c) {
+        pfm.set_component(i, j, c, *p);
+        ++p;
+      }
+    }
+  }
+
+  nassertr((unsigned char *)p == &image[idx] + page_size, false);
   return true;
 }
 

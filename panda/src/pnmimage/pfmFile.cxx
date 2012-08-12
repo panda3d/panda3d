@@ -27,6 +27,7 @@
 #include "geomTriangles.h"
 #include "geomVertexWriter.h"
 #include "pnmImage.h"
+#include "pnmReader.h"
 #include "pnmWriter.h"
 #include "string_utils.h"
 #include "lens.h"
@@ -54,11 +55,9 @@ PfmFile() {
 ////////////////////////////////////////////////////////////////////
 PfmFile::
 PfmFile(const PfmFile &copy) :
+  PNMImageHeader(copy),
   _table(copy._table),
-  _x_size(copy._x_size),
-  _y_size(copy._y_size),
   _scale(copy._scale),
-  _num_channels(copy._num_channels),
   _has_no_data_value(copy._has_no_data_value),
   _no_data_value(copy._no_data_value),
   _has_point(copy._has_point),
@@ -74,11 +73,9 @@ PfmFile(const PfmFile &copy) :
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
 operator = (const PfmFile &copy) {
+  PNMImageHeader::operator = (copy);
   _table = copy._table;
-  _x_size = copy._x_size;
-  _y_size = copy._y_size;
   _scale = copy._scale;
-  _num_channels = copy._num_channels;
   _has_no_data_value = copy._has_no_data_value;
   _no_data_value = copy._no_data_value;
   _has_point = copy._has_point;
@@ -108,7 +105,6 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
 clear(int x_size, int y_size, int num_channels) {
-  nassertv(num_channels == 1 || num_channels == 3);
   nassertv(x_size >= 0 && y_size >= 0);
   _x_size = x_size;
   _y_size = y_size;
@@ -172,108 +168,49 @@ read(const Filename &fullpath) {
 //               to a floating-point type.
 ////////////////////////////////////////////////////////////////////
 bool PfmFile::
-read(istream &in, const Filename &fullpath, const string &magic_number) {
+read(istream &in, const Filename &fullpath) {
+  PNMReader *reader = make_reader(&in, false, fullpath);
+  if (reader == (PNMReader *)NULL) {
+    clear();
+    return false;
+  }
+  return read(reader);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::read
+//       Access: Published
+//  Description: Reads the PFM data using the indicated PNMReader.
+//
+//               The PNMReader is always deleted upon completion,
+//               whether successful or not.
+////////////////////////////////////////////////////////////////////
+bool PfmFile::
+read(PNMReader *reader) {
   clear();
 
-  string identifier = magic_number;
-  PNMImageHeader::read_magic_number(&in, identifier, 2);
-
-  if (identifier == "pf") {
-    // In this case, we're probably reading a special-extension
-    // 4-channel pfm file, and we need a four-byte magic number to
-    // confirm this and fully identify the file format.
-    PNMImageHeader::read_magic_number(&in, identifier, 4);
+  if (reader == NULL) {
+    return false;
   }
 
-  if (identifier == "PF") {
-    _num_channels = 3;
+  if (!reader->is_valid()) {
+    delete reader;
+    return false;
+  }
 
-  } else if (identifier == "Pf") {
-    _num_channels = 1;
-
-  } else if (identifier == "pf4c") {
-    _num_channels = 4;
-    
-  } else {
-    // Not a PFM file.  Maybe it's a more conventional image file that
-    // we can read into a PFM.
+  if (!reader->is_floating_point()) {
+    // Not a floating-point file.  Quietly convert it.
     PNMImage pnm;
-    PNMReader *reader = pnm.make_reader
-      (&in, false, fullpath, identifier, NULL, false);
-    if (reader == (PNMReader *)NULL) {
-      pnmimage_cat.error()
-        << "Not a PFM file or known image file type: " << fullpath << "\n";
-      return false;
-    }
-
     if (!pnm.read(reader)) {
-      pnmimage_cat.error()
-        << "Invalid image file: " << fullpath << "\n";
       return false;
     }
 
     return load(pnm);
   }
 
-  int width, height;
-  PN_float32 scale;
-  in >> width >> height >> scale;
-  if (!in) {
-    pnmimage_cat.error()
-      << "Error parsing PFM header: " << fullpath << "\n";
-    return false;
-  }
-
-  // Skip the last newline/whitespace character before the raw data
-  // begins.
-  in.get();
-
-  bool little_endian = false;
-  if (scale < 0) {
-    scale = -scale;
-    little_endian = true;
-  }
-  if (pfm_force_littleendian) {
-    little_endian = true;
-  }
-  if (pfm_reverse_dimensions) {
-    int t = width;
-    width = height;
-    height = t;
-  }
-
-  _x_size = width;
-  _y_size = height;
-  _scale = scale;
-
-  // So far, so good.  Now read the data.
-  int size = _x_size * _y_size * _num_channels;
-
-  // We allocate a little bit bigger to allow safe overflow: you can
-  // call get_point3() or get_point4() on the last point of a 1- or
-  // 3-channel image.
-  _table.insert(_table.end(), size + 4, (PN_float32)0.0);
-
-  in.read((char *)&_table[0], sizeof(PN_float32) * size);
-  if (in.fail() && !in.eof()) {
-    return false;
-  }
-
-  // Now we may have to endian-reverse the data.
-#ifdef WORDS_BIGENDIAN
-  bool endian_reversed = little_endian;
-#else
-  bool endian_reversed = !little_endian;
-#endif
-
-  if (endian_reversed) {
-    for (int ti = 0; ti < size; ++ti) {
-      ReversedNumericData nd(&_table[ti], sizeof(PN_float32));
-      nd.store_value(&_table[ti], sizeof(PN_float32));
-    }
-  }
-
-  return true;
+  bool success = reader->read_pfm(*this);
+  delete reader;
+  return success;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -335,45 +272,56 @@ write(const Filename &fullpath) {
 ////////////////////////////////////////////////////////////////////
 bool PfmFile::
 write(ostream &out, const Filename &fullpath) {
-  nassertr(is_valid(), false);
-
-  switch (_num_channels) {
-  case 1:
-    out << "Pf\n";
-    break;
-
-  case 3:
-    out << "PF\n";
-    break;
-
-  case 4:
-    out << "pf4c\n";
-    break;
-
-  default:
-    nassertr(false, false);
-  }
-  out << _x_size << " " << _y_size << "\n";
-
-  PN_float32 scale = cabs(_scale);
-  if (scale == 0.0f) {
-    scale = 1.0f;
-  }
-#ifndef WORDS_BIGENDIAN
-  // Little-endian computers must write a negative scale to indicate
-  // the little-endian nature of the output.
-  scale = -scale;
-#endif
-  out << scale << "\n";
-
-  int size = _x_size * _y_size * _num_channels;
-  out.write((const char *)&_table[0], sizeof(PN_float32) * size);
-
-  if (out.fail()) {
+  if (!is_valid()) {
     return false;
   }
-  nassertr(sizeof(PN_float32) == 4, false);
-  return true;
+
+  PNMWriter *writer = make_writer(fullpath);
+  if (writer == (PNMWriter *)NULL) {
+    return false;
+  }
+
+  return write(writer);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::write
+//       Access: Published
+//  Description: Writes the PFM data using the indicated PNMWriter.
+//
+//               The PNMWriter is always deleted upon completion,
+//               whether successful or not.
+////////////////////////////////////////////////////////////////////
+bool PfmFile::
+write(PNMWriter *writer) {
+  if (writer == NULL) {
+    return false;
+  }
+
+  if (!is_valid()) {
+    delete writer;
+    return false;
+  }
+
+  writer->copy_header_from(*this);
+
+  if (!writer->supports_floating_point()) {
+    // Hmm, it's an integer file type.  Convert it from the
+    // floating-point data we have.
+    PNMImage pnmimage;
+    if (!store(pnmimage)) {
+      delete writer;
+      return false;
+    }
+    writer->copy_header_from(pnmimage);
+    bool success = writer->write_data(pnmimage.get_array(), pnmimage.get_alpha_array());
+    delete writer;
+    return success;
+  }
+
+  bool success = writer->write_pfm(*this);
+  delete writer;
+  return success;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1434,6 +1382,17 @@ generate_vis_mesh(MeshFace face) const {
   }
 
   return NodePath(gnode);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::output
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+output(ostream &out) const {
+  out << "floating-point image: " << _x_size << " by " << _y_size << " pixels, "
+      << _num_channels << " channels.";
 }
 
 ////////////////////////////////////////////////////////////////////

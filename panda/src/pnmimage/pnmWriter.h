@@ -18,6 +18,7 @@
 #include "pandabase.h"
 
 #include "pnmImageHeader.h"
+class PfmFile;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PNMWriter
@@ -47,6 +48,10 @@ public:
   INLINE void set_y_size(int y_size);
 
   INLINE void copy_header_from(const PNMImageHeader &header);
+
+  virtual bool supports_floating_point();
+  virtual bool supports_integer();
+  virtual bool write_pfm(const PfmFile &pfm);
 
   virtual int write_data(xel *array, xelval *alpha);
   virtual bool supports_write_row() const;

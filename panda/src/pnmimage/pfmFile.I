@@ -24,26 +24,6 @@ is_valid() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::get_x_size
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE int PfmFile::
-get_x_size() const {
-  return _x_size;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::get_y_size
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE int PfmFile::
-get_y_size() const {
-  return _y_size;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::get_scale
 //       Access: Published
 //  Description: The "scale" is reported in the pfm header and is
@@ -55,18 +35,14 @@ get_scale() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::get_num_channels
+//     Function: PfmFile::set_scale
 //       Access: Published
-//  Description: A pfm file can be either 1-channel
-//               (get_num_channels() == 1) or 3-channel
-//               (get_num_channels() == 3).  In the case of a
-//               1-channel file, the values can be found in the x
-//               component of each point, and the y and z components
-//               are unused.
+//  Description: The "scale" is reported in the pfm header and is
+//               probably meaningless.
 ////////////////////////////////////////////////////////////////////
-INLINE int PfmFile::
-get_num_channels() const {
-  return _num_channels;
+INLINE void PfmFile::
+set_scale(PN_float32 scale) {
+  _scale = scale;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -83,6 +59,34 @@ has_point(int x, int y) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::get_component
+//       Access: Published
+//  Description: Returns the cth component of the point value at the
+//               indicated point.
+////////////////////////////////////////////////////////////////////
+INLINE PN_float32 PfmFile::
+get_component(int x, int y, int c) const {
+  nassertr(x >= 0 && x < _x_size &&
+           y >= 0 && y < _y_size &&
+           c >= 0 && c < _num_channels, 0.0f);
+  return _table[(y * _x_size + x) * _num_channels + c];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::set_component
+//       Access: Published
+//  Description: Replaces the cth component of the point value at the
+//               indicated point.
+////////////////////////////////////////////////////////////////////
+INLINE void PfmFile::
+set_component(int x, int y, int c, PN_float32 value) {
+  nassertv(x >= 0 && x < _x_size &&
+           y >= 0 && y < _y_size &&
+           c >= 0 && c < _num_channels);
+  _table[(y * _x_size + x) * _num_channels + c] = value;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::get_point1
 //       Access: Published
 //  Description: Returns the 1-component point value at the indicated
@@ -90,8 +94,8 @@ has_point(int x, int y) const {
 ////////////////////////////////////////////////////////////////////
 INLINE PN_float32 PfmFile::
 get_point1(int x, int y) const {
-  nassertr(x >= 0 && x < _x_size, 0.0);
-  nassertr(y >= 0 && y < _y_size, 0.0);
+  nassertr(x >= 0 && x < _x_size &&
+           y >= 0 && y < _y_size, 0.0);
   return _table[(y * _x_size + x) * _num_channels];
 }
 
@@ -104,8 +108,8 @@ get_point1(int x, int y) const {
 INLINE void PfmFile::
 set_point1(int x, int y, PN_float32 point) {
   nassertv(!cnan(point));
-  nassertv(x >= 0 && x < _x_size);
-  nassertv(y >= 0 && y < _y_size);
+  nassertv(x >= 0 && x < _x_size &&
+           y >= 0 && y < _y_size);
   _table[(y * _x_size + x) * _num_channels] = point;
 }
 
@@ -118,8 +122,8 @@ set_point1(int x, int y, PN_float32 point) {
 ////////////////////////////////////////////////////////////////////
 INLINE const LPoint3f &PfmFile::
 get_point(int x, int y) const {
-  nassertr(x >= 0 && x < _x_size, LPoint3f::zero());
-  nassertr(y >= 0 && y < _y_size, LPoint3f::zero());
+  nassertr(x >= 0 && x < _x_size &&
+           y >= 0 && y < _y_size, LPoint3f::zero());
   return *(LPoint3f *)&_table[(y * _x_size + x) * _num_channels];
 }
 
@@ -133,8 +137,8 @@ get_point(int x, int y) const {
 INLINE void PfmFile::
 set_point(int x, int y, const LVecBase3f &point) {
   nassertv(!point.is_nan());
-  nassertv(x >= 0 && x < _x_size);
-  nassertv(y >= 0 && y < _y_size);
+  nassertv(x >= 0 && x < _x_size &&
+           y >= 0 && y < _y_size);
   switch (_num_channels) {
   case 1:
     _table[(y * _x_size + x)] = point[0];
@@ -169,8 +173,8 @@ INLINE LPoint3f &PfmFile::
 modify_point(int x, int y) {
 #ifndef NDEBUG
   static LPoint3f dummy_value = LPoint3f::zero();
-  nassertr(x >= 0 && x < _x_size, dummy_value);
-  nassertr(y >= 0 && y < _y_size, dummy_value);
+  nassertr(x >= 0 && x < _x_size &&
+           y >= 0 && y < _y_size, dummy_value);
 #endif
 
   return *(LPoint3f *)&_table[(y * _x_size + x) * _num_channels];
@@ -185,8 +189,8 @@ modify_point(int x, int y) {
 ////////////////////////////////////////////////////////////////////
 INLINE const LPoint4f &PfmFile::
 get_point4(int x, int y) const {
-  nassertr(x >= 0 && x < _x_size, LPoint4f::zero());
-  nassertr(y >= 0 && y < _y_size, LPoint4f::zero());
+  nassertr(x >= 0 && x < _x_size &&
+           y >= 0 && y < _y_size, LPoint4f::zero());
   return *(LPoint4f *)&_table[(y * _x_size + x) * _num_channels];
 }
 
@@ -200,8 +204,8 @@ get_point4(int x, int y) const {
 INLINE void PfmFile::
 set_point4(int x, int y, const LVecBase4f &point) {
   nassertv(!point.is_nan());
-  nassertv(x >= 0 && x < _x_size);
-  nassertv(y >= 0 && y < _y_size);
+  nassertv(x >= 0 && x < _x_size &&
+           y >= 0 && y < _y_size);
   switch (_num_channels) {
   case 1:
     _table[(y * _x_size + x)] = point[0];
@@ -239,8 +243,8 @@ INLINE LPoint4f &PfmFile::
 modify_point4(int x, int y) {
 #ifndef NDEBUG
   static LPoint4f dummy_value = LPoint4f::zero();
-  nassertr(x >= 0 && x < _x_size, dummy_value);
-  nassertr(y >= 0 && y < _y_size, dummy_value);
+  nassertr(x >= 0 && x < _x_size &&
+           y >= 0 && y < _y_size, dummy_value);
 #endif
 
   return *(LPoint4f *)&_table[(y * _x_size + x) * _num_channels];
@@ -516,4 +520,31 @@ set_vis_2d(bool vis_2d) {
 INLINE bool PfmFile::
 get_vis_2d() const {
   return _vis_2d;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::get_table
+//       Access: Public
+//  Description: This is a very low-level function that returns a
+//               read-only reference to the internal table of
+//               floating-point numbers.  Use this method at your own
+//               risk.
+////////////////////////////////////////////////////////////////////
+INLINE const pvector<PN_float32> &PfmFile::
+get_table() const {
+  return _table;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::swap_table
+//       Access: Public
+//  Description: This is a very low-level function that completely
+//               exchanges the PfmFile's internal table of
+//               floating-point numbers with whatever you supply.  The
+//               provided table must have an appropriate size.  Use
+//               this method at your own risk.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+swap_table(pvector<PN_float32> &table) {
+  _table.swap(table);
 }

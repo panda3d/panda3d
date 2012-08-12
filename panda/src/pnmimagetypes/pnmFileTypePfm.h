@@ -48,18 +48,21 @@ public:
   class Reader : public PNMReader {
   public:
     Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number);
-
-    virtual int read_data(xel *array, xelval *alpha);
+    
+    virtual bool is_floating_point();
+    virtual bool read_pfm(PfmFile &pfm);
 
   private:
-    PNMImage _image;
+    PN_float32 _scale;
   };
 
   class Writer : public PNMWriter {
   public:
     Writer(PNMFileType *type, ostream *file, bool owns_file);
 
-    virtual int write_data(xel *array, xelval *alpha);
+    virtual bool supports_floating_point();
+    virtual bool supports_integer();
+    virtual bool write_pfm(const PfmFile &pfm);
   };
 
 

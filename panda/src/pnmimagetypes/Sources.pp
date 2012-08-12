@@ -15,6 +15,7 @@
      pnmFileTypeIMG.h  \
      pnmFileTypePNG.h \
      pnmFileTypePNM.h \
+     pnmFileTypePfm.h \
      pnmFileTypeSGI.h pnmFileTypeSoftImage.h  \
      pnmFileTypeTGA.h \
      pnmFileTypeTIFF.h \
@@ -28,6 +29,7 @@
      pnmFileTypeJPG.cxx pnmFileTypeJPGReader.cxx pnmFileTypeJPGWriter.cxx \
      pnmFileTypePNG.cxx \
      pnmFileTypePNM.cxx \
+     pnmFileTypePfm.cxx \
      pnmFileTypeSGI.cxx \
      pnmFileTypeSGIReader.cxx pnmFileTypeSGIWriter.cxx  \
      pnmFileTypeSoftImage.cxx \

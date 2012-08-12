@@ -21,6 +21,7 @@
 #include "pnmFileTypeJPG.h"
 #include "pnmFileTypePNG.h"
 #include "pnmFileTypePNM.h"
+#include "pnmFileTypePfm.h"
 #include "pnmFileTypeTIFF.h"
 #include "sgi.h"
 
@@ -215,6 +216,10 @@ init_libpnmimagetypes() {
   PNMFileTypePNM::register_with_read_factory();
   tr->register_type(new PNMFileTypePNM);
 #endif
+
+  PNMFileTypePfm::init_type();
+  PNMFileTypePfm::register_with_read_factory();
+  tr->register_type(new PNMFileTypePfm);
 
 #ifdef HAVE_JPEG
   PNMFileTypeJPG::init_type();

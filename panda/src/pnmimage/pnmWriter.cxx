@@ -29,6 +29,43 @@ PNMWriter::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PNMWriter::supports_floating_point
+//       Access: Public, Virtual
+//  Description: Returns true if this PNMFileType can accept a
+//               floating-point image type, false if it can only
+//               accept a normal, integer type.  If this returns true,
+//               write_pfm() is implemented.
+////////////////////////////////////////////////////////////////////
+bool PNMWriter::
+supports_floating_point() {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMWriter::supports_integer
+//       Access: Public, Virtual
+//  Description: Returns true if this PNMFileType can accept an
+//               integer image type, false if it can only
+//               accept a floating-point type.  If this returns true,
+//               write_data() or write_row() is implemented.
+////////////////////////////////////////////////////////////////////
+bool PNMWriter::
+supports_integer() {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMWriter::write_pfm
+//       Access: Public, Virtual
+//  Description: Writes floating-point data from the indicated
+//               PfmFile.  Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool PNMWriter::
+write_pfm(const PfmFile &pfm) {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PNMWriter::write_data
 //       Access: Public, Virtual
 //  Description: Writes out an entire image all at once, including the

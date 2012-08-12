@@ -46,6 +46,8 @@ PUBLISHED:
     TF_allow_1d          = 0x0010,  // If texture is Nx1, make a 1-d texture
     TF_generate_mipmaps  = 0x0020,  // Consider generating mipmaps
     TF_multiview         = 0x0040,  // Load a multiview texture in pages
+    TF_integer           = 0x0080,  // Load as an integer (RGB) texture
+    TF_float             = 0x0100,  // Load as a floating-point (depth) texture
   };
 
   LoaderOptions(int flags = LF_search | LF_report_errors);

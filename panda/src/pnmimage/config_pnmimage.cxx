@@ -14,7 +14,6 @@
 
 #include "config_pnmimage.h"
 #include "pnmFileType.h"
-#include "pnmFileTypePfm.h"
 #include "pnmFileTypeRegistry.h"
 
 #include "dconfig.h"
@@ -66,9 +65,4 @@ init_libpnmimage() {
   initialized = true;
 
   PNMFileType::init_type();
-
-  PNMFileTypeRegistry *tr = PNMFileTypeRegistry::get_global_ptr();
-  PNMFileTypePfm::init_type();
-  PNMFileTypePfm::register_with_read_factory();
-  tr->register_type(new PNMFileTypePfm);
 }

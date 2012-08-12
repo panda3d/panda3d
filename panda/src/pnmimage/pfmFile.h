@@ -16,6 +16,7 @@
 #define PFMFILE_H
 
 #include "pandabase.h"
+#include "pnmImageHeader.h"
 #include "luse.h"
 #include "nodePath.h"
 #include "boundingHexahedron.h"
@@ -25,6 +26,8 @@
 class GeomNode;
 class Lens;
 class PNMImage;
+class PNMReader;
+class PNMWriter;
 class GeomVertexWriter;
 
 ////////////////////////////////////////////////////////////////////
@@ -33,7 +36,7 @@ class GeomVertexWriter;
 //               numbers, either 3-component or 1-component, or with a
 //               special extension, 4-component.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PNMIMAGE PfmFile {
+class EXPCL_PANDA_PNMIMAGE PfmFile : public PNMImageHeader {
 PUBLISHED:
   PfmFile();
   PfmFile(const PfmFile &copy);
@@ -43,22 +46,23 @@ PUBLISHED:
   void clear(int x_size, int y_size, int num_channels);
 
   BLOCKING bool read(const Filename &fullpath);
-  BLOCKING bool read(istream &in, const Filename &fullpath = Filename(),
-                     const string &magic_number = string());
+  BLOCKING bool read(istream &in, const Filename &fullpath = Filename());
+  BLOCKING bool read(PNMReader *reader);
   BLOCKING bool write(const Filename &fullpath);
   BLOCKING bool write(ostream &out, const Filename &fullpath = Filename());
+  BLOCKING bool write(PNMWriter *writer);
 
   BLOCKING bool load(const PNMImage &pnmimage);
   BLOCKING bool store(PNMImage &pnmimage) const;
 
   INLINE bool is_valid() const;
 
-  INLINE int get_x_size() const;
-  INLINE int get_y_size() const;
   INLINE PN_float32 get_scale() const;
-  INLINE int get_num_channels() const;
+  INLINE void set_scale(PN_float32 scale);
 
   INLINE bool has_point(int x, int y) const;
+  INLINE PN_float32 get_component(int x, int y, int c) const;
+  INLINE void set_component(int x, int y, int c, PN_float32 value);
   INLINE PN_float32 get_point1(int x, int y) const;
   INLINE void set_point1(int x, int y, PN_float32 point);
   INLINE const LPoint3f &get_point(int x, int y) const;
@@ -131,6 +135,12 @@ PUBLISHED:
   };
   BLOCKING NodePath generate_vis_mesh(MeshFace face = MF_front) const;
 
+  void output(ostream &out) const;
+
+public:
+  INLINE const pvector<PN_float32> &get_table() const;
+  INLINE void swap_table(pvector<PN_float32> &table);
+
 private:
   void make_vis_mesh_geom(GeomNode *gnode, bool inverted) const;
 
@@ -196,10 +206,7 @@ private:
   typedef pvector<PN_float32> Table;
   Table _table;
 
-  int _x_size;
-  int _y_size;
   PN_float32 _scale;
-  int _num_channels;
 
   bool _has_no_data_value;
   LPoint4f _no_data_value;

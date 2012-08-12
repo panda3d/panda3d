@@ -71,6 +71,30 @@ prepare_read() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PNMReader::is_floating_point
+//       Access: Public, Virtual
+//  Description: Returns true if this PNMFileType represents a
+//               floating-point image type, false if it is a normal,
+//               integer type.  If this returns true, read_pfm() is
+//               implemented instead of read_data().
+////////////////////////////////////////////////////////////////////
+bool PNMReader::
+is_floating_point() {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMReader::read_pfm
+//       Access: Public, Virtual
+//  Description: Reads floating-point data directly into the indicated
+//               PfmFile.  Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool PNMReader::
+read_pfm(PfmFile &pfm) {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PNMReader::read_data
 //       Access: Public, Virtual
 //  Description: Reads in an entire image all at once, storing it in

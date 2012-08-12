@@ -16,6 +16,7 @@
 #include "pnmReader.h"
 #include "pnmWriter.h"
 #include "pnmBrush.h"
+#include "pfmFile.h"
 #include "config_pnmimage.h"
 #include "perlinNoise2.h"
 #include "stackedPerlinNoise2.h"
@@ -307,6 +308,17 @@ read(PNMReader *reader) {
 
   copy_header_from(*reader);
 
+  if (reader->is_floating_point()) {
+    // Hmm, it's a floating-point file.  Quietly convert it to integer.
+    PfmFile pfm;
+    if (!reader->read_pfm(pfm)) {
+      delete reader;
+      return false;
+    }
+    delete reader;
+    return pfm.store(*this);
+  }
+
   // We reassign y_size after reading because we might have read a
   // truncated file.
   _y_size = reader->read_data(_array, _alpha);
@@ -400,6 +412,20 @@ write(PNMWriter *writer) const {
   }
 
   writer->copy_header_from(*this);
+
+  if (!writer->supports_integer()) {
+    // Hmm, it's only a floating-point file type.  Convert it from the
+    // integer data we have.
+    PfmFile pfm;
+    if (!pfm.load(*this)) {
+      delete writer;
+      return false;
+    }
+    bool success = writer->write_pfm(pfm);
+    delete writer;
+    return success;
+  }
+
   if (is_grayscale() && !writer->supports_grayscale()) {
     // Copy the gray values to all channels to help out the writer.
     for (int y = 0; y < get_y_size(); y++) {
