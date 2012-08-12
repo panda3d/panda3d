@@ -65,6 +65,10 @@ PUBLISHED:
   INLINE void set_component(int x, int y, int c, PN_float32 value);
   INLINE PN_float32 get_point1(int x, int y) const;
   INLINE void set_point1(int x, int y, PN_float32 point);
+  INLINE const LPoint2f &get_point2(int x, int y) const;
+  INLINE void set_point2(int x, int y, const LVecBase2f &point);
+  INLINE void set_point2(int x, int y, const LVecBase2d &point);
+  INLINE LPoint2f &modify_point2(int x, int y);
   INLINE const LPoint3f &get_point(int x, int y) const;
   INLINE void set_point(int x, int y, const LVecBase3f &point);
   INLINE void set_point(int x, int y, const LVecBase3d &point);
@@ -99,7 +103,9 @@ PUBLISHED:
   INLINE BLOCKING void xform(const LMatrix4d &transform);
   BLOCKING void project(const Lens *lens);
   BLOCKING void merge(const PfmFile &other);
+  BLOCKING void copy_channel(int to_channel, const PfmFile &other, int from_channel);
   BLOCKING void apply_crop(int x_begin, int x_end, int y_begin, int y_end);
+  BLOCKING void clear_to_texcoords(int x_size, int y_size);
 
   BLOCKING PT(BoundingHexahedron) compute_planar_bounds(const LPoint2f &center, PN_float32 point_dist, PN_float32 sample_radius, bool points_only) const;
   INLINE BLOCKING PT(BoundingHexahedron) compute_planar_bounds(const LPoint2d &center, PN_float32 point_dist, PN_float32 sample_radius, bool points_only) const;
@@ -117,6 +123,7 @@ PUBLISHED:
   enum ColumnType {
     CT_texcoord2,
     CT_texcoord3,
+    CT_vertex1,
     CT_vertex2,
     CT_vertex3,
     CT_normal3,

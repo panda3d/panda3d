@@ -114,6 +114,76 @@ set_point1(int x, int y, PN_float32 point) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::get_point2
+//       Access: Published
+//  Description: Returns the 2-component point value at the indicated
+//               point.  In a 1-channel image, the channel value is in
+//               the x component.
+////////////////////////////////////////////////////////////////////
+INLINE const LPoint2f &PfmFile::
+get_point2(int x, int y) const {
+  nassertr(x >= 0 && x < _x_size &&
+           y >= 0 && y < _y_size, LPoint2f::zero());
+  return *(LPoint2f *)&_table[(y * _x_size + x) * _num_channels];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::set_point2
+//       Access: Published
+//  Description: Replaces the 2-component point value at the indicated
+//               point.  In a 1-channel image, the channel value is in
+//               the x component.
+////////////////////////////////////////////////////////////////////
+INLINE void PfmFile::
+set_point2(int x, int y, const LVecBase2f &point) {
+  nassertv(!point.is_nan());
+  nassertv(x >= 0 && x < _x_size &&
+           y >= 0 && y < _y_size);
+  switch (_num_channels) {
+  case 1:
+    _table[(y * _x_size + x)] = point[0];
+    break;
+
+  case 3:
+    (*(LPoint3f *)&_table[(y * _x_size + x) * _num_channels]).set(point[0], point[1], point[2]);
+    break;
+
+  case 2:
+    *(LPoint2f *)&_table[(y * _x_size + x) * _num_channels] = point;
+    break;
+  } 
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::set_point2
+//       Access: Published
+//  Description: Replaces the 2-component point value at the indicated
+//               point.  In a 1-channel image, the channel value is in
+//               the x component.
+////////////////////////////////////////////////////////////////////
+INLINE void PfmFile::
+set_point2(int x, int y, const LVecBase2d &point) {
+  set_point2(x, y, LCAST(PN_float32, point));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::modify_point2
+//       Access: Published
+//  Description: Returns a modifiable 2-component point value at the
+//               indicated point.
+////////////////////////////////////////////////////////////////////
+INLINE LPoint2f &PfmFile::
+modify_point2(int x, int y) {
+#ifndef NDEBUG
+  static LPoint2f dummy_value = LPoint2f::zero();
+  nassertr(x >= 0 && x < _x_size &&
+           y >= 0 && y < _y_size, dummy_value);
+#endif
+
+  return *(LPoint2f *)&_table[(y * _x_size + x) * _num_channels];
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::get_point
 //       Access: Published
 //  Description: Returns the 3-component point value at the indicated

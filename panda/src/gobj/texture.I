@@ -316,6 +316,42 @@ load(const PNMImage &pnmimage, int z, int n, const LoaderOptions &options) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::load
+//       Access: Published
+//  Description: Replaces the texture with the indicated image.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+load(const PfmFile &pfm, const LoaderOptions &options) {
+  CDWriter cdata(_cycler, true);
+  do_clear(cdata);
+  ++(cdata->_properties_modified);
+  ++(cdata->_image_modified);
+  if (do_load_one(cdata, pfm, get_name(), 0, 0, options)) {
+    bool generate_mipmaps = ((options.get_texture_flags() & LoaderOptions::TF_generate_mipmaps) != 0);
+    consider_auto_process_ram_image(generate_mipmaps || uses_mipmaps(), true);
+    return true;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::load
+//       Access: Published
+//  Description: Stores the indicated image in the given page and
+//               mipmap level.  See read().
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+load(const PfmFile &pfm, int z, int n, const LoaderOptions &options) {
+  CDWriter cdata(_cycler, true);
+  ++(cdata->_properties_modified);
+  ++(cdata->_image_modified);
+  if (do_load_one(cdata, pfm, get_name(), z, n, options)) {
+    return true;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::store
 //       Access: Published
 //  Description: Saves the texture to the indicated PNMImage, but does
@@ -337,6 +373,30 @@ INLINE bool Texture::
 store(PNMImage &pnmimage, int z, int n) const {
   CDWriter cdata(((Texture *)this)->_cycler, false);
   return ((Texture *)this)->do_store_one(cdata, pnmimage, z, n);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::store
+//       Access: Published
+//  Description: Saves the texture to the indicated PfmFile, but does
+//               not write it to disk.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+store(PfmFile &pfm) const {
+  CDWriter cdata(((Texture *)this)->_cycler, false);
+  return ((Texture *)this)->do_store_one(cdata, pfm, 0, 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::store
+//       Access: Published
+//  Description: Saves the indicated page and mipmap level of the
+//               texture to the PfmFile.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+store(PfmFile &pfm, int z, int n) const {
+  CDWriter cdata(((Texture *)this)->_cycler, false);
+  return ((Texture *)this)->do_store_one(cdata, pfm, z, n);
 }
 
 ////////////////////////////////////////////////////////////////////

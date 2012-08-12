@@ -260,8 +260,12 @@ PUBLISHED:
 
   BLOCKING INLINE bool load(const PNMImage &pnmimage, const LoaderOptions &options = LoaderOptions());
   BLOCKING INLINE bool load(const PNMImage &pnmimage, int z, int n, const LoaderOptions &options = LoaderOptions());
+  BLOCKING INLINE bool load(const PfmFile &pfm, const LoaderOptions &options = LoaderOptions());
+  BLOCKING INLINE bool load(const PfmFile &pfm, int z, int n, const LoaderOptions &options = LoaderOptions());
   BLOCKING INLINE bool store(PNMImage &pnmimage) const;
   BLOCKING INLINE bool store(PNMImage &pnmimage, int z, int n) const;
+  BLOCKING INLINE bool store(PfmFile &pfm) const;
+  BLOCKING INLINE bool store(PfmFile &pfm, int z, int n) const;
 
   BLOCKING INLINE bool reload();
   BLOCKING Texture *load_related(const InternalName *suffix) const;

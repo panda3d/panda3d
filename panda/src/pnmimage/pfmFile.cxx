@@ -994,6 +994,27 @@ merge(const PfmFile &other) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::copy_channel
+//       Access: Published
+//  Description: Copies just the specified channel values from the
+//               indicated PfmFile (which could be same as this
+//               PfmFile) into the specified channel of this one.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+copy_channel(int to_channel, const PfmFile &other, int from_channel) {
+  nassertv(is_valid() && other.is_valid());
+  nassertv(other._x_size == _x_size && other._y_size == _y_size);
+  nassertv(to_channel >= 0 && to_channel < get_num_channels() &&
+           from_channel >= 0 && from_channel < other.get_num_channels());
+
+  for (int yi = 0; yi < _y_size; ++yi) {
+    for (int xi = 0; xi < _x_size; ++xi) {
+      set_component(xi, yi, to_channel, other.get_component(xi, yi, from_channel));
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::apply_crop
 //       Access: Published
 //  Description: Reduces the PFM file to the cells in the rectangle
@@ -1025,6 +1046,34 @@ apply_crop(int x_begin, int x_end, int y_begin, int y_end) {
   _table.swap(new_table);
   _x_size = new_x_size;
   _y_size = new_y_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::clear_to_texcoords
+//       Access: Published
+//  Description: Replaces this PfmFile with a new PfmFile of size
+//               x_size x y_size x 3, containing the x y 0 values in
+//               the range 0 .. 1 according to the x y index.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+clear_to_texcoords(int x_size, int y_size) {
+  clear(x_size, y_size, 3);
+
+  LPoint2f uv_scale(1.0, 1.0);
+  if (_x_size > 1) {
+    uv_scale[0] = 1.0f / PN_float32(_x_size - 1);
+  }
+  if (_y_size > 1) {
+    uv_scale[1] = 1.0f / PN_float32(_y_size - 1);
+  }
+
+  for (int yi = 0; yi < _y_size; ++yi) {
+    for (int xi = 0; xi < _x_size; ++xi) {
+      LPoint3f uv(PN_float32(xi) * uv_scale[0],
+                  PN_float32(yi) * uv_scale[1], 0.0f);
+      set_point(xi, yi, uv);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1366,6 +1415,16 @@ generate_vis_mesh(MeshFace face) const {
   nassertr(is_valid(), NodePath());
   nassertr(face != 0, NodePath());
 
+  if (_num_channels == 1 && _vis_columns.empty()) {
+    // If we're generating a default mesh from a one-channel pfm file,
+    // expand it to a three-channel pfm file to make the visualization
+    // useful.
+    PfmFile expanded;
+    expanded.clear_to_texcoords(_x_size, _y_size);
+    expanded.copy_channel(2, *this, 0);
+    return expanded.generate_vis_mesh(face);
+  }
+  
   if (_x_size == 1 || _y_size == 1) {
     // Can't generate a 1-d mesh, so generate points in this case.
     return generate_vis_points();
@@ -1864,7 +1923,7 @@ build_auto_vis_columns(VisColumns &vis_columns, bool for_points) const {
 
   if (_vis_2d) {
     // No normals needed if we're just generating a 2-d mesh.
-    add_vis_column(vis_columns, CT_vertex3, CT_vertex3, InternalName::get_vertex());
+    add_vis_column(vis_columns, CT_vertex2, CT_vertex2, InternalName::get_vertex());
     add_vis_column(vis_columns, CT_texcoord2, CT_texcoord2, InternalName::get_texcoord());
 
   } else {
@@ -1920,6 +1979,7 @@ make_array_format(const VisColumns &vis_columns) const {
       contents = GeomEnums::C_texcoord;
       break;
 
+    case CT_vertex1:
     case CT_vertex2:
     case CT_vertex3:
       num_components = 3;
@@ -2069,10 +2129,18 @@ add_data(const PfmFile &file, GeomVertexWriter &vwriter, int xi, int yi, bool re
     }
     break;
 
+  case CT_vertex1:
+    {
+      PN_float32 p = file.get_point1(xi, yi);
+      LPoint2f point(p, 0.0);
+      transform_point(point);
+      vwriter.set_data2f(point);
+    }
+    break;
+
   case CT_vertex2:
     {
-      const LPoint3f &point3 = file.get_point(xi, yi);
-      LPoint2f point(point3[0], point3[1]);
+      LPoint2f point = file.get_point2(xi, yi);
       transform_point(point);
       vwriter.set_data2f(point);
     }
