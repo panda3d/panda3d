@@ -624,7 +624,7 @@ class Installer:
         if platform == None:
             platform = PandaSystem.getPlatform()
 
-        if platform == "win32":
+        if platform.startswith("win"):
             self.buildNSIS(output, platform)
             return
         elif "_" in platform:

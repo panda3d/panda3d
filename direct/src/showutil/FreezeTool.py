@@ -86,7 +86,7 @@ class CompilationEnvironment:
         self.determineStandardSetup()
 
     def determineStandardSetup(self):
-        if self.platform == 'win32':
+        if self.platform.startswith('win'):
             self.Python = PREFIX
 
             if ('VCINSTALLDIR' in os.environ):
@@ -117,17 +117,23 @@ class CompilationEnvironment:
                 self.MD = '/MDd'
                 self.dllext = '_d'
 
+            # MSVC/bin and /lib directories have a different location
+            # for win64.
+            self.suffix64 = ''
+            if self.platform == 'win64':
+                self.suffix64 = '\\amd64'
+
             # If it is run by makepanda, it handles the MSVC and PlatformSDK paths itself.
             if ('MAKEPANDA' in os.environ):
                 self.compileObj = 'cl /wd4996 /Fo%(basename)s.obj /nologo /c %(MD)s /Zi /O2 /Ob2 /EHsc /Zm300 /W3 /I"%(pythonIPath)s" %(filename)s'
                 self.linkExe = 'link /nologo /MAP:NUL /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO /LIBPATH:"%(python)s\libs"  /out:%(basename)s.exe %(basename)s.obj'
                 self.linkDll = 'link /nologo /DLL /MAP:NUL /FIXED:NO /OPT:REF /INCREMENTAL:NO /LIBPATH:"%(python)s\libs"  /out:%(basename)s%(dllext)s.pyd %(basename)s.obj'
             else:
-                os.environ['PATH'] += ';' + self.MSVC + '\\bin;' + self.MSVC + '\\Common7\\IDE;' + self.PSDK + '\\bin'
+                os.environ['PATH'] += ';' + self.MSVC + '\\bin' + self.suffix64 + ';' + self.MSVC + '\\Common7\\IDE;' + self.PSDK + '\\bin'
 
                 self.compileObj = 'cl /wd4996 /Fo%(basename)s.obj /nologo /c %(MD)s /Zi /O2 /Ob2 /EHsc /Zm300 /W3 /I"%(pythonIPath)s" /I"%(PSDK)s\include" /I"%(MSVC)s\include" %(filename)s'
-                self.linkExe = 'link /nologo /MAP:NUL /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO /LIBPATH:"%(PSDK)s\lib" /LIBPATH:"%(MSVC)s\lib" /LIBPATH:"%(python)s\libs"  /out:%(basename)s.exe %(basename)s.obj'
-                self.linkDll = 'link /nologo /DLL /MAP:NUL /FIXED:NO /OPT:REF /INCREMENTAL:NO /LIBPATH:"%(PSDK)s\lib" /LIBPATH:"%(MSVC)s\lib" /LIBPATH:"%(python)s\libs"  /out:%(basename)s%(dllext)s.pyd %(basename)s.obj'
+                self.linkExe = 'link /nologo /MAP:NUL /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO /LIBPATH:"%(PSDK)s\lib" /LIBPATH:"%(MSVC)s\\lib%(suffix64)s" /LIBPATH:"%(python)s\libs"  /out:%(basename)s.exe %(basename)s.obj'
+                self.linkDll = 'link /nologo /DLL /MAP:NUL /FIXED:NO /OPT:REF /INCREMENTAL:NO /LIBPATH:"%(PSDK)s\lib" /LIBPATH:"%(MSVC)s\\lib%(suffix64)s" /LIBPATH:"%(python)s\libs"  /out:%(basename)s%(dllext)s.pyd %(basename)s.obj'
 
         elif self.platform.startswith('osx_'):
             # OSX
@@ -157,6 +163,7 @@ class CompilationEnvironment:
             'python' : self.Python,
             'MSVC' : self.MSVC,
             'PSDK' : self.PSDK,
+            'suffix64' : self.suffix64,
             'MD' : self.MD,
             'pythonIPath' : self.PythonIPath,
             'pythonVersion' : self.PythonVersion,
@@ -172,6 +179,7 @@ class CompilationEnvironment:
             'python' : self.Python,
             'MSVC' : self.MSVC,
             'PSDK' : self.PSDK,
+            'suffix64' : self.suffix64,
             'pythonIPath' : self.PythonIPath,
             'pythonVersion' : self.PythonVersion,
             'arch' : self.arch,
@@ -187,6 +195,7 @@ class CompilationEnvironment:
             'python' : self.Python,
             'MSVC' : self.MSVC,
             'PSDK' : self.PSDK,
+            'suffix64' : self.suffix64,
             'MD' : self.MD,
             'pythonIPath' : self.PythonIPath,
             'pythonVersion' : self.PythonVersion,
@@ -202,6 +211,7 @@ class CompilationEnvironment:
             'python' : self.Python,
             'MSVC' : self.MSVC,
             'PSDK' : self.PSDK,
+            'suffix64' : self.suffix64,
             'pythonIPath' : self.PythonIPath,
             'pythonVersion' : self.PythonVersion,
             'arch' : self.arch,
@@ -442,6 +452,7 @@ extend_frozen_modules(const struct _frozen *new_modules, int new_count) {
 
 programFile = """
 #include "Python.h"
+#include "malloc.h"
 
 %(moduleDefs)s
 
@@ -560,7 +571,7 @@ class Freezer:
 
         # The filename extension to append to the object file.
         self.objectExtension = '.o'
-        if self.platform == 'win32':
+        if self.platform.startswith('win'):
             self.objectExtension = '.obj'
 
         # Change any of these to change the generated startup and glue
@@ -1250,7 +1261,7 @@ class Freezer:
 
         dllexport = ''
         dllimport = ''
-        if self.platform == 'win32':
+        if self.platform.startswith('win'):
             dllexport = '__declspec(dllexport) '
             dllimport = '__declspec(dllimport) '
 
@@ -1259,7 +1270,7 @@ class Freezer:
 
         if compileToExe:
             code = self.frozenMainCode
-            if self.platform == 'win32':
+            if self.platform.startswith('win'):
                 code += self.frozenDllMainCode
             initCode = self.mainInitCode % {
                 'frozenMainCode' : code,
@@ -1267,7 +1278,7 @@ class Freezer:
                 'dllexport' : dllexport,
                 'dllimport' : dllimport,
                 }
-            if self.platform == 'win32':
+            if self.platform.startswith('win'):
                 initCode += self.frozenExtensions
                 target = basename + '.exe'
             else:
@@ -1276,7 +1287,7 @@ class Freezer:
             compileFunc = self.cenv.compileExe
 
         else:
-            if self.platform == 'win32':
+            if self.platform.startswith('win'):
                 target = basename + self.cenv.dllext + '.pyd'
             else:
                 target = basename + '.so'
