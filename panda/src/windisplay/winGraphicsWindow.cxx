@@ -2593,7 +2593,7 @@ get_icon(const Filename &filename) {
   Filename os = resolved.to_os_specific();
 
   HANDLE h = LoadImage(NULL, os.c_str(),
-                       IMAGE_ICON, 0, 0, LR_LOADFROMFILE);
+                       IMAGE_ICON, 0, 0, LR_LOADFROMFILE | LR_DEFAULTSIZE);
   if (h == 0) {
     windisplay_cat.warning()
       << "windows icon filename '" << os << "' could not be loaded!!\n";
