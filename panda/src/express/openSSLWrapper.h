@@ -18,8 +18,11 @@
 #include "pandabase.h"
 
 #ifdef HAVE_OPENSSL
-
 #include "filename.h"
+
+#ifdef _WIN32
+#include <winsock2.h>  // must be included prior to including OpenSSL.
+#endif
 
 #define OPENSSL_NO_KRB5
 #include "openssl/ssl.h"

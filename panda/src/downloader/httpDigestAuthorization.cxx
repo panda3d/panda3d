@@ -17,6 +17,7 @@
 #ifdef HAVE_OPENSSL
 
 #include "httpChannel.h"
+#include "openSSLWrapper.h"  // must be included before any other openssl.
 #include "openssl/ssl.h"
 #include "openssl/md5.h"
 #include <time.h>

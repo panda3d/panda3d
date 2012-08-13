@@ -36,6 +36,7 @@
 #include "pointerTo.h"
 #include "config_downloader.h"
 #include "filename.h"
+#include "openSSLWrapper.h"  // must be included before any other openssl.
 #include "openssl/ssl.h"
 #include "typedReferenceCount.h"
 

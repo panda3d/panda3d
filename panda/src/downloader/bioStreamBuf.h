@@ -23,6 +23,7 @@
 
 #include "bioPtr.h"
 #include "pointerTo.h"
+#include "openSSLWrapper.h"  // must be included before any other openssl.
 #include "openssl/ssl.h"
 
 ////////////////////////////////////////////////////////////////////

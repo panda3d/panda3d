@@ -14,12 +14,10 @@
 
 #include "hashVal.h"
 #include "virtualFileSystem.h"
-
+#include "openSSLWrapper.h"  // must be included before any other openssl.
+#include "openssl/md5.h"
 #include <ctype.h>
 
-#ifdef HAVE_OPENSSL
-#include "openssl/md5.h"
-#endif  // HAVE_OPENSSL
 
 
 ////////////////////////////////////////////////////////////////////
