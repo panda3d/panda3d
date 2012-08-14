@@ -77,6 +77,9 @@ class CompilationEnvironment:
         # Windows.
         self.MD = None
 
+        # Added to the path to the MSVC bin and lib directories on 64-bits Windows.
+        self.suffix64 = ''
+
         # The _d extension to add to dll filenames on Windows in debug builds.
         self.dllext = ''
 
@@ -119,7 +122,6 @@ class CompilationEnvironment:
 
             # MSVC/bin and /lib directories have a different location
             # for win64.
-            self.suffix64 = ''
             if self.platform == 'win64':
                 self.suffix64 = '\\amd64'
 
