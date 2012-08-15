@@ -133,7 +133,7 @@ protected:
   
   ConditionVarFull _frame_cvar;  // Signalled when the clock ticks.
 
-  static PT(AsyncTaskManager) _global_ptr;
+  static AsyncTaskManager* _global_ptr;
 
 public:
   static TypeHandle get_class_type() {

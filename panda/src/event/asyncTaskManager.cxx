@@ -23,7 +23,7 @@
 #include "config_event.h"
 #include <algorithm>
 
-PT(AsyncTaskManager) AsyncTaskManager::_global_ptr;
+AsyncTaskManager *AsyncTaskManager::_global_ptr = NULL;
 
 TypeHandle AsyncTaskManager::_type_handle;
 
@@ -731,4 +731,5 @@ make_global_ptr() {
   nassertv(_global_ptr == (AsyncTaskManager *)NULL);
 
   _global_ptr = new AsyncTaskManager("TaskManager");
+  _global_ptr->ref();
 }
