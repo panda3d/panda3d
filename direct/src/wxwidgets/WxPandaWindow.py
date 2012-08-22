@@ -62,10 +62,11 @@ class EmbeddedPandaWindow(wx.Window):
             self.win = None
 
     def onSize(self, event):
-        wp = WindowProperties()
-        wp.setOrigin(0, 0)
-        wp.setSize(*self.GetClientSize())
-        self.win.requestProperties(wp)
+        if self.win:
+            wp = WindowProperties()
+            wp.setOrigin(0, 0)
+            wp.setSize(*self.GetClientSize())
+            self.win.requestProperties(wp)
         event.Skip()
 
 if not hasattr(wxgl, 'GLCanvas'):
