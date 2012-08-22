@@ -314,7 +314,7 @@ write(PNMWriter *writer) {
       return false;
     }
     writer->copy_header_from(pnmimage);
-    bool success = writer->write_data(pnmimage.get_array(), pnmimage.get_alpha_array());
+    bool success = (writer->write_data(pnmimage.get_array(), pnmimage.get_alpha_array()) != 0);
     delete writer;
     return success;
   }
@@ -726,8 +726,11 @@ resize(int new_x_size, int new_y_size) {
     return;
   }
 
+  int new_size = new_x_size * new_y_size * _num_channels;
+
+  // We allocate a little bit bigger to allow safe overflow.
   Table new_data;
-  new_data.reserve(new_x_size * new_y_size * _num_channels);
+  new_data.reserve(new_size + 4);
 
   PN_float32 from_x0, from_x1, from_y0, from_y1;
 
@@ -826,7 +829,12 @@ resize(int new_x_size, int new_y_size) {
     nassertv(false);
   }
 
-  nassertv(new_data.size() == new_x_size * new_y_size * _num_channels);
+  new_data.push_back(0.0);
+  new_data.push_back(0.0);
+  new_data.push_back(0.0);
+  new_data.push_back(0.0);
+
+  nassertv(new_data.size() == new_size + 4);
   _table.swap(new_data);
   _x_size = new_x_size;
   _y_size = new_y_size;
@@ -1042,7 +1050,7 @@ apply_crop(int x_begin, int x_end, int y_begin, int y_end) {
            new_x_size * sizeof(PN_float32) * _num_channels);
   }
 
-  nassertv(new_table.size() == new_x_size * new_y_size * _num_channels);
+  nassertv(new_table.size() == new_size + 4);
   _table.swap(new_table);
   _x_size = new_x_size;
   _y_size = new_y_size;
