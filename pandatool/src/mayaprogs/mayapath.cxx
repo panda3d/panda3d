@@ -51,11 +51,14 @@
 #define QUOTESTR(x) #x
 #define TOSTRING(x) QUOTESTR(x)
 
-#ifdef IS_OSX
+#if defined(_WIN32)
+// Filename::dso_filename changes .so to .dll automatically.
+static const Filename openmaya_filename = "bin/OpenMaya.so";
+#elif defined(IS_OSX)
 static const Filename openmaya_filename = "MacOS/libOpenMaya.dylib";
 #else
-static const Filename openmaya_filename = "bin/OpenMaya.so";
-#endif  // IS_OSX
+static const Filename openmaya_filename = "lib/libOpenMaya.so";
+#endif  // _WIN32
 
 // Searches for python26.zip or whatever version it is.
 static Filename
