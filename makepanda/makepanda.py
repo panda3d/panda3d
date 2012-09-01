@@ -4887,6 +4887,16 @@ if (PkgSkip("PANDATOOL")==0):
   TargetAdd('pfm-trans.exe', input='libp3pystub.lib')
   TargetAdd('pfm-trans.exe', opts=['ADVAPI'])
 
+  TargetAdd('pfm-bba_pfmBba.obj', opts=OPTS, input='pfmBba.cxx')
+  TargetAdd('pfm-bba.exe', input='pfm-bba_pfmBba.obj')
+  TargetAdd('pfm-bba_config_pfm.obj', opts=OPTS, input='config_pfm.cxx')
+  TargetAdd('pfm-bba.exe', input='pfm-bba_config_pfm.obj')
+  TargetAdd('pfm-bba.exe', input='libp3progbase.lib')
+  TargetAdd('pfm-bba.exe', input='libp3pandatoolbase.lib')
+  TargetAdd('pfm-bba.exe', input=COMMON_PANDA_LIBS)
+  TargetAdd('pfm-bba.exe', input='libp3pystub.lib')
+  TargetAdd('pfm-bba.exe', opts=['ADVAPI'])
+
 #
 # DIRECTORY: pandatool/src/lwo/
 #

@@ -84,8 +84,7 @@ process_pfm(const Filename &input_filename, PfmFile &file) {
     
     pofstream out;
     if (!bba_filename.open_write(out)) {
-      pfm_cat.error()
-        << "Unable to open " << bba_filename << "\n";
+      cerr << "Unable to open " << bba_filename << "\n";
       return false;
     }
 
