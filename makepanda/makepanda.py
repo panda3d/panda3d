@@ -4888,8 +4888,8 @@ if (PkgSkip("PANDATOOL")==0):
   TargetAdd('pfm-trans.exe', opts=['ADVAPI'])
 
   TargetAdd('pfm-bba_pfmBba.obj', opts=OPTS, input='pfmBba.cxx')
-  TargetAdd('pfm-bba.exe', input='pfm-bba_pfmBba.obj')
   TargetAdd('pfm-bba_config_pfm.obj', opts=OPTS, input='config_pfm.cxx')
+  TargetAdd('pfm-bba.exe', input='pfm-bba_pfmBba.obj')
   TargetAdd('pfm-bba.exe', input='pfm-bba_config_pfm.obj')
   TargetAdd('pfm-bba.exe', input='libp3progbase.lib')
   TargetAdd('pfm-bba.exe', input='libp3pandatoolbase.lib')
