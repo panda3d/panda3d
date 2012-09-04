@@ -38,6 +38,11 @@ EggToObj() :
      "Specify the coordinate system of the resulting " + _format_name +
      " file.  Normally, this is z-up.");
 
+  add_option
+    ("C", "", 0,
+     "Clean out higher-order polygons by subdividing into triangles.",
+     &EggToObj::dispatch_none, &_triangulate_polygons);
+
   _coordinate_system = CS_zup_right;
   _got_coordinate_system = true;
 }
@@ -49,6 +54,12 @@ EggToObj() :
 ////////////////////////////////////////////////////////////////////
 void EggToObj::
 run() {
+  if (_triangulate_polygons) {
+    nout << "Triangulating polygons.\n";
+    int num_produced = _data->triangulate_polygons(~0);
+    nout << "  (" << num_produced << " triangles produced.)\n";
+  }
+
   _data->flatten_transforms();
   collect_vertices(_data);
 
