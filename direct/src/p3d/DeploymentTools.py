@@ -1191,10 +1191,11 @@ class Installer:
             retcode = subprocess.call(cmd, shell = False)
             if retcode != 0:
                 self.notify.warning("Failure invoking NSIS command.")
+            else:
+                nsifile.unlink()
         except OSError:
             self.notify.warning("Unable to invoke NSIS command.")
 
-        nsifile.unlink()
         if icofile is not None:
             icofile.unlink()
         
