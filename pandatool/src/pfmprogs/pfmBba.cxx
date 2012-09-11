@@ -92,6 +92,9 @@ process_pfm(const Filename &input_filename, PfmFile &file) {
     for (int i = 0; i < 8; ++i) {
       points[i] = bounds->get_point(i);
     }
+
+    // Experiment with expanding the back wall backwards.
+    /*
     LPlane plane(points[0], points[1], points[2]);
     LVector3 normal = plane.get_normal();
 
@@ -101,6 +104,7 @@ process_pfm(const Filename &input_filename, PfmFile &file) {
     points[1] += normal;
     points[2] += normal;
     points[3] += normal;
+    */
     
     for (int i = 0; i < 8; ++i) {
       const LPoint3 &p = points[i];
