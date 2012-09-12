@@ -1931,8 +1931,13 @@ build_auto_vis_columns(VisColumns &vis_columns, bool for_points) const {
 
   if (_vis_2d) {
     // No normals needed if we're just generating a 2-d mesh.
-    add_vis_column(vis_columns, CT_vertex2, CT_vertex2, InternalName::get_vertex());
-    add_vis_column(vis_columns, CT_texcoord2, CT_texcoord2, InternalName::get_texcoord());
+    if (_vis_inverse) {
+      add_vis_column(vis_columns, CT_texcoord2, CT_vertex2, InternalName::get_vertex());
+      add_vis_column(vis_columns, CT_vertex2, CT_texcoord2, InternalName::get_texcoord());
+    } else {
+      add_vis_column(vis_columns, CT_vertex2, CT_vertex2, InternalName::get_vertex());
+      add_vis_column(vis_columns, CT_texcoord2, CT_texcoord2, InternalName::get_texcoord());
+    }
 
   } else {
     if (_vis_inverse) {
