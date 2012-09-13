@@ -450,6 +450,8 @@ class Installer:
         self.fullname = fullname
         self.version = str(version)
         self.includeRequires = False
+        self.offerRun = True
+        self.offerDesktopShortcut = True
         self.licensename = ""
         self.licensefile = Filename()
         self.authorid = "org.panda3d"
@@ -1091,26 +1093,34 @@ class Installer:
 
         # Tell Vista that we require admin rights
         print >>nsi, 'RequestExecutionLevel admin'
-        print >>nsi
-        print >>nsi, 'Function launch'
-        print >>nsi, '  ExecShell "open" "$INSTDIR\\%s.exe"' % self.shortname
-        print >>nsi, 'FunctionEnd'
-        print >>nsi
-        print >>nsi, 'Function desktopshortcut'
-        if icofile is None:
-            print >>nsi, '  CreateShortcut "$DESKTOP\\%s.lnk" "$INSTDIR\\%s.exe"' % (self.fullname, self.shortname)
-        else:
-            print >>nsi, '  CreateShortcut "$DESKTOP\\%s.lnk" "$INSTDIR\\%s.exe" "" "$INSTDIR\\%s.ico"' % (self.fullname, self.shortname, self.shortname)
-        print >>nsi, 'FunctionEnd'
-        print >>nsi
+        print >>nsi 
+        if self.offerRun:
+            print >>nsi, 'Function launch'
+            print >>nsi, '  ExecShell "open" "$INSTDIR\\%s.exe"' % self.shortname
+            print >>nsi, 'FunctionEnd'
+            print >>nsi
+
+        if self.offerDesktopShortcut:
+            print >>nsi, 'Function desktopshortcut'
+            if icofile is None:
+                print >>nsi, '  CreateShortcut "$DESKTOP\\%s.lnk" "$INSTDIR\\%s.exe"' % (self.fullname, self.shortname)
+            else:
+                print >>nsi, '  CreateShortcut "$DESKTOP\\%s.lnk" "$INSTDIR\\%s.exe" "" "$INSTDIR\\%s.ico"' % (self.fullname, self.shortname, self.shortname)
+            print >>nsi, 'FunctionEnd'
+            print >>nsi
+            
         print >>nsi, '!include "MUI2.nsh"'
         print >>nsi, '!define MUI_ABORTWARNING'
-        print >>nsi, '!define MUI_FINISHPAGE_RUN'
-        print >>nsi, '!define MUI_FINISHPAGE_RUN_FUNCTION launch'
-        print >>nsi, '!define MUI_FINISHPAGE_RUN_TEXT "Run %s"' % self.fullname
-        print >>nsi, '!define MUI_FINISHPAGE_SHOWREADME ""'
-        print >>nsi, '!define MUI_FINISHPAGE_SHOWREADME_TEXT "Create Desktop Shortcut"'
-        print >>nsi, '!define MUI_FINISHPAGE_SHOWREADME_FUNCTION desktopshortcut'
+        if self.offerRun:
+            print >>nsi, '!define MUI_FINISHPAGE_RUN'
+            print >>nsi, '!define MUI_FINISHPAGE_RUN_NOTCHECKED'
+            print >>nsi, '!define MUI_FINISHPAGE_RUN_FUNCTION launch'
+            print >>nsi, '!define MUI_FINISHPAGE_RUN_TEXT "Run %s"' % self.fullname
+        if self.offerDesktopShortcut:
+            print >>nsi, '!define MUI_FINISHPAGE_SHOWREADME ""'
+            print >>nsi, '!define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED'
+            print >>nsi, '!define MUI_FINISHPAGE_SHOWREADME_TEXT "Create Desktop Shortcut"'
+            print >>nsi, '!define MUI_FINISHPAGE_SHOWREADME_FUNCTION desktopshortcut'
         print >>nsi
         print >>nsi, 'Var StartMenuFolder'
         print >>nsi, '!insertmacro MUI_PAGE_WELCOME'

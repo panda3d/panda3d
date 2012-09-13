@@ -102,6 +102,11 @@ Options:
      is licensed under.
      Only relevant when generating a graphical installer.
 
+  -O 
+     Specify this option when generating a graphical installer to omit
+     the default checkboxes for "run this program" and "install a
+     desktop shortcut" on completion.
+
   -a com.your_company
      Short identifier of the author of the application. The default
      is "org.panda3d", but you will most likely want to change
@@ -164,9 +169,10 @@ authorname = ""
 authoremail = ""
 iconFiles = []
 includeRequires = False
+omitDefaultCheckboxes = False
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'n:N:v:o:t:P:csl:L:a:A:e:i:h')
+    opts, args = getopt.getopt(sys.argv[1:], 'n:N:v:o:t:P:csOl:L:a:A:e:i:h')
 except getopt.error, msg:
     usage(1, msg or 'Invalid option')
 
@@ -188,6 +194,8 @@ for opt, arg in opts:
         currentPlatform = True
     elif opt == '-s':
         includeRequires = True
+    elif opt == '-O':
+        omitDefaultCheckboxes = True
     elif opt == '-l':
         licensename = arg.strip()
     elif opt == '-L':
@@ -267,6 +275,9 @@ elif deploy_mode == 'installer':
         tokens["verify_contents"] = "never"
     i = Installer(appFilename, shortname, fullname, version, tokens = tokens)
     i.includeRequires = includeRequires
+    if omitDefaultCheckboxes:
+        i.offerRun = False
+        i.offerDesktopShortcut = False
     i.licensename = licensename
     i.licensefile = licensefile
     if authorid:
