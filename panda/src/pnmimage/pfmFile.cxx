@@ -887,9 +887,9 @@ flip(bool flip_x, bool flip_y, bool transpose) {
   if (transpose) {
     // Transposed case.  X becomes Y, Y becomes X.
     for (int xi = 0; xi < _x_size; ++xi) {
-      int source_xi = flip_x ? xi : _x_size - 1 - xi;
+      int source_xi = !flip_x ? xi : _x_size - 1 - xi;
       for (int yi = 0; yi < _y_size; ++yi) {
-        int source_yi = flip_y ? yi : _y_size - 1 - yi;
+        int source_yi = !flip_y ? yi : _y_size - 1 - yi;
         const PN_float32 *p = &_table[(source_yi * _x_size + source_xi) * _num_channels];
         for (int ci = 0; ci < _num_channels; ++ci) {
           flipped.push_back(p[ci]);
@@ -904,9 +904,9 @@ flip(bool flip_x, bool flip_y, bool transpose) {
   } else {
     // Non-transposed.  X is X, Y is Y.
     for (int yi = 0; yi < _y_size; ++yi) {
-      int source_yi = flip_y ? yi : _y_size - 1 - yi;
+      int source_yi = !flip_y ? yi : _y_size - 1 - yi;
       for (int xi = 0; xi < _x_size; ++xi) {
-        int source_xi = flip_x ? xi : _x_size - 1 - xi;
+        int source_xi = !flip_x ? xi : _x_size - 1 - xi;
         const PN_float32 *p = &_table[(source_yi * _x_size + source_xi) * _num_channels];
         for (int ci = 0; ci < _num_channels; ++ci) {
           flipped.push_back(p[ci]);
@@ -915,7 +915,10 @@ flip(bool flip_x, bool flip_y, bool transpose) {
     }
   }
 
-  nassertv(flipped.size() == _table.size());
+  nassertv(flipped.size() <= _table.size());
+  // Also add in the extra buffer at the end.
+  flipped.insert(flipped.end(), _table.size() - flipped.size(), (PN_float32)0.0);
+
   _table.swap(flipped);
 }
 
