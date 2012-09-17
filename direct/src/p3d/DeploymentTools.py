@@ -1084,7 +1084,10 @@ class Installer:
         # Some global info
         print >>nsi, 'Name "%s"' % self.fullname
         print >>nsi, 'OutFile "%s"' % output.toOsSpecific()
-        print >>nsi, 'InstallDir "$PROGRAMFILES\\%s"' % self.fullname
+        if platform == 'win64':
+            print >>nsi, 'InstallDir "$PROGRAMFILES64\\%s"' % self.fullname
+        else:
+            print >>nsi, 'InstallDir "$PROGRAMFILES\\%s"' % self.fullname
         print >>nsi, 'SetCompress auto'
         print >>nsi, 'SetCompressor lzma'
         print >>nsi, 'ShowInstDetails nevershow'
