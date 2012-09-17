@@ -14,6 +14,7 @@
 
 #include "executionEnvironment.h"
 #include "pandaVersion.h"
+
 #include <assert.h>
 #include <errno.h>
 #include <stdio.h>  // for perror
@@ -29,6 +30,9 @@
 
 // And this is for GetModuleFileName().
 #include <windows.h>
+
+// SHGetSpecialFolderPath()
+#include <shlobj.h>
 #endif
 
 #ifdef __APPLE__
@@ -85,7 +89,6 @@ extern int GLOBAL_ARGC;
 // (It does seem to work with glibc2, however.)
 
 ExecutionEnvironment *ExecutionEnvironment::_global_ptr = NULL;
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ExecutionEnvironment::Constructor
@@ -299,15 +302,95 @@ ns_get_environment_variable(const string &var) const {
     }
   }
 
-#ifdef PREREAD_ENVIRONMENT
-  return string();
-#else
+#ifndef PREREAD_ENVIRONMENT
   const char *def = getenv(var.c_str());
   if (def != (char *)NULL) {
     return def;
   }
-  return string();
 #endif
+
+#ifdef _WIN32
+  // On Windows only, we also simulate several standard folder names
+  // as "environment" variables.  I know we're supposed to be using
+  // KnownFolderID's these days, but those calls aren't compatible
+  // with XP, so we'll continue to use SHGetSpecialFolderPath() until
+  // we're forced out of it.
+
+  static struct { int id; const char *name; } csidl_table[] = {
+    { CSIDL_ADMINTOOLS, "ADMINTOOLS" },
+    { CSIDL_ALTSTARTUP, "ALTSTARTUP" },
+    { CSIDL_APPDATA, "APPDATA" },
+    { CSIDL_BITBUCKET, "BITBUCKET" },
+    { CSIDL_CDBURN_AREA, "CDBURN_AREA" },
+    { CSIDL_COMMON_ADMINTOOLS, "COMMON_ADMINTOOLS" },
+    { CSIDL_COMMON_ALTSTARTUP, "COMMON_ALTSTARTUP" },
+    { CSIDL_COMMON_APPDATA, "COMMON_APPDATA" },
+    { CSIDL_COMMON_DESKTOPDIRECTORY, "COMMON_DESKTOPDIRECTORY" },
+    { CSIDL_COMMON_DOCUMENTS, "COMMON_DOCUMENTS" },
+    { CSIDL_COMMON_FAVORITES, "COMMON_FAVORITES" },
+    { CSIDL_COMMON_MUSIC, "COMMON_MUSIC" },
+    { CSIDL_COMMON_OEM_LINKS, "COMMON_OEM_LINKS" },
+    { CSIDL_COMMON_PICTURES, "COMMON_PICTURES" },
+    { CSIDL_COMMON_PROGRAMS, "COMMON_PROGRAMS" },
+    { CSIDL_COMMON_STARTMENU, "COMMON_STARTMENU" },
+    { CSIDL_COMMON_STARTUP, "COMMON_STARTUP" },
+    { CSIDL_COMMON_TEMPLATES, "COMMON_TEMPLATES" },
+    { CSIDL_COMMON_VIDEO, "COMMON_VIDEO" },
+    { CSIDL_COMPUTERSNEARME, "COMPUTERSNEARME" },
+    { CSIDL_CONNECTIONS, "CONNECTIONS" },
+    { CSIDL_CONTROLS, "CONTROLS" },
+    { CSIDL_COOKIES, "COOKIES" },
+    { CSIDL_DESKTOP, "DESKTOP" },
+    { CSIDL_DESKTOPDIRECTORY, "DESKTOPDIRECTORY" },
+    { CSIDL_DRIVES, "DRIVES" },
+    { CSIDL_FAVORITES, "FAVORITES" },
+    { CSIDL_FONTS, "FONTS" },
+    { CSIDL_HISTORY, "HISTORY" },
+    { CSIDL_INTERNET, "INTERNET" },
+    { CSIDL_INTERNET_CACHE, "INTERNET_CACHE" },
+    { CSIDL_LOCAL_APPDATA, "LOCAL_APPDATA" },
+    { CSIDL_MYDOCUMENTS, "MYDOCUMENTS" },
+    { CSIDL_MYMUSIC, "MYMUSIC" },
+    { CSIDL_MYPICTURES, "MYPICTURES" },
+    { CSIDL_MYVIDEO, "MYVIDEO" },
+    { CSIDL_NETHOOD, "NETHOOD" },
+    { CSIDL_NETWORK, "NETWORK" },
+    { CSIDL_PERSONAL, "PERSONAL" },
+    { CSIDL_PRINTERS, "PRINTERS" },
+    { CSIDL_PRINTHOOD, "PRINTHOOD" },
+    { CSIDL_PROFILE, "PROFILE" },
+    { CSIDL_PROGRAM_FILES, "PROGRAM_FILES" },
+    { CSIDL_PROGRAM_FILESX86, "PROGRAM_FILESX86" },
+    { CSIDL_PROGRAM_FILES_COMMON, "PROGRAM_FILES_COMMON" },
+    { CSIDL_PROGRAM_FILES_COMMONX86, "PROGRAM_FILES_COMMONX86" },
+    { CSIDL_PROGRAMS, "PROGRAMS" },
+    { CSIDL_RECENT, "RECENT" },
+    { CSIDL_RESOURCES, "RESOURCES" },
+    { CSIDL_RESOURCES_LOCALIZED, "RESOURCES_LOCALIZED" },
+    { CSIDL_SENDTO, "SENDTO" },
+    { CSIDL_STARTMENU, "STARTMENU" },
+    { CSIDL_STARTUP, "STARTUP" },
+    { CSIDL_SYSTEM, "SYSTEM" },
+    { CSIDL_SYSTEMX86, "SYSTEMX86" },
+    { CSIDL_TEMPLATES, "TEMPLATES" },
+    { CSIDL_WINDOWS, "WINDOWS" },
+    { 0, NULL },
+  };
+
+  for (int i = 0; csidl_table[i].name != NULL; ++i) {
+    if (strcmp(var.c_str(), csidl_table[i].name) == 0) {
+      wchar_t buffer[MAX_PATH];
+      if (SHGetSpecialFolderPathW(NULL, buffer, csidl_table[i].id, true)) {
+        Filename pathname = Filename::from_os_specific_w(buffer);
+        return pathname.to_os_specific();
+      }
+      break;
+    }
+  }
+
+#endif // _WIN32
+
+  return string();
 }
 
 ////////////////////////////////////////////////////////////////////
