@@ -989,10 +989,10 @@ void PfmFile::
 extrude(const Lens *lens) {
   nassertv(is_valid());
 
-  static LMatrix4f from_uv(2.0f, 0.0f, 0.0f, 0.0f,
-                           0.0f, 2.0f, 0.0f, 0.0f,
-                           0.0f, 0.0f, 2.0f, 0.0f,
-                           -1.0f, -1.0f, -1.0f, 1.0f);
+  static LMatrix4 from_uv(2.0, 0.0, 0.0, 0.0,
+                          0.0, 2.0, 0.0, 0.0,
+                          0.0, 0.0, 2.0, 0.0,
+                          -1.0, -1.0, -1.0, 1.0);
 
   PfmFile result;
   result.clear(_x_size, _y_size, 3);
