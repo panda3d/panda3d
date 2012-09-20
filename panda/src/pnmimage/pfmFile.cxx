@@ -978,6 +978,69 @@ project(const Lens *lens) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::extrude
+//       Access: Published
+//  Description: Converts each (u, v, depth) point of the Pfm file to
+//               an (x, y, z) point, by reversing project().  If the
+//               original file is only a 1-d file, assumes that it is
+//               a depth map with implicit (u, v) coordinates.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+extrude(const Lens *lens) {
+  nassertv(is_valid());
+
+  static LMatrix4f from_uv(2.0f, 0.0f, 0.0f, 0.0f,
+                           0.0f, 2.0f, 0.0f, 0.0f,
+                           0.0f, 0.0f, 2.0f, 0.0f,
+                           -1.0f, -1.0f, -1.0f, 1.0f);
+
+  PfmFile result;
+  result.clear(_x_size, _y_size, 3);
+  result.set_zero_special(true);
+
+  LPoint2 uv_scale(1.0, 1.0);
+  if (_x_size > 1) {
+    uv_scale[0] = 1.0 / PN_stdfloat(_x_size - 1);
+  }
+  if (_y_size > 1) {
+    uv_scale[1] = 1.0 / PN_stdfloat(_y_size - 1);
+  }
+
+  for (int yi = 0; yi < _y_size; ++yi) {
+    for (int xi = 0; xi < _x_size; ++xi) {
+      if (!has_point(xi, yi)) {
+        continue;
+      }
+      LPoint3 p;
+      if (_num_channels == 1) {
+        p.set((PN_stdfloat)xi * uv_scale[0],
+              (PN_stdfloat)yi * uv_scale[1],
+              (PN_stdfloat)get_point1(xi, yi));
+      } else {
+        p = LCAST(PN_stdfloat, get_point(xi, yi));
+      }
+
+      if (lens->is_linear()) {
+        lens->get_projection_mat_inv().xform_point_general_in_place(p);
+        result.set_point(xi, yi, p);
+
+      } else {
+        from_uv.xform_point_in_place(p);
+        LPoint3 near_point, far_point;
+        if (!lens->extrude(p, near_point, far_point)) {
+          continue;
+        }
+        
+        LPoint3 film = near_point + (far_point - near_point) * p[2];
+        result.set_point(xi, yi, film);
+      }
+    }
+  }
+
+  (*this) = result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::merge
 //       Access: Published
 //  Description: Wherever there is missing data in this PfmFile (that
