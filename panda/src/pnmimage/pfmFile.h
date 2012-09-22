@@ -103,6 +103,8 @@ PUBLISHED:
   INLINE BLOCKING void xform(const LMatrix4d &transform);
   BLOCKING void project(const Lens *lens);
   BLOCKING void extrude(const Lens *lens);
+  BLOCKING void forward_distort(const PfmFile &dist);
+  BLOCKING void reverse_distort(const PfmFile &dist);
   BLOCKING void merge(const PfmFile &other);
   BLOCKING void copy_channel(int to_channel, const PfmFile &other, int from_channel);
   BLOCKING void apply_crop(int x_begin, int x_end, int y_begin, int y_end);

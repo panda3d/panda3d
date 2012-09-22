@@ -1050,6 +1050,122 @@ extrude(const Lens *lens) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::forward_distort
+//       Access: Published
+//  Description: Applys the distortion indicated in the supplied dist
+//               map to the current map.  The dist map is understood
+//               to be a mapping of points in the range 0..1 in the
+//               first two dimensions.  Each (u,v) point in the
+//               current file is replaced with the point from the same
+//               file at (x,y), where (x,y) is the point value from
+//               the dist map.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+forward_distort(const PfmFile &dist) {
+  PfmFile result;
+  const PfmFile *dist_p = &dist;
+  PfmFile scaled_dist;
+  if (dist.get_x_size() != _x_size || dist.get_y_size() != _y_size) {
+    // Rescale the dist file as needed.
+    scaled_dist = dist;
+    scaled_dist.resize(_x_size, _y_size);
+    dist_p = &scaled_dist;
+  }
+
+  if (_has_no_data_value) {
+    result = *this;
+    for (int yi = 0; yi < _y_size; ++yi) {
+      for (int xi = 0; xi < _x_size; ++xi) {
+        result.set_point4(xi, yi, _no_data_value);
+      }
+    }
+
+  } else {
+    result.clear(_x_size, _y_size, _num_channels);
+  }
+
+  for (int yi = 0; yi < _y_size; ++yi) {
+    for (int xi = 0; xi < _x_size; ++xi) {
+      if (!dist_p->has_point(xi, yi)) {
+        continue;
+      }
+      LPoint2f uv = dist_p->get_point2(xi, yi);
+      int dist_xi = int(uv[0] * (_x_size - 1));
+      int dist_yi = int(uv[1] * (_y_size - 1));
+      if (dist_xi < 0 || dist_xi >= _x_size || 
+          dist_yi < 0 || dist_yi >= _y_size) {
+        continue;
+      }
+
+      if (!has_point(dist_xi, dist_yi)) {
+        continue;
+      }
+
+      result.set_point(xi, yi, get_point(dist_xi, dist_yi));
+    }
+  }
+
+  (*this) = result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::reverse_distort
+//       Access: Published
+//  Description: Applys the distortion indicated in the supplied dist
+//               map to the current map.  The dist map is understood
+//               to be a mapping of points in the range 0..1 in the
+//               first two dimensions.  Each (x,y) point in the
+//               current file is replaced with the point from the same
+//               file at (u,v), where (x,y) is the point value from
+//               the dist map.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+reverse_distort(const PfmFile &dist) {
+  PfmFile result;
+  const PfmFile *dist_p = &dist;
+  PfmFile scaled_dist;
+  if (dist.get_x_size() != _x_size || dist.get_y_size() != _y_size) {
+    // Rescale the dist file as needed.
+    scaled_dist = dist;
+    scaled_dist.resize(_x_size, _y_size);
+    dist_p = &scaled_dist;
+  }
+
+  if (_has_no_data_value) {
+    result = *this;
+    for (int yi = 0; yi < _y_size; ++yi) {
+      for (int xi = 0; xi < _x_size; ++xi) {
+        result.set_point4(xi, yi, _no_data_value);
+      }
+    }
+  } else {
+    result.clear(_x_size, _y_size, _num_channels);
+  }
+
+  for (int yi = 0; yi < _y_size; ++yi) {
+    for (int xi = 0; xi < _x_size; ++xi) {
+      if (!has_point(xi, yi)) {
+        continue;
+      }
+      if (!dist_p->has_point(xi, yi)) {
+        continue;
+      }
+      LPoint2f uv = dist_p->get_point2(xi, yi);
+      int dist_xi = int(uv[0] * (_x_size - 1));
+      int dist_yi = int(uv[1] * (_y_size - 1));
+      if (dist_xi < 0 || dist_xi >= _x_size || 
+          dist_yi < 0 || dist_yi >= _y_size) {
+        continue;
+      }
+
+      result.set_point(dist_xi, dist_yi, get_point(xi, yi));
+    }
+  }
+
+  (*this) = result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::merge
 //       Access: Published
 //  Description: Wherever there is missing data in this PfmFile (that
