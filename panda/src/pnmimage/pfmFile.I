@@ -593,6 +593,49 @@ get_vis_2d() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::set_vis_blend
+//       Access: Published
+//  Description: Specifies a blending map--a grayscale image--that
+//               will be applied to the vertex color during
+//               generate_vis_mesh() and generate_vis_points().  The
+//               image size must exactly match the mesh size of the
+//               PfmFile.
+//
+//               Ownership of the pointer is not kept by the PfmFile;
+//               it is your responsibility to ensure it does not
+//               destruct during the lifetime of the PfmFile (or at
+//               least not before your subsequent call to
+//               generate_vis_mesh()).
+////////////////////////////////////////////////////////////////////
+INLINE void PfmFile::
+set_vis_blend(const PNMImage *vis_blend) {
+  _vis_blend = vis_blend;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::set_vis_blend
+//       Access: Published
+//  Description: Removes the blending map set by a prior call to
+//               set_vis_blend().
+////////////////////////////////////////////////////////////////////
+INLINE void PfmFile::
+clear_vis_blend() {
+  _vis_blend = NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::get_vis_blend
+//       Access: Published
+//  Description: Returns the blending map set by the most recent call
+//               to set_vis_blend(), or NULL if there is no blending
+//               map in effect.
+////////////////////////////////////////////////////////////////////
+INLINE const PNMImage *PfmFile::
+get_vis_blend() const {
+  return _vis_blend;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::get_table
 //       Access: Public
 //  Description: This is a very low-level function that returns a

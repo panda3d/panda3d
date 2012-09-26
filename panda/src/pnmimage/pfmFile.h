@@ -123,6 +123,10 @@ PUBLISHED:
   INLINE void set_vis_2d(bool vis_2d);
   INLINE bool get_vis_2d() const;
 
+  INLINE void set_vis_blend(const PNMImage *vis_blend);
+  INLINE void clear_vis_blend();
+  INLINE const PNMImage *get_vis_blend() const;
+
   enum ColumnType {
     CT_texcoord2,
     CT_texcoord3,
@@ -130,6 +134,7 @@ PUBLISHED:
     CT_vertex2,
     CT_vertex3,
     CT_normal3,
+    CT_blend1,
   };
   void clear_vis_columns();
   void add_vis_column(ColumnType source, ColumnType target,
@@ -223,6 +228,7 @@ private:
   bool _vis_inverse;
   PT(InternalName) _flat_texcoord_name;
   bool _vis_2d;
+  const PNMImage *_vis_blend;
 
   VisColumns _vis_columns;
 

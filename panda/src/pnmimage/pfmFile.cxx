@@ -45,6 +45,7 @@ PfmFile() {
   _has_point = has_point_noop;
   _vis_inverse = false;
   _vis_2d = false;
+  _vis_blend = NULL;
   clear();
 }
 
@@ -62,7 +63,8 @@ PfmFile(const PfmFile &copy) :
   _no_data_value(copy._no_data_value),
   _has_point(copy._has_point),
   _vis_inverse(copy._vis_inverse),
-  _vis_2d(copy._vis_2d)
+  _vis_2d(copy._vis_2d),
+  _vis_blend(copy._vis_blend)
 {
 }
 
@@ -81,6 +83,7 @@ operator = (const PfmFile &copy) {
   _has_point = copy._has_point;
   _vis_inverse = copy._vis_inverse;
   _vis_2d = copy._vis_2d;
+  _vis_blend = copy._vis_blend;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -94,6 +97,7 @@ clear() {
   _y_size = 0;
   _scale = 1.0;
   _num_channels = 3;
+  _vis_blend = NULL;
   _table.clear();
   clear_no_data_value();
 }
@@ -110,6 +114,7 @@ clear(int x_size, int y_size, int num_channels) {
   _y_size = y_size;
   _scale = 1.0;
   _num_channels = num_channels;
+  _vis_blend = NULL;
 
   _table.clear();
   int size = _x_size * _y_size * _num_channels;
@@ -2149,6 +2154,11 @@ build_auto_vis_columns(VisColumns &vis_columns, bool for_points) const {
     // We need an additional texcoord column for the flat texcoords.
     add_vis_column(vis_columns, CT_texcoord2, CT_texcoord2, _flat_texcoord_name);
   }
+
+  if (_vis_blend != (PNMImage *)NULL) {
+    // The blend map, if specified, also gets applied to the vertices.
+    add_vis_column(vis_columns, CT_blend1, CT_blend1, InternalName::get_color());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2195,6 +2205,12 @@ make_array_format(const VisColumns &vis_columns) const {
       num_components = 3;
       numeric_type = GeomEnums::NT_float32;
       contents = GeomEnums::C_vector;
+      break;
+
+    case CT_blend1:
+      num_components = 4;
+      numeric_type = GeomEnums::NT_uint8;
+      contents = GeomEnums::C_color;
       break;
     }
     nassertr(num_components != 0, NULL);
@@ -2392,6 +2408,16 @@ add_data(const PfmFile &file, GeomVertexWriter &vwriter, int xi, int yi, bool re
       }
       transform_vector(n);
       vwriter.set_data3f(n);
+    }
+    break;
+
+  case CT_blend1:
+    {
+      const PNMImage *vis_blend = file.get_vis_blend();
+      if (vis_blend != NULL) {
+        double gray = vis_blend->get_gray(xi, yi);
+        vwriter.set_data3d(gray, gray, gray);
+      }
     }
     break;
   }
