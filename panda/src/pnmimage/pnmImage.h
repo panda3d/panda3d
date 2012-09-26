@@ -117,6 +117,7 @@ PUBLISHED:
   INLINE void make_rgb();
 
   BLOCKING void reverse_rows();
+  BLOCKING void flip(bool flip_x, bool flip_y, bool transpose);
 
   BLOCKING void set_maxval(xelval maxval);
 

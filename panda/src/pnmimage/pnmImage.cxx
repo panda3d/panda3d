@@ -548,6 +548,93 @@ reverse_rows() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::flip
+//       Access: Published
+//  Description: Reverses, transposes, and/or rotates the image
+//               in-place according to the specified parameters.  If
+//               flip_x is true, the x axis is reversed; if flip_y is
+//               true, the y axis is reversed.  Then, if transpose is
+//               true, the x and y axes are exchanged.  These
+//               parameters can be used to select any combination of
+//               90-degree or 180-degree rotations and flips.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+flip(bool flip_x, bool flip_y, bool transpose) {
+  if (transpose) {
+    // Transposed case.  X becomes Y, Y becomes X.
+    if (_array != NULL) {
+      xel *new_array = (xel *)PANDA_MALLOC_ARRAY(_x_size * _y_size * sizeof(xel));
+      for (int xi = 0; xi < _x_size; ++xi) {
+        xel *row = new_array + xi * _y_size;
+        int source_xi = !flip_x ? xi : _x_size - 1 - xi;
+        for (int yi = 0; yi < _y_size; ++yi) {
+          int source_yi = !flip_y ? yi : _y_size - 1 - yi;
+          xel *source_row = _array + source_yi * _x_size;
+          row[yi] = source_row[source_xi];
+        }
+      }
+      PANDA_FREE_ARRAY(_array);
+      _array = new_array;
+    }
+
+    if (_alpha != NULL) {
+      xelval *new_alpha = (xelval *)PANDA_MALLOC_ARRAY(_x_size * _y_size * sizeof(xelval));
+      for (int xi = 0; xi < _x_size; ++xi) {
+        xelval *row = new_alpha + xi * _y_size;
+        int source_xi = !flip_x ? xi : _x_size - 1 - xi;
+        for (int yi = 0; yi < _y_size; ++yi) {
+          int source_yi = !flip_y ? yi : _y_size - 1 - yi;
+          xelval *source_row = _alpha + source_yi * _x_size;
+          row[yi] = source_row[source_xi];
+        }
+      }
+
+      PANDA_FREE_ARRAY(_alpha);
+      _alpha = new_alpha;
+    }
+
+    int t = _x_size;
+    _x_size = _y_size;
+    _y_size = t;
+
+  } else {
+    // Non-transposed.  X is X, Y is Y.
+    if (_array != NULL) {
+      xel *new_array = (xel *)PANDA_MALLOC_ARRAY(_x_size * _y_size * sizeof(xel));
+      for (int yi = 0; yi < _y_size; ++yi) {
+        xel *row = new_array + yi * _x_size;
+        int source_yi = !flip_y ? yi : _y_size - 1 - yi;
+        xel *source_row = _array + source_yi * _x_size;
+
+        for (int xi = 0; xi < _x_size; ++xi) {
+          int source_xi = !flip_x ? xi : _x_size - 1 - xi;
+          row[xi] = source_row[source_xi];
+        }
+      }
+      PANDA_FREE_ARRAY(_array);
+      _array = new_array;
+    }
+
+    if (_alpha != NULL) {
+      xelval *new_alpha = (xelval *)PANDA_MALLOC_ARRAY(_x_size * _y_size * sizeof(xelval));
+      for (int yi = 0; yi < _y_size; ++yi) {
+        xelval *row = new_alpha + yi * _x_size;
+        int source_yi = !flip_y ? yi : _y_size - 1 - yi;
+        xelval *source_row = _alpha + source_yi * _x_size;
+
+        for (int xi = 0; xi < _x_size; ++xi) {
+          int source_xi = !flip_x ? xi : _x_size - 1 - xi;
+          row[xi] = source_row[source_xi];
+        }
+      }
+
+      PANDA_FREE_ARRAY(_alpha);
+      _alpha = new_alpha;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::set_maxval
 //       Access: Published
 //  Description: Rescales the image to the indicated maxval.
