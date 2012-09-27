@@ -215,6 +215,7 @@ initialize(int api_version, const string &contents_filename,
     // If the platform is compiled in (as opposed to passed in by the
     // caller), we might in fact support multiple platforms.
     _platform = DTOOL_PLATFORM;
+#ifdef _WIN32
     if (_platform == "win64") {
       _supported_platforms.push_back("win64");
       _supported_platforms.push_back("win32");
@@ -227,6 +228,7 @@ initialize(int api_version, const string &contents_filename,
       }
       _supported_platforms.push_back("win32");
     }
+#endif  // _WIN32
 
     // TODO: OSX, Linux multiplatform support.  Just add the
     // appropriate platform strings to _supported_platforms.
