@@ -241,7 +241,6 @@ for platform in platforms:
         # Just print the error message and exit gracefully.
         inst = sys.exc_info()[1]
         print inst.args[0]
-        #raise
         sys.exit(1)
 
 # An explicit call to exit() is required to exit the program, when

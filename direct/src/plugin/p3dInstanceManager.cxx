@@ -38,6 +38,7 @@
 #include <shlobj.h>
 #include <io.h>      // chmod()
 #include <direct.h>  // rmdir()
+#include <windows.h> // GetModuleHandle() etc.
 #else
 #include <sys/stat.h>
 #include <signal.h>
@@ -211,9 +212,32 @@ initialize(int api_version, const string &contents_filename,
   }
 
   if (_platform.empty()) {
+    // If the platform is compiled in (as opposed to passed in by the
+    // caller), we might in fact support multiple platforms.
     _platform = DTOOL_PLATFORM;
+    if (_platform == "win64") {
+      _supported_platforms.push_back("win64");
+      _supported_platforms.push_back("win32");
+
+    } else if (_platform == "win32") {
+      // This is a WIN32 process, but determine if the underlying OS
+      // actually supports WIN64.
+      if (supports_win64()) {
+        _supported_platforms.push_back("win64");
+      }
+      _supported_platforms.push_back("win32");
+    }
+
+    // TODO: OSX, Linux multiplatform support.  Just add the
+    // appropriate platform strings to _supported_platforms.
   }
 
+  if (_supported_platforms.empty()) {
+    // We always support at least the specific platform on which we're
+    // running.
+    _supported_platforms.push_back(_platform);
+  }
+      
 #ifdef P3D_PLUGIN_LOG_DIRECTORY
   if (_log_directory.empty()) {
     _log_directory = P3D_PLUGIN_LOG_DIRECTORY;
@@ -1520,3 +1544,20 @@ nt_thread_run() {
   _notify_ready.release();
 }
 
+#ifdef _WIN32
+bool P3DInstanceManager::
+supports_win64() {
+  BOOL is_win64 = false;
+
+  typedef BOOL (WINAPI *LPFN_ISWOW64PROCESS) (HANDLE, PBOOL);
+  LPFN_ISWOW64PROCESS _IsWow64Process;
+  _IsWow64Process = (LPFN_ISWOW64PROCESS)GetProcAddress(GetModuleHandle("kernel32"), "IsWow64Process");
+  
+  if (_IsWow64Process != NULL) {
+    if (!_IsWow64Process(GetCurrentProcess(), &is_win64)) {
+      is_win64 = false;
+    }
+  }
+  return (is_win64 != 0);
+}
+#endif  // _WIN32

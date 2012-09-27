@@ -83,6 +83,7 @@ run_command_line(int argc, char *argv[]) {
 
     case 'p':
       _this_platform = optarg;
+      _coreapi_platform = optarg;
       break;
 
     case 'n':
@@ -506,7 +507,7 @@ read_contents_file(const Filename &contents_filename, bool fresh_download) {
       const char *name = xpackage->Attribute("name");
       if (name != NULL && strcmp(name, "coreapi") == 0) {
         const char *platform = xpackage->Attribute("platform");
-        if (platform != NULL && _this_platform == string(platform)) {
+        if (platform != NULL && _coreapi_platform == string(platform)) {
           _coreapi_dll.load_xml(xpackage);
           const char *set_ver = xpackage->Attribute("set_ver");
           if (set_ver != NULL) {
@@ -524,7 +525,7 @@ read_contents_file(const Filename &contents_filename, bool fresh_download) {
   if (!found_core_package) {
     // Couldn't find the coreapi package description.
     nout << "No coreapi package defined in contents file for "
-         << _this_platform << "\n";
+         << _coreapi_platform << "\n";
     return false;
   }
 

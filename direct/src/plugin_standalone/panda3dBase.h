@@ -77,6 +77,7 @@ protected:
   string _log_dirname;
   string _log_basename;
   string _this_platform;
+  string _coreapi_platform;
   P3D_verify_contents _verify_contents;
   time_t _contents_expiration;
 

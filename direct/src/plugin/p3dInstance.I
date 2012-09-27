@@ -61,6 +61,25 @@ get_session_key() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::get_session_platform
+//       Access: Public
+//  Description: Returns the platform of this particular session.
+//               Before the panda3d package has been seen, this is the
+//               empty string; once we have downloaded the info file
+//               for the panda3d package, it is filled in with
+//               whatever platform is provided (that we're also
+//               runtime-compatible with).
+//
+//               Presumably all of the platform-specific packages that
+//               are downloaded subsequently must be of the exact same
+//               platform.
+////////////////////////////////////////////////////////////////////
+inline const string &P3DInstance::
+get_session_platform() const {
+  return _session_platform;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::get_session
 //       Access: Public
 //  Description: Returns the P3DSession that is hosting this instance,

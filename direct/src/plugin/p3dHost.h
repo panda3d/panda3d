@@ -54,17 +54,22 @@ public:
 
   P3DPackage *get_package(const string &package_name, 
                           const string &package_version,
+                          const string &package_platform,
                           const string &package_seq,
                           const string &alt_host = "");
+  bool choose_suitable_platform(string &selected_platform,
+                                const string &package_name,
+                                const string &package_version,
+                                const string &package_platform);
   bool get_package_desc_file(FileSpec &desc_file, 
-                             string &package_platform,
                              string &package_seq,
                              bool &package_solo,
                              const string &package_name,
-                             const string &package_version);
+                             const string &package_version,
+                             const string &package_platform);
 
   void forget_package(P3DPackage *package, const string &alt_host = "");
-  void migrate_package(P3DPackage *package, const string &alt_host, P3DHost *new_host);
+  void migrate_package_host(P3DPackage *package, const string &alt_host, P3DHost *new_host);
 
   void choose_random_mirrors(vector<string> &result, int num_mirrors);
   void add_mirror(string mirror_url);
@@ -97,7 +102,8 @@ private:
   typedef map<string, string> AltHosts;
   AltHosts _alt_hosts;
 
-  typedef map<string, P3DPackage *> PackageMap;
+  typedef vector<P3DPackage *> PlatformPackages;
+  typedef map<string, PlatformPackages> PackageMap;
   typedef map<string, PackageMap> Packages;
   Packages _packages;
   typedef vector<P3DPackage *> FailedPackages;

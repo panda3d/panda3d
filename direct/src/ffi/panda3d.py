@@ -124,6 +124,10 @@ class panda3d_import_manager:
                 if (cls.os.path.exists(lib + dll_ext)):
                     target = lib + dll_ext
                     break
+            if target:
+                # Once we find the first match, break all the way
+                # out--don't keep looking for a second match.
+                break
         if target == None:
             message = "DLL loader cannot find %s." % name
             raise ImportError, message

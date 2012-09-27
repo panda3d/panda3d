@@ -4258,7 +4258,9 @@ if (RTDIST or RUNTIME):
       TargetAdd('p3dcert.exe', input='plugin_wstring_encode.obj')
       TargetAdd('p3dcert.exe', input='plugin_p3dCert.obj')
       OPTS=['OPENSSL', 'FLTK', 'WINCOMCTL', 'WINSOCK']
-    else:
+      if (sys.platform=="darwin"): OPTS += ['OPT:2']
+      TargetAdd('p3dcert.exe', opts=OPTS)
+    elif (PkgSkip("WX")==0):
       OPTS.append("WX")
       TargetAdd('plugin_p3dCert.obj', opts=OPTS, input='p3dCert_wx.cxx')
       TargetAdd('p3dcert.exe', input='plugin_mkdir_complete.obj')
@@ -4266,9 +4268,8 @@ if (RTDIST or RUNTIME):
       TargetAdd('p3dcert.exe', input='plugin_p3dCert.obj')
       OPTS=['NOSTRIP', 'OPENSSL', 'WX', 'CARBON', 'WINOLE', 'WINOLEAUT', 'WINUSER', 'ADVAPI', 'WINSHELL', 'WINCOMCTL', 'WINGDI', 'WINCOMDLG']
       if (sys.platform=="darwin"): OPTS.append("GL")
-
-    if (sys.platform=="darwin"): OPTS += ['OPT:2']
-    TargetAdd('p3dcert.exe', opts=OPTS)
+      if (sys.platform=="darwin"): OPTS += ['OPT:2']
+      TargetAdd('p3dcert.exe', opts=OPTS)
 
 #
 # DIRECTORY: direct/src/plugin_npapi/

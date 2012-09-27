@@ -62,7 +62,11 @@ P3DHost::
     PackageMap &package_map = (*mi).second;
     PackageMap::iterator pi;
     for (pi = package_map.begin(); pi != package_map.end(); ++pi) {
-      delete (*pi).second;
+      PlatformPackages &ppackages = (*pi).second;
+      PlatformPackages::iterator ppi;
+      for (ppi = ppackages.begin(); ppi != ppackages.end(); ++ppi) {
+        delete (*ppi);
+      }
     }
   }
   _packages.clear();
@@ -356,14 +360,16 @@ read_xhost(TiXmlElement *xhost) {
 ////////////////////////////////////////////////////////////////////
 P3DPackage *P3DHost::
 get_package(const string &package_name, const string &package_version,
-            const string &package_seq, const string &alt_host) {
+            const string &package_platform, const string &package_seq, 
+            const string &alt_host) {
   if (!alt_host.empty()) {
     if (_xcontents != NULL) {
       // If we're asking for an alt host and we've already read our
       // contents.xml file, then we already know all of our hosts, and
       // we can start the package off with the correct host immediately.
       P3DHost *new_host = get_alt_host(alt_host);
-      return new_host->get_package(package_name, package_version, package_seq);
+      return new_host->get_package(package_name, package_version, 
+                                   package_platform, package_seq);
     }
 
     // If we haven't read contents.xml yet, we need to create the
@@ -371,30 +377,44 @@ get_package(const string &package_name, const string &package_version,
     // contents.xml, and it can migrate to its alt_host after that.
   }
 
-  PackageMap &package_map = _packages[alt_host];
-
+  string key = package_name + "_" + package_version;
+  PlatformPackages &ppackages = _packages[alt_host][key];
+  PlatformPackages::iterator ppi;
   P3DPackage *package = NULL;
 
-  string key = package_name + "_" + package_version;
-  PackageMap::iterator pi = package_map.find(key);
-  if (pi != package_map.end()) {
-    // We've previously installed this package.
-    package = (*pi).second;
+  // First, look for an exact match of the platform.
+  for (ppi = ppackages.begin(); ppi != ppackages.end(); ++ppi) {
+    if ((*ppi)->get_package_platform() == package_platform) {
+      package = *ppi;
+      break;
+    }
+  }
 
+  // If an exact match isn't found, look for a generic platform.
+  if (package == NULL) {
+    for (ppi = ppackages.begin(); ppi != ppackages.end(); ++ppi) {
+      if ((*ppi)->get_package_platform().empty()) {
+        package = *ppi;
+        break;
+      }
+    }
+  }
+
+  if (package != NULL) {
     if (package->get_failed()) {
       // If the package has previously failed, move it aside and try
       // again (maybe it just failed because the user interrupted it).
       nout << "Package " << key << " has previously failed; trying again.\n";
       _failed_packages.push_back(package);
-      (*pi).second = NULL;
+      ppackages.erase(ppi);
       package = NULL;
     }
   }
 
   if (package == NULL) {
     package = 
-      new P3DPackage(this, package_name, package_version, alt_host);
-    package_map[key] = package;
+      new P3DPackage(this, package_name, package_version, package_platform, alt_host);
+    ppackages.push_back(package);
   }
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
@@ -403,10 +423,10 @@ get_package(const string &package_name, const string &package_version,
     // believe we have a valid contents.xml file, then check the seq
     // value in the contents.
     FileSpec desc_file;
-    string platform, seq;
+    string seq;
     bool solo;
-    if (get_package_desc_file(desc_file, platform, seq, solo,
-                              package_name, package_version)) {
+    if (get_package_desc_file(desc_file, seq, solo,
+                              package_name, package_version, package_platform)) {
       nout << package_name << ": asked for seq " << package_seq
            << ", we have seq " << seq << "\n";
       if (compare_seq(package_seq, seq) > 0) {
@@ -422,6 +442,103 @@ get_package(const string &package_name, const string &package_version,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DHost::choose_suitable_platform
+//       Access: Public
+//  Description: Chooses the most appropriate platform for the
+//               indicated package (presumably the "panda3d" package),
+//               based on what this hardware supports and what is
+//               actually available.
+////////////////////////////////////////////////////////////////////
+bool P3DHost::
+choose_suitable_platform(string &selected_platform,
+                         const string &package_name,
+                         const string &package_version,
+                         const string &package_platform) {
+  if (_xcontents == NULL) {
+    return false;
+  }
+
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+
+  TiXmlElement *xpackage;
+
+  // For the "panda3d" package only, we allow searching for any
+  // available supported platform.
+  if (package_name == "panda3d" && package_platform == "") {
+    int num_supported_platforms = inst_mgr->get_num_supported_platforms();
+    for (int pi = 0; pi < num_supported_platforms; ++pi) {
+      string supported_platform = inst_mgr->get_supported_platform(pi);
+      xpackage = _xcontents->FirstChildElement("package");
+      while (xpackage != NULL) {
+        const char *name = xpackage->Attribute("name");
+        const char *platform = xpackage->Attribute("platform");
+        const char *version = xpackage->Attribute("version");
+        if (version == NULL) {
+          version = "";
+        }
+        if (name != NULL && platform != NULL &&
+            package_name == name && 
+            supported_platform == platform &&
+            package_version == version) {
+          // Here's the matching package definition.
+          selected_platform = platform;
+          return true;
+        }
+        
+        xpackage = xpackage->NextSiblingElement("package");
+      }
+    }
+  }
+
+  // Now, we look for an exact match for the current platform.
+  xpackage = _xcontents->FirstChildElement("package");
+  while (xpackage != NULL) {
+    const char *name = xpackage->Attribute("name");
+    const char *platform = xpackage->Attribute("platform");
+    const char *version = xpackage->Attribute("version");
+    if (version == NULL) {
+      version = "";
+    }
+    if (name != NULL && platform != NULL &&
+        package_name == name && 
+        package_platform == platform &&
+        package_version == version) {
+      // Here's the matching package definition.
+      selected_platform = platform;
+      return true;
+    }
+
+    xpackage = xpackage->NextSiblingElement("package");
+  }
+
+  // Look again, this time looking for a non-platform-specific version.
+  xpackage = _xcontents->FirstChildElement("package");
+  while (xpackage != NULL) {
+    const char *name = xpackage->Attribute("name");
+    const char *platform = xpackage->Attribute("platform");
+    const char *version = xpackage->Attribute("version");
+    if (platform == NULL) {
+      platform = "";
+    }
+    if (version == NULL) {
+      version = "";
+    }
+    if (name != NULL &&
+        package_name == name && 
+        *platform == '\0' &&
+        package_version == version) {
+      selected_platform = platform;
+      return true;
+    }
+
+    xpackage = xpackage->NextSiblingElement("package");
+  }
+
+  // Couldn't find a suitable platform.
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DHost::get_package_desc_file
 //       Access: Public
 //  Description: Fills the indicated FileSpec with the hash
@@ -433,11 +550,11 @@ get_package(const string &package_name, const string &package_version,
 ////////////////////////////////////////////////////////////////////
 bool P3DHost::
 get_package_desc_file(FileSpec &desc_file,              // out
-                      string &package_platform,         // out
                       string &package_seq,              // out
                       bool &package_solo,               // out
                       const string &package_name,       // in
-                      const string &package_version) {  // in
+                      const string &package_version,    // in
+                      const string &package_platform) { // in
   if (_xcontents == NULL) {
     return false;
   }
@@ -461,12 +578,11 @@ get_package_desc_file(FileSpec &desc_file,              // out
     }
     if (name != NULL && platform != NULL &&
         package_name == name && 
-        inst_mgr->get_platform() == platform &&
+        package_platform == platform &&
         package_version == version) {
       // Here's the matching package definition.
       desc_file.load_xml(xpackage);
       package_seq = seq;
-      package_platform = platform;
       package_solo = false;
       if (solo != NULL) {
         package_solo = (atoi(solo) != 0);
@@ -501,7 +617,6 @@ get_package_desc_file(FileSpec &desc_file,              // out
       // Here's the matching package definition.
       desc_file.load_xml(xpackage);
       package_seq = seq;
-      package_platform = platform;
       package_solo = false;
       if (solo != NULL) {
         package_solo = (atoi(solo) != 0);
@@ -529,16 +644,19 @@ forget_package(P3DPackage *package, const string &alt_host) {
   string key = package->get_package_name() + "_" + package->get_package_version();
   nout << "Forgetting package " << key << "\n";
 
-  PackageMap &package_map = _packages[alt_host];
+  PlatformPackages &ppackages = _packages[alt_host][key];
 
-  // Hmm, this is a memory leak.  But we allow it to remain, since
-  // it's an unusual circumstance (uninstalling), and it's safer to
-  // leak than to risk a floating pointer.
-  package_map.erase(key);
+  PlatformPackages::iterator ppi = find(ppackages.begin(), ppackages.end(), package);
+  if (ppi != ppackages.end()) {
+    // Hmm, this is a memory leak.  But we allow it to remain, since
+    // it's an unusual circumstance (uninstalling), and it's safer to
+    // leak than to risk a floating pointer.
+    ppackages.erase(ppi);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DHost::migrate_package
+//     Function: P3DHost::migrate_package_host
 //       Access: Public
 //  Description: This is called by P3DPackage when it migrates from
 //               this host to its final alt_host, after downloading
@@ -546,20 +664,21 @@ forget_package(P3DPackage *package, const string &alt_host) {
 //               true URL for its target alt_host.
 ////////////////////////////////////////////////////////////////////
 void P3DHost::
-migrate_package(P3DPackage *package, const string &alt_host, P3DHost *new_host) {
+migrate_package_host(P3DPackage *package, const string &alt_host, P3DHost *new_host) {
   assert(new_host != this);
   assert(new_host == get_alt_host(alt_host));
 
   string key = package->get_package_name() + "_" + package->get_package_version();
 
-  PackageMap &package_map = _packages[alt_host];
-  PackageMap::iterator pi = package_map.find(key);
-  assert(pi != package_map.end());
-  package_map.erase(pi);
+  PlatformPackages &ppackages = _packages[alt_host][key];
 
-  PackageMap &new_package_map = new_host->_packages[""];
-  bool inserted = new_package_map.insert(PackageMap::value_type(key, package)).second;
-  assert(inserted);
+  PlatformPackages::iterator ppi = find(ppackages.begin(), ppackages.end(), package);
+
+  assert(ppi != ppackages.end());
+  ppackages.erase(ppi);
+
+  PlatformPackages &new_ppackages = new_host->_packages[""][key];
+  new_ppackages.push_back(package);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -635,8 +754,12 @@ uninstall() {
     PackageMap &package_map = (*mi).second;
     PackageMap::iterator pi;
     for (pi = package_map.begin(); pi != package_map.end(); ++pi) {
-      P3DPackage *package = (*pi).second;
-      package->uninstall();
+      PlatformPackages &ppackages = (*pi).second;
+      PlatformPackages::iterator ppi;
+      for (ppi = ppackages.begin(); ppi != ppackages.end(); ++ppi) {
+        P3DPackage *package = (*ppi);
+        package->uninstall();
+      }
     }
   }
 

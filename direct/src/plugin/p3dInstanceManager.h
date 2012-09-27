@@ -76,6 +76,9 @@ public:
   inline bool get_trusted_environment() const;
   inline bool get_console_environment() const;
 
+  inline int get_num_supported_platforms() const;
+  inline const string &get_supported_platform(int n) const;
+
   void set_plugin_version(int major, int minor, int sequence,
                           bool official, const string &distributor,
                           const string &coreapi_host_url,
@@ -159,6 +162,10 @@ private:
   THREAD_CALLBACK_DECLARATION(P3DInstanceManager, nt_thread_run);
   void nt_thread_run();
 
+#ifdef _WIN32
+  static bool supports_win64();
+#endif  // _WIN32
+
 private:
   bool _is_initialized;
   bool _created_runtime_environment;
@@ -184,6 +191,9 @@ private:
   time_t _coreapi_timestamp;
   string _coreapi_set_ver;
   string _super_mirror_url;
+
+  typedef vector<string> SupportedPlatforms;
+  SupportedPlatforms _supported_platforms;
 
   P3D_object *_undefined_object;
   P3D_object *_none_object;

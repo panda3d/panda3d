@@ -786,13 +786,15 @@ class Freezer:
                 topName = parentName[:-2]
                 newTopName = newParentName[:-2]
                 parentNames = []
-                for dirname in self.getModulePath(topName):
-                    for basename in os.listdir(dirname):
-                        if os.path.exists(os.path.join(dirname, basename, '__init__.py')):
-                            parentName = '%s.%s' % (topName, basename)
-                            newParentName = '%s.%s' % (newTopName, basename)
-                            if self.getModulePath(parentName):
-                                parentNames.append((parentName, newParentName))
+                modulePath = self.getModulePath(topName)
+                if modulePath:
+                    for dirname in modulePath:
+                        for basename in os.listdir(dirname):
+                            if os.path.exists(os.path.join(dirname, basename, '__init__.py')):
+                                parentName = '%s.%s' % (topName, basename)
+                                newParentName = '%s.%s' % (newTopName, basename)
+                                if self.getModulePath(parentName):
+                                    parentNames.append((parentName, newParentName))
 
             for parentName, newParentName in parentNames:
                 modules = self.getModuleStar(parentName)

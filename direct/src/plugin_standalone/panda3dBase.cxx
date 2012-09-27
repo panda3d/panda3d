@@ -68,7 +68,11 @@ Panda3DBase(bool console_environment) {
 
   _exit_with_last_instance = true;
   _host_url = PANDA_PACKAGE_HOST_URL;
-  _this_platform = DTOOL_PLATFORM;
+  // Better to leave _this_platform set to the empty string until the
+  // user specifies otherwise; this allows the plugin to select a
+  // suitable platform at runtime.
+  _this_platform = "";
+  _coreapi_platform = DTOOL_PLATFORM;
   _verify_contents = P3D_VC_none;
   _contents_expiration = 0;
 
@@ -235,12 +239,17 @@ handle_request(P3D_request *request) {
 
   case P3D_RT_notify:
     {
+      //cerr << "Notify: " << request->_request._notify._message << "\n";
       if (strcmp(request->_request._notify._message, "ondownloadnext") == 0) {
         // Tell the user we're downloading a package.
         report_downloading_package(request->_instance);
       } else if (strcmp(request->_request._notify._message, "ondownloadcomplete") == 0) {
         // Tell the user we're done downloading.
         report_download_complete(request->_instance);
+      } else if (strcmp(request->_request._notify._message, "onfail") == 0) {
+        // Failure!  What else can we do?
+        cerr << "Failed to execute.\n";
+        exit(1);
       }
     }
     break;

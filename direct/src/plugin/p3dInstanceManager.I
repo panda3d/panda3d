@@ -201,6 +201,38 @@ get_console_environment() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::get_num_supported_platforms
+//       Access: Public
+//  Description: Returns the number of different supported platforms
+//               available in get_supported_platform().
+////////////////////////////////////////////////////////////////////
+inline int P3DInstanceManager::
+get_num_supported_platforms() const {
+  return (int)_supported_platforms.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::get_supported_platform
+//       Access: Public
+//  Description: Returns the nth supported platform, where 0 <= n <
+//               get_num_supported_platforms().
+//
+//               A given runtime environment may support multiple
+//               different platforms, e.g. win32 or win64, with the
+//               restriction that all platform-specific packages
+//               (beginning from panda3d), must be the same platform.
+//
+//               This function enumerates the different platforms that
+//               the current runtime environment will support, in
+//               order of preference--preferred platforms appear first
+//               in the list.
+////////////////////////////////////////////////////////////////////
+inline const string &P3DInstanceManager::
+get_supported_platform(int n) const {
+  return _supported_platforms.at(n);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::get_plugin_major_version
 //       Access: Public
 //  Description: Returns the plugin's reported major version number.

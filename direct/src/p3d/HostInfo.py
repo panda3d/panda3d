@@ -28,13 +28,9 @@ class HostInfo:
         there.  At the moment, mirror folders do not download old
         patch files from the server.
 
-        If you pass perPlatform = True, then files are unpacked into a
-        platform-specific directory, which is appropriate when you
-        might be downloading multiple platforms.  The default is
-        perPlatform = False, which means all files are unpacked into
-        the host directory directly, without an intervening
-        platform-specific directory name.  If asMirror is True, then
-        the default is perPlatform = True. """
+        perPlatform remains for historical reasons, but it is ignored.
+        Nowadays, all files are always unpacked into platform-specific
+        directories, even on the client. """
 
         assert appRunner or rootDir or hostDir
 
@@ -49,9 +45,7 @@ class HostInfo:
             
         self.hostDir = hostDir
         self.asMirror = asMirror
-        self.perPlatform = perPlatform
-        if perPlatform is None:
-            self.perPlatform = asMirror
+        self.perPlatform = True
 
         # Initially false, this is set true when the contents file is
         # successfully read.
@@ -583,7 +577,7 @@ class HostInfo:
                 for pkey, package in pitems:
                     result.append(package)
             else:
-                # If we maintain a a host for the current platform
+                # If we maintain a host for the current platform
                 # only (e.g. a client copy), then return only the
                 # current platform, or no particular platform.
                 package = platforms.get(PandaSystem.getPlatform(), None)

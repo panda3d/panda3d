@@ -44,6 +44,7 @@ private:
   P3DPackage(P3DHost *host,
              const string &package_name, 
              const string &package_version,
+             const string &package_platform,
              const string &alt_host);
   ~P3DPackage();
 
@@ -58,6 +59,7 @@ public:
   inline const string &get_package_dir() const;
   inline const string &get_package_name() const;
   inline const string &get_package_version() const;
+  inline const string &get_package_platform() const;
   inline const string &get_package_display_name() const;
   string get_formatted_name() const;
   inline const TiXmlElement *get_xconfig() const;

@@ -109,6 +109,16 @@ get_package_version() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::get_package_platform
+//       Access: Public
+//  Description: Returns the platform string of this package.
+////////////////////////////////////////////////////////////////////
+inline const string &P3DPackage::
+get_package_platform() const {
+  return _package_platform;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DPackage::get_package_display_name
 //       Access: Public
 //  Description: Returns the display_name name of this package, as set

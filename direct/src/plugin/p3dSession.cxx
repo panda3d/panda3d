@@ -697,7 +697,7 @@ start_p3dpython(P3DInstance *inst) {
     return;
   }
 
-  if (inst->_panda3d == NULL) {
+  if (inst->_panda3d_package == NULL) {
     nout << "Couldn't start Python: no panda3d dependency.\n";
     set_failed();
     return;
@@ -705,7 +705,7 @@ start_p3dpython(P3DInstance *inst) {
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
-  _python_root_dir = inst->_panda3d->get_package_dir();
+  _python_root_dir = inst->_panda3d_package->get_package_dir();
   replace_slashes(_python_root_dir);
 
   // If we're not to be preserving the user's current directory, then
@@ -823,10 +823,10 @@ start_p3dpython(P3DInstance *inst) {
     // Allow package to override the name of the p3dpython executables.
     const char *p3dpython_name_xconfig = NULL; 
     const char *p3dpythonw_name_xconfig = NULL;
-    const TiXmlElement *panda3d_xconfig = inst->_panda3d->get_xconfig();
+    const TiXmlElement *panda3d_xconfig = inst->_panda3d_package->get_xconfig();
     if (panda3d_xconfig != NULL) {
-        p3dpython_name_xconfig = panda3d_xconfig->Attribute("p3dpython_name");
-        p3dpythonw_name_xconfig = panda3d_xconfig->Attribute("p3dpythonw_name");
+      p3dpython_name_xconfig = panda3d_xconfig->Attribute("p3dpython_name");
+      p3dpythonw_name_xconfig = panda3d_xconfig->Attribute("p3dpythonw_name");
     }
 
     string p3dpython_name = "p3dpython";
@@ -1206,7 +1206,7 @@ start_p3dpython(P3DInstance *inst) {
 
   // Get the filename of the Panda3D multifile.  We need to pass this
   // to p3dpython.
-  _mf_filename = inst->_panda3d->get_archive_file_pathname();
+  _mf_filename = inst->_panda3d_package->get_archive_file_pathname();
 
   nout << "Attempting to start python from " << _p3dpython_exe << "\n";
 

@@ -146,7 +146,7 @@ P3DInstance(P3D_request_ready_func *func,
   _failed = false;
   _session = NULL;
   _auth_session = NULL;
-  _panda3d = NULL;
+  _panda3d_package = NULL;
   _splash_window = NULL;
   _instance_window_opened = false;
   _instance_window_attached = false;
@@ -241,7 +241,7 @@ P3DInstance(P3D_request_ready_func *func,
   // put up a splash image (for instance, the above IT_download image)
   // while we download the real contents.
   P3DHost *host = inst_mgr->get_host(inst_mgr->get_host_url());
-  _image_package = host->get_package("images", "", "");
+  _image_package = host->get_package("images", "", "", "");
   if (_image_package != NULL) {
     _image_package->add_instance(this);
   }
@@ -774,7 +774,7 @@ get_request() {
         P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
         P3DHost *host = inst_mgr->get_host(host_url);
         if (package_name != NULL) {
-          P3DPackage *package = host->get_package(package_name, package_version, "");
+          P3DPackage *package = host->get_package(package_name, package_version, _session_platform, "");
           host->forget_package(package);
         } else {
           // If a NULL package name is given, forget the whole host.
@@ -1066,8 +1066,9 @@ add_package(const string &name, const string &version, const string &seq,
     // get its additional host information.
     get_host_info(host);
   }
-  
-  P3DPackage *package = host->get_package(name, version, seq, alt_host);
+
+  P3DPackage *package = host->get_package(name, version, _session_platform,
+                                          seq, alt_host);
   add_package(package);
 }
     
@@ -1087,7 +1088,7 @@ add_package(P3DPackage *package) {
   }
 
   if (package->get_package_name() == "panda3d") {
-    _panda3d = package;
+    _panda3d_package = package;
   }
 
   _packages.push_back(package);
@@ -1124,6 +1125,9 @@ remove_package(P3DPackage *package) {
   }
   if (package == _p3dcert_package) {
     _p3dcert_package = NULL;
+  }
+  if (package == _panda3d_package) {
+    _panda3d_package = NULL;
   }
 
   set_failed();
@@ -1890,7 +1894,7 @@ check_p3d_signature() {
     // We have to go download this package.
     P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
     P3DHost *host = inst_mgr->get_host(inst_mgr->get_host_url());
-    _certlist_package = host->get_package("certlist", "", "");
+    _certlist_package = host->get_package("certlist", "", "", "");
     if (_certlist_package != NULL) {
       _certlist_package->add_instance(this);
     }
@@ -1931,7 +1935,7 @@ mark_p3d_untrusted() {
     // We have to go download this package.
     P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
     P3DHost *host = inst_mgr->get_host(inst_mgr->get_host_url());
-    _p3dcert_package = host->get_package("p3dcert", "", "");
+    _p3dcert_package = host->get_package("p3dcert", "", "", "");
     if (_p3dcert_package != NULL) {
       _p3dcert_package->add_instance(this);
     }
@@ -2009,20 +2013,10 @@ mark_p3d_trusted() {
   _main_object->set_bool_property("trusted", true);
   send_notify("onauth");
 
-  // Now that we're all set up, start downloading the required
+  // Now that we're all set up, grab the panda3d package.  We need to
+  // examine this before we can start to download the remaining
   // packages.
-  add_packages();
-
-  // Until we've done all of the above processing, we haven't fully
-  // committed to setting the trusted flag.  (Setting this flag down
-  // here instead of a few lines above avoids starting the instance in
-  // add_packages(), before we've had a chance to finish processing
-  // this method.)
-  _p3d_trusted = true;
-
-  if (get_packages_ready()) {
-    mark_download_complete();
-  }
+  add_panda3d_package();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2133,6 +2127,48 @@ scan_app_desc_file(TiXmlDocument *doc) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::add_panda3d_package
+//       Access: Private
+//  Description: Adds the "panda3d" package only.  This package must
+//               be downloaded first, and its desc file examined,
+//               before we can begin downloading the other packages.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+add_panda3d_package() {
+  assert(!_packages_specified);
+  assert(_panda3d_package == NULL);
+  if (_xpackage == NULL) {
+    return;
+  }
+
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+
+  TiXmlElement *xrequires = _xpackage->FirstChildElement("requires");
+  while (xrequires != NULL) {
+    const char *name = xrequires->Attribute("name");
+    const char *host_url = xrequires->Attribute("host");
+    if (name != NULL && host_url != NULL && strcmp(name, "panda3d") == 0) {
+      const char *version = xrequires->Attribute("version");
+      if (version == NULL) {
+        version = "";
+      }
+      const char *seq = xrequires->Attribute("seq");
+      if (seq == NULL) {
+        seq = "";
+      }
+      P3DHost *host = inst_mgr->get_host(host_url);
+      add_package(name, version, seq, host);
+      return;
+    }
+
+    xrequires = xrequires->NextSiblingElement("requires");
+  }
+
+  nout << "No panda3d package found in " << _fparams.get_p3d_filename() << "\n";
+  set_failed();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::add_packages
 //       Access: Private
 //  Description: Adds the set of packages required by this p3d file to
@@ -2171,6 +2207,16 @@ add_packages() {
   _packages_specified = true;
 
   consider_start_download();
+
+  // Now that we've scanned the p3d file, and prepared the list of
+  // packages, it's safe to set the trusted flag.
+  _p3d_trusted = true;
+
+  // If the packages are already downloaded, start the instance
+  // rolling.
+  if (get_packages_ready()) {
+    mark_download_complete();
+  }
 }
 
 
@@ -2689,8 +2735,10 @@ make_splash_window() {
     // Don't know where to put it yet.
     return;
   }
-  if (_wparams.get_window_type() == P3D_WT_hidden) {
-    // We're hidden, and so is the splash window.
+  if (_wparams.get_window_type() == P3D_WT_hidden && !is_failed()) {
+    // We're hidden, and so is the splash window.  (But if we've got a
+    // failure case to report, we don't care and create the splash
+    // window anyway.)
     return;
   }
 
@@ -2899,6 +2947,26 @@ report_package_info_ready(P3DPackage *package) {
 
     package->activate_download();
     return;
+  }
+
+  if (package == _panda3d_package && !_packages_specified) {
+    // Another special case.  Once the special panda3d package is
+    // ready to download (and we know what platform it belongs to), we
+    // can begin to download the remaining required packages.
+    string package_platform = package->get_package_platform();
+    if (!package_platform.empty() && _session_platform.empty()) {
+      // From now on, all platform-specific files downloaded by this
+      // session will be for this platform.
+      _session_platform = package_platform;
+    }
+    if (_session_platform != package_platform) {
+      nout << "Error: session is " << _session_platform
+           << ", but we somehow got panda3d for " << package_platform << "\n";
+      set_failed();
+      return;
+    }
+
+    add_packages();
   }
 
   // Now that the package's info is ready, we know its set of required

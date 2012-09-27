@@ -2197,6 +2197,14 @@ class Packager:
 
         # The system PATH, for searching dll's and exe's.
         self.executablePath = DSearchPath()
+
+        # By convention, we include sys.path at the front of
+        # self.executablePath, mainly to aid makepanda when building
+        # an rtdist build.
+        for dirname in sys.path:
+            self.executablePath.appendDirectory(Filename.fromOsSpecific(dirname))
+
+        # Now add the actual system search path.
         if self.platform.startswith('win'):
             self.addWindowsSearchPath(self.executablePath, "PATH")
         elif self.platform.startswith('osx'):

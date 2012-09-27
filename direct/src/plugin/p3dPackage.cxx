@@ -44,10 +44,12 @@ const double P3DPackage::_patch_factor = 0.01;
 ////////////////////////////////////////////////////////////////////
 P3DPackage::
 P3DPackage(P3DHost *host, const string &package_name,
-           const string &package_version, const string &alt_host) :
+           const string &package_version, const string &package_platform,
+           const string &alt_host) :
   _host(host),
   _package_name(package_name),
   _package_version(package_version),
+  _package_platform(package_platform),
   _alt_host(alt_host)
 {
   _package_fullname = _package_name;
@@ -611,7 +613,7 @@ host_got_contents_file() {
     nout << "Migrating " << get_package_name() << " to alt_host " 
          << _alt_host << ": " << new_host->get_host_url() << "\n";
     if (new_host != _host) {
-      _host->migrate_package(this, _alt_host, new_host);
+      _host->migrate_package_host(this, _alt_host, new_host);
       _host = new_host;
     }
 
@@ -632,10 +634,29 @@ host_got_contents_file() {
   // instance, reloading it).
   _host_contents_iseq = _host->get_contents_iseq();
 
-  // Now that we have a valid host, we can define the _package_dir.
+  // Now adjust the platform based on the available platforms
+  // provided.
+  assert(_alt_host.empty());
+  string new_platform;
+  if (_host->choose_suitable_platform(new_platform, _package_name, _package_version, _package_platform)) {
+    if (new_platform != _package_platform) {
+      nout << "Migrating " << get_package_name() << " from platform \""
+           << _package_platform << "\" to platform \"" 
+           << new_platform << "\"\n";
+      _package_platform = new_platform;
+    }
+  } else {
+    nout << "Couldn't find a platform for " << get_package_name() << ".\n";
+  }
+
+  // Now that we have a valid host and platform, we can define the
+  // _package_dir.
   _package_dir = _host->get_host_dir() + string("/") + _package_name;
   if (!_package_version.empty()) {
     _package_dir += string("/") + _package_version;
+  }
+  if (!_package_platform.empty()) {
+    _package_dir += string("/") + _package_platform;
   }
 
   // Ensure the package directory exists; create it if it does not.
@@ -661,11 +682,11 @@ download_desc_file() {
   // exists, and is consistent with the server contents file, we don't
   // need to re-download it.
   string package_seq;
-  if (!_host->get_package_desc_file(_desc_file, _package_platform, 
-                                    package_seq, _package_solo,
-                                    _package_name, _package_version)) {
+  if (!_host->get_package_desc_file(_desc_file, package_seq, _package_solo,
+                                    _package_name, _package_version,
+                                    _package_platform)) {
     nout << "Couldn't find package " << _package_fullname
-         << " in contents file.\n";
+         << "/" << _package_platform << " in contents file.\n";
     redownload_contents_file(NULL);
     return;
   }

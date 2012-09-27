@@ -88,6 +88,7 @@ public:
   inline int get_instance_id() const;
   inline const string &get_session_key() const;
   const string &get_log_pathname() const;
+  inline const string &get_session_platform() const;
 
   inline P3DSession *get_session() const;
 
@@ -176,6 +177,7 @@ private:
   void mark_p3d_untrusted();
   void mark_p3d_trusted();
   void scan_app_desc_file(TiXmlDocument *doc);
+  void add_panda3d_package();
   void add_packages();
   string find_alt_host_url(const string &host_url, const string &alt_host);
   void get_host_info(P3DHost *host);
@@ -286,6 +288,7 @@ private:
   int _instance_id;
   string _session_key;
   string _log_basename;
+  string _session_platform;
   string _prc_name;
   string _start_dir;
   bool _hidden;
@@ -356,7 +359,7 @@ private:
 
   // We keep the _panda3d pointer separately because it's so
   // important, but it's in the above vector also.
-  P3DPackage *_panda3d;  
+  P3DPackage *_panda3d_package;
 
   typedef map<int, P3DDownload *> Downloads;
   Downloads _downloads;
