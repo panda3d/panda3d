@@ -454,7 +454,9 @@ extend_frozen_modules(const struct _frozen *new_modules, int new_count) {
 
 programFile = """
 #include "Python.h"
+#ifdef _WIN32
 #include "malloc.h"
+#endif
 
 %(moduleDefs)s
 
