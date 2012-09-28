@@ -65,12 +65,15 @@ BulletWorld() {
     default:
       bullet_cat.error() << "no proper broadphase algorithm!" << endl;
   }
+  nassertv(_broadphase);
 
   // Configuration
   _configuration = new btSoftBodyRigidBodyCollisionConfiguration();
+  nassertv(_configuration);
 
   // Dispatcher
   _dispatcher = new btCollisionDispatcher(_configuration);
+  nassertv(_dispatcher);
 
 /*
   _dispatcher.registerCollisionCreateFunc(
@@ -97,9 +100,13 @@ BulletWorld() {
 
   // Solver
   _solver = new btSequentialImpulseConstraintSolver;
+  nassertv(_solver);
 
   // World
   _world = new btSoftRigidDynamicsWorld(_dispatcher, _broadphase, _solver, _configuration);
+  nassertv(_world);
+  nassertv(_world->getPairCache());
+
   _world->setGravity(btVector3(0.0f, 0.0f, 0.0f));
 
   // Ghost-pair callback
