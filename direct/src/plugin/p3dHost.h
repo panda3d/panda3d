@@ -58,6 +58,7 @@ public:
                           const string &package_seq,
                           const string &alt_host = "");
   bool choose_suitable_platform(string &selected_platform,
+                                bool &per_platform,
                                 const string &package_name,
                                 const string &package_version,
                                 const string &package_platform);

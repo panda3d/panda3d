@@ -674,7 +674,7 @@ read_log_file(const string &log_pathname,
     log.seekg(0, ios::beg);
     log.read(buffer, full_bytes);
     streamsize read_bytes = log.gcount();
-    assert(read_bytes < buffer_bytes);
+    assert(read_bytes < (streamsize)buffer_bytes);
     buffer[read_bytes] = '\0';
     log_data << "== PandaLog-" << "Full Start";
     log_data << " " << "(" << log_leafname << ")" << "\n";
@@ -688,7 +688,7 @@ read_log_file(const string &log_pathname,
     log.seekg(0, ios::beg);
     log.read(buffer, head_bytes);
     streamsize read_bytes = log.gcount();
-    assert(read_bytes < buffer_bytes);
+    assert(read_bytes < (streamsize)buffer_bytes);
     buffer[read_bytes] = '\0';
     log_data << "== PandaLog-" << "Head Start";
     log_data << " " << "(" << log_leafname << ")" << "\n";
@@ -708,7 +708,7 @@ read_log_file(const string &log_pathname,
     log.seekg(file_size - tail_bytes, ios::beg);
     log.read(buffer, tail_bytes);
     streamsize read_bytes = log.gcount();
-    assert(read_bytes < buffer_bytes);
+    assert(read_bytes < (streamsize)buffer_bytes);
     buffer[read_bytes] = '\0';
     log_data << "== PandaLog-" << "Tail Start";
     log_data << " " << "(" << log_leafname << ")" << "\n";

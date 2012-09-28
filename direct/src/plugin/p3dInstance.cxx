@@ -1366,9 +1366,14 @@ make_xml() {
   xinstance->SetAttribute("log_directory", inst_mgr->get_log_directory());
   xinstance->SetAttribute("verify_contents", (int)inst_mgr->get_verify_contents());
 
+  // Tell the Panda process that it was started by a plugin that knows
+  // about the new per_platform flag.
+  xinstance->SetAttribute("respect_per_platform", 1);
+
   if (!inst_mgr->get_super_mirror().empty()) {
     xinstance->SetAttribute("super_mirror", inst_mgr->get_super_mirror());
   }
+
 
   TiXmlElement *xfparams = _fparams.make_xml();
   xinstance->LinkEndChild(xfparams);

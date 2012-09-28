@@ -28,9 +28,16 @@ class HostInfo:
         there.  At the moment, mirror folders do not download old
         patch files from the server.
 
-        perPlatform remains for historical reasons, but it is ignored.
-        Nowadays, all files are always unpacked into platform-specific
-        directories, even on the client. """
+        If you pass perPlatform = True, then files are unpacked into a
+        platform-specific directory, which is appropriate when you
+        might be downloading multiple platforms.  The default is
+        perPlatform = False, which means all files are unpacked into
+        the host directory directly, without an intervening
+        platform-specific directory name.  If asMirror is True, then
+        the default is perPlatform = True.
+
+        Note that perPlatform is also restricted by the individual
+        package's specification.  """
 
         assert appRunner or rootDir or hostDir
 
@@ -45,7 +52,9 @@ class HostInfo:
             
         self.hostDir = hostDir
         self.asMirror = asMirror
-        self.perPlatform = True
+        self.perPlatform = perPlatform
+        if perPlatform is None:
+            self.perPlatform = asMirror
 
         # Initially false, this is set true when the contents file is
         # successfully read.
@@ -372,8 +381,12 @@ class HostInfo:
                 solo = int(xpackage.Attribute('solo') or '')
             except ValueError:
                 solo = False
+            try:
+                perPlatform = int(xpackage.Attribute('per_platform') or '')
+            except ValueError:
+                perPlatform = False
                 
-            package = self.__makePackage(name, platform, version, solo)
+            package = self.__makePackage(name, platform, version, solo, perPlatform)
             package.descFile = FileSpec()
             package.descFile.loadXml(xpackage)
             package.setupFilenames()
@@ -493,7 +506,7 @@ class HostInfo:
                 self.altHosts[keyword] = url
             xalthost = xalthost.NextSiblingElement('alt_host')
 
-    def __makePackage(self, name, platform, version, solo):
+    def __makePackage(self, name, platform, version, solo, perPlatform):
         """ Creates a new PackageInfo entry for the given name,
         version, and platform.  If there is already a matching
         PackageInfo, returns it. """
@@ -507,7 +520,8 @@ class HostInfo:
         package = platforms.get(platform, None)
         if not package:
             package = PackageInfo(self, name, version, platform = platform,
-                                  solo = solo, asMirror = self.asMirror)
+                                  solo = solo, asMirror = self.asMirror,
+                                  perPlatform = perPlatform)
             platforms[platform] = package
 
         return package
@@ -560,7 +574,7 @@ class HostInfo:
 
         return packages
 
-    def getAllPackages(self):
+    def getAllPackages(self, includeAllPlatforms = False):
         """ Returns a list of all available packages provided by this
         host. """
 
@@ -569,7 +583,7 @@ class HostInfo:
         items = self.packages.items()
         items.sort()
         for key, platforms in items:
-            if self.perPlatform:
+            if self.perPlatform or includeAllPlatforms:
                 # If we maintain a different answer per platform,
                 # return all of them.
                 pitems = platforms.items()

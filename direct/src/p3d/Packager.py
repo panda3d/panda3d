@@ -187,12 +187,13 @@ class Packager:
             objects uniquely per package. """
             return (self.packageName, self.platform, self.version)
 
-        def fromFile(self, packageName, platform, version, solo,
+        def fromFile(self, packageName, platform, version, solo, perPlatform,
                      installDir, descFilename, importDescFilename):
             self.packageName = packageName
             self.platform = platform
             self.version = version
             self.solo = solo
+            self.perPlatform = perPlatform
 
             self.descFile = FileSpec()
             self.descFile.fromFile(installDir, descFilename)
@@ -208,6 +209,8 @@ class Packager:
             self.version = xpackage.Attribute('version')
             solo = xpackage.Attribute('solo')
             self.solo = int(solo or '0')
+            perPlatform = xpackage.Attribute('per_platform')
+            self.perPlatform = int(perPlatform or '0')
 
             self.packageSeq = SeqValue()
             self.packageSeq.loadXml(xpackage, 'seq')
@@ -235,6 +238,8 @@ class Packager:
                 xpackage.SetAttribute('version', self.version)
             if self.solo:
                 xpackage.SetAttribute('solo', '1')
+            if self.perPlatform:
+                xpackage.SetAttribute('per_platform', '1')
 
             self.packageSeq.storeXml(xpackage, 'seq')
             self.packageSetVer.storeXml(xpackage, 'set_ver')
@@ -321,6 +326,9 @@ class Packager:
             # The platform is initially None until we know the file is
             # platform-specific.
             self.platform = None
+
+            # This is always true on modern packages.
+            self.perPlatform = True
 
             # The arch string, though, is pre-loaded from the system
             # arch string, so we can sensibly call otool.
@@ -722,6 +730,7 @@ class Packager:
             else:
                 self.readDescFile()
                 self.packageSeq += 1
+                self.perPlatform = True  # always true on modern packages.
                 self.compressMultifile()
                 self.writeDescFile()
                 self.writeImportDescFile()
@@ -734,7 +743,7 @@ class Packager:
                 # Replace or add the entry in the contents.
                 pe = Packager.PackageEntry()
                 pe.fromFile(self.packageName, self.platform, self.version,
-                            False, self.packager.installDir,
+                            False, self.perPlatform, self.packager.installDir,
                             self.packageDesc, self.packageImportDesc)
                 pe.packageSeq = self.packageSeq
                 pe.packageSetVer = self.packageSetVer
@@ -753,6 +762,7 @@ class Packager:
             kinds of similar "solo" packages as well. """
 
             self.considerPlatform()
+            self.perPlatform = False  # Not true on "solo" packages.
 
             packageDir = self.packageName
             if self.platform:
@@ -798,7 +808,7 @@ class Packager:
             # Replace or add the entry in the contents.
             pe = Packager.PackageEntry()
             pe.fromFile(self.packageName, self.platform, self.version,
-                        True, self.packager.installDir,
+                        True, self.perPlatform, self.packager.installDir,
                         Filename(packageDir, file.newName), None)
             peOrig = self.packager.contents.get(pe.getKey(), None)
             if peOrig:
@@ -1509,6 +1519,9 @@ class Packager:
             if not xpackage:
                 return
 
+            perPlatform = xpackage.Attribute('per_platform')
+            self.perPlatform = int(perPlatform or '0')
+
             self.packageSeq.loadXml(xpackage, 'seq')
             self.packageSetVer.loadXml(xpackage, 'set_ver')
 
@@ -1554,6 +1567,8 @@ class Packager:
                 xpackage.SetAttribute('platform', self.platform)
             if self.version:
                 xpackage.SetAttribute('version', self.version)
+            if self.perPlatform:
+                xpackage.SetAttribute('per_platform', '1')
 
             if self.patchVersion:
                 xpackage.SetAttribute('last_patch_version', self.patchVersion)

@@ -41,6 +41,8 @@ class PackageMerger:
             self.version = xpackage.Attribute('version')
             solo = xpackage.Attribute('solo')
             self.solo = int(solo or '0')
+            perPlatform = xpackage.Attribute('per_platform')
+            self.perPlatform = int(perPlatform or '0')
 
             self.descFile = FileSpec()
             self.descFile.loadXml(xpackage)
@@ -71,6 +73,8 @@ class PackageMerger:
                 xpackage.SetAttribute('version', self.version)
             if self.solo:
                 xpackage.SetAttribute('solo', '1')
+            if self.perPlatform:
+                xpackage.SetAttribute('per_platform', '1')
 
             self.descFile.storeXml(xpackage)
             self.packageSeq.storeXml(xpackage, 'seq')

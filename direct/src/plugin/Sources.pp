@@ -70,6 +70,7 @@
     p3dX11SplashWindow.h p3dX11SplashWindow.I \
     p3dWindowParams.h p3dWindowParams.I \
     plugin_get_x11.h \
+    xml_helpers.h \
     run_p3dpython.h
 
 #define COREAPI_INCLUDED_SOURCES \
@@ -104,7 +105,8 @@
     p3dUndefinedObject.cxx \
     p3dWinSplashWindow.cxx \
     p3dX11SplashWindow.cxx \
-    p3dWindowParams.cxx
+    p3dWindowParams.cxx \
+    xml_helpers.cxx
 
 #begin lib_target
 

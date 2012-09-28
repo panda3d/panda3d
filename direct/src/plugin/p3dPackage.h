@@ -241,6 +241,7 @@ private:
 
   bool is_extractable(FileSpec &file, const string &filename) const;
   bool instance_terminating(P3DInstance *instance);
+  void set_fullname();
 
 public:
   class RequiredPackage {
@@ -264,6 +265,7 @@ private:
   string _package_name;
   string _package_version;
   string _package_platform;
+  bool _per_platform;
   int _patch_version;
   string _alt_host;
   bool _package_solo;

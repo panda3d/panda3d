@@ -300,6 +300,12 @@ initialize(int api_version, const string &contents_filename,
     }
   }
 
+  nout << "Supported platforms:";
+  for (size_t pi = 0; pi < _supported_platforms.size(); ++pi) {
+    nout << " " << _supported_platforms[pi];
+  }
+  nout << "\n";
+
   return true;
 }
 

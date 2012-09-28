@@ -78,13 +78,14 @@ class PackageInfo:
             return min(float(self.bytesDone) / float(self.bytesNeeded), 1)
     
     def __init__(self, host, packageName, packageVersion, platform = None,
-                 solo = False, asMirror = False):
+                 solo = False, asMirror = False, perPlatform = False):
         self.host = host
         self.packageName = packageName
         self.packageVersion = packageVersion
         self.platform = platform
         self.solo = solo
         self.asMirror = asMirror
+        self.perPlatform = perPlatform
 
         # This will be active while we are in the middle of a download
         # cycle.
@@ -144,12 +145,23 @@ class PackageInfo:
                 self.packageDir = Filename(self.packageDir, self.packageVersion)
 
             if self.host.perPlatform:
-                # The server directory contains the platform name,
-                # though the client directory normally doesn't (unless
-                # perPlatform is set true).
+                # If we're running on a special host that wants us to
+                # include the platform, we include it.
+                includePlatform = True
+            elif self.perPlatform and self.host.appRunner.respectPerPlatform:
+                # Otherwise, if our package spec wants us to include
+                # the platform (and our plugin knows about this), then
+                # we also include it.
+                includePlatform = True
+            else:
+                # Otherwise, we must be running legacy code
+                # somewhere--either an old package or an old
+                # plugin--and we therefore shouldn't include the
+                # platform in the directory hierarchy.
+                includePlatform = False
                 
-                if self.platform:
-                    self.packageDir = Filename(self.packageDir, self.platform)
+            if includePlatform and self.platform:
+                self.packageDir = Filename(self.packageDir, self.platform)
 
         return self.packageDir
 
@@ -345,6 +357,13 @@ class PackageInfo:
             self.patchVersion = int(xpackage.Attribute('patch_version') or '')
         except ValueError:
             self.patchVersion = None
+
+        try:
+            perPlatform = int(xpackage.Attribute('per_platform') or '')
+        except ValueError:
+            perPlatform = False
+        if perPlatform != self.perPlatform:
+            self.notify.warning("per_platform disagreement on package %s" % (self.packageName))
 
         self.displayName = None
         xconfig = xpackage.FirstChildElement('config')

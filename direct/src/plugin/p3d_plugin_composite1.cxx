@@ -30,3 +30,4 @@
 #include "p3dWinSplashWindow.cxx"
 #include "p3dX11SplashWindow.cxx"
 #include "p3dWindowParams.cxx"
+#include "xml_helpers.cxx"

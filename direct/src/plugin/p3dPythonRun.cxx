@@ -1252,9 +1252,12 @@ set_instance_info(P3DCInstance *inst, TiXmlElement *xinstance) {
     Py_INCREF(main);
   }
 
+  int respect_per_platform = 0;
+  xinstance->Attribute("respect_per_platform", &respect_per_platform);
+
   PyObject *result = PyObject_CallMethod
-    (_runner, (char *)"setInstanceInfo", (char *)"sssiO", root_dir, 
-     log_directory, super_mirror, verify_contents, main);
+    (_runner, (char *)"setInstanceInfo", (char *)"sssiOi", root_dir, 
+     log_directory, super_mirror, verify_contents, main, respect_per_platform);
   Py_DECREF(main);
 
   if (result == NULL) {

@@ -104,6 +104,7 @@ class AppRunner(DirectObject):
         self.interactiveConsole = False
         self.initialAppImport = False
         self.trueFileIO = False
+        self.respectPerPlatform = None
 
         self.verifyContents = self.P3DVCNone
 
@@ -493,7 +494,7 @@ class AppRunner(DirectObject):
             hostData = InstalledHostData(host, dirnode)
 
             if host:
-                for package in host.getAllPackages():
+                for package in host.getAllPackages(includeAllPlatforms = True):
                     packageDir = package.getPackageDir()
                     if not packageDir.exists():
                         continue
@@ -781,7 +782,7 @@ class AppRunner(DirectObject):
         self.deferredEvals = []
 
     def setInstanceInfo(self, rootDir, logDirectory, superMirrorUrl,
-                        verifyContents, main):
+                        verifyContents, main, respectPerPlatform):
         """ Called by the browser to set some global information about
         the instance. """
 
@@ -806,6 +807,9 @@ class AppRunner(DirectObject):
         # The initial "main" object, if specified.
         if main is not None:
             self.main = main
+
+        self.respectPerPlatform = respectPerPlatform
+        #self.notify.info("respectPerPlatform = %s" % (self.respectPerPlatform))
 
         # Now that we have rootDir, we can read the config file.
         self.readConfigXml()

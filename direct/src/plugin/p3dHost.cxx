@@ -17,6 +17,7 @@
 #include "p3dPackage.h"
 #include "mkdir_complete.h"
 #include "wstring_encode.h"
+#include "xml_helpers.h"
 #include "openssl/md5.h"
 
 #include <algorithm>
@@ -445,12 +446,15 @@ get_package(const string &package_name, const string &package_version,
 //     Function: P3DHost::choose_suitable_platform
 //       Access: Public
 //  Description: Chooses the most appropriate platform for the
-//               indicated package (presumably the "panda3d" package),
-//               based on what this hardware supports and what is
-//               actually available.
+//               indicated package based on what this hardware
+//               supports and what is actually available.  Also fills
+//               in per_platform, which is a boolean value indicating
+//               whether the directory structure contains the platform
+//               directory or not.
 ////////////////////////////////////////////////////////////////////
 bool P3DHost::
 choose_suitable_platform(string &selected_platform,
+                         bool &per_platform,
                          const string &package_name,
                          const string &package_version,
                          const string &package_platform) {
@@ -482,6 +486,7 @@ choose_suitable_platform(string &selected_platform,
             package_version == version) {
           // Here's the matching package definition.
           selected_platform = platform;
+          per_platform = parse_bool_attrib(xpackage, "per_platform", false);
           return true;
         }
         
@@ -490,7 +495,7 @@ choose_suitable_platform(string &selected_platform,
     }
   }
 
-  // Now, we look for an exact match for the current platform.
+  // Now, we look for an exact match for the expected platform.
   xpackage = _xcontents->FirstChildElement("package");
   while (xpackage != NULL) {
     const char *name = xpackage->Attribute("name");
@@ -505,13 +510,15 @@ choose_suitable_platform(string &selected_platform,
         package_version == version) {
       // Here's the matching package definition.
       selected_platform = platform;
+      per_platform = parse_bool_attrib(xpackage, "per_platform", false);
       return true;
     }
 
     xpackage = xpackage->NextSiblingElement("package");
   }
 
-  // Look again, this time looking for a non-platform-specific version.
+  // Look one more time, this time looking for a non-platform-specific
+  // version.
   xpackage = _xcontents->FirstChildElement("package");
   while (xpackage != NULL) {
     const char *name = xpackage->Attribute("name");
@@ -528,6 +535,7 @@ choose_suitable_platform(string &selected_platform,
         *platform == '\0' &&
         package_version == version) {
       selected_platform = platform;
+      per_platform = parse_bool_attrib(xpackage, "per_platform", false);
       return true;
     }
 
@@ -561,8 +569,9 @@ get_package_desc_file(FileSpec &desc_file,              // out
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
-  // Scan the contents data for the indicated package.  First, we look
-  // for a platform-specific version.
+  // Scan the contents data for the indicated package.  We expect to
+  // match the platform precisely, because we previously called
+  // choose_suitable_platform().
   TiXmlElement *xpackage = _xcontents->FirstChildElement("package");
   while (xpackage != NULL) {
     const char *name = xpackage->Attribute("name");
@@ -579,40 +588,6 @@ get_package_desc_file(FileSpec &desc_file,              // out
     if (name != NULL && platform != NULL &&
         package_name == name && 
         package_platform == platform &&
-        package_version == version) {
-      // Here's the matching package definition.
-      desc_file.load_xml(xpackage);
-      package_seq = seq;
-      package_solo = false;
-      if (solo != NULL) {
-        package_solo = (atoi(solo) != 0);
-      }
-      return true;
-    }
-
-    xpackage = xpackage->NextSiblingElement("package");
-  }
-
-  // Look again, this time looking for a non-platform-specific version.
-  xpackage = _xcontents->FirstChildElement("package");
-  while (xpackage != NULL) {
-    const char *name = xpackage->Attribute("name");
-    const char *platform = xpackage->Attribute("platform");
-    const char *version = xpackage->Attribute("version");
-    const char *seq = xpackage->Attribute("seq");
-    const char *solo = xpackage->Attribute("solo");
-    if (platform == NULL) {
-      platform = "";
-    }
-    if (version == NULL) {
-      version = "";
-    }
-    if (seq == NULL) {
-      seq = "";
-    }
-    if (name != NULL &&
-        package_name == name && 
-        *platform == '\0' &&
         package_version == version) {
       // Here's the matching package definition.
       desc_file.load_xml(xpackage);

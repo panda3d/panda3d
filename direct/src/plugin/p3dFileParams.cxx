@@ -89,26 +89,36 @@ set_p3d_url(const string &p3d_url) {
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DFileParams::set_tokens
 //       Access: Public
-//  Description: Specifies the tokens associated with the instance.
+//  Description: Replaces all the tokens associated with the instance.
 ////////////////////////////////////////////////////////////////////
 void P3DFileParams::
 set_tokens(const P3D_token tokens[], size_t num_tokens) {
   _tokens.clear();
 
   for (size_t i = 0; i < num_tokens; ++i) {
-    Token token;
-    if (tokens[i]._keyword != NULL) {
-      // Make the token lowercase, since HTML is case-insensitive but
-      // we're not.
-      for (const char *p = tokens[i]._keyword; *p; ++p) {
-        token._keyword += tolower(*p);
-      }
-    }
-    if (tokens[i]._value != NULL) {
-      token._value = tokens[i]._value;
-    }
-    _tokens.push_back(token);
+    set_token(tokens[i]._keyword, tokens[i]._value);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DFileParams::set_token
+//       Access: Public
+//  Description: Sets an individual token value.
+////////////////////////////////////////////////////////////////////
+void P3DFileParams::
+set_token(const char *keyword, const char *value) {
+  Token token;
+  if (keyword != NULL) {
+    // Make the token lowercase, since HTML is case-insensitive but
+    // we're not.
+    for (const char *p = keyword; *p; ++p) {
+      token._keyword += tolower(*p);
+    }
+  }
+  if (value != NULL) {
+    token._value = value;
+  }
+  _tokens.push_back(token);
 }
 
 ////////////////////////////////////////////////////////////////////

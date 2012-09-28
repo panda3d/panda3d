@@ -52,10 +52,8 @@ P3DPackage(P3DHost *host, const string &package_name,
   _package_platform(package_platform),
   _alt_host(alt_host)
 {
-  _package_fullname = _package_name;
-  if (!_package_version.empty()) {
-    _package_fullname += string(".") + _package_version;
-  }
+  set_fullname();
+  _per_platform = false;
   _patch_version = 0;
 
   // This is set true if the package is a "solo", i.e. a single
@@ -638,16 +636,20 @@ host_got_contents_file() {
   // provided.
   assert(_alt_host.empty());
   string new_platform;
-  if (_host->choose_suitable_platform(new_platform, _package_name, _package_version, _package_platform)) {
+  if (_host->choose_suitable_platform(new_platform, _per_platform,
+                                      _package_name, _package_version, _package_platform)) {
     if (new_platform != _package_platform) {
       nout << "Migrating " << get_package_name() << " from platform \""
            << _package_platform << "\" to platform \"" 
            << new_platform << "\"\n";
       _package_platform = new_platform;
+      set_fullname();
     }
   } else {
     nout << "Couldn't find a platform for " << get_package_name() << ".\n";
   }
+
+  nout << "_per_platform for " << get_package_name() << " = " << _per_platform << "\n";
 
   // Now that we have a valid host and platform, we can define the
   // _package_dir.
@@ -655,7 +657,7 @@ host_got_contents_file() {
   if (!_package_version.empty()) {
     _package_dir += string("/") + _package_version;
   }
-  if (!_package_platform.empty()) {
+  if (_per_platform && !_package_platform.empty()) {
     _package_dir += string("/") + _package_platform;
   }
 
@@ -686,7 +688,7 @@ download_desc_file() {
                                     _package_name, _package_version,
                                     _package_platform)) {
     nout << "Couldn't find package " << _package_fullname
-         << "/" << _package_platform << " in contents file.\n";
+         << " in contents file.\n";
     redownload_contents_file(NULL);
     return;
   }
@@ -702,8 +704,8 @@ download_desc_file() {
   }
 
   // The desc file might have a different path on the host server than
-  // it has locally, because we strip out the platform directory
-  // locally.
+  // it has locally, because we might strip out the platform directory
+  // locally (according to _per_platform).
   FileSpec local_desc_file = _desc_file;
   local_desc_file.set_filename(_desc_file_basename);
   _desc_file_pathname = local_desc_file.get_pathname(_package_dir);
@@ -790,6 +792,16 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
     }
     report_done(false);
     return;
+  }
+
+  bool per_platform = parse_bool_attrib(xpackage, "per_platform", false);
+  if (per_platform != _per_platform) {
+    nout << "Warning! per_platform disagreement for " << get_package_name()
+         << "!\n";
+    // We don't do anything with this warning--the original value for
+    // _per_platform we got from the contents.xml file has to apply,
+    // because we're already committed to the _package_dir we're
+    // using.
   }
   
   xpackage->Attribute("patch_version", &_patch_version);
@@ -1456,6 +1468,23 @@ instance_terminating(P3DInstance *instance) {
     _instances.push_back(instance);
   }
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::set_fullname
+//       Access: Private
+//  Description: Assigns _package_fullname to the appropriate
+//               combination of name, version, and platform.
+////////////////////////////////////////////////////////////////////
+void P3DPackage::
+set_fullname() {
+  _package_fullname = _package_name;
+  if (!_package_version.empty()) {
+    _package_fullname += string(".") + _package_version;
+  }
+  if (!_package_platform.empty()) {
+    _package_fullname += string(".") + _package_platform;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
