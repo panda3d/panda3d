@@ -23,6 +23,7 @@
 
 #include "pre_maya_include.h"
 #include <maya/MFnBlendShapeDeformer.h>
+#include <maya/MObject.h>
 #include "post_maya_include.h"
 
 class EggTable;
