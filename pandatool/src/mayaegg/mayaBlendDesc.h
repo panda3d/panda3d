@@ -42,7 +42,7 @@ class EggSAnimData;
 ////////////////////////////////////////////////////////////////////
 class MayaBlendDesc : public ReferenceCount, public Namable {
 public:
-  MayaBlendDesc(MFnBlendShapeDeformer deformer, int weight_index);
+  MayaBlendDesc(MFnBlendShapeDeformer &deformer, int weight_index);
   ~MayaBlendDesc();
 
   void set_slider(PN_stdfloat value);

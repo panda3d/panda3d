@@ -2360,7 +2360,7 @@ get_vertex_weights(const MDagPath &dag_path, const MFnMesh &mesh,
           status.perror("Can't find connected Joint");
         } else {
           MObject jointObj = matrix_pa[0].node();
-          MFnIkJoint jointFn = MFnIkJoint(jointObj, &status);
+          MFnIkJoint jointFn(jointObj, &status);
           if (!status) {
             status.perror("Can't find connected JointDag");
           } else {

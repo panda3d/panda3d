@@ -23,8 +23,8 @@ TypeHandle MayaBlendDesc::_type_handle;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 MayaBlendDesc::
-MayaBlendDesc(MFnBlendShapeDeformer deformer, int weight_index) :
-  _deformer(deformer),
+MayaBlendDesc(MFnBlendShapeDeformer &deformer, int weight_index) :
+  _deformer(deformer.object()),
   _weight_index(weight_index)
 {
   ostringstream strm;

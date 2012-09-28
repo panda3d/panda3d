@@ -370,7 +370,7 @@ MayaEggGroup *MayaEggLoader::MakeGroup(EggGroup *group, EggGroup *context)
     MMatrix mat(matData);
 
     MTransformationMatrix matrix = MTransformationMatrix(mat);
-    MFnTransform tFn = MFnTransform(result->_group, &status);
+    MFnTransform tFn(result->_group, &status);
     if (status != MStatus::kSuccess) {
       status.perror("MFnTransformNode:create failed!");
     } else {
