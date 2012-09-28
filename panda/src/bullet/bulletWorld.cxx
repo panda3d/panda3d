@@ -310,9 +310,72 @@ clear_debug_node() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::attach_rigid_body
+//     Function: BulletWorld::attach
 //       Access: Published
 //  Description:
+////////////////////////////////////////////////////////////////////
+void BulletWorld::
+attach(TypedObject *object) {
+
+  if (object->is_of_type(BulletGhostNode::get_class_type())) {
+    attach_ghost(DCAST(BulletGhostNode, object));
+  }
+  else if (object->is_of_type(BulletRigidBodyNode::get_class_type())) {
+    attach_rigid_body(DCAST(BulletRigidBodyNode, object));
+  }
+  else if (object->is_of_type(BulletSoftBodyNode::get_class_type())) {
+    attach_soft_body(DCAST(BulletSoftBodyNode, object));
+  }
+  else if (object->is_of_type(BulletBaseCharacterControllerNode::get_class_type())) {
+    attach_character(DCAST(BulletBaseCharacterControllerNode, object));
+  }
+  else if (object->is_of_type(BulletVehicle::get_class_type())) {
+    attach_vehicle(DCAST(BulletVehicle, object));
+  }
+  else if (object->is_of_type(BulletConstraint::get_class_type())) {
+    attach_constraint(DCAST(BulletConstraint, object));
+  }
+  else {
+    bullet_cat->error() << "not a bullet world object!" << endl;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletWorld::remove
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletWorld::
+remove(TypedObject *object) {
+
+  if (object->is_of_type(BulletGhostNode::get_class_type())) {
+    remove_ghost(DCAST(BulletGhostNode, object));
+  }
+  else if (object->is_of_type(BulletRigidBodyNode::get_class_type())) {
+    remove_rigid_body(DCAST(BulletRigidBodyNode, object));
+  }
+  else if (object->is_of_type(BulletSoftBodyNode::get_class_type())) {
+    remove_soft_body(DCAST(BulletSoftBodyNode, object));
+  }
+  else if (object->is_of_type(BulletBaseCharacterControllerNode::get_class_type())) {
+    remove_character(DCAST(BulletBaseCharacterControllerNode, object));
+  }
+  else if (object->is_of_type(BulletVehicle::get_class_type())) {
+    remove_vehicle(DCAST(BulletVehicle, object));
+  }
+  else if (object->is_of_type(BulletConstraint::get_class_type())) {
+    remove_constraint(DCAST(BulletConstraint, object));
+  }
+  else {
+    bullet_cat->error() << "not a bullet world object!" << endl;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletWorld::attach_rigid_body
+//       Access: Published
+//  Description: Deprecated!
+//               Please use BulletWorld::attach
 ////////////////////////////////////////////////////////////////////
 void BulletWorld::
 attach_rigid_body(BulletRigidBodyNode *node) {
@@ -337,7 +400,8 @@ attach_rigid_body(BulletRigidBodyNode *node) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWorld::remove_rigid_body
 //       Access: Published
-//  Description:
+//  Description: Deprecated.!
+//               Please use BulletWorld::remove
 ////////////////////////////////////////////////////////////////////
 void BulletWorld::
 remove_rigid_body(BulletRigidBodyNode *node) {
@@ -362,7 +426,8 @@ remove_rigid_body(BulletRigidBodyNode *node) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWorld::attach_soft_body
 //       Access: Published
-//  Description:
+//  Description: Deprecated!
+//               Please use BulletWorld::attach
 ////////////////////////////////////////////////////////////////////
 void BulletWorld::
 attach_soft_body(BulletSoftBodyNode *node) {
@@ -391,7 +456,8 @@ attach_soft_body(BulletSoftBodyNode *node) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWorld::remove_soft_body
 //       Access: Published
-//  Description:
+//  Description: Deprecated.!
+//               Please use BulletWorld::remove
 ////////////////////////////////////////////////////////////////////
 void BulletWorld::
 remove_soft_body(BulletSoftBodyNode *node) {
@@ -416,7 +482,8 @@ remove_soft_body(BulletSoftBodyNode *node) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWorld::attach_ghost
 //       Access: Published
-//  Description:
+//  Description: Deprecated!
+//               Please use BulletWorld::attach
 ////////////////////////////////////////////////////////////////////
 void BulletWorld::
 attach_ghost(BulletGhostNode *node) {
@@ -459,7 +526,8 @@ enum CollisionFilterGroups {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWorld::remove_ghost
 //       Access: Published
-//  Description:
+//  Description: Deprecated.!
+//               Please use BulletWorld::remove
 ////////////////////////////////////////////////////////////////////
 void BulletWorld::
 remove_ghost(BulletGhostNode *node) {
@@ -484,7 +552,8 @@ remove_ghost(BulletGhostNode *node) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWorld::attach_character
 //       Access: Published
-//  Description:
+//  Description: Deprecated!
+//               Please use BulletWorld::attach
 ////////////////////////////////////////////////////////////////////
 void BulletWorld::
 attach_character(BulletBaseCharacterControllerNode *node) {
@@ -512,7 +581,8 @@ attach_character(BulletBaseCharacterControllerNode *node) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWorld::remove_character
 //       Access: Published
-//  Description:
+//  Description: Deprecated.!
+//               Please use BulletWorld::remove
 ////////////////////////////////////////////////////////////////////
 void BulletWorld::
 remove_character(BulletBaseCharacterControllerNode *node) {
@@ -536,7 +606,8 @@ remove_character(BulletBaseCharacterControllerNode *node) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWorld::attach_vehicle
 //       Access: Published
-//  Description:
+//  Description: Deprecated!
+//               Please use BulletWorld::attach
 ////////////////////////////////////////////////////////////////////
 void BulletWorld::
 attach_vehicle(BulletVehicle *vehicle) {
@@ -559,7 +630,8 @@ attach_vehicle(BulletVehicle *vehicle) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWorld::remove_vehicle
 //       Access: Published
-//  Description:
+//  Description: Deprecated.!
+//               Please use BulletWorld::remove
 ////////////////////////////////////////////////////////////////////
 void BulletWorld::
 remove_vehicle(BulletVehicle *vehicle) {
@@ -584,7 +656,8 @@ remove_vehicle(BulletVehicle *vehicle) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWorld::attach_constraint
 //       Access: Published
-//  Description:
+//  Description: Deprecated!
+//               Please use BulletWorld::attach
 ////////////////////////////////////////////////////////////////////
 void BulletWorld::
 attach_constraint(BulletConstraint *constraint) {
@@ -607,7 +680,8 @@ attach_constraint(BulletConstraint *constraint) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWorld::remove_constraint
 //       Access: Published
-//  Description:
+//  Description: Deprecated.!
+//               Please use BulletWorld::remove
 ////////////////////////////////////////////////////////////////////
 void BulletWorld::
 remove_constraint(BulletConstraint *constraint) {

@@ -68,34 +68,26 @@ PUBLISHED:
 
   BulletSoftBodyWorldInfo get_world_info();
 
-  // Ghost object
-  void attach_ghost(BulletGhostNode *node);
-  void remove_ghost(BulletGhostNode *node);
+  // Attach/Remove
+  void attach(TypedObject *object);
+  void remove(TypedObject *object);
 
+  // Ghost object
   INLINE int get_num_ghosts() const;
   INLINE BulletGhostNode *get_ghost(int idx) const;
   MAKE_SEQ(get_ghosts, get_num_ghosts, get_ghost);
 
   // Rigid body
-  void attach_rigid_body(BulletRigidBodyNode *node);
-  void remove_rigid_body(BulletRigidBodyNode *node);
-
   INLINE int get_num_rigid_bodies() const;
   INLINE BulletRigidBodyNode *get_rigid_body(int idx) const;
   MAKE_SEQ(get_rigid_bodies, get_num_rigid_bodies, get_rigid_body);
 
   // Soft body
-  void attach_soft_body(BulletSoftBodyNode *node);
-  void remove_soft_body(BulletSoftBodyNode *node);
-
   INLINE int get_num_soft_bodies() const;
   INLINE BulletSoftBodyNode *get_soft_body(int idx) const;
   MAKE_SEQ(get_soft_bodies, get_num_soft_bodies, get_soft_body);
 
   // Character controller
-  void attach_character(BulletBaseCharacterControllerNode *node);
-  void remove_character(BulletBaseCharacterControllerNode *node);
-
   INLINE int get_num_characters() const;
   INLINE BulletBaseCharacterControllerNode *get_character(int idx) const;
   MAKE_SEQ(get_characters, get_num_characters, get_character);
@@ -109,9 +101,6 @@ PUBLISHED:
   MAKE_SEQ(get_vehicles, get_num_vehicles, get_vehicle);
 
   // Constraint
-  void attach_constraint(BulletConstraint *constraint);
-  void remove_constraint(BulletConstraint *constraint);
-
   INLINE int get_num_constraints() const;
   INLINE BulletConstraint *get_constraint(int idx) const;
   MAKE_SEQ(get_constraints, get_num_constraints, get_constraint);
@@ -163,6 +152,22 @@ PUBLISHED:
 #ifdef HAVE_PYTHON
   void set_python_filter_callback(PyObject *callback);
 #endif
+
+PUBLISHED: // Deprecated methods, will become private soon
+  void attach_ghost(BulletGhostNode *node);
+  void remove_ghost(BulletGhostNode *node);
+
+  void attach_rigid_body(BulletRigidBodyNode *node);
+  void remove_rigid_body(BulletRigidBodyNode *node);
+
+  void attach_soft_body(BulletSoftBodyNode *node);
+  void remove_soft_body(BulletSoftBodyNode *node);
+
+  void attach_character(BulletBaseCharacterControllerNode *node);
+  void remove_character(BulletBaseCharacterControllerNode *node);
+
+  void attach_constraint(BulletConstraint *constraint);
+  void remove_constraint(BulletConstraint *constraint);
 
 public:
   static btCollisionObject *get_collision_object(PandaNode *node);

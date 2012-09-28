@@ -29,11 +29,7 @@ class BulletWheel;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BulletVehicleTuning
-// Description : Simulates a raycast vehicle which casts a ray per
-//               wheel at the ground as a cheap replacement for
-//               complex suspension simulation. The suspension can
-//               be tuned in various ways. It is possible to add a
-//               (probably) arbitrary number of wheels.
+// Description : 
 ////////////////////////////////////////////////////////////////////
 class BulletVehicleTuning {
 
@@ -60,7 +56,11 @@ private:
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BulletVehicle
-// Description : 
+// Description : Simulates a raycast vehicle which casts a ray per
+//               wheel at the ground as a cheap replacement for
+//               complex suspension simulation. The suspension can
+//               be tuned in various ways. It is possible to add a
+//               (probably) arbitrary number of wheels.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDABULLET BulletVehicle : public TypedReferenceCount {
 
