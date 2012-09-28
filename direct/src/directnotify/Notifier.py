@@ -17,6 +17,10 @@ class Notifier:
     # particularly useful for integrating the Python notify system
     # with the C++ notify system.
     streamWriter = None
+    if ConfigVariableBool('notify-integrate', True):
+        from libpandaexpress import StreamWriter, Notify
+        streamWriter = StreamWriter(Notify.out(), False)
+        
     showTime = ConfigVariableBool('notify-timestamp', False)
 
     def __init__(self, name, logger=None):
