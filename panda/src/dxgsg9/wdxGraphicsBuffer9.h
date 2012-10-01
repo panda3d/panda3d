@@ -41,10 +41,13 @@ public:
                      GraphicsOutput *host);
   virtual ~wdxGraphicsBuffer9();
 
+  virtual INLINE bool get_supports_render_texture() const;  
+  
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);
   virtual void end_frame(FrameMode mode, Thread *current_thread);
 
   virtual void select_cube_map(int cube_map_index);
+  
   virtual void process_events();
 
   virtual bool share_depth_buffer(GraphicsOutput *graphics_output);
@@ -100,5 +103,7 @@ private:
   friend class DXGraphicsStateGuardian9;
   friend class DXTextureContext9;
 };
+
+#include "wdxGraphicsBuffer9.I"
 
 #endif

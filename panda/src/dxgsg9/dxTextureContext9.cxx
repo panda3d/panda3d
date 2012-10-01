@@ -778,7 +778,6 @@ create_texture(DXScreenData &scrn) {
   DWORD usage;
   D3DPOOL pool;
 
-  usage = 0;
   if (tex->get_render_to_texture ( )) {
     // REQUIRED PARAMETERS
     _managed = false;
@@ -801,6 +800,7 @@ create_texture(DXScreenData &scrn) {
     _managed = scrn._managed_textures;
     if (_managed) {
       pool = D3DPOOL_MANAGED;
+      usage = 0;
     }
     else {
       if (scrn._supports_automatic_mipmap_generation) {
@@ -818,10 +818,12 @@ create_texture(DXScreenData &scrn) {
             // need to use UpdateTexture or UpdateSurface
             _managed = true;
             pool = D3DPOOL_MANAGED;
+            usage = 0;
           }
         }
         else {
           pool = D3DPOOL_DEFAULT;
+          usage = 0;
         }
       }
     }

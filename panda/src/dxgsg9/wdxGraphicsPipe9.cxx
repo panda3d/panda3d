@@ -150,10 +150,8 @@ make_output(const string &name,
     // Early success - if we are sure that this buffer WILL
     // meet specs, we can precertify it.
     // This looks rather overly optimistic -- ie, buggy.
-    if ((gsg != 0)&&
-        (gsg->is_valid())&&
-        (!gsg->needs_reset())&&
-        (DCAST(DXGraphicsStateGuardian9, gsg)->get_supports_render_texture())) {
+    if ((wdxgsg != NULL) && wdxgsg->is_valid() && !wdxgsg->needs_reset() &&
+        wdxgsg->get_supports_render_texture()) {
       precertify = true;
     }
     return new wdxGraphicsBuffer9(engine, this, name, fb_prop, win_prop,
