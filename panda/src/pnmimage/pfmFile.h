@@ -18,17 +18,11 @@
 #include "pandabase.h"
 #include "pnmImageHeader.h"
 #include "luse.h"
-#include "nodePath.h"
 #include "boundingHexahedron.h"
-#include "internalName.h"
-#include "lens.h"
 
-class GeomNode;
-class Lens;
 class PNMImage;
 class PNMReader;
 class PNMWriter;
-class GeomVertexWriter;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PfmFile
@@ -98,11 +92,8 @@ PUBLISHED:
   BLOCKING void resize(int new_x_size, int new_y_size);
   BLOCKING void reverse_rows();
   BLOCKING void flip(bool flip_x, bool flip_y, bool transpose);
-  INLINE BLOCKING void xform(const TransformState *transform);
   BLOCKING void xform(const LMatrix4f &transform);
   INLINE BLOCKING void xform(const LMatrix4d &transform);
-  BLOCKING void project(const Lens *lens);
-  BLOCKING void extrude(const Lens *lens);
   BLOCKING void forward_distort(const PfmFile &dist);
   BLOCKING void reverse_distort(const PfmFile &dist);
   BLOCKING void merge(const PfmFile &other);
@@ -115,41 +106,6 @@ PUBLISHED:
   void compute_sample_point(LPoint3f &result,
                             PN_float32 x, PN_float32 y, PN_float32 sample_radius) const;
 
-  INLINE void set_vis_inverse(bool vis_inverse);
-  INLINE bool get_vis_inverse() const;
-  INLINE void set_flat_texcoord_name(InternalName *flat_texcoord_name);
-  INLINE void clear_flat_texcoord_name();
-  INLINE InternalName *get_flat_texcoord_name() const;
-  INLINE void set_vis_2d(bool vis_2d);
-  INLINE bool get_vis_2d() const;
-
-  INLINE void set_vis_blend(const PNMImage *vis_blend);
-  INLINE void clear_vis_blend();
-  INLINE const PNMImage *get_vis_blend() const;
-
-  enum ColumnType {
-    CT_texcoord2,
-    CT_texcoord3,
-    CT_vertex1,
-    CT_vertex2,
-    CT_vertex3,
-    CT_normal3,
-    CT_blend1,
-  };
-  void clear_vis_columns();
-  void add_vis_column(ColumnType source, ColumnType target,
-                      InternalName *name, 
-                      const TransformState *transform = NULL, const Lens *lens = NULL);
-
-  BLOCKING NodePath generate_vis_points() const;
-
-  enum MeshFace {
-    MF_front = 0x01,
-    MF_back  = 0x02,
-    MF_both  = 0x03,
-  };
-  BLOCKING NodePath generate_vis_mesh(MeshFace face = MF_front) const;
-
   void output(ostream &out) const;
 
 public:
@@ -157,8 +113,6 @@ public:
   INLINE void swap_table(pvector<PN_float32> &table);
 
 private:
-  void make_vis_mesh_geom(GeomNode *gnode, bool inverted) const;
-
   void box_filter_region(PN_float32 &result,
                          PN_float32 x0, PN_float32 y0, PN_float32 x1, PN_float32 y1) const;
   void box_filter_region(LPoint3f &result,
@@ -177,29 +131,6 @@ private:
                         int x, int y, PN_float32 x_contrib, PN_float32 y_contrib) const;
   void box_filter_point(LPoint4f &result, PN_float32 &coverage,
                         int x, int y, PN_float32 x_contrib, PN_float32 y_contrib) const;
-
-  class VisColumn {
-  public:
-    void add_data(const PfmFile &file, GeomVertexWriter &vwriter, int xi, int yi, bool reverse_normals) const;
-    void transform_point(LPoint2f &point) const;
-    void transform_point(LPoint3f &point) const;
-    void transform_vector(LVector3f &vec) const;
-
-  public:
-    ColumnType _source;
-    ColumnType _target;
-    PT(InternalName) _name;
-    CPT(TransformState) _transform;
-    CPT(Lens) _lens;
-  };
-  typedef pvector<VisColumn> VisColumns;
-
-  static void add_vis_column(VisColumns &vis_columns, 
-                             ColumnType source, ColumnType target,
-                             InternalName *name, 
-                             const TransformState *transform = NULL, const Lens *lens = NULL);
-  void build_auto_vis_columns(VisColumns &vis_columns, bool for_points) const;
-  CPT(GeomVertexFormat) make_array_format(const VisColumns &vis_columns) const;
 
   class MiniGridCell {
   public:
@@ -225,17 +156,11 @@ private:
 
   bool _has_no_data_value;
   LPoint4f _no_data_value;
-  bool _vis_inverse;
-  PT(InternalName) _flat_texcoord_name;
-  bool _vis_2d;
-  const PNMImage *_vis_blend;
-
-  VisColumns _vis_columns;
 
   typedef bool HasPointFunc(const PfmFile *file, int x, int y);
   HasPointFunc *_has_point;
 
-  friend class VisColumn;
+  friend class PfmVizzer;
 };
 
 #include "pfmFile.I"

@@ -36,18 +36,6 @@ ConfigVariableBool pfm_reverse_dimensions
           "backwards, in the form height width instead of width height, "
           "on input.  Does not affect output, which is always written width height."));
 
-ConfigVariableInt pfm_vis_max_vertices
-("pfm-vis-max-vertices", 65535,
- PRC_DESC("Specifies the maximum number of vertex entries that may appear in "
-          "a single generated mesh.  If the mesh would require more than that, "
-          "the mesh is subdivided into smaller pieces."));
-
-ConfigVariableInt pfm_vis_max_indices
-("pfm-vis-max-indices", 1048576,
- PRC_DESC("Specifies the maximum number of vertex references that may appear in "
-          "a single generated mesh.  If the mesh would require more than that, "
-          "the mesh is subdivided into smaller pieces."));
-
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpnmimage
 //  Description: Initializes the library.  This must be called at

@@ -72,6 +72,18 @@ ConfigVariableBool movies_sync_pages
           "such as cube maps, 3-d textures, or stereo textures, or textures "
           "with separate color and alpha channel movie sources."));
 
+ConfigVariableInt pfm_vis_max_vertices
+("pfm-vis-max-vertices", 65535,
+ PRC_DESC("Specifies the maximum number of vertex entries that may appear in "
+          "a single generated mesh.  If the mesh would require more than that, "
+          "the mesh is subdivided into smaller pieces."));
+
+ConfigVariableInt pfm_vis_max_indices
+("pfm-vis-max-indices", 1048576,
+ PRC_DESC("Specifies the maximum number of vertex references that may appear in "
+          "a single generated mesh.  If the mesh would require more than that, "
+          "the mesh is subdivided into smaller pieces."));
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libgrutil
 //  Description: Initializes the library.  This must be called at

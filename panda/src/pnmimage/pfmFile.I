@@ -449,22 +449,10 @@ get_no_data_value() const {
 //               in-place.
 ////////////////////////////////////////////////////////////////////
 INLINE void PfmFile::
-xform(const TransformState *transform) {
-  if (!transform->is_identity()) {
-    xform(transform->get_mat());
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::xform
-//       Access: Published
-//  Description: Applies the indicated transform matrix to all points
-//               in-place.
-////////////////////////////////////////////////////////////////////
-INLINE void PfmFile::
 xform(const LMatrix4d &transform) {
   xform(LCAST(PN_float32, transform));
 }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::compute_planar_bounds
 //       Access: Published
@@ -487,152 +475,6 @@ xform(const LMatrix4d &transform) {
 INLINE PT(BoundingHexahedron) PfmFile::
 compute_planar_bounds(const LPoint2d &center, PN_float32 point_dist, PN_float32 sample_radius, bool points_only) const {
   return compute_planar_bounds(LCAST(PN_float32, center), point_dist, sample_radius, points_only);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::set_vis_inverse
-//       Access: Published
-//  Description: Sets the vis_inverse flag.  When this flag is true,
-//               vis meshes and point clouds are generated with the
-//               3-d depth value in the texture coordinates, and the
-//               2-d index value in the vertex position.  When it is
-//               false, meshes are generated normally, with the 3-d
-//               depth value in the vertex position and the 2-d index
-//               value in the texture coordinates.
-//
-//               This may be used in lieu of the lower-level
-//               add_vis_column().
-////////////////////////////////////////////////////////////////////
-INLINE void PfmFile::
-set_vis_inverse(bool vis_inverse) {
-  _vis_inverse = vis_inverse;
-  clear_vis_columns();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::get_vis_inverse
-//       Access: Published
-//  Description: Returns the vis_inverse flag.  See set_vis_inverse().
-////////////////////////////////////////////////////////////////////
-INLINE bool PfmFile::
-get_vis_inverse() const {
-  return _vis_inverse;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::set_flat_texcoord_name
-//       Access: Published
-//  Description: If the flat_texcoord_name is specified, it is the
-//               name of an additional vertex column that will be
-//               created for the "flat" texture coordinates, i.e. the
-//               original 0..1 values that correspond to the 2-D index
-//               position of each point in the original pfm file.
-//
-//               These are the same values that will be assigned to
-//               the default texture coordinates if the vis_inverse
-//               flag is *not* true.
-//
-//               This may be used in lieu of the lower-level
-//               add_vis_column().
-////////////////////////////////////////////////////////////////////
-INLINE void PfmFile::
-set_flat_texcoord_name(InternalName *flat_texcoord_name) {
-  _flat_texcoord_name = flat_texcoord_name;
-  clear_vis_columns();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::clear_flat_texcoord_name
-//       Access: Published
-//  Description: Resets the flat_texcoord_name to empty, so that
-//               additional texture coordinates are not created.
-//
-//               This may be used in lieu of the lower-level
-//               add_vis_column().
-////////////////////////////////////////////////////////////////////
-INLINE void PfmFile::
-clear_flat_texcoord_name() {
-  _flat_texcoord_name = NULL;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::get_flat_texcoord_name
-//       Access: Published
-//  Description: Returns the flat_texcoord_name.  See set_flat_texcoord_name().
-////////////////////////////////////////////////////////////////////
-INLINE InternalName *PfmFile::
-get_flat_texcoord_name() const {
-  return _flat_texcoord_name;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::set_vis_2d
-//       Access: Published
-//  Description: Sets the vis_2d flag.  When this flag is true,
-//               only the first two (x, y) value of each depth point
-//               is considered meaningful; the z component is ignored.
-//               This is only relevant for generating visualizations.
-//
-//               This may be used in lieu of the lower-level
-//               add_vis_column().
-////////////////////////////////////////////////////////////////////
-INLINE void PfmFile::
-set_vis_2d(bool vis_2d) {
-  _vis_2d = vis_2d;
-  clear_vis_columns();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::get_vis_2d
-//       Access: Published
-//  Description: Returns the vis_2d flag.  See set_vis_2d().
-////////////////////////////////////////////////////////////////////
-INLINE bool PfmFile::
-get_vis_2d() const {
-  return _vis_2d;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::set_vis_blend
-//       Access: Published
-//  Description: Specifies a blending map--a grayscale image--that
-//               will be applied to the vertex color during
-//               generate_vis_mesh() and generate_vis_points().  The
-//               image size must exactly match the mesh size of the
-//               PfmFile.
-//
-//               Ownership of the pointer is not kept by the PfmFile;
-//               it is your responsibility to ensure it does not
-//               destruct during the lifetime of the PfmFile (or at
-//               least not before your subsequent call to
-//               generate_vis_mesh()).
-////////////////////////////////////////////////////////////////////
-INLINE void PfmFile::
-set_vis_blend(const PNMImage *vis_blend) {
-  _vis_blend = vis_blend;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::set_vis_blend
-//       Access: Published
-//  Description: Removes the blending map set by a prior call to
-//               set_vis_blend().
-////////////////////////////////////////////////////////////////////
-INLINE void PfmFile::
-clear_vis_blend() {
-  _vis_blend = NULL;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::get_vis_blend
-//       Access: Published
-//  Description: Returns the blending map set by the most recent call
-//               to set_vis_blend(), or NULL if there is no blending
-//               map in effect.
-////////////////////////////////////////////////////////////////////
-INLINE const PNMImage *PfmFile::
-get_vis_blend() const {
-  return _vis_blend;
 }
 
 ////////////////////////////////////////////////////////////////////
