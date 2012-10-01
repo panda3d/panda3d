@@ -19,6 +19,7 @@
 #include "pnmImageHeader.h"
 #include "luse.h"
 #include "boundingHexahedron.h"
+#include "vector_float.h"
 
 class PNMImage;
 class PNMReader;
@@ -109,8 +110,8 @@ PUBLISHED:
   void output(ostream &out) const;
 
 public:
-  INLINE const pvector<PN_float32> &get_table() const;
-  INLINE void swap_table(pvector<PN_float32> &table);
+  INLINE const vector_float &get_table() const;
+  INLINE void swap_table(vector_float &table);
 
 private:
   void box_filter_region(PN_float32 &result,
@@ -149,7 +150,7 @@ private:
   static bool has_point_chan4(const PfmFile *file, int x, int y);
 
 private:
-  typedef pvector<PN_float32> Table;
+  typedef vector_float Table;
   Table _table;
 
   PN_float32 _scale;

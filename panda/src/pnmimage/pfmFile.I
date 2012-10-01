@@ -485,7 +485,7 @@ compute_planar_bounds(const LPoint2d &center, PN_float32 point_dist, PN_float32 
 //               floating-point numbers.  Use this method at your own
 //               risk.
 ////////////////////////////////////////////////////////////////////
-INLINE const pvector<PN_float32> &PfmFile::
+INLINE const vector_float &PfmFile::
 get_table() const {
   return _table;
 }
@@ -500,6 +500,6 @@ get_table() const {
 //               this method at your own risk.
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
-swap_table(pvector<PN_float32> &table) {
+swap_table(vector_float &table) {
   _table.swap(table);
 }
