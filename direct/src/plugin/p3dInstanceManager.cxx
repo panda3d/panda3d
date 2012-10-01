@@ -216,16 +216,18 @@ initialize(int api_version, const string &contents_filename,
     // caller), we might in fact support multiple platforms.
     _platform = DTOOL_PLATFORM;
 #ifdef _WIN32
-    if (_platform == "win64") {
-      _supported_platforms.push_back("win64");
+    if (_platform == "win_amd64") {
+      _supported_platforms.push_back("win_amd64");
+      _supported_platforms.push_back("win_i386");
       _supported_platforms.push_back("win32");
 
-    } else if (_platform == "win32") {
+    } else if (_platform == "win_i386" || _platform == "win32") {
       // This is a WIN32 process, but determine if the underlying OS
       // actually supports WIN64.
       if (supports_win64()) {
-        _supported_platforms.push_back("win64");
+        _supported_platforms.push_back("win_amd64");
       }
+      _supported_platforms.push_back("win_i386");
       _supported_platforms.push_back("win32");
     }
 #endif  // _WIN32

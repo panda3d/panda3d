@@ -72,7 +72,7 @@ Options:
      separated list of platforms that the p3d package will be
      deployed for. If omitted, it will be built for all platforms.
      This option may be specified multiple times.
-     Examples of valid platforms are win32, linux_amd64 and osx_ppc.
+     Examples of valid platforms are win_i386, linux_amd64 and osx_ppc.
 
   -c
      If this option is provided, any -P options are ignored and

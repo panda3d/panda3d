@@ -604,6 +604,8 @@ contents_file_redownload_finished(bool success) {
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
 host_got_contents_file() {
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+
   if (!_alt_host.empty()) {
     // If we have an alt host specification, maybe we need to change
     // the host now.
@@ -619,7 +621,6 @@ host_got_contents_file() {
     // host.
     _alt_host.clear();
 
-    P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
     if (!_host->has_current_contents_file(inst_mgr)) {
       // Now go back and get the contents.xml file for the new host.
       download_contents_file();
@@ -646,7 +647,8 @@ host_got_contents_file() {
       set_fullname();
     }
   } else {
-    nout << "Couldn't find a platform for " << get_package_name() << ".\n";
+    nout << "Couldn't find a platform for " << get_package_name()
+         << " matching " << inst_mgr->get_platform() << ".\n";
   }
 
   nout << "_per_platform for " << get_package_name() << " = " << _per_platform << "\n";
@@ -662,7 +664,6 @@ host_got_contents_file() {
   }
 
   // Ensure the package directory exists; create it if it does not.
-  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   if (inst_mgr->get_verify_contents() != P3D_VC_never) {
     mkdir_complete(_package_dir, nout);
   }

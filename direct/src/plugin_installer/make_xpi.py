@@ -46,7 +46,8 @@ assert options.host_url, "The host_url must be supplied!"
 # going through this mechanism.
 FirefoxPlatformMap = {
     'win32' : 'WINNT_x86-msvc',
-    'win64' : 'WINNT_x86_64-msvc',
+    'win_i386' : 'WINNT_x86-msvc',
+    'win_amd64' : 'WINNT_x86_64-msvc',
 #    'linux_i386' : 'Linux_x86-gcc3',
 #    'linux_amd64' : 'Linux_x86_64-gcc3',
 #    'linux_ppc' : 'Linux_ppc-gcc3',

@@ -122,7 +122,7 @@ class CompilationEnvironment:
 
             # MSVC/bin and /lib directories have a different location
             # for win64.
-            if self.platform == 'win64':
+            if self.platform == 'win_amd64':
                 self.suffix64 = '\\amd64'
 
             # If it is run by makepanda, it handles the MSVC and PlatformSDK paths itself.
