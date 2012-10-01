@@ -15,6 +15,7 @@
 #include "pfmTrans.h"
 #include "config_pfm.h"
 #include "pfmFile.h"
+#include "pfmVizzer.h"
 #include "pystub.h"
 #include "texture.h"
 #include "texturePool.h"
@@ -160,9 +161,10 @@ run() {
 ////////////////////////////////////////////////////////////////////
 bool PfmTrans::
 process_pfm(const Filename &input_filename, PfmFile &file) {
+  PfmVizzer vizzer(file);
   file.set_zero_special(_got_zero_special);
-  file.set_vis_inverse(_got_vis_inverse);
-  file.set_vis_2d(_got_vis_2d);
+  vizzer.set_vis_inverse(_got_vis_inverse);
+  vizzer.set_vis_2d(_got_vis_2d);
 
   if (_got_autocrop) {
     _got_crop = file.calc_autocrop(_crop[0], _crop[1], _crop[2], _crop[3]);
@@ -219,7 +221,7 @@ process_pfm(const Filename &input_filename, PfmFile &file) {
   }
 
   if (_got_vis_filename) {
-    NodePath mesh = file.generate_vis_mesh(PfmFile::MF_both);
+    NodePath mesh = vizzer.generate_vis_mesh(PfmVizzer::MF_both);
     if (_got_vistex_filename) {
       PT(Texture) tex = TexturePool::load_texture(_vistex_filename);
       if (tex == NULL) {
