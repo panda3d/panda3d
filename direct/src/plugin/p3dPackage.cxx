@@ -1369,6 +1369,17 @@ start_download(P3DPackage::DownloadType dtype, const string &urlbase,
     }
   }
 
+  if (download->_try_urls.size() == 1) {
+    // If we only ended up with only one URL on the try list, then try
+    // it twice, for a bit of redundancy in case there's a random
+    // network hiccup or something.
+
+    // Save a copy into its own string object first to avoid
+    // self-dereferencing errors in the push_back() method.
+    string url = download->_try_urls[0];
+    download->_try_urls.push_back(url);
+  }
+
   // OK, start the download.
   assert(!download->_try_urls.empty());
   url = download->_try_urls.back();

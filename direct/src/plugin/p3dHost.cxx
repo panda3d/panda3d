@@ -458,10 +458,7 @@ choose_suitable_platform(string &selected_platform,
                          const string &package_name,
                          const string &package_version,
                          const string &package_platform) {
-  nout << "choose_suitable_platform(" << package_name << ", " 
-       << package_version << ", " << package_platform << ")\n";
   if (_xcontents == NULL) {
-    nout << "  xcontents is null\n";
     return false;
   }
 
@@ -493,7 +490,6 @@ choose_suitable_platform(string &selected_platform,
           // Here's the matching package definition.
           selected_platform = platform;
           per_platform = parse_bool_attrib(xpackage, "per_platform", false);
-          nout << "  found match for " << selected_platform << "\n";
           return true;
         }
         
@@ -504,7 +500,6 @@ choose_suitable_platform(string &selected_platform,
 
   // Now, we look for an exact match for the expected platform.
   xpackage = _xcontents->FirstChildElement("package");
-  nout << "  scanning, xpackage = " << xpackage << "\n";
   while (xpackage != NULL) {
     const char *name = xpackage->Attribute("name");
     const char *platform = xpackage->Attribute("platform");
@@ -515,26 +510,21 @@ choose_suitable_platform(string &selected_platform,
     if (version == NULL) {
       version = "";
     }
-    nout << "  considering " << name << ", " << platform << ", " << version
-         << "\n";
     if (name != NULL &&
         package_name == name && 
         package_platform == platform &&
         package_version == version) {
       // Here's the matching package definition.
-      nout << "  match!\n";
       selected_platform = platform;
       per_platform = parse_bool_attrib(xpackage, "per_platform", false);
       return true;
     }
-    nout << "  no match.\n";
 
     xpackage = xpackage->NextSiblingElement("package");
   }
 
   // Look one more time, this time looking for a non-platform-specific
   // version.
-  nout << "  further scanning\n";
   xpackage = _xcontents->FirstChildElement("package");
   while (xpackage != NULL) {
     const char *name = xpackage->Attribute("name");
@@ -552,7 +542,6 @@ choose_suitable_platform(string &selected_platform,
         package_version == version) {
       selected_platform = platform;
       per_platform = parse_bool_attrib(xpackage, "per_platform", false);
-      nout << "  found empty platform\n";
       return true;
     }
 
@@ -560,7 +549,6 @@ choose_suitable_platform(string &selected_platform,
   }
 
   // Couldn't find a suitable platform.
-  nout << "  couldn't find.\n";
   return false;
 }
 
