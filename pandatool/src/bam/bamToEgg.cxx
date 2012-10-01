@@ -559,7 +559,7 @@ convert_geom_node(GeomNode *node, const WorkingNodePath &node_path,
     egg_group->set_decal_flag(true);
   }
 
-  if (fancy_attributes || has_decal) {
+  if (fancy_attributes || has_decal || !node->get_name().empty()) {
     // If we have any fancy attributes on the node, or if we're making
     // decal geometry, we have to make a special node to hold the
     // geometry (normally it would just appear within its parent).
