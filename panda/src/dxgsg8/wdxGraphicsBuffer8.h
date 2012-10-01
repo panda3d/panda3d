@@ -40,6 +40,8 @@ public:
                      GraphicsStateGuardian *gsg,
                      GraphicsOutput *host);
   virtual ~wdxGraphicsBuffer8();
+  
+  virtual INLINE bool get_supports_render_texture() const;
 
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);
   virtual void end_frame(FrameMode mode, Thread *current_thread);
@@ -91,5 +93,7 @@ private:
   friend class DXGraphicsStateGuardian8;
   friend class DXTextureContext8;
 };
+
+#include "wdxGraphicsBuffer8.I"
 
 #endif

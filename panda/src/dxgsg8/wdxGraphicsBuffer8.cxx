@@ -347,14 +347,14 @@ rebuild_bitplanes() {
     if (depth_ctx) {
       if (!depth_ctx->create_texture(*_dxgsg->_screen)) {
         dxgsg8_cat.error()
-          << "Unable to re-create texture " << *color_ctx->get_texture() << endl;
+          << "Unable to re-create texture " << *depth_ctx->get_texture() << endl;
         return false;
       }
       
       if (depth_tex->get_texture_type() == Texture::TT_2d_texture) {
         depth_d3d_tex = depth_ctx->_d3d_2d_texture;
         nassertr(depth_d3d_tex != 0, false);
-        hr = color_d3d_tex -> GetSurfaceLevel(0, &depth_surf);
+        hr = depth_d3d_tex -> GetSurfaceLevel(0, &depth_surf);
         if (!SUCCEEDED(hr)) {
           dxgsg8_cat.error ( ) << "GetSurfaceLevel " << D3DERRORSTRING(hr) FL;
         }
