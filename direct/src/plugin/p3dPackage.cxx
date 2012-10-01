@@ -648,7 +648,7 @@ host_got_contents_file() {
     }
   } else {
     nout << "Couldn't find a platform for " << get_package_name()
-         << " matching " << inst_mgr->get_platform() << ".\n";
+         << " matching \"" << inst_mgr->get_platform() << "\".\n";
   }
 
   nout << "_per_platform for " << get_package_name() << " = " << _per_platform << "\n";
@@ -689,7 +689,8 @@ download_desc_file() {
                                     _package_name, _package_version,
                                     _package_platform)) {
     nout << "Couldn't find package " << _package_fullname
-         << " in contents file.\n";
+         << ", platform \"" << _package_platform
+         << "\" in contents file.\n";
     redownload_contents_file(NULL);
     return;
   }
