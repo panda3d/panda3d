@@ -297,8 +297,8 @@ get_build_date() {
 //       Access: Published, Static
 //  Description: Returns a string representing the runtime platform
 //               that we are currently running on.  This will be
-//               something like "win32" or "osx.i386" or
-//               "linux.amd64".
+//               something like "win32" or "osx_i386" or
+//               "linux_amd64".
 ////////////////////////////////////////////////////////////////////
 string PandaSystem::
 get_platform() {

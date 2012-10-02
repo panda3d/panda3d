@@ -26,10 +26,10 @@
 // This has already been defined explicitly by the Config.pp file.
 
 #elif defined(_WIN64)
-#define DTOOL_PLATFORM "win64"
+#define DTOOL_PLATFORM "win_amd64"
 
 #elif defined(_WIN32)
-#define DTOOL_PLATFORM "win32"
+#define DTOOL_PLATFORM "win_i386"
 
 #elif defined(__APPLE__)
 #if defined(BUILD_IPHONE)
