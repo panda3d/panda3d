@@ -1,4 +1,4 @@
-// Filename: wdxGraphicsBuffer9.I
+// Filename: wdxGraphicsBuffer8.I
 // Created by:  zhao (29Sep12)
 //
 ////////////////////////////////////////////////////////////////////
@@ -20,7 +20,7 @@
 //               always copy-to-texture at the end of each frame to
 //               achieve this effect.
 ////////////////////////////////////////////////////////////////////
-INLINE bool wdxGraphicsBuffer9::
+INLINE bool wdxGraphicsBuffer8::
 get_supports_render_texture() const {
   // DX8 buffers can always bind-to-texture.
   return true;
