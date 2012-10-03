@@ -1730,7 +1730,7 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
     // Check the "Display Colors" box by default, so that vertex
     // colors (if any) will be visible.
     MPlug displayColors = mfn.findPlug("displayColors");
-    displayColors.setBool(true);
+    displayColors.setValue((bool)true);
 
     mesh->_shapeNode = mfn.object();
     mfn.getPath(mesh->_shape_dag_path);
