@@ -5869,22 +5869,27 @@ def MakeInstallerOSX():
     oscmd("cp -R doc/ReleaseNotes         dstroot/base/Developer/Panda3D/ReleaseNotes")
     if os.path.isdir(GetOutputDir()+"/plugins"):
         oscmd("cp -R %s/plugins           dstroot/base/Developer/Panda3D/plugins" % GetOutputDir())
+
+    install_libs = []
     for base in os.listdir(GetOutputDir()+"/lib"):
         if (not base.endswith(".a")):
-            libname = "dstroot/base/Developer/Panda3D/lib/" + base
-            # We really need to specify -R in order not to follow symlinks
-            # On OSX, just specifying -P is not enough to do that.
-            oscmd("cp -R -P " + GetOutputDir() + "/lib/" + base + " " + libname)
+            install_libs.append(base)
 
-            # Execute install_name_tool to make them reference an absolute path
-            if (libname.endswith(".dylib") or libname.endswith(".so")) and not os.path.islink(libname):
-                oscmd("install_name_tool -id /Developer/Panda3D/lib/%s %s" % (base, libname), True)
-                oscmd("otool -L %s | grep .dylib > %s/tmp/otool-libs.txt" % (libname, GetOutputDir()), True)
-                for line in open(GetOutputDir()+"/tmp/otool-libs.txt", "r"):
-                    if len(line.strip()) > 0 and not line.strip().endswith(":"):
-                        libdep = line.strip().split(" ", 1)[0]
-                        if not libdep.startswith("/"):
-                            oscmd("install_name_tool -change %s /Developer/Panda3D/lib/%s %s" % (libdep, os.path.basename(libdep), libname), True)
+    for base in install_libs:
+        libname = "dstroot/base/Developer/Panda3D/lib/" + base
+        # We really need to specify -R in order not to follow symlinks
+        # On OSX, just specifying -P is not enough to do that.
+        oscmd("cp -R -P " + GetOutputDir() + "/lib/" + base + " " + libname)
+
+        # Execute install_name_tool to make them reference an absolute path
+        if (libname.endswith(".dylib") or libname.endswith(".so")) and not os.path.islink(libname):
+            oscmd("install_name_tool -id /Developer/Panda3D/lib/%s %s" % (base, libname), True)
+            oscmd("otool -L %s | grep .dylib > %s/tmp/otool-libs.txt" % (libname, GetOutputDir()), True)
+            for line in open(GetOutputDir()+"/tmp/otool-libs.txt", "r"):
+                if len(line.strip()) > 0 and not line.strip().endswith(":"):
+                    libdep = line.strip().split(" ", 1)[0]
+                    if os.path.basename(libdep) in install_libs:
+                        oscmd("install_name_tool -change %s /Developer/Panda3D/lib/%s %s" % (libdep, os.path.basename(libdep), libname), True)
 
     # Temporary script that should clean up the poison that the early 1.7.0 builds injected into environment.plist
     oscmd("mkdir -p dstroot/scripts/base/")
@@ -5943,7 +5948,7 @@ def MakeInstallerOSX():
             for line in open(GetOutputDir()+"/tmp/otool-libs.txt", "r"):
                 if len(line.strip()) > 0 and not line.strip().endswith(":"):
                     libdep = line.strip().split(" ", 1)[0]
-                    if not libdep.startswith("/"):
+                    if os.path.basename(libdep) in install_libs:
                         oscmd("install_name_tool -change %s /Developer/Panda3D/lib/%s %s" % (libdep, os.path.basename(libdep), binname), True)
 
     if PkgSkip("PYTHON")==0:
