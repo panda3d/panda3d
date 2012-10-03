@@ -51,6 +51,7 @@ PUBLISHED:
   bool has_system(const string &system) const;
   int get_num_systems() const;
   string get_system(int n) const;
+  MAKE_SEQ(get_systems, get_num_systems, get_system);
 
   string get_system_tag(const string &system, const string &tag) const;
 
