@@ -2606,7 +2606,7 @@ TargetAdd('libp3dtoolconfig.dll', input='p3dconfig_composite1.obj')
 TargetAdd('libp3dtoolconfig.dll', input='p3prc_composite1.obj')
 TargetAdd('libp3dtoolconfig.dll', input='p3prc_composite2.obj')
 TargetAdd('libp3dtoolconfig.dll', input='libp3dtool.dll')
-TargetAdd('libp3dtoolconfig.dll', opts=['ADVAPI',  'OPENSSL'])
+TargetAdd('libp3dtoolconfig.dll', opts=['ADVAPI',  'OPENSSL', 'WINGDI', 'WINUSER'])
 
 #
 # DIRECTORY: dtool/src/pystub/
@@ -2630,20 +2630,20 @@ if (not RUNTIME):
   TargetAdd('interrogate.exe', input='interrogate_composite2.obj')
   TargetAdd('interrogate.exe', input='libp3cppParser.ilb')
   TargetAdd('interrogate.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
-  TargetAdd('interrogate.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL'])
+  TargetAdd('interrogate.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL', 'WINGDI', 'WINUSER'])
 
   TargetAdd('interrogate_module_interrogate_module.obj', opts=OPTS, input='interrogate_module.cxx')
   TargetAdd('interrogate_module.exe', input='interrogate_module_interrogate_module.obj')
   TargetAdd('interrogate_module.exe', input='libp3cppParser.ilb')
   TargetAdd('interrogate_module.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
-  TargetAdd('interrogate_module.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL'])
+  TargetAdd('interrogate_module.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL', 'WINGDI', 'WINUSER'])
 
   if (not RTDIST):
     TargetAdd('parse_file_parse_file.obj', opts=OPTS, input='parse_file.cxx')
     TargetAdd('parse_file.exe', input='parse_file_parse_file.obj')
     TargetAdd('parse_file.exe', input='libp3cppParser.ilb')
     TargetAdd('parse_file.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
-    TargetAdd('parse_file.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL'])
+    TargetAdd('parse_file.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL', 'WINGDI', 'WINUSER'])
 
 #
 # DIRECTORY: dtool/src/prckeys/
@@ -2654,7 +2654,7 @@ if (PkgSkip("OPENSSL")==0 and not RUNTIME and not RTDIST):
   TargetAdd('make-prc-key_makePrcKey.obj', opts=OPTS, input='makePrcKey.cxx')
   TargetAdd('make-prc-key.exe', input='make-prc-key_makePrcKey.obj')
   TargetAdd('make-prc-key.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
-  TargetAdd('make-prc-key.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL'])
+  TargetAdd('make-prc-key.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL', 'WINGDI', 'WINUSER'])
 
 #
 # DIRECTORY: dtool/src/test_interrogate/
@@ -2665,7 +2665,7 @@ if (not RTDIST and not RUNTIME):
   TargetAdd('test_interrogate_test_interrogate.obj', opts=OPTS, input='test_interrogate.cxx')
   TargetAdd('test_interrogate.exe', input='test_interrogate_test_interrogate.obj')
   TargetAdd('test_interrogate.exe', input=COMMON_DTOOL_LIBS_PYSTUB)
-  TargetAdd('test_interrogate.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL'])
+  TargetAdd('test_interrogate.exe', opts=['ADVAPI',  'OPENSSL', 'WINSHELL', 'WINGDI', 'WINUSER'])
 
 #
 # DIRECTORY: panda/src/pandabase/
@@ -2719,7 +2719,7 @@ TargetAdd('libpandaexpress.dll', input='p3express_composite2.obj')
 TargetAdd('libpandaexpress.dll', input='libp3express_igate.obj')
 TargetAdd('libpandaexpress.dll', input='p3pandabase_pandabase.obj')
 TargetAdd('libpandaexpress.dll', input=COMMON_DTOOL_LIBS)
-TargetAdd('libpandaexpress.dll', opts=['ADVAPI', 'WINSOCK2',  'OPENSSL', 'ZLIB'])
+TargetAdd('libpandaexpress.dll', opts=['ADVAPI', 'WINSOCK2',  'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER'])
 
 #
 # DIRECTORY: panda/src/pipeline/
@@ -3161,7 +3161,7 @@ if (not RUNTIME):
 if (not RUNTIME):
   OPTS=['DIR:panda/metalibs/panda', 'BUILDING:PANDA', 'VRPN', 'JPEG', 'PNG',
       'TIFF', 'ZLIB', 'OPENSSL', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2','SQUISH',
-      'NVIDIACG', 'WINUSER', 'WINMM', 'FFMPEG', 'SWSCALE']
+      'NVIDIACG', 'WINUSER', 'WINMM', 'FFMPEG', 'SWSCALE', 'WINGDI']
 
   TargetAdd('panda_panda.obj', opts=OPTS, input='panda.cxx')
 
@@ -3458,7 +3458,7 @@ if PkgSkip("OPENAL") == 0 and not RUNTIME:
 #
 
 if (PkgSkip("OPENSSL")==0 and not RTDIST and not RUNTIME and PkgSkip("DEPLOYTOOLS")==0):
-  OPTS=['DIR:panda/src/downloadertools', 'OPENSSL', 'ZLIB', 'ADVAPI', 'WINSOCK2', 'WINSHELL']
+  OPTS=['DIR:panda/src/downloadertools', 'OPENSSL', 'ZLIB', 'ADVAPI', 'WINSOCK2', 'WINSHELL', 'WINGDI', 'WINUSER']
 
   TargetAdd('apply_patch_apply_patch.obj', opts=OPTS, input='apply_patch.cxx')
   TargetAdd('apply_patch.exe', input=['apply_patch_apply_patch.obj'])
@@ -3505,7 +3505,7 @@ if (PkgSkip("OPENSSL")==0 and not RTDIST and not RUNTIME and PkgSkip("DEPLOYTOOL
 #
 
 if (PkgSkip("ZLIB")==0 and not RTDIST and not RUNTIME and PkgSkip("DEPLOYTOOLS")==0):
-  OPTS=['DIR:panda/src/downloadertools', 'ZLIB', 'OPENSSL', 'ADVAPI', 'WINSOCK2', 'WINSHELL']
+  OPTS=['DIR:panda/src/downloadertools', 'ZLIB', 'OPENSSL', 'ADVAPI', 'WINSOCK2', 'WINSHELL', 'WINGDI', 'WINUSER']
 
   TargetAdd('multify_multify.obj', opts=OPTS, input='multify.cxx')
   TargetAdd('multify.exe', input=['multify_multify.obj'])
@@ -4165,7 +4165,7 @@ if (PkgSkip("DIRECT")==0):
   TargetAdd('libp3direct.dll', input='p3distributed_cDistributedSmoothNodeBase.obj')
   TargetAdd('libp3direct.dll', input='libp3distributed_igate.obj')
   TargetAdd('libp3direct.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libp3direct.dll', opts=['ADVAPI',  'OPENSSL', 'WINUSER'])
+  TargetAdd('libp3direct.dll', opts=['ADVAPI',  'OPENSSL', 'WINUSER', 'WINGDI'])
 
 #
 # DIRECTORY: direct/src/dcparse/
@@ -4257,7 +4257,7 @@ if (RTDIST or RUNTIME):
       TargetAdd('p3dcert.exe', input='plugin_mkdir_complete.obj')
       TargetAdd('p3dcert.exe', input='plugin_wstring_encode.obj')
       TargetAdd('p3dcert.exe', input='plugin_p3dCert.obj')
-      OPTS=['OPENSSL', 'FLTK', 'WINCOMCTL', 'WINSOCK']
+      OPTS=['OPENSSL', 'FLTK', 'WINCOMCTL', 'WINSOCK', 'WINGDI', 'WINUSER']
       if (sys.platform=="darwin"): OPTS += ['OPT:2']
       TargetAdd('p3dcert.exe', opts=OPTS)
     elif (PkgSkip("WX")==0):
@@ -4305,7 +4305,7 @@ if (RUNTIME and PkgSkip("NPAPI")==0):
     TargetAdd('nppanda3d.plugin', input='nppanda3d.plist', ipath=OPTS)
     TargetAdd('nppanda3d.plugin', input='plugin_find_root_dir_assist.obj')
   TargetAdd('nppanda3d.plugin', input='libp3tinyxml.ilb')
-  TargetAdd('nppanda3d.plugin', opts=['NPAPI', 'OPENSSL', 'WINUSER', 'WINSHELL', 'WINOLE', 'CARBON'])
+  TargetAdd('nppanda3d.plugin', opts=['NPAPI', 'OPENSSL', 'WINGDI', 'WINUSER', 'WINSHELL', 'WINOLE', 'CARBON'])
 
 #
 # DIRECTORY: direct/src/plugin_activex/
@@ -4330,7 +4330,7 @@ if (RUNTIME and sys.platform.startswith("win")):
   TargetAdd('p3dactivex.ocx', input='P3DActiveX.res')
   TargetAdd('p3dactivex.ocx', input='P3DActiveX.def', ipath=OPTS)
   TargetAdd('p3dactivex.ocx', input='libp3tinyxml.ilb')
-  TargetAdd('p3dactivex.ocx', opts=['MFC', 'WINSOCK2', 'OPENSSL'])
+  TargetAdd('p3dactivex.ocx', opts=['MFC', 'WINSOCK2', 'OPENSSL', 'WINGDI', 'WINUSER'])
 
 #
 # DIRECTORY: direct/src/plugin_standalone/
