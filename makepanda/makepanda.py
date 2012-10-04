@@ -992,10 +992,6 @@ def CompileCxx(obj,src,opts):
                 cmd += " -mmacosx-version-min=" + OSXTARGET
             if (UNIVERSAL):
                 cmd += " -arch i386"
-                if int(platform.mac_ver()[0][3]) >= 5 and not RTDIST and not RUNTIME:
-                    #XXX we don't support 64-bits rtdist or plugin at the moment.
-                    # 10.5 supports building 64-bits Cocoa apps.
-                    cmd += " -arch x86_64"
                 if ("NOPPC" not in opts):
                     cmd += " -arch ppc"
 
@@ -1309,10 +1305,6 @@ def CompileLink(dll, obj, opts):
                 cmd += " -mmacosx-version-min=" + OSXTARGET
             if (UNIVERSAL):
                 cmd += " -arch i386"
-                if int(platform.mac_ver()[0][3]) >= 5 and not RTDIST and not RUNTIME:
-                    #XXX we don't support 64-bits rtdist or plugin at the moment.
-                    # 10.5 supports building 64-bits Cocoa apps.
-                    cmd += " -arch x86_64"
                 if ("NOPPC" not in opts):
                     cmd += " -arch ppc"
         if (LDFLAGS !=""): cmd += " " + LDFLAGS
