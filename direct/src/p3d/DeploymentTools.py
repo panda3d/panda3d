@@ -590,6 +590,7 @@ class Installer:
             if package.platform:
                 xpackage.SetAttribute('platform', package.platform)
                 assert package.platform == platform
+            xpackage.SetAttribute('per_platform', '1')
             if package.packageVersion:
                 xpackage.SetAttribute('version', version)
                 xpackage.SetAttribute('filename', package.packageName + "/" + package.packageVersion + "/" + package.descFileBasename)
@@ -1161,6 +1162,7 @@ class Installer:
                     print >>nsi, '  SetOutPath "$INSTDIR\\%s"' % outdir
                     curdir = outdir
                 print >>nsi, '  File "%s"' % (basefile.toOsSpecific())
+        print >>nsi, '  SetOutPath "$INSTDIR"'
         print >>nsi, '  WriteUninstaller "$INSTDIR\\Uninstall.exe"'
         print >>nsi, '  ; Start menu items'
         print >>nsi, '  !insertmacro MUI_STARTMENU_WRITE_BEGIN Application'
