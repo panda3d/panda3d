@@ -1084,7 +1084,7 @@ class Installer:
         # Some global info
         print >>nsi, 'Name "%s"' % self.fullname
         print >>nsi, 'OutFile "%s"' % output.toOsSpecific()
-        if platform == 'win64':
+        if platform == 'win_amd64':
             print >>nsi, 'InstallDir "$PROGRAMFILES64\\%s"' % self.fullname
         else:
             print >>nsi, 'InstallDir "$PROGRAMFILES\\%s"' % self.fullname
