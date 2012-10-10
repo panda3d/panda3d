@@ -954,10 +954,10 @@ calculate_metrics(bool fullscreen, DWORD window_style, WINDOW_METRICS &metrics,
     
     // A coordinate of -2 means to center the window in its client area.
     if (metrics.x == -2) {
-      metrics.x = 0.5 * (_pipe->get_display_width() - _properties.get_x_origin());
+      metrics.x = 0.5 * (_pipe->get_display_width() - _properties.get_x_size());
     }
     if (metrics.y == -2) {
-      metrics.y = 0.5 * (_pipe->get_display_height() - _properties.get_y_origin());
+      metrics.y = 0.5 * (_pipe->get_display_height() - _properties.get_y_size());
     }
     _properties.set_origin(metrics.x, metrics.y);
 
