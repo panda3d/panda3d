@@ -153,18 +153,12 @@ typedef void (APIENTRYP PFNGLLINKPROGRAMPROC) (GLuint program);
 typedef void (APIENTRYP PFNGLSHADERSOURCEPROC) (GLuint shader, GLsizei count, const GLchar **string, const GLint *length);
 typedef void (APIENTRYP PFNGLUSEPROGRAMPROC) (GLuint program);
 typedef void (APIENTRYP PFNGLUNIFORM4FPROC) (GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
-typedef void (APIENTRYP PFNGLUNIFORM4DPROC) (GLint location, GLdouble v0, GLdouble v1, GLdouble v2, GLdouble v3);
 typedef void (APIENTRYP PFNGLUNIFORM1IPROC) (GLint location, GLint v0);
 typedef void (APIENTRYP PFNGLUNIFORM1FVPROC) (GLint location, GLsizei count, const GLfloat *value);
 typedef void (APIENTRYP PFNGLUNIFORM2FVPROC) (GLint location, GLsizei count, const GLfloat *value);
 typedef void (APIENTRYP PFNGLUNIFORM3FVPROC) (GLint location, GLsizei count, const GLfloat *value);
 typedef void (APIENTRYP PFNGLUNIFORM4FVPROC) (GLint location, GLsizei count, const GLfloat *value);
-typedef void (APIENTRYP PFNGLUNIFORM1DVPROC) (GLint location, GLsizei count, const GLdouble *value);
-typedef void (APIENTRYP PFNGLUNIFORM2DVPROC) (GLint location, GLsizei count, const GLdouble *value);
-typedef void (APIENTRYP PFNGLUNIFORM3DVPROC) (GLint location, GLsizei count, const GLdouble *value);
-typedef void (APIENTRYP PFNGLUNIFORM4DVPROC) (GLint location, GLsizei count, const GLdouble *value);
 typedef void (APIENTRYP PFNGLUNIFORMMATRIX4FVPROC) (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
-typedef void (APIENTRYP PFNGLUNIFORMMATRIX4DVPROC) (GLint location, GLsizei count, GLboolean transpose, const GLdouble *value);
 typedef void (APIENTRYP PFNGLVALIDATEPROGRAMPROC) (GLuint program);
 typedef void (APIENTRYP PFNGLVERTEXATTRIBPOINTERPROC) (GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid *pointer);
 #endif  // OPENGLES_1
@@ -667,18 +661,12 @@ public:
   PFNGLSHADERSOURCEPROC _glShaderSource;
   PFNGLUSEPROGRAMPROC  _glUseProgram;
   PFNGLUNIFORM4FPROC _glUniform4f;
-  PFNGLUNIFORM4DPROC _glUniform4d;
   PFNGLUNIFORM1IPROC _glUniform1i;
   PFNGLUNIFORM1FVPROC _glUniform1fv;
   PFNGLUNIFORM2FVPROC _glUniform2fv;
   PFNGLUNIFORM3FVPROC _glUniform3fv;
   PFNGLUNIFORM4FVPROC _glUniform4fv;
-  PFNGLUNIFORM1DVPROC _glUniform1dv;
-  PFNGLUNIFORM2DVPROC _glUniform2dv;
-  PFNGLUNIFORM3DVPROC _glUniform3dv;
-  PFNGLUNIFORM4DVPROC _glUniform4dv;
   PFNGLUNIFORMMATRIX4FVPROC _glUniformMatrix4fv;
-  PFNGLUNIFORMMATRIX4DVPROC _glUniformMatrix4dv;
   PFNGLVALIDATEPROGRAMPROC _glValidateProgram;
   PFNGLVERTEXATTRIBPOINTERPROC _glVertexAttribPointer;
 #endif  // OPENGLES_1

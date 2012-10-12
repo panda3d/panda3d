@@ -1010,8 +1010,6 @@ reset() {
        get_extension_func(GLPREFIX_QUOTED, "UseProgram");
     _glUniform4f = (PFNGLUNIFORM4FPROC)
        get_extension_func(GLPREFIX_QUOTED, "Uniform4f");
-    _glUniform4d = (PFNGLUNIFORM4DPROC)
-       get_extension_func(GLPREFIX_QUOTED, "Uniform4d");
     _glUniform1i = (PFNGLUNIFORM1IPROC)
        get_extension_func(GLPREFIX_QUOTED, "Uniform1i");
     _glUniform1fv = (PFNGLUNIFORM1FVPROC)
@@ -1022,26 +1020,21 @@ reset() {
        get_extension_func(GLPREFIX_QUOTED, "Uniform3fv");
     _glUniform4fv = (PFNGLUNIFORM4FVPROC)
        get_extension_func(GLPREFIX_QUOTED, "Uniform4fv");
-    _glUniform1dv = (PFNGLUNIFORM1DVPROC)
-       get_extension_func(GLPREFIX_QUOTED, "Uniform1dv");
-    _glUniform2dv = (PFNGLUNIFORM2DVPROC)
-       get_extension_func(GLPREFIX_QUOTED, "Uniform2dv");
-    _glUniform3dv = (PFNGLUNIFORM3DVPROC)
-       get_extension_func(GLPREFIX_QUOTED, "Uniform3dv");
-    _glUniform4dv = (PFNGLUNIFORM4DVPROC)
-       get_extension_func(GLPREFIX_QUOTED, "Uniform4dv");
     _glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC)
        get_extension_func(GLPREFIX_QUOTED, "UniformMatrix4fv");
-    _glUniformMatrix4dv = (PFNGLUNIFORMMATRIX4DVPROC)
-       get_extension_func(GLPREFIX_QUOTED, "UniformMatrix4dv");
     _glValidateProgram = (PFNGLVALIDATEPROGRAMPROC)
        get_extension_func(GLPREFIX_QUOTED, "ValidateProgram");
     _glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)
        get_extension_func(GLPREFIX_QUOTED, "VertexAttribPointer");
-    _glProgramParameteri = (PFNGLPROGRAMPARAMETERIPROC)
-      get_extension_func(GLPREFIX_QUOTED, "ProgramParameteri");
-    _glPatchParameteri = (PFNGLPATCHPARAMETERIPROC)
-       get_extension_func(GLPREFIX_QUOTED, "PatchParameteri");
+
+    if (_supports_geometry_shaders) {
+      _glProgramParameteri = (PFNGLPROGRAMPARAMETERIPROC)
+        get_extension_func(GLPREFIX_QUOTED, "ProgramParameteri");
+    }
+    if (_supports_tessellation_shaders) {
+      _glPatchParameteri = (PFNGLPATCHPARAMETERIPROC)
+         get_extension_func(GLPREFIX_QUOTED, "PatchParameteri");
+    }
   }
 #endif
 
@@ -1068,18 +1061,12 @@ reset() {
   _glShaderSource = glShaderSource;
   _glUseProgram = glUseProgram;
   _glUniform4f = glUniform4f;
-  _glUniform4d = NULL;
   _glUniform1i = glUniform1i;
   _glUniform1fv = glUniform1fv;
   _glUniform2fv = glUniform2fv;
   _glUniform3fv = glUniform3fv;
   _glUniform4fv = glUniform4fv;
-  _glUniform1dv = NULL;
-  _glUniform2dv = NULL;
-  _glUniform3dv = NULL;
-  _glUniform4dv = NULL;
   _glUniformMatrix4fv = glUniformMatrix4fv;
-  _glUniformMatrix4dv = NULL;
   _glValidateProgram = glValidateProgram;
   _glVertexAttribPointer = glVertexAttribPointer;
 
