@@ -17,10 +17,6 @@
 
 #include "pandabase.h"
 
-#ifdef STDFLOAT_DOUBLE
-#define BT_USE_DOUBLE_PRECISION 1
-#endif
-
 #include "btBulletDynamicsCommon.h"
 
 #ifndef CPPPARSER
