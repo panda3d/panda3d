@@ -177,7 +177,8 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     if (cdata->_got_force_switch) {
       in_range = (cdata->_force_switch == index);
     } else {
-      in_range = sw.in_range_2(dist2*cdata->_lod_scale);
+      in_range = sw.in_range_2(dist2 * cdata->_lod_scale
+                   * trav->get_scene()->get_camera_node()->get_lod_scale());
     }
     
     if (in_range) {
@@ -376,7 +377,8 @@ compute_child(CullTraverser *trav, CullTraverserData &data) {
   PN_stdfloat dist2 = center.dot(center);
 
   for (int index = 0; index < (int)cdata->_switch_vector.size(); ++index) {
-    if (cdata->_switch_vector[index].in_range_2(dist2*cdata->_lod_scale)) { 
+    if (cdata->_switch_vector[index].in_range_2(dist2 * cdata->_lod_scale
+         * trav->get_scene()->get_camera_node()->get_lod_scale())) { 
       if (pgraph_cat.is_debug()) {
         pgraph_cat.debug()
           << data._node_path << " at distance " << sqrt(dist2)

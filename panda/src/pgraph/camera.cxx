@@ -31,6 +31,7 @@ Camera(const string &name, Lens *lens) :
   _camera_mask(~PandaNode::get_overall_bit()),
   _initial_state(RenderState::make_empty())
 {
+  set_lod_scale(1.0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -45,6 +46,7 @@ Camera(const Camera &copy) :
   _scene(copy._scene),
   _camera_mask(copy._camera_mask),
   _initial_state(copy._initial_state),
+  _lod_scale(copy._lod_scale),
   _tag_state_key(copy._tag_state_key),
   _tag_states(copy._tag_states)
 {

@@ -75,6 +75,9 @@ PUBLISHED:
   INLINE void set_tag_state_key(const string &tag_state_key);
   INLINE const string &get_tag_state_key() const;
 
+  INLINE void set_lod_scale(PN_stdfloat value);
+  INLINE PN_stdfloat get_lod_scale() const;
+
   void set_tag_state(const string &tag_state, const RenderState *state);
   void clear_tag_state(const string &tag_state);
   bool has_tag_state(const string &tag_state) const;
@@ -97,6 +100,7 @@ private:
   NodePath _lod_center;
 
   DrawMask _camera_mask;
+  PN_stdfloat _lod_scale;
 
   typedef pvector<DisplayRegionBase *> DisplayRegions;
   DisplayRegions _display_regions;

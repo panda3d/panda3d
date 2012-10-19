@@ -250,3 +250,24 @@ INLINE const string &Camera::
 get_tag_state_key() const {
   return _tag_state_key;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: Camera::get_lod_scale
+//       Access: Published
+//  Description: Returns the multiplier for LOD distances.
+////////////////////////////////////////////////////////////////////
+INLINE PN_stdfloat Camera::
+get_lod_scale() const {
+  return _lod_scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Camera::set_lod_scale
+//       Access: Published
+//  Description: Sets the multiplier for LOD distances. This value
+//               is multiplied with the LOD scale set on LodNodes.
+////////////////////////////////////////////////////////////////////
+INLINE void Camera::
+set_lod_scale(PN_stdfloat value) {
+  _lod_scale = value;
+}
