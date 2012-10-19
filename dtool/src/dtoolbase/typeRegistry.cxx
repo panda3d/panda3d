@@ -92,7 +92,7 @@ register_type(TypeHandle &type_handle, const string &name) {
     // reference passed in this time, but now it's different!  Bad
     // juju.
     cerr << "Reregistering " << name << "\n";
-    type_handle == rnode->_handle;
+    type_handle = rnode->_handle;
     _lock->release();
     return false;
   }
