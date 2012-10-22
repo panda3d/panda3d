@@ -16,6 +16,7 @@
 #define __AUDIO_H__
 
 #include "filterProperties.h"
+#include "audioLoadRequest.h"
 #include "audioSound.h"
 #include "audioManager.h"
 
