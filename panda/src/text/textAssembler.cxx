@@ -1378,7 +1378,7 @@ assemble_row(TextAssembler::TextRow &row,
 
     if (character == ' ') {
       // A space is a special case.
-      xpos += font->get_space_advance();
+      xpos += properties->get_glyph_scale() * properties->get_text_scale() * font->get_space_advance();
 
     } else if (character == '\t') {
       // So is a tab character.
