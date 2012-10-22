@@ -18,6 +18,7 @@
 ;   UBITMAP       - name of uninstaller bitmap                  (ie, "C:\Airblade\Airblade.bmp")
 ;
 ;   PANDA         - location of panda install tree.
+;   PYVER         - version of Python that Panda was built with (ie, "2.7")
 ;   PANDACONF     - name of panda config directory - usually $PANDA\etc 
 ;   PSOURCE       - location of the panda source-tree if available, OR location of panda install tree.
 ;   PYEXTRAS      - directory containing python extras, if any.
@@ -251,7 +252,7 @@ Section -post
         Push "$INSTDIR\bin"
         Call AddToPath
 
-        ReadRegStr $0 HKLM "Software\Python\PythonCore\2.6\InstallPath" ""
+        ReadRegStr $0 HKLM "Software\Python\PythonCore\$PYVER\InstallPath" ""
         StrCmp $0 "$INSTDIR\python" RegPath 0
         StrCmp $0 "" RegPath 0
 
@@ -261,9 +262,7 @@ Section -post
 
         RegPath:
         DetailPrint "Adding registry keys for python..."
-        WriteRegStr HKLM "Software\Python\PythonCore\2.6\InstallPath" "" "$INSTDIR\python"
-        WriteRegStr HKLM "Software\Python\PythonCore\2.6\Help" "" ""
-        WriteRegStr HKLM "Software\Python\PythonCore\2.6\Help\Main Python Documentation" "" "$INSTDIR\python\Doc\Python25.chm"
+        WriteRegStr HKLM "Software\Python\PythonCore\$PYVER\InstallPath" "" "$INSTDIR\python"
         SkipRegPath:
         !endif
 
@@ -289,9 +288,9 @@ Section Uninstall
         Push "$INSTDIR\bin"
         Call un.RemoveFromPath
 
-        ReadRegStr $0 HKLM "Software\Python\PythonCore\2.6\InstallPath" ""
+        ReadRegStr $0 HKLM "Software\Python\PythonCore\$PYVER\InstallPath" ""
         StrCmp $0 "$INSTDIR\python" 0 SkipUnReg
-        DeleteRegKey HKLM "Software\Python\PythonCore\2.6"
+        DeleteRegKey HKLM "Software\Python\PythonCore\$PYVER"
         SkipUnReg:
         !endif
 

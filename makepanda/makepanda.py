@@ -5613,6 +5613,7 @@ def MakeInstallerNSIS(file, fullname, smdirectory, installdir):
     cmd=cmd+'/DIBITMAP="panda-install.bmp" '
     cmd=cmd+'/DUBITMAP="panda-install.bmp" '
     cmd=cmd+'/DPANDA="'+panda+'" '
+    cmd=cmd+'/DPYVER="'+SDK["PYTHONVERSION"][6:9]+'" '
     cmd=cmd+'/DPANDACONF="'+panda+'\\etc" '
     cmd=cmd+'/DPSOURCE="'+psource+'" '
     cmd=cmd+'/DPYEXTRAS="'+os.path.abspath(GetThirdpartyBase())+'\\win-extras" '
