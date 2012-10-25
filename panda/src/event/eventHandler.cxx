@@ -18,7 +18,7 @@
 
 TypeHandle EventHandler::_type_handle;
 
-EventHandler *EventHandler::_global_event_handler = 0;
+EventHandler *EventHandler::_global_event_handler = NULL;
 
 
 ////////////////////////////////////////////////////////////////////
