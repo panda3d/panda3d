@@ -43,8 +43,8 @@ public:
   virtual bool safe_to_combine_children() const;
   virtual bool safe_to_flatten_below() const;
 
-  INLINE virtual btPairCachingGhostObject *get_ghost() const = 0;
-  INLINE virtual btCharacterControllerInterface *get_character() const = 0;
+  virtual btPairCachingGhostObject *get_ghost() const = 0;
+  virtual btCharacterControllerInterface *get_character() const = 0;
 
   virtual void sync_p2b(PN_stdfloat dt, int num_substeps) = 0;
   virtual void sync_b2p() = 0;

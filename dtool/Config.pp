@@ -1127,7 +1127,7 @@
 #defer HAVE_ROCKET_PYTHON $[and $[HAVE_ROCKET],$[HAVE_PYTHON]]
 
 // Bullet is a physics engine
-#define BULLET_IPATH /usr/local/include
+#define BULLET_IPATH /usr/local/include/bullet
 #define BULLET_LPATH /usr/local/lib
 #if $[WINDOWS_PLATFORM]
 #define BULLET_LIBS BulletSoftBody.lib BulletDynamics.lib BulletCollision.lib LinearMath.lib

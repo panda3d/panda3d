@@ -10,90 +10,54 @@
   #define COMBINED_SOURCES $[TARGET]_composite.cxx
 
   #define SOURCES \
-    bulletAllHitsRayResult.I \
-    bulletAllHitsRayResult.h \
-    bulletBodyNode.I \
-    bulletBodyNode.h \
-    bulletBoxShape.I \
-    bulletBoxShape.h \
-    bulletCapsuleShape.I \
-    bulletCapsuleShape.h \
-    bulletCharacterControllerNode.I \
-    bulletCharacterControllerNode.h \
-    bulletClosestHitRayResult.I \
-    bulletClosestHitRayResult.h \
-    bulletClosestHitSweepResult.I \
-    bulletClosestHitSweepResult.h \
-    bulletConeShape.I \
-    bulletConeShape.h \
-    bulletConeTwistConstraint.I \
-    bulletConeTwistConstraint.h \
-    bulletConstraint.I \
-    bulletConstraint.h \
+    bulletAllHitsRayResult.h bulletAllHitsRayResult.I \
+    bulletBaseCharacterControllerNode.h bulletBaseCharacterControllerNode.I \
+    bulletBodyNode.h bulletBodyNode.I \
+    bulletBoxShape.h bulletBoxShape.I \
+    bulletCapsuleShape.h bulletCapsuleShape.I \
+    bulletCharacterControllerNode.h bulletCharacterControllerNode.I \
+    bulletClosestHitRayResult.h bulletClosestHitRayResult.I \
+    bulletClosestHitSweepResult.h bulletClosestHitSweepResult.I \
+    bulletConeShape.h bulletConeShape.I \
+    bulletConeTwistConstraint.h bulletConeTwistConstraint.I \
+    bulletConstraint.h bulletConstraint.I \
     bulletContactCallbacks.h \
-    bulletContactResult.I \
-    bulletContactResult.h \
-    bulletConvexHullShape.I \
-    bulletConvexHullShape.h \
-    bulletConvexPointCloudShape.I \
-    bulletConvexPointCloudShape.h \
-    bulletCylinderShape.I \
-    bulletCylinderShape.h \
-    bulletDebugNode.I \
-    bulletDebugNode.h \
-    bulletGenericConstraint.I \
-    bulletGenericConstraint.h \
-    bulletGhostNode.I \
-    bulletGhostNode.h \
-    bulletHeightfieldShape.I \
-    bulletHeightfieldShape.h \
-    bulletHelper.I \
-    bulletHelper.h \
-    bulletHingeConstraint.I \
-    bulletHingeConstraint.h \
-    bulletManifoldPoint.I \
-    bulletManifoldPoint.h \
-    bulletPersistentManifold.I \
-    bulletPersistentManifold.h \
-    bulletPlaneShape.I \
-    bulletPlaneShape.h \
-    bulletRigidBodyNode.I \
-    bulletRigidBodyNode.h \
-    bulletShape.I \
-    bulletShape.h \
-    bulletSliderConstraint.I \
-    bulletSliderConstraint.h \
-    bulletSoftBodyConfig.I \
-    bulletSoftBodyConfig.h \
-    bulletSoftBodyMaterial.I \
-    bulletSoftBodyMaterial.h \
-    bulletSoftBodyNode.I \
-    bulletSoftBodyNode.h \
-    bulletSoftBodyShape.I \
-    bulletSoftBodyShape.h \
-    bulletSoftBodyWorldInfo.I \
-    bulletSoftBodyWorldInfo.h \
-    bulletSphereShape.I \
-    bulletSphereShape.h \
-    bulletSphericalConstraint.I \
-    bulletSphericalConstraint.h \
-    bulletTriangleMesh.I \
-    bulletTriangleMesh.h \
-    bulletTriangleMeshShape.I \
-    bulletTriangleMeshShape.h \
-    bulletVehicle.I \
-    bulletVehicle.h \
-    bulletWheel.I \
-    bulletWheel.h \
-    bulletWorld.I \
-    bulletWorld.h \
+    bulletContactResult.h bulletContactResult.I \
+    bulletConvexHullShape.h bulletConvexHullShape.I \
+    bulletConvexPointCloudShape.h bulletConvexPointCloudShape.I \
+    bulletCylinderShape.h bulletCylinderShape.I \
+    bulletDebugNode.h bulletDebugNode.I \
+    bulletGenericConstraint.h bulletGenericConstraint.I \
+    bulletGhostNode.h bulletGhostNode.I \
+    bulletHeightfieldShape.h bulletHeightfieldShape.I \
+    bulletHelper.h bulletHelper.I \
+    bulletHingeConstraint.h bulletHingeConstraint.I \
+    bulletManifoldPoint.h bulletManifoldPoint.I \
+    bulletMultiSphereShape.h bulletMultiSphereShape.I \
+    bulletPersistentManifold.h bulletPersistentManifold.I \
+    bulletPlaneShape.h bulletPlaneShape.I \
+    bulletRigidBodyNode.h bulletRigidBodyNode.I \
+    bulletShape.h bulletShape.I \
+    bulletSliderConstraint.h bulletSliderConstraint.I \
+    bulletSoftBodyConfig.h bulletSoftBodyConfig.I \
+    bulletSoftBodyMaterial.h bulletSoftBodyMaterial.I \
+    bulletSoftBodyNode.h bulletSoftBodyNode.I \
+    bulletSoftBodyShape.h bulletSoftBodyShape.I \
+    bulletSoftBodyWorldInfo.h bulletSoftBodyWorldInfo.I \
+    bulletSphereShape.h bulletSphereShape.I \
+    bulletSphericalConstraint.h bulletSphericalConstraint.I \
+    bulletTriangleMesh.h bulletTriangleMesh.I \
+    bulletTriangleMeshShape.h bulletTriangleMeshShape.I \
+    bulletVehicle.h bulletVehicle.I \
+    bulletWheel.h bulletWheel.I \
+    bulletWorld.h bulletWorld.I \
     bullet_includes.h \
-    bullet_utils.I \
-    bullet_utils.h \
-    config_bullet.h \
+    bullet_utils.h bullet_utils.I \
+    config_bullet.h
 
   #define INCLUDED_SOURCES \
     bulletAllHitsRayResult.cxx \
+    bulletBaseCharacterControllerNode.cxx \
     bulletBodyNode.cxx \
     bulletBoxShape.cxx \
     bulletCapsuleShape.cxx \
@@ -114,6 +78,7 @@
     bulletHelper.cxx \
     bulletHingeConstraint.cxx \
     bulletManifoldPoint.cxx \
+    bulletMultiSphereShape.cxx \
     bulletPersistentManifold.cxx \
     bulletPlaneShape.cxx \
     bulletRigidBodyNode.cxx \
@@ -131,91 +96,54 @@
     bulletVehicle.cxx \
     bulletWheel.cxx \
     bulletWorld.cxx \
-    p3bullet_composite.cxx \
     bullet_utils.cxx \
-    config_bullet.cxx \
+    config_bullet.cxx
 
   #define INSTALL_HEADERS \
-    bulletAllHitsRayResult.I \
-    bulletAllHitsRayResult.h \
-    bulletBodyNode.I \
-    bulletBodyNode.h \
-    bulletBoxShape.I \
-    bulletBoxShape.h \
-    bulletCapsuleShape.I \
-    bulletCapsuleShape.h \
-    bulletCharacterControllerNode.I \
-    bulletCharacterControllerNode.h \
-    bulletClosestHitRayResult.I \
-    bulletClosestHitRayResult.h \
-    bulletClosestHitSweepResult.I \
-    bulletClosestHitSweepResult.h \
-    bulletConeShape.I \
-    bulletConeShape.h \
-    bulletConeTwistConstraint.I \
-    bulletConeTwistConstraint.h \
-    bulletConstraint.I \
-    bulletConstraint.h \
+    bulletAllHitsRayResult.h bulletAllHitsRayResult.I \
+    bulletBaseCharacterControllerNode.h bulletBaseCharacterControllerNode.I \
+    bulletBodyNode.h bulletBodyNode.I \
+    bulletBoxShape.h bulletBoxShape.I \
+    bulletCapsuleShape.h bulletCapsuleShape.I \
+    bulletCharacterControllerNode.h bulletCharacterControllerNode.I \
+    bulletClosestHitRayResult.h bulletClosestHitRayResult.I \
+    bulletClosestHitSweepResult.h bulletClosestHitSweepResult.I \
+    bulletConeShape.h bulletConeShape.I \
+    bulletConeTwistConstraint.h bulletConeTwistConstraint.I \
+    bulletConstraint.h bulletConstraint.I \
     bulletContactCallbacks.h \
-    bulletContactResult.I \
-    bulletContactResult.h \
-    bulletConvexHullShape.I \
-    bulletConvexHullShape.h \
-    bulletConvexPointCloudShape.I \
-    bulletConvexPointCloudShape.h \
-    bulletCylinderShape.I \
-    bulletCylinderShape.h \
-    bulletDebugNode.I \
-    bulletDebugNode.h \
-    bulletGenericConstraint.I \
-    bulletGenericConstraint.h \
-    bulletGhostNode.I \
-    bulletGhostNode.h \
-    bulletHeightfieldShape.I \
-    bulletHeightfieldShape.h \
-    bulletHelper.I \
-    bulletHelper.h \
-    bulletHingeConstraint.I \
-    bulletHingeConstraint.h \
-    bulletManifoldPoint.I \
-    bulletManifoldPoint.h \
-    bulletPersistentManifold.I \
-    bulletPersistentManifold.h \
-    bulletPlaneShape.I \
-    bulletPlaneShape.h \
-    bulletRigidBodyNode.I \
-    bulletRigidBodyNode.h \
-    bulletShape.I \
-    bulletShape.h \
-    bulletSliderConstraint.I \
-    bulletSliderConstraint.h \
-    bulletSoftBodyConfig.I \
-    bulletSoftBodyConfig.h \
-    bulletSoftBodyMaterial.I \
-    bulletSoftBodyMaterial.h \
-    bulletSoftBodyNode.I \
-    bulletSoftBodyNode.h \
-    bulletSoftBodyShape.I \
-    bulletSoftBodyShape.h \
-    bulletSoftBodyWorldInfo.I \
-    bulletSoftBodyWorldInfo.h \
-    bulletSphereShape.I \
-    bulletSphereShape.h \
-    bulletSphericalConstraint.I \
-    bulletSphericalConstraint.h \
-    bulletTriangleMesh.I \
-    bulletTriangleMesh.h \
-    bulletTriangleMeshShape.I \
-    bulletTriangleMeshShape.h \
-    bulletVehicle.I \
-    bulletVehicle.h \
-    bulletWheel.I \
-    bulletWheel.h \
-    bulletWorld.I \
-    bulletWorld.h \
+    bulletContactResult.h bulletContactResult.I \
+    bulletConvexHullShape.h bulletConvexHullShape.I \
+    bulletConvexPointCloudShape.h bulletConvexPointCloudShape.I \
+    bulletCylinderShape.h bulletCylinderShape.I \
+    bulletDebugNode.h bulletDebugNode.I \
+    bulletGenericConstraint.h bulletGenericConstraint.I \
+    bulletGhostNode.h bulletGhostNode.I \
+    bulletHeightfieldShape.h bulletHeightfieldShape.I \
+    bulletHelper.h bulletHelper.I \
+    bulletHingeConstraint.h bulletHingeConstraint.I \
+    bulletManifoldPoint.h bulletManifoldPoint.I \
+    bulletMultiSphereShape.h bulletMultiSphereShape.I \
+    bulletPersistentManifold.h bulletPersistentManifold.I \
+    bulletPlaneShape.h bulletPlaneShape.I \
+    bulletRigidBodyNode.h bulletRigidBodyNode.I \
+    bulletShape.h bulletShape.I \
+    bulletSliderConstraint.h bulletSliderConstraint.I \
+    bulletSoftBodyConfig.h bulletSoftBodyConfig.I \
+    bulletSoftBodyMaterial.h bulletSoftBodyMaterial.I \
+    bulletSoftBodyNode.h bulletSoftBodyNode.I \
+    bulletSoftBodyShape.h bulletSoftBodyShape.I \
+    bulletSoftBodyWorldInfo.h bulletSoftBodyWorldInfo.I \
+    bulletSphereShape.h bulletSphereShape.I \
+    bulletSphericalConstraint.h bulletSphericalConstraint.I \
+    bulletTriangleMesh.h bulletTriangleMesh.I \
+    bulletTriangleMeshShape.h bulletTriangleMeshShape.I \
+    bulletVehicle.h bulletVehicle.I \
+    bulletWheel.h bulletWheel.I \
+    bulletWorld.h bulletWorld.I \
     bullet_includes.h \
-    bullet_utils.I \
-    bullet_utils.h \
+    bullet_utils.h bullet_utils.I \
+    config_bullet.h
 
   #define IGATESCAN all
 
