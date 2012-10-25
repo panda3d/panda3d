@@ -22,7 +22,7 @@ void (*ClockObject::_start_clock_wait)() = ClockObject::dummy_clock_wait;
 void (*ClockObject::_start_clock_busy_wait)() = ClockObject::dummy_clock_wait;
 void (*ClockObject::_stop_clock_wait)() = ClockObject::dummy_clock_wait;
 
-PT(ClockObject) ClockObject::_global_clock;
+ClockObject *ClockObject::_global_clock;
 TypeHandle ClockObject::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -595,6 +595,7 @@ make_global_clock() {
 
   _global_clock = new ClockObject;
   _global_clock->set_mode(clock_mode);
+  _global_clock->ref();
 }
 
 ////////////////////////////////////////////////////////////////////

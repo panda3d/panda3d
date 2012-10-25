@@ -166,7 +166,7 @@ private:
   typedef CycleDataWriter<CData> CDWriter;
   typedef CycleDataStageReader<CData> CDStageReader;
 
-  static PT(ClockObject) _global_clock;
+  static ClockObject *_global_clock;
 
 public:
   static TypeHandle get_class_type() {
