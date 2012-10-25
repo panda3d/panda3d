@@ -19,7 +19,7 @@
 #include "virtualFileSystem.h"
 
 #ifdef HAVE_CG
-#include "Cg/cg.h"
+#include <Cg/cg.h>
 #define JCG_PROFILE_GLSLV ((CGprofile)7007)
 #define JCG_PROFILE_GLSLF ((CGprofile)7008)
 #endif
