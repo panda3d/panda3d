@@ -386,6 +386,11 @@
 #set HAVE_ROCKET $[HAVE_ROCKET]
 #set HAVE_ROCKET_PYTHON $[HAVE_ROCKET_PYTHON]
 
+#set BULLET_IPATH $[unixfilename $[BULLET_IPATH]]
+#set BULLET_LPATH $[unixfilename $[BULLET_LPATH]]
+#set BULLET_LIBS $[BULLET_LIBS]
+#set HAVE_BULLET $[HAVE_BULLET]
+
 // Now infer a few more variables based on what was defined.
 #if $[and $[HAVE_GTK],$[PKG_CONFIG]]
   #define cflags $[shell $[PKG_CONFIG] gtk+-2.0 --cflags]

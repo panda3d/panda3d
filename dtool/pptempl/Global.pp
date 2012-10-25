@@ -504,6 +504,12 @@
   #define rocket_libs $[ROCKET_LIBS]
 #endif
 
+#if $[HAVE_BULLET]
+  #define bullet_ipath $[wildcard $[BULLET_IPATH]]
+  #define bullet_lpath $[wildcard $[BULLET_LPATH]]
+  #define bullet_libs $[BULLET_LIBS]
+#endif
+
 // We define these two variables true here in the global scope; a
 // particular Sources.pp file can redefine these to be false to
 // prevent a particular directory or target from being built in

@@ -239,6 +239,11 @@
 #else
 #print - Did not find libRocket
 #endif
+#if $[HAVE_BULLET]
+#print + Bullet Physics
+#else
+#print - Did not find Bullet Physics
+#endif
 
 #print
 #if $[and $[HAVE_INTERROGATE],$[HAVE_PYTHON]]

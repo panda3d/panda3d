@@ -1126,6 +1126,16 @@
 // Unset this if you built libRocket without Python bindings
 #defer HAVE_ROCKET_PYTHON $[and $[HAVE_ROCKET],$[HAVE_PYTHON]]
 
+// Bullet is a physics engine
+#define BULLET_IPATH /usr/local/include
+#define BULLET_LPATH /usr/local/lib
+#if $[WINDOWS_PLATFORM]
+#define BULLET_LIBS BulletSoftBody.lib BulletDynamics.lib BulletCollision.lib LinearMath.lib
+#else
+#define BULLET_LIBS BulletSoftBody BulletDynamics BulletCollision LinearMath
+#endif
+#defer HAVE_BULLET $[libtest $[BULLET_LPATH],$[BULLET_LIBS]]
+
 // Define this to explicitly indicate the given platform string within
 // the resulting Panda runtime.  Normally it is best to leave this
 // undefined, in which case Panda will determine the best value
