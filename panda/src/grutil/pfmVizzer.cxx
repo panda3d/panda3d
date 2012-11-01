@@ -303,6 +303,115 @@ generate_vis_mesh(MeshFace face) const {
   return NodePath(gnode);
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmVizzer::calc_max_u_displacement
+//       Access: Private
+//  Description: Computes the maximum amount of shift, in pixels
+//               either left or right, of any pixel in the distortion
+//               map.  This can be passed to make_displacement(); see
+//               that function for more information.
+////////////////////////////////////////////////////////////////////
+int PfmVizzer::
+calc_max_u_displacement() const {
+  int x_size = _pfm.get_x_size();
+  int y_size = _pfm.get_y_size();
+
+  int max_u = 0;
+
+  for (int yi = 0; yi < y_size; ++yi) {
+    for (int xi = 0; xi < x_size; ++xi) {
+      if (!_pfm.has_point(xi, yi)) {
+        continue;
+      }
+
+      const LPoint3f &point = _pfm.get_point(xi, yi);
+      double nxi = point[0] * (double)(x_size - 1) + 0.5;
+      double nyi = point[1] * (double)(y_size - 1) + 0.5;
+
+      max_u = max(max_u, (int)cceil(cabs(nxi - (double)xi)));
+    }
+  }
+
+  return max_u;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmVizzer::calc_max_v_displacement
+//       Access: Private
+//  Description: Computes the maximum amount of shift, in pixels
+//               either up or down, of any pixel in the distortion
+//               map.  This can be passed to make_displacement(); see
+//               that function for more information.
+////////////////////////////////////////////////////////////////////
+int PfmVizzer::
+calc_max_v_displacement() const {
+  int x_size = _pfm.get_x_size();
+  int y_size = _pfm.get_y_size();
+
+  int max_v = 0;
+
+  for (int yi = 0; yi < y_size; ++yi) {
+    for (int xi = 0; xi < x_size; ++xi) {
+      if (!_pfm.has_point(xi, yi)) {
+        continue;
+      }
+
+      const LPoint3f &point = _pfm.get_point(xi, yi);
+      double nyi = point[1] * (double)(y_size - 1) + 0.5;
+
+      max_v = max(max_v, (int)cceil(cabs(nyi - (double)yi)));
+    }
+  }
+
+  return max_v;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmVizzer::make_displacement
+//       Access: Private
+//  Description: Assuming the underlying PfmFile is a 2-d distortion
+//               mesh, with the U and V in the first two components
+//               and the third component unused, this computes an
+//               AfterEffects-style displacement map that represents
+//               the same distortion.  The indicated PNMImage will be
+//               filled in with a displacement map image, with
+//               horizontal shift in the red channel and vertical
+//               shift in the green channel, where a fully bright (or
+//               fully black) pixel indicates a shift of max_u or
+//               max_v pixels.
+//
+//               Use calc_max_u_displacement() and
+//               calc_max_v_displacement() to compute suitable values
+//               for max_u and max_v.
+////////////////////////////////////////////////////////////////////
+void PfmVizzer::
+make_displacement(PNMImage &result, int max_u, int max_v) const {
+  int x_size = _pfm.get_x_size();
+  int y_size = _pfm.get_y_size();
+  result.clear(x_size, y_size, 3, PNM_MAXMAXVAL);
+  result.fill(0.5);
+
+
+  for (int yi = 0; yi < y_size; ++yi) {
+    for (int xi = 0; xi < x_size; ++xi) {
+      if (!_pfm.has_point(xi, yi)) {
+        continue;
+      }
+
+      const LPoint3f &point = _pfm.get_point(xi, yi);
+      double nxi = point[0] * (double)(x_size - 1) + 0.5;
+      double nyi = point[1] * (double)(y_size - 1) + 0.5;
+
+      double u_shift = (nxi - (double)xi) / (double)max_u;
+      double v_shift = (nyi - (double)yi) / (double)max_v;
+
+      result.set_red(xi, yi, u_shift * 0.5 + 0.5);
+      result.set_green(xi, yi, v_shift * 0.5 + 0.5);
+    }
+  }
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PfmVizzer::make_vis_mesh_geom
 //       Access: Private
