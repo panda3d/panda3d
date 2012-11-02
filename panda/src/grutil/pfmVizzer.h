@@ -74,9 +74,9 @@ PUBLISHED:
   };
   BLOCKING NodePath generate_vis_mesh(MeshFace face = MF_front) const;
 
-  BLOCKING int calc_max_u_displacement() const;
-  BLOCKING int calc_max_v_displacement() const;
-  BLOCKING void make_displacement(PNMImage &result, int max_u, int max_v) const;
+  BLOCKING double calc_max_u_displacement() const;
+  BLOCKING double calc_max_v_displacement() const;
+  BLOCKING void make_displacement(PNMImage &result, double max_u, double max_v) const;
 
 private:
   void make_vis_mesh_geom(GeomNode *gnode, bool inverted) const;

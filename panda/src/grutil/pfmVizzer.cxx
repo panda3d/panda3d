@@ -312,12 +312,12 @@ generate_vis_mesh(MeshFace face) const {
 //               map.  This can be passed to make_displacement(); see
 //               that function for more information.
 ////////////////////////////////////////////////////////////////////
-int PfmVizzer::
+double PfmVizzer::
 calc_max_u_displacement() const {
   int x_size = _pfm.get_x_size();
   int y_size = _pfm.get_y_size();
 
-  int max_u = 0;
+  double max_u = 0;
 
   for (int yi = 0; yi < y_size; ++yi) {
     for (int xi = 0; xi < x_size; ++xi) {
@@ -326,10 +326,9 @@ calc_max_u_displacement() const {
       }
 
       const LPoint3f &point = _pfm.get_point(xi, yi);
-      double nxi = point[0] * (double)(x_size - 1) + 0.5;
-      double nyi = point[1] * (double)(y_size - 1) + 0.5;
+      double nxi = point[0] * (double)(x_size - 1);
 
-      max_u = max(max_u, (int)cceil(cabs(nxi - (double)xi)));
+      max_u = max(max_u, cabs(nxi - (double)xi));
     }
   }
 
@@ -344,12 +343,12 @@ calc_max_u_displacement() const {
 //               map.  This can be passed to make_displacement(); see
 //               that function for more information.
 ////////////////////////////////////////////////////////////////////
-int PfmVizzer::
+double PfmVizzer::
 calc_max_v_displacement() const {
   int x_size = _pfm.get_x_size();
   int y_size = _pfm.get_y_size();
 
-  int max_v = 0;
+  double max_v = 0;
 
   for (int yi = 0; yi < y_size; ++yi) {
     for (int xi = 0; xi < x_size; ++xi) {
@@ -358,9 +357,9 @@ calc_max_v_displacement() const {
       }
 
       const LPoint3f &point = _pfm.get_point(xi, yi);
-      double nyi = point[1] * (double)(y_size - 1) + 0.5;
+      double nyi = point[1] * (double)(y_size - 1);
 
-      max_v = max(max_v, (int)cceil(cabs(nyi - (double)yi)));
+      max_v = max(max_v, cabs(nyi - (double)yi));
     }
   }
 
@@ -386,12 +385,11 @@ calc_max_v_displacement() const {
 //               for max_u and max_v.
 ////////////////////////////////////////////////////////////////////
 void PfmVizzer::
-make_displacement(PNMImage &result, int max_u, int max_v) const {
+make_displacement(PNMImage &result, double max_u, double max_v) const {
   int x_size = _pfm.get_x_size();
   int y_size = _pfm.get_y_size();
   result.clear(x_size, y_size, 3, PNM_MAXMAXVAL);
   result.fill(0.5);
-
 
   for (int yi = 0; yi < y_size; ++yi) {
     for (int xi = 0; xi < x_size; ++xi) {
@@ -400,11 +398,11 @@ make_displacement(PNMImage &result, int max_u, int max_v) const {
       }
 
       const LPoint3f &point = _pfm.get_point(xi, yi);
-      double nxi = point[0] * (double)(x_size - 1) + 0.5;
-      double nyi = point[1] * (double)(y_size - 1) + 0.5;
+      double nxi = point[0] * (double)(x_size - 1);
+      double nyi = point[1] * (double)(y_size - 1);
 
-      double u_shift = (nxi - (double)xi) / (double)max_u;
-      double v_shift = (nyi - (double)yi) / (double)max_v;
+      double u_shift = (nxi - (double)xi) / max_u;
+      double v_shift = (nyi - (double)yi) / max_v;
 
       result.set_red(xi, yi, u_shift * 0.5 + 0.5);
       result.set_green(xi, yi, v_shift * 0.5 + 0.5);

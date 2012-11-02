@@ -62,19 +62,19 @@
 // are usually 8 bits per channel), it doesn't cost any precision at all to
 // use shorts, and not very much to use chars.
 
-/*
 // To use double-precision floating point, 8 bytes: (strictly for the neurotic)
 typedef double WorkType;
 typedef double StoreType;
 static const WorkType source_max = 1.0;
 static const WorkType filter_max = 1.0;
-*/
 
+/*
 // To use single-precision floating point, 4 bytes:
 typedef double WorkType;
 typedef float StoreType;
 static const WorkType source_max = 1.0;
 static const WorkType filter_max = 1.0;
+*/
 
 /*
 // To use 16-bit integer arithmetic, 2 bytes:
