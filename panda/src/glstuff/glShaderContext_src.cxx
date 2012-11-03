@@ -752,23 +752,31 @@ issue_parameters(GSG *gsg, int altered) {
     if (altered & (_shader->_mat_spec[i]._dep[0] | _shader->_mat_spec[i]._dep[1])) {
       const LMatrix4 *val = gsg->fetch_specified_value(_shader->_mat_spec[i], altered);
       if (!val) continue;
-      const PN_stdfloat *data = val->get_data();
+#ifndef STDFLOAT_DOUBLE
+      // In this case, the data is already single-precision.
+      const PN_float32 *data = val->get_data();
+#else
+      // In this case, we have to convert it.
+      LMatrix4f valf = LCAST(PN_float32, *val);
+      const PN_float32 *data = valf.get_data();
+#endif
+
       if (_shader->get_language() == Shader::SL_GLSL) {
         GLint p = _shader->_glsl_parameter_map[_shader->_mat_spec[i]._id._seqno];
         switch (_shader->_mat_spec[i]._piece) {
-        case Shader::SMP_whole: gsg->GLfv(_glUniformMatrix4)(p, 1, false, data); continue;
-        case Shader::SMP_transpose: gsg->GLfv(_glUniformMatrix4)(p, 1, true, data); continue;
-        case Shader::SMP_col0: gsg->GLf(_glUniform4)(p, data[0], data[4], data[ 8], data[12]); continue;
-        case Shader::SMP_col1: gsg->GLf(_glUniform4)(p, data[1], data[5], data[ 9], data[13]); continue;
-        case Shader::SMP_col2: gsg->GLf(_glUniform4)(p, data[2], data[6], data[10], data[14]); continue;
-        case Shader::SMP_col3: gsg->GLf(_glUniform4)(p, data[3], data[7], data[11], data[15]); continue;
-        case Shader::SMP_row0: gsg->GLfv(_glUniform4)(p, 1, data+ 0); continue;
-        case Shader::SMP_row1: gsg->GLfv(_glUniform4)(p, 1, data+ 4); continue;
-        case Shader::SMP_row2: gsg->GLfv(_glUniform4)(p, 1, data+ 8); continue;
-        case Shader::SMP_row3: gsg->GLfv(_glUniform4)(p, 1, data+12); continue;
-        case Shader::SMP_row3x1: gsg->GLfv(_glUniform1)(p, 1, data+12); continue;
-        case Shader::SMP_row3x2: gsg->GLfv(_glUniform2)(p, 1, data+12); continue;
-        case Shader::SMP_row3x3: gsg->GLfv(_glUniform3)(p, 1, data+12); continue;
+        case Shader::SMP_whole: gsg->_glUniformMatrix4fv(p, 1, false, data); continue;
+        case Shader::SMP_transpose: gsg->_glUniformMatrix4fv(p, 1, true, data); continue;
+        case Shader::SMP_col0: gsg->_glUniform4f(p, data[0], data[4], data[ 8], data[12]); continue;
+        case Shader::SMP_col1: gsg->_glUniform4f(p, data[1], data[5], data[ 9], data[13]); continue;
+        case Shader::SMP_col2: gsg->_glUniform4f(p, data[2], data[6], data[10], data[14]); continue;
+        case Shader::SMP_col3: gsg->_glUniform4f(p, data[3], data[7], data[11], data[15]); continue;
+        case Shader::SMP_row0: gsg->_glUniform4fv(p, 1, data+ 0); continue;
+        case Shader::SMP_row1: gsg->_glUniform4fv(p, 1, data+ 4); continue;
+        case Shader::SMP_row2: gsg->_glUniform4fv(p, 1, data+ 8); continue;
+        case Shader::SMP_row3: gsg->_glUniform4fv(p, 1, data+12); continue;
+        case Shader::SMP_row3x1: gsg->_glUniform1fv(p, 1, data+12); continue;
+        case Shader::SMP_row3x2: gsg->_glUniform2fv(p, 1, data+12); continue;
+        case Shader::SMP_row3x3: gsg->_glUniform3fv(p, 1, data+12); continue;
         }
       }
 #if defined(HAVE_CG) && !defined(OPENGLES)
