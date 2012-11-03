@@ -43,7 +43,11 @@ valid() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool CLP(ShaderContext)::
 uses_custom_vertex_arrays() {
-  return true;
+  #ifdef OPENGLES_2
+    return true;
+  #else
+    return (_shader->get_language() == Shader::SL_Cg);
+  #endif
 }
 
 ////////////////////////////////////////////////////////////////////
