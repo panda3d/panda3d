@@ -66,8 +66,13 @@ protected:
   virtual void close_window();
   virtual bool open_window();
 
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
   CGDisplayModeRef find_display_mode(int width, int height);
   bool do_switch_fullscreen(CGDisplayModeRef mode);
+#else
+  CFDictionaryRef find_display_mode(int width, int height);
+  bool do_switch_fullscreen(CFDictionaryRef mode);
+#endif
 
   virtual void mouse_mode_absolute();
   virtual void mouse_mode_relative();
@@ -82,10 +87,16 @@ private:
   NSView *_view;
   NSUInteger _modifier_keys;
   CGDirectDisplayID _display;
-  CGDisplayModeRef _fullscreen_mode;
-  CGDisplayModeRef _windowed_mode;
   bool _mouse_hidden;
   bool _context_needs_update;
+
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
+  CGDisplayModeRef _fullscreen_mode;
+  CGDisplayModeRef _windowed_mode;
+#else
+  CFDictionaryRef _fullscreen_mode;
+  CFDictionaryRef _windowed_mode;
+#endif
 
   typedef pmap<Filename, NSImage*> IconImages;
   IconImages _images;

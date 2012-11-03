@@ -21,7 +21,9 @@
 
 #import <Foundation/NSAutoreleasePool.h>
 #import <AppKit/NSApplication.h>
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
 #import <AppKit/NSRunningApplication.h>
+#endif
 
 #include <mach-o/arch.h>
 
@@ -32,7 +34,9 @@ static void init_app() {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     [NSApplication sharedApplication];
 
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
     [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+#endif
     [NSApp finishLaunching];
     [NSApp activateIgnoringOtherApps:YES];
     
@@ -143,7 +147,7 @@ load_display_information() {
   //_display_information->_device_id = CGDisplaySerialNumber(_display);
 
   // Display modes
-#if defined(MAC_OS_X_VERSION_10_6) && MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
   CFArrayRef modes = CGDisplayCopyAllDisplayModes(_display, NULL);
   size_t num_modes = CFArrayGetCount(modes);
   _display_information->_total_display_modes = num_modes;

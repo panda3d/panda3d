@@ -565,8 +565,14 @@ open_window() {
 
   if (_properties.get_fullscreen()) {
     // Change the display mode.
-    CGDisplayModeRef mode = find_display_mode(_properties.get_x_size(),
-                                              _properties.get_y_size());
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
+    CGDisplayModeRef mode;
+#else
+    CFDictionaryRef mode;
+#endif
+
+    mode = find_display_mode(_properties.get_x_size(),
+                             _properties.get_y_size());
 
     if (mode == NULL) {
       cocoadisplay_cat.error()
@@ -725,7 +731,13 @@ set_properties_now(WindowProperties &properties) {
           height = _properties.get_y_size();
         }
 
-        CGDisplayModeRef mode = find_display_mode(width, height);
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
+        CGDisplayModeRef mode;
+#else
+        CFDictionaryRef mode;
+#endif
+
+        mode = find_display_mode(width, height);
 
         if (mode == NULL) {
           cocoadisplay_cat.error()
@@ -796,7 +808,11 @@ set_properties_now(WindowProperties &properties) {
       properties.clear_size();
 
     } else {
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
       CGDisplayModeRef mode = find_display_mode(width, height);
+#else
+      CFDictionaryRef mode = find_display_mode(width, height);
+#endif
 
       if (mode == NULL) {
         cocoadisplay_cat.error()
@@ -1010,6 +1026,7 @@ set_properties_now(WindowProperties &properties) {
 //  Description: Returns an appropriate CGDisplayModeRef for the
 //               given width and height, or NULL if none was found.
 ////////////////////////////////////////////////////////////////////
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
 CGDisplayModeRef CocoaGraphicsWindow::
 find_display_mode(int width, int height) {
   CFArrayRef modes = CGDisplayCopyAllDisplayModes(_display, NULL);
@@ -1053,6 +1070,60 @@ find_display_mode(int width, int height) {
   CFRelease(modes);
   return NULL;
 }
+#else // Version for pre-10.6.
+CFDictionaryRef CocoaGraphicsWindow::
+find_display_mode(int width, int height) {
+  // Get the current mode and extract its properties.
+  CFDictionaryRef current_mode = CGDisplayCurrentMode(_display);
+  int current_width, current_height, current_bpp, current_refresh_rate;
+
+  CFNumberGetValue((CFNumberRef) CFDictionaryGetValue(current_mode, kCGDisplayWidth),
+    kCFNumberIntType, &current_width);
+
+  CFNumberGetValue((CFNumberRef) CFDictionaryGetValue(current_mode, kCGDisplayHeight),
+    kCFNumberIntType, &current_height);
+
+  CFNumberGetValue((CFNumberRef) CFDictionaryGetValue(current_mode, kCGDisplayBitsPerPixel),
+    kCFNumberIntType, &current_bpp);
+
+  CFNumberGetValue((CFNumberRef) CFDictionaryGetValue(current_mode, kCGDisplayRefreshRate),
+    kCFNumberIntType, &current_refresh_rate);
+
+  // Check if it is suitable and if so, return it.
+  if (current_width == width && current_height == height) {
+    return current_mode;
+  }
+
+  // Iterate over the modes to find a suitable one.
+  CFArrayRef modes = CGDisplayAvailableModes(_display);
+  size_t num_modes = CFArrayGetCount(modes);
+  int mode_width, mode_height, mode_bpp, mode_refresh_rate;
+
+  for (size_t i = 0; i < num_modes; ++i) {
+    CFDictionaryRef mode = (CFDictionaryRef) CFArrayGetValueAtIndex(modes, i);
+
+    CFNumberGetValue((CFNumberRef) CFDictionaryGetValue(mode, kCGDisplayWidth),
+      kCFNumberIntType, &mode_width);
+
+    CFNumberGetValue((CFNumberRef) CFDictionaryGetValue(mode, kCGDisplayHeight),
+      kCFNumberIntType, &mode_height);
+
+    CFNumberGetValue((CFNumberRef) CFDictionaryGetValue(mode, kCGDisplayBitsPerPixel),
+      kCFNumberIntType, &mode_bpp);
+
+    CFNumberGetValue((CFNumberRef) CFDictionaryGetValue(mode, kCGDisplayRefreshRate),
+      kCFNumberIntType, &mode_refresh_rate);
+
+    if (mode_width == width && mode_height == height &&
+        mode_refresh_rate == current_refresh_rate &&
+        mode_bpp == current_bpp) {
+      return mode;
+    }
+  }
+
+  return NULL;
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CocoaGraphicsWindow::do_switch_fullscreen
@@ -1061,8 +1132,13 @@ find_display_mode(int width, int height) {
 //               back to windowed if NULL was given.  Returns true
 //               on success, false on failure.
 ////////////////////////////////////////////////////////////////////
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
 bool CocoaGraphicsWindow::
 do_switch_fullscreen(CGDisplayModeRef mode) {
+#else
+bool CocoaGraphicsWindow::
+do_switch_fullscreen(CFDictionaryRef mode) {
+#endif
   if (mode == NULL) {
     if (_windowed_mode == NULL) {
       // Already windowed.
@@ -1070,8 +1146,12 @@ do_switch_fullscreen(CGDisplayModeRef mode) {
     }
 
     // Switch back to the mode we were in when we were still windowed.
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
     CGDisplaySetDisplayMode(_display, _windowed_mode, NULL);
     CGDisplayModeRelease(_windowed_mode);
+#else
+    CGDisplaySwitchToMode(_display, _windowed_mode);
+#endif
     CGDisplayRelease(_display);
     _windowed_mode = NULL;
     _context_needs_update = true;
@@ -1081,15 +1161,28 @@ do_switch_fullscreen(CGDisplayModeRef mode) {
       // Already fullscreen in that size.
       return true;
     }
+
+    // Store the existing mode under _windowed_mode.
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
     _windowed_mode = CGDisplayCopyDisplayMode(_display);
+#else
+    _windowed_mode = CGDisplayCurrentMode(_display);
+#endif
     _fullscreen_mode = mode;
     _context_needs_update = true;
 
-    if (CGDisplaySetDisplayMode(_display, _fullscreen_mode, NULL) != kCGErrorSuccess) {
+    CGError err;
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
+    err = CGDisplaySetDisplayMode(_display, _fullscreen_mode, NULL);
+#else
+    err = CGDisplaySwitchToMode(_display, _fullscreen_mode);
+#endif
+
+    if (err != kCGErrorSuccess) {
       return false;
     }
 
-    CGDisplayCaptureWithOptions(_display, kCGCaptureNoFill);
+    CGDisplayCapture(_display);
 
     NSRect frame = [[[_view window] screen] frame];
     if (cocoadisplay_cat.is_debug()) {

@@ -22,7 +22,9 @@
   self = [super initWithFrame: frameRect];
 
   _context = context;
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
   [self setCanDrawConcurrently:YES];
+#endif
 
   cocoadisplay_cat.debug()
     << "Created CocoaPandaView " << self << " for GraphicsWindow " << window << "\n";

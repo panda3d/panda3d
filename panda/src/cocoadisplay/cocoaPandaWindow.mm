@@ -29,7 +29,9 @@
     [self setDelegate:delegate];
     [self setOpaque:YES];
     [self setReleasedWhenClosed:YES];
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
     [self setAllowsConcurrentViewDrawing:YES];
+#endif
 
     // Necessary to be able to accept mouseMoved in the NSView
     [self setAcceptsMouseMovedEvents:YES];
