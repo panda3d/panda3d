@@ -748,7 +748,9 @@ set_properties_now(WindowProperties &properties) {
           if (_window != nil) {
             // For some reason, setting the style mask
             // makes it give up its first-responder status.
-            [_window setStyleMask:NSBorderlessWindowMask];
+            if ([_window respondsToSelector:@selector(setStyleMask:)]) {
+              [_window setStyleMask:NSBorderlessWindowMask];
+            }
             [_window makeFirstResponder:_view];
             [_window setLevel:NSMainMenuWindowLevel+1];
             [_window makeKeyAndOrderFront:nil];
@@ -889,7 +891,8 @@ set_properties_now(WindowProperties &properties) {
       // However, if we're specifying the 'undecorated' property also,
       // then we'll be setting the style mask about 25 LOC further down,
       // so we won't need to bother setting it here.
-      if (!properties.has_undecorated() && !_properties.get_undecorated()) {
+      if (!properties.has_undecorated() && !_properties.get_undecorated() &&
+          [_window respondsToSelector:@selector(setStyleMask:)]) {
         if (properties.get_fixed_size()) {
           [_window setStyleMask:NSTitledWindowMask | NSClosableWindowMask |
                                 NSMiniaturizableWindowMask ];
@@ -904,7 +907,7 @@ set_properties_now(WindowProperties &properties) {
     properties.clear_fixed_size();
   }
 
-  if (properties.has_undecorated() && _window != nil) {
+  if (properties.has_undecorated() && _window != nil && [_window respondsToSelector:@selector(setStyleMask:)]) {
     _properties.set_undecorated(properties.get_undecorated());
 
     if (!_properties.get_fullscreen()) {

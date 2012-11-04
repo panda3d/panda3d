@@ -20,6 +20,11 @@
 #import <AppKit/AppKit.h>
 #import <OpenGL/CGLRenderers.h>
 
+#ifndef kCGLRendererIDMatchingMask
+// For older versions of Mac OS X
+#define kCGLRendererIDMatchingMask   0x00FE7F00
+#endif
+
 TypeHandle CocoaGraphicsStateGuardian::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
