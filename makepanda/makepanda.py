@@ -3609,11 +3609,11 @@ if (not RUNTIME):
 #
 
 if (not RUNTIME):
-  OPTS=['DIR:panda/src/glstuff',  'NVIDIACG', 'CGGL']
+  OPTS=['DIR:panda/src/glstuff']
   TargetAdd('p3glstuff_glpure.obj', opts=OPTS, input='glpure.cxx')
   TargetAdd('libp3glstuff.dll', input='p3glstuff_glpure.obj')
   TargetAdd('libp3glstuff.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libp3glstuff.dll', opts=['ADVAPI', 'GL',  'NVIDIACG', 'CGGL'])
+  TargetAdd('libp3glstuff.dll', opts=['ADVAPI'])
 
 #
 # DIRECTORY: panda/src/glgsg/
