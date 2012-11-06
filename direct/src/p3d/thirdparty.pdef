@@ -23,8 +23,7 @@ class wx(package):
 
     module('direct.showbase.WxGlobal')
     module('direct.wxwidgets')
-    module('direct.wxwidgets.WxAppShell')
-    module('direct.wxwidgets.WxSlider')
+    module('direct.wxwidgets.*')
     module('wx', required = True)
     module('wx.*')
 
