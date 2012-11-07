@@ -49,6 +49,7 @@ PUBLISHED:
 
   BLOCKING bool load(const PNMImage &pnmimage);
   BLOCKING bool store(PNMImage &pnmimage) const;
+  BLOCKING bool store_mask(PNMImage &pnmimage) const;
 
   INLINE bool is_valid() const;
 

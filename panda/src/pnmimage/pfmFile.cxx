@@ -447,6 +447,30 @@ store(PNMImage &pnmimage) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::store_mask
+//       Access: Published
+//  Description: Stores 1 or 0 values into the indicated PNMImage,
+//               according to has_point() for each pixel.  Each valid
+//               point gets a 1 value; each nonexistent point gets a 0
+//               value.
+////////////////////////////////////////////////////////////////////
+bool PfmFile::
+store_mask(PNMImage &pnmimage) const {
+  if (!is_valid()) {
+    pnmimage.clear();
+    return false;
+  }
+
+  pnmimage.clear(get_x_size(), get_y_size(), 1, 255);
+  for (int yi = 0; yi < get_y_size(); ++yi) {
+    for (int xi = 0; xi < get_x_size(); ++xi) {
+      pnmimage.set_gray(xi, yi, has_point(xi, yi));
+    }
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::calc_average_point
 //       Access: Published
 //  Description: Computes the unweighted average point of all points
