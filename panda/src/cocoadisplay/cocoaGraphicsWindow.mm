@@ -1555,30 +1555,23 @@ handle_key_event(NSEvent *event) {
   nassertv([str length] == 1);
   unichar c = [str characterAtIndex: 0];
 
-  ButtonHandle button;
+  ButtonHandle button = map_key(c);
 
-  if (c >= 0xF700 && c < 0xF900) {
-    // Special function keys.
-    button = map_function_key(c);
-
-  } else if (c == 0x3) {
-    button = KeyboardButton::enter();
-
-  } else {
-    // If a down event, process as keystroke too.
+  if (c < 0xF700 || c >= 0xF900) {
+    // If a down event and not a special function key,
+    // process it as keystroke as well.
     if ([event type] == NSKeyDown) {
       NSString *origstr = [event characters];
       c = [str characterAtIndex: 0];
       _input_devices[0].keystroke(c);
     }
+  }
 
+  if (button == ButtonHandle::none()) {
     // That done, continue trying to find out the button handle.
     if ([str canBeConvertedToEncoding: NSASCIIStringEncoding]) {
       // Nhm, ascii character perhaps?
       button = KeyboardButton::ascii_key([str cStringUsingEncoding: NSASCIIStringEncoding]);
-
-    } else {
-      button = ButtonHandle::none();
     }
   }
 
@@ -1694,13 +1687,24 @@ handle_wheel_event(double x, double y) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CocoaGraphicsWindow::map_function_key
+//     Function: CocoaGraphicsWindow::map_key
 //       Access: Private
 //  Description:
 ////////////////////////////////////////////////////////////////////
 ButtonHandle CocoaGraphicsWindow::
-map_function_key(unsigned short keycode) {
+map_key(unsigned short keycode) {
   switch (keycode) {
+  case NSEnterCharacter:
+    return KeyboardButton::enter();
+  case NSBackspaceCharacter:
+  case NSDeleteCharacter:
+    // NSDeleteCharacter fires when I press backspace.
+    return KeyboardButton::backspace();
+  case NSTabCharacter:
+  case NSBackTabCharacter:
+    // BackTabCharacter is sent when shift-tab is used.
+    return KeyboardButton::tab();
+
   case NSUpArrowFunctionKey:
     return KeyboardButton::up();
   case NSDownArrowFunctionKey:
