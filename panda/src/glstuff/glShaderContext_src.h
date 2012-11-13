@@ -76,7 +76,7 @@ private:
   void glsl_report_program_errors(GSG *gsg, unsigned int program);
   unsigned int glsl_compile_entry_point(GSG *gsg, Shader::ShaderType type);
   bool glsl_compile_shader(GSG *gsg);
-
+  bool parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, Shader *s);
   void release_resources(GSG *gsg);
 
 public:

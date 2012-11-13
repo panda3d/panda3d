@@ -399,7 +399,7 @@ public:
     string _tess_evaluation;
   };
 
- private:
+ public:
   // These routines help split the shader into sections,
   // for those shader implementations that need to do so.
   // Don't use them when you use separate shader programs.

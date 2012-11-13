@@ -47,6 +47,164 @@ TypeHandle CLP(ShaderContext)::_type_handle;
 #endif
 #endif
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLShaderContext::ParseAndSetShaderUniformVars
+//       Access: Public
+//  Description: The Panda CG shader syntax defines a useful set of shorthand notations for setting nodepath
+//               properties as shaderinputs. For example, float4 mspos_XXX refers to nodepath XXX's position
+//               in model space. This function is a rough attempt to reimplement some of the shorthand 
+//               notations for GLSL. The code is ~99% composed of excerpts dealing with matrix shaderinputs
+//               from Shader::compile_parameter.  
+//               
+//               Given a uniform variable name queried from the compiled shader passed in via arg_id, 
+//                  1) parse the name
+//                  2a) if the name refers to a Panda shorthand notation
+//                        push the appropriate matrix into shader._mat_spec
+//                        returns True
+//                  2b) If the name doesn't refer to a Panda shorthand notation
+//                        returns False
+//               
+//               The boolean return is used to notify down-river processing whether the shader var/parm was 
+//               actually picked up and the appropriate ShaderMatSpec pushed onto _mat_spec.
+////////////////////////////////////////////////////////////////////
+bool CLP(ShaderContext)::
+parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, Shader *objShader) {
+    Shader::ShaderArgInfo p;
+  
+    p._id = arg_id;
+    
+    string basename(arg_id._name);
+    // Split it at the underscores.
+    vector_string pieces;
+    tokenize(basename, pieces, "_");
+    
+    if (pieces[0] == "mstrans") {
+        pieces[0] = "trans";
+        pieces.push_back("to");
+        pieces.push_back("model");
+    }
+    if (pieces[0] == "wstrans") {
+        pieces[0] = "trans";
+        pieces.push_back("to");
+        pieces.push_back("world");
+    }
+    if (pieces[0] == "vstrans") {
+        pieces[0] = "trans";
+        pieces.push_back("to");
+        pieces.push_back("view");
+    }
+    if (pieces[0] == "cstrans") {
+        pieces[0] = "trans";
+        pieces.push_back("to");
+        pieces.push_back("clip");
+    }
+    if (pieces[0] == "mspos") {
+        pieces[0] = "row3";
+        pieces.push_back("to");
+        pieces.push_back("model");
+    }
+    if (pieces[0] == "wspos") {
+        pieces[0] = "row3";
+        pieces.push_back("to");
+        pieces.push_back("world");
+    }
+    if (pieces[0] == "vspos") {
+        pieces[0] = "row3";
+        pieces.push_back("to");
+        pieces.push_back("view");
+    }
+    if (pieces[0] == "cspos") {
+        pieces[0] = "row3";
+        pieces.push_back("to");
+        pieces.push_back("clip");
+    }
+    
+    if ((pieces[0] == "mat")||(pieces[0] == "inv")||
+      (pieces[0] == "tps")||(pieces[0] == "itp")) {
+        if (!objShader->cp_errchk_parameter_words(p, 2)) {
+            return false;
+        }
+        string trans = pieces[0];
+        string matrix = pieces[1];
+        pieces.clear();
+        if (matrix == "modelview") {
+            tokenize("trans_model_to_apiview", pieces, "_");
+        } else if (matrix == "projection") {
+            tokenize("trans_apiview_to_apiclip", pieces, "_");
+        } else if (matrix == "modelproj") {
+            tokenize("trans_model_to_apiclip", pieces, "_");
+        } else {
+            objShader->cp_report_error(p,"unrecognized matrix name");
+            return false;
+        }
+        if (trans=="mat") {
+            pieces[0] = "trans";
+        } else if (trans=="inv") {
+            string t = pieces[1];
+            pieces[1] = pieces[3];
+            pieces[3] = t;
+        } else if (trans=="tps") {
+            pieces[0] = "tpose";
+        } else if (trans=="itp") {
+            string t = pieces[1];
+            pieces[1] = pieces[3];
+            pieces[3] = t;
+            pieces[0] = "tpose";
+            }
+    }
+  // Implement the transform-matrix generator.
+
+    if ((pieces[0]=="trans")||
+        (pieces[0]=="tpose")||
+        (pieces[0]=="row0")||
+        (pieces[0]=="row1")||
+        (pieces[0]=="row2")||
+        (pieces[0]=="row3")||
+        (pieces[0]=="col0")||
+        (pieces[0]=="col1")||
+        (pieces[0]=="col2")||
+        (pieces[0]=="col3")) {
+
+        Shader::ShaderMatSpec bind;
+        bind._id = arg_id;
+        bind._func = Shader::SMF_compose;
+
+        int next = 1;
+        pieces.push_back("");
+
+        // Decide whether this is a matrix or vector.
+        if      (pieces[0]=="trans")   bind._piece = Shader::SMP_whole;
+        else if (pieces[0]=="tpose")   bind._piece = Shader::SMP_transpose;
+        else if (pieces[0]=="row0")    bind._piece = Shader::SMP_row0;
+        else if (pieces[0]=="row1")    bind._piece = Shader::SMP_row1;
+        else if (pieces[0]=="row2")    bind._piece = Shader::SMP_row2;
+        else if (pieces[0]=="row3")    bind._piece = Shader::SMP_row3;
+        else if (pieces[0]=="col0")    bind._piece = Shader::SMP_col0;
+        else if (pieces[0]=="col1")    bind._piece = Shader::SMP_col1;
+        else if (pieces[0]=="col2")    bind._piece = Shader::SMP_col2;
+        else if (pieces[0]=="col3")    bind._piece = Shader::SMP_col3;
+
+        if (!objShader->cp_parse_coord_sys(p, pieces, next, bind, true)) {
+          return false;
+        }
+        if (!objShader->cp_parse_delimiter(p, pieces, next)) {
+          return false;
+        }    
+        if (!objShader->cp_parse_coord_sys(p, pieces, next, bind, false)) {
+          return false;
+        }
+        
+        if (!objShader->cp_parse_eol(p, pieces, next)) {
+          return false;
+        }
+        objShader->cp_optimize_mat_spec(bind);
+        objShader->_mat_spec.push_back(bind);
+        return true;
+    }
+    return false;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GLShaderContext::Constructor
 //       Access: Public
@@ -205,6 +363,11 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
             continue;
           }
 
+          //Tries to parse shorthand notations like mspos_XXX and trans_model_to_clip_of_XXX
+          if (parse_and_set_short_hand_shader_vars( arg_id, s )) {
+            continue;
+          }
+          
           if (param_size==1) {
             switch (param_type) {
 #ifndef OPENGLES
