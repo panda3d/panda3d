@@ -126,7 +126,10 @@ def makePackedApp(args):
             while len(tokens) < 4:
                 tokens.append('')
             certificate, chain, pkey, password = tokens[:4]
-            packager.signParams.append((certificate, chain, pkey, password))
+            packager.signParams.append((Filename.fromOsSpecific(certificate),
+                                        Filename.fromOsSpecific(chain),
+                                        Filename.fromOsSpecific(pkey),
+                                        Filename.fromOsSpecific(password)))
         elif option == '-e':
             packager.binaryExtensions.append(value)
         elif option == '-n':
