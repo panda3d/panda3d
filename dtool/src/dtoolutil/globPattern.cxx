@@ -115,6 +115,7 @@ match_files(vector_string &results, const Filename &cwd) const {
   }
   
   GlobPattern glob(pattern);
+  glob.set_case_sensitive(_case_sensitive);
   return glob.r_match_files(prefix, suffix, results, cwd);
 }
 
@@ -167,6 +168,7 @@ r_match_files(const Filename &prefix, const string &suffix,
   }
 
   GlobPattern next_glob(next_pattern);
+  next_glob.set_case_sensitive(_case_sensitive);
 
   if (!has_glob_characters()) {
     // If there are no special characters in the pattern, it's a
