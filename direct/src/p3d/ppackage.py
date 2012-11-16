@@ -171,7 +171,10 @@ for opt, arg in opts:
         while len(tokens) < 4:
             tokens.append('')
         certificate, chain, pkey, password = tokens[:4]
-        signParams.append((certificate, chain, pkey, password))
+        signParams.append((Filename.fromOsSpecific(certificate),
+                           Filename.fromOsSpecific(chain),
+                           Filename.fromOsSpecific(pkey),
+                           Filename.fromOsSpecific(password)))
     elif opt == '-D':
         allowPythonDev = True
     elif opt == '-u':
