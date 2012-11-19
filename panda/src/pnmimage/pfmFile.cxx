@@ -748,10 +748,10 @@ resize(int new_x_size, int new_y_size) {
   PN_float32 y_scale = 1.0;
 
   if (new_x_size > 1) {
-    x_scale = (PN_float32)(_x_size - 1) / (PN_float32)(new_x_size - 1);
+    x_scale = (PN_float32)_x_size / (PN_float32)new_x_size;
   }
   if (new_y_size > 1) {
-    y_scale = (PN_float32)(_y_size - 1) / (PN_float32)(new_y_size - 1);
+    y_scale = (PN_float32)_y_size / (PN_float32)new_y_size;
   }
 
   switch (_num_channels) {
@@ -759,12 +759,12 @@ resize(int new_x_size, int new_y_size) {
     {
       from_y0 = 0.0;
       for (int to_y = 0; to_y < new_y_size; ++to_y) {
-        from_y1 = (to_y + 0.5) * y_scale;
+        from_y1 = (to_y + 1.0) * y_scale;
         from_y1 = min(from_y1, (PN_float32) _y_size);
         
         from_x0 = 0.0;
         for (int to_x = 0; to_x < new_x_size; ++to_x) {
-          from_x1 = (to_x + 0.5) * x_scale;
+          from_x1 = (to_x + 1.0) * x_scale;
           from_x1 = min(from_x1, (PN_float32) _x_size);
           
           // Now the box from (from_x0, from_y0) - (from_x1, from_y1)
@@ -784,12 +784,12 @@ resize(int new_x_size, int new_y_size) {
     {
       from_y0 = 0.0;
       for (int to_y = 0; to_y < new_y_size; ++to_y) {
-        from_y1 = (to_y + 0.5) * y_scale;
+        from_y1 = (to_y + 1.0) * y_scale;
         from_y1 = min(from_y1, (PN_float32) _y_size);
         
         from_x0 = 0.0;
         for (int to_x = 0; to_x < new_x_size; ++to_x) {
-          from_x1 = (to_x + 0.5) * x_scale;
+          from_x1 = (to_x + 1.0) * x_scale;
           from_x1 = min(from_x1, (PN_float32) _x_size);
           
           // Now the box from (from_x0, from_y0) - (from_x1, from_y1)
@@ -811,12 +811,12 @@ resize(int new_x_size, int new_y_size) {
     {
       from_y0 = 0.0;
       for (int to_y = 0; to_y < new_y_size; ++to_y) {
-        from_y1 = (to_y + 0.5) * y_scale;
+        from_y1 = (to_y + 1.0) * y_scale;
         from_y1 = min(from_y1, (PN_float32) _y_size);
         
         from_x0 = 0.0;
         for (int to_x = 0; to_x < new_x_size; ++to_x) {
-          from_x1 = (to_x + 0.5) * x_scale;
+          from_x1 = (to_x + 1.0) * x_scale;
           from_x1 = min(from_x1, (PN_float32) _x_size);
           
           // Now the box from (from_x0, from_y0) - (from_x1, from_y1)
@@ -956,7 +956,7 @@ xform(const LMatrix4f &transform) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::forward_distort
 //       Access: Published
-//  Description: Applys the distortion indicated in the supplied dist
+//  Description: Applies the distortion indicated in the supplied dist
 //               map to the current map.  The dist map is understood
 //               to be a mapping of points in the range 0..1 in the
 //               first two dimensions.  Each (u,v) point in the
@@ -994,8 +994,8 @@ forward_distort(const PfmFile &dist) {
         continue;
       }
       LPoint2f uv = dist_p->get_point2(xi, yi);
-      int dist_xi = int(uv[0] * (_x_size - 1));
-      int dist_yi = int(uv[1] * (_y_size - 1));
+      int dist_xi = (int)cfloor(uv[0] * (double)_x_size);
+      int dist_yi = (int)cfloor(uv[0] * (double)_y_size);
       if (dist_xi < 0 || dist_xi >= _x_size || 
           dist_yi < 0 || dist_yi >= _y_size) {
         continue;
@@ -1015,7 +1015,7 @@ forward_distort(const PfmFile &dist) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::reverse_distort
 //       Access: Published
-//  Description: Applys the distortion indicated in the supplied dist
+//  Description: Applies the distortion indicated in the supplied dist
 //               map to the current map.  The dist map is understood
 //               to be a mapping of points in the range 0..1 in the
 //               first two dimensions.  Each (x,y) point in the
@@ -1055,8 +1055,8 @@ reverse_distort(const PfmFile &dist) {
         continue;
       }
       LPoint2f uv = dist_p->get_point2(xi, yi);
-      int dist_xi = int(uv[0] * (_x_size - 1));
-      int dist_yi = int(uv[1] * (_y_size - 1));
+      int dist_xi = (int)cfloor(uv[0] * (double)_x_size);
+      int dist_yi = (int)cfloor(uv[0] * (double)_y_size);
       if (dist_xi < 0 || dist_xi >= _x_size || 
           dist_yi < 0 || dist_yi >= _y_size) {
         continue;
@@ -1163,17 +1163,18 @@ clear_to_texcoords(int x_size, int y_size) {
   clear(x_size, y_size, 3);
 
   LPoint2f uv_scale(1.0, 1.0);
-  if (_x_size > 1) {
-    uv_scale[0] = 1.0f / PN_float32(_x_size - 1);
+  if (_x_size > 0) {
+    uv_scale[0] = 1.0f / PN_float32(_x_size);
   }
-  if (_y_size > 1) {
-    uv_scale[1] = 1.0f / PN_float32(_y_size - 1);
+  if (_y_size > 0) {
+    uv_scale[1] = 1.0f / PN_float32(_y_size);
   }
 
   for (int yi = 0; yi < _y_size; ++yi) {
     for (int xi = 0; xi < _x_size; ++xi) {
-      LPoint3f uv(PN_float32(xi) * uv_scale[0],
-                  PN_float32(yi) * uv_scale[1], 0.0f);
+      LPoint3f uv(PN_float32(xi) * uv_scale[0] + 0.5,
+                  PN_float32(yi) * uv_scale[1] + 0.5, 
+                  0.0f);
       set_point(xi, yi, uv);
     }
   }

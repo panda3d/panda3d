@@ -79,6 +79,10 @@ PUBLISHED:
   BLOCKING void make_displacement(PNMImage &result, double max_u, double max_v) const;
 
 private:
+  void r_fill_displacement(PNMImage &result, int xi, int yi, 
+                           double nxi, double nyi, double u_scale, double v_scale,
+                           int distance) const;
+
   void make_vis_mesh_geom(GeomNode *gnode, bool inverted) const;
 
 

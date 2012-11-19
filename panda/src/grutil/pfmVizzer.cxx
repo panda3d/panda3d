@@ -105,10 +105,10 @@ extrude(const Lens *lens) {
     // Create an implicit UV coordinate for each point.
     LPoint2 uv_scale(1.0, 1.0);
     if (_pfm.get_x_size() > 1) {
-      uv_scale[0] = 1.0 / PN_stdfloat(_pfm.get_x_size() - 1);
+      uv_scale[0] = 1.0 / PN_stdfloat(_pfm.get_x_size());
     }
     if (_pfm.get_y_size() > 1) {
-      uv_scale[1] = 1.0 / PN_stdfloat(_pfm.get_y_size() - 1);
+      uv_scale[1] = 1.0 / PN_stdfloat(_pfm.get_y_size());
     }
     for (int yi = 0; yi < _pfm.get_y_size(); ++yi) {
       for (int xi = 0; xi < _pfm.get_x_size(); ++xi) {
@@ -116,8 +116,8 @@ extrude(const Lens *lens) {
           continue;
         }
         LPoint3 p;
-        p.set((PN_stdfloat)xi * uv_scale[0],
-              (PN_stdfloat)yi * uv_scale[1],
+        p.set(((PN_stdfloat)xi + 0.5) * uv_scale[0],
+              ((PN_stdfloat)yi + 0.5) * uv_scale[1],
               (PN_stdfloat)_pfm.get_point1(xi, yi));
         
         from_uv.xform_point_in_place(p);
@@ -221,10 +221,10 @@ generate_vis_points() const {
 
   LPoint2f uv_scale(1.0, 1.0);
   if (_pfm.get_x_size() > 1) {
-    uv_scale[0] = 1.0f / PN_float32(_pfm.get_x_size() - 1);
+    uv_scale[0] = 1.0f / PN_float32(_pfm.get_x_size());
   }
   if (_pfm.get_y_size() > 1) {
-    uv_scale[1] = 1.0f / PN_float32(_pfm.get_y_size() - 1);
+    uv_scale[1] = 1.0f / PN_float32(_pfm.get_y_size());
   }
 
   int num_points = 0;
@@ -235,8 +235,8 @@ generate_vis_points() const {
       }
 
       const LPoint3f &point = _pfm.get_point(xi, yi);
-      LPoint2f uv(PN_float32(xi) * uv_scale[0],
-                  PN_float32(yi) * uv_scale[1]);
+      LPoint2f uv((PN_float32(xi) + 0.5) * uv_scale[0],
+                  (PN_float32(yi) + 0.5) * uv_scale[1]);
       if (_vis_inverse) {
         vertex.add_data2f(uv);
         texcoord.add_data3f(point);
@@ -306,7 +306,7 @@ generate_vis_mesh(MeshFace face) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PfmVizzer::calc_max_u_displacement
-//       Access: Private
+//       Access: Published
 //  Description: Computes the maximum amount of shift, in pixels
 //               either left or right, of any pixel in the distortion
 //               map.  This can be passed to make_displacement(); see
@@ -326,7 +326,7 @@ calc_max_u_displacement() const {
       }
 
       const LPoint3f &point = _pfm.get_point(xi, yi);
-      double nxi = point[0] * (double)(x_size - 1);
+      double nxi = point[0] * (double)x_size - 0.5;
 
       max_u = max(max_u, cabs(nxi - (double)xi));
     }
@@ -337,7 +337,7 @@ calc_max_u_displacement() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PfmVizzer::calc_max_v_displacement
-//       Access: Private
+//       Access: Published
 //  Description: Computes the maximum amount of shift, in pixels
 //               either up or down, of any pixel in the distortion
 //               map.  This can be passed to make_displacement(); see
@@ -357,7 +357,7 @@ calc_max_v_displacement() const {
       }
 
       const LPoint3f &point = _pfm.get_point(xi, yi);
-      double nyi = point[1] * (double)(y_size - 1);
+      double nyi = point[1] * (double)y_size - 0.5;
 
       max_v = max(max_v, cabs(nyi - (double)yi));
     }
@@ -368,7 +368,7 @@ calc_max_v_displacement() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PfmVizzer::make_displacement
-//       Access: Private
+//       Access: Published
 //  Description: Assuming the underlying PfmFile is a 2-d distortion
 //               mesh, with the U and V in the first two components
 //               and the third component unused, this computes an
@@ -389,7 +389,17 @@ make_displacement(PNMImage &result, double max_u, double max_v) const {
   int x_size = _pfm.get_x_size();
   int y_size = _pfm.get_y_size();
   result.clear(x_size, y_size, 3, PNM_MAXMAXVAL);
-  result.fill(0.5);
+  result.fill_val(0, 0, PNM_MAXMAXVAL);
+
+  // After Effects defines this as the zero (no-change) value.  It's
+  // not exactly 0.5, because they round up.
+  static const int midval = (PNM_MAXMAXVAL + 1) / 2;
+
+  // After Effects seems to always undershift by exactly this amount.
+  static const double scale_factor = 256.0 / 255.0;
+
+  double u_scale = scale_factor * 0.5 * (PNM_MAXMAXVAL - 1) / max_u;
+  double v_scale = scale_factor * 0.5 * (PNM_MAXMAXVAL - 1) / max_v;
 
   for (int yi = 0; yi < y_size; ++yi) {
     for (int xi = 0; xi < x_size; ++xi) {
@@ -398,15 +408,85 @@ make_displacement(PNMImage &result, double max_u, double max_v) const {
       }
 
       const LPoint3f &point = _pfm.get_point(xi, yi);
-      double nxi = point[0] * (double)(x_size - 1);
-      double nyi = point[1] * (double)(y_size - 1);
+      double nxi = point[0] * (double)x_size - 0.5;
+      double nyi = point[1] * (double)y_size - 0.5;
 
-      double u_shift = (nxi - (double)xi) / max_u;
-      double v_shift = (nyi - (double)yi) / max_v;
+      double x_shift = (nxi - (double)xi);
+      double y_shift = (nyi - (double)yi);
 
-      result.set_red(xi, yi, u_shift * 0.5 + 0.5);
-      result.set_green(xi, yi, v_shift * 0.5 + 0.5);
+      int u_val = midval + (int)cfloor(x_shift * u_scale + 0.5);
+      int v_val = midval + (int)cfloor(y_shift * v_scale + 0.5);
+
+      // We use the blue channel to mark holes, so we can fill them in
+      // later.
+      result.set_xel_val(xi, yi, u_val, v_val, 0);
     }
+  }
+
+  // Now fill in holes.
+  for (int yi = 0; yi < y_size; ++yi) {
+    for (int xi = 0; xi < x_size; ++xi) {
+      if (!_pfm.has_point(xi, yi)) {
+        continue;
+      }
+
+      const LPoint3f &point = _pfm.get_point(xi, yi);
+      double nxi = point[0] * (double)x_size - 0.5;
+      double nyi = point[1] * (double)y_size - 0.5;
+
+      r_fill_displacement(result, xi - 1, yi, nxi, nyi, u_scale, v_scale, 1);
+      r_fill_displacement(result, xi + 1, yi, nxi, nyi, u_scale, v_scale, 1);
+      r_fill_displacement(result, xi, yi - 1, nxi, nyi, u_scale, v_scale, 1);
+      r_fill_displacement(result, xi, yi + 1, nxi, nyi, u_scale, v_scale, 1);
+    }
+  }
+
+  // Finally, reset the blue channel for cleanliness.
+  for (int yi = 0; yi < y_size; ++yi) {
+    for (int xi = 0; xi < x_size; ++xi) {
+      result.set_blue_val(xi, yi, midval);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmVizzer::r_fill_displacement
+//       Access: Private
+//  Description: Recursively fills in holes with the color of their
+//               nearest neighbor after processing the image.  This
+//               avoids sudden discontinuities in the displacement map
+//               at the edge of the screen geometry.
+////////////////////////////////////////////////////////////////////
+void PfmVizzer::
+r_fill_displacement(PNMImage &result, int xi, int yi, 
+                    double nxi, double nyi, double u_scale, double v_scale,
+                    int distance) const {
+  if (xi < 0 || yi < 0 ||
+      xi >= result.get_x_size() || yi >= result.get_y_size()) {
+    // Stop at the edge.
+    return;
+  }
+
+  if (distance > 1000) {
+    // Avoid runaway recursion.
+    return;
+  }
+
+  int val = result.get_blue_val(xi, yi);
+  if (val > distance) {
+    // We've found a point that's closer.
+    static const int midval = (PNM_MAXMAXVAL + 1) / 2;
+
+    double x_shift = (nxi - (double)xi);
+    double y_shift = (nyi - (double)yi);
+    int u_val = midval + (int)cfloor(x_shift * u_scale + 0.5);
+    int v_val = midval + (int)cfloor(y_shift * v_scale + 0.5);
+    result.set_xel_val(xi, yi, u_val, v_val, distance);
+
+    r_fill_displacement(result, xi - 1, yi, nxi, nyi, u_scale, v_scale, distance + 1);
+    r_fill_displacement(result, xi + 1, yi, nxi, nyi, u_scale, v_scale, distance + 1);
+    r_fill_displacement(result, xi, yi - 1, nxi, nyi, u_scale, v_scale, distance + 1);
+    r_fill_displacement(result, xi, yi + 1, nxi, nyi, u_scale, v_scale, distance + 1);
   }
 }
 
@@ -710,8 +790,8 @@ add_data(const PfmVizzer &vizzer, GeomVertexWriter &vwriter, int xi, int yi, boo
   switch (_source) {
   case CT_texcoord2:
     { 
-      LPoint2f uv(PN_float32(xi) / PN_float32(pfm.get_x_size() - 1),
-                  PN_float32(yi) / PN_float32(pfm.get_y_size() - 1));
+      LPoint2f uv((PN_float32(xi) + 0.5) / PN_float32(pfm.get_x_size()),
+                  (PN_float32(yi) + 0.5) / PN_float32(pfm.get_y_size()));
       transform_point(uv);
       vwriter.set_data2f(uv);
     }
@@ -719,8 +799,8 @@ add_data(const PfmVizzer &vizzer, GeomVertexWriter &vwriter, int xi, int yi, boo
 
   case CT_texcoord3:
     {
-      LPoint3f uv(PN_float32(xi) / PN_float32(pfm.get_x_size() - 1),
-                  PN_float32(yi) / PN_float32(pfm.get_y_size() - 1), 
+      LPoint3f uv((PN_float32(xi) + 0.5) / PN_float32(pfm.get_x_size()),
+                  (PN_float32(yi) + 0.5) / PN_float32(pfm.get_y_size()), 
                   0.0f);
       transform_point(uv);
       vwriter.set_data3f(uv);
