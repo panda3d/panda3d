@@ -1008,6 +1008,44 @@ add_sub_image(const PNMImage &copy, int xto, int yto,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::mult_sub_image
+//       Access: Published
+//  Description: Behaves like copy_sub_image(), except the copy pixels
+//               are multiplied to the pixels of the destination, after
+//               scaling by the specified pixel_scale.  Unlike
+//               blend_sub_image(), the alpha channel is not treated
+//               specially.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+mult_sub_image(const PNMImage &copy, int xto, int yto,
+               int xfrom, int yfrom, int x_size, int y_size,
+               double pixel_scale) {
+  int xmin, ymin, xmax, ymax;
+  setup_sub_image(copy, xto, yto, xfrom, yfrom, x_size, y_size,
+                  xmin, ymin, xmax, ymax);
+
+  int x, y;
+  if (has_alpha() && copy.has_alpha()) {
+    for (y = ymin; y < ymax; y++) {
+      for (x = xmin; x < xmax; x++) {
+        set_alpha(x, y, get_alpha(x, y) * copy.get_alpha(x, y) * pixel_scale);
+      }
+    }
+  }
+
+  for (y = ymin; y < ymax; y++) {
+    for (x = xmin; x < xmax; x++) {
+      LRGBColord rgb1 = get_xel(x, y);
+      LRGBColord rgb2 = copy.get_xel(x, y);
+      set_xel(x, y, 
+              rgb1[0] * rgb2[0] * pixel_scale,
+              rgb1[1] * rgb2[1] * pixel_scale,
+              rgb1[2] * rgb2[2] * pixel_scale);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::darken_sub_image
 //       Access: Published
 //  Description: Behaves like copy_sub_image(), but the resulting
