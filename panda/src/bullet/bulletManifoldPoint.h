@@ -36,6 +36,7 @@ PUBLISHED:
   PN_stdfloat get_applied_impulse() const;
   LPoint3 get_position_world_on_a() const;
   LPoint3 get_position_world_on_b() const;
+  LPoint3 get_normal_world_on_b() const;
   LPoint3 get_local_point_a() const;
   LPoint3 get_local_point_b() const;
 
@@ -44,11 +45,40 @@ PUBLISHED:
   int get_index0() const;
   int get_index1() const;
 
+  INLINE bool is_const() const;
+
+  INLINE void set_lateral_friction_initialized(bool value);
+  INLINE void set_lateral_friction_dir1(const LVecBase3 &dir);
+  INLINE void set_lateral_friction_dir2(const LVecBase3 &dir);
+  INLINE void set_contact_motion1(PN_stdfloat value);
+  INLINE void set_contact_motion2(PN_stdfloat value);
+  INLINE void set_combined_friction(PN_stdfloat value);
+  INLINE void set_combined_restitution(PN_stdfloat value);
+  INLINE void set_applied_impulse(PN_stdfloat value);
+  INLINE void set_applied_impulse_lateral1(PN_stdfloat value);
+  INLINE void set_applied_impulse_lateral2(PN_stdfloat value);
+  INLINE void set_contact_cfm1(PN_stdfloat value);
+  INLINE void set_contact_cfm2(PN_stdfloat value);
+
+  INLINE bool get_lateral_friction_initialized() const;
+  INLINE LVector3 get_lateral_friction_dir1() const;
+  INLINE LVector3 get_lateral_friction_dir2() const;
+  INLINE PN_stdfloat get_contact_motion1() const;
+  INLINE PN_stdfloat get_contact_motion2() const;
+  INLINE PN_stdfloat get_combined_friction() const;
+  INLINE PN_stdfloat get_combined_restitution() const;
+  INLINE PN_stdfloat get_applied_impulse_lateral1() const;
+  INLINE PN_stdfloat get_applied_impulse_lateral2() const;
+  INLINE PN_stdfloat get_contact_cfm1() const;
+  INLINE PN_stdfloat get_contact_cfm2() const;
+
 public:
   BulletManifoldPoint(const btManifoldPoint &pt);
+  BulletManifoldPoint(btManifoldPoint &pt);
 
 private:
-  const btManifoldPoint _pt;
+  btManifoldPoint _pt;
+  bool _const;
 };
 
 #include "bulletManifoldPoint.I"

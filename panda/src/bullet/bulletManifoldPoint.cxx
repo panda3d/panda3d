@@ -20,8 +20,21 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 BulletManifoldPoint::
-BulletManifoldPoint(const btManifoldPoint &pt) : _pt(pt) {
+BulletManifoldPoint(btManifoldPoint &pt) 
+ : _pt(pt), _const(false) {
 
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletManifoldPoint::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+BulletManifoldPoint::
+BulletManifoldPoint(const btManifoldPoint &pt) {
+
+  _pt = (btManifoldPoint &)pt;
+  _const = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -77,6 +90,17 @@ LPoint3 BulletManifoldPoint::
 get_position_world_on_b() const {
 
   return btVector3_to_LPoint3(_pt.getPositionWorldOnB());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletManifoldPoint::get_normal_world_on_b
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+LPoint3 BulletManifoldPoint::
+get_normal_world_on_b() const {
+
+  return btVector3_to_LPoint3(_pt.m_normalWorldOnB);
 }
 
 ////////////////////////////////////////////////////////////////////
