@@ -395,11 +395,13 @@ make_displacement(PNMImage &result, double max_u, double max_v) const {
   // not exactly 0.5, because they round up.
   static const int midval = (PNM_MAXMAXVAL + 1) / 2;
 
-  // After Effects seems to always undershift by exactly this amount.
-  static const double scale_factor = 256.0 / 255.0;
+  // Empirically, After Effects seems to undershift by precisely this
+  // amount.  Curiously, this value is very close to, but not exactly,
+  // 256 / 255.
+  const double scale_factor = ae_undershift_factor;
 
-  double u_scale = scale_factor * 0.5 * (PNM_MAXMAXVAL - 1) / max_u;
-  double v_scale = scale_factor * 0.5 * (PNM_MAXMAXVAL - 1) / max_v;
+  double u_scale = scale_factor * 0.5 * PNM_MAXMAXVAL / max_u;
+  double v_scale = scale_factor * 0.5 * PNM_MAXMAXVAL / max_v;
 
   for (int yi = 0; yi < y_size; ++yi) {
     for (int xi = 0; xi < x_size; ++xi) {

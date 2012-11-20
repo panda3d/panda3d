@@ -84,6 +84,12 @@ ConfigVariableInt pfm_vis_max_indices
           "a single generated mesh.  If the mesh would require more than that, "
           "the mesh is subdivided into smaller pieces."));
 
+ConfigVariableDouble ae_undershift_factor
+("ae-undershift-factor", 1.004,
+ PRC_DESC("Specifies the factor by which After Effects under-applies the specified "
+          "maximum pixel shift when applying a displacement map.  This is used "
+          "to control PfmVizzer::make_displacement()."));
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libgrutil
 //  Description: Initializes the library.  This must be called at
