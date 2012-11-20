@@ -995,7 +995,7 @@ forward_distort(const PfmFile &dist) {
       }
       LPoint2f uv = dist_p->get_point2(xi, yi);
       int dist_xi = (int)cfloor(uv[0] * (double)_x_size);
-      int dist_yi = (int)cfloor(uv[0] * (double)_y_size);
+      int dist_yi = (int)cfloor(uv[1] * (double)_y_size);
       if (dist_xi < 0 || dist_xi >= _x_size || 
           dist_yi < 0 || dist_yi >= _y_size) {
         continue;
@@ -1056,7 +1056,7 @@ reverse_distort(const PfmFile &dist) {
       }
       LPoint2f uv = dist_p->get_point2(xi, yi);
       int dist_xi = (int)cfloor(uv[0] * (double)_x_size);
-      int dist_yi = (int)cfloor(uv[0] * (double)_y_size);
+      int dist_yi = (int)cfloor(uv[1] * (double)_y_size);
       if (dist_xi < 0 || dist_xi >= _x_size || 
           dist_yi < 0 || dist_yi >= _y_size) {
         continue;
