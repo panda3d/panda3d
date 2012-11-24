@@ -43,7 +43,8 @@ get_node1() const {
 INLINE const BulletManifoldPoint *BulletContact::
 get_manifold_point() const {
 
-  return new BulletManifoldPoint(_mp);
+  btManifoldPoint &mp = const_cast<btManifoldPoint &>(_mp);
+  return new BulletManifoldPoint(mp);
 }
 
 ////////////////////////////////////////////////////////////////////

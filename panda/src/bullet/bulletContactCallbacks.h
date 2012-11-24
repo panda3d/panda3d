@@ -18,7 +18,8 @@
 #include "pandabase.h"
 
 #include "bullet_includes.h"
-
+#include "bulletWorld.h"
+#include "bulletContactCallbackData.h"
 #include "config_bullet.h" // required for: bullet_cat.debug()
 
 #include "event.h"
@@ -67,6 +68,15 @@ contact_added_callback(btManifoldPoint &cp,
 
       EventQueue::get_global_event_queue()->queue_event(event);
     }
+
+    // Callback
+    if (bullet_contact_added_callback) {
+
+      BulletManifoldPoint mp(cp);
+      BulletContactCallbackData cbdata(mp, node0, node1);
+
+      bullet_contact_added_callback->do_callback(&cbdata);
+    }
   }
 
   return true;
@@ -83,7 +93,7 @@ contact_processed_callback(btManifoldPoint &cp,
 
 /*
   btCollisionObject *obj0 = (btCollisionObject *)body0;
-  btCollisionObject *colobj1Obj1 = (btCollisionObject *)body1;
+  btCollisionObject *obj1 = (btCollisionObject *)body1;
 
   int flags0 = obj0->getCollisionFlags();
   int flags1 = obj1->getCollisionFlags();

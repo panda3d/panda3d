@@ -10,6 +10,7 @@
 #include "bulletConeShape.cxx"
 #include "bulletConeTwistConstraint.cxx"
 #include "bulletConstraint.cxx"
+#include "bulletContactCallbackData.cxx"
 #include "bulletContactResult.cxx"
 #include "bulletConvexHullShape.cxx"
 #include "bulletConvexPointCloudShape.cxx"

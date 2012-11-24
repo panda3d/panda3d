@@ -37,6 +37,8 @@ PStatCollector BulletWorld::_pstat_debug("App:Bullet:DoPhysics:Debug");
 PStatCollector BulletWorld::_pstat_p2b("App:Bullet:DoPhysics:SyncP2B");
 PStatCollector BulletWorld::_pstat_b2p("App:Bullet:DoPhysics:SyncB2P");
 
+PT(CallbackObject) bullet_contact_added_callback;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWorld::Constructor
 //       Access: Published
@@ -865,6 +867,36 @@ bool BulletWorld::
 get_group_collision_flag(unsigned int group1, unsigned int group2) const {
 
   return _filter_cb2._collide[group1].get_bit(group2);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletWorld::set_contact_added_callback
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletWorld::
+set_contact_added_callback(CallbackObject *obj) {
+
+  _world->getSolverInfo().m_solverMode |= SOLVER_DISABLE_VELOCITY_DEPENDENT_FRICTION_DIRECTION;
+  _world->getSolverInfo().m_solverMode |= SOLVER_USE_2_FRICTION_DIRECTIONS;
+  _world->getSolverInfo().m_solverMode |= SOLVER_ENABLE_FRICTION_DIRECTION_CACHING;
+
+  bullet_contact_added_callback = obj;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletWorld::clear_contact_added_callback
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletWorld::
+clear_contact_added_callback() {
+
+  _world->getSolverInfo().m_solverMode &= ~SOLVER_DISABLE_VELOCITY_DEPENDENT_FRICTION_DIRECTION;
+  _world->getSolverInfo().m_solverMode &= ~SOLVER_USE_2_FRICTION_DIRECTIONS;
+  _world->getSolverInfo().m_solverMode &= ~SOLVER_ENABLE_FRICTION_DIRECTION_CACHING;
+
+  bullet_contact_added_callback = NULL;
 }
 
 #ifdef HAVE_PYTHON

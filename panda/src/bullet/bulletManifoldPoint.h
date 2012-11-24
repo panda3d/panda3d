@@ -45,8 +45,6 @@ PUBLISHED:
   int get_index0() const;
   int get_index1() const;
 
-  INLINE bool is_const() const;
-
   INLINE void set_lateral_friction_initialized(bool value);
   INLINE void set_lateral_friction_dir1(const LVecBase3 &dir);
   INLINE void set_lateral_friction_dir2(const LVecBase3 &dir);
@@ -73,12 +71,10 @@ PUBLISHED:
   INLINE PN_stdfloat get_contact_cfm2() const;
 
 public:
-  BulletManifoldPoint(const btManifoldPoint &pt);
   BulletManifoldPoint(btManifoldPoint &pt);
 
 private:
-  btManifoldPoint _pt;
-  bool _const;
+  btManifoldPoint &_pt;
 };
 
 #include "bulletManifoldPoint.I"

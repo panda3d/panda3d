@@ -21,6 +21,7 @@
     bulletConeShape.h bulletConeShape.I \
     bulletConeTwistConstraint.h bulletConeTwistConstraint.I \
     bulletConstraint.h bulletConstraint.I \
+    bulletContactCallbackData.h bulletContactCallbackData.I \
     bulletContactCallbacks.h \
     bulletContactResult.h bulletContactResult.I \
     bulletConvexHullShape.h bulletConvexHullShape.I \
@@ -67,6 +68,7 @@
     bulletConeShape.cxx \
     bulletConeTwistConstraint.cxx \
     bulletConstraint.cxx \
+    bulletContactCallbackData.cxx \
     bulletContactResult.cxx \
     bulletConvexHullShape.cxx \
     bulletConvexPointCloudShape.cxx \
@@ -111,6 +113,7 @@
     bulletConeShape.h bulletConeShape.I \
     bulletConeTwistConstraint.h bulletConeTwistConstraint.I \
     bulletConstraint.h bulletConstraint.I \
+    bulletContactCallbackData.h bulletContactCallbackData.I \
     bulletContactCallbacks.h \
     bulletContactResult.h bulletContactResult.I \
     bulletConvexHullShape.h bulletConvexHullShape.I \

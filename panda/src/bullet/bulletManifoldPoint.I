@@ -23,18 +23,6 @@ INLINE BulletManifoldPoint::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletManifoldPoint::is_const
-//       Access: Published
-//  Description: Returns TRUE if this instance of BulletManifoldPoint
-//               can not be modified.
-////////////////////////////////////////////////////////////////////
-INLINE bool BulletManifoldPoint::
-is_const() const {
-
-  return _const;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: BulletManifoldPoint::set_lateral_friction_initialized
 //       Access: Published
 //  Description:
@@ -42,7 +30,6 @@ is_const() const {
 INLINE void BulletManifoldPoint::
 set_lateral_friction_initialized(bool value) {
 
-  nassertv(!_const);
   _pt.m_lateralFrictionInitialized = value;
 }
 
@@ -65,7 +52,6 @@ get_lateral_friction_initialized() const {
 INLINE void BulletManifoldPoint::
 set_lateral_friction_dir1(const LVecBase3 &dir) {
 
-  nassertv(!_const);
   _pt.m_lateralFrictionDir1 = LVecBase3_to_btVector3(dir);
 }
 
@@ -88,7 +74,6 @@ get_lateral_friction_dir1() const {
 INLINE void BulletManifoldPoint::
 set_lateral_friction_dir2(const LVecBase3 &dir) {
 
-  nassertv(!_const);
   _pt.m_lateralFrictionDir2 = LVecBase3_to_btVector3(dir);
 }
 
@@ -111,7 +96,6 @@ get_lateral_friction_dir2() const {
 INLINE void BulletManifoldPoint::
 set_contact_motion1(PN_stdfloat value) {
 
-  nassertv(!_const);
   _pt.m_contactMotion1 = (btScalar)value;
 }
 
@@ -134,7 +118,6 @@ get_contact_motion1() const {
 INLINE void BulletManifoldPoint::
 set_contact_motion2(PN_stdfloat value) {
 
-  nassertv(!_const);
   _pt.m_contactMotion2 = (btScalar)value;
 }
 
@@ -157,7 +140,6 @@ get_contact_motion2() const {
 INLINE void BulletManifoldPoint::
 set_combined_friction(PN_stdfloat value) {
 
-  nassertv(!_const);
   _pt.m_combinedFriction = (btScalar)value;
 }
 
@@ -180,7 +162,6 @@ get_combined_friction() const {
 INLINE void BulletManifoldPoint::
 set_combined_restitution(PN_stdfloat value) {
 
-  nassertv(!_const);
   _pt.m_combinedRestitution = (btScalar)value;
 }
 
@@ -203,7 +184,6 @@ get_combined_restitution() const {
 INLINE void BulletManifoldPoint::
 set_applied_impulse(PN_stdfloat value) {
 
-  nassertv(!_const);
   _pt.m_appliedImpulse = (btScalar)value;
 }
 
@@ -215,7 +195,6 @@ set_applied_impulse(PN_stdfloat value) {
 INLINE void BulletManifoldPoint::
 set_applied_impulse_lateral1(PN_stdfloat value) {
 
-  nassertv(!_const);
   _pt.m_appliedImpulseLateral1 = (btScalar)value;
 }
 
@@ -238,7 +217,6 @@ get_applied_impulse_lateral1() const {
 INLINE void BulletManifoldPoint::
 set_applied_impulse_lateral2(PN_stdfloat value) {
 
-  nassertv(!_const);
   _pt.m_appliedImpulseLateral2 = (btScalar)value;
 }
 
@@ -261,7 +239,6 @@ get_applied_impulse_lateral2() const {
 INLINE void BulletManifoldPoint::
 set_contact_cfm1(PN_stdfloat value) {
 
-  nassertv(!_const);
   _pt.m_contactCFM1 = (btScalar)value;
 }
 
@@ -284,7 +261,6 @@ get_contact_cfm1() const {
 INLINE void BulletManifoldPoint::
 set_contact_cfm2(PN_stdfloat value) {
 
-  nassertv(!_const);
   _pt.m_contactCFM2 = (btScalar)value;
 }
 

@@ -35,6 +35,7 @@
 #include "typedReferenceCount.h"
 #include "transformState.h"
 #include "pandaNode.h"
+#include "callbackObject.h"
 #include "collideMask.h"
 #include "luse.h"
 
@@ -46,6 +47,8 @@
 class BulletPersistentManifold;
 class BulletShape;
 class BulletSoftBodyWorldInfo;
+
+extern PT(CallbackObject) bullet_contact_added_callback;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BulletWorld
@@ -134,6 +137,10 @@ PUBLISHED:
   // Collision filtering
   void set_group_collision_flag(unsigned int group1, unsigned int group2, bool enable);
   bool get_group_collision_flag(unsigned int group1, unsigned int group2) const;
+
+  // Callbacks
+  void set_contact_added_callback(CallbackObject *obj);
+  void clear_contact_added_callback();
 
   // Configuration
   enum BroadphaseAlgorithm {

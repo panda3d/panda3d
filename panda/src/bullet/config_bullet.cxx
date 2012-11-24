@@ -21,6 +21,7 @@
 #include "bulletCharacterControllerNode.h"
 #include "bulletConeShape.h"
 #include "bulletConeTwistConstraint.h"
+#include "bulletContactCallbackData.h"
 #include "bulletConstraint.h"
 #include "bulletConvexHullShape.h"
 #include "bulletConvexPointCloudShape.h"
@@ -144,7 +145,6 @@ init_libbullet() {
   initialized = true;
 
   // Initialize types
-  //
   BulletBaseCharacterControllerNode::init_type();
   BulletBodyNode::init_type();
   BulletBoxShape::init_type();
@@ -152,6 +152,7 @@ init_libbullet() {
   BulletCharacterControllerNode::init_type();
   BulletConeShape::init_type();
   BulletConeTwistConstraint::init_type();
+  BulletContactCallbackData::init_type();
   BulletConstraint::init_type();
   BulletConvexHullShape::init_type();
   BulletConvexPointCloudShape::init_type();
@@ -176,18 +177,15 @@ init_libbullet() {
   BulletWorld::init_type();
 
   // Custom contact callbacks
-  //
   gContactAddedCallback = contact_added_callback;
   gContactProcessedCallback = contact_processed_callback;
   gContactDestroyedCallback = contact_destroyed_callback;
 
   // Initialize notification category
-  //
   bullet_cat.init();
   bullet_cat.debug() << "initialize module" << endl;
 
   // Register the Bullet system
-  //
   PandaSystem *ps = PandaSystem::get_global_ptr();
   ps->add_system("Bullet");
 }

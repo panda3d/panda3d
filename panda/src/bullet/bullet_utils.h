@@ -55,6 +55,7 @@ enum BulletUpAxis {
 };
 
 EXPCL_PANDABULLET BulletUpAxis get_default_up_axis();
+
 END_PUBLISH
 
 #include "bullet_utils.I"
