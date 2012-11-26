@@ -28,6 +28,7 @@
     bulletConvexPointCloudShape.h bulletConvexPointCloudShape.I \
     bulletCylinderShape.h bulletCylinderShape.I \
     bulletDebugNode.h bulletDebugNode.I \
+    bulletFilterCallbackData.h bulletFilterCallbackData.I \
     bulletGenericConstraint.h bulletGenericConstraint.I \
     bulletGhostNode.h bulletGhostNode.I \
     bulletHeightfieldShape.h bulletHeightfieldShape.I \
@@ -47,6 +48,7 @@
     bulletSoftBodyWorldInfo.h bulletSoftBodyWorldInfo.I \
     bulletSphereShape.h bulletSphereShape.I \
     bulletSphericalConstraint.h bulletSphericalConstraint.I \
+    bulletTickCallbackData.h bulletTickCallbackData.I \
     bulletTriangleMesh.h bulletTriangleMesh.I \
     bulletTriangleMeshShape.h bulletTriangleMeshShape.I \
     bulletVehicle.h bulletVehicle.I \
@@ -74,6 +76,7 @@
     bulletConvexPointCloudShape.cxx \
     bulletCylinderShape.cxx \
     bulletDebugNode.cxx \
+    bulletFilterCallbackData.cxx \
     bulletGenericConstraint.cxx \
     bulletGhostNode.cxx \
     bulletHeightfieldShape.cxx \
@@ -93,6 +96,7 @@
     bulletSoftBodyWorldInfo.cxx \
     bulletSphereShape.cxx \
     bulletSphericalConstraint.cxx \
+    bulletTickCallbackData.cxx \
     bulletTriangleMesh.cxx \
     bulletTriangleMeshShape.cxx \
     bulletVehicle.cxx \
@@ -120,6 +124,7 @@
     bulletConvexPointCloudShape.h bulletConvexPointCloudShape.I \
     bulletCylinderShape.h bulletCylinderShape.I \
     bulletDebugNode.h bulletDebugNode.I \
+    bulletFilterCallbackData.h bulletFilterCallbackData.I \
     bulletGenericConstraint.h bulletGenericConstraint.I \
     bulletGhostNode.h bulletGhostNode.I \
     bulletHeightfieldShape.h bulletHeightfieldShape.I \
@@ -139,6 +144,7 @@
     bulletSoftBodyWorldInfo.h bulletSoftBodyWorldInfo.I \
     bulletSphereShape.h bulletSphereShape.I \
     bulletSphericalConstraint.h bulletSphericalConstraint.I \
+    bulletTickCallbackData.h bulletTickCallbackData.I \
     bulletTriangleMesh.h bulletTriangleMesh.I \
     bulletTriangleMeshShape.h bulletTriangleMeshShape.I \
     bulletVehicle.h bulletVehicle.I \

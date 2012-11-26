@@ -1,5 +1,5 @@
-// Filename: bulletContactCallbackData.h
-// Created by:  enn0x (22Nov12)
+// Filename: bulletFilterCallbackData.h
+// Created by:  enn0x (26Nov12)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,8 +12,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef __BULLET_CONTACT_CALLBACK_DATA_H__
-#define __BULLET_CONTACT_CALLBACK_DATA_H__
+#ifndef __BULLET_FILTER_CALLBACK_DATA_H__
+#define __BULLET_FILTER_CALLBACK_DATA_H__
 
 #include "pandabase.h"
 #include "callbackData.h"
@@ -21,36 +21,27 @@
 
 #include "bullet_includes.h"
 #include "bullet_utils.h"
-#include "bulletManifoldPoint.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : BulletContactCallbackData
+//       Class : BulletFilterCallbackData
 // Description : 
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDABULLET BulletContactCallbackData : public CallbackData {
+class EXPCL_PANDABULLET BulletFilterCallbackData : public CallbackData {
 
 PUBLISHED:
-  INLINE BulletContactCallbackData(BulletManifoldPoint &mp, 
-                                   PandaNode *node0, PandaNode *node1,
-                                   int id0, int id1,
-                                   int index0, int index1);
+  INLINE BulletFilterCallbackData(PandaNode *node0, 
+                                  PandaNode *node1);
 
-  INLINE BulletManifoldPoint &get_manifold() const;
-  INLINE PandaNode *get_node0() const;
-  INLINE PandaNode *get_node1() const;
-  INLINE int get_part_id0() const;
-  INLINE int get_part_id1() const;
-  INLINE int get_index0() const;
-  INLINE int get_index1() const;
+  INLINE PandaNode *get_node_0() const;
+  INLINE PandaNode *get_node_1() const;
+
+  INLINE void set_collide(bool collide);
+  INLINE bool get_collide() const;
 
 private:
-  BulletManifoldPoint &_mp;
   PandaNode *_node0;
   PandaNode *_node1;
-  int _id0;
-  int _id1;
-  int _index0;
-  int _index1;
+  bool _collide;
 
 ////////////////////////////////////////////////////////////////////
 public:
@@ -59,7 +50,7 @@ public:
   }
   static void init_type() {
     CallbackData::init_type();
-    register_type(_type_handle, "BulletContactCallbackData", 
+    register_type(_type_handle, "BulletFilterCallbackData", 
                   CallbackData::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -74,6 +65,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "bulletContactCallbackData.I"
+#include "bulletFilterCallbackData.I"
 
-#endif // __BULLET_CONTACT_CALLBACK_DATA_H__
+#endif // __BULLET_FILTER_CALLBACK_DATA_H__

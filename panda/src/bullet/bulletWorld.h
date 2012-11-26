@@ -39,11 +39,6 @@
 #include "collideMask.h"
 #include "luse.h"
 
-#ifdef HAVE_PYTHON
-  #include "py_panda.h"
-  #include "Python.h"
-#endif
-
 class BulletPersistentManifold;
 class BulletShape;
 class BulletSoftBodyWorldInfo;
@@ -142,6 +137,12 @@ PUBLISHED:
   void set_contact_added_callback(CallbackObject *obj);
   void clear_contact_added_callback();
 
+  void set_tick_callback(CallbackObject *obj);
+  void clear_tick_callback();
+
+  void set_filter_callback(CallbackObject *obj);
+  void clear_filter_callback();
+
   // Configuration
   enum BroadphaseAlgorithm {
     BA_sweep_and_prune,
@@ -151,14 +152,8 @@ PUBLISHED:
   enum FilterAlgorithm {
     FA_mask,
     FA_groups_mask,
-#ifdef HAVE_PYTHON
-    FA_python_callback,
-#endif
+    FA_callback,
   };
-
-#ifdef HAVE_PYTHON
-  void set_python_filter_callback(PyObject *callback);
-#endif
 
 PUBLISHED: // Deprecated methods, will become private soon
   void attach_ghost(BulletGhostNode *node);
@@ -187,6 +182,8 @@ private:
   void sync_p2b(PN_stdfloat dt, int num_substeps);
   void sync_b2p();
 
+  void tick_callback(btDynamicsWorld *world, btScalar timestep);
+
   typedef PTA(PT(BulletRigidBodyNode)) BulletRigidBodies;
   typedef PTA(PT(BulletSoftBodyNode)) BulletSoftBodies;
   typedef PTA(PT(BulletGhostNode)) BulletGhosts;
@@ -214,15 +211,13 @@ private:
     CollideMask _collide[32];
   };
 
-#ifdef HAVE_PYTHON
   struct btFilterCallback3 : public btOverlapFilterCallback {
     virtual bool needBroadphaseCollision(
       btBroadphaseProxy* proxy0,
       btBroadphaseProxy* proxy1) const;
 
-    PyObject *_python_callback;
+    PT(CallbackObject) _filter_callback_obj;
   };
-#endif
 
   btBroadphaseInterface *_broadphase;
   btCollisionConfiguration *_configuration;
@@ -234,14 +229,13 @@ private:
 
   btFilterCallback1 _filter_cb1;
   btFilterCallback2 _filter_cb2;
-
-#ifdef HAVE_PYTHON
   btFilterCallback3 _filter_cb3;
-#endif
 
-  btSoftBodyWorldInfo _info;
+  PT(CallbackObject) _tick_callback_obj;
 
   PT(BulletDebugNode) _debug;
+
+  btSoftBodyWorldInfo _info;
 
   BulletRigidBodies _bodies;
   BulletSoftBodies _softbodies;

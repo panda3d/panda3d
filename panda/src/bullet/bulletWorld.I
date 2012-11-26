@@ -52,10 +52,6 @@ INLINE BulletWorld::
   delete _configuration;
   delete _dispatcher;
   delete _broadphase;
-
-#ifdef HAVE_PYTHON
-  Py_XDECREF(_filter_cb3._python_callback);
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////

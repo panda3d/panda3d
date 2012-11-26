@@ -19,14 +19,6 @@
 
 #include "collideMask.h"
 
-#ifdef HAVE_PYTHON
-  #include "py_panda.h"
-  #include "typedReferenceCount.h"
-  #ifndef CPPPARSER
-    extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_PandaNode;
-  #endif
-#endif
-
 #define clamp(x, x_min, x_max) max(min(x, x_max), x_min)
 
 TypeHandle BulletWorld::_type_handle;
@@ -77,29 +69,6 @@ BulletWorld() {
   _dispatcher = new btCollisionDispatcher(_configuration);
   nassertv(_dispatcher);
 
-/*
-  _dispatcher.registerCollisionCreateFunc(
-    BroadphaseNativeType.ConvexTriangleMeshShape,
-    BroadphaseNativeType.ConvexTriangleMeshShape,
-    dcc.GetCollisionAlgorithmCreateFunc(
-      BroadphaseNativeType.TriangleMeshShape,
-      BroadphaseNativeType.TriangleMeshShape));
-
-  _dispatcher.registerCollisionCreateFunc(
-      BroadphaseNativeType.TriangleMeshShape,
-      BroadphaseNativeType.TriangleMeshShape,
-      dcc.GetCollisionAlgorithmCreateFunc(
-        BroadphaseNativeType.ConvexTriangleMeshShape,
-        BroadphaseNativeType.ConvexTriangleMeshShape));
-
-  _dispatcher.registerCollisionCreateFunc(
-     BroadphaseNativeType.ConvexTriangleMeshShape,
-     BroadphaseNativeType.ConvexTriangleMeshShape,
-     dcc.GetCollisionAlgorithmCreateFunc(
-       BroadphaseNativeType.ConvexTriangleMeshShape,
-       BroadphaseNativeType.ConvexTriangleMeshShape));
-*/
-
   // Solver
   _solver = new btSequentialImpulseConstraintSolver;
   nassertv(_solver);
@@ -109,6 +78,7 @@ BulletWorld() {
   nassertv(_world);
   nassertv(_world->getPairCache());
 
+  _world->setWorldUserInfo(this);
   _world->setGravity(btVector3(0.0f, 0.0f, 0.0f));
 
   // Ghost-pair callback
@@ -122,12 +92,15 @@ BulletWorld() {
     case FA_groups_mask:
       _world->getPairCache()->setOverlapFilterCallback(&_filter_cb2);
       break;
-    case FA_python_callback:
+    case FA_callback:
       _world->getPairCache()->setOverlapFilterCallback(&_filter_cb3);
       break;
     default:
       bullet_cat.error() << "no proper filter algorithm!" << endl;
   }
+
+  // Tick callback
+  _tick_callback_obj = NULL;
 
   // SoftBodyWorldInfo
   _info.m_dispatcher = _dispatcher;
@@ -899,30 +872,71 @@ clear_contact_added_callback() {
   bullet_contact_added_callback = NULL;
 }
 
-#ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::set_python_filter_callback
+//     Function: BulletWorld::set_tick_callback
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletWorld::
-set_python_filter_callback(PyObject *callback) {
+set_tick_callback(CallbackObject *obj) {
 
-  nassertv(callback != NULL);
+  nassertv(obj != NULL);
+  _tick_callback_obj = obj;
+}
 
-  if (!PyCallable_Check(callback)) {
-    PyErr_Format(PyExc_TypeError, "'%s' object is not callable", callback->ob_type->tp_name);
-    return;
-  }
+////////////////////////////////////////////////////////////////////
+//     Function: BulletWorld::clear_tick_callback
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletWorld::
+clear_tick_callback() {
 
-  if (bullet_filter_algorithm != FA_python_callback) {
+  _tick_callback_obj = NULL;
+}
+
+///////////////////////////////////////////////////////////////////
+//     Function: BulletWorld::tick_callback
+//       Access: Private
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletWorld::
+tick_callback(btDynamicsWorld *world, btScalar timestep) {
+
+  nassertv(world->getWorldUserInfo());
+
+  BulletWorld *w = static_cast<BulletWorld *>(world->getWorldUserInfo());
+  BulletTickCallbackData cbdata(timestep);
+  w->_tick_callback_obj->do_callback(&cbdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletWorld::set_filter_callback
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletWorld::
+set_filter_callback(CallbackObject *obj) {
+
+  nassertv(obj != NULL);
+
+  if (bullet_filter_algorithm != FA_callback) {
     bullet_cat.warning() << "filter algorithm is not 'python-callback'" << endl;
   }
 
-  _filter_cb3._python_callback = callback;
-  Py_XINCREF(_filter_cb3._python_callback);
+  _filter_cb3._filter_callback_obj = obj;
 }
-#endif
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletWorld::clear_filter_callback
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletWorld::
+clear_filter_callback() {
+
+  _filter_cb3._filter_callback_obj = NULL;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWorld::FilterCallback1::needBroadphaseCollision
@@ -983,7 +997,6 @@ needBroadphaseCollision(btBroadphaseProxy* proxy0, btBroadphaseProxy* proxy1) co
   return false;
 }
 
-#ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWorld::FilterCallback3::needBroadphaseCollision
 //       Access: Published
@@ -992,7 +1005,7 @@ needBroadphaseCollision(btBroadphaseProxy* proxy0, btBroadphaseProxy* proxy1) co
 bool BulletWorld::btFilterCallback3::
 needBroadphaseCollision(btBroadphaseProxy* proxy0, btBroadphaseProxy* proxy1) const {
 
-  nassertr(_python_callback, false);
+  nassertr(_filter_callback_obj, false);
 
   btCollisionObject *obj0 = (btCollisionObject *) proxy0->m_clientObject;
   btCollisionObject *obj1 = (btCollisionObject *) proxy1->m_clientObject;
@@ -1006,37 +1019,10 @@ needBroadphaseCollision(btBroadphaseProxy* proxy0, btBroadphaseProxy* proxy1) co
   nassertr(node0, false);
   nassertr(node1, false);
 
-  PyObject *p0 = DTool_CreatePyInstanceTyped(node0, Dtool_PandaNode, true, false, node0->get_type_index());
-  PyObject *p1 = DTool_CreatePyInstanceTyped(node1, Dtool_PandaNode, true, false, node1->get_type_index());
-
-  PyObject *result = PyEval_CallFunction(_python_callback, "OO", p0, p1);
-
-  bool collide = false;
-
-  if (!result) {
-    bullet_cat.error() << "An error occurred while calling python function!" << endl;
-    PyErr_Print();
-  }
-  else {
-    int v = PyObject_IsTrue(result);
-    if (v == 1) {
-      collide = true;
-    }
-    else if (v == 0) {
-      collide = false;
-    }
-    else {
-      bullet_cat.error() << "Python callback function must return a bool object" << endl;
-    }
-    Py_DECREF(result);
-  }
-
-  //Py_XDECREF(p0);
-  //Py_XDECREF(p1);
-
-  return collide;
+  BulletFilterCallbackData cbdata(node0, node1);
+  _filter_callback_obj->do_callback(&cbdata);
+  return cbdata.get_collide();
 }
-#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWorld::BroadphaseAlgorithm ostream operator
@@ -1090,14 +1076,10 @@ operator << (ostream &out, BulletWorld::FilterAlgorithm algorithm) {
   switch (algorithm) {
   case BulletWorld::FA_mask:
     return out << "mask";
-
   case BulletWorld::FA_groups_mask:
     return out << "groups-mask";
-
-#ifdef HAVE_PYTHON
-  case BulletWorld::FA_python_callback:
-    return out << "python-callback";
-#endif
+  case BulletWorld::FA_callback:
+    return out << "callback";
   };
   return out << "**invalid BulletWorld::FilterAlgorithm(" << (int)algorithm << ")**";
 }
@@ -1117,17 +1099,14 @@ operator >> (istream &in, BulletWorld::FilterAlgorithm &algorithm) {
   else if (word == "groups-mask") {
     algorithm = BulletWorld::FA_groups_mask;
   } 
-#ifdef HAVE_PYTHON
-  else if (word == "python-callback") {
-    algorithm = BulletWorld::FA_python_callback;
+  else if (word == "callback") {
+    algorithm = BulletWorld::FA_callback;
   }
-#endif
   else {
     bullet_cat.error()
       << "Invalid BulletWorld::FilterAlgorithm: " << word << "\n";
     algorithm = BulletWorld::FA_mask;
   }
-
   return in;
 }
 

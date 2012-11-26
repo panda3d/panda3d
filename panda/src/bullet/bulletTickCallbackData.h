@@ -1,5 +1,5 @@
-// Filename: bulletContactCallbackData.h
-// Created by:  enn0x (22Nov12)
+// Filename: bulletTickCallbackData.h
+// Created by:  enn0x (26Nov12)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,45 +12,28 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef __BULLET_CONTACT_CALLBACK_DATA_H__
-#define __BULLET_CONTACT_CALLBACK_DATA_H__
+#ifndef __BULLET_TICK_CALLBACK_DATA_H__
+#define __BULLET_TICK_CALLBACK_DATA_H__
 
 #include "pandabase.h"
 #include "callbackData.h"
 #include "callbackObject.h"
 
 #include "bullet_includes.h"
-#include "bullet_utils.h"
-#include "bulletManifoldPoint.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : BulletContactCallbackData
+//       Class : BulletTickCallbackData
 // Description : 
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDABULLET BulletContactCallbackData : public CallbackData {
+class EXPCL_PANDABULLET BulletTickCallbackData : public CallbackData {
 
 PUBLISHED:
-  INLINE BulletContactCallbackData(BulletManifoldPoint &mp, 
-                                   PandaNode *node0, PandaNode *node1,
-                                   int id0, int id1,
-                                   int index0, int index1);
+  INLINE BulletTickCallbackData(btScalar timestep);
 
-  INLINE BulletManifoldPoint &get_manifold() const;
-  INLINE PandaNode *get_node0() const;
-  INLINE PandaNode *get_node1() const;
-  INLINE int get_part_id0() const;
-  INLINE int get_part_id1() const;
-  INLINE int get_index0() const;
-  INLINE int get_index1() const;
+  INLINE PN_stdfloat get_timestep() const;
 
 private:
-  BulletManifoldPoint &_mp;
-  PandaNode *_node0;
-  PandaNode *_node1;
-  int _id0;
-  int _id1;
-  int _index0;
-  int _index1;
+  btScalar _timestep;
 
 ////////////////////////////////////////////////////////////////////
 public:
@@ -59,7 +42,7 @@ public:
   }
   static void init_type() {
     CallbackData::init_type();
-    register_type(_type_handle, "BulletContactCallbackData", 
+    register_type(_type_handle, "BulletTickCallbackData", 
                   CallbackData::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -74,6 +57,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "bulletContactCallbackData.I"
+#include "bulletTickCallbackData.I"
 
-#endif // __BULLET_CONTACT_CALLBACK_DATA_H__
+#endif // __BULLET_TICK_CALLBACK_DATA_H__

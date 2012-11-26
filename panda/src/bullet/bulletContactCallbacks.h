@@ -73,7 +73,7 @@ contact_added_callback(btManifoldPoint &cp,
     if (bullet_contact_added_callback) {
 
       BulletManifoldPoint mp(cp);
-      BulletContactCallbackData cbdata(mp, node0, node1);
+      BulletContactCallbackData cbdata(mp, node0, node1, id0, id1, index0, index1);
 
       bullet_contact_added_callback->do_callback(&cbdata);
     }
