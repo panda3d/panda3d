@@ -29,6 +29,9 @@
 #include "physxContactPair.h"
 #include "physxContactPoint.h"
 #include "physxController.h"
+#include "physxControllerReport.h"
+#include "physxControllerShapeHit.h"
+#include "physxControllersHit.h"
 #include "physxConvexMesh.h"
 #include "physxConvexForceFieldShape.h"
 #include "physxConvexShape.h"
@@ -131,6 +134,8 @@ init_libphysx() {
   PhysxContactPair::init_type();
   PhysxContactPoint::init_type();
   PhysxController::init_type();
+  PhysxControllerShapeHit::init_type();
+  PhysxControllersHit::init_type();
   PhysxConvexMesh::init_type();
   PhysxConvexForceFieldShape::init_type();
   PhysxConvexShape::init_type();

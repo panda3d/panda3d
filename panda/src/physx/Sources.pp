@@ -44,6 +44,8 @@
     physxController.I physxController.h \
     physxControllerDesc.I physxControllerDesc.h \
     physxControllerReport.I physxControllerReport.h \
+    physxControllerShapeHit.I physxControllerShapeHit.h \
+    physxControllersHit.I physxControllersHit.h \
     physxConvexForceFieldShape.I physxConvexForceFieldShape.h \
     physxConvexForceFieldShapeDesc.I physxConvexForceFieldShapeDesc.h \
     physxConvexMesh.I physxConvexMesh.h \
@@ -173,6 +175,8 @@
     physxController.cxx \
     physxControllerDesc.cxx \
     physxControllerReport.cxx \
+    physxControllerShapeHit.cxx \
+    physxControllersHit.cxx \
     physxConvexForceFieldShape.cxx \
     physxConvexForceFieldShapeDesc.cxx \
     physxConvexMesh.cxx \
@@ -302,6 +306,8 @@
     physxController.I physxController.h \
     physxControllerDesc.I physxControllerDesc.h \
     physxControllerReport.I physxControllerReport.h \
+    physxControllerShapeHit.I physxControllerShapeHit.h \
+    physxControllersHit.I physxControllersHit.h \
     physxConvexForceFieldShape.I physxConvexForceFieldShape.h \
     physxConvexForceFieldShapeDesc.I physxConvexForceFieldShapeDesc.h \
     physxConvexMesh.I physxConvexMesh.h \

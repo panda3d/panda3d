@@ -30,6 +30,8 @@
 #include "physxController.cxx"
 #include "physxControllerDesc.cxx"
 #include "physxControllerReport.cxx"
+#include "physxControllerShapeHit.cxx"
+#include "physxControllersHit.cxx"
 #include "physxConstraintDominance.cxx"
 #include "physxConvexForceFieldShape.cxx"
 #include "physxConvexForceFieldShapeDesc.cxx"

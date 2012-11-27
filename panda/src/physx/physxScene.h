@@ -17,6 +17,7 @@
 
 #include "pandabase.h"
 #include "luse.h"
+#include "callbackObject.h"
 
 #include "physxObject.h"
 #include "physxObjectCollection.h"
@@ -88,6 +89,9 @@ PUBLISHED:
   bool is_trigger_reporting_enabled() const;
   void enable_controller_reporting(bool enabled);
   bool is_controller_reporting_enabled() const;
+
+  INLINE void set_controller_shape_hit_callback(PT(CallbackObject) cbobj);
+  INLINE void set_controller_controller_hit_callback(PT(CallbackObject) cbobj);
 
   void set_gravity(const LVector3f &gravity);
 

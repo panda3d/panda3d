@@ -25,6 +25,9 @@ void PhysxControllerReport::
 enable() {
 
   _enabled = true;
+
+  _shape_hit_cbobj = NULL;
+  _controller_hit_cbobj = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -63,13 +66,21 @@ onShapeHit( const NxControllerShapeHit& hit ) {
 
   _pcollector.start();
 
-  if (1 && hit.shape) {
-    NxActor& actor = hit.shape->getActor();
-    if (actor.isDynamic() && !actor.readBodyFlag(NX_BF_KINEMATIC)) {
-      if (hit.dir.z == 0.0f) {
-        NxF32 controllerMass = hit.controller->getActor()->getMass();
-        NxF32 coeff = actor.getMass() * hit.length * controllerMass;
-        actor.addForceAtLocalPos(hit.dir*coeff, NxVec3(0,0,0), NX_IMPULSE);
+  if (_shape_hit_cbobj) {
+    // Callback
+    PhysxControllerShapeHit cbdata(hit);
+    _shape_hit_cbobj->do_callback(&cbdata);
+  } 
+  else {
+    // Default implementation
+    if (1 && hit.shape) {
+      NxActor& actor = hit.shape->getActor();
+      if (actor.isDynamic() && !actor.readBodyFlag(NX_BF_KINEMATIC)) {
+        if (hit.dir.z == 0.0f) {
+          NxF32 controllerMass = hit.controller->getActor()->getMass();
+          NxF32 coeff = actor.getMass() * hit.length * controllerMass;
+          actor.addForceAtLocalPos(hit.dir*coeff, NxVec3(0,0,0), NX_IMPULSE);
+        }
       }
     }
   }
@@ -93,9 +104,17 @@ onControllerHit(const NxControllersHit& hit) {
 
   _pcollector.start();
 
-  if (1 && hit.other) {
-    // For now other controllers are unpushable. --TODO--
-    //return NX_ACTION_PUSH; is not implemented!
+  if (_controller_hit_cbobj) {
+    // Callback
+    PhysxControllersHit cbdata(hit);
+    _controller_hit_cbobj->do_callback(&cbdata);
+  } 
+  else {
+    // Default implementation
+    if (1 && hit.other) {
+      // For now other controllers are unpushable. --TODO--
+      //return NX_ACTION_PUSH; is not implemented!
+    }
   }
 
   _pcollector.stop();

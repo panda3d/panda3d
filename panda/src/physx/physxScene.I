@@ -69,3 +69,25 @@ ls(ostream &out, int indent_level) const {
   _softbodies.ls(out, indent_level);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxScene::set_controller_shape_hit_callback
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void PhysxScene::
+set_controller_shape_hit_callback(PT(CallbackObject) cbobj) {
+
+  _controller_report.set_shape_hit_callback(cbobj);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysxScene::set_controller_controller_hit_callback
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void PhysxScene::
+set_controller_controller_hit_callback(PT(CallbackObject) cbobj) {
+
+  _controller_report.set_controller_hit_callback(cbobj);
+}
+

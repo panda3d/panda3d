@@ -16,6 +16,7 @@
 #define PHYSXCONTROLLERREPORT_H
 
 #include "pandabase.h"
+#include "callbackObject.h"
 #include "pStatCollector.h"
 
 #include "physx_includes.h"
@@ -35,11 +36,18 @@ public:
   void disable();
   bool is_enabled() const;
 
+  INLINE void set_shape_hit_callback(PT(CallbackObject) cbobj);
+  INLINE void set_controller_hit_callback(PT(CallbackObject) cbobj);
+
   virtual NxControllerAction onShapeHit(const NxControllerShapeHit& hit);
   virtual NxControllerAction onControllerHit(const NxControllersHit& hit);
 
 private:
   bool _enabled;
+
+  PT(CallbackObject) _shape_hit_cbobj;
+  PT(CallbackObject) _controller_hit_cbobj;
+
   static PStatCollector _pcollector;
 };
 
