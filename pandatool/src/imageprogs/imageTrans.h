@@ -50,6 +50,7 @@ private:
   Channels _channels;
   LColor _color_scale;
   bool _has_color_scale;
+  bool _flip, _mirror, _cw, _ccw;
 };
 
 #endif

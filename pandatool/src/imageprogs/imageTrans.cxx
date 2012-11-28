@@ -43,6 +43,26 @@ ImageTrans() : ImageFilter(true) {
      "Apply the indicated color scale to each pixel of the image.",
      &ImageTrans::dispatch_color, &_has_color_scale, &_color_scale);
 
+  add_option
+    ("flip", "", 50,
+     "Flip the image vertically.",
+     &ImageTrans::dispatch_none, &_flip);
+
+  add_option
+    ("mirror", "", 50,
+     "Reverse the image horizontally.",
+     &ImageTrans::dispatch_none, &_mirror);
+
+  add_option
+    ("cw", "", 50,
+     "Rotate the image 90 degrees clockwise.",
+     &ImageTrans::dispatch_none, &_cw);
+
+  add_option
+    ("ccw", "", 50,
+     "Rotate the image 90 degrees counter-clockwise.",
+     &ImageTrans::dispatch_none, &_ccw);
+
   _channels = C_default;
   _color_scale.set(1.0f, 1.0f, 1.0f, 1.0f);
 }
@@ -107,6 +127,19 @@ run() {
         }
       }
     }
+  }
+
+  bool transpose = false;
+  if (_cw) {
+    _flip = !_flip;
+    transpose = !transpose;
+  }
+  if (_ccw) {
+    _mirror = !_mirror;
+    transpose = !transpose;
+  }
+  if (_flip || _mirror || transpose) {
+    _image.flip(_mirror, _flip, transpose);
   }
 
   write_image();
