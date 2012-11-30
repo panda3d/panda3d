@@ -3732,7 +3732,7 @@ if (sys.platform == 'darwin' and PkgSkip("COCOA")==0 and PkgSkip("GL")==0 and no
 # DIRECTORY: panda/src/osxdisplay/
 #
 
-if (sys.platform == 'darwin' and PkgSkip("CARBON")==0 and PkgSkip("GL")==0 and not RUNTIME):
+elif (sys.platform == 'darwin' and PkgSkip("CARBON")==0 and PkgSkip("GL")==0 and not RUNTIME):
   OPTS=['DIR:panda/src/osxdisplay', 'BUILDING:PANDAGL',  'GL', 'NVIDIACG', 'CGGL']
   TargetAdd('p3osxdisplay_composite1.obj', opts=OPTS, input='p3osxdisplay_composite1.cxx')
   TargetAdd('p3osxdisplay_osxGraphicsWindow.obj', opts=OPTS, input='osxGraphicsWindow.mm')
