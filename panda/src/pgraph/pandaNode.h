@@ -201,12 +201,16 @@ PUBLISHED:
                       Thread *current_thread = Thread::get_current_thread()) const;
   void clear_tag(const string &key,
                  Thread *current_thread = Thread::get_current_thread());
-
+  void get_tag_keys(vector_string &keys) const;
 #ifdef HAVE_PYTHON
+  PyObject *get_tag_keys() const;
+
   void set_python_tag(const string &key, PyObject *value);
   PyObject *get_python_tag(const string &key) const;
   bool has_python_tag(const string &key) const;
   void clear_python_tag(const string &key);
+  void get_python_tag_keys(vector_string &keys) const;
+  PyObject *get_python_tag_keys() const;
 #endif  // HAVE_PYTHON
 
   INLINE bool has_tags() const;

@@ -891,6 +891,7 @@ PUBLISHED:
 
   INLINE void set_tag(const string &key, const string &value);
   INLINE string get_tag(const string &key) const;
+  INLINE void get_tag_keys(vector_string &keys) const;
   INLINE bool has_tag(const string &key) const;
   INLINE void clear_tag(const string &key);
   INLINE string get_net_tag(const string &key) const;
@@ -898,8 +899,11 @@ PUBLISHED:
   NodePath find_net_tag(const string &key) const;
 
 #ifdef HAVE_PYTHON
+  INLINE PyObject *get_tag_keys() const;
   INLINE void set_python_tag(const string &key, PyObject *value);
   INLINE PyObject *get_python_tag(const string &key) const;
+  INLINE void get_python_tag_keys(vector_string &keys) const;
+  INLINE PyObject *get_python_tag_keys() const;
   INLINE bool has_python_tag(const string &key) const;
   INLINE void clear_python_tag(const string &key);
   INLINE PyObject *get_net_python_tag(const string &key) const;

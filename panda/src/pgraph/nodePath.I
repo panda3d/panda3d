@@ -2182,6 +2182,73 @@ get_tag(const string &key) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_tag_keys
+//       Access: Published
+//  Description: Fills the given vector up with the
+//               list of tags on this PandaNode.
+//
+//               It is the user's responsibility to ensure that the
+//               keys vector is empty before making this call;
+//               otherwise, the new files will be appended to it.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+get_tag_keys(vector_string &keys) const {
+  nassertv_always(!is_empty());
+  node()->get_tag_keys(keys);
+}
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_python_tag_keys
+//       Access: Published
+//  Description: Fills the given vector up with the
+//               list of Python tags on this PandaNode.
+//
+//               It is the user's responsibility to ensure that the
+//               keys vector is empty before making this call;
+//               otherwise, the new files will be appended to it.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+get_python_tag_keys(vector_string &keys) const {
+  nassertv_always(!is_empty());
+  node()->get_python_tag_keys(keys);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::get_tag_keys
+//       Access: Published
+//  Description: This variant on get_tag_keys returns a Python list
+//               of strings. Returns None if the NodePath is empty.
+////////////////////////////////////////////////////////////////////
+INLINE PyObject *NodePath::
+get_tag_keys() const {
+  // An empty NodePath returns None
+  if (is_empty()) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
+  return node()->get_tag_keys();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::get_python_tag_keys
+//       Access: Published
+//  Description: This variant on get_python_tag_keys returns a
+//               Python list of strings.
+//               Returns None if the NodePath is empty.
+////////////////////////////////////////////////////////////////////
+INLINE PyObject *NodePath::
+get_python_tag_keys() const {
+  // An empty NodePath returns None
+  if (is_empty()) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
+  return node()->get_python_tag_keys();
+}
+#endif  // HAVE_PYTHON
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::has_tag
 //       Access: Published
 //  Description: Returns true if a value has been defined on this node

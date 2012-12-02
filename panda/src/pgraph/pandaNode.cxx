@@ -1722,6 +1722,94 @@ list_tags(ostream &out, const string &separator) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Filename::get_tag_keys
+//       Access: Published
+//  Description: Fills the given vector up with the
+//               list of tags on this PandaNode.
+//
+//               It is the user's responsibility to ensure that the
+//               keys vector is empty before making this call;
+//               otherwise, the new keys will be appended to it.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+get_tag_keys(vector_string &keys) const {
+  CDReader cdata(_cycler);
+  if (!cdata->_tag_data.empty()) {
+    TagData::const_iterator ti = cdata->_tag_data.begin();
+    while (ti != cdata->_tag_data.end()) {
+      keys.push_back((*ti).first);
+      ++ti;
+    }
+  }
+}
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::get_python_tag_keys
+//       Access: Published
+//  Description: Fills the given vector up with the
+//               list of Python tags on this PandaNode.
+//
+//               It is the user's responsibility to ensure that the
+//               keys vector is empty before making this call;
+//               otherwise, the new files will be appended to it.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+get_python_tag_keys(vector_string &keys) const {
+  CDReader cdata(_cycler);
+  if (!cdata->_python_tag_data.empty()) {
+    PythonTagData::const_iterator ti = cdata->_python_tag_data.begin();
+    while (ti != cdata->_python_tag_data.end()) {
+      keys.push_back((*ti).first);
+      ++ti;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::get_tag_keys
+//       Access: Published
+//  Description: This variant on get_tag_keys returns
+//               a Python list of strings.
+////////////////////////////////////////////////////////////////////
+PyObject *PandaNode::
+get_tag_keys() const {
+  vector_string keys;
+  get_tag_keys(keys);
+
+  PyObject *result = PyList_New(keys.size());
+  for (size_t i = 0; i < keys.size(); ++i) {
+    const string &tag_name = keys[i];
+    PyObject *str = PyString_FromStringAndSize(tag_name.data(), tag_name.size());
+    PyList_SET_ITEM(result, i, str);
+  }
+
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::get_python_tag_keys
+//       Access: Published
+//  Description: This variant on get_python_tag_keys returns
+//               a Python list of strings.
+////////////////////////////////////////////////////////////////////
+PyObject *PandaNode::
+get_python_tag_keys() const {
+  vector_string keys;
+  get_python_tag_keys(keys);
+
+  PyObject *result = PyList_New(keys.size());
+  for (size_t i = 0; i < keys.size(); ++i) {
+    const string &tag_name = keys[i];
+    PyObject *str = PyString_FromStringAndSize(tag_name.data(), tag_name.size());
+    PyList_SET_ITEM(result, i, str);
+  }
+
+  return result;
+}
+#endif  // HAVE_PYTHON
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::compare_tags
 //       Access: Published
 //  Description: Returns a number less than 0, 0, or greater than 0,
