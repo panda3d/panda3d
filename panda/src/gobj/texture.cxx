@@ -3458,6 +3458,11 @@ do_read_dds(CData *cdata, istream &in, const string &filename, bool header_only)
   if ((header.dds_flags & DDSD_MIPMAPCOUNT) == 0) {
     // No bit set means only the base mipmap level.
     header.num_levels = 1;
+
+  } else if (header.num_levels == 0) {
+    // Some files seem to have this set to 0 for some reason--existing
+    // readers assume 0 means 1.
+    header.num_levels = 1;
   }
 
   TextureType texture_type;
