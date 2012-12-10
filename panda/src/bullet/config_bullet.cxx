@@ -129,6 +129,13 @@ ConfigVariableDouble bullet_additional_damping_angular_threshold
 PRC_DESC("Only used when bullet-additional-damping is set to TRUE. "
          "Default value is 0.01."));
 
+ConfigVariableBool bullet_full_sync
+("bullet-full-sync", true,
+PRC_DESC("Enables optional synchronisation features like checking "
+         "for changed in a nodes net transform before each simulation "
+         "step. Disable these features for better performance. "
+         "Default value is TRUE."));
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libbullet
 //  Description: Initializes the library. This must be called at

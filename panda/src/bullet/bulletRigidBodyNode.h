@@ -91,26 +91,33 @@ protected:
 private:
   virtual void shape_changed();
 
-  // The motion state is required only for kinematic bodies.
-  // For kinematic nodies getWorldTransform is called each frame, and
-  // should return the current world transform of the node.
+  // The motion state is used for syncronisation between Bullet
+  // and the Panda3D scene graph.
   class MotionState : public btMotionState {
 
   public:
-    MotionState(CPT(TransformState) & sync) : _sync(sync) {};
-    ~MotionState() {};
+    MotionState();
 
     virtual void getWorldTransform(btTransform &trans) const;
     virtual void setWorldTransform(const btTransform &trans);
 
+    void set_net_transform(CPT(TransformState) &ts);
+    void get_net_transform(CPT(TransformState) &ts) const;
+
+    void sync_b2p(PandaNode *node);
+    bool sync_disabled() const;
+
   private:
-    CPT(TransformState) &_sync;
+    btTransform _trans;
+    LVecBase3 _scale;
+    bool _disabled;
+    bool _dirty;
   };
 
-  CPT(TransformState) _sync;
-  bool _sync_disable;
-
+  MotionState *_motion;
   btRigidBody *_rigid;
+
+  CPT(TransformState) _sync; // only used with bullet_full_sync
 
 ////////////////////////////////////////////////////////////////////
 public:

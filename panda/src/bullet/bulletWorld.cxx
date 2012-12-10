@@ -987,9 +987,12 @@ needBroadphaseCollision(btBroadphaseProxy* proxy0, btBroadphaseProxy* proxy1) co
   CollideMask mask0 = node0->get_into_collide_mask();
   CollideMask mask1 = node1->get_into_collide_mask();
 
+//cout << mask0 << "   " << mask1 << endl;
+
   for (int i=0; i<32; i++) {
     if (mask0.get_bit(i)) {
       if ((_collide[i] & mask1) != 0)
+//cout << "collide: i=" << i << " _collide[i]" << _collide[i] << endl;
         return true;
     }
   }

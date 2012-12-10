@@ -21,8 +21,8 @@
 INLINE BulletRigidBodyNode::
 ~BulletRigidBodyNode() {
 
-  delete _rigid->getMotionState();
   delete _rigid;
+  delete _motion;
 }
 
 ////////////////////////////////////////////////////////////////////
