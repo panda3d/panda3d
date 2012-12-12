@@ -1277,7 +1277,7 @@ glsl_report_shader_errors(GSG *gsg, unsigned int shader) {
   if (length > 1) {
     info_log = (char *) malloc(length);
     gsg->_glGetShaderInfoLog(shader, length, &num_chars, info_log);
-    if (strcmp(info_log, "Success.\n") != 0) {
+    if (strcmp(info_log, "Success.\n") != 0 && strcmp(info_log, "No errors.\n") != 0) {
       GLCAT.error(false) << info_log << "\n";
     }
     free(info_log);
@@ -1300,7 +1300,7 @@ glsl_report_program_errors(GSG *gsg, unsigned int program) {
   if (length > 1) {
     info_log = (char *) malloc(length);
     gsg->_glGetProgramInfoLog(program, length, &num_chars, info_log);
-    if (strcmp(info_log, "Success.\n") != 0) {
+    if (strcmp(info_log, "Success.\n") != 0 && strcmp(info_log, "No errors.\n") != 0) {
       GLCAT.error(false) << info_log << "\n";
     }
     free(info_log);
