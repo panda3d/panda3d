@@ -2507,8 +2507,8 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     return false;
   }
 #else
-  if (_current_shader_context == 0 || !_current_shader_context->uses_custom_vertex_arrays()) {
-    // No shader, or a non-Cg shader.
+  if (_current_shader_context == 0) {
+    // No shader.
     if (_vertex_array_shader_context != 0) {
       _vertex_array_shader_context->disable_shader_vertex_arrays(this);
     }
@@ -2516,17 +2516,27 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
       return false;
     }
   } else {
-    // Cg shader.
-    if (_vertex_array_shader_context == 0) {
-      disable_standard_vertex_arrays();
-      if (!_current_shader_context->update_shader_vertex_arrays(NULL, this, force)) {
-        return false;
+    // Shader.
+    if (_vertex_array_shader_context == 0 || _vertex_array_shader_context->uses_standard_vertex_arrays()) {
+      // Previous shader used standard arrays.
+      if (_current_shader_context->uses_standard_vertex_arrays()) {
+        // So does the current, so update them.
+        if (!update_standard_vertex_arrays(force)) {
+          return false;
+        }
+      } else {
+        // The current shader does not, so disable them entirely.
+        disable_standard_vertex_arrays();
       }
-    } else {
+    }
+    if (_current_shader_context->uses_custom_vertex_arrays()) {
+      // The current shader also uses custom vertex arrays.
       if (!_current_shader_context->
           update_shader_vertex_arrays(_vertex_array_shader_context, this, force)) {
         return false;
       }
+    } else {
+      _vertex_array_shader_context->disable_shader_vertex_arrays(this);
     }
   }
 

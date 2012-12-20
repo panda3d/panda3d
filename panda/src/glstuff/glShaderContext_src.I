@@ -37,17 +37,25 @@ valid() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLShaderContext::uses_standard_vertex_arrays
+//       Access: Public
+//  Description: Returns true if the shader may need to access
+//               standard vertex attributes as passed by
+//               glVertexPointer and the like.
+////////////////////////////////////////////////////////////////////
+INLINE bool CLP(ShaderContext)::
+uses_standard_vertex_arrays() {
+  return _uses_standard_vertex_arrays;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLShaderContext::uses_custom_vertex_arrays
 //       Access: Public
 //  Description: Always true, for now.
 ////////////////////////////////////////////////////////////////////
 INLINE bool CLP(ShaderContext)::
 uses_custom_vertex_arrays() {
-  #ifdef OPENGLES_2
-    return true;
-  #else
-    return (_shader->get_language() == Shader::SL_Cg);
-  #endif
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

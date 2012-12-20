@@ -219,6 +219,8 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
   _glsl_gshader = 0;
   _glsl_tcshader = 0;
   _glsl_teshader = 0;
+  _uses_standard_vertex_arrays = false;
+
 #if defined(HAVE_CG) && !defined(OPENGLES)
   _cg_context = 0;
   if (s->get_language() == Shader::SL_Cg) {
@@ -284,7 +286,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
       }
     }
     // Analyze the uniforms and put them in _glsl_parameter_map
-    if (s->_glsl_parameter_map.size() == 0) {
+    if (_glsl_parameter_map.size() == 0) {
       int seqno = 0, texunitno = 0;
       string noprefix;
       GLint param_count, param_maxlength, param_size;
@@ -300,53 +302,80 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
           Shader::ShaderArgId arg_id;
           arg_id._name  = param_name;
           arg_id._seqno = seqno++;
-          s->_glsl_parameter_map.push_back(p);
-          if (param_name.substr(0, 4) == "p3d_" || param_name.substr(0, 3) == "gl_") {
-            if (param_name.substr(0, 3) == "gl_") {
-              noprefix = param_name.substr(3);
-            } else {
-              noprefix = param_name.substr(4);
+          _glsl_parameter_map.push_back(p);
+
+          // Check for inputs with p3d_ prefix.
+          if (param_name.substr(0, 4) == "p3d_") {
+            noprefix = param_name.substr(4);
+
+            // Check for matrix inputs.
+            bool transpose = false;
+            bool inverse = false;
+            string matrix_name (noprefix);
+            size_t size = matrix_name.size();
+
+            // Check for and chop off any "Transpose" or "Inverse" suffix.
+            if (size > 15 && matrix_name.compare(size - 9, 9, "Transpose") == 0) {
+              transpose = true;
+              matrix_name = matrix_name.substr(0, size - 9);
             }
-            
-            if (noprefix == "ModelViewProjectionMatrix") {
+            size = matrix_name.size();
+            if (size > 13 && matrix_name.compare(size - 7, 7, "Inverse") == 0) {
+              inverse = true;
+              matrix_name = matrix_name.substr(0, size - 7);
+            }
+            size = matrix_name.size();
+
+            // Now if the suffix that is left over is "Matrix",
+            // we know that it is supposed to be a matrix input.
+            if (size > 6 && matrix_name.compare(size - 6, 6, "Matrix") == 0) {
               Shader::ShaderMatSpec bind;
               bind._id = arg_id;
-              bind._piece = Shader::SMP_whole;
-              bind._func = Shader::SMF_compose;
-              bind._part[0] = Shader::SMO_model_to_view;
+              if (transpose) {
+                bind._piece = Shader::SMP_transpose;
+              } else {
+                bind._piece = Shader::SMP_whole;
+              }
               bind._arg[0] = NULL;
-              bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
-              bind._part[1] = Shader::SMO_view_to_apiclip;
               bind._arg[1] = NULL;
-              bind._dep[1] = Shader::SSD_general | Shader::SSD_transform;
-              s->_mat_spec.push_back(bind);
-              continue;
-            }
-            if (noprefix == "ModelViewMatrix") {
-              Shader::ShaderMatSpec bind;
-              bind._id = arg_id;
-              bind._piece = Shader::SMP_whole;
-              bind._func = Shader::SMF_first;
-              bind._part[0] = Shader::SMO_model_to_view;
-              bind._arg[0] = NULL;
-              bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
-              bind._part[1] = Shader::SMO_identity;
-              bind._arg[1] = NULL;
-              bind._dep[1] = Shader::SSD_NONE;
-              s->_mat_spec.push_back(bind);
-              continue;
-            }
-            if (noprefix == "ProjectionMatrix") {
-              Shader::ShaderMatSpec bind;
-              bind._id = arg_id;
-              bind._piece = Shader::SMP_whole;
-              bind._func = Shader::SMF_first;
-              bind._part[0] = Shader::SMO_view_to_apiclip;
-              bind._arg[0] = NULL;
-              bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
-              bind._part[1] = Shader::SMO_identity;
-              bind._arg[1] = NULL;
-              bind._dep[1] = Shader::SSD_NONE;
+              
+              if (matrix_name == "ModelViewProjectionMatrix") {
+                bind._func = Shader::SMF_compose;
+                if (inverse) {
+                  bind._part[0] = Shader::SMO_apiclip_to_view;
+                  bind._part[1] = Shader::SMO_view_to_model;
+                } else {
+                  bind._part[0] = Shader::SMO_model_to_view;
+                  bind._part[1] = Shader::SMO_view_to_apiclip;
+                }
+                bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
+                bind._dep[1] = Shader::SSD_general | Shader::SSD_transform;
+
+              } else if (matrix_name == "ModelViewMatrix") {
+                bind._func = Shader::SMF_first;
+                if (inverse) {
+                  bind._part[0] = Shader::SMO_view_to_model;
+                } else {
+                  bind._part[0] = Shader::SMO_model_to_view;
+                }
+                bind._part[1] = Shader::SMO_identity;
+                bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
+                bind._dep[1] = Shader::SSD_NONE;
+
+              } else if (matrix_name == "ProjectionMatrix") {
+                bind._func = Shader::SMF_first;
+                if (inverse) {
+                  bind._part[0] = Shader::SMO_apiclip_to_view;
+                } else {
+                  bind._part[0] = Shader::SMO_view_to_apiclip;
+                }
+                bind._part[1] = Shader::SMO_identity;
+                bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
+                bind._dep[1] = Shader::SSD_NONE;
+              } else {
+                GLCAT.error() << "Unrecognized uniform matrix name '" << matrix_name << "'!\n";
+                continue;
+              }
               s->_mat_spec.push_back(bind);
               continue;
             }
@@ -530,72 +559,80 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
       gsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_ATTRIBUTES, &param_count);
       gsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &param_maxlength);
       param_name_cstr = (char *)alloca(param_maxlength);
+
       for (int i = 0; i < param_count; ++i) {
         gsg->_glGetActiveAttrib(_glsl_program, i, param_maxlength, NULL, &param_size, &param_type, param_name_cstr);
         string param_name(param_name_cstr);
 
-        if (param_name.substr(0, 3) == "gl_") {
-          // We shouldn't bind anything to these.
+        // Get the attrib location.
+        GLint p = gsg->_glGetAttribLocation(_glsl_program, param_name_cstr);
 
+        GLCAT.error() <<
+          "Active attribute " << param_name << " is bound to location " << p << "\n";
+
+        if (p == -1) {
+          // A gl_ attribute such as gl_Vertex requires us to pass the
+          // standard vertex arrays as we would do without shader.
+          // This is not always the case, though -- see below.
+          _uses_standard_vertex_arrays = true;
+          continue;
+        }
+
+        Shader::ShaderArgId arg_id;
+        arg_id._name  = param_name;
+        arg_id._seqno = seqno++;
+        _glsl_parameter_map.push_back(p);
+
+        Shader::ShaderVarSpec bind;
+        bind._id = arg_id;
+        bind._name = NULL;
+        bind._append_uv = -1;
+
+        if (param_name.substr(0, 3) == "gl_") {
+          // Not all drivers return -1 in glGetAttribLocation
+          // for gl_ prefixed attributes.
+          _uses_standard_vertex_arrays = true;
+          continue;
         } else if (param_name.substr(0, 4) == "p3d_") {
           noprefix = param_name.substr(4);
+        } else {
+          noprefix = "";
+        }
 
-          Shader::ShaderVarSpec bind;
-          bind._append_uv = -1;
+        if (noprefix.empty()) {
+          // Arbitrarily named attribute.
+          bind._name = InternalName::make(param_name);
 
-          if (noprefix == "Vertex") {
-            bind._name = InternalName::get_vertex();
-            s->_var_spec.push_back(bind);
-            gsg->_glBindAttribLocation(_glsl_program, i, param_name_cstr);
-            continue;
+        } else if (noprefix == "Vertex") {
+          bind._name = InternalName::get_vertex();
+
+        } else if (noprefix == "Normal") {
+          bind._name = InternalName::get_normal();
+
+        } else if (noprefix == "Color") {
+          bind._name = InternalName::get_color();
+
+        } else if (noprefix.substr(0, 7) == "Tangent") {
+          bind._name = InternalName::get_tangent();
+          if (noprefix.size() > 7) {
+            bind._append_uv = atoi(noprefix.substr(7).c_str());
           }
-          if (noprefix == "Normal") {
-            bind._name = InternalName::get_normal();
-            s->_var_spec.push_back(bind);
-            gsg->_glBindAttribLocation(_glsl_program, i, param_name_cstr);
-            continue;
+
+        } else if (noprefix.substr(0, 8) == "Binormal") {
+          bind._name = InternalName::get_binormal();
+          if (noprefix.size() > 8) {
+            bind._append_uv = atoi(noprefix.substr(8).c_str());
           }
-          if (noprefix == "Color") {
-            bind._name = InternalName::get_color();
-            s->_var_spec.push_back(bind);
-            gsg->_glBindAttribLocation(_glsl_program, i, param_name_cstr);
-            continue;
-          }
-          if (noprefix.substr(0, 7)  == "Tangent") {
-            bind._name = InternalName::get_tangent();
-            if (noprefix.size() > 7) {
-              bind._append_uv = atoi(noprefix.substr(7).c_str());
-            }
-            s->_var_spec.push_back(bind);
-            gsg->_glBindAttribLocation(_glsl_program, i, param_name_cstr);
-            continue;
-          }
-          if (noprefix.substr(0, 8)  == "Binormal") {
-            bind._name = InternalName::get_binormal();
-            if (noprefix.size() > 8) {
-              bind._append_uv = atoi(noprefix.substr(8).c_str());
-            }
-            s->_var_spec.push_back(bind);
-            gsg->_glBindAttribLocation(_glsl_program, i, param_name_cstr);
-            continue;
-          }
-          if (noprefix.substr(0, 13)  == "MultiTexCoord") {
-            bind._name = InternalName::get_texcoord();
-            bind._append_uv = atoi(noprefix.substr(13).c_str());
-            s->_var_spec.push_back(bind);
-            gsg->_glBindAttribLocation(_glsl_program, i, param_name_cstr);
-            continue;
-          }
-          GLCAT.error() << "Unrecognized vertex attrib '" << param_name << "'!\n";
-          continue;
+
+        } else if (noprefix.substr(0, 13) == "MultiTexCoord") {
+          bind._name = InternalName::get_texcoord();
+          bind._append_uv = atoi(noprefix.substr(13).c_str());
 
         } else {
-          Shader::ShaderVarSpec bind;
-          bind._name = InternalName::make(param_name);
-          bind._append_uv = -1;
-          s->_var_spec.push_back(bind);
-          gsg->_glBindAttribLocation(_glsl_program, i, param_name_cstr);
+          GLCAT.error() << "Unrecognized vertex attrib '" << param_name << "'!\n";
+          continue;
         }
+        s->_var_spec.push_back(bind);
       }
     }
     
@@ -810,7 +847,7 @@ issue_parameters(GSG *gsg, int altered) {
           release_resources(gsg);
           return;
         }
-        GLint p = _shader->_glsl_parameter_map[_shader->_ptr_spec[i]._id._seqno];
+        GLint p = _glsl_parameter_map[_shader->_ptr_spec[i]._id._seqno];
         switch(_ptr._dim[1]) {
           case 1: gsg->_glUniform4fv(p, _ptr._dim[0], (float*)_ptr_data->_ptr); continue;
           case 2: gsg->_glUniform4fv(p, _ptr._dim[0], (float*)_ptr_data->_ptr); continue;
@@ -925,7 +962,7 @@ issue_parameters(GSG *gsg, int altered) {
 #endif
 
       if (_shader->get_language() == Shader::SL_GLSL) {
-        GLint p = _shader->_glsl_parameter_map[_shader->_mat_spec[i]._id._seqno];
+        GLint p = _glsl_parameter_map[_shader->_mat_spec[i]._id._seqno];
         switch (_shader->_mat_spec[i]._piece) {
         case Shader::SMP_whole: gsg->_glUniformMatrix4fv(p, 1, false, data); continue;
         case Shader::SMP_transpose: gsg->_glUniformMatrix4fv(p, 1, true, data); continue;
@@ -1035,7 +1072,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg,
     Geom::NumericType numeric_type;
     int start, stride, num_values;
     int nvarying = _shader->_var_spec.size();
-    for (int i=0; i<nvarying; i++) {
+    for (int i = 0; i < nvarying; ++i) {
 #if defined(HAVE_CG) && !defined(OPENGLES)
       if (_shader->get_language() == Shader::SL_Cg) {
         if (_cg_parameter_map[_shader->_var_spec[i]._id._seqno] == 0) {
@@ -1062,16 +1099,13 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg,
         if (!gsg->setup_array_data(client_pointer, array_reader, force)) {
           return false;
         }
+
         if (_shader->get_language() == Shader::SL_GLSL) {
-#ifndef OPENGLES_2
-          glEnableClientState(GL_VERTEX_ARRAY);
-#endif
-          gsg->_glEnableVertexAttribArray(i);
-          gsg->_glVertexAttribPointer(i, num_values, gsg->get_numeric_type(numeric_type),
-                                GL_FALSE, stride, client_pointer + start);
-#ifndef OPENGLES_2
-          glDisableClientState(GL_VERTEX_ARRAY);
-#endif
+          const GLint p = _glsl_parameter_map[_shader->_var_spec[i]._id._seqno];
+          gsg->_glEnableVertexAttribArray(p);
+          gsg->_glVertexAttribPointer(p, num_values, gsg->get_numeric_type(numeric_type),
+                                      GL_TRUE, stride, client_pointer + start);
+
 #if defined(HAVE_CG) && !defined(OPENGLES)
         } else if (_shader->get_language() == Shader::SL_Cg) {
           CGparameter p = _cg_parameter_map[_shader->_var_spec[i]._id._seqno];
@@ -1245,7 +1279,7 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
     gsg->apply_texture(tc);
 
     if (_shader->get_language() == Shader::SL_GLSL) {
-      GLint p = _shader->_glsl_parameter_map[_shader->_tex_spec[i]._id._seqno];
+      GLint p = _glsl_parameter_map[_shader->_tex_spec[i]._id._seqno];
       gsg->_glUniform1i(p, texunit);
     }
 
