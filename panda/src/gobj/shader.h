@@ -445,9 +445,6 @@ public:
 
   void clear_parameters();
 
- public:
-  pvector<int> _glsl_parameter_map;
-
 #ifdef HAVE_CG
  private:
   ShaderArgClass    cg_parameter_class(CGparameter p); 
