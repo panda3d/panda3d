@@ -13,9 +13,12 @@
 
   #define SOURCES \
     somethingToEggConverter.I somethingToEggConverter.cxx \
-    somethingToEggConverter.h
+    somethingToEggConverter.h \
+    eggToSomethingConverter.I eggToSomethingConverter.cxx \
+    eggToSomethingConverter.h
 
   #define INSTALL_HEADERS \
-    somethingToEggConverter.I somethingToEggConverter.h
+    somethingToEggConverter.I somethingToEggConverter.h \
+    eggToSomethingConverter.I eggToSomethingConverter.h
 
 #end ss_lib_target

@@ -289,6 +289,75 @@ class Loader(DirectObject):
         assert Loader.notify.debug("Unloading model: %s" % (modelNode.getFullpath()))
         ModelPool.releaseModel(modelNode)
 
+    def saveModel(self, modelPath, node, loaderOptions = None, 
+                  callback = None, extraArgs = [], priority = None):
+        """ Saves the model (a NodePath or PandaNode) to the indicated
+        filename path.  Returns true on success, false on failure.  If
+        a callback is used, the model is saved asynchronously, and the
+        true/false status is passed to the callback function. """
+
+        if loaderOptions == None:
+            loaderOptions = LoaderOptions()
+        else:
+            loaderOptions = LoaderOptions(loaderOptions)
+
+        if isinstance(modelPath, types.StringTypes) or \
+           isinstance(modelPath, Filename):
+            # We were given a single model pathname.
+            modelList = [modelPath]
+            nodeList = [node]
+            if phaseChecker:
+                phaseChecker(modelPath, loaderOptions)
+
+            gotList = False
+        else:
+            # Assume we were given a list of model pathnames.
+            modelList = modelPath
+            nodeList = node
+            gotList = True
+
+        assert(len(modelList) == len(nodeList))
+
+        # Make sure we have PandaNodes, not NodePaths.
+        for i in range(len(nodeList)):
+            if isinstance(nodeList[i], NodePath):
+                nodeList[i] = nodeList[i].node()
+
+        # From here on, we deal with a list of (filename, node) pairs.
+        modelList = zip(modelList, nodeList)
+
+        if callback is None:
+            # We got no callback, so it's a synchronous save.
+
+            result = []
+            for modelPath, node in modelList:
+                thisResult = self.loader.saveSync(Filename(modelPath), loaderOptions, node)
+                result.append(thisResult)
+
+            if gotList:
+                return result
+            else:
+                return result[0]
+
+        else:
+            # We got a callback, so we want an asynchronous (threaded)
+            # save.  We'll return immediately, but when all of the
+            # requested models have been saved, we'll invoke the
+            # callback (passing it the models on the parameter list).
+            
+            cb = Loader.Callback(len(modelList), gotList, callback, extraArgs)
+            i=0
+            for modelPath, node in modelList:
+                request = self.loader.makeAsyncSaveRequest(Filename(modelPath), loaderOptions, node)
+                if priority is not None:
+                    request.setPriority(priority)
+                request.setDoneEvent(self.hook)
+                request.setPythonObject((cb, i))
+                i+=1
+                self.loader.saveAsync(request)
+                cb.requests[request] = True
+            return cb
+            
 
     # font loading funcs
     def loadFont(self, modelPath,
@@ -874,5 +943,8 @@ class Loader(DirectObject):
 
         elif hasattr(request, "getSound"):
             object = request.getSound()
+
+        elif hasattr(request, "getSuccess"):
+            object = request.getSuccess()
 
         cb.gotObject(i, object)

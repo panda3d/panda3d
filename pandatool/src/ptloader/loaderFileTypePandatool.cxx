@@ -15,8 +15,10 @@
 #include "loaderFileTypePandatool.h"
 #include "config_ptloader.h"
 #include "somethingToEggConverter.h"
+#include "eggToSomethingConverter.h"
 #include "config_util.h"
 #include "load_egg_file.h"
+#include "save_egg_file.h"
 #include "eggData.h"
 #include "loaderOptions.h"
 #include "bamCacheRecord.h"
@@ -29,10 +31,13 @@ TypeHandle LoaderFileTypePandatool::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 LoaderFileTypePandatool::
-LoaderFileTypePandatool(SomethingToEggConverter *converter) :
-  _converter(converter)
+LoaderFileTypePandatool(SomethingToEggConverter *loader,
+                        EggToSomethingConverter *saver) :
+  _loader(loader), _saver(saver)
 {
-  converter->set_merge_externals(true);
+  if (_loader != (SomethingToEggConverter *)NULL) {
+    _loader->set_merge_externals(true);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -51,7 +56,10 @@ LoaderFileTypePandatool::
 ////////////////////////////////////////////////////////////////////
 string LoaderFileTypePandatool::
 get_name() const {
-  return _converter->get_name();
+  if (_loader != (SomethingToEggConverter *)NULL) {
+    return _loader->get_name();
+  }
+  return _saver->get_name();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -61,7 +69,10 @@ get_name() const {
 ////////////////////////////////////////////////////////////////////
 string LoaderFileTypePandatool::
 get_extension() const {
-  return _converter->get_extension();
+  if (_loader != (SomethingToEggConverter *)NULL) {
+    return _loader->get_extension();
+  }
+  return _saver->get_extension();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -73,7 +84,10 @@ get_extension() const {
 ////////////////////////////////////////////////////////////////////
 string LoaderFileTypePandatool::
 get_additional_extensions() const {
-  return _converter->get_additional_extensions();
+  if (_loader != (SomethingToEggConverter *)NULL) {
+    return _loader->get_additional_extensions();
+  }
+  return _saver->get_additional_extensions();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -85,7 +99,34 @@ get_additional_extensions() const {
 ////////////////////////////////////////////////////////////////////
 bool LoaderFileTypePandatool::
 supports_compressed() const {
-  return _converter->supports_compressed();
+  if (_loader != (SomethingToEggConverter *)NULL) {
+    return _loader->supports_compressed();
+  }
+  return _saver->supports_compressed();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LoaderFileTypePandatool::supports_load
+//       Access: Published, Virtual
+//  Description: Returns true if the file type can be used to load
+//               files, and load_file() is supported.  Returns false
+//               if load_file() is unimplemented and will always fail.
+////////////////////////////////////////////////////////////////////
+bool LoaderFileTypePandatool::
+supports_load() const {
+  return (_loader != NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LoaderFileTypePandatool::supports_save
+//       Access: Published, Virtual
+//  Description: Returns true if the file type can be used to save
+//               files, and save_file() is supported.  Returns false
+//               if save_file() is unimplemented and will always fail.
+////////////////////////////////////////////////////////////////////
+bool LoaderFileTypePandatool::
+supports_save() const {
+  return (_saver != NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -108,39 +149,44 @@ resolve_filename(Filename &path) const {
 PT(PandaNode) LoaderFileTypePandatool::
 load_file(const Filename &path, const LoaderOptions &options,
           BamCacheRecord *record) const {
+  if (_loader == NULL) {
+    return NULL;
+  }
+
   if (record != (BamCacheRecord *)NULL) {
     record->add_dependent_file(path);
   }
 
   PT(PandaNode) result;
 
+  SomethingToEggConverter *loader = _loader->make_copy();
   PT(EggData) egg_data = new EggData;
-  _converter->set_egg_data(egg_data);
+  loader->set_egg_data(egg_data);
 
   DSearchPath file_path;
   file_path.append_directory(path.get_dirname());
-  _converter->get_path_replace()->_path = file_path;
+  loader->get_path_replace()->_path = file_path;
 
   // Convert animation, if the converter supports it.
   switch (options.get_flags() & LoaderOptions::LF_convert_anim) {
   case LoaderOptions::LF_convert_anim:
-    _converter->set_animation_convert(AC_both);
+    loader->set_animation_convert(AC_both);
     break;
     
   case LoaderOptions::LF_convert_skeleton:
-    _converter->set_animation_convert(AC_model);
+    loader->set_animation_convert(AC_model);
     break;
     
   case LoaderOptions::LF_convert_channels:
-    _converter->set_animation_convert(AC_chan);
+    loader->set_animation_convert(AC_chan);
     break;
 
   default:
     break;
   }
 
-  if (_converter->convert_file(path)) {
-    DistanceUnit input_units = _converter->get_input_units();
+  if (loader->convert_file(path)) {
+    DistanceUnit input_units = loader->get_input_units();
     if (input_units != DU_invalid && ptloader_units != DU_invalid && 
         input_units != ptloader_units) {
       // Convert the file to the units specified by the ptloader-units
@@ -160,6 +206,32 @@ load_file(const Filename &path, const LoaderOptions &options,
 
     result = load_egg_data(egg_data);
   }
-  _converter->clear_egg_data();
+  delete loader;
+
   return result.p();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LoaderFileTypePandatool::save_file
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+bool LoaderFileTypePandatool::
+save_file(const Filename &path, const LoaderOptions &options,
+          PandaNode *node) const {
+  if (_saver == NULL) {
+    return false;
+  }
+
+  PT(EggData) egg_data = new EggData;
+  if (!save_egg_data(egg_data, node)) {
+    return false;
+  }
+
+  EggToSomethingConverter *saver = _saver->make_copy();
+  saver->set_egg_data(egg_data);
+
+  bool result = saver->write_file(path);
+
+  delete saver;
 }

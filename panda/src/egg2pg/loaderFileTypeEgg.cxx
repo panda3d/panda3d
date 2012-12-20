@@ -14,6 +14,7 @@
 
 #include "loaderFileTypeEgg.h"
 #include "load_egg_file.h"
+#include "save_egg_file.h"
 
 #include "eggData.h"
 
@@ -61,6 +62,30 @@ supports_compressed() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LoaderFileTypeEgg::supports_load
+//       Access: Published, Virtual
+//  Description: Returns true if the file type can be used to load
+//               files, and load_file() is supported.  Returns false
+//               if load_file() is unimplemented and will always fail.
+////////////////////////////////////////////////////////////////////
+bool LoaderFileTypeEgg::
+supports_load() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LoaderFileTypeEgg::supports_save
+//       Access: Published, Virtual
+//  Description: Returns true if the file type can be used to save
+//               files, and save_file() is supported.  Returns false
+//               if save_file() is unimplemented and will always fail.
+////////////////////////////////////////////////////////////////////
+bool LoaderFileTypeEgg::
+supports_save() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LoaderFileTypeEgg::load_file
 //       Access: Public, Virtual
 //  Description:
@@ -70,4 +95,15 @@ load_file(const Filename &path, const LoaderOptions &,
           BamCacheRecord *record) const {
   PT(PandaNode) result = load_egg_file(path, CS_default, record);
   return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LoaderFileTypeEgg::save_file
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+bool LoaderFileTypeEgg::
+save_file(const Filename &path, const LoaderOptions &options,
+          PandaNode *node) const {
+  return save_egg_file(path, node);
 }

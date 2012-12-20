@@ -200,11 +200,11 @@ load_sync(const Filename &filename, const LoaderOptions &options) const {
 //     Function: Loader::load_async
 //       Access: Published
 //  Description: Begins an asynchronous load request.  To use this
-//               call, first create a new ModelLoadRequest object with
-//               the filename you wish to load, and then add that
-//               object to the Loader with load_async.  This function
-//               will return immediately, and the model will be loaded
-//               in the background.
+//               call, first call make_async_request() to create a new
+//               ModelLoadRequest object with the filename you wish to
+//               load, and then add that object to the Loader with
+//               load_async.  This function will return immediately,
+//               and the model will be loaded in the background.
 //
 //               To determine when the model has completely loaded,
 //               you may poll request->is_ready() from time to time,
@@ -214,6 +214,45 @@ load_sync(const Filename &filename, const LoaderOptions &options) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void Loader::
 load_async(AsyncTask *request) {
+  request->set_task_chain(_task_chain);
+  _task_manager->add(request);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Loader::save_sync
+//       Access: Published
+//  Description: Saves the file immediately, waiting for it to
+//               complete.
+////////////////////////////////////////////////////////////////////
+INLINE bool Loader::
+save_sync(const Filename &filename, const LoaderOptions &options,
+          PandaNode *node) const {
+  if (!_file_types_loaded) {
+    load_file_types();
+  }
+  return save_file(filename, options, node);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Loader::save_async
+//       Access: Published
+//  Description: Begins an asynchronous save request.  To use this
+//               call, first call make_async_save_request() to create
+//               a new ModelSaveRequest object with the filename you
+//               wish to load, and then add that object to the Loader
+//               with save_async.  This function will return
+//               immediately, and the model will be loaded in the
+//               background.
+//
+//               To determine when the model has completely loaded,
+//               you may poll request->is_ready() from time to time,
+//               or set the done_event on the request object and
+//               listen for that event.  When the request is ready,
+//               you may retrieve the success or failure via
+//               request->get_success().
+////////////////////////////////////////////////////////////////////
+INLINE void Loader::
+save_async(AsyncTask *request) {
   request->set_task_chain(_task_chain);
   _task_manager->add(request);
 }

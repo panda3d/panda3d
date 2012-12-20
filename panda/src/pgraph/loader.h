@@ -92,6 +92,13 @@ PUBLISHED:
                                    const LoaderOptions &options = LoaderOptions());
   INLINE void load_async(AsyncTask *request);
 
+  INLINE bool save_sync(const Filename &filename, const LoaderOptions &options,
+                        PandaNode *node) const;
+  PT(AsyncTask) make_async_save_request(const Filename &filename, 
+                                        const LoaderOptions &options,
+                                        PandaNode *node);
+  INLINE void save_async(AsyncTask *request);
+
   BLOCKING PT(PandaNode) load_bam_stream(istream &in);
 
   virtual void output(ostream &out) const;
@@ -102,6 +109,11 @@ private:
   PT(PandaNode) load_file(const Filename &filename, const LoaderOptions &options) const;
   PT(PandaNode) try_load_file(const Filename &pathname, const LoaderOptions &options,
                               LoaderFileType *requested_type) const;
+
+  bool save_file(const Filename &filename, const LoaderOptions &options,
+                 PandaNode *node) const;
+  bool try_save_file(const Filename &filename, const LoaderOptions &options,
+                     PandaNode *node, LoaderFileType *requested_type) const;
 
   static void make_global_ptr();
 

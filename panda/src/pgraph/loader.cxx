@@ -18,6 +18,7 @@
 #include "config_pgraph.h"
 #include "modelPool.h"
 #include "modelLoadRequest.h"
+#include "modelSaveRequest.h"
 #include "config_express.h"
 #include "config_util.h"
 #include "virtualFileSystem.h"
@@ -82,6 +83,19 @@ PT(AsyncTask) Loader::
 make_async_request(const Filename &filename, const LoaderOptions &options) {
   return new ModelLoadRequest(string("model:")+filename.get_basename(),
                               filename, options, this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Loader::make_async_save_request
+//       Access: Published
+//  Description: Returns a new AsyncTask object suitable for adding to
+//               save_async() to start an asynchronous model save.
+////////////////////////////////////////////////////////////////////
+PT(AsyncTask) Loader::
+make_async_save_request(const Filename &filename, const LoaderOptions &options,
+                        PandaNode *node) {
+  return new ModelSaveRequest(string("model_save:")+filename.get_basename(),
+                              filename, options, node, this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -174,6 +188,13 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
       loader_cat.error(false)
         << "Currently known scene file types are:\n";
       reg->write(loader_cat.error(false), 2);
+    }
+    return NULL;
+  } else if (!requested_type->supports_load()) {
+    if (report_errors) {
+      loader_cat.error()
+        << requested_type->get_name() << " file type (."
+        << extension << ") does not support loading.\n";
     }
     return NULL;
   } else if (pz_file && !requested_type->supports_compressed()) {
@@ -338,6 +359,102 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
   return NULL;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Loader::save_file
+//       Access: Private
+//  Description: Saves a scene graph to a single file, if possible.
+//               The file type written is implicit in the filename
+//               extension.
+////////////////////////////////////////////////////////////////////
+bool Loader::
+save_file(const Filename &filename, const LoaderOptions &options,
+          PandaNode *node) const {
+  Filename this_filename(filename);
+  LoaderOptions this_options(options);
+
+  bool report_errors = (this_options.get_flags() & LoaderOptions::LF_report_errors) != 0;
+
+  string extension = this_filename.get_extension();
+  if (extension.empty()) {
+    // If the filename has no filename extension, append the default
+    // extension specified in the Config file.
+    this_filename = this_filename.get_fullpath() + default_model_extension.get_value();
+    extension = this_filename.get_extension();
+  }
+
+  bool pz_file = false;
+#ifdef HAVE_ZLIB
+  if (extension == "pz") {
+    pz_file = true;
+    extension = Filename(this_filename.get_basename_wo_extension()).get_extension();
+  }
+#endif  // HAVE_ZLIB
+
+  if (extension.empty()) {
+    if (report_errors) {
+      loader_cat.error()
+        << "Cannot save " << this_filename
+        << " without filename extension.\n";
+    }
+    return NULL;
+  }
+
+  LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_global_ptr();
+  LoaderFileType *requested_type =
+    reg->get_type_from_extension(extension);
+  if (requested_type == (LoaderFileType *)NULL) {
+    if (report_errors) {
+      loader_cat.error()
+        << "Extension of file " << this_filename
+        << " is unrecognized; cannot save.\n";
+      loader_cat.error(false)
+        << "Currently known scene file types are:\n";
+      reg->write(loader_cat.error(false), 2);
+    }
+    return NULL;
+  } else if (!requested_type->supports_save()) {
+    if (report_errors) {
+      loader_cat.error()
+        << requested_type->get_name() << " file type (."
+        << extension << ") does not support saving.\n";
+    }
+    return NULL;
+  } else if (pz_file && !requested_type->supports_compressed()) {
+    if (report_errors) {
+      loader_cat.error()
+        << requested_type->get_name() << " file type (."
+        << extension << ") does not support in-line compression.\n";
+    }
+    return NULL;
+  }
+
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
+  bool result = try_save_file(this_filename, this_options, node, requested_type);
+  if (!result) {
+    if (report_errors) {
+      loader_cat.error()
+        << "Couldn't save file " << this_filename << ".\n";
+    }
+  }
+
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Loader::try_save_file
+//       Access: Private
+//  Description: The implementation of save_file(), this tries to
+//               write a specific file type.
+////////////////////////////////////////////////////////////////////
+bool Loader::
+try_save_file(const Filename &pathname, const LoaderOptions &options,
+              PandaNode *node, LoaderFileType *requested_type) const {
+  bool report_errors = ((options.get_flags() & LoaderOptions::LF_report_errors) != 0 || loader_cat.is_debug());
+  
+  bool result = requested_type->save_file(pathname, options, node);
+  return result;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Loader::load_file_types

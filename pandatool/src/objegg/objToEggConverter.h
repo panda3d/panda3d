@@ -12,8 +12,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef ObjTOEGGCONVERTER_H
-#define ObjTOEGGCONVERTER_H
+#ifndef OBJTOEGGCONVERTER_H
+#define OBJTOEGGCONVERTER_H
 
 #include "pandatoolbase.h"
 

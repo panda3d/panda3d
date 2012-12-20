@@ -64,6 +64,30 @@ supports_compressed() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LoaderFileTypeBam::supports_load
+//       Access: Published, Virtual
+//  Description: Returns true if the file type can be used to load
+//               files, and load_file() is supported.  Returns false
+//               if load_file() is unimplemented and will always fail.
+////////////////////////////////////////////////////////////////////
+bool LoaderFileTypeBam::
+supports_load() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LoaderFileTypeBam::supports_save
+//       Access: Published, Virtual
+//  Description: Returns true if the file type can be used to save
+//               files, and save_file() is supported.  Returns false
+//               if save_file() is unimplemented and will always fail.
+////////////////////////////////////////////////////////////////////
+bool LoaderFileTypeBam::
+supports_save() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LoaderFileTypeBam::load_file
 //       Access: Public, Virtual
 //  Description:
@@ -94,3 +118,26 @@ load_file(const Filename &path, const LoaderOptions &options,
   return node;
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: LoaderFileTypeBam::save_file
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+bool LoaderFileTypeBam::
+save_file(const Filename &path, const LoaderOptions &options,
+          PandaNode *node) const {
+  BamFile bam_file;
+
+  bool report_errors = (options.get_flags() & LoaderOptions::LF_report_errors) != 0;
+
+  bool okflag = false;
+
+  if (bam_file.open_write(path, report_errors)) {
+    if (bam_file.write_object(node)) {
+      okflag = true;
+    }
+    bam_file.close();
+  }
+  return okflag;
+}

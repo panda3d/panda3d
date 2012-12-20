@@ -28,6 +28,7 @@
 #include "dxfToEggConverter.h"
 #include "vrmlToEggConverter.h"
 #include "objToEggConverter.h"
+#include "eggToObjConverter.h"
 #include "config_xfile.h"
 #include "xFileToEggConverter.h"
 
@@ -91,8 +92,9 @@ init_libptloader() {
   XFileToEggConverter *xfile = new XFileToEggConverter;
   reg->register_type(new LoaderFileTypePandatool(xfile));
 
-  ObjToEggConverter *obj = new ObjToEggConverter;
-  reg->register_type(new LoaderFileTypePandatool(obj));
+  ObjToEggConverter *obj_egg = new ObjToEggConverter;
+  EggToObjConverter *egg_obj = new EggToObjConverter;
+  reg->register_type(new LoaderFileTypePandatool(obj_egg, egg_obj));
 
 //#ifdef HAVE_FCOLLADA
 //  DAEToEggConverter *dae = new DAEToEggConverter;

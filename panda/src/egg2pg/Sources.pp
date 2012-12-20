@@ -20,8 +20,10 @@
     eggBinner.h \
     eggLoader.h eggLoader.I \
     eggRenderState.h eggRenderState.I \
+    eggSaver.h eggSaver.I \
     egg_parametrics.h \
     load_egg_file.h \
+    save_egg_file.h \
     loaderFileTypeEgg.h
 
   #define INCLUDED_SOURCES \
@@ -32,8 +34,10 @@
     eggBinner.cxx \
     eggLoader.cxx \
     eggRenderState.cxx \
+    eggSaver.cxx \
     egg_parametrics.cxx \
     load_egg_file.cxx \
+    save_egg_file.cxx \
     loaderFileTypeEgg.cxx
 
   #if $[DONT_COMBINE_PGRAPH]    
@@ -43,8 +47,8 @@
   #endif
 
   #define INSTALL_HEADERS \
-    egg_parametrics.h load_egg_file.h config_egg2pg.h
+    egg_parametrics.h load_egg_file.h save_egg_file.h config_egg2pg.h
 
-  #define IGATESCAN load_egg_file.h 
+  #define IGATESCAN load_egg_file.h save_egg_file.h
 
 #end lib_target

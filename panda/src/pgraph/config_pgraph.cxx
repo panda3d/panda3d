@@ -55,6 +55,7 @@
 #include "materialAttrib.h"
 #include "modelFlattenRequest.h"
 #include "modelLoadRequest.h"
+#include "modelSaveRequest.h"
 #include "modelNode.h"
 #include "modelRoot.h"
 #include "nodePath.h"
@@ -473,6 +474,7 @@ init_libpgraph() {
   MaterialAttrib::init_type();
   ModelFlattenRequest::init_type();
   ModelLoadRequest::init_type();
+  ModelSaveRequest::init_type();
   ModelNode::init_type();
   ModelRoot::init_type();
   NodePath::init_type();

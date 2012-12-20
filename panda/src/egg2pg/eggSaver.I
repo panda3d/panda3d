@@ -1,5 +1,5 @@
-// Filename: eggToObj.h
-// Created by:  drose (25Feb12)
+// Filename: eggSaver.I
+// Created by:  drose (19Dec12)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,28 +12,14 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef EGGTOOBJ_H
-#define EGGTOOBJ_H
-
-#include "pandatoolbase.h"
-#include "eggToSomething.h"
-#include "eggToObjConverter.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : EggToObj
-// Description :
+//     Function: EggSaver::get_egg_data
+//       Access: Published
+//  Description: Returns the EggData populated within this class.
 ////////////////////////////////////////////////////////////////////
-class EggToObj : public EggToSomething {
-public:
-  EggToObj();
+INLINE EggData *EggSaver::
+get_egg_data() const {
+  return _data;
+}
 
-  void run();
-
-protected:
-  virtual bool handle_args(Args &args);
-
-private:
-  bool _triangulate_polygons;
-};
-
-#endif

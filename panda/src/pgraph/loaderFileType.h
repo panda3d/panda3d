@@ -49,9 +49,14 @@ PUBLISHED:
   virtual bool get_allow_disk_cache(const LoaderOptions &options) const;
   virtual bool get_allow_ram_cache(const LoaderOptions &options) const;
 
+  virtual bool supports_load() const;
+  virtual bool supports_save() const;
+
 public:
   virtual PT(PandaNode) load_file(const Filename &path, const LoaderOptions &options,
                                   BamCacheRecord *record) const;
+  virtual bool save_file(const Filename &path, const LoaderOptions &options,
+                         PandaNode *node) const;
 
 protected:
   int _no_cache_flags;

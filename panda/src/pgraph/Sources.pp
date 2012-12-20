@@ -67,6 +67,7 @@
     materialCollection.I materialCollection.h \
     modelFlattenRequest.I modelFlattenRequest.h \
     modelLoadRequest.I modelLoadRequest.h \
+    modelSaveRequest.I modelSaveRequest.h \
     modelNode.I modelNode.h \
     modelPool.I modelPool.h \
     modelRoot.I modelRoot.h \
@@ -167,6 +168,7 @@
     materialCollection.cxx \
     modelFlattenRequest.cxx \
     modelLoadRequest.cxx \
+    modelSaveRequest.cxx \
     modelNode.cxx \
     modelPool.cxx \
     modelRoot.cxx \
@@ -262,6 +264,7 @@
     materialCollection.I materialCollection.h \
     modelFlattenRequest.I modelFlattenRequest.h \
     modelLoadRequest.I modelLoadRequest.h \
+    modelSaveRequest.I modelSaveRequest.h \
     modelNode.I modelNode.h \
     modelPool.I modelPool.h \
     modelRoot.I modelRoot.h \

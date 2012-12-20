@@ -20,6 +20,7 @@
 #include "loaderFileType.h"
 
 class SomethingToEggConverter;
+class EggToSomethingConverter;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LoaderFileTypePandatool
@@ -30,7 +31,8 @@ class SomethingToEggConverter;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PTLOADER LoaderFileTypePandatool : public LoaderFileType {
 public:
-  LoaderFileTypePandatool(SomethingToEggConverter *converter);
+  LoaderFileTypePandatool(SomethingToEggConverter *loader,
+                          EggToSomethingConverter *saver = NULL);
   virtual ~LoaderFileTypePandatool();
 
   virtual string get_name() const;
@@ -38,12 +40,18 @@ public:
   virtual string get_additional_extensions() const;
   virtual bool supports_compressed() const;
 
+  virtual bool supports_load() const;
+  virtual bool supports_save() const;
+
   virtual void resolve_filename(Filename &path) const;
   virtual PT(PandaNode) load_file(const Filename &path, const LoaderOptions &options,
                                   BamCacheRecord *record) const;
+  virtual bool save_file(const Filename &path, const LoaderOptions &options,
+                         PandaNode *node) const;
 
 private:
-  SomethingToEggConverter *_converter;
+  SomethingToEggConverter *_loader;
+  EggToSomethingConverter *_saver;
 
 public:
   static TypeHandle get_class_type() {

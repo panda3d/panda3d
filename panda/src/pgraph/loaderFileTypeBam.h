@@ -31,8 +31,13 @@ public:
   virtual string get_extension() const;
   virtual bool supports_compressed() const;
 
+  virtual bool supports_load() const;
+  virtual bool supports_save() const;
+
   virtual PT(PandaNode) load_file(const Filename &path, const LoaderOptions &options,
                                   BamCacheRecord *record) const;
+  virtual bool save_file(const Filename &path, const LoaderOptions &options,
+                         PandaNode *node) const;
 
 public:
   static TypeHandle get_class_type() {

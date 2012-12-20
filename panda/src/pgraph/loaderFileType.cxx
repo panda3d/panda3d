@@ -81,7 +81,7 @@ get_allow_disk_cache(const LoaderOptions &options) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LoaderFileType::get_allow_ram_cache
-//       Access: Published
+//       Access: Published, Virtual
 //  Description: Returns true if the loader flags allow retrieving the
 //               model from the in-memory ModelPool cache, false
 //               otherwise.
@@ -89,6 +89,30 @@ get_allow_disk_cache(const LoaderOptions &options) const {
 bool LoaderFileType::
 get_allow_ram_cache(const LoaderOptions &options) const {
   return (options.get_flags() & (LoaderOptions::LF_no_ram_cache | _no_cache_flags)) == 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LoaderFileType::supports_load
+//       Access: Published, Virtual
+//  Description: Returns true if the file type can be used to load
+//               files, and load_file() is supported.  Returns false
+//               if load_file() is unimplemented and will always fail.
+////////////////////////////////////////////////////////////////////
+bool LoaderFileType::
+supports_load() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LoaderFileType::supports_save
+//       Access: Published, Virtual
+//  Description: Returns true if the file type can be used to save
+//               files, and save_file() is supported.  Returns false
+//               if save_file() is unimplemented and will always fail.
+////////////////////////////////////////////////////////////////////
+bool LoaderFileType::
+supports_save() const {
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -101,5 +125,18 @@ load_file(const Filename &path, const LoaderOptions &options,
           BamCacheRecord *record) const {
   loader_cat.error()
     << get_type() << " cannot read PandaNode objects.\n";
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LoaderFileType::save_file
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+bool LoaderFileType::
+save_file(const Filename &path, const LoaderOptions &options,
+          PandaNode *node) const {
+  loader_cat.error()
+    << get_type() << " cannot save PandaNode objects.\n";
   return NULL;
 }

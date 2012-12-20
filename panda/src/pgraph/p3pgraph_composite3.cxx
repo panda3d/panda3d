@@ -11,6 +11,7 @@
 #include "materialCollection.cxx"
 #include "modelFlattenRequest.cxx"
 #include "modelLoadRequest.cxx"
+#include "modelSaveRequest.cxx"
 #include "modelNode.cxx"
 #include "modelPool.cxx"
 #include "modelRoot.cxx"
