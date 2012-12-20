@@ -4629,6 +4629,7 @@ if (PkgSkip("PANDATOOL")==0):
 
   TargetAdd('egg2obj_eggToObj.obj', opts=OPTS, input='eggToObj.cxx')
   TargetAdd('egg2obj.exe', input='egg2obj_eggToObj.obj')
+  TargetAdd('egg2obj.exe', input='libp3objegg.lib')
   TargetAdd('egg2obj.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
 
 #
