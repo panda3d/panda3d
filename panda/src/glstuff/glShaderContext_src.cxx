@@ -567,7 +567,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
         // Get the attrib location.
         GLint p = gsg->_glGetAttribLocation(_glsl_program, param_name_cstr);
 
-        GLCAT.error() <<
+        GLCAT.debug() <<
           "Active attribute " << param_name << " is bound to location " << p << "\n";
 
         if (p == -1) {
