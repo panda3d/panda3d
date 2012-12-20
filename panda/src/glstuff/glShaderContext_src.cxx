@@ -404,7 +404,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
               case GL_SAMPLER_1D: {
                 Shader::ShaderTexSpec bind;
                 bind._id = arg_id;
-                bind._name = InternalName::make(param_name);;
+                bind._name = InternalName::make(param_name);
                 bind._desired_type = Texture::TT_1d_texture;
                 bind._stage = texunitno++;
                 s->_tex_spec.push_back(bind);
@@ -414,7 +414,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
               case GL_SAMPLER_2D: {
                 Shader::ShaderTexSpec bind;
                 bind._id = arg_id;
-                bind._name = InternalName::make(param_name);;
+                bind._name = InternalName::make(param_name);
                 bind._desired_type = Texture::TT_2d_texture;
                 bind._stage = texunitno++;
                 s->_tex_spec.push_back(bind);
@@ -422,7 +422,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
               case GL_SAMPLER_3D: {
                 Shader::ShaderTexSpec bind;
                 bind._id = arg_id;
-                bind._name = InternalName::make(param_name);;
+                bind._name = InternalName::make(param_name);
                 bind._desired_type = Texture::TT_3d_texture;
                 bind._stage = texunitno++;
                 s->_tex_spec.push_back(bind);
@@ -430,7 +430,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
               case GL_SAMPLER_CUBE: {
                 Shader::ShaderTexSpec bind;
                 bind._id = arg_id;
-                bind._name = InternalName::make(param_name);;
+                bind._name = InternalName::make(param_name);
                 bind._desired_type = Texture::TT_cube_map;
                 bind._stage = texunitno++;
                 s->_tex_spec.push_back(bind);
@@ -453,12 +453,11 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
                 bind._piece = Shader::SMP_whole;
                 bind._func = Shader::SMF_first;
                 bind._part[0] = Shader::SMO_mat_constant_x;
-                bind._arg[0] = InternalName::make(param_name);;
+                bind._arg[0] = InternalName::make(param_name);
+                bind._dep[0] = Shader::SSD_general | Shader::SSD_shaderinputs;
                 bind._part[1] = Shader::SMO_identity;
                 bind._arg[1] = NULL;
-                bind._part[1] = Shader::SMO_identity;
-                bind._dep[0]  = Shader::SSD_general | Shader::SSD_shaderinputs;
-                bind._dep[1]  = Shader::SSD_NONE;
+                bind._dep[1] = Shader::SSD_NONE;
                 s->_mat_spec.push_back(bind);
                 continue; }
               case GL_BOOL:
@@ -483,11 +482,11 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
                 }
                 bind._func = Shader::SMF_first;
                 bind._part[0] = Shader::SMO_vec_constant_x;
-                bind._arg[0] = InternalName::make(param_name);;
-                bind._dep[0]  = Shader::SSD_general | Shader::SSD_shaderinputs;
+                bind._arg[0] = InternalName::make(param_name);
+                bind._dep[0] = Shader::SSD_general | Shader::SSD_shaderinputs;
                 bind._part[1] = Shader::SMO_identity;
                 bind._arg[1] = NULL;
-                bind._dep[1]  = Shader::SSD_NONE;
+                bind._dep[1] = Shader::SSD_NONE;
                 s->_mat_spec.push_back(bind);
                 continue; }
               case GL_INT:
@@ -634,18 +633,6 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
         }
         s->_var_spec.push_back(bind);
       }
-    }
-    
-    // Finally, re-link the program, or otherwise the glBindAttribLocation
-    // calls won't have any effect.
-    gsg->_glLinkProgram(_glsl_program);
-
-    GLint status;
-    gsg->_glGetProgramiv(_glsl_program, GL_LINK_STATUS, &status);
-    if (status != GL_TRUE) {
-      GLCAT.error() << "An error occurred while relinking shader program!\n";
-      glsl_report_program_errors(gsg, _glsl_program);
-      s->_error_flag = true;
     }
   }
   
