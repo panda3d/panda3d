@@ -4483,7 +4483,9 @@ if (PkgSkip("PANDATOOL")==0):
 if (PkgSkip("PANDATOOL")==0):
   OPTS=['DIR:pandatool/src/converter']
   TargetAdd('p3converter_somethingToEggConverter.obj', opts=OPTS, input='somethingToEggConverter.cxx')
+  TargetAdd('p3converter_eggToSomethingConverter.obj', opts=OPTS, input='eggToSomethingConverter.cxx')
   TargetAdd('libp3converter.lib', input='p3converter_somethingToEggConverter.obj')
+  TargetAdd('libp3converter.lib', input='p3converter_eggToSomethingConverter.obj')
 
 #
 # DIRECTORY: pandatool/src/progbase/
@@ -4612,8 +4614,10 @@ if (PkgSkip("PANDATOOL")==0):
 if (PkgSkip("PANDATOOL")==0):
   OPTS=['DIR:pandatool/src/objegg']
   TargetAdd('p3objegg_objToEggConverter.obj', opts=OPTS, input='objToEggConverter.cxx')
+  TargetAdd('p3objegg_eggToObjConverter.obj', opts=OPTS, input='eggToObjConverter.cxx')
   TargetAdd('p3objegg_config_objegg.obj', opts=OPTS, input='config_objegg.cxx')
   TargetAdd('libp3objegg.lib', input='p3objegg_objToEggConverter.obj')
+  TargetAdd('libp3objegg.lib', input='p3objegg_eggToObjConverter.obj')
   TargetAdd('libp3objegg.lib', input='p3objegg_config_objegg.obj')
 
 #
