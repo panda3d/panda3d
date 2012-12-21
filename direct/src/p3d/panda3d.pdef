@@ -241,17 +241,20 @@ class audio(package):
 
 class egg(package):
     # This package contains the code for reading and operating on egg
-    # files.  Since the Packager automatically converts egg files to bam
-    # files, this is not needed for most Panda3D applications.
+    # files and other model files.  Since the Packager automatically
+    # converts egg files to bam files, this is not needed for most
+    # Panda3D applications.
 
     config(display_name = "Panda3D egg loader")
     require('panda3d')
 
     file('libpandaegg.dll', required = True)
+    file('libp3ptloader.dll', required = True)
 
     file('egg.prc', extract = True, text = """
 plugin-path $EGG_ROOT
 load-file-type egg pandaegg
+load-file-type p3ptloader
 """)
 
 class ode(package):
