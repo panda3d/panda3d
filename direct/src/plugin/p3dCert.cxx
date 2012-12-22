@@ -33,6 +33,9 @@
 #include "ca_bundle_data_src.c"
 
 #ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
 #define snprintf sprintf_s
 #endif
 
