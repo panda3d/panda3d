@@ -42,9 +42,11 @@ public:
 protected:
   bool process(const Filename &filename);
   bool process_line(const string &line);
+  bool process_ref_plane_res(const string &line);
 
   bool process_v(vector_string &words);
   bool process_vt(vector_string &words);
+  bool process_xvt(vector_string &words);
   bool process_vn(vector_string &words);
   bool process_f(vector_string &words);
   bool process_g(vector_string &words);
@@ -53,10 +55,12 @@ protected:
   EggVertex *get_face_vertex(const string &face_reference);
 
   int _line_number;
-  int _vi, _vti, _vni;
+  int _vi, _vti, _xvti, _vni;
   PT(EggVertexPool) _vpool;
   PT(EggGroup) _root_group;
   EggGroup *_current_group;
+
+  LVecBase2d _ref_plane_res;  
 
   pset<string> _ignored_tags;
 };

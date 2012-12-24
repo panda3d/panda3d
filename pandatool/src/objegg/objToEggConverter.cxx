@@ -133,7 +133,9 @@ process(const Filename &filename) {
 
   _vi = 1;
   _vti = 1;
+  _xvti = 1;
   _vni = 1;
+  _ref_plane_res.set(1.0, 1.0);
 
   _vpool = new EggVertexPool("vpool");
   _egg_data->add_child(_vpool);
@@ -147,6 +149,12 @@ process(const Filename &filename) {
   while (!line.empty()) {
     line = trim(line);
     if (line.empty()) {
+      line = sr.readline();
+      continue;
+    }
+
+    if (line.substr(0, 15) == "#_ref_plane_res") {
+      process_ref_plane_res(line);
       line = sr.readline();
       continue;
     }
@@ -182,6 +190,8 @@ process_line(const string &line) {
     return process_v(words);
   } else if (tag == "vt") {
     return process_vt(words);
+  } else if (tag == "xvt") {
+    return process_xvt(words);
   } else if (tag == "vn") {
     return process_vn(words);
   } else if (tag == "f") {
@@ -194,6 +204,41 @@ process_line(const string &line) {
       objegg_cat.info()
         << "Ignoring tag " << tag << "\n";
     }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ObjToEggConverter::process_line
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool ObjToEggConverter::
+process_ref_plane_res(const string &line) {
+  // the #_ref_plane_res line is a DRZ extension that defines the
+  // pixel resolution of the projector device.  It's needed to
+  // properly scale the xvt lines.
+
+  vector_string words;
+  tokenize(line, words, " \t", true);
+  nassertr(!words.empty(), false);
+
+  if (words.size() != 3) {
+    objegg_cat.error()
+      << "Wrong number of tokens at line " << _line_number << "\n";
+    return false;
+  }
+
+  bool okflag = true;
+  LPoint3d pos;
+  okflag &= string_to_double(words[1], _ref_plane_res[0]);
+  okflag &= string_to_double(words[2], _ref_plane_res[1]);
+
+  if (!okflag) {
+    objegg_cat.error()
+      << "Invalid number at line " << _line_number << "\n";
+    return false;
   }
 
   return true;
@@ -282,6 +327,43 @@ process_vt(vector_string &words) {
     vertex->set_uv("", LTexCoordd(uvw[0], uvw[1]));
   }
   ++_vti;
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ObjToEggConverter::process_xvt
+//       Access: Protected
+//  Description: "xvt" is an extended column invented by DRZ.  It
+//               includes texture coordinates in pixel space of the
+//               projector device, as well as for each camera.  We map
+//               it to the nominal texture coordinates here.
+////////////////////////////////////////////////////////////////////
+bool ObjToEggConverter::
+process_xvt(vector_string &words) {
+  if (words.size() < 3) {
+    objegg_cat.error()
+      << "Wrong number of tokens at line " << _line_number << "\n";
+    return false;
+  }
+  
+  bool okflag = true;
+  LTexCoordd uv;
+  okflag &= string_to_double(words[1], uv[0]);
+  okflag &= string_to_double(words[2], uv[1]);
+
+  if (!okflag) {
+    objegg_cat.error()
+      << "Invalid number at line " << _line_number << "\n";
+    return false;
+  }
+
+  uv[0] /= _ref_plane_res[0];
+  uv[1] = 1.0 - uv[1] / _ref_plane_res[1];
+
+  EggVertex *vertex = get_vertex(_xvti);
+  vertex->set_uv("", uv);
+  ++_xvti;
 
   return true;
 }
