@@ -196,7 +196,7 @@ open_subfile(const SubfileInfo &info) {
 void FfmpegVirtualFile::
 close() {
   if (_format_context != NULL) {
-    av_close_input_file(_format_context);
+    avformat_close_input(&_format_context);
     _format_context = NULL;
   }
 
