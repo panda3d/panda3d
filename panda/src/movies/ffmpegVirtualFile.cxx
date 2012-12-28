@@ -120,8 +120,9 @@ open_vfs(const Filename &filename) {
 
   // Now we can open the stream.
   int result = 
-    av_open_input_file(&_format_context, url.c_str(), NULL, 0, NULL);
+    avformat_open_input(&_format_context, url.c_str(), NULL, NULL);
   if (result < 0) {
+    _format_context = NULL;
     close();
     return false;
   }
@@ -176,8 +177,9 @@ open_subfile(const SubfileInfo &info) {
 
   // Now we can open the stream.
   int result = 
-    av_open_input_file(&_format_context, url.c_str(), NULL, 0, NULL);
+    avformat_open_input(&_format_context, url.c_str(), NULL, NULL);
   if (result < 0) {
+    _format_context = NULL;
     close();
     return false;
   }
