@@ -119,8 +119,12 @@ open_vfs(const Filename &filename) {
   string url = strm.str();
 
   // Now we can open the stream.
-  int result = 
+  int result =
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53, 2, 0) 
     avformat_open_input(&_format_context, url.c_str(), NULL, NULL);
+#else
+    av_open_input_file(&_format_context, url.c_str(), NULL, 0, NULL);
+#endif
   if (result < 0) {
     _format_context = NULL;
     close();
