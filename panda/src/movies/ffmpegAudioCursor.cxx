@@ -52,7 +52,11 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   _format_ctx = _ffvfile.get_format_context();
   nassertv(_format_ctx != NULL);
 
-  if (av_find_stream_info(_format_ctx)<0) {
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53, 6, 0)
+  if (avformat_find_stream_info(_format_ctx, NULL) < 0) {
+#else
+  if (av_find_stream_info(_format_ctx) < 0) {
+#endif
     cleanup();
     return;
   }
@@ -73,12 +77,17 @@ FfmpegAudioCursor(FfmpegAudio *src) :
     return;
   }
 
-  AVCodec *pAudioCodec=avcodec_find_decoder(_audio_ctx->codec_id);
-  if(pAudioCodec == 0) {
+  AVCodec *pAudioCodec = avcodec_find_decoder(_audio_ctx->codec_id);
+  if (pAudioCodec == 0) {
     cleanup();
     return;
   }
-  if(avcodec_open(_audio_ctx, pAudioCodec)<0) {
+
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(53, 8, 0)
+  if (avcodec_open2(_audio_ctx, pAudioCodec, NULL) < 0) {
+#else
+  if (avcodec_open(_audio_ctx, pAudioCodec) < 0) {
+#endif
     cleanup();
     return;
   }
@@ -200,16 +209,14 @@ reload_buffer() {
       return true;
     } else if (_packet_size > 0) {
       int bufsize = _buffer_size * 2;
-#if LIBAVCODEC_VERSION_INT < 3414272
 #if LIBAVCODEC_VERSION_INT < 3349504
       int len = avcodec_decode_audio(_audio_ctx, _buffer, &bufsize,
                                     _packet_data, _packet_size);
       movies_debug("avcodec_decode_audio returned " << len);
-#else
+#elif LIBAVCODEC_VERSION_INT < 3414272
       int len = avcodec_decode_audio2(_audio_ctx, _buffer, &bufsize,
                                       _packet_data, _packet_size);
       movies_debug("avcodec_decode_audio2 returned " << len);
-#endif
 #else
       AVPacket pkt; 
       av_init_packet(&pkt); 
@@ -217,7 +224,7 @@ reload_buffer() {
       pkt.size = _packet_size;
       int len = avcodec_decode_audio3(_audio_ctx, _buffer, &bufsize, &pkt);
       movies_debug("avcodec_decode_audio3 returned " << len);
-      av_free_packet(&pkt); // Not sure about this
+      av_free_packet(&pkt);
 #endif
       if (len < 0) {
         return false;
@@ -258,12 +265,16 @@ seek(double t) {
     return;
   }
   avcodec_close(_audio_ctx);
-  AVCodec *pAudioCodec=avcodec_find_decoder(_audio_ctx->codec_id);
+  AVCodec *pAudioCodec = avcodec_find_decoder(_audio_ctx->codec_id);
   if(pAudioCodec == 0) {
     cleanup();
     return;
   }
-  if(avcodec_open(_audio_ctx, pAudioCodec)<0) {
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(53, 8, 0)
+  if (avcodec_open2(_audio_ctx, pAudioCodec, NULL) < 0) {
+#else
+  if (avcodec_open(_audio_ctx, pAudioCodec) < 0) {
+#endif
     cleanup();
     return;
   }
@@ -289,18 +300,14 @@ seek(double t) {
 ////////////////////////////////////////////////////////////////////
 void FfmpegAudioCursor::
 read_samples(int n, PN_int16 *data) {
-
-  //movies_debug("here!!! FfmpegAudioCursor n="<<n);
-
   int desired = n * _audio_channels;
 
   while (desired > 0) {
-
     if (_buffer_head == _buffer_tail) {
       if(!reload_buffer()){
         break;
       }
-      movies_debug("read_samples() Desired samples: " << desired << " N:" << n);
+      movies_debug("read_samples() desired samples: " << desired << " N:" << n);
     }
     int available = _buffer_tail - _buffer_head;
     int ncopy = (desired > available) ? available : desired;

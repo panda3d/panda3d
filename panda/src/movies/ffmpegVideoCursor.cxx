@@ -509,7 +509,11 @@ open_stream() {
   _format_ctx = _ffvfile.get_format_context();
   nassertr(_format_ctx != NULL, false);
 
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53, 6, 0)
+  if (avformat_find_stream_info(_format_ctx, NULL) < 0) {
+#else
   if (av_find_stream_info(_format_ctx) < 0) {
+#endif
     ffmpeg_cat.info() 
       << "Couldn't find stream info\n";
     close_stream();
@@ -541,7 +545,11 @@ open_stream() {
     close_stream();
     return false;
   }
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(53, 8, 0)
+  if (avcodec_open2(_video_ctx, pVideoCodec, NULL) < 0) {
+#else
   if (avcodec_open(_video_ctx, pVideoCodec) < 0) {
+#endif
     ffmpeg_cat.info() 
       << "Couldn't open codec\n";
     close_stream();
