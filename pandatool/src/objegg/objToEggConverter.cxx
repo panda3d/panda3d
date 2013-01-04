@@ -699,6 +699,7 @@ process_f_node(vector_string &words) {
     return false;
   }
 
+  int synth_vni = 0;
   if (!all_vn) {
     // Synthesize a normal if we need it.
     LNormal normal = LNormal::zero();
@@ -716,8 +717,9 @@ process_f_node(vector_string &words) {
       normal[2] += p0[0] * p1[1] - p0[1] * p1[0];
     }
     normal.normalize();
-    int synth_vni = add_synth_normal(normal);
+    synth_vni = add_synth_normal(normal);
 
+    /*
     // Roll the polygon around to put the "non-vn" vertex at the
     // end.
     while (non_vn_index + 1 < verts.size()) {
@@ -728,6 +730,7 @@ process_f_node(vector_string &words) {
     }
 
     verts.back()._synth_vni = synth_vni;
+    */
   }
 
   Triangulator3 tri;
@@ -750,32 +753,18 @@ process_f_node(vector_string &words) {
     // We'll exceed our specified limit with these triangles; start a new Geom.
     _current_vertex_data->close_geom(this);
   }
-    
-  pvector<int> indices;
-  indices.reserve(verts.size());
-  for (size_t i = 0; i < verts.size(); ++i) {
-    int index = _current_vertex_data->add_vertex(this, verts[i]);
-    indices.push_back(index);
-  }
 
-  if (indices.size() == 3) {
+  if (verts.size() == 3) {
     // It's already a triangle; add it directly.
-    _current_vertex_data->add_triangle(indices[0], indices[1], indices[2]);
-  } else {
-    // We have to triangulate a higher-order polygon.
-    for (size_t i = 0; i < verts.size(); ++i) {
-      const LVecBase4 &p = _v_table[verts[i]._vi - 1];
-      tri.add_vertex(p[0], p[1], p[2]);
-      tri.add_polygon_vertex(i);
-    }
+    _current_vertex_data->add_triangle(this, verts[0], verts[1], verts[2], synth_vni);
 
-    tri.triangulate();
-    int num_tris = tri.get_num_triangles();
+  } else {
+    // Get the triangulated results.
     for (int ti = 0; ti < num_tris; ++ti) {
       int i0 = tri.get_triangle_v0(ti);
       int i1 = tri.get_triangle_v1(ti);
       int i2 = tri.get_triangle_v2(ti);
-      _current_vertex_data->add_triangle(indices[i0], indices[i1], indices[i2]);
+      _current_vertex_data->add_triangle(this, verts[i0], verts[i1], verts[i2], synth_vni);
     }
   }
 
@@ -1038,12 +1027,28 @@ add_vertex(const ObjToEggConverter *converter, const VertexEntry &entry) {
 //     Function: ObjToEggConverter::VertexData::add_triangle
 //       Access: Public
 //  Description: Adds a triangle to the primitive, as a triple of
-//               three vertex index numbers (as returned by
-//               add_vertex()).
+//               three VertexEntry objects, which are each added to
+//               the vertex pool.  If synth_vni is not 0, it is
+//               assigned to the last vertex.
 ////////////////////////////////////////////////////////////////////
 void ObjToEggConverter::VertexData::
-add_triangle(int v1, int v2, int v3) {
-  _prim->add_vertices(v1, v2, v3);
+add_triangle(const ObjToEggConverter *converter, const VertexEntry &v0, 
+             const VertexEntry &v1, const VertexEntry &v2, 
+             int synth_vni) {
+  int v0i, v1i, v2i;
+
+  v0i = add_vertex(converter, v0);
+  v1i = add_vertex(converter, v1);
+
+  if (synth_vni != 0) {
+    VertexEntry v2n(v2);
+    v2n._synth_vni = synth_vni;
+    v2i = add_vertex(converter, v2n);
+  } else {
+    v2i = add_vertex(converter, v2);
+  }
+
+  _prim->add_vertices(v0i, v1i, v2i);
   _prim->close_primitive();
 }
 

@@ -122,7 +122,9 @@ protected:
     VertexData(PandaNode *parent, const string &name);
 
     int add_vertex(const ObjToEggConverter *converter, const VertexEntry &entry);
-    void add_triangle(int v1, int v2, int v3);
+    void add_triangle(const ObjToEggConverter *converter, const VertexEntry &v0, 
+                      const VertexEntry &v1, const VertexEntry &v2, 
+                      int synth_vni);
     void close_geom(const ObjToEggConverter *converter);
 
     PT(PandaNode) _parent;
