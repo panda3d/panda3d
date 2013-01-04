@@ -225,6 +225,9 @@ class openal(package):
     require('panda3d')
 
     file('libp3openal_audio.dll', required = True)
+    file('OpenAL32.dll')
+    file('soft_oal.dll')
+    file('wrap_oal.dll')
 
     file('openal.prc', extract = True, text = """
 plugin-path $OPENAL_ROOT
