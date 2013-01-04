@@ -40,6 +40,7 @@
     stackedPerlinNoise2.h stackedPerlinNoise2.I \
     stackedPerlinNoise3.h stackedPerlinNoise3.I \
     triangulator.h triangulator.I \
+    triangulator3.h triangulator3.I \
     unionBoundingVolume.h unionBoundingVolume.I
 
   #define INCLUDED_SOURCES \
@@ -66,6 +67,7 @@
     stackedPerlinNoise2.cxx \
     stackedPerlinNoise3.cxx \
     triangulator.cxx \
+    triangulator3.cxx \
     unionBoundingVolume.cxx
 
   #define INSTALL_HEADERS \
@@ -94,6 +96,7 @@
     stackedPerlinNoise2.h stackedPerlinNoise2.I \
     stackedPerlinNoise3.h stackedPerlinNoise3.I \
     triangulator.h triangulator.I \
+    triangulator3.h triangulator3.I \
     unionBoundingVolume.h unionBoundingVolume.I
 
 

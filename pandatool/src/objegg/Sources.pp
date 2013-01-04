@@ -15,11 +15,11 @@
 
   #define SOURCES \
     config_objegg.cxx config_objegg.h \
-    objToEggConverter.cxx objToEggConverter.h \
+    objToEggConverter.cxx objToEggConverter.h objToEggConverter.I \
     eggToObjConverter.cxx eggToObjConverter.h
 
   #define INSTALL_HEADERS \
-    objToEggConverter.h \
+    objToEggConverter.h objToEggConverter.I \
     eggToObjConverter.h
 
 #end ss_lib_target

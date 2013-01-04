@@ -160,8 +160,6 @@ load_file(const Filename &path, const LoaderOptions &options,
   PT(PandaNode) result;
 
   SomethingToEggConverter *loader = _loader->make_copy();
-  PT(EggData) egg_data = new EggData;
-  loader->set_egg_data(egg_data);
 
   DSearchPath file_path;
   file_path.append_directory(path.get_dirname());
@@ -184,6 +182,20 @@ load_file(const Filename &path, const LoaderOptions &options,
   default:
     break;
   }
+
+  // Try to convert directly to PandaNode first, if the converter type
+  // supports it.
+  if (ptloader_load_node && loader->supports_convert_to_node(options)) {
+    result = loader->convert_to_node(options, path);
+    if (!result.is_null()) {
+      return result;
+    }
+  }
+
+  // If the converter type doesn't support the direct PandaNode
+  // conversion, take the slower route through egg instead.
+  PT(EggData) egg_data = new EggData;
+  loader->set_egg_data(egg_data);
 
   if (loader->convert_file(path)) {
     DistanceUnit input_units = loader->get_input_units();

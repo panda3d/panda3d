@@ -402,13 +402,21 @@ string_to_double(const string &str, double &result) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: string_to_float
-//  Description: Another flavor of string_to_float(), this one
-//               returns true if the string is a perfectly valid
-//               number (and sets result to that value), or false
-//               otherwise.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 bool
-string_to_float(const string &str, PN_stdfloat &result) {
+string_to_float(const string &str, float &result) {
+  string tail;
+  result = (float)string_to_double(str, tail);
+  return tail.empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: string_to_stdfloat
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool
+string_to_stdfloat(const string &str, PN_stdfloat &result) {
   string tail;
   result = (PN_stdfloat)string_to_double(str, tail);
   return tail.empty();

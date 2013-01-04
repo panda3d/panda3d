@@ -58,7 +58,8 @@ EXPCL_PANDA_PUTIL int string_to_int(const string &str, string &tail);
 EXPCL_PANDA_PUTIL bool string_to_int(const string &str, int &result);
 EXPCL_PANDA_PUTIL double string_to_double(const string &str, string &tail);
 EXPCL_PANDA_PUTIL bool string_to_double(const string &str, double &result);
-EXPCL_PANDA_PUTIL bool string_to_float(const string &str, PN_stdfloat &result);
+EXPCL_PANDA_PUTIL bool string_to_float(const string &str, float &result);
+EXPCL_PANDA_PUTIL bool string_to_stdfloat(const string &str, PN_stdfloat &result);
 
 // Convenience function to make a string from anything that has an
 // ostream operator.

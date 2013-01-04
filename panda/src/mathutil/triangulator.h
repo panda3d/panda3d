@@ -31,9 +31,8 @@
 //
 //               http://www.cs.unc.edu/~dm/CODE/GEM/chapter.html
 //
-//               It works strictly on 2-d points.  You'll have to
-//               convert your polygon into a plane if you have 3-d
-//               points.
+//               It works strictly on 2-d points.  See Triangulator3
+//               for 3-d points.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_MATHUTIL Triangulator {
 PUBLISHED:
@@ -61,7 +60,9 @@ PUBLISHED:
   int get_triangle_v1(int n) const;
   int get_triangle_v2(int n) const;
 
-private:
+protected:
+  void cleanup_polygon_indices(vector_int &polygon);
+
   typedef pvector<LPoint2d> Vertices;
   Vertices _vertices;
 

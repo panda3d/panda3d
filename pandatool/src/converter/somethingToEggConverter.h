@@ -23,9 +23,11 @@
 #include "pathReplace.h"
 #include "pointerTo.h"
 #include "distanceUnit.h"
+#include "pandaNode.h"
 
 class EggData;
 class EggGroupNode;
+class LoaderOptions;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : SomethingToEggConverter
@@ -103,8 +105,10 @@ public:
   virtual string get_extension() const=0;
   virtual string get_additional_extensions() const;
   virtual bool supports_compressed() const;
+  virtual bool supports_convert_to_node(const LoaderOptions &options) const;
 
   virtual bool convert_file(const Filename &filename)=0;
+  virtual PT(PandaNode) convert_to_node(const LoaderOptions &options, const Filename &filename);
   virtual DistanceUnit get_input_units();
 
   bool handle_external_reference(EggGroupNode *egg_parent,

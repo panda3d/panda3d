@@ -118,14 +118,27 @@ void Triangulator::
 triangulate() {
   _result.clear();
 
+  // Make sure our index numbers are reasonable.
+  cleanup_polygon_indices(_polygon);
+  Holes::iterator hi;
+  for (hi = _holes.begin(); hi != _holes.end(); ++hi) {
+    cleanup_polygon_indices(*hi);
+  }
+
+  if (_polygon.size() < 3) {
+    // Degenerate case.
+    return;
+  }
+
   // Set up the list of segments.
   seg.clear();
   seg.push_back(segment_t());  // we don't use the first entry.
   make_segment(_polygon, true);
 
-  Holes::const_iterator hi;
   for (hi = _holes.begin(); hi != _holes.end(); ++hi) {
-    make_segment(*hi, false);
+    if ((*hi).size() >= 3) {
+      make_segment(*hi, false);
+    }
   }
 
   // Shuffle the segment index.
@@ -151,6 +164,7 @@ triangulate() {
   */
   choose_idx = 0;
 
+  /*
   //cerr << "got " << num_segments << " segments\n";
   for (i = 1; i < (int)seg.size(); ++i) {
     segment_t &s = seg[i];
@@ -158,6 +172,7 @@ triangulate() {
     printf("    root0 = %d, root1 = %d\n", s.root0, s.root1);
     printf("    next = %d, prev = %d\n", s.next, s.prev);
   }
+  */
 
   while (construct_trapezoids(num_segments) != 0) {
     // If there's an error, re-shuffle the index and try again.
@@ -260,6 +275,43 @@ int Triangulator::
 get_triangle_v2(int n) const {
   nassertr(n >= 0 && n < (int)_result.size(), -1);
   return _result[n]._v2;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Triangulator::cleanup_polygon_indices
+//       Access: Protected
+//  Description: Removes any invalid index numbers from the list.
+////////////////////////////////////////////////////////////////////
+void Triangulator::
+cleanup_polygon_indices(vector_int &polygon) {
+  // First, check for index bounds.
+  size_t pi = 0;
+  while (pi < polygon.size()) {
+    if (polygon[pi] >= 0 && polygon[pi] < _vertices.size()) {
+      // This vertex is OK.
+      ++pi;
+    } else {
+      // This index is out-of-bounds; remove it.
+      polygon.erase(_polygon.begin() + pi);
+    }
+  }
+
+  // Now, remove any consecutive repeated vertices.
+  pi = 1;
+  while (pi < polygon.size()) {
+    if (_vertices[polygon[pi]] != _vertices[polygon[pi - 1]]) {
+      // This vertex is OK.
+      ++pi;
+    } else {
+      // This vertex repeats the previous one; remove it.
+      polygon.erase(_polygon.begin() + pi);
+    }
+  }
+
+  if (polygon.size() > 1 && _vertices[polygon.back()] == _vertices[_polygon.front()]) {
+    // The last vertex repeats the first one; remove it.
+    polygon.pop_back();
+  }
 }
 
 

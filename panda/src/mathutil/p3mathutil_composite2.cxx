@@ -16,3 +16,4 @@
 #include "stackedPerlinNoise2.cxx"
 #include "stackedPerlinNoise3.cxx"
 #include "triangulator.cxx"
+#include "triangulator3.cxx"

@@ -54,6 +54,14 @@ ConfigVariableEnum<DistanceUnit> ptloader_units
           "when using libptloader to automatically convert files to Panda "
           "at load time, via e.g. \"pview myMayaFile.mb\"."));
 
+ConfigVariableBool ptloader_load_node
+("ptloader-load-node", true,
+ PRC_DESC("Specify true to allow libptloader to invoke the more efficient "
+          "but possibly-experimental code to load model files directly into "
+          "PandaNode when possible.  Specify false to force the loading to "
+          "always go through the egg library, which is more likely to be "
+          "reliable."));
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libptloader
 //  Description: Initializes the library.  This must be called at

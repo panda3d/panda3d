@@ -102,6 +102,22 @@ supports_compressed() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::supports_convert_to_node
+//       Access: Published, Virtual
+//  Description: Returns true if this converter can directly convert
+//               the model type to internal Panda memory structures,
+//               given the indicated options, or false otherwise.  If
+//               this returns true, then convert_to_node() may be
+//               called to perform the conversion, which may be faster
+//               than calling convert_file() if the ultimate goal is a
+//               PandaNode anyway.
+////////////////////////////////////////////////////////////////////
+bool SomethingToEggConverter::
+supports_convert_to_node(const LoaderOptions &options) const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SomethingToEggConverter::get_input_units
 //       Access: Public, Virtual
 //  Description: This may be called after convert_file() has been
@@ -113,6 +129,20 @@ supports_compressed() const {
 DistanceUnit SomethingToEggConverter::
 get_input_units() {
   return DU_invalid;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::convert_to_node
+//       Access: Public, Virtual
+//  Description: Reads the input file and directly produces a
+//               ready-to-render model file as a PandaNode.  Returns
+//               NULL on failure, or if it is not supported.  (This
+//               functionality is not supported by all converter
+//               types; see supports_convert_to_node()).
+////////////////////////////////////////////////////////////////////
+PT(PandaNode) SomethingToEggConverter::
+convert_to_node(const LoaderOptions &options, const Filename &filename) {
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

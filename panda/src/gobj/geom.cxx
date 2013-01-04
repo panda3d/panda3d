@@ -328,7 +328,7 @@ set_primitive(int i, const GeomPrimitive *primitive) {
   nassertv(cdata->_primitive_type == PT_none ||
            cdata->_primitive_type == primitive->get_primitive_type());
 
-  // They also should have the a compatible shade model.
+  // They also should have a compatible shade model.
   CPT(GeomPrimitive) compat = primitive->match_shade_model(cdata->_shade_model);
   nassertv_always(compat != (GeomPrimitive *)NULL);
 
@@ -374,7 +374,7 @@ add_primitive(const GeomPrimitive *primitive) {
   nassertv(cdata->_primitive_type == PT_none ||
            cdata->_primitive_type == primitive->get_primitive_type());
 
-  // They also should have the a compatible shade model.
+  // They also should have a compatible shade model.
   CPT(GeomPrimitive) compat = primitive->match_shade_model(cdata->_shade_model);
   nassertv_always(compat != (GeomPrimitive *)NULL);
 
@@ -589,6 +589,19 @@ rotate_in_place() {
       all_is_valid = false;
     }
 #endif
+  }
+
+  switch (cdata->_shade_model) {
+  case SM_flat_first_vertex:
+    cdata->_shade_model = SM_flat_last_vertex;
+    break;
+
+  case SM_flat_last_vertex:
+    cdata->_shade_model = SM_flat_first_vertex;
+    break;
+
+  default:
+    break;
   }
 
   cdata->_modified = Geom::get_next_modified();
