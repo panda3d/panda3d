@@ -993,31 +993,31 @@ dispatch_color(const string &opt, const string &arg, void *var) {
   switch (words.size()) {
   case 4:
     okflag =
-      string_to_float(words[0], ip[0]) &&
-      string_to_float(words[1], ip[1]) &&
-      string_to_float(words[2], ip[2]) &&
-      string_to_float(words[3], ip[3]);
+      string_to_stdfloat(words[0], ip[0]) &&
+      string_to_stdfloat(words[1], ip[1]) &&
+      string_to_stdfloat(words[2], ip[2]) &&
+      string_to_stdfloat(words[3], ip[3]);
     break;
 
   case 3:
     okflag =
-      string_to_float(words[0], ip[0]) &&
-      string_to_float(words[1], ip[1]) &&
-      string_to_float(words[2], ip[2]);
+      string_to_stdfloat(words[0], ip[0]) &&
+      string_to_stdfloat(words[1], ip[1]) &&
+      string_to_stdfloat(words[2], ip[2]);
     ip[3] = 1.0;
     break;
 
   case 2:
     okflag =
-      string_to_float(words[0], ip[0]) &&
-      string_to_float(words[1], ip[3]);
+      string_to_stdfloat(words[0], ip[0]) &&
+      string_to_stdfloat(words[1], ip[3]);
     ip[1] = ip[0];
     ip[2] = ip[0];
     break;
 
   case 1:
     okflag =
-      string_to_float(words[0], ip[0]);
+      string_to_stdfloat(words[0], ip[0]);
     ip[1] = ip[0];
     ip[2] = ip[0];
     ip[3] = 1.0;

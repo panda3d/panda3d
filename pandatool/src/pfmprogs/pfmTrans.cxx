@@ -341,13 +341,13 @@ dispatch_scale(const string &opt, const string &arg, void *var) {
   bool okflag = false;
   if (words.size() == 3) {
     okflag =
-      string_to_float(words[0], sx) &&
-      string_to_float(words[1], sy) &&
-      string_to_float(words[2], sz);
+      string_to_stdfloat(words[0], sx) &&
+      string_to_stdfloat(words[1], sy) &&
+      string_to_stdfloat(words[2], sz);
 
   } else if (words.size() == 1) {
     okflag =
-      string_to_float(words[0], sx);
+      string_to_stdfloat(words[0], sx);
     sy = sz = sx;
   }
 
@@ -392,9 +392,9 @@ ns_dispatch_rotate_xyz(const string &opt, const string &arg, void *var) {
   bool okflag = false;
   if (words.size() == 3) {
     okflag =
-      string_to_float(words[0], xyz[0]) &&
-      string_to_float(words[1], xyz[1]) &&
-      string_to_float(words[2], xyz[2]);
+      string_to_stdfloat(words[0], xyz[0]) &&
+      string_to_stdfloat(words[1], xyz[1]) &&
+      string_to_stdfloat(words[2], xyz[2]);
   }
 
   if (!okflag) {
@@ -444,10 +444,10 @@ ns_dispatch_rotate_axis(const string &opt, const string &arg, void *var) {
   bool okflag = false;
   if (words.size() == 4) {
     okflag =
-      string_to_float(words[0], angle) &&
-      string_to_float(words[1], axis[0]) &&
-      string_to_float(words[2], axis[1]) &&
-      string_to_float(words[3], axis[2]);
+      string_to_stdfloat(words[0], angle) &&
+      string_to_stdfloat(words[1], axis[0]) &&
+      string_to_stdfloat(words[2], axis[1]) &&
+      string_to_stdfloat(words[3], axis[2]);
   }
 
   if (!okflag) {
@@ -479,9 +479,9 @@ dispatch_translate(const string &opt, const string &arg, void *var) {
   bool okflag = false;
   if (words.size() == 3) {
     okflag =
-      string_to_float(words[0], trans[0]) &&
-      string_to_float(words[1], trans[1]) &&
-      string_to_float(words[2], trans[2]);
+      string_to_stdfloat(words[0], trans[0]) &&
+      string_to_stdfloat(words[1], trans[1]) &&
+      string_to_stdfloat(words[2], trans[2]);
   }
 
   if (!okflag) {

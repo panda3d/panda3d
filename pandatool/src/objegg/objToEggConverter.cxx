@@ -546,7 +546,7 @@ get_face_vertex(const string &reference) {
     if (entry._vi - 1 < (int)_rgb_table.size()) {
       // We have a per-vertex color too.
       LRGBColor rgb = _rgb_table[entry._vi - 1];
-      LColorf rgba(rgb[0], rgb[1], rgb[2], 1.0);
+      LColor rgba(rgb[0], rgb[1], rgb[2], 1.0);
       synth.set_color(rgba);
     }
   }
@@ -709,8 +709,8 @@ process_f_node(vector_string &words) {
       if (vi0 == 0 || vi1 == 0) {
         continue;
       }
-      const LVecBase4f &p0 = _v_table[vi0 - 1];
-      const LVecBase4f &p1 = _v_table[vi1 - 1];
+      const LVecBase4 &p0 = _v_table[vi0 - 1];
+      const LVecBase4 &p1 = _v_table[vi1 - 1];
       
       normal[0] += p0[1] * p1[2] - p0[2] * p1[1];
       normal[1] += p0[2] * p1[0] - p0[0] * p1[2];
@@ -718,19 +718,6 @@ process_f_node(vector_string &words) {
     }
     normal.normalize();
     synth_vni = add_synth_normal(normal);
-
-    /*
-    // Roll the polygon around to put the "non-vn" vertex at the
-    // end.
-    while (non_vn_index + 1 < verts.size()) {
-      VertexEntry entry = verts.back();
-      verts.pop_back();
-      verts.insert(verts.begin(), entry);
-      ++non_vn_index;
-    }
-
-    verts.back()._synth_vni = synth_vni;
-    */
   }
 
   Triangulator3 tri;
