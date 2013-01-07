@@ -258,7 +258,7 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
         // No such file.
         gobj_cat.error()
           << "Could not find " << filename << "\n";
-        return false;
+        return NULL;
       }
 
       if (gobj_cat.is_debug()) {
@@ -271,7 +271,7 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
       vfs->close_read_file(in);
 
       if (tex == (Texture *)NULL) {
-        return false;
+        return NULL;
       }
       tex->set_fullpath(filename);
       tex->clear_alpha_fullpath();
@@ -561,7 +561,7 @@ ns_load_3d_texture(const Filename &filename_pattern,
   }
 
   // Set the original filename, before we searched along the path.
-  nassertr(tex != (Texture *)NULL, false);
+  nassertr(tex != (Texture *)NULL, NULL);
   tex->set_filename(filename_pattern);
   tex->set_fullpath(filename);
   tex->_texture_pool_key = filename;
@@ -667,7 +667,7 @@ ns_load_2d_texture_array(const Filename &filename_pattern,
   }
 
   // Set the original filename, before we searched along the path.
-  nassertr(tex != (Texture *)NULL, false);
+  nassertr(tex != (Texture *)NULL, NULL);
   tex->set_filename(filename_pattern);
   tex->set_fullpath(filename);
   tex->_texture_pool_key = filename;
@@ -768,7 +768,7 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
   }
     
   // Set the original filename, before we searched along the path.
-  nassertr(tex != (Texture *)NULL, false);
+  nassertr(tex != (Texture *)NULL, NULL);
   tex->set_filename(filename_pattern);
   tex->set_fullpath(filename);
   tex->_texture_pool_key = filename;

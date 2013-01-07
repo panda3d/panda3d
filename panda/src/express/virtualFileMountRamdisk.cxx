@@ -242,7 +242,7 @@ open_read_file(const Filename &file) const {
   PT(FileBase) f = _root.do_find_file(file);
   ((VirtualFileMountRamdisk *)this)->_lock.release();
   if (f == (FileBase *)NULL || f->is_directory()) {
-    return false;
+    return NULL;
   }
 
   File *f2 = DCAST(File, f);
@@ -263,7 +263,7 @@ open_write_file(const Filename &file, bool truncate) {
   PT(File) f = _root.do_create_file(file);
   _lock.release();
   if (f == (File *)NULL) {
-    return false;
+    return NULL;
   }
 
   if (truncate) {
@@ -288,7 +288,7 @@ open_append_file(const Filename &file) {
   PT(File) f = _root.do_create_file(file);
   _lock.release();
   if (f == (File *)NULL) {
-    return false;
+    return NULL;
   }
 
   return new OSubStream(&f->_wrapper, 0, 0, true);
@@ -308,7 +308,7 @@ open_read_write_file(const Filename &file, bool truncate) {
   PT(File) f = _root.do_create_file(file);
   _lock.release();
   if (f == (File *)NULL) {
-    return false;
+    return NULL;
   }
 
   return new SubStream(&f->_wrapper, 0, 0);
@@ -328,7 +328,7 @@ open_read_append_file(const Filename &file) {
   PT(FileBase) f = _root.do_find_file(file);
   _lock.release();
   if (f == (FileBase *)NULL || f->is_directory()) {
-    return false;
+    return NULL;
   }
 
   File *f2 = DCAST(File, f);
@@ -350,7 +350,7 @@ get_file_size(const Filename &file, istream *stream) const {
   PT(FileBase) f = _root.do_find_file(file);
   ((VirtualFileMountRamdisk *)this)->_lock.release();
   if (f == (FileBase *)NULL || f->is_directory()) {
-    return false;
+    return 0;
   }
 
   File *f2 = DCAST(File, f);
@@ -369,7 +369,7 @@ get_file_size(const Filename &file) const {
   PT(FileBase) f = _root.do_find_file(file);
   ((VirtualFileMountRamdisk *)this)->_lock.release();
   if (f == (FileBase *)NULL || f->is_directory()) {
-    return false;
+    return 0;
   }
 
   File *f2 = DCAST(File, f);
