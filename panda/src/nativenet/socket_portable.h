@@ -309,13 +309,13 @@ inline int DO_CLOSE(const SOCKET a)
 
 inline int DO_ACCEPT(SOCKET sck, sockaddr_in * adr)
 {
-    unsigned int adrlen = sizeof(sockaddr);
+    socklen_t adrlen = sizeof(sockaddr);
     return accept(sck, ( sockaddr *)adr, &adrlen);
 };
 
 inline int DO_RECV_FROM(SOCKET sck, char * data, int len, sockaddr_in * addr)
 {
-    unsigned int plen = sizeof(sockaddr);
+    socklen_t plen = sizeof(sockaddr);
     return recvfrom(sck, data, len, 0, (sockaddr *)addr, &plen);
 }
 
