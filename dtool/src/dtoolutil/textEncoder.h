@@ -18,6 +18,8 @@
 #include "dtoolbase.h"
 #include "unicodeLatinMap.h"
 
+#include <ctype.h>
+
 class StringDecoder;
 
 ////////////////////////////////////////////////////////////////////
