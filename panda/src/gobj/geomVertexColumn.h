@@ -63,6 +63,13 @@ PUBLISHED:
   INLINE bool overlaps_with(int start_byte, int num_bytes) const;
   INLINE bool is_bytewise_equivalent(const GeomVertexColumn &other) const;
 
+  void set_name(InternalName *name);
+  void set_num_components(int num_components);
+  void set_numeric_type(NumericType numeric_type);
+  void set_contents(Contents contents);
+  void set_start(int start);
+  void set_column_alignment(int column_alignment);
+
   void output(ostream &out) const;
 
 public:

@@ -332,6 +332,48 @@ set_format(const GeomVertexFormat *format) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::unclean_set_format
+//       Access: Published
+//  Description: Changes the format of the vertex data, without
+//               reformatting the data to match.  The data is exactly
+//               the same after this operation, but will be
+//               reinterpreted according to the new format.  This
+//               assumes that the new format is fundamentally
+//               compatible with the old format; in particular, it
+//               must have the same number of arrays with the same
+//               stride in each one.  No checking is performed that
+//               the data remains sensible.
+////////////////////////////////////////////////////////////////////
+void GeomVertexData::
+unclean_set_format(const GeomVertexFormat *format) {
+  Thread *current_thread = Thread::get_current_thread();
+  nassertv(format->is_registered());
+
+  CDLockedReader cdata(_cycler, current_thread);
+
+  if (format == cdata->_format) {
+    // Trivially no-op.
+    return;
+  }
+
+#ifndef NDEBUG
+  nassertv(format->get_num_arrays() == cdata->_format->get_num_arrays());
+  for (int ai = 0; ai < format->get_num_arrays(); ++ai) {
+    nassertv(format->get_array(ai)->get_stride() == cdata->_format->get_array(ai)->get_stride());
+  }
+#endif  // NDEBUG
+
+  CDWriter cdataw(_cycler, cdata, true);
+
+  // Assign the new format.
+  cdataw->_format = format;
+
+  clear_cache_stage();
+  cdataw->_modified = Geom::get_next_modified();
+  cdataw->_animated_vertices.clear();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::clear_rows
 //       Access: Published
 //  Description: Removes all of the rows from the arrays;

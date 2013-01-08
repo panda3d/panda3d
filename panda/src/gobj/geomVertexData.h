@@ -100,6 +100,7 @@ PUBLISHED:
 
   INLINE const GeomVertexFormat *get_format() const;
   void set_format(const GeomVertexFormat *format);
+  void unclean_set_format(const GeomVertexFormat *format);
 
   INLINE bool has_column(const InternalName *name) const;
 

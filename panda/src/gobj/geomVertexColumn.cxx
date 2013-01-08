@@ -31,9 +31,84 @@ operator = (const GeomVertexColumn &copy) {
   _start = copy._start;
   _column_alignment = copy._column_alignment;
 
-  delete _packer;
-  _packer = NULL;
+  setup();
+}
 
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexColumn::set_name
+//       Access: Published
+//  Description: Replaces the name of an existing column.  This is
+//               only legal on an unregistered format (i.e. when
+//               constructing the format initially).
+////////////////////////////////////////////////////////////////////
+void GeomVertexColumn::
+set_name(InternalName *name) {
+  _name = name;
+  setup();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexColumn::set_num_components
+//       Access: Published
+//  Description: Changes the number of components of an existing
+//               column.  This is only legal on an unregistered format
+//               (i.e. when constructing the format initially).
+////////////////////////////////////////////////////////////////////
+void GeomVertexColumn::
+set_num_components(int num_components) {
+  _num_components = num_components;
+  setup();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexColumn::set_numeric_type
+//       Access: Published
+//  Description: Changes the numeric type an existing column.  This is
+//               only legal on an unregistered format (i.e. when
+//               constructing the format initially).
+////////////////////////////////////////////////////////////////////
+void GeomVertexColumn::
+set_numeric_type(NumericType numeric_type) {
+  _numeric_type = numeric_type;
+  setup();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexColumn::set_contents
+//       Access: Published
+//  Description: Changes the semantic meaning of an existing column.
+//               This is only legal on an unregistered format
+//               (i.e. when constructing the format initially).
+////////////////////////////////////////////////////////////////////
+void GeomVertexColumn::
+set_contents(Contents contents) {
+  _contents = contents;
+  setup();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexColumn::set_start
+//       Access: Published
+//  Description: Changes the start byte of an existing column.
+//               This is only legal on an unregistered format
+//               (i.e. when constructing the format initially).
+////////////////////////////////////////////////////////////////////
+void GeomVertexColumn::
+set_start(int start) {
+  _start = start;
+  setup();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexColumn::set_column_alignment
+//       Access: Published
+//  Description: Changes the column alignment of an existing column.
+//               This is only legal on an unregistered format
+//               (i.e. when constructing the format initially).
+////////////////////////////////////////////////////////////////////
+void GeomVertexColumn::
+set_column_alignment(int column_alignment) {
+  _column_alignment = column_alignment;
   setup();
 }
 
@@ -146,6 +221,10 @@ setup() {
 
   _total_bytes = _component_bytes * _num_components;
 
+  if (_packer != NULL) {
+    delete _packer;
+  }
+  
   _packer = make_packer();
   _packer->_column = this;
 }

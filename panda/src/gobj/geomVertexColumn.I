@@ -16,7 +16,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexColumn::Default Constructor
 //       Access: Private
-//  Description: Creates an invalid column.  Used on when constructing
+//  Description: Creates an invalid column.  Used only when constructing
 //               from a bam file.
 ////////////////////////////////////////////////////////////////////
 INLINE GeomVertexColumn::
