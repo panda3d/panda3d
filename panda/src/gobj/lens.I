@@ -59,6 +59,21 @@ extrude(const LPoint3 &point2d, LPoint3 &near_point, LPoint3 &far_point) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Lens::extrude_depth
+//       Access: Published
+//  Description: Uses the depth component of the 3-d result from
+//               project() to compute the original point in 3-d space
+//               corresponding to a particular point on the lens.
+//               This exactly reverses project(), assuming the point
+//               does fall legitimately within the lens.
+////////////////////////////////////////////////////////////////////
+INLINE bool Lens::
+extrude_depth(const LPoint3 &point2d, LPoint3 &point3d) const {
+  CDReader cdata(_cycler);
+  return do_extrude_depth(cdata, point2d, point3d);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Lens::extrude_vec
 //       Access: Published
 //  Description: Given a 2-d point in the range (-1,1) in both

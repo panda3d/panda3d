@@ -117,14 +117,17 @@ do_project(const Lens::CData *lens_cdata, const LPoint3 &point3d, LPoint3 &point
   // into the XY plane to do this.
   LVector2 xy(v3[0], v3[1]);
 
+  // Compute the depth as a linear distance in the range 0 .. 1.
+  PN_stdfloat z = (dist - do_get_near(lens_cdata)) / (do_get_far(lens_cdata) - do_get_near(lens_cdata));
+
   point2d.set
     (
      // The x position is the angle about the Z axis.
      rad_2_deg(catan2(xy[0], xy[1])) * focal_length / ospherical_k,
      // The y position is the Z height.
      p[2],
-     // Z is the distance scaled into the range (1, -1).
-     (do_get_near(lens_cdata) - dist) / (do_get_far(lens_cdata) - do_get_near(lens_cdata))
+     // Z is the distance scaled into the range 1 .. -1.
+     1.0 - 2.0 * z
      );
 
   // Now we have to transform the point according to the film

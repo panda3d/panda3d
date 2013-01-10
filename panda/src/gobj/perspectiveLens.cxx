@@ -54,6 +54,19 @@ is_perspective() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PerspectiveLens::do_extrude_depth
+//       Access: Protected, Virtual
+//  Description: This is the generic implementation, which is based on
+//               do_extrude() and assumes a linear distribution of
+//               depth values between the near and far points.
+////////////////////////////////////////////////////////////////////
+bool PerspectiveLens::
+do_extrude_depth(const CData *cdata,
+                 const LPoint3 &point2d, LPoint3 &point3d) const {
+  return do_extrude_depth_with_mat(cdata, point2d, point3d);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PerspectiveLens::do_compute_projection_mat
 //       Access: Protected, Virtual
 //  Description: Computes the complete transformation matrix from 3-d

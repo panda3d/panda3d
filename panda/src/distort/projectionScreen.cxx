@@ -529,14 +529,14 @@ recompute_geom(Geom *geom, const LMatrix4 &rel_mat) {
   static const LMatrix4 lens_to_uv
     (0.5f, 0.0f, 0.0f, 0.0f,
      0.0f, 0.5f, 0.0f, 0.0f, 
-     0.0f, 0.0f, 0.5f, 0.0f, 
-     0.5f, 0.5f, 0.5f, 1.0f);
+     0.0f, 0.0f, 1.0f, 0.0f, 
+     0.5f, 0.5f, 0.0f, 1.0f);
 
   static const LMatrix4 lens_to_uv_inverted
     (0.5f, 0.0f, 0.0f, 0.0f,
      0.0f,-0.5f, 0.0f, 0.0f, 
-     0.0f, 0.0f, 0.5f, 0.0f, 
-     0.5f, 0.5f, 0.5f, 1.0f);
+     0.0f, 0.0f, 1.0f, 0.0f, 
+     0.5f, 0.5f, 0.0f, 1.0f);
 
   Thread *current_thread = Thread::get_current_thread();
 
@@ -546,8 +546,9 @@ recompute_geom(Geom *geom, const LMatrix4 &rel_mat) {
   const LMatrix4 &to_uv = _invert_uvs ? lens_to_uv_inverted : lens_to_uv;
 
   // Iterate through all the vertices in the Geom.
+  CPT(GeomVertexData) vdata = geom->get_vertex_data(current_thread);
+  vdata = vdata->animate_vertices(true, current_thread);
 
-  CPT(GeomVertexData) vdata = geom->get_vertex_data();
   CPT(GeomVertexFormat) vformat = vdata->get_format();
   if (!vformat->has_column(_texcoord_name) || (_texcoord_3d && vformat->get_column(_texcoord_name)->get_num_components() < 3)) {
     // We need to add a new column for the new texcoords.
@@ -582,12 +583,14 @@ recompute_geom(Geom *geom, const LMatrix4 &rel_mat) {
     LVertex vert = vertex.get_data3();
     
     // For each vertex, project to the film plane.
+    LPoint3 vert3d = vert * rel_mat;
     LPoint3 film(0.0f, 0.0f, 0.0f);
-    bool good = lens->project(vert * rel_mat, film);
+    bool good = lens->project(vert3d, film);
     
     // Now the lens gives us coordinates in the range [-1, 1].
     // Rescale these to [0, 1].
-    texcoord.set_data3(film * to_uv);
+    LPoint3 uvw = film * to_uv;
+    texcoord.set_data3(uvw);
     
     // If we have vignette color in effect, color the vertex according
     // to whether it fell in front of the lens or not.
@@ -615,17 +618,18 @@ make_mesh_node(PandaNode *result_parent, const WorkingNodePath &np,
                const NodePath &camera,
                LMatrix4 &rel_mat, bool &computed_rel_mat) {
   PandaNode *node = np.node();
-  if (!node->safe_to_flatten()) {
-    // If we can't safely flatten this node, ignore it (and all of its
-    // children) completely.  It's got no business being here anyway.
-    return NULL;
-  }
 
   PT(PandaNode) new_node;
   if (node->is_geom_node()) {
     new_node = make_mesh_geom_node(np, camera, rel_mat, computed_rel_mat);
-  } else {
+  } else if (node->safe_to_flatten()) {
     new_node = node->make_copy();
+    new_node->clear_transform();
+  } else {
+    // If we can't safely flatten the node, just make a plain node in
+    // its place.
+    new_node = new PandaNode(node->get_name());
+    new_node->set_state(node->get_state());
   }
 
   // Now attach the new node to the result.
@@ -666,9 +670,11 @@ make_mesh_children(PandaNode *new_node, const WorkingNodePath &np,
                                  rel_mat, computed_rel_mat);
     }
 
-    // Copy all of the render state (except TransformState) to the
-    // new arc.
-    new_child->set_state(child->get_state());
+    if (new_child != NULL) {
+      // Copy all of the render state (except TransformState) to the
+      // new arc.
+      new_child->set_state(child->get_state());
+    }
   }
 }
 
@@ -719,15 +725,16 @@ make_mesh_geom(const Geom *geom, Lens *lens, LMatrix4 &rel_mat) {
   PT(Geom) new_geom = geom->make_copy();
 
   GeomVertexRewriter vertex(new_geom->modify_vertex_data(), 
-                              InternalName::get_vertex());
+                            InternalName::get_vertex());
   while (!vertex.is_at_end()) {
     LVertex vert = vertex.get_data3();
     
     // Project each vertex into the film plane, but use three
     // dimensions so the Z coordinate remains meaningful.
+    LPoint3 vert3d = vert * rel_mat;
     LPoint3 film(0.0f, 0.0f, 0.0f);
-    lens->project(vert * rel_mat, film);
-    
+    lens->project(vert3d, film);
+
     vertex.set_data3(film);
   }      
   

@@ -198,11 +198,14 @@ do_project(const Lens::CData *lens_cdata, const LPoint3 &point3d, LPoint3 &point
   PN_stdfloat focal_length = do_get_focal_length(lens_cdata);
   PN_stdfloat factor = r * focal_length / fisheye_k;
 
+  // Compute the depth as a linear distance in the range 0 .. 1.
+  PN_stdfloat z = (dist - do_get_near(lens_cdata)) / (do_get_far(lens_cdata) - do_get_near(lens_cdata));
+
   point2d.set
     (y[0] * factor,
      y[1] * factor,
-     // Z is the distance scaled into the range (1, -1).
-     (do_get_near(lens_cdata) - dist) / (do_get_far(lens_cdata) - do_get_near(lens_cdata))
+     // Z is the distance scaled into the range 1 .. -1.
+     1.0 - 2.0 * z
      );
 
   // Now we have to transform the point according to the film

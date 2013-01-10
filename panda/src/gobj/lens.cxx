@@ -1243,6 +1243,37 @@ do_extrude(const CData *cdata,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Lens::do_extrude_depth
+//       Access: Protected, Virtual
+//  Description: This is the generic implementation, which is based on
+//               do_extrude() and assumes a linear distribution of
+//               depth values between the near and far points.
+////////////////////////////////////////////////////////////////////
+bool Lens::
+do_extrude_depth(const CData *cdata,
+                 const LPoint3 &point2d, LPoint3 &point3d) const {
+  LPoint3 near_point, far_point;
+  bool result = extrude(point2d, near_point, far_point);
+  point3d = near_point + (far_point - near_point) * point2d[2];
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::do_extrude_depth_with_mat
+//       Access: Protected
+//  Description: Implements do_extrude_depth() by using the projection
+//               matrix.  This is efficient, but works only for a
+//               linear (Perspective or Orthographic) lens.
+////////////////////////////////////////////////////////////////////
+bool Lens::
+do_extrude_depth_with_mat(const CData *cdata,
+                          const LPoint3 &point2d, LPoint3 &point3d) const {
+  const LMatrix4 &projection_mat_inv = do_get_projection_mat_inv(cdata);
+  point3d = projection_mat_inv.xform_point_general(point2d);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Lens::do_extrude_vec
 //       Access: Protected, Virtual
 //  Description: Given a 2-d point in the range (-1,1) in both
@@ -1572,15 +1603,15 @@ do_compute_film_mat(CData *cdata) {
   PN_stdfloat scale_x = 2.0f / film_size[0];
   PN_stdfloat scale_y = 2.0f / film_size[1];
   cdata->_film_mat.set(scale_x,      0.0f,   0.0f,  0.0f,
-                   0.0f,   scale_y,   0.0f,  0.0f,
-                   0.0f,      0.0f,   1.0f,  0.0f,
-        -film_offset[0] * scale_x, -film_offset[1] * scale_y, 0.0f,  1.0f);
+                       0.0f,   scale_y,   0.0f,  0.0f,
+                       0.0f,      0.0f,   1.0f,  0.0f,
+                       -film_offset[0] * scale_x, -film_offset[1] * scale_y, 0.0f,  1.0f);
 
   if ((cdata->_user_flags & UF_keystone) != 0) {
     cdata->_film_mat = LMatrix4(1.0f, 0.0f, cdata->_keystone[0], cdata->_keystone[0],
-                          0.0f, 1.0f, cdata->_keystone[1], cdata->_keystone[1],
-                          0.0f, 0.0f, 1.0f, 0.0f,
-                          0.0f, 0.0f, 0.0f, 1.0f) * cdata->_film_mat;
+                                0.0f, 1.0f, cdata->_keystone[1], cdata->_keystone[1],
+                                0.0f, 0.0f, 1.0f, 0.0f,
+                                0.0f, 0.0f, 0.0f, 1.0f) * cdata->_film_mat;
   }
 
   do_adjust_comp_flags(cdata, CF_film_mat_inv, CF_film_mat);

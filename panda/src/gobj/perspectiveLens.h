@@ -39,6 +39,8 @@ public:
   virtual bool is_perspective() const;
 
 protected:
+  virtual bool do_extrude_depth(const CData *cdata, const LPoint3 &point2d,
+                                LPoint3 &point3d) const;
   virtual void do_compute_projection_mat(Lens::CData *lens_cdata);
 
   virtual PN_stdfloat fov_to_film(PN_stdfloat fov, PN_stdfloat focal_length, bool horiz) const;

@@ -62,6 +62,7 @@ PUBLISHED:
                       LPoint3 &near_point, LPoint3 &far_point) const;
   INLINE bool extrude(const LPoint3 &point2d,
                       LPoint3 &near_point, LPoint3 &far_point) const;
+  INLINE bool extrude_depth(const LPoint3 &point2d, LPoint3 &point3d) const;
   INLINE bool extrude_vec(const LPoint2 &point2d, LVector3 &vec3d) const;
   INLINE bool extrude_vec(const LPoint3 &point2d, LVector3 &vec3d) const;
   INLINE bool project(const LPoint3 &point3d, LPoint3 &point2d) const;
@@ -216,6 +217,10 @@ protected:
 
   virtual bool do_extrude(const CData *cdata, const LPoint3 &point2d,
                           LPoint3 &near_point, LPoint3 &far_point) const;
+  virtual bool do_extrude_depth(const CData *cdata, const LPoint3 &point2d,
+                                LPoint3 &point3d) const;
+  bool do_extrude_depth_with_mat(const CData *cdata, const LPoint3 &point2d,
+                                 LPoint3 &point3d) const;
   virtual bool do_extrude_vec(const CData *cdata,
                               const LPoint3 &point2d, LVector3 &vec) const;
   virtual bool do_project(const CData *cdata,

@@ -89,55 +89,103 @@ project(const Lens *lens) {
 void PfmVizzer::
 extrude(const Lens *lens) {
   nassertv(_pfm.is_valid());
-  nassertv(lens->is_linear());
 
   static LMatrix4 from_uv(2.0, 0.0, 0.0, 0.0,
                           0.0, 2.0, 0.0, 0.0,
-                          0.0, 0.0, 2.0, 0.0,
-                          -1.0, -1.0, -1.0, 1.0);
-  const LMatrix4 &proj_mat_inv = lens->get_projection_mat_inv();
+                          0.0, 0.0, 1.0, 0.0,
+                          -1.0, -1.0, 0.0, 1.0);
 
   PfmFile result;
   result.clear(_pfm.get_x_size(), _pfm.get_y_size(), 3);
   result.set_zero_special(true);
 
-  if (_pfm.get_num_channels() == 1) {
-    // Create an implicit UV coordinate for each point.
-    LPoint2 uv_scale(1.0, 1.0);
-    if (_pfm.get_x_size() > 1) {
-      uv_scale[0] = 1.0 / PN_stdfloat(_pfm.get_x_size());
-    }
-    if (_pfm.get_y_size() > 1) {
-      uv_scale[1] = 1.0 / PN_stdfloat(_pfm.get_y_size());
-    }
-    for (int yi = 0; yi < _pfm.get_y_size(); ++yi) {
-      for (int xi = 0; xi < _pfm.get_x_size(); ++xi) {
-        if (!_pfm.has_point(xi, yi)) {
-          continue;
+  if (lens->is_linear()) {
+    // If the lens is linear (Perspective or Orthographic), we can
+    // take the slightly faster approach of extruding all the points
+    // via a transform matrix.
+    const LMatrix4 &proj_mat_inv = lens->get_projection_mat_inv();
+
+    if (_pfm.get_num_channels() == 1) {
+      // Create an implicit UV coordinate for each point.
+      LPoint2 uv_scale(1.0, 1.0);
+      if (_pfm.get_x_size() > 1) {
+        uv_scale[0] = 1.0 / PN_stdfloat(_pfm.get_x_size());
+      }
+      if (_pfm.get_y_size() > 1) {
+        uv_scale[1] = 1.0 / PN_stdfloat(_pfm.get_y_size());
+      }
+      for (int yi = 0; yi < _pfm.get_y_size(); ++yi) {
+        for (int xi = 0; xi < _pfm.get_x_size(); ++xi) {
+          if (!_pfm.has_point(xi, yi)) {
+            continue;
+          }
+          LPoint3 p, rp;
+          p.set(((PN_stdfloat)xi + 0.5) * uv_scale[0],
+                ((PN_stdfloat)yi + 0.5) * uv_scale[1],
+                (PN_stdfloat)_pfm.get_point1(xi, yi));
+          
+          from_uv.xform_point_in_place(p);
+          rp = proj_mat_inv.xform_point_general(p);
+          result.set_point(xi, yi, rp);
         }
-        LPoint3 p;
-        p.set(((PN_stdfloat)xi + 0.5) * uv_scale[0],
-              ((PN_stdfloat)yi + 0.5) * uv_scale[1],
-              (PN_stdfloat)_pfm.get_point1(xi, yi));
-        
-        from_uv.xform_point_in_place(p);
-        proj_mat_inv.xform_point_general_in_place(p);
-        result.set_point(xi, yi, p);
+      }
+    } else {
+      // Use the existing UV coordinate for each point.
+      for (int yi = 0; yi < _pfm.get_y_size(); ++yi) {
+        for (int xi = 0; xi < _pfm.get_x_size(); ++xi) {
+          if (!_pfm.has_point(xi, yi)) {
+            continue;
+          }
+          LPoint3 p, rp;
+          p = LCAST(PN_stdfloat, _pfm.get_point(xi, yi));
+          
+          from_uv.xform_point_in_place(p);
+          rp = proj_mat_inv.xform_point_general(p);
+          result.set_point(xi, yi, rp);
+        }
       }
     }
   } else {
-    // Use the existing UV coordinate for each point.
-    for (int yi = 0; yi < _pfm.get_y_size(); ++yi) {
-      for (int xi = 0; xi < _pfm.get_x_size(); ++xi) {
-        if (!_pfm.has_point(xi, yi)) {
-          continue;
+    // If the lens is some non-linear specialty lens, we have to call
+    // Lens::extrude_depth() to correctly extrude each point.
+    if (_pfm.get_num_channels() == 1) {
+      // Create an implicit UV coordinate for each point.
+      LPoint2 uv_scale(1.0, 1.0);
+      if (_pfm.get_x_size() > 1) {
+        uv_scale[0] = 1.0 / PN_stdfloat(_pfm.get_x_size());
+      }
+      if (_pfm.get_y_size() > 1) {
+        uv_scale[1] = 1.0 / PN_stdfloat(_pfm.get_y_size());
+      }
+      for (int yi = 0; yi < _pfm.get_y_size(); ++yi) {
+        for (int xi = 0; xi < _pfm.get_x_size(); ++xi) {
+          if (!_pfm.has_point(xi, yi)) {
+            continue;
+          }
+          LPoint3 p, rp;
+          p.set(((PN_stdfloat)xi + 0.5) * uv_scale[0],
+                ((PN_stdfloat)yi + 0.5) * uv_scale[1],
+                (PN_stdfloat)_pfm.get_point1(xi, yi));
+          
+          from_uv.xform_point_in_place(p);
+          lens->extrude_depth(p, rp);
+          result.set_point(xi, yi, rp);
         }
-        LPoint3 p;
-        p = LCAST(PN_stdfloat, _pfm.get_point(xi, yi));
-        
-        from_uv.xform_point_in_place(p);
-        proj_mat_inv.xform_point_general_in_place(p);
-        result.set_point(xi, yi, p);
+      }
+    } else {
+      // Use the existing UV coordinate for each point.
+      for (int yi = 0; yi < _pfm.get_y_size(); ++yi) {
+        for (int xi = 0; xi < _pfm.get_x_size(); ++xi) {
+          if (!_pfm.has_point(xi, yi)) {
+            continue;
+          }
+          LPoint3 p, rp;
+          p = LCAST(PN_stdfloat, _pfm.get_point(xi, yi));
+          
+          from_uv.xform_point_in_place(p);
+          lens->extrude_depth(p, rp);
+          result.set_point(xi, yi, rp);
+        }
       }
     }
   }

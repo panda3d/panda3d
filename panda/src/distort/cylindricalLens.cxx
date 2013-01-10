@@ -149,6 +149,9 @@ do_project(const Lens::CData *lens_cdata, const LPoint3 &point3d, LPoint3 &point
 
   PN_stdfloat focal_length = do_get_focal_length(lens_cdata);
 
+  // Compute the depth as a linear distance in the range 0 .. 1.
+  PN_stdfloat z = (pdist - do_get_near(lens_cdata)) / (do_get_far(lens_cdata) - do_get_near(lens_cdata));
+
   point2d.set
     (
      // The x position is the angle about the Z axis.
@@ -156,8 +159,8 @@ do_project(const Lens::CData *lens_cdata, const LPoint3 &point3d, LPoint3 &point
      // The y position is the Z height divided by the perspective
      // distance.
      p[2] * focal_length / pdist,
-     // Z is the perspective distance scaled into the range (1, -1).
-     (do_get_near(lens_cdata) - pdist) / (do_get_far(lens_cdata) - do_get_near(lens_cdata))
+     // Z is the distance scaled into the range 1 .. -1.
+     1.0 - 2.0 * z
      );
 
   // Now we have to transform the point according to the film

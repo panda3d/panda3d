@@ -47,6 +47,8 @@ public:
   virtual void write(ostream &out, int indent_level = 0) const;
 
 protected:
+  virtual bool do_extrude_depth(const CData *cdata, const LPoint3 &point2d,
+                                LPoint3 &point3d) const;
   virtual void do_compute_projection_mat(Lens::CData *lens_cdata);
 
 public:
