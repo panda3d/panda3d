@@ -722,10 +722,12 @@ make_mesh_geom_node(const WorkingNodePath &np, const NodePath &camera,
 ////////////////////////////////////////////////////////////////////
 PT(Geom) ProjectionScreen::
 make_mesh_geom(const Geom *geom, Lens *lens, LMatrix4 &rel_mat) {
+  Thread *current_thread = Thread::get_current_thread();
   PT(Geom) new_geom = geom->make_copy();
-
-  GeomVertexRewriter vertex(new_geom->modify_vertex_data(), 
-                            InternalName::get_vertex());
+  PT(GeomVertexData) vdata = new_geom->modify_vertex_data();
+  new_geom->set_vertex_data(vdata->animate_vertices(false, current_thread));
+  vdata = new_geom->modify_vertex_data();
+  GeomVertexRewriter vertex(vdata, InternalName::get_vertex());
   while (!vertex.is_at_end()) {
     LVertex vert = vertex.get_data3();
     
