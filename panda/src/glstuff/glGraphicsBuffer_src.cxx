@@ -563,6 +563,13 @@ bind_slot(int face, bool rb_resize, Texture **attach, RenderTexturePlane slot, G
         if ( slot == RTP_depth_stencil ) {
           glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_DEPTH_STENCIL_EXT,
                                         _rb_size_x, _rb_size_y);
+          GLint depth_size = 0;
+          glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_DEPTH_SIZE_EXT, &depth_size);
+          _fb_properties.set_depth_bits(depth_size);
+          GLint stencil_size = 0;
+          glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_STENCIL_SIZE_EXT, &stencil_size);
+          _fb_properties.set_stencil_bits(stencil_size);
+
           glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
 
           GLuint rb;
@@ -577,7 +584,6 @@ bind_slot(int face, bool rb_resize, Texture **attach, RenderTexturePlane slot, G
 
           glgsg->_glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
                                             GL_RENDERBUFFER_EXT, rb);
-
           return;
 
         } else if ( slot == RTP_depth ) {
@@ -603,6 +609,7 @@ bind_slot(int face, bool rb_resize, Texture **attach, RenderTexturePlane slot, G
       glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT,
                                     _rb_size_x, _rb_size_y);
 #endif
+
       glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
 
       GLuint rb;
@@ -875,7 +882,6 @@ open_buffer() {
   // tell the truth about what we actually provide by setting
   // the _fb_properties accurately.
 
-  _fb_properties.set_depth_bits(1);
   _fb_properties.set_color_bits(1);
   _fb_properties.set_alpha_bits(_host->get_fb_properties().get_alpha_bits());
   if (_gsg->get_supports_depth_stencil()) {
