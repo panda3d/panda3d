@@ -4177,12 +4177,16 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
 
     switch (tex->get_format()) {
     case Texture::F_depth_component:
+    case Texture::F_depth_component16:
+    case Texture::F_depth_component24:
+    case Texture::F_depth_component32:
     case Texture::F_depth_stencil:
-      // If the texture is one of these special formats, we don't want
-      // to adapt it to the framebuffer's color format.
+      // Don't remap if we're one of these special format.
       break;
 
     default:
+      // If the texture is a color format, we want to match the
+      // presence of alpha according to the framebuffer.
       if (_current_properties->get_alpha_bits()) {
         tex->set_format(Texture::F_rgba);
       } else {
@@ -4303,12 +4307,17 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
 
   Texture::Format format = tex->get_format();
   switch (format) {
-  case Texture::F_depth_component:
   case Texture::F_depth_stencil:
+    component_type = Texture::T_unsigned_int_24_8;
+    break;
+
+  case Texture::F_depth_component:
     if (_current_properties->get_depth_bits() <= 8) {
       component_type = Texture::T_unsigned_byte;
-    } else {
+    } else if (_current_properties->get_depth_bits() <= 16) {
       component_type = Texture::T_unsigned_short;
+    } else {
+      component_type = Texture::T_float;
     }
     break;
 
@@ -9589,6 +9598,9 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   case GL_DEPTH_COMPONENT:
 #endif
   case GL_DEPTH_COMPONENT16:
+    type = Texture::T_unsigned_short;
+    format = Texture::F_depth_component;
+    break;
   case GL_DEPTH_COMPONENT24:
   case GL_DEPTH_COMPONENT32:
     type = Texture::T_float;
@@ -9597,7 +9609,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
 #ifndef OPENGLES_2
   case GL_DEPTH_STENCIL_EXT:
   case GL_DEPTH24_STENCIL8_EXT:
-    type = Texture::T_float;
+    type = Texture::T_unsigned_int_24_8;
     format = Texture::F_depth_stencil;
     break;
 #endif

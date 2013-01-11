@@ -480,13 +480,16 @@ bind_slot(int face, bool rb_resize, Texture **attach, RenderTexturePlane slot, G
       GLclampf priority = 1.0f;
       glPrioritizeTextures(1, &gtc->_index, &priority);
 #endif
+      GLint depth_size = 0;
       if (!is_cube_map) {
         glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
                                        GL_TEXTURE_2D, gtc->_index, 0);
+        GLP(GetTexLevelParameteriv)(GL_TEXTURE_2D, 0, GL_TEXTURE_DEPTH_SIZE, &depth_size);
       } else {
         glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
                                        GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
                                        gtc->_index, 0);
+        GLP(GetTexLevelParameteriv)(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, GL_TEXTURE_DEPTH_SIZE, &depth_size);
       }
       if (_use_depth_stencil) {
         if (!is_cube_map) {
@@ -498,6 +501,8 @@ bind_slot(int face, bool rb_resize, Texture **attach, RenderTexturePlane slot, G
                                          gtc->_index, 0);
         }
       }
+      _fb_properties.set_depth_bits(depth_size);
+
     } else {
 #ifdef OPENGLES
       tex->set_format(Texture::F_rgba4);
@@ -516,13 +521,27 @@ bind_slot(int face, bool rb_resize, Texture **attach, RenderTexturePlane slot, G
       glPrioritizeTextures(1, &gtc->_index, &priority);
 #endif
       glgsg->update_texture(tc, true);
+      GLint red_size = 0, green_size = 0, blue_size = 0, alpha_size = 0;
       if (!is_cube_map) {
         glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, attachpoint,
                                        GL_TEXTURE_2D, gtc->_index, 0);
+        GLP(GetTexLevelParameteriv)(GL_TEXTURE_2D, 0, GL_TEXTURE_RED_SIZE, &red_size);
+        GLP(GetTexLevelParameteriv)(GL_TEXTURE_2D, 0, GL_TEXTURE_GREEN_SIZE, &green_size);
+        GLP(GetTexLevelParameteriv)(GL_TEXTURE_2D, 0, GL_TEXTURE_BLUE_SIZE, &blue_size);
+        GLP(GetTexLevelParameteriv)(GL_TEXTURE_2D, 0, GL_TEXTURE_ALPHA_SIZE, &alpha_size);
       } else {
         glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, attachpoint,
                                        GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
                                        gtc->_index, 0);
+        GLP(GetTexLevelParameteriv)(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, GL_TEXTURE_RED_SIZE, &red_size);
+        GLP(GetTexLevelParameteriv)(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, GL_TEXTURE_GREEN_SIZE, &green_size);
+        GLP(GetTexLevelParameteriv)(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, GL_TEXTURE_BLUE_SIZE, &blue_size);
+        GLP(GetTexLevelParameteriv)(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, GL_TEXTURE_ALPHA_SIZE, &alpha_size);
+      }
+
+      if (attachpoint == GL_COLOR_ATTACHMENT0_EXT) {
+        _fb_properties.set_color_bits(red_size + green_size + blue_size);
+        _fb_properties.set_alpha_bits(alpha_size);
       }
     }
 
@@ -602,13 +621,11 @@ bind_slot(int face, bool rb_resize, Texture **attach, RenderTexturePlane slot, G
 
       // If we get here, we're using the simple fallback case.
 #endif
-#ifdef OPENGLES
       glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT16,
                                     _rb_size_x, _rb_size_y);
-#else
-      glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT,
-                                    _rb_size_x, _rb_size_y);
-#endif
+      GLint depth_size = 0;
+      glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_DEPTH_SIZE_EXT, &depth_size);
+      _fb_properties.set_depth_bits(depth_size);
 
       glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
 
@@ -624,9 +641,17 @@ bind_slot(int face, bool rb_resize, Texture **attach, RenderTexturePlane slot, G
     } else {
       glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, glFormat,
                                     _rb_size_x, _rb_size_y);
+      GLint red_size = 0, green_size = 0, blue_size = 0, alpha_size = 0;
+      glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_RED_SIZE_EXT, &red_size);
+      glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_GREEN_SIZE_EXT, &green_size);
+      glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_BLUE_SIZE_EXT, &blue_size);
+      glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_ALPHA_SIZE_EXT, &alpha_size);
+      _fb_properties.set_color_bits(red_size + green_size + blue_size);
+      _fb_properties.set_alpha_bits(alpha_size);
       glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
       glgsg->_glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, attachpoint,
                                         GL_RENDERBUFFER_EXT, _rb[slot]);
+
     }
   }
 
@@ -882,6 +907,7 @@ open_buffer() {
   // tell the truth about what we actually provide by setting
   // the _fb_properties accurately.
 
+  _fb_properties.set_depth_bits(1);
   _fb_properties.set_color_bits(1);
   _fb_properties.set_alpha_bits(_host->get_fb_properties().get_alpha_bits());
   if (_gsg->get_supports_depth_stencil()) {
