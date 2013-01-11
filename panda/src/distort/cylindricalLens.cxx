@@ -121,8 +121,8 @@ do_extrude_vec(const Lens::CData *lens_cdata, const LPoint3 &point2d, LVector3 &
 //               (-1,-1) is the lower-left corner.
 //
 //               Some lens types also set the z coordinate of the 2-d
-//               point to a value in the range (-1, 1), where 1
-//               represents a point on the near plane, and -1
+//               point to a value in the range (-1, 1), where -1
+//               represents a point on the near plane, and 1
 //               represents a point on the far plane.
 //
 //               Returns true if the 3-d point is in front of the lens
@@ -159,8 +159,8 @@ do_project(const Lens::CData *lens_cdata, const LPoint3 &point3d, LPoint3 &point
      // The y position is the Z height divided by the perspective
      // distance.
      p[2] * focal_length / pdist,
-     // Z is the distance scaled into the range 1 .. -1.
-     1.0 - 2.0 * z
+     // Z is the distance scaled into the range -1 .. 1.
+     2.0 * z - 1.0
      );
 
   // Now we have to transform the point according to the film

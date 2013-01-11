@@ -1144,7 +1144,7 @@ get_supports_render_texture() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::flip_ready
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Returns true if a frame has been rendered and needs
 //               to be flipped, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -1155,7 +1155,7 @@ flip_ready() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::get_host
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: This is normally called only from within
 //               make_texture_buffer().  When called on a
 //               ParasiteBuffer, it returns the host of that buffer;

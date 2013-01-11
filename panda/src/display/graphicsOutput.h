@@ -215,13 +215,15 @@ PUBLISHED:
 
   virtual bool get_supports_render_texture() const;
 
-public:
-  // These are not intended to be called directly by the user.
+PUBLISHED:
+  // These are not intended to be called directly by the user, but
+  // they're published anyway since they might occasionally be useful
+  // for low-level debugging.
   virtual bool flip_ready() const;
-
-  INLINE bool operator < (const GraphicsOutput &other) const;
-
   virtual GraphicsOutput *get_host();
+
+public:
+  INLINE bool operator < (const GraphicsOutput &other) const;
 
   virtual void request_open();
   virtual void request_close();

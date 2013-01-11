@@ -92,8 +92,8 @@ extrude(const Lens *lens) {
 
   static LMatrix4 from_uv(2.0, 0.0, 0.0, 0.0,
                           0.0, 2.0, 0.0, 0.0,
-                          0.0, 0.0, 1.0, 0.0,
-                          -1.0, -1.0, 0.0, 1.0);
+                          0.0, 0.0, 2.0, 0.0,
+                          -1.0, -1.0, -1.0, 1.0);
 
   PfmFile result;
   result.clear(_pfm.get_x_size(), _pfm.get_y_size(), 3);

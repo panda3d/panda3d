@@ -1254,7 +1254,11 @@ do_extrude_depth(const CData *cdata,
                  const LPoint3 &point2d, LPoint3 &point3d) const {
   LPoint3 near_point, far_point;
   bool result = extrude(point2d, near_point, far_point);
-  point3d = near_point + (far_point - near_point) * point2d[2];
+
+  // The depth point is, by convention, in the range -1 to 1.  Scale
+  // this to 0 .. 1 for the linear interpolation.
+  PN_stdfloat t = point2d[2] * 0.5 + 0.5;
+  point3d = near_point + (far_point - near_point) * t;
   return result;
 }
 
@@ -1317,8 +1321,8 @@ do_extrude_vec(const CData *cdata, const LPoint3 &point2d, LVector3 &vec) const 
 //               (-1,-1) is the lower-left corner.
 //
 //               The z coordinate will also be set to a value in the
-//               range (-1, 1), where 1 represents a point on the near
-//               plane, and -1 represents a point on the far plane.
+//               range (-1, 1), where -1 represents a point on the near
+//               plane, and 1 represents a point on the far plane.
 //
 //               Returns true if the 3-d point is in front of the lens
 //               and within the viewing frustum (in which case point2d
