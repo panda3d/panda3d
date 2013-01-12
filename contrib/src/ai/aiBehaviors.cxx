@@ -511,7 +511,7 @@ void AIBehaviors::pause_ai(string ai_type) {
             }
 
     case 8: {
-              if(_obstacle_avoidance != NULL) {
+              if(_obstacle_avoidance_obj != NULL) {
                 turn_off("obstacle_avoidance");
                 turn_off("obstacle_avoidance_activate");
               }
