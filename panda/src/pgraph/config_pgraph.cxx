@@ -568,6 +568,8 @@ init_libpgraph() {
   RenderState::init_states();
   RenderEffects::init_states();
 
+  RenderAttrib::init_attribs();
+
   LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_global_ptr();
   reg->register_type(new LoaderFileTypeBam);
 }
