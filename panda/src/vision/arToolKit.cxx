@@ -121,12 +121,14 @@ make(NodePath camera, const Filename &paramfile, double marker_size) {
 
   if (AR_DEFAULT_PIXEL_FORMAT != AR_PIXEL_FORMAT_BGRA &&
       AR_DEFAULT_PIXEL_FORMAT != AR_PIXEL_FORMAT_RGBA &&
+      AR_DEFAULT_PIXEL_FORMAT != AR_PIXEL_FORMAT_ARGB &&
+      AR_DEFAULT_PIXEL_FORMAT != AR_PIXEL_FORMAT_ABGR &&
       AR_DEFAULT_PIXEL_FORMAT != AR_PIXEL_FORMAT_RGB &&
       AR_DEFAULT_PIXEL_FORMAT != AR_PIXEL_FORMAT_BGR) {
     vision_cat.error() <<
       "The copy of ARToolKit that you are using is not compiled "
-      "for RGB, BGR, RGBA or BGRA input.  Panda3D cannot use "
-      "this copy of ARToolKit. Please modify the ARToolKit's "
+      "for RGB, BGR, RGBA, BGRA, ARGB or ABGR input.  Panda3D cannot "
+      "use this copy of ARToolKit. Please modify the ARToolKit's "
       "config file and compile it again.\n";
     return 0;
   }
@@ -191,7 +193,7 @@ cleanup() {
 //  Description: Use ARToolKit::make to create an ARToolKit.
 ////////////////////////////////////////////////////////////////////
 ARToolKit::
-ARToolKit() {
+ARToolKit() : _have_prev_conv(false) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -268,7 +270,7 @@ detach_patterns() {
 void ARToolKit::
 analyze(Texture *tex, bool do_flip_texture) {
   // We shouldn't assert on has_ram_image since it also returns false
-  // when there is a ram image but its not updated for this frame.
+  // when there is a ram image but it's not updated for this frame.
   //nassertv(tex->has_ram_image());
   nassertv(tex->get_ram_image_compression() == Texture::CM_off);
   nassertv(tex->get_component_type() == Texture::T_unsigned_byte);
@@ -286,94 +288,156 @@ analyze(Texture *tex, bool do_flip_texture) {
   //int pagesize = xsize * ysize * 4;
   nassertv((xsize > 0) && (ysize > 0));
 
+  // row length in bytes
+  int srclen = tex->get_x_size() * tex->get_num_components();
+
   ARParam cparam;
-  change_size( (ARParam*)_camera_param, xsize, ysize, &cparam );
-  arInitCparam( &cparam );
+  change_size((ARParam*)_camera_param, xsize, ysize, &cparam);
+  arInitCparam(&cparam);
 
   // Pack the data into a buffer with no padding and invert the video
   // vertically (panda's representation is upside down from ARToolKit)
+  // Note: ARToolKit treats the images as grayscale, so the order of
+  // the individual R, G and B components does not matter.
 
   CPTA_uchar ri = tex->get_ram_image();
   const unsigned char *ram = ri.p();
 
+  if (ram == NULL) {
+    vision_cat.warning() << "No data in texture!\n";
+    return;
+  }
+
   unsigned char *data;
+  unsigned char *dstrow;
+  const unsigned char *srcrow;
+
   if (AR_DEFAULT_PIXEL_FORMAT == AR_PIXEL_FORMAT_RGB ||
       AR_DEFAULT_PIXEL_FORMAT == AR_PIXEL_FORMAT_BGR) {
     data = new unsigned char[xsize * ysize * 3];
     int dstlen = xsize * 3;
     if (tex->get_num_components() == 3) {
-      int srclen = (xsize + padx) * 3;
       if (do_flip_texture) {
-        for (int y=0; y<ysize; y++) {
+        for (int y = 0; y < ysize; ++y) {
           int invy = (ysize - y - 1);
           memcpy(data + invy * dstlen, ram + y * srclen, dstlen);
         }
       } else if (dstlen == srclen) {
         memcpy(data, ram, ysize * srclen);
       } else {
-        for (int y=0; y<ysize; y++) {
+        for (int y = 0; y < ysize; ++y) {
           memcpy(data + y * dstlen, ram + y * srclen, dstlen);
         }
       }
     } else {
       // Chop off the alpha component.
-      int srclen = (xsize + padx) * 4;
       if (do_flip_texture) {
-        for (int y=0; y<ysize; y++) {
-          int invy = (ysize - y - 1);
-          for (int x=0; x<xsize; x++) {
-            memcpy(data + invy * dstlen + x * 3, ram + y * srclen + x * 4, 3);
+        for (int y = 0; y < ysize; ++y) {
+          dstrow = data + dstlen * (ysize - y - 1);
+          srcrow = ram + srclen * y;
+          for (int x = 0; x < xsize; ++x) {
+            memcpy(dstrow + x * 3, srcrow + x * 4, 3);
           }
         }
       } else {
-        for (int y=0; y<ysize; y++) {
-          for (int x=0; x<xsize; x++) {
-            memcpy(data + y * dstlen + x * 3, ram + y * srclen + x * 4, 3);
+        for (int y = 0; y < ysize; y++) {
+          dstrow = data + dstlen * y;
+          srcrow = ram + srclen * y;
+          for (int x = 0; x < xsize; x++) {
+            memcpy(dstrow + x * 3, srcrow + x * 4, 3);
           }
         }
       }
     }
-  } else { // ARToolKit wants RGBA.
+  } else if (AR_DEFAULT_PIXEL_FORMAT == AR_PIXEL_FORMAT_RGBA ||
+             AR_DEFAULT_PIXEL_FORMAT == AR_PIXEL_FORMAT_BGRA) {
     data = new unsigned char[xsize * ysize * 4];
     int dstlen = xsize * 4;
     if (tex->get_num_components() == 3) {
-      // Until we find a better solution, we'll need to add the Alpha component ourselves.
-      int srclen = (xsize + padx) * 3;
+      // We'll have to add an alpha component.
       if (do_flip_texture) {
-        for (int y=0; y<ysize; y++) {
-          int invy = (ysize - y - 1);
-          memcpy(data + invy * dstlen, ram + y * srclen, dstlen - 1);
-          for (int x=0; x<xsize; x++) {
-            data[invy * dstlen + x * 4 + 3] = -1;
+        for (int y = 0; y < ysize; ++y) {
+          dstrow = data + dstlen * (ysize - y - 1);
+          srcrow = ram + srclen * y;
+          for (int x = 0; x < xsize; ++x) {
+            memcpy(dstrow + x * 4, srcrow + x * 3, 3);
+            dstrow[x * 4 + 3] = 255;
           }
         }
       } else {
-        for (int y=0; y<ysize; y++) {
-          memcpy(data + y * dstlen, ram + y * srclen, dstlen - 1);
-          for (int x=0; x<xsize; x++) {
-            data[y * dstlen + x * 4 + 3] = -1;
+        for (int y = 0; y < ysize; ++y) {
+          dstrow = data + dstlen * y;
+          srcrow = ram + srclen * y;
+          for (int x = 0; x < xsize; ++x) {
+            memcpy(dstrow + x * 4, srcrow + x * 3, 3);
+            dstrow[x * 4 + 3] = 255;
           }
         }
       }
     } else {
-      int srclen = (xsize + padx) * 4;
       if (do_flip_texture) {
-        for (int y=0; y<ysize; y++) {
+        for (int y = 0; y < ysize; ++y) {
           int invy = (ysize - y - 1);
           memcpy(data + invy * dstlen, ram + y * srclen, dstlen);
         }
       } else if (dstlen == srclen) {
         memcpy(data, ram, ysize * srclen);
       } else {
-        for (int y=0; y<ysize; y++) {
+        for (int y = 0; y < ysize; ++y) {
           memcpy(data + y * dstlen, ram + y * srclen, dstlen);
+        }
+      }
+    }
+  } else { // ARToolKit wants ARGB / ABGR.
+    data = new unsigned char[xsize * ysize * 4];
+    int dstlen = xsize * 4;
+    if (tex->get_num_components() == 3) {
+      // We'll have to add an alpha component.
+      if (do_flip_texture) {
+        for (int y = 0; y < ysize; ++y) {
+          dstrow = data + dstlen * (ysize - y - 1);
+          srcrow = ram + srclen * y;
+          for (int x = 0; x < xsize; ++x) {
+            memcpy(dstrow + x * 4 + 1, srcrow + x * 3, 3);
+            dstrow[x * 4] = 255;
+          }
+        }
+      } else {
+        for (int y = 0; y < ysize; ++y) {
+          dstrow = data + dstlen * y;
+          srcrow = ram + srclen * y;
+          for (int x = 0; x < xsize; ++x) {
+            memcpy(dstrow + x * 4 + 1, srcrow + x * 3, 3);
+            dstrow[x * 4] = 255;
+          }
+        }
+      }
+    } else {
+      if (do_flip_texture) {
+        for (int y = 0; y < ysize; ++y) {
+          dstrow = data + dstlen * (ysize - y - 1);
+          srcrow = ram + srclen * y;
+          for (int x = 0; x < xsize; ++x) {
+            memcpy(dstrow + x * 4 + 1, srcrow + x * 4, 3);
+            dstrow[x * 4] = srcrow[x * 4 + 3];
+          }
+        }
+      } else {
+        for (int y = 0; y < ysize; ++y) {
+          dstrow = data + dstlen * y;
+          srcrow = ram + srclen * y;
+          for (int x = 0; x < xsize; ++x) {
+            memcpy(dstrow + x * 4 + 1, srcrow + x * 4, 3);
+            dstrow[x * 4] = srcrow[x * 4 + 3];
+          }
         }
       }
     }
   }
 
+  // Activate the patterns.
   Controls::const_iterator ctrli;
-  for (ctrli=_controls.begin(); ctrli!=_controls.end(); ctrli++) {
+  for (ctrli = _controls.begin(); ctrli != _controls.end(); ++ctrli) {
     arActivatePatt((*ctrli).first);
   }
 
@@ -386,13 +450,13 @@ analyze(Texture *tex, bool do_flip_texture) {
     return;
   }
 
-  for (ctrli=_controls.begin(); ctrli!=_controls.end(); ctrli++) {
+  for (ctrli = _controls.begin(); ctrli != _controls.end(); ++ctrli) {
     NodePath np = (*ctrli).second;
     int pattern = (*ctrli).first;
     arDeactivatePatt(pattern);
     double conf = -1;
     int best = -1;
-    for (int i=0; i<marker_num; i++) {
+    for (int i = 0; i < marker_num; ++i) {
       if (marker_info[i].id == pattern) {
         if (marker_info[i].cf >= conf) {
           conf = marker_info[i].cf;
@@ -412,11 +476,11 @@ analyze(Texture *tex, bool do_flip_texture) {
         _have_prev_conv = true;
       }
       LMatrix4 mat;
-      for (int i=0; i<4; i++) {
-        mat(i,0) =  _prev_conv[0][i];
-        mat(i,1) =  _prev_conv[2][i];
-        mat(i,2) = -_prev_conv[1][i];
-        mat(i,3) = 0.0;
+      for (int i = 0; i < 4; ++i) {
+        mat(i, 0) =  _prev_conv[0][i];
+        mat(i, 1) =  _prev_conv[2][i];
+        mat(i, 2) = -_prev_conv[1][i];
+        mat(i, 3) = 0.0;
       }
       mat(3,3) = 1.0;
       LVecBase3 scale, shear, hpr, pos;
