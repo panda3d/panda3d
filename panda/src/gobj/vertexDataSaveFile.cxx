@@ -127,7 +127,11 @@ VertexDataSaveFile(const Filename &directory, const string &prefix,
     
     // Now try to lock the file, so we can be sure that no other
     // process is simultaneously writing to the same save file.
+#ifdef HAVE_LOCKF
     int result = lockf(_fd, F_TLOCK, 0);
+#else
+    int result = flock(_fd, LOCK_EX | LOCK_NB);
+#endif
     if (result == 0) {
       // We've got the file.  Truncate it first, for good measure, in
       // case there's an old version of the file we picked up.

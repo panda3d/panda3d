@@ -22,6 +22,11 @@
 #include "config_pipeline.h"
 #include <sched.h>
 
+#ifdef ANDROID
+#include "config_express.h"
+#include <jni.h>
+#endif
+
 pthread_key_t ThreadPosixImpl::_pt_ptr_index = 0;
 bool ThreadPosixImpl::_got_pt_ptr_index = false;
 
@@ -217,6 +222,18 @@ root_func(void *data) {
       self->_status = S_running;
       self->_mutex.release();
     }
+
+#ifdef ANDROID
+    // Attach the Java VM to allow calling Java functions in this thread.
+    JavaVM *jvm = get_java_vm();
+    JNIEnv *env;
+    if (jvm == NULL || jvm->AttachCurrentThread(&env, NULL) != 0) {
+      thread_cat.error()
+        << "Failed to attach Java VM to thread "
+        << self->_parent_obj->get_name() << "!\n";
+      env = NULL;
+    }
+#endif
     
     self->_parent_obj->thread_main();
     
@@ -235,7 +252,13 @@ root_func(void *data) {
       self->_status = S_finished;
       self->_mutex.release();
     }
-    
+
+#ifdef ANDROID
+    if (env != NULL) {
+      jvm->DetachCurrentThread();
+    }
+#endif
+
     // Now drop the parent object reference that we grabbed in start().
     // This might delete the parent object, and in turn, delete the
     // ThreadPosixImpl object.

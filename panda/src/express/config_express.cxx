@@ -22,6 +22,7 @@
 #include "virtualFile.h"
 #include "virtualFileComposite.h"
 #include "virtualFileMount.h"
+#include "virtualFileMountAndroidAsset.h"
 #include "virtualFileMountMultifile.h"
 #include "virtualFileMountRamdisk.h"
 #include "virtualFileMountSystem.h"
@@ -106,6 +107,9 @@ init_libexpress() {
   VirtualFile::init_type();
   VirtualFileComposite::init_type();
   VirtualFileMount::init_type();
+#ifdef ANDROID
+  VirtualFileMountAndroidAsset::init_type();
+#endif
   VirtualFileMountMultifile::init_type();
   VirtualFileMountRamdisk::init_type();
   VirtualFileMountSystem::init_type();
@@ -191,3 +195,44 @@ get_config_express() {
   static DConfig config_express;
   return config_express;
 }
+
+#ifdef ANDROID
+static JavaVM *panda_jvm = NULL;
+
+////////////////////////////////////////////////////////////////////
+//     Function: JNI_OnLoad
+//  Description: Called by Java when loading this library.
+////////////////////////////////////////////////////////////////////
+jint JNI_OnLoad(JavaVM *jvm, void *reserved) {
+  panda_jvm = jvm;
+  return JNI_VERSION_1_4;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_java_vm
+//  Description: Returns a pointer to the JavaVM object.
+////////////////////////////////////////////////////////////////////
+JavaVM *get_java_vm() {
+  nassertr(panda_jvm != NULL, NULL);
+  return panda_jvm;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_jni_env
+//  Description: Returns a JNIEnv object for the current thread.
+//               If it doesn't already exist, attaches the JVM
+//               to this thread.
+////////////////////////////////////////////////////////////////////
+JNIEnv *get_jni_env() {
+  nassertr(panda_jvm != NULL, NULL);
+  JNIEnv *env = NULL;
+  int status = panda_jvm->GetEnv((void**) &env, JNI_VERSION_1_4);
+
+  if (status < 0 || env == NULL) {
+    express_cat.error() << "JVM is not available in this thread!\n";
+    return NULL;
+  }
+
+  return env;
+}
+#endif

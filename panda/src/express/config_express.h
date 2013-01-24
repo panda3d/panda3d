@@ -28,6 +28,10 @@
 // Include this so interrogate can find it.
 #include "executionEnvironment.h"
 
+#ifdef ANDROID
+#include <jni.h>
+#endif
+
 ConfigureDecl(config_express, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);
 NotifyCategoryDecl(express, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);
 NotifyCategoryDecl(clock, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);
@@ -61,5 +65,10 @@ EXPCL_PANDAEXPRESS DConfig &get_config_express();
 END_PUBLISH
 
 extern EXPCL_PANDAEXPRESS void init_libexpress();
+
+#ifdef ANDROID
+extern EXPCL_PANDAEXPRESS JavaVM *get_java_vm();
+extern EXPCL_PANDAEXPRESS JNIEnv *get_jni_env();
+#endif
 
 #endif /* __CONFIG_UTIL_H__ */

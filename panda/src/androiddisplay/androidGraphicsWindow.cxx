@@ -566,8 +566,8 @@ handle_motion_event(const AInputEvent *event) {
     _input_devices[0].button_up(MouseButton::one());
   }
 
-  float x = AMotionEvent_getX(event, 0);
-  float y = AMotionEvent_getY(event, 0);
+  float x = AMotionEvent_getX(event, 0) - _app->contentRect.left;
+  float y = AMotionEvent_getY(event, 0) - _app->contentRect.top;
 
   _input_devices[0].set_pointer_in_window(x, y);
 
