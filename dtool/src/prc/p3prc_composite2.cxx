@@ -1,3 +1,4 @@
+#include "configVariableList.cxx"
 #include "configVariableManager.cxx"
 #include "configVariableSearchPath.cxx"
 #include "configVariableString.cxx"

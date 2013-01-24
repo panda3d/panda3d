@@ -402,6 +402,20 @@
 // Don't enable this unless you know what you're doing!
 #define BUILD_IPHONE
 
+// Panda contains some experimental code to compile for Android.  This
+// requires the Google Android NDK.
+// Besides BUILD_ANDROID, you'll also have to set ANDROID_NDK_HOME
+// to the location of the Android NDK directory.  ANDROID_NDK_HOME may
+// not contain any spaces.
+// Furthermore, ANDROID_ABI can be set to armeabi, armeabi-v7a, x86,
+// or mips, depending on which architecture should be targeted.
+#define ANDROID_NDK_HOME
+#define ANDROID_ABI armeabi
+#define ANDROID_STL gnustl_shared
+#define ANDROID_PLATFORM android-9
+#define ANDROID_ARCH arm
+#defer ANDROID_TOOLCHAIN $[if $[eq $[ANDROID_ARCH],arm],arm-linux-androideabi]
+
 // Do you want to use one of the alternative malloc implementations?
 // This is almost always a good idea on Windows, where the standard
 // malloc implementation appears to be pretty poor, but probably

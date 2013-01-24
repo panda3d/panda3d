@@ -1,7 +1,7 @@
 //
-// Config.OSX.pp
+// Config.Android.pp
 //
-// This file defines some custom config variables for the osx
+// This file defines some custom config variables for the Android
 // platform.  It makes some initial guesses about compiler features,
 // etc.
 //
@@ -19,32 +19,99 @@
 // to a subsequent version of Panda.
 // *******************************************************************
 
-#define IS_OSX 1
+// Android is a Linux distribution.
+#define IS_LINUX 1
+
+// These libraries are provided by the Android NDK.
+#define ZLIB_IPATH
+#define ZLIB_LPATH
+#define ZLIB_LIBS z
+#define HAVE_ZLIB 1
+
+#define GLES_IPATH
+#define GLES_LPATH
+#define GLES_LIBS GLESv1_CM
+#define HAVE_GLES 1
+
+#define GLES2_IPATH
+#define GLES2_LPATH
+#define GLES2_LIBS GLESv2
+#define HAVE_GLES2 1
+
+#define EGL_IPATH
+#define EGL_LPATH
+#define EGL_LIBS EGL
+#define HAVE_EGL 1
+
+// We don't have these, of course, so let's disable
+// them for convenience in case they were autodetected.
+#define HAVE_DX8
+#define HAVE_DX9
+#define HAVE_CG
 
 // Compiler flags
+#defer TOOLCHAIN_PATH $[ANDROID_NDK_HOME]/toolchains/$[ANDROID_TOOLCHAIN]/prebuilt/windows/bin
+#defer TOOLCHAIN_PREFIX $[if $[eq $[ANDROID_ABI],x86],i686-linux-android,$[ANDROID_ABI]]
+#defer CC $[TOOLCHAIN_PATH]/$[TOOLCHAIN_PREFIX]-gcc
+#defer CXX $[TOOLCHAIN_PATH]/$[TOOLCHAIN_PREFIX]-g++
+#defer AR $[TOOLCHAIN_PATH]/$[TOOLCHAIN_PREFIX]-ar
+#define C++FLAGS_GEN -fno-exceptions -fno-rtti
 
-#define CC gcc
-#define CXX g++
-#define C++FLAGS_GEN -ftemplate-depth-30
+#defer SYSROOT $[ANDROID_NDK_HOME]/platforms/$[ANDROID_PLATFORM]/arch-$[ANDROID_ARCH]
+#defer SYSROOT_FLAGS --sysroot=$[subst \,/,$[osfilename $[SYSROOT]]]
 
-// Configure for universal binaries on OSX.
-#defer ARCH_FLAGS $[if $[UNIVERSAL_BINARIES],-arch i386 -arch ppc -arch x86_64,]
-#define OSX_CDEFS
-#define OSX_CFLAGS -Wno-deprecated-declarations
+#defer EXTRA_IPATH $[ANDROID_NDK_HOME]/sources/android/native_app_glue $[SYSROOT]/usr/include
+#defer EXTRA_LPATH $[SYSROOT]/usr/lib
+#defer EXTRA_LIBS $[if $[eq $[BUILD_TYPE],android],,c m]
 
-// Whether to build for Cocoa, Carbon or both.  64-bits systems do not
-// have Carbon.  We also disable it for universal and 64-bits builds.
-#define HAVE_COCOA 1
-#defer HAVE_CARBON $[not $[or $[eq $[shell uname -m], x86_64],$[UNIVERSAL_BINARIES]]]
+// Define the CFLAGS and LDFLAGS settings for the various architectures.
+#defer ANDROID_arm_CFLAGS\
+ -fpic\
+ -ffunction-sections\
+ -funwind-tables\
+ -fstack-protector\
+ -D__ARM_ARCH_5__ -D__ARM_ARCH_5T__\
+ -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__\
+ $[if $[eq $[ANDROID_ABI],armeabi-v7a],-march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16,-march=armv5te -mtune=xscale -msoft-float]
+
+#defer ANDROID_arm_LDFLAGS -march=armv7-a -Wl,--fix-cortex-a8
+
+#define ANDROID_mips_CFLAGS\
+ -fpic\
+ -fno-strict-aliasing\
+ -finline-functions\
+ -ffunction-sections\
+ -funwind-tables\
+ -fmessage-length=0\
+ -fno-inline-functions-called-once\
+ -fgcse-after-reload\
+ -frerun-cse-after-loop\
+ -frename-registers
+
+#define ANDROID_mips_LDFLAGS
+
+#define ANDROID_x86_CFLAGS\
+ -ffunction-sections\
+ -funwind-tables\
+ -fstack-protector
+
+#define ANDROID_x86_LDFLAGS
+
+// Select the flags for our architecture and add some common ones.
+#defer ANDROID_CFLAGS $[ANDROID_$[ANDROID_ARCH]_CFLAGS] -DANDROID -Wa,$[if $[ANDROID_DISABLE_NX],--execstack,--noexecstack]
+#defer ANDROID_LDFLAGS -Wl,--no-undefined\
+ -Wl,-z,$[if $[ANDROID_DISABLE_NX],execstack,noexecstack]\
+ -Wl,-z,$[if $[ANDROID_DISABLE_RELRO],norelro,relro]\
+ -Wl,-z,$[if $[ANDROID_DISABLE_RELRO],lazy,now]
 
 // How to compile a C or C++ file into a .o file.  $[target] is the
 // name of the .o file, $[source] is the name of the source file,
 // $[ipath] is a space-separated list of directories to search for
 // include files, and $[flags] is a list of additional flags to pass
 // to the compiler.
-
-#defer COMPILE_C $[CC] $[CFLAGS_GEN] $[ARCH_FLAGS] $[OSX_CFLAGS] -c -o $[target] $[ipath:%=-I%] $[flags] $[source]
-#defer COMPILE_C++ $[CXX] $[C++FLAGS_GEN] $[ARCH_FLAGS] $[OSX_CFLAGS] -c -o $[target] $[ipath:%=-I%] $[flags] $[source]
+#defer os_ipath $[subst \,/,$[osfilename $[ipath]]]
+#defer COMPILE_C $[CC] $[SYSROOT_FLAGS] $[ANDROID_CFLAGS] $[CFLAGS_GEN] $[flags] $[os_ipath:%=-I%] -c $[source] -o $[target]
+#defer COMPILE_C++ $[CXX] $[SYSROOT_FLAGS] $[ANDROID_CFLAGS] $[C++FLAGS_GEN] $[flags] $[os_ipath:%=-I%] -c $[source] -o $[target]
 
 // What flags should be passed to both C and C++ compilers to enable
 // debug symbols?  This will be supplied when OPTIMIZE (above) is set
@@ -65,20 +132,24 @@
 // options to interrogate, guaranteeing that the correct interfaces
 // are generated.  Do not include -D here; that will be supplied
 // automatically.
-#defer CDEFINES_OPT1 $[EXTRA_CDEFS] $[OSX_CDEFS]
-#defer CDEFINES_OPT2 $[EXTRA_CDEFS] $[OSX_CDEFS]
-#defer CDEFINES_OPT3 $[EXTRA_CDEFS] $[OSX_CDEFS]
-#defer CDEFINES_OPT4 $[EXTRA_CDEFS] $[OSX_CDEFS]
+#defer CDEFINES_OPT1 $[EXTRA_CDEFS]
+#defer CDEFINES_OPT2 $[EXTRA_CDEFS]
+#defer CDEFINES_OPT3 $[EXTRA_CDEFS]
+#defer CDEFINES_OPT4 $[EXTRA_CDEFS]
 
 // What additional flags should be passed for each value of OPTIMIZE
 // (above)?  We separate out the compiler-optimization flags, above,
 // so we can compile certain files that give optimizers trouble (like
 // the output of lex and yacc) without them, but with all the other
 // relevant flags.
-#defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=-D%] -Wall $[DEBUGFLAGS]
-#defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=-D%] -Wall $[DEBUGFLAGS] $[if $[no_opt],,$[OPTFLAGS]]
-#defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=-D%] $[DEBUGFLAGS] $[if $[no_opt],,$[OPTFLAGS]]
-#defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=-D%] $[if $[no_opt],,$[OPTFLAGS]]
+
+#define ANDROID_DEBUG_CFLAGS -fno-omit-frame-pointer -fno-strict-aliasing
+#define ANDROID_RELEASE_CFLAGS -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -finline-limit=300
+
+#defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=-D%] -Wall $[DEBUGFLAGS] $[ANDROID_DEBUG_FLAGS]
+#defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=-D%] -Wall $[DEBUGFLAGS] $[if $[no_opt],,$[OPTFLAGS]] $[ANDROID_DEBUG_FLAGS]
+#defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=-D%] $[DEBUGFLAGS] $[if $[no_opt],,$[OPTFLAGS]] $[ANDROID_RELEASE_FLAGS]
+#defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=-D%] $[if $[no_opt],,$[OPTFLAGS]] $[ANDROID_RELEASE_FLAGS]
 
 // What additional flags should be passed to both compilers when
 // building shared (relocatable) sources?  Some architectures require
@@ -90,21 +161,22 @@
 // $[sources] is the list of .o files.  $[libs] is a space-separated
 // list of dependent libraries, and $[lpath] is a space-separated list
 // of directories in which those libraries can be found.
-#defer link_bin_opts $[ARCH_FLAGS] $[OSX_CFLAGS] \
- $[if $[not $[LINK_ALL_STATIC]],-undefined dynamic_lookup] \
- -o $[target] $[sources]\
+#defer os_lpath $[subst \,/,$[osfilename $[lpath]]]
+#defer LINK_BIN_C $[LINK_BIN_C++]
+#defer LINK_BIN_C++ $[cxx_ld]\
+ -Wl,--gc-sections\
+ -Wl,-z,nocopyreloc\
+ $[SYSROOT_FLAGS]\
+ $[sources]\
  $[flags]\
- $[lpath:%=-L%] $[libs:%=-l%]\
- $[fpath:%=-Wl,-F%] $[patsubst %,-framework %, $[bin_frameworks]]
-
-#defer LINK_BIN_C $[cc_ld] $[link_bin_opts]
-#defer LINK_BIN_C++ $[cxx_ld] $[link_bin_opts]
+ $[os_lpath:%=-L%] $[libs:%=-l%]\
+ -o $[target]
 
 // How to generate a static C or C++ library.  $[target] is the
 // name of the library to generate, and $[sources] is the list of .o
 // files that will go into the library.
-#defer STATIC_LIB_C libtool -static -o $[target] $[sources]
-#defer STATIC_LIB_C++ libtool -static -o $[target] $[sources]
+#defer STATIC_LIB_C $[AR] cru $[target] $[sources]
+#defer STATIC_LIB_C++ $[AR] cru $[target] $[sources]
 
 // How to run ranlib, if necessary, after generating a static library.
 // $[target] is the name of the library.  Set this to the empty string
@@ -120,9 +192,16 @@
 // as above, and $[libs] is a space-separated list of dependent
 // libraries, and $[lpath] is a space-separated list of directories in
 // which those libraries can be found.
-#defer SHARED_LIB_C $[cc_ld] $[ARCH_FLAGS] $[OSX_CFLAGS] -o $[target] -dynamiclib -install_name $[notdir $[target]] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
-#defer SHARED_LIB_C++ $[cxx_ld] $[ARCH_FLAGS] $[OSX_CFLAGS] -undefined dynamic_lookup -dynamic -dynamiclib -o $[target] -dynamiclib -install_name $[notdir $[target]] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
-#defer BUNDLE_LIB_C++ $[cxx_ld] $[ARCH_FLAGS] $[OSX_CFLAGS] -undefined dynamic_lookup -bundle -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%] $[patsubst %,-framework %, $[frameworks]]
+#defer SHARED_LIB_C $[SHARED_LIB_C++]
+#defer SHARED_LIB_C++ $[cxx_ld]\
+ -Wl,-soname,$[notdir $[target]]\
+ -shared\
+ $[SYSROOT_FLAGS]\
+ $[sources]\
+ $[flags]\
+ $[os_lpath:%=-L%] $[libs:%=-l%]\
+ -o $[target]
+#define BUNDLE_LIB_C++
 
 // How to install a data file or executable file.  $[local] is the
 // local name of the file to install, and $[dest] is the name of the
@@ -138,19 +217,16 @@
 #defer INSTALL $[if $[ne $[dir $[local]], ./],cd ./$[dir $[local]] &&] install -m $[INSTALL_UMASK_DATA] $[install_dash_p] $[notdir $[local]] $[dest]/
 #defer INSTALL_PROG $[if $[ne $[dir $[local]], ./],cd ./$[dir $[local]] &&] install -m $[INSTALL_UMASK_PROG] $[install_dash_p] $[notdir $[local]] $[dest]/
 
+#define SYSTEM_IGATE_FLAGS -D__const=const -Dvolatile -Dmutable
 
-// Assume that OSX has OpenGL available.
-#define HAVE_GL 1
+// Posix thread support is provided by the Android NDK.
+#define HAVE_POSIX_THREADS 1
+#define THREADS_LIBS
 
-// What additional flags should we pass to interrogate?
-#define BASE_IGATE_FLAGS -D__FLT_EVAL_METHOD__=0  -D__const=const -Dvolatile -Dmutable -D__LITTLE_ENDIAN__ -D__inline__=inline -D__GNUC__
-#define IGATE_ARCH -D__i386__
-#defer SYSTEM_IGATE_FLAGS $[BASE_IGATE_FLAGS] $[IGATE_ARCH]
-
-// We don't need worry about defining WORDS_BIGENDIAN (and we
-// shouldn't anyway, since ppc and intel are different).  We rely on
-// dtoolbase.h to determine this at compilation time.
-#define WORDS_BIGENDIAN 
+// Is the platform big-endian (like an SGI workstation) or
+// little-endian (like a PC)?  Define this to the empty string to
+// indicate little-endian, or nonempty to indicate big-endian.
+#define WORDS_BIGENDIAN
 
 // Does the C++ compiler support namespaces?
 #define HAVE_NAMESPACE 1
@@ -178,7 +254,7 @@
 // Do we have getopt() and/or getopt_long_only() built into the
 // system?
 #define HAVE_GETOPT 1
-#define HAVE_GETOPT_LONG_ONLY 
+#define HAVE_GETOPT_LONG_ONLY 1
 
 // Are the above getopt() functions defined in getopt.h, or somewhere else?
 #define PHAVE_GETOPT_H 1
@@ -196,19 +272,19 @@
 // Can we safely call getenv() at static init time?
 #define STATIC_INIT_GETENV 1
 
-// Can we read the file /proc/self/* to determine our
+// Can we read the files /proc/self/* to determine our
 // environment variables at static init time?
-#define HAVE_PROC_SELF_EXE
-#define HAVE_PROC_SELF_MAPS
-#define HAVE_PROC_SELF_ENVIRON
-#define HAVE_PROC_SELF_CMDLINE
+#define HAVE_PROC_SELF_EXE 1
+#define HAVE_PROC_SELF_MAPS 1
+#define HAVE_PROC_SELF_ENVIRON 1
+#define HAVE_PROC_SELF_CMDLINE 1
 
 // Do we have a global pair of argc/argv variables that we can read at
 // static init time?  Should we prototype them?  What are they called?
 #define HAVE_GLOBAL_ARGV
 #define PROTOTYPE_GLOBAL_ARGV
-#define GLOBAL_ARGV __Argv
-#define GLOBAL_ARGC __Argc
+#define GLOBAL_ARGV
+#define GLOBAL_ARGC
 
 // Should we include <iostream> or <iostream.h>?  Define PHAVE_IOSTREAM
 // to nonempty if we should use <iostream>, or empty if we should use
@@ -223,7 +299,7 @@
 #define HAVE_OPEN_MASK
 
 // Do we have the lockf() function available?
-#define HAVE_LOCKF 1
+#define HAVE_LOCKF
 
 // Do the compiler or system libraries define wchar_t for you?
 #define HAVE_WCHAR_T 1
@@ -239,7 +315,7 @@
 #define PHAVE_IO_H
 
 // Do we have <malloc.h>?
-#define PHAVE_MALLOC_H
+#define PHAVE_MALLOC_H 1
 
 // Do we have <alloca.h>?
 #define PHAVE_ALLOCA_H 1
@@ -273,7 +349,7 @@
 #define PHAVE_DIRENT_H 1
 
 // Do we have <glob.h> (and do we want to use it instead of dirent.h)?
-#define PHAVE_GLOB_H 1
+#define PHAVE_GLOB_H
 
 // Do we have <sys/soundcard.h> (and presumably a Linux-style audio
 // interface)?
@@ -282,17 +358,21 @@
 // Do we have <ucontext.h> (and therefore makecontext() / swapcontext())?
 #define PHAVE_UCONTEXT_H 1
 
+// Do we have <linux/input.h> ? This enables us to use raw mouse input.
+#define PHAVE_LINUX_INPUT_H 1
+
 // Do we have RTTI (and <typeinfo>)?
-#define HAVE_RTTI 1
+// Technically, Android has RTTI support now,
+// but we keep it disabled for performance reasons.
+#define HAVE_RTTI
 
 // Do we have <stdint.h>?
 #define PHAVE_STDINT_H 1
 
-// The dynamic library file extension (usually .so .dll or .dylib):
-#define DYNAMIC_LIB_EXT .dylib
-#define STATIC_LIB_EXT .a
+// We need 64-bit file i/o
+#define __USE_LARGEFILE64 1
 
-// If you need to build .so files in addition to .dylibs, declare this
-// too.  Python 2.4 on OSX 10.4 seems to require this (it won't import
-// a .dylib file directly).
-//#define BUNDLE_EXT .so
+// The dynamic library file extension (usually .so .dll or .dylib):
+#define DYNAMIC_LIB_EXT .so
+#define STATIC_LIB_EXT .a
+#define BUNDLE_EXT

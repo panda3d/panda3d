@@ -49,6 +49,17 @@
 #define DTOOL_PLATFORM "freebsd_i386"
 #endif
 
+#elif defined(__ANDROID__)
+#if defined(__ARM_ARCH_7A__)
+#define DTOOL_PLATFORM "android_armv7a"
+#elif defined(__arm__)
+#define DTOOL_PLATFORM "android_arm"
+#elif defined(__mips__)
+#define DTOOL_PLATFORM "android_mips"
+#elif defined(__i386__)
+#define DTOOL_PLATFORM "android_i386"
+#endif
+
 #elif defined(__x86_64)
 #define DTOOL_PLATFORM "linux_amd64"
 

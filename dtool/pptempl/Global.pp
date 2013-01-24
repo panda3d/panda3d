@@ -790,6 +790,8 @@
     #set alt_libs $[alt_libs] $[WIN_SYS_LIBS] $[components $[WIN_SYS_LIBS],$[active_libs] $[transitive_link]]
   #elif $[OSX_PLATFORM]
     #set alt_libs $[alt_libs] $[OSX_SYS_LIBS] $[components $[OSX_SYS_LIBS],$[active_libs] $[transitive_link]]
+  #elif $[eq $[PLATFORM], Android]
+    #set alt_libs $[alt_libs] $[ANDROID_SYS_LIBS] $[components $[ANDROID_SYS_LIBS],$[active_libs] $[transitive_link]]
   #else
     #set alt_libs $[alt_libs] $[UNIX_SYS_LIBS] $[components $[UNIX_SYS_LIBS],$[active_libs] $[transitive_link]]
   #endif

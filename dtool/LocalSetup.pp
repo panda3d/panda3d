@@ -578,6 +578,9 @@ $[cdefine HAVE_NAMESPACE]
 /* Define if fstream::open() accepts a third parameter for umask. */
 $[cdefine HAVE_OPEN_MASK]
 
+/* Define if we have a lockf() function. */
+$[cdefine HAVE_LOCKF]
+
 /* Define if some header file defines wchar_t. */
 $[cdefine HAVE_WCHAR_T]
 

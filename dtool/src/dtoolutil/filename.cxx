@@ -3010,7 +3010,11 @@ atomic_compare_and_exchange_contents(string &orig_contents,
 
   orig_contents = string();
 
+#ifdef HAVE_LOCKF
   if (lockf(fd, F_LOCK, 0) != 0) {
+#else
+  if (flock(fd, LOCK_EX) != 0) {
+#endif
     perror(os_specific.c_str());
     close(fd);
     return false;
@@ -3127,7 +3131,11 @@ atomic_read_contents(string &contents) const {
 
   contents = string();
 
+#ifdef HAVE_LOCKF
   if (lockf(fd, F_LOCK, 0) != 0) {
+#else
+  if (flock(fd, LOCK_EX) != 0) {
+#endif
     perror(os_specific.c_str());
     close(fd);
     return false;

@@ -28,5 +28,58 @@
   #define OSX_CFLAGS -isysroot $[dev]/SDKs/$[IPH_PLATFORM]$[IPH_VERSION].sdk $[osflags]
 
   #defer ODIR_SUFFIX -$[IPH_PLATFORM]
+#endif
+
+#if $[eq $[PLATFORM], Android]
+
+// These are the flags also used by Android's own ndk-build.
+#if $[eq $[ANDROID_ARCH],arm]
+#define target_cflags\
+ -fpic\
+ -ffunction-sections\
+ -funwind-tables\
+ -fstack-protector\
+ -D__ARM_ARCH_5__ -D__ARM_ARCH_5T__\
+ -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__
+
+#elif $[eq $[ANDROID_ARCH],mips]
+#define target_cflags\
+ -fpic\
+ -fno-strict-aliasing\
+ -finline-functions\
+ -ffunction-sections\
+ -funwind-tables\
+ -fmessage-length=0\
+ -fno-inline-functions-called-once\
+ -fgcse-after-reload\
+ -frerun-cse-after-loop\
+ -frename-registers
+
+#elif $[eq $[ANDROID_ABI],x86]
+#define target_cflags\
+ -ffunction-sections\
+ -funwind-tables\
+ -fstack-protector
+#endif
+
+#if $[eq $[ANDROID_ABI],armeabi-v7a]
+#define target_cflags $[target_cflags]\
+ -march=armv7-a \
+ -mfloat-abi=softfp \
+ -mfpu=vfpv3-d16
+
+#define target_ldflags $[target_ldflags]\
+ -march=armv7-a \
+ -Wl,--fix-cortex-a8
+
+#elif $[eq $[ANDROID_ABI],armeabi]
+#define target_cflags $[target_cflags]\
+ -march=armv5te \
+ -mtune=xscale \
+ -msoft-float
+#endif
+
+#define ANDROID_CFLAGS $[target_cflags] $[ANDROID_CFLAGS]
+#define ANDROID_LDFLAGS $[target_ldflags] $[ANDROID_LDFLAGS]
 
 #endif

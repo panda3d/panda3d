@@ -100,6 +100,9 @@
 // umask?
 #define HAVE_OPEN_MASK
 
+// Do we have the lockf() function available?
+#define HAVE_LOCKF 1
+
 // Do the compiler or system libraries define wchar_t for you?
 #define HAVE_WCHAR_T 1
 

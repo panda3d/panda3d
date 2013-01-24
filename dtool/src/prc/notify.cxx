@@ -26,6 +26,10 @@
 #include <fcntl.h>
 #endif
 
+#ifdef ANDROID
+#include <android/log.h>
+#endif
+
 Notify *Notify::_global_ptr = (Notify *)NULL;
 
 ////////////////////////////////////////////////////////////////////
@@ -439,7 +443,11 @@ assert_failure(const char *expression, int line,
     return (*_assert_handler)(expression, line, source_file);
   }
 
+#ifdef ANDROID
+  __android_log_assert("assert", "Panda3D", "Assertion failed: %s", message.c_str());
+#else
   nout << "Assertion failed: " << message << "\n";
+#endif
 
   // This is redefined here, shadowing the defining in config_prc.h,
   // so we can guarantee it has already been constructed.

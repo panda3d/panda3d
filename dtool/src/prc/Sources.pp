@@ -4,6 +4,8 @@
 #begin lib_target
   #define TARGET p3prc
 
+  #define ANDROID_SYS_LIBS log
+
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx  $[TARGET]_composite2.cxx
   
   #define SOURCES \
