@@ -9,7 +9,7 @@
 #define BUILD_DIRECTORY $[HAVE_GLES]
 
 #define COMPONENT_LIBS \
-    p3glesgsg p3egldisplay
+    p3glesgsg p3egldisplay p3androiddisplay
 
 #define LOCAL_LIBS p3gsgbase p3display p3express
 #define OTHER_LIBS p3interrogatedb:c p3dconfig:c p3dtoolconfig:m \

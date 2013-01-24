@@ -1,5 +1,5 @@
 // Filename: pandagles.cxx
-// Created by:  pro-rsoft (8Jun09)
+// Created by:  rdb (8Jun09)
 //
 ////////////////////////////////////////////////////////////////////
 
@@ -8,7 +8,10 @@
 #define OPENGLES_1
 #include "config_glesgsg.h"
 
-#ifdef HAVE_EGL
+#if defined(ANDROID)
+#include "config_androiddisplay.h"
+#include "androidGraphicsPipe.h"
+#elif defined(HAVE_EGL)
 #include "config_egldisplay.h"
 #include "eglGraphicsPipe.h"
 #endif
@@ -31,7 +34,9 @@ void
 init_libpandagles() {
   init_libglesgsg();
 
-#ifdef HAVE_EGL
+#if defined(ANDROID)
+  init_libandroiddisplay();
+#elif defined(HAVE_EGL)
   init_libegldisplay();
 #endif
 }
@@ -43,7 +48,9 @@ init_libpandagles() {
 ////////////////////////////////////////////////////////////////////
 int
 get_pipe_type_pandagles() {
-#ifdef HAVE_EGL
+#if defined(ANDROID)
+  return AndroidGraphicsPipe::get_class_type().get_index();
+#elif defined(HAVE_EGL)
   return eglGraphicsPipe::get_class_type().get_index();
 #endif
 
