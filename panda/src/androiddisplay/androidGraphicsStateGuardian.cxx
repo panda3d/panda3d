@@ -290,6 +290,15 @@ reset() {
 #else
   GLESGraphicsStateGuardian::reset();
 #endif
+
+  // If "PixelFlinger" is present, assume software.
+  if (_gl_renderer.find("PixelFlinger") != string::npos) {
+    _fbprops.set_force_software(1);
+    _fbprops.set_force_hardware(0);
+  } else {
+    _fbprops.set_force_hardware(1);
+    _fbprops.set_force_software(0);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
