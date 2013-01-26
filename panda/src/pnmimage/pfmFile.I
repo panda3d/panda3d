@@ -144,12 +144,16 @@ set_point2(int x, int y, const LVecBase2f &point) {
     _table[(y * _x_size + x)] = point[0];
     break;
 
-  case 3:
-    (*(LPoint3f *)&_table[(y * _x_size + x) * _num_channels]).set(point[0], point[1], point[2]);
-    break;
-
   case 2:
     *(LPoint2f *)&_table[(y * _x_size + x) * _num_channels] = point;
+    break;
+
+  case 3:
+    (*(LPoint3f *)&_table[(y * _x_size + x) * _num_channels]).set(point[0], point[1], 0.0);
+    break;
+
+  case 4:
+    (*(LPoint4f *)&_table[(y * _x_size + x) * _num_channels]).set(point[0], point[1], 0.0, 0.0);
     break;
   } 
 }
@@ -214,9 +218,16 @@ set_point(int x, int y, const LVecBase3f &point) {
     _table[(y * _x_size + x)] = point[0];
     break;
 
+  case 2:
+    (*(LPoint2f *)&_table[(y * _x_size + x) * _num_channels]).set(point[0], point[1]);
+    break;
+
   case 3:
-  case 4:
     *(LPoint3f *)&_table[(y * _x_size + x) * _num_channels] = point;
+    break;
+
+  case 4:
+    (*(LPoint4f *)&_table[(y * _x_size + x) * _num_channels]).set(point[0], point[1], 0.0f, 0.0f);
     break;
   } 
 }
@@ -281,6 +292,10 @@ set_point4(int x, int y, const LVecBase4f &point) {
     _table[(y * _x_size + x)] = point[0];
     break;
 
+  case 2:
+    (*(LPoint2f *)&_table[(y * _x_size + x) * _num_channels]).set(point[0], point[1]);
+    break;
+
   case 3:
     (*(LPoint3f *)&_table[(y * _x_size + x) * _num_channels]).set(point[0], point[1], point[2]);
     break;
@@ -318,6 +333,36 @@ modify_point4(int x, int y) {
 #endif
 
   return *(LPoint4f *)&_table[(y * _x_size + x) * _num_channels];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::fill
+//       Access: Published
+//  Description: Fills the table with all of the same value.
+////////////////////////////////////////////////////////////////////
+INLINE void PfmFile::
+fill(PN_float32 value) {
+  fill(LPoint4f(value, 0.0f, 0.0f, 0.0f));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::fill
+//       Access: Published
+//  Description: Fills the table with all of the same value.
+////////////////////////////////////////////////////////////////////
+INLINE void PfmFile::
+fill(const LPoint2f &value) {
+  fill(LPoint4f(value[0], value[1], 0.0f, 0.0f));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::fill
+//       Access: Published
+//  Description: Fills the table with all of the same value.
+////////////////////////////////////////////////////////////////////
+INLINE void PfmFile::
+fill(const LPoint3f &value) {
+  fill(LPoint4f(value[0], value[1], value[2], 0.0f));
 }
 
 ////////////////////////////////////////////////////////////////////

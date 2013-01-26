@@ -37,6 +37,7 @@
 #include "cmath.h"
 
 #include "pnmImage.h"
+#include "pfmFile.h"
 
 // WorkType is an abstraction that allows the filtering process to be
 // recompiled to use either floating-point or integer arithmetic.  On SGI
@@ -121,8 +122,8 @@ filter_row(StoreType dest[], int dest_len,
   // have a non-zero offset.
   int offset = (int)cfloor(iscale*0.5);
 
-  for (int dest_x=0; dest_x<dest_len; dest_x++) {
-    double center = (dest_x-offset)/scale;
+  for (int dest_x = 0; dest_x < dest_len; dest_x++) {
+    double center = (dest_x - offset) / scale;
 
     // left and right are the starting and ending ranges of the radius of
     // interest of the filter function.  We need to apply the filter to each
@@ -142,23 +143,85 @@ filter_row(StoreType dest[], int dest_len,
     // This loop is broken into two pieces--the left of center and the right
     // of center--so we don't have to incur the overhead of calling fabs()
     // each time through the loop.
-    for (source_x=left; source_x<right_center; source_x++) {
-      index = (int)(iscale*(center-source_x));
+    for (source_x = left; source_x < right_center; source_x++) {
+      index = (int)(iscale * (center - source_x));
       net_value += filter[index] * source[source_x];
       net_weight += filter[index];
     }
 
-    for (; source_x<=right; source_x++) {
-      index = (int)(iscale*(source_x-center));
+    for (; source_x <= right; source_x++) {
+      index = (int)(iscale * (source_x - center));
       net_value += filter[index] * source[source_x];
       net_weight += filter[index];
     }
 
-    if (net_weight>0) {
+    if (net_weight > 0) {
       dest[dest_x] = (StoreType)(net_value / net_weight);
     } else {
       dest[dest_x] = 0;
     }
+  }
+  Thread::consider_yield();
+}
+
+// As above, but we also accept an array of weight values per
+// element, to support scaling a sparse array (as in a PfmFile).
+static void
+filter_sparse_row(StoreType dest[], StoreType dest_weight[], int dest_len,
+                  const StoreType source[], const StoreType source_weight[], int source_len,
+                  double scale,                    //  == dest_len / source_len
+                  const WorkType filter[],
+                  double filter_width) {
+  // If we are expanding the row (scale>1.0), we need to look at a fractional
+  // granularity.  Hence, we scale our filter index by scale.  If we are
+  // compressing (scale<1.0), we don't need to fiddle with the filter index, so
+  // we leave it at one.
+  double iscale = max(scale, 1.0);
+
+  // Similarly, if we are expanding the row, we want to start the new row at
+  // the far left edge of the original pixel, not in the center.  So we will
+  // have a non-zero offset.
+  int offset = (int)cfloor(iscale*0.5);
+
+  for (int dest_x = 0; dest_x < dest_len; dest_x++) {
+    double center = (dest_x - offset) / scale;
+
+    // left and right are the starting and ending ranges of the radius of
+    // interest of the filter function.  We need to apply the filter to each
+    // value in this range.
+    int left = max((int)cfloor(center - filter_width), 0);
+    int right = min((int)cceil(center + filter_width), source_len-1);
+
+    // right_center is the point just to the right of the center.  This
+    // allows us to flip the sign of the offset when we cross the center point.
+    int right_center = (int)cceil(center);
+
+    WorkType net_weight = 0;
+    WorkType net_value = 0;
+
+    int index, source_x;
+
+    // This loop is broken into two pieces--the left of center and the right
+    // of center--so we don't have to incur the overhead of calling fabs()
+    // each time through the loop.
+    for (source_x = left; source_x < right_center; source_x++) {
+      index = (int)(iscale * (center - source_x));
+      net_value += filter[index] * source[source_x] * source_weight[source_x];
+      net_weight += filter[index] * source_weight[source_x];
+    }
+
+    for (; source_x <= right; source_x++) {
+      index = (int)(iscale * (source_x - center));
+      net_value += filter[index] * source[source_x] * source_weight[source_x];
+      net_weight += filter[index] * source_weight[source_x];
+    }
+
+    if (net_weight > 0) {
+      dest[dest_x] = (StoreType)(net_value / net_weight);
+    } else {
+      dest[dest_x] = 0;
+    }
+    dest_weight[dest_x] = (StoreType)net_weight;
   }
   Thread::consider_yield();
 }
@@ -186,20 +249,20 @@ box_filter_impl(double scale, double width,
     // the filter function to prevent dropping below the Nyquist rate.
     // Hence, we divide by scale.
     fscale = 1.0 / scale;
-  } else {
 
+  } else {
     // If we are expanding the image, we want to increase the granularity
     // of the filter function since we will need to access fractional cel
     // values.  Hence, we multiply by scale.
     fscale = scale;
   }
   filter_width = width;
-  int actual_width = (int)cceil((filter_width+1) * fscale);
+  int actual_width = (int)cceil((filter_width + 1) * fscale);
 
   filter = (WorkType *)PANDA_MALLOC_ARRAY(actual_width * sizeof(WorkType));
 
-  for (int i=0; i<actual_width; i++) {
-    filter[i] = (i<=filter_width*fscale) ? filter_max : 0;
+  for (int i = 0; i < actual_width; i++) {
+    filter[i] = (i <= filter_width * fscale) ? filter_max : 0;
   }
 }
 
@@ -219,9 +282,10 @@ gaussian_filter_impl(double scale, double width,
     // values.  Hence, we multiply by scale (to make fscale larger).
     fscale = scale;
   }
+
   double sigma = width/2;
   filter_width = 3.0 * sigma;
-  int actual_width = (int)cceil((filter_width+1) * fscale);
+  int actual_width = (int)cceil((filter_width + 1) * fscale);
 
   // G(x, y) = (1/(2 pi sigma^2)) * exp( - (x^2 + y^2) / (2 sigma^2))
 
@@ -230,10 +294,10 @@ gaussian_filter_impl(double scale, double width,
   // so we can ignore the y^2.)
 
   filter = (WorkType *)PANDA_MALLOC_ARRAY(actual_width * sizeof(WorkType));
-  double div = 2*sigma*sigma;
+  double div = 2 * sigma * sigma;
 
-  for (int i=0; i<actual_width; i++) {
-    double x = i/fscale;
+  for (int i = 0; i < actual_width; i++) {
+    double x = i / fscale;
     filter[i] = (WorkType)(filter_max * exp(-x*x / div));
     // The highest value of the exp function in this range is always 1.0,
     // at index value 0.  Thus, we scale the whole range by filter_max,
@@ -267,126 +331,146 @@ gaussian_filter_impl(double scale, double width,
 // These instances scale by X first, then by Y.
 
 #define FUNCTION_NAME filter_red_xy
+#define IMAGETYPE PNMImage
 #define ASIZE get_x_size
 #define BSIZE get_y_size
-#define GETVAL(a, b) get_red(a, b)
-#define SETVAL(a, b, v) set_red(a, b, v)
+#define GETVAL(a, b, channel) get_red(a, b)
+#define SETVAL(a, b, channel, v) set_red(a, b, v)
 #include "pnm-image-filter-core.cxx"
 #undef SETVAL
 #undef GETVAL
 #undef BSIZE
 #undef ASIZE
+#undef IMAGETYPE
 #undef FUNCTION_NAME
 
 #define FUNCTION_NAME filter_green_xy
+#define IMAGETYPE PNMImage
 #define ASIZE get_x_size
 #define BSIZE get_y_size
-#define GETVAL(a, b) get_green(a, b)
-#define SETVAL(a, b, v) set_green(a, b, v)
+#define GETVAL(a, b, channel) get_green(a, b)
+#define SETVAL(a, b, channel, v) set_green(a, b, v)
 #include "pnm-image-filter-core.cxx"
 #undef SETVAL
 #undef GETVAL
 #undef BSIZE
 #undef ASIZE
+#undef IMAGETYPE
 #undef FUNCTION_NAME
 
 #define FUNCTION_NAME filter_blue_xy
+#define IMAGETYPE PNMImage
 #define ASIZE get_x_size
 #define BSIZE get_y_size
-#define GETVAL(a, b) get_blue(a, b)
-#define SETVAL(a, b, v) set_blue(a, b, v)
+#define GETVAL(a, b, channel) get_blue(a, b)
+#define SETVAL(a, b, channel, v) set_blue(a, b, v)
 #include "pnm-image-filter-core.cxx"
 #undef SETVAL
 #undef GETVAL
 #undef BSIZE
 #undef ASIZE
+#undef IMAGETYPE
 #undef FUNCTION_NAME
 
 #define FUNCTION_NAME filter_gray_xy
+#define IMAGETYPE PNMImage
 #define ASIZE get_x_size
 #define BSIZE get_y_size
-#define GETVAL(a, b) get_bright(a, b)
-#define SETVAL(a, b, v) set_xel(a, b, v)
+#define GETVAL(a, b, channel) get_bright(a, b)
+#define SETVAL(a, b, channel, v) set_xel(a, b, v)
 #include "pnm-image-filter-core.cxx"
 #undef SETVAL
 #undef GETVAL
 #undef BSIZE
 #undef ASIZE
+#undef IMAGETYPE
 #undef FUNCTION_NAME
 
 #define FUNCTION_NAME filter_alpha_xy
+#define IMAGETYPE PNMImage
 #define ASIZE get_x_size
 #define BSIZE get_y_size
-#define GETVAL(a, b) get_alpha(a, b)
-#define SETVAL(a, b, v) set_alpha(a, b, v)
+#define GETVAL(a, b, channel) get_alpha(a, b)
+#define SETVAL(a, b, channel, v) set_alpha(a, b, v)
 #include "pnm-image-filter-core.cxx"
 #undef SETVAL
 #undef GETVAL
 #undef BSIZE
 #undef ASIZE
+#undef IMAGETYPE
 #undef FUNCTION_NAME
 
 
 // These instances scale by Y first, then by X.
 
 #define FUNCTION_NAME filter_red_yx
+#define IMAGETYPE PNMImage
 #define ASIZE get_y_size
 #define BSIZE get_x_size
-#define GETVAL(a, b) get_red(b, a)
-#define SETVAL(a, b, v) set_red(b, a, v)
+#define GETVAL(a, b, channel) get_red(b, a)
+#define SETVAL(a, b, channel, v) set_red(b, a, v)
 #include "pnm-image-filter-core.cxx"
 #undef SETVAL
 #undef GETVAL
 #undef BSIZE
 #undef ASIZE
+#undef IMAGETYPE
 #undef FUNCTION_NAME
 
 #define FUNCTION_NAME filter_green_yx
+#define IMAGETYPE PNMImage
 #define ASIZE get_y_size
 #define BSIZE get_x_size
-#define GETVAL(a, b) get_green(b, a)
-#define SETVAL(a, b, v) set_green(b, a, v)
+#define GETVAL(a, b, channel) get_green(b, a)
+#define SETVAL(a, b, channel, v) set_green(b, a, v)
 #include "pnm-image-filter-core.cxx"
 #undef SETVAL
 #undef GETVAL
 #undef BSIZE
 #undef ASIZE
+#undef IMAGETYPE
 #undef FUNCTION_NAME
 
 #define FUNCTION_NAME filter_blue_yx
+#define IMAGETYPE PNMImage
 #define ASIZE get_y_size
 #define BSIZE get_x_size
-#define GETVAL(a, b) get_blue(b, a)
-#define SETVAL(a, b, v) set_blue(b, a, v)
+#define GETVAL(a, b, channel) get_blue(b, a)
+#define SETVAL(a, b, channel, v) set_blue(b, a, v)
 #include "pnm-image-filter-core.cxx"
 #undef SETVAL
 #undef GETVAL
 #undef BSIZE
 #undef ASIZE
+#undef IMAGETYPE
 #undef FUNCTION_NAME
 
 #define FUNCTION_NAME filter_gray_yx
+#define IMAGETYPE PNMImage
 #define ASIZE get_y_size
 #define BSIZE get_x_size
-#define GETVAL(a, b) get_bright(b, a)
-#define SETVAL(a, b, v) set_xel(b, a, v)
+#define GETVAL(a, b, channel) get_bright(b, a)
+#define SETVAL(a, b, channel, v) set_xel(b, a, v)
 #include "pnm-image-filter-core.cxx"
 #undef SETVAL
 #undef GETVAL
 #undef BSIZE
 #undef ASIZE
+#undef IMAGETYPE
 #undef FUNCTION_NAME
 
 #define FUNCTION_NAME filter_alpha_yx
+#define IMAGETYPE PNMImage
 #define ASIZE get_y_size
 #define BSIZE get_x_size
-#define GETVAL(a, b) get_alpha(b, a)
-#define SETVAL(a, b, v) set_alpha(b, a, v)
+#define GETVAL(a, b, channel) get_alpha(b, a)
+#define SETVAL(a, b, channel, v) set_alpha(b, a, v)
 #include "pnm-image-filter-core.cxx"
 #undef SETVAL
 #undef GETVAL
 #undef BSIZE
 #undef ASIZE
+#undef IMAGETYPE
 #undef FUNCTION_NAME
 
 
@@ -399,30 +483,35 @@ filter_image(PNMImage &dest, const PNMImage &source,
   // We want to scale by the smallest destination axis first, for a
   // slight performance gain.
 
+  // In the PNMImage case (unlike the PfmFile case), the channel
+  // parameter is not used.  We *could* use it to avoid the
+  // replication of quite so many functions, but we replicate them
+  // anyway, for another tiny performance gain.
+
   if (dest.get_x_size() <= dest.get_y_size()) {
     if (dest.is_grayscale() || source.is_grayscale()) {
-      filter_gray_xy(dest, source, width, make_filter);
+      filter_gray_xy(dest, source, width, make_filter, 0);
     } else {
-      filter_red_xy(dest, source, width, make_filter);
-      filter_green_xy(dest, source, width, make_filter);
-      filter_blue_xy(dest, source, width, make_filter);
+      filter_red_xy(dest, source, width, make_filter, 0);
+      filter_green_xy(dest, source, width, make_filter, 0);
+      filter_blue_xy(dest, source, width, make_filter, 0);
     }
 
     if (dest.has_alpha() && source.has_alpha()) {
-      filter_alpha_xy(dest, source, width, make_filter);
+      filter_alpha_xy(dest, source, width, make_filter, 0);
     }
 
   } else {
     if (dest.is_grayscale() || source.is_grayscale()) {
-      filter_gray_yx(dest, source, width, make_filter);
+      filter_gray_yx(dest, source, width, make_filter, 0);
     } else {
-      filter_red_yx(dest, source, width, make_filter);
-      filter_green_yx(dest, source, width, make_filter);
-      filter_blue_yx(dest, source, width, make_filter);
+      filter_red_yx(dest, source, width, make_filter, 0);
+      filter_green_yx(dest, source, width, make_filter, 0);
+      filter_blue_yx(dest, source, width, make_filter, 0);
     }
 
     if (dest.has_alpha() && source.has_alpha()) {
-      filter_alpha_yx(dest, source, width, make_filter);
+      filter_alpha_yx(dest, source, width, make_filter, 0);
     }
   }
 }
@@ -454,6 +543,137 @@ box_filter_from(double width, const PNMImage &copy) {
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
 gaussian_filter_from(double width, const PNMImage &copy) {
+  filter_image(*this, copy, width, &gaussian_filter_impl);
+}
+
+// Now we do it again, this time for PfmFile.  In this case we also
+// need to support the sparse variants, since PfmFiles can be
+// incomplete.  However, we don't need to have a different function
+// for each channel.
+
+#define FUNCTION_NAME filter_pfm_xy
+#define IMAGETYPE PfmFile
+#define ASIZE get_x_size
+#define BSIZE get_y_size
+#define GETVAL(a, b, channel) get_component(a, b, channel)
+#define SETVAL(a, b, channel, v) set_component(a, b, channel, v)
+#include "pnm-image-filter-core.cxx"
+#undef SETVAL
+#undef GETVAL
+#undef BSIZE
+#undef ASIZE
+#undef IMAGETYPE
+#undef FUNCTION_NAME
+
+#define FUNCTION_NAME filter_pfm_yx
+#define IMAGETYPE PfmFile
+#define ASIZE get_y_size
+#define BSIZE get_x_size
+#define GETVAL(a, b, channel) get_component(b, a, channel)
+#define SETVAL(a, b, channel, v) set_component(b, a, channel, v)
+#include "pnm-image-filter-core.cxx"
+#undef SETVAL
+#undef GETVAL
+#undef BSIZE
+#undef ASIZE
+#undef IMAGETYPE
+#undef FUNCTION_NAME
+
+
+#define FUNCTION_NAME filter_pfm_sparse_xy
+#define IMAGETYPE PfmFile
+#define ASIZE get_x_size
+#define BSIZE get_y_size
+#define HASVAL(a, b) has_point(a, b)
+#define GETVAL(a, b, channel) get_component(a, b, channel)
+#define SETVAL(a, b, channel, v) set_component(a, b, channel, v)
+#include "pnm-image-filter-sparse-core.cxx"
+#undef SETVAL
+#undef GETVAL
+#undef HASVAL
+#undef BSIZE
+#undef ASIZE
+#undef IMAGETYPE
+#undef FUNCTION_NAME
+
+#define FUNCTION_NAME filter_pfm_sparse_yx
+#define IMAGETYPE PfmFile
+#define ASIZE get_y_size
+#define BSIZE get_x_size
+#define HASVAL(a, b) has_point(b, a)
+#define GETVAL(a, b, channel) get_component(b, a, channel)
+#define SETVAL(a, b, channel, v) set_component(b, a, channel, v)
+#include "pnm-image-filter-sparse-core.cxx"
+#undef SETVAL
+#undef GETVAL
+#undef HASVAL
+#undef BSIZE
+#undef ASIZE
+#undef IMAGETYPE
+#undef FUNCTION_NAME
+
+
+// filter_image pulls everything together, and filters one image into
+// another.  Both images can be the same with no ill effects.
+static void
+filter_image(PfmFile &dest, const PfmFile &source,
+             double width, FilterFunction *make_filter) {
+  int num_channels = min(dest.get_num_channels(), source.get_num_channels());
+
+  if (source.has_no_data_value()) {
+    // We need to use the sparse variant.
+    if (dest.get_x_size() <= dest.get_y_size()) {
+      for (int ci = 0; ci < num_channels; ++ci) {
+        filter_pfm_sparse_xy(dest, source, width, make_filter, ci);
+      }
+      
+    } else {
+      for (int ci = 0; ci < num_channels; ++ci) {
+        filter_pfm_sparse_yx(dest, source, width, make_filter, ci);
+      }
+    }
+  } else {
+    // We can use the slightly faster fully-specified variant.
+    if (dest.get_x_size() <= dest.get_y_size()) {
+      for (int ci = 0; ci < num_channels; ++ci) {
+        filter_pfm_xy(dest, source, width, make_filter, ci);
+      }
+      
+    } else {
+      for (int ci = 0; ci < num_channels; ++ci) {
+        filter_pfm_yx(dest, source, width, make_filter, ci);
+      }
+    }
+  }
+}
+
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::box_filter_from
+//       Access: Public
+//  Description: Makes a resized copy of the indicated image into this
+//               one using the indicated filter.  The image to be
+//               copied is squashed and stretched to match the
+//               dimensions of the current image, applying the
+//               appropriate filter to perform the stretching.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+box_filter_from(double width, const PfmFile &copy) {
+  filter_image(*this, copy, width, &box_filter_impl);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::gaussian_filter_from
+//       Access: Public
+//  Description: Makes a resized copy of the indicated image into this
+//               one using the indicated filter.  The image to be
+//               copied is squashed and stretched to match the
+//               dimensions of the current image, applying the
+//               appropriate filter to perform the stretching.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+gaussian_filter_from(double width, const PfmFile &copy) {
   filter_image(*this, copy, width, &gaussian_filter_impl);
 }
 

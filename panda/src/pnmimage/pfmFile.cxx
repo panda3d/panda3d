@@ -471,6 +471,56 @@ store_mask(PNMImage &pnmimage) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::fill
+//       Access: Published
+//  Description: Fills the table with all of the same value.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+fill(const LPoint4f &value) {
+  switch (_num_channels) {
+  case 1:
+    {
+      for (int yi = 0; yi < _y_size; ++yi) {
+        for (int xi = 0; xi < _x_size; ++xi) {
+          _table[(yi * _x_size + xi)] = value[0];
+        }
+      }
+    }
+    break;
+
+  case 2:
+    {
+      for (int yi = 0; yi < _y_size; ++yi) {
+        for (int xi = 0; xi < _x_size; ++xi) {
+          (*(LPoint2f *)&_table[(yi * _x_size + xi) * _num_channels]).set(value[0], value[1]);
+        }
+      }
+    }
+    break;
+
+  case 3:
+    {
+      for (int yi = 0; yi < _y_size; ++yi) {
+        for (int xi = 0; xi < _x_size; ++xi) {
+          (*(LPoint3f *)&_table[(yi * _x_size + xi) * _num_channels]).set(value[0], value[1], value[2]);
+        }
+      }
+    }
+    break;
+
+  case 4:
+    {
+      for (int yi = 0; yi < _y_size; ++yi) {
+        for (int xi = 0; xi < _x_size; ++xi) {
+          *(LPoint4f *)&_table[(yi * _x_size + xi) * _num_channels] = value;
+        }
+      }
+    }
+    break;
+  } 
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::calc_average_point
 //       Access: Published
 //  Description: Computes the unweighted average point of all points
@@ -736,41 +786,73 @@ resize(int new_x_size, int new_y_size) {
     return;
   }
 
-  int new_size = new_x_size * new_y_size * _num_channels;
+  PfmFile result;
+  result.clear(new_x_size, new_y_size, _num_channels);
 
-  // We allocate a little bit bigger to allow safe overflow.
+  if (new_x_size < _x_size && new_y_size < _y_size) {
+    // If we're downscaling, we can use quick_filter, which is faster.
+    result.quick_filter_from(*this);
+
+  } else {
+    // Otherwise, we should use box_filter(), which is more general.
+    result.box_filter_from(0.5, *this);
+  }
+
+  _table.swap(result._table);
+  _x_size = new_x_size;
+  _y_size = new_y_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::quick_filter_from
+//       Access: Public
+//  Description: Resizes from the given image, with a fixed radius of
+//               0.5. This is a very specialized and simple algorithm
+//               that doesn't handle dropping below the Nyquist rate
+//               very well, but is quite a bit faster than the more
+//               general box_filter(), above.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+quick_filter_from(const PfmFile &from) {
+  if (_x_size == 0 || _y_size == 0) {
+    return;
+  }
+
   Table new_data;
-  new_data.reserve(new_size + 4);
+  new_data.reserve(_table.size());
 
   PN_float32 from_x0, from_x1, from_y0, from_y1;
+
+  int orig_x_size = from.get_x_size();
+  int orig_y_size = from.get_y_size();
 
   PN_float32 x_scale = 1.0;
   PN_float32 y_scale = 1.0;
 
-  if (new_x_size > 1) {
-    x_scale = (PN_float32)_x_size / (PN_float32)new_x_size;
+  if (_x_size > 1) {
+    x_scale = (PN_float32)orig_x_size / (PN_float32)_x_size;
   }
-  if (new_y_size > 1) {
-    y_scale = (PN_float32)_y_size / (PN_float32)new_y_size;
+  if (_y_size > 1) {
+    y_scale = (PN_float32)orig_y_size / (PN_float32)_y_size;
   }
 
   switch (_num_channels) {
   case 1:
     {
       from_y0 = 0.0;
-      for (int to_y = 0; to_y < new_y_size; ++to_y) {
+      for (int to_y = 0; to_y < _y_size; ++to_y) {
         from_y1 = (to_y + 1.0) * y_scale;
-        from_y1 = min(from_y1, (PN_float32) _y_size);
+        from_y1 = min(from_y1, (PN_float32)orig_y_size);
         
         from_x0 = 0.0;
-        for (int to_x = 0; to_x < new_x_size; ++to_x) {
+        for (int to_x = 0; to_x < _x_size; ++to_x) {
           from_x1 = (to_x + 1.0) * x_scale;
-          from_x1 = min(from_x1, (PN_float32) _x_size);
+          from_x1 = min(from_x1, (PN_float32)orig_x_size);
           
           // Now the box from (from_x0, from_y0) - (from_x1, from_y1)
           // but not including (from_x1, from_y1) maps to the pixel (to_x, to_y).
           PN_float32 result;
-          box_filter_region(result, from_x0, from_y0, from_x1, from_y1);
+          from.box_filter_region(result, from_x0, from_y0, from_x1, from_y1);
           new_data.push_back(result);
           
           from_x0 = from_x1;
@@ -783,19 +865,19 @@ resize(int new_x_size, int new_y_size) {
   case 3:
     {
       from_y0 = 0.0;
-      for (int to_y = 0; to_y < new_y_size; ++to_y) {
+      for (int to_y = 0; to_y < _y_size; ++to_y) {
         from_y1 = (to_y + 1.0) * y_scale;
-        from_y1 = min(from_y1, (PN_float32) _y_size);
+        from_y1 = min(from_y1, (PN_float32)orig_y_size);
         
         from_x0 = 0.0;
-        for (int to_x = 0; to_x < new_x_size; ++to_x) {
+        for (int to_x = 0; to_x < _x_size; ++to_x) {
           from_x1 = (to_x + 1.0) * x_scale;
-          from_x1 = min(from_x1, (PN_float32) _x_size);
+          from_x1 = min(from_x1, (PN_float32)orig_x_size);
           
           // Now the box from (from_x0, from_y0) - (from_x1, from_y1)
           // but not including (from_x1, from_y1) maps to the pixel (to_x, to_y).
           LPoint3f result;
-          box_filter_region(result, from_x0, from_y0, from_x1, from_y1);
+          from.box_filter_region(result, from_x0, from_y0, from_x1, from_y1);
           new_data.push_back(result[0]);
           new_data.push_back(result[1]);
           new_data.push_back(result[2]);
@@ -810,19 +892,19 @@ resize(int new_x_size, int new_y_size) {
   case 4:
     {
       from_y0 = 0.0;
-      for (int to_y = 0; to_y < new_y_size; ++to_y) {
+      for (int to_y = 0; to_y < _y_size; ++to_y) {
         from_y1 = (to_y + 1.0) * y_scale;
-        from_y1 = min(from_y1, (PN_float32) _y_size);
+        from_y1 = min(from_y1, (PN_float32)orig_y_size);
         
         from_x0 = 0.0;
-        for (int to_x = 0; to_x < new_x_size; ++to_x) {
+        for (int to_x = 0; to_x < _x_size; ++to_x) {
           from_x1 = (to_x + 1.0) * x_scale;
-          from_x1 = min(from_x1, (PN_float32) _x_size);
+          from_x1 = min(from_x1, (PN_float32)orig_x_size);
           
           // Now the box from (from_x0, from_y0) - (from_x1, from_y1)
           // but not including (from_x1, from_y1) maps to the pixel (to_x, to_y).
           LPoint4f result;
-          box_filter_region(result, from_x0, from_y0, from_x1, from_y1);
+          from.box_filter_region(result, from_x0, from_y0, from_x1, from_y1);
           new_data.push_back(result[0]);
           new_data.push_back(result[1]);
           new_data.push_back(result[2]);
@@ -844,10 +926,8 @@ resize(int new_x_size, int new_y_size) {
   new_data.push_back(0.0);
   new_data.push_back(0.0);
 
-  nassertv(new_data.size() == new_size + 4);
+  nassertv(new_data.size() == _table.size());
   _table.swap(new_data);
-  _x_size = new_x_size;
-  _y_size = new_y_size;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -963,53 +1043,72 @@ xform(const LMatrix4f &transform) {
 //               current file is replaced with the point from the same
 //               file at (x,y), where (x,y) is the point value from
 //               the dist map.
+//
+//               If scale_factor is not 1, it should be a value > 1,
+//               and it specifies the factor to upscale the working
+//               table while processing, to reduce artifacts from
+//               integer truncation.
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
-forward_distort(const PfmFile &dist) {
-  PfmFile result;
+forward_distort(const PfmFile &dist, PN_float32 scale_factor) {
+  int working_x_size = (int)cceil(_x_size * scale_factor);
+  int working_y_size = (int)cceil(_y_size * scale_factor);
+
+  working_x_size = max(working_x_size, dist.get_x_size());
+  working_y_size = max(working_y_size, dist.get_y_size());
+
+  const PfmFile *source_p = this;
+  PfmFile scaled_source;
+  if ((*this).get_x_size() != working_x_size || (*this).get_y_size() != working_y_size) {
+    // Rescale the source file as needed.
+    scaled_source = (*this);
+    scaled_source.resize(working_x_size, working_y_size);
+    source_p = &scaled_source;
+  }
+
   const PfmFile *dist_p = &dist;
   PfmFile scaled_dist;
-  if (dist.get_x_size() != _x_size || dist.get_y_size() != _y_size) {
+  if (dist.get_x_size() != working_x_size || dist.get_y_size() != working_y_size) {
     // Rescale the dist file as needed.
     scaled_dist = dist;
-    scaled_dist.resize(_x_size, _y_size);
+    scaled_dist.resize(working_x_size, working_y_size);
     dist_p = &scaled_dist;
   }
 
+  PfmFile result;
+  result.clear(working_x_size, working_y_size, _num_channels);
+    
   if (_has_no_data_value) {
-    result = *this;
-    for (int yi = 0; yi < _y_size; ++yi) {
-      for (int xi = 0; xi < _x_size; ++xi) {
-        result.set_point4(xi, yi, _no_data_value);
-      }
-    }
-
-  } else {
-    result.clear(_x_size, _y_size, _num_channels);
+    result.set_no_data_value(_no_data_value);
+    result.fill(_no_data_value);
   }
 
-  for (int yi = 0; yi < _y_size; ++yi) {
-    for (int xi = 0; xi < _x_size; ++xi) {
+  for (int yi = 0; yi < working_y_size; ++yi) {
+    for (int xi = 0; xi < working_x_size; ++xi) {
       if (!dist_p->has_point(xi, yi)) {
         continue;
       }
       LPoint2f uv = dist_p->get_point2(xi, yi);
-      int dist_xi = (int)cfloor(uv[0] * (double)_x_size);
-      int dist_yi = (int)cfloor(uv[1] * (double)_y_size);
-      if (dist_xi < 0 || dist_xi >= _x_size || 
-          dist_yi < 0 || dist_yi >= _y_size) {
+      int dist_xi = (int)cfloor(uv[0] * (PN_float32)working_x_size);
+      int dist_yi = (int)cfloor(uv[1] * (PN_float32)working_y_size);
+      if (dist_xi < 0 || dist_xi >= working_x_size || 
+          dist_yi < 0 || dist_yi >= working_y_size) {
         continue;
       }
 
-      if (!has_point(dist_xi, dist_yi)) {
+      if (!source_p->has_point(dist_xi, dist_yi)) {
         continue;
       }
 
-      result.set_point(xi, yi, get_point(dist_xi, dist_yi));
+      result.set_point(xi, yi, source_p->get_point(dist_xi, dist_yi));
     }
   }
 
-  (*this) = result;
+  // Resize to the target size for completion.
+  result.resize(_x_size, _y_size);
+
+  nassertv(result._table.size() == _table.size());
+  _table.swap(result._table);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1022,51 +1121,75 @@ forward_distort(const PfmFile &dist) {
 //               current file is replaced with the point from the same
 //               file at (u,v), where (x,y) is the point value from
 //               the dist map.
+//
+//               If scale_factor is not 1, it should be a value > 1,
+//               and it specifies the factor to upscale the working
+//               table while processing, to reduce artifacts from
+//               integer truncation.
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
-reverse_distort(const PfmFile &dist) {
-  PfmFile result;
+reverse_distort(const PfmFile &dist, PN_float32 scale_factor) {
+  int working_x_size = (int)cceil(_x_size * scale_factor);
+  int working_y_size = (int)cceil(_y_size * scale_factor);
+
+  working_x_size = max(working_x_size, dist.get_x_size());
+  working_y_size = max(working_y_size, dist.get_y_size());
+
+  const PfmFile *source_p = this;
+  PfmFile scaled_source;
+  if ((*this).get_x_size() != working_x_size || (*this).get_y_size() != working_y_size) {
+    // Rescale the source file as needed.
+    scaled_source = (*this);
+    scaled_source.resize(working_x_size, working_y_size);
+    source_p = &scaled_source;
+  }
+
   const PfmFile *dist_p = &dist;
   PfmFile scaled_dist;
-  if (dist.get_x_size() != _x_size || dist.get_y_size() != _y_size) {
+  if (dist.get_x_size() != working_x_size || dist.get_y_size() != working_y_size) {
     // Rescale the dist file as needed.
     scaled_dist = dist;
-    scaled_dist.resize(_x_size, _y_size);
+    scaled_dist.resize(working_x_size, working_y_size);
     dist_p = &scaled_dist;
   }
 
+  PfmFile result;
+  result.clear(working_x_size, working_y_size, _num_channels);
+    
   if (_has_no_data_value) {
-    result = *this;
-    for (int yi = 0; yi < _y_size; ++yi) {
-      for (int xi = 0; xi < _x_size; ++xi) {
-        result.set_point4(xi, yi, _no_data_value);
-      }
-    }
-  } else {
-    result.clear(_x_size, _y_size, _num_channels);
+    result.set_no_data_value(_no_data_value);
+    result.fill(_no_data_value);
   }
 
-  for (int yi = 0; yi < _y_size; ++yi) {
-    for (int xi = 0; xi < _x_size; ++xi) {
-      if (!has_point(xi, yi)) {
+  for (int yi = 0; yi < working_y_size; ++yi) {
+    for (int xi = 0; xi < working_x_size; ++xi) {
+      if (!source_p->has_point(xi, yi)) {
         continue;
       }
       if (!dist_p->has_point(xi, yi)) {
         continue;
       }
       LPoint2f uv = dist_p->get_point2(xi, yi);
-      int dist_xi = (int)cfloor(uv[0] * (double)_x_size);
-      int dist_yi = (int)cfloor(uv[1] * (double)_y_size);
-      if (dist_xi < 0 || dist_xi >= _x_size || 
-          dist_yi < 0 || dist_yi >= _y_size) {
+      int dist_xi = (int)cfloor(uv[0] * (PN_float32)working_x_size);
+      int dist_yi = (int)cfloor(uv[1] * (PN_float32)working_y_size);
+      if (dist_xi < 0 || dist_xi >= working_x_size || 
+          dist_yi < 0 || dist_yi >= working_y_size) {
         continue;
       }
 
-      result.set_point(dist_xi, dist_yi, get_point(xi, yi));
+      if (!source_p->has_point(dist_xi, dist_yi)) {
+        continue;
+      }
+
+      result.set_point(dist_xi, dist_yi, source_p->get_point(xi, yi));
     }
   }
 
-  (*this) = result;
+  // Resize to the target size for completion.
+  result.resize(_x_size, _y_size);
+
+  nassertv(result._table.size() == _table.size());
+  _table.swap(result._table);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1089,7 +1212,7 @@ merge(const PfmFile &other) {
 
   for (int yi = 0; yi < _y_size; ++yi) {
     for (int xi = 0; xi < _x_size; ++xi) {
-      if (!has_point(xi, yi)) {
+      if (!has_point(xi, yi) && other.has_point(xi, yi)) {
         set_point(xi, yi, other.get_point(xi, yi));
       }
     }
@@ -1178,6 +1301,47 @@ clear_to_texcoords(int x_size, int y_size) {
       set_point(xi, yi, uv);
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::calc_tight_bounds
+//       Access: Published
+//  Description: Calculates the minimum and maximum vertices of all
+//               points within the table.  Assumes the table contains
+//               3-D points.
+//
+//               The return value is true if any points in the table,
+//               or false if none are.
+////////////////////////////////////////////////////////////////////
+bool PfmFile::
+calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point) const {
+  min_point.set(0.0f, 0.0f, 0.0f);
+  max_point.set(0.0f, 0.0f, 0.0f);
+
+  bool found_any = false;
+  for (int yi = 0; yi < _y_size; ++yi) {
+    for (int xi = 0; xi < _x_size; ++xi) {
+      if (!has_point(xi, yi)) {
+        continue;
+      }
+   
+      const LPoint3f &point = get_point(xi, yi);
+      if (!found_any) {
+        min_point = point;
+        max_point = point;
+        found_any = true;
+      } else {
+        min_point.set(min(min_point[0], point[0]),
+                      min(min_point[0], point[0]),
+                      min(min_point[0], point[0]));
+        max_point.set(max(max_point[0], point[0]),
+                      max(max_point[0], point[0]),
+                      max(max_point[0], point[0]));
+      }
+    }
+  }
+
+  return found_any;
 }
 
 ////////////////////////////////////////////////////////////////////

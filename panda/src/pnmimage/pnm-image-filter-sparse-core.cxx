@@ -1,5 +1,5 @@
-// Filename: pnm-image-filter-core.cxx
-// Created by:  
+// Filename: pnm-image-filter-sparse-core.cxx
+// Created by:  drose (25Jan13)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -30,56 +30,68 @@ FUNCTION_NAME(IMAGETYPE &dest, const IMAGETYPE &source,
 
   typedef StoreType *StoreTypeP;
   StoreType **matrix = (StoreType **)PANDA_MALLOC_ARRAY(dest.ASIZE() * sizeof(StoreType *));
+  StoreType **matrix_weight = (StoreType **)PANDA_MALLOC_ARRAY(dest.ASIZE() * sizeof(StoreType *));
 
   int a, b;
 
   for (a=0; a<dest.ASIZE(); a++) {
     matrix[a] = (StoreType *)PANDA_MALLOC_ARRAY(source.BSIZE() * sizeof(StoreType));
+    matrix_weight[a] = (StoreType *)PANDA_MALLOC_ARRAY(source.BSIZE() * sizeof(StoreType));
   }
 
   // First, scale the image in the A direction.
   double scale;
-  StoreType *temp_source, *temp_dest;
+  StoreType *temp_source, *temp_source_weight, *temp_dest, *temp_dest_weight;
 
   scale = (double)dest.ASIZE() / (double)source.ASIZE();
   temp_source = (StoreType *)PANDA_MALLOC_ARRAY(source.ASIZE() * sizeof(StoreType));
+  temp_source_weight = (StoreType *)PANDA_MALLOC_ARRAY(source.ASIZE() * sizeof(StoreType));
   temp_dest = (StoreType *)PANDA_MALLOC_ARRAY(dest.ASIZE() * sizeof(StoreType));
+  temp_dest_weight = (StoreType *)PANDA_MALLOC_ARRAY(dest.ASIZE() * sizeof(StoreType));
 
   WorkType *filter;
   double filter_width;
 
   make_filter(scale, width, filter, filter_width);
+  memset(temp_source_weight, 0, source.ASIZE() * sizeof(StoreType));
 
   for (b = 0; b < source.BSIZE(); b++) {
     for (a = 0; a < source.ASIZE(); a++) {
-      temp_source[a] = (StoreType)(source_max * source.GETVAL(a, b, channel));
+      if (source.HASVAL(a, b)) {
+        temp_source[a] = (StoreType)(source_max * source.GETVAL(a, b, channel));
+        temp_source_weight[a] = filter_max;
+      }
     }
 
-    filter_row(temp_dest, dest.ASIZE(),
-               temp_source, source.ASIZE(),
-               scale,
-               filter, filter_width);
-
+    filter_sparse_row(temp_dest, temp_dest_weight, dest.ASIZE(),
+                      temp_source, temp_source_weight, source.ASIZE(),
+                      scale,
+                      filter, filter_width);
+    
     for (a = 0; a < dest.ASIZE(); a++) {
       matrix[a][b] = temp_dest[a];
+      matrix_weight[a][b] = temp_dest_weight[a];
     }
   }
 
-  PANDA_FREE_ARRAY(temp_source);
+  PANDA_FREE_ARRAY(temp_source); 
+  PANDA_FREE_ARRAY(temp_source_weight);
   PANDA_FREE_ARRAY(temp_dest);
+  PANDA_FREE_ARRAY(temp_dest_weight);
   PANDA_FREE_ARRAY(filter);
 
   // Now, scale the image in the B direction.
   scale = (double)dest.BSIZE() / (double)source.BSIZE();
   temp_dest = (StoreType *)PANDA_MALLOC_ARRAY(dest.BSIZE() * sizeof(StoreType));
+  temp_dest_weight = (StoreType *)PANDA_MALLOC_ARRAY(dest.BSIZE() * sizeof(StoreType));
 
   make_filter(scale, width, filter, filter_width);
 
   for (a = 0; a < dest.ASIZE(); a++) {
-    filter_row(temp_dest, dest.BSIZE(),
-               matrix[a], source.BSIZE(),
-               scale,
-               filter, filter_width);
+    filter_sparse_row(temp_dest, temp_dest_weight, dest.BSIZE(),
+                      matrix[a], matrix_weight[a], source.BSIZE(),
+                      scale,
+                      filter, filter_width);
 
     for (b = 0; b < dest.BSIZE(); b++) {
       dest.SETVAL(a, b, channel, (double)temp_dest[b]/(double)source_max);
@@ -87,13 +99,16 @@ FUNCTION_NAME(IMAGETYPE &dest, const IMAGETYPE &source,
   }
 
   PANDA_FREE_ARRAY(temp_dest);
+  PANDA_FREE_ARRAY(temp_dest_weight);
   PANDA_FREE_ARRAY(filter);
 
   // Now, clean up our temp matrix and go home!
 
   for (a = 0; a < dest.ASIZE(); a++) {
     PANDA_FREE_ARRAY(matrix[a]);
+    PANDA_FREE_ARRAY(matrix_weight[a]);
   }
   PANDA_FREE_ARRAY(matrix);
+  PANDA_FREE_ARRAY(matrix_weight);
 }
 

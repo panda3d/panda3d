@@ -74,6 +74,11 @@ PUBLISHED:
   INLINE void set_point4(int x, int y, const LVecBase4d &point);
   INLINE LPoint4f &modify_point4(int x, int y);
 
+  INLINE void fill(PN_float32 value);
+  INLINE void fill(const LPoint2f &value);
+  INLINE void fill(const LPoint3f &value);
+  void fill(const LPoint4f &value);
+
   BLOCKING bool calc_average_point(LPoint3f &result, PN_float32 x, PN_float32 y, PN_float32 radius) const;
   BLOCKING bool calc_min_max(LVecBase3f &min_points, LVecBase3f &max_points) const;
   BLOCKING bool calc_autocrop(int &x_begin, int &x_end, int &y_begin, int &y_end) const;
@@ -92,17 +97,22 @@ PUBLISHED:
   INLINE const LPoint4f &get_no_data_value() const;
 
   BLOCKING void resize(int new_x_size, int new_y_size);
+  BLOCKING void box_filter_from(double radius, const PfmFile &copy);
+  BLOCKING void gaussian_filter_from(double radius, const PfmFile &copy);
+  BLOCKING void quick_filter_from(const PfmFile &copy);
+
   BLOCKING void reverse_rows();
   BLOCKING void flip(bool flip_x, bool flip_y, bool transpose);
   BLOCKING void xform(const LMatrix4f &transform);
   INLINE BLOCKING void xform(const LMatrix4d &transform);
-  BLOCKING void forward_distort(const PfmFile &dist);
-  BLOCKING void reverse_distort(const PfmFile &dist);
+  BLOCKING void forward_distort(const PfmFile &dist, PN_float32 scale_factor = 1.0);
+  BLOCKING void reverse_distort(const PfmFile &dist, PN_float32 scale_factor = 1.0);
   BLOCKING void merge(const PfmFile &other);
   BLOCKING void copy_channel(int to_channel, const PfmFile &other, int from_channel);
   BLOCKING void apply_crop(int x_begin, int x_end, int y_begin, int y_end);
   BLOCKING void clear_to_texcoords(int x_size, int y_size);
 
+  bool calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point) const;
   BLOCKING PT(BoundingHexahedron) compute_planar_bounds(const LPoint2f &center, PN_float32 point_dist, PN_float32 sample_radius, bool points_only) const;
   INLINE BLOCKING PT(BoundingHexahedron) compute_planar_bounds(const LPoint2d &center, PN_float32 point_dist, PN_float32 sample_radius, bool points_only) const;
   void compute_sample_point(LPoint3f &result,
