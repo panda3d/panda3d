@@ -410,11 +410,18 @@ def LocateBinary(binary):
     else:
         p = os.environ["PATH"]
 
-    # Append .exe if necessary
-    if GetHost() == 'windows' and not binary.endswith('.exe'):
-        binary += '.exe'
+    pathList = p.split(os.pathsep)
+    
+    if GetHost() == 'windows':
+        if not binary.endswith('.exe'):
+            # Append .exe if necessary
+            binary += '.exe'
 
-    for path in p.split(os.pathsep):
+        # On Windows the current directory is always implicitly
+        # searched before anything else on PATH.
+        pathList = ['.'] + pathList
+
+    for path in pathList:
         binpath = os.path.join(os.path.expanduser(path), binary)
         if os.access(binpath, os.X_OK):
             return os.path.abspath(os.path.realpath(binpath))
