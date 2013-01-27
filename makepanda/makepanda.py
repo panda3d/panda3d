@@ -1202,7 +1202,13 @@ def CompileImod(wobj, wsrc, opts):
         WriteFile(woutc,"")
         CompileCxx(wobj,woutc,opts)
         return
-    cmd = GetOutputDir() + '/bin/interrogate_module '
+
+    if not CrossCompiling():
+        # If we're compiling for this platform, we can use the one we've built.
+        cmd = os.path.join(GetOutputDir(), 'bin', 'interrogate_module')
+    else:
+        cmd = 'interrogate_module'
+
     cmd += ' -oc ' + woutc + ' -module ' + module + ' -library ' + library + ' -python-native '
     for x in wsrc: cmd += ' ' + BracketNameWithQuotes(x)
     oscmd(cmd)
