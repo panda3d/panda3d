@@ -2205,7 +2205,7 @@ def SetupBuildEnvironment(compiler):
     if GetHost() != 'windows':
         # Get the current
         ldpath = os.environ.get("LD_LIBRARY_PATH", "").split(os.pathsep)
-        if (GetHost() == 'darwin'):
+        if GetHost() == 'darwin':
             dyldpath = os.environ.get("DYLD_LIBRARY_PATH", "").split(os.pathsep)
 
         # Remove any potential current Panda installation lib dirs
@@ -2214,10 +2214,11 @@ def SetupBuildEnvironment(compiler):
                i.startswith("/usr/local/panda"):
                 ldpath.remove(i)
 
-        for i in dyldpath[:]:
-            if i.startswith("/Applications/Panda3D") or \
-               i.startswith("/Developer/Panda3D"):
-                dyldpath.remove(i)
+        if GetHost() == 'darwin':
+            for i in dyldpath[:]:
+                if i.startswith("/Applications/Panda3D") or \
+                   i.startswith("/Developer/Panda3D"):
+                    dyldpath.remove(i)
 
         # Add built/lib/ to (DY)LD_LIBRARY_PATH
         ldpath.insert(0, os.path.join(builtdir, 'lib'))
