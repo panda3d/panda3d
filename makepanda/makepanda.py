@@ -245,7 +245,7 @@ def parseopts(args):
         if (len(OSXTARGET) != 4 or not OSXTARGET.startswith("10.")):
             usage("Invalid setting for OSXTARGET")
         try:
-            OSXTARGET = "10.%d" % (str(OSXTARGET[-1]))
+            OSXTARGET = "10.%d" % (int(OSXTARGET[-1]))
         except:
             usage("Invalid setting for OSXTARGET")
     try:
