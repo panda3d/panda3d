@@ -107,8 +107,6 @@ class EXPCL_FMOD_AUDIO FmodAudioManager : public AudioManager {
 
   virtual void set_volume(PN_stdfloat);
   virtual PN_stdfloat get_volume() const;
-  
-  virtual void set_wavwriter(bool);
 
   virtual void set_wavwriter(bool);
 
