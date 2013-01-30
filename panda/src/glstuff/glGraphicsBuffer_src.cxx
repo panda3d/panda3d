@@ -460,6 +460,11 @@ bind_slot(int face, bool rb_resize, Texture **attach, RenderTexturePlane slot, G
   if (tex) {
     bool is_cube_map = (tex->get_texture_type() == Texture::TT_cube_map);
 
+    GLenum target = GL_TEXTURE_2D;
+    if (is_cube_map) {
+      target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + face;
+    }
+
     // Bind the texture to the slot.
     tex->set_x_size(_rb_size_x);
     tex->set_y_size(_rb_size_y);
@@ -480,28 +485,22 @@ bind_slot(int face, bool rb_resize, Texture **attach, RenderTexturePlane slot, G
       GLclampf priority = 1.0f;
       glPrioritizeTextures(1, &gtc->_index, &priority);
 #endif
-      GLint depth_size = 0;
-      if (!is_cube_map) {
-        glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
-                                       GL_TEXTURE_2D, gtc->_index, 0);
-        GLP(GetTexLevelParameteriv)(GL_TEXTURE_2D, 0, GL_TEXTURE_DEPTH_SIZE, &depth_size);
-      } else {
-        glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
-                                       GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
-                                       gtc->_index, 0);
-        GLP(GetTexLevelParameteriv)(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, GL_TEXTURE_DEPTH_SIZE, &depth_size);
-      }
+      glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
+                                     target, gtc->_index, 0);
       if (_use_depth_stencil) {
-        if (!is_cube_map) {
-          glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
-                                         GL_TEXTURE_2D, gtc->_index, 0);
-        } else {
-          glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
-                                         GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
-                                         gtc->_index, 0);
-        }
+        glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
+                                       target, gtc->_index, 0);
+      }
+
+#ifndef OPENGLES
+      GLint depth_size = 0, stencil_size = 0;
+      GLP(GetTexLevelParameteriv)(target, 0, GL_TEXTURE_DEPTH_SIZE, &depth_size);
+      if (_use_depth_stencil) {
+        GLP(GetTexLevelParameteriv)(target, 0, GL_TEXTURE_STENCIL_SIZE, &stencil_size);
       }
       _fb_properties.set_depth_bits(depth_size);
+      _fb_properties.set_stencil_bits(stencil_size);
+#endif
 
     } else {
 #ifdef OPENGLES
@@ -521,28 +520,20 @@ bind_slot(int face, bool rb_resize, Texture **attach, RenderTexturePlane slot, G
       glPrioritizeTextures(1, &gtc->_index, &priority);
 #endif
       glgsg->update_texture(tc, true);
-      GLint red_size = 0, green_size = 0, blue_size = 0, alpha_size = 0;
-      if (!is_cube_map) {
-        glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, attachpoint,
-                                       GL_TEXTURE_2D, gtc->_index, 0);
-        GLP(GetTexLevelParameteriv)(GL_TEXTURE_2D, 0, GL_TEXTURE_RED_SIZE, &red_size);
-        GLP(GetTexLevelParameteriv)(GL_TEXTURE_2D, 0, GL_TEXTURE_GREEN_SIZE, &green_size);
-        GLP(GetTexLevelParameteriv)(GL_TEXTURE_2D, 0, GL_TEXTURE_BLUE_SIZE, &blue_size);
-        GLP(GetTexLevelParameteriv)(GL_TEXTURE_2D, 0, GL_TEXTURE_ALPHA_SIZE, &alpha_size);
-      } else {
-        glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, attachpoint,
-                                       GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
-                                       gtc->_index, 0);
-        GLP(GetTexLevelParameteriv)(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, GL_TEXTURE_RED_SIZE, &red_size);
-        GLP(GetTexLevelParameteriv)(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, GL_TEXTURE_GREEN_SIZE, &green_size);
-        GLP(GetTexLevelParameteriv)(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, GL_TEXTURE_BLUE_SIZE, &blue_size);
-        GLP(GetTexLevelParameteriv)(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, GL_TEXTURE_ALPHA_SIZE, &alpha_size);
-      }
-
+      glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, attachpoint,
+                                     target, gtc->_index, 0);
+#ifndef OPENGLES
       if (attachpoint == GL_COLOR_ATTACHMENT0_EXT) {
+        GLint red_size = 0, green_size = 0, blue_size = 0, alpha_size = 0;
+        GLP(GetTexLevelParameteriv)(target, 0, GL_TEXTURE_RED_SIZE, &red_size);
+        GLP(GetTexLevelParameteriv)(target, 0, GL_TEXTURE_GREEN_SIZE, &green_size);
+        GLP(GetTexLevelParameteriv)(target, 0, GL_TEXTURE_BLUE_SIZE, &blue_size);
+        GLP(GetTexLevelParameteriv)(target, 0, GL_TEXTURE_ALPHA_SIZE, &alpha_size);
+
         _fb_properties.set_color_bits(red_size + green_size + blue_size);
         _fb_properties.set_alpha_bits(alpha_size);
       }
+#endif
     }
 
     _tex[slot] = tex;
