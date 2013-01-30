@@ -201,7 +201,7 @@ private:
   typedef pset<FmodAudioSound *> SoundSet;
   SoundSet _all_sounds;
 
-  FMOD_OUTPUTTYPE _saved_output;
+  FMOD_OUTPUTTYPE _saved_outputtype;
 
   ////////////////////////////////////////////////////////////
   //These are needed for Panda's Pointer System. DO NOT ERASE!
