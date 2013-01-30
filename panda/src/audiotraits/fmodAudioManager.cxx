@@ -111,6 +111,8 @@ FmodAudioManager() {
   _up.y = 0;
   _up.z = 0;
 
+  _saved_outputtype = FMOD_OUTPUTTYPE_AUTODETECT;
+
   if (_system == (FMOD::System *)NULL) {
     // Create the global FMOD System object.  This one object must be
     // shared by all FmodAudioManagers (this is particularly true on
@@ -561,6 +563,24 @@ get_volume() const {
   fmod_audio_errcheck("_channelgroup->getVolume()", result);
   return (PN_stdfloat)volume;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: FmodAudioManager::set_wavwriter()
+//       Access: Public
+//  Description: Changes output mode to write all audio to a wav file.
+////////////////////////////////////////////////////////////////////
+void FmodAudioManager::
+set_wavwriter(bool outputwav) {
+	ReMutexHolder holder(_lock);
+	if (outputwav) {
+		_system->getOutput(&_saved_outputtype);
+		_system->setOutput(FMOD_OUTPUTTYPE_WAVWRITER);
+	}
+	else {
+		_system->setOutput(_saved_outputtype);
+	}
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FmodAudioManager::set_active(bool active)

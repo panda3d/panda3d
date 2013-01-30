@@ -98,7 +98,7 @@ class EXPCL_FMOD_AUDIO FmodAudioManager : public AudioManager {
   virtual ~FmodAudioManager();
 
   virtual bool is_valid();
-          
+
   virtual PT(AudioSound) get_sound(const string&, bool positional = false, int mode=SM_heuristic);
   virtual PT(AudioSound) get_sound(MovieAudio *,  bool positional = false, int mode=SM_heuristic);
     
@@ -107,7 +107,11 @@ class EXPCL_FMOD_AUDIO FmodAudioManager : public AudioManager {
 
   virtual void set_volume(PN_stdfloat);
   virtual PN_stdfloat get_volume() const;
-          
+  
+  virtual void set_wavwriter(bool);
+
+  virtual void set_wavwriter(bool);
+
   virtual void set_active(bool);
   virtual bool get_active() const;
 
@@ -198,6 +202,8 @@ private:
   // The set of all sounds.  Needed only to implement stop_all_sounds.
   typedef pset<FmodAudioSound *> SoundSet;
   SoundSet _all_sounds;
+
+  FMOD_OUTPUTTYPE _saved_output;
 
   ////////////////////////////////////////////////////////////
   //These are needed for Panda's Pointer System. DO NOT ERASE!
