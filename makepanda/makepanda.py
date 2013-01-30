@@ -1686,7 +1686,7 @@ def CompileAnything(target, inputs, opts, progress = None):
         if (origsuffix==".exe" and not sys.platform.startswith("win")):
             os.system("chmod +x \"%s\"" % target)
         return
-    elif (target == "pandac/PandaModules.py"):
+    elif (target.endswith("pandac/PandaModules.py")):
         ProgressOutput(progress, "Generating 'pandac' tree")
         return RunGenPyCode(target, inputs, opts)
     elif (infile.endswith(".py")):
