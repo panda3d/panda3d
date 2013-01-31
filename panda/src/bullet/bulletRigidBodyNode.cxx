@@ -513,6 +513,7 @@ MotionState() {
   _scale = LVecBase3(1.0f, 1.0f, 1.0f);
   _disabled = false;
   _dirty = false;
+  _was_dirty = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -536,6 +537,7 @@ setWorldTransform(const btTransform &trans) {
 
   _trans = trans;
   _dirty = true;
+  _was_dirty = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -594,5 +596,31 @@ bool BulletRigidBodyNode::MotionState::
 sync_disabled() const {
 
   return _disabled;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletRigidBodyNode::MotionState::pick_dirty_flag
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool BulletRigidBodyNode::MotionState::
+pick_dirty_flag() {
+
+  bool flag = _was_dirty;
+  _was_dirty = false;
+  return flag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletRigidBodyNode::pick_dirty_flag
+//       Access: Published
+//  Description: Returns TRUE if the transform of the rigid body
+//               has changed at least once since the last call to
+//               this method.
+////////////////////////////////////////////////////////////////////
+bool BulletRigidBodyNode::
+pick_dirty_flag() {
+
+  return _motion->pick_dirty_flag();
 }
 

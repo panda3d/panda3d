@@ -77,6 +77,9 @@ PUBLISHED:
   void set_linear_factor(const LVector3 &factor);
   void set_angular_factor(const LVector3 &factor);
 
+  // Special
+  bool pick_dirty_flag();
+
 public:
   virtual btCollisionObject *get_object() const;
 
@@ -107,11 +110,14 @@ private:
     void sync_b2p(PandaNode *node);
     bool sync_disabled() const;
 
+    bool pick_dirty_flag();
+
   private:
     btTransform _trans;
     LVecBase3 _scale;
     bool _disabled;
     bool _dirty;
+    bool _was_dirty;
   };
 
   MotionState *_motion;
