@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 ########################################################################
 #
 # Caution: there are two separate, independent build systems:
