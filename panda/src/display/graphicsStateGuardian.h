@@ -75,14 +75,14 @@ public:
 
 PUBLISHED:
 
-  enum ShaderModel
-  {
+  enum ShaderModel {
     SM_00,
     SM_11,
     SM_20,
     SM_2X,
     SM_30,
     SM_40,
+    SM_50,
   };
 
   INLINE void release_all();

@@ -2352,8 +2352,11 @@ reset() {
       _shader_model = SM_30;
       break;
     case 4:
-    default:
       _shader_model = SM_40;
+      break;
+    case 5:
+    default:
+      _shader_model = SM_50;
       break;
   }
 
@@ -2382,8 +2385,8 @@ reset() {
     CGprofile vertex_profile;
     CGprofile pixel_profile;
     
-    vertex_profile = cgD3D9GetLatestVertexProfile( );
-    pixel_profile = cgD3D9GetLatestPixelProfile( );
+    vertex_profile = cgD3D9GetLatestVertexProfile();
+    pixel_profile = cgD3D9GetLatestPixelProfile();
     
     const char *vertex_profile_str =
       cgGetProfileString(vertex_profile);

@@ -1714,38 +1714,44 @@ reset() {
   report_my_gl_errors();
 
   void gl_set_stencil_functions (StencilRenderStates *stencil_render_states);
-  gl_set_stencil_functions (_stencil_render_states);
+  gl_set_stencil_functions(_stencil_render_states);
 
 #if defined(HAVE_CG) && !defined(OPENGLES)
 
-  typedef struct
-  {
+  typedef struct {
     CGprofile cg_profile;
     int shader_model;
-  }
-  CG_PROFILE_TO_SHADER_MODEL;
+  } CG_PROFILE_TO_SHADER_MODEL;
 
-  static CG_PROFILE_TO_SHADER_MODEL cg_profile_to_shader_model_array [ ] = {
+  static CG_PROFILE_TO_SHADER_MODEL cg_profile_to_shader_model_array[] = {
+    // gp5fp - OpenGL fragment profile for GeForce 400 Series and up
+    CG_PROFILE_GP5FP,
+    SM_50,
+
+    // gp4fp - OpenGL fragment profile for G8x (GeForce 8xxx and up)
+    CG_PROFILE_GP4FP,
+    SM_40,
+
     // fp40 - OpenGL fragment profile for NV4x (GeForce 6xxx and 7xxx
     // Series, NV4x-based Quadro FX, etc.)
     CG_PROFILE_FP40,
     SM_30,
-    
+
     // fp30 - OpenGL fragment profile for NV3x (GeForce FX, Quadro FX, etc.)
     CG_PROFILE_FP30,
     SM_2X,
-    
+
     // This OpenGL profile corresponds to the per-fragment
     // functionality introduced by GeForce FX and other DirectX 9
     // GPUs.
     CG_PROFILE_ARBFP1,
     SM_20,
-    
+
     // fp20 - OpenGL fragment profile for NV2x (GeForce3, GeForce4 Ti,
     // Quadro DCC, etc.)
     CG_PROFILE_FP20,
     SM_11,
-    
+
     // no shader support
     CG_PROFILE_UNKNOWN,
     SM_00,
@@ -1756,9 +1762,9 @@ reset() {
 
   index = 0;
   cg_profile_to_shader_model = cg_profile_to_shader_model_array;
-  while (cg_profile_to_shader_model -> shader_model != SM_00) {
-    if (cgGLIsProfileSupported(cg_profile_to_shader_model -> cg_profile)) {
-      _shader_model = cg_profile_to_shader_model -> shader_model;
+  while (cg_profile_to_shader_model->shader_model != SM_00) {
+    if (cgGLIsProfileSupported(cg_profile_to_shader_model->cg_profile)) {
+      _shader_model = cg_profile_to_shader_model->shader_model;
       break;
     }
     cg_profile_to_shader_model++;
@@ -1769,16 +1775,16 @@ reset() {
     GraphicsPipe *pipe;
     DisplayInformation *display_information;
     
-    pipe = this -> get_pipe ( );
+    pipe = this->get_pipe();
     if (pipe) {
-      display_information = pipe -> get_display_information ( );
+      display_information = pipe->get_display_information ();
       if (display_information) {
-        if (display_information -> get_shader_model ( ) > _shader_model) {
-          _shader_model = display_information -> get_shader_model ( );
+        if (display_information->get_shader_model() > _shader_model) {
+          _shader_model = display_information->get_shader_model();
         }
       }
     }
-  }  
+  }
   _auto_detect_shader_model = _shader_model;
 
   CGprofile vertex_profile;
