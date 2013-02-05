@@ -252,17 +252,17 @@ Section -post
         Push "$INSTDIR\bin"
         Call AddToPath
 
-        ReadRegStr $0 HKLM "Software\Python\PythonCore\$PYVER\InstallPath" ""
+        ReadRegStr $0 HKLM "Software\Python\PythonCore\${PYVER}\InstallPath" ""
         StrCmp $0 "$INSTDIR\python" RegPath 0
         StrCmp $0 "" RegPath 0
 
         MessageBox MB_YESNO|MB_ICONQUESTION \
-                "Your system already has a copy of Python installed. Panda3D installs its own copy of Python, which will install alongside your existing copy. Would you like to make Panda's copy the default Python? If you choose 'No', you will have to configure your existing copy of Python to use the Panda3D libraries." \
+                "Your system already has a copy of Python installed. Panda3D installs its own copy of Python ${PYVER}, which will install alongside your existing copy. Would you like to make Panda's copy the default Python? If you choose 'No', you will have to configure your existing copy of Python to use the Panda3D libraries, keeping in mind that this version of Panda3D can only run with Python ${PYVER}." \
                 IDNO SkipRegPath
 
         RegPath:
         DetailPrint "Adding registry keys for python..."
-        WriteRegStr HKLM "Software\Python\PythonCore\$PYVER\InstallPath" "" "$INSTDIR\python"
+        WriteRegStr HKLM "Software\Python\PythonCore\${PYVER}\InstallPath" "" "$INSTDIR\python"
         SkipRegPath:
         !endif
 
@@ -288,9 +288,9 @@ Section Uninstall
         Push "$INSTDIR\bin"
         Call un.RemoveFromPath
 
-        ReadRegStr $0 HKLM "Software\Python\PythonCore\$PYVER\InstallPath" ""
+        ReadRegStr $0 HKLM "Software\Python\PythonCore\${PYVER}\InstallPath" ""
         StrCmp $0 "$INSTDIR\python" 0 SkipUnReg
-        DeleteRegKey HKLM "Software\Python\PythonCore\$PYVER"
+        DeleteRegKey HKLM "Software\Python\PythonCore\${PYVER}"
         SkipUnReg:
         !endif
 
