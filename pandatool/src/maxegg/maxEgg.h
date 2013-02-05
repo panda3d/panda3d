@@ -57,8 +57,6 @@
 #include "eggVertexPool.h"
 #include "eggNurbsCurve.h"
 #include "pandatoolbase.h"
-#include "somethingToEgg.h"
-#include "somethingToEggConverter.h"
 #include "eggXfmSAnim.h"
 #include "pathStore.h"
 
