@@ -1,5 +1,5 @@
 // Filename: config_x11display.h
-// Created by:  pro-rsoft (07Jul09)
+// Created by:  rdb (07Jul09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -32,5 +32,8 @@ extern ConfigVariableInt x_wheel_up_button;
 extern ConfigVariableInt x_wheel_down_button;
 extern ConfigVariableInt x_wheel_left_button;
 extern ConfigVariableInt x_wheel_right_button;
+
+extern ConfigVariableString x_wm_class_name;
+extern ConfigVariableString x_wm_class;
 
 #endif

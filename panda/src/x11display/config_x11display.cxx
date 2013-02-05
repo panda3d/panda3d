@@ -1,5 +1,5 @@
 // Filename: config_x11display.cxx
-// Created by:  pro-rsoft (07Jul09)
+// Created by:  rdb (07Jul09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -60,6 +60,16 @@ ConfigVariableInt x_wheel_right_button
  PRC_DESC("This is the mouse button index of the wheel_right event: which "
           "mouse button number does the system report when one scrolls "
           "to the right?"));
+
+ConfigVariableString x_wm_class_name
+("x-wm-class-name", "",
+ PRC_DESC("Specify the value to use for the res_name field of the window's "
+          "WM_CLASS property.  Has no effect when x-wm-class is not set."));
+
+ConfigVariableString x_wm_class
+("x-wm-class", "",
+ PRC_DESC("Specify the value to use for the res_class field of the window's "
+          "WM_CLASS property."));
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libx11display

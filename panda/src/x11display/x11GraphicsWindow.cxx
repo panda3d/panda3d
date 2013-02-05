@@ -1077,13 +1077,21 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   // Class to "Undecorated", and let the user configure his/her window
   // manager not to put a border around windows of this class.
   XClassHint *class_hints_p = NULL;
-  if (properties.get_undecorated() || properties.get_fullscreen()) {
+  if (!x_wm_class.empty()) {
+    // Unless the user wanted to use his own WM_CLASS, of course.
+    class_hints_p = XAllocClassHint();
+    class_hints_p->res_class = x_wm_class.c_str();
+    if (!x_wm_class_name.empty()) {
+      class_hints_p->res_name = x_wm_class_name.c_str();
+    }
+
+  } else if (properties.get_undecorated() || properties.get_fullscreen()) {
     class_hints_p = XAllocClassHint();
     class_hints_p->res_class = (char*) "Undecorated";
+  }
 
-    if (!properties.get_fullscreen()) {
-      type_data[next_type_data++] = _net_wm_window_type_splash;
-    }
+  if (properties.get_undecorated() && !properties.get_fullscreen()) {
+    type_data[next_type_data++] = _net_wm_window_type_splash;
   }
 
   if (properties.has_z_order()) {
