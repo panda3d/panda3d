@@ -10,6 +10,8 @@
 #ifndef __maxEggExpOptions__H
 #define __maxEggExpOptions__H
 
+#include "pathReplace.h"
+
 #pragma conform(forScope, off)
 
 /* Externed Globals */
