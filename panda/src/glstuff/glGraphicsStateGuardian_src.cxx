@@ -1725,11 +1725,11 @@ reset() {
 
   static CG_PROFILE_TO_SHADER_MODEL cg_profile_to_shader_model_array[] = {
     // gp5fp - OpenGL fragment profile for GeForce 400 Series and up
-    7017, /*CG_PROFILE_GP5FP,*/
+    (CGprofile)7017, /*CG_PROFILE_GP5FP,*/
     SM_50,
 
     // gp4fp - OpenGL fragment profile for G8x (GeForce 8xxx and up)
-    7010, /*CG_PROFILE_GP4FP,*/
+    (CGprofile)7010, /*CG_PROFILE_GP4FP,*/
     SM_40,
 
     // fp40 - OpenGL fragment profile for NV4x (GeForce 6xxx and 7xxx
