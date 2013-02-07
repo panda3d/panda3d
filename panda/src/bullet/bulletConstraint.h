@@ -41,6 +41,11 @@ PUBLISHED:
   PN_stdfloat get_applied_impulse() const;
   PN_stdfloat get_debug_draw_size();
 
+  INLINE void set_breaking_threshold(PN_stdfloat threshold);
+  INLINE PN_stdfloat set_breaking_threshold() const;
+  INLINE void set_enabled(bool enabled);
+  INLINE bool is_enabled() const;
+
   enum ConstraintParam {
     CP_erp = 1,
     CP_stop_erp,
