@@ -1080,9 +1080,9 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   if (!x_wm_class.empty()) {
     // Unless the user wanted to use his own WM_CLASS, of course.
     class_hints_p = XAllocClassHint();
-    class_hints_p->res_class = x_wm_class.c_str();
+    class_hints_p->res_class = (char*) x_wm_class.c_str();
     if (!x_wm_class_name.empty()) {
-      class_hints_p->res_name = x_wm_class_name.c_str();
+      class_hints_p->res_name = (char*) x_wm_class_name.c_str();
     }
 
   } else if (properties.get_undecorated() || properties.get_fullscreen()) {
