@@ -1561,13 +1561,16 @@ def GetSdkDir(sdkname, sdkkey = None):
 
     sdir = sdkbase[:]
     target = GetTarget()
-    if (target == 'windows'):
-        sdir += "/win"
-        sdir += platform.architecture()[0][:2]
-    elif (target == 'linux'):
+    target_arch = GetTargetArch()
+    if target == 'windows':
+        if target_arch == 'x64':
+            sdir += "/win64"
+        else:
+            sdir += "/win32"
+    elif target == 'linux':
         sdir += "/linux"
         sdir += platform.architecture()[0][:2]
-    elif (target == 'darwin'):
+    elif target == 'darwin':
         sdir += "/macosx"
     sdir += "/" + sdkname
 
