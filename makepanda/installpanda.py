@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 ########################################################################
 #
 # Caution: there are two separate, independent build systems:
@@ -107,8 +107,15 @@ def GetLibDir():
     if len(result) > 0:
         assert result == "lib64" or result == "lib"
         return result
-    else:
-        return "lib"
+
+    # If Python is installed into /usr/lib64, it's probably safe
+    # to assume that we should install there as well.
+    python_lib = get_python_lib(1)
+    if python_lib.startswith('/usr/lib64/') or \
+       python_lib.startswith('/usr/local/lib64/'):
+        return "lib64"
+
+    return "lib"
 
 def InstallPanda(destdir="", prefix="/usr", outputdir="built"):
     if (not prefix.startswith("/")): prefix = "/" + prefix
@@ -168,7 +175,7 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built"):
     oscmd("ln -s "+PEXEC+"                      "+destdir+prefix+"/bin/ppython")
     oscmd("cp "+outputdir+"/bin/*               "+destdir+prefix+"/bin/")
     for base in os.listdir(outputdir+"/lib"):
-        if (not base.endswith(".a")):
+        if (not base.endswith(".a")) or base == "libp3pystub.a":
             # We really need to specify -R in order not to follow symlinks on non-GNU
             oscmd("cp -R -P "+outputdir+"/lib/"+base+" "+destdir+libdir+"/panda3d/"+base)
     # rpmlint doesn't like it if we compile pyc.
