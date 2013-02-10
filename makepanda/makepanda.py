@@ -1436,7 +1436,7 @@ def CompileLink(dll, obj, opts):
             oscmd('%s --strip-unneeded %s' % (GetStrip(), BracketNameWithQuotes(new_path)))
 
         elif (GetOrigExt(dll)==".exe" and GetOptimizeOption(opts)==4 and "NOSTRIP" not in opts):
-            oscmd(GetStrip() + " " + BracketNameWithQuotes(dll))
+            oscmd(GetStrip() + " -x " + BracketNameWithQuotes(dll))
 
         os.system("chmod +x " + BracketNameWithQuotes(dll))
 
