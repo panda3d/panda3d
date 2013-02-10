@@ -1384,14 +1384,8 @@ def CompileLink(dll, obj, opts):
                 cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp -L/usr/X11R6/lib'
 
         for x in obj:
-            if (GetOrigExt(x) != ".dat"):
-                base = os.path.basename(x)
-                if (base[-3:]==".so") and (base[:3]=="lib"):
-                    cmd += ' -l' + base[3:-3]
-                elif (base[-2:]==".a") and (base[:3]=="lib"):
-                    cmd += ' -l' + base[3:-2]
-                else:
-                    cmd += ' ' + x
+            if GetOrigExt(x) != ".dat":
+                cmd += ' ' + x
 
         if (GetOrigExt(dll) == ".exe" and GetTarget() == 'windows' and "NOICON" not in opts):
             cmd += " " + GetOutputDir() + "/tmp/pandaIcon.res"
