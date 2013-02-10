@@ -749,7 +749,10 @@ if (COMPILER=="GCC"):
 
     for pkg in MAYAVERSIONS:
         if (PkgSkip(pkg)==0 and (pkg in SDK)):
-            LibName(pkg, "-Wl,-rpath," + SDK[pkg] + "/lib")
+            if GetTarget() == 'darwin':
+                LibName(pkg, "-Wl,-rpath," + SDK[pkg] + "/Maya.app/Contents/MacOS")
+            else:
+                LibName(pkg, "-Wl,-rpath," + SDK[pkg] + "/lib")
             LibName(pkg, "-lOpenMaya")
             LibName(pkg, "-lOpenMayaAnim")
             LibName(pkg, "-lAnimSlice")
