@@ -1015,11 +1015,11 @@ synthesize_shader(const RenderState *rs) {
       text << "\t l_eye_normal.xyz *= tsnormal.z;\n";
       text << "\t l_eye_normal.xyz += l_tangent * tsnormal.x;\n";
       text << "\t l_eye_normal.xyz += l_binormal * tsnormal.y;\n";
-      text << "\t l_eye_normal.xyz  = normalize(l_eye_normal.xyz);\n";
-    } else {
-      text << "\t // Correct the surface normal for interpolation effects\n";
-      text << "\t l_eye_normal.xyz = normalize(l_eye_normal.xyz);\n";
     }
+  }
+  if (_need_eye_normal) {
+    text << "\t // Correct the surface normal for interpolation effects\n";
+    text << "\t l_eye_normal.xyz = normalize(l_eye_normal.xyz);\n";
   }
   if (_out_aux_normal) {
     text << "\t // Output the camera-space surface normal\n";
