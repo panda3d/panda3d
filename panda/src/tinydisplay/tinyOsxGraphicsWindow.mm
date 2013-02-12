@@ -58,8 +58,8 @@ static void Post_Event_Wait(unsigned short type, unsigned int data1 , unsigned i
                                  windowNumber:target_window
                                       context:nil
                                       subtype:type
-                                        data1:(NSInteger)data1
-                                        data2:(NSInteger)&w];
+                                        data1:data1
+                                        data2:(int)&w];
 
     [NSApp postEvent:ev atStart:NO];
     while (!w.work_done)
