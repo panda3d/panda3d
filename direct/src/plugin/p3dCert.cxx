@@ -35,6 +35,7 @@
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <shellapi.h>
 
 #define snprintf sprintf_s
 #endif
@@ -233,7 +234,11 @@ approve_cert() {
   assert(_cert != NULL);
 
   // Make sure the directory exists.
+#ifdef _WIN32
+  mkdir_complete_w(_cert_dir, cerr);
+#else
   mkdir_complete(_cert_dir, cerr);
+#endif
 
   // Look for an unused filename.
   int i = 1;
