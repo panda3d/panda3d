@@ -12,12 +12,10 @@
 #include "wglGraphicsPipe.h"
 #endif
 
-#ifdef HAVE_COCOA
+#if defined(HAVE_COCOA)
 #include "config_cocoadisplay.h"
 #include "cocoaGraphicsPipe.h"
-#endif
-
-#ifdef HAVE_CARBON
+#elif defined(HAVE_CARBON)
 #include "config_osxdisplay.h"
 #include "osxGraphicsPipe.h"
 #endif
@@ -53,11 +51,9 @@ init_libpandagl() {
   init_libwgldisplay();
 #endif  // HAVE_GL
 
-#ifdef HAVE_COCOA
+#if defined(HAVE_COCOA)
   init_libcocoadisplay();
-#endif
-
-#ifdef HAVE_CARBON
+#elif defined(HAVE_CARBON)
   init_libosxdisplay();
 #endif
 
