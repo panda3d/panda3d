@@ -92,6 +92,30 @@ no_cert_text[] =
 
   "Click Cancel to avoid running this application.";
 
+
+#ifdef _WIN32
+int WINAPI
+wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow) {
+  OpenSSL_add_all_algorithms();
+
+  LPWSTR *argv;
+  int argc;
+  argv = CommandLineToArgvW(pCmdLine, &argc);
+  if (argv == NULL || argc != 2) {
+    cerr << "usage: p3dcert cert_filename cert_dir\n";
+    return 1;
+  }
+
+  wstring cert_filename (argv[0]);
+  wstring cert_dir (argv[1]);
+
+  AuthDialog *dialog = new AuthDialog(cert_filename, cert_dir);
+  dialog->show();
+
+  return Fl::run();
+}
+
+#else // _WIN32
 int main(int argc, char **argv) {
   OpenSSL_add_all_algorithms();
 
@@ -108,14 +132,20 @@ int main(int argc, char **argv) {
 
   return Fl::run();
 }
+#endif // _WIN32
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AuthDialog::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
+#ifdef _WIN32
+AuthDialog::
+AuthDialog(const wstring &cert_filename, const wstring &cert_dir) :
+#else
 AuthDialog::
 AuthDialog(const string &cert_filename, const string &cert_dir) :
+#endif
   Fl_Window(435, 242, "New Panda3D Application"),
   _cert_dir(cert_dir)
 {
@@ -208,41 +238,43 @@ approve_cert() {
   // Look for an unused filename.
   int i = 1;
   size_t buf_length = _cert_dir.length() + 100;
-  char *buf = new char[buf_length];
+
+  // Sure, there's a slight race condition right now: another process
+  // might attempt to create the same filename.  So what.
+  FILE *fp = NULL;
+
 #ifdef _WIN32
-  wstring buf_w;
-#endif // _WIN32
+  wchar_t *buf = new wchar_t[buf_length];
+
+  while (true) {
+    swprintf(buf, L"%s/p%d.crt", _cert_dir.c_str(), i);
+    assert(wcslen(buf) < buf_length);
+
+    // Check if it already exists.  If not, take it.
+    if (GetFileAttributesW(buf) == -1) {
+      break;
+    }
+    ++i;
+  }
+  fp = _wfopen(buf, L"w");
+
+#else // _WIN32
+  char *buf = new char[buf_length];
 
   while (true) {
     sprintf(buf, "%s/p%d.crt", _cert_dir.c_str(), i);
     assert(strlen(buf) < buf_length);
 
     // Check if it already exists.  If not, take it.
-#ifdef _WIN32
-    DWORD results = 0;
-    if (string_to_wstring(buf_w, buf)) {
-      results = GetFileAttributesW(buf_w.c_str());
-    }
-    if (results == -1) {
-      break;
-    }
-#else
     struct stat statbuf;
     if (stat(buf, &statbuf) != 0) {
       break;
     }
-#endif
     ++i;
   }
-
-  // Sure, there's a slight race condition right now: another process
-  // might attempt to create the same filename.  So what.
-  FILE *fp = NULL;
-#ifdef _WIN32
-  fp = _wfopen(buf_w.c_str(), L"w");
-#else // _WIN32
   fp = fopen(buf, "w");
-#endif  // _WIN32
+#endif // _WIN32
+
   if (fp != NULL) {
     PEM_write_X509(fp, _cert);
     fclose(fp);
@@ -257,14 +289,17 @@ approve_cert() {
 //  Description: Reads the list of certificates in the pem filename
 //               passed on the command line into _cert and _stack.
 ////////////////////////////////////////////////////////////////////
+#ifdef _WIN32
+void AuthDialog::
+read_cert_file(const wstring &cert_filename) {
+#else
 void AuthDialog::
 read_cert_file(const string &cert_filename) {
+#endif
+
   FILE *fp = NULL;
 #ifdef _WIN32
-  wstring cert_filename_w;
-  if (string_to_wstring(cert_filename_w, cert_filename)) {
-    fp = _wfopen(cert_filename_w.c_str(), L"r");
-  }
+  fp = _wfopen(cert_filename.c_str(), L"r");
 #else // _WIN32
   fp = fopen(cert_filename.c_str(), "r");
 #endif  // _WIN32

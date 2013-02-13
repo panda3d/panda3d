@@ -53,7 +53,11 @@ class ViewCertDialog;
 ////////////////////////////////////////////////////////////////////
 class AuthDialog : public Fl_Window {
 public:
+#ifdef _WIN32
+  AuthDialog(const wstring &cert_filename, const wstring &cert_dir);
+#else
   AuthDialog(const string &cert_filename, const string &cert_dir);
+#endif
   virtual ~AuthDialog();
 
   static void run_clicked(Fl_Widget *w, void *data);
@@ -63,7 +67,11 @@ public:
   void approve_cert();
 
 private:
+#ifdef _WIN32
+  void read_cert_file(const wstring &cert_filename);
+#else
   void read_cert_file(const string &cert_filename);
+#endif
   void get_friendly_name();
   void verify_cert();
   int load_certificates_from_der_ram(X509_STORE *store,
@@ -76,7 +84,11 @@ public:
   ViewCertDialog *_view_cert_dialog;
 
 private:
+#ifdef _WIN32
+  wstring _cert_dir;
+#else
   string _cert_dir;
+#endif
   X509 *_cert;
   STACK_OF(X509) *_stack;
 
