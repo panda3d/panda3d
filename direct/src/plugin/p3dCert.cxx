@@ -109,6 +109,7 @@ wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdS
 
   wstring cert_filename (argv[0]);
   wstring cert_dir (argv[1]);
+  LocalFree(argv);
 
   AuthDialog *dialog = new AuthDialog(cert_filename, cert_dir);
   dialog->show();
