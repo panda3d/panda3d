@@ -1708,12 +1708,15 @@ def CompileAnything(target, inputs, opts, progress = None):
             ProgressOutput(progress, "Linking dynamic library", target)
 
         # Add version number to the dynamic library, on unix
-        if (origsuffix==".dll" and "MODULE" not in opts and not sys.platform.startswith("win") and not RTDIST):
-            if (sys.platform == "darwin"):
-                if (target.lower().endswith(".dylib")):
+        if origsuffix==".dll" and "MODULE" not in opts and not RTDIST:
+            target = GetTarget()
+            if target == "darwin":
+                # On Mac, libraries are named like libpanda.1.2.dylib
+                if target.lower().endswith(".dylib"):
                     target = target[:-5] + MAJOR_VERSION + ".dylib"
                     SetOrigExt(target, origsuffix)
-            else:
+            elif target != "windows" and target != "android":
+                # On Linux, libraries are named like libpanda.so.1.2
                 target = target + "." + MAJOR_VERSION
                 SetOrigExt(target, origsuffix)
         return CompileLink(target, inputs, opts)
