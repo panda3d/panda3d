@@ -274,12 +274,24 @@ ns_get_environment_variable(const string &var) const {
       PyObject *obj = PySys_GetObject((char*) "argv");  // borrowed reference
       if (obj != NULL && PyList_Check(obj)) {
         PyObject *item = PyList_GetItem(obj, 0);  // borrowed reference
-        // Hmm, could this ever be a Unicode object?
-        if (item != NULL && PyString_Check(item)) {
-          char *str = PyString_AsString(item);
-          if (str != (char *)NULL) {
-            main_dir = Filename::from_os_specific(str);
+        if (item != NULL) {
+          if (PyUnicode_Check(item)) {
+            Py_ssize_t size = PyUnicode_GetSize(item);
+            wchar_t *data = new wchar_t[size];
+            if (PyUnicode_AsWideChar(item, data, size) != -1) {
+              wstring wstr (data, size);
+              main_dir = Filename::from_os_specific_w(wstr);
+            }
+            delete data;
           }
+#if PY_MAJOR_VERSION < 3
+          else if (PyString_Check(item)) {
+            char *str = PyString_AsString(item);
+            if (str != (char *)NULL) {
+              main_dir = Filename::from_os_specific(str);
+            }
+          }
+#endif
         }
       }
       
