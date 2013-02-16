@@ -917,13 +917,19 @@ void GraphicsWindow::
 remove_python_event_handler(PyObject* name){
   list<PythonGraphicsWindowProc*> toRemove;
   PythonWinProcClasses::iterator iter;
-  for(iter = _python_window_proc_classes.begin(); iter != _python_window_proc_classes.end(); ++iter){
+  for (iter = _python_window_proc_classes.begin(); iter != _python_window_proc_classes.end(); ++iter) {
     PythonGraphicsWindowProc* pgwp = *iter;
-    if(PyObject_Compare(pgwp->get_name(), name) == 0)
+    if (PyObject_RichCompareBool(pgwp->get_name(), name, Py_EQ) == 1) {
       toRemove.push_back(pgwp);
+    }
+#if PY_MAJOR_VERSION < 3
+    else if (PyObject_Compare(pgwp->get_name(), name) == 0) {
+      toRemove.push_back(pgwp);
+    }
+#endif
   }
   list<PythonGraphicsWindowProc*>::iterator iter2;
-  for(iter2 = toRemove.begin(); iter2 != toRemove.end(); ++iter2){
+  for (iter2 = toRemove.begin(); iter2 != toRemove.end(); ++iter2) {
     PythonGraphicsWindowProc* pgwp = *iter2;
     remove_window_proc(pgwp);
     _python_window_proc_classes.erase(pgwp);

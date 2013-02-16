@@ -99,22 +99,40 @@ write_module(ostream &out,ostream *out_h, InterrogateModuleDef *def) {
     Function::Remaps::const_iterator ri;
     for (ri = func->_remaps.begin(); ri != func->_remaps.end(); ++ri) {
       FunctionRemap *remap = (*ri);
-      out << "  { \"" << remap->_reported_name << "\", &" 
+      out << "  { \"" << remap->_reported_name << "\", &"
           << remap->_wrapper_name << ", METH_VARARGS },\n";
     }
-  }  
+  }
   out << "  { NULL, NULL }\n"
       << "};\n\n"
 
-      << "#ifdef _WIN32\n"
-      << "extern \"C\" __declspec(dllexport) void init" << def->library_name << "();\n"
+      << "#if PY_MAJOR_VERSION >= 3\n"
+      << "static struct PyModuleDef python_simple_module = {\n"
+      << "  PyModuleDef_HEAD_INIT,\n"
+      << "  \"" << def->library_name << "\",\n"
+      << "  NULL,\n"
+      << "  -1,\n"
+      << "  python_simple_funcs,\n"
+      << "  NULL, NULL, NULL, NULL\n"
+      << "};\n\n"
+
+      << "#define INIT_FUNC PyObject *PyInit_" << def->library_name << "\n"
       << "#else\n"
-      << "extern \"C\" void init" << def->library_name << "();\n"
+      << "#define INIT_FUNC void init" << def->library_name << "\n"
       << "#endif\n\n"
-    
-      << "void init" << def->library_name << "() {\n"
-      << "  Py_InitModule(\"" << def->library_name
-      << "\", python_simple_funcs);\n"
+
+      << "#ifdef _WIN32\n"
+      << "extern \"C\" __declspec(dllexport) INIT_FUNC();\n"
+      << "#else\n"
+      << "extern \"C\" INIT_FUNC();\n"
+      << "#endif\n\n"
+
+      << "INIT_FUNC() {\n"
+      << "#if PY_MAJOR_VERSION >= 3\n"
+      << "  return PyModule_Create(&python_simple_module);\n"
+      << "#else\n"
+      << "  Py_InitModule(\"" << def->library_name << "\", python_simple_funcs);\n"
+      << "#endif\n"
       << "}\n\n";
 }
 
@@ -452,8 +470,13 @@ pack_return_value(ostream &out, int indent_level,
   if (remap->_return_type->new_type_is_atomic_string()) 
   {
     if (TypeManager::is_char_pointer(orig_type)) {
+      out << "#if PY_MAJOR_VERSION >= 3\n";
+      indent(out, indent_level)
+        << "return PyUnicode_FromString(" << return_expr << ");\n";
+      out << "#else\n";
       indent(out, indent_level)
         << "return PyString_FromString(" << return_expr << ");\n";
+      out << "#endif\n";
 
     } else if (TypeManager::is_wstring(orig_type)) {
       indent(out, indent_level)
@@ -461,9 +484,15 @@ pack_return_value(ostream &out, int indent_level,
         << return_expr << ".data(), (int)" << return_expr << ".length());\n";
 
     } else {
+      out << "#if PY_MAJOR_VERSION >= 3\n";
+      indent(out, indent_level)
+        << "return PyUnicode_FromStringAndSize("
+        << return_expr << ".data(), (Py_ssize_t)" << return_expr << ".length());\n";
+      out << "#else\n";
       indent(out, indent_level)
         << "return PyString_FromStringAndSize("
-        << return_expr << ".data(), " << return_expr << ".length());\n";
+        << return_expr << ".data(), (Py_ssize_t)" << return_expr << ".length());\n";
+      out << "#endif\n";
     }
 
   } else if (TypeManager::is_bool(type)) {
@@ -485,16 +514,26 @@ pack_return_value(ostream &out, int indent_level,
       << "return PyLong_FromUnsignedLong(" << return_expr << ");\n";
 
   } else if (TypeManager::is_integer(type)) {
+    out << "#if PY_MAJOR_VERSION >= 3\n";
+    indent(out, indent_level)
+      << "return PyLong_FromLong(" << return_expr << ");\n";
+    out << "#else\n";
     indent(out, indent_level)
       << "return PyInt_FromLong(" << return_expr << ");\n";
+    out << "#endif\n";
 
   } else if (TypeManager::is_float(type)) {
     indent(out, indent_level)
       << "return PyFloat_FromDouble(" << return_expr << ");\n";
 
   } else if (TypeManager::is_char_pointer(type)) {
+    out << "#if PY_MAJOR_VERSION >= 3\n";
+    indent(out, indent_level)
+      << "return PyUnicode_FromString(" << return_expr << ");\n";
+    out << "#else\n";
     indent(out, indent_level)
       << "return PyString_FromString(" << return_expr << ");\n";
+    out << "#endif\n";
 
   } else if (TypeManager::is_pointer_to_PyObject(type)) {
     indent(out, indent_level)

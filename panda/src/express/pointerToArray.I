@@ -82,7 +82,8 @@ PointerToArray(const PointerToArray<Element> &copy) :
 //     Function: PointerToArray::Constructor
 //       Access: Published
 //  Description: This special constructor accepts a Python list of
-//               elements, or a Python string.
+//               elements, or a Python string (or a bytes object,
+//               in Python 3).
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 PointerToArray<Element>::
@@ -100,10 +101,33 @@ PointerToArray(PyObject *self, PyObject *sequence) :
     return;
   }
 
+  // If we were passed a Python string, then instead of storing it
+  // character-at-a-time, just load the whole string as a data
+  // buffer.
+#if PY_MAJOR_VERSION >= 3
+  if (PyBytes_Check(sequence)) {
+    int size = PyBytes_Size(sequence);
+    if (size % sizeof(Element) != 0) {
+      ostringstream stream;
+      stream << "Buffer not a multiple of " << sizeof(Element) << " bytes";
+      string str = stream.str();
+      PyErr_SetString(PyExc_ValueError, str.c_str());
+      return;
+    }
+      
+    int num_elements = size / sizeof(Element);
+    insert(begin(), num_elements, Element());
+
+    // Hope there aren't any constructors or destructors involved
+    // here.
+    if (size != 0) {
+      const char *data = PyBytes_AsString(sequence);
+      memcpy(p(), data, size);
+    }
+    return;
+  }
+#else
   if (PyString_CheckExact(sequence)) {
-    // If we were passed a Python string, then instead of storing it
-    // character-at-a-time, just load the whole string as a data
-    // buffer.
     int size = PyString_Size(sequence);
     if (size % sizeof(Element) != 0) {
       ostringstream stream;
@@ -124,6 +148,7 @@ PointerToArray(PyObject *self, PyObject *sequence) :
     }
     return;
   }
+#endif
 
   // Now construct the internal list by copying the elements
   // one-at-a-time from Python.

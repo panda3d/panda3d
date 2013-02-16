@@ -95,21 +95,21 @@ private:
                                bool is_inplace, bool coercion_possible);
   
   void write_function_forset(ostream &out, Object *obj, Function *func,
-                             std::set< FunctionRemap *> &remaps, string &expected_params, int indent_level , ostream &forwarddecl,const std::string &functionname, bool inplace) ;
+                             std::set<FunctionRemap*> &remaps, string &expected_params, int indent_level, ostream &forwarddecl, bool inplace);
   
   void pack_return_value(ostream &out, int indent_level,
-                         FunctionRemap *remap, std::string return_expr ,  ostream &forwarddecl, bool in_place);
+                         FunctionRemap *remap, std::string return_expr, ostream &forwarddecl, bool in_place);
   
   void write_make_seq(ostream &out, Object *obj, const std::string &ClassName,
                       MakeSeq *make_seq);
   
   void write_class_prototypes(ostream &out) ;
-  void write_ClasseDeclarations(ostream &out ,  ostream *out_h,Object * obj);
-  void write_ClasseDetails(ostream &out, Object * obj);
+  void write_class_declarations(ostream &out, ostream *out_h, Object *obj);
+  void write_class_details(ostream &out, Object *obj);
   
   void do_assert_init(ostream &out, int &indent_level, bool constructor) const;
 public:
-  bool isRemapLegal( FunctionRemap &remap);
+  bool isRemapLegal(FunctionRemap &remap);
   bool isFunctionLegal( Function *func);
   bool isCppTypeLegal(CPPType *ctype);
   bool isExportThisRun(CPPType *ctype);
@@ -126,19 +126,20 @@ public:
     bool            _is_legal_py_class;
   };
   
-  void   GetValideChildClasses( std::map< std::string ,CastDetails > &answer, CPPStructType * inclass,  const std::string &up_cast_seed = "", bool downcastposible = true);
-  bool   DoesInheritFromIsClass( const CPPStructType * inclass, const std::string &name);
-  bool   IsPandaTypedObject(CPPStructType * inclass) { return DoesInheritFromIsClass(inclass,"TypedObject"); };
+  void GetValideChildClasses( std::map< std::string ,CastDetails > &answer, CPPStructType * inclass,  const std::string &up_cast_seed = "", bool downcastposible = true);
+  bool DoesInheritFromIsClass( const CPPStructType * inclass, const std::string &name);
+  bool IsPandaTypedObject(CPPStructType * inclass) { return DoesInheritFromIsClass(inclass,"TypedObject"); };
   void WriteReturnInstance(ostream &out, int indent_level, std::string &return_expr, std::string &ows_memory_flag,const std::string &class_name, CPPType *ctype, bool inplace, const std::string &const_flag);
   string HasAGetKeyFunction(const InterrogateType &itype_class);
   bool HasAGetClassTypeFunction(const InterrogateType &itype_class);
   int NeedsAStrFunction(const InterrogateType &itype_class);
   int NeedsAReprFunction(const InterrogateType &itype_class);
-  
+  bool NeedsARichCompareFunction(const InterrogateType &itype_class);
+
   void output_quoted(ostream &out, int indent_level, const std::string &str);
   
-  // stash the forwad declarations for this compile pass..
-  std::set< std::string >     _external_imports;    
+  // stash the forward declarations for this compile pass..
+  std::set<std::string>     _external_imports;    
 };
 
 #endif

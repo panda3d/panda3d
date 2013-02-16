@@ -248,7 +248,11 @@ __setattr__(const string &attr_name, PyObject *v) {
     PyObject *str = PyObject_Repr(v);
     task_cat.debug() 
       << *this << ": task." << attr_name << " = "
-      << PyString_AsString(str) << "\n";
+#if PY_MAJOR_VERSION >= 3
+      << PyUnicode_AsUTF8(str) << "\n";
+#else
+      << PyString_AsString(str) << "\n"; 
+#endif
     Py_DECREF(str);
   }
 
@@ -263,7 +267,11 @@ __setattr__(const string &attr_name, PyObject *v) {
     }
 
   } else if (attr_name == "name") {
+#if PY_MAJOR_VERSION >= 3
+    char *name = PyUnicode_AsUTF8(v);
+#else
     char *name = PyString_AsString(v);
+#endif
     if (name != (char *)NULL) {
       set_name(name);
     }
@@ -307,19 +315,37 @@ PyObject *PythonTask::
 __getattr__(const string &attr_name) const {
   if (attr_name == "time") {
     return PyFloat_FromDouble(get_elapsed_time());
+
   } else if (attr_name == "name") {
+#if PY_MAJOR_VERSION >= 3
+    return PyUnicode_FromString(get_name().c_str());
+#else
     return PyString_FromString(get_name().c_str());
+#endif
+
   } else if (attr_name == "wakeTime") {
     return PyFloat_FromDouble(get_wake_time());
+
   } else if (attr_name == "delayTime") {
     if (!has_delay()) {
       Py_RETURN_NONE;
     }
     return PyFloat_FromDouble(get_delay());
+
   } else if (attr_name == "frame") {
+#if PY_MAJOR_VERSION >= 3
+    return PyLong_FromLong(get_elapsed_frames());
+#else
     return PyInt_FromLong(get_elapsed_frames());
+#endif
+
   } else if (attr_name == "id") {
+#if PY_MAJOR_VERSION >= 3
+    return PyLong_FromLong(_task_id);
+#else
     return PyInt_FromLong(_task_id);
+#endif
+
   } else {
     return PyMapping_GetItemString(_dict, (char *)attr_name.c_str());
   }
@@ -389,10 +415,17 @@ do_python_task() {
       // henceforth, instead of calling the function from the top
       // again.
       if (task_cat.is_debug()) {
+#if PY_MAJOR_VERSION >= 3
+        PyObject *str = PyObject_ASCII(_function);
+        task_cat.debug()
+          << PyUnicode_AsUTF8(str) << " in " << *this
+          << " yielded a generator.\n";
+#else
         PyObject *str = PyObject_Repr(_function);
-        task_cat.debug() 
+        task_cat.debug()
           << PyString_AsString(str) << " in " << *this
           << " yielded a generator.\n";
+#endif
         Py_DECREF(str);
       }
       _generator = result;
@@ -439,8 +472,14 @@ do_python_task() {
     return DS_done;
   }
 
+#if PY_MAJOR_VERSION >= 3
+  if (PyLong_Check(result)) {
+    long retval = PyLong_AS_LONG(result);
+#else
   if (PyInt_Check(result)) {
-    int retval = PyInt_AS_LONG(result);
+    long retval = PyInt_AS_LONG(result);
+#endif
+
     switch (retval) {
     case DS_again:
       Py_XDECREF(_generator);
@@ -454,7 +493,7 @@ do_python_task() {
     case DS_pause:
       // Legitimate value.
       Py_DECREF(result);
-      return (DoneStatus)retval;
+      return (DoneStatus) retval;
 
     case -1:
       // Legacy value.
@@ -467,10 +506,16 @@ do_python_task() {
     }
   }
 
-  PyObject *str = PyObject_Repr(result);
   ostringstream strm;
+#if PY_MAJOR_VERSION >= 3
+  PyObject *str = PyObject_ASCII(result);
+  strm
+    << *this << " returned " << PyUnicode_AsUTF8(str);
+#else
+  PyObject *str = PyObject_Repr(result);
   strm
     << *this << " returned " << PyString_AsString(str);
+#endif
   Py_DECREF(str);
   Py_DECREF(result);
   string message = strm.str();
@@ -590,10 +635,17 @@ call_owner_method(const char *method_name) {
   if (_owner != Py_None) {
     PyObject *func = PyObject_GetAttrString(_owner, (char *)method_name);
     if (func == (PyObject *)NULL) {
+#if PY_MAJOR_VERSION >= 3
+      PyObject *str = PyObject_ASCII(_owner);
+      task_cat.error()
+        << "Owner object " << PyUnicode_AsUTF8(str) << " added to "
+        << *this << " has no method " << method_name << "().\n";
+#else
       PyObject *str = PyObject_Repr(_owner);
-      task_cat.error() 
+      task_cat.error()
         << "Owner object " << PyString_AsString(str) << " added to "
         << *this << " has no method " << method_name << "().\n";
+#endif
       Py_DECREF(str);
 
     } else {

@@ -26,21 +26,20 @@ PyMemberDef standard_type_members[] = {
   {NULL}  /* Sentinel */
 };
 
-
 ////////////////////////////////////////////////////////////////////////
 /// Simple Recognition Functions..
 ////////////////////////////////////////////////////////////////////////
-bool DtoolCanThisBeAPandaInstance(PyObject *self)
-{
-    // simple sanity check for the class type..size.. will stop basic foobars..
-    if(self->ob_type->tp_basicsize >= (int)sizeof(Dtool_PyInstDef))
-    {
-        Dtool_PyInstDef * pyself = (Dtool_PyInstDef *) self;
-        if(pyself->_signature == PY_PANDA_SIGNATURE)
-            return true;
+bool DtoolCanThisBeAPandaInstance(PyObject *self) {
+  // simple sanity check for the class type..size.. will stop basic foobars..
+  if (Py_TYPE(self)->tp_basicsize >= (int)sizeof(Dtool_PyInstDef)) {
+    Dtool_PyInstDef *pyself = (Dtool_PyInstDef *) self;
+    if (pyself->_signature == PY_PANDA_SIGNATURE) {
+      return true;
     }
-    return false;
+  }
+  return false;
 }
+
 ////////////////////////////////////////////////////////////////////////
 //  Function : DTOOL_Call_ExtractThisPointerForType
 //
@@ -48,13 +47,13 @@ bool DtoolCanThisBeAPandaInstance(PyObject *self)
 //      needed by the Dtool py interface.. Be very careful if you muck with these
 //      as the generated code depends on how this is set up..
 ////////////////////////////////////////////////////////////////////////
-void DTOOL_Call_ExtractThisPointerForType(PyObject *self, Dtool_PyTypedObject * classdef, void ** answer)
-{
-    if(DtoolCanThisBeAPandaInstance(self))
-        *answer = ((Dtool_PyInstDef *)self)->_My_Type->_Dtool_UpcastInterface(self,classdef);
-    else
-        answer = NULL;
-};
+void DTOOL_Call_ExtractThisPointerForType(PyObject *self, Dtool_PyTypedObject *classdef, void **answer) {
+  if (DtoolCanThisBeAPandaInstance(self)) {
+    *answer = ((Dtool_PyInstDef *)self)->_My_Type->_Dtool_UpcastInterface(self,classdef);
+  } else {
+    *answer = NULL;
+  }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: attempt_coercion
@@ -192,15 +191,23 @@ DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
           
           PyObject *fname = PyObject_GetAttrString((PyObject *)classdef, "__name__");
           if (fname != (PyObject *)NULL) {
+#if PY_MAJOR_VERSION >= 3
+            str << PyUnicode_AsUTF8(fname);
+#else
             str << PyString_AsString(fname);
+#endif
             Py_DECREF(fname);
           } else {
             str << classdef->_name;
           }
           
-          PyObject *tname = PyObject_GetAttrString((PyObject *)self->ob_type, "__name__");
+          PyObject *tname = PyObject_GetAttrString((PyObject *)Py_TYPE(self), "__name__");
           if (tname != (PyObject *)NULL) {
+#if PY_MAJOR_VERSION >= 3
+            str << ", not " << PyUnicode_AsUTF8(tname);
+#else
             str << ", not " << PyString_AsString(tname);
+#endif
             Py_DECREF(tname);
           } else {
             str << ", not " << my_type->_name;
@@ -226,15 +233,23 @@ DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
         
         PyObject *fname = PyObject_GetAttrString((PyObject *)classdef, "__name__");
         if (fname != (PyObject *)NULL) {
+#if PY_MAJOR_VERSION >= 3
+          str << PyUnicode_AsUTF8(fname);
+#else
           str << PyString_AsString(fname);
+#endif
           Py_DECREF(fname);
         } else {
           str << classdef->_name;
         }
         
-        PyObject *tname = PyObject_GetAttrString((PyObject *)self->ob_type, "__name__");
+        PyObject *tname = PyObject_GetAttrString((PyObject *)Py_TYPE(self), "__name__");
         if (tname != (PyObject *)NULL) {
+#if PY_MAJOR_VERSION >= 3
+          str << ", not " << PyUnicode_AsUTF8(tname);
+#else
           str << ", not " << PyString_AsString(tname);
+#endif
           Py_DECREF(tname);
         }
         
@@ -244,26 +259,23 @@ DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
     }
   } else {
     if (report_errors) {
-      PyErr_SetString(PyExc_TypeError, "Self Is Null"); 
+      PyErr_SetString(PyExc_TypeError, "self is NULL"); 
     }
   }
 
   return NULL;
 }
 
-void * DTOOL_Call_GetPointerThis(PyObject *self)
-{
-  if(self != NULL)
-  {
-      if(DtoolCanThisBeAPandaInstance(self))
-      {
-        Dtool_PyInstDef * pyself = (Dtool_PyInstDef *) self;
-        return pyself->_ptr_to_object;
-      }
+void *DTOOL_Call_GetPointerThis(PyObject *self) {
+  if (self != NULL) {
+    if (DtoolCanThisBeAPandaInstance(self)) {
+      Dtool_PyInstDef * pyself = (Dtool_PyInstDef *) self;
+      return pyself->_ptr_to_object;
+    }
   }
 
   return NULL;
-};
+}
 
 ////////////////////////////////////////////////////////////////////////
 //  Function : DTool_CreatePyInstanceTyped
@@ -271,128 +283,113 @@ void * DTOOL_Call_GetPointerThis(PyObject *self)
 // this function relies on the behavior of typed objects in the panda system. 
 //
 ////////////////////////////////////////////////////////////////////////
-PyObject * DTool_CreatePyInstanceTyped(void * local_this_in, Dtool_PyTypedObject & known_class_type, bool memory_rules, bool is_const, int RunTimeType)
-{     
-    if(local_this_in == NULL )
-    {
-        // Lets don't be stupid..
-        PyErr_SetString(PyExc_TypeError, "C Function Return Null 'this'");
-        return NULL;
-    }
-   /////////////////////////////////////////////////////
-   // IF the calss is posibly a run time typed object
-   /////////////////////////////////////////////////////
-    if(RunTimeType > 0)
-    {
-       /////////////////////////////////////////////////////
-       // get best fit class...
-       /////////////////////////////////////////////////////
-        Dtool_PyTypedObject * target_class = Dtool_RuntimeTypeDtoolType(RunTimeType);
-        if(target_class != NULL)
-        {
-           /////////////////////////////////////////////////////
-           // cast to the type...
-           //////////////////////////////////////////////////////
-            void * new_local_this = target_class->_Dtool_DowncastInterface(local_this_in,&known_class_type);
-            if(new_local_this != NULL)
-            {
-                /////////////////////////////////////////////
-                // ask class to allocate a instance..
-                /////////////////////////////////////////////
-                Dtool_PyInstDef * self = (Dtool_PyInstDef *) target_class->As_PyTypeObject().tp_new(&target_class->As_PyTypeObject(), NULL,NULL);
-                if(self != NULL)
-                {
-                    self->_ptr_to_object = new_local_this;
-                    self->_memory_rules = memory_rules;
-                    self->_is_const = is_const;
-                    self->_signature = PY_PANDA_SIGNATURE;
-                    self->_My_Type = target_class;    
-                    return (PyObject *)self;
-                }             
-            }
-        }
-    }
+PyObject *DTool_CreatePyInstanceTyped(void *local_this_in, Dtool_PyTypedObject & known_class_type, bool memory_rules, bool is_const, int RunTimeType) {     
+  if (local_this_in == NULL) {
+    // Let's not be stupid..
+    PyErr_SetString(PyExc_TypeError, "C Function Return Null 'this'");
+    return NULL;
+  }
 
+  /////////////////////////////////////////////////////
+  // IF the class is possibly a run time typed object
+  /////////////////////////////////////////////////////
+  if (RunTimeType > 0) {
     /////////////////////////////////////////////////////
-    // if we get this far .. just wrap the thing in the known type ??
-    //    better than aborting...I guess....
+    // get best fit class...
     /////////////////////////////////////////////////////
-    Dtool_PyInstDef * self = (Dtool_PyInstDef *) known_class_type.As_PyTypeObject().tp_new(&known_class_type.As_PyTypeObject(), NULL,NULL);
-    if(self != NULL)
-    {
-        self->_ptr_to_object = local_this_in;
-        self->_memory_rules = memory_rules;
-        self->_is_const = is_const;
-        self->_signature = PY_PANDA_SIGNATURE;
-        self->_My_Type = &known_class_type;    
+    Dtool_PyTypedObject *target_class = Dtool_RuntimeTypeDtoolType(RunTimeType);
+    if (target_class != NULL) {
+      /////////////////////////////////////////////////////
+      // cast to the type...
+      //////////////////////////////////////////////////////
+      void *new_local_this = target_class->_Dtool_DowncastInterface(local_this_in, &known_class_type);
+      if (new_local_this != NULL) {
+        /////////////////////////////////////////////
+        // ask class to allocate an instance..
+        /////////////////////////////////////////////
+        Dtool_PyInstDef *self = (Dtool_PyInstDef *) target_class->As_PyTypeObject().tp_new(&target_class->As_PyTypeObject(), NULL, NULL);
+        if (self != NULL) {
+          self->_ptr_to_object = new_local_this;
+          self->_memory_rules = memory_rules;
+          self->_is_const = is_const;
+          self->_signature = PY_PANDA_SIGNATURE;
+          self->_My_Type = target_class;
+          return (PyObject *)self;
+        }             
+      }
     }
-    return (PyObject *)self;
-};
+  }
+
+  /////////////////////////////////////////////////////
+  // if we get this far .. just wrap the thing in the known type ??
+  //    better than aborting...I guess....
+  /////////////////////////////////////////////////////
+  Dtool_PyInstDef * self = (Dtool_PyInstDef *) known_class_type.As_PyTypeObject().tp_new(&known_class_type.As_PyTypeObject(), NULL, NULL);
+  if (self != NULL) {
+    self->_ptr_to_object = local_this_in;
+    self->_memory_rules = memory_rules;
+    self->_is_const = is_const;
+    self->_signature = PY_PANDA_SIGNATURE;
+    self->_My_Type = &known_class_type;    
+  }
+  return (PyObject *)self;
+}
 
 ////////////////////////////////////////////////////////////////////////
 // DTool_CreatePyInstance .. wrapper function to finalize the existance of a general 
 //    dtool py instance..
 ////////////////////////////////////////////////////////////////////////
-PyObject * DTool_CreatePyInstance(void * local_this, Dtool_PyTypedObject & in_classdef, bool memory_rules, bool is_const)
-{    
-    if(local_this == NULL)
-    {
-        PyErr_SetString(PyExc_TypeError, "C Function Return Null 'this' ");
-        return NULL;
-    }
+PyObject *DTool_CreatePyInstance(void *local_this, Dtool_PyTypedObject &in_classdef, bool memory_rules, bool is_const) {
+  if (local_this == NULL) {
+    PyErr_SetString(PyExc_TypeError, "C Function Return Null 'this'");
+    return NULL;
+  }
 
-    Dtool_PyTypedObject * classdef = &in_classdef;
-    Dtool_PyInstDef * self = (Dtool_PyInstDef *) classdef->As_PyTypeObject().tp_new(&classdef->As_PyTypeObject(), NULL,NULL);
-    if(self != NULL)
-    {
-        self->_ptr_to_object = local_this;
-        self->_memory_rules = memory_rules;
-        self->_is_const = is_const;
-        self->_My_Type = classdef;    
-    } 
-    return (PyObject *)self;
-};
+  Dtool_PyTypedObject *classdef = &in_classdef;
+  Dtool_PyInstDef *self = (Dtool_PyInstDef *) classdef->As_PyTypeObject().tp_new(&classdef->As_PyTypeObject(), NULL, NULL);
+  if (self != NULL) {
+    self->_ptr_to_object = local_this;
+    self->_memory_rules = memory_rules;
+    self->_is_const = is_const;
+    self->_My_Type = classdef;    
+  } 
+  return (PyObject *)self;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Th Finalizer for simple instances..
 ///////////////////////////////////////////////////////////////////////////////
-int  DTool_PyInit_Finalize(PyObject * self, void * This, Dtool_PyTypedObject *type, bool memory_rules, bool is_const)
-{
-    // lets put some code in here that checks to see the memory is properly configured..
-    // prior to my call ..
+int DTool_PyInit_Finalize(PyObject *self, void *local_this, Dtool_PyTypedObject *type, bool memory_rules, bool is_const) {
+  // lets put some code in here that checks to see the memory is properly configured..
+  // prior to my call ..
 
-    ((Dtool_PyInstDef *)self)->_My_Type = type;
-    ((Dtool_PyInstDef *)self)->_ptr_to_object = This;
-    ((Dtool_PyInstDef *)self)->_memory_rules = memory_rules;
-    ((Dtool_PyInstDef *)self)->_is_const = is_const;
-    return 0;
+  ((Dtool_PyInstDef *)self)->_My_Type = type;
+  ((Dtool_PyInstDef *)self)->_ptr_to_object = local_this;
+  ((Dtool_PyInstDef *)self)->_memory_rules = memory_rules;
+  ((Dtool_PyInstDef *)self)->_is_const = is_const;
+  return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-/// A heler function to glu methed definition together .. that can not be done at 
-// code generation time becouse of multiple generation passes in interigate..
+// A helper function to glue method definition together .. that can not be done
+// at code generation time because of multiple generation passes in interrogate..
 //
 ///////////////////////////////////////////////////////////////////////////////
-
-void Dtool_Accum_MethDefs(PyMethodDef  in[], MethodDefmap &themap)
-{
-    for(; in->ml_name != NULL; in++)
-    {
-        if(themap.find(in->ml_name) == themap.end())
-        {
-            themap[in->ml_name] = in;
-        }
+void Dtool_Accum_MethDefs(PyMethodDef  in[], MethodDefmap &themap) {
+  for (; in->ml_name != NULL; in++) {
+    if (themap.find(in->ml_name) == themap.end()) {
+      themap[in->ml_name] = in;
     }
+  }
 }   
 
 ///////////////////////////////////////////////////////////////////////////////
-//  ** HACK ** allert..
+//  ** HACK ** alert..
 //
 //      Need to keep a runtime type dictionary ... that is forward declared of typed object.
 //        We rely on the fact that typed objects are uniquly defined by an integer.
 //
 ///////////////////////////////////////////////////////////////////////////////
-
 void
 RegisterRuntimeClass(Dtool_PyTypedObject * otype, int class_id) {
   if (class_id == 0) {
@@ -417,113 +414,126 @@ RegisterRuntimeClass(Dtool_PyTypedObject * otype, int class_id) {
       otype->_Dtool_IsRunTimeCapable = true;
     }
   }
-};
-
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-Dtool_PyTypedObject *  Dtool_RuntimeTypeDtoolType(int type)
-{
-    RunTimeTypeDictionary::iterator di = GetRunTimeDictionary().find(type);
-    if(di != GetRunTimeDictionary().end())
-        return di->second;
-    else
-    {
-        int  type2 = get_best_parent_from_Set(type,GetRunTimeTypeList());
-        di = GetRunTimeDictionary().find(type2);
-        if(di != GetRunTimeDictionary().end())
-            return di->second;
-    }
-    return NULL;    
-};
-
-///////////////////////////////////////////////////////////////////////////////
-void Dtool_PyModuleInitHelper( LibrayDef   *defs[], const char *  modulename)
-{
-    // the module level function inits....
-    MethodDefmap  functions;
-    for(int xx = 0; defs[xx] != NULL; xx++)
-        Dtool_Accum_MethDefs(defs[xx]->_methods,functions);
-
-    PyMethodDef  *newdef = new PyMethodDef[functions.size()+1];
-    MethodDefmap::iterator mi;
-    int     offset = 0;
-    for(mi = functions.begin(); mi != functions.end(); mi++, offset++)
-        newdef[offset] = *mi->second;
-    newdef[offset].ml_doc = NULL;
-    newdef[offset].ml_name = NULL;
-    newdef[offset].ml_meth = NULL;
-    newdef[offset].ml_flags = 0;
-
-    PyObject * module = Py_InitModule((char *)modulename,newdef);   
-
-    if(module == NULL)
-    {
-         PyErr_SetString(PyExc_TypeError, "Py_InitModule Returned NULL ???"); 
-         return;
-    }
-
-
-    // the constant inits... enums, classes ...
-    for(int y = 0; defs[y] != NULL; y++)
-        defs[y]->_constants(module);
-
-    PyModule_AddIntConstant(module,"Dtool_PyNativeInterface",1);
 }
+
 ///////////////////////////////////////////////////////////////////////////////
-///  HACK.... Be carefull 
+///////////////////////////////////////////////////////////////////////////////
+Dtool_PyTypedObject *Dtool_RuntimeTypeDtoolType(int type) {
+  RunTimeTypeDictionary::iterator di = GetRunTimeDictionary().find(type);
+  if (di != GetRunTimeDictionary().end()) {
+      return di->second;
+  } else {
+    int type2 = get_best_parent_from_Set(type, GetRunTimeTypeList());
+    di = GetRunTimeDictionary().find(type2);
+    if (di != GetRunTimeDictionary().end()) {
+      return di->second;
+    }
+  }
+  return NULL;    
+}
+
+///////////////////////////////////////////////////////////////////////////////
+PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
+  // the module level function inits....
+  MethodDefmap functions;
+  for (int xx = 0; defs[xx] != NULL; xx++) {
+    Dtool_Accum_MethDefs(defs[xx]->_methods, functions);
+  }
+
+  PyMethodDef *newdef = new PyMethodDef[functions.size() + 1];
+  MethodDefmap::iterator mi;
+  int offset = 0;
+  for (mi = functions.begin(); mi != functions.end(); mi++, offset++) {
+    newdef[offset] = *mi->second;
+  }
+  newdef[offset].ml_doc = NULL;
+  newdef[offset].ml_name = NULL;
+  newdef[offset].ml_meth = NULL;
+  newdef[offset].ml_flags = 0;
+
+#if PY_MAJOR_VERSION >= 3
+  struct PyModuleDef moduledef = {
+    PyModuleDef_HEAD_INIT,
+    modulename,
+    NULL,
+    -1,
+    newdef,
+    NULL, NULL, NULL, NULL
+  };
+  PyObject *module = PyModule_Create(&moduledef);
+#else
+  PyObject *module = Py_InitModule((char *)modulename, newdef); 
+#endif  
+
+  if (module == NULL) {
+#if PY_MAJOR_VERSION >= 3
+    PyErr_SetString(PyExc_TypeError, "PyModule_Create returned NULL");
+#else
+    PyErr_SetString(PyExc_TypeError, "Py_InitModule returned NULL");
+#endif
+    return NULL;
+  }
+
+
+  // the constant inits... enums, classes ...
+  for (int y = 0; defs[y] != NULL; y++) {
+    defs[y]->_constants(module);
+  }
+
+  PyModule_AddIntConstant(module, "Dtool_PyNativeInterface", 1);
+
+  return module;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+///  HACK.... Be careful
 //
 //  Dtool_BorrowThisReference
 //      This function can be used to grab the "THIS" pointer from an object and use it
 //      Required to support historical inheritance in the form of "is this instance of"..
 //
 ///////////////////////////////////////////////////////////////////////////////
-PyObject * Dtool_BorrowThisReference(PyObject * self, PyObject * args )
-{
-    PyObject *from_in = NULL;
-    PyObject *to_in = NULL;
-    if(PyArg_ParseTuple(args, "OO", &to_in, &from_in)) 
-    {
+PyObject *Dtool_BorrowThisReference(PyObject *self, PyObject *args) {
+  PyObject *from_in = NULL;
+  PyObject *to_in = NULL;
+  if (PyArg_ParseTuple(args, "OO", &to_in, &from_in)) {
 
-        if(DtoolCanThisBeAPandaInstance(from_in) && DtoolCanThisBeAPandaInstance(to_in))
-        {
-            Dtool_PyInstDef * from = (Dtool_PyInstDef *) from_in;
-            Dtool_PyInstDef * to = (Dtool_PyInstDef *) to_in;
-            if(from->_My_Type == to->_My_Type)
-            {
-                to->_memory_rules = false;
-                to->_is_const = from->_is_const;
-                to->_ptr_to_object = from->_ptr_to_object;
-                return Py_BuildValue("");
-            }
-            PyErr_SetString(PyExc_TypeError, "Must Be Same Type??"); 
-        }
-        else
-            PyErr_SetString(PyExc_TypeError, "One of these does not appear to be DTOOL Instance ??"); 
+    if (DtoolCanThisBeAPandaInstance(from_in) && DtoolCanThisBeAPandaInstance(to_in)) {
+      Dtool_PyInstDef * from = (Dtool_PyInstDef *) from_in;
+      Dtool_PyInstDef * to = (Dtool_PyInstDef *) to_in;
+      if (from->_My_Type == to->_My_Type) {
+        to->_memory_rules = false;
+        to->_is_const = from->_is_const;
+        to->_ptr_to_object = from->_ptr_to_object;
+        return Py_BuildValue("");
+      }
+      PyErr_SetString(PyExc_TypeError, "Must Be Same Type??");
+    } else {
+      PyErr_SetString(PyExc_TypeError, "One of these does not appear to be DTOOL Instance ??");
     }
-    return (PyObject *) NULL;
+  }
+  return (PyObject *) NULL;
 }
+
 //////////////////////////////////////////////////////////////////////////////////////////////
 // We do expose a dictionay for dtool classes .. this should be removed at some point..
 //////////////////////////////////////////////////////////////////////////////////////////////
-PyObject * Dtool_AddToDictionary(PyObject * self1, PyObject * args )
-{
-
-    PyObject  *     self;
-    PyObject  *     subject;
-    PyObject  *     key;
-    if(PyArg_ParseTuple(args, "OSO", &self, &key, &subject))
-    {
-        PyObject * dict = ((PyTypeObject *)self)->tp_dict;
-        if(dict == NULL && !PyDict_Check(dict))
-            PyErr_SetString(PyExc_TypeError, "No dictionary On Object");
-        else
-            PyDict_SetItem(dict,key,subject);
-
-    }   
-    if(PyErr_Occurred())
-        return (PyObject *)NULL;
-    return Py_BuildValue("");
-
+PyObject *Dtool_AddToDictionary(PyObject *self1, PyObject *args) {
+  PyObject *self;
+  PyObject *subject;
+  PyObject *key;
+  if (PyArg_ParseTuple(args, "OSO", &self, &key, &subject)) {
+    PyObject *dict = ((PyTypeObject *)self)->tp_dict;
+    if (dict == NULL && !PyDict_Check(dict)) {
+      PyErr_SetString(PyExc_TypeError, "No dictionary On Object");
+    } else {
+      PyDict_SetItem(dict,key,subject);
+    }
+  }   
+  if (PyErr_Occurred()) {
+    return (PyObject *)NULL;
+  }
+  return Py_BuildValue("");
 }
 ///////////////////////////////////////////////////////////////////////////////////
 /*
@@ -533,8 +543,8 @@ inline long  DTool_HashKey(PyObject * inst)
     PyObject * func = PyObject_GetAttrString(inst, "__hash__");
     if (func == NULL) 
     {
-        if(DtoolCanThisBeAPandaInstance(inst))
-            if(((Dtool_PyInstDef *)inst)->_ptr_to_object != NULL)
+        if (DtoolCanThisBeAPandaInstance(inst))
+            if (((Dtool_PyInstDef *)inst)->_ptr_to_object != NULL)
                 outcome =  (long)((Dtool_PyInstDef *)inst)->_ptr_to_object;
     }
     else
@@ -569,123 +579,98 @@ inline long  DTool_HashKey(PyObject * inst)
    XXX of error.
 */
 
-int DTOOL_PyObject_Compare_old(PyObject *v1, PyObject *v2)
-{
-    // if we are related..
-    if(PyType_IsSubtype(v1->ob_type, v2->ob_type)) 
-    {
-        void * v1_this = DTOOL_Call_GetPointerThis(v1);
-        void * v2_this = DTOOL_Call_GetPointerThis(v2);
-        if(v1_this != NULL && v2_this != NULL) // both are our types...
-        {
-            PyObject * func = PyObject_GetAttrString(v1, "compareTo");
-            if (func == NULL)
-            {
-                PyErr_Clear();
-            }
-            else
-            {
-                PyObject * res = NULL;
-                PyObject * args = Py_BuildValue("(O)", v2);
-                if (args != NULL)
-                {
-                    res = PyObject_Call(func, args, NULL);
-                    Py_DECREF(args);
-                }
-                Py_DECREF(func);
-                PyErr_Clear(); // just in case the function threw an error
-                // only use if the function  return an INT... hmm
-                if(res != NULL && PyInt_Check(res))
-                {
-                    int answer = PyInt_AsLong(res);
-                    Py_DECREF(res);
-                    return  answer;
-                }
-                if(res != NULL)
-                    Py_DECREF(res);
-
-            };
-            // CompareTo Failed some how :(
-            // do a this compare  .. if Possible...
-            if(v1_this < v2_this)
-                return -1;
-
-            if(v1_this > v2_this)
-                return 1;
-            return 0;
-        }
-        // ok drop to a basic object compare hmmmmmm
+int DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2) {
+  // First try compareTo function..
+  PyObject * func = PyObject_GetAttrString(v1, "compareTo");
+  if (func == NULL) {
+    PyErr_Clear();
+  } else {
+    PyObject *res = NULL;
+    PyObject *args = Py_BuildValue("(O)", v2);
+    if (args != NULL) {
+      res = PyObject_Call(func, args, NULL);
+      Py_DECREF(args);
     }
-    if(v1 < v2)
-        return  -1;
-    if(v1 > v2)
-        return  1;
-    return 0;   
+    Py_DECREF(func);
+    PyErr_Clear(); // just in case the function threw an error
+    // only use if the function returns an INT... hmm
+    if (res != NULL) {
+      if (PyLong_Check(res)) {
+        long answer = PyLong_AsLong(res);
+        Py_DECREF(res);
+
+        // Python really wants us to return strictly -1, 0, or 1.
+        if (answer < 0) {
+          return -1;
+        } else if (answer > 0) {
+          return 1;
+        } else {
+          return 0;
+        }
+      }
+#if PY_MAJOR_VERSION < 3
+      else if (PyInt_Check(res)) {
+        long answer = PyInt_AsLong(res);
+        Py_DECREF(res);
+
+        // Python really wants us to return strictly -1, 0, or 1.
+        if (answer < 0) {
+          return -1;
+        } else if (answer > 0) {
+          return 1;
+        } else {
+          return 0;
+        }
+      }
+#endif
+      Py_DECREF(res);
+    }
+  };
+
+  // try this compare
+  void *v1_this = DTOOL_Call_GetPointerThis(v1);
+  void *v2_this = DTOOL_Call_GetPointerThis(v2);
+  if (v1_this != NULL && v2_this != NULL) { // both are our types...
+    if (v1_this < v2_this)
+      return -1;
+
+    if (v1_this > v2_this)
+      return 1;
+    return 0;
+  }
+
+  // ok self compare...
+  if (v1 < v2)
+    return  -1;
+  if (v1 > v2)
+    return  1;
+  return 0;   
 }
 
-
-
-
-int DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2)
-{
-    //  First try compare to function..
-    PyObject * func = PyObject_GetAttrString(v1, "compareTo");
-    if (func == NULL)
-    {
-        PyErr_Clear();
-    }
-    else
-    {
-        PyObject * res = NULL;
-        PyObject * args = Py_BuildValue("(O)", v2);
-        if (args != NULL)
-        {
-            res = PyObject_Call(func, args, NULL);
-            Py_DECREF(args);
-        }
-        Py_DECREF(func);
-        PyErr_Clear(); // just in case the function threw an error
-        // only use if the function  return an INT... hmm
-        if(res != NULL && PyInt_Check(res))
-        {
-            int answer = PyInt_AsLong(res);
-            Py_DECREF(res);
-
-            // Python really wants us to return strictly -1, 0, or 1.
-            if (answer < 0) {
-              return -1;
-            } else if (answer > 0) {
-              return 1;
-            } else {
-              return 0;
-            }
-        }
-        if(res != NULL)
-            Py_DECREF(res);
-
-    };
-
-    // try this compare
-    void * v1_this = DTOOL_Call_GetPointerThis(v1);
-    void * v2_this = DTOOL_Call_GetPointerThis(v2);
-    if(v1_this != NULL && v2_this != NULL) // both are our types...
-    {
-        if(v1_this < v2_this)
-            return -1;
-
-        if(v1_this > v2_this)
-            return 1;
-        return 0;
-    }
-
-    // ok self compare...
-    if(v1 < v2)
-        return  -1;
-    if(v1 > v2)
-        return  1;
-    return 0;   
+PyObject *DTOOL_PyObject_RichCompare(PyObject *v1, PyObject *v2, int op) {
+  int cmpval = DTOOL_PyObject_Compare(v1, v2);
+  bool result;
+  switch (op) {
+  case Py_LT:
+    result = (cmpval < 0);
+    break;
+  case Py_LE:
+    result = (cmpval <= 0);
+    break;
+  case Py_EQ:
+    result = (cmpval == 0);
+    break;
+  case Py_NE:
+    result = (cmpval != 0);
+    break;
+  case Py_GT:
+    result = (cmpval > 0);
+    break;
+  case Py_GE:
+    result = (cmpval >= 0);
+  }
+  return PyBool_FromLong(result);
 }
-
 
 PyObject *make_list_for_item(PyObject *self, const char *num_name,
                              const char *element_name) {
@@ -693,7 +678,16 @@ PyObject *make_list_for_item(PyObject *self, const char *num_name,
   if (num_result == NULL) {
     return NULL;
   }
-  Py_ssize_t num_elements = PyInt_AsSsize_t(num_result);
+
+#if PY_MAJOR_VERSION >= 3
+  Py_ssize_t num_elements = PyLong_AsSsize_t(num_result);
+#else
+  if (PyLong_Check(num_result)) {
+    Py_ssize_t num_elements = PyLong_AsSsize_t(num_result);
+  } else {
+    Py_ssize_t num_elements = PyInt_AsSsize_t(num_result);
+  }
+#endif
   Py_DECREF(num_result);
   
   PyObject *list = PyList_New(num_elements);
@@ -752,12 +746,16 @@ PyObject *map_deepcopy_to_copy(PyObject *self, PyObject *args) {
 ////////////////////////////////////////////////////////////////////
 EXPCL_DTOOLCONFIG PyObject *
 PyLongOrInt_FromUnsignedLong(unsigned long value) {
+#if PY_MAJOR_VERSION >= 3
+  // Python 3 only has longs.
+  return PyLong_FromUnsignedLong(value);
+#else
   if ((long)value < 0) {
     return PyLong_FromUnsignedLong(value);
   } else {
     return PyInt_FromLong((long)value);
   }
+#endif
 }
-
 
 #endif  // HAVE_PYTHON

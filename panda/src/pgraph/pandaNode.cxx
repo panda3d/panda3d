@@ -1780,7 +1780,11 @@ get_tag_keys() const {
   PyObject *result = PyList_New(keys.size());
   for (size_t i = 0; i < keys.size(); ++i) {
     const string &tag_name = keys[i];
+#if PY_MAJOR_VERSION >= 3
+    PyObject *str = PyUnicode_FromStringAndSize(tag_name.data(), tag_name.size());
+#else
     PyObject *str = PyString_FromStringAndSize(tag_name.data(), tag_name.size());
+#endif
     PyList_SET_ITEM(result, i, str);
   }
 
@@ -1801,7 +1805,11 @@ get_python_tag_keys() const {
   PyObject *result = PyList_New(keys.size());
   for (size_t i = 0; i < keys.size(); ++i) {
     const string &tag_name = keys[i];
+#if PY_MAJOR_VERSION >= 3
+    PyObject *str = PyUnicode_FromStringAndSize(tag_name.data(), tag_name.size());
+#else
     PyObject *str = PyString_FromStringAndSize(tag_name.data(), tag_name.size());
+#endif
     PyList_SET_ITEM(result, i, str);
   }
 
@@ -1861,7 +1869,17 @@ compare_tags(const PandaNode *other) const {
       return cmp;
     }
 
+#if PY_MAJOR_VERSION >= 3
+    if (PyObject_RichCompareBool((*api).second, (*bpi).second, Py_LT) == 1) {
+      return -1;
+    } else if (PyObject_RichCompareBool((*api).second, (*bpi).second, Py_GT) == 1) {
+      return 1;
+    } else if (PyObject_RichCompareBool((*api).second, (*bpi).second, Py_EQ) == 1) {
+      cmp = 0;
+    } else {
+#else
     if (PyObject_Cmp((*api).second, (*bpi).second, &cmp) == -1) {
+#endif
       // Unable to compare objects; just compare pointers.
       if ((*api).second != (*bpi).second) {
         cmp = (*api).second < (*bpi).second ? -1 : 1;

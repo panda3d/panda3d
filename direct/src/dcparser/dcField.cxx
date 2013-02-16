@@ -269,7 +269,7 @@ pack_args(DCPacker &packer, PyObject *sequence) const {
 
   if (!Notify::ptr()->has_assert_failed()) {
     ostringstream strm;
-    PyObject *exc_type = PyExc_StandardError;
+    PyObject *exc_type = PyExc_Exception;
 
     if (as_parameter() != (DCParameter *)NULL) {
       // If it's a parameter-type field, the value may or may not be a
@@ -345,7 +345,7 @@ unpack_args(DCPacker &packer) const {
 
   if (!Notify::ptr()->has_assert_failed()) {
     ostringstream strm;
-    PyObject *exc_type = PyExc_StandardError;
+    PyObject *exc_type = PyExc_Exception;
 
     if (packer.had_pack_error()) {
       strm << "Data error unpacking field ";
@@ -585,14 +585,22 @@ get_pystr(PyObject *value) {
 
   PyObject *str = PyObject_Str(value);
   if (str != NULL) {
+#if PY_MAJOR_VERSION >= 3
+    string result = PyUnicode_AsUTF8(str);
+#else
     string result = PyString_AsString(str);
+#endif
     Py_DECREF(str);
     return result;
   }
 
   PyObject *repr = PyObject_Repr(value);
   if (repr != NULL) {
+#if PY_MAJOR_VERSION >= 3
+    string result = PyUnicode_AsUTF8(repr);
+#else
     string result = PyString_AsString(repr);
+#endif
     Py_DECREF(repr);
     return result;
   }
@@ -600,7 +608,11 @@ get_pystr(PyObject *value) {
   if (value->ob_type != NULL) {
     PyObject *typestr = PyObject_Str((PyObject *)(value->ob_type));
     if (typestr != NULL) {
+#if PY_MAJOR_VERSION >= 3
+      string result = PyUnicode_AsUTF8(typestr);
+#else
       string result = PyString_AsString(typestr);
+#endif
       Py_DECREF(typestr);
       return result;
     }

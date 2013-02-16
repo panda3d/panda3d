@@ -103,17 +103,17 @@ def doGetopts():
     # Extract the args the user passed in
     try:
         opts, pargs = getopt.getopt(sys.argv[1:], 'hvdOC:H:x:Ni:e:p:rns')
-    except Exception, e:
+    except e:
         # User passed in a bad option, print the error and the help, then exit
-        print e
-        print helpString
+        print(e)
+        print(helpString)
         sys.exit()
 
     # Store the option values into our variables
     for opt in opts:
         flag, value = opt
         if (flag == '-h'):
-            print helpString
+            print(helpString)
             sys.exit()
         elif (flag == '-v'):
             if not FFIConstants.notify.getInfo():
@@ -254,7 +254,7 @@ def generateNativeWrappers():
     # Generate a series of "libpandaModules.py" etc. files, one for
     # each named module.
     for moduleName in FFIConstants.CodeModuleNameList:
-        print 'Importing code library: ' + moduleName
+        print('Importing code library: ' + moduleName)
         Dtool_PreloadDLL(moduleName)
         exec('import %s as module' % moduleName)
 
@@ -264,7 +264,7 @@ def generateNativeWrappers():
         # not necessarily downloaded.
         pandaModules.write('try:\n  from %sModules import *\nexcept ImportError, err:\n  if "DLL loader cannot find" not in str(err):\n    raise\n' % (moduleName))
         # Not sure if this message is helpful or annoying.
-        #pandaModules.write('  print "Failed to import %s"\n' % (moduleName))
+        #pandaModules.write('  print("Failed to import %s")\n' % (moduleName))
         pandaModules.write('\n')
 
         moduleModulesFilename = os.path.join(outputCodeDir, '%sModules.py' % (moduleName))
@@ -279,7 +279,7 @@ def generateNativeWrappers():
             if type(classDef) == types.TypeType:
                 extensionFilename = os.path.join(extensionsDir, '%s_extensions.py' % (className))
                 if os.path.exists(extensionFilename):
-                    print '  Found extensions for class: %s' % (className)
+                    print('  Found extensions for class: %s' % (className))
                     extension = open(extensionFilename, 'r')
                     moduleModules.write(extension.read())
                     moduleModules.write('\n')

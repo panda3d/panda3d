@@ -6,14 +6,14 @@ pythonKeywords = ['and','del','for','is','raise','assert','elif','from','lambda'
 
 
 methodRenameDictionary = {
-    'operator==':  'eq',
-    'operator!=':  'ne',
+    'operator==':  '__eq__',
+    'operator!=':  '__ne__',
     'operator<<':  '__lshift__',
     'operator>>':  '__rshift__',
-    'operator<':   'lessThan',
-    'operator>':   'greaterThan',
-    'operator<=':  'lessThanOrEqual',
-    'operator>=':  'greaterThanOrEqual',
+    'operator<':   '__lt__',
+    'operator>':   '__gt__',
+    'operator<=':  '__le__',
+    'operator>=':  '__ge__',
     'operator=':   'assign',
     'operator()':  '__call__',
     'operator[]':  '__getitem__',

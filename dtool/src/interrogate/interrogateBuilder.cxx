@@ -51,8 +51,8 @@
 #include <algorithm>
 
 InterrogateBuilder builder;
-std::string     EXPORT_IMPORT_PREFEX;
-bool            inside_python_native = false;
+std::string EXPORT_IMPORT_PREFIX;
+bool inside_python_native = false;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateBuilder::add_source_file
@@ -332,16 +332,15 @@ void InterrogateBuilder::write_code(ostream &out_code,ostream * out_include, Int
     makers.push_back(maker);
   }
 
-  if (build_python_native  ) {
+  if (build_python_native) {
     InterfaceMakerPythonNative *maker = new InterfaceMakerPythonNative(def);
     makers.push_back(maker);
   }
 
-
-  EXPORT_IMPORT_PREFEX = std::string("EXPCL_") + def->module_name;
-  for (size_t i=0; i<EXPORT_IMPORT_PREFEX.size(); i++)
-      EXPORT_IMPORT_PREFEX[i] = toupper(EXPORT_IMPORT_PREFEX[i]);
-
+  EXPORT_IMPORT_PREFIX = std::string("EXPCL_") + def->module_name;
+  for (size_t i = 0; i < EXPORT_IMPORT_PREFIX.size(); i++) {
+    EXPORT_IMPORT_PREFIX[i] = toupper(EXPORT_IMPORT_PREFIX[i]);
+  }
 
   InterfaceMakers::iterator mi;
   // First, make all the wrappers.
@@ -359,12 +358,10 @@ void InterrogateBuilder::write_code(ostream &out_code,ostream * out_include, Int
   }
 
   // Now, begin the actual output.  Start with the #include lines.
-
-  if (!no_database) 
-  {
+  if (!no_database) {
     out_code << "#include \"dtoolbase.h\"\n"
-        << "#include \"interrogate_request.h\"\n"
-        << "#include \"dconfig.h\"\n";
+             << "#include \"interrogate_request.h\"\n"
+             << "#include \"dconfig.h\"\n";
   }
 
 

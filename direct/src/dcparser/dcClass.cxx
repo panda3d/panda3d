@@ -997,7 +997,11 @@ client_format_generate_CMU(PyObject *distobj, DOID_TYPE do_id,
 
   for (int i = 0; i < num_optional_fields; i++) {
     PyObject *py_field_name = PySequence_GetItem(optional_fields, i);
+#if PY_MAJOR_VERSION >= 3
+    string field_name = PyUnicode_AsUTF8(py_field_name);
+#else
     string field_name = PyString_AsString(py_field_name);
+#endif
     Py_XDECREF(py_field_name);
     
     DCField *field = get_field_by_name(field_name);
@@ -1082,7 +1086,11 @@ ai_format_generate(PyObject *distobj, DOID_TYPE do_id,
 
     for (int i = 0; i < num_optional_fields; ++i) {
       PyObject *py_field_name = PySequence_GetItem(optional_fields, i);
+#if PY_MAJOR_VERSION >= 3
+      string field_name = PyUnicode_AsUTF8(py_field_name);
+#else
       string field_name = PyString_AsString(py_field_name);
+#endif
       Py_XDECREF(py_field_name);
 
       DCField *field = get_field_by_name(field_name);

@@ -769,7 +769,7 @@ handle_update_field() {
       Py_DECREF(dclass_obj);
       nassertr(dclass_this != NULL, false);
 
-      DCClass *dclass = (DCClass *)PyInt_AsLong(dclass_this);
+      DCClass *dclass = (DCClass *)PyLong_AsLong(dclass_this);
       Py_DECREF(dclass_this);
 
       // If in quiet zone mode, throw update away unless distobj
@@ -778,7 +778,7 @@ handle_update_field() {
         PyObject *neverDisable = PyObject_GetAttrString(distobj, "neverDisable");
         nassertr(neverDisable != NULL, false);
 
-        unsigned int cNeverDisable = PyInt_AsLong(neverDisable);
+        unsigned int cNeverDisable = PyLong_AsLong(neverDisable);
         if (!cNeverDisable) {
           // in quiet zone and distobj is disable-able
           // drop update on the floor
@@ -863,7 +863,7 @@ handle_update_field_owner() {
       Py_DECREF(dclass_obj);
       nassertr(dclass_this != NULL, false);
 
-      DCClass *dclass = (DCClass *)PyInt_AsLong(dclass_this);
+      DCClass *dclass = (DCClass *)PyLong_AsLong(dclass_this);
       Py_DECREF(dclass_this);
 
       // check if we should forward this update to the owner view
@@ -905,7 +905,7 @@ handle_update_field_owner() {
       Py_DECREF(dclass_obj);
       nassertr(dclass_this != NULL, false);
 
-      DCClass *dclass = (DCClass *)PyInt_AsLong(dclass_this);
+      DCClass *dclass = (DCClass *)PyLong_AsLong(dclass_this);
       Py_DECREF(dclass_this);
 
       // check if we should forward this update to the owner view
@@ -982,14 +982,22 @@ describe_message(ostream &out, const string &prefix,
     if (_python_repository != (PyObject *)NULL) {
       PyObject *msgId = PyLong_FromLong(msg_type);
       nassertv(msgId != NULL);
+#if PY_MAJOR_VERSION >= 3
+      PyObject *methodName = PyUnicode_FromString("_getMsgName");
+#else
       PyObject *methodName = PyString_FromString("_getMsgName");
+#endif
       nassertv(methodName != NULL);
 
       PyObject *result = PyObject_CallMethodObjArgs(_python_repository, methodName,
                                                     msgId, NULL);
       nassertv(result != NULL);
 
+#if PY_MAJOR_VERSION >= 3
+      msgName += string(PyUnicode_AsUTF8(result));
+#else
       msgName += string(PyString_AsString(result));
+#endif
 
       Py_DECREF(methodName);
       Py_DECREF(msgId);
@@ -1032,8 +1040,8 @@ describe_message(ostream &out, const string &prefix,
         PyObject *dclass_this = PyObject_GetAttrString(dclass_obj, "this");
         Py_DECREF(dclass_obj);
         nassertv(dclass_this != NULL);
-        
-        dclass = (DCClass *)PyInt_AsLong(dclass_this);
+
+        dclass = (DCClass *)PyLong_AsLong(dclass_this);
         Py_DECREF(dclass_this);
       }
     }

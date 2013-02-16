@@ -243,7 +243,7 @@ inline bool  Buffered_DatagramConnection::SendMessage(const Datagram &msg)
         nativenet_cat.warning() << "Buffered_DatagramConnection::SendMessage->Error On Write--Out Buffer = " << _Writer.AmountBuffered() << "\n";
         #ifdef HAVE_PYTHON
         ostringstream s;
-        PyObject *exc_type = PyExc_StandardError;
+        PyObject *exc_type = PyExc_ConnectionError;
         
         s << endl << "Error sending message: " << endl;
         msg.dump_hex(s);

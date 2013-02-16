@@ -8,6 +8,9 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include <Python.h>
+#if PY_MAJOR_VERSION >= 3
+#include <wchar.h>
+#endif
 
 #ifndef IMPORT_MODULE
 #error IMPORT_MODULE must be defined when compiling ppython.cxx !
@@ -17,14 +20,54 @@
 #define STRINGIFY(s) _STRINGIFY(s)
 #define IMPORT_MODULE_STR STRINGIFY(IMPORT_MODULE)
 
-int main(int argc, char **argv) {
-  int sts = 0;
+#if defined(_WIN32) && PY_MAJOR_VERSION >= 3
+// As Py_SetProgramName expects a wchar_t*,
+// it's easiest to just use the wmain entry point.
+int wmain(int argc, wchar_t *argv[]) {
+  Py_SetProgramName(argv[0]);
+
+#elif PY_MAJOR_VERSION >= 3
+// Convert from UTF-8 to wchar_t*.
+int main(int argc, char *mb_argv[]) {
+  wchar_t **argv = new wchar_t*[argc + 1];
+  for (int i = 0; i < argc; ++i) {
+    size_t len = mbstowcs(NULL, mb_argv[i], 0);
+    argv[i] = new wchar_t[len + 1];
+    mbstowcs(argv[i], mb_argv[i], len);
+    argv[i][len] = NULL;
+  }
+  // Just for good measure
+  argv[argc] = NULL;
 
   Py_SetProgramName(argv[0]);
-  
-  // On windows, we need to set pythonhome correctly. We'll try to
+
+#else
+// Python 2.
+int main(int argc, char *argv[]) {
+  Py_SetProgramName(argv[0]);
+#endif
+
+  // On Windows, we need to set pythonhome correctly. We'll try to
   // find ppython.exe on the path and set pythonhome to its location.
 #ifdef _WIN32
+#if PY_MAJOR_VERSION >= 3
+  // Py_SetPythonHome expects a wchar_t in Python 3.
+  wchar_t *path = _wgetenv(L"PATH");
+  wchar_t *result = wcstok(path, L";");
+  while (result != NULL) {
+    struct _stat st;
+    wchar_t *ppython = (wchar_t*) malloc(wcslen(result) * 2 + 26);
+    wcscpy(ppython, result);
+    wcscat(ppython, L"\\python.exe");
+    if (_wstat(ppython, &st) == 0) {
+      Py_SetPythonHome(result);
+      free(ppython);
+      break;
+    }
+    result = wcstok(NULL, L";");
+    free(ppython);
+  }
+#else
   char *path = getenv("PATH");
   char *result = strtok(path, ";");
   while (result != NULL) {
@@ -33,13 +76,14 @@ int main(int argc, char **argv) {
     strcpy(ppython, result);
     strcat(ppython, "\\ppython.exe");
     if (stat(ppython, &st) == 0) {
-        Py_SetPythonHome(result);
-        free(ppython);
-        break;
+      Py_SetPythonHome(result);
+      free(ppython);
+      break;
     }                                
     result = strtok(NULL, ";");
     free(ppython);
   }
+#endif
 #endif
   
   Py_Initialize();
@@ -50,6 +94,7 @@ int main(int argc, char **argv) {
 
   PySys_SetArgv(argc, argv);
 
+  int sts = 0;
   PyObject* m = PyImport_ImportModule(IMPORT_MODULE_STR);
   if (m <= 0) {
     PyErr_Print();

@@ -83,38 +83,62 @@ inline PyObject* doPy_RETURN_FALSE()
 #define Py_RETURN_FALSE return doPy_RETURN_FALSE()
 #endif
 
+#ifndef PyVarObject_HEAD_INIT
+#define PyVarObject_HEAD_INIT(type, size) \
+  PyObject_HEAD_INIT(type) size,
+#endif
+
+#ifndef Py_TYPE
+#define Py_TYPE(ob) (((PyObject*)(ob))->ob_type)
+#endif
+
+#ifndef Py_TPFLAGS_CHECKTYPES
+// Always on in Python 3
+#define Py_TPFLAGS_CHECKTYPES 0
+#endif
+
+#if PY_MAJOR_VERSION < 3
+// For more portably defining hash functions.
+typedef long Py_hash_t;
+#endif
+
+#if PY_MAJOR_VERSION >= 3
+#define nb_nonzero nb_bool
+#define nb_divide nb_true_divide
+#define nb_inplace_divide nb_inplace_true_divide
+#endif
+
 using namespace std;
 
-#define PY_PANDA_SMALLER_FOOTPRINT  1
+#define PY_PANDA_SMALLER_FOOTPRINT 1
 
 ///////////////////////////////////////////////////////////////////////////////////
 // this is tempory .. untill this is glued better into the panda build system
 ///////////////////////////////////////////////////////////////////////////////////
 
 #if defined(_WIN32) && !defined(LINK_ALL_STATIC)
-#define EXPORT_THIS  __declspec(dllexport) 
-#define IMPORT_THIS  extern __declspec(dllimport) 
+#define EXPORT_THIS __declspec(dllexport)
+#define IMPORT_THIS extern __declspec(dllimport)
 #else
-#define EXPORT_THIS 
-#define IMPORT_THIS     extern
+#define EXPORT_THIS
+#define IMPORT_THIS extern
 #endif
 ///////////////////////////////////////////////////////////////////////////////////
 
-struct          Dtool_PyTypedObject;
-typedef std::map< int , Dtool_PyTypedObject *>   RunTimeTypeDictionary;
-typedef std::set<int >                           RunTimeTypeList;
+struct Dtool_PyTypedObject;
+typedef std::map<int, Dtool_PyTypedObject *>   RunTimeTypeDictionary;
+typedef std::set<int>                           RunTimeTypeList;
 
-EXPCL_DTOOLCONFIG   RunTimeTypeDictionary & GetRunTimeDictionary();
-EXPCL_DTOOLCONFIG   RunTimeTypeList & GetRunTimeTypeList();
-
+EXPCL_DTOOLCONFIG RunTimeTypeDictionary &GetRunTimeDictionary();
+EXPCL_DTOOLCONFIG RunTimeTypeList &GetRunTimeTypeList();
 
 //////////////////////////////////////////////////////////
 // used to stamp dtool instance.. 
 #define PY_PANDA_SIGNATURE 0xbeaf
-typedef  void * ( * ConvertFunctionType  )(PyObject *,Dtool_PyTypedObject * );
-typedef  void * ( * ConvertFunctionType1  )(void *, Dtool_PyTypedObject *);
-typedef  void   ( *FreeFunction  )(PyObject *);
-typedef  void   ( *PyModuleClassInit)(PyObject *module);
+typedef void * ( * ConvertFunctionType  )(PyObject *,Dtool_PyTypedObject * );
+typedef void * ( * ConvertFunctionType1  )(void *, Dtool_PyTypedObject *);
+typedef void   ( *FreeFunction  )(PyObject *);
+typedef void   ( *PyModuleClassInit)(PyObject *module);
 //inline          Dtool_PyTypedObject *  Dtool_RuntimeTypeDtoolType(int type);
 inline void     Dtool_Deallocate_General(PyObject * self);
 //inline int      DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2);
@@ -124,8 +148,7 @@ inline void     Dtool_Deallocate_General(PyObject * self);
 ////////////////////////////////////////////////////////////////////////
 #ifdef  PY_PANDA_SMALLER_FOOTPRINT
 // this should save   8 bytes per object ....
-struct Dtool_PyInstDef 
-{
+struct Dtool_PyInstDef {
   PyObject_HEAD
   void *_ptr_to_object;
   struct Dtool_PyTypedObject *_My_Type;
@@ -133,8 +156,6 @@ struct Dtool_PyInstDef
   int _memory_rules : 1;   // true if we own the pointer and should delete it or unref it
   int _is_const     : 1;       // true if this is a "const" pointer.
 };
-
-
 
 #else
 struct Dtool_PyInstDef {
@@ -159,7 +180,7 @@ struct Dtool_PyTypedObject {
   // Standard Python Features..
   PyTypeObject _PyType;
 
-  //                  My Class Level Features..
+  // My Class Level Features..
   const char *_name;                             // cpp name for the object
   bool _Dtool_IsRunTimeCapable;                  // derived from TypedObject
   ConvertFunctionType _Dtool_UpcastInterface;    // The Upcast Function By Slot
@@ -172,10 +193,123 @@ struct Dtool_PyTypedObject {
   inline PyObject &As_PyObject() { return (PyObject &)_PyType; };
 };
 
-
 ////////////////////////////////////////////////////////////////////////
 // Macros from Hell..  May want to just add this to the code generator..
 ////////////////////////////////////////////////////////////////////////
+#define Define_Dtool_PyTypedObject(MODULE_NAME, CLASS_NAME, PUBLIC_NAME) \
+  EXPORT_THIS Dtool_PyTypedObject Dtool_##CLASS_NAME =                  \
+    {                                                                   \
+      {                                                                 \
+        PyVarObject_HEAD_INIT(NULL, 0)                                  \
+        "lib" #MODULE_NAME "." #PUBLIC_NAME, /*type name with module */ \
+        sizeof(Dtool_PyInstDef),                /* tp_basicsize */      \
+        0,                                      /* tp_itemsize */       \
+        &Dtool_Deallocate_General,              /* tp_dealloc */        \
+        0,                                      /* tp_print */          \
+        0,                                      /* tp_getattr */        \
+        0,                                      /* tp_setattr */        \
+        0,                                      /* tp_compare */        \
+        0,                                      /* tp_repr */           \
+        &Dtool_PyNumberMethods_##CLASS_NAME,    /* tp_as_number */      \
+        &Dtool_PySequenceMethods_##CLASS_NAME,  /* tp_as_sequence */    \
+        &Dtool_PyMappingMethods_##CLASS_NAME,   /* tp_as_mapping */     \
+        0,                                      /* tp_hash */           \
+        0,                                      /* tp_call */           \
+        0,                                      /* tp_str */            \
+        PyObject_GenericGetAttr,                /* tp_getattro */       \
+        PyObject_GenericSetAttr,                /* tp_setattro */       \
+        0,                                      /* tp_as_buffer */      \
+        (Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES), /* tp_flags */ \
+        0,                                      /* tp_doc */            \
+        0,                                      /* tp_traverse */       \
+        0,                                      /* tp_clear */          \
+        0,                                      /* tp_richcompare */    \
+        0,                                      /* tp_weaklistoffset */ \
+        0,                                      /* tp_iter */           \
+        0,                                      /* tp_iternext */       \
+        Dtool_Methods_##CLASS_NAME,             /* tp_methods */        \
+        standard_type_members,                  /* tp_members */        \
+        0,                                      /* tp_getset */         \
+        0,                                      /* tp_base */           \
+        0,                                      /* tp_dict */           \
+        0,                                      /* tp_descr_get */      \
+        0,                                      /* tp_descr_set */      \
+        0,                                      /* tp_dictoffset */     \
+        Dtool_Init_##CLASS_NAME,                /* tp_init */           \
+        PyType_GenericAlloc,                    /* tp_alloc */          \
+        Dtool_new_##CLASS_NAME,                 /* tp_new */            \
+        PyObject_Del,                           /* tp_free */           \
+      },                                                                \
+      #CLASS_NAME,                                                      \
+      false,                                                            \
+      Dtool_UpcastInterface_##CLASS_NAME,                               \
+      Dtool_DowncastInterface_##CLASS_NAME,                             \
+      Dtool_FreeInstance_##CLASS_NAME,                                  \
+      Dtool_PyModuleClassInit_##CLASS_NAME                              \
+    };
+
+#if PY_MAJOR_VERSION >= 3
+#define Define_Dtool_Class(MODULE_NAME, CLASS_NAME, PUBLIC_NAME)        \
+  static PyNumberMethods Dtool_PyNumberMethods_##CLASS_NAME =           \
+    {                                                                   \
+      0,/*binaryfunc nb_add*/                                           \
+      0,/*binaryfunc nb_subtract*/                                      \
+      0,/*binaryfunc nb_multiply*/                                      \
+      0,/*binaryfunc nb_remainder*/                                     \
+      0,/*binaryfunc nb_divmod*/                                        \
+      0,/*ternaryfunc nb_power*/                                        \
+      0,/*unaryfunc nb_negative*/                                       \
+      0,/*unaryfunc nb_positive*/                                       \
+      0,/*unaryfunc nb_absolute*/                                       \
+      0,/*inquiry nb_bool*/                                             \
+      0,/*unaryfunc nb_invert*/                                         \
+      0,/*binaryfunc nb_lshift*/                                        \
+      0,/*binaryfunc nb_rshift*/                                        \
+      0,/*binaryfunc nb_and*/                                           \
+      0,/*binaryfunc nb_xor*/                                           \
+      0,/*binaryfunc nb_or*/                                            \
+      0,/*unaryfunc nb_int*/                                            \
+      0,/*void *nb_reserved*/                                           \
+      0,/*unaryfunc nb_float*/                                          \
+      0,/*binaryfunc nb_inplace_add*/                                   \
+      0,/*binaryfunc nb_inplace_subtract*/                              \
+      0,/*binaryfunc nb_inplace_multiply*/                              \
+      0,/*binaryfunc nb_inplace_remainder*/                             \
+      0,/*ternaryfunc nb_inplace_power*/                                \
+      0,/*binaryfunc nb_inplace_lshift*/                                \
+      0,/*binaryfunc nb_inplace_rshift*/                                \
+      0,/*binaryfunc nb_inplace_and*/                                   \
+      0,/*binaryfunc nb_inplace_xor*/                                   \
+      0,/*binaryfunc nb_inplace_or*/                                    \
+      0,/*binaryfunc nb_floor_divide*/                                  \
+      0,/*binaryfunc nb_true_divide*/                                   \
+      0,/*binaryfunc nb_inplace_floor_divide*/                          \
+      0,/*binaryfunc nb_inplace_true_divide*/                           \
+      0,/*unaryfunc nb_index*/                                          \
+    };                                                                  \
+  static PySequenceMethods Dtool_PySequenceMethods_##CLASS_NAME =       \
+    {                                                                   \
+      0,/*lenfunc sq_length */                                          \
+      0,/*binaryfunc sq_concat */                                       \
+      0,/*ssizeargfunc sq_repeat */                                     \
+      0,/*ssizeargfunc sq_item */                                       \
+      0,/*void *was_sq_slice */                                         \
+      0,/*ssizeargfunc sq_ass_item */                                   \
+      0,/*void *was_sq_ass_slice */                                     \
+      0,/*objobjproc sq_contains */                                     \
+      0,/*binaryfunc sq_inplace_concat */                               \
+      0,/*ssizeargfunc sq_inplace_repeat */                             \
+    };                                                                  \
+  static PyMappingMethods Dtool_PyMappingMethods_##CLASS_NAME =         \
+    {                                                                   \
+      0,/*inquiry mp_length */                                          \
+      0,/*binaryfunc mp_subscript */                                    \
+      0,/*objobjargproc mp_ass_subscript */                             \
+    };                                                                  \
+  Define_Dtool_PyTypedObject(MODULE_NAME, CLASS_NAME, PUBLIC_NAME)
+
+#else // Python 2:
+
 #define Define_Dtool_Class(MODULE_NAME, CLASS_NAME, PUBLIC_NAME)        \
   static PyNumberMethods Dtool_PyNumberMethods_##CLASS_NAME =           \
     {                                                                   \
@@ -235,65 +369,15 @@ struct Dtool_PyTypedObject {
       0,/*binaryfunc mp_subscript */                                    \
       0,/*objobjargproc mp_ass_subscript */                             \
     };                                                                  \
-  EXPORT_THIS Dtool_PyTypedObject Dtool_##CLASS_NAME =                  \
-    {                                                                   \
-      {                                                                 \
-        PyObject_HEAD_INIT(NULL)                                        \
-        0,                                                              \
-        "lib" #MODULE_NAME "." #PUBLIC_NAME, /*type name with module */ \
-        sizeof(Dtool_PyInstDef),                /* tp_basicsize */      \
-        0,                                      /* tp_itemsize */       \
-        &Dtool_Deallocate_General,              /* tp_dealloc */        \
-        0,                                      /* tp_print */          \
-        0,                                      /* tp_getattr */        \
-        0,                                      /* tp_setattr */        \
-        0,                                      /* tp_compare */        \
-        0,                                      /* tp_repr */           \
-        &Dtool_PyNumberMethods_##CLASS_NAME,    /* tp_as_number */      \
-        &Dtool_PySequenceMethods_##CLASS_NAME,  /* tp_as_sequence */    \
-        &Dtool_PyMappingMethods_##CLASS_NAME,   /* tp_as_mapping */     \
-        0,                                      /* tp_hash */           \
-        0,                                      /* tp_call */           \
-        0,                                      /* tp_str */            \
-        PyObject_GenericGetAttr,                /* tp_getattro */       \
-        PyObject_GenericSetAttr,                /* tp_setattro */       \
-        0,                                      /* tp_as_buffer */      \
-        (Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES), /* tp_flags */ \
-        0,                                      /* tp_doc */            \
-        0,                                      /* tp_traverse */       \
-        0,                                      /* tp_clear */          \
-        0,                                      /* tp_richcompare */    \
-        0,                                      /* tp_weaklistoffset */ \
-        0,                                      /* tp_iter */           \
-        0,                                      /* tp_iternext */       \
-        Dtool_Methods_##CLASS_NAME,             /* tp_methods */        \
-        standard_type_members,                  /* tp_members */        \
-        0,                                      /* tp_getset */         \
-        0,                                      /* tp_base */           \
-        0,                                      /* tp_dict */           \
-        0,                                      /* tp_descr_get */      \
-        0,                                      /* tp_descr_set */      \
-        0,                                      /* tp_dictoffset */     \
-        Dtool_Init_##CLASS_NAME,                /* tp_init */           \
-        PyType_GenericAlloc,                    /* tp_alloc */          \
-        Dtool_new_##CLASS_NAME,                 /* tp_new */            \
-        _PyObject_Del,                          /* tp_free */           \
-      },                                                                \
-      #CLASS_NAME,                                                      \
-      false,                                                            \
-      Dtool_UpcastInterface_##CLASS_NAME,                               \
-      Dtool_DowncastInterface_##CLASS_NAME,                             \
-      Dtool_FreeInstance_##CLASS_NAME,                                  \
-      Dtool_PyModuleClassInit_##CLASS_NAME                              \
-    }; 
-
+  Define_Dtool_PyTypedObject(MODULE_NAME, CLASS_NAME, PUBLIC_NAME)
+#endif
 
 ////////////////////////////////////////////////////////////////////////
 // The Fast Deallocator.. for Our instances..
 ////////////////////////////////////////////////////////////////////////
 inline void Dtool_Deallocate_General(PyObject * self) {
   ((Dtool_PyInstDef *)self)->_My_Type->_Dtool_FreeInstance(self);
-  self->ob_type->tp_free(self);
+  Py_TYPE(self)->tp_free(self);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -367,12 +451,11 @@ EXPCL_DTOOLCONFIG bool DtoolCanThisBeAPandaInstance(PyObject *self);
 ////////////////////////////////////////////////////////////////////////
 EXPCL_DTOOLCONFIG void DTOOL_Call_ExtractThisPointerForType(PyObject *self, Dtool_PyTypedObject * classdef, void ** answer);
 
+EXPCL_DTOOLCONFIG void *DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef, int param, const string &function_name, bool const_ok, PyObject **coerced, bool report_errors);
 
-EXPCL_DTOOLCONFIG void * DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject  *classdef, int param, const string &function_name, bool const_ok, PyObject **coerced, bool report_errors);
+EXPCL_DTOOLCONFIG void *DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef, int param, const string &function_name, bool const_ok, PyObject **coerced);
 
-EXPCL_DTOOLCONFIG void * DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject  *classdef, int param, const string &function_name, bool const_ok, PyObject **coerced);
-
-EXPCL_DTOOLCONFIG void * DTOOL_Call_GetPointerThis(PyObject *self);
+EXPCL_DTOOLCONFIG void *DTOOL_Call_GetPointerThis(PyObject *self);
 
 ////////////////////////////////////////////////////////////////////////
 //  Function : DTool_CreatePyInstanceTyped
@@ -396,7 +479,7 @@ EXPCL_DTOOLCONFIG PyObject *DTool_CreatePyInstance(void *local_this, Dtool_PyTyp
 //struct Dtool_PyTypedObject Dtool_##CLASS_NAME;
 
 #define Define_Module_Class_Internal(MODULE_NAME,CLASS_NAME,CNAME)\
-extern EXPORT_THIS   Dtool_PyTypedObject Dtool_##CLASS_NAME;  \
+extern EXPORT_THIS   Dtool_PyTypedObject Dtool_##CLASS_NAME;\
 extern struct        PyMethodDef Dtool_Methods_##CLASS_NAME[];\
 int         Dtool_Init_##CLASS_NAME(PyObject *self, PyObject *args, PyObject *kwds);\
 PyObject *  Dtool_new_##CLASS_NAME(PyTypeObject *type, PyObject *args, PyObject *kwds);\
@@ -443,9 +526,9 @@ EXPCL_DTOOLCONFIG int DTool_PyInit_Finalize(PyObject *self, void *This, Dtool_Py
 // code generation time becouse of multiple generation passes in interigate..
 //
 ///////////////////////////////////////////////////////////////////////////////
-typedef std::map<std::string, PyMethodDef *  > MethodDefmap;
+typedef std::map<std::string, PyMethodDef *> MethodDefmap;
 
-EXPCL_DTOOLCONFIG void Dtool_Accum_MethDefs(PyMethodDef  in[], MethodDefmap &themap);
+EXPCL_DTOOLCONFIG void Dtool_Accum_MethDefs(PyMethodDef in[], MethodDefmap &themap);
 
 ///////////////////////////////////////////////////////////////////////////////
 //  ** HACK ** allert..
@@ -459,22 +542,21 @@ EXPCL_DTOOLCONFIG void RegisterRuntimeClass(Dtool_PyTypedObject * otype, int cla
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-EXPCL_DTOOLCONFIG Dtool_PyTypedObject *  Dtool_RuntimeTypeDtoolType(int type);
+EXPCL_DTOOLCONFIG Dtool_PyTypedObject *Dtool_RuntimeTypeDtoolType(int type);
 
 ///////////////////////////////////////////////////////////////////////////////
 //// We need a way to runtime merge compile units into a python "Module" .. this is done with the 
 /// fallowing structors and code.. along with the support of interigate_module 
 ///////////////////////////////////////////////////////////////////////////////
-struct LibrayDef
-{
-    typedef  void   ( *ConstantFunction  )(PyObject *);
+struct LibraryDef {
+  typedef void (*ConstantFunction)(PyObject *);
 
-    PyMethodDef *           _methods;
-    ConstantFunction        _constants;
+  PyMethodDef *_methods;
+  ConstantFunction _constants;
 };
 ///////////////////////////////////////////////////////////////////////////////
 
-EXPCL_DTOOLCONFIG void Dtool_PyModuleInitHelper( LibrayDef   *defs[], const char *  modulename);
+EXPCL_DTOOLCONFIG PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename);
 
 ///////////////////////////////////////////////////////////////////////////////
 ///  HACK.... Be carefull 
@@ -484,12 +566,12 @@ EXPCL_DTOOLCONFIG void Dtool_PyModuleInitHelper( LibrayDef   *defs[], const char
 //      Required to support fom historical inharatence in the for of "is this instance of"..
 //
 ///////////////////////////////////////////////////////////////////////////////
-EXPCL_DTOOLCONFIG PyObject * Dtool_BorrowThisReference(PyObject * self, PyObject * args );
+EXPCL_DTOOLCONFIG PyObject *Dtool_BorrowThisReference(PyObject *self, PyObject *args);
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 // We do expose a dictionay for dtool classes .. this should be removed at some point..
 //////////////////////////////////////////////////////////////////////////////////////////////
-EXPCL_DTOOLCONFIG PyObject * Dtool_AddToDictionary(PyObject * self1, PyObject * args );
+EXPCL_DTOOLCONFIG PyObject *Dtool_AddToDictionary(PyObject *self1, PyObject *args);
 
 ///////////////////////////////////////////////////////////////////////////////////
 /*
@@ -535,9 +617,9 @@ EXPCL_DTOOLCONFIG long  DTool_HashKey(PyObject * inst)
    XXX of error.
 */
 
-EXPCL_DTOOLCONFIG int DTOOL_PyObject_Compare_old(PyObject *v1, PyObject *v2);
-
 EXPCL_DTOOLCONFIG int DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2);
+
+EXPCL_DTOOLCONFIG PyObject *DTOOL_PyObject_RichCompare(PyObject *v1, PyObject *v2, int op);
 
 EXPCL_DTOOLCONFIG PyObject *
 make_list_for_item(PyObject *self, const char *num_name,
@@ -555,10 +637,8 @@ map_deepcopy_to_copy(PyObject *self, PyObject *args);
 EXPCL_DTOOLCONFIG PyObject *
 PyLongOrInt_FromUnsignedLong(unsigned long value);
 
-EXPCL_DTOOLCONFIG extern struct   Dtool_PyTypedObject Dtool_DTOOL_SUPPER_BASE;
+EXPCL_DTOOLCONFIG extern struct Dtool_PyTypedObject Dtool_DTOOL_SUPER_BASE;
 
 #endif  // HAVE_PYTHON && !CPPPARSER
 
-
 #endif // PY_PANDA_H_ 
-

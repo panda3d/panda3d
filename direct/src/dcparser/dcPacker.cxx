@@ -695,11 +695,13 @@ pack_object(PyObject *object) {
             pack_int64(PyLong_AsLongLong(object));
             return;
       }
+#if PY_MAJOR_VERSION < 3
       else if (PyInt_Check(object))
       {
             pack_int64(PyInt_AsLong(object));
             return;
       }
+#endif
       break;
   case PT_uint64:
       if(PyLong_Check(object))
@@ -707,6 +709,7 @@ pack_object(PyObject *object) {
             pack_uint64(PyLong_AsUnsignedLongLong(object));
             return;
       }
+#if PY_MAJOR_VERSION < 3
       else if(PyInt_Check(object))
       {
             PyObject  *obj1 = PyNumber_Long(object);
@@ -714,6 +717,7 @@ pack_object(PyObject *object) {
             Py_DECREF(obj1);
             return;
       }
+#endif
       break;
   case PT_int:
       if(PyLong_Check(object))
@@ -721,11 +725,13 @@ pack_object(PyObject *object) {
             pack_int(PyLong_AsLong(object));
             return;
       }
+#if PY_MAJOR_VERSION < 3
       else if (PyInt_Check(object))
       {
             pack_int(PyInt_AsLong(object));
             return;
       }
+#endif
       break;
   case PT_uint:
       if(PyLong_Check(object))
@@ -733,29 +739,45 @@ pack_object(PyObject *object) {
             pack_uint(PyLong_AsUnsignedLong(object));
             return;
       }
+#if PY_MAJOR_VERSION < 3
       else if (PyInt_Check(object))
       {
-            PyObject  *obj1 = PyNumber_Long(object);
+            PyObject *obj1 = PyNumber_Long(object);
             pack_uint(PyLong_AsUnsignedLong(obj1));
             Py_DECREF(obj1);
             return;
       }
+#endif
       break;
   default:
       break;
   }
-  #ifdef USE_PYTHON_2_2_OR_EARLIER
-  if (PyInt_Check(object)) {
-  #else
   if (PyLong_Check(object)) {
     pack_int(PyLong_AsLong(object));
+#if PY_MAJOR_VERSION < 3
   } else if (PyInt_Check(object)) {
-  #endif
     pack_int(PyInt_AS_LONG(object));
+#endif
   } else if (PyFloat_Check(object)) {
     pack_double(PyFloat_AS_DOUBLE(object));
   } else if (PyLong_Check(object)) {
     pack_int64(PyLong_AsLongLong(object));
+#if PY_MAJOR_VERSION >= 3
+  } else if (PyUnicode_Check(object)) {
+    char *buffer;
+    Py_ssize_t length;
+    buffer = PyUnicode_AsUTF8AndSize(object, &length);
+    if (buffer) {
+      pack_string(string(buffer, length));
+    }
+  } else if (PyBytes_Check(object)) {
+    char *buffer;
+    Py_ssize_t length;
+    PyBytes_AsStringAndSize(object, &buffer, &length);
+    if (buffer) {
+      pack_string(string(buffer, length));
+    }
+#else
   } else if (PyString_Check(object) || PyUnicode_Check(object)) {
     char *buffer;
     Py_ssize_t length;
@@ -763,6 +785,7 @@ pack_object(PyObject *object) {
     if (buffer) {
       pack_string(string(buffer, length));
     }
+#endif
   } else {
     // For some reason, PySequence_Check() is incorrectly reporting
     // that a class instance is a sequence, even if it doesn't provide
@@ -871,18 +894,26 @@ unpack_object() {
   case PT_int:
     {
       int value = unpack_int();
+#if PY_MAJOR_VERSION >= 3
+      object = PyLong_FromLong(value);
+#else
       object = PyInt_FromLong(value);
+#endif
     }
     break;
       
   case PT_uint:
     {
       unsigned int value = unpack_uint();
+#if PY_MAJOR_VERSION >= 3
+      object = PyLong_FromLong(value);
+#else
       if (value & 0x80000000) {
         object = PyLong_FromUnsignedLong(value);
       } else {
         object = PyInt_FromLong(value);
       }
+#endif
     }
     break;
       
@@ -900,12 +931,26 @@ unpack_object() {
     }
     break;
 
-  case PT_string:
   case PT_blob:
+#if PY_MAJOR_VERSION >= 3
     {
       string str;
       unpack_string(str);
+      object = PyBytes_FromStringAndSize(str.data(), str.size());
+    }
+    break;
+#endif
+    // On Python 2, fall through to below.
+
+  case PT_string:
+    {
+      string str;
+      unpack_string(str);
+#if PY_MAJOR_VERSION >= 3
+      object = PyUnicode_FromStringAndSize(str.data(), str.size());
+#else
       object = PyString_FromStringAndSize(str.data(), str.size());
+#endif
     }
     break;
 
