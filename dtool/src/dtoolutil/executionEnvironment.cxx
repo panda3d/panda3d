@@ -277,8 +277,12 @@ ns_get_environment_variable(const string &var) const {
         if (item != NULL) {
           if (PyUnicode_Check(item)) {
             Py_ssize_t size = PyUnicode_GetSize(item);
-            wchar_t *data = new wchar_t[size];
+            wchar_t *data = new wchar_t[size + 1];
+#if PY_MAJOR_VERSION >= 3
             if (PyUnicode_AsWideChar(item, data, size) != -1) {
+#else
+            if (PyUnicode_AsWideChar((PyUnicodeObject*) item, data, size) != -1) {
+#endif
               wstring wstr (data, size);
               main_dir = Filename::from_os_specific_w(wstr);
             }
