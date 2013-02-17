@@ -88,12 +88,10 @@ PUBLISHED:
   OdeHashSpace convert_to_hash_space() const;
   OdeQuadTreeSpace convert_to_quad_tree_space() const;
   
-  int auto_collide();
+  void auto_collide();
 #ifdef HAVE_PYTHON
   int collide(PyObject* arg, PyObject* near_callback);
 #endif
-  static double get_contact_data(int data_index);
-  int get_contact_id(int data_index, int first = 0);
   int set_collide_id(int collide_id, dGeomID id);
   int set_collide_id(OdeGeom& geom, int collide_id);
   void set_surface_type( int surface_type, dGeomID id);
@@ -113,22 +111,19 @@ public:
 #endif
   
   INLINE dSpaceID get_id() const;
-  static OdeWorld* _collide_world;
-  static OdeSpace* _collide_space;
-  static dJointGroupID _collide_joint_group;
+  static OdeWorld* _static_auto_collide_world;
+  static OdeSpace* _static_auto_collide_space;
+  static dJointGroupID _static_auto_collide_joint_group;
 #ifdef HAVE_PYTHON
   static PyObject* _python_callback;
 #endif
   static int contactCount;
   string _collision_event;
 
-  static double contact_data[192]; // 64 times three
-  static int contact_ids[128]; // 64 times two
-
 protected:
   dSpaceID _id;
-  int _g; // REMOVE ME
-  OdeWorld* my_world;
+  OdeWorld* _auto_collide_world;
+  dJointGroupID _auto_collide_joint_group;
 
 public:
   static TypeHandle get_class_type() {
