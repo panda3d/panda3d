@@ -1661,7 +1661,8 @@ write_module_class(ostream &out, Object *obj) {
 
     out << "  }\n";
     out << "  Py_DECREF(args);\n";
-    out << "  Py_RETURN_NOTIMPLEMENTED;\n";
+    out << "  Py_INCREF(Py_NotImplemented);\n";
+    out << "  return Py_NotImplemented;\n";
     out << "}\n\n";
   }
 
@@ -2483,12 +2484,17 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
 
     if (remap->_parameters[pn]._remap->new_type_is_atomic_string()) {
       if (TypeManager::is_char_pointer(orig_type)) {
-        indent(out, indent_level) << "char *" << param_name;
+        indent(out, indent_level) << "char *" << param_name << ";\n";
         format_specifiers += "s";
         parameter_list += ", &" + param_name;
         
       } else if (TypeManager::is_wchar_pointer(orig_type)) {
-        indent(out, indent_level) << "PyObject *" << param_name << "\n";
+        out << "#if PY_MAJOR_VERSION >= 3\n";
+        indent(out, indent_level) << "PyObject *" << param_name << ";\n";
+        out << "#else\n";
+        indent(out, indent_level) << "PyUnicodeObject *" << param_name << ";\n";
+        out << "#endif\n";
+
         format_specifiers += "U";
         parameter_list += ", &" + param_name;
 
@@ -2501,7 +2507,11 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
         extra_cleanup += " delete[] " + param_name + "_str;";
         
       } else if (TypeManager::is_wstring(orig_type)) {
-        indent(out, indent_level) << "PyObject *" << param_name << "\n";
+        out << "#if PY_MAJOR_VERSION >= 3\n";
+        indent(out, indent_level) << "PyObject *" << param_name << ";\n";
+        out << "#else\n";
+        indent(out, indent_level) << "PyUnicodeObject *" << param_name << ";\n";
+        out << "#endif\n";
         format_specifiers += "U";
         parameter_list += ", &" + param_name;
 
@@ -2514,9 +2524,13 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
           param_name + "_len)";
 
         extra_cleanup += " delete[] " + param_name + "_str;";
-        
+
       } else if (TypeManager::is_const_ptr_to_basic_string_wchar(orig_type)) {
-        indent(out, indent_level) << "PyObject *" << param_name << "\n";
+        out << "#if PY_MAJOR_VERSION >= 3\n";
+        indent(out, indent_level) << "PyObject *" << param_name << ";\n";
+        out << "#else\n";
+        indent(out, indent_level) << "PyUnicodeObject *" << param_name << ";\n";
+        out << "#endif\n";
         format_specifiers += "U";
         parameter_list += ", &" + param_name;
 
@@ -2531,8 +2545,8 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
         extra_cleanup += " delete[] " + param_name + "_str;";
 
       } else if (TypeManager::is_const_ptr_to_basic_string_char(orig_type)) {
-        indent(out, indent_level) << "char *" << param_name
-            << "_str; int " << param_name << "_len";
+        indent(out, indent_level) << "char *" << param_name << "_str;\n";
+        indent(out, indent_level) << "int " << param_name << "_len;\n";
         format_specifiers += "s#";
         parameter_list += ", &" + param_name
           + "_str, &" + param_name + "_len";
@@ -2541,8 +2555,8 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
           param_name + "_len)";
 
       } else {
-        indent(out, indent_level) << "char *" << param_name
-            << "_str; int " << param_name << "_len";
+        indent(out, indent_level) << "char *" << param_name << "_str;\n";
+        indent(out, indent_level) << "int " << param_name << "_len;\n";
         format_specifiers += "s#";
         parameter_list += ", &" + param_name
           + "_str, &" + param_name + "_len";
@@ -2553,15 +2567,15 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
       expected_params += "string";
       
     } else if (TypeManager::is_bool(type)) {
-      indent(out, indent_level) << "PyObject *" << param_name;
+      indent(out, indent_level) << "PyObject *" << param_name << ";\n";
       format_specifiers += "O";
       parameter_list += ", &" + param_name;
-      pexpr_string = "(PyObject_IsTrue(" + param_name + ")!=0)";
+      pexpr_string = "(PyObject_IsTrue(" + param_name + ") != 0)";
       expected_params += "bool";
       pname_for_pyobject += param_name;
 
     } else if (TypeManager::is_unsigned_longlong(type)) {
-      indent(out, indent_level) << "PyObject *" << param_name;
+      indent(out, indent_level) << "PyObject *" << param_name << ";\n";
       format_specifiers += "O";
       parameter_list += ", &" + param_name;
       extra_convert += " PyObject *" + param_name + "_long = PyNumber_Long(" + param_name + ");";
@@ -2572,7 +2586,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
       pname_for_pyobject += param_name;
 
     } else if (TypeManager::is_longlong(type)) {
-      indent(out, indent_level) << "PyObject *" << param_name;
+      indent(out, indent_level) << "PyObject *" << param_name << ";\n";
       format_specifiers += "O";
       parameter_list += ", &" + param_name;
       extra_convert += " PyObject *" + param_name + "_long = PyNumber_Long(" + param_name + ");";
@@ -2583,7 +2597,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
       pname_for_pyobject += param_name;
 
     } else if (TypeManager::is_unsigned_integer(type)) {
-      indent(out, indent_level) << "PyObject *" << param_name;
+      indent(out, indent_level) << "PyObject *" << param_name << ";\n";
       format_specifiers += "O";
       parameter_list += ", &" + param_name;
       extra_convert += " PyObject *" + param_name + "_uint = PyNumber_Long(" + param_name + ");";
@@ -2594,25 +2608,25 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
       pname_for_pyobject += param_name;
 
     } else if (TypeManager::is_integer(type)) {
-      indent(out, indent_level) << "int " << param_name;
+      indent(out, indent_level) << "int " << param_name << ";\n";
       format_specifiers += "i";
       parameter_list += ", &" + param_name;
       expected_params += "int";
 
     } else if (TypeManager::is_float(type)) {
-      indent(out, indent_level) << "double " << param_name;
+      indent(out, indent_level) << "double " << param_name << ";\n";
       format_specifiers += "d";
       parameter_list += ", &" + param_name;
       expected_params += "float";
 
     } else if (TypeManager::is_char_pointer(type)) {
-      indent(out, indent_level) << "char *" << param_name;
+      indent(out, indent_level) << "char *" << param_name << ";\n";
       format_specifiers += "s";
       parameter_list += ", &" + param_name;
       expected_params += "string";
 
     } else if (TypeManager::is_pointer_to_PyObject(type)) {
-      indent(out, indent_level) << "PyObject *" << param_name;
+      indent(out, indent_level) << "PyObject *" << param_name << ";\n";
       format_specifiers += "O";
       parameter_list += ", &" + param_name;
       pexpr_string = param_name;
@@ -2632,7 +2646,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
 
       if (!remap->_has_this || pn != 0) {
         indent(out, indent_level) 
-          << "PyObject *" << param_name;
+          << "PyObject *" << param_name << ";\n";
         format_specifiers += "O";
         parameter_list += ", &" + param_name;
         pname_for_pyobject += param_name;
@@ -2651,7 +2665,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
         }
 
         //make_safe_name(itype.get_scoped_name())
-        extra_convert += p_itype.get_scoped_name()+" *" + param_name + "_this = (" + p_itype.get_scoped_name()+" *)";
+        extra_convert += p_itype.get_scoped_name() + " *" + param_name + "_this = (" + p_itype.get_scoped_name()+" *)";
         // need to a forward scope for this class..
         if (!isExportThisRun(p_itype._cpptype)) {
           _external_imports.insert(make_safe_name(p_itype.get_scoped_name()));
@@ -2687,7 +2701,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
 
     } else {
       // Ignore a parameter.
-      indent(out, indent_level) << "PyObject *" << param_name;
+      indent(out, indent_level) << "PyObject *" << param_name << ";\n";
       format_specifiers += "O";
       parameter_list += ", &" + param_name;
       expected_params += "any";
@@ -2704,8 +2718,6 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
         string class_name = remap->_cpptype->get_local_name(&parser);
         container = "(const " + class_name + "*)local_this";
       }
-    } else {
-      out << ";\n";
     }
 
     pexprs.push_back(pexpr_string);
