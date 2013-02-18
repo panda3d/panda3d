@@ -39,59 +39,56 @@ APP_INFO_PLUGIN = (
 def WriteApplicationsFile(fname, appinfo, mimeinfo):
     fhandle = open(fname, "w")
     for app, desc, exts in appinfo:
-        print >>fhandle, app
-        print >>fhandle, "\tcommand=" + app
-        print >>fhandle, "\tname=" + desc
-        print >>fhandle, "\tcan_open_multiple_files=true"
-        print >>fhandle, "\texpects_uris=false"
-        print >>fhandle, "\trequires_terminal=false"
-        print >>fhandle, "\tmime_types=",
+        fhandle.write("%s\n" % (app))
+        fhandle.write("\tcommand=%s\n" % (app))
+        fhandle.write("\tname=%s\n" % (desc))
+        fhandle.write("\tcan_open_multiple_files=true\n")
+        fhandle.write("\texpects_uris=false\n")
+        fhandle.write("\trequires_terminal=false\n")
+        fhandle.write("\tmime_types=")
         first = True
         for ext, mime, desc2, app2 in mimeinfo:
-            if (ext in exts):
-                if (first):
+            if ext in exts:
+                if first:
                     fhandle.write(mime)
                     first = False
                 else:
                     fhandle.write("," + mime)
-        fhandle.write("\n")
-        print >>fhandle
+        fhandle.write("\n\n")
     fhandle.close()
 
 def WriteMimeXMLFile(fname, info):
     fhandle = open(fname, "w")
-    print >>fhandle, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-    print >>fhandle
-    print >>fhandle, "<mime-info xmlns=\"http://www.freedesktop.org/standards/shared-mime-info\">"
+    fhandle.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+    fhandle.write("<mime-info xmlns=\"http://www.freedesktop.org/standards/shared-mime-info\">\n")
     for ext, mime, desc, app in info:
-        print >>fhandle, "\t<mime-type type=\"" + mime + "\">"
-        print >>fhandle, "\t\t<comment xml:lang=\"en\">" + desc + "</comment>"
-        print >>fhandle, "\t\t<glob pattern=\"*." + ext + "\"/>"
-        print >>fhandle, "\t</mime-type>"
-    print >>fhandle, "</mime-info>"
-    print >>fhandle
+        fhandle.write("\t<mime-type type=\"%s\">\n" % (mime))
+        fhandle.write("\t\t<comment xml:lang=\"en\">%s</comment>\n" % (desc))
+        fhandle.write("\t\t<glob pattern=\"*.%s\"/>\n" % (ext))
+        fhandle.write("\t</mime-type>\s")
+    fhandle.write("</mime-info>\n")
     fhandle.close()
 
 def WriteMimeFile(fname, info):
     fhandle = open(fname, "w")
     for ext, mime, desc, app in info:
-        print >>fhandle, mime + ":"
-        if ("." in ext):
-            print >>fhandle, "\tregex,2: " + ext.replace(".", "\\.") + "$"
-        print >>fhandle, "\text: " + ext
-        print >>fhandle
+        fhandle.write("%s:\n" % (mime))
+        if "." in ext:
+            fhandle.write("\tregex,2: %s$\n" % (ext.replace(".", "\\.")))
+        fhandle.write("\text: %s\n" % (ext))
+        fhandle.write("\n")
     fhandle.close()
 
 def WriteKeysFile(fname, info):
     fhandle = open(fname, "w")
     for ext, mime, desc, app in info:
-        print >>fhandle, mime + ":"
-        print >>fhandle, "\tdescription=" + desc
-        print >>fhandle, "\tdefault_action_type=application"
-        print >>fhandle, "\tshort_list_application_ids_for_novice_user_level=" + app
-        print >>fhandle, "\topen=" + app + " %f"
-        print >>fhandle, "\tview=" + app + " %f"
-        print >>fhandle
+        fhandle.write("%s:\n" % (mime))
+        fhandle.write("\tdescription=%s\n" % (desc))
+        fhandle.write("\tdefault_action_type=application\n")
+        fhandle.write("\tshort_list_application_ids_for_novice_user_level=%s\n" % (app))
+        fhandle.write("\topen=%s %%f\n" % (app))
+        fhandle.write("\tview=%s %%f\n" % (app))
+        fhandle.write("\n")
     fhandle.close()
 
 def GetLibDir():
@@ -229,9 +226,7 @@ if (__name__ == "__main__"):
     if (sys.platform.startswith("win") or sys.platform == "darwin"):
         exit("This script is not supported on Windows or Mac OS X at the moment!")
 
-    destdir = "/"
-    if (os.environ.has_key("DESTDIR")):
-        destdir = os.environ["DESTDIR"]
+    destdir = os.environ.get("DESTDIR", "/")
 
     parser = OptionParser()
     parser.add_option('', '--outputdir', dest = 'outputdir', help = 'Makepanda\'s output directory (default: built)', default = 'built')
@@ -249,10 +244,10 @@ if (__name__ == "__main__"):
         exit("Directory '%s' does not exist!" % destdir)
 
     if (options.runtime):
-        print "Installing Panda3D Runtime into " + destdir + options.prefix
+        print("Installing Panda3D Runtime into " + destdir + options.prefix)
         InstallRuntime(destdir = destdir, prefix = options.prefix, outputdir = options.outputdir)
     else:
-        print "Installing Panda3D into " + destdir + options.prefix
+        print("Installing Panda3D into " + destdir + options.prefix)
         InstallPanda(destdir = destdir, prefix = options.prefix, outputdir = options.outputdir)
-    print "Installation finished!"
+    print("Installation finished!")
 

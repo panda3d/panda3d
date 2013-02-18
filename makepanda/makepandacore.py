@@ -9,8 +9,13 @@
 ##
 ########################################################################
 
-import sys,os,time,stat,string,re,getopt,cPickle,fnmatch,threading,Queue,signal,shutil,platform,glob,getpass,signal
+import sys,os,time,stat,string,re,getopt,fnmatch,threading,signal,shutil,platform,glob,getpass,signal
 from distutils import sysconfig
+
+if sys.version_info >= (3, 0):
+    import pickle
+else:
+    import cPickle as pickle
 
 SUFFIX_INC = [".cxx",".c",".h",".I",".yxx",".lxx",".mm",".rc",".r"]
 SUFFIX_DLL = [".dll",".dlo",".dle",".dli",".dlm",".mll",".exe",".pyd",".ocx"]
@@ -36,7 +41,10 @@ if sys.platform == 'darwin':
     # On OSX, platform.architecture reports '64bit' even if it is
     # currently running in 32-bit mode.  But sys.maxint is a reliable
     # indicator.
-    is_64 = (sys.maxint > 0x100000000L)
+    if sys.version_info >= (3, 0):
+        is_64 = (sys.maxsize > 0x100000000)
+    else:
+        is_64 = (sys.maxint > 0x100000000)
 else:
     # On Windows (and Linux?) sys.maxint reports 0x7fffffff even on a
     # 64-bit build.  So we stick with platform.architecture in that
@@ -167,37 +175,49 @@ def GetColor(color = None):
     else:
       return curses.tparm(curses.tigetstr("sgr0"))
 
+def ColorText(color, text, reset=True):
+    if reset is True:
+        return ''.join((GetColor(color), text, GetColor()))
+    else:
+        return ''.join((GetColor(color), text))
+
 def PrettyTime(t):
     t = int(t)
-    hours = t/3600
-    t -= hours*3600
-    minutes = t/60
-    t -= minutes*60
+    hours = t // 3600
+    t -= hours * 3600
+    minutes = t // 60
+    t -= minutes * 60
     seconds = t
-    if (hours): return str(hours)+" hours "+str(minutes)+" min"
-    if (minutes): return str(minutes)+" min "+str(seconds)+" sec"
-    return str(seconds)+" sec"
+    if hours:
+        return "%d hours %d min" % (hours, minutes)
+    if minutes:
+        return "%d min %d sec" % (minutes, seconds)
+    return "%d sec" % (seconds)
 
 def ProgressOutput(progress, msg, target = None):
-    if (threading.currentThread() == MAINTHREAD):
-        if (progress == None):
-            print msg
+    prefix = ""
+    if (threading.currentThread() is MAINTHREAD):
+        if progress is None:
+            prefix = ""
         elif (progress >= 100.0):
-            print "%s[%s%d%%%s] %s" % (GetColor("yellow"), GetColor("cyan"), progress, GetColor("yellow"), msg),
+            prefix = "%s[%s%d%%%s] " % (GetColor("yellow"), GetColor("cyan"), progress, GetColor("yellow"))
         elif (progress < 10.0):
-            print "%s[%s  %d%%%s] %s" % (GetColor("yellow"), GetColor("cyan"), progress, GetColor("yellow"), msg),
+            prefix = "%s[%s  %d%%%s] " % (GetColor("yellow"), GetColor("cyan"), progress, GetColor("yellow"))
         else:
-            print "%s[%s %d%%%s] %s" % (GetColor("yellow"), GetColor("cyan"), progress, GetColor("yellow"), msg),
+            prefix = "%s[%s %d%%%s] " % (GetColor("yellow"), GetColor("cyan"), progress, GetColor("yellow"))
     else:
         global THREADS
         ident = threading.currentThread().ident
         if (ident not in THREADS):
             THREADS[ident] = len(THREADS) + 1
-        print "%s[%sT%d%s] %s" % (GetColor("yellow"), GetColor("cyan"), THREADS[ident], GetColor("yellow"), msg),
-    if (target == None):
-        print GetColor()
+        prefix = "%s[%sT%d%s] " % (GetColor("yellow"), GetColor("cyan"), THREADS[ident], GetColor("yellow"))
+
+    if target is not None:
+        suffix = ' ' + ColorText("green", target)
     else:
-        print "%s%s%s" % (GetColor("green"), target, GetColor())
+        suffix = GetColor()
+
+    print(''.join((prefix, msg, suffix)))
 
 def exit(msg = ""):
     sys.stdout.flush()
@@ -205,16 +225,16 @@ def exit(msg = ""):
     if (threading.currentThread() == MAINTHREAD):
         SaveDependencyCache()
         MoveBackConflictingFiles()
-        print "Elapsed Time: "+PrettyTime(time.time() - STARTTIME)
-        print msg
-        print GetColor("red") + "Build terminated." + GetColor()
+        print("Elapsed Time: " + PrettyTime(time.time() - STARTTIME))
+        print(msg)
+        print(ColorText("red", "Build terminated."))
         sys.stdout.flush()
         sys.stderr.flush()
         ##Don't quit the interperter if I'm running this file directly (debugging)
         if __name__ != '__main__':
             os._exit(1)
     else:
-        print msg
+        print(msg)
         raise "initiate-exit"
 
 ########################################################################
@@ -435,7 +455,7 @@ def LocateBinary(binary):
 
 def oscmd(cmd, ignoreError = False):
     if VERBOSE:
-        print GetColor("blue") + cmd.split(" ", 1)[0] + " " + GetColor("magenta") + cmd.split(" ", 1)[1] + GetColor()
+        print(GetColor("blue") + cmd.split(" ", 1)[0] + " " + GetColor("magenta") + cmd.split(" ", 1)[1] + GetColor())
     sys.stdout.flush()
 
     if sys.platform == "win32":
@@ -448,21 +468,21 @@ def oscmd(cmd, ignoreError = False):
         res = os.system(cmd)
         sig = res & 0x7F
         if (GetVerbose() and res != 0):
-            print GetColor("red") + "Process exited with exit status %d and signal code %d" % ((res & 0xFF00) >> 8, sig) + GetColor()
+            print(ColorText("red", "Process exited with exit status %d and signal code %d" % ((res & 0xFF00) >> 8, sig)))
         if (sig == signal.SIGINT):
             exit("keyboard interrupt")
         # Don't ask me where the 35584 or 34304 come from...
         if (sig == signal.SIGSEGV or res == 35584 or res == 34304):
             if (LocateBinary("gdb") and GetVerbose()):
-                print GetColor("red") + "Received SIGSEGV, retrieving traceback..." + GetColor()
+                print(ColorText("red", "Received SIGSEGV, retrieving traceback..."))
                 os.system("gdb -batch -ex 'handle SIG33 pass nostop noprint' -ex 'set pagination 0' -ex 'run' -ex 'bt full' -ex 'info registers' -ex 'thread apply all backtrace' -ex 'quit' --args %s < /dev/null" % cmd)
             else:
-                print GetColor("red") + "Received SIGSEGV" + GetColor()
+                print(ColorText("red", "Received SIGSEGV"))
             exit("")
 
     if res != 0 and not ignoreError:
         if "interrogate" in cmd.split(" ", 1)[0] and GetVerbose():
-            print GetColor("red") + "Interrogate failed, retrieving debug output..." + GetColor()
+            print(ColorText("red", "Interrogate failed, retrieving debug output..."))
             if sys.platform == "win32":
                 os.spawnl(os.P_WAIT, exe, cmd.split(" ", 1)[0] + " -v " + cmd.split(" ", 1)[1])
             else:
@@ -498,7 +518,7 @@ def GetDirectoryContents(dir, filters="*", skip=[]):
                 actual[file] = 1
     if (os.path.isfile(dir + "/CVS/Entries")):
         cvs = {}
-        srchandle = open(dir+"/CVS/Entries", "r")
+        srchandle = open(dir + "/CVS/Entries", "r")
         files = []
         for line in srchandle:
             if (line[0]=="/"):
@@ -514,21 +534,23 @@ def GetDirectoryContents(dir, filters="*", skip=[]):
         #XXX this happens all the time, do we really need to warn about this?
         #for file in actual.keys():
         #    if (file not in cvs and VERBOSE):
-        #        msg = "%sWARNING: %s is in %s, but not in CVS%s" % (GetColor("red"), GetColor("green") + file + GetColor(), GetColor("green") + dir + GetColor(), GetColor())
+        #        msg = "%sWARNING: %s is in %s, but not in CVS%s" % (GetColor("red"), ColorText("green", file), ColorText("green", dir), GetColor())
         #        print msg
         #        WARNINGS.append(msg)
 
         for file in cvs.keys():
             if (file not in actual and VERBOSE):
-                msg = "%sWARNING: %s is not in %s, but is in CVS%s" % (GetColor("red"), GetColor("green") + file + GetColor(), GetColor("green") + dir + GetColor(), GetColor())
-                print msg
+                msg = "%sWARNING: %s is not in %s, but is in CVS%s" % (GetColor("red"), ColorText("green", file), ColorText("green", dir), GetColor())
+                print(msg)
                 WARNINGS.append(msg)
 
-    results = actual.keys()
+    results = list(actual.keys())
     results.sort()
     return results
 
 def GetDirectorySize(dir):
+    if not os.path.isdir(dir):
+        return 0
     size = 0
     for (path, dirs, files) in os.walk(dir):
         for file in files:
@@ -600,7 +622,7 @@ def NeedsBuild(files,others):
         else:
             oldothers = BUILTFROMCACHE[key][0]
             if (oldothers != others and VERBOSE):
-                print "%sWARNING:%s file dependencies changed: %s%s%s" % (GetColor("red"), GetColor(), GetColor("green"), str(files), GetColor())
+                print("%sWARNING:%s file dependencies changed: %s%s%s" % (GetColor("red"), GetColor(), GetColor("green"), str(files), GetColor()))
     return 1
 
 ########################################################################
@@ -634,7 +656,7 @@ def CxxGetIncludes(path):
     if (path in CXXINCLUDECACHE):
         cached = CXXINCLUDECACHE[path]
         if (cached[0]==date): return cached[1]
-    try: sfile = open(path, 'rb')
+    try: sfile = open(path, 'r')
     except:
         exit("Cannot open source file \""+path+"\" for reading.")
     include = []
@@ -669,9 +691,9 @@ def SaveDependencyCache():
     try: icache = open(os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache"),'wb')
     except: icache = 0
     if (icache!=0):
-        print "Storing dependency cache."
-        cPickle.dump(CXXINCLUDECACHE, icache, 1)
-        cPickle.dump(BUILTFROMCACHE, icache, 1)
+        print("Storing dependency cache.")
+        pickle.dump(CXXINCLUDECACHE, icache, 1)
+        pickle.dump(BUILTFROMCACHE, icache, 1)
         icache.close()
 
 def LoadDependencyCache():
@@ -680,8 +702,8 @@ def LoadDependencyCache():
     try: icache = open(os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache"),'rb')
     except: icache = 0
     if (icache!=0):
-        CXXINCLUDECACHE = cPickle.load(icache)
-        BUILTFROMCACHE = cPickle.load(icache)
+        CXXINCLUDECACHE = pickle.load(icache)
+        BUILTFROMCACHE = pickle.load(icache)
         icache.close()
 
 ########################################################################
@@ -759,7 +781,7 @@ def CxxCalcDependencies(srcfile, ipath, ignore):
             if (ignore.count(header)==0):
                 hdeps = CxxCalcDependencies(header, ipath, [srcfile]+ignore)
                 for x in hdeps: dep[x] = 1
-    result = dep.keys()
+    result = list(dep.keys())
     CxxDependencyCache[srcfile] = result
     return result
 
@@ -775,15 +797,18 @@ def CxxCalcDependencies(srcfile, ipath, ignore):
 ########################################################################
 
 if sys.platform == "win32":
-    import _winreg
+    if sys.version_info >= (3, 0):
+        import winreg
+    else:
+        import _winreg as winreg
 
 def TryRegistryKey(path):
     try:
-        key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, path, 0, _winreg.KEY_READ)
+        key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, path, 0, winreg.KEY_READ)
         return key
     except: pass
     try:
-        key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, path, 0, _winreg.KEY_READ | 256)
+        key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, path, 0, winreg.KEY_READ | 256)
         return key
     except: pass
     return 0
@@ -795,10 +820,10 @@ def ListRegistryKeys(path):
     if (key != 0):
         try:
             while (1):
-                result.append(_winreg.EnumKey(key, index))
+                result.append(winreg.EnumKey(key, index))
                 index = index + 1
         except: pass
-        _winreg.CloseKey(key)
+        winreg.CloseKey(key)
     return result
 
 def ListRegistryValues(path):
@@ -808,10 +833,10 @@ def ListRegistryValues(path):
     if (key != 0):
         try:
             while (1):
-                result.append(_winreg.EnumValue(key, index)[0])
+                result.append(winreg.EnumValue(key, index)[0])
                 index = index + 1
         except: pass
-        _winreg.CloseKey(key)
+        winreg.CloseKey(key)
     return result
 
 def GetRegistryKey(path, subkey, override64=True):
@@ -821,9 +846,9 @@ def GetRegistryKey(path, subkey, override64=True):
     key = TryRegistryKey(path)
     if (key != 0):
         try:
-            k1, k2 = _winreg.QueryValueEx(key, subkey)
+            k1, k2 = winreg.QueryValueEx(key, subkey)
         except: pass
-        _winreg.CloseKey(key)
+        winreg.CloseKey(key)
     return k1
 
 def GetProgramFiles():
@@ -874,31 +899,48 @@ def MakeDirectory(path):
 
 def ReadFile(wfile):
     try:
+        srchandle = open(wfile, "r")
+        data = srchandle.read()
+        srchandle.close()
+        return data
+    except ex:
+        exit("Cannot read %s: %s" % (wfile, ex))
+
+def ReadBinaryFile(wfile):
+    try:
         srchandle = open(wfile, "rb")
         data = srchandle.read()
         srchandle.close()
         return data
-    except Exception, ex:
+    except ex:
         exit("Cannot read %s: %s" % (wfile, ex))
 
 def WriteFile(wfile, data):
     try:
+        dsthandle = open(wfile, "w")
+        dsthandle.write(data)
+        dsthandle.close()
+    except ex:
+        exit("Cannot write to %s: %s" % (wfile, ex))
+
+def WriteBinaryFile(wfile, data):
+    try:
         dsthandle = open(wfile, "wb")
         dsthandle.write(data)
         dsthandle.close()
-    except Exception, ex:
+    except ex:
         exit("Cannot write to %s: %s" % (wfile, ex))
 
-def ConditionalWriteFile(dest,desiredcontents):
+def ConditionalWriteFile(dest, desiredcontents):
     try:
-        rfile = open(dest, 'rb')
+        rfile = open(dest, 'r')
         contents = rfile.read(-1)
         rfile.close()
     except:
         contents=0
     if contents != desiredcontents:
         sys.stdout.flush()
-        WriteFile(dest,desiredcontents)
+        WriteFile(dest, desiredcontents)
 
 def DeleteCVS(dir):
     if dir == "": dir = "."
@@ -940,7 +982,7 @@ def DeleteEmptyDirs(dir):
 
 def CreateFile(file):
     if (os.path.exists(file)==0):
-        WriteFile(file,"")
+        WriteFile(file, "")
 
 ########################################################################
 #
@@ -1053,7 +1095,7 @@ def GetThirdpartyDir():
         THIRDPARTYDIR = GetThirdpartyBase()+"/android-libs-%s/" % (GetTargetArch())
 
     else:
-        print GetColor("red") + "WARNING:" + GetColor("Unsupported platform: " + target)
+        print("%s Unsupported platform: %s" % (ColorText("red", "WARNING:"), target))
     return THIRDPARTYDIR
 
 ########################################################################
@@ -1202,7 +1244,7 @@ def AddOverride(spec):
 
 def OverrideValue(parameter, value):
     if parameter in OVERRIDES_LIST:
-        print "Overriding value of key \"" + parameter + "\" with value \"" + OVERRIDES_LIST[parameter] + "\""
+        print("Overriding value of key \"" + parameter + "\" with value \"" + OVERRIDES_LIST[parameter] + "\"")
         return OVERRIDES_LIST[parameter]
     else:
         return value
@@ -1338,7 +1380,7 @@ def GetLibCache():
     if (LD_CACHE == None):
         LD_CACHE = []
         sysroot = SDK.get('SYSROOT', '')
-        print "Generating library cache..."
+        print("Generating library cache...")
 
         # If not cross compiling, use ldconfig to get a list of libraries in the LD cache
         if (not CrossCompiling() and LocateBinary("ldconfig") != None and GetTarget() != 'freebsd'):
@@ -1386,7 +1428,7 @@ def ChooseLib(*libs):
             return libname
     if (len(libs) > 0):
         if (VERBOSE):
-            print GetColor("cyan") + "Couldn't find any of the libraries " + ", ".join(libs) + GetColor()
+            print(ColorText("cyan", "Couldn't find any of the libraries " + ", ".join(libs)))
         return libs[0]
 
 def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None, framework = None, target_pkg = None, tool = "pkg-config"):
@@ -1462,10 +1504,10 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
             for d, v in defs.values():
                 DefSymbol(target_pkg, d, v)
         elif (pkg in PkgListGet()):
-            print "%sWARNING:%s Could not locate framework %s, excluding from build" % (GetColor("red"), GetColor(), framework)
+            print("%sWARNING:%s Could not locate framework %s, excluding from build" % (GetColor("red"), GetColor(), framework))
             PkgDisable(pkg)
         else:
-            print "%sERROR:%s Could not locate framework %s, aborting build" % (GetColor("red"), GetColor(), framework)
+            print("%sERROR:%s Could not locate framework %s, aborting build" % (GetColor("red"), GetColor(), framework))
             exit()
         return
     elif (LocateBinary(tool) != None and (tool != "pkg-config" or pkgconfig != None)):
@@ -1484,10 +1526,10 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
 
     if (pkgconfig != None and (libs == None or len(libs) == 0)):
         if (pkg in PkgListGet()):
-            print "%sWARNING:%s Could not locate pkg-config package %s, excluding from build" % (GetColor("red"), GetColor(), pkgconfig)
+            print("%sWARNING:%s Could not locate pkg-config package %s, excluding from build" % (GetColor("red"), GetColor(), pkgconfig))
             PkgDisable(pkg)
         else:
-            print "%sERROR:%s Could not locate pkg-config package %s, aborting build" % (GetColor("red"), GetColor(), pkgconfig)
+            print("%sERROR:%s Could not locate pkg-config package %s, aborting build" % (GetColor("red"), GetColor(), pkgconfig))
             exit()
     else:
         # Okay, our pkg-config attempts failed. Let's try locating the libs by ourselves.
@@ -1500,7 +1542,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
                 LibName(target_pkg, "-l" + libname)
             else:
                 if (VERBOSE):
-                    print GetColor("cyan") + "Couldn't find library lib" + libname + GetColor()
+                    print(GetColor("cyan") + "Couldn't find library lib" + libname + GetColor())
                 have_pkg = False
 
         for i in incs:
@@ -1520,7 +1562,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
                         incdir = sorted(glob.glob(os.path.join(pdir, i)))[-1]
                         have_pkg = True
                 if (incdir == None and VERBOSE and i.endswith(".h")):
-                    print GetColor("cyan") + "Couldn't find header file " + i + GetColor()
+                    print(GetColor("cyan") + "Couldn't find header file " + i + GetColor())
 
             # Note: It's possible to specify a file instead of a dir, for the sake of checking if it exists.
             if (incdir != None and os.path.isdir(incdir)):
@@ -1528,10 +1570,10 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
 
         if (not have_pkg):
             if (pkg in PkgListGet()):
-                print "%sWARNING:%s Could not locate thirdparty package %s, excluding from build" % (GetColor("red"), GetColor(), pkg.lower())
+                print("%sWARNING:%s Could not locate thirdparty package %s, excluding from build" % (GetColor("red"), GetColor(), pkg.lower()))
                 PkgDisable(pkg)
             else:
-                print "%sERROR:%s Could not locate thirdparty package %s, aborting build" % (GetColor("red"), GetColor(), pkg.lower())
+                print("%sERROR:%s Could not locate thirdparty package %s, aborting build" % (GetColor("red"), GetColor(), pkg.lower()))
                 exit()
 
 ########################################################################
@@ -1600,32 +1642,32 @@ def SdkLocateDirectX( strMode = 'default' ):
         if ("DX9" not in SDK):
             dir = GetRegistryKey("SOFTWARE\\Wow6432Node\\Microsoft\\DirectX\\Microsoft DirectX SDK (June 2010)", "InstallPath")
             if (dir != 0):
-                print "Using DirectX SDK June 2010"
+                print("Using DirectX SDK June 2010")
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
                 SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
             dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (June 2010)", "InstallPath")
             if (dir != 0):
-                print "Using DirectX SDK June 2010"
+                print("Using DirectX SDK June 2010")
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
                 SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
             dir = GetRegistryKey("SOFTWARE\\Wow6432Node\\Microsoft\\DirectX\\Microsoft DirectX SDK (August 2009)", "InstallPath")
             if (dir != 0):
-                print "Using DirectX SDK Aug 2009"
+                print("Using DirectX SDK Aug 2009")
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
                 SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
             dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (August 2009)", "InstallPath")
             if (dir != 0):
-                print "Using DirectX SDK Aug 2009"
+                print("Using DirectX SDK Aug 2009")
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
                 SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
             ## Try to locate the key within the "new" March 2009 location in the registry (yecch):
             dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (March 2009)", "InstallPath")
             if (dir != 0):
-                print "Using DirectX SDK March 2009"
+                print("Using DirectX SDK March 2009")
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
         archStr = "x86"
         if (is_64): archStr = "x64"
@@ -1654,13 +1696,13 @@ def SdkLocateDirectX( strMode = 'default' ):
         if ("DX9" not in SDK):
             dir = GetRegistryKey("SOFTWARE\\Wow6432Node\\Microsoft\\DirectX\\Microsoft DirectX SDK (June 2010)", "InstallPath")
             if (dir != 0):
-                print "Found DirectX SDK June 2010"
+                print("Found DirectX SDK June 2010")
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
                 SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
             dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (June 2010)", "InstallPath")
             if (dir != 0):
-                print "Found DirectX SDK June 2010"
+                print("Found DirectX SDK June 2010")
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
                 SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
@@ -1669,13 +1711,13 @@ def SdkLocateDirectX( strMode = 'default' ):
         if ("DX9" not in SDK):
             dir = GetRegistryKey("SOFTWARE\\Wow6432Node\\Microsoft\\DirectX\\Microsoft DirectX SDK (August 2009)", "InstallPath")
             if (dir != 0):
-                print "Found DirectX SDK Aug 2009"
+                print("Found DirectX SDK Aug 2009")
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
                 SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
             dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (August 2009)", "InstallPath")
             if (dir != 0):
-                print "Found DirectX SDK Aug 2009"
+                print("Found DirectX SDK Aug 2009")
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
                 SDK["GENERIC_DXERR_LIBRARY"] = 1;
         if ("DX9" not in SDK):
@@ -1685,7 +1727,7 @@ def SdkLocateDirectX( strMode = 'default' ):
             ## Try to locate the key within the "new" March 2009 location in the registry (yecch):
             dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (March 2009)", "InstallPath")
             if (dir != 0):
-                print "Found DirectX SDK March 2009"
+                print("Found DirectX SDK March 2009")
                 SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
         if ("DX9" not in SDK):
             exit("Couldn't find DirectX March 2009 SDK")
@@ -1778,7 +1820,7 @@ def SdkLocatePython(force_use_sys_executable = False):
                 exit("Could not find %s!" % SDK["PYTHONEXEC"])
 
             os.system(SDK["PYTHONEXEC"] + " -V > "+OUTPUTDIR+"/tmp/pythonversion 2>&1")
-            pv=ReadFile(OUTPUTDIR+"/tmp/pythonversion")
+            pv = ReadFile(OUTPUTDIR + "/tmp/pythonversion")
             if (pv.startswith("Python ")==0):
                 exit("python -V did not produce the expected output")
             pv = pv[7:10]
@@ -1958,7 +2000,7 @@ def SdkLocateSpeedTree():
     for dirname in os.listdir(dir):
         if dirname.startswith('SpeedTree SDK v'):
             version = dirname[15:].split()[0]
-            version = map(int, version.split('.'))
+            version = tuple(map(int, version.split('.')))
             speedtrees.append((version, dirname))
     if not speedtrees:
         # No installed SpeedTree SDK.
@@ -2142,11 +2184,11 @@ def LibName(opt, name):
         if not os.path.exists(name):
             WARNINGS.append(name + " not found.  Skipping Package " + opt)
             if (opt in PkgListGet()):
-                print "%sWARNING:%s Could not locate thirdparty package %s, excluding from build" % (GetColor("red"), GetColor(), opt.lower())
+                print("%sWARNING:%s Could not locate thirdparty package %s, excluding from build" % (GetColor("red"), GetColor(), opt.lower()))
                 PkgDisable(opt)
                 return
             else:
-                print "%sERROR:%s Could not locate thirdparty package %s, aborting build" % (GetColor("red"), GetColor(), opt.lower())
+                print("%sERROR:%s Could not locate thirdparty package %s, aborting build" % (GetColor("red"), GetColor(), opt.lower()))
                 exit()
     LIBNAMES.append((opt, name))
 
@@ -2248,20 +2290,20 @@ def CopyFile(dstfile, srcfile):
         if (fnl < 0): fn = srcfile
         else: fn = srcfile[fnl+1:]
         dstfile = dstdir + fn
-    if (NeedsBuild([dstfile],[srcfile])):
-        WriteFile(dstfile,ReadFile(srcfile))
+    if (NeedsBuild([dstfile], [srcfile])):
+        WriteBinaryFile(dstfile, ReadBinaryFile(srcfile))
         JustBuilt([dstfile], [srcfile])
 
 def CopyAllFiles(dstdir, srcdir, suffix=""):
     for x in GetDirectoryContents(srcdir, ["*"+suffix]):
-        CopyFile(dstdir+x, srcdir+x)
+        CopyFile(dstdir + x, srcdir + x)
 
 def CopyAllHeaders(dir, skip=[]):
     for filename in GetDirectoryContents(dir, ["*.h", "*.I", "*.T"], skip):
         srcfile = dir + "/" + filename
         dstfile = OUTPUTDIR + "/include/" + filename
         if (NeedsBuild([dstfile], [srcfile])):
-            WriteFile(dstfile, ReadFile(srcfile))
+            WriteBinaryFile(dstfile, ReadBinaryFile(srcfile))
             JustBuilt([dstfile], [srcfile])
 
 def CopyAllJavaSources(dir, skip=[]):
@@ -2269,7 +2311,7 @@ def CopyAllJavaSources(dir, skip=[]):
         srcfile = dir + "/" + filename
         dstfile = OUTPUTDIR + "/src/org/panda3d/android/" + filename
         if (NeedsBuild([dstfile], [srcfile])):
-            WriteFile(dstfile, ReadFile(srcfile))
+            WriteBinaryFile(dstfile, ReadBinaryFile(srcfile))
             JustBuilt([dstfile], [srcfile])
 
 def CopyTree(dstdir, srcdir, omitCVS=True):

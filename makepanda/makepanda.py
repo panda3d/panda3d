@@ -12,12 +12,16 @@
 #
 ########################################################################
 try:
-    import sys,os,platform,time,stat,string,re,getopt,fnmatch,threading,Queue,signal,shutil
+    import sys,os,platform,time,stat,string,re,getopt,fnmatch,threading,signal,shutil
     if sys.platform == "darwin" or sys.version_info >= (2, 6):
         import plistlib
+    if sys.version_info >= (3, 0):
+        import queue
+    else:
+        import Queue as queue
 except:
-    print "You are either using an incomplete or an old version of Python!"
-    print "Please install the development package of Python 2.x and try again."
+    print("You are either using an incomplete or an old version of Python!")
+    print("Please install the development package of Python 2.x and try again.")
     exit(1)
 
 from makepandacore import *
@@ -29,8 +33,7 @@ import sys
 ## jGenPyCode tries to get the directory for Direct from the sys.path. This only works if you 
 ## have installed the sdk using a installer. This would not work if the installer was 
 ## never used and everything was grabbed into a virgin environment using cvs.
-sys.path.append( os.getcwd() )
-import __builtin__
+sys.path.append(os.getcwd())
 
 ########################################################################
 ##
@@ -115,45 +118,45 @@ signal.signal(signal.SIGINT, keyboardInterruptHandler)
 
 def usage(problem):
     if (problem):
-        print ""
-        print "Error parsing commandline input", problem
+        print("")
+        print("Error parsing commandline input", problem)
 
-    print ""
-    print "Makepanda generates a 'built' subdirectory containing a"
-    print "compiled copy of Panda3D.  Command-line arguments are:"
-    print ""
-    print "  --help            (print the help message you're reading now)"
-    print "  --verbose         (print out more information)"
-    print "  --runtime         (build a runtime build instead of an SDK build)"
-    print "  --installer       (build an installer)"
-    print "  --optimize X      (optimization level can be 1,2,3,4)"
-    print "  --version X       (set the panda version number)"
-    print "  --lzma            (use lzma compression when building Windows installer)"
-    print "  --distributor X   (short string identifying the distributor of the build)"
-    print "  --outputdir X     (use the specified directory instead of 'built')"
-    print "  --host URL        (set the host url (runtime build only))"
-    print "  --threads N       (use the multithreaded build system. see manual)"
-    print "  --osxtarget N     (the OSX version number to build for (OSX only))"
-    print "  --universal       (build universal binaries (OSX only))"
-    print "  --override \"O=V\"  (override dtool_config/prc option value)"
-    print "  --static          (builds libraries for static linking)"
-    print "  --target X        (experimental cross-compilation (android only))"
-    print "  --arch X          (target architecture for cross-compilation)"
-    print ""
+    print("")
+    print("Makepanda generates a 'built' subdirectory containing a")
+    print("compiled copy of Panda3D.  Command-line arguments are:")
+    print("")
+    print("  --help            (print the help message you're reading now)")
+    print("  --verbose         (print out more information)")
+    print("  --runtime         (build a runtime build instead of an SDK build)")
+    print("  --installer       (build an installer)")
+    print("  --optimize X      (optimization level can be 1,2,3,4)")
+    print("  --version X       (set the panda version number)")
+    print("  --lzma            (use lzma compression when building Windows installer)")
+    print("  --distributor X   (short string identifying the distributor of the build)")
+    print("  --outputdir X     (use the specified directory instead of 'built')")
+    print("  --host URL        (set the host url (runtime build only))")
+    print("  --threads N       (use the multithreaded build system. see manual)")
+    print("  --osxtarget N     (the OSX version number to build for (OSX only))")
+    print("  --universal       (build universal binaries (OSX only))")
+    print("  --override \"O=V\"  (override dtool_config/prc option value)")
+    print("  --static          (builds libraries for static linking)")
+    print("  --target X        (experimental cross-compilation (android only))")
+    print("  --arch X          (target architecture for cross-compilation)")
+    print("")
     for pkg in PkgListGet():
         p = pkg.lower()
-        print "  --use-%-9s   --no-%-9s (enable/disable use of %s)"%(p, p, pkg)
-    print ""
-    print "  --nothing         (disable every third-party lib)"
-    print "  --everything      (enable every third-party lib)"
-    print "  --directx-sdk=X   (specify version of DX9 SDK to use: jun2010, aug2009, mar2009, aug2006)"
-    print "  --platform-sdk=X  (specify MSPlatSdk to use: win71, win61, win60A, winserver2003r2)"
-    print "  --use-icl         (experimental setting to use an intel compiler instead of MSVC on Windows)"
-    print ""
-    print "The simplest way to compile panda is to just type:"
-    print ""
-    print "  makepanda --everything"
-    print ""
+        print("  --use-%-9s   --no-%-9s (enable/disable use of %s)"%(p, p, pkg))
+    print("")
+    print("  --nothing         (disable every third-party lib)")
+    print("  --everything      (enable every third-party lib)")
+    print("  --directx-sdk=X   (specify version of DX9 SDK to use: jun2010, aug2009, mar2009, aug2006)")
+    print("  --platform-sdk=X  (specify MSPlatSdk to use: win71, win61, win60A, winserver2003r2)")
+    print("  --use-icl         (experimental setting to use an intel compiler instead of MSVC on Windows)")
+    print("")
+    print("The simplest way to compile panda is to just type:")
+    print("")
+    print("  makepanda --everything")
+    print("")
     os._exit(1)
 
 def parseopts(args):
@@ -177,7 +180,7 @@ def parseopts(args):
     try:
         opts, extras = getopt.getopt(args, "", longopts)
         for option,value in opts:
-            if (option=="--help"): raise "usage"
+            if (option=="--help"): raise Exception
             elif (option=="--optimize"): optimize=value
             elif (option=="--installer"): INSTALLER=1
             elif (option=="--verbose"): SetVerbose(True)
@@ -196,7 +199,7 @@ def parseopts(args):
             elif (option=="--nocolor"): DisableColors()
             elif (option=="--version"):
                 VERSION=value
-                if (len(VERSION.split(".")) != 3): raise "usage"
+                if (len(VERSION.split(".")) != 3): raise Exception
             elif (option=="--lzma"): COMPRESSOR="lzma"
             elif (option=="--override"): AddOverride(value.strip())
             elif (option=="--static"): SetLinkAllStatic(True)
@@ -210,12 +213,12 @@ def parseopts(args):
             elif (option=="--directx-sdk"):
                 STRDXSDKVERSION = value.strip().lower()
                 if STRDXSDKVERSION == '':
-                    print "No DirectX SDK version specified. Using 'default' DirectX SDK search"
+                    print("No DirectX SDK version specified. Using 'default' DirectX SDK search")
                     STRDXSDKVERSION = 'default'
             elif (option=="--platform-sdk"): 
                 STRMSPLATFORMVERSION = value.strip().lower()
                 if STRMSPLATFORMVERSION == '':
-                    print "No MS Platform SDK version specified. Using 'default' MS Platform SDK search"
+                    print("No MS Platform SDK version specified. Using 'default' MS Platform SDK search")
                     STRMSPLATFORMVERSION = 'default'
             elif (option=="--use-icl"): BOOUSEINTELCOMPILER = True
             else:
@@ -232,7 +235,7 @@ def parseopts(args):
               anything = 1
     except: 
         usage(0)
-        print "Exception while parsing commandline:", sys.exc_info()[0]
+        print("Exception while parsing commandline:", sys.exc_info()[0])
     if (anything==0): usage(0)
     if (RTDIST and RUNTIME):
         usage("Options --runtime and --rtdist cannot be specified at the same time!")
@@ -809,30 +812,30 @@ if GetTarget() == 'android':
 
 def printStatus(header,warnings):
     if GetVerbose():
-        print ""
-        print "-------------------------------------------------------------------"
-        print header
+        print("")
+        print("-------------------------------------------------------------------")
+        print(header)
         tkeep = ""
         tomit = ""
         for x in PkgListGet():
             if (PkgSkip(x)==0): tkeep = tkeep + x + " "
             else:                  tomit = tomit + x + " "
-        if RTDIST:  print "Makepanda: Runtime distribution build"
-        elif RUNTIME: print "Makepanda: Runtime build"
-        else:        print "Makepanda: Regular build"
-        print "Makepanda: Compiler:",COMPILER
-        print "Makepanda: Optimize:",GetOptimize()
-        print "Makepanda: Keep Pkg:",tkeep
-        print "Makepanda: Omit Pkg:",tomit
-        if (GENMAN): print "Makepanda: Generate API reference manual"
-        else       : print "Makepanda: Don't generate API reference manual"
+        if RTDIST:  print("Makepanda: Runtime distribution build")
+        elif RUNTIME: print("Makepanda: Runtime build")
+        else:        print("Makepanda: Regular build")
+        print("Makepanda: Compiler:",COMPILER)
+        print("Makepanda: Optimize:",GetOptimize())
+        print("Makepanda: Keep Pkg:",tkeep)
+        print("Makepanda: Omit Pkg:",tomit)
+        if (GENMAN): print("Makepanda: Generate API reference manual")
+        else       : print("Makepanda: Don't generate API reference manual")
         if (sys.platform == "win32" and not RTDIST):
-            if INSTALLER:  print "Makepanda: Build installer, using",COMPRESSOR
-            else        :  print "Makepanda: Don't build installer"
-        print "Makepanda: Version ID: "+VERSION
-        for x in warnings: print "Makepanda: "+x
-        print "-------------------------------------------------------------------"
-        print ""
+            if INSTALLER:  print("Makepanda: Build installer, using",COMPRESSOR)
+            else        :  print("Makepanda: Don't build installer")
+        print("Makepanda: Version ID: "+VERSION)
+        for x in warnings: print("Makepanda: "+x)
+        print("-------------------------------------------------------------------")
+        print("")
         sys.stdout.flush()
 
 ########################################################################
@@ -1133,10 +1136,10 @@ def CompileIgate(woutd,wsrc,opts):
     library = GetValueOption(opts, "ILIB:")
     ipath = GetListOption(opts, "DIR:")
     if (PkgSkip("PYTHON")):
-        WriteFile(woutc,"")
-        WriteFile(woutd,"")
-        CompileCxx(wobj,woutc,opts)
-        ConditionalWriteFile(woutd,"")
+        WriteFile(woutc, "")
+        WriteFile(woutd, "")
+        CompileCxx(wobj, woutc, opts)
+        ConditionalWriteFile(woutd, "")
         return
 
     if not CrossCompiling():
@@ -1202,8 +1205,8 @@ def CompileImod(wobj, wsrc, opts):
     if (COMPILER=="GCC"):
         woutc = wobj[:-2]+".cxx"
     if (PkgSkip("PYTHON")):
-        WriteFile(woutc,"")
-        CompileCxx(wobj,woutc,opts)
+        WriteFile(woutc, "")
+        CompileCxx(wobj, woutc, opts)
         return
 
     if not CrossCompiling():
@@ -1709,15 +1712,15 @@ def CompileAnything(target, inputs, opts, progress = None):
 
         # Add version number to the dynamic library, on unix
         if origsuffix==".dll" and "MODULE" not in opts and not RTDIST:
-            target = GetTarget()
-            if target == "darwin":
+            tplatform = GetTarget()
+            if tplatform == "darwin":
                 # On Mac, libraries are named like libpanda.1.2.dylib
-                if target.lower().endswith(".dylib"):
-                    target = target[:-5] + MAJOR_VERSION + ".dylib"
+                if tplatform.lower().endswith(".dylib"):
+                    tplatform = tplatform[:-5] + MAJOR_VERSION + ".dylib"
                     SetOrigExt(target, origsuffix)
-            elif target != "windows" and target != "android":
+            elif tplatform != "windows" and tplatform != "android":
                 # On Linux, libraries are named like libpanda.so.1.2
-                target = target + "." + MAJOR_VERSION
+                tplatform += "." + MAJOR_VERSION
                 SetOrigExt(target, origsuffix)
         return CompileLink(target, inputs, opts)
     elif (origsuffix==".in"):
@@ -2100,7 +2103,6 @@ def WriteConfigSettings():
             val = OverrideValue(key, prc_parameters[key])
             if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
             else:                conf = conf + "#define " + key + " " + val + "\n"
-            del prc_parameters[key]
     ConditionalWriteFile(GetOutputDir() + '/include/prc_parameters.h', conf)
 
     conf = "/* dtool_config.h.  Generated automatically by makepanda.py */\n"
@@ -2108,7 +2110,6 @@ def WriteConfigSettings():
         val = OverrideValue(key, dtool_config[key])
         if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
         else:                conf = conf + "#define " + key + " " + val + "\n"
-        del dtool_config[key]
     ConditionalWriteFile(GetOutputDir() + '/include/dtool_config.h', conf)
 
     if (RTDIST or RUNTIME):
@@ -2117,7 +2118,6 @@ def WriteConfigSettings():
             val = plugin_config[key]
             if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
             else:                conf = conf + "#define " + key + " \"" + val.replace("\\", "\\\\") + "\"\n"
-            del plugin_config[key]
         ConditionalWriteFile(GetOutputDir() + '/include/p3d_plugin_config.h', conf)
 
     if (PkgSkip("SPEEDTREE")==0):
@@ -2126,7 +2126,6 @@ def WriteConfigSettings():
             val = OverrideValue(key, speedtree_parameters[key])
             if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
             else:                conf = conf + "#define " + key + " \"" + val.replace("\\", "\\\\") + "\"\n"
-            del speedtree_parameters[key]
         ConditionalWriteFile(GetOutputDir() + '/include/speedtree_parameters.h', conf)
 
     for x in PkgListGet():
@@ -2137,9 +2136,9 @@ WriteConfigSettings()
 
 MoveAwayConflictingFiles()
 if "libdtoolbase" in GetLibCache():
-    print "%sWARNING:%s Found conflicting Panda3D libraries from other ppremake build!" % (GetColor("red"), GetColor())
+    print("%sWARNING:%s Found conflicting Panda3D libraries from other ppremake build!" % (GetColor("red"), GetColor()))
 if "libp3dtoolconfig" in GetLibCache():
-    print "%sWARNING:%s Found conflicting Panda3D libraries from other makepanda build!" % (GetColor("red"), GetColor())
+    print("%sWARNING:%s Found conflicting Panda3D libraries from other makepanda build!" % (GetColor("red"), GetColor()))
 
 ##########################################################################################
 #
@@ -2672,7 +2671,7 @@ COMMON_EGG2X_LIBS_PYSTUB = COMMON_EGG2X_LIBS + ['libp3pystub.lib']
 #
 ########################################################################
 
-print "Generating dependencies..."
+print("Generating dependencies...")
 sys.stdout.flush()
 
 #
@@ -5677,7 +5676,7 @@ def BuildWorker(taskqueue, donequeue):
         sys.stdout.flush()
         if (task == 0): return
         try:
-            apply(task[0],task[1])
+            task[0](*task[1])
             donequeue.put(task)
         except:
             donequeue.put(0)
@@ -5699,8 +5698,8 @@ def AllSourcesReady(task, pending):
 
 def ParallelMake(tasklist):
     # Create the communication queues.
-    donequeue=Queue.Queue()
-    taskqueue=Queue.Queue()
+    donequeue = Queue.Queue()
+    taskqueue = Queue.Queue()
     # Build up a table listing all the pending targets
     #task = [CompileAnything, [name, inputs, opts], [name], deps, []]
     # task[2] = [name]
@@ -5727,12 +5726,12 @@ def ParallelMake(tasklist):
             pending[target] = 1
     # Create the workers
     for slave in range(THREADCOUNT):
-        th = threading.Thread(target=BuildWorker, args=[taskqueue,donequeue])
+        th = threading.Thread(target=BuildWorker, args=[taskqueue, donequeue])
         th.setDaemon(1)
         th.start()
     # Feed tasks to the workers.
     tasksqueued = 0
-    while (1):
+    while True:
         if (tasksqueued < THREADCOUNT):
             extras = []
             for task in tasklist:
@@ -5760,7 +5759,7 @@ def ParallelMake(tasklist):
     for slave in range(THREADCOUNT):
         taskqueue.put(0)
     # Make sure there aren't any unsatisfied tasks
-    if (len(tasklist)>0):
+    if len(tasklist) > 0:
         exit("Dependency problems: " + str(len(tasklist)) + " tasks not finished. First task unsatisfied: "+str(tasklist[0][2]))
     SequentialMake(tasklist_seq)
 
@@ -5769,7 +5768,7 @@ def SequentialMake(tasklist):
     i = 0
     for task in tasklist:
         if (NeedsBuild(task[2], task[3])):
-            apply(task[0], task[1] + [(i * 100.0) / len(tasklist)])
+            task[0](*task[1] + [(i * 100.0) / len(tasklist)])
             JustBuilt(task[2], task[3])
         i += 1
 
@@ -5809,7 +5808,7 @@ def MakeInstallerNSIS(file, fullname, smdirectory, installdir):
         shutil.move("direct\\src\\plugin_installer\\p3d-setup.exe", file)
         return
 
-    print "Building "+fullname+" installer. This can take up to an hour."
+    print("Building "+fullname+" installer. This can take up to an hour.")
     if (COMPRESSOR != "lzma"):
         print("Note: you are using zlib, which is faster, but lzma gives better compression.")
     if (os.path.exists("nsis-output.exe")):
@@ -5838,11 +5837,11 @@ def MakeInstallerNSIS(file, fullname, smdirectory, installdir):
 
     if GetHost() == 'windows':
         cmd = os.path.join(GetThirdpartyBase(), 'win-nsis', 'makensis') + ' /V2'
-        for item in nsis_defs.iteritems():
+        for item in nsis_defs.items():
             cmd += ' /D%s="%s"' % item
     else:
         cmd = 'makensis -V2'
-        for item in nsis_defs.iteritems():
+        for item in nsis_defs.items():
             cmd += ' -D%s="%s"' % item
 
     cmd += ' "%s"' % (os.path.join(psource, 'direct', 'src', 'directscripts', 'packpanda.nsi'))
@@ -5967,6 +5966,41 @@ Info_plist = """<?xml version="1.0" encoding="UTF-8"?>
   <true/>
 </dict>
 </plist>
+"""
+
+MAC_POSTINSTALL = """#!/usr/bin/python
+import os, sys, plistlib
+home = os.environ['HOME']
+if not os.path.isdir(os.path.join(home, '.MacOSX')):
+    sys.exit()
+plist = dict()
+envfile = os.path.join(home, '.MacOSX', 'environment.plist')
+if os.path.exists(envfile):
+    try:
+        plist = plistlib.readPlist(envfile)
+    except: sys.exit(0)
+else:
+    sys.exit(0)
+paths = {'PATH' : '/Developer/Tools/Panda3D', 'DYLD_LIBRARY_PATH' : '/Developer/Panda3D/lib', 'PYTHONPATH' : '/Developer/Panda3D/lib',
+         'MAYA_SCRIPT_PATH' : '/Developer/Panda3D/plugins', 'MAYA_PLUG_IN_PATH' : '/Developer/Panda3D/plugins'}
+for env, path in dict(paths).items():
+    if env in plist:
+        paths = plist[env].split(':')
+        if '' in paths: paths.remove('')
+        if path in paths: paths.remove(path)
+        if len(paths) == 0:
+            del plist[env]
+        else:
+            plist[env] = ':'.join(paths)
+if len(plist) == 0:
+    os.remove(envfile)
+else:
+    plistlib.writePlist(plist, envfile)
+"""
+
+MAC_POSTFLIGHT = """#!/usr/bin/env bash"
+RESULT=`/usr/bin/open 'http://www.panda3d.org/wiki/index.php/Getting_Started_on_OSX'`"
+exit 0
 """
 
 # FreeBSD pkg-descr
@@ -6115,39 +6149,10 @@ def MakeInstallerOSX():
     # Temporary script that should clean up the poison that the early 1.7.0 builds injected into environment.plist
     oscmd("mkdir -p dstroot/scripts/base/")
     postinstall = open("dstroot/scripts/base/postinstall", "w")
-    print >>postinstall, "#!/usr/bin/python"
-    print >>postinstall, "import os, sys, plistlib"
-    print >>postinstall, "home = os.environ['HOME']"
-    print >>postinstall, "if not os.path.isdir(os.path.join(home, '.MacOSX')):"
-    print >>postinstall, "    sys.exit()"
-    print >>postinstall, "plist = dict()"
-    print >>postinstall, "envfile = os.path.join(home, '.MacOSX', 'environment.plist')"
-    print >>postinstall, "if os.path.exists(envfile):"
-    print >>postinstall, "    try:"
-    print >>postinstall, "        plist = plistlib.readPlist(envfile)"
-    print >>postinstall, "    except: sys.exit(0)"
-    print >>postinstall, "else:"
-    print >>postinstall, "    sys.exit(0)"
-    print >>postinstall, "paths = {'PATH' : '/Developer/Tools/Panda3D', 'DYLD_LIBRARY_PATH' : '/Developer/Panda3D/lib', 'PYTHONPATH' : '/Developer/Panda3D/lib',"
-    print >>postinstall, "         'MAYA_SCRIPT_PATH' : '/Developer/Panda3D/plugins', 'MAYA_PLUG_IN_PATH' : '/Developer/Panda3D/plugins'}"
-    print >>postinstall, "for env, path in paths.items():"
-    print >>postinstall, "    if env in plist:"
-    print >>postinstall, "        paths = plist[env].split(':')"
-    print >>postinstall, "        if '' in paths: paths.remove('')"
-    print >>postinstall, "        if path in paths: paths.remove(path)"
-    print >>postinstall, "        if len(paths) == 0:"
-    print >>postinstall, "            del plist[env]"
-    print >>postinstall, "        else:"
-    print >>postinstall, "            plist[env] = ':'.join(paths)"
-    print >>postinstall, "if len(plist) == 0:"
-    print >>postinstall, "    os.remove(envfile)"
-    print >>postinstall, "else:"
-    print >>postinstall, "    plistlib.writePlist(plist, envfile)"
+    postinstall.write(MAC_POSTINSTALL)
     postinstall.close()
     postflight = open("dstroot/scripts/base/postflight", "w")
-    print >>postflight, "#!/usr/bin/env bash\n"
-    print >>postflight, "RESULT=`/usr/bin/open 'http://www.panda3d.org/wiki/index.php/Getting_Started_on_OSX'`"
-    print >>postflight, "\nexit 0"
+    postflight.write(MAC_POSTFLIGHT)
     postflight.close()
     oscmd("chmod +x dstroot/scripts/base/postinstall")
     oscmd("chmod +x dstroot/scripts/base/postflight")
@@ -6200,24 +6205,25 @@ def MakeInstallerOSX():
     # Dummy package uninstall16 which just contains a preflight script to remove /Applications/Panda3D/ .
     oscmd("mkdir -p dstroot/scripts/uninstall16/")
     preflight = open("dstroot/scripts/uninstall16/preflight", "w")
-    print >>preflight, "#!/usr/bin/python"
-    print >>preflight, "import os, re, sys, shutil"
-    print >>preflight, "if os.path.isdir('/Applications/Panda3D'): shutil.rmtree('/Applications/Panda3D')"
-    print >>preflight, "bash_profile = os.path.join(os.environ['HOME'], '.bash_profile')"
-    print >>preflight, "if not os.path.isfile(bash_profile): sys.exit(0)"
-    print >>preflight, "pattern = re.compile('''PANDA_VERSION=[0-9][.][0-9][.][0-9]"
-    print >>preflight, "PANDA_PATH=/Applications/Panda3D/[$A-Z.0-9_]+"
-    print >>preflight, "if \[ -d \$PANDA_PATH \]"
-    print >>preflight, "then(.+?)fi"
-    print >>preflight, "''', flags = re.DOTALL | re.MULTILINE)"
-    print >>preflight, "bpfile = open(bash_profile, 'r')"
-    print >>preflight, "bpdata = bpfile.read()"
-    print >>preflight, "bpfile.close()"
-    print >>preflight, "newbpdata = pattern.sub('', bpdata)"
-    print >>preflight, "if newbpdata == bpdata: sys.exit(0)"
-    print >>preflight, "bpfile = open(bash_profile, 'w')"
-    print >>preflight, "bpfile.write(newbpdata)"
-    print >>preflight, "bpfile.close()"
+    preflight.write(
+        "#!/usr/bin/python\n"
+        "import os, re, sys, shutil\n"
+        "if os.path.isdir('/Applications/Panda3D'): shutil.rmtree('/Applications/Panda3D')\n"
+        "bash_profile = os.path.join(os.environ['HOME'], '.bash_profile')\n"
+        "if not os.path.isfile(bash_profile): sys.exit(0)\n"
+        "pattern = re.compile('''PANDA_VERSION=[0-9][.][0-9][.][0-9]\n"
+        "PANDA_PATH=/Applications/Panda3D/[$A-Z.0-9_]+\n"
+        "if \[ -d \$PANDA_PATH \]\n"
+        "then(.+?)fi\n"
+        "''', flags = re.DOTALL | re.MULTILINE)\n"
+        "bpfile = open(bash_profile, 'r')\n"
+        "bpdata = bpfile.read()\n"
+        "bpfile.close()\n"
+        "newbpdata = pattern.sub('', bpdata)\n"
+        "if newbpdata == bpdata: sys.exit(0)\n"
+        "bpfile = open(bash_profile, 'w')\n"
+        "bpfile.write(newbpdata)\n"
+        "bpfile.close()\n")
     preflight.close()
     oscmd("chmod +x dstroot/scripts/uninstall16/preflight")
 
@@ -6260,55 +6266,55 @@ def MakeInstallerOSX():
 
     # Now that we've built all of the individual packages, build the metapackage.
     dist = open("dstroot/Panda3D/Panda3D.mpkg/Contents/distribution.dist", "w")
-    print >>dist, '<?xml version="1.0" encoding="utf-8"?>'
-    print >>dist, '<installer-script minSpecVersion="1.000000" authoringTool="com.apple.PackageMaker" authoringToolVersion="3.0.3" authoringToolBuild="174">'
-    print >>dist, '    <title>Panda3D</title>'
-    print >>dist, '    <options customize="always" allow-external-scripts="no" rootVolumeOnly="false"/>'
-    # The following script is to enable the "Uninstall 1.6.x" option only when Panda3D 1.6.x is actually installed.
-    print >>dist, '''    <script>
-function have16installed() {
-  return system.files.fileExistsAtPath(my.target.mountpoint + '/Applications/Panda3D');
-}</script>'''
-    print >>dist, '    <license language="en" mime-type="text/plain">%s</license>' % ReadFile("doc/LICENSE")
-    print >>dist, '    <choices-outline>'
-    print >>dist, '        <line choice="uninstall16"/>'
-    print >>dist, '        <line choice="base"/>'
-    print >>dist, '        <line choice="tools"/>'
+    dist.write('<?xml version="1.0" encoding="utf-8"?>\n')
+    dist.write('<installer-script minSpecVersion="1.000000" authoringTool="com.apple.PackageMaker" authoringToolVersion="3.0.3" authoringToolBuild="174">\n')
+    dist.write('    <title>Panda3D</title>\n')
+    dist.write('    <options customize="always" allow-external-scripts="no" rootVolumeOnly="false"/>\n')
+    dist.write('    <script>\n')
+    dist.write('    function have16installed() {\n')
+    dist.write('        return system.files.fileExistsAtPath(my.target.mountpoint + \'/Applications/Panda3D\');\n')
+    dist.write('    }\n')
+    dist.write('    </script>\n')
+    dist.write('    <license language="en" mime-type="text/plain">%s</license>\n' % ReadFile("doc/LICENSE"))
+    dist.write('    <choices-outline>\n')
+    dist.write('        <line choice="uninstall16"/>\n')
+    dist.write('        <line choice="base"/>\n')
+    dist.write('        <line choice="tools"/>\n')
     if PkgSkip("PYTHON")==0:
-        print >>dist, '        <line choice="pythoncode"/>'
+        dist.write('        <line choice="pythoncode"/>\n')
     if os.path.isdir("samples"):
-        print >>dist, '        <line choice="samples"/>'
-    print >>dist, '        <line choice="headers"/>'
-    print >>dist, '    </choices-outline>'
-    print >>dist, '    <choice id="uninstall16" title="Uninstall Panda3D 1.6.x" tooltip="Uninstalls Panda3D 1.6.x before installing Panda3D %s" description="If this option is checked, Panda3D 1.6.x is removed from /Applications/Panda3D/ before the new version is installed. This is recommended to avoid library conflicts. WARNING: EVERYTHING UNDER /Applications/Panda3D WILL BE DELETED. MAKE SURE YOU HAVE BACKED UP IMPORTANT DATA!" selected="have16installed()" enabled="have16installed()" visible="have16installed()">' % VERSION
-    print >>dist, '        <pkg-ref id="org.panda3d.panda3d.uninstall16.pkg"/>'
-    print >>dist, '    </choice>'
-    print >>dist, '    <choice id="base" title="Panda3D Base Installation" description="This package contains the Panda3D libraries, configuration files and models/textures that are needed to use Panda3D. Location: /Developer/Panda3D/" start_enabled="false">'
-    print >>dist, '        <pkg-ref id="org.panda3d.panda3d.base.pkg"/>'
-    print >>dist, '    </choice>'
-    print >>dist, '    <choice id="tools" title="Tools" tooltip="Useful tools and model converters to help with Panda3D development" description="This package contains the various utilities that ship with Panda3D, including packaging tools, model converters, and many more. Location: /Developer/Tools/Panda3D/">'
-    print >>dist, '        <pkg-ref id="org.panda3d.panda3d.tools.pkg"/>'
-    print >>dist, '    </choice>'
+        dist.write('        <line choice="samples"/>\n')
+    dist.write('        <line choice="headers"/>\n')
+    dist.write('    </choices-outline>\n')
+    dist.write('    <choice id="uninstall16" title="Uninstall Panda3D 1.6.x" tooltip="Uninstalls Panda3D 1.6.x before installing Panda3D %s" description="If this option is checked, Panda3D 1.6.x is removed from /Applications/Panda3D/ before the new version is installed. This is recommended to avoid library conflicts. WARNING: EVERYTHING UNDER /Applications/Panda3D WILL BE DELETED. MAKE SURE YOU HAVE BACKED UP IMPORTANT DATA!" selected="have16installed()" enabled="have16installed()" visible="have16installed()">\n' % VERSION)
+    dist.write('        <pkg-ref id="org.panda3d.panda3d.uninstall16.pkg"/>\n')
+    dist.write('    </choice>\n')
+    dist.write('    <choice id="base" title="Panda3D Base Installation" description="This package contains the Panda3D libraries, configuration files and models/textures that are needed to use Panda3D. Location: /Developer/Panda3D/" start_enabled="false">\n')
+    dist.write('        <pkg-ref id="org.panda3d.panda3d.base.pkg"/>\n')
+    dist.write('    </choice>\n')
+    dist.write('    <choice id="tools" title="Tools" tooltip="Useful tools and model converters to help with Panda3D development" description="This package contains the various utilities that ship with Panda3D, including packaging tools, model converters, and many more. Location: /Developer/Tools/Panda3D/">\n')
+    dist.write('        <pkg-ref id="org.panda3d.panda3d.tools.pkg"/>\n')
+    dist.write('    </choice>\n')
     if PkgSkip("PYTHON")==0:
-        print >>dist, '    <choice id="pythoncode" title="Python Code" tooltip="Code you\'ll need for Python development" description="This package contains the \'direct\', \'pandac\' and \'panda3d\' python packages that are needed to do Python development with Panda3D. Location: /Developer/Panda3D/">'
-        print >>dist, '        <pkg-ref id="org.panda3d.panda3d.pythoncode.pkg"/>'
-        print >>dist, '    </choice>'
+        dist.write('    <choice id="pythoncode" title="Python Code" tooltip="Code you\'ll need for Python development" description="This package contains the \'direct\', \'pandac\' and \'panda3d\' python packages that are needed to do Python development with Panda3D. Location: /Developer/Panda3D/">\n')
+        dist.write('        <pkg-ref id="org.panda3d.panda3d.pythoncode.pkg"/>\n')
+        dist.write('    </choice>\n')
     if os.path.isdir("samples"):
-        print >>dist, '    <choice id="samples" title="Sample Programs" tooltip="Python sample programs that use Panda3D" description="This package contains the Python sample programs that can help you with learning how to use Panda3D. Location: /Developer/Examples/Panda3D/">'
-        print >>dist, '        <pkg-ref id="org.panda3d.panda3d.samples.pkg"/>'
-        print >>dist, '    </choice>'
-    print >>dist, '    <choice id="headers" title="C++ Header Files" tooltip="Header files for C++ development with Panda3D" description="This package contains the C++ header files that are needed in order to do C++ development with Panda3D. You don\'t need this if you want to develop in Python. Location: /Developer/Panda3D/include/" start_selected="false">'
-    print >>dist, '        <pkg-ref id="org.panda3d.panda3d.headers.pkg"/>'
-    print >>dist, '    </choice>'
-    print >>dist, '    <pkg-ref id="org.panda3d.panda3d.uninstall16.pkg" installKBytes="0" version="1" auth="Root">file:./Contents/Packages/uninstall16.pkg</pkg-ref>'
-    print >>dist, '    <pkg-ref id="org.panda3d.panda3d.base.pkg" installKBytes="%d" version="1" auth="Root">file:./Contents/Packages/base.pkg</pkg-ref>' % (GetDirectorySize("dstroot/base") / 1024)
-    print >>dist, '    <pkg-ref id="org.panda3d.panda3d.tools.pkg" installKBytes="%d" version="1" auth="Root">file:./Contents/Packages/tools.pkg</pkg-ref>' % (GetDirectorySize("dstroot/tools") / 1024)
+        dist.write('    <choice id="samples" title="Sample Programs" tooltip="Python sample programs that use Panda3D" description="This package contains the Python sample programs that can help you with learning how to use Panda3D. Location: /Developer/Examples/Panda3D/">\n')
+        dist.write('        <pkg-ref id="org.panda3d.panda3d.samples.pkg"/>\n')
+        dist.write('    </choice>\n')
+    dist.write('    <choice id="headers" title="C++ Header Files" tooltip="Header files for C++ development with Panda3D" description="This package contains the C++ header files that are needed in order to do C++ development with Panda3D. You don\'t need this if you want to develop in Python. Location: /Developer/Panda3D/include/" start_selected="false">\n')
+    dist.write('        <pkg-ref id="org.panda3d.panda3d.headers.pkg"/>\n')
+    dist.write('    </choice>\n')
+    dist.write('    <pkg-ref id="org.panda3d.panda3d.uninstall16.pkg" installKBytes="0" version="1" auth="Root">file:./Contents/Packages/uninstall16.pkg</pkg-ref>\n')
+    dist.write('    <pkg-ref id="org.panda3d.panda3d.base.pkg" installKBytes="%d" version="1" auth="Root">file:./Contents/Packages/base.pkg</pkg-ref>\n' % (GetDirectorySize("dstroot/base") // 1024))
+    dist.write('    <pkg-ref id="org.panda3d.panda3d.tools.pkg" installKBytes="%d" version="1" auth="Root">file:./Contents/Packages/tools.pkg</pkg-ref>\n' % (GetDirectorySize("dstroot/tools") // 1024))
     if PkgSkip("PYTHON")==0:
-        print >>dist, '    <pkg-ref id="org.panda3d.panda3d.pythoncode.pkg" installKBytes="%d" version="1" auth="Root">file:./Contents/Packages/pythoncode.pkg</pkg-ref>' % (GetDirectorySize("dstroot/pythoncode") / 1024)
+        dist.write('    <pkg-ref id="org.panda3d.panda3d.pythoncode.pkg" installKBytes="%d" version="1" auth="Root">file:./Contents/Packages/pythoncode.pkg</pkg-ref>\n' % (GetDirectorySize("dstroot/pythoncode") // 1024))
     if os.path.isdir("samples"):
-        print >>dist, '    <pkg-ref id="org.panda3d.panda3d.samples.pkg" installKBytes="%d" version="1" auth="Root">file:./Contents/Packages/samples.pkg</pkg-ref>' % (GetDirectorySize("dstroot/samples") / 1024)
-    print >>dist, '    <pkg-ref id="org.panda3d.panda3d.headers.pkg" installKBytes="%d" version="1" auth="Root">file:./Contents/Packages/headers.pkg</pkg-ref>' % (GetDirectorySize("dstroot/headers") / 1024)
-    print >>dist, '</installer-script>'
+        dist.write('    <pkg-ref id="org.panda3d.panda3d.samples.pkg" installKBytes="%d" version="1" auth="Root">file:./Contents/Packages/samples.pkg</pkg-ref>\n' % (GetDirectorySize("dstroot/samples") // 1024))
+    dist.write('    <pkg-ref id="org.panda3d.panda3d.headers.pkg" installKBytes="%d" version="1" auth="Root">file:./Contents/Packages/headers.pkg</pkg-ref>\n' % (GetDirectorySize("dstroot/headers") // 1024))
+    dist.write('</installer-script>\n')
     dist.close()
 
     oscmd('hdiutil create Panda3D-rw.dmg -srcfolder dstroot/Panda3D')
@@ -6410,4 +6416,4 @@ MoveBackConflictingFiles()
 WARNINGS.append("Elapsed Time: "+PrettyTime(time.time() - STARTTIME))
 
 printStatus("Makepanda Final Status Report", WARNINGS)
-print GetColor("green") + "Build successfully finished, elapsed time: " + PrettyTime(time.time() - STARTTIME) + GetColor()
+print(GetColor("green") + "Build successfully finished, elapsed time: " + PrettyTime(time.time() - STARTTIME) + GetColor())
