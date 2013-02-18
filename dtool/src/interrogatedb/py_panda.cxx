@@ -679,13 +679,14 @@ PyObject *make_list_for_item(PyObject *self, const char *num_name,
     return NULL;
   }
 
+  Py_ssize_t num_elements;
 #if PY_MAJOR_VERSION >= 3
-  Py_ssize_t num_elements = PyLong_AsSsize_t(num_result);
+  num_elements = PyLong_AsSsize_t(num_result);
 #else
   if (PyLong_Check(num_result)) {
-    Py_ssize_t num_elements = PyLong_AsSsize_t(num_result);
+    num_elements = PyLong_AsSsize_t(num_result);
   } else {
-    Py_ssize_t num_elements = PyInt_AsSsize_t(num_result);
+    num_elements = PyInt_AsSsize_t(num_result);
   }
 #endif
   Py_DECREF(num_result);
