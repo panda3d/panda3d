@@ -65,6 +65,7 @@ extern "C" {
   EXPCL_PYSTUB int PyList_Type(...);
   EXPCL_PYSTUB int PyLong_AsLong(...);
   EXPCL_PYSTUB int PyLong_AsLongLong(...);
+  EXPCL_PYSTUB int PyLong_AsSsize_t(...);
   EXPCL_PYSTUB int PyLong_AsUnsignedLong(...);
   EXPCL_PYSTUB int PyLong_AsUnsignedLongLong(...);
   EXPCL_PYSTUB int PyLong_FromLong(...);
@@ -207,6 +208,7 @@ int PyList_SetItem(...) { return 0; }
 int PyList_Type(...) { return 0; }
 int PyLong_AsLong(...) { return 0; }
 int PyLong_AsLongLong(...) { return 0; }
+int PyLong_AsSsize_t(...) { return 0; }
 int PyLong_AsUnsignedLong(...) { return 0; }
 int PyLong_AsUnsignedLongLong(...) { return 0; }
 int PyLong_FromLong(...) { return 0; }
