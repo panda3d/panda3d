@@ -683,11 +683,7 @@ PyObject *make_list_for_item(PyObject *self, const char *num_name,
 #if PY_MAJOR_VERSION >= 3
   num_elements = PyLong_AsSsize_t(num_result);
 #else
-  if (PyLong_Check(num_result)) {
-    num_elements = PyLong_AsSsize_t(num_result);
-  } else {
-    num_elements = PyInt_AsSsize_t(num_result);
-  }
+  num_elements = PyInt_AsSsize_t(num_result);
 #endif
   Py_DECREF(num_result);
   
