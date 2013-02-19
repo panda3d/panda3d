@@ -126,7 +126,7 @@ auto_collide() {
   if (_auto_collide_world == NULL) {
     odespace_cat.error() << "No collide world has been set!\n";
   } else {
-    nassertr(_id, 0);
+    nassertv(_id != NULL);
     _static_auto_collide_space = this;
     _static_auto_collide_world = _auto_collide_world;
     _static_auto_collide_joint_group = _auto_collide_joint_group;
