@@ -1464,18 +1464,21 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
         LibName(target_pkg, "-lswscale")
         return
 
-    if (os.path.isdir(GetThirdpartyDir() + pkg.lower())):
-        if os.path.isdir(GetThirdpartyDir() + pkg.lower() + "/include"):
-            IncDirectory(target_pkg, GetThirdpartyDir() + pkg.lower() + "/include")
-        if os.path.isdir(GetThirdpartyDir() + pkg.lower() + "/lib"):
-            LibDirectory(target_pkg, GetThirdpartyDir() + pkg.lower() + "/lib")
+    pkg_dir = os.path.join(GetThirdpartyDir(), pkg.lower())
+    if (os.path.isdir(pkg_dir)):
+        if os.path.isdir(os.path.join(pkg_dir, "include")):
+            IncDirectory(target_pkg, os.path.join(pkg_dir, "include"))
+        if os.path.isdir(os.path.join(pkg_dir, "lib")):
+            LibDirectory(target_pkg, os.path.join(pkg_dir, "lib"))
 
         if (PkgSkip("PYTHON") == 0):
-            LibDirectory(target_pkg, GetThirdpartyDir() + pkg.lower() + "/lib/" + SDK["PYTHONVERSION"])
+            py_lib_dir = os.path.join(pkg_dir, "lib", SDK["PYTHONVERSION"])
+            if os.path.isdir(py_lib_dir):
+                LibDirectory(target_pkg, py_lib_dir)
 
         # TODO: check for a .pc file in the lib/pkg-config/ dir
-        if (tool != None and os.path.isfile(GetThirdpartyDir() + pkg.lower() + "/bin/" + tool)):
-            tool = GetThirdpartyDir() + pkg.lower() + "/bin/" + tool
+        if (tool != None and os.path.isfile(os.path.join(pkg_dir, "bin", tool))):
+            tool = os.path.join(pkg_dir, "bin", tool)
             for i in PkgConfigGetLibs(None, tool):
                 LibName(target_pkg, i)
             for i, j in PkgConfigGetDefSymbols(None, tool).items():
@@ -1484,11 +1487,11 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
 
         for l in libs:
             libname = l
-            if (l.startswith("lib")):
+            if l.startswith("lib"):
                 libname = l[3:]
             # This is for backward compatibility - in the thirdparty dir, we kept some libs with "panda" prefix, like libpandatiff.
-            if (len(glob.glob(GetThirdpartyDir() + pkg.lower() + "/lib/libpanda%s.*" % libname)) > 0 and
-                len(glob.glob(GetThirdpartyDir() + pkg.lower() + "/lib/lib%s.*" % libname)) == 0):
+            if len(glob.glob(os.path.join(pkg_dir, "lib", "libpanda%s.*" % (libname)))) > 0 \
+               and len(glob.glob(os.path.join(pkg_dir, "lib", "lib%s.*" % (libname)))) == 0:
                 libname = "panda" + libname
             LibName(target_pkg, "-l" + libname)
 
