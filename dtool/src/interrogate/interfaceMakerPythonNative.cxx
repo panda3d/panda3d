@@ -1742,9 +1742,9 @@ write_module_class(ostream &out, Object *obj) {
     out << "#endif\n";
   }
 
-  if (has_local_richcompare) {
-    out << "        Dtool_" << ClassName << ".As_PyTypeObject().tp_richcompare = &Dtool_RichCompare_" << ClassName << ";\n";
-  }
+//  if (has_local_richcompare) {
+//    out << "        Dtool_" << ClassName << ".As_PyTypeObject().tp_richcompare = &Dtool_RichCompare_" << ClassName << ";\n";
+//  }
 
   if (has_local_repr) {
     out << "        // __repr__\n";
