@@ -903,7 +903,8 @@ def ReadFile(wfile):
         data = srchandle.read()
         srchandle.close()
         return data
-    except ex:
+    except:
+        ex = sys.exc_info()[1]
         exit("Cannot read %s: %s" % (wfile, ex))
 
 def ReadBinaryFile(wfile):
@@ -912,7 +913,8 @@ def ReadBinaryFile(wfile):
         data = srchandle.read()
         srchandle.close()
         return data
-    except ex:
+    except:
+        ex = sys.exc_info()[1]
         exit("Cannot read %s: %s" % (wfile, ex))
 
 def WriteFile(wfile, data):
@@ -920,7 +922,8 @@ def WriteFile(wfile, data):
         dsthandle = open(wfile, "w")
         dsthandle.write(data)
         dsthandle.close()
-    except ex:
+    except:
+        ex = sys.exc_info()[1]
         exit("Cannot write to %s: %s" % (wfile, ex))
 
 def WriteBinaryFile(wfile, data):
@@ -928,7 +931,8 @@ def WriteBinaryFile(wfile, data):
         dsthandle = open(wfile, "wb")
         dsthandle.write(data)
         dsthandle.close()
-    except ex:
+    except:
+        ex = sys.exc_info()[1]
         exit("Cannot write to %s: %s" % (wfile, ex))
 
 def ConditionalWriteFile(dest, desiredcontents):
