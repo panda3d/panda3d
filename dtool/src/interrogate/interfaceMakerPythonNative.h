@@ -92,10 +92,13 @@ private:
                                FunctionRemap *remap, string &expected_params, 
                                int indent_level, bool errors_fatal, 
                                ostream &forwarddecl, const std::string &functionnamestr,
-                               bool is_inplace, bool coercion_possible);
+                               bool is_inplace, bool coercion_possible,
+                               const string &args_cleanup);
   
   void write_function_forset(ostream &out, Object *obj, Function *func,
-                             std::set<FunctionRemap*> &remaps, string &expected_params, int indent_level, ostream &forwarddecl, bool inplace);
+                             std::set<FunctionRemap*> &remaps, string &expected_params,
+                             int indent_level, ostream &forwarddecl, bool inplace,
+                             const string &args_cleanup);
   
   void pack_return_value(ostream &out, int indent_level,
                          FunctionRemap *remap, std::string return_expr, ostream &forwarddecl, bool in_place);
@@ -107,7 +110,7 @@ private:
   void write_class_declarations(ostream &out, ostream *out_h, Object *obj);
   void write_class_details(ostream &out, Object *obj);
   
-  void do_assert_init(ostream &out, int &indent_level, bool constructor) const;
+  void do_assert_init(ostream &out, int &indent_level, bool constructor, const string &args_cleanup) const;
 public:
   bool isRemapLegal(FunctionRemap &remap);
   bool isFunctionLegal( Function *func);

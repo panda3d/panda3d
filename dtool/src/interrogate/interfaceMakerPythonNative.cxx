@@ -1605,21 +1605,24 @@ write_module_class(ostream &out, Object *obj) {
   }
 
   if (NeedsARichCompareFunction(obj->_itype)) {
-    //NB. It's a bit inefficient to first pack the 'other' arg into a tuple only to be
-    // parsed by PyArg_Parse again later, but there's no obvious other way to do it.
+    // NB. It's a bit inefficient to first pack the 'other' arg into a
+    // tuple only to be parsed by PyArg_Parse again later, but there's
+    // no obvious other way to do it.
     out << "//////////////////\n";
     out << "//  A rich comparison function\n";
     out << "//     " << ClassName << "\n";
     out << "//////////////////\n";
     out << "static PyObject *Dtool_RichCompare_" << ClassName << "(PyObject *self, PyObject *other, int op) {\n";
-    out << "  PyObject *args = PyTuple_Pack(1, other);\n";
     out << "  PyObject *kwds = NULL;\n";
     out << "  " << cClassName  << " *local_this = NULL;\n";
     out << "  DTOOL_Call_ExtractThisPointerForType(self, &Dtool_" << ClassName << ", (void **)&local_this);\n";
     out << "  if (local_this == NULL) {\n";
     out << "    PyErr_SetString(PyExc_AttributeError, \"C++ object is not yet constructed, or already destructed.\");\n";
     out << "    return NULL;\n";
-    out << "  }\n\n";
+    out << "  }\n";
+    out << "  PyObject *args = PyTuple_Pack(1, other);\n";
+    string args_cleanup = "Py_DECREF(args);";
+    out << "\n";
 
     out << "  switch (op) {\n";
     for (fi = obj->_methods.begin(); fi != obj->_methods.end(); ++fi) {
@@ -1654,13 +1657,20 @@ write_module_class(ostream &out, Object *obj) {
       }
       ostringstream forward_decl;
       string expected_params;
-      write_function_forset(out, obj, func, remaps, expected_params, 2, forward_decl, false);
+      write_function_forset(out, obj, func, remaps, expected_params, 2, forward_decl, false, args_cleanup);
+      out << "  if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_TypeError)) {\n";
+      out << "    PyErr_Clear();\n";
+      out << "  }\n";
       out << "  break;\n";
       has_local_richcompare = true;
     }
 
     out << "  }\n";
-    out << "  Py_DECREF(args);\n";
+    out << "  " << args_cleanup << "\n";
+    out << "  if (PyErr_Occurred()) {\n";
+    out << "    return (PyObject *)NULL;\n";
+    out << "  }\n";
+
     out << "  Py_INCREF(Py_NotImplemented);\n";
     out << "  return Py_NotImplemented;\n";
     out << "}\n\n";
@@ -2032,7 +2042,7 @@ write_function_for_name(ostream &out1, InterfaceMaker::Object *obj, InterfaceMak
     for (mii = MapSets.begin(); mii != MapSets.end(); mii ++) {
       indent(out, 2) << "case " << mii->first << ": {\n";
 
-      write_function_forset(out, obj, func, mii->second, expected_params, 4, forward_decl, is_inplace);
+      write_function_forset(out, obj, func, mii->second, expected_params, 4, forward_decl, is_inplace, "");
       if ((*mii->second.begin())->_type == FunctionRemap::T_constructor) {
         constructor = true;
       }
@@ -2097,7 +2107,7 @@ write_function_for_name(ostream &out1, InterfaceMaker::Object *obj, InterfaceMak
   } else {
     string expected_params = "";
     for (mii = MapSets.begin(); mii != MapSets.end(); mii++) {
-      write_function_forset(out, obj, func, mii->second, expected_params, 2, forward_decl, is_inplace);
+      write_function_forset(out, obj, func, mii->second, expected_params, 2, forward_decl, is_inplace, "");
       if ((*mii->second.begin())->_type == FunctionRemap::T_constructor) {
         constructor = true;
       }
@@ -2245,7 +2255,8 @@ write_function_forset(ostream &out, InterfaceMaker::Object *obj,
                       InterfaceMaker::Function *func, 
                       std::set<FunctionRemap *> &remapsin, 
                       string &expected_params, int indent_level, 
-                      ostream &forward_decl, bool is_inplace) {
+                      ostream &forward_decl, bool is_inplace,
+                      const string &args_cleanup) {
   // Do we accept any parameters that are class objects?  If so, we
   // might need to check for parameter coercion.
   bool coercion_possible = false;
@@ -2315,7 +2326,7 @@ write_function_forset(ostream &out, InterfaceMaker::Object *obj,
         indent(out, indent_level) << "// -2 ";
         remap->write_orig_prototype(out, 0); out << "\n";
 
-        write_function_instance(out, obj, func, remap, expected_params, indent_level + 2, false, forward_decl, func->_name, is_inplace, coercion_possible);
+        write_function_instance(out, obj, func, remap, expected_params, indent_level + 2, false, forward_decl, func->_name, is_inplace, coercion_possible, args_cleanup);
 
         indent(out, indent_level + 2) << "PyErr_Clear(); \n";
         indent(out, indent_level) << "}\n\n";            
@@ -2342,7 +2353,7 @@ write_function_forset(ostream &out, InterfaceMaker::Object *obj,
           << "// 1-" ;
         remap->write_orig_prototype(out, 0); 
         out << "\n" ;
-        write_function_instance(out, obj, func, remap, expected_params, indent_level + 2, true, forward_decl, func->_name, is_inplace, coercion_possible);
+        write_function_instance(out, obj, func, remap, expected_params, indent_level + 2, true, forward_decl, func->_name, is_inplace, coercion_possible, args_cleanup);
 
         if (remap->_has_this && !remap->_const_method) {
           indent(out, indent_level)
@@ -2355,6 +2366,10 @@ write_function_forset(ostream &out, InterfaceMaker::Object *obj,
             << classNameFromCppName(class_name, false)
             << "." << methodNameFromCppName(func, class_name, false)
             << "() on a const object.\");\n";
+          if (!args_cleanup.empty()) {
+            indent(out, indent_level + 2)
+              << args_cleanup << "\n";
+          }
           indent(out, indent_level + 2)
             << "return (PyObject *) NULL;\n";
           indent(out, indent_level)
@@ -2420,7 +2435,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
                         int indent_level, bool errors_fatal, 
                         ostream &ForwardDeclrs, 
                         const std::string &functionnamestr, bool is_inplace,
-                        bool coercion_possible) {
+                        bool coercion_possible, const string &args_cleanup) {
   string format_specifiers;
   std::string keyword_list;
   string parameter_list;
@@ -2788,6 +2803,10 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
       indent(out, extra_indent_level + 2)
         << "Py_XDECREF(coerced);\n";
     }
+    if (!args_cleanup.empty()) {
+      indent(out, extra_indent_level + 2)
+        << args_cleanup << "\n";
+    }
     indent(out, extra_indent_level + 2)
       << "PyErr_SetString(PyExc_IndexError, \"Out of bounds.\");\n";
     indent(out, extra_indent_level + 2)
@@ -2835,7 +2854,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
     }
 
     return_expr = manage_return_value(out, 4, remap, "return_value");
-    do_assert_init(out, extra_indent_level,is_constructor);
+    do_assert_init(out, extra_indent_level, is_constructor, args_cleanup);
     pack_return_value(out, extra_indent_level, remap, return_expr, ForwardDeclrs, is_inplace);
 
   } else {
@@ -2869,7 +2888,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
         indent(out, extra_indent_level)
           << "Py_XDECREF(coerced);\n";
       }
-      do_assert_init(out, extra_indent_level,is_constructor);
+      do_assert_init(out, extra_indent_level, is_constructor, args_cleanup);
       indent(out, extra_indent_level) << "return Py_BuildValue(\"\");\n";
 
     } else {
@@ -2899,7 +2918,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
         indent(out, extra_indent_level)
           << "Py_XDECREF(coerced);\n";
       }
-      do_assert_init(out, extra_indent_level,is_constructor);
+      do_assert_init(out, extra_indent_level, is_constructor, args_cleanup);
       pack_return_value(out, extra_indent_level, remap, remap->_return_type->temporary_to_return(return_expr), ForwardDeclrs, is_inplace);
     }
   }
@@ -3168,7 +3187,7 @@ pack_return_value(ostream &out, int indent_level,
       }
       else
       {
-        indent(out, indent_level) << "  Shouln Never Reach This InterfaceMakerPythonNative::pack_return_value";
+        indent(out, indent_level) << "  Should Never Reach This InterfaceMakerPythonNative::pack_return_value";
             //<< "return PyInt_FromLong((int)" << return_expr << ");\n";
       }
 
@@ -3545,7 +3564,7 @@ bool InterfaceMakerPythonNative::isFunctionWithThis( Function *func)
 //               failed while the C++ code was executing, and report
 //               this failure back to Python.
 ////////////////////////////////////////////////////////////////////
-void InterfaceMakerPythonNative::do_assert_init(ostream &out, int &indent_level, bool constructor) const {
+void InterfaceMakerPythonNative::do_assert_init(ostream &out, int &indent_level, bool constructor, const string &args_cleanup) const {
   // If a method raises TypeError, continue.
   indent(out, indent_level)
     << "if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_TypeError)) {\n";
@@ -3558,6 +3577,11 @@ void InterfaceMakerPythonNative::do_assert_init(ostream &out, int &indent_level,
   indent(out, indent_level)
     << "} else {\n";
   indent_level += 2;
+
+  if (!args_cleanup.empty()) {
+    indent(out, indent_level)
+      << args_cleanup << "\n";
+  }
 
   if (watch_asserts) {
     out << "#ifndef NDEBUG\n";
@@ -3907,7 +3931,6 @@ NeedsARichCompareFunction(const InterrogateType &itype_class) {
   for (mi = 0; mi < num_methods; ++mi) {
     FunctionIndex func_index = itype_class.get_method(mi);
     const InterrogateFunction &ifunc = idb->get_function(func_index);
-    int op;
     if (ifunc.get_name() == "operator <") {
       return true;
     }
