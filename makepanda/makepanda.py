@@ -5698,8 +5698,8 @@ def AllSourcesReady(task, pending):
 
 def ParallelMake(tasklist):
     # Create the communication queues.
-    donequeue = Queue.Queue()
-    taskqueue = Queue.Queue()
+    donequeue = queue.Queue()
+    taskqueue = queue.Queue()
     # Build up a table listing all the pending targets
     #task = [CompileAnything, [name, inputs, opts], [name], deps, []]
     # task[2] = [name]
