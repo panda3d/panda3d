@@ -1669,7 +1669,7 @@ write_module_class(ostream &out, Object *obj) {
     out << "  " << args_cleanup << "\n";
     out << "  if (PyErr_Occurred()) {\n";
     out << "    return (PyObject *)NULL;\n";
-    out << "  }\n";
+    out << "  }\n\n";
 
     out << "  Py_INCREF(Py_NotImplemented);\n";
     out << "  return Py_NotImplemented;\n";
@@ -1752,9 +1752,9 @@ write_module_class(ostream &out, Object *obj) {
     out << "#endif\n";
   }
 
-//  if (has_local_richcompare) {
-//    out << "        Dtool_" << ClassName << ".As_PyTypeObject().tp_richcompare = &Dtool_RichCompare_" << ClassName << ";\n";
-//  }
+  if (has_local_richcompare) {
+    out << "        Dtool_" << ClassName << ".As_PyTypeObject().tp_richcompare = &Dtool_RichCompare_" << ClassName << ";\n";
+  }
 
   if (has_local_repr) {
     out << "        // __repr__\n";
