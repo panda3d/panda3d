@@ -63,6 +63,16 @@ set_localhost(int port) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NetAddress::set_broadcast
+//       Access: Public
+//  Description: Sets the address to the broadcast address.
+////////////////////////////////////////////////////////////////////
+bool NetAddress::
+set_broadcast(int port) {
+  return _addr.set_broadcast(port);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NetAddress::set_host
 //       Access: Public
 //  Description: Sets the address up to refer to a particular port

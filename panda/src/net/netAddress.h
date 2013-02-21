@@ -31,6 +31,7 @@ PUBLISHED:
 
   bool set_any(int port);
   bool set_localhost(int port);
+  bool set_broadcast(int port);
   bool set_host(const string &hostname, int port);
 
   void clear();

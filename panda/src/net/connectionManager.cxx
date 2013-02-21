@@ -68,21 +68,67 @@ ConnectionManager::
 ////////////////////////////////////////////////////////////////////
 PT(Connection) ConnectionManager::
 open_UDP_connection(int port) {
+  return open_UDP_connection("", port);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConnectionManager::open_UDP_connection
+//       Access: Published
+//  Description: Opens a socket for sending and/or receiving UDP
+//               packets.  If the port number is greater than zero,
+//               the UDP connection will be opened for listening on
+//               the indicated port; otherwise, it will be useful only
+//               for sending.
+//
+//               This variant accepts both a hostname and port to
+//               listen on a particular interface; if the hostname is
+//               empty, all interfaces will be available.
+//
+//               If for_broadcast is true, this UDP connection will be
+//               configured to send and/or receive messages on the
+//               broadcast address (255.255.255.255); otherwise, these
+//               messages may be automatically filtered by the OS.
+//
+//               Use a ConnectionReader and ConnectionWriter to handle
+//               the actual communication.
+////////////////////////////////////////////////////////////////////
+PT(Connection) ConnectionManager::
+open_UDP_connection(const string &hostname, int port, bool for_broadcast) {
   Socket_UDP *socket = new Socket_UDP;
 
   if (port > 0) {
     NetAddress address;
-    address.set_any(port);
+    if (hostname.empty()) {
+      address.set_any(port);
+    } else {
+      address.set_host(hostname, port);
+    }
     
     if (!socket->OpenForInput(address.get_addr())) {
-      net_cat.error()
-        << "Unable to bind to port " << port << " for UDP.\n";
+      if (hostname.empty()) {
+        net_cat.error()
+          << "Unable to bind to port " << port << " for UDP.\n";
+      } else {
+        net_cat.error()
+          << "Unable to bind to " << hostname << ":" << port << " for UDP.\n";
+      }        
       delete socket;
       return PT(Connection)();
     }
 
-    net_cat.info()
-      << "Creating UDP connection for port " << port << "\n";
+    const char *broadcast_note = "";
+    if (for_broadcast) {
+      socket->SetToBroadCast();
+      broadcast_note = "broadcast ";
+    }
+
+    if (hostname.empty()) {
+      net_cat.info()
+        << "Creating UDP " << broadcast_note << "connection for port " << port << "\n";
+    } else {
+      net_cat.info()
+        << "Creating UDP " << broadcast_note << "connection for " << hostname << ":" << port << "\n";
+    }
 
   } else {
     if (!socket->InitNoAddress()) {
@@ -92,8 +138,14 @@ open_UDP_connection(int port) {
       return PT(Connection)();
     }
 
+    const char *broadcast_note = "";
+    if (for_broadcast) {
+      socket->SetToBroadCast();
+      broadcast_note = "broadcast ";
+    }
+
     net_cat.info()
-      << "Creating outgoing UDP connection\n";
+      << "Creating outgoing UDP " << broadcast_note << "connection\n";
   }
 
   PT(Connection) connection = new Connection(this, socket);
@@ -259,7 +311,7 @@ open_TCP_client_connection(const NetAddress &address, int timeout_ms) {
 #endif  // SIMPLE_THREADS
 
   net_cat.info()
-    << "Opened TCP connection to server " << address.get_ip_string() << " "
+    << "Opened TCP connection to server " << address.get_ip_string()
     << " on port " << address.get_port() << "\n";
 
   PT(Connection) connection = new Connection(this, socket);

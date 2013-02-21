@@ -49,6 +49,7 @@ PUBLISHED:
   virtual ~ConnectionManager();
 
   PT(Connection) open_UDP_connection(int port = 0);
+  PT(Connection) open_UDP_connection(const string &hostname, int port, bool for_broadcast = false);
 
   BLOCKING PT(Connection) open_TCP_server_rendezvous(int port, int backlog);
   BLOCKING PT(Connection) open_TCP_server_rendezvous(const string &hostname, 
