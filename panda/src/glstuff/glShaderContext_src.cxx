@@ -397,7 +397,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
             continue;
           }
           
-          if (param_size==1) {
+          if (param_size == 1) {
             switch (param_type) {
 #ifndef OPENGLES
               case GL_SAMPLER_1D_SHADOW:
@@ -836,9 +836,9 @@ issue_parameters(GSG *gsg, int altered) {
         }
         GLint p = _glsl_parameter_map[_shader->_ptr_spec[i]._id._seqno];
         switch(_ptr._dim[1]) {
-          case 1: gsg->_glUniform4fv(p, _ptr._dim[0], (float*)_ptr_data->_ptr); continue;
-          case 2: gsg->_glUniform4fv(p, _ptr._dim[0], (float*)_ptr_data->_ptr); continue;
-          case 3: gsg->_glUniform4fv(p, _ptr._dim[0], (float*)_ptr_data->_ptr); continue;
+          case 1: gsg->_glUniform1fv(p, _ptr._dim[0], (float*)_ptr_data->_ptr); continue;
+          case 2: gsg->_glUniform2fv(p, _ptr._dim[0], (float*)_ptr_data->_ptr); continue;
+          case 3: gsg->_glUniform3fv(p, _ptr._dim[0], (float*)_ptr_data->_ptr); continue;
           case 4: gsg->_glUniform4fv(p, _ptr._dim[0], (float*)_ptr_data->_ptr); continue;
         }
       }

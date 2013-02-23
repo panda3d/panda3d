@@ -130,7 +130,7 @@ ShaderInput(const InternalName *name, const LVecBase4f &vec, int priority) :
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(vec),
-  _stored_vector(LCAST(PN_stdfloat, vec)) //old GLSL inputs must be supported
+  _stored_vector(LCAST(PN_stdfloat, vec))
 {
 }
 
@@ -144,7 +144,8 @@ ShaderInput(const InternalName *name, const LVecBase3f &vec, int priority) :
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(vec)
+  _stored_ptr(vec),
+  _stored_vector(vec.get_x(), vec.get_y(), vec.get_z(), 0.0)
 {
 }
 
@@ -158,7 +159,8 @@ ShaderInput(const InternalName *name, const LVecBase2f &vec, int priority) :
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(vec)
+  _stored_ptr(vec),
+  _stored_vector(vec.get_x(), vec.get_y(), 0.0, 0.0)
 {
 }
 
@@ -285,7 +287,7 @@ ShaderInput(const InternalName *name, const LVecBase4d &vec, int priority) :
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(vec),
-  _stored_vector(LCAST(PN_stdfloat, vec)) //old GLSL inputs must be supported
+  _stored_vector(LCAST(PN_stdfloat, vec))
 {
 }
 
@@ -299,7 +301,8 @@ ShaderInput(const InternalName *name, const LVecBase3d &vec, int priority) :
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(vec)
+  _stored_ptr(vec),
+  _stored_vector(vec.get_x(), vec.get_y(), vec.get_z(), 0.0)
 {
 }
 
@@ -313,7 +316,8 @@ ShaderInput(const InternalName *name, const LVecBase2d &vec, int priority) :
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(vec)
+  _stored_ptr(vec),
+  _stored_vector(vec.get_x(), vec.get_y(), 0.0, 0.0)
 {
 }
 
