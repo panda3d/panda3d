@@ -259,32 +259,6 @@ sync_b2p() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::set_debug_node
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void BulletWorld::
-set_debug_node(BulletDebugNode *node) {
-
-  nassertv(node);
-
-  _debug = node;
-  _world->setDebugDrawer(&(_debug->_drawer));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::clear_debug_node
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-void BulletWorld::
-clear_debug_node() {
-
-  _debug = NULL;
-  _world->setDebugDrawer(NULL);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: BulletWorld::attach
 //       Access: Published
 //  Description:

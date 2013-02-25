@@ -61,10 +61,12 @@ PUBLISHED:
 
   int do_physics(PN_stdfloat dt, int max_substeps=1, PN_stdfloat stepsize=1.0f/60.0f);
 
-  void set_debug_node(BulletDebugNode *node);
-  void clear_debug_node();
-
   BulletSoftBodyWorldInfo get_world_info();
+
+  // Debug
+  INLINE void set_debug_node(BulletDebugNode *node);
+  INLINE void clear_debug_node();
+  INLINE BulletDebugNode *get_debug_node() const;
 
   // Attach/Remove
   void attach(TypedObject *object);

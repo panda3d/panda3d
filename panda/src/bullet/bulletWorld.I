@@ -55,6 +55,43 @@ INLINE BulletWorld::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BulletWorld::set_debug_node
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void BulletWorld::
+set_debug_node(BulletDebugNode *node) {
+
+  nassertv(node);
+
+  _debug = node;
+  _world->setDebugDrawer(&(_debug->_drawer));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletWorld::clear_debug_node
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void BulletWorld::
+clear_debug_node() {
+
+  _debug = NULL;
+  _world->setDebugDrawer(NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletWorld::get_debug_node
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE BulletDebugNode *BulletWorld::
+get_debug_node() const {
+
+  return _debug;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BulletWorld::get_world
 //       Access: Public
 //  Description:
