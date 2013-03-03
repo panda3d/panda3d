@@ -77,7 +77,7 @@ class pygame(package):
     require('panda3d', 'numpy')
 
     module('pygame', required = True)
-    module('pygame.*')
+    module('pygame.*', 'pygame._view')
 
 class twisted(package):
     config(display_name = "Twisted")
