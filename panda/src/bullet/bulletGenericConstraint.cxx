@@ -143,3 +143,25 @@ set_angular_limit(int axis, PN_stdfloat low, PN_stdfloat high) {
   _constraint->setLimit(axis + 3, low, high);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BulletGenericConstraint::get_rotational_limit_motor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+BulletRotationalLimitMotor BulletGenericConstraint::
+get_rotational_limit_motor(int axis) {
+
+  return BulletRotationalLimitMotor(*_constraint->getRotationalLimitMotor(axis));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletGenericConstraint::get_translational_limit_motor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+BulletTranslationalLimitMotor BulletGenericConstraint::
+get_translational_limit_motor() {
+
+  return BulletTranslationalLimitMotor(*_constraint->getTranslationalLimitMotor());
+}
+

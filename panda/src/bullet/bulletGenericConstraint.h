@@ -20,6 +20,8 @@
 #include "bullet_includes.h"
 #include "bullet_utils.h"
 #include "bulletConstraint.h"
+#include "bulletRotationalLimitMotor.h"
+#include "bulletTranslationalLimitMotor.h"
 
 #include "transformState.h"
 #include "luse.h"
@@ -43,18 +45,26 @@ PUBLISHED:
                           bool use_frame_a);
   INLINE ~BulletGenericConstraint();
 
-  void set_linear_limit(int axis, PN_stdfloat low, PN_stdfloat high);
-  void set_angular_limit(int axis, PN_stdfloat low, PN_stdfloat high);
-
+  // Geometry
   LVector3 get_axis(int axis) const;
   PN_stdfloat get_pivot(int axis) const;
   PN_stdfloat get_angle(int axis) const;
+
+  // Limit
+  void set_linear_limit(int axis, PN_stdfloat low, PN_stdfloat high);
+  void set_angular_limit(int axis, PN_stdfloat low, PN_stdfloat high);
+
+  // Motors
+  BulletRotationalLimitMotor get_rotational_limit_motor(int axis);
+  BulletTranslationalLimitMotor get_translational_limit_motor();
 
 public:
   virtual btTypedConstraint *ptr() const;
 
 private:
   btGeneric6DofConstraint *_constraint;
+
+//TODO btRotationalLimitMotor *  getRotationalLimitMotor (int index) 
 
 ////////////////////////////////////////////////////////////////////
 public:
