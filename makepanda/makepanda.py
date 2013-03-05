@@ -1599,9 +1599,14 @@ def Package(target, inputs, opts):
     command = SDK["PYTHONEXEC"]
     if (GetOptimizeOption(opts) >= 4):
         command += " -OO"
-    command += " direct/src/p3d/ppackage.py -u"
-    if (GetTarget() == "darwin" and "MACOSX" in SDK and SDK["MACOSX"] != None and len(SDK["MACOSX"]) > 1):
-        command += " -R \"%s\"" % SDK["MACOSX"]
+    command += " direct/src/p3d/ppackage.py"
+
+    if GetTarget() == "darwin":
+        if SDK.get("MACOSX") is not None:
+            command += " -R \"%s\"" % SDK["MACOSX"]
+        if UNIVERSAL:
+            command += " -u"
+
     command += " -i \"" + GetOutputDir() + "/stage\""
     if (P3DSUFFIX):
         command += ' -a "' + P3DSUFFIX + '"'
