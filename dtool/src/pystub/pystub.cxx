@@ -94,6 +94,7 @@ extern "C" {
   EXPCL_PYSTUB int PyObject_IsInstance(...);
   EXPCL_PYSTUB int PyObject_IsTrue(...);
   EXPCL_PYSTUB int PyObject_Repr(...);
+  EXPCL_PYSTUB int PyObject_RichCompareBool(...);
   EXPCL_PYSTUB int PyObject_SetAttrString(...);
   EXPCL_PYSTUB int PyObject_Str(...);
   EXPCL_PYSTUB int PyObject_Type(...);
@@ -237,6 +238,7 @@ int PyObject_HasAttrString(...) { return 0; }
 int PyObject_IsInstance(...) { return 0; }
 int PyObject_IsTrue(...) { return 0; }
 int PyObject_Repr(...) { return 0; }
+int PyObject_RichCompareBool(...) { return 0; }
 int PyObject_SetAttrString(...) { return 0; }
 int PyObject_Str(...) { return 0; }
 int PyObject_Type(...) { return 0; }
