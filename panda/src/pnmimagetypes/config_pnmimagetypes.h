@@ -57,6 +57,8 @@ extern ConfigVariableBool tga_grayscale;
 
 extern ConfigVariableInt jpeg_quality;
 
+extern ConfigVariableBool png_palette;
+
 extern ConfigVariableInt bmp_bpp;
 
 enum IMGHeaderType {

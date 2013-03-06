@@ -86,6 +86,10 @@ ConfigVariableInt jpeg_quality
           "significantly better quality, but do lead to significantly greater "
           "size)."));
 
+ConfigVariableBool png_palette
+("png-palette", true,
+ PRC_DESC("Set this true to allow writing palette-based PNG images when possible."));
+
 
 ConfigVariableInt bmp_bpp
 ("bmp-bpp", 0,

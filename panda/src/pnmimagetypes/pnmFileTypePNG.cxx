@@ -585,74 +585,81 @@ write_data(xel *array, xelval *alpha_data) {
   // otherwise.
   Palette palette;
   HistMap palette_lookup;
-  png_color png_palette[png_max_palette];
+  png_color png_palette_table[png_max_palette];
   png_byte png_trans[png_max_palette];
 
-  if (png_bit_depth <= 8) {
-    if (compute_palette(palette, array, alpha_data, png_max_palette)) {
-      pnmimage_png_cat.debug()
-        << palette.size() << " colors found.\n";
-
-      int palette_bit_depth = make_png_bit_depth(pm_maxvaltobits(palette.size() - 1));
-
-      int total_bits = png_bit_depth;
-      if (!is_grayscale()) {
-        total_bits *= 3;
-      }
-      if (has_alpha()) {
-        total_bits += png_bit_depth;
-      }
-
-      if (palette_bit_depth < total_bits) {
+  if (png_palette) {
+    if (png_bit_depth <= 8) {
+      if (compute_palette(palette, array, alpha_data, png_max_palette)) {
         pnmimage_png_cat.debug()
-          << "palette bit depth of " << palette_bit_depth
-          << " improves on bit depth of " << total_bits 
-          << "; making a palette image.\n";
-
-        color_type = PNG_COLOR_TYPE_PALETTE;
-
-        // Re-sort the palette to put the semitransparent pixels at the
-        // beginning.
-        sort(palette.begin(), palette.end(), LowAlphaCompare());
+          << palette.size() << " colors found.\n";
         
-        int num_alpha = 0;
-        for (int i = 0; i < (int)palette.size(); i++) {
-          png_palette[i].red = palette[i]._red;
-          png_palette[i].green = palette[i]._green;
-          png_palette[i].blue = palette[i]._blue;
-          png_trans[i] = palette[i]._alpha;
-          if (palette[i]._alpha != _maxval) {
-            num_alpha = i + 1;
-          }
+        int palette_bit_depth = make_png_bit_depth(pm_maxvaltobits(palette.size() - 1));
+        
+        int total_bits = png_bit_depth;
+        if (!is_grayscale()) {
+          total_bits *= 3;
+        }
+        if (has_alpha()) {
+          total_bits += png_bit_depth;
+        }
+        
+        if (palette_bit_depth < total_bits ||
+            _maxval != (1 << true_bit_depth) - 1) {
+          pnmimage_png_cat.debug()
+            << "palette bit depth of " << palette_bit_depth
+            << " improves on bit depth of " << total_bits 
+            << "; making a palette image.\n";
+
+          color_type = PNG_COLOR_TYPE_PALETTE;
+
+          // Re-sort the palette to put the semitransparent pixels at the
+          // beginning.
+          sort(palette.begin(), palette.end(), LowAlphaCompare());
+        
+          double palette_scale = 255.0 / _maxval;
+
+          int num_alpha = 0;
+          for (int i = 0; i < (int)palette.size(); i++) {
+            png_palette_table[i].red = (int)(palette[i]._red * palette_scale + 0.5);
+            png_palette_table[i].green = (int)(palette[i]._green * palette_scale + 0.5);
+            png_palette_table[i].blue = (int)(palette[i]._blue * palette_scale + 0.5);
+            png_trans[i] = (int)(palette[i]._alpha * palette_scale + 0.5);
+            if (palette[i]._alpha != _maxval) {
+              num_alpha = i + 1;
+            }
           
-          // Also build a reverse-lookup from color to palette index in
-          // the "histogram" structure.
-          palette_lookup[palette[i]] = i;
+            // Also build a reverse-lookup from color to palette index in
+            // the "histogram" structure.
+            palette_lookup[palette[i]] = i;
+          }
+
+          png_set_PLTE(_png, _info, png_palette_table, palette.size());
+          if (has_alpha()) {
+            pnmimage_png_cat.debug()
+              << "palette contains " << num_alpha << " transparent entries.\n";
+            png_set_tRNS(_png, _info, png_trans, num_alpha, NULL);
+          }
+        } else {
+          pnmimage_png_cat.debug()
+            << "palette bit depth of " << palette_bit_depth
+            << " does not improve on bit depth of " << total_bits 
+            << "; not making a palette image.\n";
         }
 
-        png_set_PLTE(_png, _info, png_palette, palette.size());
-        if (has_alpha()) {
-          pnmimage_png_cat.debug()
-            << "palette contains " << num_alpha << " transparent entries.\n";
-          png_set_tRNS(_png, _info, png_trans, num_alpha, NULL);
-        }
       } else {
         pnmimage_png_cat.debug()
-          << "palette bit depth of " << palette_bit_depth
-          << " does not improve on bit depth of " << total_bits 
-          << "; not making a palette image.\n";
+          << "more than " << png_max_palette
+          << " colors found; not making a palette image.\n";
       }
-
     } else {
       pnmimage_png_cat.debug()
-        << "more than " << png_max_palette
-        << " colors found; not making a palette image.\n";
+        << "maxval exceeds 255; not making a palette image.\n";
     }
   } else {
     pnmimage_png_cat.debug()
-      << "maxval exceeds 255; not making a palette image.\n";
+      << "palette images are not enabled.\n";
   }
-  
 
   pnmimage_png_cat.debug()
     << "width = " << _x_size << " height = " << _y_size
@@ -676,11 +683,16 @@ write_data(xel *array, xelval *alpha_data) {
     png_set_packing(_png);
   }
 
-  if (png_bit_depth != true_bit_depth && color_type != PNG_COLOR_TYPE_PALETTE) {
-    // This does assume that _maxval is one less than a power of 2.
-    // If it is not, the PNG image will be written as if it were the
-    // next-higher power of 2, darkening the image.
-    png_set_shift(_png, &sig_bit);
+  double val_scale = 1.0;
+
+  if (color_type != PNG_COLOR_TYPE_PALETTE) {
+    if (png_bit_depth != true_bit_depth) {
+      png_set_shift(_png, &sig_bit);
+    }
+    // Since this assumes that _maxval is one less than a power of 2,
+    // we set val_scale to the appropriate factor in case it is not.
+    int png_maxval = (1 << png_bit_depth) - 1;
+    val_scale = (double)png_maxval / (double)_maxval;
   }
 
   int row_byte_length = _x_size * _num_channels;
@@ -706,75 +718,127 @@ write_data(xel *array, xelval *alpha_data) {
   bool save_color = !is_grayscale();
   bool save_alpha = has_alpha();
 
-  int pi = 0;
-  for (int yi = 0; yi < num_rows; yi++) {
-    png_bytep dest = row;
+  if (val_scale == 1.0) {
+    // No scale needed; we're already a power of 2.
+    int pi = 0;
+    for (int yi = 0; yi < num_rows; yi++) {
+      png_bytep dest = row;
 
-    if (color_type == PNG_COLOR_TYPE_PALETTE) {
-      for (int xi = 0; xi < _x_size; xi++) {
-        int index;
+      if (color_type == PNG_COLOR_TYPE_PALETTE) {
+        for (int xi = 0; xi < _x_size; xi++) {
+          int index;
 
-        if (save_color) {
-          if (save_alpha) {
-            index = palette_lookup[PixelSpec(PPM_GETR(array[pi]), PPM_GETG(array[pi]), PPM_GETB(array[pi]), alpha_data[pi])];
+          if (save_color) {
+            if (save_alpha) {
+              index = palette_lookup[PixelSpec(PPM_GETR(array[pi]), PPM_GETG(array[pi]), PPM_GETB(array[pi]), alpha_data[pi])];
+            } else {
+              index = palette_lookup[PixelSpec(PPM_GETR(array[pi]), PPM_GETG(array[pi]), PPM_GETB(array[pi]))];
+            }
           } else {
-            index = palette_lookup[PixelSpec(PPM_GETR(array[pi]), PPM_GETG(array[pi]), PPM_GETB(array[pi]))];
+            if (save_alpha) {
+              index = palette_lookup[PixelSpec(PPM_GETB(array[pi]), alpha_data[pi])];
+            } else {
+              index = palette_lookup[PixelSpec(PPM_GETB(array[pi]))];
+            }
           }
-        } else {
+
+          *dest++ = index;
+          pi++;
+        }
+
+      } else if (png_bit_depth > 8) {
+        for (int xi = 0; xi < _x_size; xi++) {
+          if (save_color) {
+            xelval red = PPM_GETR(array[pi]);
+            *dest++ = (red >> 8) & 0xff;
+            *dest++ = red & 0xff;
+            xelval green = PPM_GETG(array[pi]);
+            *dest++ = (green >> 8) & 0xff;
+            *dest++ = green & 0xff;
+          }
+          xelval blue = PPM_GETB(array[pi]);
+          *dest++ = (blue >> 8) & 0xff;
+          *dest++ = blue & 0xff;
+
           if (save_alpha) {
-            index = palette_lookup[PixelSpec(PPM_GETB(array[pi]), alpha_data[pi])];
-          } else {
-            index = palette_lookup[PixelSpec(PPM_GETB(array[pi]))];
+            xelval alpha = alpha_data[pi];
+            *dest++ = (alpha >> 8) & 0xff;
+            *dest++ = alpha & 0xff;
           }
+          pi++;
         }
 
-        *dest++ = index;
-        pi++;
+      } else {
+        for (int xi = 0; xi < _x_size; xi++) {
+          if (save_color) {
+            *dest++ = PPM_GETR(array[pi]);
+            *dest++ = PPM_GETG(array[pi]);
+          }
+
+          *dest++ = PPM_GETB(array[pi]);
+
+          if (save_alpha) {
+            *dest++ = alpha_data[pi];
+          }
+          pi++;
+        }
       }
 
-    } else if (png_bit_depth > 8) {
-      for (int xi = 0; xi < _x_size; xi++) {
-        if (save_color) {
-          xelval red = PPM_GETR(array[pi]);
-          *dest++ = (red >> 8) & 0xff;
-          *dest++ = red & 0xff;
-          xelval green = PPM_GETG(array[pi]);
-          *dest++ = (green >> 8) & 0xff;
-          *dest++ = green & 0xff;
-        }
-        xelval blue = PPM_GETB(array[pi]);
-        *dest++ = (blue >> 8) & 0xff;
-        *dest++ = blue & 0xff;
-
-        if (save_alpha) {
-          xelval alpha = alpha_data[pi];
-          *dest++ = (alpha >> 8) & 0xff;
-          *dest++ = alpha & 0xff;
-        }
-        pi++;
-      }
-
-    } else {
-      for (int xi = 0; xi < _x_size; xi++) {
-        if (save_color) {
-          *dest++ = PPM_GETR(array[pi]);
-          *dest++ = PPM_GETG(array[pi]);
-        }
-
-        *dest++ = PPM_GETB(array[pi]);
-
-        if (save_alpha) {
-          *dest++ = alpha_data[pi];
-        }
-        pi++;
-      }
+      nassertr(dest <= row + row_byte_length, yi);
+      png_write_row(_png, row);
+      Thread::consider_yield();
     }
+  } else {
+    // Here we might need to scale each component to match the png
+    // requirement.
+    nassertr(color_type != PNG_COLOR_TYPE_PALETTE, 0);
+    int pi = 0;
+    for (int yi = 0; yi < num_rows; yi++) {
+      png_bytep dest = row;
 
-    nassertr(dest <= row + row_byte_length, yi);
-    png_write_row(_png, row);
-    Thread::consider_yield();
+      if (png_bit_depth > 8) {
+        for (int xi = 0; xi < _x_size; xi++) {
+          if (save_color) {
+            xelval red = (xelval)(PPM_GETR(array[pi]) * val_scale + 0.5);
+            *dest++ = (red >> 8) & 0xff;
+            *dest++ = red & 0xff;
+            xelval green = (xelval)(PPM_GETG(array[pi]) * val_scale + 0.5);
+            *dest++ = (green >> 8) & 0xff;
+            *dest++ = green & 0xff;
+          }
+          xelval blue = (xelval)(PPM_GETB(array[pi]) * val_scale + 0.5);
+          *dest++ = (blue >> 8) & 0xff;
+          *dest++ = blue & 0xff;
+
+          if (save_alpha) {
+            xelval alpha = (xelval)(alpha_data[pi] * val_scale + 0.5);
+            *dest++ = (alpha >> 8) & 0xff;
+            *dest++ = alpha & 0xff;
+          }
+          pi++;
+        }
+
+      } else {
+        for (int xi = 0; xi < _x_size; xi++) {
+          if (save_color) {
+            *dest++ = (xelval)(PPM_GETR(array[pi]) * val_scale + 0.5);
+            *dest++ = (xelval)(PPM_GETG(array[pi]) * val_scale + 0.5);
+          }
+
+          *dest++ = (xelval)(PPM_GETB(array[pi]) * val_scale + 0.5);
+
+          if (save_alpha) {
+            *dest++ = (xelval)(alpha_data[pi] * val_scale + 0.5);
+          }
+          pi++;
+        }
+      }
+
+      nassertr(dest <= row + row_byte_length, yi);
+      png_write_row(_png, row);
+      Thread::consider_yield();
+    }
   }
-
   PANDA_FREE_ARRAY(row);
 
   png_write_end(_png, NULL);
