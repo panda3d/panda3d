@@ -548,3 +548,53 @@ void PfmFile::
 swap_table(vector_float &table) {
   _table.swap(table);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::setup_sub_image
+//       Access: Private
+//  Description: Computes xmin, ymin, xmax, and ymax, based on the
+//               input parameters for copy_sub_image() and related
+//               methods.
+////////////////////////////////////////////////////////////////////
+INLINE void PfmFile::
+setup_sub_image(const PfmFile &copy, int &xto, int &yto,
+                int &xfrom, int &yfrom, int &x_size, int &y_size,
+                int &xmin, int &ymin, int &xmax, int &ymax) {
+  if (x_size < 0) {
+    x_size = copy.get_x_size() - xfrom;
+  }
+  if (y_size < 0) {
+    y_size = copy.get_y_size() - yfrom;
+  }
+
+  if (xfrom < 0) {
+    xto += -xfrom;
+    x_size -= -xfrom;
+    xfrom = 0;
+  }
+  if (yfrom < 0) {
+    yto += -yfrom;
+    y_size -= -yfrom;
+    yfrom = 0;
+  }
+
+  if (xto < 0) {
+    xfrom += -xto;
+    x_size -= -xto;
+    xto = 0;
+  }
+  if (yto < 0) {
+    yfrom += -yto;
+    y_size -= -yto;
+    yto = 0;
+  }
+
+  x_size = min(x_size, copy.get_x_size() - xfrom);
+  y_size = min(y_size, copy.get_y_size() - yfrom);
+
+  xmin = xto;
+  ymin = yto;
+
+  xmax = min(xmin + x_size, get_x_size());
+  ymax = min(ymin + y_size, get_y_size());
+}

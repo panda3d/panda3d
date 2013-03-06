@@ -118,6 +118,10 @@ PUBLISHED:
   void compute_sample_point(LPoint3f &result,
                             PN_float32 x, PN_float32 y, PN_float32 sample_radius) const;
 
+  void copy_sub_image(const PfmFile &copy, int xto, int yto,
+                      int xfrom = 0, int yfrom = 0,
+                      int x_size = -1, int y_size = -1);
+
   void output(ostream &out) const;
 
 public:
@@ -125,6 +129,10 @@ public:
   INLINE void swap_table(vector_float &table);
 
 private:
+  INLINE void setup_sub_image(const PfmFile &copy, int &xto, int &yto,
+                              int &xfrom, int &yfrom, int &x_size, int &y_size,
+                              int &xmin, int &ymin, int &xmax, int &ymax);
+
   void box_filter_region(PN_float32 &result,
                          PN_float32 x0, PN_float32 y0, PN_float32 x1, PN_float32 y1) const;
   void box_filter_region(LPoint3f &result,

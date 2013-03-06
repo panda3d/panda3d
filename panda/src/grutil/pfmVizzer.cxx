@@ -806,7 +806,17 @@ make_array_format(const VisColumns &vis_columns) const {
       break;
 
     case CT_vertex1:
+      num_components = 1;
+      numeric_type = GeomEnums::NT_float32;
+      contents = GeomEnums::C_point;
+      break;
+
     case CT_vertex2:
+      num_components = 2;
+      numeric_type = GeomEnums::NT_float32;
+      contents = GeomEnums::C_point;
+      break;
+
     case CT_vertex3:
       num_components = 3;
       numeric_type = GeomEnums::NT_float32;

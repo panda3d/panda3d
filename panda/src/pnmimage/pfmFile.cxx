@@ -1555,6 +1555,68 @@ compute_sample_point(LPoint3f &result,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::copy_sub_image
+//       Access: Published
+//  Description: Copies a rectangular area of another image into a
+//               rectangular area of this image.  Both images must
+//               already have been initialized.  The upper-left corner
+//               of the region in both images is specified, and the
+//               size of the area; if the size is omitted, it defaults
+//               to the entire other image, or the largest piece that
+//               will fit.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+copy_sub_image(const PfmFile &copy, int xto, int yto,
+               int xfrom, int yfrom, int x_size, int y_size) {
+  int xmin, ymin, xmax, ymax;
+  setup_sub_image(copy, xto, yto, xfrom, yfrom, x_size, y_size,
+                  xmin, ymin, xmax, ymax);
+
+  int x, y;
+  switch (_num_channels) {
+  case 1:
+    {
+      for (y = ymin; y < ymax; y++) {
+        for (x = xmin; x < xmax; x++) {
+          set_point1(x, y, copy.get_point1(x - xmin + xfrom, y - ymin + yfrom));
+        }
+      }
+    }
+    break;
+
+  case 2:
+    {
+      for (y = ymin; y < ymax; y++) {
+        for (x = xmin; x < xmax; x++) {
+          set_point2(x, y, copy.get_point2(x - xmin + xfrom, y - ymin + yfrom));
+        }
+      }
+    }
+    break;
+
+  case 3:
+    {
+      for (y = ymin; y < ymax; y++) {
+        for (x = xmin; x < xmax; x++) {
+          set_point(x, y, copy.get_point(x - xmin + xfrom, y - ymin + yfrom));
+        }
+      }
+    }
+    break;
+
+  case 4:
+    {
+      for (y = ymin; y < ymax; y++) {
+        for (x = xmin; x < xmax; x++) {
+          set_point4(x, y, copy.get_point4(x - xmin + xfrom, y - ymin + yfrom));
+        }
+      }
+    }
+    break;
+  } 
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::output
 //       Access: Published
 //  Description:
