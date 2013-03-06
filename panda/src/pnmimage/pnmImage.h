@@ -218,6 +218,8 @@ PUBLISHED:
                          double pixel_scale = 1.0);
   void threshold(const PNMImage &select_image, int channel, double threshold,
                  const PNMImage &lt, const PNMImage &ge);
+  BLOCKING void fill_distance_inside(const PNMImage &mask, double threshold, int radius, bool shrink_from_border);
+  BLOCKING void fill_distance_outside(const PNMImage &mask, double threshold, int radius);
 
   void rescale(double min_val, double max_val);
 
@@ -258,6 +260,8 @@ PUBLISHED:
   LRGBColord get_average_xel() const;
   LColord get_average_xel_a() const;
   double get_average_gray() const;
+
+  void do_fill_distance(int xi, int yi, int d);
 
 public:
   // Know what you are doing if you access the underlying data arrays

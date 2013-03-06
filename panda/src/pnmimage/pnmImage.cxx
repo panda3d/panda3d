@@ -1199,29 +1199,57 @@ lighten_sub_image(const PNMImage &copy, int xto, int yto,
 //               s = select_image.get_channel(x, y). Set this image's
 //               (x, y) to:
 //
-//               lt.get_xel(x, y) if s <= threshold, or
+//               lt.get_xel(x, y) if s < threshold, or
 //
-//               ge.get_xel(x, y) if s > threshold
+//               ge.get_xel(x, y) if s >= threshold
 //
 //               Any of select_image, lt, or ge may be the same
 //               PNMImge object as this image, or the same as each
 //               other; or they may all be different. All images must
-//               be the same size.
+//               be the same size.  As a special case, lt and ge may
+//               both be 1x1 images instead of the source image size.
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
 threshold(const PNMImage &select_image, int channel, double threshold,
           const PNMImage &lt, const PNMImage &ge) {
   nassertv(get_x_size() <= select_image.get_x_size() && get_y_size() <= select_image.get_y_size());
-  nassertv(get_x_size() <= lt.get_x_size() && get_y_size() <= lt.get_y_size());
-  nassertv(get_x_size() <= ge.get_x_size() && get_y_size() <= ge.get_y_size());
   nassertv(channel >= 0 && channel < select_image.get_num_channels());
 
   xelval threshold_val = (xelval)(select_image.get_maxval() * threshold + 0.5);
 
-  if (get_maxval() == lt.get_maxval() && get_maxval() == ge.get_maxval()) {
-    // Simple case: the maxvals are all equal.  Copy by integer value.
-    int x, y;
+  if (lt.get_x_size() == 1 && lt.get_y_size() == 1 && 
+      ge.get_x_size() == 1 && ge.get_y_size() == 1) {
+    // 1x1 source images.
+    xel lt_val = lt.get_xel_val(0, 0);
+    xelval lt_alpha = 0;
+    if (lt.has_alpha()) {
+      lt_alpha = lt.get_alpha_val(0, 0);
+    }
+    if (lt.get_maxval() != get_maxval()) {
+      double scale = (double)get_maxval() / (double)lt.get_maxval();
+      PPM_ASSIGN(lt_val, 
+                 (xelval)(PPM_GETR(lt_val) * scale + 0.5), 
+                 (xelval)(PPM_GETG(lt_val) * scale + 0.5), 
+                 (xelval)(PPM_GETB(lt_val) * scale + 0.5));
+      lt_alpha = (xelval)(lt_alpha * scale + 0.5);
+    }
 
+    xel ge_val = ge.get_xel_val(0, 0);
+    xelval ge_alpha = 0;
+    if (ge.has_alpha()) {
+      ge_alpha = ge.get_alpha_val(0, 0);
+    }
+    if (ge.get_maxval() != get_maxval()) {
+      double scale = (double)get_maxval() / (double)ge.get_maxval();
+      PPM_ASSIGN(ge_val, 
+                 (xelval)(PPM_GETR(ge_val) * scale + 0.5), 
+                 (xelval)(PPM_GETG(ge_val) * scale + 0.5), 
+                 (xelval)(PPM_GETB(ge_val) * scale + 0.5));
+      ge_alpha = (xelval)(ge_alpha * scale + 0.5);
+    }
+
+    int x, y;
+    
     if (channel == 3) {
       // Further special case: the alpha channel.
       if (has_alpha() && lt.has_alpha() && ge.has_alpha()) {
@@ -1229,23 +1257,23 @@ threshold(const PNMImage &select_image, int channel, double threshold,
         for (y = 0; y < get_y_size(); y++) {
           for (x = 0; x < get_x_size(); x++) {
             if (select_image.get_alpha_val(x, y) < threshold_val) {
-              set_xel_val(x, y, lt.get_xel_val(x, y));
-              set_alpha_val(x, y, lt.get_alpha_val(x, y));
+              set_xel_val(x, y, lt_val);
+              set_alpha_val(x, y, lt_alpha);
             } else {
-              set_xel_val(x, y, ge.get_xel_val(x, y));
-              set_alpha_val(x, y, ge.get_alpha_val(x, y));
+              set_xel_val(x, y, ge_val);
+              set_alpha_val(x, y, ge_alpha);
             }
           }
         }
-
+        
       } else {
         // Don't copy alpha channel.
         for (y = 0; y < get_y_size(); y++) {
           for (x = 0; x < get_x_size(); x++) {
             if (select_image.get_alpha_val(x, y) < threshold_val) {
-              set_xel_val(x, y, lt.get_xel_val(x, y));
+              set_xel_val(x, y, lt_val);
             } else {
-              set_xel_val(x, y, ge.get_xel_val(x, y));
+              set_xel_val(x, y, ge_val);
             }
           }
         }
@@ -1257,57 +1285,217 @@ threshold(const PNMImage &select_image, int channel, double threshold,
         for (y = 0; y < get_y_size(); y++) {
           for (x = 0; x < get_x_size(); x++) {
             if (select_image.get_channel_val(x, y, channel) < threshold_val) {
-              set_xel_val(x, y, lt.get_xel_val(x, y));
-              set_alpha_val(x, y, lt.get_alpha_val(x, y));
+              set_xel_val(x, y, lt_val);
+              set_alpha_val(x, y, lt_alpha);
             } else {
-              set_xel_val(x, y, ge.get_xel_val(x, y));
-              set_alpha_val(x, y, ge.get_alpha_val(x, y));
+              set_xel_val(x, y, ge_val);
+              set_alpha_val(x, y, ge_alpha);
             }
           }
         }
-
+        
       } else {
         // Don't copy alpha channel.
         for (y = 0; y < get_y_size(); y++) {
           for (x = 0; x < get_x_size(); x++) {
             if (select_image.get_channel_val(x, y, channel) < threshold_val) {
-              set_xel_val(x, y, lt.get_xel_val(x, y));
+              set_xel_val(x, y, lt_val);
             } else {
-              set_xel_val(x, y, ge.get_xel_val(x, y));
+              set_xel_val(x, y, ge_val);
             }
           }
         }
       }
     }
-
+    
   } else {
-    // General case: the maxvals are different.  Copy by floating-point value.
-    int x, y;
+    // Same-sized source images.
+    nassertv(get_x_size() <= lt.get_x_size() && get_y_size() <= lt.get_y_size());
+    nassertv(get_x_size() <= ge.get_x_size() && get_y_size() <= ge.get_y_size());
 
-    if (has_alpha() && lt.has_alpha() && ge.has_alpha()) {
-      for (y = 0; y < get_y_size(); y++) {
-        for (x = 0; x < get_x_size(); x++) {
-          if (select_image.get_channel_val(x, y, channel) < threshold_val) {
-            set_xel(x, y, lt.get_xel(x, y));
-            set_alpha(x, y, lt.get_alpha(x, y));
-          } else {
-            set_xel(x, y, ge.get_xel(x, y));
-            set_alpha(x, y, ge.get_alpha(x, y));
+    if (get_maxval() == lt.get_maxval() && get_maxval() == ge.get_maxval()) {
+      // Simple case: the maxvals are all equal.  Copy by integer value.
+      int x, y;
+
+      if (channel == 3) {
+        // Further special case: the alpha channel.
+        if (has_alpha() && lt.has_alpha() && ge.has_alpha()) {
+          // Copy alpha channel too.
+          for (y = 0; y < get_y_size(); y++) {
+            for (x = 0; x < get_x_size(); x++) {
+              if (select_image.get_alpha_val(x, y) < threshold_val) {
+                set_xel_val(x, y, lt.get_xel_val(x, y));
+                set_alpha_val(x, y, lt.get_alpha_val(x, y));
+              } else {
+                set_xel_val(x, y, ge.get_xel_val(x, y));
+                set_alpha_val(x, y, ge.get_alpha_val(x, y));
+              }
+            }
+          }
+
+        } else {
+          // Don't copy alpha channel.
+          for (y = 0; y < get_y_size(); y++) {
+            for (x = 0; x < get_x_size(); x++) {
+              if (select_image.get_alpha_val(x, y) < threshold_val) {
+                set_xel_val(x, y, lt.get_xel_val(x, y));
+              } else {
+                set_xel_val(x, y, ge.get_xel_val(x, y));
+              }
+            }
+          }
+        }
+      } else {
+        // Any generic channel.
+        if (has_alpha() && lt.has_alpha() && ge.has_alpha()) {
+          // Copy alpha channel too.
+          for (y = 0; y < get_y_size(); y++) {
+            for (x = 0; x < get_x_size(); x++) {
+              if (select_image.get_channel_val(x, y, channel) < threshold_val) {
+                set_xel_val(x, y, lt.get_xel_val(x, y));
+                set_alpha_val(x, y, lt.get_alpha_val(x, y));
+              } else {
+                set_xel_val(x, y, ge.get_xel_val(x, y));
+                set_alpha_val(x, y, ge.get_alpha_val(x, y));
+              }
+            }
+          }
+
+        } else {
+          // Don't copy alpha channel.
+          for (y = 0; y < get_y_size(); y++) {
+            for (x = 0; x < get_x_size(); x++) {
+              if (select_image.get_channel_val(x, y, channel) < threshold_val) {
+                set_xel_val(x, y, lt.get_xel_val(x, y));
+              } else {
+                set_xel_val(x, y, ge.get_xel_val(x, y));
+              }
+            }
           }
         }
       }
+
     } else {
-      for (y = 0; y < get_y_size(); y++) {
-        for (x = 0; x < get_x_size(); x++) {
-          if (select_image.get_channel_val(x, y, channel) < threshold_val) {
-            set_xel(x, y, lt.get_xel(x, y));
-          } else {
-            set_xel(x, y, ge.get_xel(x, y));
+      // General case: the maxvals are different.  Copy by floating-point value.
+      int x, y;
+
+      if (has_alpha() && lt.has_alpha() && ge.has_alpha()) {
+        for (y = 0; y < get_y_size(); y++) {
+          for (x = 0; x < get_x_size(); x++) {
+            if (select_image.get_channel_val(x, y, channel) < threshold_val) {
+              set_xel(x, y, lt.get_xel(x, y));
+              set_alpha(x, y, lt.get_alpha(x, y));
+            } else {
+              set_xel(x, y, ge.get_xel(x, y));
+              set_alpha(x, y, ge.get_alpha(x, y));
+            }
+          }
+        }
+      } else {
+        for (y = 0; y < get_y_size(); y++) {
+          for (x = 0; x < get_x_size(); x++) {
+            if (select_image.get_channel_val(x, y, channel) < threshold_val) {
+              set_xel(x, y, lt.get_xel(x, y));
+            } else {
+              set_xel(x, y, ge.get_xel(x, y));
+            }
           }
         }
       }
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::fill_distance_inside
+//       Access: Published
+//  Description: Replaces this image with a grayscale image whose gray
+//               channel represents the linear Manhattan distance from
+//               the nearest dark pixel in the given mask image, up to
+//               the specified radius value (which also becomes the
+//               new maxval).  radius may range from 0 to maxmaxval;
+//               smaller values will compute faster.  A dark pixel is
+//               defined as one whose pixel value is < threshold.
+//
+//               If shrink_from_border is true, then the mask image is
+//               considered to be surrounded by a border of dark
+//               pixels; otherwise, the border isn't considered.
+//
+//               This can be used, in conjunction with threshold, to
+//               shrink a mask image inwards by a certain number of
+//               pixels.
+//
+//               The mask image may be the same image as this one, in
+//               which case it is destructively modified by this
+//               process.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+fill_distance_inside(const PNMImage &mask, double threshold, int radius, bool shrink_from_border) {
+  nassertv(radius <= PNM_MAXMAXVAL);
+  PNMImage dist(mask.get_x_size(), mask.get_y_size(), 1, radius);
+  dist.fill_val(radius);
+
+  xelval threshold_val = (xelval)(mask.get_maxval() * threshold + 0.5);
+
+  for (int yi = 0; yi < mask.get_y_size(); ++yi) {
+    for (int xi = 0; xi < mask.get_x_size(); ++xi) {
+      if (mask.get_gray_val(xi, yi) < threshold_val) {
+        dist.do_fill_distance(xi, yi, 0);
+      }
+    }
+  }
+
+  if (shrink_from_border) {
+    // Also measure from the image border.
+    for (int yi = 0; yi < mask.get_y_size(); ++yi) {
+      dist.do_fill_distance(0, yi, 1);
+      dist.do_fill_distance(mask.get_x_size() - 1, yi, 1);
+    }
+    for (int xi = 0; xi < mask.get_x_size(); ++xi) {
+      dist.do_fill_distance(xi, 0, 1);
+      dist.do_fill_distance(xi, mask.get_y_size() - 1, 1);
+    }
+  }
+
+  take_from(dist);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::fill_distance_outside
+//       Access: Published
+//  Description: Replaces this image with a grayscale image whose gray
+//               channel represents the linear Manhattan distance from
+//               the nearest white pixel in the given mask image, up to
+//               the specified radius value (which also becomes the
+//               new maxval).  radius may range from 0 to maxmaxval;
+//               smaller values will compute faster.  A white pixel is
+//               defined as one whose pixel value is >= threshold.
+//
+//               This can be used, in conjunction with threshold, to
+//               grow a mask image outwards by a certain number of
+//               pixels.
+//
+//               The mask image may be the same image as this one, in
+//               which case it is destructively modified by this
+//               process.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+fill_distance_outside(const PNMImage &mask, double threshold, int radius) {
+  nassertv(radius <= PNM_MAXMAXVAL);
+  PNMImage dist(mask.get_x_size(), mask.get_y_size(), 1, radius);
+  dist.fill_val(radius);
+
+  xelval threshold_val = (xelval)(mask.get_maxval() * threshold + 0.5);
+
+  for (int yi = 0; yi < mask.get_y_size(); ++yi) {
+    for (int xi = 0; xi < mask.get_x_size(); ++xi) {
+      if (mask.get_gray_val(xi, yi) >= threshold_val) {
+        dist.do_fill_distance(xi, yi, 0);
+      }
+    }
+  }
+
+  take_from(dist);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1712,6 +1900,29 @@ setup_rc() {
     _default_gc = lumin_grn;
     _default_bc = lumin_blu;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::do_fill_distance
+//       Access: Private
+//  Description: Recursively fills in the minimum distance measured
+//               from a certain set of points into the gray channel.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+do_fill_distance(int xi, int yi, int d) {
+  if (xi < 0 || xi >= get_x_size() || 
+      yi < 0 || yi >= get_y_size()) {
+    return;
+  }
+  if (get_gray_val(xi, yi) <= d) {
+    return;
+  }
+  set_gray_val(xi, yi, d);
+
+  do_fill_distance(xi + 1, yi, d + 1);
+  do_fill_distance(xi - 1, yi, d + 1);
+  do_fill_distance(xi, yi + 1, d + 1);
+  do_fill_distance(xi, yi - 1, d + 1);
 }
 
 ////////////////////////////////////////////////////////////////////
