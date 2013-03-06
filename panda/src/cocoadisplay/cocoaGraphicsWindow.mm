@@ -1571,14 +1571,22 @@ handle_key_event(NSEvent *event) {
     // That done, continue trying to find out the button handle.
     if ([str canBeConvertedToEncoding: NSASCIIStringEncoding]) {
       // Nhm, ascii character perhaps?
+      str = [str lowercaseString];
       button = KeyboardButton::ascii_key([str cStringUsingEncoding: NSASCIIStringEncoding]);
     }
   }
 
   if (button == ButtonHandle::none()) {
     cocoadisplay_cat.warning()
-      << "Unhandled keypress, character " << (int) c << ", keyCode " << [event keyCode] << "\n";
+      << "Unhandled keypress, character " << (int) c << ", keyCode " << [event keyCode]
+      << ", type " << [event type] << ", flags " << [event modifierFlags] << "\n";
     return;
+  }
+
+  if (cocoadisplay_cat.is_spam()) {
+    cocoadisplay_cat.spam()
+      << "Handled keypress, character " << (int) c << ", keyCode " << [event keyCode]
+      << ", type " << [event type] << ", flags " << [event modifierFlags] << "\n";
   }
 
   // Let's get it off our chest.
