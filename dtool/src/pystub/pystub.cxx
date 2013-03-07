@@ -146,6 +146,7 @@ extern "C" {
 
   EXPCL_PYSTUB extern void *PyExc_AssertionError;
   EXPCL_PYSTUB extern void *PyExc_AttributeError;
+  EXPCL_PYSTUB extern void *PyExc_Exception;
   EXPCL_PYSTUB extern void *PyExc_FutureWarning;
   EXPCL_PYSTUB extern void *PyExc_IndexError;
   EXPCL_PYSTUB extern void *PyExc_RuntimeError;
@@ -294,6 +295,7 @@ int Py_IsInitialized() {
 
 void *PyExc_AssertionError = (void *)NULL;
 void *PyExc_AttributeError = (void *)NULL;
+void *PyExc_Exception = (void *)NULL;
 void *PyExc_FutureWarning = (void *)NULL;
 void *PyExc_IndexError = (void *)NULL;
 void *PyExc_RuntimeError = (void *)NULL;
