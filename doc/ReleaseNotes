@@ -1,3 +1,33 @@
+------------------------  RELEASE 1.8.1  ------------------------
+
+This is a bugfix release, fixing many issues in 1.8.0.
+However, there may still be some (minor) bugs.
+
+* Fix a host of issues related to GLSL shaders
+* Fix incorrect registry entry for Python in Windows installer
+* pdeploy generated binaries with wrong architecture on Linux
+* Fix runtime error in pdeploy when building for Windows
+* Support for Maya 2013
+* ARToolKit now also works on Mac OS X
+* WM_CLASS can be set using x-wm-class and x-wm-class-name
+* No longer crashes when Xrandr is not supported
+* Aux normals are now also normalized when no lights are applied
+* Fix hidden cursor when switching fullscreen on Mac OS X
+* PackageInstaller didn't add packages to system paths
+* Allow disabling custom cursor on Windows
+* Fix incorrect panning of 3D audio
+* Fix omission of textures of non-standard format in ShaderGenerator
+* Fix compile issue with newer gcc versions
+* Fix circular reference held by ActorNode
+* Window is now correctly centered on Windows
+* Fix confusion with depth range of Lens::project()
+* Now successfully compiles against recent SSL versions on Windows
+* Fix incorrect Cg TEXUNIT0 binding during the first frame
+* TextNode::set_text_scale now correctly scales spaces as well
+* Expose AudioLoadRequest to Python (for async audio loading)
+* Support for the libRocket debugger
+* Fix newline entry in libRocket
+
 ------------------------  RELEASE 1.8.0  ------------------------
 
 This is a major release, with several big new features.  As such,
