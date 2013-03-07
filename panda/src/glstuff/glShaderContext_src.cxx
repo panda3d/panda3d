@@ -835,7 +835,7 @@ issue_parameters(GSG *gsg, int altered) {
           return;
         }
         GLint p = _glsl_parameter_map[_shader->_ptr_spec[i]._id._seqno];
-        switch(_ptr._dim[1]) {
+        switch (_ptr._dim[1]) {
           case 1: gsg->_glUniform1fv(p, _ptr._dim[0], (float*)_ptr_data->_ptr); continue;
           case 2: gsg->_glUniform2fv(p, _ptr._dim[0], (float*)_ptr_data->_ptr); continue;
           case 3: gsg->_glUniform3fv(p, _ptr._dim[0], (float*)_ptr_data->_ptr); continue;
@@ -869,7 +869,7 @@ issue_parameters(GSG *gsg, int altered) {
         }
         CGparameter p = _cg_parameter_map[_ptr._id._seqno];
         
-        switch(ptr_data->_type) {
+        switch (ptr_data->_type) {
         case Shader::SPT_float:
           switch(_ptr._info._class) {
           case Shader::SAC_scalar: cgSetParameter1fv(p,(float*)ptr_data->_ptr); continue;
@@ -1219,7 +1219,7 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
       }
     }
 #if defined(HAVE_CG) && !defined(OPENGLES)
-    if (_shader->get_language() == Shader::SL_Cg) {
+    else if (_shader->get_language() == Shader::SL_Cg) {
       CGparameter p = _cg_parameter_map[_shader->_tex_spec[i]._id._seqno];
       if (p == 0) {
         continue;
@@ -1251,19 +1251,19 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
     if ((tex == 0) || (tex->get_texture_type() != _shader->_tex_spec[i]._desired_type)) {
       continue;
     }
+
+    gsg->_glActiveTexture(GL_TEXTURE0 + texunit);
+
     TextureContext *tc = tex->prepare_now(view, gsg->_prepared_objects, gsg);
     if (tc == (TextureContext*)NULL) {
       continue;
     }
-
-    gsg->_glActiveTexture(GL_TEXTURE0 + texunit);
 
     GLenum target = gsg->get_texture_target(tex->get_texture_type());
     if (target == GL_NONE) {
       // Unsupported texture mode.
       continue;
     }
-    gsg->apply_texture(tc);
 
     if (_shader->get_language() == Shader::SL_GLSL) {
       GLint p = _glsl_parameter_map[_shader->_tex_spec[i]._id._seqno];
