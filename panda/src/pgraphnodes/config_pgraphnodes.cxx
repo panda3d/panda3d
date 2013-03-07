@@ -97,7 +97,6 @@ init_libpgraphnodes() {
   CallbackNode::register_with_read_factory();
   DirectionalLight::register_with_read_factory();
   FadeLODNode::register_with_read_factory();
-  LightLensNode::register_with_read_factory();
   LightNode::register_with_read_factory();
   LODNode::register_with_read_factory();
   PointLight::register_with_read_factory();

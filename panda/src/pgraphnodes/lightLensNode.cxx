@@ -37,6 +37,7 @@ LightLensNode(const string &name, Lens *lens) :
   _sb_xsize = 512;
   _sb_ysize = 512;
   _sb_sort = -10;
+  //set_initial_state(RenderState::make(ShaderAttrib::make_off(), 1000));
   // Backface culling helps eliminating artifacts.
   set_initial_state(RenderState::make(CullFaceAttrib::make_reverse(),
                     ColorWriteAttrib::make(ColorWriteAttrib::C_off)));
@@ -165,4 +166,3 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   int sb_sort = scan.get_int32();
   set_shadow_caster(shadow_caster, sb_xsize, sb_ysize, sb_sort);
 }
-

@@ -41,6 +41,8 @@ PUBLISHED:
   INLINE void set_shadow_caster(bool caster);
   INLINE void set_shadow_caster(bool caster, int buffer_xsize, int buffer_ysize, int sort = -10);
 
+  INLINE GraphicsOutputBase *get_shadow_buffer(GraphicsStateGuardianBase *gsg);
+
 protected:
   LightLensNode(const LightLensNode &copy);
   void clear_shadow_buffers();

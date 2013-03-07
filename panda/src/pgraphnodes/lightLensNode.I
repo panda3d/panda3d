@@ -60,6 +60,7 @@ set_shadow_caster(bool caster, int buffer_xsize, int buffer_ysize, int buffer_so
   _shadow_caster = caster;
   _sb_xsize = buffer_xsize;
   _sb_ysize = buffer_ysize;
+
   if (buffer_sort != _sb_sort) {
     ShadowBuffers::iterator it;
     for(it = _sbuffers.begin(); it != _sbuffers.end(); ++it) {
@@ -70,3 +71,21 @@ set_shadow_caster(bool caster, int buffer_xsize, int buffer_ysize, int buffer_so
   set_active(caster);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: LightLensNode::get_shadow_buffer
+//       Access: Published
+//  Description: Returns the buffer that has been constructed for
+//               a given GSG, or NULL if no such buffer has (yet)
+//               been constructed.  This should be used for
+//               debugging only, you will not need to call this
+//               normally.
+////////////////////////////////////////////////////////////////////
+INLINE GraphicsOutputBase *LightLensNode::
+get_shadow_buffer(GraphicsStateGuardianBase *gsg) {
+  ShadowBuffers::iterator it = _sbuffers.find(gsg);
+  if (it == _sbuffers.end()) {
+    return NULL;
+  } else {
+    return (*it).second;
+  }
+}
