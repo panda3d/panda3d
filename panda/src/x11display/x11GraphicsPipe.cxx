@@ -68,6 +68,11 @@ x11GraphicsPipe(const string &display) {
   if (!_display) {
     x11display_cat.error()
       << "Could not open display \"" << display_spec << "\".\n";
+    _is_valid = false;
+    _screen = None;
+    _root = None;
+    _display_width = 0;
+    _display_height = 0;
     return;
   }
 

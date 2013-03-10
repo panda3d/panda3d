@@ -30,8 +30,13 @@ TypeHandle glxGraphicsPipe::_type_handle;
 ////////////////////////////////////////////////////////////////////
 glxGraphicsPipe::
 glxGraphicsPipe(const string &display) : x11GraphicsPipe(display) {
+  if (_display == None) {
+    // Some error must have occurred.
+    return;
+  }
+
   string display_spec (XDisplayString(_display));
-  
+
   int errorBase, eventBase;
   if (!glXQueryExtension(_display, &errorBase, &eventBase)) {
     glxdisplay_cat.error()
