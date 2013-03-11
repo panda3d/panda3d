@@ -72,9 +72,9 @@ protected:
 
   // Read from the obj file.
   int _line_number;
-  typedef pvector<LVecBase4> Vec4Table;
-  typedef pvector<LVecBase3> Vec3Table;
-  typedef pvector<LVecBase2> Vec2Table;
+  typedef epvector<LVecBase4> Vec4Table;
+  typedef epvector<LVecBase3> Vec3Table;
+  typedef epvector<LVecBase2> Vec2Table;
   typedef pmap<LVecBase3, int> UniqueVec3Table;
 
   Vec4Table _v_table;
