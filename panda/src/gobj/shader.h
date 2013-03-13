@@ -16,7 +16,7 @@
 #define SHADER_H
 
 #include "pandabase.h"
-#include "typedReferenceCount.h"
+#include "typedWritableReferenceCount.h"
 #include "namable.h"
 #include "graphicsStateGuardianBase.h"
 #include "internalName.h"
@@ -44,10 +44,8 @@ typedef struct _CGparameter *CGparameter;
 //               finally compile and store the shader parameters  
 //               in the appropriate structure.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_GOBJ Shader: public TypedReferenceCount {
-
+class EXPCL_PANDA_GOBJ Shader : public TypedWritableReferenceCount {
 PUBLISHED:
-  
   enum ShaderLanguage {
     SL_none,
     SL_Cg,
@@ -110,7 +108,6 @@ PUBLISHED:
                              GraphicsStateGuardianBase *gsg);
 
 public:
-
   enum ShaderMatInput {
     SMO_identity,
 
@@ -311,6 +308,9 @@ public:
     INLINE ShaderPtrData(const LVecBase2d &vec);
     INLINE ShaderPtrData(const LMatrix4d &mat);
     INLINE ShaderPtrData(const LMatrix3d &mat);
+
+    INLINE void write_datagram(Datagram &dg) const;
+    INLINE void read_datagram(DatagramIterator &source);
   };
 
   struct ShaderMatSpec {
@@ -372,22 +372,16 @@ public:
 
   class ShaderFile : public ReferenceCount {
   public:
-    ShaderFile(const string &shared) { 
-      _separate = false; 
-      _shared = shared; 
-    }
-    ShaderFile(const string &vertex, 
-               const string &fragment, 
-               const string &geometry,
-               const string &tess_control,
-               const string &tess_evaluation) {
-      _separate = true;
-      _vertex = vertex;
-      _fragment = fragment;
-      _geometry = geometry;
-      _tess_control = tess_control;
-      _tess_evaluation = tess_evaluation;
-    }
+    INLINE ShaderFile() {};
+    INLINE ShaderFile(const string &shared);
+    INLINE ShaderFile(const string &vertex, 
+                      const string &fragment, 
+                      const string &geometry,
+                      const string &tess_control,
+                      const string &tess_evaluation);
+
+    INLINE void write_datagram(Datagram &dg) const;
+    INLINE void read_datagram(DatagramIterator &source);
 
   public:
     bool _separate;
@@ -399,7 +393,7 @@ public:
     string _tess_evaluation;
   };
 
- public:
+public:
   // These routines help split the shader into sections,
   // for those shader implementations that need to do so.
   // Don't use them when you use separate shader programs.
@@ -446,23 +440,23 @@ public:
   void clear_parameters();
 
 #ifdef HAVE_CG
- private:
-  ShaderArgClass    cg_parameter_class(CGparameter p); 
-  ShaderArgType     cg_parameter_type(CGparameter p);
-  ShaderArgDir      cg_parameter_dir(CGparameter p);
+private:
+  ShaderArgClass cg_parameter_class(CGparameter p); 
+  ShaderArgType cg_parameter_type(CGparameter p);
+  ShaderArgDir cg_parameter_dir(CGparameter p);
 
-  CGprogram     cg_compile_entry_point(const char *entry, const ShaderCaps &caps, ShaderType type = ST_vertex);
+  CGprogram cg_compile_entry_point(const char *entry, const ShaderCaps &caps, ShaderType type = ST_vertex);
 
-  bool          cg_analyze_entry_point(CGprogram prog, ShaderType type);
+  bool cg_analyze_entry_point(CGprogram prog, ShaderType type);
 
-  bool          cg_analyze_shader(const ShaderCaps &caps);
-  bool          cg_compile_shader(const ShaderCaps &caps);
-  void          cg_release_resources();
-  void          cg_report_errors();
+  bool cg_analyze_shader(const ShaderCaps &caps);
+  bool cg_compile_shader(const ShaderCaps &caps);
+  void cg_release_resources();
+  void cg_report_errors();
   
   // Determines the appropriate cg profile settings and stores them in the active shader caps
   // based on any profile settings stored in the shader's header
-  void          cg_get_profile_from_header(ShaderCaps &caps);
+  void cg_get_profile_from_header(ShaderCaps &caps);
 
   ShaderCaps _cg_last_caps;
   CGcontext  _cg_context;
@@ -470,36 +464,33 @@ public:
   CGprogram  _cg_fprogram;
   CGprogram  _cg_gprogram;
 
-  int        _cg_vprofile;
-  int        _cg_fprofile;
-  int        _cg_gprofile;
+  int _cg_vprofile;
+  int _cg_fprofile;
+  int _cg_gprofile;
 
-  CGprogram     cg_program_from_shadertype(ShaderType type);
+  CGprogram cg_program_from_shadertype(ShaderType type);
 
- public:
+public:
 
-  bool          cg_compile_for(const ShaderCaps &caps,
-                               CGcontext &ctx,
-                               CGprogram &vprogram,
-                               CGprogram &fprogram,
-                               CGprogram &gprogram,
-                               pvector<CGparameter> &map);
+  bool cg_compile_for(const ShaderCaps &caps, CGcontext &ctx,
+                      CGprogram &vprogram, CGprogram &fprogram,
+                      CGprogram &gprogram, pvector<CGparameter> &map);
   
 #endif
 
- public:
+public:
   pvector <ShaderPtrSpec> _ptr_spec; 
   epvector <ShaderMatSpec> _mat_spec;
   pvector <ShaderTexSpec> _tex_spec;
   pvector <ShaderVarSpec> _var_spec;
   
-  bool           _error_flag;
+  bool _error_flag;
   CPT(ShaderFile) _text;
 
- protected:
+protected:
   CPT(ShaderFile) _filename; 
-  int            _parse;
-  bool           _loaded;
+  int _parse;
+  bool _loaded;
   ShaderLanguage _language;
   
   static ShaderCaps _default_caps;
@@ -517,30 +508,38 @@ public:
   typedef pmap <PreparedGraphicsObjects *, ShaderContext *> Contexts;
   Contexts _contexts;
 
- private:  
+private:  
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
 
- public:
+  Shader();
+
+public:
   Shader(CPT(ShaderFile) name, CPT(ShaderFile) text, const ShaderLanguage &lang = SL_none);
-  static void register_with_read_factory();
-  
   ~Shader();
-  
- public:
+
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
+
+public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    TypedReferenceCount::init_type();
+    TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "Shader",
-                  TypedReferenceCount::get_class_type());
+                  TypedWritableReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 
- private:
+private:
   static TypeHandle _type_handle;
 };
 

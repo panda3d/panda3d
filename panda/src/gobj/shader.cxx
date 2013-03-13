@@ -1405,6 +1405,22 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps, ShaderType typ
   compiler_args[nargs] = 0;
 
   if ((active != (int)CG_PROFILE_UNKNOWN) && (active != ultimate)) {
+    // Print out some debug information about what we're doing.
+    if (gobj_cat.is_debug()) {
+      gobj_cat.debug()
+        << "Compiling Cg shader " << get_filename(type) << " with entry point " << entry
+        << " and active profile " << cgGetProfileString((CGprofile) active) << "\n";
+
+      if (nargs > 0) {
+        gobj_cat.debug() << "Using compiler arguments:";
+        for (int i = 0; i < nargs; ++i) {
+          gobj_cat.debug(false) << " " << compiler_args[i];
+        }
+        gobj_cat.debug(false) << "\n";
+      }
+    }
+
+    // Compile the shader with the active profile.
     prog = cgCreateProgram(_cg_context, CG_SOURCE, text.c_str(),
                            (CGprofile)active, entry, (const char **)compiler_args);
     err = cgGetError();
@@ -1414,8 +1430,19 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps, ShaderType typ
     if (prog != 0) {
       cgDestroyProgram(prog);
     }
+    if (gobj_cat.is_debug()) {
+      gobj_cat.debug()
+        << "Compilation with active profile failed: " << cgGetErrorString(err) << "\n";
+    }
   }
 
+  if (gobj_cat.is_debug()) {
+    gobj_cat.debug()
+      << "Compiling Cg shader " << get_filename(type) << " with entry point " << entry
+      << " and ultimate profile " << cgGetProfileString((CGprofile) ultimate) << "\n";
+  }
+
+  // The active profile failed, so recompile it with the ultimate profile.
   prog = cgCreateProgram(_cg_context, CG_SOURCE, text.c_str(),
                          (CGprofile)ultimate, entry, (const char **)NULL);
   err = cgGetError();
@@ -1423,10 +1450,11 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps, ShaderType typ
     return prog;
   }
   if (err == CG_COMPILER_ERROR) {
+    // A compiler error has occurred.  Extract the error messages.
     string listing = cgGetLastListing(_cg_context);
     vector_string errlines;
     tokenize(listing, errlines, "\n");
-    for (int i=0; i<(int)errlines.size(); i++) {
+    for (int i = 0; i < (int) errlines.size(); ++i) {
       string line = trim(errlines[i]);
       if (line != "") {
         gobj_cat.error() << get_filename(type) << ": " << errlines[i] << "\n";
@@ -1466,12 +1494,8 @@ cg_compile_shader(const ShaderCaps &caps) {
 
   _cg_context = cgCreateContext();
 
-  if (!_text->_separate) {
-    gobj_cat.debug() << "Compiling Shader: \n" << _text << "\n";
-  }
-
   if (_cg_context == 0) {
-    gobj_cat.error() << "could not create a Cg context object.\n";
+    gobj_cat.error() << "Could not create a Cg context object.\n";
     return false;
   }
 
@@ -1481,6 +1505,7 @@ cg_compile_shader(const ShaderCaps &caps) {
       cg_release_resources();
       return false;
     }
+    _cg_vprofile = cgGetProgramProfile(_cg_vprogram);
   }
 
   if (!_text->_separate || !_text->_fragment.empty()) {
@@ -1489,6 +1514,7 @@ cg_compile_shader(const ShaderCaps &caps) {
       cg_release_resources();
       return false;
     }
+    _cg_fprofile = cgGetProgramProfile(_cg_fprogram);
   }
 
   if ((_text->_separate && !_text->_geometry.empty()) || (!_text->_separate && _text->_shared.find("gshader") != string::npos)) {
@@ -1497,6 +1523,7 @@ cg_compile_shader(const ShaderCaps &caps) {
       cg_release_resources();
       return false;
     }
+    _cg_gprofile = cgGetProgramProfile(_cg_gprogram);
   }
 
   if (_cg_vprogram == 0 && _cg_fprogram == 0 && _cg_gprogram == 0) {
@@ -1508,19 +1535,25 @@ cg_compile_shader(const ShaderCaps &caps) {
   // DEBUG: output the generated program
   if (gobj_cat.is_debug()) {
     const char *vertex_program;
-    const char *pixel_program;
+    const char *fragment_program;
     const char *geometry_program;
 
     if (_cg_vprogram != 0) {
-      vertex_program   = cgGetProgramString (_cg_vprogram, CG_COMPILED_PROGRAM);
+      gobj_cat.debug()
+        << "Cg vertex profile: " << cgGetProfileString((CGprofile)_cg_vprofile) << "\n";
+      vertex_program = cgGetProgramString(_cg_vprogram, CG_COMPILED_PROGRAM);
       gobj_cat.debug() << vertex_program << "\n";
     }
     if (_cg_fprogram != 0) {
-      pixel_program    = cgGetProgramString (_cg_fprogram, CG_COMPILED_PROGRAM);
-      gobj_cat.debug() << pixel_program << "\n";
+      gobj_cat.debug()
+        << "Cg fragment profile: " << cgGetProfileString((CGprofile)_cg_fprofile) << "\n";
+      fragment_program = cgGetProgramString(_cg_fprogram, CG_COMPILED_PROGRAM);
+      gobj_cat.debug() << fragment_program << "\n";
     }
     if (_cg_gprogram != 0) {
-      geometry_program = cgGetProgramString (_cg_gprogram, CG_COMPILED_PROGRAM);
+      gobj_cat.debug()
+        << "Cg geometry profile: " << cgGetProfileString((CGprofile)_cg_gprofile) << "\n";
+      geometry_program = cgGetProgramString(_cg_gprogram, CG_COMPILED_PROGRAM);
       gobj_cat.debug() << geometry_program << "\n";
     }
   }
@@ -1752,7 +1785,6 @@ cg_compile_for(const ShaderCaps &caps,
                pvector<CGparameter> &map) {
 
   // Initialize the return values to empty.
-
   ctx = 0;
   vprogram = 0;
   fprogram = 0;
@@ -1771,31 +1803,23 @@ cg_compile_for(const ShaderCaps &caps,
   // If the compile routine used the ultimate profile instead of the
   // active one, it means the active one isn't powerful enough to
   // compile the shader.
-
-  if (_filename->_separate) {
-    if (_cg_vprogram != 0 && _cg_vprofile == CG_PROFILE_UNKNOWN && cgGetProgramProfile(_cg_vprogram) != caps._active_vprofile) {
-      gobj_cat.error() << "Cg vprogram too complex for driver: "
-        << get_filename(ST_vertex) << ". Try choosing a different profile.\n";
-      return false;
-    }
-    if (_cg_fprogram != 0 && _cg_fprofile == CG_PROFILE_UNKNOWN && cgGetProgramProfile(_cg_fprogram) != caps._active_fprofile) {
-      gobj_cat.error() << "Cg fprogram too complex for driver: "
-        << get_filename(ST_fragment) << ". Try choosing a different profile.\n";
-      return false;
-    }
-    if (_cg_gprogram != 0 && _cg_gprofile == CG_PROFILE_UNKNOWN && cgGetProgramProfile(_cg_gprogram) != caps._active_gprofile) {
-      gobj_cat.error() << "Cg gprogram too complex for driver: "
-        << get_filename(ST_geometry) << ". Try choosing a different profile.\n";
-      return false;
-    }
-  } else {
-    if ((_cg_vprogram != 0 && _cg_vprofile == CG_PROFILE_UNKNOWN && cgGetProgramProfile(_cg_vprogram) != caps._active_vprofile) ||
-        (_cg_fprogram != 0 && _cg_fprofile == CG_PROFILE_UNKNOWN && cgGetProgramProfile(_cg_fprogram) != caps._active_fprofile) ||
-        (_cg_gprogram != 0 && _cg_gprofile == CG_PROFILE_UNKNOWN && cgGetProgramProfile(_cg_gprogram) != caps._active_gprofile)) {
-      gobj_cat.error() << "Cg program too complex for driver: "
-        << get_filename() << ". Try choosing a different profile.\n";
-      return false;
-    }
+  if (_cg_vprogram != 0 && _cg_vprofile != caps._active_vprofile) {
+    gobj_cat.error() << "Cg vertex program not supported by profile "
+      << cgGetProfileString((CGprofile) caps._active_vprofile) << ": "
+      << get_filename(ST_vertex) << ". Try choosing a different profile.\n";
+    return false;
+  }
+  if (_cg_fprogram != 0 && _cg_fprofile != caps._active_fprofile) {
+    gobj_cat.error() << "Cg vertex program not supported by profile "
+      << cgGetProfileString((CGprofile) caps._active_fprofile) << ": "
+      << get_filename(ST_fragment) << ". Try choosing a different profile.\n";
+    return false;
+  }
+  if (_cg_gprogram != 0 && _cg_gprofile != caps._active_gprofile) {
+    gobj_cat.error() << "Cg vertex program not supported by profile "
+      << cgGetProfileString((CGprofile) caps._active_gprofile) << ": "
+      << get_filename(ST_fragment) << ". Try choosing a different profile.\n";
+    return false;
   }
 
   // Build a parameter map.
@@ -1857,19 +1881,54 @@ cg_compile_for(const ShaderCaps &caps,
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::Constructor
 //       Access: Private
+//  Description: Construct a Shader that will be filled in using
+//               fillin() later.
+////////////////////////////////////////////////////////////////////
+Shader::
+Shader() :
+  _error_flag(false),
+  _text(NULL),
+  _filename(NULL),
+  _parse(0),
+  _loaded(false),
+  _language(SL_none)
+{
+#ifdef HAVE_CG
+  _cg_context = 0;
+  _cg_vprogram = 0;
+  _cg_fprogram = 0;
+  _cg_gprogram = 0;
+  _cg_vprofile = CG_PROFILE_UNKNOWN;
+  _cg_fprofile = CG_PROFILE_UNKNOWN;
+  _cg_gprofile = CG_PROFILE_UNKNOWN;
+  if (_default_caps._ultimate_vprofile == 0 || _default_caps._ultimate_vprofile == CG_PROFILE_UNKNOWN) {
+    _default_caps._active_vprofile = CG_PROFILE_UNKNOWN;
+    _default_caps._active_fprofile = CG_PROFILE_UNKNOWN;
+    _default_caps._active_gprofile = CG_PROFILE_UNKNOWN;
+    _default_caps._ultimate_vprofile = cgGetProfile("glslv");
+    _default_caps._ultimate_fprofile = cgGetProfile("glslf");
+    _default_caps._ultimate_gprofile = cgGetProfile("glslg");
+    if (_default_caps._ultimate_gprofile == CG_PROFILE_UNKNOWN) {
+      _default_caps._ultimate_gprofile = cgGetProfile("gp4gp");
+    }
+  }
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::Constructor
+//       Access: Private
 //  Description: Construct a Shader.
 ////////////////////////////////////////////////////////////////////
 Shader::
 Shader(CPT(ShaderFile) filename, CPT(ShaderFile) text, const ShaderLanguage &lang) :
-  _error_flag(true),
+  _error_flag(false),
   _text(text),
   _filename(filename),
   _parse(0),
   _loaded(false),
   _language(lang)
 {
-  _error_flag = false;
-  
 #ifdef HAVE_CG
   _cg_context = 0;
   _cg_vprogram = 0;
@@ -2466,10 +2525,64 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::register_with_read_factory
 //       Access: Public, Static
-//  Description:
+//  Description: Tells the BamReader how to create objects of type
+//               Shader.
 ////////////////////////////////////////////////////////////////////
 void Shader::
 register_with_read_factory() {
-  // IMPLEMENT ME
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void Shader::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  dg.add_uint8(_language);
+  dg.add_bool(_loaded);
+  _filename->write_datagram(dg);
+  _text->write_datagram(dg);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::make_from_bam
+//       Access: Protected, Static
+//  Description: This function is called by the BamReader's factory
+//               when a new object of type Shader is encountered
+//               in the Bam file.  It should create the Shader
+//               and extract its information from the file.
+////////////////////////////////////////////////////////////////////
+TypedWritable *Shader::
+make_from_bam(const FactoryParams &params) {
+  Shader *attrib = new Shader;
+  DatagramIterator scan;
+  BamReader *manager;
+
+  parse_params(params, scan, manager);
+  attrib->fillin(scan, manager);
+  return attrib;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::fillin
+//       Access: Protected
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new Shader.
+////////////////////////////////////////////////////////////////////
+void Shader::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  _language = (ShaderLanguage) scan.get_uint8();
+  _loaded = scan.get_bool();
+
+  PT(ShaderFile) filename = new ShaderFile;
+  filename->read_datagram(scan);
+  _filename = filename;
+
+  PT(ShaderFile) text = new ShaderFile;
+  text->read_datagram(scan);
+  _text = text;
+}

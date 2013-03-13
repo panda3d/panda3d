@@ -1790,11 +1790,20 @@ reset() {
   CGprofile vertex_profile;
   CGprofile pixel_profile;
 
-  vertex_profile = cgGLGetLatestProfile (CG_GL_VERTEX);
-  pixel_profile = cgGLGetLatestProfile (CG_GL_FRAGMENT);
+  vertex_profile = cgGLGetLatestProfile(CG_GL_VERTEX);
+  pixel_profile = cgGLGetLatestProfile(CG_GL_FRAGMENT);
   if (GLCAT.is_debug()) {
     // Temp ifdef: this crashes Mesa.
 #ifndef OSMESA_MAJOR_VERSION
+    GLCAT.debug() << "Supported Cg profiles:\n";
+    int num_profiles = cgGetNumSupportedProfiles();
+    for (int i = 0; i < num_profiles; ++i) {
+      CGprofile profile = cgGetSupportedProfile(i);
+      if (cgGLIsProfileSupported(profile)) {
+        GLCAT.debug() << "  " << cgGetProfileString(profile) << "\n";
+      }
+    }
+
     GLCAT.debug()
       << "\nCg vertex profile = " << cgGetProfileString(vertex_profile) << "  id = " << vertex_profile
       << "\nCg pixel profile = " << cgGetProfileString(pixel_profile) << "  id = " << pixel_profile

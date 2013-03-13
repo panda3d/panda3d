@@ -542,3 +542,127 @@ ShaderPtrData(const LMatrix3d &mat) :
   nassertv(sizeof(mat(0, 0)) * mat.get_num_components() == pta.size() * sizeof(pta[0]));
   memcpy(_ptr, mat.get_data(), sizeof(mat(0, 0)) * mat.get_num_components());
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::ShaderPtrData::write_datagram
+//       Access: Public
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+INLINE void Shader::ShaderPtrData::
+write_datagram(Datagram &dg) const {
+  dg.add_uint8(_type);
+  dg.add_uint32(_size);
+
+  if (_type == SPT_double) {
+    const double *data = (const double *) _ptr;
+    for (size_t i = 0; i < _size; ++i) {
+      dg.add_float64(data[i]);
+    }
+
+  } else if (_type == SPT_float) {
+    const float *data = (const float *) _ptr;
+    for (size_t i = 0; i < _size; ++i) {
+      dg.add_float32(data[i]);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::ShaderPtrData::write_datagram
+//       Access: Public
+//  Description: Reads the object from a Datagram.
+////////////////////////////////////////////////////////////////////
+INLINE void Shader::ShaderPtrData::
+read_datagram(DatagramIterator &scan) {
+  _type = (ShaderPtrType) scan.get_uint8();
+  _size = scan.get_uint32();
+
+  if (_type == SPT_double) {
+    PTA_double pta = PTA_double::empty_array(_size);
+    for (size_t i = 0; i < _size; ++i) {
+      pta[i] = scan.get_float64();
+    }
+    _pta = pta.v0();
+    _ptr = pta.p();
+
+  } else if (_type == SPT_float) {
+    PTA_float pta = PTA_float::empty_array(_size);
+    for (size_t i = 0; i < _size; ++i) {
+      pta[i] = scan.get_float32();
+    }
+    _pta = pta.v0();
+    _ptr = pta.p();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::ShaderFile::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE Shader::ShaderFile::
+ShaderFile(const string &shared) :
+  _separate(false),
+  _shared(shared)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::ShaderFile::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE Shader::ShaderFile::
+ShaderFile(const string &vertex, 
+           const string &fragment, 
+           const string &geometry,
+           const string &tess_control,
+           const string &tess_evaluation) :
+  _separate(false),
+  _vertex(vertex),
+  _fragment(fragment),
+  _geometry(geometry),
+  _tess_control(tess_control),
+  _tess_evaluation(tess_evaluation)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::ShaderFile::write_datagram
+//       Access: Public
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+INLINE void Shader::ShaderFile::
+write_datagram(Datagram &dg) const {
+  dg.add_bool(_separate);
+  if (_separate) {
+    dg.add_string(_vertex);
+    dg.add_string(_fragment);
+    dg.add_string(_geometry);
+    dg.add_string(_tess_control);
+    dg.add_string(_tess_evaluation);
+  } else {
+    dg.add_string(_shared);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::ShaderFile::write_datagram
+//       Access: Public
+//  Description: Reads the object from a Datagram.
+////////////////////////////////////////////////////////////////////
+INLINE void Shader::ShaderFile::
+read_datagram(DatagramIterator &scan) {
+  _separate = scan.get_bool();
+  if (_separate) {
+    _vertex = scan.get_string();
+    _fragment = scan.get_string();
+    _geometry = scan.get_string();
+    _tess_control = scan.get_string();
+    _tess_evaluation = scan.get_string();
+  } else {
+    _shared = scan.get_string();
+  }
+}
