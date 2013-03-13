@@ -2530,7 +2530,7 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 void Shader::
 register_with_read_factory() {
-  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
+  //BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
 ////////////////////////////////////////////////////////////////////
