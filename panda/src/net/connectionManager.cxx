@@ -23,6 +23,7 @@
 
 #if defined(WIN32_VC) || defined(WIN64_VC)
 #include <winsock2.h>  // For gethostname()
+#include <Iphlpapi.h> // For GetAdaptersAddresses()
 #else
 #include <net/if.h>
 #include <ifaddrs.h>
@@ -524,7 +525,58 @@ scan_interfaces() {
   _interfaces_scanned = true;
 
 #ifdef WIN32_VC
-  // TODO.
+  int flags = GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_SKIP_UNICAST | GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER;
+  ULONG buffer_size = 0;
+  ULONG result = GetAdaptersAddresses(AF_INET, flags, NULL, NULL, &buffer_size);
+  if (result == ERROR_BUFFER_OVERFLOW) {
+    IP_ADAPTER_ADDRESSES *addresses = (IP_ADAPTER_ADDRESSES *)PANDA_MALLOC_ARRAY(buffer_size);
+    result = GetAdaptersAddresses(AF_INET, flags, NULL, addresses, &buffer_size);
+    if (result == ERROR_SUCCESS) {
+      IP_ADAPTER_ADDRESSES *p = addresses;
+      while (p != NULL) {
+        // p->AdapterName appears to be a GUID.  Not sure if this is
+        // actually useful to anyone; we'll store the "friendly name"
+        // instead.
+        TextEncoder encoder;
+        encoder.set_wtext(wstring(p->FriendlyName));
+        string friendly_name = encoder.get_text();
+
+        Interface interface;
+        interface.set_name(friendly_name);
+
+        // Prefixes are a linked list, in the order Network IP,
+        // Adapter IP, Broadcast IP (plus more).
+        NetAddress addresses[3];
+        IP_ADAPTER_PREFIX *m = p->FirstPrefix;
+        int mc = 0;
+        while (m != NULL && mc < 3) {
+          addresses[mc] = NetAddress(Socket_Address(*(sockaddr_in *)m->Address.lpSockaddr));
+          m = m->Next;
+          ++mc;
+        }
+
+        if (mc > 1) {
+          interface.set_ip(addresses[1]);
+        }
+
+        if (mc > 2) {
+          interface.set_broadcast(addresses[2]);
+
+          // Now, we can infer the netmask by the difference between the
+          // network address (the first address) and the broadcast
+          // address (the last address).
+          PN_uint32 netmask = addresses[0].get_ip() - addresses[2].get_ip() - 1;
+          Socket_Address sa;
+          sa.set_host(netmask, 0);
+          interface.set_netmask(NetAddress(sa));
+        }
+
+        _interfaces.push_back(interface);
+        p = p->Next;
+      }
+    }
+    PANDA_FREE_ARRAY(addresses);
+  }
 
 #else  // WIN32_VC
   struct ifaddrs *ifa;
