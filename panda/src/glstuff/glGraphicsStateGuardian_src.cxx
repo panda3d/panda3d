@@ -1795,6 +1795,7 @@ reset() {
   if (GLCAT.is_debug()) {
     // Temp ifdef: this crashes Mesa.
 #ifndef OSMESA_MAJOR_VERSION
+#if CG_VERSION_NUM >= 2200
     GLCAT.debug() << "Supported Cg profiles:\n";
     int num_profiles = cgGetNumSupportedProfiles();
     for (int i = 0; i < num_profiles; ++i) {
@@ -1803,6 +1804,7 @@ reset() {
         GLCAT.debug() << "  " << cgGetProfileString(profile) << "\n";
       }
     }
+#endif  // CG_VERSION_NUM >= 2200
 
     GLCAT.debug()
       << "\nCg vertex profile = " << cgGetProfileString(vertex_profile) << "  id = " << vertex_profile
