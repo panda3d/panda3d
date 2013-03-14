@@ -490,7 +490,7 @@ if (COMPILER == "MSVC"):
     LibName("WINSHELL", "shell32.lib")
     LibName("WINGDI", "gdi32.lib")
     LibName("ADVAPI", "advapi32.lib")
-    LIBNAME("IPHLPAPI", "iphlpapi.lib")
+    LibName("IPHLPAPI", "iphlpapi.lib")
     LibName("GL", "opengl32.lib")
     LibName("GLES", "libgles_cm.lib")
     LibName("GLES2", "libGLESv2.lib")
