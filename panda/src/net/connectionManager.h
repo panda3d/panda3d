@@ -141,8 +141,8 @@ private:
   friend class Connection;
 };
 
-INLINE ostream &operator << (ostream &out, const ConnectionManager::Interface &interface) {
-  interface.output(out);
+INLINE ostream &operator << (ostream &out, const ConnectionManager::Interface &iface) {
+  iface.output(out);
   return out;
 }
 
