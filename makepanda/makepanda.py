@@ -490,6 +490,7 @@ if (COMPILER == "MSVC"):
     LibName("WINSHELL", "shell32.lib")
     LibName("WINGDI", "gdi32.lib")
     LibName("ADVAPI", "advapi32.lib")
+    LIBNAME("IPHLPAPI", "iphlpapi.lib")
     LibName("GL", "opengl32.lib")
     LibName("GLES", "libgles_cm.lib")
     LibName("GLES2", "libGLESv2.lib")
@@ -3338,7 +3339,7 @@ if (not RUNTIME):
 if (not RUNTIME):
   OPTS=['DIR:panda/metalibs/panda', 'BUILDING:PANDA', 'VRPN', 'JPEG', 'PNG',
       'TIFF', 'ZLIB', 'OPENSSL', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2','SQUISH',
-      'NVIDIACG', 'WINUSER', 'WINMM', 'FFMPEG', 'SWSCALE', 'WINGDI']
+      'NVIDIACG', 'WINUSER', 'WINMM', 'FFMPEG', 'SWSCALE', 'WINGDI', 'IPHLPAPI']
 
   TargetAdd('panda_panda.obj', opts=OPTS, input='panda.cxx')
 
