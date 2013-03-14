@@ -534,44 +534,46 @@ scan_interfaces() {
     if (result == ERROR_SUCCESS) {
       IP_ADAPTER_ADDRESSES *p = addresses;
       while (p != NULL) {
-        // p->AdapterName appears to be a GUID.  Not sure if this is
-        // actually useful to anyone; we'll store the "friendly name"
-        // instead.
-        TextEncoder encoder;
-        encoder.set_wtext(wstring(p->FriendlyName));
-        string friendly_name = encoder.get_text();
+        if (p->OperStatus == IfOperStatusUp) {
+          // p->AdapterName appears to be a GUID.  Not sure if this is
+          // actually useful to anyone; we'll store the "friendly name"
+          // instead.
+          TextEncoder encoder;
+          encoder.set_wtext(wstring(p->FriendlyName));
+          string friendly_name = encoder.get_text();
 
-        Interface interface;
-        interface.set_name(friendly_name);
+          Interface interface;
+          interface.set_name(friendly_name);
 
-        // Prefixes are a linked list, in the order Network IP,
-        // Adapter IP, Broadcast IP (plus more).
-        NetAddress addresses[3];
-        IP_ADAPTER_PREFIX *m = p->FirstPrefix;
-        int mc = 0;
-        while (m != NULL && mc < 3) {
-          addresses[mc] = NetAddress(Socket_Address(*(sockaddr_in *)m->Address.lpSockaddr));
-          m = m->Next;
-          ++mc;
+          // Prefixes are a linked list, in the order Network IP,
+          // Adapter IP, Broadcast IP (plus more).
+          NetAddress addresses[3];
+          IP_ADAPTER_PREFIX *m = p->FirstPrefix;
+          int mc = 0;
+          while (m != NULL && mc < 3) {
+            addresses[mc] = NetAddress(Socket_Address(*(sockaddr_in *)m->Address.lpSockaddr));
+            m = m->Next;
+            ++mc;
+          }
+
+          if (mc > 1) {
+            interface.set_ip(addresses[1]);
+          }
+
+          if (mc > 2) {
+            interface.set_broadcast(addresses[2]);
+
+            // Now, we can infer the netmask by the difference between the
+            // network address (the first address) and the broadcast
+            // address (the last address).
+            PN_uint32 netmask = addresses[0].get_ip() - addresses[2].get_ip() - 1;
+            Socket_Address sa;
+            sa.set_host(netmask, 0);
+            interface.set_netmask(NetAddress(sa));
+          }
+
+          _interfaces.push_back(interface);
         }
-
-        if (mc > 1) {
-          interface.set_ip(addresses[1]);
-        }
-
-        if (mc > 2) {
-          interface.set_broadcast(addresses[2]);
-
-          // Now, we can infer the netmask by the difference between the
-          // network address (the first address) and the broadcast
-          // address (the last address).
-          PN_uint32 netmask = addresses[0].get_ip() - addresses[2].get_ip() - 1;
-          Socket_Address sa;
-          sa.set_host(netmask, 0);
-          interface.set_netmask(NetAddress(sa));
-        }
-
-        _interfaces.push_back(interface);
         p = p->Next;
       }
     }
