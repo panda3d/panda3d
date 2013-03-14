@@ -23,6 +23,9 @@
 
 #if defined(WIN32_VC) || defined(WIN64_VC)
 #include <winsock2.h>  // For gethostname()
+#else
+#include <net/if.h>
+#include <ifaddrs.h>
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -33,6 +36,7 @@
 ConnectionManager::
 ConnectionManager() : _set_mutex("ConnectionManager::_set_mutex") 
 {
+  _interfaces_scanned = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -505,6 +509,95 @@ get_host_name() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConnectionManager::scan_interfaces
+//       Access: Published
+//  Description: Repopulates the list reported by
+//               get_num_interface()/get_interface().  It is not
+//               necessary to call this explicitly, unless you want to
+//               re-determine the connected interfaces (for instance,
+//               if you suspect the hardware has recently changed).
+////////////////////////////////////////////////////////////////////
+void ConnectionManager::
+scan_interfaces() {
+  LightMutexHolder holder(_set_mutex);
+  _interfaces.clear();
+  _interfaces_scanned = true;
+
+#ifdef WIN32_VC
+  // TODO.
+
+#else  // WIN32_VC
+  struct ifaddrs *ifa;
+  if (getifaddrs(&ifa) != 0) {
+    // Failure.
+    net_cat.error()
+      << "Failed to call getifaddrs\n";
+    return;
+  }
+
+  struct ifaddrs *p = ifa;
+  while (p != NULL) {
+    if (p->ifa_addr->sa_family == AF_INET) {
+      Interface interface;
+      interface.set_name(p->ifa_name);
+      if (p->ifa_addr != NULL) {
+        interface.set_ip(NetAddress(Socket_Address(*(sockaddr_in *)p->ifa_addr)));
+      }
+      if (p->ifa_netmask != NULL) {
+        interface.set_netmask(NetAddress(Socket_Address(*(sockaddr_in *)p->ifa_netmask)));
+      }
+      if ((p->ifa_flags & IFF_BROADCAST) && p->ifa_broadaddr != NULL) {
+        interface.set_broadcast(NetAddress(Socket_Address(*(sockaddr_in *)p->ifa_broadaddr)));
+      } else if ((p->ifa_flags & IFF_POINTOPOINT) && p->ifa_dstaddr != NULL) {
+        interface.set_p2p(NetAddress(Socket_Address(*(sockaddr_in *)p->ifa_dstaddr)));
+      }
+      _interfaces.push_back(interface);
+    }
+
+    p = p->ifa_next;
+  }
+
+  freeifaddrs(ifa);
+
+#endif // WIN32_VC
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConnectionManager::get_num_interfaces
+//       Access: Published
+//  Description: This returns the number of usable network interfaces
+//               detected on this machine.  (Currently, only IPv4
+//               interfaces are reported.)  See scan_interfaces() to
+//               repopulate this list.
+////////////////////////////////////////////////////////////////////
+int ConnectionManager::
+get_num_interfaces() {
+  if (!_interfaces_scanned) {
+    scan_interfaces();
+  }
+  LightMutexHolder holder(_set_mutex);
+  return _interfaces.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConnectionManager::get_interface
+//       Access: Published
+//  Description: Returns the nth usable network interface detected on
+//               this machine.  (Currently, only IPv4 interfaces are
+//               reported.)  See scan_interfaces() to repopulate this
+//               list.
+////////////////////////////////////////////////////////////////////
+const ConnectionManager::Interface &ConnectionManager::
+get_interface(int n) {
+  if (!_interfaces_scanned) {
+    scan_interfaces();
+  }
+  LightMutexHolder holder(_set_mutex);
+  nassertr(n >= 0 && n < (int)_interfaces.size(), _interfaces[0]);
+  return _interfaces[n];
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConnectionManager::new_connection
 //       Access: Protected
 //  Description: This internal function is called whenever a new
@@ -628,4 +721,27 @@ void ConnectionManager::
 remove_writer(ConnectionWriter *writer) {
   LightMutexHolder holder(_set_mutex);
   _writers.erase(writer);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConnectionManager::Interface::Output
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void ConnectionManager::Interface::
+output(ostream &out) const {
+  out << get_name() << " [";
+  if (has_ip()) {
+    out << " " << get_ip();
+  }
+  if (has_netmask()) {
+    out << " netmask " << get_netmask();
+  }
+  if (has_broadcast()) {
+    out << " broadcast " << get_broadcast();
+  }
+  if (has_p2p()) {
+    out << " p2p " << get_p2p();
+  }
+  out << " ]";
 }
