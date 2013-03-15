@@ -961,7 +961,7 @@ get_current_lens() const {
 //  Description: Returns the inverse of the transform returned by
 //               get_cs_transform().
 ////////////////////////////////////////////////////////////////////
-INLINE const TransformState *GraphicsStateGuardian::
+INLINE CPT(TransformState) GraphicsStateGuardian::
 get_inv_cs_transform() const {
   return _inv_cs_transform;
 }

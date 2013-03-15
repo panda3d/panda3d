@@ -18,6 +18,7 @@
 #include "pandabase.h"
 
 #include "typedWritableReferenceCount.h"
+#include "nodeCachedReferenceCount.h"
 #include "luse.h"
 #include "lightMutex.h"
 
@@ -212,8 +213,6 @@ public:
   (Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb)=0;
   
   virtual CoordinateSystem get_internal_coordinate_system() const=0;
-  virtual const TransformState *get_cs_transform_for(CoordinateSystem cs) const=0;
-  virtual const TransformState *get_cs_transform() const=0;
 
   virtual void bind_light(PointLight *light_obj, const NodePath &light, 
                           int light_id) { }

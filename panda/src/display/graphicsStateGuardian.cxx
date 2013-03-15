@@ -1889,7 +1889,7 @@ get_render_buffer(int buffer_type, const FrameBufferProperties &prop) {
 //               scene for a camera with the indicated coordinate
 //               system.
 ////////////////////////////////////////////////////////////////////
-const TransformState *GraphicsStateGuardian::
+CPT(TransformState) GraphicsStateGuardian::
 get_cs_transform_for(CoordinateSystem cs) const {
   if (_internal_coordinate_system == CS_default ||
       _internal_coordinate_system == cs) {
@@ -1911,7 +1911,7 @@ get_cs_transform_for(CoordinateSystem cs) const {
 //               get_internal_coordinate_system()).  This is used for
 //               rendering.
 ////////////////////////////////////////////////////////////////////
-const TransformState *GraphicsStateGuardian::
+CPT(TransformState) GraphicsStateGuardian::
 get_cs_transform() const {
   return _cs_transform;
 }
