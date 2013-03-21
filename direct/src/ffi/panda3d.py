@@ -158,7 +158,7 @@ class panda3d_submodule(type(sys)):
         mod = self.__manager__.libimport(self.__library__)
         if name == "__all__":
             everything = []
-            for obj in dir(mod):
+            for obj in mod.__dict__.keys():
                 if not obj.startswith("__"):
                     everything.append(obj)
             self.__all__ = everything
@@ -167,7 +167,7 @@ class panda3d_submodule(type(sys)):
             return self.__library__
         elif name == "__libraries__":
             return self.__libraries__
-        elif name in dir(mod):
+        elif name in mod.__dict__.keys():
             value = mod.__dict__[name]
             setattr(self, name, value)
             return value
@@ -201,7 +201,7 @@ class panda3d_multisubmodule(type(sys)):
         if name == "__all__":
             everything = []
             for lib in self.__libraries__:
-                for obj in dir(self.__manager__.libimport(lib)):
+                for obj in self.__manager__.libimport(lib).__dict__:
                     if not obj.startswith("__"):
                         everything.append(obj)
             self.__all__ = everything
@@ -211,7 +211,7 @@ class panda3d_multisubmodule(type(sys)):
 
         for lib in self.__libraries__:
             mod = self.__manager__.libimport(lib)
-            if name in dir(mod):
+            if name in mod.__dict__:
                 value = mod.__dict__[name]
                 setattr(self, name, value)
                 return value
