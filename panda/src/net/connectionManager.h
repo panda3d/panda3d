@@ -70,6 +70,7 @@ PUBLISHED:
   class Interface {
   PUBLISHED:
     const string &get_name() const { return _name; }
+    const string &get_mac_address() const { return _mac_address; }
     bool has_ip() const { return (_flags & F_has_ip) != 0; }
     const NetAddress &get_ip() const { return _ip; }
     bool has_netmask() const { return (_flags & F_has_netmask) != 0; }
@@ -84,6 +85,7 @@ PUBLISHED:
   public:
     Interface() { _flags = 0; }
     void set_name(const string &name) { _name = name; }
+    void set_mac_address(const string &mac_address) { _mac_address = mac_address; }
     void set_ip(const NetAddress &ip) { _ip = ip; _flags |= F_has_ip; }
     void set_netmask(const NetAddress &ip) { _netmask = ip; _flags |= F_has_netmask; }
     void set_broadcast(const NetAddress &ip) { _broadcast = ip; _flags |= F_has_broadcast; }
@@ -91,6 +93,7 @@ PUBLISHED:
 
   private:
     string _name;
+    string _mac_address;
 
     NetAddress _ip;
     NetAddress _netmask;
@@ -121,6 +124,8 @@ protected:
   void remove_reader(ConnectionReader *reader);
   void add_writer(ConnectionWriter *writer);
   void remove_writer(ConnectionWriter *writer);
+
+  string format_mac_address(const unsigned char *data, int data_size);
 
   typedef phash_set< PT(Connection) > Connections;
   typedef phash_set<ConnectionReader *, pointer_hash> Readers;

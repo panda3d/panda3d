@@ -534,17 +534,21 @@ scan_interfaces() {
     if (result == ERROR_SUCCESS) {
       IP_ADAPTER_ADDRESSES *p = addresses;
       while (p != NULL) {
+        // p->AdapterName appears to be a GUID.  Not sure if this is
+        // actually useful to anyone; we'll store the "friendly name"
+        // instead.
+        TextEncoder encoder;
+        encoder.set_wtext(wstring(p->FriendlyName));
+        string friendly_name = encoder.get_text();
+        
+        Interface interface;
+        interface.set_name(friendly_name);
+
+        if (p->PhysicalAddressLength > 0) {
+          interface.set_mac_address(format_mac_address((const unsigned char *)p->PhysicalAddress, p->PhysicalAddressLength));
+        }
+        
         if (p->OperStatus == IfOperStatusUp) {
-          // p->AdapterName appears to be a GUID.  Not sure if this is
-          // actually useful to anyone; we'll store the "friendly name"
-          // instead.
-          TextEncoder encoder;
-          encoder.set_wtext(wstring(p->FriendlyName));
-          string friendly_name = encoder.get_text();
-
-          Interface interface;
-          interface.set_name(friendly_name);
-
           // Prefixes are a linked list, in the order Network IP,
           // Adapter IP, Broadcast IP (plus more).
           NetAddress addresses[3];
@@ -571,9 +575,9 @@ scan_interfaces() {
             sa.set_host(netmask, 0);
             interface.set_netmask(NetAddress(sa));
           }
-
-          _interfaces.push_back(interface);
         }
+
+        _interfaces.push_back(interface);
         p = p->Next;
       }
     }
@@ -775,6 +779,24 @@ void ConnectionManager::
 remove_writer(ConnectionWriter *writer) {
   LightMutexHolder holder(_set_mutex);
   _writers.erase(writer);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConnectionManager::format_mac_address
+//       Access: Protected
+//  Description: Formats a device's MAC address into a string.
+////////////////////////////////////////////////////////////////////
+string ConnectionManager::
+format_mac_address(const unsigned char *data, int data_size) {
+  stringstream strm;
+  for (int di = 0; di < data_size; ++di) {
+    if (di != 0) {
+      strm << "-";
+    }
+    strm << hex << setw(2) << setfill('0') << (unsigned int)data[di];
+  }
+
+  return strm.str();
 }
 
 ////////////////////////////////////////////////////////////////////
