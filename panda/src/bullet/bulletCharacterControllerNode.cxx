@@ -187,7 +187,7 @@ transform_changed() {
     btMatrix3x3 m = _ghost->getWorldTransform().getBasis();
     btVector3 up = m[_up];
 
-    m = btMatrix3x3(btQuaternion(up, heading));
+    m = btMatrix3x3(btQuaternion(up, deg_2_rad(heading)));
 
     _ghost->getWorldTransform().setBasis(m);
 
