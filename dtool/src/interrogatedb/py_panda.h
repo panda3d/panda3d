@@ -139,6 +139,8 @@ typedef void * ( * ConvertFunctionType  )(PyObject *,Dtool_PyTypedObject * );
 typedef void * ( * ConvertFunctionType1  )(void *, Dtool_PyTypedObject *);
 typedef void   ( *FreeFunction  )(PyObject *);
 typedef void   ( *PyModuleClassInit)(PyObject *module);
+typedef int    ( *InitNoCoerce)(PyObject *self, PyObject *args, PyObject *kwds);
+
 //inline          Dtool_PyTypedObject *  Dtool_RuntimeTypeDtoolType(int type);
 inline void     Dtool_Deallocate_General(PyObject * self);
 //inline int      DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2);
@@ -186,7 +188,8 @@ struct Dtool_PyTypedObject {
   ConvertFunctionType _Dtool_UpcastInterface;    // The Upcast Function By Slot
   ConvertFunctionType1 _Dtool_DowncastInterface; // The Downcast Function By Slot
   FreeFunction _Dtool_FreeInstance;
-  PyModuleClassInit _Dtool_ClassInit;            // The init function pointer
+  PyModuleClassInit _Dtool_ClassInit;            // The module init function pointer
+  InitNoCoerce _Dtool_InitNoCoerce;              // A variant of the constructor that does not attempt to perform coercion of its arguments.
 
   // some convenience functions..
   inline PyTypeObject &As_PyTypeObject() { return _PyType; };
@@ -245,7 +248,8 @@ struct Dtool_PyTypedObject {
       Dtool_UpcastInterface_##CLASS_NAME,                               \
       Dtool_DowncastInterface_##CLASS_NAME,                             \
       Dtool_FreeInstance_##CLASS_NAME,                                  \
-      Dtool_PyModuleClassInit_##CLASS_NAME                              \
+      Dtool_PyModuleClassInit_##CLASS_NAME,                             \
+      Dtool_InitNoCoerce_##CLASS_NAME                                   \
     };
 
 #if PY_MAJOR_VERSION >= 3
@@ -482,6 +486,7 @@ EXPCL_DTOOLCONFIG PyObject *DTool_CreatePyInstance(void *local_this, Dtool_PyTyp
 extern EXPORT_THIS   Dtool_PyTypedObject Dtool_##CLASS_NAME;\
 extern struct        PyMethodDef Dtool_Methods_##CLASS_NAME[];\
 int         Dtool_Init_##CLASS_NAME(PyObject *self, PyObject *args, PyObject *kwds);\
+int         Dtool_InitNoCoerce_##CLASS_NAME(PyObject *self, PyObject *args, PyObject *kwds);\
 PyObject *  Dtool_new_##CLASS_NAME(PyTypeObject *type, PyObject *args, PyObject *kwds);\
 void  *     Dtool_UpcastInterface_##CLASS_NAME(PyObject *self, Dtool_PyTypedObject *requested_type);\
 void  *     Dtool_DowncastInterface_##CLASS_NAME(void *self, Dtool_PyTypedObject *requested_type);\

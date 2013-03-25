@@ -83,4 +83,9 @@ int Dtool_Init_DTOOL_SUPER_BASE(PyObject *self, PyObject *args, PyObject *kwds) 
   return -1;
 }
 
+int Dtool_InitNoCoerce_DTOOL_SUPER_BASE(PyObject *self, PyObject *args, PyObject *kwds) {
+  PyErr_SetString(PyExc_TypeError, "cannot init super base");
+  return -1;
+}
+
 #endif  // HAVE_PYTHON

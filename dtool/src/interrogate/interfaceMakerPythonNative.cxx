@@ -856,12 +856,37 @@ write_class_details(ostream &out, Object * obj) {
     out << "       return -1;\n" ;
     out << "}\n";
 
+    out
+      << "int Dtool_InitNoCoerce_" << ClassName << "(PyObject *self, PyObject *args, PyObject *kwds) {\n"
+      << "  return Dtool_Init_" << ClassName << "(self, args, kwds);\n"
+      << "}\n\n";
+
   } else {
+    bool coercion_attempted = false;
     for (fi = obj->_constructors.begin(); fi != obj->_constructors.end(); ++fi) {
       Function *func = (*fi);
       std::string fname = "int Dtool_Init_"+ClassName+"(PyObject *self, PyObject *args, PyObject *kwds)";
       
-      write_function_for_name(out, obj, func,fname,"",ClassName);
+      write_function_for_name(out, obj, func,fname,"",ClassName, true, coercion_attempted);
+    }
+    if (coercion_attempted) {
+      // If a coercion attempt was written into the above constructor,
+      // then write a secondary constructor, that won't attempt any
+      // coercion.  We'll need this for nested coercion calls.
+      for (fi = obj->_constructors.begin(); fi != obj->_constructors.end(); ++fi) {
+        Function *func = (*fi);
+        std::string fname = "int Dtool_InitNoCoerce_"+ClassName+"(PyObject *self, PyObject *args, PyObject *kwds)";
+        
+        write_function_for_name(out, obj, func,fname,"",ClassName, false, coercion_attempted);
+      }
+    } else {
+      // Otherwise, since the above constructor didn't involve any
+      // coercion anyway, we can use the same function for both
+      // purposes.  Construct a trivial wrapper.
+      out
+        << "int Dtool_InitNoCoerce_" << ClassName << "(PyObject *self, PyObject *args, PyObject *kwds) {\n"
+        << "  return Dtool_Init_" << ClassName << "(self, args, kwds);\n"
+        << "}\n\n";
     }
   }
   
@@ -1657,7 +1682,8 @@ write_module_class(ostream &out, Object *obj) {
       }
       ostringstream forward_decl;
       string expected_params;
-      write_function_forset(out, obj, func, remaps, expected_params, 2, forward_decl, false, args_cleanup);
+      bool coercion_attempted = false;
+      write_function_forset(out, obj, func, remaps, expected_params, 2, forward_decl, false, true, coercion_attempted, args_cleanup);
       out << "  if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_TypeError)) {\n";
       out << "    PyErr_Clear();\n";
       out << "  }\n";
@@ -1966,7 +1992,8 @@ void InterfaceMakerPythonNative::
 write_function_for_top(ostream &out, InterfaceMaker::Object *obj, InterfaceMaker::Function *func, const std::string &PreProcess) {
   std::string fname = "static PyObject *" + func->_name + "(PyObject *self, PyObject *args, PyObject *kwds)";
 
-  write_function_for_name(out, obj, func, fname, PreProcess, "");
+  bool coercion_attempted = false;
+  write_function_for_name(out, obj, func, fname, PreProcess, "", true, coercion_attempted);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1978,7 +2005,7 @@ void InterfaceMakerPythonNative::
 write_function_for_name(ostream &out1, InterfaceMaker::Object *obj, InterfaceMaker::Function *func, 
                         const std::string &function_name, 
                         const std::string &PreProcess,
-                        const std::string &ClassName) {
+                        const std::string &ClassName, bool coercion_allowed, bool &coercion_attempted) {
   ostringstream forward_decl;
   ostringstream out;
 
@@ -2042,7 +2069,7 @@ write_function_for_name(ostream &out1, InterfaceMaker::Object *obj, InterfaceMak
     for (mii = MapSets.begin(); mii != MapSets.end(); mii ++) {
       indent(out, 2) << "case " << mii->first << ": {\n";
 
-      write_function_forset(out, obj, func, mii->second, expected_params, 4, forward_decl, is_inplace, "");
+      write_function_forset(out, obj, func, mii->second, expected_params, 4, forward_decl, is_inplace, coercion_allowed, coercion_attempted, "");
       if ((*mii->second.begin())->_type == FunctionRemap::T_constructor) {
         constructor = true;
       }
@@ -2107,7 +2134,7 @@ write_function_for_name(ostream &out1, InterfaceMaker::Object *obj, InterfaceMak
   } else {
     string expected_params = "";
     for (mii = MapSets.begin(); mii != MapSets.end(); mii++) {
-      write_function_forset(out, obj, func, mii->second, expected_params, 2, forward_decl, is_inplace, "");
+      write_function_forset(out, obj, func, mii->second, expected_params, 2, forward_decl, is_inplace, coercion_allowed, coercion_attempted, "");
       if ((*mii->second.begin())->_type == FunctionRemap::T_constructor) {
         constructor = true;
       }
@@ -2256,32 +2283,36 @@ write_function_forset(ostream &out, InterfaceMaker::Object *obj,
                       std::set<FunctionRemap *> &remapsin, 
                       string &expected_params, int indent_level, 
                       ostream &forward_decl, bool is_inplace,
+                      bool coercion_allowed,
+                      bool &coercion_attempted,
                       const string &args_cleanup) {
   // Do we accept any parameters that are class objects?  If so, we
   // might need to check for parameter coercion.
   bool coercion_possible = false;
-  std::set<FunctionRemap *>::const_iterator sii;
-  for (sii = remapsin.begin(); sii != remapsin.end() && !coercion_possible; ++sii) {
-    FunctionRemap *remap = (*sii);
-    if (isRemapLegal(*remap)) {
-      int pn = 0;
-      if (remap->_has_this) {
-        // Skip the "this" parameter.  It's never coercible.
-        ++pn;
-      }
-      while (pn < (int)remap->_parameters.size()) {
-        CPPType *type = remap->_parameters[pn]._remap->get_new_type();
-
-        if (TypeManager::is_char_pointer(type)) {
-        } else if (TypeManager::is_wchar_pointer(type)) {
-        } else if (TypeManager::is_pointer_to_PyObject(type)) {
-        } else if (TypeManager::is_pointer(type)) {
-          // This is a pointer to an object, so we
-          // might be able to coerce a parameter to it.
-          coercion_possible = true;
-          break;
+  if (coercion_allowed) {
+    std::set<FunctionRemap *>::const_iterator sii;
+    for (sii = remapsin.begin(); sii != remapsin.end() && !coercion_possible; ++sii) {
+      FunctionRemap *remap = (*sii);
+      if (isRemapLegal(*remap)) {
+        int pn = 0;
+        if (remap->_has_this) {
+          // Skip the "this" parameter.  It's never coercible.
+          ++pn;
         }
-        ++pn;
+        while (pn < (int)remap->_parameters.size()) {
+          CPPType *type = remap->_parameters[pn]._remap->get_new_type();
+          
+          if (TypeManager::is_char_pointer(type)) {
+          } else if (TypeManager::is_wchar_pointer(type)) {
+          } else if (TypeManager::is_pointer_to_PyObject(type)) {
+          } else if (TypeManager::is_pointer(type)) {
+            // This is a pointer to an object, so we
+            // might be able to coerce a parameter to it.
+            coercion_possible = true;
+            break;
+          }
+          ++pn;
+        }
       }
     }
   }
@@ -2326,7 +2357,7 @@ write_function_forset(ostream &out, InterfaceMaker::Object *obj,
         indent(out, indent_level) << "// -2 ";
         remap->write_orig_prototype(out, 0); out << "\n";
 
-        write_function_instance(out, obj, func, remap, expected_params, indent_level + 2, false, forward_decl, func->_name, is_inplace, coercion_possible, args_cleanup);
+        write_function_instance(out, obj, func, remap, expected_params, indent_level + 2, false, forward_decl, func->_name, is_inplace, coercion_possible, coercion_attempted, args_cleanup);
 
         indent(out, indent_level + 2) << "PyErr_Clear(); \n";
         indent(out, indent_level) << "}\n\n";            
@@ -2353,7 +2384,7 @@ write_function_forset(ostream &out, InterfaceMaker::Object *obj,
           << "// 1-" ;
         remap->write_orig_prototype(out, 0); 
         out << "\n" ;
-        write_function_instance(out, obj, func, remap, expected_params, indent_level + 2, true, forward_decl, func->_name, is_inplace, coercion_possible, args_cleanup);
+        write_function_instance(out, obj, func, remap, expected_params, indent_level + 2, true, forward_decl, func->_name, is_inplace, coercion_possible, coercion_attempted, args_cleanup);
 
         if (remap->_has_this && !remap->_const_method) {
           indent(out, indent_level)
@@ -2435,7 +2466,8 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
                         int indent_level, bool errors_fatal, 
                         ostream &ForwardDeclrs, 
                         const std::string &functionnamestr, bool is_inplace,
-                        bool coercion_possible, const string &args_cleanup) {
+                        bool coercion_possible, bool &coercion_attempted,
+                        const string &args_cleanup) {
   string format_specifiers;
   std::string keyword_list;
   string parameter_list;
@@ -2704,6 +2736,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
           // We never attempt to coerce a copy constructor parameter.
           // That would lead to infinite recursion.
           str << ", coerced_ptr, report_errors";
+          coercion_attempted = true;
         } else {
           str << ", NULL, true";
         }

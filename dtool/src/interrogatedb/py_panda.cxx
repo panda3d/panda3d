@@ -71,9 +71,25 @@ attempt_coercion(PyObject *self, Dtool_PyTypedObject *classdef,
   if (coerced != NULL) {
     // Attempt coercion: try to create a temporary instance of the
     // required class using the supplied parameter.
-    PyObject *obj = PyObject_Call((PyObject *)classdef, self, NULL);
+    // Because we want to use the special InitNoCoerce constructor
+    // here instead of the regular constructor (we don't want to risk
+    // recursive coercion on the nested type we're creating), we have
+    // to call the constructor with a few more steps.
+    PyObject *obj = NULL;
+    if (classdef->_PyType.tp_new != NULL) {
+      obj = classdef->_PyType.tp_new(&classdef->_PyType, self, NULL);
+      assert(obj != NULL);
+      if (classdef->_Dtool_InitNoCoerce(obj, self, NULL) != 0) {
+        Py_DECREF(obj);
+        obj = NULL;
+      }
+    }
     if (obj == NULL) {
       // That didn't work; try to call a static "make" method instead.
+      // Presently, we don't bother filtering this for coercion,
+      // because none of our classes suffer from a recursion danger
+      // here.  Maybe one day we will need to also construct a
+      // makeNoCoerce wrapper?
       PyObject *make = PyObject_GetAttrString((PyObject *)classdef, "make");
       if (make != NULL) {
         PyErr_Clear();

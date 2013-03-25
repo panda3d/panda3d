@@ -86,18 +86,21 @@ private:
   
   void write_prototype_for_name(ostream &out, Function *func, const std::string &name);
   void write_prototype_for(ostream &out, Function *func);
-  void write_function_for_name(ostream &out, Object *obj, Function *func, const std::string &name, const std::string &PreProcess, const std::string &ClassName);
+  void write_function_for_name(ostream &out, Object *obj, Function *func, const std::string &name, const std::string &PreProcess, const std::string &ClassName,
+                               bool coercion_allowed, bool &coercion_attempted);
   void write_function_for_top(ostream &out, Object *obj, Function *func, const std::string &PreProcess);
   void write_function_instance(ostream &out, Object *obj, Function *func,
                                FunctionRemap *remap, string &expected_params, 
                                int indent_level, bool errors_fatal, 
                                ostream &forwarddecl, const std::string &functionnamestr,
-                               bool is_inplace, bool coercion_possible,
+                               bool is_inplace, bool coercion_allowed,
+                               bool &coercion_attempted,
                                const string &args_cleanup);
   
   void write_function_forset(ostream &out, Object *obj, Function *func,
                              std::set<FunctionRemap*> &remaps, string &expected_params,
                              int indent_level, ostream &forwarddecl, bool inplace,
+                             bool coercion_allowed, bool &coercion_attempted, 
                              const string &args_cleanup);
   
   void pack_return_value(ostream &out, int indent_level,
