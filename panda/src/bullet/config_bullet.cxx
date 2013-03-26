@@ -130,11 +130,11 @@ PRC_DESC("Only used when bullet-additional-damping is set to TRUE. "
          "Default value is 0.01."));
 
 ConfigVariableBool bullet_full_sync
-("bullet-full-sync", true,
+("bullet-full-sync", false,
 PRC_DESC("Enables optional synchronisation features like checking "
          "for changed in a nodes net transform before each simulation "
          "step. Disable these features for better performance. "
-         "Default value is TRUE."));
+         "Default value is FALSE."));
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libbullet

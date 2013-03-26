@@ -13,6 +13,7 @@ class btCharacterControllerInterface;
 class btCollisionConfiguration;
 class btCollisionDispatcher;
 class btCollisionObject;
+class btCollisionObjectWrapper;
 class btCollisionShape;
 class btCompoundShape;
 class btConcaveShape;

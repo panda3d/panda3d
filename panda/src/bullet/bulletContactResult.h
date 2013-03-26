@@ -61,9 +61,15 @@ PUBLISHED:
   MAKE_SEQ(get_contacts, get_num_contacts, get_contact);
 
 public:
+#if BT_BULLET_VERSION >= 281
+  virtual btScalar addSingleResult(btManifoldPoint &mp,
+      const btCollisionObjectWrapper *wrap0, int part_id0, int idx0, 
+      const btCollisionObjectWrapper *wrap1, int part_id1, int idx1); 
+#else
   virtual btScalar addSingleResult(btManifoldPoint &mp,
       const btCollisionObject *obj0, int part_id0, int idx0,
       const btCollisionObject *obj1, int part_id1, int idx1);
+#endif
 
 protected:
   BulletContactResult();

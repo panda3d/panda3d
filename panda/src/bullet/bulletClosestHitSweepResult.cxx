@@ -33,11 +33,6 @@ BulletClosestHitSweepResult(const btVector3 &from_pos, const btVector3 &to_pos, 
 bool BulletClosestHitSweepResult::
 needsCollision(btBroadphaseProxy* proxy0) const {
 
-  // Original implementation:
-  //bool collides = (proxy0->m_collisionFilterGroup & m_collisionFilterMask) != 0;
-  //collides = collides && (m_collisionFilterGroup & proxy0->m_collisionFilterMask);
-  //return collides;
-
   btCollisionObject *obj0 = (btCollisionObject *) proxy0->m_clientObject;
   PandaNode *node0 = (PandaNode *) obj0->getUserPointer();
   CollideMask mask0 = node0->get_into_collide_mask();
@@ -72,11 +67,11 @@ get_hit_fraction() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-PandaNode *BulletClosestHitSweepResult::
+const PandaNode *BulletClosestHitSweepResult::
 get_node() const {
 
-  btCollisionObject *objectPtr = m_hitCollisionObject;
-  return (objectPtr) ? (PandaNode *)objectPtr->getUserPointer() : NULL;
+  const btCollisionObject *objectPtr = m_hitCollisionObject;
+  return (objectPtr) ? (const PandaNode *)objectPtr->getUserPointer() : NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -39,16 +39,30 @@ struct UserPersitentData {
 ////////////////////////////////////////////////////////////////////
 static bool
 contact_added_callback(btManifoldPoint &cp,
+#if BT_BULLET_VERSION >= 281
+                       const btCollisionObjectWrapper *wrap0,
+#else
                        const btCollisionObject *obj0,
+#endif
                        int id0,
                        int index0,
+#if BT_BULLET_VERSION >= 281
+                       const btCollisionObjectWrapper *wrap1,
+#else
                        const btCollisionObject *obj1,
+#endif
                        int id1,
                        int index1) {
 
   if (cp.m_userPersistentData == NULL) {
+
+#if BT_BULLET_VERSION >= 281
+    PT(PandaNode) node0 = (PandaNode *)wrap0->getCollisionObject()->getUserPointer();
+    PT(PandaNode) node1 = (PandaNode *)wrap1->getCollisionObject()->getUserPointer();
+#else
     PT(PandaNode) node0 = (PandaNode *)obj0->getUserPointer();
     PT(PandaNode) node1 = (PandaNode *)obj1->getUserPointer();
+#endif
 
     bullet_cat.debug() << "contact added: " << cp.m_userPersistentData << endl;
 

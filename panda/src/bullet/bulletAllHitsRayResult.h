@@ -39,7 +39,7 @@ PUBLISHED:
   PN_stdfloat get_hit_fraction() const;
 
 private:
-  btCollisionObject *_object; 
+  const btCollisionObject *_object; 
   btVector3 _normal;
   btVector3 _pos;
   btScalar _fraction;
