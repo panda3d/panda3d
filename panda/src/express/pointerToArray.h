@@ -267,6 +267,10 @@ PUBLISHED:
   INLINE ConstPointerToArray(const PointerToArray<Element> &copy);
   INLINE ConstPointerToArray(const ConstPointerToArray<Element> &copy);
 
+#ifdef HAVE_PYTHON
+  INLINE ConstPointerToArray(PyObject *self, PyObject *sequence);
+#endif
+
   typedef TYPENAME pvector<Element>::size_type size_type;
   INLINE size_type size() const;
   INLINE const Element &get_element(size_type n) const;
@@ -297,6 +301,10 @@ PUBLISHED:
   INLINE ConstPointerToArray(TypeHandle type_handle = get_type_handle(Element));
   INLINE ConstPointerToArray(const PointerToArray<Element> &copy);
   INLINE ConstPointerToArray(const ConstPointerToArray<Element> &copy);
+
+#ifdef HAVE_PYTHON
+  INLINE ConstPointerToArray(PyObject *self, PyObject *sequence);
+#endif
 
   // Duplicating the interface of vector.
 

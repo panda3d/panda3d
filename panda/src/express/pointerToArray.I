@@ -831,6 +831,23 @@ ConstPointerToArray(const ConstPointerToArray<Element> &copy) :
 {
 }
 
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: ConstPointerToArray::Constructor
+//       Access: Public
+//  Description: This special constructor accepts a Python list of
+//               elements, or a Python string (or a bytes object,
+//               in Python 3).
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE ConstPointerToArray<Element>::
+ConstPointerToArray(PyObject *self, PyObject *sequence) :
+  PointerToArrayBase<Element>(PointerToArray<Element>(self, sequence)),
+  _type_handle(get_type_handle(Element))
+{
+}
+#endif  // HAVE_PYTHON
+
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::begin
 //       Access: Public
