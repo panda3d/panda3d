@@ -523,6 +523,11 @@ init_pointers() {
 #ifdef HAVE_PYTHON
     // Ensure that the Python threading system is initialized and ready
     // to go.
+
+#if PY_VERSION_HEX >= 0x03020000
+    Py_Initialize();
+#endif
+
     PyEval_InitThreads();
 #endif
   }

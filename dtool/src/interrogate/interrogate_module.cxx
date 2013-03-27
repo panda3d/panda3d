@@ -109,30 +109,42 @@ int write_python_table_native(ostream &out) {
 
   pset<std::string >::iterator ii;
   for(ii = Libraries.begin(); ii != Libraries.end(); ii++) {
-      printf("Referencing Library %s\n",(*ii).c_str());
-      out << "extern LibraryDef "<< *ii << "_moddef ;\n";
+    printf("Referencing Library %s\n",(*ii).c_str());
+    out << "extern LibraryDef "<< *ii << "_moddef;\n";
   }
 
-  out << "#ifdef _WIN32\n"
-      << "extern \"C\" __declspec(dllexport) void init" << library_name << "();\n"
+  out << "\n"
+      << "#if PY_MAJOR_VERSION >= 3\n"
+      << "#define INIT_FUNC PyObject *PyInit_" << library_name << "\n"
       << "#else\n"
-      << "extern \"C\" void init" << library_name << "();\n"
+      << "#define INIT_FUNC void init" << library_name << "\n"
       << "#endif\n\n"
-      << "void init" << library_name << "() \n{\n";
-  
+
+      << "#ifdef _WIN32\n"
+      << "extern \"C\" __declspec(dllexport) INIT_FUNC();\n"
+      << "#else\n"
+      << "extern \"C\" INIT_FUNC();\n"
+      << "#endif\n\n"
+
+      << "INIT_FUNC() {\n";
+
   if (track_interpreter) {
-    out << "    in_interpreter = 1;\n";
+    out << "  in_interpreter = 1;\n";
   }
 
-  out << "  LibraryDef   *defs[] = {";
-  for(ii = Libraries.begin(); ii != Libraries.end(); ii++)
-    out << "&"<< *ii << "_moddef,";
+  out << "  LibraryDef *defs[] = {";
+  for(ii = Libraries.begin(); ii != Libraries.end(); ii++) {
+    out << "&"<< *ii << "_moddef, ";
+  }
 
-  out << " NULL };\n ";
+  out << "NULL};\n\n";
 
-    
-  out << "  Dtool_PyModuleInitHelper( defs, \"" << library_name << "\");\n";
-  out << "\n\n\n}\n";
+  out << "#if PY_MAJOR_VERSION >= 3\n";
+  out << "  return Dtool_PyModuleInitHelper(defs, \"" << library_name << "\");\n";
+  out << "#else\n";
+  out << "  Dtool_PyModuleInitHelper(defs, \"" << library_name << "\");\n";
+  out << "#endif\n";
+  out << "}\n";
 
   return count;
 }

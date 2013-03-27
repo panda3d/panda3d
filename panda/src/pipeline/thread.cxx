@@ -70,6 +70,11 @@ Thread(const string &name, const string &sync_name) :
   // Ensure that the Python threading system is initialized and ready
   // to go.
 #ifdef WITH_THREAD  // This symbol defined within Python.h
+
+#if PY_VERSION_HEX >= 0x03020000
+  Py_Initialize();
+#endif
+
   PyEval_InitThreads();
 #endif
 #endif
