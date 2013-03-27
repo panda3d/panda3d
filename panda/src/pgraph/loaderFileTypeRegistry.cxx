@@ -178,6 +178,9 @@ get_type_from_extension(const string &extension) {
           << "Unable to load " << dlname.to_os_specific() << ": " 
           << load_dso_error() << endl;
         return NULL;
+      } else if (loader_cat.is_debug()) {
+        loader_cat.debug()
+          << "done loading file type module: " << name << endl;
       }
 
       // Now try again to find the LoaderFileType.

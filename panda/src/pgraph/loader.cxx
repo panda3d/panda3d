@@ -486,6 +486,9 @@ load_file_types() {
           loader_cat.warning()
             << "Unable to load " << dlname.to_os_specific()
             << ": " << load_dso_error() << endl;
+        } else if (loader_cat.is_debug()) {
+          loader_cat.debug()
+            << "done loading file type module: " << name << endl;
         }
         
       } else if (words.size() > 1) {
