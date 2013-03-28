@@ -999,6 +999,8 @@ string_cs_type(const string &strval) {
     return CST_polyset;
   } else if (cmp_nocase_uh(strval, "sphere") == 0) {
     return CST_sphere;
+  } else if (cmp_nocase_uh(strval, "box") == 0) {
+    return CST_box;
   } else if (cmp_nocase_uh(strval, "inv-sphere") == 0 ||
              cmp_nocase_uh(strval, "invsphere") == 0) {
     return CST_inv_sphere;
@@ -1494,6 +1496,8 @@ ostream &operator << (ostream &out, EggGroup::CollisionSolidType t) {
     return out << "Tube";
   case EggGroup::CST_floor_mesh:
     return out << "FloorMesh";
+  case EggGroup::CST_box:
+    return out << "Box";
   }
 
   nassertr(false, out);

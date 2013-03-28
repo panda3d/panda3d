@@ -1499,6 +1499,11 @@ GROUPING ENTRIES
       The geometry represents a sphere.  The vertices in the group are
       averaged together to determine the sphere's center and radius.
 
+    Box
+
+      The geometry represents a box.  The smalles axis-alligned box
+      that will fit around the vertices is used.
+
     InvSphere
 
       The geometry represents an inverse sphere.  This is the same as

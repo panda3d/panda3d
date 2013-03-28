@@ -166,6 +166,9 @@ private:
   bool make_sphere(EggGroup *start_group, EggGroup::CollideFlags flags,
                    LPoint3 &center, PN_stdfloat &radius, LColor &color);
 
+  bool make_box(EggGroup *start_group, EggGroup::CollideFlags flags,
+                LPoint3 &min, LPoint3 &max, LColor &color);
+
   void make_collision_solids(EggGroup *start_group, EggGroup *egg_group,
                              CollisionNode *cnode);
   void make_collision_plane(EggGroup *egg_group, CollisionNode *cnode,
@@ -176,6 +179,8 @@ private:
                               EggGroup::CollideFlags flags);
   void make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
                              EggGroup::CollideFlags flags);
+  void make_collision_box(EggGroup *egg_group, CollisionNode *cnode,
+                          EggGroup::CollideFlags flags);
   void make_collision_inv_sphere(EggGroup *egg_group, CollisionNode *cnode,
                                  EggGroup::CollideFlags flags);
   void make_collision_tube(EggGroup *egg_group, CollisionNode *cnode,
