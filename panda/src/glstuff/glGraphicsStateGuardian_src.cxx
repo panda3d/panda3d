@@ -4397,11 +4397,9 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
       GLCAT.spam(false) << "GL_BGR, ";
       break;
 #endif
-#ifndef OPENGLES_2
     case GL_BGRA:
       GLCAT.spam(false) << "GL_BGRA, ";
       break;
-#endif
     default:
       GLCAT.spam(false) << "unknown, ";
       break;
