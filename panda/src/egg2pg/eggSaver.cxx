@@ -33,6 +33,7 @@
 #include "collisionPolygon.h"
 #include "collisionPlane.h"
 #include "collisionSphere.h"
+#include "collisionBox.h"
 #include "collisionInvSphere.h"
 #include "collisionTube.h"
 #include "textureStage.h"
@@ -466,6 +467,8 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
         nout << "Encountered unhandled collsion type: CollisionPlane" << "\n";
       } else if (child->is_of_type(CollisionSphere::get_class_type())) {
         nout << "Encountered unhandled collsion type: CollisionSphere" << "\n";
+      } else if (child->is_of_type(CollisionBox::get_class_type())) {
+        nout << "Encountered unhandled collsion type: CollisionBox" << "\n";
       } else if (child->is_of_type(CollisionInvSphere::get_class_type())) {
         nout << "Encountered unhandled collsion type: CollisionInvSphere" << "\n";
       } else if (child->is_of_type(CollisionTube::get_class_type())) {
