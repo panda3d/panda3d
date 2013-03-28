@@ -2852,8 +2852,8 @@ make_sphere(EggGroup *egg_group, EggGroup::CollideFlags flags,
 ////////////////////////////////////////////////////////////////////
 bool EggLoader::
 make_box(EggGroup *egg_group, EggGroup::CollideFlags flags, 
-            LPoint3 &_min, LPoint3 &_max, LColor &color) {
-  bool success=false;
+            LPoint3 &min_p, LPoint3 &max_p, LColor &color) {
+  bool success = false;
   EggGroup *geom_group = find_collision_geometry(egg_group, flags);
   if (geom_group != (EggGroup *)NULL) {
     // Collect all of the vertices.
@@ -2870,26 +2870,25 @@ make_box(EggGroup *egg_group, EggGroup::CollideFlags flags,
       }
     }
 
-    // Now find the _min/_max points
+    // Now find the min/max points
     int num_vertices = 0;
     bool first = true;
     pset<EggVertex *>::const_iterator vi;
     for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
       EggVertex *vtx = (*vi);
-      LVertexd pos = vtx->get_pos3();
+      LVertex pos = LCAST(PN_stdfloat, vtx->get_pos3());
 
       if (first) {
-        _min.set(pos[0], pos[1], pos[2]);
-        _max.set(pos[0], pos[1], pos[2]);
+        min_p.set(pos[0], pos[1], pos[2]);
+        max_p.set(pos[0], pos[1], pos[2]);
         first = false;
-      }
-      else {
-        _min.set(min(_min[0], pos[0]),
-                 min(_min[1], pos[1]),
-                 min(_min[2], pos[2]));
-        _max.set(max(_max[0], pos[0]),
-                 max(_max[1], pos[1]),
-                 max(_max[2], pos[2]));
+      } else {
+        min_p.set(min(min_p[0], pos[0]),
+                  min(min_p[1], pos[1]),
+                  min(min_p[2], pos[2]));
+        max_p.set(max(max_p[0], pos[0]),
+                  max(max_p[1], pos[1]),
+                  max(max_p[2], pos[2]));
       }
       num_vertices++;
     }
@@ -3106,12 +3105,12 @@ make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
 void EggLoader::
 make_collision_box(EggGroup *egg_group, CollisionNode *cnode,
                    EggGroup::CollideFlags flags) {
-  LPoint3 min;
-  LPoint3 max;
+  LPoint3 min_p;
+  LPoint3 max_p;
   LColor dummycolor;
-  if (make_box(egg_group, flags, min, max, dummycolor)) {
+  if (make_box(egg_group, flags, min_p, max_p, dummycolor)) {
     CollisionBox *csbox =
-      new CollisionBox(min, max);
+      new CollisionBox(min_p, max_p);
     apply_collision_flags(csbox, flags);
     cnode->add_solid(csbox);
   }
