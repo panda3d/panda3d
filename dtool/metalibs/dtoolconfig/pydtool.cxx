@@ -2405,16 +2405,16 @@ static PyMethodDef python_simple_funcs[] = {
 #if PY_MAJOR_VERSION >= 3
 static struct PyModuleDef python_simple_module = {
   PyModuleDef_HEAD_INIT,
-  "libdtoolconfig",
+  "libp3dtoolconfig",
   NULL,
   -1,
   python_simple_funcs,
   NULL, NULL, NULL, NULL
 };
 
-#define INIT_FUNC PyObject *PyInit_libdtoolconfig
+#define INIT_FUNC PyObject *PyInit_libp3dtoolconfig
 #else
-#define INIT_FUNC void initlibdtoolconfig
+#define INIT_FUNC void initlibp3dtoolconfig
 #endif
 
 #ifdef _WIN32
@@ -2427,7 +2427,7 @@ INIT_FUNC() {
 #if PY_MAJOR_VERSION >= 3
   return PyModule_Create(&python_simple_module);
 #else
-  Py_InitModule("libdtoolconfig", python_simple_funcs);
+  Py_InitModule("libp3dtoolconfig", python_simple_funcs);
 #endif
 }
 
