@@ -1100,6 +1100,11 @@ def GetThirdpartyDir():
 
     else:
         print("%s Unsupported platform: %s" % (ColorText("red", "WARNING:"), target))
+        return
+
+    if (GetVerbose()):
+        print("Using thirdparty directory: %s" % THIRDPARTYDIR)
+
     return THIRDPARTYDIR
 
 ########################################################################
