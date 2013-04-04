@@ -45,6 +45,16 @@ PUBLISHED:
                         const LVector3 &axis_a,
                         const LVector3 &axis_b,
                         bool use_frame_a=false);
+
+  BulletHingeConstraint(const BulletRigidBodyNode *node_a, 
+                        const TransformState *ts_a,
+                        bool use_frame_a=false);
+  BulletHingeConstraint(const BulletRigidBodyNode *node_a,
+                        const BulletRigidBodyNode *node_b,
+                        const TransformState *ts_a,
+                        const TransformState *ts_b,
+                        bool use_frame_a=false);
+
   INLINE ~BulletHingeConstraint();
 
   PN_stdfloat get_hinge_angle();

@@ -22,6 +22,45 @@ TypeHandle BulletHingeConstraint::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletHingeConstraint::Constructor
 //       Access: Published
+//  Description: Creates a hinge constraint which connects one
+//               rigid body with some fixe dpoint in the world.
+////////////////////////////////////////////////////////////////////
+BulletHingeConstraint::
+BulletHingeConstraint(const BulletRigidBodyNode *node_a, 
+                      const TransformState *ts_a,
+                      bool use_frame_a) {
+
+  btRigidBody *ptr_a = btRigidBody::upcast(node_a->get_object());
+  btTransform frame_a = TransformState_to_btTrans(ts_a);
+
+  _constraint = new btHingeConstraint(*ptr_a, frame_a, use_frame_a);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletHingeConstraint::Constructor
+//       Access: Published
+//  Description: Constructs a hinge constraint which connects two
+//               rigid bodies.
+////////////////////////////////////////////////////////////////////
+BulletHingeConstraint::
+BulletHingeConstraint(const BulletRigidBodyNode *node_a,
+                      const BulletRigidBodyNode *node_b,
+                      const TransformState *ts_a,
+                      const TransformState *ts_b,
+                      bool use_frame_a) {
+
+  btRigidBody *ptr_a = btRigidBody::upcast(node_a->get_object());
+  btTransform frame_a = TransformState_to_btTrans(ts_a);
+
+  btRigidBody *ptr_b = btRigidBody::upcast(node_b->get_object());
+  btTransform frame_b = TransformState_to_btTrans(ts_b);
+
+  _constraint = new btHingeConstraint(*ptr_a, *ptr_b, frame_a, frame_b, use_frame_a);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletHingeConstraint::Constructor
+//       Access: Published
 //  Description: Creates a hinge constraint in the same way as the
 //               other constructor, but uses the world as second
 //               body so that node_a is fixed to some point in
