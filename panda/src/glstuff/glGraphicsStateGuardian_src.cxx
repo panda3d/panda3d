@@ -2076,17 +2076,18 @@ calc_projection_mat(const Lens *lens) {
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
 prepare_lens() {
+#ifndef OPENGLES_2
   if (GLCAT.is_spam()) {
     GLCAT.spam()
       << "glMatrixMode(GL_PROJECTION): " << _projection_mat->get_mat() << endl;
   }
-#ifndef OPENGLES_2
+
   GLP(MatrixMode)(GL_PROJECTION);
   GLPf(LoadMatrix)(_projection_mat->get_mat().get_data());
-#endif
   report_my_gl_errors();
 
   do_point_size();
+#endif
 
   return true;
 }
@@ -4488,6 +4489,9 @@ apply_fog(Fog *fog) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_transform() {
+#ifndef OPENGLES_2
+  // OpenGL ES 2 does not support glLoadMatrix.
+
   const TransformState *transform = _internal_transform;
   if (GLCAT.is_spam()) {
     GLCAT.spam()
@@ -4495,15 +4499,14 @@ do_issue_transform() {
   }
 
   DO_PSTATS_STUFF(_transform_state_pcollector.add_level(1));
-#ifndef OPENGLES_2
   GLP(MatrixMode)(GL_MODELVIEW);
   GLPf(LoadMatrix)(transform->get_mat().get_data());
-#endif
-  _transform_stale = false;
 
   if (_auto_rescale_normal) {
     do_auto_rescale_normal();
   }
+#endif
+  _transform_stale = false;
 
 #ifndef OPENGLES_1
   if (_current_shader_context) {
@@ -4713,13 +4716,13 @@ do_issue_antialias() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_rescale_normal() {
+#ifndef OPENGLES_2 // OpenGL ES 2.0 doesn't support rescaling normals.
   const RescaleNormalAttrib *target_rescale_normal = DCAST(RescaleNormalAttrib, _target_rs->get_attrib_def(RescaleNormalAttrib::get_class_slot()));
   RescaleNormalAttrib::Mode mode = target_rescale_normal->get_mode();
 
   _auto_rescale_normal = false;
 
   switch (mode) {
-#ifndef OPENGLES_2 // OpenGL ES 2.0 doesn't support rescaling normals.
   case RescaleNormalAttrib::M_none:
     GLP(Disable)(GL_NORMALIZE);
     if (_supports_rescale_normal && support_rescale_normal) {
@@ -4742,7 +4745,6 @@ do_issue_rescale_normal() {
       GLP(Disable)(GL_RESCALE_NORMAL);
     }
     break;
-#endif
 
   case RescaleNormalAttrib::M_auto:
     _auto_rescale_normal = true;
@@ -4754,6 +4756,7 @@ do_issue_rescale_normal() {
       << "Unknown rescale_normal mode " << (int)mode << endl;
   }
   report_my_gl_errors();
+#endif
 }
 
 // PandaCompareFunc - 1 + 0x200 === GL_NEVER, etc.  order is sequential
