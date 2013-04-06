@@ -67,8 +67,11 @@ project(const Lens *lens) {
       LPoint3f &p = _pfm.modify_point(xi, yi);
 
       LPoint3 film;
-      lens->project(LCAST(PN_stdfloat, p), film);
-      p = to_uv.xform_point(LCAST(PN_float32, film));
+      if (!lens->project(LCAST(PN_stdfloat, p), film)) {
+        _pfm.set_point4(xi, yi, _pfm.get_no_data_value());
+      } else {
+        p = to_uv.xform_point(LCAST(PN_float32, film));
+      }
     }
   }
 }
@@ -640,6 +643,9 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
 
       vdata->set_num_rows(num_vertices);
 
+      char *skip_points = new char[num_vertices];
+      memset(skip_points, 0, sizeof(char) * num_vertices);
+
       // Fill in all of the vertices.
       for (VisColumns::const_iterator vci = vis_columns.begin();
            vci != vis_columns.end();
@@ -650,7 +656,9 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
 
         for (int yi = y_begin; yi < y_end; ++yi) {
           for (int xi = x_begin; xi < x_end; ++xi) {
-            column.add_data(*this, vwriter, xi, yi, reverse_normals);
+            if (!column.add_data(*this, vwriter, xi, yi, reverse_normals)) {
+              skip_points[(yi - y_begin) * x_size + (xi - x_begin)] = (char)true;
+            }
           }
         }
       }
@@ -663,13 +671,18 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
       for (int yi = y_begin; yi < y_end - 1; ++yi) {
         for (int xi = x_begin; xi < x_end - 1; ++xi) {
 
-          if (_pfm.has_no_data_value()) {
-            if (!_pfm.has_point(xi, yi) ||
-                !_pfm.has_point(xi, yi + 1) ||
-                !_pfm.has_point(xi + 1, yi + 1) ||
-                !_pfm.has_point(xi + 1, yi)) {
-              continue;
-            }
+          if (!_pfm.has_point(xi, yi) ||
+              !_pfm.has_point(xi, yi + 1) ||
+              !_pfm.has_point(xi + 1, yi + 1) ||
+              !_pfm.has_point(xi + 1, yi)) {
+            continue;
+          }
+
+          if (skip_points[(yi - y_begin) * x_size + (xi - x_begin)] ||
+              skip_points[(yi - y_begin + 1) * x_size + (xi - x_begin)] ||
+              skip_points[(yi - y_begin) * x_size + (xi - x_begin + 1)] ||
+              skip_points[(yi - y_begin + 1) * x_size + (xi - x_begin + 1)]) {
+            continue;
           }
 
           int xi0 = xi - x_begin;
@@ -697,6 +710,8 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
       }
       geom->add_primitive(tris);
       gnode->add_geom(geom);
+
+      delete[] skip_points;
     }
   }
 }
@@ -847,18 +862,22 @@ make_array_format(const VisColumns &vis_columns) const {
 //     Function: PfmVizzer::VisColumn::add_data
 //       Access: Public
 //  Description: Adds the data for this column to the appropriate
-//               column of the GeomVertexWriter.
+//               column of the GeomVertexWriter.  Returns true if the
+//               point is valid, false otherwise.
 ////////////////////////////////////////////////////////////////////
-void PfmVizzer::VisColumn::
+bool PfmVizzer::VisColumn::
 add_data(const PfmVizzer &vizzer, GeomVertexWriter &vwriter, int xi, int yi, bool reverse_normals) const {
   const PfmFile &pfm = vizzer.get_pfm();
+  bool success = true;
 
   switch (_source) {
   case CT_texcoord2:
     { 
       LPoint2f uv((PN_float32(xi) + 0.5) / PN_float32(pfm.get_x_size()),
                   (PN_float32(yi) + 0.5) / PN_float32(pfm.get_y_size()));
-      transform_point(uv);
+      if (!transform_point(uv)) {
+        success = false;
+      }
       vwriter.set_data2f(uv);
     }
     break;
@@ -868,7 +887,9 @@ add_data(const PfmVizzer &vizzer, GeomVertexWriter &vwriter, int xi, int yi, boo
       LPoint3f uv((PN_float32(xi) + 0.5) / PN_float32(pfm.get_x_size()),
                   (PN_float32(yi) + 0.5) / PN_float32(pfm.get_y_size()), 
                   0.0f);
-      transform_point(uv);
+      if (!transform_point(uv)) {
+        success = false;
+      }
       vwriter.set_data3f(uv);
     }
     break;
@@ -877,7 +898,9 @@ add_data(const PfmVizzer &vizzer, GeomVertexWriter &vwriter, int xi, int yi, boo
     {
       PN_float32 p = pfm.get_point1(xi, yi);
       LPoint2f point(p, 0.0);
-      transform_point(point);
+      if (!transform_point(point)) {
+        success = false;
+      }
       vwriter.set_data2f(point);
     }
     break;
@@ -885,7 +908,9 @@ add_data(const PfmVizzer &vizzer, GeomVertexWriter &vwriter, int xi, int yi, boo
   case CT_vertex2:
     {
       LPoint2f point = pfm.get_point2(xi, yi);
-      transform_point(point);
+      if (!transform_point(point)) {
+        success = false;
+      }
       vwriter.set_data2f(point);
     }
     break;
@@ -893,7 +918,9 @@ add_data(const PfmVizzer &vizzer, GeomVertexWriter &vwriter, int xi, int yi, boo
   case CT_vertex3:
     {
       LPoint3f point = pfm.get_point(xi, yi);
-      transform_point(point);
+      if (!transform_point(point)) {
+        success = false;
+      }
       vwriter.set_data3f(point);
     }
     break;
@@ -926,11 +953,13 @@ add_data(const PfmVizzer &vizzer, GeomVertexWriter &vwriter, int xi, int yi, boo
         n[2] += v0[0] * v1[1] - v0[1] * v1[0];
       }
       n.normalize();
-      nassertv(!n.is_nan());
+      nassertr(!n.is_nan(), false);
       if (reverse_normals) {
         n = -n;
       }
-      transform_vector(n);
+      if (!transform_vector(n)) {
+        success = false;
+      }
       vwriter.set_data3f(n);
     }
     break;
@@ -945,6 +974,8 @@ add_data(const PfmVizzer &vizzer, GeomVertexWriter &vwriter, int xi, int yi, boo
     }
     break;
   }
+
+  return success;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -953,11 +984,12 @@ add_data(const PfmVizzer &vizzer, GeomVertexWriter &vwriter, int xi, int yi, boo
 //  Description: Transforms the indicated point as specified by the
 //               VisColumn.
 ////////////////////////////////////////////////////////////////////
-void PfmVizzer::VisColumn::
+bool PfmVizzer::VisColumn::
 transform_point(LPoint2f &point) const {
   if (!_transform->is_identity()) {
     LCAST(PN_float32, _transform->get_mat3()).xform_point_in_place(point);
   }
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -966,8 +998,9 @@ transform_point(LPoint2f &point) const {
 //  Description: Transforms the indicated point as specified by the
 //               VisColumn.
 ////////////////////////////////////////////////////////////////////
-void PfmVizzer::VisColumn::
+bool PfmVizzer::VisColumn::
 transform_point(LPoint3f &point) const {
+  bool success = true;
   if (!_transform->is_identity()) {
     LCAST(PN_float32, _transform->get_mat()).xform_point_in_place(point);
   }
@@ -977,9 +1010,13 @@ transform_point(LPoint3f &point) const {
                            0.0, 0.0, 1.0, 0.0, 
                            0.5, 0.5, 0.0, 1.0);
     LPoint3 film;
-    _lens->project(LCAST(PN_stdfloat, point), film);
+    if (!_lens->project(LCAST(PN_stdfloat, point), film)) {
+      success = false;
+    }
     point = to_uv.xform_point(LCAST(PN_float32, film));
   }
+
+  return success;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -988,9 +1025,10 @@ transform_point(LPoint3f &point) const {
 //  Description: Transforms the indicated vector as specified by the
 //               VisColumn.
 ////////////////////////////////////////////////////////////////////
-void PfmVizzer::VisColumn::
+bool PfmVizzer::VisColumn::
 transform_vector(LVector3f &vec) const {
   if (!_transform->is_identity()) {
     LCAST(PN_float32, _transform->get_mat()).xform_vec_in_place(vec);
   }
+  return true;
 }

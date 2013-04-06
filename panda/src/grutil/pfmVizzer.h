@@ -88,10 +88,10 @@ private:
 
   class VisColumn {
   public:
-    void add_data(const PfmVizzer &vizzer, GeomVertexWriter &vwriter, int xi, int yi, bool reverse_normals) const;
-    void transform_point(LPoint2f &point) const;
-    void transform_point(LPoint3f &point) const;
-    void transform_vector(LVector3f &vec) const;
+    bool add_data(const PfmVizzer &vizzer, GeomVertexWriter &vwriter, int xi, int yi, bool reverse_normals) const;
+    bool transform_point(LPoint2f &point) const;
+    bool transform_point(LPoint3f &point) const;
+    bool transform_vector(LVector3f &vec) const;
 
   public:
     ColumnType _source;

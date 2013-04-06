@@ -1939,7 +1939,11 @@ fill_mini_grid(MiniGridCell *mini_grid, int x_size, int y_size,
 ////////////////////////////////////////////////////////////////////
 bool PfmFile::
 has_point_noop(const PfmFile *self, int x, int y) {
-  return true;
+  if ((x >= 0 && x < self->_x_size) && 
+      (y >= 0 && y < self->_y_size)) {
+    return true;
+  }
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
