@@ -84,7 +84,7 @@ void BulletSphericalConstraint::
 set_pivot_b(const LPoint3 &pivot_b) {
 
   nassertv(!pivot_b.is_nan());
-  _constraint->setPivotA(LVecBase3_to_btVector3(pivot_b));
+  _constraint->setPivotB(LVecBase3_to_btVector3(pivot_b));
 }
 
 ////////////////////////////////////////////////////////////////////
