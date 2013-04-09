@@ -682,6 +682,18 @@ get_keystone() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Lens::get_custom_film_mat
+//       Access: Published
+//  Description: Returns the custom_film_mat specified for the
+//               lens.
+////////////////////////////////////////////////////////////////////
+INLINE const LMatrix4 &Lens::
+get_custom_film_mat() const {
+  CDReader cdata(_cycler);
+  return cdata->_custom_film_mat;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Lens::get_projection_mat
 //       Access: Published
 //  Description: Returns the complete transformation matrix from a 3-d

@@ -341,6 +341,46 @@ clear_keystone() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Lens::set_custom_film_mat
+//       Access: Published
+//  Description: Specifies a custom matrix to transform the points on
+//               the film after they have been converted into nominal
+//               film space (-1 .. 1 in U and V).  This can be used to
+//               introduce arbitrary scales, rotations, or other
+//               linear transforms to the media plane.  This is
+//               normally a 2-d matrix, but a full 4x4 matrix may be
+//               specified.  This is applied on top of any film size,
+//               lens shift, and/or keystone correction.
+////////////////////////////////////////////////////////////////////
+void Lens::
+set_custom_film_mat(const LMatrix4 &custom_film_mat) {
+  nassertv(!custom_film_mat.is_nan());
+  CDWriter cdata(_cycler, true);
+  cdata->_custom_film_mat = custom_film_mat;
+  do_adjust_user_flags(cdata, 0, UF_custom_film_mat);
+  do_adjust_comp_flags(cdata, CF_projection_mat | CF_projection_mat_inv |
+                       CF_projection_mat_left_inv | CF_projection_mat_right_inv | 
+                       CF_film_mat | CF_film_mat_inv, 0);
+  do_throw_change_event(cdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Lens::clear_custom_film_mat
+//       Access: Published
+//  Description: Disables the lens custom_film_mat correction.
+////////////////////////////////////////////////////////////////////
+void Lens::
+clear_custom_film_mat() {
+  CDWriter cdata(_cycler, true);
+  cdata->_custom_film_mat = LMatrix4::ident_mat();
+  do_adjust_user_flags(cdata, UF_custom_film_mat, 0);
+  do_adjust_comp_flags(cdata, CF_projection_mat | CF_projection_mat_inv | 
+                       CF_projection_mat_left_inv | CF_projection_mat_right_inv | 
+                       CF_film_mat | CF_film_mat_inv, 0);
+  do_throw_change_event(cdata);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Lens::set_frustum_from_corners
 //       Access: Published
 //  Description: Sets up the lens to use the frustum defined by the
@@ -1618,6 +1658,10 @@ do_compute_film_mat(CData *cdata) {
                                 0.0f, 0.0f, 0.0f, 1.0f) * cdata->_film_mat;
   }
 
+  if ((cdata->_user_flags & UF_custom_film_mat) != 0) {
+    cdata->_film_mat = cdata->_film_mat * cdata->_custom_film_mat;
+  }
+
   do_adjust_comp_flags(cdata, CF_film_mat_inv, CF_film_mat);
 }
 
@@ -2155,6 +2199,7 @@ clear() {
   _view_vector.set(0.0f, 1.0f, 0.0f);
   _up_vector.set(0.0f, 0.0f, 1.0f);
   _keystone.set(0.0f, 0.0f);
+  _custom_film_mat = LMatrix4::ident_mat();
 
   _user_flags = 0;
   _comp_flags = CF_fov;

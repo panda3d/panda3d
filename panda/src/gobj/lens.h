@@ -130,6 +130,10 @@ PUBLISHED:
   void set_keystone(const LVecBase2 &keystone);
   INLINE const LVecBase2 &get_keystone() const;
   void clear_keystone();
+
+  void set_custom_film_mat(const LMatrix4 &custom_film_mat);
+  INLINE const LMatrix4 &get_custom_film_mat() const;
+  void clear_custom_film_mat();
   
   // These flags are passed in as the last parameter to control the
   // behavior of set_frustum_from_corners().  See the documentation
@@ -266,6 +270,7 @@ protected:
     UF_view_mat             = 0x0400,
     UF_keystone             = 0x0800,
     UF_min_fov              = 0x1000,
+    UF_custom_film_mat      = 0x2000,
   };
 
   enum CompFlags {
@@ -320,6 +325,7 @@ protected:
     PN_stdfloat _interocular_distance;
     PN_stdfloat _convergence_distance;
     LVecBase2 _keystone;
+    LMatrix4 _custom_film_mat;
     
     LMatrix4 _film_mat, _film_mat_inv;
     LMatrix4 _lens_mat, _lens_mat_inv;
