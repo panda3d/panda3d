@@ -34,17 +34,43 @@ TypeHandle StaticTextFont::_type_handle;
 //  Description: The constructor expects the root node to a model
 //               generated via egg-mkfont, which consists of a set of
 //               models, one per each character in the font.
+//
+//               If a CoordinateSystem value is specified, it informs
+//               the font of the coordinate system in which this model
+//               was generated.  "up" in this coordinate system will
+//               be the direction of the top of the letters.
 ////////////////////////////////////////////////////////////////////
 StaticTextFont::
-StaticTextFont(PandaNode *font_def) {
+StaticTextFont(PandaNode *font_def, CoordinateSystem cs) {
   nassertv(font_def != (PandaNode *)NULL);
   _font = font_def;
+  _cs = cs;
   _glyphs.clear();
+
+  if (_cs == CS_default) {
+    _cs = get_default_coordinate_system();
+  }
+
+  NodePath np(font_def);
+  if (_cs != CS_zup_right) {
+    // We have to convert the entire font to CS_zup_right before we
+    // can use it, because the text subsystem assumes the glyphs are
+    // stored in CS_zup_right.
+    NodePath temp_root("root");
+    NodePath temp_child = temp_root.attach_new_node("child");
+    np = np.copy_to(temp_child);
+    LMatrix4 mat = LMatrix4::convert_mat(_cs, CS_zup_right);
+    temp_child.set_mat(mat);
+    temp_root.clear_model_nodes();
+    temp_root.flatten_light();
+    np = temp_root.get_child(0).get_child(0);
+    _font = np.node();
+    _cs = CS_zup_right;
+  }
 
   // If there is no explicit quality level or filter settings on the
   // textures in the static font, set the appropriate defaults for
   // text.
-  NodePath np(font_def);
   TextureCollection tc = np.find_all_textures();
   int num_textures = tc.get_num_textures();
   for (int i = 0; i < num_textures; ++i) {
@@ -68,7 +94,7 @@ StaticTextFont(PandaNode *font_def) {
     }
   }
 
-  find_characters(font_def, RenderState::make_empty());
+  find_characters(_font, RenderState::make_empty());
   _is_valid = !_glyphs.empty();
   
   // Check for an explicit space width.

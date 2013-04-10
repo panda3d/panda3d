@@ -18,6 +18,7 @@
 #include "pandabase.h"
 
 #include "config_text.h"
+#include "coordinateSystem.h"
 #include "textFont.h"
 #include "textGlyph.h"
 #include "pandaNode.h"
@@ -39,7 +40,7 @@ class GeomPoint;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_TEXT StaticTextFont : public TextFont {
 PUBLISHED:
-  StaticTextFont(PandaNode *font_def);
+  StaticTextFont(PandaNode *font_def, CoordinateSystem cs = CS_default);
 
   virtual PT(TextFont) make_copy() const;
 
@@ -59,6 +60,7 @@ private:
   Glyphs _glyphs;
   PN_stdfloat _font_height;
   PT(PandaNode) _font;
+  CoordinateSystem _cs;
 
 public:
   static TypeHandle get_class_type() {
