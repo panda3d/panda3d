@@ -1022,17 +1022,13 @@ transform_point(LPoint3f &point) const {
   }
 
   if (_undist_lut != NULL) {
-    int x_size = _undist_lut->get_x_size();
-    int y_size = _undist_lut->get_y_size();
-
-    int dist_xi = (int)cfloor(point[0] * (PN_float32)x_size);
-    int dist_yi = (int)cfloor(point[1] * (PN_float32)y_size);
-    if (!_undist_lut->has_point(dist_xi, y_size - 1 - dist_yi)) {
+    LPoint3 p;
+    if (!_undist_lut->calc_bilinear_point(p, point[0], 1.0 - point[1])) {
       // Point is missing.
       point.set(0, 0, 0);
       success = false;
     } else {
-      point = _undist_lut->get_point(dist_xi, y_size - 1 - dist_yi);
+      point = p;
       point[1] = 1.0 - point[1];
     }
   }

@@ -196,9 +196,7 @@ modify_point2(int x, int y) {
 ////////////////////////////////////////////////////////////////////
 INLINE const LPoint3f &PfmFile::
 get_point(int x, int y) const {
-  nassertr(x >= 0 && x < _x_size &&
-           y >= 0 && y < _y_size, LPoint3f::zero());
-  return *(LPoint3f *)&_table[(y * _x_size + x) * _num_channels];
+  return get_point3(x, y);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -210,6 +208,55 @@ get_point(int x, int y) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PfmFile::
 set_point(int x, int y, const LVecBase3f &point) {
+  set_point3(x, y, point);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::set_point
+//       Access: Published
+//  Description: Replaces the 3-component point value at the indicated
+//               point.  In a 1-channel image, the channel value is in
+//               the x component.
+////////////////////////////////////////////////////////////////////
+INLINE void PfmFile::
+set_point(int x, int y, const LVecBase3d &point) {
+  set_point3(x, y, point);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::modify_point
+//       Access: Published
+//  Description: Returns a modifiable 3-component point value at the
+//               indicated point.
+////////////////////////////////////////////////////////////////////
+INLINE LPoint3f &PfmFile::
+modify_point(int x, int y) {
+  return modify_point3(x, y);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::get_point3
+//       Access: Published
+//  Description: Returns the 3-component point value at the indicated
+//               point.  In a 1-channel image, the channel value is in
+//               the x component.
+////////////////////////////////////////////////////////////////////
+INLINE const LPoint3f &PfmFile::
+get_point3(int x, int y) const {
+  nassertr(x >= 0 && x < _x_size &&
+           y >= 0 && y < _y_size, LPoint3f::zero());
+  return *(LPoint3f *)&_table[(y * _x_size + x) * _num_channels];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::set_point3
+//       Access: Published
+//  Description: Replaces the 3-component point value at the indicated
+//               point.  In a 1-channel image, the channel value is in
+//               the x component.
+////////////////////////////////////////////////////////////////////
+INLINE void PfmFile::
+set_point3(int x, int y, const LVecBase3f &point) {
   nassertv(!point.is_nan());
   nassertv(x >= 0 && x < _x_size &&
            y >= 0 && y < _y_size);
@@ -233,25 +280,25 @@ set_point(int x, int y, const LVecBase3f &point) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::set_point
+//     Function: PfmFile::set_point3
 //       Access: Published
 //  Description: Replaces the 3-component point value at the indicated
 //               point.  In a 1-channel image, the channel value is in
 //               the x component.
 ////////////////////////////////////////////////////////////////////
 INLINE void PfmFile::
-set_point(int x, int y, const LVecBase3d &point) {
-  set_point(x, y, LCAST(PN_float32, point));
+set_point3(int x, int y, const LVecBase3d &point) {
+  set_point3(x, y, LCAST(PN_float32, point));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PfmFile::modify_point
+//     Function: PfmFile::modify_point3
 //       Access: Published
 //  Description: Returns a modifiable 3-component point value at the
 //               indicated point.
 ////////////////////////////////////////////////////////////////////
 INLINE LPoint3f &PfmFile::
-modify_point(int x, int y) {
+modify_point3(int x, int y) {
 #ifndef NDEBUG
   static LPoint3f dummy_value = LPoint3f::zero();
   nassertr(x >= 0 && x < _x_size &&

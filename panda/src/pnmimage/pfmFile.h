@@ -69,6 +69,10 @@ PUBLISHED:
   INLINE void set_point(int x, int y, const LVecBase3f &point);
   INLINE void set_point(int x, int y, const LVecBase3d &point);
   INLINE LPoint3f &modify_point(int x, int y);
+  INLINE const LPoint3f &get_point3(int x, int y) const;
+  INLINE void set_point3(int x, int y, const LVecBase3f &point);
+  INLINE void set_point3(int x, int y, const LVecBase3d &point);
+  INLINE LPoint3f &modify_point3(int x, int y);
   INLINE const LPoint4f &get_point4(int x, int y) const;
   INLINE void set_point4(int x, int y, const LVecBase4f &point);
   INLINE void set_point4(int x, int y, const LVecBase4d &point);
@@ -80,6 +84,7 @@ PUBLISHED:
   void fill(const LPoint4f &value);
 
   BLOCKING bool calc_average_point(LPoint3f &result, PN_float32 x, PN_float32 y, PN_float32 radius) const;
+  BLOCKING bool calc_bilinear_point(LPoint3f &result, PN_float32 x, PN_float32 y) const;
   BLOCKING bool calc_min_max(LVecBase3f &min_points, LVecBase3f &max_points) const;
   BLOCKING bool calc_autocrop(int &x_begin, int &x_end, int &y_begin, int &y_end) const;
   BLOCKING INLINE bool calc_autocrop(LVecBase4f &range) const;

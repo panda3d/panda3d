@@ -593,17 +593,13 @@ recompute_geom(Geom *geom, const LMatrix4 &rel_mat) {
     LPoint3 uvw = film * to_uv;
 
     if (good && _has_undist_lut) {
-      int x_size = _undist_lut.get_x_size();
-      int y_size = _undist_lut.get_y_size();
-      
-      int dist_xi = (int)cfloor(uvw[0] * (PN_float32)x_size);
-      int dist_yi = (int)cfloor(uvw[1] * (PN_float32)y_size);
-      if (!_undist_lut.has_point(dist_xi, y_size - 1 - dist_yi)) {
+      LPoint3 p;
+      if (!_undist_lut.calc_bilinear_point(p, uvw[0], 1.0 - uvw[1])) {
         // Point is missing.
         uvw.set(0, 0, 0);
         good = false;
       } else {
-        uvw = _undist_lut.get_point(dist_xi, y_size - 1 - dist_yi);
+        uvw = p;
         uvw[1] = 1.0 - uvw[1];
       }
     }
@@ -767,17 +763,13 @@ make_mesh_geom(const Geom *geom, Lens *lens, LMatrix4 &rel_mat) {
       // Rescale these to [0, 1].
       LPoint3 uvw = film * lens_to_uv;
       
-      int x_size = _undist_lut.get_x_size();
-      int y_size = _undist_lut.get_y_size();
-      
-      int dist_xi = (int)cfloor(uvw[0] * (PN_float32)x_size);
-      int dist_yi = (int)cfloor(uvw[1] * (PN_float32)y_size);
-      if (!_undist_lut.has_point(dist_xi, y_size - 1 - dist_yi)) {
+      LPoint3 p;
+      if (!_undist_lut.calc_bilinear_point(p, uvw[0], 1.0 - uvw[1])) {
         // Point is missing.
         uvw.set(0, 0, 0);
         good = false;
       } else {
-        uvw = _undist_lut.get_point(dist_xi, y_size - 1 - dist_yi);
+        uvw = p;
         uvw[1] = 1.0 - uvw[1];
       }
 

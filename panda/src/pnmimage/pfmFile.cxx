@@ -611,6 +611,56 @@ calc_average_point(LPoint3f &result, PN_float32 x, PN_float32 y, PN_float32 radi
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::calc_bilinear_point
+//       Access: Published
+//  Description: Computes the weighted average of the four nearest
+//               points to the floating-point index (x, y).  Returns
+//               true if the point has any contributors, false if the
+//               point is unknown.
+////////////////////////////////////////////////////////////////////
+bool PfmFile::
+calc_bilinear_point(LPoint3f &result, PN_float32 x, PN_float32 y) const {
+  result = LPoint3f::zero();
+
+  x *= _x_size;
+  y *= _y_size;
+
+  int min_x = int(floor(x));
+  int min_y = int(floor(y));
+
+  PN_float32 frac_x = x - min_x;
+  PN_float32 frac_y = y - min_y;
+
+  LPoint3f p00, p01, p10, p11;
+  PN_float32 w00 = 0.0, w01 = 0.0, w10 = 0.0, w11 = 0.0;
+
+  if (has_point(min_x, min_y)) {
+    w00 = (1.0 - frac_y) * (1.0 - frac_x);
+    p00 = get_point(min_x, min_y);
+  }
+  if (has_point(min_x + 1, min_y)) {
+    w10 = (1.0 - frac_y) * frac_x;
+    p10 = get_point(min_x + 1, min_y);
+  }
+  if (has_point(min_x, min_y + 1)) {
+    w01 = frac_y * (1.0 - frac_x);
+    p01 = get_point(min_x, min_y + 1);
+  }
+  if (has_point(min_x + 1, min_y + 1)) {
+    w11 = frac_y * frac_x;
+    p11 = get_point(min_x + 1, min_y + 1);
+  }
+
+  PN_float32 net_w = w00 + w01 + w10 + w11;
+  if (net_w == 0.0) {
+    return false;
+  }
+
+  result = (p00 * w00 + p01 * w01 + p10 * w10 + p11 * w11) / net_w;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::calc_min_max
 //       Access: Published
 //  Description: Calculates the minimum and maximum x, y, and z depth
@@ -1093,14 +1143,12 @@ forward_distort(const PfmFile &dist, PN_float32 scale_factor) {
       if (!dist_p->has_point(xi, yi)) {
         continue;
       }
-      LPoint2f uv = dist_p->get_point2(xi, yi);
-      int dist_xi = (int)cfloor(uv[0] * (PN_float32)working_x_size);
-      int dist_yi = (int)cfloor(uv[1] * (PN_float32)working_y_size);
-      if (!source_p->has_point(dist_xi, working_y_size - 1 - dist_yi)) {
+      LPoint2 uv = dist_p->get_point2(xi, yi);
+      LPoint3 p;
+      if (!calc_bilinear_point(p, uv[0], 1.0 - uv[1])) {
         continue;
       }
-
-      result.set_point(xi, working_y_size - 1 - yi, source_p->get_point(dist_xi, working_y_size - 1 - dist_yi));
+      result.set_point(xi, working_y_size - 1 - yi, p);
     }
   }
 
@@ -1302,8 +1350,8 @@ clear_to_texcoords(int x_size, int y_size) {
 
   for (int yi = 0; yi < _y_size; ++yi) {
     for (int xi = 0; xi < _x_size; ++xi) {
-      LPoint3f uv(PN_float32(xi) * uv_scale[0] + 0.5,
-                  PN_float32(yi) * uv_scale[1] + 0.5, 
+      LPoint3f uv((PN_float32(xi) + 0.5) * uv_scale[0],
+                  (PN_float32(yi) + 0.5) * uv_scale[1],
                   0.0f);
       set_point(xi, yi, uv);
     }
