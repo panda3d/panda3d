@@ -39,6 +39,7 @@ ProjectionScreen(const string &name) : PandaNode(name)
 
   _texcoord_name = InternalName::get_texcoord();
 
+  _has_undist_lut = false;
   _invert_uvs = project_invert_uvs;
   _texcoord_3d = false;
   _vignette_on = false;
@@ -214,7 +215,7 @@ generate_screen(const NodePath &projector, const string &screen_name,
   for (int yi = 0; yi < num_y_verts; yi++) {
     for (int xi = 0; xi < num_x_verts; xi++) {
       LPoint2 film = LPoint2((PN_stdfloat)xi * x_scale - 1.0f,
-                               (PN_stdfloat)yi * y_scale - 1.0f);
+                             (PN_stdfloat)yi * y_scale - 1.0f);
       
       // Reduce the image by the fill ratio.
       film *= fill_ratio;
@@ -590,6 +591,22 @@ recompute_geom(Geom *geom, const LMatrix4 &rel_mat) {
     // Now the lens gives us coordinates in the range [-1, 1].
     // Rescale these to [0, 1].
     LPoint3 uvw = film * to_uv;
+
+    if (good && _has_undist_lut) {
+      int x_size = _undist_lut.get_x_size();
+      int y_size = _undist_lut.get_y_size();
+      
+      int dist_xi = (int)cfloor(uvw[0] * (PN_float32)x_size);
+      int dist_yi = (int)cfloor(uvw[1] * (PN_float32)y_size);
+      if (!_undist_lut.has_point(dist_xi, y_size - 1 - dist_yi)) {
+        // Point is missing.
+        uvw.set(0, 0, 0);
+        good = false;
+      } else {
+        uvw = _undist_lut.get_point(dist_xi, y_size - 1 - dist_yi);
+        uvw[1] = 1.0 - uvw[1];
+      }
+    }
     texcoord.set_data3(uvw);
     
     // If we have vignette color in effect, color the vertex according
@@ -722,6 +739,13 @@ make_mesh_geom_node(const WorkingNodePath &np, const NodePath &camera,
 ////////////////////////////////////////////////////////////////////
 PT(Geom) ProjectionScreen::
 make_mesh_geom(const Geom *geom, Lens *lens, LMatrix4 &rel_mat) {
+  static const LMatrix4 lens_to_uv
+    (0.5f, 0.0f, 0.0f, 0.0f,
+     0.0f, 0.5f, 0.0f, 0.0f, 
+     0.0f, 0.0f, 1.0f, 0.0f, 
+     0.5f, 0.5f, 0.0f, 1.0f);
+  static const LMatrix4 uv_to_lens = invert(lens_to_uv);
+
   Thread *current_thread = Thread::get_current_thread();
   PT(Geom) new_geom = geom->make_copy();
   PT(GeomVertexData) vdata = new_geom->modify_vertex_data();
@@ -735,7 +759,30 @@ make_mesh_geom(const Geom *geom, Lens *lens, LMatrix4 &rel_mat) {
     // dimensions so the Z coordinate remains meaningful.
     LPoint3 vert3d = vert * rel_mat;
     LPoint3 film(0.0f, 0.0f, 0.0f);
-    lens->project(vert3d, film);
+    bool good = lens->project(vert3d, film);
+
+    if (good && _has_undist_lut) {
+    
+      // Now the lens gives us coordinates in the range [-1, 1].
+      // Rescale these to [0, 1].
+      LPoint3 uvw = film * lens_to_uv;
+      
+      int x_size = _undist_lut.get_x_size();
+      int y_size = _undist_lut.get_y_size();
+      
+      int dist_xi = (int)cfloor(uvw[0] * (PN_float32)x_size);
+      int dist_yi = (int)cfloor(uvw[1] * (PN_float32)y_size);
+      if (!_undist_lut.has_point(dist_xi, y_size - 1 - dist_yi)) {
+        // Point is missing.
+        uvw.set(0, 0, 0);
+        good = false;
+      } else {
+        uvw = _undist_lut.get_point(dist_xi, y_size - 1 - dist_yi);
+        uvw[1] = 1.0 - uvw[1];
+      }
+
+      film = uvw * uv_to_lens;
+    }
 
     vertex.set_data3(film);
   }      

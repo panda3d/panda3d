@@ -79,7 +79,7 @@ clear() {
   _x_size = 0;
   _y_size = 0;
   _scale = 1.0;
-  _num_channels = 3;
+  _num_channels = 0;
   _table.clear();
   clear_no_data_value();
 }
@@ -1044,6 +1044,11 @@ xform(const LMatrix4f &transform) {
 //               file at (x,y), where (x,y) is the point value from
 //               the dist map.
 //
+//               By convention, the y axis in inverted in the
+//               distortion map relative to the coordinates here.  A y
+//               value of 0 in the distortion map corresponds with a v
+//               value of 1 in this file.
+//
 //               If scale_factor is not 1, it should be a value > 1,
 //               and it specifies the factor to upscale the working
 //               table while processing, to reduce artifacts from
@@ -1091,16 +1096,11 @@ forward_distort(const PfmFile &dist, PN_float32 scale_factor) {
       LPoint2f uv = dist_p->get_point2(xi, yi);
       int dist_xi = (int)cfloor(uv[0] * (PN_float32)working_x_size);
       int dist_yi = (int)cfloor(uv[1] * (PN_float32)working_y_size);
-      if (dist_xi < 0 || dist_xi >= working_x_size || 
-          dist_yi < 0 || dist_yi >= working_y_size) {
+      if (!source_p->has_point(dist_xi, working_y_size - 1 - dist_yi)) {
         continue;
       }
 
-      if (!source_p->has_point(dist_xi, dist_yi)) {
-        continue;
-      }
-
-      result.set_point(xi, yi, source_p->get_point(dist_xi, dist_yi));
+      result.set_point(xi, working_y_size - 1 - yi, source_p->get_point(dist_xi, working_y_size - 1 - dist_yi));
     }
   }
 
@@ -1121,6 +1121,11 @@ forward_distort(const PfmFile &dist, PN_float32 scale_factor) {
 //               current file is replaced with the point from the same
 //               file at (u,v), where (x,y) is the point value from
 //               the dist map.
+//
+//               By convention, the y axis in inverted in the
+//               distortion map relative to the coordinates here.  A y
+//               value of 0 in the distortion map corresponds with a v
+//               value of 1 in this file.
 //
 //               If scale_factor is not 1, it should be a value > 1,
 //               and it specifies the factor to upscale the working
@@ -1163,7 +1168,7 @@ reverse_distort(const PfmFile &dist, PN_float32 scale_factor) {
 
   for (int yi = 0; yi < working_y_size; ++yi) {
     for (int xi = 0; xi < working_x_size; ++xi) {
-      if (!source_p->has_point(xi, yi)) {
+      if (!source_p->has_point(xi, working_y_size - 1 - yi)) {
         continue;
       }
       if (!dist_p->has_point(xi, yi)) {
@@ -1177,11 +1182,13 @@ reverse_distort(const PfmFile &dist, PN_float32 scale_factor) {
         continue;
       }
 
-      if (!source_p->has_point(dist_xi, dist_yi)) {
+      /*
+      if (!source_p->has_point(dist_xi, working_y_size - 1 - dist_yi)) {
         continue;
       }
+      */
 
-      result.set_point(dist_xi, dist_yi, source_p->get_point(xi, yi));
+      result.set_point(dist_xi, working_y_size - 1 - dist_yi, source_p->get_point(xi, working_y_size - 1 - yi));
     }
   }
 

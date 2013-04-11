@@ -23,6 +23,7 @@
 #include "nodePath.h"
 #include "internalName.h"
 #include "pointerTo.h"
+#include "pfmFile.h"
 
 class Geom;
 class WorkingNodePath;
@@ -66,6 +67,11 @@ public:
 PUBLISHED:
   void set_projector(const NodePath &projector);
   INLINE const NodePath &get_projector() const;
+
+  INLINE void clear_undist_lut();
+  INLINE void set_undist_lut(const PfmFile &undist_lut);
+  INLINE bool has_undist_lut() const;
+  INLINE const PfmFile &get_undist_lut() const;
 
   PT(GeomNode) generate_screen(const NodePath &projector,
                                const string &screen_name,
@@ -124,6 +130,8 @@ private:
 
   NodePath _projector;
   PT(LensNode) _projector_node;
+  bool _has_undist_lut;
+  PfmFile _undist_lut;
   PT(InternalName) _texcoord_name;
   bool _invert_uvs;
   bool _texcoord_3d;

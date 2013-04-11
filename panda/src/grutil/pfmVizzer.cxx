@@ -230,8 +230,8 @@ clear_vis_columns() {
 void PfmVizzer::
 add_vis_column(ColumnType source, ColumnType target,
                InternalName *name, const TransformState *transform,
-               const Lens *lens) {
-  add_vis_column(_vis_columns, source, target, name, transform, lens);
+               const Lens *lens, const PfmFile *undist_lut) {
+  add_vis_column(_vis_columns, source, target, name, transform, lens, undist_lut);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -726,7 +726,7 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
 void PfmVizzer::
 add_vis_column(VisColumns &vis_columns, ColumnType source, ColumnType target,
                InternalName *name, const TransformState *transform,
-               const Lens *lens) {
+               const Lens *lens, const PfmFile *undist_lut) {
   VisColumn column;
   column._source = source;
   column._target = target;
@@ -736,6 +736,9 @@ add_vis_column(VisColumns &vis_columns, ColumnType source, ColumnType target,
     column._transform = TransformState::make_identity();
   }
   column._lens = lens;
+  if (undist_lut != NULL && undist_lut->is_valid()) {
+    column._undist_lut = undist_lut;
+  }
   vis_columns.push_back(column);
 }
 
@@ -986,10 +989,12 @@ add_data(const PfmVizzer &vizzer, GeomVertexWriter &vwriter, int xi, int yi, boo
 ////////////////////////////////////////////////////////////////////
 bool PfmVizzer::VisColumn::
 transform_point(LPoint2f &point) const {
+  bool success = true;
   if (!_transform->is_identity()) {
     LCAST(PN_float32, _transform->get_mat3()).xform_point_in_place(point);
   }
-  return true;
+
+  return success;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1014,6 +1019,22 @@ transform_point(LPoint3f &point) const {
       success = false;
     }
     point = to_uv.xform_point(LCAST(PN_float32, film));
+  }
+
+  if (_undist_lut != NULL) {
+    int x_size = _undist_lut->get_x_size();
+    int y_size = _undist_lut->get_y_size();
+
+    int dist_xi = (int)cfloor(point[0] * (PN_float32)x_size);
+    int dist_yi = (int)cfloor(point[1] * (PN_float32)y_size);
+    if (!_undist_lut->has_point(dist_xi, y_size - 1 - dist_yi)) {
+      // Point is missing.
+      point.set(0, 0, 0);
+      success = false;
+    } else {
+      point = _undist_lut->get_point(dist_xi, y_size - 1 - dist_yi);
+      point[1] = 1.0 - point[1];
+    }
   }
 
   return success;

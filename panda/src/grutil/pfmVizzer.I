@@ -180,3 +180,13 @@ INLINE const PNMImage *PfmVizzer::
 get_vis_blend() const {
   return _vis_blend;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmVizzer::VisColumn::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PfmVizzer::VisColumn::
+VisColumn() {
+  _undist_lut = NULL;
+}

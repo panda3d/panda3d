@@ -63,7 +63,8 @@ PUBLISHED:
   void clear_vis_columns();
   void add_vis_column(ColumnType source, ColumnType target,
                       InternalName *name, 
-                      const TransformState *transform = NULL, const Lens *lens = NULL);
+                      const TransformState *transform = NULL, const Lens *lens = NULL,
+                      const PfmFile *undist_lut = NULL);
 
   BLOCKING NodePath generate_vis_points() const;
 
@@ -88,6 +89,7 @@ private:
 
   class VisColumn {
   public:
+    INLINE VisColumn();
     bool add_data(const PfmVizzer &vizzer, GeomVertexWriter &vwriter, int xi, int yi, bool reverse_normals) const;
     bool transform_point(LPoint2f &point) const;
     bool transform_point(LPoint3f &point) const;
@@ -99,13 +101,15 @@ private:
     PT(InternalName) _name;
     CPT(TransformState) _transform;
     CPT(Lens) _lens;
+    const PfmFile *_undist_lut;
   };
   typedef pvector<VisColumn> VisColumns;
 
   static void add_vis_column(VisColumns &vis_columns, 
                              ColumnType source, ColumnType target,
                              InternalName *name, 
-                             const TransformState *transform = NULL, const Lens *lens = NULL);
+                             const TransformState *transform = NULL,
+                             const Lens *lens = NULL, const PfmFile *undist_lut = NULL);
   void build_auto_vis_columns(VisColumns &vis_columns, bool for_points) const;
   CPT(GeomVertexFormat) make_array_format(const VisColumns &vis_columns) const;
 

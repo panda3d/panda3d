@@ -27,6 +27,58 @@ get_projector() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ProjectionScreen::clear_undist_lut
+//       Access: Published
+//  Description: Removes the distortion lookup table from the
+//               projector, if specified.
+////////////////////////////////////////////////////////////////////
+INLINE void ProjectionScreen::
+clear_undist_lut() {
+  _has_undist_lut = false;
+  _undist_lut = PfmFile();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ProjectionScreen::set_undist_lut
+//       Access: Published
+//  Description: Applies a distortion lookup table to the
+//               projector.  This mapping warps the lens effect by
+//               passing each ray through an indirection table: the
+//               point (u,v) in the indicated lookup table stores the
+//               actual (u,v) that the lens produces.
+//
+//               This does not affect the operation of
+//               generate_screen().
+////////////////////////////////////////////////////////////////////
+INLINE void ProjectionScreen::
+set_undist_lut(const PfmFile &undist_lut) {
+  _has_undist_lut = undist_lut.is_valid();
+  _undist_lut = undist_lut;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ProjectionScreen::has_undist_lut
+//       Access: Published
+//  Description: Returns true if a valid distortion lookup table was
+//               provided via set_undist_lut(), false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool ProjectionScreen::
+has_undist_lut() const {
+  return _has_undist_lut;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ProjectionScreen::get_undist_lut
+//       Access: Published
+//  Description: Returns the distortion lookup table provided via
+//               set_undist_lut(), if any.
+////////////////////////////////////////////////////////////////////
+INLINE const PfmFile &ProjectionScreen::
+get_undist_lut() const {
+  return _undist_lut;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ProjectionScreen::set_texcoord_name
 //       Access: Published
 //  Description: Specifies the name of the texture coordinates that
