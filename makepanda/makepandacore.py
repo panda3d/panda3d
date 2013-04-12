@@ -1322,11 +1322,14 @@ def PkgConfigGetIncDirs(pkgname, tool = "pkg-config"):
     result = handle.read().strip()
     if len(result) == 0: return []
     handle.close()
-    libs = []
-    for l in result.split(" "):
-        if (l.startswith("-I")):
-            libs.append(l.replace("-I", "").replace("\"", "").strip())
-    return libs
+    dirs = []
+    for opt in result.split(" "):
+        if (opt.startswith("-I")):
+            inc_dir = opt.replace("-I", "").replace("\"", "").strip()
+            # Hack for ODE, otherwise -S/usr/include gets added to interrogate
+            if inc_dir != '/usr/include' or inc_dir != '/usr/include/':
+                dirs.append(inc_dir)
+    return dirs
 
 def PkgConfigGetLibDirs(pkgname, tool = "pkg-config"):
     """Returns a list of library paths for the package, NOT prefixed by -L."""
