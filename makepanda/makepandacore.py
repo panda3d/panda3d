@@ -34,6 +34,7 @@ TARGET_ARCH = None
 HAS_TARGET_ARCH = False
 TOOLCHAIN_PREFIX = ""
 ANDROID_ABI = None
+SYS_LIB_DIRS = []
 
 # Is the current Python a 32-bit or 64-bit build?  There doesn't
 # appear to be a universal test for this.
@@ -275,6 +276,7 @@ def SetTarget(target, arch=None):
     sets the target architecture (None for default, if any).  Should
     be called *before* any calls are made to GetOutputDir, GetCC, etc."""
     global TARGET, TARGET_ARCH, HAS_TARGET_ARCH
+    global TOOLCHAIN_PREFIX
 
     host = GetHost()
     host_arch = GetHostArch()
@@ -285,6 +287,8 @@ def SetTarget(target, arch=None):
 
     if arch is not None:
         HAS_TARGET_ARCH = True
+
+    TOOLCHAIN_PREFIX = ''
 
     if target == 'windows':
         if arch is not None and arch != 'x86' and arch != 'x64':
@@ -301,7 +305,7 @@ def SetTarget(target, arch=None):
             arch = 'arm'
 
         # Determine the prefix for our gcc tools, eg. arm-linux-androideabi-gcc
-        global TOOLCHAIN_PREFIX, ANDROID_ABI
+        global ANDROID_ABI
         if arch == 'armv7a':
             ANDROID_ABI = 'armeabi-v7a'
             TOOLCHAIN_PREFIX = 'arm-linux-androideabi-'
@@ -317,9 +321,16 @@ def SetTarget(target, arch=None):
         else:
             exit('Android architecture must be arm, armv7a, x86 or mips')
 
+    elif target == 'linux':
+        if arch is not None:
+            TOOLCHAIN_PREFIX = '%s-linux-gnu-' % arch
+
+        elif host != 'linux':
+            exit('Should specify an architecture when building for Linux')
+
     elif target == host:
         if arch is None or arch == host_arch:
-            # That's okay.
+            # Not a cross build.
             pass
         else:
             exit('Cannot cross-compile for %s-%s from %s-%s' % (target, arch, host, host_arch))
@@ -358,29 +369,31 @@ def CrossCompiling():
     return GetTarget() != GetHost()
 
 def GetCC():
-    if GetTarget() == 'android':
-        return TOOLCHAIN_PREFIX + 'gcc'
-    return os.environ.get('CC', 'gcc')
+    return os.environ.get('CC', TOOLCHAIN_PREFIX + 'gcc')
 
 def GetCXX():
-    if GetTarget() == 'android':
-        return TOOLCHAIN_PREFIX + 'g++'
-    return os.environ.get('CXX', 'g++')
+    return os.environ.get('CXX', TOOLCHAIN_PREFIX + 'g++')
 
 def GetStrip():
-    if GetTarget() == 'android':
+    # Hack
+    if TARGET == 'android':
         return TOOLCHAIN_PREFIX + 'strip'
-    return 'strip'
+    else:
+        return 'strip'
 
 def GetAR():
-    if GetTarget() == 'android':
+    # Hack
+    if TARGET == 'android':
         return TOOLCHAIN_PREFIX + 'ar'
-    return 'ar'
+    else:
+        return 'ar'
 
 def GetRanlib():
-    if GetTarget() == 'android':
+    # Hack
+    if TARGET == 'android':
         return TOOLCHAIN_PREFIX + 'ranlib'
-    return 'ranlib'
+    else:
+        return 'ranlib'
 
 BISON = None
 def GetBison():
@@ -1384,62 +1397,32 @@ def PkgConfigEnable(opt, pkgname, tool = "pkg-config"):
     for i, j in PkgConfigGetDefSymbols(pkgname, tool).items():
         DefSymbol(opt, i, j)
 
-LD_CACHE = None
+def SystemLibraryExists(lib):
+    """ Returns True if this library was found in the system library search path, False otherwise. """
 
-def GetLibCache():
-    # Returns a list of cached libraries, not prefixed by lib and not suffixed by .so* or .a!
-    global LD_CACHE
-    if (LD_CACHE == None):
-        LD_CACHE = []
-        sysroot = SDK.get('SYSROOT', '')
-        print("Generating library cache...")
+    target = GetTarget()
 
-        # If not cross compiling, use ldconfig to get a list of libraries in the LD cache
-        if (not CrossCompiling() and LocateBinary("ldconfig") != None and GetTarget() != 'freebsd'):
-            handle = os.popen(LocateBinary("ldconfig") + " -NXp")
-            result = handle.read().strip().split("\n")
-            for line in result:
-                lib = line.strip().split(" ", 1)[0]
-                if (lib.endswith(".so") or ".so " in lib):
-                    lib = lib.split(".so", 1)[0][3:]
-                    LD_CACHE.append(lib)
+    for dir in SYS_LIB_DIRS:
+        if target == 'darwin' and os.path.isfile(os.path.join(dir, 'lib%s.dylib' % lib)):
+            return True
+        elif target != 'darwin' and os.path.isfile(os.path.join(dir, 'lib%s.so' % lib)):
+            return True
+        elif os.path.isfile(os.path.join(dir, 'lib%s.a' % lib)):
+            return True
 
-        libdirs = ["/lib", "/usr/lib", "/usr/local/lib", "/usr/PCBSD/local/lib", "/usr/X11/lib", "/usr/X11R6/lib"]
-
-        if is_64:
-            libdirs += ["/lib64", "/usr/lib64"]
-
-        # Prepend sysroot
-        for i, dir in enumerate(libdirs):
-            libdirs[i] = sysroot + dir
-
-        if "LD_LIBRARY_PATH" in os.environ:
-            libdirs += os.environ["LD_LIBRARY_PATH"].split(os.pathsep)
-        libdirs = list(set(libdirs))
-        libs = []
-        for path in libdirs:
-            if os.path.isdir(path):
-                libs += glob.glob(path + "/lib*.so")
-                libs += glob.glob(path + "/lib*.a")
-                if GetTarget() == 'darwin':
-                    libs += glob.glob(path + "/lib*.dylib")
-
-        for l in libs:
-            lib = os.path.basename(l).split(".so", 1)[0].split(".a", 1)[0].split(".dylib", 1)[0][3:]
-            if lib not in LD_CACHE:
-                LD_CACHE.append(lib)
-    return LD_CACHE
+    return False
 
 def ChooseLib(*libs):
     # Chooses a library from the parameters, in order of preference. Returns the first if none of them were found.
     for l in libs:
         libname = l
-        if (l.startswith("lib")):
+        if l.startswith("lib"):
             libname = l[3:]
-        if (libname in GetLibCache()):
+        if SystemLibraryExists(libname):
             return libname
-    if (len(libs) > 0):
-        if (VERBOSE):
+
+    if len(libs) > 0:
+        if VERBOSE:
             print(ColorText("cyan", "Couldn't find any of the libraries " + ", ".join(libs)))
         return libs[0]
 
@@ -1551,14 +1534,14 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
         have_pkg = True
         for l in libs:
             libname = l
-            if (l.startswith("lib")):
+            if l.startswith("lib"):
                 libname = l[3:]
-            if (libname in GetLibCache()):
+            if SystemLibraryExists(libname):
                 LibName(target_pkg, "-l" + libname)
             else:
-                if (VERBOSE):
-                    print(GetColor("cyan") + "Couldn't find library lib" + libname + GetColor())
                 have_pkg = False
+                if VERBOSE:
+                    print(GetColor("cyan") + "Couldn't find library lib" + libname + GetColor())
 
         for i in incs:
             incdir = None
@@ -2212,14 +2195,45 @@ def DefSymbol(opt, sym, val=""):
 
 ########################################################################
 #
-# This subroutine prepares the environment variables for the build.
+# This subroutine prepares the environment for the build.
 #
 ########################################################################
 
 def SetupBuildEnvironment(compiler):
+    if GetVerbose():
+        print("Using compiler: %s" % compiler)
+
     if compiler == "MSVC":
+        # Add the visual studio tools to PATH et al.
         SetupVisualStudioEnviron()
 
+    if compiler == "GCC":
+        # Invoke gcc to determine the system library directories.
+        global SYS_LIB_DIRS
+        cmd = GetCXX() + " -print-search-dirs"
+
+        if "MACOSX" in SDK:
+            # The default compiler in Leopard does not respect --sysroot correctly.
+            cmd += " -isysroot " + SDK["MACOSX"]
+        if "SYSROOT" in SDK:
+            cmd += ' --sysroot=%s -no-canonical-prefixes' % (SDK["SYSROOT"])
+
+        # Extract the dirs from the line that starts with 'libraries: ='.
+        handle = os.popen(cmd)
+        for line in handle:
+            if not line.startswith('libraries: ='):
+                continue
+
+            line = line[12:].strip()
+            SYS_LIB_DIRS += line.split(':')
+
+        returnval = handle.close()
+        if returnval != None and returnval != 0:
+            print("%sWARNING:%s Could not locate thirdparty package %s, excluding from build" % (GetColor("red"), GetColor(), opt.lower()))
+        elif GetVerbose():
+            print("System library search path: %s" % ':'.join(SYS_LIB_DIRS))
+
+    # In the case of Android, we have to put the toolchain on the PATH in order to use it.
     if GetTarget() == 'android':
         # Locate the directory where the toolchain binaries reside.
         prebuilt_dir = os.path.join(SDK['ANDROID_TOOLCHAIN'], 'prebuilt')
@@ -2246,7 +2260,7 @@ def SetupBuildEnvironment(compiler):
         # Then, add it to the PATH.
         AddToPathEnv("PATH", os.path.join(prebuilt_dir, 'bin'))
 
-    # If we're cross-compiling, no point in putting output dirs on the path.
+    # If we're cross-compiling, no point in putting our output dirs on the path.
     if CrossCompiling():
         return
 

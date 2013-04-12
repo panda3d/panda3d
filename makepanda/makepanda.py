@@ -12,7 +12,7 @@
 #
 ########################################################################
 try:
-    import sys,os,platform,time,stat,string,re,getopt,fnmatch,threading,signal,shutil
+    import sys, os, platform, time, stat, re, getopt, threading, signal, shutil
     if sys.platform == "darwin" or sys.version_info >= (2, 6):
         import plistlib
     if sys.version_info >= (3, 0):
@@ -385,13 +385,13 @@ LoadDependencyCache()
 
 MakeBuildTree()
 
-SdkLocateDirectX( STRDXSDKVERSION )
+SdkLocateDirectX(STRDXSDKVERSION)
 SdkLocateMaya()
 SdkLocateMax()
 SdkLocateMacOSX(OSXTARGET)
 SdkLocatePython(RTDIST)
 SdkLocateVisualStudio()
-SdkLocateMSPlatform( STRMSPLATFORMVERSION )
+SdkLocateMSPlatform(STRMSPLATFORMVERSION)
 SdkLocatePhysX()
 SdkLocateSpeedTree()
 SdkLocateAndroid()
@@ -1009,9 +1009,11 @@ def CompileCxx(obj,src,opts):
             elif HasTargetArch():
                 cmd += " -arch %s" % (GetTargetArch())
 
+        if "SYSROOT" in SDK:
+            cmd += ' --sysroot=%s -no-canonical-prefixes' % (SDK["SYSROOT"])
+
         # Android-specific flags.
         if GetTarget() == "android":
-            cmd += ' --sysroot=%s -no-canonical-prefixes' % (SDK["SYSROOT"])
             cmd += ' -ffunction-sections -funwind-tables'
             arch = GetTargetArch()
             if arch == 'armv7a':
@@ -1407,9 +1409,11 @@ def CompileLink(dll, obj, opts):
             elif HasTargetArch():
                 cmd += " -arch %s" % (GetTargetArch())
 
+        if "SYSROOT" in SDK:
+            cmd += " --sysroot=%s -no-canonical-prefixes" % (SDK["SYSROOT"])
+
         # Android-specific flags.
         if GetTarget() == 'android':
-            cmd += " --sysroot=%s -no-canonical-prefixes" % (SDK["SYSROOT"])
             cmd += " -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now"
             if GetTargetArch() == 'armv7a':
                 cmd += " -march=armv7-a -Wl,--fix-cortex-a8"
@@ -2141,9 +2145,9 @@ def WriteConfigSettings():
 WriteConfigSettings()
 
 MoveAwayConflictingFiles()
-if "libdtoolbase" in GetLibCache():
+if SystemLibraryExists("dtoolbase"):
     print("%sWARNING:%s Found conflicting Panda3D libraries from other ppremake build!" % (GetColor("red"), GetColor()))
-if "libp3dtoolconfig" in GetLibCache():
+if SystemLibraryExists("p3dtoolconfig"):
     print("%sWARNING:%s Found conflicting Panda3D libraries from other makepanda build!" % (GetColor("red"), GetColor()))
 
 ##########################################################################################
