@@ -622,8 +622,8 @@ bool PfmFile::
 calc_bilinear_point(LPoint3f &result, PN_float32 x, PN_float32 y) const {
   result = LPoint3f::zero();
 
-  x *= _x_size;
-  y *= _y_size;
+  x = (x * _x_size - 0.5);
+  y = (y * _y_size - 0.5);
 
   int min_x = int(floor(x));
   int min_y = int(floor(y));
@@ -1094,7 +1094,7 @@ xform(const LMatrix4f &transform) {
 //               file at (x,y), where (x,y) is the point value from
 //               the dist map.
 //
-//               By convention, the y axis in inverted in the
+//               By convention, the y axis is inverted in the
 //               distortion map relative to the coordinates here.  A y
 //               value of 0 in the distortion map corresponds with a v
 //               value of 1 in this file.
@@ -1145,7 +1145,7 @@ forward_distort(const PfmFile &dist, PN_float32 scale_factor) {
       }
       LPoint2 uv = dist_p->get_point2(xi, yi);
       LPoint3 p;
-      if (!calc_bilinear_point(p, uv[0], 1.0 - uv[1])) {
+      if (!source_p->calc_bilinear_point(p, uv[0], 1.0 - uv[1])) {
         continue;
       }
       result.set_point(xi, working_y_size - 1 - yi, p);
