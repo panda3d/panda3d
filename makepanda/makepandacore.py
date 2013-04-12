@@ -1340,7 +1340,7 @@ def PkgConfigGetIncDirs(pkgname, tool = "pkg-config"):
         if (opt.startswith("-I")):
             inc_dir = opt.replace("-I", "").replace("\"", "").strip()
             # Hack for ODE, otherwise -S/usr/include gets added to interrogate
-            if inc_dir != '/usr/include' or inc_dir != '/usr/include/':
+            if inc_dir != '/usr/include' and inc_dir != '/usr/include/':
                 dirs.append(inc_dir)
     return dirs
 
