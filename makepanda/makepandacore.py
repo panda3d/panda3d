@@ -2210,6 +2210,10 @@ def SetupBuildEnvironment(compiler):
     if compiler == "GCC":
         # Invoke gcc to determine the system library directories.
         global SYS_LIB_DIRS
+
+        # gcc doesn't add this one, but we do want it:
+        SYS_LIB_DIRS.append('/usr/local/lib')
+
         cmd = GetCXX() + " -print-search-dirs"
 
         if "MACOSX" in SDK:
@@ -2229,7 +2233,8 @@ def SetupBuildEnvironment(compiler):
 
         returnval = handle.close()
         if returnval != None and returnval != 0:
-            print("%sWARNING:%s Could not locate thirdparty package %s, excluding from build" % (GetColor("red"), GetColor(), opt.lower()))
+            print("%sWARNING:%s %s failed" % (GetColor("red"), GetColor(), cmd))
+            SYS_LIB_DIRS += ['/usr/lib']
         elif GetVerbose():
             print("System library search path: %s" % ':'.join(SYS_LIB_DIRS))
 
