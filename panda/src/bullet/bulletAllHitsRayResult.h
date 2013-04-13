@@ -28,7 +28,7 @@
 //       Class : BulletRayHit
 // Description : 
 ////////////////////////////////////////////////////////////////////
-struct BulletRayHit {
+struct EXPCL_PANDABULLET BulletRayHit {
 
 PUBLISHED:
   INLINE static BulletRayHit empty();

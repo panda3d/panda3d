@@ -31,7 +31,7 @@ class BulletWheel;
 //       Class : BulletVehicleTuning
 // Description : 
 ////////////////////////////////////////////////////////////////////
-class BulletVehicleTuning {
+class EXPCL_PANDABULLET BulletVehicleTuning {
 
 PUBLISHED:
   INLINE void set_suspension_stiffness(PN_stdfloat value);

@@ -38,7 +38,7 @@ class BulletSoftBodyWorldInfo;
 //       Class : BulletSoftBodyNodeElement
 // Description : 
 ////////////////////////////////////////////////////////////////////
-class BulletSoftBodyNodeElement {
+class EXPCL_PANDABULLET BulletSoftBodyNodeElement {
 
 PUBLISHED:
   INLINE ~BulletSoftBodyNodeElement();
