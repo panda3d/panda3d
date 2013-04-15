@@ -1089,20 +1089,21 @@ xform(const LMatrix4f &transform) {
 //  Description: Applies the distortion indicated in the supplied dist
 //               map to the current map.  The dist map is understood
 //               to be a mapping of points in the range 0..1 in the
-//               first two dimensions.  Each (u,v) point in the
-//               current file is replaced with the point from the same
-//               file at (x,y), where (x,y) is the point value from
-//               the dist map.
+//               first two dimensions.  
 //
-//               By convention, the y axis is inverted in the
-//               distortion map relative to the coordinates here.  A y
-//               value of 0 in the distortion map corresponds with a v
-//               value of 1 in this file.
+//               The operation can be expressed symbolically as:
+//
+//               this(u, v) = this(dist(u, v))
 //
 //               If scale_factor is not 1, it should be a value > 1,
 //               and it specifies the factor to upscale the working
 //               table while processing, to reduce artifacts from
 //               integer truncation.
+//
+//               By convention, the y axis is inverted in the
+//               distortion map relative to the coordinates here.  A y
+//               value of 0 in the distortion map corresponds with a v
+//               value of 1 in this file.
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
 forward_distort(const PfmFile &dist, PN_float32 scale_factor) {
@@ -1143,8 +1144,8 @@ forward_distort(const PfmFile &dist, PN_float32 scale_factor) {
       if (!dist_p->has_point(xi, yi)) {
         continue;
       }
-      LPoint2 uv = dist_p->get_point2(xi, yi);
-      LPoint3 p;
+      LPoint2f uv = dist_p->get_point2(xi, yi);
+      LPoint3f p;
       if (!source_p->calc_bilinear_point(p, uv[0], 1.0 - uv[1])) {
         continue;
       }
@@ -1165,20 +1166,21 @@ forward_distort(const PfmFile &dist, PN_float32 scale_factor) {
 //  Description: Applies the distortion indicated in the supplied dist
 //               map to the current map.  The dist map is understood
 //               to be a mapping of points in the range 0..1 in the
-//               first two dimensions.  Each (x,y) point in the
-//               current file is replaced with the point from the same
-//               file at (u,v), where (x,y) is the point value from
-//               the dist map.
+//               first two dimensions.
 //
-//               By convention, the y axis in inverted in the
-//               distortion map relative to the coordinates here.  A y
-//               value of 0 in the distortion map corresponds with a v
-//               value of 1 in this file.
+//               The operation can be expressed symbolically as:
+//
+//               this(u, v) = dist(this(u, v))
 //
 //               If scale_factor is not 1, it should be a value > 1,
 //               and it specifies the factor to upscale the working
 //               table while processing, to reduce artifacts from
 //               integer truncation.
+//
+//               By convention, the y axis in inverted in the
+//               distortion map relative to the coordinates here.  A y
+//               value of 0 in the distortion map corresponds with a v
+//               value of 1 in this file.
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
 reverse_distort(const PfmFile &dist, PN_float32 scale_factor) {
@@ -1216,27 +1218,15 @@ reverse_distort(const PfmFile &dist, PN_float32 scale_factor) {
 
   for (int yi = 0; yi < working_y_size; ++yi) {
     for (int xi = 0; xi < working_x_size; ++xi) {
-      if (!source_p->has_point(xi, working_y_size - 1 - yi)) {
+      if (!source_p->has_point(xi, yi)) {
         continue;
       }
-      if (!dist_p->has_point(xi, yi)) {
+      LPoint2f uv = source_p->get_point2(xi, yi);
+      LPoint3f p;
+      if (!dist_p->calc_bilinear_point(p, uv[0], 1.0 - uv[1])) {
         continue;
       }
-      LPoint2f uv = dist_p->get_point2(xi, yi);
-      int dist_xi = (int)cfloor(uv[0] * (PN_float32)working_x_size);
-      int dist_yi = (int)cfloor(uv[1] * (PN_float32)working_y_size);
-      if (dist_xi < 0 || dist_xi >= working_x_size || 
-          dist_yi < 0 || dist_yi >= working_y_size) {
-        continue;
-      }
-
-      /*
-      if (!source_p->has_point(dist_xi, working_y_size - 1 - dist_yi)) {
-        continue;
-      }
-      */
-
-      result.set_point(dist_xi, working_y_size - 1 - dist_yi, source_p->get_point(xi, working_y_size - 1 - yi));
+      result.set_point(xi, yi, LPoint3f(p[0], 1.0 - p[1], p[2]));
     }
   }
 
