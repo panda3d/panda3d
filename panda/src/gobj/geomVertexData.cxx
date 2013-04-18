@@ -361,12 +361,18 @@ unclean_set_format(const GeomVertexFormat *format) {
   for (int ai = 0; ai < format->get_num_arrays(); ++ai) {
     nassertv(format->get_array(ai)->get_stride() == cdata->_format->get_array(ai)->get_stride());
   }
+  nassertv(cdata->_arrays.size() == cdata->_format->get_num_arrays());
 #endif  // NDEBUG
 
   CDWriter cdataw(_cycler, cdata, true);
 
   // Assign the new format.
   cdataw->_format = format;
+
+  for (int ai = 0; ai < cdataw->_arrays.size(); ++ai) {
+    PT(GeomVertexArrayData) array_obj = cdataw->_arrays[ai].get_write_pointer();
+    array_obj->_array_format = format->get_array(ai);
+  }
 
   clear_cache_stage();
   cdataw->_modified = Geom::get_next_modified();
