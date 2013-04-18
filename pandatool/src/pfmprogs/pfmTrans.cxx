@@ -227,10 +227,11 @@ process_pfm(const Filename &input_filename, PfmFile &file) {
       if (tex == NULL) {
         nout << "Couldn't find " << _vistex_filename << "\n";
       } else {
+        tex->set_minfilter(Texture::FT_linear_mipmap_linear);
         mesh.set_texture(tex);
-      }
-      if (tex->has_alpha(tex->get_format())) {
-        mesh.set_transparency(TransparencyAttrib::M_dual);
+        if (tex->has_alpha(tex->get_format())) {
+          mesh.set_transparency(TransparencyAttrib::M_dual);
+        }
       }
     }
     mesh.set_name(input_filename.get_basename_wo_extension());
