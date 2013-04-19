@@ -68,7 +68,11 @@ project(const Lens *lens) {
 
       LPoint3 film;
       if (!lens->project(LCAST(PN_stdfloat, p), film)) {
-        _pfm.set_point4(xi, yi, _pfm.get_no_data_value());
+        if (_pfm.has_no_data_value()) {
+          _pfm.set_point4(xi, yi, _pfm.get_no_data_value());
+        } else {
+          _pfm.set_point4(xi, yi, LVecBase4f(0, 0, 0, 0));
+        }
       } else {
         p = to_uv.xform_point(LCAST(PN_float32, film));
       }
