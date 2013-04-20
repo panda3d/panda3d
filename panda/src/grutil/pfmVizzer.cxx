@@ -935,20 +935,24 @@ add_data(const PfmVizzer &vizzer, GeomVertexWriter &vwriter, int xi, int yi, boo
   case CT_normal3:
     {
       // Calculate the normal based on two neighboring vertices.
+      bool flip = reverse_normals;
+
       LPoint3f v[3];
       v[0] = pfm.get_point(xi, yi);
-      if (xi + 1 < pfm.get_x_size()) {
+      v[1] = v[0];
+      v[2] = v[0];
+      if (pfm.has_point(xi + 1, yi)) {
         v[1] = pfm.get_point(xi + 1, yi);
-      } else {
-        v[1] = v[0];
-        v[0] = pfm.get_point(xi - 1, yi);
+      } else if (pfm.has_point(xi - 1, yi)) {
+        v[1] = pfm.get_point(xi - 1, yi);
+        flip = !flip;
       }
                 
-      if (yi + 1 < pfm.get_y_size()) {
+      if (pfm.has_point(xi, yi + 1)) {
         v[2] = pfm.get_point(xi, yi + 1);
-      } else {
-        v[2] = v[0];
-        v[0] = pfm.get_point(xi, yi - 1);
+      } else if (pfm.has_point(xi, yi - 1)) {
+        v[2] = pfm.get_point(xi, yi - 1);
+        flip = !flip;
       }
                 
       LVector3f n = LVector3f::zero();
@@ -961,7 +965,7 @@ add_data(const PfmVizzer &vizzer, GeomVertexWriter &vwriter, int xi, int yi, boo
       }
       n.normalize();
       nassertr(!n.is_nan(), false);
-      if (reverse_normals) {
+      if (flip) {
         n = -n;
       }
       if (!transform_vector(n)) {

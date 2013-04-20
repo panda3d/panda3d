@@ -53,9 +53,9 @@ FUNCTION_NAME(IMAGETYPE &dest, const IMAGETYPE &source,
   double filter_width;
 
   make_filter(scale, width, filter, filter_width);
-  memset(temp_source_weight, 0, source.ASIZE() * sizeof(StoreType));
 
   for (b = 0; b < source.BSIZE(); b++) {
+    memset(temp_source_weight, 0, source.ASIZE() * sizeof(StoreType));
     for (a = 0; a < source.ASIZE(); a++) {
       if (source.HASVAL(a, b)) {
         temp_source[a] = (StoreType)(source_max * source.GETVAL(a, b, channel));

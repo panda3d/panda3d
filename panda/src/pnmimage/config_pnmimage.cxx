@@ -36,6 +36,20 @@ ConfigVariableBool pfm_reverse_dimensions
           "backwards, in the form height width instead of width height, "
           "on input.  Does not affect output, which is always written width height."));
 
+ConfigVariableBool pfm_resize_gaussian
+("pfm-resize-gaussian", true,
+ PRC_DESC("Specify true to implement PfmFile::resize() with a higher-quality "
+          "Gaussian filter, or false to implement it with a faster box "
+          "filter.  This just controls the behavior of resize(); you can "
+          "always call box_filter() or gaussian_filter() explicitly."));
+
+ConfigVariableDouble pfm_resize_radius
+("pfm-resize-radius", 1.0,
+ PRC_DESC("Specify the default filter radius for PfmFile::resize().  "
+          "This just controls the behavior of resize(); you can "
+          "always call box_filter() or gaussian_filter() explicitly with "
+          "a specific radius."));
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpnmimage
 //  Description: Initializes the library.  This must be called at
