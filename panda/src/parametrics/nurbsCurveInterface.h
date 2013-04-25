@@ -62,8 +62,10 @@ PUBLISHED:
   virtual bool set_knot(int n, PN_stdfloat t)=0;
   virtual PN_stdfloat get_knot(int n) const=0;
 
-  void write_cv(ostream &out, int n) const;
+  MAKE_SEQ(get_cvs, get_num_cvs, get_cv);
+  MAKE_SEQ(get_knots, get_num_knots, get_knot);
 
+  void write_cv(ostream &out, int n) const;
 
 protected:
   virtual int append_cv_impl(const LVecBase4 &v)=0;
