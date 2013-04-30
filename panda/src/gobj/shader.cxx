@@ -1810,15 +1810,15 @@ cg_compile_for(const ShaderCaps &caps,
     return false;
   }
   if (_cg_fprogram != 0 && _cg_fprofile != caps._active_fprofile) {
-    gobj_cat.error() << "Cg vertex program not supported by profile "
+    gobj_cat.error() << "Cg fragment program not supported by profile "
       << cgGetProfileString((CGprofile) caps._active_fprofile) << ": "
       << get_filename(ST_fragment) << ". Try choosing a different profile.\n";
     return false;
   }
   if (_cg_gprogram != 0 && _cg_gprofile != caps._active_gprofile) {
-    gobj_cat.error() << "Cg vertex program not supported by profile "
+    gobj_cat.error() << "Cg geometry program not supported by profile "
       << cgGetProfileString((CGprofile) caps._active_gprofile) << ": "
-      << get_filename(ST_fragment) << ". Try choosing a different profile.\n";
+      << get_filename(ST_geometry) << ". Try choosing a different profile.\n";
     return false;
   }
 
