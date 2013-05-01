@@ -549,10 +549,11 @@ sync_b2p(PandaNode *node) {
   if (!_dirty) return;
 
   NodePath np = NodePath::any_path(node);
-  CPT(TransformState) ts = btTrans_to_TransformState(_trans, _scale);
+  LPoint3 p = btVector3_to_LPoint3(_trans.getOrigin());
+  LQuaternion q = btQuat_to_LQuaternion(_trans.getRotation());
 
   _disabled = true;
-  np.set_transform(NodePath(), ts);
+  np.set_pos_quat(NodePath(), p, q);
   _disabled = false;
   _dirty = false;
 }
