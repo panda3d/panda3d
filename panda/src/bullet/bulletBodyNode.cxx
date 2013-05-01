@@ -178,6 +178,12 @@ add_shape(BulletShape *shape, CPT(TransformState) ts) {
     trans = TransformState_to_btTrans(ts);
   }
 
+  // Reset the shape scaling before we add a shape, and remember the current
+  // Scale so we can restore it later...
+  NodePath np = NodePath::any_path((PandaNode *)this);
+  LVector3 scale = np.get_scale();
+  np.set_scale(1.0);
+
   // Root shape
   btCollisionShape *previous = get_object()->getCollisionShape();
   btCollisionShape *next;
@@ -227,6 +233,9 @@ add_shape(BulletShape *shape, CPT(TransformState) ts) {
   _shapes.push_back(shape);
 
   shape_changed();
+
+  // Restore the local scaling again
+  np.set_scale(scale);
 }
 
 ////////////////////////////////////////////////////////////////////
