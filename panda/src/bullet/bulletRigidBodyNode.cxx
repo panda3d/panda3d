@@ -288,15 +288,13 @@ transform_changed() {
   }
 
   // Rescale all shapes, but only if the new transform state
-  // has a scale
+  // has a scale, and this scale differes from the current scale.
   if (ts->has_scale()) {
-    LVecBase3 scale = ts->get_scale();
-    if (!scale.almost_equal(LVecBase3(1.0f, 1.0f, 1.0f))) {
-      for (int i=0; i<get_num_shapes(); i++) {
-        PT(BulletShape) shape = _shapes[i];
-        shape->set_local_scale(scale);
-      }
+    btVector3 new_scale = LVecBase3_to_btVector3(ts->get_scale());
+    btVector3 current_scale = _shape->getLocalScaling();
 
+    if (new_scale != current_scale) {
+      _shape->setLocalScaling(new_scale);
       shape_changed();
     }
   }
