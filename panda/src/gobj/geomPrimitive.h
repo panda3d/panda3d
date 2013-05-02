@@ -98,7 +98,7 @@ PUBLISHED:
   INLINE int get_first_vertex() const;
   INLINE int get_num_vertices() const;
   INLINE int get_vertex(int i) const;
-  MAKE_SEQ(get_vertices, get_num_vertices, get_vertex);
+  MAKE_SEQ(get_vertex_list, get_num_vertices, get_vertex);
   void add_vertex(int vertex);
   INLINE void add_vertices(int v1, int v2);
   INLINE void add_vertices(int v1, int v2, int v3);

@@ -46,6 +46,8 @@ PUBLISHED:
   INLINE InternalName *get_flat_texcoord_name() const;
   INLINE void set_vis_2d(bool vis_2d);
   INLINE bool get_vis_2d() const;
+  INLINE void set_keep_beyond_lens(bool keep_beyond_lens);
+  INLINE bool get_keep_beyond_lens() const;
 
   INLINE void set_vis_blend(const PNMImage *vis_blend);
   INLINE void clear_vis_blend();
@@ -119,6 +121,7 @@ private:
   bool _vis_inverse;
   PT(InternalName) _flat_texcoord_name;
   bool _vis_2d;
+  bool _keep_beyond_lens;
   const PNMImage *_vis_blend;
 
   VisColumns _vis_columns;

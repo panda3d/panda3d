@@ -262,7 +262,7 @@ write(ostream &out, const Filename &fullpath) {
     return false;
   }
 
-  PNMWriter *writer = make_writer(fullpath);
+  PNMWriter *writer = make_writer(&out, false, fullpath);
   if (writer == (PNMWriter *)NULL) {
     return false;
   }
@@ -1381,11 +1381,11 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point) const {
         found_any = true;
       } else {
         min_point.set(min(min_point[0], point[0]),
-                      min(min_point[0], point[0]),
-                      min(min_point[0], point[0]));
+                      min(min_point[1], point[1]),
+                      min(min_point[2], point[2]));
         max_point.set(max(max_point[0], point[0]),
-                      max(max_point[0], point[0]),
-                      max(max_point[0], point[0]));
+                      max(max_point[1], point[1]),
+                      max(max_point[2], point[2]));
       }
     }
   }

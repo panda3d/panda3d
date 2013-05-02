@@ -139,6 +139,31 @@ get_vis_2d() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PfmVizzer::set_keep_beyond_lens
+//       Access: Published
+//  Description: Sets the keep_beyond_lens flag.  When this flag is
+//               true, points that fall outside of the normal lens
+//               range in project() or in add_vis_column() will be
+//               retained anyway; when it is false, these points will
+//               be discarded.
+////////////////////////////////////////////////////////////////////
+INLINE void PfmVizzer::
+set_keep_beyond_lens(bool keep_beyond_lens) {
+  _keep_beyond_lens = keep_beyond_lens;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmVizzer::get_keep_beyond_lens
+//       Access: Published
+//  Description: Returns the keep_beyond_lens flag.  See
+//               set_keep_beyond_lens().
+////////////////////////////////////////////////////////////////////
+INLINE bool PfmVizzer::
+get_keep_beyond_lens() const {
+  return _keep_beyond_lens;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PfmVizzer::set_vis_blend
 //       Access: Published
 //  Description: Specifies a blending map--a grayscale image--that

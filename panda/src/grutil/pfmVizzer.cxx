@@ -36,6 +36,7 @@ PfmVizzer::
 PfmVizzer(PfmFile &pfm) : _pfm(pfm) {
   _vis_inverse = false;
   _vis_2d = false;
+  _keep_beyond_lens = false;
   _vis_blend = NULL;
 }
 
@@ -67,7 +68,7 @@ project(const Lens *lens) {
       LPoint3f &p = _pfm.modify_point(xi, yi);
 
       LPoint3 film;
-      if (!lens->project(LCAST(PN_stdfloat, p), film)) {
+      if (!lens->project(LCAST(PN_stdfloat, p), film) && !_keep_beyond_lens) {
         if (_pfm.has_no_data_value()) {
           _pfm.set_point4(xi, yi, _pfm.get_no_data_value());
         } else {
@@ -561,6 +562,7 @@ r_fill_displacement(PNMImage &result, int xi, int yi,
 ////////////////////////////////////////////////////////////////////
 void PfmVizzer::
 make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
+  static const bool keep_beyond_lens = true;
   int num_x_cells = 1;
   int num_y_cells = 1;
 
@@ -682,10 +684,11 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
             continue;
           }
 
-          if (skip_points[(yi - y_begin) * x_size + (xi - x_begin)] ||
-              skip_points[(yi - y_begin + 1) * x_size + (xi - x_begin)] ||
-              skip_points[(yi - y_begin) * x_size + (xi - x_begin + 1)] ||
-              skip_points[(yi - y_begin + 1) * x_size + (xi - x_begin + 1)]) {
+          if (!keep_beyond_lens &&
+              (skip_points[(yi - y_begin) * x_size + (xi - x_begin)] ||
+               skip_points[(yi - y_begin + 1) * x_size + (xi - x_begin)] ||
+               skip_points[(yi - y_begin) * x_size + (xi - x_begin + 1)] ||
+               skip_points[(yi - y_begin + 1) * x_size + (xi - x_begin + 1)])) {
             continue;
           }
 
@@ -964,7 +967,16 @@ add_data(const PfmVizzer &vizzer, GeomVertexWriter &vwriter, int xi, int yi, boo
         n[2] += v0[0] * v1[1] - v0[1] * v1[0];
       }
       n.normalize();
-      nassertr(!n.is_nan(), false);
+      if (n.is_nan()) {
+        /*
+        cerr << "\nnan!\n"
+             << "  v[0] = " << v[0] << "\n"
+             << "  v[1] = " << v[1] << "\n"
+             << "  v[2] = " << v[2] << "\n";
+        */
+        n.set(0, 0, 0);
+        success = false;
+      }
       if (flip) {
         n = -n;
       }
