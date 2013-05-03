@@ -52,6 +52,8 @@ private:
   Filenames _input_filenames;
 
   bool _got_zero_special;
+  bool _got_no_data_nan;
+  int _no_data_nan_num_channels;
   bool _got_vis_inverse;
   bool _got_vis_2d;
   bool _got_resize;
@@ -71,6 +73,8 @@ private:
   Filename _vis_filename;
   bool _got_vistex_filename;
   Filename _vistex_filename;
+  bool _got_ls_filename;
+  Filename _ls_filename;
 
   bool _got_transform;
   LMatrix4 _transform;

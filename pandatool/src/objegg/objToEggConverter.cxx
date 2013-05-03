@@ -188,6 +188,7 @@ process(const Filename &filename) {
   _vn_table.clear();
   _rgb_table.clear();
   _vt_table.clear();
+  _xvt_table.clear();
   _ref_plane_res.set(1.0, 1.0);
   _v4_given = false;
   _vt3_given = false;
@@ -592,6 +593,7 @@ process_node(const Filename &filename) {
   _vn_table.clear();
   _rgb_table.clear();
   _vt_table.clear();
+  _xvt_table.clear();
   _ref_plane_res.set(1.0, 1.0);
   _v4_given = false;
   _vt3_given = false;

@@ -30,6 +30,7 @@
 ////////////////////////////////////////////////////////////////////
 PfmTrans::
 PfmTrans() {
+  _no_data_nan_num_channels = 0;
   _got_transform = false;
   _transform = LMatrix4::ident_mat();
   _rotate = 0;
@@ -47,6 +48,11 @@ PfmTrans() {
      &PfmTrans::dispatch_none, &_got_zero_special);
 
   add_option
+    ("nan", "num_channels", 0,
+     "Treats a NaN in any of the first num_channels channels as a special don't-touch value.",
+     &PfmTrans::dispatch_int, &_got_no_data_nan, &_no_data_nan_num_channels);
+
+  add_option
     ("resize", "width,height", 0,
      "Resamples the pfm file to scale it to the indicated grid size.  "
      "A simple box filter is applied during the scale.  Don't confuse this "
@@ -62,7 +68,7 @@ PfmTrans() {
   add_option
     ("autocrop", "", 0,
      "Automatically crops to the smallest possible rectangle that includes "
-     "all points.  Requires -z.",
+     "all points.  Requires -z or -nan.",
      &PfmTrans::dispatch_none, &_got_autocrop);
 
   add_option
@@ -118,6 +124,11 @@ PfmTrans() {
     ("vistex", "texture.jpg", 60,
      "Specifies the name of the texture to apply to the visualization.",
      &PfmTrans::dispatch_filename, &_got_vistex_filename, &_vistex_filename);
+
+  add_option
+    ("ls", "filename.txt", 60,
+     "Lists the points in the file to the indicated text file.",
+     &PfmTrans::dispatch_filename, &_got_ls_filename, &_ls_filename);
 }
 
 
@@ -162,7 +173,11 @@ run() {
 bool PfmTrans::
 process_pfm(const Filename &input_filename, PfmFile &file) {
   PfmVizzer vizzer(file);
-  file.set_zero_special(_got_zero_special);
+  if (_got_no_data_nan) {
+    file.set_no_data_nan(_no_data_nan_num_channels);
+  } else if (_got_zero_special) {
+    file.set_zero_special(true);
+  }
   vizzer.set_vis_inverse(_got_vis_inverse);
   vizzer.set_vis_2d(_got_vis_2d);
 
@@ -236,6 +251,24 @@ process_pfm(const Filename &input_filename, PfmFile &file) {
     }
     mesh.set_name(input_filename.get_basename_wo_extension());
     mesh.reparent_to(_mesh_root);
+  }
+
+  if (_got_ls_filename) {
+    pofstream out;
+    _ls_filename.set_text();
+    if (_ls_filename.open_write(out, true)) {
+      for (int yi = 0; yi < file.get_y_size(); ++yi) {
+        for (int xi = 0; xi < file.get_x_size(); ++xi) {
+          if (file.has_point(xi, yi)) {
+            out << "(" << xi << ", " << yi << "):";
+            for (int ci = 0; ci < file.get_num_channels(); ++ci) {
+              out << " " << file.get_channel(xi, yi, ci);
+            }
+            out << "\n";
+          }
+        }
+      }
+    }
   }
 
   Filename output_filename;
