@@ -57,8 +57,8 @@ PUBLISHED:
   INLINE void set_scale(PN_float32 scale);
 
   INLINE bool has_point(int x, int y) const;
-  INLINE PN_float32 get_component(int x, int y, int c) const;
-  INLINE void set_component(int x, int y, int c, PN_float32 value);
+  INLINE PN_float32 get_channel(int x, int y, int c) const;
+  INLINE void set_channel(int x, int y, int c, PN_float32 value);
   INLINE PN_float32 get_point1(int x, int y) const;
   INLINE void set_point1(int x, int y, PN_float32 point);
   INLINE const LPoint2f &get_point2(int x, int y) const;
@@ -82,6 +82,12 @@ PUBLISHED:
   INLINE void fill(const LPoint2f &value);
   INLINE void fill(const LPoint3f &value);
   void fill(const LPoint4f &value);
+  void fill_nan();
+  void fill_no_data_value();
+  void fill_channel(int channel, PN_float32 value);
+  void fill_channel_nan(int channel);
+  void fill_channel_masked(int channel, PN_float32 value);
+  void fill_channel_masked_nan(int channel);
 
   BLOCKING bool calc_average_point(LPoint3f &result, PN_float32 x, PN_float32 y, PN_float32 radius) const;
   BLOCKING bool calc_bilinear_point(LPoint3f &result, PN_float32 x, PN_float32 y) const;
@@ -95,6 +101,7 @@ PUBLISHED:
 
   INLINE void set_zero_special(bool zero_special);
   INLINE void set_no_data_chan4(bool chan4);
+  void set_no_data_nan(int num_channels);
   void set_no_data_value(const LPoint4f &no_data_value);
   INLINE void set_no_data_value(const LPoint4d &no_data_value);
   INLINE void clear_no_data_value();
@@ -169,9 +176,14 @@ private:
 
   static bool has_point_noop(const PfmFile *file, int x, int y);
   static bool has_point_1(const PfmFile *file, int x, int y);
+  static bool has_point_2(const PfmFile *file, int x, int y);
   static bool has_point_3(const PfmFile *file, int x, int y);
   static bool has_point_4(const PfmFile *file, int x, int y);
   static bool has_point_chan4(const PfmFile *file, int x, int y);
+  static bool has_point_nan_1(const PfmFile *file, int x, int y);
+  static bool has_point_nan_2(const PfmFile *file, int x, int y);
+  static bool has_point_nan_3(const PfmFile *file, int x, int y);
+  static bool has_point_nan_4(const PfmFile *file, int x, int y);
 
 private:
   typedef vector_float Table;

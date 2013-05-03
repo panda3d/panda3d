@@ -94,7 +94,9 @@ FUNCTION_NAME(IMAGETYPE &dest, const IMAGETYPE &source,
                       filter, filter_width);
 
     for (b = 0; b < dest.BSIZE(); b++) {
-      dest.SETVAL(a, b, channel, (double)temp_dest[b]/(double)source_max);
+      if (temp_dest_weight[b] != 0) {
+        dest.SETVAL(a, b, channel, (double)temp_dest[b]/(double)source_max);
+      }
     }
   }
 

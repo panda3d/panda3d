@@ -555,8 +555,8 @@ gaussian_filter_from(double width, const PNMImage &copy) {
 #define IMAGETYPE PfmFile
 #define ASIZE get_x_size
 #define BSIZE get_y_size
-#define GETVAL(a, b, channel) get_component(a, b, channel)
-#define SETVAL(a, b, channel, v) set_component(a, b, channel, v)
+#define GETVAL(a, b, channel) get_channel(a, b, channel)
+#define SETVAL(a, b, channel, v) set_channel(a, b, channel, v)
 #include "pnm-image-filter-core.cxx"
 #undef SETVAL
 #undef GETVAL
@@ -569,8 +569,8 @@ gaussian_filter_from(double width, const PNMImage &copy) {
 #define IMAGETYPE PfmFile
 #define ASIZE get_y_size
 #define BSIZE get_x_size
-#define GETVAL(a, b, channel) get_component(b, a, channel)
-#define SETVAL(a, b, channel, v) set_component(b, a, channel, v)
+#define GETVAL(a, b, channel) get_channel(b, a, channel)
+#define SETVAL(a, b, channel, v) set_channel(b, a, channel, v)
 #include "pnm-image-filter-core.cxx"
 #undef SETVAL
 #undef GETVAL
@@ -585,8 +585,8 @@ gaussian_filter_from(double width, const PNMImage &copy) {
 #define ASIZE get_x_size
 #define BSIZE get_y_size
 #define HASVAL(a, b) has_point(a, b)
-#define GETVAL(a, b, channel) get_component(a, b, channel)
-#define SETVAL(a, b, channel, v) set_component(a, b, channel, v)
+#define GETVAL(a, b, channel) get_channel(a, b, channel)
+#define SETVAL(a, b, channel, v) set_channel(a, b, channel, v)
 #include "pnm-image-filter-sparse-core.cxx"
 #undef SETVAL
 #undef GETVAL
@@ -601,8 +601,8 @@ gaussian_filter_from(double width, const PNMImage &copy) {
 #define ASIZE get_y_size
 #define BSIZE get_x_size
 #define HASVAL(a, b) has_point(b, a)
-#define GETVAL(a, b, channel) get_component(b, a, channel)
-#define SETVAL(a, b, channel, v) set_component(b, a, channel, v)
+#define GETVAL(a, b, channel) get_channel(b, a, channel)
+#define SETVAL(a, b, channel, v) set_channel(b, a, channel, v)
 #include "pnm-image-filter-sparse-core.cxx"
 #undef SETVAL
 #undef GETVAL

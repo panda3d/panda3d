@@ -521,6 +521,95 @@ fill(const LPoint4f &value) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::fill_nan
+//       Access: Published
+//  Description: Fills the table with all NaN.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+fill_nan() {
+  PN_float32 nan = make_nan((PN_float32)0.0);
+  LPoint4f nan4(nan, nan, nan, nan);
+  fill(nan4);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::fill_no_data_value
+//       Access: Published
+//  Description: Fills the table with the current no_data value, so
+//               that the table is empty.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+fill_no_data_value() {
+  fill(_no_data_value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::fill_channel
+//       Access: Published
+//  Description: Fills the indicated channel with all of the same
+//               value, leaving the other channels unchanged.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+fill_channel(int channel, PN_float32 value) {
+  nassertv(channel >= 0 && channel < _num_channels);
+
+  for (int yi = 0; yi < _y_size; ++yi) {
+    for (int xi = 0; xi < _x_size; ++xi) {
+      _table[(yi * _x_size + xi) * _num_channels + channel] = value;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::fill_channel_nan
+//       Access: Published
+//  Description: Fills the indicated channel with NaN, leaving the
+//               other channels unchanged.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+fill_channel_nan(int channel) {
+  PN_float32 nan = make_nan((PN_float32)0.0);
+  fill_channel(channel, nan);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::fill_channel_masked
+//       Access: Published
+//  Description: Fills the indicated channel with all of the same
+//               value, but only where the table already has a data
+//               point.  Leaves empty points unchanged.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+fill_channel_masked(int channel, PN_float32 value) {
+  nassertv(channel >= 0 && channel < _num_channels);
+
+  if (!_has_no_data_value) {
+    fill_channel(channel, value);
+  } else {
+    for (int yi = 0; yi < _y_size; ++yi) {
+      for (int xi = 0; xi < _x_size; ++xi) {
+        if (has_point(xi, yi)) {
+          _table[(yi * _x_size + xi) * _num_channels + channel] = value;
+        }
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::fill_channel_masked_nan
+//       Access: Published
+//  Description: Fills the indicated channel with NaN, but only where
+//               the table already has a data point.  Leaves empty
+//               points unchanged.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+fill_channel_masked_nan(int channel) {
+  PN_float32 nan = make_nan((PN_float32)0.0);
+  fill_channel_masked(channel, nan);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::calc_average_point
 //       Access: Published
 //  Description: Computes the unweighted average point of all points
@@ -793,6 +882,48 @@ is_column_empty(int x, int y_begin, int y_end) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::set_no_data_nan
+//       Access: Published
+//  Description: Sets the no_data_nan flag.  When num_channels is
+//               nonzero, then a NaN value in any of the first
+//               num_channels channels indicates no data for that
+//               point.  If num_channels is zero, then all points are
+//               valid.
+//
+//               This is a special case of set_no_data_value().
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+set_no_data_nan(int num_channels) {
+  if (num_channels > 0) {
+    num_channels = min(num_channels, _num_channels);
+    _has_no_data_value = true;
+    _no_data_value = LPoint4f::zero();
+    PN_float32 nan = make_nan((PN_float32)0.0);
+    for (int i = 0; i < num_channels; ++i) {
+      _no_data_value[i] = nan;
+    }
+    switch (num_channels) {
+    case 1:
+      _has_point = has_point_nan_1;
+      break;
+    case 2:
+      _has_point = has_point_nan_2;
+      break;
+    case 3:
+      _has_point = has_point_nan_3;
+      break;
+    case 4:
+      _has_point = has_point_nan_4;
+      break;
+    default:
+      nassertv(false);
+    }
+  } else {
+    clear_no_data_value();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::set_no_data_value
 //       Access: Published
 //  Description: Sets the special value that means "no data" when it
@@ -805,6 +936,9 @@ set_no_data_value(const LPoint4f &no_data_value) {
   switch (_num_channels) {
   case 1:
     _has_point = has_point_1;
+    break;
+  case 2:
+    _has_point = has_point_2;
     break;
   case 3:
     _has_point = has_point_3;
@@ -838,6 +972,9 @@ resize(int new_x_size, int new_y_size) {
 
   PfmFile result;
   result.clear(new_x_size, new_y_size, _num_channels);
+  if (_has_no_data_value) {
+    result.fill(_no_data_value);
+  }
 
   if (pfm_resize_gaussian) {
     result.gaussian_filter_from(pfm_resize_radius, *this);
@@ -1284,7 +1421,7 @@ copy_channel(int to_channel, const PfmFile &other, int from_channel) {
 
   for (int yi = 0; yi < _y_size; ++yi) {
     for (int xi = 0; xi < _x_size; ++xi) {
-      set_component(xi, yi, to_channel, other.get_component(xi, yi, from_channel));
+      set_channel(xi, yi, to_channel, other.get_channel(xi, yi, from_channel));
     }
   }
 }
@@ -2011,6 +2148,21 @@ has_point_1(const PfmFile *self, int x, int y) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::has_point_2
+//       Access: Private, Static
+//  Description: The implementation of has_point() for 2-component
+//               files with a no_data_value.
+////////////////////////////////////////////////////////////////////
+bool PfmFile::
+has_point_2(const PfmFile *self, int x, int y) {
+  if ((x >= 0 && x < self->_x_size) && 
+      (y >= 0 && y < self->_y_size)) {
+    return *(LPoint2f *)&self->_table[(y * self->_x_size + x) * 2] != *(LPoint2f *)&self->_no_data_value;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::has_point_3
 //       Access: Private, Static
 //  Description: The implementation of has_point() for 3-component
@@ -2052,6 +2204,70 @@ has_point_chan4(const PfmFile *self, int x, int y) {
   if ((x >= 0 && x < self->_x_size) && 
       (y >= 0 && y < self->_y_size)) {
     return self->_table[(y * self->_x_size + x) * 4 + 3] >= 0.0;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::has_point_nan_1
+//       Access: Private, Static
+//  Description: The implementation of has_point() for 
+//               files with set_no_data_nan() in effect.  This means
+//               that the data is valid iff no components involve NaN.
+////////////////////////////////////////////////////////////////////
+bool PfmFile::
+has_point_nan_1(const PfmFile *self, int x, int y) {
+  if ((x >= 0 && x < self->_x_size) && 
+      (y >= 0 && y < self->_y_size)) {
+    return !cnan(self->_table[(y * self->_x_size + x) * self->_num_channels]);
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::has_point_nan_2
+//       Access: Private, Static
+//  Description: The implementation of has_point() for 
+//               files with set_no_data_nan() in effect.  This means
+//               that the data is valid iff no components involve NaN.
+////////////////////////////////////////////////////////////////////
+bool PfmFile::
+has_point_nan_2(const PfmFile *self, int x, int y) {
+  if ((x >= 0 && x < self->_x_size) && 
+      (y >= 0 && y < self->_y_size)) {
+    return !((LVecBase2f *)&self->_table[(y * self->_x_size + x) * self->_num_channels])->is_nan();
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::has_point_nan_3
+//       Access: Private, Static
+//  Description: The implementation of has_point() for 
+//               files with set_no_data_nan() in effect.  This means
+//               that the data is valid iff no components involve NaN.
+////////////////////////////////////////////////////////////////////
+bool PfmFile::
+has_point_nan_3(const PfmFile *self, int x, int y) {
+  if ((x >= 0 && x < self->_x_size) && 
+      (y >= 0 && y < self->_y_size)) {
+    return !((LVecBase3f *)&self->_table[(y * self->_x_size + x) * self->_num_channels])->is_nan();
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::has_point_nan_4
+//       Access: Private, Static
+//  Description: The implementation of has_point() for 
+//               files with set_no_data_nan() in effect.  This means
+//               that the data is valid iff no components involve NaN.
+////////////////////////////////////////////////////////////////////
+bool PfmFile::
+has_point_nan_4(const PfmFile *self, int x, int y) {
+  if ((x >= 0 && x < self->_x_size) && 
+      (y >= 0 && y < self->_y_size)) {
+    return !((LVecBase4f *)&self->_table[(y * self->_x_size + x) * self->_num_channels])->is_nan();
   }
   return false;
 }
