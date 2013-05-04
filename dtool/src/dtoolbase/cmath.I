@@ -356,7 +356,7 @@ cnan(double v) {
 INLINE float
 make_nan(float) {
 #ifndef _WIN32
-  return nanf();
+  return nanf("");
 #else
   return numeric_limits<float>::quiet_NaN();
 #endif
@@ -369,7 +369,7 @@ make_nan(float) {
 INLINE double 
 make_nan(double) {
 #ifndef _WIN32
-  return nan();
+  return nan("");
 #else
   return numeric_limits<double>::quiet_NaN();
 #endif
