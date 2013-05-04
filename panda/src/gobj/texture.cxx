@@ -5915,7 +5915,7 @@ convert_from_pfm(PTA_uchar &image, size_t page_size, int z,
   for (int j = y_size-1; j >= 0; j--) {
     for (int i = 0; i < x_size; i++) {
       for (int c = 0; c < num_components; ++c) {
-        *p = pfm.get_component(i, j, c);
+        *p = pfm.get_channel(i, j, c);
         ++p;
       }
     }
@@ -6006,7 +6006,7 @@ convert_to_pfm(PfmFile &pfm, int x_size, int y_size,
   for (int j = y_size-1; j >= 0; j--) {
     for (int i = 0; i < x_size; i++) {
       for (int c = 0; c < num_components; ++c) {
-        pfm.set_component(i, j, c, *p);
+        pfm.set_channel(i, j, c, *p);
         ++p;
       }
     }
