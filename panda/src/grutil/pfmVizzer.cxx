@@ -1042,7 +1042,7 @@ transform_point(LPoint3f &point) const {
   }
 
   if (_undist_lut != NULL) {
-    LPoint3 p;
+    LPoint3f p;
     if (!_undist_lut->calc_bilinear_point(p, point[0], 1.0 - point[1])) {
       // Point is missing.
       point.set(0, 0, 0);
