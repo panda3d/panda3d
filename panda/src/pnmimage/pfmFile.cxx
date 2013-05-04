@@ -931,6 +931,8 @@ set_no_data_nan(int num_channels) {
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
 set_no_data_value(const LPoint4f &no_data_value) {
+  nassertv(is_valid());
+
   _has_no_data_value = true;
   _no_data_value = no_data_value;
   switch (_num_channels) {
