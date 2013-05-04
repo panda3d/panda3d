@@ -593,13 +593,13 @@ recompute_geom(Geom *geom, const LMatrix4 &rel_mat) {
     LPoint3 uvw = film * to_uv;
 
     if (good && _has_undist_lut) {
-      LPoint3 p;
+      LPoint3f p;
       if (!_undist_lut.calc_bilinear_point(p, uvw[0], 1.0 - uvw[1])) {
         // Point is missing.
         uvw.set(0, 0, 0);
         good = false;
       } else {
-        uvw = p;
+        uvw = LCAST(PN_stdfloat, p);
         uvw[1] = 1.0 - uvw[1];
       }
     }
@@ -763,13 +763,13 @@ make_mesh_geom(const Geom *geom, Lens *lens, LMatrix4 &rel_mat) {
       // Rescale these to [0, 1].
       LPoint3 uvw = film * lens_to_uv;
       
-      LPoint3 p;
+      LPoint3f p;
       if (!_undist_lut.calc_bilinear_point(p, uvw[0], 1.0 - uvw[1])) {
         // Point is missing.
         uvw.set(0, 0, 0);
         good = false;
       } else {
-        uvw = p;
+        uvw = LCAST(PN_stdfloat, p);
         uvw[1] = 1.0 - uvw[1];
       }
 
