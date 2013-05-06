@@ -232,10 +232,10 @@ add_shape(BulletShape *shape, CPT(TransformState) ts) {
 
   _shapes.push_back(shape);
 
-  shape_changed();
-
   // Restore the local scaling again
   np.set_scale(scale);
+
+  shape_changed();
 }
 
 ////////////////////////////////////////////////////////////////////
