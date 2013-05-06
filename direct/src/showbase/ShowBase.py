@@ -580,8 +580,8 @@ class ShowBase(DirectObject.DirectObject):
                         pipeType.getName()))
 
     def openWindow(self, props = None, fbprops = None, pipe = None, gsg = None,
-                   type = None, name = None, size = None, aspectRatio = None,
-                   makeCamera = True, keepCamera = False,
+                   host = None, type = None, name = None, size = None,
+                   aspectRatio = None, makeCamera = True, keepCamera = False,
                    scene = None, stereo = None, unexposedDraw = None,
                    callbackWindowDict = None, requireWindow = None):
         """
@@ -616,9 +616,10 @@ class ShowBase(DirectObject.DirectObject):
         # parameters.
         func = lambda : self._doOpenWindow(
             props = props, fbprops = fbprops, pipe = pipe, gsg = gsg,
-            type = type, name = name, size = size, aspectRatio = aspectRatio,
-            makeCamera = makeCamera, keepCamera = keepCamera,
-            scene = scene, stereo = stereo, unexposedDraw = unexposedDraw,
+            host = host, type = type, name = name, size = size,
+            aspectRatio = aspectRatio, makeCamera = makeCamera,
+            keepCamera = keepCamera, scene = scene, stereo = stereo,
+            unexposedDraw = unexposedDraw,
             callbackWindowDict = callbackWindowDict)
         
         if self.win:
@@ -675,8 +676,9 @@ class ShowBase(DirectObject.DirectObject):
 
         return win
 
-    def _doOpenWindow(self, props = None, fbprops = None, pipe = None, gsg = None,
-                      type = None, name = None, size = None, aspectRatio = None,
+    def _doOpenWindow(self, props = None, fbprops = None, pipe = None,
+                      gsg = None, host = None, type = None, name = None,
+                      size = None, aspectRatio = None,
                       makeCamera = True, keepCamera = False,
                       scene = None, stereo = None, unexposedDraw = None,
                       callbackWindowDict = None):
@@ -694,6 +696,7 @@ class ShowBase(DirectObject.DirectObject):
         if isinstance(gsg, GraphicsOutput):
             # If the gsg is a window or buffer, it means to use the
             # GSG from that buffer.
+            host = gsg
             gsg = gsg.getGsg()
             
         # If we are using DirectX, force a new GSG to be created,
@@ -734,7 +737,10 @@ class ShowBase(DirectObject.DirectObject):
         if callbackWindowDict:
             flags = flags | GraphicsPipe.BFRequireCallbackWindow
 
-        if gsg:
+        if host:
+            win = self.graphicsEngine.makeOutput(pipe, name, 0, fbprops,
+                                                 props, flags, host.getGsg(), host)
+        elif gsg:
             win = self.graphicsEngine.makeOutput(pipe, name, 0, fbprops,
                                                  props, flags, gsg)
         else:
