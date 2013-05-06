@@ -105,7 +105,6 @@ private:
     virtual void setWorldTransform(const btTransform &trans);
 
     void set_net_transform(CPT(TransformState) &ts);
-    void get_net_transform(CPT(TransformState) &ts) const;
 
     void sync_b2p(PandaNode *node);
     bool sync_disabled() const;
@@ -114,7 +113,6 @@ private:
 
   private:
     btTransform _trans;
-    LVecBase3 _scale;
     bool _disabled;
     bool _dirty;
     bool _was_dirty;
@@ -122,8 +120,6 @@ private:
 
   MotionState *_motion;
   btRigidBody *_rigid;
-
-  CPT(TransformState) _sync; // only used with bullet_full_sync
 
 ////////////////////////////////////////////////////////////////////
 public:

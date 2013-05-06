@@ -27,7 +27,6 @@ BulletRigidBodyNode(const char *name) : BulletBodyNode(name) {
 
   // Motion state
   _motion = new MotionState();
-  _sync = TransformState::make_identity();
 
   // Mass properties
   btScalar mass(0.0);
@@ -273,7 +272,7 @@ transform_changed() {
   NodePath np = NodePath::any_path((PandaNode *)this);
   CPT(TransformState) ts = np.get_net_transform();
 
-  // For kinematic bodies Bullet with collect the transform
+  // For kinematic bodies Bullet will query the transform
   // via Motionstate::getWorldTransform. Therefor we need to
   // store the new transform within the motion state.
   // For dynamic bodies we need to store the net scale within
@@ -305,9 +304,6 @@ transform_changed() {
   if (!_rigid->isActive()) {
     _rigid->activate(true);
   }
-
-  // Rememeber current transform (bullet_full_sync)
-  _sync = ts;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -321,19 +317,6 @@ sync_p2b() {
   if (is_kinematic()) {
     transform_changed();
   }
-
-  // Check if net transform has changed (bullet_full_sync)
-  else if (bullet_full_sync) {
-    NodePath np = NodePath::any_path((PandaNode *)this);
-    CPT(TransformState) ts = np.get_net_transform();
-
-    LMatrix4 m_sync = _sync->get_mat();
-    LMatrix4 m_ts = ts->get_mat();
-
-    if (!m_sync.almost_equal(m_ts)) {
-      transform_changed();
-    }
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -345,11 +328,6 @@ void BulletRigidBodyNode::
 sync_b2p() {
 
   _motion->sync_b2p((PandaNode *)this);
-
-  // Store new transform (bullet_full_sync)
-  if (bullet_full_sync) {
-    _motion->get_net_transform(_sync);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -510,7 +488,6 @@ BulletRigidBodyNode::MotionState::
 MotionState() {
 
   _trans.setIdentity();
-  _scale = LVecBase3(1.0f, 1.0f, 1.0f);
   _disabled = false;
   _dirty = false;
   _was_dirty = false;
@@ -563,7 +540,15 @@ sync_b2p(PandaNode *node) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletRigidBodyNode::MotionState::set_net_transform
 //       Access: Public
-//  Description: 
+//  Description: This method stores the global transform within the
+//               Motionstate. It is called from
+//               BulletRigidBodyNode::transform_changed().
+//               For kinematic bodies the global transform is
+//               required since Bullet queries the body transform
+//               via MotionState::getGlobalStranform().
+//               For dynamic bodies the global scale is required,
+//               since Bullet will overwrite the member _trans
+//               by calling MotionState::setGlobalTransform.
 ////////////////////////////////////////////////////////////////////
 void BulletRigidBodyNode::MotionState::
 set_net_transform(CPT(TransformState) &ts) {
@@ -571,21 +556,6 @@ set_net_transform(CPT(TransformState) &ts) {
   nassertv(ts);
 
   _trans = TransformState_to_btTrans(ts);
-
-  if (ts->has_scale()) {
-    _scale = ts->get_scale();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: BulletRigidBodyNode::MotionState::get_net_transform
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void BulletRigidBodyNode::MotionState::
-get_net_transform(CPT(TransformState) &ts) const {
-
-  ts = btTrans_to_TransformState(_trans, _scale);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -607,9 +577,9 @@ sync_disabled() const {
 bool BulletRigidBodyNode::MotionState::
 pick_dirty_flag() {
 
-  bool flag = _was_dirty;
+  bool rc = _was_dirty;
   _was_dirty = false;
-  return flag;
+  return rc;
 }
 
 ////////////////////////////////////////////////////////////////////

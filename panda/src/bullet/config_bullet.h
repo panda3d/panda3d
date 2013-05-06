@@ -40,7 +40,6 @@ extern ConfigVariableDouble bullet_additional_damping_linear_factor;
 extern ConfigVariableDouble bullet_additional_damping_angular_factor;
 extern ConfigVariableDouble bullet_additional_damping_linear_threshold;
 extern ConfigVariableDouble bullet_additional_damping_angular_threshold;
-extern ConfigVariableBool bullet_full_sync;
 
 extern EXPCL_PANDABULLET void init_libbullet();
 
