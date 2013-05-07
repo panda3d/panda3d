@@ -158,6 +158,7 @@ class ParticleEffect(NodePath):
         return self.forceGroupDict
 
     def saveConfig(self, filename):
+        filename = Filename(filename)
         f = open(filename.toOsSpecific(), 'wb')
         # Add a blank line
         f.write('\n')
