@@ -150,6 +150,10 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   } else if (magic_number == "Pf") {
     _num_channels = 1;
 
+  } else if (magic_number == "pf2c") {
+    // Special DRZ extension.
+    _num_channels = 2;
+
   } else if (magic_number == "pf4c") {
     // Special DRZ extension.
     _num_channels = 4;
@@ -297,6 +301,10 @@ write_pfm(const PfmFile &pfm) {
   switch (pfm.get_num_channels()) {
   case 1:
     (*_file) << "Pf\n";
+    break;
+
+  case 2:
+    (*_file) << "pf2c\n";
     break;
 
   case 3:

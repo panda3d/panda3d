@@ -29,7 +29,7 @@ class PNMWriter;
 //       Class : PfmFile
 // Description : Defines a pfm file, a 2-d table of floating-point
 //               numbers, either 3-component or 1-component, or with a
-//               special extension, 4-component.
+//               special extension, 2- or 4-component.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PNMIMAGE PfmFile : public PNMImageHeader {
 PUBLISHED:
@@ -147,17 +147,23 @@ private:
 
   void box_filter_region(PN_float32 &result,
                          PN_float32 x0, PN_float32 y0, PN_float32 x1, PN_float32 y1) const;
+  void box_filter_region(LPoint2f &result,
+                         PN_float32 x0, PN_float32 y0, PN_float32 x1, PN_float32 y1) const;
   void box_filter_region(LPoint3f &result,
                          PN_float32 x0, PN_float32 y0, PN_float32 x1, PN_float32 y1) const;
   void box_filter_region(LPoint4f &result,
                          PN_float32 x0, PN_float32 y0, PN_float32 x1, PN_float32 y1) const;
   void box_filter_line(PN_float32 &result, PN_float32 &coverage,
                        PN_float32 x0, int y, PN_float32 x1, PN_float32 y_contrib) const;
+  void box_filter_line(LPoint2f &result, PN_float32 &coverage,
+                       PN_float32 x0, int y, PN_float32 x1, PN_float32 y_contrib) const;
   void box_filter_line(LPoint3f &result, PN_float32 &coverage,
                        PN_float32 x0, int y, PN_float32 x1, PN_float32 y_contrib) const;
   void box_filter_line(LPoint4f &result, PN_float32 &coverage,
                        PN_float32 x0, int y, PN_float32 x1, PN_float32 y_contrib) const;
   void box_filter_point(PN_float32 &result, PN_float32 &coverage,
+                        int x, int y, PN_float32 x_contrib, PN_float32 y_contrib) const;
+  void box_filter_point(LPoint2f &result, PN_float32 &coverage,
                         int x, int y, PN_float32 x_contrib, PN_float32 y_contrib) const;
   void box_filter_point(LPoint3f &result, PN_float32 &coverage,
                         int x, int y, PN_float32 x_contrib, PN_float32 y_contrib) const;

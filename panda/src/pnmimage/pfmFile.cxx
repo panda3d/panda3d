@@ -87,11 +87,16 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::clear
 //       Access: Published
-//  Description: Resets to an empty table with a specific size.
+//  Description: Resets to an empty table with a specific size.  The
+//               case of num_channels == 0 is allowed only in the case
+//               that x_size and y_size are also == 0; and this makes
+//               an empty (and invalid) PfmFile.
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
 clear(int x_size, int y_size, int num_channels) {
   nassertv(x_size >= 0 && y_size >= 0);
+  nassertv(num_channels > 0 && num_channels <= 4 || (x_size == 0 && y_size == 0 && num_channels == 0));
+
   _x_size = x_size;
   _y_size = y_size;
   _scale = 1.0;
@@ -323,25 +328,7 @@ load(const PNMImage &pnmimage) {
     return false;
   }
 
-  // Get the number of channels, ignoring alpha.
-  int num_channels;
-  switch (pnmimage.get_num_channels()) {
-  case 4:
-    num_channels = 4;
-    break;
-
-  case 3:
-    num_channels = 3;
-    break;
-
-  case 2:
-  case 1:
-    num_channels = 1;
-    break;
-
-  default:
-    num_channels = 3;
-  }
+  int num_channels = pnmimage.get_num_channels();
 
   clear(pnmimage.get_x_size(), pnmimage.get_y_size(), num_channels);
   switch (num_channels) {
@@ -350,6 +337,18 @@ load(const PNMImage &pnmimage) {
       for (int yi = 0; yi < pnmimage.get_y_size(); ++yi) {
         for (int xi = 0; xi < pnmimage.get_x_size(); ++xi) {
           _table[yi * _x_size + xi] = pnmimage.get_gray(xi, yi);
+        }
+      }
+    }
+    break;
+
+  case 2:
+    {
+      for (int yi = 0; yi < pnmimage.get_y_size(); ++yi) {
+        for (int xi = 0; xi < pnmimage.get_x_size(); ++xi) {
+          PN_float32 *point = &_table[(yi * _x_size + xi) * _num_channels];
+          point[0] = pnmimage.get_gray(xi, yi);
+          point[1] = pnmimage.get_alpha(xi, yi);
         }
       }
     }
@@ -417,11 +416,23 @@ store(PNMImage &pnmimage) const {
     }
     break;
 
+  case 2:
+    {
+      for (int yi = 0; yi < get_y_size(); ++yi) {
+        for (int xi = 0; xi < get_x_size(); ++xi) {
+          const LPoint2f &point = get_point2(xi, yi);
+          pnmimage.set_gray(xi, yi, point[0]);
+          pnmimage.set_alpha(xi, yi, point[1]);
+        }
+      }
+    }
+    break;
+
   case 3:
     {
       for (int yi = 0; yi < get_y_size(); ++yi) {
         for (int xi = 0; xi < get_x_size(); ++xi) {
-          const LPoint3f &point = get_point(xi, yi);
+          const LPoint3f &point = get_point3(xi, yi);
           pnmimage.set_xel(xi, yi, point[0], point[1], point[2]);
         }
       }
@@ -1047,6 +1058,32 @@ quick_filter_from(const PfmFile &from) {
           PN_float32 result;
           from.box_filter_region(result, from_x0, from_y0, from_x1, from_y1);
           new_data.push_back(result);
+          
+          from_x0 = from_x1;
+        }
+        from_y0 = from_y1;
+      }
+    }
+    break;
+
+  case 2:
+    {
+      from_y0 = 0.0;
+      for (int to_y = 0; to_y < _y_size; ++to_y) {
+        from_y1 = (to_y + 1.0) * y_scale;
+        from_y1 = min(from_y1, (PN_float32)orig_y_size);
+        
+        from_x0 = 0.0;
+        for (int to_x = 0; to_x < _x_size; ++to_x) {
+          from_x1 = (to_x + 1.0) * x_scale;
+          from_x1 = min(from_x1, (PN_float32)orig_x_size);
+          
+          // Now the box from (from_x0, from_y0) - (from_x1, from_y1)
+          // but not including (from_x1, from_y1) maps to the pixel (to_x, to_y).
+          LPoint2f result;
+          from.box_filter_region(result, from_x0, from_y0, from_x1, from_y1);
+          new_data.push_back(result[0]);
+          new_data.push_back(result[1]);
           
           from_x0 = from_x1;
         }
@@ -1725,6 +1762,14 @@ compute_sample_point(LPoint3f &result,
     }
     break;
 
+  case 2:
+    {
+      LPoint2f result2;
+      box_filter_region(result2, x - xr, y - yr, x + xr, y + yr);
+      result.set(result2[0], result2[1], 0.0);
+    }
+    break;
+
   case 3:
     box_filter_region(result, x - xr, y - yr, x + xr, y + yr);
     break;
@@ -1828,6 +1873,51 @@ void PfmFile::
 box_filter_region(PN_float32 &result,
                   PN_float32 x0, PN_float32 y0, PN_float32 x1, PN_float32 y1) const {
   result = 0.0;
+  PN_float32 coverage = 0.0;
+
+  if (x1 < x0 || y1 < y0) {
+    return;
+  }
+  nassertv(y0 >= 0.0 && y1 >= 0.0);
+
+  int y = (int)y0;
+  // Get the first (partial) row
+  box_filter_line(result, coverage, x0, y, x1, (PN_float32)(y+1)-y0);
+
+  int y_last = (int)y1;
+  if (y < y_last) {
+    y++;
+    while (y < y_last) {
+      // Get each consecutive (complete) row
+      box_filter_line(result, coverage, x0, y, x1, 1.0);
+      y++;
+    }
+
+    // Get the final (partial) row
+    PN_float32 y_contrib = y1 - (PN_float32)y_last;
+    if (y_contrib > 0.0001) {
+      box_filter_line(result, coverage, x0, y, x1, y_contrib);
+    }
+  }
+
+  if (coverage != 0.0) {
+    result /= coverage;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::box_filter_region
+//       Access: Private
+//  Description: Averages all the points in the rectangle from x0
+//               .. y0 to x1 .. y1 into result.  The region may be
+//               defined by floating-point boundaries; the result will
+//               be weighted by the degree of coverage of each
+//               included point.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+box_filter_region(LPoint2f &result,
+                  PN_float32 x0, PN_float32 y0, PN_float32 x1, PN_float32 y1) const {
+  result = LPoint2f::zero();
   PN_float32 coverage = 0.0;
 
   if (x1 < x0 || y1 < y0) {
@@ -1985,6 +2075,35 @@ box_filter_line(PN_float32 &result, PN_float32 &coverage,
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
+box_filter_line(LPoint2f &result, PN_float32 &coverage,
+                PN_float32 x0, int y, PN_float32 x1, PN_float32 y_contrib) const {
+  int x = (int)x0;
+  // Get the first (partial) xel
+  box_filter_point(result, coverage, x, y, (PN_float32)(x+1)-x0, y_contrib);
+
+  int x_last = (int)x1;
+  if (x < x_last) {
+    x++;
+    while (x < x_last) {
+      // Get each consecutive (complete) xel
+      box_filter_point(result, coverage, x, y, 1.0, y_contrib);
+      x++;
+    }
+
+    // Get the final (partial) xel
+    PN_float32 x_contrib = x1 - (PN_float32)x_last;
+    if (x_contrib > 0.0001) {
+      box_filter_point(result, coverage, x, y, x_contrib, y_contrib);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::box_filter_line
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void PfmFile::
 box_filter_line(LPoint3f &result, PN_float32 &coverage,
                 PN_float32 x0, int y, PN_float32 x1, PN_float32 y_contrib) const {
   int x = (int)x0;
@@ -2061,12 +2180,30 @@ box_filter_point(PN_float32 &result, PN_float32 &coverage,
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void PfmFile::
+box_filter_point(LPoint2f &result, PN_float32 &coverage,
+                 int x, int y, PN_float32 x_contrib, PN_float32 y_contrib) const {
+  if (!has_point(x, y)) {
+    return;
+  }
+  const LPoint2f &point = get_point2(x, y);
+
+  PN_float32 contrib = x_contrib * y_contrib;
+  result += point * contrib;
+  coverage += contrib;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::box_filter_point
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void PfmFile::
 box_filter_point(LPoint3f &result, PN_float32 &coverage,
                  int x, int y, PN_float32 x_contrib, PN_float32 y_contrib) const {
   if (!has_point(x, y)) {
     return;
   }
-  const LPoint3f &point = get_point(x, y);
+  const LPoint3f &point = get_point3(x, y);
 
   PN_float32 contrib = x_contrib * y_contrib;
   result += point * contrib;
