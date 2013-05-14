@@ -1143,7 +1143,9 @@
 // Bullet is a physics engine
 #define BULLET_IPATH /usr/local/include/bullet
 #define BULLET_LPATH /usr/local/lib
-#if $[WINDOWS_PLATFORM]
+#if $[WIN64_PLATFORM]
+#define BULLET_LIBS BulletSoftBody_x64.lib BulletDynamics_x64.lib BulletCollision_x64.lib LinearMath_x64.lib
+#elif $[WINDOWS_PLATFORM]
 #define BULLET_LIBS BulletSoftBody.lib BulletDynamics.lib BulletCollision.lib LinearMath.lib
 #else
 #define BULLET_LIBS BulletSoftBody BulletDynamics BulletCollision LinearMath
