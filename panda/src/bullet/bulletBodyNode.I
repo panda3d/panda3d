@@ -218,6 +218,28 @@ set_friction(PN_stdfloat friction) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BulletBodyNode::get_rolling_friction
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE PN_stdfloat BulletBodyNode::
+get_rolling_friction() const {
+
+  return get_object()->getRollingFriction();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletBodyNode::set_rolling_friction
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void BulletBodyNode::
+set_rolling_friction(PN_stdfloat friction) {
+
+  return get_object()->setRollingFriction(friction);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BulletBodyNode::has_anisotropic_friction
 //       Access: Published
 //  Description:

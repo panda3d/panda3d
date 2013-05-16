@@ -123,6 +123,22 @@ PUBLISHED:
       const LVector3 &pivot,
       bool disable=false);
 
+  // Links
+  void append_linear_joint(BulletBodyNode *body, int cluster,
+    PN_stdfloat erp=1.0,
+    PN_stdfloat cfm=1.0,
+    PN_stdfloat split=1.0);
+
+  void append_linear_joint(BulletBodyNode *body, const LPoint3 &pos,
+    PN_stdfloat erp=1.0,
+    PN_stdfloat cfm=1.0,
+    PN_stdfloat split=1.0);
+
+  void append_angular_joint(BulletBodyNode *body, const LVector3 &axis,
+    PN_stdfloat erp=1.0,
+    PN_stdfloat cfm=1.0,
+    PN_stdfloat split=1.0);
+
   // Materials
   int get_num_materials() const;
   BulletSoftBodyMaterial get_material(int idx) const;
