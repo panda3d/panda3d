@@ -931,6 +931,22 @@ reset() {
       _shader_caps._active_vprofile = (int)cgGLGetLatestProfile(CG_GL_VERTEX);
       _shader_caps._active_fprofile = (int)cgGLGetLatestProfile(CG_GL_FRAGMENT);
       _shader_caps._active_gprofile = (int)cgGLGetLatestProfile(CG_GL_GEOMETRY);
+
+      // cgGLGetLatestProfile doesn't seem to return anything other
+      // arbvp1/arbfp1 on non-NVIDIA cards, which is severely limiting.
+      if ((_shader_caps._active_vprofile == CG_PROFILE_ARBVP1 ||
+           _shader_caps._active_fprofile == CG_PROFILE_ARBFP1) &&
+          cgGLIsProfileSupported(CG_PROFILE_GLSLV) &&
+          cgGLIsProfileSupported(CG_PROFILE_GLSLF)) {
+
+        // So, if this happens, we set it to GLSL, which is
+        // usually supported on all cards.
+        _shader_caps._active_vprofile = (int)CG_PROFILE_GLSLV;
+        _shader_caps._active_fprofile = (int)CG_PROFILE_GLSLF;
+        if (cgGLIsProfileSupported(CG_PROFILE_GLSLG)) {
+          _shader_caps._active_gprofile = (int)CG_PROFILE_GLSLG;
+        }
+      }
     }
     _shader_caps._ultimate_vprofile = (int)CG_PROFILE_VP40;
     _shader_caps._ultimate_fprofile = (int)CG_PROFILE_FP40;
