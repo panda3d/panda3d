@@ -94,6 +94,9 @@ PUBLISHED:
   INLINE PN_stdfloat get_friction() const;
   INLINE void set_friction(PN_stdfloat friction);
 
+  INLINE PN_stdfloat get_rolling_friction() const;
+  INLINE void set_rolling_friction(PN_stdfloat friction);
+
   INLINE bool has_anisotropic_friction() const;
   void set_anisotropic_friction(const LVecBase3 &friction);
   LVecBase3 get_anisotropic_friction() const;
