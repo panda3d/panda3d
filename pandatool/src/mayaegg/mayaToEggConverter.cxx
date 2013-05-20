@@ -101,6 +101,7 @@ MayaToEggConverter(const string &program_name) :
   _keep_all_uvsets = false;
   _round_uvs = false;
   _legacy_shader = false;
+  _convert_cameras = false;
 
   _transform_type = TT_model;
 }
@@ -126,6 +127,7 @@ MayaToEggConverter(const MayaToEggConverter &copy) :
   _respect_maya_double_sided(copy._respect_maya_double_sided),
   _always_show_vertex_color(copy._always_show_vertex_color),
   _keep_all_uvsets(copy._keep_all_uvsets),
+  _convert_cameras(copy._convert_cameras),
   _round_uvs(copy._round_uvs),
   _legacy_shader(copy._legacy_shader),
   _transform_type(copy._transform_type)
@@ -830,6 +832,9 @@ convert_hierarchy(EggGroupNode *egg_root) {
   if (_keep_all_uvsets) {
     mayaegg_cat.info() << "will keep_all_uvsets" << endl;
   }
+  if (_convert_cameras) {
+    mayaegg_cat.info() << "will convert camera nodes to locators" << endl;
+  }
   // give some feedback about whether special options are on
   if (_legacy_shader) {
     mayaegg_cat.info() << "will disable modern Phong shader path. using legacy" << endl;
@@ -904,33 +909,56 @@ process_model_node(MayaNodeDesc *node_desc) {
     }
 
   } else if (dag_path.hasFn(MFn::kCamera)) {
-    if (mayaegg_cat.is_debug()) {
-      mayaegg_cat.debug()
-        << "Ignoring camera node " << path
-        << "\n";
-    }
-
-    MFnCamera camera (dag_path, &status);
-    if ( !status ) {
-      status.perror("MFnCamera constructor");
-      mayaegg_cat.error() << "camera extraction failed" << endl;
-      return false;
-    }
+    if (_convert_cameras) {
+      MFnCamera camera (dag_path, &status);
+      if ( !status ) {
+        status.perror("MFnCamera constructor");
+        return false;
+      }
     
-    // Extract some interesting Camera data
-    if (mayaegg_cat.is_spam()) {
-      MPoint eyePoint = camera.eyePoint(MSpace::kWorld);
-      mayaegg_cat.spam() << "  eyePoint: " << eyePoint.x << " " 
-                         << eyePoint.y << " " << eyePoint.z << endl;
-      mayaegg_cat.spam() << "  upDirection: "
-                         << camera.upDirection(MSpace::kWorld) << endl;
-      mayaegg_cat.spam() << "  viewDirection: "
-                         << camera.viewDirection(MSpace::kWorld) << endl;
-      mayaegg_cat.spam() << "  aspectRatio: " << camera.aspectRatio() << endl;
-      mayaegg_cat.spam() << "  horizontalFilmAperture: "
-                         << camera.horizontalFilmAperture() << endl;
-      mayaegg_cat.spam() << "  verticalFilmAperture: "
-                         << camera.verticalFilmAperture() << endl;
+      // Extract some interesting Camera data
+      if (mayaegg_cat.is_spam()) {
+        MPoint eyePoint = camera.eyePoint(MSpace::kWorld);
+        mayaegg_cat.spam() << "  eyePoint: " << eyePoint.x << " " 
+                           << eyePoint.y << " " << eyePoint.z << endl;
+        mayaegg_cat.spam() << "  upDirection: "
+                           << camera.upDirection(MSpace::kWorld) << endl;
+        mayaegg_cat.spam() << "  viewDirection: "
+                           << camera.viewDirection(MSpace::kWorld) << endl;
+        mayaegg_cat.spam() << "  aspectRatio: " << camera.aspectRatio() << endl;
+        mayaegg_cat.spam() << "  horizontalFilmAperture: "
+                           << camera.horizontalFilmAperture() << endl;
+        mayaegg_cat.spam() << "  verticalFilmAperture: "
+                           << camera.verticalFilmAperture() << endl;
+      }
+
+      EggGroup *egg_group = _tree.get_egg_group(node_desc);
+
+      if (mayaegg_cat.is_debug()) {
+        mayaegg_cat.warning()
+          << "Saving camera nodes as a locator: " << path << "\n";
+      }
+
+      if (node_desc->is_tagged()) {
+        // Presumably, the camera's position has some meaning to the
+        // end-user, so we will implicitly tag it with the DCS flag so it
+        // won't get flattened out.
+        if (_animation_convert != AC_model) {
+          // For now, don't set the DCS flag on cameras within
+          // character models, since egg-optchar doesn't understand
+          // this.  Perhaps there's no reason to ever change this, since
+          // cameras within character models may not be meaningful.
+          egg_group->set_dcs_type(EggGroup::DC_net);
+        }
+        get_transform(node_desc, dag_path, egg_group);
+        make_camera_locator(dag_path, dag_node, egg_group);
+      } else {
+        if (mayaegg_cat.is_debug()) {
+          mayaegg_cat.debug()
+            << "Ignoring camera node " << path
+            << "\n";
+        }
+      }
     }
 
   } else if (dag_path.hasFn(MFn::kLight)) {
@@ -2252,6 +2280,49 @@ make_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
                 mat[2][0], mat[2][1], mat[2][2], mat[2][3],
                 mat[3][0], mat[3][1], mat[3][2], mat[3][3]);
   p3d = p3d * n2w;
+
+  // Now convert the locator point into the group's space.
+  p3d = p3d * egg_group->get_node_frame_inv();
+
+  egg_group->add_translate3d(p3d);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::make_locator
+//       Access: Private
+//  Description: Locators are used in Maya to indicate a particular
+//               position in space to the user or the modeler.  We
+//               represent that in egg with an ordinary Group node,
+//               which we transform by the locator's position, so that
+//               the indicated point becomes the origin at this node
+//               and below.
+////////////////////////////////////////////////////////////////////
+void MayaToEggConverter::
+make_camera_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
+             EggGroup *egg_group) {
+  MStatus status;
+
+  unsigned int num_children = dag_node.childCount();
+  MObject locator;
+  bool found_camera = false;
+  for (unsigned int ci = 0; ci < num_children && !found_camera; ci++) {
+    locator = dag_node.child(ci);
+    found_camera = (locator.apiType() == MFn::kCamera);
+  }
+
+  if (!found_camera) {
+    mayaegg_cat.error()
+      << "Couldn't find camera" 
+      << dag_path.fullPathName().asChar() << "\n";
+    return;
+  }
+  MFnCamera camera (dag_path, &status);
+  if ( !status ) {
+    status.perror("MFnCamera constructor");
+    return;
+  }
+  MPoint eyePoint = camera.eyePoint(MSpace::kWorld);
+  LPoint3d p3d (eyePoint.x, eyePoint.y, eyePoint.z);
 
   // Now convert the locator point into the group's space.
   p3d = p3d * egg_group->get_node_frame_inv();

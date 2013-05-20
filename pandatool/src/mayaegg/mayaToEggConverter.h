@@ -139,6 +139,8 @@ private:
                     MayaShader *default_shader = NULL);
   void make_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
                     EggGroup *egg_group);
+  void make_camera_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
+                    EggGroup *egg_group);
   bool get_vertex_weights(const MDagPath &dag_path, const MFnMesh &mesh,
                           pvector<EggGroup *> &joints, MFloatArray &weights);
   bool get_vertex_weights(const MDagPath &dag_path, const MFnNurbsSurface &surface,
@@ -191,6 +193,7 @@ public:
   bool _respect_maya_double_sided;
   bool _always_show_vertex_color;
   bool _keep_all_uvsets;
+  bool _convert_cameras;
   bool _round_uvs;
   bool _legacy_shader;
 

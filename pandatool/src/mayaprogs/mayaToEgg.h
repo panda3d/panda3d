@@ -38,6 +38,7 @@ protected:
   bool _respect_maya_double_sided;
   bool _suppress_vertex_color;
   bool _keep_all_uvsets;
+  bool _convert_cameras;
   bool _round_uvs;
   bool _legacy_shader;
   bool _legacy_copytex;
