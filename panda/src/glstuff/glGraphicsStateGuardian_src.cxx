@@ -943,9 +943,11 @@ reset() {
         // usually supported on all cards.
         _shader_caps._active_vprofile = (int)CG_PROFILE_GLSLV;
         _shader_caps._active_fprofile = (int)CG_PROFILE_GLSLF;
+#if CG_VERSION_NUM >= 2200
         if (cgGLIsProfileSupported(CG_PROFILE_GLSLG)) {
           _shader_caps._active_gprofile = (int)CG_PROFILE_GLSLG;
         }
+#endif
       }
     }
     _shader_caps._ultimate_vprofile = (int)CG_PROFILE_VP40;
