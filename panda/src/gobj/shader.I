@@ -619,7 +619,7 @@ ShaderFile(const string &vertex,
            const string &geometry,
            const string &tess_control,
            const string &tess_evaluation) :
-  _separate(false),
+  _separate(true),
   _vertex(vertex),
   _fragment(fragment),
   _geometry(geometry),
