@@ -87,6 +87,7 @@ PUBLISHED:
   int add_array(const GeomVertexArrayFormat *array_format);
   void insert_array(int array, const GeomVertexArrayFormat *array_format);
   void clear_arrays();
+  void remove_empty_arrays();
 
   int get_num_columns() const;
   int get_array_with(int i) const;
@@ -98,7 +99,7 @@ PUBLISHED:
   
   MAKE_SEQ(get_columns, get_num_columns, get_column);
 
-  void remove_column(const InternalName *name);
+  void remove_column(const InternalName *name, bool keep_empty_array = false);
   void pack_columns();
   void align_columns_for_animation();
   void maybe_align_columns_for_animation();

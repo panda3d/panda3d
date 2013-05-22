@@ -376,6 +376,29 @@ clear_arrays() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexFormat::remove_empty_arrays
+//       Access: Published
+//  Description: Removes the arrays that define no columns.
+//
+//               This may not be called once the format has been
+//               registered.
+////////////////////////////////////////////////////////////////////
+void GeomVertexFormat::
+remove_empty_arrays() {
+  nassertv(!is_registered());
+
+  Arrays orig_arrays;
+  orig_arrays.swap(_arrays);
+  Arrays::const_iterator ai;
+  for (ai = orig_arrays.begin(); ai != orig_arrays.end(); ++ai) {
+    GeomVertexArrayFormat *array_format = (*ai);
+    if (array_format->get_num_columns() != 0) {
+      _arrays.push_back(array_format);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexFormat::get_num_columns
 //       Access: Published
 //  Description: Returns the total number of different columns in
@@ -510,13 +533,13 @@ get_column(const InternalName *name) const {
 //               columns remaining in the array, the array is left
 //               with a gap where the column used to be; if this
 //               was the only column in the array, the array is
-//               removed.
+//               removed (unless keep_empty_array is true).
 //
 //               This may not be called once the format has been
 //               registered.
 ////////////////////////////////////////////////////////////////////
 void GeomVertexFormat::
-remove_column(const InternalName *name) {
+remove_column(const InternalName *name, bool keep_empty_array) {
   nassertv(!_is_registered);
 
   // Since the format's not registered, it doesn't yet have an index
@@ -537,7 +560,7 @@ remove_column(const InternalName *name) {
       array_format->remove_column(name);
 
       // Are there any columns remaining in the array?
-      if (array_format->get_num_columns() == 0) {
+      if (!keep_empty_array && array_format->get_num_columns() == 0) {
         // Remove the whole array.
         remove_array(array);
       }
@@ -756,8 +779,12 @@ do_register() {
     if (!array_format->is_registered()) {
       array_format = GeomVertexArrayFormat::register_format(array_format);
     }
-    if (array_format->get_num_columns() == 0) {
-      // Don't keep an empty array.
+
+    // Let's keep arrays with nonzero stride but no used columns;
+    // they're needed to preserve the isomorphic nature of matching
+    // formats.  But we'll toss arrays with 0 stride, which add
+    // nothing of value and only cause problems later.
+    if (array_format->get_stride() == 0) {
       gobj_cat.warning()
         << "Dropping empty array from GeomVertexFormat.\n";
       continue;

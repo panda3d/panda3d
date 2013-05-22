@@ -445,6 +445,7 @@ get_usage_hint() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomVertexArrayDataHandle::
 get_num_rows() const {
+  nassertr(_object->_array_format->get_stride() != 0, 0);
   return get_data_size_bytes() / _object->_array_format->get_stride();
 }
 
