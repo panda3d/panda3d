@@ -114,6 +114,9 @@ public:
   struct Link;
   struct Material;
   struct Node;
+  struct AJoint {
+    struct IControl;
+  };
 };
 
 // BulletCollision/CollisionDispatch/btCollisionObject.h
