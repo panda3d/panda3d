@@ -34,7 +34,7 @@ BulletSoftBodyControl() {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE BulletSoftBodyControl::
+BulletSoftBodyControl::
 ~BulletSoftBodyControl() {
 
 }
