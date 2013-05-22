@@ -120,7 +120,7 @@ open_vfs(const Filename &filename) {
 
   // Now we can open the stream.
   int result =
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53, 2, 0)
+#if LIBAVFORMAT_VERSION_INT > AV_VERSION_INT(53, 3, 0)
     avformat_open_input(&_format_context, url.c_str(), NULL, NULL);
 #else
     av_open_input_file(&_format_context, url.c_str(), NULL, 0, NULL);
@@ -181,7 +181,7 @@ open_subfile(const SubfileInfo &info) {
 
   // Now we can open the stream.
   int result =
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53, 2, 0)
+#if LIBAVFORMAT_VERSION_INT > AV_VERSION_INT(53, 3, 0)
     avformat_open_input(&_format_context, url.c_str(), NULL, NULL);
 #else
     av_open_input_file(&_format_context, url.c_str(), NULL, 0, NULL);
