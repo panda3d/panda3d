@@ -30,7 +30,7 @@ class EXPCL_PANDABULLET BulletSoftBodyControl : public btSoftBody::AJoint::ICont
 
 PUBLISHED:
   BulletSoftBodyControl();
-  ~BulletSoftBodyControl();
+  virtual ~BulletSoftBodyControl();
 
   // Motor
   INLINE void set_goal(PN_stdfloat goal);

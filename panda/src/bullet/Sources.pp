@@ -42,6 +42,7 @@
     bulletShape.h bulletShape.I \
     bulletSliderConstraint.h bulletSliderConstraint.I \
     bulletSoftBodyConfig.h bulletSoftBodyConfig.I \
+    bulletSoftBodyControl.h bulletSoftBodyControl.I \
     bulletSoftBodyMaterial.h bulletSoftBodyMaterial.I \
     bulletSoftBodyNode.h bulletSoftBodyNode.I \
     bulletSoftBodyShape.h bulletSoftBodyShape.I \
@@ -90,6 +91,7 @@
     bulletShape.cxx \
     bulletSliderConstraint.cxx \
     bulletSoftBodyConfig.cxx \
+    bulletSoftBodyControl.cxx \
     bulletSoftBodyMaterial.cxx \
     bulletSoftBodyNode.cxx \
     bulletSoftBodyShape.cxx \
@@ -138,6 +140,7 @@
     bulletShape.h bulletShape.I \
     bulletSliderConstraint.h bulletSliderConstraint.I \
     bulletSoftBodyConfig.h bulletSoftBodyConfig.I \
+    bulletSoftBodyControl.h bulletSoftBodyControl.I \
     bulletSoftBodyMaterial.h bulletSoftBodyMaterial.I \
     bulletSoftBodyNode.h bulletSoftBodyNode.I \
     bulletSoftBodyShape.h bulletSoftBodyShape.I \
