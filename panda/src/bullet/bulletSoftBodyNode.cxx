@@ -14,6 +14,7 @@
 
 #include "bulletSoftBodyNode.h"
 #include "bulletSoftBodyConfig.h"
+#include "bulletSoftBodyControl.h"
 #include "bulletSoftBodyMaterial.h"
 #include "bulletSoftBodyShape.h"
 #include "bulletSoftBodyWorldInfo.h"
@@ -1118,7 +1119,7 @@ append_linear_joint(BulletBodyNode *body, const LPoint3 &pos, PN_stdfloat erp, P
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void BulletSoftBodyNode::
-append_angular_joint(BulletBodyNode *body, const LVector3 &axis, PN_stdfloat erp, PN_stdfloat cfm, PN_stdfloat split) {
+append_angular_joint(BulletBodyNode *body, const LVector3 &axis, PN_stdfloat erp, PN_stdfloat cfm, PN_stdfloat split, BulletSoftBodyControl *control) {
 
   nassertv(body);
 
@@ -1129,6 +1130,7 @@ append_angular_joint(BulletBodyNode *body, const LVector3 &axis, PN_stdfloat erp
   as.cfm = cfm;
   as.split = split;
   as.axis = LVecBase3_to_btVector3(axis);
+  as.icontrol = control;
 
   _soft->appendAngularJoint(as, ptr);
 }

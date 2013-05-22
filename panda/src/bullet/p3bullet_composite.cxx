@@ -35,6 +35,7 @@
 #include "bulletSphericalConstraint.cxx"
 #include "bulletSoftBodyNode.cxx"
 #include "bulletSoftBodyConfig.cxx"
+#include "bulletSoftBodyControl.cxx"
 #include "bulletSoftBodyMaterial.cxx"
 #include "bulletSoftBodyShape.cxx"
 #include "bulletSoftBodyWorldInfo.cxx"

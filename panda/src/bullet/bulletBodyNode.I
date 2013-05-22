@@ -217,6 +217,7 @@ set_friction(PN_stdfloat friction) {
   return get_object()->setFriction(friction);
 }
 
+#if BT_BULLET_VERSION >= 281
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletBodyNode::get_rolling_friction
 //       Access: Published
@@ -238,6 +239,7 @@ set_rolling_friction(PN_stdfloat friction) {
 
   return get_object()->setRollingFriction(friction);
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletBodyNode::has_anisotropic_friction

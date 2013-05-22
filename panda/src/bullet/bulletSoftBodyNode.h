@@ -31,6 +31,7 @@
 #include "pta_LVecBase3.h"
 
 class BulletSoftBodyConfig;
+class BulletSoftBodyControl;
 class BulletSoftBodyMaterial;
 class BulletSoftBodyWorldInfo;
 
@@ -137,7 +138,8 @@ PUBLISHED:
   void append_angular_joint(BulletBodyNode *body, const LVector3 &axis,
     PN_stdfloat erp=1.0,
     PN_stdfloat cfm=1.0,
-    PN_stdfloat split=1.0);
+    PN_stdfloat split=1.0,
+    BulletSoftBodyControl *control=NULL);
 
   // Materials
   int get_num_materials() const;
