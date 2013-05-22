@@ -109,6 +109,9 @@ PUBLISHED:
   void set_ccd_swept_sphere_radius(PN_stdfloat radius);
   void set_ccd_motion_threshold(PN_stdfloat threshold);
 
+  // Special
+  void set_transform_dirty();
+
 public:
   virtual btCollisionObject *get_object() const = 0;
 

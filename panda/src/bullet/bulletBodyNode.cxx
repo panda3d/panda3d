@@ -655,3 +655,18 @@ add_shapes_from_collision_solids(CollisionNode *cnode) {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BulletBodyNode::set_transform_dirty
+//       Access: Published
+//  Description: This method enforces an update of the Bullet
+//               transform, that is copies the scene graph transform
+//               to the Bullet transform.
+//               This is achieved by alling the protected PandaNode 
+//               hook 'transform_changed'. 
+////////////////////////////////////////////////////////////////////
+void BulletBodyNode::
+set_transform_dirty() {
+
+  transform_changed();
+}
+
