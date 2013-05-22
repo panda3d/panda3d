@@ -245,9 +245,13 @@ Section -post
         # Add the "bin" directory to the PATH.
         Push "$INSTDIR\python"
         Call RemoveFromPath
+        Push "$INSTDIR\python\Scripts"
+        Call RemoveFromPath
         Push "$INSTDIR\bin"
         Call RemoveFromPath
         Push "$INSTDIR\python"
+        Call AddToPath
+        Push "$INSTDIR\python\Scripts"
         Call AddToPath
         Push "$INSTDIR\bin"
         Call AddToPath
@@ -281,9 +285,7 @@ Section Uninstall
         !ifndef PPGAME
         Push "$INSTDIR\python"
         Call un.RemoveFromPath
-        Push "$INSTDIR\python"
-        Call un.RemoveFromPath
-        Push "$INSTDIR\bin"
+        Push "$INSTDIR\python\Scripts"
         Call un.RemoveFromPath
         Push "$INSTDIR\bin"
         Call un.RemoveFromPath
