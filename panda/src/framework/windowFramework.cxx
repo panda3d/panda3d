@@ -626,7 +626,7 @@ load_models(const NodePath &parent, const pvector<Filename> &files) {
 ////////////////////////////////////////////////////////////////////
 NodePath WindowFramework::
 load_model(const NodePath &parent, Filename filename) {
-  nout << "Loading " << filename << "\n";
+  framework_cat.info() << "Loading " << filename << "\n";
 
   // If the filename already exists where it is, or if it is fully
   // qualified, don't search along the model path for it.
