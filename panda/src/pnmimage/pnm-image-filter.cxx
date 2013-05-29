@@ -184,7 +184,8 @@ filter_sparse_row(StoreType dest[], StoreType dest_weight[], int dest_len,
   int offset = (int)cfloor(iscale*0.5);
 
   for (int dest_x = 0; dest_x < dest_len; dest_x++) {
-    double center = (dest_x - offset) / scale;
+    // The additional offset of 0.5 keeps the pixel centered.
+    double center = (dest_x - offset + 0.5) / scale;
 
     // left and right are the starting and ending ranges of the radius of
     // interest of the filter function.  We need to apply the filter to each

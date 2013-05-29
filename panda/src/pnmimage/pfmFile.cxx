@@ -989,15 +989,16 @@ resize(int new_x_size, int new_y_size) {
     result.fill(_no_data_value);
   }
 
-  if (pfm_resize_gaussian) {
-    result.gaussian_filter_from(pfm_resize_radius, *this);
+  if (pfm_resize_quick && new_x_size <= _x_size && new_y_size <= _y_size) {
+    // If we're downscaling, we can use quick_filter, which is faster.
+    result.quick_filter_from(*this);
+    
   } else {
-    if (pfm_resize_quick && new_x_size <= _x_size && new_y_size <= _y_size) {
-      // If we're downscaling, we can use quick_filter, which is faster.
-      result.quick_filter_from(*this);
-      
+    // Otherwise, we should use box_filter() or gaussian_filter, which
+    // are more general.
+    if (pfm_resize_gaussian) {
+      result.gaussian_filter_from(pfm_resize_radius, *this);
     } else {
-      // Otherwise, we should use box_filter(), which is more general.
       result.box_filter_from(pfm_resize_radius, *this);
     }
   }
