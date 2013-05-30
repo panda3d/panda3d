@@ -37,7 +37,7 @@ ConfigVariableBool pfm_reverse_dimensions
           "on input.  Does not affect output, which is always written width height."));
 
 ConfigVariableBool pfm_resize_quick
-("pfm-resize-quick", false,
+("pfm-resize-quick", true,
  PRC_DESC("Specify true to implement PfmFile::resize() with a \"quick\" filter, "
           "but only when the pfm is being downsampled (to a smaller size).  "
           "This just controls the behavior of resize(); you can "
@@ -47,13 +47,13 @@ ConfigVariableBool pfm_resize_gaussian
 ("pfm-resize-gaussian", true,
  PRC_DESC("Specify true to implement PfmFile::resize() with a higher-quality "
           "Gaussian filter, or false to implement it with a faster box "
-          "filter.  If pfm-resize-quick is also true, then only takes effect "
+          "filter.  If pfm-resize-quick is also true, this only takes effect "
           "when the pfm is being upsampled.  This just controls the behavior "
           "of resize(); you can always call box_filter() or gaussian_filter() "
           "explicitly."));
 
 ConfigVariableDouble pfm_resize_radius
-("pfm-resize-radius", 0.5,
+("pfm-resize-radius", 1.0,
  PRC_DESC("Specify the default filter radius for PfmFile::resize().  "
           "This just controls the behavior of resize(); you can "
           "always call box_filter() or gaussian_filter() explicitly with "
