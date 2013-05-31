@@ -122,9 +122,20 @@ PN_stdfloat BulletRigidBodyNode::
 get_mass() const {
 
   btScalar inv_mass = _rigid->getInvMass();
-  btScalar mass = inv_mass == btScalar(0.0) ? btScalar(0.0) : btScalar(1.0) / inv_mass;
+  btScalar mass = (inv_mass == btScalar(0.0)) ? btScalar(0.0) : btScalar(1.0) / inv_mass;
 
   return mass;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletRigidBodyNode::get_inv_mass
+//       Access: Published
+//  Description: Returns the inverse mass of a rigid body.
+////////////////////////////////////////////////////////////////////
+PN_stdfloat BulletRigidBodyNode::
+get_inv_mass() const {
+
+  return (PN_stdfloat)_rigid->getInvMass();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -175,6 +186,28 @@ get_inertia() const {
     );
 
   return inertia;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletRigidBodyNode::get_inv_inertia_diag_local
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+LVector3 BulletRigidBodyNode::
+get_inv_inertia_diag_local() const {
+
+  return btVector3_to_LVector3(_rigid->getInvInertiaDiagLocal());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletRigidBodyNode::get_inv_inertia_tensor_world
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+LMatrix3 BulletRigidBodyNode::
+get_inv_inertia_tensor_world() const {
+
+  return btMatrix3x3_to_LMatrix3(_rigid->getInvInertiaTensorWorld());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -477,6 +510,28 @@ void BulletRigidBodyNode::
 set_angular_factor(const LVector3 &factor) {
 
   _rigid->setAngularFactor(LVecBase3_to_btVector3(factor));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletRigidBodyNode::get_total_force
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+LVector3 BulletRigidBodyNode::
+get_total_force() const {
+
+  return btVector3_to_LVector3(_rigid->getTotalForce());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletRigidBodyNode::get_total_torque
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+LVector3 BulletRigidBodyNode::
+get_total_torque() const {
+
+  return btVector3_to_LVector3(_rigid->getTotalTorque());
 }
 
 ////////////////////////////////////////////////////////////////////

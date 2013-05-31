@@ -39,8 +39,11 @@ PUBLISHED:
   // Mass & inertia
   void set_mass(PN_stdfloat mass);
   PN_stdfloat get_mass() const;
+  PN_stdfloat get_inv_mass() const;
   void set_inertia(const LVecBase3 &inertia);
   LVector3 get_inertia() const;
+  LVector3 get_inv_inertia_diag_local() const;
+  LMatrix3 get_inv_inertia_tensor_world() const;
 
   // Velocity
   LVector3 get_linear_velocity() const;
@@ -62,6 +65,9 @@ PUBLISHED:
   void apply_central_impulse(const LVector3 &impulse);
   void apply_torque(const LVector3 &torque);
   void apply_torque_impulse(const LVector3 &torque);
+
+  LVector3 get_total_force() const;
+  LVector3 get_total_torque() const;
 
   // Deactivation thresholds
   PN_stdfloat get_linear_sleep_threshold() const;
