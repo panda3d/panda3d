@@ -2578,7 +2578,7 @@ class ParticlePanel(AppShell):
         # How many forces of the same type in the force group object
         count = 0
         for f in forceGroup:
-            if f.getClassType().eq(force.getClassType()):
+            if f.getClassType() == force.getClassType():
                 count += 1
         if isinstance(force, LinearVectorForce):
             self.createLinearVectorForceWidget(
