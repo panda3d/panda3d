@@ -1530,6 +1530,43 @@ clear_to_texcoords(int x_size, int y_size) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::pull_spot
+//       Access: Published
+//  Description: Applies delta * t to the point values within radius
+//               distance of (xc, yc).  The t value is scaled from 1.0
+//               at the center to 0.0 at radius, and this scale
+//               follows the specified exponent.  Returns the number
+//               of points affected.
+////////////////////////////////////////////////////////////////////
+int PfmFile::
+pull_spot(const LPoint4f &delta, double xc, double yc, 
+          double radius, double exponent) {
+  int minx = max((int)cceil(xc - radius), 0);
+  int maxx = min((int)cfloor(xc + radius), _x_size - 1);
+  int miny = max((int)cceil(yc - radius), 0);
+  int maxy = min((int)cfloor(yc + radius), _y_size - 1);
+
+  int count = 0;
+  for (int yi = miny; yi <= maxy; ++yi) {
+    for (int xi = minx; xi <= maxx; ++xi) {
+      double r2 = (xi - xc) * (xi - xc) + (yi - yc) * (yi - yc);
+      if (r2 >= 1.0) {
+        continue;
+      }
+      PN_float32 t = (PN_float32)pow(1.0 - sqrt(r2), exponent);
+
+      PN_float32 *f = &_table[(yi * _x_size + xi) * _num_channels];
+      for (int ci = 0; ci < _num_channels; ++ci) {
+        f[ci] += delta[ci] * t;
+      }
+      ++count;
+    }
+  }
+
+  return count;
+}
+  
+////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::calc_tight_bounds
 //       Access: Published
 //  Description: Calculates the minimum and maximum vertices of all

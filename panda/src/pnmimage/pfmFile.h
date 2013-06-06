@@ -124,6 +124,9 @@ PUBLISHED:
   BLOCKING void apply_crop(int x_begin, int x_end, int y_begin, int y_end);
   BLOCKING void clear_to_texcoords(int x_size, int y_size);
 
+  BLOCKING int pull_spot(const LPoint4f &delta, double xc, double yc, 
+                         double radius, double exponent);
+
   bool calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point) const;
   BLOCKING PT(BoundingHexahedron) compute_planar_bounds(const LPoint2f &center, PN_float32 point_dist, PN_float32 sample_radius, bool points_only) const;
   INLINE BLOCKING PT(BoundingHexahedron) compute_planar_bounds(const LPoint2d &center, PN_float32 point_dist, PN_float32 sample_radius, bool points_only) const;
