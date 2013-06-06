@@ -125,7 +125,7 @@ PUBLISHED:
   BLOCKING void clear_to_texcoords(int x_size, int y_size);
 
   BLOCKING int pull_spot(const LPoint4f &delta, double xc, double yc, 
-                         double radius, double exponent);
+                         double xr, double yr, double exponent);
 
   bool calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point) const;
   BLOCKING PT(BoundingHexahedron) compute_planar_bounds(const LPoint2f &center, PN_float32 point_dist, PN_float32 sample_radius, bool points_only) const;

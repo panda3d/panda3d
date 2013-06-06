@@ -1533,23 +1533,25 @@ clear_to_texcoords(int x_size, int y_size) {
 //     Function: PfmFile::pull_spot
 //       Access: Published
 //  Description: Applies delta * t to the point values within radius
-//               distance of (xc, yc).  The t value is scaled from 1.0
-//               at the center to 0.0 at radius, and this scale
-//               follows the specified exponent.  Returns the number
-//               of points affected.
+//               (xr, yr) distance of (xc, yc).  The t value is scaled
+//               from 1.0 at the center to 0.0 at radius (xr, yr), and
+//               this scale follows the specified exponent.  Returns
+//               the number of points affected.
 ////////////////////////////////////////////////////////////////////
 int PfmFile::
 pull_spot(const LPoint4f &delta, double xc, double yc, 
-          double radius, double exponent) {
-  int minx = max((int)cceil(xc - radius), 0);
-  int maxx = min((int)cfloor(xc + radius), _x_size - 1);
-  int miny = max((int)cceil(yc - radius), 0);
-  int maxy = min((int)cfloor(yc + radius), _y_size - 1);
+          double xr, double yr, double exponent) {
+  int minx = max((int)cceil(xc - xr), 0);
+  int maxx = min((int)cfloor(xc + xr), _x_size - 1);
+  int miny = max((int)cceil(yc - yr), 0);
+  int maxy = min((int)cfloor(yc + yr), _y_size - 1);
 
   int count = 0;
   for (int yi = miny; yi <= maxy; ++yi) {
     for (int xi = minx; xi <= maxx; ++xi) {
-      double r2 = (xi - xc) * (xi - xc) + (yi - yc) * (yi - yc);
+      double xd = ((double)xi - xc) / xr;
+      double yd = ((double)yi - yc) / yr;
+      double r2 = xd * xd + yd * yd;
       if (r2 >= 1.0) {
         continue;
       }
