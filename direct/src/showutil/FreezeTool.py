@@ -1077,22 +1077,25 @@ class Freezer:
 
         str = '.'.join(dirnames)
         if str not in moduleDirs:
-            # Add an implicit __init__.py file.
+            # Add an implicit __init__.py file (but only if there's
+            # not already a legitimate __init__.py file).
             moduleName = '.'.join(dirnames)
             filename = '/'.join(dirnames) + '/__init__'
 
             if self.storePythonSource:
                 filename += '.py'
                 stream = StringStream('')
-                multifile.addSubfile(filename, stream, 0)
-                multifile.flush()
+                if multifile.findSubfile(filename) < 0:
+                    multifile.addSubfile(filename, stream, 0)
+                    multifile.flush()
             else:
                 if __debug__:
                     filename += '.pyc'
                 else:
                     filename += '.pyo'
-                code = compile('', moduleName, 'exec')
-                self.__addPyc(multifile, filename, code, compressionLevel)
+                if multifile.findSubfile(filename) < 0:
+                    code = compile('', moduleName, 'exec')
+                    self.__addPyc(multifile, filename, code, compressionLevel)
 
             moduleDirs[str] = True
             self.__addPythonDirs(multifile, moduleDirs, dirnames[:-1], compressionLevel)
@@ -1103,12 +1106,17 @@ class Freezer:
 
         # First, split the module into its subdirectory names.
         dirnames = moduleName.split('.')
+        if len(dirnames) > 1 and dirnames[-1] == '__init__':
+            # The "module" may end in __init__, but that really means
+            # the parent directory.
+            dirnames = dirnames[:-1]
+            
         self.__addPythonDirs(multifile, moduleDirs, dirnames[:-1], compressionLevel)
 
         filename = '/'.join(dirnames)
 
         module = self.mf.modules.get(mdef.moduleName, None)
-        if getattr(module, '__path__', None) is not None:
+        if getattr(module, '__path__', None) is not None or getattr(module, '__file__', '').endswith('/__init__.py'):
             # It's actually a package.  In this case, we really write
             # the file moduleName/__init__.py.
             filename += '/__init__'
