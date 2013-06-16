@@ -26,7 +26,7 @@ TypeHandle BulletSliderConstraint::_type_handle;
 ////////////////////////////////////////////////////////////////////
 BulletSliderConstraint::
 BulletSliderConstraint(const BulletRigidBodyNode *node_a, 
-                       CPT(TransformState) frame_a,
+                       const TransformState *frame_a,
                        bool use_frame_a) {
 
   btRigidBody *ptr_a = btRigidBody::upcast(node_a->get_object());
@@ -43,8 +43,8 @@ BulletSliderConstraint(const BulletRigidBodyNode *node_a,
 BulletSliderConstraint::
 BulletSliderConstraint(const BulletRigidBodyNode *node_a,
                        const BulletRigidBodyNode *node_b,
-                       CPT(TransformState) frame_a,
-                       CPT(TransformState) frame_b,
+                       const TransformState *frame_a,
+                       const TransformState *frame_b,
                        bool use_frame_a) {
 
   btRigidBody *ptr_a = btRigidBody::upcast(node_a->get_object());
@@ -307,5 +307,19 @@ PN_stdfloat BulletSliderConstraint::
 get_max_angular_motor_force() const {
 
   return (PN_stdfloat)_constraint->getMaxAngMotorForce();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletSliderConstraint::set_frames
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletSliderConstraint::
+set_frames(const TransformState *ts_a, const TransformState *ts_b) {
+
+  btTransform frame_a = TransformState_to_btTrans(ts_a);
+  btTransform frame_b = TransformState_to_btTrans(ts_b);
+
+  _constraint->setFrames(frame_a, frame_b);
 }
 

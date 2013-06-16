@@ -78,7 +78,7 @@ add_array(const PTA_LVecBase3 &points) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletConvexHullShape::
-add_geom(const Geom *geom, CPT(TransformState) ts) {
+add_geom(const Geom *geom, const TransformState *ts) {
 
   nassertv(geom);
   nassertv(ts);

@@ -23,3 +23,25 @@ INLINE BulletGenericConstraint::
   delete _constraint;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BulletGenericConstraint::get_frame_a
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE CPT(TransformState) BulletGenericConstraint::
+get_frame_a() const {
+
+  return btTrans_to_TransformState(_constraint->getFrameOffsetA());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletGenericConstraint::get_frame_b
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE CPT(TransformState) BulletGenericConstraint::
+get_frame_b() const {
+
+  return btTrans_to_TransformState(_constraint->getFrameOffsetB());
+}
+

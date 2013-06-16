@@ -165,7 +165,7 @@ output(ostream &out) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletBodyNode::
-add_shape(BulletShape *shape, CPT(TransformState) ts) {
+add_shape(BulletShape *shape, const TransformState *ts) {
 
   nassertv(get_object());
 
@@ -173,10 +173,7 @@ add_shape(BulletShape *shape, CPT(TransformState) ts) {
     && ((btConvexHullShape *)shape->ptr())->getNumVertices() == 0));
 
   // Transform
-  btTransform trans = btTransform::getIdentity();
-  if (ts) {
-    trans = TransformState_to_btTrans(ts);
-  }
+  btTransform trans = TransformState_to_btTrans(ts);
 
   // Reset the shape scaling before we add a shape, and remember the current
   // Scale so we can restore it later...

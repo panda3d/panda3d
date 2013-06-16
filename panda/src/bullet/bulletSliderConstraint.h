@@ -33,12 +33,12 @@ class EXPCL_PANDABULLET BulletSliderConstraint : public BulletConstraint {
 
 PUBLISHED:
   BulletSliderConstraint(const BulletRigidBodyNode *node_a, 
-                         CPT(TransformState) frame_a,
+                         const TransformState *frame_a,
                          bool useFrame_a);
   BulletSliderConstraint(const BulletRigidBodyNode *node_a,
                          const BulletRigidBodyNode *node_b,
-                         CPT(TransformState) frame_a,
-                         CPT(TransformState) frame_b,
+                         const TransformState *frame_a,
+                         const TransformState *frame_b,
                          bool use_frame_a);
   INLINE ~BulletSliderConstraint();
 
@@ -70,6 +70,11 @@ PUBLISHED:
   bool get_powered_angular_motor() const;
   PN_stdfloat get_target_angular_motor_velocity() const;
   PN_stdfloat get_max_angular_motor_force() const;
+
+  // Frames
+  void set_frames(const TransformState *ts_a, const TransformState *ts_b);
+  INLINE CPT(TransformState) get_frame_a() const;
+  INLINE CPT(TransformState) get_frame_b() const;
 
 public:
   virtual btTypedConstraint *ptr() const;

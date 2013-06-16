@@ -23,3 +23,25 @@ INLINE BulletConeTwistConstraint::
   delete _constraint;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BulletConeTwistConstraint::get_frame_a
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE CPT(TransformState) BulletConeTwistConstraint::
+get_frame_a() const {
+
+  return btTrans_to_TransformState(_constraint->getAFrame());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletConeTwistConstraint::get_frame_b
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE CPT(TransformState) BulletConeTwistConstraint::
+get_frame_b() const {
+
+  return btTrans_to_TransformState(_constraint->getBFrame());
+}
+

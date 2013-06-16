@@ -101,7 +101,7 @@ get_welding_distance() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletTriangleMesh::
-add_geom(const Geom *geom, bool remove_duplicate_vertices, CPT(TransformState) ts) {
+add_geom(const Geom *geom, bool remove_duplicate_vertices, const TransformState *ts) {
 
   nassertv(geom);
   nassertv(ts);

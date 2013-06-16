@@ -46,9 +46,9 @@ PUBLISHED:
                             const LPoint3 &pivot_b);
   INLINE ~BulletSphericalConstraint();
 
+  // Pivots
   void set_pivot_a(const LPoint3 &pivot_a);
   void set_pivot_b(const LPoint3 &pivot_b);
-
   LPoint3 get_pivot_in_a() const;
   LPoint3 get_pivot_in_b() const;
 

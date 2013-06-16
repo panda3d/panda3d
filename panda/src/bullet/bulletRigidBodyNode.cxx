@@ -606,7 +606,7 @@ sync_b2p(PandaNode *node) {
 //               by calling MotionState::setGlobalTransform.
 ////////////////////////////////////////////////////////////////////
 void BulletRigidBodyNode::MotionState::
-set_net_transform(CPT(TransformState) &ts) {
+set_net_transform(const TransformState *ts) {
 
   nassertv(ts);
 

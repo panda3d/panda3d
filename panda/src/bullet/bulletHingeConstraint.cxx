@@ -267,3 +267,17 @@ set_motor_target(PN_stdfloat target_angle, PN_stdfloat dt) {
   _constraint->setMotorTarget(target_angle, dt);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BulletHingeConstraint::set_frames
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletHingeConstraint::
+set_frames(const TransformState *ts_a, const TransformState *ts_b) {
+
+  btTransform frame_a = TransformState_to_btTrans(ts_a);
+  btTransform frame_b = TransformState_to_btTrans(ts_b);
+
+  _constraint->setFrames(frame_a, frame_b);
+}
+

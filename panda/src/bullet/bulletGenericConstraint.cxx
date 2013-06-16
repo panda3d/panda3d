@@ -24,7 +24,7 @@ TypeHandle BulletGenericConstraint::_type_handle;
 ////////////////////////////////////////////////////////////////////
 BulletGenericConstraint::
 BulletGenericConstraint(const BulletRigidBodyNode *node_a, 
-                        CPT(TransformState) frame_a,
+                        const TransformState *frame_a,
                         bool use_frame_a) {
 
   btRigidBody *ptr_a = btRigidBody::upcast(node_a->get_object());
@@ -41,8 +41,8 @@ BulletGenericConstraint(const BulletRigidBodyNode *node_a,
 BulletGenericConstraint::
 BulletGenericConstraint(const BulletRigidBodyNode *node_a,
                         const BulletRigidBodyNode *node_b,
-                        CPT(TransformState) frame_a,
-                        CPT(TransformState) frame_b,
+                        const TransformState *frame_a,
+                        const TransformState *frame_b,
                         bool use_frame_a) {
 
   btRigidBody *ptr_a = btRigidBody::upcast(node_a->get_object());
@@ -163,5 +163,19 @@ BulletTranslationalLimitMotor BulletGenericConstraint::
 get_translational_limit_motor() {
 
   return BulletTranslationalLimitMotor(*_constraint->getTranslationalLimitMotor());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletGenericConstraint::set_frames
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletGenericConstraint::
+set_frames(const TransformState *ts_a, const TransformState *ts_b) {
+
+  btTransform frame_a = TransformState_to_btTrans(ts_a);
+  btTransform frame_b = TransformState_to_btTrans(ts_b);
+
+  _constraint->setFrames(frame_a, frame_b);
 }
 

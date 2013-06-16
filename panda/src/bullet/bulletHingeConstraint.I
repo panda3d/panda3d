@@ -23,3 +23,25 @@ INLINE BulletHingeConstraint::
   delete _constraint;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BulletHingeConstraint::get_frame_a
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE CPT(TransformState) BulletHingeConstraint::
+get_frame_a() const {
+
+  return btTrans_to_TransformState(_constraint->getAFrame());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletHingeConstraint::get_frame_b
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE CPT(TransformState) BulletHingeConstraint::
+get_frame_b() const {
+
+  return btTrans_to_TransformState(_constraint->getBFrame());
+}
+

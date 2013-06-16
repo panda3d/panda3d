@@ -39,7 +39,7 @@ PUBLISHED:
   void add_point(const LPoint3 &p);
   void add_array(const PTA_LVecBase3 &points);
   void add_geom(const Geom *geom,
-                CPT(TransformState) ts=TransformState::make_identity());
+                const TransformState *ts=TransformState::make_identity());
 
 public:
   virtual btCollisionShape *ptr() const;

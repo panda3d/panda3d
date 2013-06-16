@@ -33,11 +33,11 @@ class EXPCL_PANDABULLET BulletConeTwistConstraint : public BulletConstraint {
 
 PUBLISHED:
   BulletConeTwistConstraint(const BulletRigidBodyNode *node_a, 
-                            CPT(TransformState) frame_a);
+                            const TransformState *frame_a);
   BulletConeTwistConstraint(const BulletRigidBodyNode *node_a,
                             const BulletRigidBodyNode *node_b,
-                            CPT(TransformState) frame_a,
-                            CPT(TransformState) frame_b);
+                            const TransformState *frame_a,
+                            const TransformState *frame_b);
   INLINE ~BulletConeTwistConstraint();
 
   void set_limit(int index, PN_stdfloat value);
@@ -53,6 +53,10 @@ PUBLISHED:
   void set_max_motor_impulse_normalized(PN_stdfloat max_impulse);
   void set_motor_target(const LQuaternion &quat);
   void set_motor_target_in_constraint_space(const LQuaternion &quat);
+
+  void set_frames(const TransformState *ts_a, const TransformState *ts_b);
+  INLINE CPT(TransformState) get_frame_a() const;
+  INLINE CPT(TransformState) get_frame_b() const;
 
 public:
   virtual btTypedConstraint *ptr() const;

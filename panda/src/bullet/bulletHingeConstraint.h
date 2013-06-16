@@ -72,6 +72,10 @@ PUBLISHED:
   void set_motor_target(const LQuaternion &quat, PN_stdfloat dt);
   void set_motor_target(PN_stdfloat target_angle, PN_stdfloat dt);
 
+  void set_frames(const TransformState *ts_a, const TransformState *ts_b);
+  INLINE CPT(TransformState) get_frame_a() const;
+  INLINE CPT(TransformState) get_frame_b() const;
+
 public:
   virtual btTypedConstraint *ptr() const;
 

@@ -38,7 +38,7 @@ PUBLISHED:
   INLINE ~BulletBodyNode();
 
   // Shapes
-  void add_shape(BulletShape *shape, CPT(TransformState) xform=NULL);
+  void add_shape(BulletShape *shape, const TransformState *xform=TransformState::make_identity());
   void remove_shape(BulletShape *shape);
 
   INLINE int get_num_shapes() const;

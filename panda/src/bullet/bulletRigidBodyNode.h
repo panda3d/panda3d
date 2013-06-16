@@ -110,7 +110,7 @@ private:
     virtual void getWorldTransform(btTransform &trans) const;
     virtual void setWorldTransform(const btTransform &trans);
 
-    void set_net_transform(CPT(TransformState) &ts);
+    void set_net_transform(const TransformState *ts);
 
     void sync_b2p(PandaNode *node);
     bool sync_disabled() const;
