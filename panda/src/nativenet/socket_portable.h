@@ -79,7 +79,7 @@ inline SOCKET DO_NEWTCP()
 }
 inline int DO_BIND(const SOCKET a, const sockaddr_in *b)
 {
-    return bind(a, reinterpret_cast<const struct ::sockaddr *>(b), sizeof(sockaddr));
+    return ::bind(a, reinterpret_cast<const struct ::sockaddr *>(b), sizeof(sockaddr));
 }
 inline int DO_CLOSE(const SOCKET a)
 {
@@ -179,7 +179,7 @@ inline int DO_SOCKET_WRITE(const SOCKET a, const char * buff, const int len)
 //#define DO_SOCKET_WRITE_TO(a,b,c,d)   sendto(a,b,c,0,(sockaddr *)d,sizeof(sockaddr))
 //#define DO_NEWUDP()          socket(AF_INET, SOCK_DGRAM, 0)
 //#define DO_NEWTCP()       socket(AF_INET, SOCK_STREAM, 0)
-//#define DO_BIND(a,b)      bind(a,(sockaddr *)b,sizeof(sockaddr))
+//#define DO_BIND(a,b)      ::bind(a,(sockaddr *)b,sizeof(sockaddr))
 //#/define DO_CLOSE(a)       close(a)
 inline int DO_SOCKET_WRITE_TO(const SOCKET a, const char * buffer, const int buf_len, const sockaddr_in * addr)
 {
@@ -195,7 +195,7 @@ inline SOCKET DO_NEWTCP()
 }
 inline int DO_BIND(const SOCKET a, const sockaddr_in *b)
 {
-    return bind(a, reinterpret_cast<const struct ::sockaddr *>(b), sizeof(sockaddr));
+    return ::bind(a, reinterpret_cast<const struct ::sockaddr *>(b), sizeof(sockaddr));
 }
 inline int DO_CLOSE(const SOCKET a)
 {
@@ -300,7 +300,7 @@ inline SOCKET DO_NEWTCP()
 }
 inline int DO_BIND(const SOCKET a, const sockaddr_in *b)
 {
-    return bind(a, reinterpret_cast<const struct ::sockaddr *>(b), sizeof(sockaddr));
+    return ::bind(a, reinterpret_cast<const struct ::sockaddr *>(b), sizeof(sockaddr));
 }
 inline int DO_CLOSE(const SOCKET a)
 {
