@@ -213,7 +213,11 @@ build_graph() {
 
   // Now build up the scene graph.
   _root = new ModelRoot(_data->get_egg_filename(), _data->get_egg_timestamp());
-  make_node(_data, _root);
+
+  EggGroupNode::const_iterator ci;
+  for (ci = _data->begin(); ci != _data->end(); ++ci) {
+    make_node(*ci, _root);
+  }
 
   reparent_decals();
   start_sequences();
