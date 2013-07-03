@@ -832,6 +832,9 @@ convert_hierarchy(EggGroupNode *egg_root) {
   if (_keep_all_uvsets) {
     mayaegg_cat.info() << "will keep_all_uvsets" << endl;
   }
+  if (_polygon_output) {
+    mayaegg_cat.info() << "will convert NURBS to polys" << endl;
+  }
   if (_convert_cameras) {
     mayaegg_cat.info() << "will convert camera nodes to locators" << endl;
   }
