@@ -1130,7 +1130,7 @@ append_angular_joint(BulletBodyNode *body, const LVector3 &axis, PN_stdfloat erp
   as.cfm = cfm;
   as.split = split;
   as.axis = LVecBase3_to_btVector3(axis);
-  as.icontrol = control;
+  as.icontrol = control ? control : btSoftBody::AJoint::IControl::Default();
 
   _soft->appendAngularJoint(as, ptr);
 }
