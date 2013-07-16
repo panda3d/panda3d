@@ -462,10 +462,10 @@ read_line(string line) {
         }
       }
 
-      if (!_in_for && !failed_if() && line.length() > p+1) {
-        if(line[p+1]==COMMAND_PREFIX) {
+      if (!_in_for && !failed_if()) {
+        if (line.length() > p + 1 && line[p + 1] == COMMAND_PREFIX) {
           // double prefix at start of line indicates echo single prefix, like '\\' in C
-          line.erase(0,1);
+          line.erase(0, 1);
         }
         return _write_state->write_line(_scope->expand_string(line));
       }
