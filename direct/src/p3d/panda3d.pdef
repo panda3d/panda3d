@@ -162,9 +162,9 @@ class morepy(package):
            'DocXMLRPCServer', 'audioop', 'imageop', 'aifc', 'sunau',
            'wave', 'chunk', 'colorsys', 'imghdr', 'sndhdr',
            'ossaudiodev', 'gettext', 'locale', 'cmd', 'shlex',
-           'Tkinter', 'Tix', 'ScrolledText', 'turtle', 'pydoc',
-           'doctest', 'unittest', 'test', 'test.test_support', 'bdb',
-           'pdb', 'hotshot', 'timeit', 'trace', 'sys', '__builtin__')
+           'pydoc', 'doctest', 'unittest', 'test',
+           'test.test_support', 'bdb', 'pdb', 'hotshot', 'timeit',
+           'trace', 'sys', '__builtin__')
     module('future_builtins', 'warnings', 'contextlib', 'abc',
            'atexit', 'traceback', '__future__', 'gc', 'inspect',
            'site', 'user', 'fpectl', 'code', 'codeop', 'rexec',

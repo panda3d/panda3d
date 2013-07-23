@@ -33,17 +33,20 @@ class tk(package):
     require('panda3d')
 
     module('Tkinter', '_tkinter', required = True)
-    module('Tkconstants', 'Tkdnd', 'tkColorChooser',
-           'tkCommonDialog', 'tkFileDialog', 'tkFont',
-           'tkMessageBox', 'tkSimpleDialog')
+    module('Tkconstants', 'Tkdnd', 'Tix', 'ScrolledText', 'turtle',
+           'tkColorChooser', 'tkCommonDialog', 'tkFileDialog',
+           'tkFont', 'tkMessageBox', 'tkSimpleDialog')
     module('direct.showbase.TkGlobal',
            'direct.tkpanels',
            'direct.tkwidgets')
 
     try:
         from Tkinter import Tcl
-        dir = Filename.fromOsSpecific(Tcl().eval("info library"))
-        file(Filename(dir, "*.tcl"), extract = True)
+        tcl = Tcl()
+        dir = Filename.fromOsSpecific(tcl.eval("info library"))
+        ver = tcl.eval("info tclversion")
+
+        file(Filename(dir, "*.tcl"), newDir = 'lib/tcl' + ver, extract = True)
     except ImportError:
         pass
 
