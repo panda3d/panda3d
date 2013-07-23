@@ -143,15 +143,15 @@ class VFSLoader:
         if not code:
             raise ImportError, 'No Python code in %s' % (fullname)
         
-        mod = sys.modules.setdefault(fullname, new.module(fullname))
+        mod = sys.modules.setdefault(fullname, imp.new_module(fullname))
         mod.__file__ = self.filename.toOsSpecific()
         mod.__loader__ = self
         if self.packagePath:
             mod.__path__ = [self.packagePath.toOsSpecific()]
             #print >> sys.stderr, "loaded %s, path = %s" % (fullname, mod.__path__)
 
-        exec code in mod.__dict__
-        return mod
+        exec(code, mod.__dict__)
+        return sys.modules[fullname]
 
     def getdata(self, path):
         path = Filename(self.dir_path, Filename.fromOsSpecific(path))
@@ -514,5 +514,4 @@ def reloadSharedPackages():
             continue
 
         reloadSharedPackage(mod)
-                    
-                
+
