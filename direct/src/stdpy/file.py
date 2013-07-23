@@ -7,6 +7,7 @@ for I/O to complete. """
 __all__ = [
     'file', 'open', 'listdir', 'walk', 'join',
     'isfile', 'isdir', 'exists', 'lexists', 'getmtime', 'getsize',
+    'execfile',
     ]
 
 from pandac import PandaModules as pm
@@ -360,3 +361,10 @@ def getsize(path):
         raise os.error
     return file.getFileSize()
 
+def execfile(path, globals=None, locals=None):
+    file = _vfs.getFile(pm.Filename.fromOsSpecific(path), True)
+    if not file:
+        raise os.error
+
+    data = file.readFile(False)
+    exec(data, globals, locals)

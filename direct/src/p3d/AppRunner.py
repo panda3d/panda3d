@@ -702,6 +702,7 @@ class AppRunner(DirectObject):
             # the multifile.
             __builtin__.file = file.file
             __builtin__.open = file.open
+            __builtin__.execfile = file.execfile
             os.listdir = file.listdir
             os.walk = file.walk
             os.path.join = file.join
