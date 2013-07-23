@@ -1116,7 +1116,8 @@ class Freezer:
         filename = '/'.join(dirnames)
 
         module = self.mf.modules.get(mdef.moduleName, None)
-        if getattr(module, '__path__', None) is not None or getattr(module, '__file__', '').endswith('/__init__.py'):
+        if getattr(module, '__path__', None) is not None or \
+          (getattr(module, '__file__', None) is not None and getattr(module, '__file__').endswith('/__init__.py')):
             # It's actually a package.  In this case, we really write
             # the file moduleName/__init__.py.
             filename += '/__init__'
