@@ -28,7 +28,7 @@ import os
 from direct.directnotify import DirectNotifyGlobal
 import sys
 
-class Particles(ParticleSystem.ParticleSystem):
+class Particles(ParticleSystem):
 
     notify = DirectNotifyGlobal.directNotify.newCategory('Particles')
     id = 1

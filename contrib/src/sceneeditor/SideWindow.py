@@ -4,9 +4,9 @@
 #################################################################
 from direct.tkwidgets.AppShell import AppShell
 from direct.tkwidgets.VectorWidgets import ColorEntry
-from direct.showbase.TkGlobal import spawnTkLoop, Toplevel
+from direct.showbase.TkGlobal import spawnTkLoop
 import seSceneGraphExplorer
-from Tkinter import Frame, IntVar, Checkbutton
+from Tkinter import Frame, IntVar, Checkbutton, Toplevel
 import Pmw, Tkinter
 
 class sideWindow(AppShell):
