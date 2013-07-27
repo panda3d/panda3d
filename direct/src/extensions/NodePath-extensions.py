@@ -311,7 +311,7 @@
         # functor creation is defered so initial state (sampled in functorFunc)
         # will be appropriate for the time the lerp is spawned
         from direct.task import Task
-        from direct.showbase import LerpBlendHelpers
+        from direct.interval import LerpBlendHelpers
         from direct.task.TaskManagerGlobal import taskMgr
 
         # upon death remove the functorFunc
@@ -367,7 +367,7 @@
         This lerp uses C++ to handle the stepping. Bonus is
         its more efficient, trade-off is there is less control"""
         from pandac import AutonomousLerp
-        from direct.showbase import LerpBlendHelpers
+        from direct.interval import LerpBlendHelpers
         # make a lerp that lives in C++ land
         functor = functorFunc()
         lerp = AutonomousLerp.AutonomousLerp(functor, time,
