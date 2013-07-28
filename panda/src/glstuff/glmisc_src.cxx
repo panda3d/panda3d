@@ -156,6 +156,14 @@ ConfigVariableBool CLP(force_no_flush)
   ("gl-force-no-flush", false, 
    PRC_DESC("Avoid calling glFlush(), for a potential performance benefit.  This may be a little dangerous."));
 
+ConfigVariableBool CLP(separate_specular_color)
+  ("gl-separate-specular-color", true, 
+   PRC_DESC("When separate specular mode is on, the specular component "
+            "will be written to the secondary instead of the primary "
+            "color, which is added after the texturing stage.  In other "
+            "words, the specular highlight will be unmodulated by the "
+            "color of the texture."));
+
 extern ConfigVariableBool CLP(parallel_arrays);
 
 void CLP(init_classes)() {

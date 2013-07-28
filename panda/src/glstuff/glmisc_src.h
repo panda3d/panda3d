@@ -61,6 +61,7 @@ extern ConfigVariableBool CLP(force_depth_stencil);
 extern ConfigVariableBool CLP(matrix_palette);
 extern ConfigVariableBool CLP(force_no_error);
 extern ConfigVariableBool CLP(force_no_flush);
+extern ConfigVariableBool CLP(separate_specular_color);
 
 extern EXPCL_GL void CLP(init_classes)();
 

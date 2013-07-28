@@ -4965,11 +4965,7 @@ do_issue_material() {
   }
 #endif  // NDEBUG
 
-#ifndef OPENGLES
   GLenum face = material->get_twoside() ? GL_FRONT_AND_BACK : GL_FRONT;
-#else
-  static const GLenum face = GL_FRONT_AND_BACK;
-#endif  // OPENGLES
 
   call_glMaterialfv(face, GL_SPECULAR, material->get_specular());
   call_glMaterialfv(face, GL_EMISSION, material->get_emission());
@@ -5025,10 +5021,17 @@ do_issue_material() {
     }
   }
 
-#ifndef OPENGLES
   GLP(LightModeli)(GL_LIGHT_MODEL_LOCAL_VIEWER, material->get_local());
   GLP(LightModeli)(GL_LIGHT_MODEL_TWO_SIDE, material->get_twoside());
-#endif  // OPENGLES
+
+#ifndef OPENGLES
+  if (CLP(separate_specular_color)) {
+    GLP(LightModeli)(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
+  } else {
+    GLP(LightModeli)(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SINGLE_COLOR);
+  }
+#endif
+
   report_my_gl_errors();
 #endif  // OPENGLES_2
 }
