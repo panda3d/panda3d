@@ -21,6 +21,7 @@
 #include "colorScaleAttrib.h"
 #include "texMatrixAttrib.h"
 #include "textureAttrib.h"
+#include "shaderAttrib.h"
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "datagram.h"
@@ -430,6 +431,18 @@ r_prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *node_state,
           texture->prepare(prepared_objects);
         }
       }
+    }
+
+    // As well as the shaders.
+    attrib = geom_state->get_attrib(ShaderAttrib::get_class_slot());
+    if (attrib != (const RenderAttrib *)NULL) {
+      const ShaderAttrib *sa;
+      DCAST_INTO_V(sa, attrib);
+      Shader *shader = (Shader *)sa->get_shader();
+      if (shader != (Shader *)NULL) {
+        shader->prepare(prepared_objects);
+      }
+      //TODO: Invoke the shader generator if enabled.
     }
   }
   
