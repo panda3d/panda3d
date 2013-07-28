@@ -58,44 +58,44 @@ cp_report_error(ShaderArgInfo &p, const string &msg) {
 
   string tstr = "invalid ";
   switch (p._type) {
-  case SAT_scalar:    tstr = "scalar "; break; 
-  case SAT_vec1:      tstr = "vec1 "; break;     
-  case SAT_vec2:      tstr = "vec2 "; break;        
-  case SAT_vec3:      tstr = "vec3 "; break;        
-  case SAT_vec4:      tstr = "vec4 "; break;        
-  case SAT_mat1x1:    tstr = "mat1x1 "; break;      
-  case SAT_mat1x2:    tstr = "mat1x2 "; break;      
-  case SAT_mat1x3:    tstr = "mat1x3 "; break;      
-  case SAT_mat1x4:    tstr = "mat1x4 "; break;      
-  case SAT_mat2x1:    tstr = "mat2x1 "; break;      
-  case SAT_mat2x2:    tstr = "mat2x2 "; break;      
-  case SAT_mat2x3:    tstr = "mat2x3 "; break;      
-  case SAT_mat2x4:    tstr = "mat2x4 "; break;      
-  case SAT_mat3x1:    tstr = "mat3x1 "; break;      
-  case SAT_mat3x2:    tstr = "mat3x2 "; break;      
-  case SAT_mat3x3:    tstr = "mat3x3 "; break;       
-  case SAT_mat3x4:    tstr = "mat3x4 "; break;       
-  case SAT_mat4x1:    tstr = "mat4x1 "; break;       
-  case SAT_mat4x2:    tstr = "mat4x2 "; break;       
-  case SAT_mat4x3:    tstr = "mat4x3 "; break;       
-  case SAT_mat4x4:    tstr = "mat4x4 "; break;      
-  case SAT_sampler1d: tstr = "sampler1d "; break;  
-  case SAT_sampler2d: tstr = "sampler2d "; break;   
-  case SAT_sampler3d: tstr = "sampler3d "; break;   
-  case SAT_sampler2dArray: tstr = "sampler2dArray "; break; 
-  case SAT_samplercube:    tstr = "samplercube "; break; 
-  default:                 tstr = "unknown "; break; 
+  case SAT_scalar:    tstr = "scalar "; break;
+  case SAT_vec1:      tstr = "vec1 "; break;
+  case SAT_vec2:      tstr = "vec2 "; break;
+  case SAT_vec3:      tstr = "vec3 "; break;
+  case SAT_vec4:      tstr = "vec4 "; break;
+  case SAT_mat1x1:    tstr = "mat1x1 "; break;
+  case SAT_mat1x2:    tstr = "mat1x2 "; break;
+  case SAT_mat1x3:    tstr = "mat1x3 "; break;
+  case SAT_mat1x4:    tstr = "mat1x4 "; break;
+  case SAT_mat2x1:    tstr = "mat2x1 "; break;
+  case SAT_mat2x2:    tstr = "mat2x2 "; break;
+  case SAT_mat2x3:    tstr = "mat2x3 "; break;
+  case SAT_mat2x4:    tstr = "mat2x4 "; break;
+  case SAT_mat3x1:    tstr = "mat3x1 "; break;
+  case SAT_mat3x2:    tstr = "mat3x2 "; break;
+  case SAT_mat3x3:    tstr = "mat3x3 "; break;
+  case SAT_mat3x4:    tstr = "mat3x4 "; break;
+  case SAT_mat4x1:    tstr = "mat4x1 "; break;
+  case SAT_mat4x2:    tstr = "mat4x2 "; break;
+  case SAT_mat4x3:    tstr = "mat4x3 "; break;
+  case SAT_mat4x4:    tstr = "mat4x4 "; break;
+  case SAT_sampler1d: tstr = "sampler1d "; break;
+  case SAT_sampler2d: tstr = "sampler2d "; break;
+  case SAT_sampler3d: tstr = "sampler3d "; break;
+  case SAT_sampler2dArray: tstr = "sampler2dArray "; break;
+  case SAT_samplercube:    tstr = "samplercube "; break;
+  default:                 tstr = "unknown "; break;
   }
-  
+
   string cstr = "invalid";
   switch (p._class) {
-  case SAC_scalar:  cstr = "scalar ";  break;              
-  case SAC_vector:  cstr = "vector ";  break;       
-  case SAC_matrix:  cstr = "matrix ";  break;        
-  case SAC_sampler: cstr = "sampler "; break;       
-  case SAC_array:   cstr = "array ";   break;       
-  default:          cstr = "unknown "; break; 
-  }    
+  case SAC_scalar:  cstr = "scalar ";  break;
+  case SAC_vector:  cstr = "vector ";  break;
+  case SAC_matrix:  cstr = "matrix ";  break;
+  case SAC_sampler: cstr = "sampler "; break;
+  case SAC_array:   cstr = "array ";   break;
+  default:          cstr = "unknown "; break;
+  }
 
   Filename fn = get_filename(p._id._type);
   p._cat->error() << fn << ": " << vstr << dstr << tstr << 
@@ -211,13 +211,13 @@ cp_errchk_parameter_ptr(ShaderArgInfo &p) {
   case SAC_vector: return true;
   case SAC_matrix: return true;
   case SAC_array:
-    switch (p._subclass){
+    switch (p._subclass) {
     case SAC_scalar: return true;
     case SAC_vector: return true;
     case SAC_matrix: return true;
     default:
       string msg = "unsupported array subclass."; 
-      cp_report_error(p,msg);
+      cp_report_error(p, msg);
       return false;
     }
   default:
@@ -494,27 +494,24 @@ void Shader::cg_recurse_parameters(CGparameter parameter,
     ShaderArgClass     arg_subclass = arg_class;
 
     CGenum vbl = cgGetParameterVariability(parameter);
-  
-    if ((vbl==CG_VARYING)||(vbl==CG_UNIFORM)){
+
+    if ((vbl==CG_VARYING)||(vbl==CG_UNIFORM)) {
       switch (cgGetParameterType(parameter)) {
         case CG_STRUCT:
           cg_recurse_parameters(
-            cgGetFirstStructParameter(parameter),type,success); break;
-        
+            cgGetFirstStructParameter(parameter), type, success);
+          break;
+
         case CG_ARRAY:
-          arg_type     = cg_parameter_type(cgGetFirstStructParameter(parameter));
-          arg_subclass = cg_parameter_class(cgGetFirstStructParameter(parameter));
+          arg_type = cg_parameter_type(cgGetArrayParameter(parameter, 0));
+          arg_subclass = cg_parameter_class(cgGetArrayParameter(parameter, 0));
 
-          arg_dim[0]  = cgGetArraySize(parameter,0); 
+          arg_dim[0]  = cgGetArraySize(parameter, 0);
 
-          //Uncomment this to parse the array[n] as n separeted elements
-          //recurse_program_parameters(
-          //  cgGetFirstStructParameter(parameter),type,success); break;
-
-        default:{
+        default: {
           arg_dim[1] = cgGetParameterRows(parameter);
           arg_dim[2] = cgGetParameterColumns(parameter);
-          
+
           ShaderArgId id;
           id._name = cgGetParameterName(parameter);
           id._type  = type;
@@ -1233,21 +1230,20 @@ clear_parameters() {
 ////////////////////////////////////////////////////////////////////
 Shader::ShaderArgType Shader::
 cg_parameter_type(CGparameter p) {
-  
   switch (cgGetParameterClass(p)) {
   case CG_PARAMETERCLASS_SCALAR: return SAT_scalar;
   case CG_PARAMETERCLASS_VECTOR:
-    switch (cgGetParameterColumns(p)){
+    switch (cgGetParameterColumns(p)) {
     case 1:  return SAT_vec1;
     case 2:  return SAT_vec2;
     case 3:  return SAT_vec3;
     case 4:  return SAT_vec4;
     default: return SAT_unknown;
-    } 
+    }
   case CG_PARAMETERCLASS_MATRIX:
-    switch (cgGetParameterRows(p)){
+    switch (cgGetParameterRows(p)) {
     case 1:
-      switch (cgGetParameterColumns(p)){
+      switch (cgGetParameterColumns(p)) {
       case 1:  return SAT_mat1x1;
       case 2:  return SAT_mat1x2;
       case 3:  return SAT_mat1x3;
@@ -1255,7 +1251,7 @@ cg_parameter_type(CGparameter p) {
       default: return SAT_unknown;
       }
     case 2:
-      switch (cgGetParameterColumns(p)){
+      switch (cgGetParameterColumns(p)) {
       case 1:  return SAT_mat2x1;
       case 2:  return SAT_mat2x2;
       case 3:  return SAT_mat2x3;
@@ -1263,7 +1259,7 @@ cg_parameter_type(CGparameter p) {
       default: return SAT_unknown;
       }
     case 3:
-      switch (cgGetParameterColumns(p)){
+      switch (cgGetParameterColumns(p)) {
       case 1:  return SAT_mat3x1;
       case 2:  return SAT_mat3x2;
       case 3:  return SAT_mat3x3;
@@ -1271,7 +1267,7 @@ cg_parameter_type(CGparameter p) {
       default: return SAT_unknown;
       }
     case 4:
-      switch (cgGetParameterColumns(p)){
+      switch (cgGetParameterColumns(p)) {
       case 1:  return SAT_mat4x1;
       case 2:  return SAT_mat4x2;
       case 3:  return SAT_mat4x3;
@@ -1281,7 +1277,7 @@ cg_parameter_type(CGparameter p) {
     default: return SAT_unknown;
     }
   case CG_PARAMETERCLASS_SAMPLER:
-    switch (cgGetParameterType(p)){
+    switch (cgGetParameterType(p)) {
     case CG_SAMPLER1D:      return Shader::SAT_sampler1d;
     case CG_SAMPLER2D:      return Shader::SAT_sampler2d;
     case CG_SAMPLER3D:      return Shader::SAT_sampler3d;
@@ -1309,7 +1305,7 @@ Shader::ShaderArgClass Shader::cg_parameter_class(CGparameter p) {
   case CG_PARAMETERCLASS_MATRIX:  return Shader::SAC_matrix;
   case CG_PARAMETERCLASS_SAMPLER: return Shader::SAC_sampler;
   case CG_PARAMETERCLASS_ARRAY:   return Shader::SAC_array;
-  default:                        return Shader::SAC_unknown;           
+  default:                        return Shader::SAC_unknown;
   }
 }
 
