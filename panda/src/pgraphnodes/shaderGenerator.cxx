@@ -1482,7 +1482,14 @@ combine_mode_as_string(CPT(TextureStage) stage, TextureStage::CombineMode c_mode
       text << combine_source_as_string(stage, 1, alpha, alpha, texindex);
       break;
     case TextureStage::CM_add_signed:
-      pgraph_cat.error() << "TextureStage::CombineMode ADD_SIGNED not yet supported in per-pixel mode.\n";
+      text << combine_source_as_string(stage, 0, alpha, alpha, texindex);
+      text << " + ";
+      text << combine_source_as_string(stage, 1, alpha, alpha, texindex);
+      if (alpha) {
+        text << " - 0.5";
+      } else {
+        text << " - float3(0.5, 0.5, 0.5)";
+      }
       break;
     case TextureStage::CM_interpolate:
       text << "lerp(";
