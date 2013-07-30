@@ -1,7 +1,7 @@
 #define UNIX_SYS_LIBS m
 
 #define OTHER_LIBS \
-    p3egg:c pandaegg:m \
+    p3egg:c p3egg2pg:c pandaegg:m \
     p3pipeline:c p3event:c p3pstatclient:c panda:m \
     p3pandabase:c p3pnmimage:c p3mathutil:c p3linmath:c p3putil:c p3express:c \
     pandaexpress:m \
