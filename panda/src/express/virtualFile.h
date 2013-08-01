@@ -72,8 +72,8 @@ PUBLISHED:
   BLOCKING virtual iostream *open_read_append_file();
   BLOCKING virtual void close_read_write_file(iostream *stream);
 
-  BLOCKING virtual off_t get_file_size(istream *stream) const;
-  BLOCKING virtual off_t get_file_size() const;
+  BLOCKING virtual streamsize get_file_size(istream *stream) const;
+  BLOCKING virtual streamsize get_file_size() const;
   BLOCKING virtual time_t get_timestamp() const;
 
   virtual bool get_system_info(SubfileInfo &info);

@@ -73,8 +73,8 @@ public:
   virtual iostream *open_read_append_file(const Filename &file);
   virtual void close_read_write_file(iostream *stream);
 
-  virtual off_t get_file_size(const Filename &file, istream *stream) const=0;
-  virtual off_t get_file_size(const Filename &file) const=0;
+  virtual streamsize get_file_size(const Filename &file, istream *stream) const=0;
+  virtual streamsize get_file_size(const Filename &file) const=0;
   virtual time_t get_timestamp(const Filename &file) const=0;
   virtual bool get_system_info(const Filename &file, SubfileInfo &info);
 

@@ -151,7 +151,7 @@ PUBLISHED:
   INLINE double get_max_updates_per_second() const;
 
   INLINE void set_expected_file_size(size_t file_size);
-  off_t get_file_size() const;
+  streamsize get_file_size() const;
   INLINE bool is_file_size_known() const;
 
   INLINE size_t get_first_byte_requested() const;

@@ -1662,14 +1662,17 @@ get_access_timestamp() const {
 //  Description: Returns the size of the file in bytes, or 0 if there
 //               is an error.
 ////////////////////////////////////////////////////////////////////
-off_t Filename::
+streamsize Filename::
 get_file_size() const {
 #ifdef WIN32_VC
   wstring os_specific = get_filename_index(0).to_os_specific_w();
 
-  struct _stat this_buf;
+  struct _stat64 this_buf;
 
-  if (_wstat(os_specific.c_str(), &this_buf) == 0) {
+  // _wstat() only returns the lower 32 bits of the file size (!).  We
+  // have to call _wstati64() if we actually want the full 64-bit file
+  // size.
+  if (_wstati64(os_specific.c_str(), &this_buf) == 0) {
     return this_buf.st_size;
   }
 #else  // WIN32_VC

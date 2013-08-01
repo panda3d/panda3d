@@ -49,8 +49,8 @@ public:
 
   virtual istream *open_read_file(bool auto_unwrap) const;
   virtual bool was_read_successful() const;
-  virtual off_t get_file_size(istream *stream) const;
-  virtual off_t get_file_size() const;
+  virtual streamsize get_file_size(istream *stream) const;
+  virtual streamsize get_file_size() const;
   virtual time_t get_timestamp() const;
 
 private:

@@ -344,7 +344,7 @@ open_read_append_file(const Filename &file) {
 //               implementations may require this stream to determine
 //               the size.
 ////////////////////////////////////////////////////////////////////
-off_t VirtualFileMountRamdisk::
+streamsize VirtualFileMountRamdisk::
 get_file_size(const Filename &file, istream *stream) const {
   ((VirtualFileMountRamdisk *)this)->_lock.acquire();
   PT(FileBase) f = _root.do_find_file(file);
@@ -363,7 +363,7 @@ get_file_size(const Filename &file, istream *stream) const {
 //  Description: Returns the current size on disk (or wherever it is)
 //               of the file before it has been opened.
 ////////////////////////////////////////////////////////////////////
-off_t VirtualFileMountRamdisk::
+streamsize VirtualFileMountRamdisk::
 get_file_size(const Filename &file) const {
   ((VirtualFileMountRamdisk *)this)->_lock.acquire();
   PT(FileBase) f = _root.do_find_file(file);

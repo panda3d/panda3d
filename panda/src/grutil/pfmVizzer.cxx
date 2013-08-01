@@ -105,7 +105,9 @@ extrude(const Lens *lens) {
 
   PfmFile result;
   result.clear(_pfm.get_x_size(), _pfm.get_y_size(), 3);
-  result.set_zero_special(true);
+  if (_pfm.has_no_data_value()) {
+    result.set_zero_special(true);
+  }
 
   if (lens->is_linear()) {
     // If the lens is linear (Perspective or Orthographic), we can

@@ -122,7 +122,15 @@ put_datagram(const Datagram &data) {
 
   // First, write the size of the upcoming datagram.
   StreamWriter writer(_out, false);
-  writer.add_uint32(data.get_length());
+  size_t num_bytes = data.get_length();
+  if (num_bytes == (PN_uint32)-1 || num_bytes != (PN_uint32)num_bytes) {
+    // Write a large value as a 64-bit size.
+    writer.add_uint32((PN_uint32)-1);
+    writer.add_uint64(num_bytes);
+  } else {
+    // Write a value that fits in 32 bits.
+    writer.add_uint32((PN_uint32)num_bytes);
+  }
 
   // Now, write the datagram itself.
   _out->write((const char *)data.get_data(), data.get_length());
@@ -158,19 +166,25 @@ copy_datagram(SubfileInfo &result, const Filename &filename) {
     return false;
   }
 
-  off_t size = vfile->get_file_size(in);
-  size_t num_remaining = (size_t)size;
-  nassertr(num_remaining == size, false);
+  streamsize size = vfile->get_file_size(in);
+  streamsize num_remaining = size;
 
   StreamWriter writer(_out, false);
-  writer.add_uint32(num_remaining);
+  if (num_remaining == (PN_uint32)-1 || num_remaining != (PN_uint32)num_remaining) {
+    // Write a large value as a 64-bit size.
+    writer.add_uint32((PN_uint32)-1);
+    writer.add_uint64(num_remaining);
+  } else {
+    // Write a value that fits in 32 bits.
+    writer.add_uint32((PN_uint32)num_remaining);
+  }
 
   static const size_t buffer_size = 4096;
   char buffer[buffer_size];
 
   streampos start = _out->tellp();
   in->read(buffer, min(buffer_size, num_remaining));
-  size_t count = in->gcount();
+  streamsize count = in->gcount();
   while (count != 0) {
     _out->write(buffer, count);
     if (_out->fail()) {
@@ -220,10 +234,17 @@ copy_datagram(SubfileInfo &result, const SubfileInfo &source) {
     return false;
   }
 
-  size_t num_remaining = source.get_size();
+  streamsize num_remaining = source.get_size();
 
   StreamWriter writer(_out, false);
-  writer.add_uint32(num_remaining);
+  if (num_remaining == (PN_uint32)-1 || num_remaining != (PN_uint32)num_remaining) {
+    // Write a large value as a 64-bit size.
+    writer.add_uint32((PN_uint32)-1);
+    writer.add_uint64(num_remaining);
+  } else {
+    // Write a value that fits in 32 bits.
+    writer.add_uint32((PN_uint32)num_remaining);
+  }
 
   static const size_t buffer_size = 4096;
   char buffer[buffer_size];
@@ -231,7 +252,7 @@ copy_datagram(SubfileInfo &result, const SubfileInfo &source) {
   streampos start = _out->tellp();
   in.seekg(source.get_start());
   in.read(buffer, min(buffer_size, num_remaining));
-  size_t count = in.gcount();
+  streamsize count = in.gcount();
   while (count != 0) {
     _out->write(buffer, count);
     if (_out->fail()) {

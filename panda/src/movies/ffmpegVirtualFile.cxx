@@ -293,25 +293,26 @@ pandavfs_open(URLContext *h, const char *filename, int flags) {
 ////////////////////////////////////////////////////////////////////
 int FfmpegVirtualFile::
 pandavfs_read(URLContext *h, unsigned char *buf, int size) {
+  streampos ssize = (streampos)size;
   FfmpegVirtualFile *self = (FfmpegVirtualFile *)(h->priv_data);
   istream *in = self->_in;
 
   // Since we may be simulating a subset of the opened stream, don't
   // allow it to read past the "end".
   streampos remaining = self->_start + (streampos)self->_size - in->tellg();
-  if (remaining < size) {
+  if (remaining < ssize) {
     if (remaining <= 0) {
       return 0;
     }
 
-    size = (int)remaining;
+    ssize = remaining;
   }
 
-  in->read((char *)buf, size);
-  int gc = in->gcount();
+  in->read((char *)buf, ssize);
+  streamsize gc = in->gcount();
   in->clear();
 
-  return gc;
+  return (int)gc;
 }
 
 ////////////////////////////////////////////////////////////////////

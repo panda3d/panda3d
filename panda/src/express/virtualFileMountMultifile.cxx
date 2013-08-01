@@ -124,7 +124,7 @@ open_read_file(const Filename &file) const {
 //               implementations may require this stream to determine
 //               the size.
 ////////////////////////////////////////////////////////////////////
-off_t VirtualFileMountMultifile::
+streamsize VirtualFileMountMultifile::
 get_file_size(const Filename &file, istream *) const {
   int subfile_index = _multifile->find_subfile(file);
   if (subfile_index < 0) {
@@ -139,7 +139,7 @@ get_file_size(const Filename &file, istream *) const {
 //  Description: Returns the current size on disk (or wherever it is)
 //               of the file before it has been opened.
 ////////////////////////////////////////////////////////////////////
-off_t VirtualFileMountMultifile::
+streamsize VirtualFileMountMultifile::
 get_file_size(const Filename &file) const {
   int subfile_index = _multifile->find_subfile(file);
   if (subfile_index < 0) {

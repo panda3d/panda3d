@@ -239,6 +239,7 @@ PUBLISHED:
   INLINE void box_filter(double radius = 1.0);
   INLINE void gaussian_filter(double radius = 1.0);
 
+  void unfiltered_stretch_from(const PNMImage &copy);
   void box_filter_from(double radius, const PNMImage &copy);
   void gaussian_filter_from(double radius, const PNMImage &copy);
   void quick_filter_from(const PNMImage &copy,

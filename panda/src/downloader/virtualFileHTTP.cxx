@@ -240,7 +240,7 @@ was_read_successful() const {
 //               implementations may require this stream to determine
 //               the size.
 ////////////////////////////////////////////////////////////////////
-off_t VirtualFileHTTP::
+streamsize VirtualFileHTTP::
 get_file_size(istream *stream) const {
   return _channel->get_file_size();
 }
@@ -251,7 +251,7 @@ get_file_size(istream *stream) const {
 //  Description: Returns the current size on disk (or wherever it is)
 //               of the file before it has been opened.
 ////////////////////////////////////////////////////////////////////
-off_t VirtualFileHTTP::
+streamsize VirtualFileHTTP::
 get_file_size() const {
   return _channel->get_file_size();
 }

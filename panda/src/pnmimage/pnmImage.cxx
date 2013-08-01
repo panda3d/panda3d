@@ -1196,8 +1196,8 @@ lighten_sub_image(const PNMImage &copy, int xto, int yto,
 //
 //               For each pixel (x, y):
 //
-//               s = select_image.get_channel(x, y). Set this image's
-//               (x, y) to:
+//               s = select_image.get_channel(x, y, channel). Set this
+//               image's (x, y) to:
 //
 //               lt.get_xel(x, y) if s < threshold, or
 //
@@ -1695,6 +1695,33 @@ expand_border(int left, int right, int bottom, int top,
   new_image.copy_sub_image(*this, left, top);
 
   take_from(new_image);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::unfiltered_stretch_from
+//       Access: Published
+//  Description: Resizes from the indicated image into this one by
+//               performing a nearest-point sample.
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+unfiltered_stretch_from(const PNMImage &copy) {
+  for (int yt = 0; yt < get_y_size(); yt++) {
+    int ys = yt * copy.get_y_size() / get_y_size();
+    for (int xt = 0; xt < get_x_size(); xt++) {
+      int xs = xt * copy.get_x_size() / get_x_size();
+      set_xel(xt, yt, copy.get_xel(xs, ys));
+    }
+  }
+
+  if (has_alpha() && copy.has_alpha()) { 
+    for (int yt = 0; yt < get_y_size(); yt++) {
+      int ys = yt * copy.get_y_size() / get_y_size();
+      for (int xt = 0; xt < get_x_size(); xt++) {
+        int xs = xt * copy.get_x_size() / get_x_size();
+        set_alpha(xt, yt, copy.get_alpha(xs, ys));
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

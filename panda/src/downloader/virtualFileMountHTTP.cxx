@@ -212,7 +212,7 @@ open_read_file(const Filename &) const {
 //               implementations may require this stream to determine
 //               the size.
 ////////////////////////////////////////////////////////////////////
-off_t VirtualFileMountHTTP::
+streamsize VirtualFileMountHTTP::
 get_file_size(const Filename &, istream *) const {
   return 0;
 }
@@ -223,7 +223,7 @@ get_file_size(const Filename &, istream *) const {
 //  Description: Returns the current size on disk (or wherever it is)
 //               of the file before it has been opened.
 ////////////////////////////////////////////////////////////////////
-off_t VirtualFileMountHTTP::
+streamsize VirtualFileMountHTTP::
 get_file_size(const Filename &) const {
   return 0;
 }

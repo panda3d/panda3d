@@ -267,7 +267,7 @@ will_close_connection() const {
 //               their minds midstream about how much data they're
 //               sending you.
 ////////////////////////////////////////////////////////////////////
-off_t HTTPChannel::
+streamsize HTTPChannel::
 get_file_size() const {
   if (_got_file_size) {
     return _file_size;

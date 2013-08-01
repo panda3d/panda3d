@@ -161,7 +161,7 @@ read_file(const Filename &file, bool do_uncompress,
     return false;
   }
 
-  off_t file_size = get_file_size(file, in);
+  streamsize file_size = get_file_size(file, in);
   if (file_size > 0) {
     result.reserve((size_t)file_size);
   }

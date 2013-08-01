@@ -182,7 +182,7 @@ open_read_file(const Filename &file) const {
 //               implementations may require this stream to determine
 //               the size.
 ////////////////////////////////////////////////////////////////////
-off_t VirtualFileMountAndroidAsset::
+streamsize VirtualFileMountAndroidAsset::
 get_file_size(const Filename &file, istream *in) const {
   // If it's already open, get the AAsset pointer from the streambuf.
   const AssetStreamBuf *buf = (const AssetStreamBuf *) in->rdbuf();
@@ -196,7 +196,7 @@ get_file_size(const Filename &file, istream *in) const {
 //  Description: Returns the current size on disk (or wherever it is)
 //               of the file before it has been opened.
 ////////////////////////////////////////////////////////////////////
-off_t VirtualFileMountAndroidAsset::
+streamsize VirtualFileMountAndroidAsset::
 get_file_size(const Filename &file) const {
   AAsset* asset = AAssetManager_open(_asset_mgr, file.c_str(), AASSET_MODE_UNKNOWN);
   off_t length = AAsset_getLength(asset);

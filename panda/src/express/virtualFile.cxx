@@ -347,7 +347,7 @@ close_read_write_file(iostream *stream) {
 //               implementations may require this stream to determine
 //               the size.
 ////////////////////////////////////////////////////////////////////
-off_t VirtualFile::
+streamsize VirtualFile::
 get_file_size(istream *stream) const {
   return get_file_size();
 }
@@ -358,7 +358,7 @@ get_file_size(istream *stream) const {
 //  Description: Returns the current size on disk (or wherever it is)
 //               of the file before it has been opened.
 ////////////////////////////////////////////////////////////////////
-off_t VirtualFile::
+streamsize VirtualFile::
 get_file_size() const {
   return 0;
 }

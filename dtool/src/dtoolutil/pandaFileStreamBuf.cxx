@@ -319,17 +319,17 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
     gbump(n);
     _gpos -= n;
     assert(_gpos >= 0);
-    size_t cur_pos = _gpos;
-    size_t new_pos = cur_pos;
+    streampos cur_pos = _gpos;
+    streampos new_pos = cur_pos;
     
     // Now adjust the data pointer appropriately.
     switch (dir) {
     case ios::beg:
-      new_pos = (size_t)off;
+      new_pos = (streampos)off;
       break;
       
     case ios::cur:
-      new_pos = (size_t)((int)cur_pos + off);
+      new_pos = (streampos)(cur_pos + off);
       break;
       
     case ios::end:
@@ -375,7 +375,7 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode which) {
       break;
       
     case ios::cur:
-      new_pos = (streampos)((int)cur_pos + off);
+      new_pos = (streampos)(cur_pos + off);
       break;
       
     case ios::end:
@@ -440,7 +440,7 @@ overflow(int ch) {
   size_t n = pptr() - pbase();
   if (n != 0) {
     size_t wrote = write_chars(pbase(), n);
-    pbump(-(int)wrote);
+    pbump(-(ssize_t)wrote);
     if (wrote != n) {
       okflag = false;
     }
@@ -474,7 +474,7 @@ sync() {
   size_t n = pptr() - pbase();
 
   size_t wrote = write_chars(pbase(), n);
-  pbump(-(int)wrote);
+  pbump(-(ssize_t)wrote);
 
   if (n != wrote) {
     return EOF;
@@ -496,7 +496,7 @@ underflow() {
 
     // Mark the buffer filled (with buffer_size bytes).
     size_t buffer_size = egptr() - eback();
-    gbump(-(int)buffer_size);
+    gbump(-(ssize_t)buffer_size);
 
     size_t num_bytes = buffer_size;
     size_t read_count = read_chars(gptr(), buffer_size);
@@ -707,7 +707,7 @@ read_chars_raw(char *start, size_t length) {
     return 0;
   }
   
-  ssize_t result = ::read(_fd, start, length);
+  int result = ::read(_fd, start, length);
   while (result < 0) {
     if (errno == EAGAIN) {
       thread_yield();
@@ -796,7 +796,7 @@ write_chars_raw(const char *start, size_t length) {
 
   size_t remaining = length;
   while (remaining > 0) {
-    ssize_t result = ::write(_fd, start, remaining);
+    int result = ::write(_fd, start, remaining);
     if (result < 0) {
       if (errno == EAGAIN) {
         thread_yield();

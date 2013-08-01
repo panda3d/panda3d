@@ -184,7 +184,7 @@ PUBLISHED:
                          bool other_missing_is_old = true) const;
   time_t get_timestamp() const;
   time_t get_access_timestamp() const;
-  off_t get_file_size() const;
+  streamsize get_file_size() const;
 
   bool resolve_filename(const DSearchPath &searchpath,
                         const string &default_extension = string());

@@ -335,7 +335,7 @@ open_read_append_file(const Filename &file) {
 //               implementations may require this stream to determine
 //               the size.
 ////////////////////////////////////////////////////////////////////
-off_t VirtualFileMountSystem::
+streamsize VirtualFileMountSystem::
 get_file_size(const Filename &file, istream *stream) const {
   // First, save the original stream position.
   streampos orig = stream->tellg();
@@ -364,7 +364,7 @@ get_file_size(const Filename &file, istream *stream) const {
 //  Description: Returns the current size on disk (or wherever it is)
 //               of the file before it has been opened.
 ////////////////////////////////////////////////////////////////////
-off_t VirtualFileMountSystem::
+streamsize VirtualFileMountSystem::
 get_file_size(const Filename &file) const {
   Filename pathname(_physical_filename, file);
   return pathname.get_file_size();

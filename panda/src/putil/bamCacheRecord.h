@@ -84,14 +84,14 @@ private:
   Filename _source_pathname;
   Filename _cache_filename;
   time_t _recorded_time;
-  off_t _record_size;  // this is accurate only in the index file.
+  streamsize _record_size;  // this is accurate only in the index file.
   time_t _source_timestamp;  // Not record to the cache file.
 
   class DependentFile {
   public:
     Filename _pathname;
     time_t _timestamp;
-    off_t _size;
+    streamsize _size;
   };
 
   typedef pvector<DependentFile> DependentFiles;

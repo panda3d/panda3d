@@ -52,8 +52,8 @@ public:
   virtual bool is_regular_file(const Filename &file) const;
 
   virtual istream *open_read_file(const Filename &file) const;
-  virtual off_t get_file_size(const Filename &file, istream *stream) const;
-  virtual off_t get_file_size(const Filename &file) const;
+  virtual streamsize get_file_size(const Filename &file, istream *stream) const;
+  virtual streamsize get_file_size(const Filename &file) const;
   virtual time_t get_timestamp(const Filename &file) const;
 
   virtual bool scan_directory(vector_string &contents, 

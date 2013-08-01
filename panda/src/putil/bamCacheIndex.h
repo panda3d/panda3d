@@ -54,7 +54,7 @@ private:
   typedef pmap<Filename, PT(BamCacheRecord) > Records;
 
   Records _records;
-  off_t _cache_size;
+  streamsize _cache_size;
 
   // This structure is a temporary container.  It is only filled in
   // while reading from a bam file.

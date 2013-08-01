@@ -141,17 +141,27 @@ get_datagram(Datagram &data) {
 
   // First, get the size of the upcoming datagram.
   StreamReader reader(_in, false);
-  size_t num_bytes = reader.get_uint32();
+  PN_uint32 num_bytes_32 = reader.get_uint32();
   if (_in->fail() || _in->eof()) {
     return false;
   }
 
-  if (num_bytes == 0) {
+  if (num_bytes_32 == 0) {
     // A special case for a zero-length datagram: no need to try to
     // read any data.
     data.clear();
     return true;
   }
+
+  streamsize num_bytes = (streamsize)num_bytes_32;
+  if (num_bytes_32 == (PN_uint32)-1) {
+    // Another special case for a value larger than 32 bits.
+    num_bytes = reader.get_uint64();
+  }
+
+  // Make sure we have a reasonable datagram size for putting into
+  // memory.
+  nassertr(num_bytes == (size_t)num_bytes, false);
 
   // Now, read the datagram itself.
 
@@ -209,9 +219,15 @@ save_datagram(SubfileInfo &info) {
 
   // First, get the size of the upcoming datagram.
   StreamReader reader(_in, false);
-  size_t num_bytes = reader.get_uint32();
+  size_t num_bytes_32 = reader.get_uint32();
   if (_in->fail() || _in->eof()) {
     return false;
+  }
+
+  streamsize num_bytes = (streamsize)num_bytes_32;
+  if (num_bytes_32 == (PN_uint32)-1) {
+    // Another special case for a value larger than 32 bits.
+    num_bytes = reader.get_uint64();
   }
 
   // If this stream is file-based, we can just point the SubfileInfo
@@ -238,12 +254,12 @@ save_datagram(SubfileInfo &info) {
       << "Copying " << num_bytes << " bytes to " << tfile->get_filename() << "\n";
   }
 
-  size_t num_remaining = num_bytes;
+  streamsize num_remaining = num_bytes;
   static const size_t buffer_size = 4096;
   char buffer[buffer_size];
   
-  _in->read(buffer, min(buffer_size, num_remaining));
-  size_t count = _in->gcount();
+  _in->read(buffer, min((streamsize)buffer_size, num_remaining));
+  streamsize count = _in->gcount();
   while (count != 0) {
     out.write(buffer, count);
     if (out.fail()) {
@@ -256,7 +272,7 @@ save_datagram(SubfileInfo &info) {
     if (num_remaining == 0) {
       break;
     }
-    _in->read(buffer, min(buffer_size, num_remaining));
+    _in->read(buffer, min((streamsize)buffer_size, num_remaining));
     count = _in->gcount();
   }
 

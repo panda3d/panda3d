@@ -57,8 +57,8 @@ PUBLISHED:
   virtual iostream *open_read_append_file();
   virtual void close_read_write_file(iostream *stream);
 
-  virtual off_t get_file_size(istream *stream) const;
-  virtual off_t get_file_size() const;
+  virtual streamsize get_file_size(istream *stream) const;
+  virtual streamsize get_file_size() const;
   virtual time_t get_timestamp() const;
   virtual bool get_system_info(SubfileInfo &info);
 

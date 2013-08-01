@@ -1005,7 +1005,7 @@ load(const Filename &file_name) {
 
   bool is_midi_file = (downcase(extension) == "mid");
 
-  if ((miles_audio_preload_threshold == -1 || file->get_file_size() < (off_t)miles_audio_preload_threshold) ||
+  if ((miles_audio_preload_threshold == -1 || file->get_file_size() < (streamsize)miles_audio_preload_threshold) ||
       is_midi_file) {
     // If the file is sufficiently small, we'll preload it into
     // memory.  MIDI files cannot be streamed, so we always preload
