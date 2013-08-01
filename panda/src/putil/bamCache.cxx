@@ -73,7 +73,7 @@ BamCache() :
               "model-cache-textures, or it may be independent."));
 
   ConfigVariableInt model_cache_max_kbytes
-    ("model-cache-max-kbytes", 1048576,
+    ("model-cache-max-kbytes", 10485760,
      PRC_DESC("This is the maximum size of the model cache, in kilobytes."));
 
   _cache_models = model_cache_models;
@@ -240,6 +240,8 @@ store(BamCacheRecord *record) {
   {
     BamWriter writer(&dout);
     if (!writer.init()) {
+      util_cat.error()
+        << "Unable to write Bam header to " << temp_pathname << "\n";
       vfs->delete_file(temp_pathname);
       return false;
     }
@@ -255,11 +257,15 @@ store(BamCacheRecord *record) {
     }
     
     if (!writer.write_object(record)) {
+      util_cat.error()
+        << "Unable to write object to " << temp_pathname << "\n";
       vfs->delete_file(temp_pathname);
       return false;
     }
     
     if (!writer.write_object(record->get_data())) {
+      util_cat.error()
+        << "Unable to write object data to " << temp_pathname << "\n";
       vfs->delete_file(temp_pathname);
       return false;
     }
@@ -581,6 +587,10 @@ rebuild_index() {
       PT(BamCacheRecord) record = do_read_record(pathname, false);
       if (record == (BamCacheRecord *)NULL) {
         // Well, it was invalid, so blow it away.
+        if (util_cat.is_debug()) {
+          util_cat.debug()
+            << "Deleting invalid " << pathname << "\n";
+        }
         file->delete_file();
 
       } else {
@@ -653,6 +663,11 @@ check_cache_size() {
       }
       VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
       Filename cache_pathname(_root, record->get_cache_filename());
+      if (util_cat.is_debug()) {
+        util_cat.debug()
+          << "Deleting " << cache_pathname
+          << " to keep cache size below " << _max_kbytes << "K\n";
+      }
       vfs->delete_file(cache_pathname);
     }
     mark_index_stale();
