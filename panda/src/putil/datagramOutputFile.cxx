@@ -15,6 +15,7 @@
 #include "datagramOutputFile.h"
 #include "streamWriter.h"
 #include "zStream.h"
+#include <algorithm>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DatagramOutputFile::open
@@ -183,7 +184,7 @@ copy_datagram(SubfileInfo &result, const Filename &filename) {
   char buffer[buffer_size];
 
   streampos start = _out->tellp();
-  in->read(buffer, min(buffer_size, num_remaining));
+  in->read(buffer, min((streamsize)buffer_size, num_remaining));
   streamsize count = in->gcount();
   while (count != 0) {
     _out->write(buffer, count);
@@ -195,7 +196,7 @@ copy_datagram(SubfileInfo &result, const Filename &filename) {
     if (num_remaining == 0) {
       break;
     }
-    in->read(buffer, min(buffer_size, num_remaining));
+    in->read(buffer, min((streamsize)buffer_size, num_remaining));
     count = in->gcount();
   }
 
@@ -251,7 +252,7 @@ copy_datagram(SubfileInfo &result, const SubfileInfo &source) {
   
   streampos start = _out->tellp();
   in.seekg(source.get_start());
-  in.read(buffer, min(buffer_size, num_remaining));
+  in.read(buffer, min((streamsize)buffer_size, num_remaining));
   streamsize count = in.gcount();
   while (count != 0) {
     _out->write(buffer, count);
@@ -262,7 +263,7 @@ copy_datagram(SubfileInfo &result, const SubfileInfo &source) {
     if (num_remaining == 0) {
       break;
     }
-    in.read(buffer, min(buffer_size, num_remaining));
+    in.read(buffer, min((streamsize)buffer_size, num_remaining));
     count = in.gcount();
   }
 
