@@ -45,3 +45,12 @@
   #define SOURCES \
     bamToEgg.cxx bamToEgg.h
 #end bin_target
+
+#begin bin_target
+  #define TARGET pts2bam
+  #define LOCAL_LIBS \
+   p3progbase
+
+  #define SOURCES \
+    ptsToBam.cxx ptsToBam.h
+#end bin_target
