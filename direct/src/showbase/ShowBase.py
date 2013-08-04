@@ -738,6 +738,7 @@ class ShowBase(DirectObject.DirectObject):
             flags = flags | GraphicsPipe.BFRequireCallbackWindow
 
         if host:
+            assert host.isValid()
             win = self.graphicsEngine.makeOutput(pipe, name, 0, fbprops,
                                                  props, flags, host.getGsg(), host)
         elif gsg:
@@ -1211,7 +1212,7 @@ class ShowBase(DirectObject.DirectObject):
         if win == None:
             win = self.win
 
-        if win != None and win.hasSize():
+        if win != None and win.hasSize() and win.getSbsLeftYSize() != 0:
             aspectRatio = float(win.getSbsLeftXSize()) / float(win.getSbsLeftYSize())
 
         else:
@@ -1222,9 +1223,12 @@ class ShowBase(DirectObject.DirectObject):
                 if not props.hasSize():
                     props = WindowProperties.getDefault()
 
-            if props.hasSize():
+            if props.hasSize() and props.getYSize() != 0:
                 aspectRatio = float(props.getXSize()) / float(props.getYSize())
 
+        if aspectRatio == 0:
+            return 1
+        
         return aspectRatio
 
     def getSize(self, win = None):
@@ -2660,7 +2664,8 @@ class ShowBase(DirectObject.DirectObject):
         if aspectRatio != self.__oldAspectRatio:
             self.__oldAspectRatio = aspectRatio
             # Fix up some anything that depends on the aspectRatio
-            self.camLens.setAspectRatio(aspectRatio)
+            if self.camLens:
+                self.camLens.setAspectRatio(aspectRatio)
             if aspectRatio < 1:
                 # If the window is TALL, lets expand the top and bottom
                 self.aspect2d.setScale(1.0, aspectRatio, aspectRatio)
