@@ -75,7 +75,8 @@ run() {
 
   _num_points_expected = 0;
   _num_points_found = 0;
-  _decimate_factor = 1.0 / _decimate_divisor;
+  _num_points_added = 0;
+  _decimate_factor = 1.0 / max(1.0, _decimate_divisor);
   _line_number = 0;
   _point_number = 0;
   _decimated_point_number = 0.0;
@@ -87,7 +88,7 @@ run() {
   close_vertex_data();
   
   nout << "\nFound " << _num_points_found << " points of " << _num_points_expected << " expected.\n";
-  nout << "Generated " << _point_number << " points to bam file.\n";
+  nout << "Generated " << _num_points_added << " points to bam file.\n";
 
   // This should be guaranteed because we pass false to the
   // constructor, above.
@@ -192,6 +193,7 @@ add_point(const vector_string &words) {
   y = string_to_double(words[1], tail);
   z = string_to_double(words[2], tail);
   _vertex.add_data3d(x, y, z);
+  _num_points_added++;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -222,7 +224,7 @@ close_vertex_data() {
   }
 
   _num_vdatas++;
-  nout << "\nGenerating " << _point_number << " points in " << _num_vdatas << " GeomVertexDatas\n";
+  nout << "\nGenerating " << _num_points_added << " points in " << _num_vdatas << " GeomVertexDatas\n";
 
   PT(Geom) geom = new Geom(_data);
 

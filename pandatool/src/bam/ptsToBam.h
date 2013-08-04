@@ -54,6 +54,7 @@ private:
   int _point_number;
   int _num_points_expected;
   int _num_points_found;
+  int _num_points_added;
   int _num_vdatas;
 
   double _decimated_point_number;
