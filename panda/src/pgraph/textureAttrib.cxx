@@ -962,8 +962,10 @@ sort_on_stages() {
   for (si = _on_stages.begin(); si != _on_stages.end(); ++si) {
     StageNode &sn = (*si);
     TextureStage *stage = sn._stage;
+    Texture *texture = sn._texture;
     nassertv(stage != NULL);
-    if (stage->is_fixed_function()) {
+    nassertv(texture != NULL);
+    if (stage->is_fixed_function() && texture->get_texture_type() != Texture::TT_2d_texture_array) {
       const InternalName *name = stage->get_texcoord_name();
 
       // This pair of lines will get the next consecutive texcoord index

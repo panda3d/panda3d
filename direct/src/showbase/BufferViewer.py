@@ -290,6 +290,17 @@ class BufferViewer(DirectObject):
                             card = NodePath(self.cardmaker.generate())
                             card.setTexture(tex)
                             cards.append(card)
+                    elif (tex.getTextureType() == Texture.TT2dTextureArray):
+                        for layer in range(tex.getZSize()):
+                            self.cardmaker.setUvRange((0, 1, 1, 0), (0, 0, 1, 1),\
+                                                      (layer, layer, layer, layer))
+                            card = NodePath(self.cardmaker.generate())
+                            # 2D texture arrays are not supported by
+                            # the fixed-function pipeline, so we need to
+                            # enable the shader generator to view them.
+                            card.setShaderAuto()
+                            card.setTexture(tex)
+                            cards.append(card)
                     else:
                         card = win.getTextureCard()
                         card.setTexture(tex)
