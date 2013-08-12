@@ -1756,7 +1756,14 @@ set_size_padded(int x, int y, int z) {
   if (do_get_auto_texture_scale(cdata) != ATS_none) {
     do_set_x_size(cdata, up_to_power_2(x));
     do_set_y_size(cdata, up_to_power_2(y));
-    do_set_z_size(cdata, up_to_power_2(z));
+
+    if (cdata->_texture_type == TT_3d_texture) {
+      // Only pad 3D textures.  It does not make sense
+      // to do so for cube maps or 2D texture arrays.
+      do_set_z_size(cdata, up_to_power_2(z));
+    } else {
+      do_set_z_size(cdata, z);
+    }
   } else {
     do_set_x_size(cdata, x);
     do_set_y_size(cdata, y);
@@ -5013,7 +5020,7 @@ do_set_component_type(CData *cdata, Texture::ComponentType component_type) {
     break;
 
   case T_unsigned_int_24_8:
-    //FIXME: I have no idea...
+    cdata->_component_width = 4;
     break;
   }
 }
