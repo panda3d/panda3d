@@ -94,6 +94,7 @@ get_default() {
     display_cat.error() << "  alpha-bits N\n";
     display_cat.error() << "  stencil-bits N\n";
     display_cat.error() << "  multisamples N\n";
+    display_cat.error() << "  coverage-samples N\n";
     display_cat.error() << "  back-buffers N\n";
   }
 
@@ -236,6 +237,9 @@ output(ostream &out) const {
   if (_property[FBP_multisamples] > 0) {
     out << "multisamples=" << _property[FBP_multisamples] << " ";
   }
+  if (_property[FBP_coverage_samples] > 0) {
+    out << "coverage_samples=" << _property[FBP_coverage_samples] << " ";
+  }
   if (_property[FBP_back_buffers] > 0) {
     out << "back_buffers=" << _property[FBP_back_buffers] << " ";
   }
@@ -358,6 +362,9 @@ is_basic() const {
     return false;
   }
   if (_property[FBP_multisamples] > 1) {
+    return false;
+  }
+  if (_property[FBP_coverage_samples] > 0) {
     return false;
   }
   if (_property[FBP_back_buffers] > 0) {
@@ -533,6 +540,12 @@ get_quality(const FrameBufferProperties &reqs) const {
   // Extra: 2 per sample.
   if (reqs._property[FBP_multisamples] != 0) {
     quality += 2 * _property[FBP_multisamples];
+  }
+
+  // Bonus for each coverage sample.
+  // Extra: 2 per sample.
+  if (reqs._property[FBP_coverage_samples] != 0) {
+    quality += 2 * _property[FBP_coverage_samples];
   }
 
   // Bonus for each color, alpha, stencil, and accum.
