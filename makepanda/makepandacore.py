@@ -1398,12 +1398,12 @@ def PkgConfigEnable(opt, pkgname, tool = "pkg-config"):
     for i, j in PkgConfigGetDefSymbols(pkgname, tool).items():
         DefSymbol(opt, i, j)
 
-def SystemLibraryExists(lib):
-    """ Returns True if this library was found in the system library search path, False otherwise. """
+def LibraryExists(lib, lpath=[]):
+    """ Returns True if this library was found in the given search path, False otherwise. """
 
     target = GetTarget()
 
-    for dir in SYS_LIB_DIRS:
+    for dir in lpath:
         if target == 'darwin' and os.path.isfile(os.path.join(dir, 'lib%s.dylib' % lib)):
             return True
         elif target != 'darwin' and os.path.isfile(os.path.join(dir, 'lib%s.so' % lib)):
@@ -1413,13 +1413,22 @@ def SystemLibraryExists(lib):
 
     return False
 
-def ChooseLib(*libs):
-    # Chooses a library from the parameters, in order of preference. Returns the first if none of them were found.
+def SystemLibraryExists(lib):
+    return LibraryExists(lib, SYS_LIB_DIRS)
+
+def ChooseLib(libs, thirdparty=None):
+    """ Chooses a library from the parameters, in order of preference. Returns the first if none of them were found. """
+
+    lpath = []
+    if thirdparty is not None:
+        lpath.append(os.path.join(GetThirdpartyDir(), thirdparty.lower(), "lib"))
+    lpath += SYS_LIB_DIRS
+
     for l in libs:
         libname = l
         if l.startswith("lib"):
             libname = l[3:]
-        if SystemLibraryExists(libname):
+        if LibraryExists(libname, lpath):
             return libname
 
     if len(libs) > 0:
