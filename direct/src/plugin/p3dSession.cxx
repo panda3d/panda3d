@@ -1232,12 +1232,6 @@ start_p3dpython(P3DInstance *inst) {
     // Fall back to running it in a sub-thread within the same
     // process.  This isn't nearly as good, but I guess it's better
     // than nothing.
-#ifndef _WIN32
-    // Let's only do this sub-thread fallback on Windows.  On Mac and
-    // Linux, just fail.
-    set_failed();
-    return;
-#endif  // _WIN32
 
     INIT_THREAD(_p3dpython_thread);
     SPAWN_THREAD(_p3dpython_thread, p3dpython_thread_run, this);
