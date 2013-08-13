@@ -192,6 +192,7 @@ else:
                 self.Bind(wx.EVT_RIGHT_DOWN, lambda event: self.__buttonDown(MouseButton.three()))
                 self.Bind(wx.EVT_RIGHT_UP, lambda event: self.__buttonUp(MouseButton.three()))
                 self.Bind(wx.EVT_MOTION, self.__mouseMotion)
+                self.Bind(wx.EVT_MOUSEWHEEL, self.__mouseWheel)
                 self.Bind(wx.EVT_LEAVE_WINDOW, self.__mouseLeaveWindow)
                 self.Bind(wx.EVT_KEY_DOWN, self.__keyDown)
                 self.Bind(wx.EVT_KEY_UP, self.__keyUp)
@@ -232,6 +233,15 @@ else:
 
         def __mouseMotion(self, event):
             self.inputDevice.setPointerInWindow(*event.GetPosition())
+
+        def __mouseWheel(self, event):
+            amount = event.GetWheelRotation()
+            if amount > 0.0:
+                self.inputDevice.buttonDown(MouseButton.wheelUp())
+                self.inputDevice.buttonUp(MouseButton.wheelUp())
+            elif amount < 0.0:
+                self.inputDevice.buttonDown(MouseButton.wheelDown())
+                self.inputDevice.buttonUp(MouseButton.wheelDown())
 
         def __mouseLeaveWindow(self, event):
             self.inputDevice.setPointerOutOfWindow()
