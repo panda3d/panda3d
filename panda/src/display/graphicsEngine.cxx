@@ -368,7 +368,8 @@ make_output(GraphicsPipe *pipe,
       ((flags&GraphicsPipe::BF_refuse_parasite)==0)&&
       ((flags&GraphicsPipe::BF_can_bind_color)==0)&&
       ((flags&GraphicsPipe::BF_can_bind_every)==0)&&
-      ((flags&GraphicsPipe::BF_rtt_cumulative)==0)) {
+      ((flags&GraphicsPipe::BF_rtt_cumulative)==0)&&
+      ((flags&GraphicsPipe::BF_can_bind_layered)==0)) {
     if ((flags&GraphicsPipe::BF_fb_props_optional) ||
         (host->get_fb_properties().subsumes(fb_prop))) {
       can_use_parasite = true;

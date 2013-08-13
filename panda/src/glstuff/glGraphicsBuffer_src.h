@@ -103,8 +103,7 @@ private:
 
   // We create one FBO for each cube map face we'll be rendering to.
   // If we aren't rendering to any cube maps, we use only _fbo[0].
-  GLuint _fbo[6];
-  int _num_faces;
+  pvector<GLuint> _fbo;
 
   // For multisample we render first to a multisample buffer, then
   // filter it to _fbo[face] at the end of the frame.
@@ -115,6 +114,7 @@ private:
 
   int         _rb_size_x;
   int         _rb_size_y;
+  int         _rb_size_z;
 
   // The texture or render buffer bound to each plane.
   PT(Texture) _tex[RTP_COUNT];
@@ -158,4 +158,3 @@ private:
 };
 
 #include "glGraphicsBuffer_src.I"
-

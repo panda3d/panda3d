@@ -89,6 +89,7 @@ PUBLISHED:
     BF_fb_props_optional   = 0x0800, // FrameBufferProperties can be ignored.
     BF_size_square         = 0x1000, // x_size must equal y_size (e.g. for cube maps)
     BF_size_power_2        = 0x2000, // x_size and y_size must each be a power of two
+    BF_can_bind_layered    = 0x4000, // Need capability: support RTM_bind_layered.
   };
 
   INLINE bool is_valid() const;

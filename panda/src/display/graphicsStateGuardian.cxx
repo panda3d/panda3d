@@ -2722,9 +2722,9 @@ make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host) {
       display_cat.error()
         << "PointLight shadow buffers must have an equal width and height!\n";
     }
-    tex->setup_cube_map(light->_sb_xsize, Texture::T_float, Texture::F_depth_component);
+    tex->setup_cube_map(light->_sb_xsize, Texture::T_unsigned_byte, Texture::F_depth_component);
   } else {
-    tex->setup_2d_texture(light->_sb_xsize, light->_sb_ysize, Texture::T_float, Texture::F_depth_component);
+    tex->setup_2d_texture(light->_sb_xsize, light->_sb_ysize, Texture::T_unsigned_byte, Texture::F_depth_component);
   }
   tex->make_ram_image();
   sbuffer->add_render_texture(tex, GraphicsOutput::RTM_bind_or_copy, GraphicsOutput::RTP_depth);

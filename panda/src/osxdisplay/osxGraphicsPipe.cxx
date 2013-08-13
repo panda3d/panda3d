@@ -392,7 +392,8 @@ make_output(const string &name,
         ((flags&BF_resizeable)!=0)||
         ((flags&BF_size_track_host)!=0)||
         ((flags&BF_can_bind_color)!=0)||
-        ((flags&BF_can_bind_every)!=0)) {
+        ((flags&BF_can_bind_every)!=0)||
+        ((flags&BF_can_bind_layered)!=0)) {
       return NULL;
     }
     WindowHandle *window_handle = win_prop.get_parent_window();
@@ -412,7 +413,7 @@ make_output(const string &name,
                                  flags, gsg, host);
   }
   
-  // Second thing to try: a glGraphicsBuffer
+  // Second thing to try: a GLGraphicsBuffer
   
   if (retry == 1) {
     if (!osx_support_gl_buffer) {
@@ -453,7 +454,8 @@ make_output(const string &name,
         ((flags&BF_require_window)!=0)||
         ((flags&BF_resizeable)!=0)||
         ((flags&BF_size_track_host)!=0)||
-        ((flags&BF_can_bind_every)!=0)) {
+        ((flags&BF_can_bind_every)!=0)||
+        ((flags&BF_can_bind_layered)!=0)) {
       return NULL;
     }
     return new osxGraphicsBuffer(engine, this, name, fb_prop, win_prop,

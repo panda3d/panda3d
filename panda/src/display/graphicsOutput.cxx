@@ -322,9 +322,9 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
 
   // Choose a default bitplane.
   if (plane == RTP_COUNT) {
-    if (tex->get_format()==Texture::F_depth_stencil) {
+    if (tex->get_format() == Texture::F_depth_stencil) {
       plane = RTP_depth_stencil;
-    } else if (tex->get_format()==Texture::F_depth_component) {
+    } else if (tex->get_format() == Texture::F_depth_component) {
       plane = RTP_depth;
     } else {
       plane = RTP_color;
@@ -339,6 +339,7 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
     tex->set_match_framebuffer_format(true);
   } else if (plane == RTP_depth_stencil) {
     tex->set_format(Texture::F_depth_stencil);
+    tex->set_component_type(Texture::T_unsigned_int_24_8);
     tex->set_match_framebuffer_format(true);
   } else if ((plane == RTP_color)||
              (plane == RTP_aux_rgba_0)||
@@ -358,6 +359,7 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
               (plane == RTP_aux_float_2)||
               (plane == RTP_aux_float_3)) {
     tex->set_format(Texture::F_rgba32);
+    tex->set_component_type(Texture::T_float);
     tex->set_match_framebuffer_format(true);
   } else {
     display_cat.error() <<
@@ -368,17 +370,32 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
   // Go ahead and tell the texture our anticipated size, even if it
   // might be inaccurate (particularly if this is a GraphicsWindow,
   // which has system-imposed restrictions on size).
-  tex->set_size_padded(get_x_size(), get_y_size());
+  tex->set_size_padded(get_x_size(), get_y_size(), tex->get_z_size());
 
-  if (mode == RTM_bind_or_copy) {
-    if (!support_render_texture || !get_supports_render_texture()) {
-      // Binding is not supported or it is disabled, so just fall back
-      // to copy instead.
+  if (!support_render_texture || !get_supports_render_texture()) {
+    // Binding is not supported or it is disabled, so just fall back
+    // to copy instead.
+    if (mode == RTM_bind_or_copy) {
       mode = RTM_copy_texture;
+    } else if (mode == RTM_bind_layered) {
+      // We can't fallback to copy, because that doesn't work
+      // for layered textures.  The best thing we can do is raise
+      // an error message.
+      display_cat.error() <<
+        "add_render_texture: RTM_bind_layered was requested but "
+        "render-to-texture is not supported or has been disabled!\n";
     }
   }
 
-  if (mode == RTM_bind_or_copy) {
+  if (mode == RTM_bind_layered && _gsg != NULL && !_gsg->get_supports_geometry_shaders()) {
+    // Layered FBOs require a geometry shader to write to
+    // any but the first layer.
+    display_cat.warning() <<
+      "add_render_texture: RTM_bind_layered was requested but "
+      "geometry shaders are not supported!\n";
+  }
+
+  if (mode == RTM_bind_or_copy || mode == RTM_bind_layered) {
     // If we're still planning on binding, indicate it in texture
     // properly.
     tex->set_render_to_texture(true);
@@ -1037,8 +1054,7 @@ make_cube_map(const string &name, int size, NodePath &camera_rig,
   buffer->set_clear_depth_active(false);
   buffer->set_clear_stencil_active(false);
 
-  PT(Lens) lens = new PerspectiveLens;
-  lens->set_fov(90.0f);
+  PT(Lens) lens = new PerspectiveLens(90, 90);
 
   for (int i = 0; i < 6; i++) {
     PT(Camera) camera = new Camera(cube_faces[i]._name);
@@ -1336,7 +1352,7 @@ change_scenes(DisplayRegionPipelineReader *new_dr) {
       RenderTextureMode rtm_mode = (*ri)._rtm_mode;
       Texture *texture = (*ri)._texture;
       if (rtm_mode != RTM_none) {
-        if (rtm_mode == RTM_bind_or_copy) {
+        if (rtm_mode == RTM_bind_or_copy || rtm_mode == RTM_bind_layered) {
           // In render-to-texture mode, switch the rendering backend to
           // the new cube map face, so that the subsequent frame will be
           // rendered to the new face.
@@ -1469,7 +1485,7 @@ prepare_for_deletion() {
   // buffer until all the textures are gone too.
   RenderTextures::iterator ri;
   for (ri = cdata->_textures.begin(); ri != cdata->_textures.end(); ++ri) {
-    if ((*ri)._rtm_mode == RTM_bind_or_copy) {
+    if ((*ri)._rtm_mode == RTM_bind_or_copy || (*ri)._rtm_mode == RTM_bind_layered) {
       _hold_textures.push_back((*ri)._texture);
     }
   }
@@ -1488,7 +1504,10 @@ prepare_for_deletion() {
 //     Function: GraphicsOutput::promote_to_copy_texture
 //       Access: Protected
 //  Description: If any textures are marked RTM_bind_or_copy, change
-//               them to RTM_copy_texture.
+//               them to RTM_copy_texture.  This does not change
+//               textures that are set to RTM_bind_layered, as
+//               layered framebuffers aren't supported with
+//               RTM_copy_texture.
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
 promote_to_copy_texture() {

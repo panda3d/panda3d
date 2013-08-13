@@ -83,11 +83,29 @@ private:
 PUBLISHED:
   enum RenderTextureMode {
     RTM_none,
+
+    // Try to render to the texture directly, but if that is
+    // not possible, fall back to RTM_copy_texture.
     RTM_bind_or_copy,
+
+    // Copy the image from the buffer to the texture every frame.
     RTM_copy_texture,
+
+    // Copy the image from the buffer to system RAM every frame.
     RTM_copy_ram,
+
+    // Copy the image from the buffer to the texture after a
+    // call to trigger_copy().
     RTM_triggered_copy_texture,
+
+    // Copy the image from the buffer to system RAM after a
+    // call to trigger_copy().
     RTM_triggered_copy_ram,
+
+    // Render directly to a layered texture, such as a cube map,
+    // 3D texture or 2D texture array.  The layer that is being
+    // rendered to is selected by a geometry shader.
+    RTM_bind_layered,
   };
 
   // There are many reasons to call begin_frame/end_frame.
@@ -167,7 +185,7 @@ PUBLISHED:
   INLINE int get_child_sort() const;
 
   INLINE void trigger_copy();
-  
+
   INLINE DisplayRegion *make_display_region();
   INLINE DisplayRegion *make_display_region(PN_stdfloat l, PN_stdfloat r, PN_stdfloat b, PN_stdfloat t);
   DisplayRegion *make_display_region(const LVecBase4 &dimensions);
@@ -233,7 +251,7 @@ public:
   virtual void clear_pipe();
 
   void set_size_and_recalc(int x, int y);
-  
+
   // It is an error to call any of the following methods from any
   // thread other than the draw thread.  These methods are normally
   // called by the GraphicsEngine.
@@ -262,7 +280,7 @@ protected:
   void prepare_for_deletion();
   void promote_to_copy_texture();
   bool copy_to_textures();
-  
+
   INLINE void begin_frame_spam(FrameMode mode);
   INLINE void end_frame_spam(FrameMode mode);
   INLINE void clear_cube_map_selection();

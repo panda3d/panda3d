@@ -118,7 +118,8 @@ make_output(const string &name,
         ((flags&BF_size_track_host)!=0)||
         ((flags&BF_rtt_cumulative)!=0)||
         ((flags&BF_can_bind_color)!=0)||
-        ((flags&BF_can_bind_every)!=0)) {
+        ((flags&BF_can_bind_every)!=0)||
+        ((flags&BF_can_bind_layered)!=0)) {
       return NULL;
     }
     return new glxGraphicsWindow(engine, this, name, fb_prop, win_prop,
@@ -168,14 +169,15 @@ make_output(const string &name,
       if (!glx_support_pbuffer) {
         return NULL;
       }
-      
+
       if (((flags&BF_require_parasite)!=0)||
           ((flags&BF_require_window)!=0)||
           ((flags&BF_resizeable)!=0)||
-          ((flags&BF_size_track_host)!=0)) {
+          ((flags&BF_size_track_host)!=0)||
+          ((flags&BF_can_bind_layered)!=0) {
         return NULL;
       }
-      
+
       if (!support_rtt) {
         if (((flags&BF_rtt_cumulative)!=0)||
             ((flags&BF_can_bind_every)!=0)) {
@@ -184,7 +186,7 @@ make_output(const string &name,
           return NULL;
         }
       }
-      
+
       return new glxGraphicsBuffer(engine, this, name, fb_prop, win_prop,
                                    flags, gsg, host);
     }
@@ -199,7 +201,8 @@ make_output(const string &name,
     if (((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)||
         ((flags&BF_resizeable)!=0)||
-        ((flags&BF_size_track_host)!=0)) {
+        ((flags&BF_size_track_host)!=0)||
+        ((flags&BF_can_bind_layered)!=0) {
       return NULL;
     }
 
@@ -211,7 +214,7 @@ make_output(const string &name,
     return new glxGraphicsPixmap(engine, this, name, fb_prop, win_prop,
                                  flags, gsg, host);
   }
-  
+
   // Nothing else left to try.
   return NULL;
 }
