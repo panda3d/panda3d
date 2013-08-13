@@ -1042,7 +1042,7 @@ reset() {
        get_extension_func(GLPREFIX_QUOTED, "GetUniformLocation");
     _glLinkProgram = (PFNGLLINKPROGRAMPROC)
        get_extension_func(GLPREFIX_QUOTED, "LinkProgram");
-    _glShaderSource = (PFNGLSHADERSOURCEPROC)
+    _glShaderSource = (PFNGLSHADERSOURCEPROC_P)
        get_extension_func(GLPREFIX_QUOTED, "ShaderSource");
     _glUseProgram = (PFNGLUSEPROGRAMPROC)
        get_extension_func(GLPREFIX_QUOTED, "UseProgram");
