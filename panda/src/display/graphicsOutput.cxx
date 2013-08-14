@@ -954,6 +954,8 @@ make_texture_buffer(const string &name, int x_size, int y_size,
 
   FrameBufferProperties props;
   props.set_rgb_color(1);
+  props.set_color_bits(1);
+  props.set_alpha_bits(1);
   props.set_depth_bits(1);
 
   if (fbp == NULL) {
