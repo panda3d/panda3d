@@ -26,6 +26,7 @@
 #include "bulletConvexHullShape.h"
 #include "bulletConvexPointCloudShape.h"
 #include "bulletCylinderShape.h"
+#include "bulletMinkowskiSumShape.h"
 #include "bulletDebugNode.h"
 #include "bulletFilterCallbackData.h"
 #include "bulletGenericConstraint.h"
@@ -159,6 +160,7 @@ init_libbullet() {
   BulletConvexHullShape::init_type();
   BulletConvexPointCloudShape::init_type();
   BulletCylinderShape::init_type();
+  BulletMinkowskiSumShape::init_type();
   BulletDebugNode::init_type();
   BulletFilterCallbackData::init_type();
   BulletGenericConstraint::init_type();

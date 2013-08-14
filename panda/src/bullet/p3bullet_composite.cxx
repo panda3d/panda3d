@@ -24,6 +24,7 @@
 #include "bulletHeightfieldShape.cxx"
 #include "bulletHingeConstraint.cxx"
 #include "bulletManifoldPoint.cxx"
+#include "bulletMinkowskiSumShape.cxx"
 #include "bulletMultiSphereShape.cxx"
 #include "bulletPersistentManifold.cxx"
 #include "bulletPlaneShape.cxx"

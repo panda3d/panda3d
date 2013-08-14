@@ -35,6 +35,7 @@
     bulletHelper.h bulletHelper.I \
     bulletHingeConstraint.h bulletHingeConstraint.I \
     bulletManifoldPoint.h bulletManifoldPoint.I \
+    bulletMinkowskiSumShape.h bulletMinkowskiSumShape.I \
     bulletMultiSphereShape.h bulletMultiSphereShape.I \
     bulletPersistentManifold.h bulletPersistentManifold.I \
     bulletPlaneShape.h bulletPlaneShape.I \
@@ -84,6 +85,7 @@
     bulletHelper.cxx \
     bulletHingeConstraint.cxx \
     bulletManifoldPoint.cxx \
+    bulletMinkowskiSumShape.cxx \
     bulletMultiSphereShape.cxx \
     bulletPersistentManifold.cxx \
     bulletPlaneShape.cxx \
@@ -133,6 +135,7 @@
     bulletHelper.h bulletHelper.I \
     bulletHingeConstraint.h bulletHingeConstraint.I \
     bulletManifoldPoint.h bulletManifoldPoint.I \
+    bulletMinkowskiSumShape.h bulletMinkowskiSumShape.I \
     bulletMultiSphereShape.h bulletMultiSphereShape.I \
     bulletPersistentManifold.h bulletPersistentManifold.I \
     bulletPlaneShape.h bulletPlaneShape.I \

@@ -51,6 +51,7 @@ class btManifoldArray;
 class btManifoldPoint;
 class btMatrix3x3;
 class btMotionState;
+class btMinkowskiSumShape;
 class btMultiSphereShape;
 class btOverlapFilterCallback;
 class btPairCachingGhostObject;
