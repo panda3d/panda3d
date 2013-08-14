@@ -8599,7 +8599,10 @@ specify_texture(CLP(TextureContext) *gtc) {
 
 #ifndef OPENGLES
   if (tex->get_format() == Texture::F_depth_stencil ||
-      tex->get_format() == Texture::F_depth_component) {
+      tex->get_format() == Texture::F_depth_component ||
+      tex->get_format() == Texture::F_depth_component16 ||
+      tex->get_format() == Texture::F_depth_component24 ||
+      tex->get_format() == Texture::F_depth_component32) {
     GLP(TexParameteri)(target, GL_DEPTH_TEXTURE_MODE_ARB, GL_INTENSITY);
     if (_supports_shadow_filter) {
       if ((tex->get_magfilter() == Texture::FT_shadow) ||

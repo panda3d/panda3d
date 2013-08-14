@@ -111,6 +111,7 @@ private:
   int         _requested_multisamples;
   int         _requested_coverage_samples;
   bool        _use_depth_stencil;
+  bool        _have_any_color;
 
   int         _rb_size_x;
   int         _rb_size_y;

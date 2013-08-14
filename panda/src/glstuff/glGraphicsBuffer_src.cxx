@@ -397,6 +397,7 @@ rebuild_bitplanes() {
   }
 
   // Now create the FBO's.
+  _have_any_color = false;
   _fbo.reserve(num_fbos);
   for (int layer = 0; layer < num_fbos; ++layer) {
     if (layer >= _fbo.size()) {
@@ -423,17 +424,21 @@ rebuild_bitplanes() {
     int next = GL_COLOR_ATTACHMENT0_EXT;
     if (attach[RTP_color] || _fb_properties.get_color_bits() > 0) {
       bind_slot(layer, rb_resize, attach, RTP_color, next++);
+      _have_any_color = true;
     }
 
 #ifndef OPENGLES
     for (int i=0; i<_fb_properties.get_aux_rgba(); i++) {
       bind_slot(layer, rb_resize, attach, (RenderTexturePlane)(RTP_aux_rgba_0+i), next++);
+      _have_any_color = true;
     }
     for (int i=0; i<_fb_properties.get_aux_hrgba(); i++) {
       bind_slot(layer, rb_resize, attach, (RenderTexturePlane)(RTP_aux_hrgba_0+i), next++);
+      _have_any_color = true;
     }
     for (int i=0; i<_fb_properties.get_aux_float(); i++) {
       bind_slot(layer, rb_resize, attach, (RenderTexturePlane)(RTP_aux_float_0+i), next++);
+      _have_any_color = true;
     }
 #endif  // OPENGLES
 
@@ -463,15 +468,12 @@ rebuild_bitplanes() {
 
     for (int i=0; i<_fb_properties.get_aux_rgba(); i++) {
       bind_slot_multisample(rb_resize, attach, (RenderTexturePlane)(RTP_aux_rgba_0+i), next++);
-      next += 1;
     }
     for (int i=0; i<_fb_properties.get_aux_hrgba(); i++) {
       bind_slot_multisample(rb_resize, attach, (RenderTexturePlane)(RTP_aux_hrgba_0+i), next++);
-      next += 1;
     }
     for (int i=0; i<_fb_properties.get_aux_float(); i++) {
       bind_slot_multisample(rb_resize, attach, (RenderTexturePlane)(RTP_aux_float_0+i), next++);
-      next += 1;
     }
     glEnable(GL_MULTISAMPLE);
 
@@ -484,11 +486,16 @@ rebuild_bitplanes() {
   }
 #endif  // OPENGLES
 
+  if (!_have_any_color) {
+    _fb_properties.set_color_bits(0);
+    _fb_properties.set_alpha_bits(0);
+  }
+
   _initial_clear = false;
+  report_my_gl_errors();
 
 #ifndef OPENGLES
-  if ((_fb_properties.get_rgb_color() > 0) ||
-      (_fb_properties.get_aux_hrgba() > 0)) {
+  if (_have_any_color) {
     glDrawBuffer(GL_COLOR_ATTACHMENT0_EXT);
     glReadBuffer(GL_COLOR_ATTACHMENT0_EXT);
   } else {
@@ -497,6 +504,7 @@ rebuild_bitplanes() {
   }
 #endif
 
+  _needs_rebuild = false;
   report_my_gl_errors();
 
   if (!check_fbo()) {
@@ -506,8 +514,6 @@ rebuild_bitplanes() {
     }
     return;
   }
-
-  _needs_rebuild = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -599,6 +605,8 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
     glgsg->update_texture(tc, true);
 
     if (attachpoint == GL_DEPTH_ATTACHMENT_EXT) {
+      GLCAT.debug() << "Binding texture " << *tex << " to depth attachment.\n";
+
 #ifndef OPENGLES
       GLclampf priority = 1.0f;
       glPrioritizeTextures(1, &gtc->_index, &priority);
@@ -624,6 +632,7 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
       _fb_properties.set_depth_bits(depth_size);
 
       if (slot == RTP_depth_stencil) {
+        GLCAT.debug() << "Binding texture " << *tex << " to stencil attachment.\n";
         if (_rb_size_z == 1) {
           if (target == GL_TEXTURE_3D) {
             glgsg->_glFramebufferTexture3D(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
@@ -646,6 +655,8 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
       }
 
     } else {
+      GLCAT.debug() << "Binding texture " << *tex << " to color attachment.\n";
+
 #ifndef OPENGLES
       GLclampf priority = 1.0f;
       glPrioritizeTextures(1, &gtc->_index, &priority);
@@ -761,6 +772,7 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
     // Allocate and bind the renderbuffer.
     glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, _rb[slot]);
     if (slot == RTP_depth_stencil) {
+      GLCAT.debug() << "Creating depth stencil renderbuffer.\n";
       // Allocate renderbuffer storage for depth stencil.
       GLint depth_size = 0, stencil_size = 0;
       glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, gl_format, _rb_size_x, _rb_size_y);
@@ -785,6 +797,7 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
       report_my_gl_errors();
 
     } else if (slot == RTP_depth) {
+      GLCAT.debug() << "Creating depth renderbuffer.\n";
       // Allocate renderbuffer storage for regular depth.
       GLint depth_size = 0;
       glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, gl_format, _rb_size_x, _rb_size_y);
@@ -804,6 +817,7 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
       report_my_gl_errors();
 
     } else {
+      GLCAT.debug() << "Creating color renderbuffer.\n";
       glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, gl_format, _rb_size_x, _rb_size_y);
       GLint red_size = 0, green_size = 0, blue_size = 0, alpha_size = 0;
       glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_RED_SIZE_EXT, &red_size);
@@ -1085,6 +1099,13 @@ open_buffer() {
 
   // Rounding the depth bits is not spectacular, but at least we're
   // telling the user *something* about what we're going to get.
+
+  // Temporary bug workaround: it seems that my Intel HD Graphics 4000
+  // does not like our FBO if we don't have a colour attachment.
+  if (_fb_properties.get_color_bits() == 0) {
+    _fb_properties.set_color_bits(1);
+  }
+
   if (_fb_properties.get_depth_bits() >= 32) {
     _fb_properties.set_depth_bits(32);
   } else if (_fb_properties.get_depth_bits() > 16) {
@@ -1389,35 +1410,31 @@ resolve_multisamples() {
   // Now handle the other color buffers.
   int next = GL_COLOR_ATTACHMENT1_EXT;
   for (int i=0; i<_fb_properties.get_aux_rgba(); i++) {
-    glReadBuffer( next );
-    glDrawBuffer( next );
+    glReadBuffer(next);
+    glDrawBuffer(next);
     glgsg->_glBlitFramebuffer(0, 0, _rb_size_x, _rb_size_y, 0, 0, _rb_size_x, _rb_size_y,
                               GL_COLOR_BUFFER_BIT, GL_NEAREST);
     next += 1;
   }
   for (int i=0; i<_fb_properties.get_aux_hrgba(); i++) {
-    glReadBuffer( next );
-    glDrawBuffer( next );
+    glReadBuffer(next);
+    glDrawBuffer(next);
     glgsg->_glBlitFramebuffer(0, 0, _rb_size_x, _rb_size_y, 0, 0, _rb_size_x, _rb_size_y,
                               GL_COLOR_BUFFER_BIT, GL_NEAREST);
     next += 1;
   }
   for (int i=0; i<_fb_properties.get_aux_float(); i++) {
-    glReadBuffer( next );
-    glDrawBuffer( next );
+    glReadBuffer(next);
+    glDrawBuffer(next);
     glgsg->_glBlitFramebuffer(0, 0, _rb_size_x, _rb_size_y, 0, 0, _rb_size_x, _rb_size_y,
                               GL_COLOR_BUFFER_BIT, GL_NEAREST);
     next += 1;
   }
-  
-  glReadBuffer(GL_COLOR_ATTACHMENT0_EXT);
-  glDrawBuffer(GL_COLOR_ATTACHMENT0_EXT);
 #endif
   report_my_gl_errors();
 
 #ifndef OPENGLES
-  if ((_fb_properties.get_rgb_color() > 0) ||
-      (_fb_properties.get_aux_hrgba() > 0)) {
+  if (_have_any_color) {
     glDrawBuffer(GL_COLOR_ATTACHMENT0_EXT);
     glReadBuffer(GL_COLOR_ATTACHMENT0_EXT);
   } else {
