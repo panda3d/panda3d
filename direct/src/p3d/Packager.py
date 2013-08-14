@@ -2323,7 +2323,7 @@ class Packager:
         elif self.platform.startswith('osx'):
             self.remapExtensions = {
                 'dll' : 'dylib',
-                'pyd' : 'dylib',
+                'pyd' : 'so',
                 'exe' : ''
                 }
         else:
