@@ -1100,8 +1100,15 @@ open_buffer() {
   // Rounding the depth bits is not spectacular, but at least we're
   // telling the user *something* about what we're going to get.
 
-  // Temporary bug workaround: it seems that my Intel HD Graphics 4000
-  // does not like our FBO if we don't have a colour attachment.
+  // A lot of code seems to depend on being able to get a
+  // color buffer by just setting the rgb_color bit.
+  if (_fb_properties.get_color_bits() == 0 &&
+      _fb_properties.get_rgb_color() > 0) {
+    _fb_properties.set_color_bits(1);
+  }
+
+  // Actually, let's always get a colour buffer for now until we
+  // figure out why Intel HD Graphics cards complain otherwise.
   if (_fb_properties.get_color_bits() == 0) {
     _fb_properties.set_color_bits(1);
   }

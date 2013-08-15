@@ -1939,15 +1939,17 @@ clear(DrawableRegion *clearable) {
     }
   }
 
-  if (clearable->get_clear_color_active()) {
-    LColor v = clearable->get_clear_color();
-    GLP(ClearColor)(v[0],v[1],v[2],v[3]);
-    if (CLP(color_mask)) {
-      GLP(ColorMask)(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  if (_current_properties->get_color_bits() > 0) {
+    if (clearable->get_clear_color_active()) {
+      LColor v = clearable->get_clear_color();
+      GLP(ClearColor)(v[0],v[1],v[2],v[3]);
+      if (CLP(color_mask)) {
+        GLP(ColorMask)(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+      }
+      _state_mask.clear_bit(ColorWriteAttrib::get_class_slot());
+      mask |= GL_COLOR_BUFFER_BIT;
+      set_draw_buffer(clearable->get_draw_buffer_type());
     }
-    _state_mask.clear_bit(ColorWriteAttrib::get_class_slot());
-    mask |= GL_COLOR_BUFFER_BIT;
-    set_draw_buffer(clearable->get_draw_buffer_type());
   }
   
   if (clearable->get_clear_depth_active()) {
@@ -5838,27 +5840,26 @@ set_draw_buffer(int rbtype) {
 
     GLuint buffers[16];
     int nbuffers=0;
-    if (rbtype & RenderBuffer::T_color) {
-      buffers[nbuffers++] = GL_COLOR_ATTACHMENT0_EXT;
+    int index = 0;
+    if (_current_properties->get_color_bits() > 0) {
+      if (rbtype & RenderBuffer::T_color) {
+        buffers[nbuffers++] = GL_COLOR_ATTACHMENT0_EXT + (index++);
+      }
     }
-    int index = 1;
     for (int i=0; i<_current_properties->get_aux_rgba(); i++) {
       if (rbtype & (RenderBuffer::T_aux_rgba_0 << i)) {
-        buffers[nbuffers++] = GL_COLOR_ATTACHMENT0_EXT + index;
+        buffers[nbuffers++] = GL_COLOR_ATTACHMENT0_EXT + (index++);
       }
-      index += 1;
     }
     for (int i=0; i<_current_properties->get_aux_hrgba(); i++) {
       if (rbtype & (RenderBuffer::T_aux_hrgba_0 << i)) {
-        buffers[nbuffers++] = GL_COLOR_ATTACHMENT0_EXT + index;
+        buffers[nbuffers++] = GL_COLOR_ATTACHMENT0_EXT + (index++);
       }
-      index += 1;
     }
     for (int i=0; i<_current_properties->get_aux_float(); i++) {
       if (rbtype & (RenderBuffer::T_aux_float_0 << i)) {
-        buffers[nbuffers++] = GL_COLOR_ATTACHMENT0_EXT + index;
+        buffers[nbuffers++] = GL_COLOR_ATTACHMENT0_EXT + (index++);
       }
-      index += 1;
     }
     _glDrawBuffers(nbuffers, buffers);
 
