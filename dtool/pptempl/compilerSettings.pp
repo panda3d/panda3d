@@ -300,6 +300,9 @@
   #define LINKER_FLAGS $[LINKER_FLAGS] /NODEFAULTLIB:LIBCI.LIB
   // Added to make pandatool function in VS 9
   #define LINKER_FLAGS $[LINKER_FLAGS] /NOD:MFC80.LIB /NOD:libcmtd /NOD:libc
+  // Added to generate manifest files even when no dependencies exist
+  #define LINKER_FLAGS $[LINKER_FLAGS] /MANIFEST
+
 
   // ensure pdbs are copied to install dir
   #define build_pdbs yes
