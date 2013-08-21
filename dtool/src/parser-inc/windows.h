@@ -20,11 +20,13 @@
 #ifndef WINDOWS_H
 #define WINDOWS_H
 
+// http://msdn.microsoft.com/en-us/library/cc230309.aspx
 typedef bool BOOL;
 typedef long DWORD;
 typedef long LONG;
 typedef long UINT;
 typedef unsigned long ULONG;
+typedef signed __int64 LONGLONG;
 typedef long HRESULT;
 typedef int CRITICAL_SECTION;
 typedef int HANDLE;
