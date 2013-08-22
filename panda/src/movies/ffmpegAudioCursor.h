@@ -25,11 +25,19 @@
 #include "pointerTo.h"
 #include "ffmpegVirtualFile.h"
 
+extern "C" {
+  #include "libavcodec/avcodec.h"
+}
+
 class FfmpegAudio;
 struct AVFormatContext;
 struct AVCodecContext;
 struct AVStream;
 struct AVPacket;
+
+#ifdef HAVE_SWRESAMPLE
+struct SwrContext;
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FfmpegAudioCursor
@@ -61,12 +69,17 @@ protected:
   int _audio_index;
   double _audio_timebase;
 
+  AVFrame  *_frame;
   PN_int16 *_buffer;
   int       _buffer_size;
   PN_int16 *_buffer_alloc;
   int       _buffer_head;
   int       _buffer_tail;
-  
+
+#ifdef HAVE_SWRESAMPLE
+  SwrContext *_resample_ctx;
+#endif
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

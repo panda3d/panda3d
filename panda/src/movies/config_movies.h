@@ -32,6 +32,7 @@ extern ConfigVariableBool ffmpeg_show_seek_frames;
 extern ConfigVariableBool ffmpeg_support_seek;
 extern ConfigVariableBool ffmpeg_global_lock;
 extern ConfigVariableEnum<ThreadPriority> ffmpeg_thread_priority;
+extern ConfigVariableInt ffmpeg_read_buffer_size;
 
 extern EXPCL_PANDA_MOVIES void init_libmovies();
 

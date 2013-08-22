@@ -18,14 +18,27 @@
 
 #include "ffmpegAudio.h"
 extern "C" {
+  #include "libavutil/dict.h"
+  #include "libavutil/opt.h"
   #include "libavcodec/avcodec.h"
   #include "libavformat/avformat.h"
 }
+
+#ifdef HAVE_SWRESAMPLE
+extern "C" {
+  #include "libswresample/swresample.h"
+}
+#endif
 
 TypeHandle FfmpegAudioCursor::_type_handle;
 
 #if LIBAVFORMAT_VERSION_MAJOR < 53
   #define AVMEDIA_TYPE_AUDIO CODEC_TYPE_AUDIO
+#endif
+
+#ifndef AVCODEC_MAX_AUDIO_FRAME_SIZE
+// More recent versions of ffmpeg no longer define this.
+#define AVCODEC_MAX_AUDIO_FRAME_SIZE 192000
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -42,7 +55,8 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   _format_ctx(0),
   _audio_ctx(0),
   _buffer(0),
-  _buffer_alloc(0)
+  _buffer_alloc(0),
+  _resample_ctx(0)
 {
   if (!_ffvfile.open_vfs(_filename)) {
     cleanup();
@@ -62,8 +76,8 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   }
 
   // Find the audio stream
-  for(int i = 0; i < (int)_format_ctx->nb_streams; i++) {
-    if(_format_ctx->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO) {
+  for (int i = 0; i < (int)_format_ctx->nb_streams; i++) {
+    if (_format_ctx->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO) {
       _audio_index = i;
       _audio_ctx = _format_ctx->streams[i]->codec;
       _audio_timebase = av_q2d(_format_ctx->streams[i]->time_base);
@@ -84,6 +98,8 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   }
 
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(53, 8, 0)
+  AVDictionary *opts = NULL;
+  av_dict_set(&opts, "request_sample_fmt", "s16", 0);
   if (avcodec_open2(_audio_ctx, pAudioCodec, NULL) < 0) {
 #else
   if (avcodec_open(_audio_ctx, pAudioCodec) < 0) {
@@ -92,23 +108,61 @@ FfmpegAudioCursor(FfmpegAudio *src) :
     return;
   }
 
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(53, 8, 0)
+  av_dict_free(&opts);
+#endif
+
+  // Set up the resample context if necessary.
+  if (_audio_ctx->sample_fmt != AV_SAMPLE_FMT_S16) {
+#ifdef HAVE_SWRESAMPLE
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(53, 25, 0)
+    movies_cat.error()
+      << "Codec does not use signed 16-bit sample format.  Upgrade libavcodec to 53.25.0 or higher.\n";
+#else
+    movies_cat.debug()
+      << "Codec does not use signed 16-bit sample format.  Setting up swresample context.\n";
+#endif
+
+    _resample_ctx = swr_alloc();
+    av_opt_set_int(_resample_ctx, "in_channel_layout", _audio_ctx->channel_layout, 0);
+    av_opt_set_int(_resample_ctx, "out_channel_layout", _audio_ctx->channel_layout, 0);
+    av_opt_set_int(_resample_ctx, "in_sample_rate", _audio_ctx->sample_rate, 0);
+    av_opt_set_int(_resample_ctx, "out_sample_rate", _audio_ctx->sample_rate, 0);
+    av_opt_set_sample_fmt(_resample_ctx, "in_sample_fmt", _audio_ctx->sample_fmt, 0);
+    av_opt_set_sample_fmt(_resample_ctx, "out_sample_fmt", AV_SAMPLE_FMT_S16, 0);
+
+    if (swr_init(_resample_ctx) != 0) {
+      movies_cat.error()
+        << "Failed to set up resample context.\n";
+      _resample_ctx = NULL;
+    }
+#else
+    movies_cat.error()
+      << "Codec does not use signed 16-bit sample format, but support for libswresample has not been enabled.\n";
+#endif
+  }
+
   _length = (_format_ctx->duration * 1.0) / AV_TIME_BASE;
   _can_seek = true;
   _can_seek_fast = true;
 
+  _frame = av_frame_alloc();
+
   _packet = new AVPacket;
   _buffer_size = AVCODEC_MAX_AUDIO_FRAME_SIZE / 2;
-  _buffer_alloc = new PN_int16[_buffer_size + 128];
+  _buffer_alloc = new PN_int16[_buffer_size + 64];
+
+  // Allocate enough space for 1024 samples per channel.
   if ((_packet == 0)||(_buffer_alloc == 0)) {
     cleanup();
     return;
   }
   memset(_packet, 0, sizeof(AVPacket));
 
-  // Align the buffer to a 16-byte boundary
+  // Align the buffer to a 64-byte boundary
   // The ffmpeg codec likes this, because it uses SSE/SSE2.
   _buffer = _buffer_alloc;
-  while (((size_t)_buffer) & 15) {
+  while (((size_t)_buffer) & 31) {
     _buffer += 1;
   }
 
@@ -137,6 +191,11 @@ FfmpegAudioCursor::
 ////////////////////////////////////////////////////////////////////
 void FfmpegAudioCursor::
 cleanup() {
+  if (_frame) {
+    av_frame_free(&_frame);
+    _frame = NULL;
+  }
+
   if (_packet) {
     if (_packet->data) {
       av_free_packet(_packet);
@@ -160,6 +219,13 @@ cleanup() {
     _ffvfile.close();
     _format_ctx = NULL;
   }
+
+#ifdef HAVE_SWRESAMPLE
+  if (_resample_ctx) {
+    swr_free(&_resample_ctx);
+    _resample_ctx = NULL;
+  }
+#endif
 
   _audio_index = -1;
 }
@@ -199,7 +265,6 @@ fetch_packet() {
 bool FfmpegAudioCursor::
 reload_buffer() {
 
-
   while (_buffer_head == _buffer_tail) {
     // If we're out of packets, generate silence.
     if (_packet->data == 0) {
@@ -217,15 +282,44 @@ reload_buffer() {
       int len = avcodec_decode_audio2(_audio_ctx, _buffer, &bufsize,
                                       _packet_data, _packet_size);
       movies_debug("avcodec_decode_audio2 returned " << len);
-#else
-      AVPacket pkt; 
-      av_init_packet(&pkt); 
+#elif LIBAVCODEC_VERSION_INT < AV_VERSION_INT(53, 25, 0)
+      // We should technically also consider resampling in this case,
+      // but whatever.  Just upgrade your ffmpeg version if you get garbage.
+      AVPacket pkt;
+      av_init_packet(&pkt);
       pkt.data = _packet_data;
       pkt.size = _packet_size;
       int len = avcodec_decode_audio3(_audio_ctx, _buffer, &bufsize, &pkt);
       movies_debug("avcodec_decode_audio3 returned " << len);
       av_free_packet(&pkt);
+#else
+      int got_frame;
+      AVPacket pkt;
+      av_init_packet(&pkt);
+      pkt.data = _packet_data;
+      pkt.size = _packet_size;
+      int len = avcodec_decode_audio4(_audio_ctx, _frame, &got_frame, &pkt);
+      movies_debug("avcodec_decode_audio4 returned " << len);
+      av_free_packet(&pkt);
+
+      bufsize = 0;
+      if (got_frame) {
+#ifdef HAVE_SWRESAMPLE
+        if (_resample_ctx) {
+          // Resample the data to signed 16-bit sample format.
+          uint8_t* out[SWR_CH_MAX] = {(uint8_t*) _buffer, NULL};
+          bufsize = swr_convert(_resample_ctx, out, _buffer_size / 2, (const uint8_t**)_frame->extended_data, _frame->nb_samples);
+          bufsize *= _audio_channels * 2;
+        } else
 #endif
+        {
+          bufsize = _frame->linesize[0];
+          memcpy(_buffer, _frame->data[0], bufsize);
+        }
+      }
+      av_frame_unref(_frame);
+#endif
+
       if (len < 0) {
         return false;
       } else if (len == 0){

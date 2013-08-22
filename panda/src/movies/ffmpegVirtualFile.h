@@ -56,25 +56,25 @@ public:
   static void register_protocol();
 
 private:
-  static int pandavfs_open(URLContext *h, const char *filename, int flags);
-  static int pandavfs_read(URLContext *h, unsigned char *buf, int size);
-  static int pandavfs_write(URLContext *h, const unsigned char *buf, int size);
-  static int64_t pandavfs_seek(URLContext *h, int64_t pos, int whence);
-  static int pandavfs_close(URLContext *h);
+  // These are callbacks passed to ffmpeg and cannot change signature.
+  static int read_packet(void *opaque, uint8_t *buf, int buf_size);
+  static int64_t seek(void *opaque, int64_t offset, int whence);
 
   static void log_callback(void *ptr, int level, const char *fmt, va_list v1);
 
 private:
+  AVIOContext *_io_context;
   AVFormatContext *_format_context;
   streampos _start;
   streamsize _size;
   istream *_in;
   pifstream _file_in;
   bool _owns_in;
+  unsigned char *_buffer;
+  int _buffer_size;
 };
 
 #include "ffmpegVirtualFile.I"
 
 #endif // HAVE_FFMPEG
 #endif // FFMPEGVIRTUALFILE_H
-

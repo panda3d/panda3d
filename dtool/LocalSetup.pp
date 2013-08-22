@@ -187,11 +187,7 @@
 #print - Did not find OpenCV
 #endif
 #if $[HAVE_FFMPEG]
-#if $[HAVE_SWSCALE]
-#print + FFMPEG, with libswscale
-#else
 #print + FFMPEG
-#endif
 #else
 #print - Did not find FFMPEG
 #endif
@@ -428,6 +424,7 @@ $[cdefine OPENCV_VER_23]
 /* Define if we have FFMPEG installed and want to build for FFMPEG.  */
 $[cdefine HAVE_FFMPEG]
 $[cdefine HAVE_SWSCALE]
+$[cdefine HAVE_SWRESAMPLE]
 
 /* Define if we have ODE installed and want to build for ODE.  */
 $[cdefine HAVE_ODE]

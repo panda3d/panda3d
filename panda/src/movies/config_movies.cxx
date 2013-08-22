@@ -81,6 +81,12 @@ ConfigVariableEnum<ThreadPriority> ffmpeg_thread_priority
  PRC_DESC("The default thread priority at which to start ffmpeg decoder "
           "threads."));
 
+ConfigVariableInt ffmpeg_read_buffer_size
+("ffmpeg-read-buffer-size", 4096,
+ PRC_DESC("The size in bytes of the buffer used when reading input files. "
+          "This is important for performance.  A typical size is that of a "
+          "cache page, e.g. 4kb."));
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libmovies
 //  Description: Initializes the library.  This must be called at
