@@ -2144,7 +2144,7 @@ def WriteConfigSettings():
 
 WriteConfigSettings()
 
-MoveAwayConflictingFiles()
+WarnConflictingFiles()
 if SystemLibraryExists("dtoolbase"):
     print("%sWARNING:%s Found conflicting Panda3D libraries from other ppremake build!" % (GetColor("red"), GetColor()))
 if SystemLibraryExists("p3dtoolconfig"):
@@ -6423,7 +6423,6 @@ if (INSTALLER != 0):
 ##########################################################################################
 
 SaveDependencyCache()
-MoveBackConflictingFiles()
 
 WARNINGS.append("Elapsed Time: "+PrettyTime(time.time() - STARTTIME))
 
