@@ -1460,6 +1460,9 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
         # Let it be handled by the ffmpeg package
         LibName(target_pkg, "-lswscale")
         return
+    if (pkg.lower() == "swresample" and os.path.isfile(GetThirdpartyDir() + "ffmpeg/include/libswresample/swresample.h")):
+        LibName(target_pkg, "-lswresample")
+        return
 
     pkg_dir = os.path.join(GetThirdpartyDir(), pkg.lower())
     if (os.path.isdir(pkg_dir)):
