@@ -3539,6 +3539,12 @@ update_texture(TextureContext *tc, bool force) {
 
   CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
 
+  if (GLCAT.is_debug() && gtc->get_texture()->get_name() != string("buf")) {
+    GLCAT.debug()
+      << "Considering update " << gtc->get_texture()->get_name()
+      << ": " << gtc->was_image_modified() << ", modified = " << gtc->get_texture()->get_image_modified() << "\n";
+  }
+
   if (gtc->was_image_modified()) {
     // If the texture image was modified, reload the texture.  This
     // means we also re-specify the properties for good measure.
