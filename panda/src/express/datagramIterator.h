@@ -68,7 +68,7 @@ PUBLISHED:
 
   INLINE void skip_bytes(size_t size);
   string extract_bytes(size_t size);
-  size_t extract_bytes(char *into, size_t size);
+  size_t extract_bytes(unsigned char *into, size_t size);
 
   INLINE string get_remaining_bytes() const;
   INLINE int get_remaining_size() const;

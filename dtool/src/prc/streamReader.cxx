@@ -140,12 +140,12 @@ extract_bytes(size_t size) {
 //               that were successfully written.
 ////////////////////////////////////////////////////////////////////
 size_t StreamReader::
-extract_bytes(char *into, size_t size) {
+extract_bytes(unsigned char *into, size_t size) {
   if (_in->eof() || _in->fail()) {
     return 0;
   }
 
-  _in->read(into, size);
+  _in->read((char *)into, size);
   return _in->gcount();
 }
 

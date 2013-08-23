@@ -159,7 +159,7 @@ extract_bytes(size_t size) {
 //               that were successfully written.
 ////////////////////////////////////////////////////////////////////
 size_t DatagramIterator::
-extract_bytes(char *into, size_t size) {
+extract_bytes(unsigned char *into, size_t size) {
   nassertr((int)size >= 0, 0);
   nassertr(_datagram != (const Datagram *)NULL, 0);
   nassertr(_current_index + size <= _datagram->get_length(), 0);

@@ -67,7 +67,7 @@ PUBLISHED:
 
   BLOCKING void skip_bytes(size_t size);
   BLOCKING string extract_bytes(size_t size);
-  BLOCKING size_t extract_bytes(char *into, size_t size);
+  BLOCKING size_t extract_bytes(unsigned char *into, size_t size);
 
   BLOCKING string readline();
 
