@@ -150,6 +150,28 @@ extract_bytes(size_t size) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DatagramIterator::extract_bytes
+//       Access: Published
+//  Description: Extracts the indicated number of bytes in the
+//               datagram into the given character buffer.  Assumes
+//               that the buffer is big enough to hold the requested
+//               number of bytes.  Returns the number of bytes
+//               that were successfully written.
+////////////////////////////////////////////////////////////////////
+size_t DatagramIterator::
+extract_bytes(char *into, size_t size) {
+  nassertr((int)size >= 0, 0);
+  nassertr(_datagram != (const Datagram *)NULL, 0);
+  nassertr(_current_index + size <= _datagram->get_length(), 0);
+
+  const char *ptr = (const char *)_datagram->get_data();
+  memcpy(into, ptr + _current_index, size);
+
+  _current_index += size;
+  return size;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function : output
 //       Access : Public
 //  Description : Write a string representation of this instance to
@@ -183,5 +205,4 @@ write(ostream &out, unsigned int indent) const {
   }
   #endif //] NDEBUG
 }
-
 

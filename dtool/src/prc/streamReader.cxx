@@ -130,6 +130,24 @@ extract_bytes(size_t size) {
   return string(buffer, read_bytes);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: StreamReader::extract_bytes
+//       Access: Published
+//  Description: Extracts the indicated number of bytes in the
+//               stream into the given character buffer.  Assumes
+//               that the buffer is big enough to hold the requested
+//               number of bytes.  Returns the number of bytes
+//               that were successfully written.
+////////////////////////////////////////////////////////////////////
+size_t StreamReader::
+extract_bytes(char *into, size_t size) {
+  if (_in->eof() || _in->fail()) {
+    return 0;
+  }
+
+  _in->read(into, size);
+  return _in->gcount();
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::readline
