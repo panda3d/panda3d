@@ -24,11 +24,11 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : UvScrollNode
 // Description : This node is placed at key points within the scene
-//               graph to animate uvs. 
+//               graph to animate uvs.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PGRAPH UvScrollNode : public PandaNode {
 PUBLISHED:
-  INLINE UvScrollNode(const string &name, PN_stdfloat u_speed, PN_stdfloat v_speed, PN_stdfloat r_speed);
+  INLINE UvScrollNode(const string &name, PN_stdfloat u_speed, PN_stdfloat v_speed, PN_stdfloat w_speed, PN_stdfloat r_speed);
   INLINE UvScrollNode(const string &name);
 
 protected:
@@ -43,14 +43,17 @@ public:
 PUBLISHED:
   INLINE void set_u_speed(PN_stdfloat u_speed);
   INLINE void set_v_speed(PN_stdfloat v_speed);
+  INLINE void set_w_speed(PN_stdfloat w_speed);
   INLINE void set_r_speed(PN_stdfloat r_speed);
   INLINE PN_stdfloat get_u_speed() const;
   INLINE PN_stdfloat get_v_speed() const;
+  INLINE PN_stdfloat get_w_speed() const;
   INLINE PN_stdfloat get_r_speed() const;
-  
+
 private:
   PN_stdfloat _u_speed;
   PN_stdfloat _v_speed;
+  PN_stdfloat _w_speed;
   PN_stdfloat _r_speed;
 
   double _start_time;

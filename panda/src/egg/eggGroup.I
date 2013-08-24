@@ -1087,6 +1087,11 @@ set_scroll_v(const double v_speed) {
 }
 
 INLINE void EggGroup::
+set_scroll_w(const double w_speed) {
+  _w_speed = w_speed;
+}
+
+INLINE void EggGroup::
 set_scroll_r(const double r_speed) {
   _r_speed = r_speed;
 }
@@ -1102,6 +1107,11 @@ get_scroll_v() const {
 }
 
 INLINE double EggGroup::
+get_scroll_w() const {
+  return _w_speed;
+}
+
+INLINE double EggGroup::
 get_scroll_r() const {
   return _r_speed;
 }
@@ -1109,5 +1119,5 @@ get_scroll_r() const {
 
 INLINE bool EggGroup::
 has_scrolling_uvs() {
-  return (_u_speed != 0) || (_v_speed != 0) || (_r_speed != 0);
+  return (_u_speed != 0) || (_v_speed != 0) || (_w_speed != 0) || (_r_speed != 0);
 }

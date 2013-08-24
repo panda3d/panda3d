@@ -42,6 +42,7 @@ EggGroup(const string &name) : EggGroupNode(name) {
   _blend_color = LColor::zero();
   _u_speed = 0;
   _v_speed = 0;
+  _w_speed = 0;
   _r_speed = 0;
 }
 
@@ -80,6 +81,7 @@ operator = (const EggGroup &copy) {
   _tag_data = copy._tag_data;
   _u_speed = copy._u_speed;
   _v_speed = copy._v_speed;
+  _w_speed = copy._w_speed;
   _r_speed = copy._r_speed;
   _default_pose = copy._default_pose;
 
@@ -232,24 +234,29 @@ write(ostream &out, int indent_level) const {
     _default_pose.write(out, indent_level + 2, "<DefaultPose>");
   }
 
-  if(get_scroll_u() != 0) {
+  if (get_scroll_u() != 0) {
     indent(out, indent_level + 2) 
       << "<Scalar> scroll_u { " << get_scroll_u() << " }\n";
 
   }
 
-  if(get_scroll_v() != 0) {
+  if (get_scroll_v() != 0) {
     indent(out, indent_level + 2) 
       << "<Scalar> scroll_v { " << get_scroll_v() << " }\n";
 
   }
 
-  if(get_scroll_r() != 0) {
+  if (get_scroll_w() != 0) {
+    indent(out, indent_level + 2)
+      << "<Scalar> scroll_w { " << get_scroll_w() << " }\n";
+
+  }
+
+  if (get_scroll_r() != 0) {
     indent(out, indent_level + 2) 
       << "<Scalar> scroll_r { " << get_scroll_r() << " }\n";
 
   }
-
 
   write_object_types(out, indent_level + 2);
   write_decal_flags(out, indent_level + 2);

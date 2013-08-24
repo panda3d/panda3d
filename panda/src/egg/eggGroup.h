@@ -277,9 +277,11 @@ PUBLISHED:
 
   INLINE void set_scroll_u(const double u_speed);
   INLINE void set_scroll_v(const double v_speed);
+  INLINE void set_scroll_w(const double w_speed);
   INLINE void set_scroll_r(const double r_speed);
   INLINE double get_scroll_u() const;
   INLINE double get_scroll_v() const;
+  INLINE double get_scroll_w() const;
   INLINE double get_scroll_r() const;
 
   INLINE bool has_scrolling_uvs();
@@ -385,6 +387,7 @@ private:
 
   double _u_speed;
   double _v_speed;
+  double _w_speed;
   double _r_speed;
 
   // This is the <DefaultPose> entry for a <Joint>.  It is not the

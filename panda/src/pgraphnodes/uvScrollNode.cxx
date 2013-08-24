@@ -61,6 +61,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   PandaNode::write_datagram(manager, dg);
   dg.add_stdfloat(_u_speed);
   dg.add_stdfloat(_v_speed);
+  dg.add_stdfloat(_w_speed);
   dg.add_stdfloat(_r_speed);
 }
 
@@ -97,7 +98,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   _u_speed = scan.get_stdfloat();
   _v_speed = scan.get_stdfloat();
-  if(manager->get_file_minor_ver() >=22) {
+  if (manager->get_file_minor_ver() >= 33) {
+    _w_speed = scan.get_stdfloat();
+  }
+  if (manager->get_file_minor_ver() >= 22) {
     _r_speed = scan.get_stdfloat();
   }
 
@@ -132,13 +136,15 @@ bool UvScrollNode::
 cull_callback(CullTraverser * trav, CullTraverserData &data) {
   double elapsed = ClockObject::get_global_clock()->get_frame_time() - _start_time; 
   CPT(TransformState) ts = TransformState::make_pos_hpr(
-    LVecBase3(cmod(elapsed*_u_speed,1.0)/1.0, cmod(elapsed*_v_speed,1.0)/1.0,0), 
-    LVecBase3((cmod(elapsed*_r_speed,1.0)/1.0)*360,0,0));
-  
+    LVecBase3(cmod(elapsed * _u_speed, 1.0) / 1.0,
+              cmod(elapsed * _v_speed, 1.0) / 1.0,
+              cmod(elapsed * _w_speed, 1.0) / 1.0),
+    LVecBase3((cmod(elapsed * _r_speed, 1.0) / 1.0) * 360, 0, 0));
+
   CPT(RenderAttrib) tm = TexMatrixAttrib::make(TextureStage::get_default(), ts);
   CPT(RenderState) rs = RenderState::make_empty()->set_attrib(tm);
   data._state = data._state->compose(rs);
-   
+
   return true;
 }
 
