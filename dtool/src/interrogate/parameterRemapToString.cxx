@@ -26,10 +26,19 @@ ParameterRemapToString(CPPType *orig_type) :
 {
   static CPPType *char_star_type = (CPPType *)NULL;
   if (char_star_type == (CPPType *)NULL) {
-    char_star_type = parser.parse_type("const char *");
+    char_star_type = parser.parse_type("char *");
   }
 
-  _new_type = char_star_type;
+  static CPPType *const_char_star_type = (CPPType *)NULL;
+  if (const_char_star_type == (CPPType *)NULL) {
+    const_char_star_type = parser.parse_type("const char *");
+  }
+
+  if (TypeManager::is_const(orig_type)) {
+    _new_type = const_char_star_type;
+  } else {
+    _new_type = char_star_type;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
