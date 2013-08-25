@@ -175,7 +175,7 @@ class CompilationEnvironment:
             }
         print >> sys.stderr, compile
         if os.system(compile) != 0:
-            raise StandardError
+            raise StandardError, 'failed to compile %s.' % basename
 
         link = self.linkExe % {
             'python' : self.Python,
@@ -190,7 +190,7 @@ class CompilationEnvironment:
             }
         print >> sys.stderr, link
         if os.system(link) != 0:
-            raise StandardError
+            raise StandardError, 'failed to link %s.' % basename
 
     def compileDll(self, filename, basename):
         compile = self.compileObj % {
@@ -207,7 +207,7 @@ class CompilationEnvironment:
             }
         print >> sys.stderr, compile
         if os.system(compile) != 0:
-            raise StandardError
+            raise StandardError, 'failed to compile %s.' % basename
 
         link = self.linkDll % {
             'python' : self.Python,
@@ -223,7 +223,7 @@ class CompilationEnvironment:
             }
         print >> sys.stderr, link
         if os.system(link) != 0:
-            raise StandardError
+            raise StandardError, 'failed to link %s.' % basename
 
 # The code from frozenmain.c in the Python source repository.
 frozenMainCode = """
