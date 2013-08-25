@@ -390,10 +390,47 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
             }
             GLCAT.error() << "Unrecognized uniform name '" << param_name_cstr << "'!\n";
             continue;
+
+          } else if (param_name.substr(0, 4) == "osg_") {
+            // These inputs are supported by OpenSceneGraph.  We can support
+            // them as well, to increase compatibility.
+            // Other inputs we may support in the future:
+            // int osg_FrameNumber
+            // float osg_FrameTime
+            // float osg_DeltaFrameTime
+
+            if (param_name == "osg_ViewMatrix") {
+              Shader::ShaderMatSpec bind;
+              bind._id = arg_id;
+              bind._piece = Shader::SMP_whole;
+              bind._arg[0] = NULL;
+              bind._arg[1] = NULL;
+              bind._func = Shader::SMF_first;
+              bind._part[0] = Shader::SMO_world_to_view;
+              bind._part[1] = Shader::SMO_identity;
+              bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
+              bind._dep[1] = Shader::SSD_NONE;
+              s->_mat_spec.push_back(bind);
+              continue;
+
+            } else if (param_name == "osg_InverseViewMatrix") {
+              Shader::ShaderMatSpec bind;
+              bind._id = arg_id;
+              bind._piece = Shader::SMP_whole;
+              bind._arg[0] = NULL;
+              bind._arg[1] = NULL;
+              bind._func = Shader::SMF_first;
+              bind._part[0] = Shader::SMO_view_to_world;
+              bind._part[1] = Shader::SMO_identity;
+              bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
+              bind._dep[1] = Shader::SSD_NONE;
+              s->_mat_spec.push_back(bind);
+              continue;
+            }
           }
 
           //Tries to parse shorthand notations like mspos_XXX and trans_model_to_clip_of_XXX
-          if (parse_and_set_short_hand_shader_vars( arg_id, s )) {
+          if (parse_and_set_short_hand_shader_vars(arg_id, s)) {
             continue;
           }
           
@@ -1194,6 +1231,7 @@ disable_shader_texture_bindings(GSG *gsg) {
 void CLP(ShaderContext)::
 update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
   _last_gsg = gsg;
+
   if (prev) {
     prev->disable_shader_texture_bindings(gsg);
   }
