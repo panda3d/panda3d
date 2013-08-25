@@ -108,6 +108,7 @@ GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
   _flip_ready = false;
   _cube_map_index = -1;
   _cube_map_dr = NULL;
+  _tex_view_offset = -1;
   _sort = 0;
   _child_sort = 0;
   _got_child_sort = false;
@@ -1384,6 +1385,29 @@ change_scenes(DisplayRegionPipelineReader *new_dr) {
       }
     }
   }
+
+  int new_tex_view_offset = new_dr->get_tex_view_offset();
+  if (new_tex_view_offset != _tex_view_offset) {
+    int old_tex_view_offset = _tex_view_offset;
+    //DisplayRegion *old_cube_map_dr = _cube_map_dr;
+    _tex_view_offset = new_tex_view_offset;
+    //_cube_map_dr = new_dr->get_object();
+
+    CDReader cdata(_cycler);
+    RenderTextures::const_iterator ri;
+    for (ri = cdata->_textures.begin(); ri != cdata->_textures.end(); ++ri) {
+      RenderTextureMode rtm_mode = (*ri)._rtm_mode;
+      Texture *texture = (*ri)._texture;
+      if (rtm_mode == RTM_bind_or_copy || rtm_mode == RTM_bind_layered) {
+        // In render-to-texture mode, switch the rendering backend to
+        // the new view, so that the subsequent frame will be
+        // rendered to the new view.
+
+        select_tex_view(new_tex_view_offset);
+        break;
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1397,6 +1421,18 @@ change_scenes(DisplayRegionPipelineReader *new_dr) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
 select_cube_map(int) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::select_tex_view
+//       Access: Public, Virtual
+//  Description: Called internally when the window is in
+//               render-to-a-texture mode and the DisplayRegion
+//               requests that we switch rendering to a different
+//               texture view.
+////////////////////////////////////////////////////////////////////
+void GraphicsOutput::
+select_tex_view(int) {
 }
 
 ////////////////////////////////////////////////////////////////////

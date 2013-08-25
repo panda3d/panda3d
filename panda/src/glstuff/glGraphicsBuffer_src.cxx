@@ -81,6 +81,7 @@ CLP(GraphicsBuffer)(GraphicsEngine *engine, GraphicsPipe *pipe,
 
   _shared_depth_buffer = 0;
   _active_cube_map_index = -1;
+  _bound_tex_view = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -304,6 +305,7 @@ rebuild_bitplanes() {
     for (size_t i = 0; i != cdata->_textures.size(); ++i) {
       const RenderTexture &rt = cdata->_textures[i];
       RenderTextureMode rtm_mode = rt._rtm_mode;
+      RenderTexturePlane plane = rt._plane;
       Texture *tex = rt._texture;
 
       if (rtm_mode == RTM_bind_layered) {
@@ -311,11 +313,13 @@ rebuild_bitplanes() {
           GLCAT.warning()
            << "All textures attached to layered FBO should have the same layer count!\n";
         }
-      } else if (tex->get_z_size() > 1) {
-        num_fbos = max(num_fbos, tex->get_z_size());
+
+        // Assign the texture to this slot.
+        attach[plane] = tex;
+        continue;
       }
 
-      if (rtm_mode != RTM_bind_or_copy && rtm_mode != RTM_bind_layered) {
+      if (rtm_mode != RTM_bind_or_copy) {
         continue;
       }
 
@@ -339,10 +343,13 @@ rebuild_bitplanes() {
       // If I can't find an appropriate slot, or if there's
       // already a texture bound to this slot, then punt
       // this texture.
-      RenderTexturePlane plane = rt._plane;
       if (attach[plane]) {
         ((CData *)cdata.p())->_textures[i]._rtm_mode = RTM_copy_texture;
         continue;
+      }
+
+      if (tex->get_z_size() > 1) {
+        num_fbos = max(num_fbos, tex->get_z_size());
       }
 
       // Assign the texture to this slot.
@@ -491,6 +498,7 @@ rebuild_bitplanes() {
     _fb_properties.set_alpha_bits(0);
   }
 
+  _bound_tex_view = 0;
   _initial_clear = false;
   report_my_gl_errors();
 
@@ -1031,6 +1039,20 @@ end_frame(FrameMode mode, Thread *current_thread) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: glGraphicsBuffer::set_size
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsBuffer)::
+set_size(int x, int y) {
+  if (_x_size != x || _y_size != y) {
+    _needs_rebuild = true;
+  }
+
+  set_size_and_recalc(x, y);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: glGraphicsBuffer::select_cube_map
 //       Access: Public, Virtual
 //  Description: Called internally when the window is in
@@ -1057,6 +1079,79 @@ select_cube_map(int cube_map_index) {
   _active_cube_map_index = cube_map_index;
 
   report_my_gl_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glGraphicsBuffer::select_tex_view
+//       Access: Public, Virtual
+//  Description: Called internally when the window is in
+//               render-to-a-texture mode and the DisplayRegion
+//               requests that we switch rendering to a different
+//               texture view.
+//
+//               In the FBO case, we do this by re-binding the
+//               texture that is attached to the color plane.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsBuffer)::
+select_tex_view(int view) {
+  CLP(GraphicsStateGuardian) *glgsg;
+  DCAST_INTO_V(glgsg, _gsg);
+
+  if (view == _bound_tex_view) {
+    return;
+  }
+
+  // We assume that we've already configured the texture earlier
+  // in bind_bitplanes.  Therefore, since we can safely assume that
+  // all texture views have the same format, we can just bind the
+  // new view here.
+
+  Texture *tex = _tex[RTP_color];
+  if (tex != NULL) {
+    if (view >= tex->get_num_views()) {
+      tex->set_num_views(view + 1);
+    }
+
+    GLenum target = glgsg->get_texture_target(tex->get_texture_type());
+    if (target == GL_TEXTURE_CUBE_MAP) {
+      target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + _active_cube_map_index;
+    }
+
+    // Create the OpenGL texture object.
+    TextureContext *tc = tex->prepare_now(view, glgsg->get_prepared_objects(), glgsg);
+    nassertv(tc != (TextureContext *)NULL);
+    CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+    glgsg->update_texture(tc, true);
+
+    GLCAT.spam() << "Binding texture " << *tex
+      << " view " << view << " to color attachment.\n";
+
+  #ifndef OPENGLES
+    GLclampf priority = 1.0f;
+    glPrioritizeTextures(1, &gtc->_index, &priority);
+  #endif
+    glgsg->update_texture(tc, true);
+
+    if (_rb_size_z == 1) {
+      if (target == GL_TEXTURE_3D) {
+        glgsg->_glFramebufferTexture3D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+                                       target, gtc->_index, 0, _active_cube_map_index);
+      } else if (target == GL_TEXTURE_2D_ARRAY_EXT) {
+        glgsg->_glFramebufferTextureLayer(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+                                          gtc->_index, 0, _active_cube_map_index);
+      } else {
+        glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+                                       target, gtc->_index, 0);
+      }
+    } else {
+      glgsg->_glFramebufferTexture(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+                                   gtc->_index, 0);
+    }
+
+    report_my_gl_errors();
+  }
+
+  _bound_tex_view = view;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1139,7 +1234,7 @@ open_buffer() {
   _fb_properties.set_back_buffers(0);
   _fb_properties.set_indexed_color(0);
   _fb_properties.set_rgb_color(1);
-  _fb_properties.set_stereo(0);
+  //_fb_properties.set_stereo(0);
   _fb_properties.set_force_hardware(_host->get_fb_properties().get_force_hardware());
   _fb_properties.set_force_software(_host->get_fb_properties().get_force_software());
 

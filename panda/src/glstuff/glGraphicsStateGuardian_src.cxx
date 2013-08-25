@@ -1939,6 +1939,16 @@ clear(DrawableRegion *clearable) {
     }
   }
 
+  // In the past, it was possible to set the draw buffer
+  // once in prepare_display_region and then forget about it.
+  // Now, with aux layers, it is necessary to occasionally
+  // change the draw buffer.  In time, I think there will need
+  // to be a draw buffer attrib.  Until then, this little hack
+  // to put things back the way they were after
+  // prepare_display_region will do.
+  
+  set_draw_buffer(_draw_buffer_type);
+
   if (_current_properties->get_color_bits() > 0) {
     if (clearable->get_clear_color_active()) {
       LColor v = clearable->get_clear_color();
@@ -1948,7 +1958,6 @@ clear(DrawableRegion *clearable) {
       }
       _state_mask.clear_bit(ColorWriteAttrib::get_class_slot());
       mask |= GL_COLOR_BUFFER_BIT;
-      set_draw_buffer(clearable->get_draw_buffer_type());
     }
   }
   
@@ -1971,18 +1980,8 @@ clear(DrawableRegion *clearable) {
     GLP(ClearStencil)(clearable->get_clear_stencil());
     mask |= GL_STENCIL_BUFFER_BIT;
   }
-  
+
   GLP(Clear)(mask);
-  
-  // In the past, it was possible to set the draw buffer
-  // once in prepare_display_region and then forget about it.
-  // Now, with aux layers, it is necessary to occasionally
-  // change the draw buffer.  In time, I think there will need
-  // to be a draw buffer attrib.  Until then, this little hack
-  // to put things back the way they were after
-  // prepare_display_region will do.
-  
-  set_draw_buffer(_draw_buffer_type);
 
   if (GLCAT.is_spam()) {
     GLCAT.spam() << "glClear(";
@@ -2225,7 +2224,8 @@ end_scene() {
   GraphicsStateGuardian::end_scene();
 
 #ifndef OPENGLES_1
-  if (_vertex_array_shader_context != 0) {
+  // This breaks shaders across multiple regions.
+  /*if (_vertex_array_shader_context != 0) {
     _vertex_array_shader_context->disable_shader_vertex_arrays(this);
     _vertex_array_shader = (Shader *)NULL;
     _vertex_array_shader_context = (CLP(ShaderContext) *)NULL;
@@ -2239,7 +2239,7 @@ end_scene() {
     _current_shader_context->unbind(this);
     _current_shader = (Shader *)NULL;
     _current_shader_context = (CLP(ShaderContext) *)NULL;
-  }
+  }*/
 #endif
 
   _dlights.clear();
@@ -4648,6 +4648,7 @@ do_issue_shader(bool state_has_changed) {
   if (!shader) {
     shader = _default_shader;
   }
+
 #endif
   if (shader) {
     context = (CLP(ShaderContext) *)(shader->prepare_now(get_prepared_objects(), this));
