@@ -16,6 +16,7 @@
 
 #ifndef CPPPARSER
 #undef this
+#define HAVE_LONG_LONG 1
 #include <Rocket/Core/Context.h>
 #include <Rocket/Core/Python/Utilities.h>
 #endif

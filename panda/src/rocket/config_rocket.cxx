@@ -21,7 +21,10 @@
 #include "pandaSystem.h"
 #include "dconfig.h"
 
+// This is defined by both Panda and Rocket.
+#define Factory RocketFactory
 #include <Rocket/Core.h>
+#undef Factory
 
 Configure(config_rocket);
 NotifyCategoryDef(rocket, "");
