@@ -20,6 +20,7 @@
 #include "audioSound.h"
 #include "nullAudioManager.h"
 #include "nullAudioSound.h"
+#include "string_utils.h"
 
 Configure(config_audio);
 NotifyCategoryDef(audio, "");
@@ -185,7 +186,7 @@ operator >> (istream &in, FmodSpeakerMode &sm) {
     sm = FSM_prologic;
 
   } else {
-    gobj_cat->error() << "Invalid FmodSpeakerMode value: " << word << "\n";
+    audio_cat->error() << "Invalid FmodSpeakerMode value: " << word << "\n";
     sm = FSM_unspecified;
   }
 

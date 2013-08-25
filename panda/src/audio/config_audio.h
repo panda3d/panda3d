@@ -54,8 +54,8 @@ enum FmodSpeakerMode {
   FSM_unspecified
 };
 
-EXPCL_FMOD_AUDIO ostream &operator << (ostream &out, FmodSpeakerMode sm);
-EXPCL_FMOD_AUDIO istream &operator >> (istream &in, FmodSpeakerMode &sm);
+EXPCL_PANDA_AUDIO ostream &operator << (ostream &out, FmodSpeakerMode sm);
+EXPCL_PANDA_AUDIO istream &operator >> (istream &in, FmodSpeakerMode &sm);
 
 extern EXPCL_PANDA_AUDIO ConfigVariableInt fmod_number_of_sound_channels;
 extern EXPCL_PANDA_AUDIO ConfigVariableBool fmod_use_surround_sound;
