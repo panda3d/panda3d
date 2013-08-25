@@ -27,4 +27,5 @@
     Core/Core.h Forest/Forest.h Renderers/OpenGL/OpenGLRenderer.h \
     Renderers/DirectX9/DirectX9Renderer.h \
     glew/glew.h Eigen/Dense Eigen/StdVector \
-    Rocket/Core/RenderInterface.h btBulletDynamicsCommon.h
+    Rocket/Core/RenderInterface.h btBulletDynamicsCommon.h OVR.h \
+    ogg/os_types.h vorbis/vorbisfile.h
