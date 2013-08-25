@@ -1,5 +1,6 @@
 """ This module is now vestigial.  """
 
+from Tkinter import *
 import sys, Pmw
 
 # This is required by the ihooks.py module used by Squeeze (used by
