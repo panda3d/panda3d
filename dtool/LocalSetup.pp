@@ -240,6 +240,11 @@
 #else
 #print - Did not find Bullet Physics
 #endif
+#if $[HAVE_VORBIS]
+#print + libvorbis (Ogg Vorbis Decoder)
+#else
+#print - Did not find libvorbis (Ogg Vorbis Decoder)
+#endif
 
 #print
 #if $[and $[HAVE_INTERROGATE],$[HAVE_PYTHON]]
@@ -340,6 +345,9 @@ $[cdefine HAVE_FCOLLADA]
 /* Define if we have ARToolKit available. */
 $[cdefine HAVE_ARTOOLKIT]
 
+/* Define if we have libvorbisfile available. */
+$[cdefine HAVE_VORBIS]
+
 /* Define if we have OpenSSL installed.  */
 $[cdefine HAVE_OPENSSL]
 $[cdefine REPORT_OPENSSL_ERRORS]
@@ -376,9 +384,6 @@ $[cdefine HAVE_SQUISH]
 
 /* Define if we have Berkeley DB installed.  */
 $[cdefine HAVE_BDB]
-
-/* Define if we have VRPN installed.  */
-$[cdefine HAVE_VRPN]
 
 /* Define if we have HELIX installed.  */
 $[cdefine HAVE_HELIX]

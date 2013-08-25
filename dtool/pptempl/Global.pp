@@ -510,6 +510,12 @@
   #define bullet_libs $[BULLET_LIBS]
 #endif
 
+#if $[HAVE_VORBIS]
+  #define vorbis_ipath $[wildcard $[VORBIS_IPATH]]
+  #define vorbis_lpath $[wildcard $[VORBIS_LPATH]]
+  #define vorbis_libs $[VORBIS_LIBS]
+#endif
+
 // We define these two variables true here in the global scope; a
 // particular Sources.pp file can redefine these to be false to
 // prevent a particular directory or target from being built in

@@ -391,6 +391,11 @@
 #set BULLET_LIBS $[BULLET_LIBS]
 #set HAVE_BULLET $[HAVE_BULLET]
 
+#set VORBIS_IPATH $[unixfilename $[VORBIS_IPATH]]
+#set VORBIS_LPATH $[unixfilename $[VORBIS_LPATH]]
+#set VORBIS_LIBS $[VORBIS_LIBS]
+#set HAVE_VORBIS $[HAVE_VORBIS]
+
 // Now infer a few more variables based on what was defined.
 #if $[and $[HAVE_GTK],$[PKG_CONFIG]]
   #define cflags $[shell $[PKG_CONFIG] gtk+-2.0 --cflags]

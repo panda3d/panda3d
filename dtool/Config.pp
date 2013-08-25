@@ -1153,6 +1153,12 @@
 #endif
 #defer HAVE_BULLET $[libtest $[BULLET_LPATH],$[BULLET_LIBS]]
 
+// libvorbisfile is used for reading Ogg Vorbis audio files (.ogg).
+#define VORBIS_IPATH
+#define VORBIS_LPATH
+#define VORBIS_LIBS $[if $[WINDOWS_PLATFORM],libogg_static.lib libvorbis_static.lib libvorbisfile_static.lib,ogg vorbis vorbisfile]
+#defer HAVE_VORBIS $[libtest $[VORBIS_LPATH],$[VORBIS_LIBS]]
+
 // Define this to explicitly indicate the given platform string within
 // the resulting Panda runtime.  Normally it is best to leave this
 // undefined, in which case Panda will determine the best value
