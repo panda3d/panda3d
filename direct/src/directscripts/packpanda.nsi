@@ -92,7 +92,7 @@ Section "${SMDIRECTORY}" SecCore
         SetOutPath $INSTDIR\bin
         File /r "${PANDA}\bin\*.dll"
         File /nonfatal /r "${PANDA}\bin\*.pyd"
-        File /r "${PANDA}\bin\Microsoft.*.manifest"
+        File /nonfatal /r "${PANDA}\bin\Microsoft.*.manifest"
         SetOutPath $INSTDIR\etc
         File /r "${PANDACONF}\*"
         SetOutPath $INSTDIR\direct\directscripts
@@ -675,7 +675,7 @@ Function IsUserAdmin
                         Push 1
                         Return
 
-                NOtAdmin:
+                NotAdmin:
                         ; You should still check for an empty string because the functions
                         ; UserInfo.dll looks for may not be present on Windows 95. (per kichik)
                 
@@ -745,7 +745,7 @@ Function un.IsUserAdmin
                         Push 1
                         Return
 
-                NOtAdmin:
+                NotAdmin:
                         ; You should still check for an empty string because the functions
                         ; UserInfo.dll looks for may not be present on Windows 95. (per kichik)
                 
