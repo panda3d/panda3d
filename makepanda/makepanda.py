@@ -908,11 +908,19 @@ def CompileCxx(obj,src,opts):
                cmd += " /Oy /Zp16"      # jean-claude add /Zp16 insures correct static alignment for SSEx
 
             cmd += " /Fd" + os.path.splitext(obj)[0] + ".pdb"
+
             building = GetValueOption(opts, "BUILDING:")
-            if (building): cmd += " /DBUILDING_" + building
+            if (building):
+                cmd += " /DBUILDING_" + building
+
             if ("BIGOBJ" in opts) or GetTargetArch() == 'x64':
                 cmd += " /bigobj"
-            cmd += " /EHa /Zm300 /DWIN32_VC /DWIN32 /W3 " + BracketNameWithQuotes(src)
+
+            cmd += " /EHa /Zm300 /DWIN32_VC /DWIN32"
+            if GetTargetArch() == 'x64':
+                cmd += " /DWIN64_VC /DWIN64"
+
+            cmd += " /W3 " + BracketNameWithQuotes(src)
             oscmd(cmd)
         else:
             cmd = "icl "
@@ -996,7 +1004,10 @@ def CompileCxx(obj,src,opts):
                 cmd += " /Qopt-report:2 /Qopt-report-phase:hlo /Qopt-report-phase:hpo"    # some optimization reports
             else:            
                 cmd += " /W1 "
-            cmd += " /EHa /Zm300 /DWIN32_VC /DWIN32 " + BracketNameWithQuotes(src)
+            cmd += " /EHa /Zm300 /DWIN32_VC /DWIN32"
+            if GetTargetArch() == 'x64':
+                cmd += " /DWIN64_VC /DWIN64"
+            cmd += " " + BracketNameWithQuotes(src)
 
             oscmd(cmd)
             
@@ -1167,7 +1178,9 @@ def CompileIgate(woutd,wsrc,opts):
 
     cmd += ' -srcdir %s -I%s -Dvolatile -Dmutable' % (srcdir, srcdir)
     if (COMPILER=="MSVC"):
-        cmd += ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -longlong __int64 -D_X86_ -DWIN32_VC -D_WIN32'
+        cmd += ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -longlong __int64 -D_X86_ -DWIN32_VC -DWIN32 -D_WIN32'
+        if GetTargetArch() == 'x64':
+            cmd += ' -DWIN64_VC -DWIN64 -D_WIN64'
         # NOTE: this 1600 value is the version number for VC2010.
         cmd += ' -D_MSC_VER=1600 -D"_declspec(param)=" -D_near -D_far -D__near -D__far -D__stdcall'
     if (COMPILER=="GCC"):
