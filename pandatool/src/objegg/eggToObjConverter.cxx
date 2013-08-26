@@ -19,6 +19,8 @@
 #include "streamReader.h"
 #include "virtualFileSystem.h"
 #include "eggPolygon.h"
+#include "eggPoint.h"
+#include "eggLine.h"
 #include "dcast.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -161,16 +163,16 @@ process(const Filename &filename) {
 //     Function: EggToObjConverter::collect_vertices
 //       Access: Private
 //  Description: Recursively walks the egg structure, looking for
-//               vertices referenced by polygons.  Any such vertices
-//               are added to the vertex tables for writing to the obj
-//               file.
+//               vertices referenced by polygons or points.  Any such
+//               vertices are added to the vertex tables for writing
+//               to the obj file.
 ////////////////////////////////////////////////////////////////////
 void EggToObjConverter::
 collect_vertices(EggNode *egg_node) {
-  if (egg_node->is_of_type(EggPolygon::get_class_type())) {
-    EggPolygon *egg_poly = DCAST(EggPolygon, egg_node);
-    EggPolygon::iterator pi;
-    for (pi = egg_poly->begin(); pi != egg_poly->end(); ++pi) {
+  if (egg_node->is_of_type(EggPrimitive::get_class_type())) {
+    EggPrimitive *egg_prim = DCAST(EggPrimitive, egg_node);
+    EggPrimitive::iterator pi;
+    for (pi = egg_prim->begin(); pi != egg_prim->end(); ++pi) {
       record_vertex(*pi);
     }
 
@@ -188,58 +190,68 @@ collect_vertices(EggNode *egg_node) {
 //     Function: EggToObjConverter::write_faces
 //       Access: Private
 //  Description: Recursively walks the egg structure again, this time
-//               writing out the face records for any polygons
-//               encountered.
+//               writing out the face records for any polygons,
+//               points, or lines encountered.
 ////////////////////////////////////////////////////////////////////
 void EggToObjConverter::
 write_faces(ostream &out, EggNode *egg_node) {
-  if (egg_node->is_of_type(EggPolygon::get_class_type())) {
-    write_group_reference(out, egg_node);
-
-    EggPolygon *egg_poly = DCAST(EggPolygon, egg_node);
-
-    out << "f";
-    EggPolygon::iterator pi;
-    for (pi = egg_poly->begin(); pi != egg_poly->end(); ++pi) {
-      VertexDef &vdef = _vmap[(*pi)];
-      int vert_index = -1;
-      int uv_index = -1;
-      int norm_index = -1;
-
-      if (vdef._vert3_index != -1) {
-        vert_index = vdef._vert3_index + 1;
-      } else if (vdef._vert4_index != -1) {
-        vert_index = vdef._vert4_index + 1 + (int)_unique_vert3.size();
-      }
-
-      if (vdef._uv2_index != -1) {
-        uv_index = vdef._uv2_index + 1;
-      } else if (vdef._uv3_index != -1) {
-        uv_index = vdef._uv3_index + 1 + (int)_unique_uv2.size();
-      }
-
-      if (vdef._norm_index != -1) {
-        norm_index = vdef._norm_index + 1;
-      }
-
-      if (vert_index == -1) {
-        continue;
-      }
-
-      if (norm_index != -1) {
-        if (uv_index != -1) {
-          out << " " << vert_index << "/" << uv_index << "/" << norm_index;
-        } else {
-          out << " " << vert_index << "//" << norm_index;
-        }
-      } else if (uv_index != -1) {
-        out << " " << vert_index << "/" << uv_index;
-      } else {
-        out << " " << vert_index;
-      }
+  if (egg_node->is_of_type(EggPrimitive::get_class_type())) {
+    const char *prim_type = NULL;
+    if (egg_node->is_of_type(EggPolygon::get_class_type())) {
+      prim_type = "f";
+    } else if (egg_node->is_of_type(EggPoint::get_class_type())) {
+      prim_type = "p";
+    } else if (egg_node->is_of_type(EggLine::get_class_type())) {
+      prim_type = "l";
     }
-    out << "\n";
 
+    if (prim_type != NULL) {
+      write_group_reference(out, egg_node);
+
+      EggPrimitive *egg_prim = DCAST(EggPrimitive, egg_node);
+      
+      out << prim_type;
+      EggPrimitive::iterator pi;
+      for (pi = egg_prim->begin(); pi != egg_prim->end(); ++pi) {
+        VertexDef &vdef = _vmap[(*pi)];
+        int vert_index = -1;
+        int uv_index = -1;
+        int norm_index = -1;
+        
+        if (vdef._vert3_index != -1) {
+          vert_index = vdef._vert3_index + 1;
+        } else if (vdef._vert4_index != -1) {
+          vert_index = vdef._vert4_index + 1 + (int)_unique_vert3.size();
+        }
+        
+        if (vdef._uv2_index != -1) {
+          uv_index = vdef._uv2_index + 1;
+        } else if (vdef._uv3_index != -1) {
+          uv_index = vdef._uv3_index + 1 + (int)_unique_uv2.size();
+        }
+
+        if (vdef._norm_index != -1) {
+          norm_index = vdef._norm_index + 1;
+        }
+        
+        if (vert_index == -1) {
+          continue;
+        }
+        
+        if (norm_index != -1) {
+          if (uv_index != -1) {
+            out << " " << vert_index << "/" << uv_index << "/" << norm_index;
+          } else {
+            out << " " << vert_index << "//" << norm_index;
+          }
+        } else if (uv_index != -1) {
+          out << " " << vert_index << "/" << uv_index;
+        } else {
+          out << " " << vert_index;
+        }
+      }
+      out << "\n";
+    }
   } else if (egg_node->is_of_type(EggGroupNode::get_class_type())) {
     EggGroupNode *egg_group = DCAST(EggGroupNode, egg_node);
 
@@ -408,7 +420,7 @@ write_vertices(ostream &out, const string &prefix, int num_components,
                const UniqueVertices &unique) {
   // First, sort the list into numeric order.
   int num_vertices = (int)unique.size();
-  const LVecBase4d **vertices = (const LVecBase4d **)alloca(num_vertices * sizeof(LVecBase4d *));
+  const LVecBase4d **vertices = (const LVecBase4d **)PANDA_MALLOC_ARRAY(num_vertices * sizeof(LVecBase4d *));
   memset(vertices, 0, num_vertices * sizeof(LVecBase4d *));
   UniqueVertices::const_iterator ui;
   for (ui = unique.begin(); ui != unique.end(); ++ui) {
@@ -427,6 +439,7 @@ write_vertices(ostream &out, const string &prefix, int num_components,
     }
     out << "\n";
   }
+  PANDA_FREE_ARRAY(vertices);
 }
 
 ////////////////////////////////////////////////////////////////////

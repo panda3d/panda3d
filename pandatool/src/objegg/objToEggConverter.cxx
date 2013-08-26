@@ -210,6 +210,16 @@ process(const Filename &filename) {
       continue;
     }
 
+    while (line[line.length() - 1] == '\\') {
+      // If it ends on a backslash, it's a continuation character.
+      string line2 = sr.readline();
+      ++_line_number;
+      if (line2.empty()) {
+        break;
+      }
+      line = line.substr(0, line.length() - 1) + trim(line2);
+    }
+
     if (line.substr(0, 15) == "#_ref_plane_res") {
       process_ref_plane_res(line);
       line = sr.readline();
@@ -296,7 +306,7 @@ process_ref_plane_res(const string &line) {
 
   if (!okflag) {
     objegg_cat.error()
-      << "Invalid number at line " << _line_number << "\n";
+      << "Invalid number at line " << _line_number << ":\n";
     return false;
   }
 
