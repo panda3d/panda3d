@@ -36,6 +36,7 @@
 class EXPCL_PANDA_DEVICE TrackerNode : public DataNode {
 PUBLISHED:
   TrackerNode(ClientBase *client, const string &device_name);
+  TrackerNode(ClientTrackerDevice *device);
   virtual ~TrackerNode();
 
   INLINE bool is_valid() const;

@@ -55,6 +55,27 @@ TrackerNode(ClientBase *client, const string &device_name) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TrackerNode::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+TrackerNode::
+TrackerNode(ClientTrackerDevice *device) :
+  DataNode(device->get_device_name()),
+  _tracker(device)
+{
+  _transform_output = define_output("transform", TransformState::get_class_type());
+
+  _transform = TransformState::make_identity();
+
+  nassertv(device != (ClientTrackerDevice *)NULL);
+  ClientBase *client = device->get_client();
+  nassertv(client != (ClientBase *)NULL);
+  set_tracker_coordinate_system(client->get_coordinate_system());
+  set_graph_coordinate_system(CS_default);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TrackerNode::Destructor
 //       Access: Public, Virtual
 //  Description:
