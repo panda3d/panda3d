@@ -615,7 +615,7 @@ $[TAB] cp $[target_header_prebuilt] $[target_header]
 #if $[HAVE_BISON]
 #define source $[file]
 $[target] : $[file]
-$[TAB] $[FLEX] $[LFLAGS] $[if $[YACC_PREFIX],-P$[YACC_PREFIX]] -olex.yy.c $[file]
+$[TAB] $[FLEX] $[FLEXFLAGS] $[if $[YACC_PREFIX],-P$[YACC_PREFIX]] -olex.yy.c $[file]
 #define source lex.yy.c
 #define script /#include <unistd.h>/d
 $[TAB] $[SED]
