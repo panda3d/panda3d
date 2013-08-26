@@ -75,6 +75,7 @@ class panda3d(package):
     excludeModule('libpandaskel')
     excludeModule('libpandaphysx')
     excludeModule('libpandaai')
+    excludeModule('libp3vrpn')
 
     # Exclude these GUI toolkits; they're big, and many applications don't
     # use them.  We define them as separate, optional packages, below.
@@ -242,6 +243,22 @@ class audio(package):
     # OpenAL seems to work pretty well universally now.
     require('openal')
 
+class ffmpeg(package):
+    # This package includes the ffmpeg libraries and integration.
+    # It's a bit big, and is restricted by patents and the restrictive
+    # GPLv3 license, which is why it is included as a separate package.
+
+    config(display_name = "FFMpeg multimedia decoder")
+    require('panda3d')
+
+    file('libp3ffmpeg.dll', required = True)
+
+    file('ffmpeg.prc', extract = True, text = """
+plugin-path $FFMPEG_ROOT
+load-audio-type * p3ffmpeg
+load-video-type * p3ffmpeg
+""")
+
 class egg(package):
     # This package contains the code for reading and operating on egg
     # files and other model files.  Since the Packager automatically
@@ -324,6 +341,15 @@ class rocket(package):
 
     module('_rocketcore', '_rocketcontrols')
     file('libp3rocket.dll', required = True)
+
+class vrpn(package):
+    # This package contains the code for VRPN integration.
+    # Most applications don't use this, which is why it's separate.
+
+    config(display_name = "Panda3D VRPN support")
+    require('panda3d')
+
+    file('libp3vrpn.dll', required = True)
 
 
 class packp3d(p3d):

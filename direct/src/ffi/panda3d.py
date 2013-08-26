@@ -16,6 +16,7 @@ panda3d_modules = {
     "awesomium"   : "libp3awesomium",
     "speedtree"   : "libpandaspeedtree",
     "rocket"      :("_rocketcore", "_rocketcontrols", "libp3rocket"),
+    "vrpn"        : "libp3vrpn",
 }
 
 class panda3d_import_manager:
