@@ -29,7 +29,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifdef HAVE_DIRECTCAM
+#if defined(HAVE_DIRECTCAM) && !defined(CPPPARSER)
 
 #define WIN32_LEAN_AND_MEAN
 
@@ -61,19 +61,28 @@
 #include <string.h>
 #include <windows.h>
 
-// NOTE:  there is a problem with dxtrans.h missing from newer Microsoft DirectX SDKs (including March 2009)
-// See "dxtrans.h missing in Microsoft DirectX SDK" at
-// http://social.msdn.microsoft.com/forums/en-US/windowssdk/thread/ed097d2c-3d68-448-8448-277eaaf68252/ for example.
-// This header file is referenced only by qedit.h and not needed.
-// Solution:  add this pragma and these defines before the qedit.h inclusion:
-#pragma include_alias( "dxtrans.h", "qedit.h" )
-#define __IDxtCompositor_INTERFACE_DEFINED__
-#define __IDxtAlphaSetter_INTERFACE_DEFINED__
-#define __IDxtJpeg_INTERFACE_DEFINED_
-#define __IDxtKey_INTERFACE_DEFINED__
-#define IDXEffect IUnknown
-#include <qedit.h>
-#include <atlbase.h>
+// This used to work back when qedit.h still existed.  The hacks
+// served to prevent it from including the defunct dxtrans.h.
+//#pragma include_alias( "dxtrans.h", "qedit.h" )
+//#define __IDxtCompositor_INTERFACE_DEFINED__
+//#define __IDxtAlphaSetter_INTERFACE_DEFINED__
+//#define __IDxtJpeg_INTERFACE_DEFINED_
+//#define __IDxtKey_INTERFACE_DEFINED__
+//#define IDXEffect IUnknown
+//#include <qedit.h>
+
+// We can use this fugly hack to still access the qedit.h interfaces.
+// When this stops working, we'll have to just copy the relevant
+// definitions to this file.
+#import "libid:78530B68-61F9-11D2-8CAD-00A024580902" \
+  no_namespace named_guids raw_interfaces_only no_implementation \
+  exclude("_AMMediaType", "_FilterState", "IReferenceClock", "IMediaFilter", \
+  	      "_PinDirection", "IEnumMediaTypes", "IFilterGraph", "_FilterInfo", \
+  	      "IGraphBuilder", "IBaseFilter", "_PinInfo", "IPin", "IEnumPins", \
+  	      "IEnumFilters", "IEnumMediaTypes", "IAMSetErrorLog","IAMTimelineObj", \
+  	      "IMediaDet", "IMediaSample", "IPersistStream", "IPersist", "IStream", \
+  	      "ISequentialStream", "_LARGE_INTEGER", "_ULARGE_INTEGER", \
+  	      "tagSTATSTG", "_FILETIME", "IPropertyBag", "IErrorLog")
 
 ////////////////////////////////////////////////////////////////////
 //       Class : WebcamVideoDS
@@ -161,7 +170,7 @@ public:
   ICaptureGraphBuilder2   *_pCaptureBuilder;
   IBaseFilter             *_pSrcFilter;
   IAMStreamConfig         *_pStreamConfig;
-  CComPtr<ISampleGrabber>  _pSampleGrabber;
+  ISampleGrabber          *_pSampleGrabber;
   IBaseFilter             *_pStreamRenderer;
   IMediaControl           *_pMediaCtrl;
   //  IMemAllocator           *_pAllocator;
@@ -500,13 +509,16 @@ WebcamVideoCursorDS(WebcamVideoDS *src) :
     cleanup(); return;
   }
 
-  _pSampleGrabber.CoCreateInstance(CLSID_SampleGrabber);
-  if(!_pSampleGrabber)
+  hResult = CoCreateInstance(CLSID_SampleGrabber, NULL, CLSCTX_INPROC, IID_PPV_ARGS(&_pSampleGrabber));
+  if(hResult != S_OK)
     {  cerr << "  Can not create the sample grabber, maybe qedit.dll is not registered?";
     cleanup(); return;  }
 
 
-  CComQIPtr< IBaseFilter, &IID_IBaseFilter > pGrabberFilter(_pSampleGrabber);
+  //hResult = CoCreateInstance(CLSID_SampleGrabber,)
+  //CComQIPtr< IBaseFilter, &IID_IBaseFilter > pGrabberFilter(_pSampleGrabber);
+  IBaseFilter *pGrabberFilter = NULL;
+  hResult = _pSampleGrabber->QueryInterface(IID_PPV_ARGS(&pGrabberFilter));
   cerr << "  IID_IBaseFilter of CLSID_SampleGrabber is acquired.\n";
 
   ZeroMemory(&mediaType, sizeof(AM_MEDIA_TYPE));
@@ -604,6 +616,11 @@ WebcamVideoCursorDS(WebcamVideoDS *src) :
     mediaType.pUnk=NULL;
   }
 
+  if(pGrabberFilter != NULL) {
+  	pGrabberFilter->Release();
+  	pGrabberFilter=NULL;
+  }
+
   _pSampleGrabber->SetBufferSamples(FALSE);
   _pSampleGrabber->SetOneShot(FALSE);
 
@@ -635,7 +652,7 @@ cleanup() {
   if(_pMediaCtrl)       {  _pMediaCtrl->Release();  _pMediaCtrl=NULL;  }
   if(_pCaptureBuilder)  {  _pCaptureBuilder->Release();  _pCaptureBuilder=NULL;  }
   if(_pGraphBuilder)    {  _pGraphBuilder->Release();  _pGraphBuilder=NULL;  }
-  if(_pSampleGrabber.p) {  _pSampleGrabber.Release();  }
+  if(_pSampleGrabber)   {  _pSampleGrabber->Release();  _pSampleGrabber=NULL;  }
   if(_pStreamRenderer)  {  _pStreamRenderer->Release();  _pStreamRenderer=NULL;  }
   if(_pSrcFilter)       {  _pSrcFilter->Release();  _pSrcFilter=NULL;  }
   if(_pStreamConfig)    {  _pStreamConfig->Release();  _pStreamConfig=NULL;  }
