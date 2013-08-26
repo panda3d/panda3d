@@ -349,7 +349,7 @@
 // genPyCode.  You may wish to add to this list to add your own
 // libraries, or if you want to use some of the more obscure
 // interfaces like libpandaegg and libpandafx.
-#defer GENPYCODE_LIBS libpandaexpress libpanda libpandaphysics libp3direct libpandafx libp3vision $[if $[HAVE_ODE],libpandaode]
+#defer GENPYCODE_LIBS libpandaexpress libpanda libpandaphysics libp3direct libpandafx libp3vision $[if $[HAVE_ODE],libpandaode] $[if $[HAVE_VRPN],libp3vrpn]
 
 // Normally, Python source files are copied into the INSTALL_LIB_DIR
 // defined above, along with the compiled C++ library objects, when
@@ -814,6 +814,7 @@
 #define ODE_IPATH
 #define ODE_LPATH
 #define ODE_LIBS $[if $[WINDOWS_PLATFORM],ode.lib,ode]
+#define ODE_CFLAGS
 #defer HAVE_ODE $[libtest $[ODE_LPATH],$[ODE_LIBS]]
 
 // Is Awesomium installed, and where?
