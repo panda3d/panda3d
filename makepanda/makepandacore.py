@@ -1785,12 +1785,14 @@ def SdkLocatePython(force_use_sys_executable = False):
             if (not os.path.isfile(SDK["PYTHONEXEC"])):
                 exit("Could not find %s!" % SDK["PYTHONEXEC"])
 
-            os.system(SDK["PYTHONEXEC"] + " -V > "+OUTPUTDIR+"/tmp/pythonversion 2>&1")
-            pv = ReadFile(OUTPUTDIR + "/tmp/pythonversion")
-            if (pv.startswith("Python ")==0):
-                exit("python -V did not produce the expected output")
-            pv = pv[7:10]
-            SDK["PYTHONVERSION"]="python"+pv
+            # Determine which version it is by checking which dll is in the directory.
+            py_dlls = glob.glob(SDK["PYTHON"] + "/python[0-9][0-9].dll")
+            if len(py_dlls) == 0:
+                exit("Could not find the Python dll in %s." % (SDK["PYTHON"]))
+            elif len(py_dlls) > 1:
+                exit("Found multiple Python dlls in %s." % (SDK["PYTHON"]))
+
+            SDK["PYTHONVERSION"] = "python" + py_dlls[0][-6] + "." + py_dlls[0][-5]
 
         elif (GetTarget() == 'windows'):
             SDK["PYTHON"] = os.path.dirname(sysconfig.get_python_inc())
@@ -1801,6 +1803,9 @@ def SdkLocatePython(force_use_sys_executable = False):
             SDK["PYTHON"] = sysconfig.get_python_inc()
             SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version()
             SDK["PYTHONEXEC"] = os.path.realpath(sys.executable)
+
+        if GetVerbose():
+            print("Using Python %s build located at %s" % (SDK["PYTHONVERSION"][6:9], SDK["PYTHON"]))
 
     else:
         SDK["PYTHONEXEC"] = os.path.realpath(sys.executable)
