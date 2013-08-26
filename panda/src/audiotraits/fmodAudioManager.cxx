@@ -249,7 +249,7 @@ make_dsp(const FilterProperties::FilterConfig &conf) {
   case FilterProperties::FT_parameq:    dsptype = FMOD_DSP_TYPE_PARAMEQ;     break;
   case FilterProperties::FT_pitchshift: dsptype = FMOD_DSP_TYPE_PITCHSHIFT;  break;
   case FilterProperties::FT_chorus:     dsptype = FMOD_DSP_TYPE_CHORUS;      break;
-  case FilterProperties::FT_reverb:     dsptype = FMOD_DSP_TYPE_REVERB;      break;
+  case FilterProperties::FT_sfxreverb:  dsptype = FMOD_DSP_TYPE_SFXREVERB;   break;
   case FilterProperties::FT_compress:   dsptype = FMOD_DSP_TYPE_COMPRESSOR;  break;
   default:
     audio_error("Garbage in DSP configuration data");
@@ -262,81 +262,97 @@ make_dsp(const FilterProperties::FilterConfig &conf) {
     return NULL;
   }
 
-  FMOD_RESULT res1=FMOD_OK;
-  FMOD_RESULT res2=FMOD_OK;
-  FMOD_RESULT res3=FMOD_OK;
-  FMOD_RESULT res4=FMOD_OK;
-  FMOD_RESULT res5=FMOD_OK;
-  FMOD_RESULT res6=FMOD_OK;
-  FMOD_RESULT res7=FMOD_OK;
-  FMOD_RESULT res8=FMOD_OK;
+  FMOD_RESULT res1 = FMOD_OK;
+  FMOD_RESULT res2 = FMOD_OK;
+  FMOD_RESULT res3 = FMOD_OK;
+  FMOD_RESULT res4 = FMOD_OK;
+  FMOD_RESULT res5 = FMOD_OK;
+  FMOD_RESULT res6 = FMOD_OK;
+  FMOD_RESULT res7 = FMOD_OK;
+  FMOD_RESULT res8 = FMOD_OK;
+  FMOD_RESULT res9 = FMOD_OK;
+  FMOD_RESULT res10 = FMOD_OK;
+  FMOD_RESULT res11 = FMOD_OK;
+  FMOD_RESULT res12 = FMOD_OK;
+  FMOD_RESULT res13 = FMOD_OK;
+  FMOD_RESULT res14 = FMOD_OK;
 
   switch (conf._type) {
   case FilterProperties::FT_lowpass:
-    res1=dsp->setParameter(FMOD_DSP_LOWPASS_CUTOFF,     conf._a);
-    res2=dsp->setParameter(FMOD_DSP_LOWPASS_RESONANCE,  conf._b);
+    res1 = dsp->setParameter(FMOD_DSP_LOWPASS_CUTOFF,     conf._a);
+    res2 = dsp->setParameter(FMOD_DSP_LOWPASS_RESONANCE,  conf._b);
     break;
   case FilterProperties::FT_highpass:
-    res1=dsp->setParameter(FMOD_DSP_HIGHPASS_CUTOFF,    conf._a);
-    res2=dsp->setParameter(FMOD_DSP_HIGHPASS_RESONANCE, conf._b);
+    res1 = dsp->setParameter(FMOD_DSP_HIGHPASS_CUTOFF,    conf._a);
+    res2 = dsp->setParameter(FMOD_DSP_HIGHPASS_RESONANCE, conf._b);
     break;
   case FilterProperties::FT_echo:
-    res1=dsp->setParameter(FMOD_DSP_ECHO_DRYMIX,        conf._a);
-    res2=dsp->setParameter(FMOD_DSP_ECHO_WETMIX,        conf._b);
-    res3=dsp->setParameter(FMOD_DSP_ECHO_DELAY,         conf._c);
-    res4=dsp->setParameter(FMOD_DSP_ECHO_DECAYRATIO,    conf._d);
+    res1 = dsp->setParameter(FMOD_DSP_ECHO_DRYMIX,        conf._a);
+    res2 = dsp->setParameter(FMOD_DSP_ECHO_WETMIX,        conf._b);
+    res3 = dsp->setParameter(FMOD_DSP_ECHO_DELAY,         conf._c);
+    res4 = dsp->setParameter(FMOD_DSP_ECHO_DECAYRATIO,    conf._d);
     break;
   case FilterProperties::FT_flange:
-    res1=dsp->setParameter(FMOD_DSP_FLANGE_DRYMIX,      conf._a);
-    res2=dsp->setParameter(FMOD_DSP_FLANGE_WETMIX,      conf._b);
-    res3=dsp->setParameter(FMOD_DSP_FLANGE_DEPTH,       conf._c);
-    res4=dsp->setParameter(FMOD_DSP_FLANGE_RATE,        conf._d);
+    res1 = dsp->setParameter(FMOD_DSP_FLANGE_DRYMIX,      conf._a);
+    res2 = dsp->setParameter(FMOD_DSP_FLANGE_WETMIX,      conf._b);
+    res3 = dsp->setParameter(FMOD_DSP_FLANGE_DEPTH,       conf._c);
+    res4 = dsp->setParameter(FMOD_DSP_FLANGE_RATE,        conf._d);
     break;
   case FilterProperties::FT_distort:
-    res1=dsp->setParameter(FMOD_DSP_DISTORTION_LEVEL,   conf._a);
+    res1 = dsp->setParameter(FMOD_DSP_DISTORTION_LEVEL,   conf._a);
     break;
   case FilterProperties::FT_normalize:
-    res1=dsp->setParameter(FMOD_DSP_NORMALIZE_FADETIME,  conf._a);
-    res2=dsp->setParameter(FMOD_DSP_NORMALIZE_THRESHHOLD,conf._b);
-    res3=dsp->setParameter(FMOD_DSP_NORMALIZE_MAXAMP,    conf._c);
+    res1 = dsp->setParameter(FMOD_DSP_NORMALIZE_FADETIME,  conf._a);
+    res2 = dsp->setParameter(FMOD_DSP_NORMALIZE_THRESHHOLD,conf._b);
+    res3 = dsp->setParameter(FMOD_DSP_NORMALIZE_MAXAMP,    conf._c);
     break;
   case FilterProperties::FT_parameq:
-    res1=dsp->setParameter(FMOD_DSP_PARAMEQ_CENTER,     conf._a);
-    res2=dsp->setParameter(FMOD_DSP_PARAMEQ_BANDWIDTH,  conf._b);
-    res3=dsp->setParameter(FMOD_DSP_PARAMEQ_GAIN,       conf._c);
+    res1 = dsp->setParameter(FMOD_DSP_PARAMEQ_CENTER,     conf._a);
+    res2 = dsp->setParameter(FMOD_DSP_PARAMEQ_BANDWIDTH,  conf._b);
+    res3 = dsp->setParameter(FMOD_DSP_PARAMEQ_GAIN,       conf._c);
     break;
   case FilterProperties::FT_pitchshift:
-    res1=dsp->setParameter(FMOD_DSP_PITCHSHIFT_PITCH,   conf._a);
-    res2=dsp->setParameter(FMOD_DSP_PITCHSHIFT_FFTSIZE, conf._b);
-    res3=dsp->setParameter(FMOD_DSP_PITCHSHIFT_OVERLAP, conf._c);
+    res1 = dsp->setParameter(FMOD_DSP_PITCHSHIFT_PITCH,   conf._a);
+    res2 = dsp->setParameter(FMOD_DSP_PITCHSHIFT_FFTSIZE, conf._b);
+    res3 = dsp->setParameter(FMOD_DSP_PITCHSHIFT_OVERLAP, conf._c);
     break;
   case FilterProperties::FT_chorus:
-    res1=dsp->setParameter(FMOD_DSP_CHORUS_DRYMIX,      conf._a);
-    res2=dsp->setParameter(FMOD_DSP_CHORUS_WETMIX1,     conf._b);
-    res3=dsp->setParameter(FMOD_DSP_CHORUS_WETMIX2,     conf._c);
-    res4=dsp->setParameter(FMOD_DSP_CHORUS_WETMIX3,     conf._d);
-    res5=dsp->setParameter(FMOD_DSP_CHORUS_DELAY,       conf._e);
-    res6=dsp->setParameter(FMOD_DSP_CHORUS_RATE,        conf._f);
-    res7=dsp->setParameter(FMOD_DSP_CHORUS_DEPTH,       conf._g);
-    res8=dsp->setParameter(FMOD_DSP_CHORUS_FEEDBACK,    conf._h);
+    res1 = dsp->setParameter(FMOD_DSP_CHORUS_DRYMIX,      conf._a);
+    res2 = dsp->setParameter(FMOD_DSP_CHORUS_WETMIX1,     conf._b);
+    res3 = dsp->setParameter(FMOD_DSP_CHORUS_WETMIX2,     conf._c);
+    res4 = dsp->setParameter(FMOD_DSP_CHORUS_WETMIX3,     conf._d);
+    res5 = dsp->setParameter(FMOD_DSP_CHORUS_DELAY,       conf._e);
+    res6 = dsp->setParameter(FMOD_DSP_CHORUS_RATE,        conf._f);
+    res7 = dsp->setParameter(FMOD_DSP_CHORUS_DEPTH,       conf._g);
     break;
-  case FilterProperties::FT_reverb:
-    res1=dsp->setParameter(FMOD_DSP_REVERB_DRYMIX,      conf._a);
-    res2=dsp->setParameter(FMOD_DSP_REVERB_WETMIX,      conf._b);
-    res3=dsp->setParameter(FMOD_DSP_REVERB_ROOMSIZE,    conf._c);
-    res4=dsp->setParameter(FMOD_DSP_REVERB_DAMP,        conf._d);
-    res5=dsp->setParameter(FMOD_DSP_REVERB_WIDTH,       conf._e);
+  case FilterProperties::FT_sfxreverb:
+    res1 = dsp->setParameter(FMOD_DSP_SFXREVERB_DRYLEVEL, conf._a);
+    res2 = dsp->setParameter(FMOD_DSP_SFXREVERB_ROOM,     conf._b);
+    res3 = dsp->setParameter(FMOD_DSP_SFXREVERB_ROOMHF,   conf._c);
+    res4 = dsp->setParameter(FMOD_DSP_SFXREVERB_DECAYTIME,conf._d);
+    res5 = dsp->setParameter(FMOD_DSP_SFXREVERB_DECAYHFRATIO,    conf._e);
+    res6 = dsp->setParameter(FMOD_DSP_SFXREVERB_REFLECTIONSLEVEL,conf._f);
+    res7 = dsp->setParameter(FMOD_DSP_SFXREVERB_REFLECTIONSDELAY,conf._g);
+    res8 = dsp->setParameter(FMOD_DSP_SFXREVERB_REVERBLEVEL,     conf._h);
+    res9 = dsp->setParameter(FMOD_DSP_SFXREVERB_REVERBDELAY,     conf._i);
+    res10 = dsp->setParameter(FMOD_DSP_SFXREVERB_DIFFUSION,      conf._j);
+    res11 = dsp->setParameter(FMOD_DSP_SFXREVERB_DENSITY,        conf._k);
+    res12 = dsp->setParameter(FMOD_DSP_SFXREVERB_HFREFERENCE,    conf._l);
+    res13 = dsp->setParameter(FMOD_DSP_SFXREVERB_ROOMLF,         conf._m);
+    res14 = dsp->setParameter(FMOD_DSP_SFXREVERB_LFREFERENCE,    conf._n);
     break;
   case FilterProperties::FT_compress:
-    res1=dsp->setParameter(FMOD_DSP_COMPRESSOR_THRESHOLD, conf._a);
-    res2=dsp->setParameter(FMOD_DSP_COMPRESSOR_ATTACK,    conf._b);
-    res3=dsp->setParameter(FMOD_DSP_COMPRESSOR_RELEASE,   conf._c);
-    res4=dsp->setParameter(FMOD_DSP_COMPRESSOR_GAINMAKEUP,conf._d);
+    res1 = dsp->setParameter(FMOD_DSP_COMPRESSOR_THRESHOLD, conf._a);
+    res2 = dsp->setParameter(FMOD_DSP_COMPRESSOR_ATTACK,    conf._b);
+    res3 = dsp->setParameter(FMOD_DSP_COMPRESSOR_RELEASE,   conf._c);
+    res4 = dsp->setParameter(FMOD_DSP_COMPRESSOR_GAINMAKEUP,conf._d);
     break;
   }
 
   if ((res1!=FMOD_OK)||(res2!=FMOD_OK)||(res3!=FMOD_OK)||(res4!=FMOD_OK)||
-      (res5!=FMOD_OK)||(res6!=FMOD_OK)||(res7!=FMOD_OK)||(res8!=FMOD_OK)) {
+      (res5!=FMOD_OK)||(res6!=FMOD_OK)||(res7!=FMOD_OK)||(res8!=FMOD_OK)||
+      (res9!=FMOD_OK)||(res10!=FMOD_OK)||(res11!=FMOD_OK)||(res12!=FMOD_OK)||
+      (res13!=FMOD_OK)||(res14!=FMOD_OK)) {
     audio_error("Could not configure DSP");
     dsp->release();
     return NULL;
@@ -493,11 +509,17 @@ getSpeakerSetup() {
     case  FMOD_SPEAKERMODE_7POINT1:
       returnMode = 6;
       break;
-    case  FMOD_SPEAKERMODE_PROLOGIC:
+    case  FMOD_SPEAKERMODE_SRS5_1_MATRIX:
       returnMode = 7;
       break;
-    case  FMOD_SPEAKERMODE_MAX:
+    case  FMOD_SPEAKERMODE_DOLBY5_1_MATRIX:
       returnMode = 8;
+      break;
+    case  FMOD_SPEAKERMODE_MYEARS:
+      returnMode = 9;
+      break;
+    case  FMOD_SPEAKERMODE_MAX:
+      returnMode = 10;
       break;
     default:
       returnMode = -1;

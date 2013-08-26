@@ -41,7 +41,10 @@ FilterProperties::
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void FilterProperties::
-add_filter(FilterType t, PN_stdfloat a, PN_stdfloat b, PN_stdfloat c, PN_stdfloat d, PN_stdfloat e, PN_stdfloat f, PN_stdfloat g, PN_stdfloat h) {
+add_filter(FilterType t, PN_stdfloat a, PN_stdfloat b, PN_stdfloat c, PN_stdfloat d,
+	                     PN_stdfloat e, PN_stdfloat f, PN_stdfloat g, PN_stdfloat h,
+	                     PN_stdfloat i, PN_stdfloat j, PN_stdfloat k, PN_stdfloat l,
+	                     PN_stdfloat m, PN_stdfloat n) {
   FilterConfig conf;
   conf._type = t;
   conf._a = a;
@@ -52,6 +55,12 @@ add_filter(FilterType t, PN_stdfloat a, PN_stdfloat b, PN_stdfloat c, PN_stdfloa
   conf._f = f;
   conf._g = g;
   conf._h = h;
+  conf._i = i;
+  conf._j = j;
+  conf._k = k;
+  conf._l = l;
+  conf._m = m;
+  conf._n = n;
   _config.push_back(conf);
 }
 

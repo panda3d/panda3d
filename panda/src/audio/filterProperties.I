@@ -109,18 +109,22 @@ add_pitchshift(PN_stdfloat pitch, PN_stdfloat fftsize, PN_stdfloat overlap) {
 // Description: Add a chorus filter to the end of the DSP chain.
 ////////////////////////////////////////////////////////////////////
 INLINE void FilterProperties::
-add_chorus(PN_stdfloat drymix, PN_stdfloat wet1, PN_stdfloat wet2, PN_stdfloat wet3, PN_stdfloat delay, PN_stdfloat rate, PN_stdfloat depth, PN_stdfloat feedback) {
-  add_filter(FT_chorus, drymix, wet1, wet2, wet3, delay, rate, depth, feedback);
+add_chorus(PN_stdfloat drymix, PN_stdfloat wet1, PN_stdfloat wet2, PN_stdfloat wet3, PN_stdfloat delay, PN_stdfloat rate, PN_stdfloat depth) {
+  add_filter(FT_chorus, drymix, wet1, wet2, wet3, delay, rate, depth);
 }
 
 ////////////////////////////////////////////////////////////////////
-//    Function: FilterProperties::add_reverb
+//    Function: FilterProperties::add_sfxreverb
 //      Access: Published
 // Description: Add a reverb filter to the end of the DSP chain.
 ////////////////////////////////////////////////////////////////////
 INLINE void FilterProperties::
-add_reverb(PN_stdfloat drymix, PN_stdfloat wetmix, PN_stdfloat roomsize, PN_stdfloat damp, PN_stdfloat width) {
-  add_filter(FT_reverb, drymix, wetmix, roomsize, damp, width);
+add_sfxreverb(PN_stdfloat drylevel, PN_stdfloat room, PN_stdfloat roomhf, PN_stdfloat decaytime,
+  	          PN_stdfloat decayhfratio, PN_stdfloat reflectionslevel, PN_stdfloat reflectionsdelay,
+  	          PN_stdfloat reverblevel, PN_stdfloat reverbdelay, PN_stdfloat diffusion,
+  	          PN_stdfloat density, PN_stdfloat hfreference, PN_stdfloat roomlf, PN_stdfloat lfreference) {
+  add_filter(FT_sfxreverb, drylevel, room, roomhf, decaytime, decayhfratio, reflectionslevel, reflectionsdelay,
+  	                       reverblevel, reverbdelay, diffusion, density, hfreference, roomlf, lfreference);
 }
 
 ////////////////////////////////////////////////////////////////////
