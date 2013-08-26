@@ -4556,7 +4556,7 @@ if (RUNTIME and PkgSkip("NPAPI")==0):
 #
 
 if (RUNTIME and GetTarget() == 'windows'):
-  OPTS=['DIR:direct/src/plugin_activex', 'RUNTIME', 'ACTIVEX']
+  OPTS=['DIR:direct/src/plugin_activex', 'RUNTIME', 'ACTIVEX', 'MFC']
   DefSymbol('ACTIVEX', '_USRDLL', '')
   DefSymbol('ACTIVEX', '_WINDLL', '')
   DefSymbol('ACTIVEX', '_AFXDLL', '')
