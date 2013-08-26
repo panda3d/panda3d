@@ -385,8 +385,7 @@ bool P3DSplashWindow::
 read_image_data_png(ImageData &image, string &data,
                     FILE *fp, const string &image_filename) {
   png_structp png;
-  png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL,
-                                png_error, png_warning);
+  png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
   if (png == NULL) {
     return false;
   }
