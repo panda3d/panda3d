@@ -26,10 +26,6 @@
 #include <errno.h>
 #endif  // _WIN32
 
-#ifdef _MSC_VER
-typedef SSIZE_T ssize_t;
-#endif
-
 PandaFileStreamBuf::NewlineMode PandaFileStreamBuf::_newline_mode = NM_native;
 
 static const size_t file_buffer_size = 4096;
@@ -444,7 +440,7 @@ overflow(int ch) {
   size_t n = pptr() - pbase();
   if (n != 0) {
     size_t wrote = write_chars(pbase(), n);
-    pbump(-(ssize_t)wrote);
+    pbump(-(streamoff)wrote);
     if (wrote != n) {
       okflag = false;
     }
@@ -478,7 +474,7 @@ sync() {
   size_t n = pptr() - pbase();
 
   size_t wrote = write_chars(pbase(), n);
-  pbump(-(ssize_t)wrote);
+  pbump(-(streamoff)wrote);
 
   if (n != wrote) {
     return EOF;
@@ -500,7 +496,7 @@ underflow() {
 
     // Mark the buffer filled (with buffer_size bytes).
     size_t buffer_size = egptr() - eback();
-    gbump(-(ssize_t)buffer_size);
+    gbump(-(streamoff)buffer_size);
 
     size_t num_bytes = buffer_size;
     size_t read_count = read_chars(gptr(), buffer_size);
