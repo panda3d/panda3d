@@ -26,6 +26,10 @@
 #include <errno.h>
 #endif  // _WIN32
 
+#ifdef _MSC_VER
+typedef SSIZE_T ssize_t;
+#endif
+
 PandaFileStreamBuf::NewlineMode PandaFileStreamBuf::_newline_mode = NM_native;
 
 static const size_t file_buffer_size = 4096;
