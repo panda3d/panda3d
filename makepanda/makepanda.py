@@ -453,6 +453,7 @@ if (COMPILER == "MSVC"):
             if (pkg[:4]=="MAYA"):
                 IncDirectory(pkg, SDK[pkg]      + "/include")
                 DefSymbol(pkg, "MAYAVERSION", pkg)
+                DefSymbol(pkg, "MLIBRARY_DONTUSE_MFC_MANIFEST", "")
             elif (pkg[:3]=="MAX"):
                 IncDirectory(pkg, SDK[pkg]      + "/include")
                 IncDirectory(pkg, SDK[pkg]      + "/include/CS")
