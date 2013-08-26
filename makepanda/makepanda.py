@@ -477,7 +477,7 @@ if (COMPILER == "MSVC"):
                 LibName(pkg, 'dxerrVNUM.lib'.replace("VNUM", vnum))
             LibName(pkg, 'ddraw.lib')
             LibName(pkg, 'dxguid.lib')
-    IncDirectory("MFC", GetThirdpartyDir() + "extras/include")
+    IncDirectory("ALWAYS", GetThirdpartyDir() + "extras/include")
     LibName("WINSOCK", "wsock32.lib")
     LibName("WINSOCK2", "wsock32.lib")
     LibName("WINSOCK2", "ws2_32.lib")
