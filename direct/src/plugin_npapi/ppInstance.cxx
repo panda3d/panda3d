@@ -339,7 +339,7 @@ set_window(NPWindow *window) {
       // main thread, but we also rely on this to paint the twirling
       // icon into the browser window.
       SetWindowLongPtr(_hwnd, GWLP_USERDATA, (LONG_PTR)this);
-      _orig_window_proc = SetWindowLongPtr(_hwnd, GWL_WNDPROC, (LONG_PTR)st_window_proc);
+      _orig_window_proc = SetWindowLongPtr(_hwnd, GWLP_WNDPROC, (LONG_PTR)st_window_proc);
 
       // Also set a timer to go off every once in a while, to update
       // the twirling icon, and also to catch events in case something
@@ -1986,7 +1986,7 @@ cleanup_window() {
 #ifdef _WIN32
     // Restore the parent window to its own window handler.
     HWND hwnd = (HWND)_window.window;
-    SetWindowLongPtr(hwnd, GWL_WNDPROC, _orig_window_proc);
+    SetWindowLongPtr(hwnd, GWLP_WNDPROC, _orig_window_proc);
     InvalidateRect(hwnd, NULL, true);
 
     if (_bg_brush != NULL) {
