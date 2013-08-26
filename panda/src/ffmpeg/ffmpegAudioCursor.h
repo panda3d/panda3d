@@ -17,8 +17,6 @@
 
 #include "pandabase.h"
 
-#ifdef HAVE_FFMPEG
-
 #include "movieAudioCursor.h"
 #include "namable.h"
 #include "texture.h"
@@ -43,7 +41,7 @@ struct SwrContext;
 //       Class : FfmpegAudioCursor
 // Description : A stream that generates a sequence of audio samples.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_MOVIES FfmpegAudioCursor : public MovieAudioCursor {
+class EXPCL_FFMPEG FfmpegAudioCursor : public MovieAudioCursor {
   friend class FfmpegAudio;
 
 PUBLISHED:
@@ -85,7 +83,7 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWritableReferenceCount::init_type();
+    MovieAudioCursor::init_type();
     register_type(_type_handle, "FfmpegAudioCursor",
                   MovieAudioCursor::get_class_type());
   }
@@ -100,5 +98,4 @@ private:
 
 #include "ffmpegAudioCursor.I"
 
-#endif // HAVE_FFMPEG
-#endif // FFMPEG_AUDIO.H
+#endif // FFMPEGAUDIOCURSOR_H

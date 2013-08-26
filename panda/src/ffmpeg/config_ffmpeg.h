@@ -1,5 +1,5 @@
-// Filename: config_vrpn.h
-// Created by:  jason (07Aug00)
+// Filename: config_ffmpeg.h
+// Created by:  rdb (23Aug13)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,12 +12,20 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CONFIG_VRPN_H
-#define CONFIG_VRPN_H
+#ifndef CONFIG_FFMPEG_H
+#define CONFIG_FFMPEG_H
 
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
+#include "configVariableEnum.h"
+#include "configVariableInt.h"
+#include "configVariableBool.h"
+#include "threadPriority.h"
+#include "dconfig.h"
 
-NotifyCategoryDecl(vrpn, EXPCL_VRPN, EXPTP_VRPN);
+ConfigureDecl(config_ffmpeg, EXPCL_FFMPEG, EXPTP_FFMPEG);
+NotifyCategoryDecl(ffmpeg, EXPCL_FFMPEG, EXPTP_FFMPEG);
 
-#endif
+extern EXPCL_FFMPEG void init_libffmpeg();
+
+#endif /* CONFIG_FFMPEG_H */

@@ -17,8 +17,6 @@
 
 #include "pandabase.h"
 
-#ifdef HAVE_FFMPEG
-
 #include "movieVideo.h"
 
 class FfmpegVideoCursor;
@@ -30,15 +28,16 @@ class BamReader;
 //       Class : FfmpegVideo
 // Description : 
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_MOVIES FfmpegVideo : public MovieVideo {
-
+class EXPCL_FFMPEG FfmpegVideo : public MovieVideo {
 PUBLISHED:
   FfmpegVideo(const Filename &name);
   FfmpegVideo(const SubfileInfo &info);
 
   virtual ~FfmpegVideo();
   virtual PT(MovieVideoCursor) open();
-  
+
+  static PT(MovieVideo) make(const Filename &name);
+
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
@@ -69,5 +68,4 @@ private:
 
 #include "ffmpegVideo.I"
 
-#endif // HAVE_FFMPEG
 #endif // FFMPEGVIDEO_H

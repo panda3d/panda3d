@@ -20,6 +20,7 @@
 #ifdef HAVE_AUDIO
 
 #include "movieVideo.h"
+#include "movieVideoCursor.h"
 #include "audioSound.h"
 #include "pipelineCycler.h"
 #include "cycleData.h"

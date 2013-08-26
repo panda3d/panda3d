@@ -35,7 +35,7 @@ class VrpnDialDevice;
 //               and records information on the connected VRPN
 //               devices.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_VRPN VrpnClient : public ClientBase {
+class EXPCL_VRPN VrpnClient : public ClientBase {
 PUBLISHED:
   VrpnClient(const string &server_name);
   ~VrpnClient();

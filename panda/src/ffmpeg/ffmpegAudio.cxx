@@ -13,10 +13,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "ffmpegAudio.h"
-
-#ifdef HAVE_FFMPEG
-
 #include "ffmpegAudioCursor.h"
+#include "dcast.h"
 
 TypeHandle FfmpegAudio::_type_handle;
 
@@ -50,7 +48,7 @@ PT(MovieAudioCursor) FfmpegAudio::
 open() {
   PT(FfmpegAudioCursor) result = new FfmpegAudioCursor(this);
   if (result->_format_ctx == 0) {
-    movies_cat.error() << "Could not open " << _filename << "\n";
+    ffmpeg_cat.error() << "Could not open " << _filename << "\n";
     return NULL;
   } else {
     return (MovieAudioCursor*)(FfmpegAudioCursor*)result;
@@ -58,5 +56,11 @@ open() {
 }
 
 ////////////////////////////////////////////////////////////////////
-
-#endif // HAVE_FFMPEG
+//     Function: FfmpegAudio::make
+//       Access: Published, Static
+//  Description: Obtains a MovieAudio that references a file.
+////////////////////////////////////////////////////////////////////
+PT(MovieAudio) FfmpegAudio::
+make(const Filename &name) {
+  return DCAST(MovieAudio, new FfmpegAudio(name));
+}

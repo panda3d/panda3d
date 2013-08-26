@@ -16,9 +16,6 @@
 #define FFMPEGVIDEOCURSOR_H
 
 #include "pandabase.h"
-
-#ifdef HAVE_FFMPEG
-
 #include "movieVideoCursor.h"
 #include "texture.h"
 #include "pointerTo.h"
@@ -42,7 +39,7 @@ struct SwsContext;
 //       Class : FfmpegVideoCursor
 // Description : 
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_MOVIES FfmpegVideoCursor : public MovieVideoCursor {
+class EXPCL_FFMPEG FfmpegVideoCursor : public MovieVideoCursor {
 private:
   FfmpegVideoCursor();
   void init_from(FfmpegVideo *src);
@@ -67,7 +64,7 @@ public:
 
 public:
   // Nested class must be public for PT(FfmpegBuffer) to work correctly.
-  class EXPCL_PANDA_MOVIES FfmpegBuffer : public Buffer {
+  class EXPCL_FFMPEG FfmpegBuffer : public Buffer {
   public:
     ALLOC_DELETED_CHAIN(FfmpegBuffer);
     INLINE FfmpegBuffer(size_t block_size, double video_timebase);
@@ -215,5 +212,4 @@ private:
 
 #include "ffmpegVideoCursor.I"
 
-#endif // HAVE_FFMPEG
 #endif // FFMPEGVIDEO_H

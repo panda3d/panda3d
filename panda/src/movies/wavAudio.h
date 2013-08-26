@@ -1,5 +1,5 @@
-// Filename: microphoneAudio.h
-// Created by: jyelon (02Jul07)
+// Filename: wavAudio.h
+// Created by: rdb (23Aug13)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,48 +12,37 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef MICROPHONEAUDIO_H
-#define MICROPHONEAUDIO_H
+#ifndef WAVAUDIO_H
+#define WAVAUDIO_H
 
+#include "pandabase.h"
 #include "movieAudio.h"
-class MovieAudio;
-class MovieAudioCursor;
+
+class WavAudioCursor;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : MicrophoneAudio
-// Description : Class MicrophoneAudio provides the means to read
-//               raw audio samples from a microphone.
+//       Class : WavAudio
+// Description : A native PCM .wav loader.  Supported formats
+//               are linear PCM, IEEE float, A-law and mu-law.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_MOVIES MicrophoneAudio : public MovieAudio {
+class EXPCL_PANDA_MOVIES WavAudio : public MovieAudio {
+PUBLISHED:
+  WavAudio(const Filename &name);
+  virtual ~WavAudio();
+  virtual PT(MovieAudioCursor) open();
 
- PUBLISHED:
-  virtual ~MicrophoneAudio();
+  static PT(MovieAudio) make(const Filename &name);
 
-  static int                 get_num_options();
-  static PT(MicrophoneAudio) get_option(int n);
-  MAKE_SEQ(get_options, get_num_options, get_option);
+private:
+  friend class WavAudioCursor;
   
-  INLINE int get_channels() const;
-  INLINE int get_rate() const;
-  
-  virtual PT(MovieAudioCursor) open() = 0;
-
 public:
-  static void find_all_microphones();
-
-protected:
-  int _channels;
-  int _rate;
-
-  static pvector<PT(MicrophoneAudio)> _all_microphones;
-
- public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    MovieAudio::init_type();
-    register_type(_type_handle, "MicrophoneAudio",
+    TypedWritableReferenceCount::init_type();
+    register_type(_type_handle, "WavAudio",
                   MovieAudio::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -61,10 +50,10 @@ protected:
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 
- private:
+private:
   static TypeHandle _type_handle;
 };
 
-#include "microphoneAudio.I"
+#include "wavAudio.I"
 
 #endif

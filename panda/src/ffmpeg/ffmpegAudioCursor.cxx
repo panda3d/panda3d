@@ -14,8 +14,6 @@
 
 #include "ffmpegAudioCursor.h"
 
-#ifdef HAVE_FFMPEG
-
 #include "ffmpegAudio.h"
 extern "C" {
   #include "libavutil/dict.h"
@@ -116,10 +114,10 @@ FfmpegAudioCursor(FfmpegAudio *src) :
   if (_audio_ctx->sample_fmt != AV_SAMPLE_FMT_S16) {
 #ifdef HAVE_SWRESAMPLE
 #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(53, 25, 0)
-    movies_cat.error()
+    ffmpeg_cat.error()
       << "Codec does not use signed 16-bit sample format.  Upgrade libavcodec to 53.25.0 or higher.\n";
 #else
-    movies_cat.debug()
+    ffmpeg_cat.debug()
       << "Codec does not use signed 16-bit sample format.  Setting up swresample context.\n";
 #endif
 
@@ -132,12 +130,12 @@ FfmpegAudioCursor(FfmpegAudio *src) :
     av_opt_set_sample_fmt(_resample_ctx, "out_sample_fmt", AV_SAMPLE_FMT_S16, 0);
 
     if (swr_init(_resample_ctx) != 0) {
-      movies_cat.error()
+      ffmpeg_cat.error()
         << "Failed to set up resample context.\n";
       _resample_ctx = NULL;
     }
 #else
-    movies_cat.error()
+    ffmpeg_cat.error()
       << "Codec does not use signed 16-bit sample format, but support for libswresample has not been enabled.\n";
 #endif
   }
@@ -354,7 +352,7 @@ seek(double t) {
     target_ts = _initial_dts;
   }
   if (av_seek_frame(_format_ctx, _audio_index, target_ts, AVSEEK_FLAG_BACKWARD) < 0) {
-    movies_cat.error() << "Seek failure. Shutting down movie.\n";
+    ffmpeg_cat.error() << "Seek failure. Shutting down movie.\n";
     cleanup();
     return;
   }
@@ -417,7 +415,3 @@ read_samples(int n, PN_int16 *data) {
   }
   _samples_read += n;
 }
-
-////////////////////////////////////////////////////////////////////
-
-#endif // HAVE_FFMPEG

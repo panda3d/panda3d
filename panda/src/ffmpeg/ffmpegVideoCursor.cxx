@@ -13,9 +13,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "ffmpegVideoCursor.h"
-
-#ifdef HAVE_FFMPEG
-
 #include "config_movies.h"
 #include "pStatCollector.h"
 #include "pStatTimer.h"
@@ -1299,5 +1296,3 @@ get_timestamp() const {
   int mid_frame = (_begin_frame + _end_frame - 1) / 2;
   return mid_frame * _video_timebase;
 }
-
-#endif // HAVE_FFMPEG

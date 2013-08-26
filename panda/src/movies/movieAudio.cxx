@@ -14,7 +14,8 @@
 
 #include "movieAudio.h"
 #include "movieAudioCursor.h"
-#include "ffmpegAudio.h"
+#include "config_movies.h"
+#include "movieTypeRegistry.h"
 
 TypeHandle MovieAudio::_type_handle;
 
@@ -55,14 +56,10 @@ open() {
 //     Function: MovieAudio::get
 //       Access: Published, Static
 //  Description: Obtains a MovieAudio that references a file.
+//               Just calls MovieTypeRegistry::make_audio().
 ////////////////////////////////////////////////////////////////////
 PT(MovieAudio) MovieAudio::
 get(const Filename &name) {
-#ifdef HAVE_FFMPEG
-  // Someday, I'll probably put a dispatcher here.
-  // But for now, just hardwire it to go to FFMPEG.
-  return new FfmpegAudio(name);
-#else
-  return new MovieAudio("Load-Failure Stub");
-#endif
+  MovieTypeRegistry *reg = MovieTypeRegistry::get_global_ptr();
+  return reg->make_audio(name);
 }

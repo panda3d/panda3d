@@ -118,14 +118,8 @@ init_libgrutil() {
 #ifdef HAVE_AUDIO
   MovieTexture::init_type();
   MovieTexture::register_with_read_factory();
-#endif  // HAVE_AUDIO
-
-#ifdef HAVE_FFMPEG
-  MovieTexture::init_type();
-  MovieTexture::register_with_read_factory();
 
   TexturePool *ts = TexturePool::get_global_ptr();
   ts->register_texture_type(MovieTexture::make_texture, "avi mov mpg mpeg mp4 wmv asf flv nut ogm mkv ogv");
-#endif  // HAVE_FFMPEG
+#endif
 }
-

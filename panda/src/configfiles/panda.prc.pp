@@ -59,6 +59,17 @@ audio-library-name p3openal_audio
 load-file-type egg pandaegg
 
 
+# These entries work very similar to load-file-type, except they are
+# used by the MovieVideo and MovieAudio code to determine which module
+# should be loaded in order to decode files of the given extension.
+
+# ffmpeg is added by default because it used to be compiled in.
+# The * is a special catch-all extension that is consulted unless a
+# loader has been defined with an explicit extension.
+
+load-audio-type * p3ffmpeg
+load-video-type * p3ffmpeg
+
 
 # The following lines define some handy object types to use within the
 # egg syntax.  This remaps <ObjectType> { name } into whatever egg

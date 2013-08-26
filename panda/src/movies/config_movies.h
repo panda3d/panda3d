@@ -12,28 +12,24 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef __CONFIG_MOVIES_H__
-#define __CONFIG_MOVIES_H__
+#ifndef CONFIG_MOVIES_H
+#define CONFIG_MOVIES_H
 
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
-#include "configVariableEnum.h"
-#include "configVariableInt.h"
 #include "configVariableBool.h"
+#include "configVariableList.h"
 #include "threadPriority.h"
 #include "dconfig.h"
 
 ConfigureDecl(config_movies, EXPCL_PANDA_MOVIES, EXPTP_PANDA_MOVIES);
 NotifyCategoryDecl(movies, EXPCL_PANDA_MOVIES, EXPTP_PANDA_MOVIES);
-NotifyCategoryDecl(ffmpeg, EXPCL_PANDA_MOVIES, EXPTP_PANDA_MOVIES);
 
-extern ConfigVariableInt ffmpeg_max_readahead_frames;
-extern ConfigVariableBool ffmpeg_show_seek_frames;
-extern ConfigVariableBool ffmpeg_support_seek;
-extern ConfigVariableBool ffmpeg_global_lock;
-extern ConfigVariableEnum<ThreadPriority> ffmpeg_thread_priority;
-extern ConfigVariableInt ffmpeg_read_buffer_size;
+extern ConfigVariableList load_audio_type;
+extern ConfigVariableList load_video_type;
+
+extern ConfigVariableBool vorbis_seek_lap;
 
 extern EXPCL_PANDA_MOVIES void init_libmovies();
 
-#endif /* __CONFIG_MOVIES_H__ */
+#endif /* CONFIG_MOVIES_H */

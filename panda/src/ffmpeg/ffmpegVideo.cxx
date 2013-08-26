@@ -13,12 +13,10 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "ffmpegVideo.h"
-
-#ifdef HAVE_FFMPEG
-
 #include "ffmpegVideoCursor.h"
 #include "config_movies.h"
 #include "bamReader.h"
+#include "dcast.h"
 
 TypeHandle FfmpegVideo::_type_handle;
 
@@ -70,11 +68,21 @@ PT(MovieVideoCursor) FfmpegVideo::
 open() {
   PT(FfmpegVideoCursor) result = new FfmpegVideoCursor(this);
   if (result->_format_ctx == 0) {
-    movies_cat.error() << "Could not open " << _filename << "\n";
+    ffmpeg_cat.error() << "Could not open " << _filename << "\n";
     return NULL;
   } else {
     return result.p();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FfmpegVideo::make
+//       Access: Published, Static
+//  Description: Obtains a MovieVideo that references a file.
+////////////////////////////////////////////////////////////////////
+PT(MovieVideo) FfmpegVideo::
+make(const Filename &name) {
+  return DCAST(MovieVideo, new FfmpegVideo(name));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -130,7 +138,3 @@ void FfmpegVideo::
 fillin(DatagramIterator &scan, BamReader *manager) {
   MovieVideo::fillin(scan, manager);
 }
-
-////////////////////////////////////////////////////////////////////
-
-#endif // HAVE_FFMPEG

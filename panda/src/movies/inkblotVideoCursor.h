@@ -19,6 +19,7 @@
 #include "texture.h"
 #include "pointerTo.h"
 #include "inkblotVideo.h"
+#include "movieVideoCursor.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : InkblotVideoCursor

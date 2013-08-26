@@ -16,9 +16,6 @@
 #define FFMPEGAUDIO_H
 
 #include "pandabase.h"
-
-#ifdef HAVE_FFMPEG
-
 #include "movieAudio.h"
 
 class FfmpegAudioCursor;
@@ -27,12 +24,13 @@ class FfmpegAudioCursor;
 //       Class : FfmpegAudio
 // Description : A stream that generates a sequence of audio samples.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_MOVIES FfmpegAudio : public MovieAudio {
-
+class EXPCL_FFMPEG FfmpegAudio : public MovieAudio {
 PUBLISHED:
   FfmpegAudio(const Filename &name);
   virtual ~FfmpegAudio();
   virtual PT(MovieAudioCursor) open();
+
+  static PT(MovieAudio) make(const Filename &name);
 
  private:
   friend class FfmpegAudioCursor;
@@ -57,5 +55,4 @@ private:
 
 #include "ffmpegAudio.I"
 
-#endif // HAVE_FFMPEG
-#endif // FFMPEG_AUDIO.H
+#endif // FFMPEGAUDIO_H

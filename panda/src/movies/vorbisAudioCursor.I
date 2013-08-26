@@ -1,5 +1,5 @@
-// Filename: config_vrpn.h
-// Created by:  jason (07Aug00)
+// Filename: wavAudioCursor.I
+// Created by: rdb (23Aug13)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,12 +12,3 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CONFIG_VRPN_H
-#define CONFIG_VRPN_H
-
-#include "pandabase.h"
-#include "notifyCategoryProxy.h"
-
-NotifyCategoryDecl(vrpn, EXPCL_VRPN, EXPTP_VRPN);
-
-#endif

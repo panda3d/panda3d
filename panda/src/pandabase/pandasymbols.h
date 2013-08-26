@@ -40,6 +40,14 @@
   #define EXPTP_COLLADA extern
 #endif
 
+#ifdef BUILDING_FFMPEG
+  #define EXPCL_FFMPEG __declspec(dllexport)
+  #define EXPTP_FFMPEG
+#else
+  #define EXPCL_FFMPEG __declspec(dllimport)
+  #define EXPTP_FFMPEG extern
+#endif
+
 #ifdef BUILDING_FRAMEWORK
   #define EXPCL_FRAMEWORK __declspec(dllexport)
   #define EXPTP_FRAMEWORK
@@ -70,6 +78,14 @@
 #else
   #define EXPCL_FMOD_AUDIO __declspec(dllimport)
   #define EXPTP_FMOD_AUDIO extern
+#endif
+
+#ifdef BUILDING_OCULUSVR
+  #define EXPCL_OCULUSVR __declspec(dllexport)
+  #define EXPTP_OCULUSVR
+#else
+  #define EXPCL_OCULUSVR __declspec(dllimport)
+  #define EXPTP_OCULUSVR extern
 #endif
 
 #ifdef BUILDING_OPENAL_AUDIO
@@ -264,6 +280,14 @@
   #define EXPTP_VISION extern
 #endif
 
+#ifdef BUILDING_VRPN
+  #define EXPCL_VRPN __declspec(dllexport)
+  #define EXPTP_VRPN
+#else
+  #define EXPCL_VRPN __declspec(dllimport)
+  #define EXPTP_VRPN extern
+#endif
+
 #else   /* !WIN32_VC */
 
 #define EXPCL_CFTALK
@@ -271,6 +295,9 @@
 
 #define EXPCL_COLLADA
 #define EXPTP_COLLADA
+
+#define EXPCL_FFMPEG
+#define EXPTP_FFMPEG
 
 #define EXPCL_FRAMEWORK
 #define EXPTP_FRAMEWORK
@@ -283,6 +310,9 @@
 
 #define EXPCL_FMOD_AUDIO
 #define EXPTP_FMOD_AUDIO
+
+#define EXPCL_OCULUSVR
+#define EXPTP_OCULUSVR
 
 #define EXPCL_OPENAL_AUDIO
 #define EXPTP_OPENAL_AUDIO
@@ -359,6 +389,9 @@
 #define EXPCL_VISION
 #define EXPTP_VISION
 
+#define EXPCL_VRPN
+#define EXPTP_VRPN
+
 #endif  /* WIN32_VC */
 
 #if (defined(WIN32_VC) || defined(WIN64_VC)) && !defined(CPPPARSER)
@@ -428,9 +461,6 @@
 
 #define EXPCL_PANDA_PIPELINE EXPCL_PANDA
 #define EXPTP_PANDA_PIPELINE EXPTP_PANDA
-
-#define EXPCL_PANDA_VRPN EXPCL_PANDA
-#define EXPTP_PANDA_VRPN EXPTP_PANDA
 
 #define EXPCL_PANDA_GRUTIL EXPCL_PANDA
 #define EXPTP_PANDA_GRUTIL EXPTP_PANDA

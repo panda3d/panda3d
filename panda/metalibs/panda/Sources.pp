@@ -10,7 +10,7 @@
 
 #define COMPONENT_LIBS \
     p3recorder p3pgraph p3pgraphnodes p3pipeline \
-    p3vrpn p3grutil p3chan p3pstatclient \
+    p3grutil p3chan p3pstatclient \
     p3char p3collide p3cull p3device \
     p3dgraph p3display p3event p3gobj p3gsgbase \
     p3linmath p3mathutil p3movies p3net p3nativenet \

@@ -16,9 +16,6 @@
 #define FFMPEGVIRTUALFILE_H
 
 #include "pandabase.h"
-
-#ifdef HAVE_FFMPEG
-
 #include "config_movies.h"
 #include "filename.h"
 #include "subfileInfo.h"
@@ -37,7 +34,7 @@ struct AVFormatContext;
 //               instance of the FfmpegVirtualFile for each ffmpeg
 //               stream you wish to open.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_MOVIES FfmpegVirtualFile {
+class EXPCL_FFMPEG FfmpegVirtualFile {
 public:
   FfmpegVirtualFile();
   ~FfmpegVirtualFile();
@@ -76,5 +73,4 @@ private:
 
 #include "ffmpegVirtualFile.I"
 
-#endif // HAVE_FFMPEG
 #endif // FFMPEGVIRTUALFILE_H

@@ -19,8 +19,8 @@
 #include "namable.h"
 #include "pointerTo.h"
 #include "typedWritableReferenceCount.h"
-class MovieAudioCursor;
 
+class MovieAudioCursor;
 
 #ifdef NOTIFY_DEBUG //[
   // Non-release build:
@@ -32,7 +32,6 @@ class MovieAudioCursor;
   // Release build:
   #define movies_debug(msg) ((void)0);
 #endif //]
-
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MovieAudio
@@ -47,12 +46,12 @@ class MovieAudioCursor;
 //               is what allows access.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_MOVIES MovieAudio : public TypedWritableReferenceCount, public Namable {
-
  PUBLISHED:
   MovieAudio(const string &name = "Blank Audio");
   virtual ~MovieAudio();
   virtual PT(MovieAudioCursor) open();
   static PT(MovieAudio) get(const Filename &name);
+
   INLINE const Filename &get_filename() const;
 
  protected:
@@ -75,9 +74,6 @@ class EXPCL_PANDA_MOVIES MovieAudio : public TypedWritableReferenceCount, public
  private:
   static TypeHandle _type_handle;
 };
-
-/* okcircular */
-#include "movieAudioCursor.h"
 
 #include "movieAudio.I"
 

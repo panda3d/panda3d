@@ -13,8 +13,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "movieVideo.h"
+#include "movieVideoCursor.h"
 #include "config_movies.h"
-#include "ffmpegVideo.h"
+#include "movieTypeRegistry.h"
 #include "bamReader.h"
 #include "bamWriter.h"
 
@@ -58,18 +59,13 @@ open() {
 //     Function: MovieVideo::get
 //       Access: Published, Static
 //  Description: Obtains a MovieVideo that references a file.
+//               Just calls MovieTypeRegistry::make_video().
 ////////////////////////////////////////////////////////////////////
 PT(MovieVideo) MovieVideo::
 get(const Filename &name) {
-#ifdef HAVE_FFMPEG
-  // Someday, I'll probably put a dispatcher here.
-  // But for now, just hardwire it to go to FFMPEG.
-  return new FfmpegVideo(name);
-#else
-  return new MovieVideo("Load-Failure Stub");
-#endif
+  MovieTypeRegistry *reg = MovieTypeRegistry::get_global_ptr();
+  return reg->make_video(name);
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MovieVideo::write_datagram

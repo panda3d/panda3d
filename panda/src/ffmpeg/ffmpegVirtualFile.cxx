@@ -14,8 +14,6 @@
 
 #include "pandabase.h"
 
-#ifdef HAVE_FFMPEG
-
 #include "config_movies.h"
 #include "ffmpegVirtualFile.h"
 #include "virtualFileSystem.h"
@@ -349,5 +347,3 @@ log_callback(void *ptr, int level, const char *fmt, va_list v1) {
       << buffer;
   }
 }
-
-#endif // HAVE_FFMPEG

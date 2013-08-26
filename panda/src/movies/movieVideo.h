@@ -40,7 +40,6 @@ class BamReader;
 //               is what allows access.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_MOVIES MovieVideo : public TypedWritableReferenceCount, public Namable {
-
 PUBLISHED:
   MovieVideo(const string &name = "Blank Video");
   virtual ~MovieVideo();
@@ -77,9 +76,6 @@ public:
 private:
   static TypeHandle _type_handle;
 };
-
-/* okcircular */
-#include "movieVideoCursor.h"
 
 #include "movieVideo.I"
 
