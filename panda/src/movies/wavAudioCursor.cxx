@@ -322,7 +322,8 @@ seek(double t) {
     }
   }
 
-  _last_seek = _stream->tellg() / _byte_rate;
+  _data_pos = _stream->tellg() - _data_start;
+  _last_seek = _data_pos / _byte_rate;
   _samples_read = 0;
 }
 
