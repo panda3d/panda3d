@@ -358,7 +358,7 @@ add_pipe_type(TypeHandle type, PipeConstructorFunc *func) {
   nassertr(func != NULL, false);
 
   if (!type.is_derived_from(GraphicsPipe::get_class_type())) {
-    display_cat.warning()
+    display_cat->warning()
       << "Attempt to register " << type << " as a GraphicsPipe type.\n";
     return false;
   }
@@ -370,15 +370,15 @@ add_pipe_type(TypeHandle type, PipeConstructorFunc *func) {
   for (ti = _pipe_types.begin(); ti != _pipe_types.end(); ++ti) {
     const PipeType &ptype = (*ti);
     if (ptype._type == type) {
-      display_cat.warning()
+      display_cat->warning()
         << "Attempt to register GraphicsPipe type " << type
         << " more than once.\n";
       return false;
     }
   }
 
-  if (display_cat.is_debug()) {
-    display_cat.debug()
+  if (display_cat->is_debug()) {
+    display_cat->debug()
       << "Registering " << type << " as a GraphicsPipe type.\n";
   }
 
