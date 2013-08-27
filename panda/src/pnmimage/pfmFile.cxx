@@ -731,7 +731,7 @@ calc_bilinear_point(LPoint3f &result, PN_float32 x, PN_float32 y) const {
   PN_float32 frac_x = x - min_x;
   PN_float32 frac_y = y - min_y;
 
-  LPoint3f p00, p01, p10, p11;
+  LPoint3f p00(LPoint3f::zero()), p01(LPoint3f::zero()), p10(LPoint3f::zero()), p11(LPoint3f::zero());
   PN_float32 w00 = 0.0, w01 = 0.0, w10 = 0.0, w11 = 0.0;
 
   if (has_point(min_x, min_y)) {
@@ -1330,6 +1330,7 @@ forward_distort(const PfmFile &dist, PN_float32 scale_factor) {
       if (!source_p->calc_bilinear_point(p, uv[0], 1.0 - uv[1])) {
         continue;
       }
+      nassertv(!p.is_nan());
       result.set_point(xi, working_y_size - 1 - yi, p);
     }
   }
