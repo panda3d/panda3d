@@ -425,6 +425,7 @@ class VFSSharedLoader:
         #print >>sys.stderr, "shared load_module(%s), loaders = %s" % (fullname, map(lambda l: l.dir_path, self.loaders))
 
         mod = None
+        message = None
         path = []
         vfs_shared_path = []
         if self.reload:
@@ -436,6 +437,10 @@ class VFSSharedLoader:
             try:
                 mod = loader.load_module(fullname, loadingShared = True)
             except ImportError:
+                etype, evalue, etraceback = sys.exc_info()
+                print "%s on %s: %s" % (etype.__name__, fullname, evalue)
+                if not message:
+                    message = '%s: %s' % (fullname, evalue)
                 continue
             for dir in getattr(mod, '__path__', []):
                 if dir not in path:
@@ -443,7 +448,7 @@ class VFSSharedLoader:
 
         if mod is None:
             # If all of them failed to load, raise ImportError.
-            raise ImportError
+            raise ImportError, message
 
         # If at least one of them loaded successfully, return the
         # union of loaded modules.
