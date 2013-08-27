@@ -16,9 +16,14 @@
 #define CONFIG_PGRAPHNODES_H
 
 #include "pandabase.h"
-#include "lodNodeType.h"
+#include "notifyCategoryProxy.h"
+#include "dconfig.h"
+#include "configVariableBool.h"
 #include "configVariableEnum.h"
 #include "configVariableDouble.h"
+#include "configVariableInt.h"
+#include "configVariableString.h"
+#include "lodNodeType.h"
 
 class DSearchPath;
 
@@ -26,6 +31,13 @@ ConfigureDecl(config_pgraphnodes, EXPCL_PANDA_PGRAPHNODES, EXPTP_PANDA_PGRAPHNOD
 NotifyCategoryDecl(pgraphnodes, EXPCL_PANDA_PGRAPHNODES, EXPTP_PANDA_PGRAPHNODES);
 
 extern ConfigVariableEnum<LODNodeType> default_lod_type;
+extern ConfigVariableBool support_fade_lod;
+extern ConfigVariableDouble lod_fade_time;
+extern ConfigVariableString lod_fade_bin_name;
+extern ConfigVariableInt lod_fade_bin_draw_order;
+extern ConfigVariableInt lod_fade_state_override;
+extern ConfigVariableBool verify_lods;
+
 extern ConfigVariableInt parallax_mapping_samples;
 extern ConfigVariableDouble parallax_mapping_scale;
 

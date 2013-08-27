@@ -47,6 +47,41 @@ ConfigVariableEnum<LODNodeType> default_lod_type
  PRC_DESC("Set this to either 'pop' or 'fade' to determine the type of "
           "LODNode that is created by LODNode::make_default_lod()."));
 
+ConfigVariableBool support_fade_lod
+("support-fade-lod", true,
+ PRC_DESC("Set this false to make FadeLOD nodes behave like regular LOD nodes "
+          "(ignoring the fade time).  This may be useful, for instance, to "
+          "test the performance impact of using FadeLOD nodes."));
+
+ConfigVariableDouble lod_fade_time
+("lod-fade-time", 0.5,
+ PRC_DESC("The default amount of time (in seconds) over which a FadeLODNode "
+          "transitions between its different levels."));
+
+ConfigVariableString lod_fade_bin_name
+("lod-fade-bin-name", "fixed",
+ PRC_DESC("The default bin name in which to place the fading part of a "
+          "FadeLODNode transition."));
+
+ConfigVariableInt lod_fade_bin_draw_order
+("lod-fade-bin-draw-order", 0,
+ PRC_DESC("The default bin draw order to assign the fading part of a "
+          "FadeLODNode transition."));
+
+ConfigVariableInt lod_fade_state_override
+("lod-fade-state-override", 1000,
+ PRC_DESC("The default override value to assign to the fade attribs "
+          "in order to effect a FadeLODNode transition."));
+
+ConfigVariableBool verify_lods
+("verify-lods", false,
+ PRC_DESC("When this is true, LODNodes will test when they are rendered to "
+          "ensure that each child's geometry fits entirely within the radius "
+          "defined by its switch-out distance.  When it is false, LODNodes "
+          "may have any switch in and out distances, regardless of the "
+          "actual size of their geometry.  This test is only made in NDEBUG "
+          "mode (the variable is ignored in a production build)."));
+
 ConfigVariableInt parallax_mapping_samples
 ("parallax-mapping-samples", 3,
  PRC_DESC("Sets the amount of samples to use in the parallax mapping "

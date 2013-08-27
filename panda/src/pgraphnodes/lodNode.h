@@ -16,7 +16,7 @@
 #define LODNODE_H
 
 #include "pandabase.h"
-
+#include "config_pgraphnodes.h"
 #include "pandaNode.h"
 #include "luse.h"
 #include "pvector.h"

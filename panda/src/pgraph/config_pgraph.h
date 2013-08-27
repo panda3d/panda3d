@@ -52,7 +52,6 @@ extern ConfigVariableBool uniquify_transforms;
 extern ConfigVariableBool uniquify_states;
 extern ConfigVariableBool uniquify_attribs;
 extern ConfigVariableBool retransform_sprites;
-extern ConfigVariableBool support_fade_lod;
 extern ConfigVariableBool depth_offset_decals;
 extern ConfigVariableInt max_collect_vertices;
 extern ConfigVariableInt max_collect_indices;
@@ -63,11 +62,6 @@ extern EXPCL_PANDA_PGRAPH ConfigVariableInt max_lenses;
 extern ConfigVariableBool default_antialias_enable;
 
 extern ConfigVariableBool polylight_info;
-extern ConfigVariableDouble lod_fade_time;
-extern ConfigVariableString lod_fade_bin_name;
-extern ConfigVariableInt lod_fade_bin_draw_order;
-extern ConfigVariableInt lod_fade_state_override;
-extern ConfigVariableBool verify_lods;
 
 extern ConfigVariableBool show_vertex_animation;
 extern ConfigVariableBool show_transparency;
