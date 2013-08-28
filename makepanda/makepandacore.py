@@ -241,7 +241,7 @@ def exit(msg = ""):
 
 def GetHost():
     """Returns the host platform, ie. the one we're compiling on."""
-    if sys.platform == 'win32':
+    if sys.platform == 'win32' or sys.platform == 'cygwin':
         # sys.platform is win32 on 64-bits Windows as well.
         return 'windows'
     elif sys.platform == 'darwin':
@@ -482,9 +482,10 @@ def oscmd(cmd, ignoreError = False):
             print(ColorText("red", "Process exited with exit status %d and signal code %d" % ((res & 0xFF00) >> 8, sig)))
         if (sig == signal.SIGINT):
             exit("keyboard interrupt")
+
         # Don't ask me where the 35584 or 34304 come from...
         if (sig == signal.SIGSEGV or res == 35584 or res == 34304):
-            if (LocateBinary("gdb") and GetVerbose()):
+            if (LocateBinary("gdb") and GetVerbose() and GetHost() != "windows"):
                 print(ColorText("red", "Received SIGSEGV, retrieving traceback..."))
                 os.system("gdb -batch -ex 'handle SIG33 pass nostop noprint' -ex 'set pagination 0' -ex 'run' -ex 'bt full' -ex 'info registers' -ex 'thread apply all backtrace' -ex 'quit' --args %s < /dev/null" % cmd)
             else:
@@ -808,6 +809,7 @@ def CxxCalcDependencies(srcfile, ipath, ignore):
 ########################################################################
 
 if sys.platform == "win32":
+    # Note: not supported on cygwin. 
     if sys.version_info >= (3, 0):
         import winreg
     else:
@@ -1463,7 +1465,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
         for d, v in defs.values():
             DefSymbol(target_pkg, d, v)
         return
-    elif (sys.platform == "darwin" and framework != None):
+    elif (GetHost() == "darwin" and framework != None):
         if (os.path.isdir("/Library/Frameworks/%s.framework" % framework) or
             os.path.isdir("/System/Library/Frameworks/%s.framework" % framework) or
             os.path.isdir("/Developer/Library/Frameworks/%s.framework" % framework) or
@@ -1599,7 +1601,7 @@ def GetSdkDir(sdkname, sdkkey = None):
     return sdir
 
 def SdkLocateDirectX( strMode = 'default' ):
-    if (sys.platform != "win32"): return
+    if (GetHost() != "windows"): return
     if strMode == 'default':
         GetSdkDir("directx8", "DX8")
         GetSdkDir("directx9", "DX9")
@@ -1729,14 +1731,14 @@ def SdkLocateMaya():
         if (PkgSkip(ver)==0 and ver not in SDK):
             GetSdkDir(ver.lower().replace("x",""), ver)
             if (not ver in SDK):
-                if (sys.platform == "win32"):
+                if (GetHost() == "windows"):
                     for dev in ["Alias|Wavefront","Alias","Autodesk"]:
                         fullkey="SOFTWARE\\"+dev+"\\Maya\\"+key+"\\Setup\\InstallPath"
                         res = GetRegistryKey(fullkey, "MAYA_INSTALL_LOCATION", override64=False)
                         if (res != 0):
                             res = res.replace("\\", "/").rstrip("/")
                             SDK[ver] = res
-                elif (sys.platform == "darwin"):
+                elif (GetHost() == "darwin"):
                     ddir = "/Applications/Autodesk/maya"+key
                     if (os.path.isdir(ddir)): SDK[ver] = ddir
                 else:
@@ -1751,7 +1753,7 @@ def SdkLocateMaya():
                     elif (os.path.isdir(ddir2)): SDK[ver] = ddir2
 
 def SdkLocateMax():
-    if (sys.platform != "win32"): return
+    if (GetHost() != "windows"): return
     for version,key1,key2,subdir in MAXVERSIONINFO:
         if (PkgSkip(version)==0):
             if (version not in SDK):
@@ -1811,35 +1813,50 @@ def SdkLocatePython(force_use_sys_executable = False):
         SDK["PYTHONEXEC"] = os.path.realpath(sys.executable)
 
 def SdkLocateVisualStudio():
-    if (sys.platform != "win32"): return
+    if (GetHost() != "windows"): return
     vcdir = GetRegistryKey("SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VC7", "10.0")
     if (vcdir != 0) and (vcdir[-4:] == "\\VC\\"):
         vcdir = vcdir[:-3]
         SDK["VISUALSTUDIO"] = vcdir
+
+    elif (os.path.isfile("C:\\Program Files\\Microsoft Visual Studio 10.0\\VC\\bin\\cl.exe")):
+        SDK["VISUALSTUDIO"] = "C:\\Program Files\\Microsoft Visual Studio 10.0\\"
+
+    elif (os.path.isfile("C:\\Program Files (x86)\\Microsoft Visual Studio 10.0\\VC\\bin\\cl.exe")):
+        SDK["VISUALSTUDIO"] = "C:\\Program Files (x86)\\Microsoft Visual Studio 10.0\\"
+
     elif "VCINSTALLDIR" in os.environ:
         vcdir = os.environ["VCINSTALLDIR"]
         if (vcdir[-3:] == "\\VC"):
             vcdir = vcdir[:-2]
         elif (vcdir[-4:] == "\\VC\\"):
             vcdir = vcdir[:-3]
+
         SDK["VISUALSTUDIO"] = vcdir
 
 def SdkLocateMSPlatform(strMode = 'default'):
-    if (sys.platform != "win32"): return
-    platsdk = 0
+    if (GetHost() != "windows"): return
+    platsdk = None
 
     platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v7.1", "InstallationFolder")
     if (platsdk and not os.path.isdir(platsdk)):
-        platsdk = 0
+        platsdk = None
+
+    if not platsdk:
+        # Most common location.  Worth a try.
+        platsdk = "C:\\Program Files\\Microsoft SDKs\\Windows\\v7.1"
+        if not os.path.isdir(platsdk):
+            platsdk = None
+
     if not platsdk:
         exit("Couldn't find Windows SDK v7.1")
 
-    if (not platsdk.endswith("\\")):
+    if not platsdk.endswith("\\"):
         platsdk += "\\"
     SDK["MSPLATFORM"] = platsdk
 
 def SdkLocateMacOSX(osxtarget = None):
-    if (sys.platform != "darwin"): return
+    if (GetHost() != "darwin"): return
     if (osxtarget != None):
         if (os.path.exists("/Developer/SDKs/MacOSX%su.sdk" % osxtarget)):
             SDK["MACOSX"] = "/Developer/SDKs/MacOSX%su.sdk" % osxtarget
@@ -1877,14 +1894,14 @@ def SdkLocatePhysX():
 
     # Try to find a PhysX installation on the system.
     for (ver, key) in PHYSXVERSIONINFO:
-        if (sys.platform == "win32"):
+        if (GetHost() == "windows"):
             folders = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Installer\\Folders"
             for folder in ListRegistryValues(folders):
                 if folder.endswith("NVIDIA PhysX SDK\\%s\\SDKs\\" % key) or \
                    folder.endswith("NVIDIA PhysX SDK\\%s_win\\SDKs\\" % key):
                     SDK["PHYSX"] = folder
                     return
-        elif (sys.platform.startswith("linux")):
+        elif (GetHost() == "linux"):
             incpath = "/usr/include/PhysX/%s/SDKs" % key
             libpath = "/usr/lib/PhysX/%s" % key
             if (os.path.isdir(incpath) and os.path.isdir(libpath)):
@@ -1972,7 +1989,7 @@ def SdkAutoDisableDirectX():
     for ver in ["DX8","DX9","DIRECTCAM"]:
         if (PkgSkip(ver)==0):
             if (ver not in SDK):
-                if (sys.platform.startswith("win")):
+                if (GetHost() == "windows"):
                     WARNINGS.append("I cannot locate SDK for "+ver)
                     WARNINGS.append("I have automatically added this command-line option: --no-"+ver.lower())
                 PkgDisable(ver)
@@ -1982,7 +1999,7 @@ def SdkAutoDisableDirectX():
 def SdkAutoDisableMaya():
     for (ver,key) in MAYAVERSIONINFO:
         if (ver not in SDK) and (PkgSkip(ver)==0):
-            if (sys.platform == "win32"):
+            if (GetHost() == "windows"):
                 WARNINGS.append("The registry does not appear to contain a pointer to the "+ver+" SDK.")
             else:
                 WARNINGS.append("I cannot locate SDK for "+ver)
@@ -1992,7 +2009,7 @@ def SdkAutoDisableMaya():
 def SdkAutoDisableMax():
     for version,key1,key2,subdir in MAXVERSIONINFO:
         if (PkgSkip(version)==0) and ((version not in SDK) or (version+"CS" not in SDK)):
-            if (sys.platform.startswith("win")):
+            if (GetHost() == "windows"):
                 if (version in SDK):
                     WARNINGS.append("Your copy of "+version+" does not include the character studio SDK")
                 else:
@@ -2033,25 +2050,37 @@ def SetupVisualStudioEnviron():
         exit("Could not find the Microsoft Platform SDK")
     os.environ["VCINSTALLDIR"] = SDK["VISUALSTUDIO"] + "VC"
     os.environ["WindowsSdkDir"] = SDK["MSPLATFORM"]
-    target_suffix = ""
-    host_suffix = ""
-    target_arch = GetTargetArch()
-    if (target_arch == 'x64'):
-        target_suffix = "\\amd64"
-    if (GetHostArch() == 'x64'):
-        host_suffix = "\\amd64"
 
-    AddToPathEnv("PATH",    SDK["VISUALSTUDIO"] + "VC\\bin"+host_suffix)
+    # Determine the directories to look in based on the architecture.
+    arch = GetTargetArch()
+    bindir = ""
+    libdir = ""
+    if (arch == 'x64'):
+        bindir = 'amd64'
+        libdir = 'amd64'
+    elif (arch != 'x86'):
+        bindir = arch
+        libdir = arch
+
+    if (arch != 'x86' and GetHostArch() == 'x86'):
+        # Special version of the tools that run on x86.
+        bindir = 'x86_' + bindir
+
+    binpath = SDK["VISUALSTUDIO"] + "VC\\bin\\" + bindir
+    if not os.path.isdir(binpath):
+        exit("Couldn't find compilers in %s.  You may need to install the Windows SDK 7.1 and the Visual C++ 2010 SP1 Compiler Update for Windows SDK 7.1.")
+
+    AddToPathEnv("PATH",    binpath)
     AddToPathEnv("PATH",    SDK["VISUALSTUDIO"] + "Common7\\IDE")
     AddToPathEnv("INCLUDE", SDK["VISUALSTUDIO"] + "VC\\include")
     AddToPathEnv("INCLUDE", SDK["VISUALSTUDIO"] + "VC\\atlmfc\\include")
-    AddToPathEnv("LIB",     SDK["VISUALSTUDIO"] + "VC\\lib"+target_suffix)
-    AddToPathEnv("LIB",     SDK["VISUALSTUDIO"] + "VC\\atlmfc\\lib"+target_suffix)
+    AddToPathEnv("LIB",     SDK["VISUALSTUDIO"] + "VC\\lib\\" + libdir)
+    AddToPathEnv("LIB",     SDK["VISUALSTUDIO"] + "VC\\atlmfc\\lib\\" + libdir)
     AddToPathEnv("PATH",    SDK["MSPLATFORM"] + "bin")
     AddToPathEnv("INCLUDE", SDK["MSPLATFORM"] + "include")
     AddToPathEnv("INCLUDE", SDK["MSPLATFORM"] + "include\\atl")
     AddToPathEnv("INCLUDE", SDK["MSPLATFORM"] + "include\\mfc")
-    if (target_arch != 'x64'):
+    if (arch != 'x64'):
         AddToPathEnv("LIB", SDK["MSPLATFORM"] + "lib")
         AddToPathEnv("PATH",SDK["VISUALSTUDIO"] + "VC\\redist\\x86\\Microsoft.VC100.CRT")
         AddToPathEnv("PATH",SDK["VISUALSTUDIO"] + "VC\\redist\\x86\\Microsoft.VC100.MFC")
@@ -2189,7 +2218,7 @@ def SetupBuildEnvironment(compiler):
     AddToPathEnv("PYTHONPATH", builtdir)
     AddToPathEnv("PANDA_PRC_DIR", os.path.join(builtdir, "etc"))
     AddToPathEnv("PATH", os.path.join(builtdir, "bin"))
-    if (sys.platform.startswith("win")):
+    if (GetHost() == 'windows'):
         AddToPathEnv("PATH", os.path.join(builtdir, "plugins"))
         AddToPathEnv("PYTHONPATH", os.path.join(builtdir, "bin"))
     else:
@@ -2275,7 +2304,7 @@ def CopyTree(dstdir, srcdir, omitCVS=True):
                 if (not omitCVS or entry != "CVS"):
                     CopyTree(dstpth, srcpth)
     else:
-        if (GetHost() == 'windows'):
+        if sys.platform == 'win32':
             cmd = 'xcopy /I/Y/E/Q "' + srcdir + '" "' + dstdir + '"'
         else:
             cmd = 'cp -R -f ' + srcdir + ' ' + dstdir

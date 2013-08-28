@@ -262,12 +262,15 @@ def parseopts(args):
         SetTarget(target, target_arch)
 
     is_win7 = False
-    if sys.platform.startswith("win"):
+    if GetHost() == "windows":
         if (STRMSPLATFORMVERSION not in ['winserver2003r2', 'win60A']):
             platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v7.1", "InstallationFolder")
-            winver = sys.getwindowsversion()
-            if platsdk and os.path.isdir(platsdk) and winver[0] >= 6 and winver[1] >= 1:
-                is_win7 = True
+
+    if sys.platform == "win32":
+        # Note: not available in cygwin.
+        winver = sys.getwindowsversion()
+        if platsdk and os.path.isdir(platsdk) and winver[0] >= 6 and winver[1] >= 1:
+            is_win7 = True
     if not is_win7:
         PkgDisable("TOUCHINPUT")
 
@@ -289,7 +292,7 @@ if ("LDFLAGS" in os.environ):
 LDFLAGS = LDFLAGS.strip()
 
 os.environ["MAKEPANDA"] = os.path.abspath(sys.argv[0])
-if (sys.platform == "darwin" and OSXTARGET != None):
+if (GetHost() == "darwin" and OSXTARGET != None):
     os.environ["MACOSX_DEPLOYMENT_TARGET"] = OSXTARGET
 
 ########################################################################
@@ -318,6 +321,8 @@ MAJOR_VERSION = VERSION[:3]
 if (P3DSUFFIX is None):
     P3DSUFFIX = MAJOR_VERSION
 
+outputdir_suffix = ""
+
 if (RUNTIME or RTDIST):
     # Compiling Maya/Max is pointless in rtdist build
     for ver in MAYAVERSIONS + MAXVERSIONS:
@@ -326,15 +331,19 @@ if (RUNTIME or RTDIST):
     if (DISTRIBUTOR.strip() == ""):
         exit("You must provide a valid distributor name when making a runtime or rtdist build!")
 
-    if (not IsCustomOutputDir()):
-        if (RTDIST):
-            SetOutputDir("built_" + DISTRIBUTOR.strip())
-        elif (RUNTIME):
-            SetOutputDir("built_" + DISTRIBUTOR.strip() + "_rt")
+    outputdir_suffix += "_" + DISTRIBUTOR.strip()
+    if (RUNTIME):
+        outputdir_suffix += "_rt"
 
     RTDIST_VERSION = DISTRIBUTOR.strip() + "_" + MAJOR_VERSION
 elif (DISTRIBUTOR == ""):
     DISTRIBUTOR = "makepanda"
+
+if not IsCustomOutputDir():
+    if GetTarget() == "windows" and GetTargetArch() == 'x64':
+        outputdir_suffix += '_x64'
+
+    SetOutputDir("built" + outputdir_suffix)
 
 if (RUNTIME):
     for pkg in PkgListGet():
@@ -628,7 +637,7 @@ if (COMPILER=="GCC"):
 
     if (PkgSkip("PYTHON")==0):
         IncDirectory("ALWAYS", SDK["PYTHON"])
-    if (sys.platform == "darwin"):
+    if (GetHost() == "darwin"):
         if (PkgSkip("FREETYPE")==0):
           IncDirectory("FREETYPE", "/usr/X11R6/include")
           IncDirectory("FREETYPE", "/usr/X11/include")
@@ -639,7 +648,7 @@ if (COMPILER=="GCC"):
         IncDirectory("ALWAYS", "/usr/PCBSD/local/include")
         LibDirectory("ALWAYS", "/usr/PCBSD/local/lib")
 
-    if (sys.platform.startswith("freebsd")):
+    if (GetHost() == "freebsd"):
         IncDirectory("ALWAYS", "/usr/local/include")
         LibDirectory("ALWAYS", "/usr/local/lib")
 
@@ -682,7 +691,7 @@ if (COMPILER=="GCC"):
         rocket_libs = ("RocketCore", "RocketControls")
         if (GetOptimize() <= 3):
             rocket_libs += ("RocketDebugger",)
-        if (sys.platform != "darwin"):
+        if (GetHost() != "darwin"):
             # We use a statically linked libboost_python on OSX
             rocket_libs += ("boost_python",)
         SmartPkgEnable("ROCKET",    "",          rocket_libs, "Rocket/Core.h")
@@ -692,7 +701,7 @@ if (COMPILER=="GCC"):
     SmartPkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
     SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
     SmartPkgEnable("ZLIB",      "zlib",      ("z"), "zlib.h")
-    if (RTDIST and sys.platform == "darwin" and "PYTHONVERSION" in SDK):
+    if (RTDIST and GetHost() == "darwin" and "PYTHONVERSION" in SDK):
         # Don't use the framework for the OSX rtdist build. I'm afraid it gives problems somewhere.
         SmartPkgEnable("PYTHON",    "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config")
     elif("PYTHONVERSION" in SDK and not RUNTIME):
@@ -701,12 +710,12 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("WX",    tool = "wx-config")
         SmartPkgEnable("FLTK", "", ("fltk"), ("Fl/Fl.H"), tool = "fltk-config")
     if (RUNTIME):
-        if (sys.platform == 'darwin'):
+        if (GetHost() == 'darwin'):
             SmartPkgEnable("NPAPI", "", (), ("npapi.h"))
             if not os.path.isdir(GetThirdpartyDir() + "npapi"):
                 IncDirectory("NPAPI", "/System/Library/Frameworks/WebKit.framework/Headers")
 
-        elif (sys.platform.startswith("freebsd")):
+        elif (GetHost() == "freebsd"):
             SmartPkgEnable("NPAPI", "mozilla-plugin", (), ("libxul/stable", "libxul/stable/npapi.h", "nspr/prtypes.h", "nspr"))
         else:
             SmartPkgEnable("NPAPI", "mozilla-plugin", (), ("xulrunner-*/stable", "xulrunner-*/stable/npapi.h", "nspr*/prtypes.h", "nspr*"))
@@ -732,7 +741,7 @@ if (COMPILER=="GCC"):
 
     for pkg in MAYAVERSIONS:
         if (PkgSkip(pkg)==0 and (pkg in SDK)):
-            if (sys.platform == "darwin"):
+            if (GetHost() == "darwin"):
                 # Sheesh, Autodesk really can't make up their mind
                 # regarding the location of the Maya devkit on OS X.
                 if (os.path.isdir(SDK[pkg] + "/Maya.app/Contents/lib")):
@@ -807,7 +816,7 @@ if (COMPILER=="GCC"):
         IncDirectory("PHYSX", SDK["PHYSX"] + "/Foundation/include")
         IncDirectory("PHYSX", SDK["PHYSX"] + "/Cooking/include")
         LibDirectory("PHYSX", SDK["PHYSXLIBS"])
-        if (sys.platform == "darwin"):
+        if (GetHost() == "darwin"):
             LibName("PHYSX", SDK["PHYSXLIBS"] + "/osxstatic/PhysXCooking.a")
             LibName("PHYSX", SDK["PHYSXLIBS"] + "/osxstatic/PhysXCore.a")
         else:
@@ -845,7 +854,7 @@ def printStatus(header,warnings):
         print("Makepanda: Omit Pkg:",tomit)
         if (GENMAN): print("Makepanda: Generate API reference manual")
         else       : print("Makepanda: Don't generate API reference manual")
-        if (sys.platform == "win32" and not RTDIST):
+        if (GetHost() == "windows" and not RTDIST):
             if INSTALLER:  print("Makepanda: Build installer, using",COMPRESSOR)
             else        :  print("Makepanda: Don't build installer")
         print("Makepanda: Version ID: "+VERSION)
@@ -1713,7 +1722,7 @@ def CompileAnything(target, inputs, opts, progress = None):
         # It must be a simple copy operation.
         ProgressOutput(progress, "Copying file", target)
         CopyFile(target, infile)
-        if (origsuffix==".exe" and not sys.platform.startswith("win")):
+        if (origsuffix==".exe" and GetHost() != "windows"):
             os.system("chmod +x \"%s\"" % target)
         return
     elif (target.endswith("pandac/PandaModules.py")):
