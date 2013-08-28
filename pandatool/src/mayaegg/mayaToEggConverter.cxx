@@ -51,7 +51,6 @@
 #include <maya/MFnMeshData.h>
 #include <maya/MFnPlugin.h>
 #include <maya/MItDag.h>
-#include <maya/MLibrary.h>
 #include <maya/MMatrix.h>
 #include <maya/MObject.h>
 #include <maya/MPoint.h>
