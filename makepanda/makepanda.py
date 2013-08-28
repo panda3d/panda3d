@@ -1264,18 +1264,18 @@ def CompileLib(lib, obj, opts):
     if (COMPILER=="MSVC"):
         if not BOOUSEINTELCOMPILER:
             #Use MSVC Linker
-            cmd = 'link /lib /nologo '
-            if GetTargetArch() == 'x64':
-                cmd += "/MACHINE:X64 "
-            cmd += '/OUT:' + BracketNameWithQuotes(lib)
+            cmd = 'link /lib /nologo'
+            if HasTargetArch():
+                cmd += " /MACHINE:" + GetTargetArch().upper()
+            cmd += ' /OUT:' + BracketNameWithQuotes(lib)
             for x in obj: cmd += ' ' + BracketNameWithQuotes(x)
             oscmd(cmd)
         else:
             # Choose Intel linker; from Jean-Claude
             cmd = 'xilink /verbose:lib /lib '
-            if GetTargetArch() == 'x64':
-                cmd += "/MACHINE:X64 "
-            cmd += '/OUT:' + BracketNameWithQuotes(lib)
+            if HasTargetArch():
+                cmd += " /MACHINE:" + GetTargetArch().upper()
+            cmd += ' /OUT:' + BracketNameWithQuotes(lib)
             for x in obj: cmd += ' ' + BracketNameWithQuotes(x)
             cmd += ' /LIBPATH:"C:\Program Files (x86)\Intel\Composer XE 2011 SP1\ipp\lib\ia32"'
             cmd += ' /LIBPATH:"C:\Program Files (x86)\Intel\Composer XE 2011 SP1\TBB\Lib\ia32\vc10"'
@@ -1303,8 +1303,8 @@ def CompileLink(dll, obj, opts):
     if (COMPILER=="MSVC"):
         if not BOOUSEINTELCOMPILER:
             cmd = "link /nologo "
-            if GetTargetArch() == 'x64':
-                cmd += " /MACHINE:X64"
+            if HasTargetArch():
+                cmd += " /MACHINE:" + GetTargetArch().upper()
             if ("MFC" not in opts):
                 cmd += " /NOD:MFC90.LIB /NOD:MFC80.LIB /NOD:LIBCMT"
             cmd += " /NOD:LIBCI.LIB /DEBUG"
@@ -1347,8 +1347,8 @@ def CompileLink(dll, obj, opts):
         else:
             cmd = "xilink"
             if GetVerbose(): cmd += " /verbose:lib"            
-            if GetTargetArch() == 'x64':
-                cmd += " /MACHINE:X64"
+            if HasTargetArch():
+                cmd += " /MACHINE:" + GetTargetArch().upper()
             if ("MFC" not in opts):
                 cmd += " /NOD:MFC90.LIB /NOD:MFC80.LIB /NOD:LIBCMT"
             cmd += " /NOD:LIBCI.LIB /DEBUG"
@@ -1579,7 +1579,7 @@ def RunGenPyCode(target, inputs, opts):
     if (PkgSkip("PYTHON") != 0):
         return
 
-    cmdstr = SDK["PYTHONEXEC"] + " " + os.path.join("direct", "src", "ffi", "jGenPyCode.py")
+    cmdstr = sys.executable + " -B " + os.path.join("direct", "src", "ffi", "jGenPyCode.py")
     if (GENMAN): cmdstr += " -d"
     cmdstr += " -r"
     for i in inputs:
@@ -1597,7 +1597,7 @@ def RunGenPyCode(target, inputs, opts):
 def FreezePy(target, inputs, opts):
     assert len(inputs) > 0
     # Make sure this function isn't called before genpycode is run.
-    cmdstr = SDK["PYTHONEXEC"] + " " + os.path.join("direct", "src", "showutil", "pfreeze.py")
+    cmdstr = sys.executable + " -B " + os.path.join("direct", "src", "showutil", "pfreeze.py")
     src = inputs.pop(0)
     for i in inputs:
       cmdstr += " -i " + os.path.splitext(i)[0]
@@ -1621,10 +1621,10 @@ def FreezePy(target, inputs, opts):
 def Package(target, inputs, opts):
     assert len(inputs) == 1
     # Invoke the ppackage script.
-    command = SDK["PYTHONEXEC"]
+    command = sys.executable
     if (GetOptimizeOption(opts) >= 4):
         command += " -OO"
-    command += " direct/src/p3d/ppackage.py"
+    command += " -B direct/src/p3d/ppackage.py"
 
     if GetTarget() == "darwin":
         if SDK.get("MACOSX") is not None:
@@ -5853,7 +5853,7 @@ def MakeInstallerNSIS(file, fullname, smdirectory, installdir):
         # Invoke the make_installer script.
         AddToPathEnv("PATH", GetOutputDir() + "\\bin")
         AddToPathEnv("PATH", GetOutputDir() + "\\plugins")
-        oscmd(SDK["PYTHONEXEC"] + " direct\\src\\plugin_installer\\make_installer.py --version %s" % VERSION)
+        oscmd(sys.executable + " -B direct\\src\\plugin_installer\\make_installer.py --version %s" % VERSION)
         shutil.move("direct\\src\\plugin_installer\\p3d-setup.exe", file)
         return
 
@@ -6155,7 +6155,7 @@ def MakeInstallerOSX():
     if (RUNTIME):
         # Invoke the make_installer script.
         AddToPathEnv("DYLD_LIBRARY_PATH", GetOutputDir() + "/plugins")
-        oscmd(SDK["PYTHONEXEC"] + " direct/src/plugin_installer/make_installer.py --version %s" % VERSION)
+        oscmd(sys.executable + " -B direct/src/plugin_installer/make_installer.py --version %s" % VERSION)
         return
 
     import compileall

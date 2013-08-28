@@ -2033,20 +2033,25 @@ def SetupVisualStudioEnviron():
         exit("Could not find the Microsoft Platform SDK")
     os.environ["VCINSTALLDIR"] = SDK["VISUALSTUDIO"] + "VC"
     os.environ["WindowsSdkDir"] = SDK["MSPLATFORM"]
-    suffix=""
-    arch = GetTargetArch()
-    if (arch == 'x64'): suffix = "\\amd64"
-    AddToPathEnv("PATH",    SDK["VISUALSTUDIO"] + "VC\\bin"+suffix)
+    target_suffix = ""
+    host_suffix = ""
+    target_arch = GetTargetArch()
+    if (target_arch == 'x64'):
+        target_suffix = "\\amd64"
+    if (GetHostArch() == 'x64'):
+        host_suffix = "\\amd64"
+
+    AddToPathEnv("PATH",    SDK["VISUALSTUDIO"] + "VC\\bin"+host_suffix)
     AddToPathEnv("PATH",    SDK["VISUALSTUDIO"] + "Common7\\IDE")
     AddToPathEnv("INCLUDE", SDK["VISUALSTUDIO"] + "VC\\include")
     AddToPathEnv("INCLUDE", SDK["VISUALSTUDIO"] + "VC\\atlmfc\\include")
-    AddToPathEnv("LIB",     SDK["VISUALSTUDIO"] + "VC\\lib"+suffix)
-    AddToPathEnv("LIB",     SDK["VISUALSTUDIO"] + "VC\\atlmfc\\lib"+suffix)
+    AddToPathEnv("LIB",     SDK["VISUALSTUDIO"] + "VC\\lib"+target_suffix)
+    AddToPathEnv("LIB",     SDK["VISUALSTUDIO"] + "VC\\atlmfc\\lib"+target_suffix)
     AddToPathEnv("PATH",    SDK["MSPLATFORM"] + "bin")
     AddToPathEnv("INCLUDE", SDK["MSPLATFORM"] + "include")
     AddToPathEnv("INCLUDE", SDK["MSPLATFORM"] + "include\\atl")
     AddToPathEnv("INCLUDE", SDK["MSPLATFORM"] + "include\\mfc")
-    if (arch != 'x64'):
+    if (target_arch != 'x64'):
         AddToPathEnv("LIB", SDK["MSPLATFORM"] + "lib")
         AddToPathEnv("PATH",SDK["VISUALSTUDIO"] + "VC\\redist\\x86\\Microsoft.VC100.CRT")
         AddToPathEnv("PATH",SDK["VISUALSTUDIO"] + "VC\\redist\\x86\\Microsoft.VC100.MFC")
