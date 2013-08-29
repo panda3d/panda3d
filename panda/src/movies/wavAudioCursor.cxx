@@ -298,7 +298,7 @@ WavAudioCursor::
 void WavAudioCursor::
 seek(double t) {
   t = max(t, 0.0);
-  streampos pos = _data_start + (streampos) min(t * _byte_rate, _data_size);
+  streampos pos = _data_start + min((size_t) (t * _byte_rate), _data_size);
 
   if (_can_seek_fast) {
     _stream->seekg(pos);
@@ -338,7 +338,7 @@ seek(double t) {
 void WavAudioCursor::
 read_samples(int n, PN_int16 *data) {
   int desired = n * _audio_channels;
-  int read_samples = min(desired, (_data_size - _data_pos) / _bytes_per_sample);
+  int read_samples = min(desired, ((int) (_data_size - _data_pos)) / _bytes_per_sample);
 
   if (read_samples <= 0) {
     return;
