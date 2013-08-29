@@ -298,7 +298,7 @@ WavAudioCursor::
 void WavAudioCursor::
 seek(double t) {
   t = max(t, 0.0);
-  streampos pos = _data_start + min((size_t) (t * _byte_rate), _data_size);
+  streampos pos = _data_start + (streampos) min((size_t) (t * _byte_rate), _data_size);
 
   if (_can_seek_fast) {
     _stream->seekg(pos);
