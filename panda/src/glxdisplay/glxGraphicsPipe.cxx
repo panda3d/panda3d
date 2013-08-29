@@ -174,7 +174,7 @@ make_output(const string &name,
           ((flags&BF_require_window)!=0)||
           ((flags&BF_resizeable)!=0)||
           ((flags&BF_size_track_host)!=0)||
-          ((flags&BF_can_bind_layered)!=0) {
+          ((flags&BF_can_bind_layered)!=0)) {
         return NULL;
       }
 
@@ -202,7 +202,7 @@ make_output(const string &name,
         ((flags&BF_require_window)!=0)||
         ((flags&BF_resizeable)!=0)||
         ((flags&BF_size_track_host)!=0)||
-        ((flags&BF_can_bind_layered)!=0) {
+        ((flags&BF_can_bind_layered)!=0)) {
       return NULL;
     }
 
