@@ -168,6 +168,7 @@ void BulletBodyNode::
 add_shape(BulletShape *shape, const TransformState *ts) {
 
   nassertv(get_object());
+  nassertv(ts);
 
   nassertv(!(shape->ptr()->getShapeType() == CONVEX_HULL_SHAPE_PROXYTYPE 
     && ((btConvexHullShape *)shape->ptr())->getNumVertices() == 0));
@@ -188,17 +189,17 @@ add_shape(BulletShape *shape, const TransformState *ts) {
   if (_shapes.size() == 0) {
     nassertv(previous->getShapeType() == EMPTY_SHAPE_PROXYTYPE);
 
-    if (ts) {
-      // After adding the shape we will have a total of one shape, without 
-      // local transform. We can set the shape directly.
-      next = new btCompoundShape();
-      ((btCompoundShape *)next)->addChildShape(trans, shape->ptr());
-    }
-    else {
+    if (ts->is_identity()) {
       // After adding the shape we will have one shape, but with transform.
       // We need to wrap the shape within a compound shape, in oder to
       // be able to set the local transform.
       next = shape->ptr();
+    }
+    else {
+      // After adding the shape we will have a total of one shape, without 
+      // local transform. We can set the shape directly.
+      next = new btCompoundShape();
+      ((btCompoundShape *)next)->addChildShape(trans, shape->ptr());
     }
 
     get_object()->setCollisionShape(next);
