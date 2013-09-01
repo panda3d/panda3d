@@ -541,11 +541,11 @@ scan_interfaces() {
         encoder.set_wtext(wstring(p->FriendlyName));
         string friendly_name = encoder.get_text();
         
-        Interface interface;
-        interface.set_name(friendly_name);
+        Interface iface;
+        iface.set_name(friendly_name);
 
         if (p->PhysicalAddressLength > 0) {
-          interface.set_mac_address(format_mac_address((const unsigned char *)p->PhysicalAddress, p->PhysicalAddressLength));
+          iface.set_mac_address(format_mac_address((const unsigned char *)p->PhysicalAddress, p->PhysicalAddressLength));
         }
         
         if (p->OperStatus == IfOperStatusUp) {
@@ -561,11 +561,11 @@ scan_interfaces() {
           }
 
           if (mc > 1) {
-            interface.set_ip(addresses[1]);
+            iface.set_ip(addresses[1]);
           }
 
           if (mc > 2) {
-            interface.set_broadcast(addresses[2]);
+            iface.set_broadcast(addresses[2]);
 
             // Now, we can infer the netmask by the difference between the
             // network address (the first address) and the broadcast
@@ -573,11 +573,11 @@ scan_interfaces() {
             PN_uint32 netmask = addresses[0].get_ip() - addresses[2].get_ip() - 1;
             Socket_Address sa;
             sa.set_host(netmask, 0);
-            interface.set_netmask(NetAddress(sa));
+            iface.set_netmask(NetAddress(sa));
           }
         }
 
-        _interfaces.push_back(interface);
+        _interfaces.push_back(iface);
         p = p->Next;
       }
     }
@@ -596,20 +596,20 @@ scan_interfaces() {
   struct ifaddrs *p = ifa;
   while (p != NULL) {
     if (p->ifa_addr->sa_family == AF_INET) {
-      Interface interface;
-      interface.set_name(p->ifa_name);
+      Interface iface;
+      iface.set_name(p->ifa_name);
       if (p->ifa_addr != NULL) {
-        interface.set_ip(NetAddress(Socket_Address(*(sockaddr_in *)p->ifa_addr)));
+        iface.set_ip(NetAddress(Socket_Address(*(sockaddr_in *)p->ifa_addr)));
       }
       if (p->ifa_netmask != NULL) {
-        interface.set_netmask(NetAddress(Socket_Address(*(sockaddr_in *)p->ifa_netmask)));
+        iface.set_netmask(NetAddress(Socket_Address(*(sockaddr_in *)p->ifa_netmask)));
       }
       if ((p->ifa_flags & IFF_BROADCAST) && p->ifa_broadaddr != NULL) {
-        interface.set_broadcast(NetAddress(Socket_Address(*(sockaddr_in *)p->ifa_broadaddr)));
+        iface.set_broadcast(NetAddress(Socket_Address(*(sockaddr_in *)p->ifa_broadaddr)));
       } else if ((p->ifa_flags & IFF_POINTOPOINT) && p->ifa_dstaddr != NULL) {
-        interface.set_p2p(NetAddress(Socket_Address(*(sockaddr_in *)p->ifa_dstaddr)));
+        iface.set_p2p(NetAddress(Socket_Address(*(sockaddr_in *)p->ifa_dstaddr)));
       }
-      _interfaces.push_back(interface);
+      _interfaces.push_back(iface);
     }
 
     p = p->ifa_next;
