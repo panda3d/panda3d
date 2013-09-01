@@ -585,9 +585,8 @@ get_extra_extensions() {
 void *wglGraphicsStateGuardian::
 do_get_extension_func(const char *prefix, const char *name) {
   string fullname = string(prefix) + string(name);
-  return wglGetProcAddress(fullname.c_str());
+  return (void*) wglGetProcAddress(fullname.c_str());
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: wglGraphicsStateGuardian::make_context
