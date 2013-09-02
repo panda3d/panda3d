@@ -476,8 +476,13 @@ if (COMPILER == "MSVC"):
     for pkg in DXVERSIONS:
         if (PkgSkip(pkg)==0):
             vnum=pkg[2:]
-            LibDirectory(pkg, SDK[pkg] + '/lib/x86')
-            LibDirectory(pkg, SDK[pkg] + '/lib')
+
+            if GetTargetArch() == 'x64':
+              LibDirectory(pkg, SDK[pkg] + '/lib/x64')
+            else:
+              LibDirectory(pkg, SDK[pkg] + '/lib/x86')
+              LibDirectory(pkg, SDK[pkg] + '/lib')
+
             LibName(pkg, 'd3dVNUM.lib'.replace("VNUM", vnum))
             LibName(pkg, 'd3dxVNUM.lib'.replace("VNUM", vnum))
             if (vnum=="9" and "GENERIC_DXERR_LIBRARY" in SDK):
