@@ -20,6 +20,7 @@
 #ifdef HAVE_OPENCV
 
 #include "webcamVideo.h"
+#include "movieVideoCursor.h"
 
 class WebcamVideoOpenCV;
 
