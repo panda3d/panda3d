@@ -380,7 +380,7 @@ read_samples(int n, PN_int16 *data) {
 
     } case 8: {
       // Downsample.
-      const PN_int64 scale_factor = 0x7fffffffffffffff / 0x7fff;
+      const PN_int64 scale_factor = 0x7fffffffffffffffLL / 0x7fffLL;
 
       for (int i = 0; i < read_samples; ++i) {
         data[i] = _reader.get_int64() / scale_factor;
