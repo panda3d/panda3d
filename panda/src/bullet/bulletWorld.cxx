@@ -105,7 +105,7 @@ BulletWorld() {
   // SoftBodyWorldInfo
   _info.m_dispatcher = _dispatcher;
   _info.m_broadphase = _broadphase;
-  _info.m_gravity = _world->getGravity();
+  _info.m_gravity.setValue(0.0f, 0.0f, 0.0f);
   _info.m_sparsesdf.Initialize();
 
   // Register GIMPACT algorithm
@@ -138,7 +138,7 @@ void BulletWorld::
 set_gravity(const LVector3 &gravity) {
 
   _world->setGravity(LVecBase3_to_btVector3(gravity));
-  _info.m_gravity = _world->getGravity();
+  _info.m_gravity.setValue(gravity.get_x(), gravity.get_y(), gravity.get_z());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -150,7 +150,7 @@ void BulletWorld::
 set_gravity(PN_stdfloat gx, PN_stdfloat gy, PN_stdfloat gz) {
 
   _world->setGravity(btVector3((btScalar)gx, (btScalar)gy, (btScalar)gz));
-  _info.m_gravity = _world->getGravity();
+  _info.m_gravity.setValue((btScalar)gx, (btScalar)gy, (btScalar)gz);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -77,7 +77,7 @@ void BulletSoftBodyWorldInfo::
 set_water_normal(const LVector3 &normal) {
 
   nassertv(!normal.is_nan());
-  _info.water_normal = LVecBase3_to_btVector3(normal);
+  _info.water_normal.setValue(normal.get_x(), normal.get_y(), normal.get_z());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -89,7 +89,7 @@ void BulletSoftBodyWorldInfo::
 set_gravity(const LVector3 &gravity) {
 
   nassertv(!gravity.is_nan());
-  _info.m_gravity = LVecBase3_to_btVector3(gravity);
+  _info.m_gravity.setValue(gravity.get_x(), gravity.get_y(), gravity.get_z());
 }
 
 ////////////////////////////////////////////////////////////////////
