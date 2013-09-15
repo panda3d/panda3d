@@ -171,13 +171,18 @@ class FilterManager(DirectObject):
             colortex = textures.get("color", None)
             depthtex = textures.get("depth", None)
             auxtex = textures.get("aux", None)
+            auxtex0 = textures.get("aux0", auxtex)
+            auxtex1 = textures.get("aux1", None)
+        else:
+            auxtex0 = auxtex
+            auxtex1 = None
 
         if (colortex == None):
             colortex = Texture("filter-base-color")
             colortex.setWrapU(Texture.WMClamp)
             colortex.setWrapV(Texture.WMClamp)
 
-        texgroup = (depthtex, colortex, auxtex, None)
+        texgroup = (depthtex, colortex, auxtex0, auxtex1)
 
         # Choose the size of the offscreen buffer.
 
@@ -215,9 +220,11 @@ class FilterManager(DirectObject):
 
         dr = buffer.getDisplayRegion(0)
         self.setStackedClears(dr, self.rclears, self.wclears)
-        if (auxtex):
+        if (auxtex0):
             dr.setClearActive(GraphicsOutput.RTPAuxRgba0, 1)
-            dr.setClearValue(GraphicsOutput.RTPAuxRgba0, Vec4(0.5,0.5,1.0,0.0))
+            dr.setClearValue(GraphicsOutput.RTPAuxRgba0, Vec4(0.5, 0.5, 1.0, 0.0))
+        if (auxtex1):
+            dr.setClearActive(GraphicsOutput.RTPAuxRgba1, 1)
         self.region.disableClears()
         if (self.isFullscreen()):
             self.win.disableClears()
