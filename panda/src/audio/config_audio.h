@@ -48,7 +48,6 @@ enum FmodSpeakerMode {
   FSM_surround,
   FSM_5point1,
   FSM_7point1,
-  FSM_prologic,
 
   // For backward compatibility
   FSM_unspecified

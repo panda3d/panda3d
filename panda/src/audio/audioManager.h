@@ -39,7 +39,6 @@ PUBLISHED:
     SPEAKERMODE_surround, 
     SPEAKERMODE_5point1, 
     SPEAKERMODE_7point1, 
-    SPEAKERMODE_prologic, 
     SPEAKERMODE_max,
     SPEAKERMODE_COUNT
   };

@@ -509,17 +509,8 @@ getSpeakerSetup() {
     case  FMOD_SPEAKERMODE_7POINT1:
       returnMode = 6;
       break;
-    case  FMOD_SPEAKERMODE_SRS5_1_MATRIX:
-      returnMode = 7;
-      break;
-    case  FMOD_SPEAKERMODE_DOLBY5_1_MATRIX:
-      returnMode = 8;
-      break;
-    case  FMOD_SPEAKERMODE_MYEARS:
-      returnMode = 9;
-      break;
     case  FMOD_SPEAKERMODE_MAX:
-      returnMode = 10;
+      returnMode = 7;
       break;
     default:
       returnMode = -1;

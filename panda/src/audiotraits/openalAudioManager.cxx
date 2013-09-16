@@ -118,15 +118,15 @@ OpenALAudioManager() {
   _forward_up[5] = 0;
 
   // Initialization
-  if (_active_managers==0 || !_openal_active) {
+  if (_active_managers == 0 || !_openal_active) {
     _device = alcOpenDevice(NULL); // select the "preferred device"
     if (!_device) {
       // this is a unique kind of error
       audio_error("OpenALAudioManager: alcOpenDevice(NULL): ALC couldn't open device");
     } else {
       alcGetError(_device); // clear errors
-      _context=alcCreateContext(_device,NULL);
-      alc_audio_errcheck("alcCreateContext(_device,NULL)",_device);
+      _context = alcCreateContext(_device, NULL);
+      alc_audio_errcheck("alcCreateContext(_device, NULL)",_device);
       if (_context!=NULL) {
         _openal_active = true;
       }
