@@ -321,7 +321,9 @@ reload_buffer() {
           memcpy(_buffer, _frame->data[0], bufsize);
         }
       }
+#if LIBAVUTIL_VERSION_INT > AV_VERSION_INT(52, 19, 100)
       av_frame_unref(_frame);
+#endif
 #endif
 
       if (len < 0) {
