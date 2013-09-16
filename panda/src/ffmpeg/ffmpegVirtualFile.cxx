@@ -115,7 +115,7 @@ open_vfs(const Filename &filename) {
 
   // Now we can open the stream.
   int result =
-#if LIBAVFORMAT_VERSION_INT > AV_VERSION_INT(53, 3, 0)
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53, 4, 0)
     avformat_open_input(&_format_context, "", NULL, NULL);
 #else
     av_open_input_file(&_format_context, "", NULL, 0, NULL);
@@ -166,7 +166,7 @@ open_subfile(const SubfileInfo &info) {
 
   // Now we can open the stream.
   int result =
-#if LIBAVFORMAT_VERSION_INT > AV_VERSION_INT(53, 3, 0)
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53, 4, 0)
     avformat_open_input(&_format_context, fname.c_str(), NULL, NULL);
 #else
     av_open_input_file(&_format_context, fname.c_str(), NULL, 0, NULL);
@@ -188,7 +188,7 @@ open_subfile(const SubfileInfo &info) {
 void FfmpegVirtualFile::
 close() {
   if (_format_context != NULL) {
-#if LIBAVFORMAT_VERSION_MAJOR >= 54
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(53, 25, 0)
     avformat_close_input(&_format_context);
 #else
     av_close_input_file(_format_context);
