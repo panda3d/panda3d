@@ -1,4 +1,5 @@
 /.deps/
+/Debug/
 /Makefile.in
 /aclocal.m4
 /autom4te.cache/
@@ -7,6 +8,7 @@
 /config.log
 /config.status
 /configure
+/ipch/
 /ppremake
 /stamp-h1
 Makefile
