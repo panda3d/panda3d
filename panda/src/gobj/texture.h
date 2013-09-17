@@ -128,6 +128,10 @@ PUBLISHED:
     F_depth_component16,
     F_depth_component24,
     F_depth_component32,
+
+    F_r16,
+    F_rg16,
+    F_rgb16,
   };
 
   enum FilterType {

@@ -521,7 +521,12 @@ protected:
   int _num_active_texture_stages;
   PN_stdfloat _max_anisotropy;
   bool _supports_anisotropy;
-  
+
+#ifdef OPENGLES
+  bool _supports_depth24;
+  bool _supports_depth32;
+#endif
+
   int _error_count;
 
   string _gl_vendor;

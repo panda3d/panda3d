@@ -567,6 +567,16 @@ estimate_texture_memory() const {
     bpp = 16;
     break;
 
+  case Texture::F_r16:
+    bpp = 2;
+    break;
+  case Texture::F_rg16:
+    bpp = 4;
+    break;
+  case Texture::F_rgb16:
+    bpp = 6;
+    break;
+
   default:
     break;
   }
@@ -1670,6 +1680,16 @@ write(ostream &out, int indent_level) const {
   case F_luminance_alphamask:
     out << "luminance_alphamask";
     break;
+
+  case F_r16:
+    out << "r16";
+    break;
+  case F_rg16:
+    out << "rg16";
+    break;
+  case F_rgb16:
+    out << "rgb16";
+    break;
   }
 
   if (cdata->_compression != CM_default) {
@@ -2086,6 +2106,12 @@ format_format(Format format) {
     return "rgba16";
   case F_rgba32:
     return "rgba32";
+  case F_r16:
+    return "r16";
+  case F_rg16:
+    return "rg16";
+  case F_rgb16:
+    return "rgb16";
   }
   return "**invalid**";
 }
@@ -2150,6 +2176,12 @@ string_format(const string &str) {
     return F_rgba16;
   } else if (cmp_nocase(str, "rgba32") == 0 || cmp_nocase(str, "r32g32b32a32") == 0) {
     return F_rgba32;
+  } else if (cmp_nocase(str, "r16") == 0 || cmp_nocase(str, "red16") == 0) {
+    return F_r16;
+  } else if (cmp_nocase(str, "rg16") == 0 || cmp_nocase(str, "r16g16") == 0) {
+    return F_rg16;
+  } else if (cmp_nocase(str, "rgb16") == 0 || cmp_nocase(str, "r16g16b16") == 0) {
+    return F_rgb16;
   }
 
   gobj_cat->error()
@@ -4968,11 +5000,13 @@ do_set_format(CData *cdata, Texture::Format format) {
   case F_blue:
   case F_alpha:
   case F_luminance:
+  case F_r16:
     cdata->_num_components = 1;
     break;
 
   case F_luminance_alpha:
   case F_luminance_alphamask:
+  case F_rg16:
     cdata->_num_components = 2;
     break;
 
@@ -4981,6 +5015,7 @@ do_set_format(CData *cdata, Texture::Format format) {
   case F_rgb8:
   case F_rgb12:
   case F_rgb332:
+  case F_rgb16:
     cdata->_num_components = 3;
     break;
 
