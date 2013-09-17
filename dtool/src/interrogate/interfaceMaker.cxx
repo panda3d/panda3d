@@ -40,8 +40,7 @@
 #include "cppStructType.h"
 #include "pnotify.h"
 
- InterrogateType dummy_type;
-
+InterrogateType dummy_type;
  
 ////////////////////////////////////////////////////////////////////
 //     Function: InterfaceMaker::Function::Constructor
@@ -150,6 +149,10 @@ check_protocols() {
   } else if (flags & FunctionRemap::F_copy_constructor) {
     // Ditto for the copy constructor.
     _protocol_types |= PT_copy_constructor;
+  }
+
+  if (flags & FunctionRemap::F_iter) {
+    _protocol_types |= PT_iter;
   }
 
   // Now are there any make_seq requests within this class?
@@ -361,9 +364,8 @@ write_functions(ostream &out) {
 //               support a module file.
 ////////////////////////////////////////////////////////////////////
 void InterfaceMaker::
-write_module(ostream &, ostream *out_h,InterrogateModuleDef *) {
+write_module(ostream &, ostream *out_h, InterrogateModuleDef *) {
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: InterfaceMaker::remap_parameter
@@ -379,6 +381,8 @@ write_module(ostream &, ostream *out_h,InterrogateModuleDef *) {
 ////////////////////////////////////////////////////////////////////
 ParameterRemap *InterfaceMaker::
 remap_parameter(CPPType *struct_type, CPPType *param_type) {
+  nassertr(param_type != NULL, NULL);
+
   if (convert_strings) {
     if (TypeManager::is_char_pointer(param_type)) {
       return new ParameterRemapCharStarToString(param_type);

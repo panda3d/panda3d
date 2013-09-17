@@ -98,18 +98,11 @@ PUBLISHED:
 
   static VirtualFileSystem *get_global_ptr();
 
-#ifdef HAVE_PYTHON
-  BLOCKING PyObject *__py__read_file(const Filename &filename, bool auto_unwrap) const;
-#endif  // HAVE_PYTHON
-  BLOCKING INLINE string read_file(const Filename &filename, bool auto_unwrap) const;
-
+  EXTENSION(BLOCKING PyObject *read_file(const Filename &filename, bool auto_unwrap) const);
   BLOCKING istream *open_read_file(const Filename &filename, bool auto_unwrap) const;
   BLOCKING static void close_read_file(istream *stream);
 
-#ifdef HAVE_PYTHON
-  BLOCKING PyObject *__py__write_file(const Filename &filename, PyObject *data, bool auto_wrap);
-#endif  // HAVE_PYTHON
-  BLOCKING INLINE bool write_file(const Filename &filename, const string &data, bool auto_wrap);
+  EXTENSION(BLOCKING PyObject *write_file(const Filename &filename, PyObject *data, bool auto_wrap));
   BLOCKING ostream *open_write_file(const Filename &filename, bool auto_wrap, bool truncate);
   BLOCKING ostream *open_append_file(const Filename &filename);
   BLOCKING static void close_write_file(ostream *stream);
@@ -119,6 +112,10 @@ PUBLISHED:
   BLOCKING static void close_read_write_file(iostream *stream);
 
 public:
+  // We provide Python versions of these as efficient extension methods, above.
+  BLOCKING INLINE string read_file(const Filename &filename, bool auto_unwrap) const;
+  BLOCKING INLINE bool write_file(const Filename &filename, const string &data, bool auto_wrap);
+
   bool atomic_compare_and_exchange_contents(const Filename &filename, string &orig_contents, const string &old_contents, const string &new_contents);
   bool atomic_read_contents(const Filename &filename, string &contents) const;
 

@@ -23,6 +23,7 @@
 #include "cppPointerType.h"
 #include "cppSimpleType.h"
 #include "cppStructType.h"
+#include "cppTemplateScope.h"
 #include "cppTypeDeclaration.h"
 #include "pnotify.h"
 #include "cppTypedef.h"
@@ -1053,6 +1054,35 @@ is_const_ref_to_pointer_to_base(CPPType *type) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_pair
+//       Access: Public, Static
+//  Description: Returns true if the type is pair<>, or
+//               a reference to it.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_pair(CPPType *type) {
+  // We only check the simple name of the type against pair,
+  // since we need to allow for the various template instantiations of
+  // this thing.
+  if (type->get_simple_name() == "pair") {
+    return true;
+  }
+
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_pair(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_reference:
+    return is_pair(type->as_reference_type()->_pointing_at);
+
+  default:
+    break;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TypeManager::is_pointer_to_PyObject
 //       Access: Public, Static
 //  Description: Returns true if the indicated type is PyObject *.
@@ -1090,6 +1120,43 @@ is_PyObject(CPPType *type) {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_pointer_to_Py_buffer
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is Py_buffer *.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_pointer_to_Py_buffer(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_pointer_to_Py_buffer(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_pointer:
+    return is_Py_buffer(type->as_pointer_type()->_pointing_at);
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_Py_buffer
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is Py_buffer.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_Py_buffer(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_Py_buffer(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_extension:
+    return (type->get_local_name(&parser) == "Py_buffer");
+
+  default:
+    return false;
+  }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeManager::is_ostream
@@ -1388,6 +1455,40 @@ get_pointer_type(CPPStructType *pt_type) {
   }
 
   return (CPPType *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::get_template_parameter_type
+//       Access: Public, Static
+//  Description: Returns the ith template parameter type.  For
+//               instance, if the type is pair<A, B>, then this
+//               function will return type A when passing 0 and
+//               type B when passing 1, and NULL otherwise.
+////////////////////////////////////////////////////////////////////
+CPPType *TypeManager::
+get_template_parameter_type(CPPType *source_type, int i) {
+  switch (source_type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return get_template_parameter_type(source_type->as_const_type()->_wrapped_around, i);
+
+  case CPPDeclaration::ST_reference:
+    return get_template_parameter_type(source_type->as_reference_type()->_pointing_at, i);
+  }
+
+  CPPStructType *type = source_type->as_struct_type();
+  if (type == NULL) {
+    return NULL;
+  }
+
+  // I'm not sure how reliable this is, but I don't know if there
+  // is a more proper way to access this.
+  CPPTemplateParameterList *templ = type->_ident->_names.back().get_templ();
+  if (templ == NULL || i >= templ->_parameters.size()) {
+    return NULL;
+  }
+
+  CPPDeclaration *decl = templ->_parameters[i];
+  return decl->as_type();
 }
 
 ////////////////////////////////////////////////////////////////////

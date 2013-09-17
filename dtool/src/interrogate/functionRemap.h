@@ -56,7 +56,7 @@ public:
                        bool convert_result, const string &container,
                        const vector_string &pexprs = vector_string()) const;
 
-  void write_orig_prototype(ostream &out, int indent_level) const;
+  void write_orig_prototype(ostream &out, int indent_level, bool local=false) const;
 
   FunctionWrapperIndex make_wrapper_entry(FunctionIndex function_index);
 
@@ -87,6 +87,9 @@ public:
     F_make_copy        = 0x0020,
     F_copy_constructor = 0x0040,
     F_explicit_self    = 0x0080,
+    F_iter             = 0x0100,
+    F_getbuffer        = 0x0200,
+    F_releasebuffer    = 0x0400,
   };
 
   typedef vector<Parameter> Parameters;

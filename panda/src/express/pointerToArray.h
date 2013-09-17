@@ -113,7 +113,7 @@ PUBLISHED:
   INLINE PointerToArray(const PointerToArray<Element> &copy);
 
 #ifdef HAVE_PYTHON
-  PointerToArray(PyObject *self, PyObject *sequence);
+  PointerToArray(PyObject *self, PyObject *source);
 #endif
 
   INLINE size_type size() const;
@@ -129,6 +129,11 @@ PUBLISHED:
   INLINE void set_subdata(size_type n, size_type count, const string &data);
   INLINE int get_ref_count() const;
   INLINE int get_node_ref_count() const;
+
+#ifdef HAVE_PYTHON
+  int __getbuffer__(PyObject *self, Py_buffer *view, int flags);
+  void __releasebuffer__(PyObject *self, Py_buffer *view) const;
+#endif
 
 #else  // CPPPARSER
   // This is the actual, complete interface.
@@ -150,7 +155,7 @@ public:
   INLINE PointerToArray(const PointerToArray<Element> &copy);
 
 #ifdef HAVE_PYTHON
-  PointerToArray(PyObject *self, PyObject *sequence);
+  PointerToArray(PyObject *self, PyObject *source);
 #endif
 
 public:
@@ -223,10 +228,17 @@ public:
   INLINE void set_void_ptr(void* p);
 
   INLINE int get_ref_count() const;
+  INLINE void ref() const;
+  INLINE bool unref() const;
 
   INLINE int get_node_ref_count() const;
   INLINE void node_ref() const;
   INLINE bool node_unref() const;
+
+#ifdef HAVE_PYTHON
+  int __getbuffer__(PyObject *self, Py_buffer *view, int flags);
+  void __releasebuffer__(PyObject *self, Py_buffer *view) const;
+#endif
 
   // Reassignment is by pointer, not memberwise as with a vector.
   INLINE PointerToArray<Element> &
@@ -268,7 +280,7 @@ PUBLISHED:
   INLINE ConstPointerToArray(const ConstPointerToArray<Element> &copy);
 
 #ifdef HAVE_PYTHON
-  INLINE ConstPointerToArray(PyObject *self, PyObject *sequence);
+  INLINE ConstPointerToArray(PyObject *self, PyObject *source);
 #endif
 
   typedef TYPENAME pvector<Element>::size_type size_type;
@@ -279,6 +291,11 @@ PUBLISHED:
   INLINE string get_subdata(size_type n, size_type count) const;
   INLINE int get_ref_count() const;
   INLINE int get_node_ref_count() const;
+
+#ifdef HAVE_PYTHON
+  int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const;
+  void __releasebuffer__(PyObject *self, Py_buffer *view) const;
+#endif
 
 #else  // CPPPARSER
   // This is the actual, complete interface.
@@ -303,7 +320,7 @@ PUBLISHED:
   INLINE ConstPointerToArray(const ConstPointerToArray<Element> &copy);
 
 #ifdef HAVE_PYTHON
-  INLINE ConstPointerToArray(PyObject *self, PyObject *sequence);
+  INLINE ConstPointerToArray(PyObject *self, PyObject *source);
 #endif
 
   // Duplicating the interface of vector.
@@ -343,10 +360,17 @@ PUBLISHED:
   INLINE string get_subdata(size_type n, size_type count) const;
 
   INLINE int get_ref_count() const;
+  INLINE void ref() const;
+  INLINE bool unref() const;
 
   INLINE int get_node_ref_count() const;
   INLINE void node_ref() const;
   INLINE bool node_unref() const;
+
+#ifdef HAVE_PYTHON
+  int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const;
+  void __releasebuffer__(PyObject *self, Py_buffer *view) const;
+#endif
 
   // Reassignment is by pointer, not memberwise as with a vector.
   INLINE ConstPointerToArray<Element> &
@@ -372,12 +396,40 @@ private:
   friend class PointerToArray<Element>;
 };
 
-
 // And the brevity macros.
-
 #define PTA(type) PointerToArray< type >
 #define CPTA(type) ConstPointerToArray< type >
 
+#ifdef HAVE_PYTHON
+// This macro is used to map a data type to a format code
+// as used in the Python 'struct' and 'array' modules.
+#define get_format_code(type) _get_format_code((const type *)0)
+#define define_format_code(code, type) template<> \
+  INLINE const char *_get_format_code(const type *) { \
+    return code; \
+  }
+
+template<class T>
+INLINE const char *_get_format_code(const T *) {
+  return NULL;
+}
+
+define_format_code("c", char);
+define_format_code("b", signed char);
+define_format_code("B", unsigned char);
+define_format_code("h", short);
+define_format_code("H", unsigned short);
+define_format_code("i", int);
+define_format_code("I", unsigned int);
+define_format_code("l", long);
+define_format_code("L", unsigned long);
+define_format_code("q", long long);
+define_format_code("Q", unsigned long long);
+define_format_code("f", float);
+define_format_code("d", double);
+
+#endif  // HAVE_PYTHON
+
 #include "pointerToArray.I"
 
-#endif
+#endif  // HAVE_POINTERTOARRAY_H

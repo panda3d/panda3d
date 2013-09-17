@@ -56,7 +56,7 @@ public:
   void read_command_file(istream &in);
   void do_command(const string &command, const string &params);
   void build();
-  void write_code(ostream &out_code,ostream *out_include, InterrogateModuleDef *def);
+  void write_code(ostream &out_code, ostream *out_include, InterrogateModuleDef *def);
   InterrogateModuleDef *make_module_def(int file_identifier);
 
   static string clean_identifier(const string &name);

@@ -24,10 +24,10 @@ IMPORT_THIS struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase4);
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE void EXT_METHOD_ARGS(FLOATNAME(LVecBase3),
-__setitem__, int i, FLOATTYPE v) {
+INLINE_LINMATH void Extension<FLOATNAME(LVecBase3)>::
+__setitem__(int i, FLOATTYPE v) {
   nassertv(i >= 0 && i < 3);
-  this->_v(i) = v;
+  _this->_v(i) = v;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -35,12 +35,12 @@ __setitem__, int i, FLOATTYPE v) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE void EXT_CONST_METHOD_ARGS(FLOATNAME(LVecBase3),
-python_repr, ostream &out, const string &class_name) {
+INLINE_LINMATH void Extension<FLOATNAME(LVecBase3)>::
+python_repr(ostream &out, const string &class_name) const {
   out << class_name << "("
-      << MAYBE_ZERO(this->_v(0)) << ", "
-      << MAYBE_ZERO(this->_v(1)) << ", "
-      << MAYBE_ZERO(this->_v(2)) << ")";
+      << MAYBE_ZERO(_this->_v(0)) << ", "
+      << MAYBE_ZERO(_this->_v(1)) << ", "
+      << MAYBE_ZERO(_this->_v(2)) << ")";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -49,8 +49,8 @@ python_repr, ostream &out, const string &class_name) {
 //  Description: This special Python method is implement to provide
 //               support for the pickle module.
 ////////////////////////////////////////////////////////////////////
-INLINE PyObject *EXT_CONST_METHOD_ARGS(FLOATNAME(LVecBase3),
-__reduce__, PyObject *self) {
+INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase3)>::
+__reduce__(PyObject *self) const {
   // We should return at least a 2-tuple, (Class, (args)): the
   // necessary class object whose constructor we should call
   // (e.g. this), and the arguments necessary to reconstruct this
@@ -61,7 +61,7 @@ __reduce__, PyObject *self) {
   }
 
   PyObject *result = Py_BuildValue("(O(fff))", this_class,
-                                   (*this)[0], (*this)[1], (*this)[2]);
+                                   (*_this)[0], (*_this)[1], (*_this)[2]);
   Py_DECREF(this_class);
   return result;
 }
@@ -71,8 +71,8 @@ __reduce__, PyObject *self) {
 //       Access: Published
 //  Description: This is used to implement swizzle masks.
 ////////////////////////////////////////////////////////////////////
-PyObject *EXT_CONST_METHOD_ARGS(FLOATNAME(LVecBase3),
-__getattr__, const string &attr_name) {
+INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase3)>::
+__getattr__(const string &attr_name) const {
   // Validate the attribute name.
   for (string::const_iterator it = attr_name.begin(); it < attr_name.end(); it++) {
     if (*it < 'x' || *it > 'z') {
@@ -80,29 +80,31 @@ __getattr__, const string &attr_name) {
     }
   }
 
-  if (attr_name.size() == 1) {
-    return PyFloat_FromDouble(this->_v(attr_name[0] - 'x'));
+  switch (attr_name.size()) {
+    case 1:
+      return PyFloat_FromDouble(_this->_v(attr_name[0] - 'x'));
 
-  } else if (attr_name.size() == 2) {
-    FLOATNAME(LVecBase2) *vec = new FLOATNAME(LVecBase2);
-    vec->_v(0) = this->_v(attr_name[0] - 'x');
-    vec->_v(1) = this->_v(attr_name[1] - 'x');
-    return DTool_CreatePyInstance((void *)vec, FLOATNAME(Dtool_LVecBase2), true, false);
+    case 2: {
+      FLOATNAME(LVecBase2) *vec = new FLOATNAME(LVecBase2);
+      vec->_v(0) = _this->_v(attr_name[0] - 'x');
+      vec->_v(1) = _this->_v(attr_name[1] - 'x');
+      return DTool_CreatePyInstance((void *)vec, FLOATNAME(Dtool_LVecBase2), true, false);
 
-  } else if (attr_name.size() == 3) {
-    FLOATNAME(LVecBase3) *vec = new FLOATNAME(LVecBase3);
-    vec->_v(0) = this->_v(attr_name[0] - 'x');
-    vec->_v(1) = this->_v(attr_name[1] - 'x');
-    vec->_v(2) = this->_v(attr_name[2] - 'x');
-    return DTool_CreatePyInstance((void *)vec, FLOATNAME(Dtool_LVecBase3), true, false);
+    } case 3: {
+      FLOATNAME(LVecBase3) *vec = new FLOATNAME(LVecBase3);
+      vec->_v(0) = _this->_v(attr_name[0] - 'x');
+      vec->_v(1) = _this->_v(attr_name[1] - 'x');
+      vec->_v(2) = _this->_v(attr_name[2] - 'x');
+      return DTool_CreatePyInstance((void *)vec, FLOATNAME(Dtool_LVecBase3), true, false);
 
-  } else if (attr_name.size() == 4) {
-    FLOATNAME(LVecBase4) *vec = new FLOATNAME(LVecBase4);
-    vec->_v(0) = this->_v(attr_name[0] - 'x');
-    vec->_v(1) = this->_v(attr_name[1] - 'x');
-    vec->_v(2) = this->_v(attr_name[2] - 'x');
-    vec->_v(3) = this->_v(attr_name[3] - 'x');
-    return DTool_CreatePyInstance((void *)vec, FLOATNAME(Dtool_LVecBase4), true, false);
+    } case 4: {
+      FLOATNAME(LVecBase4) *vec = new FLOATNAME(LVecBase4);
+      vec->_v(0) = _this->_v(attr_name[0] - 'x');
+      vec->_v(1) = _this->_v(attr_name[1] - 'x');
+      vec->_v(2) = _this->_v(attr_name[2] - 'x');
+      vec->_v(3) = _this->_v(attr_name[3] - 'x');
+      return DTool_CreatePyInstance((void *)vec, FLOATNAME(Dtool_LVecBase4), true, false);
+    }
   }
 
   return NULL;
@@ -113,8 +115,8 @@ __getattr__, const string &attr_name) {
 //       Access: Published
 //  Description: This is used to implement write masks.
 ////////////////////////////////////////////////////////////////////
-int EXT_METHOD_ARGS(FLOATNAME(LVecBase3),
-__setattr__, PyObject *self, const string &attr_name, PyObject *assign) {
+INLINE_LINMATH int Extension<FLOATNAME(LVecBase3)>::
+__setattr__(PyObject *self, const string &attr_name, PyObject *assign) {
 #ifndef NDEBUG
   // Validate the attribute name.
   for (string::const_iterator it = attr_name.begin(); it < attr_name.end(); it++) {
@@ -157,7 +159,7 @@ __setattr__, PyObject *self, const string &attr_name, PyObject *assign) {
       double value = PyFloat_AS_DOUBLE(fl);
       Py_DECREF(fl);
 
-      this->_v(attr_name[i] - 'x') = value;
+      _this->_v(attr_name[i] - 'x') = value;
     }
 
     Py_DECREF(fast);
@@ -182,7 +184,7 @@ __setattr__, PyObject *self, const string &attr_name, PyObject *assign) {
     // Loop through the components in the attribute name,
     // and assign the floating-point value to every one of them.
     for (string::const_iterator it = attr_name.begin(); it < attr_name.end(); it++) {
-      this->_v((*it) - 'x') = value;
+      _this->_v((*it) - 'x') = value;
     }
   }
 

@@ -11,5 +11,6 @@ namespace OVR {
   class SensorInfo;
   class SensorFusion;
 
+  template<class T> class DeviceEnumerator;
   template<class T> class Ptr;
 };

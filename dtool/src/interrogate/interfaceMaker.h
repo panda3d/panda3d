@@ -115,6 +115,7 @@ public:
       PT_mapping          = 0x0002,
       PT_make_copy        = 0x0004,
       PT_copy_constructor = 0x0008,
+      PT_iter             = 0x0010,
     };
     int _protocol_types;
   };

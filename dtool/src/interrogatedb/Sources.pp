@@ -17,7 +17,7 @@
     interrogateType.I interrogateType.h  \
     interrogate_datafile.I interrogate_datafile.h  \
     interrogate_interface.h interrogate_request.h \
-    py_panda.h \
+    extension.h py_panda.h \
     vector_int.h
 
  #define INCLUDED_SOURCES  \
@@ -37,7 +37,7 @@
   #define INSTALL_HEADERS \
     interrogate_interface.h interrogate_request.h vector_int.h \
     config_interrogatedb.h \
-    py_panda.h \
+    extension.h py_panda.h \
     vector_int.h
 
 #end lib_target

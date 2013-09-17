@@ -15,7 +15,7 @@
      coordinateSystem.h dbl2fltnames.h dblnames.h \
      deg_2_rad.h deg_2_rad.I \
      flt2dblnames.h fltnames.h lcast_to.h lcast_to_src.h  \
-     lcast_to_src.I lmatrix.h lmatrix_ext.I lmatrix3_src.I  \
+     lcast_to_src.I lmatrix.h lmatrix_ext.h lmatrix3_src.I  \
      lmatrix3_src.cxx lmatrix3_src.h lmatrix4_src.I  \
      lmatrix4_src.cxx lmatrix4_src.h lorientation.h  \
      lorientation_src.I lorientation_src.cxx lorientation_src.h  \
@@ -37,12 +37,12 @@
      lvector3.h lvector3_src.I lvector3_src.cxx lvector3_src.h  \
      lvector4.h lvector4_src.I lvector4_src.cxx lvector4_src.h  \
      lvector4.h lvector4_src.I lvector4_src.cxx lvector4_src.h  \
-     lvecBase2_ext.I lvecBase3_ext.I lvecBase4_ext.I \
-     lpoint2_ext.I lpoint3_ext.I lpoint4_ext.I \
-     lvector2_ext.I lvector3_ext.I lvector4_ext.I \
+     lvecBase2_ext.h lvecBase3_ext.h lvecBase4_ext.h \
+     lpoint2_ext.h lpoint3_ext.h lpoint4_ext.h \
+     lvector2_ext.h lvector3_ext.h lvector4_ext.h \
      mathNumbers.h mathNumbers.I 
     
-   #define INCLUDED_SOURCES \
+  #define INCLUDED_SOURCES \
      compose_matrix.cxx config_linmath.cxx coordinateSystem.cxx  \
      lmatrix.cxx \
      lorientation.cxx lpoint2.cxx  \

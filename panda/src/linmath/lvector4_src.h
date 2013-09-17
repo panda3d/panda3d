@@ -25,8 +25,8 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVector4)(FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LVector4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w);
 
-  EXTENSION(PyObject *__getattr__(const string &attr_name) const);
-  EXTENSION(int __setattr__(PyObject *self, const string &attr_name, PyObject *assign));
+  EXTENSION(INLINE_LINMATH PyObject *__getattr__(const string &attr_name) const);
+  EXTENSION(INLINE_LINMATH int __setattr__(PyObject *self, const string &attr_name, PyObject *assign));
 
   INLINE_LINMATH static const FLOATNAME(LVector4) &zero();
   INLINE_LINMATH static const FLOATNAME(LVector4) &unit_x();

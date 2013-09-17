@@ -579,6 +579,83 @@ write_with_data(ostream &out, int indent_level,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayFormat::get_format_string
+//       Access: Published
+//  Description: Returns a string with format codes representing the
+//               exact memory layout of the columns in memory, as
+//               understood by Python's struct module.
+//               If pad is true, extra padding bytes are added to
+//               the end as 'x' characters as needed.
+////////////////////////////////////////////////////////////////////
+string GeomVertexArrayFormat::
+get_format_string(bool pad) const {
+  consider_sort_columns();
+
+  int row_size;
+  if (pad) {
+    row_size = get_stride();
+  } else {
+    row_size = get_total_bytes();
+  }
+
+  // Synthesize the format string.
+  char *fmt = (char*) malloc(row_size + 1);
+  memset((void*) fmt, 0, row_size + 1);
+  int fi = 0;
+  int offset = 0;
+
+  for (int ci = 0; ci < get_num_columns(); ++ci) {
+    const GeomVertexColumn *column = get_column(ci);
+
+    if (offset < column->get_start()) {
+      // Add padding bytes to fill the gap.
+      int pad = column->get_start() - offset;
+      memset((void*) (fmt + fi), 'x', pad);
+      fi += pad;
+      offset += pad;
+    }
+
+    char fmt_code = 'x';
+    switch (column->get_numeric_type()) {
+    case NT_uint8:
+      fmt_code = 'B';
+      break;
+    case NT_uint16:
+      fmt_code = 'H';
+      break;
+    case NT_uint32:
+    case NT_packed_dcba:
+    case NT_packed_dabc:
+      fmt_code = 'I';
+      break;
+    case NT_float32:
+      fmt_code = 'f';
+      break;
+    case NT_float64:
+      fmt_code = 'd';
+      break;
+    default:
+      gobj_cat.error()
+        << "Unknown numeric type " << column->get_numeric_type() << "!\n";
+      return NULL;
+    }
+    memset((void*) (fmt + fi), fmt_code, column->get_num_components());
+    offset += column->get_total_bytes();
+    fi += column->get_num_components();
+  }
+
+  if (offset < row_size) {
+    // Add padding bytes.
+    int pad = row_size - offset;
+    memset((void*) (fmt + fi), 'x', pad);
+  }
+
+  string fmt_string (fmt);
+  free(fmt);
+  return fmt_string;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayFormat::compare_to
 //       Access: Public
 //  Description: 

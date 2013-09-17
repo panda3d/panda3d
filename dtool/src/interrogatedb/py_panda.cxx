@@ -437,7 +437,7 @@ RegisterRuntimeClass(Dtool_PyTypedObject * otype, int class_id) {
 Dtool_PyTypedObject *Dtool_RuntimeTypeDtoolType(int type) {
   RunTimeTypeDictionary::iterator di = GetRunTimeDictionary().find(type);
   if (di != GetRunTimeDictionary().end()) {
-      return di->second;
+    return di->second;
   } else {
     int type2 = get_best_parent_from_Set(type, GetRunTimeTypeList());
     di = GetRunTimeDictionary().find(type2);
@@ -468,6 +468,7 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
   newdef[offset].ml_flags = 0;
 
 #if PY_MAJOR_VERSION >= 3
+  cerr << "About to create module " << modulename << "\n";
   struct PyModuleDef moduledef = {
     PyModuleDef_HEAD_INIT,
     modulename,
@@ -477,6 +478,7 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
     NULL, NULL, NULL, NULL
   };
   PyObject *module = PyModule_Create(&moduledef);
+  cerr << "Module created!\n";
 #else
   PyObject *module = Py_InitModule((char *)modulename, newdef); 
 #endif  

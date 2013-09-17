@@ -30,6 +30,7 @@
     geomLinestrips.h \
     geomPoints.h \
     geomVertexArrayData.h geomVertexArrayData.I \
+    geomVertexArrayData_ext.h geomVertexArrayData_ext.cxx \
     geomVertexArrayFormat.h geomVertexArrayFormat.I \
     geomCacheEntry.h geomCacheEntry.I \
     geomCacheManager.h geomCacheManager.I \

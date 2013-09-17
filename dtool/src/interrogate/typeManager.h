@@ -76,6 +76,7 @@ public:
   static bool is_const_ref_to_basic_string_wchar(CPPType *type);
   static bool is_const_ptr_to_basic_string_wchar(CPPType *type);
   static bool is_wstring(CPPType *type);
+  static bool is_pair(CPPType *type);
   static bool is_bool(CPPType *type);
   static bool is_integer(CPPType *type);
   static bool is_unsigned_integer(CPPType *type);
@@ -90,6 +91,8 @@ public:
   static bool is_const_ref_to_pointer_to_base(CPPType *type);
   static bool is_pointer_to_PyObject(CPPType *type);
   static bool is_PyObject(CPPType *type);
+  static bool is_pointer_to_Py_buffer(CPPType *type);
+  static bool is_Py_buffer(CPPType *type);
   static bool involves_unpublished(CPPType *type);
   static bool involves_protected(CPPType *type);
 
@@ -103,6 +106,7 @@ public:
   static CPPType *unwrap(CPPType *type);
 
   static CPPType *get_pointer_type(CPPStructType *pt_type);
+  static CPPType *get_template_parameter_type(CPPType *type, int i = 0);
 
   static CPPType *wrap_pointer(CPPType *type);
   static CPPType *wrap_const_pointer(CPPType *type);

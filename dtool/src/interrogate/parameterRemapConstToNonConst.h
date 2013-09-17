@@ -23,7 +23,7 @@
 //       Class : ParameterRemapConstToNonConst
 // Description : A ParameterRemap class that handles remapping a
 //               simple const parameter (like const int) to an
-//               ordinary parameter (line int).  It doesn't apply to
+//               ordinary parameter (like int).  It doesn't apply to
 //               const references or const pointers, however.
 ////////////////////////////////////////////////////////////////////
 class ParameterRemapConstToNonConst : public ParameterRemap {

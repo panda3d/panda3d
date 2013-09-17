@@ -115,6 +115,8 @@ PUBLISHED:
   void write_with_data(ostream &out, int indent_level, 
                        const GeomVertexArrayData *array_data) const;
 
+  string get_format_string(bool pad = true) const;
+
 public:
   int compare_to(const GeomVertexArrayFormat &other) const;
 

@@ -23,5 +23,6 @@
 class PyObject;
 class PyThreadState;
 typedef int Py_ssize_t;
+struct Py_buffer;
 
 #endif  // PYTHON_H

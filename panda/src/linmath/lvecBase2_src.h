@@ -37,9 +37,9 @@ PUBLISHED:
 
   INLINE_LINMATH ~FLOATNAME(LVecBase2)();
 
-  EXTENSION(PyObject *__reduce__(PyObject *self) const);
-  EXTENSION(PyObject *__getattr__(const string &attr_name) const);
-  EXTENSION(int __setattr__(PyObject *self, const string &attr_name, PyObject *assign));
+  EXTENSION(INLINE_LINMATH PyObject *__reduce__(PyObject *self) const);
+  EXTENSION(INLINE_LINMATH PyObject *__getattr__(const string &attr_name) const);
+  EXTENSION(INLINE_LINMATH int __setattr__(PyObject *self, const string &attr_name, PyObject *assign));
 
   INLINE_LINMATH FLOATTYPE operator [](int i) const;
   INLINE_LINMATH FLOATTYPE &operator [](int i);

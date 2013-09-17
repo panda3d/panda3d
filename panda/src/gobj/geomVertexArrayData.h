@@ -114,6 +114,10 @@ PUBLISHED:
   static void lru_epoch();
   INLINE static VertexDataBook &get_book();
 
+  EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags));
+  EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const);
+  EXTENSION(void __releasebuffer__(PyObject *self, Py_buffer *view) const);
+
 public:
   virtual void evict_lru();
 

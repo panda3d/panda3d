@@ -128,17 +128,16 @@ read_command_file(istream &in) {
 void InterrogateBuilder::
 do_command(const string &command, const string &params) {
 
-  if(command == "forcevisible")
-  {
-      CPPType *type = parser.parse_type(params);
-      if (type == (CPPType *)NULL) {
-          nout << "Unknown type: allowtype " << params << "\n";
-      } else {
-          type = type->resolve_type(&parser, &parser);
-          type->_vis = min_vis;
-      }
-  }
-  else if (command == "forcetype") {
+  if (command == "forcevisible") {
+    CPPType *type = parser.parse_type(params);
+    if (type == (CPPType *)NULL) {
+      nout << "Unknown type: allowtype " << params << "\n";
+    } else {
+      type = type->resolve_type(&parser, &parser);
+      type->_vis = min_vis;
+    }
+
+  } else if (command == "forcetype") {
     // forcetype explicitly exports the given type.
     CPPType *type = parser.parse_type(params);
     if (type == (CPPType *)NULL) {
@@ -364,7 +363,6 @@ void InterrogateBuilder::write_code(ostream &out_code,ostream * out_include, Int
              << "#include \"dconfig.h\"\n";
   }
 
-
   ostringstream declaration_bodies;
 
   if (watch_asserts) {
@@ -377,7 +375,8 @@ void InterrogateBuilder::write_code(ostream &out_code,ostream * out_include, Int
     if (library_name.size() > 1) {
       declaration_bodies << "#define PANDA_LIBRARY_NAME_" << library_name << "\n";
     }
-    declaration_bodies << "#include \"py_panda.h\"  \n";
+    declaration_bodies << "#include \"py_panda.h\"\n";
+    declaration_bodies << "#include \"extension.h\"\n";
   }
   declaration_bodies << "\n";
   
@@ -393,12 +392,6 @@ void InterrogateBuilder::write_code(ostream &out_code,ostream * out_include, Int
       } else {
         declaration_bodies << "#include <" << filename << ">\n";
       }
-    // Check if it's a special extension file.
-    } else if (filename.length() > 6 && filename.substr(filename.length() - 6) == "_ext.I") {
-      declaration_bodies
-        << "#define this _ext_this\n"
-        << "#include \"" << filename << "\"\n"
-        << "#undef this\n";
     }
   }
   declaration_bodies << "\n";
@@ -1755,6 +1748,11 @@ get_function(CPPInstance *function, string description,
   if (ftype->_flags & CPPFunctionType::F_operator_typecast) {
     // This is a special typecast operator.
     ifunction->_flags |= InterrogateFunction::F_operator_typecast;
+  }
+
+  if (function->_storage_class & CPPInstance::SC_virtual) {
+    // This is a virtual function.
+    ifunction->_flags |= InterrogateFunction::F_virtual;
   }
 
   ifunction->_flags |= flags;

@@ -1,4 +1,4 @@
-// Filename: rocketRegion_ext.I
+// Filename: rocketRegion_ext.cxx
 // Created by:  rdb (06Dec11)
 //
 ////////////////////////////////////////////////////////////////////
@@ -13,9 +13,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "rocketRegion.h"
+#include "extension.h"
 
 #ifndef CPPPARSER
-#undef this
 #define HAVE_LONG_LONG 1
 #include <Rocket/Core/Context.h>
 #include <Rocket/Core/Python/Utilities.h>
@@ -31,10 +31,10 @@
 //               It's best to call this method just once and store
 //               the context in a Python variable, to avoid overhead.
 ////////////////////////////////////////////////////////////////////
-PyObject* EXT_CONST_METHOD(RocketRegion,
-get_context) {
+PyObject* Extension<RocketRegion>::
+get_context() const {
   try {
-    Rocket::Core::Context* context = _ext_this->get_context();
+    Rocket::Core::Context* context = _this->get_context();
     python::object py_context = Rocket::Core::Python::Utilities::MakeObject(context);
 
     // Make sure the context won't be destroyed before both the Python

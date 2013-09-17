@@ -83,11 +83,12 @@ PointerToArray(const PointerToArray<Element> &copy) :
 //       Access: Published
 //  Description: This special constructor accepts a Python list of
 //               elements, or a Python string (or a bytes object,
-//               in Python 3).
+//               in Python 3), or any object that supports the
+//               Python buffer protocol.
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 PointerToArray<Element>::
-PointerToArray(PyObject *self, PyObject *sequence) :
+PointerToArray(PyObject *self, PyObject *source) :
   PointerToArrayBase<Element>((ReferenceCountedVector<Element> *)NULL),
   _type_handle(get_type_handle(Element))
 {
@@ -95,9 +96,33 @@ PointerToArray(PyObject *self, PyObject *sequence) :
   // self in the constructor--the caller can't initialize this for us.
   ((Dtool_PyInstDef *)self)->_ptr_to_object = this;
 
-  if (!PySequence_Check(sequence)) {
+  if (PyObject_CheckBuffer(source)) {
+    // User passed a buffer object.
+    Py_buffer view;
+    if (PyObject_GetBuffer(source, &view, PyBUF_CONTIG_RO) == -1) {
+      PyErr_SetString(PyExc_TypeError, "PointerToArray constructor requires a contiguous buffer");
+      return;
+    }
+
+    if (view.itemsize != 1 && view.itemsize != sizeof(Element)) {
+      PyErr_SetString(PyExc_TypeError, "buffer.itemsize does not match PointerToArray element size");
+      return;
+    }
+
+    int num_elements = view.len / sizeof(Element);
+    insert(begin(), num_elements, Element());
+
+    if (view.len > 0) {
+      memcpy(p(), view.buf, view.len);
+    }
+
+    PyBuffer_Release(&view);
+    return;
+  }
+
+  if (!PySequence_Check(source)) {
     // If passed with a non-sequence, this isn't the right constructor.
-    PyErr_SetString(PyExc_TypeError, "PointerToArray constructor requires a sequence");
+    PyErr_SetString(PyExc_TypeError, "PointerToArray constructor requires a sequence or buffer object");
     return;
   }
 
@@ -105,8 +130,8 @@ PointerToArray(PyObject *self, PyObject *sequence) :
   // character-at-a-time, just load the whole string as a data
   // buffer.
 #if PY_MAJOR_VERSION >= 3
-  if (PyBytes_Check(sequence)) {
-    int size = PyBytes_Size(sequence);
+  if (PyBytes_Check(source)) {
+    int size = PyBytes_Size(source);
     if (size % sizeof(Element) != 0) {
       ostringstream stream;
       stream << "Buffer not a multiple of " << sizeof(Element) << " bytes";
@@ -121,14 +146,14 @@ PointerToArray(PyObject *self, PyObject *sequence) :
     // Hope there aren't any constructors or destructors involved
     // here.
     if (size != 0) {
-      const char *data = PyBytes_AsString(sequence);
+      const char *data = PyBytes_AsString(source);
       memcpy(p(), data, size);
     }
     return;
   }
 #else
-  if (PyString_CheckExact(sequence)) {
-    int size = PyString_Size(sequence);
+  if (PyString_CheckExact(source)) {
+    int size = PyString_Size(source);
     if (size % sizeof(Element) != 0) {
       ostringstream stream;
       stream << "Buffer not a multiple of " << sizeof(Element) << " bytes";
@@ -143,7 +168,7 @@ PointerToArray(PyObject *self, PyObject *sequence) :
     // Hope there aren't any constructors or destructors involved
     // here.
     if (size != 0) {
-      const char *data = PyString_AsString(sequence);
+      const char *data = PyString_AsString(source);
       memcpy(p(), data, size);
     }
     return;
@@ -152,9 +177,9 @@ PointerToArray(PyObject *self, PyObject *sequence) :
 
   // Now construct the internal list by copying the elements
   // one-at-a-time from Python.
-  int size = PySequence_Size(sequence);
+  int size = PySequence_Size(source);
   for (int i = 0; i < size; ++i) {
-    PyObject *item = PySequence_GetItem(sequence, i);
+    PyObject *item = PySequence_GetItem(source, i);
     if (item == NULL) {
       return;
     }
@@ -716,6 +741,32 @@ get_ref_count() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PointerToArray::ref
+//       Access: Public
+//  Description: Increments the reference count of the underlying vector.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE void PointerToArray<Element>::
+ref() const {
+  if ((this->_void_ptr) == NULL) {
+    ((PointerToArray<Element> *)this)->reassign(new ReferenceCountedVector<Element>(_type_handle));
+  }
+  ((To *)(this->_void_ptr))->ref();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToArray::unref
+//       Access: Public
+//  Description: Decrements the reference count of the underlying vector.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE bool PointerToArray<Element>::
+unref() const {
+  nassertr((this->_void_ptr) != NULL, true);
+  return ((To *)(this->_void_ptr))->unref();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::get_node_ref_count
 //       Access: Public
 //  Description: Returns the node_ref of the underlying vector.
@@ -841,8 +892,8 @@ ConstPointerToArray(const ConstPointerToArray<Element> &copy) :
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE ConstPointerToArray<Element>::
-ConstPointerToArray(PyObject *self, PyObject *sequence) :
-  PointerToArrayBase<Element>(PointerToArray<Element>(self, sequence)),
+ConstPointerToArray(PyObject *self, PyObject *source) :
+  PointerToArrayBase<Element>(PointerToArray<Element>(self, source)),
   _type_handle(get_type_handle(Element))
 {
 }
@@ -1165,6 +1216,32 @@ get_ref_count() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConstPointerToArray::ref
+//       Access: Public
+//  Description: Increments the reference count of the underlying vector.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE void ConstPointerToArray<Element>::
+ref() const {
+  if ((this->_void_ptr) == NULL) {
+    ((ConstPointerToArray<Element> *)this)->reassign(new ReferenceCountedVector<Element>(_type_handle));
+  }
+  ((To *)(this->_void_ptr))->ref();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConstPointerToArray::unref
+//       Access: Public
+//  Description: Decrements the reference count of the underlying vector.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE bool ConstPointerToArray<Element>::
+unref() const {
+  nassertr((this->_void_ptr) != NULL, true);
+  return ((To *)(this->_void_ptr))->unref();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::get_node_ref_count
 //       Access: Public
 //  Description: Returns the node_ref of the underlying vector.
@@ -1251,5 +1328,152 @@ INLINE void ConstPointerToArray<Element>::
 clear() {
   ((ConstPointerToArray<Element> *)this)->reassign((ReferenceCountedVector<Element> *)NULL);
 }
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToArray::__getbuffer__
+//       Access: Published
+//  Description: This is used to implement the buffer protocol, in
+//               order to allow efficient access to the array data
+//               through a Python multiview object.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE int PointerToArray<Element>::
+__getbuffer__(PyObject *self, Py_buffer *view, int flags) {
+
+  const char *format = get_format_code(Element);
+  cerr << "non-const __getbuffer__ with fmt " << format << "\n";
+  if (format == NULL) {
+    // Not supported.
+    return -1;
+  }
+
+  if (self != NULL) {
+    Py_INCREF(self);
+  }
+  view->obj = self;
+  view->buf = (void*) p();
+  view->len = size() * sizeof(Element);
+  view->readonly = 0;
+  view->itemsize = sizeof(Element);
+  view->format = NULL;
+  if ((flags & PyBUF_FORMAT) == PyBUF_FORMAT) {
+    view->format = (char*) format;
+  }
+  view->ndim = 1;
+  view->shape = NULL;
+  if ((flags & PyBUF_ND) == PyBUF_ND) {
+    // This leaks, which sucks, but __releasebuffer__ doesn't give us
+    // the same pointer, so we would need to store it elsewhere if we
+    // wanted to delete it there.  Eh, it's just an int, who cares.
+    view->shape = new Py_ssize_t(size());
+  }
+  view->strides = NULL;
+  if ((flags & PyBUF_STRIDES) == PyBUF_STRIDES) {
+    view->strides = &(view->itemsize);
+  }
+  view->suboffsets = NULL;
+
+  // Store a reference to ourselves on the Py_buffer object
+  // as a reminder that we have increased our refcount.
+  ref();
+  view->internal = (void*) this;
+
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointerToArray::__releasebuffer__
+//       Access: Published
+//  Description: Releases the buffer allocated by __getbuffer__.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE void PointerToArray<Element>::
+__releasebuffer__(PyObject *self, Py_buffer *view) const {
+  // Note: PyBuffer_Release automatically decrements view->obj.
+
+  if (view->internal != NULL) {
+    // Oh, right, let's not forget to unref this.
+    ((const PointerToArray<Element> *) view->internal)->unref();
+    view->internal = NULL;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConstPointerToArray::__getbuffer__
+//       Access: Published
+//  Description: This is used to implement the buffer protocol, in
+//               order to allow efficient access to the array data
+//               through a Python multiview object.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE int ConstPointerToArray<Element>::
+__getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
+
+  if ((flags & PyBUF_WRITABLE) == PyBUF_WRITABLE) {
+    cerr << "writable buffer requested of const array\n";
+    PyErr_SetString(PyExc_BufferError,
+                    "Object is not writable.");
+    return -1;
+  }
+
+  const char *format = get_format_code(Element);
+  cerr << "const __getbuffer__ with fmt " << format << "\n";
+  if (format == NULL) {
+    // Not supported.
+    return -1;
+  }
+
+  if (self != NULL) {
+    Py_INCREF(self);
+  }
+  view->obj = self;
+  view->buf = (void*) p();
+  view->len = size() * sizeof(Element);
+  view->readonly = 1;
+  view->itemsize = sizeof(Element);
+  view->format = NULL;
+  if ((flags & PyBUF_FORMAT) == PyBUF_FORMAT) {
+    view->format = (char*) format;
+  }
+  view->ndim = 1;
+  view->shape = NULL;
+  if ((flags & PyBUF_ND) == PyBUF_ND) {
+    // This leaks, which sucks, but __releasebuffer__ doesn't give us
+    // the same pointer, so we would need to store it elsewhere if we
+    // wanted to delete it there.  Eh, it's just an int, who cares.
+    view->shape = new Py_ssize_t(size());
+  }
+  view->strides = NULL;
+  if ((flags & PyBUF_STRIDES) == PyBUF_STRIDES) {
+    view->strides = &(view->itemsize);
+  }
+  view->suboffsets = NULL;
+
+  // Store a reference to ourselves on the Py_buffer object
+  // as a reminder that we have increased our refcount.
+  ref();
+  view->internal = (void*) this;
+
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConstPointerToArray::__releasebuffer__
+//       Access: Published
+//  Description: Releases the buffer allocated by __getbuffer__.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE void ConstPointerToArray<Element>::
+__releasebuffer__(PyObject *self, Py_buffer *view) const {
+  // Note: PyBuffer_Release automatically decrements obj->view.
+
+  if (view->internal != NULL) {
+    // Oh, right, let's not forget to unref this.
+    ((const PointerToArray<Element> *) view->internal)->unref();
+    view->internal = NULL;
+  }
+}
+#endif  // HAVE_PYTHON
 
 #endif  // CPPPARSER

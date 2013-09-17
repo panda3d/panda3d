@@ -15,7 +15,6 @@
 #include "interfaceMakerPython.h"
 #include "interrogate.h"
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: InterfaceMakerPython::Constructor
 //       Access: Public

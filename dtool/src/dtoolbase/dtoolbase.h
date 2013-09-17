@@ -23,7 +23,7 @@
 #include "dtool_config.h"
 
 /* Make sure WIN32 and WIN32_VC are defined when using MSVC */
-#ifdef _WIN32
+#if defined(_WIN32) || defined(_WIN64)
 #ifndef WIN32
 #define WIN32
 #endif
@@ -411,11 +411,6 @@
 #define MAKE_SEQ(seq_name, num_name, element_name)
 #define EXTENSION(x)
 #define EXTEND
-/* If you change these, don't forget to also change it in interrogate itself. */
-#define _EXT_FUNC(func) _ext__ ## func
-#define EXT_FUNC(func) _EXT_FUNC(func) ()
-#define EXT_FUNC_ARGS(func, ...) _EXT_FUNC(func) (__VA_ARGS__)
-#define CALL_EXT_FUNC(func, ...) _EXT_METHOD(cl, m) (__VA_ARGS__)
 #endif
 
 #ifdef __cplusplus

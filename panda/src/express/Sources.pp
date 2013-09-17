@@ -70,6 +70,7 @@
     virtualFileMountSystem.h virtualFileMountSystem.I \
     virtualFileSimple.h virtualFileSimple.I \
     virtualFileSystem.h virtualFileSystem.I \
+    virtualFileSystem_ext.h virtualFileSystem_ext.cxx \
     weakPointerCallback.I weakPointerCallback.h \
     weakPointerTo.I weakPointerTo.h \
     weakPointerToBase.I weakPointerToBase.h \

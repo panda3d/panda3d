@@ -1,5 +1,5 @@
-// Filename: lvecBase4_ext.I
-// Created by:  rdb (02Jan11)
+// Filename: lpoint4_ext.I
+// Created by:  rdb (13Sep13)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,11 +12,18 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "lvecBase4.h"
+#ifndef LPOINT4_EXT_H
+#define LPOINT4_EXT_H
+
+#include "lpoint4.h"
+#include "extension.h"
+
+#include "lvecBase4_ext.h"
 
 #include "fltnames.h"
-#include "lvecBase4_ext_src.I"
+#include "lpoint4_ext_src.h"
 
 #include "dblnames.h"
-#include "lvecBase4_ext_src.I"
+#include "lpoint4_ext_src.h"
 
+#endif

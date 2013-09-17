@@ -63,7 +63,7 @@ PUBLISHED:
     FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22);
   ALLOC_DELETED_CHAIN(FLOATNAME(LMatrix3));
 
-  EXTENSION(PyObject *__reduce__(PyObject *self) const);
+  EXTENSION(INLINE_LINMATH PyObject *__reduce__(PyObject *self) const);
 
   void fill(FLOATTYPE fill_value);
   INLINE_LINMATH void set(
@@ -283,7 +283,7 @@ PUBLISHED:
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
-  EXTENSION(void python_repr(ostream &out, const string &class_name) const);
+  EXTENSION(INLINE_LINMATH void python_repr(ostream &out, const string &class_name) const);
 
   INLINE_LINMATH void generate_hash(ChecksumHashGenerator &hashgen) const;
   void generate_hash(

@@ -34,17 +34,17 @@ public:
   virtual ~InterfaceMakerPythonNative();
   
   
-  virtual void write_prototypes(ostream &out,ostream *out_h);
-  void write_prototypes_class(ostream &out,ostream *out_h, Object * obj) ;
-  void write_prototypes_class_external(ostream &out, Object * obj);
+  virtual void write_prototypes(ostream &out, ostream *out_h);
+  void write_prototypes_class(ostream &out, ostream *out_h, Object *obj) ;
+  void write_prototypes_class_external(ostream &out, Object *obj);
   
   virtual void write_functions(ostream &out);
   
-  virtual void write_module(ostream &out,ostream *out_h, InterrogateModuleDef *def);
-  virtual void write_module_support(ostream &out, ostream *out_h,InterrogateModuleDef *moduledefdef);
+  virtual void write_module(ostream &out, ostream *out_h, InterrogateModuleDef *def);
+  virtual void write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def);
   
   void write_module_class(ostream &out, Object *cls); 
-  virtual void write_sub_module(ostream &out,  Object *obj); 
+  virtual void write_sub_module(ostream &out, Object *obj); 
   
   virtual bool synthesize_this_parameter();
   
@@ -74,6 +74,8 @@ private:
     WT_sequence_size,
     WT_mapping_setitem,
     WT_inquiry,
+    WT_getbuffer,
+    WT_releasebuffer,
   };
 
   class SlottedFunctionDef {
@@ -102,22 +104,25 @@ private:
                              int indent_level, ostream &forwarddecl, bool inplace,
                              bool coercion_allowed, bool &coercion_attempted, 
                              const string &args_cleanup);
-  
-  void pack_return_value(ostream &out, int indent_level,
-                         FunctionRemap *remap, std::string return_expr, ostream &forwarddecl, bool in_place);
-  
+
+  void pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
+                         const std::string &return_expr, bool in_place);
+  void pack_python_value(ostream &out, int indent_level, FunctionRemap *remap,
+                         ParameterRemap *return_type, const std::string &return_expr,
+                         const std::string &assign_expr, bool in_place);
+
   void write_make_seq(ostream &out, Object *obj, const std::string &ClassName,
                       MakeSeq *make_seq);
-  
+
   void write_class_prototypes(ostream &out) ;
   void write_class_declarations(ostream &out, ostream *out_h, Object *obj);
   void write_class_details(ostream &out, Object *obj);
   
   void do_assert_init(ostream &out, int &indent_level, bool constructor, const string &args_cleanup) const;
 public:
-  bool isRemapLegal(FunctionRemap &remap);
-  bool isFunctionLegal( Function *func);
-  bool isCppTypeLegal(CPPType *ctype);
+  bool is_remap_legal(FunctionRemap &remap);
+  bool is_function_legal( Function *func);
+  bool is_cpp_type_legal(CPPType *ctype);
   bool isExportThisRun(CPPType *ctype);
   bool isExportThisRun(Function *func);
   bool isFunctionWithThis( Function *func);
@@ -131,11 +136,11 @@ public:
     bool            _can_downcast;
     bool            _is_legal_py_class;
   };
-  
-  void GetValideChildClasses( std::map< std::string ,CastDetails > &answer, CPPStructType * inclass,  const std::string &up_cast_seed = "", bool downcastposible = true);
-  bool DoesInheritFromIsClass( const CPPStructType * inclass, const std::string &name);
+
+  void get_valid_child_classes(std::map<std::string, CastDetails> &answer, CPPStructType *inclass, const std::string &upcast_seed = "", bool can_downcast = true);
+  bool DoesInheritFromIsClass(const CPPStructType * inclass, const std::string &name);
   bool IsPandaTypedObject(CPPStructType * inclass) { return DoesInheritFromIsClass(inclass,"TypedObject"); };
-  void WriteReturnInstance(ostream &out, int indent_level, std::string &return_expr, std::string &ows_memory_flag,const std::string &class_name, CPPType *ctype, bool inplace, const std::string &const_flag);
+  void write_python_instance(ostream &out, int indent_level, const std::string &return_expr, const std::string &assign_expr, std::string &owns_memory_flag, const std::string &class_name, CPPType *ctype, bool inplace, const std::string &const_flag);
   string HasAGetKeyFunction(const InterrogateType &itype_class);
   bool HasAGetClassTypeFunction(const InterrogateType &itype_class);
   int NeedsAStrFunction(const InterrogateType &itype_class);

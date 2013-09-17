@@ -221,7 +221,7 @@ struct Dtool_PyTypedObject {
         0,                                      /* tp_str */            \
         PyObject_GenericGetAttr,                /* tp_getattro */       \
         PyObject_GenericSetAttr,                /* tp_setattro */       \
-        0,                                      /* tp_as_buffer */      \
+        &Dtool_PyBufferProcs_##CLASS_NAME,      /* tp_as_buffer */      \
         (Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_CHECKTYPES), /* tp_flags */ \
         0,                                      /* tp_doc */            \
         0,                                      /* tp_traverse */       \
@@ -310,6 +310,11 @@ struct Dtool_PyTypedObject {
       0,/*binaryfunc mp_subscript */                                    \
       0,/*objobjargproc mp_ass_subscript */                             \
     };                                                                  \
+  static PyMappingMethods Dtool_PyBufferProcs_##CLASS_NAME =            \
+    {                                                                   \
+      0,/*getbufferproc bf_getbuffer */                                 \
+      0,/*releasebufferproc bf_releasebuffer */                         \
+    };                                                                  \
   Define_Dtool_PyTypedObject(MODULE_NAME, CLASS_NAME, PUBLIC_NAME)
 
 #else // Python 2:
@@ -372,6 +377,15 @@ struct Dtool_PyTypedObject {
       0,/*inquiry mp_length */                                          \
       0,/*binaryfunc mp_subscript */                                    \
       0,/*objobjargproc mp_ass_subscript */                             \
+    };                                                                  \
+  static PyBufferProcs Dtool_PyBufferProcs_##CLASS_NAME =               \
+    {                                                                   \
+      0,/*readbufferproc bf_getreadbuffer */                            \
+      0,/*writebufferproc bf_getwritebuffer */                          \
+      0,/*segcountproc bf_getsegcount */                                \
+      0,/*charbufferproc bf_getcharbuffer */                            \
+      0,/*getbufferproc bf_getbuffer */                                 \
+      0,/*releasebufferproc bf_releasebuffer */                         \
     };                                                                  \
   Define_Dtool_PyTypedObject(MODULE_NAME, CLASS_NAME, PUBLIC_NAME)
 #endif

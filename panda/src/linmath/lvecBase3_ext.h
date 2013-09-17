@@ -1,5 +1,5 @@
-// Filename: lvector4_ext.I
-// Created by:  rdb (02Jan11)
+// Filename: lvecBase3_ext.I
+// Created by:  rdb (13Sep13)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,11 +12,16 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "lvector4.h"
+#ifndef LVECBASE3_EXT_H
+#define LVECBASE3_EXT_H
+
+#include "lvecBase3.h"
+#include "extension.h"
 
 #include "fltnames.h"
-#include "lvector4_ext_src.I"
+#include "lvecBase3_ext_src.h"
 
 #include "dblnames.h"
-#include "lvector4_ext_src.I"
+#include "lvecBase3_ext_src.h"
 
+#endif

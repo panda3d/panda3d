@@ -18,10 +18,10 @@
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE void EXT_NESTED_METHOD_ARGS(FLOATNAME(LMatrix3), Row,
-__setitem__, int i, FLOATTYPE v) {
+INLINE_LINMATH void Extension<FLOATNAME(LMatrix3)::Row>::
+__setitem__(int i, FLOATTYPE v) {
   nassertv(i >= 0 && i < 3);
-  this->_row[i] = v;
+  _this->_row[i] = v;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -30,8 +30,8 @@ __setitem__, int i, FLOATTYPE v) {
 //  Description: This special Python method is implement to provide
 //               support for the pickle module.
 ////////////////////////////////////////////////////////////////////
-PyObject *EXT_CONST_METHOD_ARGS(FLOATNAME(LMatrix3),
-__reduce__, PyObject *self) {
+INLINE_LINMATH PyObject *Extension<FLOATNAME(LMatrix3)>::
+__reduce__(PyObject *self) const {
   // We should return at least a 2-tuple, (Class, (args)): the
   // necessary class object whose constructor we should call
   // (e.g. this), and the arguments necessary to reconstruct this
@@ -42,9 +42,9 @@ __reduce__, PyObject *self) {
   }
 
   PyObject *result = Py_BuildValue("(O(fffffffff))", this_class, 
-    this->_m(0, 0), this->_m(0, 1), this->_m(0, 2),
-    this->_m(1, 0), this->_m(1, 1), this->_m(1, 2),
-    this->_m(2, 0), this->_m(2, 1), this->_m(2, 2));
+    _this->_m(0, 0), _this->_m(0, 1), _this->_m(0, 2),
+    _this->_m(1, 0), _this->_m(1, 1), _this->_m(1, 2),
+    _this->_m(2, 0), _this->_m(2, 1), _this->_m(2, 2));
 
   Py_DECREF(this_class);
   return result;
@@ -55,19 +55,19 @@ __reduce__, PyObject *self) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void EXT_CONST_METHOD_ARGS(FLOATNAME(LMatrix3),
-python_repr, ostream &out, const string &class_name) {
+INLINE_LINMATH void Extension<FLOATNAME(LMatrix3)>::
+python_repr(ostream &out, const string &class_name) const {
   out << class_name << "(" 
-      << MAYBE_ZERO(this->_m(0, 0)) << ", "
-      << MAYBE_ZERO(this->_m(0, 1)) << ", "
-      << MAYBE_ZERO(this->_m(0, 2)) << ", "
+      << MAYBE_ZERO(_this->_m(0, 0)) << ", "
+      << MAYBE_ZERO(_this->_m(0, 1)) << ", "
+      << MAYBE_ZERO(_this->_m(0, 2)) << ", "
 
-      << MAYBE_ZERO(this->_m(1, 0)) << ", "
-      << MAYBE_ZERO(this->_m(1, 1)) << ", "
-      << MAYBE_ZERO(this->_m(1, 2)) << ", "
+      << MAYBE_ZERO(_this->_m(1, 0)) << ", "
+      << MAYBE_ZERO(_this->_m(1, 1)) << ", "
+      << MAYBE_ZERO(_this->_m(1, 2)) << ", "
 
-      << MAYBE_ZERO(this->_m(2, 0)) << ", "
-      << MAYBE_ZERO(this->_m(2, 1)) << ", "
-      << MAYBE_ZERO(this->_m(2, 2)) << ")";
+      << MAYBE_ZERO(_this->_m(2, 0)) << ", "
+      << MAYBE_ZERO(_this->_m(2, 1)) << ", "
+      << MAYBE_ZERO(_this->_m(2, 2)) << ")";
 }
 

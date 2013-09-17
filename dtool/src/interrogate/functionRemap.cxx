@@ -244,8 +244,12 @@ string FunctionRemap::call_function(ostream &out, int indent_level, bool convert
 //               comment.
 ////////////////////////////////////////////////////////////////////
 void FunctionRemap::
-write_orig_prototype(ostream &out, int indent_level) const {
-  _cppfunc->output(out, indent_level, &parser, false, _num_default_parameters);
+write_orig_prototype(ostream &out, int indent_level, bool local) const {
+  if (local) {
+    _cppfunc->output(out, indent_level, NULL, false, _num_default_parameters);
+  } else {
+    _cppfunc->output(out, indent_level, &parser, false, _num_default_parameters);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -392,28 +396,13 @@ get_call_str(const string &container, const vector_string &pexprs) const {
     const char *separator = "";
 
     // If this function is marked as having an extension function,
-    // call that instead.  The naming convention of the extension
-    // function has to match the EXT_IMPL definition in dtoolbase.h.
-    if (_extension) {
-      if (_cpptype != NULL) {
-        // Fix nested classes by replacing :: with __
-        char* nested_name = strdup(_cpptype->get_local_name(&parser).c_str());
-        for (size_t i = 0; i < strlen(nested_name); ++i) {
-          if (nested_name[i] == ':') {
-            nested_name[i] = '_';
-          }
-        }
-        call << "_ext_"  << nested_name << "_"
-                         << _cppfunc->get_local_name() << "(";
-        delete[] nested_name;
-      } else {
-        call << "_ext__" << _cppfunc->get_local_name() << "(";
-      }
+    // call that instead.
+    if (_extension && !container.empty()) {
+      call << "invoke_extension(" << container << ").";
 
-      if (_has_this && !container.empty()) {
-        call << container;
-        separator = ", ";
-      }
+      call << _cppfunc->get_local_name();
+      call << "(";
+
     } else {
 
       if (_type == T_constructor) {
@@ -569,11 +558,13 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     if (param._remap == (ParameterRemap *)NULL) {
       // If we can't handle one of the parameter types, we can't call
       // the function.
+      //nout << "Can't handle parameter " << i << " of method " << *_cppfunc << "\n";
       return false;
     }
     param._remap->set_default_value(params[i]->_initializer);
 
     if (!param._remap->is_valid()) {
+      nout << "Invalid remap for parameter " << i << " of method " << *_cppfunc << "\n";
       return false;
     }
 
@@ -693,6 +684,31 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
         // It receives no parameters, and returns a pointer.
         _flags |= F_make_copy;
       }
+
+    } else if (fname == "__iter__" ) {
+      if (_has_this && _parameters.size() == 1 &&
+          TypeManager::is_pointer(_return_type->get_new_type())) {
+        // It receives no parameters, and returns a pointer.
+        _flags |= F_iter;
+      }
+
+    } else if (fname == "__getbuffer__" ) {
+      if (_has_this && _parameters.size() == 4 &&
+          TypeManager::is_integer(_return_type->get_new_type()) &&
+          TypeManager::is_pointer_to_PyObject(_parameters[1]._remap->get_orig_type()) &&
+          TypeManager::is_pointer_to_Py_buffer(_parameters[2]._remap->get_orig_type()) &&
+          TypeManager::is_integer(_parameters[3]._remap->get_orig_type())) {
+
+        _flags |= F_getbuffer;
+      }
+
+    } else if (fname == "__releasebuffer__" ) {
+      if (_has_this && _parameters.size() == 3 &&
+          TypeManager::is_pointer_to_PyObject(_parameters[1]._remap->get_orig_type()) &&
+          TypeManager::is_pointer_to_Py_buffer(_parameters[2]._remap->get_orig_type())) {
+
+        _flags |= F_releasebuffer;
+      }
     }
 
   } else if (_type == T_constructor) {
@@ -709,25 +725,21 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
   return true;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-std::string make_safe_name(const std::string & name)
-{
-    return InterrogateBuilder::clean_identifier(name);
+std::string make_safe_name(const std::string &name) {
+  return InterrogateBuilder::clean_identifier(name);
+  /*
+  static const char safe_chars2[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
+  std::string result = name;
 
-    /*
-    static const char safe_chars2[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
-        std::string result = name;
+  size_t pos = result.find_first_not_of(safe_chars2);
+  while (pos != std::string::npos) {
+    result[pos] = '_';
+    pos = result.find_first_not_of(safe_chars2);
+  }
 
-        size_t pos = result.find_first_not_of(safe_chars2);
-        while (pos != std::string::npos)
-        {
-                result[pos] = '_';
-                pos = result.find_first_not_of(safe_chars2);
-        }
-
-        return result;
-        */
+  return result;
+  */
 }

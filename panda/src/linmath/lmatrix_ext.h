@@ -1,5 +1,5 @@
-// Filename: lpoint2_ext.I
-// Created by:  rdb (02Jan11)
+// Filename: lmatrix_ext.h
+// Created by:  rdb (13Sep13)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,11 +12,18 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "lpoint2.h"
+#ifndef LMATRIX_EXT_H
+#define LMATRIX_EXT_H
+
+#include "lmatrix.h"
+#include "extension.h"
 
 #include "fltnames.h"
-#include "lpoint2_ext_src.I"
+#include "lmatrix3_ext_src.h"
+#include "lmatrix4_ext_src.h"
 
 #include "dblnames.h"
-#include "lpoint2_ext_src.I"
+#include "lmatrix3_ext_src.h"
+#include "lmatrix4_ext_src.h"
 
+#endif
