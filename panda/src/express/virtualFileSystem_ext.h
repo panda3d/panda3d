@@ -39,3 +39,4 @@ public:
 #endif  // HAVE_PYTHON
 
 #endif  // VIRTUALFILESYSTEM_EXT_H
+
