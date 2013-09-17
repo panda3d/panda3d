@@ -27,6 +27,7 @@
 #include <sys/stat.h>
 
 #include <algorithm>
+#include <iterator>
 #include <assert.h>
 
 #ifdef WIN32_VC
