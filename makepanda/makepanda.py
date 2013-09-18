@@ -2904,6 +2904,7 @@ IGATEFILES=GetDirectoryContents('panda/src/express', ["*.h", "*_composite*.cxx"]
 TargetAdd('libp3express.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libp3express.in', opts=['IMOD:pandaexpress', 'ILIB:libp3express', 'SRCDIR:panda/src/express'])
 TargetAdd('libp3express_igate.obj', input='libp3express.in', opts=["DEPENDENCYONLY"])
+TargetAdd('p3express_virtualFileSystem_ext.obj', opts=OPTS, input='virtualFileSystem_ext.cxx')
 
 #
 # DIRECTORY: panda/src/downloader/
@@ -2936,6 +2937,7 @@ TargetAdd('libpandaexpress.dll', input='libp3downloader_igate.obj')
 TargetAdd('libpandaexpress.dll', input='p3express_composite1.obj')
 TargetAdd('libpandaexpress.dll', input='p3express_composite2.obj')
 TargetAdd('libpandaexpress.dll', input='libp3express_igate.obj')
+TargetAdd('libpandaexpress.dll', input='p3express_virtualFileSystem_ext.obj')
 TargetAdd('libpandaexpress.dll', input='p3pandabase_pandabase.obj')
 TargetAdd('libpandaexpress.dll', input=COMMON_DTOOL_LIBS)
 TargetAdd('libpandaexpress.dll', opts=['ADVAPI', 'WINSOCK2',  'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER'])
@@ -3100,6 +3102,7 @@ if (not RUNTIME):
   TargetAdd('libp3gobj.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3gobj.in', opts=['IMOD:panda', 'ILIB:libp3gobj', 'SRCDIR:panda/src/gobj'])
   TargetAdd('libp3gobj_igate.obj', input='libp3gobj.in', opts=["DEPENDENCYONLY"])
+  TargetAdd('p3gobj_geomVertexArrayData_ext.obj', opts=OPTS, input='geomVertexArrayData_ext.cxx')
 
 #
 # DIRECTORY: panda/src/pgraphnodes/
@@ -3454,6 +3457,7 @@ if (not RUNTIME):
   TargetAdd('libpanda.dll', input='p3gobj_composite1.obj')
   TargetAdd('libpanda.dll', input='p3gobj_composite2.obj')
   TargetAdd('libpanda.dll', input='libp3gobj_igate.obj')
+  TargetAdd('libpanda.dll', input='p3gobj_geomVertexArrayData_ext.obj')
   TargetAdd('libpanda.dll', input='p3gsgbase_composite1.obj')
   TargetAdd('libpanda.dll', input='libp3gsgbase_igate.obj')
   TargetAdd('libpanda.dll', input='p3linmath_composite1.obj')
@@ -3546,9 +3550,12 @@ if (PkgSkip("ROCKET") ==0) and (not RUNTIME):
   TargetAdd('libp3rocket_module.obj', opts=OPTS)
   TargetAdd('libp3rocket_module.obj', opts=['IMOD:p3rocket', 'ILIB:libp3rocket'])
 
+  TargetAdd('p3rocket_rocketRegion_ext.obj', opts=OPTS, input='rocketRegion_ext.cxx')
+
   TargetAdd('libp3rocket.dll', input='p3rocket_composite1.obj')
   TargetAdd('libp3rocket.dll', input='libp3rocket_igate.obj')
   TargetAdd('libp3rocket.dll', input='libp3rocket_module.obj')
+  TargetAdd('libp3rocket.dll', input='p3rocket_rocketRegion_ext.obj')
   TargetAdd('libp3rocket.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libp3rocket.dll', opts=OPTS)
 
