@@ -3007,7 +3007,6 @@ if (not RUNTIME):
   for ifile in IGATEFILES[:]:
       if "_src." in ifile:
           IGATEFILES.remove(ifile)
-  IGATEFILES.remove('lmat_ops_src.h')
   IGATEFILES.remove('cast_to_double.h')
   IGATEFILES.remove('lmat_ops.h')
   IGATEFILES.remove('cast_to_float.h')
