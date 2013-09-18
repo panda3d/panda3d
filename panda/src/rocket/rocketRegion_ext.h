@@ -20,7 +20,7 @@
 #ifdef HAVE_PYTHON
 
 #include "extension.h"
-#include "geomVertexArrayData.h"
+#include "rocketRegion.h"
 #include "py_panda.h"
 
 ////////////////////////////////////////////////////////////////////

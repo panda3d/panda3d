@@ -12,7 +12,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "rocketRegion.h"
+#include "rocketRegion_ext.h"
 #include "extension.h"
 
 #ifndef CPPPARSER
