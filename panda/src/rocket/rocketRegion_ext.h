@@ -32,6 +32,7 @@
 template<>
 class Extension<RocketRegion> : public ExtensionBase<RocketRegion> {
 public:
+  PyObject *get_context() const;
 };
 
 #endif  // HAVE_PYTHON
