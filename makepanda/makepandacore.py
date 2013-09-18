@@ -294,6 +294,9 @@ def SetTarget(target, arch=None):
             exit("Windows architecture must be x86 or x64")
 
     elif target == 'darwin':
+        if arch == 'amd64':
+            arch = 'x86_64'
+
         if arch is not None:
             choices = ('i386', 'x86_64', 'ppc', 'ppc64')
             if arch not in choices:

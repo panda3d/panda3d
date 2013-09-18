@@ -3001,7 +3001,7 @@ if (not RUNTIME):
   OPTS=['DIR:panda/src/linmath', 'BUILDING:PANDA']
   TargetAdd('p3linmath_composite1.obj', opts=OPTS, input='p3linmath_composite1.cxx')
   TargetAdd('p3linmath_composite2.obj', opts=OPTS, input='p3linmath_composite2.cxx')
-  IGATEFILES=GetDirectoryContents('panda/src/linmath', ["*.h", "*_ext.I", "*_composite*.cxx"])
+  IGATEFILES=GetDirectoryContents('panda/src/linmath', ["*.h", "*_composite*.cxx"])
   IGATEFILES.remove('lmat_ops_src.h')
   IGATEFILES.remove('cast_to_double.h')
   IGATEFILES.remove('lmat_ops.h')
@@ -3537,7 +3537,7 @@ if (PkgSkip("ROCKET") ==0) and (not RUNTIME):
   OPTS=['DIR:panda/src/rocket', 'BUILDING:ROCKET', 'ROCKET']
   TargetAdd('p3rocket_composite1.obj', opts=OPTS, input='p3rocket_composite1.cxx')
   IGATEFILES=GetDirectoryContents('panda/src/rocket', ["rocketInputHandler.h",
-    "rocketInputHandler.cxx", "rocketRegion.h", "rocketRegion.cxx", "rocketRegion_ext.I"])
+    "rocketInputHandler.cxx", "rocketRegion.h", "rocketRegion.cxx"])
   TargetAdd('libp3rocket.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3rocket.in', opts=['IMOD:p3rocket', 'ILIB:libp3rocket', 'SRCDIR:panda/src/rocket'])
   TargetAdd('libp3rocket_igate.obj', input='libp3rocket.in', opts=["DEPENDENCYONLY"])
