@@ -19,6 +19,7 @@ extern "C" {
   EXPCL_PYSTUB int PyArg_ParseTuple(...);
   EXPCL_PYSTUB int PyArg_ParseTupleAndKeywords(...);
   EXPCL_PYSTUB int PyBool_FromLong(...);
+  EXPCL_PYSTUB int PyBuffer_Release(...);
   EXPCL_PYSTUB int PyCFunction_New(...);
   EXPCL_PYSTUB int PyCFunction_NewEx(...);
   EXPCL_PYSTUB int PyCallable_Check(...);
@@ -74,6 +75,7 @@ extern "C" {
   EXPCL_PYSTUB int PyLong_FromUnsignedLongLong(...);
   EXPCL_PYSTUB int PyLong_Type(...);
   EXPCL_PYSTUB int PyMapping_GetItemString(...);
+  EXPCL_PYSTUB int PyModuleView_FromObject(...);
   EXPCL_PYSTUB int PyModule_AddIntConstant(...);
   EXPCL_PYSTUB int PyModule_AddObject(...);
   EXPCL_PYSTUB int PyModule_AddStringConstant(...);
@@ -90,6 +92,7 @@ extern "C" {
   EXPCL_PYSTUB int PyObject_GenericGetAttr(...);
   EXPCL_PYSTUB int PyObject_GenericSetAttr(...);
   EXPCL_PYSTUB int PyObject_GetAttrString(...);
+  EXPCL_PYSTUB int PyObject_GetBuffer(...);
   EXPCL_PYSTUB int PyObject_HasAttrString(...);
   EXPCL_PYSTUB int PyObject_IsInstance(...);
   EXPCL_PYSTUB int PyObject_IsTrue(...);
@@ -146,6 +149,7 @@ extern "C" {
 
   EXPCL_PYSTUB extern void *PyExc_AssertionError;
   EXPCL_PYSTUB extern void *PyExc_AttributeError;
+  EXPCL_PYSTUB extern void *PyExc_BufferError;
   EXPCL_PYSTUB extern void *PyExc_Exception;
   EXPCL_PYSTUB extern void *PyExc_FutureWarning;
   EXPCL_PYSTUB extern void *PyExc_IndexError;
@@ -164,6 +168,7 @@ int PyArg_Parse(...) { return 0; };
 int PyArg_ParseTuple(...) { return 0; }
 int PyArg_ParseTupleAndKeywords(...) { return 0; }
 int PyBool_FromLong(...) { return 0; }
+int PyBuffer_Release(...) { return 0; }
 int PyCFunction_New(...) { return 0; };
 int PyCFunction_NewEx(...) { return 0; };
 int PyCallable_Check(...) { return 0; }
@@ -219,6 +224,7 @@ int PyLong_FromUnsignedLong(...) { return 0; }
 int PyLong_FromUnsignedLongLong(...) { return 0; }
 int PyLong_Type(...) { return 0; }
 int PyMapping_GetItemString(...) { return 0; }
+int PyMemoryView_FromObject(...) { return 0; }
 int PyModule_AddIntConstant(...) { return 0; };
 int PyModule_AddObject(...) { return 0; };
 int PyModule_AddStringConstant(...) { return 0; };
@@ -235,6 +241,7 @@ int PyObject_Free(...) { return 0; }
 int PyObject_GenericGetAttr(...) { return 0; };
 int PyObject_GenericSetAttr(...) { return 0; };
 int PyObject_GetAttrString(...) { return 0; }
+int PyObject_GetBuffer(...) { return 0; }
 int PyObject_HasAttrString(...) { return 0; }
 int PyObject_IsInstance(...) { return 0; }
 int PyObject_IsTrue(...) { return 0; }
@@ -295,6 +302,7 @@ int Py_IsInitialized() {
 
 void *PyExc_AssertionError = (void *)NULL;
 void *PyExc_AttributeError = (void *)NULL;
+void *PyExc_BufferError = (void *)NULL;
 void *PyExc_Exception = (void *)NULL;
 void *PyExc_FutureWarning = (void *)NULL;
 void *PyExc_IndexError = (void *)NULL;
