@@ -20,6 +20,7 @@
 #ifdef HAVE_VIDEO4LINUX
 
 #include "webcamVideo.h"
+#include "movieVideoCursor.h"
 
 struct v4l2_format;
 
