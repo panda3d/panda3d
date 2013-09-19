@@ -75,7 +75,7 @@ extern "C" {
   EXPCL_PYSTUB int PyLong_FromUnsignedLongLong(...);
   EXPCL_PYSTUB int PyLong_Type(...);
   EXPCL_PYSTUB int PyMapping_GetItemString(...);
-  EXPCL_PYSTUB int PyModuleView_FromObject(...);
+  EXPCL_PYSTUB int PyMemoryView_FromObject(...);
   EXPCL_PYSTUB int PyModule_AddIntConstant(...);
   EXPCL_PYSTUB int PyModule_AddObject(...);
   EXPCL_PYSTUB int PyModule_AddStringConstant(...);
