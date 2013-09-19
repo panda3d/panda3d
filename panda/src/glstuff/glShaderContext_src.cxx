@@ -352,26 +352,48 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
                 bind._dep[1] = Shader::SSD_general | Shader::SSD_transform;
 
               } else if (matrix_name == "ModelViewMatrix") {
-                bind._func = Shader::SMF_first;
+                bind._func = Shader::SMF_compose;
                 if (inverse) {
-                  bind._part[0] = Shader::SMO_view_to_model;
+                  bind._part[0] = Shader::SMO_apiview_to_view;
+                  bind._part[1] = Shader::SMO_view_to_model;
                 } else {
                   bind._part[0] = Shader::SMO_model_to_view;
+                  bind._part[1] = Shader::SMO_view_to_apiview;
                 }
-                bind._part[1] = Shader::SMO_identity;
                 bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
-                bind._dep[1] = Shader::SSD_NONE;
+                bind._dep[1] = Shader::SSD_general | Shader::SSD_transform;
 
               } else if (matrix_name == "ProjectionMatrix") {
-                bind._func = Shader::SMF_first;
+                bind._func = Shader::SMF_compose;
                 if (inverse) {
                   bind._part[0] = Shader::SMO_apiclip_to_view;
+                  bind._part[1] = Shader::SMO_view_to_apiview;
                 } else {
-                  bind._part[0] = Shader::SMO_view_to_apiclip;
+                  bind._part[0] = Shader::SMO_apiview_to_view;
+                  bind._part[1] = Shader::SMO_view_to_apiclip;
                 }
-                bind._part[1] = Shader::SMO_identity;
                 bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
-                bind._dep[1] = Shader::SSD_NONE;
+                bind._dep[1] = Shader::SSD_general | Shader::SSD_transform;
+
+              } else if (matrix_name == "NormalMatrix") {
+                // This is really the upper 3x3 of the ModelViewMatrixInverseTranspose.
+                bind._func = Shader::SMF_compose;
+                if (inverse) {
+                  bind._part[0] = Shader::SMO_model_to_view;
+                  bind._part[1] = Shader::SMO_view_to_apiview;
+                } else {
+                  bind._part[0] = Shader::SMO_apiview_to_view;
+                  bind._part[1] = Shader::SMO_view_to_model;
+                }
+                bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
+                bind._dep[1] = Shader::SSD_general | Shader::SSD_transform;
+
+                if (transpose) {
+                  bind._piece = Shader::SMP_whole;
+                } else {
+                  bind._piece = Shader::SMP_transpose;
+                }
+
               } else {
                 GLCAT.error() << "Unrecognized uniform matrix name '" << matrix_name << "'!\n";
                 continue;
