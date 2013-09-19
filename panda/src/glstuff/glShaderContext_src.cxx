@@ -389,9 +389,9 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
                 bind._dep[1] = Shader::SSD_general | Shader::SSD_transform;
 
                 if (transpose) {
-                  bind._piece = Shader::SMP_whole;
+                  bind._piece = Shader::SMP_upper3x3;
                 } else {
-                  bind._piece = Shader::SMP_transpose;
+                  bind._piece = Shader::SMP_transpose3x3;
                 }
 
               } else {
@@ -495,7 +495,6 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
                 s->_tex_spec.push_back(bind);
                 continue; }
               case GL_FLOAT_MAT2:
-              case GL_FLOAT_MAT3:
 #ifndef OPENGLES
               case GL_FLOAT_MAT2x3:
               case GL_FLOAT_MAT2x4:
@@ -506,6 +505,19 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
 #endif
                 GLCAT.warning() << "GLSL shader requested an unrecognized matrix type\n";
                 continue;
+              case GL_FLOAT_MAT3: {
+                Shader::ShaderMatSpec bind;
+                bind._id = arg_id;
+                bind._piece = Shader::SMP_upper3x3;
+                bind._func = Shader::SMF_first;
+                bind._part[0] = Shader::SMO_mat_constant_x;
+                bind._arg[0] = InternalName::make(param_name);
+                bind._dep[0] = Shader::SSD_general | Shader::SSD_shaderinputs;
+                bind._part[1] = Shader::SMO_identity;
+                bind._arg[1] = NULL;
+                bind._dep[1] = Shader::SSD_NONE;
+                s->_mat_spec.push_back(bind);
+                continue; }
               case GL_FLOAT_MAT4: {
                 Shader::ShaderMatSpec bind;
                 bind._id = arg_id;
@@ -1023,6 +1035,18 @@ issue_parameters(GSG *gsg, int altered) {
         case Shader::SMP_row3x1: gsg->_glUniform1fv(p, 1, data+12); continue;
         case Shader::SMP_row3x2: gsg->_glUniform2fv(p, 1, data+12); continue;
         case Shader::SMP_row3x3: gsg->_glUniform3fv(p, 1, data+12); continue;
+        case Shader::SMP_upper3x3:
+          {
+            LMatrix3f upper3 = val->get_upper_3();
+            gsg->_glUniformMatrix3fv(p, 1, false, upper3.get_data());
+            continue;
+          }
+        case Shader::SMP_transpose3x3:
+          {
+            LMatrix3f upper3 = val->get_upper_3();
+            gsg->_glUniformMatrix3fv(p, 1, true, upper3.get_data());
+            continue;
+          }
         }
       }
 #if defined(HAVE_CG) && !defined(OPENGLES)
@@ -1042,6 +1066,18 @@ issue_parameters(GSG *gsg, int altered) {
         case Shader::SMP_row3x1: GLfv(cgGLSetParameter1)(p, data+12); continue;
         case Shader::SMP_row3x2: GLfv(cgGLSetParameter2)(p, data+12); continue;
         case Shader::SMP_row3x3: GLfv(cgGLSetParameter3)(p, data+12); continue;
+        case Shader::SMP_upper3x3:
+          {
+            LMatrix3f upper3 = val->get_upper_3();
+            GLfc(cgGLSetMatrixParameter)(p, upper3.get_data());
+            continue;
+          }
+        case Shader::SMP_transpose3x3:
+          {
+            LMatrix3f upper3 = val->get_upper_3();
+            GLfr(cgGLSetMatrixParameter)(p, upper3.get_data());
+            continue;
+          }
         }
       }
 #endif

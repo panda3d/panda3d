@@ -225,8 +225,10 @@ public:
     SMP_row3x1,
     SMP_row3x2,
     SMP_row3x3,
+    SMP_upper3x3,
+    SMP_transpose3x3,
   };
-  
+
   enum ShaderStateDep {
     SSD_NONE          =  0,
     SSD_general       =  1,

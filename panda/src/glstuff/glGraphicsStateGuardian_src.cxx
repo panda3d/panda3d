@@ -1059,6 +1059,8 @@ reset() {
        get_extension_func(GLPREFIX_QUOTED, "Uniform3fv");
     _glUniform4fv = (PFNGLUNIFORM4FVPROC)
        get_extension_func(GLPREFIX_QUOTED, "Uniform4fv");
+    _glUniformMatrix3fv = (PFNGLUNIFORMMATRIX3FVPROC)
+       get_extension_func(GLPREFIX_QUOTED, "UniformMatrix3fv");
     _glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC)
        get_extension_func(GLPREFIX_QUOTED, "UniformMatrix4fv");
     _glValidateProgram = (PFNGLVALIDATEPROGRAMPROC)
@@ -1112,6 +1114,7 @@ reset() {
   _glUniform2fv = glUniform2fv;
   _glUniform3fv = glUniform3fv;
   _glUniform4fv = glUniform4fv;
+  _glUniformMatrix3fv = glUniformMatrix3fv;
   _glUniformMatrix4fv = glUniformMatrix4fv;
   _glValidateProgram = glValidateProgram;
   _glVertexAttribPointer = glVertexAttribPointer;

@@ -188,6 +188,7 @@ cp_errchk_parameter_float(ShaderArgInfo &p, int lo, int hi)
   case SAT_vec2: nfloat = 2; break;
   case SAT_vec3: nfloat = 3; break;
   case SAT_vec4: nfloat = 4; break;
+  case SAT_mat3x3: nfloat = 9; break;
   case SAT_mat4x4: nfloat = 16; break;
   default: nfloat = 0; break;
   }
@@ -737,7 +738,17 @@ compile_parameter(const ShaderArgId        &arg_id,
     else if (pieces[0]=="col2")    bind._piece = SMP_col2;
     else if (pieces[0]=="col3")    bind._piece = SMP_col3;
     if ((bind._piece == SMP_whole)||(bind._piece == SMP_transpose)) {
-      if (!cp_errchk_parameter_float(p, 16, 16)) return false;
+      if (p._type == SAT_mat3x3) {
+        if (!cp_errchk_parameter_float(p, 9, 9)) return false;
+
+        if (bind._piece == SMP_transpose) {
+          bind._piece = SMP_transpose3x3;
+        } else {
+          bind._piece = SMP_upper3x3;
+        }
+      } else if (!cp_errchk_parameter_float(p, 16, 16)) {
+        return false;
+      }
     } else {
       if (!cp_errchk_parameter_float(p, 4, 4)) return false;
     }
