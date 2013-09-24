@@ -2676,6 +2676,28 @@ adjust_size(int &x_size, int &y_size, const string &name,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::ensure_loader_type
+//       Access: Public, Virtual
+//  Description: May be called prior to calling read_txo() or any
+//               bam-related Texture-creating callback, to ensure that
+//               the proper dynamic libraries for a Texture of the
+//               current class type, and the indicated filename, have
+//               been already loaded.
+//
+//               This is a low-level function that should not normally
+//               need to be called directly by the user.
+//
+//               Note that for best results you must first create a
+//               Texture object of the appropriate class type for your
+//               filename, for instance with
+//               TexturePool::make_texture().
+////////////////////////////////////////////////////////////////////
+void Texture::
+ensure_loader_type(const Filename &filename) {
+  // For a plain Texture type, this doesn't need to do anything.
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::reconsider_dirty
 //       Access: Protected, Virtual
 //  Description: Called by TextureContext to give the Texture a chance

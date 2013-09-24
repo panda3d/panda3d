@@ -520,6 +520,8 @@ public:
   INLINE bool adjust_this_size(int &x_size, int &y_size, const string &name,
                                bool for_padding) const;
 
+  virtual void ensure_loader_type(const Filename &filename);
+
 protected:
   class CData;
 

@@ -1090,6 +1090,17 @@ try_load_cache(PT(Texture) &tex, BamCache *cache, const Filename &filename,
     // The texture was not supplied by a texture filter.  See if it
     // can be found in the on-disk cache, if it is active.
     if ((cache->get_cache_textures() || cache->get_cache_compressed_textures()) && !textures_header_only) {
+
+      // Call ns_make_texture() on the file extension and create a
+      // dummy texture object we can call ensure_loaded_type() on.  We
+      // don't need to keep this object around after this call, since
+      // we'll be creating a new one below.  I know this is a bit
+      // hacky.
+      string ext = downcase(filename.get_extension());
+      PT(Texture) dummy = ns_make_texture(ext);
+      dummy->ensure_loader_type(filename);
+      dummy.clear();
+
       record = cache->lookup(filename, "txo");
       if (record != (BamCacheRecord *)NULL) {
         if (record->has_data()) {

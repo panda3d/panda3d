@@ -18,6 +18,7 @@
 
 #include "movieVideo.h"
 #include "movieVideoCursor.h"
+#include "movieTypeRegistry.h"
 #include "movieTexture.h"
 #include "clockObject.h"
 #include "config_gobj.h"
@@ -123,6 +124,32 @@ MovieTexture(const MovieTexture &copy) :
 MovieTexture::
 ~MovieTexture() {
   clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::ensure_loader_type
+//       Access: Public, Virtual
+//  Description: May be called prior to calling read_txo() or any
+//               bam-related Texture-creating callback, to ensure that
+//               the proper dynamic libraries for a Texture of the
+//               current class type, and the indicated filename, have
+//               been already loaded.
+//
+//               This is a low-level function that should not normally
+//               need to be called directly by the user.
+//
+//               Note that for best results you must first create a
+//               Texture object of the appropriate class type for your
+//               filename, for instance with
+//               TexturePool::make_texture().
+////////////////////////////////////////////////////////////////////
+void MovieTexture::
+ensure_loader_type(const Filename &filename) {
+  // Creating a MovieVideo of the appropriate type is a slightly hacky
+  // way to ensure the appropriate libraries are loaded.  We can let
+  // the MovieVideo we create immediately destruct.
+  MovieTypeRegistry *reg = MovieTypeRegistry::get_global_ptr();
+  PT(MovieVideo) video = reg->make_video(filename);
 }
 
 ////////////////////////////////////////////////////////////////////

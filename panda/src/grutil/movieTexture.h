@@ -64,6 +64,8 @@ PUBLISHED:
   void   unsynchronize();
   
 public:
+  virtual void ensure_loader_type(const Filename &filename);
+
   static PT(Texture) make_texture();
   virtual bool has_cull_callback() const;
   virtual bool cull_callback(CullTraverser *trav, const CullTraverserData &data) const;
