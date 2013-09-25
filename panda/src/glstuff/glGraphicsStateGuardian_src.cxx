@@ -2227,25 +2227,6 @@ void CLP(GraphicsStateGuardian)::
 end_scene() {
   GraphicsStateGuardian::end_scene();
 
-#ifndef OPENGLES_1
-  // This breaks shaders across multiple regions.
-  /*if (_vertex_array_shader_context != 0) {
-    _vertex_array_shader_context->disable_shader_vertex_arrays(this);
-    _vertex_array_shader = (Shader *)NULL;
-    _vertex_array_shader_context = (CLP(ShaderContext) *)NULL;
-  }
-  if (_texture_binding_shader_context != 0) {
-    _texture_binding_shader_context->disable_shader_texture_bindings(this);
-    _texture_binding_shader = (Shader *)NULL;
-    _texture_binding_shader_context = (CLP(ShaderContext) *)NULL;
-  }
-  if (_current_shader_context != 0) {
-    _current_shader_context->unbind(this);
-    _current_shader = (Shader *)NULL;
-    _current_shader_context = (CLP(ShaderContext) *)NULL;
-  }*/
-#endif
-
   _dlights.clear();
   report_my_gl_errors();
 }
@@ -2275,6 +2256,25 @@ end_frame(Thread *current_thread) {
     // (vertex buffer) is resident.  In fact, the API appears geared
     // towards the assumption that such buffers are always resident.
     // OK.
+  }
+#endif
+
+#ifndef OPENGLES_1
+  // This breaks shaders across multiple regions.
+  if (_vertex_array_shader_context != 0) {
+    _vertex_array_shader_context->disable_shader_vertex_arrays(this);
+    _vertex_array_shader = (Shader *)NULL;
+    _vertex_array_shader_context = (CLP(ShaderContext) *)NULL;
+  }
+  if (_texture_binding_shader_context != 0) {
+    _texture_binding_shader_context->disable_shader_texture_bindings(this);
+    _texture_binding_shader = (Shader *)NULL;
+    _texture_binding_shader_context = (CLP(ShaderContext) *)NULL;
+  }
+  if (_current_shader_context != 0) {
+    _current_shader_context->unbind(this);
+    _current_shader = (Shader *)NULL;
+    _current_shader_context = (CLP(ShaderContext) *)NULL;
   }
 #endif
 
