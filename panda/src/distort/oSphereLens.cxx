@@ -102,21 +102,19 @@ bool OSphereLens::
 do_project(const Lens::CData *lens_cdata, const LPoint3 &point3d, LPoint3 &point2d) const {
   // First, account for any rotations, etc. on the lens.
   LPoint3 p = point3d * do_get_lens_mat_inv(lens_cdata) * do_get_projection_mat(lens_cdata);
-  PN_stdfloat dist = p.length();
+
+  // To compute the x position on the frame, we only need to consider
+  // the angle of the vector about the Z axis.  Project the vector
+  // into the XY plane to do this.
+  LVector2 xy(p[0], p[1]);
+
+  PN_stdfloat dist = xy.length();
   if (dist == 0.0f) {
     point2d.set(0.0f, 0.0f, 0.0f);
     return false;
   }
 
-  LPoint3 v3 = p / dist;
-
   PN_stdfloat focal_length = do_get_focal_length(lens_cdata);
-
-  // To compute the x position on the frame, we only need to consider
-  // the angle of the vector about the Z axis.  Project the vector
-  // into the XY plane to do this.
-  LVector2 xy(v3[0], v3[1]);
-
   // Compute the depth as a linear distance in the range 0 .. 1.
   PN_stdfloat z = (dist - do_get_near(lens_cdata)) / (do_get_far(lens_cdata) - do_get_near(lens_cdata));
 
