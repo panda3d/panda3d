@@ -112,10 +112,13 @@ CONFLICTING_FILES=["dtool/src/dtoolutil/pandaVersion.h",
                    "direct/src/plugin_npapi/nppanda3d.rc",
                    "direct/src/plugin_standalone/panda3d.rc"]
 
-def WarnConflictingFiles():
+def WarnConflictingFiles(delete = False):
     for cfile in CONFLICTING_FILES:
         if os.path.exists(cfile):
             print("%sWARNING:%s file may conflict with build: %s%s%s" % (GetColor("red"), GetColor(), GetColor("green"), cfile, GetColor()))
+            if delete:
+                os.unlink(cfile)
+                print("Deleted.")
 
 ########################################################################
 ##
