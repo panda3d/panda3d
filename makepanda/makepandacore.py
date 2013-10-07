@@ -1920,7 +1920,7 @@ def SdkLocatePhysX():
                         SDK["PHYSXLIBS"] = folder + "/lib/win32"
                         AddToPathEnv("PATH", folder + "/../Bin/win32/")
 
-                   return
+                    return
 
         elif (GetHost() == "linux"):
             incpath = "/usr/include/PhysX/%s/SDKs" % key
