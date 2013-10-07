@@ -103,7 +103,7 @@ MaxEggTex *MaxEggLoader::GetTex(const string &fn)
     return _tex_tab[fn];
 
   BitmapTex *bmt = NewDefaultBitmapTex();
-  bmt->SetMapName(_M(fn.c_str()));
+  bmt->SetMapName(MSTR::FromACP(fn.c_str()));
   StdMat *mat = NewDefaultStdMat();
   mat->SetSubTexmap(ID_DI, bmt);
   mat->SetTexmapAmt(ID_DI, 1.0, 0);
@@ -284,7 +284,7 @@ void MaxEggJoint::CreateMaxBone(void)
   _node->SetWireColor(RGB(int(boneColor.x*255.0f), int(boneColor.y*255.0f), int(boneColor.z*255.0f) ));
   _node->SetBoneNodeOnOff(TRUE, 0);
   _node->SetRenderable(FALSE);
-  _node->SetName(_M(_egg_joint->get_name().c_str()));
+  _node->SetName(MSTR::FromACP(_egg_joint->get_name().c_str()));
   _node->SetObjOffsetRot(ooquat);
   if (_parent) {
     _node->Detach(0, 1);
@@ -454,7 +454,7 @@ MaxEggMesh *MaxEggLoader::GetMesh(EggVertexPool *pool)
     result->_tvert_count = 0;
     result->_cvert_count = 0;
     result->_face_count = 0;
-    result->_node->SetName(_M(name.c_str()));
+    result->_node->SetName(MSTR::FromACP(name.c_str()));
     _mesh_tab[pool] = result;
   }
   return result;
