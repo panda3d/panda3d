@@ -103,7 +103,7 @@ MaxEggTex *MaxEggLoader::GetTex(const string &fn)
     return _tex_tab[fn];
 
   BitmapTex *bmt = NewDefaultBitmapTex();
-  bmt->SetMapName((TCHAR*)(fn.c_str()));
+  bmt->SetMapName(_M(fn.c_str()));
   StdMat *mat = NewDefaultStdMat();
   mat->SetSubTexmap(ID_DI, bmt);
   mat->SetTexmapAmt(ID_DI, 1.0, 0);
@@ -275,7 +275,7 @@ void MaxEggJoint::CreateMaxBone(void)
   _node->SetNodeTM(0, Matrix3(xv, yv, zv, pos));
   IParamBlock2 *blk = _bone->pblock2;
   for (int i=0; i<blk->NumParams(); i++) {
-    TSTR n = blk->GetLocalName(i);
+    MSTR n = blk->GetLocalName(i);
     if      (strcmp(n, "Length")==0) blk->SetValue(i,0,(PN_stdfloat)len); 
     else if (strcmp(n, "Width")==0)  blk->SetValue(i,0,(PN_stdfloat)_thickness);
     else if (strcmp(n, "Height")==0) blk->SetValue(i,0,(PN_stdfloat)_thickness);
@@ -284,7 +284,7 @@ void MaxEggJoint::CreateMaxBone(void)
   _node->SetWireColor(RGB(int(boneColor.x*255.0f), int(boneColor.y*255.0f), int(boneColor.z*255.0f) ));
   _node->SetBoneNodeOnOff(TRUE, 0);
   _node->SetRenderable(FALSE);
-  _node->SetName((TCHAR*)(_egg_joint->get_name().c_str()));
+  _node->SetName(_M(_egg_joint->get_name().c_str()));
   _node->SetObjOffsetRot(ooquat);
   if (_parent) {
     _node->Detach(0, 1);
@@ -454,7 +454,7 @@ MaxEggMesh *MaxEggLoader::GetMesh(EggVertexPool *pool)
     result->_tvert_count = 0;
     result->_cvert_count = 0;
     result->_face_count = 0;
-    result->_node->SetName((TCHAR*)(name.c_str()));
+    result->_node->SetName(_M(name.c_str()));
     _mesh_tab[pool] = result;
   }
   return result;
@@ -672,7 +672,7 @@ bool MaxEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool an
   }
   
   if (_next_tex) {
-    TSTR name;
+    MSTR name;
     MultiMtl *mtl = NewDefaultMultiMtl();
     mtl->SetNumSubMtls(_next_tex);
     for (ti = _tex_tab.begin(); ti != _tex_tab.end(); ++ti) {

@@ -164,8 +164,8 @@ public:
   AddNodeCB (MaxOptionsDialog *instance, HWND wnd) : 
     ph(instance), hWnd(wnd) {}
 
-  virtual TCHAR *dialogTitle() {return _T("Objects to Export");}
-  virtual TCHAR *buttonText()  {return _T("Select");}
+  virtual MCHAR *dialogTitle() {return _M("Objects to Export");}
+  virtual MCHAR *buttonText()  {return _M("Select");}
   virtual int filter(INode *node);
   virtual void proc(INodeTab &nodeTab);
 };
@@ -217,8 +217,8 @@ public:
     RemoveNodeCB (MaxOptionsDialog *instance, HWND wnd) : 
         ph(instance), hWnd(wnd) {}
     
-    virtual TCHAR *dialogTitle() {return _T("Objects to Remove");}
-    virtual TCHAR *buttonText()  {return _T("Remove");}
+    virtual MCHAR *dialogTitle() {return _M("Objects to Remove");}
+    virtual MCHAR *buttonText()  {return _M("Remove");}
     virtual int filter(INode *node) {return (node && ph->FindNode(node->GetHandle()));}
     virtual void proc(INodeTab &nodeTab);
 };
@@ -511,7 +511,7 @@ void MaxOptionsDialog::RefreshNodeList(HWND hWnd) {
   SendMessage(nodeLB, LB_RESETCONTENT, 0, 0);
   for (int i = 0; i < _node_list.size(); i++) {
       INode *temp = _max_interface->GetINodeByHandle(_node_list[i]);
-      TCHAR *name = _T("Unknown Node");
+      MCHAR *name = _M("Unknown Node");
       if (temp) name = temp->GetName();
       SendMessage(nodeLB, LB_ADDSTRING, 0, (LPARAM)name);
   }
