@@ -370,7 +370,8 @@ process_model_node(MaxNodeDesc *node_desc) {
                             //It's a CV Curve, process it
                             egg_group = _tree.get_egg_group(node_desc);
                             get_transform(max_node, egg_group);
-                            make_nurbs_curve((NURBSCVCurve *)nObj, string(max_node->GetName()),
+                            CStr node_name = CStr::FromMSTR(max_node->GetName());
+                            make_nurbs_curve((NURBSCVCurve *)nObj, node_name,
                                              time, egg_group);
                         }
                     }
@@ -650,7 +651,8 @@ make_polyset(INode *max_node, Mesh *mesh,
     // all the vertices up front, we'll start with an empty vpool, and
     // add vertices to it on the fly.
 
-    string vpool_name = string(max_node->GetName()) + ".verts";
+    CStr node_name = CStr::FromMSTR(max_node->GetName());
+    string vpool_name = string(node_name) + ".verts";
     EggVertexPool *vpool = new EggVertexPool(vpool_name);
     egg_group->add_child(vpool);
 
@@ -1062,7 +1064,7 @@ void MaxToEggConverter::analyze_diffuse_maps(PandaMaterial &pandaMat, Texmap *ma
         BitmapTex *diffuseTex = (BitmapTex *)mat;
 
         Filename fullpath, outpath;
-#ifdef _UNICDOE
+#ifdef _UNICODE
         Filename filename = Filename::from_os_specific_w(diffuseTex->GetMapName());
 #else
         Filename filename = Filename::from_os_specific(diffuseTex->GetMapName());

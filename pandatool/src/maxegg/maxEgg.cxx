@@ -529,9 +529,10 @@ void MaxEggPlugin::DoExport() {
             // If "auto overwrite" was not checked and the file exists,
             // ask if the user wishes to overwrite the file
             bool do_write = true;
-            if (!autoOverwrite && Filename::from_os_specific(eggList[i]->_file_name).exists()) {
+
+            if (!autoOverwrite && GetFileAttributes(eggList[i]->_file_name) != INVALID_FILE_ATTRIBUTES) {
                 TCHAR msg[1024];
-                _stprintf(msg, "Overwrite file \"%s.egg\"?", eggList[i]->_short_name);
+                _stprintf(msg, _T("Overwrite file \"%s.egg\"?"), eggList[i]->_short_name);
                 do_write = (MessageBox(hMaxEggParams, msg, _T("Panda3D Exporter"), MB_YESNO | MB_ICONQUESTION) == IDYES);
             }
             if (do_write) {

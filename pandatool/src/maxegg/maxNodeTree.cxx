@@ -290,8 +290,8 @@ r_build_node(INode* max_node)
     node_desc = _root;
 
   } else {
-    INode *parent_node; 
-    string local_name = max_node->GetName();
+    INode *parent_node;
+    CStr local_name = CStr::FromMSTR(max_node->GetName());
     if (max_node->IsRootNode()) {
       parent_node = NULL;
     } else {
@@ -315,17 +315,18 @@ r_build_node(INode* max_node)
 MaxNodeDesc *MaxNodeTree::
 r_build_joint(MaxNodeDesc *node_desc, INode *max_node) 
 {
+  CStr node_name = CStr::FromMSTR(max_node->GetName())
   MaxNodeDesc *node_joint;
   if (node_desc == _root) {
-    node_joint =  new MaxNodeDesc(_root, max_node->GetName());
+    node_joint =  new MaxNodeDesc(_root, node_name);
     _nodes.push_back(node_joint);
-        return node_joint;
-  }     else if (node_desc->is_node_joint() && node_desc->_joint_entry) {
-    node_joint =  new MaxNodeDesc(node_desc->_joint_entry, max_node->GetName());
+    return node_joint;
+  } else if (node_desc->is_node_joint() && node_desc->_joint_entry) {
+    node_joint =  new MaxNodeDesc(node_desc->_joint_entry, node_name);
     _nodes.push_back(node_joint);
-        return node_joint;
+    return node_joint;
   } else {
-        return r_build_joint(node_desc->_parent, max_node);
+    return r_build_joint(node_desc->_parent, max_node);
   }
 }
 
