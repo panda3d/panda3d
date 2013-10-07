@@ -71,7 +71,13 @@ bool MaxToEggConverter::convert(MaxEggOptions *options) {
 
     _options = options;
 
-    Filename fn = Filename::from_os_specific(_options->_file_name);
+    Filename fn;
+#ifdef _UNICODE
+    fn = Filename::from_os_specific_w(_options->_file_name);
+#else
+    fn = Filename::from_os_specific(_options->_file_name);
+#endif
+
     _options->_path_replace->_path_directory = fn.get_dirname();
 
     _egg_data = new EggData;
@@ -163,7 +169,11 @@ bool MaxToEggConverter::convert(MaxEggOptions *options) {
     _options->_successful = all_ok;
     
     if (all_ok) {
+#ifdef _UNICODE
+        Filename fn = Filename::from_os_specific_w(_options->_file_name);
+#else
         Filename fn = Filename::from_os_specific(_options->_file_name);
+#endif
         return _egg_data->write_egg(fn);
     } else {
         return false;
@@ -1016,7 +1026,6 @@ get_panda_material(Mtl *mtl, MtlID matID) {
             pandaMat._color[2] = diffuseColor.z;
         }
         if (!pandaMat._any_opacity) {
-            
             pandaMat._color[3] = (maxMaterial->GetOpacity(_current_frame * GetTicksPerFrame()));
         }
         if (pandaMat._texture_list.size() < 1) {
@@ -1027,7 +1036,7 @@ get_panda_material(Mtl *mtl, MtlID matID) {
         }
         return pandaMat;
     }
-      
+
     // Otherwise, it's unrecognizable. Leave result blank.
     return pandaMat;
 }
@@ -1038,7 +1047,7 @@ get_panda_material(Mtl *mtl, MtlID matID) {
 ////////////////////////////////////////////////////////////////////
 void MaxToEggConverter::analyze_diffuse_maps(PandaMaterial &pandaMat, Texmap *mat) {
     if (mat == 0) return;
-    
+
     if (mat->ClassID() == Class_ID(RGBMULT_CLASS_ID, 0)) {
         for (int i=0; i<mat->NumSubTexmaps(); i++) {
             analyze_diffuse_maps(pandaMat, mat->GetSubTexmap(i));
@@ -1053,7 +1062,11 @@ void MaxToEggConverter::analyze_diffuse_maps(PandaMaterial &pandaMat, Texmap *ma
         BitmapTex *diffuseTex = (BitmapTex *)mat;
 
         Filename fullpath, outpath;
+#ifdef _UNICDOE
+        Filename filename = Filename::from_os_specific_w(diffuseTex->GetMapName());
+#else
         Filename filename = Filename::from_os_specific(diffuseTex->GetMapName());
+#endif
         _options->_path_replace->full_convert_path(filename, get_model_path(),
                                                    fullpath, outpath);
         tex->set_filename(outpath);
@@ -1061,7 +1074,7 @@ void MaxToEggConverter::analyze_diffuse_maps(PandaMaterial &pandaMat, Texmap *ma
 
         apply_texture_properties(*tex, diffuseTex->GetMapChannel());
         add_map_channel(pandaMat, diffuseTex->GetMapChannel());
-        
+
         Bitmap *diffuseBitmap = diffuseTex->GetBitmap(0);
         if ( diffuseBitmap && diffuseBitmap->HasAlpha()) {
             tex->set_format(EggTexture::F_rgba);
@@ -1069,7 +1082,7 @@ void MaxToEggConverter::analyze_diffuse_maps(PandaMaterial &pandaMat, Texmap *ma
             tex->set_format(EggTexture::F_rgb);
         }
         tex->set_env_type(EggTexture::ET_modulate);
-        
+
         pandaMat._texture_list.push_back(tex);
     }
 }
@@ -1094,7 +1107,11 @@ void MaxToEggConverter::analyze_opacity_maps(PandaMaterial &pandaMat, Texmap *ma
         BitmapTex *transTex = (BitmapTex *)mat;
 
         Filename fullpath, outpath;
+#ifdef _UNICODE
+        Filename filename = Filename::from_os_specific_w(transTex->GetMapName());
+#else
         Filename filename = Filename::from_os_specific(transTex->GetMapName());
+#endif
         _options->_path_replace->full_convert_path(filename, get_model_path(),
                                                    fullpath, outpath);
 
@@ -1146,7 +1163,11 @@ void MaxToEggConverter::analyze_glow_maps(PandaMaterial &pandaMat, Texmap *mat) 
         BitmapTex *gtex = (BitmapTex *)mat;
 
         Filename fullpath, outpath;
+#ifdef _UNICODE
+        Filename filename = Filename::from_os_specific_w(gtex->GetMapName());
+#else
         Filename filename = Filename::from_os_specific(gtex->GetMapName());
+#endif
         _options->_path_replace->full_convert_path(filename, get_model_path(),
                                                    fullpath, outpath);
 
@@ -1191,7 +1212,11 @@ void MaxToEggConverter::analyze_gloss_maps(PandaMaterial &pandaMat, Texmap *mat)
         BitmapTex *gtex = (BitmapTex *)mat;
 
         Filename fullpath, outpath;
+#ifdef _UNICODE
+        Filename filename = Filename::from_os_specific_w(gtex->GetMapName());
+#else
         Filename filename = Filename::from_os_specific(gtex->GetMapName());
+#endif
         _options->_path_replace->full_convert_path(filename, get_model_path(),
                                                    fullpath, outpath);
 
@@ -1236,7 +1261,11 @@ void MaxToEggConverter::analyze_normal_maps(PandaMaterial &pandaMat, Texmap *mat
         BitmapTex *ntex = (BitmapTex *)mat;
 
         Filename fullpath, outpath;
+#ifdef _UNICODE
+        Filename filename = Filename::from_os_specific_w(ntex->GetMapName());
+#else
         Filename filename = Filename::from_os_specific(ntex->GetMapName());
+#endif
         _options->_path_replace->full_convert_path(filename, get_model_path(),
                                                    fullpath, outpath);
 

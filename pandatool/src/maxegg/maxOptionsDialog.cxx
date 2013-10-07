@@ -15,8 +15,8 @@
 //Disable the forcing int to true or false performance warning
 #pragma warning(disable: 4800)
 
-void SetICustEdit(HWND wnd, int nIDDlgItem, char *text)
-{ 
+void SetICustEdit(HWND wnd, int nIDDlgItem, const TCHAR *text)
+{
   ICustEdit *edit = GetICustEdit(GetDlgItem(wnd, nIDDlgItem));
   edit->SetText(text);
   ReleaseICustEdit(edit);
@@ -24,18 +24,18 @@ void SetICustEdit(HWND wnd, int nIDDlgItem, char *text)
 
 void SetICustEdit(HWND wnd, int nIDDlgItem, int n)
 {
-  char text[80];
-  sprintf(text, "%d", n);
+  TCHAR text[80];
+  _stprintf(text, _T("%d"), n);
   ICustEdit *edit = GetICustEdit(GetDlgItem(wnd, nIDDlgItem));
   edit->SetText(text);
   ReleaseICustEdit(edit);
 }
 
-char *GetICustEditT(HWND wnd)
+TCHAR *GetICustEditT(HWND wnd)
 {
-  static char buffer[2084];
+  static TCHAR buffer[2084];
   ICustEdit *edit = GetICustEdit(wnd);
-  edit->GetText(buffer,2084);
+  edit->GetText(buffer, 2084);
   ReleaseICustEdit(edit);
   return buffer;
 }
@@ -72,24 +72,24 @@ void ChunkSave(ISave *isave, int chunkid, bool value)
   isave->EndChunk();
 }
 
-void ChunkSave(ISave *isave, int chunkid, char *value)
+void ChunkSave(ISave *isave, int chunkid, TCHAR *value)
 {
   ULONG nb;
   isave->BeginChunk(chunkid);
-  int bytes = strlen(value) + 1;
-  isave->Write(&bytes, sizeof(int), &nb);
-  isave->Write(value, bytes, &nb);
+  int length = _tcslen(value) + 1;
+  isave->Write(&length, sizeof(int), &nb);
+  isave->Write(value, length * sizeof(TCHAR), &nb);
   isave->EndChunk();
 }
 
-char *ChunkLoadString(ILoad *iload, char *buffer, int maxBytes)
+TCHAR *ChunkLoadString(ILoad *iload, TCHAR *buffer, int maxLength)
 {
   ULONG nb;
-  int bytes;
+  int length;
   IOResult res;
-  res = iload->Read(&bytes, sizeof(int), &nb);
-  assert(res == IO_OK && bytes <= maxBytes);
-  res = iload->Read(buffer, bytes, &nb);
+  res = iload->Read(&length, sizeof(int), &nb);
+  assert(res == IO_OK && length <= maxLength);
+  res = iload->Read(buffer, length * sizeof(TCHAR), &nb);
   assert(res == IO_OK);
   return buffer;
 }
@@ -128,7 +128,7 @@ void showAnimControls(HWND hWnd, BOOL val) {
   ShowWindow(GetDlgItem(hWnd, IDC_EF), val);
   ShowWindow(GetDlgItem(hWnd, IDC_SF_LABEL), val);
   SetWindowText(GetDlgItem(hWnd, IDC_EXP_SEL_FRAMES),
-                val ? "Use Range:" : "Use Frame:");
+                val ? _T("Use Range:") : _T("Use Frame:"));
 }
 
 void enableAnimControls(HWND hWnd, BOOL val) {
@@ -262,7 +262,7 @@ MaxEggOptions::MaxEggOptions() {
 
 INT_PTR CALLBACK MaxOptionsDialogProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam ) 
 {
-    char tempFilename[2048];
+    TCHAR tempFilename[2048];
     //We pass in our plugin through the lParam variable. Let's convert it back.
     MaxOptionsDialog *imp = (MaxOptionsDialog*)GetWindowLongPtr(hWnd,GWLP_USERDATA); 
     if ( !imp && message != WM_INITDIALOG ) return FALSE;
@@ -286,7 +286,7 @@ INT_PTR CALLBACK MaxOptionsDialogProc( HWND hWnd, UINT message, WPARAM wParam, L
         case IDC_MODEL:
             if (HIWORD(wParam) == BN_CLICKED) {
                 SetWindowText(GetDlgItem(hWnd, IDC_EXPORT_SELECTED),
-                              "Export Meshes:");
+                              _T("Export Meshes:"));
                 enableAnimRadios(hWnd, ANIM_RAD_NONE);
                 showAnimControls(hWnd, TRUE);
                 enableAnimControls(hWnd, FALSE);
@@ -300,7 +300,7 @@ INT_PTR CALLBACK MaxOptionsDialogProc( HWND hWnd, UINT message, WPARAM wParam, L
         case IDC_ANIMATION:
             if (HIWORD(wParam) == BN_CLICKED) {
                 SetWindowText(GetDlgItem(hWnd, IDC_EXPORT_SELECTED),
-                              "Export Bones:");
+                              _T("Export Bones:"));
                 enableAnimRadios(hWnd, ANIM_RAD_ALL);
                 showAnimControls(hWnd, TRUE);
                 enableAnimControls(hWnd, IsDlgButtonChecked(hWnd, IDC_EXP_SEL_FRAMES));
@@ -314,7 +314,7 @@ INT_PTR CALLBACK MaxOptionsDialogProc( HWND hWnd, UINT message, WPARAM wParam, L
         case IDC_BOTH:
             if (HIWORD(wParam) == BN_CLICKED) {
                 SetWindowText(GetDlgItem(hWnd, IDC_EXPORT_SELECTED),
-                              "Export Models:");
+                              _T("Export Models:"));
                 enableAnimRadios(hWnd, ANIM_RAD_ALL);
                 showAnimControls(hWnd, TRUE);
                 enableAnimControls(hWnd, IsDlgButtonChecked(hWnd, IDC_EXP_SEL_FRAMES));
@@ -328,7 +328,7 @@ INT_PTR CALLBACK MaxOptionsDialogProc( HWND hWnd, UINT message, WPARAM wParam, L
         case IDC_POSE:
             if (HIWORD(wParam) == BN_CLICKED) {
                 SetWindowText(GetDlgItem(hWnd, IDC_EXPORT_SELECTED),
-                              "Export Meshes:");
+                              _T("Export Meshes:"));
                 enableAnimRadios(hWnd, ANIM_RAD_EXPSEL);
                 showAnimControls(hWnd, FALSE);
                 enableAnimControls(hWnd, TRUE);
@@ -415,17 +415,17 @@ INT_PTR CALLBACK MaxOptionsDialogProc( HWND hWnd, UINT message, WPARAM wParam, L
             return TRUE; break;
         case IDC_BROWSE:
             OPENFILENAME ofn;
-            strcpy(tempFilename, GetICustEditT(GetDlgItem(hWnd, IDC_FILENAME)));
-            
+            _tcscpy(tempFilename, GetICustEditT(GetDlgItem(hWnd, IDC_FILENAME)));
+
             memset(&ofn, 0, sizeof(ofn));
             ofn.nMaxFile = 2047;
             ofn.lpstrFile = tempFilename;
             ofn.lStructSize = sizeof(ofn);
             ofn.hwndOwner = hWnd;
             ofn.Flags = OFN_HIDEREADONLY | OFN_NOREADONLYRETURN | OFN_PATHMUSTEXIST;
-            ofn.lpstrDefExt = "egg";
-            ofn.lpstrFilter = "Panda3D Egg Files (*.egg)\0*.egg\0All Files (*.*)\0*.*\0";
-            
+            ofn.lpstrDefExt = _T("egg");
+            ofn.lpstrFilter = _T("Panda3D Egg Files (*.egg)\0*.egg\0All Files (*.*)\0*.*\0");
+
             SetFocus(GetDlgItem(hWnd, IDC_FILENAME));
             if (GetSaveFileName(&ofn))
                 SetICustEdit(hWnd, IDC_FILENAME, ofn.lpstrFile);
@@ -437,9 +437,9 @@ INT_PTR CALLBACK MaxOptionsDialogProc( HWND hWnd, UINT message, WPARAM wParam, L
             return TRUE; break;
         case IDC_CHECK1:
             if (IsDlgButtonChecked(hWnd, IDC_CHECK1))
-                if (MessageBox(hWnd, "Warning: Exporting double-sided polygons can severely hurt "
-                               "performance in Panda3D.\n\nAre you sure you want to export them?",
-                               "Panda3D Exporter", MB_YESNO | MB_ICONQUESTION) != IDYES)
+                if (MessageBox(hWnd, _T("Warning: Exporting double-sided polygons can severely hurt ")
+                               _T("performance in Panda3D.\n\nAre you sure you want to export them?"),
+                               _T("Panda3D Exporter"), MB_YESNO | MB_ICONQUESTION) != IDYES)
                     CheckDlgButton(hWnd, IDC_CHECK1, BST_UNCHECKED);
             return TRUE; break;
 
@@ -533,7 +533,7 @@ bool MaxOptionsDialog::UpdateFromUI(HWND hWnd) {
   BOOL valid;
   Anim_Type newAnimType;
   int newSF = INT_MIN, newEF = INT_MIN;
-  char msg[1024];
+  TCHAR msg[1024];
 
   if (IsDlgButtonChecked(hWnd, IDC_MODEL))          newAnimType = MaxEggOptions::AT_model;
   else if (IsDlgButtonChecked(hWnd, IDC_ANIMATION)) newAnimType = MaxEggOptions::AT_chan;
@@ -543,56 +543,58 @@ bool MaxOptionsDialog::UpdateFromUI(HWND hWnd) {
   if (newAnimType != MaxEggOptions::AT_model && IsDlgButtonChecked(hWnd, IDC_EXP_SEL_FRAMES)) {
       newSF = GetICustEditI(GetDlgItem(hWnd, IDC_SF), &valid);
       if (!valid) {
-          MessageBox(hWnd, "Start Frame must be an integer", "Invalid Value", MB_OK | MB_ICONEXCLAMATION);
+          MessageBox(hWnd, _T("Start Frame must be an integer"), _T("Invalid Value"), MB_OK | MB_ICONEXCLAMATION);
           return false;
       }
       if (newSF < _min_frame) {
-          sprintf(msg, "Start Frame must be at least %d", _min_frame);
-          MessageBox(hWnd, msg, "Invalid Value", MB_OK | MB_ICONEXCLAMATION);
+          _stprintf(msg, _T("Start Frame must be at least %d"), _min_frame);
+          MessageBox(hWnd, msg, _T("Invalid Value"), MB_OK | MB_ICONEXCLAMATION);
           return false;
       }
       if (newSF > _max_frame) {
-          sprintf(msg, "Start Frame must be at most %d", _max_frame);
-          MessageBox(hWnd, msg, "Invalid Value", MB_OK | MB_ICONEXCLAMATION);
+          _stprintf(msg, _T("Start Frame must be at most %d"), _max_frame);
+          MessageBox(hWnd, msg, _T("Invalid Value"), MB_OK | MB_ICONEXCLAMATION);
           return false;
       }
       if (newAnimType != MaxEggOptions::AT_pose) {
           newEF = GetICustEditI(GetDlgItem(hWnd, IDC_EF), &valid);
           if (!valid) {
-              MessageBox(hWnd, "End Frame must be an integer", "Invalid Value", MB_OK | MB_ICONEXCLAMATION);
+              MessageBox(hWnd, _T("End Frame must be an integer"), _T("Invalid Value"), MB_OK | MB_ICONEXCLAMATION);
               return false;
           }
           if (newEF > _max_frame) {
-              sprintf(msg, "End Frame must be at most %d", _max_frame);
-              MessageBox(hWnd, msg, "Invalid Value", MB_OK | MB_ICONEXCLAMATION);
+              _stprintf(msg, _T("End Frame must be at most %d"), _max_frame);
+              MessageBox(hWnd, msg, _T("Invalid Value"), MB_OK | MB_ICONEXCLAMATION);
               return false;
           }
           if (newEF < newSF) {
-              MessageBox(hWnd, "End Frame must be greater than the start frame", "Invalid Value", MB_OK | MB_ICONEXCLAMATION);
+              MessageBox(hWnd, _T("End Frame must be greater than the start frame"), _T("Invalid Value"), MB_OK | MB_ICONEXCLAMATION);
               return false;
           }
       }
   }
 
-  char *temp = GetICustEditT(GetDlgItem(hWnd, IDC_FILENAME));
-  if (!strlen(temp)) {
-    MessageBox(hWnd, "The filename cannot be empty", "Invalid Value", MB_OK | MB_ICONEXCLAMATION);
+  TCHAR *temp = GetICustEditT(GetDlgItem(hWnd, IDC_FILENAME));
+  if (!_tcslen(temp)) {
+    MessageBox(hWnd, _T("The filename cannot be empty"), _T("Invalid Value"), MB_OK | MB_ICONEXCLAMATION);
     return false;
   }
 
-  if (strlen(temp) < 4 || strncmp(".egg", temp+(strlen(temp) - 4), 4))
-      sprintf(_file_name, "%s.egg", temp);
-  else strcpy(_file_name, temp);
+  if (_tcslen(temp) < 4 || _tcsncmp(_T(".egg"), temp+(_tcslen(temp) - 4), 4)) {
+    _stprintf(_file_name, _T("%s.egg"), temp);
+  } else {
+    _tcscpy(_file_name, temp);
+  }
 
-  temp = strrchr(_file_name, '\\');
+  temp = _tcsrchr(_file_name, '\\');
   if (!temp) temp = _file_name;
   else temp++;
 
-  if (strlen(temp) > sizeof(_short_name))
-    sprintf(_short_name, "%.*s...", sizeof(_short_name)-4, temp);
+  if (_tcslen(temp) > sizeof(_short_name))
+    _stprintf(_short_name, _T("%.*s..."), sizeof(_short_name)-4, temp);
   else {
-    strcpy(_short_name, temp);
-    _short_name[strlen(_short_name) - 4] = NULL; //Cut off the .egg
+    _tcscpy(_short_name, temp);
+    _short_name[_tcslen(_short_name) - 4] = NULL; //Cut off the .egg
   }
   
   _start_frame = newSF;
