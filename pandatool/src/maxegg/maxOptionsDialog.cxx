@@ -164,7 +164,7 @@ public:
   AddNodeCB (MaxOptionsDialog *instance, HWND wnd) : 
     ph(instance), hWnd(wnd) {}
 
-#if MAX_VERSION_MAJOR < 16
+#if MAX_VERSION_MAJOR < 15
   virtual MCHAR *dialogTitle() {return _M("Objects to Export");}
   virtual MCHAR *buttonText()  {return _M("Select");}
 #else
@@ -223,7 +223,7 @@ public:
     RemoveNodeCB (MaxOptionsDialog *instance, HWND wnd) : 
         ph(instance), hWnd(wnd) {}
 
-#if MAX_VERSION_MAJOR < 16
+#if MAX_VERSION_MAJOR < 15
     virtual MCHAR *dialogTitle() {return _M("Objects to Remove");}
     virtual MCHAR *buttonText()  {return _M("Remove");}
 #else

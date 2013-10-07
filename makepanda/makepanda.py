@@ -469,6 +469,9 @@ if (COMPILER == "MSVC"):
                 IncDirectory(pkg, SDK[pkg+"CS"] + "/include")
                 IncDirectory(pkg, SDK[pkg+"CS"] + "/include/CS")
                 DefSymbol(pkg, "MAX", pkg)
+                if (int(pkg[3:]) >= 2013):
+                    DefSymbol(pkg, "UNICODE", "")
+                    DefSymbol(pkg, "_UNICODE", "")
             elif (pkg[:2]=="DX"):
                 IncDirectory(pkg, SDK[pkg]      + "/include")
             elif GetThirdpartyDir() is not None:
