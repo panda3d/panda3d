@@ -1885,10 +1885,10 @@ def SdkLocateMacOSX(osxtarget = None):
         SDK["MACOSX"] = ""
 
 # Latest first
-PHYSXVERSIONINFO=[
-    ("PHYSX284","v2.8.4"),
-    ("PHYSX283","v2.8.3"),
-    ("PHYSX281","v2.8.1"),
+PHYSXVERSIONINFO = [
+    ("PHYSX284", "v2.8.4"),
+    ("PHYSX283", "v2.8.3"),
+    ("PHYSX281", "v2.8.1"),
 ]
 
 def SdkLocatePhysX():
@@ -1899,6 +1899,9 @@ def SdkLocatePhysX():
         SDK["PHYSXLIBS"] = dir + "/lib"
         return
 
+    if CrossCompiling():
+        return
+
     # Try to find a PhysX installation on the system.
     for (ver, key) in PHYSXVERSIONINFO:
         if (GetHost() == "windows"):
@@ -1906,8 +1909,17 @@ def SdkLocatePhysX():
             for folder in ListRegistryValues(folders):
                 if folder.endswith("NVIDIA PhysX SDK\\%s\\SDKs\\" % key) or \
                    folder.endswith("NVIDIA PhysX SDK\\%s_win\\SDKs\\" % key):
+
                     SDK["PHYSX"] = folder
-                    return
+                    if GetTargetArch() == 'x64':
+                        SDK["PHYSXLIBS"] = folder + "/lib/win64"
+                        AddToPathEnv("PATH", folder + "/../Bin/win64/")
+                    else:
+                        SDK["PHYSXLIBS"] = folder + "/lib/win32"
+                        AddToPathEnv("PATH", folder + "/../Bin/win32/")
+
+                   return
+
         elif (GetHost() == "linux"):
             incpath = "/usr/include/PhysX/%s/SDKs" % key
             libpath = "/usr/lib/PhysX/%s" % key

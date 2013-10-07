@@ -589,16 +589,20 @@ if (COMPILER == "MSVC"):
             LibName(pkg, SDK[pkg] +  '/lib/maxutil.lib')
             LibName(pkg, SDK[pkg] +  '/lib/paramblk2.lib')
     if (PkgSkip("PHYSX")==0):
-        LibName("PHYSX",      SDK["PHYSX"] + "/lib/Win32/PhysXLoader.lib")
-        LibName("PHYSX",      SDK["PHYSX"] + "/lib/Win32/NxCharacter.lib")
+        if GetTargetArch() == 'x64':
+            LibName("PHYSX",  SDK["PHYSXLIBS"] + "/PhysXLoader64.lib")
+            LibName("PHYSX",  SDK["PHYSXLIBS"] + "/NxCharacter64.lib")
+        else:
+            LibName("PHYSX",  SDK["PHYSXLIBS"] + "/PhysXLoader.lib")
+            LibName("PHYSX",  SDK["PHYSXLIBS"] + "/NxCharacter.lib")
+
         IncDirectory("PHYSX", SDK["PHYSX"] + "/Physics/include")
         IncDirectory("PHYSX", SDK["PHYSX"] + "/PhysXLoader/include")
         IncDirectory("PHYSX", SDK["PHYSX"] + "/NxCharacter/include")
         IncDirectory("PHYSX", SDK["PHYSX"] + "/NxExtensions/include")
         IncDirectory("PHYSX", SDK["PHYSX"] + "/Foundation/include")
         IncDirectory("PHYSX", SDK["PHYSX"] + "/Cooking/include")
-        # We need to be able to find NxCharacter.dll when importing code library libpandaphysx
-        AddToPathEnv("PATH", SDK["PHYSX"]+"/../Bin/win32/")
+
     if (PkgSkip("SPEEDTREE")==0):
         if GetTargetArch() == 'x64':
             libdir = SDK["SPEEDTREE"] + "/Lib/Windows/VC10.x64/"
