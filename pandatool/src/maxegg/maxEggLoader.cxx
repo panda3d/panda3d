@@ -276,9 +276,9 @@ void MaxEggJoint::CreateMaxBone(void)
   IParamBlock2 *blk = _bone->pblock2;
   for (int i=0; i<blk->NumParams(); i++) {
     MSTR n = blk->GetLocalName(i);
-    if      (strcmp(n, "Length")==0) blk->SetValue(i,0,(PN_stdfloat)len); 
-    else if (strcmp(n, "Width")==0)  blk->SetValue(i,0,(PN_stdfloat)_thickness);
-    else if (strcmp(n, "Height")==0) blk->SetValue(i,0,(PN_stdfloat)_thickness);
+    if      (_tcscmp(n, _M("Length"))==0) blk->SetValue(i,0,(PN_stdfloat)len); 
+    else if (_tcscmp(n, _M("Width"))==0)  blk->SetValue(i,0,(PN_stdfloat)_thickness);
+    else if (_tcscmp(n, _M("Height"))==0) blk->SetValue(i,0,(PN_stdfloat)_thickness);
   }
   Point3 boneColor = GetUIColor(COLOR_BONES);
   _node->SetWireColor(RGB(int(boneColor.x*255.0f), int(boneColor.y*255.0f), int(boneColor.z*255.0f) ));
