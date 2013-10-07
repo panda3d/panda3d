@@ -132,7 +132,11 @@ class MaxEggPlugin : public HelperObject
   CreateMouseCallBack* GetCreateMouseCallBack();
   void BeginEditParams( IObjParam *ip, ULONG flags,Animatable *prev);
   void EndEditParams( IObjParam *ip, ULONG flags,Animatable *next);
+#if MAX_VERSION_MAJOR < 16
   MCHAR *GetObjectName() { return GetString(IDS_LIBDESCRIPTION); }
+#else
+  const MCHAR *GetObjectName() { return GetString(IDS_LIBDESCRIPTION); }
+#endif
 
   // From Object
   ObjectState Eval(TimeValue time);

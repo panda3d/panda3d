@@ -164,8 +164,14 @@ public:
   AddNodeCB (MaxOptionsDialog *instance, HWND wnd) : 
     ph(instance), hWnd(wnd) {}
 
+#if MAX_VERSION_MAJOR < 16
   virtual MCHAR *dialogTitle() {return _M("Objects to Export");}
   virtual MCHAR *buttonText()  {return _M("Select");}
+#else
+  virtual const MCHAR *dialogTitle() {return _M("Objects to Export");}
+  virtual const MCHAR *buttonText()  {return _M("Select");}
+#endif
+
   virtual int filter(INode *node);
   virtual void proc(INodeTab &nodeTab);
 };
@@ -213,12 +219,18 @@ class RemoveNodeCB : public HitByNameDlgCallback
 public:
     MaxOptionsDialog *ph; //Pointer to the parent class
     HWND hWnd;            //Handle to the parent dialog
-    
+
     RemoveNodeCB (MaxOptionsDialog *instance, HWND wnd) : 
         ph(instance), hWnd(wnd) {}
-    
+
+#if MAX_VERSION_MAJOR < 16
     virtual MCHAR *dialogTitle() {return _M("Objects to Remove");}
     virtual MCHAR *buttonText()  {return _M("Remove");}
+#else
+    virtual const MCHAR *dialogTitle() {return _M("Objects to Remove");}
+    virtual const MCHAR *buttonText()  {return _M("Remove");}
+#endif
+
     virtual int filter(INode *node) {return (node && ph->FindNode(node->GetHandle()));}
     virtual void proc(INodeTab &nodeTab);
 };
@@ -511,7 +523,7 @@ void MaxOptionsDialog::RefreshNodeList(HWND hWnd) {
   SendMessage(nodeLB, LB_RESETCONTENT, 0, 0);
   for (int i = 0; i < _node_list.size(); i++) {
       INode *temp = _max_interface->GetINodeByHandle(_node_list[i]);
-      MCHAR *name = _M("Unknown Node");
+      const MCHAR *name = _M("Unknown Node");
       if (temp) name = temp->GetName();
       SendMessage(nodeLB, LB_ADDSTRING, 0, (LPARAM)name);
   }
