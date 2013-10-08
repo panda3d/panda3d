@@ -32,7 +32,7 @@ class AstronInternalRepository(ConnectionRepository):
         maxChannels = self.config.GetInt('air-channel-allocation', 1000000)
         self.channelAllocator = UniqueIdAllocator(baseChannel, baseChannel+maxChannels-1)
 
-        self.ourChannel = self.channelAllocator.allocate()
+        self.ourChannel = self.allocateChannel()
 
         self.eventLogId = self.config.GetString('eventlog-id', 'AIR:%d' % self.ourChannel)
         self.eventSocket = None
@@ -45,6 +45,23 @@ class AstronInternalRepository(ConnectionRepository):
                 self.setEventLogHost(eventLogHost)
 
         self.readDCFile(dcFileNames)
+
+    def allocateChannel(self):
+        """
+        Allocate an unused channel out of this AIR's configured channel space.
+
+        This is also used to allocate IDs for DistributedObjects, since those
+        occupy a channel.
+        """
+
+        return self.channelAllocator.allocate()
+
+    def deallocateChannel(self, channel):
+        """
+        Return the previously-allocated channel back to the allocation pool.
+        """
+
+        self.channelAllocator.free(channel)
 
     def setEventLogHost(self, host, port=7197):
         """
