@@ -31,6 +31,13 @@ class AstronInternalRepository(ConnectionRepository):
 
         self.eventLogId = self.config.GetString('eventlog-id', 'AIR:?')
         self.eventSocket = None
+        eventLogHost = self.config.GetString('eventlog-host', '')
+        if eventLogHost:
+            if ':' in eventLogHost:
+                host, port = eventLogHost.split(':', 1)
+                self.setEventLogHost(host, int(port))
+            else:
+                self.setEventLogHost(eventLogHost)
 
         self.readDCFile(dcFileNames)
 
