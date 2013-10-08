@@ -19,7 +19,7 @@ class AstronInternalRepository(ConnectionRepository):
     """
     notify = DirectNotifyGlobal.directNotify.newCategory("AstronInternalRepository")
 
-    def __init__(self, dcFileNames = [], dcSuffix = 'AI',
+    def __init__(self, baseChannel, dcFileNames = [], dcSuffix = 'AI',
                  connectMethod = None, threadedNet = None):
         if connectMethod is None:
             connectMethod = self.CM_HTTP
@@ -29,7 +29,12 @@ class AstronInternalRepository(ConnectionRepository):
             if self.config.GetBool('verbose-internalrepository'):
                 self.setVerbose(1)
 
-        self.eventLogId = self.config.GetString('eventlog-id', 'AIR:?')
+        maxChannels = self.config.GetInt('air-channel-allocation', 1000000)
+        self.channelAllocator = UniqueIdAllocator(baseChannel, baseChannel+maxChannels-1)
+
+        self.ourChannel = self.channelAllocator.allocate()
+
+        self.eventLogId = self.config.GetString('eventlog-id', 'AIR:%d' % self.ourChannel)
         self.eventSocket = None
         eventLogHost = self.config.GetString('eventlog-host', '')
         if eventLogHost:
