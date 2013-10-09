@@ -3,22 +3,11 @@
 from direct.showbase.PythonUtil import invertDictLossless
 
 MsgName2Id = {
-    # 2 new params: passwd, char bool 0/1 1 = new account
-    # 2 new return values: 129 = not found, 12 = bad passwd, 
-    'CLIENT_LOGIN':                                  1,
-    'CLIENT_LOGIN_RESP':                             2,
-    'CLIENT_GET_AVATARS':                            3,
+    'CLIENT_HELLO':                                  1,
+    'CLIENT_HELLO_RESP':                             2,
+
     # Sent by the server when it is dropping the connection deliberately.
     'CLIENT_GO_GET_LOST':                            4,
-    'CLIENT_GET_AVATARS_RESP':                       5,
-    'CLIENT_CREATE_AVATAR':                          6,
-    'CLIENT_CREATE_AVATAR_RESP':                     7,
-    'CLIENT_GET_FRIEND_LIST':                        10,
-    'CLIENT_GET_FRIEND_LIST_RESP':                   11,
-    'CLIENT_GET_AVATAR_DETAILS':                     14,
-    'CLIENT_GET_AVATAR_DETAILS_RESP':                15,
-    'CLIENT_LOGIN_2':                                16,
-    'CLIENT_LOGIN_2_RESP':                           17,
 
     'CLIENT_OBJECT_UPDATE_FIELD':                    24,
     'CLIENT_OBJECT_UPDATE_FIELD_RESP':               24,
@@ -42,65 +31,34 @@ MsgName2Id = {
 
     'CLIENT_DISCONNECT':                             37,
 
-    'CLIENT_GET_STATE_RESP':                         47,
     'CLIENT_DONE_INTEREST_RESP':                     48,
 
-    'CLIENT_DELETE_AVATAR':                          49,
-
-    'CLIENT_DELETE_AVATAR_RESP':                     5,
-
     'CLIENT_HEARTBEAT':                              52,
-    'CLIENT_FRIEND_ONLINE':                          53,
-    'CLIENT_FRIEND_OFFLINE':                         54,
-    'CLIENT_REMOVE_FRIEND':                          56,
-
-    'CLIENT_CHANGE_PASSWORD':                        65,
-
-    'CLIENT_SET_NAME_PATTERN':                       67,
-    'CLIENT_SET_NAME_PATTERN_ANSWER':                68,
-
-    'CLIENT_SET_WISHNAME':                           70,
-    'CLIENT_SET_WISHNAME_RESP':                      71,
-    'CLIENT_SET_WISHNAME_CLEAR':                     72,
-    'CLIENT_SET_SECURITY':                           73,
 
     'CLIENT_SET_DOID_RANGE':                         74,
-
-    'CLIENT_GET_AVATARS_RESP2':                      75,
-    'CLIENT_CREATE_AVATAR2':                         76,
-    'CLIENT_SYSTEM_MESSAGE':                         78,
-    'CLIENT_SET_AVTYPE':                             80,
-
-    'CLIENT_GET_PET_DETAILS':                        81,
-    'CLIENT_GET_PET_DETAILS_RESP':                   82,
 
     'CLIENT_ADD_INTEREST':                           97,
     'CLIENT_REMOVE_INTEREST':                        99,
     'CLIENT_OBJECT_LOCATION':                        102,
 
-    'CLIENT_LOGIN_3':                                111,
-    'CLIENT_LOGIN_3_RESP':                           110,
 
-    'CLIENT_GET_FRIEND_LIST_EXTENDED':               115,
-    'CLIENT_GET_FRIEND_LIST_EXTENDED_RESP':          116,
+    # These are sent internally inside the Astron cluster.
 
-    'CLIENT_SET_FIELD_SENDABLE':                     120,
-    
-    'CLIENT_SYSTEMMESSAGE_AKNOWLEDGE':               123,
-    'CLIENT_CHANGE_GENERATE_ORDER':                  124,
+    # Message Director control messages:
+    'CONTROL_CHANNEL':                                  4001,
+    'CONTROL_ADD_CHANNEL':                              2001,
+    'CONTROL_REMOVE_CHANNEL':                           2002,
+    'CONTROL_ADD_RANGE':                                2008,
+    'CONTROL_REMOVE_RANGE':                             2009,
+    'CONTROL_ADD_POST_REMOVE':                          2010,
+    'CONTROL_CLEAR_POST_REMOVE':                        2011,
 
-    # new toontown specific login message, adds last logged in, and if child account has parent acount
-    'CLIENT_LOGIN_TOONTOWN':                         125,
-    'CLIENT_LOGIN_TOONTOWN_RESP':                    126,  
-    
-    
+    # State Server control messages:
+    'STATESERVER_OBJECT_GENERATE_WITH_REQUIRED':        2001,
+    'STATESERVER_OBJECT_GENERATE_WITH_REQUIRED_OTHER':  2003,
+    'STATESERVER_OBJECT_UPDATE_FIELD':                  2004,
 
-    'STATESERVER_OBJECT_GENERATE_WITH_REQUIRED':           2001,
-    'STATESERVER_OBJECT_GENERATE_WITH_REQUIRED_OTHER':     2003,
-    'STATESERVER_OBJECT_UPDATE_FIELD':                     2004,
-    'STATESERVER_OBJECT_CREATE_WITH_REQUIRED_CONTEXT':     2050,
-    'STATESERVER_OBJECT_CREATE_WITH_REQUIR_OTHER_CONTEXT': 2051,
-    'STATESERVER_BOUNCE_MESSAGE':                          2086,
+
     }
 
 # create id->name table for debugging
