@@ -64,6 +64,66 @@ class AstronInternalRepository(ConnectionRepository):
 
         self.channelAllocator.free(channel)
 
+    def registerForChannel(self, channel):
+        """
+        Register for messages on a specific Message Director channel.
+
+        If the channel is already open by this AIR, nothing will happen. If the
+        AIR is not yet connected, it will be requested upon connect.
+        """
+
+        if channel in self._registeredChannels:
+            return
+        self._registeredChannels.add(channel)
+
+        dg = PyDatagram()
+        dg.addServerControlHeader(CONTROL_ADD_CHANNEL)
+        dg.addChannel(channel)
+        self.send(dg)
+
+    def unregisterForChannel(self, channel):
+        """
+        Unregister a channel subscription on the Message Director. The Message
+        Director will cease to relay messages to this AIR sent on the channel.
+        """
+
+        if channel not in self._registeredChannels:
+            return
+        self._registeredChannels.remove(channel)
+
+        dg = PyDatagram()
+        dg.addServerControlHeader(CONTROL_REMOVE_CHANNEL)
+        dg.addChannel(channel)
+        self.send(dg)
+
+    def addPostRemove(self, dg):
+        """
+        Register a datagram with the Message Director that gets sent out if the
+        connection is ever lost.
+
+        This is useful for registering cleanup messages: If the Panda3D process
+        ever crashes unexpectedly, the Message Director will detect the socket
+        close and automatically process any post-remove datagrams.
+        """
+
+        dg2 = PyDatagram()
+        dg2.addServerControlHeader(CONTROL_ADD_POST_REMOVE)
+        dg2.addString(dg.getMessage())
+        self.send(dg2)
+
+    def clearPostRemove(self):
+        """
+        Clear all datagrams registered with addPostRemove.
+
+        This is useful if the Panda3D process is performing a clean exit. It may
+        clear the "emergency clean-up" post-remove messages and perform a normal
+        exit-time clean-up instead, depending on the specific design of the game.
+        """
+
+        dg = PyDatagram()
+        dg.addServerControlHeader(CONTROL_CLEAR_POST_REMOVE)
+        self.send(dg)
+
     def setEventLogHost(self, host, port=7197):
         """
         Set the target host for Event Logger messaging. This should be pointed
