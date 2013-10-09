@@ -32,6 +32,7 @@ class AstronInternalRepository(ConnectionRepository):
 
         maxChannels = self.config.GetInt('air-channel-allocation', 1000000)
         self.channelAllocator = UniqueIdAllocator(baseChannel, baseChannel+maxChannels-1)
+        self._registeredChannels = set()
 
         self.ourChannel = self.allocateChannel()
 
