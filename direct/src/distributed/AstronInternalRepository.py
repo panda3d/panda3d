@@ -24,6 +24,7 @@ class AstronInternalRepository(ConnectionRepository):
         if connectMethod is None:
             connectMethod = self.CM_HTTP
         ConnectionRepository.__init__(self, connectMethod, base.config, hasOwnerView = False, threadedNet = threadedNet)
+        self.setClientDatagram(False)
         self.dcSuffix = dcSuffix
         if hasattr(self, 'setVerbose'):
             if self.config.GetBool('verbose-internalrepository'):
