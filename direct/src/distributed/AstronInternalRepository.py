@@ -125,6 +125,30 @@ class AstronInternalRepository(ConnectionRepository):
         dg.addServerControlHeader(CONTROL_CLEAR_POST_REMOVE)
         self.send(dg)
 
+    def sendUpdate(self, do, fieldName, args):
+        """
+        Send a field update for the given object.
+
+        You should probably use do.sendUpdate(...) instead.
+        """
+
+        self.sendUpdateToChannel(do, do.doId, fieldName, args)
+
+    def sendUpdateToChannel(self, do, channelId, fieldName, args):
+        """
+        Send an object field update to a specific channel.
+
+        This is useful for directing the update to a specific client or node,
+        rather than at the State Server managing the object.
+
+        You should probably use do.sendUpdateToChannel(...) instead.
+        """
+
+        dclass = do.dclass
+        field = dclass.getFieldByName(fieldName)
+        dg = field.aiFormatUpdate(do.doId, channelId, self.ourChannel, args)
+        self.send(dg)
+
     def setEventLogHost(self, host, port=7197):
         """
         Set the target host for Event Logger messaging. This should be pointed
