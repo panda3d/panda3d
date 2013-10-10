@@ -19,8 +19,8 @@ class AstronInternalRepository(ConnectionRepository):
     """
     notify = DirectNotifyGlobal.directNotify.newCategory("AstronInternalRepository")
 
-    def __init__(self, baseChannel, dcFileNames = [], dcSuffix = 'AI',
-                 connectMethod = None, threadedNet = None):
+    def __init__(self, baseChannel, serverId=None, dcFileNames = [],
+                 dcSuffix = 'AI', connectMethod = None, threadedNet = None):
         if connectMethod is None:
             connectMethod = self.CM_HTTP
         ConnectionRepository.__init__(self, connectMethod, config, hasOwnerView = False, threadedNet = threadedNet)
@@ -29,6 +29,12 @@ class AstronInternalRepository(ConnectionRepository):
         if hasattr(self, 'setVerbose'):
             if self.config.GetBool('verbose-internalrepository'):
                 self.setVerbose(1)
+
+        # The State Server we are configured to use for creating objects.
+        #If this is None, generating objects is not possible.
+        self.serverId = self.config.GetInt('air-stateserver', 0) or None
+        if serverId is not None:
+            self.serverId = serverId
 
         maxChannels = self.config.GetInt('air-channel-allocation', 1000000)
         self.channelAllocator = UniqueIdAllocator(baseChannel, baseChannel+maxChannels-1)
@@ -148,6 +154,27 @@ class AstronInternalRepository(ConnectionRepository):
         field = dclass.getFieldByName(fieldName)
         dg = field.aiFormatUpdate(do.doId, channelId, self.ourChannel, args)
         self.send(dg)
+
+    def generateWithRequired(self, do, parentId, zoneId, optionalFields=[]):
+        """
+        Generate an object onto the State Server, choosing an ID from the pool.
+
+        You should probably use do.generateWithRequired(...) instead.
+        """
+
+        doId = self.allocateChannel()
+        self.generateWithRequiredAndId(do, doId, parentId, zoneId, optionalFields)
+
+    def generateWithRequiredAndId(self, do, doId, parentId, zoneId, optionalFields=[]):
+        """
+        Generate an object onto the State Server, specifying its ID and location.
+
+        You should probably use do.generateWithRequiredAndId(...) instead.
+        """
+
+        do.doId = doId
+        self.addDOToTables(do, (parentId, zoneId))
+        do.sendGenerateWithRequired(self, parentId, zoneId, optionalFields)
 
     def setEventLogHost(self, host, port=7197):
         """
