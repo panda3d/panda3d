@@ -75,8 +75,7 @@ class AstronInternalRepository(ConnectionRepository):
         """
         Register for messages on a specific Message Director channel.
 
-        If the channel is already open by this AIR, nothing will happen. If the
-        AIR is not yet connected, it will be requested upon connect.
+        If the channel is already open by this AIR, nothing will happen.
         """
 
         if channel in self._registeredChannels:
