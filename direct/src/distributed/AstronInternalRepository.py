@@ -19,7 +19,7 @@ class AstronInternalRepository(ConnectionRepository):
     """
     notify = DirectNotifyGlobal.directNotify.newCategory("AstronInternalRepository")
 
-    def __init__(self, baseChannel, serverId=None, dcFileNames = [],
+    def __init__(self, baseChannel, serverId=None, dcFileNames = None,
                  dcSuffix = 'AI', connectMethod = None, threadedNet = None):
         if connectMethod is None:
             connectMethod = self.CM_HTTP
