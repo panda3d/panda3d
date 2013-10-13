@@ -176,6 +176,61 @@ class AstronInternalRepository(ConnectionRepository):
         self.addDOToTables(do, (parentId, zoneId))
         do.sendGenerateWithRequired(self, parentId, zoneId, optionalFields)
 
+    def connect(self, host, port=7199):
+        """
+        Connect to a Message Director. The airConnected message is sent upon
+        success.
+
+        N.B. This overrides the base class's connect(). You cannot use the
+        ConnectionRepository connect() parameters.
+        """
+
+        url = URLSpec()
+        url.setServer(host)
+        url.setPort(port)
+
+        self.notify.info('Now connecting to %s:%s...' % (host, port))
+        ConnectionRepository.connect(self, [url],
+                                     successCallback=self.__connected,
+                                     failureCallback=self.__connectFailed,
+                                     failureArgs=[host, port])
+
+    def __connected(self):
+        self.notify.info('Connected successfully.')
+
+        # Listen to our channel...
+        self.registerForChannel(self.ourChannel)
+
+        # If we're configured with a State Server, register a post-remove to
+        # clean up whatever objects we own on this server should we unexpectedly
+        # fall over and die.
+        if self.serverId:
+            dg = PyDatagram()
+            dg.addServerHeader(self.serverId, self.ourChannel, STATESERVER_SHARD_RESET)
+            dg.addChannel(self.ourChannel)
+            self.addPostRemove(dg)
+
+        messenger.send('airConnected')
+        self.handleConnected()
+
+    def __connectFailed(self, code, explanation, host, port):
+        self.notify.warning('Failed to connect! (code=%s; %r)' % (code, explanation))
+
+        # Try again...
+        retryInterval = config.GetFloat('air-reconnect-delay', 5.0)
+        taskMgr.doMethodLater(retryInterval, self.connect, 'Reconnect delay', extraArgs=[host, port])
+
+    def handleConnected(self):
+        """
+        Subclasses should override this if they wish to handle the connection
+        event.
+        """
+
+    def lostConnection(self):
+        # This should be overridden by a subclass if unexpectedly losing connection
+        # is okay.
+        self.notify.error('Lost connection to gameserver!')
+
     def setEventLogHost(self, host, port=7197):
         """
         Set the target host for Event Logger messaging. This should be pointed
