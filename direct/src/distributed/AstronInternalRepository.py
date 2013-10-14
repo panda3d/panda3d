@@ -209,6 +209,18 @@ class AstronInternalRepository(ConnectionRepository):
         self.addDOToTables(do, location=(parentId, zoneId))
         do.sendGenerateWithRequired(self, parentId or 1, zoneId, optionalFields)
 
+    def requestDelete(self, do):
+        """
+        Request the deletion of an object that already exists on the State Server.
+
+        You should probably use do.requestDelete() instead.
+        """
+
+        dg = PyDatagram()
+        dg.addServerHeader(do.doId, self.ourChannel, STATESERVER_OBJECT_DELETE_RAM)
+        dg.addUint32(do.doId)
+        self.send(dg)
+
     def connect(self, host, port=7199):
         """
         Connect to a Message Director. The airConnected message is sent upon
