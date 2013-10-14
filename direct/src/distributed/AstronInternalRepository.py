@@ -130,6 +130,40 @@ class AstronInternalRepository(ConnectionRepository):
         dg.addServerControlHeader(CONTROL_CLEAR_POST_REMOVE)
         self.send(dg)
 
+    def handleDatagram(self, di):
+        msgType = self.getMsgType()
+
+        if msgType == STATESERVER_OBJECT_ENTER_AI_RECV:
+            self.handleObjEntry(di)
+
+
+    def handleObjEntry(self, di):
+        parentId = di.getUint32()
+        zoneId = di.getUint32()
+        classId = di.getUint16()
+        doId = di.getUint32()
+
+        if classId not in self.dclassesByNumber:
+            self.notify.warning('Received entry for unknown dclass=%d! (Object %d)' % (classId, doId))
+            return
+
+        if doId in self.doId2do:
+            return # We already know about this object; ignore the entry.
+
+        dclass = self.dclassesByNumber[classId]
+
+        do = dclass.getClassDef()(self)
+        do.dclass = dclass
+        do.doId = doId
+        # The DO came in off the server, so we do not unregister the channel when
+        # it dies:
+        do.doNotDeallocateChannel = True
+        self.addDOToTables(do, location=(parentId, zoneId))
+
+        # Now for generation:
+        do.generate()
+        do.updateAllRequiredOtherFields(dclass, di)
+
     def sendUpdate(self, do, fieldName, args):
         """
         Send a field update for the given object.
@@ -172,8 +206,8 @@ class AstronInternalRepository(ConnectionRepository):
         """
 
         do.doId = doId
-        self.addDOToTables(do, (parentId, zoneId))
-        do.sendGenerateWithRequired(self, parentId, zoneId, optionalFields)
+        self.addDOToTables(do, location=(parentId, zoneId))
+        do.sendGenerateWithRequired(self, parentId or 1, zoneId, optionalFields)
 
     def connect(self, host, port=7199):
         """
