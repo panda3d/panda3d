@@ -135,6 +135,8 @@ class AstronInternalRepository(ConnectionRepository):
 
         if msgType == STATESERVER_OBJECT_ENTER_AI_RECV:
             self.handleObjEntry(di)
+        elif msgType == STATESERVER_OBJECT_LEAVING_AI_INTEREST:
+            self.handleObjExit(di)
 
 
     def handleObjEntry(self, di):
@@ -163,6 +165,18 @@ class AstronInternalRepository(ConnectionRepository):
         # Now for generation:
         do.generate()
         do.updateAllRequiredOtherFields(dclass, di)
+
+    def handleObjExit(self, di):
+        doId = di.getUint32()
+
+        if doId not in self.doId2do:
+            self.notify.warning('Received AI exit for unknown object %d' % (doId))
+            return
+
+        do = self.doId2do[doId]
+        do.sendDeleteEvent()
+        self.removeDOFromTables(do)
+        do.delete()
 
     def sendUpdate(self, do, fieldName, args):
         """
