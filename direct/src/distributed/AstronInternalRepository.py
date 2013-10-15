@@ -142,7 +142,8 @@ class AstronInternalRepository(ConnectionRepository):
             self.handleObjEntry(di)
         elif msgType == STATESERVER_OBJECT_LEAVING_AI_INTEREST:
             self.handleObjExit(di)
-        elif msgType in (DBSERVER_OBJECT_CREATE_RESP,):
+        elif msgType in (DBSERVER_OBJECT_CREATE_RESP,
+                         DBSERVER_OBJECT_GET_ALL_RESP):
             self.dbInterface.handleDatagram(msgType, di)
 
     def handleObjEntry(self, di):

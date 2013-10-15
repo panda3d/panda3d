@@ -74,6 +74,77 @@ class AstronDatabaseInterface:
         del self._callbacks[ctx]
         self.air.contextAllocator.free(ctx)
 
+    def queryObject(self, databaseId, doId, callback):
+        """
+        Query object `doId` out of the database.
+
+        On success, the callback will be invoked as callback(dclass, fields)
+        where dclass is a DCClass instance and fields is a dict.
+        On failure, the callback will be invoked as callback(None, None).
+        """
+
+        # Save the callback:
+        ctx = self.air.contextAllocator.allocate()
+        self._callbacks[ctx] = callback
+
+        # Generate and send the datagram:
+        dg = PyDatagram()
+        dg.addServerHeader(databaseId, self.air.ourChannel, DBSERVER_OBJECT_GET_ALL)
+        dg.addUint32(ctx)
+        dg.addUint32(doId)
+        self.air.send(dg)
+
+    def handleQueryObjectResp(self, di):
+        ctx = di.getUint32()
+        success = di.getUint8()
+
+        if ctx not in self._callbacks:
+            self.notify.warning('Received unexpected DBSERVER_OBJECT_GET_ALL_RESP'
+                                ' (ctx %d, doId %d)' % (ctx, doId))
+            return
+
+        try:
+            if not success:
+                self._callbacks[ctx](None, None)
+                return
+
+            dclassId = di.getUint16()
+            dclass = self.air.dclassesByNumber.get(dclassId)
+
+            if not dclass:
+                self.notify.warning('Received bad dclass %d for %d in'
+                                    ' DBSERVER_OBJECT_GET_ALL_RESP' % (dclassId, doId))
+                self._callbacks[ctx](None, None)
+                return
+
+            fieldCount = di.getUint16()
+            unpacker = DCPacker()
+            unpacker.setUnpackData(di.getRemainingBytes())
+            fields = {}
+            for x in xrange(fieldCount):
+                fieldId = unpacker.rawUnpackInt16()
+                field = dclass.getFieldByIndex(fieldId)
+
+                if not field:
+                    self.notify.warning('Received bad field %d in query for'
+                                        ' %s(%d)' % (fieldId, dclass.getName(),
+                                                        doId))
+                    self._callbacks[ctx](None, None)
+                    return
+
+
+                unpacker.beginUnpack(field)
+                fields[field.getName()] = field.unpackArgs(unpacker)
+                unpacker.endUnpack()
+
+            self._callbacks[ctx](dclass, fields)
+
+        finally:
+            del self._callbacks[ctx]
+            self.air.contextAllocator.free(ctx)
+
     def handleDatagram(self, msgType, di):
         if msgType == DBSERVER_OBJECT_CREATE_RESP:
             self.handleCreateObjectResp(di)
+        elif msgType == DBSERVER_OBJECT_GET_ALL_RESP:
+            self.handleQueryObjectResp(di)
