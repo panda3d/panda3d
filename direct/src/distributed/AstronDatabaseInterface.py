@@ -68,7 +68,8 @@ class AstronDatabaseInterface:
                                 ' (ctx %d, doId %d)' % (ctx, doId))
             return
 
-        self._callbacks[ctx](doId)
+        if self._callbacks[ctx]:
+            self._callbacks[ctx](doId)
 
         del self._callbacks[ctx]
         self.air.contextAllocator.free(ctx)
@@ -104,7 +105,8 @@ class AstronDatabaseInterface:
 
         try:
             if not success:
-                self._callbacks[ctx](None, None)
+                if self._callbacks[ctx]:
+                    self._callbacks[ctx](None, None)
                 return
 
             dclassId = di.getUint16()
@@ -131,7 +133,8 @@ class AstronDatabaseInterface:
                 fields[field.getName()] = field.unpackArgs(unpacker)
                 unpacker.endUnpack()
 
-            self._callbacks[ctx](dclass, fields)
+            if self._callbacks[ctx]:
+                self._callbacks[ctx](dclass, fields)
 
         finally:
             del self._callbacks[ctx]
