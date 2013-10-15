@@ -41,9 +41,8 @@ class AstronDatabaseInterface:
         for k,v in fields.items():
             field = dclass.getFieldByName(k)
             if not field:
-                self.notify.warning('Creation request for %s object contains '
-                                    'invalid field named %s' % (dclass.getName(), k))
-                continue
+                self.notify.error('Creation request for %s object contains '
+                                  'invalid field named %s' % (dclass.getName(), k))
 
             fieldPacker.rawPackUint16(field.getNumber())
             fieldPacker.beginPack(field)
@@ -100,7 +99,7 @@ class AstronDatabaseInterface:
 
         if ctx not in self._callbacks:
             self.notify.warning('Received unexpected DBSERVER_OBJECT_GET_ALL_RESP'
-                                ' (ctx %d, doId %d)' % (ctx, doId))
+                                ' (ctx %d)' % (ctx))
             return
 
         try:
@@ -112,10 +111,8 @@ class AstronDatabaseInterface:
             dclass = self.air.dclassesByNumber.get(dclassId)
 
             if not dclass:
-                self.notify.warning('Received bad dclass %d for %d in'
-                                    ' DBSERVER_OBJECT_GET_ALL_RESP' % (dclassId, doId))
-                self._callbacks[ctx](None, None)
-                return
+                self.notify.error('Received bad dclass %d in'
+                                  ' DBSERVER_OBJECT_GET_ALL_RESP' % (dclassId))
 
             fieldCount = di.getUint16()
             unpacker = DCPacker()
@@ -126,11 +123,8 @@ class AstronDatabaseInterface:
                 field = dclass.getFieldByIndex(fieldId)
 
                 if not field:
-                    self.notify.warning('Received bad field %d in query for'
-                                        ' %s(%d)' % (fieldId, dclass.getName(),
-                                                        doId))
-                    self._callbacks[ctx](None, None)
-                    return
+                    self.notify.error('Received bad field %d in query for'
+                                      ' %s object' % (fieldId, dclass.getName()))
 
 
                 unpacker.beginUnpack(field)
@@ -175,9 +169,8 @@ class AstronDatabaseInterface:
         for k,v in newFields.items():
             field = dclass.getFieldByName(k)
             if not field:
-                self.notify.warning('Update for %s(%d) object contains invalid'
-                                    ' field named %s' % (dclass.getName(), doId, k))
-                continue
+                self.notify.error('Update for %s(%d) object contains invalid'
+                                  ' field named %s' % (dclass.getName(), doId, k))
 
             fieldPacker.rawPackUint16(field.getNumber())
 
