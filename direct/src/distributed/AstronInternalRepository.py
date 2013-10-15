@@ -145,6 +145,8 @@ class AstronInternalRepository(ConnectionRepository):
         elif msgType in (DBSERVER_OBJECT_CREATE_RESP,
                          DBSERVER_OBJECT_GET_ALL_RESP):
             self.dbInterface.handleDatagram(msgType, di)
+        else:
+            self.notify.warning('Received message with unknown MsgType=%d' % msgType)
 
     def handleObjEntry(self, di):
         parentId = di.getUint32()
