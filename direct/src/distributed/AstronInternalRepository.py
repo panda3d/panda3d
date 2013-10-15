@@ -4,6 +4,7 @@ from direct.directnotify import DirectNotifyGlobal
 from ConnectionRepository import ConnectionRepository
 from PyDatagram import PyDatagram
 from PyDatagramIterator import PyDatagramIterator
+from AstronDatabaseInterface import AstronDatabaseInterface
 
 class AstronInternalRepository(ConnectionRepository):
     """
@@ -39,6 +40,10 @@ class AstronInternalRepository(ConnectionRepository):
         maxChannels = self.config.GetInt('air-channel-allocation', 1000000)
         self.channelAllocator = UniqueIdAllocator(baseChannel, baseChannel+maxChannels-1)
         self._registeredChannels = set()
+
+        self.contextAllocator = UniqueIdAllocator(0, 100)
+
+        self.dbInterface = AstronDatabaseInterface(self)
 
         self.ourChannel = self.allocateChannel()
 
@@ -137,7 +142,8 @@ class AstronInternalRepository(ConnectionRepository):
             self.handleObjEntry(di)
         elif msgType == STATESERVER_OBJECT_LEAVING_AI_INTEREST:
             self.handleObjExit(di)
-
+        elif msgType in (DBSERVER_OBJECT_CREATE_RESP,):
+            self.dbInterface.handleDatagram(msgType, di)
 
     def handleObjEntry(self, di):
         parentId = di.getUint32()
