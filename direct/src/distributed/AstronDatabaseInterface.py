@@ -143,8 +143,135 @@ class AstronDatabaseInterface:
             del self._callbacks[ctx]
             self.air.contextAllocator.free(ctx)
 
+    def updateObject(self, databaseId, doId, dclass, newFields, oldFields=None, callback=None):
+        """
+        Update field(s) on an object, optionally with the requirement that the
+        fields must match some old value.
+
+        databaseId and doId represent the database control channel and object ID
+        for the update request.
+        newFields is to be a dict of fieldname->value, representing the fields
+        to add/change on the database object.
+        oldFields, if specified, is a similarly-formatted dict that contains the
+        expected older values. If the values do not match, the database will
+        refuse to process the update. This is useful for guarding against race
+        conditions.
+
+        On success, the callback is called as callback(None).
+        On failure, the callback is called as callback(dict), where dict contains
+        the current object values. This is so that the updater can try again,
+        basing its updates off of the new values.
+        """
+
+        # Ensure that the keys in newFields and oldFields are the same if
+        # oldFields is given...
+        if oldFields is not None:
+            if set(newFields.keys()) != set(oldFields.keys()):
+                self.notify.error('newFields and oldFields must contain the same keys!')
+                return
+
+        fieldPacker = DCPacker()
+        fieldCount = 0
+        for k,v in newFields.items():
+            field = dclass.getFieldByName(k)
+            if not field:
+                self.notify.warning('Update for %s(%d) object contains invalid'
+                                    ' field named %s' % (dclass.getName(), doId, k))
+                continue
+
+            fieldPacker.rawPackUint16(field.getNumber())
+
+            if oldFields is not None:
+                # Pack the old values:
+                fieldPacker.beginPack(field)
+                field.packArgs(fieldPacker, oldFields[k])
+                fieldPacker.endPack()
+
+            fieldPacker.beginPack(field)
+            field.packArgs(fieldPacker, v)
+            fieldPacker.endPack()
+
+            fieldCount += 1
+
+        # Generate and send the datagram:
+        dg = PyDatagram()
+        if oldFields is not None:
+            ctx = self.air.contextAllocator.allocate()
+            self._callbacks[ctx] = callback
+            if fieldCount == 1:
+                dg.addServerHeader(databaseId, self.air.ourChannel,
+                                   DBSERVER_OBJECT_SET_FIELD_IF_EQUALS)
+            else:
+                dg.addServerHeader(databaseId, self.air.ourChannel,
+                                   DBSERVER_OBJECT_SET_FIELDS_IF_EQUALS)
+            dg.addUint32(ctx)
+        else:
+            if fieldCount == 1:
+                dg.addServerHeader(databaseId, self.air.ourChannel,
+                                   DBSERVER_OBJECT_SET_FIELD)
+            else:
+                dg.addServerHeader(databaseId, self.air.ourChannel,
+                                   DBSERVER_OBJECT_SET_FIELDS)
+        dg.addUint32(doId)
+        if fieldCount != 1:
+            dg.addUint16(fieldCount)
+        dg.appendData(fieldPacker.getString())
+        self.air.send(dg)
+
+        if oldFields is None and callback is not None:
+            # Why oh why did they ask for a callback if there's no oldFields?
+            # Oh well, better honor their request:
+            callback(None)
+
+    def handleUpdateObjectResp(self, di, multi):
+        ctx = di.getUint32()
+        success = di.getUint8()
+
+        if ctx not in self._callbacks:
+            self.notify.warning('Received unexpected'
+                                ' DBSERVER_OBJECT_SET_FIELD(S)_IF_EQUALS_RESP'
+                                ' (ctx %d)' % (ctx))
+            return
+
+        try:
+            if success:
+                if self._callbacks[ctx]:
+                    self._callbacks[ctx](None)
+                return
+
+            if multi:
+                fieldCount = di.getUint16()
+            else:
+                fieldCount = 1
+
+            unpacker = DCPacker()
+            unpacker.setUnpackData(di.getRemainingBytes())
+            fields = {}
+            for x in xrange(fieldCount):
+                fieldId = unpacker.rawUnpackInt16()
+                field = self.air.getDcFile().getFieldByIndex(fieldId)
+
+                if not field:
+                    self.notify.error('Received bad field %d in update'
+                                      ' failure response message' % (fieldId))
+
+                unpacker.beginUnpack(field)
+                fields[field.getName()] = field.unpackArgs(unpacker)
+                unpacker.endUnpack()
+
+            if self._callbacks[ctx]:
+                self._callbacks[ctx](fields)
+
+        finally:
+            del self._callbacks[ctx]
+            self.air.contextAllocator.free(ctx)
+
     def handleDatagram(self, msgType, di):
         if msgType == DBSERVER_OBJECT_CREATE_RESP:
             self.handleCreateObjectResp(di)
         elif msgType == DBSERVER_OBJECT_GET_ALL_RESP:
             self.handleQueryObjectResp(di)
+        elif msgType == DBSERVER_OBJECT_SET_FIELD_IF_EQUALS_RESP:
+            self.handleUpdateObjectResp(di, False)
+        elif msgType == DBSERVER_OBJECT_SET_FIELDS_IF_EQUALS_RESP:
+            self.handleUpdateObjectResp(di, True)

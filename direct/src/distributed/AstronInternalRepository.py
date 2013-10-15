@@ -143,7 +143,9 @@ class AstronInternalRepository(ConnectionRepository):
         elif msgType == STATESERVER_OBJECT_LEAVING_AI_INTEREST:
             self.handleObjExit(di)
         elif msgType in (DBSERVER_OBJECT_CREATE_RESP,
-                         DBSERVER_OBJECT_GET_ALL_RESP):
+                         DBSERVER_OBJECT_GET_ALL_RESP,
+                         DBSERVER_OBJECT_SET_FIELD_IF_EQUALS_RESP,
+                         DBSERVER_OBJECT_SET_FIELDS_IF_EQUALS_RESP):
             self.dbInterface.handleDatagram(msgType, di)
         else:
             self.notify.warning('Received message with unknown MsgType=%d' % msgType)
