@@ -338,5 +338,5 @@ class AstronInternalRepository(ConnectionRepository):
         dg.addString(self.eventLogId)
         dg.addString(logtype)
         for arg in args:
-            dg.addString(arg)
+            dg.addString(str(arg))
         self.eventSocket.Send(dg.getMessage())
