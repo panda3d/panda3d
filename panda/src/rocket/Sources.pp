@@ -17,7 +17,8 @@
     config_rocket.h \
     rocketFileInterface.h \
     rocketInputHandler.h \
-    rocketRegion.h $[if $[HAVE_ROCKET_PYTHON],rocketRegion_ext.I] \
+    rocketRegion.h \
+    $[if $[HAVE_ROCKET_PYTHON],rocketRegion_ext.cxx rocketRegion_ext.h] \
     rocketRenderInterface.h \
     rocketSystemInterface.h
 
@@ -33,7 +34,7 @@
     config_rocket.h rocketRegion.h
 
 #if $[HAVE_ROCKET_PYTHON]
-  #define IGATESCAN rocketInputHandler.h rocketInputHandler.cxx rocketRegion.h rocketRegion.cxx rocketRegion_ext.I
+  #define IGATESCAN rocketInputHandler.h rocketInputHandler.cxx rocketRegion.h rocketRegion.cxx rocketRegion_ext.h
 #endif
 
 #end lib_target
