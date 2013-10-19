@@ -9,7 +9,7 @@
 #begin lib_target
   #define TARGET p3rocket
   #define LOCAL_LIBS \
-    p3display p3pgraph p3gobj p3linmath p3putil p3dgraph
+    p3display p3pgraph p3gobj p3linmath p3putil p3dgraph p3text
 
   #define COMBINED_SOURCES p3rocket_composite1.cxx
 

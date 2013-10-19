@@ -41,16 +41,16 @@ LogMessage(Rocket::Core::Log::Type type, const Rocket::Core::String& message) {
   case Rocket::Core::Log::LT_ALWAYS:
   case Rocket::Core::Log::LT_ERROR:
   case Rocket::Core::Log::LT_ASSERT:
-    rocket_cat.error() << message.CString() << "\n";
+    rocket_cat->error() << message.CString() << "\n";
     return true;
   case Rocket::Core::Log::LT_WARNING:
-    rocket_cat.warning() << message.CString() << "\n";
+    rocket_cat->warning() << message.CString() << "\n";
     return true;
   case Rocket::Core::Log::LT_INFO:
-    rocket_cat.info() << message.CString() << "\n";
+    rocket_cat->info() << message.CString() << "\n";
     return true;
   case Rocket::Core::Log::LT_DEBUG:
-    rocket_cat.debug() << message.CString() << "\n";
+    rocket_cat->debug() << message.CString() << "\n";
   }
   return true;
 }
