@@ -78,12 +78,6 @@ class DoInterestManager(DirectObject.DirectObject):
     Top level Interest Manager
     """
     notify = directNotify.newCategory("DoInterestManager")
-    try:
-        tempbase = base
-    except:
-        tempbase = simbase
-    InterestDebug = tempbase.config.GetBool('interest-debug', False)
-    del tempbase
 
     # 'handle' is a number that represents a single interest set that the
     # client has requested; the interest set may be modified
@@ -113,6 +107,8 @@ class DoInterestManager(DirectObject.DirectObject):
         # keep track of request contexts that have not completed
         self._completeEventCount = ScratchPad(num=0)
         self._allInterestsCompleteCallbacks = []
+
+        self.InterestDebug = config.GetBool('interest-debug', False)
 
     def __verbose(self):
         return self.InterestDebug or self.getVerbose()
