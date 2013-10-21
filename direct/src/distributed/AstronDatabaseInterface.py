@@ -52,7 +52,7 @@ class AstronDatabaseInterface:
 
         # Now generate and send the datagram:
         dg = PyDatagram()
-        dg.addServerHeader(databaseId, self.air.ourChannel, DBSERVER_OBJECT_CREATE)
+        dg.addServerHeader(databaseId, self.air.ourChannel, DBSERVER_CREATE_OBJECT)
         dg.addUint32(ctx)
         dg.addUint16(dclass.getNumber())
         dg.addUint16(fieldCount)
@@ -64,7 +64,7 @@ class AstronDatabaseInterface:
         doId = di.getUint32()
 
         if ctx not in self._callbacks:
-            self.notify.warning('Received unexpected DBSERVER_OBJECT_CREATE_RESP'
+            self.notify.warning('Received unexpected DBSERVER_CREATE_OBJECT_RESP'
                                 ' (ctx %d, doId %d)' % (ctx, doId))
             return
 
@@ -263,7 +263,7 @@ class AstronDatabaseInterface:
             self.air.contextAllocator.free(ctx)
 
     def handleDatagram(self, msgType, di):
-        if msgType == DBSERVER_OBJECT_CREATE_RESP:
+        if msgType == DBSERVER_CREATE_OBJECT_RESP:
             self.handleCreateObjectResp(di)
         elif msgType == DBSERVER_OBJECT_GET_ALL_RESP:
             self.handleQueryObjectResp(di)

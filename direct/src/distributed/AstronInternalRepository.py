@@ -138,11 +138,13 @@ class AstronInternalRepository(ConnectionRepository):
     def handleDatagram(self, di):
         msgType = self.getMsgType()
 
-        if msgType == STATESERVER_OBJECT_ENTER_AI_RECV:
-            self.handleObjEntry(di)
-        elif msgType == STATESERVER_OBJECT_LEAVING_AI_INTEREST:
+        if msgType in (STATESERVER_OBJECT_ENTER_AI_WITH_REQUIRED,
+                       STATESERVER_OBJECT_ENTER_AI_WITH_REQUIRED_OTHER):
+            self.handleObjEntry(di, msgType == STATESERVER_OBJECT_ENTER_AI_WITH_REQUIRED_OTHER)
+        elif msgType in (STATESERVER_OBJECT_CHANGING_AI,
+                         STATESERVER_OBJECT_DELETE_RAM):
             self.handleObjExit(di)
-        elif msgType in (DBSERVER_OBJECT_CREATE_RESP,
+        elif msgType in (DBSERVER_CREATE_OBJECT_RESP,
                          DBSERVER_OBJECT_GET_ALL_RESP,
                          DBSERVER_OBJECT_SET_FIELD_IF_EQUALS_RESP,
                          DBSERVER_OBJECT_SET_FIELDS_IF_EQUALS_RESP):
@@ -150,11 +152,11 @@ class AstronInternalRepository(ConnectionRepository):
         else:
             self.notify.warning('Received message with unknown MsgType=%d' % msgType)
 
-    def handleObjEntry(self, di):
+    def handleObjEntry(self, di, other):
+        doId = di.getUint32()
         parentId = di.getUint32()
         zoneId = di.getUint32()
         classId = di.getUint16()
-        doId = di.getUint32()
 
         if classId not in self.dclassesByNumber:
             self.notify.warning('Received entry for unknown dclass=%d! (Object %d)' % (classId, doId))
@@ -175,7 +177,10 @@ class AstronInternalRepository(ConnectionRepository):
 
         # Now for generation:
         do.generate()
-        do.updateAllRequiredOtherFields(dclass, di)
+        if other:
+            do.updateAllRequiredOtherFields(dclass, di)
+        else:
+            do.updateAllRequiredFields(dclass, di)
 
     def handleObjExit(self, di):
         doId = di.getUint32()
@@ -232,7 +237,7 @@ class AstronInternalRepository(ConnectionRepository):
 
         do.doId = doId
         self.addDOToTables(do, location=(parentId, zoneId))
-        do.sendGenerateWithRequired(self, parentId or 1, zoneId, optionalFields)
+        do.sendGenerateWithRequired(self, parentId, zoneId, optionalFields)
 
     def requestDelete(self, do):
         """
@@ -276,7 +281,7 @@ class AstronInternalRepository(ConnectionRepository):
         # fall over and die.
         if self.serverId:
             dg = PyDatagram()
-            dg.addServerHeader(self.serverId, self.ourChannel, STATESERVER_SHARD_RESET)
+            dg.addServerHeader(self.serverId, self.ourChannel, STATESERVER_DELETE_AI_OBJECTS)
             dg.addChannel(self.ourChannel)
             self.addPostRemove(dg)
 
