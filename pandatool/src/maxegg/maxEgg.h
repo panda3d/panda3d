@@ -75,7 +75,7 @@ extern HINSTANCE hInstance;
 
 /* Global Functions
  */
-extern MCHAR *GetString(int id);
+extern TCHAR *GetString(int id);
 
 /* This class defines the 3D Studio Max exporter itself.  It is basically a
    shell that is invoked by 3D Studio Max's export API.  It then sets up 
@@ -133,14 +133,14 @@ class MaxEggPlugin : public HelperObject
   void BeginEditParams( IObjParam *ip, ULONG flags,Animatable *prev);
   void EndEditParams( IObjParam *ip, ULONG flags,Animatable *next);
 #if MAX_VERSION_MAJOR < 15
-  MCHAR *GetObjectName() { return GetString(IDS_LIBDESCRIPTION); }
+  TCHAR *GetObjectName() { return GetString(IDS_LIBDESCRIPTION); }
 #else
-  const MCHAR *GetObjectName() { return GetString(IDS_LIBDESCRIPTION); }
+  const TCHAR *GetObjectName() { return GetString(IDS_LIBDESCRIPTION); }
 #endif
 
   // From Object
   ObjectState Eval(TimeValue time);
-  void InitNodeName(MSTR& s) { s = GetString(IDS_CLASS_NAME); }
+  void InitNodeName(TSTR& s) { s = GetString(IDS_CLASS_NAME); }
   Interval ObjectValidity(TimeValue time);
   void Invalidate();
   int DoOwnSelectHilite() { return 1; }
@@ -154,8 +154,8 @@ class MaxEggPlugin : public HelperObject
   // Animatable methods
   void DeleteThis() { delete this; }
   Class_ID ClassID() { return MaxEggPlugin_CLASS_ID; }
-  void GetClassName(MSTR& s) { s = MSTR(GetString(IDS_CLASS_NAME)); }
-  MSTR SubAnimName(int i) { return MSTR(GetString(IDS_CLASS_NAME)); }
+  void GetClassName(TSTR& s) { s = TSTR(GetString(IDS_CLASS_NAME)); }
+  TSTR SubAnimName(int i) { return TSTR(GetString(IDS_CLASS_NAME)); }
 
   // From ref
   RefTargetHandle Clone(RemapDir& remap = DefaultRemapDir());

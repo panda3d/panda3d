@@ -41,6 +41,29 @@ MaxNodeDesc(MaxNodeDesc *parent, const string &name) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MaxNodeDesc::Constructor
+//       Access: Public
+//  Description: This convenience constructor takes a wstring.
+////////////////////////////////////////////////////////////////////
+MaxNodeDesc::
+MaxNodeDesc(MaxNodeDesc *parent, const wstring &name) :
+  Namable(string(name.begin(), name.end())),
+  _parent(parent)
+{
+  _max_node = (INode *)NULL;
+  _egg_group = (EggGroup *)NULL;
+  _egg_table = (EggTable *)NULL;
+  _anim = (EggXfmSAnim *)NULL;
+  _joint_type = JT_none;
+  _joint_entry = NULL;
+
+  // Add ourselves to our parent.
+  if (_parent != (MaxNodeDesc *)NULL) {
+    _parent->_children.push_back(this);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MaxNodeDesc::Destructor
 //       Access: Public
 //  Description: 

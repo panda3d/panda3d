@@ -61,7 +61,7 @@ public:
   MaxEggMesh  *GetMesh(EggVertexPool *pool);
   MaxEggJoint *FindJoint(EggGroup *joint);
   MaxEggJoint *MakeJoint(EggGroup *joint, EggGroup *context);
-  MaxEggTex   *GetTex(const string &fn);
+  MaxEggTex   *GetTex(const Filename &fn);
   void         CreateSkinModifier(MaxEggMesh *M);
 
   typedef phash_map<EggVertexPool *, MaxEggMesh *> MeshTable;
@@ -91,26 +91,31 @@ Point3 MakeMaxPoint(LVector3d vec)
 class MaxEggTex
 {
 public:
-  string     _path;
+  Filename   _path;
   int        _id;
   StdMat    *_mat;
   BitmapTex *_bmt;
 };
 
-MaxEggTex *MaxEggLoader::GetTex(const string &fn)
+MaxEggTex *MaxEggLoader::GetTex(const Filename &fn)
 {
   if (_tex_tab.count(fn))
     return _tex_tab[fn];
 
   BitmapTex *bmt = NewDefaultBitmapTex();
-  bmt->SetMapName(MSTR::FromACP(fn.c_str()));
+#ifdef _UNICODE
+  bmt->SetMapName(fn.to_os_specific_w().c_str());
+#else
+  bmt->SetMapName(fn.to_os_specific().c_str());
+#endif
+
   StdMat *mat = NewDefaultStdMat();
   mat->SetSubTexmap(ID_DI, bmt);
   mat->SetTexmapAmt(ID_DI, 1.0, 0);
   mat->EnableMap(ID_DI, TRUE);
   mat->SetActiveTexmap(bmt);
   GetCOREInterface()->ActivateTexture(bmt, mat);
-  
+
   MaxEggTex *res = new MaxEggTex;
   res->_path = fn;
   res->_id = _next_tex ++;
@@ -260,7 +265,7 @@ void MaxEggJoint::CreateMaxBone(void)
   Point3 pos(MakeMaxPoint(GetPos()));
   Point3 endpos(MakeMaxPoint(_endpos));
   Point3 tzv(MakeMaxPoint(_perp));
-  
+
   Point3 fwd = endpos - pos;
   double len = fwd.Length();
   Point3 txv = fwd * ((PN_stdfloat)(1.0/len));
@@ -275,16 +280,16 @@ void MaxEggJoint::CreateMaxBone(void)
   _node->SetNodeTM(0, Matrix3(xv, yv, zv, pos));
   IParamBlock2 *blk = _bone->pblock2;
   for (int i=0; i<blk->NumParams(); i++) {
-    MSTR n = blk->GetLocalName(i);
-    if      (_tcscmp(n, _M("Length"))==0) blk->SetValue(i,0,(PN_stdfloat)len); 
-    else if (_tcscmp(n, _M("Width"))==0)  blk->SetValue(i,0,(PN_stdfloat)_thickness);
-    else if (_tcscmp(n, _M("Height"))==0) blk->SetValue(i,0,(PN_stdfloat)_thickness);
+    TSTR n = blk->GetLocalName(i);
+    if      (_tcscmp(n, _T("Length")) == 0) blk->SetValue(i, 0, (PN_stdfloat) len);
+    else if (_tcscmp(n, _T("Width")) == 0)  blk->SetValue(i, 0, (PN_stdfloat) _thickness);
+    else if (_tcscmp(n, _T("Height")) == 0) blk->SetValue(i, 0, (PN_stdfloat) _thickness);
   }
   Point3 boneColor = GetUIColor(COLOR_BONES);
   _node->SetWireColor(RGB(int(boneColor.x*255.0f), int(boneColor.y*255.0f), int(boneColor.z*255.0f) ));
   _node->SetBoneNodeOnOff(TRUE, 0);
   _node->SetRenderable(FALSE);
-  _node->SetName(MSTR::FromACP(_egg_joint->get_name().c_str()));
+  _node->SetName(TSTR(_egg_joint->get_name().c_str()));
   _node->SetObjOffsetRot(ooquat);
   if (_parent) {
     _node->Detach(0, 1);
@@ -454,7 +459,7 @@ MaxEggMesh *MaxEggLoader::GetMesh(EggVertexPool *pool)
     result->_tvert_count = 0;
     result->_cvert_count = 0;
     result->_face_count = 0;
-    result->_node->SetName(MSTR::FromACP(name.c_str()));
+    result->_node->SetName(TSTR(name.c_str()));
     _mesh_tab[pool] = result;
   }
   return result;
@@ -465,7 +470,7 @@ int MaxEggMesh::AddFace(int v0, int v1, int v2, int tv0, int tv1, int tv2, int c
   static int dump = 0;
   if (_face_count == _mesh->numFaces) {
     int nsize = _face_count*2 + 100;
-    BOOL keep = _mesh->numFaces ? TRUE:FALSE;
+    BOOL keep = _mesh->numFaces ? TRUE : FALSE;
     _mesh->setNumFaces(nsize, keep);
     _mesh->setNumTVFaces(nsize, keep, _face_count);
     _mesh->setNumVCFaces(nsize, keep, _face_count);
@@ -566,7 +571,7 @@ void MaxEggLoader::TraverseEggNode(EggNode *node, EggGroup *context)
   vector<int> vertIndices;
   vector<int> tvertIndices;
   vector<int> cvertIndices;
-  
+
   if (node->is_of_type(EggPolygon::get_class_type())) {
     EggPolygon *poly = DCAST(EggPolygon, node);
 
@@ -574,13 +579,13 @@ void MaxEggLoader::TraverseEggNode(EggNode *node, EggGroup *context)
     LMatrix3d uvtrans = LMatrix3d::ident_mat();
     if (poly->has_texture()) {
       EggTexture *tex = poly->get_texture(0);
-      texid = GetTex(tex->get_fullpath().to_os_specific())->_id;
+      texid = GetTex(tex->get_fullpath())->_id;
       if (tex->has_transform())
         uvtrans = tex->get_transform2d();
     } else {
-      texid = GetTex("")->_id;
+      texid = GetTex(Filename())->_id;
     }
-    
+
     EggPolygon::const_iterator ci;
     MaxEggMesh *mesh = GetMesh(poly->get_pool());
     vertIndices.clear();
@@ -621,7 +626,7 @@ bool MaxEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool an
     maxloader_cat.error() << "Currently, only 'merge' mode is implemented.\n";
     return false;
   }
-  
+
   if ((anim) || (!model)) {
     maxloader_cat.error() << "Currently, only model-loading is implemented.\n";
     return false;
@@ -630,14 +635,14 @@ bool MaxEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool an
   MeshIterator ci;
   JointIterator ji;
   TexIterator ti;
-  
+
   data->set_coordinate_system(CS_zup_right);
-  
+
   SuspendAnimate();
   SuspendSetKeyMode();
   AnimateOff();
   _next_tex = 0;
-  
+
   TraverseEggNode(data, NULL);
 
   for (ci = _mesh_tab.begin(); ci != _mesh_tab.end(); ++ci) {
@@ -652,7 +657,7 @@ bool MaxEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool an
     mesh->_mesh->InvalidateGeomCache();
     mesh->_mesh->buildNormals();
   }
-  
+
   double thickness = 0.0;
   for (ji = _joint_tab.begin(); ji != _joint_tab.end(); ++ji) {
     double dfo = ((*ji)->GetPos()).length();
@@ -664,15 +669,15 @@ bool MaxEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool an
     joint->ChooseEndPos(thickness);
     joint->CreateMaxBone();
   }
-  
+
   for (ci = _mesh_tab.begin(); ci != _mesh_tab.end(); ++ci) {
     MaxEggMesh *mesh = (*ci);
     EggGroup *joint = mesh->GetControlJoint();
     if (joint) CreateSkinModifier(mesh);
   }
-  
+
   if (_next_tex) {
-    MSTR name;
+    TSTR name;
     MultiMtl *mtl = NewDefaultMultiMtl();
     mtl->SetNumSubMtls(_next_tex);
     for (ti = _tex_tab.begin(); ti != _tex_tab.end(); ++ti) {
@@ -688,10 +693,10 @@ bool MaxEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool an
   for (ci = _mesh_tab.begin();  ci != _mesh_tab.end();  ++ci) delete *ci;
   for (ji = _joint_tab.begin(); ji != _joint_tab.end(); ++ji) delete *ji;
   for (ti = _tex_tab.begin();   ti != _tex_tab.end();   ++ti) delete *ti;
-  
+
   ResumeSetKeyMode();
   ResumeAnimate();
-  
+
   maxloader_cat.info() << "Egg import successful\n";
   return true;
 }

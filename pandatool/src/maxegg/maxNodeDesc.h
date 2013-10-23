@@ -26,6 +26,7 @@
 class MaxNodeDesc : public ReferenceCount, public Namable {
  public:
   MaxNodeDesc(MaxNodeDesc *parent = NULL, const string &name = string());
+  MaxNodeDesc(MaxNodeDesc *parent = NULL, const wstring &name = wstring());
   ~MaxNodeDesc();
 
   void from_INode(INode *max_node);

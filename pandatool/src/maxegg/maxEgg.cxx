@@ -274,17 +274,17 @@ const double meshVerts[252][3] = {
    This basically says "Yes, I am a helper object!"
 */
 
-class MaxEggPluginClassDesc : public ClassDesc 
+class MaxEggPluginClassDesc : public ClassDesc
 {
 public:
   int          IsPublic() { return TRUE; }
   void         *Create(BOOL loading = FALSE) { return new MaxEggPlugin(); }
-  const MCHAR  *ClassName() { return GetString(IDS_CLASS_NAME); }
+  const TCHAR  *ClassName() { return GetString(IDS_CLASS_NAME); }
   SClass_ID    SuperClassID() { return HELPER_CLASS_ID; }
   Class_ID     ClassID() { return MaxEggPlugin_CLASS_ID; }
-  const MCHAR  *Category() { return GetString(IDS_CATEGORY); }
+  const TCHAR  *Category() { return GetString(IDS_CATEGORY); }
   // returns fixed parsable name (scripter-visible name)
-  const MCHAR *InternalName() { return _M("MaxEggPlugin"); }
+  const TCHAR *InternalName() { return _T("MaxEggPlugin"); }
 };
 
 // Our private global instance of the above class
@@ -822,7 +822,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL,ULONG fdwReason,LPVOID lpvReserved)
 
 // This function returns a string that describes the DLL and where the user
 // could purchase the DLL if they don't have it.
-__declspec( dllexport ) const MCHAR* LibDescription()
+__declspec( dllexport ) const TCHAR* LibDescription()
 {
         return GetString(IDS_LIBDESCRIPTION);
 }
@@ -851,9 +851,9 @@ __declspec( dllexport ) ULONG LibVersion()
         return VERSION_3DSMAX;
 }
 
-MCHAR *GetString(int id)
+TCHAR *GetString(int id)
 {
-        static MCHAR buf[256];
+        static TCHAR buf[256];
 
         if (hInstance)
                 return LoadString(hInstance, id, buf, sizeof(buf)) ? buf : NULL;
