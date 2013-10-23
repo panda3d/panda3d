@@ -62,6 +62,9 @@ init_librocket() {
   Rocket::Core::Initialise();
 
 #ifdef COMPILE_IN_DEFAULT_FONT
+#ifdef HAVE_FREETYPE
+  // Load Panda's default compiled-in freetype font (Perspective Sans).
   Rocket::Core::FontDatabase::LoadFontFace(default_font_data, default_font_size);
+#endif
 #endif
 }
