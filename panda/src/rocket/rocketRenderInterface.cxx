@@ -156,7 +156,7 @@ RenderGeometry(Rocket::Core::Vertex* vertices, int num_vertices, int* indices, i
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RocketRenderInterface::CompileGeometry
-//       Access: Protected      
+//       Access: Protected
 //  Description: Called by Rocket when it wants to compile geometry
 //               it believes will be static for the forseeable future.
 ////////////////////////////////////////////////////////////////////

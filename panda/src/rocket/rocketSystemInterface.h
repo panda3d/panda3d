@@ -20,6 +20,12 @@
 #include <Rocket/Core/SystemInterface.h>
 #include <Rocket/Core/Log.h>
 
+////////////////////////////////////////////////////////////////////
+//       Class : RocketSystemInterface
+// Description : This is an implementation of SystemInterface
+//               that redirects the log output to Panda's notify
+//               system.
+////////////////////////////////////////////////////////////////////
 class RocketSystemInterface : public Rocket::Core::SystemInterface {
 public:
   float GetElapsedTime();

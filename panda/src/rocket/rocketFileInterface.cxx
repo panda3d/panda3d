@@ -31,86 +31,118 @@ RocketFileInterface(VirtualFileSystem *vfs) : _vfs(vfs) {
 ////////////////////////////////////////////////////////////////////
 //     Function: RocketFileInterface::Open
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 Rocket::Core::FileHandle RocketFileInterface::
 Open(const Rocket::Core::String& path) {
   rocket_cat.debug() << "Opening " << path.CString() << "\n";
 
   Filename fn = Filename::from_os_specific(path.CString());
-  void *ptr = (void*) _vfs->open_read_file(fn, true);
 
-  if (ptr == NULL) {
-    rocket_cat.error() << "Failed to open " << fn << "\n";
+  PT(VirtualFile) file = _vfs->get_file(fn);
+  if (file == NULL) {
+    rocket_cat.error() << "Failed to find " << fn << "\n";
+    return (Rocket::Core::FileHandle) NULL;
   }
 
-  // A FileHandle is actually just a void pointer
-  return (Rocket::Core::FileHandle) ptr;
+  istream *str = file->open_read_file(true);
+  if (str == NULL) {
+    rocket_cat.error() << "Failed to open " << fn << " for reading\n";
+    return (Rocket::Core::FileHandle) NULL;
+  }
+
+  VirtualFileHandle *handle = new VirtualFileHandle;
+  handle->_file = file;
+  handle->_stream = str;
+
+  // A FileHandle is actually just a void pointer.
+  return (Rocket::Core::FileHandle) handle;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RocketFileInterface::Close
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void RocketFileInterface::
 Close(Rocket::Core::FileHandle file) {
-  if ((istream*) file != (istream*) NULL) {
-    _vfs->close_read_file((istream*) file);
+  VirtualFileHandle *handle = (VirtualFileHandle*) file;
+  if (handle == NULL) {
+    return;
   }
+
+  _vfs->close_read_file(handle->_stream);
+  delete handle;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RocketFileInterface::Read
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 size_t RocketFileInterface::
 Read(void* buffer, size_t size, Rocket::Core::FileHandle file) {
-  istream* const stream = (istream*) file;
-  if (stream == (istream*) NULL) {
+  VirtualFileHandle *handle = (VirtualFileHandle*) file;
+  if (handle == NULL) {
     return 0;
   }
 
-  stream->read((char*) buffer, size);
-  return stream->gcount();
+  handle->_stream->read((char*) buffer, size);
+  return handle->_stream->gcount();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RocketFileInterface::Seek
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool RocketFileInterface::
 Seek(Rocket::Core::FileHandle file, long offset, int origin) {
-  istream* stream = (istream*) file;
-  if (stream == (istream*) NULL) {
+  VirtualFileHandle *handle = (VirtualFileHandle*) file;
+  if (handle == NULL) {
     return false;
   }
 
   switch(origin) {
   case SEEK_SET:
-    stream->seekg(offset, ios::beg);
+    handle->_stream->seekg(offset, ios::beg);
     break;
   case SEEK_CUR:
-    stream->seekg(offset, ios::cur);
+    handle->_stream->seekg(offset, ios::cur);
     break;
   case SEEK_END:
-    stream->seekg(offset, ios::end);
+    handle->_stream->seekg(offset, ios::end);
   };
 
-  return !stream->fail();
+  return !handle->_stream->fail();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RocketFileInterface::Tell
-//       Access: Public   
-//  Description: 
+//       Access: Public
+//  Description:
 ////////////////////////////////////////////////////////////////////
 size_t RocketFileInterface::
 Tell(Rocket::Core::FileHandle file) {
-  if ((istream*) file == (istream*) NULL) {
-    return -1;
+  VirtualFileHandle *handle = (VirtualFileHandle*) file;
+  if (handle == NULL) {
+    return 0;
   }
-  return ((istream*) file)->tellg();
+
+  return handle->_stream->tellg();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RocketFileInterface::Length
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+size_t RocketFileInterface::
+Length(Rocket::Core::FileHandle file) {
+  VirtualFileHandle *handle = (VirtualFileHandle*) file;
+  if (handle == NULL) {
+    return 0;
+  }
+
+  return handle->_file->get_file_size(handle->_stream);
 }

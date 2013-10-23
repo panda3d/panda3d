@@ -16,11 +16,16 @@
 #define ROCKET_FILE_INTERFACE_H
 
 #include "config_rocket.h"
-
+#include "virtualFile.h"
 #include <Rocket/Core/FileInterface.h>
 
 class VirtualFileSystem;
 
+////////////////////////////////////////////////////////////////////
+//       Class : RocketFileInterface
+// Description : Implementation of FileInterface to allow libRocket
+//               to read files from the virtual file system.
+////////////////////////////////////////////////////////////////////
 class RocketFileInterface : public Rocket::Core::FileInterface {
 public:
   RocketFileInterface(VirtualFileSystem *vfs = NULL);
@@ -33,7 +38,14 @@ public:
   bool Seek(Rocket::Core::FileHandle file, long offset, int origin);
   size_t Tell(Rocket::Core::FileHandle file);
 
+  size_t Length(Rocket::Core::FileHandle file);
+
 protected:
+  struct VirtualFileHandle {
+    PT(VirtualFile) _file;
+    istream *_stream;
+  };
+
   VirtualFileSystem* _vfs;
 };
 
