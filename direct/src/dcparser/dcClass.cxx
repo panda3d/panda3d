@@ -1018,6 +1018,7 @@ client_format_generate_CMU(PyObject *distobj, DOID_TYPE do_id,
 }
 #endif  // HAVE_PYTHON
 
+#ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////
 //     Function: DCClass::ai_format_generate
 //       Access: Published
@@ -1105,6 +1106,7 @@ ai_format_generate(PyObject *distobj, DOID_TYPE do_id,
 
   return Datagram(packer.get_data(), packer.get_length());
 }
+#endif  // HAVE_PYTHON
 
 ////////////////////////////////////////////////////////////////////
 //     Function : DCClass::output
