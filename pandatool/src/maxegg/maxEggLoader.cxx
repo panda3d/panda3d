@@ -104,9 +104,9 @@ MaxEggTex *MaxEggLoader::GetTex(const Filename &fn)
 
   BitmapTex *bmt = NewDefaultBitmapTex();
 #ifdef _UNICODE
-  bmt->SetMapName(fn.to_os_specific_w().c_str());
+  bmt->SetMapName((TCHAR*) fn.to_os_specific_w().c_str());
 #else
-  bmt->SetMapName(fn.to_os_specific().c_str());
+  bmt->SetMapName((char*) fn.to_os_specific().c_str());
 #endif
 
   StdMat *mat = NewDefaultStdMat();
