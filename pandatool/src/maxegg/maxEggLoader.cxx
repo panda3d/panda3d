@@ -289,7 +289,16 @@ void MaxEggJoint::CreateMaxBone(void)
   _node->SetWireColor(RGB(int(boneColor.x*255.0f), int(boneColor.y*255.0f), int(boneColor.z*255.0f) ));
   _node->SetBoneNodeOnOff(TRUE, 0);
   _node->SetRenderable(FALSE);
-  _node->SetName(TSTR(_egg_joint->get_name().c_str()));
+
+#ifdef _UNICODE
+  TCHAR *wname [1024];
+  wname[1023] = 0;
+  mbstowcs(wname, _egg_joint->get_name().c_str(), 1023);
+  _node->SetName(wname);
+#else
+  _node->SetName(_egg_joint->get_name().c_str());
+#endif
+
   _node->SetObjOffsetRot(ooquat);
   if (_parent) {
     _node->Detach(0, 1);

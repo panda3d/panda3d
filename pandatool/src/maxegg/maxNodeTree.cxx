@@ -18,7 +18,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: MaxNodeTree::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 MaxNodeTree::
 MaxNodeTree() {
@@ -41,13 +41,15 @@ MaxNodeDesc *MaxNodeTree::
 build_node(INode *max_node) {
   MaxNodeDesc *node_desc = r_build_node(max_node);
   node_desc->from_INode(max_node);
-  if (node_desc->is_node_joint())
+
+  if (node_desc->is_node_joint()) {
     node_desc->_joint_entry = build_joint(max_node, node_desc);
+  }
   return node_desc;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MaxNodeTree::build_node
+//     Function: MaxNodeTree::build_joint
 //       Access: Public
 //  Description: Returns a pointer to the node corresponding to the
 //               indicated INode object, creating it first if
@@ -57,7 +59,7 @@ MaxNodeDesc *MaxNodeTree::
 build_joint(INode *max_node, MaxNodeDesc *node_joint) {
   MaxNodeDesc *node_desc = r_build_joint(node_joint, max_node);
   node_desc->from_INode(max_node);
-  node_desc->set_joint(true);  
+  node_desc->set_joint(true);
   return node_desc;
 }
 
@@ -102,7 +104,7 @@ build_complete_hierarchy(INode *root, ULONG *selection_list, int len) {
     // *** Log an error
     return false;
   }
-    
+
   bool all_ok = true;
   r_build_hierarchy(root, selection_list, len);
 
@@ -218,7 +220,7 @@ get_egg_table(MaxNodeDesc *node_desc) {
     nassertr(node_desc->_parent != (MaxNodeDesc *)NULL, NULL);
 
     EggTable *egg_table = new EggTable(node_desc->get_name());
-    node_desc->_anim = new EggXfmSAnim("xform", 
+    node_desc->_anim = new EggXfmSAnim("xform",
                                        _egg_data->get_coordinate_system());
     node_desc->_anim->set_fps(_fps);
     egg_table->add_child(node_desc->_anim);
@@ -247,12 +249,10 @@ get_egg_table(MaxNodeDesc *node_desc) {
 //               has not already been created.
 ////////////////////////////////////////////////////////////////////
 EggXfmSAnim *MaxNodeTree::
-get_egg_anim(MaxNodeDesc *node_desc) 
-{
+get_egg_anim(MaxNodeDesc *node_desc) {
   get_egg_table(node_desc);
   return node_desc->_anim;
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MaxNodeTree::r_build_node
@@ -260,8 +260,7 @@ get_egg_anim(MaxNodeDesc *node_desc)
 //  Description: The recursive implementation of build_node().
 ////////////////////////////////////////////////////////////////////
 MaxNodeDesc *MaxNodeTree::
-r_build_node(INode* max_node) 
-{
+r_build_node(INode* max_node) {
   // If we have already encountered this pathname, return the
   // corresponding MaxNodeDesc immediately.
 
@@ -286,7 +285,6 @@ r_build_node(INode* max_node)
 
   } else {
     INode *parent_node;
-    TSTR local_name = max_node->GetName();
 
     if (max_node->IsRootNode()) {
       parent_node = NULL;
@@ -295,7 +293,7 @@ r_build_node(INode* max_node)
     }
 
     MaxNodeDesc *parent_node_desc = r_build_node(parent_node);
-    node_desc = new MaxNodeDesc(parent_node_desc, local_name);
+    node_desc = new MaxNodeDesc(parent_node_desc, max_node);
     _nodes.push_back(node_desc);
   }
 
@@ -309,15 +307,15 @@ r_build_node(INode* max_node)
 //  Description: The recursive implementation of build_joint().
 ////////////////////////////////////////////////////////////////////
 MaxNodeDesc *MaxNodeTree::
-r_build_joint(MaxNodeDesc *node_desc, INode *max_node) 
+r_build_joint(MaxNodeDesc *node_desc, INode *max_node)
 {
   MaxNodeDesc *node_joint;
   if (node_desc == _root) {
-    node_joint = new MaxNodeDesc(_root, max_node->GetName());
+    node_joint = new MaxNodeDesc(_root, max_node);
     _nodes.push_back(node_joint);
     return node_joint;
   } else if (node_desc->is_node_joint() && node_desc->_joint_entry) {
-    node_joint = new MaxNodeDesc(node_desc->_joint_entry, max_node->GetName());
+    node_joint = new MaxNodeDesc(node_desc->_joint_entry, max_node);
     _nodes.push_back(node_joint);
     return node_joint;
   } else {
@@ -331,21 +329,20 @@ r_build_joint(MaxNodeDesc *node_desc, INode *max_node)
 //  Description: The recursive implementation of build_node().
 ////////////////////////////////////////////////////////////////////
 MaxNodeDesc *MaxNodeTree::
-find_node(INode* max_node) 
-{
+find_node(INode* max_node) {
   // If we have already encountered this pathname, return the
   // corresponding MaxNodeDesc immediately.
-  
+
   ULONG node_handle = 0;
-  
+
   if (max_node) {
     node_handle = max_node->GetHandle();
-  }    
+  }
 
   NodesByPath::const_iterator ni = _nodes_by_path.find(node_handle);
   if (ni != _nodes_by_path.end()) {
     return (*ni).second;
-  } 
+  }
 
   return NULL;
 }

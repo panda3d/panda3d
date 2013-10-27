@@ -78,7 +78,7 @@ class MaxToEggConverter {
     void get_joint_transform(INode *max_node, INode *parent_node, 
                              EggGroup *egg_group);
     
-    bool make_nurbs_curve(NURBSCVCurve *curve, const string &name,
+    bool make_nurbs_curve(INode *max_node, NURBSCVCurve *curve,
                           TimeValue time, EggGroup *egg_group);
     void make_polyset(INode *max_node,
                       Mesh *mesh,

@@ -15,7 +15,7 @@
 //Disable the forcing int to true or false performance warning
 #pragma warning(disable: 4800)
 
-void SetICustEdit(HWND wnd, int nIDDlgItem, const TCHAR *text)
+void SetICustEdit(HWND wnd, int nIDDlgItem, TCHAR *text)
 {
   ICustEdit *edit = GetICustEdit(GetDlgItem(wnd, nIDDlgItem));
   edit->SetText(text);

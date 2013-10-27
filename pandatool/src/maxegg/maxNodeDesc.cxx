@@ -20,36 +20,26 @@ TypeHandle MaxNodeDesc::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: MaxNodeDesc::Constructor
 //       Access: Public
-//  Description: 
+//  Description: Creates a MaxNodeDesc.  The name is copied from
+//               the given max node.  Use from_INode to actually
+//               associate the desc with a given max node.
 ////////////////////////////////////////////////////////////////////
 MaxNodeDesc::
-MaxNodeDesc(MaxNodeDesc *parent, const string &name) :
-  Namable(name),
-  _parent(parent)
-{
-  _max_node = (INode *)NULL;
-  _egg_group = (EggGroup *)NULL;
-  _egg_table = (EggTable *)NULL;
-  _anim = (EggXfmSAnim *)NULL;
-  _joint_type = JT_none;
-  _joint_entry = NULL;
+MaxNodeDesc(MaxNodeDesc *parent, INode *max_node) :
+  _parent(parent) {
 
-  // Add ourselves to our parent.
-  if (_parent != (MaxNodeDesc *)NULL) {
-    _parent->_children.push_back(this);
+  if (max_node != NULL) {
+    const TCHAR *max_name = max_node->GetName();
+#ifdef _UNICODE
+    char name_mb [1024];
+    name_mb[1023] = 0;
+    wcstombs(name_mb, max_name, 1023);
+    set_name(name_mb);
+#else
+    set_name(max_name);
+#endif
   }
-}
 
-////////////////////////////////////////////////////////////////////
-//     Function: MaxNodeDesc::Constructor
-//       Access: Public
-//  Description: This convenience constructor takes a wstring.
-////////////////////////////////////////////////////////////////////
-MaxNodeDesc::
-MaxNodeDesc(MaxNodeDesc *parent, const wstring &name) :
-  Namable(string(name.begin(), name.end())),
-  _parent(parent)
-{
   _max_node = (INode *)NULL;
   _egg_group = (EggGroup *)NULL;
   _egg_table = (EggTable *)NULL;
@@ -66,7 +56,7 @@ MaxNodeDesc(MaxNodeDesc *parent, const wstring &name) :
 ////////////////////////////////////////////////////////////////////
 //     Function: MaxNodeDesc::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 MaxNodeDesc::
 ~MaxNodeDesc() {}
@@ -82,8 +72,8 @@ from_INode(INode *max_node) {
   if (_max_node == (INode *)NULL) {
     _max_node = max_node;
 
-    // This is how I decided to check to see if this max node is a 
-    // joint.  It works in all instances I've seen so far, but this 
+    // This is how I decided to check to see if this max node is a
+    // joint.  It works in all instances I've seen so far, but this
     // may be a good starting place to look if joints are not being
     // picked up correctly in the future.
 
@@ -96,7 +86,7 @@ from_INode(INode *max_node) {
         ((c->ClassID() == BIPSLAVE_CONTROL_CLASS_ID) ||
          (c->ClassID() == BIPBODY_CONTROL_CLASS_ID) ||
          (c->ClassID() == FOOTPRINT_CLASS_ID)))) {
-      
+
       // This node is a joint.
       _joint_type = JT_node_joint;
       if (_parent != (MaxNodeDesc *)NULL) {

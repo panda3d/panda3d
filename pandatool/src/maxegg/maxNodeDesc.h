@@ -25,8 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 class MaxNodeDesc : public ReferenceCount, public Namable {
  public:
-  MaxNodeDesc(MaxNodeDesc *parent = NULL, const string &name = string());
-  MaxNodeDesc(MaxNodeDesc *parent = NULL, const wstring &name = wstring());
+  MaxNodeDesc(MaxNodeDesc *parent = NULL, INode *max_node = NULL);
   ~MaxNodeDesc();
 
   void from_INode(INode *max_node);
@@ -42,7 +41,7 @@ class MaxNodeDesc : public ReferenceCount, public Namable {
   MaxNodeDesc *_joint_entry;
   typedef pvector< MaxNodeDesc* > Children;
   Children _children;
-  
+
  private:
   void clear_egg();
   void mark_joint_parent();

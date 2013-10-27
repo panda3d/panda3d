@@ -370,8 +370,7 @@ process_model_node(MaxNodeDesc *node_desc) {
                             //It's a CV Curve, process it
                             egg_group = _tree.get_egg_group(node_desc);
                             get_transform(max_node, egg_group);
-                            CStr node_name = CStr::FromMSTR(max_node->GetName());
-                            make_nurbs_curve((NURBSCVCurve *)nObj, node_name,
+                            make_nurbs_curve(max_node, (NURBSCVCurve *)nObj,
                                              time, egg_group);
                         }
                     }
@@ -578,7 +577,7 @@ get_joint_transform(INode *max_node, INode *parent_node, EggGroup *egg_group) {
 //               structure and attaches it to the indicated egg group.
 ////////////////////////////////////////////////////////////////////
 bool MaxToEggConverter::
-make_nurbs_curve(NURBSCVCurve *curve, const string &name,
+make_nurbs_curve(INode *max_node, NURBSCVCurve *curve,
                  TimeValue time, EggGroup *egg_group) 
 {
     int degree = curve->GetOrder();
@@ -589,6 +588,8 @@ make_nurbs_curve(NURBSCVCurve *curve, const string &name,
     if (knots != cvs + degree) {
         return false;
     }
+
+    string name = max_node->GetName();
 
     string vpool_name = name + ".cvs";
     EggVertexPool *vpool = new EggVertexPool(vpool_name);
@@ -651,8 +652,8 @@ make_polyset(INode *max_node, Mesh *mesh,
     // all the vertices up front, we'll start with an empty vpool, and
     // add vertices to it on the fly.
 
-    CStr node_name = CStr::FromMSTR(max_node->GetName());
-    string vpool_name = string(node_name) + ".verts";
+    string node_name = max_node->GetName();
+    string vpool_name = node_name + ".verts";
     EggVertexPool *vpool = new EggVertexPool(vpool_name);
     egg_group->add_child(vpool);
 
