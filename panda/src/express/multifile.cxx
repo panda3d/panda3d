@@ -2130,8 +2130,8 @@ read_subfile(int index, pvector<unsigned char> &result) {
   result.clear();
 
   // Now look up the particular Subfile we are reading.
-  nassertr(is_read_valid(), NULL);
-  nassertr(index >= 0 && index < (int)_subfiles.size(), NULL);
+  nassertr(is_read_valid(), false);
+  nassertr(index >= 0 && index < (int)_subfiles.size(), false);
   Subfile *subfile = _subfiles[index];
 
   if (subfile->_source != (istream *)NULL ||
@@ -2142,7 +2142,7 @@ read_subfile(int index, pvector<unsigned char> &result) {
 
     // That shouldn't change the subfile index or delete the subfile
     // pointer.
-    nassertr(subfile == _subfiles[index], NULL);
+    nassertr(subfile == _subfiles[index], false);
   }
 
   result.reserve(subfile->_uncompressed_length);
