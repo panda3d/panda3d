@@ -82,6 +82,7 @@ private:
   public:
     string _answer_location;
     WrapperType _wrapper_type;
+    int _min_version;
   };
 
   static bool get_slotted_function_def(Object *obj, Function *func, SlottedFunctionDef &def);
