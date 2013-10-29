@@ -129,6 +129,7 @@ read_file(const Filename &file, bool do_uncompress,
   if (asset == (AAsset *)NULL) {
     express_cat.info()
       << "Unable to read " << file << "\n";
+    return false;
   }
 
   // Reserve enough space to hold the entire file.
@@ -251,7 +252,7 @@ get_system_info(const Filename &file, SubfileInfo &info) {
   // We don't actually need the file descriptor, so close it.
   close(fd);
 
-  info = SubfileInfo(_apk_path, start, length); 
+  info = SubfileInfo(_apk_path, start, length);
   return true;
 }
 

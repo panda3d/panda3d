@@ -131,8 +131,10 @@ PUBLISHED:
   INLINE int get_node_ref_count() const;
 
 #ifdef HAVE_PYTHON
+#if PY_VERSION_HEX >= 0x02060000
   int __getbuffer__(PyObject *self, Py_buffer *view, int flags);
   void __releasebuffer__(PyObject *self, Py_buffer *view) const;
+#endif
 #endif
 
 #else  // CPPPARSER
