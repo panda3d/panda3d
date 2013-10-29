@@ -238,8 +238,10 @@ public:
   INLINE bool node_unref() const;
 
 #ifdef HAVE_PYTHON
+#if PY_VERSION_HEX >= 0x02060000
   int __getbuffer__(PyObject *self, Py_buffer *view, int flags);
   void __releasebuffer__(PyObject *self, Py_buffer *view) const;
+#endif
 #endif
 
   // Reassignment is by pointer, not memberwise as with a vector.
@@ -295,8 +297,10 @@ PUBLISHED:
   INLINE int get_node_ref_count() const;
 
 #ifdef HAVE_PYTHON
+#if PY_VERSION_HEX >= 0x02060000
   int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const;
   void __releasebuffer__(PyObject *self, Py_buffer *view) const;
+#endif
 #endif
 
 #else  // CPPPARSER
@@ -370,8 +374,10 @@ PUBLISHED:
   INLINE bool node_unref() const;
 
 #ifdef HAVE_PYTHON
+#if PY_VERSION_HEX >= 0x02060000
   int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const;
   void __releasebuffer__(PyObject *self, Py_buffer *view) const;
+#endif
 #endif
 
   // Reassignment is by pointer, not memberwise as with a vector.
