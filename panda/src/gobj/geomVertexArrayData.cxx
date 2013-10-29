@@ -839,22 +839,12 @@ reserve_num_rows(int n) {
 void GeomVertexArrayDataHandle::
 copy_data_from(const GeomVertexArrayDataHandle *other) {
   nassertv(_writable);
-  mark_used();
   other->mark_used();
 
   size_t size = other->_cdata->_buffer.get_size();
-  _cdata->_buffer.unclean_realloc(size);
-  _cdata->_buffer.set_size(size);
-
-  unsigned char *dest = _cdata->_buffer.get_write_pointer();
   const unsigned char *source = other->_cdata->_buffer.get_read_pointer(true);
-  memcpy(dest, source, size);
 
-  _cdata->_modified = Geom::get_next_modified();
-
-  if (get_current_thread()->get_pipeline_stage() == 0) {
-    _object->set_lru_size(_cdata->_buffer.get_size());
-  }
+  copy_data_from(source, size);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -869,19 +859,60 @@ void GeomVertexArrayDataHandle::
 copy_subdata_from(size_t to_start, size_t to_size,
                   const GeomVertexArrayDataHandle *other,
                   size_t from_start, size_t from_size) {
-  nassertv(_writable);
-  mark_used();
   other->mark_used();
-
-  VertexDataBuffer &to_buffer = _cdata->_buffer;
-  size_t to_buffer_orig_size = to_buffer.get_size();
-  to_start = min(to_start, to_buffer_orig_size);
-  to_size = min(to_size, to_buffer_orig_size - to_start);
 
   const VertexDataBuffer &from_buffer = other->_cdata->_buffer;
   size_t from_buffer_orig_size = from_buffer.get_size();
   from_start = min(from_start, from_buffer_orig_size);
   from_size = min(from_size, from_buffer_orig_size - from_start);
+
+  copy_subdata_from(to_start, to_size,
+                    other->get_read_pointer(true),
+                    from_start, from_size);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayDataHandle::copy_data_from
+//       Access: Public
+//  Description: Copies the entire data array from the buffer.
+////////////////////////////////////////////////////////////////////
+void GeomVertexArrayDataHandle::
+copy_data_from(const unsigned char *source, size_t size) {
+  nassertv(_writable);
+  mark_used();
+
+  _cdata->_buffer.unclean_realloc(size);
+  _cdata->_buffer.set_size(size);
+
+  unsigned char *dest = _cdata->_buffer.get_write_pointer();
+  memcpy(dest, source, size);
+
+  _cdata->_modified = Geom::get_next_modified();
+
+  if (get_current_thread()->get_pipeline_stage() == 0) {
+    _object->set_lru_size(_cdata->_buffer.get_size());
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayDataHandle::copy_subdata_from
+//       Access: Public
+//  Description: Copies a portion of the data array from the buffer
+//               into a portion of the data array of this object.
+//               If to_size != from_size, the size of this data
+//               array is adjusted accordingly.
+////////////////////////////////////////////////////////////////////
+void GeomVertexArrayDataHandle::
+copy_subdata_from(size_t to_start, size_t to_size,
+                  const unsigned char *source,
+                  size_t from_start, size_t from_size) {
+  nassertv(_writable);
+  mark_used();
+
+  VertexDataBuffer &to_buffer = _cdata->_buffer;
+  size_t to_buffer_orig_size = to_buffer.get_size();
+  to_start = min(to_start, to_buffer_orig_size);
+  to_size = min(to_size, to_buffer_orig_size - to_start);
 
   if (from_size < to_size) {
     // Reduce the array.
@@ -909,8 +940,7 @@ copy_subdata_from(size_t to_start, size_t to_size,
 
   // Now copy the data.
   memcpy(to_buffer.get_write_pointer() + to_start, 
-         other->get_read_pointer(true) + from_start, 
-         from_size);
+         source + from_start, from_size);
   _cdata->_modified = Geom::get_next_modified();
 
   if (get_current_thread()->get_pipeline_stage() == 0) {

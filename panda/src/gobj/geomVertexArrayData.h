@@ -47,7 +47,7 @@ class SimpleAllocatorBlock;
 //               structure.  Many GeomVertexData structures will only
 //               define one array, with all data elements interleaved
 //               (DirectX 8.0 and before insisted on this format);
-//               some will define multiple arrays.  
+//               some will define multiple arrays.
 //
 //               DirectX calls this concept of one array a "stream".
 //               It also closely correlates with the concept of a
@@ -114,9 +114,11 @@ PUBLISHED:
   static void lru_epoch();
   INLINE static VertexDataBook &get_book();
 
+#if PY_VERSION_HEX >= 0x02060000
   EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags));
   EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const);
   EXTENSION(void __releasebuffer__(PyObject *self, Py_buffer *view) const);
+#endif
 
 public:
   virtual void evict_lru();
@@ -291,6 +293,18 @@ PUBLISHED:
   void copy_subdata_from(size_t to_start, size_t to_size,
                          const GeomVertexArrayDataHandle *other,
                          size_t from_start, size_t from_size);
+
+  void copy_data_from(const unsigned char *source, size_t size);
+  void copy_subdata_from(size_t to_start, size_t to_size,
+                         const unsigned char *source,
+                         size_t from_start, size_t from_size);
+
+  EXTENSION(void copy_data_from(PyObject *buffer));
+  EXTENSION(void copy_subdata_from(size_t to_start, size_t to_size,
+                                   PyObject *buffer));
+  EXTENSION(void copy_subdata_from(size_t to_start, size_t to_size,
+                                   PyObject *buffer,
+                                   size_t from_start, size_t from_size));
 
   INLINE string get_data() const;
   void set_data(const string &data);

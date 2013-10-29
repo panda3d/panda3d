@@ -32,9 +32,28 @@
 template<>
 class Extension<GeomVertexArrayData> : public ExtensionBase<GeomVertexArrayData> {
 public:
+#if PY_VERSION_HEX >= 0x02060000
   int __getbuffer__(PyObject *self, Py_buffer *view, int flags);
   int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const;
   void __releasebuffer__(PyObject *self, Py_buffer *view) const;
+#endif
+};
+
+////////////////////////////////////////////////////////////////////
+//       Class : Extension<GeomVertexArrayDataHandle>
+// Description : This class defines the extension methods for
+//               GeomVertexArrayDataHandle, which are called instead
+//               of any C++ methods with the same prototype.
+////////////////////////////////////////////////////////////////////
+template<>
+class Extension<GeomVertexArrayDataHandle> : public ExtensionBase<GeomVertexArrayDataHandle> {
+public:
+  void copy_data_from(PyObject *buffer);
+  void copy_subdata_from(size_t to_start, size_t to_size,
+                         PyObject *buffer);
+  void copy_subdata_from(size_t to_start, size_t to_size,
+                         PyObject *buffer,
+                         size_t from_start, size_t from_size);
 };
 
 #endif  // HAVE_PYTHON

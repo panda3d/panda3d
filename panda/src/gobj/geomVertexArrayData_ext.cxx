@@ -21,6 +21,7 @@ struct InternalBufferData {
   string _format;
 };
 
+#if PY_VERSION_HEX >= 0x02060000
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexArrayData::__getbuffer__
 //       Access: Published
@@ -165,3 +166,110 @@ __releasebuffer__(PyObject *self, Py_buffer *view) const {
   delete data;
   view->internal = NULL;
 }
+
+#endif  // PY_VERSION_HEX >= 0x02060000
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayDataHandle::copy_data_from
+//       Access: Published
+//  Description: Copies all data from the given buffer object.
+//               The array is rescaled as necessary.
+////////////////////////////////////////////////////////////////////
+void Extension<GeomVertexArrayDataHandle>::
+copy_data_from(PyObject *buffer) {
+
+#if PY_VERSION_HEX < 0x02060000
+  PyErr_SetString(PyExc_TypeError, "buffer interface not supported before Python 2.6");
+
+#else
+  if (!PyObject_CheckBuffer(buffer)) {
+    PyErr_SetString(PyExc_TypeError, "buffer object expected");
+    return;
+  }
+
+  Py_buffer view;
+  if (PyObject_GetBuffer(buffer, &view, PyBUF_CONTIG_RO) == -1) {
+    PyErr_SetString(PyExc_TypeError, "contiguous buffer object expected");
+    return;
+  }
+
+  _this->copy_data_from((const unsigned char *) view.buf, view.len);
+
+  PyBuffer_Release(&view);
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayDataHandle::copy_subdata_from
+//       Access: Public
+//  Description: Copies the entire data array from the buffer
+//               into a portion of the data array of this object.
+//               If to_size is not the size of the given buffer,
+//               the size of this dat array is adjusted accordingly.
+////////////////////////////////////////////////////////////////////
+void Extension<GeomVertexArrayDataHandle>::
+copy_subdata_from(size_t to_start, size_t to_size, PyObject *buffer) {
+
+#if PY_VERSION_HEX < 0x02060000
+  PyErr_SetString(PyExc_TypeError, "buffer interface not supported before Python 2.6");
+
+#else
+  if (!PyObject_CheckBuffer(buffer)) {
+    PyErr_SetString(PyExc_TypeError, "buffer object expected");
+    return;
+  }
+
+  Py_buffer view;
+  if (PyObject_GetBuffer(buffer, &view, PyBUF_CONTIG_RO) == -1) {
+    PyErr_SetString(PyExc_TypeError, "contiguous buffer object expected");
+    return;
+  }
+
+  _this->copy_subdata_from(to_start, to_size,
+                           (const unsigned char *) view.buf,
+                           0, (size_t) view.len);
+
+  PyBuffer_Release(&view);
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexArrayDataHandle::copy_subdata_from
+//       Access: Public
+//  Description: Copies a portion of the data array from the buffer
+//               into a portion of the data array of this object.
+//               If to_size != from_size, the size of this data
+//               array is adjusted accordingly.
+////////////////////////////////////////////////////////////////////
+void Extension<GeomVertexArrayDataHandle>::
+copy_subdata_from(size_t to_start, size_t to_size,
+                  PyObject *buffer,
+                  size_t from_start, size_t from_size) {
+
+#if PY_VERSION_HEX < 0x02060000
+  PyErr_SetString(PyExc_TypeError, "buffer interface not supported before Python 2.6");
+
+#else
+  if (!PyObject_CheckBuffer(buffer)) {
+    PyErr_SetString(PyExc_TypeError, "buffer object expected");
+    return;
+  }
+
+  Py_buffer view;
+  if (PyObject_GetBuffer(buffer, &view, PyBUF_CONTIG_RO) == -1) {
+    PyErr_SetString(PyExc_TypeError, "contiguous buffer object expected");
+    return;
+  }
+
+  size_t from_buffer_orig_size = (size_t) view.len;
+  from_start = min(from_start, from_buffer_orig_size);
+  from_size = min(from_size, from_buffer_orig_size - from_start);
+
+  _this->copy_subdata_from(to_start, to_size,
+                           (const unsigned char *) view.buf,
+                           from_start, from_size);
+
+  PyBuffer_Release(&view);
+#endif
+}
+
