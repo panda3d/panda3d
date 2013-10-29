@@ -457,6 +457,10 @@ clear_vertices() {
 ////////////////////////////////////////////////////////////////////
 void GeomPrimitive::
 offset_vertices(int offset) {
+  if (offset == 0) {
+    return;
+  }
+
   if (is_indexed()) {
     CDWriter cdata(_cycler, true);
 
@@ -473,6 +477,67 @@ offset_vertices(int offset) {
     }
 
   } else {
+    CDWriter cdata(_cycler, true);
+
+    cdata->_first_vertex += offset;
+    cdata->_modified = Geom::get_next_modified();
+    cdata->_got_minmax = false;
+
+    consider_elevate_index_type(cdata, 
+                                cdata->_first_vertex + cdata->_num_vertices - 1);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitive::offset_vertices
+//       Access: Published
+//  Description: Adds the indicated offset to the indicated segment
+//               of vertices used by the primitive.  Unlike the
+//               other version of offset_vertices, this makes the
+//               geometry indexed if it isn't already.
+//
+//               Don't call this in a downstream thread unless you
+//               don't mind it blowing away other changes you might
+//               have recently made in an upstream thread.
+////////////////////////////////////////////////////////////////////
+void GeomPrimitive::
+offset_vertices(int offset, int begin_row, int end_row) {
+  if (offset == 0 || end_row <= begin_row) {
+    return;
+  }
+
+  nassertv(begin_row >= 0 && end_row >= 0);
+  nassertv(end_row <= get_num_vertices());
+
+  if (!is_indexed() && (begin_row > 0 || end_row < get_num_vertices())) {
+    // Make it indexed unless the whole array was specified.
+    make_indexed();
+  }
+
+  if (is_indexed()) {
+    CDWriter cdata(_cycler, true);
+    
+    // Calculate the maximum vertex over our range.
+    int max_vertex = 0;
+    {
+      GeomVertexReader index_r(cdata->_vertices.get_read_pointer(), 0);
+      index_r.set_row_unsafe(begin_row);
+      for (int j = begin_row; j < end_row; ++j) {
+        max_vertex = max(max_vertex, index_r.get_data1i());
+      }
+    }
+
+    consider_elevate_index_type(cdata, max_vertex + offset);
+
+    GeomVertexRewriter index(do_modify_vertices(cdata), 0);
+    index.set_row_unsafe(begin_row);
+    for (int j = begin_row; j < end_row; ++j) {
+      index.set_data1i(index.get_data1i() + offset);
+    }
+
+  } else {
+    // The supplied values cover all vertices, so we don't need
+    // to make it indexed.
     CDWriter cdata(_cycler, true);
 
     cdata->_first_vertex += offset;
