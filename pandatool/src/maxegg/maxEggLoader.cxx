@@ -296,7 +296,7 @@ void MaxEggJoint::CreateMaxBone(void)
   mbstowcs(wname, _egg_joint->get_name().c_str(), 1023);
   _node->SetName(wname);
 #else
-  _node->SetName(_egg_joint->get_name().c_str());
+  _node->SetName((char*) _egg_joint->get_name().c_str());
 #endif
 
   _node->SetObjOffsetRot(ooquat);
