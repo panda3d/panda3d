@@ -1022,6 +1022,11 @@ class Actor(DirectObject, NodePath):
         if (partDict.has_key(partName)):
             del(partDict[partName])
 
+        # remove the bundle handle, in case this part is ever
+        # loaded again in the future
+        if partName in self.__commonBundleHandles:
+            del self.__commonBundleHandles[partName]
+
     def hidePart(self, partName, lodName="lodRoot"):
         """
         Make the given part of the optionally given lod not render,
