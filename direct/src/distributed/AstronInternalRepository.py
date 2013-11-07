@@ -233,6 +233,51 @@ class AstronInternalRepository(ConnectionRepository):
         dg = field.aiFormatUpdate(do.doId, channelId, self.ourChannel, args)
         self.send(dg)
 
+    def sendActivate(self, doId, parentId, zoneId, dclass=None, fields=None):
+        """
+        Activate a DBSS object, given its doId, into the specified parentId/zoneId.
+
+        If both dclass and fields are specified, an ACTIVATE_WITH_DEFAULTS_OTHER
+        will be sent instead. In other words, the specified fields will be
+        auto-applied during the activation.
+        """
+
+        fieldPacker = DCPacker()
+        fieldCount = 0
+        if dclass and fields:
+            for k,v in fields.items():
+                field = dclass.getFieldByName(k)
+                if not field:
+                    self.notify.error('Activation request for %s object contains '
+                                      'invalid field named %s' % (dclass.getName(), k))
+
+                fieldPacker.rawPackUint16(field.getNumber())
+                fieldPacker.beginPack(field)
+                field.packArgs(fieldPacker, v)
+                fieldPacker.endPack()
+                fieldCount += 1
+
+            dg = PyDatagram()
+            dg.addServerHeader(doId, self.ourChannel, DBSS_OBJECT_ACTIVATE_WITH_DEFAULTS)
+            dg.addUint32(doId)
+            dg.addUint32(parentId)
+            dg.addUint32(zoneId)
+            self.send(dg)
+            # DEFAULTS_OTHER isn't implemented yet, so we chase it with a SET_FIELDS
+            dg = PyDatagram()
+            dg.addServerHeader(doId, self.ourChannel, STATESERVER_OBJECT_SET_FIELDS)
+            dg.addUint32(doId)
+            dg.addUint16(fieldCount)
+            dg.appendData(fieldPacker.getString())
+            self.send(dg)
+        else:
+            dg = PyDatagram()
+            dg.addServerHeader(doId, self.ourChannel, DBSS_OBJECT_ACTIVATE_WITH_DEFAULTS)
+            dg.addUint32(doId)
+            dg.addUint32(parentId)
+            dg.addUint32(zoneId)
+            self.send(dg)
+
     def generateWithRequired(self, do, parentId, zoneId, optionalFields=[]):
         """
         Generate an object onto the State Server, choosing an ID from the pool.
