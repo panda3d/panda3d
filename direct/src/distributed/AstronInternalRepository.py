@@ -144,6 +144,8 @@ class AstronInternalRepository(ConnectionRepository):
         elif msgType in (STATESERVER_OBJECT_CHANGING_AI,
                          STATESERVER_OBJECT_DELETE_RAM):
             self.handleObjExit(di)
+        elif msgType == STATESERVER_OBJECT_CHANGING_LOCATION:
+            self.handleObjLocation(di)
         elif msgType in (DBSERVER_CREATE_OBJECT_RESP,
                          DBSERVER_OBJECT_GET_ALL_RESP,
                          DBSERVER_OBJECT_SET_FIELD_IF_EQUALS_RESP,
@@ -151,6 +153,19 @@ class AstronInternalRepository(ConnectionRepository):
             self.dbInterface.handleDatagram(msgType, di)
         else:
             self.notify.warning('Received message with unknown MsgType=%d' % msgType)
+
+    def handleObjLocation(self, di):
+        doId = di.getUint32()
+        parentId = di.getUint32()
+        zoneId = di.getUint32()
+
+        do = self.doId2do.get(doId)
+
+        if not do:
+            self.notify.warning('Received location for unknown doId=%d!' % (doId))
+            return
+
+        do.setLocation(parentId, zoneId)
 
     def handleObjEntry(self, di, other):
         doId = di.getUint32()
