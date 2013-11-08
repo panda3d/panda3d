@@ -156,22 +156,24 @@ check_protocols() {
   }
 
   // Now are there any make_seq requests within this class?
-  CPPStructType *stype = _itype._cpptype->as_struct_type();
-  if (stype != (CPPStructType *)NULL) {
-    CPPScope *scope = stype->get_scope();
-    if (scope != (CPPScope *)NULL) {
-      CPPScope::Declarations::iterator di;
-      for (di = scope->_declarations.begin(); di != scope->_declarations.end(); ++di) {
-        CPPMakeSeq *cpp_make_seq = (*di)->as_make_seq();
-        if (cpp_make_seq != (CPPMakeSeq *)NULL) {
-          string class_name = _itype.get_scoped_name();
-          string clean_name = InterrogateBuilder::clean_identifier(class_name);
-          string wrapper_name = "MakeSeq_" + clean_name + "_" + cpp_make_seq->_seq_name;
-          MakeSeq *make_seq = new MakeSeq(wrapper_name, cpp_make_seq);
-          _make_seqs.push_back(make_seq);
+  if (_itype._cpptype != NULL) {
+    CPPStructType *stype = _itype._cpptype->as_struct_type();
+    if (stype != (CPPStructType *)NULL) {
+      CPPScope *scope = stype->get_scope();
+      if (scope != (CPPScope *)NULL) {
+        CPPScope::Declarations::iterator di;
+        for (di = scope->_declarations.begin(); di != scope->_declarations.end(); ++di) {
+          CPPMakeSeq *cpp_make_seq = (*di)->as_make_seq();
+          if (cpp_make_seq != (CPPMakeSeq *)NULL) {
+            string class_name = _itype.get_scoped_name();
+            string clean_name = InterrogateBuilder::clean_identifier(class_name);
+            string wrapper_name = "MakeSeq_" + clean_name + "_" + cpp_make_seq->_seq_name;
+            MakeSeq *make_seq = new MakeSeq(wrapper_name, cpp_make_seq);
+            _make_seqs.push_back(make_seq);
 
-          // Also add to the interrogate database.
-          builder.get_make_seq(cpp_make_seq, stype);
+            // Also add to the interrogate database.
+            builder.get_make_seq(cpp_make_seq, stype);
+          }
         }
       }
     }
@@ -246,26 +248,20 @@ void InterfaceMaker::
 generate_wrappers() {
   InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
 
-
   // We use a while loop rather than a simple for loop, because we
   // might increase the number of types recursively during the
   // traversal.
   int ti = 0;
-  while (ti < idb->get_num_all_types())
-  {
-        TypeIndex type_index = idb->get_all_type(ti);
-        record_object(type_index);
+  while (ti < idb->get_num_all_types()) {
+    TypeIndex type_index = idb->get_all_type(ti);
+    record_object(type_index);
 
-
-         if(interrogate_type_is_enum(ti))
-         {
-             int enum_count = interrogate_type_number_of_enum_values(ti);
-             for(int xx = 0; xx< enum_count; xx++)
-             {
-//                 printf("   PyModule_AddIntConstant(module,\"%s\",%d)\n",interrogate_type_enum_value_name(ti,xx),interrogate_type_enum_value(ti,xx));
-             }
-         }
-
+    if (interrogate_type_is_enum(ti)) {
+      int enum_count = interrogate_type_number_of_enum_values(ti);
+      for (int xx = 0; xx < enum_count; ++xx) {
+//        printf("   PyModule_AddIntConstant(module,\"%s\",%d)\n",interrogate_type_enum_value_name(ti,xx),interrogate_type_enum_value(ti,xx));
+      }
+    }
 
     ++ti;
 //    printf(" New Type %d\n",ti);
@@ -273,54 +269,43 @@ generate_wrappers() {
 
   int num_global_elements = idb->get_num_global_elements();
   for (int gi = 0; gi < num_global_elements; ++gi) {
-    printf(" Global Type = %d",gi);
+    printf(" Global Type = %d", gi);
     TypeIndex type_index = idb->get_global_element(gi);
     record_object(type_index);
   }
 
   int num_functions = idb->get_num_global_functions();
-  for (int fi = 0; fi < num_functions; fi++) 
-  {
+  for (int fi = 0; fi < num_functions; fi++) {
     FunctionIndex func_index = idb->get_global_function(fi);
     record_function(dummy_type, func_index);
-  }    
-
-
+  }
 
   int num_manifests = idb->get_num_global_manifests();
-  for (int mi = 0; mi < num_manifests; mi++) 
-  {
+  for (int mi = 0; mi < num_manifests; mi++) {
     ManifestIndex manifest_index = idb->get_global_manifest(mi);
     const InterrogateManifest &iman = idb->get_manifest(manifest_index);
-    if (iman.has_getter()) 
-    {
+    if (iman.has_getter()) {
       FunctionIndex func_index = iman.get_getter();
       record_function(dummy_type, func_index);
     }
-    printf(" Manafests %d\n",mi);
-  }    
-
-
+    printf(" Manifests %d\n", mi);
+  }
 
   int num_elements = idb->get_num_global_elements();
-  for (int ei = 0; ei < num_elements; ei++) 
-  {
-    printf(" Element %d\n",ei);
+  for (int ei = 0; ei < num_elements; ei++) {
+    printf(" Element %d\n", ei);
 
     ElementIndex element_index = idb->get_global_element(ei);
     const InterrogateElement &ielement = idb->get_element(element_index);
-    if (ielement.has_getter()) 
-    {
+    if (ielement.has_getter()) {
       FunctionIndex func_index = ielement.get_getter();
       record_function(dummy_type, func_index);
     }
-    if (ielement.has_setter()) 
-    {
+    if (ielement.has_setter()) {
       FunctionIndex func_index = ielement.get_setter();
       record_function(dummy_type, func_index);
     }
   }    
-
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -492,6 +477,19 @@ separate_overloading() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: InterfaceMaker::wrap_global_functions
+//       Access: Public, Virtual
+//  Description: This method should be overridden and redefined to
+//               return false for interfaces that don't support
+//               global functions and should therefore will only
+//               accept function remaps that have a class associated.
+////////////////////////////////////////////////////////////////////
+bool InterfaceMaker::
+wrap_global_functions() {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: InterfaceMaker::get_function_remaps
 //       Access: Public
 //  Description: Fills up the indicated vector with all of the
@@ -625,21 +623,17 @@ record_function(const InterrogateType &itype, FunctionIndex func_index) {
   Function *func = new Function(wrapper_name, itype, ifunc);
   _functions.push_back(func);
 
-
-//  printf(" Function Name = %s\n",ifunc.get_name().c_str());
+//  printf(" Function Name = %s\n", ifunc.get_name().c_str());
 
   // Now get all the valid FunctionRemaps for the function.
-  if (ifunc._instances != (InterrogateFunction::Instances *)NULL) 
-  {
+  if (ifunc._instances != (InterrogateFunction::Instances *)NULL) {
     InterrogateFunction::Instances::const_iterator ii;
-    for (ii = ifunc._instances->begin();ii != ifunc._instances->end();++ii) 
-    {
+    for (ii = ifunc._instances->begin(); ii != ifunc._instances->end(); ++ii) {
       CPPInstance *cppfunc = (*ii).second;
       CPPFunctionType *ftype = cppfunc->_type->as_function_type();
       int max_default_parameters = 0;
       
-      if (separate_overloading()) 
-      {
+      if (separate_overloading()) {
         // Count up the number of default parameters this function might
         // take.
         CPPParameterList *parameters = ftype->_parameters;
