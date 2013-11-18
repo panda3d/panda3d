@@ -134,12 +134,16 @@ add_func_modifier(CPPParameterList *params, int flags) {
   // is really a unary operator, so set the unary_op flag.  Operators
   // () and [] are never considered unary operators.
   if (_ident != NULL && 
-      _ident->get_simple_name().substr(0, 9) == "operator " &&
-      _ident->get_simple_name() != string("operator ()") &&
-      _ident->get_simple_name() != string("operator []")) {
-    if (params->_parameters.empty()) {
-      flags |= CPPFunctionType::F_unary_op;
+      _ident->get_simple_name().substr(0, 9) == "operator ") {
+
+    if (_ident->get_simple_name() != string("operator ()") &&
+        _ident->get_simple_name() != string("operator []")) {
+      if (params->_parameters.empty()) {
+        flags |= CPPFunctionType::F_unary_op;
+      }
     }
+
+    flags |= CPPFunctionType::F_operator;
   }
 
   _modifiers.push_back(Modifier::func_type(params, flags));
