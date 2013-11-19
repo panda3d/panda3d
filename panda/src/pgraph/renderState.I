@@ -550,8 +550,9 @@ operator = (const Attribute &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE int RenderState::Attribute::
 compare_to(const Attribute &other) const {
-  if (_attrib != other._attrib) {
-    return _attrib < other._attrib ? -1 : 1;
+  int c = _attrib->compare_to(*other._attrib);
+  if (c != 0) {
+    return c;
   }
   return _override - other._override;
 }
