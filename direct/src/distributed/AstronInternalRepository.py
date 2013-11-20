@@ -205,9 +205,9 @@ class AstronInternalRepository(ConnectionRepository):
             return
 
         do = self.doId2do[doId]
-        do.sendDeleteEvent()
         self.removeDOFromTables(do)
         do.delete()
+        do.sendDeleteEvent()
 
     def sendUpdate(self, do, fieldName, args):
         """
