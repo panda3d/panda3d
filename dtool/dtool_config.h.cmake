@@ -261,7 +261,7 @@
 
 /* The compiled-in character(s) to expect to separate different
    components of a path list (e.g. $PRC_PATH). */
-#cmakedefine DEFAULT_PATHSEP
+#define DEFAULT_PATHSEP "@DEFAULT_PATHSEP@"
 
 /* Many of the prc variables are exported by
    dtool/src/prc/prc_parameters.h.pp, instead of here.  Only those prc
