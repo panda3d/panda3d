@@ -40,3 +40,6 @@ set(DEFAULT_PRC_DIR "${INSTALL_DIR}/etc" CACHE STRING "Panda uses prc files for 
 include(${CMAKE_CURRENT_LIST_DIR}/Configure.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/src/dtoolbase/Sources.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/src/dtoolutil/Sources.cmake)
+
+## Include dtool metalibs ##
+include(${CMAKE_CURRENT_LIST_DIR}/metalibs/dtool/Sources.cmake)
