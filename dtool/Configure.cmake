@@ -54,8 +54,8 @@ endif()
 
 
 # Check for and configure PNG library
-find_package(PNG QUIET COMPONENTS png)
 # Mangle the builtin FindPNG output to match Panda3D's config-style
+find_package(PNG QUIET COMPONENTS png)
 include(ManglePNG)
 if(HAVE_PNG)
     message(STATUS "+ libpng")
