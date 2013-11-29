@@ -74,11 +74,16 @@ else()
     message(STATUS "- Did not find libtiff")
 endif()
 
+
+# Check for and configure TAR library
+find_package(Tar QUIET COMPONENTS tar)
 if(HAVE_TAR)
     message(STATUS "+ libtar")
 else()
     message(STATUS "- Did not find libtar")
 endif()
+
+
 
 if(HAVE_FFTW)
     message(STATUS "+ fftw")
