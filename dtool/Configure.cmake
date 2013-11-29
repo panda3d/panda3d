@@ -3,7 +3,7 @@ message("Configuring support for the following optional third-party packages:")
 
 
 # Check for and configure Eigen library
-find_package(Eigen3 QUIET)
+find_package(Eigen3)
 if(HAVE_EIGEN)
     message(STATUS "+ Eigen linear algebra library")
     if(WIN32)
@@ -76,7 +76,7 @@ endif()
 
 
 # Check for and configure TAR library
-find_package(Tar QUIET COMPONENTS tar)
+find_package(Tar)
 if(HAVE_TAR)
     message(STATUS "+ libtar")
 else()

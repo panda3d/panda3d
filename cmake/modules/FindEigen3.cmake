@@ -15,66 +15,63 @@
 #  EIGEN_VERSION - eigen version
 #
 
-if(NOT Eigen3_FIND_VERSION)
-	if(NOT Eigen3_FIND_VERSION_MAJOR)
-		set(Eigen3_FIND_VERSION_MAJOR 2)
-	endif(NOT Eigen3_FIND_VERSION_MAJOR)
-	if(NOT Eigen3_FIND_VERSION_MINOR)
-		set(Eigen3_FIND_VERSION_MINOR 91)
-	endif(NOT Eigen3_FIND_VERSION_MINOR)
-	if(NOT Eigen3_FIND_VERSION_PATCH)
-		set(Eigen3_FIND_VERSION_PATCH 0)
-	endif(NOT Eigen3_FIND_VERSION_PATCH)
+if(NOT EIGEN_FIND_VERSION)
+	if(NOT EIGEN_FIND_VERSION_MAJOR)
+		set(EIGEN_FIND_VERSION_MAJOR 2)
+	endif()
+	if(NOT EIGEN_FIND_VERSION_MINOR)
+		set(EIGEN_FIND_VERSION_MINOR 91)
+	endif()
+	if(NOT EIGEN_FIND_VERSION_PATCH)
+		set(EIGEN_FIND_VERSION_PATCH 0)
+	endif()
 
-	set(Eigen3_FIND_VERSION "${Eigen3_FIND_VERSION_MAJOR}.${Eigen3_FIND_VERSION_MINOR}.${Eigen3_FIND_VERSION_PATCH}")
-endif(NOT Eigen3_FIND_VERSION)
+	set(EIGEN_FIND_VERSION "${EIGEN_FIND_VERSION_MAJOR}.${EIGEN_FIND_VERSION_MINOR}.${EIGEN_FIND_VERSION_PATCH}")
+endif()
 
-macro(_eigen3_check_version)
-	file(READ "${EIGEN_IPATH}/Eigen/src/Core/util/Macros.h" _eigen3_version_header)
 
-	string(REGEX MATCH "define[ \t]+EIGEN_WORLD_VERSION[ \t]+([0-9]+)" _eigen3_world_version_match "${_eigen3_version_header}")
-	set(EIGEN3_WORLD_VERSION "${CMAKE_MATCH_1}")
-	string(REGEX MATCH "define[ \t]+EIGEN_MAJOR_VERSION[ \t]+([0-9]+)" _eigen3_major_version_match "${_eigen3_version_header}")
-	set(EIGEN3_MAJOR_VERSION "${CMAKE_MATCH_1}")
-	string(REGEX MATCH "define[ \t]+EIGEN_MINOR_VERSION[ \t]+([0-9]+)" _eigen3_minor_version_match "${_eigen3_version_header}")
-	set(EIGEN3_MINOR_VERSION "${CMAKE_MATCH_1}")
+macro(_eigen_check_version)
+	# Read version from Macros.h
+	file(READ "${EIGEN_IPATH}/Eigen/src/Core/util/Macros.h" _eigen_version_header)
 
-	set(EIGEN_VERSION ${EIGEN3_WORLD_VERSION}.${EIGEN3_MAJOR_VERSION}.${EIGEN3_MINOR_VERSION})
-	if(${EIGEN_VERSION} VERSION_LESS ${Eigen3_FIND_VERSION})
+	# Parse version from read data
+	string(REGEX MATCH "define[ \t]+EIGEN_WORLD_VERSION[ \t]+([0-9]+)" _eigen_world_version_match "${_eigen_version_header}")
+	set(EIGEN_WORLD_VERSION "${CMAKE_MATCH_1}")
+	string(REGEX MATCH "define[ \t]+EIGEN_MAJOR_VERSION[ \t]+([0-9]+)" _eigen_major_version_match "${_eigen_version_header}")
+	set(EIGEN_MAJOR_VERSION "${CMAKE_MATCH_1}")
+	string(REGEX MATCH "define[ \t]+EIGEN_MINOR_VERSION[ \t]+([0-9]+)" _eigen_minor_version_match "${_eigen_version_header}")
+	set(EIGEN_MINOR_VERSION "${CMAKE_MATCH_1}")
+
+	# Set EIGEN_VERSION
+	set(EIGEN_VERSION ${EIGEN_WORLD_VERSION}.${EIGEN_MAJOR_VERSION}.${EIGEN_MINOR_VERSION})
+
+	# Make sure Eigen Version is at least the requested version
+	if(${EIGEN_VERSION} VERSION_LESS ${EIGEN_FIND_VERSION})
 		set(EIGEN_VERSION_OK FALSE)
-	else(${EIGEN_VERSION} VERSION_LESS ${Eigen3_FIND_VERSION})
+	else(${EIGEN_VERSION} VERSION_LESS ${EIGEN_FIND_VERSION})
 		set(EIGEN_VERSION_OK TRUE)
-	endif(${EIGEN_VERSION} VERSION_LESS ${Eigen3_FIND_VERSION})
+	endif(${EIGEN_VERSION} VERSION_LESS ${EIGEN_FIND_VERSION})
+endmacro()
 
-	if(NOT EIGEN_VERSION_OK)
 
-		message(STATUS "Eigen3 version ${EIGEN_VERSION} found in ${EIGEN_IPATH}, "
-									 "but at least version ${Eigen3_FIND_VERSION} is required")
-	endif(NOT EIGEN_VERSION_OK)
-endmacro(_eigen3_check_version)
-
-if (EIGEN_IPATH)
-
-	# in cache already
-	_eigen3_check_version()
+if(EIGEN_IPATH)
+	# If already in cache, just check that the version is correct
+	_eigen_check_version()
 	set(HAVE_EIGEN ${EIGEN_VERSION_OK})
+else()
+	# Otherwise find it manually
+	find_path(EIGEN_IPATH
+		NAMES signature_of_eigen3_matrix_library
+		PATHS ${CMAKE_INSTALL_PREFIX}/include
+		      ${KDE4_INCLUDE_DIR}
+		PATH_SUFFIXES eigen3 eigen
+	)
 
-else (EIGEN_IPATH)
-
-	find_path(EIGEN_IPATH NAMES signature_of_eigen3_matrix_library
-			PATHS
-				${CMAKE_INSTALL_PREFIX}/include
-				${KDE4_INCLUDE_DIR}
-			PATH_SUFFIXES eigen3 eigen
-		)
-
+	# Checking to make sure it has the write version
 	if(EIGEN_IPATH)
-		_eigen3_check_version()
-	endif(EIGEN_IPATH)
-
-	include(FindPackageHandleStandardArgs)
-	find_package_handle_standard_args(Eigen3 DEFAULT_MSG EIGEN_IPATH EIGEN_VERSION_OK)
+		_eigen_check_version()
+		set(HAVE_EIGEN ${EIGEN_VERSION_OK})
+	endif()
 
 	mark_as_advanced(EIGEN_IPATH)
-
-endif(EIGEN_IPATH)
+endif()
