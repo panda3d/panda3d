@@ -15,4 +15,4 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
 
 ## Include Panda3D Packages ##
-include(${CMAKE_SOURCE_DIR}/dtool/Package.cmake)
+add_subdirectory(dtool)
