@@ -1,8 +1,18 @@
 message(STATUS "")
 message("Configuring support for the following optional third-party packages:")
 
+
+# Check for and configure Eigen library
+find_package(Eigen3 QUIET)
 if(HAVE_EIGEN)
     message(STATUS "+ Eigen linear algebra library")
+    if(WIN32)
+        set(EIGEN_CFLAGS "/arch:SSE2")
+    else()
+        set(EIGEN_CFLAGS "-msse2")
+    endif()
+
+    set(LINMATH_ALIGN ON CACHE BOOL "If on, vectorization is enabled in build.")
     if(LINMATH_ALIGN)
         message(STATUS "+   (vectorization enabled in build)")
     else()
@@ -12,24 +22,49 @@ else()
     message(STATUS "- Did not find Eigen linear algebra library")
 endif()
 
-#find_package(OpenSSL ssl crypto)
+
+# Check for and configure OpenSSL library
+# Mangle the builtin FindOpenSSL output to match Panda3D's config-style
+find_package(OpenSSL QUIET COMPONENTS ssl crypto)
+include(MangleOpenSSL)
 if(HAVE_OPENSSL)
     message(STATUS "+ OpenSSL")
+
+    if(NOT DEFINED OPTIMIZE OR OPTIMIZE LESS 4)
+        set(REPORT_OPENSSL_ERRORS ON CACHE BOOL "If on, OpenSSL reports verbose error messages when they occur.")
+    else()
+        set(REPORT_OPENSSL_ERRORS OFF CACHE BOOL "If on, OpenSSL reports verbose error messages when they occur.")
+    endif()
 else()
     message(STATUS "- Did not find OpenSSL")
 endif()
 
+
+# Check for and configure JPEG library
+# Mangle the builtin FindJPEG output to match Panda3D's config-style
+find_package(JPEG QUIET COMPONENTS jpeg)
+include(MangleJPEG)
 if(HAVE_JPEG)
     message(STATUS "+ libjpeg")
+    set(PHAVE_JPEGINT_H TRUE CACHE BOOL "Set to False if missing jpegint.h.")
 else()
     message(STATUS "- Did not find libjpeg")
+    unset(PHAVE_JPEGINT_H CACHE)
 endif()
 
+
+# Check for and configure PNG library
+find_package(PNG QUIET COMPONENTS png)
+# Mangle the builtin FindPNG output to match Panda3D's config-style
+include(ManglePNG)
 if(HAVE_PNG)
     message(STATUS "+ libpng")
 else()
     message(STATUS "- Did not find libpng")
 endif()
+
+
+
 
 if(HAVE_TIFF)
     message(STATUS "+ libtiff")
