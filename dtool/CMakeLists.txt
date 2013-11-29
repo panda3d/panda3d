@@ -44,6 +44,7 @@ add_subdirectory(src/prc)
 add_subdirectory(src/dconfig)
 add_subdirectory(src/pystub)
 add_subdirectory(src/cppparser)
+add_subdirectory(src/interrogatedb)
 
 ## Include dtool metalibs ##
 add_subdirectory(metalibs/dtool)
