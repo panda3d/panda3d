@@ -17,6 +17,8 @@
 
 #include "dtoolbase.h"
 
+#include "cppMakeSeq.h"
+
 #include "interrogate_interface.h"
 #include "interrogate_request.h"
 #include "functionWriters.h"

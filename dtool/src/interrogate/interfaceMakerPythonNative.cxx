@@ -17,6 +17,7 @@
 #include "parameterRemapUnchanged.h"
 #include "typeManager.h"
 
+#include "pnotify.h" // For nout
 #include "interrogateDatabase.h"
 #include "interrogateType.h"
 #include "interrogateFunction.h"
