@@ -18,7 +18,8 @@ set(P3CPPPARSER_HEADERS
 	cppTypeProxy.h cppTypedef.h cppUsing.h cppVisibility.h)
 
 set(P3CPPPARSER_SOURCES
-	cppArrayType.cxx cppBison.cxx cppClassTemplateParameter.cxx
+	cppArrayType.cxx ${CMAKE_CURRENT_BINARY_DIR}/cppBison.cxx
+	cppClassTemplateParameter.cxx
 	cppCommentBlock.cxx cppConstType.cxx cppDeclaration.cxx
 	cppEnumType.cxx cppExpression.cxx cppExpressionParser.cxx
 	cppExtensionType.cxx cppFile.cxx cppFunctionGroup.cxx
@@ -34,15 +35,15 @@ set(P3CPPPARSER_SOURCES
 	cppTypeParser.cxx cppTypeProxy.cxx cppTypedef.cxx
 	cppUsing.cxx cppVisibility.cxx)
 
-if(HAVE_INTERROGATE)
-	find_package(BISON)
-	bison_target(cppParser
-		cppBison.yxx
-		cppBison.cxx
-		COMPILE_FLAGS --defines=cppBison.h)
+find_package(BISON)
+bison_target(cppParser
+	cppBison.yxx
+	${CMAKE_CURRENT_BINARY_DIR}/cppBison.cxx
+	COMPILE_FLAGS --defines=${CMAKE_CURRENT_BINARY_DIR}/cppBison.h)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(${CMAKE_CURRENT_LIST_DIR})
 
-	add_library(p3cppParser STATIC
-		${P3CPPPARSER_HEADERS}
-		${P3CPPPARSER_SOURCES})
-	add_dependencies(p3cppParser cppParser)
-endif()
+add_library(p3cppParser STATIC
+	${P3CPPPARSER_HEADERS}
+	${P3CPPPARSER_SOURCES})
+add_dependencies(p3cppParser cppParser)
