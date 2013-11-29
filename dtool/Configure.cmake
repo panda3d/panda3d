@@ -64,8 +64,10 @@ else()
 endif()
 
 
-
-
+# Check for and configure TIFF library
+# Mangle the builtin FindTIFF output to match Panda3D's config-style
+find_package(TIFF QUIET COMPONENTS tiff z)
+include(MangleTIFF)
 if(HAVE_TIFF)
     message(STATUS "+ libtiff")
 else()
