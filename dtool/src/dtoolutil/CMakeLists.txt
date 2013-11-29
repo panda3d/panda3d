@@ -1,16 +1,18 @@
-include_directories(${CMAKE_CURRENT_LIST_DIR}/../dtoolbase)
+include_directories(../dtoolbase)
 
-configure_file(${CMAKE_CURRENT_LIST_DIR}/pandaVersion.h.cmake
-               ${CMAKE_CURRENT_LIST_DIR}/pandaVersion.h)
+configure_file(pandaVersion.h.cmake
+               pandaVersion.h)
 
-configure_file(${CMAKE_CURRENT_LIST_DIR}/checkPandaVersion.h.cmake
-               ${CMAKE_CURRENT_LIST_DIR}/checkPandaVersion.h)
+configure_file(checkPandaVersion.h.cmake
+               checkPandaVersion.h)
 
-configure_file(${CMAKE_CURRENT_LIST_DIR}/checkPandaVersion.cxx.cmake
-               ${CMAKE_CURRENT_LIST_DIR}/checkPandaVersion.cxx)
+configure_file(checkPandaVersion.cxx.cmake
+               checkPandaVersion.cxx)
 
-set(P3DTOOLUTIL_HEADER_FILES
-	checkPandaVersion.h
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
+set(P3DTOOLUTIL_HEADERS
+	${CMAKE_CURRENT_BINARY_DIR}/checkPandaVersion.h
 	config_dtoolutil.h
 	dSearchPath.I dSearchPath.h
 	executionEnvironment.I executionEnvironment.h filename.I 
@@ -32,12 +34,12 @@ set(P3DTOOLUTIL_HEADER_FILES
 )
 
 if(APPLE)
-	set(P3DTOOL_HEADER_FILES ${P3DTOOL_HEADER_FILES}
+	set(P3DTOOLUTIL_HEADERS ${P3DTOOLUTIL_HEADERS}
 		filename_assist.mm filename_assist.h)
 endif()
 
-set(P3DTOOLUTIL_SOURCE_FILES
-	checkPandaVersion.cxx
+set(P3DTOOLUTIL_SOURCES
+	${CMAKE_CURRENT_BINARY_DIR}/checkPandaVersion.cxx
 	config_dtoolutil.cxx
 	dSearchPath.cxx
 	executionEnvironment.cxx filename.cxx
@@ -55,14 +57,7 @@ set(P3DTOOLUTIL_SOURCE_FILES
 	win32ArgParser.cxx
 )
 
-foreach(FILENAME IN LISTS P3DTOOLUTIL_HEADER_FILES)
-	set(P3DTOOLUTIL_INSTALL_HEADERS ${P3DTOOLUTIL_INSTALL_HEADERS} ${CMAKE_CURRENT_LIST_DIR}/${FILENAME})
-endforeach()
-foreach(FILENAME IN LISTS P3DTOOLUTIL_SOURCE_FILES)
-	set(P3DTOOLUTIL_SOURCES ${P3DTOOLUTIL_SOURCES} ${CMAKE_CURRENT_LIST_DIR}/${FILENAME})
-endforeach()
-
 add_library(p3dtoolutil STATIC
-	${P3DTOOLUTIL_INSTALL_HEADERS}
+	${P3DTOOLUTIL_HEADERS}
 	${P3DTOOLUTIL_SOURCES}
 )

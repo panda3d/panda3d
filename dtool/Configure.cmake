@@ -396,5 +396,5 @@ else()
 	set(DEFAULT_PATHSEP ":")
 endif()
 
-configure_file(${CMAKE_CURRENT_LIST_DIR}/dtool_config.h.cmake ${CMAKE_BINARY_DIR}/include/dtool_config.h)
+configure_file(dtool_config.h.cmake ${CMAKE_BINARY_DIR}/include/dtool_config.h)
 include_directories("${CMAKE_BINARY_DIR}/include")

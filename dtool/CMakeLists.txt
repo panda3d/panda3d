@@ -35,7 +35,7 @@ set(DTOOL_INSTALL "${INSTALL_DIR}" CACHE STRING "The directory in which to insta
 
 set(DEFAULT_PRC_DIR "${INSTALL_DIR}/etc" CACHE STRING "Panda uses prc files for runtime configuration. Panda will search the default .prc directory if the PRC_PATH and PRC_DIR environment variables are not defined.")
 
-include(${CMAKE_CURRENT_LIST_DIR}/Configure.cmake)
+include(Configure.cmake)
 
 ## Include dtool subpackages ##
 add_subdirectory(src/dtoolbase)

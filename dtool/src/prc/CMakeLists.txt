@@ -1,13 +1,14 @@
-include_directories(${CMAKE_CURRENT_LIST_DIR}/../dtoolutil)
-include_directories(${CMAKE_CURRENT_LIST_DIR}/../dtoolbase)
+include_directories(../dtoolutil)
+include_directories(../dtoolbase)
 
 set(PRC_DCONFIG_TRUST_LEVEL 0 CACHE STRING "The trust level value for any legacy (DConfig) variables.")
 set(PRC_INC_TRUST_LEVEL 0 CACHE STRING "The amount by which we globally increment the trust level.")
 
-configure_file(${CMAKE_CURRENT_LIST_DIR}/prc_parameters.h.cmake
-               ${CMAKE_CURRENT_LIST_DIR}/prc_parameters.h)
+configure_file(prc_parameters.h.cmake
+               prc_parameters.h)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-set(P3PRC_HEADER_FILES
+set(P3PRC_HEADERS
 	bigEndian.h
 	config_prc.h
 	configDeclaration.I configDeclaration.h
@@ -39,9 +40,9 @@ set(P3PRC_HEADER_FILES
 	streamReader.I streamReader.h
 	streamWrapper.I streamWrapper.h
 	streamWriter.I streamWriter.h
-	prc_parameters.h)
+	${CMAKE_CURRENT_BINARY_DIR}/prc_parameters.h)
 
-set(P3PRC_SOURCE_FILES
+set(P3PRC_SOURCES
 	config_prc.cxx
 	configDeclaration.cxx
 	configFlags.cxx
@@ -68,13 +69,6 @@ set(P3PRC_SOURCE_FILES
 	prcKeyRegistry.cxx
 	reversedNumericData.cxx
 	streamReader.cxx streamWrapper.cxx streamWriter.cxx)
-
-foreach(FILENAME IN LISTS P3PRC_HEADER_FILES)
-	set(P3PRC_HEADERS ${P3PRC_HEADERS} ${CMAKE_CURRENT_LIST_DIR}/${FILENAME})
-endforeach()
-foreach(FILENAME IN LISTS P3PRC_SOURCE_FILES)
-	set(P3PRC_SOURCES ${P3PRC_SOURCES} ${CMAKE_CURRENT_LIST_DIR}/${FILENAME})
-endforeach()
 
 add_library(p3prc STATIC
 	${P3PRC_HEADERS}

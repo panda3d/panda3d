@@ -1,7 +1,7 @@
-include_directories(${CMAKE_CURRENT_LIST_DIR}/../dtoolutil)
-include_directories(${CMAKE_CURRENT_LIST_DIR}/../dtoolbase)
+include_directories(../dtoolutil)
+include_directories(../dtoolbase)
 
-set(P3CPPPARSER_HEADER_FILES
+set(P3CPPPARSER_HEADERS
 	cppArrayType.h cppBison.yxx cppBisonDefs.h
 	cppClassTemplateParameter.h cppCommentBlock.h cppConstType.h
 	cppDeclaration.h cppEnumType.h cppExpression.h
@@ -17,7 +17,7 @@ set(P3CPPPARSER_HEADER_FILES
 	cppType.h cppTypeDeclaration.h cppTypeParser.h
 	cppTypeProxy.h cppTypedef.h cppUsing.h cppVisibility.h)
 
-set(P3CPPPARSER_SOURCE_FILES
+set(P3CPPPARSER_SOURCES
 	cppArrayType.cxx cppBison.cxx cppClassTemplateParameter.cxx
 	cppCommentBlock.cxx cppConstType.cxx cppDeclaration.cxx
 	cppEnumType.cxx cppExpression.cxx cppExpressionParser.cxx
@@ -34,19 +34,12 @@ set(P3CPPPARSER_SOURCE_FILES
 	cppTypeParser.cxx cppTypeProxy.cxx cppTypedef.cxx
 	cppUsing.cxx cppVisibility.cxx)
 
-foreach(FILENAME IN LISTS P3CPPPARSER_HEADER_FILES)
-	set(P3CPPPARSER_HEADERS ${P3CPPPARSER_HEADERS} ${CMAKE_CURRENT_LIST_DIR}/${FILENAME})
-endforeach()
-foreach(FILENAME IN LISTS P3CPPPARSER_SOURCE_FILES)
-	set(P3CPPPARSER_SOURCES ${P3CPPPARSER_SOURCES} ${CMAKE_CURRENT_LIST_DIR}/${FILENAME})
-endforeach()
-
 if(HAVE_INTERROGATE)
 	find_package(BISON)
 	bison_target(cppParser
-		${CMAKE_CURRENT_LIST_DIR}/cppBison.yxx
-		${CMAKE_CURRENT_LIST_DIR}/cppBison.cxx
-		COMPILE_FLAGS --defines=${CMAKE_CURRENT_LIST_DIR}/cppBison.h)
+		cppBison.yxx
+		cppBison.cxx
+		COMPILE_FLAGS --defines=cppBison.h)
 
 	add_library(p3cppParser STATIC
 		${P3CPPPARSER_HEADERS}
