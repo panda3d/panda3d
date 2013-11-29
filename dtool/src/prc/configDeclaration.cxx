@@ -14,6 +14,7 @@
 
 #include "configDeclaration.h"
 #include "configVariableCore.h"
+#include "config_prc.h"
 #include "pstrtod.h"
 
 

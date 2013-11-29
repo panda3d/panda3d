@@ -40,6 +40,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/Configure.cmake)
 ## Include dtool subpackages ##
 add_subdirectory(src/dtoolbase)
 add_subdirectory(src/dtoolutil)
+add_subdirectory(src/prc)
 
 ## Include dtool metalibs ##
 add_subdirectory(metalibs/dtool)
