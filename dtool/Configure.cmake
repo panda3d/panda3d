@@ -3,127 +3,63 @@ message("Configuring support for the following optional third-party packages:")
 
 include(ConfigurePackage)
 
-# Check for and configure Eigen library
+# Find and configure Eigen library
 find_package(Eigen3)
-if(FOUND_EIGEN)
-	set(USE_EIGEN TRUE CACHE BOOL "If true, compile Panda3D with eigen")
-	if(USE_EIGEN)
-		set(HAVE_EIGEN TRUE)
-	endif()
-endif()
+config_package(EIGEN COMMENT "eigen")
 if(HAVE_EIGEN)
-	message(STATUS "+ Eigen linear algebra library")
 	if(WIN32)
 		set(EIGEN_CFLAGS "/arch:SSE2")
 	else()
 		set(EIGEN_CFLAGS "-msse2")
 	endif()
 
-	set(LINMATH_ALIGN ON CACHE BOOL "If on, vectorization is enabled in build.")
-	if(LINMATH_ALIGN)
+	if(NOT DEFINED LINMATH_ALIGN)
 		message(STATUS "+   (vectorization enabled in build)")
-	else()
-		message(STATUS "-   (vectorization NOT enabled in build)")
 	endif()
+	set(LINMATH_ALIGN ON CACHE BOOL "If on, vectorization is enabled in build.")
 else()
-	message(STATUS "- Did not find Eigen linear algebra library")
+	unset(LINMATH_ALIGN CACHE)
 endif()
 
-
-# Check for and configure OpenSSL library
-# Mangle the builtin FindOpenSSL output to match Panda3D's config-style
+# Find and configure OpenSSL library
 find_package(OpenSSL QUIET COMPONENTS ssl crypto)
-include(MangleOpenSSL)
-if(FOUND_OPENSSL)
-	set(USE_OPENSSL TRUE CACHE BOOL "If true, compile Panda3D with OpenSSL")
-	if(USE_OPENSSL)
-		set(HAVE_OPENSSL TRUE)
-	endif()
-endif()
+mangle_package(OpenSSL)
+config_package(OPENSSL COMMENT "OpenSSL")
 if(HAVE_OPENSSL)
-	message(STATUS "+ OpenSSL")
-
 	if(NOT DEFINED OPTIMIZE OR OPTIMIZE LESS 4)
 		set(REPORT_OPENSSL_ERRORS ON CACHE BOOL "If on, OpenSSL reports verbose error messages when they occur.")
 	else()
 		set(REPORT_OPENSSL_ERRORS OFF CACHE BOOL "If on, OpenSSL reports verbose error messages when they occur.")
 	endif()
 else()
-	message(STATUS "- Did not find OpenSSL")
+	unset(REPORT_OPENSSL_ERRORS CACHE)
 endif()
 
-
-# Check for and configure JPEG library
-# Mangle the builtin FindJPEG output to match Panda3D's config-style
+# Find and configure JPEG library
 find_package(JPEG QUIET COMPONENTS jpeg)
-include(MangleJPEG)
-if(FOUND_JPEG)
-	set(USE_JPEG TRUE CACHE BOOL "If true, compile Panda3D with libjpeg")
-	if(USE_JPEG)
-		set(HAVE_JPEG TRUE)
-	endif()
-endif()
-if(HAVE_JPEG)
-	message(STATUS "+ libjpeg")
-	set(PHAVE_JPEGINT_H TRUE CACHE BOOL "Set to False if missing jpegint.h.")
-else()
-	message(STATUS "- Did not find libjpeg")
-	unset(PHAVE_JPEGINT_H CACHE)
-endif()
+mangle_package(JPEG)
+config_package(JPEG COMMENT "libjpeg")
 
-
-# Check for and configure PNG library
-# Mangle the builtin FindPNG output to match Panda3D's config-style
+# Find and configure PNG library
 find_package(PNG QUIET COMPONENTS png)
-include(ManglePNG)
-if(FOUND_PNG)
-	set(USE_PNG TRUE CACHE BOOL "If true, compile Panda3D with libpng")
-	if(USE_PNG)
-		set(HAVE_PNG TRUE)
-	endif()
-endif()
-if(HAVE_PNG)
-	message(STATUS "+ libpng")
-else()
-	message(STATUS "- Did not find libpng")
-endif()
+mangle_package(PNG)
+config_package(PNG COMMENT "libpng")
 
-
-# Check for and configure TIFF library
-# Mangle the builtin FindTIFF output to match Panda3D's config-style
+# Find and configure TIFF library
 find_package(TIFF QUIET COMPONENTS tiff z)
 mangle_package(TIFF)
-if(FOUND_TIFF)
-	set(USE_TIFF TRUE CACHE BOOL "If true, compile Panda3D with libtiff")
-	if(USE_TIFF)
-		set(HAVE_TIFF TRUE)
-	endif()
-endif()
-if(HAVE_TIFF)
-	message(STATUS "+ libtiff")
-else()
-	message(STATUS "- Did not find libtiff")
-endif()
+config_package(TIFF COMMENT "libtiff")
 
-
-# Check for and configure Tar library
+# Find and configure Tar library
 find_package(Tar)
 config_package(TAR COMMENT "libtar")
 
-
-# Check for and configure FFTW library
+# Find and configure FFTW library
 find_package(FFTW)
-if(FOUND_FFTW)
-	set(USE_FFTW TRUE CACHE BOOL "If true, compile Panda3D with fftw")
-	if(USE_FFTW)
-		set(HAVE_FFTW TRUE)
-	endif()
-endif()
-if(HAVE_FFTW)
-	message(STATUS "+ fftw")
-else()
-	message(STATUS "- Did not find fftw")
-endif()
+config_package(FFTW COMMENT "fftw")
+
+
+
 
 if(FOUND_SQUISH)
 	set(USE_SQUISH TRUE CACHE BOOL "If true, compile Panda3D with squish")

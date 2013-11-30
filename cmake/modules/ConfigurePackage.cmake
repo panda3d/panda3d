@@ -49,6 +49,7 @@ function(config_package PKG_NAME)
 	if(FOUND_${PKG_NAME})
 		# Output success after finding the package for the first time
 		if(NOT DEFINED USE_${PKG_NAME})
+			message(STATUS "+ ${DISPLAY_NAME}")
 		endif()
 
 		# Add a USE_XYZZY config variable to the cache
