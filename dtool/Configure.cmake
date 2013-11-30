@@ -1,6 +1,7 @@
 message(STATUS "")
 message("Configuring support for the following optional third-party packages:")
 
+include(ConfigurePackage)
 
 # Check for and configure Eigen library
 find_package(Eigen3)
@@ -91,7 +92,7 @@ endif()
 # Check for and configure TIFF library
 # Mangle the builtin FindTIFF output to match Panda3D's config-style
 find_package(TIFF QUIET COMPONENTS tiff z)
-include(MangleTIFF)
+mangle_package(TIFF)
 if(FOUND_TIFF)
 	set(USE_TIFF TRUE CACHE BOOL "If true, compile Panda3D with libtiff")
 	if(USE_TIFF)
@@ -107,17 +108,7 @@ endif()
 
 # Check for and configure Tar library
 find_package(Tar)
-if(FOUND_TAR)
-	set(USE_TAR TRUE CACHE BOOL "If true, compile Panda3D with libtar")
-	if(USE_TAR)
-		set(HAVE_TAR TRUE)
-	endif()
-endif()
-if(HAVE_TAR)
-	message(STATUS "+ libtar")
-else()
-	message(STATUS "- Did not find libtar")
-endif()
+config_package(TAR COMMENT "libtar")
 
 
 # Check for and configure FFTW library
