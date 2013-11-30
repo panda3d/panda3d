@@ -6,6 +6,9 @@ include_directories(../dtoolbase)
 include_directories(../pystub)
 include_directories(../prc)
 
+find_package(OpenSSL REQUIRED)
+include_directories(${OPENSSL_INCLUDE_DIR})
+
 set(INTERROGATE_HEADERS
 	functionRemap.h
 	functionWriter.h
@@ -57,5 +60,5 @@ add_executable(interrogate
 	${INTERROGATE_HEADERS}
 	${INTERROGATE_SOURCES})
 target_link_libraries(interrogate
-	p3cppParser p3interrogatedb p3dconfig p3dtoolutil p3dtoolbase p3pystub
-	p3prc)
+	p3cppParser p3interrogatedb p3dconfig p3prc p3dtoolutil p3dtoolbase
+	p3pystub ${OPENSSL_LIBRARIES})
