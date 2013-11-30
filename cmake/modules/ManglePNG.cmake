@@ -6,7 +6,7 @@
 #
 
 if(PNG_FOUND)
-	set(HAVE_PNG TRUE)
+	set(FOUND_PNG TRUE)
 	set(PNG_LIBS png)
 
 	get_filename_component(PNG_LIBRARY_DIR "${PNG_LIBRARY}" PATH)

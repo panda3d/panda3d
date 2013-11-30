@@ -6,7 +6,7 @@
 #
 
 if(JPEG_FOUND)
-	set(HAVE_JPEG TRUE)
+	set(FOUND_JPEG TRUE)
 	set(JPEG_LIBS jpeg)
 
 	get_filename_component(JPEG_LIBRARY_DIR "${JPEG_LIBRARY}" PATH)

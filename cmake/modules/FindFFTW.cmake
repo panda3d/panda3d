@@ -5,7 +5,7 @@
 #   find_package(FFTW [REQUIRED] [QUIET])
 #
 # It sets the following variables:
-#  HAVE_FFTW  - true if fftw is found on the system
+#  FOUND_FFTW  - true if fftw is found on the system
 #  FFTW_IPATH - the fftw include directory
 #  FFTW_LPATH - the fftw library directory
 #
@@ -15,7 +15,7 @@
 #
 
 if(FFTW_IPATH AND FFTW_LPATH)
-	set(HAVE_FFTW TRUE)
+	set(FOUND_FFTW TRUE)
 else()
 	# Check if we can use PkgConfig
 	find_package(PkgConfig QUIET)
@@ -117,7 +117,7 @@ else()
 
 	# Check if we have everything we need
 	if(FFTW_IPATH AND FFTW_LPATH)
-		set(HAVE_FFTW TRUE)
+		set(FOUND_FFTW TRUE)
 	endif()
 
 	unset(FFTW_LIBRARY_DIR)

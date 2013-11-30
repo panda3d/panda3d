@@ -10,7 +10,7 @@
 #
 # Once done this will define
 #
-#  HAVE_EIGEN - system has eigen lib with correct version
+#  FOUND_EIGEN - system has eigen lib with correct version
 #  EIGEN_IPATH - the eigen include directory
 #  EIGEN_VERSION - eigen version
 #
@@ -57,7 +57,7 @@ endmacro()
 if(EIGEN_IPATH)
 	# If already in cache, just check that the version is correct
 	_eigen_check_version()
-	set(HAVE_EIGEN ${EIGEN_VERSION_OK})
+	set(FOUND_EIGEN ${EIGEN_VERSION_OK})
 else()
 	# Otherwise find it manually
 	find_path(EIGEN_IPATH
@@ -70,7 +70,7 @@ else()
 	# Checking to make sure it has the write version
 	if(EIGEN_IPATH)
 		_eigen_check_version()
-		set(HAVE_EIGEN ${EIGEN_VERSION_OK})
+		set(FOUND_EIGEN ${EIGEN_VERSION_OK})
 	endif()
 
 	mark_as_advanced(EIGEN_IPATH)

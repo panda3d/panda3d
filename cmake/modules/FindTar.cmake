@@ -5,14 +5,14 @@
 #   find_package(Tar [REQUIRED] [QUIET])
 #
 # It sets the following variables:
-#   HAVE_TAR  - system has libtar
+#   FOUND_TAR  - system has libtar
 #   TAR_IPATH - the tar include directory
 #   TAR_LPATH - the tar library directory
 #   TAR_LIBS  - the tar components found
 #
 
 if(TAR_IPATH AND TAR_LPATH)
-	set(HAVE_TAR TRUE)
+	set(FOUND_TAR TRUE)
 	set(TAR_LIBS tar)
 else()
 	# Find the libtar include files
@@ -37,7 +37,7 @@ else()
 
 	# Check if we have everything we need
 	if(TAR_IPATH AND TAR_LPATH)
-		set(HAVE_TAR TRUE)
+		set(FOUND_TAR TRUE)
 		set(TAR_LIBS tar)
 	endif()
 

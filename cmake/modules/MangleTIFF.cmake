@@ -6,7 +6,7 @@
 #
 
 if(TIFF_FOUND)
-	set(HAVE_TIFF TRUE)
+	set(FOUND_TIFF TRUE)
 	set(TIFF_LIBS tiff z)
 
 	get_filename_component(TIFF_LIBRARY_DIR "${TIFF_LIBRARY}" PATH)
