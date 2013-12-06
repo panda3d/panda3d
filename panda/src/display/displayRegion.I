@@ -239,17 +239,41 @@ get_texture_reload_priority() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::get_cube_map_index
+//     Function: DisplayRegion::set_cube_map_index
 //       Access: Published
-//  Description: Returns the cube map face index associated with this
+//  Description: Deprecated; replaced by set_target_tex_page().
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegion::
+set_cube_map_index(int cube_map_index) {
+  set_target_tex_page(cube_map_index, 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_target_tex_page
+//       Access: Published
+//  Description: Returns the target page number associated with this
 //               particular DisplayRegion, or -1 if it is not
-//               associated with a cube map.  See
-//               set_cube_map_index().
+//               associated with a page.  See
+//               set_target_tex_page().
 ////////////////////////////////////////////////////////////////////
 INLINE int DisplayRegion::
-get_cube_map_index() const {
+get_target_tex_page() const {
   CDReader cdata(_cycler);
-  return cdata->_cube_map_index;
+  return cdata->_target_tex_page;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_target_tex_view
+//       Access: Published
+//  Description: Returns the target view number associated with this
+//               particular DisplayRegion, or -1 if it is not
+//               associated with a view.  See
+//               set_target_tex_page().
+////////////////////////////////////////////////////////////////////
+INLINE int DisplayRegion::
+get_target_tex_view() const {
+  CDReader cdata(_cycler);
+  return cdata->_target_tex_view;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -776,16 +800,29 @@ get_tex_view_offset() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegionPipelineReader::get_cube_map_index
-//       Access: Public
-//  Description: Returns the cube map face index associated with this
+//     Function: DisplayRegionPipelineReader::get_target_tex_page
+//       Access: Published
+//  Description: Returns the target page number associated with this
 //               particular DisplayRegion, or -1 if it is not
-//               associated with a cube map.  See
-//               set_cube_map_index().
+//               associated with a page.  See
+//               set_target_tex_page().
 ////////////////////////////////////////////////////////////////////
 INLINE int DisplayRegionPipelineReader::
-get_cube_map_index() const {
-  return _cdata->_cube_map_index;
+get_target_tex_page() const {
+  return _cdata->_target_tex_page;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::get_target_tex_view
+//       Access: Published
+//  Description: Returns the target view number associated with this
+//               particular DisplayRegion, or -1 if it is not
+//               associated with a view.  See
+//               set_target_tex_page().
+////////////////////////////////////////////////////////////////////
+INLINE int DisplayRegionPipelineReader::
+get_target_tex_view() const {
+  return _cdata->_target_tex_view;
 }
 
 ////////////////////////////////////////////////////////////////////

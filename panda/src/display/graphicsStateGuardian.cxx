@@ -2754,7 +2754,7 @@ make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host) {
     for (int i = 0; i < 6; ++i) {
       PT(DisplayRegion) dr = sbuffer->make_mono_display_region(0, 1, 0, 1);
       dr->set_lens_index(i);
-      dr->set_cube_map_index(i);
+      dr->set_target_tex_page(i, 0);
       dr->set_camera(light_np);
       dr->set_clear_depth_active(true);
     }

@@ -80,7 +80,7 @@ CLP(GraphicsBuffer)(GraphicsEngine *engine, GraphicsPipe *pipe,
   }
 
   _shared_depth_buffer = 0;
-  _active_cube_map_index = -1;
+  _bound_tex_page = -1;
   _bound_tex_view = 0;
 }
 
@@ -125,7 +125,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   begin_frame_spam(mode);
 
   check_host_valid();
-  _active_cube_map_index = -1;
+  _bound_tex_page = -1;
 
   if (!_is_valid) {
     if (GLCAT.is_debug()) {
@@ -1056,7 +1056,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_V(glgsg, _gsg);
   glgsg->bind_fbo(0);
-  _active_cube_map_index = -1;
+  _bound_tex_page = -1;
 
   if (mode == FM_render) {
     generate_mipmaps();
@@ -1086,108 +1086,95 @@ set_size(int x, int y) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::select_cube_map
+//     Function: glGraphicsBuffer::select_target_tex_page
 //       Access: Public, Virtual
 //  Description: Called internally when the window is in
 //               render-to-a-texture mode and we are in the process of
-//               rendering the six layers of a cube map.  This should
-//               do whatever needs to be done to switch the buffer to
-//               the indicated face.
+//               rendering the six faces of a cube map, or any other
+//               multi-page and/or multi-view texture.  This should do
+//               whatever needs to be done to switch the buffer to the
+//               indicated page and view.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsBuffer)::
-select_cube_map(int cube_map_index) {
-  nassertv(cube_map_index >= 0 && cube_map_index < _fbo.size());
-
-  if (_active_cube_map_index != -1) {
-    // Resolve the multisample rendering for the previous face.
-    if (_requested_multisamples && _fbo_multisample) {
-      resolve_multisamples();
-    }
-  }
+select_target_tex_page(int page, int view) {
+  nassertv(page >= 0 && page < _fbo.size());
 
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_V(glgsg, _gsg);
 
-  glgsg->bind_fbo(_fbo[cube_map_index]);
-  _active_cube_map_index = cube_map_index;
+  bool switched_page = (_bound_tex_page != page);
+  bool switched_view = (_bound_tex_view != view);
+
+  if (switched_page) {
+    if (_bound_tex_page != -1) {
+      // Resolve the multisample rendering for the previous face.
+      if (_requested_multisamples && _fbo_multisample) {
+        resolve_multisamples();
+      }
+    }
+    
+    glgsg->bind_fbo(_fbo[page]);
+    _bound_tex_page = page;
+  }
+
+  if (switched_view || switched_page) {
+    // We assume that we've already configured the texture earlier
+    // in bind_bitplanes.  Therefore, since we can safely assume that
+    // all texture views have the same format, we can just bind the
+    // new view here.
+
+    Texture *tex = _tex[RTP_color];
+    if (tex != NULL) {
+      if (view >= tex->get_num_views()) {
+        tex->set_num_views(view + 1);
+      }
+
+      GLenum target = glgsg->get_texture_target(tex->get_texture_type());
+      if (target == GL_TEXTURE_CUBE_MAP) {
+        target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + _bound_tex_page;
+      }
+
+      // Create the OpenGL texture object.
+      TextureContext *tc = tex->prepare_now(view, glgsg->get_prepared_objects(), glgsg);
+      nassertv(tc != (TextureContext *)NULL);
+      CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+      glgsg->update_texture(tc, true);
+
+      if (GLCAT.is_spam()) {
+        GLCAT.spam()
+          << "Binding texture " << *tex
+          << " view " << view << " to color attachment.\n";
+      }
+
+#ifndef OPENGLES
+      GLclampf priority = 1.0f;
+      glPrioritizeTextures(1, &gtc->_index, &priority);
+#endif
+      glgsg->update_texture(tc, true);
+
+      if (_rb_size_z == 1) {
+        if (target == GL_TEXTURE_3D) {
+          glgsg->_glFramebufferTexture3D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+                                         target, gtc->_index, 0, _bound_tex_page);
+        } else if (target == GL_TEXTURE_2D_ARRAY_EXT) {
+          glgsg->_glFramebufferTextureLayer(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+                                            gtc->_index, 0, _bound_tex_page);
+        } else {
+          glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+                                         target, gtc->_index, 0);
+        }
+      } else {
+        glgsg->_glFramebufferTexture(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+                                     gtc->_index, 0);
+      }
+
+      report_my_gl_errors();
+    }
+
+    _bound_tex_view = view;
+  }
 
   report_my_gl_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: glGraphicsBuffer::select_tex_view
-//       Access: Public, Virtual
-//  Description: Called internally when the window is in
-//               render-to-a-texture mode and the DisplayRegion
-//               requests that we switch rendering to a different
-//               texture view.
-//
-//               In the FBO case, we do this by re-binding the
-//               texture that is attached to the color plane.
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsBuffer)::
-select_tex_view(int view) {
-  CLP(GraphicsStateGuardian) *glgsg;
-  DCAST_INTO_V(glgsg, _gsg);
-
-  if (view == _bound_tex_view) {
-    return;
-  }
-
-  // We assume that we've already configured the texture earlier
-  // in bind_bitplanes.  Therefore, since we can safely assume that
-  // all texture views have the same format, we can just bind the
-  // new view here.
-
-  Texture *tex = _tex[RTP_color];
-  if (tex != NULL) {
-    if (view >= tex->get_num_views()) {
-      tex->set_num_views(view + 1);
-    }
-
-    GLenum target = glgsg->get_texture_target(tex->get_texture_type());
-    if (target == GL_TEXTURE_CUBE_MAP) {
-      target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + _active_cube_map_index;
-    }
-
-    // Create the OpenGL texture object.
-    TextureContext *tc = tex->prepare_now(view, glgsg->get_prepared_objects(), glgsg);
-    nassertv(tc != (TextureContext *)NULL);
-    CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
-    glgsg->update_texture(tc, true);
-
-    if (GLCAT.is_spam()) {
-      GLCAT.spam()
-        << "Binding texture " << *tex
-        << " view " << view << " to color attachment.\n";
-    }
-
-  #ifndef OPENGLES
-    GLclampf priority = 1.0f;
-    glPrioritizeTextures(1, &gtc->_index, &priority);
-  #endif
-    glgsg->update_texture(tc, true);
-
-    if (_rb_size_z == 1) {
-      if (target == GL_TEXTURE_3D) {
-        glgsg->_glFramebufferTexture3D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
-                                       target, gtc->_index, 0, _active_cube_map_index);
-      } else if (target == GL_TEXTURE_2D_ARRAY_EXT) {
-        glgsg->_glFramebufferTextureLayer(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
-                                          gtc->_index, 0, _active_cube_map_index);
-      } else {
-        glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
-                                       target, gtc->_index, 0);
-      }
-    } else {
-      glgsg->_glFramebufferTexture(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
-                                   gtc->_index, 0);
-    }
-
-    report_my_gl_errors();
-  }
-
-  _bound_tex_view = view;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1531,8 +1518,8 @@ resolve_multisamples() {
 
   glgsg->report_my_gl_errors();
   GLuint fbo = _fbo[0];
-  if (_active_cube_map_index != -1) {
-    fbo = _fbo[_active_cube_map_index];
+  if (_bound_tex_page != -1) {
+    fbo = _fbo[_bound_tex_page];
   }
   glgsg->_glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, fbo);
   glgsg->_glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, _fbo_multisample);

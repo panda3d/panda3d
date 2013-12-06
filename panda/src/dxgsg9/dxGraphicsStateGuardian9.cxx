@@ -1902,7 +1902,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   // must use a render target type texture for StretchRect
   tex->set_render_to_texture(true);
 
-  int view = dr->get_tex_view_offset();
+  int view = dr->get_target_tex_view();
   TextureContext *tc = tex->prepare_now(view, get_prepared_objects(), this);
   if (tc == (TextureContext *)NULL) {
     return false;

@@ -394,7 +394,7 @@ rebuild_bitplanes() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsBuffer8::select_cube_map
+//     Function: wdxGraphicsBuffer8::select_target_tex_page
 //       Access: Public, Virtual
 //  Description: Called internally when the window is in
 //               render-to-a-texture mode and we are in the process of
@@ -403,8 +403,8 @@ rebuild_bitplanes() {
 //               the indicated face.
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsBuffer8::
-select_cube_map(int cube_map_index) {
-  _cube_map_index = cube_map_index;
+select_target_tex_page(int page, int view) {
+  _cube_map_index = page;
 
   HRESULT hr;
   Texture *color_tex = 0;

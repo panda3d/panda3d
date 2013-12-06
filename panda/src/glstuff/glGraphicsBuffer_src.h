@@ -74,8 +74,7 @@ public:
 
   virtual void set_size(int x, int y);
 
-  virtual void select_cube_map(int cube_map_index);
-  virtual void select_tex_view(int tex_view_offset);
+  virtual void select_target_tex_page(int page, int view);
 
   virtual bool share_depth_buffer(GraphicsOutput *graphics_output);
   virtual void unshare_depth_buffer();
@@ -129,7 +128,7 @@ private:
 
   // The cube map face we are currently drawing to or have just
   // finished drawing to, or -1 if we are not drawing to a cube map.
-  int _active_cube_map_index;
+  int _bound_tex_page;
   int _bound_tex_view;
 
   bool _initial_clear;

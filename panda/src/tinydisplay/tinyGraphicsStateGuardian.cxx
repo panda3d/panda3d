@@ -1359,7 +1359,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
 
   tex->setup_2d_texture(w, h, Texture::T_unsigned_byte, Texture::F_rgba);
 
-  int view = dr->get_tex_view_offset();
+  int view = dr->get_target_tex_view();
   TextureContext *tc = tex->prepare_now(view, get_prepared_objects(), this);
   nassertr(tc != (TextureContext *)NULL, false);
   TinyTextureContext *gtc = DCAST(TinyTextureContext, tc);
@@ -1431,12 +1431,23 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
                        component_type, format);
   }
 
+  nassertr(z < tex->get_z_size(), false);
+
+  int view = dr->get_target_tex_view();
+  if (view >= tex->get_num_views()) {
+    tex->set_num_views(view + 1);
+  }
+
   unsigned char *image_ptr = tex->modify_ram_image();
   size_t image_size = tex->get_ram_image_size();
-  if (z >= 0) {
-    nassertr(z < tex->get_z_size(), false);
+  if (z >= 0 || view > 0) {
     image_size = tex->get_expected_ram_page_size();
-    image_ptr += z * image_size;
+    if (z >= 0) {
+      image_ptr += z * image_size;
+    }
+    if (view > 0) {
+      image_ptr += (view * tex->get_z_size()) * image_size;
+    }
   }
 
   PIXEL *ip = (PIXEL *)(image_ptr + image_size);
