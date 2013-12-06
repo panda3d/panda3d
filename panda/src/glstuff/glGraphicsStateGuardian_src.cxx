@@ -3543,12 +3543,6 @@ update_texture(TextureContext *tc, bool force) {
 
   CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
 
-  if (GLCAT.is_debug() && gtc->get_texture()->get_name() != string("buf")) {
-    GLCAT.debug()
-      << "Considering update " << gtc->get_texture()->get_name()
-      << ": " << gtc->was_image_modified() << ", modified = " << gtc->get_texture()->get_image_modified() << "\n";
-  }
-
   if (gtc->was_image_modified()) {
     // If the texture image was modified, reload the texture.  This
     // means we also re-specify the properties for good measure.
@@ -9040,7 +9034,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force) {
 //               in the case of cube mapping, in which case
 //               texture_target will be target for the overall
 //               texture, e.g. GL_TEXTURE_CUBE_MAP, and page_target
-//               will the target for this particular page,
+//               will be the target for this particular page,
 //               e.g. GL_TEXTURE_CUBE_MAP_POSITIVE_X.
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
@@ -9082,6 +9076,8 @@ upload_texture_image(CLP(TextureContext) *gtc,
       GLCAT.debug()
         << "loading uncompressed texture " << tex->get_name() << "\n";
     }
+    GLCAT.debug()
+      << "page_target " << hex << page_target << dec << "\n";
   }
 
   int num_ram_mipmap_levels = 0;
@@ -9104,6 +9100,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
         uses_mipmaps = false;
       }
     }
+
   } else {
     num_ram_mipmap_levels = 1;
     if (uses_mipmaps) {

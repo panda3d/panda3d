@@ -238,8 +238,8 @@ generate_normalization_cube_map(int size) {
   PTA_uchar image = do_make_ram_image(cdata);
   cdata->_keep_ram_image = true;
 
-  ++(cdata->_image_modified);
-  ++(cdata->_properties_modified);
+  cdata->inc_image_modified();
+  cdata->inc_properties_modified();
 
   PN_stdfloat half_size = (PN_stdfloat)size * 0.5f;
   PN_stdfloat center = half_size - 0.5f;
@@ -345,8 +345,8 @@ generate_alpha_scale_map() {
   cdata->_magfilter = FT_nearest;
   cdata->_compression = CM_off;
 
-  ++(cdata->_image_modified);
-  ++(cdata->_properties_modified);
+  cdata->inc_image_modified();
+  cdata->inc_properties_modified();
 
   PTA_uchar image = do_make_ram_image(cdata);
   cdata->_keep_ram_image = true;
@@ -366,8 +366,8 @@ bool Texture::
 read(const Filename &fullpath, const LoaderOptions &options) {
   CDWriter cdata(_cycler, true);
   do_clear(cdata);
-  ++(cdata->_properties_modified);
-  ++(cdata->_image_modified);
+  cdata->inc_properties_modified();
+  cdata->inc_image_modified();
   return do_read(cdata, fullpath, Filename(), 0, 0, 0, 0, false, false,
                  options, NULL);
 }
@@ -389,8 +389,8 @@ read(const Filename &fullpath, const Filename &alpha_fullpath,
      const LoaderOptions &options) {
   CDWriter cdata(_cycler, true);
   do_clear(cdata);
-  ++(cdata->_properties_modified);
-  ++(cdata->_image_modified);
+  cdata->inc_properties_modified();
+  cdata->inc_image_modified();
   return do_read(cdata, fullpath, alpha_fullpath, primary_file_num_channels,
                  alpha_file_channel, 0, 0, false, false,
                  options, NULL);
@@ -411,8 +411,8 @@ read(const Filename &fullpath, int z, int n,
      bool read_pages, bool read_mipmaps,
      const LoaderOptions &options) {
   CDWriter cdata(_cycler, true);
-  ++(cdata->_properties_modified);
-  ++(cdata->_image_modified);
+  cdata->inc_properties_modified();
+  cdata->inc_image_modified();
   return do_read(cdata, fullpath, Filename(), 0, 0, z, n, read_pages, read_mipmaps,
                  options, NULL);
 }
@@ -493,8 +493,8 @@ read(const Filename &fullpath, const Filename &alpha_fullpath,
      BamCacheRecord *record,
      const LoaderOptions &options) {
   CDWriter cdata(_cycler, true);
-  ++(cdata->_properties_modified);
-  ++(cdata->_image_modified);
+  cdata->inc_properties_modified();
+  cdata->inc_image_modified();
   return do_read(cdata, fullpath, alpha_fullpath, primary_file_num_channels,
                  alpha_file_channel, z, n, read_pages, read_mipmaps,
                  options, record);
@@ -652,8 +652,8 @@ get_aux_data(const string &key) const {
 bool Texture::
 read_txo(istream &in, const string &filename) {
   CDWriter cdata(_cycler, true);
-  ++(cdata->_properties_modified);
-  ++(cdata->_image_modified);
+  cdata->inc_properties_modified();
+  cdata->inc_image_modified();
   return do_read_txo(cdata, in, filename);
 }
 
@@ -760,8 +760,8 @@ write_txo(ostream &out, const string &filename) const {
 bool Texture::
 read_dds(istream &in, const string &filename, bool header_only) {
   CDWriter cdata(_cycler, true);
-  ++(cdata->_properties_modified);
-  ++(cdata->_image_modified);
+  cdata->inc_properties_modified();
+  cdata->inc_image_modified();
   return do_read_dds(cdata, in, filename, header_only);
 }
 
@@ -1122,7 +1122,7 @@ set_ram_mipmap_pointer(int n, void *image, size_t page_size) {
   cdata->_ram_images[n]._page_size = page_size;
   //_ram_images[n]._image.clear(); wtf is going on?!
   cdata->_ram_images[n]._pointer_image = image;
-  ++(cdata->_image_modified);
+  cdata->inc_image_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1189,7 +1189,7 @@ new_simple_ram_image(int x_size, int y_size) {
   cdata->_simple_ram_image._image = PTA_uchar::empty_array(expected_page_size);
   cdata->_simple_ram_image._page_size = expected_page_size;
   cdata->_simple_image_date_generated = (PN_int32)time(NULL);
-  ++(cdata->_simple_image_modified);
+  cdata->inc_simple_image_modified();
 
   return cdata->_simple_ram_image._image;
 }
@@ -4127,8 +4127,8 @@ unlocked_ensure_ram_image(bool allow_compression) {
     cdataw->_format = cdata_tex->_format;
     cdataw->_component_type = cdata_tex->_component_type;
     
-    ++(cdataw->_properties_modified);
-    ++(cdataw->_image_modified);
+    cdataw->inc_properties_modified();
+    cdataw->inc_image_modified();
   }
   
   cdataw->_keep_ram_image = cdata_tex->_keep_ram_image;
@@ -4343,7 +4343,7 @@ do_set_ram_image(CData *cdata, CPTA_uchar image, Texture::CompressionMode compre
     cdata->_ram_images[0]._page_size = page_size;
     cdata->_ram_images[0]._pointer_image = NULL;
     cdata->_ram_image_compression = compression;
-    ++(cdata->_image_modified);
+    cdata->inc_image_modified();
   }
 }
 
@@ -4404,7 +4404,7 @@ do_set_ram_mipmap_image(CData *cdata, int n, CPTA_uchar image, size_t page_size)
     cdata->_ram_images[n]._image = image.cast_non_const();
     cdata->_ram_images[n]._pointer_image = NULL;
     cdata->_ram_images[n]._page_size = page_size;
-    ++(cdata->_image_modified);
+    cdata->inc_image_modified();
   }
 }
 
@@ -4839,7 +4839,7 @@ do_rescale_texture(CData *cdata) {
     new_image.quick_filter_from(orig_image);
 
     do_clear_ram_image(cdata);
-    ++(cdata->_image_modified);
+    cdata->inc_image_modified();
     cdata->_x_size = new_x_size;
     cdata->_y_size = new_y_size;
     if (!do_load_one(cdata, new_image, get_name(), 0, 0, LoaderOptions())) {
@@ -4871,7 +4871,7 @@ do_rescale_texture(CData *cdata) {
 
       do_clear_ram_image(cdata);
       cdata->_loaded_from_image = false;
-      ++(cdata->_image_modified);
+      cdata->inc_image_modified();
       if (!do_load_one(cdata, new_image, get_name(), 0, 0, LoaderOptions())) {
         return false;
       }
@@ -4933,9 +4933,9 @@ do_clear(CData *cdata) {
   CDReader cdata_tex(tex._cycler);
   do_assign(cdata, &tex, cdata_tex);
 
-  ++(cdata->_properties_modified);
-  ++(cdata->_image_modified);
-  ++(cdata->_simple_image_modified);
+  cdata->inc_properties_modified();
+  cdata->inc_image_modified();
+  cdata->inc_simple_image_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5008,7 +5008,7 @@ do_set_format(CData *cdata, Texture::Format format) {
     return;
   }
   cdata->_format = format;
-  ++(cdata->_properties_modified);
+  cdata->inc_properties_modified();
 
   switch (cdata->_format) {
   case F_color_index:
@@ -5091,7 +5091,7 @@ void Texture::
 do_set_x_size(CData *cdata, int x_size) {
   if (cdata->_x_size != x_size) {
     cdata->_x_size = x_size;
-    ++(cdata->_image_modified);
+    cdata->inc_image_modified();
     do_clear_ram_image(cdata);
     do_set_pad_size(cdata, 0, 0, 0);
   }
@@ -5107,7 +5107,7 @@ do_set_y_size(CData *cdata, int y_size) {
   if (cdata->_y_size != y_size) {
     nassertv(cdata->_texture_type != Texture::TT_1d_texture || y_size == 1);
     cdata->_y_size = y_size;
-    ++(cdata->_image_modified);
+    cdata->inc_image_modified();
     do_clear_ram_image(cdata);
     do_set_pad_size(cdata, 0, 0, 0);
   }
@@ -5127,7 +5127,7 @@ do_set_z_size(CData *cdata, int z_size) {
              (cdata->_texture_type == Texture::TT_cube_map && z_size == 6) ||
              (cdata->_texture_type == Texture::TT_2d_texture_array) || (z_size == 1));
     cdata->_z_size = z_size;
-    ++(cdata->_image_modified);
+    cdata->inc_image_modified();
     do_clear_ram_image(cdata);
     do_set_pad_size(cdata, 0, 0, 0);
   }
@@ -5143,8 +5143,10 @@ do_set_num_views(CData *cdata, int num_views) {
   nassertv(num_views >= 1);
   if (cdata->_num_views != num_views) {
     cdata->_num_views = num_views;
-    ++(cdata->_image_modified);
-    do_clear_ram_image(cdata);
+    if (do_has_ram_image(cdata)) {
+      cdata->inc_image_modified();
+      do_clear_ram_image(cdata);
+    }
     do_set_pad_size(cdata, 0, 0, 0);
   }
 }
@@ -5157,7 +5159,7 @@ do_set_num_views(CData *cdata, int num_views) {
 void Texture::
 do_set_wrap_u(CData *cdata, Texture::WrapMode wrap) {
   if (cdata->_wrap_u != wrap) {
-    ++(cdata->_properties_modified);
+    cdata->inc_properties_modified();
     cdata->_wrap_u = wrap;
   }
 }
@@ -5170,7 +5172,7 @@ do_set_wrap_u(CData *cdata, Texture::WrapMode wrap) {
 void Texture::
 do_set_wrap_v(CData *cdata, Texture::WrapMode wrap) {
   if (cdata->_wrap_v != wrap) {
-    ++(cdata->_properties_modified);
+    cdata->inc_properties_modified();
     cdata->_wrap_v = wrap;
   }
 }
@@ -5183,7 +5185,7 @@ do_set_wrap_v(CData *cdata, Texture::WrapMode wrap) {
 void Texture::
 do_set_wrap_w(CData *cdata, Texture::WrapMode wrap) {
   if (cdata->_wrap_w != wrap) {
-    ++(cdata->_properties_modified);
+    cdata->inc_properties_modified();
     cdata->_wrap_w = wrap;
   }
 }
@@ -5196,7 +5198,7 @@ do_set_wrap_w(CData *cdata, Texture::WrapMode wrap) {
 void Texture::
 do_set_minfilter(CData *cdata, Texture::FilterType filter) {
   if (cdata->_minfilter != filter) {
-    ++(cdata->_properties_modified);
+    cdata->inc_properties_modified();
     cdata->_minfilter = filter;
   }
 }
@@ -5209,7 +5211,7 @@ do_set_minfilter(CData *cdata, Texture::FilterType filter) {
 void Texture::
 do_set_magfilter(CData *cdata, Texture::FilterType filter) {
   if (cdata->_magfilter != filter) {
-    ++(cdata->_properties_modified);
+    cdata->inc_properties_modified();
     cdata->_magfilter = filter;
   }
 }
@@ -5222,7 +5224,7 @@ do_set_magfilter(CData *cdata, Texture::FilterType filter) {
 void Texture::
 do_set_anisotropic_degree(CData *cdata, int anisotropic_degree) {
   if (cdata->_anisotropic_degree != anisotropic_degree) {
-    ++(cdata->_properties_modified);
+    cdata->inc_properties_modified();
     cdata->_anisotropic_degree = anisotropic_degree;
   }
 }
@@ -5235,7 +5237,7 @@ do_set_anisotropic_degree(CData *cdata, int anisotropic_degree) {
 void Texture::
 do_set_border_color(CData *cdata, const LColor &color) {
   if (cdata->_border_color != color) {
-    ++(cdata->_properties_modified);
+    cdata->inc_properties_modified();
     cdata->_border_color = color;
   }
 }
@@ -5248,7 +5250,7 @@ do_set_border_color(CData *cdata, const LColor &color) {
 void Texture::
 do_set_compression(CData *cdata, Texture::CompressionMode compression) {
   if (cdata->_compression != compression) {
-    ++(cdata->_properties_modified);
+    cdata->inc_properties_modified();
     cdata->_compression = compression;
 
     if (do_has_ram_image(cdata)) {
@@ -5273,7 +5275,7 @@ do_set_compression(CData *cdata, Texture::CompressionMode compression) {
 void Texture::
 do_set_quality_level(CData *cdata, Texture::QualityLevel quality_level) {
   if (cdata->_quality_level != quality_level) {
-    ++(cdata->_properties_modified);
+    cdata->inc_properties_modified();
     cdata->_quality_level = quality_level;
   }
 }
@@ -5325,12 +5327,14 @@ do_get_ram_image(CData *cdata) {
   if (!do_has_ram_image(cdata) && do_can_reload(cdata)) {
     do_reload_ram_image(cdata, true);
 
-    // Normally, we don't update the cdata->_modified semaphores in a do_blah
-    // method, but we'll make an exception in this case, because it's
-    // easiest to modify these here, and only when we know it's
-    // needed.
-    ++(cdata->_image_modified);
-    ++(cdata->_properties_modified);
+    if (do_has_ram_image(cdata)) {
+      // Normally, we don't update the cdata->_modified semaphores in a do_blah
+      // method, but we'll make an exception in this case, because it's
+      // easiest to modify these here, and only when we know it's
+      // needed.
+      cdata->inc_image_modified();
+      cdata->inc_properties_modified();
+    }
   }
 
   if (cdata->_ram_images.empty()) {
@@ -5539,7 +5543,7 @@ do_set_simple_ram_image(CData *cdata, CPTA_uchar image, int x_size, int y_size) 
   cdata->_simple_ram_image._image = image.cast_non_const();
   cdata->_simple_ram_image._page_size = image.size();
   cdata->_simple_image_date_generated = (PN_int32)time(NULL);
-  ++(cdata->_simple_image_modified);
+  cdata->inc_simple_image_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5644,7 +5648,7 @@ do_clear_simple_ram_image(CData *cdata) {
   // We allow this exception: we update the _simple_image_modified
   // here, since no one really cares much about that anyway, and it's
   // convenient to do it here.
-  ++(cdata->_simple_image_modified);
+  cdata->inc_simple_image_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5804,7 +5808,7 @@ do_reload(CData *cdata) {
     do_reload_ram_image(cdata, true);
     if (do_has_ram_image(cdata)) {
       // An explicit call to reload() should increment image_modified.
-      ++(cdata->_image_modified);
+      cdata->inc_image_modified();
       return true;
     }
     return false;
@@ -7769,7 +7773,7 @@ do_fillin_body(CData *cdata, DatagramIterator &scan, BamReader *manager) {
   cdata->_format = (Format)scan.get_uint8();
   cdata->_num_components = scan.get_uint8();
 
-  ++(cdata->_properties_modified);
+  cdata->inc_properties_modified();
 
   cdata->_auto_texture_scale = ATS_unspecified;
   if (manager->get_file_minor_ver() >= 28) {
@@ -7797,7 +7801,7 @@ do_fillin_body(CData *cdata, DatagramIterator &scan, BamReader *manager) {
 
     cdata->_simple_ram_image._image = image;
     cdata->_simple_ram_image._page_size = u_size;
-    ++(cdata->_simple_image_modified);
+    cdata->inc_simple_image_modified();
   }
 }
 
@@ -7856,7 +7860,7 @@ do_fillin_rawdata(CData *cdata, DatagramIterator &scan, BamReader *manager) {
     cdata->_ram_images[n]._image = image;
   }
   cdata->_loaded_from_image = true;
-  ++(cdata->_image_modified);
+  cdata->inc_image_modified();
 }
 
 ////////////////////////////////////////////////////////////////////

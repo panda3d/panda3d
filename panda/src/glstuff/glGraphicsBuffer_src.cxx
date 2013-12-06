@@ -1156,8 +1156,11 @@ select_tex_view(int view) {
     CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
     glgsg->update_texture(tc, true);
 
-    GLCAT.spam() << "Binding texture " << *tex
-      << " view " << view << " to color attachment.\n";
+    if (GLCAT.is_spam()) {
+      GLCAT.spam()
+        << "Binding texture " << *tex
+        << " view " << view << " to color attachment.\n";
+    }
 
   #ifndef OPENGLES
     GLclampf priority = 1.0f;
