@@ -58,20 +58,10 @@ config_package(TAR COMMENT "libtar")
 find_package(FFTW)
 config_package(FFTW COMMENT "fftw")
 
+# Find and configure Squish library
+find_package(Squish)
+config_package(SQUISH COMMENT "squish")
 
-
-
-if(FOUND_SQUISH)
-	set(USE_SQUISH TRUE CACHE BOOL "If true, compile Panda3D with squish")
-	if(USE_SQUISH)
-		set(HAVE_SQUISH TRUE)
-	endif()
-endif()
-if(HAVE_SQUISH)
-	message(STATUS "+ squish")
-else()
-	message(STATUS "- Did not find squish")
-endif()
 
 if(FOUND_CG)
 	set(USE_CG TRUE CACHE BOOL "If true, compile Panda3D with Nvidia Cg")
