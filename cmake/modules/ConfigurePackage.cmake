@@ -23,11 +23,7 @@ function(config_package PKG_NAME)
 
 	# Handle optional function arguments
 	foreach(arg ${ARGN})
-		if(ARG_IS_LIBRARY)
-			unset(ARG_IS_LIBRARY)
-			set(LIB_NAME ${arg})
-			break()
-		elseif(ARG_IS_COMMENT)
+		if(ARG_IS_COMMENT)
 			unset(ARG_IS_COMMENT)
 			set(DISPLAY_NAME ${arg})
 			break()
