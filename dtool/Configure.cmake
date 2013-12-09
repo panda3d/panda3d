@@ -96,9 +96,9 @@ config_package(ZLIB COMMENT "zlib")
 # TODO #
 ########
 
-# Find and configure Miles sound system
-#find_package(RAD_MSS)
-#config_package(RAD_MSS COMMENT "Miles Sound System")
+# Find and configure Miles Sound System
+find_package(Miles)
+config_package(RAD_MSS COMMENT "Miles Sound System")
 
 # Find and configure FMOD Ex
 #find_package(FMODEX)
