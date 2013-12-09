@@ -1,6 +1,16 @@
 message(STATUS "")
 message("Configuring support for the following optional third-party packages:")
 
+set(ENABLE_EVERYTHING Off)
+set(DISABLE_EVERYTHING Off)
+if(EVERYTHING)
+	message("Re-enabling all disabled third-party libraries.")
+	set(ENABLE_EVERYTHING On)
+elseif(NOTHING)
+	message("Disabling all third-party libraries.")
+	set(DISABLE_EVERYTHING On)
+endif()
+
 include(ConfigurePackage)
 
 # Find and configure Eigen library

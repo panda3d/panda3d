@@ -48,12 +48,23 @@ function(config_package PKG_NAME)
 
 	if(FOUND_${PKG_NAME})
 		# Output success after finding the package for the first time
-		if(NOT DEFINED USE_${PKG_NAME})
+		if(NOT DEFINED USE_${PKG_NAME} AND NOT DISABLE_EVERYTHING)
 			message(STATUS "+ ${DISPLAY_NAME}")
 		endif()
 
-		# Add a USE_XYZZY config variable to the cache
-		set(USE_${PKG_NAME} TRUE CACHE BOOL "If true, compile Panda3D with ${DISPLAY_NAME}")
+		### Add a USE_XYZZY config variable to the cache ###
+		if(ENABLE_EVERYTHING OR DISABLE_EVERYTHING)
+			unset(USE_${PKG_NAME} CACHE)
+		endif()
+
+		if(DISABLE_EVERYTHING)
+			set(USE_${PKG_NAME} FALSE CACHE BOOL "If true, compile Panda3D with ${DISPLAY_NAME}")
+		else()
+			set(USE_${PKG_NAME} TRUE CACHE BOOL "If true, compile Panda3D with ${DISPLAY_NAME}")
+		endif()
+
+
+		# Update HAVE_XYZZY
 		if(USE_${PKG_NAME})
 			set(HAVE_${PKG_NAME} TRUE PARENT_SCOPE)
 		endif()
@@ -71,6 +82,8 @@ function(config_package PKG_NAME)
 
 	else()
 		# Output failure to find package
-		message(STATUS "- Did not find ${DISPLAY_NAME}")
+		if(NOT DISABLE_EVERYTHING)
+			message(STATUS "- Did not find ${DISPLAY_NAME}")
+		endif()
 	endif()
 endfunction()
