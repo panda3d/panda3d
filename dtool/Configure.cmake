@@ -1,14 +1,23 @@
 message(STATUS "")
 message("Configuring support for the following optional third-party packages:")
 
-set(ENABLE_EVERYTHING Off)
-set(DISABLE_EVERYTHING Off)
+# Settings to change USE_PACKAGE behavior (these options override cached values)
+set(CONFIG_ENABLE_EVERYTHING Off)
+set(CONFIG_DISABLE_EVERYTHING Off)
+set(CONFIG_ENABLE_FOUND Off)
+set(CONFIG_DISABLE_MISSING Off)
+
+# Update USE_PACKAGE settings based on CLI arguments
 if(EVERYTHING)
 	message("Re-enabling all disabled third-party libraries.")
-	set(ENABLE_EVERYTHING On)
+	set(CONFIG_ENABLE_EVERYTHING On)
+elseif(DISCOVERED)
+	message("Enabling found and disabling not-found third-party libraries.")
+	set(CONFIG_ENABLE_FOUND On)
+	set(CONFIG_DISABLE_MISSING On)
 elseif(NOTHING)
 	message("Disabling all third-party libraries.")
-	set(DISABLE_EVERYTHING On)
+	set(CONFIG_DISABLE_EVERYTHING On)
 endif()
 
 include(ConfigurePackage)

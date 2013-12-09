@@ -8,6 +8,12 @@
 #
 # Assumes the file has already been found with find_package().
 #
+# The following variables can be set to override the cached values of USE_XYZZY
+#    CONFIG_DISABLE_EVERYTHING - always set USE_XYZZY to false
+#    CONFIG_DISABLE_MISSING    - set USE_XYZZY to false if it was not found
+#    CONFIG_ENABLE_FOUND       - set USE_XYZZY to true if the package was found
+#    CONFIG_ENABLE_EVERYTHING  - always set USE_XYZZY to true (even if the package is missing)
+#
 
 # Usage:
 #   mangle_package(LIBRARY_NAME)
@@ -44,16 +50,16 @@ function(config_package PKG_NAME)
 
 	if(FOUND_${PKG_NAME})
 		# Output success after finding the package for the first time
-		if(NOT DEFINED USE_${PKG_NAME} AND NOT DISABLE_EVERYTHING)
+		if(NOT DEFINED USE_${PKG_NAME} AND NOT CONFIG_DISABLE_EVERYTHING)
 			message(STATUS "+ ${DISPLAY_NAME}")
 		endif()
 
 		### Add a USE_XYZZY config variable to the cache ###
-		if(ENABLE_EVERYTHING OR DISABLE_EVERYTHING)
+		if(CONFIG_ENABLE_EVERYTHING OR CONFIG_DISABLE_EVERYTHING OR CONFIG_ENABLE_FOUND)
 			unset(USE_${PKG_NAME} CACHE)
 		endif()
 
-		if(DISABLE_EVERYTHING)
+		if(CONFIG_DISABLE_EVERYTHING)
 			set(USE_${PKG_NAME} FALSE CACHE BOOL "If true, compile Panda3D with ${DISPLAY_NAME}")
 		else()
 			set(USE_${PKG_NAME} TRUE CACHE BOOL "If true, compile Panda3D with ${DISPLAY_NAME}")
@@ -73,12 +79,21 @@ function(config_package PKG_NAME)
 
 			# Only unset if USE_XYZZY is true;
 			# This allows us to set USE_XYZZY to false to silence the output
-			unset(USE_${PKG_NAME})
+			unset(USE_${PKG_NAME} CACHE)
+
+			# If using Discovery, we want to silently disable missing packages
+			if(CONFIG_DISABLE_MISSING)
+				set(USE_${PKG_NAME} FALSE CACHE BOOL "If true, compile Panda3D with ${DISPLAY_NAME}")
+			endif()
 		endif()
 
 	else()
-		# Output failure to find package
-		if(NOT DISABLE_EVERYTHING)
+		# If using DISCOVERED <OR> NOTHING, we want to silently disable missing packages
+		if(CONFIG_DISABLE_MISSING OR CONFIG_DISABLE_EVERYTHING)
+			set(USE_${PKG_NAME} FALSE CACHE BOOL "If true, compile Panda3D with ${DISPLAY_NAME}")
+
+		else()
+			# Otherwise, output failure to find package
 			message(STATUS "- Did not find ${DISPLAY_NAME}")
 		endif()
 	endif()

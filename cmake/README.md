@@ -20,6 +20,26 @@ To configure CMake, it is recommended to use cmake-gui (`cmake-gui .`),
 however it is also possible to configure it entirely through CMake's
 command-line interface; see `man cmake` for more details.
 
+In general, the config variable for a particular third party library is:
+```
+	USE_<LIBRARY>=True/False   # Example: USE_JPEG
+```
+Optional features typically use the format:
+```
+	BUILD_<FEATURE>=True/False   # Example: BUILD_THREADS
+```
+Configuration settings use more direct names:
+```
+	# Examples
+	PANDA_DISTRIBUTOR="MyDistributor"
+	DTOOL_INSTALL="/usr/local/panda"
+
+	# ... etc ...
+
+```
+
+For example, `makepanda.py --distributor X` becomes `cmake -DDISTRIBUTOR
+
 All third-party libraries are enabled by default and Panda3D will
 be compiled with any 3rd party library that is found.
 Third-party libraries can be enabled or disabled through
@@ -32,3 +52,7 @@ cmake -DEVERYTHING=True .  # or .. if you are in a separate build/ dir
 cmake -DNOTHING=True .  # or .. if you are in a separate build/ dir
 ```
 
+To use all available packages, and silence output for missing packages, run:
+```sh
+cmake- DDISCOVERED=True .  # or .. if you are in a separate build/ dir
+```
