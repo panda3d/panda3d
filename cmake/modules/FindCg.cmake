@@ -78,16 +78,19 @@ endmacro()
 
 # Find Cg for DirectX 8
 macro(find_cgdx8)
+	# TODO: Implement
 endmacro()
 
 
 # Find Cg for DirectX 9
 macro(find_cgdx9)
+	# TODO: Implement
 endmacro()
 
 
 # Find Cg for DirectX 10
 macro(find_cgdx10)
+	# TODO: Implement
 endmacro()
 
 

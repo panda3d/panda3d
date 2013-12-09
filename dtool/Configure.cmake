@@ -70,20 +70,12 @@ config_package(CGDX8 COMMENT "Cg DX8 API")
 config_package(CGDX9 COMMENT "Cg DX9 API")
 config_package(CGDX10 COMMENT "Cg DX10 API")
 
+# Find and configure VRPN library
+find_package(VRPN)
+config_package(VRPN)
 
 
 
-if(FOUND_VRPN)
-	set(USE_VRPN TRUE CACHE BOOL "If true, compile Panda3D with VRPN")
-	if(USE_VRPN)
-		set(HAVE_VRPN TRUE)
-	endif()
-endif()
-if(HAVE_VRPN)
-	message(STATUS "+ VRPN")
-else()
-	message(STATUS "- Did not find VRPN")
-endif()
 
 if(FOUND_ZLIB)
 	set(USE_ZLIB TRUE CACHE BOOL "If true, compile Panda3D with zlib")
