@@ -42,10 +42,10 @@ else()
 		NAMES "miles.h"
 		PATHS "/usr/include"
 		      "/usr/local/include"
-		      "/opt/miles/include"
-		      "C:/Program Files/miles"
-		      "C:/Program Files (x86)/miles"
-		PATH_SUFFIXES "" "miles"
+		      "/opt/"
+		      "C:/Program Files"
+		      "C:/Program Files (x86)"
+		PATH_SUFFIXES "" "miles" "Miles6" "miles/include" "Miles6/include"
 		DOC "The path to the Miles SDK include directory."
 	)
 
@@ -55,8 +55,11 @@ else()
 		PATHS "/usr"
 		      "/usr/local"
 		      "/opt/miles"
+		      "/opt/Miles6"
 		      "C:/Program Files/miles"
 		      "C:/Program Files (x86)/miles"
+		      "C:/Program Files/Miles6"
+		      "C:/Program Files (x86)/Miles6"
 		PATH_SUFFIXES "lib" "lib32"
 	)
 	find_library(RAD_MSS_MINSIZE_LIBRARY
@@ -66,6 +69,8 @@ else()
 		      "/opt/miles"
 		      "C:/Program Files/miles"
 		      "C:/Program Files (x86)/miles"
+		      "C:/Program Files/Miles6"
+		      "C:/Program Files (x86)/Miles6"
 		PATH_SUFFIXES "lib" "lib32"
 	)
 	find_library(RAD_MSS_RELWITHDEBINFO_LIBRARY
@@ -75,6 +80,8 @@ else()
 		      "/opt/miles"
 		      "C:/Program Files/miles"
 		      "C:/Program Files (x86)/miles"
+		      "C:/Program Files/Miles6"
+		      "C:/Program Files (x86)/Miles6"
 		PATH_SUFFIXES "lib" "lib32"
 	)
 	find_library(RAD_MSS_DEBUG_LIBRARY
@@ -84,6 +91,8 @@ else()
 		      "/opt/miles"
 		      "C:/Program Files/miles"
 		      "C:/Program Files (x86)/miles"
+		      "C:/Program Files/Miles6"
+		      "C:/Program Files (x86)/Miles6"
 		PATH_SUFFIXES "lib" "lib32"
 	)
 	get_filename_component(RAD_MSS_LIBRARY_DIR "${RAD_MSS_RELEASE_LIBRARY}" PATH)
