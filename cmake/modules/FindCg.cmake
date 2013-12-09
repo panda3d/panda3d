@@ -62,7 +62,7 @@ macro(find_cggl)
 
 		# Check if we have everything we need
 		if(CGGL_IPATH AND CGGL_LPATH)
-			set(CGGL_FOUND TRUE)
+			set(FOUND_CGGL TRUE)
 			if(WIN32)
 				set(CGGL_LIBS cgGL.lib)
 			else()
@@ -169,7 +169,7 @@ else()
 
 	# Check if we have everything we need
 	if(CG_IPATH AND CG_LPATH)
-		set(CG_FOUND TRUE)
+		set(FOUND_CG TRUE)
 		if(WIN32)
 			set(CG_LIBS cg.lib)
 		else()
