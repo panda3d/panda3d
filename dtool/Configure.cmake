@@ -85,24 +85,22 @@ find_package(VRPN)
 config_package(VRPN)
 
 # Find and configure zlib
-find_package(ZLIB)
+find_package(ZLIB QUIET COMPONENTS z)
 mangle_package(ZLIB)
 config_package(ZLIB COMMENT "zlib")
-
-
-
-
-########
-# TODO #
-########
 
 # Find and configure Miles Sound System
 find_package(Miles)
 config_package(RAD_MSS COMMENT "Miles Sound System")
 
 # Find and configure FMOD Ex
-#find_package(FMODEX)
-#config_package(FMODEX COMMENT "FMOD Ex sound library")
+find_package(FMODEx)
+config_package(FMODEX COMMENT "FMOD Ex sound library")
+
+
+########
+# TODO #
+########
 
 # Find and configure OpenAL
 #find_package(OpenAL)
