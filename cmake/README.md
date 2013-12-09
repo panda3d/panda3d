@@ -54,5 +54,5 @@ cmake -DNOTHING=True .  # or .. if you are in a separate build/ dir
 
 To use all available packages, and silence output for missing packages, run:
 ```sh
-cmake- DDISCOVERED=True .  # or .. if you are in a separate build/ dir
+cmake -DDISCOVERED=True .  # or .. if you are in a separate build/ dir
 ```

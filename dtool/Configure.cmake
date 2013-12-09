@@ -106,14 +106,15 @@ config_package(RAD_MSS COMMENT "Miles Sound System")
 find_package(FMODEx)
 config_package(FMODEX COMMENT "FMOD Ex sound library")
 
+# Find and configure OpenAL
+find_package(OpenAL QUIET)
+mangle_package(OpenAL)
+config_package(OPENAL COMMENT "OpenAL sound library")
 
 ########
 # TODO #
 ########
 
-# Find and configure OpenAL
-#find_package(OpenAL)
-#config_package(OPENAL COMMENT "OpenAL sound library")
 
 # Find and configure PhysX
 #find_package(PhysX)
