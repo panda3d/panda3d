@@ -237,7 +237,7 @@ config_package(VRPN)
 #config_package(VORBIS COMMENT "Vorbis Ogg decoder")
 
 
-
+### Configure interrogate ###
 message(STATUS "") # simple line break
 if(HAVE_PYTHON)
 	set(USE_INTERROGATE TRUE CACHE BOOL "If true, Panda3D will generate python interfaces")
@@ -252,21 +252,33 @@ else()
 endif()
 
 
+### Configure threading support ###
+# Add basic use flag for threading
 set(USE_THREADS TRUE CACHE BOOL "If true, compile Panda3D with threading support.")
 if(USE_THREADS)
 	set(HAVE_THREADS TRUE)
 else()
 	unset(SIMPLE_THREADS CACHE)
-	unset(DO_PIPELINING CACHE)
+	unset(OS_SIMPLE_THREADS CACHE)
 endif()
 
+# Configure debug threads
+if(NOT DEFINED OPTIMIZE OR OPTIMIZE LESS 3)
+	set(DEBUG_THREADS ON CACHE BOOL "If on, enables debugging of thread and sync operations (i.e. mutexes, deadlocks)")
+else()
+	set(DEBUG_THREADS OFF CACHE BOOL "If on, enables debugging of thread and sync operations (i.e. mutexes, deadlocks)")
+endif()
+
+# Add advanced threading configuration
 if(HAVE_THREADS)
 	set(SIMPLE_THREADS FALSE CACHE BOOL "If true, compile with simulated threads.")
 	if(SIMPLE_THREADS)
 		message(STATUS "Compilation will include simulated threading support.")
-		unset(DO_PIPELINING CACHE)
+		set(OS_SIMPLE_THREADS TRUE CACHE BOOL "If true, OS threading constructs will be used to perform context switches.")
 	else()
-		set(DO_PIPELINING TRUE CACHE BOOL "If true, compile with pipelined threads.")
+		unset(OS_SIMPLE_THREADS CACHE)
+
+		set(DO_PIPELINING TRUE CACHE BOOL "If true, compile with pipelined rendering.")
 		if(DO_PIPELINING)
 			message(STATUS "Compilation will include full, pipelined threading support.")
 		else()
@@ -277,6 +289,34 @@ else()
 	message(STATUS "Configuring Panda without threading support.")
 endif()
 
+set(HAVE_POSIX_THREADS FALSE)
+if(NOT WIN32)
+	find_path(PTHREAD_IPATH
+		NAMES "pthread.h"
+		PATHS "/usr/include"
+	)
+	if(PTHREAD_IPATH)
+		set(HAVE_POSIX_THREADS TRUE)
+		set(THREAD_LIBS pthread)
+		set(CMAKE_CXX_FLAGS "-pthread")
+		set(CMAKE_CXX_FLAGS_DEBUG "-pthread")
+		set(CMAKE_CXX_FLAGS_RELEASE "-pthread")
+		set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-pthread")
+		set(CMAKE_CXX_FLAGS_MINSIZEREL "-pthread")
+	endif()
+endif()
+
+
+### Configure pipelining ###
+if(NOT DEFINED DO_PIPELINING)
+	if(NOT DEFINED OPTIMIZE OR OPTIMIZE LESS 2)
+		set(DO_PIPELINING TRUE CACHE BOOL "If true, compile with pipelined rendering.")
+	else()
+		set(DO_PIPELINING FALSE CACHE BOOL "If true, compile with pipelined rendering.")
+	endif()
+endif()
+
+### Configure OS X options ###
 if(OSX_PLATFORM)
 	set(UNIVERSIAL_BINARIES TRUE CACHE BOOL "If true, compiling will create universal OS X binaries.")
 	if(UNIVERSAL_BINARIES)
