@@ -84,16 +84,17 @@ config_package(CGDX10 COMMENT "Cg DX10 API")
 find_package(VRPN)
 config_package(VRPN)
 
+# Find and configure zlib
+find_package(ZLIB)
+mangle_package(ZLIB)
+config_package(ZLIB COMMENT "zlib")
+
 
 
 
 ########
 # TODO #
 ########
-
-# Find and configure zlib
-#find_package(zlib)
-#config_package(ZLIB COMMENT "zlib")
 
 # Find and configure Miles sound system
 #find_package(RAD_MSS)

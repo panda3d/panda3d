@@ -1,4 +1,5 @@
 # Filename: FindCg.cmake
+# Author: kestred (8 Dec, 2013)
 #
 # Usage:
 #   find_package(Cg [REQUIRED] [QUIET])
