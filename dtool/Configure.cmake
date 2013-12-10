@@ -111,10 +111,10 @@ find_package(OpenAL QUIET)
 mangle_package(OpenAL)
 config_package(OPENAL COMMENT "OpenAL sound library")
 
+
 ########
 # TODO #
 ########
-
 
 # Find and configure PhysX
 #find_package(PhysX)
