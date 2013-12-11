@@ -111,6 +111,12 @@ find_package(OpenAL QUIET)
 mangle_package(OpenAL)
 config_package(OPENAL COMMENT "OpenAL sound library")
 
+# Find and configure GTK
+find_package(GTK2 QUIET)
+mangle_package(GTK2)
+config_package(GTK COMMENT "gtk+-2")
+
+
 
 ########
 # TODO #
@@ -123,10 +129,6 @@ config_package(OPENAL COMMENT "OpenAL sound library")
 # Find and configure SpeedTree
 #find_package(SpeedTree)
 #config_package(SPEEDTREE COMMENT "SpeedTree")
-
-# Find and configure GTK
-#find_package(GTK)
-#config_package(GTK COMMENT "gtk+-2")
 
 # Find and configure Freetype
 #find_package(Freetype)
