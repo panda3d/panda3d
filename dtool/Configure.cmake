@@ -116,6 +116,10 @@ find_package(GTK2 QUIET)
 mangle_package(GTK2)
 config_package(GTK COMMENT "gtk+-2")
 
+# Find and configure Freetype
+find_package(Freetype)
+mangle_package(Freetype)
+config_package(FREETYPE COMMENT "Freetype")
 
 
 ########
@@ -130,9 +134,6 @@ config_package(GTK COMMENT "gtk+-2")
 #find_package(SpeedTree)
 #config_package(SPEEDTREE COMMENT "SpeedTree")
 
-# Find and configure Freetype
-#find_package(Freetype)
-#config_package(FREETYPE COMMENT "Freetype")
 
 # Find and configure WxWidgets
 #find_package(WxWidgets)

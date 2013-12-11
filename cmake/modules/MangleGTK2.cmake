@@ -1,7 +1,7 @@
-# Filename: MangleOpenAL.cmake
-# Author: kestred (28 Nov, 2013)
+# Filename: MangleGTK2.cmake
+# Author: kestred (11 Dec, 2013)
 #
-# MangleOpenAL replaces the output variables of the builtin FindOpenAL
+# MangleGTK2 replaces the output variables of the builtin FindGTK2
 # with vars matching Panda3D's existing config-var names.
 #
 
@@ -19,6 +19,7 @@ if(GTK2_FOUND)
 	mark_as_advanced(GTK_LPATH)
 
 	unset(GTK2_FOUND)
+	unset(GTK2_LIBRARY)
 	unset(GTK2_INCLUDE_DIR)
 	unset(GTK2_LIBRARY_DIR)
 	unset(GTK2_MAJOR_VERSION)
