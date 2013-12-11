@@ -120,6 +120,9 @@ config_package(GTK COMMENT "gtk+-2")
 find_package(Freetype)
 mangle_package(Freetype)
 config_package(FREETYPE COMMENT "Freetype")
+if(HAVE_FREETYPE AND NOT WIN32)
+	set(FREETYPE_CONFIG freetype-config)
+endif()
 
 
 ########
