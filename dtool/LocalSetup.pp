@@ -602,9 +602,6 @@ $[cdefine HAVE_DINKUM]
 /* Define if we have STL hash_map etc. available  */
 $[cdefine HAVE_STL_HASH]
 
-/* Define if we have a gettimeofday() function. */
-$[cdefine HAVE_GETTIMEOFDAY]
-
 /* Define if gettimeofday() takes only one parameter. */
 $[cdefine GETTIMEOFDAY_ONE_PARAM]
 
