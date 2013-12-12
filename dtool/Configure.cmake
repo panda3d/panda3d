@@ -136,7 +136,7 @@ mangle_package(GTK2)
 config_package(GTK COMMENT "gtk+-2")
 
 # Find and configure Freetype
-find_package(Freetype)
+find_package(Freetype QUIET)
 mangle_package(Freetype)
 config_package(FREETYPE COMMENT "Freetype")
 if(HAVE_FREETYPE AND NOT WIN32)
@@ -246,7 +246,7 @@ endif()
 # Find and configure libRocket
 #find_package(Rocket)
 #config_package(ROCKET COMMENT "libRocket")
-#if(HAVE_ROCKET)
+#if(HAVE_ROCKET AND HAVE_PYTHON)
 #	# Check for rocket python bindings
 #	if(FOUND_ROCKET_PYTHON)
 #		option(USE_ROCKET_PYTHON "If on, compile Panda3D with python bindings for libRocket" ON)
@@ -261,6 +261,8 @@ endif()
 #	else()
 #		message(STATUS "+ libRocket without Python bindings")
 #	endif()
+#else()
+#	unset(USE_ROCKET_PYTHON CACHE)
 #endif()
 
 # Find and configure Bullet

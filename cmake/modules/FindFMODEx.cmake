@@ -9,6 +9,10 @@
 #   FMODEX_IPATH   - the FMOD Ex include directory
 #   FMODEX_LPATH   - the FMOD Ex library directory
 #   FMODEX_LIBS    - the FMOD Ex components found
+#   FMODEX_LIBRARY - the path to the library binary
+#
+#   FMODEX_32_LIBRARY   - the filepath of the Miles SDK 32-bit library
+#   FMOXEX_64_LIBRARY   - the filepath of the Miles SDK 64-bit library
 #
 
 if(FMODEX_LPATH AND FMODEX_IPATH)
@@ -89,8 +93,8 @@ else()
 
 	mark_as_advanced(FMODEX_IPATH)
 	mark_as_advanced(FMODEX_LPATH)
+	mark_as_advanced(FMODEX_LIBRARY)
 	mark_as_advanced(FMODEX_32_LIBRARY)
 	mark_as_advanced(FMODEX_64_LIBRARY)
 	unset(FMODEX_LIBRARY_DIR)
-	unset(FMODEX_LIBRARY CACHE)
 endif()

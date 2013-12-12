@@ -17,11 +17,7 @@ if(JPEG_FOUND)
 	mark_as_advanced(JPEG_LPATH)
 
 	unset(JPEG_FOUND)
-	unset(JPEG_LIBRARY CACHE)
-	unset(JPEG_LIBRARIES)
-	unset(JPEG_INCLUDE_DIR CACHE)
 	unset(JPEG_LIBRARY_DIR)
-else()
-	unset(JPEG_LIBRARY CACHE)
-	unset(JPEG_INCLUDE_DIR CACHE)
 endif()
+
+unset(JPEG_INCLUDE_DIR CACHE)

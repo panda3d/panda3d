@@ -15,7 +15,8 @@ set(P3CPPPARSER_HEADERS
 	cppSimpleType.h cppStructType.h cppTBDType.h
 	cppTemplateParameterList.h cppTemplateScope.h cppToken.h
 	cppType.h cppTypeDeclaration.h cppTypeParser.h
-	cppTypeProxy.h cppTypedef.h cppUsing.h cppVisibility.h)
+	cppTypeProxy.h cppTypedef.h cppUsing.h cppVisibility.h
+)
 
 set(P3CPPPARSER_SOURCES
 	cppArrayType.cxx ${CMAKE_CURRENT_BINARY_DIR}/cppBison.cxx
@@ -33,17 +34,30 @@ set(P3CPPPARSER_SOURCES
 	cppTemplateParameterList.cxx cppTemplateScope.cxx
 	cppToken.cxx cppType.cxx cppTypeDeclaration.cxx
 	cppTypeParser.cxx cppTypeProxy.cxx cppTypedef.cxx
-	cppUsing.cxx cppVisibility.cxx)
+	cppUsing.cxx cppVisibility.cxx
+)
 
-find_package(BISON)
+# Bison is required for CPPParser
+# Check for it here, so that cppparser can be compiled individually
+if(NOT HAVE_BISON)
+	find_package(BISON REQUIRED QUIET)
+
+	if(NOT BISON_FOUND)
+		message(FATAL_ERROR "CPPParser requires Bison.")
+	endif()
+endif()
+
 bison_target(cppParser
 	cppBison.yxx
 	${CMAKE_CURRENT_BINARY_DIR}/cppBison.cxx
-	COMPILE_FLAGS --defines=${CMAKE_CURRENT_BINARY_DIR}/cppBison.h)
+	COMPILE_FLAGS --defines=${CMAKE_CURRENT_BINARY_DIR}/cppBison.h
+)
+
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_LIST_DIR})
 
 add_library(p3cppParser STATIC
 	${P3CPPPARSER_HEADERS}
-	${P3CPPPARSER_SOURCES})
+	${P3CPPPARSER_SOURCES}
+)
 add_dependencies(p3cppParser cppParser)

@@ -5,10 +5,11 @@
 #   find_package(Tar [REQUIRED] [QUIET])
 #
 # It sets the following variables:
-#   FOUND_TAR  - system has libtar
-#   TAR_IPATH - the tar include directory
-#   TAR_LPATH - the tar library directory
-#   TAR_LIBS  - the tar components found
+#   FOUND_TAR   - system has libtar
+#   TAR_IPATH   - the tar include directory
+#   TAR_LPATH   - the tar library directory
+#   TAR_LIBS    - the tar components found
+#   TAR_LIBRARY - the path to the library binary
 #
 
 if(TAR_IPATH AND TAR_LPATH)
@@ -42,7 +43,7 @@ else()
 	endif()
 
 	unset(TAR_LIBRARY_DIR)
-	unset(TAR_LIBRARY CACHE)
 	mark_as_advanced(TAR_IPATH)
 	mark_as_advanced(TAR_LPATH)
+	mark_as_advanced(TAR_LIBRARY)
 endif()

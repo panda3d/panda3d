@@ -5,12 +5,14 @@
 #   find_package(Squish [REQUIRED] [QUIET])
 #
 # It sets the following variables:
-#   FOUND_SQUISH  - system has squish
-#   SQUISH_IPATH - the squish include directory
-#   SQUISH_LPATH - the squish library directory
+#   FOUND_SQUISH   - system has squish
+#   SQUISH_IPATH   - the squish include directory
+#   SQUISH_LPATH   - the squish library directory
+#   SQUISH_LIBS    - the squish components found
+#   SQUISH_LIBRARY - the path to the library binary
+#
 #   SQUISH_RELEASE_LIBRARY - the filepath of the squish release library
-#   SQUISH_DEBUG_LIBRARY - the filepath of the squish debug library
-#   SQUISH_LIBS  - the squish components found
+#   SQUISH_DEBUG_LIBRARY   - the filepath of the squish debug library
 #
 
 if(SQUISH_IPATH AND SQUISH_LPATH)
@@ -92,9 +94,9 @@ else()
 	endif()
 
 	unset(SQUISH_LIBRARY_DIR)
-	unset(SQUISH_LIBRARY CACHE)
 	mark_as_advanced(SQUISH_IPATH)
 	mark_as_advanced(SQUISH_LPATH)
+	mark_as_advanced(SQUISH_LIBRARY)
 	mark_as_advanced(SQUISH_RELEASE_LIBRARY)
 	mark_as_advanced(SQUISH_DEBUG_LIBRARY)
 endif()

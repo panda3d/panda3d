@@ -28,12 +28,9 @@ endif()
 string(REPLACE "." "," P3D_PLUGIN_DLL_COMMA_VERSION "${P3D_PLUGIN_DLL_DOT_VERSION}")
 
 
-## Installation Config ##
+## Dtool Config ##
 set(INSTALL_DIR "/usr/local/panda" CACHE STRING "The directory in which to install Panda3D.")
-
 set(DTOOL_INSTALL "${INSTALL_DIR}" CACHE STRING "The directory in which to install the dtool package.")
-
-set(DEFAULT_PRC_DIR "${INSTALL_DIR}/etc" CACHE STRING "Panda uses prc files for runtime configuration. Panda will search the default .prc directory if the PRC_PATH and PRC_DIR environment variables are not defined.")
 
 include(Configure.cmake)
 

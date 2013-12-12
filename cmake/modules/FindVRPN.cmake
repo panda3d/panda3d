@@ -5,9 +5,10 @@
 #   find_package(Tar [REQUIRED] [QUIET])
 #
 # It sets the following variables:
-#   FOUND_VRPN  - system has libvrpn
-#   VRPN_IPATH - the vrpn include directory
-#   VRPN_LPATH - the vrpn library directory
+#   FOUND_VRPN   - system has libvrpn
+#   VRPN_IPATH   - the vrpn include directory
+#   VRPN_LPATH   - the vrpn library directory
+#   VRPN_LIBRARY - the path to the library binary
 #
 
 if(VRPN_IPATH AND VRPN_LPATH)
@@ -41,7 +42,7 @@ else()
 	endif()
 
 	unset(VRPN_LIBRARY_DIR)
-	unset(VRPN_LIBRARY CACHE)
 	mark_as_advanced(VRPN_IPATH)
 	mark_as_advanced(VRPN_LPATH)
+	mark_as_advanced(VRPN_LIBRARY)
 endif()

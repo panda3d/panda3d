@@ -18,6 +18,8 @@ if(GTK2_FOUND)
 	mark_as_advanced(GTK_IPATH)
 	mark_as_advanced(GTK_LPATH)
 
+	set(GTK_LIBRARIES GTK2_LIBRARIES)
+
 	unset(GTK2_FOUND)
 	unset(GTK2_LIBRARY)
 	unset(GTK2_INCLUDE_DIR)

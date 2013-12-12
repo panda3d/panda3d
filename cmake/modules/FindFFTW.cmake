@@ -6,8 +6,9 @@
 #
 # It sets the following variables:
 #  FOUND_FFTW  - true if fftw is found on the system
-#  FFTW_IPATH - the fftw include directory
-#  FFTW_LPATH - the fftw library directory
+#  FFTW_IPATH   - the fftw include directory
+#  FFTW_LPATH   - the fftw library directory
+#  FFTW_LIBRARY - the path to the library binary
 #
 # The following variables will be checked by the function
 #   FFTW_USE_STATIC_LIBS - if true, only static libraries are found
@@ -121,9 +122,9 @@ else()
 	endif()
 
 	unset(FFTW_LIBRARY_DIR)
-	unset(FFTW_LIBRARY CACHE)
 	mark_as_advanced(FFTW_IPATH)
 	mark_as_advanced(FFTW_LPATH)
+	mark_as_advanced(FFTW_LIBRARY)
 	mark_as_advanced(FFTW_FFTWF_LIBRARY)
 	mark_as_advanced(FFTW_FFTWL_LIBRARY)
 endif()

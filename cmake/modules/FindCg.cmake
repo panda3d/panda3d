@@ -9,11 +9,13 @@
 #   CG_IPATH   - the NvidiaCg include directory
 #   CG_LPATH   - the NvidiaCg library directory
 #   CG_LIBS    - the Cg components found
+#   CG_LIBRARY - the path to the library binary
 #
-#   FOUND_CGGL - system has CgGL
-#   CGGL_IPATH - the CgGL include directory
-#   CGGL_LPATH - the CgGL library directory
-#   CGGL_LIBS  - the CgGL components found
+#   FOUND_CGGL   - system has CgGL
+#   CGGL_IPATH   - the CgGL include directory
+#   CGGL_LPATH   - the CgGL library directory
+#   CGGL_LIBS    - the CgGL components found
+#   CGGL_LIBRARY - the path to the library binary
 #
 
 
@@ -58,8 +60,6 @@ macro(find_cggl)
 		set(CGGL_LPATH "${CGGL_LIBRARY_DIR}" CACHE PATH "The path to the CgGL library directory.") # Library path
 
 		unset(CGGL_LIBRARY_DIR)
-		unset(CGGL_LIBRARY CACHE)
-
 
 		# Check if we have everything we need
 		if(CGGL_IPATH AND CGGL_LPATH)
@@ -73,6 +73,7 @@ macro(find_cggl)
 
 		mark_as_advanced(CGGL_IPATH)
 		mark_as_advanced(CGGL_LPATH)
+		mark_as_advanced(CGGL_LIBRARY)
 	endif()
 endmacro()
 
@@ -165,7 +166,6 @@ else()
 		set(CG_LPATH "${CG_LIBRARY_DIR}" CACHE PATH "The path to NvidiaCG's library directory.") # Library path
 
 		unset(CG_LIBRARY_DIR)
-		unset(CG_LIBRARY CACHE)
 	endif()
 
 	# Check if we have everything we need
@@ -186,4 +186,5 @@ else()
 
 	mark_as_advanced(CG_IPATH)
 	mark_as_advanced(CG_LPATH)
+	mark_as_advanced(CG_LIBRARY)
 endif()
