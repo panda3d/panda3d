@@ -60,9 +60,9 @@ function(config_package PKG_NAME)
 		endif()
 
 		if(CONFIG_DISABLE_EVERYTHING)
-			set(USE_${PKG_NAME} FALSE CACHE BOOL "If true, compile Panda3D with ${DISPLAY_NAME}")
+			option(USE_${PKG_NAME} "If on, compile Panda3D with ${DISPLAY_NAME}" OFF)
 		else()
-			set(USE_${PKG_NAME} TRUE CACHE BOOL "If true, compile Panda3D with ${DISPLAY_NAME}")
+			option(USE_${PKG_NAME} "If on, compile Panda3D with ${DISPLAY_NAME}" ON)
 		endif()
 
 
@@ -83,14 +83,14 @@ function(config_package PKG_NAME)
 
 			# If using Discovery, we want to silently disable missing packages
 			if(CONFIG_DISABLE_MISSING)
-				set(USE_${PKG_NAME} FALSE CACHE BOOL "If true, compile Panda3D with ${DISPLAY_NAME}")
+				option(USE_${PKG_NAME} "If on, compile Panda3D with ${DISPLAY_NAME}" OFF)
 			endif()
 		endif()
 
 	else()
 		# If using DISCOVERED <OR> NOTHING, we want to silently disable missing packages
 		if(CONFIG_DISABLE_MISSING OR CONFIG_DISABLE_EVERYTHING)
-			set(USE_${PKG_NAME} FALSE CACHE BOOL "If true, compile Panda3D with ${DISPLAY_NAME}")
+			option(USE_${PKG_NAME} "If on, compile Panda3D with ${DISPLAY_NAME}" OFF)
 
 		else()
 			# Otherwise, output failure to find package
