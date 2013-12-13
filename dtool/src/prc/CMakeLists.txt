@@ -1,10 +1,6 @@
 include_directories(../dtoolutil)
 include_directories(../dtoolbase)
 
-set(DEFAULT_PRC_DIR "${INSTALL_DIR}/etc" CACHE STRING "Panda uses prc files for runtime configuration. Panda will search the default .prc directory if the PRC_PATH and PRC_DIR environment variables are not defined.")
-set(PRC_DCONFIG_TRUST_LEVEL 0 CACHE STRING "The trust level value for any legacy (DConfig) variables.")
-set(PRC_INC_TRUST_LEVEL 0 CACHE STRING "The amount by which we globally increment the trust level.")
-
 configure_file(prc_parameters.h.cmake
                prc_parameters.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})

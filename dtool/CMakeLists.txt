@@ -27,10 +27,31 @@ else()
 endif()
 string(REPLACE "." "," P3D_PLUGIN_DLL_COMMA_VERSION "${P3D_PLUGIN_DLL_DOT_VERSION}")
 
+# PRC Config settings
+set(PRC_DEFAULT_DIR_ABSOLUTE "" CACHE STRING "Specify the PRC_DEFAULT_DIR as an absolute path.")
+if(NOT PRC_DEFAULT_DIR_ABSOLUTE)
+	set(PRC_DEFAULT_DIR "etc" CACHE STRING
+	"Panda uses prc files for runtime configuration. Panda will search the default
+	.prc directory if the PRC_PATH and PRC_DIR environment variables are not defined.")
+else()
+	set(PRC_DEFAULT_DIR "" CACHE STRING
+	"Panda uses prc files for runtime configuration. Panda will search the default
+	.prc directory if the PRC_PATH and PRC_DIR environment variables are not defined.")
+endif()
+set(PRC_DCONFIG_TRUST_LEVEL 0 CACHE STRING "The trust level value for any legacy (DConfig) variables.")
+set(PRC_INC_TRUST_LEVEL 0 CACHE STRING "The amount by which we globally increment the trust level.")
+if(PRC_DEFAULT_DIR AND PRC_DEFAULT_DIR_ABSOLUTE)
+	message(FATAL_ERROR "Cannot have both PRC_DEFAULT_DIR and PRC_DEFAULT_DIR_ABSOLUTE, choose one.")
+endif()
 
-## Dtool Config ##
-set(INSTALL_DIR "/usr/local/panda" CACHE STRING "The directory in which to install Panda3D.")
-set(DTOOL_INSTALL "${INSTALL_DIR}" CACHE STRING "The directory in which to install the dtool package.")
+# PRC special values for config headers
+if(PRC_DEFAULT_DIR_ABSOLUTE)
+	set(DEFAULT_PRC_DIR ${PRC_ABSOLUTE_DIR})
+else()
+	set(DEFAULT_PRC_DIR "${CMAKE_INSTALL_PREFIX}/panda/${PRC_DEFAULT_DIR}")
+endif()
+
+
 
 include(Configure.cmake)
 
