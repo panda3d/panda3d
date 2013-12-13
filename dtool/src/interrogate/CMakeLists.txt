@@ -6,20 +6,6 @@ include_directories(../dtoolbase)
 include_directories(../pystub)
 include_directories(../prc)
 
-# OpenSSL is required for Interrogate
-# Check for it here, so that Interrogate can be compiled individually
-if(HAVE_OPENSSL)
-	include_directories(OPENSSL_IPATH)
-else()
-	find_package(OpenSSL REQUIRED QUIET)
-
-	if(NOT OPENSSL_FOUND)
-		message(FATAL_ERROR "Interrogate requires OpenSSL.")
-	endif()
-
-	include_directories(${OPENSSL_INCLUDE_DIR})
-endif()
-
 set(INTERROGATE_HEADERS
 	functionRemap.h
 	functionWriter.h
