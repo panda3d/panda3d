@@ -14,7 +14,7 @@
 #   FFTW_ROOT - if set, the libraries are exclusively searched under this path
 #
 
-if(NOT FFTW_INCLUDE_DIR AND NOT FFTW_LIBRARY_DIR)
+if(NOT FFTW_INCLUDE_DIR OR NOT FFTW_LIBRARY_DIR)
   # Check if we can use PkgConfig
   find_package(PkgConfig QUIET)
 

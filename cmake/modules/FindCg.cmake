@@ -4,7 +4,7 @@
 # Usage:
 #   find_package(Cg [REQUIRED] [QUIET])
 #
-# It sets the following variables:
+# Once done this will define:
 #   CG_FOUND         - system has NvidiaCg
 #   CG_INCLUDE_DIR   - the NvidiaCg include directory
 #   CG_LIBRARY_DIR   - the NvidiaCg library directory
@@ -21,7 +21,10 @@
 
 # Find Cg for OpenGL
 macro(find_cggl)
-  if(NOT CGGL_LIBRARY_DIR AND NOT CGGL_INCLUDE_DIR)
+  if(Cg_FIND_QUIETLY)
+    set(CgGL_FIND_QUIETLY TRUE)
+  endif()
+  if(NOT CGGL_LIBRARY_DIR OR NOT CGGL_INCLUDE_DIR)
     # Find the include directory
     find_path(CGGL_INCLUDE_DIR
       NAMES "cgGL.h"
@@ -41,6 +44,7 @@ macro(find_cggl)
       PATHS "C:/Program Files/Cg"
             "C:/Program Files/NVIDIA Corporation/Cg"
             "/usr"
+            "/usr/lib/x86_64-linux-gnu"
             "/usr/local"
             "/opt/Cg"
             "/opt/nvidia-cg-toolkit" # Gentoo
@@ -80,7 +84,7 @@ endmacro()
 
 
 # Find base Nvidia Cg
-if(NOT CG_LIBRARY_DIR AND NOT CG_INCLUDE_DIR)
+if(NOT CG_LIBRARY_DIR OR NOT CG_INCLUDE_DIR)
   # On OSX default to using the framework version of Cg.
   if(APPLE)
     include(${CMAKE_ROOT}/Modules/CMakeFindFrameworks.cmake)
@@ -125,6 +129,7 @@ if(NOT CG_LIBRARY_DIR AND NOT CG_INCLUDE_DIR)
       PATHS "C:/Program Files/Cg"
             "C:/Program Files/NVIDIA Corporation/Cg"
             "/usr"
+            "/usr/lib/x86_64-linux-gnu"
             "/usr/local"
             "/opt/Cg"
             "/opt/nvidia-cg-toolkit" # Gentoo
@@ -142,7 +147,7 @@ endif()
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(Cg DEFAULT_MSG CG_LIBRARY CG_INCLUDE_DIR CG_LIBRARY_DIR)
 
-if(FOUND_CG)
+if(CG_INCLUDE_DIR AND CG_LIBRARY_DIR)
   find_cggl()
   find_cgdx8()
   find_cgdx9()

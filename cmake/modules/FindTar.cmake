@@ -5,19 +5,15 @@
 #   find_package(Tar [REQUIRED] [QUIET])
 #
 # It sets the following variables:
-#   FOUND_TAR   - system has libtar
-#   TAR_IPATH   - the tar include directory
-#   TAR_LPATH   - the tar library directory
-#   TAR_LIBS    - the tar components found
+#   TAR_FOUND   - system has libtar
+#   TAR_INCLUDE_DIR   - the tar include directory
+#   TAR_LIBRARY_DIR   - the tar library directory
 #   TAR_LIBRARY - the path to the library binary
 #
 
-if(TAR_IPATH AND TAR_LPATH)
-	set(FOUND_TAR TRUE)
-	set(TAR_LIBS tar)
-else()
+if(NOT TAR_INCLUDE_DIR OR NOT TAR_LIBRARY_DIR)
 	# Find the libtar include files
-	find_path(TAR_IPATH
+	find_path(TAR_INCLUDE_DIR
 		NAMES "libtar.h"
 		PATHS "/usr/include"
 		      "/usr/local/include"
@@ -34,16 +30,12 @@ else()
 		PATH_SUFFIXES "lib" "lib32" "lib64"
 	)
 	get_filename_component(TAR_LIBRARY_DIR "${TAR_LIBRARY}" PATH)
-	set(TAR_LPATH "${TAR_LIBRARY_DIR}" CACHE PATH "The path to libtar's library directory.") # Library path
+	set(TAR_LIBRARY_DIR "${TAR_LIBRARY_DIR}" CACHE PATH "The path to libtar's library directory.") # Library path
 
-	# Check if we have everything we need
-	if(TAR_IPATH AND TAR_LPATH)
-		set(FOUND_TAR TRUE)
-		set(TAR_LIBS tar)
-	endif()
-
-	unset(TAR_LIBRARY_DIR)
-	mark_as_advanced(TAR_IPATH)
-	mark_as_advanced(TAR_LPATH)
+	mark_as_advanced(TAR_INCLUDE_DIR)
+	mark_as_advanced(TAR_LIBRARY_DIR)
 	mark_as_advanced(TAR_LIBRARY)
 endif()
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(Tar DEFAULT_MSG TAR_LIBRARY TAR_INCLUDE_DIR TAR_LIBRARY_DIR)

@@ -1,21 +1,21 @@
-# Filename: FindTar.cmake
+# Filename: FindVRPN.cmake
 # Author: kestred (29 Nov, 2013)
 #
 # Usage:
-#   find_package(Tar [REQUIRED] [QUIET])
+#   find_package(VRPN [REQUIRED] [QUIET])
 #
 # It sets the following variables:
-#   FOUND_VRPN   - system has libvrpn
-#   VRPN_IPATH   - the vrpn include directory
-#   VRPN_LPATH   - the vrpn library directory
+#   VRPN_FOUND   - system has libvrpn
+#   VRPN_INCLUDE_DIR   - the vrpn include directory
+#   VRPN_LIBRARY_DIR   - the vrpn library directory
 #   VRPN_LIBRARY - the path to the library binary
 #
 
-if(VRPN_IPATH AND VRPN_LPATH)
+if(VRPN_INCLUDE_DIR AND VRPN_LIBRARY_DIR)
 	set(FOUND_VRPN TRUE)
 else()
 	# Find the vrpn include files
-	find_path(VRPN_IPATH
+	find_path(VRPN_INCLUDE_DIR
 		NAMES "vrpn_Keyboard.h"
 		PATHS "/usr/include"
 		      "/usr/local/include"
@@ -34,15 +34,12 @@ else()
 		PATH_SUFFIXES "lib" "lib32" "lib64"
 	)
 	get_filename_component(VRPN_LIBRARY_DIR "${VRPN_LIBRARY}" PATH)
-	set(VRPN_LPATH "${VRPN_LIBRARY_DIR}" CACHE PATH "The path to vrpn's library directory.") # Library path
+	set(VRPN_LIBRARY_DIR "${VRPN_LIBRARY_DIR}" CACHE PATH "The path to vrpn's library directory.") # Library path
 
-	# Check if we have everything we need
-	if(VRPN_IPATH AND VRPN_LPATH)
-		set(FOUND_VRPN TRUE)
-	endif()
-
-	unset(VRPN_LIBRARY_DIR)
-	mark_as_advanced(VRPN_IPATH)
-	mark_as_advanced(VRPN_LPATH)
+	mark_as_advanced(VRPN_INCLUDE_DIR)
+	mark_as_advanced(VRPN_LIBRARY_DIR)
 	mark_as_advanced(VRPN_LIBRARY)
 endif()
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(VRPN DEFAULT_MSG VRPN_LIBRARY VRPN_INCLUDE_DIR VRPN_LIBRARY_DIR)

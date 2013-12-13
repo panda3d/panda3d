@@ -4,49 +4,22 @@
 # Usage:
 #   find_package(Miles [REQUIRED] [QUIET])
 #
-# It sets the following variables:
-#   FOUND_RAD_MSS   - system has Radgame's Miles SDK
-#   RAD_MSS_IPATH   - the Miles SDK include directory
-#   RAD_MSS_LPATH   - the Miles SDK library directory
-#   RAD_MSS_LIBS    - the Miles SDK components found
-#   RAD_MSS_LIBRARY - the path to the library binary
+# Once done this will define:
+#   MILES_FOUND       - system has Radgame's Miles SDK
+#   RAD_MSS_FOUND     - system has Radgame's Miles SDK
+#   MILES_INCLUDE_DIR - the Miles SDK include directory
+#   MILES_LIBRARY_DIR - the Miles SDK library directory
+#   MILES_LIBRARY     - the path to the library binary
 #
-#   RAD_MSS_RELEASE_LIBRARY        - the filepath of the Miles SDK release library
-#   RAD_MSS_RELWITHDEBINFO_LIBRARY - the filepath of the Miles SDK optimize debug library
-#   RAD_MSS_MINSIZE_LIBRARY        - the filepath of the Miles SDK minimum size library
-#   RAD_MSS_DEBUG_LIBRARY          - the filepath of the Miles SDK debug library
+#   MILES_RELEASE_LIBRARY - the filepath of the Miles SDK release library
+#   MILES_RELDBG_LIBRARY  - the filepath of the Miles SDK optimize debug library
+#   MILES_MINSIZE_LIBRARY - the filepath of the Miles SDK minimum size library
+#   MILES_DEBUG_LIBRARY   - the filepath of the Miles SDK debug library
 #
 
-if(RAD_MSS_IPATH AND RAD_MSS_LPATH)
-  set(FOUND_RAD_MSS TRUE)
-  set(RAD_MSS_LIBS Mss32)
-
-
-  # Choose library
-  if(CMAKE_BUILD_TYPE MATCHES "Release" AND RAD_MSS_RELEASE_LIBRARY)
-    unset(RAD_MSS_LIBRARY)
-    set(RAD_MSS_LIBRARY ${RAD_MSS_RELEASE_LIBRARY} CACHE FILEPATH "The Miles SDK library file.")
-  elseif(CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo" AND RAD_MSS_RELWITHDEBINFO_LIBRARY)
-    unset(RAD_MSS_LIBRARY)
-    set(RAD_MSS_LIBRARY ${RAD_MSS_RELWITHDEBINFO_LIBRARY} CACHE FILEPATH "The Miles SDK library file.")
-  elseif(CMAKE_BUILD_TYPE MATCHES "MinSizeRel" AND RAD_MSS_MINSIZE_LIBRARY)
-    unset(RAD_MSS_LIBRARY)
-    set(RAD_MSS_LIBRARY ${RAD_MSS_MINSIZE_LIBRARY} CACHE FILEPATH "The Miles SDK library file.")
-  elseif(CMAKE_BUILD_TYPE MATCHES "Debug" AND RAD_MSS_DEBUG_LIBRARY)
-    unset(RAD_MSS_LIBRARY)
-    set(RAD_MSS_LIBRARY ${RAD_MSS_DEBUG_LIBRARY} CACHE FILEPATH "The Miles SDK library file.")
-  endif()
-
-  # Set library path
-  if(DEFINED RAD_MSS_LIBRARY)
-    unset(RAD_MSS_LPATH)
-    get_filename_component(RAD_MSS_LIBRARY_DIR "${RAD_MSS_LIBRARY}" PATH)
-    set(RAD_MSS_LPATH "${RAD_MSS_LIBRARY_DIR}" CACHE PATH "The path to the Miles SDK library directory.")
-    unset(RAD_MSS_LIBRARY_DIR)
-  endif()
-else()
+if(NOT MILES_INCLUDE_DIR OR NOT MILES_LIBRARY_DIR)
   # Find the Miles SDK include files
-  find_path(RAD_MSS_IPATH
+  find_path(MILES_INCLUDE_DIR
     NAMES "miles.h"
     PATHS "/usr/include"
           "/usr/local/include"
@@ -58,7 +31,7 @@ else()
   )
 
   # Find the Miles SDK libraries (.a, .so)
-  find_library(RAD_MSS_RELEASE_LIBRARY
+  find_library(MILES_RELEASE_LIBRARY
     NAMES "miles"
     PATHS "/usr"
           "/usr/local"
@@ -70,7 +43,7 @@ else()
           "C:/Program Files (x86)/Miles6"
     PATH_SUFFIXES "lib" "lib32"
   )
-  find_library(RAD_MSS_MINSIZE_LIBRARY
+  find_library(MILES_MINSIZE_LIBRARY
     NAMES "miles_s"
     PATHS "/usr"
           "/usr/local"
@@ -81,7 +54,7 @@ else()
           "C:/Program Files (x86)/Miles6"
     PATH_SUFFIXES "lib" "lib32"
   )
-  find_library(RAD_MSS_RELWITHDEBINFO_LIBRARY
+  find_library(MILES_RELWITHDEBINFO_LIBRARY
     NAMES "miles_rd"
     PATHS "/usr"
           "/usr/local"
@@ -92,7 +65,7 @@ else()
           "C:/Program Files (x86)/Miles6"
     PATH_SUFFIXES "lib" "lib32"
   )
-  find_library(RAD_MSS_DEBUG_LIBRARY
+  find_library(MILES_DEBUG_LIBRARY
     NAMES "miles_d"
     PATHS "/usr"
           "/usr/local"
@@ -105,32 +78,57 @@ else()
   )
 
   # Choose library
-  if(CMAKE_BUILD_TYPE MATCHES "Release" AND RAD_MSS_RELEASE_LIBRARY)
-    set(RAD_MSS_LIBRARY ${RAD_MSS_RELEASE_LIBRARY} CACHE FILEPATH "The Miles SDK library file.")
-  elseif(CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo" AND RAD_MSS_RELWITHDEBINFO_LIBRARY)
-    set(RAD_MSS_LIBRARY ${RAD_MSS_RELWITHDEBINFO_LIBRARY} CACHE FILEPATH "The Miles SDK library file.")
-  elseif(CMAKE_BUILD_TYPE MATCHES "MinSizeRel" AND RAD_MSS_MINSIZE_LIBRARY)
-    set(RAD_MSS_LIBRARY ${RAD_MSS_MINSIZE_LIBRARY} CACHE FILEPATH "The Miles SDK library file.")
-  elseif(CMAKE_BUILD_TYPE MATCHES "Debug" AND RAD_MSS_DEBUG_LIBRARY)
-    set(RAD_MSS_LIBRARY ${RAD_MSS_DEBUG_LIBRARY} CACHE FILEPATH "The Miles SDK library file.")
+  if(CMAKE_BUILD_TYPE MATCHES "Release" AND MILES_RELEASE_LIBRARY)
+    set(MILES_LIBRARY ${MILES_RELEASE_LIBRARY} CACHE FILEPATH "The Miles SDK library file.")
+  elseif(CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo" AND MILES_RELDBG_LIBRARY)
+    set(MILES_LIBRARY ${MILES_RELWITHDEBINFO_LIBRARY} CACHE FILEPATH "The Miles SDK library file.")
+  elseif(CMAKE_BUILD_TYPE MATCHES "MinSizeRel" AND MILES_MINSIZE_LIBRARY)
+    set(MILES_LIBRARY ${MILES_MINSIZE_LIBRARY} CACHE FILEPATH "The Miles SDK library file.")
+  elseif(CMAKE_BUILD_TYPE MATCHES "Debug" AND MILES_DEBUG_LIBRARY)
+    set(MILES_LIBRARY ${MILES_DEBUG_LIBRARY} CACHE FILEPATH "The Miles SDK library file.")
   endif()
 
   # Set library path
-  get_filename_component(RAD_MSS_LIBRARY_DIR "${RAD_MSS_LIBRARY}" PATH)
-  set(RAD_MSS_LPATH "${RAD_MSS_LIBRARY_DIR}" CACHE PATH "The path to the Miles SDK library directory.")
+  get_filename_component(MILES_LIBRARY_DIR "${MILES_LIBRARY}" PATH)
+  set(MILES_LIBRARY_DIR "${MILES_LIBRARY_DIR}" CACHE PATH "The path to the Miles SDK library directory.")
 
   # Check if we have everything we need
-  if(RAD_MSS_IPATH AND RAD_MSS_LPATH)
-    set(FOUND_RAD_MSS TRUE)
-    set(RAD_MSS_LIBS Mss32)
+  if(MILES_INCLUDE_DIR AND MILES_LIBRARY_DIR)
+    set(FOUND_MILES TRUE)
+    set(MILES_LIBS Mss32)
   endif()
 
-  unset(RAD_MSS_LIBRARY_DIR)
-  mark_as_advanced(RAD_MSS_IPATH)
-  mark_as_advanced(RAD_MSS_LPATH)
-  mark_as_advanced(RAD_MSS_LIBRARY)
-  mark_as_advanced(RAD_MSS_DEBUG_LIBRARY)
-  mark_as_advanced(RAD_MSS_RELEASE_LIBRARY)
-  mark_as_advanced(RAD_MSS_RELWITHDEBINFO_LIBRARY)
-  mark_as_advanced(RAD_MSS_MINSIZE_LIBRARY)
+  mark_as_advanced(MILES_INCLUDE_DIR)
+  mark_as_advanced(MILES_DEBUG_LIBRARY)
+  mark_as_advanced(MILES_RELEASE_LIBRARY)
+  mark_as_advanced(MILES_RELWITHDEBINFO_LIBRARY)
+  mark_as_advanced(MILES_MINSIZE_LIBRARY)
 endif()
+
+# Choose library
+if(CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo" AND MILES_RELDBG_LIBRARY)
+  unset(MILES_LIBRARY CACHE)
+  set(MILES_LIBRARY ${MILES_RELDBG_LIBRARY} CACHE FILEPATH "The Miles SDK library file.")
+elseif(CMAKE_BUILD_TYPE MATCHES "MinSizeRel" AND MILES_MINSIZE_LIBRARY)
+  unset(MILES_LIBRARY CACHE)
+  set(MILES_LIBRARY ${MILES_MINSIZE_LIBRARY} CACHE FILEPATH "The Miles SDK library file.")
+elseif(CMAKE_BUILD_TYPE MATCHES "Debug" AND MILES_DEBUG_LIBRARY)
+  unset(MILES_LIBRARY CACHE)
+  set(MILES_LIBRARY ${MILES_DEBUG_LIBRARY} CACHE FILEPATH "The Miles SDK library file.")
+elseif(MILES_RELEASE_LIBRARY)
+  unset(MILES_LIBRARY CACHE)
+  set(MILES_LIBRARY ${MILES_RELEASE_LIBRARY} CACHE FILEPATH "The Miles SDK library file.")
+endif()
+
+# Set library path
+if(DEFINED MILES_LIBRARY)
+  unset(MILES_LIBRARY_DIR CACHE)
+  get_filename_component(MILES_LIBRARY_DIR "${MILES_LIBRARY}" PATH)
+  set(MILES_LIBRARY_DIR "${MILES_LIBRARY_DIR}" CACHE PATH "The path to the Miles SDK library directory.")
+endif()
+
+mark_as_advanced(MILES_LIBRARY)
+mark_as_advanced(MILES_LIBRARY_DIR)
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(Miles DEFAULT_MSG MILES_LIBRARY MILES_INCLUDE_DIR MILES_LIBRARY_DIR)

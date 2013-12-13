@@ -1,7 +1,6 @@
 message(STATUS "")
 message("Configuring support for the following optional third-party packages:")
 
-
 # Settings to change USE_PACKAGE behavior (these options override cached values)
 set(CONFIG_ENABLE_EVERYTHING Off)
 set(CONFIG_DISABLE_EVERYTHING Off)
@@ -130,7 +129,12 @@ find_package(OpenAL QUIET)
 config_package(OPENAL "OpenAL sound library")
 
 # Find and configure GTK
-find_package(GTK2 QUIET)
+set(Freetype_FIND_QUIETLY TRUE) # Fix for builtin FindGTK2
+set(GTK2_GTK_FIND_QUIETLY TRUE) # Fix for builtin FindGTK2
+find_package(GTK2 QUIET COMPONENTS gtk)
+if(GTK2_FOUND)
+  set(GTK_FOUND TRUE) # Mangle for convenience
+endif()
 config_package(GTK "gtk+-2")
 
 # Find and configure Freetype
@@ -290,8 +294,8 @@ endif()
 
 ### Configure threading support ###
 # Add basic use flag for threading
-option(USE_THREADS "If on, compile Panda3D with threading support." ON)
-if(USE_THREADS)
+option(BUILD_THREADS "If on, compile Panda3D with threading support." ON)
+if(BUILD_THREADS)
   set(HAVE_THREADS TRUE)
 else()
   unset(BUILD_SIMPLE_THREADS CACHE)
@@ -299,7 +303,7 @@ else()
 endif()
 
 # Configure debug threads
-if(NOT DEFINED OPTIMIZE OR OPTIMIZE LESS 3)
+if(CMAKE_BUILD_TYPE MATCHES "Debug")
   option(BUILD_DEBUG_THREADS "If on, enables debugging of thread and sync operations (i.e. mutexes, deadlocks)" ON)
 else()
   option(BUILD_DEBUG_THREADS "If on, enables debugging of thread and sync operations (i.e. mutexes, deadlocks)" OFF)
@@ -355,18 +359,14 @@ endif()
 
 ### Configure pipelining ###
 if(NOT DEFINED BUILD_PIPELINING)
-  if(NOT DEFINED OPTIMIZE OR OPTIMIZE LESS 2)
-    option(BUILD_PIPELINING "If on, compile with pipelined rendering." ON)
-  else()
-    option(BUILD_PIPELINING "If on, compile with pipelined rendering." OFF)
-  endif()
+  option(BUILD_PIPELINING "If on, compile with pipelined rendering." ON)
 endif()
 if(BUILD_PIPELINING)
   set(DO_PIPELINING TRUE)
 endif()
 
 ### Configure OS X options ###
-if(OSX_PLATFORM)
+if(APPLE)
   option(BUILD_UNIVERSIAL_BINARIES "If on, compiling will create universal OS X binaries." ON)
   if(BUILD_UNIVERSAL_BINARIES)
     message(STATUS "Compilation will create universal binaries.")
