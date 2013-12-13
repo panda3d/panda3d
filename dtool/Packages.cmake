@@ -1,5 +1,5 @@
 message(STATUS "")
-message("Configuring support for the following optional third-party packages:")
+message(STATUS "Configuring support for the following optional third-party packages:")
 
 # Settings to change USE_PACKAGE behavior (these options override cached values)
 set(CONFIG_ENABLE_EVERYTHING Off)

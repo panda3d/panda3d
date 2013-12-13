@@ -12,13 +12,29 @@ else()
 default .prc directory if the PRC_PATH and PRC_DIR environment variables
 are not defined.")
 endif()
+if(PRC_DEFAULT_DIR AND PRC_DEFAULT_DIR_ABSOLUTE)
+	message("Using PRC_DEFAULT_DIR_ABSOLUTE instead of PRC_DEFAULT_DIR.")
+endif()
+
+set(PRC_DIR_ENVVARS "PANDA_PRC_DIR" CACHE STRING "")
+set(PRC_PATH_ENVVARS "PANDA_PRC_PATH" CACHE STRING "")
+set(PRC_PATH2_ENVVARS "" CACHE STRING "")
+set(PRC_PATTERNS "*.prc" CACHE STRING "")
+set(PRC_ENCRYPTED_PATTERNS "*.prc.pe" CACHE STRING "")
+set(PRC_ENCRYPTION_KEY "" CACHE STRING "")
+set(PRC_EXECUTABLE_PATTERNS "" CACHE STRING "")
+set(PRC_EXECUTABLE_ARGS_ENVVAR "PANDA_PRC_XARGS" CACHE STRING "")
+set(PRC_PUBLIC_KEYS_FILENAME "" CACHE STRING "")
+set(PRC_RESPECT_TRUST_LEVEL CACHE STRING "")
 set(PRC_DCONFIG_TRUST_LEVEL 0 CACHE STRING
   "The trust level value for any legacy (DConfig) variables.")
 set(PRC_INC_TRUST_LEVEL 0 CACHE STRING
   "The amount by which we globally increment the trust level.")
-if(PRC_DEFAULT_DIR AND PRC_DEFAULT_DIR_ABSOLUTE)
-	message("Using PRC_DEFAULT_DIR_ABSOLUTE instead of PRC_DEFAULT_DIR.")
-endif()
+mark_as_advanced(PRC_DEFAULT_DIR PRC_DEFAULT_DIR_ABSOLUTE PRC_DIR_ENVVARS
+  PRC_PATH_ENVVARS PRC_PATH2_ENVVARS PRC_PATTERNS PRC_ENCRYPTED_PATTERNS
+  PRC_ENCRYPTION_KEY PRC_EXECUTABLE_PATTERNS PRC_EXECUTABLE_ARGS_ENVVAR
+  PRC_PUBLIC_KEYS_FILENAME PRC_RESPECT_TRUST_LEVEL
+  PRC_DCONFIG_TRUST_LEVEL PRC_INC_TRUST_LEVEL)
 
 # PRC special values for config headers
 if(PRC_DEFAULT_DIR_ABSOLUTE)
@@ -48,7 +64,12 @@ endif()
 find_package(Threads)
 if(THREADS_FOUND)
   # Add basic use flag for threading
-  option(BUILD_THREADS "If on, compile Panda3D with threading support." ON)
+  option(BUILD_THREADS
+    "If on, compile Panda3D with threading support.
+Building in support for threading will enable Panda to take
+advantage of multiple CPU's if you have them (and if the OS
+supports kernel threads running on different CPU's), but it will
+slightly slow down Panda for the single CPU case." ON)
   if(BUILD_THREADS)
     set(HAVE_THREADS TRUE)
   else()
@@ -80,10 +101,24 @@ if(HAVE_THREADS)
     set(CMAKE_CXX_FLAGS_MINSIZEREL "-pthread")
   endif()
 
-  option(BUILD_SIMPLE_THREADS "If on, compile with simulated threads." OFF)
+  option(BUILD_SIMPLE_THREADS
+    "If on, compile with simulated threads.  Threads, by default, use
+OS-provided threading constructs, which usually allows for full
+multithreading support (i.e. the program can use multiple CPU's).
+On the other hand, compiling in this full OS-provided support can
+impose some substantial runtime overhead, making the application
+run slower on a single-CPU machine. This settings avoid the overhead,
+but still gain some of the basic functionality of threads." OFF)
+
   if(BUILD_SIMPLE_THREADS)
     message(STATUS "Compilation will include simulated threading support.")
-    option(BUILD_OS_SIMPLE_THREADS "If on, OS threading constructs will be used to perform context switches." ON)
+    option(BUILD_OS_SIMPLE_THREADS
+      "If on, OS threading constructs will be used to perform context switches.
+A mutex is used to ensure that only one thread runs at a time, so the
+normal SIMPLE_THREADS optimizations still apply, and the normal
+SIMPLE_THREADS scheduler is used to switch between threads (instead
+of the OS scheduler).  This may be more portable and more reliable,
+but it is a hybrid between user-space threads and os-provided threads." ON)
 
     set(SIMPLE_THREADS TRUE)
     if(BUILD_OS_SIMPLE_THREADS)
@@ -126,6 +161,33 @@ endif()
 message(STATUS "")
 message(STATUS "See dtool_config.h for more details about the specified configuration.\n")
 
+### Miscellaneous configuration
+if(CMAKE_BUILD_TYPE MATCHES "MinSizeRel")
+  unset(BUILD_WITH_DEFAULT_FONT CACHE)
+  option(BUILD_WITH_DEFAULT_FONT
+    "If on, compiles in a default font, so that every TextNode will always
+have a font available without requiring the user to specify one.
+When turned off, the generated libary will save a few kilobytes." OFF)
+else()
+  option(BUILD_WITH_DEFAULT_FONT
+    "If on, compiles in a default font, so that every TextNode will always
+have a font available without requiring the user to specify one.
+When turned off, the generated libary will save a few kilobytes." ON)
+endif()
+if(BUILD_WITH_DEFAULT_FONT)
+  set(COMPILE_IN_DEFAULT_FONT TRUE)
+endif()
+
+option(BUILD_PREFER_STDFLOAT
+  "Define this true to compile a special version of Panda to use a
+'double' floating-precision type for most internal values, such as
+positions and transforms, instead of the standard single-precision
+'float' type.  This does not affect the default numeric type of
+vertices, which is controlled by the runtime config variable
+vertices-float64." OFF)
+if(BUILD_PREFER_STDFLOAT)
+  set(STDFLOAT_DOUBLE TRUE)
+endif()
 
 ### Check for system support of various values ###
 # Do we have all these header files?
