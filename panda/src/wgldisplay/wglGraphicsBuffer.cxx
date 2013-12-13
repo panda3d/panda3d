@@ -205,7 +205,7 @@ bind_texture_to_pbuffer() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsBuffer::select_cube_map
+//     Function: wglGraphicsBuffer::select_target_tex_page
 //       Access: Public, Virtual
 //  Description: Called internally when the window is in
 //               render-to-a-texture mode and we are in the process of
@@ -214,7 +214,7 @@ bind_texture_to_pbuffer() {
 //               the indicated face.
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsBuffer::
-select_cube_map(int cube_map_index) {
+select_target_tex_page(int page, int view) {
   wglGraphicsStateGuardian *wglgsg;
   DCAST_INTO_V(wglgsg, _gsg);
 
@@ -225,7 +225,7 @@ select_cube_map(int cube_map_index) {
   int ni = 0;
 
   iattrib_list[ni++] = WGL_CUBE_MAP_FACE_ARB;
-  iattrib_list[ni++] = WGL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB + cube_map_index;
+  iattrib_list[ni++] = WGL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB + page;
 
   // Terminate the list.
   nassertv(ni <= max_attrib_list);

@@ -99,6 +99,42 @@ was_simple_image_modified() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureContext::get_properties_modified
+//       Access: Published
+//  Description: Returns a sequence number which is guaranteed to
+//               change at least every time the texture properties
+//               (unrelated to the image) are modified.
+////////////////////////////////////////////////////////////////////
+INLINE UpdateSeq TextureContext::
+get_properties_modified() const {
+  return _properties_modified;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureContext::get_image_modified
+//       Access: Published
+//  Description: Returns a sequence number which is guaranteed to
+//               change at least every time the texture image data
+//               (including mipmap levels) are modified.
+////////////////////////////////////////////////////////////////////
+INLINE UpdateSeq TextureContext::
+get_image_modified() const {
+  return _image_modified;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureContext::get_simple_image_modified
+//       Access: Published
+//  Description: Returns a sequence number which is guaranteed to
+//               change at least every time the texture's "simple"
+//               image data is modified.
+////////////////////////////////////////////////////////////////////
+INLINE UpdateSeq TextureContext::
+get_simple_image_modified() const {
+  return _simple_image_modified;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureContext::update_data_size_bytes
 //       Access: Public
 //  Description: Should be called (usually by a derived class) when

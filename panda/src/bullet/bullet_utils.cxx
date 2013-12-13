@@ -219,3 +219,12 @@ void get_node_transform(btTransform &trans, PandaNode *node) {
   trans.setOrigin(btv);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: get_bullet_version
+//  Description: Returns the version of the linked Bullet library.
+////////////////////////////////////////////////////////////////////
+int get_bullet_version() {
+
+  return BT_BULLET_VERSION;
+}
+

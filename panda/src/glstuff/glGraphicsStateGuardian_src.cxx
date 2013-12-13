@@ -3543,12 +3543,6 @@ update_texture(TextureContext *tc, bool force) {
 
   CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
 
-  if (GLCAT.is_debug() && gtc->get_texture()->get_name() != string("buf")) {
-    GLCAT.debug()
-      << "Considering update " << gtc->get_texture()->get_name()
-      << ": " << gtc->was_image_modified() << ", modified = " << gtc->get_texture()->get_image_modified() << "\n";
-  }
-
   if (gtc->was_image_modified()) {
     // If the texture image was modified, reload the texture.  This
     // means we also re-specify the properties for good measure.
@@ -4288,7 +4282,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
     }
   }
 
-  int view = dr->get_tex_view_offset();
+  int view = dr->get_target_tex_view();
   TextureContext *tc = tex->prepare_now(view, get_prepared_objects(), this);
   nassertr(tc != (TextureContext *)NULL, false);
   CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
@@ -4469,6 +4463,13 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
                        component_type, format);
   }
 
+  nassertr(z < tex->get_z_size(), false);
+
+  int view = dr->get_target_tex_view();
+  if (view >= tex->get_num_views()) {
+    tex->set_num_views(view + 1);
+  }
+
   GLenum external_format = get_external_image_format(tex);
 
   if (GLCAT.is_spam()) {
@@ -4519,10 +4520,14 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
 
   unsigned char *image_ptr = tex->modify_ram_image();
   size_t image_size = tex->get_ram_image_size();
-  if (z >= 0) {
-    nassertr(z < tex->get_z_size(), false);
+  if (z >= 0 || view > 0) {
     image_size = tex->get_expected_ram_page_size();
-    image_ptr += z * image_size;
+    if (z >= 0) {
+      image_ptr += z * image_size;
+    }
+    if (view > 0) {
+      image_ptr += (view * tex->get_z_size()) * image_size;
+    }
   }
 
   GLP(ReadPixels)(xo, yo, w, h,
@@ -9040,7 +9045,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force) {
 //               in the case of cube mapping, in which case
 //               texture_target will be target for the overall
 //               texture, e.g. GL_TEXTURE_CUBE_MAP, and page_target
-//               will the target for this particular page,
+//               will be the target for this particular page,
 //               e.g. GL_TEXTURE_CUBE_MAP_POSITIVE_X.
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
@@ -9082,6 +9087,8 @@ upload_texture_image(CLP(TextureContext) *gtc,
       GLCAT.debug()
         << "loading uncompressed texture " << tex->get_name() << "\n";
     }
+    GLCAT.debug()
+      << "page_target " << hex << page_target << dec << "\n";
   }
 
   int num_ram_mipmap_levels = 0;
@@ -9104,6 +9111,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
         uses_mipmaps = false;
       }
     }
+
   } else {
     num_ram_mipmap_levels = 1;
     if (uses_mipmaps) {

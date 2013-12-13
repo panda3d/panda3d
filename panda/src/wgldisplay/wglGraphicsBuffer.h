@@ -49,7 +49,7 @@ public:
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);
   virtual void end_frame(FrameMode mode, Thread *current_thread);
 
-  virtual void select_cube_map(int cube_map_index);
+  virtual void select_target_tex_page(int page, int view);
 
   virtual void process_events();
 

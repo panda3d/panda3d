@@ -35,6 +35,7 @@ public:
     F_destructor        = 0x08,
     F_method_pointer    = 0x10,
     F_unary_op          = 0x20,
+    F_operator          = 0x40,
   };
 
   CPPFunctionType(CPPType *return_type, CPPParameterList *parameters,

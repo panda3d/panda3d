@@ -80,8 +80,11 @@ public:
   static bool is_bool(CPPType *type);
   static bool is_integer(CPPType *type);
   static bool is_unsigned_integer(CPPType *type);
-  static bool is_unsigned_longlong(CPPType *type);
+  static bool is_short(CPPType *type);
+  static bool is_unsigned_short(CPPType *type);
   static bool is_longlong(CPPType *type);
+  static bool is_unsigned_longlong(CPPType *type);
+  static bool is_double(CPPType *type);
   static bool is_float(CPPType *type);
   static bool is_void(CPPType *type);
   static bool is_reference_count(CPPType *type);

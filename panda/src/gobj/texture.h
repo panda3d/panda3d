@@ -776,6 +776,9 @@ protected:
     }
 
     void do_assign(const CData *copy);
+    INLINE void inc_properties_modified();
+    INLINE void inc_image_modified();
+    INLINE void inc_simple_image_modified();
 
     Filename _filename;
     Filename _alpha_filename;
