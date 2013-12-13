@@ -13,6 +13,9 @@ set(P3D_COREAPI_VERSION ${P3D_PLUGIN_VERSION} 1)
 ## Set CMake Find<Foo> Module path ##
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
+## This is where dtool_config.h gets generated ##
+include_directories("${CMAKE_BINARY_DIR}/include")
 
 ## Include Panda3D Packages ##
 add_subdirectory(dtool)
+add_subdirectory(panda)

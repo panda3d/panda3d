@@ -47,11 +47,23 @@ if(NOT HAVE_BISON)
 	endif()
 endif()
 
-bison_target(cppParser
-	cppBison.yxx
-	${CMAKE_CURRENT_BINARY_DIR}/cppBison.cxx
-	COMPILE_FLAGS --defines=${CMAKE_CURRENT_BINARY_DIR}/cppBison.h
-)
+# TODO: we should move this to a global macro somewhere.
+if(BISON_FOUND)
+  add_custom_command(
+    OUTPUT cppBison.h cppBison.cxx
+    COMMAND ${BISON_EXECUTABLE}
+      --defines=cppBison.h -o cppBison.cxx -p cppyy
+      "${CMAKE_CURRENT_SOURCE_DIR}/cppBison.yxx"
+    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/cppBison.yxx"
+  )
+else()
+  add_custom_command(
+    OUTPUT cppBison.h cppBison.cxx
+    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cppBison.h.prebuilt" cppBison.h
+    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cppBison.cxx.prebuilt" cppBison.cxx
+    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/cppBison.h.prebuilt" "${CMAKE_CURRENT_SOURCE_DIR}/cppBison.cxx.prebuilt"
+  )
+endif()
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_LIST_DIR})

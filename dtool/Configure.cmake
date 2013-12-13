@@ -424,4 +424,3 @@ else()
 endif()
 
 configure_file(dtool_config.h.cmake ${CMAKE_BINARY_DIR}/include/dtool_config.h)
-include_directories("${CMAKE_BINARY_DIR}/include")
