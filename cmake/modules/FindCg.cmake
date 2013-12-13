@@ -5,17 +5,15 @@
 #   find_package(Cg [REQUIRED] [QUIET])
 #
 # It sets the following variables:
-#   FOUND_CG   - system has NvidiaCg
-#   CG_IPATH   - the NvidiaCg include directory
-#   CG_LPATH   - the NvidiaCg library directory
-#   CG_LIBS    - the Cg components found
-#   CG_LIBRARY - the path to the library binary
+#   CG_FOUND         - system has NvidiaCg
+#   CG_INCLUDE_DIR   - the NvidiaCg include directory
+#   CG_LIBRARY_DIR   - the NvidiaCg library directory
+#   CG_LIBRARY       - the path to the library binary
 #
-#   FOUND_CGGL   - system has CgGL
-#   CGGL_IPATH   - the CgGL include directory
-#   CGGL_LPATH   - the CgGL library directory
-#   CGGL_LIBS    - the CgGL components found
-#   CGGL_LIBRARY - the path to the library binary
+#   CGGL_FOUND       - system has CgGL
+#   CGGL_INCLUDE_DIR - the CgGL include directory
+#   CGGL_LIBRARY_DIR - the CgGL library directory
+#   CGGL_LIBRARY     - the path to the library binary
 #
 
 
@@ -23,168 +21,130 @@
 
 # Find Cg for OpenGL
 macro(find_cggl)
-	if(CGGL_LPATH AND CGGL_IPATH)
-		# If its cached, we don't need to refind it
-		set(FOUND_CGGL TRUE)
-		if(WIN32)
-			set(CGGL_LIBS cgGL.lib)
-		else()
-			set(CGGL_LIBS CgGL)
-		endif()
-	else()
-		# Find the include directory
-		find_path(CGGL_IPATH
-			NAMES "cgGL.h"
-			PATHS "C:/Program Files/Cg"
-			      "C:/Program Files/NVIDIA Corporation/Cg/include"
-			      "/usr/include"
-			      "/usr/local/include"
-			      "/opt/Cg"
-			      "/opt/nvidia-cg-toolkit/include" # Gentoo
-			PATH_SUFFIXES "" "Cg"
-			DOC "The path to NvidiaCg's include directory."
-		)
+  if(NOT CGGL_LIBRARY_DIR AND NOT CGGL_INCLUDE_DIR)
+    # Find the include directory
+    find_path(CGGL_INCLUDE_DIR
+      NAMES "cgGL.h"
+      PATHS "C:/Program Files/Cg"
+            "C:/Program Files/NVIDIA Corporation/Cg/include"
+            "/usr/include"
+            "/usr/local/include"
+            "/opt/Cg"
+            "/opt/nvidia-cg-toolkit/include" # Gentoo
+      PATH_SUFFIXES "" "Cg"
+      DOC "The path to NvidiaCgGL's include directory."
+    )
 
-		# Find the library directory
-		find_library(CGGL_LIBRARY
-			NAMES "CgGL" "libCgGL"
-			PATHS "C:/Program Files/Cg"
-			      "C:/Program Files/NVIDIA Corporation/Cg"
-			      "/usr"
-			      "/usr/local"
-			      "/opt/Cg"
-			      "/opt/nvidia-cg-toolkit" # Gentoo
-			PATH_SUFFIXES "" "lib" "lib32" "lib64"
-		)
-		get_filename_component(CGGL_LIBRARY_DIR "${CGGL_LIBRARY}" PATH)
-		set(CGGL_LPATH "${CGGL_LIBRARY_DIR}" CACHE PATH "The path to the CgGL library directory.") # Library path
+    # Find the library directory
+    find_library(CGGL_LIBRARY
+      NAMES "CgGL" "libCgGL"
+      PATHS "C:/Program Files/Cg"
+            "C:/Program Files/NVIDIA Corporation/Cg"
+            "/usr"
+            "/usr/local"
+            "/opt/Cg"
+            "/opt/nvidia-cg-toolkit" # Gentoo
+      PATH_SUFFIXES "" "lib" "lib32" "lib64"
+      DOC "The filepath to NvidiaCgGL's libary binary."
+    )
+    get_filename_component(CGGL_LIBRARY_DIR "${CGGL_LIBRARY}" PATH)
+    set(CGGL_LIBRARY_DIR "${CGGL_LIBRARY_DIR}" CACHE PATH "The path to the CgGL library directory.") # Library path
 
-		unset(CGGL_LIBRARY_DIR)
+    mark_as_advanced(CGGL_INCLUDE_DIR)
+    mark_as_advanced(CGGL_LIBRARY_DIR)
+    mark_as_advanced(CGGL_LIBRARY)
+  endif()
 
-		# Check if we have everything we need
-		if(CGGL_IPATH AND CGGL_LPATH)
-			set(FOUND_CGGL TRUE)
-			if(WIN32)
-				set(CGGL_LIBS cgGL.lib)
-			else()
-				set(CGGL_LIBS CgGL)
-			endif()
-		endif()
+  find_package_handle_standard_args(CgGL DEFAULT_MSG CGGL_LIBRARY CGGL_INCLUDE_DIR CGGL_LIBRARY_DIR)
 
-		mark_as_advanced(CGGL_IPATH)
-		mark_as_advanced(CGGL_LPATH)
-		mark_as_advanced(CGGL_LIBRARY)
-	endif()
 endmacro()
 
 
 # Find Cg for DirectX 8
 macro(find_cgdx8)
-	# TODO: Implement
+  # TODO: Implement
 endmacro()
 
 
 # Find Cg for DirectX 9
 macro(find_cgdx9)
-	# TODO: Implement
+  # TODO: Implement
 endmacro()
 
 
 # Find Cg for DirectX 10
 macro(find_cgdx10)
-	# TODO: Implement
+  # TODO: Implement
 endmacro()
 
 
 
 # Find base Nvidia Cg
-if(CG_LPATH AND CG_IPATH)
-	# If its cached, we don't need to refind it
-	set(FOUND_CG TRUE)
-	if(WIN32)
-		set(CG_LIBS cg.lib)
-	else()
-		set(CG_LIBS Cg)
-	endif()
+if(NOT CG_LIBRARY_DIR AND NOT CG_INCLUDE_DIR)
+  # On OSX default to using the framework version of Cg.
+  if(APPLE)
+    include(${CMAKE_ROOT}/Modules/CMakeFindFrameworks.cmake)
+    set(CG_INCLUDES)
 
-	find_cggl()
-	find_cgdx8()
-	find_cgdx9()
-	find_cgdx10()
+    cmake_find_frameworks(Cg)
+    if(Cg_FRAMEWORKS)
+      foreach(dir ${Cg_FRAMEWORKS})
+        set(CG_INCLUDES ${CG_INCLUDES} ${dir}/Headers ${dir}/PrivateHeaders)
+      endforeach(dir)
+      unset(Cg_FRAMEWORKS)
 
-else()
-	# On OSX default to using the framework version of Cg.
-	if(APPLE)
-		include(${CMAKE_ROOT}/Modules/CMakeFindFrameworks.cmake)
-		set(CG_INCLUDES)
+      # Find the include dir
+      find_path(CG_INCLUDE_DIR
+        NAMES "cg.h"
+        PATHS ${CG_INCLUDES}
+        DOC "The path to NvidiaCg's include directory."
+      )
+      unset(CG_INCLUDES)
 
-		cmake_find_frameworks(Cg)
-		if(Cg_FRAMEWORKS)
-			foreach(dir ${Cg_FRAMEWORKS})
-				set(CG_INCLUDES ${CG_INCLUDES} ${dir}/Headers ${dir}/PrivateHeaders)
-			endforeach(dir)
-			unset(Cg_FRAMEWORKS)
+      # Set the library dir (TODO: Check the correctness on Mac OS X)
+      set(CG_LIBRARY_DIR "/Library/Frameworks/Cg.framework" CACHE PATH "The path to NvidiaCg's library directory.")
+    endif()
 
-			# Find the include dir
-			find_path(CG_IPATH
-				NAMES "cg.h"
-				PATHS ${CG_INCLUDES}
-				DOC "The path to NvidiaCg's include directory."
-			)
-			unset(CG_INCLUDES)
+  else()
+    # Find the include directory
+    find_path(CG_INCLUDE_DIR
+      NAMES "cg.h"
+      PATHS "C:/Program Files/Cg"
+            "C:/Program Files/NVIDIA Corporation/Cg/include"
+            "/usr/include"
+            "/usr/local/include"
+            "/opt/Cg"
+            "/opt/nvidia-cg-toolkit/include" # Gentoo
+      PATH_SUFFIXES "" "Cg"
+      DOC "The path to NvidiaCg's include directory."
+    )
 
-			# Set the library dir (TODO: Check the correctness on Mac OS X)
-			set(CG_LPATH "/Library/Frameworks/Cg.framework" CACHE PATH "The path to NvidiaCg's library directory.")
-		endif()
+    # Find the library directory
+    find_library(CG_LIBRARY
+      NAMES "Cg" "libCg"
+      PATHS "C:/Program Files/Cg"
+            "C:/Program Files/NVIDIA Corporation/Cg"
+            "/usr"
+            "/usr/local"
+            "/opt/Cg"
+            "/opt/nvidia-cg-toolkit" # Gentoo
+      PATH_SUFFIXES "" "lib" "lib32" "lib64"
+    )
+    get_filename_component(CG_LIBRARY_DIR "${CG_LIBRARY}" PATH)
+    set(CG_LIBRARY_DIR "${CG_LIBRARY_DIR}" CACHE PATH "The path to NvidiaCG's library directory.") # Library path
+  endif()
 
-	else()
-		# Find the include directory
-		find_path(CG_IPATH
-			NAMES "cg.h"
-			PATHS "C:/Program Files/Cg"
-			      "C:/Program Files/NVIDIA Corporation/Cg/include"
-			      "/usr/include"
-			      "/usr/local/include"
-			      "/opt/Cg"
-			      "/opt/nvidia-cg-toolkit/include" # Gentoo
-			PATH_SUFFIXES "" "Cg"
-			DOC "The path to NvidiaCg's include directory."
-		)
+  mark_as_advanced(CG_INCLUDE_DIR)
+  mark_as_advanced(CG_LIBRARY_DIR)
+  mark_as_advanced(CG_LIBRARY)
+endif()
 
-		# Find the library directory
-		find_library(CG_LIBRARY
-			NAMES "Cg" "libCg"
-			PATHS "C:/Program Files/Cg"
-			      "C:/Program Files/NVIDIA Corporation/Cg"
-			      "/usr"
-			      "/usr/local"
-			      "/opt/Cg"
-			      "/opt/nvidia-cg-toolkit" # Gentoo
-			PATH_SUFFIXES "" "lib" "lib32" "lib64"
-		)
-		get_filename_component(CG_LIBRARY_DIR "${CG_LIBRARY}" PATH)
-		set(CG_LPATH "${CG_LIBRARY_DIR}" CACHE PATH "The path to NvidiaCG's library directory.") # Library path
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(Cg DEFAULT_MSG CG_LIBRARY CG_INCLUDE_DIR CG_LIBRARY_DIR)
 
-		unset(CG_LIBRARY_DIR)
-	endif()
-
-	# Check if we have everything we need
-	if(CG_IPATH AND CG_LPATH)
-		set(FOUND_CG TRUE)
-		if(WIN32)
-			set(CG_LIBS cg.lib)
-		else()
-			set(CG_LIBS Cg)
-		endif()
-
-		find_cggl()
-		find_cgdx8()
-		find_cgdx9()
-		find_cgdx10()
-
-	endif()
-
-	mark_as_advanced(CG_IPATH)
-	mark_as_advanced(CG_LPATH)
-	mark_as_advanced(CG_LIBRARY)
+if(FOUND_CG)
+  find_cggl()
+  find_cgdx8()
+  find_cgdx9()
+  find_cgdx10()
 endif()
