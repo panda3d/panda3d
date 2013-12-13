@@ -309,9 +309,6 @@
 /* Define if we have STL hash_map etc. available  */
 #cmakedefine HAVE_STL_HASH
 
-/* Define if we have a gettimeofday() function. */
-#cmakedefine HAVE_GETTIMEOFDAY
-
 /* Define if gettimeofday() takes only one parameter. */
 #cmakedefine GETTIMEOFDAY_ONE_PARAM
 
