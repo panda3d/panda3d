@@ -45,27 +45,41 @@ endif()
 
 
 ### Configure threading support ###
-# Add basic use flag for threading
-option(BUILD_THREADS "If on, compile Panda3D with threading support." ON)
-if(BUILD_THREADS)
-  set(HAVE_THREADS TRUE)
+find_package(Threads)
+if(THREADS_FOUND)
+  # Add basic use flag for threading
+  option(BUILD_THREADS "If on, compile Panda3D with threading support." ON)
+  if(BUILD_THREADS)
+    set(HAVE_THREADS TRUE)
+  else()
+    unset(BUILD_SIMPLE_THREADS CACHE)
+    unset(BUILD_OS_SIMPLE_THREADS CACHE)
+  endif()
 else()
-  unset(BUILD_SIMPLE_THREADS CACHE)
-  unset(BUILD_OS_SIMPLE_THREADS CACHE)
+  unset(BUILD_THREADS CACHE)
 endif()
 
 # Configure debug threads
-if(CMAKE_BUILD_TYPE MATCHES "Debug")
-  option(BUILD_DEBUG_THREADS "If on, enables debugging of thread and sync operations (i.e. mutexes, deadlocks)" ON)
-else()
-  option(BUILD_DEBUG_THREADS "If on, enables debugging of thread and sync operations (i.e. mutexes, deadlocks)" OFF)
-endif()
-if(BUILD_DEBUG_THREADS)
-  set(DEBUG_THREADS TRUE)
-endif()
-
 # Add advanced threading configuration
 if(HAVE_THREADS)
+  if(CMAKE_BUILD_TYPE MATCHES "Debug")
+    option(BUILD_DEBUG_THREADS "If on, enables debugging of thread and sync operations (i.e. mutexes, deadlocks)" ON)
+  else()
+    option(BUILD_DEBUG_THREADS "If on, enables debugging of thread and sync operations (i.e. mutexes, deadlocks)" OFF)
+  endif()
+  if(BUILD_DEBUG_THREADS)
+    set(DEBUG_THREADS TRUE)
+  endif()
+
+  set(HAVE_POSIX_THREADS ${CMAKE_USE_PTHREADS_INIT})
+  if(HAVE_POSIX_THREADS)
+    set(CMAKE_CXX_FLAGS "-pthread")
+    set(CMAKE_CXX_FLAGS_DEBUG "-pthread")
+    set(CMAKE_CXX_FLAGS_RELEASE "-pthread")
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-pthread")
+    set(CMAKE_CXX_FLAGS_MINSIZEREL "-pthread")
+  endif()
+
   option(BUILD_SIMPLE_THREADS "If on, compile with simulated threads." OFF)
   if(BUILD_SIMPLE_THREADS)
     message(STATUS "Compilation will include simulated threading support.")
@@ -87,24 +101,6 @@ if(HAVE_THREADS)
   endif()
 else()
   message(STATUS "Configuring Panda without threading support.")
-endif()
-
-set(HAVE_POSIX_THREADS FALSE)
-if(NOT WIN32)
-  find_path(PTHREAD_INCLUDE_DIR
-    NAMES "pthread.h"
-    PATHS "/usr/include"
-  )
-  if(PTHREAD_INCLUDE_DIR)
-    set(HAVE_POSIX_THREADS TRUE)
-    set(CMAKE_CXX_FLAGS "-pthread")
-    set(CMAKE_CXX_FLAGS_DEBUG "-pthread")
-    set(CMAKE_CXX_FLAGS_RELEASE "-pthread")
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-pthread")
-    set(CMAKE_CXX_FLAGS_MINSIZEREL "-pthread")
-
-    mark_as_advanced(PTHREAD_INCLUDE_DIR)
-  endif()
 endif()
 
 
@@ -130,6 +126,9 @@ endif()
 message(STATUS "")
 message(STATUS "See dtool_config.h for more details about the specified configuration.\n")
 
+
+### Check for system support of various values ###
+# Do we have all these header files?
 include(CheckIncludeFileCXX)
 check_include_file_cxx(io.h PHAVE_IO_H)
 check_include_file_cxx(iostream PHAVE_IOSTREAM)
@@ -154,16 +153,64 @@ check_include_file_cxx(sys/soundcard.h PHAVE_SYS_SOUNDCARD_H)
 check_include_file_cxx(ucontext.h PHAVE_UCONTEXT_H)
 check_include_file_cxx(linux/input.h PHAVE_LINUX_INPUT_H)
 check_include_file_cxx(stdint.h PHAVE_STDINT_H)
+check_include_file_cxx(typeinfo HAVE_RTTI)
+check_include_file_cxx(getopt.h PHAVE_GETOPT_H)
+
+# Do we have these sized type definitions
+include(CheckTypeSize)
+check_type_size(wchar_t WCHAR_T)
+
+# Does the compiler accept these declarations
+include(CheckCXXSourceCompiles)
+check_cxx_source_compiles(
+  "#include <string>
+   std::wstring str;
+   int main(int argc, char *argv[]) { return 0; }"
+  HAVE_WSTRING)
+
+# Do we have these standard functions
+include(CheckFunctionExists)
+check_function_exists(getopt HAVE_GETOPT)
+check_function_exists(getopt_long_only HAVE_GETOPT_LONG_ONLY)
+
+# Are we on a big endian system?
+include(TestBigEndian)
+test_big_endian(WORDS_BIGENDIAN)
+
+# Do we support std namespaces?
+include(TestForSTDNamespace)
+set(HAVE_NAMESPACE CMAKE_STD_NAMESPACE)
+
+# Can we read the file /proc/self/[*] to determine our
+# environment variables at static init time?
+if(EXISTS "/proc/self/exe")
+  set(HAVE_PROC_SELF_EXE TRUE)
+endif()
+if(EXISTS "/proc/self/maps")
+  set(HAVE_PROC_SELF_MAPS TRUE)
+endif()
+if(EXISTS "/proc/self/environ")
+  set(HAVE_PROC_SELF_ENVIRON TRUE)
+endif()
+if(EXISTS "/proc/self/cmdline")
+  set(HAVE_PROC_SELF_CMDLINE TRUE)
+endif()
+if(EXISTS "/proc/curproc/file")
+  set(HAVE_PROC_CURPROC_FILE TRUE)
+endif()
+if(EXISTS "/proc/curproc/map")
+  set(HAVE_PROC_CURPROC_MAP TRUE)
+endif()
+if(EXISTS "/proc/curproc/cmdline")
+  set(HAVE_PROC_CURPROC_CMDLINE TRUE)
+endif()
 
 # TODO: Actually check for these, instead of assuming
-set(HAVE_NAMESPACE ON)
-set(HAVE_LOCKF ON)
-set(HAVE_WCHAR_T ON)
-set(HAVE_WSTRING ON)
-set(HAVE_TYPENAME ON)
-set(SIMPLE_STRUCT_POINTERS ON)
-set(HAVE_STREAMSIZE ON)
-set(HAVE_IOS_TYPEDEFS ON)
+set(HAVE_LOCKF TRUE)
+set(HAVE_TYPENAME TRUE)
+set(SIMPLE_STRUCT_POINTERS TRUE)
+set(HAVE_STREAMSIZE TRUE)
+set(HAVE_IOS_TYPEDEFS TRUE)
 
 if(WIN32)
   set(DEFAULT_PATHSEP ";")
