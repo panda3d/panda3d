@@ -16,6 +16,6 @@
  *  Generated automatically by CMake.
  ***************************** DO NOT EDIT *************************/
 
-# include "dtoolbase.h"
+#include "dtoolbase.h"
 
 EXPCL_DTOOL int @PANDA_VERSION_SYMBOL@ = 0;

@@ -18,7 +18,7 @@
 
    Do NOT attempt to edit the version number in this file.  This is a
    generated file, and your changes to this file will not persist.  To
-   increment the version number, modify dtool/PandaVersion.pp and
+   increment the version number, modify dtool/PandaVersion.cmake and
    re-run ppremake.
 
  ***************************** DO NOT EDIT *************************/
@@ -70,8 +70,8 @@
 
 #if HAVE_P3D_PLUGIN
 /* Similar definitions for the plugin versioning, if in use. */
-#define P3D_PLUGIN_MAJOR_VERSION "@P3D_PLUGIN_MAJOR_VERSION@"
-#define P3D_PLUGIN_MINOR_VERSION "@P3D_PLUGIN_MINOR_VERSION@"
-#define P3D_PLUGIN_SEQUENCE_VERSION "@P3D_PLUGIN_SEQUENCE_VERSION@"
+#define P3D_PLUGIN_MAJOR_VERSION @P3D_PLUGIN_MAJOR_VERSION@
+#define P3D_PLUGIN_MINOR_VERSION @P3D_PLUGIN_MINOR_VERSION@
+#define P3D_PLUGIN_SEQUENCE_VERSION @P3D_PLUGIN_SEQUENCE_VERSION@
 #define P3D_COREAPI_VERSION_STR "@P3D_COREAPI_VERSION_STR@"
 #endif
