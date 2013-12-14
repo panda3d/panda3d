@@ -38,10 +38,10 @@ Configuration settings use more direct names:
 
 ```
 
-For example, `makepanda.py --distributor X` becomes `cmake -DDISTRIBUTOR
+For example, `makepanda.py --distributor X` becomes `cmake -DPANDA_DISTRIBUTOR=X`
 
 All third-party libraries are enabled by default and Panda3D will
-be compiled with any 3rd party library that is found.
+be compiled with any third-party library that is found.
 Third-party libraries can be enabled or disabled through
 configuration with the cmake gui or cli.
 

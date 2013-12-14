@@ -1,7 +1,7 @@
-## Configure dtool ##
+# Generate dtool_config.h
 include(LocalSetup.cmake)
 
-## Include dtool subpackages ##
+# Include dtool source directories
 add_subdirectory(src/dtoolbase)
 add_subdirectory(src/dtoolutil)
 add_subdirectory(src/prc)
@@ -11,5 +11,5 @@ add_subdirectory(src/cppparser)
 add_subdirectory(src/interrogatedb)
 add_subdirectory(src/interrogate)
 
-## Include dtool metalibs ##
+# Include dtool metalibs
 add_subdirectory(metalibs/dtool)

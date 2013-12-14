@@ -1,2 +1,2 @@
-## Include panda subpackages ##
+# Include panda source directories
 add_subdirectory(src/pandabase)

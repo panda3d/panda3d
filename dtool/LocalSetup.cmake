@@ -176,4 +176,5 @@ check_include_file_cxx(typeinfo HAVE_RTTI)
 #$[cdefine __USE_LARGEFILE64]
 
 configure_file(dtool_config.h.cmake "${PROJECT_BINARY_DIR}/dtool_config.h")
+include_directories("${PROJECT_BINARY_DIR}")
 #install(FILES "${PROJECT_BINARY_DIR}/dtool_config.h" DESTINATION include/panda3d)
