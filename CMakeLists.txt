@@ -5,10 +5,10 @@ project(Panda3D)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
 
 ## This is where dtool_config.h gets generated ##
-include_directories("${CMAKE_BINARY_DIR}/include")
+include_directories("${CMAKE_BINARY_DIR}")
 
 ## Configure Panda3D ##(
-include(dtool/Version.cmake)
+include(dtool/PandaVersion.cmake)
 include(dtool/Packages.cmake)
 include(dtool/Config.cmake)
 

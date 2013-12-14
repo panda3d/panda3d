@@ -167,12 +167,12 @@ if(CMAKE_BUILD_TYPE MATCHES "MinSizeRel")
   option(BUILD_WITH_DEFAULT_FONT
     "If on, compiles in a default font, so that every TextNode will always
 have a font available without requiring the user to specify one.
-When turned off, the generated libary will save a few kilobytes." OFF)
+When turned off, the generated library will save a few kilobytes." OFF)
 else()
   option(BUILD_WITH_DEFAULT_FONT
     "If on, compiles in a default font, so that every TextNode will always
 have a font available without requiring the user to specify one.
-When turned off, the generated libary will save a few kilobytes." ON)
+When turned off, the generated library will save a few kilobytes." ON)
 endif()
 if(BUILD_WITH_DEFAULT_FONT)
   set(COMPILE_IN_DEFAULT_FONT TRUE)
@@ -189,95 +189,15 @@ if(BUILD_PREFER_STDFLOAT)
   set(STDFLOAT_DOUBLE TRUE)
 endif()
 
-### Check for system support of various values ###
-# Do we have all these header files?
-include(CheckIncludeFileCXX)
-check_include_file_cxx(io.h PHAVE_IO_H)
-check_include_file_cxx(iostream PHAVE_IOSTREAM)
-check_include_file_cxx(malloc.h PHAVE_MALLOC_H)
-check_include_file_cxx(sys/malloc.h PHAVE_SYS_MALLOC_H)
-check_include_file_cxx(alloca.h PHAVE_ALLOCA_H)
-check_include_file_cxx(locale.h PHAVE_LOCALE_H)
-check_include_file_cxx(string.h PHAVE_STRING_H)
-check_include_file_cxx(stdlib.h PHAVE_STDLIB_H)
-check_include_file_cxx(limits.h PHAVE_LIMITS_H)
-check_include_file_cxx(minmax.h PHAVE_MINMAX_H)
-check_include_file_cxx(sstream PHAVE_SSTREAM)
-check_include_file_cxx(new PHAVE_NEW)
-check_include_file_cxx(sys/types.h PHAVE_SYS_TYPES_H)
-check_include_file_cxx(sys/time.h PHAVE_SYS_TIME_H)
-check_include_file_cxx(unistd.h PHAVE_UNISTD_H)
-check_include_file_cxx(utime.h PHAVE_UTIME_H)
-check_include_file_cxx(glob.h PHAVE_GLOB_H)
-check_include_file_cxx(dirent.h PHAVE_DIRENT_H)
-check_include_file_cxx(drfftw.h PHAVE_DRFFTW_H)
-check_include_file_cxx(sys/soundcard.h PHAVE_SYS_SOUNDCARD_H)
-check_include_file_cxx(ucontext.h PHAVE_UCONTEXT_H)
-check_include_file_cxx(linux/input.h PHAVE_LINUX_INPUT_H)
-check_include_file_cxx(stdint.h PHAVE_STDINT_H)
-check_include_file_cxx(typeinfo HAVE_RTTI)
-check_include_file_cxx(getopt.h PHAVE_GETOPT_H)
-
-# Do we have these sized type definitions
-include(CheckTypeSize)
-check_type_size(wchar_t WCHAR_T)
-
-# Does the compiler accept these declarations
-include(CheckCXXSourceCompiles)
-check_cxx_source_compiles(
-  "#include <string>
-   std::wstring str;
-   int main(int argc, char *argv[]) { return 0; }"
-  HAVE_WSTRING)
-
-# Do we have these standard functions
-include(CheckFunctionExists)
-check_function_exists(getopt HAVE_GETOPT)
-check_function_exists(getopt_long_only HAVE_GETOPT_LONG_ONLY)
-
-# Are we on a big endian system?
-include(TestBigEndian)
-test_big_endian(WORDS_BIGENDIAN)
-
-# Do we support std namespaces?
-include(TestForSTDNamespace)
-set(HAVE_NAMESPACE CMAKE_STD_NAMESPACE)
-
-# Can we read the file /proc/self/[*] to determine our
-# environment variables at static init time?
-if(EXISTS "/proc/self/exe")
-  set(HAVE_PROC_SELF_EXE TRUE)
-endif()
-if(EXISTS "/proc/self/maps")
-  set(HAVE_PROC_SELF_MAPS TRUE)
-endif()
-if(EXISTS "/proc/self/environ")
-  set(HAVE_PROC_SELF_ENVIRON TRUE)
-endif()
-if(EXISTS "/proc/self/cmdline")
-  set(HAVE_PROC_SELF_CMDLINE TRUE)
-endif()
-if(EXISTS "/proc/curproc/file")
-  set(HAVE_PROC_CURPROC_FILE TRUE)
-endif()
-if(EXISTS "/proc/curproc/map")
-  set(HAVE_PROC_CURPROC_MAP TRUE)
-endif()
-if(EXISTS "/proc/curproc/cmdline")
-  set(HAVE_PROC_CURPROC_CMDLINE TRUE)
-endif()
-
-# TODO: Actually check for these, instead of assuming
-set(HAVE_LOCKF TRUE)
-set(HAVE_TYPENAME TRUE)
-set(SIMPLE_STRUCT_POINTERS TRUE)
-set(HAVE_STREAMSIZE TRUE)
-set(HAVE_IOS_TYPEDEFS TRUE)
+#XXX note from rdb: I've moved the automatically-configured
+# compiler settings to LocalSetup.cmake, which is also where
+# dtool_config.h.cmake is now being invoked.
+# LocalSetup.cmake is included in dtool/CMakeLists.txt, which
+# is OK since the variables in there don't have to be used
+# outside of dtool_config.h.cmake.
 
 if(WIN32)
   set(DEFAULT_PATHSEP ";")
 else()
   set(DEFAULT_PATHSEP ":")
 endif()
-
-configure_file(dtool/dtool_config.h.cmake ${CMAKE_BINARY_DIR}/include/dtool_config.h)

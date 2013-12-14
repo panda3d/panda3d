@@ -61,7 +61,7 @@ else()
   set(VERSION_SUFFIX "c")
 endif()
 
-set(PANDA_VERSION_STR "${PANDA_VERSION}c")
+set(PANDA_VERSION_STR "${PANDA_VERSION}${VERSION_SUFFIX}")
 
 # This symbol is used to enforce ABI incompatibility between
 # major versions of Panda3D.

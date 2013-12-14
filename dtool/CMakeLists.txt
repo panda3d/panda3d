@@ -1,5 +1,5 @@
 ## Configure dtool ##
-configure_file(dtool_config.h.cmake ${CMAKE_BINARY_DIR}/include/dtool_config.h)
+include(LocalSetup.cmake)
 
 ## Include dtool subpackages ##
 add_subdirectory(src/dtoolbase)
