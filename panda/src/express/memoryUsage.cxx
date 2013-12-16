@@ -27,6 +27,7 @@
 #endif
 
 #include "config_express.h"
+#include "configVariableInt64.h"
 #include <algorithm>
 #include <iterator>
 
