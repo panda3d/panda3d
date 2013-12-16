@@ -1,15 +1,6 @@
-include_directories(../dtoolbase)
-
-configure_file(pandaVersion.h.cmake
-               pandaVersion.h)
-
-configure_file(checkPandaVersion.h.cmake
-               checkPandaVersion.h)
-
-configure_file(checkPandaVersion.cxx.cmake
-               checkPandaVersion.cxx)
-
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
+configure_file(pandaVersion.h.in pandaVersion.h)
+configure_file(checkPandaVersion.h.in checkPandaVersion.h)
+configure_file(checkPandaVersion.cxx.in checkPandaVersion.cxx)
 
 set(P3DTOOLUTIL_HEADERS
 	${CMAKE_CURRENT_BINARY_DIR}/checkPandaVersion.h
@@ -57,7 +48,7 @@ set(P3DTOOLUTIL_SOURCES
 	win32ArgParser.cxx
 )
 
-add_library(p3dtoolutil STATIC
-	${P3DTOOLUTIL_HEADERS}
-	${P3DTOOLUTIL_SOURCES}
-)
+composite_sources(p3dtoolutil P3DTOOLUTIL_SOURCES)
+
+add_library(p3dtoolutil ${P3DTOOLUTIL_HEADERS} ${P3DTOOLUTIL_SOURCES})
+target_link_libraries(p3dtoolutil p3dtoolbase ${CMAKE_DL_LIBS})

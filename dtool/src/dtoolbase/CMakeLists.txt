@@ -59,7 +59,6 @@ set(P3DTOOLBASE_SOURCES
     typedObject.cxx
 )
 
-add_library(p3dtoolbase STATIC
-	${P3DTOOLBASE_HEADERS}
-	${P3DTOOLBASE_SOURCES}
-)
+composite_sources(p3dtoolbase P3DTOOLBASE_SOURCES)
+
+add_library(p3dtoolbase	${P3DTOOLBASE_HEADERS} ${P3DTOOLBASE_SOURCES})

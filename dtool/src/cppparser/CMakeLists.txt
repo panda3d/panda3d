@@ -1,6 +1,3 @@
-include_directories(../dtoolutil)
-include_directories(../dtoolbase)
-
 set(P3CPPPARSER_HEADERS
 	cppArrayType.h cppBison.yxx cppBisonDefs.h
 	cppClassTemplateParameter.h cppCommentBlock.h cppConstType.h
@@ -37,39 +34,16 @@ set(P3CPPPARSER_SOURCES
 	cppUsing.cxx cppVisibility.cxx
 )
 
+composite_sources(p3cppParser P3CPPPARSER_SOURCES)
+
 # Bison is required for CPPParser
 # Check for it here, so that cppparser can be compiled individually
+#TODO rdb: should be global
 if(NOT HAVE_BISON)
 	find_package(BISON REQUIRED QUIET)
-
-	if(NOT BISON_FOUND)
-		message(FATAL_ERROR "CPPParser requires Bison.")
-	endif()
 endif()
 
-# TODO: we should move this to a global macro somewhere.
-if(BISON_FOUND)
-  add_custom_command(
-    OUTPUT cppBison.h cppBison.cxx
-    COMMAND ${BISON_EXECUTABLE}
-      --defines=cppBison.h -o cppBison.cxx -p cppyy
-      "${CMAKE_CURRENT_SOURCE_DIR}/cppBison.yxx"
-    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/cppBison.yxx"
-  )
-else()
-  add_custom_command(
-    OUTPUT cppBison.h cppBison.cxx
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cppBison.h.prebuilt" cppBison.h
-    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/cppBison.cxx.prebuilt" cppBison.cxx
-    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/cppBison.h.prebuilt" "${CMAKE_CURRENT_SOURCE_DIR}/cppBison.cxx.prebuilt"
-  )
-endif()
+add_bison_target(cppBison.cxx cppBison.yxx DEFINES cppBison.h PREFIX cppyy)
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories(${CMAKE_CURRENT_LIST_DIR})
-
-add_library(p3cppParser STATIC
-	${P3CPPPARSER_HEADERS}
-	${P3CPPPARSER_SOURCES}
-)
-add_dependencies(p3cppParser cppParser)
+add_library(p3cppParser STATIC ${P3CPPPARSER_HEADERS} ${P3CPPPARSER_SOURCES})
+target_link_libraries(p3cppParser p3dtoolutil)

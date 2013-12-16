@@ -1,9 +1,4 @@
-include_directories(../dtoolutil)
-include_directories(../dtoolbase)
-
-configure_file(prc_parameters.h.cmake
-               prc_parameters.h)
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
+configure_file(prc_parameters.h.in prc_parameters.h)
 
 set(P3PRC_HEADERS
 	bigEndian.h
@@ -67,6 +62,7 @@ set(P3PRC_SOURCES
 	reversedNumericData.cxx
 	streamReader.cxx streamWrapper.cxx streamWriter.cxx)
 
-add_library(p3prc STATIC
-	${P3PRC_HEADERS}
-	${P3PRC_SOURCES})
+composite_sources(p3prc P3PRC_SOURCES)
+
+add_library(p3prc ${P3PRC_HEADERS} ${P3PRC_SOURCES})
+target_link_libraries(p3prc p3dtoolutil p3dtoolbase)

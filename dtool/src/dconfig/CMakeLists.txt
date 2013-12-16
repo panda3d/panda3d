@@ -1,13 +1,10 @@
-include_directories(../dtoolutil)
-include_directories(../dtoolbase)
-include_directories(../prc)
-
 set(P3DCONFIG_HEADERS
 	config_dconfig.h dconfig.I dconfig.h)
 
 set(P3DCONFIG_SOURCES
 	config_dconfig.cxx dconfig.cxx)
 
-add_library(p3dconfig STATIC
-	${P3DCONFIG_HEADERS}
-	${P3DCONFIG_SOURCES})
+composite_sources(p3dconfig P3DCONFIG_SOURCES)
+
+add_library(p3dconfig ${P3DCONFIG_HEADERS} ${P3DCONFIG_SOURCES})
+target_link_libraries(p3dconfig p3prc)

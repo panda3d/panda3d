@@ -1,8 +1,3 @@
-include_directories(../dconfig)
-include_directories(../dtoolutil)
-include_directories(../dtoolbase)
-include_directories(../prc)
-
 set(P3INTERROGATEDB_HEADERS
 	config_interrogatedb.h indexRemapper.h interrogateComponent.I
 	interrogateComponent.h interrogateDatabase.I
@@ -32,6 +27,7 @@ set(P3INTERROGATEDB_SOURCES
 	py_panda.cxx
 	vector_int.cxx)
 
-add_library(p3interrogatedb STATIC
-	${P3INTERROGATEDB_HEADERS}
-	${P3INTERROGATEDB_SOURCES})
+composite_sources(p3interrogatedb P3INTERROGATEDB_SOURCES)
+
+add_library(p3interrogatedb ${P3INTERROGATEDB_HEADERS} ${P3INTERROGATEDB_SOURCES})
+target_link_libraries(p3interrogatedb p3dconfig)

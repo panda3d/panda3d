@@ -1,11 +1,3 @@
-include_directories(../cppparser)
-include_directories(../interrogatedb)
-include_directories(../dconfig)
-include_directories(../dtoolutil)
-include_directories(../dtoolbase)
-include_directories(../pystub)
-include_directories(../prc)
-
 set(INTERROGATE_HEADERS
 	functionRemap.h
 	functionWriter.h
@@ -53,9 +45,9 @@ set(INTERROGATE_SOURCES
 	parameterRemapToString.cxx parameterRemapUnchanged.cxx
 	typeManager.cxx)
 
-add_executable(interrogate
-	${INTERROGATE_HEADERS}
-	${INTERROGATE_SOURCES})
+composite_sources(interrogate INTERROGATE_SOURCES)
+
+add_executable(interrogate ${INTERROGATE_HEADERS} ${INTERROGATE_SOURCES})
 target_link_libraries(interrogate
 	p3cppParser p3interrogatedb p3dconfig p3prc p3dtoolutil p3dtoolbase
 	p3pystub ${OPENSSL_LIBRARIES})

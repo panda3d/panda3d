@@ -353,10 +353,3 @@ if(BUILD_PREFER_STDFLOAT)
   set(STDFLOAT_DOUBLE TRUE)
 endif()
 
-#XXX note from rdb: I've moved the automatically-configured
-# compiler settings to LocalSetup.cmake, which is also where
-# dtool_config.h.cmake is now being invoked.
-# LocalSetup.cmake is included in dtool/CMakeLists.txt, which
-# is OK since the variables in there don't have to be used
-# outside of dtool_config.h.cmake.
-
