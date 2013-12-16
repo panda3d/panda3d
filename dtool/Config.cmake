@@ -213,6 +213,19 @@ FFI step.  This loads and runs much more quickly than the original
 mechanism.  Define this false (that is, empty) to use the original
 interfaces." ON)
 
+set(INTERROGATE_C_INTERFACE
+  "Do you want to generate a C-callable interrogate interface?  This
+generates an interface similar to the Python interface above, with
+a C calling convention.  It should be useful for most other kinds
+of scripting language; the VR Studio used to use this to make calls
+into Panda from Squeak." OFF)
+
+option(HAVE_INTERROGATE
+  "Do you even want to build interrogate at all?  This is the program
+that reads our C++ source files and generates one of the above
+interfaces.  If you won't be building the interfaces, you don't
+need the program." ON)
+
 set(INTERROGATE_OPTIONS "-fnames;-string;-refcount;-assert" CACHE STRING
   "What additional options should be passed to interrogate when
 generating either of the above two interfaces?  Generally, you
@@ -264,7 +277,7 @@ endif()
 
 option(USE_PYTHON
   "Enables support for Python.  If INTERROGATE_PYTHON_INTERFACE
-is also enabled, Python bindings will be generated.")
+is also enabled, Python bindings will be generated." ON)
 
 if(USE_PYTHON)
   find_package(PythonLibs)

@@ -14,7 +14,7 @@ include(dtool/PandaMacros.cmake)
 include(dtool/PandaVersion.cmake)
 include(dtool/Packages.cmake)
 include(dtool/Config.cmake)
-#include(dtool/Interrogate.cmake)
+include(dtool/Interrogate.cmake)
 
 # Determine which trees to build.
 option(BUILD_DTOOL "Build the dtool source tree." ON)

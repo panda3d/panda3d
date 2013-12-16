@@ -1,7 +1,8 @@
 # Settings for composite builds.  Should be moved to Config.cmake?
-set(COMPOSITE_SOURCE_LIMIT "10" CACHE STRING
-  "Setting this to a value higher than 1 will enable unity builds.
-A high value will speed up the build dramatically but use more RAM.")
+set(COMPOSITE_SOURCE_LIMIT "30" CACHE STRING
+  "Setting this to a value higher than 1 will enable unity builds, also
+known as SCU (single compilation unit).  A high value will speed up the
+build dramatically but will be more memory intensive than a low value.")
 
 set(COMPOSITE_SOURCE_EXTENSIONS "cxx;c;mm" CACHE STRING
   "Only files of these extensions will be added to composite files.")
@@ -172,25 +173,28 @@ if(CMAKE_VERSION VERSION_LESS 2.8.11)
   endfunction()
 
   function(target_link_libraries target)
-    set(interface_dirs "")
+    set(interface_dirs)
     get_target_property(target_interface_dirs "${target}" INTERFACE_INCLUDE_DIRECTORIES)
 
     foreach(lib ${ARGN})
       get_target_property(lib_interface_dirs "${lib}" INTERFACE_INCLUDE_DIRECTORIES)
 
-      set(interface_dirs ${interface_dirs} ${lib_interface_dirs})
+      if(lib_interface_dirs)
+        list(APPEND interface_dirs ${lib_interface_dirs})
+      endif()
     endforeach()
 
+    list(REMOVE_DUPLICATES interface_dirs)
+
     #NB. target_include_directories is new in 2.8.8.
-    #target_include_directories("${target}" ${interace_dirs})
+    #target_include_directories("${target}" ${interface_dirs})
     include_directories(${interface_dirs})
-    message(STATUS "adding extra ${interface_dirs}")
 
     # Update this target's interface inc dirs.
     set_target_properties("${target}" PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${target_interface_dirs};${interface_dirs}")
 
     # Call to the built-in function we are overriding.
-    _target_link_libraries(${name} ${ARGN})
+    _target_link_libraries(${target} ${ARGN})
   endfunction()
 
 else()

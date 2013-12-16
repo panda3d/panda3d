@@ -13,3 +13,4 @@ add_subdirectory(src/interrogate)
 
 # Include dtool metalibs
 add_subdirectory(metalibs/dtool)
+add_subdirectory(metalibs/dtoolconfig)
