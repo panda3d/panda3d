@@ -62,9 +62,9 @@ int main(int argc, char *argv[]) {
   }
 }" SIMPLE_STRUCT_POINTERS)
 
-# Define if we have STL hash_map etc. available
-#TODO make test case
-#//$[cdefine HAVE_STL_HASH]
+# Define if we have STL hash_map etc. available.
+# We're not using this functionality at the moment, it seems.
+set(HAVE_STL_HASH OFF)
 
 # Check if we have a gettimeofday() function.
 check_function_exists(gettimeofday HAVE_GETTIMEOFDAY)
@@ -174,6 +174,13 @@ check_include_file_cxx(typeinfo HAVE_RTTI)
 
 #/* Define if needed to have 64-bit file i/o */
 #$[cdefine __USE_LARGEFILE64]
+
+# Set LINK_ALL_STATIC if we're building everything as static libraries.
+if(BUILD_SHARED_LIBS)
+  set(LINK_ALL_STATIC OFF)
+else()
+  set(LINK_ALL_STATIC ON)
+endif()
 
 # Generate dtool_config.h
 configure_file(dtool_config.h.in "${PROJECT_BINARY_DIR}/dtool_config.h")

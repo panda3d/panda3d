@@ -1,9 +1,5 @@
 /* dtool_config.h.  Generated automatically by CMake. */
 
-/* Debug / non-debug symbols.  OPTIMIZE = $[OPTIMIZE] */
-#cmakedefine _DEBUG
-#cmakedefine NDEBUG
-
 /* Define if we have Eigen available. */
 #cmakedefine HAVE_EIGEN
 #cmakedefine LINMATH_ALIGN
@@ -467,4 +463,3 @@
 #cmakedefine IS_LINUX
 #cmakedefine IS_FREEBSD
 #cmakedefine BUILD_IPHONE
-#cmakedefine UNIVERSAL_BINARIES

@@ -9,7 +9,7 @@ option(PANDA_OFFICIAL_VERSION
   "This variable will be defined to false in the CVS repository, but
 scripts that generate source tarballs and/or binary releases for
 distribution, by checking out Panda from an official CVS tag,
-should explictly set this to true. When false, it indicates that
+should explictly set this to true.  When false, it indicates that
 the current version of Panda was checked out from CVS, so it may
 not be a complete representation of the indicated version."
   OFF)
@@ -17,7 +17,7 @@ not be a complete representation of the indicated version."
 set(PANDA_DISTRIBUTOR homebuilt CACHE STRING
   "This string is reported verbatim by PandaSystem::get_distributor().
 It should be set by whoever provides a particular distribution of
-Panda. If you build your own Panda, leave this unchanged.")
+Panda.  If you build your own Panda, leave this unchanged.")
 
 set(PANDA_PACKAGE_VERSION CACHE STRING
   "This string is used to describe the Panda3D \"package\" associated
@@ -40,13 +40,15 @@ than Panda itself.")
 set(P3D_COREAPI_VERSION "${P3D_PLUGIN_VERSION}.1" CACHE STRING
   "Finally, there's a separate version number for the Core API. At
 first, we didn't believe we needed a Core API version number, but
-in this belief we were naive. This version number is a little less
+in this belief we were naive.  This version number is a little less
 strict in its format requirements than P3D_PLUGIN_VERSION, above,
 and it doesn't necessarily consist of a specific number of
 integers, but by convention it will consist of four integers, with
 the first three matching the plugin version, and the fourth integer
 being incremented with each new Core API revision.")
 
+mark_as_advanced(PANDA_VERSION PANDA_OFFICIAL_VERSION
+  PANDA_PACKAGE_VERSION P3D_PLUGIN_VERSION P3D_COREAPI_VERSION)
 
 # Separate the Panda3D version into its three components.
 string(REPLACE "." ";" PANDA_VERSION_LIST "${PANDA_VERSION}")

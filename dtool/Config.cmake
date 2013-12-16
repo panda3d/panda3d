@@ -27,6 +27,14 @@ else()
   set(DEFAULT_PATHSEP ":")
 endif()
 
+#TODO figure out what to do about release/debug vs OPTIMIZE level.
+if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "")
+  set(DO_DEBUG ON)
+else()
+  set(DO_DEBUG OFF)
+endif()
+
+
 # Panda uses prc files for runtime configuration.  There are many
 # compiled-in options to customize the behavior of the prc config
 # system; most users won't need to change any of them.  Feel free to
@@ -169,9 +177,10 @@ mark_as_advanced(PRC_DEFAULT_DIR PRC_DIR_ENVVARS PRC_PATH_ENVVARS
   PRC_PUBLIC_KEYS_FILENAME PRC_RESPECT_TRUST_LEVEL
   PRC_DCONFIG_TRUST_LEVEL PRC_INC_TRUST_LEVEL)
 
+#
 # This is the end of the PRC variable customization section.  The
 # remaining variables are of general interest to everyone.
-
+#
 
 option(HAVE_P3D_PLUGIN
   "You may define this to build or develop the plugin." OFF)
@@ -209,6 +218,10 @@ set(INTERROGATE_OPTIONS "-fnames;-string;-refcount;-assert" CACHE STRING
 generating either of the above two interfaces?  Generally, you
 probably don't want to mess with this.")
 
+option(INTERROGATE_VERBOSE
+  "Set this if you would like interrogate to generate advanced
+debugging information." OFF)
+
 set(INTERROGATE "interrogate" CACHE STRING
   "What's the name of the interrogate binary to run?  The default
 specified is the one that is built as part of DTOOL.  If you have a
@@ -223,6 +236,148 @@ mark_as_advanced(PYTHON_NATIVE INTERROGATE_OPTIONS)
 if(NOT CMAKE_CROSSCOMPILING)
   mark_as_advanced(INTERROGATE INTERROGATE_MODULE)
 endif()
+
+#
+# Now let's check for the presence of various thirdparty libraries.
+#
+
+option(USE_EIGEN
+  "Enables experimental support for the Eigen linear algebra library.
+If this is provided, Panda will use this library as the fundamental
+implementation of its own linmath library; otherwise, it will use
+its own internal implementation.  The primary advantage of using
+Eigen is SSE2 support, which is only activated if LINMATH_ALIGN
+is also enabled." ON)
+
+option(LINMATH_ALIGN
+  "This is required for activating SSE2 support using Eigen.
+Activating this does constrain most objects in Panda to 16-byte
+alignment, which could impact memory usage on very-low-memory
+platforms.  Currently experimental." ON)
+
+if(USE_EIGEN)
+  find_package(Eigen3)
+  if(EIGEN3_FOUND)
+    set(HAVE_EIGEN3 TRUE)
+  endif()
+endif()
+
+option(USE_PYTHON
+  "Enables support for Python.  If INTERROGATE_PYTHON_INTERFACE
+is also enabled, Python bindings will be generated.")
+
+if(USE_PYTHON)
+  find_package(PythonLibs)
+  find_package(PythonInterp)
+  if(PYTHONLIBS_FOUND)
+    set(HAVE_PYTHON TRUE)
+    include_directories("${PYTHON_INCLUDE_DIR}")
+  endif()
+endif()
+
+# By default, we'll assume the user only wants to run with Debug
+# python if he has to--that is, on Windows when building a debug build.
+if(WIN32 AND DO_DEBUG)
+  set(USE_DEBUG_PYTHON ON)
+else()
+  set(USE_DEBUG_PYTHON OFF)
+endif()
+
+set(GENPYCODE_LIBS "libpandaexpress;libpanda;libpandaphysics;libp3direct;libpandafx;libp3vision;libpandaode;libp3vrpn" CACHE STRING
+  "Define the default set of libraries to be instrumented by
+genPyCode.  You may wish to add to this list to add your own
+libraries, or if you want to use some of the more obscure
+interfaces like libpandaegg and libpandafx.")
+
+mark_as_advanced(GENPYCODE_LIBS)
+
+#TODO INSTALL_PYTHON_SOURCE?
+
+#
+# The following options have to do with the memory allocation system
+# that will be used by Panda3D.
+#
+
+option(DO_MEMORY_USAGE
+  "Do you want to compile in support for tracking memory usage?  This
+enables you to define the variable 'track-memory-usage' at runtime
+to help track memory leaks, and also report total memory usage on
+PStats.  There is some small overhead for having this ability
+available, even if it is unused." ${DO_DEBUG})
+
+option(SIMULATE_NETWORK_DELAY
+  "This option compiles in support for simulating network delay via
+the min-lag and max-lag prc variables.  It adds a tiny bit of
+overhead even when it is not activated, so it is typically enabled
+only in a development build." ${DO_DEBUG})
+
+option(SUPPORT_IMMEDIATE_MODE
+  "This option compiles in support for immediate-mode OpenGL
+rendering.  Since this is normally useful only for researching
+buggy drivers, and since there is a tiny bit of per-primitive
+overhead to have this option available even if it is unused, it is
+by default enabled only in a development build.  This has no effect
+on DirectX rendering." ${DO_DEBUG})
+
+option(USE_MEMORY_DLMALLOC
+  "This is an optional alternative memory-allocation scheme
+available within Panda.  You can experiment with it to see
+if it gives better performance than the system malloc(), but
+at the time of this writing, it doesn't appear that it does." OFF)
+
+option(USE_MEMORY_PTMALLOC2
+  "This is an optional alternative memory-allocation scheme
+available within Panda.  You can experiment with it to see
+if it gives better performance than the system malloc(), but
+at the time of this writing, it doesn't appear that it does." OFF)
+
+option(MEMORY_HOOK_DO_ALIGN
+  "Set this true if you prefer to use the system malloc library even
+if 16-byte alignment must be performed on top of it, wasting up to
+30% of memory usage.  If you do not set this, and 16-byte alignment
+is required and not provided by the system malloc library, then an
+alternative malloc system (above) will be used instead." OFF)
+
+option(ALTERNATIVE_MALLOC
+  "Do you want to use one of the alternative malloc implementations?"
+  OFF)
+
+option(USE_DELETED_CHAIN
+  "Define this true to use the DELETED_CHAIN macros, which support
+fast re-use of existing allocated blocks, minimizing the low-level
+calls to malloc() and free() for frequently-created and -deleted
+objects.  There's usually no reason to set this false, unless you
+suspect a bug in Panda's memory management code." ON)
+
+mark_as_advanced(DO_MEMORY_USAGE SIMULATE_NETWORK_DELAY
+  SUPPORT_IMMEDIATE_MODE USE_MEMORY_DLMALLOC USE_MEMORY_PTMALLOC2
+  MEMORY_HOOK_DO_ALIGN ALTERNATIVE_MALLOC USE_DELETED_CHAIN)
+
+
+#
+# < Insert the rest of the Config.pp port here <
+#
+
+# How to invoke bison and flex.  Panda takes advantage of some
+# bison/flex features, and therefore specifically requires bison and
+# flex, not some other versions of yacc and lex.  However, you only
+# need to have these programs if you need to make changes to the
+# bison or flex sources (see the next point, below).
+
+find_package(BISON QUIET)
+find_package(FLEX QUIET)
+
+# You may not even have bison and flex installed.  If you don't, no
+# sweat; Panda ships with the pre-generated output of these programs,
+# so you don't need them unless you want to make changes to the
+# grammars themselves (files named *.yxx or *.lxx).
+
+set(HAVE_BISON ${BISON_FOUND})
+set(HAVE_FLEX ${FLEX_FOUND})
+
+#
+#
+#
 
 ### Configure threading support ###
 find_package(Threads)
@@ -311,16 +466,9 @@ if(BUILD_PIPELINING)
   set(DO_PIPELINING TRUE)
 endif()
 
+
+
 ### Configure OS X options ###
-if(APPLE)
-  option(BUILD_UNIVERSIAL_BINARIES "If on, compiling will create universal OS X binaries." ON)
-  if(BUILD_UNIVERSAL_BINARIES)
-    message(STATUS "Compilation will create universal binaries.")
-    set(UNIVERSAL_BINARIES TRUE)
-  else()
-    message(STATUS "Compilation will not create universal binaries.")
-  endif()
-endif()
 
 message(STATUS "")
 message(STATUS "See dtool_config.h for more details about the specified configuration.\n")

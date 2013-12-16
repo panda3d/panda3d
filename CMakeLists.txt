@@ -14,7 +14,17 @@ include(dtool/PandaMacros.cmake)
 include(dtool/PandaVersion.cmake)
 include(dtool/Packages.cmake)
 include(dtool/Config.cmake)
+#include(dtool/Interrogate.cmake)
+
+# Determine which trees to build.
+option(BUILD_DTOOL "Build the dtool source tree." ON)
+option(BUILD_PANDA "Build the panda source tree." ON)
 
 # Include Panda3D packages
-add_subdirectory(dtool)
-add_subdirectory(panda)
+if(BUILD_DTOOL)
+  add_subdirectory(dtool)
+endif()
+
+if(BUILD_PANDA)
+  add_subdirectory(panda)
+endif()

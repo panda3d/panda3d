@@ -1,4 +1,4 @@
-# Settings for composite builds.
+# Settings for composite builds.  Should be moved to Config.cmake?
 set(COMPOSITE_SOURCE_LIMIT "10" CACHE STRING
   "Setting this to a value higher than 1 will enable unity builds.
 A high value will speed up the build dramatically but use more RAM.")
@@ -7,22 +7,6 @@ set(COMPOSITE_SOURCE_EXTENSIONS "cxx;c;mm" CACHE STRING
   "Only files of these extensions will be added to composite files.")
 
 set(COMPOSITE_GENERATOR "${CMAKE_CURRENT_LIST_DIR}/MakeComposite.cmake")
-
-# Settings for interrogate.
-#set(INTERROGATE_OPTIONS
-
-#
-# Function: write_composite_file(file [source1 [source2 ...])
-# Writes out a single composite file.  Used by composite_sources, below.
-#
-#function(write_composite_file file)
-#  set(COMPOSITE_INCLUDES "")
-#  foreach(source ${ARGN})
-#    set(COMPOSITE_INCLUDES "${COMPOSITE_INCLUDES}#include \"${source}\"\n")
-#  endforeach()
-#
-#  configure_file("${COMPOSITE_TEMPLATE}" "${file}")
-#endfunction(write_composite_file)
 
 #
 # Macro: composite_sources(target sources_var)
@@ -137,6 +121,8 @@ function(add_bison_target output_cxx input_yxx)
   endif()
 
   if(HAVE_BISON)
+    get_source_file_property(input_yxx "${input_yxx}" LOCATION)
+
     # If we have bison, we can of course just run it.
     add_custom_command(
       OUTPUT ${outputs}

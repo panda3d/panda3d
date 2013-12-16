@@ -1,3 +1,5 @@
+add_bison_target(cppBison.cxx cppBison.yxx DEFINES cppBison.h PREFIX cppyy)
+
 set(P3CPPPARSER_HEADERS
 	cppArrayType.h cppBison.yxx cppBisonDefs.h
 	cppClassTemplateParameter.h cppCommentBlock.h cppConstType.h
@@ -35,15 +37,6 @@ set(P3CPPPARSER_SOURCES
 )
 
 composite_sources(p3cppParser P3CPPPARSER_SOURCES)
-
-# Bison is required for CPPParser
-# Check for it here, so that cppparser can be compiled individually
-#TODO rdb: should be global
-if(NOT HAVE_BISON)
-	find_package(BISON REQUIRED QUIET)
-endif()
-
-add_bison_target(cppBison.cxx cppBison.yxx DEFINES cppBison.h PREFIX cppyy)
 
 add_library(p3cppParser STATIC ${P3CPPPARSER_HEADERS} ${P3CPPPARSER_SOURCES})
 target_link_libraries(p3cppParser p3dtoolutil)
