@@ -649,9 +649,10 @@ def NeedsBuild(files, others):
 
     key = tuple(files)
     if key in BUILTFROMCACHE:
-        if BUILTFROMCACHE[key] == dates:
+        cached = BUILTFROMCACHE[key]
+        if cached == dates:
             return False
-        if VERBOSE and frozenset(oldothers) != frozenset(others):
+        if VERBOSE and frozenset(cached.keys()) != frozenset(dates.keys()):
             print("%sWARNING:%s file dependencies changed: %s%s%s" % (GetColor("red"), GetColor(), GetColor("green"), files, GetColor()))
 
     return True
