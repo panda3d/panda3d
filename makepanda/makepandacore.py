@@ -627,32 +627,34 @@ def ClearTimestamp(path):
 
 BUILTFROMCACHE = {}
 
-def JustBuilt(files,others):
-    dates = []
+def JustBuilt(files, others):
+    dates = {}
     for file in files:
         del TIMESTAMPCACHE[file]
-        dates.append(GetTimestamp(file))
+        dates[file] = GetTimestamp(file)
     for file in others:
-        dates.append(GetTimestamp(file))
-    key = tuple(files)
-    BUILTFROMCACHE[key] = [others,dates]
+        dates[file] = GetTimestamp(file)
 
-def NeedsBuild(files,others):
-    dates = []
-    for file in files:
-        dates.append(GetTimestamp(file))
-        if (not os.path.exists(file)): return 1
-    for file in others:
-        dates.append(GetTimestamp(file))
     key = tuple(files)
-    if (key in BUILTFROMCACHE):
-        if (BUILTFROMCACHE[key] == [others,dates]):
-            return 0
-        else:
-            oldothers = BUILTFROMCACHE[key][0]
-            if (oldothers != others and VERBOSE):
-                print("%sWARNING:%s file dependencies changed: %s%s%s" % (GetColor("red"), GetColor(), GetColor("green"), files, GetColor()))
-    return 1
+    BUILTFROMCACHE[key] = dates
+
+def NeedsBuild(files, others):
+    dates = {}
+    for file in files:
+        dates[file] = GetTimestamp(file)
+        if not os.path.exists(file):
+            return True
+    for file in others:
+        dates[file] = GetTimestamp(file)
+
+    key = tuple(files)
+    if key in BUILTFROMCACHE:
+        if BUILTFROMCACHE[key] == dates:
+            return False
+        if VERBOSE and frozenset(oldothers) != frozenset(others):
+            print("%sWARNING:%s file dependencies changed: %s%s%s" % (GetColor("red"), GetColor(), GetColor("green"), files, GetColor()))
+
+    return True
 
 ########################################################################
 ##
@@ -721,8 +723,8 @@ def SaveDependencyCache():
     except: icache = 0
     if (icache!=0):
         print("Storing dependency cache.")
-        pickle.dump(CXXINCLUDECACHE, icache, 1)
-        pickle.dump(BUILTFROMCACHE, icache, 1)
+        pickle.dump(CXXINCLUDECACHE, icache, 2)
+        pickle.dump(BUILTFROMCACHE, icache, 2)
         icache.close()
 
 def LoadDependencyCache():
@@ -971,8 +973,10 @@ def ConditionalWriteFile(dest, desiredcontents):
         contents = rfile.read(-1)
         rfile.close()
     except:
-        contents=0
+        contents = 0
     if contents != desiredcontents:
+        if VERBOSE:
+            print("Writing %s" % (dest))
         sys.stdout.flush()
         WriteFile(dest, desiredcontents)
 
@@ -1744,7 +1748,7 @@ def SdkLocateDirectX( strMode = 'default' ):
         SDK["DIRECTCAM"] = SDK["DX9"]
 
 def SdkLocateMaya():
-    for (ver,key) in MAYAVERSIONINFO:
+    for (ver, key) in MAYAVERSIONINFO:
         if (PkgSkip(ver)==0 and ver not in SDK):
             GetSdkDir(ver.lower().replace("x",""), ver)
             if (not ver in SDK):
@@ -1759,7 +1763,7 @@ def SdkLocateMaya():
                     ddir = "/Applications/Autodesk/maya"+key
                     if (os.path.isdir(ddir)): SDK[ver] = ddir
                 else:
-                    if (GetTargetArch() == 'x64'):
+                    if (GetTargetArch() in ("x86_64", "amd64")):
                         ddir1 = "/usr/autodesk/maya"+key+"-x64"
                         ddir2 = "/usr/aw/maya"+key+"-x64"
                     else:
@@ -2544,9 +2548,9 @@ def CalcLocation(fn, ipath):
 
 def FindLocation(fn, ipath):
     if (GetLinkAllStatic() and fn.endswith(".dll")):
-        fn = fn[:-4]+".lib"
+        fn = fn[:-4] + ".lib"
     loc = CalcLocation(fn, ipath)
-    (base,ext) = os.path.splitext(fn)
+    base, ext = os.path.splitext(fn)
     ORIG_EXT[loc] = ext
     return loc
 
@@ -2597,8 +2601,8 @@ def FindLocation(fn, ipath):
 class Target:
     pass
 
-TARGET_LIST=[]
-TARGET_TABLE={}
+TARGET_LIST = []
+TARGET_TABLE = {}
 
 def TargetAdd(target, dummy=0, opts=0, input=0, dep=0, ipath=0, winrc=0):
     if (dummy != 0):
@@ -2607,7 +2611,7 @@ def TargetAdd(target, dummy=0, opts=0, input=0, dep=0, ipath=0, winrc=0):
     if (ipath == 0): ipath = []
     if (type(input) == str): input = [input]
     if (type(dep) == str): dep = [dep]
-    full = FindLocation(target,[OUTPUTDIR+"/include"])
+    full = FindLocation(target, [OUTPUTDIR + "/include"])
 
     if (full not in TARGET_TABLE):
         t = Target()
@@ -2642,6 +2646,7 @@ def TargetAdd(target, dummy=0, opts=0, input=0, dep=0, ipath=0, winrc=0):
         for x in dep:
             fulldep = FindLocation(x, ipath)
             t.deps[fulldep] = 1
+
     if winrc != 0 and GetTarget() == 'windows':
         TargetAdd(target, input=WriteResourceFile(target.split("/")[-1].split(".")[0], **winrc))
 

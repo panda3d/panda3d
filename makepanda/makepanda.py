@@ -2149,7 +2149,7 @@ def WriteConfigSettings():
         speedtree_parameters["SPEEDTREE_BIN_DIR"] = (SDK["SPEEDTREE"] + "/Bin")
 
     conf = "/* prc_parameters.h.  Generated automatically by makepanda.py */\n"
-    for key in prc_parameters.keys():
+    for key in sorted(prc_parameters.keys()):
         if ((key == "DEFAULT_PRC_DIR") or (key[:4]=="PRC_")):
             val = OverrideValue(key, prc_parameters[key])
             if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
@@ -2157,7 +2157,7 @@ def WriteConfigSettings():
     ConditionalWriteFile(GetOutputDir() + '/include/prc_parameters.h', conf)
 
     conf = "/* dtool_config.h.  Generated automatically by makepanda.py */\n"
-    for key in dtool_config.keys():
+    for key in sorted(dtool_config.keys()):
         val = OverrideValue(key, dtool_config[key])
         if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
         else:                conf = conf + "#define " + key + " " + val + "\n"
@@ -2165,7 +2165,7 @@ def WriteConfigSettings():
 
     if (RTDIST or RUNTIME):
         conf = "/* p3d_plugin_config.h.  Generated automatically by makepanda.py */\n"
-        for key in plugin_config.keys():
+        for key in sorted(plugin_config.keys()):
             val = plugin_config[key]
             if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
             else:                conf = conf + "#define " + key + " \"" + val.replace("\\", "\\\\") + "\"\n"
@@ -2173,15 +2173,15 @@ def WriteConfigSettings():
 
     if (PkgSkip("SPEEDTREE")==0):
         conf = "/* speedtree_parameters.h.  Generated automatically by makepanda.py */\n"
-        for key in speedtree_parameters.keys():
+        for key in sorted(speedtree_parameters.keys()):
             val = OverrideValue(key, speedtree_parameters[key])
             if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
             else:                conf = conf + "#define " + key + " \"" + val.replace("\\", "\\\\") + "\"\n"
         ConditionalWriteFile(GetOutputDir() + '/include/speedtree_parameters.h', conf)
 
     for x in PkgListGet():
-        if (PkgSkip(x)): ConditionalWriteFile(GetOutputDir() + '/tmp/dtool_have_'+x.lower()+'.dat',"0\n")
-        else:            ConditionalWriteFile(GetOutputDir() + '/tmp/dtool_have_'+x.lower()+'.dat',"1\n")
+        if (PkgSkip(x)): ConditionalWriteFile(GetOutputDir() + '/tmp/dtool_have_'+x.lower()+'.dat', "0\n")
+        else:            ConditionalWriteFile(GetOutputDir() + '/tmp/dtool_have_'+x.lower()+'.dat', "1\n")
 
 WriteConfigSettings()
 
