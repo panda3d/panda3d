@@ -68,24 +68,6 @@ from libpandaexpress import ConfigVariableBool
 
 ScalarTypes = (types.FloatType, types.IntType, types.LongType)
 
-import __builtin__
-if not hasattr(__builtin__, 'enumerate'):
-    def enumerate(L):
-        """Returns (0, L[0]), (1, L[1]), etc., allowing this syntax:
-        for i, item in enumerate(L):
-           ...
-
-        enumerate is a built-in feature in Python 2.3, which implements it
-        using an iterator. For now, we can use this quick & dirty
-        implementation that returns a list of tuples that is completely
-        constructed every time enumerate() is called.
-        """
-        return zip(xrange(len(L)), L)
-
-    __builtin__.enumerate = enumerate
-else:
-    enumerate = __builtin__.enumerate
-
 """
 # with one integer positional arg, this uses about 4/5 of the memory of the Functor class below
 def Functor(function, *args, **kArgs):

@@ -794,7 +794,7 @@ def _encode_entity(text, pattern=_escape):
 # the following functions assume an ascii-compatible encoding
 # (or "utf-16")
 
-def _escape_cdata(text, encoding=None, replace=string.replace):
+def _escape_cdata(text, encoding=None):
     # escape character data
     try:
         if encoding:
@@ -802,14 +802,14 @@ def _escape_cdata(text, encoding=None, replace=string.replace):
                 text = _encode(text, encoding)
             except UnicodeError:
                 return _encode_entity(text)
-        text = replace(text, "&", "&amp;")
-        text = replace(text, "<", "&lt;")
-        text = replace(text, ">", "&gt;")
+        text = text.replace("&", "&amp;")
+        text = text.replace("<", "&lt;")
+        text = text.replace( ">", "&gt;")
         return text
     except (TypeError, AttributeError):
         _raise_serialization_error(text)
 
-def _escape_attrib(text, encoding=None, replace=string.replace):
+def _escape_attrib(text, encoding=None):
     # escape attribute value
     try:
         if encoding:
@@ -817,11 +817,11 @@ def _escape_attrib(text, encoding=None, replace=string.replace):
                 text = _encode(text, encoding)
             except UnicodeError:
                 return _encode_entity(text)
-        text = replace(text, "&", "&amp;")
-        text = replace(text, "'", "&apos;") # FIXME: overkill
-        text = replace(text, "\"", "&quot;")
-        text = replace(text, "<", "&lt;")
-        text = replace(text, ">", "&gt;")
+        text = text.replace("&", "&amp;")
+        text = text.replace("'", "&apos;") # FIXME: overkill
+        text = text.replace("\"", "&quot;")
+        text = text.replace("<", "&lt;")
+        text = text.replace(">", "&gt;")
         return text
     except (TypeError, AttributeError):
         _raise_serialization_error(text)
