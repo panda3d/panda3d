@@ -80,7 +80,7 @@ int write_python_table_native(ostream &out) {
 
   int count = 0;
 
-  pset<std::string > Libraries;
+  pset<std::string> libraries;
 
 //  out << "extern \"C\" {\n";
 
@@ -92,59 +92,88 @@ int write_python_table_native(ostream &out) {
 
     // Consider only those that belong in the module we asked for.
     if (interrogate_function_has_module_name(function_index) &&
-        module_name == interrogate_function_module_name(function_index)) {
-        // if it has a library name add it to set of libraries
-        if(interrogate_function_has_library_name(function_index))
-            Libraries.insert(interrogate_function_library_name(function_index));
+      module_name == interrogate_function_module_name(function_index)) {
+      // if it has a library name add it to set of libraries
+      if (interrogate_function_has_library_name(function_index)) {
+        libraries.insert(interrogate_function_library_name(function_index));
+      }
     }
   }
 
-  for(int ti = 0; ti < interrogate_number_of_types(); ti++) {
+  for (int ti = 0; ti < interrogate_number_of_types(); ti++) {
     TypeIndex thetype  = interrogate_get_type(ti);
-    if(interrogate_type_has_module_name(thetype) && module_name == interrogate_type_module_name(thetype)) {
-        if(interrogate_type_has_library_name(thetype))
-            Libraries.insert(interrogate_type_library_name(thetype));
+    if (interrogate_type_has_module_name(thetype) && module_name == interrogate_type_module_name(thetype)) {
+      if (interrogate_type_has_library_name(thetype)) {
+        libraries.insert(interrogate_type_library_name(thetype));
+      }
     }
   }
 
   pset<std::string >::iterator ii;
-  for(ii = Libraries.begin(); ii != Libraries.end(); ii++) {
-    printf("Referencing Library %s\n",(*ii).c_str());
-    out << "extern LibraryDef "<< *ii << "_moddef;\n";
+  for(ii = libraries.begin(); ii != libraries.end(); ii++) {
+    printf("Referencing Library %s\n", (*ii).c_str());
+    out << "extern LibraryDef " << *ii << "_moddef;\n";
   }
 
   out << "\n"
       << "#if PY_MAJOR_VERSION >= 3\n"
-      << "#define INIT_FUNC PyObject *PyInit_" << library_name << "\n"
-      << "#else\n"
-      << "#define INIT_FUNC void init" << library_name << "\n"
-      << "#endif\n\n"
-
+      << "static struct PyModuleDef py_" << library_name << "_module = {\n"
+      << "  PyModuleDef_HEAD_INIT,\n"
+      << "  \"" << library_name << "\",\n"
+      << "  NULL,\n"
+      << "  -1,\n"
+      << "  NULL,\n"
+      << "  NULL, NULL, NULL, NULL\n"
+      << "};\n"
+      << "\n"
       << "#ifdef _WIN32\n"
-      << "extern \"C\" __declspec(dllexport) INIT_FUNC();\n"
+      << "extern \"C\" __declspec(dllexport) PyObject *PyInit_" << library_name << "();\n"
       << "#else\n"
-      << "extern \"C\" INIT_FUNC();\n"
-      << "#endif\n\n"
-
-      << "INIT_FUNC() {\n";
+      << "extern \"C\" PyObject *PyInit_" << library_name << "();\n"
+      << "#endif\n"
+      << "\n"
+      << "PyObject *PyInit_" << library_name << "() {\n";
 
   if (track_interpreter) {
     out << "  in_interpreter = 1;\n";
   }
 
   out << "  LibraryDef *defs[] = {";
-  for(ii = Libraries.begin(); ii != Libraries.end(); ii++) {
-    out << "&"<< *ii << "_moddef, ";
+  for(ii = libraries.begin(); ii != libraries.end(); ii++) {
+    out << "&" << *ii << "_moddef, ";
   }
 
-  out << "NULL};\n\n";
+  out << "NULL};\n"
+      << "\n"
+      << "  return Dtool_PyModuleInitHelper(defs, &py_" << library_name << "_module);\n"
+      << "}\n"
+      << "\n"
+      << "#else  // Python 2 case\n"
+      << "\n"
+      << "#ifdef _WIN32\n"
+      << "extern \"C\" __declspec(dllexport) void init" << library_name << "();\n"
+      << "#else\n"
+      << "extern \"C\" void init" << library_name << "();\n"
+      << "#endif\n"
+      << "\n"
+      << "void init" << library_name << "() {\n";
 
-  out << "#if PY_MAJOR_VERSION >= 3\n";
-  out << "  return Dtool_PyModuleInitHelper(defs, \"" << library_name << "\");\n";
-  out << "#else\n";
-  out << "  Dtool_PyModuleInitHelper(defs, \"" << library_name << "\");\n";
-  out << "#endif\n";
-  out << "}\n";
+  if (track_interpreter) {
+    out << "  in_interpreter = 1;\n";
+  }
+
+  out << "  LibraryDef *defs[] = {";
+  for(ii = libraries.begin(); ii != libraries.end(); ii++) {
+    out << "&" << *ii << "_moddef, ";
+  }
+
+  out << "NULL};\n"
+      << "\n"
+      << "  Dtool_PyModuleInitHelper(defs, \"" << library_name << "\");\n"
+      << "}\n"
+      << "#endif\n"
+      << "\n";
+
 
   return count;
 }

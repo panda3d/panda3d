@@ -203,8 +203,7 @@ DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
         if (report_errors) {
           ostringstream str;
           str << function_name << "() argument " << param << " must be ";
-          
-          
+
           PyObject *fname = PyObject_GetAttrString((PyObject *)classdef, "__name__");
           if (fname != (PyObject *)NULL) {
 #if PY_MAJOR_VERSION >= 3
@@ -216,7 +215,7 @@ DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
           } else {
             str << classdef->_name;
           }
-          
+
           PyObject *tname = PyObject_GetAttrString((PyObject *)Py_TYPE(self), "__name__");
           if (tname != (PyObject *)NULL) {
 #if PY_MAJOR_VERSION >= 3
@@ -228,7 +227,7 @@ DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
           } else {
             str << ", not " << my_type->_name;
           }
-          
+
           string msg = str.str();
           PyErr_SetString(PyExc_TypeError, msg.c_str());
         }
@@ -445,11 +444,15 @@ Dtool_PyTypedObject *Dtool_RuntimeTypeDtoolType(int type) {
       return di->second;
     }
   }
-  return NULL;    
+  return NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+#if PY_MAJOR_VERSION >= 3
+PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], PyModuleDef *module_def) {
+#else
 PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
+#endif
   // the module level function inits....
   MethodDefmap functions;
   for (int xx = 0; defs[xx] != NULL; xx++) {
@@ -468,20 +471,11 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
   newdef[offset].ml_flags = 0;
 
 #if PY_MAJOR_VERSION >= 3
-  cerr << "About to create module " << modulename << "\n";
-  struct PyModuleDef moduledef = {
-    PyModuleDef_HEAD_INIT,
-    modulename,
-    NULL,
-    -1,
-    newdef,
-    NULL, NULL, NULL, NULL
-  };
-  PyObject *module = PyModule_Create(&moduledef);
-  cerr << "Module created!\n";
+  module_def->m_methods = newdef;
+  PyObject *module = PyModule_Create(module_def);
 #else
-  PyObject *module = Py_InitModule((char *)modulename, newdef); 
-#endif  
+  PyObject *module = Py_InitModule((char *)modulename, newdef);
+#endif
 
   if (module == NULL) {
 #if PY_MAJOR_VERSION >= 3
@@ -491,7 +485,6 @@ PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename) {
 #endif
     return NULL;
   }
-
 
   // the constant inits... enums, classes ...
   for (int y = 0; defs[y] != NULL; y++) {
