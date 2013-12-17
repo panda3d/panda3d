@@ -47,9 +47,6 @@
 // assertion failures on execution.
 #define SIMPLE_STRUCT_POINTERS 1
 
-// Do we have a gettimeofday() function?
-#define HAVE_GETTIMEOFDAY
-
 // Does gettimeofday() take only one parameter?
 #define GETTIMEOFDAY_ONE_PARAM
 
