@@ -2352,7 +2352,7 @@ def CopyTree(dstdir, srcdir, omitCVS=True):
 
 def ParsePandaVersion(fn):
     try:
-        f = file(fn, "r")
+        f = open(fn, "r")
         pattern = re.compile('^[ \t]*[#][ \t]*define[ \t]+PANDA_VERSION[ \t]+([0-9]+)[ \t]+([0-9]+)[ \t]+([0-9]+)')
         for line in f:
             match = pattern.match(line,0)
@@ -2365,7 +2365,7 @@ def ParsePandaVersion(fn):
 
 def ParsePluginVersion(fn):
     try:
-        f = file(fn, "r")
+        f = open(fn, "r")
         pattern = re.compile('^[ \t]*[#][ \t]*define[ \t]+P3D_PLUGIN_VERSION[ \t]+([0-9]+)[ \t]+([0-9]+)[ \t]+([0-9]+)')
         for line in f:
             match = pattern.match(line,0)
@@ -2378,7 +2378,7 @@ def ParsePluginVersion(fn):
 
 def ParseCoreapiVersion(fn):
     try:
-        f = file(fn, "r")
+        f = open(fn, "r")
         pattern = re.compile('^[ \t]*[#][ \t]*define[ \t]+P3D_COREAPI_VERSION.*([0-9]+)[ \t]*$')
         for line in f:
             match = pattern.match(line,0)
