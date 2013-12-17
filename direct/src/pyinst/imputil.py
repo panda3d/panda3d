@@ -223,7 +223,7 @@ class Importer:
 
     # execute the code within the module's namespace
     if not is_module:
-      exec result[1] in module.__dict__
+      exec(result[1], module.__dict__)
 
     # insert the module into its parent
     if parent:

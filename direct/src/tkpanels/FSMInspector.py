@@ -71,7 +71,7 @@ class FSMInspector(AppShell):
                                      'Set state label size', tearoff = 1)
         for size in (8, 10, 12, 14, 18, 24):
             menuBar.addmenuitem('Font Size', 'command',
-                'Set font to: ' + repr(size) + ' Pts', label = `size` + ' Pts',
+                'Set font to: ' + repr(size) + ' Pts', label = repr(size) + ' Pts',
                 command = lambda s = self, sz = size: s.setFontSize(sz))
         menuBar.addcascademenu('States', 'Marker Size',
                                      'Set state marker size', tearoff = 1)

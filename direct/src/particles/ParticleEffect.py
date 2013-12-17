@@ -202,7 +202,7 @@ class ParticleEffect(NodePath):
         data = vfs.readFile(filename, 1)
         data = data.replace('\r', '')
         try:
-            exec data
+            exec(data)
         except:
             self.notify.warning('loadConfig: failed to load particle file: '+ repr(filename))
             raise
