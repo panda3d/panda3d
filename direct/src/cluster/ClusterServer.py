@@ -102,14 +102,14 @@ class ClusterServer(DirectObject.DirectObject):
 
     def addNamedObjectMapping(self,object,name,hasColor = True,
                               priority = 0):
-        if (not self.objectMappings.has_key(name)):
+        if (name not in self.objectMappings):
             self.objectMappings[name] = object
             self.objectHasColor[name] = hasColor
         else:
             self.notify.debug('attempt to add duplicate named object: '+name)
 
     def removeObjectMapping(self,name):
-        if (self.objectMappings.has_key(name)):
+        if (name in self.objectMappings):
             self.objectMappings.pop(name)
 
 
@@ -125,7 +125,7 @@ class ClusterServer(DirectObject.DirectObject):
 
     def addControlMapping(self,objectName,controlledName, offset = None,
                           priority = 0):
-        if (not self.controlMappings.has_key(objectName)):
+        if (objectName not in self.controlMappings):
             self.controlMappings[objectName] = controlledName
             if (offset == None):
                 offset = Vec3(0,0,0)
@@ -136,12 +136,12 @@ class ClusterServer(DirectObject.DirectObject):
             self.notify.debug('attempt to add duplicate controlled object: '+name)
 
     def setControlMappingOffset(self,objectName,offset):
-        if (self.controlMappings.has_key(objectName)):
+        if (objectName in self.controlMappings):
             self.controlOffsets[objectName] = offset
     
 
     def removeControlMapping(self,name):
-        if (self.controlMappings.has_key(name)):
+        if (name in self.controlMappings):
             self.controlMappings.pop(name)
             self.controlPriorities.pop(name)
         self.redoSortedPriorities()
@@ -156,7 +156,7 @@ class ClusterServer(DirectObject.DirectObject):
         for pair in self.sortedControlPriorities:
             object = pair[1]
             name   = self.controlMappings[object] 
-            if (self.objectMappings.has_key(object)):
+            if (object in self.objectMappings):
                 self.moveObject(self.objectMappings[object],name,self.controlOffsets[object],
                                 self.objectHasColor[object])
 
@@ -297,7 +297,7 @@ class ClusterServer(DirectObject.DirectObject):
     def handleNamedMovement(self, data):
         """ Update cameraJig position to reflect latest position """
         (name,x, y, z, h, p, r,sx,sy,sz, red, g, b, a, hidden) = data
-        if (self.objectMappings.has_key(name)):
+        if (name in self.objectMappings):
             self.objectMappings[name].setPosHpr(render, x, y, z, h, p, r)
             self.objectMappings[name].setScale(render,sx,sy,sz)
             self.objectMappings[name].setColor(red,g,b,a)

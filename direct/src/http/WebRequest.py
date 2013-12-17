@@ -262,7 +262,7 @@ class WebRequestDispatcher(object):
 
     def enableLandingPage(self, enable):
         if enable:
-            if not self.__dict__.has_key("landingPage"):
+            if "landingPage" not in self.__dict__:
                 self.landingPage = LandingPage()
                 self.registerGETHandler("/", self._main, returnsResponse = True, autoSkin = True)
                 self.registerGETHandler("/services", self._services, returnsResponse = True, autoSkin = True)

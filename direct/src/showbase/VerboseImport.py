@@ -18,7 +18,7 @@ def newimport(*args, **kw):
     fPrint = 0
     name = args[0]
     # Only print the name if we have not imported this before
-    if not sys.modules.has_key(name):
+    if name not in sys.modules:
         print (" "*indentLevel + "import " + args[0])
         fPrint = 1
     indentLevel += 1

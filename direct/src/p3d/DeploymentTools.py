@@ -39,9 +39,9 @@ def archiveFilter(info):
     # Somewhat hacky, but it's the only way
     # permissions can work on a Windows box.
     if info.type != tarfile.DIRTYPE and '.' in info.name.rsplit('/', 1)[-1]:
-        info.mode = 0644
+        info.mode = 0o644
     else:
-        info.mode = 0755
+        info.mode = 0o755
 
     return info
 
@@ -53,8 +53,8 @@ class TarInfoRoot(tarfile.TarInfo):
     gid = property(lambda self: 0, lambda self, x: None)
     uname = property(lambda self: "root", lambda self, x: None)
     gname = property(lambda self: "root", lambda self, x: None)
-    mode = property(lambda self: 0644 if self.type != tarfile.DIRTYPE and \
-                    '.' in self.name.rsplit('/', 1)[-1] else 0755,
+    mode = property(lambda self: 0o644 if self.type != tarfile.DIRTYPE and \
+                    '.' in self.name.rsplit('/', 1)[-1] else 0o755,
                     lambda self, x: None)
 
 # On OSX, the root group is named "wheel".
@@ -186,7 +186,7 @@ class Standalone:
         ohandle.close()
         phandle.close()
 
-        os.chmod(output.toOsSpecific(), 0755)
+        os.chmod(output.toOsSpecific(), 0o755)
 
     def getExtraFiles(self, platform):
         """ Returns a list of extra files that will need to be included
@@ -550,7 +550,7 @@ class Installer:
                 mf = Multifile()
                 # Make sure that it isn't mounted before altering it, just to be safe
                 vfs.unmount(archive)
-                os.chmod(archive.toOsSpecific(), 0644)
+                os.chmod(archive.toOsSpecific(), 0o644)
                 if not mf.openReadWrite(archive):
                     Installer.notify.warning("Failed to open archive %s" % (archive))
                     continue
@@ -575,7 +575,7 @@ class Installer:
                 #    archive.unlink()
                 #else:
                 mf.close()
-                try: os.chmod(archive.toOsSpecific(), 0444)
+                try: os.chmod(archive.toOsSpecific(), 0o444)
                 except: pass
 
         # Write out our own contents.xml file.

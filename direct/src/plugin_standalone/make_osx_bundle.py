@@ -73,7 +73,7 @@ def makeBundle(startDir):
     shutil.copyfile(icons.toOsSpecific(), iconFilename.toOsSpecific())
     print panda3d_mac, exeFilename
     shutil.copyfile(panda3d_mac.toOsSpecific(), exeFilename.toOsSpecific())
-    os.chmod(exeFilename.toOsSpecific(), 0755)
+    os.chmod(exeFilename.toOsSpecific(), 0o755)
 
     # All done!
     bundleFilename.touch()

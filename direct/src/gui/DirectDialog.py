@@ -15,7 +15,7 @@ def findDialog(uniqueName):
     useful for debugging, to get a pointer to the current onscreen
     panel of a particular type.
     """
-    if DirectDialog.AllDialogs.has_key(uniqueName):
+    if uniqueName in DirectDialog.AllDialogs:
         return DirectDialog.AllDialogs[uniqueName]
     return None
 
@@ -27,7 +27,7 @@ def cleanupDialog(uniqueName):
     that opening panel A should automatically close panel B, for
     instance.
     """
-    if DirectDialog.AllDialogs.has_key(uniqueName):
+    if uniqueName in DirectDialog.AllDialogs:
         # calling cleanup() will remove it out of the AllDialogs dict
         # This way it will get removed from the dict even it we did
         # not clean it up using this interface (ie somebody called
@@ -330,7 +330,7 @@ class DirectDialog(DirectFrame):
     def cleanup(self):
         # Remove this panel out of the AllDialogs list
         uniqueName = self['dialogName']
-        if DirectDialog.AllDialogs.has_key(uniqueName):
+        if uniqueName in DirectDialog.AllDialogs:
             del DirectDialog.AllDialogs[uniqueName]
         self.destroy()
 

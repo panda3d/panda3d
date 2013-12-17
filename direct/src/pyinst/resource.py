@@ -18,7 +18,7 @@ def makeresource(name, xtrapath=None):
        when the module archive.py was desired."""
     typ, nm, fullname = finder.identify(name, xtrapath)
     fullname = os.path.normpath(fullname)
-    if _cache.has_key(fullname):
+    if fullname in _cache:
         return _cache[fullname]
     elif typ in (finder.SCRIPT, finder.GSCRIPT):
         rsrc = scriptresource(nm, fullname)

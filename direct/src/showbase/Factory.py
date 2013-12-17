@@ -20,7 +20,7 @@ class Factory:
         return self._type2ctor[type](*args, **kwArgs)
 
     def _registerType(self, type, ctor):
-        if self._type2ctor.has_key(type):
+        if type in self._type2ctor:
             self.notify.debug('replacing %s ctor %s with %s' %
                               (type, self._type2ctor[type], ctor))
         self._type2ctor[type] = ctor

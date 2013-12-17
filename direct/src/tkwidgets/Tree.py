@@ -227,7 +227,7 @@ class TreeNode:
         self.kidKeys = []
         for item in sublist:
             key = item.GetKey()
-            if fUseCachedChildren and self.children.has_key(key):
+            if fUseCachedChildren and key in self.children:
                 child = self.children[key]
             else:
                 child = TreeNode(self.canvas, self, item, self.menuList)
@@ -291,7 +291,7 @@ class TreeNode:
             sublist.sort(compareText)
         for item in sublist:
             key = item.GetKey()
-            if fUseCachedChildren and self.children.has_key(key):
+            if fUseCachedChildren and key in self.children:
                 child = self.children[key]
             else:
                 child = TreeNode(self.canvas, self, item, self.menuList)
@@ -452,7 +452,7 @@ class TreeNode:
             key = item.GetKey()
 
             # Use existing child or create new TreeNode if none exists
-            if self.children.has_key(key):
+            if key in self.children:
                 child = self.children[key]
             else:
                 child = TreeNode(self.canvas, self, item, self.menuList)

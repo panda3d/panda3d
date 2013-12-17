@@ -124,7 +124,7 @@ if __name__ == "__main__":
                               command = printDialogValue)
 
     customDialog = DirectDialog(text = 'Pick a number',
-                                buttonTextList = map(str, range(10)),
+                                buttonTextList = [str(i) for i in range(10)],
                                 buttonValueList = range(10),
                                 command = printDialogValue)
 

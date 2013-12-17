@@ -699,7 +699,7 @@ class ServerRepository:
         
         if self.notify.getDebug():
             self.notify.debug(
-                "ServerRepository sending to all in zone %s except %s:" % (zoneId, map(lambda c: c.doIdBase, exceptionList)))
+                "ServerRepository sending to all in zone %s except %s:" % (zoneId, [c.doIdBase for c in exceptionList]))
             #datagram.dumpHex(ostream)
 
         for client in self.zonesToClients.get(zoneId, []):
@@ -716,7 +716,7 @@ class ServerRepository:
         
         if self.notify.getDebug():
             self.notify.debug(
-                "ServerRepository sending to all except %s:" % (map(lambda c: c.doIdBase, exceptionList),))
+                "ServerRepository sending to all except %s:" % ([c.doIdBase for c in exceptionList],))
             #datagram.dumpHex(ostream)
 
         for client in self.clientsByConnection.values():

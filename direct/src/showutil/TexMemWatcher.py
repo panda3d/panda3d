@@ -627,7 +627,7 @@ class TexMemWatcher(DirectObject):
             self.repack()
 
         else:
-            overflowCount = sum(map(lambda tp: tp.overflowed, self.texPlacements.keys()))
+            overflowCount = sum([tp.overflowed for tp in self.texPlacements.keys()])
             if totalSize <= self.limit and overflowCount:
                 # Shouldn't be overflowing any more.  Better repack.
                 self.repack()

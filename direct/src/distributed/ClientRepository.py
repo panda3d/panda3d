@@ -372,7 +372,7 @@ class ClientRepository(ClientRepositoryBase):
         This is not a distributed message and does not delete the
         object on the server or on any other client.
         """
-        if self.doId2do.has_key(doId):
+        if doId in self.doId2do:
             # If it is in the dictionary, remove it.
             obj = self.doId2do[doId]
             # Remove it from the dictionary
