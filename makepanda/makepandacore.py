@@ -2343,6 +2343,47 @@ def CopyTree(dstdir, srcdir, omitCVS=True):
         else:
             cmd = 'cp -R -f ' + srcdir + ' ' + dstdir
         oscmd(cmd)
+        if omitCVS:
+            DeleteCVS(dstdir)
+
+def CopyPythonTree(dstdir, srcdir, lib2to3_fixers=[]):
+    if (not os.path.isdir(dstdir)):
+        os.mkdir(dstdir)
+
+    lib2to3 = None
+    if len(lib2to3_fixers) > 0 and sys.version_info >= (3, 0):
+        from lib2to3.main import main as lib2to3
+        lib2to3_args = ['-w', '-n', '--no-diffs', '-x', 'buffer', '-x', 'idioms', '-x', 'set_literal', '-x', 'ws_comma']
+        if lib2to3_fixers != ['all']:
+            for fixer in lib2to3_fixers:
+                lib2to3_args += ['-f', fixer]
+
+    refactor = []
+    for entry in os.listdir(srcdir):
+        srcpth = os.path.join(srcdir, entry)
+        dstpth = os.path.join(dstdir, entry)
+        if (os.path.isfile(srcpth)):
+            base, ext = os.path.splitext(entry)
+            if (entry != ".cvsignore" and ext not in SUFFIX_INC):
+                if (NeedsBuild([dstpth], [srcpth])):
+                    WriteBinaryFile(dstpth, ReadBinaryFile(srcpth))
+
+                    if ext == '.py' and not entry.endswith('-extensions.py'):
+                        refactor.append((dstpth, srcpth))
+                    else:
+                        JustBuilt([dstpth], [srcpth])
+
+        elif (entry != "CVS"):
+            CopyPythonTree(dstpth, srcpth, lib2to3_fixers)
+
+    for dstpth, srcpth in refactor:
+        if lib2to3 is not None:
+            ret = lib2to3("lib2to3.fixes", lib2to3_args + [dstpth])
+            if ret != 0:
+                os.remove(dstpth)
+                exit("Error in lib2to3.")
+        JustBuilt([dstpth], [srcpth])
+
 
 ########################################################################
 ##

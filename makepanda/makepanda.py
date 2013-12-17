@@ -1611,12 +1611,14 @@ def RunGenPyCode(target, inputs, opts):
     if (PkgSkip("PYTHON") != 0):
         return
 
-    cmdstr = sys.executable + " -B " + os.path.join("direct", "src", "ffi", "jGenPyCode.py")
+    cmdstr = sys.executable + " -B " + os.path.join(GetOutputDir(), "direct", "ffi", "jGenPyCode.py")
     if (GENMAN): cmdstr += " -d"
     cmdstr += " -r"
     for i in inputs:
-        if (GetOrigExt(i)==".dll"):
-            cmdstr += " " + os.path.basename(os.path.splitext(i)[0].replace("_d","").replace(GetOutputDir()+"/lib/",""))
+        if (GetOrigExt(i)==".pyd"):
+            cmdstr += " panda3d." + os.path.basename(os.path.splitext(i)[0])
+        elif (GetOrigExt(i)==".dll"):
+            cmdstr += " " + os.path.basename(os.path.splitext(i)[0].replace("_d",""))
 
     oscmd(cmdstr)
 
@@ -2379,7 +2381,7 @@ CreatePandaVersionFiles()
 ##########################################################################################
 
 if (PkgSkip("DIRECT")==0):
-    CopyTree(GetOutputDir()+'/direct', 'direct/src')
+    CopyPythonTree(GetOutputDir() + '/direct', 'direct/src', lib2to3_fixers=['all'])
     ConditionalWriteFile(GetOutputDir() + '/direct/__init__.py', "")
     if (GetTarget() == 'windows'):
         CopyFile(GetOutputDir()+'/bin/panda3d.py', 'direct/src/ffi/panda3d.py')
