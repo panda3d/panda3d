@@ -665,10 +665,18 @@ if (COMPILER=="GCC"):
         LibDirectory("ALWAYS", "/usr/local/lib")
 
     # Workaround for an issue where pkg-config does not include this path
-    if (os.path.isdir("/usr/lib64/glib-2.0/include")):
-        IncDirectory("GTK2", "/usr/lib64/glib-2.0/include")
-    if (os.path.isdir("/usr/lib64/gtk-2.0/include")):
-        IncDirectory("GTK2", "/usr/lib64/gtk-2.0/include")
+    if GetTargetArch() in ("x86_64", "amd64"):
+        if (os.path.isdir("/usr/lib64/glib-2.0/include")):
+            IncDirectory("GTK2", "/usr/lib64/glib-2.0/include")
+        if (os.path.isdir("/usr/lib64/gtk-2.0/include")):
+            IncDirectory("GTK2", "/usr/lib64/gtk-2.0/include")
+
+        if (os.path.isdir("/usr/X11R6/lib64")):
+            LibDirectory("ALWAYS", "/usr/X11R6/lib64")
+        else:
+            LibDirectory("ALWAYS", "/usr/X11R6/lib")
+    else:
+        LibDirectory("ALWAYS", "/usr/X11R6/lib")
 
     fcollada_libs = ("FColladaD", "FColladaSD", "FColladaS")
     # WARNING! The order of the ffmpeg libraries matters!
@@ -707,20 +715,23 @@ if (COMPILER=="GCC"):
             # We use a statically linked libboost_python on OSX
             rocket_libs += ("boost_python",)
         SmartPkgEnable("ROCKET",    "",          rocket_libs, "Rocket/Core.h")
+        SmartPkgEnable("GTK2",      "gtk+-2.0")
 
-    SmartPkgEnable("GTK2",      "gtk+-2.0")
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
     SmartPkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
     SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
     SmartPkgEnable("ZLIB",      "zlib",      ("z"), "zlib.h")
+
     if (RTDIST and GetHost() == "darwin" and "PYTHONVERSION" in SDK):
         # Don't use the framework for the OSX rtdist build. I'm afraid it gives problems somewhere.
         SmartPkgEnable("PYTHON",    "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config")
     elif("PYTHONVERSION" in SDK and not RUNTIME):
         SmartPkgEnable("PYTHON",    "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config", framework = "Python")
+
     if (RTDIST):
         SmartPkgEnable("WX",    tool = "wx-config")
         SmartPkgEnable("FLTK", "", ("fltk"), ("Fl/Fl.H"), tool = "fltk-config")
+
     if (RUNTIME):
         if (GetHost() == 'darwin'):
             SmartPkgEnable("NPAPI", "", (), ("npapi.h"))
@@ -1416,7 +1427,7 @@ def CompileLink(dll, obj, opts):
     if COMPILER == "GCC":
         cxx = GetCXX()
         if GetOrigExt(dll) == ".exe" and GetTarget() != 'android':
-            cmd = cxx + ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp -L/usr/X11R6/lib'
+            cmd = cxx + ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp'
         else:
             if (GetTarget() == "darwin"):
                 cmd = cxx + ' -undefined dynamic_lookup'
@@ -1424,11 +1435,11 @@ def CompileLink(dll, obj, opts):
                 else:
                     cmd += ' -dynamiclib -install_name ' + os.path.basename(dll)
                     cmd += ' -compatibility_version ' + MAJOR_VERSION + ' -current_version ' + VERSION
-                cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp -L/usr/X11R6/lib'
+                cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp'
             else:
                 cmd = cxx + ' -shared'
                 if ("MODULE" not in opts): cmd += " -Wl,-soname=" + os.path.basename(dll)
-                cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp -L/usr/X11R6/lib'
+                cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp'
 
         for x in obj:
             if GetOrigExt(x) != ".dat":
