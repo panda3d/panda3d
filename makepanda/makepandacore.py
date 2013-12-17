@@ -159,22 +159,30 @@ def DisableColors():
     HAVE_COLORS = False
 
 def GetColor(color = None):
-    if not HAVE_COLORS: return ""
-    if color != None: color = color.lower()
+    if not HAVE_COLORS:
+        return ""
+    if color != None:
+        color = color.lower()
+
     if (color == "blue"):
-      return curses.tparm(SETF, 1)
+        token = curses.tparm(SETF, 1)
     elif (color == "green"):
-      return curses.tparm(SETF, 2)
+        token = curses.tparm(SETF, 2)
     elif (color == "cyan"):
-      return curses.tparm(SETF, 3)
+        token = curses.tparm(SETF, 3)
     elif (color == "red"):
-      return curses.tparm(SETF, 4)
+        token = curses.tparm(SETF, 4)
     elif (color == "magenta"):
-      return curses.tparm(SETF, 5)
+        token = curses.tparm(SETF, 5)
     elif (color == "yellow"):
-      return curses.tparm(SETF, 6)
+        token = curses.tparm(SETF, 6)
     else:
-      return curses.tparm(curses.tigetstr("sgr0"))
+        token = curses.tparm(curses.tigetstr("sgr0"))
+
+    if sys.version_info >= (3, 0):
+        return token.decode('ascii')
+    else:
+        return token
 
 def ColorText(color, text, reset=True):
     if reset is True:
