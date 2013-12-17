@@ -61,7 +61,10 @@ import bisect
 __report_indent = 3
 
 from direct.directutil import Verify
-from panda3d.core import ConfigVariableBool
+# Don't import libpandaexpressModules, which doesn't get built until
+# genPyCode.
+import direct.extensions_native.extension_native_helpers
+from libpandaexpress import ConfigVariableBool
 
 ScalarTypes = (types.FloatType, types.IntType, types.LongType)
 
