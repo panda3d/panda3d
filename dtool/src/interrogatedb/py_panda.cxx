@@ -43,7 +43,7 @@ bool DtoolCanThisBeAPandaInstance(PyObject *self) {
 ////////////////////////////////////////////////////////////////////////
 //  Function : DTOOL_Call_ExtractThisPointerForType
 //
-//  These are the wrappers that allow for down and upcast from type .. 
+//  These are the wrappers that allow for down and upcast from type ..
 //      needed by the Dtool py interface.. Be very careful if you muck with these
 //      as the generated code depends on how this is set up..
 ////////////////////////////////////////////////////////////////////////
@@ -119,7 +119,7 @@ attempt_coercion(PyObject *self, Dtool_PyTypedObject *classdef,
       // temporary object.  Weird.
       Py_DECREF(obj);
     }
-    
+
     // Clear the error returned by the coercion constructor.  It's not
     // the error message we want to report.
     PyErr_Clear();
@@ -245,7 +245,7 @@ DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
       if (report_errors) {
         ostringstream str;
         str << function_name << "() argument " << param << " must be ";
-        
+
         PyObject *fname = PyObject_GetAttrString((PyObject *)classdef, "__name__");
         if (fname != (PyObject *)NULL) {
 #if PY_MAJOR_VERSION >= 3
@@ -257,7 +257,7 @@ DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
         } else {
           str << classdef->_name;
         }
-        
+
         PyObject *tname = PyObject_GetAttrString((PyObject *)Py_TYPE(self), "__name__");
         if (tname != (PyObject *)NULL) {
 #if PY_MAJOR_VERSION >= 3
@@ -267,14 +267,14 @@ DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
 #endif
           Py_DECREF(tname);
         }
-        
+
         string msg = str.str();
         PyErr_SetString(PyExc_TypeError, msg.c_str());
       }
     }
   } else {
     if (report_errors) {
-      PyErr_SetString(PyExc_TypeError, "self is NULL"); 
+      PyErr_SetString(PyExc_TypeError, "self is NULL");
     }
   }
 
@@ -295,7 +295,7 @@ void *DTOOL_Call_GetPointerThis(PyObject *self) {
 ////////////////////////////////////////////////////////////////////////
 //  Function : DTool_CreatePyInstanceTyped
 //
-// this function relies on the behavior of typed objects in the panda system. 
+// this function relies on the behavior of typed objects in the panda system.
 //
 ////////////////////////////////////////////////////////////////////////
 PyObject *DTool_CreatePyInstanceTyped(void *local_this_in, Dtool_PyTypedObject & known_class_type, bool memory_rules, bool is_const, int RunTimeType) {     
@@ -330,7 +330,7 @@ PyObject *DTool_CreatePyInstanceTyped(void *local_this_in, Dtool_PyTypedObject &
           self->_signature = PY_PANDA_SIGNATURE;
           self->_My_Type = target_class;
           return (PyObject *)self;
-        }             
+        }
       }
     }
   }
@@ -345,13 +345,13 @@ PyObject *DTool_CreatePyInstanceTyped(void *local_this_in, Dtool_PyTypedObject &
     self->_memory_rules = memory_rules;
     self->_is_const = is_const;
     self->_signature = PY_PANDA_SIGNATURE;
-    self->_My_Type = &known_class_type;    
+    self->_My_Type = &known_class_type;
   }
   return (PyObject *)self;
 }
 
 ////////////////////////////////////////////////////////////////////////
-// DTool_CreatePyInstance .. wrapper function to finalize the existance of a general 
+// DTool_CreatePyInstance .. wrapper function to finalize the existance of a general
 //    dtool py instance..
 ////////////////////////////////////////////////////////////////////////
 PyObject *DTool_CreatePyInstance(void *local_this, Dtool_PyTypedObject &in_classdef, bool memory_rules, bool is_const) {
@@ -366,8 +366,8 @@ PyObject *DTool_CreatePyInstance(void *local_this, Dtool_PyTypedObject &in_class
     self->_ptr_to_object = local_this;
     self->_memory_rules = memory_rules;
     self->_is_const = is_const;
-    self->_My_Type = classdef;    
-  } 
+    self->_My_Type = classdef;
+  }
   return (PyObject *)self;
 }
 
@@ -390,13 +390,13 @@ int DTool_PyInit_Finalize(PyObject *self, void *local_this, Dtool_PyTypedObject 
 // at code generation time because of multiple generation passes in interrogate..
 //
 ///////////////////////////////////////////////////////////////////////////////
-void Dtool_Accum_MethDefs(PyMethodDef  in[], MethodDefmap &themap) {
+void Dtool_Accum_MethDefs(PyMethodDef in[], MethodDefmap &themap) {
   for (; in->ml_name != NULL; in++) {
     if (themap.find(in->ml_name) == themap.end()) {
       themap[in->ml_name] = in;
     }
   }
-}   
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //  ** HACK ** alert..
@@ -406,10 +406,10 @@ void Dtool_Accum_MethDefs(PyMethodDef  in[], MethodDefmap &themap) {
 //
 ///////////////////////////////////////////////////////////////////////////////
 void
-RegisterRuntimeClass(Dtool_PyTypedObject * otype, int class_id) {
+RegisterRuntimeClass(Dtool_PyTypedObject *otype, int class_id) {
   if (class_id == 0) {
     interrogatedb_cat.warning()
-      << "Class " << otype->_name 
+      << "Class " << otype->_name
       << " has a zero TypeHandle value; check that init_type() is called.\n";
 
   } else if (class_id > 0) {
@@ -421,7 +421,7 @@ RegisterRuntimeClass(Dtool_PyTypedObject * otype, int class_id) {
       Dtool_PyTypedObject *other_type = (*result.first).second;
       interrogatedb_cat.warning()
         << "Classes " << otype->_name << " and " << other_type->_name
-        << " share the same TypeHandle value (" << class_id 
+        << " share the same TypeHandle value (" << class_id
         << "); check class definitions.\n";
 
     } else {
@@ -540,19 +540,20 @@ PyObject *Dtool_AddToDictionary(PyObject *self1, PyObject *args) {
     } else {
       PyDict_SetItem(dict,key,subject);
     }
-  }   
+  }
   if (PyErr_Occurred()) {
     return (PyObject *)NULL;
   }
   return Py_BuildValue("");
 }
+
 ///////////////////////////////////////////////////////////////////////////////////
 /*
 inline long  DTool_HashKey(PyObject * inst)
 {
     long   outcome = (long)inst;
-    PyObject * func = PyObject_GetAttrString(inst, "__hash__");
-    if (func == NULL) 
+    PyObject *func = PyObject_GetAttrString(inst, "__hash__");
+    if (func == NULL)
     {
         if (DtoolCanThisBeAPandaInstance(inst))
             if (((Dtool_PyInstDef *)inst)->_ptr_to_object != NULL)
@@ -564,13 +565,13 @@ inline long  DTool_HashKey(PyObject * inst)
         Py_DECREF(func);
         if (res == NULL)
             return -1;
-        if (PyInt_Check(res)) 
+        if (PyInt_Check(res))
         {
             outcome = PyInt_AsLong(res);
             if (outcome == -1)
                 outcome = -2;
         }
-        else 
+        else
         {
             PyErr_SetString(PyExc_TypeError,
                 "__hash__() should return an int");
@@ -592,7 +593,7 @@ inline long  DTool_HashKey(PyObject * inst)
 
 int DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2) {
   // First try compareTo function..
-  PyObject * func = PyObject_GetAttrString(v1, "compareTo");
+  PyObject * func = PyObject_GetAttrString(v1, "compare_to");
   if (func == NULL) {
     PyErr_Clear();
   } else {
@@ -636,26 +637,29 @@ int DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2) {
 #endif
       Py_DECREF(res);
     }
-  };
+  }
 
   // try this compare
   void *v1_this = DTOOL_Call_GetPointerThis(v1);
   void *v2_this = DTOOL_Call_GetPointerThis(v2);
   if (v1_this != NULL && v2_this != NULL) { // both are our types...
-    if (v1_this < v2_this)
+    if (v1_this < v2_this) {
       return -1;
-
-    if (v1_this > v2_this)
+    }
+    if (v1_this > v2_this) {
       return 1;
+    }
     return 0;
   }
 
   // ok self compare...
-  if (v1 < v2)
-    return  -1;
-  if (v1 > v2)
-    return  1;
-  return 0;   
+  if (v1 < v2) {
+    return -1;
+  }
+  if (v1 > v2) {
+    return 1;
+  }
+  return 0;
 }
 
 PyObject *DTOOL_PyObject_RichCompare(PyObject *v1, PyObject *v2, int op) {
@@ -697,7 +701,7 @@ PyObject *make_list_for_item(PyObject *self, const char *num_name,
   num_elements = PyInt_AsSsize_t(num_result);
 #endif
   Py_DECREF(num_result);
-  
+
   PyObject *list = PyList_New(num_elements);
   for (int i = 0; i < num_elements; ++i) {
     PyObject *element = PyObject_CallMethod(self, (char *)element_name, (char *)"(i)", i);
@@ -716,7 +720,7 @@ PyObject *make_list_for_item(PyObject *self, const char *num_name,
 //               __copy__() method from a C++ make_copy() method.
 ////////////////////////////////////////////////////////////////////
 PyObject *copy_from_make_copy(PyObject *self) {
-  return PyObject_CallMethod(self, (char *)"makeCopy", (char *)"()");
+  return PyObject_CallMethod(self, (char *)"make_copy", (char *)"()");
 }
 
 ////////////////////////////////////////////////////////////////////

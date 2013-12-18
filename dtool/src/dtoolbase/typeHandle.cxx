@@ -25,9 +25,9 @@ TypeHandle TypeHandle::_none;
 //       Access: Published
 //  Description: This special method allows coercion to a TypeHandle
 //               from a Python class object or instance.  It simply
-//               attempts to call classobj.getClassType(), and returns
-//               that value (or raises an exception if that method
-//               doesn't work).
+//               attempts to call classobj.get_class_type(), and
+//               returns that value (or raises an exception if that
+//               method doesn't work).
 //
 //               This method allows a Python class object to be used
 //               anywhere a TypeHandle is expected by the C++
@@ -35,7 +35,7 @@ TypeHandle TypeHandle::_none;
 ////////////////////////////////////////////////////////////////////
 PyObject *TypeHandle::
 make(PyObject *classobj) {
-  return PyObject_CallMethod(classobj, (char *)"getClassType", (char *)"");
+  return PyObject_CallMethod(classobj, (char *)"get_class_type", (char *)"");
 }
 #endif  // HAVE_PYTHON
 
@@ -119,7 +119,7 @@ operator << (ostream &out, TypeHandle::MemoryClass mem_class) {
   case TypeHandle::MC_limit:
     return out << "limit";
   }
-  
+
   return out
     << "**invalid TypeHandle::MemoryClass (" << (int)mem_class
     << ")**\n";
