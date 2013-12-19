@@ -1,7 +1,7 @@
 
 """Undocumented Module"""
 
-__all__ = ['enumerate', 'unique', 'indent', 'nonRepeatingRandomList',
+__all__ = ['unique', 'indent', 'nonRepeatingRandomList',
 'writeFsmTree', 'StackTrace', 'traceFunctionCall', 'traceParentCall',
 'printThisCall', 'tron', 'trace', 'troff', 'getClassLineage', 'pdir',
 '_pdir', '_is_variadic', '_has_keywordargs', '_varnames', '_getcode',
