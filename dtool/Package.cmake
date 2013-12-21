@@ -124,6 +124,10 @@ config_package(FMODEX "FMOD Ex sound library")
 find_package(OpenAL QUIET)
 config_package(OPENAL "OpenAL sound library")
 
+# Find and configure OpenGL
+find_package(OpenGL QUIET)
+config_package(OPENGL "OpenGL")
+
 # Find and configure GTK
 set(Freetype_FIND_QUIETLY TRUE) # Fix for builtin FindGTK2
 set(GTK2_GTK_FIND_QUIETLY TRUE) # Fix for builtin FindGTK2
@@ -134,22 +138,6 @@ config_package(GTK "gtk+-2")
 # Find and configure Freetype
 find_package(Freetype QUIET)
 config_package(FREETYPE "Freetype")
-if(HAVE_FREETYPE AND NOT WIN32)
-  set(FREETYPE_CONFIG freetype-config)
-endif()
-
-
-########
-# TODO #
-########
-
-# Find and configure PhysX
-#find_package(PhysX)
-#config_package(PHYSX "Aegia PhysX")
-
-# Find and configure SpeedTree
-#find_package(SpeedTree)
-#config_package(SPEEDTREE "SpeedTree")
 
 # Find and configure WxWidgets
 find_package(wxWidgets QUIET)
@@ -164,9 +152,18 @@ config_package(WX "WxWidgets")
 find_package(FLTK QUIET)
 config_package(FLTK)
 
-# Find and configure OpenGL
-#find_package(OpenGL)
-#config_package(OPENGL COMMENT "OpenGL")
+
+########
+# TODO #
+########
+
+# Find and configure PhysX
+#find_package(PhysX)
+#config_package(PHYSX "Aegia PhysX")
+
+# Find and configure SpeedTree
+#find_package(SpeedTree)
+#config_package(SPEEDTREE "SpeedTree")
 
 # Find and configure OpenGL ES 1
 #find_package(GLES)
