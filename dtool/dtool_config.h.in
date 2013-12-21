@@ -116,7 +116,7 @@
 
 /* Define if we have OpenGL installed and want to build for GL.  */
 #cmakedefine HAVE_GL
-#if HAVE_GL
+#ifdef HAVE_GL
 #cmakedefine MIN_GL_VERSION_MAJOR
 #cmakedefine MIN_GL_VERSION_MINOR
 #endif

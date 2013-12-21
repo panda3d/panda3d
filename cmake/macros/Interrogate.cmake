@@ -1,9 +1,11 @@
+# Filename: Interrogate.cmake
 #
-# dtool/Interrogate.cmake
+# Description: This file contains macros and functions that are used to invoke
+#   interrogate, to generate wrappers for Python and/or other languages.
 #
-# This file contains macros and functions that are used to invoke
-# interrogate, in order to generate wrappers for Python and/or other
-# languages.
+# Functions:
+#   target_interrogate(target [ALL] [source1 [source2 ...]])
+#   add_python_module(module [lib1 [lib2 ...]])
 #
 
 set(IGATE_FLAGS ${INTERROGATE_OPTIONS} -DCPPPARSER -D__cplusplus -Dvolatile -Dmutable)

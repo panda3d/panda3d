@@ -20,9 +20,6 @@ elseif(NOTHING)
   set(CONFIG_DISABLE_EVERYTHING On)
 endif()
 
-
-include(ConfigurePackage)
-
 # Find and configure Eigen library
 find_package(Eigen3 QUIET)
 config_package(EIGEN "Eigen")
@@ -52,7 +49,6 @@ else()
   unset(BUILD_EIGEN_VECTORIZATION CACHE)
 endif()
 
-
 # Find and configure OpenSSL library
 find_package(OpenSSL QUIET COMPONENTS ssl crypto)
 config_package(OPENSSL "OpenSSL")
@@ -73,7 +69,6 @@ if(HAVE_OPENSSL)
 else()
   unset(BUILD_OPENSSL_ERROR_REPORTS CACHE)
 endif()
-
 
 # Find and configure JPEG library
 find_package(JPEG QUIET)
@@ -127,22 +122,55 @@ config_package(FMODEX "FMOD Ex sound library")
 find_package(OpenAL QUIET)
 config_package(OPENAL "OpenAL sound library")
 
-# Find and configure GTK
-set(Freetype_FIND_QUIETLY TRUE) # Fix for builtin FindGTK2
-set(GTK2_GTK_FIND_QUIETLY TRUE) # Fix for builtin FindGTK2
-find_package(GTK2 QUIET COMPONENTS gtk)
-if(GTK2_FOUND)
-  set(GTK_FOUND TRUE) # Mangle for convenience
-endif()
-config_package(GTK "gtk+-2")
+# Find and configure OpenGL
+find_package(OpenGL QUIET)
+set(GL_FOUND ${OPENGL_FOUND})
+config_package(GL "OpenGL")
 
 # Find and configure Freetype
 find_package(Freetype QUIET)
 config_package(FREETYPE "Freetype")
-if(HAVE_FREETYPE AND NOT WIN32)
-  set(FREETYPE_CONFIG freetype-config)
-endif()
 
+# Find and configure GTK
+set(Freetype_FIND_QUIETLY TRUE) # Fix for builtin FindGTK2
+set(GTK2_GTK_FIND_QUIETLY TRUE) # Fix for builtin FindGTK2
+find_package(GTK2 QUIET COMPONENTS gtk)
+set(GTK_FOUND ${GTK2_FOUND}) # Mangle for convenience
+config_package(GTK "gtk+-2")
+
+# Find and configure WxWidgets
+find_package(wxWidgets QUIET)
+if(WXWIDGETS_FOUND)
+  set(WX_FOUND TRUE) # Mangle for convenience
+
+  # Cleanup after builtin FindWx
+  mark_as_advanced(wxWidgets_CONFIG_EXECUTABLE)
+  mark_as_advanced(wxWidgets_wxrc_EXECUTABLE)
+endif()
+config_package(WX "WxWidgets")
+
+# Find and configure FLTK
+set(OpenGL_FIND_QUIETLY TRUE) # Fix for builtin FindFLTK
+find_package(FLTK QUIET)
+config_package(FLTK)
+
+# Cleanup after builtin FindFLTK
+mark_as_advanced(FLTK_DIR)
+mark_as_advanced(FLTK_MATH_LIBRARY)
+
+# Find and configure SDL
+set(Threads_FIND_QUIETLY TRUE) # Fix for builtin FindSDL
+set(Eigen3_FIND_QUIETLY TRUE) # Fix for builtin FindSDL
+set(PythonLibs_FIND_QUIETLY TRUE) # Fix for builtin FindSDL
+set(PythonInterp_FIND_QUIETLY TRUE) # Fix for builtin FindSDL
+find_package(SDL QUIET)
+config_package(SDL)
+
+# Cleanup after builtin FindSDL
+mark_as_advanced(SDLMAIN_LIBRARY)
+mark_as_advanced(SDL_INCLUDE_DIR)
+mark_as_advanced(SDL_LIBRARY)
+mark_as_advanced(SDL_LIBRARY_TEMP)
 
 ########
 # TODO #
@@ -150,23 +178,11 @@ endif()
 
 # Find and configure PhysX
 #find_package(PhysX)
-#config_package(PHYSX COMMENT "Aegia PhysX")
+#config_package(PHYSX "Aegia PhysX")
 
 # Find and configure SpeedTree
 #find_package(SpeedTree)
-#config_package(SPEEDTREE COMMENT "SpeedTree")
-
-# Find and configure WxWidgets
-#find_package(WxWidgets)
-#config_package(WX COMMENT "WxWidgets")
-
-# Find and configure FLTK
-#find_package(FLTK)
-#config_package(FLTK)
-
-# Find and configure OpenGL
-#find_package(OpenGL)
-#config_package(OPENGL COMMENT "OpenGL")
+#config_package(SPEEDTREE "SpeedTree")
 
 # Find and configure OpenGL ES 1
 #find_package(GLES)
@@ -191,11 +207,6 @@ endif()
 # Find and configure Tinydisplay
 #find_package(Tinydisplay)
 #config_package(TINYDISPLAY COMMENT "Tinydisplay")
-
-#### Was commented out in original 'Config.pp' not sure why
-# Find and configure SDL
-#find_package(SDL)
-#config_package(SDL)
 
 # Find and configure Mesa
 #find_package(Mesa)

@@ -1,10 +1,13 @@
-# Filename: ConfigurePackage.cmake
+# Filename: ConfigPackage.cmake
 # Author: kestred (30 Nov, 2013)
 #
 # This modules defines a function which finds and configures libraries
 # and packages for Panda3Ds configuration file headers (.h files).
 #
 # Assumes the file has already been found with find_package().
+#
+# Usage:
+#   config_package(package_name)
 #
 # The following variables can be set to override the cached values of USE_XYZZY
 #    CONFIG_DISABLE_EVERYTHING - always set USE_XYZZY to false

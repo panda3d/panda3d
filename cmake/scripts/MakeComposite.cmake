@@ -1,5 +1,13 @@
-# This script is invoked via add_custom_target, like this:
-# cmake -P MakeComposite.cmake -D COMPOSITE_FILE="x_composite1.cxx" -D COMPOSITE_SOURCES="a.cxx b.cxx"
+# Filename: MakeComposite.cmake
+#
+# Description: When run, creates a single C++ file which includes multiple
+#   other C++ files, to help facilitate unity builds.
+#   Unity builds provide significantly increased compile speed.
+#
+# Usage:
+#   This script is invoked via add_custom_target, like this:
+#   cmake -P MakeComposite.cmake -D COMPOSITE_FILE="x_composite1.cxx" -D COMPOSITE_SOURCES="a.cxx b.cxx"
+#
 
 if(CMAKE_SCRIPT_MODE_FILE)
   #cmake_minimum_required(VERSION 2.8.4)
