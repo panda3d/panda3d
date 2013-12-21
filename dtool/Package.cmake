@@ -49,7 +49,6 @@ else()
   unset(BUILD_EIGEN_VECTORIZATION CACHE)
 endif()
 
-
 # Find and configure OpenSSL library
 find_package(OpenSSL QUIET COMPONENTS ssl crypto)
 config_package(OPENSSL "OpenSSL")
@@ -70,7 +69,6 @@ if(HAVE_OPENSSL)
 else()
   unset(BUILD_OPENSSL_ERROR_REPORTS CACHE)
 endif()
-
 
 # Find and configure JPEG library
 find_package(JPEG QUIET)
@@ -126,7 +124,12 @@ config_package(OPENAL "OpenAL sound library")
 
 # Find and configure OpenGL
 find_package(OpenGL QUIET)
-config_package(OPENGL "OpenGL")
+set(GL_FOUND ${OPENGL_FOUND})
+config_package(GL "OpenGL")
+
+# Find and configure Freetype
+find_package(Freetype QUIET)
+config_package(FREETYPE "Freetype")
 
 # Find and configure GTK
 set(Freetype_FIND_QUIETLY TRUE) # Fix for builtin FindGTK2
@@ -135,23 +138,39 @@ find_package(GTK2 QUIET COMPONENTS gtk)
 set(GTK_FOUND ${GTK2_FOUND}) # Mangle for convenience
 config_package(GTK "gtk+-2")
 
-# Find and configure Freetype
-find_package(Freetype QUIET)
-config_package(FREETYPE "Freetype")
-
 # Find and configure WxWidgets
 find_package(wxWidgets QUIET)
 if(WXWIDGETS_FOUND)
   set(WX_FOUND TRUE) # Mangle for convenience
-  mark_as_advanced(wxWidgets_CONFIG_EXECUTABLE) # Cleanup after builtin find
-  mark_as_advanced(wxWidgets_wxrc_EXECUTABLE) # Cleanup after builtin find
+
+  # Cleanup after builtin FindWx
+  mark_as_advanced(wxWidgets_CONFIG_EXECUTABLE)
+  mark_as_advanced(wxWidgets_wxrc_EXECUTABLE)
 endif()
 config_package(WX "WxWidgets")
 
 # Find and configure FLTK
+set(OpenGL_FIND_QUIETLY TRUE) # Fix for builtin FindFLTK
 find_package(FLTK QUIET)
 config_package(FLTK)
 
+# Cleanup after builtin FindFLTK
+mark_as_advanced(FLTK_DIR)
+mark_as_advanced(FLTK_MATH_LIBRARY)
+
+# Find and configure SDL
+set(Threads_FIND_QUIETLY TRUE) # Fix for builtin FindSDL
+set(Eigen3_FIND_QUIETLY TRUE) # Fix for builtin FindSDL
+set(PythonLibs_FIND_QUIETLY TRUE) # Fix for builtin FindSDL
+set(PythonInterp_FIND_QUIETLY TRUE) # Fix for builtin FindSDL
+find_package(SDL QUIET)
+config_package(SDL)
+
+# Cleanup after builtin FindSDL
+mark_as_advanced(SDLMAIN_LIBRARY)
+mark_as_advanced(SDL_INCLUDE_DIR)
+mark_as_advanced(SDL_LIBRARY)
+mark_as_advanced(SDL_LIBRARY_TEMP)
 
 ########
 # TODO #
@@ -188,11 +207,6 @@ config_package(FLTK)
 # Find and configure Tinydisplay
 #find_package(Tinydisplay)
 #config_package(TINYDISPLAY COMMENT "Tinydisplay")
-
-#### Was commented out in original 'Config.pp' not sure why
-# Find and configure SDL
-#find_package(SDL)
-#config_package(SDL)
 
 # Find and configure Mesa
 #find_package(Mesa)
