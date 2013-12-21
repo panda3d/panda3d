@@ -128,9 +128,7 @@ config_package(OPENAL "OpenAL sound library")
 set(Freetype_FIND_QUIETLY TRUE) # Fix for builtin FindGTK2
 set(GTK2_GTK_FIND_QUIETLY TRUE) # Fix for builtin FindGTK2
 find_package(GTK2 QUIET COMPONENTS gtk)
-if(GTK2_FOUND)
-  set(GTK_FOUND TRUE) # Mangle for convenience
-endif()
+set(GTK_FOUND ${GTK2_FOUND}) # Mangle for convenience
 config_package(GTK "gtk+-2")
 
 # Find and configure Freetype
@@ -147,15 +145,20 @@ endif()
 
 # Find and configure PhysX
 #find_package(PhysX)
-#config_package(PHYSX COMMENT "Aegia PhysX")
+#config_package(PHYSX "Aegia PhysX")
 
 # Find and configure SpeedTree
 #find_package(SpeedTree)
-#config_package(SPEEDTREE COMMENT "SpeedTree")
+#config_package(SPEEDTREE "SpeedTree")
 
 # Find and configure WxWidgets
-#find_package(WxWidgets)
-#config_package(WX COMMENT "WxWidgets")
+find_package(wxWidgets QUIET)
+if(WXWIDGETS_FOUND)
+  set(WX_FOUND TRUE) # Mangle for convenience
+  mark_as_advanced(wxWidgets_CONFIG_EXECUTABLE) # Cleanup after builtin find
+  mark_as_advanced(wxWidgets_wxrc_EXECUTABLE) # Cleanup after builtin find
+endif()
+config_package(WX "WxWidgets")
 
 # Find and configure FLTK
 #find_package(FLTK)
