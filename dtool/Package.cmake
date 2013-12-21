@@ -161,8 +161,8 @@ endif()
 config_package(WX "WxWidgets")
 
 # Find and configure FLTK
-#find_package(FLTK)
-#config_package(FLTK)
+find_package(FLTK QUIET)
+config_package(FLTK)
 
 # Find and configure OpenGL
 #find_package(OpenGL)
