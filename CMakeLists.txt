@@ -13,6 +13,7 @@ include_directories("${CMAKE_BINARY_DIR}")
 include(dtool/PandaMacros.cmake)
 include(dtool/PandaVersion.cmake)
 include(dtool/Packages.cmake)
+include(dtool/PackageMacros.cmake)
 include(dtool/Config.cmake)
 include(dtool/Interrogate.cmake)
 

@@ -17,9 +17,6 @@ include(TestForSTDNamespace)
 # Define if we have libjpeg installed.
 check_include_file_cxx(jpegint.h PHAVE_JPEGINT_H)
 
-# Define to build video-for-linux.
-check_include_file_cxx(linux/videodev2.h HAVE_VIDEO4LINUX)
-
 # Check if this is a big-endian system.
 test_big_endian(WORDS_BIGENDIAN)
 
@@ -181,6 +178,38 @@ if(BUILD_SHARED_LIBS)
 else()
   set(LINK_ALL_STATIC ON)
 endif()
+
+# Now go through all the packages and report whether we have them.
+message(STATUS "Configuring support for the following optional third-party packages:")
+
+#report_package(EIGEN "Eigen linear algebra library")
+if(LINMATH_ALIGN)
+  message("+   (vectorization enabled in build)")
+else()
+  message("-   (vectorization NOT enabled in build)")
+endif()
+
+if(HAVE_INTERROGATE AND HAVE_PYTHON)
+  message("Compilation will generate Python interfaces.")
+else()
+  message("Configuring Panda WITHOUT Python interfaces.")
+endif()
+
+if(HAVE_THREADS)
+  if(SIMPLE_THREADS)
+    message("Compilation will include simulated threading support.")
+
+  elseif(DO_PIPELINING)
+    message("Compilation will include full, pipelined threading support.")
+
+  else()
+    message("Compilation will include nonpipelined threading support.")
+  endif()
+else()
+  message("Configuring Panda without threading support.")
+endif()
+
+message("See dtool_config.h for more details about the specified configuration.")
 
 # Generate dtool_config.h
 configure_file(dtool_config.h.in "${PROJECT_BINARY_DIR}/dtool_config.h")
