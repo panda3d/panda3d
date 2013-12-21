@@ -20,9 +20,6 @@ elseif(NOTHING)
   set(CONFIG_DISABLE_EVERYTHING On)
 endif()
 
-
-include(ConfigurePackage)
-
 # Find and configure Eigen library
 find_package(Eigen3 QUIET)
 config_package(EIGEN "Eigen")
