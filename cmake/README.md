@@ -22,17 +22,18 @@ command-line interface; see `man cmake` for more details.
 
 In general, the config variable for a particular third party library is:
 ```
-	USE_<LIBRARY>=True/False   # Example: USE_JPEG
+	HAVE_<LIBRARY>=True/False   # Example: USE_JPEG
 ```
-Optional features typically use the format:
+Panda subpackage building is handled by:
 ```
-	BUILD_<FEATURE>=True/False   # Example: BUILD_THREADS
+	BUILD_<SUBPACKAGE>=True/False   # Example: BUILD_DTOOL, BUILD_PANDA
 ```
-Configuration settings use more direct names:
+Other configuration settings use more direct names (same names as in-source):
 ```
 	# Examples
 	PANDA_DISTRIBUTOR="MyDistributor"
 	DTOOL_INSTALL="/usr/local/panda"
+	LINMATH_ALIGN=On
 
 	# ... etc ...
 
