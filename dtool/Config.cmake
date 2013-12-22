@@ -422,7 +422,7 @@ avoid building this, unless you really want to make a low-footprint
 build (such as, for instance, for the iPhone)." ON)
 
 # Is OpenSSL installed, and where?
-find_package(OpenSSL)
+find_package(OpenSSL COMPONENTS ssl crypto)
 
 package_option(OPENSSL DEFAULT ON
   "Enable OpenSSL support")

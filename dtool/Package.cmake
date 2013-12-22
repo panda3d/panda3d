@@ -1,142 +1,52 @@
 message(STATUS "")
 message(STATUS "Configuring support for the following optional third-party packages:")
 
-# Settings to change USE_PACKAGE behavior (these options override cached values)
-set(CONFIG_ENABLE_EVERYTHING Off)
-set(CONFIG_DISABLE_EVERYTHING Off)
-set(CONFIG_ENABLE_FOUND Off)
-set(CONFIG_DISABLE_MISSING Off)
-
-# Update USE_PACKAGE settings based on CLI arguments
-if(EVERYTHING)
-  message("Re-enabling all disabled third-party libraries.")
-  set(CONFIG_ENABLE_EVERYTHING On)
-elseif(DISCOVERED)
-  message("Enabling found and disabling not-found third-party libraries.")
-  set(CONFIG_ENABLE_FOUND On)
-  set(CONFIG_DISABLE_MISSING On)
-elseif(NOTHING)
-  message("Disabling all third-party libraries.")
-  set(CONFIG_DISABLE_EVERYTHING On)
-endif()
-
-# Find and configure Eigen library
-find_package(Eigen3 QUIET)
-config_package(EIGEN "Eigen")
-if(HAVE_EIGEN)
-  if(WIN32)
-    set(EIGEN_CFLAGS "/arch:SSE2")
-  else()
-    set(EIGEN_CFLAGS "-msse2")
-  endif()
-
-  if(CONFIG_ENABLE_EVERYTHING OR CONFIG_ENABLE_FOUND)
-    unset(BUILD_EIGEN_VECTORIZATION)
-  elseif(CONFIG_DISABLE_EVERYTHING)
-    option(BUILD_EIGEN_VECTORIZATION "If on, vectorization is enabled in build." OFF)
-  endif()
-
-  if(NOT DEFINED BUILD_EIGEN_VECTORIZATION)
-    message(STATUS "+   (vectorization enabled in build)")
-  endif()
-
-  option(BUILD_EIGEN_VECTORIZATION "If on, vectorization is enabled in build." ON)
-
-  if(BUILD_EIGEN_VECTORIZATION)
-    set(LINMATH_ALIGN TRUE)
-  endif()
-else()
-  unset(BUILD_EIGEN_VECTORIZATION CACHE)
-endif()
-
-# Find and configure OpenSSL library
-find_package(OpenSSL QUIET COMPONENTS ssl crypto)
-config_package(OPENSSL "OpenSSL")
-if(HAVE_OPENSSL)
-  if(CONFIG_ENABLE_EVERYTHING OR CONFIG_ENABLE_FOUND)
-    unset(BUILD_OPENSSL_ERROR_REPORTS)
-  endif()
-
-  if(CMAKE_BUILD_TYPE MATCHES "Debug" OR CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
-    option(BUILD_OPENSSL_ERROR_REPORTS "If on, OpenSSL reports verbose error messages when they occur." ON)
-  else()
-    set(BUILD_OPENSSL_ERROR_REPORTS "If on, OpenSSL reports verbose error messages when they occur." OFF)
-  endif()
-
-  if(BUILD_OPENSSL_ERROR_REPORTS)
-    set(REPORT_OPENSSL_ERRORS TRUE)
-  endif()
-else()
-  unset(BUILD_OPENSSL_ERROR_REPORTS CACHE)
-endif()
-
-# Find and configure JPEG library
-find_package(JPEG QUIET)
-config_package(JPEG "libjpeg")
-
-# Find and configure PNG library
-find_package(PNG QUIET)
-config_package(PNG "libpng")
-
-# Find and configure TIFF library
-find_package(TIFF QUIET COMPONENTS tiff z)
-config_package(TIFF "libtiff")
-
-# Find and configure Tar library
-find_package(Tar QUIET)
-config_package(TAR "libtar")
-
-# Find and configure FFTW library
-find_package(FFTW QUIET)
-config_package(FFTW "fftw")
-
-# Find and configure Squish library
-find_package(Squish QUIET)
-config_package(SQUISH "squish")
-
 # Find and configure Cg library
 find_package(Cg QUIET)
-config_package(CG "Nvidia Cg Shading Langauge")
-config_package(CGGL "Cg OpenGL API")
-config_package(CGDX8 "Cg DX8 API")
-config_package(CGDX9 "Cg DX9 API")
-config_package(CGDX10 "Cg DX10 API")
-
-# Find and configure VRPN library
-find_package(VRPN QUIET)
-config_package(VRPN)
-
-# Find and configure zlib
-find_package(ZLIB QUIET)
-config_package(ZLIB "zlib")
+#config_package(CG "Nvidia Cg Shading Langauge")
+#config_package(CGGL "Cg OpenGL API")
+#config_package(CGDX8 "Cg DX8 API")
+#config_package(CGDX9 "Cg DX9 API")
+#config_package(CGDX10 "Cg DX10 API")
+package_option(CG)
+package_option(CGGL)
+package_option(CGDX8)
+package_option(CGDX9)
+package_option(CGDX10)
 
 # Find and configure Miles Sound System
 find_package(Miles QUIET)
-config_package(RAD_MSS "Miles Sound System")
+#config_package(RAD_MSS "Miles Sound System")
+package_option(RAD_MSS)
 
 # Find and configure FMOD Ex
 find_package(FMODEx QUIET)
-config_package(FMODEX "FMOD Ex sound library")
+#config_package(FMODEX "FMOD Ex sound library")
+package_option(FMODEX)
 
 # Find and configure OpenAL
 find_package(OpenAL QUIET)
-config_package(OPENAL "OpenAL sound library")
+#config_package(OPENAL "OpenAL sound library")
+package_option(OPENAL)
 
 # Find and configure OpenGL
 find_package(OpenGL QUIET)
 set(GL_FOUND ${OPENGL_FOUND})
-config_package(GL "OpenGL")
+#config_package(GL "OpenGL")
+package_option(GL)
 
 # Find and configure Freetype
 find_package(Freetype QUIET)
-config_package(FREETYPE "Freetype")
+#config_package(FREETYPE "Freetype")
+package_option(FREETYPE)
 
 # Find and configure GTK
 set(Freetype_FIND_QUIETLY TRUE) # Fix for builtin FindGTK2
 set(GTK2_GTK_FIND_QUIETLY TRUE) # Fix for builtin FindGTK2
 find_package(GTK2 QUIET COMPONENTS gtk)
 set(GTK_FOUND ${GTK2_FOUND}) # Mangle for convenience
-config_package(GTK "gtk+-2")
+#config_package(GTK "gtk+-2")
+package_option(GTK)
 
 # Find and configure WxWidgets
 find_package(wxWidgets QUIET)
@@ -147,12 +57,14 @@ if(WXWIDGETS_FOUND)
   mark_as_advanced(wxWidgets_CONFIG_EXECUTABLE)
   mark_as_advanced(wxWidgets_wxrc_EXECUTABLE)
 endif()
-config_package(WX "WxWidgets")
+#config_package(WX "WxWidgets")
+package_option(WX)
 
 # Find and configure FLTK
 set(OpenGL_FIND_QUIETLY TRUE) # Fix for builtin FindFLTK
 find_package(FLTK QUIET)
-config_package(FLTK)
+#config_package(FLTK)
+package_option(FLTK)
 
 # Cleanup after builtin FindFLTK
 mark_as_advanced(FLTK_DIR)
@@ -164,7 +76,8 @@ set(Eigen3_FIND_QUIETLY TRUE) # Fix for builtin FindSDL
 set(PythonLibs_FIND_QUIETLY TRUE) # Fix for builtin FindSDL
 set(PythonInterp_FIND_QUIETLY TRUE) # Fix for builtin FindSDL
 find_package(SDL QUIET)
-config_package(SDL)
+#config_package(SDL)
+package_option(SDL)
 
 # Cleanup after builtin FindSDL
 mark_as_advanced(SDLMAIN_LIBRARY)
