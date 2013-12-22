@@ -709,6 +709,7 @@ def CxxGetIncludes(path):
 ##
 ########################################################################
 
+DCACHE_VERSION = 2
 DCACHE_BACKED_UP = False
 
 def SaveDependencyCache():
@@ -720,10 +721,15 @@ def SaveDependencyCache():
                           os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache-backup"))
         except: pass
         DCACHE_BACKED_UP = True
-    try: icache = open(os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache"),'wb')
-    except: icache = 0
-    if (icache!=0):
+
+    try:
+        icache = open(os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache"),'wb')
+    except:
+        icache = None
+
+    if icache is not None:
         print("Storing dependency cache.")
+        pickle.dump(DCACHE_VERSION, icache, 0)
         pickle.dump(CXXINCLUDECACHE, icache, 2)
         pickle.dump(BUILTFROMCACHE, icache, 2)
         icache.close()
@@ -731,12 +737,20 @@ def SaveDependencyCache():
 def LoadDependencyCache():
     global CXXINCLUDECACHE
     global BUILTFROMCACHE
-    try: icache = open(os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache"),'rb')
-    except: icache = 0
-    if (icache!=0):
-        CXXINCLUDECACHE = pickle.load(icache)
-        BUILTFROMCACHE = pickle.load(icache)
-        icache.close()
+
+    try:
+        icache = open(os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache"), 'rb')
+    except:
+        icache = None
+
+    if icache is not None:
+        ver = pickle.load(icache)
+        if ver == DCACHE_VERSION:
+            CXXINCLUDECACHE = pickle.load(icache)
+            BUILTFROMCACHE = pickle.load(icache)
+            icache.close()
+        else:
+            print("Cannot load dependency cache, version is too old!")
 
 ########################################################################
 ##
