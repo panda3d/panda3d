@@ -533,36 +533,33 @@ set(HAVE_FLEX ${FLEX_FOUND})
 
 ### Configure threading support ###
 find_package(Threads)
+
+# Add basic use flag for threading
 if(THREADS_FOUND)
-  # Add basic use flag for threading
-  option(BUILD_THREADS
+  option(HAVE_THREADS
     "If on, compile Panda3D with threading support.
 Building in support for threading will enable Panda to take
 advantage of multiple CPU's if you have them (and if the OS
 supports kernel threads running on different CPU's), but it will
 slightly slow down Panda for the single CPU case." ON)
-  if(BUILD_THREADS)
-    set(HAVE_THREADS TRUE)
-  else()
-    unset(BUILD_SIMPLE_THREADS CACHE)
-    unset(BUILD_OS_SIMPLE_THREADS CACHE)
-  endif()
 else()
-  unset(BUILD_THREADS CACHE)
+  option(HAVE_THREADS
+    "If on, compile Panda3D with threading support.
+Building in support for threading will enable Panda to take
+advantage of multiple CPU's if you have them (and if the OS
+supports kernel threads running on different CPU's), but it will
+slightly slow down Panda for the single CPU case." OFF)
 endif()
 
-# Configure debug threads
-# Add advanced threading configuration
-if(HAVE_THREADS)
-  if(CMAKE_BUILD_TYPE MATCHES "Debug")
-    option(BUILD_DEBUG_THREADS "If on, enables debugging of thread and sync operations (i.e. mutexes, deadlocks)" ON)
-  else()
-    option(BUILD_DEBUG_THREADS "If on, enables debugging of thread and sync operations (i.e. mutexes, deadlocks)" OFF)
-  endif()
-  if(BUILD_DEBUG_THREADS)
-    set(DEBUG_THREADS TRUE)
-  endif()
 
+# Configure debug threads
+if(CMAKE_BUILD_TYPE MATCHES "Debug")
+  option(DEBUG_THREADS "If on, enables debugging of thread and sync operations (i.e. mutexes, deadlocks)" ON)
+else()
+  option(DEBUG_THREADS "If on, enables debugging of thread and sync operations (i.e. mutexes, deadlocks)" OFF)
+endif()
+
+if(HAVE_THREADS)
   set(HAVE_POSIX_THREADS ${CMAKE_USE_PTHREADS_INIT})
   if(HAVE_POSIX_THREADS)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
@@ -571,9 +568,10 @@ if(HAVE_THREADS)
     set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -pthread")
     set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} -pthread")
   endif()
+endif()
 
-  option(BUILD_SIMPLE_THREADS
-    "If on, compile with simulated threads.  Threads, by default, use
+option(SIMPLE_THREADS
+  "If on, compile with simulated threads.  Threads, by default, use
 OS-provided threading constructs, which usually allows for full
 multithreading support (i.e. the program can use multiple CPU's).
 On the other hand, compiling in this full OS-provided support can
@@ -581,75 +579,54 @@ impose some substantial runtime overhead, making the application
 run slower on a single-CPU machine. This settings avoid the overhead,
 but still gain some of the basic functionality of threads." OFF)
 
-  if(BUILD_SIMPLE_THREADS)
-    message(STATUS "Compilation will include simulated threading support.")
-    option(BUILD_OS_SIMPLE_THREADS
-      "If on, OS threading constructs will be used to perform context switches.
+
+option(OS_SIMPLE_THREADS
+  "If on, OS threading constructs will be used to perform context switches.
 A mutex is used to ensure that only one thread runs at a time, so the
 normal SIMPLE_THREADS optimizations still apply, and the normal
 SIMPLE_THREADS scheduler is used to switch between threads (instead
 of the OS scheduler).  This may be more portable and more reliable,
 but it is a hybrid between user-space threads and os-provided threads." ON)
 
-    set(SIMPLE_THREADS TRUE)
-    if(BUILD_OS_SIMPLE_THREADS)
-      set(OS_SIMPLE_THREADS TRUE)
-    endif()
-  else()
-    unset(BUILD_OS_SIMPLE_THREADS CACHE)
-
-    option(BUILD_PIPELINING "If on, compile with pipelined rendering." ON)
-    if(BUILD_PIPELINING)
-      message(STATUS "Compilation will include full, pipelined threading support.")
-    else()
-      message(STATUS "Compilation will include nonpipelined threading support.")
-    endif()
-  endif()
-else()
-  message(STATUS "Configuring Panda without threading support.")
-endif()
-
 
 ### Configure pipelining ###
-if(NOT DEFINED BUILD_PIPELINING)
-  option(BUILD_PIPELINING "If on, compile with pipelined rendering." ON)
+option(DO_PIPELINING "If on, compile with pipelined rendering." ON)
+
+
+### Report on threading and pipelining status ###
+if(SIMPLE_THREADS)
+  message(STATUS "Compilation will include simulated threading support.")
+elseif(HAVE_THREADS)
+  if(DO_PIPELINING)
+    message(STATUS "Compilation will include full, pipelined threading support.")
+  else()
+    message(STATUS "Compilation will include nonpipelined threading support.")
+  endif()
+else(NOT SIMPLE_THREADS)
+  message(STATUS "Configuring Panda without threading support.")
 endif()
-if(BUILD_PIPELINING)
-  set(DO_PIPELINING TRUE)
-endif()
-
-
-
-### Configure OS X options ###
 
 message(STATUS "")
 message(STATUS "See dtool_config.h for more details about the specified configuration.\n")
 
 ### Miscellaneous configuration
 if(CMAKE_BUILD_TYPE MATCHES "MinSizeRel")
-  unset(BUILD_WITH_DEFAULT_FONT CACHE)
-  option(BUILD_WITH_DEFAULT_FONT
+  unset(COMPILE_IN_DEFAULT_FONT CACHE)
+  option(COMPILE_IN_DEFAULT_FONT
     "If on, compiles in a default font, so that every TextNode will always
 have a font available without requiring the user to specify one.
 When turned off, the generated library will save a few kilobytes." OFF)
 else()
-  option(BUILD_WITH_DEFAULT_FONT
+  option(COMPILE_IN_DEFAULT_FONT
     "If on, compiles in a default font, so that every TextNode will always
 have a font available without requiring the user to specify one.
 When turned off, the generated library will save a few kilobytes." ON)
 endif()
-if(BUILD_WITH_DEFAULT_FONT)
-  set(COMPILE_IN_DEFAULT_FONT TRUE)
-endif()
 
-option(BUILD_PREFER_STDFLOAT
+option(STDFLOAT_DOUBLE
   "Define this true to compile a special version of Panda to use a
 'double' floating-precision type for most internal values, such as
 positions and transforms, instead of the standard single-precision
 'float' type.  This does not affect the default numeric type of
 vertices, which is controlled by the runtime config variable
 vertices-float64." OFF)
-if(BUILD_PREFER_STDFLOAT)
-  set(STDFLOAT_DOUBLE TRUE)
-endif()
-
