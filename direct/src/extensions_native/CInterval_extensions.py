@@ -1,13 +1,3 @@
-from extension_native_helpers import *
-try:
-  Dtool_PreloadDLL("libp3direct")
-  from libp3direct import *
-except:
-  Dtool_PreloadDLL("libdirect")
-  from libdirect import *
-
-#####################################################################
-
 from direct.directnotify.DirectNotifyGlobal import directNotify
 notify = directNotify.newCategory("Interval")
 Dtool_ObjectToDict(CInterval,"notify", notify)
@@ -26,39 +16,39 @@ del setT
 #####################################################################
 
 def play(self, t0 = 0.0, duration = None, scale = 1.0):
-        self.notify.error("using deprecated CInterval.play() interface")
-        if duration:  # None or 0 implies full length
-            self.start(t0, t0 + duration, scale)
-        else:
-            self.start(t0, -1, scale)
+    self.notify.error("CInterval.play() is deprecated, use start() instead")
+    if duration:  # None or 0 implies full length
+        self.start(t0, t0 + duration, scale)
+    else:
+        self.start(t0, -1, scale)
 
 Dtool_funcToMethod(play, CInterval)
 del play
 #####################################################################
 
 def stop(self):
-        self.notify.error("using deprecated CInterval.stop() interface")
-        self.finish()
+    self.notify.error("CInterval.stop() is deprecated, use finish() instead")
+    self.finish()
 
 Dtool_funcToMethod(stop, CInterval)
 del stop
 #####################################################################
 
 def setFinalT(self):
-        self.notify.error("using deprecated CInterval.setFinalT() interface")
-        self.finish()
+    self.notify.error("CInterval.setFinalT() is deprecated, use finish() instead")
+    self.finish()
 
 Dtool_funcToMethod(setFinalT, CInterval)
 del setFinalT
 #####################################################################
 
 def privPostEvent(self):
-        # Call after calling any of the priv* methods to do any required
-        # Python finishing steps.
-        t = self.getT()
-        if hasattr(self, "setTHooks"):
-            for func in self.setTHooks:
-                func(t)
+    # Call after calling any of the priv* methods to do any required
+    # Python finishing steps.
+    t = self.getT()
+    if hasattr(self, "setTHooks"):
+        for func in self.setTHooks:
+            func(t)
 
 Dtool_funcToMethod(privPostEvent, CInterval)
 del privPostEvent
