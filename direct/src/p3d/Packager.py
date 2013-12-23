@@ -10,7 +10,6 @@ import sys
 import os
 import glob
 import marshal
-import new
 import string
 import types
 import getpass

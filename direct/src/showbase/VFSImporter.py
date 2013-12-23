@@ -1,6 +1,5 @@
 from libpandaexpress import Filename, VirtualFileSystem, VirtualFileMountSystem, OFileStream, copyStream
 import sys
-import new
 import os
 import marshal
 import imp

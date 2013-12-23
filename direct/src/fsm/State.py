@@ -23,7 +23,6 @@ class State(DirectObject):
 
         @classmethod
         def replaceMethod(self, oldFunction, newFunction):
-            import new
             import types
             count = 0        
             for state in self.States:
@@ -34,16 +33,16 @@ class State(DirectObject):
                 if type(enterFunc) == types.MethodType:
                     if (enterFunc.im_func == oldFunction):
                         # print 'found: ', enterFunc, oldFunction
-                        state.setEnterFunc(new.instancemethod(newFunction,
-                                                              enterFunc.im_self,
-                                                              enterFunc.im_class))
+                        state.setEnterFunc(types.MethodType(newFunction,
+                                                            enterFunc.im_self,
+                                                            enterFunc.im_class))
                         count += 1
                 if type(exitFunc) == types.MethodType:
                     if (exitFunc.im_func == oldFunction):
                         # print 'found: ', exitFunc, oldFunction
-                        state.setExitFunc(new.instancemethod(newFunction,
-                                                             exitFunc.im_self,
-                                                             exitFunc.im_class))
+                        state.setExitFunc(types.MethodType(newFunction,
+                                                           exitFunc.im_self,
+                                                           exitFunc.im_class))
                         count += 1
             return count
 

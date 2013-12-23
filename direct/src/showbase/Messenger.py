@@ -506,7 +506,6 @@ class Messenger:
         This is only used by Finder.py - the module that lets
         you redefine functions with Control-c-Control-v
         """
-        import new
         retFlag = 0
         for entry in self.__callbacks.items():
             event, objectDict = entry
@@ -522,7 +521,7 @@ class Messenger:
                 #       'oldMethod: ' + repr(oldMethod) + '\n' +
                 #       'newFunction: ' + repr(newFunction) + '\n')
                 if (function == oldMethod):
-                    newMethod = new.instancemethod(
+                    newMethod = types.MethodType(
                         newFunction, method.im_self, method.im_class)
                     params[0] = newMethod
                     # Found it retrun true

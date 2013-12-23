@@ -45,7 +45,6 @@ import os
 import sys
 import random
 import time
-import new
 import gc
 #if __debug__:
 import traceback
@@ -1203,16 +1202,15 @@ def getSetter(targetObj, valueName, prefix='set'):
 def mostDerivedLast(classList):
     """pass in list of classes. sorts list in-place, with derived classes
     appearing after their bases"""
-    def compare(a, b):
-        if issubclass(a, b):
-            result=1
-        elif issubclass(b, a):
-            result=-1
-        else:
-            result=0
-        #print a, b, result
-        return result
-    classList.sort(compare)
+
+    class ClassSortKey(object):
+        __slots__ = 'classobj',
+        def __init__(self, classobj):
+            self.classobj = classobj
+        def __lt__(self, other):
+            return issubclass(other.classobj, self.classobj)
+
+    classList.sort(key=ClassSortKey)
 
 """
 ParamObj/ParamSet
@@ -1509,7 +1507,7 @@ class ParamObj:
                 # then the applier, or b) call the setter and queue the
                 # applier, depending on whether our params are locked
                 """
-                setattr(self, setterName, new.instancemethod(
+                setattr(self, setterName, types.MethodType(
                     Functor(setterStub, param, setterFunc), self, self.__class__))
                     """
                 def setterStub(self, value, param=param, origSetterName=origSetterName):
@@ -2734,7 +2732,7 @@ def tagRepr(obj, tag):
             return s
         oldRepr = Functor(stringer, repr(obj))
         stringer = None
-    obj.__repr__ = new.instancemethod(Functor(reprWithTag, oldRepr, tag), obj, obj.__class__)
+    obj.__repr__ = types.MethodType(Functor(reprWithTag, oldRepr, tag), obj, obj.__class__)
     reprWithTag = None
     return obj
 
@@ -2761,7 +2759,7 @@ def appendStr(obj, st):
             return s
         oldStr = Functor(stringer, str(obj))
         stringer = None
-    obj.__str__ = new.instancemethod(Functor(appendedStr, oldStr, st), obj, obj.__class__)
+    obj.__str__ = types.MethodType(Functor(appendedStr, oldStr, st), obj, obj.__class__)
     appendedStr = None
     return obj
 
