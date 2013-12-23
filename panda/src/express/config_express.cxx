@@ -14,6 +14,7 @@
 
 #include "config_express.h"
 #include "datagram.h"
+#include "datagramIterator.h"
 #include "nodeReferenceCount.h"
 #include "referenceCount.h"
 #include "textEncoder.h"
@@ -99,6 +100,7 @@ init_libexpress() {
   initialized = true;
 
   Datagram::init_type();
+  DatagramIterator::init_type();
   Namable::init_type();
   NodeReferenceCount::init_type();
   ReferenceCount::init_type();
