@@ -168,7 +168,7 @@ class Queue:
     def __len__(self):
         return len(self.__list)
 
-if __debug__:
+if __debug__ and __name__ == '__main__':
     q = Queue()
     assert q.isEmpty()
     q.clear()
@@ -615,7 +615,7 @@ class Signature:
                 l.append('*' + specials['positional'])
             if 'keyword' in specials:
                 l.append('**' + specials['keyword'])
-            return "%s(%s)" % (self.name, string.join(l, ', '))
+            return "%s(%s)" % (self.name, ', '.join(l))
         else:
             return "%s(?)" % self.name
 
@@ -908,7 +908,7 @@ def binaryRepr(number, max_length = 32):
     digits = map (operator.mod, shifts, max_length * [2])
     if not digits.count (1): return 0
     digits = digits [digits.index (1):]
-    return string.join (map (repr, digits), '')
+    return ''.join([repr(digit) for digit in digits])
 
 class StdoutCapture:
     # redirects stdout to a string
@@ -1194,7 +1194,7 @@ def extractProfile(*args, **kArgs):
 def getSetterName(valueName, prefix='set'):
     # getSetterName('color') -> 'setColor'
     # getSetterName('color', 'get') -> 'getColor'
-    return '%s%s%s' % (prefix, string.upper(valueName[0]), valueName[1:])
+    return '%s%s%s' % (prefix, valueName[0].upper(), valueName[1:])
 def getSetter(targetObj, valueName, prefix='set'):
     # getSetter(smiley, 'pos') -> smiley.setPos
     return getattr(targetObj, getSetterName(valueName, prefix))
@@ -1427,6 +1427,8 @@ class ParamObj:
                 # we've already compiled the defaults for this class
                 return
             bases = list(cls.__bases__)
+            if object in bases:
+                bases.remove(object)
             # bring less-derived classes to the front
             mostDerivedLast(bases)
             cls._Params = {}
@@ -1612,7 +1614,7 @@ class ParamObj:
             argStr += '%s=%s,' % (param, repr(value))
         return '%s(%s)' % (self.__class__.__name__, argStr)
 
-if __debug__:
+if __debug__ and __name__ == '__main__':
     class ParamObjTest(ParamObj):
         class ParamSet(ParamObj.ParamSet):
             Params = {
@@ -1809,7 +1811,7 @@ class POD:
             argStr += '%s=%s,' % (name, repr(getSetter(self, name, 'get')()))
         return '%s(%s)' % (self.__class__.__name__, argStr)
 
-if __debug__:
+if __debug__ and __name__ == '__main__':
     class PODtest(POD):
         DataSet = {
             'foo': dict,
@@ -2139,7 +2141,7 @@ def pivotScalar(scalar, pivot):
     # reflect scalar about pivot; see tests below
     return pivot + (pivot - scalar)
 
-if __debug__:
+if __debug__ and __name__ == '__main__':
     assert pivotScalar(1, 0) == -1
     assert pivotScalar(-1, 0) == 1
     assert pivotScalar(3, 5) == 7
@@ -3596,9 +3598,9 @@ def recordCreationStackStr(cls):
         self._creationStackTraceStrLst = StackTrace(start=1).compact().split(',')
         return self.__moved_init__(*args, **kArgs)
     def getCreationStackTraceCompactStr(self):
-        return string.join(self._creationStackTraceStrLst, ',')
+        return ','.join(self._creationStackTraceStrLst)
     def printCreationStackTrace(self):
-        print string.join(self._creationStackTraceStrLst, ',')
+        print ','.join(self._creationStackTraceStrLst)
     cls.__init__ = __recordCreationStackStr_init__
     cls.getCreationStackTraceCompactStr = getCreationStackTraceCompactStr
     cls.printCreationStackTrace = printCreationStackTrace
@@ -3750,7 +3752,7 @@ def flywheel(*args, **kArgs):
         pass
     return flywheel
 
-if __debug__:
+if __debug__ and __name__ == '__main__':
     f = flywheel(['a','b','c','d'], countList=[11,20,3,4])
     obj2count = {}
     for obj in f:
@@ -3944,7 +3946,7 @@ def formatTimeCompact(seconds):
     result += '%ss' % seconds
     return result
 
-if __debug__:
+if __debug__ and __name__ == '__main__':
     ftc = formatTimeCompact
     assert ftc(0) == '0s'
     assert ftc(1) == '1s'
@@ -3980,7 +3982,7 @@ def formatTimeExact(seconds):
         result += '%ss' % seconds
     return result
 
-if __debug__:
+if __debug__ and __name__ == '__main__':
     fte = formatTimeExact
     assert fte(0) == '0s'
     assert fte(1) == '1s'
@@ -4019,7 +4021,7 @@ class AlphabetCounter:
                 break
         return result
 
-if __debug__:
+if __debug__ and __name__ == '__main__':
     def testAlphabetCounter():
         tempList = []
         ac = AlphabetCounter()
@@ -4195,7 +4197,7 @@ def unescapeHtmlString(s):
         result += char
     return result
 
-if __debug__:
+if __debug__ and __name__ == '__main__':
     assert unescapeHtmlString('asdf') == 'asdf'
     assert unescapeHtmlString('as+df') == 'as df'
     assert unescapeHtmlString('as%32df') == 'as2df'
@@ -4252,7 +4254,7 @@ class HTMLStringToElements(HTMLParser):
 def str2elements(str):
     return HTMLStringToElements(str).getElements()
 
-if __debug__:
+if __debug__ and __name__ == '__main__':
     s = ScratchPad()
     assert len(str2elements('')) == 0
     s.br = str2elements('<br>')
@@ -4292,7 +4294,7 @@ def repeatableRepr(obj):
         return repeatableRepr(l)
     return repr(obj)
 
-if __debug__:
+if __debug__ and __name__ == '__main__':
     assert repeatableRepr({1: 'a', 2: 'b'}) == repeatableRepr({2: 'b', 1: 'a'})
     assert repeatableRepr(set([1,2,3])) == repeatableRepr(set([3,2,1]))
 
@@ -4349,7 +4351,7 @@ class PriorityCallbacks:
         for priority, callback in self._callbacks:
             callback()
 
-if __debug__:
+if __debug__ and __name__ == '__main__':
     l = []
     def a(l=l):
         l.append('a')

@@ -224,7 +224,7 @@ def doErrorCheck():
         FFIConstants.CodeModuleNameList = codeLibs
 
 def generateNativeWrappers():
-    from direct.extensions_native.extension_native_helpers import Dtool_PreloadDLL
+    from direct.extensions_native.extension_native_helpers import Dtool_FindModule, Dtool_PreloadDLL
 
     # Empty out the output directories of unnecessary crud from
     # previous runs before we begin.
@@ -256,27 +256,50 @@ def generateNativeWrappers():
     for moduleName in FFIConstants.CodeModuleNameList:
         print('Importing code library: ' + moduleName)
         Dtool_PreloadDLL(moduleName)
-        exec('import %s as module' % moduleName)
+
+        __import__(moduleName)
+        module = sys.modules[moduleName]
+
+        # Make a suitable meta module name
+        metaModuleName = ""
+        nextCap = False
+        for ch in moduleName:
+            if ch == '.':
+                nextCap = True
+            elif nextCap:
+                metaModuleName += ch.upper()
+                nextCap = False
+            else:
+                metaModuleName += ch
+        metaModuleName += "Modules"
 
         # Wrap the import in a try..except so that we can continue if
         # the library isn't present.  This is particularly necessary
         # in the runtime (plugin) environment, where all libraries are
         # not necessarily downloaded.
-        pandaModules.write('try:\n  from %sModules import *\nexcept ImportError, err:\n  if "DLL loader cannot find" not in str(err):\n    raise\n' % (moduleName))
+        if sys.version_info >= (3, 0):
+            pandaModules.write('try:\n  from .%s import *\nexcept ImportError as err:\n  if "DLL loader cannot find" not in str(err):\n    raise\n' % (metaModuleName))
+        else:
+            pandaModules.write('try:\n  from %s import *\nexcept ImportError, err:\n  if "DLL loader cannot find" not in str(err):\n    raise\n' % (metaModuleName))
+
         # Not sure if this message is helpful or annoying.
         #pandaModules.write('  print("Failed to import %s")\n' % (moduleName))
         pandaModules.write('\n')
 
-        moduleModulesFilename = os.path.join(outputCodeDir, '%sModules.py' % (moduleName))
+        moduleModulesFilename = os.path.join(outputCodeDir, '%s.py' % (metaModuleName))
         moduleModules = open(moduleModulesFilename, 'w')
 
-        moduleModules.write('from extension_native_helpers import *\n')
+        if sys.version_info >= (3, 0):
+            moduleModules.write('from .extension_native_helpers import *\n')
+        else:
+            moduleModules.write('from extension_native_helpers import *\n')
         moduleModules.write('Dtool_PreloadDLL("%s")\n' % (moduleName))
+
         moduleModules.write('from %s import *\n\n' % (moduleName))
 
         # Now look for extensions
         for className, classDef in module.__dict__.items():
-            if type(classDef) == types.TypeType:
+            if isinstance(classDef, type):
                 extensionFilename = os.path.join(extensionsDir, '%s_extensions.py' % (className))
                 if os.path.exists(extensionFilename):
                     print('  Found extensions for class: %s' % (className))
