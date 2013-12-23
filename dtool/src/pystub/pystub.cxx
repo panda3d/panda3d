@@ -141,6 +141,7 @@ extern "C" {
   EXPCL_PYSTUB int PyUnicodeUCS4_AsWideChar(...);
   EXPCL_PYSTUB int PyUnicodeUCS4_GetSize(...);
   EXPCL_PYSTUB int PyUnicode_AsUTF8(...);
+  EXPCL_PYSTUB int PyUnicode_AsUTF8AndSize(...);
   EXPCL_PYSTUB int PyUnicode_AsWideChar(...);
   EXPCL_PYSTUB int PyUnicode_FromString(...);
   EXPCL_PYSTUB int PyUnicode_FromStringAndSize(...);
@@ -304,6 +305,7 @@ int PyUnicodeUCS4_FromWideChar(...) { return 0; }
 int PyUnicodeUCS4_AsWideChar(...) { return 0; }
 int PyUnicodeUCS4_GetSize(...) { return 0; }
 int PyUnicode_AsUTF8(...) { return 0; }
+int PyUnicode_AsUTF8AndSize(...) { return 0; }
 int PyUnicode_AsWideChar(...) { return 0; }
 int PyUnicode_FromString(...) { return 0; }
 int PyUnicode_FromStringAndSize(...) { return 0; }
