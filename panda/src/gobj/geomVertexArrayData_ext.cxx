@@ -14,6 +14,8 @@
 
 #include "geomVertexArrayData_ext.h"
 
+#ifdef HAVE_PYTHON
+
 struct InternalBufferData {
   CPT(GeomVertexArrayDataHandle) _handle;
   Py_ssize_t _num_rows;
@@ -273,3 +275,4 @@ copy_subdata_from(size_t to_start, size_t to_size,
 #endif
 }
 
+#endif  // HAVE_PYTHON
