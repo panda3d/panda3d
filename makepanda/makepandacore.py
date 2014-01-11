@@ -9,7 +9,7 @@
 ##
 ########################################################################
 
-import sys,os,time,stat,string,re,getopt,fnmatch,threading,signal,shutil,platform,glob,getpass,signal
+import sys,os,time,stat,string,re,getopt,fnmatch,threading,signal,shutil,platform,glob,getpass,signal,thread
 from distutils import sysconfig
 
 if sys.version_info >= (3, 0):
@@ -205,7 +205,8 @@ def PrettyTime(t):
 
 def ProgressOutput(progress, msg, target = None):
     prefix = ""
-    if (threading.currentThread() is MAINTHREAD):
+    thisthread = threading.currentThread()
+    if thisthread is MAINTHREAD:
         if progress is None:
             prefix = ""
         elif (progress >= 100.0):
@@ -216,7 +217,8 @@ def ProgressOutput(progress, msg, target = None):
             prefix = "%s[%s %d%%%s] " % (GetColor("yellow"), GetColor("cyan"), progress, GetColor("yellow"))
     else:
         global THREADS
-        ident = threading.currentThread().ident
+        
+        ident = thread.get_ident()
         if (ident not in THREADS):
             THREADS[ident] = len(THREADS) + 1
         prefix = "%s[%sT%d%s] " % (GetColor("yellow"), GetColor("cyan"), THREADS[ident], GetColor("yellow"))
@@ -2208,10 +2210,10 @@ def SetupBuildEnvironment(compiler):
 
         cmd = GetCXX() + " -print-search-dirs"
 
-        if "MACOSX" in SDK:
+        if SDK.get("MACOSX"):
             # The default compiler in Leopard does not respect --sysroot correctly.
             cmd += " -isysroot " + SDK["MACOSX"]
-        if "SYSROOT" in SDK:
+        if SDK.get("SYSROOT"):
             cmd += ' --sysroot=%s -no-canonical-prefixes' % (SDK["SYSROOT"])
 
         # Extract the dirs from the line that starts with 'libraries: ='.
