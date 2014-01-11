@@ -650,11 +650,10 @@ if (COMPILER=="GCC"):
     if (PkgSkip("PYTHON")==0):
         IncDirectory("ALWAYS", SDK["PYTHON"])
     if (GetHost() == "darwin"):
-        if (PkgSkip("FREETYPE")==0):
-          IncDirectory("FREETYPE", "/usr/X11R6/include")
+        if (PkgSkip("FREETYPE")==0 and not os.path.isdir(GetThirdpartyDir() + 'freetype')):
           IncDirectory("FREETYPE", "/usr/X11/include")
           IncDirectory("FREETYPE", "/usr/X11/include/freetype2")
-        IncDirectory("GL", "/usr/X11R6/include")
+          LibDirectory("FREETYPE", "/usr/X11/lib")
 
     if (os.path.isdir("/usr/PCBSD")):
         IncDirectory("ALWAYS", "/usr/PCBSD/local/include")
@@ -664,19 +663,20 @@ if (COMPILER=="GCC"):
         IncDirectory("ALWAYS", "/usr/local/include")
         LibDirectory("ALWAYS", "/usr/local/lib")
 
-    # Workaround for an issue where pkg-config does not include this path
-    if GetTargetArch() in ("x86_64", "amd64"):
-        if (os.path.isdir("/usr/lib64/glib-2.0/include")):
-            IncDirectory("GTK2", "/usr/lib64/glib-2.0/include")
-        if (os.path.isdir("/usr/lib64/gtk-2.0/include")):
-            IncDirectory("GTK2", "/usr/lib64/gtk-2.0/include")
+    if GetHost() != "darwin":
+        # Workaround for an issue where pkg-config does not include this path
+        if GetTargetArch() in ("x86_64", "amd64"):
+            if (os.path.isdir("/usr/lib64/glib-2.0/include")):
+                IncDirectory("GTK2", "/usr/lib64/glib-2.0/include")
+            if (os.path.isdir("/usr/lib64/gtk-2.0/include")):
+                IncDirectory("GTK2", "/usr/lib64/gtk-2.0/include")
 
-        if (os.path.isdir("/usr/X11R6/lib64")):
-            LibDirectory("ALWAYS", "/usr/X11R6/lib64")
+            if (os.path.isdir("/usr/X11R6/lib64")):
+                LibDirectory("ALWAYS", "/usr/X11R6/lib64")
+            else:
+                LibDirectory("ALWAYS", "/usr/X11R6/lib")
         else:
             LibDirectory("ALWAYS", "/usr/X11R6/lib")
-    else:
-        LibDirectory("ALWAYS", "/usr/X11R6/lib")
 
     fcollada_libs = ("FColladaD", "FColladaSD", "FColladaS")
     # WARNING! The order of the ffmpeg libraries matters!
