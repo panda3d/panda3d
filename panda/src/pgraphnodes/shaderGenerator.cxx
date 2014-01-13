@@ -132,10 +132,12 @@ alloc_freg() {
   case  6: _ftregs_used += 1; return (char*)"TEXCOORD6";
   case  7: _ftregs_used += 1; return (char*)"TEXCOORD7";
   }
-  switch (_fcregs_used) {
-  case  0: _fcregs_used += 1; return (char*)"COLOR0";
-  case  1: _fcregs_used += 1; return (char*)"COLOR1";
-  }
+  // We really shouldn't rely on COLOR fregs,
+  // since the clamping can have unexpected side-effects.
+  //switch (_fcregs_used) {
+  //case  0: _fcregs_used += 1; return (char*)"COLOR0";
+  //case  1: _fcregs_used += 1; return (char*)"COLOR1";
+  //}
   // These don't exist in arbvp1/arbfp1, though they're
   // reportedly supported by other profiles.
   switch (_ftregs_used) {
@@ -655,11 +657,14 @@ synthesize_shader(const RenderState *rs) {
   text << "void vshader(\n";
   const TextureAttrib *texture = DCAST(TextureAttrib, rs->get_attrib_def(TextureAttrib::get_class_slot()));
   const TexGenAttrib *tex_gen = DCAST(TexGenAttrib, rs->get_attrib_def(TexGenAttrib::get_class_slot()));
-  for (int i=0; i<_num_textures; i++) {
-    texcoord_vreg.push_back(alloc_vreg());
-    texcoord_freg.push_back(alloc_freg());
-    text << "\t in float4 vtx_texcoord" << i << " : " << texcoord_vreg[i] << ",\n";
-    text << "\t out float4 l_texcoord" << i << " : " << texcoord_freg[i] << ",\n";
+  for (int i = 0; i < _num_textures; ++i) {
+    TextureStage *stage = texture->get_on_stage(i);
+    if (!tex_gen->has_stage(stage)) {
+      texcoord_vreg.push_back(alloc_vreg());
+      texcoord_freg.push_back(alloc_freg());
+      text << "\t in float4 vtx_texcoord" << i << " : " << texcoord_vreg[i] << ",\n";
+      text << "\t out float4 l_texcoord" << i << " : " << texcoord_freg[i] << ",\n";
+    }
   }
   if (_vertex_colors) {
     text << "\t in float4 vtx_color : COLOR0,\n";
@@ -763,7 +768,7 @@ synthesize_shader(const RenderState *rs) {
     text << "\t l_eye_normal.xyz = mul((float3x3)tpose_view_to_model, vtx_normal.xyz);\n";
     text << "\t l_eye_normal.w = 0;\n";
   }
-  for (int i=0; i<_num_textures; i++) {
+  for (int i = 0; i < _num_textures; ++i) {
     if (!tex_gen->has_stage(texture->get_on_stage(i))) {
       text << "\t l_texcoord" << i << " = vtx_texcoord" << i << ";\n";
     }
