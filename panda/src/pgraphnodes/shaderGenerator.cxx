@@ -628,7 +628,6 @@ synthesize_shader(const RenderState *rs) {
   char *nbinormal_freg = 0;
   char *htangent_vreg = 0;
   char *hbinormal_vreg = 0;
-  pvector<char *> texcoord_vreg;
   pvector<char *> texcoord_freg;
   pvector<char *> dlightcoord_freg;
   pvector<char *> slightcoord_freg;
@@ -660,10 +659,11 @@ synthesize_shader(const RenderState *rs) {
   for (int i = 0; i < _num_textures; ++i) {
     TextureStage *stage = texture->get_on_stage(i);
     if (!tex_gen->has_stage(stage)) {
-      texcoord_vreg.push_back(alloc_vreg());
       texcoord_freg.push_back(alloc_freg());
-      text << "\t in float4 vtx_texcoord" << i << " : " << texcoord_vreg[i] << ",\n";
+      text << "\t in float4 vtx_texcoord" << i << " : " << alloc_vreg() << ",\n";
       text << "\t out float4 l_texcoord" << i << " : " << texcoord_freg[i] << ",\n";
+    } else {
+      texcoord_freg.push_back(NULL);
     }
   }
   if (_vertex_colors) {
