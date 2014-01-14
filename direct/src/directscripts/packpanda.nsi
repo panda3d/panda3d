@@ -38,10 +38,6 @@ OutFile "${OUTFILE}"
 SetCompress auto
 SetCompressor ${COMPRESSOR}
 
-!ifdef REGVIEW
-SetRegView ${REGVIEW}
-!endif
-
 !define MUI_WELCOMEFINISHPAGE_BITMAP "${IBITMAP}"
 !define MUI_UNWELCOMEFINISHPAGE_BITMAP "${UBITMAP}"
 
@@ -245,6 +241,10 @@ SectionEnd
 
 Section -post
 
+        !ifdef REGVIEW
+        SetRegView ${REGVIEW}
+        !endif
+
         !ifndef PPGAME
 
         # Add the "bin" directory to the PATH.
@@ -286,6 +286,10 @@ Section -post
 SectionEnd
 
 Section Uninstall
+
+        !ifdef REGVIEW
+        SetRegView ${REGVIEW}
+        !endif
 
         !ifndef PPGAME
         Push "$INSTDIR\python"
