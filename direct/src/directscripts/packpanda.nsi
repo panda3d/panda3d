@@ -22,6 +22,7 @@
 ;   PANDACONF     - name of panda config directory - usually $PANDA\etc 
 ;   PSOURCE       - location of the panda source-tree if available, OR location of panda install tree.
 ;   PYEXTRAS      - directory containing python extras, if any.
+;   REGVIEW       - either 32 or 64, depending on the build architecture.
 ;
 ;   PPGAME      - directory containing prepagaged game, if any        (ie, "C:\My Games\Airblade")
 ;   PPMAIN      - python program containing prepackaged game, if any  (ie, "Airblade.py")
@@ -36,6 +37,10 @@ OutFile "${OUTFILE}"
 
 SetCompress auto
 SetCompressor ${COMPRESSOR}
+
+!ifdef REGVIEW
+SetRegView ${REGVIEW}
+!endif
 
 !define MUI_WELCOMEFINISHPAGE_BITMAP "${IBITMAP}"
 !define MUI_UNWELCOMEFINISHPAGE_BITMAP "${UBITMAP}"
