@@ -5908,6 +5908,11 @@ def MakeInstallerNSIS(file, fullname, smdirectory, installdir):
     psource = os.path.abspath(".")
     panda = os.path.abspath(GetOutputDir())
 
+    if GetTargetArch() == 'x64':
+        regview = '64'
+    else:
+        regview = '32'
+
     nsis_defs = {
         'COMPRESSOR'  : COMPRESSOR,
         'NAME'        : fullname,
@@ -5924,6 +5929,7 @@ def MakeInstallerNSIS(file, fullname, smdirectory, installdir):
         'PANDACONF'   : os.path.join(panda, 'etc'),
         'PSOURCE'     : psource,
         'PYEXTRAS'    : os.path.join(os.path.abspath(GetThirdpartyBase()), 'win-extras'),
+        'REGVIEW'     : regview,
     }
 
     if GetHost() == 'windows':
