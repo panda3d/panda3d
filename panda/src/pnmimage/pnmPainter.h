@@ -16,6 +16,7 @@
 #define PNMPAINTER_H
 
 #include "pandabase.h"
+#include "pnmBrush.h"
 
 class PNMImage;
 
