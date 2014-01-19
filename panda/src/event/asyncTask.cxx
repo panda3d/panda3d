@@ -18,7 +18,6 @@
 #include "pt_Event.h"
 #include "throw_event.h"
 #include "eventParameter.h"
-#include "event.h"
 
 AtomicAdjust::Integer AsyncTask::_next_task_id;
 PStatCollector AsyncTask::_show_code_pcollector("App:Show code");
