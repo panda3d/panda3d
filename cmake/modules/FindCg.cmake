@@ -7,6 +7,7 @@
 # Once done this will define:
 #   CG_FOUND         - system has NvidiaCg
 #   CG_INCLUDE_DIR   - the NvidiaCg include directory
+#   CG_INCLUDE_DIRS  - directories for all NvidiaCg components
 #   CG_LIBRARY_DIR   - the NvidiaCg library directory
 #   CG_LIBRARY       - the path to the library binary
 #
@@ -34,7 +35,7 @@ macro(find_cggl)
             "/usr/local/include"
             "/opt/Cg"
             "/opt/nvidia-cg-toolkit/include" # Gentoo
-      PATH_SUFFIXES "" "Cg"
+      PATH_SUFFIXES "" "Cg" "cg"
       DOC "The path to NvidiaCgGL's include directory."
     )
 
@@ -84,7 +85,7 @@ endmacro()
 
 
 # Find base Nvidia Cg
-if(NOT CG_LIBRARY_DIR OR NOT CG_INCLUDE_DIR)
+if(NOT CG_LIBRARY_DIR OR NOT CG_INCLUDE_DIRS)
   # On OSX default to using the framework version of Cg.
   if(APPLE)
     include(${CMAKE_ROOT}/Modules/CMakeFindFrameworks.cmake)
@@ -119,7 +120,7 @@ if(NOT CG_LIBRARY_DIR OR NOT CG_INCLUDE_DIR)
             "/usr/local/include"
             "/opt/Cg"
             "/opt/nvidia-cg-toolkit/include" # Gentoo
-      PATH_SUFFIXES "" "Cg"
+      PATH_SUFFIXES "" "Cg" "cg"
       DOC "The path to NvidiaCg's include directory."
     )
 
@@ -139,13 +140,17 @@ if(NOT CG_LIBRARY_DIR OR NOT CG_INCLUDE_DIR)
     set(CG_LIBRARY_DIR "${CG_LIBRARY_DIR}" CACHE PATH "The path to NvidiaCG's library directory.") # Library path
   endif()
 
+  string(REGEX REPLACE "/Cg$" "" CG_BASE_INCLUDE_DIR ${CG_INCLUDE_DIR})
+  set(CG_INCLUDE_DIRS ${CG_BASE_INCLUDE_DIR} ${CG_INCLUDE_DIR})
+
+  mark_as_advanced(CG_INCLUDE_DIRS)
   mark_as_advanced(CG_INCLUDE_DIR)
   mark_as_advanced(CG_LIBRARY_DIR)
   mark_as_advanced(CG_LIBRARY)
 endif()
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(Cg DEFAULT_MSG CG_LIBRARY CG_INCLUDE_DIR CG_LIBRARY_DIR)
+find_package_handle_standard_args(Cg DEFAULT_MSG CG_LIBRARY CG_INCLUDE_DIRS CG_LIBRARY_DIR)
 
 if(CG_INCLUDE_DIR AND CG_LIBRARY_DIR)
   find_cggl()
