@@ -16,6 +16,7 @@
 #define SHADER_H
 
 #include "pandabase.h"
+#include "config_gobj.h"
 #include "typedWritableReferenceCount.h"
 #include "namable.h"
 #include "graphicsStateGuardianBase.h"

@@ -151,7 +151,7 @@ endif()
 
 composite_sources(p3gobj P3GOBJ_SOURCES)
 add_library(p3gobj ${P3GOBJ_HEADERS} ${P3GOBJ_SOURCES})
-target_link_libraries(p3gobj p3mathutil p3gsgbase)
+target_link_libraries(p3gobj p3gsgbase p3pnmimage)
 target_interrogate(p3gobj ALL)
 
 #begin test_bin_target

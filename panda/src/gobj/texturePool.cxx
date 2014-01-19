@@ -26,6 +26,7 @@
 #include "configVariableList.h"
 #include "load_dso.h"
 #include "mutexHolder.h"
+#include "dcast.h"
 
 TexturePool *TexturePool::_global_ptr;
 

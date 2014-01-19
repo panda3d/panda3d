@@ -17,6 +17,7 @@
 #include "config_gobj.h"
 #include "mutexHolder.h"
 #include "configVariableEnum.h"
+#include "string_utils.h"
 
 TextureStagePool *TextureStagePool::_global_ptr = (TextureStagePool *)NULL;
 

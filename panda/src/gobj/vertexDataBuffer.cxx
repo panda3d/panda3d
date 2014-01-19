@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "vertexDataBuffer.h"
+#include "config_gobj.h"
 #include "pStatTimer.h"
 
 TypeHandle VertexDataBuffer::_type_handle;
