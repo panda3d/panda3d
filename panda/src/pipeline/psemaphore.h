@@ -18,6 +18,7 @@
 #include "pandabase.h"
 #include "pmutex.h"
 #include "conditionVar.h"
+#include "mutexHolder.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Semaphore

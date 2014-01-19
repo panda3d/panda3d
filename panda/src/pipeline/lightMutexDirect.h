@@ -17,6 +17,7 @@
 
 #include "pandabase.h"
 #include "mutexImpl.h"
+#include "pnotify.h"
 
 class Thread;
 
