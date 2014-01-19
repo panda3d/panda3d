@@ -478,11 +478,11 @@ package_option(TAR
   "This is used to optimize patch generation against tar files.")
 
 # Is libfftw installed, and where?
-find_package(FFTW)
+#find_package(FFTW2)
 
-package_option(FFTW
-  "This enables support for lossless compression of animations in
-.bam files.  This is rarely used, and you probably don't need it.")
+#package_option(FFTW
+#  "This enables support for lossless compression of animations in
+#.bam files.  This is rarely used, and you probably don't need it.")
 
 #TODO PHAVE_DRFFTW_H
 

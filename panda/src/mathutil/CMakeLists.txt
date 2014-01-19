@@ -63,13 +63,13 @@ set(P3MATHUTIL_SOURCES
 if(HAVE_EIGEN)
   include_directories(${EIGEN3_INCLUDE_DIR})
 endif()
-if(NOT PHAVE_DRFFTW_H)
-  configure_file(../../../dtool/src/parser-inc/rfftw.h rfftw.h COPYONLY)
+if(HAVE_FFTW)
+  include_directories(${FFTW2_INCLUDE_DIR})
 endif()
 
 composite_sources(p3mathutil P3MATHUTIL_SOURCES)
 add_library(p3mathutil ${P3MATHUTIL_HEADERS} ${P3MATHUTIL_SOURCES})
-target_link_libraries(p3mathutil p3event ${FFTW_LIBRARY_DIR})
+target_link_libraries(p3mathutil p3event ${FFTW2_LIBRARY_DIR}})
 target_interrogate(p3mathutil ALL)
 
 #begin test_bin_target
