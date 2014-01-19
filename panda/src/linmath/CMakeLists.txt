@@ -12,7 +12,7 @@ set(P3LINMATH_HEADERS
   lpoint2.h lpoint2_src.I lpoint2_src.h
   lpoint3.h lpoint3_src.I lpoint3_src.h
   lpoint4.h lpoint4_src.I lpoint4_src.h
-  lquaternion.h lquaternion_src.I lquaternion_src.cxx
+  lquaternion.h lquaternion_src.I
   lquaternion_src.h lrotation.h lrotation_src.I
   lrotation_src.h
   lsimpleMatrix.h lsimpleMatrix.I

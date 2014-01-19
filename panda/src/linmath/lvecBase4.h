@@ -21,6 +21,7 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "checksumHashGenerator.h"
+#include "lsimpleMatrix.h"
 
 #include "cmath.h"
 #include "nearly_zero.h"
