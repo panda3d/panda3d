@@ -30,4 +30,4 @@ set(P3INTERROGATEDB_SOURCES
 composite_sources(p3interrogatedb P3INTERROGATEDB_SOURCES)
 
 add_library(p3interrogatedb ${P3INTERROGATEDB_HEADERS} ${P3INTERROGATEDB_SOURCES})
-target_link_libraries(p3interrogatedb p3dconfig)
+target_link_libraries(p3interrogatedb p3dconfig ${PYTHON_LIBRARIES})
