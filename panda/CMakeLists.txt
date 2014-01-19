@@ -10,6 +10,7 @@ add_subdirectory(src/pipeline)
 add_subdirectory(src/putil)
 add_subdirectory(src/pstatclient)
 add_subdirectory(src/linmath)
+add_subdirectory(src/event)
 
 #add_subdirectory(src/gobj)
 #add_subdirectory(src/pgraph)
