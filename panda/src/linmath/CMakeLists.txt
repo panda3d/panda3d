@@ -42,7 +42,7 @@ set(P3LINMATH_SOURCES
   lvector2.cxx lvector3.cxx lvector4.cxx mathNumbers.cxx
 )
 
-if(EIGEN_FOUND)
+if(HAVE_EIGEN)
   include_directories(${EIGEN3_INCLUDE_DIR})
 endif()
 
