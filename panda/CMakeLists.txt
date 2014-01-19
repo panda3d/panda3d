@@ -7,8 +7,9 @@ add_subdirectory(src/pandabase)
 add_subdirectory(src/express)
 add_subdirectory(src/downloader)
 add_subdirectory(src/pipeline)
-
 add_subdirectory(src/putil)
+add_subdirectory(src/pstatclient)
+
 #add_subdirectory(src/pgraph)
 #add_subdirectory(src/display)
 #add_subdirectory(src/framework)
