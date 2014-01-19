@@ -2,6 +2,7 @@
 # with invalid HEADER_FILE_ONLY behavior in MSVC 2010.
 cmake_minimum_required(VERSION 2.8.4)
 project(Panda3D)
+enable_testing()
 
 # Add generic modules to cmake module path,
 # and add Panda3D specific modules to cmake module path

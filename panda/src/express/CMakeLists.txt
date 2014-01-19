@@ -126,3 +126,17 @@ composite_sources(p3express P3EXPRESS_SOURCES)
 add_library(p3express ${P3EXPRESS_SOURCES} ${P3EXPRESS_HEADERS})
 target_link_libraries(p3express p3pandabase p3dtool p3dtoolconfig)
 target_interrogate(p3express ALL)
+
+#add_executable(p3expressTestTypes test_types.cxx)
+#target_link_libraries(p3expressTestTypes p3express p3dtoolutil p3dtool p3prc p3dtoolconfig p3pystub)
+#add_test(p3express_test_types p3expressTestTypes)
+
+#add_executable(p3expressTestOrderedVector test_ordered_vector.cxx)
+#target_link_libraries(p3expressTestOrderedVector p3putil p3dtoolutil p3dtool p3prc p3dtoolconfig p3pystub)
+#add_test(p3express_test_ordered_vector p3expressTestOrderedVector)
+
+if(HAVE_ZLIB)
+  #add_executable(p3expressTestBinTarget test_zstream.cxx)
+  #target_link_libraries(p3expressTestBinTarget p3express p3dtoolutil p3dtool p3prc p3dtoolconfig p3pystub)
+  #add_test(p3express_test_zstream p3expressTestBinTarget)
+endif()
