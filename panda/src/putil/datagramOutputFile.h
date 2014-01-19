@@ -21,6 +21,8 @@
 #include "filename.h"
 #include "fileReference.h"
 #include "virtualFile.h"
+#include "virtualFileSystem.h"
+#include "config_util.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DatagramOutputFile

@@ -13,9 +13,12 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "bamCacheRecord.h"
+#include "bamReader.h"
+#include "bamWriter.h"
 #include "virtualFileSystem.h"
 #include "virtualFile.h"
 #include "indent.h"
+#include "config_util.h" // util_cat
 
 TypeHandle BamCacheRecord::_type_handle;
 

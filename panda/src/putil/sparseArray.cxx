@@ -14,6 +14,8 @@
 
 #include "sparseArray.h"
 #include "bitArray.h"
+#include "datagram.h"
+#include "datagramIterator.h"
 
 TypeHandle SparseArray::_type_handle;
 
