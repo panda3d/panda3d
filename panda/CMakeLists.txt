@@ -12,6 +12,7 @@ add_subdirectory(src/pstatclient)
 add_subdirectory(src/linmath)
 add_subdirectory(src/event)
 
+add_subdirectory(src/mathutil)
 #add_subdirectory(src/gobj)
 #add_subdirectory(src/pgraph)
 #add_subdirectory(src/display)
