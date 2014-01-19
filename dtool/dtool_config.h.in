@@ -1,4 +1,6 @@
 /* dtool_config.h.  Generated automatically by CMake. */
+#ifndef DTOOL_CONFIG_H
+#define DTOOL_CONFIG_H
 
 /* Define if we have Eigen available. */
 #cmakedefine HAVE_EIGEN
@@ -463,3 +465,5 @@
 #cmakedefine IS_LINUX
 #cmakedefine IS_FREEBSD
 #cmakedefine BUILD_IPHONE
+
+#endif
