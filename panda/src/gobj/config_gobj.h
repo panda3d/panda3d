@@ -23,6 +23,7 @@
 #include "configVariableDouble.h"
 #include "configVariableFilename.h"
 #include "configVariableString.h"
+#include "configVariableList.h"
 #include "autoTextureScale.h"
 
 NotifyCategoryDecl(gobj, EXPCL_PANDA_GOBJ, EXPTP_PANDA_GOBJ);
@@ -84,6 +85,7 @@ extern EXPCL_PANDA_GOBJ ConfigVariableInt released_ibuffer_cache_size;
 
 extern EXPCL_PANDA_GOBJ ConfigVariableDouble default_near;
 extern EXPCL_PANDA_GOBJ ConfigVariableDouble default_far;
+extern EXPCL_PANDA_GOBJ ConfigVariableDouble lens_far_limit;
 extern EXPCL_PANDA_GOBJ ConfigVariableDouble default_fov;
 extern EXPCL_PANDA_GOBJ ConfigVariableDouble default_iod;
 extern EXPCL_PANDA_GOBJ ConfigVariableDouble default_converge;

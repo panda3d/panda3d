@@ -15,6 +15,7 @@
 #include "geomCacheManager.h"
 #include "geomCacheEntry.h"
 #include "lightMutexHolder.h"
+#include "clockObject.h"
 
 GeomCacheManager *GeomCacheManager::_global_ptr = NULL;
 
