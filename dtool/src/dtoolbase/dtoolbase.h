@@ -106,6 +106,7 @@
 #ifdef HAVE_PYTHON
 #undef _POSIX_C_SOURCE
 #undef _XOPEN_SOURCE
+#undef HAVE_LOCKF
 #include "pyconfig.h"
 #endif
 
