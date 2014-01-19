@@ -14,6 +14,7 @@
 
 #include "finiteBoundingVolume.h"
 #include "boundingBox.h"
+#include "config_mathutil.h"
 
 TypeHandle FiniteBoundingVolume::_type_handle;
 

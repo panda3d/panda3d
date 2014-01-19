@@ -14,6 +14,8 @@
 
 #include "boundingPlane.h"
 #include "boundingSphere.h"
+#include "boundingBox.h"
+#include "boundingHexahedron.h"
 #include "config_mathutil.h"
 
 TypeHandle BoundingPlane::_type_handle;

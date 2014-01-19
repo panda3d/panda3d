@@ -14,6 +14,7 @@
 
 #include "boundingLine.h"
 #include "boundingSphere.h"
+#include "boundingBox.h"
 #include "config_mathutil.h"
 
 #include <math.h>
