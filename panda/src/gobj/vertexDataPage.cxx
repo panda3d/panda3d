@@ -20,6 +20,7 @@
 #include "pStatTimer.h"
 #include "memoryHook.h"
 #include "config_gobj.h"
+#include <algorithm>
 
 #ifdef HAVE_ZLIB
 #include <zlib.h>
