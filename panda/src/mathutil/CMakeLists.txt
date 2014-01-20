@@ -1,4 +1,4 @@
-set(P3GOBJ_HEADERS
+set(P3MATHUTIL_HEADERS
   boundingHexahedron.I boundingHexahedron.h boundingLine.I
   boundingLine.h
   boundingBox.I boundingBox.h
@@ -32,7 +32,7 @@ set(P3GOBJ_HEADERS
   unionBoundingVolume.h unionBoundingVolume.I
 )
 
-set(P3GOBJ_SOURCES
+set(P3MATHUTIL_SOURCES
   boundingHexahedron.cxx boundingLine.cxx
   boundingBox.cxx
   boundingPlane.cxx
@@ -63,14 +63,14 @@ set(P3GOBJ_SOURCES
 if(HAVE_EIGEN)
   include_directories(${EIGEN3_INCLUDE_DIR})
 endif()
-if(NOT HAVE_FFTW)
+if(NOT PHAVE_DRFFTW_H)
   configure_file(../../../dtool/src/parser-inc/rfftw.h rfftw.h COPYONLY)
 endif()
 
-composite_sources(p3gobj P3GOBJ_SOURCES)
-add_library(p3gobj ${P3GOBJ_HEADERS} ${P3GOBJ_SOURCES})
-target_link_libraries(p3gobj p3event ${FFTW_LIBRARY_DIR})
-target_interrogate(p3gobj ALL)
+composite_sources(p3mathutil P3MATHUTIL_SOURCES)
+add_library(p3mathutil ${P3MATHUTIL_HEADERS} ${P3MATHUTIL_SOURCES})
+target_link_libraries(p3mathutil p3event ${FFTW_LIBRARY_DIR})
+target_interrogate(p3mathutil ALL)
 
 #begin test_bin_target
   #define TARGET test_mathutil
