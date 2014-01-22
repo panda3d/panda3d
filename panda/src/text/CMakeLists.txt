@@ -30,7 +30,6 @@ set(P3TEXT_SOURCES
   textNode.cxx
   textProperties.cxx
   textPropertiesManager.cxx
-  cmss12.bam_src.c cmss12.bam.pz_src.c persans.ttf_src.c
 )
 
 composite_sources(p3text P3TEXT_SOURCES)
