@@ -48,5 +48,4 @@ add_subdirectory(src/pgui)
 add_subdirectory(src/recorder)
 add_subdirectory(src/collide)
 add_subdirectory(src/framework)
-
-#add_subdirectory(src/testbed)
+add_subdirectory(src/testbed)
