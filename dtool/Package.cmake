@@ -52,17 +52,23 @@ package_option(GTK)
 find_package(wxWidgets QUIET)
 if(WXWIDGETS_FOUND)
   set(WX_FOUND TRUE) # Mangle for convenience
-
-  # Cleanup after builtin FindWx
-  mark_as_advanced(wxWidgets_CONFIG_EXECUTABLE)
-  mark_as_advanced(wxWidgets_wxrc_EXECUTABLE)
 endif()
+# Cleanup after builtin FindWx
+mark_as_advanced(wxWidgets_CONFIG_EXECUTABLE)
+mark_as_advanced(wxWidgets_wxrc_EXECUTABLE)
 #config_package(WX "WxWidgets")
 package_option(WX)
 
 # Find and configure FLTK
 set(OpenGL_FIND_QUIETLY TRUE) # Fix for builtin FindFLTK
 find_package(FLTK QUIET)
+mark_as_advanced(FLTK_BASE_LIBRARY) # Cleanup after builtin FLTK
+mark_as_advanced(FLTK_CONFIG_SCRIPT) # Cleanup after builtin FLTK
+mark_as_advanced(FLTK_FLUID_EXECUTABLE) # Cleanup after builtin FLTK
+mark_as_advanced(FLTK_FORMS_LIBRARY) # Cleanup after builtin FLTK
+mark_as_advanced(FLTK_GL_LIBRARY) # Cleanup after builtin FLTK
+mark_as_advanced(FLTK_IMAGES_LIBRARY) # Cleanup after builtin FLTK
+mark_as_advanced(FLTK_INCLUDE_DIR) # Cleanup after builtin FLTK
 #config_package(FLTK)
 package_option(FLTK)
 
