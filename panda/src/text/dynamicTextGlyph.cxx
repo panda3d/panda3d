@@ -16,6 +16,7 @@
 
 #ifdef HAVE_FREETYPE
 
+#include "dynamicTextFont.h"
 #include "dynamicTextPage.h"
 #include "geomTextGlyph.h"
 #include "geomVertexData.h"
