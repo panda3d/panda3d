@@ -22,6 +22,7 @@
 #include "linmath_events.h"
 #include "mouseButton.h"
 #include "keyboardButton.h"
+#include "config_tform.h"
 
 TypeHandle Trackball::_type_handle;
 

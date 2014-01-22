@@ -43,7 +43,7 @@ add_subdirectory(src/pnmtext)
 add_subdirectory(src/parametrics)
 add_subdirectory(src/text)
 add_subdirectory(src/grutil)
+add_subdirectory(src/tform)
 
-#add_subdirectory(src/tform)
 #add_subdirectory(src/framework)
 #add_subdirectory(src/testbed)
