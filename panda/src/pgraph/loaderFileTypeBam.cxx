@@ -16,6 +16,7 @@
 #include "config_pgraph.h"
 #include "bamFile.h"
 #include "bamCacheRecord.h"
+#include "modelRoot.h"
 #include "loaderOptions.h"
 
 #include "dcast.h"

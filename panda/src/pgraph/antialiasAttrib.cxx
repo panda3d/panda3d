@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "antialiasAttrib.h"
+#include "config_pgraph.h"
 #include "graphicsStateGuardianBase.h"
 #include "dcast.h"
 #include "bamReader.h"

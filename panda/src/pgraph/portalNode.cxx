@@ -20,12 +20,14 @@
 #include "renderState.h"
 #include "portalClipper.h"
 #include "transformState.h"
+#include "clipPlaneAttrib.h"
 #include "colorScaleAttrib.h"
 #include "transparencyAttrib.h"
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "bamReader.h"
 #include "bamWriter.h"
+#include "boundingSphere.h"
 
 #include "plane.h"
 

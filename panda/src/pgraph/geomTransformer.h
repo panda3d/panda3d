@@ -20,6 +20,7 @@
 #include "luse.h"
 #include "geom.h"
 #include "geomVertexData.h"
+#include "texMatrixAttrib.h"
 
 class GeomNode;
 class RenderState;

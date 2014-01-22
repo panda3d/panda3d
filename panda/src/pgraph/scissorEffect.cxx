@@ -22,6 +22,7 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "boundingHexahedron.h"
+#include "lens.h"
 
 TypeHandle ScissorEffect::_type_handle;
 

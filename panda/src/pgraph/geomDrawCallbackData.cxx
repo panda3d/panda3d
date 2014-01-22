@@ -13,6 +13,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "geomDrawCallbackData.h"
+#include "cullableObject.h"
+#include "graphicsStateGuardianBase.h"
 
 TypeHandle GeomDrawCallbackData::_type_handle;
 

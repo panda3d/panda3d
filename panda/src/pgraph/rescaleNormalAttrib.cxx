@@ -21,6 +21,7 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "configVariableEnum.h"
+#include "config_pgraph.h"
 
 TypeHandle RescaleNormalAttrib::_type_handle;
 int RescaleNormalAttrib::_attrib_slot;

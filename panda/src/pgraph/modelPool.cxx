@@ -16,6 +16,7 @@
 #include "loader.h"
 #include "config_pgraph.h"
 #include "lightMutexHolder.h"
+#include "virtualFileSystem.h"
 
 
 ModelPool *ModelPool::_global_ptr = (ModelPool *)NULL;

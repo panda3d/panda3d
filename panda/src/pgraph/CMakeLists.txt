@@ -196,9 +196,13 @@ set(P3PGRAPH_SOURCES
   workingNodePath.cxx
 )
 
+if(HAVE_EIGEN)
+  include_directories(${EIGEN3_INCLUDE_DIR})
+endif()
+
 composite_sources(p3pgraph P3PGRAPH_SOURCES)
 add_library(p3pgraph ${P3PGRAPH_HEADERS} ${P3PGRAPH_SOURCES})
-target_link_libraries(p3pgraph) #p3gobj
+target_link_libraries(p3pgraph p3gobj)
 target_interrogate(p3pgraph ALL)
     # p3gobj p3event p3gsgbase p3putil p3linmath p3downloader
 

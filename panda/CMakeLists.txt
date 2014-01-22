@@ -14,9 +14,9 @@ add_subdirectory(src/event)
 add_subdirectory(src/mathutil)
 add_subdirectory(src/gsgbase)
 add_subdirectory(src/pnmimage)
-
 add_subdirectory(src/gobj)
-#add_subdirectory(src/pgraph)
+add_subdirectory(src/pgraph)
+
 #add_subdirectory(src/display)
 #add_subdirectory(src/framework)
 #add_subdirectory(src/testbed)

@@ -28,6 +28,8 @@
 #include "geomMunger.h"
 #include "texture.h"
 #include "texturePeeker.h"
+#include "textureAttrib.h"
+#include "colorAttrib.h"
 #include "config_pgraph.h"
 
 PStatCollector GeomTransformer::_apply_vertex_collector("*:Flatten:apply:vertex");
