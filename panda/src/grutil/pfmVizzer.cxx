@@ -21,6 +21,7 @@
 #include "geomTriangles.h"
 #include "geomVertexWriter.h"
 #include "lens.h"
+#include "pnmImage.h"
 #include "config_grutil.h"
 
 ////////////////////////////////////////////////////////////////////
