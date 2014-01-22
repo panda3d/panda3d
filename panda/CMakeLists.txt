@@ -33,7 +33,7 @@ add_subdirectory(src/pgraphnodes)
 add_subdirectory(src/cull)
 add_subdirectory(src/display)
 add_subdirectory(src/chan)
-#add_subdirectory(src/char)
+add_subdirectory(src/char)
 
 #add_subdirectory(src/framework)
 #add_subdirectory(src/testbed)
