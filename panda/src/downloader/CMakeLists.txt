@@ -28,7 +28,8 @@ set(P3DOWNLOADER_HEADERS
   stringStream.I stringStream.h
   urlSpec.h urlSpec.I
   virtualFileHTTP.I virtualFileHTTP.h
-  virtualFileMountHTTP.I virtualFileMountHTTP.h)
+  virtualFileMountHTTP.I virtualFileMountHTTP.h
+)
 
 set(P3DOWNLOADER_SOURCES
   config_downloader.cxx
@@ -58,10 +59,10 @@ set(P3DOWNLOADER_SOURCES
   stringStream.cxx
   urlSpec.cxx
   virtualFileHTTP.cxx
-  virtualFileMountHTTP.cxx)
+  virtualFileMountHTTP.cxx
+)
 
 composite_sources(p3downloader P3DOWNLOADER_SOURCES)
-
 add_library(p3downloader ${P3DOWNLOADER_SOURCES} ${P3DOWNLOADER_HEADERS})
-target_link_libraries(p3downloader p3express p3pandabase)
+target_link_libraries(p3downloader p3express)
 target_interrogate(p3downloader ALL)
