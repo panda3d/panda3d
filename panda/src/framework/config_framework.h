@@ -28,6 +28,7 @@ NotifyCategoryDecl(framework, EXPCL_FRAMEWORK, EXPTP_FRAMEWORK);
 extern ConfigVariableDouble aspect_ratio;
 extern ConfigVariableBool show_frame_rate_meter;
 extern ConfigVariableBool show_scene_graph_analyzer_meter;
+extern ConfigVariableString window_type;
 
 extern ConfigVariableString record_session;
 extern ConfigVariableString playback_session;

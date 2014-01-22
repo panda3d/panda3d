@@ -46,6 +46,7 @@ add_subdirectory(src/grutil)
 add_subdirectory(src/tform)
 add_subdirectory(src/pgui)
 add_subdirectory(src/recorder)
+add_subdirectory(src/collide)
+add_subdirectory(src/framework)
 
-#add_subdirectory(src/framework)
 #add_subdirectory(src/testbed)
