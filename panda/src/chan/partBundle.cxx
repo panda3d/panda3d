@@ -29,6 +29,8 @@
 #include "bamWriter.h"
 #include "configVariableEnum.h"
 #include "loaderOptions.h"
+#include "bindAnimRequest.h"
+#include "transformState.h"
 
 #include <algorithm>
 

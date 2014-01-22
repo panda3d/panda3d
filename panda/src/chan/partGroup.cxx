@@ -22,6 +22,7 @@
 #include "datagramIterator.h"
 #include "bamReader.h"
 #include "bamWriter.h"
+#include "transformState.h"
 
 #include <algorithm>
 
