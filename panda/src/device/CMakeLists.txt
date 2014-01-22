@@ -1,12 +1,12 @@
 set(P3DEVICE_HEADERS
   analogNode.I analogNode.h
-  buttonNode.I buttonNode.h 
-  clientAnalogDevice.I clientAnalogDevice.h clientBase.I 
-  clientBase.h clientButtonDevice.I clientButtonDevice.h 
-  clientDevice.I clientDevice.h clientDialDevice.I 
-  clientDialDevice.h clientTrackerDevice.I 
+  buttonNode.I buttonNode.h
+  clientAnalogDevice.I clientAnalogDevice.h clientBase.I
+  clientBase.h clientButtonDevice.I clientButtonDevice.h
+  clientDevice.I clientDevice.h clientDialDevice.I
+  clientDialDevice.h clientTrackerDevice.I
   clientTrackerDevice.h config_device.h
-  dialNode.I dialNode.h 
+  dialNode.I dialNode.h
   mouseAndKeyboard.h
   trackerData.I trackerData.h
   trackerNode.I trackerNode.h
@@ -15,9 +15,9 @@ set(P3DEVICE_HEADERS
 set(P3DEVICE_SOURCES
   analogNode.cxx
   buttonNode.cxx
-  clientAnalogDevice.cxx 
-  clientBase.cxx clientButtonDevice.cxx clientDevice.cxx 
-  clientDialDevice.cxx clientTrackerDevice.cxx 
+  clientAnalogDevice.cxx
+  clientBase.cxx clientButtonDevice.cxx clientDevice.cxx
+  clientDialDevice.cxx clientTrackerDevice.cxx
   config_device.cxx
   dialNode.cxx
   mouseAndKeyboard.cxx
