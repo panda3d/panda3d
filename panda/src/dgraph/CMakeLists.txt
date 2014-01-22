@@ -1,0 +1,17 @@
+set(P3DGRAPH_HEADERS
+  config_dgraph.h
+  dataGraphTraverser.I dataGraphTraverser.h
+  dataNode.I dataNode.h
+  dataNodeTransmit.I dataNodeTransmit.h
+)
+set(P3DGRAPH_SOURCES
+  config_dgraph.cxx
+  dataGraphTraverser.cxx
+  dataNode.cxx
+  dataNodeTransmit.cxx
+)
+
+composite_sources(p3dgraph P3DGRAPH_SOURCES)
+add_library(p3dgraph ${P3DGRAPH_SOURCES} ${P3DGRAPH_HEADERS})
+target_link_libraries(p3dgraph p3pgraph)
+target_interrogate(p3dgraph ALL)
