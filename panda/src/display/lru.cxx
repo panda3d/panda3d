@@ -21,6 +21,9 @@
 //#include <windows.h>
 
 #include "lru.h"
+#if ENABLE_MUTEX
+#include "mutexHolder.h"
+#endif
 
 
 static const int HIGH_PRIORITY_SCALE = 4;

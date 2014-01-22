@@ -13,7 +13,12 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "displayRegionDrawCallbackData.h"
+
+#include "config_display.h"
 #include "cullResult.h"
+#include "displayRegion.h"
+#include "graphicsOutput.h"
+#include "graphicsStateGuardian.h"
 #include "sceneSetup.h"
 
 TypeHandle DisplayRegionDrawCallbackData::_type_handle;
