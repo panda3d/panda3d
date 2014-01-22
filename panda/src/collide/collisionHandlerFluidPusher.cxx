@@ -16,6 +16,7 @@
 #include "collisionNode.h"
 #include "collisionEntry.h"
 #include "collisionPolygon.h"
+#include "collisionSphere.h"
 #include "config_collide.h"
 #include "dcast.h"
 

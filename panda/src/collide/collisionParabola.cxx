@@ -22,6 +22,7 @@
 #include "geomLinestrips.h"
 #include "geomVertexWriter.h"
 #include "boundingHexahedron.h"
+#include "boundingSphere.h"
 #include "look_at.h"
 
 PStatCollector CollisionParabola::_volume_pcollector(

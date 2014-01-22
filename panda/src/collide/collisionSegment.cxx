@@ -28,8 +28,10 @@
 #include "bamWriter.h"
 #include "geom.h"
 #include "geomLines.h"
+#include "boundingSphere.h"
 #include "boundingHexahedron.h"
 #include "geomVertexWriter.h"
+#include "look_at.h"
 
 TypeHandle CollisionSegment::_type_handle;
 
