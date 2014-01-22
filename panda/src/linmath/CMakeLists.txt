@@ -42,10 +42,6 @@ set(P3LINMATH_SOURCES
   lvector2.cxx lvector3.cxx lvector4.cxx mathNumbers.cxx
 )
 
-if(HAVE_EIGEN)
-  include_directories(${EIGEN3_INCLUDE_DIR})
-endif()
-
 composite_sources(p3linmath P3LINMATH_SOURCES)
 add_library(p3linmath ${P3LINMATH_HEADERS} ${P3LINMATH_SOURCES})
 target_link_libraries(p3linmath p3putil)

@@ -12,13 +12,6 @@ set(P3GSGBASE_SOURCES
   graphicsStateGuardianBase.cxx
 )
 
-if(HAVE_EIGEN)
-  include_directories(${EIGEN3_INCLUDE_DIR})
-endif()
-if(HAVE_CG)
-  include_directories(${CG_INCLUDE_DIRS})
-endif()
-
 composite_sources(p3gsgbase P3GSGBASE_SOURCES)
 add_library(p3gsgbase ${P3GSGBASE_HEADERS} ${P3GSGBASE_SOURCES})
 target_link_libraries(p3gsgbase p3linmath)

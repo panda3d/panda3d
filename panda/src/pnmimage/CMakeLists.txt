@@ -24,10 +24,6 @@ set(P3PNMIMAGE_SOURCES
   ppmcmap.cxx
 )
 
-if(HAVE_EIGEN)
-  include_directories(${EIGEN3_INCLUDE_DIR})
-endif()
-
 composite_sources(p3pnmimage P3PNMIMAGE_SOURCES)
 add_library(p3pnmimage ${P3PNMIMAGE_HEADERS} ${P3PNMIMAGE_SOURCES})
 target_link_libraries(p3pnmimage p3mathutil)

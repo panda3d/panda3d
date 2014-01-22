@@ -60,13 +60,6 @@ set(P3MATHUTIL_SOURCES
   unionBoundingVolume.cxx
 )
 
-if(HAVE_EIGEN)
-  include_directories(${EIGEN3_INCLUDE_DIR})
-endif()
-if(HAVE_FFTW)
-  include_directories(${FFTW2_INCLUDE_DIR})
-endif()
-
 composite_sources(p3mathutil P3MATHUTIL_SOURCES)
 add_library(p3mathutil ${P3MATHUTIL_HEADERS} ${P3MATHUTIL_SOURCES})
 target_link_libraries(p3mathutil p3event ${FFTW2_LIBRARY_DIR}})

@@ -141,14 +141,6 @@ set(P3GOBJ_SOURCES
   videoTexture.cxx
 )
 
-if(HAVE_EIGEN)
-  include_directories(${EIGEN3_INCLUDE_DIR})
-endif()
-
-if(HAVE_CG)
-  include_directories(${CG_INCLUDE_DIRS})
-endif()
-
 composite_sources(p3gobj P3GOBJ_SOURCES)
 add_library(p3gobj ${P3GOBJ_HEADERS} ${P3GOBJ_SOURCES})
 target_link_libraries(p3gobj p3gsgbase p3pnmimage)
