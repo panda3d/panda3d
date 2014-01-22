@@ -31,6 +31,7 @@
 #include "texMatrixAttrib.h"
 #include "texGenAttrib.h"
 #include "colorScaleAttrib.h"
+#include "clipPlaneAttrib.h"
 #include "fogAttrib.h"
 #include "texture.h"
 #include "ambientLight.h"
@@ -39,6 +40,7 @@
 #include "spotlight.h"
 #include "lightLensNode.h"
 #include "lvector4.h"
+#include "config_pgraphnodes.h"
 
 TypeHandle ShaderGenerator::_type_handle;
 

@@ -14,6 +14,7 @@
 
 #include "lodNodeType.h"
 #include "string_utils.h"
+#include "config_pgraph.h"
 
 ostream &
 operator << (ostream &out, LODNodeType lnt) {
