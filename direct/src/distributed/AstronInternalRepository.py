@@ -260,8 +260,8 @@ class AstronInternalRepository(ConnectionRepository):
             dg = PyDatagram()
             dg.addServerHeader(doId, self.ourChannel, DBSS_OBJECT_ACTIVATE_WITH_DEFAULTS)
             dg.addUint32(doId)
-            dg.addUint32(parentId)
-            dg.addUint32(zoneId)
+            dg.addUint32(0)
+            dg.addUint32(0)
             self.send(dg)
             # DEFAULTS_OTHER isn't implemented yet, so we chase it with a SET_FIELDS
             dg = PyDatagram()
@@ -270,6 +270,13 @@ class AstronInternalRepository(ConnectionRepository):
             dg.addUint16(fieldCount)
             dg.appendData(fieldPacker.getString())
             self.send(dg)
+            # Now slide it into the zone we expect to see it in (so it
+            # generates onto us with all of the fields in place)
+            dg = PyDatagram()
+            dg.addServerHeader(doId, self.ourChannel, STATESERVER_OBJECT_SET_LOCATION)
+            dg.addUint32(parentId)
+            dg.addUint32(zoneId)
+            self.send(dg)
         else:
             dg = PyDatagram()
             dg.addServerHeader(doId, self.ourChannel, DBSS_OBJECT_ACTIVATE_WITH_DEFAULTS)
@@ -277,6 +284,13 @@ class AstronInternalRepository(ConnectionRepository):
             dg.addUint32(parentId)
             dg.addUint32(zoneId)
             self.send(dg)
+
+    def sendSetLocation(self, do, parentId, zoneId):
+        dg = PyDatagram()
+        dg.addServerHeader(do.doId, self.ourChannel, STATESERVER_OBJECT_SET_LOCATION)
+        dg.addUint32(parentId)
+        dg.addUint32(zoneId)
+        self.send(dg)
 
     def generateWithRequired(self, do, parentId, zoneId, optionalFields=[]):
         """
