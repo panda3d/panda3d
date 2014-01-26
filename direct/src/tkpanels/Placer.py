@@ -510,7 +510,7 @@ class Placer(AppShell):
         else:
             # Generate a unique name for the dict
             dictName = name + '-' + repr(nodePath.id())
-        if not dict.has_key(dictName):
+        if dictName not in dict:
             # Update combo box to include new item
             names.append(dictName)
             listbox = menu.component('scrolledlist')

@@ -147,7 +147,7 @@ class DoInterestManager(DirectObject.DirectObject):
         # still a valid interest handle
         if not isinstance(handle, InterestHandle):
             return False
-        return DoInterestManager._interests.has_key(handle.asInt())
+        return handle.asInt() in DoInterestManager._interests
 
     def updateInterestDescription(self, handle, desc):
         iState = DoInterestManager._interests.get(handle.asInt())
@@ -240,7 +240,7 @@ class DoInterestManager(DirectObject.DirectObject):
         if not event:
             event = self._getAnonymousEvent('removeInterest')
         handle = handle.asInt()
-        if DoInterestManager._interests.has_key(handle):
+        if handle in DoInterestManager._interests:
             existed = True
             intState = DoInterestManager._interests[handle]
             if event:
@@ -287,7 +287,7 @@ class DoInterestManager(DirectObject.DirectObject):
         assert isinstance(handle, InterestHandle)
         existed = False
         handle = handle.asInt()
-        if DoInterestManager._interests.has_key(handle):
+        if handle in DoInterestManager._interests:
             existed = True
             intState = DoInterestManager._interests[handle]
             if intState.isPendingDelete():
@@ -345,7 +345,7 @@ class DoInterestManager(DirectObject.DirectObject):
         exists = False
         if event is None:
             event = self._getAnonymousEvent('alterInterest')
-        if DoInterestManager._interests.has_key(handle):
+        if handle in DoInterestManager._interests:
             if description is not None:
                 DoInterestManager._interests[handle].desc = description
             else:
@@ -427,7 +427,7 @@ class DoInterestManager(DirectObject.DirectObject):
         """
         assert DoInterestManager.notify.debugCall()
         
-        if DoInterestManager._interests.has_key(handle):
+        if handle in DoInterestManager._interests:
             if DoInterestManager._interests[handle].isPendingDelete():
                 # make sure there is no pending event for this interest
                 if DoInterestManager._interests[handle].context == NO_CONTEXT:
@@ -594,7 +594,7 @@ class DoInterestManager(DirectObject.DirectObject):
         DoInterestManager.notify.debug(
             "handleInterestDoneMessage--> Received handle %s, context %s" % (
             handle, contextId))
-        if DoInterestManager._interests.has_key(handle):
+        if handle in DoInterestManager._interests:
             eventsToSend = []
             # if the context matches, send out the event
             if contextId == DoInterestManager._interests[handle].context:

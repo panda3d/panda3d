@@ -28,7 +28,6 @@ class FunctionInterval(Interval.Interval):
 
         @classmethod
         def replaceMethod(self, oldFunction, newFunction):
-            import new
             import types
             count = 0        
             for ival in self.FunctionIntervals:
@@ -37,9 +36,9 @@ class FunctionInterval(Interval.Interval):
                 if type(ival.function) == types.MethodType:
                     if (ival.function.im_func == oldFunction):
                         # print 'found: ', ival.function, oldFunction
-                        ival.function = new.instancemethod(newFunction,
-                                                           ival.function.im_self,
-                                                           ival.function.im_class)
+                        ival.function = types.MethodType(newFunction,
+                                                         ival.function.im_self,
+                                                         ival.function.im_class)
                         count += 1
             return count
 

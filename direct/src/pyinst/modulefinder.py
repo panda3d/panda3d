@@ -218,7 +218,7 @@ class ModuleFinder:
         else:
             self.msgout(3, "import_module ->", m)
             return m
-        if self.badmodules.has_key(fqname):
+        if fqname in self.badmodules:
             self.msgout(3, "import_module -> None")
             self.badmodules[fqname][parent.__name__] = None
             return None
@@ -275,24 +275,24 @@ class ModuleFinder:
                 i = i+2
             if op == IMPORT_NAME:
                 name = lastname = co.co_names[oparg]
-                if not self.badmodules.has_key(lastname):
+                if lastname not in self.badmodules:
                     try:
                         self.import_hook(name, m)
                     except ImportError, msg:
                         self.msg(2, "ImportError:", str(msg))
-                        if not self.badmodules.has_key(name):
+                        if name not in self.badmodules:
                             self.badmodules[name] = {}
                         self.badmodules[name][m.__name__] = None
             elif op == IMPORT_FROM:
                 name = co.co_names[oparg]
                 assert lastname is not None
-                if not self.badmodules.has_key(lastname):
+                if lastname not in self.badmodules:
                     try:
                         self.import_hook(lastname, m, [name])
                     except ImportError, msg:
                         self.msg(2, "ImportError:", str(msg))
                         fullname = lastname + "." + name
-                        if not self.badmodules.has_key(fullname):
+                        if fullname not in self.badmodules:
                             self.badmodules[fullname] = {}
                         self.badmodules[fullname][m.__name__] = None
             else:
@@ -316,7 +316,7 @@ class ModuleFinder:
         return m
 
     def add_module(self, fqname):
-        if self.modules.has_key(fqname):
+        if fqname in self.modules:
             return self.modules[fqname]
         self.modules[fqname] = m = Module(fqname)
         return m

@@ -181,12 +181,6 @@ extern "C" {
 /* reuse GLX_NONE_EXT */
 #endif
 
-#ifndef GLX_EXT_import_context
-#define GLX_SHARE_CONTEXT_EXT              0x800A
-#define GLX_VISUAL_ID_EXT                  0x800B
-#define GLX_SCREEN_EXT                     0x800C
-#endif
-
 #ifndef GLX_SGIX_fbconfig
 #define GLX_WINDOW_BIT_SGIX                0x00000001
 #define GLX_PIXMAP_BIT_SGIX                0x00000002
@@ -456,22 +450,6 @@ typedef void (* PFNGLXDESTROYGLXVIDEOSOURCESGIXPROC) (X11_Display *dpy, GLXVideo
 #endif /* _VL_H */
 #ifndef GLX_EXT_visual_rating
 #define GLX_EXT_visual_rating 1
-#endif
-
-#ifndef GLX_EXT_import_context
-#define GLX_EXT_import_context 1
-#ifdef GLX_GLXEXT_PROTOTYPES
-extern X11_Display * glXGetCurrentDisplayEXT ();
-extern int glXQueryContextInfoEXT (X11_Display *, GLXContext, int, int *);
-extern GLXContextID glXGetContextIDEXT (const GLXContext);
-extern GLXContext glXImportContextEXT (X11_Display *, GLXContextID);
-extern void glXFreeContextEXT (X11_Display *, GLXContext);
-#endif /* GLX_GLXEXT_PROTOTYPES */
-typedef X11_Display * (* PFNGLXGETCURRENTDISPLAYEXTPROC) ();
-typedef int (* PFNGLXQUERYCONTEXTINFOEXTPROC) (X11_Display *dpy, GLXContext context, int attribute, int *value);
-typedef GLXContextID (* PFNGLXGETCONTEXTIDEXTPROC) (const GLXContext context);
-typedef GLXContext (* PFNGLXIMPORTCONTEXTEXTPROC) (X11_Display *dpy, GLXContextID contextID);
-typedef void (* PFNGLXFREECONTEXTEXTPROC) (X11_Display *dpy, GLXContext context);
 #endif
 
 #ifndef GLX_SGIX_fbconfig

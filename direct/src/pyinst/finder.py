@@ -96,7 +96,7 @@ def identify(name, xtrapath=None):
     else:
         if xtrapath is None:
             xtra = []
-        elif _pcache.has_key(id(xtrapath)):
+        elif id(xtrapath) in _pcache:
             xtra = _pcache[id(xtrapath)]
         else:
             xtra = expand(xtrapath)

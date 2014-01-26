@@ -137,7 +137,7 @@ class ClusterClient(DirectObject.DirectObject):
             object     = pair[1]
             name       = self.controlMappings[object][0]
             serverList = self.controlMappings[object][1]
-            if (self.objectMappings.has_key(object)):
+            if (object in self.objectMappings):
                 self.moveObject(self.objectMappings[object],name,serverList,
                                 self.controlOffsets[object], self.objectHasColor[object])
         self.sendNamedMovementDone()
@@ -204,20 +204,20 @@ class ClusterClient(DirectObject.DirectObject):
 
 
     def addNamedObjectMapping(self,object,name,hasColor = True):
-        if (not self.objectMappings.has_key(name)):
+        if (name not in self.objectMappings):
             self.objectMappings[name] = object
             self.objectHasColor[name] = hasColor
         else:
             self.notify.debug('attempt to add duplicate named object: '+name)
 
     def removeObjectMapping(self,name):
-        if (self.objectMappings.has_key(name)):
+        if (name in self.objectMappings):
             self.objectMappings.pop(name)
 
 
     def addControlMapping(self,objectName,controlledName, serverList = None,
                           offset = None, priority = 0):
-        if (not self.controlMappings.has_key(objectName)):
+        if (objectName not in self.controlMappings):
             if (serverList == None):
                 serverList = range(len(self.serverList))
             if (offset == None):
@@ -239,11 +239,11 @@ class ClusterClient(DirectObject.DirectObject):
             #self.notify.debug('attempt to add duplicate controlled object: '+name)
 
     def setControlMappingOffset(self,objectName,offset):
-        if (self.controlMappings.has_key(objectName)):
+        if (objectName in self.controlMappings):
             self.controlOffsets[objectName] = offset
 
     def removeControlMapping(self,name, serverList = None):
-        if (self.controlMappings.has_key(name)):
+        if (name in self.controlMappings):
 
             if (serverList == None):
                 self.controlMappings.pop(name)
@@ -299,7 +299,7 @@ class ClusterClient(DirectObject.DirectObject):
 
     def selectNodePath(self, nodePath):
         name = self.getNodePathName(nodePath)
-        if self.taggedObjects.has_key(name):
+        if name in self.taggedObjects:
             taskMgr.remove("moveSelectedTask")
             tag = self.taggedObjects[name]
             function = tag["selectFunction"]
@@ -312,7 +312,7 @@ class ClusterClient(DirectObject.DirectObject):
 
     def deselectNodePath(self, nodePath):
         name = self.getNodePathName(nodePath)
-        if self.taggedObjects.has_key(name):
+        if name in self.taggedObjects:
             tag = self.taggedObjects[name]
             function = tag["deselectFunction"]
             args     = tag["deselectArgs"]        
@@ -323,7 +323,7 @@ class ClusterClient(DirectObject.DirectObject):
 
     def sendCamFrustum(self, focalLength, filmSize, filmOffset, indexList=[]):
         if indexList:
-            serverList = map(lambda i: self.serverList[i], indexList)
+            serverList = [self.serverList[i] for i in indexList]
         else:
             serverList = self.serverList
         for server in serverList:
@@ -381,7 +381,7 @@ class ClusterClient(DirectObject.DirectObject):
         #print "name"
         #if (name == "camNode"):
         #    print x,y,z,h,p,r, sx, sy, sz,red,g,b,a, hidden
-        if (self.objectMappings.has_key(name)):
+        if (name in self.objectMappings):
             self.objectMappings[name].setPosHpr(render, x, y, z, h, p, r)
             self.objectMappings[name].setScale(render,sx,sy,sz)
             if (self.objectHasColor[name]):
@@ -598,7 +598,7 @@ def createClusterClient():
     # setup camera offsets based on cluster-config
     clusterConfig = base.config.GetString('cluster-config', 'single-server')
     # No cluster config specified!
-    if not ClientConfigs.has_key(clusterConfig):
+    if clusterConfig not in ClientConfigs:
         base.notify.warning(
             'createClusterClient: %s cluster-config is undefined.' %
             clusterConfig)

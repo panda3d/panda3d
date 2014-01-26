@@ -32,7 +32,7 @@
 #include <fcntl.h>
 #include <sys/time.h>
 
-#ifdef HAVE_LINUX_INPUT_H
+#ifdef PHAVE_LINUX_INPUT_H
 #include <linux/input.h>
 #endif
 
@@ -1202,7 +1202,7 @@ setup_colormap(XVisualInfo *visual) {
 ////////////////////////////////////////////////////////////////////
 void x11GraphicsWindow::
 open_raw_mice() {
-#ifdef HAVE_LINUX_INPUT_H
+#ifdef PHAVE_LINUX_INPUT_H
   bool any_present = false;
   bool any_mice = false;
 
@@ -1282,11 +1282,10 @@ open_raw_mice() {
 //  Description: Reads events from the raw mouse device files.
 ////////////////////////////////////////////////////////////////////
 void x11GraphicsWindow::
-poll_raw_mice()
-{
-#ifdef HAVE_LINUX_INPUT_H
-  for (int dev=0; dev<_mouse_device_info.size(); dev++) {
-    MouseDeviceInfo &inf = _mouse_device_info[dev];
+poll_raw_mice() {
+#ifdef PHAVE_LINUX_INPUT_H
+  for (int di = 0; di < _mouse_device_info.size(); ++di) {
+    MouseDeviceInfo &inf = _mouse_device_info[di];
 
     // Read all bytes into buffer.
     if (inf._fd >= 0) {
@@ -1296,7 +1295,7 @@ poll_raw_mice()
         if (nread > 0) {
           inf._io_buffer += string(tbuf, nread);
         } else {
-          if ((nread < 0)&&((errno == EWOULDBLOCK) || (errno==EAGAIN))) {
+          if ((nread < 0) && ((errno == EWOULDBLOCK) || (errno==EAGAIN))) {
             break;
           }
           close(inf._fd);
@@ -1315,7 +1314,7 @@ poll_raw_mice()
     GraphicsWindowInputDevice &dev = _input_devices[inf._input_device_index];
     int x = dev.get_raw_pointer().get_x();
     int y = dev.get_raw_pointer().get_y();
-    for (int i=0; i<nevents; i++) {
+    for (int i = 0; i < nevents; i++) {
       if (events[i].type == EV_REL) {
         if (events[i].code == REL_X) x += events[i].value;
         if (events[i].code == REL_Y) y += events[i].value;
@@ -1323,9 +1322,9 @@ poll_raw_mice()
         if (events[i].code == ABS_X) x = events[i].value;
         if (events[i].code == ABS_Y) y = events[i].value;
       } else if (events[i].type == EV_KEY) {
-        if ((events[i].code >= BTN_MOUSE)&&(events[i].code < BTN_MOUSE+8)) {
+        if ((events[i].code >= BTN_MOUSE) && (events[i].code < BTN_MOUSE + 8)) {
           int btn = events[i].code - BTN_MOUSE;
-          dev.set_pointer_in_window(x,y);
+          dev.set_pointer_in_window(x, y);
           if (events[i].value) {
             dev.button_down(MouseButton::button(btn));
           } else {
@@ -1334,8 +1333,8 @@ poll_raw_mice()
         }
       }
     }
-    inf._io_buffer.erase(0,nevents*sizeof(struct input_event));
-    dev.set_pointer_in_window(x,y);
+    inf._io_buffer.erase(0, nevents * sizeof(struct input_event));
+    dev.set_pointer_in_window(x, y);
   }
 #endif
 }

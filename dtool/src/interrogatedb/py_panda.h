@@ -204,7 +204,7 @@ struct Dtool_PyTypedObject {
     {                                                                   \
       {                                                                 \
         PyVarObject_HEAD_INIT(NULL, 0)                                  \
-        "lib" #MODULE_NAME "." #PUBLIC_NAME, /*type name with module */ \
+        #MODULE_NAME "." #PUBLIC_NAME,       /*type name with module */ \
         sizeof(Dtool_PyInstDef),                /* tp_basicsize */      \
         0,                                      /* tp_itemsize */       \
         &Dtool_Deallocate_General,              /* tp_dealloc */        \
@@ -444,7 +444,11 @@ struct LibraryDef {
 };
 ///////////////////////////////////////////////////////////////////////////////
 
+#if PY_MAJOR_VERSION >= 3
+EXPCL_DTOOLCONFIG PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], PyModuleDef *module_def);
+#else
 EXPCL_DTOOLCONFIG PyObject *Dtool_PyModuleInitHelper(LibraryDef *defs[], const char *modulename);
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 ///  HACK.... Be carefull 

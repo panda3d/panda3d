@@ -365,31 +365,31 @@ class Particles(ParticleSystem):
                     typ = type(fun).__name__
                     if typ == 'ColorInterpolationFunctionConstant':
                         c_a = fun.getColorA()
-                        file.write(targ+'.renderer.getColorInterpolationManager().addConstant('+repr(t_b)+','+`t_e`+','+ \
-                                   'Vec4('+repr(c_a[0])+','+`c_a[1]`+','+`c_a[2]`+','+`c_a[3]`+'),'+`mod`+')\n')
+                        file.write(targ+'.renderer.getColorInterpolationManager().addConstant('+repr(t_b)+','+repr(t_e)+','+ \
+                                   'Vec4('+repr(c_a[0])+','+repr(c_a[1])+','+repr(c_a[2])+','+repr(c_a[3])+'),'+repr(mod)+')\n')
                     elif typ == 'ColorInterpolationFunctionLinear':
                         c_a = fun.getColorA()
                         c_b = fun.getColorB()
-                        file.write(targ+'.renderer.getColorInterpolationManager().addLinear('+repr(t_b)+','+`t_e`+','+ \
-                                   'Vec4('+repr(c_a[0])+','+`c_a[1]`+','+`c_a[2]`+','+`c_a[3]`+'),' + \
-                                   'Vec4('+repr(c_b[0])+','+`c_b[1]`+','+`c_b[2]`+','+`c_b[3]`+'),'+`mod`+')\n')
+                        file.write(targ+'.renderer.getColorInterpolationManager().addLinear('+repr(t_b)+','+repr(t_e)+','+ \
+                                   'Vec4('+repr(c_a[0])+','+repr(c_a[1])+','+repr(c_a[2])+','+repr(c_a[3])+'),' + \
+                                   'Vec4('+repr(c_b[0])+','+repr(c_b[1])+','+repr(c_b[2])+','+repr(c_b[3])+'),'+repr(mod)+')\n')
                     elif typ == 'ColorInterpolationFunctionStepwave':
                         c_a = fun.getColorA()
                         c_b = fun.getColorB()
                         w_a = fun.getWidthA()
                         w_b = fun.getWidthB()
-                        file.write(targ+'.renderer.getColorInterpolationManager().addStepwave('+repr(t_b)+','+`t_e`+','+ \
-                                   'Vec4('+repr(c_a[0])+','+`c_a[1]`+','+`c_a[2]`+','+`c_a[3]`+'),' + \
-                                   'Vec4('+repr(c_b[0])+','+`c_b[1]`+','+`c_b[2]`+','+`c_b[3]`+'),' + \
-                                   repr(w_a)+','+`w_b`+','+`mod`+')\n')
+                        file.write(targ+'.renderer.getColorInterpolationManager().addStepwave('+repr(t_b)+','+repr(t_e)+','+ \
+                                   'Vec4('+repr(c_a[0])+','+repr(c_a[1])+','+repr(c_a[2])+','+repr(c_a[3])+'),' + \
+                                   'Vec4('+repr(c_b[0])+','+repr(c_b[1])+','+repr(c_b[2])+','+repr(c_b[3])+'),' + \
+                                   repr(w_a)+','+repr(w_b)+','+repr(mod)+')\n')
                     elif typ == 'ColorInterpolationFunctionSinusoid':
                         c_a = fun.getColorA()
                         c_b = fun.getColorB()
                         per = fun.getPeriod()
-                        file.write(targ+'.renderer.getColorInterpolationManager().addSinusoid('+repr(t_b)+','+`t_e`+','+ \
-                                   'Vec4('+repr(c_a[0])+','+`c_a[1]`+','+`c_a[2]`+','+`c_a[3]`+'),' + \
-                                   'Vec4('+repr(c_b[0])+','+`c_b[1]`+','+`c_b[2]`+','+`c_b[3]`+'),' + \
-                                   repr(per)+','+`mod`+')\n')
+                        file.write(targ+'.renderer.getColorInterpolationManager().addSinusoid('+repr(t_b)+','+repr(t_e)+','+ \
+                                   'Vec4('+repr(c_a[0])+','+repr(c_a[1])+','+repr(c_a[2])+','+repr(c_a[3])+'),' + \
+                                   'Vec4('+repr(c_b[0])+','+repr(c_b[1])+','+repr(c_b[2])+','+repr(c_b[3])+'),' + \
+                                   repr(per)+','+repr(mod)+')\n')
 
         elif (self.rendererType == "SparkleParticleRenderer"):
             file.write('# Sparkle parameters\n')
@@ -468,31 +468,31 @@ class Particles(ParticleSystem):
                     typ = type(fun).__name__
                     if typ == 'ColorInterpolationFunctionConstant':
                         c_a = fun.getColorA()
-                        file.write(targ+'.renderer.getColorInterpolationManager().addConstant('+repr(t_b)+','+`t_e`+','+ \
-                                   'Vec4('+repr(c_a[0])+','+`c_a[1]`+','+`c_a[2]`+','+`c_a[3]`+'),'+`mod`+')\n')
+                        file.write(targ+'.renderer.getColorInterpolationManager().addConstant('+repr(t_b)+','+repr(t_e)+','+ \
+                                   'Vec4('+repr(c_a[0])+','+repr(c_a[1])+','+repr(c_a[2])+','+repr(c_a[3])+'),'+repr(mod)+')\n')
                     elif typ == 'ColorInterpolationFunctionLinear':
                         c_a = fun.getColorA()
                         c_b = fun.getColorB()
-                        file.write(targ+'.renderer.getColorInterpolationManager().addLinear('+repr(t_b)+','+`t_e`+','+ \
-                                   'Vec4('+repr(c_a[0])+','+`c_a[1]`+','+`c_a[2]`+','+`c_a[3]`+'),' + \
-                                   'Vec4('+repr(c_b[0])+','+`c_b[1]`+','+`c_b[2]`+','+`c_b[3]`+'),'+`mod`+')\n')
+                        file.write(targ+'.renderer.getColorInterpolationManager().addLinear('+repr(t_b)+','+repr(t_e)+','+ \
+                                   'Vec4('+repr(c_a[0])+','+repr(c_a[1])+','+repr(c_a[2])+','+repr(c_a[3])+'),' + \
+                                   'Vec4('+repr(c_b[0])+','+repr(c_b[1])+','+repr(c_b[2])+','+repr(c_b[3])+'),'+repr(mod)+')\n')
                     elif typ == 'ColorInterpolationFunctionStepwave':
                         c_a = fun.getColorA()
                         c_b = fun.getColorB()
                         w_a = fun.getWidthA()
                         w_b = fun.getWidthB()
-                        file.write(targ+'.renderer.getColorInterpolationManager().addStepwave('+repr(t_b)+','+`t_e`+','+ \
-                                   'Vec4('+repr(c_a[0])+','+`c_a[1]`+','+`c_a[2]`+','+`c_a[3]`+'),' + \
-                                   'Vec4('+repr(c_b[0])+','+`c_b[1]`+','+`c_b[2]`+','+`c_b[3]`+'),' + \
-                                   repr(w_a)+','+`w_b`+','+`mod`+')\n')
+                        file.write(targ+'.renderer.getColorInterpolationManager().addStepwave('+repr(t_b)+','+repr(t_e)+','+ \
+                                   'Vec4('+repr(c_a[0])+','+repr(c_a[1])+','+repr(c_a[2])+','+repr(c_a[3])+'),' + \
+                                   'Vec4('+repr(c_b[0])+','+repr(c_b[1])+','+repr(c_b[2])+','+repr(c_b[3])+'),' + \
+                                   repr(w_a)+','+repr(w_b)+','+repr(mod)+')\n')
                     elif typ == 'ColorInterpolationFunctionSinusoid':
                         c_a = fun.getColorA()
                         c_b = fun.getColorB()
                         per = fun.getPeriod()
-                        file.write(targ+'.renderer.getColorInterpolationManager().addSinusoid('+repr(t_b)+','+`t_e`+','+ \
-                                   'Vec4('+repr(c_a[0])+','+`c_a[1]`+','+`c_a[2]`+','+`c_a[3]`+'),' + \
-                                   'Vec4('+repr(c_b[0])+','+`c_b[1]`+','+`c_b[2]`+','+`c_b[3]`+'),' + \
-                                   repr(per)+','+`mod`+')\n')
+                        file.write(targ+'.renderer.getColorInterpolationManager().addSinusoid('+repr(t_b)+','+repr(t_e)+','+ \
+                                   'Vec4('+repr(c_a[0])+','+repr(c_a[1])+','+repr(c_a[2])+','+repr(c_a[3])+'),' + \
+                                   'Vec4('+repr(c_b[0])+','+repr(c_b[1])+','+repr(c_b[2])+','+repr(c_b[3])+'),' + \
+                                   repr(per)+','+repr(mod)+')\n')
 
         file.write('# Emitter parameters\n')
         emissionType = self.emitter.getEmissionType()

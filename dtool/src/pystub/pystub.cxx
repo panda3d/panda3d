@@ -20,6 +20,10 @@ extern "C" {
   EXPCL_PYSTUB int PyArg_ParseTupleAndKeywords(...);
   EXPCL_PYSTUB int PyBool_FromLong(...);
   EXPCL_PYSTUB int PyBuffer_Release(...);
+  EXPCL_PYSTUB int PyBytes_AsString(...);
+  EXPCL_PYSTUB int PyBytes_AsStringAndSize(...);
+  EXPCL_PYSTUB int PyBytes_FromStringAndSize(...);
+  EXPCL_PYSTUB int PyBytes_Size(...);
   EXPCL_PYSTUB int PyCFunction_New(...);
   EXPCL_PYSTUB int PyCFunction_NewEx(...);
   EXPCL_PYSTUB int PyCallable_Check(...);
@@ -79,8 +83,10 @@ extern "C" {
   EXPCL_PYSTUB int PyModule_AddIntConstant(...);
   EXPCL_PYSTUB int PyModule_AddObject(...);
   EXPCL_PYSTUB int PyModule_AddStringConstant(...);
+  EXPCL_PYSTUB int PyModule_Create2(...);
   EXPCL_PYSTUB int PyNumber_Float(...);
   EXPCL_PYSTUB int PyNumber_Long(...);
+  EXPCL_PYSTUB int PyObject_ASCII(...);
   EXPCL_PYSTUB int PyObject_Call(...);
   EXPCL_PYSTUB int PyObject_CallFunction(...);
   EXPCL_PYSTUB int PyObject_CallMethod(...);
@@ -134,6 +140,13 @@ extern "C" {
   EXPCL_PYSTUB int PyUnicodeUCS4_FromWideChar(...);
   EXPCL_PYSTUB int PyUnicodeUCS4_AsWideChar(...);
   EXPCL_PYSTUB int PyUnicodeUCS4_GetSize(...);
+  EXPCL_PYSTUB int PyUnicode_AsUTF8(...);
+  EXPCL_PYSTUB int PyUnicode_AsUTF8AndSize(...);
+  EXPCL_PYSTUB int PyUnicode_AsWideChar(...);
+  EXPCL_PYSTUB int PyUnicode_FromString(...);
+  EXPCL_PYSTUB int PyUnicode_FromStringAndSize(...);
+  EXPCL_PYSTUB int PyUnicode_FromWideChar(...);
+  EXPCL_PYSTUB int PyUnicode_GetSize(...);
   EXPCL_PYSTUB int PyUnicode_Type(...);
   EXPCL_PYSTUB int Py_BuildValue(...);
   EXPCL_PYSTUB int Py_InitModule4(...);
@@ -145,11 +158,13 @@ extern "C" {
   EXPCL_PYSTUB int _Py_NegativeRefcount(...);
   EXPCL_PYSTUB int _Py_RefTotal(...);
 
+  EXPCL_PYSTUB void Py_Initialize();
   EXPCL_PYSTUB int Py_IsInitialized();
 
   EXPCL_PYSTUB extern void *PyExc_AssertionError;
   EXPCL_PYSTUB extern void *PyExc_AttributeError;
   EXPCL_PYSTUB extern void *PyExc_BufferError;
+  EXPCL_PYSTUB extern void *PyExc_ConnectionError;
   EXPCL_PYSTUB extern void *PyExc_Exception;
   EXPCL_PYSTUB extern void *PyExc_FutureWarning;
   EXPCL_PYSTUB extern void *PyExc_IndexError;
@@ -169,6 +184,10 @@ int PyArg_ParseTuple(...) { return 0; }
 int PyArg_ParseTupleAndKeywords(...) { return 0; }
 int PyBool_FromLong(...) { return 0; }
 int PyBuffer_Release(...) { return 0; }
+int PyBytes_AsString(...) { return 0; }
+int PyBytes_AsStringAndSize(...) { return 0; }
+int PyBytes_FromStringAndSize(...) { return 0; }
+int PyBytes_Size(...) { return 0; }
 int PyCFunction_New(...) { return 0; };
 int PyCFunction_NewEx(...) { return 0; };
 int PyCallable_Check(...) { return 0; }
@@ -228,8 +247,10 @@ int PyMemoryView_FromObject(...) { return 0; }
 int PyModule_AddIntConstant(...) { return 0; };
 int PyModule_AddObject(...) { return 0; };
 int PyModule_AddStringConstant(...) { return 0; };
+int PyModule_Create2(...) { return 0; };
 int PyNumber_Float(...) { return 0; }
 int PyNumber_Long(...) { return 0; }
+int PyObject_ASCII(...) { return 0; }
 int PyObject_Call(...) { return 0; }
 int PyObject_CallFunction(...) { return 0; }
 int PyObject_CallMethod(...) { return 0; }
@@ -283,6 +304,13 @@ int PyUnicodeUCS4_FromStringAndSize(...) { return 0; }
 int PyUnicodeUCS4_FromWideChar(...) { return 0; }
 int PyUnicodeUCS4_AsWideChar(...) { return 0; }
 int PyUnicodeUCS4_GetSize(...) { return 0; }
+int PyUnicode_AsUTF8(...) { return 0; }
+int PyUnicode_AsUTF8AndSize(...) { return 0; }
+int PyUnicode_AsWideChar(...) { return 0; }
+int PyUnicode_FromString(...) { return 0; }
+int PyUnicode_FromStringAndSize(...) { return 0; }
+int PyUnicode_FromWideChar(...) { return 0; }
+int PyUnicode_GetSize(...) { return 0; }
 int PyUnicode_Type(...) { return 0; }
 int Py_BuildValue(...) { return 0; }
 int Py_InitModule4(...) { return 0; }
@@ -295,6 +323,8 @@ int _Py_NegativeRefcount(...) { return 0; };
 int _Py_RefTotal(...) { return 0; };
 
 // We actually might call this one.
+void Py_Initialize() {
+}
 int Py_IsInitialized() {
   return 0;
 }
@@ -303,6 +333,7 @@ int Py_IsInitialized() {
 void *PyExc_AssertionError = (void *)NULL;
 void *PyExc_AttributeError = (void *)NULL;
 void *PyExc_BufferError = (void *)NULL;
+void *PyExc_ConnectionError = (void *)NULL;
 void *PyExc_Exception = (void *)NULL;
 void *PyExc_FutureWarning = (void *)NULL;
 void *PyExc_IndexError = (void *)NULL;
@@ -319,4 +350,3 @@ void *_Py_NotImplementedStruct = (void *)NULL;
 void
 pystub() {
 }
-

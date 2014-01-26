@@ -22,6 +22,7 @@
 ;   PANDACONF     - name of panda config directory - usually $PANDA\etc 
 ;   PSOURCE       - location of the panda source-tree if available, OR location of panda install tree.
 ;   PYEXTRAS      - directory containing python extras, if any.
+;   REGVIEW       - either 32 or 64, depending on the build architecture.
 ;
 ;   PPGAME      - directory containing prepagaged game, if any        (ie, "C:\My Games\Airblade")
 ;   PPMAIN      - python program containing prepackaged game, if any  (ie, "Airblade.py")
@@ -240,6 +241,10 @@ SectionEnd
 
 Section -post
 
+        !ifdef REGVIEW
+        SetRegView ${REGVIEW}
+        !endif
+
         !ifndef PPGAME
 
         # Add the "bin" directory to the PATH.
@@ -281,6 +286,10 @@ Section -post
 SectionEnd
 
 Section Uninstall
+
+        !ifdef REGVIEW
+        SetRegView ${REGVIEW}
+        !endif
 
         !ifndef PPGAME
         Push "$INSTDIR\python"

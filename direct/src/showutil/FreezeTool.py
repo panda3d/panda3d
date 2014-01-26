@@ -657,7 +657,7 @@ class Freezer:
         __path__. """
 
         str = 'import %s' % (moduleName)
-        exec str
+        exec(str)
 
         module = sys.modules[moduleName]
         for path in module.__path__:

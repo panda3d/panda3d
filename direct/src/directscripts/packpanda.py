@@ -165,7 +165,7 @@ if (sys.platform == "win32"):
 
 def limitedCopyTree(src, dst, rmdir):
     if (os.path.isdir(src)):
-        if (rmdir.has_key(os.path.basename(src))):
+        if (os.path.basename(src) in rmdir):
             return
         if (not os.path.isdir(dst)): os.mkdir(dst)
         for x in os.listdir(src):

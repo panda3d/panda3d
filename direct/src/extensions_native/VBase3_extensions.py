@@ -2,11 +2,6 @@
 Methods to extend functionality of the VBase3 class
 """
 
-from extension_native_helpers import *
-Dtool_PreloadDLL("libpanda")
-from libpanda import *
-
-
 def pPrintValues(self):
     """
     Pretty print

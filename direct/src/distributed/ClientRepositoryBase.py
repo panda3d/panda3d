@@ -221,7 +221,7 @@ class ClientRepositoryBase(ConnectionRepository):
         return Task.done
 
     def generateWithRequiredFields(self, dclass, doId, di, parentId, zoneId):
-        if self.doId2do.has_key(doId):
+        if doId in self.doId2do:
             # ...it is in our dictionary.
             # Just update it.
             distObj = self.doId2do[doId]
@@ -269,7 +269,7 @@ class ClientRepositoryBase(ConnectionRepository):
 
     def generateWithRequiredOtherFields(self, dclass, doId, di,
                                         parentId = None, zoneId = None):
-        if self.doId2do.has_key(doId):
+        if doId in self.doId2do:
             # ...it is in our dictionary.
             # Just update it.
             distObj = self.doId2do[doId]
@@ -315,7 +315,7 @@ class ClientRepositoryBase(ConnectionRepository):
         return distObj
 
     def generateWithRequiredOtherFieldsOwner(self, dclass, doId, di):
-        if self.doId2ownerView.has_key(doId):
+        if doId in self.doId2ownerView:
             # ...it is in our dictionary.
             # Just update it.
             self.notify.error('duplicate owner generate for %s (%s)' % (
@@ -359,7 +359,7 @@ class ClientRepositoryBase(ConnectionRepository):
     def disableDoId(self, doId, ownerView=False):
         table, cache = self.getTables(ownerView)
         # Make sure the object exists
-        if table.has_key(doId):
+        if doId in table:
             # Look up the object
             distObj = table[doId]
             # remove the object from the dictionary
@@ -378,7 +378,7 @@ class ClientRepositoryBase(ConnectionRepository):
                     # make sure we're not leaking
                     distObj.detectLeaks()
 
-        elif self.deferredDoIds.has_key(doId):
+        elif doId in self.deferredDoIds:
             # The object had been deferred.  Great; we don't even have
             # to generate it now.
             del self.deferredDoIds[doId]

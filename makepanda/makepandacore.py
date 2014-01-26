@@ -9,7 +9,7 @@
 ##
 ########################################################################
 
-import sys,os,time,stat,string,re,getopt,fnmatch,threading,signal,shutil,platform,glob,getpass,signal
+import sys,os,time,stat,string,re,getopt,fnmatch,threading,signal,shutil,platform,glob,getpass,signal,thread
 from distutils import sysconfig
 
 if sys.version_info >= (3, 0):
@@ -159,22 +159,30 @@ def DisableColors():
     HAVE_COLORS = False
 
 def GetColor(color = None):
-    if not HAVE_COLORS: return ""
-    if color != None: color = color.lower()
+    if not HAVE_COLORS:
+        return ""
+    if color != None:
+        color = color.lower()
+
     if (color == "blue"):
-      return curses.tparm(SETF, 1)
+        token = curses.tparm(SETF, 1)
     elif (color == "green"):
-      return curses.tparm(SETF, 2)
+        token = curses.tparm(SETF, 2)
     elif (color == "cyan"):
-      return curses.tparm(SETF, 3)
+        token = curses.tparm(SETF, 3)
     elif (color == "red"):
-      return curses.tparm(SETF, 4)
+        token = curses.tparm(SETF, 4)
     elif (color == "magenta"):
-      return curses.tparm(SETF, 5)
+        token = curses.tparm(SETF, 5)
     elif (color == "yellow"):
-      return curses.tparm(SETF, 6)
+        token = curses.tparm(SETF, 6)
     else:
-      return curses.tparm(curses.tigetstr("sgr0"))
+        token = curses.tparm(curses.tigetstr("sgr0"))
+
+    if sys.version_info >= (3, 0):
+        return token.decode('ascii')
+    else:
+        return token
 
 def ColorText(color, text, reset=True):
     if reset is True:
@@ -197,7 +205,8 @@ def PrettyTime(t):
 
 def ProgressOutput(progress, msg, target = None):
     prefix = ""
-    if (threading.currentThread() is MAINTHREAD):
+    thisthread = threading.currentThread()
+    if thisthread is MAINTHREAD:
         if progress is None:
             prefix = ""
         elif (progress >= 100.0):
@@ -208,7 +217,8 @@ def ProgressOutput(progress, msg, target = None):
             prefix = "%s[%s %d%%%s] " % (GetColor("yellow"), GetColor("cyan"), progress, GetColor("yellow"))
     else:
         global THREADS
-        ident = threading.currentThread().ident
+        
+        ident = thread.get_ident()
         if (ident not in THREADS):
             THREADS[ident] = len(THREADS) + 1
         prefix = "%s[%sT%d%s] " % (GetColor("yellow"), GetColor("cyan"), THREADS[ident], GetColor("yellow"))
@@ -619,32 +629,35 @@ def ClearTimestamp(path):
 
 BUILTFROMCACHE = {}
 
-def JustBuilt(files,others):
-    dates = []
+def JustBuilt(files, others):
+    dates = {}
     for file in files:
         del TIMESTAMPCACHE[file]
-        dates.append(GetTimestamp(file))
+        dates[file] = GetTimestamp(file)
     for file in others:
-        dates.append(GetTimestamp(file))
-    key = tuple(files)
-    BUILTFROMCACHE[key] = [others,dates]
+        dates[file] = GetTimestamp(file)
 
-def NeedsBuild(files,others):
-    dates = []
-    for file in files:
-        dates.append(GetTimestamp(file))
-        if (not os.path.exists(file)): return 1
-    for file in others:
-        dates.append(GetTimestamp(file))
     key = tuple(files)
-    if (key in BUILTFROMCACHE):
-        if (BUILTFROMCACHE[key] == [others,dates]):
-            return 0
-        else:
-            oldothers = BUILTFROMCACHE[key][0]
-            if (oldothers != others and VERBOSE):
-                print("%sWARNING:%s file dependencies changed: %s%s%s" % (GetColor("red"), GetColor(), GetColor("green"), files, GetColor()))
-    return 1
+    BUILTFROMCACHE[key] = dates
+
+def NeedsBuild(files, others):
+    dates = {}
+    for file in files:
+        dates[file] = GetTimestamp(file)
+        if not os.path.exists(file):
+            return True
+    for file in others:
+        dates[file] = GetTimestamp(file)
+
+    key = tuple(files)
+    if key in BUILTFROMCACHE:
+        cached = BUILTFROMCACHE[key]
+        if cached == dates:
+            return False
+        if VERBOSE and frozenset(cached) != frozenset(dates):
+            print("%sWARNING:%s file dependencies changed: %s%s%s" % (GetColor("red"), GetColor(), GetColor("green"), files, GetColor()))
+
+    return True
 
 ########################################################################
 ##
@@ -698,6 +711,7 @@ def CxxGetIncludes(path):
 ##
 ########################################################################
 
+DCACHE_VERSION = 2
 DCACHE_BACKED_UP = False
 
 def SaveDependencyCache():
@@ -709,23 +723,36 @@ def SaveDependencyCache():
                           os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache-backup"))
         except: pass
         DCACHE_BACKED_UP = True
-    try: icache = open(os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache"),'wb')
-    except: icache = 0
-    if (icache!=0):
+
+    try:
+        icache = open(os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache"),'wb')
+    except:
+        icache = None
+
+    if icache is not None:
         print("Storing dependency cache.")
-        pickle.dump(CXXINCLUDECACHE, icache, 1)
-        pickle.dump(BUILTFROMCACHE, icache, 1)
+        pickle.dump(DCACHE_VERSION, icache, 0)
+        pickle.dump(CXXINCLUDECACHE, icache, 2)
+        pickle.dump(BUILTFROMCACHE, icache, 2)
         icache.close()
 
 def LoadDependencyCache():
     global CXXINCLUDECACHE
     global BUILTFROMCACHE
-    try: icache = open(os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache"),'rb')
-    except: icache = 0
-    if (icache!=0):
-        CXXINCLUDECACHE = pickle.load(icache)
-        BUILTFROMCACHE = pickle.load(icache)
-        icache.close()
+
+    try:
+        icache = open(os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache"), 'rb')
+    except:
+        icache = None
+
+    if icache is not None:
+        ver = pickle.load(icache)
+        if ver == DCACHE_VERSION:
+            CXXINCLUDECACHE = pickle.load(icache)
+            BUILTFROMCACHE = pickle.load(icache)
+            icache.close()
+        else:
+            print("Cannot load dependency cache, version is too old!")
 
 ########################################################################
 ##
@@ -963,8 +990,10 @@ def ConditionalWriteFile(dest, desiredcontents):
         contents = rfile.read(-1)
         rfile.close()
     except:
-        contents=0
+        contents = 0
     if contents != desiredcontents:
+        if VERBOSE:
+            print("Writing %s" % (dest))
         sys.stdout.flush()
         WriteFile(dest, desiredcontents)
 
@@ -1736,7 +1765,7 @@ def SdkLocateDirectX( strMode = 'default' ):
         SDK["DIRECTCAM"] = SDK["DX9"]
 
 def SdkLocateMaya():
-    for (ver,key) in MAYAVERSIONINFO:
+    for (ver, key) in MAYAVERSIONINFO:
         if (PkgSkip(ver)==0 and ver not in SDK):
             GetSdkDir(ver.lower().replace("x",""), ver)
             if (not ver in SDK):
@@ -1751,7 +1780,7 @@ def SdkLocateMaya():
                     ddir = "/Applications/Autodesk/maya"+key
                     if (os.path.isdir(ddir)): SDK[ver] = ddir
                 else:
-                    if (GetTargetArch() == 'x64'):
+                    if (GetTargetArch() in ("x86_64", "amd64")):
                         ddir1 = "/usr/autodesk/maya"+key+"-x64"
                         ddir2 = "/usr/aw/maya"+key+"-x64"
                     else:
@@ -2181,10 +2210,10 @@ def SetupBuildEnvironment(compiler):
 
         cmd = GetCXX() + " -print-search-dirs"
 
-        if "MACOSX" in SDK:
+        if SDK.get("MACOSX"):
             # The default compiler in Leopard does not respect --sysroot correctly.
             cmd += " -isysroot " + SDK["MACOSX"]
-        if "SYSROOT" in SDK:
+        if SDK.get("SYSROOT"):
             cmd += ' --sysroot=%s -no-canonical-prefixes' % (SDK["SYSROOT"])
 
         # Extract the dirs from the line that starts with 'libraries: ='.
@@ -2330,6 +2359,47 @@ def CopyTree(dstdir, srcdir, omitCVS=True):
         else:
             cmd = 'cp -R -f ' + srcdir + ' ' + dstdir
         oscmd(cmd)
+        if omitCVS:
+            DeleteCVS(dstdir)
+
+def CopyPythonTree(dstdir, srcdir, lib2to3_fixers=[]):
+    if (not os.path.isdir(dstdir)):
+        os.mkdir(dstdir)
+
+    lib2to3 = None
+    if len(lib2to3_fixers) > 0 and sys.version_info >= (3, 0):
+        from lib2to3.main import main as lib2to3
+        lib2to3_args = ['-w', '-n', '--no-diffs', '-x', 'buffer', '-x', 'idioms', '-x', 'set_literal', '-x', 'ws_comma']
+        if lib2to3_fixers != ['all']:
+            for fixer in lib2to3_fixers:
+                lib2to3_args += ['-f', fixer]
+
+    refactor = []
+    for entry in os.listdir(srcdir):
+        srcpth = os.path.join(srcdir, entry)
+        dstpth = os.path.join(dstdir, entry)
+        if (os.path.isfile(srcpth)):
+            base, ext = os.path.splitext(entry)
+            if (entry != ".cvsignore" and ext not in SUFFIX_INC):
+                if (NeedsBuild([dstpth], [srcpth])):
+                    WriteBinaryFile(dstpth, ReadBinaryFile(srcpth))
+
+                    if ext == '.py' and not entry.endswith('-extensions.py'):
+                        refactor.append((dstpth, srcpth))
+                    else:
+                        JustBuilt([dstpth], [srcpth])
+
+        elif (entry != "CVS"):
+            CopyPythonTree(dstpth, srcpth, lib2to3_fixers)
+
+    for dstpth, srcpth in refactor:
+        if lib2to3 is not None:
+            ret = lib2to3("lib2to3.fixes", lib2to3_args + [dstpth])
+            if ret != 0:
+                os.remove(dstpth)
+                exit("Error in lib2to3.")
+        JustBuilt([dstpth], [srcpth])
+
 
 ########################################################################
 ##
@@ -2339,7 +2409,7 @@ def CopyTree(dstdir, srcdir, omitCVS=True):
 
 def ParsePandaVersion(fn):
     try:
-        f = file(fn, "r")
+        f = open(fn, "r")
         pattern = re.compile('^[ \t]*[#][ \t]*define[ \t]+PANDA_VERSION[ \t]+([0-9]+)[ \t]+([0-9]+)[ \t]+([0-9]+)')
         for line in f:
             match = pattern.match(line,0)
@@ -2352,7 +2422,7 @@ def ParsePandaVersion(fn):
 
 def ParsePluginVersion(fn):
     try:
-        f = file(fn, "r")
+        f = open(fn, "r")
         pattern = re.compile('^[ \t]*[#][ \t]*define[ \t]+P3D_PLUGIN_VERSION[ \t]+([0-9]+)[ \t]+([0-9]+)[ \t]+([0-9]+)')
         for line in f:
             match = pattern.match(line,0)
@@ -2365,7 +2435,7 @@ def ParsePluginVersion(fn):
 
 def ParseCoreapiVersion(fn):
     try:
-        f = file(fn, "r")
+        f = open(fn, "r")
         pattern = re.compile('^[ \t]*[#][ \t]*define[ \t]+P3D_COREAPI_VERSION.*([0-9]+)[ \t]*$')
         for line in f:
             match = pattern.match(line,0)
@@ -2536,9 +2606,9 @@ def CalcLocation(fn, ipath):
 
 def FindLocation(fn, ipath):
     if (GetLinkAllStatic() and fn.endswith(".dll")):
-        fn = fn[:-4]+".lib"
+        fn = fn[:-4] + ".lib"
     loc = CalcLocation(fn, ipath)
-    (base,ext) = os.path.splitext(fn)
+    base, ext = os.path.splitext(fn)
     ORIG_EXT[loc] = ext
     return loc
 
@@ -2589,8 +2659,8 @@ def FindLocation(fn, ipath):
 class Target:
     pass
 
-TARGET_LIST=[]
-TARGET_TABLE={}
+TARGET_LIST = []
+TARGET_TABLE = {}
 
 def TargetAdd(target, dummy=0, opts=0, input=0, dep=0, ipath=0, winrc=0):
     if (dummy != 0):
@@ -2599,7 +2669,7 @@ def TargetAdd(target, dummy=0, opts=0, input=0, dep=0, ipath=0, winrc=0):
     if (ipath == 0): ipath = []
     if (type(input) == str): input = [input]
     if (type(dep) == str): dep = [dep]
-    full = FindLocation(target,[OUTPUTDIR+"/include"])
+    full = FindLocation(target, [OUTPUTDIR + "/include"])
 
     if (full not in TARGET_TABLE):
         t = Target()
@@ -2634,6 +2704,7 @@ def TargetAdd(target, dummy=0, opts=0, input=0, dep=0, ipath=0, winrc=0):
         for x in dep:
             fulldep = FindLocation(x, ipath)
             t.deps[fulldep] = 1
+
     if winrc != 0 and GetTarget() == 'windows':
         TargetAdd(target, input=WriteResourceFile(target.split("/")[-1].split(".")[0], **winrc))
 

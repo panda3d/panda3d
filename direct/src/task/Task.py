@@ -560,10 +560,9 @@ class TaskManager:
         else:
             function = method
         if (function == oldMethod):
-            import new
-            newMethod = new.instancemethod(newFunction,
-                                           method.im_self,
-                                           method.im_class)
+            newMethod = types.MethodType(newFunction,
+                                         method.im_self,
+                                         method.im_class)
             task.setFunction(newMethod)
             # Found a match
             return 1

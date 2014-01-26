@@ -24,7 +24,7 @@ def inspect(anObject):
 
 def inspectorFor(anObject):
     typeName = string.capitalize(type(anObject).__name__) + 'Type'
-    if _InspectorMap.has_key(typeName):
+    if typeName in _InspectorMap:
         inspectorName = _InspectorMap[typeName]
     else:
         print "Can't find an inspector for " + typeName
@@ -92,7 +92,7 @@ class Inspector:
             #    self._partsList.append(each)  
 
     def initializePartNames(self):
-        self._partNames = ['up'] + map(lambda each: str(each), self._partsList)
+        self._partNames = ['up'] + [str(each) for each in self._partsList]
 
     def title(self):
         "Subclasses may override."
@@ -195,7 +195,7 @@ class DictionaryInspector(Inspector):
         if partNumber == 0:
             return self.object
         key = self.privatePartNumber(partNumber)
-        if self.object.has_key(key):
+        if key in self.object:
             return self.object[key]
         else:
             return getattr(self.object, key)

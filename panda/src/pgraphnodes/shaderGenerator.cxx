@@ -97,6 +97,14 @@ alloc_vreg() {
   case  5: _vtregs_used += 1; return (char*)"TEXCOORD5";
   case  6: _vtregs_used += 1; return (char*)"TEXCOORD6";
   case  7: _vtregs_used += 1; return (char*)"TEXCOORD7";
+  }
+  switch (_vcregs_used) {
+  case  0: _vcregs_used += 1; return (char*)"COLOR0";
+  case  1: _vcregs_used += 1; return (char*)"COLOR1";
+  }
+  // These don't exist in arbvp1, though they're reportedly
+  // supported by other profiles.
+  switch (_vtregs_used) {
   case  8: _vtregs_used += 1; return (char*)"TEXCOORD8";
   case  9: _vtregs_used += 1; return (char*)"TEXCOORD9";
   case 10: _vtregs_used += 1; return (char*)"TEXCOORD10";
@@ -105,24 +113,6 @@ alloc_vreg() {
   case 13: _vtregs_used += 1; return (char*)"TEXCOORD13";
   case 14: _vtregs_used += 1; return (char*)"TEXCOORD14";
   case 15: _vtregs_used += 1; return (char*)"TEXCOORD15";
-  }
-  switch (_vcregs_used) {
-  case  0: _vcregs_used += 1; return (char*)"COLOR0";
-  case  1: _vcregs_used += 1; return (char*)"COLOR1";
-  case  2: _vcregs_used += 1; return (char*)"COLOR2";
-  case  3: _vcregs_used += 1; return (char*)"COLOR3";
-  case  4: _vcregs_used += 1; return (char*)"COLOR4";
-  case  5: _vcregs_used += 1; return (char*)"COLOR5";
-  case  6: _vcregs_used += 1; return (char*)"COLOR6";
-  case  7: _vcregs_used += 1; return (char*)"COLOR7";
-  case  8: _vcregs_used += 1; return (char*)"COLOR8";
-  case  9: _vcregs_used += 1; return (char*)"COLOR9";
-  case 10: _vcregs_used += 1; return (char*)"COLOR10";
-  case 11: _vcregs_used += 1; return (char*)"COLOR11";
-  case 12: _vcregs_used += 1; return (char*)"COLOR12";
-  case 13: _vcregs_used += 1; return (char*)"COLOR13";
-  case 14: _vcregs_used += 1; return (char*)"COLOR14";
-  case 15: _vcregs_used += 1; return (char*)"COLOR15";
   }
   return (char*)"UNKNOWN";
 }
@@ -143,6 +133,16 @@ alloc_freg() {
   case  5: _ftregs_used += 1; return (char*)"TEXCOORD5";
   case  6: _ftregs_used += 1; return (char*)"TEXCOORD6";
   case  7: _ftregs_used += 1; return (char*)"TEXCOORD7";
+  }
+  // We really shouldn't rely on COLOR fregs,
+  // since the clamping can have unexpected side-effects.
+  //switch (_fcregs_used) {
+  //case  0: _fcregs_used += 1; return (char*)"COLOR0";
+  //case  1: _fcregs_used += 1; return (char*)"COLOR1";
+  //}
+  // These don't exist in arbvp1/arbfp1, though they're
+  // reportedly supported by other profiles.
+  switch (_ftregs_used) {
   case  8: _ftregs_used += 1; return (char*)"TEXCOORD8";
   case  9: _ftregs_used += 1; return (char*)"TEXCOORD9";
   case 10: _ftregs_used += 1; return (char*)"TEXCOORD10";
@@ -151,24 +151,6 @@ alloc_freg() {
   case 13: _ftregs_used += 1; return (char*)"TEXCOORD13";
   case 14: _ftregs_used += 1; return (char*)"TEXCOORD14";
   case 15: _ftregs_used += 1; return (char*)"TEXCOORD15";
-  }
-  switch (_fcregs_used) {
-  case  0: _fcregs_used += 1; return (char*)"COLOR0";
-  case  1: _fcregs_used += 1; return (char*)"COLOR1";
-  case  2: _fcregs_used += 1; return (char*)"COLOR2";
-  case  3: _fcregs_used += 1; return (char*)"COLOR3";
-  case  4: _fcregs_used += 1; return (char*)"COLOR4";
-  case  5: _fcregs_used += 1; return (char*)"COLOR5";
-  case  6: _fcregs_used += 1; return (char*)"COLOR6";
-  case  7: _fcregs_used += 1; return (char*)"COLOR7";
-  case  8: _fcregs_used += 1; return (char*)"COLOR8";
-  case  9: _fcregs_used += 1; return (char*)"COLOR9";
-  case 10: _fcregs_used += 1; return (char*)"COLOR10";
-  case 11: _fcregs_used += 1; return (char*)"COLOR11";
-  case 12: _fcregs_used += 1; return (char*)"COLOR12";
-  case 13: _fcregs_used += 1; return (char*)"COLOR13";
-  case 14: _fcregs_used += 1; return (char*)"COLOR14";
-  case 15: _fcregs_used += 1; return (char*)"COLOR15";
   }
   return (char*)"UNKNOWN";
 }
@@ -232,7 +214,7 @@ analyze_renderstate(const RenderState *rs) {
   _out_aux_normal = (outputs & AuxBitplaneAttrib::ABO_aux_normal) ? true:false;
   _out_aux_glow = (outputs & AuxBitplaneAttrib::ABO_aux_glow) ? true:false;
   _out_aux_any = (_out_aux_normal || _out_aux_glow);
-  
+
   if (_out_aux_normal) {
     _need_eye_normal = true;
   }
@@ -287,7 +269,7 @@ analyze_renderstate(const RenderState *rs) {
 
   // See if there is a normal map, height map, gloss map, or glow map.
   // Also check if anything has TexGen.
-  
+
   const TexGenAttrib *tex_gen = DCAST(TexGenAttrib, rs->get_attrib_def(TexGenAttrib::get_class_slot()));
   for (int i=0; i<_num_textures; i++) {
     TextureStage *stage = texture->get_on_stage(i);
@@ -338,7 +320,6 @@ analyze_renderstate(const RenderState *rs) {
 
   if (la->get_num_on_lights() > 0) {
     _lighting = true;
-    _need_eye_position = true;
     _need_eye_normal = true;
   }
 
@@ -391,6 +372,13 @@ analyze_renderstate(const RenderState *rs) {
       }
     } else if (_map_index_gloss >= 0) {
       _have_specular = true;
+    }
+
+    if (_plights.size() + _slights.size() > 0) {
+      _need_eye_position = true;
+
+    } else if (_have_specular && _material->get_local()) {
+      _need_eye_position = true;
     }
   }
 
@@ -523,34 +511,34 @@ CPT(RenderAttrib) ShaderGenerator::
 create_shader_attrib(const string &txt) {
   PT(Shader) shader = Shader::make(txt);
   CPT(RenderAttrib) shattr = ShaderAttrib::make();
-  shattr=DCAST(ShaderAttrib, shattr)->set_shader(shader);
+  shattr = DCAST(ShaderAttrib, shattr)->set_shader(shader);
   if (_lighting) {
-    for (int i=0; i<(int)_alights.size(); i++) {
-      shattr=DCAST(ShaderAttrib, shattr)->set_shader_input(InternalName::make("alight", i), _alights_np[i]);
+    for (int i=0; i < (int)_alights.size(); i++) {
+      shattr = DCAST(ShaderAttrib, shattr)->set_shader_input(InternalName::make("alight", i), _alights_np[i]);
     }
-    for (int i=0; i<(int)_dlights.size(); i++) {
-      shattr=DCAST(ShaderAttrib, shattr)->set_shader_input(InternalName::make("dlight", i), _dlights_np[i]);
+    for (int i=0; i < (int)_dlights.size(); i++) {
+      shattr = DCAST(ShaderAttrib, shattr)->set_shader_input(InternalName::make("dlight", i), _dlights_np[i]);
       if (_shadows && _dlights[i]->_shadow_caster) {
         PT(Texture) tex = update_shadow_buffer(_dlights_np[i]);
         if (tex == NULL) {
           pgraph_cat.error() << "Failed to create shadow buffer for DirectionalLight '" << _dlights[i]->get_name() << "'!\n";
         }
-        shattr=DCAST(ShaderAttrib, shattr)->set_shader_input(InternalName::make("dlighttex", i), tex);
+        shattr = DCAST(ShaderAttrib, shattr)->set_shader_input(InternalName::make("dlighttex", i), tex);
       } else {
         _dlights[i]->clear_shadow_buffers();
       }
     }
-    for (int i=0; i<(int)_plights.size(); i++) {
-      shattr=DCAST(ShaderAttrib, shattr)->set_shader_input(InternalName::make("plight", i), _plights_np[i]);
+    for (int i=0; i < (int)_plights.size(); i++) {
+      shattr = DCAST(ShaderAttrib, shattr)->set_shader_input(InternalName::make("plight", i), _plights_np[i]);
     }
-    for (int i=0; i<(int)_slights.size(); i++) {
-      shattr=DCAST(ShaderAttrib, shattr)->set_shader_input(InternalName::make("slight", i), _slights_np[i]);
+    for (int i=0; i < (int)_slights.size(); i++) {
+      shattr = DCAST(ShaderAttrib, shattr)->set_shader_input(InternalName::make("slight", i), _slights_np[i]);
       if (_shadows && _slights[i]->_shadow_caster) {
         PT(Texture) tex = update_shadow_buffer(_slights_np[i]);
         if (tex == NULL) {
           pgraph_cat.error() << "Failed to create shadow buffer for Spotlight '" << _slights[i]->get_name() << "'!\n";
         }
-        shattr=DCAST(ShaderAttrib, shattr)->set_shader_input(InternalName::make("slighttex", i), tex);
+        shattr = DCAST(ShaderAttrib, shattr)->set_shader_input(InternalName::make("slighttex", i), tex);
       } else {
         _slights[i]->clear_shadow_buffers();
       }
@@ -576,7 +564,7 @@ update_shadow_buffer(NodePath light_np) {
   if (light == NULL || !light->_shadow_caster) {
     return NULL;
   }
-  
+
   // See if we already have a buffer. If not, create one.
   PT(Texture) tex;
   if (light->_sbuffers.count(_gsg) == 0) {
@@ -636,14 +624,12 @@ synthesize_shader(const RenderState *rs) {
 
   // These variables will hold the results of register allocation.
 
-  char *normal_vreg = 0;
   char *ntangent_vreg = 0;
   char *ntangent_freg = 0;
   char *nbinormal_vreg = 0;
   char *nbinormal_freg = 0;
   char *htangent_vreg = 0;
   char *hbinormal_vreg = 0;
-  pvector<char *> texcoord_vreg;
   pvector<char *> texcoord_freg;
   pvector<char *> dlightcoord_freg;
   pvector<char *> slightcoord_freg;
@@ -654,6 +640,7 @@ synthesize_shader(const RenderState *rs) {
   char *hpos_freg = 0;
 
   if (_vertex_colors) {
+    // Reserve COLOR0
     _vcregs_used = 1;
     _fcregs_used = 1;
   }
@@ -671,15 +658,19 @@ synthesize_shader(const RenderState *rs) {
   text << "void vshader(\n";
   const TextureAttrib *texture = DCAST(TextureAttrib, rs->get_attrib_def(TextureAttrib::get_class_slot()));
   const TexGenAttrib *tex_gen = DCAST(TexGenAttrib, rs->get_attrib_def(TexGenAttrib::get_class_slot()));
-  for (int i=0; i<_num_textures; i++) {
-    texcoord_vreg.push_back(alloc_vreg());
-    texcoord_freg.push_back(alloc_freg());
-    text << "\t in float4 vtx_texcoord" << i << " : " << texcoord_vreg[i] << ",\n";
-    text << "\t out float4 l_texcoord" << i << " : " << texcoord_freg[i] << ",\n";
+  for (int i = 0; i < _num_textures; ++i) {
+    TextureStage *stage = texture->get_on_stage(i);
+    if (!tex_gen->has_stage(stage)) {
+      texcoord_freg.push_back(alloc_freg());
+      text << "\t in float4 vtx_texcoord" << i << " : " << alloc_vreg() << ",\n";
+      text << "\t out float4 l_texcoord" << i << " : " << texcoord_freg[i] << ",\n";
+    } else {
+      texcoord_freg.push_back(NULL);
+    }
   }
   if (_vertex_colors) {
-    text << "\t in float4 vtx_color : COLOR,\n";
-    text << "\t out float4 l_color : COLOR,\n";
+    text << "\t in float4 vtx_color : COLOR0,\n";
+    text << "\t out float4 l_color : COLOR0,\n";
   }
   if (_need_world_position || _need_world_normal) {
     text << "\t uniform float4x4 trans_model_to_world,\n";
@@ -703,8 +694,7 @@ synthesize_shader(const RenderState *rs) {
     text << "\t out float4 l_eye_normal : " << eye_normal_freg << ",\n";
   }
   if (_map_index_height >= 0 || _need_world_normal || _need_eye_normal) {
-    normal_vreg = alloc_vreg();
-    text << "\t in float4 vtx_normal : " << normal_vreg << ",\n";
+    text << "\t in float4 vtx_normal : NORMAL,\n";
   }
   if (_map_index_height >= 0) {
     htangent_vreg = alloc_vreg();
@@ -724,6 +714,7 @@ synthesize_shader(const RenderState *rs) {
       if (_map_index_normal != _map_index_height) {
         ntangent_vreg = alloc_vreg();
         nbinormal_vreg = alloc_vreg();
+        // NB. If we used TANGENT and BINORMAL, Cg would have them overlap with TEXCOORD6-7.
         text << "\t in float4 vtx_tangent" << _map_index_normal << " : " << ntangent_vreg << ",\n";
         text << "\t in float4 vtx_binormal" << _map_index_normal << " : " << nbinormal_vreg << ",\n";
       }
@@ -733,7 +724,7 @@ synthesize_shader(const RenderState *rs) {
       text << "\t out float4 l_binormal : " << nbinormal_freg << ",\n";
     }
     if (_shadows && _auto_shadow_on) {
-      for (int i=0; i<(int)_dlights.size(); i++) {
+      for (int i=0; i < (int)_dlights.size(); i++) {
         if (_dlights[i]->_shadow_caster) {
           dlightcoord_freg.push_back(alloc_freg());
           text << "\t uniform float4x4 trans_model_to_clip_of_dlight" << i << ",\n";
@@ -742,7 +733,7 @@ synthesize_shader(const RenderState *rs) {
           dlightcoord_freg.push_back(NULL);
         }
       }
-      for (int i=0; i<(int)_slights.size(); i++) {
+      for (int i=0; i < (int)_slights.size(); i++) {
         if (_slights[i]->_shadow_caster) {
           slightcoord_freg.push_back(alloc_freg());
           text << "\t uniform float4x4 trans_model_to_clip_of_slight" << i << ",\n";
@@ -779,7 +770,7 @@ synthesize_shader(const RenderState *rs) {
     text << "\t l_eye_normal.xyz = mul((float3x3)tpose_view_to_model, vtx_normal.xyz);\n";
     text << "\t l_eye_normal.w = 0;\n";
   }
-  for (int i=0; i<_num_textures; i++) {
+  for (int i = 0; i < _num_textures; ++i) {
     if (!tex_gen->has_stage(texture->get_on_stage(i))) {
       text << "\t l_texcoord" << i << " = vtx_texcoord" << i << ";\n";
     }
@@ -795,12 +786,12 @@ synthesize_shader(const RenderState *rs) {
   }
   if (_shadows && _auto_shadow_on) {
     text << "\t float4x4 biasmat = {0.5f, 0.0f, 0.0f, 0.5f, 0.0f, 0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f};\n";
-    for (int i=0; i<(int)_dlights.size(); i++) {
+    for (int i=0; i < (int)_dlights.size(); i++) {
       if (_dlights[i]->_shadow_caster) {
         text << "\t l_dlightcoord" << i << " = mul(biasmat, mul(trans_model_to_clip_of_dlight" << i << ", vtx_position));\n";
       }
     }
-    for (int i=0; i<(int)_slights.size(); i++) {
+    for (int i=0; i < (int)_slights.size(); i++) {
       if (_slights[i]->_shadow_caster) {
         text << "\t l_slightcoord" << i << " = mul(biasmat, mul(trans_model_to_clip_of_slight" << i << ", vtx_position));\n";
       }
@@ -829,7 +820,7 @@ synthesize_shader(const RenderState *rs) {
   if (_need_world_normal) {
     text << "\t in float4 l_world_normal : " << world_normal_freg << ",\n";
   }
-  if (_need_eye_position) { 
+  if (_need_eye_position) {
     text << "\t in float4 l_eye_position : " << eye_position_freg << ",\n";
   }
   if (_need_eye_normal) {
@@ -853,10 +844,10 @@ synthesize_shader(const RenderState *rs) {
     text << "\t in float3 l_binormal : " << nbinormal_freg << ",\n";
   }
   if (_lighting) {
-    for (int i=0; i<(int)_alights.size(); i++) {
+    for (int i=0; i < (int)_alights.size(); i++) {
       text << "\t uniform float4 alight_alight" << i << ",\n";
     }
-    for (int i=0; i<(int)_dlights.size(); i++) {
+    for (int i=0; i < (int)_dlights.size(); i++) {
       text << "\t uniform float4x4 dlight_dlight" << i << "_rel_view,\n";
       if (_shadows && _dlights[i]->_shadow_caster && _auto_shadow_on) {
         if (_use_shadow_filter) {
@@ -867,10 +858,10 @@ synthesize_shader(const RenderState *rs) {
         text << "\t in float4 l_dlightcoord" << i << " : " << dlightcoord_freg[i] << ",\n";
       }
     }
-    for (int i=0; i<(int)_plights.size(); i++) {
+    for (int i=0; i < (int)_plights.size(); i++) {
       text << "\t uniform float4x4 plight_plight" << i << "_rel_view,\n";
     }
-    for (int i=0; i<(int)_slights.size(); i++) {
+    for (int i=0; i < (int)_slights.size(); i++) {
       text << "\t uniform float4x4 slight_slight" << i << "_rel_view,\n";
       text << "\t uniform float4   satten_slight" << i << ",\n";
       if (_shadows && _slights[i]->_shadow_caster && _auto_shadow_on) {
@@ -901,7 +892,7 @@ synthesize_shader(const RenderState *rs) {
   }
   text << "\t out float4 o_color : COLOR0,\n";
   if (_vertex_colors) {
-    text << "\t in float4 l_color : COLOR,\n";
+    text << "\t in float4 l_color : COLOR0,\n";
   } else {
     text << "\t uniform float4 attr_color,\n";
   }
@@ -919,7 +910,7 @@ synthesize_shader(const RenderState *rs) {
   }
   text << "\t float4 result;\n";
   if (_out_aux_any) {
-    text << "\t o_aux = float4(0,0,0,0);\n";
+    text << "\t o_aux = float4(0, 0, 0, 0);\n";
   }
   // Now generate any texture coordinates according to TexGenAttrib. If it has a TexMatrixAttrib, also transform them.
   for (int i=0; i<_num_textures; i++) {
@@ -961,11 +952,11 @@ synthesize_shader(const RenderState *rs) {
     case Texture::TT_2d_texture_array:
       text << "xyz";
       break;
-    case Texture::TT_2d_texture: 
-      text << "xy";  
+    case Texture::TT_2d_texture:
+      text << "xy";
       break;
     case Texture::TT_1d_texture:
-      text << "x";   
+      text << "x";
       break;
     default:
       break;
@@ -1060,7 +1051,7 @@ synthesize_shader(const RenderState *rs) {
         text << "\t float shininess = 50; // no shininess specified, using default\n";
       }
     }
-    for (int i=0; i<(int)_alights.size(); i++) {
+    for (int i=0; i < (int)_alights.size(); i++) {
       text << "\t // Ambient Light " << i << "\n";
       text << "\t lcolor = alight_alight" << i << ";\n";
       if (_separate_ambient_diffuse && _have_ambient) {
@@ -1069,7 +1060,7 @@ synthesize_shader(const RenderState *rs) {
         text << "\t tot_diffuse += lcolor;\n";
       }
     }
-    for (int i=0; i<(int)_dlights.size(); i++) {
+    for (int i=0; i < (int)_dlights.size(); i++) {
       text << "\t // Directional Light " << i << "\n";
       text << "\t lcolor = dlight_dlight" << i << "_rel_view[0];\n";
       text << "\t lspec  = dlight_dlight" << i << "_rel_view[1];\n";
@@ -1097,7 +1088,7 @@ synthesize_shader(const RenderState *rs) {
         text << "\t tot_specular += lspec;\n";
       }
     }
-    for (int i=0; i<(int)_plights.size(); i++) {
+    for (int i=0; i < (int)_plights.size(); i++) {
       text << "\t // Point Light " << i << "\n";
       text << "\t lcolor = plight_plight" << i << "_rel_view[0];\n";
       text << "\t lspec  = plight_plight" << i << "_rel_view[1];\n";
@@ -1115,14 +1106,14 @@ synthesize_shader(const RenderState *rs) {
         if (_material->get_local()) {
           text << "\t lhalf  = normalize(lvec - normalize(l_eye_position));\n";
         } else {
-          text << "\t lhalf = normalize(lvec - float4(0,1,0,0));\n";
+          text << "\t lhalf = normalize(lvec - float4(0, 1, 0, 0));\n";
         }
         text << "\t lspec *= lattenv;\n";
         text << "\t lspec *= pow(saturate(dot(l_eye_normal.xyz, lhalf.xyz)), shininess);\n";
         text << "\t tot_specular += lspec;\n";
       }
     }
-    for (int i=0; i<(int)_slights.size(); i++) {
+    for (int i=0; i < (int)_slights.size(); i++) {
       text << "\t // Spot Light " << i << "\n";
       text << "\t lcolor = slight_slight" << i << "_rel_view[0];\n";
       text << "\t lspec  = slight_slight" << i << "_rel_view[1];\n";
@@ -1433,7 +1424,7 @@ synthesize_shader(const RenderState *rs) {
     case Fog::M_linear:
       text << "\t result.rgb = lerp(attr_fogcolor.rgb, result.rgb, saturate((attr_fog.z - l_hpos.z) * attr_fog.w));\n";
       break;
-    case Fog::M_exponential:
+    case Fog::M_exponential: // 1.442695f = 1 / log(2)
       text << "\t result.rgb = lerp(attr_fogcolor.rgb, result.rgb, saturate(exp2(attr_fog.x * l_hpos.z * -1.442695f)));\n";
       break;
     case Fog::M_exponential_squared:
@@ -1456,10 +1447,10 @@ synthesize_shader(const RenderState *rs) {
   // Insert the shader into the shader attrib.
   CPT(RenderAttrib) shattr = create_shader_attrib(text.str());
   if (_subsume_alpha_test) {
-    shattr=DCAST(ShaderAttrib, shattr)->set_flag(ShaderAttrib::F_subsume_alpha_test, true);
+    shattr = DCAST(ShaderAttrib, shattr)->set_flag(ShaderAttrib::F_subsume_alpha_test, true);
   }
   if (_disable_alpha_write) {
-    shattr=DCAST(ShaderAttrib, shattr)->set_flag(ShaderAttrib::F_disable_alpha_write, true);
+    shattr = DCAST(ShaderAttrib, shattr)->set_flag(ShaderAttrib::F_disable_alpha_write, true);
   }
   clear_analysis();
   reset_register_allocator();

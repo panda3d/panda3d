@@ -19,8 +19,7 @@ class VectorEntry(Pmw.MegaWidget):
         DEFAULT_DIM = 3
         # Default value depends on *actual* vector size, test for user input
         DEFAULT_VALUE = [0.0] * kw.get('dim', DEFAULT_DIM)
-        DEFAULT_LABELS = map(lambda x: 'v[%d]' % x,
-                             range(kw.get('dim', DEFAULT_DIM)))
+        DEFAULT_LABELS = ['v[%d]' % x for x in range(kw.get('dim', DEFAULT_DIM))]
 
         # Process options
         INITOPT = Pmw.INITOPT

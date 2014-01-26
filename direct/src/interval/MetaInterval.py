@@ -38,7 +38,7 @@ class MetaInterval(CMetaInterval):
         #else:
 
         # Look for the name in the keyword params.
-        if kw.has_key('name'):
+        if 'name' in kw:
             name = kw['name']
             del kw['name']
 
@@ -52,10 +52,10 @@ class MetaInterval(CMetaInterval):
         
         autoPause = 0
         autoFinish = 0
-        if kw.has_key('autoPause'):
+        if 'autoPause' in kw:
             autoPause = kw['autoPause']
             del kw['autoPause']
-        if kw.has_key('autoFinish'):
+        if 'autoFinish' in kw:
             autoFinish = kw['autoFinish']
             del kw['autoFinish']
 
@@ -63,7 +63,7 @@ class MetaInterval(CMetaInterval):
         # appear to have for the purposes of computing the start time
         # for subsequent intervals in a sequence or track.
         self.phonyDuration = -1
-        if kw.has_key('duration'):
+        if 'duration' in kw:
             self.phonyDuration = kw['duration']
             del kw['duration']
 

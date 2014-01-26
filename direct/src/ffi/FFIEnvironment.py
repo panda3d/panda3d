@@ -12,7 +12,7 @@ class FFIEnvironment:
         self.manifests = []
     
     def addType(self, typeDescriptor, name):
-        if self.types.has_key(name):
+        if name in self.types:
             FFIConstants.notify.info('Redefining type named: ' + name)
         self.types[name] = typeDescriptor
     

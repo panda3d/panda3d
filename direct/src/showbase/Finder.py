@@ -5,7 +5,6 @@ __all__ = ['findClass', 'rebindClass', 'copyFuncs', 'replaceMessengerFunc', 'rep
 import time
 import types
 import os
-import new
 import sys
 
 def findClass(className):
@@ -107,24 +106,24 @@ def copyFuncs(fromClass, toClass):
                 #   SystemError: cellobject.c:22: bad argument to internal function
                 # Give the new function code the same filename as the old function
                 # Perhaps there is a cleaner way to do this? This was my best idea.
-                newCode = new.code(newFunc.func_code.co_argcount,
-                                   newFunc.func_code.co_nlocals,
-                                   newFunc.func_code.co_stacksize,
-                                   newFunc.func_code.co_flags,
-                                   newFunc.func_code.co_code,
-                                   newFunc.func_code.co_consts,
-                                   newFunc.func_code.co_names,
-                                   newFunc.func_code.co_varnames,
-                                   # Use the oldFunc's filename here. Tricky!
-                                   oldFunc.func_code.co_filename,
-                                   newFunc.func_code.co_name,
-                                   newFunc.func_code.co_firstlineno,
-                                   newFunc.func_code.co_lnotab)
-                newFunc = new.function(newCode,
-                                       newFunc.func_globals,
-                                       newFunc.func_name,
-                                       newFunc.func_defaults,
-                                       newFunc.func_closure)
+                newCode = types.CodeType(newFunc.func_code.co_argcount,
+                                         newFunc.func_code.co_nlocals,
+                                         newFunc.func_code.co_stacksize,
+                                         newFunc.func_code.co_flags,
+                                         newFunc.func_code.co_code,
+                                         newFunc.func_code.co_consts,
+                                         newFunc.func_code.co_names,
+                                         newFunc.func_code.co_varnames,
+                                         # Use the oldFunc's filename here. Tricky!
+                                         oldFunc.func_code.co_filename,
+                                         newFunc.func_code.co_name,
+                                         newFunc.func_code.co_firstlineno,
+                                         newFunc.func_code.co_lnotab)
+                newFunc = types.FunctionType(newCode,
+                                             newFunc.func_globals,
+                                             newFunc.func_name,
+                                             newFunc.func_defaults,
+                                             newFunc.func_closure)
                 """
                 replaceFuncList.append((oldFunc, funcName, newFunc))
             else:

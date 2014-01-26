@@ -42,7 +42,7 @@ class DirectSession(DirectObject):
         self.fIgnoreDirectOnlyKeyMap = 0 # [gjeon] to skip old direct controls in new LE
 
         self.drList = DisplayRegionList()
-        self.iRayList = map(lambda x: x.iRay, self.drList)
+        self.iRayList = [x.iRay for x in self.drList]
         self.dr = self.drList[0]
         self.win = base.win
         self.camera = base.camera
@@ -196,8 +196,8 @@ class DirectSession(DirectObject):
                               'alt', 'alt-up', 'alt-repeat',
                                ]
 
-        keyList = map(chr, range(97, 123))
-        keyList.extend(map(chr, range(48, 58)))
+        keyList = [chr(i) for i in range(97, 123)]
+        keyList.extend([chr(i) for i in range(48, 58)])
         keyList.extend(["`", "-", "=", "[", "]", ";", "'", ",", ".", "/", "\\"])
 
         self.specialKeys = ['escape', 'delete', 'page_up', 'page_down', 'enter']
@@ -209,8 +209,8 @@ class DirectSession(DirectObject):
             return "shift-%s"%a
 
         self.keyEvents = keyList[:]
-        self.keyEvents.extend(map(addCtrl, keyList))
-        self.keyEvents.extend(map(addShift, keyList))        
+        self.keyEvents.extend(list(map(addCtrl, keyList)))
+        self.keyEvents.extend(list(map(addShift, keyList)))        
         self.keyEvents.extend(self.specialKeys)
 
         self.mouseEvents = ['mouse1', 'mouse1-up',
@@ -996,7 +996,7 @@ class DirectSession(DirectObject):
             # Get last item off of redo list
             undoGroup = self.popUndoGroup()
             # Record redo information
-            nodePathList = map(lambda x: x[0], undoGroup)
+            nodePathList = [x[0] for x in undoGroup]
             self.pushRedo(nodePathList)
             # Now undo xform for group
             for pose in undoGroup:
@@ -1010,7 +1010,7 @@ class DirectSession(DirectObject):
             # Get last item off of redo list
             redoGroup = self.popRedoGroup()
             # Record undo information
-            nodePathList = map(lambda x: x[0], redoGroup)
+            nodePathList = [x[0] for x in redoGroup]
             self.pushUndo(nodePathList, fResetRedo = 0)
             # Redo xform
             for pose in redoGroup:

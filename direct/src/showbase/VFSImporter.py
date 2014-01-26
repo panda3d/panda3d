@@ -1,6 +1,5 @@
 from libpandaexpress import Filename, VirtualFileSystem, VirtualFileMountSystem, OFileStream, copyStream
 import sys
-import new
 import os
 import marshal
 import imp
@@ -457,7 +456,7 @@ class VFSSharedLoader:
         # Also set this special symbol, which records that this is a
         # shared package, and also lists the paths we have already
         # loaded.
-        mod._vfs_shared_path = vfs_shared_path + map(lambda l: l.dir_path, self.loaders)
+        mod._vfs_shared_path = vfs_shared_path + [l.dir_path for l in self.loaders]
 
         return mod
 

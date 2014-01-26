@@ -1,7 +1,3 @@
-from extension_native_helpers import *
-Dtool_PreloadDLL("libpandaexpress")
-from libpandaexpress import *
-
 """
 Ramfile_extensions module: contains methods to extend functionality
 of the Ramfile class

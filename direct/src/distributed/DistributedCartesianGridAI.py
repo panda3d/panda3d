@@ -65,7 +65,7 @@ class DistributedCartesianGridAI(DistributedNodeAI, CartesianGridBase):
 
         # Remove grid parent for this av
         avId = av.doId
-        if self.gridObjects.has_key(avId):
+        if avId in self.gridObjects:
             del self.gridObjects[avId]
 
         # Stop task if there are no more av's being managed

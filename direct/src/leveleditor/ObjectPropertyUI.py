@@ -91,7 +91,7 @@ class ObjectPropUI(wx.Panel):
             value = self.getValue()
             frame = self.parent.editor.ui.animUI.curFrame
             
-            if self.parent.editor.animMgr.keyFramesInfo.has_key((objUID,propertyName)):
+            if (objUID, propertyName) in self.parent.editor.animMgr.keyFramesInfo:
                 for i in range(len(self.parent.editor.animMgr.keyFramesInfo[(objUID,propertyName)])):
                     if self.parent.editor.animMgr.keyFramesInfo[(objUID,propertyName)][i][AG.FRAME] == frame:
                         del self.parent.editor.animMgr.keyFramesInfo[(objUID,propertyName)][i]
@@ -239,8 +239,8 @@ class ObjectPropUITime(wx.Panel):
 
         hSizer = wx.BoxSizer(wx.HORIZONTAL)
         self.uiAmPm = wx.Choice(self.uiPane, -1, choices=['AM', 'PM'])
-        self.uiHour = wx.Choice(self.uiPane, -1, choices=map(lambda x : str(x), range(1, 13)))
-        self.uiMin = wx.Choice(self.uiPane, -1, choices=map(lambda x : str(x), range(0, 60, 15)))
+        self.uiHour = wx.Choice(self.uiPane, -1, choices=[str(x) for x in range(1, 13)])
+        self.uiMin = wx.Choice(self.uiPane, -1, choices=[str(x) for x in range(0, 60, 15)])
 
         hSizer.Add(self.uiAmPm)
         hSizer.Add(self.uiHour)

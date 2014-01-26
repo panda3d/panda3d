@@ -262,7 +262,7 @@ class SliderWidget(Pmw.MegaWidget):
         self.initialiseoptions(SliderWidget)
 
         # Adjust relief
-        if not kw.has_key('relief'):
+        if 'relief' not in kw:
             if self['style'] == VALUATOR_FULL:
                 self['relief'] = FLAT
 
