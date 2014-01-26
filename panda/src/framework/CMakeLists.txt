@@ -8,7 +8,6 @@ set(P3FRAMEWORK_SOURCES
   config_framework.cxx
   pandaFramework.cxx
   windowFramework.cxx
-  rock_floor.rgb_src.c shuttle_controls.bam_src.c
 )
 
 
