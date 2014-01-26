@@ -52,4 +52,4 @@ add_subdirectory(src/framework)
 #add_subdirectory(src/testbed)
 
 # Include panda metalibs
-#add_subdirectory(metalibs/panda)
+add_subdirectory(metalibs/panda)
