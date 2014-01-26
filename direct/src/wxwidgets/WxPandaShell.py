@@ -126,26 +126,26 @@ class WxPandaShell(WxAppShell):
             base.startDirect(fWantTk = 0, fWantWx = 0)
 
             base.direct.disableMouseEvents()
-            newMouseEvents = map(lambda x: "_le_per_%s"%x, base.direct.mouseEvents) +\
-                             map(lambda x: "_le_fro_%s"%x, base.direct.mouseEvents) +\
-                             map(lambda x: "_le_lef_%s"%x, base.direct.mouseEvents) +\
-                             map(lambda x: "_le_top_%s"%x, base.direct.mouseEvents)
+            newMouseEvents = ["_le_per_%s"%x for x in base.direct.mouseEvents] +\
+                             ["_le_fro_%s"%x for x in base.direct.mouseEvents] +\
+                             ["_le_lef_%s"%x for x in base.direct.mouseEvents] +\
+                             ["_le_top_%s"%x for x in base.direct.mouseEvents]
             base.direct.mouseEvents = newMouseEvents
             base.direct.enableMouseEvents()
 
             base.direct.disableKeyEvents()
-            keyEvents = map(lambda x: "_le_per_%s"%x, base.direct.keyEvents) +\
-                             map(lambda x: "_le_fro_%s"%x, base.direct.keyEvents) +\
-                             map(lambda x: "_le_lef_%s"%x, base.direct.keyEvents) +\
-                             map(lambda x: "_le_top_%s"%x, base.direct.keyEvents)
+            keyEvents = ["_le_per_%s"%x for x in base.direct.keyEvents] +\
+                             ["_le_fro_%s"%x for x in base.direct.keyEvents] +\
+                             ["_le_lef_%s"%x for x in base.direct.keyEvents] +\
+                             ["_le_top_%s"%x for x in base.direct.keyEvents]
             base.direct.keyEvents = keyEvents
             base.direct.enableKeyEvents()
 
             base.direct.disableModifierEvents()
-            modifierEvents = map(lambda x: "_le_per_%s"%x, base.direct.modifierEvents) +\
-                             map(lambda x: "_le_fro_%s"%x, base.direct.modifierEvents) +\
-                             map(lambda x: "_le_lef_%s"%x, base.direct.modifierEvents) +\
-                             map(lambda x: "_le_top_%s"%x, base.direct.modifierEvents)
+            modifierEvents = ["_le_per_%s"%x for x in base.direct.modifierEvents] +\
+                             ["_le_fro_%s"%x for x in base.direct.modifierEvents] +\
+                             ["_le_lef_%s"%x for x in base.direct.modifierEvents] +\
+                             ["_le_top_%s"%x for x in base.direct.modifierEvents]
             base.direct.modifierEvents = modifierEvents
             base.direct.enableModifierEvents()
 

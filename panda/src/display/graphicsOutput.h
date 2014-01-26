@@ -260,8 +260,7 @@ public:
   virtual void end_frame(FrameMode mode, Thread *current_thread);
 
   void change_scenes(DisplayRegionPipelineReader *new_dr);
-  virtual void select_cube_map(int cube_map_index);
-  virtual void select_tex_view(int tex_view_offset);
+  virtual void select_target_tex_page(int page, int view);
 
   // These methods will be called within the app (main) thread.
   virtual void begin_flip();
@@ -311,9 +310,9 @@ protected:
   bool _stereo;
   string _name;
   bool _flip_ready;
-  int _cube_map_index;
-  DisplayRegion *_cube_map_dr;
-  int _tex_view_offset;
+  int _target_tex_page;
+  int _target_tex_view;
+  DisplayRegion *_prev_page_dr;
   PT(Geom) _texture_card;
   bool _trigger_copy;
 

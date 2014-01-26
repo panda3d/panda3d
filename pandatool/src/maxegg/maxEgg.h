@@ -132,7 +132,11 @@ class MaxEggPlugin : public HelperObject
   CreateMouseCallBack* GetCreateMouseCallBack();
   void BeginEditParams( IObjParam *ip, ULONG flags,Animatable *prev);
   void EndEditParams( IObjParam *ip, ULONG flags,Animatable *next);
+#if MAX_VERSION_MAJOR < 15
   TCHAR *GetObjectName() { return GetString(IDS_LIBDESCRIPTION); }
+#else
+  const TCHAR *GetObjectName() { return GetString(IDS_LIBDESCRIPTION); }
+#endif
 
   // From Object
   ObjectState Eval(TimeValue time);
@@ -152,7 +156,7 @@ class MaxEggPlugin : public HelperObject
   Class_ID ClassID() { return MaxEggPlugin_CLASS_ID; }
   void GetClassName(TSTR& s) { s = TSTR(GetString(IDS_CLASS_NAME)); }
   TSTR SubAnimName(int i) { return TSTR(GetString(IDS_CLASS_NAME)); }
-  
+
   // From ref
   RefTargetHandle Clone(RemapDir& remap = DefaultRemapDir());
 

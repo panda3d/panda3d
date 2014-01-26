@@ -852,10 +852,11 @@ clear_contact_added_callback() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void BulletWorld::
-set_tick_callback(CallbackObject *obj) {
+set_tick_callback(CallbackObject *obj, bool is_pretick) {
 
   nassertv(obj != NULL);
   _tick_callback_obj = obj;
+  _world->setInternalTickCallback(&BulletWorld::tick_callback, this, is_pretick);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -867,6 +868,7 @@ void BulletWorld::
 clear_tick_callback() {
 
   _tick_callback_obj = NULL;
+  _world->setInternalTickCallback(NULL);
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -880,8 +882,11 @@ tick_callback(btDynamicsWorld *world, btScalar timestep) {
   nassertv(world->getWorldUserInfo());
 
   BulletWorld *w = static_cast<BulletWorld *>(world->getWorldUserInfo());
-  BulletTickCallbackData cbdata(timestep);
-  w->_tick_callback_obj->do_callback(&cbdata);
+  CallbackObject *obj = w->_tick_callback_obj;
+  if (obj) {
+    BulletTickCallbackData cbdata(timestep);
+    obj->do_callback(&cbdata);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -895,7 +900,7 @@ set_filter_callback(CallbackObject *obj) {
   nassertv(obj != NULL);
 
   if (bullet_filter_algorithm != FA_callback) {
-    bullet_cat.warning() << "filter algorithm is not 'python-callback'" << endl;
+    bullet_cat.warning() << "filter algorithm is not 'callback'" << endl;
   }
 
   _filter_cb3._filter_callback_obj = obj;

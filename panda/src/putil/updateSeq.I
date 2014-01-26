@@ -265,6 +265,17 @@ operator ++ (int) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: UpdateSeq::get_seq
+//       Access: Published
+//  Description: Returns the internal integer value associated with
+//               the UpdateSeq.  Useful for debugging only.
+////////////////////////////////////////////////////////////////////
+INLINE AtomicAdjust::Integer UpdateSeq::
+get_seq() const {
+  return _seq;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: UpdateSeq::output
 //       Access: Published
 //  Description:

@@ -10,7 +10,6 @@ import sys
 import os
 import glob
 import marshal
-import new
 import string
 import types
 import getpass
@@ -427,7 +426,7 @@ class Packager:
                 self.compressionLevel = 6
 
                 # Every p3dapp requires panda3d.
-                if 'panda3d' not in map(lambda p: p.packageName, self.requires):
+                if 'panda3d' not in [p.packageName for p in self.requires]:
                     assert not self.packager.currentPackage
                     self.packager.currentPackage = self
                     self.packager.do_require('panda3d')
@@ -726,7 +725,7 @@ class Packager:
             if self.p3dApplication:
                 # No patches for an application; just move it into place.
                 # Make the application file executable.
-                os.chmod(self.packageFullpath.toOsSpecific(), 0755)
+                os.chmod(self.packageFullpath.toOsSpecific(), 0o755)
             else:
                 self.readDescFile()
                 self.packageSeq += 1
@@ -2206,7 +2205,7 @@ class Packager:
         # returned, so they will persist beyond the lifespan of the
         # config variable.
         cvar = ConfigVariableSearchPath('pdef-path')
-        self.installSearch = map(Filename, cvar.getDirectories())
+        self.installSearch = list(map(Filename, cvar.getDirectories()))
 
         # The system PATH, for searching dll's and exe's.
         self.executablePath = DSearchPath()
@@ -2938,7 +2937,7 @@ class Packager:
             tuples.append((version, file))
         tuples.sort(reverse = True)
 
-        return map(lambda t: t[1], tuples)
+        return [t[1] for t in tuples]
 
     def __sortPackageInfos(self, packages):
         """ Given a list of PackageInfos retrieved from a Host, sorts
@@ -2951,7 +2950,7 @@ class Packager:
             tuples.append((version, file))
         tuples.sort(reverse = True)
 
-        return map(lambda t: t[1], tuples)
+        return [t[1] for t in tuples]
 
     def __makeVersionTuple(self, version):
         """ Converts a version string into a tuple for sorting, by

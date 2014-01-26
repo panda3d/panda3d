@@ -337,7 +337,7 @@ class FFIMethodArgumentTree:
                 # methodSpec in this dictionary
                 self.tree[typeDesc] = [None, methodSpec]
             else:
-                if self.tree.has_key(typeDesc):
+                if typeDesc in self.tree:
                     # If there already is a tree here, jump into and pass the
                     # cdr of the arg list
                     subTree = self.tree[typeDesc][0]

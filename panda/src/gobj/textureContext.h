@@ -48,6 +48,10 @@ PUBLISHED:
   INLINE bool was_image_modified() const;
   INLINE bool was_simple_image_modified() const;
 
+  INLINE UpdateSeq get_properties_modified() const;
+  INLINE UpdateSeq get_image_modified() const;
+  INLINE UpdateSeq get_simple_image_modified() const;
+
 public:
   INLINE void update_data_size_bytes(size_t new_data_size_bytes);
   INLINE void mark_loaded();

@@ -1,7 +1,7 @@
 ###  Tools
 __all__ = ["Dtool_ObjectToDict", "Dtool_funcToMethod", "Dtool_PreloadDLL"]
 
-import imp,sys,os
+import imp, sys, os
 
 # The following code exists to work around a problem that exists
 # with Python 2.5 or greater.
@@ -15,6 +15,7 @@ dll_suffix = ''
 if sys.platform == "win32":
     # On Windows, dynamic libraries end in ".dll".
     dll_ext = '.dll'
+    module_ext = '.pyd'
 
     # We allow the caller to preload dll_suffix into the sys module.
     dll_suffix = getattr(sys, 'dll_suffix', None)
@@ -33,9 +34,11 @@ elif sys.platform == "darwin":
         from direct.extensions_native.extensions_darwin import dll_ext
     except ImportError:
         dll_ext = '.dylib'
+    module_ext = '.so'
 else:
     # On most other UNIX systems (including linux), .so is used.
     dll_ext = '.so'
+    module_ext = '.so'
 
 if sys.platform == "win32":
     # On Windows, we must furthermore ensure that the PATH is modified
@@ -51,47 +54,69 @@ if sys.platform == "win32":
             target = dir
     if target == None:
         message = "Cannot find %s" % (filename)
-        raise ImportError, message
+        raise ImportError(message)
 
     # And add that directory to the system path.
     path = os.environ["PATH"]
     if not path.startswith(target + ";"):
         os.environ["PATH"] = target + ";" + path
 
+def Dtool_FindModule(module):
+    # Finds a .pyd module on the Python path.
+    filename = module.replace('.', os.path.sep) + module_ext
+    for dir in sys.path:
+        lib = os.path.join(dir, filename)
+        if (os.path.exists(lib)):
+            return lib
+
+    return None
+
 def Dtool_PreloadDLL(module):
     if module in sys.modules:
         return
 
+    # First find it as a .pyd module on the Python path.
+    if Dtool_FindModule(module):
+        # OK, we should have no problem importing it as is.
+        return
+
+    # Nope, we'll need to search for a dynamic lib and preload it.
     # Search for the appropriate directory.
     target = None
-    filename = module + dll_suffix + dll_ext
+    filename = module.replace('.', os.path.sep) + dll_suffix + dll_ext
     for dir in sys.path + [sys.prefix]:
         lib = os.path.join(dir, filename)
         if (os.path.exists(lib)):
             target = dir
             break
-    if target == None:
+
+    if target is None:
         message = "DLL loader cannot find %s." % (module)
-        raise ImportError, message
+        raise ImportError(message)
 
     # Now import the file explicitly.
     pathname = os.path.join(target, filename)
-    imp.load_dynamic(module, pathname)
+    imp.load_dynamic(module, pathname)    
 
-Dtool_PreloadDLL("libpandaexpress")
-from libpandaexpress import *
+# Nowadays, we can compile libpandaexpress with libpanda into a
+# .pyd file called panda3d/core.pyd which can be imported without
+# any difficulty.  Let's see if this is the case.
+if Dtool_FindModule("panda3d.core"):
+    from panda3d.core import *
+else:
+    Dtool_PreloadDLL("libpandaexpress")
+    from libpandaexpress import *
 
-def Dtool_ObjectToDict(clas, name, obj):
-    clas.DtoolClassDict[name] = obj;
+def Dtool_ObjectToDict(cls, name, obj):
+    cls.DtoolClassDict[name] = obj;
 
-def Dtool_funcToMethod(func, clas, method_name=None):
+def Dtool_funcToMethod(func, cls, method_name=None):
     """Adds func to class so it is an accessible method; use method_name to specify the name to be used for calling the method.
     The new method is accessible to any instance immediately."""
-    func.im_class=clas
-    func.im_func=func
-    func.im_self=None
+    if sys.version_info < (3, 0):
+        func.im_class = cls
+    func.im_func = func
+    func.im_self = None
     if not method_name:
-            method_name = func.__name__
-    clas.DtoolClassDict[method_name] = func;
-
-
+        method_name = func.__name__
+    cls.DtoolClassDict[method_name] = func;

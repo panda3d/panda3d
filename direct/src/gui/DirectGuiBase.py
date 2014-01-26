@@ -439,7 +439,7 @@ class DirectGuiBase(DirectObject.DirectObject):
         Get current configuration setting for this option
         """
         # Return the value of an option, for example myWidget['font'].
-        if self._optionInfo.has_key(option):
+        if option in self._optionInfo:
             return self._optionInfo[option][DGG._OPT_VALUE]
         else:
             index = string.find(option, '_')
@@ -448,7 +448,7 @@ class DirectGuiBase(DirectObject.DirectObject):
                 componentOption = option[(index + 1):]
 
                 # Expand component alias
-                if self.__componentAliases.has_key(component):
+                if component in self.__componentAliases:
                     component, subComponent = self.__componentAliases[
                         component]
                     if subComponent is not None:
@@ -457,7 +457,7 @@ class DirectGuiBase(DirectObject.DirectObject):
                     # Expand option string to write on error
                     option = component + '_' + componentOption
 
-                if self.__componentInfo.has_key(component):
+                if component in self.__componentInfo:
                     # Call cget on the component.
                     componentCget = self.__componentInfo[component][3]
                     return componentCget(componentOption)
@@ -582,7 +582,7 @@ class DirectGuiBase(DirectObject.DirectObject):
 
         # Expand component alias
         # Example entry which is an alias for entryField_entry
-        if self.__componentAliases.has_key(component):
+        if component in self.__componentAliases:
             # component = entryField, subComponent = entry
             component, subComponent = self.__componentAliases[component]
             if subComponent is not None:
@@ -608,7 +608,7 @@ class DirectGuiBase(DirectObject.DirectObject):
         return names
 
     def hascomponent(self, component):
-        return self.__componentInfo.has_key(component)
+        return component in self.__componentInfo
 
     def destroycomponent(self, name):
         # Remove a megawidget component.

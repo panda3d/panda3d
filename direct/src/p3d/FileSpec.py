@@ -205,9 +205,9 @@ class FileSpec:
         # On Windows, we have to change the file to read-write before
         # we can successfully update its timestamp.
         try:
-            os.chmod(pathname.toOsSpecific(), 0755)
+            os.chmod(pathname.toOsSpecific(), 0o755)
             os.utime(pathname.toOsSpecific(), (st.st_atime, self.timestamp))
-            os.chmod(pathname.toOsSpecific(), 0555)
+            os.chmod(pathname.toOsSpecific(), 0o555)
         except OSError:
             pass
 

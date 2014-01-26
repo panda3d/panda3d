@@ -20,6 +20,7 @@
 
 #include "pandaSystem.h"
 #include "dconfig.h"
+#include "default_font.h"
 
 // This is defined by both Panda and Rocket.
 #define Factory RocketFactory
@@ -59,4 +60,11 @@ init_librocket() {
   Rocket::Core::SetSystemInterface(si);
 
   Rocket::Core::Initialise();
+
+#ifdef COMPILE_IN_DEFAULT_FONT
+#ifdef HAVE_FREETYPE
+  // Load Panda's default compiled-in freetype font (Perspective Sans).
+  Rocket::Core::FontDatabase::LoadFontFace(default_font_data, default_font_size);
+#endif
+#endif
 }

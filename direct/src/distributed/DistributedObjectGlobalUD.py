@@ -35,7 +35,7 @@ class DistributedObjectGlobalUD(DistributedObjectUD):
     def __execMessage(self, message):
         if not self.ExecNamespace:
             # Import some useful variables into the ExecNamespace initially.
-            exec 'from pandac.PandaModules import *' in globals(), self.ExecNamespace
+            exec('from pandac.PandaModules import *', globals(), self.ExecNamespace)
             #self.importExecNamespace()
 
         # Now try to evaluate the expression using ChatInputNormal.ExecNamespace as
@@ -48,7 +48,7 @@ class DistributedObjectGlobalUD(DistributedObjectUD):
             # "import math".  These aren't expressions, so eval()
             # fails, but they can be exec'ed.
             try:
-                exec message in globals(), self.ExecNamespace
+                exec(message, globals(), self.ExecNamespace)
                 return 'ok'
             except:
                 exception = sys.exc_info()[0]

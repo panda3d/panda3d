@@ -106,9 +106,9 @@ GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
 
   _is_valid = false;
   _flip_ready = false;
-  _cube_map_index = -1;
-  _cube_map_dr = NULL;
-  _tex_view_offset = -1;
+  _target_tex_page = -1;
+  _target_tex_view = -1;
+  _prev_page_dr = NULL;
   _sort = 0;
   _child_sort = 0;
   _got_child_sort = false;
@@ -1069,7 +1069,7 @@ make_cube_map(const string &name, int size, NodePath &camera_rig,
     DisplayRegion *dr;
     dr = buffer->make_display_region();
 
-    dr->set_cube_map_index(i);
+    dr->set_target_tex_page(i, 0);
     dr->copy_clear_settings(*this);
     dr->set_camera(camera_np);
   }
@@ -1341,13 +1341,16 @@ end_frame(FrameMode mode, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
 change_scenes(DisplayRegionPipelineReader *new_dr) {
-  int new_cube_map_index = new_dr->get_cube_map_index();
-  if (new_cube_map_index != -1 &&
-      new_cube_map_index != _cube_map_index) {
-    int old_cube_map_index = _cube_map_index;
-    DisplayRegion *old_cube_map_dr = _cube_map_dr;
-    _cube_map_index = new_cube_map_index;
-    _cube_map_dr = new_dr->get_object();
+  int new_target_tex_page = new_dr->get_target_tex_page();
+  int new_target_tex_view = new_dr->get_target_tex_view();
+  if ((new_target_tex_page != -1 && new_target_tex_page != _target_tex_page) ||
+      new_target_tex_view != _target_tex_view) {
+    int old_target_tex_page = _target_tex_page;
+    int old_target_tex_view = _target_tex_view;
+    DisplayRegion *old_page_dr = _prev_page_dr;
+    _target_tex_page = new_target_tex_page;
+    _target_tex_view = new_target_tex_view;
+    _prev_page_dr = new_dr->get_object();
 
     CDReader cdata(_cycler);
     RenderTextures::const_iterator ri;
@@ -1356,83 +1359,55 @@ change_scenes(DisplayRegionPipelineReader *new_dr) {
       Texture *texture = (*ri)._texture;
       if (rtm_mode != RTM_none) {
         if (rtm_mode == RTM_bind_or_copy || rtm_mode == RTM_bind_layered) {
-          // In render-to-texture mode, switch the rendering backend to
-          // the new cube map face, so that the subsequent frame will be
-          // rendered to the new face.
+          // In render-to-texture mode, switch the rendering backend
+          // to the new page, so that the subsequent frame will be
+          // rendered to the correct page.
+          select_target_tex_page(_target_tex_page, _target_tex_view);
 
-          select_cube_map(new_cube_map_index);
-
-        } else if (old_cube_map_index != -1) {
+        } else if (old_target_tex_page != -1) {
           // In copy-to-texture mode, copy the just-rendered framebuffer
-          // to the old cube map face.
-          nassertv(old_cube_map_dr != (DisplayRegion *)NULL);
+          // to the old texture page.
+
+          // TODO: we should probably pass the view parameter into
+          // framebuffer_copy_to_xxx(), as we do the page parameter.
+          // Instead these methods draw the view parameter from
+          // dr->get_target_tex_view(), which is not altogether wrong
+          // but is a strange approach.
+
+          nassertv(old_page_dr != (DisplayRegion *)NULL);
           if (display_cat.is_debug()) {
             display_cat.debug()
               << "Copying texture for " << get_name() << " at scene change.\n";
             display_cat.debug()
-              << "cube_map_index = " << old_cube_map_index << "\n";
+              << "target_tex_page = " << old_target_tex_page << "\n";
           }
           RenderBuffer buffer = _gsg->get_render_buffer(get_draw_buffer_type(),
                                                         get_fb_properties());
           if (rtm_mode == RTM_copy_ram) {
-            _gsg->framebuffer_copy_to_ram(texture, old_cube_map_index,
-                                          old_cube_map_dr, buffer);
+            _gsg->framebuffer_copy_to_ram(texture, old_target_tex_page,
+                                          old_page_dr, buffer);
           } else {
-            _gsg->framebuffer_copy_to_texture(texture, old_cube_map_index,
-                                              old_cube_map_dr, buffer);
+            _gsg->framebuffer_copy_to_texture(texture, old_target_tex_page,
+                                              old_page_dr, buffer);
           }
         }
       }
     }
   }
-
-  int new_tex_view_offset = new_dr->get_tex_view_offset();
-  if (new_tex_view_offset != _tex_view_offset) {
-    int old_tex_view_offset = _tex_view_offset;
-    //DisplayRegion *old_cube_map_dr = _cube_map_dr;
-    _tex_view_offset = new_tex_view_offset;
-    //_cube_map_dr = new_dr->get_object();
-
-    CDReader cdata(_cycler);
-    RenderTextures::const_iterator ri;
-    for (ri = cdata->_textures.begin(); ri != cdata->_textures.end(); ++ri) {
-      RenderTextureMode rtm_mode = (*ri)._rtm_mode;
-      Texture *texture = (*ri)._texture;
-      if (rtm_mode == RTM_bind_or_copy || rtm_mode == RTM_bind_layered) {
-        // In render-to-texture mode, switch the rendering backend to
-        // the new view, so that the subsequent frame will be
-        // rendered to the new view.
-
-        select_tex_view(new_tex_view_offset);
-        break;
-      }
-    }
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::select_cube_map
+//     Function: GraphicsOutput::select_target_tex_page
 //       Access: Public, Virtual
 //  Description: Called internally when the window is in
 //               render-to-a-texture mode and we are in the process of
-//               rendering the six faces of a cube map.  This should
-//               do whatever needs to be done to switch the buffer to
-//               the indicated face.
+//               rendering the six faces of a cube map, or any other
+//               multi-page and/or multi-view texture.  This should do
+//               whatever needs to be done to switch the buffer to the
+//               indicated page and view.
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
-select_cube_map(int) {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::select_tex_view
-//       Access: Public, Virtual
-//  Description: Called internally when the window is in
-//               render-to-a-texture mode and the DisplayRegion
-//               requests that we switch rendering to a different
-//               texture view.
-////////////////////////////////////////////////////////////////////
-void GraphicsOutput::
-select_tex_view(int) {
+select_target_tex_page(int, int) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1603,7 +1578,7 @@ copy_to_textures() {
         display_cat.debug()
           << "Copying texture for " << get_name() << " at frame end.\n";
         display_cat.debug()
-          << "cube_map_index = " << _cube_map_index << "\n";
+          << "target_tex_page = " << _target_tex_page << "\n";
       }
       RenderTexturePlane plane = (*ri)._plane;
       RenderBuffer buffer(_gsg, DrawableRegion::get_renderbuffer_type(plane));
@@ -1613,24 +1588,24 @@ copy_to_textures() {
       }
 
       bool copied = false;
-      if (_cube_map_dr != (DisplayRegion *)NULL) {
+      if (_prev_page_dr != (DisplayRegion *)NULL) {
         if ((rtm_mode == RTM_copy_ram)||(rtm_mode == RTM_triggered_copy_ram)) {
           copied =
-            _gsg->framebuffer_copy_to_ram(texture, _cube_map_index,
-                                          _cube_map_dr, buffer);
+            _gsg->framebuffer_copy_to_ram(texture, _target_tex_page,
+                                          _prev_page_dr, buffer);
         } else {
           copied =
-            _gsg->framebuffer_copy_to_texture(texture, _cube_map_index,
-                                              _cube_map_dr, buffer);
+            _gsg->framebuffer_copy_to_texture(texture, _target_tex_page,
+                                              _prev_page_dr, buffer);
         }
       } else {
         if ((rtm_mode == RTM_copy_ram)||(rtm_mode == RTM_triggered_copy_ram)) {
           copied =
-            _gsg->framebuffer_copy_to_ram(texture, _cube_map_index,
+            _gsg->framebuffer_copy_to_ram(texture, _target_tex_page,
                                           _overlay_display_region, buffer);
         } else {
           copied =
-            _gsg->framebuffer_copy_to_texture(texture, _cube_map_index,
+            _gsg->framebuffer_copy_to_texture(texture, _target_tex_page,
                                               _overlay_display_region, buffer);
         }
       }

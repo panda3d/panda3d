@@ -28,8 +28,9 @@
 //               know the correct type and order of each element.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS DatagramIterator {
-public:    
-    INLINE void assign(Datagram &datagram, size_t offset = 0);
+public:
+  INLINE void assign(Datagram &datagram, size_t offset = 0);
+
 PUBLISHED:
   INLINE DatagramIterator();
   INLINE DatagramIterator(const Datagram &datagram, size_t offset = 0);
@@ -82,6 +83,17 @@ PUBLISHED:
 private:
   const Datagram *_datagram;
   size_t _current_index;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    register_type(_type_handle, "DatagramIterator");
+  }
+
+private:
+  static TypeHandle _type_handle;
 };
 
 // These generic functions are primarily for reading a value from a

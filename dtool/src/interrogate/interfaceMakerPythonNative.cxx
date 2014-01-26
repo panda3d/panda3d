@@ -329,6 +329,7 @@ bool InterfaceMakerPythonNative::
 get_slotted_function_def(Object *obj, Function *func, SlottedFunctionDef &def) {
   def._answer_location = string();
   def._wrapper_type = WT_none;
+  def._min_version = 0;
 
   string method_name = func->_ifunc.get_name();
   bool is_unary_op = func->_ifunc.is_unary_op();
@@ -408,54 +409,63 @@ get_slotted_function_def(Object *obj, Function *func, SlottedFunctionDef &def) {
   if (method_name == "operator +=") {
     def._answer_location = "tp_as_number->nb_inplace_add";
     def._wrapper_type = WT_one_param;
+    def._min_version = 0x02000000;
     return true;
   }
 
   if (method_name == "operator -=") {
     def._answer_location = "tp_as_number->nb_inplace_subtract";
     def._wrapper_type = WT_one_param;
+    def._min_version = 0x02000000;
     return true;
   }
 
   if (method_name == "operator *=") {
     def._answer_location = "tp_as_number->nb_inplace_multiply";
     def._wrapper_type = WT_one_param;
+    def._min_version = 0x02000000;
     return true;
   }
 
   if (method_name == "operator /=") {
     def._answer_location = "tp_as_number->nb_inplace_divide";
     def._wrapper_type = WT_one_param;
+    def._min_version = 0x02000000;
     return true;
   }
 
   if (method_name == "operator %=") {
     def._answer_location = ".tp_as_number->nb_inplace_remainder";
     def._wrapper_type = WT_one_param;
+    def._min_version = 0x02000000;
     return true;
   }
 
   if (method_name == "operator <<=") {
     def._answer_location = "tp_as_number->nb_inplace_lshift";
     def._wrapper_type = WT_one_param;
+    def._min_version = 0x02000000;
     return true;
   }
 
   if (method_name == "operator >>=") {
     def._answer_location = "tp_as_number->nb_inplace_rshift";
     def._wrapper_type = WT_one_param;
+    def._min_version = 0x02000000;
     return true;
   }
 
   if (method_name == "operator &=") {
     def._answer_location = "tp_as_number->nb_inplace_and";
     def._wrapper_type = WT_one_param;
+    def._min_version = 0x02000000;
     return true;
   }
 
   if (method_name == "operator ^=") {
     def._answer_location = "tp_as_number->nb_inplace_xor";
     def._wrapper_type = WT_one_param;
+    def._min_version = 0x02000000;
     return true;
   }
 
@@ -539,12 +549,14 @@ get_slotted_function_def(Object *obj, Function *func, SlottedFunctionDef &def) {
   if (method_name == "__getbuffer__") {
     def._answer_location = "tp_as_buffer->bf_getbuffer";
     def._wrapper_type = WT_getbuffer;
+    def._min_version = 0x02060000;
     return true;
   }
 
   if (method_name == "__releasebuffer__") {
     def._answer_location = "tp_as_buffer->bf_releasebuffer";
     def._wrapper_type = WT_releasebuffer;
+    def._min_version = 0x02060000;
     return true;
   }
 
@@ -1155,25 +1167,41 @@ write_module(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
   out << "//********************************************************************\n";
 
   out << "#if PY_MAJOR_VERSION >= 3\n"
-      << "#define INIT_FUNC PyObject *PyInit_" << def->module_name << "\n"
-      << "#else\n"
-      << "#define INIT_FUNC void init" << def->module_name << "\n"
-      << "#endif\n\n"
-
+      << "static struct PyModuleDef python_native_module = {\n"
+      << "  PyModuleDef_HEAD_INIT,\n"
+      << "  \"" << def->module_name << "\",\n"
+      << "  NULL,\n"
+      << "  -1,\n"
+      << "  NULL,\n"
+      << "  NULL, NULL, NULL, NULL\n"
+      << "};\n"
+      << "\n"
       << "#ifdef _WIN32\n"
-      << "extern \"C\" __declspec(dllexport) INIT_FUNC();\n"
+      << "extern \"C\" __declspec(dllexport) PyObject *PyInit_" << def->module_name << "();\n"
       << "#else\n"
-      << "extern \"C\" INIT_FUNC();\n"
-      << "#endif\n\n"
-
-      << "INIT_FUNC() {\n"
+      << "extern \"C\" PyObject *PyInit_" << def->module_name << "();\n"
+      << "#endif\n"
+      << "\n"
       << "PyObject *PyInit_" << def->module_name << "() {\n"
       << "  LibraryDef *refs[] = {&" << def->library_name << "_moddef, NULL};\n"
-      << "#if PY_MAJOR_VERSION >= 3\n"
-      << "  return\n"
+      << "  return Dtool_PyModuleInitHelper(refs, &python_native_module);\n"
+      << "}\n"
+      << "\n"
+      << "#else  // Python 2 case\n"
+      << "\n"
+      << "#ifdef _WIN32\n"
+      << "extern \"C\" __declspec(dllexport) void init" << def->module_name << "();\n"
+      << "#else\n"
+      << "extern \"C\" void init" << def->module_name << "();\n"
       << "#endif\n"
+      << "\n"
+      << "void init" << def->module_name << "() {\n"
+      << "  LibraryDef *refs[] = {&" << def->library_name << "_moddef, NULL};\n"
       << "  Dtool_PyModuleInitHelper(refs, \"" << def->module_name << "\");\n"
-      << "}\n\n";
+      << "}\n"
+      << "\n"
+      << "#endif\n"
+      << "\n";
 }
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Function :write_module_class
@@ -1211,8 +1239,7 @@ write_module_class(ostream &out, Object *obj) {
   out << "PyMethodDef Dtool_Methods_" << ClassName << "[] = {\n";
 
   std::map<int, Function *> static_functions;
-  std::map<Function *, std::string>        normal_Operator_functions;
-  std::map<Function *, SlottedFunctionDef> wraped_Operator_functions;
+  std::map<Function *, SlottedFunctionDef> slotted_functions;
   // function Table
   bool got_copy = false;
   bool got_deepcopy = false;
@@ -1244,13 +1271,8 @@ write_module_class(ostream &out, Object *obj) {
     }
 
     SlottedFunctionDef slotted_def;
-    if (!get_slotted_function_def(obj, func, slotted_def)) {
-        
-    } else if (slotted_def._wrapper_type != WT_none) {
-      wraped_Operator_functions[func] = slotted_def;
-      
-    } else {
-      normal_Operator_functions[func] = slotted_def._answer_location;
+    if (get_slotted_function_def(obj, func, slotted_def)) {
+      slotted_functions[func] = slotted_def;
     }
   }
 
@@ -1321,8 +1343,8 @@ write_module_class(ostream &out, Object *obj) {
   }
 
   {
-    std::map<Function *, SlottedFunctionDef>::iterator rfi; //          wraped_Operator_functions;
-    for (rfi = wraped_Operator_functions.begin(); rfi != wraped_Operator_functions.end(); rfi++) {
+    std::map<Function *, SlottedFunctionDef>::iterator rfi; //          slotted_functions;
+    for (rfi = slotted_functions.begin(); rfi != slotted_functions.end(); rfi++) {
       switch (rfi->second._wrapper_type) {
       case WT_no_params:
         // PyObject *func(PyObject *self)
@@ -1878,7 +1900,9 @@ write_module_class(ostream &out, Object *obj) {
     out << "    Dtool_" << ClassName << ".As_PyTypeObject().tp_flags |= Py_TPFLAGS_HAVE_ITER;\n";
   }
   if (has_local_getbuffer) {
+    out << "#if PY_VERSION_HEX >= 0x02060000\n";
     out << "    Dtool_" << ClassName << ".As_PyTypeObject().tp_flags |= Py_TPFLAGS_HAVE_NEWBUFFER;\n";
+    out << "#endif";
   }
 
   // add bases///
@@ -1899,23 +1923,37 @@ write_module_class(ostream &out, Object *obj) {
   out << "    Dtool_" << ClassName << ".As_PyTypeObject().tp_dict = PyDict_New();\n";
   out << "    PyDict_SetItemString(Dtool_" <<ClassName << ".As_PyTypeObject().tp_dict, \"DtoolClassDict\", Dtool_" <<ClassName << ".As_PyTypeObject().tp_dict);\n";
 
-  // the standard call functions
-  std::map<Function *, std::string >::iterator ofi;
-  for (ofi = normal_Operator_functions.begin(); ofi != normal_Operator_functions.end(); ofi++) {
-    Function *func = ofi->first;
-    out << "    // " << ofi->second << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
-    out << "    Dtool_" << ClassName << ".As_PyTypeObject()." << ofi->second << " = &" << func->_name << ";\n";
-  }
+  // Now assign the slotted function definitions.
+  std::map<Function *, SlottedFunctionDef>::const_iterator rfi;
+  int prev_min_version = 0;
 
+  for (rfi = slotted_functions.begin(); rfi != slotted_functions.end(); rfi++) {
+    Function *func = rfi->first;
+    const SlottedFunctionDef &def = rfi->second;
 
-  // wrapped functions...
-  {
-    std::map<Function *, SlottedFunctionDef>::iterator rfi; //          wraped_Operator_functions;
-    for (rfi = wraped_Operator_functions.begin(); rfi != wraped_Operator_functions.end(); rfi++) {
-      Function *func = rfi->first;
-      out << "    // " << rfi->second._answer_location << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
-      out << "    Dtool_" << ClassName << ".As_PyTypeObject()." << rfi->second._answer_location << " = &" << func->_name << methodNameFromCppName(func, export_class_name, false) << ";\n";
+    // Add an #ifdef if there is a specific version requirement on this function.
+    if (def._min_version != prev_min_version) {
+      if (prev_min_version > 0) {
+        out << "#endif\n";
+      }
+      prev_min_version = def._min_version;
+      if (def._min_version > 0) {
+        out << "#if PY_VERSION_HEX >= 0x" << hex << def._min_version << dec << "\n";
+      }
     }
+
+    out << "    // " << rfi->second._answer_location << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
+
+    if (def._wrapper_type == WT_none) {
+      // Bound directly, without wrapper.
+      out << "    Dtool_" << ClassName << ".As_PyTypeObject()." << def._answer_location << " = &" << func->_name << ";\n";
+    } else {
+      // Assign to the wrapper method that was generated earlier.
+      out << "    Dtool_" << ClassName << ".As_PyTypeObject()." << def._answer_location << " = &" << func->_name << methodNameFromCppName(func, export_class_name, false) << ";\n";
+    }
+  }
+  if (prev_min_version > 0) {
+    out << "#endif\n";
   }
 
   // compare and hash work together in PY inherit behavior hmm grrr

@@ -87,6 +87,8 @@ class panda3d(package):
                   'direct.tkpanels', 'direct.tkwidgets',
                   'tkCommonDialog', 'tkMessageBox', 'tkSimpleDialog')
 
+    excludeModule('MySQLdb', '_mysql')
+
     # Most of the core Panda3D DLL's will be included implicitly due to
     # being referenced by the above Python code.  Here we name a few more
     # that are also needed, but aren't referenced by any code.  Again,

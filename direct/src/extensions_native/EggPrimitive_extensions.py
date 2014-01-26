@@ -1,7 +1,3 @@
-from extension_native_helpers import *
-Dtool_PreloadDLL("libpandaegg")
-from libpandaegg import *
-
 ####################################################################
 #Dtool_funcToMethod(func, class)        
 #del func

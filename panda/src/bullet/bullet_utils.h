@@ -55,6 +55,7 @@ enum BulletUpAxis {
 };
 
 EXPCL_PANDABULLET BulletUpAxis get_default_up_axis();
+EXPCL_PANDABULLET int get_bullet_version();
 
 END_PUBLISH
 

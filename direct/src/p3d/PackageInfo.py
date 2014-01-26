@@ -175,7 +175,7 @@ class PackageInfo:
 
         # Return the size of plan A, assuming it will work.
         plan = self.installPlans[0]
-        size = sum(map(lambda step: step.getEffort(), plan))
+        size = sum([step.getEffort() for step in plan])
         
         return size
 
@@ -313,7 +313,7 @@ class PackageInfo:
 
             filename = Filename(self.getPackageDir(), self.descFileBasename)
             # Now that we've written the desc file, make it read-only.
-            os.chmod(filename.toOsSpecific(), 0444)
+            os.chmod(filename.toOsSpecific(), 0o444)
 
         if not self.__readDescFile():
             # Weird, it passed the hash check, but we still can't read
@@ -688,7 +688,7 @@ class PackageInfo:
         installPlans = self.installPlans
         self.installPlans = None
         for plan in installPlans:
-            self.totalPlanSize = sum(map(lambda step: step.getEffort(), plan))
+            self.totalPlanSize = sum([step.getEffort() for step in plan])
             self.totalPlanCompleted = 0
             self.downloadProgress = 0
 
@@ -832,7 +832,7 @@ class PackageInfo:
             if bytesStarted:
                 self.notify.info("Resuming %s after %s bytes already downloaded" % (url, bytesStarted))
                 # Make sure the file is writable.
-                os.chmod(targetPathname.toOsSpecific(), 0644)
+                os.chmod(targetPathname.toOsSpecific(), 0o644)
                 channel.beginGetSubdocument(request, bytesStarted, 0)
             else:
                 # No partial download possible; get the whole file.
@@ -980,7 +980,7 @@ class PackageInfo:
             yield self.stepFailed; return
 
         # Now that we've verified the archive, make it read-only.
-        os.chmod(targetPathname.toOsSpecific(), 0444)
+        os.chmod(targetPathname.toOsSpecific(), 0o444)
 
         # Now we can safely remove the compressed archive.
         sourcePathname.unlink()
@@ -1032,7 +1032,7 @@ class PackageInfo:
                 continue
 
             # Make sure it's executable, and not writable.
-            os.chmod(targetPathname.toOsSpecific(), 0555)
+            os.chmod(targetPathname.toOsSpecific(), 0o555)
 
             step.bytesDone += file.size
             self.__updateStepProgress(step)

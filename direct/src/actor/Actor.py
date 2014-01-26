@@ -1006,7 +1006,7 @@ class Actor(DirectObject, NodePath):
             return
 
         # remove the part
-        if (partBundleDict.has_key(partName)):
+        if (partName in partBundleDict):
             partBundleDict[partName].partBundleNP.removeNode()
             del(partBundleDict[partName])
 
@@ -1019,7 +1019,7 @@ class Actor(DirectObject, NodePath):
             return
 
         # remove the animations
-        if (partDict.has_key(partName)):
+        if (partName in partDict):
             del(partDict[partName])
 
         # remove the bundle handle, in case this part is ever
@@ -1802,7 +1802,7 @@ class Actor(DirectObject, NodePath):
                 # Get all main parts, but not sub-parts.
                 animDictItems = []
                 for thisPart, animDict in partDict.items():
-                    if not self.__subpartDict.has_key(thisPart):
+                    if thisPart not in self.__subpartDict:
                         animDictItems.append((thisPart, animDict))
 
             else:

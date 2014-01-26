@@ -23,6 +23,8 @@ BulletClosestHitRayResult::
 BulletClosestHitRayResult(const btVector3 &from_pos, const btVector3 &to_pos, const CollideMask &mask) 
  : btCollisionWorld::ClosestRayResultCallback(from_pos, to_pos), _mask(mask) {
 
+  _shapePart = -1;
+  _triangleIndex = -1;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -33,17 +35,30 @@ BulletClosestHitRayResult(const btVector3 &from_pos, const btVector3 &to_pos, co
 bool BulletClosestHitRayResult::
 needsCollision(btBroadphaseProxy* proxy0) const {
 
-  // Original implementation:
-  //bool collides = (proxy0->m_collisionFilterGroup & m_collisionFilterMask) != 0;
-  //collides = collides && (m_collisionFilterGroup & proxy0->m_collisionFilterMask);
-  //return collides;
-
   btCollisionObject *obj0 = (btCollisionObject *) proxy0->m_clientObject;
   PandaNode *node0 = (PandaNode *) obj0->getUserPointer();
   CollideMask mask0 = node0->get_into_collide_mask();
 
   return (_mask & mask0) != 0;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletAllHitsRayResult::addSingleResult
+//       Access: Protected
+//  Description: Override default implementation.
+////////////////////////////////////////////////////////////////////
+btScalar BulletClosestHitRayResult::
+addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace) {
+
+  // Store part/index information
+  if (rayResult.m_localShapeInfo) {
+    _shapePart = rayResult.m_localShapeInfo->m_shapePart;
+    _triangleIndex = rayResult.m_localShapeInfo->m_triangleIndex;
+  }
+
+  // Call the default implementation
+  return btCollisionWorld::ClosestRayResultCallback::addSingleResult(rayResult, normalInWorldSpace);
+};
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletClosestHitRayResult::has_hit
@@ -121,5 +136,27 @@ LPoint3 BulletClosestHitRayResult::
 get_to_pos() const {
 
   return btVector3_to_LPoint3(m_rayToWorld);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletClosestHitRayResult::get_shape_part
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+int BulletClosestHitRayResult::
+get_shape_part() const {
+
+  return _shapePart;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletClosestHitRayResult::get_triangle_index
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+int BulletClosestHitRayResult::
+get_triangle_index() const {
+
+  return _triangleIndex;
 }
 

@@ -48,11 +48,11 @@ class DirectLights(NodePath):
             self.delete(light)
 
     def asList(self):
-        return map(lambda n, s=self: s[n], self.getNameList())
+        return [self[n] for n in self.getNameList()]
 
     def getNameList(self):
         # Return a sorted list of all lights in the light dict
-        nameList = map(lambda x: x.getName(), self.lightDict.values())
+        nameList = [x.getName() for x in self.lightDict.values()]
         nameList.sort()
         return nameList
 

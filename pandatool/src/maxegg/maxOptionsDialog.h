@@ -42,12 +42,12 @@ extern HINSTANCE hInstance;
 void ChunkSave(ISave *isave, int chunkid, int value);
 void ChunkSave(ISave *isave, int chunkid, bool value);
 void ChunkSave(ISave *isave, int chunkid, char *value);
-char *ChunkLoadString(ILoad *iload, char *buffer, int maxBytes);
+TCHAR *ChunkLoadString(ILoad *iload, TCHAR *buffer, int maxLength);
 int ChunkLoadInt(ILoad *iload);
 bool ChunkLoadBool(ILoad *iload);
-void SetICustEdit(HWND wnd, int nIDDlgItem, char *text);
-INT_PTR CALLBACK MaxOptionsDialogProc( HWND hWnd, UINT message, 
-                                    WPARAM wParam, LPARAM lParam );
+void SetICustEdit(HWND wnd, int nIDDlgItem, TCHAR *text);
+INT_PTR CALLBACK MaxOptionsDialogProc(HWND hWnd, UINT message,
+                                      WPARAM wParam, LPARAM lParam );
 
 struct MaxEggOptions
 {
@@ -71,16 +71,16 @@ struct MaxEggOptions
     bool _successful;
     bool _export_whole_scene;
     bool _export_all_frames;
-    char _file_name[2048];
-    char _short_name[256];
+    TCHAR _file_name[2048];
+    TCHAR _short_name[256];
     PT(PathReplace) _path_replace;
     std::vector<ULONG> _node_list;
 };
 
 class MaxOptionsDialog : public MaxEggOptions
 {
-    friend class MaxEggPlugin;
-    
+  friend class MaxEggPlugin;
+
   public:
     int _min_frame, _max_frame;
     bool _checked;
@@ -89,24 +89,24 @@ class MaxOptionsDialog : public MaxEggOptions
 
     MaxOptionsDialog();
     ~MaxOptionsDialog();
-    
-    //All these List functions should probably take what list they need to operate on
-    //rather than just operating on a global list
+
+    // All these List functions should probably take what list they need to operate on
+    // rather than just operating on a global list
     void SetMaxInterface(IObjParam *iface) { _max_interface = iface; }
     void UpdateUI(HWND hWnd);
     bool UpdateFromUI(HWND hWnd);
     void RefreshNodeList(HWND hWnd);
     void SetAnimRange();
-    
+
     bool FindNode(ULONG INodeHandle); //returns true if the node is already in the list
     void AddNode(ULONG INodeHandle);
     void RemoveNode(int i);
     void RemoveNodeByHandle(ULONG INodeHandle);
     void ClearNodeList(HWND hWnd);
     void CullBadNodes();
-    
+
     ULONG GetNode(int i) { return (i >= 0 && i < _node_list.size()) ? _node_list[i] : ULONG_MAX; }
-    
+
     IOResult Load(ILoad *iload);
     IOResult Save(ISave *isave);
 };

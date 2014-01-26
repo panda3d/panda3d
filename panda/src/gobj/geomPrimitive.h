@@ -109,6 +109,7 @@ PUBLISHED:
   bool close_primitive();
   void clear_vertices();
   void offset_vertices(int offset);
+  void offset_vertices(int offset, int begin_row, int end_row);
   void make_nonindexed(GeomVertexData *dest, const GeomVertexData *source);
   void pack_vertices(GeomVertexData *dest, const GeomVertexData *source);
   void make_indexed();

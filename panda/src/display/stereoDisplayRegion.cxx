@@ -284,16 +284,16 @@ set_cull_traverser(CullTraverser *trav) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: StereoDisplayRegion::set_cube_map_index
+//     Function: StereoDisplayRegion::set_target_tex_page
 //       Access: Published, Virtual
-//  Description: Sets the cube_map_index on both the left and
+//  Description: Sets the page and view on both the left and
 //               right DisplayRegions to the indicated value.
 ////////////////////////////////////////////////////////////////////
 void StereoDisplayRegion::
-set_cube_map_index(int cube_map_index) {
-  DisplayRegion::set_cube_map_index(cube_map_index);
-  _left_eye->set_cube_map_index(cube_map_index);
-  _right_eye->set_cube_map_index(cube_map_index);
+set_target_tex_page(int page, int view) {
+  DisplayRegion::set_target_tex_page(page, view);
+  _left_eye->set_target_tex_page(page, view);
+  _right_eye->set_target_tex_page(page, view);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -238,7 +238,7 @@ class FunctionCall(ReceivesMultipleStateChanges, PushesStateChanges):
     def _recvMultiStatePush(self, key, source):
         # one of the arguments changed
         # pick up the new value
-        if isinstance(key, types.StringType):
+        if isinstance(key, str):
             self._bakedKargs[key] = source.getState()
         else:
             self._bakedArgs[key] = source.getState()

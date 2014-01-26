@@ -238,7 +238,7 @@ class FFIInterrogateDatabase:
         self.environment = FFIEnvironment.FFIEnvironment()
 
     def isDefinedType(self, typeIndex):
-        return self.typeIndexMap.has_key(typeIndex)
+        return typeIndex in self.typeIndexMap
     
     def constructDescriptor(self, typeIndex):
         if interrogate_type_is_atomic(typeIndex):

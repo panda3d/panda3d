@@ -139,7 +139,7 @@ PUBLISHED:
   void set_contact_added_callback(CallbackObject *obj);
   void clear_contact_added_callback();
 
-  void set_tick_callback(CallbackObject *obj);
+  void set_tick_callback(CallbackObject *obj, bool is_pretick=false);
   void clear_tick_callback();
 
   void set_filter_callback(CallbackObject *obj);
@@ -184,7 +184,7 @@ private:
   void sync_p2b(PN_stdfloat dt, int num_substeps);
   void sync_b2p();
 
-  void tick_callback(btDynamicsWorld *world, btScalar timestep);
+  static void tick_callback(btDynamicsWorld *world, btScalar timestep);
 
   typedef PTA(PT(BulletRigidBodyNode)) BulletRigidBodies;
   typedef PTA(PT(BulletSoftBodyNode)) BulletSoftBodies;

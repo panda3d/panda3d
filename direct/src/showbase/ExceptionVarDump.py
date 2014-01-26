@@ -1,7 +1,6 @@
 from pandac.PandaModules import getConfigShowbase
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import fastRepr
-from exceptions import Exception
 import sys
 import types
 import traceback

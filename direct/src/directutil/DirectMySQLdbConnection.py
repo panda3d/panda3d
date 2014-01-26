@@ -8,19 +8,16 @@ class DirectMySQLdbConnection(Connection):
         from MySQLdb.constants import CLIENT, FIELD_TYPE
         from MySQLdb.converters import conversions
         from weakref import proxy, WeakValueDictionary
-        
+
         import types
 
         kwargs2 = kwargs.copy()
-        
-        if kwargs.has_key('conv'):
-            conv = kwargs['conv']
-        else:
-            conv = conversions
+
+        conv = kwargs.get('conv', conversions)
 
         kwargs2['conv'] = dict([ (k, v) for k, v in conv.items()
                                  if type(k) is int ])
-    
+
         self.cursorclass = kwargs2.pop('cursorclass', self.default_cursor)
         charset = kwargs2.pop('charset', '')
 
@@ -28,7 +25,7 @@ class DirectMySQLdbConnection(Connection):
             use_unicode = True
         else:
             use_unicode = False
-            
+
         use_unicode = kwargs2.pop('use_unicode', use_unicode)
         sql_mode = kwargs2.pop('sql_mode', '')
 

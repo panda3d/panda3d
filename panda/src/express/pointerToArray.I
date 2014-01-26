@@ -96,6 +96,7 @@ PointerToArray(PyObject *self, PyObject *source) :
   // self in the constructor--the caller can't initialize this for us.
   ((Dtool_PyInstDef *)self)->_ptr_to_object = this;
 
+#if PY_VERSION_HEX >= 0x02060000
   if (PyObject_CheckBuffer(source)) {
     // User passed a buffer object.
     Py_buffer view;
@@ -119,6 +120,7 @@ PointerToArray(PyObject *self, PyObject *source) :
     PyBuffer_Release(&view);
     return;
   }
+#endif
 
   if (!PySequence_Check(source)) {
     // If passed with a non-sequence, this isn't the right constructor.
@@ -1330,6 +1332,7 @@ clear() {
 }
 
 #ifdef HAVE_PYTHON
+#if PY_VERSION_HEX >= 0x02060000
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::__getbuffer__
 //       Access: Published
@@ -1342,7 +1345,6 @@ INLINE int PointerToArray<Element>::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) {
 
   const char *format = get_format_code(Element);
-  cerr << "non-const __getbuffer__ with fmt " << format << "\n";
   if (format == NULL) {
     // Not supported.
     return -1;
@@ -1411,14 +1413,12 @@ INLINE int ConstPointerToArray<Element>::
 __getbuffer__(PyObject *self, Py_buffer *view, int flags) const {
 
   if ((flags & PyBUF_WRITABLE) == PyBUF_WRITABLE) {
-    cerr << "writable buffer requested of const array\n";
     PyErr_SetString(PyExc_BufferError,
                     "Object is not writable.");
     return -1;
   }
 
   const char *format = get_format_code(Element);
-  cerr << "const __getbuffer__ with fmt " << format << "\n";
   if (format == NULL) {
     // Not supported.
     return -1;
@@ -1474,6 +1474,7 @@ __releasebuffer__(PyObject *self, Py_buffer *view) const {
     view->internal = NULL;
   }
 }
+#endif  // PY_VERSION_HEX
 #endif  // HAVE_PYTHON
 
 #endif  // CPPPARSER

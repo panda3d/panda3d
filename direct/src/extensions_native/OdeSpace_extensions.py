@@ -1,7 +1,3 @@
-from extension_native_helpers import *
-Dtool_PreloadDLL("libpanda")
-from libpanda import *
-
 ####################################################################
 #Dtool_funcToMethod(func, class)
 #del func

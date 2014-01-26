@@ -274,7 +274,7 @@ const double meshVerts[252][3] = {
    This basically says "Yes, I am a helper object!"
 */
 
-class MaxEggPluginClassDesc : public ClassDesc 
+class MaxEggPluginClassDesc : public ClassDesc
 {
 public:
   int          IsPublic() { return TRUE; }
@@ -468,29 +468,29 @@ void MaxEggPlugin::SaveCheckState() {
 void MaxEggPlugin::UpdateUI() {
     HWND lv = GetDlgItem(hMaxEggParams, IDC_LIST_EGGS);
     LV_COLUMN pCol;
-    
+
     if (ListView_GetColumnWidth(lv, 1) <= 0 || ListView_GetColumnWidth(lv, 1) > 10000) {
-        //Columns have not been setup, so initialize the control
+        // Columns have not been setup, so initialize the control
         ListView_SetExtendedListViewStyleEx(lv, LVS_EX_CHECKBOXES | LVS_EX_FULLROWSELECT, 
                                             LVS_EX_CHECKBOXES | LVS_EX_FULLROWSELECT);
-        
+
         pCol.fmt = LVCFMT_LEFT;
         pCol.cx = 96;
-        pCol.pszText = "Filename";
+        pCol.pszText = _T("Filename");
         pCol.mask = LVCF_FMT | LVCF_WIDTH | LVCF_TEXT | LVCF_SUBITEM;
         pCol.iSubItem = 0;
         ListView_InsertColumn(lv, 0, &pCol);
-        
+
         pCol.cx = 44;
-        pCol.pszText = "Type";
+        pCol.pszText = _T("Type");
         ListView_InsertColumn(lv, 1, &pCol);
     }
-    
-    //Add the eggs to the list
+
+    // Add the eggs to the list
     ListView_DeleteAllItems(lv);
     LV_ITEM Item;
     Item.mask = LVIF_TEXT;
-    
+
     for (int i = 0; i < numEggs; i++) {
         Item.iItem = i;
         Item.iSubItem = 0;
@@ -498,16 +498,16 @@ void MaxEggPlugin::UpdateUI() {
         ListView_InsertItem(lv, &Item);
         Item.iSubItem = 1;
         switch(eggList[i]->_anim_type) {
-        case MaxEggOptions::AT_chan:  Item.pszText = "Animation"; break;
-        case MaxEggOptions::AT_both:  Item.pszText = "Both"; break;
-        case MaxEggOptions::AT_pose:  Item.pszText = "Static"; break;
-        case MaxEggOptions::AT_model: Item.pszText = "Model"; break;
-        default:                      Item.pszText = "Model"; break;
+        case MaxEggOptions::AT_chan:  Item.pszText = _T("Animation"); break;
+        case MaxEggOptions::AT_both:  Item.pszText = _T("Both"); break;
+        case MaxEggOptions::AT_pose:  Item.pszText = _T("Static"); break;
+        case MaxEggOptions::AT_model: Item.pszText = _T("Model"); break;
+        default:                      Item.pszText = _T("Model"); break;
         }
         ListView_SetItem(lv, &Item);
         ListView_SetCheckState(lv, i, eggList[i]->_checked);
     }
-    
+
     // Set the "Overwrite Existing Files" and "Pview" checkboxes
     CheckDlgButton(hMaxEggParams, IDC_OVERWRITE_CHECK, 
                    autoOverwrite ? BST_CHECKED : BST_UNCHECKED);
@@ -519,48 +519,49 @@ void MaxEggPlugin::UpdateUI() {
 
 void MaxEggPlugin::DoExport() {
     int good = 0, bad = 0;
-    
-    std::stringstream status;
-    
+
+    std::basic_stringstream<TCHAR> status;
+
     SaveCheckState();
-    
+
     for (int i = 0; i < numEggs; i++) {
         if (eggList[i]->_checked) {
             // If "auto overwrite" was not checked and the file exists,
             // ask if the user wishes to overwrite the file
             bool do_write = true;
-            if (!autoOverwrite && Filename::from_os_specific(eggList[i]->_file_name).exists()) {
-                char msg[1024];
-                sprintf(msg, "Overwrite file \"%s.egg\"?", eggList[i]->_short_name);
-                do_write = (MessageBox(hMaxEggParams, msg, "Panda3D Exporter", MB_YESNO | MB_ICONQUESTION) == IDYES);
+
+            if (!autoOverwrite && GetFileAttributes(eggList[i]->_file_name) != INVALID_FILE_ATTRIBUTES) {
+                TCHAR msg[1024];
+                _stprintf(msg, _T("Overwrite file \"%s.egg\"?"), eggList[i]->_short_name);
+                do_write = (MessageBox(hMaxEggParams, msg, _T("Panda3D Exporter"), MB_YESNO | MB_ICONQUESTION) == IDYES);
             }
             if (do_write) {
                 MaxToEggConverter converter;
                 if (converter.convert((MaxEggOptions*)eggList[i])) {
                     good += 1;
-                    status << "Successfully created " << eggList[i]->_short_name << ".egg\n";
+                    status << _T("Successfully created ") << eggList[i]->_short_name << _T(".egg\n");
                 } else {
                     bad += 1;
-                    status << "Could not export " << eggList[i]->_short_name << ".egg\n";
+                    status << _T("Could not export ") << eggList[i]->_short_name << _T(".egg\n");
                 }
             } else {
                 bad += 1;
-                status << "Skipped file " << eggList[i]->_short_name << ".egg\n";
+                status << _T("Skipped file ") << eggList[i]->_short_name << _T(".egg\n");
             }
         }
     }
-    
+
     UINT mask = MB_OK;
-    
+
     if (good == 0 && bad == 0) {
         mask |= MB_ICONEXCLAMATION;
-        MessageBox(hMaxEggParams, "Nothing to export!", "Panda3D Export results", mask);
+        MessageBox(hMaxEggParams, _T("Nothing to export!"), _T("Panda3D Export results"), mask);
     } else {
         if (bad > 0) mask |= MB_ICONEXCLAMATION;
-        else mask |= MB_ICONINFORMATION;        
-        MessageBox(hMaxEggParams, status.str().c_str(), "Panda3D Export results", mask);
+        else mask |= MB_ICONINFORMATION;
+        MessageBox(hMaxEggParams, status.str().c_str(), _T("Panda3D Export results"), mask);
     }
-    
+
     int pviewed = 0;
     if (pview && good > 0) {
         for (i = 0; i < numEggs; i++) {
@@ -568,18 +569,18 @@ void MaxEggPlugin::DoExport() {
                 if (eggList[i]->_anim_type != MaxEggOptions::AT_chan) {
                     PROCESS_INFORMATION pi;
                     STARTUPINFO si;
-                    
-                    memset(&si,0,sizeof(si));
-                    si.cb= sizeof(si);
-                    
-                    char cmdLine[2048];
+
+                    memset(&si, 0, sizeof(si));
+                    si.cb = sizeof(si);
+
+                    TCHAR cmdLine[2048];
                     // If we have just one model and animation file, pview them both
                     if (numEggs == 2 && eggList[i]->_anim_type == MaxEggOptions::AT_model &&
                         eggList[1-i]->_checked && eggList[1-i]->_successful &&
                         eggList[1-i]->_anim_type == MaxEggOptions::AT_chan) {
-                        sprintf(cmdLine, "pview \"%s\" \"%s\"", eggList[i]->_file_name, eggList[1-i]->_file_name);
+                        _stprintf(cmdLine, _T("pview \"%s\" \"%s\""), eggList[i]->_file_name, eggList[1-i]->_file_name);
                     } else {
-                        sprintf(cmdLine, "pview \"%s\"", eggList[i]->_file_name);
+                        _stprintf(cmdLine, _T("pview \"%s\""), eggList[i]->_file_name);
                     }
                     CreateProcess(NULL, cmdLine, NULL, NULL, FALSE, CREATE_NEW_CONSOLE,
                                   NULL, NULL, &si, &pi);
@@ -595,7 +596,7 @@ void MaxEggPlugin::BuildMesh()
 {
     int i;
     if(meshBuilt) return;
-    
+
     mesh.setNumVerts(252);
     mesh.setNumFaces(84);
     mesh.setSmoothFlags(0);

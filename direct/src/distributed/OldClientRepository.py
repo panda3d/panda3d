@@ -168,7 +168,7 @@ class OldClientRepository(ClientRepositoryBase):
         dclass.stopGenerate()
 
     def generateWithRequiredFields(self, dclass, doId, di):
-        if self.doId2do.has_key(doId):
+        if doId in self.doId2do:
             # ...it is in our dictionary.
             # Just update it.
             distObj = self.doId2do[doId]

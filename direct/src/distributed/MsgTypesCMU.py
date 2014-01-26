@@ -27,5 +27,5 @@ MsgId2Names = invertDictLossless(MsgName2Id)
     
 # put msg names in module scope, assigned to msg value
 for name, value in MsgName2Id.items():
-    exec '%s = %s' % (name, value)
+    exec('%s = %s' % (name, value))
 del name, value

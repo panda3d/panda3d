@@ -54,7 +54,7 @@ InterfaceMakerPythonObj::
 //               write_functions().
 ////////////////////////////////////////////////////////////////////
 void InterfaceMakerPythonObj::
-write_prototypes(ostream &out,ostream *out_h) {
+write_prototypes(ostream &out, ostream *out_h) {
   Functions::iterator fi;
   for (fi = _functions.begin(); fi != _functions.end(); ++fi) {
     Function *func = (*fi);

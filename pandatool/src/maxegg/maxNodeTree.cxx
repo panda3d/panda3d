@@ -15,15 +15,10 @@
 
 #include "maxEgg.h"
 
-// 3dsmax versions below 9 don't define this.
-#ifndef _M
-#define _M(s) (s)
-#endif
-
 ////////////////////////////////////////////////////////////////////
 //     Function: MaxNodeTree::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 MaxNodeTree::
 MaxNodeTree() {
@@ -46,13 +41,15 @@ MaxNodeDesc *MaxNodeTree::
 build_node(INode *max_node) {
   MaxNodeDesc *node_desc = r_build_node(max_node);
   node_desc->from_INode(max_node);
-  if (node_desc->is_node_joint())
+
+  if (node_desc->is_node_joint()) {
     node_desc->_joint_entry = build_joint(max_node, node_desc);
+  }
   return node_desc;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MaxNodeTree::build_node
+//     Function: MaxNodeTree::build_joint
 //       Access: Public
 //  Description: Returns a pointer to the node corresponding to the
 //               indicated INode object, creating it first if
@@ -62,7 +59,7 @@ MaxNodeDesc *MaxNodeTree::
 build_joint(INode *max_node, MaxNodeDesc *node_joint) {
   MaxNodeDesc *node_desc = r_build_joint(node_joint, max_node);
   node_desc->from_INode(max_node);
-  node_desc->set_joint(true);  
+  node_desc->set_joint(true);
   return node_desc;
 }
 
@@ -107,7 +104,7 @@ build_complete_hierarchy(INode *root, ULONG *selection_list, int len) {
     // *** Log an error
     return false;
   }
-    
+
   bool all_ok = true;
   r_build_hierarchy(root, selection_list, len);
 
@@ -223,7 +220,7 @@ get_egg_table(MaxNodeDesc *node_desc) {
     nassertr(node_desc->_parent != (MaxNodeDesc *)NULL, NULL);
 
     EggTable *egg_table = new EggTable(node_desc->get_name());
-    node_desc->_anim = new EggXfmSAnim("xform", 
+    node_desc->_anim = new EggXfmSAnim("xform",
                                        _egg_data->get_coordinate_system());
     node_desc->_anim->set_fps(_fps);
     egg_table->add_child(node_desc->_anim);
@@ -252,12 +249,10 @@ get_egg_table(MaxNodeDesc *node_desc) {
 //               has not already been created.
 ////////////////////////////////////////////////////////////////////
 EggXfmSAnim *MaxNodeTree::
-get_egg_anim(MaxNodeDesc *node_desc) 
-{
+get_egg_anim(MaxNodeDesc *node_desc) {
   get_egg_table(node_desc);
   return node_desc->_anim;
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MaxNodeTree::r_build_node
@@ -265,16 +260,15 @@ get_egg_anim(MaxNodeDesc *node_desc)
 //  Description: The recursive implementation of build_node().
 ////////////////////////////////////////////////////////////////////
 MaxNodeDesc *MaxNodeTree::
-r_build_node(INode* max_node) 
-{
+r_build_node(INode* max_node) {
   // If we have already encountered this pathname, return the
   // corresponding MaxNodeDesc immediately.
-  
+
   ULONG node_handle = 0;
-  
+
   if (max_node) {
     node_handle = max_node->GetHandle();
-  }    
+  }
 
   NodesByPath::const_iterator ni = _nodes_by_path.find(node_handle);
   if (ni != _nodes_by_path.end()) {
@@ -290,8 +284,8 @@ r_build_node(INode* max_node)
     node_desc = _root;
 
   } else {
-    INode *parent_node; 
-    string local_name = max_node->GetName();
+    INode *parent_node;
+
     if (max_node->IsRootNode()) {
       parent_node = NULL;
     } else {
@@ -299,7 +293,7 @@ r_build_node(INode* max_node)
     }
 
     MaxNodeDesc *parent_node_desc = r_build_node(parent_node);
-    node_desc = new MaxNodeDesc(parent_node_desc, local_name);
+    node_desc = new MaxNodeDesc(parent_node_desc, max_node);
     _nodes.push_back(node_desc);
   }
 
@@ -313,19 +307,19 @@ r_build_node(INode* max_node)
 //  Description: The recursive implementation of build_joint().
 ////////////////////////////////////////////////////////////////////
 MaxNodeDesc *MaxNodeTree::
-r_build_joint(MaxNodeDesc *node_desc, INode *max_node) 
+r_build_joint(MaxNodeDesc *node_desc, INode *max_node)
 {
   MaxNodeDesc *node_joint;
   if (node_desc == _root) {
-    node_joint =  new MaxNodeDesc(_root, max_node->GetName());
+    node_joint = new MaxNodeDesc(_root, max_node);
     _nodes.push_back(node_joint);
-        return node_joint;
-  }     else if (node_desc->is_node_joint() && node_desc->_joint_entry) {
-    node_joint =  new MaxNodeDesc(node_desc->_joint_entry, max_node->GetName());
+    return node_joint;
+  } else if (node_desc->is_node_joint() && node_desc->_joint_entry) {
+    node_joint = new MaxNodeDesc(node_desc->_joint_entry, max_node);
     _nodes.push_back(node_joint);
-        return node_joint;
+    return node_joint;
   } else {
-        return r_build_joint(node_desc->_parent, max_node);
+    return r_build_joint(node_desc->_parent, max_node);
   }
 }
 
@@ -335,21 +329,20 @@ r_build_joint(MaxNodeDesc *node_desc, INode *max_node)
 //  Description: The recursive implementation of build_node().
 ////////////////////////////////////////////////////////////////////
 MaxNodeDesc *MaxNodeTree::
-find_node(INode* max_node) 
-{
+find_node(INode* max_node) {
   // If we have already encountered this pathname, return the
   // corresponding MaxNodeDesc immediately.
-  
+
   ULONG node_handle = 0;
-  
+
   if (max_node) {
     node_handle = max_node->GetHandle();
-  }    
+  }
 
   NodesByPath::const_iterator ni = _nodes_by_path.find(node_handle);
   if (ni != _nodes_by_path.end()) {
     return (*ni).second;
-  } 
+  }
 
   return NULL;
 }
@@ -385,56 +378,56 @@ void MaxNodeTree::set_collision_tags(MaxNodeDesc *node_desc, EggGroup *egg_group
       
       //We have to check each collision type in turn to see if it's true
       //Ugly but it works per object, not globaly
-    if (node_desc->get_max_node()->GetUserPropInt(_M("polyset"), check)) {
+    if (node_desc->get_max_node()->GetUserPropInt(_T("polyset"), check)) {
         //we have a polyset.
       if (check == 1) {
         egg_group->set_collision_name(node_desc->get_name());
         egg_group->set_cs_type(EggGroup::CST_polyset);
       }
     } 
-    if (node_desc->get_max_node()->GetUserPropInt(_M("plane"), check)) {
+    if (node_desc->get_max_node()->GetUserPropInt(_T("plane"), check)) {
       //plane
       if (check == 1) {
         egg_group->set_collision_name(node_desc->get_name());
         egg_group->set_cs_type(EggGroup::CST_plane);
       }
     } 
-    if (node_desc->get_max_node()->GetUserPropInt(_M("polygon"), check)) {
+    if (node_desc->get_max_node()->GetUserPropInt(_T("polygon"), check)) {
       //polygon
       if (check == 1) {
         egg_group->set_collision_name(node_desc->get_name());
         egg_group->set_cs_type(EggGroup::CST_polygon);
       }
     }
-    if (node_desc->get_max_node()->GetUserPropInt(_M("sphere"), check)) {
+    if (node_desc->get_max_node()->GetUserPropInt(_T("sphere"), check)) {
       //sphere
       if (check == 1) {
         egg_group->set_collision_name(node_desc->get_name());
         egg_group->set_cs_type(EggGroup::CST_sphere);
       }
     } 
-    if (node_desc->get_max_node()->GetUserPropInt(_M("inv-sphere"), check)) {
+    if (node_desc->get_max_node()->GetUserPropInt(_T("inv-sphere"), check)) {
       //invsphere
       if (check == 1) {
         egg_group->set_collision_name(node_desc->get_name());
         egg_group->set_cs_type(EggGroup::CST_inv_sphere);
       }
     } 
-    if (node_desc->get_max_node()->GetUserPropInt(_M("invsphere"), check)) {
+    if (node_desc->get_max_node()->GetUserPropInt(_T("invsphere"), check)) {
       //invsphere (different spelling)
       if (check == 1) {
         egg_group->set_collision_name(node_desc->get_name());
         egg_group->set_cs_type(EggGroup::CST_inv_sphere);
       }
     } 
-    if (node_desc->get_max_node()->GetUserPropInt(_M("tube"), check)) {
+    if (node_desc->get_max_node()->GetUserPropInt(_T("tube"), check)) {
       //tube
       if (check == 1) {
         egg_group->set_collision_name(node_desc->get_name());
         egg_group->set_cs_type(EggGroup::CST_tube);
       }
     } 
-    if (node_desc->get_max_node()->GetUserPropInt(_M("floor-mesh"), check)) {
+    if (node_desc->get_max_node()->GetUserPropInt(_T("floor-mesh"), check)) {
       //floor-mesh
       if (check == 1) {
         egg_group->set_collision_name(node_desc->get_name());
@@ -442,49 +435,49 @@ void MaxNodeTree::set_collision_tags(MaxNodeDesc *node_desc, EggGroup *egg_group
       }
     }
     
-    if (node_desc->get_max_node()->GetUserPropInt(_M("descend"), check)) {
+    if (node_desc->get_max_node()->GetUserPropInt(_T("descend"), check)) {
       if (check == 1) {
       //we have the descend flag specified
       egg_group->set_collide_flags(EggGroup::CF_descend);
       }
     } 
-    if (node_desc->get_max_node()->GetUserPropInt(_M("event"), check)) {
+    if (node_desc->get_max_node()->GetUserPropInt(_T("event"), check)) {
       if (check == 1) {
       //we have the event flag specified
       egg_group->set_collide_flags(EggGroup::CF_event);
       }
     } 
-    if (node_desc->get_max_node()->GetUserPropInt(_M("keep"), check)) {
+    if (node_desc->get_max_node()->GetUserPropInt(_T("keep"), check)) {
       if (check == 1) {
       //we have the keep flag specified
       egg_group->set_collide_flags(EggGroup::CF_keep);
       }
     } 
-    if (node_desc->get_max_node()->GetUserPropInt(_M("solid"), check)) {
+    if (node_desc->get_max_node()->GetUserPropInt(_T("solid"), check)) {
       if (check == 1) {
       //we have the solid flag specified
       egg_group->set_collide_flags(EggGroup::CF_solid);
       }
     } 
-    if (node_desc->get_max_node()->GetUserPropInt(_M("center"), check)) {
+    if (node_desc->get_max_node()->GetUserPropInt(_T("center"), check)) {
       if (check == 1) {
       //we have the center flag specified
       egg_group->set_collide_flags(EggGroup::CF_center);
       }
     } 
-    if (node_desc->get_max_node()->GetUserPropInt(_M("turnstile"), check)) {
+    if (node_desc->get_max_node()->GetUserPropInt(_T("turnstile"), check)) {
       if (check == 1) {
       //we have the turnstile flag specified
       egg_group->set_collide_flags(EggGroup::CF_turnstile);
       }
     } 
-    if (node_desc->get_max_node()->GetUserPropInt(_M("level"), check)) {
+    if (node_desc->get_max_node()->GetUserPropInt(_T("level"), check)) {
       if (check == 1) {
       //we have the level flag specified
       egg_group->set_collide_flags(EggGroup::CF_level);
       }
     } 
-    if (node_desc->get_max_node()->GetUserPropInt(_M("intangible"), check)) {
+    if (node_desc->get_max_node()->GetUserPropInt(_T("intangible"), check)) {
       if (check == 1) {
       //we have the intangible flag specified
       egg_group->set_collide_flags(EggGroup::CF_intangible);

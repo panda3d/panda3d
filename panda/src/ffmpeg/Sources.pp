@@ -39,6 +39,4 @@
     ffmpegAudioCursor.h ffmpegAudioCursor.I \
     ffmpegVirtualFile.h ffmpegVirtualFile.I
 
-  #define IGATESCAN all
-
 #end lib_target

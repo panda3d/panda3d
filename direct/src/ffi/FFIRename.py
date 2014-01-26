@@ -108,7 +108,7 @@ def classNameFromCppName(cppName):
             firstChar = 0
         else:
             className = className + char
-    if classRenameDictionary.has_key(className):
+    if className in classRenameDictionary:
         className = classRenameDictionary[className]
 
     if (className == ''):

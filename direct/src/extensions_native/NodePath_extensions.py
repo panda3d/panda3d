@@ -1,7 +1,3 @@
-from extension_native_helpers import *
-Dtool_PreloadDLL("libpanda")
-from libpanda import *
-
 ####################################################################
 #Dtool_funcToMethod(func, class)
 #del func
@@ -15,6 +11,7 @@ of the NodePath class
 ####################################################################
 def id(self):
         """Returns a unique id identifying the NodePath instance"""
+        print "Warning: NodePath.id() is deprecated.  Use hash(NodePath) or NodePath.get_key() instead."
         return self.getKey()
 
 Dtool_funcToMethod(id, NodePath)
@@ -28,7 +25,7 @@ del id
     # For iterating over children
 def getChildrenAsList(self):
         """Converts a node path's child NodePathCollection into a list"""
-        print "Warning: NodePath.getChildrenAsList() is deprecated.  Use getChildren() instead."
+        print "Warning: NodePath.getChildrenAsList() is deprecated.  Use get_children() instead."
         return list(self.getChildren())
 
 Dtool_funcToMethod(getChildrenAsList, NodePath)
@@ -99,6 +96,7 @@ del isolate
 
 def remove(self):
         """Remove a node path from the scene graph"""
+        print "Warning: NodePath.remove() is deprecated.  Use remove_node() instead."
         # Send message in case anyone needs to do something
         # before node is deleted
         messenger.send('preRemoveNodePath', [self])
@@ -148,7 +146,7 @@ del reverseLsNames
 #####################################################################
 def getAncestry(self):
         """Get a list of a node path's ancestors"""
-        print "NodePath.getAncestry() is deprecated.  Use getAncestors() instead."""
+        print "NodePath.getAncestry() is deprecated.  Use get_ancestors() instead."""
         ancestors = list(self.getAncestors())
         ancestors.reverse()
         return ancestors

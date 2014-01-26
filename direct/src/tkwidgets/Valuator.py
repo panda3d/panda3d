@@ -89,7 +89,7 @@ class Valuator(Pmw.MegaWidget):
         self.packValuator()
 
         # Set reset value if none specified
-        if not kw.has_key('resetValue'):
+        if 'resetValue' not in kw:
             self['resetValue'] = self['value']
 
         if self['fAdjustable']:
@@ -351,8 +351,7 @@ class ValuatorGroup(Pmw.MegaWidget):
         DEFAULT_DIM = 1
         # Default value depends on *actual* group size, test for user input
         DEFAULT_VALUE = [0.0] * kw.get('dim', DEFAULT_DIM)
-        DEFAULT_LABELS = map(lambda x: 'v[%d]' % x,
-                             range(kw.get('dim', DEFAULT_DIM)))
+        DEFAULT_LABELS = ['v[%d]' % x for x in range(kw.get('dim', DEFAULT_DIM))]
 
         #define the megawidget options
         INITOPT = Pmw.INITOPT
@@ -486,8 +485,7 @@ class ValuatorGroupPanel(Pmw.MegaToplevel):
         DEFAULT_DIM = 1
         # Default value depends on *actual* group size, test for user input
         DEFAULT_VALUE = [0.0] * kw.get('dim', DEFAULT_DIM)
-        DEFAULT_LABELS = map(lambda x: 'v[%d]' % x,
-                             range(kw.get('dim', DEFAULT_DIM)))
+        DEFAULT_LABELS = ['v[%d]' % x for x in range(kw.get('dim', DEFAULT_DIM))]
 
         #define the megawidget options
         INITOPT = Pmw.INITOPT

@@ -71,7 +71,13 @@ bool MaxToEggConverter::convert(MaxEggOptions *options) {
 
     _options = options;
 
-    Filename fn = Filename::from_os_specific(_options->_file_name);
+    Filename fn;
+#ifdef _UNICODE
+    fn = Filename::from_os_specific_w(_options->_file_name);
+#else
+    fn = Filename::from_os_specific(_options->_file_name);
+#endif
+
     _options->_path_replace->_path_directory = fn.get_dirname();
 
     _egg_data = new EggData;
@@ -163,7 +169,11 @@ bool MaxToEggConverter::convert(MaxEggOptions *options) {
     _options->_successful = all_ok;
     
     if (all_ok) {
+#ifdef _UNICODE
+        Filename fn = Filename::from_os_specific_w(_options->_file_name);
+#else
         Filename fn = Filename::from_os_specific(_options->_file_name);
+#endif
         return _egg_data->write_egg(fn);
     } else {
         return false;
@@ -360,7 +370,7 @@ process_model_node(MaxNodeDesc *node_desc) {
                             //It's a CV Curve, process it
                             egg_group = _tree.get_egg_group(node_desc);
                             get_transform(max_node, egg_group);
-                            make_nurbs_curve((NURBSCVCurve *)nObj, string(max_node->GetName()),
+                            make_nurbs_curve(max_node, (NURBSCVCurve *)nObj,
                                              time, egg_group);
                         }
                     }
@@ -567,7 +577,7 @@ get_joint_transform(INode *max_node, INode *parent_node, EggGroup *egg_group) {
 //               structure and attaches it to the indicated egg group.
 ////////////////////////////////////////////////////////////////////
 bool MaxToEggConverter::
-make_nurbs_curve(NURBSCVCurve *curve, const string &name,
+make_nurbs_curve(INode *max_node, NURBSCVCurve *curve,
                  TimeValue time, EggGroup *egg_group) 
 {
     int degree = curve->GetOrder();
@@ -578,6 +588,8 @@ make_nurbs_curve(NURBSCVCurve *curve, const string &name,
     if (knots != cvs + degree) {
         return false;
     }
+
+    string name = max_node->GetName();
 
     string vpool_name = name + ".cvs";
     EggVertexPool *vpool = new EggVertexPool(vpool_name);
@@ -640,7 +652,8 @@ make_polyset(INode *max_node, Mesh *mesh,
     // all the vertices up front, we'll start with an empty vpool, and
     // add vertices to it on the fly.
 
-    string vpool_name = string(max_node->GetName()) + ".verts";
+    string node_name = max_node->GetName();
+    string vpool_name = node_name + ".verts";
     EggVertexPool *vpool = new EggVertexPool(vpool_name);
     egg_group->add_child(vpool);
 
@@ -1016,7 +1029,6 @@ get_panda_material(Mtl *mtl, MtlID matID) {
             pandaMat._color[2] = diffuseColor.z;
         }
         if (!pandaMat._any_opacity) {
-            
             pandaMat._color[3] = (maxMaterial->GetOpacity(_current_frame * GetTicksPerFrame()));
         }
         if (pandaMat._texture_list.size() < 1) {
@@ -1027,7 +1039,7 @@ get_panda_material(Mtl *mtl, MtlID matID) {
         }
         return pandaMat;
     }
-      
+
     // Otherwise, it's unrecognizable. Leave result blank.
     return pandaMat;
 }
@@ -1038,7 +1050,7 @@ get_panda_material(Mtl *mtl, MtlID matID) {
 ////////////////////////////////////////////////////////////////////
 void MaxToEggConverter::analyze_diffuse_maps(PandaMaterial &pandaMat, Texmap *mat) {
     if (mat == 0) return;
-    
+
     if (mat->ClassID() == Class_ID(RGBMULT_CLASS_ID, 0)) {
         for (int i=0; i<mat->NumSubTexmaps(); i++) {
             analyze_diffuse_maps(pandaMat, mat->GetSubTexmap(i));
@@ -1053,7 +1065,11 @@ void MaxToEggConverter::analyze_diffuse_maps(PandaMaterial &pandaMat, Texmap *ma
         BitmapTex *diffuseTex = (BitmapTex *)mat;
 
         Filename fullpath, outpath;
+#ifdef _UNICODE
+        Filename filename = Filename::from_os_specific_w(diffuseTex->GetMapName());
+#else
         Filename filename = Filename::from_os_specific(diffuseTex->GetMapName());
+#endif
         _options->_path_replace->full_convert_path(filename, get_model_path(),
                                                    fullpath, outpath);
         tex->set_filename(outpath);
@@ -1061,7 +1077,7 @@ void MaxToEggConverter::analyze_diffuse_maps(PandaMaterial &pandaMat, Texmap *ma
 
         apply_texture_properties(*tex, diffuseTex->GetMapChannel());
         add_map_channel(pandaMat, diffuseTex->GetMapChannel());
-        
+
         Bitmap *diffuseBitmap = diffuseTex->GetBitmap(0);
         if ( diffuseBitmap && diffuseBitmap->HasAlpha()) {
             tex->set_format(EggTexture::F_rgba);
@@ -1069,7 +1085,7 @@ void MaxToEggConverter::analyze_diffuse_maps(PandaMaterial &pandaMat, Texmap *ma
             tex->set_format(EggTexture::F_rgb);
         }
         tex->set_env_type(EggTexture::ET_modulate);
-        
+
         pandaMat._texture_list.push_back(tex);
     }
 }
@@ -1094,7 +1110,11 @@ void MaxToEggConverter::analyze_opacity_maps(PandaMaterial &pandaMat, Texmap *ma
         BitmapTex *transTex = (BitmapTex *)mat;
 
         Filename fullpath, outpath;
+#ifdef _UNICODE
+        Filename filename = Filename::from_os_specific_w(transTex->GetMapName());
+#else
         Filename filename = Filename::from_os_specific(transTex->GetMapName());
+#endif
         _options->_path_replace->full_convert_path(filename, get_model_path(),
                                                    fullpath, outpath);
 
@@ -1146,7 +1166,11 @@ void MaxToEggConverter::analyze_glow_maps(PandaMaterial &pandaMat, Texmap *mat) 
         BitmapTex *gtex = (BitmapTex *)mat;
 
         Filename fullpath, outpath;
+#ifdef _UNICODE
+        Filename filename = Filename::from_os_specific_w(gtex->GetMapName());
+#else
         Filename filename = Filename::from_os_specific(gtex->GetMapName());
+#endif
         _options->_path_replace->full_convert_path(filename, get_model_path(),
                                                    fullpath, outpath);
 
@@ -1191,7 +1215,11 @@ void MaxToEggConverter::analyze_gloss_maps(PandaMaterial &pandaMat, Texmap *mat)
         BitmapTex *gtex = (BitmapTex *)mat;
 
         Filename fullpath, outpath;
+#ifdef _UNICODE
+        Filename filename = Filename::from_os_specific_w(gtex->GetMapName());
+#else
         Filename filename = Filename::from_os_specific(gtex->GetMapName());
+#endif
         _options->_path_replace->full_convert_path(filename, get_model_path(),
                                                    fullpath, outpath);
 
@@ -1236,7 +1264,11 @@ void MaxToEggConverter::analyze_normal_maps(PandaMaterial &pandaMat, Texmap *mat
         BitmapTex *ntex = (BitmapTex *)mat;
 
         Filename fullpath, outpath;
+#ifdef _UNICODE
+        Filename filename = Filename::from_os_specific_w(ntex->GetMapName());
+#else
         Filename filename = Filename::from_os_specific(ntex->GetMapName());
+#endif
         _options->_path_replace->full_convert_path(filename, get_model_path(),
                                                    fullpath, outpath);
 

@@ -312,7 +312,7 @@ class ShowBase(DirectObject.DirectObject):
                 TrueClock.getGlobalPtr().setCpuAffinity(1 << (affinity % 32))
 
         # Make sure we're not making more than one ShowBase.
-        if hasattr(__builtin__, 'base'):
+        if 'base' in __builtin__.__dict__:
             raise StandardError, "Attempt to spawn multiple ShowBase instances!"
         
         __builtin__.base = self

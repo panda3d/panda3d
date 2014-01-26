@@ -38,11 +38,17 @@ PUBLISHED:
   LVector3 get_hit_normal() const;
   PN_stdfloat get_hit_fraction() const;
 
+  int get_shape_part() const;
+  int get_triangle_index() const;
+
 private:
   const btCollisionObject *_object; 
   btVector3 _normal;
   btVector3 _pos;
   btScalar _fraction;
+
+  int _shapePart;
+  int _triangleIndex;
 
   friend struct BulletAllHitsRayResult;
 };
@@ -68,11 +74,15 @@ PUBLISHED:
 
 public:
   virtual bool needsCollision(btBroadphaseProxy* proxy0) const;
+  virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace);
 
 private:
   BulletAllHitsRayResult(const btVector3 &from_pos, const btVector3 &to_pos, const CollideMask &mask);
 
   CollideMask _mask;
+
+  btAlignedObjectArray<int> _shapePart;
+  btAlignedObjectArray<int> _triangleIndex;
 
   friend class BulletWorld;
 };

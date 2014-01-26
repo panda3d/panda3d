@@ -139,7 +139,7 @@ class Audio3DManager:
         """
         Get the velocity of the sound.
         """
-        if (self.vel_dict.has_key(sound)):
+        if (sound in self.vel_dict):
             vel = self.vel_dict[sound]
             if (vel!=None):
                 return vel
@@ -196,7 +196,7 @@ class Audio3DManager:
                     # the object any more
                     del self.sound_dict[known_object]
 
-        if not self.sound_dict.has_key(object):
+        if object not in self.sound_dict:
             self.sound_dict[object] = []
 
         self.sound_dict[object].append(sound)
@@ -222,7 +222,7 @@ class Audio3DManager:
         """
         returns a list of sounds attached to an object
         """
-        if not self.sound_dict.has_key(object):
+        if object not in self.sound_dict:
             return []
         sound_list = []
         sound_list.extend(self.sound_dict[object])

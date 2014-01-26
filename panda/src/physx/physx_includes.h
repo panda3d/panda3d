@@ -19,12 +19,18 @@
 #include "NxVersionNumber.h"
 
 // Platform-specific defines
+#if defined(_WIN64)
+#define NX64 1
+#elif defined(_WIN32)
+#define NX32 1
+#else
 #if NATIVE_WORDSIZE == 64
 #define NX64 1
 #endif
 
 #if NATIVE_WORDSIZE == 32
 #define NX32 1
+#endif
 #endif
 
 #ifdef IS_LINUX

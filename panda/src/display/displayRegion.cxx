@@ -387,22 +387,29 @@ get_cull_traverser() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::set_cube_map_index
+//     Function: DisplayRegion::set_target_tex_page
 //       Access: Published, Virtual
 //  Description: This is a special parameter that is only used when
-//               rendering the faces of a cube map.  Normally you
-//               should not need to set it directly.  This sets up the
-//               DisplayRegion to render to the nth cube map face; the
-//               value must be between 0 and 5, inclusive.  A normal
-//               DisplayRegion that is not associated with any
-//               particular cube map should be set to -1.
+//               rendering the faces of a cube map or multipage and/or
+//               multiview texture.  
+//
+//               This sets up the DisplayRegion to render to the ith
+//               page and jth view of its associated texture(s); the
+//               value must be consistent with the range of values
+//               availble to the texture.  A normal DisplayRegion that
+//               is not associated with any particular page should be
+//               set to page -1 and view 0.
+//
+//               This is particularly useful when rendering cube maps
+//               and/or stereo textures.
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
-set_cube_map_index(int cube_map_index) {
+set_target_tex_page(int page, int view) {
   int pipeline_stage = Thread::get_current_pipeline_stage();
   nassertv(pipeline_stage == 0);
   CDWriter cdata(_cycler);
-  cdata->_cube_map_index = cube_map_index;
+  cdata->_target_tex_page = page;
+  cdata->_target_tex_view = view;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -816,7 +823,8 @@ CData() :
   _sort(0),
   _stereo_channel(Lens::SC_mono),
   _tex_view_offset(0),
-  _cube_map_index(-1)
+  _target_tex_page(-1),
+  _target_tex_view(-1)
 {
 }
 
@@ -841,7 +849,8 @@ CData(const DisplayRegion::CData &copy) :
   _sort(copy._sort),
   _stereo_channel(copy._stereo_channel),
   _tex_view_offset(copy._tex_view_offset),
-  _cube_map_index(copy._cube_map_index)
+  _target_tex_page(copy._target_tex_page),
+  _target_tex_view(copy._target_tex_view)
 {
 }
 

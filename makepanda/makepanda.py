@@ -469,6 +469,9 @@ if (COMPILER == "MSVC"):
                 IncDirectory(pkg, SDK[pkg+"CS"] + "/include")
                 IncDirectory(pkg, SDK[pkg+"CS"] + "/include/CS")
                 DefSymbol(pkg, "MAX", pkg)
+                if (int(pkg[3:]) >= 2013):
+                    DefSymbol(pkg, "UNICODE", "")
+                    DefSymbol(pkg, "_UNICODE", "")
             elif (pkg[:2]=="DX"):
                 IncDirectory(pkg, SDK[pkg]      + "/include")
             elif GetThirdpartyDir() is not None:
@@ -519,7 +522,7 @@ if (COMPILER == "MSVC"):
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "odbccp32.lib")
     if (PkgSkip("PNG")==0):      LibName("PNG",      GetThirdpartyDir() + "png/lib/libpng_static.lib")
     if (PkgSkip("JPEG")==0):     LibName("JPEG",     GetThirdpartyDir() + "jpeg/lib/jpeg-static.lib")
-    if (PkgSkip("TIFF")==0):     LibName("TIFF",     GetThirdpartyDir() + "tiff/lib/libpandatiff.lib")
+    if (PkgSkip("TIFF")==0):     LibName("TIFF",     GetThirdpartyDir() + "tiff/lib/libtiff.lib")
     if (PkgSkip("ZLIB")==0):     LibName("ZLIB",     GetThirdpartyDir() + "zlib/lib/zlibstatic.lib")
     if (PkgSkip("VRPN")==0):     LibName("VRPN",     GetThirdpartyDir() + "vrpn/lib/vrpn.lib")
     if (PkgSkip("VRPN")==0):     LibName("VRPN",     GetThirdpartyDir() + "vrpn/lib/quat.lib")
@@ -589,16 +592,20 @@ if (COMPILER == "MSVC"):
             LibName(pkg, SDK[pkg] +  '/lib/maxutil.lib')
             LibName(pkg, SDK[pkg] +  '/lib/paramblk2.lib')
     if (PkgSkip("PHYSX")==0):
-        LibName("PHYSX",      SDK["PHYSX"] + "/lib/Win32/PhysXLoader.lib")
-        LibName("PHYSX",      SDK["PHYSX"] + "/lib/Win32/NxCharacter.lib")
+        if GetTargetArch() == 'x64':
+            LibName("PHYSX",  SDK["PHYSXLIBS"] + "/PhysXLoader64.lib")
+            LibName("PHYSX",  SDK["PHYSXLIBS"] + "/NxCharacter64.lib")
+        else:
+            LibName("PHYSX",  SDK["PHYSXLIBS"] + "/PhysXLoader.lib")
+            LibName("PHYSX",  SDK["PHYSXLIBS"] + "/NxCharacter.lib")
+
         IncDirectory("PHYSX", SDK["PHYSX"] + "/Physics/include")
         IncDirectory("PHYSX", SDK["PHYSX"] + "/PhysXLoader/include")
         IncDirectory("PHYSX", SDK["PHYSX"] + "/NxCharacter/include")
         IncDirectory("PHYSX", SDK["PHYSX"] + "/NxExtensions/include")
         IncDirectory("PHYSX", SDK["PHYSX"] + "/Foundation/include")
         IncDirectory("PHYSX", SDK["PHYSX"] + "/Cooking/include")
-        # We need to be able to find NxCharacter.dll when importing code library libpandaphysx
-        AddToPathEnv("PATH", SDK["PHYSX"]+"/../Bin/win32/")
+
     if (PkgSkip("SPEEDTREE")==0):
         if GetTargetArch() == 'x64':
             libdir = SDK["SPEEDTREE"] + "/Lib/Windows/VC10.x64/"
@@ -643,11 +650,10 @@ if (COMPILER=="GCC"):
     if (PkgSkip("PYTHON")==0):
         IncDirectory("ALWAYS", SDK["PYTHON"])
     if (GetHost() == "darwin"):
-        if (PkgSkip("FREETYPE")==0):
-          IncDirectory("FREETYPE", "/usr/X11R6/include")
+        if (PkgSkip("FREETYPE")==0 and not os.path.isdir(GetThirdpartyDir() + 'freetype')):
           IncDirectory("FREETYPE", "/usr/X11/include")
           IncDirectory("FREETYPE", "/usr/X11/include/freetype2")
-        IncDirectory("GL", "/usr/X11R6/include")
+          LibDirectory("FREETYPE", "/usr/X11/lib")
 
     if (os.path.isdir("/usr/PCBSD")):
         IncDirectory("ALWAYS", "/usr/PCBSD/local/include")
@@ -657,11 +663,20 @@ if (COMPILER=="GCC"):
         IncDirectory("ALWAYS", "/usr/local/include")
         LibDirectory("ALWAYS", "/usr/local/lib")
 
-    # Workaround for an issue where pkg-config does not include this path
-    if (os.path.isdir("/usr/lib64/glib-2.0/include")):
-        IncDirectory("GTK2", "/usr/lib64/glib-2.0/include")
-    if (os.path.isdir("/usr/lib64/gtk-2.0/include")):
-        IncDirectory("GTK2", "/usr/lib64/gtk-2.0/include")
+    if GetHost() != "darwin":
+        # Workaround for an issue where pkg-config does not include this path
+        if GetTargetArch() in ("x86_64", "amd64"):
+            if (os.path.isdir("/usr/lib64/glib-2.0/include")):
+                IncDirectory("GTK2", "/usr/lib64/glib-2.0/include")
+            if (os.path.isdir("/usr/lib64/gtk-2.0/include")):
+                IncDirectory("GTK2", "/usr/lib64/gtk-2.0/include")
+
+            if (os.path.isdir("/usr/X11R6/lib64")):
+                LibDirectory("ALWAYS", "/usr/X11R6/lib64")
+            else:
+                LibDirectory("ALWAYS", "/usr/X11R6/lib")
+        else:
+            LibDirectory("ALWAYS", "/usr/X11R6/lib")
 
     fcollada_libs = ("FColladaD", "FColladaSD", "FColladaS")
     # WARNING! The order of the ffmpeg libraries matters!
@@ -700,20 +715,23 @@ if (COMPILER=="GCC"):
             # We use a statically linked libboost_python on OSX
             rocket_libs += ("boost_python",)
         SmartPkgEnable("ROCKET",    "",          rocket_libs, "Rocket/Core.h")
+        SmartPkgEnable("GTK2",      "gtk+-2.0")
 
-    SmartPkgEnable("GTK2",      "gtk+-2.0")
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
     SmartPkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
     SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
     SmartPkgEnable("ZLIB",      "zlib",      ("z"), "zlib.h")
+
     if (RTDIST and GetHost() == "darwin" and "PYTHONVERSION" in SDK):
         # Don't use the framework for the OSX rtdist build. I'm afraid it gives problems somewhere.
         SmartPkgEnable("PYTHON",    "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config")
     elif("PYTHONVERSION" in SDK and not RUNTIME):
         SmartPkgEnable("PYTHON",    "", SDK["PYTHONVERSION"], (SDK["PYTHONVERSION"], SDK["PYTHONVERSION"] + "/Python.h"), tool = SDK["PYTHONVERSION"] + "-config", framework = "Python")
+
     if (RTDIST):
         SmartPkgEnable("WX",    tool = "wx-config")
         SmartPkgEnable("FLTK", "", ("fltk"), ("Fl/Fl.H"), tool = "fltk-config")
+
     if (RUNTIME):
         if (GetHost() == 'darwin'):
             SmartPkgEnable("NPAPI", "", (), ("npapi.h"))
@@ -1409,7 +1427,7 @@ def CompileLink(dll, obj, opts):
     if COMPILER == "GCC":
         cxx = GetCXX()
         if GetOrigExt(dll) == ".exe" and GetTarget() != 'android':
-            cmd = cxx + ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp -L/usr/X11R6/lib'
+            cmd = cxx + ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp'
         else:
             if (GetTarget() == "darwin"):
                 cmd = cxx + ' -undefined dynamic_lookup'
@@ -1417,11 +1435,11 @@ def CompileLink(dll, obj, opts):
                 else:
                     cmd += ' -dynamiclib -install_name ' + os.path.basename(dll)
                     cmd += ' -compatibility_version ' + MAJOR_VERSION + ' -current_version ' + VERSION
-                cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp -L/usr/X11R6/lib'
+                cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp'
             else:
                 cmd = cxx + ' -shared'
                 if ("MODULE" not in opts): cmd += " -Wl,-soname=" + os.path.basename(dll)
-                cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp -L/usr/X11R6/lib'
+                cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp'
 
         for x in obj:
             if GetOrigExt(x) != ".dat":
@@ -1593,12 +1611,14 @@ def RunGenPyCode(target, inputs, opts):
     if (PkgSkip("PYTHON") != 0):
         return
 
-    cmdstr = sys.executable + " -B " + os.path.join("direct", "src", "ffi", "jGenPyCode.py")
+    cmdstr = sys.executable + " -B " + os.path.join(GetOutputDir(), "direct", "ffi", "jGenPyCode.py")
     if (GENMAN): cmdstr += " -d"
     cmdstr += " -r"
     for i in inputs:
-        if (GetOrigExt(i)==".dll"):
-            cmdstr += " " + os.path.basename(os.path.splitext(i)[0].replace("_d","").replace(GetOutputDir()+"/lib/",""))
+        if (GetOrigExt(i)==".pyd"):
+            cmdstr += " panda3d." + os.path.basename(os.path.splitext(i)[0])
+        elif (GetOrigExt(i)==".dll"):
+            cmdstr += " " + os.path.basename(os.path.splitext(i)[0].replace("_d",""))
 
     oscmd(cmdstr)
 
@@ -1876,7 +1896,6 @@ DTOOL_CONFIG=[
     ("SIMPLE_STRUCT_POINTERS",         '1',                      'UNDEF'),
     ("HAVE_DINKUM",                    'UNDEF',                  'UNDEF'),
     ("HAVE_STL_HASH",                  'UNDEF',                  'UNDEF'),
-    ("HAVE_GETTIMEOFDAY",              'UNDEF',                  '1'),
     ("GETTIMEOFDAY_ONE_PARAM",         'UNDEF',                  'UNDEF'),
     ("HAVE_GETOPT",                    'UNDEF',                  '1'),
     ("HAVE_GETOPT_LONG_ONLY",          'UNDEF',                  '1'),
@@ -2143,7 +2162,7 @@ def WriteConfigSettings():
         speedtree_parameters["SPEEDTREE_BIN_DIR"] = (SDK["SPEEDTREE"] + "/Bin")
 
     conf = "/* prc_parameters.h.  Generated automatically by makepanda.py */\n"
-    for key in prc_parameters.keys():
+    for key in sorted(prc_parameters.keys()):
         if ((key == "DEFAULT_PRC_DIR") or (key[:4]=="PRC_")):
             val = OverrideValue(key, prc_parameters[key])
             if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
@@ -2151,7 +2170,7 @@ def WriteConfigSettings():
     ConditionalWriteFile(GetOutputDir() + '/include/prc_parameters.h', conf)
 
     conf = "/* dtool_config.h.  Generated automatically by makepanda.py */\n"
-    for key in dtool_config.keys():
+    for key in sorted(dtool_config.keys()):
         val = OverrideValue(key, dtool_config[key])
         if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
         else:                conf = conf + "#define " + key + " " + val + "\n"
@@ -2159,7 +2178,7 @@ def WriteConfigSettings():
 
     if (RTDIST or RUNTIME):
         conf = "/* p3d_plugin_config.h.  Generated automatically by makepanda.py */\n"
-        for key in plugin_config.keys():
+        for key in sorted(plugin_config.keys()):
             val = plugin_config[key]
             if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
             else:                conf = conf + "#define " + key + " \"" + val.replace("\\", "\\\\") + "\"\n"
@@ -2167,15 +2186,15 @@ def WriteConfigSettings():
 
     if (PkgSkip("SPEEDTREE")==0):
         conf = "/* speedtree_parameters.h.  Generated automatically by makepanda.py */\n"
-        for key in speedtree_parameters.keys():
+        for key in sorted(speedtree_parameters.keys()):
             val = OverrideValue(key, speedtree_parameters[key])
             if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
             else:                conf = conf + "#define " + key + " \"" + val.replace("\\", "\\\\") + "\"\n"
         ConditionalWriteFile(GetOutputDir() + '/include/speedtree_parameters.h', conf)
 
     for x in PkgListGet():
-        if (PkgSkip(x)): ConditionalWriteFile(GetOutputDir() + '/tmp/dtool_have_'+x.lower()+'.dat',"0\n")
-        else:            ConditionalWriteFile(GetOutputDir() + '/tmp/dtool_have_'+x.lower()+'.dat',"1\n")
+        if (PkgSkip(x)): ConditionalWriteFile(GetOutputDir() + '/tmp/dtool_have_'+x.lower()+'.dat', "0\n")
+        else:            ConditionalWriteFile(GetOutputDir() + '/tmp/dtool_have_'+x.lower()+'.dat', "1\n")
 
 WriteConfigSettings()
 
@@ -2362,7 +2381,7 @@ CreatePandaVersionFiles()
 ##########################################################################################
 
 if (PkgSkip("DIRECT")==0):
-    CopyTree(GetOutputDir()+'/direct', 'direct/src')
+    CopyPythonTree(GetOutputDir() + '/direct', 'direct/src', lib2to3_fixers=['all'])
     ConditionalWriteFile(GetOutputDir() + '/direct/__init__.py', "")
     if (GetTarget() == 'windows'):
         CopyFile(GetOutputDir()+'/bin/panda3d.py', 'direct/src/ffi/panda3d.py')
@@ -3329,7 +3348,7 @@ if (not RUNTIME):
 #
 
 if (not RUNTIME):
-  OPTS=['DIR:panda/src/pnmimagetypes', 'DIR:panda/src/pnmimage', 'BUILDING:PANDA', 'PNG', 'ZLIB', 'JPEG', 'ZLIB',  'JPEG', 'TIFF']
+  OPTS=['DIR:panda/src/pnmimagetypes', 'DIR:panda/src/pnmimage', 'BUILDING:PANDA', 'PNG', 'ZLIB', 'JPEG', 'TIFF']
   TargetAdd('p3pnmimagetypes_composite1.obj', opts=OPTS, input='p3pnmimagetypes_composite1.cxx')
   TargetAdd('p3pnmimagetypes_composite2.obj', opts=OPTS, input='p3pnmimagetypes_composite2.cxx')
 
@@ -5889,6 +5908,11 @@ def MakeInstallerNSIS(file, fullname, smdirectory, installdir):
     psource = os.path.abspath(".")
     panda = os.path.abspath(GetOutputDir())
 
+    if GetTargetArch() == 'x64':
+        regview = '64'
+    else:
+        regview = '32'
+
     nsis_defs = {
         'COMPRESSOR'  : COMPRESSOR,
         'NAME'        : fullname,
@@ -5905,6 +5929,7 @@ def MakeInstallerNSIS(file, fullname, smdirectory, installdir):
         'PANDACONF'   : os.path.join(panda, 'etc'),
         'PSOURCE'     : psource,
         'PYEXTRAS'    : os.path.join(os.path.abspath(GetThirdpartyBase()), 'win-extras'),
+        'REGVIEW'     : regview,
     }
 
     if GetHost() == 'windows':

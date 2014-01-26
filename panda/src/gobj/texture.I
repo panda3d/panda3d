@@ -31,9 +31,9 @@ INLINE PT(Texture) Texture::
 make_copy() const {
   PT(Texture) tex = make_copy_impl();
   CDWriter cdata_tex(tex->_cycler, true);
-  ++(cdata_tex->_properties_modified);
-  ++(cdata_tex->_image_modified);
-  ++(cdata_tex->_simple_image_modified);
+  cdata_tex->inc_properties_modified();
+  cdata_tex->inc_image_modified();
+  cdata_tex->inc_simple_image_modified();
   return tex;
 }
 
@@ -288,8 +288,8 @@ INLINE bool Texture::
 load(const PNMImage &pnmimage, const LoaderOptions &options) {
   CDWriter cdata(_cycler, true);
   do_clear(cdata);
-  ++(cdata->_properties_modified);
-  ++(cdata->_image_modified);
+  cdata->inc_properties_modified();
+  cdata->inc_image_modified();
   if (do_load_one(cdata, pnmimage, get_name(), 0, 0, options)) {
     bool generate_mipmaps = ((options.get_texture_flags() & LoaderOptions::TF_generate_mipmaps) != 0);
     consider_auto_process_ram_image(generate_mipmaps || uses_mipmaps(), true);
@@ -307,8 +307,8 @@ load(const PNMImage &pnmimage, const LoaderOptions &options) {
 INLINE bool Texture::
 load(const PNMImage &pnmimage, int z, int n, const LoaderOptions &options) {
   CDWriter cdata(_cycler, true);
-  ++(cdata->_properties_modified);
-  ++(cdata->_image_modified);
+  cdata->inc_properties_modified();
+  cdata->inc_image_modified();
   if (do_load_one(cdata, pnmimage, get_name(), z, n, options)) {
     return true;
   }
@@ -324,8 +324,8 @@ INLINE bool Texture::
 load(const PfmFile &pfm, const LoaderOptions &options) {
   CDWriter cdata(_cycler, true);
   do_clear(cdata);
-  ++(cdata->_properties_modified);
-  ++(cdata->_image_modified);
+  cdata->inc_properties_modified();
+  cdata->inc_image_modified();
   if (do_load_one(cdata, pfm, get_name(), 0, 0, options)) {
     bool generate_mipmaps = ((options.get_texture_flags() & LoaderOptions::TF_generate_mipmaps) != 0);
     consider_auto_process_ram_image(generate_mipmaps || uses_mipmaps(), true);
@@ -343,8 +343,8 @@ load(const PfmFile &pfm, const LoaderOptions &options) {
 INLINE bool Texture::
 load(const PfmFile &pfm, int z, int n, const LoaderOptions &options) {
   CDWriter cdata(_cycler, true);
-  ++(cdata->_properties_modified);
-  ++(cdata->_image_modified);
+  cdata->inc_properties_modified();
+  cdata->inc_image_modified();
   if (do_load_one(cdata, pfm, get_name(), z, n, options)) {
     return true;
   }
@@ -1412,7 +1412,7 @@ get_ram_image_compression() const {
 INLINE PTA_uchar Texture::
 modify_ram_image() {
   CDWriter cdata(_cycler, true);
-  ++(cdata->_image_modified);
+  cdata->inc_image_modified();
   return do_modify_ram_image(cdata);
 }
 
@@ -1453,7 +1453,7 @@ get_uncompressed_ram_image() {
 INLINE PTA_uchar Texture::
 make_ram_image() {
   CDWriter cdata(_cycler, true);
-  ++(cdata->_image_modified);
+  cdata->inc_image_modified();
   return do_make_ram_image(cdata);
 }
 
@@ -1537,7 +1537,7 @@ compress_ram_image(Texture::CompressionMode compression,
                    GraphicsStateGuardianBase *gsg) {
   CDWriter cdata(_cycler, false);
   if (do_compress_ram_image(cdata, compression, quality_level, gsg)) {
-    ++(cdata->_image_modified);
+    cdata->inc_image_modified();
     return true;
   }
   return false;
@@ -1558,7 +1558,7 @@ INLINE bool Texture::
 uncompress_ram_image() {
   CDWriter cdata(_cycler, false);
   if (do_uncompress_ram_image(cdata)) {
-    ++(cdata->_image_modified);
+    cdata->inc_image_modified();
     return true;
   }
   return false;
@@ -1723,7 +1723,7 @@ get_expected_ram_mipmap_page_size(int n) const {
 INLINE PTA_uchar Texture::
 modify_ram_mipmap_image(int n) {
   CDWriter cdata(_cycler, false);
-  ++(cdata->_image_modified);
+  cdata->inc_image_modified();
   return do_modify_ram_mipmap_image(cdata, n);
 }
 
@@ -1739,7 +1739,7 @@ modify_ram_mipmap_image(int n) {
 INLINE PTA_uchar Texture::
 make_ram_mipmap_image(int n) {
   CDWriter cdata(_cycler, false);
-  ++(cdata->_image_modified);
+  cdata->inc_image_modified();
   return do_make_ram_mipmap_image(cdata, n);
 }
 
@@ -1769,7 +1769,7 @@ set_ram_mipmap_image(int n, CPTA_uchar image, size_t page_size) {
 INLINE void Texture::
 clear_ram_mipmap_images() {
   CDWriter cdata(_cycler, false);
-  ++(cdata->_image_modified);
+  cdata->inc_image_modified();
   do_clear_ram_mipmap_images(cdata);
 }
 
@@ -1790,7 +1790,7 @@ clear_ram_mipmap_images() {
 INLINE void Texture::
 generate_ram_mipmap_images() {
   CDWriter cdata(_cycler, unlocked_ensure_ram_image(false));
-  ++(cdata->_image_modified);
+  cdata->inc_image_modified();
   do_generate_ram_mipmap_images(cdata);
 }
 
@@ -2625,6 +2625,36 @@ is_dds_filename(const Filename &fullpath) {
   }
 #endif  // HAVE_ZLIB
   return (downcase(extension) == "dds");
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::CData::inc_properties_modified
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::CData::
+inc_properties_modified() {
+  ++_properties_modified;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::CData::inc_image_modified
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::CData::
+inc_image_modified() {
+  ++_image_modified;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::CData::inc_simple_image_modified
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::CData::
+inc_simple_image_modified() {
+  ++_simple_image_modified;
 }
 
 ////////////////////////////////////////////////////////////////////

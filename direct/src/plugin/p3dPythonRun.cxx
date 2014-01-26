@@ -20,7 +20,7 @@
 #include "nativeWindowHandle.h"
 
 #ifndef CPPPARSER
-#include "py_panda.h"  
+#include "py_panda.h"
 IMPORT_THIS struct Dtool_PyTypedObject Dtool_WindowHandle;
 #endif
 
@@ -81,9 +81,9 @@ P3DPythonRun(const char *program_name, const char *archive_file,
 
   // Initialize Python.  It appears to be important to do this before
   // we open the pipe streams and spawn the thread, below.
-  PyEval_InitThreads();
   Py_SetProgramName((char *)_program_name.c_str());
   Py_Initialize();
+  PyEval_InitThreads();
   PySys_SetArgv(_py_argc, _py_argv);
 
   // Open the error output before we do too much more.

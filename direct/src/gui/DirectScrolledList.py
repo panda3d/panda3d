@@ -22,10 +22,10 @@ class DirectScrolledListItem(DirectButton):
     def __init__(self, parent=None, **kw):
         assert self.notify.debugStateCall(self)
         self.parent = parent
-        if kw.has_key("command"):
+        if "command" in kw:
             self.nextCommand = kw.get("command")
             del kw["command"]
-        if kw.has_key("extraArgs"):
+        if "extraArgs" in kw:
             self.nextCommandExtraArgs = kw.get("extraArgs")
             del kw["extraArgs"]
         optiondefs = (
@@ -59,7 +59,7 @@ class DirectScrolledList(DirectFrame):
 
         # if 'items' is a list of strings, make a copy for our use
         # so we can modify it without mangling the user's list
-        if kw.has_key('items'):
+        if 'items' in kw:
             for item in kw['items']:
                 if type(item) != type(''):
                     break

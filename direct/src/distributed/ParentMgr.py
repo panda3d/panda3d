@@ -57,7 +57,7 @@ class ParentMgr:
             self.pendingParentToken2children[parentToken].remove(child)
 
     def requestReparent(self, child, parentToken):
-        if self.token2nodepath.has_key(parentToken):
+        if parentToken in self.token2nodepath:
             # this parent has registered
             # this child may already be waiting on a different parent;
             # make sure they aren't any more
@@ -82,7 +82,7 @@ class ParentMgr:
             child.reparentTo(hidden)
             
     def registerParent(self, token, parent):
-        if self.token2nodepath.has_key(token):
+        if token in self.token2nodepath:
             self.notify.error(
                 "registerParent: token '%s' already registered, referencing %s" %
                 (token, repr(self.token2nodepath[token])))
@@ -141,7 +141,7 @@ class ParentMgr:
                 del self.pendingChild2parentToken[child]
 
     def unregisterParent(self, token):
-        if not self.token2nodepath.has_key(token):
+        if token not in self.token2nodepath:
             self.notify.warning("unregisterParent: unknown parent token '%s'" %
                                 token)
             return
