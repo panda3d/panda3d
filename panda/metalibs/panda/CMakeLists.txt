@@ -1,3 +1,4 @@
+add_definitions(-DBUILDING_PANDA)
 set(PANDA_LINK_TARGETS p3pnmimagetypes p3device)
 
 if(LINK_IN_PHYSX)
