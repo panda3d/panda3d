@@ -40,13 +40,29 @@ else()
   set(DEFAULT_PATHSEP ":")
 endif()
 
-#TODO figure out what to do about release/debug vs OPTIMIZE level.
+# TODO: Figure out what to do about release/debug vs OPTIMIZE level.
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "")
   set(DO_DEBUG ON)
 else()
   set(DO_DEBUG OFF)
 endif()
 
+# Provide convenient boolean expression based on build type
+if(CMAKE_BUILD_TYPE MATCHES "Debug")
+  set(IS_DEBUG_BUILD True)
+  set(IS_NOT_DEBUG_BUILD False)
+else()
+  set(IS_DEBUG_BUILD False)
+  set(IS_NOT_DEBUG_BUILD True)
+endif()
+
+if(CMAKE_BUILD_TYPE MATCHES "MinSizeRel")
+  set(IS_MINSIZE_BUILD True)
+  set(IS_NOT_MINSIZE_BUILD False)
+else()
+  set(IS_MINSIZE_BUILD False)
+  set(IS_NOT_MINSIZE_BUILD True)
+endif()
 
 # Panda uses prc files for runtime configuration.  There are many
 # compiled-in options to customize the behavior of the prc config
@@ -528,6 +544,152 @@ find_package(ZLIB)
 package_option(ZLIB DEFAULT ON
   "Enables support for compression of Panda assets.")
 
+
+# Is OpenGL installed, and where?
+find_package(OpenGL QUIET)
+set(GL_FOUND ${OPENGL_FOUND})
+package_option(GL "Enable OpenGL support.")
+
+# If you are having trouble linking in OpenGL extension functions at
+# runtime for some reason, you can set this variable. It also,
+# requires you to install the OpenGL header files and compile-time
+# libraries appropriate to the version you want to compile against.
+set(MIN_GL_VERSION "1 1" CACHE STRING
+  "The variable is the major, minor version of OpenGL, separated by a
+space (instead of a dot).  Thus, "1 1" means OpenGL version 1.1.
+
+This defines the minimum runtime version of OpenGL that Panda will
+require. Setting it to a higher version will compile in hard
+references to the extension functions provided by that OpenGL
+version and below, which may reduce runtime portability to other
+systems, but it will avoid issues with getting extension function
+pointers.")
+
+# Is Mesa installed separately from OpenGL?  Mesa is an open-source
+# software-only OpenGL renderer.  Panda can link with it
+# independently from OpenGL (and if Mesa is built statically, and/or
+# with -DUSE_MGL_NAMESPACE declared to rename gl* to mgl*, it can
+# switch between the system OpenGL implementation and the Mesa
+# implementation at runtime).
+
+# Also, Mesa includes some core libraries (in libOSMesa.so) that
+# allow totally headless rendering, handy if you want to run a
+# renderer as a batch service, and you don't want to insist that a
+# user be logged on to the desktop or otherwise deal with X11 or
+# Windows.
+
+# TODO: Mesa
+#find_package(Mesa)
+
+#package_option(MESA
+#  "When set, will build libmesadisplay, which can be used in lieu of
+#libpandagl or libpandadx to do rendering.  However, for most
+#applications, you don't need to do this, since (a) if you have
+#hardware rendering capability, you probably don't want to use Mesa,
+#since it's software-only, and (b) if you don't have hardware
+#rendering, you can install Mesa as the system's OpenGL
+#implementation, so you can just use the normal libpandagl.
+#You only need to define HAVE_MESA if you want to run totally headless,
+#or if you want to be able to easily switch between Mesa and the
+#system OpenGL implementation at runtime.  If you compiled Mesa with
+#USE_MGL_NAMESPACE defined, define MESA_MGL here.")
+
+set(MIN_MESA_VERSION "1 1" CACHE STRING
+  "Similar to MIN_GL_VERSION, above.")
+
+
+# Should build tinydisplay?
+option(HAVE_TINYDISPLAY
+  "Builds TinyDisplay, a light software renderer based on TinyGL,
+that is built into Panda. TinyDisplay is not as full-featured as Mesa
+but is many times faster." ${IS_NOT_MINSIZE_BUILD})
+
+
+# TODO: OpenGL ES
+# Is OpenGL ES 1.x installed, and where?
+#find_package(OpenGLES)
+
+#package_option(GLES
+#  "Enable OpenGL ES 1.x support, a minimal subset of
+#OpenGL for mobile devices.")
+
+# Is OpenGL ES 2.x installed, and where?
+#find_package(OpenGLES)
+
+#package_option(GLES2
+#  "Enable OpenGL ES 2.x support, a version of OpenGL ES but without
+#fixed-function pipeline - everything is programmable there.")
+
+# Is EGL installed, and where?
+#package_option(EGL
+#  "Enable EGL support. EGL is like GLX, but for OpenGL ES.")
+
+
+# Is SDL installed, and where?
+set(Threads_FIND_QUIETLY TRUE) # Fix for builtin FindSDL
+set(Eigen3_FIND_QUIETLY TRUE) # Fix for builtin FindSDL
+set(PythonLibs_FIND_QUIETLY TRUE) # Fix for builtin FindSDL
+set(PythonInterp_FIND_QUIETLY TRUE) # Fix for builtin FindSDL
+
+find_package(SDL QUIET)
+
+package_option(SDL
+  "The SDL library is useful only for tinydisplay, and is not even
+required for that, as tinydisplay is also supported natively on
+each supported platform.")
+
+# Cleanup after builtin FindSDL
+mark_as_advanced(SDLMAIN_LIBRARY)
+mark_as_advanced(SDL_INCLUDE_DIR)
+mark_as_advanced(SDL_LIBRARY)
+mark_as_advanced(SDL_LIBRARY_TEMP)
+
+
+# TODO: XF86DGA
+# This defines if we have XF86DGA installed.
+#find_package(XF86DGA QUIET)
+
+#package_option(XF86DGA
+#  "This enables smooth FPS-style mouse in x11display,
+#when mouse mode M_relative is used.")
+
+
+# TODO: XRANDR
+#find_package(Xrandr QUIET)
+#package_option(XRANDR
+#  "This enables resolution switching in x11display.")
+
+
+# TODO: XCURSOR
+#find_package(Xcursor QUIET)
+#package_option(XCURSOR
+#  "This enables custom cursor support in x11display.")
+
+if(HAVE_GL AND HAVE_X11)
+  option(HAVE_GLX "Enables GLX. Requires OpenGL and X11." ON)
+else()
+  option(HAVE_GLX "Enables GLX. Requires OpenGL and X11." OFF)
+endif()
+
+option(LINK_IN_GLXGETPROCADDRESS
+  "Define this to compile in a reference to the glXGetProcAddress().
+This is only relevant from platforms using OpenGL under X."
+  OFF)
+
+if(WIN32 AND HAVE_GL)
+  option(HAVE_WGL "Enable WGL.  Requires OpenGL on Windows." ON)
+else()
+  option(HAVE_WGL "Enable WGL.  Requires OpenGL on Windows." OFF)
+endif()
+
+if(IS_OSX)
+  option(HAVE_COCOA "Enable Cocoa. Requires Mac OS X." ON)
+  option(HAVE_CARBON "Enable Carbon. Requires Mac OS X." ON)
+else()
+  option(HAVE_COCOA "Enable Cocoa. Requires Mac OS X." OFF)
+  option(HAVE_CARBON "Enable Carbon. Requires Mac OS X." OFF)
+endif()
+
 #
 # <<<<<< Insert the rest of the Config.pp
 #        port of third-party libs here <<<<<<<
@@ -564,27 +726,19 @@ build (such as, for instance, for the iPhone)." ON)
 # These image formats don't require the assistance of a third-party
 # library to read and write, so there's normally no reason to disable
 # them int he build, unless you are looking to reduce the memory footprint.
-if(CMAKE_BUILD_TYPE MATCHES "MinSizeRel")
-  set(BUILD_TYPE_USE_IMAGES OFF)
-else()
-  set(BUILD_TYPE_USE_IMAGES ON)
-endif()
-
 option(HAVE_SGI_RGB "Enable support for loading SGI RGB images."
-  ${BUILD_TYPE_USE_IMAGES})
+  ${IS_NOT_MINSIZE_BUILD})
 option(HAVE_TGA "Enable support for loading TGA images."
-  ${BUILD_TYPE_USE_IMAGES})
+  ${IS_NOT_MINSIZE_BUILD})
 option(HAVE_IMG "Enable support for loading IMG images."
-  ${BUILD_TYPE_USE_IMAGES})
+  ${IS_NOT_MINSIZE_BUILD})
 option(HAVE_SOFTIMAGE_PIC
   "Enable support for loading SOFTIMAGE PIC images."
-  ${BUILD_TYPE_USE_IMAGES})
+  ${IS_NOT_MINSIZE_BUILD})
 option(HAVE_BMP "Enable support for loading BMP images."
-  ${BUILD_TYPE_USE_IMAGES})
+  ${IS_NOT_MINSIZE_BUILD})
 option(HAVE_PNM "Enable support for loading PNM images."
-  ${BUILD_TYPE_USE_IMAGES})
-
-unset(BUILD_TYPE_USE_IMAGES)
+  ${IS_NOT_MINSIZE_BUILD})
 
 mark_as_advanced(HAVE_SGI_RGB HAVE_TGA
   HAVE_IMG HAVE_SOFTIMAGE_PIC HAVE_BMP HAVE_PNM)
@@ -698,18 +852,11 @@ message(STATUS "")
 message(STATUS "See dtool_config.h for more details about the specified configuration.\n")
 
 ### Miscellaneous configuration
-if(CMAKE_BUILD_TYPE MATCHES "MinSizeRel")
-  unset(COMPILE_IN_DEFAULT_FONT CACHE)
-  option(COMPILE_IN_DEFAULT_FONT
-    "If on, compiles in a default font, so that every TextNode will always
+option(COMPILE_IN_DEFAULT_FONT
+  "If on, compiles in a default font, so that every TextNode will always
 have a font available without requiring the user to specify one.
-When turned off, the generated library will save a few kilobytes." OFF)
-else()
-  option(COMPILE_IN_DEFAULT_FONT
-    "If on, compiles in a default font, so that every TextNode will always
-have a font available without requiring the user to specify one.
-When turned off, the generated library will save a few kilobytes." ON)
-endif()
+When turned off, the generated library will save a few kilobytes."
+  ${IS_NOT_MINSIZE_BUILD})
 
 option(STDFLOAT_DOUBLE
   "Define this true to compile a special version of Panda to use a

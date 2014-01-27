@@ -16,11 +16,6 @@ find_package(OpenAL QUIET)
 #config_package(OPENAL "OpenAL sound library")
 package_option(OPENAL)
 
-# Find and configure OpenGL
-find_package(OpenGL QUIET)
-set(GL_FOUND ${OPENGL_FOUND})
-#config_package(GL "OpenGL")
-package_option(GL)
 
 # Find and configure Freetype
 find_package(Freetype QUIET)
@@ -63,20 +58,6 @@ package_option(FLTK)
 mark_as_advanced(FLTK_DIR)
 mark_as_advanced(FLTK_MATH_LIBRARY)
 
-# Find and configure SDL
-set(Threads_FIND_QUIETLY TRUE) # Fix for builtin FindSDL
-set(Eigen3_FIND_QUIETLY TRUE) # Fix for builtin FindSDL
-set(PythonLibs_FIND_QUIETLY TRUE) # Fix for builtin FindSDL
-set(PythonInterp_FIND_QUIETLY TRUE) # Fix for builtin FindSDL
-find_package(SDL QUIET)
-#config_package(SDL)
-package_option(SDL)
-
-# Cleanup after builtin FindSDL
-mark_as_advanced(SDLMAIN_LIBRARY)
-mark_as_advanced(SDL_INCLUDE_DIR)
-mark_as_advanced(SDL_LIBRARY)
-mark_as_advanced(SDL_LIBRARY_TEMP)
 
 ########
 # TODO #
@@ -109,10 +90,6 @@ mark_as_advanced(SDL_LIBRARY_TEMP)
 # Find and configure DirectX 11
 #find_package(DX11)
 #config_package(DX11 COMMENT "DirectX11")
-
-# Find and configure Tinydisplay
-#find_package(Tinydisplay)
-#config_package(TINYDISPLAY COMMENT "Tinydisplay")
 
 # Find and configure Mesa
 #find_package(Mesa)
