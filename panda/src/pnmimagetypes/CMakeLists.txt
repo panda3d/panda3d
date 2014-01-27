@@ -26,7 +26,29 @@ set(P3PNMIMAGETYPES_SOURCES
   pnmFileTypeTGA.cxx
 )
 
+# We aggregate the PNMIMAGETYPES libraries depending on which image formats are
+# compiled in.
+unset(PNMIMAGETYPES_LINK_LIBRARIES)
+
+if(HAVE_JPEG)
+  set(PNMIMAGETYPES_LINK_LIBRARIES
+    ${PNMIMAGETYPES_LINK_LIBRARIES}
+    ${JPEG_LIBRARIES})
+endif()
+
+if(HAVE_TIFF)
+  set(PNMIMAGETYPES_LINK_LIBRARIES
+    ${PNMIMAGETYPES_LINK_LIBRARIES}
+    ${TIFF_LIBRARIES})
+endif()
+
+if(HAVE_PNG)
+  set(PNMIMAGETYPES_LINK_LIBRARIES
+    ${PNMIMAGETYPES_LINK_LIBRARIES}
+    ${PNG_LIBRARIES})
+endif()
+
 composite_sources(p3pnmimagetypes P3PNMIMAGETYPES_SOURCES)
 add_library(p3pnmimagetypes ${P3PNMIMAGETYPES_HEADERS} ${P3PNMIMAGETYPES_SOURCES})
-target_link_libraries(p3pnmimagetypes p3pnmimage)
+target_link_libraries(p3pnmimagetypes p3pnmimage ${PNMIMAGETYPES_LINK_LIBRARIES})
 target_interrogate(p3pnmimagetypes ALL)
