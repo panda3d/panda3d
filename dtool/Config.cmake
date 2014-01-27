@@ -195,6 +195,7 @@ mark_as_advanced(DEFAULT_PRC_DIR PRC_DIR_ENVVARS PRC_PATH_ENVVARS
 # remaining variables are of general interest to everyone.
 #
 
+
 option(HAVE_P3D_PLUGIN
   "You may define this to build or develop the plugin." OFF)
 
@@ -209,6 +210,8 @@ if(HAVE_P3D_RTDIST)
 endif()
 
 mark_as_advanced(HAVE_P3D_RTDIST PANDA_PACKAGE_VERSION PANDA_PACKAGE_HOST)
+
+
 
 # The following options relate to interrogate, the tool that is
 # used to generate bindings for non-C++ languages.
@@ -263,83 +266,6 @@ if(NOT CMAKE_CROSSCOMPILING)
   mark_as_advanced(INTERROGATE INTERROGATE_MODULE)
 endif()
 
-#
-# Now let's check for the presence of various thirdparty libraries.
-#
-
-find_package(Eigen3)
-
-package_option(EIGEN
-  "Enables experimental support for the Eigen linear algebra library.
-If this is provided, Panda will use this library as the fundamental
-implementation of its own linmath library; otherwise, it will use
-its own internal implementation.  The primary advantage of using
-Eigen is SSE2 support, which is only activated if LINMATH_ALIGN
-is also enabled.")
-
-#option(USE_EIGEN
-#  "Enables experimental support for the Eigen linear algebra library.
-#If this is provided, Panda will use this library as the fundamental
-#implementation of its own linmath library; otherwise, it will use
-#its own internal implementation.  The primary advantage of using
-#Eigen is SSE2 support, which is only activated if LINMATH_ALIGN
-#is also enabled." ON)
-
-option(LINMATH_ALIGN
-  "This is required for activating SSE2 support using Eigen.
-Activating this does constrain most objects in Panda to 16-byte
-alignment, which could impact memory usage on very-low-memory
-platforms.  Currently experimental." ON)
-
-#if(USE_EIGEN)
-#  find_package(Eigen3)
-#  if(EIGEN3_FOUND)
-#    set(HAVE_EIGEN3 TRUE)
-#  endif()
-#endif()
-
-find_package(PythonLibs)
-find_package(PythonInterp)
-set(PYTHON_FOUND ${PYTHONLIBS_FOUND})
-
-package_option(PYTHON DEFAULT ON
-  "Enables support for Python.  If INTERROGATE_PYTHON_INTERFACE
-is also enabled, Python bindings will be generated.")
-
-# Always include Python, because we include it pretty much everywhere
-# though we don't usually want to link it in as well.
-include_directories(${PYTHON_INCLUDE_DIRS})
-
-#option(USE_PYTHON
-#  "Enables support for Python.  If INTERROGATE_PYTHON_INTERFACE
-#is also enabled, Python bindings will be generated." ON)
-
-#if(USE_PYTHON)
-#  find_package(PythonLibs)
-#  find_package(PythonInterp)
-#  if(PYTHONLIBS_FOUND)
-#    set(HAVE_PYTHON TRUE)
-#    include_directories("${PYTHON_INCLUDE_DIR}")
-#  endif()
-#endif()
-
-# By default, we'll assume the user only wants to run with Debug
-# python if he has to--that is, on Windows when building a debug build.
-if(WIN32 AND DO_DEBUG)
-  set(USE_DEBUG_PYTHON ON)
-else()
-  set(USE_DEBUG_PYTHON OFF)
-endif()
-
-set(GENPYCODE_LIBS "libpandaexpress;libpanda;libpandaphysics;libp3direct;libpandafx;libp3vision;libpandaode;libp3vrpn" CACHE STRING
-  "Define the default set of libraries to be instrumented by
-genPyCode.  You may wish to add to this list to add your own
-libraries, or if you want to use some of the more obscure
-interfaces like libpandaegg and libpandafx.")
-
-mark_as_advanced(GENPYCODE_LIBS)
-
-#TODO INSTALL_PYTHON_SOURCE?
 
 #
 # The following options have to do with the memory allocation system
@@ -401,6 +327,220 @@ mark_as_advanced(DO_MEMORY_USAGE SIMULATE_NETWORK_DELAY
   SUPPORT_IMMEDIATE_MODE USE_MEMORY_DLMALLOC USE_MEMORY_PTMALLOC2
   MEMORY_HOOK_DO_ALIGN ALTERNATIVE_MALLOC USE_DELETED_CHAIN)
 
+
+#
+# This section relates to mobile-device/phone support and options
+#
+
+# iPhone support
+set(BUILD_IPHONE "" CACHE STRING
+  "Panda contains some experimental code to compile for IPhone.  This
+requires the Apple IPhone SDK, which is currently only available
+for OS X platforms.  Set this to either 'iPhoneSimulator' or
+'iPhoneOS'.  Note that this is still *experimental* and incomplete!
+Don't enable this unless you know what you're doing!")
+set_property(CACHE BUILD_IPHONE PROPERTY STRINGS iPhoneSimulator iPhoneOS)
+
+
+# Android support
+option(BUILD_ANDROID
+  "Panda contains some experimental code to compile for Android.
+This requires the Google Android NDK. Besides BUILD_ANDROID, you'll
+also have to set ANDROID_NDK_HOME." OFF)
+
+set(ANDROID_NDK_HOME "" CACHE STRING
+  "The location of the Android NDK directory. ANDROID_NDK_HOME may
+not contain any spaces.")
+
+set(ANDROID_ABI "armeabi" CACHE STRING
+  "Can be be set to armeabi, armeabi-v7a, x86, or mips,
+depending on which architecture should be targeted.")
+set_property(CACHE ANDROID_ABI PROPERTY STRINGS
+  armeabi armeabi-v7a x86 mips)
+
+set(ANDROID_STL "gnustl_shared" CACHE STRING)
+set(ANDROID_PLATFORM "android-9" CACHE STRING)
+set(ANDROID_ARCH "arm" CACHE STRING)
+if(ANDROID_ARCH STREQUAL "arm")
+  set(ANDROID_TOOLCHAIN "arm-linux-androideabi")
+else()
+  set(ANDROID_TOOLCHAIN "")
+endif()
+
+mark_as_advanced(ANDROID_NDK_HOME ANDROID_ABI ANDROID_STL
+  ANDROID_PLATFORM ANDROID_ARCH)
+
+
+#
+# Now let's check for the presence of various thirdparty libraries.
+#
+
+# Is Eigen installed, and should Eigen replace internal linmath?
+find_package(Eigen3)
+
+package_option(EIGEN
+  "Enables experimental support for the Eigen linear algebra library.
+If this is provided, Panda will use this library as the fundamental
+implementation of its own linmath library; otherwise, it will use
+its own internal implementation.  The primary advantage of using
+Eigen is SSE2 support, which is only activated if LINMATH_ALIGN
+is also enabled.")
+
+option(LINMATH_ALIGN
+  "This is required for activating SSE2 support using Eigen.
+Activating this does constrain most objects in Panda to 16-byte
+alignment, which could impact memory usage on very-low-memory
+platforms.  Currently experimental." ON)
+
+
+# Is Python installed, and should Python interfaces be generated?
+find_package(PythonLibs)
+find_package(PythonInterp)
+set(PYTHON_FOUND ${PYTHONLIBS_FOUND})
+
+package_option(PYTHON DEFAULT ON
+  "Enables support for Python.  If INTERROGATE_PYTHON_INTERFACE
+is also enabled, Python bindings will be generated.")
+
+# Always include Python, because we include it pretty much everywhere
+# though we don't usually want to link it in as well.
+include_directories(${PYTHON_INCLUDE_DIRS})
+
+# By default, we'll assume the user only wants to run with Debug
+# python if he has to--that is, on Windows when building a debug build.
+if(WIN32 AND DO_DEBUG)
+  set(USE_DEBUG_PYTHON ON)
+else()
+  set(USE_DEBUG_PYTHON OFF)
+endif()
+
+set(GENPYCODE_LIBS
+  "libpandaexpress;libpanda;libpandaphysics;libp3direct;libpandafx;libp3vision;libpandaode;libp3vrpn"
+  CACHE STRING
+  "Define the default set of libraries to be instrumented by
+genPyCode.  You may wish to add to this list to add your own
+libraries, or if you want to use some of the more obscure
+interfaces like libpandaegg and libpandafx.")
+
+mark_as_advanced(GENPYCODE_LIBS)
+
+option(INSTALL_PYTHON_SOURCE
+  "Normally, Python source files are copied into the CMake library
+install directory, along with the compiled C++ library objects, when
+you make install.  If you prefer not to copy these Python source
+files, but would rather run them directly out of the source
+directory (presumably so you can develop them and make changes
+without having to reinstall), comment out this definition and put
+your source directory on your PYTHONPATH.)
+
+
+# Is OpenSSL installed, and where?
+find_package(OpenSSL COMPONENTS ssl crypto)
+
+package_option(OPENSSL DEFAULT ON
+  "Enable OpenSSL support")
+
+option(REPORT_OPENSSL_ERRORS
+  "Define this true to include the OpenSSL code to report verbose
+error messages when they occur." ${DO_DEBUG})
+
+
+# Is libjpeg installed, and where?
+find_package(JPEG)
+
+package_option(JPEG DEFAULT ON
+  "Enable support for loading .jpg images.")
+
+# Some versions of libjpeg did not provide jpegint.h.  Redefine this
+# to false if you lack this header file.
+#set(PHAVE_JPEGINT_H TRUE)
+
+option(HAVE_VIDEO4LINUX
+  "Set this to enable webcam support on Linux." ${IS_LINUX})
+
+
+# Is libpng installed, and where?
+find_package(PNG)
+
+package_option(PNG DEFAULT ON
+  "Enable support for loading .png images.")
+
+
+# Is libtiff installed, and where?
+find_package(TIFF)
+
+package_option(TIFF
+  "Enable support for loading .tif images.")
+
+
+# Is libtar installed, and where?
+find_package(Tar)
+
+package_option(TAR
+  "This is used to optimize patch generation against tar files.")
+
+
+# TODO: FFTW2
+# Is libfftw installed, and where?
+#find_package(FFTW2)
+
+#package_option(FFTW
+#  "This enables support for lossless compression of animations in
+#.bam files.  This is rarely used, and you probably don't need it.")
+
+#TODO PHAVE_DRFFTW_H
+
+
+# Is libsquish installed, and where?
+find_package(Squish)
+
+package_option(SQUISH
+  "Enables support for automatic compression of DXT textures.")
+
+
+# Is Cg installed, and where?
+find_package(Cg QUIET)
+package_option(CG "Enable support for Nvidia Cg Shading Language")
+package_option(CGGL "Enable support for Nvidia Cg's OpenGL API.")
+package_option(CGDX8 "Enable support for Nvidia Cg's DX8 API.")
+package_option(CGDX9 "Enable support for Nvidia Cg's DX9 API.")
+package_option(CGDX10 "Enable support for Nvidia Cg's DX10 API.")
+
+
+# Is VRPN installed, and where?
+find_package(VRPN)
+
+package_option(VRPN
+  "Enables support for connecting to VRPN servers.")
+
+
+# TODO: Helix
+# Is HELIX installed, and where?
+#find_package(Helix)
+
+#package_option(HELIX
+# "Enables support for Helix media playback.")
+
+
+# Is ZLIB installed, and where?
+find_package(ZLIB)
+
+package_option(ZLIB DEFAULT ON
+  "Enables support for compression of Panda assets.")
+
+#
+# <<<<<< Insert the rest of the Config.pp
+#        port of third-party libs here <<<<<<<
+#
+
+
+
+
+
+#
+# Miscellaneous settings
+#
+
 option(HAVE_WIN_TOUCHINPUT
 "Define this if you are building on Windows 7 or better, and you
 want your Panda build to run only on Windows 7 or better, and you
@@ -421,94 +561,42 @@ option(HAVE_EGG
 avoid building this, unless you really want to make a low-footprint
 build (such as, for instance, for the iPhone)." ON)
 
-# Is OpenSSL installed, and where?
-find_package(OpenSSL COMPONENTS ssl crypto)
+# These image formats don't require the assistance of a third-party
+# library to read and write, so there's normally no reason to disable
+# them int he build, unless you are looking to reduce the memory footprint.
+if(CMAKE_BUILD_TYPE MATCHES "MinSizeRel")
+  set(BUILD_TYPE_USE_IMAGES OFF)
+else()
+  set(BUILD_TYPE_USE_IMAGES ON)
+endif()
 
-package_option(OPENSSL DEFAULT ON
-  "Enable OpenSSL support")
+option(HAVE_SGI_RGB "Enable support for loading SGI RGB images."
+  ${BUILD_TYPE_USE_IMAGES})
+option(HAVE_TGA "Enable support for loading TGA images."
+  ${BUILD_TYPE_USE_IMAGES})
+option(HAVE_IMG "Enable support for loading IMG images."
+  ${BUILD_TYPE_USE_IMAGES})
+option(HAVE_SOFTIMAGE_PIC
+  "Enable support for loading SOFTIMAGE PIC images."
+  ${BUILD_TYPE_USE_IMAGES})
+option(HAVE_BMP "Enable support for loading BMP images."
+  ${BUILD_TYPE_USE_IMAGES})
+option(HAVE_PNM "Enable support for loading PNM images."
+  ${BUILD_TYPE_USE_IMAGES})
 
-option(REPORT_OPENSSL_ERRORS
-  "Define this true to include the OpenSSL code to report verbose
-error messages when they occur." ${DO_DEBUG})
-
-# Is libjpeg installed, and where?
-find_package(JPEG)
-
-package_option(JPEG DEFAULT ON
-  "Enable support for loading .jpg images.")
-
-# Some versions of libjpeg did not provide jpegint.h.  Redefine this
-# to false if you lack this header file.
-#set(PHAVE_JPEGINT_H TRUE)
-
-option(HAVE_VIDEO4LINUX
-  "Set this to enable webcam support on Linux." ${IS_LINUX})
-
-# Is libpng installed, and where?
-find_package(PNG)
-
-package_option(PNG DEFAULT ON
-  "Enable support for loading .png images.")
-
-# Is libtiff installed, and where?
-find_package(TIFF)
-
-package_option(TIFF
-  "Enable support for loading .tif images.")
-
-# These image formats don't require the assistance of a
-# third-party library to read and write, so there's normally no
-# reason to disable them int he build, unless you are looking to
-# reduce the memory footprint.
-
-option(HAVE_SGI_RGB "Enable support for loading SGI RGB images." ON)
-option(HAVE_TGA "Enable support for loading TGA images." ON)
-option(HAVE_IMG "Enable support for loading IMG images." ON)
-option(HAVE_SOFTIMAGE_PIC "Enable support for loading SOFTIMAGE PIC images." ON)
-option(HAVE_BMP "Enable support for loading BMP images." ON)
-option(HAVE_PNM "Enable support for loading PNM images." ON)
+unset(BUILD_TYPE_USE_IMAGES)
 
 mark_as_advanced(HAVE_SGI_RGB HAVE_TGA
   HAVE_IMG HAVE_SOFTIMAGE_PIC HAVE_BMP HAVE_PNM)
 
-# Is libtar installed, and where?
-find_package(Tar)
-
-package_option(TAR
-  "This is used to optimize patch generation against tar files.")
-
-# Is libfftw installed, and where?
-#find_package(FFTW2)
-
-#package_option(FFTW
-#  "This enables support for lossless compression of animations in
-#.bam files.  This is rarely used, and you probably don't need it.")
-
-#TODO PHAVE_DRFFTW_H
-
-# Is libsquish installed, and where?
-find_package(Squish)
-
-package_option(SQUISH
-  "Enables support for automatic compression of DXT textures.")
-
-#TODO: Cg HERE!
-
-# Is VRPN installed, and where?
-find_package(VRPN)
-
-package_option(VRPN
-  "Enables support for connecting to VRPN servers.")
-
-# Is ZLIB installed, and where?
-find_package(ZLIB)
-
-package_option(ZLIB DEFAULT ON
-  "Enables support for compression of Panda assets.")
 
 #
-# < Insert the rest of the Config.pp port here <
+# <<<<< Insert the rest of the Config.pp
+#       port of miscellaneous settings here <<<<<
 #
+
+
+
 
 # How to invoke bison and flex.  Panda takes advantage of some
 # bison/flex features, and therefore specifically requires bison and

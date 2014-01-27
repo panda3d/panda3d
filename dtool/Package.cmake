@@ -1,19 +1,6 @@
 message(STATUS "")
 message(STATUS "Configuring support for the following optional third-party packages:")
 
-# Find and configure Cg library
-find_package(Cg QUIET)
-#config_package(CG "Nvidia Cg Shading Langauge")
-#config_package(CGGL "Cg OpenGL API")
-#config_package(CGDX8 "Cg DX8 API")
-#config_package(CGDX9 "Cg DX9 API")
-#config_package(CGDX10 "Cg DX10 API")
-package_option(CG)
-package_option(CGGL)
-package_option(CGDX8)
-package_option(CGDX9)
-package_option(CGDX10)
-
 # Find and configure Miles Sound System
 find_package(Miles QUIET)
 #config_package(RAD_MSS "Miles Sound System")
