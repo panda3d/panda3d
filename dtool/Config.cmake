@@ -374,9 +374,9 @@ depending on which architecture should be targeted.")
 set_property(CACHE ANDROID_ABI PROPERTY STRINGS
   armeabi armeabi-v7a x86 mips)
 
-set(ANDROID_STL "gnustl_shared" CACHE STRING)
-set(ANDROID_PLATFORM "android-9" CACHE STRING)
-set(ANDROID_ARCH "arm" CACHE STRING)
+set(ANDROID_STL "gnustl_shared" CACHE STRING "")
+set(ANDROID_PLATFORM "android-9" CACHE STRING "")
+set(ANDROID_ARCH "arm" CACHE STRING "")
 if(ANDROID_ARCH STREQUAL "arm")
   set(ANDROID_TOOLCHAIN "arm-linux-androideabi")
 else()
@@ -447,7 +447,7 @@ you make install.  If you prefer not to copy these Python source
 files, but would rather run them directly out of the source
 directory (presumably so you can develop them and make changes
 without having to reinstall), comment out this definition and put
-your source directory on your PYTHONPATH.)
+your source directory on your PYTHONPATH.")
 
 
 # Is OpenSSL installed, and where?
