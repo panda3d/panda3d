@@ -12,6 +12,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/macros/")
 # Include global modules
 include(AutoInclude)        # Implements automatic include_directories finding
 include(AddBisonTarget)     # Defines add_bison_target function
+include(AddFlexTarget)      # Defines add_flex_target function
 include(CompositeSources)   # Defines composite_sources function
 include(PackageConfig)      # Defines package_option AND target_use_packages
 include(Interrogate)        # Defines target_interrogate AND add_python_module
