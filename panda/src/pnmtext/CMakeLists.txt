@@ -15,5 +15,5 @@ set(P3PNMTEXT_SOURCES
 
 composite_sources(p3pnmtext P3PNMTEXT_SOURCES)
 add_library(p3pnmtext ${P3PNMTEXT_SOURCES} ${P3PNMTEXT_HEADERS})
-target_link_libraries(p3pnmtext p3pnmimage)
+target_link_libraries(p3pnmtext p3pnmimage ${FREETYPE_LIBRARIES})
 target_interrogate(p3pnmtext ALL)
