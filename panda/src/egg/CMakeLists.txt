@@ -1,6 +1,6 @@
 if(HAVE_EGG)
   add_bison_target(parser.cxx parser.yxx DEFINES parser.h PREFIX eggyy)
-  add_flex_target(lexer.cxx lexer.lxx DEFINES lexer.h PREFIX eggyy)
+  add_flex_target(lexer.cxx lexer.lxx PREFIX eggyy)
 
   set(P3EGG_HEADERS
     config_egg.h eggAnimData.I eggAnimData.h
