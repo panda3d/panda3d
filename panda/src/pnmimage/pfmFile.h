@@ -121,6 +121,7 @@ PUBLISHED:
   BLOCKING void reverse_distort(const PfmFile &dist, PN_float32 scale_factor = 1.0);
   BLOCKING void merge(const PfmFile &other);
   BLOCKING void copy_channel(int to_channel, const PfmFile &other, int from_channel);
+  BLOCKING void copy_channel_masked(int to_channel, const PfmFile &other, int from_channel);
   BLOCKING void apply_crop(int x_begin, int x_end, int y_begin, int y_end);
   BLOCKING void clear_to_texcoords(int x_size, int y_size);
 

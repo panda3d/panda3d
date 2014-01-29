@@ -1468,6 +1468,29 @@ copy_channel(int to_channel, const PfmFile &other, int from_channel) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::copy_channel_masked
+//       Access: Published
+//  Description: Copies just the specified channel values from the
+//               indicated PfmFile, but only where the other file has
+//               a data point.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+copy_channel_masked(int to_channel, const PfmFile &other, int from_channel) {
+  nassertv(is_valid() && other.is_valid());
+  nassertv(other._x_size == _x_size && other._y_size == _y_size);
+  nassertv(to_channel >= 0 && to_channel < get_num_channels() &&
+           from_channel >= 0 && from_channel < other.get_num_channels());
+
+  for (int yi = 0; yi < _y_size; ++yi) {
+    for (int xi = 0; xi < _x_size; ++xi) {
+      if (other.has_point(xi, yi)) {
+        set_channel(xi, yi, to_channel, other.get_channel(xi, yi, from_channel));
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::apply_crop
 //       Access: Published
 //  Description: Reduces the PFM file to the cells in the rectangle
