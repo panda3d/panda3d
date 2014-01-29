@@ -212,6 +212,6 @@ endif()
 message("See dtool_config.h for more details about the specified configuration.")
 
 # Generate dtool_config.h
-configure_file(dtool_config.h.in "${PROJECT_BINARY_DIR}/dtool_config.h")
-include_directories("${PROJECT_BINARY_DIR}")
+configure_file(dtool_config.h.in "${PROJECT_BINARY_DIR}/include/dtool_config.h")
+include_directories("${PROJECT_BINARY_DIR}/include")
 #install(FILES "${PROJECT_BINARY_DIR}/dtool_config.h" DESTINATION include/panda3d)
