@@ -19,6 +19,8 @@ function(add_flex_target output_cxx input_lxx)
       set(keyword "DEFINES")
     elseif(arg STREQUAL "PREFIX")
       set(keyword "PREFIX")
+    elseif(arg STREQUAL "CASE_INSENSITIVE")
+      set(arguments ${arguments} -i)
 
     elseif(keyword STREQUAL "PREFIX")
       set(arguments ${arguments} -P "${arg}")
