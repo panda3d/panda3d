@@ -8,7 +8,7 @@ make
 [sudo] make install
 ```
 
-It is recommended to create a separate directory to build Panda3D:
+Instead, it is recommended to create a separate directory to build Panda3D:
 ```sh
 mkdir build
 cd build/
@@ -28,11 +28,10 @@ Panda subpackage building is handled by:
 ```
 	BUILD_<SUBPACKAGE>=True/False   # Example: BUILD_DTOOL, BUILD_PANDA
 ```
-Other configuration settings use more direct names (same names as in-source):
+Other configuration settings use their historical names (same names as in-source):
 ```
 	# Examples
 	PANDA_DISTRIBUTOR="MyDistributor"
-	DTOOL_INSTALL="/usr/local/panda"
 	LINMATH_ALIGN=On
 
 	# ... etc ...
@@ -41,19 +40,20 @@ Other configuration settings use more direct names (same names as in-source):
 
 For example, `makepanda.py --distributor X` becomes `cmake -DPANDA_DISTRIBUTOR=X`
 
-All third-party libraries are enabled by default and Panda3D will
-be compiled with any third-party library that is found.
-Third-party libraries can be enabled or disabled through
-configuration with the cmake gui or cli.
+All found third-party libraries are enabled by default.
+Most config settings are set to a sensible default for typical
+a PC/desktop Panda3D distribution.
+Third-party libraries and other settings can be enabled or disabled
+through configuration with the cmake gui or cli.
 
-To quickly enable or disable all third-party libraries, run:
-```sh
-cmake -DEVERYTHING=True .  # or .. if you are in a separate build/ dir
-# OR
-cmake -DNOTHING=True .  # or .. if you are in a separate build/ dir
-```
+Running Panda3D with `-DCMAKE_BUILD_TYPE=` and one of `Release`, `Debug`,
+`MinSizeRel`, or `RelWithDebInfo` will cause some configuration settings
+to change their defaults to more appropriate values.
 
-To use all available packages, and silence output for missing packages, run:
-```sh
-cmake -DDISCOVERED=True .  # or .. if you are in a separate build/ dir
-```
+If cmake has already been generated, changing the build type will not cause
+some of these values to change to their expected values, because the values
+are cached so that they don't overwrite custom settings.
+
+To reset CMake's config to defaults, delete the CMakeCache.txt file, and rerun
+CMake with the preferred build mode specified
+(example: `cmake .. -DCMAKE_BUILD_TYPE=Debug`).
