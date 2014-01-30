@@ -7,38 +7,26 @@
 #
 
 # Define the plaform we are building on.
+# The values "UNIX", "WIN32", "MINGW", "MSYS", and "CYGWIN"
+# are automatically provided by CMAKE.  "APPLE" is also provided by
+# CMAKE but may be True on systems that are not OS X.
 if(CMAKE_SYSTEM_NAME MATCHES "Linux")
   set(IS_LINUX 1)
 endif()
-
 if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
   set(IS_OSX 1)
 endif()
-
 if(CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
   set(IS_FREEBSD 1)
 endif()
 
-# The character used to separate components of an OS-specific
-# directory name depends on the platform (it is '/' on Unix, '\' on
-# Windows).  That character selection is hardcoded into Panda and
-# cannot be changed here.  (Note that an internal Panda filename
-# always uses the forward slash, '/', to separate the components of a
-# directory name.)
 
-# There's a different character used to separate the complete
-# directory names in a search path specification.  On Unix, the
-# normal convention is ':', on Windows, it has to be ';', because the
-# colon is already used to mark the drive letter.  This character is
-# selectable here.  Most users won't want to change this.  If
-# multiple characters are placed in this string, any one of them may
-# be used as a separator character.
-
-if(WIN32)
-  set(DEFAULT_PATHSEP ";")
-else()
-  set(DEFAULT_PATHSEP ":")
+# Define the type of build we are setting up.
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE RelWithDebInfo)
 endif()
+set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+  Release RelWithDebInfo Debug MinSizeRel Distribution)
 
 # Provide convenient boolean expression based on build type
 if(CMAKE_BUILD_TYPE MATCHES "Debug")
@@ -55,6 +43,35 @@ if(CMAKE_BUILD_TYPE MATCHES "MinSizeRel")
 else()
   set(IS_MINSIZE_BUILD False)
   set(IS_NOT_MINSIZE_BUILD True)
+endif()
+
+if(CMAKE_BUILD_TYPE MATCHES "Distribution")
+  set(IS_DIST_BUILD True)
+  set(IS_NOT_DIST_BUILD False)
+else()
+  set(IS_DIST_BUILD False)
+  set(IS_NOT_DIST_BUILD True)
+endif()
+
+
+# The character used to separate components of an OS-specific
+# directory name depends on the platform (it is '/' on Unix, '\' on
+# Windows).  That character selection is hardcoded into Panda and
+# cannot be changed here.  (Note that an internal Panda filename
+# always uses the forward slash, '/', to separate the components of a
+# directory name.)
+
+# There's a different character used to separate the complete
+# directory names in a search path specification.  On Unix, the
+# normal convention is ':', on Windows, it has to be ';', because the
+# colon is already used to mark the drive letter.  This character is
+# selectable here.  Most users won't want to change this.  If
+# multiple characters are placed in this string, any one of them may
+# be used as a separator character.
+if(WIN32)
+  set(DEFAULT_PATHSEP ";")
+else()
+  set(DEFAULT_PATHSEP ":")
 endif()
 
 # Panda uses prc files for runtime configuration.  There are many
