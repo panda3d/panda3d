@@ -4,12 +4,8 @@
 #   behavior by default.
 #
 
-# Emulate CMake 2.8.11's CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE behavior if
-# this version doesn't define CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE.
-# CFSworks's version of CMake (2.8.12) doesn't have
-# CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE even though it should be supported,
-# hence test if it's defined (as either ON or OFF) before trying to use it.
-if("${CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE}" STREQUAL "")
+# Emulate CMake 2.8.11's CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE behavior.
+if(CMAKE_VERSION VERSION_LESS 2.8.11)
   # Replace some built-in functions in order to extend their functionality.
   function(add_library target)
     _add_library(${target} ${ARGN})
@@ -33,16 +29,14 @@ if("${CMAKE_INCLUDE_CURRENT_DIR_IN_INTERFACE}" STREQUAL "")
       endif()
     endforeach()
 
-    if(interface_dirs)
-      list(REMOVE_DUPLICATES interface_dirs)
+    list(REMOVE_DUPLICATES interface_dirs)
 
-      #NB. target_include_directories is new in 2.8.8.
-      #target_include_directories("${target}" ${interface_dirs})
-      include_directories(${interface_dirs})
+    #NB. target_include_directories is new in 2.8.8.
+    #target_include_directories("${target}" ${interface_dirs})
+    include_directories(${interface_dirs})
 
-      # Update this target's interface inc dirs.
-      set_target_properties("${target}" PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${target_interface_dirs};${interface_dirs}")
-    endif()
+    # Update this target's interface inc dirs.
+    set_target_properties("${target}" PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${target_interface_dirs};${interface_dirs}")
 
     # Call to the built-in function we are overriding.
     _target_link_libraries(${target} ${ARGN})
