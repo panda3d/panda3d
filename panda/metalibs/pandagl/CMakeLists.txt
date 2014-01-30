@@ -1,4 +1,12 @@
 if(HAVE_GL)
+  # Check that we actually have a display subsystem.
+  if(NOT HAVE_WGL AND NOT HAVE_COCOA AND NOT HAVE_CARBON AND NOT HAVE_GLX)
+    message("") # Add extra line before error
+    message(SEND_ERROR
+      "When compiling with OpenGL (HAVE_GL), at least one of:
+    HAVE_WGL, HAVE_COCOA, HAVE_CARBON, or HAVE_GLX must be defined.")
+  endif()
+
   add_definitions(-DBUILDING_PANDAGL)
   set(PANDAGL_LINK_TARGETS p3glgsg)
 
