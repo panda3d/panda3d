@@ -73,6 +73,10 @@ function(package_option name)
 
   # Create the option.
   option("HAVE_${name}" "${cache_string}" "${default}")
+  if(NOT HAVE_${name})
+    unset(${name}_LIBRARY)
+    unset(${name}_LIBRARIES)
+  endif()
 endfunction()
 
 #
