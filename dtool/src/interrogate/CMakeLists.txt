@@ -50,4 +50,4 @@ composite_sources(interrogate INTERROGATE_SOURCES)
 add_executable(interrogate ${INTERROGATE_HEADERS} ${INTERROGATE_SOURCES})
 target_link_libraries(interrogate
 	p3cppParser p3interrogatedb p3dconfig p3prc p3dtoolutil p3dtoolbase
-	p3pystub ${OPENSSL_LIBRARIES})
+	p3pystub ${_OPENSSL_LIBRARIES})

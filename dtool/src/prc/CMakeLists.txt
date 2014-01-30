@@ -65,4 +65,4 @@ set(P3PRC_SOURCES
 composite_sources(p3prc P3PRC_SOURCES)
 
 add_library(p3prc ${P3PRC_HEADERS} ${P3PRC_SOURCES})
-target_link_libraries(p3prc p3dtoolutil p3dtoolbase ${OPENSSL_LIBRARIES})
+target_link_libraries(p3prc p3dtoolutil p3dtoolbase ${_OPENSSL_LIBRARIES})

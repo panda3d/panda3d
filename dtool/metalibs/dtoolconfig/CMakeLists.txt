@@ -2,7 +2,7 @@ add_definitions(-DBUILDING_DTOOLCONFIG)
 
 if(HAVE_PYTHON)
   add_library(p3dtoolconfig dtoolconfig.cxx pydtool.cxx)
-  target_link_libraries(p3dtoolconfig ${PYTHON_LIBRARIES})
+  target_link_libraries(p3dtoolconfig ${_PYTHON_LIBRARIES})
 else()
   add_library(p3dtoolconfig dtoolconfig.cxx)
 endif()

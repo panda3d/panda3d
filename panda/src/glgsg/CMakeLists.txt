@@ -11,6 +11,6 @@ if(HAVE_GL)
   composite_sources(p3glgsg P3GLGSG_SOURCES)
   add_library(p3glgsg ${P3GLGSG_HEADERS} ${P3GLGSG_SOURCES})
   target_link_libraries(p3glgsg p3glstuff p3display
-    ${OPENGL_LIBRARIES} ${CG_LIBRARIES})
+    ${OPENGL_LIBRARIES} ${_CG_LIBRARIES})
   target_interrogate(p3glgsg ALL)
 endif()

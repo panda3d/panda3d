@@ -34,5 +34,5 @@ set(P3TEXT_SOURCES
 
 composite_sources(p3text P3TEXT_SOURCES)
 add_library(p3text ${P3TEXT_SOURCES} ${P3TEXT_HEADERS})
-target_link_libraries(p3text p3pnmtext p3parametrics ${FREETYPE_LIBRARIES})
+target_link_libraries(p3text p3pnmtext p3parametrics ${_FREETYPE_LIBRARIES})
 target_interrogate(p3text ALL)
