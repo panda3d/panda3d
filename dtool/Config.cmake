@@ -54,6 +54,13 @@ else()
 endif()
 
 
+# Are we building with static or dynamic linking?
+option(BUILD_SHARED_LIBS
+  "Causes subpackes to be built separately -- setup for dynamic linking.
+Utilities/tools/binaries/etc are then dynamically linked to the
+libraries instead of being statically linked." ON)
+
+
 # The character used to separate components of an OS-specific
 # directory name depends on the platform (it is '/' on Unix, '\' on
 # Windows).  That character selection is hardcoded into Panda and
