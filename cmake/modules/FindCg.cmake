@@ -10,6 +10,7 @@
 #   CG_INCLUDE_DIRS  - directories for all NvidiaCg components
 #   CG_LIBRARY_DIR   - the NvidiaCg library directory
 #   CG_LIBRARY       - the path to the library binary
+#   CG_LIBRARIES     - the paths to the Cg library and each library below.
 #
 #   CGGL_FOUND       - system has CgGL
 #   CGGL_INCLUDE_DIR - the CgGL include directory
@@ -157,4 +158,8 @@ if(CG_INCLUDE_DIR AND CG_LIBRARY_DIR)
   find_cgdx8()
   find_cgdx9()
   find_cgdx10()
+
+  set(CG_LIBRARIES ${CG_LIBRARY} ${CGGL_LIBRARY}
+    ${CGDX8_LIBRARY} ${CGDX9_LIBRARY} ${CGDX10_LIBRARY})
+  mark_as_advanced(CG_LIBRARIES)
 endif()
