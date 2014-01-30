@@ -645,6 +645,19 @@ mark_as_advanced(SDL_LIBRARY)
 mark_as_advanced(SDL_LIBRARY_TEMP)
 
 
+# Is X11 insalled, and where?
+find_package(X11)
+
+package_option(X11
+  "Provides X-server support on Unix platforms. X11 may need to be linked
+against for tinydisplay, but probably only on a Linux platform.")
+if(NOT UNIX AND HAVE_X11)
+  message(SEND_ERROR
+    "X11 support is only supported on Unix platforms:
+ie. Linux, BSD, OS X, Cygwin, etc...")
+endif()
+
+
 # TODO: XF86DGA
 # This defines if we have XF86DGA installed.
 #find_package(XF86DGA QUIET)
@@ -752,6 +765,8 @@ mark_as_advanced(HAVE_SGI_RGB HAVE_TGA
 
 
 
+
+
 # How to invoke bison and flex.  Panda takes advantage of some
 # bison/flex features, and therefore specifically requires bison and
 # flex, not some other versions of yacc and lex.  However, you only
@@ -769,8 +784,11 @@ find_package(FLEX QUIET)
 set(HAVE_BISON ${BISON_FOUND})
 set(HAVE_FLEX ${FLEX_FOUND})
 
+
 #
-#
+# >>>>> Below is entirely temporary config information
+#       until the port of Config.pp is finished.
+#       It should be re-arranged for above. >>>>>>
 #
 
 ### Configure threading support ###
