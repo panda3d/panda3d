@@ -74,6 +74,7 @@ else()
   set(DEFAULT_PATHSEP ":")
 endif()
 
+
 # Panda uses prc files for runtime configuration.  There are many
 # compiled-in options to customize the behavior of the prc config
 # system; most users won't need to change any of them.  Feel free to
@@ -410,7 +411,8 @@ If this is provided, Panda will use this library as the fundamental
 implementation of its own linmath library; otherwise, it will use
 its own internal implementation.  The primary advantage of using
 Eigen is SSE2 support, which is only activated if LINMATH_ALIGN
-is also enabled.")
+is also enabled."
+  LICENSE "MPL-2")
 
 option(LINMATH_ALIGN
   "This is required for activating SSE2 support using Eigen.
@@ -537,7 +539,8 @@ package_option(CGDX10 "Enable support for Nvidia Cg's DX10 API.")
 find_package(VRPN)
 
 package_option(VRPN
-  "Enables support for connecting to VRPN servers.")
+  "Enables support for connecting to VRPN servers."
+  LICENSE "Nvidia")
 
 
 # TODO: Helix

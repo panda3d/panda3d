@@ -19,6 +19,14 @@ set(PANDA_DISTRIBUTOR homebuilt CACHE STRING
 It should be set by whoever provides a particular distribution of
 Panda.  If you build your own Panda, leave this unchanged.")
 
+set(PANDA_DIST_USE_LICENSES "BSD-3;BSD-2;MIT" CACHE STRING
+  "This is a list of allowed licenses for 3rd-party packages to build
+support for when performing a Distribution build of Panda3d.
+Note: This only is checked for packages that CMake has declared with a
+particular license. Some packages don't have a listed license because
+they are almost always required/used, or because they are only used in
+plugins that can be easily removed (eg. directx, ffmpeg, fmod, ...).")
+
 set(PANDA_PACKAGE_VERSION CACHE STRING
   "This string is used to describe the Panda3D \"package\" associated
 with this current build of Panda. It should increment with major
@@ -48,7 +56,8 @@ the first three matching the plugin version, and the fourth integer
 being incremented with each new Core API revision.")
 
 mark_as_advanced(PANDA_VERSION PANDA_OFFICIAL_VERSION
-  PANDA_PACKAGE_VERSION P3D_PLUGIN_VERSION P3D_COREAPI_VERSION)
+  PANDA_PACKAGE_VERSION P3D_PLUGIN_VERSION P3D_COREAPI_VERSION
+  PANDA_DIST_USE_LICENSES)
 
 # Separate the Panda3D version into its three components.
 string(REPLACE "." ";" PANDA_VERSION_LIST "${PANDA_VERSION}")

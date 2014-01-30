@@ -7,11 +7,14 @@
 #
 # Function: package_option
 # Usage:
-#   package_option(package_name DOCSTRING [DEFAULT ON | OFF])
+#   package_option(package_name DOCSTRING
+#                  [DEFAULT ON | OFF]
+#                  [LICENSE license])
 # Examples:
-#   add_library(mylib ${SOURCES})
+#   package_option(LIBNAME "Enables LIBNAME support." DEFAULT OFF)
 #
-#       If no default is given, the default is whether the package was found.
+#       If no default is given, the default in normal
+#       builds is to enable all found third-party packages.
 #
 #
 # Function: target_use_packages
@@ -29,6 +32,7 @@ function(package_option name)
   # Parse the arguments.
   set(command)
   set(default)
+  set(license)
   set(cache_string)
 
   foreach(arg ${ARGN})
@@ -36,8 +40,15 @@ function(package_option name)
       set(default "${arg}")
       set(command)
 
+    elseif(command STREQUAL "LICENSE")
+      set(license "${arg}")
+      set(command)
+
     elseif(arg STREQUAL "DEFAULT")
       set(command "DEFAULT")
+
+    elseif(arg STREQUAL "LICENSE")
+      set(command "LICENSE")
 
     else()
       # Yes, a list, because semicolons can be in there, and
@@ -54,7 +65,28 @@ function(package_option name)
 
   # If the default is not set, we set it.
   if(NOT DEFINED default)
-    set(default "${${name}_FOUND}")
+    if(IS_DIST_BUILD)
+      # Accept things that don't have a configured license
+      if(license STREQUAL "")
+        set(default "${${name}_FOUND}")
+
+      else()
+        list(FIND PANDA_DIST_USE_LICENSES ${license} license_index)
+        # If the license isn't in the accept listed, don't use the package
+        if(license_index EQUAL -1)
+          set(default OFF)
+        else
+          set(default "${${name}_FOUND}")
+        endif()
+      endif()
+
+    elseif(IS_MINSIZE_BUILD)
+      set(default OFF)
+
+    else()
+      set(default "${${name}_FOUND}")
+
+    endif()
   endif()
 
   # If it was set by the user but not found, display an error.
