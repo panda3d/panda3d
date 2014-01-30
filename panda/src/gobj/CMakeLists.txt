@@ -144,7 +144,7 @@ set(P3GOBJ_SOURCES
 composite_sources(p3gobj P3GOBJ_SOURCES)
 add_library(p3gobj ${P3GOBJ_HEADERS} ${P3GOBJ_SOURCES})
 target_link_libraries(p3gobj p3gsgbase p3pnmimage
-  ${_ZLIB_LIBRARIES} ${_SQUISH_LIBRARY})
+  ${_ZLIB_LIBRARIES} ${_SQUISH_LIBRARY} ${_CG_LIBRARIES})
 target_interrogate(p3gobj ALL)
 
 #begin test_bin_target
