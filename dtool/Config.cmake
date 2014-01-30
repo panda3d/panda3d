@@ -40,13 +40,6 @@ else()
   set(DEFAULT_PATHSEP ":")
 endif()
 
-# TODO: Figure out what to do about release/debug vs OPTIMIZE level.
-if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "")
-  set(DO_DEBUG ON)
-else()
-  set(DO_DEBUG OFF)
-endif()
-
 # Provide convenient boolean expression based on build type
 if(CMAKE_BUILD_TYPE MATCHES "Debug")
   set(IS_DEBUG_BUILD True)
@@ -293,13 +286,13 @@ option(DO_MEMORY_USAGE
 enables you to define the variable 'track-memory-usage' at runtime
 to help track memory leaks, and also report total memory usage on
 PStats.  There is some small overhead for having this ability
-available, even if it is unused." ${DO_DEBUG})
+available, even if it is unused." ${IS_DEBUG_BUILD})
 
 option(SIMULATE_NETWORK_DELAY
   "This option compiles in support for simulating network delay via
 the min-lag and max-lag prc variables.  It adds a tiny bit of
 overhead even when it is not activated, so it is typically enabled
-only in a development build." ${DO_DEBUG})
+only in a development build." ${IS_DEBUG_BUILD})
 
 option(SUPPORT_IMMEDIATE_MODE
   "This option compiles in support for immediate-mode OpenGL
@@ -307,7 +300,7 @@ rendering.  Since this is normally useful only for researching
 buggy drivers, and since there is a tiny bit of per-primitive
 overhead to have this option available even if it is unused, it is
 by default enabled only in a development build.  This has no effect
-on DirectX rendering." ${DO_DEBUG})
+on DirectX rendering." ${IS_DEBUG_BUILD})
 
 option(USE_MEMORY_DLMALLOC
   "This is an optional alternative memory-allocation scheme
@@ -424,7 +417,7 @@ include_directories(${PYTHON_INCLUDE_DIRS})
 
 # By default, we'll assume the user only wants to run with Debug
 # python if he has to--that is, on Windows when building a debug build.
-if(WIN32 AND DO_DEBUG)
+if(WIN32 AND IS_DEBUG_BUILD)
   set(USE_DEBUG_PYTHON ON)
 else()
   set(USE_DEBUG_PYTHON OFF)
@@ -458,7 +451,7 @@ package_option(OPENSSL DEFAULT ON
 
 option(REPORT_OPENSSL_ERRORS
   "Define this true to include the OpenSSL code to report verbose
-error messages when they occur." ${DO_DEBUG})
+error messages when they occur." ${IS_DEBUG_BUILD})
 
 
 # Is libjpeg installed, and where?
