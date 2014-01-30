@@ -126,8 +126,9 @@ function(target_interrogate target)
       endif()
     endforeach(source)
 
-    # Now record INTERROGATE_SOURCES to the target:
+    # Now record INTERROGATE_SOURCES and INTERROGATE_DATABASE to the target:
     set_target_properties("${target}" PROPERTIES INTERROGATE_SOURCES ${igate_sources})
+    set_target_properties("${target}" PROPERTIES INTERROGATE_DATABASE "${target}.in")
 
 
     # HACK: This is REALLY ugly, but we can't add the _igate.cxx to the existing
