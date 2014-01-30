@@ -355,7 +355,7 @@ requires the Apple IPhone SDK, which is currently only available
 for OS X platforms.  Set this to either 'iPhoneSimulator' or
 'iPhoneOS'.  Note that this is still *experimental* and incomplete!
 Don't enable this unless you know what you're doing!")
-set_property(CACHE BUILD_IPHONE PROPERTY STRINGS iPhoneSimulator iPhoneOS)
+set_property(CACHE BUILD_IPHONE PROPERTY STRINGS "" iPhoneSimulator iPhoneOS)
 
 
 # Android support
