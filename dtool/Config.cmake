@@ -528,19 +528,25 @@ package_option(SQUISH
 
 # Is Cg installed, and where?
 find_package(Cg QUIET)
-package_option(CG "Enable support for Nvidia Cg Shading Language")
-package_option(CGGL "Enable support for Nvidia Cg's OpenGL API.")
-package_option(CGDX8 "Enable support for Nvidia Cg's DX8 API.")
-package_option(CGDX9 "Enable support for Nvidia Cg's DX9 API.")
-package_option(CGDX10 "Enable support for Nvidia Cg's DX10 API.")
+package_option(CG
+  "Enable support for Nvidia Cg Shading Language"
+  LICENSE "Nvidia")
+package_option(CGGL
+  "Enable support for Nvidia Cg's OpenGL API."
+  LICENSE "Nvidia")
+package_option(CGDX8 "Enable support for Nvidia Cg's DX8 API."
+  LICENSE "Nvidia")
+package_option(CGDX9 "Enable support for Nvidia Cg's DX9 API."
+  LICENSE "Nvidia")
+package_option(CGDX10 "Enable support for Nvidia Cg's DX10 API."
+  LICENSE "Nvidia")
 
 
 # Is VRPN installed, and where?
 find_package(VRPN)
 
 package_option(VRPN
-  "Enables support for connecting to VRPN servers."
-  LICENSE "Nvidia")
+  "Enables support for connecting to VRPN servers.")
 
 
 # TODO: Helix

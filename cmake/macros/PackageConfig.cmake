@@ -32,7 +32,7 @@ function(package_option name)
   # Parse the arguments.
   set(command)
   set(default)
-  set(license)
+  set(license "")
   set(cache_string)
 
   foreach(arg ${ARGN})
@@ -73,9 +73,10 @@ function(package_option name)
       else()
         list(FIND PANDA_DIST_USE_LICENSES ${license} license_index)
         # If the license isn't in the accept listed, don't use the package
-        if(license_index EQUAL -1)
+        message("INDEX for ${name}: ${license_index}")
+        if(${license_index} EQUAL "-1")
           set(default OFF)
-        else
+        else()
           set(default "${${name}_FOUND}")
         endif()
       endif()
