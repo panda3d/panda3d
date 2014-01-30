@@ -27,6 +27,7 @@ set(P3GRUTIL_SOURCES
   geoMipTerrain.cxx
   sceneGraphAnalyzerMeter.cxx
   heightfieldTesselator.cxx
+  multitexReducer.cxx
   nodeVertexTransform.cxx
   pfmVizzer.cxx
   pipeOcclusionCullTraverser.cxx
