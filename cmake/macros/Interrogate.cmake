@@ -95,13 +95,13 @@ function(interrogate_sources target output database module)
   if(HAVE_PYTHON AND HAVE_INTERROGATE)
     get_target_property(sources "${target}" IGATE_SOURCES)
 
-    if(sources STREQUAL "sources-NOTFOUND")
+    if(NOT sources)
       message(FATAL_ERROR
         "Cannot interrogate ${target} unless it's run through target_interrogate first!")
     endif()
 
     get_target_property(srcdir "${target}" TARGET_SRCDIR)
-    if(srcdir STREQUAL "srcdir-NOTFOUND")
+    if(NOT srcdir)
       # No TARGET_SRCDIR was set, so we'll do everything relative to our
       # current binary dir instead:
       set(srcdir "${CMAKE_CURRENT_BINARY_DIR}")
