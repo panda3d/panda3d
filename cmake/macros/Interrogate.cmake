@@ -66,6 +66,15 @@ function(target_interrogate target)
     set_target_properties("${target}" PROPERTIES IGATE_SOURCES
       "${absolute_sources}")
 
+    # CMake has no property for determining the source directory where the
+    # target was originally added. interrogate_sources makes use of this
+    # property (if it is set) in order to make all paths on the command-line
+    # relative to it, thereby shortening the command-line even more.
+    # Since this is not an Interrogate-specific property, it is not named with
+    # an IGATE_ prefix.
+    set_target_properties("${target}" PROPERTIES TARGET_SRCDIR
+      "${CMAKE_CURRENT_SOURCE_DIR}")
+
     # HACK HACK HACK -- this is part of the below hack.
     target_link_libraries(${target} ${target}_igate)
   endif()
@@ -91,6 +100,13 @@ function(interrogate_sources target output database module)
         "Cannot interrogate ${target} unless it's run through target_interrogate first!")
     endif()
 
+    get_target_property(srcdir "${target}" TARGET_SRCDIR)
+    if(srcdir STREQUAL "srcdir-NOTFOUND")
+      # No TARGET_SRCDIR was set, so we'll do everything relative to our
+      # current binary dir instead:
+      set(srcdir "${CMAKE_CURRENT_BINARY_DIR}")
+    endif()
+
     set(scan_sources)
     foreach(source ${sources})
       get_filename_component(source_basename "${source}" NAME)
@@ -113,7 +129,7 @@ function(interrogate_sources target output database module)
       if(NOT exclude)
         # This file is to be scanned by Interrogate. In order to avoid
         # cluttering up the command line, we should first make it relative:
-        file(RELATIVE_PATH rel_source "${CMAKE_CURRENT_BINARY_DIR}" "${source}")
+        file(RELATIVE_PATH rel_source "${srcdir}" "${source}")
         list(APPEND scan_sources "${rel_source}")
       endif()
     endforeach(source)
@@ -124,6 +140,8 @@ function(interrogate_sources target output database module)
     get_target_property(include_dirs "${target}" INTERFACE_INCLUDE_DIRECTORIES)
     foreach(include_dir ${include_dirs})
       # To keep the command-line small, also make this relative:
+      # Note that Interrogate does NOT handle -I paths relative to -srcdir, so
+      # we make them relative to the directory where it's invoked.
       file(RELATIVE_PATH rel_include_dir "${CMAKE_CURRENT_BINARY_DIR}" "${include_dir}")
       list(APPEND include_flags "-I${rel_include_dir}")
     endforeach(include_dir)
@@ -136,6 +154,7 @@ function(interrogate_sources target output database module)
       COMMAND interrogate
         -oc "${output}"
         -od "${database}"
+        -srcdir "${srcdir}"
         -module ${module} -library ${target} ${IGATE_FLAGS}
         -S "${PROJECT_BINARY_DIR}/include"
         -S "${PROJECT_SOURCE_DIR}/dtool/src/parser-inc"
