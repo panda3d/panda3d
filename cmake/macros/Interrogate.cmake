@@ -65,6 +65,9 @@ function(target_interrogate target)
 
     set_target_properties("${target}" PROPERTIES IGATE_SOURCES
       "${absolute_sources}")
+
+    # HACK HACK HACK -- this is part of the below hack.
+    target_link_libraries(${target} ${target}_igate)
   endif()
 endfunction(target_interrogate)
 
@@ -154,11 +157,25 @@ function(add_python_module module)
     set(targets ${ARGN})
     set(infiles)
     set(sources)
+    set(HACKlinklibs)
 
     foreach(target ${targets})
       interrogate_sources(${target} "${target}_igate.cxx" "${target}.in" "${module}")
       list(APPEND infiles "${target}.in")
-      list(APPEND sources "${target}_igate.cxx")
+      #list(APPEND sources "${target}_igate.cxx")
+
+      # HACK HACK HACK:
+      # Currently, the codebase has dependencies on the Interrogate-generated
+      # code when HAVE_PYTHON is enabled. rdb is working to remove this, but
+      # until then, the generated code must somehow be made available to the
+      # modules themselves. The workaround here is to put the _igate.cxx into
+      # its own micro-library, which is linked both here on the module and
+      # against the component library in question.
+      add_library(${target}_igate ${target}_igate.cxx)
+      list(APPEND HACKlinklibs "${target}_igate")
+
+      get_target_property(target_links "${target}" INTERFACE_LINK_LIBRARIES)
+      target_link_libraries(${target}_igate ${target_links})
     endforeach(target)
 
     add_custom_command(
@@ -174,6 +191,7 @@ function(add_python_module module)
     add_library(${module} MODULE "${module}_module.cxx" ${sources})
     target_link_libraries(${module}
       ${targets} ${PYTHON_LIBRARIES} p3interrogatedb)
+    target_link_libraries(${module} ${HACKlinklibs})
 
     set_target_properties(${module} PROPERTIES
       LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/panda3d"
