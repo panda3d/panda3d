@@ -148,6 +148,19 @@ function(interrogate_sources target output database module)
     # The above must also be included when compiling the resulting _igate.cxx file:
     include_directories(${include_dirs})
 
+    # Get the compiler definition flags. These must be passed to Interrogate
+    # in the same way that they are passed to the compiler so that Interrogate
+    # will preprocess each file in the same way.
+    set(define_flags)
+    get_target_property(target_defines "${target}" COMPILE_DEFINITIONS)
+    foreach(target_define ${target_defines})
+      list(APPEND define_flags "-D${target_define}")
+    endforeach(target_define)
+    # If this is a release build that has NDEBUG defined, we need that too:
+    string(TOUPPER "${CMAKE_BUILD_TYPE}" build_type)
+    if("${CMAKE_CXX_FLAGS_${build_type}}" MATCHES ".*NDEBUG.*")
+      list(APPEND define_flags "-DNDEBUG")
+    endif()
 
     add_custom_command(
       OUTPUT "${output}" "${database}"
@@ -155,7 +168,9 @@ function(interrogate_sources target output database module)
         -oc "${output}"
         -od "${database}"
         -srcdir "${srcdir}"
-        -module ${module} -library ${target} ${IGATE_FLAGS}
+        -module ${module} -library ${target}
+        ${IGATE_FLAGS}
+        ${define_flags}
         -S "${PROJECT_BINARY_DIR}/include"
         -S "${PROJECT_SOURCE_DIR}/dtool/src/parser-inc"
         -S "${PROJECT_BINARY_DIR}/include/parser-inc"
