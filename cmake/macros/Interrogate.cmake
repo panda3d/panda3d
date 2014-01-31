@@ -108,6 +108,7 @@ function(interrogate_sources target output database module)
     endif()
 
     set(scan_sources)
+    set(nfiles)
     foreach(source ${sources})
       get_filename_component(source_basename "${source}" NAME)
 
@@ -131,6 +132,16 @@ function(interrogate_sources target output database module)
         # cluttering up the command line, we should first make it relative:
         file(RELATIVE_PATH rel_source "${srcdir}" "${source}")
         list(APPEND scan_sources "${rel_source}")
+
+        # Also see if this file has a .N counterpart, which has directives
+        # specific for Interrogate. If there is a .N file, we add it as a dep,
+        # so that CMake will rerun Interrogate if the .N files are modified:
+        get_filename_component(source_path "${source}" PATH)
+        get_filename_component(source_name_we "${source}" NAME_WE)
+        set(nfile "${source_path}/${source_name_we}.N")
+        if(EXISTS "${nfile}")
+          list(APPEND nfiles "${nfile}")
+        endif()
       endif()
     endforeach(source)
 
@@ -176,7 +187,7 @@ function(interrogate_sources target output database module)
         -S "${PROJECT_BINARY_DIR}/include/parser-inc"
         ${include_flags}
         ${scan_sources}
-      DEPENDS interrogate ${sources}
+      DEPENDS interrogate ${sources} ${nfiles}
       COMMENT "Interrogating ${target}"
     )
   endif()
