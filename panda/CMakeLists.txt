@@ -61,3 +61,8 @@ add_subdirectory(src/testbed)
 add_subdirectory(metalibs/panda)
 add_subdirectory(metalibs/pandagl)
 add_subdirectory(metalibs/pandaegg)
+
+add_python_module(core p3chan p3char p3collide p3cull p3device p3dgraph
+  p3display p3downloader p3event p3express p3gobj p3grutil p3gsgbase p3linmath
+  p3mathutil p3parametrics p3pgraph p3pgraphnodes p3pgui p3pipeline p3pnmimage
+  p3pnmtext p3pstatclient p3putil p3recorder p3text p3tform)
