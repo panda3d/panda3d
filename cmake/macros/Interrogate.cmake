@@ -219,7 +219,7 @@ function(add_python_module module)
       add_library(${target}_igate ${target}_igate.cxx)
       list(APPEND HACKlinklibs "${target}_igate")
 
-      get_target_property(target_links "${target}" INTERFACE_LINK_LIBRARIES)
+      get_target_property(target_links "${target}" LINK_LIBRARIES)
       target_link_libraries(${target}_igate ${target_links})
     endforeach(target)
 
