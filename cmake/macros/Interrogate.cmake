@@ -15,6 +15,8 @@ set(IGATE_FLAGS ${INTERROGATE_OPTIONS} -DCPPPARSER -D__cplusplus -Dvolatile -Dmu
 set(INTERROGATE_EXCLUDE_REGEXES
   ".*\\.I$"
   ".*\\.N$"
+  ".*\\.lxx$"
+  ".*\\.yxx$"
   ".*_src\\..*")
 
 if(WIN32)
@@ -39,11 +41,11 @@ function(target_interrogate target)
   if(HAVE_PYTHON AND HAVE_INTERROGATE)
     set(sources)
     set(want_all OFF)
-    foreach(arg ${ARGV})
+    foreach(arg ${ARGN})
       if(arg STREQUAL "ALL")
         set(want_all ON)
       else()
-        list(APPEND sources "${source}")
+        list(APPEND sources "${arg}")
       endif()
     endforeach()
 
