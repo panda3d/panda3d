@@ -307,7 +307,7 @@ else()
   message("- Did not find SpeedTree")
 endif()
 
-if(HAVE_GTK)
+if(HAVE_GTK2)
   message("+ gtk+-2")
 else()
   message("- Did not find gtk+-2")
