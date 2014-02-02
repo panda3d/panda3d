@@ -1,6 +1,3 @@
-message(STATUS "")
-message(STATUS "Configuring support for the following optional third-party packages:")
-
 # Find and configure Miles Sound System
 find_package(Miles QUIET)
 #config_package(RAD_MSS "Miles Sound System")
