@@ -173,6 +173,14 @@ function(interrogate_sources target output database module)
       list(APPEND define_flags "-DNDEBUG")
     endif()
 
+    # CMake offers no way to directly depend on the composite files from here,
+    # because the composite files are created in a different directory from
+    # where CMake itself is run. Therefore, we need to depend on the
+    # TARGET_composite target, if it exists.
+    if(TARGET ${target}_composite)
+      set(sources ${target}_composite ${sources})
+    endif()
+
     add_custom_command(
       OUTPUT "${output}" "${database}"
       COMMAND interrogate

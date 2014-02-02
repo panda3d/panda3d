@@ -84,7 +84,7 @@ function(composite_sources target sources_var)
               -DCOMPOSITE_FILE="${composite_file}"
               -DCOMPOSITE_SOURCES="${composite_sources}"
               -P "${COMPOSITE_GENERATOR}"
-            DEPENDS ${composite_sources})          
+            DEPENDS ${composite_sources})
 
           # Reset for the next composite file.
           set(composite_sources "")
@@ -92,6 +92,12 @@ function(composite_sources target sources_var)
       endif()
     endif()
   endwhile()
+
+  # This exists for Interrogate's benefit, which needs the composite files to
+  # exist before it can run. Unfortunately, CMake does not expose the
+  # add_custom_command outputs as targets outside of the directory, so we have
+  # to create our own pseudotarget that gets exposed.
+  add_custom_target(${target}_composite DEPENDS ${composite_files})
 
   #set_source_files_properties(${composite_files} PROPERTIES GENERATED YES)
 
