@@ -174,6 +174,10 @@ function(interrogate_sources target output database module)
     if("${CMAKE_CXX_FLAGS_${build_type}}" MATCHES ".*NDEBUG.*")
       list(APPEND define_flags "-DNDEBUG")
     endif()
+    # In addition, Interrogate needs to know if this is a 64-bit build:
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+      list(APPEND define_flags "-D_LP64")
+    endif()
 
     # CMake offers no way to directly depend on the composite files from here,
     # because the composite files are created in a different directory from
