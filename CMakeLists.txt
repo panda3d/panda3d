@@ -37,3 +37,5 @@ endif()
 if(BUILD_PANDA)
   add_subdirectory(panda)
 endif()
+
+add_subdirectory(direct)
