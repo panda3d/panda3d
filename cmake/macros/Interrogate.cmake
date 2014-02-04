@@ -11,7 +11,9 @@
 set(IGATE_FLAGS -DCPPPARSER -D__cplusplus -Dvolatile -Dmutable -python-native)
 
 # In addition, Interrogate needs to know if this is a 64-bit build:
-if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+include(CheckTypeSize)
+check_type_size(long CMAKE_SIZEOF_LONG)
+if(CMAKE_SIZEOF_LONG EQUAL 8)
   list(APPEND IGATE_FLAGS "-D_LP64")
 endif()
 
