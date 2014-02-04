@@ -8,7 +8,7 @@
 #   add_python_module(module [lib1 [lib2 ...]])
 #
 
-set(IGATE_FLAGS ${INTERROGATE_OPTIONS} -DCPPPARSER -D__cplusplus -Dvolatile -Dmutable -python-native)
+set(IGATE_FLAGS -DCPPPARSER -D__cplusplus -Dvolatile -Dmutable -python-native)
 
 # This is a list of regexes that are applied to every filename. If one of the
 # regexes matches, that file will not be passed to Interrogate.
@@ -26,7 +26,7 @@ if(INTERROGATE_VERBOSE)
   list(APPEND IGATE_FLAGS "-v")
 endif()
 
-set(IMOD_FLAGS ${INTERROGATE_MODULE_OPTIONS} -python-native)
+set(IMOD_FLAGS -python-native)
 
 
 #
@@ -194,6 +194,7 @@ function(interrogate_sources target output database module)
         -od "${database}"
         -srcdir "${srcdir}"
         -module ${module} -library ${target}
+        ${INTERROGATE_OPTIONS}
         ${IGATE_FLAGS}
         ${define_flags}
         -S "${PROJECT_BINARY_DIR}/include"
@@ -242,6 +243,7 @@ function(add_python_module module)
       COMMAND interrogate_module
         -oc "${CMAKE_CURRENT_BINARY_DIR}/${module}_module.cxx"
         -module ${module} -library ${module}
+        ${INTERROGATE_MODULE_OPTIONS}
         ${IMOD_FLAGS} ${infiles}
       DEPENDS interrogate_module ${infiles}
       COMMENT "Generating module ${module}"
