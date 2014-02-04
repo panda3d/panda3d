@@ -10,6 +10,12 @@
 
 set(IGATE_FLAGS -DCPPPARSER -D__cplusplus -Dvolatile -Dmutable -python-native)
 
+# In addition, Interrogate needs to know if this is a 64-bit build:
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+  list(APPEND IGATE_FLAGS "-D_LP64")
+endif()
+
+
 # This is a list of regexes that are applied to every filename. If one of the
 # regexes matches, that file will not be passed to Interrogate.
 set(INTERROGATE_EXCLUDE_REGEXES
@@ -173,10 +179,6 @@ function(interrogate_sources target output database module)
     string(TOUPPER "${CMAKE_BUILD_TYPE}" build_type)
     if("${CMAKE_CXX_FLAGS_${build_type}}" MATCHES ".*NDEBUG.*")
       list(APPEND define_flags "-DNDEBUG")
-    endif()
-    # In addition, Interrogate needs to know if this is a 64-bit build:
-    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-      list(APPEND define_flags "-D_LP64")
     endif()
 
     # CMake offers no way to directly depend on the composite files from here,
