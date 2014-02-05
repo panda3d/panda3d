@@ -1,0 +1,24 @@
+if(HAVE_AUDIO)
+  set(P3AUDIO_HEADERS
+      config_audio.h
+      filterProperties.h filterProperties.I
+      audioLoadRequest.h audioLoadRequest.I
+      audioManager.h audioManager.I
+      audioSound.h audioSound.I
+      nullAudioManager.h
+      nullAudioSound.h)
+
+  set(P3AUDIO_SOURCES
+      config_audio.cxx
+      filterProperties.cxx
+      audioLoadRequest.cxx
+      audioManager.cxx
+      audioSound.cxx
+      nullAudioManager.cxx
+      nullAudioSound.cxx)
+
+  composite_sources(p3audio P3AUDIO_SOURCES)
+  add_library(p3audio ${P3AUDIO_HEADERS} ${P3AUDIO_SOURCES})
+  target_link_libraries(p3audio p3putil p3event p3movies p3linmath)
+  target_interrogate(p3audio ALL)
+endif()

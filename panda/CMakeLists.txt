@@ -40,6 +40,8 @@ add_subdirectory(src/pgraph)
 add_subdirectory(src/pgraphnodes)
 add_subdirectory(src/cull)
 add_subdirectory(src/display)
+add_subdirectory(src/movies)
+add_subdirectory(src/audio)
 add_subdirectory(src/chan)
 add_subdirectory(src/char)
 add_subdirectory(src/dgraph)
@@ -64,8 +66,20 @@ add_subdirectory(metalibs/panda)
 add_subdirectory(metalibs/pandagl)
 add_subdirectory(metalibs/pandaegg)
 
-add_python_module(core p3chan p3char p3collide p3cull p3device p3dgraph
-  p3display p3downloader p3event p3express p3gobj p3grutil p3gsgbase p3linmath
-  p3mathutil p3nativenet p3net p3parametrics p3pgraph p3pgraphnodes p3pgui
-  p3pipeline p3pnmimage p3pnmtext p3pstatclient p3putil p3recorder p3text p3tform)
-add_python_module(egg p3egg p3egg2pg)
+
+# Now add the Python modules:
+set(CORE_MODULE_COMPONENTS
+    p3chan p3char p3collide p3cull p3device p3dgraph p3display p3downloader
+    p3event p3express p3gobj p3grutil p3gsgbase p3linmath p3mathutil p3nativenet
+    p3net p3movies p3parametrics p3pgraph p3pgraphnodes p3pgui p3pipeline
+    p3pnmimage p3pnmtext p3pstatclient p3putil p3recorder p3text p3tform)
+
+if(HAVE_AUDIO)
+  list(APPEND CORE_MODULE_COMPONENTS p3audio)
+endif()
+
+add_python_module(core ${CORE_MODULE_COMPONENTS})
+
+if(HAVE_EGG)
+  add_python_module(egg p3egg p3egg2pg)
+endif()
