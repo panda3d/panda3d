@@ -29,4 +29,6 @@ if(HAVE_NET AND WANT_NATIVE_NET)
   add_library(p3net ${P3NET_HEADERS} ${P3NET_SOURCES})
   target_link_libraries(p3net p3express p3downloader p3pandabase p3nativenet p3pipeline)
   target_interrogate(p3net ALL)
+
+  install(TARGETS p3net DESTINATION lib)
 endif()

@@ -201,6 +201,8 @@ add_library(p3pgraph ${P3PGRAPH_HEADERS} ${P3PGRAPH_SOURCES})
 target_link_libraries(p3pgraph p3gobj p3event p3gsgbase p3putil p3linmath p3downloader)
 target_interrogate(p3pgraph ALL)
 
+install(TARGETS p3pgraph DESTINATION lib)
+
 
 #begin test_bin_target
   #define TARGET test_pgraph

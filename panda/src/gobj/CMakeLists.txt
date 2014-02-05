@@ -147,6 +147,8 @@ target_link_libraries(p3gobj p3gsgbase p3pnmimage
   ${_ZLIB_LIBRARIES} ${_SQUISH_LIBRARY} ${_CG_LIBRARIES})
 target_interrogate(p3gobj ALL)
 
+install(TARGETS p3gobj DESTINATION lib)
+
 #begin test_bin_target
   #define TARGET test_gobj
   #define LOCAL_LIBS \

@@ -33,4 +33,6 @@ if(HAVE_EGG)
   add_library(p3egg2pg ${P3EGG2PG_HEADERS} ${P3EGG2PG_SOURCES})
   target_link_libraries(p3egg2pg p3parametrics p3collide p3egg p3pgraph p3chan p3char)
   target_interrogate(p3egg2pg ALL)
+
+  install(TARGETS p3egg2pg DESTINATION lib)
 endif()

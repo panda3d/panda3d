@@ -65,6 +65,8 @@ add_library(p3mathutil ${P3MATHUTIL_HEADERS} ${P3MATHUTIL_SOURCES})
 target_link_libraries(p3mathutil p3event ${FFTW2_LIBRARY_DIR})
 target_interrogate(p3mathutil ALL)
 
+install(TARGETS p3mathutil DESTINATION lib)
+
 #begin test_bin_target
   #define TARGET test_mathutil
   #define LOCAL_LIBS \

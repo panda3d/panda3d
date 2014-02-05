@@ -8,3 +8,5 @@ else()
 endif()
 
 target_link_libraries(p3dtoolconfig p3prc p3dconfig p3interrogatedb)
+
+install(TARGETS p3dtoolconfig DESTINATION lib)

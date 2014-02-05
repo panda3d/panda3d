@@ -17,6 +17,8 @@ add_library(p3gsgbase ${P3GSGBASE_HEADERS} ${P3GSGBASE_SOURCES})
 target_link_libraries(p3gsgbase p3linmath)
 target_interrogate(p3gsgbase ALL)
 
+install(TARGETS p3gsgbase DESTINATION lib)
+
 #begin test_bin_target
   #define TARGET test_gsgbase
   #define LOCAL_LIBS

@@ -33,4 +33,6 @@ if(HAVE_GL)
   composite_sources(p3glstuff P3GLSTUFF_SOURCES)
   add_library(p3glstuff ${P3GLSTUFF_HEADERS} ${P3GLSTUFF_SOURCES})
   target_link_libraries(p3glstuff p3pandabase p3gobj)
+
+  install(TARGETS p3glstuff DESTINATION lib)
 endif()

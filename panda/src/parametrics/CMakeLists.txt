@@ -38,6 +38,8 @@ add_library(p3parametrics ${P3PARAMETRICS_SOURCES} ${P3PARAMETRICS_HEADERS})
 target_link_libraries(p3parametrics p3pgraph)
 target_interrogate(p3parametrics ALL)
 
+install(TARGETS p3parametrics DESTINATION lib)
+
 #begin test_bin_target
   #define TARGET test_parametrics
   #define LOCAL_LIBS

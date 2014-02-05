@@ -130,6 +130,8 @@ target_link_libraries(p3express p3pandabase p3dtool p3dtoolconfig
   ${_TAR_LIBRARY})
 target_interrogate(p3express ALL)
 
+install(TARGETS p3express DESTINATION lib)
+
 #add_executable(p3expressTestTypes test_types.cxx)
 #target_link_libraries(p3expressTestTypes p3express p3dtoolutil p3dtool p3prc p3dtoolconfig p3pystub)
 #add_test(p3express_test_types p3expressTestTypes)

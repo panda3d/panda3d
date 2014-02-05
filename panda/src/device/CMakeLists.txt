@@ -30,3 +30,5 @@ composite_sources(p3device P3DEVICE_SOURCES)
 add_library(p3device ${P3DEVICE_SOURCES} ${P3DEVICE_HEADERS})
 target_link_libraries(p3device p3dgraph p3display)
 target_interrogate(p3device ALL)
+
+install(TARGETS p3device DESTINATION lib)

@@ -8,3 +8,5 @@ set(P3PANDABASE_SOURCES
 
 add_library(p3pandabase ${P3PANDABASE_HEADERS} ${P3PANDABASE_SOURCES})
 target_link_libraries(p3pandabase p3dtoolbase)
+
+install(TARGETS p3pandabase DESTINATION lib)

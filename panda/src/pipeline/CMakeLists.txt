@@ -140,6 +140,8 @@ add_library(p3pipeline ${P3PIPELINE_HEADERS} ${P3PIPELINE_SOURCES})
 target_link_libraries(p3pipeline p3express)
 target_interrogate(p3pipeline ALL)
 
+install(TARGETS p3pipeline DESTINATION lib)
+
 #begin test_bin_target
   #define TARGET test_threaddata
   #define LOCAL_LIBS $[LOCAL_LIBS] p3pipeline

@@ -24,3 +24,5 @@ composite_sources(p3cull P3CULL_SOURCES)
 add_library(p3cull ${P3CULL_HEADERS} ${P3CULL_SOURCES})
 target_link_libraries(p3cull p3pgraph)
 target_interrogate(p3cull ALL)
+
+install(TARGETS p3cull DESTINATION lib)

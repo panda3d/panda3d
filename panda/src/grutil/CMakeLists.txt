@@ -42,3 +42,5 @@ if(HAVE_AUDIO)
   target_link_libraries(p3grutil p3audio)
 endif()
 target_interrogate(p3grutil ALL)
+
+install(TARGETS p3grutil DESTINATION lib)

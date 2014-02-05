@@ -66,3 +66,5 @@ composite_sources(p3downloader P3DOWNLOADER_SOURCES)
 add_library(p3downloader ${P3DOWNLOADER_SOURCES} ${P3DOWNLOADER_HEADERS})
 target_link_libraries(p3downloader p3express)
 target_interrogate(p3downloader ALL)
+
+install(TARGETS p3downloader DESTINATION lib)

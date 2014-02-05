@@ -55,3 +55,5 @@ target_link_libraries(p3dtoolutil p3dtoolbase ${CMAKE_DL_LIBS})
 if(HAVE_PYTHON)
   target_link_libraries(p3dtoolutil ${PYTHON_LIBRARIES})
 endif()
+
+install(TARGETS p3dtoolutil DESTINATION lib)

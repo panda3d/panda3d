@@ -1,5 +1,6 @@
 add_executable(pview pview.cxx)
 target_link_libraries(pview p3framework p3pystub)
+install(TARGETS pview DESTINATION bin)
 
 #begin test_bin_target
   #define TARGET pgrid

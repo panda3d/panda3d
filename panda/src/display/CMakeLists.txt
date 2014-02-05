@@ -91,6 +91,8 @@ add_library(p3display ${P3DISPLAY_HEADERS} ${P3DISPLAY_SOURCES})
 target_link_libraries(p3display p3cull p3pgraphnodes)
 target_interrogate(p3display ALL)
 
+install(TARGETS p3display DESTINATION lib)
+
 if(OSX_PLATFORM AND HAVE_P3D_PLUGIN)
   # We build a static library of just these files, so the plugin can
   # link with it in direct/src/plugin, without pulling in the rest of 

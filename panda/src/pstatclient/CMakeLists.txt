@@ -27,6 +27,8 @@ add_library(p3pstatclient ${P3PSTATCLIENT_HEADERS} ${P3PSTATCLIENT_SOURCES})
 target_link_libraries(p3pstatclient p3putil)
 target_interrogate(p3pstatclient ALL)
 
+install(TARGETS p3pstatclient DESTINATION lib)
+
 #begin test_bin_target
   #define LOCAL_LIBS \
    # p3pstatclient 

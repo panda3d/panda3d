@@ -27,4 +27,6 @@ if(WANT_NATIVE_NET)
   add_library(p3nativenet ${P3NATIVENET_HEADERS} ${P3NATIVENET_SOURCES})
   target_link_libraries(p3nativenet p3express p3pandabase)
   target_interrogate(p3nativenet ALL)
+
+  install(TARGETS p3nativenet DESTINATION lib)
 endif()
