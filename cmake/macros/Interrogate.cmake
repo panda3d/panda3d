@@ -241,6 +241,7 @@ function(add_python_module module)
       # against the component library in question.
       add_library(${target}_igate ${target}_igate.cxx)
       list(APPEND HACKlinklibs "${target}_igate")
+      install(TARGETS ${target}_igate DESTINATION lib)
 
       get_target_property(target_links "${target}" LINK_LIBRARIES)
       target_link_libraries(${target}_igate ${target_links})
