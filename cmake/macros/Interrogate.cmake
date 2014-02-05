@@ -8,7 +8,24 @@
 #   add_python_module(module [lib1 [lib2 ...]])
 #
 
-set(IGATE_FLAGS ${INTERROGATE_OPTIONS} -DCPPPARSER -D__cplusplus -Dvolatile -Dmutable)
+set(IGATE_FLAGS -DCPPPARSER -D__cplusplus -Dvolatile -Dmutable -python-native)
+
+# In addition, Interrogate needs to know if this is a 64-bit build:
+include(CheckTypeSize)
+check_type_size(long CMAKE_SIZEOF_LONG)
+if(CMAKE_SIZEOF_LONG EQUAL 8)
+  list(APPEND IGATE_FLAGS "-D_LP64")
+endif()
+
+
+# This is a list of regexes that are applied to every filename. If one of the
+# regexes matches, that file will not be passed to Interrogate.
+set(INTERROGATE_EXCLUDE_REGEXES
+  ".*\\.I$"
+  ".*\\.N$"
+  ".*\\.lxx$"
+  ".*\\.yxx$"
+  ".*_src\\..*")
 
 if(WIN32)
   list(APPEND IGATE_FLAGS -longlong __int64 -D_X86_ -D__STDC__=1 -DWIN32_VC -D "_declspec(param)=" -D "__declspec(param)=" -D_near -D_far -D__near -D__far -D_WIN32 -D__stdcall -DWIN32)
@@ -17,21 +34,14 @@ if(INTERROGATE_VERBOSE)
   list(APPEND IGATE_FLAGS "-v")
 endif()
 
-if(INTERROGATE_PYTHON_INTERFACE AND PYTHON_NATIVE)
-  list(APPEND IGATE_FLAGS -python-native)
-endif()
+set(IMOD_FLAGS -python-native)
 
-set(IMOD_FLAGS ${INTERROGATE_MODULE_OPTIONS})
-
-# This is a list of filename extensions that Interrogate will allow in the
-# sources lists.
-set(INTERROGATE_EXTENSIONS "cxx;h")
 
 #
 # Function: target_interrogate(target [ALL] [source1 [source2 ...]])
-# Currently, this adds the resultant TARGET_igate.cxx to the target by linking
-# it as a library. This is only temporary until the codebase is cleaned up a
-# bit more to reduce the dependency on interrogate.
+# NB. This doesn't actually invoke interrogate, but merely adds the
+# sources to the list of scan sources associated with the target.
+# Interrogate will be invoked when add_python_module is called.
 # If ALL is specified, all of the sources from the associated
 # target are added.
 #
@@ -39,16 +49,11 @@ function(target_interrogate target)
   if(HAVE_PYTHON AND HAVE_INTERROGATE)
     set(sources)
     set(want_all OFF)
-
-    # Find any .N files that would normally be picked up by interrogate.
-    # We let CMake add these as dependencies too, to allow rebuilding
-    # the wrappers when the .N files have been modified.
-    set(deps)
-    foreach(arg ${ARGV})
+    foreach(arg ${ARGN})
       if(arg STREQUAL "ALL")
         set(want_all ON)
       else()
-        list(APPEND sources "${source}")
+        list(APPEND sources "${arg}")
       endif()
     endforeach()
 
@@ -60,85 +65,152 @@ function(target_interrogate target)
 
     list(REMOVE_DUPLICATES sources)
 
-    # Also remove the non-whitelisted filename extensions from sources:
+    # Now let's get everything's absolute path, so that it can be passed
+    # through a property while still preserving the reference.
+    set(absolute_sources)
     foreach(source ${sources})
-      set(any_extension_matches OFF)
-      foreach(filex ${INTERROGATE_EXTENSIONS})
-        if("${source}" MATCHES ".*\\.${filex}$")
-          set(any_extension_matches ON)
-        endif()
-      endforeach(filex)
-      if(NOT any_extension_matches)
-        list(REMOVE_ITEM sources "${source}")
-      endif()
+      get_source_file_property(location "${source}" LOCATION)
+      set(absolute_sources ${absolute_sources} ${location})
     endforeach(source)
 
-    # Go through the sources to determine the full name,
-    # and also find out if there are any .N files to pick up.
-    foreach(source ${sources})
-      get_source_file_property(exclude "${source}" WRAP_EXCLUDE)
+    set_target_properties("${target}" PROPERTIES IGATE_SOURCES
+      "${absolute_sources}")
 
-      if(NOT exclude)
-        get_filename_component(basename "${source}" NAME_WE)
-        if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${basename}.N")
-          list(APPEND deps "${CMAKE_CURRENT_SOURCE_DIR}/${basename}.N")
-        endif()
+    # CMake has no property for determining the source directory where the
+    # target was originally added. interrogate_sources makes use of this
+    # property (if it is set) in order to make all paths on the command-line
+    # relative to it, thereby shortening the command-line even more.
+    # Since this is not an Interrogate-specific property, it is not named with
+    # an IGATE_ prefix.
+    set_target_properties("${target}" PROPERTIES TARGET_SRCDIR
+      "${CMAKE_CURRENT_SOURCE_DIR}")
 
-        # Add the full path to the source file itself.
-        get_source_file_property(location "${source}" LOCATION)
-        list(APPEND deps "${location}")
-      endif()
-    endforeach(source)
-
-    # Interrogate also needs to know the include paths of the current module,
-    # so we'll run over the include directories property and add those to the
-    # interrogate command line.
-    set(igate_includes)
-    get_target_property(target_includes "${target}" INTERFACE_INCLUDE_DIRECTORIES)
-    foreach(include_directory ${target_includes})
-      set(igate_includes
-        ${igate_includes} -I "${include_directory}")
-    endforeach(include_directory)
-
-    add_custom_command(
-      OUTPUT "${target}_igate.cxx" "${target}.in"
-      COMMAND interrogate
-        -od "${target}.in"
-        -oc "${target}_igate.cxx"
-        -library ${target} ${IGATE_FLAGS}
-        -srcdir "${CMAKE_CURRENT_SOURCE_DIR}"
-        -S "${PROJECT_SOURCE_DIR}/dtool/src/parser-inc"
-        -S "${PROJECT_BINARY_DIR}/include/parser-inc"
-        -S "${PROJECT_BINARY_DIR}/include"
-        ${igate_includes}
-        ${sources}
-      DEPENDS interrogate ${deps}
-      COMMENT "Interrogating ${target}"
-    )
-
-    # Now that we've interrogated, let's associate the interrogate sources to
-    # the target:
-    set(igate_sources "${target}_igate.cxx")
-    # Also add all of the _ext sources:
-    foreach(source ${sources})
-      if("${source}" MATCHES ".*_ext.*")
-        set(igate_sources ${igate_sources} "${source}")
-      endif()
-    endforeach(source)
-
-    # Now record INTERROGATE_SOURCES and INTERROGATE_DATABASE to the target:
-    set_target_properties("${target}" PROPERTIES INTERROGATE_SOURCES ${igate_sources})
-    set_target_properties("${target}" PROPERTIES INTERROGATE_DATABASE "${target}.in")
-
-
-    # HACK: This is REALLY ugly, but we can't add the _igate.cxx to the existing
-    # target (or at least, when I tried, it ignored the additional file), so as
-    # a (very!) temporary workaround, add another library and link it in.
-    add_library("${target}_igate" ${igate_sources})
+    # HACK HACK HACK -- this is part of the below hack.
     target_link_libraries(${target} ${target}_igate)
-
   endif()
 endfunction(target_interrogate)
+
+#
+# Function: interrogate_sources(target output database module)
+#
+# This function actually runs a component-level interrogation against 'target'.
+# It generates the outfile.cxx (output) and dbfile.in (database) files, which
+# can then be used during the interrogate_module step to produce language
+# bindings.
+#
+# The target must first have had sources selected with target_interrogate.
+# Failure to do so will result in an error.
+#
+function(interrogate_sources target output database module)
+  if(HAVE_PYTHON AND HAVE_INTERROGATE)
+    get_target_property(sources "${target}" IGATE_SOURCES)
+
+    if(NOT sources)
+      message(FATAL_ERROR
+        "Cannot interrogate ${target} unless it's run through target_interrogate first!")
+    endif()
+
+    get_target_property(srcdir "${target}" TARGET_SRCDIR)
+    if(NOT srcdir)
+      # No TARGET_SRCDIR was set, so we'll do everything relative to our
+      # current binary dir instead:
+      set(srcdir "${CMAKE_CURRENT_BINARY_DIR}")
+    endif()
+
+    set(scan_sources)
+    set(nfiles)
+    foreach(source ${sources})
+      get_filename_component(source_basename "${source}" NAME)
+
+      # Only certain sources should actually be scanned by Interrogate. The
+      # rest are merely dependencies. This uses the exclusion regex above in
+      # order to determine what files are okay:
+      set(exclude OFF)
+      foreach(regex ${INTERROGATE_EXCLUDE_REGEXES})
+        if("${source_basename}" MATCHES "${regex}")
+          set(exclude ON)
+        endif()
+      endforeach(regex)
+
+      get_source_file_property(source_excluded ${source} WRAP_EXCLUDE)
+      if(source_excluded)
+        set(exclude ON)
+      endif()
+
+      if(NOT exclude)
+        # This file is to be scanned by Interrogate. In order to avoid
+        # cluttering up the command line, we should first make it relative:
+        file(RELATIVE_PATH rel_source "${srcdir}" "${source}")
+        list(APPEND scan_sources "${rel_source}")
+
+        # Also see if this file has a .N counterpart, which has directives
+        # specific for Interrogate. If there is a .N file, we add it as a dep,
+        # so that CMake will rerun Interrogate if the .N files are modified:
+        get_filename_component(source_path "${source}" PATH)
+        get_filename_component(source_name_we "${source}" NAME_WE)
+        set(nfile "${source_path}/${source_name_we}.N")
+        if(EXISTS "${nfile}")
+          list(APPEND nfiles "${nfile}")
+        endif()
+      endif()
+    endforeach(source)
+
+    # Interrogate also needs the include paths, so we'll extract them from the
+    # target:
+    set(include_flags)
+    get_target_property(include_dirs "${target}" INTERFACE_INCLUDE_DIRECTORIES)
+    foreach(include_dir ${include_dirs})
+      # To keep the command-line small, also make this relative:
+      # Note that Interrogate does NOT handle -I paths relative to -srcdir, so
+      # we make them relative to the directory where it's invoked.
+      file(RELATIVE_PATH rel_include_dir "${CMAKE_CURRENT_BINARY_DIR}" "${include_dir}")
+      list(APPEND include_flags "-I${rel_include_dir}")
+    endforeach(include_dir)
+    # The above must also be included when compiling the resulting _igate.cxx file:
+    include_directories(${include_dirs})
+
+    # Get the compiler definition flags. These must be passed to Interrogate
+    # in the same way that they are passed to the compiler so that Interrogate
+    # will preprocess each file in the same way.
+    set(define_flags)
+    get_target_property(target_defines "${target}" COMPILE_DEFINITIONS)
+    foreach(target_define ${target_defines})
+      list(APPEND define_flags "-D${target_define}")
+    endforeach(target_define)
+    # If this is a release build that has NDEBUG defined, we need that too:
+    string(TOUPPER "${CMAKE_BUILD_TYPE}" build_type)
+    if("${CMAKE_CXX_FLAGS_${build_type}}" MATCHES ".*NDEBUG.*")
+      list(APPEND define_flags "-DNDEBUG")
+    endif()
+
+    # CMake offers no way to directly depend on the composite files from here,
+    # because the composite files are created in a different directory from
+    # where CMake itself is run. Therefore, we need to depend on the
+    # TARGET_composite target, if it exists.
+    if(TARGET ${target}_composite)
+      set(sources ${target}_composite ${sources})
+    endif()
+
+    add_custom_command(
+      OUTPUT "${output}" "${database}"
+      COMMAND interrogate
+        -oc "${output}"
+        -od "${database}"
+        -srcdir "${srcdir}"
+        -module ${module} -library ${target}
+        ${INTERROGATE_OPTIONS}
+        ${IGATE_FLAGS}
+        ${define_flags}
+        -S "${PROJECT_BINARY_DIR}/include"
+        -S "${PROJECT_SOURCE_DIR}/dtool/src/parser-inc"
+        -S "${PROJECT_BINARY_DIR}/include/parser-inc"
+        ${include_flags}
+        ${scan_sources}
+      DEPENDS interrogate ${sources} ${nfiles}
+      COMMENT "Interrogating ${target}"
+    )
+  endif()
+endfunction(interrogate_sources)
 
 #
 # Function: add_python_module(module [lib1 [lib2 ...]])
@@ -148,9 +220,26 @@ function(add_python_module module)
   if(HAVE_PYTHON AND HAVE_INTERROGATE)
     set(targets ${ARGN})
     set(infiles)
+    set(sources)
+    set(HACKlinklibs)
 
     foreach(target ${targets})
+      interrogate_sources(${target} "${target}_igate.cxx" "${target}.in" "${module}")
       list(APPEND infiles "${target}.in")
+      #list(APPEND sources "${target}_igate.cxx")
+
+      # HACK HACK HACK:
+      # Currently, the codebase has dependencies on the Interrogate-generated
+      # code when HAVE_PYTHON is enabled. rdb is working to remove this, but
+      # until then, the generated code must somehow be made available to the
+      # modules themselves. The workaround here is to put the _igate.cxx into
+      # its own micro-library, which is linked both here on the module and
+      # against the component library in question.
+      add_library(${target}_igate ${target}_igate.cxx)
+      list(APPEND HACKlinklibs "${target}_igate")
+
+      get_target_property(target_links "${target}" LINK_LIBRARIES)
+      target_link_libraries(${target}_igate ${target_links})
     endforeach(target)
 
     add_custom_command(
@@ -158,13 +247,16 @@ function(add_python_module module)
       COMMAND interrogate_module
         -oc "${CMAKE_CURRENT_BINARY_DIR}/${module}_module.cxx"
         -module ${module} -library ${module}
+        ${INTERROGATE_MODULE_OPTIONS}
         ${IMOD_FLAGS} ${infiles}
       DEPENDS interrogate_module ${infiles}
+      COMMENT "Generating module ${module}"
     )
 
-    add_library(${module} MODULE "${module}_module.cxx")
-    target_link_libraries(${module} ${PYTHON_LIBRARIES})
-    target_link_libraries(${module} p3interrogatedb)
+    add_library(${module} MODULE "${module}_module.cxx" ${sources})
+    target_link_libraries(${module}
+      ${targets} ${PYTHON_LIBRARIES} p3interrogatedb)
+    target_link_libraries(${module} ${HACKlinklibs})
 
     set_target_properties(${module} PROPERTIES
       LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/panda3d"

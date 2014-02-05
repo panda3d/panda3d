@@ -27,8 +27,6 @@ add_subdirectory(src/putil)
 add_subdirectory(src/pstatclient)
 add_subdirectory(src/linmath)
 add_subdirectory(src/event)
-add_subdirectory(src/egg)
-add_subdirectory(src/egg2pg)
 add_subdirectory(src/mathutil)
 add_subdirectory(src/gsgbase)
 add_subdirectory(src/glstuff)
@@ -54,6 +52,8 @@ add_subdirectory(src/tform)
 add_subdirectory(src/pgui)
 add_subdirectory(src/recorder)
 add_subdirectory(src/collide)
+add_subdirectory(src/egg)
+add_subdirectory(src/egg2pg)
 add_subdirectory(src/framework)
 add_subdirectory(src/testbed)
 
@@ -61,3 +61,9 @@ add_subdirectory(src/testbed)
 add_subdirectory(metalibs/panda)
 add_subdirectory(metalibs/pandagl)
 add_subdirectory(metalibs/pandaegg)
+
+add_python_module(core p3chan p3char p3collide p3cull p3device p3dgraph
+  p3display p3downloader p3event p3express p3gobj p3grutil p3gsgbase p3linmath
+  p3mathutil p3parametrics p3pgraph p3pgraphnodes p3pgui p3pipeline p3pnmimage
+  p3pnmtext p3pstatclient p3putil p3recorder p3text p3tform)
+add_python_module(egg p3egg p3egg2pg)
