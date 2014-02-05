@@ -11,6 +11,6 @@ add_subdirectory(src/distributed)
 #add_subdirectory(src/http)
 add_subdirectory(src/interval)
 #add_subdirectory(src/motiontrail)
-#add_subdirectory(src/showbase)
+add_subdirectory(src/showbase)
 
-add_python_module(direct p3dcparser p3deadrec p3distributed p3interval)
+add_python_module(direct p3dcparser p3deadrec p3distributed p3interval p3showbase)
