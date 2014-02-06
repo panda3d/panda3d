@@ -29,10 +29,6 @@ add_subdirectory(src/linmath)
 add_subdirectory(src/event)
 add_subdirectory(src/mathutil)
 add_subdirectory(src/gsgbase)
-add_subdirectory(src/glstuff)
-add_subdirectory(src/glgsg)
-add_subdirectory(src/glxdisplay)
-add_subdirectory(src/x11display)
 add_subdirectory(src/pnmimage)
 add_subdirectory(src/pnmimagetypes)
 add_subdirectory(src/gobj)
@@ -40,6 +36,12 @@ add_subdirectory(src/pgraph)
 add_subdirectory(src/pgraphnodes)
 add_subdirectory(src/cull)
 add_subdirectory(src/display)
+add_subdirectory(src/glstuff)
+add_subdirectory(src/glgsg)
+add_subdirectory(src/x11display)
+add_subdirectory(src/glxdisplay)
+add_subdirectory(src/windisplay)
+add_subdirectory(src/wgldisplay)
 add_subdirectory(src/movies)
 add_subdirectory(src/audio)
 add_subdirectory(src/chan)
@@ -66,16 +68,18 @@ add_subdirectory(metalibs/panda)
 add_subdirectory(metalibs/pandagl)
 add_subdirectory(metalibs/pandaegg)
 
-
 # Now add the Python modules:
 set(CORE_MODULE_COMPONENTS
     p3chan p3char p3collide p3cull p3device p3dgraph p3display p3downloader
     p3event p3express p3gobj p3grutil p3gsgbase p3linmath p3mathutil p3nativenet
     p3net p3movies p3parametrics p3pgraph p3pgraphnodes p3pgui p3pipeline
-    p3pnmimage p3pnmtext p3pstatclient p3putil p3recorder p3text p3tform)
+    p3pnmimage p3pstatclient p3putil p3recorder p3text p3tform)
 
 if(HAVE_AUDIO)
   list(APPEND CORE_MODULE_COMPONENTS p3audio)
+endif()
+if(HAVE_FREETYPE)
+  list(APPEND CORE_MODULE_COMPONENTS p3pnmtext)
 endif()
 
 add_python_module(core ${CORE_MODULE_COMPONENTS})

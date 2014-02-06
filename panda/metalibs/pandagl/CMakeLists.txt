@@ -11,7 +11,10 @@ if(HAVE_GL)
   set(PANDAGL_LINK_TARGETS p3glgsg)
 
   if(HAVE_GLX)
-    set(PANDAGL_LINK_TARGETS ${PANDAGL_LINK_TARGETS} p3glxdisplay)
+    list(APPEND PANDAGL_LINK_TARGETS p3glxdisplay)
+  endif()
+  if(HAVE_WGL)
+    list(APPEND PANDAGL_LINK_TARGETS p3wgldisplay)
   endif()
 
 

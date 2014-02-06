@@ -1,6 +1,3 @@
-message(STATUS "")
-message(STATUS "Configuring support for the following optional third-party packages:")
-
 # Find and configure Miles Sound System
 find_package(Miles QUIET)
 #config_package(RAD_MSS "Miles Sound System")
@@ -26,9 +23,8 @@ package_option(FREETYPE)
 set(Freetype_FIND_QUIETLY TRUE) # Fix for builtin FindGTK2
 set(GTK2_GTK_FIND_QUIETLY TRUE) # Fix for builtin FindGTK2
 find_package(GTK2 QUIET COMPONENTS gtk)
-set(GTK_FOUND ${GTK2_FOUND}) # Mangle for convenience
-#config_package(GTK "gtk+-2")
-package_option(GTK)
+#config_package(GTK2 "gtk+-2")
+package_option(GTK2)
 
 # Find and configure WxWidgets
 find_package(wxWidgets QUIET)
