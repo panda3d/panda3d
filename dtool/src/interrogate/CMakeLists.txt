@@ -56,5 +56,5 @@ install(TARGETS interrogate DESTINATION bin)
 add_executable(interrogate_module interrogate_module.cxx)
 target_link_libraries(interrogate_module
 	p3cppParser p3interrogatedb p3dconfig p3prc p3dtoolutil p3dtoolbase
-	p3pystub ${OPENSSL_LIBRARIES})
+	p3pystub ${_OPENSSL_LIBRARIES})
 install(TARGETS interrogate DESTINATION bin)
