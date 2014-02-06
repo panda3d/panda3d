@@ -437,9 +437,28 @@ package_option(PYTHON DEFAULT ON
   "Enables support for Python.  If INTERROGATE_PYTHON_INTERFACE
 is also enabled, Python bindings will be generated.")
 
-# Always include Python, because we include it pretty much everywhere
-# though we don't usually want to link it in as well.
-include_directories(${PYTHON_INCLUDE_DIRS})
+# Also detect the optimal install paths:
+if(HAVE_PYTHON)
+  execute_process(
+    COMMAND ${PYTHON_EXECUTABLE}
+      -c "from distutils.sysconfig import get_python_lib; print get_python_lib(False)"
+      OUTPUT_VARIABLE _LIB_DIR)
+  execute_process(
+    COMMAND ${PYTHON_EXECUTABLE}
+      -c "from distutils.sysconfig import get_python_lib; print get_python_lib(True)"
+      OUTPUT_VARIABLE _ARCH_DIR)
+
+  set(PYTHON_LIB_INSTALL_DIR "${_LIB_DIR}" CACHE STRING
+    "Path to the Python architecture-independent package directory.")
+
+  set(PYTHON_ARCH_INSTALL_DIR "${_ARCH_DIR}" CACHE STRING
+    "Path to the Python architecture-dependent package directory.")
+
+  # Always include Python, because we include it pretty much everywhere
+  # though we don't usually want to link it in as well.
+  include_directories(${PYTHON_INCLUDE_DIRS})
+endif()
+
 
 # By default, we'll assume the user only wants to run with Debug
 # python if he has to--that is, on Windows when building a debug build.
