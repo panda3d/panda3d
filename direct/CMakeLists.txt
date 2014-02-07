@@ -36,3 +36,6 @@ if(HAVE_PYTHON)
     FILES "${CMAKE_CURRENT_BINARY_DIR}/__init__.py"
     DESTINATION "${PYTHON_LIB_INSTALL_DIR}/direct")
 endif()
+
+# pandac has its own installation steps necessary:
+add_subdirectory(src/pandac)

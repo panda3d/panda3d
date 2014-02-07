@@ -36,6 +36,8 @@ endif()
 
 set(IMOD_FLAGS -python-native)
 
+# This stores the names of every module added to the Interrogate system:
+set(ALL_INTERROGATE_MODULES CACHE INTERNAL "Internal variable")
 
 #
 # Function: target_interrogate(target [ALL] [source1 [source2 ...]])
@@ -270,6 +272,9 @@ function(add_python_module module)
     if(WIN32 AND NOT CYGWIN)
       set_target_properties(${module} PROPERTIES SUFFIX ".pyd")
     endif()
+
+    list(APPEND ALL_INTERROGATE_MODULES "${module}")
+    set(ALL_INTERROGATE_MODULES "${ALL_INTERROGATE_MODULES}" CACHE INTERNAL "Internal variable")
   endif()
 endfunction(add_python_module)
 
@@ -281,5 +286,5 @@ if(HAVE_PYTHON)
 
   # The Interrogate path needs to be installed to the architecture-dependent
   # Python directory.
-  install(DIRECTORY "${PROJECT_BINARY_DIR}/panda3d" DESTINATION "${PYTHON_LIB_INSTALL_DIR}")
+  install(DIRECTORY "${PROJECT_BINARY_DIR}/panda3d" DESTINATION "${PYTHON_ARCH_INSTALL_DIR}")
 endif()
