@@ -1,4 +1,4 @@
-from libpandaexpress import Filename, VirtualFileSystem, VirtualFileMountSystem, OFileStream, copyStream
+from panda3d.core import Filename, VirtualFileSystem, VirtualFileMountSystem, OFileStream, copyStream
 import sys
 import os
 import marshal
