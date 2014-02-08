@@ -61,10 +61,15 @@ add_subdirectory(src/egg2pg)
 add_subdirectory(src/framework)
 add_subdirectory(src/testbed)
 
+# For other metalibs
+add_subdirectory(src/physics)
+add_subdirectory(src/particlesystem)
+
 # Include panda metalibs
 add_subdirectory(metalibs/panda)
 add_subdirectory(metalibs/pandagl)
 add_subdirectory(metalibs/pandaegg)
+add_subdirectory(metalibs/pandaphysics)
 
 
 # Now add the Python modules:
@@ -86,3 +91,5 @@ add_python_module(core ${CORE_MODULE_COMPONENTS})
 if(HAVE_EGG)
   add_python_module(egg p3egg p3egg2pg)
 endif()
+
+add_python_module(physics p3physics p3particlesystem)
