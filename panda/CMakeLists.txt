@@ -61,9 +61,12 @@ add_subdirectory(src/egg2pg)
 add_subdirectory(src/framework)
 add_subdirectory(src/testbed)
 
-# For other metalibs
+# For other components
+# physics
 add_subdirectory(src/physics)
 add_subdirectory(src/particlesystem)
+# ode
+add_subdirectory(src/ode)
 
 # Include panda metalibs
 add_subdirectory(metalibs/panda)
@@ -93,3 +96,7 @@ if(HAVE_EGG)
 endif()
 
 add_python_module(physics p3physics p3particlesystem)
+
+if(HAVE_ODE)
+  add_python_module(ode p3ode)
+endif()
