@@ -589,6 +589,11 @@ find_package(ZLIB)
 package_option(ZLIB DEFAULT ON
   "Enables support for compression of Panda assets.")
 
+# Is ODE installed, and where?
+find_package(ODE)
+
+package_option(ODE DEFAULT ON
+  "Enables support for ridid-body physics using the Open Dynamics Engine.")
 
 # Is OpenGL installed, and where?
 find_package(OpenGL QUIET)
