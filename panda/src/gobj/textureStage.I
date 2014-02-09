@@ -141,11 +141,44 @@ set_texcoord_name(const string &name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureStage::get_texcoord_name
 //       Access: Published
-//  Description: Returns the InternalName
+//  Description: See set_texcoord_name.  The default is
+//               InternalName::get_texcoord().
 ////////////////////////////////////////////////////////////////////
 INLINE InternalName *TextureStage::
 get_texcoord_name() const {
   return _texcoord_name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureStage::get_tangent_name
+//       Access: Published
+//  Description: Returns the set of tangents this texture stage will
+//               use.  This is the same as get_texcoord_name(),
+//               except that the first part is "tangent".
+////////////////////////////////////////////////////////////////////
+INLINE InternalName *TextureStage::
+get_tangent_name() const {
+  if (_texcoord_name->get_parent() == NULL) {
+    return InternalName::get_tangent();
+  } else {
+    return InternalName::get_tangent_name(_texcoord_name->get_basename());
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureStage::get_binormal_name
+//       Access: Published
+//  Description: Returns the set of binormals this texture stage will
+//               use.  This is the same as get_binormal_name(),
+//               except that the first part is "binormal".
+////////////////////////////////////////////////////////////////////
+INLINE InternalName *TextureStage::
+get_binormal_name() const {
+  if (_texcoord_name->get_parent() == NULL) {
+    return InternalName::get_binormal();
+  } else {
+    return InternalName::get_binormal_name(_texcoord_name->get_basename());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -45,7 +45,7 @@ PUBLISHED:
 
   enum Mode {
     // Modes that pertain to the fixed-function pipeline.
-    
+
     M_modulate,
     M_decal,
     M_blend,
@@ -53,12 +53,12 @@ PUBLISHED:
     M_add,
     M_combine,
     M_blend_color_scale,
-    
+
     M_modulate_glow,  // When fixed-function, equivalent to modulate.
     M_modulate_gloss, // When fixed-function, equivalent to modulate.
-    
+
     // Modes that are only relevant to shader-based rendering.
-    
+
     M_normal,
     M_normal_height,
     M_glow,         // Rarely used: modulate_glow  is more efficient.
@@ -67,7 +67,7 @@ PUBLISHED:
     M_selector,
     M_normal_gloss,
   };
-  
+
   enum CombineMode {
     CM_undefined,
     CM_replace,
@@ -113,12 +113,14 @@ PUBLISHED:
   INLINE void set_texcoord_name(InternalName *name);
   INLINE void set_texcoord_name(const string &texcoord_name);
   INLINE InternalName *get_texcoord_name() const;
-  
+  INLINE InternalName *get_tangent_name() const;
+  INLINE InternalName *get_binormal_name() const;
+
   INLINE void set_mode(Mode mode);
   INLINE Mode get_mode() const;
-  
+
   INLINE bool is_fixed_function() const;
-  
+
   INLINE void set_color(const LColor &color);
   INLINE LColor get_color() const;
 
@@ -231,7 +233,7 @@ private:
 
   static PT(TextureStage) _default_stage;
   static UpdateSeq _sort_seq;
-  
+
 public:
   // Datagram stuff
   static void register_with_read_factory();
@@ -272,6 +274,3 @@ EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, TextureStage::CombineOperan
 #include "textureStage.I"
 
 #endif
-
-
-  
