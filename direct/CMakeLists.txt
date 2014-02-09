@@ -1,3 +1,7 @@
+if(NOT BUILD_PANDA)
+  message(FATAL_ERROR "Cannot build direct without panda!  Please enable the BUILD_PANDA option.")
+endif()
+
 # Include source directories which have C++ components:
 add_subdirectory(src/directbase)
 add_subdirectory(src/autorestart)
