@@ -996,6 +996,16 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &
                                  0.0);
     return &t;
   }
+  case Shader::SMO_frame_time: {
+    PN_stdfloat time = ClockObject::get_global_clock()->get_frame_time();
+    t = LMatrix4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, time, time, time, time);
+    return &t;
+  }
+  case Shader::SMO_frame_delta: {
+    PN_stdfloat dt = ClockObject::get_global_clock()->get_dt();
+    t = LMatrix4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, dt, dt, dt, dt);
+    return &t;
+  }
   case Shader::SMO_texpad_x: {
     Texture *tex = _target_shader->get_shader_input_texture(name);
     nassertr(tex != 0, &LMatrix4::zeros_mat());

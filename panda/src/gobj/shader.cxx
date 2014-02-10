@@ -414,23 +414,23 @@ cp_dependency(ShaderMatInput inp) {
       (inp == SMO_view_to_model)) {
     dep |= SSD_transform;
   }
-  if ((inp == SMO_texpad_x)||
-      (inp == SMO_texpix_x)||
-      (inp == SMO_alight_x)||
-      (inp == SMO_dlight_x)||
-      (inp == SMO_plight_x)||
-      (inp == SMO_slight_x)||
-      (inp == SMO_satten_x)||
-      (inp == SMO_mat_constant_x)||
-      (inp == SMO_vec_constant_x)||
-      (inp == SMO_clipplane_x)||
-      (inp == SMO_view_x_to_view)||
-      (inp == SMO_view_to_view_x)||
-      (inp == SMO_apiview_x_to_view)||
-      (inp == SMO_view_to_apiview_x)||
-      (inp == SMO_clip_x_to_view)||
-      (inp == SMO_view_to_clip_x)||
-      (inp == SMO_apiclip_x_to_view)||
+  if ((inp == SMO_texpad_x) ||
+      (inp == SMO_texpix_x) ||
+      (inp == SMO_alight_x) ||
+      (inp == SMO_dlight_x) ||
+      (inp == SMO_plight_x) ||
+      (inp == SMO_slight_x) ||
+      (inp == SMO_satten_x) ||
+      (inp == SMO_mat_constant_x) ||
+      (inp == SMO_vec_constant_x) ||
+      (inp == SMO_clipplane_x) ||
+      (inp == SMO_view_x_to_view) ||
+      (inp == SMO_view_to_view_x) ||
+      (inp == SMO_apiview_x_to_view) ||
+      (inp == SMO_view_to_apiview_x) ||
+      (inp == SMO_clip_x_to_view) ||
+      (inp == SMO_view_to_clip_x) ||
+      (inp == SMO_apiclip_x_to_view) ||
       (inp == SMO_view_to_apiclip_x)) {
     dep |= SSD_shaderinputs;
   }
@@ -588,36 +588,45 @@ compile_parameter(const ShaderArgId        &arg_id,
     }
     ShaderVarSpec bind;
     bind._id = arg_id;
+    bind._append_uv = -1;
+
     if (pieces.size() == 2) {
-      if (pieces[1]=="position") {
+      if (pieces[1] == "position") {
         bind._name = InternalName::get_vertex();
         bind._append_uv = -1;
         _var_spec.push_back(bind);
         return true;
       }
-      if (pieces[1].substr(0,8)=="texcoord") {
+      if (pieces[1].substr(0, 8) == "texcoord") {
         bind._name = InternalName::get_texcoord();
-        bind._append_uv = atoi(pieces[1].c_str()+8);
+        if (pieces[1].size() > 8) {
+          bind._append_uv = atoi(pieces[1].c_str() + 8);
+        }
         _var_spec.push_back(bind);
         return true;
       }
-      if (pieces[1].substr(0,7)=="tangent") {
+      if (pieces[1].substr(0, 7) == "tangent") {
         bind._name = InternalName::get_tangent();
-        bind._append_uv = atoi(pieces[1].c_str()+7);
+        if (pieces[1].size() > 7) {
+          bind._append_uv = atoi(pieces[1].c_str() + 7);
+        }
         _var_spec.push_back(bind);
         return true;
       }
-      if (pieces[1].substr(0,8)=="binormal") {
+      if (pieces[1].substr(0, 8) == "binormal") {
         bind._name = InternalName::get_binormal();
-        bind._append_uv = atoi(pieces[1].c_str()+8);
+        if (pieces[1].size() > 8) {
+          bind._append_uv = atoi(pieces[1].c_str() + 8);
+        }
         _var_spec.push_back(bind);
         return true;
       }
     }
+
     bind._name = InternalName::get_root();
-    bind._append_uv = -1;
-    for (int i=1; i<(int)(pieces.size()-0); i++)
+    for (int i = 1; i < pieces.size(); ++i) {
       bind._name = bind._name->append(pieces[i]);
+    }
     _var_spec.push_back(bind);
     return true;
   }
@@ -1008,7 +1017,7 @@ compile_parameter(const ShaderArgId        &arg_id,
   // Keywords to access unusual parameters.
 
   if (pieces[0] == "sys") {
-    if ((!cp_errchk_parameter_words(p,2)) ||
+    if ((!cp_errchk_parameter_words(p, 2)) ||
         (!cp_errchk_parameter_in(p)) ||
         (!cp_errchk_parameter_uniform(p))) {
       return false;
@@ -1025,14 +1034,24 @@ compile_parameter(const ShaderArgId        &arg_id,
       }
       bind._part[0] = SMO_pixel_size;
       bind._arg[0] = NULL;
+
     } else if (pieces[1] == "windowsize") {
       if (!cp_errchk_parameter_float(p, 2, 2)) {
         return false;
       }
       bind._part[0] = SMO_window_size;
       bind._arg[0] = NULL;
+
+    } else if (pieces[1] == "time") {
+      if (!cp_errchk_parameter_float(p, 1, 1)) {
+        return false;
+      }
+      bind._piece = SMP_row3x1;
+      bind._part[0] = SMO_frame_time;
+      bind._arg[0] = NULL;
+
     } else {
-      cp_report_error(p,"unknown system parameter");
+      cp_report_error(p, "unknown system parameter");
       return false;
     }
 
