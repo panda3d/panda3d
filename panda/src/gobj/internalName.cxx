@@ -155,6 +155,25 @@ get_name() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: InternalName::join
+//       Access: Published
+//  Description: Like get_name, but uses a custom separator instead
+//               of ".".
+////////////////////////////////////////////////////////////////////
+string InternalName::
+join(const string &sep) const {
+  if (_parent == get_root()) {
+    return _basename;
+
+  } else if (_parent == (InternalName *)NULL) {
+    return string();
+
+  } else {
+    return _parent->join(sep) + sep + _basename;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: InternalName::find_ancestor
 //       Access: Published
 //  Description: Returns the index of the ancestor with the indicated
