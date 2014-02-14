@@ -62,6 +62,8 @@ PUBLISHED:
 
 public:
 #if BT_BULLET_VERSION >= 281
+  virtual bool needsCollision(btBroadphaseProxy *proxy0) const;
+
   virtual btScalar addSingleResult(btManifoldPoint &mp,
       const btCollisionObjectWrapper *wrap0, int part_id0, int idx0, 
       const btCollisionObjectWrapper *wrap1, int part_id1, int idx1); 
@@ -74,10 +76,20 @@ public:
 protected:
   BulletContactResult();
 
+#if BT_BULLET_VERSION >= 281
+  void use_filter(btOverlapFilterCallback *cb, btBroadphaseProxy *proxy);
+#endif
+
 private:
   static BulletContact _empty;
 
   btAlignedObjectArray<BulletContact> _contacts;
+
+#if BT_BULLET_VERSION >= 281
+  bool _filter_set;
+  btOverlapFilterCallback *_filter_cb;
+  btBroadphaseProxy *_filter_proxy;
+#endif
 
   friend class BulletWorld;
 };

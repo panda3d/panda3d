@@ -24,9 +24,46 @@ BulletContact BulletContactResult::_empty;
 BulletContactResult::
 BulletContactResult() : btCollisionWorld::ContactResultCallback() {
 
+#if BT_BULLET_VERSION >= 281
+  _filter_cb = NULL;
+  _filter_proxy = NULL;
+  _filter_set = false;
+#endif
 }
 
 #if BT_BULLET_VERSION >= 281
+////////////////////////////////////////////////////////////////////
+//     Function: BulletContactResult::use_filter
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void BulletContactResult::
+use_filter(btOverlapFilterCallback *cb, btBroadphaseProxy *proxy) {
+
+  nassertv(cb);
+  nassertv(proxy);
+
+  _filter_cb = cb;
+  _filter_proxy = proxy;
+  _filter_set = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletContactResult::needsCollision
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+bool BulletContactResult::
+needsCollision(btBroadphaseProxy *proxy0) const {
+
+  if (_filter_set) {
+    return _filter_cb->needBroadphaseCollision(proxy0, _filter_proxy);
+  }
+  else {
+    return true;
+  }
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletContactResult::addSingleResult
 //       Access: Published

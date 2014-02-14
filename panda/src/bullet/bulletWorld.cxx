@@ -87,17 +87,20 @@ BulletWorld() {
   // Filter callback
   switch (bullet_filter_algorithm) {
     case FA_mask:
-      _world->getPairCache()->setOverlapFilterCallback(&_filter_cb1);
+      _filter_cb = &_filter_cb1;
       break;
     case FA_groups_mask:
-      _world->getPairCache()->setOverlapFilterCallback(&_filter_cb2);
+      _filter_cb = &_filter_cb2;
       break;
     case FA_callback:
-      _world->getPairCache()->setOverlapFilterCallback(&_filter_cb3);
+      _filter_cb = &_filter_cb3;
       break;
     default:
       bullet_cat.error() << "no proper filter algorithm!" << endl;
+      _filter_cb = NULL;
   }
+
+  _world->getPairCache()->setOverlapFilterCallback(_filter_cb);
 
   // Tick callback
   _tick_callback_obj = NULL;
@@ -718,13 +721,18 @@ sweep_test_closest(BulletShape *shape, const TransformState &from_ts, const Tran
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 BulletContactResult BulletWorld::
-contact_test(PandaNode *node) const {
+contact_test(PandaNode *node, bool use_filter) const {
 
   btCollisionObject *obj = get_collision_object(node);
 
   BulletContactResult cb;
 
   if (obj) {
+
+    if (use_filter) {
+      cb.use_filter(_filter_cb, obj->getBroadphaseHandle());
+    }
+
     _world->contactTest(obj, cb);
   }
 
@@ -745,6 +753,7 @@ contact_test_pair(PandaNode *node0, PandaNode *node1) const {
   BulletContactResult cb;
 
   if (obj0 && obj1) {
+
     _world->contactPairTest(obj0, obj1, cb);
   }
 
