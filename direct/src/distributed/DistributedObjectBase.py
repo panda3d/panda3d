@@ -1,6 +1,6 @@
 
 from direct.showbase.DirectObject import DirectObject
-#from direct.directnotify.DirectNotifyGlobal import directNotify
+from direct.directnotify import DirectNotifyGlobal
 
 class DistributedObjectBase(DirectObject):
     """
@@ -8,7 +8,7 @@ class DistributedObjectBase(DirectObject):
     (i.e. distributed) objects.  These will usually (always?) have a
     dclass entry in a *.dc file.
     """
-    notify = directNotify.newCategory("DistributedObjectBase")
+    notify = DirectNotifyGlobal.directNotify.newCategory("DistributedObjectBase")
 
     def __init__(self, cr):
         assert self.notify.debugStateCall(self)

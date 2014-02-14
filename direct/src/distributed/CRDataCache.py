@@ -1,5 +1,10 @@
 from direct.distributed.CachedDOData import CachedDOData
 
+# This has to be imported for __builtin__.config
+from direct.showbase import ShowBase
+
+__all__ = ["CRDataCache"]
+
 class CRDataCache:
     # Stores cached data for DistributedObjects between instantiations on the client
 
