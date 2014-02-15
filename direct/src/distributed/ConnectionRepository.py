@@ -1,5 +1,6 @@
 from pandac.PandaModules import *
 from direct.task import Task
+from direct.task.TaskManagerGlobal import * # taskMgr
 from direct.directnotify import DirectNotifyGlobal
 from direct.distributed.DoInterestManager import DoInterestManager
 from direct.distributed.DoCollectionManager import DoCollectionManager
@@ -11,7 +12,9 @@ import types
 import imp
 import gc
 
+__all__ = ["ConnectionRepository", "GCTrigger"]
 
+vfs = VirtualFileSystem.getGlobalPtr()
 
 class ConnectionRepository( 
         DoInterestManager, DoCollectionManager, CConnectionRepository):
