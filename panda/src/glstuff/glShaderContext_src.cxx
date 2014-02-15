@@ -221,51 +221,58 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
 
 #if defined(HAVE_CG) && !defined(OPENGLES)
   _cg_context = 0;
+  _cg_vprofile = CG_PROFILE_UNKNOWN;
+  _cg_fprofile = CG_PROFILE_UNKNOWN;
+  _cg_gprofile = CG_PROFILE_UNKNOWN;
   if (s->get_language() == Shader::SL_Cg) {
-    
     // Ask the shader to compile itself for us and 
     // to give us the resulting Cg program objects.
 
     if (!s->cg_compile_for(gsg->_shader_caps,
                            _cg_context,
                            _cg_vprogram,
-                           _cg_fprogram, 
+                           _cg_fprogram,
                            _cg_gprogram,
                            _cg_parameter_map)) {
       return;
     }
-    
+
     // Load the program.
-    
     if (_cg_vprogram != 0) {
+      _cg_vprofile = cgGetProgramProfile(_cg_vprogram);
       cgGLLoadProgram(_cg_vprogram);
       CGerror verror = cgGetError();
       if (verror != CG_NO_ERROR) {
-        const char *str = (const char *)GLP(GetString)(GL_PROGRAM_ERROR_STRING_ARB);
-        GLCAT.error() << "Could not load Cg vertex program:" << s->get_filename(Shader::ST_vertex) << " (" << 
-          cgGetProfileString(cgGetProgramProfile(_cg_vprogram)) << " " << str << ")\n";
+        const char *str = cgGetErrorString(verror);
+        GLCAT.error()
+          << "Could not load Cg vertex program: " << s->get_filename(Shader::ST_vertex)
+          << " (" << cgGetProfileString(_cg_vprofile) << " " << str << ")\n";
         release_resources(gsg);
       }
     }
 
     if (_cg_fprogram != 0) {
+      _cg_fprofile = cgGetProgramProfile(_cg_fprogram);
       cgGLLoadProgram(_cg_fprogram);
       CGerror ferror = cgGetError();
       if (ferror != CG_NO_ERROR) {
-        const char *str = (const char *)GLP(GetString)(GL_PROGRAM_ERROR_STRING_ARB);
-        GLCAT.error() << "Could not load Cg fragment program:" << s->get_filename(Shader::ST_fragment) << " (" << 
-          cgGetProfileString(cgGetProgramProfile(_cg_fprogram)) << " " << str << ")\n";
+        const char *str = cgGetErrorString(ferror);
+        GLCAT.error()
+          << "Could not load Cg fragment program: " << s->get_filename(Shader::ST_fragment)
+          << " (" << cgGetProfileString(_cg_fprofile) << " " << str << ")\n";
         release_resources(gsg);
       }
     }
 
     if (_cg_gprogram != 0) {
+      _cg_gprofile = cgGetProgramProfile(_cg_gprogram);
       cgGLLoadProgram(_cg_gprogram);
       CGerror gerror = cgGetError();
       if (gerror != CG_NO_ERROR) {
-        const char *str = (const char *)GLP(GetString)(GL_PROGRAM_ERROR_STRING_ARB);
-        GLCAT.error() << "Could not load Cg geometry program:" << s->get_filename(Shader::ST_geometry) << " (" << 
-          cgGetProfileString(cgGetProgramProfile(_cg_gprogram)) << " " << str << ")\n";
+        const char *str = cgGetErrorString(gerror);
+        GLCAT.error()
+          << "Could not load Cg geometry program: " << s->get_filename(Shader::ST_geometry)
+          << " (" << cgGetProfileString(_cg_gprofile) << " " << str << ")\n";
         release_resources(gsg);
       }
     }
@@ -832,15 +839,15 @@ bind(GSG *gsg, bool reissue_parameters) {
   if (_cg_context != 0) {
     // Bind the shaders.
     if (_cg_vprogram != 0) {
-      cgGLEnableProfile(cgGetProgramProfile(_cg_vprogram));
+      cgGLEnableProfile(_cg_vprofile);
       cgGLBindProgram(_cg_vprogram);
     }
     if (_cg_fprogram != 0) {
-      cgGLEnableProfile(cgGetProgramProfile(_cg_fprogram));
+      cgGLEnableProfile(_cg_fprofile);
       cgGLBindProgram(_cg_fprogram);
     }
     if (_cg_gprogram != 0) {
-      cgGLEnableProfile(cgGetProgramProfile(_cg_gprogram));
+      cgGLEnableProfile(_cg_gprofile);
       cgGLBindProgram(_cg_gprogram);
     }
 
@@ -863,19 +870,22 @@ unbind(GSG *gsg) {
 #if defined(HAVE_CG) && !defined(OPENGLES)
   if (_cg_context != 0) {
     if (_cg_vprogram != 0) {
-      cgGLDisableProfile(cgGetProgramProfile(_cg_vprogram));
+      cgGLUnbindProgram(_cg_vprofile);
+      cgGLDisableProfile(_cg_vprofile);
     }
     if (_cg_fprogram != 0) {
-      cgGLDisableProfile(cgGetProgramProfile(_cg_fprogram));
+      cgGLUnbindProgram(_cg_fprofile);
+      cgGLDisableProfile(_cg_fprofile);
     }
     if (_cg_gprogram != 0) {
-      cgGLDisableProfile(cgGetProgramProfile(_cg_gprogram));
+      cgGLUnbindProgram(_cg_gprofile);
+      cgGLDisableProfile(_cg_gprofile);
     }
 
     cg_report_errors();
   }
 #endif
-  
+
   if (_shader->get_language() == Shader::SL_GLSL) {
     gsg->_glUseProgram(0);
   }
