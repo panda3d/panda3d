@@ -126,6 +126,8 @@ PUBLISHED:
   BulletContactResult contact_test(PandaNode *node, bool use_filter=false) const;
   BulletContactResult contact_test_pair(PandaNode *node0, PandaNode *node1) const;
 
+  bool filter_test(PandaNode *node0, PandaNode *node1) const;
+
   // Manifolds
   INLINE int get_num_manifolds() const;
   BulletPersistentManifold *get_manifold(int idx) const;
