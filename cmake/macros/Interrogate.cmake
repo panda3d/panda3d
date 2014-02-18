@@ -174,9 +174,13 @@ function(interrogate_sources target output database module)
     # will preprocess each file in the same way.
     set(define_flags)
     get_target_property(target_defines "${target}" COMPILE_DEFINITIONS)
-    foreach(target_define ${target_defines})
-      list(APPEND define_flags "-D${target_define}")
-    endforeach(target_define)
+    if(target_defines)
+      foreach(target_define ${target_defines})
+        list(APPEND define_flags "-D${target_define}")
+        # And add the same definition when we compile the _igate.cxx file:
+        add_definitions("-D${target_define}")
+      endforeach(target_define)
+    endif()
     # If this is a release build that has NDEBUG defined, we need that too:
     string(TOUPPER "${CMAKE_BUILD_TYPE}" build_type)
     if("${CMAKE_CXX_FLAGS_${build_type}}" MATCHES ".*NDEBUG.*")

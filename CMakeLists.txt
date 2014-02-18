@@ -26,8 +26,9 @@ include(dtool/Package.cmake)
 include(dtool/Config.cmake)
 
 # Determine which trees to build.
-option(BUILD_DTOOL "Build the dtool source tree." ON)
-option(BUILD_PANDA "Build the panda source tree." ON)
+option(BUILD_DTOOL  "Build the dtool source tree." ON)
+option(BUILD_PANDA  "Build the panda source tree." ON)
+option(BUILD_DIRECT "Build the direct source tree." ON)
 
 # Include Panda3D packages
 if(BUILD_DTOOL)
@@ -36,4 +37,8 @@ endif()
 
 if(BUILD_PANDA)
   add_subdirectory(panda)
+endif()
+
+if(BUILD_DIRECT)
+  add_subdirectory(direct)
 endif()
