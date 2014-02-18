@@ -33,6 +33,7 @@ VorbisAudioCursor(VorbisAudio *src, istream *stream) :
   _bitstream(0)
 {
   nassertv(stream != NULL);
+  nassertv(stream->good());
 
   // Set up the callbacks to read via the VFS.
   ov_callbacks callbacks;
@@ -52,7 +53,10 @@ VorbisAudioCursor(VorbisAudio *src, istream *stream) :
     return;
   }
 
-  _length = ov_time_total(&_ov, -1);
+  double time_total = ov_time_total(&_ov, -1);
+  if (time_total != OV_EINVAL) {
+    _length = time_total;
+  }
 
   vorbis_info *vi = ov_info(&_ov, -1);
   _audio_channels = vi->channels;
@@ -175,6 +179,12 @@ cb_read_func(void *ptr, size_t size, size_t nmemb, void *datasource) {
   nassertr(stream != NULL, -1);
 
   stream->read((char *)ptr, size * nmemb);
+
+  if (stream->eof()) {
+    // Gracefully handle EOF.
+    stream->clear();
+  }
+
   return stream->gcount();
 }
 
@@ -213,6 +223,26 @@ cb_seek_func(void *datasource, ogg_int64_t offset, int whence) {
   }
 
   if (stream->fail()) {
+    // This is a fatal error and usually leads to
+    // a libvorbis crash.
+    movies_cat.error()
+      << "Failure to seek to byte " << offset;
+
+    switch (whence) {
+    case SEEK_CUR:
+      movies_cat.error(false)
+        << " from current location!\n";
+      break;
+
+    case SEEK_END:
+      movies_cat.error(false)
+        << " from end of file!\n";
+      break;
+
+    default:
+      movies_cat.error(false) << "!\n";
+    }
+
     return -1;
   }
 
