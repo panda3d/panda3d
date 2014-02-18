@@ -130,6 +130,10 @@ target_link_libraries(p3express p3pandabase p3dtool p3dtoolconfig
   ${_TAR_LIBRARY})
 target_interrogate(p3express ALL)
 
+if(WIN32)
+  target_link_libraries(p3express advapi32.lib ws2_32.lib)
+endif()
+
 install(TARGETS p3express DESTINATION lib)
 
 #add_executable(p3expressTestTypes test_types.cxx)

@@ -40,6 +40,8 @@ add_subdirectory(src/glstuff)
 add_subdirectory(src/glgsg)
 add_subdirectory(src/x11display)
 add_subdirectory(src/glxdisplay)
+add_subdirectory(src/windisplay)
+add_subdirectory(src/wgldisplay)
 add_subdirectory(src/movies)
 add_subdirectory(src/audio)
 add_subdirectory(src/chan)
@@ -65,7 +67,6 @@ add_subdirectory(src/testbed)
 add_subdirectory(metalibs/panda)
 add_subdirectory(metalibs/pandagl)
 add_subdirectory(metalibs/pandaegg)
-
 
 # Now add the Python modules:
 set(CORE_MODULE_COMPONENTS
