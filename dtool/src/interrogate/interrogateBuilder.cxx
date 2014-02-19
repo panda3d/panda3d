@@ -1679,6 +1679,10 @@ get_function(CPPInstance *function, string description,
     InterrogateFunction &ifunction =
       InterrogateDatabase::get_ptr()->update_function(index);
 
+    // Not 100% sure why, but there's a case where this happens,
+    // in a case where a typedef shadowed an actual type. ~rdb
+    nassertr(&ifunction != NULL, 0);
+
     ifunction._flags |= flags;
 
     // Also, make sure this particular signature is defined.
