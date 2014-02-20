@@ -802,8 +802,8 @@ synthesize_shader(const RenderState *rs) {
   }
   if (_map_index_height >= 0) {
     text << "\t float3 eyedir = mspos_view.xyz - vtx_position.xyz;\n";
-    text << "\t l_eyevec.x = dot(vtx_tangent" << _map_index_height << ".xyz, eyedir);\n";
-    text << "\t l_eyevec.y = dot(vtx_binormal" << _map_index_height << ".xyz, eyedir);\n";
+    text << "\t l_eyevec.x = dot(vtx_" << tangent_input << ".xyz, eyedir);\n";
+    text << "\t l_eyevec.y = dot(vtx_" << binormal_input << ".xyz, eyedir);\n";
     text << "\t l_eyevec.z = dot(vtx_normal.xyz, eyedir);\n";
     text << "\t l_eyevec = normalize(l_eyevec);\n";
   }
