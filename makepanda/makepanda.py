@@ -3634,7 +3634,7 @@ if (PkgSkip("ROCKET") == 0) and (not RUNTIME):
   TargetAdd('rocket.pyd', input='libp3rocket.dll')
   TargetAdd('rocket.pyd', input='core.pyd')
   TargetAdd('rocket.pyd', input=COMMON_PANDA_LIBS)
-  TargetAdd('rocket.pyd', opts=['PYTHON'])
+  TargetAdd('rocket.pyd', opts=['PYTHON', 'ROCKET'])
 
 #
 # DIRECTORY: panda/src/p3awesomium
