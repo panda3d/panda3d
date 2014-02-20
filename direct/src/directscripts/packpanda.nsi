@@ -103,8 +103,6 @@ Section "${SMDIRECTORY}" SecCore
         File /r /x CVS /x Opt?-Win32 "${PSOURCE}\direct\filter\*.sha"
         SetOutPath $INSTDIR\direct
         File /r /x CVS /x Opt?-Win32 "${PSOURCE}\direct\*.py"
-        SetOutPath $INSTDIR
-        File "${PSOURCE}\panda3d.py"
         !else
         File /r /x CVS /x Opt?-Win32 "${PSOURCE}\direct\src\directscripts\*"
         SetOutPath $INSTDIR\direct\filter
@@ -112,11 +110,12 @@ Section "${SMDIRECTORY}" SecCore
         SetOutPath $INSTDIR\direct
         File /r /x CVS /x Opt?-Win32 "${PSOURCE}\direct\src\*.py"
         File "${PANDA}\tmp\__init__.py"
-        SetOutPath $INSTDIR
-        File "${PSOURCE}\direct\src\ffi\panda3d.py"
         !endif
         SetOutPath $INSTDIR\pandac
         File /r "${PANDA}\pandac\*.py"
+        SetOutPath $INSTDIR\panda3d
+        File /r "${PANDA}\panda3d\*.py"
+        File /r "${PANDA}\panda3d\*.pyd"
         SetOutPath $INSTDIR\python
         File /r "${PANDA}\python\*"
         RMDir /r "$SMPROGRAMS\${SMDIRECTORY}"
