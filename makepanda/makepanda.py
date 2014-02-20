@@ -4231,7 +4231,7 @@ if (PkgSkip("BULLET")==0 and not RUNTIME):
   TargetAdd('bullet.pyd', input='libpandabullet.dll')
   TargetAdd('bullet.pyd', input='core.pyd')
   TargetAdd('bullet.pyd', input=COMMON_PANDA_LIBS)
-  TargetAdd('bullet.pyd', opts=['PYTHON'])
+  TargetAdd('bullet.pyd', opts=['PYTHON', 'WINUSER', 'BULLET'])
 
 #
 # DIRECTORY: panda/src/physx/
@@ -4270,7 +4270,7 @@ if (PkgSkip("PHYSX")==0):
   TargetAdd('physx.pyd', input='libpandaphysx.dll')
   TargetAdd('physx.pyd', input='core.pyd')
   TargetAdd('physx.pyd', input=COMMON_PANDA_LIBS)
-  TargetAdd('physx.pyd', opts=['PYTHON'])
+  TargetAdd('physx.pyd', opts=['PYTHON', 'WINUSER', 'PHYSX', 'NOPPC'])
 
 #
 # DIRECTORY: panda/src/physics/
@@ -4587,7 +4587,7 @@ if (PkgSkip("DIRECT")==0):
   TargetAdd('direct.pyd', input='libp3direct.dll')
   TargetAdd('direct.pyd', input='core.pyd')
   TargetAdd('direct.pyd', input=COMMON_PANDA_LIBS)
-  TargetAdd('direct.pyd', opts=['PYTHON'])
+  TargetAdd('direct.pyd', opts=['PYTHON', 'OPENSSL', 'WINUSER', 'WINGDI'])
 
 #
 # DIRECTORY: direct/src/dcparse/
