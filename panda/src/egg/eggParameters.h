@@ -58,6 +58,6 @@ public:
   double _table_threshold;
 };
 
-extern EggParameters *egg_parameters;
+extern EXPCL_PANDAEGG EggParameters *egg_parameters;
 
 #endif
