@@ -1352,29 +1352,42 @@ def CompileLink(dll, obj, opts):
                 else: cmd += " /NOD:MSVCRT.LIB mfcs100.lib MSVCRT.lib"
             cmd += " /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO "
             cmd += ' /OUT:' + BracketNameWithQuotes(dll)
+
             subsystem = GetValueOption(opts, "SUBSYSTEM:")
-            if (subsystem): cmd += " /SUBSYSTEM:" + subsystem
-            if (dll.endswith(".dll") or dll.endswith(".pyd")):
+            if subsystem:
+                cmd += " /SUBSYSTEM:" + subsystem
+
+            if dll.endswith(".dll"):
                 cmd += ' /IMPLIB:' + GetOutputDir() + '/lib/' + os.path.splitext(os.path.basename(dll))[0] + ".lib"
+
             for (opt, dir) in LIBDIRECTORIES:
-                if (opt=="ALWAYS") or (opt in opts): cmd += ' /LIBPATH:' + BracketNameWithQuotes(dir)
+                if (opt=="ALWAYS") or (opt in opts):
+                    cmd += ' /LIBPATH:' + BracketNameWithQuotes(dir)
+
             for x in obj:
-                if (x.endswith(".dll") or x.endswith(".pyd")):
+                if x.endswith(".dll"):
                     cmd += ' ' + GetOutputDir() + '/lib/' + os.path.splitext(os.path.basename(x))[0] + ".lib"
-                elif (x.endswith(".lib")):
+                elif x.endswith(".pyd"):
+                    cmd += ' ' + os.path.splitext(x)[0] + ".lib"
+                elif x.endswith(".lib"):
                     dname = os.path.splitext(os.path.basename(x))[0] + ".dll"
                     if (GetOrigExt(x) != ".ilb" and os.path.exists(GetOutputDir()+"/bin/" + dname)):
                         exit("Error: in makepanda, specify "+dname+", not "+x)
                     cmd += ' ' + BracketNameWithQuotes(x)
-                elif (x.endswith(".def")):
+                elif x.endswith(".def"):
                     cmd += ' /DEF:' + BracketNameWithQuotes(x)
-                elif (x.endswith(".dat")):
+                elif x.endswith(".dat"):
                     pass
-                else: cmd += ' ' + BracketNameWithQuotes(x)
+                else:
+                    cmd += ' ' + BracketNameWithQuotes(x)
+
             if (GetOrigExt(dll)==".exe" and "NOICON" not in opts):
                 cmd += " " + GetOutputDir() + "/tmp/pandaIcon.res"
+
             for (opt, name) in LIBNAMES:
-                if (opt=="ALWAYS") or (opt in opts): cmd += " " + BracketNameWithQuotes(name)
+                if (opt=="ALWAYS") or (opt in opts):
+                    cmd += " " + BracketNameWithQuotes(name)
+
             oscmd(cmd)
         else:
             cmd = "xilink"
@@ -1399,29 +1412,42 @@ def CompileLink(dll, obj, opts):
                 else: cmd += " /NOD:MSVCRT.LIB mfcs100.lib MSVCRT.lib"
             cmd += " /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO "
             cmd += ' /OUT:' + BracketNameWithQuotes(dll)
+
             subsystem = GetValueOption(opts, "SUBSYSTEM:")
-            if (subsystem): cmd += " /SUBSYSTEM:" + subsystem
-            if (dll.endswith(".dll") or dll.endswith(".pyd")):
-                cmd += ' /IMPLIB:' + GetOutputDir() + '/lib/'+os.path.splitext(os.path.basename(dll))[0]+".lib"
+            if subsystem:
+                cmd += " /SUBSYSTEM:" + subsystem
+
+            if dll.endswith(".dll"):
+                cmd += ' /IMPLIB:' + GetOutputDir() + '/lib/' + os.path.splitext(os.path.basename(dll))[0] + ".lib"
+
             for (opt, dir) in LIBDIRECTORIES:
-                if (opt=="ALWAYS") or (opt in opts): cmd += ' /LIBPATH:' + BracketNameWithQuotes(dir)
+                if (opt=="ALWAYS") or (opt in opts):
+                    cmd += ' /LIBPATH:' + BracketNameWithQuotes(dir)
+
             for x in obj:
-                if (x.endswith(".dll") or x.endswith(".pyd")):
+                if x.endswith(".dll"):
                     cmd += ' ' + GetOutputDir() + '/lib/' + os.path.splitext(os.path.basename(x))[0] + ".lib"
-                elif (x.endswith(".lib")):
+                elif x.endswith(".pyd"):
+                    cmd += ' ' + os.path.splitext(x)[0] + ".lib"
+                elif x.endswith(".lib"):
                     dname = os.path.splitext(dll)[0]+".dll"
                     if (GetOrigExt(x) != ".ilb" and os.path.exists(GetOutputDir()+"/bin/" + os.path.splitext(os.path.basename(x))[0] + ".dll")):
                         exit("Error: in makepanda, specify "+dname+", not "+x)
                     cmd += ' ' + BracketNameWithQuotes(x)
-                elif (x.endswith(".def")):
+                elif x.endswith(".def"):
                     cmd += ' /DEF:' + BracketNameWithQuotes(x)
-                elif (x.endswith(".dat")):
+                elif x.endswith(".dat"):
                     pass
-                else: cmd += ' ' + BracketNameWithQuotes(x)
+                else:
+                    cmd += ' ' + BracketNameWithQuotes(x)
+
             if (GetOrigExt(dll)==".exe" and "NOICON" not in opts):
                 cmd += " " + GetOutputDir() + "/tmp/pandaIcon.res"
+
             for (opt, name) in LIBNAMES:
-                if (opt=="ALWAYS") or (opt in opts): cmd += " " + BracketNameWithQuotes(name)
+                if (opt=="ALWAYS") or (opt in opts):
+                    cmd += " " + BracketNameWithQuotes(name)
+
             oscmd(cmd)
 
     if COMPILER == "GCC":
@@ -3553,7 +3579,7 @@ if (not RUNTIME):
 # DIRECTORY: panda/src/vision/
 #
 
-if (PkgSkip("VISION") ==0) and (not RUNTIME):
+if (PkgSkip("VISION") == 0) and (not RUNTIME):
   OPTS=['DIR:panda/src/vision', 'BUILDING:VISION', 'ARTOOLKIT', 'OPENCV', 'DX9', 'DIRECTCAM', 'JPEG']
   TargetAdd('p3vision_composite1.obj', opts=OPTS, input='p3vision_composite1.cxx')
 
@@ -3566,6 +3592,7 @@ if (PkgSkip("VISION") ==0) and (not RUNTIME):
   TargetAdd('libp3vision.in', opts=['IMOD:vision', 'ILIB:libp3vision', 'SRCDIR:panda/src/vision'])
   TargetAdd('libp3vision_igate.obj', input='libp3vision.in', opts=["DEPENDENCYONLY"])
 
+  OPTS=['DIR:panda/src/vision', 'ARTOOLKIT', 'OPENCV', 'DX9', 'DIRECTCAM', 'JPEG']
   TargetAdd('vision_module.obj', input='libp3vision.in')
   TargetAdd('vision_module.obj', opts=OPTS)
   TargetAdd('vision_module.obj', opts=['IMOD:vision', 'ILIB:vision'])
@@ -3581,7 +3608,7 @@ if (PkgSkip("VISION") ==0) and (not RUNTIME):
 # DIRECTORY: panda/src/rocket/
 #
 
-if (PkgSkip("ROCKET") ==0) and (not RUNTIME):
+if (PkgSkip("ROCKET") == 0) and (not RUNTIME):
   OPTS=['DIR:panda/src/rocket', 'BUILDING:ROCKET', 'ROCKET']
   TargetAdd('p3rocket_composite1.obj', opts=OPTS, input='p3rocket_composite1.cxx')
 
@@ -3596,6 +3623,7 @@ if (PkgSkip("ROCKET") ==0) and (not RUNTIME):
   TargetAdd('libp3rocket_igate.obj', input='libp3rocket.in', opts=["DEPENDENCYONLY"])
   TargetAdd('p3rocket_rocketRegion_ext.obj', opts=OPTS, input='rocketRegion_ext.cxx')
 
+  OPTS=['DIR:panda/src/rocket', 'ROCKET']
   TargetAdd('rocket_module.obj', input='libp3rocket.in')
   TargetAdd('rocket_module.obj', opts=OPTS)
   TargetAdd('rocket_module.obj', opts=['IMOD:rocket', 'ILIB:rocket'])
@@ -3623,6 +3651,7 @@ if PkgSkip("AWESOMIUM") == 0 and not RUNTIME:
   TargetAdd('libp3awesomium.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libp3awesomium.dll', opts=OPTS)
 
+  OPTS=['DIR:panda/src/awesomium', 'AWESOMIUM']
   TargetAdd('awesomium_module.obj', input='libp3awesomium.in')
   TargetAdd('awesomium_module.obj', opts=OPTS)
   TargetAdd('awesomium_module.obj', opts=['IMOD:awesomium', 'ILIB:awesomium'])
@@ -3658,7 +3687,6 @@ if (PkgSkip('SKEL')==0) and (not RUNTIME):
   TargetAdd('libpandaskel.dll', opts=OPTS)
 
   TargetAdd('skel_module.obj', input='libp3skel.in')
-  TargetAdd('skel_module.obj', opts=OPTS)
   TargetAdd('skel_module.obj', opts=['IMOD:skel', 'ILIB:skel'])
 
   TargetAdd('skel.pyd', input='skel_module.obj')
@@ -3693,6 +3721,7 @@ if (PkgSkip('PANDAFX')==0) and (not RUNTIME):
   TargetAdd('libpandafx.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libpandafx.dll', opts=['ADVAPI',  'NVIDIACG'])
 
+  OPTS=['DIR:panda/metalibs/pandafx', 'DIR:panda/src/distort', 'NVIDIACG']
   TargetAdd('fx_module.obj', input='libp3distort.in')
   TargetAdd('fx_module.obj', opts=OPTS)
   TargetAdd('fx_module.obj', opts=['IMOD:fx', 'ILIB:fx'])
@@ -3709,17 +3738,18 @@ if (PkgSkip('PANDAFX')==0) and (not RUNTIME):
 #
 
 if (PkgSkip("VRPN")==0 and not RUNTIME):
-  TargetAdd('libp3vrpn.dll', input='p3vrpn_composite1.obj')
-  TargetAdd('libp3vrpn.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libp3vrpn.dll', opts=['VRPN'])
-
-  OPTS=['DIR:panda/src/vrpn', 'BUILDING:VRPN',  'VRPN']
+  OPTS=['DIR:panda/src/vrpn', 'BUILDING:VRPN', 'VRPN']
   TargetAdd('p3vrpn_composite1.obj', opts=OPTS, input='p3vrpn_composite1.cxx')
   IGATEFILES=GetDirectoryContents('panda/src/vrpn', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3vrpn.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3vrpn.in', opts=['IMOD:vrpn', 'ILIB:libp3vrpn', 'SRCDIR:panda/src/vrpn'])
   TargetAdd('libp3vrpn_igate.obj', input='libp3vrpn.in', opts=["DEPENDENCYONLY"])
 
+  TargetAdd('libp3vrpn.dll', input='p3vrpn_composite1.obj')
+  TargetAdd('libp3vrpn.dll', input=COMMON_PANDA_LIBS)
+  TargetAdd('libp3vrpn.dll', opts=['VRPN'])
+
+  OPTS=['DIR:panda/src/vrpn', 'VRPN']
   TargetAdd('vrpn_module.obj', input='libp3vrpn.in')
   TargetAdd('vrpn_module.obj', opts=OPTS)
   TargetAdd('vrpn_module.obj', opts=['IMOD:vrpn', 'ILIB:vrpn'])
@@ -3964,6 +3994,7 @@ if (not RUNTIME):
   TargetAdd('libpandaegg.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libpandaegg.dll', opts=['ADVAPI'])
 
+  OPTS=['DIR:panda/metalibs/pandaegg', 'DIR:panda/src/egg']
   TargetAdd('egg_module.obj', input='libp3egg2pg.in')
   TargetAdd('egg_module.obj', input='libp3egg.in')
   TargetAdd('egg_module.obj', opts=OPTS)
@@ -4181,6 +4212,7 @@ if (PkgSkip("BULLET")==0 and not RUNTIME):
   TargetAdd('libpandabullet.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libpandabullet.dll', opts=['WINUSER', 'BULLET'])
 
+  OPTS=['DIR:panda/metalibs/pandabullet', 'BULLET']
   TargetAdd('bullet_module.obj', input='libpandabullet.in')
   TargetAdd('bullet_module.obj', opts=OPTS)
   TargetAdd('bullet_module.obj', opts=['IMOD:bullet', 'ILIB:bullet'])
@@ -4217,6 +4249,7 @@ if (PkgSkip("PHYSX")==0):
   TargetAdd('libpandaphysx.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libpandaphysx.dll', opts=['WINUSER', 'PHYSX', 'NOPPC'])
 
+  OPTS=['DIR:panda/metalibs/pandaphysx', 'PHYSX', 'NOPPC']
   TargetAdd('physx_module.obj', input='libpandaphysx.in')
   TargetAdd('physx_module.obj', opts=OPTS)
   TargetAdd('physx_module.obj', opts=['IMOD:physx', 'ILIB:physx'])
@@ -4275,6 +4308,7 @@ if (PkgSkip("PANDAPHYSICS")==0) and (not RUNTIME):
   TargetAdd('libpandaphysics.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libpandaphysics.dll', opts=['ADVAPI'])
 
+  OPTS=['DIR:panda/metalibs/pandaphysics']
   TargetAdd('physics_module.obj', input='libp3physics.in')
   if (PkgSkip("PANDAPARTICLESYSTEM")==0):
     TargetAdd('physics_module.obj', input='libp3particlesystem.in')
@@ -4524,6 +4558,7 @@ if (PkgSkip("DIRECT")==0):
   TargetAdd('libp3direct.dll', input=COMMON_PANDA_LIBS)
   TargetAdd('libp3direct.dll', opts=['ADVAPI',  'OPENSSL', 'WINUSER', 'WINGDI'])
 
+  OPTS=['DIR:direct/metalibs/direct']
   TargetAdd('direct_module.obj', input='libp3dcparser.in')
   TargetAdd('direct_module.obj', input='libp3showbase.in')
   TargetAdd('direct_module.obj', input='libp3deadrec.in')
@@ -5720,6 +5755,7 @@ if (PkgSkip("CONTRIB")==0 and not RUNTIME):
   TargetAdd('libpandaai.dll', input='p3ai_composite1.obj')
   TargetAdd('libpandaai.dll', input=COMMON_PANDA_LIBS)
 
+  OPTS=['DIR:contrib/src/ai']
   TargetAdd('ai_module.obj', input='libpandaai.in')
   TargetAdd('ai_module.obj', opts=OPTS)
   TargetAdd('ai_module.obj', opts=['IMOD:ai', 'ILIB:ai'])
