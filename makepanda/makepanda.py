@@ -3702,8 +3702,10 @@ if (PkgSkip('SKEL')==0) and (not RUNTIME):
 #
 
 if (PkgSkip('PANDAFX')==0) and (not RUNTIME):
-  OPTS=['DIR:panda/src/distort']
+  OPTS=['DIR:panda/src/distort', 'BUILDING:PANDAFX']
   TargetAdd('p3distort_composite1.obj', opts=OPTS, input='p3distort_composite1.cxx')
+
+  OPTS=['DIR:panda/metalibs/pandafx', 'DIR:panda/src/distort', 'NVIDIACG']
   IGATEFILES=GetDirectoryContents('panda/src/distort', ["*.h", "*_composite*.cxx"])
   TargetAdd('libp3distort.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3distort.in', opts=['IMOD:fx', 'ILIB:libp3distort', 'SRCDIR:panda/src/distort'])
