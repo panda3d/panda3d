@@ -3546,9 +3546,7 @@ if (not RUNTIME):
   TargetAdd('core_module.obj', opts=['IMOD:core', 'ILIB:core'])
 
   TargetAdd('core.pyd', input='core_module.obj')
-  TargetAdd('core.pyd', input='libp3dtoolconfig.dll')
-  TargetAdd('core.pyd', input='libpandaexpress.dll')
-  TargetAdd('core.pyd', input='libpanda.dll')
+  TargetAdd('core.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('core.pyd', opts=['PYTHON'])
 
 #
@@ -3575,6 +3573,8 @@ if (PkgSkip("VISION") ==0) and (not RUNTIME):
   TargetAdd('vision.pyd', input='vision_module.obj')
   TargetAdd('vision.pyd', input='libp3vision_igate.obj')
   TargetAdd('vision.pyd', input='libp3vision.dll')
+  TargetAdd('vision.pyd', input='core.pyd')
+  TargetAdd('vision.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('vision.pyd', opts=['PYTHON'])
 
 #
@@ -3604,6 +3604,8 @@ if (PkgSkip("ROCKET") ==0) and (not RUNTIME):
   TargetAdd('rocket.pyd', input='libp3rocket_igate.obj')
   TargetAdd('rocket.pyd', input='p3rocket_rocketRegion_ext.obj')
   TargetAdd('rocket.pyd', input='libp3rocket.dll')
+  TargetAdd('rocket.pyd', input='core.pyd')
+  TargetAdd('rocket.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('rocket.pyd', opts=['PYTHON'])
 
 #
@@ -3628,6 +3630,8 @@ if PkgSkip("AWESOMIUM") == 0 and not RUNTIME:
   TargetAdd('awesomium.pyd', input='awesomium_module.obj')
   TargetAdd('awesomium.pyd', input='libp3awesomium_igate.obj')
   TargetAdd('awesomium.pyd', input='libp3awesomium.dll')
+  TargetAdd('awesomium.pyd', input='core.pyd')
+  TargetAdd('awesomium.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('awesomium.pyd', opts=['PYTHON'])
 
 #
@@ -3660,6 +3664,8 @@ if (PkgSkip('SKEL')==0) and (not RUNTIME):
   TargetAdd('skel.pyd', input='skel_module.obj')
   TargetAdd('skel.pyd', input='libp3skel_igate.obj')
   TargetAdd('skel.pyd', input='libpandaskel.dll')
+  TargetAdd('skel.pyd', input='core.pyd')
+  TargetAdd('skel.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('skel.pyd', opts=['PYTHON'])
 
 #
@@ -3694,6 +3700,8 @@ if (PkgSkip('PANDAFX')==0) and (not RUNTIME):
   TargetAdd('fx.pyd', input='fx_module.obj')
   TargetAdd('fx.pyd', input='libp3distort_igate.obj')
   TargetAdd('fx.pyd', input='libpandafx.dll')
+  TargetAdd('fx.pyd', input='core.pyd')
+  TargetAdd('fx.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('fx.pyd', opts=['PYTHON'])
 
 #
@@ -3719,6 +3727,8 @@ if (PkgSkip("VRPN")==0 and not RUNTIME):
   TargetAdd('vrpn.pyd', input='vrpn_module.obj')
   TargetAdd('vrpn.pyd', input='libp3vrpn_igate.obj')
   TargetAdd('vrpn.pyd', input='libp3vrpn.dll')
+  TargetAdd('vrpn.pyd', input='core.pyd')
+  TargetAdd('vrpn.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('vrpn.pyd', opts=['PYTHON'])
 
 #
@@ -3964,6 +3974,8 @@ if (not RUNTIME):
   TargetAdd('egg.pyd', input='libp3egg_igate.obj')
   TargetAdd('egg.pyd', input='libp3egg2pg_igate.obj')
   TargetAdd('egg.pyd', input='libpandaegg.dll')
+  TargetAdd('egg.pyd', input='core.pyd')
+  TargetAdd('egg.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('egg.pyd', opts=['PYTHON'])
 
 #
@@ -4142,6 +4154,8 @@ if (PkgSkip("ODE")==0 and not RUNTIME):
   TargetAdd('ode.pyd', input='p3ode_ext_composite.obj')
   TargetAdd('ode.pyd', input='libpandaode_igate.obj')
   TargetAdd('ode.pyd', input='libpandaode.dll')
+  TargetAdd('ode.pyd', input='core.pyd')
+  TargetAdd('ode.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('ode.pyd', opts=['PYTHON'])
 
 #
@@ -4174,6 +4188,8 @@ if (PkgSkip("BULLET")==0 and not RUNTIME):
   TargetAdd('bullet.pyd', input='bullet_module.obj')
   TargetAdd('bullet.pyd', input='libpandabullet_igate.obj')
   TargetAdd('bullet.pyd', input='libpandabullet.dll')
+  TargetAdd('bullet.pyd', input='core.pyd')
+  TargetAdd('bullet.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('bullet.pyd', opts=['PYTHON'])
 
 #
@@ -4208,6 +4224,8 @@ if (PkgSkip("PHYSX")==0):
   TargetAdd('physx.pyd', input='physx_module.obj')
   TargetAdd('physx.pyd', input='libpandaphysx_igate.obj')
   TargetAdd('physx.pyd', input='libpandaphysx.dll')
+  TargetAdd('physx.pyd', input='core.pyd')
+  TargetAdd('physx.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('physx.pyd', opts=['PYTHON'])
 
 #
@@ -4268,6 +4286,8 @@ if (PkgSkip("PANDAPHYSICS")==0) and (not RUNTIME):
   if (PkgSkip("PANDAPARTICLESYSTEM")==0):
     TargetAdd('physics.pyd', input='libp3particlesystem_igate.obj')
   TargetAdd('physics.pyd', input='libpandaphysics.dll')
+  TargetAdd('physics.pyd', input='core.pyd')
+  TargetAdd('physics.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('physics.pyd', opts=['PYTHON'])
 
 #
@@ -4514,6 +4534,8 @@ if (PkgSkip("DIRECT")==0):
 
   TargetAdd('direct.pyd', input='direct_module.obj')
   TargetAdd('direct.pyd', input='libp3direct.dll')
+  TargetAdd('direct.pyd', input='core.pyd')
+  TargetAdd('direct.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('direct.pyd', opts=['PYTHON'])
 
 #
@@ -5704,6 +5726,9 @@ if (PkgSkip("CONTRIB")==0 and not RUNTIME):
 
   TargetAdd('ai.pyd', input='ai_module.obj')
   TargetAdd('ai.pyd', input='libpandaai_igate.obj')
+  TargetAdd('ai.pyd', input='libpandaai.dll')
+  TargetAdd('ai.pyd', input='core.pyd')
+  TargetAdd('ai.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('ai.pyd', opts=['PYTHON'])
 
 #
