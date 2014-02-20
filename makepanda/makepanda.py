@@ -3546,6 +3546,7 @@ if (not RUNTIME):
   TargetAdd('core_module.obj', opts=['IMOD:core', 'ILIB:core'])
 
   TargetAdd('core.pyd', input='core_module.obj')
+  TargetAdd('core.pyd', input='libp3dtoolconfig.dll')
   TargetAdd('core.pyd', input='libpandaexpress.dll')
   TargetAdd('core.pyd', input='libpanda.dll')
   TargetAdd('core.pyd', opts=['PYTHON'])
