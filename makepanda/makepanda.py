@@ -4194,7 +4194,7 @@ if (PkgSkip("ODE")==0 and not RUNTIME):
   TargetAdd('ode.pyd', input='libpandaode.dll')
   TargetAdd('ode.pyd', input='core.pyd')
   TargetAdd('ode.pyd', input=COMMON_PANDA_LIBS)
-  TargetAdd('ode.pyd', opts=['PYTHON'])
+  TargetAdd('ode.pyd', opts=['PYTHON', 'ODE'])
 
 #
 # DIRECTORY: panda/src/bullet/
