@@ -1148,7 +1148,7 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
 
   out << "  {NULL, NULL, 0, NULL}\n" << "};\n\n";
 
-  out << "struct LibraryDef " << def->library_name << "_moddef = {python_simple_funcs, BuildInstants};\n";
+  out << "EXPORT_THIS struct LibraryDef " << def->library_name << "_moddef = {python_simple_funcs, BuildInstants};\n";
   if (out_h != NULL) {
     *out_h << "extern struct LibraryDef " << def->library_name << "_moddef;\n";
   }
