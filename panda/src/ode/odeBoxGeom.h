@@ -29,7 +29,7 @@
 class EXPCL_PANDAODE OdeBoxGeom : public OdeGeom {
   friend class OdeGeom;
 
-private:
+public:
   OdeBoxGeom(dGeomID id);
 
 PUBLISHED:

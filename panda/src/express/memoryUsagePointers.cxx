@@ -20,20 +20,6 @@
 #include "referenceCount.h"
 #include "typedReferenceCount.h"
 
-#ifdef HAVE_PYTHON
-// Pick up a few declarations so we can create Python wrappers in
-// get_python_pointer(), below.
-
-#include "py_panda.h"  
-
-#ifndef CPPPARSER
-extern EXPCL_PANDAEXPRESS Dtool_PyTypedObject Dtool_TypedObject;
-extern EXPCL_PANDAEXPRESS Dtool_PyTypedObject Dtool_TypedReferenceCount;
-extern EXPCL_PANDAEXPRESS Dtool_PyTypedObject Dtool_ReferenceCount;
-#endif  // CPPPARSER
-
-#endif  // HAVE_PYTHON
-
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsagePointers::Constructor
 //       Access: Published
@@ -150,65 +136,6 @@ get_age(int n) const {
   nassertr(n >= 0 && n < get_num_pointers(), 0.0);
   return _entries[n]._age;
 }
-
-#ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: MemoryUsagePointers::get_python_pointer
-//       Access: Published
-//  Description: Returns the nth object, represented as a Python
-//               object of the appropriate type.  Reference counting
-//               will be properly set on the Python object.
-//
-//               get_typed_pointer() is almost as good as this, but
-//               (a) it does not set the reference count, and (b) it
-//               does not work for objects that do not inherit from
-//               TypedObject.  This will work for any object whose
-//               type is known, which has a Python representation.
-////////////////////////////////////////////////////////////////////
-PyObject *MemoryUsagePointers::
-get_python_pointer(int n) const {
-  nassertr(n >= 0 && n < get_num_pointers(), NULL);
-  TypedObject *typed_ptr = _entries[n]._typed_ptr;
-  ReferenceCount *ref_ptr = _entries[n]._ref_ptr;
-
-  bool memory_rules = false;
-  if (ref_ptr != (ReferenceCount *)NULL) {
-    memory_rules = true;
-    ref_ptr->ref();
-  }
-
-  if (typed_ptr != (TypedObject *)NULL) {
-    return DTool_CreatePyInstanceTyped(typed_ptr, Dtool_TypedObject,
-                                       memory_rules, false, 
-                                       typed_ptr->get_type_index());
-  }
-
-  if (ref_ptr == (ReferenceCount *)NULL) {
-    return Py_BuildValue("");
-  }
-
-  TypeHandle type = _entries[n]._type;
-  if (type != TypeHandle::none()) {
-    // Use TypedReferenceCount if we have it.
-    if (type.is_derived_from(TypedReferenceCount::get_class_type())) {
-      TypedReferenceCount *typed_ref_ptr = (TypedReferenceCount *)ref_ptr;
-      
-      return DTool_CreatePyInstanceTyped(typed_ref_ptr, Dtool_TypedReferenceCount,
-                                         memory_rules, false, 
-                                         type.get_index());
-    }
-
-    // Otherwise, trust that there is a downcast path to the actual type.
-    return DTool_CreatePyInstanceTyped(ref_ptr, Dtool_ReferenceCount,
-                                       memory_rules, false, 
-                                       type.get_index());
-  }
-
-  // If worse comes to worst, just return a ReferenceCount wrapper.
-  return DTool_CreatePyInstance(ref_ptr, Dtool_ReferenceCount, 
-                                memory_rules, false);
-}
-#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsagePointers::clear

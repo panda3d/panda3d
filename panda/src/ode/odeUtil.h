@@ -23,10 +23,6 @@
 #include "odeJointCollection.h"
 #include "odeCollisionEntry.h"
 
-#ifdef HAVE_PYTHON
-  #include "py_panda.h"
-#endif
-
 class OdeBody;
 class OdeJoint;
 class OdeGeom;
@@ -48,10 +44,10 @@ PUBLISHED:
                                      const int joint_type);
   static PT(OdeCollisionEntry) collide(const OdeGeom &geom1, const OdeGeom &geom2,
                                       const short int max_contacts = 150);
-#ifdef HAVE_PYTHON
-  static int collide2(const OdeGeom &geom1, const OdeGeom &geom2,
-                      PyObject* arg, PyObject* callback);
-#endif
+
+  EXTENSION(static int collide2(const OdeGeom &geom1, const OdeGeom &geom2,
+                                PyObject* arg, PyObject* callback));
+
   static OdeGeom space_to_geom(const OdeSpace &space);
 
   static dReal OC_infinity;
@@ -62,12 +58,6 @@ PUBLISHED:
   static int rand_get_seed() {return dRandGetSeed();};
 
   static void rand_set_seed(int s) {dRandSetSeed(s);};
-  
-private:
-#ifdef HAVE_PYTHON
-  static void near_callback(void*, dGeomID, dGeomID);
-  static PyObject* _python_callback;
-#endif
 };
 
 #endif

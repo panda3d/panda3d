@@ -16,7 +16,7 @@
 class EXPCL_PANDAODE OdeAMotorJoint : public OdeJoint {
   friend class OdeJoint;
 
-private:
+public:
   OdeAMotorJoint(dJointID id);
 
 PUBLISHED:

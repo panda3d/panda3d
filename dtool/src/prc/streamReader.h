@@ -70,6 +70,7 @@ PUBLISHED:
   BLOCKING size_t extract_bytes(unsigned char *into, size_t size);
 
   BLOCKING string readline();
+  EXTENSION(BLOCKING PyObject *readlines());
 
 private:
   istream *_in;

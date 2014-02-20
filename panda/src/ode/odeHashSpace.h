@@ -31,7 +31,7 @@ class EXPCL_PANDAODE OdeHashSpace : public OdeSpace {
   friend class OdeSpace;
   friend class OdeGeom;
 
-private:
+public:
   OdeHashSpace(dSpaceID id);
 
 PUBLISHED:

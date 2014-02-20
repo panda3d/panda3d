@@ -90,6 +90,7 @@ public:
     F_iter             = 0x0100,
     F_getbuffer        = 0x0200,
     F_releasebuffer    = 0x0400,
+    F_compare_to       = 0x0800,
   };
 
   typedef vector<Parameter> Parameters;
@@ -113,7 +114,7 @@ public:
   string _reported_name;
   string _wrapper_name;
   FunctionWrapperIndex _wrapper_index;
-  
+
   bool _return_value_needs_management;
   FunctionIndex _return_value_destructor;
   bool _manage_reference_count;

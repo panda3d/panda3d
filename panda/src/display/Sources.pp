@@ -27,8 +27,8 @@
     graphicsDevice.h graphicsDevice.I \
     graphicsPipe.I graphicsPipe.h  \
     graphicsPipeSelection.I graphicsPipeSelection.h \
-    graphicsStateGuardian.I \
-    graphicsStateGuardian.h \
+    graphicsStateGuardian.I graphicsStateGuardian.h \
+    graphicsStateGuardian_ext.cxx graphicsStateGuardian_ext.h \
     graphicsThreadingModel.I graphicsThreadingModel.h \
     graphicsWindow.I graphicsWindow.h \
     graphicsWindowInputDevice.I  \

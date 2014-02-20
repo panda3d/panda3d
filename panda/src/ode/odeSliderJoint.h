@@ -15,7 +15,7 @@
 class EXPCL_PANDAODE OdeSliderJoint : public OdeJoint {
   friend class OdeJoint;
 
-private:
+public:
   OdeSliderJoint(dJointID id);
 
 PUBLISHED:

@@ -6,7 +6,7 @@
   #define TARGET p3express
   #define USE_PACKAGES zlib openssl tar
   
-  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx $[TARGET]_ext_composite.cxx
 
   #define SOURCES \
     buffer.I buffer.h \
@@ -31,6 +31,7 @@
     memoryUsage.I memoryUsage.h \
     memoryUsagePointerCounts.I memoryUsagePointerCounts.h \
     memoryUsagePointers.I memoryUsagePointers.h \
+    memoryUsagePointers_ext.h \
     multifile.I multifile.h \
     namable.I \
     namable.h \
@@ -51,10 +52,11 @@
     pta_int.h \
     pta_uchar.h pta_double.h pta_float.h \
     pta_stdfloat.h \
-    ramfile.I ramfile.h \
+    ramfile.I ramfile.h ramfile_ext.h \
     referenceCount.I referenceCount.h \
     subStream.I subStream.h subStreamBuf.h \
     subfileInfo.h subfileInfo.I \
+    streamReader_ext.h \
     temporaryFile.h temporaryFile.I \
     threadSafePointerTo.I threadSafePointerTo.h \
     threadSafePointerToBase.I threadSafePointerToBase.h \
@@ -70,7 +72,7 @@
     virtualFileMountSystem.h virtualFileMountSystem.I \
     virtualFileSimple.h virtualFileSimple.I \
     virtualFileSystem.h virtualFileSystem.I \
-    virtualFileSystem_ext.h virtualFileSystem_ext.cxx \
+    virtualFileSystem_ext.h \
     weakPointerCallback.I weakPointerCallback.h \
     weakPointerTo.I weakPointerTo.h \
     weakPointerToBase.I weakPointerToBase.h \
@@ -92,6 +94,7 @@
     fileReference.cxx \
     hashGeneratorBase.cxx hashVal.cxx \
     memoryInfo.cxx memoryUsage.cxx memoryUsagePointerCounts.cxx \
+    memoryUsagePointers_ext.cxx \
     memoryUsagePointers.cxx multifile.cxx \
     namable.cxx \
     nodePointerTo.cxx \
@@ -109,8 +112,10 @@
     profileTimer.cxx \
     pta_int.cxx \
     pta_uchar.cxx pta_double.cxx pta_float.cxx \
+    ramfile_ext.cxx \
     ramfile.cxx \
     referenceCount.cxx \
+    streamReader_ext.cxx \
     subStream.cxx subStreamBuf.cxx \
     subfileInfo.cxx \
     temporaryFile.cxx \
@@ -125,6 +130,7 @@
     virtualFileMountRamdisk.cxx \
     virtualFileMountSystem.cxx \
     virtualFileSimple.cxx virtualFileSystem.cxx \
+    virtualFileSystem_ext.cxx \
     weakPointerCallback.cxx \
     weakPointerTo.cxx \
     weakPointerToBase.cxx \

@@ -29,7 +29,7 @@
 class EXPCL_PANDAODE OdeConvexGeom : public OdeGeom {
   friend class OdeGeom;
 
-private:
+public:
   OdeConvexGeom(dGeomID id);
 
 PUBLISHED:

@@ -24,6 +24,7 @@
      eggCurve.I eggCurve.h eggData.I eggData.h  \
      eggExternalReference.I eggExternalReference.h  \
      eggFilenameNode.I eggFilenameNode.h eggGroup.I eggGroup.h  \
+     eggGroupNode_ext.h \
      eggGroupNode.I eggGroupNode.h eggGroupUniquifier.h  \
      eggLine.I eggLine.h \
      eggMaterial.I eggMaterial.h eggMaterialCollection.I  \
@@ -69,7 +70,8 @@
      eggCompositePrimitive.cxx \
      eggCoordinateSystem.cxx  \
      eggCurve.cxx eggData.cxx eggExternalReference.cxx  \
-     eggFilenameNode.cxx eggGroup.cxx eggGroupNode.cxx  \
+     eggFilenameNode.cxx eggGroup.cxx  \
+     eggGroupNode_ext.cxx eggGroupNode.cxx  \
      eggGroupUniquifier.cxx eggLine.cxx eggMaterial.cxx  \
      eggMaterialCollection.cxx \
      eggMesher.cxx \
@@ -106,7 +108,8 @@
     eggCoordinateSystem.I eggCoordinateSystem.h eggCurve.I \
     eggCurve.h eggData.I eggData.h eggExternalReference.I \
     eggExternalReference.h eggFilenameNode.I eggFilenameNode.h \
-    eggGroup.I eggGroup.h eggGroupNode.I eggGroupNode.h \
+    eggGroup.I eggGroup.h \
+    eggGroupNode_ext.h eggGroupNode.I eggGroupNode.h \
     eggGroupUniquifier.h \
     eggLine.I eggLine.h \
     eggMaterial.I \

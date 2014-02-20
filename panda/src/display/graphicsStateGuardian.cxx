@@ -59,13 +59,6 @@
 #include <algorithm>
 #include <limits.h>
 
-#ifdef HAVE_PYTHON
-#include "py_panda.h"
-#ifndef CPPPARSER
-IMPORT_THIS struct Dtool_PyTypedObject Dtool_Texture;
-#endif
-#endif  // HAVE_PYTHON
-
 PStatCollector GraphicsStateGuardian::_vertex_buffer_switch_pcollector("Vertex buffer switch:Vertex");
 PStatCollector GraphicsStateGuardian::_index_buffer_switch_pcollector("Vertex buffer switch:Index");
 PStatCollector GraphicsStateGuardian::_load_vertex_buffer_pcollector("Draw:Transfer data:Vertex buffer");
@@ -247,10 +240,10 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   // The default is no shader support.
   _auto_detect_shader_model = SM_00;
   _shader_model = SM_00;
-  
+
   _gamma = 1.0f;
   _texture_quality_override = Texture::QL_default;
-  
+
   _shader_generator = NULL;
 }
 
@@ -435,41 +428,6 @@ void GraphicsStateGuardian::
 restore_gamma() {
 }
 
-#ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_prepared_textures
-//       Access: Published
-//  Description: Returns a Python list of all of the
-//               currently-prepared textures within the GSG.
-////////////////////////////////////////////////////////////////////
-PyObject *GraphicsStateGuardian::
-get_prepared_textures() const {
-  ReMutexHolder holder(_prepared_objects->_lock);
-  size_t num_textures = _prepared_objects->_prepared_textures.size();
-  PyObject *list = PyList_New(num_textures);
-
-  size_t i = 0;
-  PreparedGraphicsObjects::Textures::const_iterator ti;
-  for (ti = _prepared_objects->_prepared_textures.begin();
-       ti != _prepared_objects->_prepared_textures.end();
-       ++ti) {
-    PT(Texture) tex = (*ti)->get_texture();
-
-    PyObject *element = 
-      DTool_CreatePyInstanceTyped(tex, Dtool_Texture,
-                                  true, false, tex->get_type_index());
-    tex->ref();
-
-    nassertr(i < num_textures, NULL);
-    PyList_SetItem(list, i, element);
-    ++i;
-  }
-  nassertr(i == num_textures, NULL);
-
-  return list;
-}
-#endif  // HAVE_PYTHON
-
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::traverse_prepared_textures
 //       Access: Public
@@ -485,7 +443,7 @@ traverse_prepared_textures(GraphicsStateGuardian::TextureCallback *func,
   for (ti = _prepared_objects->_prepared_textures.begin();
        ti != _prepared_objects->_prepared_textures.end();
        ++ti) {
-    bool result = (*func)(*ti,callback_arg);
+    bool result = (*func)(*ti, callback_arg);
     if (!result) {
       return;
     }
@@ -2473,11 +2431,11 @@ determine_target_texture() {
            target_tex_gen != (TexGenAttrib *)NULL);
   _target_texture = target_texture;
   _target_tex_gen = target_tex_gen;
-  
+
   if (_has_texture_alpha_scale) {
     PT(TextureStage) stage = get_alpha_scale_texture_stage();
     PT(Texture) texture = TexturePool::get_alpha_scale_map();
-    
+
     _target_texture = DCAST(TextureAttrib, _target_texture->add_on_stage(stage, texture));
     _target_tex_gen = DCAST(TexGenAttrib, _target_tex_gen->add_stage
                                (stage, TexGenAttrib::M_constant, LTexCoord3(_current_color_scale[3], 0.0f, 0.0f)));
@@ -2801,6 +2759,9 @@ string GraphicsStateGuardian::get_driver_renderer() {
 //     Function: GraphicsStateGuardian::get_driver_version
 //       Access: Public, Virtual
 //  Description: Returns driver version
+//               This has an implementation-defined meaning, and may
+//               be "0" if the particular graphics implementation
+//               does not provide a way to query this information.
 ////////////////////////////////////////////////////////////////////
 string GraphicsStateGuardian::
 get_driver_version() {
@@ -2810,7 +2771,10 @@ get_driver_version() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_driver_version_major
 //       Access: Public, Virtual
-//  Description: Returns major version of the video driver
+//  Description: Returns major version of the video driver.
+//               This has an implementation-defined meaning, and may
+//               be -1 if the particular graphics implementation
+//               does not provide a way to query this information.
 ////////////////////////////////////////////////////////////////////
 int GraphicsStateGuardian::
 get_driver_version_major() {
@@ -2820,7 +2784,10 @@ get_driver_version_major() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_driver_version_minor
 //       Access: Public, Virtual
-//  Description: Returns the minor version of the video driver
+//  Description: Returns the minor version of the video driver.
+//               This has an implementation-defined meaning, and may
+//               be -1 if the particular graphics implementation
+//               does not provide a way to query this information.
 ////////////////////////////////////////////////////////////////////
 int GraphicsStateGuardian::
 get_driver_version_minor() {
@@ -2830,7 +2797,7 @@ get_driver_version_minor() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_driver_shader_version_major
 //       Access: Public, Virtual
-//  Description: Returns the major version of the shader model
+//  Description: Returns the major version of the shader model.
 ////////////////////////////////////////////////////////////////////
 int GraphicsStateGuardian::
 get_driver_shader_version_major() {
@@ -2840,7 +2807,7 @@ get_driver_shader_version_major() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_driver_shader_version_minor
 //       Access: Public, Virtual
-//  Description: Returns the minor version of the shader model
+//  Description: Returns the minor version of the shader model.
 ////////////////////////////////////////////////////////////////////
 int GraphicsStateGuardian::
 get_driver_shader_version_minor() {

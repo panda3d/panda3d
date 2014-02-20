@@ -113,6 +113,8 @@ PUBLISHED:
   EggNode *get_first_child();
   EggNode *get_next_child();
 
+  EXTENSION(PyObject *get_children() const);
+
   EggNode *add_child(EggNode *node);
   PT(EggNode) remove_child(EggNode *node);
   void steal_children(EggGroupNode &other);

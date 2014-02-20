@@ -46,9 +46,9 @@
 #include "occlusionQueryContext.h"
 #include "stencilRenderStates.h"
 #include "loader.h"
-#include "textureAttrib.h"
-#include "texGenAttrib.h"
 #include "shaderAttrib.h"
+#include "texGenAttrib.h"
+#include "textureAttrib.h"
 
 class DrawableRegion;
 class GraphicsEngine;
@@ -179,9 +179,7 @@ PUBLISHED:
   INLINE void set_texture_quality_override(Texture::QualityLevel quality_level);
   INLINE Texture::QualityLevel get_texture_quality_override() const;
 
-#ifdef HAVE_PYTHON
-  PyObject *get_prepared_textures() const;
-#endif
+  EXTENSION(PyObject *get_prepared_textures() const);
   typedef bool TextureCallback(TextureContext *tc, void *callback_arg);
   void traverse_prepared_textures(TextureCallback *func, void *callback_arg);
 

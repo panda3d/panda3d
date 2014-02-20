@@ -35,7 +35,7 @@ PUBLISHED:
 
 #ifdef HAVE_PYTHON
   NodePathCollection(PyObject *self, PyObject *sequence);
-  PyObject *__reduce__(PyObject *self) const;
+  EXTENSION(PyObject *__reduce__(PyObject *self) const);
 #endif
 
   void add_path(const NodePath &node_path);
@@ -76,6 +76,10 @@ PUBLISHED:
   CollideMask get_collide_mask() const;
   void set_collide_mask(CollideMask new_mask, CollideMask bits_to_change = CollideMask::all_on(),
                         TypeHandle node_type = TypeHandle::none());
+
+  bool calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point) const;
+
+  EXTENSION(PyObject *get_tight_bounds() const);
 
   void set_texture(Texture *tex, int priority = 0);
   void set_texture(TextureStage *stage, Texture *tex, int priority = 0);

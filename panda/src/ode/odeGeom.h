@@ -50,7 +50,7 @@ class EXPCL_PANDAODE OdeGeom : public TypedObject {
   friend class OdeUtil;
   friend class OdeCollisionEntry;
 
-protected:
+public:
   OdeGeom(dGeomID id);
 
 PUBLISHED:
@@ -87,6 +87,7 @@ PUBLISHED:
   INLINE LMatrix3f get_rotation() const;
   INLINE LQuaternionf get_quaternion() const;
   INLINE void get_AABB(LVecBase3f &min, LVecBase3f &max) const;
+  EXTENSION(INLINE PyObject *get_AA_bounds() const);
   INLINE int is_space();
   INLINE int get_class() const;
   INLINE void set_category_bits(const BitMask32 &bits);
@@ -109,21 +110,22 @@ PUBLISHED:
   INLINE LPoint3f get_offset_position() const;
   INLINE LMatrix3f get_offset_rotation() const;
   INLINE LQuaternionf get_offset_quaternion() const;
-  
+
   //int get_surface_type() ;
   //int get_collide_id() ;
   //int set_collide_id( int collide_id);
   //void set_surface_type( int surface_type);
-  
+
   //int test_collide_id( int collide_id);
 
-
   OdeSpace get_space() const;
+  EXTENSION(INLINE PyObject *get_converted_space() const);
 
   virtual void write(ostream &out = cout, unsigned int indent=0) const;
   operator bool () const;
   INLINE int compare_to(const OdeGeom &other) const;
 
+  EXTENSION(PyObject *convert() const);
   OdeBoxGeom convert_to_box() const;
   OdeCappedCylinderGeom convert_to_capped_cylinder() const;
   // OdeConvexGeom convert_to_convex() const;
@@ -136,8 +138,6 @@ PUBLISHED:
   OdeSimpleSpace convert_to_simple_space() const;
   OdeHashSpace convert_to_hash_space() const;
   OdeQuadTreeSpace convert_to_quad_tree_space() const;
-  
-  
 
 public:
   INLINE static int get_geom_class() { return -1; };

@@ -179,12 +179,10 @@ PUBLISHED:
   INLINE NodePath(const NodePath &copy);
   INLINE void operator = (const NodePath &copy);
 
-#ifdef HAVE_PYTHON
-  NodePath __copy__() const;
-  PyObject *__deepcopy__(PyObject *self, PyObject *memo) const;
-  PyObject *__reduce__(PyObject *self) const;
-  PyObject *__reduce_persist__(PyObject *self, PyObject *pickler) const;
-#endif
+  EXTENSION(NodePath __copy__() const);
+  EXTENSION(PyObject *__deepcopy__(PyObject *self, PyObject *memo) const);
+  EXTENSION(PyObject *__reduce__(PyObject *self) const);
+  EXTENSION(PyObject *__reduce_persist__(PyObject *self, PyObject *pickler) const);
 
   INLINE static NodePath not_found();
   INLINE static NodePath removed();
@@ -881,6 +879,8 @@ PUBLISHED:
   bool calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
                          Thread *current_thread = Thread::get_current_thread()) const;
 
+  EXTENSION(PyObject *get_tight_bounds() const);
+
   //  void analyze() const;
 
   int flatten_light();
@@ -898,18 +898,16 @@ PUBLISHED:
   INLINE bool has_net_tag(const string &key) const;
   NodePath find_net_tag(const string &key) const;
 
-#ifdef HAVE_PYTHON
-  INLINE PyObject *get_tag_keys() const;
-  INLINE void set_python_tag(const string &key, PyObject *value);
-  INLINE PyObject *get_python_tag(const string &key) const;
-  INLINE void get_python_tag_keys(vector_string &keys) const;
-  INLINE PyObject *get_python_tag_keys() const;
-  INLINE bool has_python_tag(const string &key) const;
-  INLINE void clear_python_tag(const string &key);
-  INLINE PyObject *get_net_python_tag(const string &key) const;
-  INLINE bool has_net_python_tag(const string &key) const;
-  NodePath find_net_python_tag(const string &key) const;
-#endif  // HAVE_PYTHON
+  EXTENSION(INLINE PyObject *get_tag_keys() const);
+  EXTENSION(INLINE void set_python_tag(const string &key, PyObject *value));
+  EXTENSION(INLINE PyObject *get_python_tag(const string &key) const);
+  EXTENSION(INLINE void get_python_tag_keys(vector_string &keys) const);
+  EXTENSION(INLINE PyObject *get_python_tag_keys() const);
+  EXTENSION(INLINE bool has_python_tag(const string &key) const);
+  EXTENSION(INLINE void clear_python_tag(const string &key));
+  EXTENSION(INLINE PyObject *get_net_python_tag(const string &key) const);
+  EXTENSION(INLINE bool has_net_python_tag(const string &key) const);
+  EXTENSION(NodePath find_net_python_tag(const string &key) const);
 
   INLINE void list_tags() const;
 
@@ -1014,13 +1012,6 @@ private:
 };
 
 INLINE ostream &operator << (ostream &out, const NodePath &node_path);
-
-#ifdef HAVE_PYTHON
-BEGIN_PUBLISH
-NodePath py_decode_NodePath_from_bam_stream(const string &data);
-NodePath py_decode_NodePath_from_bam_stream_persist(PyObject *unpickler, const string &data);
-END_PUBLISH
-#endif
 
 #include "nodePath.I"
 

@@ -49,7 +49,7 @@ bool DtoolCanThisBeAPandaInstance(PyObject *self) {
 ////////////////////////////////////////////////////////////////////////
 void DTOOL_Call_ExtractThisPointerForType(PyObject *self, Dtool_PyTypedObject *classdef, void **answer) {
   if (DtoolCanThisBeAPandaInstance(self)) {
-    *answer = ((Dtool_PyInstDef *)self)->_My_Type->_Dtool_UpcastInterface(self,classdef);
+    *answer = ((Dtool_PyInstDef *)self)->_My_Type->_Dtool_UpcastInterface(self, classdef);
   } else {
     *answer = NULL;
   }
@@ -298,7 +298,7 @@ void *DTOOL_Call_GetPointerThis(PyObject *self) {
 // this function relies on the behavior of typed objects in the panda system.
 //
 ////////////////////////////////////////////////////////////////////////
-PyObject *DTool_CreatePyInstanceTyped(void *local_this_in, Dtool_PyTypedObject & known_class_type, bool memory_rules, bool is_const, int RunTimeType) {     
+PyObject *DTool_CreatePyInstanceTyped(void *local_this_in, Dtool_PyTypedObject & known_class_type, bool memory_rules, bool is_const, int RunTimeType) {
   if (local_this_in == NULL) {
     // Let's not be stupid..
     PyErr_SetString(PyExc_TypeError, "C Function Return Null 'this'");
@@ -339,7 +339,7 @@ PyObject *DTool_CreatePyInstanceTyped(void *local_this_in, Dtool_PyTypedObject &
   // if we get this far .. just wrap the thing in the known type ??
   //    better than aborting...I guess....
   /////////////////////////////////////////////////////
-  Dtool_PyInstDef * self = (Dtool_PyInstDef *) known_class_type.As_PyTypeObject().tp_new(&known_class_type.As_PyTypeObject(), NULL, NULL);
+  Dtool_PyInstDef *self = (Dtool_PyInstDef *) known_class_type.As_PyTypeObject().tp_new(&known_class_type.As_PyTypeObject(), NULL, NULL);
   if (self != NULL) {
     self->_ptr_to_object = local_this_in;
     self->_memory_rules = memory_rules;

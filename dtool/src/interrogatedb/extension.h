@@ -17,10 +17,7 @@
 
 #include "dtoolbase.h"
 
-struct _object;
-typedef struct _object PyObject;
-
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////
 //       Class : ExtensionBase
 // Description : This is where all extensions should derive from.
 //               It defines the _self and _this members that can
@@ -30,7 +27,6 @@ template<class T>
 class EXPCL_DTOOLCONFIG ExtensionBase {
 public:
   T * _this;
-  PyObject * _self;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -52,10 +48,9 @@ class EXPCL_DTOOLCONFIG Extension : public ExtensionBase<T> {
 ////////////////////////////////////////////////////////////////////
 template<class T>
 inline Extension<T>
-invoke_extension(T *ptr, PyObject *self = NULL) {
+invoke_extension(T *ptr) {
   Extension<T> ext;
   ext._this = ptr;
-  ext._self = self;
   return ext;
 }
 
@@ -65,10 +60,9 @@ invoke_extension(T *ptr, PyObject *self = NULL) {
 ////////////////////////////////////////////////////////////////////
 template<class T>
 inline const Extension<T>
-invoke_extension(const T *ptr, PyObject *self = NULL) {
+invoke_extension(const T *ptr) {
   Extension<T> ext;
   ext._this = (T *) ptr;
-  ext._self = self;
   return ext;
 }
 

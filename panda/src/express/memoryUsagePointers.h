@@ -67,9 +67,7 @@ PUBLISHED:
   string get_type_name(int n) const;
   double get_age(int n) const;
 
-#ifdef HAVE_PYTHON
-  PyObject *get_python_pointer(int n) const;
-#endif
+  EXTENSION(PyObject *get_python_pointer(int n) const);
 
   void clear();
 

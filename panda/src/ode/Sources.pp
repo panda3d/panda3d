@@ -12,18 +12,21 @@
   #define USE_PACKAGES ode
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx \
-    $[TARGET]_composite2.cxx $[TARGET]_composite3.cxx
+    $[TARGET]_composite2.cxx $[TARGET]_composite3.cxx \
+    $[TARGET]_ext_composite.cxx
 
   #define SOURCES \
     ode_includes.h config_ode.h \
     odeWorld.I odeWorld.h \
     odeMass.I odeMass.h \
-    odeBody.I odeBody.h \
+    odeBody.I odeBody.h odeBody_ext.h \
     odeJointGroup.I odeJointGroup.h \
-    odeJoint.I odeJoint.h \
-    odeUtil.h \
+    odeJoint.I odeJoint.h odeJoint_ext.h \
+    odeUtil.h odeUtil_ext.h \
     odeSpace.I odeSpace.h \
+    odeSpace_ext.I odeSpace_ext.h \
     odeGeom.I odeGeom.h \
+    odeGeom_ext.I odeGeom_ext.h \
     odeSurfaceParameters.I odeSurfaceParameters.h \
     odeContactGeom.I odeContactGeom.h \
     odeContact.I odeContact.h \
@@ -55,11 +58,13 @@
 
   #define INCLUDED_SOURCES \
     config_ode.cxx \
-    odeWorld.cxx odeMass.cxx odeBody.cxx \
-    odeJointGroup.cxx odeJoint.cxx \
-    odeUtil.cxx \
-    odeSpace.cxx \
-    odeGeom.cxx \
+    odeWorld.cxx odeMass.cxx \
+    odeBody.cxx odeBody_ext.cxx \
+    odeJointGroup.cxx \
+    odeJoint.cxx odeJoint_ext.cxx \
+    odeUtil.cxx odeUtil_ext.cxx \
+    odeSpace.cxx odeSpace_ext.cxx \
+    odeGeom.cxx odeGeom_ext.cxx \
     odeSurfaceParameters.cxx \
     odeContactGeom.cxx odeContact.cxx \
     odeAMotorJoint.cxx odeBallJoint.cxx \
@@ -118,4 +123,3 @@
   #define IGATESCAN all
 
 #end lib_target
-

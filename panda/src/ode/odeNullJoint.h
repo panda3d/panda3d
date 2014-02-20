@@ -15,7 +15,7 @@
 class EXPCL_PANDAODE OdeNullJoint : public OdeJoint {
   friend class OdeJoint;
 
-private:
+public:
   OdeNullJoint(dJointID id);
 
 PUBLISHED:
