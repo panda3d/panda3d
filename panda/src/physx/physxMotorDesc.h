@@ -28,7 +28,7 @@
 //               - PhysxPulleyJoint
 //               - PhysxRevoluteJoint
 ////////////////////////////////////////////////////////////////////
-class PhysxMotorDesc {
+class EXPCL_PANDAPHYSX PhysxMotorDesc {
 
 PUBLISHED:
   INLINE PhysxMotorDesc();
