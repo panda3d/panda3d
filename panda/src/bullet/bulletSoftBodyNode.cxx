@@ -1135,3 +1135,26 @@ append_angular_joint(BulletBodyNode *body, const LVector3 &axis, PN_stdfloat erp
   _soft->appendAngularJoint(as, ptr);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BulletSoftBodyNode::set_wind_velocity
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void BulletSoftBodyNode::
+set_wind_velocity(const LVector3 &velocity) {
+
+  nassertv(!velocity.is_nan());
+  _soft->setWindVelocity(LVecBase3_to_btVector3(velocity));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletSoftBodyNode::get_wind_velocity
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+LVector3 BulletSoftBodyNode::
+get_wind_velocity() const {
+
+  return btVector3_to_LVector3(_soft->getWindVelocity());
+}
+

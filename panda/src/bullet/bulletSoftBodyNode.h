@@ -96,6 +96,9 @@ PUBLISHED:
   void add_velocity(const LVector3 &velocity);
   void add_velocity(const LVector3 &velocity, int node);
 
+  void set_wind_velocity(const LVector3 &velocity);
+  LVector3 get_wind_velocity() const;
+
   void set_pose(bool bvolume, bool bframe);
 
   BoundingBox get_aabb() const;
