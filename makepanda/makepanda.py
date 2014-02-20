@@ -4158,7 +4158,6 @@ if (PkgSkip("ODE")==0 and not RUNTIME):
   TargetAdd('p3ode_composite1.obj', opts=OPTS, input='p3ode_composite1.cxx')
   TargetAdd('p3ode_composite2.obj', opts=OPTS, input='p3ode_composite2.cxx')
   TargetAdd('p3ode_composite3.obj', opts=OPTS, input='p3ode_composite3.cxx')
-  TargetAdd('p3ode_ext_composite.obj', opts=OPTS, input='p3ode_ext_composite.cxx')
 
   OPTS=['DIR:panda/src/ode', 'ODE']
   IGATEFILES=GetDirectoryContents('panda/src/ode', ["*.h", "*_composite*.cxx"])
@@ -4168,6 +4167,7 @@ if (PkgSkip("ODE")==0 and not RUNTIME):
   TargetAdd('libpandaode.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libpandaode.in', opts=['IMOD:ode', 'ILIB:libpandaode', 'SRCDIR:panda/src/ode'])
   TargetAdd('libpandaode_igate.obj', input='libpandaode.in', opts=["DEPENDENCYONLY"])
+  TargetAdd('p3ode_ext_composite.obj', opts=OPTS, input='p3ode_ext_composite.cxx')
 
 #
 # DIRECTORY: panda/metalibs/pandaode/
@@ -4189,12 +4189,12 @@ if (PkgSkip("ODE")==0 and not RUNTIME):
   TargetAdd('ode_module.obj', opts=['IMOD:ode', 'ILIB:ode'])
 
   TargetAdd('ode.pyd', input='ode_module.obj')
-  TargetAdd('ode.pyd', input='p3ode_ext_composite.obj')
   TargetAdd('ode.pyd', input='libpandaode_igate.obj')
+  TargetAdd('ode.pyd', input='p3ode_ext_composite.obj')
   TargetAdd('ode.pyd', input='libpandaode.dll')
   TargetAdd('ode.pyd', input='core.pyd')
   TargetAdd('ode.pyd', input=COMMON_PANDA_LIBS)
-  TargetAdd('ode.pyd', opts=['PYTHON', 'ODE'])
+  TargetAdd('ode.pyd', opts=['PYTHON', 'WINUSER', 'ODE'])
 
 #
 # DIRECTORY: panda/src/bullet/
