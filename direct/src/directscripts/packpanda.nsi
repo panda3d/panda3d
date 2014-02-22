@@ -111,6 +111,9 @@ Section "${SMDIRECTORY}" SecCore
         File /r /x CVS /x Opt?-Win32 "${PSOURCE}\direct\src\*.py"
         File "${PANDA}\tmp\__init__.py"
         !endif
+        Delete "$INSTDIR\panda3d.py"
+        Delete "$INSTDIR\panda3d.pyc"
+        Delete "$INSTDIR\panda3d.pyo"
         SetOutPath $INSTDIR\pandac
         File /r "${PANDA}\pandac\*.py"
         SetOutPath $INSTDIR\panda3d
