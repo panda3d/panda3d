@@ -136,7 +136,6 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built"):
         oscmd("mkdir -m 0755 -p "+destdir+"/usr/local/libdata/ldconfig")
     else:
         oscmd("mkdir -m 0755 -p "+destdir+"/etc/ld.so.conf.d")
-    WriteFile(destdir+prefix+"/share/panda3d/direct/__init__.py", "")
     Configrc = ReadFile(outputdir+"/etc/Config.prc")
     Configrc = Configrc.replace("model-path    $THIS_PRC_DIR/..", "model-path    "+prefix+"/share/panda3d")
     if (sys.platform.startswith("freebsd")):
