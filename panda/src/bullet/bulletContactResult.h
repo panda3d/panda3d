@@ -28,8 +28,12 @@
 ////////////////////////////////////////////////////////////////////
 struct EXPCL_PANDABULLET BulletContact {
 
+public:
+  BulletContact();
+  BulletContact(const BulletContact &other);
+
 PUBLISHED:
-  INLINE const BulletManifoldPoint *get_manifold_point() const;
+  INLINE BulletManifoldPoint &get_manifold_point();
   INLINE PandaNode *get_node0() const;
   INLINE PandaNode *get_node1() const;
   INLINE const int get_idx0() const;
@@ -38,9 +42,13 @@ PUBLISHED:
   INLINE const int get_part_id1() const;
 
 private:
-  btManifoldPoint _mp;
-  const btCollisionObject *_obj0;
-  const btCollisionObject *_obj1;
+  static btManifoldPoint _empty;
+
+  BulletManifoldPoint _mp;
+
+  PT(PandaNode) _node0;
+  PT(PandaNode) _node1;
+
   int _part_id0;
   int _part_id1;
   int _idx0;
@@ -57,7 +65,7 @@ struct EXPCL_PANDABULLET BulletContactResult : public btCollisionWorld::ContactR
 
 PUBLISHED:
   INLINE int get_num_contacts() const;
-  INLINE const BulletContact &get_contact(int idx) const;
+  INLINE BulletContact &get_contact(int idx);
   MAKE_SEQ(get_contacts, get_num_contacts, get_contact);
 
 public:
