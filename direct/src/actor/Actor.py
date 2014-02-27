@@ -566,7 +566,7 @@ class Actor(DirectObject, NodePath):
         # and sort them every time somebody asks for the list
         self.__sortedLODNames = self.__partBundleDict.keys()
         # Reverse sort the doing a string->int
-        def sortFunc(x, y):
+        def sortKey(x):
             if not str(x).isdigit():
                 smap = {'h':3,
                         'm':2,
@@ -574,19 +574,16 @@ class Actor(DirectObject, NodePath):
                         'f':0}
 
                 """
-                sx = smap.get(x[0],None)
-                sy = smap.get(y[0],None)
+                sx = smap.get(x[0], None)
 
                 if sx is None:
                     self.notify.error('Invalid lodName: %s' % x)
-                if sy is None:
-                    self.notify.error('Invalid lodName: %s' % y)
                 """
-                return cmp(smap[y[0]], smap[x[0]])
+                return smap[x[0]]
             else:
-                return cmp (int(y), int(x))
+                return int(x)
 
-        self.__sortedLODNames.sort(sortFunc)
+        self.__sortedLODNames.sort(key=sortKey, reverse=True)
 
     def getLODNames(self):
         """

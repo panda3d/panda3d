@@ -57,9 +57,10 @@ class FunctionInterval(Interval.Interval):
         self.function = function
             
         # Create a unique name for the interval if necessary
-        if (name == None):
+        if name is None:
             name = self.makeUniqueName(function)
-        assert isinstance(name, types.StringType)
+        assert isinstance(name, str)
+
         # Record any arguments
         self.extraArgs = extraArgs
         self.kw = kw
