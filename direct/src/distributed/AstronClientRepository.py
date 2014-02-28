@@ -45,9 +45,9 @@ class AstronClientRepository(ClientRepositoryBase):
             self.handleEnterObjectRequired(di)
         elif msgType == CLIENT_ENTER_OBJECT_REQUIRED_OWNER:
             self.handleEnterObjectRequiredOwner(di)
+        elif msgType == CLIENT_OBJECT_SET_FIELD:
+            self.handleUpdateField(di)
         # FIXME: These are supposedly handled in cConnectionRepository
-        #elif msgType == CLIENT_OBJECT_SET_FIELD:
-        #    self.handleObjectSetField(di)
         #elif msgType == CLIENT_OBJECT_SET_FIELDS:
         #    self.handleObjectSetFields(di)
         elif msgType == CLIENT_OBJECT_LEAVING:
@@ -134,6 +134,10 @@ class AstronClientRepository(ClientRepositoryBase):
         # some code that auto-unpacks them.
         field_name = self.get_dc_file().get_field_by_index(field_id).get_name()
         # FIXME: You actually need to figure out the fields types and unpack them!
+        print("do_id: %d" % (do_id,))
+        print("do   : %s" % (str(do),))
+        print("do_t : %s" % (type(do),))
+        print("field: %s" % (field_name,))
         self.sendUpdate(field_name, [fieldArguments])
 
     def handleObjectSetFields(self, di):
@@ -163,6 +167,12 @@ class AstronClientRepository(ClientRepositoryBase):
     #
     # Sending messages
     #
+
+    def sendUpdate(self, distObj, fieldName, args):
+        """ Sends a normal update for a single field. """
+        dg = distObj.dclass.clientFormatUpdate(
+            fieldName, distObj.doId, args)
+        self.send(dg)
 
     # FIXME: The version string should default to a .prc variable.
     def sendHello(self, version_string):
