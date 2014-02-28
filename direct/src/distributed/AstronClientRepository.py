@@ -10,6 +10,15 @@ class AstronClientRepository(ClientRepositoryBase):
     """
     The Astron implementation of a clients repository for
     communication with an Astron ClientAgent.
+    
+    This repo will emit events for:
+    * CLIENT_HELLO_RESP
+    * CLIENT_EJECT ( int error_code, string reason )
+    * CLIENT_DONE_INTEREST_RESP" ( int context, int interest_id )
+    * CLIENT_OBJECT_LEAVING ( int do_id )
+    * CLIENT_ADD_INTEREST ( context, interest_id, parent_id, zone_id )
+    * CLIENT_REMOVE_INTEREST ( context, interest_id )
+    * LOST_CONNECTION ()
     """
 
     notify = DirectNotifyGlobal.directNotify.newCategory("ClientRepository")
@@ -47,22 +56,35 @@ class AstronClientRepository(ClientRepositoryBase):
             self.handleEnterObjectRequiredOwner(di)
         elif msgType == CLIENT_OBJECT_SET_FIELD:
             self.handleUpdateField(di)
-        # FIXME: These are supposedly handled in cConnectionRepository
-        #elif msgType == CLIENT_OBJECT_SET_FIELDS:
-        #    self.handleObjectSetFields(di)
+        # FIXME: This is supposedly handled in cConnectionRepository; see CLIENT_OBJECT_SET_FIELD
+        # elif msgType == CLIENT_OBJECT_SET_FIELDS:
+        #     self.handleObjectSetFields(di)
         elif msgType == CLIENT_OBJECT_LEAVING:
-            self.handleObjectLeaving(di)
+            # FIXME: Doesn't this need to be handled in the repository?
+            do_id = di.get_uint32()
+            messenger.send("CLIENT_OBJECT_LEAVING", [do_id])
         elif msgType == CLIENT_OBJECT_LOCATION:
+            # FIXME: What does this even do???
             self.handleObjectLocation(di)
         elif msgType == CLIENT_ADD_INTEREST:
-            self.handleAddInterest(di)
+            # FIXME: Doesn't this need to be handled in the repository?
+            context = di.get_uint32()
+            interest_id = di.get_uint16()
+            parent_id = di.get_uint32()
+            zone_id = di.get_uint32()
+            messenger.send("CLIENT_ADD_INTEREST", [context, interest_id, parent_id, zone_id])
         elif msgType == CLIENT_ADD_INTEREST_MULTIPLE:
-            self.handleAddInterestMultiple(di)
-        elif msgType == CLIENT_REMOVE_INTEREST:
-            self.handleRemoveInterest(di)
-        elif msgType == CLIENT_DONE_INTEREST_RESP:
-            # FIXME: Unpack and send event
+            # FIXME: Informative event here
             pass
+        elif msgType == CLIENT_REMOVE_INTEREST:
+            # FIXME: Doesn't this need to be handled in the repository?
+            context = di.get_uint32()
+            interest_id = di.get_uint16()
+            messenger.send("CLIENT_REMOVE_INTEREST", [context, interest_id])
+        elif msgType == CLIENT_DONE_INTEREST_RESP:
+            context = di.get_uint32()
+            interest_id = di.get_uint16 ()
+            messenger.send("CLIENT_DONE_INTEREST_RESP", [context, interest_id])
         else:
             self.notify.error("Got unknown message type %d!" % (msgType,))
 
@@ -125,42 +147,7 @@ class AstronClientRepository(ClientRepositoryBase):
             # updateRequiredFields calls announceGenerate
         return distObj
 
-    def handleObjectSetField(self, di):
-        do_id = di.getArg(STUint32)
-        field_id = di.getArg(STUint16)
-        # FIXME: Is this really the best way?
-        do = self.doId2do[do_id]
-        # FIXME: Figure out field types and unpack them, or use
-        # some code that auto-unpacks them.
-        field_name = self.get_dc_file().get_field_by_index(field_id).get_name()
-        # FIXME: You actually need to figure out the fields types and unpack them!
-        print("do_id: %d" % (do_id,))
-        print("do   : %s" % (str(do),))
-        print("do_t : %s" % (type(do),))
-        print("field: %s" % (field_name,))
-        self.sendUpdate(field_name, [fieldArguments])
-
-    def handleObjectSetFields(self, di):
-        # FIXME: Implement this!
-        pass
-
-    def handleObjectLeaving(self, di):
-        # FIXME: Implement this!
-        pass
-
     def handleObjectLocation(self, di):
-        # FIXME: Implement this!
-        pass
-
-    def handleAddInterest(self, di):
-        # FIXME: Implement this!
-        pass
-
-    def handleAddInterestMultiple(self, di):
-        # FIXME: Implement this!
-        pass
-
-    def handleRemoveInterest(self, di):
         # FIXME: Implement this!
         pass
 
@@ -213,4 +200,11 @@ class AstronClientRepository(ClientRepositoryBase):
         dg.add_uint32(context)
         dg.add_uint16(interest_id)
         self.send(dg)
+
+    #
+    # Other stuff
+    #
+    
+    def lostConnection(self):
+        messenger.send("LOST_CONNECTION")
 
