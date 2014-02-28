@@ -27,15 +27,15 @@ class AstronClientRepository(ClientRepositoryBase):
     # Message Handling
     #
     
-    #def handleDatagram(self, di):
-        #msgType = self.getMsgType()
+    def handleDatagram(self, di):
+        msgType = self.getMsgType()
+        self.handleMessageType(msgType, di)
 
     def handleMessageType(self, msgType, di):
 
         # These are the messages to a client that Astron specifies.
 
         if msgType == CLIENT_HELLO_RESP:
-            print("Hello back!")
             messenger.send("CLIENT_HELLO_RESP", [])
         elif msgType == CLIENT_EJECT:
             error_code = di.get_uint16()
@@ -60,9 +60,11 @@ class AstronClientRepository(ClientRepositoryBase):
             self.handleAddInterestMultiple(di)
         elif msgType == CLIENT_REMOVE_INTEREST:
             self.handleRemoveInterest(di)
+        elif msgType == CLIENT_DONE_INTEREST_RESP:
+            # FIXME: Unpack and send event
+            pass
         else:
-            print("Passing unknown message type "+str(msgType))
-            ClientRepositoryBase.handleMessageType(self, msgType, di)
+            self.notify.error("Got unknown message type %d!" % (msgType,))
 
         self.considerHeartbeat()
 
@@ -169,8 +171,6 @@ class AstronClientRepository(ClientRepositoryBase):
         dg.add_uint32(self.get_dc_file().get_hash())
         dg.add_string(version_string)
         self.send(dg)
-        # FIXME: Remove debug print
-        print("Hello!")
 
     def sendHeartbeat(self):
         datagram = PyDatagram()
