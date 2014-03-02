@@ -13,11 +13,12 @@ class AstronClientRepository(ClientRepositoryBase):
     
     This repo will emit events for:
     * CLIENT_HELLO_RESP
-    * CLIENT_EJECT ( int error_code, string reason )
-    * CLIENT_DONE_INTEREST_RESP" ( int context, int interest_id )
-    * CLIENT_OBJECT_LEAVING ( int do_id )
+    * CLIENT_EJECT ( error_code, reason )
+    * CLIENT_OBJECT_LEAVING ( do_id )
     * CLIENT_ADD_INTEREST ( context, interest_id, parent_id, zone_id )
+    * CLIENT_ADD_INTEREST_MULTIPLE ( icontext, interest_id, parent_id, [zone_ids] )
     * CLIENT_REMOVE_INTEREST ( context, interest_id )
+    * CLIENT_DONE_INTEREST_RESP ( context, interest_id )
     * LOST_CONNECTION ()
     """
 
@@ -64,28 +65,25 @@ class AstronClientRepository(ClientRepositoryBase):
             do_id = di.get_uint32()
             messenger.send("CLIENT_OBJECT_LEAVING", [do_id])
         elif msgType == CLIENT_OBJECT_LOCATION:
-            # FIXME: What does this even do???
             self.handleObjectLocation(di)
         elif msgType == CLIENT_ADD_INTEREST:
-            # FIXME: Does this need handling by the repository?
             context = di.get_uint32()
             interest_id = di.get_uint16()
             parent_id = di.get_uint32()
             zone_id = di.get_uint32()
             messenger.send("CLIENT_ADD_INTEREST", [context, interest_id, parent_id, zone_id])
         elif msgType == CLIENT_ADD_INTEREST_MULTIPLE:
-            # FIXME: Does this need handling by the repository?
             context = di.get_uint32()
             interest_id = di.get_uint16()
             parent_id = di.get_uint32()
             zone_ids = [di.get_uint32() for i in range(0, di.get_uint16())]
             messenger.send("CLIENT_ADD_INTEREST_MULTIPLE", [context, interest_id, parent_id, zone_ids])
         elif msgType == CLIENT_REMOVE_INTEREST:
-            # FIXME: Does this need handling by the repository?
             context = di.get_uint32()
             interest_id = di.get_uint16()
             messenger.send("CLIENT_REMOVE_INTEREST", [context, interest_id])
         elif msgType == CLIENT_DONE_INTEREST_RESP:
+            self.handleInterestDoneMessage(di) # Implemented in DoInterestManager.py
             context = di.get_uint32()
             interest_id = di.get_uint16 ()
             messenger.send("CLIENT_DONE_INTEREST_RESP", [context, interest_id])
