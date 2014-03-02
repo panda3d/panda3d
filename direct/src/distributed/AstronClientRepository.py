@@ -30,7 +30,6 @@ class AstronClientRepository(ClientRepositoryBase):
     def __init__(self, *args, **kwargs):
         ClientRepositoryBase.__init__(self, *args, **kwargs)
         base.finalExitCallbacks.append(self.shutdown)
-        # FIXME: Partial code from ClientRepository.py may be required here.
 
     #
     # Message Handling
@@ -56,28 +55,33 @@ class AstronClientRepository(ClientRepositoryBase):
             self.handleEnterObjectRequiredOwner(di)
         elif msgType == CLIENT_OBJECT_SET_FIELD:
             self.handleUpdateField(di)
-        # FIXME: This is supposedly handled in cConnectionRepository; see CLIENT_OBJECT_SET_FIELD
-        # elif msgType == CLIENT_OBJECT_SET_FIELDS:
-        #     self.handleObjectSetFields(di)
+        elif msgType == CLIENT_OBJECT_SET_FIELDS:
+            # FIXME: There is no implementation in the repository for
+            # updating multiple Fields.
+            self.notify.error("CLIENT_OBJECT_SET_FIELDS not implemented!")
         elif msgType == CLIENT_OBJECT_LEAVING:
-            # FIXME: Doesn't this need to be handled in the repository?
+            # FIXME: Does this need handling by the repository?
             do_id = di.get_uint32()
             messenger.send("CLIENT_OBJECT_LEAVING", [do_id])
         elif msgType == CLIENT_OBJECT_LOCATION:
             # FIXME: What does this even do???
             self.handleObjectLocation(di)
         elif msgType == CLIENT_ADD_INTEREST:
-            # FIXME: Doesn't this need to be handled in the repository?
+            # FIXME: Does this need handling by the repository?
             context = di.get_uint32()
             interest_id = di.get_uint16()
             parent_id = di.get_uint32()
             zone_id = di.get_uint32()
             messenger.send("CLIENT_ADD_INTEREST", [context, interest_id, parent_id, zone_id])
         elif msgType == CLIENT_ADD_INTEREST_MULTIPLE:
-            # FIXME: Informative event here
-            pass
+            # FIXME: Does this need handling by the repository?
+            context = di.get_uint32()
+            interest_id = di.get_uint16()
+            parent_id = di.get_uint32()
+            zone_ids = [di.get_uint32() for i in range(0, di.get_uint16())]
+            messenger.send("CLIENT_ADD_INTEREST_MULTIPLE", [context, interest_id, parent_id, zone_ids])
         elif msgType == CLIENT_REMOVE_INTEREST:
-            # FIXME: Doesn't this need to be handled in the repository?
+            # FIXME: Does this need handling by the repository?
             context = di.get_uint32()
             interest_id = di.get_uint16()
             messenger.send("CLIENT_REMOVE_INTEREST", [context, interest_id])
@@ -148,7 +152,7 @@ class AstronClientRepository(ClientRepositoryBase):
         return distObj
 
     def handleObjectLocation(self, di):
-        # FIXME: Implement this!
+        # FIXME: What does this do?
         pass
 
     #
