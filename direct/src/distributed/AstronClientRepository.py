@@ -57,12 +57,22 @@ class AstronClientRepository(ClientRepositoryBase):
         elif msgType == CLIENT_OBJECT_SET_FIELD:
             self.handleUpdateField(di)
         elif msgType == CLIENT_OBJECT_SET_FIELDS:
-            # FIXME: There is no implementation in the repository for
-            # updating multiple Fields.
+            do_id = di.getUint32()
+            field_count = di.getUint16()
+            for i in range(0, field_count):
+                field_id = di.getUint16()
+                field = self.get_dc_file().get_field_by_index(field_id)
+                print(type(field))
+                print(field)
+                # FIXME: Get field type, unpack value, create and send message.
+                # value = di.get?()
+                # Assemble new message
             self.notify.error("CLIENT_OBJECT_SET_FIELDS not implemented!")
         elif msgType == CLIENT_OBJECT_LEAVING:
-            # FIXME: Does this need handling by the repository?
             do_id = di.get_uint32()
+            dist_obj = self.doId2do.get(do_id)
+            dist_obj.delete()
+            self.deleteObject(do_id)
             messenger.send("CLIENT_OBJECT_LEAVING", [do_id])
         elif msgType == CLIENT_OBJECT_LOCATION:
             self.handleObjectLocation(di)
@@ -84,9 +94,6 @@ class AstronClientRepository(ClientRepositoryBase):
             messenger.send("CLIENT_REMOVE_INTEREST", [context, interest_id])
         elif msgType == CLIENT_DONE_INTEREST_RESP:
             self.handleInterestDoneMessage(di) # Implemented in DoInterestManager.py
-            context = di.get_uint32()
-            interest_id = di.get_uint16 ()
-            messenger.send("CLIENT_DONE_INTEREST_RESP", [context, interest_id])
         else:
             self.notify.error("Got unknown message type %d!" % (msgType,))
 
@@ -149,9 +156,42 @@ class AstronClientRepository(ClientRepositoryBase):
             # updateRequiredFields calls announceGenerate
         return distObj
 
-    def handleObjectLocation(self, di):
-        # FIXME: What does this do?
-        pass
+    def deleteObject(self, doId):
+        """
+        implementation copied from ClientRepository.py
+        
+        Removes the object from the client's view of the world.  This
+        should normally not be called directly except in the case of
+        error recovery, since the server will normally be responsible
+        for deleting and disabling objects as they go out of scope.
+
+        After this is called, future updates by server on this object
+        will be ignored (with a warning message).  The object will
+        become valid again the next time the server sends a generate
+        message for this doId.
+
+        This is not a distributed message and does not delete the
+        object on the server or on any other client.
+        """
+        if doId in self.doId2do:
+            # If it is in the dictionary, remove it.
+            obj = self.doId2do[doId]
+            # Remove it from the dictionary
+            del self.doId2do[doId]
+            # Disable, announce, and delete the object itself...
+            # unless delayDelete is on...
+            obj.deleteOrDelay()
+            if self.isLocalId(doId):
+                self.freeDoId(doId)
+        elif self.cache.contains(doId):
+            # If it is in the cache, remove it.
+            self.cache.delete(doId)
+            if self.isLocalId(doId):
+                self.freeDoId(doId)
+        else:
+            # Otherwise, ignore it
+            self.notify.warning(
+                "Asked to delete non-existent DistObj " + str(doId))
 
     #
     # Sending messages
