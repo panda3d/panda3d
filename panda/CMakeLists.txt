@@ -90,7 +90,7 @@ if(HAVE_FREETYPE)
   list(APPEND CORE_MODULE_COMPONENTS p3pnmtext)
 endif()
 
-add_python_module(core ${CORE_MODULE_COMPONENTS})
+add_python_module(core ${CORE_MODULE_COMPONENTS} LINK panda)
 
 if(HAVE_EGG)
   add_python_module(egg p3egg p3egg2pg)
