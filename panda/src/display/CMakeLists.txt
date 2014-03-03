@@ -78,11 +78,16 @@ if(HAVE_PYTHON)
 	)
 endif()
 
-if(OSX_PLATFORM)
-	set(P3DISPLAY_HEADER
+if(APPLE)
+	set(P3DISPLAY_HEADERS
 		${P3DISPLAY_HEADERS}
 		subprocessWindowBuffer.h
 		subprocessWindowBuffer.I
+	)
+
+	set(P3DISPLAY_SOURCES
+		${P3DISPLAY_SOURCES}
+		subprocessWindowBuffer.cxx
 	)
 endif()
 
