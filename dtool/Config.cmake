@@ -429,8 +429,8 @@ platforms.  Currently experimental." ON)
 
 
 # Is Python installed, and should Python interfaces be generated?
-find_package(PythonLibs)
-find_package(PythonInterp)
+find_package(PythonLibs 2.5)
+find_package(PythonInterp 2.5)
 set(PYTHON_FOUND ${PYTHONLIBS_FOUND})
 
 package_option(PYTHON DEFAULT ON
