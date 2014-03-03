@@ -67,6 +67,8 @@ add_library(p3collide ${P3COLLIDE_SOURCES} ${P3COLLIDE_HEADERS})
 target_link_libraries(p3collide p3tform)
 target_interrogate(p3collide ALL)
 
+install(TARGETS p3collide DESTINATION lib)
+
 #begin test_bin_target
   #define TARGET test_collide
   #define LOCAL_LIBS

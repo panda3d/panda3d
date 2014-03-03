@@ -30,3 +30,5 @@ composite_sources(p3pnmimagetypes P3PNMIMAGETYPES_SOURCES)
 add_library(p3pnmimagetypes ${P3PNMIMAGETYPES_HEADERS} ${P3PNMIMAGETYPES_SOURCES})
 target_link_libraries(p3pnmimagetypes p3pnmimage ${_JPEG_LIBRARIES}
   ${_TIFF_LIBRARIES} ${_PNG_LIBRARIES})
+
+install(TARGETS p3pnmimagetypes DESTINATION lib)

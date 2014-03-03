@@ -20,3 +20,5 @@ composite_sources(p3recorder P3RECORDER_SOURCES)
 add_library(p3recorder ${P3RECORDER_SOURCES} ${P3RECORDER_HEADERS})
 target_link_libraries(p3recorder p3dgraph p3downloader)
 target_interrogate(p3recorder ALL)
+
+install(TARGETS p3recorder DESTINATION lib)

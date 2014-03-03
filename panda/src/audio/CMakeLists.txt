@@ -21,4 +21,6 @@ if(HAVE_AUDIO)
   add_library(p3audio ${P3AUDIO_HEADERS} ${P3AUDIO_SOURCES})
   target_link_libraries(p3audio p3putil p3event p3movies p3linmath)
   target_interrogate(p3audio ALL)
+
+  install(TARGETS p3audio DESTINATION lib)
 endif()

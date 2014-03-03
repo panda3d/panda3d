@@ -51,3 +51,5 @@ add_library(p3dcparser ${P3DCPARSER_SOURCES} ${P3DCPARSER_HEADERS}
 set_target_properties(p3dcparser PROPERTIES COMPILE_DEFINITIONS WITHIN_PANDA)
 target_link_libraries(p3dcparser p3directbase p3express p3pstatclient p3prc)
 target_interrogate(p3dcparser ${P3DCPARSER_SOURCES} ${P3DCPARSER_HEADERS})
+
+install(TARGETS p3dcparser DESTINATION lib)

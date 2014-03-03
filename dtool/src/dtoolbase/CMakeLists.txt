@@ -65,3 +65,5 @@ add_library(p3dtoolbase	${P3DTOOLBASE_HEADERS} ${P3DTOOLBASE_SOURCES})
 if(HAVE_PYTHON)
   target_link_libraries(p3dtoolbase ${PYTHON_LIBRARIES})
 endif()
+
+install(TARGETS p3dtoolbase DESTINATION lib)

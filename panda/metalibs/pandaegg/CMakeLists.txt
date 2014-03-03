@@ -3,4 +3,6 @@ if(HAVE_EGG)
 
   add_library(pandaegg pandaegg.cxx)
   target_link_libraries(pandaegg ${PANDAEGG_LINK_TARGETS})
+
+  install(TARGETS pandaegg DESTINATION lib)
 endif()

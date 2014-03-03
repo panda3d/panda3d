@@ -20,4 +20,6 @@ if(HAVE_GL)
 
   add_library(pandagl pandagl.cxx)
   target_link_libraries(pandagl ${PANDAGL_LINK_TARGETS})
+
+  install(TARGETS pandagl DESTINATION lib)
 endif()

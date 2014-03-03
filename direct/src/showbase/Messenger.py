@@ -7,7 +7,7 @@ from PythonUtil import *
 from direct.directnotify import DirectNotifyGlobal
 import types
 
-from libpandaexpress import ConfigVariableBool
+from panda3d.core import ConfigVariableBool
 
 # If using the Toontown ActiveX launcher, this must be set true.
 # Also, Panda must be compiled with SIMPLE_THREADS or no HAVE_THREADS

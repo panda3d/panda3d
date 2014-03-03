@@ -39,3 +39,5 @@ if(HAVE_FREETYPE)
   target_link_libraries(p3text p3pnmtext ${_FREETYPE_LIBRARIES})
 endif()
 target_interrogate(p3text ALL)
+
+install(TARGETS p3text DESTINATION lib)

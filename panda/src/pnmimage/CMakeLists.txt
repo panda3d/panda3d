@@ -28,3 +28,5 @@ composite_sources(p3pnmimage P3PNMIMAGE_SOURCES)
 add_library(p3pnmimage ${P3PNMIMAGE_HEADERS} ${P3PNMIMAGE_SOURCES})
 target_link_libraries(p3pnmimage p3mathutil)
 target_interrogate(p3pnmimage ALL)
+
+install(TARGETS p3pnmimage DESTINATION lib)

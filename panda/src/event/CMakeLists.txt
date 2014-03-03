@@ -41,6 +41,8 @@ add_library(p3event ${P3EVENT_HEADERS} ${P3EVENT_SOURCES})
 target_link_libraries(p3event p3linmath p3pstatclient)
 target_interrogate(p3event ALL)
 
+install(TARGETS p3event DESTINATION lib)
+
 #begin test_bin_target
   #define TARGET test_task
   #define LOCAL_LIBS $[LOCAL_LIBS] p3mathutil

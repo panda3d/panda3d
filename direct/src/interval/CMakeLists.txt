@@ -39,3 +39,5 @@ composite_sources(p3interval P3INTERVAL_SOURCES)
 add_library(p3interval ${P3INTERVAL_HEADERS} ${P3INTERVAL_SOURCES})
 target_link_libraries(p3interval p3directbase p3pstatclient p3pgraph p3chan p3dconfig p3prc)
 target_interrogate(p3interval ALL)
+
+install(TARGETS p3interval DESTINATION lib)

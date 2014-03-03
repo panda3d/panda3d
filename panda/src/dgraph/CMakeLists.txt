@@ -15,3 +15,5 @@ composite_sources(p3dgraph P3DGRAPH_SOURCES)
 add_library(p3dgraph ${P3DGRAPH_SOURCES} ${P3DGRAPH_HEADERS})
 target_link_libraries(p3dgraph p3pgraph)
 target_interrogate(p3dgraph ALL)
+
+install(TARGETS p3dgraph DESTINATION lib)

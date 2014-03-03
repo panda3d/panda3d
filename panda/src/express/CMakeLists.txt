@@ -134,6 +134,8 @@ if(WIN32)
   target_link_libraries(p3express advapi32.lib ws2_32.lib)
 endif()
 
+install(TARGETS p3express DESTINATION lib)
+
 #add_executable(p3expressTestTypes test_types.cxx)
 #target_link_libraries(p3expressTestTypes p3express p3dtoolutil p3dtool p3prc p3dtoolconfig p3pystub)
 #add_test(p3express_test_types p3expressTestTypes)

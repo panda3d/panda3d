@@ -18,4 +18,6 @@ if(HAVE_FREETYPE)
   add_library(p3pnmtext ${P3PNMTEXT_SOURCES} ${P3PNMTEXT_HEADERS})
   target_link_libraries(p3pnmtext p3pnmimage ${_FREETYPE_LIBRARIES})
   target_interrogate(p3pnmtext ALL)
+
+  install(TARGETS p3pnmtext DESTINATION lib)
 endif()

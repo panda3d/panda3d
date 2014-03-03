@@ -36,6 +36,8 @@ endif()
 
 set(IMOD_FLAGS -python-native)
 
+# This stores the names of every module added to the Interrogate system:
+set(ALL_INTERROGATE_MODULES CACHE INTERNAL "Internal variable")
 
 #
 # Function: target_interrogate(target [ALL] [source1 [source2 ...]])
@@ -241,6 +243,7 @@ function(add_python_module module)
       # against the component library in question.
       add_library(${target}_igate ${target}_igate.cxx)
       list(APPEND HACKlinklibs "${target}_igate")
+      install(TARGETS ${target}_igate DESTINATION lib)
 
       get_target_property(target_links "${target}" LINK_LIBRARIES)
       target_link_libraries(${target}_igate ${target_links})
@@ -269,5 +272,19 @@ function(add_python_module module)
     if(WIN32 AND NOT CYGWIN)
       set_target_properties(${module} PROPERTIES SUFFIX ".pyd")
     endif()
+
+    list(APPEND ALL_INTERROGATE_MODULES "${module}")
+    set(ALL_INTERROGATE_MODULES "${ALL_INTERROGATE_MODULES}" CACHE INTERNAL "Internal variable")
   endif()
 endfunction(add_python_module)
+
+
+if(HAVE_PYTHON)
+  # We have to create an __init__.py so that Python 2.x can recognize 'panda3d'
+  # as a package.
+  file(WRITE "${PROJECT_BINARY_DIR}/panda3d/__init__.py" "")
+
+  # The Interrogate path needs to be installed to the architecture-dependent
+  # Python directory.
+  install(DIRECTORY "${PROJECT_BINARY_DIR}/panda3d" DESTINATION "${PYTHON_ARCH_INSTALL_DIR}")
+endif()

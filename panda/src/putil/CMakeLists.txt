@@ -117,6 +117,8 @@ add_library(p3putil ${P3PUTIL_HEADERS} ${P3PUTIL_SOURCES})
 target_link_libraries(p3putil p3pipeline)
 target_interrogate(p3putil ALL)
 
+install(TARGETS p3putil DESTINATION lib)
+
 #begin test_bin_target
   #define TARGET test_bamRead
   #define LOCAL_LIBS

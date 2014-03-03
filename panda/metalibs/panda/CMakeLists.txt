@@ -11,3 +11,5 @@ endif()
 
 add_library(panda panda.cxx)
 target_link_libraries(panda ${PANDA_LINK_TARGETS})
+
+install(TARGETS panda DESTINATION lib)

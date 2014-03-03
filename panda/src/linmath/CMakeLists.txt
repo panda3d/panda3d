@@ -47,6 +47,8 @@ add_library(p3linmath ${P3LINMATH_HEADERS} ${P3LINMATH_SOURCES})
 target_link_libraries(p3linmath p3putil)
 target_interrogate(p3linmath ALL)
 
+install(TARGETS p3linmath DESTINATION lib)
+
 #begin test_bin_target
   #define TARGET test_math
   #define LOCAL_LIBS \

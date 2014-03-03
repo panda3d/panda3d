@@ -97,4 +97,6 @@ if(HAVE_EGG)
   add_library(p3egg ${P3EGG_HEADERS} ${P3EGG_SOURCES} ${P3EGG_PARSER_SOURCES})
   target_link_libraries(p3egg p3prc p3pandabase p3express p3linmath p3mathutil)
   target_interrogate(p3egg ${P3EGG_HEADERS} ${P3EGG_SOURCES})
+
+  install(TARGETS p3egg DESTINATION lib)
 endif()

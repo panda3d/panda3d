@@ -21,4 +21,6 @@ if(HAVE_PYTHON)
     target_link_libraries(p3distributed p3net)
   endif()
   target_interrogate(p3distributed ALL)
+
+  install(TARGETS p3distributed DESTINATION lib)
 endif()
