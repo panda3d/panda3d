@@ -14,6 +14,13 @@ if(HAVE_GL)
     set(PANDAGL_LINK_TARGETS ${PANDAGL_LINK_TARGETS} p3glxdisplay)
   endif()
 
+  if(HAVE_COCOA)
+    set(PANDAGL_LINK_TARGETS ${PANDAGL_LINK_TARGETS} p3cocoadisplay)
+  endif()
+
+  if(HAVE_CARBON)
+    set(PANDAGL_LINK_TARGETS ${PANDAGL_LINK_TARGETS} p3osxdisplay)
+  endif()
 
   add_library(pandagl pandagl.cxx)
   target_link_libraries(pandagl ${PANDAGL_LINK_TARGETS})
