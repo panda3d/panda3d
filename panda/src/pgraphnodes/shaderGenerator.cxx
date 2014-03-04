@@ -669,7 +669,7 @@ synthesize_shader(const RenderState *rs) {
       }
     }
 
-    if ((_map_index_normal == i && _lighting && _auto_normal_on) || _map_index_height == i) {
+    if ((_map_index_normal == i && (_lighting || _out_aux_normal) && _auto_normal_on) || _map_index_height == i) {
       const InternalName *texcoord_name = stage->get_texcoord_name();
       PT(InternalName) tangent_name = InternalName::get_tangent();
       PT(InternalName) binormal_name = InternalName::get_binormal();
@@ -684,7 +684,7 @@ synthesize_shader(const RenderState *rs) {
       text << "\t in float4 vtx_" << tangent_input << " : " << alloc_vreg() << ",\n";
       text << "\t in float4 vtx_" << binormal_input << " : " << alloc_vreg() << ",\n";
 
-      if (_map_index_normal == i && _lighting && _auto_normal_on) {
+      if (_map_index_normal == i && (_lighting || _out_aux_normal) && _auto_normal_on) {
         tangent_freg = alloc_freg();
         binormal_freg = alloc_freg();
         text << "\t out float4 l_tangent : " << tangent_freg << ",\n";
@@ -781,7 +781,7 @@ synthesize_shader(const RenderState *rs) {
   if (_vertex_colors) {
     text << "\t l_color = vtx_color;\n";
   }
-  if (_lighting && (_map_index_normal >= 0 && _auto_normal_on)) {
+  if ((_lighting || _out_aux_normal) && (_map_index_normal >= 0 && _auto_normal_on)) {
     text << "\t l_tangent.xyz = mul((float3x3)tpose_view_to_model, vtx_" << tangent_input << ".xyz);\n";
     text << "\t l_tangent.w = 0;\n";
     text << "\t l_binormal.xyz = mul((float3x3)tpose_view_to_model, -vtx_" << binormal_input << ".xyz);\n";
@@ -842,7 +842,7 @@ synthesize_shader(const RenderState *rs) {
       text << "\t uniform float4x4 texmat_" << i << ",\n";
     }
   }
-  if (_lighting && (_map_index_normal >= 0 && _auto_normal_on)) {
+  if ((_lighting || _out_aux_normal) && (_map_index_normal >= 0 && _auto_normal_on)) {
     text << "\t in float3 l_tangent : " << tangent_freg << ",\n";
     text << "\t in float3 l_binormal : " << binormal_freg << ",\n";
   }
@@ -1014,7 +1014,7 @@ synthesize_shader(const RenderState *rs) {
       text << ");\n";
     }
   }
-  if (_lighting) {
+  if (_lighting || _out_aux_normal) {
     if (_map_index_normal >= 0 && _auto_normal_on) {
       text << "\t // Translate tangent-space normal in map to view-space.\n";
       text << "\t float3 tsnormal = ((float3)tex" << _map_index_normal << " * 2) - 1;\n";
