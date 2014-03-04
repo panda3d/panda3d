@@ -12,7 +12,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "graphicsWindow.h"
+
 #import <AppKit/NSView.h>
+#import <AppKit/NSOpenGL.h>
 
 class CocoaGraphicsWindow;
 

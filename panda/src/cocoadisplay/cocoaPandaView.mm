@@ -12,6 +12,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "config_cocoadisplay.h"
 #import "cocoaPandaView.h"
 #import "cocoaGraphicsWindow.h"
 
