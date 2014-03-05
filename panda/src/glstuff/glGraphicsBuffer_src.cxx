@@ -559,15 +559,10 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
   }
 
   if (tex) {
-    GLenum target = glgsg->get_texture_target(tex->get_texture_type());
-    if (target == GL_TEXTURE_CUBE_MAP) {
-      target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + layer;
-    }
-
     // Bind the texture to the slot.
     tex->set_x_size(_rb_size_x);
     tex->set_y_size(_rb_size_y);
-    if (target != GL_TEXTURE_CUBE_MAP && _rb_size_z > 1) {
+    if (tex->get_texture_type() != Texture::TT_cube_map && _rb_size_z > 1) {
       tex->set_z_size(_rb_size_z);
     }
     tex->set_pad_size(_rb_size_x - _x_size, _rb_size_y - _y_size);
@@ -617,85 +612,41 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
       }
     }
 
-    // Create the OpenGL texture object.
-    TextureContext *tc = tex->prepare_now(0, glgsg->get_prepared_objects(), glgsg);
-    nassertv(tc != (TextureContext *)NULL);
-    CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
-    glgsg->update_texture(tc, true);
+#ifndef OPENGLES
+    GLenum target = glgsg->get_texture_target(tex->get_texture_type());
+    if (target == GL_TEXTURE_CUBE_MAP) {
+      target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + layer;
+    }
+#endif
 
     if (attachpoint == GL_DEPTH_ATTACHMENT_EXT) {
       GLCAT.debug() << "Binding texture " << *tex << " to depth attachment.\n";
 
-#ifndef OPENGLES
-      GLclampf priority = 1.0f;
-      glPrioritizeTextures(1, &gtc->_index, &priority);
-#endif
-      if (_rb_size_z == 1) {
-        if (target == GL_TEXTURE_3D) {
-          glgsg->_glFramebufferTexture3D(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
-                                         target, gtc->_index, 0, layer);
-        } else if (target == GL_TEXTURE_2D_ARRAY_EXT) {
-          glgsg->_glFramebufferTextureLayer(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
-                                            gtc->_index, 0, layer);
-        } else {
-          glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
-                                         target, gtc->_index, 0);
-        }
-      } else {
-        glgsg->_glFramebufferTexture(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
-                                     gtc->_index, 0);
-      }
+      attach_tex(layer, 0, tex, GL_DEPTH_ATTACHMENT_EXT);
 
+#ifndef OPENGLES
       GLint depth_size = 0;
       GLP(GetTexLevelParameteriv)(target, 0, GL_TEXTURE_DEPTH_SIZE, &depth_size);
       _fb_properties.set_depth_bits(depth_size);
+#endif
 
       if (slot == RTP_depth_stencil) {
         GLCAT.debug() << "Binding texture " << *tex << " to stencil attachment.\n";
-        if (_rb_size_z == 1) {
-          if (target == GL_TEXTURE_3D) {
-            glgsg->_glFramebufferTexture3D(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
-                                           target, gtc->_index, 0, layer);
-          } else if (target == GL_TEXTURE_2D_ARRAY_EXT) {
-            glgsg->_glFramebufferTextureLayer(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
-                                              gtc->_index, 0, layer);
-          } else {
-            glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
-                                           target, gtc->_index, 0);
-          }
-        } else {
-          glgsg->_glFramebufferTexture(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
-                                       gtc->_index, 0);
-        }
 
+        attach_tex(layer, 0, tex, GL_STENCIL_ATTACHMENT_EXT);
+
+#ifndef OPENGLES
         GLint stencil_size = 0;
         GLP(GetTexLevelParameteriv)(target, 0, GL_TEXTURE_STENCIL_SIZE, &stencil_size);
         _fb_properties.set_stencil_bits(stencil_size);
+#endif
       }
 
     } else {
       GLCAT.debug() << "Binding texture " << *tex << " to color attachment.\n";
 
-#ifndef OPENGLES
-      GLclampf priority = 1.0f;
-      glPrioritizeTextures(1, &gtc->_index, &priority);
-#endif
-      glgsg->update_texture(tc, true);
-      if (_rb_size_z == 1) {
-        if (target == GL_TEXTURE_3D) {
-          glgsg->_glFramebufferTexture3D(GL_FRAMEBUFFER_EXT, attachpoint,
-                                         target, gtc->_index, 0, layer);
-        } else if (target == GL_TEXTURE_2D_ARRAY_EXT) {
-          glgsg->_glFramebufferTextureLayer(GL_FRAMEBUFFER_EXT, attachpoint,
-                                            gtc->_index, 0, layer);
-        } else {
-          glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, attachpoint,
-                                         target, gtc->_index, 0);
-        }
-      } else {
-        glgsg->_glFramebufferTexture(GL_FRAMEBUFFER_EXT, attachpoint,
-                                     gtc->_index, 0);
-      }
+      attach_tex(layer, 0, tex, attachpoint);
+
 #ifndef OPENGLES
       if (attachpoint == GL_COLOR_ATTACHMENT0_EXT) {
         GLint red_size = 0, green_size = 0, blue_size = 0, alpha_size = 0;
@@ -749,16 +700,18 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
           gl_format = GL_RGB10_EXT;
         }
       } else if (_fb_properties.get_color_bits() == 0) {
-        gl_format = GL_ALPHA8_OES;
+        gl_format = GL_ALPHA8_EXT;
       } else if (_fb_properties.get_color_bits() <= 12
               && _fb_properties.get_alpha_bits() <= 4) {
         gl_format = GL_RGBA4_OES;
+#ifndef OPENGLES_1
       } else if (_fb_properties.get_color_bits() <= 15
               && _fb_properties.get_alpha_bits() == 1) {
         gl_format = GL_RGB5_A1_EXT;
+#endif
       } else if (_fb_properties.get_color_bits() <= 30
               && _fb_properties.get_alpha_bits() <= 2) {
-        gl_format = GL_RGB10_A2_OES;
+        gl_format = GL_RGB10_A2_EXT;
       } else {
         gl_format = GL_RGBA8_OES;
       }
@@ -1001,6 +954,61 @@ bind_slot_multisample(bool rb_resize, Texture **attach, RenderTexturePlane slot,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: glGraphicsBuffer::attach_tex
+//       Access: Private
+//  Description: This function attaches the given texture to the
+//               given attachment point.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsBuffer)::
+attach_tex(int layer, int view, Texture *attach, GLenum attachpoint) {
+  CLP(GraphicsStateGuardian) *glgsg;
+  DCAST_INTO_V(glgsg, _gsg);
+
+  // Create the OpenGL texture object.
+  TextureContext *tc = attach->prepare_now(view, glgsg->get_prepared_objects(), glgsg);
+  nassertv(tc != (TextureContext *)NULL);
+  CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+  glgsg->update_texture(tc, true);
+
+#ifndef OPENGLES
+  GLclampf priority = 1.0f;
+  glPrioritizeTextures(1, &gtc->_index, &priority);
+#endif
+
+#ifndef OPENGLES
+  if (_rb_size_z != 1) {
+    // Bind all of the layers of the texture.
+    glgsg->_glFramebufferTexture(GL_FRAMEBUFFER_EXT, attachpoint,
+                                 gtc->_index, 0);
+    return;
+  }
+#endif
+
+  GLenum target = glgsg->get_texture_target(attach->get_texture_type());
+  if (target == GL_TEXTURE_CUBE_MAP) {
+    target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + layer;
+  } 
+
+  switch (target) {
+#ifndef OPENGLES_1
+  case GL_TEXTURE_3D:
+    glgsg->_glFramebufferTexture3D(GL_FRAMEBUFFER_EXT, attachpoint,
+                                   target, gtc->_index, 0, layer);
+    break;
+#endif
+#ifndef OPENGLES
+  case GL_TEXTURE_2D_ARRAY_EXT:
+    glgsg->_glFramebufferTextureLayer(GL_FRAMEBUFFER_EXT, attachpoint,
+                                      gtc->_index, 0, layer);
+    break;
+#endif
+  default:
+    glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, attachpoint,
+                                   target, gtc->_index, 0);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: glGraphicsBuffer::generate_mipmaps
 //       Access: Private
 //  Description: This function will be called within the draw thread
@@ -1129,44 +1137,13 @@ select_target_tex_page(int page, int view) {
         tex->set_num_views(view + 1);
       }
 
-      GLenum target = glgsg->get_texture_target(tex->get_texture_type());
-      if (target == GL_TEXTURE_CUBE_MAP) {
-        target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + _bound_tex_page;
-      }
-
-      // Create the OpenGL texture object.
-      TextureContext *tc = tex->prepare_now(view, glgsg->get_prepared_objects(), glgsg);
-      nassertv(tc != (TextureContext *)NULL);
-      CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
-      glgsg->update_texture(tc, true);
-
       if (GLCAT.is_spam()) {
         GLCAT.spam()
           << "Binding texture " << *tex
           << " view " << view << " to color attachment.\n";
       }
 
-#ifndef OPENGLES
-      GLclampf priority = 1.0f;
-      glPrioritizeTextures(1, &gtc->_index, &priority);
-#endif
-      glgsg->update_texture(tc, true);
-
-      if (_rb_size_z == 1) {
-        if (target == GL_TEXTURE_3D) {
-          glgsg->_glFramebufferTexture3D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
-                                         target, gtc->_index, 0, _bound_tex_page);
-        } else if (target == GL_TEXTURE_2D_ARRAY_EXT) {
-          glgsg->_glFramebufferTextureLayer(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
-                                            gtc->_index, 0, _bound_tex_page);
-        } else {
-          glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
-                                         target, gtc->_index, 0);
-        }
-      } else {
-        glgsg->_glFramebufferTexture(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
-                                     gtc->_index, 0);
-      }
+      attach_tex(_bound_tex_page, view, tex, GL_COLOR_ATTACHMENT0_EXT);
 
       report_my_gl_errors();
     }

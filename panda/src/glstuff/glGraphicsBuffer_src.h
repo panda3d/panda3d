@@ -98,6 +98,7 @@ private:
                  RenderTexturePlane plane, GLenum attachpoint);
   void bind_slot_multisample(bool rb_resize, Texture **attach,
                  RenderTexturePlane plane, GLenum attachpoint);
+  void attach_tex(int layer, int view, Texture *attach, GLenum attachpoint);
   bool check_fbo();
   void generate_mipmaps();
   void rebuild_bitplanes();
