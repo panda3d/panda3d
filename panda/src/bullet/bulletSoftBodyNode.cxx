@@ -194,22 +194,35 @@ transform_changed() {
   LMatrix4 m_ts = ts->get_mat();
 
   if (!m_sync.almost_equal(m_ts)) {
-    _sync = ts;
 
+    // New transform for the center
     btTransform trans = TransformState_to_btTrans(ts);
 
-    trans *= _soft->m_initialWorldTransform.inverse();
+    // Offset between current approx center and current initial transform
+    btVector3 pos = LVecBase3_to_btVector3(this->get_aabb().get_approx_center());
+    btVector3 origin = _soft->m_initialWorldTransform.getOrigin();
+    btVector3 offset = pos - origin;
+
+    // Subtract offset to get new transform for the body
+    trans.setOrigin(trans.getOrigin() - offset);
+
+    // Now apply the new transform
+    _soft->transform(_soft->m_initialWorldTransform.inverse());
     _soft->transform(trans);
 
     if (ts->has_scale()) {
-      LVecBase3 scale = ts->get_scale();
-      if (!scale.almost_equal(LVecBase3(1.0f, 1.0f, 1.0f))) {
-        for (int i=0; i<get_num_shapes(); i++) {
-          PT(BulletShape) shape = _shapes[i];
-          shape->set_local_scale(scale);
-        }
-      }
+      btVector3 current_scale = LVecBase3_to_btVector3(_sync->get_scale());
+      btVector3 new_scale = LVecBase3_to_btVector3(ts->get_scale());
+
+      current_scale.setX(1.0 / current_scale.getX());
+      current_scale.setY(1.0 / current_scale.getY());
+      current_scale.setZ(1.0 / current_scale.getZ());
+
+      _soft->scale(current_scale);
+      _soft->scale(new_scale);
     }
+
+    _sync = ts;
   }
 }
 
@@ -221,7 +234,7 @@ transform_changed() {
 void BulletSoftBodyNode::
 sync_p2b() {
 
-  transform_changed();
+  //transform_changed(); Disabled for now...
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -280,22 +293,21 @@ sync_b2p() {
     }
   }
 
-  // It is ok to pass the address of a temporary object here, because
-  // set_bounds does not store the pointer - it makes a copy using
-  // volume->make_copy().
-  BoundingBox bb = this->get_aabb();
-  LVecBase3 pos = bb.get_approx_center();
+  // Update the synchronized transform with the current
+  // approximate center of the soft body
+  LVecBase3 pos = this->get_aabb().get_approx_center();
+  CPT(TransformState) ts = TransformState::make_pos(pos);
 
   NodePath np = NodePath::any_path((PandaNode *)this);
   LVecBase3 scale = np.get_net_transform()->get_scale();
-
-  CPT(TransformState) ts = TransformState::make_pos(pos);
   ts = ts->set_scale(scale);
 
   _sync = ts;
   _sync_disable = true;
   np.set_transform(NodePath(), ts);
   _sync_disable = false;
+/*
+*/
 
   Thread *current_thread = Thread::get_current_thread();
   this->r_mark_geom_bounds_stale(current_thread);
