@@ -167,7 +167,7 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built"):
     else:
         oscmd("echo '"+libdir+"/panda3d'>    "+destdir+"/etc/ld.so.conf.d/panda3d.conf")
         oscmd("chmod +x "+destdir+"/etc/ld.so.conf.d/panda3d.conf")
-    oscmd("ln -s "+PEXEC+"                      "+destdir+prefix+"/bin/ppython")
+    oscmd("ln -f -s "+PEXEC+"                   "+destdir+prefix+"/bin/ppython")
     oscmd("cp "+outputdir+"/bin/*               "+destdir+prefix+"/bin/")
     for base in os.listdir(outputdir+"/lib"):
         if (not base.endswith(".a")) or base == "libp3pystub.a":
