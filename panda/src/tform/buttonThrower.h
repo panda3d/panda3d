@@ -53,6 +53,10 @@ PUBLISHED:
   INLINE const string &get_candidate_event() const;
   INLINE void set_move_event(const string &move_event);
   INLINE const string &get_move_event() const;
+  INLINE void set_raw_button_down_event(const string &raw_button_down_event);
+  INLINE const string &get_raw_button_down_event() const;
+  INLINE void set_raw_button_up_event(const string &raw_button_up_event);
+  INLINE const string &get_raw_button_up_event() const;
 
   INLINE void set_prefix(const string &prefix);
   INLINE const string &get_prefix() const;
@@ -61,7 +65,6 @@ PUBLISHED:
 
   INLINE void set_time_flag(bool time_flag);
   INLINE bool get_time_flag() const;
-  
 
   void add_parameter(const EventParameter &obj);
   int get_num_parameters() const;
@@ -85,7 +88,7 @@ public:
 
 private:
   void do_specific_event(const string &event_name, double time);
-  void do_general_event(const ButtonEvent &button_event, 
+  void do_general_event(const ButtonEvent &button_event,
                         const string &event_name);
 
 private:
@@ -95,6 +98,8 @@ private:
   string _keystroke_event;
   string _candidate_event;
   string _move_event;
+  string _raw_button_up_event;
+  string _raw_button_down_event;
   bool _specific_flag;
   string _prefix;
   bool _time_flag;

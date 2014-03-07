@@ -67,6 +67,7 @@ protected:
 
   ButtonHandle get_button(XKeyEvent &key_event, bool allow_shift);
   ButtonHandle map_button(KeySym key);
+  ButtonHandle map_raw_button(KeyCode key);
   ButtonHandle get_mouse_button(XButtonEvent &button_event);
 
   static Bool check_event(X11_Display *display, XEvent *event, char *arg);
