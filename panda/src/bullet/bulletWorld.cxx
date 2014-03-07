@@ -764,10 +764,11 @@ contact_test(PandaNode *node, bool use_filter) const {
   BulletContactResult cb;
 
   if (obj) {
-
+#if BT_BULLET_VERSION >= 281
     if (use_filter) {
       cb.use_filter(_filter_cb, obj->getBroadphaseHandle());
     }
+#endif
 
     _world->contactTest(obj, cb);
   }
