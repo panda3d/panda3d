@@ -6405,8 +6405,10 @@ get_external_image_format(Texture *tex) const {
 #endif
   case Texture::F_alpha:
     return GL_ALPHA;
+#ifndef OPENGLES_1
   case Texture::F_rg16:
     return GL_RG;
+#endif
   case Texture::F_rgb:
   case Texture::F_rgb5:
   case Texture::F_rgb8:
@@ -6681,8 +6683,10 @@ get_internal_image_format(Texture *tex) const {
     return GL_RGBA8_OES;
   case Texture::F_rgba12:
     return GL_RGBA;
+#ifndef OPENGLES_1
   case Texture::F_rgba16:
     return GL_RGBA16F_EXT;
+#endif  // OPENGLES_1
   case Texture::F_rgba32:
     return GL_RGBA32F_EXT;
 #else
@@ -6733,12 +6737,12 @@ get_internal_image_format(Texture *tex) const {
     return GL_R3_G3_B2;
 #endif
 
-#ifdef OPENGLES
+#if defined(OPENGLES_2)
   case Texture::F_r16:
     return GL_R16F_EXT;
   case Texture::F_rg16:
     return GL_RG16F_EXT;
-#else
+#elif !defined(OPENGLES_1)
   case Texture::F_r16:
     if (tex->get_component_type() == Texture::T_float) {
       return GL_R16F;
@@ -6756,10 +6760,12 @@ get_internal_image_format(Texture *tex) const {
   case Texture::F_alpha:
     return GL_ALPHA;
 
+#ifndef OPENGLES_1
   case Texture::F_red:
   case Texture::F_green:
   case Texture::F_blue:
     return GL_RED;
+#endif
 
   case Texture::F_luminance:
     return GL_LUMINANCE;
@@ -9333,9 +9339,11 @@ upload_texture_image(CLP(TextureContext) *gtc,
           break;
         case GL_TEXTURE_2D_ARRAY:
 #endif
+#ifndef OPENGLES_1
         case GL_TEXTURE_3D:
           _glTexImage3D(page_target, 0, internal_format, width, height, depth, 0, external_format, component_type, NULL);
           break;
+#endif
         default:
           GLP(TexImage2D)(page_target, 0, internal_format, width, height, 0, external_format, component_type, NULL);
           break;
@@ -9817,10 +9825,12 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     type = Texture::T_unsigned_short;
     format = Texture::F_depth_component;
     break;
+#ifndef OPENGLES
   case GL_DEPTH_COMPONENT32F:
     type = Texture::T_float;
     format = Texture::F_depth_component;
     break;
+#endif
   case GL_DEPTH_STENCIL_EXT:
   case GL_DEPTH24_STENCIL8_EXT:
     type = Texture::T_unsigned_int_24_8;
@@ -9848,10 +9858,6 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     format = Texture::F_rgba12;
     break;
 #endif
-  case GL_RGBA16F:
-    type = Texture::T_float;
-    format = Texture::F_rgba16;
-    break;
 
   case GL_RGB:
   case 3:
@@ -9877,6 +9883,11 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     break;
 #endif
 
+#ifndef OPENGLES_1
+  case GL_RGBA16F:
+    type = Texture::T_float;
+    format = Texture::F_rgba16;
+    break;
   case GL_RGB16F:
     type = Texture::T_float;
     format = Texture::F_rgb16;
@@ -9889,6 +9900,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     type = Texture::T_float;
     format = Texture::F_r16;
     break;
+#endif
 
 #ifndef OPENGLES
   case GL_RGB16:
