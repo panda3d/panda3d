@@ -704,11 +704,9 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
       } else if (_fb_properties.get_color_bits() <= 12
               && _fb_properties.get_alpha_bits() <= 4) {
         gl_format = GL_RGBA4_OES;
-#ifndef OPENGLES_1
       } else if (_fb_properties.get_color_bits() <= 15
               && _fb_properties.get_alpha_bits() == 1) {
-        gl_format = GL_RGB5_A1_EXT;
-#endif
+        gl_format = GL_RGB5_A1_OES;
       } else if (_fb_properties.get_color_bits() <= 30
               && _fb_properties.get_alpha_bits() <= 2) {
         gl_format = GL_RGB10_A2_EXT;
