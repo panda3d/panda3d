@@ -6218,41 +6218,6 @@ Info_plist = """<?xml version="1.0" encoding="UTF-8"?>
 </plist>
 """
 
-MAC_POSTINSTALL = """#!/usr/bin/python
-import os, sys, plistlib
-home = os.environ['HOME']
-if not os.path.isdir(os.path.join(home, '.MacOSX')):
-    sys.exit()
-plist = dict()
-envfile = os.path.join(home, '.MacOSX', 'environment.plist')
-if os.path.exists(envfile):
-    try:
-        plist = plistlib.readPlist(envfile)
-    except: sys.exit(0)
-else:
-    sys.exit(0)
-paths = {'PATH' : '/Developer/Tools/Panda3D', 'DYLD_LIBRARY_PATH' : '/Developer/Panda3D/lib', 'PYTHONPATH' : '/Developer/Panda3D/lib',
-         'MAYA_SCRIPT_PATH' : '/Developer/Panda3D/plugins', 'MAYA_PLUG_IN_PATH' : '/Developer/Panda3D/plugins'}
-for env, path in dict(paths).items():
-    if env in plist:
-        paths = plist[env].split(':')
-        if '' in paths: paths.remove('')
-        if path in paths: paths.remove(path)
-        if len(paths) == 0:
-            del plist[env]
-        else:
-            plist[env] = ':'.join(paths)
-if len(plist) == 0:
-    os.remove(envfile)
-else:
-    plistlib.writePlist(plist, envfile)
-"""
-
-MAC_POSTFLIGHT = """#!/usr/bin/env bash"
-RESULT=`/usr/bin/open 'http://www.panda3d.org/wiki/index.php/Getting_Started_on_OSX'`"
-exit 0
-"""
-
 # FreeBSD pkg-descr
 INSTALLER_PKG_DESCR_FILE = """
 Panda3D is a game engine which includes graphics, audio, I/O, collision detection, and other abilities relevant to the creation of 3D games. Panda3D is open source and free software under the revised BSD license, and can be used for both free and commercial game development at no financial cost.
@@ -6364,9 +6329,6 @@ def MakeInstallerOSX():
     if (os.path.exists("dstroot")): oscmd("rm -rf dstroot")
     if (os.path.exists("Panda3D-rw.dmg")): oscmd('rm -f Panda3D-rw.dmg')
 
-    #TODO: add postflight script
-    #oscmd("sed -e 's@\\$1@%s@' < direct/src/directscripts/profilepaths-osx.command >> Panda3D-tpl-rw/panda3dpaths.command" % VERSION)
-
     oscmd("mkdir -p dstroot/base/Developer/Panda3D/lib")
     oscmd("mkdir -p dstroot/base/Developer/Panda3D/panda3d")
     oscmd("mkdir -p dstroot/base/Developer/Panda3D/etc")
@@ -6401,17 +6363,6 @@ def MakeInstallerOSX():
                     libdep = line.strip().split(" ", 1)[0]
                     if 'lib/' + os.path.basename(libdep) in install_libs:
                         oscmd("install_name_tool -change %s /Developer/Panda3D/lib/%s %s" % (libdep, os.path.basename(libdep), libname), True)
-
-    # Temporary script that should clean up the poison that the early 1.7.0 builds injected into environment.plist
-    oscmd("mkdir -p dstroot/scripts/base/")
-    postinstall = open("dstroot/scripts/base/postinstall", "w")
-    postinstall.write(MAC_POSTINSTALL)
-    postinstall.close()
-    postflight = open("dstroot/scripts/base/postflight", "w")
-    postflight.write(MAC_POSTFLIGHT)
-    postflight.close()
-    oscmd("chmod +x dstroot/scripts/base/postinstall")
-    oscmd("chmod +x dstroot/scripts/base/postflight")
 
     oscmd("mkdir -p dstroot/tools/Developer/Tools/Panda3D")
     oscmd("mkdir -p dstroot/tools/Developer/Panda3D")
@@ -6457,31 +6408,6 @@ def MakeInstallerOSX():
         oscmd("mkdir -p dstroot/samples/Developer/Examples/Panda3D")
         oscmd("cp -R samples/* dstroot/samples/Developer/Examples/Panda3D/")
 
-    # Dummy package uninstall16 which just contains a preflight script to remove /Applications/Panda3D/ .
-    oscmd("mkdir -p dstroot/scripts/uninstall16/")
-    preflight = open("dstroot/scripts/uninstall16/preflight", "w")
-    preflight.write(
-        "#!/usr/bin/python\n"
-        "import os, re, sys, shutil\n"
-        "if os.path.isdir('/Applications/Panda3D'): shutil.rmtree('/Applications/Panda3D')\n"
-        "bash_profile = os.path.join(os.environ['HOME'], '.bash_profile')\n"
-        "if not os.path.isfile(bash_profile): sys.exit(0)\n"
-        "pattern = re.compile('''PANDA_VERSION=[0-9][.][0-9][.][0-9]\n"
-        "PANDA_PATH=/Applications/Panda3D/[$A-Z.0-9_]+\n"
-        "if \[ -d \$PANDA_PATH \]\n"
-        "then(.+?)fi\n"
-        "''', flags = re.DOTALL | re.MULTILINE)\n"
-        "bpfile = open(bash_profile, 'r')\n"
-        "bpdata = bpfile.read()\n"
-        "bpfile.close()\n"
-        "newbpdata = pattern.sub('', bpdata)\n"
-        "if newbpdata == bpdata: sys.exit(0)\n"
-        "bpfile = open(bash_profile, 'w')\n"
-        "bpfile.write(newbpdata)\n"
-        "bpfile.close()\n")
-    preflight.close()
-    oscmd("chmod +x dstroot/scripts/uninstall16/preflight")
-
     oscmd("chmod -R 0775 dstroot/*")
     DeleteCVS("dstroot")
     DeleteBuildFiles("dstroot")
@@ -6492,7 +6418,7 @@ def MakeInstallerOSX():
     oscmd("mkdir -p dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/")
     oscmd("mkdir -p dstroot/Panda3D/Panda3D.mpkg/Contents/Resources/en.lproj/")
 
-    pkgs = ["base", "tools", "headers", "uninstall16"]
+    pkgs = ["base", "tools", "headers"]
     if PkgSkip("PYTHON")==0:     pkgs.append("pythoncode")
     if os.path.isdir("samples"): pkgs.append("samples")
     for pkg in pkgs:
@@ -6504,12 +6430,8 @@ def MakeInstallerOSX():
 
         if os.path.exists("/Developer/usr/bin/packagemaker"):
             cmd = '/Developer/usr/bin/packagemaker --info /tmp/Info_plist --version ' + VERSION + ' --out dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/' + pkg + '.pkg --target 10.4 --domain system --root dstroot/' + pkg + '/ --no-relocate'
-            if os.path.isdir("dstroot/scripts/" + pkg):
-                cmd += ' --scripts dstroot/scripts/' + pkg
         elif os.path.exists("/Applications/Xcode.app/Contents/Applications/PackageMaker.app/Contents/MacOS/PackageMaker"):
             cmd = '/Applications/Xcode.app/Contents/Applications/PackageMaker.app/Contents/MacOS/PackageMaker --info /tmp/Info_plist --version ' + VERSION + ' --out dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/' + pkg + '.pkg --target 10.4 --domain system --root dstroot/' + pkg + '/ --no-relocate'
-            if os.path.isdir("dstroot/scripts/" + pkg):
-                cmd += ' --scripts dstroot/scripts/' + pkg
         elif os.path.exists("/Developer/Tools/packagemaker"):
             cmd = '/Developer/Tools/packagemaker -build -f dstroot/' + pkg + '/ -p dstroot/Panda3D/Panda3D.mpkg/Contents/Packages/' + pkg + '.pkg -i /tmp/Info_plist'
         else:
@@ -6525,14 +6447,8 @@ def MakeInstallerOSX():
     dist.write('<installer-script minSpecVersion="1.000000" authoringTool="com.apple.PackageMaker" authoringToolVersion="3.0.3" authoringToolBuild="174">\n')
     dist.write('    <title>Panda3D</title>\n')
     dist.write('    <options customize="always" allow-external-scripts="no" rootVolumeOnly="false"/>\n')
-    dist.write('    <script>\n')
-    dist.write('    function have16installed() {\n')
-    dist.write('        return system.files.fileExistsAtPath(my.target.mountpoint + \'/Applications/Panda3D\');\n')
-    dist.write('    }\n')
-    dist.write('    </script>\n')
     dist.write('    <license language="en" mime-type="text/plain">%s</license>\n' % ReadFile("doc/LICENSE"))
     dist.write('    <choices-outline>\n')
-    dist.write('        <line choice="uninstall16"/>\n')
     dist.write('        <line choice="base"/>\n')
     dist.write('        <line choice="tools"/>\n')
     if PkgSkip("PYTHON")==0:
@@ -6541,9 +6457,6 @@ def MakeInstallerOSX():
         dist.write('        <line choice="samples"/>\n')
     dist.write('        <line choice="headers"/>\n')
     dist.write('    </choices-outline>\n')
-    dist.write('    <choice id="uninstall16" title="Uninstall Panda3D 1.6.x" tooltip="Uninstalls Panda3D 1.6.x before installing Panda3D %s" description="If this option is checked, Panda3D 1.6.x is removed from /Applications/Panda3D/ before the new version is installed. This is recommended to avoid library conflicts. WARNING: EVERYTHING UNDER /Applications/Panda3D WILL BE DELETED. MAKE SURE YOU HAVE BACKED UP IMPORTANT DATA!" selected="have16installed()" enabled="have16installed()" visible="have16installed()">\n' % VERSION)
-    dist.write('        <pkg-ref id="org.panda3d.panda3d.uninstall16.pkg"/>\n')
-    dist.write('    </choice>\n')
     dist.write('    <choice id="base" title="Panda3D Base Installation" description="This package contains the Panda3D libraries, configuration files and models/textures that are needed to use Panda3D. Location: /Developer/Panda3D/" start_enabled="false">\n')
     dist.write('        <pkg-ref id="org.panda3d.panda3d.base.pkg"/>\n')
     dist.write('    </choice>\n')
@@ -6561,7 +6474,6 @@ def MakeInstallerOSX():
     dist.write('    <choice id="headers" title="C++ Header Files" tooltip="Header files for C++ development with Panda3D" description="This package contains the C++ header files that are needed in order to do C++ development with Panda3D. You don\'t need this if you want to develop in Python. Location: /Developer/Panda3D/include/" start_selected="false">\n')
     dist.write('        <pkg-ref id="org.panda3d.panda3d.headers.pkg"/>\n')
     dist.write('    </choice>\n')
-    dist.write('    <pkg-ref id="org.panda3d.panda3d.uninstall16.pkg" installKBytes="0" version="1" auth="Root">file:./Contents/Packages/uninstall16.pkg</pkg-ref>\n')
     dist.write('    <pkg-ref id="org.panda3d.panda3d.base.pkg" installKBytes="%d" version="1" auth="Root">file:./Contents/Packages/base.pkg</pkg-ref>\n' % (GetDirectorySize("dstroot/base") // 1024))
     dist.write('    <pkg-ref id="org.panda3d.panda3d.tools.pkg" installKBytes="%d" version="1" auth="Root">file:./Contents/Packages/tools.pkg</pkg-ref>\n' % (GetDirectorySize("dstroot/tools") // 1024))
     if PkgSkip("PYTHON")==0:
