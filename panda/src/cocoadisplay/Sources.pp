@@ -17,13 +17,14 @@
      cocoaGraphicsPipe.h cocoaGraphicsPipe.I \
      cocoaGraphicsWindow.h cocoaGraphicsWindow.I \
      cocoaGraphicsStateGuardian.h cocoaGraphicsStateGuardian.I \
-     cocoaPandaView.h cocoaPandaWindowDelegate.h
+     cocoaPandaApp.h cocoaPandaView.h cocoaPandaWindowDelegate.h
     
   #define INCLUDED_SOURCES \
     config_cocoadisplay.mm \
     cocoaGraphicsPipe.mm \
     cocoaGraphicsStateGuardian.mm \
     cocoaGraphicsWindow.mm \
+    cocoaPandaApp.mm \
     cocoaPandaView.mm \
     cocoaPandaWindow.mm \
     cocoaPandaWindowDelegate.mm
