@@ -1558,9 +1558,14 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
             if SystemLibraryExists(libname):
                 LibName(target_pkg, "-l" + libname)
             else:
-                have_pkg = False
-                if VERBOSE:
-                    print(GetColor("cyan") + "Couldn't find library lib" + libname + GetColor())
+                # Try searching in the package's LibDirectories.
+                lpath = [dir for ppkg, dir in LIBDIRECTORIES if pkg == ppkg]
+                if LibraryExists(libname, lpath):
+                    LibName(target_pkg, "-l" + libname)
+                else:
+                    have_pkg = False
+                    if VERBOSE:
+                        print(GetColor("cyan") + "Couldn't find library lib" + libname + GetColor())
 
         for i in incs:
             incdir = None
@@ -1572,17 +1577,18 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
             elif (os.path.isdir(sysroot_usr + "/PCBSD") and len(glob.glob(sysroot_usr + "/PCBSD/local/include/" + i)) > 0):
                 incdir = sorted(glob.glob(sysroot_usr + "/PCBSD/local/include/" + i))[-1]
             else:
-                have_pkg = False
                 # Try searching in the package's IncDirectories.
                 for ppkg, pdir in INCDIRECTORIES:
-                    if (pkg == ppkg and len(glob.glob(os.path.join(pdir, i))) > 0):
+                    if pkg == ppkg and len(glob.glob(os.path.join(pdir, i))) > 0:
                         incdir = sorted(glob.glob(os.path.join(pdir, i)))[-1]
-                        have_pkg = True
-                if (incdir == None and VERBOSE and i.endswith(".h")):
-                    print(GetColor("cyan") + "Couldn't find header file " + i + GetColor())
+
+                if incdir is None and i.endswith(".h"):
+                    have_pkg = False
+                    if VERBOSE:
+                        print(GetColor("cyan") + "Couldn't find header file " + i + GetColor())
 
             # Note: It's possible to specify a file instead of a dir, for the sake of checking if it exists.
-            if (incdir != None and os.path.isdir(incdir)):
+            if incdir is not None and os.path.isdir(incdir):
                 IncDirectory(target_pkg, incdir)
 
         if (not have_pkg):

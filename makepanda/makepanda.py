@@ -1459,7 +1459,11 @@ def CompileLink(dll, obj, opts):
                 cmd = cxx + ' -undefined dynamic_lookup'
                 if ("BUNDLE" in opts): cmd += ' -bundle '
                 else:
-                    cmd += ' -dynamiclib -install_name ' + os.path.basename(dll)
+                    if GetOrigExt(dll) == ".pyd":
+                        install_name = '@loader_path/../panda3d/' + os.path.basename(dll)
+                    else:
+                        install_name = os.path.basename(dll)
+                    cmd += ' -dynamiclib -install_name ' + install_name
                     cmd += ' -compatibility_version ' + MAJOR_VERSION + ' -current_version ' + VERSION
                 cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp'
             else:
@@ -1801,16 +1805,16 @@ def CompileAnything(target, inputs, opts, progress = None):
             ProgressOutput(progress, "Linking dynamic library", target)
 
         # Add version number to the dynamic library, on unix
-        if origsuffix==".dll" and "MODULE" not in opts and not RTDIST:
+        if origsuffix == ".dll" and "MODULE" not in opts and not RTDIST:
             tplatform = GetTarget()
             if tplatform == "darwin":
                 # On Mac, libraries are named like libpanda.1.2.dylib
-                if tplatform.lower().endswith(".dylib"):
-                    tplatform = tplatform[:-5] + MAJOR_VERSION + ".dylib"
+                if target.lower().endswith(".dylib"):
+                    target = target[:-5] + MAJOR_VERSION + ".dylib"
                     SetOrigExt(target, origsuffix)
             elif tplatform != "windows" and tplatform != "android":
                 # On Linux, libraries are named like libpanda.so.1.2
-                tplatform += "." + MAJOR_VERSION
+                target += "." + MAJOR_VERSION
                 SetOrigExt(target, origsuffix)
         return CompileLink(target, inputs, opts)
     elif (origsuffix==".in"):
@@ -2420,6 +2424,8 @@ if (PkgSkip("DIRECT")==0):
     # Don't copy this file, which would cause conflict with our 'panda3d' module.
     if os.path.isfile(GetOutputDir() + '/direct/ffi/panda3d.py'):
         os.remove(GetOutputDir() + '/direct/ffi/panda3d.py')
+    if os.path.isfile(GetOutputDir() + '/direct/ffi/panda3d.pyc'):
+        os.remove(GetOutputDir() + '/direct/ffi/panda3d.pyc')
 
 ##########################################################################################
 #
@@ -3318,6 +3324,7 @@ if (not RUNTIME):
   TargetAdd('p3grutil_composite1.obj', opts=OPTS, input='p3grutil_composite1.cxx')
   TargetAdd('p3grutil_composite2.obj', opts=OPTS, input='p3grutil_composite2.cxx')
   IGATEFILES=GetDirectoryContents('panda/src/grutil', ["*.h", "*_composite*.cxx"])
+  if 'convexHull.h' in IGATEFILES: IGATEFILES.remove('convexHull.h')
   TargetAdd('libp3grutil.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3grutil.in', opts=['IMOD:core', 'ILIB:libp3grutil', 'SRCDIR:panda/src/grutil'])
   TargetAdd('libp3grutil_igate.obj', input='libp3grutil.in', opts=["DEPENDENCYONLY"])
@@ -6361,6 +6368,7 @@ def MakeInstallerOSX():
     #oscmd("sed -e 's@\\$1@%s@' < direct/src/directscripts/profilepaths-osx.command >> Panda3D-tpl-rw/panda3dpaths.command" % VERSION)
 
     oscmd("mkdir -p dstroot/base/Developer/Panda3D/lib")
+    oscmd("mkdir -p dstroot/base/Developer/Panda3D/panda3d")
     oscmd("mkdir -p dstroot/base/Developer/Panda3D/etc")
     oscmd("cp %s/etc/Config.prc           dstroot/base/Developer/Panda3D/etc/Config.prc" % GetOutputDir())
     oscmd("cp %s/etc/Confauto.prc         dstroot/base/Developer/Panda3D/etc/Confauto.prc" % GetOutputDir())
@@ -6373,22 +6381,25 @@ def MakeInstallerOSX():
     install_libs = []
     for base in os.listdir(GetOutputDir()+"/lib"):
         if (not base.endswith(".a")):
-            install_libs.append(base)
+            install_libs.append("lib/"+base)
+    for base in os.listdir(GetOutputDir()+"/panda3d"):
+        if (not base.endswith(".a")):
+            install_libs.append("panda3d/"+base)
 
     for base in install_libs:
-        libname = "dstroot/base/Developer/Panda3D/lib/" + base
+        libname = "dstroot/base/Developer/Panda3D/" + base
         # We really need to specify -R in order not to follow symlinks
         # On OSX, just specifying -P is not enough to do that.
-        oscmd("cp -R -P " + GetOutputDir() + "/lib/" + base + " " + libname)
+        oscmd("cp -R -P " + GetOutputDir() + "/" + base + " " + libname)
 
         # Execute install_name_tool to make them reference an absolute path
         if (libname.endswith(".dylib") or libname.endswith(".so")) and not os.path.islink(libname):
-            oscmd("install_name_tool -id /Developer/Panda3D/lib/%s %s" % (base, libname), True)
+            oscmd("install_name_tool -id /Developer/Panda3D/%s %s" % (base, libname), True)
             oscmd("otool -L %s | grep .dylib > %s/tmp/otool-libs.txt" % (libname, GetOutputDir()), True)
             for line in open(GetOutputDir()+"/tmp/otool-libs.txt", "r"):
                 if len(line.strip()) > 0 and not line.strip().endswith(":"):
                     libdep = line.strip().split(" ", 1)[0]
-                    if os.path.basename(libdep) in install_libs:
+                    if 'lib/' + os.path.basename(libdep) in install_libs:
                         oscmd("install_name_tool -change %s /Developer/Panda3D/lib/%s %s" % (libdep, os.path.basename(libdep), libname), True)
 
     # Temporary script that should clean up the poison that the early 1.7.0 builds injected into environment.plist
@@ -6419,26 +6430,25 @@ def MakeInstallerOSX():
             for line in open(GetOutputDir()+"/tmp/otool-libs.txt", "r"):
                 if len(line.strip()) > 0 and not line.strip().endswith(":"):
                     libdep = line.strip().split(" ", 1)[0]
-                    if os.path.basename(libdep) in install_libs:
+                    if 'lib/' + os.path.basename(libdep) in install_libs:
                         oscmd("install_name_tool -change %s /Developer/Panda3D/lib/%s %s" % (libdep, os.path.basename(libdep), binname), True)
 
     if PkgSkip("PYTHON")==0:
         PV = SDK["PYTHONVERSION"].replace("python", "")
         oscmd("mkdir -p dstroot/pythoncode/usr/bin")
-        oscmd("mkdir -p dstroot/pythoncode/Developer/Panda3D/lib/direct")
+        oscmd("mkdir -p dstroot/pythoncode/Developer/Panda3D/direct")
         oscmd("mkdir -p dstroot/pythoncode/Library/Python/%s/site-packages" % PV)
-        WriteFile("dstroot/pythoncode/Library/Python/%s/site-packages/Panda3D.pth" % PV, "/Developer/Panda3D/lib")
-        oscmd("cp -R %s/pandac                dstroot/pythoncode/Developer/Panda3D/lib/pandac" % GetOutputDir())
-        oscmd("cp -R direct/src/*             dstroot/pythoncode/Developer/Panda3D/lib/direct")
-        oscmd("cp direct/src/ffi/panda3d.py   dstroot/pythoncode/Developer/Panda3D/lib/panda3d.py")
+        WriteFile("dstroot/pythoncode/Library/Python/%s/site-packages/Panda3D.pth" % PV, "/Developer/Panda3D")
+        oscmd("cp -R %s/pandac                dstroot/pythoncode/Developer/Panda3D/pandac" % GetOutputDir())
+        oscmd("cp -R direct/src/*             dstroot/pythoncode/Developer/Panda3D/direct")
         oscmd("ln -s %s                       dstroot/pythoncode/usr/bin/ppython" % SDK["PYTHONEXEC"])
         if os.path.isdir(GetOutputDir()+"/Pmw"):
-            oscmd("cp -R %s/Pmw               dstroot/pythoncode/Developer/Panda3D/lib/Pmw" % GetOutputDir())
-            compileall.compile_dir("dstroot/pythoncode/Developer/Panda3D/lib/Pmw")
-        WriteFile("dstroot/pythoncode/Developer/Panda3D/lib/direct/__init__.py", "")
-        for base in os.listdir("dstroot/pythoncode/Developer/Panda3D/lib/direct"):
+            oscmd("cp -R %s/Pmw               dstroot/pythoncode/Developer/Panda3D/Pmw" % GetOutputDir())
+            compileall.compile_dir("dstroot/pythoncode/Developer/Panda3D/Pmw")
+        WriteFile("dstroot/pythoncode/Developer/Panda3D/direct/__init__.py", "")
+        for base in os.listdir("dstroot/pythoncode/Developer/Panda3D/direct"):
             if ((base != "extensions") and (base != "extensions_native")):
-                compileall.compile_dir("dstroot/pythoncode/Developer/Panda3D/lib/direct/"+base)
+                compileall.compile_dir("dstroot/pythoncode/Developer/Panda3D/direct/"+base)
 
     oscmd("mkdir -p dstroot/headers/Developer/Panda3D")
     oscmd("cp -R %s/include               dstroot/headers/Developer/Panda3D/include" % GetOutputDir())
