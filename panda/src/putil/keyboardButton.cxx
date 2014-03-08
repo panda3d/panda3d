@@ -49,7 +49,6 @@ ascii_key(const string &ascii_equivalent) {
 #define DEFINE_KEYBD_BUTTON_HANDLE(KeyName)     \
                   static ButtonHandle _##KeyName; \
                   ButtonHandle KeyboardButton::KeyName() { return _##KeyName; }
-                  
 
 DEFINE_KEYBD_BUTTON_HANDLE(space)
 DEFINE_KEYBD_BUTTON_HANDLE(backspace)
@@ -90,6 +89,7 @@ DEFINE_KEYBD_BUTTON_HANDLE(scroll_lock)
 DEFINE_KEYBD_BUTTON_HANDLE(num_lock)
 DEFINE_KEYBD_BUTTON_HANDLE(print_screen)
 DEFINE_KEYBD_BUTTON_HANDLE(pause)
+DEFINE_KEYBD_BUTTON_HANDLE(menu)
 DEFINE_KEYBD_BUTTON_HANDLE(shift)
 DEFINE_KEYBD_BUTTON_HANDLE(control)
 DEFINE_KEYBD_BUTTON_HANDLE(alt)
@@ -99,6 +99,8 @@ DEFINE_KEYBD_BUTTON_HANDLE(lcontrol)
 DEFINE_KEYBD_BUTTON_HANDLE(rcontrol)
 DEFINE_KEYBD_BUTTON_HANDLE(lalt)
 DEFINE_KEYBD_BUTTON_HANDLE(ralt)
+DEFINE_KEYBD_BUTTON_HANDLE(lmeta)
+DEFINE_KEYBD_BUTTON_HANDLE(rmeta)
 
 
 ////////////////////////////////////////////////////////////////////
@@ -143,7 +145,7 @@ init_keyboard_buttons() {
   ButtonRegistry::ptr()->register_button(_left, "arrow_left");
   ButtonRegistry::ptr()->register_button(_right, "arrow_right");
   ButtonRegistry::ptr()->register_button(_up, "arrow_up");  // cannot name this 'up' since it conflicts with key-release name 'up'
-  ButtonRegistry::ptr()->register_button(_down, "arrow_down");  
+  ButtonRegistry::ptr()->register_button(_down, "arrow_down");
   ButtonRegistry::ptr()->register_button(_page_up, "page_up");
   ButtonRegistry::ptr()->register_button(_page_down, "page_down");
   ButtonRegistry::ptr()->register_button(_home, "home");
@@ -161,6 +163,7 @@ init_keyboard_buttons() {
   ButtonRegistry::ptr()->register_button(_scroll_lock, "scroll_lock");
   ButtonRegistry::ptr()->register_button(_print_screen, "print_screen");
   ButtonRegistry::ptr()->register_button(_pause, "pause");
+  ButtonRegistry::ptr()->register_button(_menu, "menu");
 
   ButtonRegistry::ptr()->register_button(_lshift, "lshift", _shift);
   ButtonRegistry::ptr()->register_button(_rshift, "rshift", _shift);
@@ -168,12 +171,14 @@ init_keyboard_buttons() {
   ButtonRegistry::ptr()->register_button(_rcontrol, "rcontrol", _control);
   ButtonRegistry::ptr()->register_button(_lalt, "lalt", _alt);
   ButtonRegistry::ptr()->register_button(_ralt, "ralt", _alt);
+  ButtonRegistry::ptr()->register_button(_lmeta, "lmeta", _meta);
+  ButtonRegistry::ptr()->register_button(_rmeta, "rmeta", _meta);
 
   // Also register all of the visible ASCII characters.
   for (int i = 32; i < 127; i++) {
     if (isgraph(i)) {
       ButtonHandle key;
-      ButtonRegistry::ptr()->register_button(key, string(1, (char)i), 
+      ButtonRegistry::ptr()->register_button(key, string(1, (char)i),
                                              ButtonHandle::none(), i);
     }
   }

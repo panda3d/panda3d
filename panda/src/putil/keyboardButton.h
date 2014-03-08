@@ -66,6 +66,7 @@ PUBLISHED:
   static ButtonHandle insert();
   static ButtonHandle del();  // delete is a C++ keyword.
   static ButtonHandle help();
+  static ButtonHandle menu();
 
   static ButtonHandle shift();
   static ButtonHandle control();
@@ -84,6 +85,8 @@ PUBLISHED:
   static ButtonHandle rcontrol();
   static ButtonHandle lalt();
   static ButtonHandle ralt();
+  static ButtonHandle lmeta();
+  static ButtonHandle rmeta();
 
 public:
   static void init_keyboard_buttons();

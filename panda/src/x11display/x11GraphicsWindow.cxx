@@ -1392,16 +1392,19 @@ handle_keypress(XKeyEvent &event) {
 
   // Now get the raw unshifted button.
   ButtonHandle button = get_button(event, false);
-  if (button == KeyboardButton::lcontrol() || button == KeyboardButton::rcontrol()) {
-    _input_devices[0].button_down(KeyboardButton::control());
-  }
-  if (button == KeyboardButton::lshift() || button == KeyboardButton::rshift()) {
-    _input_devices[0].button_down(KeyboardButton::shift());
-  }
-  if (button == KeyboardButton::lalt() || button == KeyboardButton::ralt()) {
-    _input_devices[0].button_down(KeyboardButton::alt());
-  }
   if (button != ButtonHandle::none()) {
+    if (button == KeyboardButton::lcontrol() || button == KeyboardButton::rcontrol()) {
+      _input_devices[0].button_down(KeyboardButton::control());
+    }
+    if (button == KeyboardButton::lshift() || button == KeyboardButton::rshift()) {
+      _input_devices[0].button_down(KeyboardButton::shift());
+    }
+    if (button == KeyboardButton::lalt() || button == KeyboardButton::ralt()) {
+      _input_devices[0].button_down(KeyboardButton::alt());
+    }
+    if (button == KeyboardButton::lmeta() || button == KeyboardButton::rmeta()) {
+      _input_devices[0].button_down(KeyboardButton::meta());
+    }
     _input_devices[0].button_down(button);
   }
 
@@ -1425,16 +1428,19 @@ handle_keyrelease(XKeyEvent &event) {
 
   // Now get the raw unshifted button.
   ButtonHandle button = get_button(event, false);
-  if (button == KeyboardButton::lcontrol() || button == KeyboardButton::rcontrol()) {
-    _input_devices[0].button_up(KeyboardButton::control());
-  }
-  if (button == KeyboardButton::lshift() || button == KeyboardButton::rshift()) {
-    _input_devices[0].button_up(KeyboardButton::shift());
-  }
-  if (button == KeyboardButton::lalt() || button == KeyboardButton::ralt()) {
-    _input_devices[0].button_up(KeyboardButton::alt());
-  }
   if (button != ButtonHandle::none()) {
+    if (button == KeyboardButton::lcontrol() || button == KeyboardButton::rcontrol()) {
+      _input_devices[0].button_up(KeyboardButton::control());
+    }
+    if (button == KeyboardButton::lshift() || button == KeyboardButton::rshift()) {
+      _input_devices[0].button_up(KeyboardButton::shift());
+    }
+    if (button == KeyboardButton::lalt() || button == KeyboardButton::ralt()) {
+      _input_devices[0].button_up(KeyboardButton::alt());
+    }
+    if (button == KeyboardButton::lmeta() || button == KeyboardButton::rmeta()) {
+      _input_devices[0].button_up(KeyboardButton::meta());
+    }
     _input_devices[0].button_up(button);
   }
 
@@ -1825,6 +1831,8 @@ map_button(KeySym key) {
     return KeyboardButton::print_screen();
   case XK_Pause:
     return KeyboardButton::pause();
+  case XK_Menu:
+    return KeyboardButton::menu();
   case XK_Shift_L:
     return KeyboardButton::lshift();
   case XK_Shift_R:
@@ -1838,8 +1846,9 @@ map_button(KeySym key) {
   case XK_Alt_R:
     return KeyboardButton::ralt();
   case XK_Meta_L:
+    return KeyboardButton::lmeta();
   case XK_Meta_R:
-    return KeyboardButton::meta();
+    return KeyboardButton::rmeta();
   case XK_Caps_Lock:
     return KeyboardButton::caps_lock();
   case XK_Shift_Lock:
@@ -1963,9 +1972,9 @@ map_raw_button(KeyCode key) {
 
   case 127: return KeyboardButton::pause();
 
-  //case 133: return KeyboardButton::lmeta();
-  //case 134: return KeyboardButton::rmeta();
-  //case 135: return KeyboardButton::menu();
+  case 133: return KeyboardButton::lmeta();
+  case 134: return KeyboardButton::rmeta();
+  case 135: return KeyboardButton::menu();
   }
   return ButtonHandle::none();
 }

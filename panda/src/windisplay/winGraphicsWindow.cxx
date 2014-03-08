@@ -2605,9 +2605,9 @@ lookup_raw_key(LPARAM lparam) const {
   switch (vsc) {
   case 87: return KeyboardButton::f11();
   case 88: return KeyboardButton::f12();
-  //case 91: return KeyboardButton::lmeta();
-  //case 92: return KeyboardButton::rmeta();
-  //case 93: return KeyboardButton::menu();
+  case 91: return KeyboardButton::lmeta();
+  case 92: return KeyboardButton::rmeta();
+  case 93: return KeyboardButton::menu();
   default: return ButtonHandle::none();
   }
 }
