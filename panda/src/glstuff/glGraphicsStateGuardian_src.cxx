@@ -1106,7 +1106,7 @@ reset() {
   _glGetShaderInfoLog = glGetShaderInfoLog;
   _glGetUniformLocation = glGetUniformLocation;
   _glLinkProgram = glLinkProgram;
-  _glShaderSource = glShaderSource;
+  _glShaderSource = (PFNGLSHADERSOURCEPROC_P) glShaderSource;
   _glUseProgram = glUseProgram;
   _glUniform4f = glUniform4f;
   _glUniform1i = glUniform1i;
