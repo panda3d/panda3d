@@ -2028,7 +2028,7 @@ get_keyboard_map() const {
       continue;
     }
 
-    map->map_button(raw_button, button, name);
+    map->map_button(raw_button, button);
   }
 
   return map;
