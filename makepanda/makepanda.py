@@ -1641,7 +1641,11 @@ def RunGenPyCode(target, inputs, opts):
     if (PkgSkip("PYTHON") != 0):
         return
 
-    cmdstr = sys.executable + " -B " + os.path.join(GetOutputDir(), "direct", "ffi", "jGenPyCode.py")
+    cmdstr = sys.executable + " "
+    if sys.version_info >= (2, 6):
+        cmdstr += "-B "
+
+    cmdstr += os.path.join(GetOutputDir(), "direct", "ffi", "jGenPyCode.py")
     if (GENMAN): cmdstr += " -d"
     cmdstr += " -r"
     for i in inputs:
@@ -1661,7 +1665,11 @@ def RunGenPyCode(target, inputs, opts):
 def FreezePy(target, inputs, opts):
     assert len(inputs) > 0
     # Make sure this function isn't called before genpycode is run.
-    cmdstr = sys.executable + " -B " + os.path.join("direct", "src", "showutil", "pfreeze.py")
+    cmdstr = sys.executable + " "
+    if sys.version_info >= (2, 6):
+        cmdstr += "-B "
+
+    cmdstr += os.path.join("direct", "src", "showutil", "pfreeze.py")
     src = inputs.pop(0)
     for i in inputs:
       cmdstr += " -i " + os.path.splitext(i)[0]
@@ -1685,10 +1693,14 @@ def FreezePy(target, inputs, opts):
 def Package(target, inputs, opts):
     assert len(inputs) == 1
     # Invoke the ppackage script.
-    command = sys.executable
-    if (GetOptimizeOption(opts) >= 4):
-        command += " -OO"
-    command += " -B direct/src/p3d/ppackage.py"
+    command = sys.executable + " "
+    if GetOptimizeOption(opts) >= 4:
+        command += "-OO "
+
+    if sys.version_info >= (2, 6):
+        command += "-B "
+
+    command += "direct/src/p3d/ppackage.py"
 
     if GetTarget() == "darwin":
         if SDK.get("MACOSX") is not None:
@@ -6321,7 +6333,12 @@ def MakeInstallerOSX():
     if (RUNTIME):
         # Invoke the make_installer script.
         AddToPathEnv("DYLD_LIBRARY_PATH", GetOutputDir() + "/plugins")
-        oscmd(sys.executable + " -B direct/src/plugin_installer/make_installer.py --version %s" % VERSION)
+        cmdstr = sys.executable + " "
+        if sys.version_info >= (2, 6):
+            cmdstr += "-B "
+
+        cmdstr += "direct/src/plugin_installer/make_installer.py --version %s" % VERSION
+        oscmd(cmdstr)
         return
 
     import compileall
