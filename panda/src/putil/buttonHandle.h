@@ -29,6 +29,7 @@ class EXPCL_PANDA_PUTIL ButtonHandle {
 PUBLISHED:
   INLINE ButtonHandle();
   INLINE ButtonHandle(int index);
+  ButtonHandle(const string &name);
 
 public:
   INLINE ButtonHandle(const ButtonHandle &copy);
