@@ -1942,7 +1942,7 @@ write_module_class(ostream &out, Object *obj) {
     out << "    Dtool_" << ClassName << ".As_PyTypeObject().tp_flags |= Py_TPFLAGS_HAVE_ITER;\n";
   }
   if (has_local_getbuffer) {
-    out << "#if PY_VERSION_HEX >= 0x02060000\n";
+    out << "#if PY_VERSION_HEX >= 0x02060000 && PY_VERSION_HEX < 0x03000000\n";
     out << "    Dtool_" << ClassName << ".As_PyTypeObject().tp_flags |= Py_TPFLAGS_HAVE_NEWBUFFER;\n";
     out << "#endif";
   }
