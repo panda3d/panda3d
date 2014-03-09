@@ -3116,6 +3116,7 @@ if (not RUNTIME):
   TargetAdd('libp3pnmimage.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3pnmimage.in', opts=['IMOD:core', 'ILIB:libp3pnmimage', 'SRCDIR:panda/src/pnmimage'])
   TargetAdd('libp3pnmimage_igate.obj', input='libp3pnmimage.in', opts=["DEPENDENCYONLY"])
+  TargetAdd('p3pnmimage_pfmFile_ext.obj', opts=OPTS, input='pfmFile_ext.cxx')
 
 #
 # DIRECTORY: panda/src/nativenet/
@@ -3540,6 +3541,7 @@ if (not RUNTIME):
   TargetAdd('libpanda.dll', input='libp3dtool.dll')
 
   TargetAdd('libpanda.dll', input='p3putil_typedWritable_ext.obj')
+  TargetAdd('libpanda.dll', input='p3pnmimage_pfmFile_ext.obj')
   TargetAdd('libpanda.dll', input='p3gobj_geomVertexArrayData_ext.obj')
   TargetAdd('libpanda.dll', input='p3pgraph_nodePath_ext.obj')
   TargetAdd('libpanda.dll', input='p3pgraph_nodePathCollection_ext.obj')

@@ -12,6 +12,7 @@
   #define SOURCES \
      config_pnmimage.h \
      pfmFile.I pfmFile.h \
+     pfmFile_ext.cxx pfmFile_ext.h \
      pnmbitio.h \
      pnmBrush.h pnmBrush.I \
      pnmFileType.h pnmFileTypeRegistry.h pnmImage.I  \
@@ -36,6 +37,7 @@
   #define INSTALL_HEADERS \
      config_pnmimage.h \
      pfmFile.I pfmFile.h \
+     pfmFile_ext.cxx pfmFile_ext.h \
      pnmBrush.h pnmBrush.I \
      pnmFileType.h pnmFileTypeRegistry.h pnmImage.I \
      pnmImage.h pnmImageHeader.I pnmImageHeader.h \

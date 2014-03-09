@@ -95,7 +95,7 @@ PUBLISHED:
   BLOCKING bool calc_autocrop(int &x_begin, int &x_end, int &y_begin, int &y_end) const;
   BLOCKING INLINE bool calc_autocrop(LVecBase4f &range) const;
   BLOCKING INLINE bool calc_autocrop(LVecBase4d &range) const;
- 
+
   bool is_row_empty(int y, int x_begin, int x_end) const;
   bool is_column_empty(int x, int y_begin, int y_end) const;
 
@@ -139,6 +139,9 @@ PUBLISHED:
                       int x_size = -1, int y_size = -1);
 
   void output(ostream &out) const;
+
+  EXTENSION(PyObject *get_points() const);
+  EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const);
 
 public:
   INLINE const vector_float &get_table() const;
