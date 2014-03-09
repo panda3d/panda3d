@@ -2395,7 +2395,7 @@ def CopyPythonTree(dstdir, srcdir, lib2to3_fixers=[]):
         dstpth = os.path.join(dstdir, entry)
         if (os.path.isfile(srcpth)):
             base, ext = os.path.splitext(entry)
-            if (entry != ".cvsignore" and ext not in SUFFIX_INC):
+            if (entry != ".cvsignore" and ext not in SUFFIX_INC + ['.pyc', '.pyo']):
                 if (NeedsBuild([dstpth], [srcpth])):
                     WriteBinaryFile(dstpth, ReadBinaryFile(srcpth))
 
