@@ -21,6 +21,7 @@
 #include "bitArray.h"
 #include "bitMask.h"
 #include "buttonHandle.h"
+#include "buttonMap.h"
 #include "cachedTypedWritableReferenceCount.h"
 #include "callbackData.h"
 #include "callbackObject.h"
@@ -186,6 +187,7 @@ init_libputil() {
   BitMask32::init_type();
   BitMask64::init_type();
   ButtonHandle::init_type();
+  ButtonMap::init_type();
   CPointerCallbackObject::init_type();
   CachedTypedWritableReferenceCount::init_type();
   CallbackData::init_type();

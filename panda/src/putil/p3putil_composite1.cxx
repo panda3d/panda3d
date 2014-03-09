@@ -10,6 +10,7 @@
 #include "bitArray.cxx"
 #include "bitMask.cxx"
 #include "buttonHandle.cxx"
+#include "buttonMap.cxx"
 #include "buttonRegistry.cxx"
 #include "cachedTypedWritableReferenceCount.cxx"
 #include "callbackData.cxx"

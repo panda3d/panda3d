@@ -66,9 +66,10 @@ protected:
   void handle_keyrelease(XKeyEvent &event);
 
   ButtonHandle get_button(XKeyEvent &key_event, bool allow_shift);
-  ButtonHandle map_button(KeySym key);
-  ButtonHandle map_raw_button(KeyCode key);
+  ButtonHandle map_button(KeySym key) const;
+  ButtonHandle map_raw_button(KeyCode key) const;
   ButtonHandle get_mouse_button(XButtonEvent &button_event);
+  virtual ButtonMap *get_keyboard_map() const;
 
   static Bool check_event(X11_Display *display, XEvent *event, char *arg);
 
