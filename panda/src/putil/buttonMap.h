@@ -35,21 +35,21 @@ PUBLISHED:
   INLINE int get_num_buttons() const;
   INLINE ButtonHandle get_raw_button(int i) const;
   INLINE ButtonHandle get_mapped_button(int i) const;
-  INLINE const string &get_mapped_button_text(int i) const;
+  INLINE const string &get_mapped_button_label(int i) const;
 
   INLINE ButtonHandle get_mapped_button(ButtonHandle raw) const;
   INLINE ButtonHandle get_mapped_button(const string &raw_name) const;
-  INLINE const string &get_mapped_button_text(ButtonHandle raw) const;
-  INLINE const string &get_mapped_button_text(const string &raw_name) const;
+  INLINE const string &get_mapped_button_label(ButtonHandle raw) const;
+  INLINE const string &get_mapped_button_label(const string &raw_name) const;
 
 public:
-  void map_button(ButtonHandle raw_button, ButtonHandle button, const string &text = "");
+  void map_button(ButtonHandle raw_button, ButtonHandle button, const string &label = "");
 
 private:
   struct ButtonNode {
     ButtonHandle _raw;
-  	ButtonHandle _mapped;
-  	string _text;
+    ButtonHandle _mapped;
+    string _label;
   };
 
   pmap<int, ButtonNode> _button_map;

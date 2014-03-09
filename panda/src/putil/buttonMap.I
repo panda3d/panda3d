@@ -47,15 +47,15 @@ get_mapped_button(int i) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ButtonMap::get_mapped_button_text
+//     Function: ButtonMap::get_mapped_button_label
 //       Access: Published
-//  Description: Returns the text associated with the nth mapped
+//  Description: Returns the label associated with the nth mapped
 //               button, meaning the button that the nth raw
 //               button is mapped to.
 ////////////////////////////////////////////////////////////////////
 INLINE const string &ButtonMap::
-get_mapped_button_text(int i) const {
-  return _buttons[i]->_text;
+get_mapped_button_label(int i) const {
+  return _buttons[i]->_label;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -94,7 +94,7 @@ get_mapped_button(const string &raw_name) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ButtoMap::get_mapped_button_text
+//     Function: ButtoMap::get_mapped_button_label
 //       Access: Published
 //  Description: If the button map specifies a special name for the
 //               button (eg. if the operating system or keyboard
@@ -106,19 +106,19 @@ get_mapped_button(const string &raw_name) const {
 //               name of the Panda event associated with the button.
 ////////////////////////////////////////////////////////////////////
 INLINE const string &ButtonMap::
-get_mapped_button_text(ButtonHandle raw) const {
+get_mapped_button_label(ButtonHandle raw) const {
   pmap<int, ButtonNode>::const_iterator it;
   it = _button_map.find(raw.get_index());
   if (it == _button_map.end()) {
     static const string empty = "";
     return empty;
   } else {
-    return it->second._text;
+    return it->second._label;
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ButtoMap::get_mapped_button_text
+//     Function: ButtoMap::get_mapped_button_label
 //       Access: Published
 //  Description: If the button map specifies a special name for the
 //               button (eg. if the operating system or keyboard
@@ -130,12 +130,12 @@ get_mapped_button_text(ButtonHandle raw) const {
 //               name of the Panda event associated with the button.
 ////////////////////////////////////////////////////////////////////
 INLINE const string &ButtonMap::
-get_mapped_button_text(const string &raw_name) const {
+get_mapped_button_label(const string &raw_name) const {
   ButtonHandle raw_button = ButtonRegistry::ptr()->find_button(raw_name);
   if (raw_button == ButtonHandle::none()) {
     static const string empty = "";
     return empty;
   } else {
-    return get_mapped_button_text(raw_button);
+    return get_mapped_button_label(raw_button);
   }
 }
