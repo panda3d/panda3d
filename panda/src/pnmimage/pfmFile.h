@@ -141,7 +141,10 @@ PUBLISHED:
   void output(ostream &out) const;
 
   EXTENSION(PyObject *get_points() const);
+
+#if PY_VERSION_HEX >= 0x02060000
   EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const);
+#endif
 
 public:
   INLINE const vector_float &get_table() const;
