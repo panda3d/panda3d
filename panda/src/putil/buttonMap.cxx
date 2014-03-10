@@ -24,6 +24,11 @@ TypeHandle ButtonMap::_type_handle;
 void ButtonMap::
 map_button(ButtonHandle raw_button, ButtonHandle button, const string &label) {
   int index = raw_button.get_index();
+  if (_button_map.find(index) != _button_map.end()) {
+    // A button with this index was already mapped.
+    return;
+  }
+
   ButtonNode bnode;
   bnode._raw = raw_button;
   bnode._mapped = button;

@@ -30,7 +30,7 @@
 //               button, which may optionally be associated with an
 //               appropriate platform-specific name for the button.
 ////////////////////////////////////////////////////////////////////
-class ButtonMap : public TypedReferenceCount {
+class EXPCL_PANDA_PUTIL ButtonMap : public TypedReferenceCount {
 PUBLISHED:
   INLINE int get_num_buttons() const;
   INLINE ButtonHandle get_raw_button(int i) const;
