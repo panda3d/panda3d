@@ -104,8 +104,11 @@ PUBLISHED:
   void set_no_data_nan(int num_channels);
   void set_no_data_value(const LPoint4f &no_data_value);
   INLINE void set_no_data_value(const LPoint4d &no_data_value);
+  void set_no_data_threshold(const LPoint4f &no_data_value);
+  INLINE void set_no_data_threshold(const LPoint4d &no_data_value);
   INLINE void clear_no_data_value();
   INLINE bool has_no_data_value() const;
+  INLINE bool has_no_data_threshold() const;
   INLINE const LPoint4f &get_no_data_value() const;
 
   BLOCKING void resize(int new_x_size, int new_y_size);
@@ -195,6 +198,10 @@ private:
   static bool has_point_2(const PfmFile *file, int x, int y);
   static bool has_point_3(const PfmFile *file, int x, int y);
   static bool has_point_4(const PfmFile *file, int x, int y);
+  static bool has_point_threshold_1(const PfmFile *file, int x, int y);
+  static bool has_point_threshold_2(const PfmFile *file, int x, int y);
+  static bool has_point_threshold_3(const PfmFile *file, int x, int y);
+  static bool has_point_threshold_4(const PfmFile *file, int x, int y);
   static bool has_point_chan4(const PfmFile *file, int x, int y);
   static bool has_point_nan_1(const PfmFile *file, int x, int y);
   static bool has_point_nan_2(const PfmFile *file, int x, int y);
@@ -208,6 +215,7 @@ private:
   PN_float32 _scale;
 
   bool _has_no_data_value;
+  bool _has_no_data_threshold;
   LPoint4f _no_data_value;
 
   typedef bool HasPointFunc(const PfmFile *file, int x, int y);

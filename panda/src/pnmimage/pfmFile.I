@@ -478,6 +478,7 @@ INLINE void PfmFile::
 set_no_data_chan4(bool chan4) {
   if (chan4 && _num_channels == 4) {
     _has_no_data_value = true;
+    _has_no_data_threshold = false;
     _no_data_value.set(0.0, 0.0, 0.0, -1.0);
     _has_point = has_point_chan4;
   } else {
@@ -497,6 +498,18 @@ set_no_data_value(const LPoint4d &no_data_value) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::set_no_data_threshold
+//       Access: Published
+//  Description: Sets the special threshold value.  Points that are
+//               below this value in all components are considered "no
+//               value".
+////////////////////////////////////////////////////////////////////
+INLINE void PfmFile::
+set_no_data_threshold(const LPoint4d &no_data_threshold) {
+  set_no_data_threshold(LCAST(PN_float32, no_data_threshold));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PfmFile::set_no_data_value
 //       Access: Published
 //  Description: Removes the special value that means "no data" when it
@@ -506,6 +519,7 @@ set_no_data_value(const LPoint4d &no_data_value) {
 INLINE void PfmFile::
 clear_no_data_value() {
   _has_no_data_value = false;
+  _has_no_data_threshold = false;
   _no_data_value = LPoint4f::zero();
   _has_point = has_point_noop;
 }
@@ -519,6 +533,17 @@ clear_no_data_value() {
 INLINE bool PfmFile::
 has_no_data_value() const {
   return _has_no_data_value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::has_no_data_threshold
+//       Access: Published
+//  Description: Returns whether a "no data" threshold value has been
+//               established by set_no_data_threshold().
+////////////////////////////////////////////////////////////////////
+INLINE bool PfmFile::
+has_no_data_threshold() const {
+  return _has_no_data_threshold;
 }
 
 ////////////////////////////////////////////////////////////////////
