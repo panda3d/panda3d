@@ -13,7 +13,6 @@
 #include "eggFilenameNode.cxx"
 #include "eggGroup.cxx"
 #include "eggGroupNode.cxx"
-#include "eggGroupNode_ext.cxx"
 #include "eggGroupUniquifier.cxx"
 #include "eggLine.cxx"
 #include "eggMaterial.cxx"
