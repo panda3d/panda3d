@@ -42,6 +42,9 @@ PUBLISHED:
   INLINE const string &get_mapped_button_label(ButtonHandle raw) const;
   INLINE const string &get_mapped_button_label(const string &raw_name) const;
 
+  void output(ostream &out) const;
+  void write(ostream &out, int indent_level = 0) const;
+
 public:
   void map_button(ButtonHandle raw_button, ButtonHandle button, const string &label = "");
 
