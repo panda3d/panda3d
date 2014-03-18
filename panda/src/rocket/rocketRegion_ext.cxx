@@ -15,6 +15,8 @@
 #include "rocketRegion_ext.h"
 #include "extension.h"
 
+#ifdef HAVE_PYTHON
+
 #ifndef CPPPARSER
 #define HAVE_LONG_LONG 1
 #include <Rocket/Core/Context.h>
@@ -48,3 +50,5 @@ get_context() const {
   }
   return NULL;
 }
+
+#endif
