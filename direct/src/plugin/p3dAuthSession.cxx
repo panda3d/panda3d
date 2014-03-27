@@ -28,6 +28,7 @@
 #include <sys/select.h>
 #include <signal.h>
 #include <dlfcn.h>
+#include <unistd.h>
 #endif
 
 ////////////////////////////////////////////////////////////////////

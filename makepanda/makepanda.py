@@ -715,12 +715,12 @@ if (COMPILER=="GCC"):
             # We use a statically linked libboost_python on OSX
             rocket_libs += ("boost_python",)
         SmartPkgEnable("ROCKET",    "",          rocket_libs, "Rocket/Core.h")
-        SmartPkgEnable("GTK2",      "gtk+-2.0")
 
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
     SmartPkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
     SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
     SmartPkgEnable("ZLIB",      "zlib",      ("z"), "zlib.h")
+    SmartPkgEnable("GTK2",      "gtk+-2.0")
 
     if (RTDIST and GetHost() == "darwin" and "PYTHONVERSION" in SDK):
         # Don't use the framework for the OSX rtdist build. I'm afraid it gives problems somewhere.
@@ -4721,7 +4721,7 @@ if (RTDIST or RUNTIME):
 #
 
 if (RUNTIME and PkgSkip("NPAPI")==0):
-  OPTS=['DIR:direct/src/plugin_npapi', 'RUNTIME']
+  OPTS=['DIR:direct/src/plugin_npapi', 'RUNTIME', 'GTK2']
   if GetTarget() == 'windows':
     nppanda3d_rc = {"name" : "Panda3D Game Engine Plug-in",
                     "version" : VERSION,
