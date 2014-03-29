@@ -420,7 +420,7 @@ add_files(const vector_string &params) {
   }
 
   // Change current working directory, if requested.
-  if (got_chdir_to && chdir(chdir_to.c_str()) != 0) {
+  if (got_chdir_to && !chdir_to.chdir()) {
     cout << "Failed to chdir to " << chdir_to << ": " << strerror(errno) << endl;
     return false;
   }
