@@ -220,8 +220,10 @@ make_geom(BulletSoftBodyNode *node, const GeomVertexFormat *format, bool two_sid
 
   if (two_sided) {
     for (int j=0; j<nodes.size(); ++j) {
-      btVector3 &v = nodes[j].m_x;
+      btVector3 v = nodes[j].m_x;
       btVector3 &n = nodes[j].m_n;
+
+      v = trans.invXform(v);
 
       vwriter.add_data3((PN_stdfloat)v.getX(), (PN_stdfloat)v.getY(), (PN_stdfloat)v.getZ());
       nwriter.add_data3((PN_stdfloat)n.getX(), (PN_stdfloat)n.getY(), (PN_stdfloat)n.getZ());
@@ -231,23 +233,29 @@ make_geom(BulletSoftBodyNode *node, const GeomVertexFormat *format, bool two_sid
 
   // Indices
   btSoftBody::Node *node0 = &nodes[0];
+  int i0, i1, i2;
 
   if (use_faces) {
+
     btSoftBody::tFaceArray &faces(body->m_faces);
 
     prim = new GeomTriangles(Geom::UH_stream);
     prim->set_shade_model(Geom::SM_uniform);
 
     for (int j=0; j<faces.size(); ++j) {
-      prim->add_vertices(int(faces[j].m_n[0] - node0),
-                         int(faces[j].m_n[1] - node0),
-                         int(faces[j].m_n[2] - node0));
+      i0 = int(faces[j].m_n[0] - node0);
+      i1 = int(faces[j].m_n[1] - node0);
+      i2 = int(faces[j].m_n[2] - node0);
+
+      prim->add_vertices(i0, i1, i2);
       prim->close_primitive();
 
       if (two_sided) {
-        prim->add_vertices(nodes.size() + int(faces[j].m_n[0] - node0),
-                           nodes.size() + int(faces[j].m_n[2] - node0),
-                           nodes.size() + int(faces[j].m_n[1] - node0));
+        i0 = nodes.size() + int(faces[j].m_n[0] - node0);
+        i1 = nodes.size() + int(faces[j].m_n[2] - node0);
+        i2 = nodes.size() + int(faces[j].m_n[1] - node0);
+
+        prim->add_vertices(i0, i1, i2);
         prim->close_primitive();
       }
     }
@@ -259,8 +267,10 @@ make_geom(BulletSoftBodyNode *node, const GeomVertexFormat *format, bool two_sid
     prim->set_shade_model(Geom::SM_uniform);
 
     for (int j=0; j<links.size(); ++j) {
-      prim->add_vertices(int(links[j].m_n[0] - node0),
-                         int(links[j].m_n[1] - node0));
+      i0 = int(links[j].m_n[0] - node0);
+      i1 = int(links[j].m_n[1] - node0);
+
+      prim->add_vertices(i0, i1);
       prim->close_primitive();
     }
   }

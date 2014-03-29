@@ -21,6 +21,10 @@
 #include "shaderContext.h"
 #include "deletedChain.h"
 
+#if defined(HAVE_CG) && !defined(OPENGLES)
+#include <Cg/cg.h>
+#endif
+
 class CLP(GraphicsStateGuardian);
 
 ////////////////////////////////////////////////////////////////////
@@ -57,10 +61,13 @@ private:
   CGprogram _cg_vprogram;
   CGprogram _cg_fprogram;
   CGprogram _cg_gprogram;
+  CGprofile _cg_vprofile;
+  CGprofile _cg_fprofile;
+  CGprofile _cg_gprofile;
 
   pvector <CGparameter> _cg_parameter_map;
 #endif
-  
+
   GLuint _glsl_program;
   GLuint _glsl_vshader;
   GLuint _glsl_fshader;

@@ -95,7 +95,7 @@ PUBLISHED:
   BLOCKING bool calc_autocrop(int &x_begin, int &x_end, int &y_begin, int &y_end) const;
   BLOCKING INLINE bool calc_autocrop(LVecBase4f &range) const;
   BLOCKING INLINE bool calc_autocrop(LVecBase4d &range) const;
- 
+
   bool is_row_empty(int y, int x_begin, int x_end) const;
   bool is_column_empty(int x, int y_begin, int y_end) const;
 
@@ -121,6 +121,7 @@ PUBLISHED:
   BLOCKING void reverse_distort(const PfmFile &dist, PN_float32 scale_factor = 1.0);
   BLOCKING void merge(const PfmFile &other);
   BLOCKING void copy_channel(int to_channel, const PfmFile &other, int from_channel);
+  BLOCKING void copy_channel_masked(int to_channel, const PfmFile &other, int from_channel);
   BLOCKING void apply_crop(int x_begin, int x_end, int y_begin, int y_end);
   BLOCKING void clear_to_texcoords(int x_size, int y_size);
 
@@ -138,6 +139,12 @@ PUBLISHED:
                       int x_size = -1, int y_size = -1);
 
   void output(ostream &out) const;
+
+  EXTENSION(PyObject *get_points() const);
+
+#if PY_VERSION_HEX >= 0x02060000
+  EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const);
+#endif
 
 public:
   INLINE const vector_float &get_table() const;

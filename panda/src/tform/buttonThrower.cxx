@@ -268,16 +268,16 @@ void ButtonThrower::
 do_specific_event(const string &event_name, double time) {
   if (_specific_flag) {
     PT(Event) event = new Event(_prefix + event_name);
-    
+
     if (_time_flag) {
       event->add_parameter(time);
     }
-    
+
     ParameterList::const_iterator pi;
     for (pi = _parameters.begin(); pi != _parameters.end(); ++pi) {
       event->add_parameter(*pi);
     }
-    
+
     throw_event(event);
   }
 }
@@ -318,6 +318,14 @@ do_general_event(const ButtonEvent &button_event, const string &button_name) {
   case ButtonEvent::T_move:
     event_name = _move_event;
     break;
+
+  case ButtonEvent::T_raw_down:
+    event_name = _raw_button_down_event;
+    break;
+
+  case ButtonEvent::T_raw_up:
+    event_name = _raw_button_up_event;
+    break;
   }
   if (event_name.empty()) {
     // This general event is not configured.
@@ -336,6 +344,8 @@ do_general_event(const ButtonEvent &button_event, const string &button_name) {
   case ButtonEvent::T_resume_down:
   case ButtonEvent::T_up:
   case ButtonEvent::T_repeat:
+  case ButtonEvent::T_raw_down:
+  case ButtonEvent::T_raw_up:
     event->add_parameter(button_name);
     break;
 
@@ -405,7 +415,7 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
             do_specific_event(event_name, be._time);
           }
           do_general_event(be, event_name);
-          
+
         } else {
           // Don't process this button; instead, pass it down to future
           // generations.
@@ -418,7 +428,7 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
         // throw an event now (since we already missed it), but do
         // make sure our modifiers are up-to-date.
         _mods.button_down(be._button);
-          
+
       } else if (be._type == ButtonEvent::T_up) {
         // Button up.
         _mods.button_up(be._button);
@@ -428,6 +438,34 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
         // of the modifier keys.
         if (!_throw_buttons_active || has_throw_button(be._button)) {
           do_specific_event(event_name + "-up", be._time);
+          do_general_event(be, event_name);
+        }
+        if (_throw_buttons_active) {
+          // Now pass the event on to future generations.  We always
+          // pass "up" events, even if we are intercepting this
+          // particular button; unless we're processing all buttons in
+          // which case it doesn't matter.
+          _button_events->add_event(be);
+        }
+
+      } else if (be._type == ButtonEvent::T_raw_down) {
+        // Raw button down.
+        if (!_throw_buttons_active || has_throw_button(be._button)) {
+          // Process this button.
+          do_specific_event("raw-" + event_name, be._time);
+          do_general_event(be, event_name);
+
+        } else {
+          // Don't process this button; instead, pass it down to future
+          // generations.
+          _button_events->add_event(be);
+        }
+
+      } else if (be._type == ButtonEvent::T_raw_up) {
+        // Raw button up.
+        if (!_throw_buttons_active || has_throw_button(be._button)) {
+          // Process this button.
+          do_specific_event("raw-" + event_name + "-up", be._time);
           do_general_event(be, event_name);
         }
         if (_throw_buttons_active) {

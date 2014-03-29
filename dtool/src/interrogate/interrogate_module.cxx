@@ -112,7 +112,7 @@ int write_python_table_native(ostream &out) {
   pset<std::string >::iterator ii;
   for(ii = libraries.begin(); ii != libraries.end(); ii++) {
     printf("Referencing Library %s\n", (*ii).c_str());
-    out << "extern LibraryDef " << *ii << "_moddef;\n";
+    out << "IMPORT_THIS LibraryDef " << *ii << "_moddef;\n";
   }
 
   out << "\n"

@@ -31,7 +31,7 @@
 #include "pta_LVecBase2.h"
 
 #ifdef HAVE_CG
-// I don't want to include the Cg header file into panda as a 
+// I don't want to include the Cg header file into panda as a
 // whole.  Instead, I'll just excerpt some opaque declarations.
 typedef struct _CGcontext   *CGcontext;
 typedef struct _CGprogram   *CGprogram;
@@ -41,8 +41,8 @@ typedef struct _CGparameter *CGparameter;
 ////////////////////////////////////////////////////////////////////
 //       Class : Shader
 //      Summary: The Shader class is meant to select the Shader Language,
-//               select the available profile, compile the shader, and 
-//               finally compile and store the shader parameters  
+//               select the available profile, compile the shader, and
+//               finally compile and store the shader parameters
 //               in the appropriate structure.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_GOBJ Shader : public TypedWritableReferenceCount {
@@ -116,11 +116,11 @@ public:
     SMO_pixel_size,
     SMO_texpad_x,
     SMO_texpix_x,
-    
+
     SMO_attr_material,
     SMO_attr_color,
     SMO_attr_colorscale,
-    
+
     SMO_alight_x,
     SMO_dlight_x,
     SMO_plight_x,
@@ -129,7 +129,7 @@ public:
     SMO_texmat_x,
     SMO_plane_x,
     SMO_clipplane_x,
-    
+
     SMO_mat_constant_x,
     SMO_vec_constant_x,
 
@@ -147,7 +147,7 @@ public:
 
     SMO_apiclip_to_view,
     SMO_view_to_apiclip,
-    
+
     SMO_view_x_to_view,
     SMO_view_to_view_x,
 
@@ -162,11 +162,15 @@ public:
 
     SMO_attr_fog,
     SMO_attr_fogcolor,
-    
+
+    SMO_frame_number,
+    SMO_frame_time,
+    SMO_frame_delta,
+
     SMO_INVALID
   };
-  
-  enum ShaderArgClass { 
+
+  enum ShaderArgClass {
     SAC_scalar,
     SAC_vector,
     SAC_matrix,
@@ -174,28 +178,28 @@ public:
     SAC_array,
     SAC_unknown,
   };
-  
-  enum ShaderArgType { 
-    SAT_scalar,     
-    SAT_vec1,       
-    SAT_vec2,       
-    SAT_vec3,       
-    SAT_vec4,       
-    SAT_mat1x1,   
-    SAT_mat1x2,  
-    SAT_mat1x3, 
+
+  enum ShaderArgType {
+    SAT_scalar,
+    SAT_vec1,
+    SAT_vec2,
+    SAT_vec3,
+    SAT_vec4,
+    SAT_mat1x1,
+    SAT_mat1x2,
+    SAT_mat1x3,
     SAT_mat1x4,
     SAT_mat2x1,
-    SAT_mat2x2,   
-    SAT_mat2x3,  
-    SAT_mat2x4, 
-    SAT_mat3x1, 
-    SAT_mat3x2, 
-    SAT_mat3x3,   
-    SAT_mat3x4,  
-    SAT_mat4x1,  
-    SAT_mat4x2,  
-    SAT_mat4x3,  
+    SAT_mat2x2,
+    SAT_mat2x3,
+    SAT_mat2x4,
+    SAT_mat3x1,
+    SAT_mat3x2,
+    SAT_mat3x3,
+    SAT_mat3x4,
+    SAT_mat4x1,
+    SAT_mat4x2,
+    SAT_mat4x3,
     SAT_mat4x4,
     SAT_sampler1d,
     SAT_sampler2d,
@@ -231,20 +235,20 @@ public:
   };
 
   enum ShaderStateDep {
-    SSD_NONE          =  0,
-    SSD_general       =  1,
-    SSD_transform     =  2,
-    SSD_color         =  4,
-    SSD_colorscale    =  8,
-    SSD_material      = 16,
-    SSD_shaderinputs  = 32,
-    SSD_fog           = 64,
+    SSD_NONE          = 0x000,
+    SSD_general       = 0x001,
+    SSD_transform     = 0x002,
+    SSD_color         = 0x004,
+    SSD_colorscale    = 0x008,
+    SSD_material      = 0x010,
+    SSD_shaderinputs  = 0x020,
+    SSD_fog           = 0x040,
   };
 
   enum ShaderBug {
     SBUG_ati_draw_buffers,
   };
-  
+
   enum ShaderMatFunc {
     SMF_compose,
     SMF_transform_dlight,
@@ -252,36 +256,36 @@ public:
     SMF_transform_slight,
     SMF_first,
   };
- 
+
   struct ShaderArgId {
     string     _name;
     ShaderType _type;
     int        _seqno;
-  }; 
-  
-  struct ShaderArgInfo {  
+  };
+
+  struct ShaderArgInfo {
     ShaderArgId       _id;
     ShaderArgClass    _class;
     ShaderArgClass    _subclass;
-    ShaderArgType     _type;      
+    ShaderArgType     _type;
     ShaderArgDir      _direction;
     bool              _varying;
     NotifyCategory   *_cat;
   };
- 
+
   enum ShaderPtrType {
     SPT_float,
     SPT_double,
     SPT_unknown
-  };  
-  
+  };
+
   // Container structure for data of parameters ShaderPtrSpec.
   struct ShaderPtrData {
   private:
     PT(ReferenceCount) _pta;
 
   public:
-    void *_ptr; 
+    void *_ptr;
     ShaderPtrType _type;
     bool _updated;
     int _size; //number of elements vec3[4]=12
@@ -340,8 +344,8 @@ public:
     PT(InternalName)  _name;
     int               _append_uv;
   };
-  
-  struct ShaderPtrSpec { 
+
+  struct ShaderPtrSpec {
     ShaderArgId       _id;
     int               _dim[3]; //n_elements,rows,cols
     int               _dep[2];
@@ -377,8 +381,8 @@ public:
   public:
     INLINE ShaderFile() {};
     INLINE ShaderFile(const string &shared);
-    INLINE ShaderFile(const string &vertex, 
-                      const string &fragment, 
+    INLINE ShaderFile(const string &vertex,
+                      const string &fragment,
                       const string &geometry,
                       const string &tess_control,
                       const string &tess_evaluation);
@@ -405,18 +409,18 @@ public:
   void parse_upto(string &result, string pattern, bool include);
   void parse_rest(string &result);
   bool parse_eof();
-  
+
   void cp_report_error(ShaderArgInfo &arg, const string &msg);
   bool cp_errchk_parameter_words(ShaderArgInfo &arg, int len);
   bool cp_errchk_parameter_in(ShaderArgInfo &arg);
-  bool cp_errchk_parameter_ptr(ShaderArgInfo &p); 
+  bool cp_errchk_parameter_ptr(ShaderArgInfo &p);
   bool cp_errchk_parameter_varying(ShaderArgInfo &arg);
   bool cp_errchk_parameter_uniform(ShaderArgInfo &arg);
   bool cp_errchk_parameter_float(ShaderArgInfo &arg, int lo, int hi);
   bool cp_errchk_parameter_sampler(ShaderArgInfo &arg);
   bool cp_parse_eol(ShaderArgInfo &arg,
                     vector_string &pieces, int &next);
-  bool cp_parse_delimiter(ShaderArgInfo &arg, 
+  bool cp_parse_delimiter(ShaderArgInfo &arg,
                           vector_string &pieces, int &next);
   string cp_parse_non_delimiter(vector_string &pieces, int &next);
   bool cp_parse_coord_sys(ShaderArgInfo &arg,
@@ -426,12 +430,12 @@ public:
   void cp_optimize_mat_spec(ShaderMatSpec &spec);
 
 #ifdef HAVE_CG
-  void cg_recurse_parameters(CGparameter parameter, 
-                          const ShaderType &type, 
+  void cg_recurse_parameters(CGparameter parameter,
+                          const ShaderType &type,
                           bool &success);
 #endif
-  
-  bool compile_parameter(const ShaderArgId        &arg_id, 
+
+  bool compile_parameter(const ShaderArgId        &arg_id,
                          const ShaderArgClass     &arg_class,
                          const ShaderArgClass     &arg_subclass,
                          const ShaderArgType      &arg_type,
@@ -444,7 +448,7 @@ public:
 
 #ifdef HAVE_CG
 private:
-  ShaderArgClass cg_parameter_class(CGparameter p); 
+  ShaderArgClass cg_parameter_class(CGparameter p);
   ShaderArgType cg_parameter_type(CGparameter p);
   ShaderArgDir cg_parameter_dir(CGparameter p);
 
@@ -456,7 +460,7 @@ private:
   bool cg_compile_shader(const ShaderCaps &caps);
   void cg_release_resources();
   void cg_report_errors();
-  
+
   // Determines the appropriate cg profile settings and stores them in the active shader caps
   // based on any profile settings stored in the shader's header
   void cg_get_profile_from_header(ShaderCaps &caps);
@@ -478,24 +482,24 @@ public:
   bool cg_compile_for(const ShaderCaps &caps, CGcontext &ctx,
                       CGprogram &vprogram, CGprogram &fprogram,
                       CGprogram &gprogram, pvector<CGparameter> &map);
-  
+
 #endif
 
 public:
-  pvector <ShaderPtrSpec> _ptr_spec; 
+  pvector <ShaderPtrSpec> _ptr_spec;
   epvector <ShaderMatSpec> _mat_spec;
   pvector <ShaderTexSpec> _tex_spec;
   pvector <ShaderVarSpec> _var_spec;
-  
+
   bool _error_flag;
   CPT(ShaderFile) _text;
 
 protected:
-  CPT(ShaderFile) _filename; 
+  CPT(ShaderFile) _filename;
   int _parse;
   bool _loaded;
   ShaderLanguage _language;
-  
+
   static ShaderCaps _default_caps;
   static ShaderUtilization _shader_utilization;
   static int _shaders_generated;
@@ -511,7 +515,7 @@ protected:
   typedef pmap <PreparedGraphicsObjects *, ShaderContext *> Contexts;
   Contexts _contexts;
 
-private:  
+private:
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
 
   Shader();

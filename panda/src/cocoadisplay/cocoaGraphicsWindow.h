@@ -80,7 +80,9 @@ protected:
 private:
   NSImage *load_image(const Filename &filename);
 
-  ButtonHandle map_key(unsigned short keycode);
+  void handle_modifier(NSUInteger modifierFlags, NSUInteger mask, ButtonHandle button);
+  ButtonHandle map_key(unsigned short c);
+  ButtonHandle map_raw_key(unsigned short keycode);
 
 private:
   NSWindow *_window;

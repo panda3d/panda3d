@@ -28,7 +28,7 @@
 class EXPCL_PANDAODE OdePlaneGeom : public OdeGeom {
   friend class OdeGeom;
 
-private:
+public:
   OdePlaneGeom(dGeomID id);
 
 PUBLISHED:

@@ -25,7 +25,7 @@
 // Description : Used to describe drive properties for a
 //               PhysxD6Joint.
 ////////////////////////////////////////////////////////////////////
-class PhysxJointDriveDesc : public PhysxEnums {
+class EXPCL_PANDAPHYSX PhysxJointDriveDesc : public PhysxEnums {
 
 PUBLISHED:
   INLINE PhysxJointDriveDesc();

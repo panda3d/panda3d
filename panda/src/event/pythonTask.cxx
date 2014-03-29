@@ -159,7 +159,7 @@ get_args() {
     }
 
     this->ref();
-    PyObject *self = 
+    PyObject *self =
       DTool_CreatePyInstanceTyped(this, Dtool_TypedReferenceCount,
                                   true, false, get_type_index());
     PyTuple_SET_ITEM(with_task, num_args, self);

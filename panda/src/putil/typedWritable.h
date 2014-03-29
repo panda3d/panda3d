@@ -12,8 +12,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef __TYPED_WRITABLE_
-#define __TYPED_WRITABLE_
+#ifndef TYPEDWRITABLE_H
+#define TYPEDWRITABLE_H
 
 #include "typedObject.h"
 #include "vector_typedWritable.h"
@@ -31,10 +31,9 @@ class ReferenceCount;
 //       Class : TypedWritable
 // Description : Base class for objects that can be written to and
 //               read from Bam files.
-//               
+//
 //               See also TypedObject for detailed instructions.
 ////////////////////////////////////////////////////////////////////
-
 class EXPCL_PANDA_PUTIL TypedWritable : public TypedObject {
 public:
   static TypedWritable* const Null;
@@ -60,22 +59,15 @@ PUBLISHED:
   INLINE void mark_bam_modified();
   INLINE UpdateSeq get_bam_modified() const;
 
-#ifdef HAVE_PYTHON
-  PyObject *__reduce__(PyObject *self) const;
-  PyObject *__reduce_persist__(PyObject *self, PyObject *pickler) const;
-#endif
+  EXTENSION(PyObject *__reduce__(PyObject *self) const);
+  EXTENSION(PyObject *__reduce_persist__(PyObject *self, PyObject *pickler) const);
 
   INLINE string encode_to_bam_stream() const;
   bool encode_to_bam_stream(string &data, BamWriter *writer = NULL) const;
-  static bool decode_raw_from_bam_stream(TypedWritable *&ptr, 
+  static bool decode_raw_from_bam_stream(TypedWritable *&ptr,
                                          ReferenceCount *&ref_ptr,
                                          const string &data,
                                          BamReader *reader = NULL);
-
-public:
-#ifdef HAVE_PYTHON
-  static PyObject *find_global_decode(PyObject *this_class, const char *func_name);
-#endif
 
 private:
   // We may need to store a list of the BamWriter(s) that have a
@@ -111,15 +103,6 @@ private:
   friend class BamWriter;
 };
 
-#ifdef HAVE_PYTHON
-BEGIN_PUBLISH
-PyObject *py_decode_TypedWritable_from_bam_stream(PyObject *this_class, const string &data);
-PyObject *py_decode_TypedWritable_from_bam_stream_persist(PyObject *unpickler, PyObject *this_class, const string &data);
-END_PUBLISH
-#endif
-
 #include "typedWritable.I"
 
 #endif
-
-

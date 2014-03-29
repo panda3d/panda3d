@@ -47,27 +47,27 @@ public:
   static GraphicsWindowInputDevice pointer_only(GraphicsWindow *host, const string &name);
   static GraphicsWindowInputDevice keyboard_only(GraphicsWindow *host, const string &name);
   static GraphicsWindowInputDevice pointer_and_keyboard(GraphicsWindow *host, const string &name);
-  
+
   INLINE GraphicsWindowInputDevice();
   GraphicsWindowInputDevice(const GraphicsWindowInputDevice &copy);
   void operator = (const GraphicsWindowInputDevice &copy);
   ~GraphicsWindowInputDevice();
-  
+
   INLINE string get_name() const;
   INLINE bool has_pointer() const;
   INLINE bool has_keyboard() const;
 
   INLINE void set_device_index(int index);
-  
+
   INLINE MouseData get_pointer() const;
   INLINE MouseData get_raw_pointer() const;
-  
+
   INLINE void enable_pointer_events();
   INLINE void disable_pointer_events();
-  
+
   void enable_pointer_mode(double speed);
   void disable_pointer_mode();
-  
+
   bool has_button_event() const;
   ButtonEvent get_button_event();
   bool has_pointer_event() const;
@@ -83,6 +83,8 @@ PUBLISHED:
   void candidate(const wstring &candidate_string, size_t highlight_start, 
                  size_t highlight_end, size_t cursor_pos);
   void focus_lost(double time = ClockObject::get_global_clock()->get_frame_time());
+  void raw_button_down(ButtonHandle button, double time = ClockObject::get_global_clock()->get_frame_time());
+  void raw_button_up(ButtonHandle button, double time = ClockObject::get_global_clock()->get_frame_time());
 
   INLINE void set_pointer_in_window(double x, double y, double time = ClockObject::get_global_clock()->get_frame_time());
   INLINE void set_pointer_out_of_window(double time = ClockObject::get_global_clock()->get_frame_time());
@@ -104,17 +106,17 @@ private:
   typedef pdeque<ButtonEvent> ButtonEvents;
 
   LightMutex _lock;
-  
+
   GraphicsWindow *_host;
-  
+
   string _name;
   int _flags;
   int _device_index;
   int _event_sequence;
-  
+
   bool   _pointer_mode_enable;
   double _pointer_speed;
-  
+
   bool _enable_pointer_events;
   MouseData _mouse_data;
   MouseData _true_mouse_data;

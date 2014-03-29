@@ -1819,6 +1819,10 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       handle_keypress(lookup_key(wparam), point.x, point.y, 
                       get_message_time());
 
+      if ((lparam & 0x40000000) == 0) {
+        handle_raw_keypress(lookup_raw_key(lparam), get_message_time());
+      }
+
       // wparam does not contain left/right information for SHIFT,
       // CONTROL, or ALT, so we have to track their status and do
       // the right thing.  We'll send the left/right specific key
@@ -1879,6 +1883,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       ScreenToClient(hwnd, &point);
       handle_keypress(lookup_key(wparam), point.x, point.y,
                       get_message_time());
+      handle_raw_keypress(lookup_raw_key(lparam), get_message_time());
 
       // wparam does not contain left/right information for SHIFT,
       // CONTROL, or ALT, so we have to track their status and do
@@ -2005,6 +2010,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         << "keyup: " << wparam << " (" << lookup_key(wparam) << ")\n";
     }
     handle_keyrelease(lookup_key(wparam), get_message_time());
+    handle_raw_keyrelease(lookup_raw_key(lparam), get_message_time());
 
     // wparam does not contain left/right information for SHIFT,
     // CONTROL, or ALT, so we have to track their status and do
@@ -2368,6 +2374,30 @@ handle_keyrelease(ButtonHandle key, double time) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::handle_raw_keypress
+//       Access: Private
+//  Description:
+////////////////////////////////////////////////////////////////////
+void WinGraphicsWindow::
+handle_raw_keypress(ButtonHandle key, double time) {
+  if (key != ButtonHandle::none()) {
+    _input_devices[0].raw_button_down(key, time);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::handle_raw_keyrelease
+//       Access: Private
+//  Description:
+////////////////////////////////////////////////////////////////////
+void WinGraphicsWindow::
+handle_raw_keyrelease(ButtonHandle key, double time) {
+  if (key != ButtonHandle::none()) {
+    _input_devices[0].raw_button_up(key, time);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WinGraphicsWindow::lookup_key
 //       Access: Private
 //  Description: Translates the keycode reported by Windows to an
@@ -2450,6 +2480,136 @@ lookup_key(WPARAM wparam) const {
     break;
   }
   return ButtonHandle::none();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::lookup_raw_key
+//       Access: Private
+//  Description: Translates the scancode reported by Windows to an
+//               appropriate Panda ButtonHandle.
+////////////////////////////////////////////////////////////////////
+ButtonHandle WinGraphicsWindow::
+lookup_raw_key(LPARAM lparam) const {
+  unsigned char vsc = (lparam & 0xff0000) >> 16;
+
+  if (lparam & 0x1000000) {
+    // Extended keys
+    switch (vsc) {
+    case 29: return KeyboardButton::rcontrol();
+    case 56: return KeyboardButton::ralt();
+    case 69: return KeyboardButton::num_lock();
+    case 71: return KeyboardButton::home();
+    case 72: return KeyboardButton::up();
+    case 73: return KeyboardButton::page_up();
+    case 75: return KeyboardButton::left();
+    case 77: return KeyboardButton::right();
+    case 79: return KeyboardButton::end();
+    case 80: return KeyboardButton::down();
+    case 81: return KeyboardButton::page_down();
+    case 82: return KeyboardButton::insert();
+    case 83: return KeyboardButton::del();
+    }
+  }
+
+  if (vsc <= 83) {
+    static ButtonHandle raw_map[] = {
+      ButtonHandle::none(),
+      KeyboardButton::escape(),
+      KeyboardButton::ascii_key('1'),
+      KeyboardButton::ascii_key('2'),
+      KeyboardButton::ascii_key('3'),
+      KeyboardButton::ascii_key('4'),
+      KeyboardButton::ascii_key('5'),
+      KeyboardButton::ascii_key('6'),
+      KeyboardButton::ascii_key('7'),
+      KeyboardButton::ascii_key('8'),
+      KeyboardButton::ascii_key('9'),
+      KeyboardButton::ascii_key('0'),
+      KeyboardButton::ascii_key('-'),
+      KeyboardButton::ascii_key('='),
+      KeyboardButton::backspace(),
+      KeyboardButton::tab(),
+      KeyboardButton::ascii_key('q'),
+      KeyboardButton::ascii_key('w'),
+      KeyboardButton::ascii_key('e'),
+      KeyboardButton::ascii_key('r'),
+      KeyboardButton::ascii_key('t'),
+      KeyboardButton::ascii_key('y'),
+      KeyboardButton::ascii_key('u'),
+      KeyboardButton::ascii_key('i'),
+      KeyboardButton::ascii_key('o'),
+      KeyboardButton::ascii_key('p'),
+      KeyboardButton::ascii_key('['),
+      KeyboardButton::ascii_key(']'),
+      KeyboardButton::enter(),
+      KeyboardButton::lcontrol(),
+      KeyboardButton::ascii_key('a'),
+      KeyboardButton::ascii_key('s'),
+      KeyboardButton::ascii_key('d'),
+      KeyboardButton::ascii_key('f'),
+      KeyboardButton::ascii_key('g'),
+      KeyboardButton::ascii_key('h'),
+      KeyboardButton::ascii_key('j'),
+      KeyboardButton::ascii_key('k'),
+      KeyboardButton::ascii_key('l'),
+      KeyboardButton::ascii_key(';'),
+      KeyboardButton::ascii_key('\''),
+      KeyboardButton::ascii_key('`'),
+      KeyboardButton::lshift(),
+      KeyboardButton::ascii_key('\\'),
+      KeyboardButton::ascii_key('z'),
+      KeyboardButton::ascii_key('x'),
+      KeyboardButton::ascii_key('c'),
+      KeyboardButton::ascii_key('v'),
+      KeyboardButton::ascii_key('b'),
+      KeyboardButton::ascii_key('n'),
+      KeyboardButton::ascii_key('m'),
+      KeyboardButton::ascii_key(','),
+      KeyboardButton::ascii_key('.'),
+      KeyboardButton::ascii_key('/'),
+      KeyboardButton::rshift(),
+      KeyboardButton::ascii_key('*'),
+      KeyboardButton::lalt(),
+      KeyboardButton::space(),
+      KeyboardButton::caps_lock(),
+      KeyboardButton::f1(),
+      KeyboardButton::f2(),
+      KeyboardButton::f3(),
+      KeyboardButton::f4(),
+      KeyboardButton::f5(),
+      KeyboardButton::f6(),
+      KeyboardButton::f7(),
+      KeyboardButton::f8(),
+      KeyboardButton::f9(),
+      KeyboardButton::f10(),
+      KeyboardButton::pause(),
+      KeyboardButton::scroll_lock(),
+      KeyboardButton::ascii_key('7'),
+      KeyboardButton::ascii_key('8'),
+      KeyboardButton::ascii_key('9'),
+      KeyboardButton::ascii_key('-'),
+      KeyboardButton::ascii_key('4'),
+      KeyboardButton::ascii_key('5'),
+      KeyboardButton::ascii_key('6'),
+      KeyboardButton::ascii_key('+'),
+      KeyboardButton::ascii_key('1'),
+      KeyboardButton::ascii_key('2'),
+      KeyboardButton::ascii_key('3'),
+      KeyboardButton::ascii_key('0'),
+      KeyboardButton::ascii_key('.')
+    };
+    return raw_map[vsc];
+  }
+
+  // A few additional keys don't fit well in the above table.
+  switch (vsc) {
+  case 87: return KeyboardButton::f11();
+  case 88: return KeyboardButton::f12();
+  case 91: return KeyboardButton::lmeta();
+  case 92: return KeyboardButton::rmeta();
+  case 93: return KeyboardButton::menu();
+  default: return ButtonHandle::none();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

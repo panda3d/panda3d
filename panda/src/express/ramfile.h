@@ -32,6 +32,7 @@ PUBLISHED:
   INLINE size_t tell() const;
   string read(size_t length);
   string readline();
+  EXTENSION(PyObject *readlines());
 
   INLINE const string &get_data() const;
   INLINE size_t get_data_size() const;

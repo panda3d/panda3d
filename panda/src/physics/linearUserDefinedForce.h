@@ -27,7 +27,7 @@
 //               in the makefile when the time is right or this class
 //               becomes needed...
 ////////////////////////////////////////////////////////////////////
-class LinearUserDefinedForce : public LinearForce {
+class EXPCL_PANDAPHYSICS LinearUserDefinedForce : public LinearForce {
 PUBLISHED:
   LinearUserDefinedForce(LVector3 (*proc)(const PhysicsObject *) = NULL,
                          PN_stdfloat a = 1.0f,

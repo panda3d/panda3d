@@ -39,7 +39,7 @@ class EXPCL_PANDAODE OdeBody : public TypedObject {
   friend class OdeGeom;
   friend class OdeCollisionEntry;
 
-protected:
+public:
   OdeBody(dBodyID id);
 
 PUBLISHED:
@@ -140,6 +140,8 @@ PUBLISHED:
   INLINE int get_num_joints() const;
   OdeJoint get_joint(int index) const;
   MAKE_SEQ(get_joints, get_num_joints, get_joint);
+  EXTENSION(INLINE PyObject *get_converted_joint(int i) const);
+
   INLINE void enable();
   INLINE void disable();
   INLINE int is_enabled() const;

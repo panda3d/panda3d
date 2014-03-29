@@ -26,11 +26,6 @@
 
 #include "ode_includes.h"
 
-#ifdef HAVE_PYTHON
-  #include "py_panda.h"
-  #include "Python.h"
-#endif
-
 class OdeGeom;
 class OdeTriMeshGeom;
 class OdeSimpleSpace;
@@ -39,15 +34,15 @@ class OdeQuadTreeSpace;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : OdeSpace
-// Description : 
+// Description :
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAODE OdeSpace : public TypedObject {
   friend class OdeGeom;
   static const int MAX_CONTACTS;
 
-protected:
+public:
   OdeSpace(dSpaceID id);
-  
+
 PUBLISHED:
   virtual ~OdeSpace();
   void destroy();
@@ -59,6 +54,7 @@ PUBLISHED:
   int query(const OdeSpace& space) const;
   INLINE int get_num_geoms() const;
   INLINE void get_AABB(LVecBase3f &min, LVecBase3f &max) const;
+  EXTENSION(INLINE PyObject *get_AA_bounds() const);
   INLINE int is_space();
   INLINE int get_class() const;
   INLINE void set_category_bits(const BitMask32 &bits);
@@ -78,7 +74,7 @@ PUBLISHED:
   void clean();
   OdeGeom get_geom(int i); // Not INLINE because of forward declaration
   //static int get_surface_type(OdeSpace * self, dGeomID o1);
-  
+
   INLINE OdeSpace get_space() const;
 
   virtual void write(ostream &out = cout, unsigned int indent=0) const;
@@ -87,11 +83,13 @@ PUBLISHED:
   OdeSimpleSpace convert_to_simple_space() const;
   OdeHashSpace convert_to_hash_space() const;
   OdeQuadTreeSpace convert_to_quad_tree_space() const;
-  
+
+  EXTENSION(PyObject *convert() const);
+  EXTENSION(INLINE PyObject *get_converted_geom(int i) const);
+  EXTENSION(INLINE PyObject *get_converted_space() const);
+
   void auto_collide();
-#ifdef HAVE_PYTHON
-  int collide(PyObject* arg, PyObject* near_callback);
-#endif
+  EXTENSION(int collide(PyObject* arg, PyObject* near_callback));
   int set_collide_id(int collide_id, dGeomID id);
   int set_collide_id(OdeGeom& geom, int collide_id);
   void set_surface_type( int surface_type, dGeomID id);
@@ -106,17 +104,11 @@ PUBLISHED:
 
 public:
   static void auto_callback(void*, dGeomID, dGeomID);
-#ifdef HAVE_PYTHON
-  static void near_callback(void*, dGeomID, dGeomID);
-#endif
-  
+
   INLINE dSpaceID get_id() const;
   static OdeWorld* _static_auto_collide_world;
   static OdeSpace* _static_auto_collide_space;
   static dJointGroupID _static_auto_collide_joint_group;
-#ifdef HAVE_PYTHON
-  static PyObject* _python_callback;
-#endif
   static int contactCount;
   string _collision_event;
 
@@ -153,4 +145,3 @@ private:
 #include "odeSpace.I"
 
 #endif
-

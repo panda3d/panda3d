@@ -14,7 +14,7 @@
 
 #include "functionRemap.h"
 #include "typeManager.h"
-#include "interrogate.h" 
+#include "interrogate.h"
 #include "parameterRemap.h"
 #include "parameterRemapThis.h"
 #include "interfaceMaker.h"
@@ -324,7 +324,6 @@ make_wrapper_entry(FunctionIndex function_index) {
       _flags |= F_explicit_self;
     }
   }
-      
 
   if (!_void_return) {
     iwrapper._flags |= InterrogateFunctionWrapper::F_has_return;
@@ -340,15 +339,15 @@ make_wrapper_entry(FunctionIndex function_index) {
   if (_return_value_needs_management) {
     iwrapper._flags |= InterrogateFunctionWrapper::F_caller_manages;
     FunctionIndex destructor = _return_value_destructor;
-    
+
     if (destructor != 0) {
       iwrapper._return_value_destructor = destructor;
-      
+
     } else {
       // We don't need to report this warning, since the FFI code
       // understands that if the destructor function is zero, it
       // should use the regular class destructor.
-      
+
       //          nout << "Warning!  Destructor for " 
       //               << *_return_type->get_orig_type()
       //               << " is unavailable.\n"
@@ -397,8 +396,12 @@ get_call_str(const string &container, const vector_string &pexprs) const {
 
     // If this function is marked as having an extension function,
     // call that instead.
-    if (_extension && !container.empty()) {
-      call << "invoke_extension(" << container << ").";
+    if (_extension) {
+      if (!container.empty()) {
+        call << "invoke_extension(" << container << ").";
+      } else {
+        call << "Extension<" << _cpptype->get_local_name(&parser) << ">::";
+      }
 
       call << _cppfunc->get_local_name();
       call << "(";
@@ -413,7 +416,7 @@ get_call_str(const string &container, const vector_string &pexprs) const {
         // If we have a "this" parameter, the calling convention is also
         // a bit different.
         call << "(" << container << ")->" << _cppfunc->get_local_name();
-        
+
       } else {
         call << _cppfunc->get_local_name(&parser);
       }
@@ -465,7 +468,7 @@ get_parameter_expr(int n, const vector_string &pexprs) const {
 ////////////////////////////////////////////////////////////////////
 bool FunctionRemap::
 setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_maker) {
-  _function_signature = 
+  _function_signature =
     TypeManager::get_function_signature(_cppfunc, _num_default_parameters);
   _expression = ifunc._expression;
 
@@ -519,7 +522,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
       _parameters.push_back(param);
       _first_true_parameter = 1;
     }
-      
+
     // Also check the name of the function.  If it's one of the
     // assignment-style operators, flag it as such.
     if (fname == "operator =" ||
@@ -611,7 +614,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     }
   }
 
-  if (_return_type == (ParameterRemap *)NULL || 
+  if (_return_type == (ParameterRemap *)NULL ||
       !_return_type->is_valid()) {
     // If our return type isn't something we can deal with, treat the
     // function as if it returns NULL.
@@ -621,25 +624,25 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     _return_type = interface_maker->remap_parameter(_cpptype, void_type);
     assert(_return_type != (ParameterRemap *)NULL);
   }
-  
+
   // Do we need to manage the return value?
-  _return_value_needs_management = 
+  _return_value_needs_management =
     _return_type->return_value_needs_management();
-  _return_value_destructor = 
+  _return_value_destructor =
     _return_type->get_return_value_destructor();
-  
+
   // Should we manage a reference count?
   CPPType *return_type = _return_type->get_new_type();
   return_type = TypeManager::resolve_type(return_type, _cppscope);
   CPPType *return_meat_type = TypeManager::unwrap_pointer(return_type);
-  
+
   if (manage_reference_counts &&
       TypeManager::is_reference_count_pointer(return_type) &&
       !TypeManager::has_protected_destructor(return_meat_type)) {
     // Yes!
     _manage_reference_count = true;
     _return_value_needs_management = true;
-    
+
     // This is problematic, because we might not have the class in
     // question fully defined here, particularly if the class is
     // defined in some other library.
@@ -709,11 +712,18 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
 
         _flags |= F_releasebuffer;
       }
+
+    } else if (fname == "compare_to" ) {
+      if (_has_this && _parameters.size() == 2 &&
+          TypeManager::is_integer(_return_type->get_new_type())) {
+        // It receives one parameter, and returns an integer.
+        _flags |= F_compare_to;
+      }
     }
 
   } else if (_type == T_constructor) {
     if (!_has_this && _parameters.size() == 1) {
-      if (TypeManager::unwrap(_parameters[0]._remap->get_orig_type()) == 
+      if (TypeManager::unwrap(_parameters[0]._remap->get_orig_type()) ==
           TypeManager::unwrap(_return_type->get_orig_type())) {
         // If this is the only parameter, and it's the same as the
         // "this" type, this is a copy constructor.

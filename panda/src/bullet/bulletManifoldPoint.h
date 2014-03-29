@@ -73,6 +73,9 @@ PUBLISHED:
 public:
   BulletManifoldPoint(btManifoldPoint &pt);
 
+  BulletManifoldPoint(const BulletManifoldPoint &other);
+  BulletManifoldPoint& operator=(const BulletManifoldPoint& other);
+
 private:
   btManifoldPoint &_pt;
 };

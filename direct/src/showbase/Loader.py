@@ -814,7 +814,7 @@ class Loader(DirectObject):
             result = []
             for soundPath in soundList:
                 # should return a valid sound obj even if musicMgr is invalid
-                sound = manager.getSound(soundPath)
+                sound = manager.getSound(soundPath, positional)
                 result.append(sound)
 
             if gotList:
