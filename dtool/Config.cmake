@@ -442,11 +442,13 @@ if(HAVE_PYTHON)
   execute_process(
     COMMAND ${PYTHON_EXECUTABLE}
       -c "from distutils.sysconfig import get_python_lib; print get_python_lib(False)"
-      OUTPUT_VARIABLE _LIB_DIR)
+      OUTPUT_VARIABLE _LIB_DIR
+      OUTPUT_STRIP_TRAILING_WHITESPACE)
   execute_process(
     COMMAND ${PYTHON_EXECUTABLE}
       -c "from distutils.sysconfig import get_python_lib; print get_python_lib(True)"
-      OUTPUT_VARIABLE _ARCH_DIR)
+      OUTPUT_VARIABLE _ARCH_DIR
+      OUTPUT_STRIP_TRAILING_WHITESPACE)
 
   set(PYTHON_LIB_INSTALL_DIR "${_LIB_DIR}" CACHE STRING
     "Path to the Python architecture-independent package directory.")
