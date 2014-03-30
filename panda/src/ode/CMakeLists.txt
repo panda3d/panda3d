@@ -61,16 +61,30 @@ if(HAVE_ODE)
       odeTriMeshData.cxx  odeTriMeshGeom.cxx
       odeCollisionEntry.cxx)
 
+  set(P3ODE_IGATEEXT
+      odeBody_ext.h
+      odeBody_ext.I
+      odeGeom_ext.cxx
+      odeGeom_ext.h
+      odeGeom_ext.I
+      odeJoint_ext.cxx
+      odeJoint_ext.h
+      odeSpace_ext.cxx
+      odeSpace_ext.h
+      odeSpace_ext.I
+      odeUtil_ext.cxx
+      odeUtil_ext.h)
+
   set(P3ODE_IGATE_SOURCES "${P3ODE_HEADERS};${P3ODE_SOURCES}")
   list(REMOVE_ITEM P3ODE_IGATE_SOURCES "odeConvexGeom.h")
   list(REMOVE_ITEM P3ODE_IGATE_SOURCES "odeHeightFieldGeom.h")
   list(REMOVE_ITEM P3ODE_IGATE_SOURCES "odeHelperStructs.h")
 
   composite_sources(p3ode P3ODE_SOURCES)
-  add_library(p3ode ${P3ODE_SOURCES} ${P3ODE_HEADERS})
+  add_library(p3ode ${P3ODE_SOURCES} ${P3ODE_HEADERS} ${P3ODE_IGATEEXT})
   set_target_properties(p3ode PROPERTIES COMPILE_DEFINITIONS dSINGLE)
   target_link_libraries(p3ode p3pgraph p3physics ${ODE_LIBRARY})
-  target_interrogate(p3ode ${P3ODE_IGATE_SOURCES})
+  target_interrogate(p3ode ${P3ODE_IGATE_SOURCES} ${P3ODE_IGATEEXT})
 
   install(TARGETS p3ode DESTINATION lib)
 endif()
