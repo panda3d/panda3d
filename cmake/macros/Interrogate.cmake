@@ -219,15 +219,33 @@ function(interrogate_sources target output database module)
 endfunction(interrogate_sources)
 
 #
-# Function: add_python_module(module [lib1 [lib2 ...]])
-# Uses interrogate to create a Python module.
+# Function: add_python_module(module [lib1 [lib2 ...]] [LINK lib1 ...])
+# Uses interrogate to create a Python module. If the LINK keyword is specified,
+# the Python module is linked against the specified libraries instead of those
+# listed before.
 #
 function(add_python_module module)
   if(HAVE_PYTHON AND HAVE_INTERROGATE)
-    set(targets ${ARGN})
+    set(targets)
+    set(link_targets)
     set(infiles)
     set(sources)
     set(HACKlinklibs)
+
+    set(link_keyword OFF)
+    foreach(arg ${ARGN})
+      if(arg STREQUAL "LINK")
+        set(link_keyword ON)
+      elseif(link_keyword)
+        list(APPEND link_targets "${arg}")
+      else()
+        list(APPEND targets "${arg}")
+      endif()
+    endforeach(arg)
+
+    if(NOT link_keyword)
+      set(link_targets ${targets})
+    endif()
 
     foreach(target ${targets})
       interrogate_sources(${target} "${target}_igate.cxx" "${target}.in" "${module}")
@@ -262,7 +280,7 @@ function(add_python_module module)
 
     add_library(${module} MODULE "${module}_module.cxx" ${sources})
     target_link_libraries(${module}
-      ${targets} ${PYTHON_LIBRARIES} p3interrogatedb)
+      ${link_targets} ${PYTHON_LIBRARIES} p3interrogatedb)
     target_link_libraries(${module} ${HACKlinklibs})
 
     set_target_properties(${module} PROPERTIES

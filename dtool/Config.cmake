@@ -429,8 +429,8 @@ platforms.  Currently experimental." ON)
 
 
 # Is Python installed, and should Python interfaces be generated?
-find_package(PythonLibs)
-find_package(PythonInterp)
+find_package(PythonLibs 2.5)
+find_package(PythonInterp 2.5)
 set(PYTHON_FOUND ${PYTHONLIBS_FOUND})
 
 package_option(PYTHON DEFAULT ON
@@ -591,6 +591,11 @@ find_package(ZLIB)
 package_option(ZLIB DEFAULT ON
   "Enables support for compression of Panda assets.")
 
+# Is ODE installed, and where?
+find_package(ODE)
+
+package_option(ODE DEFAULT ON
+  "Enables support for ridid-body physics using the Open Dynamics Engine.")
 
 # Is OpenGL installed, and where?
 find_package(OpenGL QUIET)

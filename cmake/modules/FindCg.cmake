@@ -141,7 +141,7 @@ if(NOT CG_LIBRARY_DIR OR NOT CG_INCLUDE_DIRS)
     set(CG_LIBRARY_DIR "${CG_LIBRARY_DIR}" CACHE PATH "The path to NvidiaCG's library directory.") # Library path
   endif()
 
-  string(REGEX REPLACE "/Cg$" "" CG_BASE_INCLUDE_DIR ${CG_INCLUDE_DIR})
+  string(REGEX REPLACE "/Cg$" "" CG_BASE_INCLUDE_DIR "${CG_INCLUDE_DIR}")
   set(CG_INCLUDE_DIRS ${CG_BASE_INCLUDE_DIR} ${CG_INCLUDE_DIR})
 
   mark_as_advanced(CG_INCLUDE_DIRS)

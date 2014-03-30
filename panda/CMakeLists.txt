@@ -42,8 +42,11 @@ add_subdirectory(src/x11display)
 add_subdirectory(src/glxdisplay)
 add_subdirectory(src/windisplay)
 add_subdirectory(src/wgldisplay)
+add_subdirectory(src/osxdisplay)
+add_subdirectory(src/cocoadisplay)
 add_subdirectory(src/movies)
 add_subdirectory(src/audio)
+add_subdirectory(src/audiotraits)
 add_subdirectory(src/chan)
 add_subdirectory(src/char)
 add_subdirectory(src/dgraph)
@@ -63,10 +66,18 @@ add_subdirectory(src/egg2pg)
 add_subdirectory(src/framework)
 add_subdirectory(src/testbed)
 
+# For other components
+# physics
+add_subdirectory(src/physics)
+add_subdirectory(src/particlesystem)
+# ode
+add_subdirectory(src/ode)
+
 # Include panda metalibs
 add_subdirectory(metalibs/panda)
 add_subdirectory(metalibs/pandagl)
 add_subdirectory(metalibs/pandaegg)
+add_subdirectory(metalibs/pandaphysics)
 
 # Now add the Python modules:
 set(CORE_MODULE_COMPONENTS
@@ -82,8 +93,14 @@ if(HAVE_FREETYPE)
   list(APPEND CORE_MODULE_COMPONENTS p3pnmtext)
 endif()
 
-add_python_module(core ${CORE_MODULE_COMPONENTS})
+add_python_module(core ${CORE_MODULE_COMPONENTS} LINK panda)
 
 if(HAVE_EGG)
   add_python_module(egg p3egg p3egg2pg)
+endif()
+
+add_python_module(physics p3physics p3particlesystem)
+
+if(HAVE_ODE)
+  add_python_module(ode p3ode)
 endif()

@@ -135,7 +135,7 @@ composite_sources(p3express P3EXPRESS_SOURCES)
 
 add_library(p3express ${P3EXPRESS_SOURCES} ${P3EXPRESS_HEADERS} ${P3EXPRESS_IGATEEXT})
 target_link_libraries(p3express p3pandabase p3dtool p3dtoolconfig
-  ${_TAR_LIBRARY})
+  ${_TAR_LIBRARY} ${_ZLIB_LIBRARY})
 target_interrogate(p3express ALL)
 
 if(WIN32)

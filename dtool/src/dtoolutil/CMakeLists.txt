@@ -56,4 +56,10 @@ if(HAVE_PYTHON)
   target_link_libraries(p3dtoolutil ${PYTHON_LIBRARIES})
 endif()
 
+if(APPLE)
+  find_library(FOUNDATION_LIBRARY Foundation)
+  find_library(APPKIT_LIBRARY AppKit)
+  target_link_libraries(p3dtoolutil ${FOUNDATION_LIBRARY} ${APPKIT_LIBRARY})
+endif()
+
 install(TARGETS p3dtoolutil DESTINATION lib)

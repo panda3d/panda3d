@@ -14,6 +14,8 @@
 
 #import <AppKit/NSWindow.h>
 
+#import "cocoaGraphicsWindow.h"
+
 class CocoaGraphicsWindow;
 
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060

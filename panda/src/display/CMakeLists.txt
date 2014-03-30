@@ -73,22 +73,27 @@ set(P3DISPLAY_IGATEEXT
 )
 
 if(HAVE_PYTHON)
-	set(P3DISPLAY_HEADERS
-		${P3DISPLAY_HEADERS}
-		pythonGraphicsWindowProc.h
-	)
-	set(P3DISPLAY_SOURCES
-		${P3DISPLAY_SOURCES}
-		pythonGraphicsWindowProc.cxx
-	)
+  set(P3DISPLAY_HEADERS
+    ${P3DISPLAY_HEADERS}
+    pythonGraphicsWindowProc.h
+  )
+  set(P3DISPLAY_SOURCES
+    ${P3DISPLAY_SOURCES}
+    pythonGraphicsWindowProc.cxx
+  )
 endif()
 
-if(OSX_PLATFORM)
-	set(P3DISPLAY_HEADER
-		${P3DISPLAY_HEADERS}
-		subprocessWindowBuffer.h
-		subprocessWindowBuffer.I
-	)
+if(APPLE)
+  set(P3DISPLAY_HEADERS
+    ${P3DISPLAY_HEADERS}
+    subprocessWindowBuffer.h
+    subprocessWindowBuffer.I
+  )
+
+  set(P3DISPLAY_SOURCES
+    ${P3DISPLAY_SOURCES}
+    subprocessWindowBuffer.cxx
+  )
 endif()
 
 composite_sources(p3display P3DISPLAY_SOURCES)
