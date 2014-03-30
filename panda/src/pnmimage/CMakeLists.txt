@@ -30,8 +30,8 @@ set(P3PNMIMAGE_IGATEEXT
 )
 
 composite_sources(p3pnmimage P3PNMIMAGE_SOURCES)
-add_library(p3pnmimage ${P3PNMIMAGE_HEADERS} ${P3PNMIMAGE_SOURCES} ${P3PNMIMAGE_IGATEEXT})
+add_library(p3pnmimage ${P3PNMIMAGE_HEADERS} ${P3PNMIMAGE_SOURCES})
 target_link_libraries(p3pnmimage p3mathutil)
-target_interrogate(p3pnmimage ALL)
+target_interrogate(p3pnmimage ALL ${P3PNMIMAGE_IGATEEXT})
 
 install(TARGETS p3pnmimage DESTINATION lib)
