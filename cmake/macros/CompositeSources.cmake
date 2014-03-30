@@ -93,12 +93,6 @@ function(composite_sources target sources_var)
     endif()
   endwhile()
 
-  # This exists for Interrogate's benefit, which needs the composite files to
-  # exist before it can run. Unfortunately, CMake does not expose the
-  # add_custom_command outputs as targets outside of the directory, so we have
-  # to create our own pseudotarget that gets exposed.
-  add_custom_target(${target}_composite DEPENDS ${composite_files})
-
   #set_source_files_properties(${composite_files} PROPERTIES GENERATED YES)
 
   # The new files are added to the existing files, which means the old files
