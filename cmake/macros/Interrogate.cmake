@@ -50,10 +50,16 @@ set(ALL_INTERROGATE_MODULES CACHE INTERNAL "Internal variable")
 function(target_interrogate target)
   if(HAVE_PYTHON AND HAVE_INTERROGATE)
     set(sources)
+    set(extensions)
     set(want_all OFF)
+    set(extensions_keyword OFF)
     foreach(arg ${ARGN})
       if(arg STREQUAL "ALL")
         set(want_all ON)
+      elseif(arg STREQUAL "EXTENSIONS")
+        set(extensions_keyword ON)
+      elseif(extensions_keyword)
+        list(APPEND extensions "${arg}")
       else()
         list(APPEND sources "${arg}")
       endif()
@@ -70,13 +76,20 @@ function(target_interrogate target)
     # Now let's get everything's absolute path, so that it can be passed
     # through a property while still preserving the reference.
     set(absolute_sources)
+    set(absolute_extensions)
     foreach(source ${sources})
       get_source_file_property(location "${source}" LOCATION)
-      set(absolute_sources ${absolute_sources} ${location})
+      list(APPEND absolute_sources ${location})
     endforeach(source)
+    foreach(extension ${extensions})
+      get_source_file_property(location "${extension}" LOCATION)
+      list(APPEND absolute_extensions ${location})
+    endforeach(extension)
 
     set_target_properties("${target}" PROPERTIES IGATE_SOURCES
       "${absolute_sources}")
+    set_target_properties("${target}" PROPERTIES IGATE_EXTENSIONS
+      "${absolute_extensions}")
 
     # CMake has no property for determining the source directory where the
     # target was originally added. interrogate_sources makes use of this
@@ -86,9 +99,6 @@ function(target_interrogate target)
     # an IGATE_ prefix.
     set_target_properties("${target}" PROPERTIES TARGET_SRCDIR
       "${CMAKE_CURRENT_SOURCE_DIR}")
-
-    # HACK HACK HACK -- this is part of the below hack.
-    target_link_libraries(${target} ${target}_igate)
   endif()
 endfunction(target_interrogate)
 
@@ -106,6 +116,7 @@ endfunction(target_interrogate)
 function(interrogate_sources target output database module)
   if(HAVE_PYTHON AND HAVE_INTERROGATE)
     get_target_property(sources "${target}" IGATE_SOURCES)
+    get_target_property(extensions "${target}" IGATE_EXTENSIONS)
 
     if(NOT sources)
       message(FATAL_ERROR
@@ -189,14 +200,6 @@ function(interrogate_sources target output database module)
       list(APPEND define_flags "-DNDEBUG")
     endif()
 
-    # CMake offers no way to directly depend on the composite files from here,
-    # because the composite files are created in a different directory from
-    # where CMake itself is run. Therefore, we need to depend on the
-    # TARGET_composite target, if it exists.
-    if(TARGET ${target}_composite)
-      set(sources ${target}_composite ${sources})
-    endif()
-
     add_custom_command(
       OUTPUT "${output}" "${database}"
       COMMAND interrogate
@@ -212,7 +215,8 @@ function(interrogate_sources target output database module)
         -S "${PROJECT_BINARY_DIR}/include/parser-inc"
         ${include_flags}
         ${scan_sources}
-      DEPENDS interrogate ${sources} ${nfiles}
+        ${extensions}
+      DEPENDS interrogate ${sources} ${extensions} ${nfiles}
       COMMENT "Interrogating ${target}"
     )
   endif()
@@ -230,7 +234,6 @@ function(add_python_module module)
     set(link_targets)
     set(infiles)
     set(sources)
-    set(HACKlinklibs)
 
     set(link_keyword OFF)
     foreach(arg ${ARGN})
@@ -249,22 +252,12 @@ function(add_python_module module)
 
     foreach(target ${targets})
       interrogate_sources(${target} "${target}_igate.cxx" "${target}.in" "${module}")
+      get_target_property(target_extensions "${target}" IGATE_EXTENSIONS)
       list(APPEND infiles "${target}.in")
-      #list(APPEND sources "${target}_igate.cxx")
+      list(APPEND sources "${target}_igate.cxx" ${target_extensions})
 
-      # HACK HACK HACK:
-      # Currently, the codebase has dependencies on the Interrogate-generated
-      # code when HAVE_PYTHON is enabled. rdb is working to remove this, but
-      # until then, the generated code must somehow be made available to the
-      # modules themselves. The workaround here is to put the _igate.cxx into
-      # its own micro-library, which is linked both here on the module and
-      # against the component library in question.
-      add_library(${target}_igate ${target}_igate.cxx)
-      list(APPEND HACKlinklibs "${target}_igate")
-      install(TARGETS ${target}_igate DESTINATION lib)
-
-      get_target_property(target_links "${target}" LINK_LIBRARIES)
-      target_link_libraries(${target}_igate ${target_links})
+      #get_target_property(target_links "${target}" LINK_LIBRARIES)
+      #target_link_libraries(${target}_igate ${target_links})
     endforeach(target)
 
     add_custom_command(
@@ -278,10 +271,9 @@ function(add_python_module module)
       COMMENT "Generating module ${module}"
     )
 
-    add_library(${module} MODULE "${module}_module.cxx" ${sources})
+    add_library(${module} "${module}_module.cxx" ${sources})
     target_link_libraries(${module}
       ${link_targets} ${PYTHON_LIBRARIES} p3interrogatedb)
-    target_link_libraries(${module} ${HACKlinklibs})
 
     set_target_properties(${module} PROPERTIES
       LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/panda3d"

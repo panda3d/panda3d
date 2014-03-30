@@ -119,7 +119,7 @@ set(P3PUTIL_IGATEEXT
 composite_sources(p3putil P3PUTIL_SOURCES)
 add_library(p3putil ${P3PUTIL_HEADERS} ${P3PUTIL_SOURCES})
 target_link_libraries(p3putil p3pipeline)
-target_interrogate(p3putil ALL ${P3PUTIL_IGATEEXT})
+target_interrogate(p3putil ALL EXTENSIONS ${P3PUTIL_IGATEEXT})
 
 install(TARGETS p3putil DESTINATION lib)
 

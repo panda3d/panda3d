@@ -99,7 +99,7 @@ endif()
 composite_sources(p3display P3DISPLAY_SOURCES)
 add_library(p3display ${P3DISPLAY_HEADERS} ${P3DISPLAY_SOURCES})
 target_link_libraries(p3display p3cull p3pgraphnodes)
-target_interrogate(p3display ALL ${P3DISPLAY_IGATEEXT})
+target_interrogate(p3display ALL EXTENSIONS ${P3DISPLAY_IGATEEXT})
 
 install(TARGETS p3display DESTINATION lib)
 
