@@ -97,10 +97,13 @@ add_python_module(core ${CORE_MODULE_COMPONENTS} LINK panda)
 
 if(HAVE_EGG)
   add_python_module(egg p3egg p3egg2pg)
+  target_link_libraries(egg core)
 endif()
 
 add_python_module(physics p3physics p3particlesystem)
+target_link_libraries(physics core)
 
 if(HAVE_ODE)
   add_python_module(ode p3ode)
+  target_link_libraries(ode core)
 endif()
