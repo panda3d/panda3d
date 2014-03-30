@@ -59,7 +59,6 @@ set(P3EXPRESS_HEADERS
   virtualFileMountSystem.h virtualFileMountSystem.I
   virtualFileSimple.h virtualFileSimple.I
   virtualFileSystem.h virtualFileSystem.I
-  virtualFileSystem_ext.h
   weakPointerCallback.I weakPointerCallback.h
   weakPointerTo.I weakPointerTo.h
   weakPointerToBase.I weakPointerToBase.h
@@ -114,7 +113,6 @@ set(P3EXPRESS_SOURCES
   virtualFileMountRamdisk.cxx
   virtualFileMountSystem.cxx
   virtualFileSimple.cxx virtualFileSystem.cxx
-  virtualFileSystem_ext.cxx
   weakPointerCallback.cxx
   weakPointerTo.cxx
   weakPointerToBase.cxx
@@ -123,9 +121,19 @@ set(P3EXPRESS_SOURCES
   windowsRegistry.cxx
   zStream.cxx zStreamBuf.cxx)
 
+set(P3EXPRESS_IGATEEXT
+  memoryUsagePointers_ext.cxx
+  memoryUsagePointers_ext.h
+  ramfile_ext.cxx
+  ramfile_ext.h
+  streamReader_ext.cxx
+  streamReader_ext.h
+  virtualFileSystem_ext.cxx
+  virtualFileSystem_ext.h)
+
 composite_sources(p3express P3EXPRESS_SOURCES)
 
-add_library(p3express ${P3EXPRESS_SOURCES} ${P3EXPRESS_HEADERS})
+add_library(p3express ${P3EXPRESS_SOURCES} ${P3EXPRESS_HEADERS} ${P3EXPRESS_IGATEEXT})
 target_link_libraries(p3express p3pandabase p3dtool p3dtoolconfig
   ${_TAR_LIBRARY})
 target_interrogate(p3express ALL)

@@ -67,6 +67,11 @@ set(P3DISPLAY_SOURCES
   touchInfo.cxx
 )
 
+set(P3DISPLAY_IGATEEXT
+  graphicsStateGuardian_ext.cxx
+  graphicsStateGuardian_ext.h
+)
+
 if(HAVE_PYTHON)
 	set(P3DISPLAY_HEADERS
 		${P3DISPLAY_HEADERS}
@@ -87,7 +92,7 @@ if(OSX_PLATFORM)
 endif()
 
 composite_sources(p3display P3DISPLAY_SOURCES)
-add_library(p3display ${P3DISPLAY_HEADERS} ${P3DISPLAY_SOURCES})
+add_library(p3display ${P3DISPLAY_HEADERS} ${P3DISPLAY_SOURCES} ${P3DISPLAY_IGATEEXT})
 target_link_libraries(p3display p3cull p3pgraphnodes)
 target_interrogate(p3display ALL)
 

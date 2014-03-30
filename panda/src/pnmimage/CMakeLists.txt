@@ -24,8 +24,13 @@ set(P3PNMIMAGE_SOURCES
   ppmcmap.cxx
 )
 
+set(P3PNMIMAGE_IGATEEXT
+  pfmFile_ext.cxx
+  pfmFile_ext.h
+)
+
 composite_sources(p3pnmimage P3PNMIMAGE_SOURCES)
-add_library(p3pnmimage ${P3PNMIMAGE_HEADERS} ${P3PNMIMAGE_SOURCES})
+add_library(p3pnmimage ${P3PNMIMAGE_HEADERS} ${P3PNMIMAGE_SOURCES} ${P3PNMIMAGE_IGATEEXT})
 target_link_libraries(p3pnmimage p3mathutil)
 target_interrogate(p3pnmimage ALL)
 

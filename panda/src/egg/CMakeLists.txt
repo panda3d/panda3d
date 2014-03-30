@@ -88,15 +88,20 @@ if(HAVE_EGG)
     vector_PT_EggVertex.cxx
   )
 
+  set(P3EGG_IGATEEXT
+    eggGroupNode_ext.cxx
+    eggGroupNode_ext.h
+  )
+
   # These cannot be interrogated, and are excluded from the composites.
   set(P3EGG_PARSER_SOURCES
     parser.cxx
     lexer.cxx)
 
   composite_sources(p3egg P3EGG_SOURCES)
-  add_library(p3egg ${P3EGG_HEADERS} ${P3EGG_SOURCES} ${P3EGG_PARSER_SOURCES})
+  add_library(p3egg ${P3EGG_HEADERS} ${P3EGG_SOURCES} ${P3EGG_IGATEEXT} ${P3EGG_PARSER_SOURCES})
   target_link_libraries(p3egg p3prc p3pandabase p3express p3linmath p3mathutil)
-  target_interrogate(p3egg ${P3EGG_HEADERS} ${P3EGG_SOURCES})
+  target_interrogate(p3egg ${P3EGG_HEADERS} ${P3EGG_SOURCES} eggGroupNode_ext.h)
 
   install(TARGETS p3egg DESTINATION lib)
 endif()
