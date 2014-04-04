@@ -1350,16 +1350,16 @@ end_draw_primitives() {
 //               copy.
 ////////////////////////////////////////////////////////////////////
 bool TinyGraphicsStateGuardian::
-framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
+framebuffer_copy_to_texture(Texture *tex, int view, int z,
+                            const DisplayRegion *dr,
                             const RenderBuffer &rb) {
   nassertr(tex != NULL && dr != NULL, false);
-  
+
   int xo, yo, w, h;
   dr->get_region_pixels_i(xo, yo, w, h);
 
   tex->setup_2d_texture(w, h, Texture::T_unsigned_byte, Texture::F_rgba);
 
-  int view = dr->get_target_tex_view();
   TextureContext *tc = tex->prepare_now(view, get_prepared_objects(), this);
   nassertr(tc != (TextureContext *)NULL, false);
   TinyTextureContext *gtc = DCAST(TinyTextureContext, tc);
@@ -1389,7 +1389,6 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   return true;
 }
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: TinyGraphicsStateGuardian::framebuffer_copy_to_ram
 //       Access: Public, Virtual
@@ -1401,10 +1400,11 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
 //               indicated texture.
 ////////////////////////////////////////////////////////////////////
 bool TinyGraphicsStateGuardian::
-framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
+framebuffer_copy_to_ram(Texture *tex, int view, int z,
+                        const DisplayRegion *dr,
                         const RenderBuffer &rb) {
   nassertr(tex != NULL && dr != NULL, false);
-  
+
   int xo, yo, w, h;
   dr->get_region_pixels_i(xo, yo, w, h);
 
@@ -1432,11 +1432,6 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
   }
 
   nassertr(z < tex->get_z_size(), false);
-
-  int view = dr->get_target_tex_view();
-  if (view >= tex->get_num_views()) {
-    tex->set_num_views(view + 1);
-  }
 
   unsigned char *image_ptr = tex->modify_ram_image();
   size_t image_size = tex->get_ram_image_size();

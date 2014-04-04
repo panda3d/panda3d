@@ -214,7 +214,7 @@ bind_texture_to_pbuffer() {
 //               the indicated face.
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsBuffer::
-select_target_tex_page(int page, int view) {
+select_target_tex_page(int page) {
   wglGraphicsStateGuardian *wglgsg;
   DCAST_INTO_V(wglgsg, _gsg);
 

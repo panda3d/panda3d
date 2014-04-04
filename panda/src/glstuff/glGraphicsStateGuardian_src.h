@@ -266,9 +266,9 @@ public:
   virtual void clear(DrawableRegion *region);
   
   virtual bool framebuffer_copy_to_texture
-    (Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb);
+    (Texture *tex, int view, int z, const DisplayRegion *dr, const RenderBuffer &rb);
   virtual bool framebuffer_copy_to_ram
-    (Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb);
+    (Texture *tex, int view, int z, const DisplayRegion *dr, const RenderBuffer &rb);
 
   void apply_fog(Fog *fog);
 
@@ -637,7 +637,6 @@ public:
   INLINE bool get_supports_framebuffer_blit();
   PFNGLBLITFRAMEBUFFEREXTPROC _glBlitFramebuffer;
   PFNGLDRAWBUFFERSPROC _glDrawBuffers;
-  int _max_draw_buffers;
   int _max_fb_samples;
 
   PFNGLGENQUERIESPROC _glGenQueries;

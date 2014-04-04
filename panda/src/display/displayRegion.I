@@ -245,7 +245,7 @@ get_texture_reload_priority() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DisplayRegion::
 set_cube_map_index(int cube_map_index) {
-  set_target_tex_page(cube_map_index, 0);
+  set_target_tex_page(cube_map_index);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -260,20 +260,6 @@ INLINE int DisplayRegion::
 get_target_tex_page() const {
   CDReader cdata(_cycler);
   return cdata->_target_tex_page;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::get_target_tex_view
-//       Access: Published
-//  Description: Returns the target view number associated with this
-//               particular DisplayRegion, or -1 if it is not
-//               associated with a view.  See
-//               set_target_tex_page().
-////////////////////////////////////////////////////////////////////
-INLINE int DisplayRegion::
-get_target_tex_view() const {
-  CDReader cdata(_cycler);
-  return cdata->_target_tex_view;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -810,19 +796,6 @@ get_tex_view_offset() {
 INLINE int DisplayRegionPipelineReader::
 get_target_tex_page() const {
   return _cdata->_target_tex_page;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegionPipelineReader::get_target_tex_view
-//       Access: Published
-//  Description: Returns the target view number associated with this
-//               particular DisplayRegion, or -1 if it is not
-//               associated with a view.  See
-//               set_target_tex_page().
-////////////////////////////////////////////////////////////////////
-INLINE int DisplayRegionPipelineReader::
-get_target_tex_view() const {
-  return _cdata->_target_tex_view;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -74,7 +74,7 @@ public:
 
   virtual void set_size(int x, int y);
 
-  virtual void select_target_tex_page(int page, int view);
+  virtual void select_target_tex_page(int page);
 
   virtual bool share_depth_buffer(GraphicsOutput *graphics_output);
   virtual void unshare_depth_buffer();
@@ -94,7 +94,7 @@ protected:
 
 private:
   
-  void bind_slot(int face, bool rb_resize, Texture **attach,
+  void bind_slot(int layer, bool rb_resize, Texture **attach,
                  RenderTexturePlane plane, GLenum attachpoint);
   void bind_slot_multisample(bool rb_resize, Texture **attach,
                  RenderTexturePlane plane, GLenum attachpoint);
@@ -130,7 +130,6 @@ private:
   // The cube map face we are currently drawing to or have just
   // finished drawing to, or -1 if we are not drawing to a cube map.
   int _bound_tex_page;
-  int _bound_tex_view;
 
   bool _initial_clear;
   bool _needs_rebuild;

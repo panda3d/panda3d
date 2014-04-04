@@ -218,7 +218,8 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _supports_two_sided_stencil = false;
   _supports_geometry_instancing = false;
 
-  _maximum_simultaneous_render_targets = 1;
+  // Assume a maximum of 1 render target in absence of MRT.
+  _max_color_targets = 1;
 
   _supported_geom_rendering = 0;
 
@@ -1317,14 +1318,14 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
   case Lens::SC_left:
     _color_write_mask = dr->get_window()->get_left_eye_color_mask();
     if (_current_properties->is_stereo()) {
-      _stereo_buffer_mask = ~(RenderBuffer::T_front_right | RenderBuffer::T_back_right);
+      _stereo_buffer_mask = ~RenderBuffer::T_right;
     }
     break;
 
   case Lens::SC_right:
     _color_write_mask = dr->get_window()->get_right_eye_color_mask();
     if (_current_properties->is_stereo()) {
-      _stereo_buffer_mask = ~(RenderBuffer::T_front_left | RenderBuffer::T_back_left);
+      _stereo_buffer_mask = ~RenderBuffer::T_left;
     }
     break;
 
@@ -2150,7 +2151,7 @@ do_issue_light() {
 //               copy.
 ////////////////////////////////////////////////////////////////////
 bool GraphicsStateGuardian::
-framebuffer_copy_to_texture(Texture *, int, const DisplayRegion *,
+framebuffer_copy_to_texture(Texture *, int, int, const DisplayRegion *,
                             const RenderBuffer &) {
   return false;
 }
@@ -2167,7 +2168,7 @@ framebuffer_copy_to_texture(Texture *, int, const DisplayRegion *,
 //               indicated texture.
 ////////////////////////////////////////////////////////////////////
 bool GraphicsStateGuardian::
-framebuffer_copy_to_ram(Texture *, int, const DisplayRegion *,
+framebuffer_copy_to_ram(Texture *, int, int, const DisplayRegion *,
                         const RenderBuffer &) {
   return false;
 }
@@ -2722,7 +2723,7 @@ make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host) {
     for (int i = 0; i < 6; ++i) {
       PT(DisplayRegion) dr = sbuffer->make_mono_display_region(0, 1, 0, 1);
       dr->set_lens_index(i);
-      dr->set_target_tex_page(i, 0);
+      dr->set_target_tex_page(i);
       dr->set_camera(light_np);
       dr->set_clear_depth_active(true);
     }

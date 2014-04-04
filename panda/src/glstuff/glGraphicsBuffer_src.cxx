@@ -81,7 +81,6 @@ CLP(GraphicsBuffer)(GraphicsEngine *engine, GraphicsPipe *pipe,
 
   _shared_depth_buffer = 0;
   _bound_tex_page = -1;
-  _bound_tex_view = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -431,6 +430,17 @@ rebuild_bitplanes() {
     int next = GL_COLOR_ATTACHMENT0_EXT;
     if (attach[RTP_color] || _fb_properties.get_color_bits() > 0) {
       bind_slot(layer, rb_resize, attach, RTP_color, next++);
+
+      if (_fb_properties.is_stereo()) {
+        // The texture has already been initialized, so bind it straight away.
+        if (attach[RTP_color] != NULL) {
+          attach_tex(layer, 1, attach[RTP_color], next++);
+        } else {
+          //XXX hack: I needed a slot to use, and we don't currently use RTP_stencil
+          // which is treated as a color attachment below, so this fits the bill.
+          bind_slot(layer, rb_resize, attach, RTP_stencil, next++);
+        }
+      }
       _have_any_color = true;
     }
 
@@ -471,6 +481,9 @@ rebuild_bitplanes() {
     int next = GL_COLOR_ATTACHMENT0_EXT;
     if (attach[RTP_color] || _fb_properties.get_color_bits() > 0) {
       bind_slot_multisample(rb_resize, attach, RTP_color, next++);
+      if (_fb_properties.is_stereo()) {
+        //TODO: figure out how multisample is supposed to work with stereo buffers.
+      }
     }
 
     for (int i=0; i<_fb_properties.get_aux_rgba(); i++) {
@@ -498,7 +511,6 @@ rebuild_bitplanes() {
     _fb_properties.set_alpha_bits(0);
   }
 
-  _bound_tex_view = 0;
   _initial_clear = false;
   report_my_gl_errors();
 
@@ -763,6 +775,7 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
 
     // Allocate and bind the renderbuffer.
     glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, _rb[slot]);
+
     if (slot == RTP_depth_stencil) {
       GLCAT.debug() << "Creating depth stencil renderbuffer.\n";
       // Allocate renderbuffer storage for depth stencil.
@@ -811,13 +824,16 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
     } else {
       GLCAT.debug() << "Creating color renderbuffer.\n";
       glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, gl_format, _rb_size_x, _rb_size_y);
-      GLint red_size = 0, green_size = 0, blue_size = 0, alpha_size = 0;
-      glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_RED_SIZE_EXT, &red_size);
-      glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_GREEN_SIZE_EXT, &green_size);
-      glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_BLUE_SIZE_EXT, &blue_size);
-      glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_ALPHA_SIZE_EXT, &alpha_size);
-      _fb_properties.set_color_bits(red_size + green_size + blue_size);
-      _fb_properties.set_alpha_bits(alpha_size);
+
+      if (attachpoint == GL_COLOR_ATTACHMENT0_EXT) {
+        GLint red_size = 0, green_size = 0, blue_size = 0, alpha_size = 0;
+        glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_RED_SIZE_EXT, &red_size);
+        glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_GREEN_SIZE_EXT, &green_size);
+        glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_BLUE_SIZE_EXT, &blue_size);
+        glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_ALPHA_SIZE_EXT, &alpha_size);
+        _fb_properties.set_color_bits(red_size + green_size + blue_size);
+        _fb_properties.set_alpha_bits(alpha_size);
+      }
       glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
       glgsg->_glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, attachpoint,
                                         GL_RENDERBUFFER_EXT, _rb[slot]);
@@ -962,6 +978,10 @@ attach_tex(int layer, int view, Texture *attach, GLenum attachpoint) {
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_V(glgsg, _gsg);
 
+  if (view >= attach->get_num_views()) {
+    attach->set_num_views(view + 1);
+  }
+
   // Create the OpenGL texture object.
   TextureContext *tc = attach->prepare_now(view, glgsg->get_prepared_objects(), glgsg);
   nassertv(tc != (TextureContext *)NULL);
@@ -985,7 +1005,7 @@ attach_tex(int layer, int view, Texture *attach, GLenum attachpoint) {
   GLenum target = glgsg->get_texture_target(attach->get_texture_type());
   if (target == GL_TEXTURE_CUBE_MAP) {
     target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + layer;
-  } 
+  }
 
   switch (target) {
 #ifndef OPENGLES_1
@@ -1097,19 +1117,17 @@ set_size(int x, int y) {
 //  Description: Called internally when the window is in
 //               render-to-a-texture mode and we are in the process of
 //               rendering the six faces of a cube map, or any other
-//               multi-page and/or multi-view texture.  This should do
-//               whatever needs to be done to switch the buffer to the
-//               indicated page and view.
+//               multi-page texture.  This should do whatever needs
+//               to be done to switch the buffer to the indicated page.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsBuffer)::
-select_target_tex_page(int page, int view) {
+select_target_tex_page(int page) {
   nassertv(page >= 0 && page < _fbo.size());
 
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_V(glgsg, _gsg);
 
   bool switched_page = (_bound_tex_page != page);
-  bool switched_view = (_bound_tex_view != view);
 
   if (switched_page) {
     if (_bound_tex_page != -1) {
@@ -1121,32 +1139,6 @@ select_target_tex_page(int page, int view) {
     
     glgsg->bind_fbo(_fbo[page]);
     _bound_tex_page = page;
-  }
-
-  if (switched_view || switched_page) {
-    // We assume that we've already configured the texture earlier
-    // in bind_bitplanes.  Therefore, since we can safely assume that
-    // all texture views have the same format, we can just bind the
-    // new view here.
-
-    Texture *tex = _tex[RTP_color];
-    if (tex != NULL) {
-      if (view >= tex->get_num_views()) {
-        tex->set_num_views(view + 1);
-      }
-
-      if (GLCAT.is_spam()) {
-        GLCAT.spam()
-          << "Binding texture " << *tex
-          << " view " << view << " to color attachment.\n";
-      }
-
-      attach_tex(_bound_tex_page, view, tex, GL_COLOR_ATTACHMENT0_EXT);
-
-      report_my_gl_errors();
-    }
-
-    _bound_tex_view = view;
   }
 
   report_my_gl_errors();
@@ -1167,7 +1159,8 @@ open_buffer() {
   nassertr(_host != 0, false);
 
   // Count total color buffers.
-  int totalcolor = 1 +
+  int totalcolor =
+   (_fb_properties.is_stereo() ? 2 : 1) +
     _fb_properties.get_aux_rgba() +
     _fb_properties.get_aux_hrgba() +
     _fb_properties.get_aux_float();
@@ -1229,8 +1222,10 @@ open_buffer() {
   _fb_properties.set_accum_bits(0);
   _fb_properties.set_multisamples(_host->get_fb_properties().get_multisamples());
 
-  // Update aux settings to reflect the GL_MAX_DRAW_BUFFERS limit.
-  int availcolor = glgsg->_max_draw_buffers;
+  // Update aux settings to reflect the GL_MAX_DRAW_BUFFERS limit,
+  // if we exceed it, that is.
+  int availcolor = glgsg->_max_color_targets;
+
   if (totalcolor > availcolor) {
     int aux_rgba = _fb_properties.get_aux_rgba();
     int aux_hrgba = _fb_properties.get_aux_hrgba();
@@ -1238,6 +1233,13 @@ open_buffer() {
 
     if (_fb_properties.get_color_bits() > 0 && availcolor > 0) {
       --availcolor;
+      if (_fb_properties.is_stereo()) {
+        if (availcolor > 0) {
+          --availcolor;
+        } else {
+          _fb_properties.set_stereo(0);
+        }
+      }
     }
     aux_rgba = min(aux_rgba, availcolor);
     availcolor -= aux_rgba;
@@ -1254,7 +1256,6 @@ open_buffer() {
   _fb_properties.set_back_buffers(0);
   _fb_properties.set_indexed_color(0);
   _fb_properties.set_rgb_color(1);
-  //_fb_properties.set_stereo(0);
   _fb_properties.set_force_hardware(_host->get_fb_properties().get_force_hardware());
   _fb_properties.set_force_software(_host->get_fb_properties().get_force_software());
 
@@ -1537,21 +1538,28 @@ resolve_multisamples() {
 #ifndef OPENGLES
   // Now handle the other color buffers.
   int next = GL_COLOR_ATTACHMENT1_EXT;
-  for (int i=0; i<_fb_properties.get_aux_rgba(); i++) {
+  if (_fb_properties.is_stereo()) {
     glReadBuffer(next);
     glDrawBuffer(next);
     glgsg->_glBlitFramebuffer(0, 0, _rb_size_x, _rb_size_y, 0, 0, _rb_size_x, _rb_size_y,
                               GL_COLOR_BUFFER_BIT, GL_NEAREST);
     next += 1;
   }
-  for (int i=0; i<_fb_properties.get_aux_hrgba(); i++) {
+  for (int i = 0; i < _fb_properties.get_aux_rgba(); ++i) {
     glReadBuffer(next);
     glDrawBuffer(next);
     glgsg->_glBlitFramebuffer(0, 0, _rb_size_x, _rb_size_y, 0, 0, _rb_size_x, _rb_size_y,
                               GL_COLOR_BUFFER_BIT, GL_NEAREST);
     next += 1;
   }
-  for (int i=0; i<_fb_properties.get_aux_float(); i++) {
+  for (int i = 0; i < _fb_properties.get_aux_hrgba(); ++i) {
+    glReadBuffer(next);
+    glDrawBuffer(next);
+    glgsg->_glBlitFramebuffer(0, 0, _rb_size_x, _rb_size_y, 0, 0, _rb_size_x, _rb_size_y,
+                              GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    next += 1;
+  }
+  for (int i = 0; i < _fb_properties.get_aux_float(); ++i) {
     glReadBuffer(next);
     glDrawBuffer(next);
     glgsg->_glBlitFramebuffer(0, 0, _rb_size_x, _rb_size_y, 0, 0, _rb_size_x, _rb_size_y,

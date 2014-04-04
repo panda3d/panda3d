@@ -208,10 +208,10 @@ public:
   virtual void end_draw_primitives()=0;
 
   virtual bool framebuffer_copy_to_texture
-  (Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb)=0;
+  (Texture *tex, int view, int z, const DisplayRegion *dr, const RenderBuffer &rb)=0;
   virtual bool framebuffer_copy_to_ram
-  (Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb)=0;
-  
+  (Texture *tex, int view, int z, const DisplayRegion *dr, const RenderBuffer &rb)=0;
+
   virtual CoordinateSystem get_internal_coordinate_system() const=0;
 
   virtual void bind_light(PointLight *light_obj, const NodePath &light, 
