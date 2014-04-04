@@ -40,7 +40,7 @@ __copy__() const {
 
   // If we do have a node, duplicate it, and wrap it in a new
   // NodePath.
-  return NodePath(_this->node()->__copy__());
+  return NodePath(invoke_extension(_this->node()).__copy__());
 }
 
 ////////////////////////////////////////////////////////////////////

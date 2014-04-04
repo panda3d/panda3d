@@ -3200,8 +3200,7 @@ if (not RUNTIME):
   TargetAdd('libp3pgraph.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3pgraph.in', opts=['IMOD:core', 'ILIB:libp3pgraph', 'SRCDIR:panda/src/pgraph'])
   TargetAdd('libp3pgraph_igate.obj', input='libp3pgraph.in', opts=["DEPENDENCYONLY","BIGOBJ"])
-  TargetAdd('p3pgraph_nodePath_ext.obj', opts=OPTS, input='nodePath_ext.cxx')
-  TargetAdd('p3pgraph_nodePathCollection_ext.obj', opts=OPTS, input='nodePathCollection_ext.cxx')
+  TargetAdd('p3pgraph_ext_composite.obj', opts=OPTS, input='p3pgraph_ext_composite.cxx')
 
 #
 # DIRECTORY: panda/src/cull/
@@ -3543,8 +3542,7 @@ if (not RUNTIME):
   TargetAdd('libpanda.dll', input='p3putil_typedWritable_ext.obj')
   TargetAdd('libpanda.dll', input='p3pnmimage_pfmFile_ext.obj')
   TargetAdd('libpanda.dll', input='p3gobj_geomVertexArrayData_ext.obj')
-  TargetAdd('libpanda.dll', input='p3pgraph_nodePath_ext.obj')
-  TargetAdd('libpanda.dll', input='p3pgraph_nodePathCollection_ext.obj')
+  TargetAdd('libpanda.dll', input='p3pgraph_ext_composite.obj')
   TargetAdd('libpanda.dll', input='p3display_graphicsStateGuardian_ext.obj')
 
   if PkgSkip("FREETYPE")==0:
