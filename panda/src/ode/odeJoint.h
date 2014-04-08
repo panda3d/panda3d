@@ -32,7 +32,7 @@ PUBLISHED:
 };
 
 // Strange, we should be forced to include this by get_body()
-class OdeBody; 
+class OdeBody;
 
 class OdeBallJoint;
 class OdeHingeJoint;
@@ -48,7 +48,7 @@ class OdePlane2dJoint;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : OdeJoint
-// Description : 
+// Description :
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAODE OdeJoint : public TypedObject {
   friend class OdeBody;
@@ -56,8 +56,6 @@ class EXPCL_PANDAODE OdeJoint : public TypedObject {
 
 public:
   OdeJoint();
-
-protected:
   OdeJoint(dJointID id);
 
 PUBLISHED:
@@ -78,7 +76,7 @@ PUBLISHED:
   void destroy();
   INLINE bool is_empty() const;
   INLINE dJointID get_id() const;
-  
+
   /* INLINE void set_data(void *data); */
   /* INLINE void *get_data(); */
   INLINE int get_joint_type() const;
@@ -86,7 +84,8 @@ PUBLISHED:
   INLINE void set_feedback(OdeJointFeedback *);
   INLINE void set_feedback(bool flag = true);
   INLINE OdeJointFeedback *get_feedback();
-   
+
+  EXTENSION(void attach(const OdeBody *body1, const OdeBody *body2));
   void attach_bodies(const OdeBody &body1, const OdeBody &body2);
   void attach_body(const OdeBody &body, int index);
   void detach();
@@ -96,6 +95,7 @@ PUBLISHED:
   INLINE bool operator == (const OdeJoint &other) const;
   operator bool () const;
 
+  EXTENSION(PyObject *convert() const);
   OdeBallJoint convert_to_ball() const;
   OdeHingeJoint convert_to_hinge() const;
   OdeSliderJoint convert_to_slider() const;

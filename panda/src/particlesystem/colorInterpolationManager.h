@@ -27,7 +27,7 @@
 //               function.
 ////////////////////////////////////////////////////////////////////
 
-class ColorInterpolationFunction : public TypedReferenceCount {
+class EXPCL_PANDAPHYSICS ColorInterpolationFunction : public TypedReferenceCount {
 PUBLISHED:
 //  virtual string get_type();
   
@@ -62,7 +62,7 @@ private:
 //               the segment.
 ////////////////////////////////////////////////////////////////////
 
-class ColorInterpolationFunctionConstant : public ColorInterpolationFunction {
+class EXPCL_PANDAPHYSICS ColorInterpolationFunctionConstant : public ColorInterpolationFunction {
 PUBLISHED:
   INLINE LColor get_color_a() const;
 
@@ -103,7 +103,7 @@ private:
 //               the segment.
 ////////////////////////////////////////////////////////////////////
 
-class ColorInterpolationFunctionLinear : public ColorInterpolationFunctionConstant {
+class EXPCL_PANDAPHYSICS ColorInterpolationFunctionLinear : public ColorInterpolationFunctionConstant {
 PUBLISHED:
   INLINE LColor get_color_b() const;
 
@@ -147,7 +147,7 @@ private:
 //               the end of the segment.
 ////////////////////////////////////////////////////////////////////
 
-class ColorInterpolationFunctionStepwave : public ColorInterpolationFunctionLinear {
+class EXPCL_PANDAPHYSICS ColorInterpolationFunctionStepwave : public ColorInterpolationFunctionLinear {
 PUBLISHED:
   INLINE PN_stdfloat get_width_a() const;
   INLINE PN_stdfloat get_width_b() const;
@@ -195,7 +195,7 @@ private:
 //               cycle.
 ////////////////////////////////////////////////////////////////////
 
-class ColorInterpolationFunctionSinusoid : public ColorInterpolationFunctionLinear {
+class EXPCL_PANDAPHYSICS ColorInterpolationFunctionSinusoid : public ColorInterpolationFunctionLinear {
 PUBLISHED:
   INLINE PN_stdfloat get_period() const;
 
@@ -238,7 +238,7 @@ private:
 //               also has a function associated with it.
 ////////////////////////////////////////////////////////////////////
 
-class ColorInterpolationSegment : public ReferenceCount {
+class EXPCL_PANDAPHYSICS ColorInterpolationSegment : public ReferenceCount {
 PUBLISHED:
   ColorInterpolationSegment(ColorInterpolationFunction* function, const PN_stdfloat &time_begin, const PN_stdfloat &time_end, const bool is_modulated, const int id);
   ColorInterpolationSegment(const ColorInterpolationSegment &s);
@@ -280,7 +280,7 @@ protected:
 //               general use.
 ////////////////////////////////////////////////////////////////////
 
-class ColorInterpolationManager : public ReferenceCount {
+class EXPCL_PANDAPHYSICS ColorInterpolationManager : public ReferenceCount {
 PUBLISHED:
 ColorInterpolationManager();
   ColorInterpolationManager(const LColor &c);

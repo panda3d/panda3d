@@ -52,7 +52,7 @@ destroy() {
 void OdeJoint::
 attach_bodies(const OdeBody &body1, const OdeBody &body2) {
   nassertv(_id);
-  nassertv(body1.get_id() != 0 && body2.get_id() != 0);
+  nassertv(body1.get_id() != 0 || body2.get_id() != 0);
   dJointAttach(_id, body1.get_id(), body2.get_id());
 }
 

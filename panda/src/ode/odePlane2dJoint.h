@@ -15,7 +15,7 @@
 class EXPCL_PANDAODE OdePlane2dJoint : public OdeJoint {
   friend class OdeJoint;
 
-private:
+public:
   OdePlane2dJoint(dJointID id);
 
 PUBLISHED:

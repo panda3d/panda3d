@@ -72,7 +72,10 @@
     modelPool.I modelPool.h \
     modelRoot.I modelRoot.h \
     nodePath.I nodePath.h nodePath.cxx \
+    nodePath_ext.I nodePath_ext.h nodePath_ext.cxx \
     nodePathCollection.I nodePathCollection.h \
+    nodePathCollection_ext.I nodePathCollection_ext.h \
+    nodePathCollection_ext.cxx \
     nodePathComponent.I nodePathComponent.h \
     occluderEffect.I occluderEffect.h \
     occluderNode.I occluderNode.h \

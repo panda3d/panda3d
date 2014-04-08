@@ -25,4 +25,7 @@ class PyThreadState;
 typedef int Py_ssize_t;
 struct Py_buffer;
 
+// This file defines PY_VERSION_HEX, which is used in some places.
+#include "patchlevel.h"
+
 #endif  // PYTHON_H

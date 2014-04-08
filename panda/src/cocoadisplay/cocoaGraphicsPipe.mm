@@ -16,6 +16,7 @@
 //#include "cocoaGraphicsBuffer.h"
 #include "cocoaGraphicsWindow.h"
 #include "cocoaGraphicsStateGuardian.h"
+#include "cocoaPandaApp.h"
 #include "config_cocoadisplay.h"
 #include "frameBufferProperties.h"
 
@@ -32,7 +33,7 @@ TypeHandle CocoaGraphicsPipe::_type_handle;
 static void init_app() {
   if (NSApp == nil) {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    [NSApplication sharedApplication];
+    [CocoaPandaApp sharedApplication];
 
 #if __MAC_OS_X_VERSION_MAX_ALLOWED >= 1060
     [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];

@@ -81,10 +81,17 @@ public:
     // from a menu.
     T_candidate,
 
-    // T_move is used to indicate that the mouse has moved within the 
+    // T_move is used to indicate that the mouse has moved within the
     // current region. Button drag mode needs this, others may ignore
     // this event
     T_move,
+
+    // T_raw_down is usually sent together with T_down, except that
+    // this is the original, untransformed scan key sent by the keyboard.
+    // It is not altered by modifier keys and acts as if the user is
+    // using the US (qwerty) keyboard layout.
+    T_raw_down,
+    T_raw_up,
   };
 
   INLINE ButtonEvent();

@@ -33,13 +33,19 @@ VorbisAudioCursor(VorbisAudio *src, istream *stream) :
   _bitstream(0)
 {
   nassertv(stream != NULL);
+  nassertv(stream->good());
 
   // Set up the callbacks to read via the VFS.
   ov_callbacks callbacks;
   callbacks.read_func = &cb_read_func;
-  callbacks.seek_func = &cb_seek_func;
   callbacks.close_func = &cb_close_func;
   callbacks.tell_func = &cb_tell_func;
+
+  if (vorbis_enable_seek) {
+    callbacks.seek_func = &cb_seek_func;
+  } else {
+    callbacks.seek_func = NULL;
+  }
 
   if (ov_open_callbacks((void*) stream, &_ov, NULL, 0, callbacks) != 0) {
     movies_cat.error()
@@ -47,13 +53,16 @@ VorbisAudioCursor(VorbisAudio *src, istream *stream) :
     return;
   }
 
-  _length = ov_time_total(&_ov, -1);
+  double time_total = ov_time_total(&_ov, -1);
+  if (time_total != OV_EINVAL) {
+    _length = time_total;
+  }
 
   vorbis_info *vi = ov_info(&_ov, -1);
   _audio_channels = vi->channels;
   _audio_rate = vi->rate;
 
-  _can_seek = (ov_seekable(&_ov) != 0);
+  _can_seek = vorbis_enable_seek && (ov_seekable(&_ov) != 0);
   _can_seek_fast = _can_seek;
 
   _is_valid = true;
@@ -78,6 +87,10 @@ VorbisAudioCursor::
 ////////////////////////////////////////////////////////////////////
 void VorbisAudioCursor::
 seek(double t) {
+  if (!vorbis_enable_seek) {
+    return;
+  }
+
   t = max(t, 0.0);
 
   // Use ov_time_seek_lap if cross-lapping is enabled.
@@ -163,8 +176,15 @@ read_samples(int n, PN_int16 *data) {
 size_t VorbisAudioCursor::
 cb_read_func(void *ptr, size_t size, size_t nmemb, void *datasource) {
   istream *stream = (istream*) datasource;
+  nassertr(stream != NULL, -1);
 
   stream->read((char *)ptr, size * nmemb);
+
+  if (stream->eof()) {
+    // Gracefully handle EOF.
+    stream->clear();
+  }
+
   return stream->gcount();
 }
 
@@ -176,7 +196,12 @@ cb_read_func(void *ptr, size_t size, size_t nmemb, void *datasource) {
 ////////////////////////////////////////////////////////////////////
 int VorbisAudioCursor::
 cb_seek_func(void *datasource, ogg_int64_t offset, int whence) {
+  if (!vorbis_enable_seek) {
+    return -1;
+  }
+
   istream *stream = (istream*) datasource;
+  nassertr(stream != NULL, -1);
 
   switch (whence) {
   case SEEK_SET:
@@ -198,6 +223,26 @@ cb_seek_func(void *datasource, ogg_int64_t offset, int whence) {
   }
 
   if (stream->fail()) {
+    // This is a fatal error and usually leads to
+    // a libvorbis crash.
+    movies_cat.error()
+      << "Failure to seek to byte " << offset;
+
+    switch (whence) {
+    case SEEK_CUR:
+      movies_cat.error(false)
+        << " from current location!\n";
+      break;
+
+    case SEEK_END:
+      movies_cat.error(false)
+        << " from end of file!\n";
+      break;
+
+    default:
+      movies_cat.error(false) << "!\n";
+    }
+
     return -1;
   }
 
@@ -213,6 +258,8 @@ cb_seek_func(void *datasource, ogg_int64_t offset, int whence) {
 int VorbisAudioCursor::
 cb_close_func(void *datasource) {
   istream *stream = (istream*) datasource;
+  nassertr(stream != NULL, -1);
+
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   vfs->close_read_file(stream);
 
@@ -229,6 +276,8 @@ cb_close_func(void *datasource) {
 long VorbisAudioCursor::
 cb_tell_func(void *datasource) {
   istream *stream = (istream*) datasource;
+  nassertr(stream != NULL, -1);
+
   return stream->tellg();
 }
 

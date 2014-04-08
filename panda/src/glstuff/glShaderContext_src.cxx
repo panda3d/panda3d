@@ -71,14 +71,13 @@ TypeHandle CLP(ShaderContext)::_type_handle;
 bool CLP(ShaderContext)::
 parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, Shader *objShader) {
     Shader::ShaderArgInfo p;
-  
     p._id = arg_id;
-    
+
     string basename(arg_id._name);
     // Split it at the underscores.
     vector_string pieces;
     tokenize(basename, pieces, "_");
-    
+
     if (pieces[0] == "mstrans") {
         pieces[0] = "trans";
         pieces.push_back("to");
@@ -119,9 +118,9 @@ parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, Shader *objSha
         pieces.push_back("to");
         pieces.push_back("clip");
     }
-    
-    if ((pieces[0] == "mat")||(pieces[0] == "inv")||
-      (pieces[0] == "tps")||(pieces[0] == "itp")) {
+
+    if ((pieces[0] == "mat") || (pieces[0] == "inv") ||
+        (pieces[0] == "tps") || (pieces[0] == "itp")) {
         if (!objShader->cp_errchk_parameter_words(p, 2)) {
             return false;
         }
@@ -138,33 +137,33 @@ parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, Shader *objSha
             objShader->cp_report_error(p,"unrecognized matrix name");
             return false;
         }
-        if (trans=="mat") {
+        if (trans == "mat") {
             pieces[0] = "trans";
-        } else if (trans=="inv") {
+        } else if (trans == "inv") {
             string t = pieces[1];
             pieces[1] = pieces[3];
             pieces[3] = t;
-        } else if (trans=="tps") {
+        } else if (trans == "tps") {
             pieces[0] = "tpose";
-        } else if (trans=="itp") {
+        } else if (trans == "itp") {
             string t = pieces[1];
             pieces[1] = pieces[3];
             pieces[3] = t;
             pieces[0] = "tpose";
-            }
+        }
     }
   // Implement the transform-matrix generator.
 
-    if ((pieces[0]=="trans")||
-        (pieces[0]=="tpose")||
-        (pieces[0]=="row0")||
-        (pieces[0]=="row1")||
-        (pieces[0]=="row2")||
-        (pieces[0]=="row3")||
-        (pieces[0]=="col0")||
-        (pieces[0]=="col1")||
-        (pieces[0]=="col2")||
-        (pieces[0]=="col3")) {
+    if ((pieces[0] == "trans") ||
+        (pieces[0] == "tpose") ||
+        (pieces[0] == "row0") ||
+        (pieces[0] == "row1") ||
+        (pieces[0] == "row2") ||
+        (pieces[0] == "row3") ||
+        (pieces[0] == "col0") ||
+        (pieces[0] == "col1") ||
+        (pieces[0] == "col2") ||
+        (pieces[0] == "col3")) {
 
         Shader::ShaderMatSpec bind;
         bind._id = arg_id;
@@ -174,27 +173,26 @@ parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, Shader *objSha
         pieces.push_back("");
 
         // Decide whether this is a matrix or vector.
-        if      (pieces[0]=="trans")   bind._piece = Shader::SMP_whole;
-        else if (pieces[0]=="tpose")   bind._piece = Shader::SMP_transpose;
-        else if (pieces[0]=="row0")    bind._piece = Shader::SMP_row0;
-        else if (pieces[0]=="row1")    bind._piece = Shader::SMP_row1;
-        else if (pieces[0]=="row2")    bind._piece = Shader::SMP_row2;
-        else if (pieces[0]=="row3")    bind._piece = Shader::SMP_row3;
-        else if (pieces[0]=="col0")    bind._piece = Shader::SMP_col0;
-        else if (pieces[0]=="col1")    bind._piece = Shader::SMP_col1;
-        else if (pieces[0]=="col2")    bind._piece = Shader::SMP_col2;
-        else if (pieces[0]=="col3")    bind._piece = Shader::SMP_col3;
+        if      (pieces[0] == "trans") bind._piece = Shader::SMP_whole;
+        else if (pieces[0] == "tpose") bind._piece = Shader::SMP_transpose;
+        else if (pieces[0] == "row0")  bind._piece = Shader::SMP_row0;
+        else if (pieces[0] == "row1")  bind._piece = Shader::SMP_row1;
+        else if (pieces[0] == "row2")  bind._piece = Shader::SMP_row2;
+        else if (pieces[0] == "row3")  bind._piece = Shader::SMP_row3;
+        else if (pieces[0] == "col0")  bind._piece = Shader::SMP_col0;
+        else if (pieces[0] == "col1")  bind._piece = Shader::SMP_col1;
+        else if (pieces[0] == "col2")  bind._piece = Shader::SMP_col2;
+        else if (pieces[0] == "col3")  bind._piece = Shader::SMP_col3;
 
         if (!objShader->cp_parse_coord_sys(p, pieces, next, bind, true)) {
           return false;
         }
         if (!objShader->cp_parse_delimiter(p, pieces, next)) {
           return false;
-        }    
+        }
         if (!objShader->cp_parse_coord_sys(p, pieces, next, bind, false)) {
           return false;
         }
-        
         if (!objShader->cp_parse_eol(p, pieces, next)) {
           return false;
         }
@@ -223,51 +221,58 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
 
 #if defined(HAVE_CG) && !defined(OPENGLES)
   _cg_context = 0;
+  _cg_vprofile = CG_PROFILE_UNKNOWN;
+  _cg_fprofile = CG_PROFILE_UNKNOWN;
+  _cg_gprofile = CG_PROFILE_UNKNOWN;
   if (s->get_language() == Shader::SL_Cg) {
-    
     // Ask the shader to compile itself for us and 
     // to give us the resulting Cg program objects.
 
     if (!s->cg_compile_for(gsg->_shader_caps,
                            _cg_context,
                            _cg_vprogram,
-                           _cg_fprogram, 
+                           _cg_fprogram,
                            _cg_gprogram,
                            _cg_parameter_map)) {
       return;
     }
-    
+
     // Load the program.
-    
     if (_cg_vprogram != 0) {
+      _cg_vprofile = cgGetProgramProfile(_cg_vprogram);
       cgGLLoadProgram(_cg_vprogram);
       CGerror verror = cgGetError();
       if (verror != CG_NO_ERROR) {
-        const char *str = (const char *)GLP(GetString)(GL_PROGRAM_ERROR_STRING_ARB);
-        GLCAT.error() << "Could not load Cg vertex program:" << s->get_filename(Shader::ST_vertex) << " (" << 
-          cgGetProfileString(cgGetProgramProfile(_cg_vprogram)) << " " << str << ")\n";
+        const char *str = cgGetErrorString(verror);
+        GLCAT.error()
+          << "Could not load Cg vertex program: " << s->get_filename(Shader::ST_vertex)
+          << " (" << cgGetProfileString(_cg_vprofile) << " " << str << ")\n";
         release_resources(gsg);
       }
     }
 
     if (_cg_fprogram != 0) {
+      _cg_fprofile = cgGetProgramProfile(_cg_fprogram);
       cgGLLoadProgram(_cg_fprogram);
       CGerror ferror = cgGetError();
       if (ferror != CG_NO_ERROR) {
-        const char *str = (const char *)GLP(GetString)(GL_PROGRAM_ERROR_STRING_ARB);
-        GLCAT.error() << "Could not load Cg fragment program:" << s->get_filename(Shader::ST_fragment) << " (" << 
-          cgGetProfileString(cgGetProgramProfile(_cg_fprogram)) << " " << str << ")\n";
+        const char *str = cgGetErrorString(ferror);
+        GLCAT.error()
+          << "Could not load Cg fragment program: " << s->get_filename(Shader::ST_fragment)
+          << " (" << cgGetProfileString(_cg_fprofile) << " " << str << ")\n";
         release_resources(gsg);
       }
     }
 
     if (_cg_gprogram != 0) {
+      _cg_gprofile = cgGetProgramProfile(_cg_gprogram);
       cgGLLoadProgram(_cg_gprogram);
       CGerror gerror = cgGetError();
       if (gerror != CG_NO_ERROR) {
-        const char *str = (const char *)GLP(GetString)(GL_PROGRAM_ERROR_STRING_ARB);
-        GLCAT.error() << "Could not load Cg geometry program:" << s->get_filename(Shader::ST_geometry) << " (" << 
-          cgGetProfileString(cgGetProgramProfile(_cg_gprogram)) << " " << str << ")\n";
+        const char *str = cgGetErrorString(gerror);
+        GLCAT.error()
+          << "Could not load Cg geometry program: " << s->get_filename(Shader::ST_geometry)
+          << " (" << cgGetProfileString(_cg_gprofile) << " " << str << ")\n";
         release_resources(gsg);
       }
     }
@@ -338,7 +343,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
               }
               bind._arg[0] = NULL;
               bind._arg[1] = NULL;
-              
+
               if (matrix_name == "ModelViewProjectionMatrix") {
                 bind._func = Shader::SMF_compose;
                 if (inverse) {
@@ -418,15 +423,14 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
             // them as well, to increase compatibility.
             // Other inputs we may support in the future:
             // int osg_FrameNumber
-            // float osg_FrameTime
-            // float osg_DeltaFrameTime
+
+            Shader::ShaderMatSpec bind;
+            bind._id = arg_id;
+            bind._arg[0] = NULL;
+            bind._arg[1] = NULL;
 
             if (param_name == "osg_ViewMatrix") {
-              Shader::ShaderMatSpec bind;
-              bind._id = arg_id;
               bind._piece = Shader::SMP_whole;
-              bind._arg[0] = NULL;
-              bind._arg[1] = NULL;
               bind._func = Shader::SMF_first;
               bind._part[0] = Shader::SMO_world_to_view;
               bind._part[1] = Shader::SMO_identity;
@@ -436,15 +440,31 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
               continue;
 
             } else if (param_name == "osg_InverseViewMatrix") {
-              Shader::ShaderMatSpec bind;
-              bind._id = arg_id;
               bind._piece = Shader::SMP_whole;
-              bind._arg[0] = NULL;
-              bind._arg[1] = NULL;
               bind._func = Shader::SMF_first;
               bind._part[0] = Shader::SMO_view_to_world;
               bind._part[1] = Shader::SMO_identity;
               bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
+              bind._dep[1] = Shader::SSD_NONE;
+              s->_mat_spec.push_back(bind);
+              continue;
+
+            } else if (param_name == "osg_FrameTime") {
+              bind._piece = Shader::SMP_row3x1;
+              bind._func = Shader::SMF_first;
+              bind._part[0] = Shader::SMO_frame_time;
+              bind._part[1] = Shader::SMO_identity;
+              bind._dep[0] = Shader::SSD_general;
+              bind._dep[1] = Shader::SSD_NONE;
+              s->_mat_spec.push_back(bind);
+              continue;
+
+            } else if (param_name == "osg_DeltaFrameTime") {
+              bind._piece = Shader::SMP_row3x1;
+              bind._func = Shader::SMF_first;
+              bind._part[0] = Shader::SMO_frame_delta;
+              bind._part[1] = Shader::SMO_identity;
+              bind._dep[0] = Shader::SSD_general;
               bind._dep[1] = Shader::SSD_NONE;
               s->_mat_spec.push_back(bind);
               continue;
@@ -455,7 +475,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
           if (parse_and_set_short_hand_shader_vars(arg_id, s)) {
             continue;
           }
-          
+
           if (param_size == 1) {
             switch (param_type) {
 #ifndef OPENGLES
@@ -706,7 +726,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
       }
     }
   }
-  
+
   gsg->report_my_gl_errors();
 }
 
@@ -819,15 +839,15 @@ bind(GSG *gsg, bool reissue_parameters) {
   if (_cg_context != 0) {
     // Bind the shaders.
     if (_cg_vprogram != 0) {
-      cgGLEnableProfile(cgGetProgramProfile(_cg_vprogram));
+      cgGLEnableProfile(_cg_vprofile);
       cgGLBindProgram(_cg_vprogram);
     }
     if (_cg_fprogram != 0) {
-      cgGLEnableProfile(cgGetProgramProfile(_cg_fprogram));
+      cgGLEnableProfile(_cg_fprofile);
       cgGLBindProgram(_cg_fprogram);
     }
     if (_cg_gprogram != 0) {
-      cgGLEnableProfile(cgGetProgramProfile(_cg_gprogram));
+      cgGLEnableProfile(_cg_gprofile);
       cgGLBindProgram(_cg_gprogram);
     }
 
@@ -850,19 +870,22 @@ unbind(GSG *gsg) {
 #if defined(HAVE_CG) && !defined(OPENGLES)
   if (_cg_context != 0) {
     if (_cg_vprogram != 0) {
-      cgGLDisableProfile(cgGetProgramProfile(_cg_vprogram));
+      cgGLUnbindProgram(_cg_vprofile);
+      cgGLDisableProfile(_cg_vprofile);
     }
     if (_cg_fprogram != 0) {
-      cgGLDisableProfile(cgGetProgramProfile(_cg_fprogram));
+      cgGLUnbindProgram(_cg_fprofile);
+      cgGLDisableProfile(_cg_fprofile);
     }
     if (_cg_gprogram != 0) {
-      cgGLDisableProfile(cgGetProgramProfile(_cg_gprogram));
+      cgGLUnbindProgram(_cg_gprofile);
+      cgGLDisableProfile(_cg_gprofile);
     }
 
     cg_report_errors();
   }
 #endif
-  
+
   if (_shader->get_language() == Shader::SL_GLSL) {
     gsg->_glUseProgram(0);
   }
@@ -1162,12 +1185,13 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg,
         }
       }
 #endif
-      
+
       InternalName *name = _shader->_var_spec[i]._name;
       int texslot = _shader->_var_spec[i]._append_uv;
       if (texslot >= 0 && texslot < gsg->_state_texture->get_num_on_stages()) {
         TextureStage *stage = gsg->_state_texture->get_on_stage(texslot);
         InternalName *texname = stage->get_texcoord_name();
+
         if (name == InternalName::get_texcoord()) {
           name = texname;
         } else if (texname != InternalName::get_texcoord()) {

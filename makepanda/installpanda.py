@@ -125,7 +125,6 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built"):
     oscmd("mkdir -m 0755 -p "+destdir+prefix+"/bin")
     oscmd("mkdir -m 0755 -p "+destdir+prefix+"/include")
     oscmd("mkdir -m 0755 -p "+destdir+prefix+"/share/panda3d")
-    oscmd("mkdir -m 0755 -p "+destdir+prefix+"/share/panda3d/direct")
     oscmd("mkdir -m 0755 -p "+destdir+prefix+"/share/mime-info")
     oscmd("mkdir -m 0755 -p "+destdir+prefix+"/share/mime/packages")
     oscmd("mkdir -m 0755 -p "+destdir+prefix+"/share/application-registry")
@@ -137,7 +136,6 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built"):
         oscmd("mkdir -m 0755 -p "+destdir+"/usr/local/libdata/ldconfig")
     else:
         oscmd("mkdir -m 0755 -p "+destdir+"/etc/ld.so.conf.d")
-    WriteFile(destdir+prefix+"/share/panda3d/direct/__init__.py", "")
     Configrc = ReadFile(outputdir+"/etc/Config.prc")
     Configrc = Configrc.replace("model-path    $THIS_PRC_DIR/..", "model-path    "+prefix+"/share/panda3d")
     if (sys.platform.startswith("freebsd")):
@@ -147,13 +145,13 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built"):
         WriteFile(destdir+"/etc/Config.prc", Configrc)
         oscmd("cp "+outputdir+"/etc/Confauto.prc    "+destdir+"/etc/Confauto.prc")
     oscmd("cp -R "+outputdir+"/include          "+destdir+prefix+"/include/panda3d")
-    oscmd("cp -R direct/src/*                   "+destdir+prefix+"/share/panda3d/direct")
-    oscmd("cp -R "+outputdir+"/pandac           "+destdir+prefix+"/share/panda3d/pandac")
-    oscmd("cp -R "+outputdir+"/models           "+destdir+prefix+"/share/panda3d/models")
-    oscmd("cp direct/src/ffi/panda3d.py         "+destdir+prefix+"/share/panda3d/panda3d.py")
-    if os.path.isdir("samples"):             oscmd("cp -R samples               "+destdir+prefix+"/share/panda3d/samples")
-    if os.path.isdir(outputdir+"/Pmw"):      oscmd("cp -R "+outputdir+"/Pmw     "+destdir+prefix+"/share/panda3d/Pmw")
-    if os.path.isdir(outputdir+"/plugins"):  oscmd("cp -R "+outputdir+"/plugins "+destdir+prefix+"/share/panda3d/plugins")
+    oscmd("cp -R "+outputdir+"/direct           "+destdir+prefix+"/share/panda3d/")
+    oscmd("cp -R "+outputdir+"/pandac           "+destdir+prefix+"/share/panda3d/")
+    oscmd("cp -R "+outputdir+"/panda3d          "+destdir+PPATH+"/")
+    oscmd("cp -R "+outputdir+"/models           "+destdir+prefix+"/share/panda3d/")
+    if os.path.isdir("samples"):             oscmd("cp -R samples               "+destdir+prefix+"/share/panda3d/")
+    if os.path.isdir(outputdir+"/Pmw"):      oscmd("cp -R "+outputdir+"/Pmw     "+destdir+prefix+"/share/panda3d/")
+    if os.path.isdir(outputdir+"/plugins"):  oscmd("cp -R "+outputdir+"/plugins "+destdir+prefix+"/share/panda3d/")
     WriteMimeFile(destdir+prefix+"/share/mime-info/panda3d.mime", MIME_INFO)
     WriteKeysFile(destdir+prefix+"/share/mime-info/panda3d.keys", MIME_INFO)
     WriteMimeXMLFile(destdir+prefix+"/share/mime/packages/panda3d.xml", MIME_INFO)
@@ -169,7 +167,7 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built"):
     else:
         oscmd("echo '"+libdir+"/panda3d'>    "+destdir+"/etc/ld.so.conf.d/panda3d.conf")
         oscmd("chmod +x "+destdir+"/etc/ld.so.conf.d/panda3d.conf")
-    oscmd("ln -s "+PEXEC+"                      "+destdir+prefix+"/bin/ppython")
+    oscmd("ln -f -s "+PEXEC+"                   "+destdir+prefix+"/bin/ppython")
     oscmd("cp "+outputdir+"/bin/*               "+destdir+prefix+"/bin/")
     for base in os.listdir(outputdir+"/lib"):
         if (not base.endswith(".a")) or base == "libp3pystub.a":

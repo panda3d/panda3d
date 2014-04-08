@@ -76,7 +76,7 @@ TextureCollection(PyObject *self, PyObject *sequence) {
     if (item == NULL) {
       return;
     }
-    PyObject *result = PyObject_CallMethod(self, (char *)"addTexture", (char *)"O", item);
+    PyObject *result = PyObject_CallMethod(self, (char *)"add_texture", (char *)"O", item);
     Py_DECREF(item);
     if (result == NULL) {
       // Unable to add item--probably it wasn't of the appropriate type.

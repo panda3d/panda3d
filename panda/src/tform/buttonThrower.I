@@ -201,6 +201,53 @@ get_move_event() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ButtonThrower::set_raw_button_down_event
+//       Access: Published
+//  Description: Like set_button_down_event, but uses the raw,
+//               untransformed scan key from the operating system.
+//               This uses buttons that are independent of the
+//               user's selected keyboard layout.
+////////////////////////////////////////////////////////////////////
+INLINE void ButtonThrower::
+set_raw_button_down_event(const string &raw_button_down_event) {
+  _raw_button_down_event = raw_button_down_event;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonThrower::get_raw_button_down_event
+//       Access: Published
+//  Description: Returns the raw_button_down_event that has been set on
+//               this ButtonThrower.  See set_raw_button_down_event().
+////////////////////////////////////////////////////////////////////
+INLINE const string &ButtonThrower::
+get_raw_button_down_event() const {
+  return _raw_button_down_event;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonThrower::set_raw_button_up_event
+//       Access: Published
+//  Description: Specifies the generic event that is generated (if
+//               any) each time a key or button is released.  See
+//               set_raw_button_down_event().
+////////////////////////////////////////////////////////////////////
+INLINE void ButtonThrower::
+set_raw_button_up_event(const string &raw_button_up_event) {
+  _raw_button_up_event = raw_button_up_event;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonThrower::get_raw_button_up_event
+//       Access: Published
+//  Description: Returns the raw_button_up_event that has been set on
+//               this ButtonThrower.  See set_raw_button_up_event().
+////////////////////////////////////////////////////////////////////
+INLINE const string &ButtonThrower::
+get_raw_button_up_event() const {
+  return _raw_button_up_event;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ButtonThrower::set_prefix
 //       Access: Published
 //  Description: Sets the prefix which is prepended to all specific

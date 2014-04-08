@@ -110,6 +110,11 @@ void MeshDrawer::begin(NodePath camera, NodePath render) {
   if (_normal != NULL) delete _normal;
   if (_uv != NULL)     delete _uv;
   if (_color != NULL)  delete _color;
+
+  if (_vdata == NULL) {
+    generator(_budget);
+  }
+
   _vertex = new GeomVertexRewriter(_vdata, "vertex");
   _uv = new GeomVertexRewriter(_vdata, "texcoord");
   _normal = new GeomVertexRewriter(_vdata, "normal");

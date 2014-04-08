@@ -43,7 +43,7 @@ class AnimChannelBase;
 //               MovingPart.  It defines a hierarchy of MovingParts.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_CHAN PartGroup : public TypedWritableReferenceCount, public Namable {
-public:
+PUBLISHED:
   // This enum defines bits which may be passed into check_hierarchy()
   // and PartBundle::bind_anim() to allow an inexact match of channel
   // hierarchies.  This specifies conditions that we don't care about

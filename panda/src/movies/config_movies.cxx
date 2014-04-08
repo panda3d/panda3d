@@ -50,6 +50,11 @@ ConfigVariableList load_video_type
           "either the name of a module, or a space-separate list of filename "
           "extensions, followed by the name of the module."));
 
+ConfigVariableBool vorbis_enable_seek
+("vorbis-enable-seek", true,
+ PRC_DESC("Set this to false if you're having trouble with seeking while "
+          "using the Ogg Vorbis decoder."));
+
 ConfigVariableBool vorbis_seek_lap
 ("vorbis-seek-lap", true,
  PRC_DESC("If this is set to true, the Ogg Vorbis decoder will automatically "

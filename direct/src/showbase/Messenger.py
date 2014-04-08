@@ -7,7 +7,7 @@ from PythonUtil import *
 from direct.directnotify import DirectNotifyGlobal
 import types
 
-from libpandaexpress import ConfigVariableBool
+from panda3d.core import ConfigVariableBool
 
 # If using the Toontown ActiveX launcher, this must be set true.
 # Also, Panda must be compiled with SIMPLE_THREADS or no HAVE_THREADS
@@ -634,7 +634,10 @@ class Messenger:
             functionName = method.im_class.__name__ + '.' + \
                 method.im_func.__name__
         else:
-            functionName = method.__name__
+            if hasattr(method, "__name__"):
+                functionName = method.__name__
+            else:
+                return ""
         return functionName
 
     def __eventRepr(self, event):

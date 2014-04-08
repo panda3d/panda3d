@@ -365,3 +365,25 @@ focus_lost(double time) {
   }
   _buttons_held.clear();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindowInputDevice::raw_button_down
+//       Access: Public
+//  Description: Records that the indicated button has been depressed.
+////////////////////////////////////////////////////////////////////
+void GraphicsWindowInputDevice::
+raw_button_down(ButtonHandle button, double time) {
+  LightMutexHolder holder(_lock);
+  _button_events.push_back(ButtonEvent(button, ButtonEvent::T_raw_down, time));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindowInputDevice::raw_button_up
+//       Access: Public
+//  Description: Records that the indicated button has been released.
+////////////////////////////////////////////////////////////////////
+void GraphicsWindowInputDevice::
+raw_button_up(ButtonHandle button, double time) {
+  LightMutexHolder holder(_lock);
+  _button_events.push_back(ButtonEvent(button, ButtonEvent::T_raw_up, time));
+}

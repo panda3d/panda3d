@@ -17,23 +17,12 @@
 
 #include "throw_event.h"
 
-#ifdef HAVE_PYTHON
-  #include "py_panda.h"
-  #include "typedReferenceCount.h"
-  #ifndef CPPPARSER
-    extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_OdeGeom;
-  #endif
-#endif
-
 TypeHandle OdeSpace::_type_handle;
 // this data is used in auto_collide
 const int OdeSpace::MAX_CONTACTS = 16; 
 OdeWorld* OdeSpace::_static_auto_collide_world; 
 OdeSpace* OdeSpace::_static_auto_collide_space; 
 dJointGroupID OdeSpace::_static_auto_collide_joint_group; 
-#ifdef HAVE_PYTHON
-PyObject* OdeSpace::_python_callback = NULL;
-#endif
 
 OdeSpace::
 OdeSpace(dSpaceID id) : 
@@ -142,23 +131,23 @@ auto_callback(void *data, dGeomID o1, dGeomID o2) {
   dBodyID b2 = dGeomGetBody(o2);
 
   dContact contact[OdeSpace::MAX_CONTACTS];
-      
+
   int surface1 = _static_auto_collide_space->get_surface_type(o1);
   int surface2 = _static_auto_collide_space->get_surface_type(o2);
-  
+
   nassertv(_static_auto_collide_world != NULL);
   sSurfaceParams collide_params;
   collide_params = _static_auto_collide_world->get_surface(surface1, surface2);
-  
+
   for (i=0; i < OdeSpace::MAX_CONTACTS; i++) {
-    contact[i].surface.mode = collide_params.colparams.mode; 
-    contact[i].surface.mu = collide_params.colparams.mu; 
-    contact[i].surface.mu2 = collide_params.colparams.mu2; 
-    contact[i].surface.bounce = collide_params.colparams.bounce; 
-    contact[i].surface.bounce_vel = collide_params.colparams.bounce_vel; 
-    contact[i].surface.soft_cfm = collide_params.colparams.soft_cfm; 
+    contact[i].surface.mode = collide_params.colparams.mode;
+    contact[i].surface.mu = collide_params.colparams.mu;
+    contact[i].surface.mu2 = collide_params.colparams.mu2;
+    contact[i].surface.bounce = collide_params.colparams.bounce;
+    contact[i].surface.bounce_vel = collide_params.colparams.bounce_vel;
+    contact[i].surface.soft_cfm = collide_params.colparams.soft_cfm;
   }
-  
+
   static int numc = 0;
   numc = dCollide(o1, o2, OdeSpace::MAX_CONTACTS, &contact[0].geom, sizeof(dContact));
 
@@ -177,7 +166,7 @@ auto_callback(void *data, dGeomID o1, dGeomID o2) {
       entry->_num_contacts = numc;
       entry->_contact_geoms = new OdeContactGeom[numc];
     }
-    
+
     for(i=0; i < numc; i++) {
       dJointID c = dJointCreateContact(_static_auto_collide_world->get_id(), _static_auto_collide_joint_group, contact + i);
       if ((_static_auto_collide_space->get_collide_id(o1) >= 0) && (_static_auto_collide_space->get_collide_id(o2) >= 0)) {
@@ -188,50 +177,12 @@ auto_callback(void *data, dGeomID o1, dGeomID o2) {
       }
     }
     _static_auto_collide_world->set_dampen_on_bodies(b1, b2, collide_params.dampen);
-    
+
     if (!_static_auto_collide_space->_collision_event.empty()) {
       throw_event(_static_auto_collide_space->_collision_event, EventParameter(entry));
     }
   }
 }
-
-#ifdef HAVE_PYTHON
-int OdeSpace::
-collide(PyObject* arg, PyObject* callback) {
-  nassertr(callback != NULL, -1);
-  if (!PyCallable_Check(callback)) {
-    PyErr_Format(PyExc_TypeError, "'%s' object is not callable", callback->ob_type->tp_name);
-    return -1;
-  } else if (_id == NULL) {
-    // Well, while we're in the mood of python exceptions, let's make this one too.
-    PyErr_Format(PyExc_TypeError, "OdeSpace is not valid!");
-    return -1;
-  } else {
-    OdeSpace::_python_callback = (PyObject*) callback;
-    Py_XINCREF(OdeSpace::_python_callback);
-    dSpaceCollide(_id, (void*) arg, &near_callback);
-    Py_XDECREF(OdeSpace::_python_callback);
-    return 0;
-  }
-}
-
-void OdeSpace::
-near_callback(void *data, dGeomID o1, dGeomID o2) {
-  OdeGeom *g1 = new OdeGeom(o1);
-  OdeGeom *g2 = new OdeGeom(o2);
-  PyObject *p1 = DTool_CreatePyInstanceTyped(g1, Dtool_OdeGeom, true, false, g1->get_type_index());
-  PyObject *p2 = DTool_CreatePyInstanceTyped(g2, Dtool_OdeGeom, true, false, g2->get_type_index());
-  PyObject *result = PyEval_CallFunction(_python_callback, "OOO", (PyObject*) data, p1, p2);
-  if (!result) {
-    odespace_cat.error() << "An error occurred while calling python function!\n";
-    PyErr_Print();
-  } else {
-    Py_DECREF(result);
-  }
-  Py_XDECREF(p2);
-  Py_XDECREF(p1);
-}
-#endif
 
 OdeSimpleSpace OdeSpace::
 convert_to_simple_space() const {
@@ -309,4 +260,3 @@ get_collide_id(dGeomID id) {
   }
   return 0;
 }
-

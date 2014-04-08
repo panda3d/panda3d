@@ -25,7 +25,7 @@
 //               integrated, so even high spring and damper
 //               coefficients should be robust.
 ////////////////////////////////////////////////////////////////////
-class PhysxSpringDesc {
+class EXPCL_PANDAPHYSX PhysxSpringDesc {
 
 PUBLISHED:
   INLINE PhysxSpringDesc();
