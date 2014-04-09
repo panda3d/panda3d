@@ -250,3 +250,10 @@ class AstronClientRepository(ClientRepositoryBase):
     def lostConnection(self):
         messenger.send("LOST_CONNECTION")
 
+    def disconnect(self):
+        """
+        This implicitly deletes all objects from the repository.
+        """
+        for do_id in self.doId2do.keys():
+            self.deleteObject(do_id)
+        ClientRepositoryBase.disconnect(self)
