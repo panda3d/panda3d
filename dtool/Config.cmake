@@ -591,6 +591,18 @@ find_package(ZLIB)
 package_option(ZLIB DEFAULT ON
   "Enables support for compression of Panda assets.")
 
+# Is FFMPEG installed, and where?
+find_package(FFMPEG)
+find_package(SWScale)
+find_package(SWResample)
+
+package_option(FFMPEG DEFAULT ON
+  "Enables support for audio- and video-decoding using the FFMPEG library.")
+package_option(SWSCALE DEFAULT ON
+  "Enables support for FFMPEG's libswscale for video rescaling.")
+package_option(SWRESAMPLE DEFAULT ON
+  "Enables support for FFMPEG's libresample for audio resampling.")
+
 # Is ODE installed, and where?
 find_package(ODE)
 
