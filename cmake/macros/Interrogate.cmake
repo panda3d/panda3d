@@ -71,8 +71,11 @@ function(target_interrogate target)
     # through a property while still preserving the reference.
     set(absolute_sources)
     foreach(source ${sources})
-      get_source_file_property(location "${source}" LOCATION)
-      set(absolute_sources ${absolute_sources} ${location})
+      get_source_file_property(exclude "${source}" WRAP_EXCLUDE)
+      if(NOT exclude)
+        get_source_file_property(location "${source}" LOCATION)
+        list(APPEND absolute_sources ${location})
+      endif()
     endforeach(source)
 
     set_target_properties("${target}" PROPERTIES IGATE_SOURCES
@@ -133,11 +136,6 @@ function(interrogate_sources target output database module)
           set(exclude ON)
         endif()
       endforeach(regex)
-
-      get_source_file_property(source_excluded ${source} WRAP_EXCLUDE)
-      if(source_excluded)
-        set(exclude ON)
-      endif()
 
       if(NOT exclude)
         # This file is to be scanned by Interrogate. In order to avoid
