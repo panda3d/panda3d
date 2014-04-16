@@ -12,6 +12,7 @@ set(P3EXPRESS_HEADERS
   dcast.T dcast.h
   encrypt_string.h
   error_utils.h
+  export_dtool.h
   fileReference.h fileReference.I
   hashGeneratorBase.I hashGeneratorBase.h
   hashVal.I hashVal.h
