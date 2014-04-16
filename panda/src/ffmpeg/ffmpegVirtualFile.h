@@ -67,7 +67,6 @@ private:
   istream *_in;
   pifstream _file_in;
   bool _owns_in;
-  unsigned char *_buffer;
   int _buffer_size;
 };
 
