@@ -36,7 +36,7 @@ set(P3GRUTIL_SOURCES
 )
 
 composite_sources(p3grutil P3GRUTIL_SOURCES)
-add_library(p3grutil ${P3GRUTIL_SOURCES} ${P3GRUTIL_HEADERS})
+add_library(p3grutil ${P3GRUTIL_HEADERS} ${P3GRUTIL_SOURCES})
 target_link_libraries(p3grutil p3display p3text p3movies)
 if(HAVE_AUDIO)
   target_link_libraries(p3grutil p3audio)

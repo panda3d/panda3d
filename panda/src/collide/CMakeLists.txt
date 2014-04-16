@@ -63,7 +63,7 @@ set(P3COLLIDE_SOURCES
 )
 
 composite_sources(p3collide P3COLLIDE_SOURCES)
-add_library(p3collide ${P3COLLIDE_SOURCES} ${P3COLLIDE_HEADERS})
+add_library(p3collide ${P3COLLIDE_HEADERS} ${P3COLLIDE_SOURCES})
 target_link_libraries(p3collide p3tform)
 target_interrogate(p3collide ALL)
 

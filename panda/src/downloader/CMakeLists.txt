@@ -63,7 +63,7 @@ set(P3DOWNLOADER_SOURCES
 )
 
 composite_sources(p3downloader P3DOWNLOADER_SOURCES)
-add_library(p3downloader ${P3DOWNLOADER_SOURCES} ${P3DOWNLOADER_HEADERS})
+add_library(p3downloader ${P3DOWNLOADER_HEADERS} ${P3DOWNLOADER_SOURCES})
 target_link_libraries(p3downloader p3express)
 target_interrogate(p3downloader ALL)
 

@@ -16,7 +16,7 @@ if(APPLE AND HAVE_GL AND HAVE_COCOA)
       cocoaPandaWindowDelegate.mm)
 
   #composite_sources(p3cocoadisplay P3COCOADISPLAY_SOURCES)
-  add_library(p3cocoadisplay ${P3COCOADISPLAY_SOURCES} ${P3COCOADISPLAY_HEADERS})
+  add_library(p3cocoadisplay ${P3COCOADISPLAY_HEADERS} ${P3COCOADISPLAY_SOURCES})
   target_link_libraries(p3cocoadisplay p3display p3putil p3glgsg)
 
   # Frameworks:

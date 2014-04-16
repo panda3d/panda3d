@@ -10,7 +10,7 @@ if(APPLE AND HAVE_GL AND HAVE_CARBON)
       osxGraphicsBuffer.cxx)
 
   composite_sources(p3osxdisplay P3OSXDISPLAY_SOURCES)
-  add_library(p3osxdisplay ${P3OSXDISPLAY_SOURCES} ${P3OSXDISPLAY_HEADERS})
+  add_library(p3osxdisplay ${P3OSXDISPLAY_HEADERS} ${P3OSXDISPLAY_SOURCES})
   target_link_libraries(p3osxdisplay p3display p3putil p3glgsg)
 
   # Frameworks:
