@@ -1,0 +1,7 @@
+if(NOT BUILD_PANDA)
+  message(FATAL_ERROR "Cannot build pandatool without panda!  Please enable the BUILD_PANDA option.")
+endif()
+
+# Include pandatool source directories
+add_subdirectory(src/pandatoolbase)
+add_subdirectory(src/progbase)
