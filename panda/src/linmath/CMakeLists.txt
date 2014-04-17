@@ -45,6 +45,7 @@ set(P3LINMATH_SOURCES
 composite_sources(p3linmath P3LINMATH_SOURCES)
 add_library(p3linmath ${P3LINMATH_HEADERS} ${P3LINMATH_SOURCES})
 target_link_libraries(p3linmath p3putil)
+target_use_packages(p3linmath EIGEN)
 target_interrogate(p3linmath ALL)
 
 install(TARGETS p3linmath DESTINATION lib)
