@@ -11,8 +11,9 @@ set(P3PUTIL_HEADERS
   bamWriter.I bamWriter.h
   bitArray.I bitArray.h
   bitMask.I bitMask.h
-  buttonHandle.I
-  buttonHandle.h buttonRegistry.I buttonRegistry.h
+  buttonHandle.I buttonHandle.h
+  buttonMap.I buttonMap.h
+  buttonRegistry.I buttonRegistry.h
   cachedTypedWritableReferenceCount.h cachedTypedWritableReferenceCount.I
   callbackData.h callbackData.I
   callbackObject.h callbackObject.I
@@ -74,7 +75,7 @@ set(P3PUTIL_SOURCES
   bamWriter.cxx
   bitArray.cxx
   bitMask.cxx
-  buttonHandle.cxx buttonRegistry.cxx
+  buttonHandle.cxx buttonMap.cxx buttonRegistry.cxx
   cachedTypedWritableReferenceCount.cxx
   callbackData.cxx
   callbackObject.cxx
