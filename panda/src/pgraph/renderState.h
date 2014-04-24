@@ -126,10 +126,8 @@ PUBLISHED:
   INLINE int get_invert_composition_cache_size() const;
   INLINE const RenderState *get_invert_composition_cache_source(int n) const;
   INLINE const RenderState *get_invert_composition_cache_result(int n) const;
-#ifdef HAVE_PYTHON
-  PyObject *get_composition_cache() const;
-  PyObject *get_invert_composition_cache() const;
-#endif  // HAVE_PYTHON
+  EXTENSION(PyObject *get_composition_cache() const);
+  EXTENSION(PyObject *get_invert_composition_cache() const);
 
   const RenderState *get_auto_shader_state() const;
 
@@ -146,9 +144,7 @@ PUBLISHED:
   static void list_cycles(ostream &out);
   static void list_states(ostream &out);
   static bool validate_states();
-#ifdef HAVE_PYTHON
-  static PyObject *get_states();
-#endif  // HAVE_PYTHON
+  EXTENSION(static PyObject *get_states());
 
 PUBLISHED:
   // These methods are intended for use by low-level code, but they're
@@ -363,6 +359,7 @@ private:
 
   friend class GraphicsStateGuardian;
   friend class RenderAttribRegistry;
+  friend class Extension<RenderState>;
 };
 
 INLINE ostream &operator << (ostream &out, const RenderState &state) {

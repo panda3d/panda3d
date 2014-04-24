@@ -82,9 +82,9 @@ public:
   virtual void end_draw_primitives();
 
   virtual bool framebuffer_copy_to_texture
-  (Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb);
+  (Texture *tex, int view, int z, const DisplayRegion *dr, const RenderBuffer &rb);
   virtual bool framebuffer_copy_to_ram
-  (Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb);
+  (Texture *tex, int view, int z, const DisplayRegion *dr, const RenderBuffer &rb);
 
   virtual void set_state_and_transform(const RenderState *state,
                                        const TransformState *transform);

@@ -354,7 +354,7 @@ class Particles(ParticleSystem):
                     else:
                         file.write(targ+'.renderer.setColorBlendMode(ColorBlendAttrib.%s)\n' % cbmLut[cbMode])
             cim = self.renderer.getColorInterpolationManager()
-            segIdList = eval('['+cim.getSegmentIdList().replace(' ',', ')+']')
+            segIdList = [int(seg) for seg in cim.getSegmentIdList().split()]
             for sid in segIdList:
                 seg = cim.getSegment(sid)
                 if seg.isEnabled():
@@ -457,7 +457,7 @@ class Particles(ParticleSystem):
                     else:
                         file.write(targ+'.renderer.setColorBlendMode(ColorBlendAttrib.%s)\n' % cbmLut[cbMode])
             cim = self.renderer.getColorInterpolationManager()
-            segIdList = eval('['+cim.getSegmentIdList().replace(' ',', ')+']')
+            segIdList = [int(seg) for seg in cim.getSegmentIdList().split()]
             for sid in segIdList:
                 seg = cim.getSegment(sid)
                 if seg.isEnabled():

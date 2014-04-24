@@ -4188,7 +4188,7 @@ def unescapeHtmlString(s):
             char = ' '
         elif char == '%':
             if i < (len(s)-2):
-                num = eval('0x' + s[i+1:i+3])
+                num = int(s[i+1:i+3], 16)
                 char = chr(num)
                 i += 2
         i += 1

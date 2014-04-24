@@ -38,7 +38,6 @@ FfmpegVirtualFile() :
   _format_context(NULL),
   _in(NULL),
   _owns_in(false),
-  _buffer(NULL),
   _buffer_size(ffmpeg_read_buffer_size)
 {
 }
@@ -106,8 +105,11 @@ open_vfs(const Filename &filename) {
   _start = 0;
   _size = vfile->get_file_size(_in);
 
-  _buffer = (unsigned char*) av_malloc(_buffer_size);
-  _io_context = avio_alloc_context(_buffer, _buffer_size, 0, (void*) this,
+  // NOTE: The AVIO system owns the buffer after allocation and may realloc it
+  // internally. Therefore, when we're done with the buffer, we use
+  // _io_context->buffer to deallocate it rather than holding on to this pointer.
+  unsigned char *buffer = (unsigned char*) av_malloc(_buffer_size);
+  _io_context = avio_alloc_context(buffer, _buffer_size, 0, (void*) this,
                                    &read_packet, 0, &seek);
 
   _format_context = avformat_alloc_context();
@@ -157,8 +159,11 @@ open_subfile(const SubfileInfo &info) {
 
   _in->seekg(_start);
 
-  _buffer = (unsigned char*) av_malloc(_buffer_size);
-  _io_context = avio_alloc_context(_buffer, _buffer_size, 0, (void*) this,
+  // NOTE: The AVIO system owns the buffer after allocation and may realloc it
+  // internally. Therefore, when we're done with the buffer, we use
+  // _io_context->buffer to deallocate it rather than holding on to this pointer.
+  unsigned char *buffer = (unsigned char*) av_malloc(_buffer_size);
+  _io_context = avio_alloc_context(buffer, _buffer_size, 0, (void*) this,
                                    &read_packet, 0, &seek);
 
   _format_context = avformat_alloc_context();
@@ -197,13 +202,11 @@ close() {
   }
 
   if (_io_context != NULL) {
+    if (_io_context->buffer != NULL) {
+      av_free(_io_context->buffer);
+    }
     av_free(_io_context);
     _io_context = NULL;
-  }
-
-  if (_buffer != NULL) {
-    av_free(_buffer);
-    _buffer = NULL;
   }
 
   if (_owns_in) {

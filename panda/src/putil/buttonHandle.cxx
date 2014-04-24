@@ -21,6 +21,22 @@ ButtonHandle ButtonHandle::_none;
 TypeHandle ButtonHandle::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ButtonHandle::Constructor
+//       Access: Published
+//  Description: Constructs a ButtonHandle with the corresponding
+//               name, which is looked up in the ButtonRegistry.
+//               This exists for the purpose of being able to
+//               automatically coerce a string into a ButtonHandle;
+//               for most purposes, you should use either the static
+//               KeyboardButton/MouseButton getters or
+//               ButtonRegistry::register_button().
+////////////////////////////////////////////////////////////////////
+ButtonHandle::
+ButtonHandle(const string &name) {
+  _index = ButtonRegistry::ptr()->get_button(name)._index;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ButtonHandle::get_name
 //       Access: Public
 //  Description: Returns the name of the button.

@@ -22,6 +22,10 @@
 
 #include <algorithm>
 
+#ifndef _WIN32
+#include <unistd.h>
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DHost::Constructor
 //       Access: Private

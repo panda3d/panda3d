@@ -591,7 +591,7 @@ rebuild_bitplanes() {
 //               the indicated face.
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsBuffer9::
-select_target_tex_page(int page, int view) {
+select_target_tex_page(int page) {
 
   DWORD render_target_index;
   

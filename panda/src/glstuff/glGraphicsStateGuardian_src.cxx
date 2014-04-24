@@ -49,20 +49,19 @@
 #include "load_prc_file.h"
 #include "bamCache.h"
 #include "bamCacheRecord.h"
-#include "colorWriteAttrib.h"
-#include "depthWriteAttrib.h"
-#include "shadeModelAttrib.h"
-#include "rescaleNormalAttrib.h"
-#include "clipPlaneAttrib.h"
 #include "alphaTestAttrib.h"
-#include "cullFaceAttrib.h"
-#include "fogAttrib.h"
-#include "depthOffsetAttrib.h"
-#include "materialAttrib.h"
-#include "stencilAttrib.h"
-#include "lightAttrib.h"
-#include "scissorAttrib.h"
 #include "clipPlaneAttrib.h"
+#include "colorWriteAttrib.h"
+#include "cullFaceAttrib.h"
+#include "depthOffsetAttrib.h"
+#include "depthWriteAttrib.h"
+#include "fogAttrib.h"
+#include "lightAttrib.h"
+#include "materialAttrib.h"
+#include "rescaleNormalAttrib.h"
+#include "scissorAttrib.h"
+#include "shadeModelAttrib.h"
+#include "stencilAttrib.h"
 #include "graphicsEngine.h"
 #include "shaderGenerator.h"
 
@@ -955,21 +954,23 @@ reset() {
 
       // cgGLGetLatestProfile doesn't seem to return anything other
       // arbvp1/arbfp1 on non-NVIDIA cards, which is severely limiting.
-      if ((_shader_caps._active_vprofile == CG_PROFILE_ARBVP1 ||
-           _shader_caps._active_fprofile == CG_PROFILE_ARBFP1) &&
-          cgGLIsProfileSupported(CG_PROFILE_GLSLV) &&
-          cgGLIsProfileSupported(CG_PROFILE_GLSLF)) {
+      // Actually, it seems that these profiles are horribly broken on these
+      // cards.  Let's not do this.
+      //if ((_shader_caps._active_vprofile == CG_PROFILE_ARBVP1 ||
+      //     _shader_caps._active_fprofile == CG_PROFILE_ARBFP1) &&
+      //    cgGLIsProfileSupported(CG_PROFILE_GLSLV) &&
+      //    cgGLIsProfileSupported(CG_PROFILE_GLSLF)) {
 
-        // So, if this happens, we set it to GLSL, which is
-        // usually supported on all cards.
-        _shader_caps._active_vprofile = (int)CG_PROFILE_GLSLV;
-        _shader_caps._active_fprofile = (int)CG_PROFILE_GLSLF;
+      //  // So, if this happens, we set it to GLSL, which is
+      //  // usually supported on all cards.
+      //  _shader_caps._active_vprofile = (int)CG_PROFILE_GLSLV;
+      //  _shader_caps._active_fprofile = (int)CG_PROFILE_GLSLF;
 #if CG_VERSION_NUM >= 2200
-        if (cgGLIsProfileSupported(CG_PROFILE_GLSLG)) {
-          _shader_caps._active_gprofile = (int)CG_PROFILE_GLSLG;
-        }
+      //  if (cgGLIsProfileSupported(CG_PROFILE_GLSLG)) {
+      //    _shader_caps._active_gprofile = (int)CG_PROFILE_GLSLG;
+      //  }
 #endif
-      }
+      //}
     }
     _shader_caps._ultimate_vprofile = (int)CG_PROFILE_VP40;
     _shader_caps._ultimate_fprofile = (int)CG_PROFILE_FP40;
@@ -1254,12 +1255,12 @@ reset() {
     _glDrawBuffers = (PFNGLDRAWBUFFERSPROC)
       get_extension_func(GLPREFIX_QUOTED, "DrawBuffersARB");
   }
-  _max_draw_buffers = 1;
+
+  _max_color_targets = 1;
   if (_glDrawBuffers != 0) {
     GLint max_draw_buffers = 0;
     GLP(GetIntegerv)(GL_MAX_DRAW_BUFFERS, &max_draw_buffers);
-    _max_draw_buffers = max_draw_buffers;
-    _maximum_simultaneous_render_targets = max_draw_buffers;
+    _max_color_targets = max_draw_buffers;
   }
 #endif  // OPENGLES
 
@@ -4200,8 +4201,8 @@ make_geom_munger(const RenderState *state, Thread *current_thread) {
 //               into which to copy.
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
-framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
-                            const RenderBuffer &rb) {
+framebuffer_copy_to_texture(Texture *tex, int view, int z,
+                            const DisplayRegion *dr, const RenderBuffer &rb) {
   nassertr(tex != NULL && dr != NULL, false);
   set_read_buffer(rb._buffer_type);
   if (CLP(color_mask)) {
@@ -4282,7 +4283,6 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
     }
   }
 
-  int view = dr->get_target_tex_view();
   TextureContext *tc = tex->prepare_now(view, get_prepared_objects(), this);
   nassertr(tc != (TextureContext *)NULL, false);
   CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
@@ -4390,8 +4390,8 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
 //               indicated texture.
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
-framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
-                        const RenderBuffer &rb) {
+framebuffer_copy_to_ram(Texture *tex, int view, int z,
+                        const DisplayRegion *dr, const RenderBuffer &rb) {
   nassertr(tex != NULL && dr != NULL, false);
   set_read_buffer(rb._buffer_type);
   GLP(PixelStorei)(GL_PACK_ALIGNMENT, 1);
@@ -4464,11 +4464,6 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
   }
 
   nassertr(z < tex->get_z_size(), false);
-
-  int view = dr->get_target_tex_view();
-  if (view >= tex->get_num_views()) {
-    tex->set_num_views(view + 1);
-  }
 
   GLenum external_format = get_external_image_format(tex);
 
@@ -5853,27 +5848,37 @@ set_draw_buffer(int rbtype) {
   if (_current_fbo) {
 
     GLuint buffers[16];
-    int nbuffers=0;
+    int nbuffers = 0;
     int index = 0;
     if (_current_properties->get_color_bits() > 0) {
-      if (rbtype & RenderBuffer::T_color) {
-        buffers[nbuffers++] = GL_COLOR_ATTACHMENT0_EXT + (index++);
+      if (rbtype & RenderBuffer::T_left) {
+        buffers[nbuffers++] = GL_COLOR_ATTACHMENT0_EXT + index;
+      }
+      ++index;
+      if (_current_properties->is_stereo()) {
+        if (rbtype & RenderBuffer::T_right) {
+          buffers[nbuffers++] = GL_COLOR_ATTACHMENT0_EXT + index;
+        }
+        ++index;
       }
     }
     for (int i=0; i<_current_properties->get_aux_rgba(); i++) {
       if (rbtype & (RenderBuffer::T_aux_rgba_0 << i)) {
-        buffers[nbuffers++] = GL_COLOR_ATTACHMENT0_EXT + (index++);
+        buffers[nbuffers++] = GL_COLOR_ATTACHMENT0_EXT + index;
       }
+      ++index;
     }
     for (int i=0; i<_current_properties->get_aux_hrgba(); i++) {
       if (rbtype & (RenderBuffer::T_aux_hrgba_0 << i)) {
-        buffers[nbuffers++] = GL_COLOR_ATTACHMENT0_EXT + (index++);
+        buffers[nbuffers++] = GL_COLOR_ATTACHMENT0_EXT + index;
       }
+      ++index;
     }
     for (int i=0; i<_current_properties->get_aux_float(); i++) {
       if (rbtype & (RenderBuffer::T_aux_float_0 << i)) {
-        buffers[nbuffers++] = GL_COLOR_ATTACHMENT0_EXT + (index++);
+        buffers[nbuffers++] = GL_COLOR_ATTACHMENT0_EXT + index;
       }
+      ++index;
     }
     _glDrawBuffers(nbuffers, buffers);
 
@@ -5950,26 +5955,31 @@ set_read_buffer(int rbtype) {
   }
 
   if (_current_fbo) {
-
     GLuint buffer = GL_COLOR_ATTACHMENT0_EXT;
     int index = 1;
+    if (_current_properties->is_stereo()) {
+      if (rbtype & RenderBuffer::T_right) {
+        buffer = GL_COLOR_ATTACHMENT1_EXT;
+      }
+      ++index;
+    }
     for (int i=0; i<_current_properties->get_aux_rgba(); i++) {
       if (rbtype & (RenderBuffer::T_aux_rgba_0 << i)) {
         buffer = GL_COLOR_ATTACHMENT0_EXT + index;
       }
-      index += 1;
+      ++index;
     }
     for (int i=0; i<_current_properties->get_aux_hrgba(); i++) {
       if (rbtype & (RenderBuffer::T_aux_hrgba_0 << i)) {
         buffer = GL_COLOR_ATTACHMENT0_EXT + index;
       }
-      index += 1;
+      ++index;
     }
     for (int i=0; i<_current_properties->get_aux_float(); i++) {
       if (rbtype & (RenderBuffer::T_aux_float_0 << i)) {
         buffer = GL_COLOR_ATTACHMENT0_EXT + index;
       }
-      index += 1;
+      ++index;
     }
     GLP(ReadBuffer)(buffer);
 

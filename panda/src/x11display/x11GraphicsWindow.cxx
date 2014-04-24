@@ -19,6 +19,7 @@
 #include "graphicsPipe.h"
 #include "keyboardButton.h"
 #include "mouseButton.h"
+#include "buttonMap.h"
 #include "clockObject.h"
 #include "pStatTimer.h"
 #include "textEncoder.h"
@@ -1545,8 +1546,10 @@ get_button(XKeyEvent &key_event, bool allow_shift) {
 //               Called by get_button(), above.
 ////////////////////////////////////////////////////////////////////
 ButtonHandle x11GraphicsWindow::
-map_button(KeySym key) {
+map_button(KeySym key) const {
   switch (key) {
+  case NoSymbol:
+    return ButtonHandle::none();
   case XK_BackSpace:
     return KeyboardButton::backspace();
   case XK_Tab:
@@ -1864,7 +1867,7 @@ map_button(KeySym key) {
 //  Description: Maps from a single X keycode to Panda's ButtonHandle.
 ////////////////////////////////////////////////////////////////////
 ButtonHandle x11GraphicsWindow::
-map_raw_button(KeyCode key) {
+map_raw_button(KeyCode key) const {
   switch (key) {
   case 9:  return KeyboardButton::escape();
   case 10: return KeyboardButton::ascii_key('1');
@@ -1999,6 +2002,36 @@ get_mouse_button(XButtonEvent &button_event) {
   } else {
     return MouseButton::button(index - 1);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: x11GraphicsWindow::get_keyboard_map
+//       Access: Private, Virtual
+//  Description: Returns a ButtonMap containing the association
+//               between raw buttons and virtual buttons.
+////////////////////////////////////////////////////////////////////
+ButtonMap *x11GraphicsWindow::
+get_keyboard_map() const {
+  // NB.  This could be improved by using the Xkb API.
+  //XkbDescPtr desc = XkbGetMap(_display, XkbAllMapComponentsMask, XkbUseCoreKbd);
+  ButtonMap *map = new ButtonMap;
+
+  for (int k = 9; k <= 135; ++k) {
+    ButtonHandle raw_button = map_raw_button(k);
+    if (raw_button == ButtonHandle::none()) {
+      continue;
+    }
+
+    KeySym sym = XKeycodeToKeysym(_display, k, 0);
+    ButtonHandle button = map_button(sym);
+    if (button == ButtonHandle::none()) {
+      continue;
+    }
+
+    map->map_button(raw_button, button);
+  }
+
+  return map;
 }
 
 ////////////////////////////////////////////////////////////////////

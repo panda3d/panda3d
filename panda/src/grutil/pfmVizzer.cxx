@@ -39,6 +39,7 @@ PfmVizzer(PfmFile &pfm) : _pfm(pfm) {
   _vis_2d = false;
   _keep_beyond_lens = false;
   _vis_blend = NULL;
+  _aux_pfm = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -254,6 +255,9 @@ NodePath PfmVizzer::
 generate_vis_points() const {
   nassertr(_pfm.is_valid(), NodePath());
 
+  bool check_aux_pfm = uses_aux_pfm();
+  nassertr(!check_aux_pfm || (_aux_pfm != NULL && _aux_pfm->is_valid()), NodePath());
+
   CPT(GeomVertexFormat) format;
   if (_vis_inverse) {
     if (_vis_2d) {
@@ -290,6 +294,9 @@ generate_vis_points() const {
   for (int yi = 0; yi < _pfm.get_y_size(); ++yi) {
     for (int xi = 0; xi < _pfm.get_x_size(); ++xi) {
       if (!_pfm.has_point(xi, yi)) {
+        continue;
+      }
+      if (check_aux_pfm && !_aux_pfm->has_point(xi, yi)) {
         continue;
       }
 
@@ -331,6 +338,8 @@ generate_vis_points() const {
 NodePath PfmVizzer::
 generate_vis_mesh(MeshFace face) const {
   nassertr(_pfm.is_valid(), NodePath());
+  bool check_aux_pfm = uses_aux_pfm();
+  nassertr(!check_aux_pfm || (_aux_pfm != NULL && _aux_pfm->is_valid()), NodePath());
   nassertr(face != 0, NodePath());
 
   if (_pfm.get_num_channels() == 1 && _vis_columns.empty()) {
@@ -514,6 +523,31 @@ make_displacement(PNMImage &result, double max_u, double max_v) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PfmVizzer::uses_aux_pfm
+//       Access: Private
+//  Description: Returns true if any of the vis_column tokens
+//               reference the aux_pfm file, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool PfmVizzer::
+uses_aux_pfm() const {
+  for (VisColumns::const_iterator vci = _vis_columns.begin();
+       vci != _vis_columns.end();
+       ++vci) {
+    const VisColumn &column = *vci;
+    switch (column._source) {
+    case CT_aux_vertex1:
+    case CT_aux_vertex2:
+    case CT_aux_vertex3:
+      return true;
+    default:
+      break;
+    }
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PfmVizzer::r_fill_displacement
 //       Access: Private
 //  Description: Recursively fills in holes with the color of their
@@ -617,6 +651,7 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
   if (vis_columns.empty()) {
     build_auto_vis_columns(vis_columns, true);
   }
+  bool check_aux_pfm = uses_aux_pfm();
 
   CPT(GeomVertexFormat) format = make_array_format(vis_columns);
 
@@ -686,7 +721,13 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
               !_pfm.has_point(xi + 1, yi)) {
             continue;
           }
-
+          if (check_aux_pfm && (!_aux_pfm->has_point(xi, yi) ||
+                                !_aux_pfm->has_point(xi, yi + 1) ||
+                                !_aux_pfm->has_point(xi + 1, yi + 1) ||
+                                !_aux_pfm->has_point(xi + 1, yi))) {
+            continue;
+          }
+          
           if (!keep_beyond_lens &&
               (skip_points[(yi - y_begin) * x_size + (xi - x_begin)] ||
                skip_points[(yi - y_begin + 1) * x_size + (xi - x_begin)] ||
@@ -834,18 +875,21 @@ make_array_format(const VisColumns &vis_columns) const {
       break;
 
     case CT_vertex1:
+    case CT_aux_vertex1:
       num_components = 1;
       numeric_type = GeomEnums::NT_float32;
       contents = GeomEnums::C_point;
       break;
 
     case CT_vertex2:
+    case CT_aux_vertex2:
       num_components = 2;
       numeric_type = GeomEnums::NT_float32;
       contents = GeomEnums::C_point;
       break;
 
     case CT_vertex3:
+    case CT_aux_vertex3:
       num_components = 3;
       numeric_type = GeomEnums::NT_float32;
       contents = GeomEnums::C_point;
@@ -918,6 +962,18 @@ add_data(const PfmVizzer &vizzer, GeomVertexWriter &vwriter, int xi, int yi, boo
     }
     break;
 
+  case CT_aux_vertex1:
+    {
+      nassertr(vizzer.get_aux_pfm() != NULL, false);
+      PN_float32 p = vizzer.get_aux_pfm()->get_point1(xi, yi);
+      LPoint2f point(p, 0.0);
+      if (!transform_point(point)) {
+        success = false;
+      }
+      vwriter.set_data2f(point);
+    }
+    break;
+
   case CT_vertex2:
     {
       LPoint2f point = pfm.get_point2(xi, yi);
@@ -928,9 +984,30 @@ add_data(const PfmVizzer &vizzer, GeomVertexWriter &vwriter, int xi, int yi, boo
     }
     break;
 
+  case CT_aux_vertex2:
+    {
+      nassertr(vizzer.get_aux_pfm() != NULL, false);
+      LPoint2f point = vizzer.get_aux_pfm()->get_point2(xi, yi);
+      if (!transform_point(point)) {
+        success = false;
+      }
+      vwriter.set_data2f(point);
+    }
+    break;
+
   case CT_vertex3:
     {
       LPoint3f point = pfm.get_point(xi, yi);
+      if (!transform_point(point)) {
+        success = false;
+      }
+      vwriter.set_data3f(point);
+    }
+    break;
+
+  case CT_aux_vertex3:
+    {
+      LPoint3f point = vizzer.get_aux_pfm()->get_point(xi, yi);
       if (!transform_point(point)) {
         success = false;
       }

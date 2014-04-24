@@ -46,7 +46,7 @@ public:
   static HRESULT d3d_surface_to_texture(RECT &source_rect,
           IDirect3DSurface9 *d3d_surface,
           bool inverted, Texture *result,
-          int z);
+          int view, int z);
 
 private:
   HRESULT fill_d3d_texture_mipmap_pixels(int mip_level, int depth_index, D3DFORMAT source_format);

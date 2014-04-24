@@ -404,12 +404,11 @@ get_cull_traverser() {
 //               and/or stereo textures.
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
-set_target_tex_page(int page, int view) {
+set_target_tex_page(int page) {
   int pipeline_stage = Thread::get_current_pipeline_stage();
   nassertv(pipeline_stage == 0);
   CDWriter cdata(_cycler);
   cdata->_target_tex_page = page;
-  cdata->_target_tex_view = view;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -587,7 +586,7 @@ get_screenshot() {
   
   RenderBuffer buffer = gsg->get_render_buffer(get_screenshot_buffer_type(),
                                                _window->get_fb_properties());
-  if (!gsg->framebuffer_copy_to_ram(tex, -1, this, buffer)) {
+  if (!gsg->framebuffer_copy_to_ram(tex, 0, -1, this, buffer)) {
     return NULL;
   }
   
@@ -823,8 +822,7 @@ CData() :
   _sort(0),
   _stereo_channel(Lens::SC_mono),
   _tex_view_offset(0),
-  _target_tex_page(-1),
-  _target_tex_view(-1)
+  _target_tex_page(-1)
 {
 }
 
@@ -849,8 +847,7 @@ CData(const DisplayRegion::CData &copy) :
   _sort(copy._sort),
   _stereo_channel(copy._stereo_channel),
   _tex_view_offset(copy._tex_view_offset),
-  _target_tex_page(copy._target_tex_page),
-  _target_tex_view(copy._target_tex_view)
+  _target_tex_page(copy._target_tex_page)
 {
 }
 

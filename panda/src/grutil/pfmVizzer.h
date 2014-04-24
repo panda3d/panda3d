@@ -53,6 +53,10 @@ PUBLISHED:
   INLINE void clear_vis_blend();
   INLINE const PNMImage *get_vis_blend() const;
 
+  INLINE void set_aux_pfm(const PfmFile *pfm);
+  INLINE void clear_aux_pfm();
+  INLINE const PfmFile *get_aux_pfm() const;
+
   enum ColumnType {
     CT_texcoord2,
     CT_texcoord3,
@@ -61,6 +65,9 @@ PUBLISHED:
     CT_vertex3,
     CT_normal3,
     CT_blend1,
+    CT_aux_vertex1,
+    CT_aux_vertex2,
+    CT_aux_vertex3,
   };
   void clear_vis_columns();
   void add_vis_column(ColumnType source, ColumnType target,
@@ -82,6 +89,7 @@ PUBLISHED:
   BLOCKING void make_displacement(PNMImage &result, double max_u, double max_v) const;
 
 private:
+  bool uses_aux_pfm() const;
   void r_fill_displacement(PNMImage &result, int xi, int yi, 
                            double nxi, double nyi, double u_scale, double v_scale,
                            int distance) const;
@@ -117,6 +125,7 @@ private:
 
 private:
   PfmFile &_pfm;
+  const PfmFile *_aux_pfm;
 
   bool _vis_inverse;
   PT(InternalName) _flat_texcoord_name;
