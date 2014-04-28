@@ -31,7 +31,7 @@ if(HAVE_PYTHON)
     install(
       DIRECTORY "src/${dir}"
       DESTINATION "${PYTHON_LIB_INSTALL_DIR}/direct"
-      PATTERN "*.py")
+      FILES_MATCHING PATTERN "*.py")
   endforeach()
 
   # We also need an __init__.py file, which we have to generate:
