@@ -289,6 +289,8 @@ function(add_python_module module)
       set_target_properties(${module} PROPERTIES SUFFIX ".pyd")
     endif()
 
+    install(TARGETS ${module} DESTINATION "${PYTHON_ARCH_INSTALL_DIR}/panda3d")
+
     list(APPEND ALL_INTERROGATE_MODULES "${module}")
     set(ALL_INTERROGATE_MODULES "${ALL_INTERROGATE_MODULES}" CACHE INTERNAL "Internal variable")
   endif()
@@ -302,5 +304,5 @@ if(HAVE_PYTHON)
 
   # The Interrogate path needs to be installed to the architecture-dependent
   # Python directory.
-  install(DIRECTORY "${PROJECT_BINARY_DIR}/panda3d" DESTINATION "${PYTHON_ARCH_INSTALL_DIR}")
+  install(FILES "${PROJECT_BINARY_DIR}/panda3d/__init__.py" DESTINATION "${PYTHON_ARCH_INSTALL_DIR}/panda3d")
 endif()
