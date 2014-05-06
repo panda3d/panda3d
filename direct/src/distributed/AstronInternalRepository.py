@@ -46,6 +46,7 @@ class AstronInternalRepository(ConnectionRepository):
         self.__contextCounter = 0
 
         self.dbInterface = AstronDatabaseInterface(self)
+        self.__callbacks = {}
 
         self.ourChannel = self.allocateChannel()
 
@@ -157,6 +158,8 @@ class AstronInternalRepository(ConnectionRepository):
                          DBSERVER_OBJECT_SET_FIELD_IF_EQUALS_RESP,
                          DBSERVER_OBJECT_SET_FIELDS_IF_EQUALS_RESP):
             self.dbInterface.handleDatagram(msgType, di)
+        elif msgType == DBSS_OBJECT_GET_ACTIVATED_RESP:
+            self.handleGetActivatedResp(di)
         else:
             self.notify.warning('Received message with unknown MsgType=%d' % msgType)
 
@@ -214,6 +217,30 @@ class AstronInternalRepository(ConnectionRepository):
         self.removeDOFromTables(do)
         do.delete()
         do.sendDeleteEvent()
+
+    def handleGetActivatedResp(self, di):
+        ctx = di.getUint32()
+        doId = di.getUint32()
+        activated = di.getUint8()
+
+        if ctx not in self.__callbacks:
+            self.notify.warning('Received unexpected DBSS_OBJECT_GET_ACTIVATED_RESP (ctx: %d)' %ctx)
+            return
+
+        try:
+            self.__callbacks[ctx](doId, activated)
+        finally:
+            del self.__callbacks[ctx]
+
+    def getActivated(self, doId, callback):
+        ctx = self.getContext()
+        self.__callbacks[ctx] = callback
+
+        dg = PyDatagram()
+        dg.addServerHeader(doId, self.ourChannel, DBSS_OBJECT_GET_ACTIVATED)
+        dg.addUint32(ctx)
+        dg.addUint32(doId)
+        self.send(dg)
 
     def sendUpdate(self, do, fieldName, args):
         """
