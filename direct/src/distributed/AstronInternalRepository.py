@@ -43,7 +43,7 @@ class AstronInternalRepository(ConnectionRepository):
         self.channelAllocator = UniqueIdAllocator(baseChannel, baseChannel+maxChannels-1)
         self._registeredChannels = set()
 
-        self.contextAllocator = UniqueIdAllocator(0, 100)
+        self.__contextCounter = 0
 
         self.dbInterface = AstronDatabaseInterface(self)
 
@@ -60,6 +60,10 @@ class AstronInternalRepository(ConnectionRepository):
                 self.setEventLogHost(eventLogHost)
 
         self.readDCFile(dcFileNames)
+
+    def getContext(self):
+        self.__contextCounter = (self.__contextCounter + 1) & 0xFFFFFFFF
+        return self.__contextCounter
 
     def allocateChannel(self):
         """

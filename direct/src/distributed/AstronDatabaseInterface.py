@@ -32,7 +32,7 @@ class AstronDatabaseInterface:
         """
 
         # Save the callback:
-        ctx = self.air.contextAllocator.allocate()
+        ctx = self.air.getContext()
         self._callbacks[ctx] = callback
 
         # Pack up/count valid fields.
@@ -72,7 +72,6 @@ class AstronDatabaseInterface:
             self._callbacks[ctx](doId)
 
         del self._callbacks[ctx]
-        self.air.contextAllocator.free(ctx)
 
     def queryObject(self, databaseId, doId, callback):
         """
@@ -84,7 +83,7 @@ class AstronDatabaseInterface:
         """
 
         # Save the callback:
-        ctx = self.air.contextAllocator.allocate()
+        ctx = self.air.getContext()
         self._callbacks[ctx] = callback
 
         # Generate and send the datagram:
@@ -138,7 +137,6 @@ class AstronDatabaseInterface:
 
         finally:
             del self._callbacks[ctx]
-            self.air.contextAllocator.free(ctx)
 
     def updateObject(self, databaseId, doId, dclass, newFields, oldFields=None, callback=None):
         """
@@ -192,7 +190,7 @@ class AstronDatabaseInterface:
         # Generate and send the datagram:
         dg = PyDatagram()
         if oldFields is not None:
-            ctx = self.air.contextAllocator.allocate()
+            ctx = self.air.getContext()
             self._callbacks[ctx] = callback
             if fieldCount == 1:
                 dg.addServerHeader(databaseId, self.air.ourChannel,
@@ -260,7 +258,6 @@ class AstronDatabaseInterface:
 
         finally:
             del self._callbacks[ctx]
-            self.air.contextAllocator.free(ctx)
 
     def handleDatagram(self, msgType, di):
         if msgType == DBSERVER_CREATE_OBJECT_RESP:
