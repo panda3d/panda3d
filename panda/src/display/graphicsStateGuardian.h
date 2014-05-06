@@ -150,6 +150,7 @@ PUBLISHED:
   INLINE bool get_supports_two_sided_stencil() const;
   INLINE bool get_supports_geometry_instancing() const;
 
+  INLINE int get_max_color_targets() const;
   INLINE int get_maximum_simultaneous_render_targets() const;
 
   INLINE int get_shader_model() const;
@@ -308,9 +309,9 @@ public:
   virtual void do_issue_light();
 
   virtual bool framebuffer_copy_to_texture
-  (Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb);
+  (Texture *tex, int view, int z, const DisplayRegion *dr, const RenderBuffer &rb);
   virtual bool framebuffer_copy_to_ram
-  (Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb);
+  (Texture *tex, int view, int z, const DisplayRegion *dr, const RenderBuffer &rb);
 
   virtual void bind_light(PointLight *light_obj, const NodePath &light,
                           int light_id);
@@ -495,7 +496,7 @@ protected:
   bool _supports_two_sided_stencil;
   bool _supports_geometry_instancing;
 
-  int _maximum_simultaneous_render_targets;
+  int _max_color_targets;
 
   int  _supported_geom_rendering;
   bool _color_scale_via_lighting;

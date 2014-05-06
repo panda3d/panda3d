@@ -39,7 +39,7 @@
 #import <AppKit/NSImage.h>
 #import <AppKit/NSScreen.h>
 #import <OpenGL/OpenGL.h>
-//#import <Carbon/Carbon.h>
+#import <Carbon/Carbon.h>
 
 TypeHandle CocoaGraphicsWindow::_type_handle;
 
@@ -1731,12 +1731,69 @@ handle_wheel_event(double x, double y) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CocoaGraphicsWindow::get_keyboard_map
+//       Access: Published, Virtual
+//  Description: Returns a ButtonMap containing the association
+//               between raw buttons and virtual buttons.
+////////////////////////////////////////////////////////////////////
+ButtonMap *CocoaGraphicsWindow::
+get_keyboard_map() const {
+  TISInputSourceRef input_source;
+  CFDataRef layout_data;
+  const UCKeyboardLayout *layout;
+
+  // Get the current keyboard layout data.
+  input_source = TISCopyCurrentKeyboardInputSource();
+  layout_data = (CFDataRef) TISGetInputSourceProperty(input_source, kTISPropertyUnicodeKeyLayoutData);
+  layout = (const UCKeyboardLayout *)CFDataGetBytePtr(layout_data);
+
+  ButtonMap *map = new ButtonMap;
+
+  UniChar chars[4];
+  UniCharCount num_chars;
+
+  // Iterate through the known scancode range and see what
+  // every scan code is mapped to.
+  for (int k = 0; k <= 0x7E; ++k) {
+    ButtonHandle raw_button = map_raw_key(k);
+    if (raw_button == ButtonHandle::none()) {
+      continue;
+    }
+
+    UInt32 dead_keys = 0;
+    if (UCKeyTranslate(layout, k, kUCKeyActionDisplay, 0, LMGetKbdType(),
+                       kUCKeyTranslateNoDeadKeysMask, &dead_keys, 4,
+                       &num_chars, chars) == noErr) {
+      if (num_chars > 0 && chars[0] != 0x10) {
+        ButtonHandle button = ButtonHandle::none();
+
+        if (chars[0] > 0 && chars[0] <= 0x7f) {
+          button = KeyboardButton::ascii_key(chars[0]);
+        }
+        if (button == ButtonHandle::none()) {
+          button = map_key(chars[0]);
+        }
+        if (button != ButtonHandle::none()) {
+          map->map_button(raw_button, button);
+        }
+      } else {
+        // A special function key or modifier key, which isn't remapped by the OS.
+        map->map_button(raw_button, raw_button);
+      }
+    }
+  }
+
+  CFRelease(input_source);
+  return map;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CocoaGraphicsWindow::map_key
 //       Access: Private
-//  Description: Maps a Cocoa key character to a ButtonHandle.
+//  Description: Maps a unicode key character to a ButtonHandle.
 ////////////////////////////////////////////////////////////////////
 ButtonHandle CocoaGraphicsWindow::
-map_key(unsigned short c) {
+map_key(unsigned short c) const {
   switch (c) {
   case NSEnterCharacter:
     return KeyboardButton::enter();
@@ -1749,17 +1806,21 @@ map_key(unsigned short c) {
     // BackTabCharacter is sent when shift-tab is used.
     return KeyboardButton::tab();
 
-  case 16:
+  case 0x10:
     // No idea where this constant comes from, but it
     // is sent whenever the menu key is pressed.
     return KeyboardButton::menu();
 
+  case 0x1e:
   case NSUpArrowFunctionKey:
     return KeyboardButton::up();
+  case 0x1f:
   case NSDownArrowFunctionKey:
     return KeyboardButton::down();
+  case 0x1c:
   case NSLeftArrowFunctionKey:
     return KeyboardButton::left();
+  case 0x1d:
   case NSRightArrowFunctionKey:
     return KeyboardButton::right();
   case NSF1FunctionKey:
@@ -1818,14 +1879,18 @@ map_key(unsigned short c) {
     return KeyboardButton::insert();
   case NSDeleteFunctionKey:
     return KeyboardButton::del();
+  case 0x01:
   case NSHomeFunctionKey:
     return KeyboardButton::home();
   case NSBeginFunctionKey:
     break;
+  case 0x04:
   case NSEndFunctionKey:
     return KeyboardButton::end();
+  case 0x0b:
   case NSPageUpFunctionKey:
     return KeyboardButton::page_up();
+  case 0x0c:
   case NSPageDownFunctionKey:
     return KeyboardButton::page_down();
   case NSPrintScreenFunctionKey:
@@ -1858,6 +1923,7 @@ map_key(unsigned short c) {
   case NSRedoFunctionKey:
   case NSFindFunctionKey:
     break;
+  case 0x05:
   case NSHelpFunctionKey:
     return KeyboardButton::help();
   case NSModeSwitchFunctionKey:
@@ -1872,7 +1938,7 @@ map_key(unsigned short c) {
 //  Description: Maps a keycode to a ButtonHandle.
 ////////////////////////////////////////////////////////////////////
 ButtonHandle CocoaGraphicsWindow::
-map_raw_key(unsigned short keycode) {
+map_raw_key(unsigned short keycode) const {
   if (keycode > 0x7f) {
     return ButtonHandle::none();
   }

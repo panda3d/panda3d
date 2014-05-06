@@ -715,12 +715,12 @@ if (COMPILER=="GCC"):
             # We use a statically linked libboost_python on OSX
             rocket_libs += ("boost_python",)
         SmartPkgEnable("ROCKET",    "",          rocket_libs, "Rocket/Core.h")
-        SmartPkgEnable("GTK2",      "gtk+-2.0")
 
     SmartPkgEnable("JPEG",      "",          ("jpeg"), "jpeglib.h")
     SmartPkgEnable("OPENSSL",   "openssl",   ("ssl", "crypto"), ("openssl/ssl.h", "openssl/crypto.h"))
     SmartPkgEnable("PNG",       "libpng",    ("png"), "png.h", tool = "libpng-config")
     SmartPkgEnable("ZLIB",      "zlib",      ("z"), "zlib.h")
+    SmartPkgEnable("GTK2",      "gtk+-2.0")
 
     if (RTDIST and GetHost() == "darwin" and "PYTHONVERSION" in SDK):
         # Don't use the framework for the OSX rtdist build. I'm afraid it gives problems somewhere.
@@ -3200,8 +3200,7 @@ if (not RUNTIME):
   TargetAdd('libp3pgraph.in', opts=OPTS, input=IGATEFILES)
   TargetAdd('libp3pgraph.in', opts=['IMOD:core', 'ILIB:libp3pgraph', 'SRCDIR:panda/src/pgraph'])
   TargetAdd('libp3pgraph_igate.obj', input='libp3pgraph.in', opts=["DEPENDENCYONLY","BIGOBJ"])
-  TargetAdd('p3pgraph_nodePath_ext.obj', opts=OPTS, input='nodePath_ext.cxx')
-  TargetAdd('p3pgraph_nodePathCollection_ext.obj', opts=OPTS, input='nodePathCollection_ext.cxx')
+  TargetAdd('p3pgraph_ext_composite.obj', opts=OPTS, input='p3pgraph_ext_composite.cxx')
 
 #
 # DIRECTORY: panda/src/cull/
@@ -3543,8 +3542,7 @@ if (not RUNTIME):
   TargetAdd('libpanda.dll', input='p3putil_typedWritable_ext.obj')
   TargetAdd('libpanda.dll', input='p3pnmimage_pfmFile_ext.obj')
   TargetAdd('libpanda.dll', input='p3gobj_geomVertexArrayData_ext.obj')
-  TargetAdd('libpanda.dll', input='p3pgraph_nodePath_ext.obj')
-  TargetAdd('libpanda.dll', input='p3pgraph_nodePathCollection_ext.obj')
+  TargetAdd('libpanda.dll', input='p3pgraph_ext_composite.obj')
   TargetAdd('libpanda.dll', input='p3display_graphicsStateGuardian_ext.obj')
 
   if PkgSkip("FREETYPE")==0:
@@ -4721,7 +4719,7 @@ if (RTDIST or RUNTIME):
 #
 
 if (RUNTIME and PkgSkip("NPAPI")==0):
-  OPTS=['DIR:direct/src/plugin_npapi', 'RUNTIME']
+  OPTS=['DIR:direct/src/plugin_npapi', 'RUNTIME', 'GTK2']
   if GetTarget() == 'windows':
     nppanda3d_rc = {"name" : "Panda3D Game Engine Plug-in",
                     "version" : VERSION,

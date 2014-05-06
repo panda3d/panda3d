@@ -1887,8 +1887,8 @@ end_draw_primitives() {
 //               copy.
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian9::
-framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
-                            const RenderBuffer &rb) {
+framebuffer_copy_to_texture(Texture *tex, int view, int z,
+                            const DisplayRegion *dr, const RenderBuffer &rb) {
   set_read_buffer(rb);
 
   int orig_x = tex->get_x_size();
@@ -1902,7 +1902,6 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   // must use a render target type texture for StretchRect
   tex->set_render_to_texture(true);
 
-  int view = dr->get_target_tex_view();
   TextureContext *tc = tex->prepare_now(view, get_prepared_objects(), this);
   if (tc == (TextureContext *)NULL) {
     return false;
@@ -1918,7 +1917,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   if (tex->get_texture_type() != Texture::TT_2d_texture) {
     // For a specialty texture like a cube map, go the slow route
     // through RAM for now.
-    return do_framebuffer_copy_to_ram(tex, z, dr, rb, true);
+    return do_framebuffer_copy_to_ram(tex, view, z, dr, rb, true);
   }
   nassertr(dtc->get_d3d_2d_texture() != NULL, false);
 
@@ -2020,7 +2019,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   } else {
     // The copy failed.  Fall back to copying it to RAM and back.
     // Terribly slow, but what are you going to do?
-    return do_framebuffer_copy_to_ram(tex, z, dr, rb, true);
+    return do_framebuffer_copy_to_ram(tex, view, z, dr, rb, true);
   }
 
   return true;
@@ -2038,9 +2037,9 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
 //               indicated texture.
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian9::
-framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, 
-                        const RenderBuffer &rb) {
-  return do_framebuffer_copy_to_ram(tex, z, dr, rb, false);
+framebuffer_copy_to_ram(Texture *tex, int view, int z,
+                        const DisplayRegion *dr, const RenderBuffer &rb) {
+  return do_framebuffer_copy_to_ram(tex, view, z, dr, rb, false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2053,8 +2052,9 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
 //               copies to texture memory).
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian9::
-do_framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, 
-                           const RenderBuffer &rb, bool inverted) {
+do_framebuffer_copy_to_ram(Texture *tex, int view, int z,
+                           const DisplayRegion *dr, const RenderBuffer &rb,
+                           bool inverted) {
   set_read_buffer(rb);
 
   RECT rect;
@@ -2212,7 +2212,7 @@ do_framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
     copy_inverted = !copy_inverted;
   }
   DXTextureContext9::d3d_surface_to_texture(rect, temp_surface,
-                                            copy_inverted, tex, z);
+                                            copy_inverted, tex, view, z);
 
   RELEASE(temp_surface, dxgsg9, "temp_surface", RELEASE_ONCE);
 
@@ -2445,7 +2445,7 @@ reset() {
   _supports_stencil_wrap = (d3d_caps.StencilCaps & D3DSTENCILCAPS_INCR) && (d3d_caps.StencilCaps & D3DSTENCILCAPS_DECR);
   _supports_two_sided_stencil = ((d3d_caps.StencilCaps & D3DSTENCILCAPS_TWOSIDED) != 0);
 
-  _maximum_simultaneous_render_targets = d3d_caps.NumSimultaneousRTs;
+  _max_color_targets = d3d_caps.NumSimultaneousRTs;
 
   _supports_depth_bias = ((d3d_caps.RasterCaps & (D3DPRASTERCAPS_DEPTHBIAS | D3DPRASTERCAPS_SLOPESCALEDEPTHBIAS)) == (D3DPRASTERCAPS_DEPTHBIAS | D3DPRASTERCAPS_SLOPESCALEDEPTHBIAS));
 

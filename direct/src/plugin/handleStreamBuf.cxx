@@ -22,6 +22,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <unistd.h>
 #endif  // _WIN32
 
 #if !defined(_WIN32) && !defined(__APPLE__) && !defined(__FreeBSD__)

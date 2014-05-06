@@ -76,6 +76,7 @@ private:
     WT_inquiry,
     WT_getbuffer,
     WT_releasebuffer,
+    WT_iter_next,
   };
 
   class SlottedFunctionDef {

@@ -172,6 +172,17 @@ ConfigVariableInt max_texture_stages
           "this number of texture stages simultaneously, regardless of "
           "what the GSG says it can do."));
 
+ConfigVariableInt max_color_targets
+("max-color-targets", -1,
+ PRC_DESC("Set this to a positive integer to limit the number of "
+          "color targets reported by the GSG.  This can be used to limit "
+          "the amount of render targets Panda will attempt to use.  "
+          "If this is zero or less, the GSG will report its honest number "
+          "of color targets, allowing Panda the full use of the graphics "
+          "card; if it is 1 or more, then Panda will never allow more than "
+          "this number of color targets simultaneously, regardless of "
+          "what the GSG says it can do."));
+
 ConfigVariableBool support_render_texture
 ("support-render-texture", true,
  PRC_DESC("Set this true allow use of the render-to-a-texture feature, if it "

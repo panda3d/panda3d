@@ -77,8 +77,8 @@ GraphicsWindow::
   // Clean up python event handlers.
 #ifdef HAVE_PYTHON
   PythonWinProcClasses::iterator iter;
-  for (iter = _python_window_proc_classes.begin(); 
-       iter != _python_window_proc_classes.end(); 
+  for (iter = _python_window_proc_classes.begin();
+       iter != _python_window_proc_classes.end();
        ++iter) {
     delete *iter;
   }
@@ -341,6 +341,17 @@ has_keyboard(int device) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: x11GraphicsWindow::get_keyboard_map
+//       Access: Published, Virtual
+//  Description: Returns a ButtonMap containing the association
+//               between raw buttons and virtual buttons.
+////////////////////////////////////////////////////////////////////
+ButtonMap *GraphicsWindow::
+get_keyboard_map() const {
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::enable_pointer_events
 //       Access: Published
 //  Description: Turn on the generation of pointer events.
@@ -391,8 +402,10 @@ disable_pointer_mode(int device) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::get_pointer
 //       Access: Published
-//  Description: Returns the MouseData associated with the nth input
-//               device's pointer.
+//  Description: Returns the MouseData associated with the nth
+//               input device's pointer.  This is deprecated; use
+//               get_pointer_device().get_pointer() instead, or for
+//               raw mice, use the InputDeviceManager interface.
 ////////////////////////////////////////////////////////////////////
 MouseData GraphicsWindow::
 get_pointer(int device) const {
@@ -409,7 +422,7 @@ get_pointer(int device) const {
 //     Function: GraphicsWindow::move_pointer
 //       Access: Published, Virtual
 //  Description: Forces the pointer to the indicated position within
-//               the window, if possible.  
+//               the window, if possible.
 //
 //               Returns true if successful, false on failure.  This
 //               may fail if the mouse is not currently within the

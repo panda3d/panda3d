@@ -52,9 +52,17 @@ StereoDisplayRegion::
 ////////////////////////////////////////////////////////////////////
 void StereoDisplayRegion::
 set_clear_active(int n, bool clear_active) {
-  //DisplayRegion::set_clear_active(n, clear_active);
-  _left_eye->set_clear_active(n, clear_active);
-  _right_eye->set_clear_active(n, clear_active);
+  // The clear_active flag gets set only on the parent, stereo display
+  // region.
+  DisplayRegion::set_clear_active(n, clear_active);
+
+  // Except for non-color buffers.  These also get set on the
+  // right display region by default, on the assumption that we want
+  // to clear these buffers between drawing the eyes, and that the
+  // right eye is the second of the pair.
+  if (n != RTP_color) {
+    _right_eye->set_clear_active(n, clear_active);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -64,7 +72,7 @@ set_clear_active(int n, bool clear_active) {
 ////////////////////////////////////////////////////////////////////
 void StereoDisplayRegion::
 set_clear_value(int n, const LColor &clear_value) {
-  //DisplayRegion::set_clear_value(n, clear_value);
+  DisplayRegion::set_clear_value(n, clear_value);
   _left_eye->set_clear_value(n, clear_value);
   _right_eye->set_clear_value(n, clear_value);
 }
@@ -290,10 +298,10 @@ set_cull_traverser(CullTraverser *trav) {
 //               right DisplayRegions to the indicated value.
 ////////////////////////////////////////////////////////////////////
 void StereoDisplayRegion::
-set_target_tex_page(int page, int view) {
-  DisplayRegion::set_target_tex_page(page, view);
-  _left_eye->set_target_tex_page(page, view);
-  _right_eye->set_target_tex_page(page, view);
+set_target_tex_page(int page) {
+  DisplayRegion::set_target_tex_page(page);
+  _left_eye->set_target_tex_page(page);
+  _right_eye->set_target_tex_page(page);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -2333,8 +2333,12 @@ def CopyFile(dstfile, srcfile):
         if (fnl < 0): fn = srcfile
         else: fn = srcfile[fnl+1:]
         dstfile = dstdir + fn
-    if (NeedsBuild([dstfile], [srcfile])):
-        WriteBinaryFile(dstfile, ReadBinaryFile(srcfile))
+    if NeedsBuild([dstfile], [srcfile]):
+        if os.path.islink(srcfile):
+            # Preserve symlinks
+            os.symlink(os.readlink(srcfile), dstfile)
+        else:
+            WriteBinaryFile(dstfile, ReadBinaryFile(srcfile))
         JustBuilt([dstfile], [srcfile])
 
 def CopyAllFiles(dstdir, srcdir, suffix=""):

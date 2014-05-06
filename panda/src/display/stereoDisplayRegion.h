@@ -61,7 +61,7 @@ PUBLISHED:
   virtual void set_incomplete_render(bool incomplete_render);
   virtual void set_texture_reload_priority(int texture_reload_priority);
   virtual void set_cull_traverser(CullTraverser *trav);
-  virtual void set_target_tex_page(int page, int view);
+  virtual void set_target_tex_page(int page);
 
   virtual void output(ostream &out) const;
   virtual PT(PandaNode) make_cull_result_graph();

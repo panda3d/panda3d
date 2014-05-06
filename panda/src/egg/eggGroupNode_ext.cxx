@@ -16,7 +16,9 @@
 
 #ifdef HAVE_PYTHON
 
+#ifndef CPPPARSER
 IMPORT_THIS struct Dtool_PyTypedObject Dtool_EggNode;
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::get_children

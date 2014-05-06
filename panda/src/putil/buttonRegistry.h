@@ -48,6 +48,7 @@ public:
 
 PUBLISHED:
   ButtonHandle get_button(const string &name);
+  ButtonHandle find_button(const string &name);
   ButtonHandle find_ascii_button(char ascii_equivalent) const;
 
   void write(ostream &out) const;

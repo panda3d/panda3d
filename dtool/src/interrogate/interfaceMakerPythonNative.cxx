@@ -507,9 +507,9 @@ get_slotted_function_def(Object *obj, Function *func, SlottedFunctionDef &def) {
       return true;
     }
 
-    if (method_name == "next") {
+    if (method_name == "next" || method_name == "__next__") {
       def._answer_location = "tp_iternext";
-      def._wrapper_type = WT_no_params;
+      def._wrapper_type = WT_iter_next;
       return true;
     }
   }
@@ -1696,6 +1696,29 @@ write_module_class(ostream &out, Object *obj) {
             out << "  return;\n";
           }
 
+          out << "}\n\n";
+        }
+        break;
+
+      case WT_iter_next:
+        // PyObject *func(PyObject *self)
+        // However, returns NULL instead of None
+        {
+          Function *func = rfi->first;
+          out << "//////////////////\n";
+          out << "//  A wrapper function to satisfy Python's internal calling conventions.\n";
+          out << "//     " << ClassName << " ..." << rfi->second._answer_location << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
+          out << "//////////////////\n";
+          out << "static PyObject *" <<  func->_name << methodNameFromCppName(func, export_class_name, false) << "(PyObject *self) {\n";
+          out << "  PyObject *args = Py_BuildValue(\"()\");\n";
+          out << "  PyObject *result = " << func->_name << "(self, args, NULL);\n";
+          out << "  Py_DECREF(args);\n";
+          out << "  if (result == Py_None) {\n";
+          out << "    Py_DECREF(Py_None);\n";
+          out << "    return NULL;\n";
+          out << "  } else {\n";
+          out << "    return result;\n";
+          out << "  }\n";
           out << "}\n\n";
         }
         break;

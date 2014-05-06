@@ -132,6 +132,25 @@ get_button(const string &name) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ButtonRegistry::find_button
+//       Access: Published
+//  Description: Finds a ButtonHandle in the registry matching the
+//               indicated name.  If there is no such ButtonHandle,
+//               returns ButtonHandle::none().
+////////////////////////////////////////////////////////////////////
+ButtonHandle ButtonRegistry::
+find_button(const string &name) {
+  NameRegistry::const_iterator ri;
+  ri = _name_registry.find(name);
+
+  if (ri != _name_registry.end()) {
+    return (*ri).second->_handle;
+  }
+
+  return ButtonHandle::none();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ButtonRegistry::find_ascii_button
 //       Access: Published
 //  Description: Finds a ButtonHandle in the registry matching the

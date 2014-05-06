@@ -63,7 +63,9 @@ public:
 protected:
   GraphicsOutput *open_window(const WindowProperties &props, int flags,
                               GraphicsEngine *engine, GraphicsPipe *pipe,
-                              GraphicsStateGuardian *gsg = NULL);
+                              GraphicsStateGuardian *gsg = NULL,
+                              const FrameBufferProperties &fbprops =
+                                    FrameBufferProperties::get_default());
   void close_window();
 
 public:

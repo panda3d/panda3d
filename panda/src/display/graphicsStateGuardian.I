@@ -703,14 +703,37 @@ get_supports_geometry_instancing() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_max_color_targets
+//       Access: Published
+//  Description: Returns the maximum number of simultaneous color
+//               textures that may be attached for render-to-texture,
+//               as supported by this particular GSG.  If you exceed
+//               this number, the lowest-priority render targets will
+//               not be applied.  Use RenderTarget::set_priority() to
+//               adjust the relative importance of the different
+//               render targets.
+//
+//               The value returned may not be meaningful until after
+//               the graphics context has been fully created (e.g. the
+//               window has been opened).
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsStateGuardian::
+get_max_color_targets() const {
+  if (max_color_targets > 0) {
+    return min(_max_color_targets, (int)max_color_targets);
+  }
+  return _max_color_targets;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_maximum_simultaneous_render_targets
 //       Access: Published
-//  Description: Returns the maximum simultaneous render targets 
-//               supported.
+//  Description: Deprecated.  Use get_max_color_targets() instead,
+//               which returns the exact same value.
 ////////////////////////////////////////////////////////////////////
 INLINE int GraphicsStateGuardian::
 get_maximum_simultaneous_render_targets() const {
-  return _maximum_simultaneous_render_targets;
+  return get_max_color_targets();
 }
 
 ////////////////////////////////////////////////////////////////////

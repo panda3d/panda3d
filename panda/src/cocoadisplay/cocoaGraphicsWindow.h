@@ -58,6 +58,7 @@ public:
   void handle_mouse_button_event(int button, bool down);
   void handle_mouse_moved_event(bool in_window, double x, double y, bool absolute);
   void handle_wheel_event(double x, double y);
+  virtual ButtonMap *get_keyboard_map() const;
 
   INLINE NSWindow *get_nswindow() const;
   INLINE NSView *get_nsview() const;
@@ -81,8 +82,8 @@ private:
   NSImage *load_image(const Filename &filename);
 
   void handle_modifier(NSUInteger modifierFlags, NSUInteger mask, ButtonHandle button);
-  ButtonHandle map_key(unsigned short c);
-  ButtonHandle map_raw_key(unsigned short keycode);
+  ButtonHandle map_key(unsigned short c) const;
+  ButtonHandle map_raw_key(unsigned short keycode) const;
 
 private:
   NSWindow *_window;
