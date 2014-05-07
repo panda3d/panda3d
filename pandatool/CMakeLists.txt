@@ -5,5 +5,8 @@ endif()
 # Include pandatool source directories
 add_subdirectory(src/pandatoolbase)
 add_subdirectory(src/progbase)
+add_subdirectory(src/converter)
+add_subdirectory(src/eggbase)
+add_subdirectory(src/bam)
 add_subdirectory(src/pstatserver)
 add_subdirectory(src/gtk-stats)
