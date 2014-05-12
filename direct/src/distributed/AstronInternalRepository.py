@@ -26,7 +26,13 @@ def msgpack_length(dg, length, fix, maxfix, tag8, tag16, tag32):
         raise ValueError('Value too big for MessagePack')
 
 def msgpack_encode(dg, element):
-    if isinstance(element, (int, long)):
+    if element == None:
+        dg.addUint8(0xc0)
+    elif element == False:
+        dg.addUint8(0xc2)
+    elif element == True:
+        dg.addUint8(0xc3)
+    elif isinstance(element, (int, long)):
         if -32 <= element < 128:
             dg.addInt8(element)
         elif 128 <= element < 256:
