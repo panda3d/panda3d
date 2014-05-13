@@ -233,6 +233,11 @@ class AstronDatabaseInterface:
                     self._callbacks[ctx](None)
                 return
 
+            if not di.getRemainingSize():
+                # We failed due to other reasons.
+                if self._callbacks[ctx]:
+                    return self._callbacks[ctx]({})
+
             if multi:
                 fieldCount = di.getUint16()
             else:
