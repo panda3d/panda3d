@@ -7,6 +7,7 @@ from ConnectionRepository import ConnectionRepository
 from PyDatagram import PyDatagram
 from PyDatagramIterator import PyDatagramIterator
 from AstronDatabaseInterface import AstronDatabaseInterface
+from NetMessenger import NetMessenger
 import collections
 
 # Helper functions for logging output:
@@ -117,6 +118,8 @@ class AstronInternalRepository(ConnectionRepository):
         self._registeredChannels = set()
 
         self.__contextCounter = 0
+
+        self.netMessenger = NetMessenger(self)
 
         self.dbInterface = AstronDatabaseInterface(self)
         self.__callbacks = {}
@@ -233,6 +236,9 @@ class AstronInternalRepository(ConnectionRepository):
             self.dbInterface.handleDatagram(msgType, di)
         elif msgType == DBSS_OBJECT_GET_ACTIVATED_RESP:
             self.handleGetActivatedResp(di)
+        elif msgType >= 20000:
+            # These messages belong to the NetMessenger:
+            self.netMessenger.handle(msgType, di)
         else:
             self.notify.warning('Received message with unknown MsgType=%d' % msgType)
 
