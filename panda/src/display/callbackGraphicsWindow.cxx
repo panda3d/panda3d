@@ -124,6 +124,11 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 void CallbackGraphicsWindow::
 end_frame(FrameMode mode, Thread *current_thread) {
   if (_render_callback != NULL) {
+    // In case the callback or the application hosting the OpenGL
+    // context wants to do more rendering, let's give it a blank slate.
+    _gsg->set_state_and_transform(RenderState::make_empty(), _gsg->get_internal_transform());
+    _gsg->clear_before_callback();
+
     RenderCallbackData data(this, RCT_end_frame, mode);
     _render_callback->do_callback(&data);
   } else {
