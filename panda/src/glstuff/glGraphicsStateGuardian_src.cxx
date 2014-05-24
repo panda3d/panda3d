@@ -9036,7 +9036,6 @@ upload_texture(CLP(TextureContext) *gtc, bool force) {
 
     GraphicsEngine *engine = get_engine();
     nassertr(engine != (GraphicsEngine *)NULL, false);
-    nassertr(engine == GraphicsEngine::get_global_ptr(), false);  // temp hack
     engine->texture_uploaded(tex);
     gtc->mark_loaded();
 
