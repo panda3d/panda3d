@@ -44,6 +44,7 @@ BulletManifoldPoint(const BulletManifoldPoint &other)
 BulletManifoldPoint& BulletManifoldPoint::
 operator=(const BulletManifoldPoint& other) {
  
+  this->_pt = other._pt;
   return *this;
 }
 
