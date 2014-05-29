@@ -6303,6 +6303,9 @@ get_external_image_format(Texture *tex) const {
       switch (tex->get_format()) {
       case Texture::F_color_index:
       case Texture::F_depth_component:
+      case Texture::F_depth_component16:
+      case Texture::F_depth_component24:
+      case Texture::F_depth_component32:
       case Texture::F_depth_stencil:
         // This shouldn't be possible.
         nassertr(false, GL_RGB);
@@ -6401,6 +6404,9 @@ get_external_image_format(Texture *tex) const {
     return GL_COLOR_INDEX;
 #endif
   case Texture::F_depth_component:
+  case Texture::F_depth_component16:
+  case Texture::F_depth_component24:
+  case Texture::F_depth_component32:
     return GL_DEPTH_COMPONENT;
   case Texture::F_depth_stencil:
     return _supports_depth_stencil ? GL_DEPTH_STENCIL_EXT : GL_DEPTH_COMPONENT;
