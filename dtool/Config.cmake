@@ -596,17 +596,17 @@ find_package(FFMPEG)
 find_package(SWScale)
 find_package(SWResample)
 
-package_option(FFMPEG DEFAULT ON
+package_option(FFMPEG
   "Enables support for audio- and video-decoding using the FFMPEG library.")
-package_option(SWSCALE DEFAULT ON
+package_option(SWSCALE
   "Enables support for FFMPEG's libswscale for video rescaling.")
-package_option(SWRESAMPLE DEFAULT ON
+package_option(SWRESAMPLE
   "Enables support for FFMPEG's libresample for audio resampling.")
 
 # Is ODE installed, and where?
 find_package(ODE)
 
-package_option(ODE DEFAULT ON
+package_option(ODE
   "Enables support for ridid-body physics using the Open Dynamics Engine.")
 
 # Is OpenGL installed, and where?
@@ -620,7 +620,7 @@ package_option(GL "Enable OpenGL support.")
 # libraries appropriate to the version you want to compile against.
 set(MIN_GL_VERSION "1 1" CACHE STRING
   "The variable is the major, minor version of OpenGL, separated by a
-space (instead of a dot).  Thus, "1 1" means OpenGL version 1.1.
+space (instead of a dot).  Thus, \"1 1\" means OpenGL version 1.1.
 
 This defines the minimum runtime version of OpenGL that Panda will
 require. Setting it to a higher version will compile in hard

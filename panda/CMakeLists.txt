@@ -19,6 +19,7 @@ if(HAVE_FREETYPE)
 endif()
 
 # Include panda source directories
+add_subdirectory(src/configfiles)
 add_subdirectory(src/pandabase)
 add_subdirectory(src/express)
 add_subdirectory(src/downloader)
