@@ -406,13 +406,27 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
               s->_mat_spec.push_back(bind);
               continue;
             }
-            if (noprefix.substr(0, 7) == "Texture") {
+            if (size > 7 && noprefix.substr(0, 7) == "Texture") {
               Shader::ShaderTexSpec bind;
               bind._id = arg_id;
               bind._name = 0;
               bind._desired_type = Texture::TT_2d_texture;
               bind._stage = atoi(noprefix.substr(7).c_str());
               s->_tex_spec.push_back(bind);
+              continue;
+            }
+            if (noprefix == "ColorScale") {
+              Shader::ShaderMatSpec bind;
+              bind._id = arg_id;
+              bind._piece = Shader::SMP_row3;
+              bind._func = Shader::SMF_first;
+              bind._part[0] = Shader::SMO_attr_colorscale;
+              bind._arg[0] = NULL;
+              bind._dep[0] = Shader::SSD_general | Shader::SSD_colorscale;
+              bind._part[1] = Shader::SMO_identity;
+              bind._arg[1] = NULL;
+              bind._dep[1] = Shader::SSD_NONE;
+              s->_mat_spec.push_back(bind);
               continue;
             }
             GLCAT.error() << "Unrecognized uniform name '" << param_name_cstr << "'!\n";
@@ -514,6 +528,16 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
                 bind._stage = texunitno++;
                 s->_tex_spec.push_back(bind);
                 continue; }
+#ifndef OPENGLES
+              case GL_SAMPLER_2D_ARRAY: {
+                Shader::ShaderTexSpec bind;
+                bind._id = arg_id;
+                bind._name = InternalName::make(param_name);
+                bind._desired_type = Texture::TT_2d_texture_array;
+                bind._stage = texunitno++;
+                s->_tex_spec.push_back(bind);
+                continue; }
+#endif
               case GL_FLOAT_MAT2:
 #ifndef OPENGLES
               case GL_FLOAT_MAT2x3:
