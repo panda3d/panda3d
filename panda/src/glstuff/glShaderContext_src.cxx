@@ -299,11 +299,26 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
       gsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_UNIFORMS, &param_count);
       gsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &param_maxlength);
       char* param_name_cstr = (char *)alloca(param_maxlength);
+
       for (int i = 0; i < param_count; ++i) {
+        param_name_cstr[0] = 0;
         gsg->_glGetActiveUniform(_glsl_program, i, param_maxlength, NULL, &param_size, &param_type, param_name_cstr);
         string param_name(param_name_cstr);
         GLint p = gsg->_glGetUniformLocation(_glsl_program, param_name_cstr);
+
+        if (GLCAT.is_debug()) {
+          GLCAT.debug()
+            << "Active uniform " << param_name << " with size " << param_size
+            << " and type " << param_type << " is bound to location " << p << "\n";
+        }
+
         if (p > -1) {
+          // Strip off [0] suffix that some drivers append to arrays.
+          size_t size = param_name.size();
+          if (size > 3 && param_name.substr(size - 3, 3) == "[0]") {
+            param_name = param_name.substr(0, size - 3);
+          }
+
           Shader::ShaderArgId arg_id;
           arg_id._name  = param_name;
           arg_id._seqno = seqno++;
@@ -317,7 +332,6 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
             bool transpose = false;
             bool inverse = false;
             string matrix_name (noprefix);
-            size_t size = matrix_name.size();
 
             // Check for and chop off any "Transpose" or "Inverse" suffix.
             if (size > 15 && matrix_name.compare(size - 9, 9, "Transpose") == 0) {
@@ -616,7 +630,6 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
           } else {
             switch (param_type) {
             case GL_FLOAT_MAT2:
-            case GL_FLOAT_MAT3:
 #ifndef OPENGLES
             case GL_FLOAT_MAT2x3:
             case GL_FLOAT_MAT2x4:
@@ -627,9 +640,6 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
 #endif
               GLCAT.warning() << "GLSL shader requested an unrecognized matrix array type\n";
               continue;
-            case GL_FLOAT_MAT4: {
-              GLCAT.warning() << "GLSL shader does not yet support passing matrix arrays\n";
-              continue; }
             case GL_BOOL:
             case GL_BOOL_VEC2:
             case GL_BOOL_VEC3:
@@ -637,7 +647,9 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
             case GL_FLOAT:
             case GL_FLOAT_VEC2:
             case GL_FLOAT_VEC3:
-            case GL_FLOAT_VEC4: {
+            case GL_FLOAT_VEC4:
+            case GL_FLOAT_MAT3:
+            case GL_FLOAT_MAT4: {
               Shader::ShaderPtrSpec bind;
               bind._id = arg_id;
               switch (param_type) {
@@ -649,8 +661,10 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
                 case GL_FLOAT_VEC3: bind._dim[1] = 3; break;
                 case GL_BOOL_VEC4:
                 case GL_FLOAT_VEC4: bind._dim[1] = 4; break;
+                case GL_FLOAT_MAT3: bind._dim[1] = 9; break;
+                case GL_FLOAT_MAT4: bind._dim[1] = 16; break;
               }
-              bind._arg = InternalName::make(param_name);;
+              bind._arg = InternalName::make(param_name);
               bind._dim[0] = param_size;
               bind._dep[0] = Shader::SSD_general | Shader::SSD_shaderinputs;
               bind._dep[1] = Shader::SSD_NONE;
@@ -675,6 +689,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
       param_name_cstr = (char *)alloca(param_maxlength);
 
       for (int i = 0; i < param_count; ++i) {
+        param_name_cstr[0] = 0;
         gsg->_glGetActiveAttrib(_glsl_program, i, param_maxlength, NULL, &param_size, &param_type, param_name_cstr);
         string param_name(param_name_cstr);
 
@@ -958,6 +973,8 @@ issue_parameters(GSG *gsg, int altered) {
           case 2: gsg->_glUniform2fv(p, _ptr._dim[0], (float*)_ptr_data->_ptr); continue;
           case 3: gsg->_glUniform3fv(p, _ptr._dim[0], (float*)_ptr_data->_ptr); continue;
           case 4: gsg->_glUniform4fv(p, _ptr._dim[0], (float*)_ptr_data->_ptr); continue;
+          case 9: gsg->_glUniformMatrix3fv(p, _ptr._dim[0], GL_FALSE, (float*)_ptr_data->_ptr); continue;
+          case 16: gsg->_glUniformMatrix4fv(p, _ptr._dim[0], GL_FALSE, (float*)_ptr_data->_ptr); continue;
         }
       }
 #if defined(HAVE_CG) && !defined(OPENGLES)
@@ -1069,8 +1086,8 @@ issue_parameters(GSG *gsg, int altered) {
       if (_shader->get_language() == Shader::SL_GLSL) {
         GLint p = _glsl_parameter_map[_shader->_mat_spec[i]._id._seqno];
         switch (_shader->_mat_spec[i]._piece) {
-        case Shader::SMP_whole: gsg->_glUniformMatrix4fv(p, 1, false, data); continue;
-        case Shader::SMP_transpose: gsg->_glUniformMatrix4fv(p, 1, true, data); continue;
+        case Shader::SMP_whole: gsg->_glUniformMatrix4fv(p, 1, GL_FALSE, data); continue;
+        case Shader::SMP_transpose: gsg->_glUniformMatrix4fv(p, 1, GL_TRUE, data); continue;
         case Shader::SMP_col0: gsg->_glUniform4f(p, data[0], data[4], data[ 8], data[12]); continue;
         case Shader::SMP_col1: gsg->_glUniform4f(p, data[1], data[5], data[ 9], data[13]); continue;
         case Shader::SMP_col2: gsg->_glUniform4f(p, data[2], data[6], data[10], data[14]); continue;
