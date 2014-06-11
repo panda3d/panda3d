@@ -1,5 +1,5 @@
-// Filename: fltnames.h
-// Created by:  cxgeorge (04Apr01)
+// Filename: intnames.h
+// Created by:  rdb (07Jun14)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -39,7 +39,8 @@
 #undef FLOATCONST
 #undef FLOATTYPE_IS_INT
 
-#define FLOATTYPE float
-#define FLOATNAME(ARG) ARG##f
-#define FLOATTOKEN 'f'
-#define FLOATCONST(ARG) ARG##f
+#define FLOATTYPE int
+#define FLOATNAME(ARG) ARG##i
+#define FLOATTOKEN 'i'
+#define FLOATCONST(ARG) ARG
+#define FLOATTYPE_IS_INT

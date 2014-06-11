@@ -70,7 +70,7 @@ cross(const FLOATNAME(LVector3) &a, const FLOATNAME(LVector3) &b) {
   return FLOATNAME(LVector3)(a.cross(b));
 }
 
-
+#ifndef FLOATTYPE_IS_INT
 ////////////////////////////////////////////////////////////////////
 //     Function: length of a vector
 //  Description:
@@ -80,7 +80,6 @@ INLINE_LINMATH FLOATTYPE
 length(const FLOATNAME(LVecBase3) &a) {
   return a.length();
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: normalize
@@ -93,6 +92,7 @@ normalize(const FLOATNAME(LVecBase3) &v) {
   v1.normalize();
   return v1;
 }
+#endif  // FLOATTYPE_IS_INT
 
 ////////////////////////////////////////////////////////////////////
 //     Function: generic_write_datagram

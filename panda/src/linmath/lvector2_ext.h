@@ -26,4 +26,7 @@
 #include "dblnames.h"
 #include "lvector2_ext_src.h"
 
+#include "intnames.h"
+#include "lvector2_ext_src.h"
+
 #endif

@@ -27,5 +27,7 @@
 #include "dblnames.h"
 #include "lvec4_ops_src.h"
 
+#include "intnames.h"
+#include "lvec4_ops_src.h"
 
 #endif

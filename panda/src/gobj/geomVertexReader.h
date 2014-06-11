@@ -122,9 +122,9 @@ PUBLISHED:
   INLINE const LVecBase4 &get_data4();
 
   INLINE int get_data1i();
-  INLINE const int *get_data2i();
-  INLINE const int *get_data3i();
-  INLINE const int *get_data4i();
+  INLINE const LVecBase2i &get_data2i();
+  INLINE const LVecBase3i &get_data3i();
+  INLINE const LVecBase4i &get_data4i();
 
   void output(ostream &out) const;
 

@@ -20,3 +20,5 @@
 #include "dblnames.h"
 #include "lvecBase2_src.cxx"
 
+#include "intnames.h"
+#include "lvecBase2_src.cxx"

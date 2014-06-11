@@ -26,5 +26,7 @@
 #include "dblnames.h"
 #include "lpoint2_src.h"
 
+#include "intnames.h"
+#include "lpoint2_src.h"
 
 #endif

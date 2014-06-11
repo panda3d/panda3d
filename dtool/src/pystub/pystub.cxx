@@ -85,6 +85,7 @@ extern "C" {
   EXPCL_PYSTUB int PyModule_AddStringConstant(...);
   EXPCL_PYSTUB int PyModule_Create2(...);
   EXPCL_PYSTUB int PyNumber_Float(...);
+  EXPCL_PYSTUB int PyNumber_Int(...);
   EXPCL_PYSTUB int PyNumber_Long(...);
   EXPCL_PYSTUB int PyObject_ASCII(...);
   EXPCL_PYSTUB int PyObject_Call(...);
@@ -249,6 +250,7 @@ int PyModule_AddObject(...) { return 0; };
 int PyModule_AddStringConstant(...) { return 0; };
 int PyModule_Create2(...) { return 0; };
 int PyNumber_Float(...) { return 0; }
+int PyNumber_Int(...) { return 0; }
 int PyNumber_Long(...) { return 0; }
 int PyObject_ASCII(...) { return 0; }
 int PyObject_Call(...) { return 0; }

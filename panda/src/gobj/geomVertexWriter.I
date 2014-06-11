@@ -792,8 +792,7 @@ set_data1i(int data) {
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexWriter::
 set_data2i(int a, int b) {
-  nassertv(has_column());
-  _packer->set_data2i(inc_pointer(), a, b);
+  set_data2i(LVecBase2i(a, b));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -806,8 +805,9 @@ set_data2i(int a, int b) {
 //               the end of data.
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexWriter::
-set_data2i(const int data[2]) {
-  set_data2i(data[0], data[1]);
+set_data2i(const LVecBase2i &data) {
+  nassertv(has_column());
+  _packer->set_data2i(inc_pointer(), data);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -821,8 +821,7 @@ set_data2i(const int data[2]) {
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexWriter::
 set_data3i(int a, int b, int c) {
-  nassertv(has_column());
-  _packer->set_data3i(inc_pointer(), a, b, c);
+  set_data3i(LVecBase3i(a, b, c));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -835,8 +834,9 @@ set_data3i(int a, int b, int c) {
 //               the end of data.
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexWriter::
-set_data3i(const int data[3]) {
-  set_data3i(data[0], data[1], data[2]);
+set_data3i(const LVecBase3i &data) {
+  nassertv(has_column());
+  _packer->set_data3i(inc_pointer(), data);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -850,8 +850,7 @@ set_data3i(const int data[3]) {
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexWriter::
 set_data4i(int a, int b, int c, int d) {
-  nassertv(has_column());
-  _packer->set_data4i(inc_pointer(), a, b, c, d);
+  set_data4i(LVecBase4i(a, b, c, d));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -864,8 +863,9 @@ set_data4i(int a, int b, int c, int d) {
 //               the end of data.
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexWriter::
-set_data4i(const int data[4]) {
-  set_data4i(data[0], data[1], data[2], data[3]);
+set_data4i(const LVecBase4i &data) {
+  nassertv(has_column());
+  _packer->set_data4i(inc_pointer(), data);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1224,8 +1224,7 @@ add_data1i(int data) {
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexWriter::
 add_data2i(int a, int b) {
-  nassertv(has_column());
-  _packer->set_data2i(inc_add_pointer(), a, b);
+  add_data2i(LVecBase2i(a, b));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1239,7 +1238,22 @@ add_data2i(int a, int b) {
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexWriter::
 add_data2i(const int data[2]) {
-  add_data2i(data[0], data[1]);
+  add_data2i(LVecBase2i(data[0], data[1]));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::add_data2i
+//       Access: Published
+//  Description: Sets the write row to a particular 2-component
+//               value, and advances the write row.
+//
+//               If the write row advances past the end of data,
+//               implicitly adds a new row to the data.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexWriter::
+add_data2i(const LVecBase2i &data) {
+  nassertv(has_column());
+  _packer->set_data2i(inc_add_pointer(), data);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1253,8 +1267,7 @@ add_data2i(const int data[2]) {
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexWriter::
 add_data3i(int a, int b, int c) {
-  nassertv(has_column());
-  _packer->set_data3i(inc_add_pointer(), a, b, c);
+  add_data3i(LVecBase3i(a, b, c));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1268,7 +1281,22 @@ add_data3i(int a, int b, int c) {
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexWriter::
 add_data3i(const int data[3]) {
-  add_data3i(data[0], data[1], data[2]);
+  add_data3i(LVecBase3i(data[0], data[1], data[2]));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::add_data3i
+//       Access: Published
+//  Description: Sets the write row to a particular 3-component
+//               value, and advances the write row.
+//
+//               If the write row advances past the end of data,
+//               implicitly adds a new row to the data.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexWriter::
+add_data3i(const LVecBase3i &data) {
+  nassertv(has_column());
+  _packer->set_data3i(inc_add_pointer(), data);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1282,8 +1310,7 @@ add_data3i(const int data[3]) {
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexWriter::
 add_data4i(int a, int b, int c, int d) {
-  nassertv(has_column());
-  _packer->set_data4i(inc_add_pointer(), a, b, c, d);
+  add_data4i(LVecBase4i(a, b, c, d));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1297,7 +1324,22 @@ add_data4i(int a, int b, int c, int d) {
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomVertexWriter::
 add_data4i(const int data[4]) {
-  add_data4i(data[0], data[1], data[2], data[3]);
+  add_data4i(LVecBase4i(data[0], data[1], data[2], data[3]));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexWriter::add_data4i
+//       Access: Published
+//  Description: Sets the write row to a particular 4-component
+//               value, and advances the write row.
+//
+//               If the write row advances past the end of data,
+//               implicitly adds a new row to the data.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomVertexWriter::
+add_data4i(const LVecBase4i &data) {
+  nassertv(has_column());
+  _packer->set_data4i(inc_add_pointer(), data);
 }
 
 ////////////////////////////////////////////////////////////////////

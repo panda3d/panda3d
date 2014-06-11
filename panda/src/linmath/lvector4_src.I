@@ -76,6 +76,17 @@ FLOATNAME(LVector4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LVector4::Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVector4)::
+FLOATNAME(LVector4)(const FLOATNAME(LVecBase3) &copy, FLOATTYPE w) :
+  FLOATNAME(LVecBase4)(copy, w)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LVector4::zero Named Constructor
 //       Access: Public
 //  Description: Returns a zero-length vector.
@@ -192,10 +203,10 @@ operator * (FLOATTYPE scalar) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector4) FLOATNAME(LVector4)::
 operator / (FLOATTYPE scalar) const {
-  FLOATTYPE recip_scalar = 1.0f/scalar;
-  return FLOATNAME(LVector4)(FLOATNAME(LVecBase4)::operator * (recip_scalar));
+  return FLOATNAME(LVector4)(FLOATNAME(LVecBase4)::operator / (scalar));
 }
 
+#ifndef FLOATTYPE_IS_INT
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector4::project
 //       Access: Published
@@ -207,4 +218,4 @@ INLINE_LINMATH FLOATNAME(LVector4) FLOATNAME(LVector4)::
 project(const FLOATNAME(LVecBase4) &onto) const {
   return FLOATNAME(LVecBase4)::project(onto);
 }
-
+#endif  // FLOATTYPE_IS_INT

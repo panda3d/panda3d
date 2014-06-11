@@ -171,10 +171,10 @@ operator * (FLOATTYPE scalar) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector2) FLOATNAME(LVector2)::
 operator / (FLOATTYPE scalar) const {
-  FLOATTYPE recip_scalar = 1.0f/scalar;
-  return FLOATNAME(LVector2)(FLOATNAME(LVecBase2)::operator * (recip_scalar));
+  return FLOATNAME(LVector2)(FLOATNAME(LVecBase2)::operator / (scalar));
 }
 
+#ifndef FLOATTYPE_IS_INT
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector2::project
 //       Access: Published
@@ -208,4 +208,4 @@ INLINE_LINMATH FLOATTYPE FLOATNAME(LVector2)::
 signed_angle_deg(const FLOATNAME(LVector2) &other) const {
   return rad_2_deg(signed_angle_rad(other));
 }
-
+#endif  // FLOATTYPE_IS_INT

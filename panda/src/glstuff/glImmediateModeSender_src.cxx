@@ -564,7 +564,7 @@ issue_vertex() {
 ////////////////////////////////////////////////////////////////////
 void CLP(ImmediateModeSender)::VectorSender2fui::
 issue_vertex() {
-  const int *d = _reader->get_data2i();
+  const LVecBase2i &d = _reader->get_data2i();
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam()
@@ -573,7 +573,7 @@ issue_vertex() {
   }
 #endif  // NDEBUG
 
-  (*_func)(2, (const GLuint *)d);
+  (*_func)(2, (const GLuint *)d.get_data());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -583,7 +583,7 @@ issue_vertex() {
 ////////////////////////////////////////////////////////////////////
 void CLP(ImmediateModeSender)::VectorSender3fui::
 issue_vertex() {
-  const int *d = _reader->get_data3i();
+  const LVecBase3i &d = _reader->get_data3i();
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam()
@@ -592,7 +592,7 @@ issue_vertex() {
   }
 #endif  // NDEBUG
 
-  (*_func)(3, (const GLuint *)d);
+  (*_func)(3, (const GLuint *)d.get_data());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -602,7 +602,7 @@ issue_vertex() {
 ////////////////////////////////////////////////////////////////////
 void CLP(ImmediateModeSender)::VectorSender4fui::
 issue_vertex() {
-  const int *d = _reader->get_data4i();
+  const LVecBase4i &d = _reader->get_data4i();
 #ifndef NDEBUG
   if (GLCAT.is_spam()) {
     GLCAT.spam()
@@ -611,7 +611,7 @@ issue_vertex() {
   }
 #endif  // NDEBUG
 
-  (*_func)(4, (const GLuint *)d);
+  (*_func)(4, (const GLuint *)d.get_data());
 }
 
 #endif  // SUPPORT_IMMEDIATE_MODE

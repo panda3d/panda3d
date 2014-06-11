@@ -124,9 +124,9 @@ private:
     virtual const LVecBase4d &get_data4d(const unsigned char *pointer);
 
     virtual int get_data1i(const unsigned char *pointer);
-    virtual const int *get_data2i(const unsigned char *pointer);
-    virtual const int *get_data3i(const unsigned char *pointer);
-    virtual const int *get_data4i(const unsigned char *pointer);
+    virtual const LVecBase2i &get_data2i(const unsigned char *pointer);
+    virtual const LVecBase3i &get_data3i(const unsigned char *pointer);
+    virtual const LVecBase4i &get_data4i(const unsigned char *pointer);
 
     virtual void set_data1f(unsigned char *pointer, float data);
     virtual void set_data2f(unsigned char *pointer, const LVecBase2f &data);
@@ -138,10 +138,10 @@ private:
     virtual void set_data3d(unsigned char *pointer, const LVecBase3d &data);
     virtual void set_data4d(unsigned char *pointer, const LVecBase4d &data);
     
-    virtual void set_data1i(unsigned char *pointer, int a);
-    virtual void set_data2i(unsigned char *pointer, int a, int b);
-    virtual void set_data3i(unsigned char *pointer, int a, int b, int c);
-    virtual void set_data4i(unsigned char *pointer, int a, int b, int c, int d);
+    virtual void set_data1i(unsigned char *pointer, int data);
+    virtual void set_data2i(unsigned char *pointer, const LVecBase2i &data);
+    virtual void set_data3i(unsigned char *pointer, const LVecBase3i &data);
+    virtual void set_data4i(unsigned char *pointer, const LVecBase4i &data);
 
     virtual const char *get_name() const {
       return "Packer";
@@ -178,7 +178,9 @@ private:
     LVecBase2d _v2d;
     LVecBase3d _v3d;
     LVecBase4d _v4d;
-    int _i[4];
+    LVecBase2i _v2i;
+    LVecBase3i _v3i;
+    LVecBase4i _v4i;
     unsigned int _a, _b, _c, _d;
   };
 

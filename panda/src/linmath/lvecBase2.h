@@ -16,6 +16,7 @@
 #define LVECBASE2_H
 
 #include "pandabase.h"
+#include "config_linmath.h"
 #include "typedObject.h"
 #include "pnotify.h"
 #include "datagram.h"
@@ -34,6 +35,9 @@ class DatagramIterator;
 #include "lvecBase2_src.h"
 
 #include "dblnames.h"
+#include "lvecBase2_src.h"
+
+#include "intnames.h"
 #include "lvecBase2_src.h"
 
 #endif

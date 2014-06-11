@@ -33,15 +33,15 @@ operator * (FLOATTYPE scalar, const FLOATNAME(LVector4) &a);
 INLINE_LINMATH FLOATTYPE
 dot(const FLOATNAME(LVecBase4) &a, const FLOATNAME(LVecBase4) &b);
 
-
+#ifndef FLOATTYPE_IS_INT
 // Length of a vector.
 INLINE_LINMATH FLOATTYPE
 length(const FLOATNAME(LVector4) &a);
 
-
 // A normalized vector.
 INLINE_LINMATH FLOATNAME(LVector4)
 normalize(const FLOATNAME(LVector4) &v);
+#endif  // FLOATTYPE_IS_INT
 
 INLINE_LINMATH void
 generic_write_datagram(Datagram &dest, const FLOATNAME(LVecBase4) &value);
