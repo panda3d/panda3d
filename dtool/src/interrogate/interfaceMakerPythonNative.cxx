@@ -406,6 +406,12 @@ get_slotted_function_def(Object *obj, Function *func, SlottedFunctionDef &def) {
     return true;
   }
 
+  if (method_name == "__pow__") {
+    def._answer_location = "tp_as_number->nb_power";
+    def._wrapper_type = WT_ternary_operator;
+    return true;
+  }
+
   if (method_name == "operator +=") {
     def._answer_location = "tp_as_number->nb_inplace_add";
     def._wrapper_type = WT_one_param;
@@ -465,6 +471,13 @@ get_slotted_function_def(Object *obj, Function *func, SlottedFunctionDef &def) {
   if (method_name == "operator ^=") {
     def._answer_location = "tp_as_number->nb_inplace_xor";
     def._wrapper_type = WT_one_param;
+    def._min_version = 0x02000000;
+    return true;
+  }
+
+  if (method_name == "__ipow__") {
+    def._answer_location = "tp_as_number->nb_inplace_power";
+    def._wrapper_type = WT_one_or_two_params;
     def._min_version = 0x02000000;
     return true;
   }
@@ -866,7 +879,7 @@ write_class_details(ostream &out, Object *obj) {
       GetThis << "  " << cClassName << " *local_this = NULL;\n";
       GetThis << "  DTOOL_Call_ExtractThisPointerForType(self, &Dtool_" << ClassName << ", (void **)&local_this);\n";
       GetThis << "  if (local_this == NULL) {\n";
-      if (def._wrapper_type == WT_numeric_operator) {
+      if (def._wrapper_type == WT_numeric_operator || def._wrapper_type == WT_ternary_operator) {
         // WT_numeric_operator means we must return NotImplemented, instead
         // of raising an exception, if the this pointer doesn't
         // match.  This is for things like __sub__, which Python
@@ -1719,6 +1732,29 @@ write_module_class(ostream &out, Object *obj) {
           out << "  } else {\n";
           out << "    return result;\n";
           out << "  }\n";
+          out << "}\n\n";
+        }
+        break;
+
+      case WT_one_or_two_params:
+      case WT_ternary_operator:
+        // PyObject *func(PyObject *self, PyObject *one, PyObject *two)
+        {
+          Function *func = rfi->first;
+          out << "//////////////////\n";
+          out << "//  A wrapper function to satisfy Python's internal calling conventions.\n";
+          out << "//     " << ClassName << " ..." << rfi->second._answer_location << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
+          out << "//////////////////\n";
+          out << "static PyObject *" <<  func->_name << methodNameFromCppName(func, export_class_name, false) << "(PyObject *self, PyObject *one, PyObject *two) {\n";
+          out << "  PyObject *args;\n";
+          out << "  if (two != Py_None) {\n";
+          out << "    args = Py_BuildValue(\"(OO)\", one, two);\n";
+          out << "  } else {\n";
+          out << "    args = Py_BuildValue(\"(O)\", one);\n";
+          out << "  }\n\n";
+          out << "  PyObject *result = " << func->_name << "(self, args, NULL);\n";
+          out << "  Py_DECREF(args);\n";
+          out << "  return result;\n";
           out << "}\n\n";
         }
         break;
