@@ -429,6 +429,35 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
               s->_tex_spec.push_back(bind);
               continue;
             }
+            if (size > 9 && noprefix.substr(0, 9) == "Material.") {
+              Shader::ShaderMatSpec bind;
+              bind._id = arg_id;
+              bind._func = Shader::SMF_first;
+              bind._part[0] = Shader::SMO_attr_material;
+              bind._arg[0] = NULL;
+              bind._dep[0] = Shader::SSD_general | Shader::SSD_material;
+              bind._part[1] = Shader::SMO_identity;
+              bind._arg[1] = NULL;
+              bind._dep[1] = Shader::SSD_NONE;
+
+              if (noprefix == "Material.ambient") {
+                bind._piece = Shader::SMP_row0;
+                s->_mat_spec.push_back(bind);
+                continue;
+              } else if (noprefix == "Material.diffuse") {
+                bind._piece = Shader::SMP_row1;
+                s->_mat_spec.push_back(bind);
+                continue;
+              } else if (noprefix == "Material.emission") {
+                bind._piece = Shader::SMP_row2;
+                s->_mat_spec.push_back(bind);
+                continue;
+              } else if (noprefix == "Material.specular") {
+                bind._piece = Shader::SMP_row3;
+                s->_mat_spec.push_back(bind);
+                continue;
+              }
+            }
             if (noprefix == "ColorScale") {
               Shader::ShaderMatSpec bind;
               bind._id = arg_id;
