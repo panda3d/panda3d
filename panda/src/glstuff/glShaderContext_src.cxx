@@ -290,9 +290,11 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
         return;
       }
     }
+    gsg->_glUseProgram(_glsl_program);
+
     // Analyze the uniforms and put them in _glsl_parameter_map
     if (_glsl_parameter_map.size() == 0) {
-      int seqno = 0, texunitno = 0;
+      int seqno = 0, texunitno = 0, imgunitno = 0;
       string noprefix;
       GLint param_count, param_maxlength, param_size;
       GLenum param_type;
@@ -653,6 +655,28 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
               case GL_INT_VEC4:
                 GLCAT.warning() << "Panda does not support passing integers to shaders (yet)!\n";
                 continue;
+#ifndef OPENGLES
+              case GL_IMAGE_1D_EXT:
+              case GL_IMAGE_2D_EXT:
+              case GL_IMAGE_3D_EXT:
+              case GL_IMAGE_CUBE_EXT:
+              case GL_IMAGE_2D_ARRAY_EXT:
+              case GL_INT_IMAGE_1D_EXT:
+              case GL_INT_IMAGE_2D_EXT:
+              case GL_INT_IMAGE_3D_EXT:
+              case GL_INT_IMAGE_CUBE_EXT:
+              case GL_INT_IMAGE_2D_ARRAY_EXT:
+              case GL_UNSIGNED_INT_IMAGE_1D_EXT:
+              case GL_UNSIGNED_INT_IMAGE_2D_EXT:
+              case GL_UNSIGNED_INT_IMAGE_3D_EXT:
+              case GL_UNSIGNED_INT_IMAGE_CUBE_EXT:
+              case GL_UNSIGNED_INT_IMAGE_2D_ARRAY_EXT:
+                // This won't really change at runtime, so we might as well
+                // bind once and then forget about it.
+                gsg->_glUniform1i(p, imgunitno++);
+                _glsl_img_inputs.push_back(InternalName::make(param_name));
+                continue;
+#endif
               default:
                 GLCAT.warning() << "Ignoring unrecognized GLSL parameter type!\n";
             }
@@ -793,6 +817,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
         s->_var_spec.push_back(bind);
       }
     }
+    gsg->_glUseProgram(0);
   }
 
   gsg->report_my_gl_errors();
@@ -1462,6 +1487,51 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
 
     if (!gsg->update_texture(tc, false)) {
       continue;
+    }
+  }
+
+  // Now bind all the 'image units'; a bit of an esoteric OpenGL feature right now.
+  int num_image_units = min(_glsl_img_inputs.size(), (size_t)gsg->_max_image_units);
+
+  if (num_image_units > 0 && _shader->get_language() == Shader::SL_GLSL) {
+    GLuint *multi_img = NULL;
+    // If we support multi-bind, prepare an array.
+    if (gsg->_supports_multi_bind && num_image_units > 1) {
+      multi_img = new GLuint[num_image_units];
+    }
+
+    for (int i = 0; i < num_image_units; ++i) {
+      const InternalName *name = _glsl_img_inputs[i];
+      Texture *tex = gsg->_target_shader->get_shader_input_texture(name);
+
+      GLuint gl_tex = 0;
+      if (tex != NULL) {
+        int view = gsg->get_current_tex_view_offset();
+
+        CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tex->prepare_now(view, gsg->_prepared_objects, gsg));
+        if (gtc != (TextureContext*)NULL) {
+          gl_tex = gtc->_index;
+        }
+      }
+
+      if (multi_img != NULL) {
+        // Put in array so we can multi-bind later.
+        multi_img[i] = gl_tex;
+
+      } else {
+        // We don't support multi-bind, so bind now in the same way that multi-bind would have done it.
+        if (gl_tex == 0) {
+          gsg->_glBindImageTexture(i, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R8);
+        } else {
+          GLint internal_format = gsg->get_internal_image_format(tex);
+          gsg->_glBindImageTexture(i, gl_tex, 0, GL_TRUE, 0, GL_READ_WRITE, internal_format);
+        }
+      }
+    }
+
+    if (multi_img != NULL) {
+      gsg->_glBindImageTextures(0, num_image_units, multi_img);
+      delete[] multi_img;
     }
   }
 

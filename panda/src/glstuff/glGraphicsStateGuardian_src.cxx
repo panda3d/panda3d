@@ -1584,7 +1584,36 @@ reset() {
     GLP(GetFloatv)(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &max_anisotropy);
     _max_anisotropy = (PN_stdfloat)max_anisotropy;
     _supports_anisotropy = true;
-  } 
+  }
+
+  // Check availability of image read/write functionality in shaders.
+  _max_image_units = 0;
+  if (is_at_least_gl_version(4, 2) || has_extension("GL_ARB_shader_image_load_store")) {
+    _glBindImageTexture = (PFNGLBINDIMAGETEXTUREPROC)
+      get_extension_func(GLPREFIX_QUOTED, "BindImageTexture");
+
+    GLP(GetIntegerv)(GL_MAX_IMAGE_UNITS, &_max_image_units);
+
+  } else if (has_extension("GL_EXT_shader_image_load_store")) {
+    _glBindImageTexture = (PFNGLBINDIMAGETEXTUREPROC)
+      get_extension_func(GLPREFIX_QUOTED, "BindImageTextureEXT");
+
+    GLP(GetIntegerv)(GL_MAX_IMAGE_UNITS_EXT, &_max_image_units);
+  }
+
+  // Check availability of multi-bind functions.
+  _supports_multi_bind = false;
+  if (is_at_least_gl_version(4, 4) || has_extension("GL_ARB_multi_bind")) {
+    _glBindImageTextures = (PFNGLBINDIMAGETEXTURESPROC)
+      get_extension_func(GLPREFIX_QUOTED, "BindImageTextures");
+
+    if (_glBindImageTextures != NULL) {
+      _supports_multi_bind = true;
+    } else {
+      GLCAT.warning()
+        << "ARB_multi_bind advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
+    }
+  }
 
   report_my_gl_errors();
 

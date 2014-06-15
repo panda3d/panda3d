@@ -77,6 +77,8 @@ private:
 
   pvector <GLint> _glsl_parameter_map;
 
+  pvector<CPT(InternalName)> _glsl_img_inputs;
+
   int _stage_offset;
   // Avoid using this! It merely exists so the
   // destructor has access to the extension functions.

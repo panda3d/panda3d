@@ -170,6 +170,8 @@ typedef void (APIENTRYP PFNGLVERTEXATTRIBPOINTERPROC) (GLuint index, GLint size,
 typedef void (APIENTRYP PFNGLPROGRAMPARAMETERIEXTPROC) (GLuint program, GLenum pname, GLint value);
 typedef void (APIENTRYP PFNGLDRAWARRAYSINSTANCEDPROC) (GLenum mode, GLint first, GLsizei count, GLsizei primcount);
 typedef void (APIENTRYP PFNGLDRAWELEMENTSINSTANCEDPROC) (GLenum mode, GLsizei count, GLenum type, const GLvoid *indices, GLsizei primcount);
+typedef void (APIENTRYP PFNGLBINDIMAGETEXTUREPROC) (GLuint unit, GLuint texture, GLint level, GLboolean layered, GLint layer, GLenum access, GLenum format);
+typedef void (APIENTRYP PFNGLBINDIMAGETEXTURESPROC) (GLuint first, GLsizei count, const GLuint *textures);
 #endif  // OPENGLES
 #endif  // __EDG__
 
@@ -522,6 +524,8 @@ protected:
   int _num_active_texture_stages;
   PN_stdfloat _max_anisotropy;
   bool _supports_anisotropy;
+  GLint _max_image_units;
+  bool _supports_multi_bind;
 
 #ifdef OPENGLES
   bool _supports_depth24;
@@ -687,6 +691,8 @@ public:
   PFNGLPATCHPARAMETERIPROC _glPatchParameteri;
   PFNGLDRAWARRAYSINSTANCEDPROC _glDrawArraysInstanced;
   PFNGLDRAWELEMENTSINSTANCEDPROC _glDrawElementsInstanced;
+  PFNGLBINDIMAGETEXTUREPROC _glBindImageTexture;
+  PFNGLBINDIMAGETEXTURESPROC _glBindImageTextures;
 #endif  // OPENGLES
 
   GLenum _edge_clamp;
