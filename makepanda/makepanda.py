@@ -92,7 +92,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "GTK2", "WX", "FLTK",                                # Toolkit support
   "ROCKET",                                            # GUI libraries
   "CARBON", "COCOA",                                   # Mac OS X toolkits
-  "OSMESA", "X11", "XF86DGA", "XRANDR", "XCURSOR",     # Unix platform support
+  "X11", "XF86DGA", "XRANDR", "XCURSOR",               # Unix platform support
   "PANDATOOL", "PVIEW", "DEPLOYTOOLS",                 # Toolchain
   "SKEL",                                              # Example SKEL project
   "PANDAFX",                                           # Some distortion special lenses 
@@ -697,7 +697,6 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("GLES",      "glesv1_cm", ("GLESv1_CM"), ("GLES/gl.h"), framework = "OpenGLES")
         SmartPkgEnable("GLES2",     "glesv2",    ("GLESv2"), ("GLES2/gl2.h")) #framework = "OpenGLES"?
         SmartPkgEnable("EGL",       "egl",       ("EGL"), ("EGL/egl.h"))
-        SmartPkgEnable("OSMESA",    "osmesa",    ("OSMesa"), ("GL/osmesa.h"))
         SmartPkgEnable("NVIDIACG",  "",          ("Cg"), "Cg/cg.h", framework = "Cg")
         SmartPkgEnable("ODE",       "",          ("ode"), "ode/ode.h", tool = "ode-config")
         SmartPkgEnable("OPENAL",    "openal",    ("openal"), "AL/al.h", framework = "OpenAL")
@@ -1901,9 +1900,6 @@ DTOOL_CONFIG=[
     ("HAVE_GL",                        '1',                      'UNDEF'),
     ("HAVE_GLES",                      'UNDEF',                  'UNDEF'),
     ("HAVE_GLES2",                     'UNDEF',                  'UNDEF'),
-    ("HAVE_MESA",                      'UNDEF',                  'UNDEF'),
-    ("MESA_MGL",                       'UNDEF',                  'UNDEF'),
-    ("HAVE_SGIGL",                     'UNDEF',                  'UNDEF'),
     ("HAVE_GLX",                       'UNDEF',                  '1'),
     ("HAVE_EGL",                       'UNDEF',                  'UNDEF'),
     ("HAVE_WGL",                       '1',                      'UNDEF'),
@@ -4034,20 +4030,6 @@ if (not RUNTIME):
   TargetAdd('egg.pyd', input='core.pyd')
   TargetAdd('egg.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('egg.pyd', opts=['PYTHON'])
-
-#
-# DIRECTORY: panda/src/mesadisplay/
-#
-
-if (GetTarget() != 'windows' and PkgSkip("GL")==0 and PkgSkip("OSMESA")==0 and not RUNTIME):
-  OPTS=['DIR:panda/src/mesadisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAMESA', 'NVIDIACG', 'GL', 'OSMESA']
-  TargetAdd('p3mesadisplay_composite1.obj', opts=OPTS, input='p3mesadisplay_composite1.cxx')
-  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAMESA', 'NVIDIACG', 'GL']
-  TargetAdd('libpandamesa.dll', input='p3mesadisplay_composite1.obj')
-  if (PkgSkip('PANDAFX')==0):
-    TargetAdd('libpandamesa.dll', input='libpandafx.dll')
-  TargetAdd('libpandamesa.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandamesa.dll', opts=['MODULE', 'GL', 'OSMESA'])
 
 #
 # DIRECTORY: panda/src/x11display/

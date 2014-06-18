@@ -176,11 +176,6 @@
 #else
 #print - Did not find X11
 #endif
-#if $[HAVE_MESA]
-#print + Mesa
-#else
-#print - Did not find Mesa
-#endif
 #if $[HAVE_OPENCV]
 #print + OpenCV
 #else
@@ -436,14 +431,6 @@ $[cdefine HAVE_ODE]
 
 /* Define if we have AWESOMIUM installed and want to build for AWESOMIUM.  */
 $[cdefine HAVE_AWESOMIUM]
-
-/* Define if we have Mesa installed and want to build mesadisplay.  */
-$[cdefine HAVE_MESA]
-$[cdefine MESA_MGL]
-#if HAVE_MESA
-# define MIN_MESA_VERSION_MAJOR $[word 1,$[MIN_MESA_VERSION]]
-# define MIN_MESA_VERSION_MINOR $[word 2,$[MIN_MESA_VERSION]]
-#endif
 
 /* Define if we have GLX installed and want to build for GLX.  */
 $[cdefine HAVE_GLX]

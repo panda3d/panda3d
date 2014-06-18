@@ -793,11 +793,6 @@ reset() {
 
   _supports_multitexture = false;
 
-  _supports_mesa_6 = false;
-  if (_gl_version.find("Mesa 6.",0) != string::npos) {
-    _supports_mesa_6 = true;
-  }
-
 #ifdef OPENGLES
   _supports_tex_non_pow2 =
     has_extension("GL_OES_texture_npot");
@@ -1588,6 +1583,7 @@ reset() {
 
   // Check availability of image read/write functionality in shaders.
   _max_image_units = 0;
+#ifndef OPENGLES
   if (is_at_least_gl_version(4, 2) || has_extension("GL_ARB_shader_image_load_store")) {
     _glBindImageTexture = (PFNGLBINDIMAGETEXTUREPROC)
       get_extension_func(GLPREFIX_QUOTED, "BindImageTexture");
@@ -1600,6 +1596,7 @@ reset() {
 
     GLP(GetIntegerv)(GL_MAX_IMAGE_UNITS_EXT, &_max_image_units);
   }
+#endif
 
   // Check availability of multi-bind functions.
   _supports_multi_bind = false;
@@ -1865,8 +1862,6 @@ reset() {
   vertex_profile = cgGLGetLatestProfile(CG_GL_VERTEX);
   pixel_profile = cgGLGetLatestProfile(CG_GL_FRAGMENT);
   if (GLCAT.is_debug()) {
-    // Temp ifdef: this crashes Mesa.
-#ifndef OSMESA_MAJOR_VERSION
 #if CG_VERSION_NUM >= 2200
     GLCAT.debug() << "Supported Cg profiles:\n";
     int num_profiles = cgGetNumSupportedProfiles();
@@ -1883,7 +1878,6 @@ reset() {
       << "\nCg pixel profile = " << cgGetProfileString(pixel_profile) << "  id = " << pixel_profile
       << "\nshader model = " << _shader_model
       << "\n";
-#endif
   }
 
 #endif
@@ -2588,10 +2582,6 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   // extra vertex arrays used by the previous rendering mode.
 #ifdef SUPPORT_IMMEDIATE_MODE
   _use_sender = !vertex_arrays;
-  // This is a workaround for a bug in Mesa 6 vertex array handling.
-  if ((_supports_mesa_6) && (_current_properties->get_force_software())) {
-    _use_sender = true;
-  }
 #endif
   
 #ifdef OPENGLES_1
@@ -9685,10 +9675,8 @@ get_texture_memory_size(Texture *tex) {
   GLP(GetTexLevelParameteriv)(page_target, 0,
                               GL_TEXTURE_INTENSITY_SIZE, &intensity_size);
   if (_supports_depth_texture) {
-    // Actually, this seems to cause problems on some Mesa versions,
-    // even though they advertise GL_ARB_depth_texture.  Who needs it.
-    //    GLP(GetTexLevelParameteriv)(page_target, 0,
-    //        GL_TEXTURE_DEPTH_SIZE, &depth_size);
+    GLP(GetTexLevelParameteriv)(page_target, 0,
+                                GL_TEXTURE_DEPTH_SIZE, &depth_size);
   }
 
   GLint width = 1, height = 1, depth = 1;
@@ -9794,10 +9782,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
 #endif
   }
   GLP(GetTexParameteriv)(target, GL_TEXTURE_MIN_FILTER, &minfilter);
-
-  // Mesa has a bug querying this property.
-  magfilter = GL_LINEAR;
-  //  GLP(GetTexParameteriv)(target, GL_TEXTURE_MAG_FILTER, &magfilter);
+  GLP(GetTexParameteriv)(target, GL_TEXTURE_MAG_FILTER, &magfilter);
 
 #ifndef OPENGLES
   GLP(GetTexParameterfv)(target, GL_TEXTURE_BORDER_COLOR, border_color);

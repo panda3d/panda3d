@@ -581,8 +581,7 @@ public:
 
   bool _supports_bgr;
   bool _supports_rescale_normal;
-  bool _supports_mesa_6;
-  
+
   bool _supports_multitexture;
   PFNGLACTIVETEXTUREPROC _glActiveTexture;
   PFNGLCLIENTACTIVETEXTUREPROC _glClientActiveTexture;

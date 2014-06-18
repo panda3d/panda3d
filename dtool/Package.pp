@@ -236,12 +236,6 @@
 #set GLES2_LIBS $[GLES2_LIBS]
 #set HAVE_GLES2 $[HAVE_GLES2]
 
-#set MESA_IPATH $[unixfilename $[MESA_IPATH]]
-#set MESA_LPATH $[unixfilename $[MESA_LPATH]]
-#set MESA_LIBS $[MESA_LIBS]
-#set MESA_MGL $[MESA_MGL]
-#set HAVE_MESA $[HAVE_MESA]
-
 #set GLX_IPATH $[unixfilename $[GLX_IPATH]]
 #set GLX_LPATH $[unixfilename $[GLX_LPATH]]
 #set HAVE_GLX $[HAVE_GLX]

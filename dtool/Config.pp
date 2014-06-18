@@ -653,40 +653,6 @@
 // space (instead of a dot).  Thus, "1 1" means OpenGL version 1.1.
 #define MIN_GL_VERSION 1 1
 
-// Is Mesa installed separately from OpenGL?  Mesa is an open-source
-// software-only OpenGL renderer.  Panda can link with it
-// independently from OpenGL (and if Mesa is built statically, and/or
-// with -DUSE_MGL_NAMESPACE declared to rename gl* to mgl*, it can
-// switch between the system OpenGL implementation and the Mesa
-// implementation at runtime).
-
-// Also, Mesa includes some core libraries (in libOSMesa.so) that
-// allow totally headless rendering, handy if you want to run a
-// renderer as a batch service, and you don't want to insist that a
-// user be logged on to the desktop or otherwise deal with X11 or
-// Windows.
-
-// If you define HAVE_MESA here, and the appropriate paths to headers
-// and libraries, then Panda will build libmesadisplay, which can be
-// used in lieu of libpandagl or libpandadx to do rendering.  However,
-// for most applications, you don't need to do this, since (a) if you
-// have hardware rendering capability, you probably don't want to use
-// Mesa, since it's software-only, and (b) if you don't have hardware
-// rendering, you can install Mesa as the system's OpenGL
-// implementation, so you can just use the normal libpandagl.  You
-// only need to define HAVE_MESA if you want to run totally headless,
-// or if you want to be able to easily switch between Mesa and the
-// system OpenGL implementation at runtime.  If you compiled Mesa with
-// USE_MGL_NAMESPACE defined, define MESA_MGL here.
-#define MESA_IPATH
-#define MESA_LPATH
-#define MESA_LIBS
-#define MESA_MGL
-#defer HAVE_MESA $[libtest $[MESA_LPATH],$[MESA_LIBS]]
-
-// Similar to MIN_GL_VERSION, above.
-#define MIN_MESA_VERSION 1 1
-
 // Do you want to build tinydisplay, a light and fast software
 // renderer built into Panda, based on TinyGL?  This isn't as
 // full-featured as Mesa, but it is many times faster, and in fact
