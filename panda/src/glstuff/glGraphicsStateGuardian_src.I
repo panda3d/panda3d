@@ -161,7 +161,7 @@ get_gl_version_minor() const {
 INLINE void CLP(GraphicsStateGuardian)::
 maybe_gl_finish() const {
 #ifdef DO_PSTATS
-  if (CLP(finish)) {
+  if (gl_finish) {
     glFinish();
   }
 #endif

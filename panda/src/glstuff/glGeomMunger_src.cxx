@@ -36,9 +36,9 @@ CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state) :
 
   _flags = 0;
 
-  if (CLP(interleaved_arrays)) {
+  if (gl_interleaved_arrays) {
     _flags |= F_interleaved_arrays;
-  } else if (CLP(parallel_arrays)) {
+  } else if (gl_parallel_arrays) {
     _flags |= F_parallel_arrays;
   }
 }

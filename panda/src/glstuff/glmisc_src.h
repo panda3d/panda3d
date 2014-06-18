@@ -40,28 +40,28 @@
 
 //#define GSG_VERBOSE 1
 
-extern ConfigVariableBool CLP(cheap_textures);
-extern ConfigVariableBool CLP(ignore_clamp);
-extern ConfigVariableBool CLP(support_clamp_to_border);
-extern ConfigVariableBool CLP(ignore_filters);
-extern ConfigVariableBool CLP(ignore_mipmaps);
-extern ConfigVariableBool CLP(force_mipmaps);
-extern ConfigVariableBool CLP(show_texture_usage);
-extern ConfigVariableInt CLP(show_texture_usage_max_size);
-extern ConfigVariableBool CLP(color_mask);
-extern ConfigVariableBool CLP(support_occlusion_query);
-extern ConfigVariableBool CLP(compile_and_execute);
-extern ConfigVariableBool CLP(interleaved_arrays);
-extern ConfigVariableBool CLP(parallel_arrays);
-extern ConfigVariableInt CLP(max_errors);
-extern ConfigVariableEnum<GeomEnums::UsageHint> CLP(min_buffer_usage_hint);
-extern ConfigVariableBool CLP(debug_buffers);
-extern ConfigVariableBool CLP(finish);
-extern ConfigVariableBool CLP(force_depth_stencil);
-extern ConfigVariableBool CLP(matrix_palette);
-extern ConfigVariableBool CLP(force_no_error);
-extern ConfigVariableBool CLP(force_no_flush);
-extern ConfigVariableBool CLP(separate_specular_color);
+extern ConfigVariableBool gl_cheap_textures;
+extern ConfigVariableBool gl_ignore_clamp;
+extern ConfigVariableBool gl_support_clamp_to_border;
+extern ConfigVariableBool gl_ignore_filters;
+extern ConfigVariableBool gl_ignore_mipmaps;
+extern ConfigVariableBool gl_force_mipmaps;
+extern ConfigVariableBool gl_show_texture_usage;
+extern ConfigVariableInt gl_show_texture_usage_max_size;
+extern ConfigVariableBool gl_color_mask;
+extern ConfigVariableBool gl_support_occlusion_query;
+extern ConfigVariableBool gl_compile_and_execute;
+extern ConfigVariableBool gl_interleaved_arrays;
+extern ConfigVariableBool gl_parallel_arrays;
+extern ConfigVariableInt gl_max_errors;
+extern ConfigVariableEnum<GeomEnums::UsageHint> gl_min_buffer_usage_hint;
+extern ConfigVariableBool gl_debug_buffers;
+extern ConfigVariableBool gl_finish;
+extern ConfigVariableBool gl_force_depth_stencil;
+extern ConfigVariableBool gl_matrix_palette;
+extern ConfigVariableBool gl_force_no_error;
+extern ConfigVariableBool gl_force_no_flush;
+extern ConfigVariableBool gl_separate_specular_color;
 
 extern EXPCL_GL void CLP(init_classes)();
 

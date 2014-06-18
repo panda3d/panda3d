@@ -306,11 +306,11 @@ CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe) :
   _is_hardware = true;
 
   // calling glGetError() forces a sync, this turns it off if you want to.
-  _track_errors = !CLP(force_no_error);
-  _allow_flush = !CLP(force_no_flush);
+  _track_errors = !gl_force_no_error;
+  _allow_flush = !gl_force_no_flush;
 
 #ifdef DO_PSTATS
-  if (CLP(finish)) {
+  if (gl_finish) {
     GLCAT.warning()
       << "The config variable gl-finish is set True.  This may have a substantial negative impact your render performance.\n";
   }
@@ -510,7 +510,7 @@ reset() {
     In the meantime, you must put both "matrix-palette 1" and
     "gl-matrix-palette 1" in your Config.prc to exercise the new
     code. */
-  if (!CLP(matrix_palette)) {
+  if (!gl_matrix_palette) {
     if (_supports_matrix_palette) {
       if (GLCAT.is_debug()) {
         GLCAT.debug() << "Forcing off matrix palette support.\n";
@@ -777,7 +777,7 @@ reset() {
   _supports_rescale_normal = true;
 #else
   _supports_rescale_normal =
-    CLP(support_rescale_normal) &&
+    gl_support_rescale_normal &&
     (has_extension("GL_EXT_rescale_normal") || is_at_least_gl_version(1, 2));
 #endif
 
@@ -1269,7 +1269,7 @@ reset() {
 #endif
 
   _supports_occlusion_query = false;
-  if (CLP(support_occlusion_query)) {
+  if (gl_support_occlusion_query) {
     if (is_at_least_gl_version(1, 5)) {
       _supports_occlusion_query = true;
 
@@ -1389,7 +1389,7 @@ reset() {
 
   _border_clamp = _edge_clamp;
 #ifndef OPENGLES
-  if (CLP(support_clamp_to_border) &&
+  if (gl_support_clamp_to_border &&
       (has_extension("GL_ARB_texture_border_clamp") ||
        is_at_least_gl_version(1, 3))) {
     _border_clamp = GL_CLAMP_TO_BORDER;
@@ -1756,7 +1756,7 @@ reset() {
   report_my_gl_errors();
 
 #ifndef OPENGLES_2
-  if (CLP(cheap_textures)) {
+  if (gl_cheap_textures) {
     GLCAT.info()
       << "Setting glHint() for fastest textures.\n";
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
@@ -1981,7 +1981,7 @@ clear(DrawableRegion *clearable) {
     if (clearable->get_clear_color_active()) {
       LColor v = clearable->get_clear_color();
       glClearColor(v[0],v[1],v[2],v[3]);
-      if (CLP(color_mask)) {
+      if (gl_color_mask) {
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
       }
       _state_mask.clear_bit(ColorWriteAttrib::get_class_slot());
@@ -2187,7 +2187,7 @@ begin_frame(Thread *current_thread) {
 
 #ifndef NDEBUG
   _show_texture_usage = false;
-  if (CLP(show_texture_usage)) {
+  if (gl_show_texture_usage) {
     // When this is true, then every other second, we show the usage
     // textures instead of the real textures.
     double now = ClockObject::get_global_clock()->get_frame_time();
@@ -2196,7 +2196,7 @@ begin_frame(Thread *current_thread) {
       _show_texture_usage = true;
       _show_texture_usage_index = this_second >> 1;
 
-      int max_size = CLP(show_texture_usage_max_size);
+      int max_size = gl_show_texture_usage_max_size;
       if (max_size != _show_texture_usage_max_size) {
         // Remove the cache of usage textures; we've changed the max
         // size.
@@ -2561,7 +2561,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
     // If it has been modified, or this is the first time, then we
     // need to build the display list up.
-    if (CLP(compile_and_execute)) {
+    if (gl_compile_and_execute) {
       glNewList(_geom_display_list, GL_COMPILE_AND_EXECUTE);
     } else {
       glNewList(_geom_display_list, GL_COMPILE);
@@ -2884,7 +2884,7 @@ update_standard_vertex_arrays(bool force) {
 void CLP(GraphicsStateGuardian)::
 unbind_buffers() {
   if (_current_vbuffer_index != 0) {
-    if (GLCAT.is_spam() && CLP(debug_buffers)) {
+    if (GLCAT.is_spam() && gl_debug_buffers) {
       GLCAT.spam()
         << "unbinding vertex buffer\n";
     }
@@ -2892,7 +2892,7 @@ unbind_buffers() {
     _current_vbuffer_index = 0;
   }
   if (_current_ibuffer_index != 0) {
-    if (GLCAT.is_spam() && CLP(debug_buffers)) {
+    if (GLCAT.is_spam() && gl_debug_buffers) {
       GLCAT.spam()
         << "unbinding index buffer\n";
     }
@@ -3450,7 +3450,7 @@ end_draw_primitives() {
     glEndList();
     _load_display_list_pcollector.stop();
 
-    if (!CLP(compile_and_execute)) {
+    if (!gl_compile_and_execute) {
       glCallList(_geom_display_list);
     }
     _primitive_batches_display_list_pcollector.add_level(1);
@@ -3747,7 +3747,7 @@ prepare_vertex_buffer(GeomVertexArrayData *data) {
     CLP(VertexBufferContext) *gvbc = new CLP(VertexBufferContext)(this, _prepared_objects, data);
     _glGenBuffers(1, &gvbc->_index);
 
-    if (GLCAT.is_debug() && CLP(debug_buffers)) {
+    if (GLCAT.is_debug() && gl_debug_buffers) {
       GLCAT.debug()
         << "creating vertex buffer " << (int)gvbc->_index << ": "
         << data->get_num_rows() << " vertices "
@@ -3780,7 +3780,7 @@ apply_vertex_buffer(VertexBufferContext *vbc,
   CLP(VertexBufferContext) *gvbc = DCAST(CLP(VertexBufferContext), vbc);
 
   if (_current_vbuffer_index != gvbc->_index) {
-    if (GLCAT.is_spam() && CLP(debug_buffers)) {
+    if (GLCAT.is_spam() && gl_debug_buffers) {
       GLCAT.spam()
         << "binding vertex buffer " << (int)gvbc->_index << "\n";
     }
@@ -3791,7 +3791,7 @@ apply_vertex_buffer(VertexBufferContext *vbc,
 
   if (gvbc->was_modified(reader)) {
     int num_bytes = reader->get_data_size_bytes();
-    if (GLCAT.is_debug() && CLP(debug_buffers)) {
+    if (GLCAT.is_debug() && gl_debug_buffers) {
       GLCAT.debug()
         << "copying " << num_bytes
         << " bytes into vertex buffer " << (int)gvbc->_index << "\n";
@@ -3836,7 +3836,7 @@ release_vertex_buffer(VertexBufferContext *vbc) {
 
   CLP(VertexBufferContext) *gvbc = DCAST(CLP(VertexBufferContext), vbc);
 
-  if (GLCAT.is_debug() && CLP(debug_buffers)) {
+  if (GLCAT.is_debug() && gl_debug_buffers) {
     GLCAT.debug()
       << "deleting vertex buffer " << (int)gvbc->_index << "\n";
   }
@@ -3846,7 +3846,7 @@ release_vertex_buffer(VertexBufferContext *vbc) {
   // help out a flaky driver, and we need to keep our internal state
   // consistent anyway.
   if (_current_vbuffer_index == gvbc->_index) {
-    if (GLCAT.is_spam() && CLP(debug_buffers)) {
+    if (GLCAT.is_spam() && gl_debug_buffers) {
       GLCAT.spam()
         << "unbinding vertex buffer\n";
     }
@@ -3890,11 +3890,11 @@ setup_array_data(const unsigned char *&client_pointer,
     return (client_pointer != NULL);
   }
   if (!vertex_buffers || _geom_display_list != 0 ||
-      array_reader->get_usage_hint() < CLP(min_buffer_usage_hint)) {
+      array_reader->get_usage_hint() < gl_min_buffer_usage_hint) {
     // The array specifies client rendering only, or buffer objects
     // are configured off.
     if (_current_vbuffer_index != 0) {
-      if (GLCAT.is_spam() && CLP(debug_buffers)) {
+      if (GLCAT.is_spam() && gl_debug_buffers) {
         GLCAT.spam()
           << "unbinding vertex buffer\n";
       }
@@ -3936,7 +3936,7 @@ prepare_index_buffer(GeomPrimitive *data) {
     CLP(IndexBufferContext) *gibc = new CLP(IndexBufferContext)(this, _prepared_objects, data);
     _glGenBuffers(1, &gibc->_index);
 
-    if (GLCAT.is_debug() && CLP(debug_buffers)) {
+    if (GLCAT.is_debug() && gl_debug_buffers) {
       GLCAT.debug()
         << "creating index buffer " << (int)gibc->_index << ": "
         << data->get_num_vertices() << " indices ("
@@ -3972,7 +3972,7 @@ apply_index_buffer(IndexBufferContext *ibc,
   CLP(IndexBufferContext) *gibc = DCAST(CLP(IndexBufferContext), ibc);
 
   if (_current_ibuffer_index != gibc->_index) {
-    if (GLCAT.is_spam() && CLP(debug_buffers)) {
+    if (GLCAT.is_spam() && gl_debug_buffers) {
       GLCAT.spam()
         << "binding index buffer " << (int)gibc->_index << "\n";
     }
@@ -3983,7 +3983,7 @@ apply_index_buffer(IndexBufferContext *ibc,
 
   if (gibc->was_modified(reader)) {
     int num_bytes = reader->get_data_size_bytes();
-    if (GLCAT.is_debug() && CLP(debug_buffers)) {
+    if (GLCAT.is_debug() && gl_debug_buffers) {
       GLCAT.debug()
         << "copying " << num_bytes
         << " bytes into index buffer " << (int)gibc->_index << "\n";
@@ -4028,7 +4028,7 @@ release_index_buffer(IndexBufferContext *ibc) {
 
   CLP(IndexBufferContext) *gibc = DCAST(CLP(IndexBufferContext), ibc);
 
-  if (GLCAT.is_debug() && CLP(debug_buffers)) {
+  if (GLCAT.is_debug() && gl_debug_buffers) {
     GLCAT.debug()
       << "deleting index buffer " << (int)gibc->_index << "\n";
   }
@@ -4038,7 +4038,7 @@ release_index_buffer(IndexBufferContext *ibc) {
   // help out a flaky driver, and we need to keep our internal state
   // consistent anyway.
   if (_current_ibuffer_index == gibc->_index) {
-    if (GLCAT.is_spam() && CLP(debug_buffers)) {
+    if (GLCAT.is_spam() && gl_debug_buffers) {
       GLCAT.spam()
         << "unbinding index buffer\n";
     }
@@ -4086,7 +4086,7 @@ setup_primitive(const unsigned char *&client_pointer,
     // The array specifies client rendering only, or buffer objects
     // are configured off.
     if (_current_ibuffer_index != 0) {
-      if (GLCAT.is_spam() && CLP(debug_buffers)) {
+      if (GLCAT.is_spam() && gl_debug_buffers) {
         GLCAT.spam()
           << "unbinding index buffer\n";
       }
@@ -4224,7 +4224,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
                             const DisplayRegion *dr, const RenderBuffer &rb) {
   nassertr(tex != NULL && dr != NULL, false);
   set_read_buffer(rb._buffer_type);
-  if (CLP(color_mask)) {
+  if (gl_color_mask) {
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
   }
   
@@ -4315,7 +4315,7 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
   int height = tex->get_y_size();
   int depth = tex->get_z_size();
 
-  bool uses_mipmaps = tex->uses_mipmaps() && !CLP(ignore_mipmaps);
+  bool uses_mipmaps = tex->uses_mipmaps() && !gl_ignore_mipmaps;
   if (uses_mipmaps) {
 #ifndef OPENGLES_2
     if (_supports_generate_mipmap) {
@@ -4414,7 +4414,7 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
   nassertr(tex != NULL && dr != NULL, false);
   set_read_buffer(rb._buffer_type);
   glPixelStorei(GL_PACK_ALIGNMENT, 1);
-  if (CLP(color_mask)) {
+  if (gl_color_mask) {
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
   }
 
@@ -5121,7 +5121,7 @@ do_issue_material() {
   glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, material->get_local());
   glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, material->get_twoside());
 
-  if (CLP(separate_specular_color)) {
+  if (gl_separate_specular_color) {
     glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
   } else {
     glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SINGLE_COLOR);
@@ -5154,7 +5154,7 @@ do_issue_blending() {
     int color_write_slot = ColorWriteAttrib::get_class_slot();
     enable_multisample_alpha_one(false);
     enable_multisample_alpha_mask(false);
-    if (CLP(color_mask)) {
+    if (gl_color_mask) {
       enable_blend(false);
       glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
     } else {
@@ -5164,7 +5164,7 @@ do_issue_blending() {
     }
     return;
   } else {
-    if (CLP(color_mask)) {
+    if (gl_color_mask) {
       glColorMask((color_channels & ColorWriteAttrib::C_red) != 0,
                      (color_channels & ColorWriteAttrib::C_green) != 0,
                      (color_channels & ColorWriteAttrib::C_blue) != 0,
@@ -5526,7 +5526,7 @@ gl_get_error() const {
 bool CLP(GraphicsStateGuardian)::
 report_errors_loop(int line, const char *source_file, GLenum error_code,
                    int &error_count) {
-  while ((CLP(max_errors) < 0 || error_count < CLP(max_errors)) &&
+  while ((gl_max_errors < 0 || error_count < gl_max_errors) &&
          (error_code != GL_NO_ERROR)) {
     GLCAT.error()
       << "at " << line << " of " << source_file << " : "
@@ -5946,7 +5946,7 @@ set_draw_buffer(int rbtype) {
 #endif  // OPENGLES
   
   // Also ensure that any global color channels are masked out.
-  if (CLP(color_mask)) {
+  if (gl_color_mask) {
     glColorMask((_color_write_mask & ColorWriteAttrib::C_red) != 0,
                 (_color_write_mask & ColorWriteAttrib::C_green) != 0,
                 (_color_write_mask & ColorWriteAttrib::C_blue) != 0,
@@ -6136,7 +6136,7 @@ get_texture_target(Texture::TextureType texture_type) const {
 ////////////////////////////////////////////////////////////////////
 GLenum CLP(GraphicsStateGuardian)::
 get_texture_wrap_mode(Texture::WrapMode wm) const {
-  if (CLP(ignore_clamp)) {
+  if (gl_ignore_clamp) {
     return GL_REPEAT;
   }
   switch (wm) {
@@ -6206,7 +6206,7 @@ get_panda_wrap_mode(GLenum wm) {
 ////////////////////////////////////////////////////////////////////
 GLenum CLP(GraphicsStateGuardian)::
 get_texture_filter_type(Texture::FilterType ft, bool ignore_mipmaps) {
-  if (CLP(ignore_filters)) {
+  if (gl_ignore_filters) {
     return GL_NEAREST;
 
   } else if (ignore_mipmaps) {
@@ -8696,10 +8696,10 @@ specify_texture(CLP(TextureContext) *gtc) {
 
   Texture::FilterType minfilter = tex->get_effective_minfilter();
   Texture::FilterType magfilter = tex->get_effective_magfilter();
-  bool uses_mipmaps = Texture::is_mipmap(minfilter) && !CLP(ignore_mipmaps);
+  bool uses_mipmaps = Texture::is_mipmap(minfilter) && !gl_ignore_mipmaps;
 
 #ifndef NDEBUG
-  if (CLP(force_mipmaps)) {
+  if (gl_force_mipmaps) {
     minfilter = Texture::FT_linear_mipmap_linear;
     magfilter = Texture::FT_linear;
     uses_mipmaps = true;
@@ -8965,10 +8965,10 @@ upload_texture(CLP(TextureContext) *gtc, bool force) {
 
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-  bool uses_mipmaps = (tex->uses_mipmaps() && !CLP(ignore_mipmaps)) || CLP(force_mipmaps);
+  bool uses_mipmaps = (tex->uses_mipmaps() && !gl_ignore_mipmaps) || gl_force_mipmaps;
 
 #ifndef NDEBUG
-  if (CLP(force_mipmaps)) {
+  if (gl_force_mipmaps) {
     uses_mipmaps = true;
   }
 #endif
