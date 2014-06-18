@@ -571,7 +571,7 @@ reset() {
     _supports_depth_stencil =
       has_extension("GL_EXT_packed_depth_stencil") || has_extension("GL_OES_packed_depth_stencil");
   }
-  
+ 
   _supports_3d_texture = false;
 
   if (is_at_least_gl_version(1, 2)) {
@@ -634,12 +634,19 @@ reset() {
   }
 #endif
 
+  _cube_map_seamless = false;
 #ifdef OPENGLES_2
   _supports_cube_map = true;
 #else
   _supports_cube_map =
     has_extension("GL_ARB_texture_cube_map") || is_at_least_gl_version(1, 3) ||
     has_extension("GL_OES_texture_cube_map");
+
+  if (_supports_cube_map && gl_cube_map_seamless) {
+    if (is_at_least_gl_version(3, 2) || has_extension("GL_ARB_seamless_cube_map")) {
+      _cube_map_seamless = true;
+    }
+  }
 #endif
 
   _supports_compressed_texture = false;
@@ -2213,6 +2220,10 @@ begin_frame(Thread *current_thread) {
     }
   }
 #endif  // NDEBUG
+
+  if (_cube_map_seamless) {
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+  }
 
   report_my_gl_errors();
   return true;

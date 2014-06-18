@@ -141,11 +141,11 @@ ConfigVariableBool gl_finish
             "This variable is enabled only if PStats is compiled in."));
 
 ConfigVariableBool gl_force_depth_stencil
-  ("gl-force-depth-stencil", false, 
+  ("gl-force-depth-stencil", false,
    PRC_DESC("Temporary hack variable 7x00 vs 8x00 nVidia bug.  See glGraphicsStateGuardian_src.cxx."));
 
 ConfigVariableBool gl_matrix_palette
-  ("gl-matrix-palette", false, 
+  ("gl-matrix-palette", false,
    PRC_DESC("Temporary hack variable protecting untested code.  See glGraphicsStateGuardian_src.cxx."));
 
 ConfigVariableBool gl_force_no_error
@@ -153,16 +153,25 @@ ConfigVariableBool gl_force_no_error
    PRC_DESC("Avoid reporting OpenGL errors, for a small performance benefit."));
 
 ConfigVariableBool gl_force_no_flush
-  ("gl-force-no-flush", false, 
+  ("gl-force-no-flush", false,
    PRC_DESC("Avoid calling glFlush(), for a potential performance benefit.  This may be a little dangerous."));
 
 ConfigVariableBool gl_separate_specular_color
-  ("gl-separate-specular-color", true, 
+  ("gl-separate-specular-color", true,
    PRC_DESC("When separate specular mode is on, the specular component "
             "will be written to the secondary instead of the primary "
             "color, which is added after the texturing stage.  In other "
             "words, the specular highlight will be unmodulated by the "
             "color of the texture."));
+
+ConfigVariableBool gl_cube_map_seamless
+  ("gl-cube-map-seamless", true,
+   PRC_DESC("This configures Panda to try and enable seamless cube map "
+            "sampling when supported.  This will help to remove seams "
+            "that show up at cube map edges, especially at lower "
+            "resolutions.  On by default; disable if you suspect that "
+            "this is causing problems or if you simply don't need the "
+            "functionality."));
 
 extern ConfigVariableBool gl_parallel_arrays;
 
@@ -189,4 +198,3 @@ void CLP(init_classes)() {
   // since we won't know those until we create a graphics context (and
   // the answer may be different for different contexts).
 }
-

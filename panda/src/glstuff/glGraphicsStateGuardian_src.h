@@ -579,6 +579,7 @@ public:
   PFNGLCOMPRESSEDTEXSUBIMAGE3DPROC _glCompressedTexSubImage3D;
   PFNGLGETCOMPRESSEDTEXIMAGEPROC _glGetCompressedTexImage;
 
+  bool _cube_map_seamless;
   bool _supports_bgr;
   bool _supports_rescale_normal;
 
