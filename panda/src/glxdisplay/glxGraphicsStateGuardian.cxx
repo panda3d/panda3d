@@ -90,7 +90,7 @@ get_properties(FrameBufferProperties &properties, XVisualInfo *visual) {
     red_size, green_size, blue_size,
     alpha_size, ared_size, agreen_size, ablue_size, aalpha_size,
     depth_size, stencil_size;
-  
+
   glXGetConfig(_display, visual, GLX_USE_GL, &use_gl);
   glXGetConfig(_display, visual, GLX_RGBA, &render_mode);
   glXGetConfig(_display, visual, GLX_DOUBLEBUFFER, &double_buffer);
@@ -131,7 +131,7 @@ get_properties(FrameBufferProperties &properties, XVisualInfo *visual) {
   properties.set_depth_bits(depth_size);
   properties.set_alpha_bits(alpha_size);
   properties.set_accum_bits(ared_size+agreen_size+ablue_size+aalpha_size);
-  
+
   // Set both hardware and software bits, indicating not-yet-known.
   properties.set_force_software(1);
   properties.set_force_hardware(1);
@@ -154,7 +154,7 @@ get_properties_advanced(FrameBufferProperties &properties,
     int render_type, double_buffer, stereo, red_size, green_size, blue_size,
       alpha_size, ared_size, agreen_size, ablue_size, aalpha_size,
       depth_size, stencil_size, samples, drawable_type, caveat;
-    
+
     _glXGetFBConfigAttrib(_display, config, GLX_RENDER_TYPE, &render_type);
     _glXGetFBConfigAttrib(_display, config, GLX_DOUBLEBUFFER, &double_buffer);
     _glXGetFBConfigAttrib(_display, config, GLX_STEREO, &stereo);
@@ -171,47 +171,49 @@ get_properties_advanced(FrameBufferProperties &properties,
     _glXGetFBConfigAttrib(_display, config, GLX_SAMPLES, &samples);
     _glXGetFBConfigAttrib(_display, config, GLX_DRAWABLE_TYPE, &drawable_type);
     _glXGetFBConfigAttrib(_display, config, GLX_CONFIG_CAVEAT, &caveat);
-    
+
     context_has_pbuffer = false;
     if ((drawable_type & GLX_PBUFFER_BIT)!=0) {
       context_has_pbuffer = true;
     }
-    
+
     context_has_pixmap = false;
     if ((drawable_type & GLX_PIXMAP_BIT)!=0) {
       context_has_pixmap = true;
     }
-    
+
     slow = false;
     if (caveat == GLX_SLOW_CONFIG) {
       slow = true;
     }
-    
+
     if ((drawable_type & GLX_WINDOW_BIT)==0) {
       // We insist on having a context that will support an onscreen window.
       return;
     }
-    
+
     if (double_buffer) {
       properties.set_back_buffers(1);
     }
+
     if (stereo) {
-      properties.set_stereo(1);
+      properties.set_stereo(true);
     }
-    
+
     if ((render_type & GLX_RGBA_BIT)!=0) {
-      properties.set_rgb_color(1);
+      properties.set_rgb_color(true);
     }
     if ((render_type & GLX_COLOR_INDEX_BIT)!=0) {
-      properties.set_indexed_color(1);
+      properties.set_indexed_color(true);
     }
+
     properties.set_color_bits(red_size+green_size+blue_size);
     properties.set_stencil_bits(stencil_size);
     properties.set_depth_bits(depth_size);
     properties.set_alpha_bits(alpha_size);
     properties.set_accum_bits(ared_size+agreen_size+ablue_size+aalpha_size);
     properties.set_multisamples(samples);
-    
+
     // Set both hardware and software bits, indicating not-yet-known.
     properties.set_force_software(1);
     properties.set_force_hardware(1);
@@ -298,11 +300,11 @@ choose_pixel_format(const FrameBufferProperties &properties,
   attrib_list[n++] = GLX_DRAWABLE_TYPE;
   attrib_list[n++] = GLX_DONT_CARE;
   attrib_list[n] = (int)None;
-  
+
   int num_configs = 0;
   GLXFBConfig *configs =
     _glXChooseFBConfig(_display, _screen, attrib_list, &num_configs);
-  
+
   if (configs != 0) {
     bool context_has_pbuffer, context_has_pixmap, slow;
     int quality, i;
@@ -325,7 +327,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
       if (need_pixmap && !context_has_pixmap) {
         continue;
       }
-      
+
       if (quality > best_quality) {
         best_quality = quality;
         best_result = i;
@@ -336,7 +338,7 @@ choose_pixel_format(const FrameBufferProperties &properties,
 
   if (best_quality > 0) {
     _fbconfig = configs[best_result];
-    _context = 
+    _context =
       _glXCreateNewContext(_display, _fbconfig, GLX_RGBA_TYPE, _share_context,
                            GL_TRUE);
     if (_context) {
@@ -401,7 +403,7 @@ reset() {
 
   if (_supports_swap_control) {
     _glXSwapIntervalSGI = 
-      (PFNGLXSWAPINTERVALSGIPROC)get_extension_func("glX", "SwapIntervalSGI");
+      (PFNGLXSWAPINTERVALSGIPROC)get_extension_func("glXSwapIntervalSGI");
     if (_glXSwapIntervalSGI == NULL) {
       glxdisplay_cat.error()
         << "Driver claims to support GLX_SGI_swap_control extension, but does not define all functions.\n";
@@ -419,18 +421,18 @@ reset() {
     if (glx_is_at_least_version(1, 3)) {
       // If we have glx 1.3 or better, we have the FBConfig interface.
       _supports_fbconfig = true;
-      
-      _glXChooseFBConfig = 
-        (PFNGLXCHOOSEFBCONFIGPROC)get_extension_func("glX", "ChooseFBConfig");
-      _glXCreateNewContext = 
-        (PFNGLXCREATENEWCONTEXTPROC)get_extension_func("glX", "CreateNewContext");
-      _glXGetVisualFromFBConfig = 
-        (PFNGLXGETVISUALFROMFBCONFIGPROC)get_extension_func("glX", "GetVisualFromFBConfig");
-      _glXGetFBConfigAttrib = 
-        (PFNGLXGETFBCONFIGATTRIBPROC)get_extension_func("glX", "GetFBConfigAttrib");
-      _glXCreatePixmap = 
-        (PFNGLXCREATEPIXMAPPROC)get_extension_func("glX", "CreatePixmap");
-      
+
+      _glXChooseFBConfig =
+        (PFNGLXCHOOSEFBCONFIGPROC)get_extension_func("glXChooseFBConfig");
+      _glXCreateNewContext =
+        (PFNGLXCREATENEWCONTEXTPROC)get_extension_func("glXCreateNewContext");
+      _glXGetVisualFromFBConfig =
+        (PFNGLXGETVISUALFROMFBCONFIGPROC)get_extension_func("glXGetVisualFromFBConfig");
+      _glXGetFBConfigAttrib =
+        (PFNGLXGETFBCONFIGATTRIBPROC)get_extension_func("glXGetFBConfigAttrib");
+      _glXCreatePixmap =
+        (PFNGLXCREATEPIXMAPPROC)get_extension_func("glXCreatePixmap");
+
       if (_glXChooseFBConfig == NULL ||
           _glXCreateNewContext == NULL ||
           _glXGetVisualFromFBConfig == NULL ||
@@ -445,18 +447,18 @@ reset() {
       // the same, but the function names are different--we just remap
       // them to the same function pointers.
       _supports_fbconfig = true;
-      
-      _glXChooseFBConfig = 
-        (PFNGLXCHOOSEFBCONFIGPROC)get_extension_func("glX", "ChooseFBConfigSGIX");
-      _glXCreateNewContext = 
-        (PFNGLXCREATENEWCONTEXTPROC)get_extension_func("glX", "CreateContextWithConfigSGIX");
-      _glXGetVisualFromFBConfig = 
-        (PFNGLXGETVISUALFROMFBCONFIGPROC)get_extension_func("glX", "GetVisualFromFBConfigSGIX");
-      _glXGetFBConfigAttrib = 
-        (PFNGLXGETFBCONFIGATTRIBPROC)get_extension_func("glX", "GetFBConfigAttribSGIX");
-      _glXCreatePixmap = 
-        (PFNGLXCREATEPIXMAPPROC)get_extension_func("glX", "CreateGLXPixmapWithConfigSGIX");
-      
+
+      _glXChooseFBConfig =
+        (PFNGLXCHOOSEFBCONFIGPROC)get_extension_func("glXChooseFBConfigSGIX");
+      _glXCreateNewContext =
+        (PFNGLXCREATENEWCONTEXTPROC)get_extension_func("glXCreateContextWithConfigSGIX");
+      _glXGetVisualFromFBConfig =
+        (PFNGLXGETVISUALFROMFBCONFIGPROC)get_extension_func("glXGetVisualFromFBConfigSGIX");
+      _glXGetFBConfigAttrib =
+        (PFNGLXGETFBCONFIGATTRIBPROC)get_extension_func("glXGetFBConfigAttribSGIX");
+      _glXCreatePixmap =
+        (PFNGLXCREATEPIXMAPPROC)get_extension_func("glXCreateGLXPixmapWithConfigSGIX");
+
       if (_glXChooseFBConfig == NULL ||
           _glXCreateNewContext == NULL ||
           _glXGetVisualFromFBConfig == NULL ||
@@ -467,36 +469,36 @@ reset() {
         _supports_fbconfig = false;
       }
     }
-    
+
     if (glx_is_at_least_version(1, 3)) {
       // If we have glx 1.3 or better, we have the PBuffer interface.
       _supports_pbuffer = true;
       _uses_sgix_pbuffer = false;
-      
-      _glXCreatePbuffer = 
-        (PFNGLXCREATEPBUFFERPROC)get_extension_func("glX", "CreatePbuffer");
+
+      _glXCreatePbuffer =
+        (PFNGLXCREATEPBUFFERPROC)get_extension_func("glXCreatePbuffer");
       _glXCreateGLXPbufferSGIX = NULL;
-      _glXDestroyPbuffer = 
-        (PFNGLXDESTROYPBUFFERPROC)get_extension_func("glX", "DestroyPbuffer");
+      _glXDestroyPbuffer =
+        (PFNGLXDESTROYPBUFFERPROC)get_extension_func("glXDestroyPbuffer");
       if (_glXCreatePbuffer == NULL ||
           _glXDestroyPbuffer == NULL) {
         glxdisplay_cat.error()
           << "Driver claims to support GLX_pbuffer extension, but does not define all functions.\n";
         _supports_pbuffer = false;
       }
-      
+
     } else if (has_extension("GLX_SGIX_pbuffer")) {
       // Or maybe we have the old SGIX extension for PBuffers.
       _uses_sgix_pbuffer = true;
-      
+
       // CreatePbuffer has a different form between SGIX and 1.3,
       // however, so we must treat it specially.  But we can use the
       // same function pointer for DestroyPbuffer.
       _glXCreatePbuffer = NULL;
-      _glXCreateGLXPbufferSGIX = 
-        (PFNGLXCREATEGLXPBUFFERSGIXPROC)get_extension_func("glX", "CreateGLXPbufferSGIX");
-      _glXDestroyPbuffer = 
-        (PFNGLXDESTROYPBUFFERPROC)get_extension_func("glX", "DestroyGLXPbufferSGIX");
+      _glXCreateGLXPbufferSGIX =
+        (PFNGLXCREATEGLXPBUFFERSGIXPROC)get_extension_func("glXCreateGLXPbufferSGIX");
+      _glXDestroyPbuffer =
+        (PFNGLXDESTROYPBUFFERPROC)get_extension_func("glXDestroyGLXPbufferSGIX");
       if (_glXCreateGLXPbufferSGIX == NULL ||
           _glXDestroyPbuffer == NULL) {
         glxdisplay_cat.error()
@@ -625,41 +627,39 @@ get_extra_extensions() {
 //               not defined.
 ////////////////////////////////////////////////////////////////////
 void *glxGraphicsStateGuardian::
-do_get_extension_func(const char *prefix, const char *name) {
-  nassertr(prefix != NULL, NULL);
+do_get_extension_func(const char *name) {
   nassertr(name != NULL, NULL);
-  string fullname = string(prefix) + string(name);
 
   if (glx_get_proc_address) {
     // First, check if we have glXGetProcAddress available.  This will
     // be superior if we can get it.
-    
+
 #if defined(LINK_IN_GLXGETPROCADDRESS) && defined(HAVE_GLXGETPROCADDRESS)
       // If we are confident the system headers defined it, we can
       // call it directly.  This is more reliable than trying to
       // determine its address dynamically, but it may make
       // libpandagl.so fail to load if the symbol isn't in the runtime
       // library.
-    return (void *)glXGetProcAddress((const GLubyte *)fullname.c_str());
-      
+    return (void *)glXGetProcAddress((const GLubyte *)name);
+
 #elif defined(LINK_IN_GLXGETPROCADDRESS) && defined(HAVE_GLXGETPROCADDRESSARB)
     // The ARB extension version is OK too.  Sometimes the prototype
     // isn't supplied for some reason.
-    return (void *)glXGetProcAddressARB((const GLubyte *)fullname.c_str());
-    
+    return (void *)glXGetProcAddressARB((const GLubyte *)name);
+
 #else
     // Otherwise, we have to fiddle around with the dynamic runtime.
-    
+
     if (!_checked_get_proc_address) {
       const char *funcName = NULL;
-      
+
       if (glx_is_at_least_version(1, 4)) {
         funcName = "glXGetProcAddress";
 
       } else if (has_extension("GLX_ARB_get_proc_address")) {
         funcName = "glXGetProcAddressARB";
       }
-      
+
       if (funcName != NULL) {
         _glXGetProcAddress = (PFNGLXGETPROCADDRESSPROC)get_system_func(funcName);
         if (_glXGetProcAddress == NULL) {
@@ -671,16 +671,16 @@ do_get_extension_func(const char *prefix, const char *name) {
 
       _checked_get_proc_address = true;
     }
-    
+
     // Use glxGetProcAddress() if we've got it; it should be more robust.
     if (_glXGetProcAddress != NULL) {
-      return (void *)_glXGetProcAddress((const GLubyte *)fullname.c_str());
+      return (void *)_glXGetProcAddress((const GLubyte *)name);
     }
 #endif // HAVE_GLXGETPROCADDRESS
   }
 
   // Otherwise, fall back to the OS-provided calls.
-  return PosixGraphicsStateGuardian::do_get_extension_func(prefix, name);
+  return PosixGraphicsStateGuardian::do_get_extension_func(name);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -759,17 +759,17 @@ choose_temp_visual(const FrameBufferProperties &properties) {
       }
     }
   }
-  
+
   if (best_quality > 0) {
     _visual = _visuals + best_result;
-    _temp_context = glXCreateContext(_display, _visual, None, GL_TRUE);    
+    _temp_context = glXCreateContext(_display, _visual, None, GL_TRUE);
     if (_temp_context) {
       _fbprops = best_props;
       return;
     }
   }
 
-  glxdisplay_cat.error() 
+  glxdisplay_cat.error()
     << "Could not find a usable pixel format.\n";
 }
 
@@ -828,7 +828,7 @@ destroy_temp_xwindow() {
     _temp_xwindow = (X11_Window)NULL;
   }
 
-  if (_temp_context != (GLXContext)NULL){ 
+  if (_temp_context != (GLXContext)NULL) {
     glXDestroyContext(_display, _temp_context);
     _temp_context = (GLXContext)NULL;
   }

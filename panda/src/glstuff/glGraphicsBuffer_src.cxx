@@ -638,7 +638,7 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
 
 #ifndef OPENGLES
       GLint depth_size = 0;
-      GLP(GetTexLevelParameteriv)(target, 0, GL_TEXTURE_DEPTH_SIZE, &depth_size);
+      glGetTexLevelParameteriv(target, 0, GL_TEXTURE_DEPTH_SIZE, &depth_size);
       _fb_properties.set_depth_bits(depth_size);
 #endif
 
@@ -649,7 +649,7 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
 
 #ifndef OPENGLES
         GLint stencil_size = 0;
-        GLP(GetTexLevelParameteriv)(target, 0, GL_TEXTURE_STENCIL_SIZE, &stencil_size);
+        glGetTexLevelParameteriv(target, 0, GL_TEXTURE_STENCIL_SIZE, &stencil_size);
         _fb_properties.set_stencil_bits(stencil_size);
 #endif
       }
@@ -662,10 +662,10 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
 #ifndef OPENGLES
       if (attachpoint == GL_COLOR_ATTACHMENT0_EXT) {
         GLint red_size = 0, green_size = 0, blue_size = 0, alpha_size = 0;
-        GLP(GetTexLevelParameteriv)(target, 0, GL_TEXTURE_RED_SIZE, &red_size);
-        GLP(GetTexLevelParameteriv)(target, 0, GL_TEXTURE_GREEN_SIZE, &green_size);
-        GLP(GetTexLevelParameteriv)(target, 0, GL_TEXTURE_BLUE_SIZE, &blue_size);
-        GLP(GetTexLevelParameteriv)(target, 0, GL_TEXTURE_ALPHA_SIZE, &alpha_size);
+        glGetTexLevelParameteriv(target, 0, GL_TEXTURE_RED_SIZE, &red_size);
+        glGetTexLevelParameteriv(target, 0, GL_TEXTURE_GREEN_SIZE, &green_size);
+        glGetTexLevelParameteriv(target, 0, GL_TEXTURE_BLUE_SIZE, &blue_size);
+        glGetTexLevelParameteriv(target, 0, GL_TEXTURE_ALPHA_SIZE, &alpha_size);
 
         _fb_properties.set_color_bits(red_size + green_size + blue_size);
         _fb_properties.set_alpha_bits(alpha_size);
@@ -1049,9 +1049,9 @@ generate_mipmaps() {
       CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
       glgsg->update_texture(tc, true);
       GLenum target = glgsg->get_texture_target(tex->get_texture_type());
-      GLP(BindTexture)(target, gtc->_index);
+      glBindTexture(target, gtc->_index);
       glgsg->_glGenerateMipmap(target);
-      GLP(BindTexture)(target, 0);
+      glBindTexture(target, 0);
     }
   }
   report_my_gl_errors();

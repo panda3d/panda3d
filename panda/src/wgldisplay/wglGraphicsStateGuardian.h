@@ -58,7 +58,7 @@ public:
 
 protected:
   virtual void get_extra_extensions();
-  virtual void *do_get_extension_func(const char *prefix, const char *name);
+  virtual void *do_get_extension_func(const char *name);
 
 private:
   void make_context(HDC hdc);

@@ -405,8 +405,6 @@ get_extra_extensions() {
 //               not defined.
 ////////////////////////////////////////////////////////////////////
 void *AndroidGraphicsStateGuardian::
-do_get_extension_func(const char *prefix, const char *name) {
-  string fullname = string(prefix) + string(name);
-
-  return (void *)eglGetProcAddress(fullname.c_str());
+do_get_extension_func(const char *name) {
+  return (void *)eglGetProcAddress(name);
 }

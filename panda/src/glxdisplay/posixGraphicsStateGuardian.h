@@ -32,7 +32,7 @@ public:
   ~PosixGraphicsStateGuardian();
 
 protected:
-  virtual void *do_get_extension_func(const char *prefix, const char *name);
+  virtual void *do_get_extension_func(const char *name);
   void *get_system_func(const char *name);
 
 private:

@@ -18,7 +18,6 @@
 // some such), define the following symbols and #include this header
 // file.
 
-// #define GLP(name): returns name prefixed by the gl prefix, e.g. gl##name
 // #define CLP(name): returns name prefixed by the class prefix, e.g. GL##name
 // #define CLASSPREFIX_QUOTED: the quoted prefix of CLP, e.g. "GL"
 // #define CONFIGOBJ: a Configrc object, e.g. config_glgsg
@@ -43,4 +42,3 @@
 #include "glImmediateModeSender_src.h"
 #include "glGraphicsBuffer_src.h"
 #include "glGraphicsStateGuardian_src.h"
-

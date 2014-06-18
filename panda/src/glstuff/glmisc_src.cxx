@@ -16,7 +16,7 @@
 
 ConfigVariableBool CLP(cheap_textures)
   ("gl-cheap-textures", false,
-   PRC_DESC("Configure this true to GLP(Hint) the textures into the cheapest "
+   PRC_DESC("Configure this true to glHint the textures into the cheapest "
             "possible mode."));
 
 ConfigVariableBool CLP(ignore_clamp)

@@ -345,8 +345,8 @@ protected:
   bool has_extension(const string &extension) const;
   INLINE bool is_at_least_gl_version(int major_version, int minor_version) const;
   INLINE bool is_at_least_gles_version(int major_version, int minor_version) const;
-  void *get_extension_func(const char *prefix, const char *name);
-  virtual void *do_get_extension_func(const char *prefix, const char *name);
+  void *get_extension_func(const char *name);
+  virtual void *do_get_extension_func(const char *name);
 
   virtual void reissue_transforms();
   virtual void enable_lighting(bool enable);

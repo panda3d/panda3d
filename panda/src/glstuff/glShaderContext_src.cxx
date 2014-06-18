@@ -1365,21 +1365,21 @@ disable_shader_texture_bindings(GSG *gsg) {
       return;
     }
 #ifndef OPENGLES
-    GLP(BindTexture)(GL_TEXTURE_1D, 0);
+    glBindTexture(GL_TEXTURE_1D, 0);
 #endif  // OPENGLES
-    GLP(BindTexture)(GL_TEXTURE_2D, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
 #ifndef OPENGLES_1
     if (gsg->_supports_3d_texture) {
-      GLP(BindTexture)(GL_TEXTURE_3D, 0);
+      glBindTexture(GL_TEXTURE_3D, 0);
     }
 #endif  // OPENGLES_1
 #ifndef OPENGLES
     if (gsg->_supports_2d_texture_array) {
-      GLP(BindTexture)(GL_TEXTURE_2D_ARRAY_EXT, 0);
+      glBindTexture(GL_TEXTURE_2D_ARRAY_EXT, 0);
     }
 #endif
     if (gsg->_supports_cube_map) {
-      GLP(BindTexture)(GL_TEXTURE_CUBE_MAP, 0);
+      glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     }
     // This is probably faster - but maybe not as safe?
     // cgGLDisableTextureParameter(p);
@@ -1490,6 +1490,11 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
     }
   }
 
+#if defined(HAVE_CG) && !defined(OPENGLES)
+  cg_report_errors();
+#endif
+
+#ifndef OPENGLES
   // Now bind all the 'image units'; a bit of an esoteric OpenGL feature right now.
   int num_image_units = min(_glsl_img_inputs.size(), (size_t)gsg->_max_image_units);
 
@@ -1511,6 +1516,7 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
         CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tex->prepare_now(view, gsg->_prepared_objects, gsg));
         if (gtc != (TextureContext*)NULL) {
           gl_tex = gtc->_index;
+          gsg->update_texture(gtc, false);
         }
       }
 
@@ -1523,6 +1529,7 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
         if (gl_tex == 0) {
           gsg->_glBindImageTexture(i, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R8);
         } else {
+          //TODO: automatically convert to sized type instead of plain GL_RGBA
           GLint internal_format = gsg->get_internal_image_format(tex);
           gsg->_glBindImageTexture(i, gl_tex, 0, GL_TRUE, 0, GL_READ_WRITE, internal_format);
         }
@@ -1534,9 +1541,6 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
       delete[] multi_img;
     }
   }
-
-#if defined(HAVE_CG) && !defined(OPENGLES)
-  cg_report_errors();
 #endif
 
   gsg->report_my_gl_errors();

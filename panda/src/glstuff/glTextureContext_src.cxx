@@ -49,11 +49,11 @@ evict_lru() {
 void CLP(TextureContext)::
 reset_data() {
   // Free the texture resources.
-  GLP(DeleteTextures)(1, &_index);
+  glDeleteTextures(1, &_index);
 
   // We still need a valid index number, though, in case we want to
   // re-load the texture later.
-  GLP(GenTextures)(1, &_index);
+  glGenTextures(1, &_index);
 
   _already_applied = false;
 }
