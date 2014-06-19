@@ -1,5 +1,6 @@
 #include "ambientLight.cxx"
 #include "callbackNode.cxx"
+#include "computeNode.cxx"
 #include "config_pgraphnodes.cxx"
 #include "directionalLight.cxx"
 #include "fadeLodNode.cxx"

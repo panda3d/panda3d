@@ -755,6 +755,17 @@ end_occlusion_query() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::dispatch_compute
+//       Access: Public, Virtual
+//  Description: Dispatches a currently bound compute shader using
+//               the given work group counts.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
+  nassertv(false /* Compute shaders not supported by GSG */);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_geom_munger
 //       Access: Public, Virtual
 //  Description: Looks up or creates a GeomMunger object to munge

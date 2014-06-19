@@ -217,6 +217,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
   _glsl_gshader = 0;
   _glsl_tcshader = 0;
   _glsl_teshader = 0;
+  _glsl_cshader = 0;
   _uses_standard_vertex_arrays = false;
 
 #if defined(HAVE_CG) && !defined(OPENGLES)
@@ -880,6 +881,9 @@ release_resources(GSG *gsg) {
     if (_glsl_teshader != 0) {
       gsg->_glDetachShader(_glsl_program, _glsl_teshader);
     }
+    if (_glsl_cshader != 0) {
+      gsg->_glDetachShader(_glsl_program, _glsl_cshader);
+    }
     gsg->_glDeleteProgram(_glsl_program);
     _glsl_program = 0;
   }
@@ -902,6 +906,10 @@ release_resources(GSG *gsg) {
   if (_glsl_teshader != 0) {
     gsg->_glDeleteShader(_glsl_teshader);
     _glsl_teshader = 0;
+  }
+  if (_glsl_cshader != 0) {
+    gsg->_glDeleteShader(_glsl_cshader);
+    _glsl_cshader = 0;
   }
   
   gsg->report_my_gl_errors();
@@ -1391,6 +1399,22 @@ disable_shader_texture_bindings(GSG *gsg) {
   cg_report_errors();
 #endif
 
+#ifndef OPENGLES
+  // Now unbind all the image units.  Not sure if we *have* to do this.
+  int num_image_units = min(_glsl_img_inputs.size(), (size_t)gsg->_max_image_units);
+
+  if (num_image_units > 0 && _shader->get_language() == Shader::SL_GLSL) {
+    if (gsg->_supports_multi_bind) {
+      gsg->_glBindImageTextures(0, num_image_units, NULL);
+
+    } else {
+      for (int i = 0; i < num_image_units; ++i) {
+        gsg->_glBindImageTexture(i, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R8);
+      }
+    }
+  }
+#endif
+
   gsg->report_my_gl_errors();
 }
 
@@ -1623,6 +1647,11 @@ glsl_compile_entry_point(GSG *gsg, Shader::ShaderType type) {
         handle = gsg->_glCreateShader(GL_TESS_EVALUATION_SHADER);
       }
       break;
+    case Shader::ST_compute:
+      if (gsg->get_supports_compute_shaders()) {
+        handle = gsg->_glCreateShader(GL_COMPUTE_SHADER);
+      }
+      break;
 #endif
   }
   if (!handle) {
@@ -1701,7 +1730,13 @@ glsl_compile_shader(GSG *gsg) {
     if (!_glsl_teshader) return false;
     gsg->_glAttachShader(_glsl_program, _glsl_teshader);
   }
-  
+
+  if (!_shader->get_text(Shader::ST_compute).empty()) {
+    _glsl_cshader = glsl_compile_entry_point(gsg, Shader::ST_compute);
+    if (!_glsl_cshader) return false;
+    gsg->_glAttachShader(_glsl_program, _glsl_cshader);
+  }
+
   // There might be warnings. Only report them for one shader program.
   if (_glsl_vshader != 0) {
     glsl_report_shader_errors(gsg, _glsl_vshader);

@@ -172,6 +172,7 @@ typedef void (APIENTRYP PFNGLDRAWARRAYSINSTANCEDPROC) (GLenum mode, GLint first,
 typedef void (APIENTRYP PFNGLDRAWELEMENTSINSTANCEDPROC) (GLenum mode, GLsizei count, GLenum type, const GLvoid *indices, GLsizei primcount);
 typedef void (APIENTRYP PFNGLBINDIMAGETEXTUREPROC) (GLuint unit, GLuint texture, GLint level, GLboolean layered, GLint layer, GLenum access, GLenum format);
 typedef void (APIENTRYP PFNGLBINDIMAGETEXTURESPROC) (GLuint first, GLsizei count, const GLuint *textures);
+typedef void (APIENTRYP PFNGLDISPATCHCOMPUTEPROC) (GLuint num_groups_x, GLuint num_groups_y, GLuint num_groups_z);
 #endif  // OPENGLES
 #endif  // __EDG__
 
@@ -261,6 +262,8 @@ public:
 
   virtual void begin_occlusion_query();
   virtual PT(OcclusionQueryContext) end_occlusion_query();
+
+  virtual void dispatch_compute(int size_x, int size_y, int size_z);
 
   virtual PT(GeomMunger) make_geom_munger(const RenderState *state,
                                           Thread *current_thread);
@@ -693,6 +696,7 @@ public:
   PFNGLDRAWELEMENTSINSTANCEDPROC _glDrawElementsInstanced;
   PFNGLBINDIMAGETEXTUREPROC _glBindImageTexture;
   PFNGLBINDIMAGETEXTURESPROC _glBindImageTextures;
+  PFNGLDISPATCHCOMPUTEPROC _glDispatchCompute;
 #endif  // OPENGLES
 
   GLenum _edge_clamp;

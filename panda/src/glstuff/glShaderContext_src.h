@@ -74,6 +74,7 @@ private:
   GLuint _glsl_gshader;
   GLuint _glsl_tcshader;
   GLuint _glsl_teshader;
+  GLuint _glsl_cshader;
 
   pvector <GLint> _glsl_parameter_map;
 

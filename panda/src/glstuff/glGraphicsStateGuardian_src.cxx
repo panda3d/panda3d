@@ -993,10 +993,12 @@ reset() {
 
 #ifdef OPENGLES_2
   _supports_glsl = true;
+  _supports_geometry_shaders = false;
   _supports_tessellation_shaders = false;
 #else
   #ifdef OPENGLES_1
     _supports_glsl = false;
+    _supports_geometry_shaders = false;
     _supports_tessellation_shaders = false;
   #else
     _supports_glsl = is_at_least_gl_version(2, 0) || has_extension("GL_ARB_shading_language_100");
@@ -1005,6 +1007,18 @@ reset() {
   #endif
 #endif
   _shader_caps._supports_glsl = _supports_glsl;
+
+  _supports_compute_shaders = false;
+#ifndef OPENGLES
+  if (is_at_least_gl_version(4, 3) || has_extension("GL_ARB_compute_shader")) {
+    _glDispatchCompute = (PFNGLDISPATCHCOMPUTEPROC)
+      get_extension_func("glDispatchCompute");
+
+    if (_glDispatchCompute != NULL) {
+      _supports_compute_shaders = true;
+    }
+  }
+#endif
 
 #ifndef OPENGLES
   if (_supports_glsl) {
@@ -4216,6 +4230,19 @@ end_occlusion_query() {
 
   return result;
 #endif  // OPENGLES
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::dispatch_compute
+//       Access: Public, Virtual
+//  Description: Dispatches a currently bound compute shader using
+//               the given work group counts.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
+  nassertv(_supports_compute_shaders);
+  nassertv(_current_shader_context != NULL);
+  _glDispatchCompute(num_groups_x, num_groups_y, num_groups_z);
 }
 
 ////////////////////////////////////////////////////////////////////
