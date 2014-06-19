@@ -17,7 +17,6 @@
 
 #include "pandabase.h"
 #include "pnotify.h"
-#include "colorSpace.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FrameBufferProperties
