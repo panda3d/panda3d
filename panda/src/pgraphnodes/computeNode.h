@@ -48,7 +48,7 @@ public:
 
   virtual void output(ostream &out) const;
 
-private:
+public:
   class EXPCL_PANDA_PGRAPHNODES Dispatcher : public CallbackObject {
     friend class ComputeNode;
   public:
@@ -80,6 +80,7 @@ private:
 
   };
 
+private:
   // One per ComputeNode.
   PT(Dispatcher) _dispatcher;
 
