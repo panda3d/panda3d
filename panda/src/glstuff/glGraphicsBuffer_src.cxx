@@ -370,6 +370,11 @@ rebuild_bitplanes() {
       // explicitly bound something to RTP_depth.
       _use_depth_stencil = false;
 
+    } else if (_fb_properties.get_float_depth()) {
+      // Let's not bother with a depth-stencil buffer
+      // if a float buffer was requested.
+      _use_depth_stencil = false;
+
     } else if (_fb_properties.get_depth_bits() > 24) {
       // We can't give more than 24 depth bits with a depth-stencil buffer.
       _use_depth_stencil = false;
@@ -582,7 +587,10 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
     // Adjust the texture format based on the requested framebuffer settings.
     switch (slot) {
     case RTP_depth:
-      if (_fb_properties.get_depth_bits() > 24) {
+      if (_fb_properties.get_float_depth()) {
+        tex->set_format(Texture::F_depth_component32);
+        tex->set_component_type(Texture::T_float);
+      } else if (_fb_properties.get_depth_bits() > 24) {
         tex->set_format(Texture::F_depth_component32);
       } else if (_fb_properties.get_depth_bits() > 16) {
         tex->set_format(Texture::F_depth_component24);
@@ -594,7 +602,12 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
       break;
     case RTP_depth_stencil:
       tex->set_format(Texture::F_depth_stencil);
-      tex->set_component_type(Texture::T_unsigned_int_24_8);
+
+      if (_fb_properties.get_float_depth()) {
+        tex->set_component_type(Texture::T_float);
+      } else {
+        tex->set_component_type(Texture::T_unsigned_int_24_8);
+      }
       break;
     case RTP_aux_hrgba_0:
     case RTP_aux_hrgba_1:
@@ -611,16 +624,24 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
       tex->set_component_type(Texture::T_float);
       break;
     default:
-      if (_fb_properties.get_color_bits() > 48) {
-        tex->set_format(Texture::F_rgba32);
-        // Currently a float format.  Should change.
-        tex->set_component_type(Texture::T_float);
-      } else if (_fb_properties.get_color_bits() > 24) {
-        tex->set_format(Texture::F_rgba16);
-        // Currently a float format.  Should change.
-        tex->set_component_type(Texture::T_float);
+      if (_fb_properties.get_srgb_color()) {
+        if (_fb_properties.get_alpha_bits() == 0) {
+          tex->set_format(Texture::F_srgb);
+        } else {
+          tex->set_format(Texture::F_srgb_alpha);
+        }
       } else {
-        tex->set_format(Texture::F_rgba);
+        if (_fb_properties.get_float_color()) {
+          tex->set_component_type(Texture::T_float);
+        }
+        if (_fb_properties.get_color_bits() > 16 * 3) {
+          tex->set_format(Texture::F_rgba32);
+          tex->set_component_type(Texture::T_float);
+        } else if (_fb_properties.get_color_bits() > 8 * 3) {
+          tex->set_format(Texture::F_rgba16);
+        } else {
+          tex->set_format(Texture::F_rgba);
+        }
       }
     }
 
@@ -730,10 +751,16 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
     GLuint gl_format = GL_RGBA;
     switch (slot) {
       case RTP_depth_stencil:
-        gl_format = GL_DEPTH_STENCIL_EXT;
+        if (_fb_properties.get_float_depth()) {
+          gl_format = GL_DEPTH32F_STENCIL8;
+        } else {
+          gl_format = GL_DEPTH24_STENCIL8;
+        }
         break;
       case RTP_depth:
-        if (_fb_properties.get_depth_bits() > 24) {
+        if (_fb_properties.get_float_depth()) {
+          gl_format = GL_DEPTH_COMPONENT32F;
+        } else if (_fb_properties.get_depth_bits() > 24) {
           gl_format = GL_DEPTH_COMPONENT32;
         } else if (_fb_properties.get_depth_bits() > 16) {
           gl_format = GL_DEPTH_COMPONENT24;
@@ -763,7 +790,41 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
         break;
       default:
         if (_fb_properties.get_alpha_bits() == 0) {
-          gl_format = GL_RGB;
+          if (_fb_properties.get_srgb_color()) {
+            gl_format = GL_SRGB8;
+          } else if (_fb_properties.get_float_color()) {
+            if (_fb_properties.get_color_bits() > 16 * 3) {
+              gl_format = GL_RGB32F_ARB;
+            } else {
+              gl_format = GL_RGB16F_ARB;
+            }
+          } else {
+            if (_fb_properties.get_color_bits() > 16 * 3) {
+              gl_format = GL_RGBA32F_ARB;
+            } else if (_fb_properties.get_color_bits() > 8 * 3) {
+              gl_format = GL_RGB16_EXT;
+            } else {
+              gl_format = GL_RGB;
+            }
+          }
+        } else {
+          if (_fb_properties.get_srgb_color()) {
+            gl_format = GL_SRGB8_ALPHA8;
+          } else if (_fb_properties.get_float_color()) {
+            if (_fb_properties.get_color_bits() > 16 * 3) {
+              gl_format = GL_RGBA32F_ARB;
+            } else {
+              gl_format = GL_RGBA16F_ARB;
+            }
+          } else {
+            if (_fb_properties.get_color_bits() > 16 * 3) {
+              gl_format = GL_RGB32F_ARB;
+            } else if (_fb_properties.get_color_bits() > 8 * 3) {
+              gl_format = GL_RGB16_EXT;
+            } else {
+              gl_format = GL_RGB;
+            }
+          }
         }
     };
 #endif
@@ -1160,7 +1221,7 @@ open_buffer() {
 
   // Count total color buffers.
   int totalcolor =
-   (_fb_properties.is_stereo() ? 2 : 1) +
+   (_fb_properties.get_stereo() ? 2 : 1) +
     _fb_properties.get_aux_rgba() +
     _fb_properties.get_aux_hrgba() +
     _fb_properties.get_aux_float();
@@ -1213,6 +1274,30 @@ open_buffer() {
   }
   if (_fb_properties.get_alpha_bits() > 32) {
     _fb_properties.set_alpha_bits(32);
+  }
+
+  if (_fb_properties.get_float_depth()) {
+    // GL_DEPTH_COMPONENT32F seems the only depth float format.
+    _fb_properties.set_depth_bits(32);
+  }
+
+  // We currently only support color formats this big as float.
+  if (_fb_properties.get_color_bits() > 16 * 3) {
+    _fb_properties.set_color_bits(32 * 3);
+    _fb_properties.set_float_color(true);
+
+    if (_fb_properties.get_alpha_bits() > 0) {
+      _fb_properties.set_alpha_bits(32);
+    }
+  }
+
+  if (_fb_properties.get_srgb_color()) {
+    _fb_properties.set_color_bits(24);
+    _fb_properties.set_float_color(false);
+
+    if (_fb_properties.get_alpha_bits() > 0) {
+      _fb_properties.set_alpha_bits(32);
+    }
   }
 
   if (!_gsg->get_supports_depth_stencil()) {

@@ -412,6 +412,10 @@ ConfigVariableBool framebuffer_srgb
           "means that the output will be properly gamma-corrected, as "
           "long as all the input textures are either converted from "
           "original sRGB to linear or sRGB textures are used."));
+ConfigVariableBool framebuffer_float
+("framebuffer-float", false,
+ PRC_DESC("Set this to request a framebuffer that uses floating-point "
+          "storage for the color channel."));
 
 ConfigVariableInt depth_bits
 ("depth-bits", 0,

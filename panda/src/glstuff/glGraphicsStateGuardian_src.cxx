@@ -1603,7 +1603,6 @@ reset() {
 
     glGetIntegerv(GL_MAX_IMAGE_UNITS_EXT, &_max_image_units);
   }
-#endif
 
   // Check availability of multi-bind functions.
   _supports_multi_bind = false;
@@ -1618,6 +1617,7 @@ reset() {
         << "ARB_multi_bind advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
     }
   }
+#endif
 
   report_my_gl_errors();
 
@@ -2225,6 +2225,10 @@ begin_frame(Thread *current_thread) {
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
   }
 
+  if (_current_properties->get_srgb_color()) {
+    glEnable(GL_FRAMEBUFFER_SRGB);
+  }
+
   report_my_gl_errors();
   return true;
 }
@@ -2276,6 +2280,11 @@ end_scene() {
 void CLP(GraphicsStateGuardian)::
 end_frame(Thread *current_thread) {
   report_my_gl_errors();
+
+  if (_current_properties->get_srgb_color()) {
+    glDisable(GL_FRAMEBUFFER_SRGB);
+  }
+
 #ifdef DO_PSTATS
   // Check for textures, etc., that are no longer resident.  These
   // calls might be measurably expensive, and they don't have any
@@ -4304,11 +4313,19 @@ framebuffer_copy_to_texture(Texture *tex, int view, int z,
 
     default:
       // If the texture is a color format, we want to match the
-      // presence of alpha according to the framebuffer.
-      if (_current_properties->get_alpha_bits()) {
-        tex->set_format(Texture::F_rgba);
+      // presence of sRGB and alpha according to the framebuffer.
+      if (_current_properties->get_srgb_color()) {
+        if (_current_properties->get_alpha_bits()) {
+          tex->set_format(Texture::F_srgb_alpha);
+        } else {
+          tex->set_format(Texture::F_srgb);
+        }
       } else {
-        tex->set_format(Texture::F_rgb);
+        if (_current_properties->get_alpha_bits()) {
+          tex->set_format(Texture::F_rgba);
+        } else {
+          tex->set_format(Texture::F_rgb);
+        }
       }
     }
   }
@@ -4444,11 +4461,17 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
   Texture::Format format = tex->get_format();
   switch (format) {
   case Texture::F_depth_stencil:
-    component_type = Texture::T_unsigned_int_24_8;
+    if (_current_properties->get_float_depth()) {
+      component_type = Texture::T_float;
+    } else {
+      component_type = Texture::T_unsigned_int_24_8;
+    }
     break;
 
   case Texture::F_depth_component:
-    if (_current_properties->get_depth_bits() <= 8) {
+    if (_current_properties->get_float_depth()) {
+      component_type = Texture::T_float;
+    } else if (_current_properties->get_depth_bits() <= 8) {
       component_type = Texture::T_unsigned_byte;
     } else if (_current_properties->get_depth_bits() <= 16) {
       component_type = Texture::T_unsigned_short;
@@ -4459,12 +4482,22 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
 
   default:
     color_mode = true;
-    if (_current_properties->get_alpha_bits()) {
-      format = Texture::F_rgba;
+    if (_current_properties->get_srgb_color()) {
+      if (_current_properties->get_alpha_bits()) {
+        format = Texture::F_srgb_alpha;
+      } else {
+        format = Texture::F_srgb;
+      }
     } else {
-      format = Texture::F_rgb;
+      if (_current_properties->get_alpha_bits()) {
+        format = Texture::F_rgba;
+      } else {
+        format = Texture::F_rgb;
+      }
     }
-    if (_current_properties->get_color_bits() <= 24) {
+    if (_current_properties->get_float_color()) {
+      component_type = Texture::T_float;
+    } else if (_current_properties->get_color_bits() <= 24) {
       component_type = Texture::T_unsigned_byte;
     } else {
       component_type = Texture::T_unsigned_short;
@@ -4504,7 +4537,7 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
     case GL_DEPTH_COMPONENT:
       GLCAT.spam(false) << "GL_DEPTH_COMPONENT, ";
       break;
-    case GL_DEPTH_STENCIL_EXT:
+    case GL_DEPTH_STENCIL:
       GLCAT.spam(false) << "GL_DEPTH_STENCIL, ";
       break;
     case GL_RGB:
@@ -4555,9 +4588,8 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
     }
   }
 
-  glReadPixels(xo, yo, w, h,
-                  external_format, get_component_type(component_type),
-                  image_ptr);
+  glReadPixels(xo, yo, w, h, external_format,
+               get_component_type(component_type), image_ptr);
 
   // We may have to reverse the byte ordering of the image if GL
   // didn't do it for us.
@@ -6324,12 +6356,13 @@ get_component_type(Texture::ComponentType component_type) {
 GLint CLP(GraphicsStateGuardian)::
 get_external_image_format(Texture *tex) const {
   Texture::CompressionMode compression = tex->get_ram_image_compression();
+  Texture::Format format = tex->get_format();
   if (compression != Texture::CM_off &&
       get_supports_compressed_texture_format(compression)) {
     switch (compression) {
     case Texture::CM_on:
 #ifndef OPENGLES
-      switch (tex->get_format()) {
+      switch (format) {
       case Texture::F_color_index:
       case Texture::F_depth_component:
       case Texture::F_depth_component16:
@@ -6374,13 +6407,29 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_luminance_alpha:
       case Texture::F_luminance_alphamask:
         return GL_COMPRESSED_LUMINANCE_ALPHA;
+
+      case Texture::F_srgb:
+        return GL_COMPRESSED_SRGB;
+
+      case Texture::F_srgb_alpha:
+        return GL_COMPRESSED_SRGB_ALPHA;
+
+      case Texture::F_sluminance:
+        return GL_COMPRESSED_SLUMINANCE;
+
+      case Texture::F_sluminance_alpha:
+        return GL_COMPRESSED_SLUMINANCE_ALPHA;
       }
 #endif
       break;
 
 #ifndef OPENGLES_1
     case Texture::CM_dxt1:
-      if (Texture::has_alpha(tex->get_format())) {
+      if (format == Texture::F_srgb_alpha) {
+        return GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT;
+      } else if (format == Texture::F_srgb) {
+        return GL_COMPRESSED_SRGB_S3TC_DXT1_EXT;
+      } else if (Texture::has_alpha(format)) {
         return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
       } else {
         return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
@@ -6389,13 +6438,21 @@ get_external_image_format(Texture *tex) const {
 
 #ifndef OPENGLES
     case Texture::CM_dxt3:
-      return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+      if (format == Texture::F_srgb || format == Texture::F_srgb_alpha) {
+        return GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT;
+      } else {
+        return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+      }
 
     case Texture::CM_dxt5:
-      return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+      if (format == Texture::F_srgb || format == Texture::F_srgb_alpha) {
+        return GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT;
+      } else {
+        return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+      }
 
     case Texture::CM_fxt1:
-      if (Texture::has_alpha(tex->get_format())) {
+      if (Texture::has_alpha(format)) {
         return GL_COMPRESSED_RGBA_FXT1_3DFX;
       } else {
         return GL_COMPRESSED_RGB_FXT1_3DFX;
@@ -6403,14 +6460,22 @@ get_external_image_format(Texture *tex) const {
 
 #else
     case Texture::CM_pvr1_2bpp:
-      if (Texture::has_alpha(tex->get_format())) {
+      if (format == Texture::F_srgb_alpha) {
+        return GL_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV1_EXT;
+      } else if (format == Texture::F_srgb) {
+        return GL_COMPRESSED_SRGB_PVRTC_2BPPV1_EXT;
+      } else if (Texture::has_alpha(format)) {
         return GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
       } else {
         return GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG;
       }
 
     case Texture::CM_pvr1_4bpp:
-      if (Texture::has_alpha(tex->get_format())) {
+      if (format == Texture::F_srgb_alpha) {
+        return GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV1_EXT;
+      } else if (format == Texture::F_srgb) {
+        return GL_COMPRESSED_SRGB_PVRTC_4BPPV1_EXT;
+      } else if (Texture::has_alpha(format)) {
         return GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
       } else {
         return GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
@@ -6427,7 +6492,7 @@ get_external_image_format(Texture *tex) const {
     }
   }
 
-  switch (tex->get_format()) {
+  switch (format) {
 #ifndef OPENGLES
   case Texture::F_color_index:
     return GL_COLOR_INDEX;
@@ -6438,7 +6503,7 @@ get_external_image_format(Texture *tex) const {
   case Texture::F_depth_component32:
     return GL_DEPTH_COMPONENT;
   case Texture::F_depth_stencil:
-    return _supports_depth_stencil ? GL_DEPTH_STENCIL_EXT : GL_DEPTH_COMPONENT;
+    return _supports_depth_stencil ? GL_DEPTH_STENCIL : GL_DEPTH_COMPONENT;
 #ifndef OPENGLES
   case Texture::F_red:
   case Texture::F_r16:
@@ -6460,6 +6525,7 @@ get_external_image_format(Texture *tex) const {
   case Texture::F_rgb12:
   case Texture::F_rgb332:
   case Texture::F_rgb16:
+  case Texture::F_srgb:
 #ifdef OPENGLES
     return GL_RGB;
 #else
@@ -6473,15 +6539,18 @@ get_external_image_format(Texture *tex) const {
   case Texture::F_rgba12:
   case Texture::F_rgba16:
   case Texture::F_rgba32:
+  case Texture::F_srgb_alpha:
 #ifdef OPENGLES_2
     return GL_RGBA;
 #else
     return _supports_bgr ? GL_BGRA : GL_RGBA;
 #endif
   case Texture::F_luminance:
+  case Texture::F_sluminance:
     return GL_LUMINANCE;
   case Texture::F_luminance_alphamask:
   case Texture::F_luminance_alpha:
+  case Texture::F_sluminance_alpha:
     return GL_LUMINANCE_ALPHA;
   }
   GLCAT.error()
@@ -6502,6 +6571,7 @@ get_internal_image_format(Texture *tex) const {
   if (compression == Texture::CM_default) {
     compression = (compressed_textures) ? Texture::CM_on : Texture::CM_off;
   }
+  Texture::Format format = tex->get_format();
   if (tex->get_render_to_texture()) {
     // no compression for render targets
     compression = Texture::CM_off;
@@ -6520,7 +6590,7 @@ get_internal_image_format(Texture *tex) const {
       // appropriate choice), since that makes saving the result as a
       // pre-compressed texture more dependable--this way, we will know
       // which compression algorithm was applied.
-      switch (tex->get_format()) {
+      switch (format) {
       case Texture::F_color_index:
       case Texture::F_depth_component:
       case Texture::F_depth_stencil:
@@ -6612,11 +6682,33 @@ get_internal_image_format(Texture *tex) const {
         return GL_COMPRESSED_LUMINANCE_ALPHA;
       }
       break;
+
+      case Texture::F_srgb:
+        if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
+          return GL_COMPRESSED_SRGB_S3TC_DXT1_EXT;
+        }
+        return GL_COMPRESSED_SRGB;
+
+      case Texture::F_srgb_alpha:
+        if (get_supports_compressed_texture_format(Texture::CM_dxt5) && !is_3d) {
+          return GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT;
+        }
+        return GL_COMPRESSED_SRGB_ALPHA;
+
+      case Texture::F_sluminance:
+        return GL_COMPRESSED_SLUMINANCE;
+
+      case Texture::F_sluminance_alpha:
+        return GL_COMPRESSED_SLUMINANCE_ALPHA;
 #endif
 
 #ifndef OPENGLES_1
     case Texture::CM_dxt1:
-      if (Texture::has_alpha(tex->get_format())) {
+      if (format == Texture::F_srgb_alpha) {
+        return GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT;
+      } else if (format == Texture::F_srgb) {
+        return GL_COMPRESSED_SRGB_S3TC_DXT1_EXT;
+      } else if (Texture::has_alpha(format)) {
         return GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
       } else {
         return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
@@ -6625,27 +6717,43 @@ get_internal_image_format(Texture *tex) const {
 
 #ifndef OPENGLES
     case Texture::CM_dxt3:
-      return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+      if (format == Texture::F_srgb || format == Texture::F_srgb_alpha) {
+        return GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT;
+      } else {
+        return GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+      }
 
     case Texture::CM_dxt5:
-      return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+      if (format == Texture::F_srgb || format == Texture::F_srgb_alpha) {
+        return GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT;
+      } else {
+        return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+      }
 
     case Texture::CM_fxt1:
-      if (Texture::has_alpha(tex->get_format())) {
+      if (Texture::has_alpha(format)) {
         return GL_COMPRESSED_RGBA_FXT1_3DFX;
       } else {
         return GL_COMPRESSED_RGB_FXT1_3DFX;
       }
 #else
     case Texture::CM_pvr1_2bpp:
-      if (Texture::has_alpha(tex->get_format())) {
+      if (format == Texture::F_srgb_alpha) {
+        return GL_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV1_EXT;
+      } else if (format == Texture::F_srgb) {
+        return GL_COMPRESSED_SRGB_PVRTC_2BPPV1_EXT;
+      } else if (Texture::has_alpha(format)) {
         return GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
       } else {
         return GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG;
       }
 
     case Texture::CM_pvr1_4bpp:
-      if (Texture::has_alpha(tex->get_format())) {
+      if (format == Texture::F_srgb_alpha) {
+        return GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV1_EXT;
+      } else if (format == Texture::F_srgb) {
+        return GL_COMPRESSED_SRGB_PVRTC_4BPPV1_EXT;
+      } else if (Texture::has_alpha(format)) {
         return GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
       } else {
         return GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
@@ -6661,11 +6769,22 @@ get_internal_image_format(Texture *tex) const {
     }
   }
 
-  switch (tex->get_format()) {
+  switch (format) {
 #ifndef OPENGLES
   case Texture::F_color_index:
     return GL_COLOR_INDEX;
 #endif
+
+  case Texture::F_depth_stencil:
+    if (_supports_depth_stencil) {
+      if (tex->get_component_type() == Texture::T_float) {
+        return GL_DEPTH32F_STENCIL8;
+      } else {
+        return GL_DEPTH_STENCIL;
+      }
+    }
+    // Fall through.
+
   case Texture::F_depth_component:
 #ifndef OPENGLES
     if (tex->get_component_type() == Texture::T_float) {
@@ -6710,16 +6829,14 @@ get_internal_image_format(Texture *tex) const {
     }
 #endif
 
-  case Texture::F_depth_stencil:
-    if (_supports_depth_stencil) {
-      return GL_DEPTH_STENCIL_EXT;
-    } else {
-      return GL_DEPTH_COMPONENT;
-    }
-
   case Texture::F_rgba:
   case Texture::F_rgbm:
-    return GL_RGBA;
+    if (tex->get_component_type() == Texture::T_float) {
+      return GL_RGBA16F;
+    } else {
+      return GL_RGBA;
+    }
+
   case Texture::F_rgba4:
     return GL_RGBA4;
 
@@ -6730,23 +6847,28 @@ get_internal_image_format(Texture *tex) const {
     return GL_RGBA;
 #ifndef OPENGLES_1
   case Texture::F_rgba16:
-    return GL_RGBA16F_EXT;
+    return GL_RGBA16F;
 #endif  // OPENGLES_1
   case Texture::F_rgba32:
-    return GL_RGBA32F_EXT;
+    return GL_RGBA32F;
 #else
   case Texture::F_rgba8:
     return GL_RGBA8;
   case Texture::F_rgba12:
     return GL_RGBA12;
   case Texture::F_rgba16:
-    return GL_RGBA16F_ARB;
+    return GL_RGBA16F;
   case Texture::F_rgba32:
-    return GL_RGBA32F_ARB;
+    return GL_RGBA32F;
 #endif  // OPENGLES
 
   case Texture::F_rgb:
-    return GL_RGB;
+    if (tex->get_component_type() == Texture::T_float) {
+      return GL_RGB16F;
+    } else {
+      return GL_RGB;
+    }
+
   case Texture::F_rgb5:
 #ifdef OPENGLES
     // Close enough.
@@ -6763,7 +6885,7 @@ get_internal_image_format(Texture *tex) const {
   case Texture::F_rgb12:
     return GL_RGB;
   case Texture::F_rgb16:
-    return GL_RGB16F_EXT;
+    return GL_RGB16F;
 #else
   case Texture::F_rgb8:
     return GL_RGB8;
@@ -6817,6 +6939,15 @@ get_internal_image_format(Texture *tex) const {
   case Texture::F_luminance_alpha:
   case Texture::F_luminance_alphamask:
     return GL_LUMINANCE_ALPHA;
+
+  case Texture::F_srgb:
+    return GL_SRGB8;
+  case Texture::F_srgb_alpha:
+    return GL_SRGB8_ALPHA8;
+  case Texture::F_sluminance:
+    return GL_SLUMINANCE8;
+  case Texture::F_sluminance_alpha:
+    return GL_SLUMINANCE8_ALPHA8;
 
   default:
     GLCAT.error()
@@ -9366,7 +9497,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
     }
 
     if (num_ram_mipmap_levels == 0) {
-      if ((external_format == GL_DEPTH_STENCIL_EXT) && get_supports_depth_stencil()) {
+      if ((external_format == GL_DEPTH_STENCIL) && get_supports_depth_stencil()) {
 #ifdef OPENGLES
         component_type = GL_UNSIGNED_INT_24_8_OES;
 #else
@@ -9870,9 +10001,13 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     format = Texture::F_depth_component;
     break;
 #endif
-  case GL_DEPTH_STENCIL_EXT:
-  case GL_DEPTH24_STENCIL8_EXT:
+  case GL_DEPTH_STENCIL:
+  case GL_DEPTH24_STENCIL8:
     type = Texture::T_unsigned_int_24_8;
+    format = Texture::F_depth_stencil;
+    break;
+  case GL_DEPTH32F_STENCIL8:
+    type = Texture::T_float;
     format = Texture::F_depth_stencil;
     break;
   case GL_RGBA:
@@ -9985,6 +10120,19 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     format = Texture::F_luminance_alpha;
     break;
 
+  case GL_SRGB:
+    format = Texture::F_srgb;
+    break;
+  case GL_SRGB_ALPHA:
+    format = Texture::F_srgb_alpha;
+    break;
+  case GL_SLUMINANCE:
+    format = Texture::F_sluminance;
+    break;
+  case GL_SLUMINANCE_ALPHA:
+    format = Texture::F_sluminance_alpha;
+    break;
+
 #ifndef OPENGLES
   case GL_COMPRESSED_RGB:
     format = Texture::F_rgb;
@@ -10006,6 +10154,23 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     format = Texture::F_luminance_alpha;
     compression = Texture::CM_on;
     break;
+
+  case GL_COMPRESSED_SRGB:
+    format = Texture::F_srgb;
+    compression = Texture::CM_on;
+    break;
+  case GL_COMPRESSED_SRGB_ALPHA:
+    format = Texture::F_srgb_alpha;
+    compression = Texture::CM_on;
+    break;
+  case GL_COMPRESSED_SLUMINANCE:
+    format = Texture::F_sluminance;
+    compression = Texture::CM_on;
+    break;
+  case GL_COMPRESSED_SLUMINANCE_ALPHA:
+    format = Texture::F_sluminance_alpha;
+    compression = Texture::CM_on;
+    break;
 #endif
 
 #ifndef OPENGLES_1
@@ -10015,6 +10180,14 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     break;
   case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
     format = Texture::F_rgbm;
+    compression = Texture::CM_dxt1;
+    break;
+  case GL_COMPRESSED_SRGB_S3TC_DXT1_EXT:
+    format = Texture::F_srgb;
+    compression = Texture::CM_dxt1;
+    break;
+  case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT:
+    format = Texture::F_srgb_alpha;
     compression = Texture::CM_dxt1;
     break;
 #endif
@@ -10035,6 +10208,23 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     format = Texture::F_rgba;
     compression = Texture::CM_pvr1_4bpp;
     break;
+
+  case GL_COMPRESSED_SRGB_PVRTC_2BPPV1_EXT:
+    format = Texture::F_srgb;
+    compression = Texture::CM_pvr1_2bpp;
+    break;
+  case GL_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV1_EXT:
+    format = Texture::F_srgb_alpha;
+    compression = Texture::CM_pvr1_2bpp;
+    break;
+  case GL_COMPRESSED_SRGB_PVRTC_4BPPV1_EXT:
+    format = Texture::F_srgb;
+    compression = Texture::CM_pvr1_4bpp;
+    break;
+  case GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV1_EXT:
+    format = Texture::F_srgb_alpha;
+    compression = Texture::CM_pvr1_4bpp;
+    break;
 #else
   case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
     format = Texture::F_rgba;
@@ -10042,6 +10232,14 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     break;
   case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
     format = Texture::F_rgba;
+    compression = Texture::CM_dxt5;
+    break;
+  case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT:
+    format = Texture::F_srgb_alpha;
+    compression = Texture::CM_dxt3;
+    break;
+  case GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT:
+    format = Texture::F_srgb_alpha;
     compression = Texture::CM_dxt5;
     break;
   case GL_COMPRESSED_RGB_FXT1_3DFX:

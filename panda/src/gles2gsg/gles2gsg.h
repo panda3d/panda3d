@@ -96,11 +96,15 @@ typedef char GLchar;
 #define GL_RG16F GL_RG16F_EXT
 #define GL_RGB16F GL_RGB16F_EXT
 #define GL_RGBA16F GL_RGBA16F_EXT
+#define GL_RGB16F GL_RGB16F_EXT
+#define GL_RGBA16F GL_RGBA16F_EXT
+#define GL_RGB32F GL_RGB32F_EXT
+#define GL_RGBA32F GL_RGBA32F_EXT
 
 #undef SUPPORT_IMMEDIATE_MODE
 #define APIENTRY
 #define APIENTRYP *
 
 #include "glstuff_src.h"
- 
+
 #endif  // GLES2GSG_H

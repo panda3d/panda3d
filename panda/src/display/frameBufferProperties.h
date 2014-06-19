@@ -17,6 +17,7 @@
 
 #include "pandabase.h"
 #include "pnotify.h"
+#include "colorSpace.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FrameBufferProperties
@@ -44,18 +45,28 @@ private:
     FBP_multisamples,
     FBP_coverage_samples,
     FBP_back_buffers,
-    FBP_indexed_color,
-    FBP_rgb_color,
-    FBP_stereo,
-    FBP_force_hardware,
-    FBP_force_software,
-    
+
     // This is a sentinel value.
     FBP_COUNT
   };
-  
+
+  enum FrameBufferFlag {
+    FBF_indexed_color  = 0x001,
+    FBF_rgb_color      = 0x002,
+    FBF_stereo         = 0x004,
+    FBF_force_hardware = 0x008,
+    FBF_force_software = 0x010,
+    FBF_srgb_color     = 0x020,
+    FBF_float_color    = 0x040,
+    FBF_float_depth    = 0x080,
+    FBF_all            = 0x100-1,
+  };
+
   int _property[FBP_COUNT];
-  int _specified[FBP_COUNT];
+  bool _specified[FBP_COUNT];
+
+  int _flags;
+  int _flags_specified;
 
 PUBLISHED:
 
@@ -71,11 +82,14 @@ PUBLISHED:
   INLINE int get_multisamples() const;
   INLINE int get_coverage_samples() const;
   INLINE int get_back_buffers() const;
-  INLINE int get_indexed_color() const;
-  INLINE int get_rgb_color() const;
-  INLINE int get_stereo() const;
-  INLINE int get_force_hardware() const;
-  INLINE int get_force_software() const;
+  INLINE bool get_indexed_color() const;
+  INLINE bool get_rgb_color() const;
+  INLINE bool get_stereo() const;
+  INLINE bool get_force_hardware() const;
+  INLINE bool get_force_software() const;
+  INLINE bool get_srgb_color() const;
+  INLINE bool get_float_color() const;
+  INLINE bool get_float_depth() const;
 
   // Individual assigners.
   INLINE void set_depth_bits(int n);
@@ -89,11 +103,14 @@ PUBLISHED:
   INLINE void set_multisamples(int n);
   INLINE void set_coverage_samples(int n);
   INLINE void set_back_buffers(int n);
-  INLINE void set_indexed_color(int n);
-  INLINE void set_rgb_color(int n);
-  INLINE void set_stereo(int n);
-  INLINE void set_force_hardware(int n);
-  INLINE void set_force_software(int n);
+  INLINE void set_indexed_color(bool n);
+  INLINE void set_rgb_color(bool n);
+  INLINE void set_stereo(bool n);
+  INLINE void set_force_hardware(bool n);
+  INLINE void set_force_software(bool n);
+  INLINE void set_srgb_color(bool n);
+  INLINE void set_float_color(bool n);
+  INLINE void set_float_depth(bool n);
 
   // Other.
 
@@ -111,9 +128,9 @@ PUBLISHED:
   void add_properties(const FrameBufferProperties &other);
   void output(ostream &out) const;
   void set_one_bit_per_channel();
-  
-  bool is_stereo() const;
-  bool is_single_buffered() const;
+
+  INLINE bool is_stereo() const;
+  INLINE bool is_single_buffered() const;
   int get_quality(const FrameBufferProperties &reqs) const;
   bool is_any_specified() const;
   bool is_basic() const;

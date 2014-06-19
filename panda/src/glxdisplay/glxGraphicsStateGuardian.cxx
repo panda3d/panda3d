@@ -153,7 +153,7 @@ get_properties_advanced(FrameBufferProperties &properties,
     // Now update our framebuffer_mode and bit depth appropriately.
     int render_type, double_buffer, stereo, red_size, green_size, blue_size,
       alpha_size, ared_size, agreen_size, ablue_size, aalpha_size,
-      depth_size, stencil_size, samples, drawable_type, caveat;
+      depth_size, stencil_size, samples, drawable_type, caveat, srgb_capable;
 
     _glXGetFBConfigAttrib(_display, config, GLX_RENDER_TYPE, &render_type);
     _glXGetFBConfigAttrib(_display, config, GLX_DOUBLEBUFFER, &double_buffer);
@@ -171,6 +171,7 @@ get_properties_advanced(FrameBufferProperties &properties,
     _glXGetFBConfigAttrib(_display, config, GLX_SAMPLES, &samples);
     _glXGetFBConfigAttrib(_display, config, GLX_DRAWABLE_TYPE, &drawable_type);
     _glXGetFBConfigAttrib(_display, config, GLX_CONFIG_CAVEAT, &caveat);
+    _glXGetFBConfigAttrib(_display, config, GLX_FRAMEBUFFER_SRGB_CAPABLE_EXT, &srgb_capable);
 
     context_has_pbuffer = false;
     if ((drawable_type & GLX_PBUFFER_BIT)!=0) {
@@ -198,6 +199,10 @@ get_properties_advanced(FrameBufferProperties &properties,
 
     if (stereo) {
       properties.set_stereo(true);
+    }
+
+    if (srgb_capable) {
+      properties.set_srgb_color(true);
     }
 
     if ((render_type & GLX_RGBA_BIT)!=0) {
@@ -352,6 +357,10 @@ choose_pixel_format(const FrameBufferProperties &properties,
       if (_visual) {
         get_properties_advanced(_fbprops, _context_has_pbuffer, _context_has_pixmap,
                                 _slow, _fbconfig);
+
+        if (!properties.get_srgb_color()) {
+          _fbprops.set_srgb_color(false);
+        }
 
         if (glxdisplay_cat.is_debug()) {
           glxdisplay_cat.debug()

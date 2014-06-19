@@ -132,6 +132,13 @@ PUBLISHED:
     F_r16,
     F_rg16,
     F_rgb16,
+
+    // These formats are in the sRGB color space.
+    // RGB is 2.2 gamma corrected, alpha is always linear.
+    F_srgb,
+    F_srgb_alpha,
+    F_sluminance,
+    F_sluminance_alpha,
   };
 
   enum FilterType {
@@ -160,7 +167,7 @@ PUBLISHED:
 
     // The OpenGL ARB_shadow extension can be thought of as a kind of filtering.
     FT_shadow,
-    
+
     // Default is usually linear, but it depends on format.
     // This was added at the end of the list to avoid bumping TXO version #.
     FT_default,

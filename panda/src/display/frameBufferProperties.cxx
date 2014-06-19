@@ -34,7 +34,10 @@ FrameBufferProperties() {
 ////////////////////////////////////////////////////////////////////
 void FrameBufferProperties::
 operator = (const FrameBufferProperties &copy) {
-  for (int i=0; i<FBP_COUNT; i++) {
+  _flags_specified = copy._flags_specified;
+  _flags = copy._flags;
+
+  for (int i = 0; i < FBP_COUNT; ++i) {
     _specified[i] = copy._specified[i];
     _property[i]  = copy._property[i];
   }
@@ -49,11 +52,17 @@ operator = (const FrameBufferProperties &copy) {
 ////////////////////////////////////////////////////////////////////
 bool FrameBufferProperties::
 subsumes(const FrameBufferProperties &other) const {
-  for (int i=0; i<FBP_COUNT; i++) {
+  if (((other._flags & other._flags_specified) & ~(_flags & _flags_specified)) != 0) {
+    // The other has bits enabled that we don't have enabled.
+    return false;
+  }
+
+  for (int i = 0; i < FBP_COUNT; ++i) {
     if (other._property[i] > _property[i]) {
       return false;
     }
   }
+
   return true;
 }
 
@@ -73,9 +82,9 @@ get_default() {
     return default_props;
   }
 
-  default_props.set_rgb_color(1);
+  default_props.set_rgb_color(true);
   default_props.set_back_buffers(back_buffers);
-  
+
   int num_words = framebuffer_mode.get_num_words();
   if (num_words > 0) {
     display_cat.error()
@@ -99,10 +108,10 @@ get_default() {
   }
 
   if (framebuffer_hardware) {
-    default_props.set_force_hardware(1);
+    default_props.set_force_hardware(true);
   }
   if (framebuffer_software) {
-    default_props.set_force_software(1);
+    default_props.set_force_software(true);
   }
   if (framebuffer_depth) {
     default_props.set_depth_bits(1);
@@ -120,7 +129,13 @@ get_default() {
     default_props.set_multisamples(1);
   }
   if (framebuffer_stereo) {
-    default_props.set_stereo(1);
+    default_props.set_stereo(true);
+  }
+  if (framebuffer_srgb) {
+    default_props.set_srgb_color(true);
+  }
+  if (framebuffer_float) {
+    default_props.set_float_color(true);
   }
   if (depth_bits > 0) {
     default_props.set_depth_bits(depth_bits);
@@ -141,10 +156,9 @@ get_default() {
     default_props.set_multisamples(multisamples);
   }
 
-  if ((default_props._property[FBP_force_software])&&
-      (default_props._property[FBP_force_hardware])) {
-    default_props._property[FBP_force_software] = 0;
-    default_props._property[FBP_force_hardware] = 0;
+  if ((default_props._flags & FBF_force_software) != 0 &&
+      (default_props._flags & FBF_force_hardware) != 0){
+    default_props._flags &= ~(FBF_force_software | FBF_force_hardware);
   }
 
   default_ready = true;
@@ -158,7 +172,11 @@ get_default() {
 ////////////////////////////////////////////////////////////////////
 bool FrameBufferProperties::
 operator == (const FrameBufferProperties &other) const {
-  for (int i=0; i<FBP_COUNT; i++) {
+  if ((_flags & _flags_specified) != (other._flags & other._flags_specified)) {
+    return false;
+  }
+
+  for (int i = 0; i < FBP_COUNT; ++i) {
     if (_specified[i] != other._specified[i]) {
       return false;
     }
@@ -166,6 +184,7 @@ operator == (const FrameBufferProperties &other) const {
       return false;
     }
   }
+
   return true;
 }
 
@@ -178,7 +197,10 @@ operator == (const FrameBufferProperties &other) const {
 ////////////////////////////////////////////////////////////////////
 void FrameBufferProperties::
 clear() {
-  for (int i=0; i<FBP_COUNT; i++) {
+  _flags = 0;
+  _flags_specified = 0;
+
+  for (int i = 0; i < FBP_COUNT; ++i) {
     _specified[i] = 0;
     _property[i] = 0;
   }
@@ -193,7 +215,10 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 void FrameBufferProperties::
 add_properties(const FrameBufferProperties &other) {
-  for (int i=0; i<FBP_COUNT; i++) {
+  _flags &= ~other._flags_specified;
+  _flags |= other._flags & other._flags_specified;
+
+  for (int i = 0; i < FBP_COUNT; ++i) {
     if (other._specified[i]) {
       _property[i] = other._property[i];
       _specified[i] = true;
@@ -204,14 +229,24 @@ add_properties(const FrameBufferProperties &other) {
 ////////////////////////////////////////////////////////////////////
 //     Function: FrameBufferProperties::output
 //       Access: Published
-//  Description: Sets any properties that are explicitly specified in
-//               other on this object.  Leaves other properties
-//               unchanged.
+//  Description: Generates a string representation.
 ////////////////////////////////////////////////////////////////////
 void FrameBufferProperties::
 output(ostream &out) const {
+  if ((_flags & FBF_float_depth) != 0) {
+    out << "float_depth ";
+  }
   if (_property[FBP_depth_bits] > 0) {
     out << "depth_bits=" << _property[FBP_depth_bits] << " ";
+  }
+  if ((_flags & FBF_float_color) != 0) {
+    out << "float_color ";
+  }
+  if ((_flags & FBF_srgb_color) != 0) {
+    out << "srgb_color ";
+  }
+  if ((_flags & FBF_indexed_color) != 0) {
+    out << "indexed_color ";
   }
   if (_property[FBP_color_bits] > 0) {
     out << "color_bits=" << _property[FBP_color_bits] << " ";
@@ -243,17 +278,14 @@ output(ostream &out) const {
   if (_property[FBP_back_buffers] > 0) {
     out << "back_buffers=" << _property[FBP_back_buffers] << " ";
   }
-  if (_property[FBP_indexed_color] > 0) {
-    out << "indexed_color=" << _property[FBP_indexed_color] << " ";
+  if ((_flags & FBF_stereo) != 0) {
+    out << "stereo ";
   }
-  if (_property[FBP_stereo] > 0) {
-    out << "stereo=" << _property[FBP_stereo] << " ";
+  if ((_flags & FBF_force_hardware) != 0) {
+    out << "force_hardware ";
   }
-  if (_property[FBP_force_hardware] > 0) {
-    out << "force_hardware=" << _property[FBP_force_hardware] << " ";
-  }
-  if (_property[FBP_force_software] > 0) {
-    out << "force_software=" << _property[FBP_force_software] << " ";
+  if ((_flags & FBF_force_software) != 0) {
+    out << "force_software ";
   }
 }
 
@@ -287,7 +319,7 @@ get_aux_mask() const {
 int FrameBufferProperties::
 get_buffer_mask() const {
   int mask = 0;
-  
+
   if (_property[FBP_back_buffers] > 0) {
     mask = RenderBuffer::T_front | RenderBuffer::T_back;
   } else {
@@ -310,7 +342,11 @@ get_buffer_mask() const {
 ////////////////////////////////////////////////////////////////////
 bool FrameBufferProperties::
 is_any_specified() const {
-  for (int i=0; i<FBP_COUNT; i++) {
+  if (_flags_specified != 0) {
+    return true;
+  }
+
+  for (int i = 0; i < FBP_COUNT; ++i) {
     if (_specified[i]) {
       return true;
     }
@@ -325,7 +361,9 @@ is_any_specified() const {
 ////////////////////////////////////////////////////////////////////
 void FrameBufferProperties::
 set_all_specified() {
-  for (int i=0; i<FBP_COUNT; i++) {
+  _flags_specified = FBF_all;
+
+  for (int i = 0; i < FBP_COUNT; ++i) {
     _specified[i] = true;
   }
 }
@@ -370,13 +408,22 @@ is_basic() const {
   if (_property[FBP_back_buffers] > 0) {
     return false;
   }
-  if (_property[FBP_indexed_color] > 0) {
+  if ((_flags & FBF_indexed_color) != 0) {
     return false;
   }
-  if (_property[FBP_force_hardware] > 0) {
+  if ((_flags & FBF_force_hardware) != 0) {
     return false;
   }
-  if (_property[FBP_force_software] > 0) {
+  if ((_flags & FBF_force_software) != 0) {
+    return false;
+  }
+  if ((_flags & FBF_srgb_color) != 0) {
+    return false;
+  }
+  if ((_flags & FBF_float_color) != 0) {
+    return false;
+  }
+  if ((_flags & FBF_float_depth) != 0) {
     return false;
   }
   return true;
@@ -391,7 +438,7 @@ is_basic() const {
 ////////////////////////////////////////////////////////////////////
 void FrameBufferProperties::
 set_one_bit_per_channel() {
-  for (int prop=FBP_depth_bits; prop<=FBP_accum_bits; ++prop) {
+  for (int prop = FBP_depth_bits; prop <= FBP_accum_bits; ++prop) {
     if (_property[prop] > 1) {
       _property[prop] = 1;
     }
@@ -426,13 +473,13 @@ set_one_bit_per_channel() {
 int FrameBufferProperties::
 get_quality(const FrameBufferProperties &reqs) const {
 
-  if ((_property[FBP_indexed_color]==0) && (_property[FBP_rgb_color]==0)) {
+  if (!get_indexed_color() && !get_rgb_color()) {
     // Nonfunctioning window.
     return 0;
   }
-  
-  if ((reqs._property[FBP_rgb_color]      > _property[FBP_rgb_color])||
-      (reqs._property[FBP_indexed_color]  > _property[FBP_indexed_color])) {
+
+  if ((reqs.get_rgb_color() && !get_rgb_color()) ||
+      (reqs.get_indexed_color() && !get_indexed_color())) {
     // These properties are nonnegotiable.
     return 0;
   }
@@ -441,17 +488,17 @@ get_quality(const FrameBufferProperties &reqs) const {
 
   // Deduct for using the wrong kind of renderer (hardware or software).
   // Cost: 10,000,000
-  
-  if ((reqs._property[FBP_force_hardware] > _property[FBP_force_hardware])||
-      (reqs._property[FBP_force_software] > _property[FBP_force_software])) {
+
+  if ((reqs._flags & FBF_force_hardware) > (_flags & FBF_force_hardware) ||
+      (reqs._flags & FBF_force_software) > (_flags & FBF_force_software)) {
     quality -= 10000000;
   }
 
   // Deduct for missing depth, color, alpha, stencil, or accum.
   // Cost: 1,000,000
 
-  for (int prop=FBP_depth_bits; prop<=FBP_accum_bits; prop++) {
-    if ((reqs._property[prop]) && (_property[prop]==0)) {
+  for (int prop = FBP_depth_bits; prop <= FBP_accum_bits; ++prop) {
+    if (reqs._property[prop] && _property[prop] == 0) {
       quality -= 1000000;
     }
   }
@@ -459,7 +506,7 @@ get_quality(const FrameBufferProperties &reqs) const {
   // Deduct for missing aux bitplanes.
   // Cost: 100,000
 
-  for (int prop=FBP_aux_rgba; prop<=FBP_aux_float; prop++) {
+  for (int prop = FBP_aux_rgba; prop <= FBP_aux_float; ++prop) {
     if (reqs._property[prop] > _property[prop]) {
       quality -= 100000;
     }
@@ -468,13 +515,31 @@ get_quality(const FrameBufferProperties &reqs) const {
   // Deduct for stereo not enabled.
   // Cost: 100,000
 
-  if (reqs._property[FBP_stereo] > _property[FBP_stereo]) {
+  if (reqs.get_stereo() && !get_stereo()) {
+    quality -= 100000;
+  }
+
+  // Deduct for not being sRGB-capable.
+  // Cost: 100,000
+
+  if (reqs.get_srgb_color() && !get_srgb_color()) {
+    quality -= 100000;
+  }
+
+  // Deduct for not having a floating-point format if we requested it.
+  // Cost: 100,000
+
+  if (reqs.get_float_color() && !get_float_color()) {
+    quality -= 100000;
+  }
+
+  if (reqs.get_float_depth() && !get_float_depth()) {
     quality -= 100000;
   }
 
   // Deduct for insufficient back-buffers.
   // Cost: 100,000
-  
+
   if (reqs._property[FBP_back_buffers] > _property[FBP_back_buffers]) {
     quality -= 100000;
   }
@@ -488,7 +553,7 @@ get_quality(const FrameBufferProperties &reqs) const {
   // Deduct for not enough bits in depth, color, alpha, stencil, or accum.
   // Cost: 10,000
 
-  for (int prop=FBP_depth_bits; prop<=FBP_accum_bits; prop++) {
+  for (int prop = FBP_depth_bits; prop <= FBP_accum_bits; ++prop) {
     if (_property[prop] != 0 && reqs._property[prop] > _property[prop]) {
       quality -= 10000;
     }
@@ -497,33 +562,33 @@ get_quality(const FrameBufferProperties &reqs) const {
   // deduct for insufficient multisamples.
   // Cost: 1,000
 
-  if (_property[FBP_multisamples] != 0 && 
+  if (_property[FBP_multisamples] != 0 &&
       reqs._property[FBP_multisamples] > _property[FBP_multisamples]) {
     quality -= 1000;
   }
 
   // Deduct for unrequested bitplanes.
   // Cost: 50
-  
-  for (int prop=FBP_depth_bits; prop<=FBP_accum_bits; prop++) {
+
+  for (int prop = FBP_depth_bits; prop <= FBP_accum_bits; ++prop) {
     if ((_property[prop]) && (reqs._property[prop] == 0)) {
       quality -= 50;
     }
   }
-  for (int prop=FBP_aux_rgba; prop<=FBP_aux_float; prop++) {
+  for (int prop = FBP_aux_rgba; prop <= FBP_aux_float; ++prop) {
     int extra = _property[prop] > reqs._property[prop];
     if (extra > 0) {
       extra = min(extra, 3);
       quality -= extra*50;
     }
   }
-  
+
   // Deduct for excessive resolution in any bitplane (unless we asked
   // for only 1 bit, which is the convention for any amount).
 
   // Cost: 50
-  
-  for (int prop=FBP_depth_bits; prop<=FBP_accum_bits; prop++) {
+
+  for (int prop = FBP_depth_bits; prop <= FBP_accum_bits; ++prop) {
     if (reqs._property[prop] > 1 &&
         _property[prop] > reqs._property[prop]) {
       quality -= 50;
@@ -555,9 +620,9 @@ get_quality(const FrameBufferProperties &reqs) const {
       quality += _property[prop];
     }
   }
-  
+
   return quality;
-};
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FrameBufferProperties::verify_hardware_software
@@ -594,8 +659,6 @@ verify_hardware_software(const FrameBufferProperties &props, const string &rende
       << "hardware/software configuration in your Config.prc file.\n";
     return false;
   }
-  
+
   return true;
 }
-
-

@@ -93,6 +93,7 @@ extern EXPCL_PANDA_DISPLAY ConfigVariableBool framebuffer_stencil;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool framebuffer_accum;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool framebuffer_stereo;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool framebuffer_srgb;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool framebuffer_float;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt depth_bits;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt color_bits;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt alpha_bits;
