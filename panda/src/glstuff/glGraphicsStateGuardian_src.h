@@ -55,6 +55,9 @@ typedef double GLdouble;
 // functions are defined, and the system gl.h sometimes doesn't
 // declare these typedefs.
 #if !defined( __EDG__ ) || defined( __INTEL_COMPILER )  // Protect the following from the Tau instrumentor and expose it for the intel compiler.
+typedef void (APIENTRY *GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,GLvoid *userParam);
+typedef void (APIENTRYP PFNGLDEBUGMESSAGECALLBACKPROC) (GLDEBUGPROC callback, const void *userParam);
+typedef void (APIENTRYP PFNGLDEBUGMESSAGECONTROLPROC) (GLenum source, GLenum type, GLenum severity, GLsizei count, const GLuint *ids, GLboolean enabled);
 typedef void (APIENTRYP PFNGLGETCOMPRESSEDTEXIMAGEPROC) (GLenum target, GLint level, GLvoid *img);
 typedef void (APIENTRYP PFNGLGENQUERIESPROC) (GLsizei n, GLuint *ids);
 typedef void (APIENTRYP PFNGLBEGINQUERYPROC) (GLenum target, GLuint id);
@@ -196,6 +199,8 @@ public:
   virtual int get_driver_shader_version_major();
   virtual int get_driver_shader_version_minor();
   
+  static void debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, GLvoid *userParam);
+
   virtual void reset();
 
   virtual void prepare_display_region(DisplayRegionPipelineReader *dr);
@@ -543,6 +548,7 @@ protected:
   int _gl_version_major, _gl_version_minor;
   //#--- Zhao Nov/2011
   int _gl_shadlang_ver_major, _gl_shadlang_ver_minor;
+
   pset<string> _extensions;
 
 public:
@@ -582,7 +588,6 @@ public:
   PFNGLCOMPRESSEDTEXSUBIMAGE3DPROC _glCompressedTexSubImage3D;
   PFNGLGETCOMPRESSEDTEXIMAGEPROC _glGetCompressedTexImage;
 
-  bool _cube_map_seamless;
   bool _supports_bgr;
   bool _supports_rescale_normal;
 

@@ -295,6 +295,11 @@ choose_pixel_format(const FrameBufferProperties &properties,
   int best_result = 0;
   FrameBufferProperties best_props;
 
+  int render_type = GLX_RGBA_TYPE;
+  if (properties.get_indexed_color()) {
+    render_type = GLX_COLOR_INDEX_TYPE;
+  }
+
   static const int max_attrib_list = 32;
   int attrib_list[max_attrib_list];
   int n = 0;
@@ -324,7 +329,8 @@ choose_pixel_format(const FrameBufferProperties &properties,
         const char *pixmaptext = context_has_pixmap ? " (pixmap)" : "";
         const char *slowtext = slow ? " (slow)" : "";
         glxdisplay_cat.debug()
-          << i << ": " << fbprops << " quality=" << quality << pbuffertext << pixmaptext << slowtext << "\n";
+          << i << ": " << fbprops << " quality=" << quality << pbuffertext
+          << pixmaptext << slowtext << "\n";
       }
       if (need_pbuffer && !context_has_pbuffer) {
         continue;
@@ -343,10 +349,29 @@ choose_pixel_format(const FrameBufferProperties &properties,
 
   if (best_quality > 0) {
     _fbconfig = configs[best_result];
-    _context =
-      _glXCreateNewContext(_display, _fbconfig, GLX_RGBA_TYPE, _share_context,
-                           GL_TRUE);
+
+    if (_glXCreateContextAttribs != NULL) {
+      // NB.  This is a wholly different type of attrib list
+      // than below, the same values are not used!
+      n = 0;
+      attrib_list[n++] = GLX_RENDER_TYPE;
+      attrib_list[n++] = render_type;
+      if (gl_debug) {
+        attrib_list[n++] = GLX_CONTEXT_FLAGS_ARB;
+        attrib_list[n++] = GLX_CONTEXT_DEBUG_BIT_ARB;
+      }
+      attrib_list[n] = None;
+      _context = _glXCreateContextAttribs(_display, _fbconfig, _share_context,
+                                          GL_TRUE, attrib_list);
+    } else {
+      _context =
+        _glXCreateNewContext(_display, _fbconfig, render_type, _share_context,
+                             GL_TRUE);
+    }
+
     if (_context) {
+      mark_new();
+
       if (_visuals != (XVisualInfo *)NULL) {
         XFree(_visuals);
         _visuals = NULL;
@@ -396,150 +421,6 @@ choose_pixel_format(const FrameBufferProperties &properties,
 
   // Pbuffers aren't supported at all with the XVisual interface.
   _context_has_pbuffer = false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsStateGuardian::reset
-//       Access: Public, Virtual
-//  Description: Resets all internal state as if the gsg were newly
-//               created.
-////////////////////////////////////////////////////////////////////
-void glxGraphicsStateGuardian::
-reset() {
-  PosixGraphicsStateGuardian::reset();
-
-  _supports_swap_control = has_extension("GLX_SGI_swap_control");
-
-  if (_supports_swap_control) {
-    _glXSwapIntervalSGI = 
-      (PFNGLXSWAPINTERVALSGIPROC)get_extension_func("glXSwapIntervalSGI");
-    if (_glXSwapIntervalSGI == NULL) {
-      glxdisplay_cat.error()
-        << "Driver claims to support GLX_SGI_swap_control extension, but does not define all functions.\n";
-      _supports_swap_control = false;
-    }
-  }
-
-  if (_supports_swap_control) {
-    // Set the video-sync setting up front, if we have the extension
-    // that supports it.
-    _glXSwapIntervalSGI(sync_video ? 1 : 0);
-  }
-
-  if (glx_support_fbconfig) {
-    if (glx_is_at_least_version(1, 3)) {
-      // If we have glx 1.3 or better, we have the FBConfig interface.
-      _supports_fbconfig = true;
-
-      _glXChooseFBConfig =
-        (PFNGLXCHOOSEFBCONFIGPROC)get_extension_func("glXChooseFBConfig");
-      _glXCreateNewContext =
-        (PFNGLXCREATENEWCONTEXTPROC)get_extension_func("glXCreateNewContext");
-      _glXGetVisualFromFBConfig =
-        (PFNGLXGETVISUALFROMFBCONFIGPROC)get_extension_func("glXGetVisualFromFBConfig");
-      _glXGetFBConfigAttrib =
-        (PFNGLXGETFBCONFIGATTRIBPROC)get_extension_func("glXGetFBConfigAttrib");
-      _glXCreatePixmap =
-        (PFNGLXCREATEPIXMAPPROC)get_extension_func("glXCreatePixmap");
-
-      if (_glXChooseFBConfig == NULL ||
-          _glXCreateNewContext == NULL ||
-          _glXGetVisualFromFBConfig == NULL ||
-          _glXGetFBConfigAttrib == NULL ||
-          _glXCreatePixmap == NULL) {
-        glxdisplay_cat.error()
-          << "Driver claims to support GLX_fbconfig extension, but does not define all functions.\n";
-        _supports_fbconfig = false;
-      }
-    } else if (has_extension("GLX_SGIX_fbconfig")) {
-      // Or maybe we have the old SGIX extension for FBConfig.  This is
-      // the same, but the function names are different--we just remap
-      // them to the same function pointers.
-      _supports_fbconfig = true;
-
-      _glXChooseFBConfig =
-        (PFNGLXCHOOSEFBCONFIGPROC)get_extension_func("glXChooseFBConfigSGIX");
-      _glXCreateNewContext =
-        (PFNGLXCREATENEWCONTEXTPROC)get_extension_func("glXCreateContextWithConfigSGIX");
-      _glXGetVisualFromFBConfig =
-        (PFNGLXGETVISUALFROMFBCONFIGPROC)get_extension_func("glXGetVisualFromFBConfigSGIX");
-      _glXGetFBConfigAttrib =
-        (PFNGLXGETFBCONFIGATTRIBPROC)get_extension_func("glXGetFBConfigAttribSGIX");
-      _glXCreatePixmap =
-        (PFNGLXCREATEPIXMAPPROC)get_extension_func("glXCreateGLXPixmapWithConfigSGIX");
-
-      if (_glXChooseFBConfig == NULL ||
-          _glXCreateNewContext == NULL ||
-          _glXGetVisualFromFBConfig == NULL ||
-          _glXGetFBConfigAttrib == NULL ||
-          _glXCreatePixmap == NULL) {
-        glxdisplay_cat.error()
-          << "Driver claims to support GLX_SGIX_fbconfig extension, but does not define all functions.\n";
-        _supports_fbconfig = false;
-      }
-    }
-
-    if (glx_is_at_least_version(1, 3)) {
-      // If we have glx 1.3 or better, we have the PBuffer interface.
-      _supports_pbuffer = true;
-      _uses_sgix_pbuffer = false;
-
-      _glXCreatePbuffer =
-        (PFNGLXCREATEPBUFFERPROC)get_extension_func("glXCreatePbuffer");
-      _glXCreateGLXPbufferSGIX = NULL;
-      _glXDestroyPbuffer =
-        (PFNGLXDESTROYPBUFFERPROC)get_extension_func("glXDestroyPbuffer");
-      if (_glXCreatePbuffer == NULL ||
-          _glXDestroyPbuffer == NULL) {
-        glxdisplay_cat.error()
-          << "Driver claims to support GLX_pbuffer extension, but does not define all functions.\n";
-        _supports_pbuffer = false;
-      }
-
-    } else if (has_extension("GLX_SGIX_pbuffer")) {
-      // Or maybe we have the old SGIX extension for PBuffers.
-      _uses_sgix_pbuffer = true;
-
-      // CreatePbuffer has a different form between SGIX and 1.3,
-      // however, so we must treat it specially.  But we can use the
-      // same function pointer for DestroyPbuffer.
-      _glXCreatePbuffer = NULL;
-      _glXCreateGLXPbufferSGIX =
-        (PFNGLXCREATEGLXPBUFFERSGIXPROC)get_extension_func("glXCreateGLXPbufferSGIX");
-      _glXDestroyPbuffer =
-        (PFNGLXDESTROYPBUFFERPROC)get_extension_func("glXDestroyGLXPbufferSGIX");
-      if (_glXCreateGLXPbufferSGIX == NULL ||
-          _glXDestroyPbuffer == NULL) {
-        glxdisplay_cat.error()
-          << "Driver claims to support GLX_SGIX_pbuffer extension, but does not define all functions.\n";
-        _supports_pbuffer = false;
-      }
-    }
-  }
-
-
-  if (glxdisplay_cat.is_debug()) {
-    glxdisplay_cat.debug()
-      << "supports_swap_control = " << _supports_swap_control << "\n";
-    glxdisplay_cat.debug()
-      << "supports_fbconfig = " << _supports_fbconfig << "\n";
-    glxdisplay_cat.debug()
-      << "supports_pbuffer = " << _supports_pbuffer
-      << " sgix = " << _uses_sgix_pbuffer << "\n";
-  }
-
-  // If "Mesa" is present, assume software.  However, if "Mesa DRI" is
-  // found, it's actually a Mesa-based OpenGL layer running over a
-  // hardware driver.
-  if (_gl_renderer.find("Mesa") != string::npos &&
-      _gl_renderer.find("Mesa DRI") == string::npos) {
-    // It's Mesa, therefore probably a software context.
-    _fbprops.set_force_software(1);
-    _fbprops.set_force_hardware(0);
-  } else {
-    _fbprops.set_force_hardware(1);
-    _fbprops.set_force_software(0);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -693,6 +574,153 @@ do_get_extension_func(const char *name) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsStateGuardian::query_glx_extensions
+//       Access: Private
+//  Description: Queries the GLX extension pointers.
+////////////////////////////////////////////////////////////////////
+void glxGraphicsStateGuardian::
+query_glx_extensions() {
+  _supports_swap_control = has_extension("GLX_SGI_swap_control");
+
+  if (_supports_swap_control) {
+    _glXSwapIntervalSGI = 
+      (PFNGLXSWAPINTERVALSGIPROC)get_extension_func("glXSwapIntervalSGI");
+    if (_glXSwapIntervalSGI == NULL) {
+      glxdisplay_cat.error()
+        << "Driver claims to support GLX_SGI_swap_control extension, but does not define all functions.\n";
+      _supports_swap_control = false;
+    }
+  }
+
+  if (_supports_swap_control) {
+    // Set the video-sync setting up front, if we have the extension
+    // that supports it.
+    _glXSwapIntervalSGI(sync_video ? 1 : 0);
+  }
+
+  if (glx_support_fbconfig) {
+    if (glx_is_at_least_version(1, 3)) {
+      // If we have glx 1.3 or better, we have the FBConfig interface.
+      _supports_fbconfig = true;
+
+      _glXChooseFBConfig =
+        (PFNGLXCHOOSEFBCONFIGPROC)get_extension_func("glXChooseFBConfig");
+      _glXCreateNewContext =
+        (PFNGLXCREATENEWCONTEXTPROC)get_extension_func("glXCreateNewContext");
+      _glXGetVisualFromFBConfig =
+        (PFNGLXGETVISUALFROMFBCONFIGPROC)get_extension_func("glXGetVisualFromFBConfig");
+      _glXGetFBConfigAttrib =
+        (PFNGLXGETFBCONFIGATTRIBPROC)get_extension_func("glXGetFBConfigAttrib");
+      _glXCreatePixmap =
+        (PFNGLXCREATEPIXMAPPROC)get_extension_func("glXCreatePixmap");
+
+      if (_glXChooseFBConfig == NULL ||
+          _glXCreateNewContext == NULL ||
+          _glXGetVisualFromFBConfig == NULL ||
+          _glXGetFBConfigAttrib == NULL ||
+          _glXCreatePixmap == NULL) {
+        glxdisplay_cat.error()
+          << "Driver claims to support GLX_fbconfig extension, but does not define all functions.\n";
+        _supports_fbconfig = false;
+      }
+    } else if (has_extension("GLX_SGIX_fbconfig")) {
+      // Or maybe we have the old SGIX extension for FBConfig.  This is
+      // the same, but the function names are different--we just remap
+      // them to the same function pointers.
+      _supports_fbconfig = true;
+
+      _glXChooseFBConfig =
+        (PFNGLXCHOOSEFBCONFIGPROC)get_extension_func("glXChooseFBConfigSGIX");
+      _glXCreateNewContext =
+        (PFNGLXCREATENEWCONTEXTPROC)get_extension_func("glXCreateContextWithConfigSGIX");
+      _glXGetVisualFromFBConfig =
+        (PFNGLXGETVISUALFROMFBCONFIGPROC)get_extension_func("glXGetVisualFromFBConfigSGIX");
+      _glXGetFBConfigAttrib =
+        (PFNGLXGETFBCONFIGATTRIBPROC)get_extension_func("glXGetFBConfigAttribSGIX");
+      _glXCreatePixmap =
+        (PFNGLXCREATEPIXMAPPROC)get_extension_func("glXCreateGLXPixmapWithConfigSGIX");
+
+      if (_glXChooseFBConfig == NULL ||
+          _glXCreateNewContext == NULL ||
+          _glXGetVisualFromFBConfig == NULL ||
+          _glXGetFBConfigAttrib == NULL ||
+          _glXCreatePixmap == NULL) {
+        glxdisplay_cat.error()
+          << "Driver claims to support GLX_SGIX_fbconfig extension, but does not define all functions.\n";
+        _supports_fbconfig = false;
+      }
+    }
+
+    if (glx_is_at_least_version(1, 3)) {
+      // If we have glx 1.3 or better, we have the PBuffer interface.
+      _supports_pbuffer = true;
+      _uses_sgix_pbuffer = false;
+
+      _glXCreatePbuffer =
+        (PFNGLXCREATEPBUFFERPROC)get_extension_func("glXCreatePbuffer");
+      _glXCreateGLXPbufferSGIX = NULL;
+      _glXDestroyPbuffer =
+        (PFNGLXDESTROYPBUFFERPROC)get_extension_func("glXDestroyPbuffer");
+      if (_glXCreatePbuffer == NULL ||
+          _glXDestroyPbuffer == NULL) {
+        glxdisplay_cat.error()
+          << "Driver claims to support GLX_pbuffer extension, but does not define all functions.\n";
+        _supports_pbuffer = false;
+      }
+
+    } else if (has_extension("GLX_SGIX_pbuffer")) {
+      // Or maybe we have the old SGIX extension for PBuffers.
+      _uses_sgix_pbuffer = true;
+
+      // CreatePbuffer has a different form between SGIX and 1.3,
+      // however, so we must treat it specially.  But we can use the
+      // same function pointer for DestroyPbuffer.
+      _glXCreatePbuffer = NULL;
+      _glXCreateGLXPbufferSGIX =
+        (PFNGLXCREATEGLXPBUFFERSGIXPROC)get_extension_func("glXCreateGLXPbufferSGIX");
+      _glXDestroyPbuffer =
+        (PFNGLXDESTROYPBUFFERPROC)get_extension_func("glXDestroyGLXPbufferSGIX");
+      if (_glXCreateGLXPbufferSGIX == NULL ||
+          _glXDestroyPbuffer == NULL) {
+        glxdisplay_cat.error()
+          << "Driver claims to support GLX_SGIX_pbuffer extension, but does not define all functions.\n";
+        _supports_pbuffer = false;
+      }
+    }
+
+    if (has_extension("GLX_ARB_create_context")) {
+      _glXCreateContextAttribs = 
+        (PFNGLXCREATECONTEXTATTRIBSARBPROC)get_extension_func("glXCreateContextAttribsARB");
+    } else {
+      _glXCreateContextAttribs = NULL;
+    }
+  }
+
+  if (glxdisplay_cat.is_debug()) {
+    glxdisplay_cat.debug()
+      << "supports_swap_control = " << _supports_swap_control << "\n";
+    glxdisplay_cat.debug()
+      << "supports_fbconfig = " << _supports_fbconfig << "\n";
+    glxdisplay_cat.debug()
+      << "supports_pbuffer = " << _supports_pbuffer
+      << " sgix = " << _uses_sgix_pbuffer << "\n";
+  }
+
+  // If "Mesa" is present, assume software.  However, if "Mesa DRI" is
+  // found, it's actually a Mesa-based OpenGL layer running over a
+  // hardware driver.
+  if (_gl_renderer.find("Mesa") != string::npos &&
+      _gl_renderer.find("Mesa DRI") == string::npos) {
+    // It's Mesa, therefore probably a software context.
+    _fbprops.set_force_software(1);
+    _fbprops.set_force_hardware(0);
+  } else {
+    _fbprops.set_force_hardware(1);
+    _fbprops.set_force_software(0);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: glxGraphicsStateGuardian::show_glx_client_string
 //       Access: Protected
 //  Description: Outputs the result of glxGetClientString() on the
@@ -814,8 +842,11 @@ init_temp_context() {
     return;
   }
 
+  // Now use it to query the available GLX features.
   glXMakeCurrent(_display, _temp_xwindow, _temp_context);
-  reset();
+  query_gl_version();
+  get_extra_extensions();
+  query_glx_extensions();
 }
 
 ////////////////////////////////////////////////////////////////////

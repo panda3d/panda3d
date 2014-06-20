@@ -338,6 +338,49 @@ CLP(GraphicsStateGuardian)::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::debug_callback
+//       Access: Public, Static
+//  Description: This is called by the GL if an error occurs, if
+//               gl_debug has been enabled (and the driver supports
+//               the GL_ARB_debug_output extension).
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, GLvoid *userParam) {
+  // Determine how to map the severity level.
+  NotifySeverity level;
+  switch (severity) {
+  case GL_DEBUG_SEVERITY_HIGH:
+    level = NS_error;
+    break;
+
+  case GL_DEBUG_SEVERITY_MEDIUM:
+    level = NS_warning;
+    break;
+
+  case GL_DEBUG_SEVERITY_LOW:
+    level = NS_info;
+    break;
+
+  case GL_DEBUG_SEVERITY_NOTIFICATION:
+    level = NS_debug;
+    break;
+
+  default:
+    level = NS_fatal; //???
+    break;
+  }
+
+  string msg_str(message, length);
+  GLCAT.out(level) << msg_str << "\n";
+
+#ifndef NDEBUG
+  if (level >= gl_debug_abort_level.get_value()) {
+    abort();
+  }
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::reset
 //       Access: Public, Virtual
 //  Description: Resets all internal state as if the gsg were newly
@@ -386,9 +429,64 @@ reset() {
   }
 
   // Save the extensions tokens.
+  _extensions.clear();
   save_extensions((const char *)glGetString(GL_EXTENSIONS));
   get_extra_extensions();
   report_extensions();
+
+  // Initialize OpenGL debugging output first, if enabled and supported.
+  if (gl_debug) {
+    bool supports_debug = false;
+    PFNGLDEBUGMESSAGECALLBACKPROC _glDebugMessageCallback;
+    PFNGLDEBUGMESSAGECONTROLPROC _glDebugMessageControl;
+
+    if (is_at_least_gl_version(4, 3) || has_extension("GL_KHR_debug")) {
+#ifdef OPENGLES
+      _glDebugMessageCallback = (PFNGLDEBUGMESSAGECALLBACKPROC)
+        get_extension_func("glDebugMessageCallbackKHR");
+      _glDebugMessageControl = (PFNGLDEBUGMESSAGECONTROLPROC)
+        get_extension_func("glDebugMessageControlKHR");
+#else
+      _glDebugMessageCallback = (PFNGLDEBUGMESSAGECALLBACKPROC)
+        get_extension_func("glDebugMessageCallback");
+      _glDebugMessageControl = (PFNGLDEBUGMESSAGECONTROLPROC)
+        get_extension_func("glDebugMessageControl");
+#endif
+      glEnable(GL_DEBUG_OUTPUT); // Not supported in ARB version
+      supports_debug = true;
+
+    } else if (has_extension("GL_ARB_debug_output")) {
+      _glDebugMessageCallback = (PFNGLDEBUGMESSAGECALLBACKPROC)
+        get_extension_func("glDebugMessageCallbackARB");
+      _glDebugMessageControl = (PFNGLDEBUGMESSAGECONTROLPROC)
+        get_extension_func("glDebugMessageControlARB");
+      supports_debug = true;
+    }
+
+    if (supports_debug) {
+      // Set the categories we want to listen to.
+      _glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_HIGH,
+                             0, NULL, GLCAT.is_error());
+      _glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_MEDIUM,
+                             0, NULL, GLCAT.is_warning());
+      _glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_LOW,
+                             0, NULL, GLCAT.is_info());
+      _glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION,
+                             0, NULL, GLCAT.is_debug());
+
+      // Enable the callback.
+      _glDebugMessageCallback(&debug_callback, (void*)this);
+      if (gl_debug_synchronous) {
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+      }
+
+      GLCAT.error() << "gl-debug enabled.\n";
+    } else {
+      GLCAT.error() << "gl-debug enabled, but NOT supported.\n";
+    }
+  } else {
+    GLCAT.debug() << "gl-debug NOT enabled.\n";
+  }
 
   _supported_geom_rendering =
     Geom::GR_indexed_point |
@@ -634,7 +732,6 @@ reset() {
   }
 #endif
 
-  _cube_map_seamless = false;
 #ifdef OPENGLES_2
   _supports_cube_map = true;
 #else
@@ -644,7 +741,7 @@ reset() {
 
   if (_supports_cube_map && gl_cube_map_seamless) {
     if (is_at_least_gl_version(3, 2) || has_extension("GL_ARB_seamless_cube_map")) {
-      _cube_map_seamless = true;
+      glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     }
   }
 #endif
@@ -2234,10 +2331,6 @@ begin_frame(Thread *current_thread) {
     }
   }
 #endif  // NDEBUG
-
-  if (_cube_map_seamless) {
-    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-  }
 
   if (_current_properties->get_srgb_color()) {
     glEnable(GL_FRAMEBUFFER_SRGB);
