@@ -1540,7 +1540,7 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
         CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tex->prepare_now(view, gsg->_prepared_objects, gsg));
         if (gtc != (TextureContext*)NULL) {
           gl_tex = gtc->_index;
-          gsg->update_texture(gtc, false);
+          gsg->update_texture(gtc, true);
         }
       }
 

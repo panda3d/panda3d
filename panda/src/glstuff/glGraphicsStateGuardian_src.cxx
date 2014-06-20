@@ -3690,7 +3690,7 @@ update_texture(TextureContext *tc, bool force) {
 
   CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
 
-  if (gtc->was_image_modified()) {
+  if (gtc->was_image_modified() || !gtc->_already_applied) {
     // If the texture image was modified, reload the texture.  This
     // means we also re-specify the properties for good measure.
     specify_texture(gtc);
