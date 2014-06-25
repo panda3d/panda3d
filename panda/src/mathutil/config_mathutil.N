@@ -51,3 +51,18 @@ forcetype PointerToBase<ReferenceCountedVector<LVecBase2d> >
 forcetype PointerToArrayBase<LVecBase2d>
 forcetype PTA_LVecBase2d
 forcetype CPTA_LVecBase2d
+
+forcetype PointerToBase<ReferenceCountedVector<UnalignedLVecBase4i> >
+forcetype PointerToArrayBase<UnalignedLVecBase4i>
+forcetype PTA_LVecBase4i
+forcetype CPTA_LVecBase4i
+
+forcetype PointerToBase<ReferenceCountedVector<LVecBase3i> >
+forcetype PointerToArrayBase<LVecBase3i>
+forcetype PTA_LVecBase3i
+forcetype CPTA_LVecBase3i
+
+forcetype PointerToBase<ReferenceCountedVector<LVecBase2i> >
+forcetype PointerToArrayBase<LVecBase2i>
+forcetype PTA_LVecBase2i
+forcetype CPTA_LVecBase2i
