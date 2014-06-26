@@ -66,6 +66,7 @@ extern ConfigVariableBool gl_force_no_error;
 extern ConfigVariableBool gl_force_no_flush;
 extern ConfigVariableBool gl_separate_specular_color;
 extern ConfigVariableBool gl_cube_map_seamless;
+extern ConfigVariableBool gl_dump_compiled_shaders;
 
 extern EXPCL_GL void CLP(init_classes)();
 

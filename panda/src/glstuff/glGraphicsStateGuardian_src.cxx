@@ -77,6 +77,7 @@ PStatCollector CLP(GraphicsStateGuardian)::_load_display_list_pcollector("Draw:T
 PStatCollector CLP(GraphicsStateGuardian)::_primitive_batches_display_list_pcollector("Primitive batches:Display lists");
 PStatCollector CLP(GraphicsStateGuardian)::_vertices_display_list_pcollector("Vertices:Display lists");
 PStatCollector CLP(GraphicsStateGuardian)::_vertices_immediate_pcollector("Vertices:Immediate mode");
+PStatCollector CLP(GraphicsStateGuardian)::_compute_dispatch_pcollector("Draw:Compute dispatch");
 
 #ifdef OPENGLES_2
 PT(Shader) CLP(GraphicsStateGuardian)::_default_shader = NULL;
@@ -480,9 +481,9 @@ reset() {
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
       }
 
-      GLCAT.error() << "gl-debug enabled.\n";
+      GLCAT.debug() << "gl-debug enabled.\n";
     } else {
-      GLCAT.error() << "gl-debug enabled, but NOT supported.\n";
+      GLCAT.debug() << "gl-debug enabled, but NOT supported.\n";
     }
   } else {
     GLCAT.debug() << "gl-debug NOT enabled.\n";
@@ -1705,12 +1706,16 @@ reset() {
   if (is_at_least_gl_version(4, 2) || has_extension("GL_ARB_shader_image_load_store")) {
     _glBindImageTexture = (PFNGLBINDIMAGETEXTUREPROC)
       get_extension_func("glBindImageTexture");
+    _glMemoryBarrier = (PFNGLMEMORYBARRIERPROC)
+      get_extension_func("glMemoryBarrier");
 
     glGetIntegerv(GL_MAX_IMAGE_UNITS, &_max_image_units);
 
   } else if (has_extension("GL_EXT_shader_image_load_store")) {
     _glBindImageTexture = (PFNGLBINDIMAGETEXTUREPROC)
       get_extension_func("glBindImageTextureEXT");
+    _glMemoryBarrier = (PFNGLMEMORYBARRIERPROC)
+      get_extension_func("glMemoryBarrierEXT");
 
     glGetIntegerv(GL_MAX_IMAGE_UNITS_EXT, &_max_image_units);
   }
@@ -1726,6 +1731,19 @@ reset() {
     } else {
       GLCAT.warning()
         << "ARB_multi_bind advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
+    }
+  }
+#endif
+
+#ifndef OPENGLES
+  _supports_get_program_binary = false;
+
+  if (is_at_least_gl_version(4, 1) || has_extension("GL_ARB_get_program_binary")) {
+    _glGetProgramBinary = (PFNGLGETPROGRAMBINARYPROC)
+      get_extension_func("glGetProgramBinary");
+
+    if (_glGetProgramBinary != NULL) {
+      _supports_get_program_binary = true;
     }
   }
 #endif
@@ -4333,9 +4351,12 @@ end_occlusion_query() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
+  PStatTimer timer(_compute_dispatch_pcollector);
   nassertv(_supports_compute_shaders);
   nassertv(_current_shader_context != NULL);
   _glDispatchCompute(num_groups_x, num_groups_y, num_groups_z);
+
+  maybe_gl_finish();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -8986,6 +9007,11 @@ specify_texture(CLP(TextureContext) *gtc) {
                      get_texture_filter_type(minfilter, !uses_mipmaps));
   glTexParameteri(target, GL_TEXTURE_MAG_FILTER,
                      get_texture_filter_type(magfilter, true));
+
+  if (!uses_mipmaps) {
+    // NVIDIA drivers complain if we don't do this.
+    glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, 0);
+  }
 
   // Set anisotropic filtering.
   if (_supports_anisotropy) {

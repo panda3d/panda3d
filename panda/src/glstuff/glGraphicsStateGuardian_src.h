@@ -176,6 +176,8 @@ typedef void (APIENTRYP PFNGLDRAWELEMENTSINSTANCEDPROC) (GLenum mode, GLsizei co
 typedef void (APIENTRYP PFNGLBINDIMAGETEXTUREPROC) (GLuint unit, GLuint texture, GLint level, GLboolean layered, GLint layer, GLenum access, GLenum format);
 typedef void (APIENTRYP PFNGLBINDIMAGETEXTURESPROC) (GLuint first, GLsizei count, const GLuint *textures);
 typedef void (APIENTRYP PFNGLDISPATCHCOMPUTEPROC) (GLuint num_groups_x, GLuint num_groups_y, GLuint num_groups_z);
+typedef void (APIENTRYP PFNGLMEMORYBARRIERPROC) (GLbitfield barriers);
+typedef void (APIENTRYP PFNGLGETPROGRAMBINARYPROC) (GLuint program, GLsizei bufsize, GLsizei *length, GLenum *binaryFormat, void *binary);
 #endif  // OPENGLES
 #endif  // __EDG__
 
@@ -534,6 +536,7 @@ protected:
   bool _supports_anisotropy;
   GLint _max_image_units;
   bool _supports_multi_bind;
+  bool _supports_get_program_binary;
 
 #ifdef OPENGLES
   bool _supports_depth24;
@@ -702,6 +705,8 @@ public:
   PFNGLBINDIMAGETEXTUREPROC _glBindImageTexture;
   PFNGLBINDIMAGETEXTURESPROC _glBindImageTextures;
   PFNGLDISPATCHCOMPUTEPROC _glDispatchCompute;
+  PFNGLMEMORYBARRIERPROC _glMemoryBarrier;
+  PFNGLGETPROGRAMBINARYPROC _glGetProgramBinary;
 #endif  // OPENGLES
 
   GLenum _edge_clamp;
@@ -745,6 +750,7 @@ public:
   static PStatCollector _primitive_batches_display_list_pcollector;
   static PStatCollector _vertices_display_list_pcollector;
   static PStatCollector _vertices_immediate_pcollector;
+  static PStatCollector _compute_dispatch_pcollector;
 
 public:
   virtual TypeHandle get_type() const {

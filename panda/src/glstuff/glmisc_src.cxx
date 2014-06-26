@@ -198,6 +198,12 @@ ConfigVariableBool gl_cube_map_seamless
             "this is causing problems or if you simply don't need the "
             "functionality."));
 
+ConfigVariableBool gl_dump_compiled_shaders
+  ("gl-dump-compiled-shaders", false,
+   PRC_DESC("This configures Panda to dump the binary content of GLSL "
+            "programs to disk with a filename like glsl_program0.dump "
+            "into the current directory."));
+
 extern ConfigVariableBool gl_parallel_arrays;
 
 void CLP(init_classes)() {

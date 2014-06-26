@@ -1750,6 +1750,13 @@ glsl_compile_shader(GSG *gsg) {
     glsl_report_shader_errors(gsg, _glsl_teshader);
   }
 
+  // If we requested to retrieve the shader, we should indicate that before linking.
+#if !defined(NDEBUG) && !defined(OPENGLES)
+  if (gl_dump_compiled_shaders && gsg->_supports_get_program_binary) {
+    gsg->_glProgramParameteri(_glsl_program, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, GL_TRUE);
+  }
+#endif
+
   gsg->_glLinkProgram(_glsl_program);
 
   GLint status;
@@ -1760,9 +1767,36 @@ glsl_compile_shader(GSG *gsg) {
     return false;
   }
 
+  // Dump the binary if requested.
+#if !defined(NDEBUG) && !defined(OPENGLES)
+  if (gl_dump_compiled_shaders && gsg->_supports_get_program_binary) {
+    GLint length = 0;
+    gsg->_glGetProgramiv(_glsl_program, GL_PROGRAM_BINARY_LENGTH, &length);
+    length += 2;
+
+    char filename[64];
+    static int gl_dump_count = 0;
+    sprintf(filename, "glsl_program%d.dump", gl_dump_count++);
+
+    char *binary = new char[length];
+    GLenum format;
+    GLsizei num_bytes;
+    gsg->_glGetProgramBinary(_glsl_program, length, &num_bytes, &format, (void*)binary);
+
+    pofstream s;
+    s.open(filename, ios::out | ios::binary);
+    s.write(binary, num_bytes);
+    s.close();
+
+    GLCAT.info()
+      << "Dumped " << num_bytes << " bytes of program binary with format 0x"
+      << hex << format << dec << "  to " << filename << "\n";
+    delete[] binary;
+  }
+#endif  // NDEBUG
+
   gsg->report_my_gl_errors();
   return true;
 }
 
 #endif  // OPENGLES_1
-
