@@ -34,11 +34,17 @@ ConfigureFn(config_grutil) {
   init_libgrutil();
 }
 
+ConfigVariableBool frame_rate_meter_milliseconds
+("frame-rate-meter-milliseconds", false);
+
 ConfigVariableDouble frame_rate_meter_update_interval
 ("frame-rate-meter-update-interval", 1.5);
 
 ConfigVariableString frame_rate_meter_text_pattern
 ("frame-rate-meter-text-pattern", "%0.1f fps");
+
+ConfigVariableString frame_rate_meter_ms_text_pattern
+("frame-rate-meter-ms-text-pattern", "%0.1f ms");
 
 ConfigVariableInt frame_rate_meter_layer_sort
 ("frame-rate-meter-layer-sort", 1000);
