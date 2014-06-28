@@ -1269,15 +1269,32 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &
     return &t;
   }
   case Shader::SMO_apiclip_x_to_view: {
-    // NOT IMPLEMENTED
-    return &LMatrix4::ident_mat();
+    // LIMITATION: only takes the first lens.
+    const NodePath &np = _target_shader->get_shader_input_nodepath(name);
+    nassertr(!np.is_empty(), &LMatrix4::ident_mat());
+    LensNode *ln;
+    DCAST_INTO_R(ln, np.node(), &LMatrix4::ident_mat());
+    Lens *lens = ln->get_lens();
+    nassertr(lens != (Lens *)NULL, &LMatrix4::ident_mat());
+    CPT(TransformState) ts = calc_projection_mat(lens);
+    t = ts->get_inverse()->get_mat() * _inv_cs_transform->get_mat();
+    return &t;
   }
   case Shader::SMO_view_to_apiclip_x: {
-    // NOT IMPLEMENTED
-    return &LMatrix4::ident_mat();
+    // LIMITATION: only takes the first lens.
+    const NodePath &np = _target_shader->get_shader_input_nodepath(name);
+    nassertr(!np.is_empty(), &LMatrix4::ident_mat());
+    LensNode *ln;
+    DCAST_INTO_R(ln, np.node(), &LMatrix4::ident_mat());
+    Lens *lens = ln->get_lens();
+    nassertr(lens != (Lens *)NULL, &LMatrix4::ident_mat());
+    CPT(TransformState) ts = calc_projection_mat(lens);
+    nassertr(ts != NULL, &LMatrix4::ident_mat());
+    t = _cs_transform->get_mat() * ts->get_mat();
+    return &t;
   }
   default:
-    // should never get here
+    nassertr(false /*should never get here*/, &LMatrix4::ident_mat());
     return &LMatrix4::ident_mat();
   }
 }
