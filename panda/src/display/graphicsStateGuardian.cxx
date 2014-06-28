@@ -1180,8 +1180,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &
     return &(get_external_transform()->get_mat());
   }
   case Shader::SMO_view_to_model: {
-    // DANGER: SLOW AND NOT CACHEABLE!
-    t.invert_from(get_external_transform()->get_mat());
+    t = get_external_transform()->get_inverse()->get_mat();
     return &t;
   }
   case Shader::SMO_apiview_to_view: {
@@ -1227,7 +1226,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4::ident_mat());
     t = get_scene()->get_camera_transform()->get_mat() *
-      invert(np.get_net_transform()->get_mat());
+      np.get_net_transform()->get_inverse()->get_mat();
     return &t;
   }
   case Shader::SMO_apiview_x_to_view: {
@@ -1242,7 +1241,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4::ident_mat());
     t = (get_scene()->get_camera_transform()->get_mat() *
-         invert(np.get_net_transform()->get_mat()) *
+         np.get_net_transform()->get_inverse()->get_mat() *
          LMatrix4::convert_mat(_coordinate_system, _internal_coordinate_system));
     return &t;
   }
@@ -1263,34 +1262,31 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &
     nassertr(np.node()->is_of_type(LensNode::get_class_type()), &LMatrix4::ident_mat());
     Lens *lens = DCAST(LensNode, np.node())->get_lens();
     t = get_scene()->get_camera_transform()->get_mat() *
-      invert(np.get_net_transform()->get_mat()) *
+      np.get_net_transform()->get_inverse()->get_mat() *
       LMatrix4::convert_mat(_coordinate_system, lens->get_coordinate_system()) *
       lens->get_projection_mat(_current_stereo_channel);
     return &t;
   }
   case Shader::SMO_apiclip_x_to_view: {
-    // LIMITATION: only takes the first lens.
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4::ident_mat());
-    LensNode *ln;
-    DCAST_INTO_R(ln, np.node(), &LMatrix4::ident_mat());
-    Lens *lens = ln->get_lens();
-    nassertr(lens != (Lens *)NULL, &LMatrix4::ident_mat());
-    CPT(TransformState) ts = calc_projection_mat(lens);
-    t = ts->get_inverse()->get_mat() * _inv_cs_transform->get_mat();
+    nassertr(np.node()->is_of_type(LensNode::get_class_type()), &LMatrix4::ident_mat());
+    Lens *lens = DCAST(LensNode, np.node())->get_lens();
+    t = calc_projection_mat(lens)->get_inverse()->get_mat() *
+      get_cs_transform_for(lens->get_coordinate_system())->get_inverse()->get_mat() *
+      np.get_net_transform()->get_mat() *
+      get_scene()->get_world_transform()->get_mat();
     return &t;
   }
   case Shader::SMO_view_to_apiclip_x: {
-    // LIMITATION: only takes the first lens.
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4::ident_mat());
-    LensNode *ln;
-    DCAST_INTO_R(ln, np.node(), &LMatrix4::ident_mat());
-    Lens *lens = ln->get_lens();
-    nassertr(lens != (Lens *)NULL, &LMatrix4::ident_mat());
-    CPT(TransformState) ts = calc_projection_mat(lens);
-    nassertr(ts != NULL, &LMatrix4::ident_mat());
-    t = _cs_transform->get_mat() * ts->get_mat();
+    nassertr(np.node()->is_of_type(LensNode::get_class_type()), &LMatrix4::ident_mat());
+    Lens *lens = DCAST(LensNode, np.node())->get_lens();
+    t = get_scene()->get_camera_transform()->get_mat() *
+      np.get_net_transform()->get_inverse()->get_mat() *
+      get_cs_transform_for(lens->get_coordinate_system())->get_mat() *
+      calc_projection_mat(lens)->get_mat();
     return &t;
   }
   default:
