@@ -178,6 +178,7 @@ typedef void (APIENTRYP PFNGLBINDIMAGETEXTURESPROC) (GLuint first, GLsizei count
 typedef void (APIENTRYP PFNGLDISPATCHCOMPUTEPROC) (GLuint num_groups_x, GLuint num_groups_y, GLuint num_groups_z);
 typedef void (APIENTRYP PFNGLMEMORYBARRIERPROC) (GLbitfield barriers);
 typedef void (APIENTRYP PFNGLGETPROGRAMBINARYPROC) (GLuint program, GLsizei bufsize, GLsizei *length, GLenum *binaryFormat, void *binary);
+typedef void (APIENTRYP PFNGLGETINTERNALFORMATIVPROC) (GLenum target, GLenum internalformat, GLenum pname, GLsizei bufSize, GLint *params); 
 #endif  // OPENGLES
 #endif  // __EDG__
 
@@ -707,6 +708,7 @@ public:
   PFNGLDISPATCHCOMPUTEPROC _glDispatchCompute;
   PFNGLMEMORYBARRIERPROC _glMemoryBarrier;
   PFNGLGETPROGRAMBINARYPROC _glGetProgramBinary;
+  PFNGLGETINTERNALFORMATIVPROC _glGetInternalformativ;
 #endif  // OPENGLES
 
   GLenum _edge_clamp;

@@ -1733,6 +1733,16 @@ reset() {
         << "ARB_multi_bind advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
     }
   }
+
+  if (is_at_least_gl_version(4, 3) || has_extension("GL_ARB_internalformat_query2")) {
+    _glGetInternalformativ = (PFNGLGETINTERNALFORMATIVPROC)
+      get_extension_func("glGetInternalformativ");
+
+    if (_glGetInternalformativ == NULL) {
+      GLCAT.warning()
+        << "ARB_internalformat_query2 advertised as supported by OpenGL runtime, but could not get pointers to extension function.\n";
+    }
+  }
 #endif
 
 #ifndef OPENGLES

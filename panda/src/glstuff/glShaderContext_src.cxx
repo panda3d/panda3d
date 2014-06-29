@@ -1099,6 +1099,56 @@ update_shader_texture_bindings(ShaderContext *prev) {
     return;
   }
 
+#ifndef OPENGLES
+  // First bind all the 'image units'; a bit of an esoteric OpenGL feature right now.
+  int num_image_units = min(_glsl_img_inputs.size(), (size_t)_glgsg->_max_image_units);
+
+  if (num_image_units > 0) {
+    GLuint *multi_img = NULL;
+    // If we support multi-bind, prepare an array.
+    if (_glgsg->_supports_multi_bind) {
+      multi_img = new GLuint[num_image_units];
+    }
+
+    for (int i = 0; i < num_image_units; ++i) {
+      const InternalName *name = _glsl_img_inputs[i];
+      Texture *tex = _glgsg->_target_shader->get_shader_input_texture(name);
+
+      GLuint gl_tex = 0;
+      if (tex != NULL) {
+        int view = _glgsg->get_current_tex_view_offset();
+
+        CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tex->prepare_now(view, _glgsg->_prepared_objects, _glgsg));
+        if (gtc != (TextureContext*)NULL) {
+          gl_tex = gtc->_index;
+          _glgsg->update_texture(gtc, true);
+        }
+      }
+
+      if (multi_img != NULL) {
+        // Put in array so we can multi-bind later.
+        multi_img[i] = gl_tex;
+
+      } else {
+        // We don't support multi-bind, so bind now in the same way that multi-bind would have done it.
+        if (gl_tex == 0) {
+          _glgsg->_glBindImageTexture(i, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R8);
+        } else {
+          //TODO: automatically convert to sized type instead of plain GL_RGBA
+          // If a base type is used, it will crash.
+          GLint internal_format = _glgsg->get_internal_image_format(tex);
+          _glgsg->_glBindImageTexture(i, gl_tex, 0, GL_TRUE, 0, GL_READ_WRITE, internal_format);
+        }
+      }
+    }
+
+    if (multi_img != NULL) {
+      _glgsg->_glBindImageTextures(0, num_image_units, multi_img);
+      delete[] multi_img;
+    }
+  }
+#endif
+
   // We get the TextureAttrib directly from the _target_rs, not the
   // filtered TextureAttrib in _target_texture.
   const TextureAttrib *texattrib = DCAST(TextureAttrib, _glgsg->_target_rs->get_attrib_def(TextureAttrib::get_class_slot()));
@@ -1156,55 +1206,6 @@ update_shader_texture_bindings(ShaderContext *prev) {
       continue;
     }
   }
-
-#ifndef OPENGLES
-  // Now bind all the 'image units'; a bit of an esoteric OpenGL feature right now.
-  int num_image_units = min(_glsl_img_inputs.size(), (size_t)_glgsg->_max_image_units);
-
-  if (num_image_units > 0) {
-    GLuint *multi_img = NULL;
-    // If we support multi-bind, prepare an array.
-    if (_glgsg->_supports_multi_bind && num_image_units > 1) {
-      multi_img = new GLuint[num_image_units];
-    }
-
-    for (int i = 0; i < num_image_units; ++i) {
-      const InternalName *name = _glsl_img_inputs[i];
-      Texture *tex = _glgsg->_target_shader->get_shader_input_texture(name);
-
-      GLuint gl_tex = 0;
-      if (tex != NULL) {
-        int view = _glgsg->get_current_tex_view_offset();
-
-        CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tex->prepare_now(view, _glgsg->_prepared_objects, _glgsg));
-        if (gtc != (TextureContext*)NULL) {
-          gl_tex = gtc->_index;
-          _glgsg->update_texture(gtc, true);
-        }
-      }
-
-      if (multi_img != NULL) {
-        // Put in array so we can multi-bind later.
-        multi_img[i] = gl_tex;
-
-      } else {
-        // We don't support multi-bind, so bind now in the same way that multi-bind would have done it.
-        if (gl_tex == 0) {
-          _glgsg->_glBindImageTexture(i, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R8);
-        } else {
-          //TODO: automatically convert to sized type instead of plain GL_RGBA
-          GLint internal_format = _glgsg->get_internal_image_format(tex);
-          _glgsg->_glBindImageTexture(i, gl_tex, 0, GL_TRUE, 0, GL_READ_WRITE, internal_format);
-        }
-      }
-    }
-
-    if (multi_img != NULL) {
-      _glgsg->_glBindImageTextures(0, num_image_units, multi_img);
-      delete[] multi_img;
-    }
-  }
-#endif
 
   _glgsg->report_my_gl_errors();
 }
