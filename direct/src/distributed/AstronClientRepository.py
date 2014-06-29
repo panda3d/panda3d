@@ -68,6 +68,7 @@ class AstronClientRepository(ClientRepositoryBase):
                 # value = di.get?()
                 # Assemble new message
             self.notify.error("CLIENT_OBJECT_SET_FIELDS not implemented!")
+            raise NotImplementedError("CLIENT_OBJECT_SET_FIELDS not implemented!")
         elif msgType == CLIENT_OBJECT_LEAVING:
             do_id = di.get_uint32()
             dist_obj = self.doId2do.get(do_id)
