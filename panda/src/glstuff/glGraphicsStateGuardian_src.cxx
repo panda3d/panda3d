@@ -2431,17 +2431,17 @@ end_frame(Thread *current_thread) {
 #ifndef OPENGLES_1
   // This breaks shaders across multiple regions.
   if (_vertex_array_shader_context != 0) {
-    _vertex_array_shader_context->disable_shader_vertex_arrays(this);
+    _vertex_array_shader_context->disable_shader_vertex_arrays();
     _vertex_array_shader = (Shader *)NULL;
     _vertex_array_shader_context = (CLP(ShaderContext) *)NULL;
   }
   if (_texture_binding_shader_context != 0) {
-    _texture_binding_shader_context->disable_shader_texture_bindings(this);
+    _texture_binding_shader_context->disable_shader_texture_bindings();
     _texture_binding_shader = (Shader *)NULL;
     _texture_binding_shader_context = (CLP(ShaderContext) *)NULL;
   }
   if (_current_shader_context != 0) {
-    _current_shader_context->unbind(this);
+    _current_shader_context->unbind();
     _current_shader = (Shader *)NULL;
     _current_shader_context = (CLP(ShaderContext) *)NULL;
   }
@@ -2737,7 +2737,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   if (_current_shader_context == 0) {
     // No shader.
     if (_vertex_array_shader_context != 0) {
-      _vertex_array_shader_context->disable_shader_vertex_arrays(this);
+      _vertex_array_shader_context->disable_shader_vertex_arrays();
     }
     if (!update_standard_vertex_arrays(force)) {
       return false;
@@ -2759,11 +2759,11 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     if (_current_shader_context->uses_custom_vertex_arrays()) {
       // The current shader also uses custom vertex arrays.
       if (!_current_shader_context->
-          update_shader_vertex_arrays(_vertex_array_shader_context, this, force)) {
+          update_shader_vertex_arrays(_vertex_array_shader_context, force)) {
         return false;
       }
     } else {
-      _vertex_array_shader_context->disable_shader_vertex_arrays(this);
+      _vertex_array_shader_context->disable_shader_vertex_arrays();
     }
   }
 
@@ -3834,29 +3834,48 @@ release_geom(GeomContext *gc) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::prepare_shader
 //       Access: Public, Virtual
-//  Description: yadda.
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ShaderContext *CLP(GraphicsStateGuardian)::
 prepare_shader(Shader *se) {
 #ifndef OPENGLES_1
-  CLP(ShaderContext) *result = new CLP(ShaderContext)(se, this);
-  if (result->valid()) return result;
-  delete result;
+  ShaderContext *result = NULL;
+
+  switch (se->get_language()) {
+  case Shader::SL_GLSL:
+    result = new CLP(ShaderContext)(this, se);
+    break;
+
+#if defined(HAVE_CG) && !defined(OPENGLES)
+  case Shader::SL_Cg:
+    result = new CLP(CgShaderContext)(this, se);
+    break;
 #endif
+
+  default:
+    GLCAT.error()
+      << "Tried to load shader with unsupported shader language!\n";
+    return NULL;
+  }
+
+  if (result->valid()) {
+    return result;
+  }
+
+  delete result;
+#endif  // OPENGLES_1
+
   return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::release_shader
 //       Access: Public, Virtual
-//  Description: yadda.
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 release_shader(ShaderContext *sc) {
-#ifndef OPENGLES_1
-  CLP(ShaderContext) *gsc = DCAST(CLP(ShaderContext), sc);
-  delete gsc;
-#endif
+  delete sc;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4807,7 +4826,7 @@ do_issue_transform() {
 
 #ifndef OPENGLES_1
   if (_current_shader_context) {
-    _current_shader_context->issue_parameters(this, Shader::SSD_transform);
+    _current_shader_context->issue_parameters(Shader::SSD_transform);
   }
 #endif
 
@@ -4868,7 +4887,7 @@ do_issue_shader(bool state_has_changed) {
   
   if (context == 0 || (context->valid() == false)) {
     if (_current_shader_context != 0) {
-      _current_shader_context->unbind(this);
+      _current_shader_context->unbind();
       _current_shader = 0;
       _current_shader_context = 0;
     }
@@ -4877,19 +4896,19 @@ do_issue_shader(bool state_has_changed) {
       // Use a completely different shader than before.
       // Unbind old shader, bind the new one.
       if (_current_shader_context != 0) {
-        _current_shader_context->unbind(this);
+        _current_shader_context->unbind();
       }
-      context->bind(this);
+      context->bind();
       _current_shader = shader;
       _current_shader_context = context;
-      context->issue_parameters(this, Shader::SSD_shaderinputs);
+      context->issue_parameters(Shader::SSD_shaderinputs);
     } else {
 #ifdef OPENGLES_2
-      context->bind(this, false);
+      context->bind(false);
 #endif
       if (state_has_changed) {
         // Use the same shader as before, but with new input arguments.
-        context->issue_parameters(this, Shader::SSD_shaderinputs);
+        context->issue_parameters(Shader::SSD_shaderinputs);
       }
     }
   }
@@ -7856,8 +7875,8 @@ set_state_and_transform(const RenderState *target,
     _state_mask.set_bit(color_scale_slot);
 #ifndef OPENGLES_1
     if (_current_shader_context) {
-      _current_shader_context->issue_parameters(this, Shader::SSD_color);
-      _current_shader_context->issue_parameters(this, Shader::SSD_colorscale);
+      _current_shader_context->issue_parameters(Shader::SSD_color);
+      _current_shader_context->issue_parameters(Shader::SSD_colorscale);
     }
 #endif
   }
@@ -8008,7 +8027,7 @@ set_state_and_transform(const RenderState *target,
     _state_mask.set_bit(material_slot);
 #ifndef OPENGLES_1
     if (_current_shader_context) {
-      _current_shader_context->issue_parameters(this, Shader::SSD_material);
+      _current_shader_context->issue_parameters(Shader::SSD_material);
     }
 #endif
   }
@@ -8037,7 +8056,7 @@ set_state_and_transform(const RenderState *target,
     _state_mask.set_bit(fog_slot);
 #ifndef OPENGLES_1
     if (_current_shader_context) {
-      _current_shader_context->issue_parameters(this, Shader::SSD_fog);
+      _current_shader_context->issue_parameters(Shader::SSD_fog);
     }
 #endif
   }
@@ -8136,16 +8155,16 @@ do_issue_texture() {
   if (_current_shader_context == 0 || !_current_shader_context->uses_custom_texture_bindings()) {
     // No shader, or a non-Cg shader.
     if (_texture_binding_shader_context != 0) {
-      _texture_binding_shader_context->disable_shader_texture_bindings(this);
+      _texture_binding_shader_context->disable_shader_texture_bindings();
     }
     update_standard_texture_bindings();
   } else {
     if (_texture_binding_shader_context == 0) {
       disable_standard_texture_bindings();
-      _current_shader_context->update_shader_texture_bindings(NULL,this);
+      _current_shader_context->update_shader_texture_bindings(NULL);
     } else {
       _current_shader_context->
-        update_shader_texture_bindings(_texture_binding_shader_context,this);
+        update_shader_texture_bindings(_texture_binding_shader_context);
     }
   }
 

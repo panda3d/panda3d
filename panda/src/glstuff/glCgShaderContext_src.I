@@ -1,5 +1,5 @@
-// Filename: glShaderContext_src.h
-// Created by: jyelon (01Sep05)
+// Filename: glCgShaderContext_src.h
+// Created by: rdb (27Jun14)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,9 +12,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifndef OPENGLES_1
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLShaderContext::valid
+//     Function: GLCgShaderContext::valid
 //       Access: Public
 //  Description: Returns true if the shader is "valid", ie, if the
 //               compilation was successful.  The compilation could
@@ -22,46 +23,45 @@
 //               if the current video card isn't shader-capable,
 //               or if no shader languages are compiled into panda.
 ////////////////////////////////////////////////////////////////////
-INLINE bool CLP(ShaderContext)::
+INLINE bool CLP(CgShaderContext)::
 valid() {
   if (_shader->get_error_flag()) return false;
-  if (_shader->get_language() != Shader::SL_GLSL) {
-    return false;
-  }
-  if (_glsl_program != 0) {
-    return true;
-  }
+  if (_shader->get_language() != Shader::SL_Cg) return false;
+  if (_cg_context) return true;
   return false;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLShaderContext::uses_standard_vertex_arrays
+//     Function: GLCgShaderContext::uses_standard_vertex_arrays
 //       Access: Public
 //  Description: Returns true if the shader may need to access
 //               standard vertex attributes as passed by
 //               glVertexPointer and the like.
 ////////////////////////////////////////////////////////////////////
-INLINE bool CLP(ShaderContext)::
+INLINE bool CLP(CgShaderContext)::
 uses_standard_vertex_arrays() {
   return _uses_standard_vertex_arrays;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLShaderContext::uses_custom_vertex_arrays
+//     Function: GLCgShaderContext::uses_custom_vertex_arrays
 //       Access: Public
 //  Description: Always true, for now.
 ////////////////////////////////////////////////////////////////////
-INLINE bool CLP(ShaderContext)::
+INLINE bool CLP(CgShaderContext)::
 uses_custom_vertex_arrays() {
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLShaderContext::uses_custom_texture_bindings
+//     Function: GLCgShaderContext::uses_custom_texture_bindings
 //       Access: Public
 //  Description: Always true, for now.
 ////////////////////////////////////////////////////////////////////
-INLINE bool CLP(ShaderContext)::
+INLINE bool CLP(CgShaderContext)::
 uses_custom_texture_bindings() {
   return true;
 }
+
+#endif  // OPENGLES_1
+

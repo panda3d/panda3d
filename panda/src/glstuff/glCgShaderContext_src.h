@@ -12,7 +12,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef OPENGLES_1
+#if defined(HAVE_CG) && !defined(OPENGLES)
 
 #include "pandabase.h"
 #include "string_utils.h"
@@ -21,19 +21,21 @@
 #include "shaderContext.h"
 #include "deletedChain.h"
 
+#include <Cg/cg.h>
+
 class CLP(GraphicsStateGuardian);
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GLShaderContext
 // Description : xyz
 ////////////////////////////////////////////////////////////////////
-class EXPCL_GL CLP(ShaderContext) : public ShaderContext {
+class EXPCL_GL CLP(CgShaderContext) : public ShaderContext {
 public:
   friend class CLP(GraphicsStateGuardian);
 
-  CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s);
-  ~CLP(ShaderContext)();
-  ALLOC_DELETED_CHAIN(CLP(ShaderContext));
+  CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s);
+  ~CLP(CgShaderContext)();
+  ALLOC_DELETED_CHAIN(CLP(CgShaderContext));
 
   INLINE bool valid(void);
   void bind(bool reissue_parameters = true);
@@ -49,28 +51,21 @@ public:
   INLINE bool uses_custom_texture_bindings(void);
 
 private:
-  GLuint _glsl_program;
-  GLuint _glsl_vshader;
-  GLuint _glsl_fshader;
-  GLuint _glsl_gshader;
-  GLuint _glsl_tcshader;
-  GLuint _glsl_teshader;
-  GLuint _glsl_cshader;
+  CGcontext _cg_context;
+  CGprogram _cg_vprogram;
+  CGprogram _cg_fprogram;
+  CGprogram _cg_gprogram;
+  CGprofile _cg_vprofile;
+  CGprofile _cg_fprofile;
+  CGprofile _cg_gprofile;
 
-  pvector <GLint> _glsl_parameter_map;
-
-  pvector<CPT(InternalName)> _glsl_img_inputs;
+  pvector <CGparameter> _cg_parameter_map;
 
   int _stage_offset;
   CLP(GraphicsStateGuardian) *_glgsg;
 
   bool _uses_standard_vertex_arrays;
 
-  void glsl_report_shader_errors(unsigned int shader);
-  void glsl_report_program_errors(unsigned int program);
-  unsigned int glsl_compile_entry_point(Shader::ShaderType type);
-  bool glsl_compile_shader();
-  bool parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, Shader *s);
   void release_resources();
 
 public:
@@ -79,7 +74,7 @@ public:
   }
   static void init_type() {
     TypedObject::init_type();
-    register_type(_type_handle, CLASSPREFIX_QUOTED "ShaderContext",
+    register_type(_type_handle, CLASSPREFIX_QUOTED "CgShaderContext",
                   TypedObject::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -91,6 +86,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "glShaderContext_src.I"
+#include "glCgShaderContext_src.I"
 
 #endif  // OPENGLES_1
+

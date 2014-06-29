@@ -775,6 +775,7 @@ private:
   friend class CLP(VertexBufferContext);
   friend class CLP(IndexBufferContext);
   friend class CLP(ShaderContext);
+  friend class CLP(CgShaderContext);
   friend class CLP(GraphicsBuffer);
   friend class CLP(OcclusionQueryContext);
 };
