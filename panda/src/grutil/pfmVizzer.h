@@ -86,11 +86,15 @@ PUBLISHED:
 
   BLOCKING double calc_max_u_displacement() const;
   BLOCKING double calc_max_v_displacement() const;
-  BLOCKING void make_displacement(PNMImage &result, double max_u, double max_v) const;
+  BLOCKING void make_displacement(PNMImage &result, double max_u, double max_v, bool for_32bit) const;
+  BLOCKING void make_displacement(PfmFile &result, double max_u, double max_v, bool for_32bit) const;
 
 private:
   bool uses_aux_pfm() const;
   void r_fill_displacement(PNMImage &result, int xi, int yi, 
+                           double nxi, double nyi, double u_scale, double v_scale,
+                           int distance) const;
+  void r_fill_displacement(PfmFile &result, int xi, int yi, 
                            double nxi, double nyi, double u_scale, double v_scale,
                            int distance) const;
 

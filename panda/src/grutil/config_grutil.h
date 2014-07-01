@@ -42,7 +42,8 @@ extern ConfigVariableBool movies_sync_pages;
 extern ConfigVariableInt pfm_vis_max_vertices;
 extern ConfigVariableInt pfm_vis_max_indices;
 
-extern ConfigVariableDouble ae_undershift_factor;
+extern ConfigVariableDouble ae_undershift_factor_16;
+extern ConfigVariableDouble ae_undershift_factor_32;
 
 extern EXPCL_PANDA_GRUTIL void init_libgrutil();
 
