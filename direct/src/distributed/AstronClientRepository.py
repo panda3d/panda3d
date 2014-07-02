@@ -57,18 +57,19 @@ class AstronClientRepository(ClientRepositoryBase):
         elif msgType == CLIENT_OBJECT_SET_FIELD:
             self.handleUpdateField(di)
         elif msgType == CLIENT_OBJECT_SET_FIELDS:
-            do_id = di.getUint32()
-            field_count = di.getUint16()
-            for i in range(0, field_count):
-                field_id = di.getUint16()
-                field = self.get_dc_file().get_field_by_index(field_id)
-                print(type(field))
-                print(field)
-                # FIXME: Get field type, unpack value, create and send message.
-                # value = di.get?()
-                # Assemble new message
-            self.notify.error("CLIENT_OBJECT_SET_FIELDS not implemented!")
             raise NotImplementedError("CLIENT_OBJECT_SET_FIELDS not implemented!")
+            # Can't test this without the server actually sending it.
+            # Here's some tentative code and notes:
+            #do_id = di.getUint32()
+            #field_count = di.getUint16()
+            #for i in range(0, field_count):
+            #    field_id = di.getUint16()
+            #    field = self.get_dc_file().get_field_by_index(field_id)
+            #    # print(type(field))
+            #    # print(field)
+            #    # FIXME: Get field type, unpack value, create and send message.
+            #    # value = di.get?()
+            #    # Assemble new message
         elif msgType == CLIENT_OBJECT_LEAVING:
             do_id = di.get_uint32()
             dist_obj = self.doId2do.get(do_id)
