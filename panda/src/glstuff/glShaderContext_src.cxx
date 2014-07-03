@@ -1099,6 +1099,8 @@ update_shader_texture_bindings(ShaderContext *prev) {
     return;
   }
 
+  _glgsg->_glMemoryBarrier(GL_ALL_BARRIER_BITS);
+
 #ifndef OPENGLES
   // First bind all the 'image units'; a bit of an esoteric OpenGL feature right now.
   int num_image_units = min(_glsl_img_inputs.size(), (size_t)_glgsg->_max_image_units);
@@ -1316,7 +1318,6 @@ glsl_compile_entry_point(Shader::ShaderType type) {
     return 0;
   }
 
-  _glgsg->report_my_gl_errors();
   return handle;
 }
 
@@ -1356,7 +1357,6 @@ glsl_compile_shader() {
     glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES, &max_vertices);
     _glgsg->_glProgramParameteri(_glsl_program, GL_GEOMETRY_VERTICES_OUT_ARB, max_vertices); 
 #endif
-    _glgsg->report_my_gl_errors();
   }
 
   if (!_shader->get_text(Shader::ST_tess_control).empty()) {

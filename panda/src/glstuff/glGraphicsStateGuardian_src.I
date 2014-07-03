@@ -45,7 +45,7 @@ report_errors(int line, const char *source_file) {
 INLINE void CLP(GraphicsStateGuardian)::
 report_my_errors(int line, const char *source_file) {
 #ifndef NDEBUG
-  if (_track_errors) {
+  if (_check_errors) {
     GLenum error_code = glGetError();
     if (error_code != GL_NO_ERROR) {
       if (!report_errors_loop(line, source_file, error_code, _error_count)) {
@@ -83,7 +83,7 @@ clear_errors(int line, const char *source_file) {
 //       Access: Public
 //  Description: This works like report_my_errors(), except that it
 //               always runs, even in the NDEBUG case (but not when
-//               _track_errors is false), and it never calls
+//               _check_errors is false), and it never calls
 //               panic_deactivate().  It is designed to be called when
 //               it is important to clear the error stack (for
 //               instance, because we want to be able to reliably
@@ -91,7 +91,7 @@ clear_errors(int line, const char *source_file) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
 clear_my_errors(int line, const char *source_file) {
-  if (_track_errors) {
+  if (_check_errors) {
     GLenum error_code = glGetError();
     if (error_code != GL_NO_ERROR) {
       int error_count = 0;

@@ -728,8 +728,9 @@ public:
 
   //RenderState::SlotMask _inv_state_mask;
 
-  bool _track_errors;
-  bool _allow_flush;
+  bool _check_errors;
+  bool _force_flush;
+  bool _supports_debug;
 
 #ifndef NDEBUG
   bool _show_texture_usage;

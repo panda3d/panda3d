@@ -173,13 +173,17 @@ ConfigVariableBool gl_matrix_palette
   ("gl-matrix-palette", false,
    PRC_DESC("Temporary hack variable protecting untested code.  See glGraphicsStateGuardian_src.cxx."));
 
-ConfigVariableBool gl_force_no_error
-  ("gl-force-no-error", false,
-   PRC_DESC("Avoid reporting OpenGL errors, for a small performance benefit."));
+ConfigVariableBool gl_check_errors
+  ("gl-check-errors", false,
+   PRC_DESC("Regularly call glGetError() to check for OpenGL errors.  "
+            "This will slow down rendering significantly.  If your "
+            "video driver supports it, you should use gl-debug instead."));
 
-ConfigVariableBool gl_force_no_flush
-  ("gl-force-no-flush", false,
-   PRC_DESC("Avoid calling glFlush(), for a potential performance benefit.  This may be a little dangerous."));
+ConfigVariableBool gl_force_flush
+  ("gl-force-flush", false,
+   PRC_DESC("Call this to force a call to glFlush() after rendering a "
+            "frame, even when using a double-buffered framebuffer.  "
+            "This can incur a significant performance penalty."));
 
 ConfigVariableBool gl_separate_specular_color
   ("gl-separate-specular-color", true,

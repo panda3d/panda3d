@@ -306,9 +306,9 @@ CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe) :
   // the window tells us otherwise.
   _is_hardware = true;
 
-  // calling glGetError() forces a sync, this turns it off if you want to.
-  _track_errors = !gl_force_no_error;
-  _allow_flush = !gl_force_no_flush;
+  // calling glGetError() forces a sync, this turns it on if you want to.
+  _check_errors = gl_check_errors;
+  _force_flush = gl_force_flush;
 
 #ifdef DO_PSTATS
   if (gl_finish) {
@@ -436,8 +436,8 @@ reset() {
   report_extensions();
 
   // Initialize OpenGL debugging output first, if enabled and supported.
+  _supports_debug = false;
   if (gl_debug) {
-    bool supports_debug = false;
     PFNGLDEBUGMESSAGECALLBACKPROC _glDebugMessageCallback;
     PFNGLDEBUGMESSAGECONTROLPROC _glDebugMessageControl;
 
@@ -454,17 +454,17 @@ reset() {
         get_extension_func("glDebugMessageControl");
 #endif
       glEnable(GL_DEBUG_OUTPUT); // Not supported in ARB version
-      supports_debug = true;
+      _supports_debug = true;
 
     } else if (has_extension("GL_ARB_debug_output")) {
       _glDebugMessageCallback = (PFNGLDEBUGMESSAGECALLBACKPROC)
         get_extension_func("glDebugMessageCallbackARB");
       _glDebugMessageControl = (PFNGLDEBUGMESSAGECONTROLPROC)
         get_extension_func("glDebugMessageControlARB");
-      supports_debug = true;
+      _supports_debug = true;
     }
 
-    if (supports_debug) {
+    if (_supports_debug) {
       // Set the categories we want to listen to.
       _glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_HIGH,
                              0, NULL, GLCAT.is_error());
@@ -487,6 +487,11 @@ reset() {
     }
   } else {
     GLCAT.debug() << "gl-debug NOT enabled.\n";
+
+    // However, still check if it is supported.
+    _supports_debug = is_at_least_gl_version(4, 3)
+                   || has_extension("GL_KHR_debug")
+                   || has_extension("GL_ARB_debug_output");
   }
 
   _supported_geom_rendering =
@@ -2503,14 +2508,46 @@ end_frame(Thread *current_thread) {
   // necessary if this is a single-buffered visual, so that the frame
   // will be finished drawing before we return to the application.
   // It's not clear what effect this has on our total frame time.
-  if (_allow_flush) {
+  if (_force_flush || _current_properties->is_single_buffered()) {
     gl_flush();
   }
   maybe_gl_finish();
 
-  report_my_gl_errors();
-}
+#ifndef NDEBUG
+  if (_check_errors || (_supports_debug && gl_debug)) {
+    report_my_gl_errors();
+  } else {
+    // If _check_errors is false, we still want to check for errors
+    // once during this frame, so that we know if anything went wrong.
+    GLenum error_code = glGetError();
+    if (error_code != GL_NO_ERROR) {
+      int error_count = 0;
+      bool deactivate = !report_errors_loop(__LINE__, __FILE__, error_code, error_count);
 
+      if (error_count == 1) {
+        GLCAT.error()
+          << "An OpenGL error (" << get_error_string(error_code)
+          << ") has occurred.";
+      } else {
+        GLCAT.error()
+          << error_count << " OpenGL errors have occurred.";
+      }
+
+      if (_supports_debug) {
+        GLCAT.error(false) << "  Set gl-debug #t "
+          << "in your PRC file to display more information.\n";
+      } else {
+        GLCAT.error(false) << "  Set gl-check-errors #t "
+          << "in your PRC file to display more information.\n";
+      }
+
+      if (deactivate) {
+        panic_deactivate();
+      }
+    }
+  }
+#endif
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::begin_draw_primitives
@@ -3079,14 +3116,12 @@ disable_standard_vertex_arrays()
   glDisableClientState(GL_NORMAL_ARRAY);
   glDisableClientState(GL_COLOR_ARRAY);
   GLPf(Color4)(1.0f, 1.0f, 1.0f, 1.0f);
-  report_my_gl_errors();
 
   for (int stage_index=0; stage_index < _last_max_stage_index; stage_index++) {
     _glClientActiveTexture(GL_TEXTURE0 + stage_index);
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
   }
   _last_max_stage_index = 0;
-  report_my_gl_errors();
 
 #ifndef OPENGLES
   if (_supports_vertex_blend) {
@@ -3764,7 +3799,6 @@ update_texture(TextureContext *tc, bool force) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 release_texture(TextureContext *tc) {
-  report_my_gl_errors();
   CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
 
   glDeleteTextures(1, &gtc->_index);
@@ -4380,6 +4414,8 @@ end_occlusion_query() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
+  maybe_gl_finish();
+
   PStatTimer timer(_compute_dispatch_pcollector);
   nassertv(_supports_compute_shaders);
   nassertv(_current_shader_context != NULL);
@@ -5709,9 +5745,7 @@ draw_immediate_composite_primitives(const GeomPrimitivePipelineReader *reader, G
 void CLP(GraphicsStateGuardian)::
 gl_flush() const {
   PStatTimer timer(_flush_pcollector);
-  if (_allow_flush) {
-    glFlush();
-  }
+  glFlush();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5721,7 +5755,7 @@ gl_flush() const {
 ////////////////////////////////////////////////////////////////////
 GLenum CLP(GraphicsStateGuardian)::
 gl_get_error() const {
-  if (_track_errors) {
+  if (_check_errors) {
     return glGetError();
   } else {
     return GL_NO_ERROR;
@@ -9666,9 +9700,9 @@ upload_texture_image(CLP(TextureContext) *gtc,
     // object.
     if (GLCAT.is_debug()) {
       GLCAT.debug()
-        << "loading new texture object, " << width << " x " << height
-        << " x " << depth << ", z = " << z << ", mipmaps " << num_ram_mipmap_levels 
-        << ", uses_mipmaps = " << uses_mipmaps << "\n";
+        << "loading new texture object for " << tex->get_name() << ", " << width
+        << " x " << height << " x " << depth << ", z = " << z << ", mipmaps "
+        << num_ram_mipmap_levels << ", uses_mipmaps = " << uses_mipmaps << "\n";
     }
 
     if (num_ram_mipmap_levels == 0) {
