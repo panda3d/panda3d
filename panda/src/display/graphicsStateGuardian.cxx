@@ -1156,9 +1156,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &
     return &t;
   }
   case Shader::SMO_mat_constant_x: {
-    const NodePath &np = _target_shader->get_shader_input_nodepath(name);
-    nassertr(!np.is_empty(), &LMatrix4::ident_mat());
-    return &(np.node()->get_transform()->get_mat());
+    return &_target_shader->get_shader_input_matrix(name, t);
   }
   case Shader::SMO_vec_constant_x: {
     const LVecBase4 &input = _target_shader->get_shader_input_vector(name);
