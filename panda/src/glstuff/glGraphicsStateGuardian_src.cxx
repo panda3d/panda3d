@@ -345,6 +345,7 @@ CLP(GraphicsStateGuardian)::
 //               gl_debug has been enabled (and the driver supports
 //               the GL_ARB_debug_output extension).
 ////////////////////////////////////////////////////////////////////
+#ifndef OPENGLES_1
 void CLP(GraphicsStateGuardian)::
 debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, GLvoid *userParam) {
   // Determine how to map the severity level.
@@ -380,6 +381,7 @@ debug_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei l
   }
 #endif
 }
+#endif  // OPENGLES_1
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::reset
@@ -437,6 +439,7 @@ reset() {
 
   // Initialize OpenGL debugging output first, if enabled and supported.
   _supports_debug = false;
+#ifndef OPENGLES_1
   if (gl_debug) {
     PFNGLDEBUGMESSAGECALLBACKPROC _glDebugMessageCallback;
     PFNGLDEBUGMESSAGECONTROLPROC _glDebugMessageControl;
@@ -493,6 +496,7 @@ reset() {
                    || has_extension("GL_KHR_debug")
                    || has_extension("GL_ARB_debug_output");
   }
+#endif  // OPENGLES_1
 
   _supported_geom_rendering =
     Geom::GR_indexed_point |
@@ -744,7 +748,9 @@ reset() {
   _supports_cube_map =
     has_extension("GL_ARB_texture_cube_map") || is_at_least_gl_version(1, 3) ||
     has_extension("GL_OES_texture_cube_map");
+#endif
 
+#ifndef OPENGLES
   if (_supports_cube_map && gl_cube_map_seamless) {
     if (is_at_least_gl_version(3, 2) || has_extension("GL_ARB_seamless_cube_map")) {
       glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
@@ -2373,9 +2379,11 @@ begin_frame(Thread *current_thread) {
   }
 #endif  // NDEBUG
 
+#ifndef OPENGLES_1
   if (_current_properties->get_srgb_color()) {
     glEnable(GL_FRAMEBUFFER_SRGB);
   }
+#endif
 
   report_my_gl_errors();
   return true;
@@ -2429,9 +2437,11 @@ void CLP(GraphicsStateGuardian)::
 end_frame(Thread *current_thread) {
   report_my_gl_errors();
 
+#ifndef OPENGLES_1
   if (_current_properties->get_srgb_color()) {
     glDisable(GL_FRAMEBUFFER_SRGB);
   }
+#endif
 
 #ifdef DO_PSTATS
   // Check for textures, etc., that are no longer resident.  These
@@ -4422,6 +4432,7 @@ end_occlusion_query() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
+#ifndef OPENGLES
   maybe_gl_finish();
 
   PStatTimer timer(_compute_dispatch_pcollector);
@@ -4430,6 +4441,7 @@ dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
   _glDispatchCompute(num_groups_x, num_groups_y, num_groups_z);
 
   maybe_gl_finish();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -6769,8 +6781,11 @@ get_external_image_format(Texture *tex) const {
   case Texture::F_luminance_alpha:
   case Texture::F_sluminance_alpha:
     return GL_LUMINANCE_ALPHA;
+
+#ifndef OPENGLES
   case Texture::F_r32i:
     return GL_RED_INTEGER;
+#endif
   }
   GLCAT.error()
     << "Invalid Texture::Format value in get_external_image_format(): "
@@ -7159,6 +7174,7 @@ get_internal_image_format(Texture *tex) const {
   case Texture::F_luminance_alphamask:
     return GL_LUMINANCE_ALPHA;
 
+#ifndef OPENGLES_1
   case Texture::F_srgb:
     return GL_SRGB8;
   case Texture::F_srgb_alpha:
@@ -7167,9 +7183,12 @@ get_internal_image_format(Texture *tex) const {
     return GL_SLUMINANCE8;
   case Texture::F_sluminance_alpha:
     return GL_SLUMINANCE8_ALPHA8;
+#endif
 
+#ifndef OPENGLES
   case Texture::F_r32i:
     return GL_R32I;
+#endif
 
   default:
     GLCAT.error()
@@ -9089,10 +9108,12 @@ specify_texture(CLP(TextureContext) *gtc) {
   glTexParameteri(target, GL_TEXTURE_MAG_FILTER,
                      get_texture_filter_type(magfilter, true));
 
+#ifndef OPENGLES
   if (!uses_mipmaps) {
     // NVIDIA drivers complain if we don't do this.
     glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, 0);
   }
+#endif
 
   // Set anisotropic filtering.
   if (_supports_anisotropy) {
@@ -10324,9 +10345,11 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     format = Texture::F_red;
     break;
 #endif
+#ifndef OPENGLES
   case GL_R32I:
     format = Texture::F_r32i;
     break;
+#endif
 
 #ifndef OPENGLES
   case GL_RED:
@@ -10351,6 +10374,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     format = Texture::F_luminance_alpha;
     break;
 
+#ifndef OPENGLES_1
   case GL_SRGB:
     format = Texture::F_srgb;
     break;
@@ -10363,6 +10387,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   case GL_SLUMINANCE_ALPHA:
     format = Texture::F_sluminance_alpha;
     break;
+#endif
 
 #ifndef OPENGLES
   case GL_COMPRESSED_RGB:
