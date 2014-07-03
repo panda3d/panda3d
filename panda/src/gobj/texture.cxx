@@ -581,6 +581,10 @@ estimate_texture_memory() const {
     bpp = 6;
     break;
 
+  case Texture::F_r32i:
+    bpp = 4;
+    break;
+
   default:
     break;
   }
@@ -1597,6 +1601,10 @@ write(ostream &out, int indent_level) const {
     out << " floats";
     break;
 
+  case T_int:
+    out << " ints";
+    break;
+
   default:
     break;
   }
@@ -1706,6 +1714,10 @@ write(ostream &out, int indent_level) const {
     break;
   case F_sluminance_alpha:
     out << "sluminance_alpha";
+    break;
+
+  case F_r32i:
+    out << "r32i";
     break;
   }
 
@@ -2034,6 +2046,8 @@ format_component_type(ComponentType ct) {
     return "float";
   case T_unsigned_int_24_8:
     return "unsigned_int_24_8";
+  case T_int:
+    return "int";
   }
 
   return "**invalid**";
@@ -2055,6 +2069,8 @@ string_component_type(const string &str) {
     return T_float;
   } else if (cmp_nocase(str, "unsigned_int_24_8") == 0) {
     return T_unsigned_int_24_8;
+  } else if (cmp_nocase(str, "int") == 0) {
+    return T_int;
   }
 
   gobj_cat->error()
@@ -2137,6 +2153,8 @@ format_format(Format format) {
     return "sluminance";
   case F_sluminance_alpha:
     return "sluminance_alpha";
+  case F_r32i:
+    return "r32i";
   }
   return "**invalid**";
 }
@@ -2215,6 +2233,8 @@ string_format(const string &str) {
     return F_sluminance;
   } else if (cmp_nocase(str, "sluminance_alpha") == 0) {
     return F_sluminance_alpha;
+  } else if (cmp_nocase(str, "r32i") == 0) {
+    return F_r32i;
   }
 
   gobj_cat->error()
@@ -5060,6 +5080,7 @@ do_set_format(CData *cdata, Texture::Format format) {
   case F_luminance:
   case F_r16:
   case F_sluminance:
+  case F_r32i:
     cdata->_num_components = 1;
     break;
 
@@ -5117,6 +5138,10 @@ do_set_component_type(CData *cdata, Texture::ComponentType component_type) {
     break;
 
   case T_unsigned_int_24_8:
+    cdata->_component_width = 4;
+    break;
+
+  case T_int:
     cdata->_component_width = 4;
     break;
   }

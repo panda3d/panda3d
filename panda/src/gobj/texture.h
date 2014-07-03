@@ -86,6 +86,7 @@ PUBLISHED:
     T_unsigned_short,
     T_float,
     T_unsigned_int_24_8,
+    T_int,
   };
 
   enum Format {
@@ -139,6 +140,8 @@ PUBLISHED:
     F_srgb_alpha,
     F_sluminance,
     F_sluminance_alpha,
+
+    F_r32i,  // 32-bit integer, used for atomic access
   };
 
   enum FilterType {

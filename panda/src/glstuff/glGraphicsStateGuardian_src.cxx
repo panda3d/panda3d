@@ -4774,6 +4774,9 @@ framebuffer_copy_to_ram(Texture *tex, int view, int z,
     case GL_FLOAT:
       GLCAT.spam(false) << "GL_FLOAT";
       break;
+    case GL_INT:
+      GLCAT.spam(false) << "GL_INT";
+      break;
     default:
       GLCAT.spam(false) << "unknown";
       break;
@@ -6545,6 +6548,8 @@ get_component_type(Texture::ComponentType component_type) {
     } else {
       return GL_UNSIGNED_BYTE;
     }
+  case Texture::T_int:
+    return GL_INT;
   default:
     GLCAT.error() << "Invalid Texture::Type value!\n";
     return GL_UNSIGNED_BYTE;
@@ -6756,6 +6761,8 @@ get_external_image_format(Texture *tex) const {
   case Texture::F_luminance_alpha:
   case Texture::F_sluminance_alpha:
     return GL_LUMINANCE_ALPHA;
+  case Texture::F_r32i:
+    return GL_RED_INTEGER;
   }
   GLCAT.error()
     << "Invalid Texture::Format value in get_external_image_format(): "
@@ -7152,6 +7159,9 @@ get_internal_image_format(Texture *tex) const {
     return GL_SLUMINANCE8;
   case Texture::F_sluminance_alpha:
     return GL_SLUMINANCE8_ALPHA8;
+
+  case Texture::F_r32i:
+    return GL_R32I;
 
   default:
     GLCAT.error()
@@ -10306,6 +10316,10 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     format = Texture::F_red;
     break;
 #endif
+  case GL_R32I:
+    format = Texture::F_r32i;
+    break;
+
 #ifndef OPENGLES
   case GL_RED:
     format = Texture::F_red;
