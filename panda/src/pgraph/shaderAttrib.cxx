@@ -52,13 +52,18 @@ make_off() {
 //               set.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ShaderAttrib::
-make() {
+make(const Shader *shader) {
   static CPT(RenderAttrib) _null_attrib;
   if (_null_attrib == 0) {
     ShaderAttrib *attrib = new ShaderAttrib;
     _null_attrib = return_new(attrib);
   }
-  return _null_attrib;
+
+  if (shader == NULL) {
+    return _null_attrib;
+  } else {
+    return DCAST(ShaderAttrib, _null_attrib)->set_shader(shader);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

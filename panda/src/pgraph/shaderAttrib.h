@@ -43,10 +43,10 @@ private:
   INLINE ShaderAttrib(const ShaderAttrib &copy);
 
 PUBLISHED:
-  static CPT(RenderAttrib) make();
+  static CPT(RenderAttrib) make(const Shader *shader = NULL);
   static CPT(RenderAttrib) make_off();
   static CPT(RenderAttrib) make_default();
-  
+
   enum {
     F_disable_alpha_write = 0,  // Suppress writes to color buffer alpha channel.
     F_subsume_alpha_test  = 1,  // Shader promises to subsume the alpha test using TEXKILL
