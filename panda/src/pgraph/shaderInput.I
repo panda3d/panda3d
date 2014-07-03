@@ -378,6 +378,107 @@ ShaderInput(const InternalName *name, const LMatrix3d &mat, int priority) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ShaderInput::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ShaderInput::
+ShaderInput(const InternalName *name, const PTA_int &ptr, int priority) : 
+  _name(name),
+  _type(M_numeric),
+  _priority(priority),
+  _stored_ptr(ptr)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderInput::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ShaderInput::
+ShaderInput(const InternalName *name, const PTA_LVecBase4i &ptr, int priority) : 
+  _name(name),
+  _type(M_numeric),
+  _priority(priority),
+  _stored_ptr(ptr)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderInput::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ShaderInput::
+ShaderInput(const InternalName *name, const PTA_LVecBase3i &ptr, int priority) : 
+  _name(name),
+  _type(M_numeric),
+  _priority(priority),
+  _stored_ptr(ptr)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderInput::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ShaderInput::
+ShaderInput(const InternalName *name, const PTA_LVecBase2i &ptr, int priority) :
+  _name(name),
+  _type(M_numeric),
+  _priority(priority),
+  _stored_ptr(ptr)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderInput::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ShaderInput::
+ShaderInput(const InternalName *name, const LVecBase4i &vec, int priority) :
+  _name(name),
+  _type(M_numeric),
+  _priority(priority),
+  _stored_ptr(vec),
+  _stored_vector((int)vec.get_x(), (int)vec.get_y(), (int)vec.get_z(), (int)vec.get_w())
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderInput::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ShaderInput::
+ShaderInput(const InternalName *name, const LVecBase3i &vec, int priority) :
+  _name(name),
+  _type(M_numeric),
+  _priority(priority),
+  _stored_ptr(vec),
+  _stored_vector((int)vec.get_x(), (int)vec.get_y(), (int)vec.get_z(), 0.0)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderInput::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ShaderInput::
+ShaderInput(const InternalName *name, const LVecBase2i &vec, int priority) :
+  _name(name),
+  _type(M_numeric),
+  _priority(priority),
+  _stored_ptr(vec),
+  _stored_vector((int)vec.get_x(), (int)vec.get_y(), 0.0, 0.0)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ShaderInput::get_name
 //       Access: Published
 //  Description: 
