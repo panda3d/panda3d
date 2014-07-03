@@ -476,7 +476,7 @@ reset() {
                              0, NULL, GLCAT.is_debug());
 
       // Enable the callback.
-      _glDebugMessageCallback(&debug_callback, (void*)this);
+      _glDebugMessageCallback((GLDEBUGPROC) &debug_callback, (void*)this);
       if (gl_debug_synchronous) {
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
       }
