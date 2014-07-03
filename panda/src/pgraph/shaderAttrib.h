@@ -110,6 +110,7 @@ PUBLISHED:
   const LVecBase4 &get_shader_input_vector(InternalName *id) const;
   Texture *get_shader_input_texture(const InternalName *id) const;
   const Shader::ShaderPtrData *get_shader_input_ptr(const InternalName *id) const;
+  const LMatrix4 &get_shader_input_matrix(const InternalName *id, LMatrix4 &matrix) const;
 
   static void register_with_read_factory();
   

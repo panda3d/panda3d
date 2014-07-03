@@ -618,6 +618,7 @@ PUBLISHED:
   void set_shader_input(const InternalName *id, const NodePath &np, int priority=0);
   void set_shader_input(const InternalName *id, const PTA_float &v, int priority=0);
   void set_shader_input(const InternalName *id, const PTA_double &v, int priority=0);
+  void set_shader_input(const InternalName *id, const PTA_int &v, int priority=0);
   void set_shader_input(const InternalName *id, const PTA_LVecBase4 &v, int priority=0);
   void set_shader_input(const InternalName *id, const PTA_LVecBase3 &v, int priority=0);
   void set_shader_input(const InternalName *id, const PTA_LVecBase2 &v, int priority=0);
@@ -635,6 +636,7 @@ PUBLISHED:
   void set_shader_input(const string &id, const NodePath &np, int priority=0);
   void set_shader_input(const string &id, const PTA_float &v, int priority=0); 
   void set_shader_input(const string &id, const PTA_double &v, int priority=0); 
+  void set_shader_input(const string &id, const PTA_int &v, int priority=0); 
   void set_shader_input(const string &id, const PTA_LVecBase4 &v, int priority=0); 
   void set_shader_input(const string &id, const PTA_LVecBase3 &v, int priority=0); 
   void set_shader_input(const string &id, const PTA_LVecBase2 &v, int priority=0); 

@@ -281,7 +281,7 @@ issue_parameters(int altered) {
           case Shader::SAC_matrix:
             cgGLSetMatrixParameterArrayfc(p,0,_ptr._dim[0],(float*)ptr_data->_ptr); continue;
           }
-        } 
+        }
         }
       case Shader::SPT_double:
         switch(_ptr._info._class) {
@@ -308,7 +308,18 @@ issue_parameters(int altered) {
           case Shader::SAC_matrix:
             cgGLSetMatrixParameterArraydc(p,0,_ptr._dim[0],(double*)ptr_data->_ptr); continue;
           }
-        } 
+        }
+        }
+      case Shader::SPT_int:
+        switch(_ptr._info._class) {
+        case Shader::SAC_scalar: cgSetParameter1iv(p,(int*)ptr_data->_ptr); continue;
+        case Shader::SAC_vector:
+          switch(_ptr._info._type) {
+          case Shader::SAT_vec1: cgSetParameter1iv(p,(int*)ptr_data->_ptr); continue;
+          case Shader::SAT_vec2: cgSetParameter2iv(p,(int*)ptr_data->_ptr); continue;
+          case Shader::SAT_vec3: cgSetParameter3iv(p,(int*)ptr_data->_ptr); continue;
+          case Shader::SAT_vec4: cgSetParameter4iv(p,(int*)ptr_data->_ptr); continue;
+          }
         }
       default: GLCAT.error() << _ptr._id._name << ":" << "unrecognized parameter type\n"; 
         release_resources(); 
@@ -316,8 +327,6 @@ issue_parameters(int altered) {
       }
     }
   }
-
-  //FIXME: this could be much faster if we used deferred parameter setting.
 
   for (int i=0; i<(int)_shader->_mat_spec.size(); i++) {
     if (altered & (_shader->_mat_spec[i]._dep[0] | _shader->_mat_spec[i]._dep[1])) {

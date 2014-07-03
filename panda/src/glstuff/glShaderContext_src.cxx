@@ -541,10 +541,6 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
               bind._dep[1] = Shader::SSD_NONE;
               s->_mat_spec.push_back(bind);
               continue; }
-            case GL_BOOL:
-            case GL_BOOL_VEC2:
-            case GL_BOOL_VEC3:
-            case GL_BOOL_VEC4:
             case GL_FLOAT:
             case GL_FLOAT_VEC2:
             case GL_FLOAT_VEC3:
@@ -570,12 +566,33 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
               bind._dep[1] = Shader::SSD_NONE;
               s->_mat_spec.push_back(bind);
               continue; }
+            case GL_BOOL:
+            case GL_BOOL_VEC2:
+            case GL_BOOL_VEC3:
+            case GL_BOOL_VEC4:
             case GL_INT:
             case GL_INT_VEC2:
             case GL_INT_VEC3:
-            case GL_INT_VEC4:
-              GLCAT.warning() << "Panda does not support passing integers to shaders (yet)!\n";
+            case GL_INT_VEC4: {
+              Shader::ShaderPtrSpec bind;
+              bind._id = arg_id;
+              switch (param_type) {
+                case GL_BOOL:
+                case GL_INT:        bind._dim[1] = 1; break;
+                case GL_BOOL_VEC2:
+                case GL_INT_VEC2:   bind._dim[1] = 2; break;
+                case GL_BOOL_VEC3:
+                case GL_INT_VEC3:   bind._dim[1] = 3; break;
+                case GL_BOOL_VEC4:
+                case GL_INT_VEC4:   bind._dim[1] = 4; break;
+              }
+              bind._arg = InternalName::make(param_name);
+              bind._dim[0] = 1;
+              bind._dep[0] = Shader::SSD_general | Shader::SSD_shaderinputs;
+              bind._dep[1] = Shader::SSD_NONE;
+              s->_ptr_spec.push_back(bind);
               continue;
+            }
 #ifndef OPENGLES
             case GL_IMAGE_1D_EXT:
             case GL_IMAGE_2D_EXT:
@@ -618,6 +635,10 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
           case GL_BOOL_VEC2:
           case GL_BOOL_VEC3:
           case GL_BOOL_VEC4:
+          case GL_INT:
+          case GL_INT_VEC2:
+          case GL_INT_VEC3:
+          case GL_INT_VEC4:
           case GL_FLOAT:
           case GL_FLOAT_VEC2:
           case GL_FLOAT_VEC3:
@@ -628,12 +649,16 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
             bind._id = arg_id;
             switch (param_type) {
               case GL_BOOL:
+              case GL_INT:
               case GL_FLOAT:      bind._dim[1] = 1; break;
               case GL_BOOL_VEC2:
+              case GL_INT_VEC2:
               case GL_FLOAT_VEC2: bind._dim[1] = 2; break;
               case GL_BOOL_VEC3:
+              case GL_INT_VEC3:
               case GL_FLOAT_VEC3: bind._dim[1] = 3; break;
               case GL_BOOL_VEC4:
+              case GL_INT_VEC4:
               case GL_FLOAT_VEC4: bind._dim[1] = 4; break;
               case GL_FLOAT_MAT3: bind._dim[1] = 9; break;
               case GL_FLOAT_MAT4: bind._dim[1] = 16; break;
@@ -643,13 +668,8 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
             bind._dep[0] = Shader::SSD_general | Shader::SSD_shaderinputs;
             bind._dep[1] = Shader::SSD_NONE;
             s->_ptr_spec.push_back(bind);
-            continue; }
-          case GL_INT:
-          case GL_INT_VEC2:
-          case GL_INT_VEC3:
-          case GL_INT_VEC4:
-            GLCAT.warning() << "Panda does not support passing integer arrays to shaders (yet)!\n";
             continue;
+          }
           default:
             GLCAT.warning() << "Ignoring unrecognized GLSL parameter array type!\n";
           }
@@ -874,20 +894,34 @@ issue_parameters(int altered) {
   for (int i=0; i<(int)_shader->_ptr_spec.size(); i++) {
     if(altered & (_shader->_ptr_spec[i]._dep[0] | _shader->_ptr_spec[i]._dep[1])) {
       const Shader::ShaderPtrSpec& _ptr = _shader->_ptr_spec[i];
-      Shader::ShaderPtrData* _ptr_data =
+      Shader::ShaderPtrData* ptr_data =
         const_cast< Shader::ShaderPtrData*>(_glgsg->fetch_ptr_parameter(_ptr));
-      if (_ptr_data == NULL) { //the input is not contained in ShaderPtrData
+      if (ptr_data == NULL) { //the input is not contained in ShaderPtrData
         release_resources();
         return;
       }
       GLint p = _glsl_parameter_map[_shader->_ptr_spec[i]._id._seqno];
-      switch (_ptr._dim[1]) {
-        case 1: _glgsg->_glUniform1fv(p, _ptr._dim[0], (float*)_ptr_data->_ptr); continue;
-        case 2: _glgsg->_glUniform2fv(p, _ptr._dim[0], (float*)_ptr_data->_ptr); continue;
-        case 3: _glgsg->_glUniform3fv(p, _ptr._dim[0], (float*)_ptr_data->_ptr); continue;
-        case 4: _glgsg->_glUniform4fv(p, _ptr._dim[0], (float*)_ptr_data->_ptr); continue;
-        case 9: _glgsg->_glUniformMatrix3fv(p, _ptr._dim[0], GL_FALSE, (float*)_ptr_data->_ptr); continue;
-        case 16: _glgsg->_glUniformMatrix4fv(p, _ptr._dim[0], GL_FALSE, (float*)_ptr_data->_ptr); continue;
+
+      switch (ptr_data->_type) {
+      case Shader::SPT_float:
+        switch (_ptr._dim[1]) {
+          case 1: _glgsg->_glUniform1fv(p, _ptr._dim[0], (float*)ptr_data->_ptr); continue;
+          case 2: _glgsg->_glUniform2fv(p, _ptr._dim[0], (float*)ptr_data->_ptr); continue;
+          case 3: _glgsg->_glUniform3fv(p, _ptr._dim[0], (float*)ptr_data->_ptr); continue;
+          case 4: _glgsg->_glUniform4fv(p, _ptr._dim[0], (float*)ptr_data->_ptr); continue;
+          case 9: _glgsg->_glUniformMatrix3fv(p, _ptr._dim[0], GL_FALSE, (float*)ptr_data->_ptr); continue;
+          case 16: _glgsg->_glUniformMatrix4fv(p, _ptr._dim[0], GL_FALSE, (float*)ptr_data->_ptr); continue;
+        }
+      case Shader::SPT_int:
+        switch (_ptr._dim[1]) {
+          case 1: _glgsg->_glUniform1iv(p, _ptr._dim[0], (int*)ptr_data->_ptr); continue;
+          case 2: _glgsg->_glUniform2iv(p, _ptr._dim[0], (int*)ptr_data->_ptr); continue;
+          case 3: _glgsg->_glUniform3iv(p, _ptr._dim[0], (int*)ptr_data->_ptr); continue;
+          case 4: _glgsg->_glUniform4iv(p, _ptr._dim[0], (int*)ptr_data->_ptr); continue;
+        }
+      case Shader::SPT_double:
+        GLCAT.error() << "Passing double-precision shader inputs to GLSL shaders is not currently supported\n";
+        continue;
       }
     }
   }

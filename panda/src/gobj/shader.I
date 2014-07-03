@@ -556,6 +556,120 @@ ShaderPtrData(const LMatrix3d &mat) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//  Function: Shader::ShaderPtrData Constructor
+//  Access:
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Shader::ShaderPtrData::
+ShaderPtrData(const PTA_int &ptr):
+  _pta(ptr.v0()),
+  _ptr(ptr.p()),
+  _type(SPT_int),
+  _updated(true),
+  _size(ptr.size())
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//  Function: Shader::ShaderPtrData Constructor
+//  Access:
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Shader::ShaderPtrData::
+ShaderPtrData(const PTA_LVecBase4i &ptr):
+  _pta(ptr.v0()),
+  _ptr(ptr.p()),
+  _type(SPT_int),
+  _updated(true),
+  _size(ptr.size() * 4)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//  Function: Shader::ShaderPtrData Constructor
+//  Access:
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Shader::ShaderPtrData::
+ShaderPtrData(const PTA_LVecBase3i &ptr):
+  _pta(ptr.v0()),
+  _ptr(ptr.p()),
+  _type(SPT_int),
+  _updated(true),
+  _size(ptr.size() * 3)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//  Function: Shader::ShaderPtrData Constructor
+//  Access:
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Shader::ShaderPtrData::
+ShaderPtrData(const PTA_LVecBase2i &ptr):
+  _pta(ptr.v0()),
+  _ptr(ptr.p()),
+  _type(SPT_int),
+  _updated(true),
+  _size(ptr.size() * 2)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//  Function: Shader::ShaderPtrData Constructor
+//  Access:
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Shader::ShaderPtrData::
+ShaderPtrData(const LVecBase4i &vec) :
+  _type(SPT_int),
+  _updated(true),
+  _size(4)
+{
+  PTA_int pta = PTA_int::empty_array(4);
+  _pta = pta.v0();
+  _ptr = pta.p();
+  nassertv(sizeof(vec[0]) * vec.get_num_components() == pta.size() * sizeof(pta[0]));
+  memcpy(_ptr, vec.get_data(), sizeof(vec[0]) * vec.get_num_components());
+}
+
+////////////////////////////////////////////////////////////////////
+//  Function: Shader::ShaderPtrData Constructor
+//  Access:
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Shader::ShaderPtrData::
+ShaderPtrData(const LVecBase3i &vec) :
+  _type(SPT_int),
+  _updated(true),
+  _size(3)
+{
+  PTA_int pta = PTA_int::empty_array(3);
+  _pta = pta.v0();
+  _ptr = pta.p();
+  nassertv(sizeof(vec[0]) * vec.get_num_components() == pta.size() * sizeof(pta[0]));
+  memcpy(_ptr, vec.get_data(), sizeof(vec[0]) * vec.get_num_components());
+}
+
+////////////////////////////////////////////////////////////////////
+//  Function: Shader::ShaderPtrData Constructor
+//  Access:
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Shader::ShaderPtrData::
+ShaderPtrData(const LVecBase2i &vec) :
+  _type(SPT_int),
+  _updated(true),
+  _size(2)
+{
+  PTA_int pta = PTA_int::empty_array(2);
+  _pta = pta.v0();
+  _ptr = pta.p();
+  nassertv(sizeof(vec[0]) * vec.get_num_components() == pta.size() * sizeof(pta[0]));
+  memcpy(_ptr, vec.get_data(), sizeof(vec[0]) * vec.get_num_components());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Shader::ShaderPtrData::write_datagram
 //       Access: Public
 //  Description: Writes the contents of this object to the datagram
@@ -576,6 +690,11 @@ write_datagram(Datagram &dg) const {
     const float *data = (const float *) _ptr;
     for (size_t i = 0; i < _size; ++i) {
       dg.add_float32(data[i]);
+    }
+  } else if (_type == SPT_int) {
+    const int *data = (const int *) _ptr;
+    for (size_t i = 0; i < _size; ++i) {
+      dg.add_int32(data[i]);
     }
   }
 }
@@ -602,6 +721,14 @@ read_datagram(DatagramIterator &scan) {
     PTA_float pta = PTA_float::empty_array(_size);
     for (size_t i = 0; i < _size; ++i) {
       pta[i] = scan.get_float32();
+    }
+    _pta = pta.v0();
+    _ptr = pta.p();
+
+  } else if (_type == SPT_int) {
+    PTA_int pta = PTA_int::empty_array(_size);
+    for (size_t i = 0; i < _size; ++i) {
+      pta[i] = scan.get_int32();
     }
     _pta = pta.v0();
     _ptr = pta.p();

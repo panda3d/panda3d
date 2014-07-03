@@ -3819,6 +3819,16 @@ set_shader_input(const InternalName *id, const PTA_double &v, int priority) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void NodePath:: 
+set_shader_input(const InternalName *id, const PTA_int &v, int priority) {
+  set_shader_input(new ShaderInput(id,v,priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NodePath:: 
 set_shader_input(const InternalName *id, const PTA_LVecBase4 &v, int priority) {
   set_shader_input(new ShaderInput(id,v,priority));
 }
@@ -3961,6 +3971,16 @@ set_shader_input(const string &id, const PTA_float &v, int priority) {
 ////////////////////////////////////////////////////////////////////
 void NodePath:: 
 set_shader_input(const string &id, const PTA_double &v, int priority) {
+  set_shader_input(new ShaderInput(InternalName::make(id),v,priority));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_shader_input
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NodePath:: 
+set_shader_input(const string &id, const PTA_int &v, int priority) {
   set_shader_input(new ShaderInput(InternalName::make(id),v,priority));
 }
 
