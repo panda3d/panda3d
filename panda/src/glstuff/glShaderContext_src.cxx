@@ -1099,8 +1099,6 @@ update_shader_texture_bindings(ShaderContext *prev) {
     return;
   }
 
-  _glgsg->_glMemoryBarrier(GL_ALL_BARRIER_BITS);
-
 #ifndef OPENGLES
   // First bind all the 'image units'; a bit of an esoteric OpenGL feature right now.
   int num_image_units = min(_glsl_img_inputs.size(), (size_t)_glgsg->_max_image_units);
