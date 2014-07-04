@@ -541,31 +541,6 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
               bind._dep[1] = Shader::SSD_NONE;
               s->_mat_spec.push_back(bind);
               continue; }
-            case GL_FLOAT:
-            case GL_FLOAT_VEC2:
-            case GL_FLOAT_VEC3:
-            case GL_FLOAT_VEC4: {
-              Shader::ShaderMatSpec bind;
-              bind._id = arg_id;
-              switch (param_type) {
-              case GL_BOOL:
-              case GL_FLOAT:      bind._piece = Shader::SMP_row3x1; break;
-              case GL_BOOL_VEC2:
-              case GL_FLOAT_VEC2: bind._piece = Shader::SMP_row3x2; break;
-              case GL_BOOL_VEC3:
-              case GL_FLOAT_VEC3: bind._piece = Shader::SMP_row3x3; break;
-              case GL_BOOL_VEC4:
-              case GL_FLOAT_VEC4: bind._piece = Shader::SMP_row3  ; break;
-              }
-              bind._func = Shader::SMF_first;
-              bind._part[0] = Shader::SMO_vec_constant_x;
-              bind._arg[0] = InternalName::make(param_name);
-              bind._dep[0] = Shader::SSD_general | Shader::SSD_shaderinputs;
-              bind._part[1] = Shader::SMO_identity;
-              bind._arg[1] = NULL;
-              bind._dep[1] = Shader::SSD_NONE;
-              s->_mat_spec.push_back(bind);
-              continue; }
             case GL_BOOL:
             case GL_BOOL_VEC2:
             case GL_BOOL_VEC3:
@@ -573,18 +548,28 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
             case GL_INT:
             case GL_INT_VEC2:
             case GL_INT_VEC3:
-            case GL_INT_VEC4: {
+            case GL_INT_VEC4:
+            case GL_FLOAT:
+            case GL_FLOAT_VEC2:
+            case GL_FLOAT_VEC3:
+            case GL_FLOAT_VEC4: {
               Shader::ShaderPtrSpec bind;
               bind._id = arg_id;
               switch (param_type) {
                 case GL_BOOL:
-                case GL_INT:        bind._dim[1] = 1; break;
+                case GL_INT:
+                case GL_FLOAT:      bind._dim[1] = 1; break;
                 case GL_BOOL_VEC2:
-                case GL_INT_VEC2:   bind._dim[1] = 2; break;
+                case GL_INT_VEC2:
+                case GL_FLOAT_VEC2: bind._dim[1] = 2; break;
                 case GL_BOOL_VEC3:
-                case GL_INT_VEC3:   bind._dim[1] = 3; break;
+                case GL_INT_VEC3:
+                case GL_FLOAT_VEC3: bind._dim[1] = 3; break;
                 case GL_BOOL_VEC4:
-                case GL_INT_VEC4:   bind._dim[1] = 4; break;
+                case GL_INT_VEC4:
+                case GL_FLOAT_VEC4: bind._dim[1] = 4; break;
+                case GL_FLOAT_MAT3: bind._dim[1] = 9; break;
+                case GL_FLOAT_MAT4: bind._dim[1] = 16; break;
               }
               bind._arg = InternalName::make(param_name);
               bind._dim[0] = 1;
