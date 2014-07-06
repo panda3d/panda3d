@@ -459,6 +459,8 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
         if (param_size == 1) {
           switch (param_type) {
 #ifndef OPENGLES
+            case GL_INT_SAMPLER_1D:
+            case GL_UNSIGNED_INT_SAMPLER_1D:
             case GL_SAMPLER_1D_SHADOW:
             case GL_SAMPLER_1D: {
               Shader::ShaderTexSpec bind;
@@ -468,6 +470,8 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
               bind._stage = texunitno++;
               s->_tex_spec.push_back(bind);
               continue; }
+            case GL_INT_SAMPLER_2D:
+            case GL_UNSIGNED_INT_SAMPLER_2D:
             case GL_SAMPLER_2D_SHADOW:
 #endif
             case GL_SAMPLER_2D: {
@@ -478,6 +482,10 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
               bind._stage = texunitno++;
               s->_tex_spec.push_back(bind);
               continue; }
+#ifndef OPENGLES
+            case GL_INT_SAMPLER_3D:
+            case GL_UNSIGNED_INT_SAMPLER_3D:
+#endif
             case GL_SAMPLER_3D: {
               Shader::ShaderTexSpec bind;
               bind._id = arg_id;
@@ -486,6 +494,11 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
               bind._stage = texunitno++;
               s->_tex_spec.push_back(bind);
               continue; }
+#ifndef OPENGLES
+            case GL_INT_SAMPLER_CUBE:
+            case GL_UNSIGNED_INT_SAMPLER_CUBE:
+            case GL_SAMPLER_CUBE_SHADOW:
+#endif
             case GL_SAMPLER_CUBE: {
               Shader::ShaderTexSpec bind;
               bind._id = arg_id;
