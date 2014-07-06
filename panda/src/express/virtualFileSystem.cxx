@@ -514,6 +514,7 @@ make_directory(const Filename &filename) {
   _lock.acquire();
   PT(VirtualFile) result = do_get_file(filename, OF_make_directory);
   _lock.release();
+  nassertr_always(result != NULL, false);
   return result->is_directory();
 }
 
@@ -542,6 +543,7 @@ make_directory_full(const Filename &filename) {
   // Now make the last one, and check the return value.
   PT(VirtualFile) result = do_get_file(filename, OF_make_directory);
   _lock.release();
+  nassertr_always(result != NULL, false);
   return result->is_directory();
 }
 

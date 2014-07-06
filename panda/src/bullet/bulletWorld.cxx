@@ -87,17 +87,20 @@ BulletWorld() {
   // Filter callback
   switch (bullet_filter_algorithm) {
     case FA_mask:
-      _world->getPairCache()->setOverlapFilterCallback(&_filter_cb1);
+      _filter_cb = &_filter_cb1;
       break;
     case FA_groups_mask:
-      _world->getPairCache()->setOverlapFilterCallback(&_filter_cb2);
+      _filter_cb = &_filter_cb2;
       break;
     case FA_callback:
-      _world->getPairCache()->setOverlapFilterCallback(&_filter_cb3);
+      _filter_cb = &_filter_cb3;
       break;
     default:
       bullet_cat.error() << "no proper filter algorithm!" << endl;
+      _filter_cb = NULL;
   }
+
+  _world->getPairCache()->setOverlapFilterCallback(_filter_cb);
 
   // Tick callback
   _tick_callback_obj = NULL;
@@ -713,18 +716,60 @@ sweep_test_closest(BulletShape *shape, const TransformState &from_ts, const Tran
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BulletWorld::filter_test
+//       Access: Published
+//  Description: Performs a test if two bodies should collide or
+//               not, based on the collision filter setting.
+////////////////////////////////////////////////////////////////////
+bool BulletWorld::
+filter_test(PandaNode *node0, PandaNode *node1) const {
+
+  nassertr(node0, false);
+  nassertr(node1, false);
+  nassertr(_filter_cb, false);
+
+  btCollisionObject *obj0 = get_collision_object(node0);
+  btCollisionObject *obj1 = get_collision_object(node1);
+
+  nassertr(obj0, false);
+  nassertr(obj1, false);
+
+  btBroadphaseProxy *proxy0 = obj0->getBroadphaseHandle();
+  btBroadphaseProxy *proxy1 = obj1->getBroadphaseHandle();
+
+  nassertr(proxy0, false);
+  nassertr(proxy1, false);
+
+  return _filter_cb->needBroadphaseCollision(proxy0, proxy1);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BulletWorld::contact_test
 //       Access: Published
-//  Description: 
+//  Description: Performas a test for all bodies which are
+//               currently in contact with the given body.
+//               The test returns a BulletContactResult object
+//               which may contain zero, one or more contacts.
+//
+//               If the optional parameter use_filter is set to
+//               TRUE this test will consider filter settings.
+//               Otherwise all objects in contact are reported,
+//               no matter if they would collide or not.
 ////////////////////////////////////////////////////////////////////
 BulletContactResult BulletWorld::
-contact_test(PandaNode *node) const {
+contact_test(PandaNode *node, bool use_filter) const {
 
   btCollisionObject *obj = get_collision_object(node);
 
   BulletContactResult cb;
 
   if (obj) {
+#if BT_BULLET_VERSION >= 281
+    if (use_filter) {
+      cb.use_filter(_filter_cb, obj->getBroadphaseHandle());
+    }
+#endif
+
     _world->contactTest(obj, cb);
   }
 
@@ -734,7 +779,10 @@ contact_test(PandaNode *node) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BulletWorld::contact_pair_test
 //       Access: Published
-//  Description: 
+//  Description: Performas a test if the two bodies given as
+//               parameters are in contact or not.
+//               The test returns a BulletContactResult object
+//               which may contain zero or one contacts.
 ////////////////////////////////////////////////////////////////////
 BulletContactResult BulletWorld::
 contact_test_pair(PandaNode *node0, PandaNode *node1) const {
@@ -745,6 +793,7 @@ contact_test_pair(PandaNode *node0, PandaNode *node1) const {
   BulletContactResult cb;
 
   if (obj0 && obj1) {
+
     _world->contactPairTest(obj0, obj1, cb);
   }
 
@@ -806,7 +855,7 @@ set_group_collision_flag(unsigned int group1, unsigned int group2, bool enable) 
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletWorld::get_collision_object
+//     Function: BulletWorld::get_group_collision_flag
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////

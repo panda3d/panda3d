@@ -622,15 +622,13 @@ synthesize_shader(const RenderState *rs) {
 
   // These variables will hold the results of register allocation.
 
-  char *ntangent_vreg = 0;
-  char *ntangent_freg = 0;
-  char *nbinormal_vreg = 0;
-  char *nbinormal_freg = 0;
-  char *htangent_vreg = 0;
-  char *hbinormal_vreg = 0;
-  pvector<char *> texcoord_freg;
-  pvector<char *> dlightcoord_freg;
-  pvector<char *> slightcoord_freg;
+  char *tangent_freg = 0;
+  char *binormal_freg = 0;
+  string tangent_input;
+  string binormal_input;
+  pmap<const InternalName *, char *> texcoord_fregs;
+  pvector<char *> dlightcoord_fregs;
+  pvector<char *> slightcoord_fregs;
   char *world_position_freg = 0;
   char *world_normal_freg = 0;
   char *eye_position_freg = 0;
@@ -659,11 +657,39 @@ synthesize_shader(const RenderState *rs) {
   for (int i = 0; i < _num_textures; ++i) {
     TextureStage *stage = texture->get_on_stage(i);
     if (!tex_gen->has_stage(stage)) {
-      texcoord_freg.push_back(alloc_freg());
-      text << "\t in float4 vtx_texcoord" << i << " : " << alloc_vreg() << ",\n";
-      text << "\t out float4 l_texcoord" << i << " : " << texcoord_freg[i] << ",\n";
-    } else {
-      texcoord_freg.push_back(NULL);
+      const InternalName *texcoord_name = stage->get_texcoord_name();
+
+      if (texcoord_fregs.count(texcoord_name) == 0) {
+        char *freg = alloc_freg();
+        string tcname = texcoord_name->join("_");
+        texcoord_fregs[texcoord_name] = freg;
+
+        text << "\t in float4 vtx_" << tcname << " : " << alloc_vreg() << ",\n";
+        text << "\t out float4 l_" << tcname << " : " << freg << ",\n";
+      }
+    }
+
+    if ((_map_index_normal == i && (_lighting || _out_aux_normal) && _auto_normal_on) || _map_index_height == i) {
+      const InternalName *texcoord_name = stage->get_texcoord_name();
+      PT(InternalName) tangent_name = InternalName::get_tangent();
+      PT(InternalName) binormal_name = InternalName::get_binormal();
+
+      if (texcoord_name != InternalName::get_texcoord()) {
+        tangent_name = tangent_name->append(texcoord_name->get_basename());
+        binormal_name = binormal_name->append(texcoord_name->get_basename());
+      }
+      tangent_input = tangent_name->join("_");
+      binormal_input = binormal_name->join("_");
+
+      text << "\t in float4 vtx_" << tangent_input << " : " << alloc_vreg() << ",\n";
+      text << "\t in float4 vtx_" << binormal_input << " : " << alloc_vreg() << ",\n";
+
+      if (_map_index_normal == i && (_lighting || _out_aux_normal) && _auto_normal_on) {
+        tangent_freg = alloc_freg();
+        binormal_freg = alloc_freg();
+        text << "\t out float4 l_tangent : " << tangent_freg << ",\n";
+        text << "\t out float4 l_binormal : " << binormal_freg << ",\n";
+      }
     }
   }
   if (_vertex_colors) {
@@ -695,49 +721,27 @@ synthesize_shader(const RenderState *rs) {
     text << "\t in float4 vtx_normal : NORMAL,\n";
   }
   if (_map_index_height >= 0) {
-    htangent_vreg = alloc_vreg();
-    hbinormal_vreg = alloc_vreg();
-    if (_map_index_normal == _map_index_height) {
-      ntangent_vreg = htangent_vreg;
-      nbinormal_vreg = hbinormal_vreg;
-    }
-    text << "\t in float4 vtx_tangent" << _map_index_height << " : " << htangent_vreg << ",\n";
-    text << "\t in float4 vtx_binormal" << _map_index_height << " : " << hbinormal_vreg << ",\n";
     text << "\t uniform float4 mspos_view,\n";
     text << "\t out float3 l_eyevec,\n";
   }
   if (_lighting) {
-    if (_map_index_normal >= 0 && _auto_normal_on) {
-      // If we had a height map and it used the same stage, that means we already have those inputs.
-      if (_map_index_normal != _map_index_height) {
-        ntangent_vreg = alloc_vreg();
-        nbinormal_vreg = alloc_vreg();
-        // NB. If we used TANGENT and BINORMAL, Cg would have them overlap with TEXCOORD6-7.
-        text << "\t in float4 vtx_tangent" << _map_index_normal << " : " << ntangent_vreg << ",\n";
-        text << "\t in float4 vtx_binormal" << _map_index_normal << " : " << nbinormal_vreg << ",\n";
-      }
-      ntangent_freg = alloc_freg();
-      nbinormal_freg = alloc_freg();
-      text << "\t out float4 l_tangent : " << ntangent_freg << ",\n";
-      text << "\t out float4 l_binormal : " << nbinormal_freg << ",\n";
-    }
     if (_shadows && _auto_shadow_on) {
       for (int i=0; i < (int)_dlights.size(); i++) {
         if (_dlights[i]->_shadow_caster) {
-          dlightcoord_freg.push_back(alloc_freg());
+          dlightcoord_fregs.push_back(alloc_freg());
           text << "\t uniform float4x4 trans_model_to_clip_of_dlight" << i << ",\n";
-          text << "\t out float4 l_dlightcoord" << i << " : " << dlightcoord_freg[i] << ",\n";
+          text << "\t out float4 l_dlightcoord" << i << " : " << dlightcoord_fregs[i] << ",\n";
         } else {
-          dlightcoord_freg.push_back(NULL);
+          dlightcoord_fregs.push_back(NULL);
         }
       }
       for (int i=0; i < (int)_slights.size(); i++) {
         if (_slights[i]->_shadow_caster) {
-          slightcoord_freg.push_back(alloc_freg());
+          slightcoord_fregs.push_back(alloc_freg());
           text << "\t uniform float4x4 trans_model_to_clip_of_slight" << i << ",\n";
-          text << "\t out float4 l_slightcoord" << i << " : " << slightcoord_freg[i] << ",\n";
+          text << "\t out float4 l_slightcoord" << i << " : " << slightcoord_fregs[i] << ",\n";
         } else {
-          slightcoord_freg.push_back(NULL);
+          slightcoord_fregs.push_back(NULL);
         }
       }
     }
@@ -768,18 +772,19 @@ synthesize_shader(const RenderState *rs) {
     text << "\t l_eye_normal.xyz = mul((float3x3)tpose_view_to_model, vtx_normal.xyz);\n";
     text << "\t l_eye_normal.w = 0;\n";
   }
-  for (int i = 0; i < _num_textures; ++i) {
-    if (!tex_gen->has_stage(texture->get_on_stage(i))) {
-      text << "\t l_texcoord" << i << " = vtx_texcoord" << i << ";\n";
-    }
+  pmap<const InternalName *, char *>::const_iterator it;
+  for (it = texcoord_fregs.begin(); it != texcoord_fregs.end(); ++it) {
+    // Pass through all texcoord inputs as-is.
+    string tcname = it->first->join("_");
+    text << "\t l_" << tcname << " = vtx_" << tcname << ";\n";
   }
   if (_vertex_colors) {
     text << "\t l_color = vtx_color;\n";
   }
-  if (_lighting && (_map_index_normal >= 0 && _auto_normal_on)) {
-    text << "\t l_tangent.xyz = mul((float3x3)tpose_view_to_model, vtx_tangent" << _map_index_normal << ".xyz);\n";
+  if ((_lighting || _out_aux_normal) && (_map_index_normal >= 0 && _auto_normal_on)) {
+    text << "\t l_tangent.xyz = mul((float3x3)tpose_view_to_model, vtx_" << tangent_input << ".xyz);\n";
     text << "\t l_tangent.w = 0;\n";
-    text << "\t l_binormal.xyz = mul((float3x3)tpose_view_to_model, -vtx_binormal" << _map_index_normal << ".xyz);\n";
+    text << "\t l_binormal.xyz = mul((float3x3)tpose_view_to_model, -vtx_" << binormal_input << ".xyz);\n";
     text << "\t l_binormal.w = 0;\n";
   }
   if (_shadows && _auto_shadow_on) {
@@ -797,8 +802,8 @@ synthesize_shader(const RenderState *rs) {
   }
   if (_map_index_height >= 0) {
     text << "\t float3 eyedir = mspos_view.xyz - vtx_position.xyz;\n";
-    text << "\t l_eyevec.x = dot(vtx_tangent" << _map_index_height << ".xyz, eyedir);\n";
-    text << "\t l_eyevec.y = dot(vtx_binormal" << _map_index_height << ".xyz, eyedir);\n";
+    text << "\t l_eyevec.x = dot(vtx_" << tangent_input << ".xyz, eyedir);\n";
+    text << "\t l_eyevec.y = dot(vtx_" << binormal_input << ".xyz, eyedir);\n";
     text << "\t l_eyevec.z = dot(vtx_normal.xyz, eyedir);\n";
     text << "\t l_eyevec = normalize(l_eyevec);\n";
   }
@@ -824,22 +829,22 @@ synthesize_shader(const RenderState *rs) {
   if (_need_eye_normal) {
     text << "\t in float4 l_eye_normal : " << eye_normal_freg << ",\n";
   }
+  for (it = texcoord_fregs.begin(); it != texcoord_fregs.end(); ++it) {
+    text << "\t in float4 l_" << it->first->join("_") << " : " << it->second << ",\n";
+  }
   const TexMatrixAttrib *tex_matrix = DCAST(TexMatrixAttrib, rs->get_attrib_def(TexMatrixAttrib::get_class_slot()));
   for (int i=0; i<_num_textures; i++) {
     TextureStage *stage = texture->get_on_stage(i);
     Texture *tex = texture->get_on_texture(stage);
     nassertr(tex != NULL, NULL);
     text << "\t uniform sampler" << texture_type_as_string(tex->get_texture_type()) << " tex_" << i << ",\n";
-    if (!tex_gen->has_stage(stage)) {
-      text << "\t in float4 l_texcoord" << i << " : " << texcoord_freg[i] << ",\n";
-    }
     if (tex_matrix->has_stage(stage)) {
       text << "\t uniform float4x4 texmat_" << i << ",\n";
     }
   }
-  if (_lighting && (_map_index_normal >= 0 && _auto_normal_on)) {
-    text << "\t in float3 l_tangent : " << ntangent_freg << ",\n";
-    text << "\t in float3 l_binormal : " << nbinormal_freg << ",\n";
+  if ((_lighting || _out_aux_normal) && (_map_index_normal >= 0 && _auto_normal_on)) {
+    text << "\t in float3 l_tangent : " << tangent_freg << ",\n";
+    text << "\t in float3 l_binormal : " << binormal_freg << ",\n";
   }
   if (_lighting) {
     for (int i=0; i < (int)_alights.size(); i++) {
@@ -853,7 +858,7 @@ synthesize_shader(const RenderState *rs) {
         } else {
           text << "\t uniform sampler2D k_dlighttex" << i << ",\n";
         }
-        text << "\t in float4 l_dlightcoord" << i << " : " << dlightcoord_freg[i] << ",\n";
+        text << "\t in float4 l_dlightcoord" << i << " : " << dlightcoord_fregs[i] << ",\n";
       }
     }
     for (int i=0; i < (int)_plights.size(); i++) {
@@ -868,7 +873,7 @@ synthesize_shader(const RenderState *rs) {
         } else {
           text << "\t uniform sampler2D k_slighttex" << i << ",\n";
         }
-        text << "\t in float4 l_slightcoord" << i << " : " << slightcoord_freg[i] << ",\n";
+        text << "\t in float4 l_slightcoord" << i << " : " << slightcoord_fregs[i] << ",\n";
       }
     }
     if (_need_material_props) {
@@ -916,26 +921,30 @@ synthesize_shader(const RenderState *rs) {
     if (tex_gen != NULL && tex_gen->has_stage(stage)) {
       switch (tex_gen->get_mode(stage)) {
         case TexGenAttrib::M_world_position:
-          text << "\t float4 l_texcoord" << i << " = l_world_position;\n";
+          text << "\t float4 texcoord" << i << " = l_world_position;\n";
           break;
         case TexGenAttrib::M_world_normal:
-          text << "\t float4 l_texcoord" << i << " = l_world_normal;\n";
+          text << "\t float4 texcoord" << i << " = l_world_normal;\n";
           break;
         case TexGenAttrib::M_eye_position:
-          text << "\t float4 l_texcoord" << i << " = l_eye_position;\n";
+          text << "\t float4 texcoord" << i << " = l_eye_position;\n";
           break;
         case TexGenAttrib::M_eye_normal:
-          text << "\t float4 l_texcoord" << i << " = l_eye_normal;\n";
-          text << "\t l_texcoord" << i << ".w = 1.0f;\n";
+          text << "\t float4 texcoord" << i << " = l_eye_normal;\n";
+          text << "\t texcoord" << i << ".w = 1.0f;\n";
           break;
         default:
           pgraph_cat.error() << "Unsupported TexGenAttrib mode\n";
-          text << "\t float4 l_texcoord" << i << " = float4(0, 0, 0, 0);\n";
+          text << "\t float4 texcoord" << i << " = float4(0, 0, 0, 0);\n";
       }
+    } else {
+      // Cg seems to be able to optimize this temporary away when appropriate.
+      const InternalName *texcoord_name = stage->get_texcoord_name();
+      text << "\t float4 texcoord" << i << " = l_" << texcoord_name->join("_") << ";\n";
     }
     if (tex_matrix != NULL && tex_matrix->has_stage(stage)) {
-      text << "\t l_texcoord" << i << " = mul(texmat_" << i << ", l_texcoord" << i << ");\n";
-      text << "\t l_texcoord" << i << ".xyz /= l_texcoord" << i << ".w;\n";
+      text << "\t texcoord" << i << " = mul(texmat_" << i << ", texcoord" << i << ");\n";
+      text << "\t texcoord" << i << ".xyz /= texcoord" << i << ".w;\n";
     }
   }
   text << "\t // Fetch all textures.\n";
@@ -943,7 +952,7 @@ synthesize_shader(const RenderState *rs) {
     Texture *tex = texture->get_on_texture(texture->get_on_stage(_map_index_height));
     nassertr(tex != NULL, NULL);
     text << "\t float4 tex" << _map_index_height << " = tex" << texture_type_as_string(tex->get_texture_type());
-    text << "(tex_" << _map_index_height << ", l_texcoord" << _map_index_height << ".";
+    text << "(tex_" << _map_index_height << ", texcoord" << _map_index_height << ".";
     switch (tex->get_texture_type()) {
     case Texture::TT_cube_map:
     case Texture::TT_3d_texture:
@@ -983,21 +992,21 @@ synthesize_shader(const RenderState *rs) {
       nassertr(tex != NULL, NULL);
       // Parallax mapping pushes the texture coordinates of the other textures away from the camera.
       if (_map_index_height >= 0 && parallax_mapping_samples > 0) {
-        text << "\t l_texcoord" << i << ".xyz -= parallax_offset;\n";
+        text << "\t texcoord" << i << ".xyz -= parallax_offset;\n";
       }
       text << "\t float4 tex" << i << " = tex" << texture_type_as_string(tex->get_texture_type());
-      text << "(tex_" << i << ", l_texcoord" << i << ".";
+      text << "(tex_" << i << ", texcoord" << i << ".";
       switch(tex->get_texture_type()) {
       case Texture::TT_cube_map:
       case Texture::TT_3d_texture:
       case Texture::TT_2d_texture_array:
-        text << "xyz"; 
+        text << "xyz";
         break;
-      case Texture::TT_2d_texture: 
+      case Texture::TT_2d_texture:
         text << "xy";
         break;
-      case Texture::TT_1d_texture: 
-        text << "x";   
+      case Texture::TT_1d_texture:
+        text << "x";
         break;
       default:
         break;
@@ -1005,7 +1014,7 @@ synthesize_shader(const RenderState *rs) {
       text << ");\n";
     }
   }
-  if (_lighting) {
+  if (_lighting || _out_aux_normal) {
     if (_map_index_normal >= 0 && _auto_normal_on) {
       text << "\t // Translate tangent-space normal in map to view-space.\n";
       text << "\t float3 tsnormal = ((float3)tex" << _map_index_normal << " * 2) - 1;\n";
@@ -1240,7 +1249,7 @@ synthesize_shader(const RenderState *rs) {
     } else if (_flat_colors) {
       text << "\t result = attr_color;\n";
     } else {
-      text << "\t result = float4(1,1,1,1);\n";
+      text << "\t result = float4(1, 1, 1, 1);\n";
     }
   }
 

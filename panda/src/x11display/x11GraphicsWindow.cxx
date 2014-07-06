@@ -19,6 +19,7 @@
 #include "graphicsPipe.h"
 #include "keyboardButton.h"
 #include "mouseButton.h"
+#include "buttonMap.h"
 #include "clockObject.h"
 #include "pStatTimer.h"
 #include "textEncoder.h"
@@ -1392,17 +1393,25 @@ handle_keypress(XKeyEvent &event) {
 
   // Now get the raw unshifted button.
   ButtonHandle button = get_button(event, false);
-  if (button == KeyboardButton::lcontrol() || button == KeyboardButton::rcontrol()) {
-    _input_devices[0].button_down(KeyboardButton::control());
-  }
-  if (button == KeyboardButton::lshift() || button == KeyboardButton::rshift()) {
-    _input_devices[0].button_down(KeyboardButton::shift());
-  }
-  if (button == KeyboardButton::lalt() || button == KeyboardButton::ralt()) {
-    _input_devices[0].button_down(KeyboardButton::alt());
-  }
   if (button != ButtonHandle::none()) {
+    if (button == KeyboardButton::lcontrol() || button == KeyboardButton::rcontrol()) {
+      _input_devices[0].button_down(KeyboardButton::control());
+    }
+    if (button == KeyboardButton::lshift() || button == KeyboardButton::rshift()) {
+      _input_devices[0].button_down(KeyboardButton::shift());
+    }
+    if (button == KeyboardButton::lalt() || button == KeyboardButton::ralt()) {
+      _input_devices[0].button_down(KeyboardButton::alt());
+    }
+    if (button == KeyboardButton::lmeta() || button == KeyboardButton::rmeta()) {
+      _input_devices[0].button_down(KeyboardButton::meta());
+    }
     _input_devices[0].button_down(button);
+  }
+
+  ButtonHandle raw_button = map_raw_button(event.keycode);
+  if (raw_button != ButtonHandle::none()) {
+    _input_devices[0].raw_button_down(raw_button);
   }
 }
 
@@ -1420,17 +1429,25 @@ handle_keyrelease(XKeyEvent &event) {
 
   // Now get the raw unshifted button.
   ButtonHandle button = get_button(event, false);
-  if (button == KeyboardButton::lcontrol() || button == KeyboardButton::rcontrol()) {
-    _input_devices[0].button_up(KeyboardButton::control());
-  }
-  if (button == KeyboardButton::lshift() || button == KeyboardButton::rshift()) {
-    _input_devices[0].button_up(KeyboardButton::shift());
-  }
-  if (button == KeyboardButton::lalt() || button == KeyboardButton::ralt()) {
-    _input_devices[0].button_up(KeyboardButton::alt());
-  }
   if (button != ButtonHandle::none()) {
+    if (button == KeyboardButton::lcontrol() || button == KeyboardButton::rcontrol()) {
+      _input_devices[0].button_up(KeyboardButton::control());
+    }
+    if (button == KeyboardButton::lshift() || button == KeyboardButton::rshift()) {
+      _input_devices[0].button_up(KeyboardButton::shift());
+    }
+    if (button == KeyboardButton::lalt() || button == KeyboardButton::ralt()) {
+      _input_devices[0].button_up(KeyboardButton::alt());
+    }
+    if (button == KeyboardButton::lmeta() || button == KeyboardButton::rmeta()) {
+      _input_devices[0].button_up(KeyboardButton::meta());
+    }
     _input_devices[0].button_up(button);
+  }
+
+  ButtonHandle raw_button = map_raw_button(event.keycode);
+  if (raw_button != ButtonHandle::none()) {
+    _input_devices[0].raw_button_up(raw_button);
   }
 }
 
@@ -1529,8 +1546,10 @@ get_button(XKeyEvent &key_event, bool allow_shift) {
 //               Called by get_button(), above.
 ////////////////////////////////////////////////////////////////////
 ButtonHandle x11GraphicsWindow::
-map_button(KeySym key) {
+map_button(KeySym key) const {
   switch (key) {
+  case NoSymbol:
+    return ButtonHandle::none();
   case XK_BackSpace:
     return KeyboardButton::backspace();
   case XK_Tab:
@@ -1815,6 +1834,8 @@ map_button(KeySym key) {
     return KeyboardButton::print_screen();
   case XK_Pause:
     return KeyboardButton::pause();
+  case XK_Menu:
+    return KeyboardButton::menu();
   case XK_Shift_L:
     return KeyboardButton::lshift();
   case XK_Shift_R:
@@ -1828,14 +1849,136 @@ map_button(KeySym key) {
   case XK_Alt_R:
     return KeyboardButton::ralt();
   case XK_Meta_L:
+    return KeyboardButton::lmeta();
   case XK_Meta_R:
-    return KeyboardButton::meta();
+    return KeyboardButton::rmeta();
   case XK_Caps_Lock:
     return KeyboardButton::caps_lock();
   case XK_Shift_Lock:
     return KeyboardButton::shift_lock();
   }
 
+  return ButtonHandle::none();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: x11GraphicsWindow::map_raw_button
+//       Access: Private
+//  Description: Maps from a single X keycode to Panda's ButtonHandle.
+////////////////////////////////////////////////////////////////////
+ButtonHandle x11GraphicsWindow::
+map_raw_button(KeyCode key) const {
+  switch (key) {
+  case 9:  return KeyboardButton::escape();
+  case 10: return KeyboardButton::ascii_key('1');
+  case 11: return KeyboardButton::ascii_key('2');
+  case 12: return KeyboardButton::ascii_key('3');
+  case 13: return KeyboardButton::ascii_key('4');
+  case 14: return KeyboardButton::ascii_key('5');
+  case 15: return KeyboardButton::ascii_key('6');
+  case 16: return KeyboardButton::ascii_key('7');
+  case 17: return KeyboardButton::ascii_key('8');
+  case 18: return KeyboardButton::ascii_key('9');
+  case 19: return KeyboardButton::ascii_key('0');
+  case 20: return KeyboardButton::ascii_key('-');
+  case 21: return KeyboardButton::ascii_key('=');
+  case 22: return KeyboardButton::backspace();
+  case 23: return KeyboardButton::tab();
+  case 24: return KeyboardButton::ascii_key('q');
+  case 25: return KeyboardButton::ascii_key('w');
+  case 26: return KeyboardButton::ascii_key('e');
+  case 27: return KeyboardButton::ascii_key('r');
+  case 28: return KeyboardButton::ascii_key('t');
+  case 29: return KeyboardButton::ascii_key('y');
+  case 30: return KeyboardButton::ascii_key('u');
+  case 31: return KeyboardButton::ascii_key('i');
+  case 32: return KeyboardButton::ascii_key('o');
+  case 33: return KeyboardButton::ascii_key('p');
+  case 34: return KeyboardButton::ascii_key('[');
+  case 35: return KeyboardButton::ascii_key(']');
+  case 36: return KeyboardButton::enter();
+  case 37: return KeyboardButton::lcontrol();
+  case 38: return KeyboardButton::ascii_key('a');
+  case 39: return KeyboardButton::ascii_key('s');
+  case 40: return KeyboardButton::ascii_key('d');
+  case 41: return KeyboardButton::ascii_key('f');
+  case 42: return KeyboardButton::ascii_key('g');
+  case 43: return KeyboardButton::ascii_key('h');
+  case 44: return KeyboardButton::ascii_key('j');
+  case 45: return KeyboardButton::ascii_key('k');
+  case 46: return KeyboardButton::ascii_key('l');
+  case 47: return KeyboardButton::ascii_key(';');
+  case 48: return KeyboardButton::ascii_key('\'');
+  case 49: return KeyboardButton::ascii_key('`');
+  case 50: return KeyboardButton::lshift();
+  case 51: return KeyboardButton::ascii_key('\\');
+  case 52: return KeyboardButton::ascii_key('z');
+  case 53: return KeyboardButton::ascii_key('x');
+  case 54: return KeyboardButton::ascii_key('c');
+  case 55: return KeyboardButton::ascii_key('v');
+  case 56: return KeyboardButton::ascii_key('b');
+  case 57: return KeyboardButton::ascii_key('n');
+  case 58: return KeyboardButton::ascii_key('m');
+  case 59: return KeyboardButton::ascii_key(',');
+  case 60: return KeyboardButton::ascii_key('.');
+  case 61: return KeyboardButton::ascii_key('/');
+  case 62: return KeyboardButton::rshift();
+  case 63: return KeyboardButton::ascii_key('*');
+  case 64: return KeyboardButton::lalt();
+  case 65: return KeyboardButton::space();
+  case 66: return KeyboardButton::caps_lock();
+  case 67: return KeyboardButton::f1();
+  case 68: return KeyboardButton::f2();
+  case 69: return KeyboardButton::f3();
+  case 70: return KeyboardButton::f4();
+  case 71: return KeyboardButton::f5();
+  case 72: return KeyboardButton::f6();
+  case 73: return KeyboardButton::f7();
+  case 74: return KeyboardButton::f8();
+  case 75: return KeyboardButton::f9();
+  case 76: return KeyboardButton::f10();
+  case 77: return KeyboardButton::num_lock();
+  case 78: return KeyboardButton::scroll_lock();
+  case 79: return KeyboardButton::ascii_key('7');
+  case 80: return KeyboardButton::ascii_key('8');
+  case 81: return KeyboardButton::ascii_key('9');
+  case 82: return KeyboardButton::ascii_key('-');
+  case 83: return KeyboardButton::ascii_key('4');
+  case 84: return KeyboardButton::ascii_key('5');
+  case 85: return KeyboardButton::ascii_key('6');
+  case 86: return KeyboardButton::ascii_key('+');
+  case 87: return KeyboardButton::ascii_key('1');
+  case 88: return KeyboardButton::ascii_key('2');
+  case 89: return KeyboardButton::ascii_key('3');
+  case 90: return KeyboardButton::ascii_key('0');
+  case 91: return KeyboardButton::ascii_key('.');
+
+  case 95: return KeyboardButton::f11();
+  case 96: return KeyboardButton::f12();
+
+  case 104: return KeyboardButton::enter();
+  case 105: return KeyboardButton::rcontrol();
+  case 106: return KeyboardButton::ascii_key('/');
+  case 107: return KeyboardButton::print_screen();
+  case 108: return KeyboardButton::ralt();
+
+  case 110: return KeyboardButton::home();
+  case 111: return KeyboardButton::up();
+  case 112: return KeyboardButton::page_up();
+  case 113: return KeyboardButton::left();
+  case 114: return KeyboardButton::right();
+  case 115: return KeyboardButton::end();
+  case 116: return KeyboardButton::down();
+  case 117: return KeyboardButton::page_down();
+  case 118: return KeyboardButton::insert();
+  case 119: return KeyboardButton::del();
+
+  case 127: return KeyboardButton::pause();
+
+  case 133: return KeyboardButton::lmeta();
+  case 134: return KeyboardButton::rmeta();
+  case 135: return KeyboardButton::menu();
+  }
   return ButtonHandle::none();
 }
 
@@ -1859,6 +2002,36 @@ get_mouse_button(XButtonEvent &button_event) {
   } else {
     return MouseButton::button(index - 1);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: x11GraphicsWindow::get_keyboard_map
+//       Access: Private, Virtual
+//  Description: Returns a ButtonMap containing the association
+//               between raw buttons and virtual buttons.
+////////////////////////////////////////////////////////////////////
+ButtonMap *x11GraphicsWindow::
+get_keyboard_map() const {
+  // NB.  This could be improved by using the Xkb API.
+  //XkbDescPtr desc = XkbGetMap(_display, XkbAllMapComponentsMask, XkbUseCoreKbd);
+  ButtonMap *map = new ButtonMap;
+
+  for (int k = 9; k <= 135; ++k) {
+    ButtonHandle raw_button = map_raw_button(k);
+    if (raw_button == ButtonHandle::none()) {
+      continue;
+    }
+
+    KeySym sym = XKeycodeToKeysym(_display, k, 0);
+    ButtonHandle button = map_button(sym);
+    if (button == ButtonHandle::none()) {
+      continue;
+    }
+
+    map->map_button(raw_button, button);
+  }
+
+  return map;
 }
 
 ////////////////////////////////////////////////////////////////////

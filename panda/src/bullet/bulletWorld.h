@@ -123,8 +123,10 @@ PUBLISHED:
     const CollideMask &mask=CollideMask::all_on(),
     PN_stdfloat penetration=0.0f) const;
 
-  BulletContactResult contact_test(PandaNode *node) const;
+  BulletContactResult contact_test(PandaNode *node, bool use_filter=false) const;
   BulletContactResult contact_test_pair(PandaNode *node0, PandaNode *node1) const;
+
+  bool filter_test(PandaNode *node0, PandaNode *node1) const;
 
   // Manifolds
   INLINE int get_num_manifolds() const;
@@ -232,6 +234,7 @@ private:
   btFilterCallback1 _filter_cb1;
   btFilterCallback2 _filter_cb2;
   btFilterCallback3 _filter_cb3;
+  btOverlapFilterCallback *_filter_cb;
 
   PT(CallbackObject) _tick_callback_obj;
 

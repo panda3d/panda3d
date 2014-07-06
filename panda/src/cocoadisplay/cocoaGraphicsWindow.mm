@@ -39,7 +39,7 @@
 #import <AppKit/NSImage.h>
 #import <AppKit/NSScreen.h>
 #import <OpenGL/OpenGL.h>
-//#import <Carbon/Carbon.h>
+#import <Carbon/Carbon.h>
 
 TypeHandle CocoaGraphicsWindow::_type_handle;
 
@@ -1495,53 +1495,72 @@ void CocoaGraphicsWindow::
 handle_key_event(NSEvent *event) {
   NSUInteger modifierFlags = [event modifierFlags];
 
-  if ((modifierFlags ^ _modifier_keys) & NSAlphaShiftKeyMask) {
-    if (modifierFlags & NSAlphaShiftKeyMask) {
-      _input_devices[0].button_down(KeyboardButton::caps_lock());
-    } else {
-      _input_devices[0].button_up(KeyboardButton::caps_lock());
-    }
-  }
+  //NB.  This is actually a on-off toggle, not up-down.
+  // Should we instead rapidly fire two successive up-down events?
+  handle_modifier(modifierFlags, NSAlphaShiftKeyMask, KeyboardButton::caps_lock());
 
-  if ((modifierFlags ^ _modifier_keys) & NSShiftKeyMask) {
-    if (modifierFlags & NSShiftKeyMask) {
-      _input_devices[0].button_down(KeyboardButton::shift());
-    } else {
-      _input_devices[0].button_up(KeyboardButton::shift());
-    }
-  }
+  // Check if any of the modifier keys have changed.
+  handle_modifier(modifierFlags, NSShiftKeyMask, KeyboardButton::shift());
+  handle_modifier(modifierFlags, NSControlKeyMask, KeyboardButton::control());
+  handle_modifier(modifierFlags, NSAlternateKeyMask, KeyboardButton::alt());
+  handle_modifier(modifierFlags, NSCommandKeyMask, KeyboardButton::meta());
 
-  if ((modifierFlags ^ _modifier_keys) & NSControlKeyMask) {
-    if (modifierFlags & NSControlKeyMask) {
-      _input_devices[0].button_down(KeyboardButton::control());
-    } else {
-      _input_devices[0].button_up(KeyboardButton::control());
-    }
-  }
-
-  if ((modifierFlags ^ _modifier_keys) & NSAlternateKeyMask) {
-    if (modifierFlags & NSAlternateKeyMask) {
-      _input_devices[0].button_down(KeyboardButton::alt());
-    } else {
-      _input_devices[0].button_up(KeyboardButton::alt());
-    }
-  }
-
-  if ((modifierFlags ^ _modifier_keys) & NSCommandKeyMask) {
-    if (modifierFlags & NSCommandKeyMask) {
-      _input_devices[0].button_down(KeyboardButton::meta());
-    } else {
-      _input_devices[0].button_up(KeyboardButton::meta());
-    }
-  }
-
-  // I'd add the help key too, but something else in Cocoa messes
-  // around with it.  The up event is registered fine below, but
-  // the down event isn't, and the modifier flag gets stuck after 1 press.
-  // More testing is needed, but I don't think it's worth it until
-  // we encounter someone who requires support for the help key.
+  // These are not documented, but they seem to be a reliable indicator
+  // of the status of the left/right modifier keys.
+  handle_modifier(modifierFlags, 0x0002, KeyboardButton::lshift());
+  handle_modifier(modifierFlags, 0x0004, KeyboardButton::rshift());
+  handle_modifier(modifierFlags, 0x0001, KeyboardButton::lcontrol());
+  handle_modifier(modifierFlags, 0x2000, KeyboardButton::rcontrol());
+  handle_modifier(modifierFlags, 0x0020, KeyboardButton::lalt());
+  handle_modifier(modifierFlags, 0x0040, KeyboardButton::ralt());
+  handle_modifier(modifierFlags, 0x0008, KeyboardButton::lmeta());
+  handle_modifier(modifierFlags, 0x0010, KeyboardButton::rmeta());
 
   _modifier_keys = modifierFlags;
+
+  // Get the raw button and send it.
+  ButtonHandle raw_button = map_raw_key([event keyCode]);
+  if (raw_button != ButtonHandle::none()) {
+    // This is not perfect.  Eventually, this whole thing should
+    // probably be replaced with something that uses IOKit or so.
+    // In particular, the flaws are:
+    // - OS eats unmodified F11, F12, scroll lock, pause
+    // - no up events for caps lock
+    // - no robust way to distinguish up/down for modkeys
+    if ([event type] == NSKeyUp) {
+      _input_devices[0].raw_button_up(raw_button);
+
+    } else if ([event type] == NSFlagsChanged) {
+      bool down = false;
+      if (raw_button == KeyboardButton::lshift()) {
+        down = (modifierFlags & 0x0002);
+      } else if (raw_button == KeyboardButton::rshift()) {
+        down = (modifierFlags & 0x0004);
+      } else if (raw_button == KeyboardButton::lcontrol()) {
+        down = (modifierFlags & 0x0001);
+      } else if (raw_button == KeyboardButton::rcontrol()) {
+        down = (modifierFlags & 0x2000);
+      } else if (raw_button == KeyboardButton::lalt()) {
+        down = (modifierFlags & 0x0020);
+      } else if (raw_button == KeyboardButton::ralt()) {
+        down = (modifierFlags & 0x0040);
+      } else if (raw_button == KeyboardButton::lmeta()) {
+        down = (modifierFlags & 0x0008);
+      } else if (raw_button == KeyboardButton::rmeta()) {
+        down = (modifierFlags & 0x0010);
+      } else if (raw_button == KeyboardButton::caps_lock()) {
+        // Emulate down-up, annoying hack!
+        _input_devices[0].raw_button_down(raw_button);
+      }
+      if (down) {
+        _input_devices[0].raw_button_down(raw_button);
+      } else {
+        _input_devices[0].raw_button_up(raw_button);
+      }
+    } else if (![event isARepeat]) {
+      _input_devices[0].raw_button_down(raw_button);
+    }
+  }
 
   // FlagsChanged events only carry modifier key information.
   if ([event type] == NSFlagsChanged) {
@@ -1594,6 +1613,23 @@ handle_key_event(NSEvent *event) {
     _input_devices[0].button_up(button);
   } else {
     _input_devices[0].button_down(button);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CocoaGraphicsWindow::handle_modifier
+//       Access: Private
+//  Description: Called by handle_key_event to read the state of
+//               a modifier key.
+////////////////////////////////////////////////////////////////////
+void CocoaGraphicsWindow::
+handle_modifier(NSUInteger modifierFlags, NSUInteger mask, ButtonHandle button) {
+  if ((modifierFlags ^ _modifier_keys) & mask) {
+    if (modifierFlags & mask) {
+      _input_devices[0].button_down(button);
+    } else {
+      _input_devices[0].button_up(button);
+    }
   }
 }
 
@@ -1695,13 +1731,70 @@ handle_wheel_event(double x, double y) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CocoaGraphicsWindow::get_keyboard_map
+//       Access: Published, Virtual
+//  Description: Returns a ButtonMap containing the association
+//               between raw buttons and virtual buttons.
+////////////////////////////////////////////////////////////////////
+ButtonMap *CocoaGraphicsWindow::
+get_keyboard_map() const {
+  TISInputSourceRef input_source;
+  CFDataRef layout_data;
+  const UCKeyboardLayout *layout;
+
+  // Get the current keyboard layout data.
+  input_source = TISCopyCurrentKeyboardInputSource();
+  layout_data = (CFDataRef) TISGetInputSourceProperty(input_source, kTISPropertyUnicodeKeyLayoutData);
+  layout = (const UCKeyboardLayout *)CFDataGetBytePtr(layout_data);
+
+  ButtonMap *map = new ButtonMap;
+
+  UniChar chars[4];
+  UniCharCount num_chars;
+
+  // Iterate through the known scancode range and see what
+  // every scan code is mapped to.
+  for (int k = 0; k <= 0x7E; ++k) {
+    ButtonHandle raw_button = map_raw_key(k);
+    if (raw_button == ButtonHandle::none()) {
+      continue;
+    }
+
+    UInt32 dead_keys = 0;
+    if (UCKeyTranslate(layout, k, kUCKeyActionDisplay, 0, LMGetKbdType(),
+                       kUCKeyTranslateNoDeadKeysMask, &dead_keys, 4,
+                       &num_chars, chars) == noErr) {
+      if (num_chars > 0 && chars[0] != 0x10) {
+        ButtonHandle button = ButtonHandle::none();
+
+        if (chars[0] > 0 && chars[0] <= 0x7f) {
+          button = KeyboardButton::ascii_key(chars[0]);
+        }
+        if (button == ButtonHandle::none()) {
+          button = map_key(chars[0]);
+        }
+        if (button != ButtonHandle::none()) {
+          map->map_button(raw_button, button);
+        }
+      } else {
+        // A special function key or modifier key, which isn't remapped by the OS.
+        map->map_button(raw_button, raw_button);
+      }
+    }
+  }
+
+  CFRelease(input_source);
+  return map;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CocoaGraphicsWindow::map_key
 //       Access: Private
-//  Description:
+//  Description: Maps a unicode key character to a ButtonHandle.
 ////////////////////////////////////////////////////////////////////
 ButtonHandle CocoaGraphicsWindow::
-map_key(unsigned short keycode) {
-  switch (keycode) {
+map_key(unsigned short c) const {
+  switch (c) {
   case NSEnterCharacter:
     return KeyboardButton::enter();
   case NSBackspaceCharacter:
@@ -1713,12 +1806,21 @@ map_key(unsigned short keycode) {
     // BackTabCharacter is sent when shift-tab is used.
     return KeyboardButton::tab();
 
+  case 0x10:
+    // No idea where this constant comes from, but it
+    // is sent whenever the menu key is pressed.
+    return KeyboardButton::menu();
+
+  case 0x1e:
   case NSUpArrowFunctionKey:
     return KeyboardButton::up();
+  case 0x1f:
   case NSDownArrowFunctionKey:
     return KeyboardButton::down();
+  case 0x1c:
   case NSLeftArrowFunctionKey:
     return KeyboardButton::left();
+  case 0x1d:
   case NSRightArrowFunctionKey:
     return KeyboardButton::right();
   case NSF1FunctionKey:
@@ -1777,14 +1879,18 @@ map_key(unsigned short keycode) {
     return KeyboardButton::insert();
   case NSDeleteFunctionKey:
     return KeyboardButton::del();
+  case 0x01:
   case NSHomeFunctionKey:
     return KeyboardButton::home();
   case NSBeginFunctionKey:
     break;
+  case 0x04:
   case NSEndFunctionKey:
     return KeyboardButton::end();
+  case 0x0b:
   case NSPageUpFunctionKey:
     return KeyboardButton::page_up();
+  case 0x0c:
   case NSPageDownFunctionKey:
     return KeyboardButton::page_down();
   case NSPrintScreenFunctionKey:
@@ -1817,10 +1923,132 @@ map_key(unsigned short keycode) {
   case NSRedoFunctionKey:
   case NSFindFunctionKey:
     break;
+  case 0x05:
   case NSHelpFunctionKey:
     return KeyboardButton::help();
   case NSModeSwitchFunctionKey:
     break;
   }
   return ButtonHandle::none();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CocoaGraphicsWindow::map_raw_key
+//       Access: Private
+//  Description: Maps a keycode to a ButtonHandle.
+////////////////////////////////////////////////////////////////////
+ButtonHandle CocoaGraphicsWindow::
+map_raw_key(unsigned short keycode) const {
+  if (keycode > 0x7f) {
+    return ButtonHandle::none();
+  }
+  switch ((unsigned char) keycode) {
+  /* See HIToolBox/Events.h */
+  case 0x00: return KeyboardButton::ascii_key('a');
+  case 0x01: return KeyboardButton::ascii_key('s');
+  case 0x02: return KeyboardButton::ascii_key('d');
+  case 0x03: return KeyboardButton::ascii_key('f');
+  case 0x04: return KeyboardButton::ascii_key('h');
+  case 0x05: return KeyboardButton::ascii_key('g');
+  case 0x06: return KeyboardButton::ascii_key('z');
+  case 0x07: return KeyboardButton::ascii_key('x');
+  case 0x08: return KeyboardButton::ascii_key('c');
+  case 0x09: return KeyboardButton::ascii_key('v');
+  case 0x0B: return KeyboardButton::ascii_key('b');
+  case 0x0C: return KeyboardButton::ascii_key('q');
+  case 0x0D: return KeyboardButton::ascii_key('w');
+  case 0x0E: return KeyboardButton::ascii_key('e');
+  case 0x0F: return KeyboardButton::ascii_key('r');
+  case 0x10: return KeyboardButton::ascii_key('y');
+  case 0x11: return KeyboardButton::ascii_key('t');
+  case 0x12: return KeyboardButton::ascii_key('1');
+  case 0x13: return KeyboardButton::ascii_key('2');
+  case 0x14: return KeyboardButton::ascii_key('3');
+  case 0x15: return KeyboardButton::ascii_key('4');
+  case 0x16: return KeyboardButton::ascii_key('6');
+  case 0x17: return KeyboardButton::ascii_key('5');
+  case 0x18: return KeyboardButton::ascii_key('=');
+  case 0x19: return KeyboardButton::ascii_key('9');
+  case 0x1A: return KeyboardButton::ascii_key('7');
+  case 0x1B: return KeyboardButton::ascii_key('-');
+  case 0x1C: return KeyboardButton::ascii_key('8');
+  case 0x1D: return KeyboardButton::ascii_key('0');
+  case 0x1E: return KeyboardButton::ascii_key(']');
+  case 0x1F: return KeyboardButton::ascii_key('o');
+  case 0x20: return KeyboardButton::ascii_key('u');
+  case 0x21: return KeyboardButton::ascii_key('[');
+  case 0x22: return KeyboardButton::ascii_key('i');
+  case 0x23: return KeyboardButton::ascii_key('p');
+  case 0x24: return KeyboardButton::enter();
+  case 0x25: return KeyboardButton::ascii_key('l');
+  case 0x26: return KeyboardButton::ascii_key('j');
+  case 0x27: return KeyboardButton::ascii_key('\'');
+  case 0x28: return KeyboardButton::ascii_key('k');
+  case 0x29: return KeyboardButton::ascii_key(';');
+  case 0x2A: return KeyboardButton::ascii_key('\\');
+  case 0x2B: return KeyboardButton::ascii_key(',');
+  case 0x2C: return KeyboardButton::ascii_key('/');
+  case 0x2D: return KeyboardButton::ascii_key('n');
+  case 0x2E: return KeyboardButton::ascii_key('m');
+  case 0x2F: return KeyboardButton::ascii_key('.');
+  case 0x30: return KeyboardButton::tab();
+  case 0x31: return KeyboardButton::ascii_key(' ');
+  case 0x32: return KeyboardButton::ascii_key('`');
+  case 0x33: return KeyboardButton::backspace();
+  case 0x35: return KeyboardButton::escape();
+  case 0x36: return KeyboardButton::rmeta();
+  case 0x37: return KeyboardButton::lmeta();
+  case 0x38: return KeyboardButton::lshift();
+  case 0x39: return KeyboardButton::caps_lock();
+  case 0x3A: return KeyboardButton::lalt();
+  case 0x3B: return KeyboardButton::lcontrol();
+  case 0x3C: return KeyboardButton::rshift();
+  case 0x3D: return KeyboardButton::ralt();
+  case 0x3E: return KeyboardButton::rcontrol();
+  case 0x41: return KeyboardButton::ascii_key('.');
+  case 0x43: return KeyboardButton::ascii_key('*');
+  case 0x45: return KeyboardButton::ascii_key('+');
+  case 0x47: return KeyboardButton::num_lock();
+  case 0x4B: return KeyboardButton::ascii_key('/');
+  case 0x4C: return KeyboardButton::enter();
+  case 0x4E: return KeyboardButton::ascii_key('-');
+  case 0x51: return KeyboardButton::ascii_key('=');
+  case 0x52: return KeyboardButton::ascii_key('0');
+  case 0x53: return KeyboardButton::ascii_key('1');
+  case 0x54: return KeyboardButton::ascii_key('2');
+  case 0x55: return KeyboardButton::ascii_key('3');
+  case 0x56: return KeyboardButton::ascii_key('4');
+  case 0x57: return KeyboardButton::ascii_key('5');
+  case 0x58: return KeyboardButton::ascii_key('6');
+  case 0x59: return KeyboardButton::ascii_key('7');
+  case 0x5B: return KeyboardButton::ascii_key('8');
+  case 0x5C: return KeyboardButton::ascii_key('9');
+  case 0x60: return KeyboardButton::f5();
+  case 0x61: return KeyboardButton::f6();
+  case 0x62: return KeyboardButton::f7();
+  case 0x63: return KeyboardButton::f3();
+  case 0x64: return KeyboardButton::f8();
+  case 0x65: return KeyboardButton::f9();
+  case 0x67: return KeyboardButton::f11();
+  case 0x69: return KeyboardButton::print_screen();
+  case 0x6B: return KeyboardButton::scroll_lock();
+  case 0x6D: return KeyboardButton::f10();
+  case 0x6E: return KeyboardButton::menu();
+  case 0x6F: return KeyboardButton::f12();
+  case 0x71: return KeyboardButton::pause();
+  case 0x72: return KeyboardButton::insert();
+  case 0x73: return KeyboardButton::home();
+  case 0x74: return KeyboardButton::page_up();
+  case 0x75: return KeyboardButton::del();
+  case 0x76: return KeyboardButton::f4();
+  case 0x77: return KeyboardButton::end();
+  case 0x78: return KeyboardButton::f2();
+  case 0x79: return KeyboardButton::page_down();
+  case 0x7A: return KeyboardButton::f1();
+  case 0x7B: return KeyboardButton::left();
+  case 0x7C: return KeyboardButton::right();
+  case 0x7D: return KeyboardButton::down();
+  case 0x7E: return KeyboardButton::up();
+  default:   return ButtonHandle::none();
+  }
 }

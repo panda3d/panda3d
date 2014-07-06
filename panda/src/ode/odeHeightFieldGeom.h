@@ -29,7 +29,7 @@
 class EXPCL_PANDAODE OdeHeightfieldGeom : public OdeGeom {
   friend class OdeGeom;
 
-private:
+public:
   OdeHeightfieldGeom(dGeomID id);
 
 PUBLISHED:

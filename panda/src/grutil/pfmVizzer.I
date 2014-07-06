@@ -17,7 +17,7 @@
 //     Function: PfmVizzer::get_pfm
 //       Access: Published
 //  Description: Returns the reference to the PfmFile manipulated by
-//               thiz PfmVizzer.
+//               this PfmVizzer.
 ////////////////////////////////////////////////////////////////////
 INLINE PfmFile &PfmVizzer::
 get_pfm() {
@@ -28,7 +28,7 @@ get_pfm() {
 //     Function: PfmVizzer::get_pfm
 //       Access: Published
 //  Description: Returns the reference to the PfmFile manipulated by
-//               thiz PfmVizzer.
+//               this PfmVizzer.
 ////////////////////////////////////////////////////////////////////
 INLINE const PfmFile &PfmVizzer::
 get_pfm() const {
@@ -204,6 +204,49 @@ clear_vis_blend() {
 INLINE const PNMImage *PfmVizzer::
 get_vis_blend() const {
   return _vis_blend;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmVizzer::set_aux_pfm
+//       Access: Published
+//  Description: Assigns an auxiliary PfmFile to this PfmVizzer.  This
+//               file will be queried by column types
+//               CT_aux_vertex1/2/3, but has no other meaning to the
+//               vizzer.  This size of this PfmFile should exactly
+//               match the base PfmFile.  No reference count is held
+//               and no copy is made; the caller is responsible for
+//               ensuring that the auxiliary PfmFile will persist
+//               throughout the lifetime of the PfmVizzer it is
+//               assigned to.
+////////////////////////////////////////////////////////////////////
+INLINE void PfmVizzer::
+set_aux_pfm(const PfmFile *pfm) {
+  assert(pfm == NULL || (pfm->get_x_size() == _pfm.get_x_size() &&
+                         pfm->get_y_size() == _pfm.get_y_size()));
+  _aux_pfm = pfm;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmVizzer::clear_aux_pfm
+//       Access: Published
+//  Description: Removes the auxiliary PfmFile from this PfmVizzer.
+////////////////////////////////////////////////////////////////////
+INLINE void PfmVizzer::
+clear_aux_pfm() {
+  _aux_pfm = NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmVizzer::get_aux_pfm
+//       Access: Published
+//  Description: Returns the reference to the auxiliary PfmFile
+//               queried by this PfmVizzer.  This contains the values
+//               that will be reflected in CT_aux_vertex3 etc.  See
+//               set_aux_pfm().
+////////////////////////////////////////////////////////////////////
+INLINE const PfmFile *PfmVizzer::
+get_aux_pfm() const {
+  return _aux_pfm;
 }
 
 ////////////////////////////////////////////////////////////////////

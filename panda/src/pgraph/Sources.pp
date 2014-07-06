@@ -72,7 +72,10 @@
     modelPool.I modelPool.h \
     modelRoot.I modelRoot.h \
     nodePath.I nodePath.h nodePath.cxx \
+    nodePath_ext.I nodePath_ext.h nodePath_ext.cxx \
     nodePathCollection.I nodePathCollection.h \
+    nodePathCollection_ext.I nodePathCollection_ext.h \
+    nodePathCollection_ext.cxx \
     nodePathComponent.I nodePathComponent.h \
     occluderEffect.I occluderEffect.h \
     occluderNode.I occluderNode.h \
@@ -113,7 +116,8 @@
 
   #define COMBINED_SOURCES \
     $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx \
-    $[TARGET]_composite3.cxx $[TARGET]_composite4.cxx
+    $[TARGET]_composite3.cxx $[TARGET]_composite4.cxx \
+    $[TARGET]_ext_composite.cxx
   #define INCLUDED_SOURCES \
     accumulatedAttribs.cxx \
     alphaTestAttrib.cxx \  
@@ -274,6 +278,7 @@
     occluderEffect.I occluderEffect.h \
     occluderNode.I occluderNode.h \
     pandaNode.I pandaNode.h \
+    pandaNode_ext.h pandaNode_ext.cxx \
     pandaNodeChain.I pandaNodeChain.h \
     planeNode.I planeNode.h \
     polylightEffect.I polylightEffect.h \
@@ -286,6 +291,7 @@
     renderEffects.I renderEffects.h \
     renderModeAttrib.I renderModeAttrib.h \
     renderState.I renderState.h \
+    renderState_ext.h renderState_ext.cxx \
     rescaleNormalAttrib.I rescaleNormalAttrib.h \
     sceneGraphReducer.I sceneGraphReducer.h \
     sceneSetup.I sceneSetup.h \
@@ -304,6 +310,7 @@
     texGenAttrib.I texGenAttrib.h \
     textureStageCollection.I textureStageCollection.h \
     transformState.I transformState.h \
+    transformState_ext.h transformState_ext.cxx \
     transparencyAttrib.I transparencyAttrib.h \
     weakNodePath.I weakNodePath.h \
     workingNodePath.I workingNodePath.h

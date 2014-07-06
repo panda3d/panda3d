@@ -969,7 +969,6 @@ process_model_node(MayaNodeDesc *node_desc) {
         << "Ignoring light node " << path
         << "\n";
     }
-    /*
  
     MFnLight light (dag_path, &status);
     if ( !status ) {
@@ -977,26 +976,59 @@ process_model_node(MayaNodeDesc *node_desc) {
       mayaegg_cat.error() << "light extraction failed" << endl;
       return false;
     }
+    mayaegg_cat.debug() << "-- Light found -- tranlations in cm, rotations in rads\n";
+
+    mayaegg_cat.debug() << "\"" << dag_path.partialPathName() << "\" : \n";
 
     // Get the translation/rotation/scale data
-    //printTransformData(dag_path, quiet);
+    MObject		transformNode = dag_path.transform(&status);
+    // This node has no transform - i.e., it's the world node
+    if (!status && status.statusCode () == MStatus::kInvalidParameter)
+      return false;
+    MFnDagNode	transform (transformNode, &status);
+    if (!status) {
+      status.perror("MFnDagNode constructor");
+      return false;
+    }
+    MTransformationMatrix	matrix (transform.transformationMatrix());
+    MVector tl = matrix.getTranslation(MSpace::kWorld);
+    // Stop rediculously small values like -4.43287e-013
+    if (tl.x < 0.0001) {
+      tl.x = 0;
+    }
+    if (tl.y < 0.0001) {
+      tl.y = 0;
+    }
+    if (tl.z < 0.0001) {
+      tl.z = 0;
+    }
+    // We swap Y and Z in the next few bits cuz Panda is Z-up by default and Maya is Y-up
+    mayaegg_cat.debug() << "  \"translation\" : (" << tl.x << ", " << tl.z << ", " << tl.y << ")"
+         << endl;
+    double threeDoubles[3];
+    MTransformationMatrix::RotationOrder	rOrder;
+    
+    matrix.getRotation (threeDoubles, rOrder, MSpace::kWorld);
+    mayaegg_cat.debug() << "  \"rotation\": ("
+         << threeDoubles[0] << ", "
+         << threeDoubles[2] << ", "
+         << threeDoubles[1] << ")\n";
+    matrix.getScale (threeDoubles, MSpace::kWorld);
+    mayaegg_cat.debug() << "  \"scale\" : ("
+         << threeDoubles[0] << ", "
+         << threeDoubles[2] << ", "
+         << threeDoubles[1] << ")\n";
 
     // Extract some interesting Light data
     MColor color;
-
     color = light.color();
-    cout << "  color: ["
+    mayaegg_cat.debug() << "  \"color\" : ("
          << color.r << ", "
          << color.g << ", "
-         << color.b << "]\n";
+         << color.b << ")\n";
     color = light.shadowColor();
-    cout << "  shadowColor: ["
-         << color.r << ", "
-         << color.g << ", "
-         << color.b << "]\n";
-    
-    cout << "  intensity: " << light.intensity() << endl;
-    */
+    mayaegg_cat.debug() << "  \"intensity\" : " << light.intensity() << endl;
+
   } else if (dag_path.hasFn(MFn::kNurbsSurface)) {
     EggGroup *egg_group = _tree.get_egg_group(node_desc);
     get_transform(node_desc, dag_path, egg_group);

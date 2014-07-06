@@ -64,7 +64,7 @@ OpenALAudioSound(OpenALAudioManager* manager,
   _start_time(0.0),
   _current_time(0.0),
   _basename(movie->get_filename().get_basename()),
-  _active(true),
+  _active(manager->get_active()),
   _paused(false)
 {
   _location[0] = 0.0f;

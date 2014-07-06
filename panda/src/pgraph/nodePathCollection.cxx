@@ -96,37 +96,6 @@ NodePathCollection(PyObject *self, PyObject *sequence) {
 }
 #endif  // HAVE_PYTHON
 
-#ifdef HAVE_PYTHON
-////////////////////////////////////////////////////////////////////
-//     Function: NodePathCollection::__reduce__
-//       Access: Published
-//  Description: This special Python method is implement to provide
-//               support for the pickle module.
-////////////////////////////////////////////////////////////////////
-PyObject *NodePathCollection::
-__reduce__(PyObject *self) const {
-  // Here we will return a 4-tuple: (Class, (args), None, iterator),
-  // where iterator is an iterator that will yield successive
-  // NodePaths.
-
-  // We should return at least a 2-tuple, (Class, (args)): the
-  // necessary class object whose constructor we should call
-  // (e.g. this), and the arguments necessary to reconstruct this
-  // object.
-
-  PyObject *this_class = PyObject_Type(self);
-  if (this_class == NULL) {
-    return NULL;
-  }
-
-  // Since a NodePathCollection is itself an iterator, we can simply
-  // pass it as the fourth tuple component.
-  PyObject *result = Py_BuildValue("(O()OO)", this_class, Py_None, self);
-  Py_DECREF(this_class);
-  return result;
-}
-#endif  // HAVE_PYTHON
-
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::add_path
 //       Access: Published
@@ -490,7 +459,7 @@ get_collide_mask() const {
 //       Access: Published
 //  Description: Recursively applies the indicated CollideMask to the
 //               into_collide_masks for all nodes at this level and
-//               below.  Only nodes 
+//               below.
 //
 //               The default is to change all bits, but if
 //               bits_to_change is not all bits on, then only the bits
@@ -504,6 +473,49 @@ set_collide_mask(CollideMask new_mask, CollideMask bits_to_change,
   for (int i = 0; i < get_num_paths(); i++) {
     get_path(i).set_collide_mask(new_mask, bits_to_change, node_type);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePathCollection::calc_tight_bounds
+//       Access: Published
+//  Description: Calculates the minimum and maximum vertices of all
+//               Geoms at these NodePath's bottom nodes and below
+//               This is a tight bounding box; it will generally be
+//               tighter than the bounding volume returned by
+//               get_bounds() (but it is more expensive to compute).
+//
+//               The return value is true if any points are within the
+//               bounding volume, or false if none are.
+////////////////////////////////////////////////////////////////////
+bool NodePathCollection::
+calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point) const {
+  bool have_bounds = false;
+
+  for (int i = 0; i < get_num_paths(); i++) {
+    LPoint3 tmp_min;
+    LPoint3 tmp_max;
+
+    if (get_path(i).is_empty()) {
+      continue;
+    }
+
+    if (get_path(i).calc_tight_bounds(tmp_min, tmp_max)) {
+      if (!have_bounds) {
+        min_point = tmp_min;
+        max_point = tmp_max;
+        have_bounds = true;
+      } else {
+        min_point.set(min(min_point._v(0), tmp_min._v(0)),
+                      min(min_point._v(1), tmp_min._v(1)),
+                      min(min_point._v(2), tmp_min._v(2)));
+        max_point.set(max(max_point._v(0), tmp_max._v(0)),
+                      max(max_point._v(1), tmp_max._v(1)),
+                      max(max_point._v(2), tmp_max._v(2)));
+      }
+    }
+  }
+
+  return have_bounds;
 }
 
 ////////////////////////////////////////////////////////////////////

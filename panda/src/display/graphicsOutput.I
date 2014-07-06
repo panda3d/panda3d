@@ -863,12 +863,11 @@ end_frame_spam(FrameMode mode) {
 //     Function: GraphicsOutput::clear_cube_map_selection
 //       Access: Public
 //  Description: Clear the variables that select a cube-map face (or
-//               other multipage or multiview texture face).
+//               other multipage texture face).
 ////////////////////////////////////////////////////////////////////
 INLINE void GraphicsOutput::
 clear_cube_map_selection() {
   _target_tex_page = -1;
-  _target_tex_view = -1;
   _prev_page_dr = NULL;
 }
 

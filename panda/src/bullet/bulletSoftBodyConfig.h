@@ -29,7 +29,7 @@ PUBLISHED:
   INLINE ~BulletSoftBodyConfig();
 
   enum CollisionFlag {
-    CF_rigid__vs_soft_mask   = 0x000f, // RVSmask: Rigid versus soft mask
+    CF_rigid_vs_soft_mask    = 0x000f, // RVSmask: Rigid versus soft mask
     CF_sdf_rigid_soft        = 0x0001, // SDF_RS:  SDF based rigid vs soft
     CF_cluster_rigid_soft    = 0x0002, // CL_RS:   Cluster vs convex rigid vs soft
     CF_soft_vs_soft_mask     = 0x0030, // SVSmask: Soft versus soft mask

@@ -14,7 +14,7 @@ from direct.task import Task
 from direct.showbase import ShowBase
 from direct.showbase.PythonUtil import recordCreationStackStr
 from pandac.PandaModules import PStatCollector
-import string, types
+import types
 
 guiObjectCollector = PStatCollector("Client::GuiObjects")
 
@@ -192,9 +192,9 @@ class DirectGuiBase(DirectObject.DirectObject):
 
         # optimisations:
         optionInfo = self._optionInfo
-        optionInfo_has_key = optionInfo.has_key
+        optionInfo_has_key = optionInfo.__contains__
         keywords = self._constructorKeywords
-        keywords_has_key = keywords.has_key
+        keywords_has_key = keywords.__contains__
         FUNCTION = DGG._OPT_FUNCTION
 
         for name, default, function in optionDefs:
@@ -251,7 +251,7 @@ class DirectGuiBase(DirectObject.DirectObject):
                     # This keyword argument has not been used.  If it
                     # does not refer to a dynamic group, mark it as
                     # unused.
-                    index = string.find(name, '_')
+                    index = name.find('_')
                     if index < 0 or name[:index] not in self._dynamicGroups:
                         unusedOptions.append(name)
             self._constructorKeywords = {}
@@ -260,7 +260,7 @@ class DirectGuiBase(DirectObject.DirectObject):
                     text = 'Unknown option "'
                 else:
                     text = 'Unknown options "'
-                raise KeyError, text + string.join(unusedOptions, ', ') + \
+                raise KeyError, text + ', '.join(unusedOptions) + \
                         '" for ' + myClass.__name__
             # Can now call post init func
             self.postInitialiseFunc()
@@ -326,11 +326,11 @@ class DirectGuiBase(DirectObject.DirectObject):
 
         # optimizations:
         optionInfo = self._optionInfo
-        optionInfo_has_key = optionInfo.has_key
+        optionInfo_has_key = optionInfo.__contains__
         componentInfo = self.__componentInfo
-        componentInfo_has_key = componentInfo.has_key
+        componentInfo_has_key = componentInfo.__contains__
         componentAliases = self.__componentAliases
-        componentAliases_has_key = componentAliases.has_key
+        componentAliases_has_key = componentAliases.__contains__
         VALUE = DGG._OPT_VALUE
         FUNCTION = DGG._OPT_FUNCTION
 
@@ -345,7 +345,7 @@ class DirectGuiBase(DirectObject.DirectObject):
         # component and whose values are a dictionary of options and
         # values for the component.
         indirectOptions = {}
-        indirectOptions_has_key = indirectOptions.has_key
+        indirectOptions_has_key = indirectOptions.__contains__
 
         for option, value in kw.items():
             if optionInfo_has_key(option):
@@ -361,7 +361,7 @@ class DirectGuiBase(DirectObject.DirectObject):
                 optionInfo[option][VALUE] = value
                 directOptions.append(option)
             else:
-                index = string.find(option, '_')
+                index = option.find('_')
                 if index >= 0:
                     # This option may be of the form <component>_<option>.
                     # e.g. if alias ('efEntry', 'entryField_entry')
@@ -420,8 +420,8 @@ class DirectGuiBase(DirectObject.DirectObject):
 
         # Call the configure methods for any components.
         # Pass in the dictionary of keyword/values created above
-        map(apply, indirectOptions.keys(),
-                ((),) * len(indirectOptions), indirectOptions.values())
+        for func, options in indirectOptions.items():
+            func(**options)
 
         # Call the configuration callback function for each option.
         for option in directOptions:
@@ -432,7 +432,7 @@ class DirectGuiBase(DirectObject.DirectObject):
 
     # Allow index style references
     def __setitem__(self, key, value):
-        apply(self.configure, (), {key: value})
+        self.configure(**{key: value})
 
     def cget(self, option):
         """
@@ -442,7 +442,7 @@ class DirectGuiBase(DirectObject.DirectObject):
         if option in self._optionInfo:
             return self._optionInfo[option][DGG._OPT_VALUE]
         else:
-            index = string.find(option, '_')
+            index = option.find('_')
             if index >= 0:
                 component = option[:index]
                 componentOption = option[(index + 1):]
@@ -494,7 +494,7 @@ class DirectGuiBase(DirectObject.DirectObject):
 
         for alias, component in componentAliases:
             # Create aliases to the component and its sub-components.
-            index = string.find(component, '_')
+            index = component.find('_')
             if index < 0:
                 # Just a shorter name for one of this widget's components
                 self.__componentAliases[alias] = (component, None)
@@ -529,7 +529,7 @@ class DirectGuiBase(DirectObject.DirectObject):
             # keyword argument as being used, but do not remove it
             # since it may be required when creating another
             # component.
-            index = string.find(option, '_')
+            index = option.find('_')
             if index >= 0 and componentGroup == option[:index]:
                 rest = option[(index + 1):]
                 kw[rest] = keywords[option][0]
@@ -559,7 +559,7 @@ class DirectGuiBase(DirectObject.DirectObject):
             # single tuple argument.
             widgetArgs = widgetArgs[0]
         # Create the widget
-        widget = apply(widgetClass, widgetArgs, kw)
+        widget = widgetClass(*widgetArgs, **kw)
         componentClass = widget.__class__.__name__
         self.__componentInfo[componentName] = (widget, widget.configure,
                 componentClass, widget.cget, componentGroup)
@@ -572,7 +572,7 @@ class DirectGuiBase(DirectObject.DirectObject):
         # widget components directly.
 
         # Find the main component and any subcomponents
-        index = string.find(name, '_')
+        index = name.find('_')
         if index < 0:
             component = name
             remainingComponents = None
@@ -748,35 +748,13 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         self.assign(parent.attachNewNode(self.guiItem, self['sortOrder']))
         # Update pose to initial values
         if self['pos']:
-            pos = self['pos']
-            # Can either be a VBase3 or a tuple of 3 values
-            if isinstance(pos, VBase3):
-                self.setPos(pos)
-            else:
-                apply(self.setPos, pos)
+            self.setPos(self['pos'])
         if self['hpr']:
-            hpr = self['hpr']
-            # Can either be a VBase3 or a tuple of 3 values
-            if isinstance(hpr, VBase3):
-                self.setHpr(hpr)
-            else:
-                apply(self.setHpr, hpr)
+            self.setHpr(self['hpr'])
         if self['scale']:
-            scale = self['scale']
-            # Can either be a VBase3 or a tuple of 3 values
-            if (isinstance(scale, VBase3) or
-                (type(scale) == types.IntType) or
-                (type(scale) == types.FloatType)):
-                self.setScale(scale)
-            else:
-                apply(self.setScale, scale)
+            self.setScale(self['scale'])
         if self['color']:
-            color = self['color']
-            # Can either be a VBase4 or a tuple of 4 values
-            if (isinstance(color, VBase4)):
-                self.setColor(color)
-            else:
-                apply(self.setColor, color)
+            self.setColor(self['color'])
         # Initialize names
         # Putting the class name in helps with debugging.
         self.setName("%s-%s" % (self.__class__.__name__, self.guiId))

@@ -53,6 +53,7 @@ PUBLISHED:
 
   INLINE InternalName *get_parent() const;
   string get_name() const;
+  string join(const string &sep) const;
   INLINE const string &get_basename() const;
 
   int find_ancestor(const string &basename) const;

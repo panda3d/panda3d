@@ -196,8 +196,8 @@ classNameFromCppName(const std::string &cppName, bool mangle) {
   bool nextCap = false;
   bool firstChar = true && mangle;
 
-  for (std::string::const_iterator chr = cppName.begin(); 
-       chr != cppName.end(); 
+  for (std::string::const_iterator chr = cppName.begin();
+       chr != cppName.end();
        chr++) {
     if ((*chr == '_' || *chr == ' ') && mangle) {
       nextCap = true;
@@ -222,10 +222,10 @@ classNameFromCppName(const std::string &cppName, bool mangle) {
       className = classRenameDictionary[x]._to;
     }
   }
-  
+
   if (className.empty()) {
     std::string text = "** ERROR ** Renaming class: " + cppName + " to empty string";
-    printf("%s",text.c_str());
+    printf("%s", text.c_str());
   }
 
   className = checkKeyword(className);
@@ -248,8 +248,8 @@ methodNameFromCppName(const std::string &cppName, const std::string &className, 
   std::string methodName;
   const std::string badChars("!@#$%^&*()<>,.-=+~{}? ");
   bool nextCap = false;
-  for (std::string::const_iterator chr = origName.begin(); 
-       chr != origName.end(); 
+  for (std::string::const_iterator chr = origName.begin();
+       chr != origName.end();
        chr++) {
     if ((*chr == '_' || *chr == ' ') && mangle) {
       nextCap = true;
@@ -282,7 +282,7 @@ methodNameFromCppName(const std::string &cppName, const std::string &className, 
       }
     }
   }
- 
+
   //    # Mangle names that happen to be python keywords so they are not anymore
   methodName = checkKeyword(methodName);
   return methodName;
@@ -301,13 +301,13 @@ std::string methodNameFromCppName(InterfaceMaker::Function *func, const std::str
 
 bool isInplaceFunction(InterfaceMaker::Function *func) {
   std::string wname = methodNameFromCppName(func, "", false);
-  
+
   for (int x = 0; InPlaceSet[x] != NULL; x++) {
     if (InPlaceSet[x] == wname) {
       return true;
     }
   }
-  
+
   return false;
 }
 
@@ -343,13 +343,13 @@ get_slotted_function_def(Object *obj, Function *func, SlottedFunctionDef &def) {
   if (method_name == "operator -" && is_unary_op) {
     def._answer_location = "tp_as_number->nb_negative";
     def._wrapper_type = WT_no_params;
-    return true;        
+    return true;
   }
 
   if (method_name == "operator -") {
     def._answer_location = "tp_as_number->nb_subtract";
     def._wrapper_type = WT_numeric_operator;
-    return true;        
+    return true;
   }
 
   if (method_name == "operator *") {
@@ -486,7 +486,7 @@ get_slotted_function_def(Object *obj, Function *func, SlottedFunctionDef &def) {
       return true;
     }
   }
-  
+
   if (obj->_protocol_types & Object::PT_mapping) {
     if (func->_flags & FunctionRemap::F_getitem) {
       def._answer_location = "tp_as_mapping->mp_subscript";
@@ -507,9 +507,9 @@ get_slotted_function_def(Object *obj, Function *func, SlottedFunctionDef &def) {
       return true;
     }
 
-    if (method_name == "next") {
+    if (method_name == "next" || method_name == "__next__") {
       def._answer_location = "tp_iternext";
-      def._wrapper_type = WT_no_params;
+      def._wrapper_type = WT_iter_next;
       return true;
     }
   }
@@ -602,7 +602,7 @@ get_valid_child_classes(std::map<std::string, CastDetails> &answer, CPPStructTyp
       ++bi) {
 
     const CPPStructType::Base &base = (*bi);
-//        if (base._vis <= V_public) 
+//        if (base._vis <= V_public)
 //          can_downcast = false;
     CPPStructType *base_type = TypeManager::resolve_type(base._base)->as_struct_type();
     if (base_type != NULL) {
@@ -855,13 +855,13 @@ write_class_details(ostream &out, Object *obj) {
   out << "//********************************************************************\n";
   out << "//*** Functions for .. " << cClassName << "\n" ;
   out << "//********************************************************************\n";
-  
+
   for (fi = obj->_methods.begin(); fi != obj->_methods.end(); ++fi) {
     Function *func = (*fi);
     if (func) {
       SlottedFunctionDef def;
       get_slotted_function_def(obj, func, def);
-      
+
       ostringstream GetThis;
       GetThis << "  " << cClassName << " *local_this = NULL;\n";
       GetThis << "  DTOOL_Call_ExtractThisPointerForType(self, &Dtool_" << ClassName << ", (void **)&local_this);\n";
@@ -902,7 +902,7 @@ write_class_details(ostream &out, Object *obj) {
     for (fi = obj->_constructors.begin(); fi != obj->_constructors.end(); ++fi) {
       Function *func = (*fi);
       std::string fname = "int Dtool_Init_" + ClassName + "(PyObject *self, PyObject *args, PyObject *kwds)";
-      
+
       write_function_for_name(out, obj, func, fname, "", ClassName, true, coercion_attempted);
     }
     if (coercion_attempted) {
@@ -912,7 +912,7 @@ write_class_details(ostream &out, Object *obj) {
       for (fi = obj->_constructors.begin(); fi != obj->_constructors.end(); ++fi) {
         Function *func = (*fi);
         std::string fname = "int Dtool_InitNoCoerce_" + ClassName + "(PyObject *self, PyObject *args, PyObject *kwds)";
-        
+
         write_function_for_name(out, obj, func, fname, "", ClassName, false, coercion_attempted);
       }
     } else {
@@ -930,7 +930,7 @@ write_class_details(ostream &out, Object *obj) {
   for (msi = obj->_make_seqs.begin(); msi != obj->_make_seqs.end(); ++msi) {
     write_make_seq(out, obj, ClassName, *msi);
   }
-  
+
   CPPType *cpptype = TypeManager::resolve_type(obj->_itype._cpptype);
   std::map<string, CastDetails> details;
   std::map<string, CastDetails>::iterator di;
@@ -944,7 +944,7 @@ write_class_details(ostream &out, Object *obj) {
   }
 
   { // the Cast Converter
-    
+
     out << "inline void *Dtool_UpcastInterface_" << ClassName << "(PyObject *self, Dtool_PyTypedObject *requested_type) {\n";
     out << "  Dtool_PyTypedObject *SelfType = ((Dtool_PyInstDef *)self)->_My_Type;\n";
     out << "  if (SelfType != &Dtool_" << ClassName << ") {\n";
@@ -959,7 +959,7 @@ write_class_details(ostream &out, Object *obj) {
 
     for (di = details.begin(); di != details.end(); di++) {
       if (di->second._is_legal_py_class) {
-        out << "  if (requested_type == &Dtool_" <<make_safe_name(di->second._to_class_name) << ") {\n";
+        out << "  if (requested_type == &Dtool_" << make_safe_name(di->second._to_class_name) << ") {\n";
         out << "    return " << di->second._up_cast_string << " local_this;\n";
         out << "  }\n";
       }
@@ -1099,7 +1099,7 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
         out << "   PyModule_AddStringConstant(module, \"" << name2 << "\", \"" << value << "\");\n";
       }
     }
-  }    
+  }
 
   for (oi = _objects.begin(); oi != _objects.end(); ++oi) {
     Object *object = (*oi).second;
@@ -1131,10 +1131,10 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
     if (!func->_itype.is_global() && is_function_legal(func)) {
       string name1 = methodNameFromCppName(func, "", false);
       string name2 = methodNameFromCppName(func, "", true);
-      out << "  { \"" << name1 << "\", (PyCFunction) &" 
+      out << "  { \"" << name1 << "\", (PyCFunction) &"
           << func->_name << ", METH_VARARGS | METH_KEYWORDS, (char *)" << func->_name << "_comment},\n";
       if (name1 != name2) {
-        out << "  { \"" << name2 << "\", (PyCFunction) &" 
+        out << "  { \"" << name2 << "\", (PyCFunction) &"
             << func->_name << ", METH_VARARGS | METH_KEYWORDS, (char *)" << func->_name << "_comment},\n";
       }
     }
@@ -1148,7 +1148,7 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
 
   out << "  {NULL, NULL, 0, NULL}\n" << "};\n\n";
 
-  out << "struct LibraryDef " << def->library_name << "_moddef = {python_simple_funcs, BuildInstants};\n";
+  out << "EXPORT_THIS struct LibraryDef " << def->library_name << "_moddef = {python_simple_funcs, BuildInstants};\n";
   if (out_h != NULL) {
     *out_h << "extern struct LibraryDef " << def->library_name << "_moddef;\n";
   }
@@ -1261,11 +1261,11 @@ write_module_class(ostream &out, Object *obj) {
 
     string name1 = methodNameFromCppName(func, export_class_name, false);
     string name2 = methodNameFromCppName(func, export_class_name, true);
-    out << "  { \"" << name1 << "\", (PyCFunction) &" 
+    out << "  { \"" << name1 << "\", (PyCFunction) &"
         << func->_name << ", METH_VARARGS | METH_KEYWORDS, (char *) " << func->_name << "_comment},\n";
     ++x;
     if (name1 != name2) {
-      out << "  { \"" << name2 << "\", (PyCFunction) &" 
+      out << "  { \"" << name2 << "\", (PyCFunction) &"
           << func->_name << ", METH_VARARGS | METH_KEYWORDS, (char *) " << func->_name << "_comment},\n";
       ++x;
     }
@@ -1291,7 +1291,7 @@ write_module_class(ostream &out, Object *obj) {
   if (got_copy && !got_deepcopy) {
     out << "  { \"__deepcopy__\", (PyCFunction) &map_deepcopy_to_copy, METH_VARARGS, NULL},\n";
   }
-  
+
   MakeSeqs::iterator msi;
   for (msi = obj->_make_seqs.begin(); msi != obj->_make_seqs.end(); ++msi) {
     string flags = "METH_NOARGS";
@@ -1316,7 +1316,7 @@ write_module_class(ostream &out, Object *obj) {
   for (di = 0; di < num_derivations; di++) {
     TypeIndex d_type_Index = obj->_itype.get_derivation(di);
     if (!interrogate_type_is_unpublished(d_type_Index)) {
-      const InterrogateType &d_itype = idb->get_type(d_type_Index);    
+      const InterrogateType &d_itype = idb->get_type(d_type_Index);
       if (is_cpp_type_legal(d_itype._cpptype)) {
         if (!isExportThisRun(d_itype._cpptype)) {
           _external_imports.insert(make_safe_name(d_itype.get_scoped_name().c_str()));
@@ -1331,7 +1331,7 @@ write_module_class(ostream &out, Object *obj) {
   for (di = 0; di < num_derivations; di++) {
     TypeIndex d_type_Index = obj->_itype.get_derivation(di);
     if (!interrogate_type_is_unpublished(d_type_Index)) {
-      const InterrogateType &d_itype = idb->get_type(d_type_Index);    
+      const InterrogateType &d_itype = idb->get_type(d_type_Index);
       if (is_cpp_type_legal(d_itype._cpptype)) {
         bases.push_back(make_safe_name(d_itype.get_scoped_name().c_str()));
       }
@@ -1362,7 +1362,7 @@ write_module_class(ostream &out, Object *obj) {
           out << "}\n\n";
         }
         break;
-        
+
       case WT_one_param:
       case WT_numeric_operator:
         // PyObject *func(PyObject *self, PyObject *one)
@@ -1518,7 +1518,7 @@ write_module_class(ostream &out, Object *obj) {
           out << "}\n\n";
         }
         break;
-        
+
       case WT_inquiry:
         // int func(PyObject *self)
         {
@@ -1700,6 +1700,29 @@ write_module_class(ostream &out, Object *obj) {
         }
         break;
 
+      case WT_iter_next:
+        // PyObject *func(PyObject *self)
+        // However, returns NULL instead of None
+        {
+          Function *func = rfi->first;
+          out << "//////////////////\n";
+          out << "//  A wrapper function to satisfy Python's internal calling conventions.\n";
+          out << "//     " << ClassName << " ..." << rfi->second._answer_location << " = " << methodNameFromCppName(func, export_class_name, false) << "\n";
+          out << "//////////////////\n";
+          out << "static PyObject *" <<  func->_name << methodNameFromCppName(func, export_class_name, false) << "(PyObject *self) {\n";
+          out << "  PyObject *args = Py_BuildValue(\"()\");\n";
+          out << "  PyObject *result = " << func->_name << "(self, args, NULL);\n";
+          out << "  Py_DECREF(args);\n";
+          out << "  if (result == Py_None) {\n";
+          out << "    Py_DECREF(Py_None);\n";
+          out << "    return NULL;\n";
+          out << "  } else {\n";
+          out << "    return result;\n";
+          out << "  }\n";
+          out << "}\n\n";
+        }
+        break;
+
       case WT_none:
         break;
       }
@@ -1739,7 +1762,7 @@ write_module_class(ostream &out, Object *obj) {
         has_local_hash = true;
       }
     }
-    
+
     int need_repr = NeedsAReprFunction(obj->_itype);
     if (need_repr > 0) {
       out << "//////////////////\n";
@@ -1824,6 +1847,7 @@ write_module_class(ostream &out, Object *obj) {
     out << "\n";
 
     out << "  switch (op) {\n";
+    Function *compare_to_func = NULL;
     for (fi = obj->_methods.begin(); fi != obj->_methods.end(); ++fi) {
       std::set<FunctionRemap*> remaps;
       Function *func = (*fi);
@@ -1851,13 +1875,18 @@ write_module_class(ostream &out, Object *obj) {
         out << "  case Py_GT:\n";
       } else if (fname == "operator >=") {
         out << "  case Py_GE:\n";
+      } else if (fname == "compare_to") {
+        compare_to_func = func;
+        continue;
       } else {
         continue;
       }
+
       ostringstream forward_decl;
       string expected_params;
       bool coercion_attempted = false;
       write_function_forset(out, obj, func, remaps, expected_params, 2, forward_decl, false, true, coercion_attempted, args_cleanup);
+
       out << "  if (PyErr_Occurred() && PyErr_ExceptionMatches(PyExc_TypeError)) {\n";
       out << "    PyErr_Clear();\n";
       out << "  }\n";
@@ -1865,11 +1894,47 @@ write_module_class(ostream &out, Object *obj) {
       has_local_richcompare = true;
     }
 
-    out << "  }\n";
+    out << "  }\n\n";
+
     out << "  " << args_cleanup << "\n";
     out << "  if (PyErr_Occurred()) {\n";
     out << "    return (PyObject *)NULL;\n";
     out << "  }\n\n";
+
+    if (compare_to_func != NULL) {
+      out << "#if PY_MAJOR_VERSION >= 3\n";
+      out << "  // All is not lost; we still have the compare_to function to fall back onto.\n";
+      out << "  PyObject *result = " << compare_to_func->_name << "(self, args, kwds);\n";
+      out << "  if (result != NULL) {\n";
+      out << "    if (PyLong_Check(result)) {;\n";
+      out << "      long cmpval = PyLong_AsLong(result);\n";
+      out << "      switch (op) {\n";
+      out << "      case Py_LT:\n";
+      out << "        return PyBool_FromLong(cmpval < 0);\n";
+      out << "      case Py_LE:\n";
+      out << "        return PyBool_FromLong(cmpval <= 0);\n";
+      out << "      case Py_EQ:\n";
+      out << "        return PyBool_FromLong(cmpval == 0);\n";
+      out << "      case Py_NE:\n";
+      out << "        return PyBool_FromLong(cmpval != 0);\n";
+      out << "      case Py_GT:\n";
+      out << "        return PyBool_FromLong(cmpval > 0);\n";
+      out << "      case Py_GE:\n";
+      out << "        return PyBool_FromLong(cmpval >= 0);\n";
+      out << "      }\n";
+      out << "    }\n";
+      out << "    Py_DECREF(result);\n";
+      out << "  }\n\n";
+
+      out << "  if (PyErr_Occurred()) {\n";
+      out << "    if (PyErr_ExceptionMatches(PyExc_TypeError)) {\n";
+      out << "      PyErr_Clear();\n";
+      out << "    } else {\n";
+      out << "      return (PyObject *)NULL;\n";
+      out << "    }\n";
+      out << "  }\n";
+      out << "#endif\n\n";
+    }
 
     out << "  Py_INCREF(Py_NotImplemented);\n";
     out << "  return Py_NotImplemented;\n";
@@ -1884,11 +1949,11 @@ write_module_class(ostream &out, Object *obj) {
   //        out << "        memset(Dtool_" << ClassName << ".As_PyTypeObject().tp_as_mapping,0,sizeof(PyMappingMethods));\n";
   //        out << "        static Dtool_PyTypedObject  *InheritsFrom[] = {";
 
-  // add doc string 
+  // add doc string
   if (obj->_itype.has_comment()) {
     out << "#ifndef NDEBUG\n";
     out << "    // Class documentation string\n";
-    out << "    Dtool_" << ClassName 
+    out << "    Dtool_" << ClassName
         << ".As_PyTypeObject().tp_doc =\n";
     output_quoted(out, 6, obj->_itype.get_comment());
     out << ";\n"
@@ -1897,10 +1962,12 @@ write_module_class(ostream &out, Object *obj) {
 
   // Add flags.
   if (obj->_protocol_types & Object::PT_iter) {
+    out << "#if PY_VERSION_HEX < 0x03000000\n";
     out << "    Dtool_" << ClassName << ".As_PyTypeObject().tp_flags |= Py_TPFLAGS_HAVE_ITER;\n";
+    out << "#endif";
   }
   if (has_local_getbuffer) {
-    out << "#if PY_VERSION_HEX >= 0x02060000\n";
+    out << "#if PY_VERSION_HEX >= 0x02060000 && PY_VERSION_HEX < 0x03000000\n";
     out << "    Dtool_" << ClassName << ".As_PyTypeObject().tp_flags |= Py_TPFLAGS_HAVE_NEWBUFFER;\n";
     out << "#endif";
   }
@@ -2242,7 +2309,7 @@ write_function_for_name(ostream &out1, InterfaceMaker::Object *obj, InterfaceMak
 
   if (MapSets.size() > 1) {
     string expected_params;
-      
+
     indent(out, 2) << "int parameter_count = 1;\n";
     indent(out, 2) << "if (PyTuple_Check(args)) {\n";
     indent(out, 2) << "  parameter_count = PyTuple_Size(args);\n";
@@ -2250,7 +2317,7 @@ write_function_for_name(ostream &out1, InterfaceMaker::Object *obj, InterfaceMak
     indent(out, 2) << "    parameter_count += PyDict_Size(kwds);\n";
     indent(out, 2) << "  }\n";
     indent(out, 2) << "}\n";
-      
+
     indent(out, 2) << "switch (parameter_count) {\n";
     for (mii = MapSets.begin(); mii != MapSets.end(); mii ++) {
       indent(out, 2) << "case " << mii->first << ": {\n";
@@ -2263,7 +2330,7 @@ write_function_for_name(ostream &out1, InterfaceMaker::Object *obj, InterfaceMak
       indent(out, 4) << "}\n";
       indent(out, 4) << "break;\n";
     }
-      
+
     indent(out, 2) << "default:\n";
     indent(out, 4) << "{\n";
     indent(out, 6)
@@ -2275,8 +2342,8 @@ write_function_for_name(ostream &out1, InterfaceMaker::Object *obj, InterfaceMak
     // Python convention.
     int add_self = func->_has_this ? 1 : 0;
     size_t mic;
-    for (mic = 0, mii = MapSets.begin(); 
-         mii != MapSets.end(); 
+    for (mic = 0, mii = MapSets.begin();
+         mii != MapSets.end();
          ++mii, ++mic) {
       if (mic == MapSets.size() - 1) {
         if (mic == 1) {
@@ -2292,16 +2359,16 @@ write_function_for_name(ostream &out1, InterfaceMaker::Object *obj, InterfaceMak
     }
 
     out << " arguments (%d given)\", parameter_count + " << add_self << ");\n";
-      
+
     if (constructor)
       indent(out, 6) << "return -1;\n";
     else
       indent(out, 6) << "return (PyObject *) NULL;\n";
-      
+
     indent(out, 4) << "}\n";
     indent(out, 4) << "break;\n";
     indent(out, 2) << "}\n";
-      
+
     out << "  if (!PyErr_Occurred()) { // Let error pass on\n";
     out << "    PyErr_SetString(PyExc_TypeError,\n";
     out << "      \"Arguments must match one of:\\n\"\n";
@@ -2318,7 +2385,7 @@ write_function_for_name(ostream &out1, InterfaceMaker::Object *obj, InterfaceMak
     if (!expected_params.empty() && FunctionComment1.empty()) {
       FunctionComment1 += "C++ Interface:\n";
     }
- 
+
     FunctionComment1 += expected_params;
 
   } else {
@@ -2345,7 +2412,7 @@ write_function_for_name(ostream &out1, InterfaceMaker::Object *obj, InterfaceMak
     if (!expected_params.empty() && FunctionComment1.empty()) {
       FunctionComment1 += "C++ Interface:\n";
     }
-      
+
     FunctionComment1 += expected_params;
   }
 
@@ -2400,13 +2467,13 @@ int GetParnetDepth(CPPType *type) {
     int deepest = 0;
     TypeIndex type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(type)), false);
     InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
-    const InterrogateType &itype = idb->get_type(type_index);    
+    const InterrogateType &itype = idb->get_type(type_index);
 
     if (itype.is_class() || itype.is_struct()) {
       int num_derivations = itype.number_of_derivations();
       for (int di = 0; di < num_derivations; di++) {
         TypeIndex d_type_Index = itype.get_derivation(di);
-        const InterrogateType &d_itype = idb->get_type(d_type_Index);    
+        const InterrogateType &d_itype = idb->get_type(d_type_Index);
         int this_one = GetParnetDepth(d_itype._cpptype);
         if (this_one > deepest) {
           deepest = this_one;
@@ -2466,10 +2533,10 @@ SortFunctionSet(std::set<FunctionRemap *> &remaps) {
 //  A set is defined as all remaps that have the same number of paramaters..
 ///////////////////////////////////////////////////////////
 void InterfaceMakerPythonNative::
-write_function_forset(ostream &out, InterfaceMaker::Object *obj, 
-                      InterfaceMaker::Function *func, 
-                      std::set<FunctionRemap *> &remapsin, 
-                      string &expected_params, int indent_level, 
+write_function_forset(ostream &out, InterfaceMaker::Object *obj,
+                      InterfaceMaker::Function *func,
+                      std::set<FunctionRemap *> &remapsin,
+                      string &expected_params, int indent_level,
                       ostream &forward_decl, bool is_inplace,
                       bool coercion_allowed,
                       bool &coercion_attempted,
@@ -2489,7 +2556,7 @@ write_function_forset(ostream &out, InterfaceMaker::Object *obj,
         }
         while (pn < (int)remap->_parameters.size()) {
           CPPType *type = remap->_parameters[pn]._remap->get_new_type();
-          
+
           if (TypeManager::is_char_pointer(type)) {
           } else if (TypeManager::is_wchar_pointer(type)) {
           } else if (TypeManager::is_pointer_to_PyObject(type)) {
@@ -2512,17 +2579,17 @@ write_function_forset(ostream &out, InterfaceMaker::Object *obj,
     indent(out, indent_level)
       << "{\n";
     indent_level += 2;
-    indent(out, indent_level) 
+    indent(out, indent_level)
       << "PyObject *coerced = NULL;\n";
-    indent(out, indent_level) 
+    indent(out, indent_level)
       << "PyObject **coerced_ptr = NULL;\n";
-    indent(out, indent_level) 
+    indent(out, indent_level)
       << "bool report_errors = false;\n";
-    indent(out, indent_level) 
+    indent(out, indent_level)
       << "while (true) {\n";
     indent_level += 2;
   }
-    
+
   if (remapsin.size() > 1) {
     // There are multiple different overloads for this number of
     // parameters.  Sort them all into order from most-specific to
@@ -2536,7 +2603,7 @@ write_function_forset(ostream &out, InterfaceMaker::Object *obj,
         if (remap->_has_this && !remap->_const_method) {
           // If it's a non-const method, we only allow a
           // non-const this.
-          indent(out, indent_level) 
+          indent(out, indent_level)
             << "if (!((Dtool_PyInstDef *)self)->_is_const) {\n";
         } else {
           indent(out, indent_level)
@@ -2549,7 +2616,7 @@ write_function_forset(ostream &out, InterfaceMaker::Object *obj,
         write_function_instance(out, obj, func, remap, expected_params, indent_level + 2, false, forward_decl, func->_name, is_inplace, coercion_possible, coercion_attempted, args_cleanup);
 
         indent(out, indent_level + 2) << "PyErr_Clear();\n";
-        indent(out, indent_level) << "}\n\n";            
+        indent(out, indent_level) << "}\n\n";
       }
     }
   } else {
@@ -2562,16 +2629,16 @@ write_function_forset(ostream &out, InterfaceMaker::Object *obj,
         if (remap->_has_this && !remap->_const_method) {
           // If it's a non-const method, we only allow a
           // non-const this.
-          indent(out, indent_level) 
+          indent(out, indent_level)
             << "if (!((Dtool_PyInstDef *)self)->_is_const) {\n";
         } else {
           indent(out, indent_level)
             << "{\n";
         }
 
-        indent(out, indent_level + 2) 
+        indent(out, indent_level + 2)
           << "// 1-" ;
-        remap->write_orig_prototype(out, 0); 
+        remap->write_orig_prototype(out, 0);
         out << "\n" ;
         write_function_instance(out, obj, func, remap, expected_params, indent_level + 2, true, forward_decl, func->_name, is_inplace, coercion_possible, coercion_attempted, args_cleanup);
 
@@ -2596,7 +2663,7 @@ write_function_forset(ostream &out, InterfaceMaker::Object *obj,
             << "}\n\n";
         } else {
           indent(out, indent_level)
-            << "}\n\n";            
+            << "}\n\n";
         }
       }
     }
@@ -2606,38 +2673,38 @@ write_function_forset(ostream &out, InterfaceMaker::Object *obj,
 
   if (coercion_possible) {
     // Try again, this time with coercion enabled.
-    indent(out, indent_level) 
+    indent(out, indent_level)
       << "if (coerced_ptr == NULL && !report_errors) {\n";
-    indent(out, indent_level + 2) 
+    indent(out, indent_level + 2)
       << "coerced_ptr = &coerced;\n";
-    indent(out, indent_level + 2) 
+    indent(out, indent_level + 2)
       << "continue;\n";
-    indent(out, indent_level) 
+    indent(out, indent_level)
       << "}\n";
 
     // No dice.  Go back one more time, and this time get the error
     // message.
-    indent(out, indent_level) 
+    indent(out, indent_level)
       << "if (!report_errors) {\n";
-    indent(out, indent_level + 2) 
+    indent(out, indent_level + 2)
       << "report_errors = true;\n";
-    indent(out, indent_level + 2) 
+    indent(out, indent_level + 2)
       << "continue;\n";
-    indent(out, indent_level) 
+    indent(out, indent_level)
       << "}\n";
 
     // We've been through three times.  We're done.
-    indent(out, indent_level) 
+    indent(out, indent_level)
       << "break;\n";
-    
+
     indent_level -= 2;
-    indent(out, indent_level) 
+    indent(out, indent_level)
       << "}\n";
-    
-    indent(out, indent_level) 
+
+    indent(out, indent_level)
       << "Py_XDECREF(coerced);\n";
     indent_level -= 2;
-    indent(out, indent_level) 
+    indent(out, indent_level)
       << "}\n";
   }
 }
@@ -2649,11 +2716,11 @@ write_function_forset(ostream &out, InterfaceMaker::Object *obj,
 //               single instance of an overloaded function.
 ////////////////////////////////////////////////////////////////////
 void InterfaceMakerPythonNative::
-write_function_instance(ostream &out, InterfaceMaker::Object *obj, 
+write_function_instance(ostream &out, InterfaceMaker::Object *obj,
                         InterfaceMaker::Function *func1,
-                        FunctionRemap *remap, string &expected_params, 
-                        int indent_level, bool errors_fatal, 
-                        ostream &ForwardDeclrs, 
+                        FunctionRemap *remap, string &expected_params,
+                        int indent_level, bool errors_fatal,
+                        ostream &ForwardDeclrs,
                         const std::string &functionnamestr, bool is_inplace,
                         bool coercion_possible, bool &coercion_attempted,
                         const string &args_cleanup) {
@@ -2672,21 +2739,21 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
   if (remap->_type == FunctionRemap::T_constructor) {
     is_constructor = true;
   }
-  
+
   if (is_constructor && (remap->_flags & FunctionRemap::F_explicit_self) != 0) {
     // If we'll be passing "self" to the constructor, we need to
     // pre-initialize it here.  Unfortunately, we can't pre-load the
     // "this" pointer, but the constructor itself can do this.
-    
+
     indent(out, indent_level)
       << "// Pre-initialize self for the constructor\n";
 
     CPPType *orig_type = remap->_return_type->get_orig_type();
     TypeIndex type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(orig_type)), false);
     InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
-    const InterrogateType &itype = idb->get_type(type_index);    
+    const InterrogateType &itype = idb->get_type(type_index);
     indent(out, indent_level)
-      << "DTool_PyInit_Finalize(self, NULL, &" 
+      << "DTool_PyInit_Finalize(self, NULL, &"
       << CLASS_PREFIX << make_safe_name(itype.get_scoped_name())
       << ", false, false);\n";
   }
@@ -2723,7 +2790,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
         indent(out, indent_level) << "char *" << param_name << ";\n";
         format_specifiers += "s";
         parameter_list += ", &" + param_name;
-        
+
       } else if (TypeManager::is_wchar_pointer(orig_type)) {
         out << "#if PY_MAJOR_VERSION >= 3\n";
         indent(out, indent_level) << "PyObject *" << param_name << ";\n";
@@ -2741,7 +2808,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
 
         pexpr_string = param_name + "_str";
         extra_cleanup += " delete[] " + param_name + "_str;";
-        
+
       } else if (TypeManager::is_wstring(orig_type)) {
         out << "#if PY_MAJOR_VERSION >= 3\n";
         indent(out, indent_level) << "PyObject *" << param_name << ";\n";
@@ -2892,7 +2959,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
       expected_params += classNameFromCppName(obj_type->get_simple_name(), false);
 
       if (!remap->_has_this || pn != 0) {
-        indent(out, indent_level) 
+        indent(out, indent_level)
           << "PyObject *" << param_name << ";\n";
         format_specifiers += "O";
         parameter_list += ", &" + param_name;
@@ -2900,7 +2967,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
 
         TypeIndex p_type_index = builder.get_type(obj_type, false);
         InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
-        const InterrogateType &p_itype = idb->get_type(p_type_index);    
+        const InterrogateType &p_itype = idb->get_type(p_type_index);
 
         bool is_copy_constructor = false;
         if (is_constructor && remap->_parameters.size() == 1 && pn == 0) {
@@ -2927,9 +2994,9 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
         }
 
         ostringstream str;
-        str << "DTOOL_Call_GetPointerThisClass(" << param_name 
-            << ", &Dtool_" << make_safe_name(p_itype.get_scoped_name()) 
-            << ", " << pn << ", \"" 
+        str << "DTOOL_Call_GetPointerThisClass(" << param_name
+            << ", &Dtool_" << make_safe_name(p_itype.get_scoped_name())
+            << ", " << pn << ", \""
             << method_prefix << methodNameFromCppName(func1, class_name, false)
             << "\", " << const_ok;
         if (coercion_possible && !is_copy_constructor) {
@@ -2971,29 +3038,29 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
     pexprs.push_back(pexpr_string);
   }
   expected_params += ")\n";
-    
+
   // If we got what claimed to be a unary operator, don't check for
   // parameters, since we won't be getting any anyway.
   if (!func1->_ifunc.is_unary_op()) {
-    std::string format_specifiers1 = format_specifiers + ":" + 
+    std::string format_specifiers1 = format_specifiers + ":" +
       methodNameFromCppName(func1, "", false);
     indent(out, indent_level)
       << "static char *keyword_list[] = {" << keyword_list << "NULL};\n";
 
-    if (remap->_parameters.size() == 1 || 
+    if (remap->_parameters.size() == 1 ||
         (remap->_has_this && remap->_parameters.size() == 2)) {
       indent(out, indent_level)
         << "// Special case to make operators work\n";
       indent(out, indent_level)
         << "if (PyTuple_Check(args) || (kwds != NULL && PyDict_Check(kwds))) {\n";
       indent(out, indent_level)
-        << "  PyArg_ParseTupleAndKeywords(args, kwds, \"" 
+        << "  PyArg_ParseTupleAndKeywords(args, kwds, \""
         << format_specifiers1 << "\", keyword_list" << parameter_list
         << ");\n";
       indent(out, indent_level)
         << "} else {\n";
       indent(out, indent_level)
-        << "  PyArg_Parse(args, \"" << format_specifiers1 << "\"" 
+        << "  PyArg_Parse(args, \"" << format_specifiers1 << "\""
         << parameter_list << ");\n";
       indent(out, indent_level)
         << "}\n";
@@ -3002,7 +3069,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
 
     } else {
       indent(out, indent_level)
-        << "if (PyArg_ParseTupleAndKeywords(args, kwds, \"" 
+        << "if (PyArg_ParseTupleAndKeywords(args, kwds, \""
         << format_specifiers1 << "\", keyword_list"
         << parameter_list << ")) {\n";
     }
@@ -3048,11 +3115,11 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
     indent(out, extra_indent_level)
       << "}\n";
   }
-  
-  if (!remap->_void_return && 
+
+  if (!remap->_void_return &&
       remap->_return_type->new_type_is_atomic_string()) {
     // Treat strings as a special case.  We don't want to format the
-    // return expression. 
+    // return expression.
     if (remap->_blocking) {
       // With SIMPLE_THREADS, it's important that we never release the
       // interpreter lock.
@@ -3166,7 +3233,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
     extra_indent_level -= 2;
     indent(out, extra_indent_level) << "}\n";
   }
-  
+
   indent(out, indent_level) << "}\n";
 }
 
@@ -3187,7 +3254,7 @@ pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
 
     TypeIndex type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(orig_type)), false);
     InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
-    const InterrogateType &itype = idb->get_type(type_index);    
+    const InterrogateType &itype = idb->get_type(type_index);
     indent(out, indent_level)
       << "return DTool_PyInit_Finalize(self, " << return_expr << ", &" << CLASS_PREFIX  << make_safe_name(itype.get_scoped_name()) << ", true, false);\n";
 
@@ -3240,7 +3307,7 @@ pack_python_value(ostream &out, int indent_level, FunctionRemap *remap,
       indent(out, indent_level+2) << assign_stmt << "Py_None;\n";
       indent(out, indent_level) << "} else {\n";
       indent(out, indent_level+2)
-        << assign_stmt << "PyUnicode_FromWideChar(" 
+        << assign_stmt << "PyUnicode_FromWideChar("
         << return_expr << ", wcslen(" << return_expr << "));\n";
       indent(out, indent_level) << "}\n";
 
@@ -3320,11 +3387,11 @@ pack_python_value(ostream &out, int indent_level, FunctionRemap *remap,
     indent(out, indent_level) << assign_stmt
       << "PyInt_FromLong(" << return_expr << ");\n";
     out << "#endif\n";
-    
+
   } else if (TypeManager::is_float(type)) {
     indent(out, indent_level) << assign_stmt
       << "PyFloat_FromDouble(" << return_expr << ");\n";
-    
+
   } else if (TypeManager::is_char_pointer(type)) {
     indent(out, indent_level) << "if (" << return_expr << " == NULL) {\n";
     indent(out, indent_level) << "  Py_INCREF(Py_None);\n";
@@ -3340,14 +3407,14 @@ pack_python_value(ostream &out, int indent_level, FunctionRemap *remap,
     out << "#endif\n";
 
     indent(out, indent_level) << "}\n";
-    
+
   } else if (TypeManager::is_wchar_pointer(type)) {
     indent(out, indent_level) << "if (" << return_expr << " == NULL) {\n";
     indent(out, indent_level) << "  Py_INCREF(Py_None);\n";
     indent(out, indent_level+2) << assign_stmt << "Py_None;\n";
     indent(out, indent_level) << "} else {\n";
     indent(out, indent_level+2) << assign_stmt
-      << "PyUnicode_FromWideChar(" 
+      << "PyUnicode_FromWideChar("
       << return_expr << ", wcslen(" << return_expr << "));\n";
 
     indent(out, indent_level) << "}\n";
@@ -3372,12 +3439,12 @@ pack_python_value(ostream &out, int indent_level, FunctionRemap *remap,
     } else {
       const_flag = "false";
     }
-    
+
     if (TypeManager::is_struct(orig_type) || TypeManager::is_ref_to_anything(orig_type)) {
       if (TypeManager::is_ref_to_anything(orig_type)) {
         TypeIndex type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(type)),false);
         InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
-        const InterrogateType &itype = idb->get_type(type_index);    
+        const InterrogateType &itype = idb->get_type(type_index);
         std::string owns_memory_flag("true");
 
         if (remap->_return_value_needs_management) {
@@ -3404,7 +3471,7 @@ pack_python_value(ostream &out, int indent_level, FunctionRemap *remap,
         if (remap->_manage_reference_count) {
           TypeIndex type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(type)),false);
           InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
-          const InterrogateType &itype = idb->get_type(type_index);    
+          const InterrogateType &itype = idb->get_type(type_index);
 
           if (!isExportThisRun(itype._cpptype)) {
             _external_imports.insert(make_safe_name(itype.get_scoped_name()));
@@ -3416,7 +3483,7 @@ pack_python_value(ostream &out, int indent_level, FunctionRemap *remap,
         } else {
           TypeIndex type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(orig_type)),false);
           InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
-          const InterrogateType &itype = idb->get_type(type_index);    
+          const InterrogateType &itype = idb->get_type(type_index);
 
           if (!isExportThisRun(itype._cpptype)) {
             _external_imports.insert(make_safe_name(itype.get_scoped_name()));
@@ -3430,7 +3497,7 @@ pack_python_value(ostream &out, int indent_level, FunctionRemap *remap,
     } else if (TypeManager::is_struct(orig_type->as_pointer_type()->_pointing_at)) {
       TypeIndex type_index = builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(orig_type)),false);
       InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
-      const InterrogateType &itype = idb->get_type(type_index);    
+      const InterrogateType &itype = idb->get_type(type_index);
 
       std::string owns_memory_flag("true");
       if (remap->_return_value_needs_management) {
@@ -3474,7 +3541,7 @@ write_make_seq(ostream &out, Object *obj, const std::string &ClassName,
   string num_name = methodNameFromCppName(make_seq->_num_name, ClassName, false);
   string element_name = methodNameFromCppName(make_seq->_element_name, ClassName, false);
 
-  out << "  return make_list_for_item(self, \"" << num_name 
+  out << "  return make_list_for_item(self, \"" << num_name
       << "\", \"" << element_name << "\");\n";
   out << "}\n";
 }
@@ -3498,7 +3565,7 @@ record_object(TypeIndex type_index) {
   }
 
   InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
-  const InterrogateType &itype = idb->get_type(type_index);    
+  const InterrogateType &itype = idb->get_type(type_index);
 
   if (!is_cpp_type_legal(itype._cpptype)) {
     return (Object *)NULL;
@@ -3517,7 +3584,7 @@ record_object(TypeIndex type_index) {
       object->_constructors.push_back(function);
     }
   }
-  
+
   int num_methods = itype.number_of_methods();
   int mi;
   for (mi = 0; mi < num_methods; mi++) {
@@ -3526,7 +3593,7 @@ record_object(TypeIndex type_index) {
       object->_methods.push_back(function);
     }
   }
-  
+
   int num_casts = itype.number_of_casts();
   for (mi = 0; mi < num_casts; mi++) {
     function = record_function(itype, itype.get_cast(mi));
@@ -3534,11 +3601,11 @@ record_object(TypeIndex type_index) {
       object->_methods.push_back(function);
     }
   }
-  
+
   int num_derivations = itype.number_of_derivations();
   for (int di = 0; di < num_derivations; di++) {
     TypeIndex d_type_Index = itype.get_derivation(di);
-    idb->get_type(d_type_Index);    
+    idb->get_type(d_type_Index);
 
     if (!interrogate_type_is_unpublished(d_type_Index)) {
       if (itype.derivation_has_upcast(di)) {
@@ -3576,7 +3643,7 @@ record_object(TypeIndex type_index) {
       FunctionIndex func_index = ielement.get_setter();
       record_function(itype, func_index);
     }
-  }    
+  }
 
   object->check_protocols();
 
@@ -3622,9 +3689,7 @@ generate_wrappers() {
   for (int fi = 0; fi < num_functions; fi++) {
     FunctionIndex func_index = idb->get_global_function(fi);
     record_function(dummy_type, func_index);
-  }    
-
-
+  }
 
   int num_manifests = idb->get_num_global_manifests();
   for (int mi = 0; mi < num_manifests; mi++) {
@@ -3634,7 +3699,7 @@ generate_wrappers() {
       FunctionIndex func_index = iman.get_getter();
       record_function(dummy_type, func_index);
     }
-  }    
+  }
 
   int num_elements = idb->get_num_global_elements();
   for (int ei = 0; ei < num_elements; ei++) {
@@ -3648,10 +3713,11 @@ generate_wrappers() {
       FunctionIndex func_index = ielement.get_setter();
       record_function(dummy_type, func_index);
     }
-  }    
+  }
   inside_python_native = false;
-} 
-////////////////////////////////////////////// 
+}
+
+//////////////////////////////////////////////
 //   Function :is_cpp_type_legal
 //
 // is the cpp object  supported by by the dtool_py interface..
@@ -3769,7 +3835,7 @@ is_function_legal(Function *func) {
 
       return true;
     }
-  }   
+  }
 
 //    printf("  Function Is Marked Illegal %s\n",func->_name.c_str());
   return false;
@@ -3788,7 +3854,7 @@ isFunctionWithThis(Function *func) {
     if (remap->_has_this) {
       return true;
     }
-  }   
+  }
   return false;
 }
 
@@ -3900,7 +3966,7 @@ DoesInheritFromIsClass(const CPPStructType *inclass, const std::string &name) {
         return true;
       }
     }
-  }  
+  }
   return false;
 }
 
@@ -3928,22 +3994,22 @@ HasAGetKeyFunction(const InterrogateType &itype_class) {
              ++ii) {
           CPPInstance *cppinst = (*ii).second;
           CPPFunctionType *cppfunc = cppinst->_type->as_function_type();
-          
+
           if (cppfunc != NULL) {
             if (cppfunc->_parameters != NULL &&
-                cppfunc->_return_type != NULL && 
+                cppfunc->_return_type != NULL &&
                 TypeManager::is_integer(cppfunc->_return_type)) {
               if (cppfunc->_parameters->_parameters.size() == 0) {
                 return ifunc.get_name();
               }
             }
           }
-        }   
+        }
       }
     }
   }
   return string();
-};
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 //  Function : HasAGetClassTypeFunction
@@ -3953,7 +4019,7 @@ HasAGetKeyFunction(const InterrogateType &itype_class) {
 bool InterfaceMakerPythonNative::
 HasAGetClassTypeFunction(const InterrogateType &itype_class) {
   InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
-  
+
   int num_methods = itype_class.number_of_methods();
   int mi;
   for (mi = 0; mi < num_methods; mi++) {
@@ -3965,7 +4031,7 @@ HasAGetClassTypeFunction(const InterrogateType &itype_class) {
         for (ii = ifunc._instances->begin();ii != ifunc._instances->end();++ii) {
           CPPInstance *cppinst = (*ii).second;
           CPPFunctionType *cppfunc = cppinst->_type->as_function_type();
-          
+
           if (cppfunc != NULL && cppfunc->_return_type != NULL &&
               cppfunc->_parameters != NULL) {
             CPPType *ret_type = TypeManager::unwrap(cppfunc->_return_type);
@@ -3976,8 +4042,7 @@ HasAGetClassTypeFunction(const InterrogateType &itype_class) {
               }
             }
           }
-          
-        }   
+        }
       }
     }
   }
@@ -4013,8 +4078,8 @@ NeedsAStrFunction(const InterrogateType &itype_class) {
           CPPFunctionType *cppfunc = cppinst->_type->as_function_type();
 
           if (cppfunc != NULL) {
-            if (cppfunc->_parameters != NULL && 
-                cppfunc->_return_type != NULL && 
+            if (cppfunc->_parameters != NULL &&
+                cppfunc->_return_type != NULL &&
                 TypeManager::is_void(cppfunc->_return_type)) {
               if (cppfunc->_parameters->_parameters.size() == 1) {
                 CPPInstance *inst1 = cppfunc->_parameters->_parameters[0];
@@ -4041,7 +4106,7 @@ NeedsAStrFunction(const InterrogateType &itype_class) {
               }
             }
           }
-        }   
+        }
       }
     }
   }
@@ -4082,8 +4147,8 @@ NeedsAReprFunction(const InterrogateType &itype_class) {
           CPPFunctionType *cppfunc = cppinst->_type->as_function_type();
 
           if (cppfunc != NULL) {
-            if (cppfunc->_parameters != NULL && 
-                cppfunc->_return_type != NULL && 
+            if (cppfunc->_parameters != NULL &&
+                cppfunc->_return_type != NULL &&
                 TypeManager::is_void(cppfunc->_return_type)) {
               if (cppfunc->_parameters->_parameters.size() == 2) {
                 CPPInstance *inst1 = cppfunc->_parameters->_parameters[0];
@@ -4102,7 +4167,7 @@ NeedsAReprFunction(const InterrogateType &itype_class) {
               }
             }
           }
-        }   
+        }
       }
     }
   }
@@ -4120,8 +4185,8 @@ NeedsAReprFunction(const InterrogateType &itype_class) {
           CPPFunctionType *cppfunc = cppinst->_type->as_function_type();
 
           if (cppfunc != NULL) {
-            if (cppfunc->_parameters != NULL && 
-                cppfunc->_return_type != NULL && 
+            if (cppfunc->_parameters != NULL &&
+                cppfunc->_return_type != NULL &&
                 TypeManager::is_void(cppfunc->_return_type)) {
               if (cppfunc->_parameters->_parameters.size() == 1) {
                 CPPInstance *inst1 = cppfunc->_parameters->_parameters[0];
@@ -4143,7 +4208,7 @@ NeedsAReprFunction(const InterrogateType &itype_class) {
               }
             }
           }
-        }   
+        }
       }
     }
   }

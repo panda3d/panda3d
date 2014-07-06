@@ -112,9 +112,8 @@ PUBLISHED:
   CullTraverser *get_cull_traverser();
 
   INLINE void set_cube_map_index(int cube_map_index);
-  virtual void set_target_tex_page(int page, int view);
+  virtual void set_target_tex_page(int page);
   INLINE int get_target_tex_page() const;
-  INLINE int get_target_tex_view() const;
 
   INLINE void set_cull_callback(CallbackObject *object);
   INLINE void clear_cull_callback();
@@ -213,7 +212,6 @@ private:
     Lens::StereoChannel _stereo_channel;
     int _tex_view_offset;
     int _target_tex_page;
-    int _target_tex_view;
 
     PT(CallbackObject) _cull_callback;
     PT(CallbackObject) _draw_callback;
@@ -312,7 +310,6 @@ public:
   INLINE int get_tex_view_offset();
   INLINE bool get_clear_depth_between_eyes() const;
   INLINE int get_target_tex_page() const;
-  INLINE int get_target_tex_view() const;
   INLINE CallbackObject *get_draw_callback() const;
 
   INLINE void get_pixels(int &pl, int &pr, int &pb, int &pt) const;

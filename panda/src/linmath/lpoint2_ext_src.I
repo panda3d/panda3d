@@ -82,5 +82,5 @@ __getattr__(const string &attr_name) const {
 INLINE_LINMATH int Extension<FLOATNAME(LPoint2)>::
 __setattr__(PyObject *self, const string &attr_name, PyObject *assign) {
   // Upcall to LVecBase2.
-  return invoke_extension<FLOATNAME(LVecBase2)>(_this, _self).__setattr__(self, attr_name, assign);
+  return invoke_extension<FLOATNAME(LVecBase2)>(_this).__setattr__(self, attr_name, assign);
 }

@@ -29,7 +29,7 @@
 class EXPCL_PANDAODE OdeCappedCylinderGeom : public OdeGeom {
   friend class OdeGeom;
 
-private:
+public:
   OdeCappedCylinderGeom(dGeomID id);
 
 PUBLISHED:

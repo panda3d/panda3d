@@ -88,6 +88,8 @@ MsgName2Id = {
     # DBSS-backed-object messages:
     'DBSS_OBJECT_ACTIVATE_WITH_DEFAULTS':        2200,
     'DBSS_OBJECT_ACTIVATE_WITH_DEFAULTS_OTHER':  2201,
+    'DBSS_OBJECT_GET_ACTIVATED':                 2207,
+    'DBSS_OBJECT_GET_ACTIVATED_RESP':            2208,
     'DBSS_OBJECT_DELETE_FIELD_DISK':             2230,
     'DBSS_OBJECT_DELETE_FIELDS_DISK':            2231,
     'DBSS_OBJECT_DELETE_DISK':                   2232,
@@ -137,9 +139,7 @@ MsgName2Id = {
 MsgId2Names = invertDictLossless(MsgName2Id)
     
 # put msg names in module scope, assigned to msg value
-for name, value in MsgName2Id.items():
-    exec('%s = %s' % (name, value))
-del name, value
+globals().update(MsgName2Id)
 
 # These messages are ignored when the client is headed to the quiet zone
 QUIET_ZONE_IGNORED_LIST = [

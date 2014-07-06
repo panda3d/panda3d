@@ -1539,6 +1539,12 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
       case ButtonEvent::T_move:
         // This is handled below.
         break;
+
+      case ButtonEvent::T_raw_down:
+      case ButtonEvent::T_raw_up:
+        // These are passed through.
+        new_button_events.add_event(be);
+        break;
       }
     }
   }

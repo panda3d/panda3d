@@ -35,6 +35,7 @@
     b = p2->b << 8;
 #endif
 
+#undef RGB /* from wingdi.h */
 #ifdef INTERP_RGB
 #define RGB(x) x
 #define RGBPIXEL *pp = RGB_TO_PIXEL(r >> 8,g >> 8,b >> 8)
@@ -105,4 +106,4 @@
 #undef PUTPIXEL
 #undef ZZ
 #undef RGB
-#undef RGBPIXEL 
+#undef RGBPIXEL

@@ -46,8 +46,8 @@ public:
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);
   virtual void end_frame(FrameMode mode, Thread *current_thread);
 
-  virtual void select_target_tex_page(int page, int view);
-  
+  virtual void select_target_tex_page(int page);
+
   virtual void process_events();
 
   virtual bool share_depth_buffer(GraphicsOutput *graphics_output);

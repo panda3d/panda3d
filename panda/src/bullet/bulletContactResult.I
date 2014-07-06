@@ -14,41 +14,40 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletContactResult::get_node0
+//     Function: BulletContact::get_node0
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *BulletContact::
 get_node0() const {
 
-  return _obj0 ? (PandaNode *)_obj0->getUserPointer() : NULL;
+  return _node0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletContactResult::get_node1
+//     Function: BulletContact::get_node1
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *BulletContact::
 get_node1() const {
 
-  return _obj1 ? (PandaNode *)_obj1->getUserPointer() : NULL;
+  return _node1;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletContactResult::get_manifold_point
+//     Function: BulletContact::get_manifold_point
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const BulletManifoldPoint *BulletContact::
-get_manifold_point() const {
+INLINE BulletManifoldPoint &BulletContact::
+get_manifold_point() {
 
-  btManifoldPoint &mp = const_cast<btManifoldPoint &>(_mp);
-  return new BulletManifoldPoint(mp);
+  return _mp;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletContactResult::get_idx0
+//     Function: BulletContact::get_idx0
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -59,7 +58,7 @@ get_idx0() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletContactResult::get_idx1
+//     Function: BulletContact::get_idx1
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -70,7 +69,7 @@ get_idx1() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletContactResult::get_part_id0
+//     Function: BulletContact::get_part_id0
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -81,7 +80,7 @@ get_part_id0() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletContactResult::get_part_id1
+//     Function: BulletContact::get_part_id1
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -107,8 +106,8 @@ get_num_contacts() const {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE const BulletContact &BulletContactResult::
-get_contact(int idx) const {
+INLINE BulletContact &BulletContactResult::
+get_contact(int idx) {
 
   nassertr(idx >= 0 && idx < (int)_contacts.size(), _empty);
   return _contacts[idx];

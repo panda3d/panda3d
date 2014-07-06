@@ -189,9 +189,9 @@ class ObjectMgrBase:
                         if funcName.startswith('.'):
                             # when it's using default objectHandler
                             if self.editor:
-                                func = Functor(eval("self.editor.objectHandler%s"%funcName))
+                                func = Functor(getattr(self.editor, "objectHandler%s"%funcName))
                             else: # when loaded outside of LE
-                                func = Functor(eval("base.objectHandler%s"%funcName))                        
+                                func = Functor(getattr(base, "objectHandler%s"%funcName))                        
                         else:
                             # when it's not using default objectHandler, whole name of the handling obj
                             # should be included in function name
@@ -686,11 +686,11 @@ class ObjectMgrBase:
                 if type(funcName) == types.StringType:
                     if funcName.startswith('.'):
                         if self.editor:
-                            func = Functor(eval("self.editor.objectHandler%s"%funcName), **kwargs)
-                            undoFunc = Functor(eval("self.editor.objectHandler%s"%funcName), **undoKwargs)
+                            func = Functor(getattr(self.editor, "objectHandler%s"%funcName), **kwargs)
+                            undoFunc = Functor(getattr(self.editor, "objectHandler%s"%funcName), **undoKwargs)
                         else: # when loaded outside of LE
-                            func = Functor(eval("base.objectHandler%s"%funcName), **kwargs)
-                            undoFunc = Functor(eval("base.objectHandler%s"%funcName), **undoKwargs)                    
+                            func = Functor(getattr(base, "objectHandler%s"%funcName), **kwargs)
+                            undoFunc = Functor(getattr(base, ".objectHandler%s"%funcName), **undoKwargs)                    
                     else:
                         func = Functor(eval(funcName), **kwargs)
                         undoFunc = Functor(eval(funcName), **undoKwargs)

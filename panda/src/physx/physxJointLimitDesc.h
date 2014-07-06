@@ -23,7 +23,7 @@
 //       Class : PhysxJointLimitDesc
 // Description : Describes a joint limit.
 ////////////////////////////////////////////////////////////////////
-class PhysxJointLimitDesc {
+class EXPCL_PANDAPHYSX PhysxJointLimitDesc {
 
 PUBLISHED:
   INLINE PhysxJointLimitDesc();

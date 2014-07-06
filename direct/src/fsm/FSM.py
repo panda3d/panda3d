@@ -10,7 +10,6 @@ from direct.directnotify import DirectNotifyGlobal
 from direct.showbase import PythonUtil
 from direct.stdpy.threading import RLock
 import types
-import string
 
 class FSMException(Exception):
     pass
@@ -364,7 +363,7 @@ class FSM(DirectObject):
             # If self.defaultTransitions is None, it means to accept
             # all requests whose name begins with a capital letter.
             # These are direct requests to a particular state.
-            if request[0] in string.uppercase:
+            if request[0].isupper():
                 return (request,) + args
         else:
             # If self.defaultTransitions is not None, it is a map of
@@ -381,7 +380,7 @@ class FSM(DirectObject):
             # to request a direct state transition (capital letter
             # request) not listed in defaultTransitions and not
             # handled by an earlier filter.
-            if request[0] in string.uppercase:
+            if request[0].isupper():
                 raise RequestDenied, "%s (from state: %s)" % (request, self.state)
 
         # In either case, we quietly ignore unhandled command
@@ -392,7 +391,7 @@ class FSM(DirectObject):
     def filterOff(self, request, args):
         """From the off state, we can always go directly to any other
         state."""
-        if request[0] in string.uppercase:
+        if request[0].isupper():
             return (request,) + args
         return self.defaultFilter(request, args)
         

@@ -55,6 +55,14 @@ output(ostream &out) const {
   case T_move:
     out << "move";
     break;
+
+  case T_raw_down:
+    out << "raw button " << _button << " down";
+    break;
+
+  case T_raw_up:
+    out << "raw button " << _button << " up";
+    break;
   }
 }
 

@@ -29,7 +29,7 @@
 class EXPCL_PANDAODE OdeTriMeshGeom : public OdeGeom {
   friend class OdeGeom;
 
-private:
+public:
   OdeTriMeshGeom(dGeomID id);
 
 PUBLISHED:
@@ -55,9 +55,6 @@ public:
   INLINE static int get_geom_class() { return dTriMeshClass; };
   INLINE dTriMeshDataID get_tri_mesh_data_id() const;
   INLINE dTriMeshDataID get_data_id() const;
-
-private:
-  void operator = (const OdeTriMeshGeom &copy);
 
 public:
   static TypeHandle get_class_type() {

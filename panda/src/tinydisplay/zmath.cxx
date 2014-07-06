@@ -140,7 +140,7 @@ int Matrix_Inv(PN_stdfloat *r,PN_stdfloat *m,int n)
   int i,j,k,l;
   PN_stdfloat max,tmp,t;
 
-  /* identitée dans r */
+  /* identite dans r */
   for(i=0;i<n*n;i++) r[i]=0;
   for(i=0;i<n;i++) r[i*n+i]=1;
 
@@ -271,5 +271,3 @@ V4 gl_V4_New(PN_stdfloat x,PN_stdfloat y,PN_stdfloat z,PN_stdfloat w)
   a.v[3]=w;
   return a;
 }
-
-

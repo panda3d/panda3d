@@ -24,9 +24,8 @@
 #include <sys/stat.h>  // for mkdir()
 #include <errno.h>
 #include <string.h>     // strerror()
+#include <unistd.h>
 #endif
-
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: get_dirname

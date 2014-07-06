@@ -9,13 +9,15 @@
 ##
 ########################################################################
 
-import sys,os,time,stat,string,re,getopt,fnmatch,threading,signal,shutil,platform,glob,getpass,signal,thread
+import sys,os,time,stat,string,re,getopt,fnmatch,threading,signal,shutil,platform,glob,getpass,signal
 from distutils import sysconfig
 
 if sys.version_info >= (3, 0):
     import pickle
+    import _thread as thread
 else:
     import cPickle as pickle
+    import thread
 
 SUFFIX_INC = [".cxx",".c",".h",".I",".yxx",".lxx",".mm",".rc",".r"]
 SUFFIX_DLL = [".dll",".dlo",".dle",".dli",".dlm",".mll",".exe",".pyd",".ocx"]
@@ -71,6 +73,7 @@ MAYAVERSIONINFO = [("MAYA6",   "6.0"),
                    ("MAYA2013","2013"),
                    ("MAYA20135","2013.5"),
                    ("MAYA2014","2014"),
+                   ("MAYA2015","2015"),
 ]
 
 MAXVERSIONINFO = [("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0", "installdir", "maxsdk\\cssdk\\include"),
@@ -694,11 +697,16 @@ def CxxGetIncludes(path):
     except:
         exit("Cannot open source file \""+path+"\" for reading.")
     include = []
-    for line in sfile:
-        match = CxxIncludeRegex.match(line,0)
-        if (match):
-            incname = match.group(1)
-            include.append(incname)
+    try:
+        for line in sfile:
+            match = CxxIncludeRegex.match(line,0)
+            if (match):
+                incname = match.group(1)
+                include.append(incname)
+    except:
+        print("Failed to determine dependencies of \""+path+"\".")
+        raise
+
     sfile.close()
     CXXINCLUDECACHE[path] = [date, include]
     return include
@@ -1062,6 +1070,8 @@ def MakeBuildTree():
     MakeDirectory(OUTPUTDIR + "/models/gui")
     MakeDirectory(OUTPUTDIR + "/pandac")
     MakeDirectory(OUTPUTDIR + "/pandac/input")
+    MakeDirectory(OUTPUTDIR + "/panda3d")
+    CreateFile(OUTPUTDIR + "/panda3d/__init__.py")
 
     if GetTarget() == 'android':
         MakeDirectory(OUTPUTDIR + "/libs")
@@ -1549,9 +1559,14 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
             if SystemLibraryExists(libname):
                 LibName(target_pkg, "-l" + libname)
             else:
-                have_pkg = False
-                if VERBOSE:
-                    print(GetColor("cyan") + "Couldn't find library lib" + libname + GetColor())
+                # Try searching in the package's LibDirectories.
+                lpath = [dir for ppkg, dir in LIBDIRECTORIES if pkg == ppkg]
+                if LibraryExists(libname, lpath):
+                    LibName(target_pkg, "-l" + libname)
+                else:
+                    have_pkg = False
+                    if VERBOSE:
+                        print(GetColor("cyan") + "Couldn't find library lib" + libname + GetColor())
 
         for i in incs:
             incdir = None
@@ -1563,17 +1578,18 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
             elif (os.path.isdir(sysroot_usr + "/PCBSD") and len(glob.glob(sysroot_usr + "/PCBSD/local/include/" + i)) > 0):
                 incdir = sorted(glob.glob(sysroot_usr + "/PCBSD/local/include/" + i))[-1]
             else:
-                have_pkg = False
                 # Try searching in the package's IncDirectories.
                 for ppkg, pdir in INCDIRECTORIES:
-                    if (pkg == ppkg and len(glob.glob(os.path.join(pdir, i))) > 0):
+                    if pkg == ppkg and len(glob.glob(os.path.join(pdir, i))) > 0:
                         incdir = sorted(glob.glob(os.path.join(pdir, i)))[-1]
-                        have_pkg = True
-                if (incdir == None and VERBOSE and i.endswith(".h")):
-                    print(GetColor("cyan") + "Couldn't find header file " + i + GetColor())
+
+                if incdir is None and i.endswith(".h"):
+                    have_pkg = False
+                    if VERBOSE:
+                        print(GetColor("cyan") + "Couldn't find header file " + i + GetColor())
 
             # Note: It's possible to specify a file instead of a dir, for the sake of checking if it exists.
-            if (incdir != None and os.path.isdir(incdir)):
+            if incdir is not None and os.path.isdir(incdir):
                 IncDirectory(target_pkg, incdir)
 
         if (not have_pkg):
@@ -2318,8 +2334,12 @@ def CopyFile(dstfile, srcfile):
         if (fnl < 0): fn = srcfile
         else: fn = srcfile[fnl+1:]
         dstfile = dstdir + fn
-    if (NeedsBuild([dstfile], [srcfile])):
-        WriteBinaryFile(dstfile, ReadBinaryFile(srcfile))
+    if NeedsBuild([dstfile], [srcfile]):
+        if os.path.islink(srcfile):
+            # Preserve symlinks
+            os.symlink(os.readlink(srcfile), dstfile)
+        else:
+            WriteBinaryFile(dstfile, ReadBinaryFile(srcfile))
         JustBuilt([dstfile], [srcfile])
 
 def CopyAllFiles(dstdir, srcdir, suffix=""):
@@ -2380,7 +2400,7 @@ def CopyPythonTree(dstdir, srcdir, lib2to3_fixers=[]):
         dstpth = os.path.join(dstdir, entry)
         if (os.path.isfile(srcpth)):
             base, ext = os.path.splitext(entry)
-            if (entry != ".cvsignore" and ext not in SUFFIX_INC):
+            if (entry != ".cvsignore" and ext not in SUFFIX_INC + ['.pyc', '.pyo']):
                 if (NeedsBuild([dstpth], [srcpth])):
                     WriteBinaryFile(dstpth, ReadBinaryFile(srcpth))
 
@@ -2412,10 +2432,10 @@ def ParsePandaVersion(fn):
         f = open(fn, "r")
         pattern = re.compile('^[ \t]*[#][ \t]*define[ \t]+PANDA_VERSION[ \t]+([0-9]+)[ \t]+([0-9]+)[ \t]+([0-9]+)')
         for line in f:
-            match = pattern.match(line,0)
+            match = pattern.match(line, 0)
             if (match):
                 f.close()
-                return match.group(1)+"."+match.group(2)+"."+match.group(3)
+                return match.group(1) + "." + match.group(2) + "." + match.group(3)
         f.close()
     except: pass
     return "0.0.0"
@@ -2428,7 +2448,7 @@ def ParsePluginVersion(fn):
             match = pattern.match(line,0)
             if (match):
                 f.close()
-                return match.group(1)+"."+match.group(2)+"."+match.group(3)
+                return match.group(1) + "." + match.group(2) + "." + match.group(3)
         f.close()
     except: pass
     return "0.0.0"
@@ -2522,7 +2542,7 @@ def WriteResourceFile(basename, **kwargs):
 ##
 ########################################################################
 
-ORIG_EXT={}
+ORIG_EXT = {}
 
 def GetOrigExt(x):
     return ORIG_EXT[x]
@@ -2556,7 +2576,7 @@ def CalcLocation(fn, ipath):
         if (fn.endswith(".res")):   return OUTPUTDIR+"/tmp/"+fn
         if (fn.endswith(".tlb")):   return OUTPUTDIR+"/tmp/"+fn
         if (fn.endswith(".dll")):   return OUTPUTDIR+"/bin/"+fn[:-4]+dllext+".dll"
-        if (fn.endswith(".pyd")):   return OUTPUTDIR+"/bin/"+fn[:-4]+dllext+".pyd"
+        if (fn.endswith(".pyd")):   return OUTPUTDIR+"/panda3d/"+fn[:-4]+dllext+".pyd"
         if (fn.endswith(".ocx")):   return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".ocx"
         if (fn.endswith(".mll")):   return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".mll"
         if (fn.endswith(".dlo")):   return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".dlo"
@@ -2572,7 +2592,7 @@ def CalcLocation(fn, ipath):
         if (fn.endswith(".plist")): return CxxFindSource(fn, ipath)
         if (fn.endswith(".obj")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".o"
         if (fn.endswith(".dll")):   return OUTPUTDIR+"/lib/"+fn[:-4]+".dylib"
-        if (fn.endswith(".pyd")):   return OUTPUTDIR+"/lib/"+fn[:-4]+".so"
+        if (fn.endswith(".pyd")):   return OUTPUTDIR+"/panda3d/"+fn[:-4]+".so"
         if (fn.endswith(".mll")):   return OUTPUTDIR+"/plugins/"+fn
         if (fn.endswith(".exe")):   return OUTPUTDIR+"/bin/"+fn[:-4]
         if (fn.endswith(".lib")):   return OUTPUTDIR+"/lib/"+fn[:-4]+".a"
@@ -2593,7 +2613,7 @@ def CalcLocation(fn, ipath):
     else:
         if (fn.endswith(".obj")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".o"
         if (fn.endswith(".dll")):   return OUTPUTDIR+"/lib/"+fn[:-4]+".so"
-        if (fn.endswith(".pyd")):   return OUTPUTDIR+"/lib/"+fn[:-4]+".so"
+        if (fn.endswith(".pyd")):   return OUTPUTDIR+"/panda3d/"+fn[:-4]+".so"
         if (fn.endswith(".mll")):   return OUTPUTDIR+"/plugins/"+fn
         if (fn.endswith(".plugin")):return OUTPUTDIR+"/plugins/"+fn[:-7]+dllext+".so"
         if (fn.endswith(".exe")):   return OUTPUTDIR+"/bin/"+fn[:-4]
@@ -2669,6 +2689,11 @@ def TargetAdd(target, dummy=0, opts=0, input=0, dep=0, ipath=0, winrc=0):
     if (ipath == 0): ipath = []
     if (type(input) == str): input = [input]
     if (type(dep) == str): dep = [dep]
+
+    if os.path.splitext(target)[1] == '.pyd' and PkgSkip("PYTHON"):
+        # It makes no sense to build Python modules with python disabled.
+        return
+
     full = FindLocation(target, [OUTPUTDIR + "/include"])
 
     if (full not in TARGET_TABLE):

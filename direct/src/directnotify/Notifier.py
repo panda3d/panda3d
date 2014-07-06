@@ -4,7 +4,7 @@ for the programmer/user
 """
 from LoggerGlobal import defaultLogger
 from direct.showbase import PythonUtil
-from libpandaexpress import ConfigVariableBool
+from panda3d.core import ConfigVariableBool
 import time
 import types
 import sys
@@ -18,7 +18,7 @@ class Notifier:
     # with the C++ notify system.
     streamWriter = None
     if ConfigVariableBool('notify-integrate', True):
-        from libpandaexpress import StreamWriter, Notify
+        from panda3d.core import StreamWriter, Notify
         streamWriter = StreamWriter(Notify.out(), False)
         
     showTime = ConfigVariableBool('notify-timestamp', False)

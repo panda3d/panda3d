@@ -2101,6 +2101,7 @@ CData(const Lens::CData &copy) {
   _film_offset = copy._film_offset;
   _focal_length = copy._focal_length;
   _fov = copy._fov;
+  _min_fov = copy._min_fov;
   _aspect_ratio = copy._aspect_ratio;
   _near_distance = copy._near_distance;
   _far_distance = copy._far_distance;

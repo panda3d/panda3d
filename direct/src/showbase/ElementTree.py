@@ -749,10 +749,7 @@ def _encode(s, encoding):
     except AttributeError:
         return s # 1.5.2: assume the string uses the right encoding
 
-if sys.version[:3] == "1.5":
-    _escape = re.compile(r"[&<>\"\x80-\xff]+") # 1.5.2
-else:
-    _escape = re.compile(eval(r'u"[&<>\"\u0080-\uffff]+"'))
+_escape = re.compile(u"[&<>\"\u0080-\uffff]+")
 
 _escape_map = {
     "&": "&amp;",

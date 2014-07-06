@@ -260,7 +260,7 @@ public:
   virtual void end_frame(FrameMode mode, Thread *current_thread);
 
   void change_scenes(DisplayRegionPipelineReader *new_dr);
-  virtual void select_target_tex_page(int page, int view);
+  virtual void select_target_tex_page(int page);
 
   // These methods will be called within the app (main) thread.
   virtual void begin_flip();

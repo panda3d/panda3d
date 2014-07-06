@@ -79,4 +79,4 @@ write_file(const Filename &filename, PyObject *data, bool auto_wrap) {
   return PyBool_FromLong(result);
 }
 
-#endif  // HAVE_PYTHOS
+#endif  // HAVE_PYTHON

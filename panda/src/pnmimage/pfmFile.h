@@ -95,7 +95,7 @@ PUBLISHED:
   BLOCKING bool calc_autocrop(int &x_begin, int &x_end, int &y_begin, int &y_end) const;
   BLOCKING INLINE bool calc_autocrop(LVecBase4f &range) const;
   BLOCKING INLINE bool calc_autocrop(LVecBase4d &range) const;
- 
+
   bool is_row_empty(int y, int x_begin, int x_end) const;
   bool is_column_empty(int x, int y_begin, int y_end) const;
 
@@ -104,8 +104,11 @@ PUBLISHED:
   void set_no_data_nan(int num_channels);
   void set_no_data_value(const LPoint4f &no_data_value);
   INLINE void set_no_data_value(const LPoint4d &no_data_value);
+  void set_no_data_threshold(const LPoint4f &no_data_value);
+  INLINE void set_no_data_threshold(const LPoint4d &no_data_value);
   INLINE void clear_no_data_value();
   INLINE bool has_no_data_value() const;
+  INLINE bool has_no_data_threshold() const;
   INLINE const LPoint4f &get_no_data_value() const;
 
   BLOCKING void resize(int new_x_size, int new_y_size);
@@ -121,6 +124,7 @@ PUBLISHED:
   BLOCKING void reverse_distort(const PfmFile &dist, PN_float32 scale_factor = 1.0);
   BLOCKING void merge(const PfmFile &other);
   BLOCKING void copy_channel(int to_channel, const PfmFile &other, int from_channel);
+  BLOCKING void copy_channel_masked(int to_channel, const PfmFile &other, int from_channel);
   BLOCKING void apply_crop(int x_begin, int x_end, int y_begin, int y_end);
   BLOCKING void clear_to_texcoords(int x_size, int y_size);
 
@@ -138,6 +142,12 @@ PUBLISHED:
                       int x_size = -1, int y_size = -1);
 
   void output(ostream &out) const;
+
+  EXTENSION(PyObject *get_points() const);
+
+#if PY_VERSION_HEX >= 0x02060000
+  EXTENSION(int __getbuffer__(PyObject *self, Py_buffer *view, int flags) const);
+#endif
 
 public:
   INLINE const vector_float &get_table() const;
@@ -188,6 +198,10 @@ private:
   static bool has_point_2(const PfmFile *file, int x, int y);
   static bool has_point_3(const PfmFile *file, int x, int y);
   static bool has_point_4(const PfmFile *file, int x, int y);
+  static bool has_point_threshold_1(const PfmFile *file, int x, int y);
+  static bool has_point_threshold_2(const PfmFile *file, int x, int y);
+  static bool has_point_threshold_3(const PfmFile *file, int x, int y);
+  static bool has_point_threshold_4(const PfmFile *file, int x, int y);
   static bool has_point_chan4(const PfmFile *file, int x, int y);
   static bool has_point_nan_1(const PfmFile *file, int x, int y);
   static bool has_point_nan_2(const PfmFile *file, int x, int y);
@@ -201,6 +215,7 @@ private:
   PN_float32 _scale;
 
   bool _has_no_data_value;
+  bool _has_no_data_threshold;
   LPoint4f _no_data_value;
 
   typedef bool HasPointFunc(const PfmFile *file, int x, int y);

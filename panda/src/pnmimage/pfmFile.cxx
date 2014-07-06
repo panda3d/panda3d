@@ -33,6 +33,7 @@
 PfmFile::
 PfmFile() {
   _has_no_data_value = false;
+  _has_no_data_threshold = false;
   _no_data_value = LPoint4f::zero();
   _has_point = has_point_noop;
   clear();
@@ -49,6 +50,7 @@ PfmFile(const PfmFile &copy) :
   _table(copy._table),
   _scale(copy._scale),
   _has_no_data_value(copy._has_no_data_value),
+  _has_no_data_threshold(copy._has_no_data_threshold),
   _no_data_value(copy._no_data_value),
   _has_point(copy._has_point)
 {
@@ -65,6 +67,7 @@ operator = (const PfmFile &copy) {
   _table = copy._table;
   _scale = copy._scale;
   _has_no_data_value = copy._has_no_data_value;
+  _has_no_data_threshold = copy._has_no_data_threshold;
   _no_data_value = copy._no_data_value;
   _has_point = copy._has_point;
 }
@@ -908,6 +911,7 @@ set_no_data_nan(int num_channels) {
   if (num_channels > 0) {
     num_channels = min(num_channels, _num_channels);
     _has_no_data_value = true;
+    _has_no_data_threshold = false;
     _no_data_value = LPoint4f::zero();
     PN_float32 nan = make_nan((PN_float32)0.0);
     for (int i = 0; i < num_channels; ++i) {
@@ -945,6 +949,7 @@ set_no_data_value(const LPoint4f &no_data_value) {
   nassertv(is_valid());
 
   _has_no_data_value = true;
+  _has_no_data_threshold = false;
   _no_data_value = no_data_value;
   switch (_num_channels) {
   case 1:
@@ -958,6 +963,38 @@ set_no_data_value(const LPoint4f &no_data_value) {
     break;
   case 4:
     _has_point = has_point_4;
+    break;
+  default:
+    nassertv(false);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::set_no_data_threshold
+//       Access: Published
+//  Description: Sets the special threshold value.  Points that are
+//               below this value in all components are considered "no
+//               value".
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+set_no_data_threshold(const LPoint4f &no_data_value) {
+  nassertv(is_valid());
+
+  _has_no_data_value = true;
+  _has_no_data_threshold = true;
+  _no_data_value = no_data_value;
+  switch (_num_channels) {
+  case 1:
+    _has_point = has_point_threshold_1;
+    break;
+  case 2:
+    _has_point = has_point_threshold_2;
+    break;
+  case 3:
+    _has_point = has_point_threshold_3;
+    break;
+  case 4:
+    _has_point = has_point_threshold_4;
     break;
   default:
     nassertv(false);
@@ -1463,6 +1500,29 @@ copy_channel(int to_channel, const PfmFile &other, int from_channel) {
   for (int yi = 0; yi < _y_size; ++yi) {
     for (int xi = 0; xi < _x_size; ++xi) {
       set_channel(xi, yi, to_channel, other.get_channel(xi, yi, from_channel));
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::copy_channel_masked
+//       Access: Published
+//  Description: Copies just the specified channel values from the
+//               indicated PfmFile, but only where the other file has
+//               a data point.
+////////////////////////////////////////////////////////////////////
+void PfmFile::
+copy_channel_masked(int to_channel, const PfmFile &other, int from_channel) {
+  nassertv(is_valid() && other.is_valid());
+  nassertv(other._x_size == _x_size && other._y_size == _y_size);
+  nassertv(to_channel >= 0 && to_channel < get_num_channels() &&
+           from_channel >= 0 && from_channel < other.get_num_channels());
+
+  for (int yi = 0; yi < _y_size; ++yi) {
+    for (int xi = 0; xi < _x_size; ++xi) {
+      if (other.has_point(xi, yi)) {
+        set_channel(xi, yi, to_channel, other.get_channel(xi, yi, from_channel));
+      }
     }
   }
 }
@@ -2368,6 +2428,76 @@ has_point_4(const PfmFile *self, int x, int y) {
   if ((x >= 0 && x < self->_x_size) && 
       (y >= 0 && y < self->_y_size)) {
     return *(LPoint4f *)&self->_table[(y * self->_x_size + x) * 4] != *(LPoint4f *)&self->_no_data_value;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::has_point_threshold_1
+//       Access: Private, Static
+//  Description: The implementation of has_point_threshold() for 1-component
+//               files with a no_data_value.
+////////////////////////////////////////////////////////////////////
+bool PfmFile::
+has_point_threshold_1(const PfmFile *self, int x, int y) {
+  if ((x >= 0 && x < self->_x_size) && 
+      (y >= 0 && y < self->_y_size)) {
+    const float *table = &self->_table[(y * self->_x_size + x)];
+    return table[0] >= self->_no_data_value[0];
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::has_point_threshold_2
+//       Access: Private, Static
+//  Description: The implementation of has_point_threshold() for 2-component
+//               files with a no_data_value.
+////////////////////////////////////////////////////////////////////
+bool PfmFile::
+has_point_threshold_2(const PfmFile *self, int x, int y) {
+  if ((x >= 0 && x < self->_x_size) && 
+      (y >= 0 && y < self->_y_size)) {
+    const float *table = &self->_table[(y * self->_x_size + x) * 2];
+    return (table[0] >= self->_no_data_value[0] ||
+            table[1] >= self->_no_data_value[1]);
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::has_point_threshold_3
+//       Access: Private, Static
+//  Description: The implementation of has_point_threshold() for 3-component
+//               files with a no_data_value.
+////////////////////////////////////////////////////////////////////
+bool PfmFile::
+has_point_threshold_3(const PfmFile *self, int x, int y) {
+  if ((x >= 0 && x < self->_x_size) && 
+      (y >= 0 && y < self->_y_size)) {
+    const float *table = &self->_table[(y * self->_x_size + x) * 3];
+    return (table[0] >= self->_no_data_value[0] ||
+            table[1] >= self->_no_data_value[1] ||
+            table[2] >= self->_no_data_value[2]);
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmFile::has_point_threshold_4
+//       Access: Private, Static
+//  Description: The implementation of has_point_threshold() for 4-component
+//               files with a no_data_value.
+////////////////////////////////////////////////////////////////////
+bool PfmFile::
+has_point_threshold_4(const PfmFile *self, int x, int y) {
+  if ((x >= 0 && x < self->_x_size) && 
+      (y >= 0 && y < self->_y_size)) {
+    const float *table = &self->_table[(y * self->_x_size + x) * 4];
+    return (table[0] >= self->_no_data_value[0] ||
+            table[1] >= self->_no_data_value[1] ||
+            table[2] >= self->_no_data_value[2] ||
+            table[3] >= self->_no_data_value[3]);
   }
   return false;
 }

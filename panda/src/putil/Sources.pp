@@ -21,8 +21,9 @@
     bamWriter.I bamWriter.h \
     bitArray.I bitArray.h \
     bitMask.I bitMask.h \
-    buttonHandle.I \
-    buttonHandle.h buttonRegistry.I buttonRegistry.h \
+    buttonHandle.I buttonHandle.h \
+    buttonMap.I buttonMap.h \
+    buttonRegistry.I buttonRegistry.h \
     cachedTypedWritableReferenceCount.h cachedTypedWritableReferenceCount.I \
     callbackData.h callbackData.I \
     callbackObject.h callbackObject.I \
@@ -64,7 +65,8 @@
     sparseArray.I sparseArray.h \
     string_utils.I string_utils.N string_utils.h \
     timedCycle.I timedCycle.h typedWritable.I \
-    typedWritable.h typedWritableReferenceCount.I \
+    typedWritable.h typedWritable_ext.h typedWritable_ext.cxx \
+    typedWritableReferenceCount.I \
     typedWritableReferenceCount.h updateSeq.I updateSeq.h \
     uniqueIdAllocator.h \
     vector_typedWritable.h \
@@ -83,7 +85,7 @@
     bamWriter.cxx \
     bitArray.cxx \
     bitMask.cxx \
-    buttonHandle.cxx buttonRegistry.cxx \
+    buttonHandle.cxx buttonMap.cxx buttonRegistry.cxx \
     cachedTypedWritableReferenceCount.cxx \
     callbackData.cxx \
     callbackObject.cxx \
@@ -131,8 +133,9 @@
     bamWriter.I bamWriter.h \
     bitArray.I bitArray.h \
     bitMask.I bitMask.h \
-    buttonHandle.I buttonHandle.h buttonRegistry.I \
-    buttonRegistry.h \
+    buttonHandle.I buttonHandle.h \
+    buttonMap.I buttonMap.h \
+    buttonRegistry.I buttonRegistry.h \
     cachedTypedWritableReferenceCount.h cachedTypedWritableReferenceCount.I \
     callbackData.h callbackData.I \
     callbackObject.h callbackObject.I \
@@ -174,7 +177,7 @@
     sparseArray.I sparseArray.h \
     string_utils.I string_utils.h \
     timedCycle.I timedCycle.h typedWritable.I \
-    typedWritable.h typedWritableReferenceCount.I \
+    typedWritable.h typedWritable_ext.h typedWritableReferenceCount.I \
     typedWritableReferenceCount.h updateSeq.I updateSeq.h \
     uniqueIdAllocator.h \
     vector_typedWritable.h \

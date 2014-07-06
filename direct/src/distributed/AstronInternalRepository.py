@@ -7,6 +7,80 @@ from ConnectionRepository import ConnectionRepository
 from PyDatagram import PyDatagram
 from PyDatagramIterator import PyDatagramIterator
 from AstronDatabaseInterface import AstronDatabaseInterface
+from NetMessenger import NetMessenger
+import collections
+
+# Helper functions for logging output:
+def msgpack_length(dg, length, fix, maxfix, tag8, tag16, tag32):
+    if length < maxfix:
+        dg.addUint8(fix + length)
+    elif tag8 is not None and length < 1<<8:
+        dg.addUint8(tag8)
+        dg.addUint8(length)
+    elif tag16 is not None and length < 1<<16:
+        dg.addUint8(tag16)
+        dg.addBeUint16(length)
+    elif tag32 is not None and length < 1<<32:
+        dg.addUint8(tag32)
+        dg.addBeUint32(length)
+    else:
+        raise ValueError('Value too big for MessagePack')
+
+def msgpack_encode(dg, element):
+    if element == None:
+        dg.addUint8(0xc0)
+    elif element == False:
+        dg.addUint8(0xc2)
+    elif element == True:
+        dg.addUint8(0xc3)
+    elif isinstance(element, (int, long)):
+        if -32 <= element < 128:
+            dg.addInt8(element)
+        elif 128 <= element < 256:
+            dg.addUint8(0xcc)
+            dg.addUint8(element)
+        elif 256 <= element < 65536:
+            dg.addUint8(0xcd)
+            dg.addBeUint16(element)
+        elif 65536 <= element < (1<<32):
+            dg.addUint8(0xce)
+            dg.addBeUint32(element)
+        elif (1<<32) <= element < (1<<64):
+            dg.addUint8(0xcf)
+            dg.addBeUint64(element)
+        elif -128 <= element < -32:
+            dg.addUint8(0xd0)
+            dg.addInt8(element)
+        elif -32768 <= element < -128:
+            dg.addUint8(0xd1)
+            dg.addBeInt16(element)
+        elif -1<<31 <= element < -32768:
+            dg.addUint8(0xd2)
+            dg.addBeInt32(element)
+        elif -1<<63 <= element < -1<<31:
+            dg.addUint8(0xd3)
+            dg.addBeInt64(element)
+        else:
+            raise ValueError('int out of range for msgpack: %d' % element)
+    elif isinstance(element, dict):
+        msgpack_length(dg, len(element), 0x80, 0x10, None, 0xde, 0xdf)
+        for k,v in element.items():
+            msgpack_encode(dg, k)
+            msgpack_encode(dg, v)
+    elif isinstance(element, list):
+        msgpack_length(dg, len(element), 0x90, 0x10, None, 0xdc, 0xdd)
+        for v in element:
+            msgpack_encode(dg, v)
+    elif isinstance(element, basestring):
+        msgpack_length(dg, len(element), 0xa0, 0x20, 0xd9, 0xda, 0xdb)
+        dg.appendData(element)
+    elif isinstance(element, float):
+        # Python does not distinguish between floats and doubles, so we send
+        # everything as a double in MsgPack:
+        dg.addUint8(0xcb)
+        dg.addFloat64(element)
+    else:
+        raise TypeError('Encountered non-MsgPack-packable value: %r' % element)
 
 class AstronInternalRepository(ConnectionRepository):
     """
@@ -43,9 +117,12 @@ class AstronInternalRepository(ConnectionRepository):
         self.channelAllocator = UniqueIdAllocator(baseChannel, baseChannel+maxChannels-1)
         self._registeredChannels = set()
 
-        self.contextAllocator = UniqueIdAllocator(0, 100)
+        self.__contextCounter = 0
+
+        self.netMessenger = NetMessenger(self)
 
         self.dbInterface = AstronDatabaseInterface(self)
+        self.__callbacks = {}
 
         self.ourChannel = self.allocateChannel()
 
@@ -60,6 +137,10 @@ class AstronInternalRepository(ConnectionRepository):
                 self.setEventLogHost(eventLogHost)
 
         self.readDCFile(dcFileNames)
+
+    def getContext(self):
+        self.__contextCounter = (self.__contextCounter + 1) & 0xFFFFFFFF
+        return self.__contextCounter
 
     def allocateChannel(self):
         """
@@ -153,6 +234,11 @@ class AstronInternalRepository(ConnectionRepository):
                          DBSERVER_OBJECT_SET_FIELD_IF_EQUALS_RESP,
                          DBSERVER_OBJECT_SET_FIELDS_IF_EQUALS_RESP):
             self.dbInterface.handleDatagram(msgType, di)
+        elif msgType == DBSS_OBJECT_GET_ACTIVATED_RESP:
+            self.handleGetActivatedResp(di)
+        elif msgType >= 20000:
+            # These messages belong to the NetMessenger:
+            self.netMessenger.handle(msgType, di)
         else:
             self.notify.warning('Received message with unknown MsgType=%d' % msgType)
 
@@ -210,6 +296,30 @@ class AstronInternalRepository(ConnectionRepository):
         self.removeDOFromTables(do)
         do.delete()
         do.sendDeleteEvent()
+
+    def handleGetActivatedResp(self, di):
+        ctx = di.getUint32()
+        doId = di.getUint32()
+        activated = di.getUint8()
+
+        if ctx not in self.__callbacks:
+            self.notify.warning('Received unexpected DBSS_OBJECT_GET_ACTIVATED_RESP (ctx: %d)' %ctx)
+            return
+
+        try:
+            self.__callbacks[ctx](doId, activated)
+        finally:
+            del self.__callbacks[ctx]
+
+    def getActivated(self, doId, callback):
+        ctx = self.getContext()
+        self.__callbacks[ctx] = callback
+
+        dg = PyDatagram()
+        dg.addServerHeader(doId, self.ourChannel, DBSS_OBJECT_GET_ACTIVATED)
+        dg.addUint32(ctx)
+        dg.addUint32(doId)
+        self.send(dg)
 
     def sendUpdate(self, do, fieldName, args):
         """
@@ -403,7 +513,7 @@ class AstronInternalRepository(ConnectionRepository):
             self.eventSocket = SocketUDPOutgoing()
             self.eventSocket.InitToAddress(address)
 
-    def writeServerEvent(self, logtype, *args):
+    def writeServerEvent(self, logtype, *args, **kwargs):
         """
         Write an event to the central Event Logger, if one is configured.
 
@@ -415,9 +525,16 @@ class AstronInternalRepository(ConnectionRepository):
         if self.eventSocket is None:
             return # No event logger configured!
 
+        log = collections.OrderedDict()
+        log['type'] = logtype
+        log['sender'] = self.eventLogId
+
+        for i,v in enumerate(args):
+            # +1 because the logtype was _0, so we start at _1
+            log['_%d' % (i+1)] = v
+
+        log.update(kwargs)
+
         dg = PyDatagram()
-        dg.addString(self.eventLogId)
-        dg.addString(logtype)
-        for arg in args:
-            dg.addString(str(arg))
+        msgpack_encode(dg, log)
         self.eventSocket.Send(dg.getMessage())

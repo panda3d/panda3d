@@ -145,7 +145,8 @@ WindowFramework::
 ////////////////////////////////////////////////////////////////////
 GraphicsOutput *WindowFramework::
 open_window(const WindowProperties &props, int flags, GraphicsEngine *engine,
-            GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
+            GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
+            const FrameBufferProperties &fbprops) {
   nassertr(_window == (GraphicsOutput *)NULL, _window);
 
   static int next_window_index = 1;
@@ -155,9 +156,8 @@ open_window(const WindowProperties &props, int flags, GraphicsEngine *engine,
   string name = stream.str();
 
   _window = 0;
-  GraphicsOutput *winout = 
-    engine->make_output(pipe, name, 0,
-                        FrameBufferProperties::get_default(),
+  GraphicsOutput *winout =
+    engine->make_output(pipe, name, 0, fbprops,
                         props, flags, gsg, NULL);
   if (winout != (GraphicsOutput *)NULL) {
     _window = winout;

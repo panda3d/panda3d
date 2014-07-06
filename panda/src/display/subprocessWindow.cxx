@@ -191,7 +191,7 @@ begin_flip() {
                                    _buffer->get_fb_properties());
 
   bool copied = 
-    _gsg->framebuffer_copy_to_ram(_texture, -1,
+    _gsg->framebuffer_copy_to_ram(_texture, 0, -1,
                                   _overlay_display_region, buffer);
 
   if (copied) {

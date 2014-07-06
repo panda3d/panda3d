@@ -154,9 +154,6 @@ compare_to(const TextureStage &other) const {
   if (get_tex_view_offset() != other.get_tex_view_offset()) {
     return get_tex_view_offset() < other.get_tex_view_offset() ? -1 : 1;
   }
-  if (get_mode() != other.get_mode()) {
-    return get_mode() < other.get_mode() ? -1 : 1;
-  }
   if (get_mode() == M_combine) {
     if (get_combine_rgb_mode() != other.get_combine_rgb_mode()) {
       return get_combine_rgb_mode() < other.get_combine_rgb_mode() ? -1 : 1;

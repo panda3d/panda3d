@@ -26,6 +26,29 @@ BulletManifoldPoint(btManifoldPoint &pt)
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BulletManifoldPoint::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+BulletManifoldPoint::
+BulletManifoldPoint(const BulletManifoldPoint &other) 
+ : _pt(other._pt) {
+
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BulletManifoldPoint::Copy Assignment
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+BulletManifoldPoint& BulletManifoldPoint::
+operator=(const BulletManifoldPoint& other) {
+ 
+  this->_pt = other._pt;
+  return *this;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BulletManifoldPoint::get_lift_time
 //       Access: Published
 //  Description:
