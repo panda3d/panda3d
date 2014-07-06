@@ -419,9 +419,8 @@ set_target_tex_page(int page) {
 void DisplayRegion::
 output(ostream &out) const {
   CDReader cdata(_cycler);
-  out << "DisplayRegion(" << cdata->_dimensions << ")=pixels(" << cdata->_pl
-      << " " << cdata->_pr << " " << cdata->_pb << " " << cdata->_pt
-      << ")";
+  out << "DisplayRegion(" << cdata->_dimensions << ")=pixels("
+      << cdata->_pixels << ")";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -747,26 +746,28 @@ do_compute_pixels(int x_size, int y_size, CData *cdata) {
       << "DisplayRegion::do_compute_pixels(" << x_size << ", " << y_size << ")\n";
   }
 
-  int old_w = cdata->_pr - cdata->_pl;
-  int old_h = cdata->_pt - cdata->_pb;
+  int old_w = cdata->_pixels[1] - cdata->_pixels[0];
+  int old_h = cdata->_pixels[3] - cdata->_pixels[2];
 
-  cdata->_pl = int((cdata->_dimensions[0] * x_size) + 0.5);
-  cdata->_pr = int((cdata->_dimensions[1] * x_size) + 0.5);
+  cdata->_pixels[0] = int((cdata->_dimensions[0] * x_size) + 0.5);
+  cdata->_pixels[1] = int((cdata->_dimensions[1] * x_size) + 0.5);
+  cdata->_pixels_i[0] = cdata->_pixels[0];
+  cdata->_pixels_i[1] = cdata->_pixels[1];
 
   nassertv(_window != (GraphicsOutput *)NULL);
   if (_window->get_inverted()) {
     // The window is inverted; compute the DisplayRegion accordingly.
-    cdata->_pb = int(((1.0f - cdata->_dimensions[3]) * y_size) + 0.5);
-    cdata->_pt = int(((1.0f - cdata->_dimensions[2]) * y_size) + 0.5);
-    cdata->_pbi = int((cdata->_dimensions[3] * y_size) + 0.5);
-    cdata->_pti = int((cdata->_dimensions[2] * y_size) + 0.5);
+    cdata->_pixels[2] = int(((1.0f - cdata->_dimensions[3]) * y_size) + 0.5);
+    cdata->_pixels[3] = int(((1.0f - cdata->_dimensions[2]) * y_size) + 0.5);
+    cdata->_pixels_i[2] = int((cdata->_dimensions[3] * y_size) + 0.5);
+    cdata->_pixels_i[3] = int((cdata->_dimensions[2] * y_size) + 0.5);
 
   } else {
     // The window is normal.
-    cdata->_pb = int((cdata->_dimensions[2] * y_size) + 0.5);
-    cdata->_pt = int((cdata->_dimensions[3] * y_size) + 0.5);
-    cdata->_pbi = int(((1.0f - cdata->_dimensions[2]) * y_size) + 0.5);
-    cdata->_pti = int(((1.0f - cdata->_dimensions[3]) * y_size) + 0.5);
+    cdata->_pixels[2] = int((cdata->_dimensions[2] * y_size) + 0.5);
+    cdata->_pixels[3] = int((cdata->_dimensions[3] * y_size) + 0.5);
+    cdata->_pixels_i[2] = int(((1.0f - cdata->_dimensions[2]) * y_size) + 0.5);
+    cdata->_pixels_i[3] = int(((1.0f - cdata->_dimensions[3]) * y_size) + 0.5);
   }
 }
 
@@ -815,8 +816,9 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
 DisplayRegion::CData::
 CData() :
   _dimensions(0.0f, 1.0f, 0.0f, 1.0f),
-  _pl(0), _pr(0), _pb(0), _pt(0),
-  _pbi(0), _pti(0), _lens_index(0),
+  _pixels(0, 0, 0, 0),
+  _pixels_i(0, 0, 0, 0),
+  _lens_index(0),
   _camera_node((Camera *)NULL),
   _active(true),
   _sort(0),
@@ -834,12 +836,8 @@ CData() :
 DisplayRegion::CData::
 CData(const DisplayRegion::CData &copy) :
   _dimensions(copy._dimensions),
-  _pl(copy._pl),
-  _pr(copy._pr),
-  _pb(copy._pb),
-  _pt(copy._pt),
-  _pbi(copy._pbi),
-  _pti(copy._pti),
+  _pixels(copy._pixels),
+  _pixels_i(copy._pixels_i),
   _lens_index(copy._lens_index),
   _camera(copy._camera),
   _camera_node(copy._camera_node),

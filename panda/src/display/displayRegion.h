@@ -195,13 +195,9 @@ private:
     }
 
     LVecBase4 _dimensions;  // left, right, bottom, top
-    
-    int _pl;
-    int _pr;
-    int _pb;
-    int _pt;
-    int _pbi;
-    int _pti;
+    LVecBase4i _pixels;
+    LVecBase4i _pixels_i;
+
     int _lens_index; // index into which lens of a camera is associated with this display region.  0 is default
     
     NodePath _camera;

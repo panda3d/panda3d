@@ -389,7 +389,7 @@ get_draw_callback() const {
 INLINE int DisplayRegion::
 get_pixel_width() const {
   CDReader cdata(_cycler);
-  return cdata->_pr - cdata->_pl;
+  return cdata->_pixels[1] - cdata->_pixels[0];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -400,7 +400,7 @@ get_pixel_width() const {
 INLINE int DisplayRegion::
 get_pixel_height() const {
   CDReader cdata(_cycler);
-  return cdata->_pt - cdata->_pb;
+  return cdata->_pixels[3] - cdata->_pixels[2];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -412,10 +412,10 @@ get_pixel_height() const {
 INLINE void DisplayRegion::
 get_pixels(int &pl, int &pr, int &pb, int &pt) const {
   CDReader cdata(_cycler);
-  pl = cdata->_pl;
-  pr = cdata->_pr;
-  pb = cdata->_pb;
-  pt = cdata->_pt;
+  pl = cdata->_pixels[0];
+  pr = cdata->_pixels[1];
+  pb = cdata->_pixels[2];
+  pt = cdata->_pixels[3];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -428,10 +428,10 @@ get_pixels(int &pl, int &pr, int &pb, int &pt) const {
 INLINE void DisplayRegion::
 get_region_pixels(int &xo, int &yo, int &w, int &h) const {
   CDReader cdata(_cycler);
-  xo = cdata->_pl;
-  yo = cdata->_pb;
-  w = cdata->_pr - cdata->_pl;
-  h = cdata->_pt - cdata->_pb;
+  xo = cdata->_pixels[0];
+  yo = cdata->_pixels[2];
+  w = cdata->_pixels[1] - xo;
+  h = cdata->_pixels[3] - yo;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -445,10 +445,10 @@ get_region_pixels(int &xo, int &yo, int &w, int &h) const {
 INLINE void DisplayRegion::
 get_region_pixels_i(int &xo, int &yo, int &w, int &h) const {
   CDReader cdata(_cycler);
-  xo = cdata->_pl;
-  yo = cdata->_pti;
-  w = cdata->_pr - cdata->_pl;
-  h = cdata->_pbi - cdata->_pti;
+  xo = cdata->_pixels_i[0];
+  yo = cdata->_pixels_i[2];
+  w = cdata->_pixels_i[1] - xo;
+  h = cdata->_pixels_i[3] - yo;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -816,10 +816,10 @@ get_draw_callback() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DisplayRegionPipelineReader::
 get_pixels(int &pl, int &pr, int &pb, int &pt) const {
-  pl = _cdata->_pl;
-  pr = _cdata->_pr;
-  pb = _cdata->_pb;
-  pt = _cdata->_pt;
+  pl = _cdata->_pixels[0];
+  pr = _cdata->_pixels[1];
+  pb = _cdata->_pixels[2];
+  pt = _cdata->_pixels[3];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -831,10 +831,10 @@ get_pixels(int &pl, int &pr, int &pb, int &pt) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DisplayRegionPipelineReader::
 get_region_pixels(int &xo, int &yo, int &w, int &h) const {
-  xo = _cdata->_pl;
-  yo = _cdata->_pb;
-  w = _cdata->_pr - _cdata->_pl;
-  h = _cdata->_pt - _cdata->_pb;
+  xo = _cdata->_pixels[0];
+  yo = _cdata->_pixels[2];
+  w = _cdata->_pixels[1] - xo;
+  h = _cdata->_pixels[3] - yo;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -847,10 +847,10 @@ get_region_pixels(int &xo, int &yo, int &w, int &h) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DisplayRegionPipelineReader::
 get_region_pixels_i(int &xo, int &yo, int &w, int &h) const {
-  xo = _cdata->_pl;
-  yo = _cdata->_pti;
-  w = _cdata->_pr - _cdata->_pl;
-  h = _cdata->_pbi - _cdata->_pti;
+  xo = _cdata->_pixels_i[0];
+  yo = _cdata->_pixels_i[2];
+  w = _cdata->_pixels_i[1] - xo;
+  h = _cdata->_pixels_i[3] - yo;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -860,7 +860,7 @@ get_region_pixels_i(int &xo, int &yo, int &w, int &h) const {
 ////////////////////////////////////////////////////////////////////
 INLINE int DisplayRegionPipelineReader::
 get_pixel_width() const {
-  return _cdata->_pr - _cdata->_pl;
+  return _cdata->_pixels[1] - _cdata->_pixels[0];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -869,8 +869,7 @@ get_pixel_width() const {
 //  Description: Gets the index into a lens_node lens array. 0 default
 ////////////////////////////////////////////////////////////////////
 INLINE int DisplayRegionPipelineReader::
-get_lens_index() const
-{
+get_lens_index() const {
   return _cdata->_lens_index;
 }
 
@@ -881,5 +880,5 @@ get_lens_index() const
 ////////////////////////////////////////////////////////////////////
 INLINE int DisplayRegionPipelineReader::
 get_pixel_height() const {
-  return _cdata->_pt - _cdata->_pb;
+  return _cdata->_pixels[3] - _cdata->_pixels[2];
 }
