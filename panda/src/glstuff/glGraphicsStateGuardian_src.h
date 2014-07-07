@@ -660,6 +660,7 @@ public:
   PFNGLBLITFRAMEBUFFEREXTPROC _glBlitFramebuffer;
   PFNGLDRAWBUFFERSPROC _glDrawBuffers;
   int _max_fb_samples;
+  bool _supports_viewport_arrays;
 
   PFNGLGENQUERIESPROC _glGenQueries;
   PFNGLBEGINQUERYPROC _glBeginQuery;
@@ -719,6 +720,9 @@ public:
   PFNGLMEMORYBARRIERPROC _glMemoryBarrier;
   PFNGLGETPROGRAMBINARYPROC _glGetProgramBinary;
   PFNGLGETINTERNALFORMATIVPROC _glGetInternalformativ;
+  PFNGLVIEWPORTARRAYVPROC _glViewportArrayv;
+  PFNGLSCISSORARRAYVPROC _glScissorArrayv;
+  PFNGLDEPTHRANGEARRAYVPROC _glDepthRangeArrayv;
 #endif  // OPENGLES
 
   GLenum _edge_clamp;

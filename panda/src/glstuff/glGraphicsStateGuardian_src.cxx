@@ -1397,6 +1397,26 @@ reset() {
   }
 #endif  // OPENGLES
 
+#ifndef OPENGLES
+  _supports_viewport_arrays = false;
+
+  if (is_at_least_gl_version(4, 1) || has_extension("GL_ARB_viewport_array")) {
+    _glViewportArrayv = (PFNGLVIEWPORTARRAYVPROC)
+      get_extension_func("glViewportArrayv");
+    _glScissorArrayv = (PFNGLSCISSORARRAYVPROC)
+      get_extension_func("glScissorArrayv");
+    _glDepthRangeArrayv = (PFNGLDEPTHRANGEARRAYVPROC)
+      get_extension_func("glDepthRangeArrayv");
+
+    if (_glViewportArrayv == NULL || _glScissorArrayv == NULL || _glDepthRangeArrayv == NULL) {
+      GLCAT.warning()
+          << "Viewport arrays advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
+    } else {
+      _supports_viewport_arrays = true;
+    }
+  }
+#endif  // OPENGLES
+
   _max_fb_samples = 0;
 #ifndef OPENGLES
   if (_supports_framebuffer_multisample) {
@@ -2223,10 +2243,32 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
   _draw_buffer_type = dr->get_object()->get_draw_buffer_type() & _current_properties->get_buffer_mask() & _stereo_buffer_mask;
   _draw_buffer_type |= _current_properties->get_aux_mask();
   set_draw_buffer(_draw_buffer_type);
-  
+
   glEnable(GL_SCISSOR_TEST);
-  glScissor(x, y, width, height);
-  glViewport(x, y, width, height);
+
+  if (_supports_viewport_arrays) {
+    int count = dr->get_num_regions();
+    GLfloat *viewports = new GLfloat[4 * count];
+    GLint *scissors = new GLint[4 * count];
+
+    for (int i = 0; i < count; ++i) {
+      GLint *sr = scissors + i * 4;
+      dr->get_region_pixels(i, sr[0], sr[1], sr[2], sr[3]);
+      GLfloat *vr = viewports + i * 4;
+      vr[0] = (GLfloat) sr[0];
+      vr[1] = (GLfloat) sr[1];
+      vr[2] = (GLfloat) sr[2];
+      vr[3] = (GLfloat) sr[3];
+    }
+    _glViewportArrayv(0, count, viewports);
+    _glScissorArrayv(0, count, scissors);
+    delete[] viewports;
+    delete[] scissors;
+
+  } else {
+    glScissor(x, y, width, height);
+    glViewport(x, y, width, height);
+  }
 
   report_my_gl_errors();
   do_point_size();
