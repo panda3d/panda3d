@@ -585,6 +585,16 @@ estimate_texture_memory() const {
     bpp = 4;
     break;
 
+  case Texture::F_r32:
+    bpp = 4;
+    break;
+  case Texture::F_rg32:
+    bpp = 8;
+    break;
+  case Texture::F_rgb32:
+    bpp = 12;
+    break;
+
   default:
     break;
   }
@@ -1719,6 +1729,16 @@ write(ostream &out, int indent_level) const {
   case F_r32i:
     out << "r32i";
     break;
+
+  case F_r32:
+    out << "r32";
+    break;
+  case F_rg32:
+    out << "rg32";
+    break;
+  case F_rgb32:
+    out << "rgb32";
+    break;
   }
 
   if (cdata->_compression != CM_default) {
@@ -2155,6 +2175,12 @@ format_format(Format format) {
     return "sluminance_alpha";
   case F_r32i:
     return "r32i";
+  case F_r32:
+    return "r32";
+  case F_rg32:
+    return "rg32";
+  case F_rgb32:
+    return "rgb32";
   }
   return "**invalid**";
 }
@@ -2235,6 +2261,12 @@ string_format(const string &str) {
     return F_sluminance_alpha;
   } else if (cmp_nocase(str, "r32i") == 0) {
     return F_r32i;
+  } else if (cmp_nocase(str, "r32") == 0 || cmp_nocase(str, "red32") == 0) {
+    return F_r32;
+  } else if (cmp_nocase(str, "rg32") == 0 || cmp_nocase(str, "r32g32") == 0) {
+    return F_rg32;
+  } else if (cmp_nocase(str, "rgb32") == 0 || cmp_nocase(str, "r32g32b32") == 0) {
+    return F_rgb32;
   }
 
   gobj_cat->error()
@@ -4542,6 +4574,8 @@ do_compress_ram_image(CData *cdata, Texture::CompressionMode compression,
     case Texture::F_rgb8:
     case Texture::F_rgb12:
     case Texture::F_rgb332:
+    case Texture::F_rgb16:
+    case Texture::F_rgb32:
       if (gsg == NULL || gsg->get_supports_compressed_texture_format(CM_dxt1)) {
         compression = CM_dxt1;
       } else if (gsg == NULL || gsg->get_supports_compressed_texture_format(CM_dxt3)) {
@@ -5081,6 +5115,7 @@ do_set_format(CData *cdata, Texture::Format format) {
   case F_r16:
   case F_sluminance:
   case F_r32i:
+  case F_r32:
     cdata->_num_components = 1;
     break;
 
@@ -5088,6 +5123,7 @@ do_set_format(CData *cdata, Texture::Format format) {
   case F_luminance_alphamask:
   case F_rg16:
   case F_sluminance_alpha:
+  case F_rg32:
     cdata->_num_components = 2;
     break;
 
@@ -5098,6 +5134,7 @@ do_set_format(CData *cdata, Texture::Format format) {
   case F_rgb332:
   case F_rgb16:
   case F_srgb:
+  case F_rgb32:
     cdata->_num_components = 3;
     break;
 

@@ -6649,6 +6649,8 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_rgba4:
       case Texture::F_rgba8:
       case Texture::F_rgba12:
+      case Texture::F_rgba16:
+      case Texture::F_rgba32:
         return GL_COMPRESSED_RGBA;
 
       case Texture::F_rgb:
@@ -6658,6 +6660,7 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_rgb12:
       case Texture::F_rgb332:
       case Texture::F_rgb16:
+      case Texture::F_rgb32:
         return GL_COMPRESSED_RGB;
 
       case Texture::F_alpha:
@@ -6667,9 +6670,11 @@ get_external_image_format(Texture *tex) const {
       case Texture::F_green:
       case Texture::F_blue:
       case Texture::F_r16:
+      case Texture::F_r32:
         return GL_COMPRESSED_RED;
 
       case Texture::F_rg16:
+      case Texture::F_rg32:
         return GL_COMPRESSED_RG;
 
       case Texture::F_luminance:
@@ -6778,6 +6783,7 @@ get_external_image_format(Texture *tex) const {
 #ifndef OPENGLES
   case Texture::F_red:
   case Texture::F_r16:
+  case Texture::F_r32:
     return GL_RED;
   case Texture::F_green:
     return GL_GREEN;
@@ -6788,6 +6794,7 @@ get_external_image_format(Texture *tex) const {
     return GL_ALPHA;
 #ifndef OPENGLES_1
   case Texture::F_rg16:
+  case Texture::F_rg32:
     return GL_RG;
 #endif
   case Texture::F_rgb:
@@ -6796,6 +6803,7 @@ get_external_image_format(Texture *tex) const {
   case Texture::F_rgb12:
   case Texture::F_rgb332:
   case Texture::F_rgb16:
+  case Texture::F_rgb32:
   case Texture::F_srgb:
 #ifdef OPENGLES
     return GL_RGB;
@@ -6892,6 +6900,8 @@ get_internal_image_format(Texture *tex) const {
       case Texture::F_rgba:
       case Texture::F_rgba8:
       case Texture::F_rgba12:
+      case Texture::F_rgba16:
+      case Texture::F_rgba32:
         if (get_supports_compressed_texture_format(Texture::CM_dxt5) && !is_3d) {
           return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
         } else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
@@ -6906,6 +6916,7 @@ get_internal_image_format(Texture *tex) const {
       case Texture::F_rgb12:
       case Texture::F_rgb332:
       case Texture::F_rgb16:
+      case Texture::F_rgb32:
         if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
           return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
         } else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
@@ -6925,6 +6936,7 @@ get_internal_image_format(Texture *tex) const {
       case Texture::F_green:
       case Texture::F_blue:
       case Texture::F_r16:
+      case Texture::F_r32:
         if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
           return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
         } else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
@@ -6933,6 +6945,7 @@ get_internal_image_format(Texture *tex) const {
         return GL_COMPRESSED_RED;
 
       case Texture::F_rg16:
+      case Texture::F_rg32:
         if (get_supports_compressed_texture_format(Texture::CM_dxt1) && !is_3d) {
           return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
         } else if (get_supports_compressed_texture_format(Texture::CM_fxt1) && !is_3d) {
@@ -7174,6 +7187,8 @@ get_internal_image_format(Texture *tex) const {
       return GL_RGB16;
     }
 #endif  // OPENGLES
+  case Texture::F_rgb32:
+    return GL_RGB32F;
 
 #ifndef OPENGLES
   case Texture::F_rgb332:
@@ -7199,6 +7214,10 @@ get_internal_image_format(Texture *tex) const {
       return GL_RG16;
     }
 #endif
+  case Texture::F_r32:
+    return GL_R32F;
+  case Texture::F_rg32:
+    return GL_RG32F;
 
   case Texture::F_alpha:
     return GL_ALPHA;
@@ -10364,6 +10383,22 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     type = Texture::T_float;
     format = Texture::F_r16;
     break;
+  case GL_RGBA32F:
+    type = Texture::T_float;
+    format = Texture::F_rgba32;
+    break;
+  case GL_RGB32F:
+    type = Texture::T_float;
+    format = Texture::F_rgb32;
+    break;
+  case GL_RG32F:
+    type = Texture::T_float;
+    format = Texture::F_rg32;
+    break;
+  case GL_R32F:
+    type = Texture::T_float;
+    format = Texture::F_r32;
+    break;    
 #endif
 
 #ifndef OPENGLES

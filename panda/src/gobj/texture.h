@@ -142,6 +142,9 @@ PUBLISHED:
     F_sluminance_alpha,
 
     F_r32i,  // 32-bit integer, used for atomic access
+    F_r32,
+    F_rg32,
+    F_rgb32,
   };
 
   enum FilterType {
