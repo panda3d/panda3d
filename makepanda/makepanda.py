@@ -3824,15 +3824,16 @@ if (PkgSkip("OPENSSL")==0 and not RTDIST and not RUNTIME and PkgSkip("DEPLOYTOOL
   TargetAdd('build_patch.exe', input=COMMON_PANDA_LIBS_PYSTUB)
   TargetAdd('build_patch.exe', opts=OPTS)
 
-  TargetAdd('check_adler_check_adler.obj', opts=OPTS, input='check_adler.cxx')
-  TargetAdd('check_adler.exe', input=['check_adler_check_adler.obj'])
-  TargetAdd('check_adler.exe', input=COMMON_PANDA_LIBS_PYSTUB)
-  TargetAdd('check_adler.exe', opts=OPTS)
+  if not PkgSkip("ZLIB"):
+    TargetAdd('check_adler_check_adler.obj', opts=OPTS, input='check_adler.cxx')
+    TargetAdd('check_adler.exe', input=['check_adler_check_adler.obj'])
+    TargetAdd('check_adler.exe', input=COMMON_PANDA_LIBS_PYSTUB)
+    TargetAdd('check_adler.exe', opts=OPTS)
 
-  TargetAdd('check_crc_check_crc.obj', opts=OPTS, input='check_crc.cxx')
-  TargetAdd('check_crc.exe', input=['check_crc_check_crc.obj'])
-  TargetAdd('check_crc.exe', input=COMMON_PANDA_LIBS_PYSTUB)
-  TargetAdd('check_crc.exe', opts=OPTS)
+    TargetAdd('check_crc_check_crc.obj', opts=OPTS, input='check_crc.cxx')
+    TargetAdd('check_crc.exe', input=['check_crc_check_crc.obj'])
+    TargetAdd('check_crc.exe', input=COMMON_PANDA_LIBS_PYSTUB)
+    TargetAdd('check_crc.exe', opts=OPTS)
 
   TargetAdd('check_md5_check_md5.obj', opts=OPTS, input='check_md5.cxx')
   TargetAdd('check_md5.exe', input=['check_md5_check_md5.obj'])
