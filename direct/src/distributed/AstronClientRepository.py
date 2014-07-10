@@ -2,7 +2,7 @@
 
 from direct.directnotify import DirectNotifyGlobal
 from ClientRepositoryBase import ClientRepositoryBase
-from MsgTypesAstron import *
+from MsgTypes import *
 from direct.distributed.PyDatagram import PyDatagram
 from pandac.PandaModules import STUint16, STUint32
 
@@ -27,80 +27,48 @@ class AstronClientRepository(ClientRepositoryBase):
     # This is required by DoCollectionManager, even though it's not
     # used by this implementation.
     GameGlobalsId = 0
-        
+    
     def __init__(self, *args, **kwargs):
         ClientRepositoryBase.__init__(self, *args, **kwargs)
         base.finalExitCallbacks.append(self.shutdown)
-
+        self.message_handlers = {CLIENT_HELLO_RESP: self.handleHelloResp,
+                                 CLIENT_EJECT: self.handleEject,
+                                 CLIENT_ENTER_OBJECT_REQUIRED: self.handleEnterObjectRequired,
+                                 CLIENT_ENTER_OBJECT_REQUIRED_OWNER: self.handleEnterObjectRequiredOwner,
+                                 CLIENT_OBJECT_SET_FIELD: self.handleUpdateField,
+                                 CLIENT_OBJECT_SET_FIELDS: self.handleUpdateFields,
+                                 CLIENT_OBJECT_LEAVING: self.handleObjectLeaving,
+                                 CLIENT_OBJECT_LOCATION: self.handleObjectLocation,
+                                 CLIENT_ADD_INTEREST: self.handleAddInterest,
+                                 CLIENT_ADD_INTEREST_MULTIPLE: self.handleAddInterestMultiple,
+                                 CLIENT_REMOVE_INTEREST: self.handleRemoveInterest,
+                                 CLIENT_DONE_INTEREST_RESP: self.handleInterestDoneMessage,
+                                 }
+       
     #
     # Message Handling
     #
     
     def handleDatagram(self, di):
         msgType = self.getMsgType()
-        self.handleMessageType(msgType, di)
-
-    def handleMessageType(self, msgType, di):
-
-        # These are the messages to a client that Astron specifies.
-
-        if msgType == CLIENT_HELLO_RESP:
-            messenger.send("CLIENT_HELLO_RESP", [])
-        elif msgType == CLIENT_EJECT:
-            error_code = di.get_uint16()
-            reason = di.get_string()
-            messenger.send("CLIENT_EJECT", [error_code, reason])
-        elif msgType == CLIENT_ENTER_OBJECT_REQUIRED:
-            self.handleEnterObjectRequired(di)
-        elif msgType == CLIENT_ENTER_OBJECT_REQUIRED_OWNER:
-            self.handleEnterObjectRequiredOwner(di)
-        elif msgType == CLIENT_OBJECT_SET_FIELD:
-            self.handleUpdateField(di)
-        elif msgType == CLIENT_OBJECT_SET_FIELDS:
-            raise NotImplementedError("CLIENT_OBJECT_SET_FIELDS not implemented!")
-            # Can't test this without the server actually sending it.
-            # Here's some tentative code and notes:
-            #do_id = di.getUint32()
-            #field_count = di.getUint16()
-            #for i in range(0, field_count):
-            #    field_id = di.getUint16()
-            #    field = self.get_dc_file().get_field_by_index(field_id)
-            #    # print(type(field))
-            #    # print(field)
-            #    # FIXME: Get field type, unpack value, create and send message.
-            #    # value = di.get?()
-            #    # Assemble new message
-        elif msgType == CLIENT_OBJECT_LEAVING:
-            do_id = di.get_uint32()
-            dist_obj = self.doId2do.get(do_id)
-            dist_obj.delete()
-            self.deleteObject(do_id)
-            messenger.send("CLIENT_OBJECT_LEAVING", [do_id])
-        elif msgType == CLIENT_OBJECT_LOCATION:
-            self.handleObjectLocation(di)
-        elif msgType == CLIENT_ADD_INTEREST:
-            context = di.get_uint32()
-            interest_id = di.get_uint16()
-            parent_id = di.get_uint32()
-            zone_id = di.get_uint32()
-            messenger.send("CLIENT_ADD_INTEREST", [context, interest_id, parent_id, zone_id])
-        elif msgType == CLIENT_ADD_INTEREST_MULTIPLE:
-            context = di.get_uint32()
-            interest_id = di.get_uint16()
-            parent_id = di.get_uint32()
-            zone_ids = [di.get_uint32() for i in range(0, di.get_uint16())]
-            messenger.send("CLIENT_ADD_INTEREST_MULTIPLE", [context, interest_id, parent_id, zone_ids])
-        elif msgType == CLIENT_REMOVE_INTEREST:
-            context = di.get_uint32()
-            interest_id = di.get_uint16()
-            messenger.send("CLIENT_REMOVE_INTEREST", [context, interest_id])
-        elif msgType == CLIENT_DONE_INTEREST_RESP:
-            self.handleInterestDoneMessage(di) # Implemented in DoInterestManager.py
+    #    self.handleMessageType(msgType, di)
+    #
+    #def handleMessageType(self, msgType, di):
+        if msgType in self.message_handlers:
+            self.message_handlers[msgType](di)
         else:
             self.notify.error("Got unknown message type %d!" % (msgType,))
 
         self.considerHeartbeat()
 
+    def handleHelloResp(self, di):
+        messenger.send("CLIENT_HELLO_RESP", []) 
+
+    def handleEject(self, di):
+        error_code = di.get_uint16()
+        reason = di.get_string()
+        messenger.send("CLIENT_EJECT", [error_code, reason])
+    
     def handleEnterObjectRequired(self, di):
         do_id = di.getArg(STUint32)
         parent_id = di.getArg(STUint32)
@@ -158,6 +126,47 @@ class AstronClientRepository(ClientRepositoryBase):
             # updateRequiredFields calls announceGenerate
         return distObj
 
+    def handleUpdateFields(self, di):
+        # Can't test this without the server actually sending it.
+        self.notify.error("CLIENT_OBJECT_SET_FIELDS not implemented!")
+        # # Here's some tentative code and notes:
+        # do_id = di.getUint32()
+        # field_count = di.getUint16()
+        # for i in range(0, field_count):
+        #     field_id = di.getUint16()
+        #     field = self.get_dc_file().get_field_by_index(field_id)
+        #     # print(type(field))
+        #     # print(field)
+        #     # FIXME: Get field type, unpack value, create and send message.
+        #     # value = di.get?()
+        #     # Assemble new message
+
+    def handleObjectLeaving(self, di):
+        do_id = di.get_uint32()
+        dist_obj = self.doId2do.get(do_id)
+        dist_obj.delete()
+        self.deleteObject(do_id)
+        messenger.send("CLIENT_OBJECT_LEAVING", [do_id])
+
+    def handleAddInterest(self, di):
+        context = di.get_uint32()
+        interest_id = di.get_uint16()
+        parent_id = di.get_uint32()
+        zone_id = di.get_uint32()
+        messenger.send("CLIENT_ADD_INTEREST", [context, interest_id, parent_id, zone_id])
+
+    def handleAddInterestMultiple(self, di):
+        context = di.get_uint32()
+        interest_id = di.get_uint16()
+        parent_id = di.get_uint32()
+        zone_ids = [di.get_uint32() for i in range(0, di.get_uint16())]
+        messenger.send("CLIENT_ADD_INTEREST_MULTIPLE", [context, interest_id, parent_id, zone_ids])
+
+    def handleRemoveInterest(self, di):
+        context = di.get_uint32()
+        interest_id = di.get_uint16()
+        messenger.send("CLIENT_REMOVE_INTEREST", [context, interest_id])
+    
     def deleteObject(self, doId):
         """
         implementation copied from ClientRepository.py
