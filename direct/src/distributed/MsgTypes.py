@@ -15,10 +15,12 @@ MsgName2Id = {
     'CLIENT_HEARTBEAT':                              5,
 
     'CLIENT_OBJECT_SET_FIELD':                       120,
+    'CLIENT_OBJECT_SET_FIELDS':                      121,
     'CLIENT_OBJECT_LEAVING':                         132,
     'CLIENT_OBJECT_LEAVING_OWNER':                   161,
     'CLIENT_ENTER_OBJECT_REQUIRED':                  142,
     'CLIENT_ENTER_OBJECT_REQUIRED_OTHER':            143,
+    'CLIENT_ENTER_OBJECT_REQUIRED_OWNER':            172,
     'CLIENT_ENTER_OBJECT_REQUIRED_OTHER_OWNER':      173,
 
     'CLIENT_DONE_INTEREST_RESP':                     204,
