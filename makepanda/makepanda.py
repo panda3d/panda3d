@@ -5522,15 +5522,17 @@ if (PkgSkip("PANDATOOL")==0):
 # DIRECTORY: pandatool/src/miscprogs/
 #
 
-if (PkgSkip("PANDATOOL")==0):
-    OPTS=['DIR:pandatool/src/miscprogs']
-    TargetAdd('bin2c_binToC.obj', opts=OPTS, input='binToC.cxx')
-    TargetAdd('bin2c.exe', input='bin2c_binToC.obj')
-    TargetAdd('bin2c.exe', input='libp3progbase.lib')
-    TargetAdd('bin2c.exe', input='libp3pandatoolbase.lib')
-    TargetAdd('bin2c.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('bin2c.exe', input='libp3pystub.lib')
-    TargetAdd('bin2c.exe', opts=['ADVAPI'])
+# This is a bit of an esoteric tool, and it causes issues because
+# it conflicts with tools of the same name in different packages.
+#if (PkgSkip("PANDATOOL")==0):
+#    OPTS=['DIR:pandatool/src/miscprogs']
+#    TargetAdd('bin2c_binToC.obj', opts=OPTS, input='binToC.cxx')
+#    TargetAdd('bin2c.exe', input='bin2c_binToC.obj')
+#    TargetAdd('bin2c.exe', input='libp3progbase.lib')
+#    TargetAdd('bin2c.exe', input='libp3pandatoolbase.lib')
+#    TargetAdd('bin2c.exe', input=COMMON_PANDA_LIBS)
+#    TargetAdd('bin2c.exe', input='libp3pystub.lib')
+#    TargetAdd('bin2c.exe', opts=['ADVAPI'])
 
 #
 # DIRECTORY: pandatool/src/pstatserver/
