@@ -2289,17 +2289,20 @@ make(const string &body, const ShaderLanguage &lang) {
   if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
     return i->second;
   }
+
   PT(ShaderFile) sfile = new ShaderFile("created-shader");
   PT(Shader) result = new Shader(sfile, sbody, lang);
   _make_table[sbody] = result;
+
   if (dump_generated_shaders) {
     ostringstream fns;
     int index = _shaders_generated ++;
     fns << "genshader" << index;
     string fn = fns.str();
     gobj_cat.warning() << "Dumping shader: " << fn << "\n";
+
     pofstream s;
-    s.open(fn.c_str());
+    s.open(fn.c_str(), ios::out | ios::trunc);
     s << body;
     s.close();
   }
