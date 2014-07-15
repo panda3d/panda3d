@@ -587,7 +587,6 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
                 case GL_FLOAT_MAT3: bind._dim[1] = 9; break;
                 case GL_FLOAT_MAT4: bind._dim[1] = 16; break;
               }
-              bind._type = Shader::SPT_int;
               bind._arg = InternalName::make(param_name);
               bind._dim[0] = 1;
               bind._dep[0] = Shader::SSD_general | Shader::SSD_shaderinputs;
@@ -665,23 +664,6 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
               case GL_FLOAT_VEC4: bind._dim[1] = 4; break;
               case GL_FLOAT_MAT3: bind._dim[1] = 9; break;
               case GL_FLOAT_MAT4: bind._dim[1] = 16; break;
-            }
-            switch (param_type) {
-              case GL_BOOL:
-              case GL_BOOL_VEC2:
-              case GL_BOOL_VEC3:
-              case GL_BOOL_VEC4:
-                bind._type = Shader::SPT_unknown;
-                break;
-              case GL_INT:
-              case GL_INT_VEC2:
-              case GL_INT_VEC3:
-              case GL_INT_VEC4:
-                bind._type = Shader::SPT_int;
-                break;
-              default:
-                bind._type = Shader::SPT_float;
-                break;
             }
             bind._arg = InternalName::make(param_name);
             bind._dim[0] = param_size;
