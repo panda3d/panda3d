@@ -73,9 +73,8 @@ CLP(GraphicsBuffer)(GraphicsEngine *engine, GraphicsPipe *pipe,
   _rb_size_x = 0;
   _rb_size_y = 0;
   _rb_size_z = 0;
-  for (int i=0; i<RTP_COUNT; i++) {
+  for (int i = 0; i < RTP_COUNT; ++i) {
     _rb[i] = 0;
-    _tex[i] = 0;
     _rbm[i] = 0;
   }
 
@@ -170,6 +169,24 @@ begin_frame(FrameMode mode, Thread *current_thread) {
       // rebuild_bitplanes().
       return false;
     }
+
+    // In case of multisample rendering, we don't need to issue
+    // the barrier until we call glBlitFramebuffer.
+    if (gl_enable_memory_barriers && _fbo_multisample == 0) {
+      CLP(GraphicsStateGuardian) *glgsg;
+      DCAST_INTO_R(glgsg, _gsg, false);
+
+      pvector<CLP(TextureContext)*>::iterator it;
+      for (it = _texture_contexts.begin(); it != _texture_contexts.end(); ++it) {
+        CLP(TextureContext) *gtc = *it;
+
+        if (gtc->needs_barrier(GL_FRAMEBUFFER_BARRIER_BIT)) {
+          glgsg->issue_memory_barrier(GL_FRAMEBUFFER_BARRIER_BIT);
+          // If we've done it for one, we've done it for all.
+          break;
+        }
+      }
+    }
   }
 
   _gsg->set_current_properties(&get_fb_properties());
@@ -248,7 +265,9 @@ rebuild_bitplanes() {
   DCAST_INTO_V(glgsg, _gsg);
 
   if (!_needs_rebuild) {
-    if (_fbo.size() > 0) {
+    if (_fbo_multisample != 0) {
+      glgsg->bind_fbo(_fbo_multisample);
+    } else if (_fbo.size() > 0) {
       glgsg->bind_fbo(_fbo[0]);
     } else {
       glgsg->bind_fbo(0);
@@ -284,6 +303,7 @@ rebuild_bitplanes() {
   // These variables indicate what should be bound to each bitplane.
   Texture *attach[RTP_COUNT];
   memset(attach, 0, sizeof(Texture *) * RTP_COUNT);
+  _texture_contexts.clear();
 
   // Sort the textures list into appropriate slots.
   {
@@ -437,12 +457,13 @@ rebuild_bitplanes() {
       bind_slot(layer, rb_resize, attach, RTP_color, next++);
 
       if (_fb_properties.is_stereo()) {
-        // The texture has already been initialized, so bind it straight away.
+        // The second tex view has already been initialized, so bind it straight away.
         if (attach[RTP_color] != NULL) {
           attach_tex(layer, 1, attach[RTP_color], next++);
         } else {
           //XXX hack: I needed a slot to use, and we don't currently use RTP_stencil
-          // which is treated as a color attachment below, so this fits the bill.
+          // and it's treated as a color attachment below, so this fits the bill.
+          // Eventually, we might want to add RTP_color_left and RTP_color_right.
           bind_slot(layer, rb_resize, attach, RTP_stencil, next++);
         }
       }
@@ -553,7 +574,6 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
   DCAST_INTO_V(glgsg, _gsg);
 
   Texture *tex = attach[slot];
-  _tex[slot] = tex;
 
   if (tex && layer >= tex->get_z_size()) {
     // If the requested layer index exceeds the number of layers
@@ -1047,7 +1067,10 @@ attach_tex(int layer, int view, Texture *attach, GLenum attachpoint) {
   TextureContext *tc = attach->prepare_now(view, glgsg->get_prepared_objects(), glgsg);
   nassertv(tc != (TextureContext *)NULL);
   CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
-  glgsg->update_texture(tc, true);
+
+  glgsg->update_texture(gtc, true);
+  gtc->set_active(true);
+  _texture_contexts.push_back(gtc);
 
 #ifndef OPENGLES
   GLclampf priority = 1.0f;
@@ -1098,23 +1121,26 @@ attach_tex(int layer, int view, Texture *attach, GLenum attachpoint) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsBuffer)::
 generate_mipmaps() {
+  if (gl_ignore_mipmaps && !gl_force_mipmaps) {
+    return;
+  }
+
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_V(glgsg, _gsg);
 
-  for (int slot=0; slot<RTP_COUNT; slot++) {
-    Texture *tex = _tex[slot];
-    if ((tex != 0) && (tex->uses_mipmaps())) {
+  pvector<CLP(TextureContext)*>::iterator it;
+  for (it = _texture_contexts.begin(); it != _texture_contexts.end(); ++it) {
+    CLP(TextureContext) *gtc = *it;
+
+    if (gtc->_generate_mipmaps) {
       glgsg->_state_texture = 0;
-      TextureContext *tc = tex->prepare_now(0, glgsg->get_prepared_objects(), glgsg);
-      nassertv(tc != (TextureContext *)NULL);
-      CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
-      glgsg->update_texture(tc, true);
-      GLenum target = glgsg->get_texture_target(tex->get_texture_type());
-      glBindTexture(target, gtc->_index);
-      glgsg->_glGenerateMipmap(target);
-      glBindTexture(target, 0);
+      glgsg->update_texture(gtc, true);
+      glgsg->apply_texture(gtc);
+      glgsg->_glGenerateMipmap(gtc->_target);
+      glBindTexture(gtc->_target, 0);
     }
   }
+
   report_my_gl_errors();
 }
 
@@ -1197,8 +1223,12 @@ select_target_tex_page(int page) {
         resolve_multisamples();
       }
     }
-    
-    glgsg->bind_fbo(_fbo[page]);
+
+    if (_fbo_multisample != 0) {
+      // TODO: re-issue clears?
+    } else {
+      glgsg->bind_fbo(_fbo[page]);
+    }
     _bound_tex_page = page;
   }
 
@@ -1305,7 +1335,8 @@ open_buffer() {
     _fb_properties.set_stencil_bits(0);
   }
   _fb_properties.set_accum_bits(0);
-  _fb_properties.set_multisamples(_host->get_fb_properties().get_multisamples());
+
+  _fb_properties.set_multisamples(_requested_multisamples);
 
   // Update aux settings to reflect the GL_MAX_DRAW_BUFFERS limit,
   // if we exceed it, that is.
@@ -1378,7 +1409,6 @@ close_buffer() {
       glgsg->_glDeleteRenderbuffers(1, &(_rb[i]));
       _rb[i] = 0;
     }
-    _tex[i] = 0;
   }
   // Delete the renderbuffers.
   for (int i=0; i<RTP_COUNT; i++) {
@@ -1386,7 +1416,6 @@ close_buffer() {
       glgsg->_glDeleteRenderbuffers(1, &(_rbm[i]));
       _rb[i] = 0;
     }
-    _tex[i] = 0;
   }
   _rb_size_x = 0;
   _rb_size_y = 0;
@@ -1577,6 +1606,21 @@ resolve_multisamples() {
 
   nassertv(_fbo.size() > 0);
 
+  if (gl_enable_memory_barriers) {
+    // Issue memory barriers as necessary to make sure that the
+    // texture memory is synchronized before we blit to it.
+    pvector<CLP(TextureContext)*>::iterator it;
+    for (it = _texture_contexts.begin(); it != _texture_contexts.end(); ++it) {
+      CLP(TextureContext) *gtc = *it;
+
+      if (gtc->needs_barrier(GL_FRAMEBUFFER_BARRIER_BIT)) {
+        glgsg->issue_memory_barrier(GL_FRAMEBUFFER_BARRIER_BIT);
+        // If we've done it for one, we've done it for all.
+        break;
+      }
+    }
+  }
+
   glgsg->report_my_gl_errors();
   GLuint fbo = _fbo[0];
   if (_bound_tex_page != -1) {
@@ -1586,31 +1630,34 @@ resolve_multisamples() {
   glgsg->_glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, _fbo_multisample);
   
   // If the depth buffer is shared, resolve it only on the last to render FBO.
-  int do_depth_blit = 0;
-  if (_shared_depth_buffer) {
-    CLP(GraphicsBuffer) *graphics_buffer = NULL;
-    CLP(GraphicsBuffer) *highest_sort_graphics_buffer = NULL;
-    list <CLP(GraphicsBuffer) *>::iterator graphics_buffer_iterator;
-    
-    int max_sort_order = 0;
-    for (graphics_buffer_iterator = _shared_depth_buffer_list.begin();
-         graphics_buffer_iterator != _shared_depth_buffer_list.end();
-         graphics_buffer_iterator++) {
-      graphics_buffer = (*graphics_buffer_iterator);
-      if (graphics_buffer) {
-        // this call removes the entry from the list
-        if ( graphics_buffer->get_sort() >= max_sort_order ) {
-          max_sort_order = graphics_buffer->get_sort();
-          highest_sort_graphics_buffer = graphics_buffer;
+  bool do_depth_blit = false;
+  if (_rbm[RTP_depth_stencil] != 0 || _rbm[RTP_depth] != 0) {
+    if (_shared_depth_buffer) {
+      CLP(GraphicsBuffer) *graphics_buffer = NULL;
+      CLP(GraphicsBuffer) *highest_sort_graphics_buffer = NULL;
+      list <CLP(GraphicsBuffer) *>::iterator graphics_buffer_iterator;
+
+      int max_sort_order = 0;
+      for (graphics_buffer_iterator = _shared_depth_buffer_list.begin();
+           graphics_buffer_iterator != _shared_depth_buffer_list.end();
+           graphics_buffer_iterator++) {
+        graphics_buffer = (*graphics_buffer_iterator);
+        if (graphics_buffer) {
+          // this call removes the entry from the list
+          if (graphics_buffer->get_sort() >= max_sort_order) {
+            max_sort_order = graphics_buffer->get_sort();
+            highest_sort_graphics_buffer = graphics_buffer;
+          }
         }
       }
+      if (max_sort_order == this->get_sort()) {
+        do_depth_blit = true;
+      }
+    } else {
+      do_depth_blit = true;
     }
-    if (max_sort_order == this->get_sort()) {
-      do_depth_blit = 1;
-    }
-  } else {
-    do_depth_blit = 1;
   }
+
   if (do_depth_blit) {
     glgsg->_glBlitFramebuffer(0, 0, _rb_size_x, _rb_size_y, 0, 0, _rb_size_x, _rb_size_y,
                               GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT,
@@ -1620,7 +1667,6 @@ resolve_multisamples() {
                               GL_COLOR_BUFFER_BIT,
                               GL_NEAREST);
   }
-#ifndef OPENGLES
   // Now handle the other color buffers.
   int next = GL_COLOR_ATTACHMENT1_EXT;
   if (_fb_properties.is_stereo()) {
@@ -1630,6 +1676,7 @@ resolve_multisamples() {
                               GL_COLOR_BUFFER_BIT, GL_NEAREST);
     next += 1;
   }
+#ifndef OPENGLES
   for (int i = 0; i < _fb_properties.get_aux_rgba(); ++i) {
     glReadBuffer(next);
     glDrawBuffer(next);

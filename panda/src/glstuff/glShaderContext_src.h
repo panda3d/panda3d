@@ -50,26 +50,33 @@ public:
 
 private:
   GLuint _glsl_program;
-  GLuint _glsl_vshader;
-  GLuint _glsl_fshader;
-  GLuint _glsl_gshader;
-  GLuint _glsl_tcshader;
-  GLuint _glsl_teshader;
-  GLuint _glsl_cshader;
+  typedef pvector<GLuint> GLSLShaders;
+  GLSLShaders _glsl_shaders;
 
-  pvector <GLint> _glsl_parameter_map;
+  //struct ParamContext {
+  //  CPT(InternalName) _name;
+  //  GLint _location;
+  //  GLsizei _count;
+  //  WPT(ParamValue) _value;
+  //  UpdateSeq _updated;
+  //};
+  //typedef pvector<ParamContext> ParamContexts;
+  //ParamContexts _params;
+
+  pvector<GLint> _glsl_parameter_map;
+  pmap<GLint, GLuint64> _glsl_uniform_handles;
 
   pvector<CPT(InternalName)> _glsl_img_inputs;
+  pvector<CLP(TextureContext)*> _glsl_img_textures;
 
-  int _stage_offset;
   CLP(GraphicsStateGuardian) *_glgsg;
 
   bool _uses_standard_vertex_arrays;
 
-  void glsl_report_shader_errors(unsigned int shader);
-  void glsl_report_program_errors(unsigned int program);
-  unsigned int glsl_compile_entry_point(Shader::ShaderType type);
-  bool glsl_compile_shader();
+  void glsl_report_shader_errors(GLuint shader);
+  void glsl_report_program_errors(GLuint program);
+  bool glsl_compile_shader(Shader::ShaderType type);
+  bool glsl_compile_and_link();
   bool parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, Shader *s);
   void release_resources();
 

@@ -120,12 +120,14 @@ private:
   int         _rb_size_y;
   int         _rb_size_z;
 
-  // The texture or render buffer bound to each plane.
-  PT(Texture) _tex[RTP_COUNT];
+  // Stores the render buffers for each plane.
+  // _rbm stores the multisample renderbuffers.
   GLuint      _rb[RTP_COUNT];
-
-  // The render buffer for _fbo_multisample.
   GLuint      _rbm[RTP_COUNT];
+
+  // List of textures for which we might have to generate mipmaps
+  // after rendering one frame.
+  pvector<CLP(TextureContext)*> _texture_contexts;
 
   // The cube map face we are currently drawing to or have just
   // finished drawing to, or -1 if we are not drawing to a cube map.

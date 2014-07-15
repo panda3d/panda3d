@@ -40,8 +40,10 @@ TypeHandle CLP(CgShaderContext)::_type_handle;
 CLP(CgShaderContext)::
 CLP(CgShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext(s) {
   _glgsg = glgsg;
-  _uses_standard_vertex_arrays = false;
   _cg_context = 0;
+  _cg_vprogram = 0;
+  _cg_fprogram = 0;
+  _cg_gprogram = 0;
   _cg_vprofile = CG_PROFILE_UNKNOWN;
   _cg_fprofile = CG_PROFILE_UNKNOWN;
   _cg_gprofile = CG_PROFILE_UNKNOWN;
@@ -409,10 +411,14 @@ disable_shader_vertex_arrays() {
 ////////////////////////////////////////////////////////////////////
 bool CLP(CgShaderContext)::
 update_shader_vertex_arrays(ShaderContext *prev, bool force) {
-  if (prev) prev->disable_shader_vertex_arrays();
+  if (prev) {
+    prev->disable_shader_vertex_arrays();
+  }
+
   if (!valid()) {
     return true;
   }
+
   cg_report_errors();
 
 #ifdef SUPPORT_IMMEDIATE_MODE
@@ -451,11 +457,17 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
         }
 
         CGparameter p = _cg_parameter_map[_shader->_var_spec[i]._id._seqno];
-        cgGLSetParameterPointer(p,
-                                num_values, _glgsg->get_numeric_type(numeric_type),
-                                stride, client_pointer + start);
+
         cgGLEnableClientState(p);
-      } else  {
+        if (numeric_type == GeomEnums::NT_packed_dabc) {
+          cgGLSetParameterPointer(p, GL_BGRA, GL_UNSIGNED_BYTE,
+                                  stride, client_pointer + start);
+        } else {
+          cgGLSetParameterPointer(p,
+                                  num_values, _glgsg->get_numeric_type(numeric_type),
+                                  stride, client_pointer + start);
+        }
+      } else {
         CGparameter p = _cg_parameter_map[_shader->_var_spec[i]._id._seqno];
         cgGLDisableClientState(p);
       }
@@ -464,7 +476,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
 
   cg_report_errors();
   _glgsg->report_my_gl_errors();
-  
+
   return true;
 }
 
@@ -507,7 +519,6 @@ disable_shader_texture_bindings() {
     // cgGLDisableTextureParameter(p);
   }
 #endif  // OPENGLES_2
-  _stage_offset = 0;
 
   cg_report_errors();
   _glgsg->report_my_gl_errors();
@@ -538,7 +549,6 @@ update_shader_texture_bindings(ShaderContext *prev) {
   // filtered TextureAttrib in _target_texture.
   const TextureAttrib *texattrib = DCAST(TextureAttrib, _glgsg->_target_rs->get_attrib_def(TextureAttrib::get_class_slot()));
   nassertv(texattrib != (TextureAttrib *)NULL);
-  _stage_offset = texattrib->get_num_on_stages();
 
   for (int i = 0; i < (int)_shader->_tex_spec.size(); ++i) {
     InternalName *id = _shader->_tex_spec[i]._name;

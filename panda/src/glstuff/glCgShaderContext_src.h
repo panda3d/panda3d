@@ -61,10 +61,7 @@ private:
 
   pvector <CGparameter> _cg_parameter_map;
 
-  int _stage_offset;
   CLP(GraphicsStateGuardian) *_glgsg;
-
-  bool _uses_standard_vertex_arrays;
 
   void release_resources();
 

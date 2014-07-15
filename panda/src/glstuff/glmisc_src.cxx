@@ -208,6 +208,34 @@ ConfigVariableBool gl_dump_compiled_shaders
             "programs to disk with a filename like glsl_program0.dump "
             "into the current directory."));
 
+ConfigVariableBool gl_immutable_texture_storage
+  ("gl-immutable-texture-storage", true,
+   PRC_DESC("This configures Panda to pre-allocate immutable storage "
+            "for each texture.  This improves runtime performance, but "
+            "changing the size or type of a texture will be slower."));
+
+ConfigVariableBool gl_use_bindless_texture
+  ("gl-use-bindless-texture", false,
+   PRC_DESC("Set this to let Panda use OpenGL's bindless texture "
+            "extension for all textures passed to shaders, for improved "
+            "performance.  This is an experimental feature and comes "
+            "with a few caveats; for one, it requires that all sampler "
+            "uniforms have a layout(bindless_sampler) qualifier, and "
+            "it also requires that the texture properties are not "
+            "modified after the texture handle has been initialized."));
+
+ConfigVariableBool gl_enable_memory_barriers
+  ("gl-enable-memory-barriers", true,
+   PRC_DESC("If this is set, Panda will make sure that every write "
+            "to an image using an image2D (et al) binding will cause "
+            "Panda to issue a memory barrier before the next use of "
+            "said texture, to ensure that all reads and writes are "
+            "properly synchronized.  This may not be strictly necessary "
+            "when using the 'coherent' qualifier, but Panda has no "
+            "way to detect whether you are using those.  Turning "
+            "this off may give a slight performance increase, but you "
+            "have to know what you're doing."));
+
 extern ConfigVariableBool gl_parallel_arrays;
 
 void CLP(init_classes)() {

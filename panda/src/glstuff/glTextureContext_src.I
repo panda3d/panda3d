@@ -19,12 +19,20 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CLP(TextureContext)::
-CLP(TextureContext)(PreparedGraphicsObjects *pgo, Texture *tex, int view) :
+CLP(TextureContext)(CLP(GraphicsStateGuardian) *glgsg,
+  PreparedGraphicsObjects *pgo, Texture *tex, int view) :
   TextureContext(pgo, tex, view)
 {
-  _index = 0;
-  _already_applied = false;
+  _glgsg = glgsg;
+
+  glGenTextures(1, &_index);
+
+  _handle = 0;
+  _needs_barrier = false;
+  _has_storage = false;
+  _immutable = false;
   _uses_mipmaps = false;
+  _generate_mipmaps = false;
   _internal_format = 0;
   _width = 0;
   _height = 0;

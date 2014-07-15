@@ -195,18 +195,12 @@ CLP(ShaderContext)::
 CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext(s) {
   _glgsg = glgsg;
   _glsl_program = 0;
-  _glsl_vshader = 0;
-  _glsl_fshader = 0;
-  _glsl_gshader = 0;
-  _glsl_tcshader = 0;
-  _glsl_teshader = 0;
-  _glsl_cshader = 0;
   _uses_standard_vertex_arrays = false;
 
   nassertv(s->get_language() == Shader::SL_GLSL);
 
   // We compile and analyze the shader here, instead of in shader.cxx, to avoid gobj getting a dependency on GL stuff.
-  if (!glsl_compile_shader()) {
+  if (!glsl_compile_and_link()) {
     release_resources();
     s->_error_flag = true;
     return;
@@ -344,6 +338,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
             continue;
           }
           if (size > 7 && noprefix.substr(0, 7) == "Texture") {
+            _glgsg->_glUniform1i(p, s->_tex_spec.size());
             Shader::ShaderTexSpec bind;
             bind._id = arg_id;
             bind._name = 0;
@@ -376,7 +371,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
               s->_mat_spec.push_back(bind);
               continue;
             } else if (noprefix == "Material.specular") {
-              bind._piece = Shader::SMP_row3;
+              bind._piece = Shader::SMP_row3x3;
               s->_mat_spec.push_back(bind);
               continue;
             }
@@ -463,6 +458,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
             case GL_UNSIGNED_INT_SAMPLER_1D:
             case GL_SAMPLER_1D_SHADOW:
             case GL_SAMPLER_1D: {
+              _glgsg->_glUniform1i(p, s->_tex_spec.size());
               Shader::ShaderTexSpec bind;
               bind._id = arg_id;
               bind._name = InternalName::make(param_name);
@@ -475,6 +471,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
             case GL_SAMPLER_2D_SHADOW:
 #endif
             case GL_SAMPLER_2D: {
+              _glgsg->_glUniform1i(p, s->_tex_spec.size());
               Shader::ShaderTexSpec bind;
               bind._id = arg_id;
               bind._name = InternalName::make(param_name);
@@ -487,6 +484,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
             case GL_UNSIGNED_INT_SAMPLER_3D:
 #endif
             case GL_SAMPLER_3D: {
+              _glgsg->_glUniform1i(p, s->_tex_spec.size());
               Shader::ShaderTexSpec bind;
               bind._id = arg_id;
               bind._name = InternalName::make(param_name);
@@ -500,6 +498,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
             case GL_SAMPLER_CUBE_SHADOW:
 #endif
             case GL_SAMPLER_CUBE: {
+              _glgsg->_glUniform1i(p, s->_tex_spec.size());
               Shader::ShaderTexSpec bind;
               bind._id = arg_id;
               bind._name = InternalName::make(param_name);
@@ -508,7 +507,11 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
               s->_tex_spec.push_back(bind);
               continue; }
 #ifndef OPENGLES
+            case GL_INT_SAMPLER_2D_ARRAY:
+            case GL_UNSIGNED_INT_SAMPLER_2D_ARRAY:
+            case GL_SAMPLER_2D_ARRAY_SHADOW:
             case GL_SAMPLER_2D_ARRAY: {
+              _glgsg->_glUniform1i(p, s->_tex_spec.size());
               Shader::ShaderTexSpec bind;
               bind._id = arg_id;
               bind._name = InternalName::make(param_name);
@@ -584,6 +587,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
                 case GL_FLOAT_MAT3: bind._dim[1] = 9; break;
                 case GL_FLOAT_MAT4: bind._dim[1] = 16; break;
               }
+              bind._type = Shader::SPT_int;
               bind._arg = InternalName::make(param_name);
               bind._dim[0] = 1;
               bind._dep[0] = Shader::SSD_general | Shader::SSD_shaderinputs;
@@ -611,6 +615,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
               // bind once and then forget about it.
               _glgsg->_glUniform1i(p, imgunitno++);
               _glsl_img_inputs.push_back(InternalName::make(param_name));
+              _glsl_img_textures.push_back(NULL);
               continue;
 #endif
             default:
@@ -660,6 +665,23 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
               case GL_FLOAT_VEC4: bind._dim[1] = 4; break;
               case GL_FLOAT_MAT3: bind._dim[1] = 9; break;
               case GL_FLOAT_MAT4: bind._dim[1] = 16; break;
+            }
+            switch (param_type) {
+              case GL_BOOL:
+              case GL_BOOL_VEC2:
+              case GL_BOOL_VEC3:
+              case GL_BOOL_VEC4:
+                bind._type = Shader::SPT_unknown;
+                break;
+              case GL_INT:
+              case GL_INT_VEC2:
+              case GL_INT_VEC3:
+              case GL_INT_VEC4:
+                bind._type = Shader::SPT_int;
+                break;
+              default:
+                bind._type = Shader::SPT_float;
+                break;
             }
             bind._arg = InternalName::make(param_name);
             bind._dim[0] = param_size;
@@ -783,51 +805,20 @@ release_resources() {
     return;
   }
   if (_glsl_program != 0) {
-    if (_glsl_vshader != 0) {
-      _glgsg->_glDetachShader(_glsl_program, _glsl_vshader);
-    }
-    if (_glsl_fshader != 0) {
-      _glgsg->_glDetachShader(_glsl_program, _glsl_fshader);
-    }
-    if (_glsl_gshader != 0) {
-      _glgsg->_glDetachShader(_glsl_program, _glsl_gshader);
-    }
-    if (_glsl_tcshader != 0) {
-      _glgsg->_glDetachShader(_glsl_program, _glsl_tcshader);
-    }
-    if (_glsl_teshader != 0) {
-      _glgsg->_glDetachShader(_glsl_program, _glsl_teshader);
-    }
-    if (_glsl_cshader != 0) {
-      _glgsg->_glDetachShader(_glsl_program, _glsl_cshader);
+    GLSLShaders::const_iterator it;
+    for (it = _glsl_shaders.begin(); it != _glsl_shaders.end(); ++it) {
+      _glgsg->_glDetachShader(_glsl_program, *it);
     }
     _glgsg->_glDeleteProgram(_glsl_program);
     _glsl_program = 0;
   }
-  if (_glsl_vshader != 0) {
-    _glgsg->_glDeleteShader(_glsl_vshader);
-    _glsl_vshader = 0;
+
+  GLSLShaders::const_iterator it;
+  for (it = _glsl_shaders.begin(); it != _glsl_shaders.end(); ++it) {
+    _glgsg->_glDeleteShader(*it);
   }
-  if (_glsl_fshader != 0) {
-    _glgsg->_glDeleteShader(_glsl_fshader);
-    _glsl_fshader = 0;
-  }
-  if (_glsl_gshader != 0) {
-    _glgsg->_glDeleteShader(_glsl_gshader);
-    _glsl_gshader = 0;
-  }
-  if (_glsl_tcshader != 0) {
-    _glgsg->_glDeleteShader(_glsl_tcshader);
-    _glsl_tcshader = 0;
-  }
-  if (_glsl_teshader != 0) {
-    _glgsg->_glDeleteShader(_glsl_teshader);
-    _glsl_teshader = 0;
-  }
-  if (_glsl_cshader != 0) {
-    _glgsg->_glDeleteShader(_glsl_cshader);
-    _glsl_cshader = 0;
-  }
+
+  _glsl_shaders.clear();
   
   _glgsg->report_my_gl_errors();
 }
@@ -890,32 +881,33 @@ issue_parameters(int altered) {
 
   // Iterate through _ptr parameters
   for (int i=0; i<(int)_shader->_ptr_spec.size(); i++) {
-    if(altered & (_shader->_ptr_spec[i]._dep[0] | _shader->_ptr_spec[i]._dep[1])) {
-      const Shader::ShaderPtrSpec& _ptr = _shader->_ptr_spec[i];
+    const Shader::ShaderPtrSpec& spec = _shader->_ptr_spec[i];
+
+    if (altered & (spec._dep[0] | spec._dep[1])) {
       Shader::ShaderPtrData* ptr_data =
-        const_cast< Shader::ShaderPtrData*>(_glgsg->fetch_ptr_parameter(_ptr));
+        const_cast< Shader::ShaderPtrData*>(_glgsg->fetch_ptr_parameter(spec));
       if (ptr_data == NULL) { //the input is not contained in ShaderPtrData
         release_resources();
         return;
       }
-      GLint p = _glsl_parameter_map[_shader->_ptr_spec[i]._id._seqno];
 
+      GLint p = _glsl_parameter_map[spec._id._seqno];
       switch (ptr_data->_type) {
       case Shader::SPT_float:
-        switch (_ptr._dim[1]) {
-          case 1: _glgsg->_glUniform1fv(p, _ptr._dim[0], (float*)ptr_data->_ptr); continue;
-          case 2: _glgsg->_glUniform2fv(p, _ptr._dim[0], (float*)ptr_data->_ptr); continue;
-          case 3: _glgsg->_glUniform3fv(p, _ptr._dim[0], (float*)ptr_data->_ptr); continue;
-          case 4: _glgsg->_glUniform4fv(p, _ptr._dim[0], (float*)ptr_data->_ptr); continue;
-          case 9: _glgsg->_glUniformMatrix3fv(p, _ptr._dim[0], GL_FALSE, (float*)ptr_data->_ptr); continue;
-          case 16: _glgsg->_glUniformMatrix4fv(p, _ptr._dim[0], GL_FALSE, (float*)ptr_data->_ptr); continue;
+        switch (spec._dim[1]) {
+          case 1: _glgsg->_glUniform1fv(p, spec._dim[0], (float*)ptr_data->_ptr); continue;
+          case 2: _glgsg->_glUniform2fv(p, spec._dim[0], (float*)ptr_data->_ptr); continue;
+          case 3: _glgsg->_glUniform3fv(p, spec._dim[0], (float*)ptr_data->_ptr); continue;
+          case 4: _glgsg->_glUniform4fv(p, spec._dim[0], (float*)ptr_data->_ptr); continue;
+          case 9: _glgsg->_glUniformMatrix3fv(p, spec._dim[0], GL_FALSE, (float*)ptr_data->_ptr); continue;
+          case 16: _glgsg->_glUniformMatrix4fv(p, spec._dim[0], GL_FALSE, (float*)ptr_data->_ptr); continue;
         }
       case Shader::SPT_int:
-        switch (_ptr._dim[1]) {
-          case 1: _glgsg->_glUniform1iv(p, _ptr._dim[0], (int*)ptr_data->_ptr); continue;
-          case 2: _glgsg->_glUniform2iv(p, _ptr._dim[0], (int*)ptr_data->_ptr); continue;
-          case 3: _glgsg->_glUniform3iv(p, _ptr._dim[0], (int*)ptr_data->_ptr); continue;
-          case 4: _glgsg->_glUniform4iv(p, _ptr._dim[0], (int*)ptr_data->_ptr); continue;
+        switch (spec._dim[1]) {
+          case 1: _glgsg->_glUniform1iv(p, spec._dim[0], (int*)ptr_data->_ptr); continue;
+          case 2: _glgsg->_glUniform2iv(p, spec._dim[0], (int*)ptr_data->_ptr); continue;
+          case 3: _glgsg->_glUniform3iv(p, spec._dim[0], (int*)ptr_data->_ptr); continue;
+          case 4: _glgsg->_glUniform4iv(p, spec._dim[0], (int*)ptr_data->_ptr); continue;
         }
       case Shader::SPT_double:
         GLCAT.error() << "Passing double-precision shader inputs to GLSL shaders is not currently supported\n";
@@ -1002,7 +994,9 @@ disable_shader_vertex_arrays() {
 ////////////////////////////////////////////////////////////////////
 bool CLP(ShaderContext)::
 update_shader_vertex_arrays(ShaderContext *prev, bool force) {
-  if (prev) prev->disable_shader_vertex_arrays();
+  if (prev) {
+    prev->disable_shader_vertex_arrays();
+  }
   if (!valid()) {
     return true;
   }
@@ -1040,14 +1034,20 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
 
         const GLint p = _glsl_parameter_map[_shader->_var_spec[i]._id._seqno];
         _glgsg->_glEnableVertexAttribArray(p);
-        _glgsg->_glVertexAttribPointer(p, num_values, _glgsg->get_numeric_type(numeric_type),
-                                    GL_TRUE, stride, client_pointer + start);
+
+        if (numeric_type == GeomEnums::NT_packed_dabc) {
+          _glgsg->_glVertexAttribPointer(p, GL_BGRA, GL_UNSIGNED_BYTE,
+                                         GL_TRUE, stride, client_pointer + start);
+        } else {
+          _glgsg->_glVertexAttribPointer(p, num_values, _glgsg->get_numeric_type(numeric_type),
+                                         GL_TRUE, stride, client_pointer + start);
+        }
       }
     }
   }
 
   _glgsg->report_my_gl_errors();
-  
+
   return true;
 }
 
@@ -1062,13 +1062,27 @@ disable_shader_texture_bindings() {
     return;
   }
 
-#ifndef OPENGLES_2
-  for (int i=0; i<(int)_shader->_tex_spec.size(); i++) {
-    if (_shader->_tex_spec[i]._name == 0) {
-      _glgsg->_glActiveTexture(GL_TEXTURE0 + _shader->_tex_spec[i]._stage);
-    } else {
-      _glgsg->_glActiveTexture(GL_TEXTURE0 + _shader->_tex_spec[i]._stage + _stage_offset);
+  for (int i = 0; i < _shader->_tex_spec.size(); ++i) {
+#ifndef OPENGLES
+    // Check if bindless was used, if so, there's nothing to unbind.
+    if (_glgsg->_supports_bindless_texture) {
+      GLint p = _glsl_parameter_map[_shader->_tex_spec[i]._id._seqno];
+
+      if (_glsl_uniform_handles.count(p) > 0) {
+        continue;
+      }
     }
+
+    if (_glgsg->_supports_multi_bind) {
+      // There are non-bindless textures to unbind, and we're lazy,
+      // so let's go and unbind everything after this point using one
+      // multi-bind call, and then break out of the loop.
+      _glgsg->_glBindTextures(i, _shader->_tex_spec.size() - i, NULL);
+      break;
+    }
+#endif
+
+    _glgsg->_glActiveTexture(GL_TEXTURE0 + i);
 
 #ifndef OPENGLES
     glBindTexture(GL_TEXTURE_1D, 0);
@@ -1087,22 +1101,29 @@ disable_shader_texture_bindings() {
     if (_glgsg->_supports_cube_map) {
       glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     }
-    // This is probably faster - but maybe not as safe?
-    // cgGLDisableTextureParameter(p);
   }
-#endif  // OPENGLES_2
-  _stage_offset = 0;
 
 #ifndef OPENGLES
   // Now unbind all the image units.  Not sure if we *have* to do this.
   int num_image_units = min(_glsl_img_inputs.size(), (size_t)_glgsg->_max_image_units);
 
-  if (_glgsg->_supports_multi_bind) {
-    _glgsg->_glBindImageTextures(0, num_image_units, NULL);
+  if (num_image_units > 0) {
+    if (_glgsg->_supports_multi_bind) {
+      _glgsg->_glBindImageTextures(0, num_image_units, NULL);
 
-  } else {
-    for (int i = 0; i < num_image_units; ++i) {
-      _glgsg->_glBindImageTexture(i, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R8);
+    } else {
+      for (int i = 0; i < num_image_units; ++i) {
+        _glgsg->_glBindImageTexture(i, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R8);
+      }
+    }
+
+    if (gl_enable_memory_barriers) {
+      for (int i = 0; i < num_image_units; ++i) {
+        // We don't distinguish between read-only and read-write/write-only
+        // image access, so we have to assume that the shader wrote to it.
+        _glsl_img_textures[i]->mark_incoherent();
+        _glsl_img_textures[i] = NULL;
+      }
     }
   }
 #endif
@@ -1132,6 +1153,8 @@ update_shader_texture_bindings(ShaderContext *prev) {
   }
 
 #ifndef OPENGLES
+  GLbitfield barriers = 0;
+
   // First bind all the 'image units'; a bit of an esoteric OpenGL feature right now.
   int num_image_units = min(_glsl_img_inputs.size(), (size_t)_glgsg->_max_image_units);
 
@@ -1152,8 +1175,14 @@ update_shader_texture_bindings(ShaderContext *prev) {
 
         CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tex->prepare_now(view, _glgsg->_prepared_objects, _glgsg));
         if (gtc != (TextureContext*)NULL) {
+          _glsl_img_textures[i] = gtc;
+
           gl_tex = gtc->_index;
           _glgsg->update_texture(gtc, true);
+
+          if (gtc->needs_barrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT)) {
+            barriers |= GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
+          }
         }
       }
 
@@ -1185,28 +1214,26 @@ update_shader_texture_bindings(ShaderContext *prev) {
   // filtered TextureAttrib in _target_texture.
   const TextureAttrib *texattrib = DCAST(TextureAttrib, _glgsg->_target_rs->get_attrib_def(TextureAttrib::get_class_slot()));
   nassertv(texattrib != (TextureAttrib *)NULL);
-  _stage_offset = texattrib->get_num_on_stages();
 
   for (int i = 0; i < (int)_shader->_tex_spec.size(); ++i) {
-    InternalName *id = _shader->_tex_spec[i]._name;
+    const InternalName *id = _shader->_tex_spec[i]._name;
     int texunit = _shader->_tex_spec[i]._stage;
-    if (id != 0) {
-      texunit += _stage_offset;
-    }
 
-    Texture *tex = 0;
+    Texture *tex = NULL;
     int view = _glgsg->get_current_tex_view_offset();
-    if (id != 0) {
+    if (id != NULL) {
       const ShaderInput *input = _glgsg->_target_shader->get_shader_input(id);
       tex = input->get_texture();
+
     } else {
-      if (_shader->_tex_spec[i]._stage >= texattrib->get_num_on_stages()) {
+      if (texunit >= texattrib->get_num_on_stages()) {
         continue;
       }
-      TextureStage *stage = texattrib->get_on_stage(_shader->_tex_spec[i]._stage);
+      TextureStage *stage = texattrib->get_on_stage(texunit);
       tex = texattrib->get_on_texture(stage);
       view += stage->get_tex_view_offset();
     }
+
     if (_shader->_tex_spec[i]._suffix != 0) {
       // The suffix feature is inefficient. It is a temporary hack.
       if (tex == 0) {
@@ -1218,26 +1245,63 @@ update_shader_texture_bindings(ShaderContext *prev) {
       continue;
     }
 
-    _glgsg->_glActiveTexture(GL_TEXTURE0 + texunit);
-
-    TextureContext *tc = tex->prepare_now(view, _glgsg->_prepared_objects, _glgsg);
-    if (tc == (TextureContext*)NULL) {
-      continue;
-    }
-
-    GLenum target = _glgsg->get_texture_target(tex->get_texture_type());
-    if (target == GL_NONE) {
-      // Unsupported texture mode.
+    CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tex->prepare_now(view, _glgsg->_prepared_objects, _glgsg));
+    if (gtc == NULL) {
       continue;
     }
 
     GLint p = _glsl_parameter_map[_shader->_tex_spec[i]._id._seqno];
-    _glgsg->_glUniform1i(p, texunit);
 
-    if (!_glgsg->update_texture(tc, false)) {
+#ifndef OPENGLES
+    // If it was recently written to, we will have to issue a memory barrier soon.
+    if (gtc->needs_barrier(GL_TEXTURE_FETCH_BARRIER_BIT)) {
+      barriers |= GL_TEXTURE_FETCH_BARRIER_BIT;
+    }
+
+    // Try bindless texturing first, if supported.
+    if (gl_use_bindless_texture && _glgsg->_supports_bindless_texture) {
+      // We demand the real texture, since we won't be able
+      // to change the texture properties after this point.
+      if (!_glgsg->update_texture(gtc, true)) {
+        continue;
+      }
+
+      GLuint64 handle = gtc->get_handle();
+      if (handle != 0) {
+        gtc->make_handle_resident();
+        gtc->set_active(true);
+
+        // Check if we have already specified this texture handle.
+        // If so, no need to call glUniformHandle again.
+        pmap<GLint, GLuint64>::const_iterator it;
+        it = _glsl_uniform_handles.find(p);
+        if (it != _glsl_uniform_handles.end() && it->second == handle) {
+          // Already specified.
+          continue;
+        } else {
+          _glgsg->_glUniformHandleui64(p, handle);
+          _glsl_uniform_handles[p] = handle;
+        }
+        continue;
+      }
+    }
+#endif
+
+    // Bindless texturing wasn't supported or didn't work, so
+    // let's just bind the texture normally.
+    _glgsg->_glActiveTexture(GL_TEXTURE0 + i);
+    if (!_glgsg->update_texture(gtc, false)) {
       continue;
     }
+    _glgsg->apply_texture(gtc);
   }
+
+#ifndef OPENGLES
+  if (barriers != 0) {
+    // Issue a memory barrier.
+    _glgsg->issue_memory_barrier(barriers);
+  }
+#endif
 
   _glgsg->report_my_gl_errors();
 }
@@ -1248,7 +1312,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
 //  Description: This subroutine prints the infolog for a shader.
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
-glsl_report_shader_errors(unsigned int shader) {
+glsl_report_shader_errors(GLuint shader) {
   char *info_log;
   GLint length = 0;
   GLint num_chars  = 0;
@@ -1271,7 +1335,7 @@ glsl_report_shader_errors(unsigned int shader) {
 //  Description: This subroutine prints the infolog for a program.
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
-glsl_report_program_errors(unsigned int program) {
+glsl_report_program_errors(GLuint program) {
   char *info_log;
   GLint length = 0;
   GLint num_chars  = 0;
@@ -1289,13 +1353,13 @@ glsl_report_program_errors(unsigned int program) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Shader::glsl_compile_entry_point
+//     Function: Shader::glsl_compile_shader
 //       Access: Private
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-unsigned int CLP(ShaderContext)::
-glsl_compile_entry_point(Shader::ShaderType type) {
-  unsigned int handle = 0;
+bool CLP(ShaderContext)::
+glsl_compile_shader(Shader::ShaderType type) {
+  GLuint handle = 0;
   switch (type) {
     case Shader::ST_vertex:
       handle = _glgsg->_glCreateShader(GL_VERTEX_SHADER);
@@ -1327,8 +1391,10 @@ glsl_compile_entry_point(Shader::ShaderType type) {
 #endif
   }
   if (!handle) {
+    GLCAT.error()
+      << "Could not create a GLSL shader of the requested type.\n";
     _glgsg->report_my_gl_errors();
-    return 0;
+    return false;
   }
 
   string text_str = _shader->get_text(type);
@@ -1345,79 +1411,68 @@ glsl_compile_entry_point(Shader::ShaderType type) {
     glsl_report_shader_errors(handle);
     _glgsg->_glDeleteShader(handle);
     _glgsg->report_my_gl_errors();
-    return 0;
+    return false;
   }
 
-  return handle;
+  _glgsg->_glAttachShader(_glsl_program, handle);
+  _glsl_shaders.push_back(handle);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Shader::glsl_compile_shader
+//     Function: Shader::glsl_compile_and_link
 //       Access: Private
 //  Description: This subroutine compiles a GLSL shader.
 ////////////////////////////////////////////////////////////////////
 bool CLP(ShaderContext)::
-glsl_compile_shader() {
+glsl_compile_and_link() {
+  _glsl_shaders.clear();
   _glsl_program = _glgsg->_glCreateProgram();
-  if (!_glsl_program) return false;
+  if (!_glsl_program) {
+    return false;
+  }
+  bool valid = true;
 
   if (!_shader->get_text(Shader::ST_vertex).empty()) {
-    _glsl_vshader = glsl_compile_entry_point(Shader::ST_vertex);
-    if (!_glsl_vshader) return false;
-    _glgsg->_glAttachShader(_glsl_program, _glsl_vshader);
+    valid &= glsl_compile_shader(Shader::ST_vertex);
   }
 
   if (!_shader->get_text(Shader::ST_fragment).empty()) {
-    _glsl_fshader = glsl_compile_entry_point(Shader::ST_fragment);
-    if (!_glsl_fshader) return false;
-    _glgsg->_glAttachShader(_glsl_program, _glsl_fshader);
+    valid &= glsl_compile_shader(Shader::ST_fragment);
   }
-
-  if (!_shader->get_text(Shader::ST_geometry).empty()) {
-    _glsl_gshader = glsl_compile_entry_point(Shader::ST_geometry);
-    if (!_glsl_gshader) return false;
-    _glgsg->_glAttachShader(_glsl_program, _glsl_gshader);
 
 #ifdef OPENGLES
     nassertr(false, false); // OpenGL ES has no geometry shaders.
 #else
-    // Set the vertex output limit to the maximum
+  if (!_shader->get_text(Shader::ST_geometry).empty()) {
+    valid &= glsl_compile_shader(Shader::ST_geometry);
+
+    // Set the vertex output limit to the maximum.
+    // This is slow, but it is probably reasonable to require
+    // the user to override this in his shader using layout().
     nassertr(_glgsg->_glProgramParameteri != NULL, false);
     GLint max_vertices;
     glGetIntegerv(GL_MAX_GEOMETRY_OUTPUT_VERTICES, &max_vertices);
     _glgsg->_glProgramParameteri(_glsl_program, GL_GEOMETRY_VERTICES_OUT_ARB, max_vertices); 
-#endif
   }
+#endif
 
   if (!_shader->get_text(Shader::ST_tess_control).empty()) {
-    _glsl_tcshader = glsl_compile_entry_point(Shader::ST_tess_control);
-    if (!_glsl_tcshader) return false;
-    _glgsg->_glAttachShader(_glsl_program, _glsl_tcshader);
+    valid &= glsl_compile_shader(Shader::ST_tess_control);
   }
 
   if (!_shader->get_text(Shader::ST_tess_evaluation).empty()) {
-    _glsl_teshader = glsl_compile_entry_point(Shader::ST_tess_evaluation);
-    if (!_glsl_teshader) return false;
-    _glgsg->_glAttachShader(_glsl_program, _glsl_teshader);
+    valid &= glsl_compile_shader(Shader::ST_tess_evaluation);
   }
 
   if (!_shader->get_text(Shader::ST_compute).empty()) {
-    _glsl_cshader = glsl_compile_entry_point(Shader::ST_compute);
-    if (!_glsl_cshader) return false;
-    _glgsg->_glAttachShader(_glsl_program, _glsl_cshader);
+    valid &= glsl_compile_shader(Shader::ST_compute);
   }
 
-  // There might be warnings. Only report them for one shader program.
-  if (_glsl_vshader != 0) {
-    glsl_report_shader_errors(_glsl_vshader);
-  } else if (_glsl_fshader != 0) {
-    glsl_report_shader_errors(_glsl_fshader);
-  } else if (_glsl_gshader != 0) {
-    glsl_report_shader_errors(_glsl_gshader);
-  } else if (_glsl_tcshader != 0) {
-    glsl_report_shader_errors(_glsl_tcshader);
-  } else if (_glsl_teshader != 0) {
-    glsl_report_shader_errors(_glsl_teshader);
+  // There might be warnings, so report those.
+  GLSLShaders::const_iterator it;
+  for (it = _glsl_shaders.begin(); it != _glsl_shaders.end(); ++it) {
+    glsl_report_shader_errors(*it);
   }
 
   // If we requested to retrieve the shader, we should indicate that before linking.
@@ -1454,7 +1509,7 @@ glsl_compile_shader() {
     _glgsg->_glGetProgramBinary(_glsl_program, length, &num_bytes, &format, (void*)binary);
 
     pofstream s;
-    s.open(filename, ios::out | ios::binary);
+    s.open(filename, ios::out | ios::binary | ios::trunc);
     s.write(binary, num_bytes);
     s.close();
 
