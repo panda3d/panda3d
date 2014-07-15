@@ -209,7 +209,7 @@ ConfigVariableBool gl_dump_compiled_shaders
             "into the current directory."));
 
 ConfigVariableBool gl_immutable_texture_storage
-  ("gl-immutable-texture-storage", true,
+  ("gl-immutable-texture-storage", false,
    PRC_DESC("This configures Panda to pre-allocate immutable storage "
             "for each texture.  This improves runtime performance, but "
             "changing the size or type of a texture will be slower."));
