@@ -29,9 +29,9 @@ def msgpack_length(dg, length, fix, maxfix, tag8, tag16, tag32):
 def msgpack_encode(dg, element):
     if element == None:
         dg.addUint8(0xc0)
-    elif element == False:
+    elif element is False:
         dg.addUint8(0xc2)
-    elif element == True:
+    elif element is True:
         dg.addUint8(0xc3)
     elif isinstance(element, (int, long)):
         if -32 <= element < 128:
