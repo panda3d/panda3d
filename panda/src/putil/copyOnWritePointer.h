@@ -61,7 +61,7 @@ public:
   INLINE bool test_ref_count_nonzero() const;
 
 private:
-  CopyOnWriteObject *_object;
+  CopyOnWriteObject *_cow_object;
 };
 
 

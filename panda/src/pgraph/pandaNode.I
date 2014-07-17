@@ -1315,13 +1315,13 @@ get_parent(int n) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNodePipelineReader::
-PandaNodePipelineReader(const PandaNode *object, Thread *current_thread) :
-  _object(object),
+PandaNodePipelineReader(const PandaNode *node, Thread *current_thread) :
+  _node(node),
   _current_thread(current_thread),
-  _cdata(object->_cycler.read_unlocked(current_thread))
+  _cdata(node->_cycler.read_unlocked(current_thread))
 {
 #ifdef _DEBUG
-  nassertv(_object->test_ref_count_nonzero());
+  nassertv(_node->test_ref_count_nonzero());
 #endif // _DEBUG
 
 #ifdef DO_PIPELINING
@@ -1335,11 +1335,11 @@ PandaNodePipelineReader(const PandaNode *object, Thread *current_thread) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNodePipelineReader::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNodePipelineReader::
 PandaNodePipelineReader(const PandaNodePipelineReader &copy) :
-  _object(copy._object),
+  _node(copy._node),
   _current_thread(copy._current_thread),
   _cdata(copy._cdata)
 {
@@ -1349,7 +1349,7 @@ PandaNodePipelineReader(const PandaNodePipelineReader &copy) :
 
   /*
   if (_cdata != (PandaNode::CData *)NULL) {
-    _object->_cycler.increment_read(_cdata);
+    _node->_cycler.increment_read(_cdata);
   }
   */
 }
@@ -1357,7 +1357,7 @@ PandaNodePipelineReader(const PandaNodePipelineReader &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNodePipelineReader::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void PandaNodePipelineReader::
 operator = (const PandaNodePipelineReader &copy) {
@@ -1365,7 +1365,7 @@ operator = (const PandaNodePipelineReader &copy) {
 
   /*
   if (_cdata != (PandaNode::CData *)NULL) {
-    _object->_cycler.release_read(_cdata);
+    _node->_cycler.release_read(_cdata);
   }
   */
 
@@ -1373,7 +1373,7 @@ operator = (const PandaNodePipelineReader &copy) {
   node_unref_delete((CycleData *)_cdata);
 #endif  // DO_PIPELINING
 
-  _object = copy._object;
+  _node = copy._node;
   _cdata = copy._cdata;
 
 #ifdef DO_PIPELINING
@@ -1382,7 +1382,7 @@ operator = (const PandaNodePipelineReader &copy) {
 
   /*
   if (_cdata != (PandaNode::CData *)NULL) {
-    _object->_cycler.increment_read(_cdata);
+    _node->_cycler.increment_read(_cdata);
   }
   */
 }
@@ -1396,7 +1396,7 @@ INLINE PandaNodePipelineReader::
 ~PandaNodePipelineReader() {
   /*
   if (_cdata != (PandaNode::CData *)NULL) {
-    _object->_cycler.release_read(_cdata);
+    _node->_cycler.release_read(_cdata);
   }
   */
 
@@ -1405,19 +1405,19 @@ INLINE PandaNodePipelineReader::
 #endif  // DO_PIPELINING
 
 #ifdef _DEBUG
-  _object = NULL;
+  _node = NULL;
   _cdata = NULL;
 #endif  // _DEBUG
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNodePipelineReader::get_object
+//     Function: PandaNodePipelineReader::get_node
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const PandaNode *PandaNodePipelineReader::
-get_object() const {
-  return _object;
+get_node() const {
+  return _node;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1440,7 +1440,7 @@ INLINE void PandaNodePipelineReader::
 release() {
   /*
   if (_cdata != (PandaNode::CData *)NULL) {
-    _object->_cycler.release_read(_cdata);
+    _node->_cycler.release_read(_cdata);
     _cdata = NULL;
   }
   */
@@ -1539,7 +1539,7 @@ get_parent(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE int PandaNodePipelineReader::
 find_parent(PandaNode *node) const {
-  return _object->do_find_parent(node, _cdata);
+  return _node->do_find_parent(node, _cdata);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1592,7 +1592,7 @@ get_child_sort(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE int PandaNodePipelineReader::
 find_child(PandaNode *node) const {
-  return _object->do_find_child(node, _cdata->get_down());
+  return _node->do_find_child(node, _cdata->get_down());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1645,7 +1645,7 @@ get_stashed_sort(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE int PandaNodePipelineReader::
 find_stashed(PandaNode *node) const {
-  return _object->do_find_child(node, _cdata->get_stashed());
+  return _node->do_find_child(node, _cdata->get_stashed());
 }
 
 ////////////////////////////////////////////////////////////////////
