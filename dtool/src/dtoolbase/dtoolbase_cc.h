@@ -124,7 +124,7 @@ typedef ios::seekdir ios_seekdir;
 #if __has_extension(cxx_constexpr)
 #define CONSTEXPR constexpr
 #endif
-#elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7))
 #define CONSTEXPR constexpr
 #else
 #define CONSTEXPR INLINE
