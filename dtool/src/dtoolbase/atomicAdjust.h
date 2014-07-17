@@ -23,7 +23,7 @@
 #include "atomicAdjustDummyImpl.h"
 typedef AtomicAdjustDummyImpl AtomicAdjust;
 
-#elif  defined(__i386__) || defined(_M_IX86)
+#elif defined(__i386__) || defined(_M_IX86)
 // For an i386 architecture, we'll always use the i386 implementation.
 // It should be safe for any OS, and it might be a bit faster than
 // any OS-provided calls.
@@ -36,6 +36,15 @@ typedef AtomicAdjustI386Impl AtomicAdjust;
 // are not defined, users may elect to implement an operation with
 // some other method than compare_and_exchange(), which might be
 // faster.
+#define HAVE_ATOMIC_COMPARE_AND_EXCHANGE 1
+#define HAVE_ATOMIC_COMPARE_AND_EXCHANGE_PTR 1
+
+#elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7))
+// GCC 4.7 and above has built-in __atomic functions for atomic operations.
+
+#include "atomicAdjustGccImpl.h"
+typedef AtomicAdjustGccImpl AtomicAdjust;
+
 #define HAVE_ATOMIC_COMPARE_AND_EXCHANGE 1
 #define HAVE_ATOMIC_COMPARE_AND_EXCHANGE_PTR 1
 

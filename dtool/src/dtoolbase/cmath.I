@@ -365,7 +365,7 @@ cpow(int x, int y) {
 INLINE bool
 cnan(double v) {
 #ifndef _WIN32
-  return (isnan(v) != 0);
+  return (std::isnan(v) != 0);
 #else
   return (_isnan(v) != 0);
 #endif

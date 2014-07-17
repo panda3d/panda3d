@@ -23,7 +23,7 @@
 
 #include "dtoolbase.h"
 
-#include <math.h>
+#include <cmath>
 
 // Windows defines isnan() in a different place and with a different
 // name than everyone else.  Sheesh.
