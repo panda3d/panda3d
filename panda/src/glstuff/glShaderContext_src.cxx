@@ -728,6 +728,19 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
         noprefix = "";
       }
 
+      bind._integer = (param_type == GL_BOOL ||
+                       param_type == GL_BOOL_VEC2 ||
+                       param_type == GL_BOOL_VEC3 ||
+                       param_type == GL_BOOL_VEC4 ||
+                       param_type == GL_INT ||
+                       param_type == GL_INT_VEC2 ||
+                       param_type == GL_INT_VEC3 ||
+                       param_type == GL_INT_VEC4 ||
+                       param_type == GL_UNSIGNED_INT ||
+                       param_type == GL_UNSIGNED_INT_VEC2 ||
+                       param_type == GL_UNSIGNED_INT_VEC3 ||
+                       param_type == GL_UNSIGNED_INT_VEC4);
+
       if (noprefix.empty()) {
         // Arbitrarily named attribute.
         bind._name = InternalName::make(param_name);
@@ -1002,8 +1015,10 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
     int nvarying = _shader->_var_spec.size();
 
     for (int i = 0; i < nvarying; ++i) {
-      InternalName *name = _shader->_var_spec[i]._name;
-      int texslot = _shader->_var_spec[i]._append_uv;
+      const Shader::ShaderVarSpec &bind = _shader->_var_spec[i];
+      InternalName *name = bind._name;
+      int texslot = bind._append_uv;
+
       if (texslot >= 0 && texslot < _glgsg->_state_texture->get_num_on_stages()) {
         TextureStage *stage = _glgsg->_state_texture->get_on_stage(texslot);
         InternalName *texname = stage->get_texcoord_name();
@@ -1014,7 +1029,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
           name = name->append(texname->get_basename());
         }
       }
-      const GLint p = _glsl_parameter_map[_shader->_var_spec[i]._id._seqno];
+      const GLint p = _glsl_parameter_map[bind._id._seqno];
 
       if (_glgsg->_data_reader->get_array_info(name,
                                                array_reader, num_values, numeric_type,
@@ -1026,6 +1041,12 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
 
         _glgsg->_glEnableVertexAttribArray(p);
 
+#ifndef OPENGLES
+        if (bind._integer) {
+          _glgsg->_glVertexAttribIPointer(p, num_values, _glgsg->get_numeric_type(numeric_type),
+                                          stride, client_pointer + start);
+        } else
+#endif
         if (numeric_type == GeomEnums::NT_packed_dabc) {
           _glgsg->_glVertexAttribPointer(p, GL_BGRA, GL_UNSIGNED_BYTE,
                                          GL_TRUE, stride, client_pointer + start);

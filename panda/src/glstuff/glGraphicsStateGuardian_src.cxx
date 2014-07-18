@@ -1236,6 +1236,10 @@ reset() {
        get_extension_func("glValidateProgram");
     _glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)
        get_extension_func("glVertexAttribPointer");
+    _glVertexAttribIPointer = (PFNGLVERTEXATTRIBIPOINTERPROC)
+       get_extension_func("glVertexAttribIPointer");
+    _glVertexAttribLPointer = (PFNGLVERTEXATTRIBLPOINTERPROC)
+       get_extension_func("glVertexAttribLPointer");
 
     if (_supports_geometry_shaders) {
       _glProgramParameteri = (PFNGLPROGRAMPARAMETERIPROC)
@@ -1287,6 +1291,8 @@ reset() {
   _glUniformMatrix4fv = glUniformMatrix4fv;
   _glValidateProgram = glValidateProgram;
   _glVertexAttribPointer = glVertexAttribPointer;
+  _glVertexAttribIPointer = NULL;
+  _glVertexAttribLPointer = NULL;
 
   // We need to have a default shader to apply in case
   // something didn't happen to have a shader applied, or
@@ -3054,7 +3060,7 @@ update_standard_vertex_arrays(bool force) {
         return false;
       }
       glNormalPointer(get_numeric_type(numeric_type), stride,
-                         client_pointer + start);
+                      client_pointer + start);
       glEnableClientState(GL_NORMAL_ARRAY);
     } else {
       glDisableClientState(GL_NORMAL_ARRAY);

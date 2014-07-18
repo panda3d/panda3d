@@ -355,6 +355,7 @@ public:
     ShaderArgId       _id;
     PT(InternalName)  _name;
     int               _append_uv;
+    bool              _integer;
   };
 
   struct ShaderPtrSpec {
