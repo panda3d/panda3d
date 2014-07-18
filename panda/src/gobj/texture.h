@@ -85,7 +85,7 @@ PUBLISHED:
     T_unsigned_byte,
     T_unsigned_short,
     T_float,
-    T_unsigned_int_24_8,
+    T_unsigned_int_24_8,  // Packed
     T_int,
   };
 
@@ -758,6 +758,8 @@ private:
   static void filter_2d_unsigned_short(unsigned char *&p, 
                                        const unsigned char *&q,
                                        size_t pixel_size, size_t row_size);
+  static void filter_2d_float(unsigned char *&p, const unsigned char *&q,
+                              size_t pixel_size, size_t row_size);
 
   static void filter_3d_unsigned_byte(unsigned char *&p, 
                                       const unsigned char *&q,
@@ -767,7 +769,9 @@ private:
                                        const unsigned char *&q,
                                        size_t pixel_size, size_t row_size,
                                        size_t page_size);
-  
+  static void filter_3d_float(unsigned char *&p, const unsigned char *&q,
+                              size_t pixel_size, size_t row_size, size_t page_size);
+
   bool do_squish(CData *cdata, CompressionMode compression, int squish_flags);
   bool do_unsquish(CData *cdata, int squish_flags);
 

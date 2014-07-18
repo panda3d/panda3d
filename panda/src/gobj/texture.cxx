@@ -1611,6 +1611,7 @@ write(ostream &out, int indent_level) const {
     out << " floats";
     break;
 
+  case T_unsigned_int_24_8:
   case T_int:
     out << " ints";
     break;
@@ -4835,11 +4836,7 @@ do_reconsider_image_properties(CData *cdata, int x_size, int y_size, int num_com
     //TODO: handle sRGB properly
     switch (num_components) {
     case 1:
-      if (component_type == T_float) {
-        cdata->_format = F_depth_component;
-      } else {
-        cdata->_format = F_luminance;
-      }
+      cdata->_format = F_luminance;
       break;
 
     case 2:
@@ -5773,7 +5770,7 @@ do_clear_ram_mipmap_images(CData *cdata) {
 void Texture::
 do_generate_ram_mipmap_images(CData *cdata) {
   nassertv(do_has_ram_image(cdata));
-  nassertv(cdata->_component_type != T_float);
+
   if (do_get_expected_num_mipmap_levels(cdata) == 1) {
     // Don't bother.
     return;
@@ -6937,6 +6934,27 @@ void Texture::
 do_filter_2d_mipmap_pages(const CData *cdata,
                           Texture::RamImage &to, const Texture::RamImage &from,
                           int x_size, int y_size) const {
+  Filter2DComponent *filter_component;
+  switch (cdata->_component_type) {
+  case T_unsigned_byte:
+    filter_component = &filter_2d_unsigned_byte;
+    break;
+
+  case T_unsigned_short:
+    filter_component = &filter_2d_unsigned_short;
+    break;
+
+  case T_float:
+    filter_component = &filter_2d_float;
+    break;
+
+  default:
+    gobj_cat.error()
+      << "Unable to generate mipmaps for 2D texture with component type "
+      << cdata->_component_type << "!";
+    return;
+  }
+
   size_t pixel_size = cdata->_num_components * cdata->_component_width;
   size_t row_size = (size_t)x_size * pixel_size;
 
@@ -6946,8 +6964,6 @@ do_filter_2d_mipmap_pages(const CData *cdata,
   size_t to_row_size = (size_t)to_x_size * pixel_size;
   to._page_size = (size_t)to_y_size * to_row_size;
   to._image = PTA_uchar::empty_array(to._page_size * cdata->_z_size * cdata->_num_views, get_class_type());
-
-  Filter2DComponent *filter_component = (cdata->_component_type == T_unsigned_byte ? &filter_2d_unsigned_byte : filter_2d_unsigned_short);
 
   int num_pages = cdata->_z_size * cdata->_num_views;
   for (int z = 0; z < num_pages; ++z) {
@@ -7037,6 +7053,27 @@ void Texture::
 do_filter_3d_mipmap_level(const CData *cdata,
                           Texture::RamImage &to, const Texture::RamImage &from,
                           int x_size, int y_size, int z_size) const {
+  Filter3DComponent *filter_component;
+  switch (cdata->_component_type) {
+  case T_unsigned_byte:
+    filter_component = &filter_3d_unsigned_byte;
+    break;
+
+  case T_unsigned_short:
+    filter_component = &filter_3d_unsigned_short;
+    break;
+
+  case T_float:
+    filter_component = &filter_3d_float;
+    break;
+
+  default:
+    gobj_cat.error()
+      << "Unable to generate mipmaps for 3D texture with component type "
+      << cdata->_component_type << "!";
+    return;
+  }
+
   size_t pixel_size = cdata->_num_components * cdata->_component_width;
   size_t row_size = (size_t)x_size * pixel_size;
   size_t page_size = (size_t)y_size * row_size;
@@ -7051,8 +7088,6 @@ do_filter_3d_mipmap_level(const CData *cdata,
   size_t to_view_size = (size_t)to_z_size * to_page_size;
   to._page_size = to_page_size;
   to._image = PTA_uchar::empty_array(to_page_size * to_z_size * cdata->_num_views, get_class_type());
-
-  Filter3DComponent *filter_component = (cdata->_component_type == T_unsigned_byte ? &filter_3d_unsigned_byte : filter_3d_unsigned_short);
 
   for (int view = 0; view < cdata->_num_views; ++view) {
     unsigned char *start_to = to._image.p() + view * to_view_size;
@@ -7236,6 +7271,24 @@ filter_2d_unsigned_short(unsigned char *&p, const unsigned char *&q,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::filter_2d_float
+//       Access: Public, Static
+//  Description: Averages a 2x2 block of pixel components into a
+//               single pixel component, for producing the next mipmap
+//               level.  Increments p and q to the next component.
+////////////////////////////////////////////////////////////////////
+void Texture::
+filter_2d_float(unsigned char *&p, const unsigned char *&q,
+                size_t pixel_size, size_t row_size) {
+  *(float *)p = (*(float *)&q[0] +
+                 *(float *)&q[pixel_size] +
+                 *(float *)&q[row_size] +
+                 *(float *)&q[pixel_size + row_size]) / 4.0f;
+  p += 4;
+  q += 4;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::filter_3d_unsigned_byte
 //       Access: Public, Static
 //  Description: Averages a 2x2x2 block of pixel components into a
@@ -7279,6 +7332,28 @@ filter_3d_unsigned_short(unsigned char *&p, const unsigned char *&q,
                          (unsigned int)*(unsigned short *)&q[pixel_size + row_size + page_size]) >> 3;
   store_unscaled_short(p, result);
   q += 2;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::filter_3d_float
+//       Access: Public, Static
+//  Description: Averages a 2x2x2 block of pixel components into a
+//               single pixel component, for producing the next mipmap
+//               level.  Increments p and q to the next component.
+////////////////////////////////////////////////////////////////////
+void Texture::
+filter_3d_float(unsigned char *&p, const unsigned char *&q,
+                size_t pixel_size, size_t row_size, size_t page_size) {
+  *(float *)p = (*(float *)&q[0] +
+                 *(float *)&q[pixel_size] +
+                 *(float *)&q[row_size] +
+                 *(float *)&q[pixel_size + row_size] +
+                 *(float *)&q[page_size] +
+                 *(float *)&q[pixel_size + page_size] +
+                 *(float *)&q[row_size + page_size] +
+                 *(float *)&q[pixel_size + row_size + page_size]) / 8.0f;
+  p += 4;
+  q += 4;
 }
 
 ////////////////////////////////////////////////////////////////////
