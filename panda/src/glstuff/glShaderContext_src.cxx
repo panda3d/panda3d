@@ -1014,6 +1014,8 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
           name = name->append(texname->get_basename());
         }
       }
+      const GLint p = _glsl_parameter_map[_shader->_var_spec[i]._id._seqno];
+
       if (_glgsg->_data_reader->get_array_info(name,
                                                array_reader, num_values, numeric_type,
                                                start, stride)) {
@@ -1022,7 +1024,6 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
           return false;
         }
 
-        const GLint p = _glsl_parameter_map[_shader->_var_spec[i]._id._seqno];
         _glgsg->_glEnableVertexAttribArray(p);
 
         if (numeric_type == GeomEnums::NT_packed_dabc) {
