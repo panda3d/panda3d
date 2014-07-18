@@ -370,6 +370,9 @@ issue_parameters(int altered) {
           GLfr(cgGLSetMatrixParameter)(p, upper3.get_data());
           continue;
         }
+      case Shader::SMP_cell15:
+        GLf(cgGLSetParameter1)(p, data[15]);
+        continue;
       }
     }
   }

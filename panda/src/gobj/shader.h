@@ -234,6 +234,7 @@ public:
     SMP_row3x3,
     SMP_upper3x3,
     SMP_transpose3x3,
+    SMP_cell15,
   };
 
   enum ShaderStateDep {
@@ -362,6 +363,7 @@ public:
     int               _dep[2];
     PT(InternalName)  _arg;
     ShaderArgInfo     _info;
+    ShaderPtrType     _type;
   };
 
   class ShaderCaps {

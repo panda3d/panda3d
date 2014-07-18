@@ -374,6 +374,10 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
               bind._piece = Shader::SMP_row3x3;
               s->_mat_spec.push_back(bind);
               continue;
+            } else if (noprefix == "Material.shininess") {
+              bind._piece = Shader::SMP_cell15;
+              s->_mat_spec.push_back(bind);
+              continue;
             }
           }
           if (noprefix == "ColorScale") {
@@ -938,6 +942,9 @@ issue_parameters(int altered) {
           _glgsg->_glUniformMatrix3fv(p, 1, true, upper3.get_data());
           continue;
         }
+      case Shader::SMP_cell15:
+        _glgsg->_glUniform1fv(p, 1, data+15);
+        continue;
       }
     }
   }
@@ -993,6 +1000,7 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
     Geom::NumericType numeric_type;
     int start, stride, num_values;
     int nvarying = _shader->_var_spec.size();
+
     for (int i = 0; i < nvarying; ++i) {
       InternalName *name = _shader->_var_spec[i]._name;
       int texslot = _shader->_var_spec[i]._append_uv;
@@ -1007,8 +1015,8 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
         }
       }
       if (_glgsg->_data_reader->get_array_info(name,
-                                            array_reader, num_values, numeric_type,
-                                            start, stride)) {
+                                               array_reader, num_values, numeric_type,
+                                               start, stride)) {
         const unsigned char *client_pointer;
         if (!_glgsg->setup_array_data(client_pointer, array_reader, force)) {
           return false;
@@ -1024,6 +1032,8 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
           _glgsg->_glVertexAttribPointer(p, num_values, _glgsg->get_numeric_type(numeric_type),
                                          GL_TRUE, stride, client_pointer + start);
         }
+      } else {
+        _glgsg->_glDisableVertexAttribArray(p);
       }
     }
   }
