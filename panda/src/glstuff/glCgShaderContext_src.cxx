@@ -449,8 +449,8 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
         }
       }
       if (_glgsg->_data_reader->get_array_info(name,
-                                            array_reader, num_values, numeric_type,
-                                            start, stride)) {
+                                               array_reader, num_values, numeric_type,
+                                               start, stride)) {
         const unsigned char *client_pointer;
         if (!_glgsg->setup_array_data(client_pointer, array_reader, force)) {
           return false;
@@ -458,15 +458,21 @@ update_shader_vertex_arrays(ShaderContext *prev, bool force) {
 
         CGparameter p = _cg_parameter_map[_shader->_var_spec[i]._id._seqno];
 
-        cgGLEnableClientState(p);
         if (numeric_type == GeomEnums::NT_packed_dabc) {
           cgGLSetParameterPointer(p, GL_BGRA, GL_UNSIGNED_BYTE,
                                   stride, client_pointer + start);
         } else {
+          if (name == InternalName::get_normal() && num_values == 4) {
+            // In some cases, the normals are aligned to 4 values.
+            // This would cause an error on some rivers, so we tell it
+            // to use the first three values only.
+            num_values = 3;
+          }
           cgGLSetParameterPointer(p,
                                   num_values, _glgsg->get_numeric_type(numeric_type),
                                   stride, client_pointer + start);
         }
+        cgGLEnableClientState(p);
       } else {
         CGparameter p = _cg_parameter_map[_shader->_var_spec[i]._id._seqno];
         cgGLDisableClientState(p);
@@ -599,6 +605,8 @@ update_shader_texture_bindings(ShaderContext *prev) {
     if (!_glgsg->update_texture(tc, false)) {
       continue;
     }
+
+    _glgsg->apply_texture(tc);
   }
 
   cg_report_errors();
