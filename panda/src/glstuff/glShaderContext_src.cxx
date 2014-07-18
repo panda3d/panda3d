@@ -977,7 +977,9 @@ disable_shader_vertex_arrays() {
   }
 
   for (int i=0; i<(int)_shader->_var_spec.size(); i++) {
-    _glgsg->_glDisableVertexAttribArray(i);
+    const Shader::ShaderVarSpec &bind = _shader->_var_spec[i];
+    const GLint p = _glsl_parameter_map[bind._id._seqno];
+    _glgsg->_glDisableVertexAttribArray(p);
   }
 
   _glgsg->report_my_gl_errors();
