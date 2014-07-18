@@ -91,6 +91,10 @@ public:
     F_getbuffer        = 0x0200,
     F_releasebuffer    = 0x0400,
     F_compare_to       = 0x0800,
+    F_no_args          = 0x1000,
+    F_single_arg       = 0x2000,
+    F_varargs          = 0x4000,
+    F_keyword_args     = 0x8000,
   };
 
   typedef vector<Parameter> Parameters;

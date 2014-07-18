@@ -79,9 +79,21 @@ attempt_coercion(PyObject *self, Dtool_PyTypedObject *classdef,
     if (classdef->_PyType.tp_new != NULL) {
       obj = classdef->_PyType.tp_new(&classdef->_PyType, self, NULL);
       assert(obj != NULL);
-      if (classdef->_Dtool_InitNoCoerce(obj, self, NULL) != 0) {
-        Py_DECREF(obj);
-        obj = NULL;
+
+      if (PyTuple_Check(self)) {
+        // A tuple was passed, which we assume are the constructor arguments.
+        if (classdef->_Dtool_InitNoCoerce(obj, self) != 0) {
+          Py_DECREF(obj);
+          obj = NULL;
+        }
+      } else {
+        // We need to pack the value into an args tuple.
+        PyObject *args = PyTuple_Pack(1, self);
+        if (classdef->_Dtool_InitNoCoerce(obj, args) != 0) {
+          Py_DECREF(obj);
+          obj = NULL;
+        }
+        Py_DECREF(args);
       }
     }
     if (obj == NULL) {
@@ -93,7 +105,11 @@ attempt_coercion(PyObject *self, Dtool_PyTypedObject *classdef,
       PyObject *make = PyObject_GetAttrString((PyObject *)classdef, "make");
       if (make != NULL) {
         PyErr_Clear();
-        obj = PyObject_Call(make, self, NULL);
+        if (PyTuple_Check(self)) {
+          obj = PyObject_CallObject(make, self);
+        } else {
+          obj = PyObject_CallFunctionObjArgs(make, self, NULL);
+        }
         Py_DECREF(make);
       }
     }
@@ -598,7 +614,7 @@ int DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2) {
     PyErr_Clear();
   } else {
     PyObject *res = NULL;
-    PyObject *args = Py_BuildValue("(O)", v2);
+    PyObject *args = PyTuple_Pack(1, v2);
     if (args != NULL) {
       res = PyObject_Call(func, args, NULL);
       Py_DECREF(args);

@@ -663,7 +663,7 @@ record_function(const InterrogateType &itype, FunctionIndex func_index) {
           make_function_remap(itype, ifunc, cppfunc, num_default_parameters);
         if (remap != (FunctionRemap *)NULL) {
           func->_remaps.push_back(remap);
-          
+
           // If *any* of the variants of this function has a "this"
           // pointer, the entire set of functions is deemed to have a
           // "this" pointer.
@@ -672,7 +672,7 @@ record_function(const InterrogateType &itype, FunctionIndex func_index) {
           }
 
           func->_flags |= remap->_flags;
-          
+
           // Make a wrapper for the function.
           FunctionWrapperIndex wrapper_index = 
             remap->make_wrapper_entry(func_index);
@@ -683,6 +683,13 @@ record_function(const InterrogateType &itype, FunctionIndex func_index) {
         }
       }
     }
+  }
+
+  // If there's a remap taking no args and a remap
+  // taking only a single arg, assume we need varargs.
+  if ((func->_flags & FunctionRemap::F_no_args) &&
+      (func->_flags & FunctionRemap::F_single_arg)) {
+    func->_flags |= FunctionRemap::F_varargs;
   }
 
   return func;
