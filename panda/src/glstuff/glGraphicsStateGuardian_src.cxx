@@ -9918,7 +9918,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
       case GL_TEXTURE_1D:
         if (image_compression == Texture::CM_off) {
           glTexSubImage1D(page_target, n - mipmap_bias, 0, width,
-                             external_format, component_type, image_ptr);
+                          external_format, component_type, image_ptr);
         } else {
           _glCompressedTexSubImage1D(page_target, n - mipmap_bias, 0, width,
                                      external_format, view_size, image_ptr);
@@ -9970,7 +9970,7 @@ upload_texture_image(CLP(TextureContext) *gtc, bool needs_reload,
             height = tex->get_y_size() - tex->get_pad_y_size();
           }
           glTexSubImage2D(page_target, n - mipmap_bias, 0, 0, width, height,
-                             external_format, component_type, image_ptr);
+                          external_format, component_type, image_ptr);
         } else {
           _glCompressedTexSubImage2D(page_target, n - mipmap_bias, 0, 0, width, height,
                                      external_format, view_size, image_ptr);
@@ -10654,15 +10654,19 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
 
 #ifndef OPENGLES_1
   case GL_SRGB:
+  case GL_SRGB8:
     format = Texture::F_srgb;
     break;
   case GL_SRGB_ALPHA:
+  case GL_SRGB8_ALPHA8:
     format = Texture::F_srgb_alpha;
     break;
   case GL_SLUMINANCE:
+  case GL_SLUMINANCE8:
     format = Texture::F_sluminance;
     break;
   case GL_SLUMINANCE_ALPHA:
+  case GL_SLUMINANCE8_ALPHA8:
     format = Texture::F_sluminance_alpha;
     break;
 #endif

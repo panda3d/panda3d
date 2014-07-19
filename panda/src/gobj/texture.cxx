@@ -161,6 +161,46 @@ struct DDSHeader {
   DDSCaps2 caps;
 };
 
+// This table is used for converting unsigned char texture values in an sRGB
+// texture to linear RGB values, for use in mipmap generation.
+static float srgb_to_lrgbf[256] = {0.000000f, 0.000304f, 0.000607f, 0.000911f,
+  0.001214f, 0.001518f, 0.001821f, 0.002125f, 0.002428f, 0.002732f, 0.003035f,
+  0.003347f, 0.003677f, 0.004025f, 0.004391f, 0.004777f, 0.005182f, 0.005605f,
+  0.006049f, 0.006512f, 0.006995f, 0.007499f, 0.008023f, 0.008568f, 0.009134f,
+  0.009721f, 0.010330f, 0.010960f, 0.011612f, 0.012286f, 0.012983f, 0.013702f,
+  0.014444f, 0.015209f, 0.015996f, 0.016807f, 0.017642f, 0.018500f, 0.019382f,
+  0.020289f, 0.021219f, 0.022174f, 0.023153f, 0.024158f, 0.025187f, 0.026241f,
+  0.027321f, 0.028426f, 0.029557f, 0.030713f, 0.031896f, 0.033105f, 0.034340f,
+  0.035601f, 0.036889f, 0.038204f, 0.039546f, 0.040915f, 0.042311f, 0.043735f,
+  0.045186f, 0.046665f, 0.048172f, 0.049707f, 0.051269f, 0.052861f, 0.054480f,
+  0.056128f, 0.057805f, 0.059511f, 0.061246f, 0.063010f, 0.064803f, 0.066626f,
+  0.068478f, 0.070360f, 0.072272f, 0.074214f, 0.076185f, 0.078187f, 0.080220f,
+  0.082283f, 0.084376f, 0.086500f, 0.088656f, 0.090842f, 0.093059f, 0.095307f,
+  0.097587f, 0.099899f, 0.102242f, 0.104616f, 0.107023f, 0.109462f, 0.111932f,
+  0.114435f, 0.116971f, 0.119538f, 0.122139f, 0.124772f, 0.127438f, 0.130136f,
+  0.132868f, 0.135633f, 0.138432f, 0.141263f, 0.144128f, 0.147027f, 0.149960f,
+  0.152926f, 0.155926f, 0.158961f, 0.162029f, 0.165132f, 0.168269f, 0.171441f,
+  0.174647f, 0.177888f, 0.181164f, 0.184475f, 0.187821f, 0.191202f, 0.194618f,
+  0.198069f, 0.201556f, 0.205079f, 0.208637f, 0.212231f, 0.215861f, 0.219526f,
+  0.223228f, 0.226966f, 0.230740f, 0.234551f, 0.238398f, 0.242281f, 0.246201f,
+  0.250158f, 0.254152f, 0.258183f, 0.262251f, 0.266356f, 0.270498f, 0.274677f,
+  0.278894f, 0.283149f, 0.287441f, 0.291771f, 0.296138f, 0.300544f, 0.304987f,
+  0.309469f, 0.313989f, 0.318547f, 0.323143f, 0.327778f, 0.332452f, 0.337164f,
+  0.341914f, 0.346704f, 0.351533f, 0.356400f, 0.361307f, 0.366253f, 0.371238f,
+  0.376262f, 0.381326f, 0.386429f, 0.391572f, 0.396755f, 0.401978f, 0.407240f,
+  0.412543f, 0.417885f, 0.423268f, 0.428690f, 0.434154f, 0.439657f, 0.445201f,
+  0.450786f, 0.456411f, 0.462077f, 0.467784f, 0.473531f, 0.479320f, 0.485150f,
+  0.491021f, 0.496933f, 0.502886f, 0.508881f, 0.514918f, 0.520996f, 0.527115f,
+  0.533276f, 0.539479f, 0.545724f, 0.552011f, 0.558340f, 0.564712f, 0.571125f,
+  0.577580f, 0.584078f, 0.590619f, 0.597202f, 0.603827f, 0.610496f, 0.617207f,
+  0.623960f, 0.630757f, 0.637597f, 0.644480f, 0.651406f, 0.658375f, 0.665387f,
+  0.672443f, 0.679542f, 0.686685f, 0.693872f, 0.701102f, 0.708376f, 0.715694f,
+  0.723055f, 0.730461f, 0.737910f, 0.745404f, 0.752942f, 0.760525f, 0.768151f,
+  0.775822f, 0.783538f, 0.791298f, 0.799103f, 0.806952f, 0.814847f, 0.822786f,
+  0.830770f, 0.838799f, 0.846873f, 0.854993f, 0.863157f, 0.871367f, 0.879622f,
+  0.887923f, 0.896269f, 0.904661f, 0.913099f, 0.921582f, 0.930111f, 0.938686f,
+  0.947307f, 0.955973f, 0.964686f, 0.973445f, 0.982251f, 0.991102f, 1.000000f};
+
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::Constructor
 //       Access: Published
@@ -2646,6 +2686,26 @@ bool Texture::
 has_binary_alpha(Format format) {
   switch (format) {
   case F_rgbm:
+    return true;
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::is_srgb
+//       Access: Public, Static
+//  Description: Returns true if the indicated format is in the
+//               sRGB color space, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+is_srgb(Format format) {
+  switch (format) {
+  case F_srgb:
+  case F_srgb_alpha:
+  case F_sluminance:
+  case F_sluminance_alpha:
     return true;
 
   default:
@@ -6935,24 +6995,37 @@ do_filter_2d_mipmap_pages(const CData *cdata,
                           Texture::RamImage &to, const Texture::RamImage &from,
                           int x_size, int y_size) const {
   Filter2DComponent *filter_component;
-  switch (cdata->_component_type) {
-  case T_unsigned_byte:
-    filter_component = &filter_2d_unsigned_byte;
-    break;
+  Filter2DComponent *filter_alpha;
 
-  case T_unsigned_short:
-    filter_component = &filter_2d_unsigned_short;
-    break;
+  if (is_srgb(cdata->_format)) {
+    // We currently only support sRGB mipmap generation for
+    // unsigned byte textures, due to our use of a lookup table.
+    nassertv(cdata->_component_type == T_unsigned_byte);
+    filter_component = &filter_2d_unsigned_byte_srgb;
+    // Alpha is always linear.
+    filter_alpha = &filter_2d_unsigned_byte;
 
-  case T_float:
-    filter_component = &filter_2d_float;
-    break;
+  } else {
+    switch (cdata->_component_type) {
+    case T_unsigned_byte:
+      filter_component = &filter_2d_unsigned_byte;
+      break;
 
-  default:
-    gobj_cat.error()
-      << "Unable to generate mipmaps for 2D texture with component type "
-      << cdata->_component_type << "!";
-    return;
+    case T_unsigned_short:
+      filter_component = &filter_2d_unsigned_short;
+      break;
+
+    case T_float:
+      filter_component = &filter_2d_float;
+      break;
+
+    default:
+      gobj_cat.error()
+        << "Unable to generate mipmaps for 2D texture with component type "
+        << cdata->_component_type << "!";
+      return;
+    }
+    filter_alpha = filter_component;
   }
 
   size_t pixel_size = cdata->_num_components * cdata->_component_width;
@@ -6964,6 +7037,12 @@ do_filter_2d_mipmap_pages(const CData *cdata,
   size_t to_row_size = (size_t)to_x_size * pixel_size;
   to._page_size = (size_t)to_y_size * to_row_size;
   to._image = PTA_uchar::empty_array(to._page_size * cdata->_z_size * cdata->_num_views, get_class_type());
+
+  bool alpha = has_alpha(cdata->_format);
+  int num_color_components = cdata->_num_components;
+  if (alpha) {
+    --num_color_components;
+  }
 
   int num_pages = cdata->_z_size * cdata->_num_views;
   for (int z = 0; z < num_pages; ++z) {
@@ -6982,9 +7061,12 @@ do_filter_2d_mipmap_pages(const CData *cdata,
           int x;
           for (x = 0; x < x_size - 1; x += 2) {
             // For each pixel.
-            for (int c = 0; c < cdata->_num_components; ++c) {
+            for (int c = 0; c < num_color_components; ++c) {
               // For each component.
               filter_component(p, q, pixel_size, row_size);
+            }
+            if (alpha) {
+              filter_alpha(p, q, pixel_size, row_size);
             }
             q += pixel_size;
           }
@@ -6994,9 +7076,12 @@ do_filter_2d_mipmap_pages(const CData *cdata,
           }
         } else {
           // Just one pixel.
-          for (int c = 0; c < cdata->_num_components; ++c) {
+          for (int c = 0; c < num_color_components; ++c) {
             // For each component.
             filter_component(p, q, 0, row_size);
+          }
+          if (alpha) {
+            filter_alpha(p, q, 0, row_size);
           }
         }
         q += row_size;
@@ -7012,9 +7097,12 @@ do_filter_2d_mipmap_pages(const CData *cdata,
         int x;
         for (x = 0; x < x_size - 1; x += 2) {
           // For each pixel.
-          for (int c = 0; c < cdata->_num_components; ++c) {
+          for (int c = 0; c < num_color_components; ++c) {
             // For each component.
             filter_component(p, q, pixel_size, 0);
+          }
+          if (alpha) {
+            filter_alpha(p, q, pixel_size, 0);
           }
           q += pixel_size;
         }
@@ -7024,9 +7112,12 @@ do_filter_2d_mipmap_pages(const CData *cdata,
         }
       } else {
         // Just one pixel.
-        for (int c = 0; c < cdata->_num_components; ++c) {
+        for (int c = 0; c < num_color_components; ++c) {
           // For each component.
           filter_component(p, q, 0, 0);
+        }
+        if (alpha) {
+          filter_alpha(p, q, pixel_size, 0);
         }
       }
     }
@@ -7054,24 +7145,37 @@ do_filter_3d_mipmap_level(const CData *cdata,
                           Texture::RamImage &to, const Texture::RamImage &from,
                           int x_size, int y_size, int z_size) const {
   Filter3DComponent *filter_component;
-  switch (cdata->_component_type) {
-  case T_unsigned_byte:
-    filter_component = &filter_3d_unsigned_byte;
-    break;
+  Filter3DComponent *filter_alpha;
 
-  case T_unsigned_short:
-    filter_component = &filter_3d_unsigned_short;
-    break;
+  if (is_srgb(cdata->_format)) {
+    // We currently only support sRGB mipmap generation for
+    // unsigned byte textures, due to our use of a lookup table.
+    nassertv(cdata->_component_type == T_unsigned_byte);
+    filter_component = &filter_3d_unsigned_byte_srgb;
+    // Alpha is always linear.
+    filter_alpha = &filter_3d_unsigned_byte;
 
-  case T_float:
-    filter_component = &filter_3d_float;
-    break;
+  } else {
+    switch (cdata->_component_type) {
+    case T_unsigned_byte:
+      filter_component = &filter_3d_unsigned_byte;
+      break;
 
-  default:
-    gobj_cat.error()
-      << "Unable to generate mipmaps for 3D texture with component type "
-      << cdata->_component_type << "!";
-    return;
+    case T_unsigned_short:
+      filter_component = &filter_3d_unsigned_short;
+      break;
+
+    case T_float:
+      filter_component = &filter_3d_float;
+      break;
+
+    default:
+      gobj_cat.error()
+        << "Unable to generate mipmaps for 3D texture with component type "
+        << cdata->_component_type << "!";
+      return;
+    }
+    filter_alpha = filter_component;
   }
 
   size_t pixel_size = cdata->_num_components * cdata->_component_width;
@@ -7088,6 +7192,12 @@ do_filter_3d_mipmap_level(const CData *cdata,
   size_t to_view_size = (size_t)to_z_size * to_page_size;
   to._page_size = to_page_size;
   to._image = PTA_uchar::empty_array(to_page_size * to_z_size * cdata->_num_views, get_class_type());
+
+  bool alpha = has_alpha(cdata->_format);
+  int num_color_components = cdata->_num_components;
+  if (alpha) {
+    --num_color_components;
+  }
 
   for (int view = 0; view < cdata->_num_views; ++view) {
     unsigned char *start_to = to._image.p() + view * to_view_size;
@@ -7112,9 +7222,12 @@ do_filter_3d_mipmap_level(const CData *cdata,
               int x;
               for (x = 0; x < x_size - 1; x += 2) {
                 // For each pixel.
-                for (int c = 0; c < cdata->_num_components; ++c) {
+                for (int c = 0; c < num_color_components; ++c) {
                   // For each component.
                   filter_component(p, q, pixel_size, row_size, page_size);
+                }
+                if (alpha) {
+                  filter_alpha(p, q, pixel_size, row_size, page_size);
                 }
                 q += pixel_size;
               }
@@ -7124,9 +7237,12 @@ do_filter_3d_mipmap_level(const CData *cdata,
               }
             } else {
               // Just one pixel.
-              for (int c = 0; c < cdata->_num_components; ++c) {
+              for (int c = 0; c < num_color_components; ++c) {
                 // For each component.
                 filter_component(p, q, 0, row_size, page_size);
+              }
+              if (alpha) {
+                filter_alpha(p, q, 0, row_size, page_size);
               }
             }
             q += row_size;
@@ -7142,9 +7258,12 @@ do_filter_3d_mipmap_level(const CData *cdata,
             int x;
             for (x = 0; x < x_size - 1; x += 2) {
               // For each pixel.
-              for (int c = 0; c < cdata->_num_components; ++c) {
+              for (int c = 0; c < num_color_components; ++c) {
                 // For each component.
                 filter_component(p, q, pixel_size, 0, page_size);
+              }
+              if (alpha) {
+                filter_alpha(p, q, pixel_size, 0, page_size);
               }
               q += pixel_size;
             }
@@ -7154,9 +7273,12 @@ do_filter_3d_mipmap_level(const CData *cdata,
             }
           } else {
             // Just one pixel.
-            for (int c = 0; c < cdata->_num_components; ++c) {
+            for (int c = 0; c < num_color_components; ++c) {
               // For each component.
               filter_component(p, q, 0, 0, page_size);
+            }
+            if (alpha) {
+              filter_alpha(p, q, 0, 0, page_size);
             }
           }
         }
@@ -7178,9 +7300,12 @@ do_filter_3d_mipmap_level(const CData *cdata,
             int x;
             for (x = 0; x < x_size - 1; x += 2) {
               // For each pixel.
-              for (int c = 0; c < cdata->_num_components; ++c) {
+              for (int c = 0; c < num_color_components; ++c) {
                 // For each component.
                 filter_component(p, q, pixel_size, row_size, 0);
+              }
+              if (alpha) {
+                filter_alpha(p, q, pixel_size, row_size, 0);
               }
               q += pixel_size;
             }
@@ -7190,9 +7315,12 @@ do_filter_3d_mipmap_level(const CData *cdata,
             }
           } else {
             // Just one pixel.
-            for (int c = 0; c < cdata->_num_components; ++c) {
+            for (int c = 0; c < num_color_components; ++c) {
               // For each component.
               filter_component(p, q, 0, row_size, 0);
+            }
+            if (alpha) {
+              filter_alpha(p, q, 0, row_size, 0);
             }
           }
           q += row_size;
@@ -7208,9 +7336,12 @@ do_filter_3d_mipmap_level(const CData *cdata,
           int x;
           for (x = 0; x < x_size - 1; x += 2) {
             // For each pixel.
-            for (int c = 0; c < cdata->_num_components; ++c) {
+            for (int c = 0; c < num_color_components; ++c) {
               // For each component.
               filter_component(p, q, pixel_size, 0, 0);
+            }
+            if (alpha) {
+              filter_alpha(p, q, pixel_size, 0, 0);
             }
             q += pixel_size;
           }
@@ -7220,9 +7351,12 @@ do_filter_3d_mipmap_level(const CData *cdata,
           }
         } else {
           // Just one pixel.
-          for (int c = 0; c < cdata->_num_components; ++c) {
+          for (int c = 0; c < num_color_components; ++c) {
             // For each component.
             filter_component(p, q, 0, 0, 0);
+          }
+          if (alpha) {
+            filter_alpha(p, q, 0, 0, 0);
           }
         }
       }
@@ -7248,6 +7382,32 @@ filter_2d_unsigned_byte(unsigned char *&p, const unsigned char *&q,
                          (unsigned int)q[row_size] +
                          (unsigned int)q[pixel_size + row_size]) >> 2;
   *p = (unsigned char)result;
+  ++p;
+  ++q;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::filter_2d_unsigned_byte_srgb
+//       Access: Public, Static
+//  Description: Averages a 2x2 block of pixel components into a
+//               single pixel component, for producing the next mipmap
+//               level.  Increments p and q to the next component.
+////////////////////////////////////////////////////////////////////
+void Texture::
+filter_2d_unsigned_byte_srgb(unsigned char *&p, const unsigned char *&q,
+                             size_t pixel_size, size_t row_size) {
+  float result = (srgb_to_lrgbf[q[0]] +
+                  srgb_to_lrgbf[q[pixel_size]] +
+                  srgb_to_lrgbf[q[row_size]] +
+                  srgb_to_lrgbf[q[pixel_size + row_size]]) / 4.0f;
+
+  // This is based on the formula out of the EXT_texture_sRGB
+  // specification, except the factors are multiplied with 255.0f.
+  if (result < 0.0031308f) {
+    *p = (unsigned char)(result * 3294.6f);
+  } else {
+    *p = (unsigned char)(269.025f * powf(result, 0.41666f) - 14.025f);
+  }
   ++p;
   ++q;
 }
@@ -7307,6 +7467,36 @@ filter_3d_unsigned_byte(unsigned char *&p, const unsigned char *&q,
                          (unsigned int)q[row_size + page_size] +
                          (unsigned int)q[pixel_size + row_size + page_size]) >> 3;
   *p = (unsigned char)result;
+  ++p;
+  ++q;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::filter_3d_unsigned_byte_srgb
+//       Access: Public, Static
+//  Description: Averages a 2x2x2 block of pixel components into a
+//               single pixel component, for producing the next mipmap
+//               level.  Increments p and q to the next component.
+////////////////////////////////////////////////////////////////////
+void Texture::
+filter_3d_unsigned_byte_srgb(unsigned char *&p, const unsigned char *&q,
+                             size_t pixel_size, size_t row_size, size_t page_size) {
+  float result = (srgb_to_lrgbf[q[0]] +
+                  srgb_to_lrgbf[q[pixel_size]] +
+                  srgb_to_lrgbf[q[row_size]] +
+                  srgb_to_lrgbf[q[pixel_size + row_size]] +
+                  srgb_to_lrgbf[q[page_size]] +
+                  srgb_to_lrgbf[q[pixel_size + page_size]] +
+                  srgb_to_lrgbf[q[row_size + page_size]] +
+                  srgb_to_lrgbf[q[pixel_size + row_size + page_size]]) / 8.0f;
+
+  // This is based on the formula out of the EXT_texture_sRGB
+  // specification, except the factors are multiplied with 255.0f.
+  if (result < 0.0031308f) {
+    *p = (unsigned char)(result * 3294.6f);
+  } else {
+    *p = (unsigned char)(269.025f * powf(result, 0.41666f) - 14.025f);
+  }
   ++p;
   ++q;
 }

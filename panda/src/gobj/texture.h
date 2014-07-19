@@ -527,6 +527,7 @@ public:
   static bool is_specific(CompressionMode compression);
   static bool has_alpha(Format format);
   static bool has_binary_alpha(Format format);
+  static bool is_srgb(Format format);
 
   static bool adjust_size(int &x_size, int &y_size, const string &name,
                           bool for_padding, AutoTextureScale auto_texture_scale = ATS_unspecified);
@@ -755,6 +756,9 @@ private:
   static void filter_2d_unsigned_byte(unsigned char *&p, 
                                       const unsigned char *&q,
                                       size_t pixel_size, size_t row_size);
+  static void filter_2d_unsigned_byte_srgb(unsigned char *&p, 
+                                           const unsigned char *&q,
+                                           size_t pixel_size, size_t row_size);
   static void filter_2d_unsigned_short(unsigned char *&p, 
                                        const unsigned char *&q,
                                        size_t pixel_size, size_t row_size);
@@ -765,6 +769,10 @@ private:
                                       const unsigned char *&q,
                                       size_t pixel_size, size_t row_size,
                                       size_t page_size);
+  static void filter_3d_unsigned_byte_srgb(unsigned char *&p, 
+                                           const unsigned char *&q,
+                                           size_t pixel_size, size_t row_size,
+                                           size_t page_size);
   static void filter_3d_unsigned_short(unsigned char *&p, 
                                        const unsigned char *&q,
                                        size_t pixel_size, size_t row_size,
