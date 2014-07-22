@@ -27,8 +27,7 @@ class FunctionRemap;
 // Description : An InterfaceMaker for generating complex Python
 //               function wrappers around C++ code.
 ////////////////////////////////////////////////////////////////////
-class InterfaceMakerPythonNative : public InterfaceMakerPython 
-{
+class InterfaceMakerPythonNative : public InterfaceMakerPython {
 public:
   InterfaceMakerPythonNative(InterrogateModuleDef *def);
   virtual ~InterfaceMakerPythonNative();
@@ -92,27 +91,24 @@ private:
 
   void write_prototype_for_name(ostream &out, Function *func, const std::string &name);
   void write_prototype_for(ostream &out, Function *func);
-  void write_function_for_top(ostream &out, Object *obj, Function *func, const std::string &PreProcess);
+  void write_function_for_top(ostream &out, Object *obj, Function *func);
   void write_function_for_name(ostream &out, Object *obj, Function *func,
-                               const std::string &name, const std::string &PreProcess,
+                               const std::string &name,
                                bool coercion_allowed, bool &coercion_attempted,
-                               bool single_arg, bool have_varargs,
-                               bool have_kwargs, bool return_int);
+                               ArgsType args_type, bool return_int);
 
   void write_function_forset(ostream &out, Object *obj, Function *func,
                              std::set<FunctionRemap*> &remaps, string &expected_params,
                              int indent_level, bool inplace,
                              bool coercion_allowed, bool &coercion_attempted,
-                             bool single_arg, bool have_varargs,
-                             bool have_kwargs, bool return_int,
+                             ArgsType args_type, bool return_int,
                              const string &first_expr = string());
 
   void write_function_instance(ostream &out, Object *obj, Function *func,
                                FunctionRemap *remap, string &expected_params,
                                int indent_level, bool is_inplace,
                                bool coercion_allowed, bool &coercion_attempted,
-                               bool single_arg, bool have_varargs,
-                               bool have_kwargs, bool return_int,
+                               ArgsType args_type, bool return_int,
                                const string &first_pexpr = string());
 
   void pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,

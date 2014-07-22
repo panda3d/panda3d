@@ -50,6 +50,7 @@ FunctionRemap(const InterrogateType &itype, const InterrogateFunction &ifunc,
   _num_default_parameters = num_default_parameters;
   _type = T_normal;
   _flags = 0;
+  _args_type = 0;
   _wrapper_index = 0;
 
   _return_value_needs_management = false;
@@ -648,11 +649,11 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
   }
 
   if (_parameters.size() == first_param) {
-    _flags |= F_no_args;
+    _args_type = InterfaceMaker::AT_no_args;
   } else if (_parameters.size() == first_param + 1) {
-    _flags |= F_single_arg;
+    _args_type = InterfaceMaker::AT_single_arg;
   } else {
-    _flags |= F_varargs;
+    _args_type = InterfaceMaker::AT_varargs;
   }
 
   if (_type == T_normal) {
@@ -670,7 +671,8 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
       if (_has_this && _parameters.size() > 2) {
         if (TypeManager::is_integer(_parameters[1]._remap->get_new_type())) {
           // Its first parameter is an int parameter, presumably an index.
-          _flags |= (F_setitem_int | F_varargs);
+          _flags |= F_setitem_int;
+          _args_type = InterfaceMaker::AT_varargs;
         }
       }
 
@@ -720,16 +722,16 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
 
     } else if (fname == "operator ()" || fname == "__call__") {
       // Call operators always take keyword arguments.
-      _flags |= (F_varargs | F_keyword_args);
+      _args_type = InterfaceMaker::AT_keyword_args;
 
     } else if (fname == "__setattr__" || fname == "__getattr__") {
       // Just to prevent these from getting keyword arguments.
 
     } else {
-      if (_flags & F_varargs) {
+      if (_args_type == InterfaceMaker::AT_varargs) {
         // Every other method can take keyword arguments, if they
         // take more than one argument.
-        _flags |= F_keyword_args;
+        _args_type = InterfaceMaker::AT_keyword_args;
       }
     }
 
@@ -743,7 +745,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
 
     }
     // Constructors always take varargs and keyword args.
-    _flags |= (F_varargs | F_keyword_args);
+    _args_type = InterfaceMaker::AT_keyword_args;
   }
 
   return true;

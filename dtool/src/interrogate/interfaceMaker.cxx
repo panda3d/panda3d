@@ -57,6 +57,7 @@ Function(const string &name,
 {
   _has_this = false;
   _flags = 0;
+  _args_type = AT_unknown;
 }
  
 ////////////////////////////////////////////////////////////////////
@@ -632,13 +633,13 @@ record_function(const InterrogateType &itype, FunctionIndex func_index) {
       CPPInstance *cppfunc = (*ii).second;
       CPPFunctionType *ftype = cppfunc->_type->as_function_type();
       int max_default_parameters = 0;
-      
+
       if (separate_overloading()) {
         // Count up the number of default parameters this function might
         // take.
         CPPParameterList *parameters = ftype->_parameters;
         CPPParameterList::Parameters::reverse_iterator pi;
-        for (pi = parameters->_parameters.rbegin(); 
+        for (pi = parameters->_parameters.rbegin();
              pi != parameters->_parameters.rend();
              ++pi) {
           CPPInstance *param = (*pi);
@@ -651,7 +652,7 @@ record_function(const InterrogateType &itype, FunctionIndex func_index) {
           }
         }
       }
-      
+
       // Now make a different wrapper for each combination of default
       // parameters.  This will happen only if separate_overloading(),
       // tested above, returned true; otherwise, max_default_parameters
@@ -672,9 +673,10 @@ record_function(const InterrogateType &itype, FunctionIndex func_index) {
           }
 
           func->_flags |= remap->_flags;
+          func->_args_type = (ArgsType)((int)func->_args_type | (int)remap->_args_type);
 
           // Make a wrapper for the function.
-          FunctionWrapperIndex wrapper_index = 
+          FunctionWrapperIndex wrapper_index =
             remap->make_wrapper_entry(func_index);
           if (wrapper_index != 0) {
             InterrogateFunction &mod_ifunc = idb->update_function(func_index);
@@ -683,13 +685,6 @@ record_function(const InterrogateType &itype, FunctionIndex func_index) {
         }
       }
     }
-  }
-
-  // If there's a remap taking no args and a remap
-  // taking only a single arg, assume we need varargs.
-  if ((func->_flags & FunctionRemap::F_no_args) &&
-      (func->_flags & FunctionRemap::F_single_arg)) {
-    func->_flags |= FunctionRemap::F_varargs;
   }
 
   return func;
