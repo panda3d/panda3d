@@ -1255,7 +1255,6 @@ write_module_class(ostream &out, Object *obj) {
   bool got_copy = false;
   bool got_deepcopy = false;
 
-  //int x = 0;
   for (fi = obj->_methods.begin(); fi != obj->_methods.end(); ++fi) {
     Function *func = (*fi);
     if (func->_name == "__copy__") {
@@ -1292,11 +1291,9 @@ write_module_class(ostream &out, Object *obj) {
 
     out << "  { \"" << name1 << "\", (PyCFunction) &"
         << func->_name << ", " << flags << ", (char *) " << func->_name << "_comment},\n";
-    //++x;
     if (name1 != name2) {
       out << "  { \"" << name2 << "\", (PyCFunction) &"
           << func->_name << ", " << flags << ", (char *) " << func->_name << "_comment},\n";
-      //++x;
     }
 
     SlottedFunctionDef slotted_def;
@@ -3136,7 +3133,6 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
         format_specifiers += "O";
         parameter_list += ", &" + param_name;
       }
-      parameter_list += ", &" + param_name;
       extra_convert += "PyObject *" + param_name + "_long = PyNumber_Long(" + param_name + ");";
       extra_param_check += " && " + param_name + "_long != NULL";
       pexpr_string = "PyLong_AsUnsignedLong(" + param_name + "_long)";
