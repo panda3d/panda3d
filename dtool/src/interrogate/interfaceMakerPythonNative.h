@@ -27,8 +27,7 @@ class FunctionRemap;
 // Description : An InterfaceMaker for generating complex Python
 //               function wrappers around C++ code.
 ////////////////////////////////////////////////////////////////////
-class InterfaceMakerPythonNative : public InterfaceMakerPython 
-{
+class InterfaceMakerPythonNative : public InterfaceMakerPython {
 public:
   InterfaceMakerPythonNative(InterrogateModuleDef *def);
   virtual ~InterfaceMakerPythonNative();
@@ -77,6 +76,8 @@ private:
     WT_getbuffer,
     WT_releasebuffer,
     WT_iter_next,
+    WT_one_or_two_params,
+    WT_ternary_operator,
   };
 
   class SlottedFunctionDef {
@@ -87,25 +88,28 @@ private:
   };
 
   static bool get_slotted_function_def(Object *obj, Function *func, SlottedFunctionDef &def);
-  
+
   void write_prototype_for_name(ostream &out, Function *func, const std::string &name);
   void write_prototype_for(ostream &out, Function *func);
-  void write_function_for_name(ostream &out, Object *obj, Function *func, const std::string &name, const std::string &PreProcess, const std::string &ClassName,
-                               bool coercion_allowed, bool &coercion_attempted);
-  void write_function_for_top(ostream &out, Object *obj, Function *func, const std::string &PreProcess);
-  void write_function_instance(ostream &out, Object *obj, Function *func,
-                               FunctionRemap *remap, string &expected_params, 
-                               int indent_level, bool errors_fatal, 
-                               ostream &forwarddecl, const std::string &functionnamestr,
-                               bool is_inplace, bool coercion_allowed,
-                               bool &coercion_attempted,
-                               const string &args_cleanup);
-  
+  void write_function_for_top(ostream &out, Object *obj, Function *func);
+  void write_function_for_name(ostream &out, Object *obj, Function *func,
+                               const std::string &name,
+                               bool coercion_allowed, bool &coercion_attempted,
+                               ArgsType args_type, bool return_int);
+
   void write_function_forset(ostream &out, Object *obj, Function *func,
                              std::set<FunctionRemap*> &remaps, string &expected_params,
-                             int indent_level, ostream &forwarddecl, bool inplace,
-                             bool coercion_allowed, bool &coercion_attempted, 
-                             const string &args_cleanup);
+                             int indent_level, bool inplace,
+                             bool coercion_allowed, bool &coercion_attempted,
+                             ArgsType args_type, bool return_int,
+                             const string &first_expr = string());
+
+  void write_function_instance(ostream &out, Object *obj, Function *func,
+                               FunctionRemap *remap, string &expected_params,
+                               int indent_level, bool is_inplace,
+                               bool coercion_allowed, bool &coercion_attempted,
+                               ArgsType args_type, bool return_int,
+                               const string &first_pexpr = string());
 
   void pack_return_value(ostream &out, int indent_level, FunctionRemap *remap,
                          const std::string &return_expr, bool in_place);
@@ -119,17 +123,16 @@ private:
   void write_class_prototypes(ostream &out) ;
   void write_class_declarations(ostream &out, ostream *out_h, Object *obj);
   void write_class_details(ostream &out, Object *obj);
-  
-  void do_assert_init(ostream &out, int &indent_level, bool constructor, const string &args_cleanup) const;
+
 public:
-  bool is_remap_legal(FunctionRemap &remap);
+  bool is_remap_legal(FunctionRemap *remap);
   bool is_function_legal( Function *func);
   bool is_cpp_type_legal(CPPType *ctype);
   bool isExportThisRun(CPPType *ctype);
   bool isExportThisRun(Function *func);
   bool isFunctionWithThis( Function *func);
   bool IsRunTimeTyped(const InterrogateType &itype);
-  
+
   // comunicates the cast capabilites among methods..
   struct CastDetails {
     CPPStructType   *_structType;

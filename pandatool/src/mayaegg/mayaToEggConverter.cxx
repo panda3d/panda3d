@@ -981,7 +981,7 @@ process_model_node(MayaNodeDesc *node_desc) {
     mayaegg_cat.debug() << "\"" << dag_path.partialPathName() << "\" : \n";
 
     // Get the translation/rotation/scale data
-    MObject		transformNode = dag_path.transform(&status);
+    MObject transformNode = dag_path.transform(&status);
     // This node has no transform - i.e., it's the world node
     if (!status && status.statusCode () == MStatus::kInvalidParameter)
       return false;
@@ -990,8 +990,8 @@ process_model_node(MayaNodeDesc *node_desc) {
       status.perror("MFnDagNode constructor");
       return false;
     }
-    MTransformationMatrix	matrix (transform.transformationMatrix());
-    MVector tl = matrix.getTranslation(MSpace::kWorld);
+    MTransformationMatrix matrix (transform.transformationMatrix());
+    MVector tl = matrix.translation(MSpace::kWorld);
     // Stop rediculously small values like -4.43287e-013
     if (tl.x < 0.0001) {
       tl.x = 0;

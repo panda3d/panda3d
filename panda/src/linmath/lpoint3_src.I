@@ -76,6 +76,17 @@ FLOATNAME(LPoint3)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LPoint3::Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LPoint3)::
+FLOATNAME(LPoint3)(const FLOATNAME(LVecBase2) &copy, FLOATTYPE z) :
+  FLOATNAME(LVecBase3)(copy, z)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LPoint3::zero Named Constructor
 //       Access: Public
 //  Description: Returns a zero-length point.
@@ -218,6 +229,7 @@ cross(const FLOATNAME(LVecBase3) &other) const {
   return FLOATNAME(LVecBase3)::cross(other);
 }
 
+#ifndef FLOATTYPE_IS_INT
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint3::project
 //       Access: Published
@@ -229,6 +241,7 @@ INLINE_LINMATH FLOATNAME(LPoint3) FLOATNAME(LPoint3)::
 project(const FLOATNAME(LVecBase3) &onto) const {
   return FLOATNAME(LVecBase3)::project(onto);
 }
+#endif  // FLOATTYPE_IS_INT
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint3::operator * scalar
@@ -258,9 +271,9 @@ operator / (FLOATTYPE scalar) const {
 //               existing coordinate systems; it's hard to imagine it
 //               ever being different.
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LPoint3) FLOATNAME(LPoint3)::
+INLINE_LINMATH const FLOATNAME(LPoint3) &FLOATNAME(LPoint3)::
 origin(CoordinateSystem) {
-  return FLOATNAME(LPoint3)(0.0f, 0.0f, 0.0f);
+  return FLOATNAME(LPoint3)::zero();
 }
 
 ////////////////////////////////////////////////////////////////////

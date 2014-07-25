@@ -60,6 +60,7 @@ PUBLISHED:
     ST_geometry,
     ST_tess_control,
     ST_tess_evaluation,
+    ST_compute,
   };
 
   enum AutoShaderSwitch {
@@ -85,11 +86,13 @@ PUBLISHED:
                          const Filename &geometry = "",
                          const Filename &tess_control = "",
                          const Filename &tess_evaluation = "");
+  static PT(Shader) load_compute(const ShaderLanguage &lang, const Filename &fn);
   static PT(Shader) make(const ShaderLanguage &lang, 
                          const string &vertex, const string &fragment, 
                          const string &geometry = "",
                          const string &tess_control = "",
                          const string &tess_evaluation = "");
+  static PT(Shader) make_compute(const ShaderLanguage &lang, const string &body);
 
   INLINE const Filename get_filename(const ShaderType &type = ST_none) const;
   INLINE const string &get_text(const ShaderType &type = ST_none) const;
@@ -232,6 +235,7 @@ public:
     SMP_row3x3,
     SMP_upper3x3,
     SMP_transpose3x3,
+    SMP_cell15,
   };
 
   enum ShaderStateDep {
@@ -276,6 +280,7 @@ public:
   enum ShaderPtrType {
     SPT_float,
     SPT_double,
+    SPT_int,
     SPT_unknown
   };
 
@@ -316,6 +321,14 @@ public:
     INLINE ShaderPtrData(const LMatrix4d &mat);
     INLINE ShaderPtrData(const LMatrix3d &mat);
 
+    INLINE ShaderPtrData(const PTA_int &ptr);
+    INLINE ShaderPtrData(const PTA_LVecBase4i &ptr);
+    INLINE ShaderPtrData(const PTA_LVecBase3i &ptr);
+    INLINE ShaderPtrData(const PTA_LVecBase2i &ptr);
+    INLINE ShaderPtrData(const LVecBase4i &vec);
+    INLINE ShaderPtrData(const LVecBase3i &vec);
+    INLINE ShaderPtrData(const LVecBase2i &vec);
+
     INLINE void write_datagram(Datagram &dg) const;
     INLINE void read_datagram(DatagramIterator &source);
   };
@@ -343,6 +356,7 @@ public:
     ShaderArgId       _id;
     PT(InternalName)  _name;
     int               _append_uv;
+    bool              _integer;
   };
 
   struct ShaderPtrSpec {
@@ -351,6 +365,7 @@ public:
     int               _dep[2];
     PT(InternalName)  _arg;
     ShaderArgInfo     _info;
+    ShaderPtrType     _type;
   };
 
   class ShaderCaps {
@@ -398,6 +413,7 @@ public:
     string _geometry;
     string _tess_control;
     string _tess_evaluation;
+    string _compute;
   };
 
 public:

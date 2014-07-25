@@ -52,13 +52,18 @@ make_off() {
 //               set.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ShaderAttrib::
-make() {
+make(const Shader *shader) {
   static CPT(RenderAttrib) _null_attrib;
   if (_null_attrib == 0) {
     ShaderAttrib *attrib = new ShaderAttrib;
     _null_attrib = return_new(attrib);
   }
-  return _null_attrib;
+
+  if (shader == NULL) {
+    return _null_attrib;
+  } else {
+    return DCAST(ShaderAttrib, _null_attrib)->set_shader(shader);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -557,6 +562,55 @@ get_shader_input_texture(const InternalName *id) const {
       return NULL;
     }
     return p->get_texture();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderAttrib::get_shader_input_matrix
+//       Access: Published
+//  Description: Returns the ShaderInput as a matrix.  Assertion
+//               fails if there is none, or if it is not a matrix
+//               or NodePath.
+////////////////////////////////////////////////////////////////////
+const LMatrix4 &ShaderAttrib::
+get_shader_input_matrix(const InternalName *id, LMatrix4 &matrix) const {
+  Inputs::const_iterator i = _inputs.find(id);
+  if (i == _inputs.end()) {
+    ostringstream strm;
+    strm << "Shader input " << id->get_name() << " is not present.\n";
+    nassert_raise(strm.str());
+    return LMatrix4::ident_mat();
+  } else {
+    const ShaderInput *p = (*i).second;
+
+    if (p->get_value_type() == ShaderInput::M_nodepath) {
+      const NodePath &np = p->get_nodepath();
+      nassertr(!np.is_empty(), LMatrix4::ident_mat());
+      return np.get_transform()->get_mat();
+
+    } else if (p->get_value_type() == ShaderInput::M_numeric && p->get_ptr()._size == 16) {
+      const Shader::ShaderPtrData &ptr = p->get_ptr();
+
+      switch (ptr._type) {
+        case Shader::SPT_float: {
+          LMatrix4f matrixf;
+          memcpy(&matrixf(0, 0), ptr._ptr, sizeof(float) * 16);
+          matrix = LCAST(PN_stdfloat, matrixf);
+          return matrix;
+        }
+        case Shader::SPT_double: {
+          LMatrix4d matrixd;
+          memcpy(&matrixd(0, 0), ptr._ptr, sizeof(double) * 16);
+          matrix = LCAST(PN_stdfloat, matrixd);
+          return matrix;
+        }
+      }
+    }
+
+    ostringstream strm;
+    strm << "Shader input " << id->get_name() << " is not a NodePath or LMatrix4.\n";
+    nassert_raise(strm.str());
+    return LMatrix4::ident_mat();
   }
 }
 

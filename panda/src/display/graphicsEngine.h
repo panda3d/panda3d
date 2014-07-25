@@ -108,6 +108,9 @@ PUBLISHED:
   BLOCKING void flip_frame();
 
   bool extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg);
+  void dispatch_compute(const LVecBase3i &work_groups,
+                        const ShaderAttrib *sattr,
+                        GraphicsStateGuardian *gsg);
 
   static GraphicsEngine *get_global_ptr();
 

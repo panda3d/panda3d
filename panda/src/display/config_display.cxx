@@ -405,6 +405,17 @@ ConfigVariableBool framebuffer_stereo
  PRC_DESC("True if FM_stereo should be added to the default framebuffer "
           "properties, which requests a stereo-capable display, if "
           "supported by the graphics driver."));
+ConfigVariableBool framebuffer_srgb
+("framebuffer-srgb", false,
+ PRC_DESC("Set this to request an sRGB framebuffer, which will "
+          "convert all values to linear space before blending.  This "
+          "means that the output will be properly gamma-corrected, as "
+          "long as all the input textures are either converted from "
+          "original sRGB to linear or sRGB textures are used."));
+ConfigVariableBool framebuffer_float
+("framebuffer-float", false,
+ PRC_DESC("Set this to request a framebuffer that uses floating-point "
+          "storage for the color channel."));
 
 ConfigVariableInt depth_bits
 ("depth-bits", 0,

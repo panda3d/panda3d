@@ -35,7 +35,7 @@ evict_lru() {
 
   // Make sure the buffer is unbound before we delete it.
   if (_glgsg->_current_vbuffer_index == _index) {
-    if (GLCAT.is_debug() && CLP(debug_buffers)) {
+    if (GLCAT.is_debug() && gl_debug_buffers) {
       GLCAT.debug()
         << "unbinding vertex buffer\n";
     }

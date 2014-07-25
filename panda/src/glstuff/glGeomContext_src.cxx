@@ -46,7 +46,7 @@ get_display_list(GLuint &index, const CLP(GeomMunger) *munger,
   DisplayList &dl = _display_lists[(CLP(GeomMunger) *)munger];
   bool list_current = (dl._modified == modified);
   if (dl._index == 0) {
-    dl._index = GLP(GenLists)(1);    
+    dl._index = glGenLists(1);
     list_current = false;
     if (munger != (CLP(GeomMunger) *)NULL) {
       ((CLP(GeomMunger) *)munger)->_geom_contexts.insert(this);
@@ -87,7 +87,7 @@ release_display_lists() {
       GLCAT.debug()
         << "releasing index " << (int)dl._index << "\n";
     }
-    GLP(DeleteLists)(dl._index, 1);
+    glDeleteLists(dl._index, 1);
   }
 
   _display_lists.clear();

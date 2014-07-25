@@ -656,6 +656,17 @@ get_supports_tessellation_shaders() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_compute_shaders
+//       Access: Published
+//  Description: Returns true if this particular GSG supports
+//               compute shaders.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_supports_compute_shaders() const {
+  return _supports_compute_shaders;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_supports_glsl
 //       Access: Published
 //  Description: Returns true if this particular GSG supports

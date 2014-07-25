@@ -37,6 +37,7 @@
 #undef FLOATNAME
 #undef FLOATTOKEN
 #undef FLOATCONST
+#undef FLOATTYPE_IS_INT
 
 #define FLOATTYPE float
 #define FLOATNAME(ARG) ARG##f

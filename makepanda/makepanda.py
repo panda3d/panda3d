@@ -92,7 +92,7 @@ PkgListSet(["PYTHON", "DIRECT",                        # Python support
   "GTK2", "WX", "FLTK",                                # Toolkit support
   "ROCKET",                                            # GUI libraries
   "CARBON", "COCOA",                                   # Mac OS X toolkits
-  "OSMESA", "X11", "XF86DGA", "XRANDR", "XCURSOR",     # Unix platform support
+  "X11", "XF86DGA", "XRANDR", "XCURSOR",               # Unix platform support
   "PANDATOOL", "PVIEW", "DEPLOYTOOLS",                 # Toolchain
   "SKEL",                                              # Example SKEL project
   "PANDAFX",                                           # Some distortion special lenses 
@@ -697,7 +697,6 @@ if (COMPILER=="GCC"):
         SmartPkgEnable("GLES",      "glesv1_cm", ("GLESv1_CM"), ("GLES/gl.h"), framework = "OpenGLES")
         SmartPkgEnable("GLES2",     "glesv2",    ("GLESv2"), ("GLES2/gl2.h")) #framework = "OpenGLES"?
         SmartPkgEnable("EGL",       "egl",       ("EGL"), ("EGL/egl.h"))
-        SmartPkgEnable("OSMESA",    "osmesa",    ("OSMesa"), ("GL/osmesa.h"))
         SmartPkgEnable("NVIDIACG",  "",          ("Cg"), "Cg/cg.h", framework = "Cg")
         SmartPkgEnable("ODE",       "",          ("ode"), "ode/ode.h", tool = "ode-config")
         SmartPkgEnable("OPENAL",    "openal",    ("openal"), "AL/al.h", framework = "OpenAL")
@@ -1901,9 +1900,6 @@ DTOOL_CONFIG=[
     ("HAVE_GL",                        '1',                      'UNDEF'),
     ("HAVE_GLES",                      'UNDEF',                  'UNDEF'),
     ("HAVE_GLES2",                     'UNDEF',                  'UNDEF'),
-    ("HAVE_MESA",                      'UNDEF',                  'UNDEF'),
-    ("MESA_MGL",                       'UNDEF',                  'UNDEF'),
-    ("HAVE_SGIGL",                     'UNDEF',                  'UNDEF'),
     ("HAVE_GLX",                       'UNDEF',                  '1'),
     ("HAVE_EGL",                       'UNDEF',                  'UNDEF'),
     ("HAVE_WGL",                       '1',                      'UNDEF'),
@@ -3828,15 +3824,16 @@ if (PkgSkip("OPENSSL")==0 and not RTDIST and not RUNTIME and PkgSkip("DEPLOYTOOL
   TargetAdd('build_patch.exe', input=COMMON_PANDA_LIBS_PYSTUB)
   TargetAdd('build_patch.exe', opts=OPTS)
 
-  TargetAdd('check_adler_check_adler.obj', opts=OPTS, input='check_adler.cxx')
-  TargetAdd('check_adler.exe', input=['check_adler_check_adler.obj'])
-  TargetAdd('check_adler.exe', input=COMMON_PANDA_LIBS_PYSTUB)
-  TargetAdd('check_adler.exe', opts=OPTS)
+  if not PkgSkip("ZLIB"):
+    TargetAdd('check_adler_check_adler.obj', opts=OPTS, input='check_adler.cxx')
+    TargetAdd('check_adler.exe', input=['check_adler_check_adler.obj'])
+    TargetAdd('check_adler.exe', input=COMMON_PANDA_LIBS_PYSTUB)
+    TargetAdd('check_adler.exe', opts=OPTS)
 
-  TargetAdd('check_crc_check_crc.obj', opts=OPTS, input='check_crc.cxx')
-  TargetAdd('check_crc.exe', input=['check_crc_check_crc.obj'])
-  TargetAdd('check_crc.exe', input=COMMON_PANDA_LIBS_PYSTUB)
-  TargetAdd('check_crc.exe', opts=OPTS)
+    TargetAdd('check_crc_check_crc.obj', opts=OPTS, input='check_crc.cxx')
+    TargetAdd('check_crc.exe', input=['check_crc_check_crc.obj'])
+    TargetAdd('check_crc.exe', input=COMMON_PANDA_LIBS_PYSTUB)
+    TargetAdd('check_crc.exe', opts=OPTS)
 
   TargetAdd('check_md5_check_md5.obj', opts=OPTS, input='check_md5.cxx')
   TargetAdd('check_md5.exe', input=['check_md5_check_md5.obj'])
@@ -4034,20 +4031,6 @@ if (not RUNTIME):
   TargetAdd('egg.pyd', input='core.pyd')
   TargetAdd('egg.pyd', input=COMMON_PANDA_LIBS)
   TargetAdd('egg.pyd', opts=['PYTHON'])
-
-#
-# DIRECTORY: panda/src/mesadisplay/
-#
-
-if (GetTarget() != 'windows' and PkgSkip("GL")==0 and PkgSkip("OSMESA")==0 and not RUNTIME):
-  OPTS=['DIR:panda/src/mesadisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAMESA', 'NVIDIACG', 'GL', 'OSMESA']
-  TargetAdd('p3mesadisplay_composite1.obj', opts=OPTS, input='p3mesadisplay_composite1.cxx')
-  OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAMESA', 'NVIDIACG', 'GL']
-  TargetAdd('libpandamesa.dll', input='p3mesadisplay_composite1.obj')
-  if (PkgSkip('PANDAFX')==0):
-    TargetAdd('libpandamesa.dll', input='libpandafx.dll')
-  TargetAdd('libpandamesa.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandamesa.dll', opts=['MODULE', 'GL', 'OSMESA'])
 
 #
 # DIRECTORY: panda/src/x11display/
@@ -5539,15 +5522,17 @@ if (PkgSkip("PANDATOOL")==0):
 # DIRECTORY: pandatool/src/miscprogs/
 #
 
-if (PkgSkip("PANDATOOL")==0):
-    OPTS=['DIR:pandatool/src/miscprogs']
-    TargetAdd('bin2c_binToC.obj', opts=OPTS, input='binToC.cxx')
-    TargetAdd('bin2c.exe', input='bin2c_binToC.obj')
-    TargetAdd('bin2c.exe', input='libp3progbase.lib')
-    TargetAdd('bin2c.exe', input='libp3pandatoolbase.lib')
-    TargetAdd('bin2c.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('bin2c.exe', input='libp3pystub.lib')
-    TargetAdd('bin2c.exe', opts=['ADVAPI'])
+# This is a bit of an esoteric tool, and it causes issues because
+# it conflicts with tools of the same name in different packages.
+#if (PkgSkip("PANDATOOL")==0):
+#    OPTS=['DIR:pandatool/src/miscprogs']
+#    TargetAdd('bin2c_binToC.obj', opts=OPTS, input='binToC.cxx')
+#    TargetAdd('bin2c.exe', input='bin2c_binToC.obj')
+#    TargetAdd('bin2c.exe', input='libp3progbase.lib')
+#    TargetAdd('bin2c.exe', input='libp3pandatoolbase.lib')
+#    TargetAdd('bin2c.exe', input=COMMON_PANDA_LIBS)
+#    TargetAdd('bin2c.exe', input='libp3pystub.lib')
+#    TargetAdd('bin2c.exe', opts=['ADVAPI'])
 
 #
 # DIRECTORY: pandatool/src/pstatserver/

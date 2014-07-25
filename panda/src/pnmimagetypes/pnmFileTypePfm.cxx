@@ -165,6 +165,8 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
     return;
   }
 
+  _maxval = PGM_MAXMAXVAL;
+
   (*_file) >> _x_size >> _y_size >> _scale;
   if (!(*_file)) {
     pnmimage_cat.debug()

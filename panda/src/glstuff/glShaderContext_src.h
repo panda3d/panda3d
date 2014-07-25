@@ -21,75 +21,64 @@
 #include "shaderContext.h"
 #include "deletedChain.h"
 
-#if defined(HAVE_CG) && !defined(OPENGLES)
-#include <Cg/cg.h>
-#endif
-
 class CLP(GraphicsStateGuardian);
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GLShaderContext
 // Description : xyz
 ////////////////////////////////////////////////////////////////////
-class EXPCL_GL CLP(ShaderContext): public ShaderContext {
+class EXPCL_GL CLP(ShaderContext) : public ShaderContext {
 public:
   friend class CLP(GraphicsStateGuardian);
-  typedef CLP(GraphicsStateGuardian) GSG;
 
-  CLP(ShaderContext)(Shader *s, GSG *gsg);
+  CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s);
   ~CLP(ShaderContext)();
   ALLOC_DELETED_CHAIN(CLP(ShaderContext));
 
   INLINE bool valid(void);
-  void bind(GSG *gsg, bool reissue_parameters = true);
-  void unbind(GSG *gsg);
-  void issue_parameters(GSG *gsg, int altered);
-  void disable_shader_vertex_arrays(GSG *gsg);
-  bool update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg,
-                                   bool force);
-  void disable_shader_texture_bindings(GSG *gsg);
-  void update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg);
+  void bind(bool reissue_parameters = true);
+  void unbind();
+  void issue_parameters(int altered);
+  void disable_shader_vertex_arrays();
+  bool update_shader_vertex_arrays(ShaderContext *prev, bool force);
+  void disable_shader_texture_bindings();
+  void update_shader_texture_bindings(ShaderContext *prev);
 
   INLINE bool uses_standard_vertex_arrays(void);
   INLINE bool uses_custom_vertex_arrays(void);
   INLINE bool uses_custom_texture_bindings(void);
 
 private:
-
-#if defined(HAVE_CG) && !defined(OPENGLES)
-  CGcontext _cg_context;
-  CGprogram _cg_vprogram;
-  CGprogram _cg_fprogram;
-  CGprogram _cg_gprogram;
-  CGprofile _cg_vprofile;
-  CGprofile _cg_fprofile;
-  CGprofile _cg_gprofile;
-
-  pvector <CGparameter> _cg_parameter_map;
-#endif
-
   GLuint _glsl_program;
-  GLuint _glsl_vshader;
-  GLuint _glsl_fshader;
-  GLuint _glsl_gshader;
-  GLuint _glsl_tcshader;
-  GLuint _glsl_teshader;
+  typedef pvector<GLuint> GLSLShaders;
+  GLSLShaders _glsl_shaders;
 
-  pvector <GLint> _glsl_parameter_map;
+  //struct ParamContext {
+  //  CPT(InternalName) _name;
+  //  GLint _location;
+  //  GLsizei _count;
+  //  WPT(ParamValue) _value;
+  //  UpdateSeq _updated;
+  //};
+  //typedef pvector<ParamContext> ParamContexts;
+  //ParamContexts _params;
 
-  int _stage_offset;
-  // Avoid using this! It merely exists so the
-  // destructor has access to the extension functions.
-  WPT(GSG) _last_gsg;
+  pvector<GLint> _glsl_parameter_map;
+  pmap<GLint, GLuint64> _glsl_uniform_handles;
+
+  pvector<CPT(InternalName)> _glsl_img_inputs;
+  pvector<CLP(TextureContext)*> _glsl_img_textures;
+
+  CLP(GraphicsStateGuardian) *_glgsg;
 
   bool _uses_standard_vertex_arrays;
 
-  void glsl_report_shader_errors(GSG *gsg, unsigned int shader);
-  void glsl_report_program_errors(GSG *gsg, unsigned int program);
-  unsigned int glsl_compile_entry_point(GSG *gsg, Shader::ShaderType type);
-  bool glsl_compile_shader(GSG *gsg);
+  void glsl_report_shader_errors(GLuint shader);
+  void glsl_report_program_errors(GLuint program);
+  bool glsl_compile_shader(Shader::ShaderType type);
+  bool glsl_compile_and_link();
   bool parse_and_set_short_hand_shader_vars(Shader::ShaderArgId &arg_id, Shader *s);
-  void release_resources(GSG *gsg);
+  void release_resources();
 
 public:
   static TypeHandle get_class_type() {
@@ -112,4 +101,3 @@ private:
 #include "glShaderContext_src.I"
 
 #endif  // OPENGLES_1
-

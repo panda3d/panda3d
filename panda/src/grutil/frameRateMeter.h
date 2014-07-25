@@ -71,6 +71,7 @@ private:
   PT(DisplayRegion) _display_region;
   NodePath _root;
 
+  bool _show_milliseconds;
   double _update_interval;
   double _last_update;
   string _text_pattern;

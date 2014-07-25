@@ -72,10 +72,9 @@
     modelPool.I modelPool.h \
     modelRoot.I modelRoot.h \
     nodePath.I nodePath.h nodePath.cxx \
-    nodePath_ext.I nodePath_ext.h nodePath_ext.cxx \
+    nodePath_ext.I nodePath_ext.h \
     nodePathCollection.I nodePathCollection.h \
     nodePathCollection_ext.I nodePathCollection_ext.h \
-    nodePathCollection_ext.cxx \
     nodePathComponent.I nodePathComponent.h \
     occluderEffect.I occluderEffect.h \
     occluderNode.I occluderNode.h \
@@ -112,7 +111,12 @@
     transformState.I transformState.h \
     transparencyAttrib.I transparencyAttrib.h \
     weakNodePath.I weakNodePath.h \
-    workingNodePath.I workingNodePath.h
+    workingNodePath.I workingNodePath.h \
+    nodePath_ext.h nodePath_ext.I \
+    nodePathCollection_ext.h nodePathCollection_ext.I \
+    pandaNode_ext.h \
+    renderState_ext.h \
+    transformState_ext.h
 
   #define COMBINED_SOURCES \
     $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx \
@@ -213,7 +217,12 @@
     transformState.cxx \
     transparencyAttrib.cxx \
     weakNodePath.cxx \
-    workingNodePath.cxx
+    workingNodePath.cxx \
+    nodePath_ext.cxx \
+    nodePathCollection_ext.cxx \
+    pandaNode_ext.cxx \
+    renderState_ext.cxx \
+    transformState_ext.cxx
 
   #define INSTALL_HEADERS \
     accumulatedAttribs.I accumulatedAttribs.h \

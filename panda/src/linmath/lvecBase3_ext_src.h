@@ -27,6 +27,9 @@ public:
   INLINE_LINMATH int __setattr__(PyObject *self, const string &attr_name, PyObject *assign);
   INLINE_LINMATH void __setitem__(int i, FLOATTYPE v);
   INLINE_LINMATH void python_repr(ostream &out, const string &class_name) const;
+
+  INLINE_LINMATH FLOATNAME(LVecBase3) __pow__(FLOATTYPE exponent) const;
+  INLINE_LINMATH PyObject *__ipow__(PyObject *self, FLOATTYPE exponent);
 };
 
 #include "lvecBase3_ext_src.I"

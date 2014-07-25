@@ -213,11 +213,10 @@ read(PNMReader *reader) {
 //  Description: Writes the PFM data to the indicated file, returning
 //               true on success, false on failure.
 //
-//               This can also handle writing a standard image file
-//               supported by PNMImage, if the filename extension is
-//               some image type's extension other than "pfm"; it
-//               will be quietly converted to the appropriate integer
-//               type.
+//               If the type implied by the filename extension
+//               supports floating-point, the data will be written
+//               directly; otherwise, the floating-point data will be
+//               quietly converted to the appropriate integer type.
 ////////////////////////////////////////////////////////////////////
 bool PfmFile::
 write(const Filename &fullpath) {
@@ -233,21 +232,6 @@ write(const Filename &fullpath) {
     pnmimage_cat.error()
       << "Unable to open " << filename << "\n";
     return false;
-  }
-
-  string extension = downcase(fullpath.get_extension());
-  if (extension != "pfm") {
-    // Maybe we're trying to write a different kind of image file.
-    PNMImage pnm;
-    PNMWriter *writer = pnm.make_writer(&out, false, fullpath, NULL);
-    if (writer != (PNMWriter *)NULL) {
-      // Yep.
-      if (store(pnm)) {
-        return pnm.write(writer);
-      }
-      // Couldn't make an image.  Carry on directly.
-      delete writer;
-    }
   }
   
   if (pnmimage_cat.is_debug()) {

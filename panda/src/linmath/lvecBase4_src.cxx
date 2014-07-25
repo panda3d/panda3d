@@ -16,15 +16,15 @@ TypeHandle FLOATNAME(LVecBase4)::_type_handle;
 TypeHandle FLOATNAME(UnalignedLVecBase4)::_type_handle;
 
 const FLOATNAME(LVecBase4) FLOATNAME(LVecBase4)::_zero =
-  FLOATNAME(LVecBase4)(0.0f, 0.0f, 0.0f, 0.0f);
+  FLOATNAME(LVecBase4)(0, 0, 0, 0);
 const FLOATNAME(LVecBase4) FLOATNAME(LVecBase4)::_unit_x =
-  FLOATNAME(LVecBase4)(1.0f, 0.0f, 0.0f, 0.0f);
+  FLOATNAME(LVecBase4)(1, 0, 0, 0);
 const FLOATNAME(LVecBase4) FLOATNAME(LVecBase4)::_unit_y =
-  FLOATNAME(LVecBase4)(0.0f, 1.0f, 0.0f, 0.0f);
+  FLOATNAME(LVecBase4)(0, 1, 0, 0);
 const FLOATNAME(LVecBase4) FLOATNAME(LVecBase4)::_unit_z =
-  FLOATNAME(LVecBase4)(0.0f, 0.0f, 1.0f, 0.0f);
+  FLOATNAME(LVecBase4)(0, 0, 1, 0);
 const FLOATNAME(LVecBase4) FLOATNAME(LVecBase4)::_unit_w =
-  FLOATNAME(LVecBase4)(0.0f, 0.0f, 0.0f, 1.0f);
+  FLOATNAME(LVecBase4)(0, 0, 0, 1);
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::init_type

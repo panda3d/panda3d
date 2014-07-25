@@ -243,6 +243,19 @@ make_points() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Geom::make_patches
+//       Access: Published
+//  Description: Returns a new Geom with each primitive converted
+//               into a patch.  Calls decompose() first.
+////////////////////////////////////////////////////////////////////
+INLINE PT(Geom) Geom::
+make_patches() const {
+  PT(Geom) new_geom = make_copy();
+  new_geom->make_patches_in_place();
+  return new_geom;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Geom::get_modified
 //       Access: Published
 //  Description: Returns a sequence number which is guaranteed to

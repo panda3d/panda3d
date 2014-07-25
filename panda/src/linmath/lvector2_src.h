@@ -43,9 +43,11 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVector2) operator * (FLOATTYPE scalar) const;
   INLINE_LINMATH FLOATNAME(LVector2) operator / (FLOATTYPE scalar) const;
 
+#ifndef FLOATTYPE_IS_INT
   INLINE_LINMATH FLOATNAME(LVector2) project(const FLOATNAME(LVecBase2) &onto) const;
   INLINE_LINMATH FLOATTYPE signed_angle_rad(const FLOATNAME(LVector2) &other) const;
   INLINE_LINMATH FLOATTYPE signed_angle_deg(const FLOATNAME(LVector2) &other) const;
+#endif
 
   EXTENSION(INLINE_LINMATH void python_repr(ostream &out, const string &class_name) const);
 

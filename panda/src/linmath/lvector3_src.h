@@ -30,6 +30,7 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVector3) &operator = (FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LVector3)(FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LVector3)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z);
+  INLINE_LINMATH FLOATNAME(LVector3)(const FLOATNAME(LVecBase2) &copy, FLOATTYPE z);
 
   EXTENSION(INLINE_LINMATH PyObject *__getattr__(const string &attr_name) const);
   EXTENSION(INLINE_LINMATH int __setattr__(PyObject *self, const string &attr_name, PyObject *assign));
@@ -52,6 +53,8 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVector3) operator - (const FLOATNAME(LVector3) &other) const;
 
   INLINE_LINMATH FLOATNAME(LVector3) cross(const FLOATNAME(LVecBase3) &other) const;
+
+#ifndef FLOATTYPE_IS_INT
   INLINE_LINMATH FLOATNAME(LVector3) project(const FLOATNAME(LVecBase3) &onto) const;
   INLINE_LINMATH FLOATTYPE angle_rad(const FLOATNAME(LVector3) &other) const;
   INLINE_LINMATH FLOATTYPE angle_deg(const FLOATNAME(LVector3) &other) const;
@@ -63,7 +66,7 @@ PUBLISHED:
 
   INLINE_LINMATH FLOATTYPE relative_angle_rad(const FLOATNAME(LVector3) &other) const;
   INLINE_LINMATH FLOATTYPE relative_angle_deg(const FLOATNAME(LVector3) &other) const;
-
+#endif
 
   INLINE_LINMATH FLOATNAME(LVector3) operator * (FLOATTYPE scalar) const;
   INLINE_LINMATH FLOATNAME(LVector3) operator / (FLOATTYPE scalar) const;

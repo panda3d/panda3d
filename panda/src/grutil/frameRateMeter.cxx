@@ -38,9 +38,15 @@ FrameRateMeter(const string &name) : TextNode(name) {
 
   Thread *current_thread = Thread::get_current_thread();
 
+  _show_milliseconds = frame_rate_meter_milliseconds;
+  if (_show_milliseconds) {
+    _text_pattern = frame_rate_meter_ms_text_pattern;
+  } else {
+    _text_pattern = frame_rate_meter_text_pattern;
+  }
+
   _update_interval = frame_rate_meter_update_interval;
   _last_update = 0.0f;
-  _text_pattern = frame_rate_meter_text_pattern;
   _clock_object = ClockObject::get_global_clock();
 
   // The top of the visible frame is 80% of the line height, based on
@@ -184,16 +190,21 @@ void FrameRateMeter::
 do_update(Thread *current_thread) {
   _last_update = _clock_object->get_frame_time(current_thread);
 
-  double frame_rate = _clock_object->get_average_frame_rate(current_thread);
+  double value = _clock_object->get_average_frame_rate(current_thread);
   double deviation = _clock_object->calc_frame_rate_deviation(current_thread);
+
+  if (_show_milliseconds) {
+    value = 1000.0 / value;
+    deviation = 1000.0 / deviation;
+  }
 
   static const size_t buffer_size = 1024;
   char buffer[buffer_size];
 #if defined(WIN32_VC) || defined(WIN64_VC)
   // Windows doesn't define snprintf().  Hope we don't overflow.
-  sprintf(buffer, _text_pattern.c_str(), frame_rate, deviation);
+  sprintf(buffer, _text_pattern.c_str(), value, deviation);
 #else
-  snprintf(buffer, buffer_size, _text_pattern.c_str(), frame_rate, deviation);
+  snprintf(buffer, buffer_size, _text_pattern.c_str(), value, deviation);
 #endif
   nassertv(strlen(buffer) < buffer_size);
 

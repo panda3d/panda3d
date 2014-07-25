@@ -76,6 +76,17 @@ FLOATNAME(LVector3)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LVector3::Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVector3)::
+FLOATNAME(LVector3)(const FLOATNAME(LVecBase2) &copy, FLOATTYPE z) :
+  FLOATNAME(LVecBase3)(copy, z)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LVector3::zero Named Constructor
 //       Access: Published
 //  Description: Returns a zero-length vector.
@@ -208,6 +219,7 @@ cross(const FLOATNAME(LVecBase3) &other) const {
   return FLOATNAME(LVecBase3)::cross(other);
 }
 
+#ifndef FLOATTYPE_IS_INT
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::project
 //       Access: Published
@@ -309,6 +321,7 @@ INLINE_LINMATH FLOATTYPE FLOATNAME(LVector3)::
 relative_angle_deg(const FLOATNAME(LVector3) &other) const {
   return relative_angle_rad(other)*180/3.1415926535;
 }
+#endif  // FLOATTYPE_IS_INT
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::operator * scalar
@@ -327,8 +340,7 @@ operator * (FLOATTYPE scalar) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
 operator / (FLOATTYPE scalar) const {
-  FLOATTYPE recip_scalar = 1.0f/scalar;
-  return FLOATNAME(LVector3)(FLOATNAME(LVecBase3)::operator * (recip_scalar));
+  return FLOATNAME(LVector3)(FLOATNAME(LVecBase3)::operator / (scalar));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -345,16 +357,16 @@ up(CoordinateSystem cs) {
   switch (cs) {
   case CS_zup_right:
   case CS_zup_left:
-    return FLOATNAME(LVector3)(0.0f, 0.0f, 1.0f);
+    return FLOATNAME(LVector3)(0, 0, 1);
 
   case CS_yup_right:
   case CS_yup_left:
-    return FLOATNAME(LVector3)(0.0f, 1.0f, 0.0f);
+    return FLOATNAME(LVector3)(0, 1, 0);
 
   default:
     linmath_cat.error()
       << "Invalid coordinate system!\n";
-    return FLOATNAME(LVector3)(0.0f, 0.0f, 0.0f);
+    return FLOATNAME(LVector3)(0, 0, 0);
   }
 }
 
@@ -366,7 +378,7 @@ up(CoordinateSystem cs) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
 right(CoordinateSystem) {
-  return FLOATNAME(LVector3)(1.0f, 0.0f, 0.0f);
+  return FLOATNAME(LVector3)(1, 0, 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -382,21 +394,21 @@ forward(CoordinateSystem cs) {
   }
   switch (cs) {
   case CS_zup_right:
-    return FLOATNAME(LVector3)(0.0f, 1.0f, 0.0f);
+    return FLOATNAME(LVector3)(0, 1, 0);
 
   case CS_zup_left:
-    return FLOATNAME(LVector3)(0.0f, -1.0f, 0.0f);
+    return FLOATNAME(LVector3)(0, -1, 0);
 
   case CS_yup_right:
-    return FLOATNAME(LVector3)(0.0f, 0.0f, -1.0f);
+    return FLOATNAME(LVector3)(0, 0, -1);
 
   case CS_yup_left:
-    return FLOATNAME(LVector3)(0.0f, 0.0f, 1.0f);
+    return FLOATNAME(LVector3)(0, 0, 1);
 
   default:
     linmath_cat.error()
       << "Invalid coordinate system!\n";
-    return FLOATNAME(LVector3)(0.0f, 0.0f, 0.0f);
+    return FLOATNAME(LVector3)(0, 0, 0);
   }
 }
 
@@ -440,8 +452,7 @@ back(CoordinateSystem cs) {
 //               forward, and up components, in whatever way the
 //               coordinate system represents that vector.
 ////////////////////////////////////////////////////////////////////
-
-//INLINE_LINMATH FLOATNAME(LVector3) & FLOATNAME(LVector3)::
+//INLINE_LINMATH FLOATNAME(LVector3) &FLOATNAME(LVector3)::
 INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
 rfu(FLOATTYPE right_v, FLOATTYPE fwd_v, FLOATTYPE up_v,
     CoordinateSystem cs) {
@@ -449,12 +460,11 @@ rfu(FLOATTYPE right_v, FLOATTYPE fwd_v, FLOATTYPE up_v,
   /*  return forward(cs) * fwd_v + up(cs) * up_v + right(cs) * right_v; */
 
   // fast implementation of above for axis-aligned coordinate systems
-
-
   if (cs == CS_default) {
     cs = get_default_coordinate_system();
   }
-  FLOATTYPE vy,vz;
+
+  FLOATTYPE vy, vz;
   switch(cs) {
   case CS_yup_right:
     vz = -fwd_v;
@@ -479,9 +489,8 @@ rfu(FLOATTYPE right_v, FLOATTYPE fwd_v, FLOATTYPE up_v,
   default:
     linmath_cat.error()
       << "Invalid coordinate system!\n";
-    return FLOATNAME(LVector3)(0.0f, 0.0f, 0.0f);
+    return FLOATNAME(LVector3)(0);
   }
 
- return FLOATNAME(LVector3)(right_v,vy,vz);
+  return FLOATNAME(LVector3)(right_v, vy, vz);
 }
-

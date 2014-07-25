@@ -101,6 +101,6 @@ extern EXPCL_PANDA_GOBJ ConfigVariableInt adaptive_lru_max_updates_per_frame;
 extern EXPCL_PANDA_GOBJ ConfigVariableDouble async_load_delay;
 extern EXPCL_PANDA_GOBJ ConfigVariableInt lens_geom_segments;
 
+extern EXPCL_PANDA_GOBJ ConfigVariableString cg_glsl_version;
+
 #endif
-
-

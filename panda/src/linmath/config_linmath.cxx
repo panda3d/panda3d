@@ -88,6 +88,17 @@ init_liblinmath() {
   UnalignedLVecBase4d::init_type();
   UnalignedLMatrix4d::init_type();
 
+  LVecBase2i::init_type();
+  LVecBase3i::init_type();
+  LVecBase4i::init_type();
+  LVector2i::init_type();
+  LVector3i::init_type();
+  LVector4i::init_type();
+  LPoint2i::init_type();
+  LPoint3i::init_type();
+  LPoint4i::init_type();
+  UnalignedLVecBase4i::init_type();
+
   LQuaternionf::init_type();
   LRotationf::init_type();
   LOrientationf::init_type();

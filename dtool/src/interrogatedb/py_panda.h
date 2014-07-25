@@ -42,18 +42,23 @@
 
 #if defined(HAVE_PYTHON) && !defined(CPPPARSER)
 
-#ifdef HAVE_LONG_LONG
-#undef HAVE_LONG_LONG
-#endif 
 #ifdef _POSIX_C_SOURCE
 #undef _POSIX_C_SOURCE
 #endif
 
+#define PY_SSIZE_T_CLEAN 1
+
 #include "Python.h"
 #include "structmember.h"
-#ifdef HAVE_LONG_LONG
-#undef HAVE_LONG_LONG
-#endif 
+
+#ifndef HAVE_LONG_LONG
+#define PyLong_FromLongLong(x) PyLong_FromLong((long) (x))
+#define PyLong_FromUnsignedLongLong(x) PyLong_FromUnsignedLong((unsigned long) (x))
+#define PyLong_AsLongLong(x) PyLong_AsLong(x)
+#define PyLong_AsUnsignedLongLong(x) PyLong_AsUnsignedLong(x)
+#define PyLong_AsUnsignedLongLongMask(x) PyLong_AsUnsignedLongMask(x)
+#define PyLong_AsLongLongAndOverflow(x) PyLong_AsLongAndOverflow(x)
+#endif
 
 #if PY_VERSION_HEX < 0x02050000
 
@@ -139,7 +144,7 @@ typedef void * ( * ConvertFunctionType  )(PyObject *,Dtool_PyTypedObject * );
 typedef void * ( * ConvertFunctionType1  )(void *, Dtool_PyTypedObject *);
 typedef void   ( *FreeFunction  )(PyObject *);
 typedef void   ( *PyModuleClassInit)(PyObject *module);
-typedef int    ( *InitNoCoerce)(PyObject *self, PyObject *args, PyObject *kwds);
+typedef int    ( *InitNoCoerce)(PyObject *self, PyObject *args);
 
 //inline          Dtool_PyTypedObject *  Dtool_RuntimeTypeDtoolType(int type);
 inline void     Dtool_Deallocate_General(PyObject * self);
@@ -369,7 +374,7 @@ EXPCL_DTOOLCONFIG PyObject *DTool_CreatePyInstance(void *local_this, Dtool_PyTyp
 extern EXPORT_THIS   Dtool_PyTypedObject Dtool_##CLASS_NAME;\
 extern struct        PyMethodDef Dtool_Methods_##CLASS_NAME[];\
 int         Dtool_Init_##CLASS_NAME(PyObject *self, PyObject *args, PyObject *kwds);\
-int         Dtool_InitNoCoerce_##CLASS_NAME(PyObject *self, PyObject *args, PyObject *kwds);\
+int         Dtool_InitNoCoerce_##CLASS_NAME(PyObject *self, PyObject *args);\
 PyObject *  Dtool_new_##CLASS_NAME(PyTypeObject *type, PyObject *args, PyObject *kwds);\
 void  *     Dtool_UpcastInterface_##CLASS_NAME(PyObject *self, Dtool_PyTypedObject *requested_type);\
 void  *     Dtool_DowncastInterface_##CLASS_NAME(void *self, Dtool_PyTypedObject *requested_type);\

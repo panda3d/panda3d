@@ -33,6 +33,7 @@ using namespace std;
 
 #define INLINE inline
 #define TYPENAME typename
+#define CONSTEXPR
 
 #define EXPORT_TEMPLATE_CLASS(expcl, exptp, classname)
 
@@ -117,6 +118,16 @@ typedef ios::seekdir ios_seekdir;
 #define INLINE __forceinline
 #else
 #define INLINE inline
+#endif
+
+#if defined(__has_extension) // Clang magic.
+#if __has_extension(cxx_constexpr)
+#define CONSTEXPR constexpr
+#endif
+#elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7)) && (__cplusplus >= 201103L)
+#define CONSTEXPR constexpr
+#else
+#define CONSTEXPR INLINE
 #endif
 
 #if defined(WIN32_VC) && !defined(LINK_ALL_STATIC) && defined(EXPORT_TEMPLATES)

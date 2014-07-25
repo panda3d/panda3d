@@ -42,7 +42,8 @@ DisplayRegion(GraphicsOutput *window, const LVecBase4 &dimensions) :
 {
   _screenshot_buffer_type = window->get_draw_buffer_type();
   _draw_buffer_type = window->get_draw_buffer_type();
-  set_dimensions(dimensions);
+  set_num_regions(1);
+  set_dimensions(0, dimensions);
   compute_pixels_all_stages();
 
   _window->add_display_region(this);
@@ -127,15 +128,15 @@ set_lens_index(int index) {
 //               whole screen.
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
-set_dimensions(const LVecBase4 &dimensions) {
+set_dimensions(int i, const LVecBase4 &dimensions) {
   int pipeline_stage = Thread::get_current_pipeline_stage();
   nassertv(pipeline_stage == 0);
   CDWriter cdata(_cycler);
 
-  cdata->_dimensions = dimensions;
+  cdata->_regions[i]._dimensions = dimensions;
 
   if (_window != (GraphicsOutput *)NULL && _window->has_size()) {
-    do_compute_pixels(_window->get_fb_x_size(), _window->get_fb_y_size(), cdata);
+    do_compute_pixels(i, _window->get_fb_x_size(), _window->get_fb_y_size(), cdata);
   }
 }
 
@@ -419,9 +420,8 @@ set_target_tex_page(int page) {
 void DisplayRegion::
 output(ostream &out) const {
   CDReader cdata(_cycler);
-  out << "DisplayRegion(" << cdata->_dimensions << ")=pixels(" << cdata->_pl
-      << " " << cdata->_pr << " " << cdata->_pb << " " << cdata->_pt
-      << ")";
+  out << "DisplayRegion(" << cdata->_regions[0]._dimensions
+      << ")=pixels(" << cdata->_regions[0]._pixels << ")";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -636,8 +636,10 @@ void DisplayRegion::
 compute_pixels() {
   if (_window != (GraphicsOutput *)NULL) {
     CDWriter cdata(_cycler, false);
-    do_compute_pixels(_window->get_fb_x_size(), _window->get_fb_y_size(), 
-                      cdata);
+    for (int i = 0; i < cdata->_regions.size(); ++i) {
+      do_compute_pixels(i, _window->get_fb_x_size(), _window->get_fb_y_size(), 
+                        cdata);
+    }
   }
 }
 
@@ -656,8 +658,10 @@ compute_pixels_all_stages() {
   if (_window != (GraphicsOutput *)NULL) {
     OPEN_ITERATE_ALL_STAGES(_cycler) {
       CDStageWriter cdata(_cycler, pipeline_stage);
-      do_compute_pixels(_window->get_fb_x_size(), _window->get_fb_y_size(), 
-                        cdata);
+      for (int i = 0; i < cdata->_regions.size(); ++i) {
+        do_compute_pixels(i, _window->get_fb_x_size(), _window->get_fb_y_size(), 
+                          cdata);
+      }
     }
     CLOSE_ITERATE_ALL_STAGES(_cycler);
   }
@@ -673,7 +677,9 @@ compute_pixels_all_stages() {
 void DisplayRegion::
 compute_pixels(int x_size, int y_size) {
   CDWriter cdata(_cycler, false);
-  do_compute_pixels(x_size, y_size, cdata);
+  for (int i = 0; i < cdata->_regions.size(); ++i) {
+    do_compute_pixels(i, x_size, y_size, cdata);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -689,7 +695,9 @@ void DisplayRegion::
 compute_pixels_all_stages(int x_size, int y_size) {
   OPEN_ITERATE_ALL_STAGES(_cycler) {
     CDStageWriter cdata(_cycler, pipeline_stage);
-    do_compute_pixels(x_size, y_size, cdata);
+    for (int i = 0; i < cdata->_regions.size(); ++i) {
+      do_compute_pixels(i, x_size, y_size, cdata);
+    }
   } 
   CLOSE_ITERATE_ALL_STAGES(_cycler);
 }
@@ -741,32 +749,36 @@ win_display_regions_changed() {
 //               assumes that we already have the lock.
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
-do_compute_pixels(int x_size, int y_size, CData *cdata) {
+do_compute_pixels(int i, int x_size, int y_size, CData *cdata) {
   if (display_cat.is_debug()) {
     display_cat.debug()
       << "DisplayRegion::do_compute_pixels(" << x_size << ", " << y_size << ")\n";
   }
 
-  int old_w = cdata->_pr - cdata->_pl;
-  int old_h = cdata->_pt - cdata->_pb;
+  Region &region = cdata->_regions[i];
 
-  cdata->_pl = int((cdata->_dimensions[0] * x_size) + 0.5);
-  cdata->_pr = int((cdata->_dimensions[1] * x_size) + 0.5);
+  int old_w = region._pixels[1] - region._pixels[0];
+  int old_h = region._pixels[3] - region._pixels[2];
+
+  region._pixels[0] = int((region._dimensions[0] * x_size) + 0.5);
+  region._pixels[1] = int((region._dimensions[1] * x_size) + 0.5);
+  region._pixels_i[0] = region._pixels[0];
+  region._pixels_i[1] = region._pixels[1];
 
   nassertv(_window != (GraphicsOutput *)NULL);
   if (_window->get_inverted()) {
     // The window is inverted; compute the DisplayRegion accordingly.
-    cdata->_pb = int(((1.0f - cdata->_dimensions[3]) * y_size) + 0.5);
-    cdata->_pt = int(((1.0f - cdata->_dimensions[2]) * y_size) + 0.5);
-    cdata->_pbi = int((cdata->_dimensions[3] * y_size) + 0.5);
-    cdata->_pti = int((cdata->_dimensions[2] * y_size) + 0.5);
+    region._pixels[2] = int(((1.0f - region._dimensions[3]) * y_size) + 0.5);
+    region._pixels[3] = int(((1.0f - region._dimensions[2]) * y_size) + 0.5);
+    region._pixels_i[2] = int((region._dimensions[3] * y_size) + 0.5);
+    region._pixels_i[3] = int((region._dimensions[2] * y_size) + 0.5);
 
   } else {
     // The window is normal.
-    cdata->_pb = int((cdata->_dimensions[2] * y_size) + 0.5);
-    cdata->_pt = int((cdata->_dimensions[3] * y_size) + 0.5);
-    cdata->_pbi = int(((1.0f - cdata->_dimensions[2]) * y_size) + 0.5);
-    cdata->_pti = int(((1.0f - cdata->_dimensions[3]) * y_size) + 0.5);
+    region._pixels[2] = int((region._dimensions[2] * y_size) + 0.5);
+    region._pixels[3] = int((region._dimensions[3] * y_size) + 0.5);
+    region._pixels_i[2] = int(((1.0f - region._dimensions[2]) * y_size) + 0.5);
+    region._pixels_i[3] = int(((1.0f - region._dimensions[3]) * y_size) + 0.5);
   }
 }
 
@@ -814,9 +826,7 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
 ////////////////////////////////////////////////////////////////////
 DisplayRegion::CData::
 CData() :
-  _dimensions(0.0f, 1.0f, 0.0f, 1.0f),
-  _pl(0), _pr(0), _pb(0), _pt(0),
-  _pbi(0), _pti(0), _lens_index(0),
+  _lens_index(0),
   _camera_node((Camera *)NULL),
   _active(true),
   _sort(0),
@@ -824,6 +834,7 @@ CData() :
   _tex_view_offset(0),
   _target_tex_page(-1)
 {
+  _regions.push_back(Region());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -833,13 +844,7 @@ CData() :
 ////////////////////////////////////////////////////////////////////
 DisplayRegion::CData::
 CData(const DisplayRegion::CData &copy) :
-  _dimensions(copy._dimensions),
-  _pl(copy._pl),
-  _pr(copy._pr),
-  _pb(copy._pb),
-  _pt(copy._pt),
-  _pbi(copy._pbi),
-  _pti(copy._pti),
+  _regions(copy._regions),
   _lens_index(copy._lens_index),
   _camera(copy._camera),
   _camera_node(copy._camera_node),

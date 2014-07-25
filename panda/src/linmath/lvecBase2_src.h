@@ -78,24 +78,32 @@ PUBLISHED:
   INLINE_LINMATH void fill(FLOATTYPE fill_value);
   INLINE_LINMATH void set(FLOATTYPE x, FLOATTYPE y);
 
-  INLINE_LINMATH FLOATTYPE length() const;
-  INLINE_LINMATH FLOATTYPE length_squared() const;
-  INLINE_LINMATH bool normalize();
-
   INLINE_LINMATH FLOATTYPE dot(const FLOATNAME(LVecBase2) &other) const;
+  INLINE_LINMATH FLOATTYPE length_squared() const;
+
+#ifndef FLOATTYPE_IS_INT
+  INLINE_LINMATH FLOATTYPE length() const;
+  INLINE_LINMATH bool normalize();
   INLINE_LINMATH FLOATNAME(LVecBase2) project(const FLOATNAME(LVecBase2) &onto) const;
+#endif
 
   INLINE_LINMATH bool operator < (const FLOATNAME(LVecBase2) &other) const;
   INLINE_LINMATH bool operator == (const FLOATNAME(LVecBase2) &other) const;
   INLINE_LINMATH bool operator != (const FLOATNAME(LVecBase2) &other) const;
 
   INLINE_LINMATH int compare_to(const FLOATNAME(LVecBase2) &other) const;
+  INLINE_LINMATH size_t get_hash() const;
+  INLINE_LINMATH size_t add_hash(size_t hash) const;
+  INLINE_LINMATH void generate_hash(ChecksumHashGenerator &hashgen) const;
+
+#ifndef FLOATTYPE_IS_INT
   INLINE_LINMATH int compare_to(const FLOATNAME(LVecBase2) &other,
                                 FLOATTYPE threshold) const;
-  INLINE_LINMATH size_t get_hash() const;
   INLINE_LINMATH size_t get_hash(FLOATTYPE threshold) const;
-  INLINE_LINMATH size_t add_hash(size_t hash) const;
   INLINE_LINMATH size_t add_hash(size_t hash, FLOATTYPE threshold) const;
+  INLINE_LINMATH void generate_hash(ChecksumHashGenerator &hashgen,
+                                    FLOATTYPE threshold) const;
+#endif
 
   INLINE_LINMATH FLOATNAME(LVecBase2) operator - () const;
 
@@ -113,6 +121,9 @@ PUBLISHED:
   INLINE_LINMATH void operator *= (FLOATTYPE scalar);
   INLINE_LINMATH void operator /= (FLOATTYPE scalar);
 
+  EXTENSION(INLINE_LINMATH FLOATNAME(LVecBase2) __pow__(FLOATTYPE exponent) const);
+  EXTENSION(INLINE_LINMATH PyObject *__ipow__(PyObject *self, FLOATTYPE exponent));
+
   INLINE_LINMATH FLOATNAME(LVecBase2) fmax(const FLOATNAME(LVecBase2) &other);
   INLINE_LINMATH FLOATNAME(LVecBase2) fmin(const FLOATNAME(LVecBase2) &other);
 
@@ -122,10 +133,6 @@ PUBLISHED:
 
   INLINE_LINMATH void output(ostream &out) const;
   EXTENSION(INLINE_LINMATH void python_repr(ostream &out, const string &class_name) const);
-
-  INLINE_LINMATH void generate_hash(ChecksumHashGenerator &hashgen) const;
-  INLINE_LINMATH void generate_hash(ChecksumHashGenerator &hashgen,
-                                    FLOATTYPE threshold) const;
 
   INLINE_LINMATH void write_datagram_fixed(Datagram &destination) const;
   INLINE_LINMATH void read_datagram_fixed(DatagramIterator &source);

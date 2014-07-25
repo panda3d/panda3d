@@ -24,6 +24,7 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVector4) &operator = (FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LVector4)(FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LVector4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w);
+  INLINE_LINMATH FLOATNAME(LVector4)(const FLOATNAME(LVecBase3) &copy, FLOATTYPE w);
 
   EXTENSION(INLINE_LINMATH PyObject *__getattr__(const string &attr_name) const);
   EXTENSION(INLINE_LINMATH int __setattr__(PyObject *self, const string &attr_name, PyObject *assign));
@@ -45,7 +46,9 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVector4) operator * (FLOATTYPE scalar) const;
   INLINE_LINMATH FLOATNAME(LVector4) operator / (FLOATTYPE scalar) const;
 
+#ifndef FLOATTYPE_IS_INT
   INLINE_LINMATH FLOATNAME(LVector4) project(const FLOATNAME(LVecBase4) &onto) const;
+#endif
 
   EXTENSION(INLINE_LINMATH void python_repr(ostream &out, const string &class_name) const);
 

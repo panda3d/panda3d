@@ -43,10 +43,10 @@ private:
   INLINE ShaderAttrib(const ShaderAttrib &copy);
 
 PUBLISHED:
-  static CPT(RenderAttrib) make();
+  static CPT(RenderAttrib) make(const Shader *shader = NULL);
   static CPT(RenderAttrib) make_off();
   static CPT(RenderAttrib) make_default();
-  
+
   enum {
     F_disable_alpha_write = 0,  // Suppress writes to color buffer alpha channel.
     F_subsume_alpha_test  = 1,  // Shader promises to subsume the alpha test using TEXKILL
@@ -110,6 +110,7 @@ PUBLISHED:
   const LVecBase4 &get_shader_input_vector(InternalName *id) const;
   Texture *get_shader_input_texture(const InternalName *id) const;
   const Shader::ShaderPtrData *get_shader_input_ptr(const InternalName *id) const;
+  const LMatrix4 &get_shader_input_matrix(const InternalName *id, LMatrix4 &matrix) const;
 
   static void register_with_read_factory();
   

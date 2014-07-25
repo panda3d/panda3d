@@ -47,6 +47,7 @@ PUBLISHED:
 
   INLINE int get_num_variables() const;
   INLINE ConfigVariableCore *get_variable(int n) const;
+  MAKE_SEQ(get_variables, get_num_variables, get_variable);
   string get_variable_name(int n) const;
   bool is_variable_used(int n) const;
 

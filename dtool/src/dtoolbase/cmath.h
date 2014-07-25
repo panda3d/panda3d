@@ -23,7 +23,7 @@
 
 #include "dtoolbase.h"
 
-#include <math.h>
+#include <cmath>
 
 // Windows defines isnan() in a different place and with a different
 // name than everyone else.  Sheesh.
@@ -61,6 +61,8 @@ INLINE double casin(double v);
 INLINE double cacos(double v);
 INLINE double cmod(double x, double y);
 INLINE double cpow(double x, double y);
+
+INLINE int cpow(int x, int y);
 
 // Returns true if the number is NaN, false if it's a genuine number
 // or infinity.

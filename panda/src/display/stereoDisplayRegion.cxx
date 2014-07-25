@@ -109,10 +109,10 @@ set_pixel_zoom(PN_stdfloat pixel_zoom) {
 //               indicated dimensions.
 ////////////////////////////////////////////////////////////////////
 void StereoDisplayRegion::
-set_dimensions(const LVecBase4 &dimensions) {
-  DisplayRegion::set_dimensions(dimensions);
-  _left_eye->set_dimensions(dimensions);
-  _right_eye->set_dimensions(dimensions);
+set_dimensions(int i, const LVecBase4 &dimensions) {
+  DisplayRegion::set_dimensions(i, dimensions);
+  _left_eye->set_dimensions(i, dimensions);
+  _right_eye->set_dimensions(i, dimensions);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -63,10 +63,36 @@ is_any_specified() const {
 //               including decorations.
 ////////////////////////////////////////////////////////////////////
 INLINE void WindowProperties::
-set_origin(int x_origin, int y_origin) {
-  _x_origin = x_origin;
-  _y_origin = y_origin;
+set_origin(const LPoint2i &origin) {
+  _origin = origin;
   _specified |= S_origin;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::set_origin
+//       Access: Published
+//  Description: Specifies the origin on the screen (in pixels,
+//               relative to the top-left corner) at which the window
+//               should appear.  This is the origin of the top-left
+//               corner of the useful part of the window, not
+//               including decorations.
+////////////////////////////////////////////////////////////////////
+INLINE void WindowProperties::
+set_origin(int x_origin, int y_origin) {
+  _origin.set(x_origin, y_origin);
+  _specified |= S_origin;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::get_origin
+//       Access: Published
+//  Description: Returns the coordinates of the window's top-left
+//               corner, not including decorations.
+////////////////////////////////////////////////////////////////////
+INLINE const LPoint2i &WindowProperties::
+get_origin() const {
+  nassertr(has_origin(), LPoint2i::zero());
+  return _origin;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -78,7 +104,7 @@ set_origin(int x_origin, int y_origin) {
 INLINE int WindowProperties::
 get_x_origin() const {
   nassertr(has_origin(), 0);
-  return _x_origin;
+  return _origin.get_x();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -90,7 +116,7 @@ get_x_origin() const {
 INLINE int WindowProperties::
 get_y_origin() const {
   nassertr(has_origin(), 0);
-  return _y_origin;
+  return _origin.get_y();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -112,8 +138,20 @@ has_origin() const {
 INLINE void WindowProperties::
 clear_origin() {
   _specified &= ~S_origin;
-  _x_origin = 0;
-  _y_origin = 0;
+  _origin = LPoint2i::zero();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::set_size
+//       Access: Published
+//  Description: Specifies the requested size of the window, in
+//               pixels.  This is the size of the useful part of the
+//               window, not including decorations.
+////////////////////////////////////////////////////////////////////
+INLINE void WindowProperties::
+set_size(const LVector2i &size) {
+  _size = size;
+  _specified |= S_size;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -125,9 +163,20 @@ clear_origin() {
 ////////////////////////////////////////////////////////////////////
 INLINE void WindowProperties::
 set_size(int x_size, int y_size) {
-  _x_size = x_size;
-  _y_size = y_size;
+  _size.set(x_size, y_size);
   _specified |= S_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::get_origin
+//       Access: Published
+//  Description: Returns size in pixels of the useful part of the
+//               window, not including decorations.
+////////////////////////////////////////////////////////////////////
+INLINE const LVector2i &WindowProperties::
+get_size() const {
+  nassertr(has_size(), LVector2i::zero());
+  return _size;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -140,7 +189,7 @@ set_size(int x_size, int y_size) {
 INLINE int WindowProperties::
 get_x_size() const {
   nassertr(has_size(), 0);
-  return _x_size;
+  return _size.get_x();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -153,7 +202,7 @@ get_x_size() const {
 INLINE int WindowProperties::
 get_y_size() const {
   nassertr(has_size(), 0);
-  return _y_size;
+  return _size.get_y();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -175,8 +224,7 @@ has_size() const {
 INLINE void WindowProperties::
 clear_size() {
   _specified &= ~S_size;
-  _x_size = 0;
-  _y_size = 0;
+  _size = LVector2i::zero();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -133,6 +133,7 @@ PUBLISHED:
   CPT(GeomPrimitive) reverse() const;
   CPT(GeomPrimitive) match_shade_model(ShadeModel shade_model) const;
   CPT(GeomPrimitive) make_points() const;
+  CPT(GeomPrimitive) make_patches() const;
 
   int get_num_bytes() const;
   INLINE int get_data_size_bytes() const;
@@ -232,14 +233,14 @@ private:
   // itself from the other's list.
   typedef pmap<PreparedGraphicsObjects *, IndexBufferContext *> Contexts;
   Contexts _contexts;
-    
+
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA_GOBJ CData : public CycleData {
   public:
     INLINE CData();
     INLINE CData(const CData &copy);
     ALLOC_DELETED_CHAIN(CData);
-    
+
     virtual CycleData *make_copy() const;
     virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
     virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
@@ -247,7 +248,7 @@ private:
     virtual TypeHandle get_parent_type() const {
       return GeomPrimitive::get_class_type();
     }
-    
+
     ShadeModel _shade_model;
     int _first_vertex;
     int _num_vertices;
@@ -258,11 +259,11 @@ private:
     COWPT(GeomVertexArrayData) _mins;
     COWPT(GeomVertexArrayData) _maxs;
     UpdateSeq _modified;
-    
+
     bool _got_minmax;
     unsigned int _min_vertex;
     unsigned int _max_vertex;
-    
+
   public:
     static TypeHandle get_class_type() {
       return _type_handle;
@@ -270,7 +271,7 @@ private:
     static void init_type() {
       register_type(_type_handle, "GeomPrimitive::CData");
     }
-    
+
   private:
     static TypeHandle _type_handle;
 
@@ -282,7 +283,7 @@ private:
   typedef CycleDataWriter<CData> CDWriter;
   typedef CycleDataStageReader<CData> CDStageReader;
   typedef CycleDataStageWriter<CData> CDStageWriter;
-  
+
 private:
   static PStatCollector _decompose_pcollector;
   static PStatCollector _doubleside_pcollector;
@@ -360,7 +361,7 @@ public:
   INLINE CPTA_int get_ends() const;
   INLINE CPT(GeomVertexArrayData) get_mins() const;
   INLINE CPT(GeomVertexArrayData) get_maxs() const;
-  
+
 private:
   CPT(GeomPrimitive) _object;
   Thread *_current_thread;
