@@ -15,6 +15,10 @@
 #include "globPattern.h"
 #include <ctype.h>
 
+#ifdef HAVE_PYTHON
+#include "Python.h"
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GlobPattern::has_glob_characters
 //       Access: Published

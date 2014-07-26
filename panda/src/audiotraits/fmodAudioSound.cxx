@@ -23,10 +23,12 @@
 
 //Panda Headers
 #include "config_audio.h"
+#include "config_fmodAudio.h"
 #include "fmodAudioSound.h"
 #include "string_utils.h"
 #include "subfileInfo.h"
 #include "reMutexHolder.h"
+#include "virtualFileSystem.h"
 
 TypeHandle FmodAudioSound::_type_handle;
 

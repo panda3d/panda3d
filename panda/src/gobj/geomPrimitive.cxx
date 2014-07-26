@@ -14,6 +14,7 @@
 
 #include "geomPrimitive.h"
 #include "geom.h"
+#include "geomPatches.h"
 #include "geomVertexData.h"
 #include "geomVertexArrayFormat.h"
 #include "geomVertexColumn.h"

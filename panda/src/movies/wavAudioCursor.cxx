@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "wavAudioCursor.h"
+#include "config_movies.h"
 #include "virtualFileSystem.h"
 
 // Tables for decompressing mu-law and A-law wav files.

@@ -18,6 +18,8 @@
 #include "connectionWriter.h"
 #include "netAddress.h"
 #include "config_net.h"
+#include "socket_udp.h"
+#include "socket_tcp_listen.h"
 #include "lightMutexHolder.h"
 #include "trueClock.h"
 

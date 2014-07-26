@@ -17,6 +17,7 @@
 
 #include "pandabase.h"
 #include "config_audio.h"
+#include "config_fmodAudio.h"
 #include "dcast.h"
 
 #ifdef HAVE_FMODEX //[

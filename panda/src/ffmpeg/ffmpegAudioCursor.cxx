@@ -12,6 +12,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "config_ffmpeg.h"
 #include "ffmpegAudioCursor.h"
 
 #include "ffmpegAudio.h"

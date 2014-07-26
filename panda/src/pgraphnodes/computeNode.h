@@ -18,6 +18,7 @@
 #include "pandabase.h"
 #include "pandaNode.h"
 #include "callbackObject.h"
+#include "callbackNode.h"
 #include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////

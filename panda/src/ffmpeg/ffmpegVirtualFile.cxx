@@ -14,7 +14,7 @@
 
 #include "pandabase.h"
 
-#include "config_movies.h"
+#include "config_ffmpeg.h"
 #include "ffmpegVirtualFile.h"
 #include "virtualFileSystem.h"
 

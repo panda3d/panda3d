@@ -17,6 +17,8 @@
 
 #include "pandabase.h"
 
+#include "numeric_types.h"
+
 ////////////////////////////////////////////////////////////////////
 //       Class : EggParameters
 // Description : The values stored in this structure are global
