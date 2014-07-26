@@ -19,7 +19,7 @@
 #include "movieAudioCursor.h"
 #include "streamReader.h"
 
-#include "wavAudio.h"
+class WavAudio;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : WavAudioCursor
