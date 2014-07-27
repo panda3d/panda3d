@@ -267,6 +267,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
           if (size > 6 && matrix_name.compare(size - 6, 6, "Matrix") == 0) {
             Shader::ShaderMatSpec bind;
             bind._id = arg_id;
+            bind._func = Shader::SMF_compose;
             if (transpose) {
               bind._piece = Shader::SMP_transpose;
             } else {
@@ -274,9 +275,10 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
             }
             bind._arg[0] = NULL;
             bind._arg[1] = NULL;
+            bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
+            bind._dep[1] = Shader::SSD_general | Shader::SSD_transform;
 
             if (matrix_name == "ModelViewProjectionMatrix") {
-              bind._func = Shader::SMF_compose;
               if (inverse) {
                 bind._part[0] = Shader::SMO_apiclip_to_view;
                 bind._part[1] = Shader::SMO_view_to_model;
@@ -284,11 +286,8 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
                 bind._part[0] = Shader::SMO_model_to_view;
                 bind._part[1] = Shader::SMO_view_to_apiclip;
               }
-              bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
-              bind._dep[1] = Shader::SSD_general | Shader::SSD_transform;
 
             } else if (matrix_name == "ModelViewMatrix") {
-              bind._func = Shader::SMF_compose;
               if (inverse) {
                 bind._part[0] = Shader::SMO_apiview_to_view;
                 bind._part[1] = Shader::SMO_view_to_model;
@@ -296,11 +295,8 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
                 bind._part[0] = Shader::SMO_model_to_view;
                 bind._part[1] = Shader::SMO_view_to_apiview;
               }
-              bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
-              bind._dep[1] = Shader::SSD_general | Shader::SSD_transform;
 
             } else if (matrix_name == "ProjectionMatrix") {
-              bind._func = Shader::SMF_compose;
               if (inverse) {
                 bind._part[0] = Shader::SMO_apiclip_to_view;
                 bind._part[1] = Shader::SMO_view_to_apiview;
@@ -308,12 +304,9 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
                 bind._part[0] = Shader::SMO_apiview_to_view;
                 bind._part[1] = Shader::SMO_view_to_apiclip;
               }
-              bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
-              bind._dep[1] = Shader::SSD_general | Shader::SSD_transform;
 
             } else if (matrix_name == "NormalMatrix") {
               // This is really the upper 3x3 of the ModelViewMatrixInverseTranspose.
-              bind._func = Shader::SMF_compose;
               if (inverse) {
                 bind._part[0] = Shader::SMO_model_to_view;
                 bind._part[1] = Shader::SMO_view_to_apiview;
@@ -321,13 +314,38 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
                 bind._part[0] = Shader::SMO_apiview_to_view;
                 bind._part[1] = Shader::SMO_view_to_model;
               }
-              bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
-              bind._dep[1] = Shader::SSD_general | Shader::SSD_transform;
 
               if (transpose) {
                 bind._piece = Shader::SMP_upper3x3;
               } else {
                 bind._piece = Shader::SMP_transpose3x3;
+              }
+
+            } else if (matrix_name == "ModelMatrix") {
+              if (inverse) {
+                bind._part[0] = Shader::SMO_world_to_view;
+                bind._part[1] = Shader::SMO_view_to_model;
+              } else {
+                bind._part[0] = Shader::SMO_model_to_view;
+                bind._part[1] = Shader::SMO_view_to_world;
+              }
+
+            } else if (matrix_name == "ViewMatrix") {
+              if (inverse) {
+                bind._part[0] = Shader::SMO_apiview_to_view;
+                bind._part[1] = Shader::SMO_view_to_world;
+              } else {
+                bind._part[0] = Shader::SMO_world_to_view;
+                bind._part[1] = Shader::SMO_view_to_apiview;
+              }
+
+            } else if (matrix_name == "ViewProjectionMatrix") {
+              if (inverse) {
+                bind._part[0] = Shader::SMO_apiclip_to_view;
+                bind._part[1] = Shader::SMO_view_to_world;
+              } else {
+                bind._part[0] = Shader::SMO_world_to_view;
+                bind._part[1] = Shader::SMO_view_to_apiclip;
               }
 
             } else {
@@ -410,21 +428,21 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
 
           if (param_name == "osg_ViewMatrix") {
             bind._piece = Shader::SMP_whole;
-            bind._func = Shader::SMF_first;
+            bind._func = Shader::SMF_compose;
             bind._part[0] = Shader::SMO_world_to_view;
-            bind._part[1] = Shader::SMO_identity;
+            bind._part[1] = Shader::SMO_view_to_apiview;
             bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
-            bind._dep[1] = Shader::SSD_NONE;
+            bind._dep[1] = Shader::SSD_general | Shader::SSD_transform;
             s->_mat_spec.push_back(bind);
             continue;
 
           } else if (param_name == "osg_InverseViewMatrix") {
             bind._piece = Shader::SMP_whole;
-            bind._func = Shader::SMF_first;
-            bind._part[0] = Shader::SMO_view_to_world;
-            bind._part[1] = Shader::SMO_identity;
+            bind._func = Shader::SMF_compose;
+            bind._part[0] = Shader::SMO_apiview_to_view;
+            bind._part[1] = Shader::SMO_view_to_world;
             bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
-            bind._dep[1] = Shader::SSD_NONE;
+            bind._dep[1] = Shader::SSD_general | Shader::SSD_transform;
             s->_mat_spec.push_back(bind);
             continue;
 
