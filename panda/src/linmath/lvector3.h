@@ -29,4 +29,7 @@
 #include "dblnames.h"
 #include "lvector3_src.h"
 
+#include "intnames.h"
+#include "lvector3_src.h"
+
 #endif

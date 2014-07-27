@@ -591,10 +591,22 @@ find_package(ZLIB)
 package_option(ZLIB DEFAULT ON
   "Enables support for compression of Panda assets.")
 
+# Is FFMPEG installed, and where?
+find_package(FFMPEG)
+find_package(SWScale)
+find_package(SWResample)
+
+package_option(FFMPEG
+  "Enables support for audio- and video-decoding using the FFMPEG library.")
+package_option(SWSCALE
+  "Enables support for FFMPEG's libswscale for video rescaling.")
+package_option(SWRESAMPLE
+  "Enables support for FFMPEG's libresample for audio resampling.")
+
 # Is ODE installed, and where?
 find_package(ODE)
 
-package_option(ODE DEFAULT ON
+package_option(ODE
   "Enables support for ridid-body physics using the Open Dynamics Engine.")
 
 # Is OpenGL installed, and where?
@@ -608,7 +620,7 @@ package_option(GL "Enable OpenGL support.")
 # libraries appropriate to the version you want to compile against.
 set(MIN_GL_VERSION "1 1" CACHE STRING
   "The variable is the major, minor version of OpenGL, separated by a
-space (instead of a dot).  Thus, "1 1" means OpenGL version 1.1.
+space (instead of a dot).  Thus, \"1 1\" means OpenGL version 1.1.
 
 This defines the minimum runtime version of OpenGL that Panda will
 require. Setting it to a higher version will compile in hard
@@ -787,6 +799,12 @@ option(HAVE_EGG
   "Do you want to build the egg loader?  Usually there's no reason to
 avoid building this, unless you really want to make a low-footprint
 build (such as, for instance, for the iPhone)." ON)
+
+option(HAVE_AUDIO
+  "Do you want to build the audio interface?" ON)
+
+option(DO_PSTATS
+  "Enable the pstats client?" ON)
 
 # These image formats don't require the assistance of a third-party
 # library to read and write, so there's normally no reason to disable

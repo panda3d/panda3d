@@ -40,7 +40,7 @@ __copy__() const {
 
   // If we do have a node, duplicate it, and wrap it in a new
   // NodePath.
-  return NodePath(_this->node()->__copy__());
+  return NodePath(invoke_extension(_this->node()).__copy__());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -168,7 +168,7 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
     }
   }
 
-  PyObject *result = Py_BuildValue("(O(s#))", func, bam_stream.data(), bam_stream.size());
+  PyObject *result = Py_BuildValue("(O(s#))", func, bam_stream.data(), (Py_ssize_t) bam_stream.size());
   Py_DECREF(func);
   Py_DECREF(this_class);
   return result;

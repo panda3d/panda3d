@@ -31,6 +31,7 @@ include_directories("${CMAKE_BINARY_DIR}/include")
 option(BUILD_DTOOL  "Build the dtool source tree." ON)
 option(BUILD_PANDA  "Build the panda source tree." ON)
 option(BUILD_DIRECT "Build the direct source tree." ON)
+option(BUILD_PANDATOOL "Build the pandatool source tree." ON)
 
 # Include Panda3D packages
 if(BUILD_DTOOL)
@@ -43,4 +44,8 @@ endif()
 
 if(BUILD_DIRECT)
   add_subdirectory(direct)
+endif()
+
+if(BUILD_PANDATOOL)
+  add_subdirectory(pandatool)
 endif()

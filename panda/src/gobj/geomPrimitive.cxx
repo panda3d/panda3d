@@ -14,6 +14,7 @@
 
 #include "geomPrimitive.h"
 #include "geom.h"
+#include "geomPatches.h"
 #include "geomVertexData.h"
 #include "geomVertexArrayFormat.h"
 #include "geomVertexColumn.h"
@@ -989,6 +990,41 @@ make_points() const {
   points->set_vertices(new_vertices);
 
   return points;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitive::make_patches
+//       Access: Published
+//  Description: Decomposes a complex primitive type into a simpler
+//               primitive type, for instance triangle strips to
+//               triangles, puts these in a new GeomPatches objectand returns a pointer to the new primitive
+//               definition.  If the decomposition cannot be
+//               performed, this might return the original object.
+//
+//               This method is useful for application code that wants
+//               to iterate through the set of triangles on the
+//               primitive without having to write handlers for each
+//               possible kind of primitive type.
+////////////////////////////////////////////////////////////////////
+CPT(GeomPrimitive) GeomPrimitive::
+make_patches() const {
+  if (is_exact_type(GeomPatches::get_class_type())) {
+    return this;
+  }
+
+  CPT(GeomPrimitive) prim = decompose_impl();
+  int num_vertices_per_patch = prim->get_num_vertices_per_primitive();
+
+  PT(GeomPrimitive) patches = new GeomPatches(num_vertices_per_patch, get_usage_hint());
+
+  if (prim->is_indexed()) {
+    patches->set_vertices(prim->get_vertices());
+  } else {
+    patches->set_nonindexed_vertices(prim->get_first_vertex(),
+                                     prim->get_num_vertices());
+  }
+
+  return patches;
 }
 
 ////////////////////////////////////////////////////////////////////

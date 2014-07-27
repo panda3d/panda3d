@@ -21,6 +21,7 @@
 #include "pnmFileTypeRegistry.h"
 #include "bamReader.h"
 #include "ppmcmap.h"
+#include "pfmFile.h"
 
 // Tiff will want to re-typedef these things.
 #define int8 tiff_int8
@@ -75,9 +76,6 @@ unsigned short tiff_fillorder = FILLORDER_MSB2LSB;
 short tiff_predictor = 0;
 /* 0, 1, or 2;  meaningful when tiff_compression == COMPRESSION_LZW. */
 
-
-long tiff_rowsperstrip = 0;
-/* 0 or any positive number */
 
 #ifndef PHOTOMETRIC_DEPTH
 #define PHOTOMETRIC_DEPTH 32768
@@ -369,6 +367,8 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   }
 
   if (_is_valid) {
+    if ( ! TIFFGetField( tif, TIFFTAG_SAMPLEFORMAT, &sample_format ) )
+      sample_format = SAMPLEFORMAT_UINT;
     if ( ! TIFFGetField( tif, TIFFTAG_BITSPERSAMPLE, &bps ) )
       bps = 1;
     if ( ! TIFFGetField( tif, TIFFTAG_SAMPLESPERPIXEL, &spp ) )
@@ -377,6 +377,20 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
     if ( ! TIFFGetField( tif, TIFFTAG_PHOTOMETRIC, &photomet ) ) {
       pnmimage_tiff_cat.error()
         << "Error getting photometric from TIFF file.\n";
+      _is_valid = false;
+
+    } else if (sample_format == SAMPLEFORMAT_IEEEFP) {
+      // Floating-point TIFF.  We only accept 32-bit floats.
+      if (bps != 32) {
+        pnmimage_tiff_cat.error()
+          << "Can only read 32-bit float TIFF files, not " << bps << "-bit.\n";
+        _is_valid = false;
+      }
+
+    } else if (sample_format != SAMPLEFORMAT_UINT) {
+      // Can't understand other kinds of sample formats.
+      pnmimage_tiff_cat.error()
+        << "Can't understand sample format\n";
       _is_valid = false;
     }
   }
@@ -563,6 +577,54 @@ PNMFileTypeTIFF::Reader::
   if (tif != (struct tiff *)NULL) {
     TIFFClose(tif);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeTIFF::Reader::is_floating_point
+//       Access: Public, Virtual
+//  Description: Returns true if this PNMFileType represents a
+//               floating-point image type, false if it is a normal,
+//               integer type.  If this returns true, read_pfm() is
+//               implemented instead of read_data().
+////////////////////////////////////////////////////////////////////
+bool PNMFileTypeTIFF::Reader::
+is_floating_point() {
+  return sample_format = SAMPLEFORMAT_IEEEFP;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeTIFF::Reader::read_pfm
+//       Access: Public, Virtual
+//  Description: Reads floating-point data directly into the indicated
+//               PfmFile.  Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool PNMFileTypeTIFF::Reader::
+read_pfm(PfmFile &pfm) {
+  if (!is_valid()) {
+    return false;
+  }
+
+  int x_size = get_x_size();
+  int y_size = get_y_size();
+  int num_channels = get_num_channels();
+
+  pfm.clear(x_size, y_size, num_channels);
+  vector_float table;
+  pfm.swap_table(table);
+
+  for (int yi = 0; yi < y_size; ++yi) {
+    float *row = &table[(yi * x_size) * _num_channels];
+
+    if (TIFFReadScanline(tif, row, yi, 0 ) < 0 ) {
+      pnmimage_tiff_cat.error()
+        << "failed a scanline read on row " << yi << "\n";
+      pfm.swap_table(table);
+      return false;
+    }
+  }
+
+  pfm.swap_table(table);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -856,6 +918,91 @@ Writer(PNMFileType *type, ostream *file, bool owns_file) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeTIFF::Writer::supports_floating_point
+//       Access: Public, Virtual
+//  Description: Returns true if this PNMFileType can accept a
+//               floating-point image type, false if it can only
+//               accept a normal, integer type.  If this returns true,
+//               write_pfm() is implemented.
+////////////////////////////////////////////////////////////////////
+bool PNMFileTypeTIFF::Writer::
+supports_floating_point() {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeTIFF::Writer::supports_integer
+//       Access: Public, Virtual
+//  Description: Returns true if this PNMFileType can accept an
+//               integer image type, false if it can only
+//               accept a floating-point type.  If this returns true,
+//               write_data() or write_row() is implemented.
+////////////////////////////////////////////////////////////////////
+bool PNMFileTypeTIFF::Writer::
+supports_integer() {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeTIFF::Writer::write_pfm
+//       Access: Public, Virtual
+//  Description: Writes floating-point data from the indicated
+//               PfmFile.  Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool PNMFileTypeTIFF::Writer::
+write_pfm(const PfmFile &pfm) {
+  struct tiff *tif;
+
+  // Open output file.
+  tif = TIFFClientOpen("TIFF file", "w",
+                       (thandle_t) _file,
+                       ostream_dont_read, ostream_write,
+                       (TIFFSeekProc)ostream_seek,
+                       iostream_dont_close, ostream_size,
+                       iostream_map, iostream_unmap);
+  if (tif == NULL) {
+    return false;
+  }
+
+  int x_size = pfm.get_x_size();
+  int y_size = pfm.get_y_size();
+  int num_channels = pfm.get_num_channels();
+
+  int photometric = 0;
+  if (num_channels >= 3) {
+    photometric = PHOTOMETRIC_RGB;
+  }
+
+  // Set TIFF parameters.
+  TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, x_size);
+  TIFFSetField(tif, TIFFTAG_IMAGELENGTH, y_size);
+  TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_IEEEFP);
+  TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 32);
+  TIFFSetField(tif, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
+  TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, photometric);
+  TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_NONE);
+  TIFFSetField(tif, TIFFTAG_IMAGEDESCRIPTION, "Generated via pnmimage.\n" );
+  TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, num_channels);
+  TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
+
+  const vector_float &table = pfm.get_table();
+  for (int yi = 0; yi < y_size; ++yi) {
+    const float *row = &table[(yi * x_size) * _num_channels];
+    
+    if (TIFFWriteScanline(tif, (tdata_t)row, yi, 0 ) < 0) {
+      pnmimage_tiff_cat.error()
+        << "failed a scanline write on row " << yi << "\n";
+      return false;
+    }
+  }
+
+  TIFFFlushData(tif);
+  TIFFClose(tif);
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeTIFF::Writer::write_data
 //       Access: Public, Virtual
 //  Description: Writes out an entire image all at once, including the
@@ -992,8 +1139,6 @@ write_data(xel *array, xelval *alpha) {
     break;
   }
 
-  if ( tiff_rowsperstrip == 0 )
-    tiff_rowsperstrip = ( 8 * 1024 ) / bytesperrow;
   buf = (unsigned char*) malloc( bytesperrow );
   if ( buf == (unsigned char*) 0 ) {
     pnmimage_tiff_cat.error()
@@ -1004,6 +1149,7 @@ write_data(xel *array, xelval *alpha) {
   /* Set TIFF parameters. */
   TIFFSetField( tif, TIFFTAG_IMAGEWIDTH, _x_size );
   TIFFSetField( tif, TIFFTAG_IMAGELENGTH, _y_size );
+  TIFFSetField( tif, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_UINT );
   TIFFSetField( tif, TIFFTAG_BITSPERSAMPLE, bitspersample );
   TIFFSetField( tif, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT );
   TIFFSetField( tif, TIFFTAG_COMPRESSION, tiff_compression );
@@ -1020,8 +1166,6 @@ write_data(xel *array, xelval *alpha) {
   if (has_alpha()) {
     TIFFSetField(tif, TIFFTAG_EXTRASAMPLES, 1, extra_samples);
   }
-  TIFFSetField( tif, TIFFTAG_ROWSPERSTRIP, tiff_rowsperstrip );
-  /* TIFFSetField( tif, TIFFTAG_STRIPBYTECOUNTS, _y_size / tiff_rowsperstrip ); */
   TIFFSetField( tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG );
 
   if ( chv == (colorhist_vector) 0 ) {

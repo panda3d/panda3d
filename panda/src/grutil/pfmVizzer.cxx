@@ -39,6 +39,7 @@ PfmVizzer(PfmFile &pfm) : _pfm(pfm) {
   _vis_2d = false;
   _keep_beyond_lens = false;
   _vis_blend = NULL;
+  _aux_pfm = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -254,6 +255,9 @@ NodePath PfmVizzer::
 generate_vis_points() const {
   nassertr(_pfm.is_valid(), NodePath());
 
+  bool check_aux_pfm = uses_aux_pfm();
+  nassertr(!check_aux_pfm || (_aux_pfm != NULL && _aux_pfm->is_valid()), NodePath());
+
   CPT(GeomVertexFormat) format;
   if (_vis_inverse) {
     if (_vis_2d) {
@@ -290,6 +294,9 @@ generate_vis_points() const {
   for (int yi = 0; yi < _pfm.get_y_size(); ++yi) {
     for (int xi = 0; xi < _pfm.get_x_size(); ++xi) {
       if (!_pfm.has_point(xi, yi)) {
+        continue;
+      }
+      if (check_aux_pfm && !_aux_pfm->has_point(xi, yi)) {
         continue;
       }
 
@@ -331,6 +338,8 @@ generate_vis_points() const {
 NodePath PfmVizzer::
 generate_vis_mesh(MeshFace face) const {
   nassertr(_pfm.is_valid(), NodePath());
+  bool check_aux_pfm = uses_aux_pfm();
+  nassertr(!check_aux_pfm || (_aux_pfm != NULL && _aux_pfm->is_valid()), NodePath());
   nassertr(face != 0, NodePath());
 
   if (_pfm.get_num_channels() == 1 && _vis_columns.empty()) {
@@ -442,9 +451,17 @@ calc_max_v_displacement() const {
 //               Use calc_max_u_displacement() and
 //               calc_max_v_displacement() to compute suitable values
 //               for max_u and max_v.
+//
+//               This generates an integer 16-bit displacement image.
+//               It is a good idea, though not necessarily essential,
+//               to check "Preserve RGB" in the interpret footage
+//               section for each displacement image.  Set
+//               for_32bit true if this is meant to be used in a
+//               32-bit project file, and false if it is meant to be
+//               used in a 16-bit project file.
 ////////////////////////////////////////////////////////////////////
 void PfmVizzer::
-make_displacement(PNMImage &result, double max_u, double max_v) const {
+make_displacement(PNMImage &result, double max_u, double max_v, bool for_32bit) const {
   int x_size = _pfm.get_x_size();
   int y_size = _pfm.get_y_size();
   result.clear(x_size, y_size, 3, PNM_MAXMAXVAL);
@@ -454,10 +471,19 @@ make_displacement(PNMImage &result, double max_u, double max_v) const {
   // not exactly 0.5, because they round up.
   static const int midval = (PNM_MAXMAXVAL + 1) / 2;
 
-  // Empirically, After Effects seems to undershift by precisely this
-  // amount.  Curiously, this value is very close to, but not exactly,
-  // 256 / 255.
-  const double scale_factor = ae_undershift_factor;
+  double scale_factor;
+  if (for_32bit) {
+    // There doesn't appear to be an undershift needed on 32-bit
+    // projects, but we have the factor here anyway in case it
+    // develops.
+    scale_factor = ae_undershift_factor_32;
+  } else {
+    // Empirically, After Effects seems to undershift by precisely
+    // this amount (but only in a 16-bit project, not in a 32-bit
+    // project).  Curiously, this value is very close to, but not
+    // exactly, 256 / 255.
+    scale_factor = ae_undershift_factor_16;
+  }
 
   double u_scale = scale_factor * 0.5 * PNM_MAXMAXVAL / max_u;
   double v_scale = scale_factor * 0.5 * PNM_MAXMAXVAL / max_v;
@@ -514,6 +540,127 @@ make_displacement(PNMImage &result, double max_u, double max_v) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PfmVizzer::make_displacement
+//       Access: Published
+//  Description: Assuming the underlying PfmFile is a 2-d distortion
+//               mesh, with the U and V in the first two components
+//               and the third component unused, this computes an
+//               AfterEffects-style displacement map that represents
+//               the same distortion.  The indicated PNMImage will be
+//               filled in with a displacement map image, with
+//               horizontal shift in the red channel and vertical
+//               shift in the green channel, where a fully bright (or
+//               fully black) pixel indicates a shift of max_u or
+//               max_v pixels.
+//
+//               Use calc_max_u_displacement() and
+//               calc_max_v_displacement() to compute suitable values
+//               for max_u and max_v.
+//
+//               This generates a 32-bit floating-point displacement
+//               image.  It is essential to check "Preserve RGB" in
+//               the interpret footage section for each displacement
+//               image.  Set for_32bit true if this is meant to
+//               be used in a 32-bit project file, and false if it is
+//               meant to be used in a 16-bit project file.
+////////////////////////////////////////////////////////////////////
+void PfmVizzer::
+make_displacement(PfmFile &result, double max_u, double max_v, bool for_32bit) const {
+  int x_size = _pfm.get_x_size();
+  int y_size = _pfm.get_y_size();
+  result.clear(x_size, y_size, 3);
+
+  double scale_factor;
+  if (for_32bit) {
+    // There doesn't appear to be an undershift needed on 32-bit
+    // projects, but we have the factor here anyway in case it
+    // develops.
+    scale_factor = ae_undershift_factor_32;
+  } else {
+    // Empirically, After Effects seems to undershift by precisely
+    // this amount (but only in a 16-bit project, not in a 32-bit
+    // project).  Curiously, this value is very close to, but not
+    // exactly, 256 / 255.
+    scale_factor = ae_undershift_factor_16;
+  }
+
+  double u_scale = scale_factor * 0.5 / max_u;
+  double v_scale = scale_factor * 0.5 / max_v;
+
+  for (int yi = 0; yi < y_size; ++yi) {
+    for (int xi = 0; xi < x_size; ++xi) {
+      if (!_pfm.has_point(xi, yi)) {
+        continue;
+      }
+
+      const LPoint3f &point = _pfm.get_point(xi, yi);
+      double nxi = point[0] * (double)x_size - 0.5;
+      double nyi = point[1] * (double)y_size - 0.5;
+
+      double x_shift = (nxi - (double)xi);
+      double y_shift = (nyi - (double)yi);
+
+      float u_val = 0.5 + (float)(x_shift * u_scale);
+      float v_val = 0.5 + (float)(y_shift * v_scale);
+
+      // We use the blue channel to mark holes, so we can fill them in
+      // later.
+      result.set_point3(xi, yi, LVecBase3f(u_val, v_val, 0));
+    }
+  }
+
+  // Now fill in holes.
+  for (int yi = 0; yi < y_size; ++yi) {
+    for (int xi = 0; xi < x_size; ++xi) {
+      if (!_pfm.has_point(xi, yi)) {
+        continue;
+      }
+
+      const LPoint3f &point = _pfm.get_point(xi, yi);
+      double nxi = point[0] * (double)x_size - 0.5;
+      double nyi = point[1] * (double)y_size - 0.5;
+
+      r_fill_displacement(result, xi - 1, yi, nxi, nyi, u_scale, v_scale, 1);
+      r_fill_displacement(result, xi + 1, yi, nxi, nyi, u_scale, v_scale, 1);
+      r_fill_displacement(result, xi, yi - 1, nxi, nyi, u_scale, v_scale, 1);
+      r_fill_displacement(result, xi, yi + 1, nxi, nyi, u_scale, v_scale, 1);
+    }
+  }
+
+  // Finally, reset the blue channel for cleanliness.
+  for (int yi = 0; yi < y_size; ++yi) {
+    for (int xi = 0; xi < x_size; ++xi) {
+      result.set_channel(xi, yi, 2, 0.5);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmVizzer::uses_aux_pfm
+//       Access: Private
+//  Description: Returns true if any of the vis_column tokens
+//               reference the aux_pfm file, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool PfmVizzer::
+uses_aux_pfm() const {
+  for (VisColumns::const_iterator vci = _vis_columns.begin();
+       vci != _vis_columns.end();
+       ++vci) {
+    const VisColumn &column = *vci;
+    switch (column._source) {
+    case CT_aux_vertex1:
+    case CT_aux_vertex2:
+    case CT_aux_vertex3:
+      return true;
+    default:
+      break;
+    }
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PfmVizzer::r_fill_displacement
 //       Access: Private
 //  Description: Recursively fills in holes with the color of their
@@ -549,6 +696,45 @@ r_fill_displacement(PNMImage &result, int xi, int yi,
                        min(max(u_val, 0), PNM_MAXMAXVAL), 
                        min(max(v_val, 0), PNM_MAXMAXVAL), 
                        min(distance, PNM_MAXMAXVAL));
+
+    r_fill_displacement(result, xi - 1, yi, nxi, nyi, u_scale, v_scale, distance + 1);
+    r_fill_displacement(result, xi + 1, yi, nxi, nyi, u_scale, v_scale, distance + 1);
+    r_fill_displacement(result, xi, yi - 1, nxi, nyi, u_scale, v_scale, distance + 1);
+    r_fill_displacement(result, xi, yi + 1, nxi, nyi, u_scale, v_scale, distance + 1);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmVizzer::r_fill_displacement
+//       Access: Private
+//  Description: Recursively fills in holes with the color of their
+//               nearest neighbor after processing the image.  This
+//               avoids sudden discontinuities in the displacement map
+//               at the edge of the screen geometry.
+////////////////////////////////////////////////////////////////////
+void PfmVizzer::
+r_fill_displacement(PfmFile &result, int xi, int yi, 
+                    double nxi, double nyi, double u_scale, double v_scale,
+                    int distance) const {
+  if (xi < 0 || yi < 0 ||
+      xi >= result.get_x_size() || yi >= result.get_y_size()) {
+    // Stop at the edge.
+    return;
+  }
+
+  if (distance > 1000) {
+    // Avoid runaway recursion.
+    return;
+  }
+
+  float val = result.get_channel(xi, yi, 2);
+  if (val > (float)distance) {
+    // We've found a point that's closer.
+    double x_shift = (nxi - (double)xi);
+    double y_shift = (nyi - (double)yi);
+    float u_val = 0.5 + (float)(x_shift * u_scale);
+    float v_val = 0.5 + (float)(y_shift * v_scale);
+    result.set_point3(xi, yi, LVecBase3f(u_val, v_val, distance));
 
     r_fill_displacement(result, xi - 1, yi, nxi, nyi, u_scale, v_scale, distance + 1);
     r_fill_displacement(result, xi + 1, yi, nxi, nyi, u_scale, v_scale, distance + 1);
@@ -617,6 +803,7 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
   if (vis_columns.empty()) {
     build_auto_vis_columns(vis_columns, true);
   }
+  bool check_aux_pfm = uses_aux_pfm();
 
   CPT(GeomVertexFormat) format = make_array_format(vis_columns);
 
@@ -686,7 +873,13 @@ make_vis_mesh_geom(GeomNode *gnode, bool inverted) const {
               !_pfm.has_point(xi + 1, yi)) {
             continue;
           }
-
+          if (check_aux_pfm && (!_aux_pfm->has_point(xi, yi) ||
+                                !_aux_pfm->has_point(xi, yi + 1) ||
+                                !_aux_pfm->has_point(xi + 1, yi + 1) ||
+                                !_aux_pfm->has_point(xi + 1, yi))) {
+            continue;
+          }
+          
           if (!keep_beyond_lens &&
               (skip_points[(yi - y_begin) * x_size + (xi - x_begin)] ||
                skip_points[(yi - y_begin + 1) * x_size + (xi - x_begin)] ||
@@ -834,18 +1027,21 @@ make_array_format(const VisColumns &vis_columns) const {
       break;
 
     case CT_vertex1:
+    case CT_aux_vertex1:
       num_components = 1;
       numeric_type = GeomEnums::NT_float32;
       contents = GeomEnums::C_point;
       break;
 
     case CT_vertex2:
+    case CT_aux_vertex2:
       num_components = 2;
       numeric_type = GeomEnums::NT_float32;
       contents = GeomEnums::C_point;
       break;
 
     case CT_vertex3:
+    case CT_aux_vertex3:
       num_components = 3;
       numeric_type = GeomEnums::NT_float32;
       contents = GeomEnums::C_point;
@@ -918,6 +1114,18 @@ add_data(const PfmVizzer &vizzer, GeomVertexWriter &vwriter, int xi, int yi, boo
     }
     break;
 
+  case CT_aux_vertex1:
+    {
+      nassertr(vizzer.get_aux_pfm() != NULL, false);
+      PN_float32 p = vizzer.get_aux_pfm()->get_point1(xi, yi);
+      LPoint2f point(p, 0.0);
+      if (!transform_point(point)) {
+        success = false;
+      }
+      vwriter.set_data2f(point);
+    }
+    break;
+
   case CT_vertex2:
     {
       LPoint2f point = pfm.get_point2(xi, yi);
@@ -928,9 +1136,30 @@ add_data(const PfmVizzer &vizzer, GeomVertexWriter &vwriter, int xi, int yi, boo
     }
     break;
 
+  case CT_aux_vertex2:
+    {
+      nassertr(vizzer.get_aux_pfm() != NULL, false);
+      LPoint2f point = vizzer.get_aux_pfm()->get_point2(xi, yi);
+      if (!transform_point(point)) {
+        success = false;
+      }
+      vwriter.set_data2f(point);
+    }
+    break;
+
   case CT_vertex3:
     {
       LPoint3f point = pfm.get_point(xi, yi);
+      if (!transform_point(point)) {
+        success = false;
+      }
+      vwriter.set_data3f(point);
+    }
+    break;
+
+  case CT_aux_vertex3:
+    {
+      LPoint3f point = vizzer.get_aux_pfm()->get_point(xi, yi);
       if (!transform_point(point)) {
         success = false;
       }

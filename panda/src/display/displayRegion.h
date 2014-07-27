@@ -72,14 +72,19 @@ public:
   INLINE bool operator < (const DisplayRegion &other) const;
 
 PUBLISHED:
+  INLINE int get_num_regions() const;
+  INLINE void set_num_regions(int i);
   INLINE void get_dimensions(PN_stdfloat &l, PN_stdfloat &r, PN_stdfloat &b, PN_stdfloat &t) const;
-  INLINE LVecBase4 get_dimensions() const;
-  INLINE PN_stdfloat get_left() const;
-  INLINE PN_stdfloat get_right() const;
-  INLINE PN_stdfloat get_bottom() const;
-  INLINE PN_stdfloat get_top() const;
+  INLINE void get_dimensions(int i, PN_stdfloat &l, PN_stdfloat &r, PN_stdfloat &b, PN_stdfloat &t) const;
+  INLINE LVecBase4 get_dimensions(int i = 0) const;
+  INLINE PN_stdfloat get_left(int i = 0) const;
+  INLINE PN_stdfloat get_right(int i = 0) const;
+  INLINE PN_stdfloat get_bottom(int i = 0) const;
+  INLINE PN_stdfloat get_top(int i = 0) const;
   INLINE void set_dimensions(PN_stdfloat l, PN_stdfloat r, PN_stdfloat b, PN_stdfloat t);
-  virtual void set_dimensions(const LVecBase4 &dimensions);
+  INLINE void set_dimensions(int i, PN_stdfloat l, PN_stdfloat r, PN_stdfloat b, PN_stdfloat t);
+  INLINE void set_dimensions(const LVecBase4 &dimensions);
+  virtual void set_dimensions(int i, const LVecBase4 &dimensions);
 
   INLINE GraphicsOutput *get_window() const;
   GraphicsPipe *get_pipe() const;
@@ -112,9 +117,8 @@ PUBLISHED:
   CullTraverser *get_cull_traverser();
 
   INLINE void set_cube_map_index(int cube_map_index);
-  virtual void set_target_tex_page(int page, int view);
+  virtual void set_target_tex_page(int page);
   INLINE int get_target_tex_page() const;
-  INLINE int get_target_tex_view() const;
 
   INLINE void set_cull_callback(CallbackObject *object);
   INLINE void clear_cull_callback();
@@ -124,8 +128,8 @@ PUBLISHED:
   INLINE void clear_draw_callback();
   INLINE CallbackObject *get_draw_callback() const;
 
-  INLINE int get_pixel_width() const;
-  INLINE int get_pixel_height() const;
+  INLINE int get_pixel_width(int i = 0) const;
+  INLINE int get_pixel_height(int i = 0) const;
 
   virtual void output(ostream &out) const;
 
@@ -145,8 +149,11 @@ public:
   void compute_pixels(int x_size, int y_size);
   void compute_pixels_all_stages(int x_size, int y_size);
   INLINE void get_pixels(int &pl, int &pr, int &pb, int &pt) const;
+  INLINE void get_pixels(int i, int &pl, int &pr, int &pb, int &pt) const;
   INLINE void get_region_pixels(int &xo, int &yo, int &w, int &h) const;
+  INLINE void get_region_pixels(int i, int &xo, int &yo, int &w, int &h) const;
   INLINE void get_region_pixels_i(int &xo, int &yo, int &w, int &h) const;
+  INLINE void get_region_pixels_i(int i, int &xo, int &yo, int &w, int &h) const;
 
   virtual bool supports_pixel_zoom() const;
 
@@ -158,11 +165,20 @@ public:
   INLINE PStatCollector &get_cull_region_pcollector();
   INLINE PStatCollector &get_draw_region_pcollector();
 
+  struct Region {
+    INLINE Region();
+
+    LVecBase4 _dimensions;  // left, right, bottom, top
+    LVecBase4i _pixels;
+    LVecBase4i _pixels_i;
+  };
+  typedef pvector<Region> Regions;
+
 private:
   class CData;
 
   void win_display_regions_changed();
-  void do_compute_pixels(int x_size, int y_size, CData *cdata);
+  void do_compute_pixels(int i, int x_size, int y_size, CData *cdata);
   void set_active_index(int index);
 
 protected:
@@ -195,14 +211,8 @@ private:
       return DisplayRegion::get_class_type();
     }
 
-    LVecBase4 _dimensions;  // left, right, bottom, top
-    
-    int _pl;
-    int _pr;
-    int _pb;
-    int _pt;
-    int _pbi;
-    int _pti;
+    Regions _regions;
+
     int _lens_index; // index into which lens of a camera is associated with this display region.  0 is default
     
     NodePath _camera;
@@ -213,7 +223,6 @@ private:
     Lens::StereoChannel _stereo_channel;
     int _tex_view_offset;
     int _target_tex_page;
-    int _target_tex_view;
 
     PT(CallbackObject) _cull_callback;
     PT(CallbackObject) _draw_callback;
@@ -295,12 +304,14 @@ public:
 
   INLINE bool is_any_clear_active() const;
 
+  INLINE int get_num_regions() const;
   INLINE void get_dimensions(PN_stdfloat &l, PN_stdfloat &r, PN_stdfloat &b, PN_stdfloat &t) const;
-  INLINE const LVecBase4 &get_dimensions() const;
-  INLINE PN_stdfloat get_left() const;
-  INLINE PN_stdfloat get_right() const;
-  INLINE PN_stdfloat get_bottom() const;
-  INLINE PN_stdfloat get_top() const;
+  INLINE void get_dimensions(int i, PN_stdfloat &l, PN_stdfloat &r, PN_stdfloat &b, PN_stdfloat &t) const;
+  INLINE const LVecBase4 &get_dimensions(int i = 0) const;
+  INLINE PN_stdfloat get_left(int i = 0) const;
+  INLINE PN_stdfloat get_right(int i = 0) const;
+  INLINE PN_stdfloat get_bottom(int i = 0) const;
+  INLINE PN_stdfloat get_top(int i = 0) const;
 
   INLINE GraphicsOutput *get_window() const;
   GraphicsPipe *get_pipe() const;
@@ -312,15 +323,17 @@ public:
   INLINE int get_tex_view_offset();
   INLINE bool get_clear_depth_between_eyes() const;
   INLINE int get_target_tex_page() const;
-  INLINE int get_target_tex_view() const;
   INLINE CallbackObject *get_draw_callback() const;
 
   INLINE void get_pixels(int &pl, int &pr, int &pb, int &pt) const;
+  INLINE void get_pixels(int i, int &pl, int &pr, int &pb, int &pt) const;
   INLINE void get_region_pixels(int &xo, int &yo, int &w, int &h) const;
+  INLINE void get_region_pixels(int i, int &xo, int &yo, int &w, int &h) const;
   INLINE void get_region_pixels_i(int &xo, int &yo, int &w, int &h) const;
+  INLINE void get_region_pixels_i(int i, int &xo, int &yo, int &w, int &h) const;
 
-  INLINE int get_pixel_width() const;
-  INLINE int get_pixel_height() const;
+  INLINE int get_pixel_width(int i = 0) const;
+  INLINE int get_pixel_height(int i = 0) const;
 
   INLINE int get_lens_index() const;
 

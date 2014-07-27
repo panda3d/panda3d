@@ -107,9 +107,7 @@ MsgName2Id = {
 MsgId2Names = invertDictLossless(MsgName2Id)
     
 # put msg names in module scope, assigned to msg value
-for name, value in MsgName2Id.items():
-    exec('%s = %s' % (name, value))
-del name, value
+globals().update(MsgName2Id)
 
 # These messages are ignored when the client is headed to the quiet zone
 QUIET_ZONE_IGNORED_LIST = [

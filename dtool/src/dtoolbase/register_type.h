@@ -92,6 +92,7 @@ extern TypeHandle EXPCL_DTOOL bool_type_handle;
 extern TypeHandle EXPCL_DTOOL double_type_handle;
 extern TypeHandle EXPCL_DTOOL float_type_handle;
 extern TypeHandle EXPCL_DTOOL string_type_handle;
+extern TypeHandle EXPCL_DTOOL wstring_type_handle;
 
 extern TypeHandle long_p_type_handle;
 extern TypeHandle int_p_type_handle;
@@ -173,6 +174,11 @@ INLINE TypeHandle _get_type_handle(const float *) {
 template<>
 INLINE TypeHandle _get_type_handle(const string *) {
   return string_type_handle;
+}
+
+template<>
+INLINE TypeHandle _get_type_handle(const wstring *) {
+  return wstring_type_handle;
 }
 
 template<>

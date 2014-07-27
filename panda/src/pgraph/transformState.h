@@ -32,6 +32,7 @@
 #include "deletedChain.h"
 #include "simpleHashMap.h"
 #include "cacheStats.h"
+#include "extension.h"
 
 class GraphicsStateGuardianBase;
 class FactoryParams;
@@ -190,10 +191,8 @@ PUBLISHED:
   INLINE const TransformState *get_invert_composition_cache_source(int n) const;
   INLINE const TransformState *get_invert_composition_cache_result(int n) const;
   bool validate_composition_cache() const;
-#ifdef HAVE_PYTHON
-  PyObject *get_composition_cache() const;
-  PyObject *get_invert_composition_cache() const;
-#endif  // HAVE_PYTHON
+  EXTENSION(PyObject *get_composition_cache() const);
+  EXTENSION(PyObject *get_invert_composition_cache() const);
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level) const;
@@ -206,10 +205,8 @@ PUBLISHED:
   static void list_cycles(ostream &out);
   static void list_states(ostream &out);
   static bool validate_states();
-#ifdef HAVE_PYTHON
-  static PyObject *get_states();
-  static PyObject *get_unused_states();
-#endif  // HAVE_PYTHON
+  EXTENSION(static PyObject *get_states());
+  EXTENSION(static PyObject *get_unused_states());
 
 
 public:
@@ -405,6 +402,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class Extension<TransformState>;
 };
 
 INLINE ostream &operator << (ostream &out, const TransformState &state) {

@@ -185,13 +185,6 @@
   #define xcursor_libs $[XCURSOR_LIBS]
 #endif
 
-#if $[HAVE_MESA]
-  #define mesa_ipath $[wildcard $[MESA_IPATH]]
-  #define mesa_lpath $[wildcard $[MESA_LPATH]]
-  #define mesa_cflags $[MESA_CFLAGS]
-  #define mesa_libs $[MESA_LIBS]
-#endif
-
 #if $[HAVE_GLX]
   #define glx_ipath $[wildcard $[GLX_IPATH]]
   #define glx_lpath $[wildcard $[GLX_LPATH]]

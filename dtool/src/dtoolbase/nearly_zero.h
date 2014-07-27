@@ -35,6 +35,13 @@ get_nearly_zero_value(float) {
   return 1.0e-6f;
 }
 
+INLINE int
+get_nearly_zero_value(int) {
+  // This is a bit silly, but we should nevertheless define it in
+  // case it is called for an integer type.
+  return 0;
+}
+
 
 // IS_THRESHOLD_ZERO(value, threshold) returns true if the value is
 // within threshold of zero.
@@ -73,7 +80,7 @@ get_nearly_zero_value(float) {
 // MAYBE_ZERO(value) returns 0 if the value is nearly zero, and the
 // value itself otherwise.
 #define MAYBE_ZERO(value) \
-  (IS_NEARLY_ZERO(value) ? 0.0 : (value))
+  (IS_NEARLY_ZERO(value) ? 0 : (value))
 
 
 #endif

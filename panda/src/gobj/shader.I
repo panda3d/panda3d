@@ -32,6 +32,15 @@ get_filename(const ShaderType &type) const {
       case ST_geometry:
         return _filename->_geometry;
         break;
+      case ST_tess_control:
+        return _text->_tess_control;
+        break;
+      case ST_tess_evaluation:
+        return _text->_tess_evaluation;
+        break;
+      case ST_compute:
+        return _text->_compute;
+        break;
       default:
         return _filename->_shared;
     }
@@ -64,6 +73,9 @@ get_text(const ShaderType &type) const {
         break;
       case ST_tess_evaluation:
         return _text->_tess_evaluation;
+        break;
+      case ST_compute:
+        return _text->_compute;
         break;
       default:
         return _text->_shared;
@@ -544,6 +556,120 @@ ShaderPtrData(const LMatrix3d &mat) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//  Function: Shader::ShaderPtrData Constructor
+//  Access:
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Shader::ShaderPtrData::
+ShaderPtrData(const PTA_int &ptr):
+  _pta(ptr.v0()),
+  _ptr(ptr.p()),
+  _type(SPT_int),
+  _updated(true),
+  _size(ptr.size())
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//  Function: Shader::ShaderPtrData Constructor
+//  Access:
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Shader::ShaderPtrData::
+ShaderPtrData(const PTA_LVecBase4i &ptr):
+  _pta(ptr.v0()),
+  _ptr(ptr.p()),
+  _type(SPT_int),
+  _updated(true),
+  _size(ptr.size() * 4)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//  Function: Shader::ShaderPtrData Constructor
+//  Access:
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Shader::ShaderPtrData::
+ShaderPtrData(const PTA_LVecBase3i &ptr):
+  _pta(ptr.v0()),
+  _ptr(ptr.p()),
+  _type(SPT_int),
+  _updated(true),
+  _size(ptr.size() * 3)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//  Function: Shader::ShaderPtrData Constructor
+//  Access:
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Shader::ShaderPtrData::
+ShaderPtrData(const PTA_LVecBase2i &ptr):
+  _pta(ptr.v0()),
+  _ptr(ptr.p()),
+  _type(SPT_int),
+  _updated(true),
+  _size(ptr.size() * 2)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//  Function: Shader::ShaderPtrData Constructor
+//  Access:
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Shader::ShaderPtrData::
+ShaderPtrData(const LVecBase4i &vec) :
+  _type(SPT_int),
+  _updated(true),
+  _size(4)
+{
+  PTA_int pta = PTA_int::empty_array(4);
+  _pta = pta.v0();
+  _ptr = pta.p();
+  nassertv(sizeof(vec[0]) * vec.get_num_components() == pta.size() * sizeof(pta[0]));
+  memcpy(_ptr, vec.get_data(), sizeof(vec[0]) * vec.get_num_components());
+}
+
+////////////////////////////////////////////////////////////////////
+//  Function: Shader::ShaderPtrData Constructor
+//  Access:
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Shader::ShaderPtrData::
+ShaderPtrData(const LVecBase3i &vec) :
+  _type(SPT_int),
+  _updated(true),
+  _size(3)
+{
+  PTA_int pta = PTA_int::empty_array(3);
+  _pta = pta.v0();
+  _ptr = pta.p();
+  nassertv(sizeof(vec[0]) * vec.get_num_components() == pta.size() * sizeof(pta[0]));
+  memcpy(_ptr, vec.get_data(), sizeof(vec[0]) * vec.get_num_components());
+}
+
+////////////////////////////////////////////////////////////////////
+//  Function: Shader::ShaderPtrData Constructor
+//  Access:
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Shader::ShaderPtrData::
+ShaderPtrData(const LVecBase2i &vec) :
+  _type(SPT_int),
+  _updated(true),
+  _size(2)
+{
+  PTA_int pta = PTA_int::empty_array(2);
+  _pta = pta.v0();
+  _ptr = pta.p();
+  nassertv(sizeof(vec[0]) * vec.get_num_components() == pta.size() * sizeof(pta[0]));
+  memcpy(_ptr, vec.get_data(), sizeof(vec[0]) * vec.get_num_components());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Shader::ShaderPtrData::write_datagram
 //       Access: Public
 //  Description: Writes the contents of this object to the datagram
@@ -564,6 +690,11 @@ write_datagram(Datagram &dg) const {
     const float *data = (const float *) _ptr;
     for (size_t i = 0; i < _size; ++i) {
       dg.add_float32(data[i]);
+    }
+  } else if (_type == SPT_int) {
+    const int *data = (const int *) _ptr;
+    for (size_t i = 0; i < _size; ++i) {
+      dg.add_int32(data[i]);
     }
   }
 }
@@ -590,6 +721,14 @@ read_datagram(DatagramIterator &scan) {
     PTA_float pta = PTA_float::empty_array(_size);
     for (size_t i = 0; i < _size; ++i) {
       pta[i] = scan.get_float32();
+    }
+    _pta = pta.v0();
+    _ptr = pta.p();
+
+  } else if (_type == SPT_int) {
+    PTA_int pta = PTA_int::empty_array(_size);
+    for (size_t i = 0; i < _size; ++i) {
+      pta[i] = scan.get_int32();
     }
     _pta = pta.v0();
     _ptr = pta.p();
@@ -636,14 +775,16 @@ ShaderFile(const string &vertex,
 ////////////////////////////////////////////////////////////////////
 INLINE void Shader::ShaderFile::
 write_datagram(Datagram &dg) const {
-  dg.add_bool(_separate);
   if (_separate) {
+    dg.add_uint8(6);
     dg.add_string(_vertex);
     dg.add_string(_fragment);
     dg.add_string(_geometry);
     dg.add_string(_tess_control);
     dg.add_string(_tess_evaluation);
+    dg.add_string(_compute);
   } else {
+    dg.add_uint8(0);
     dg.add_string(_shared);
   }
 }
@@ -655,13 +796,17 @@ write_datagram(Datagram &dg) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void Shader::ShaderFile::
 read_datagram(DatagramIterator &scan) {
-  _separate = scan.get_bool();
-  if (_separate) {
-    _vertex = scan.get_string();
-    _fragment = scan.get_string();
-    _geometry = scan.get_string();
-    _tess_control = scan.get_string();
-    _tess_evaluation = scan.get_string();
+  short count = scan.get_uint8();
+  if (count > 0) {
+    if (count-- > 0) _vertex = scan.get_string();
+    if (count-- > 0) _fragment = scan.get_string();
+    if (count-- > 0) _geometry = scan.get_string();
+    if (count-- > 0) _tess_control = scan.get_string();
+    if (count-- > 0) _tess_evaluation = scan.get_string();
+    if (count-- > 0) _compute = scan.get_string();
+    while (count-- > 0) {
+      scan.get_string();
+    }
   } else {
     _shared = scan.get_string();
   }

@@ -147,3 +147,9 @@ class box2d(package):
     require('panda3d')
 
     module('Box2D', required = True)
+
+class pyglet(package):
+    config(display_name = "pyglet")
+    require('panda3d')
+
+    module('pyglet', required = True)

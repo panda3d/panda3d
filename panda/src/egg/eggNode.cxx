@@ -14,6 +14,7 @@
 
 #include "eggNode.h"
 #include "eggGroupNode.h"
+#include "lightMutexHolder.h"
 #include "config_egg.h"
 #include "eggTextureCollection.h"
 #include "dcast.h"

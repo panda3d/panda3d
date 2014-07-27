@@ -30,6 +30,7 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LPoint3) &operator = (FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LPoint3)(FLOATTYPE fill_value);
   INLINE_LINMATH FLOATNAME(LPoint3)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z);
+  INLINE_LINMATH FLOATNAME(LPoint3)(const FLOATNAME(LVecBase2) &copy, FLOATTYPE z);
 
   EXTENSION(INLINE_LINMATH PyObject *__getattr__(const string &attr_name) const);
   EXTENSION(INLINE_LINMATH int __setattr__(PyObject *self, const string &attr_name, PyObject *assign));
@@ -58,13 +59,17 @@ PUBLISHED:
   operator - (const FLOATNAME(LVector3) &other) const;
 
   INLINE_LINMATH FLOATNAME(LPoint3) cross(const FLOATNAME(LVecBase3) &other) const;
+
+#ifndef FLOATTYPE_IS_INT
   INLINE_LINMATH FLOATNAME(LPoint3) project(const FLOATNAME(LVecBase3) &onto) const;
+#endif
+
   INLINE_LINMATH FLOATNAME(LPoint3) operator * (FLOATTYPE scalar) const;
   INLINE_LINMATH FLOATNAME(LPoint3) operator / (FLOATTYPE scalar) const;
 
   // Some special named constructors for LPoint3.
 
-  INLINE_LINMATH static FLOATNAME(LPoint3) origin(CoordinateSystem cs = CS_default);
+  INLINE_LINMATH static const FLOATNAME(LPoint3) &origin(CoordinateSystem cs = CS_default);
   INLINE_LINMATH static FLOATNAME(LPoint3) rfu(FLOATTYPE right,
                                        FLOATTYPE fwd,
                                        FLOATTYPE up,

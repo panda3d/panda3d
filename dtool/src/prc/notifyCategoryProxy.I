@@ -80,30 +80,38 @@ is_on(NotifySeverity severity) {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
+#ifdef NOTIFY_DEBUG
 template<class GetCategory>
 INLINE bool NotifyCategoryProxy<GetCategory>::
 is_spam() {
-#ifdef NOTIFY_DEBUG
   return get_unsafe_ptr()->is_spam();
-#else
-  return false;
-#endif
 }
+#else
+template<class GetCategory>
+CONSTEXPR bool NotifyCategoryProxy<GetCategory>::
+is_spam() {
+  return false;
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategoryProxy::is_debug
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
+#ifdef NOTIFY_DEBUG
 template<class GetCategory>
 INLINE bool NotifyCategoryProxy<GetCategory>::
 is_debug() {
-#ifdef NOTIFY_DEBUG
   return get_unsafe_ptr()->is_debug();
-#else
-  return false;
-#endif
 }
+#else
+template<class GetCategory>
+CONSTEXPR bool NotifyCategoryProxy<GetCategory>::
+is_debug() {
+  return false;
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategoryProxy::is_info

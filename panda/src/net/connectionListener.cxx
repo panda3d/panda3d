@@ -12,6 +12,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "dcast.h"
 #include "connectionListener.h"
 #include "connection.h"
 #include "connectionManager.h"

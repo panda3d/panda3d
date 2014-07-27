@@ -14,6 +14,11 @@
 
 #include "config_ode.h"
 #include "odeSpace.h"
+#include "odeGeom.h"
+#include "odeCollisionEntry.h"
+#include "odeSimpleSpace.h"
+#include "odeQuadTreeSpace.h"
+#include "odeHashSpace.h"
 
 #include "throw_event.h"
 

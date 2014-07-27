@@ -49,6 +49,10 @@
 #include <unistd.h>
 #endif
 
+#ifdef HAVE_PYTHON
+#include "Python.h"
+#endif
+
 TextEncoder::Encoding Filename::_filesystem_encoding = TextEncoder::E_utf8;
 
 TVOLATILE AtomicAdjust::Pointer Filename::_home_directory;

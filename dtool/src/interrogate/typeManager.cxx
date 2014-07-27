@@ -934,7 +934,7 @@ bool TypeManager::
 is_double(CPPType *type) {
   switch (type->get_subtype()) {
   case CPPDeclaration::ST_const:
-    return is_float(type->as_const_type()->_wrapped_around);
+    return is_double(type->as_const_type()->_wrapped_around);
 
   case CPPDeclaration::ST_simple:
     {
@@ -1199,7 +1199,8 @@ is_PyObject(CPPType *type) {
     return is_PyObject(type->as_const_type()->_wrapped_around);
 
   case CPPDeclaration::ST_extension:
-    return (type->get_local_name(&parser) == "PyObject");
+    return (type->get_local_name(&parser) == "PyObject" ||
+            type->get_local_name(&parser) == "_object");
 
   default:
     return false;

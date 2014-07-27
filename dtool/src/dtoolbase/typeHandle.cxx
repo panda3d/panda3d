@@ -16,6 +16,10 @@
 #include "typeRegistryNode.h"
 #include "atomicAdjust.h"
 
+#ifdef HAVE_PYTHON
+#include "Python.h"
+#endif
+
 // This is initialized to zero by static initialization.
 TypeHandle TypeHandle::_none;
 

@@ -14,6 +14,18 @@
 
 #include "config_ode.h"
 #include "odeGeom.h"
+#include "odeSimpleSpace.h"
+#include "odeQuadTreeSpace.h"
+#include "odeHashSpace.h"
+
+#include "odeTriMeshGeom.h"
+#include "odeTriMeshData.h"
+#include "odeBoxGeom.h"
+#include "odeCappedCylinderGeom.h"
+#include "odeCylinderGeom.h"
+#include "odePlaneGeom.h"
+#include "odeRayGeom.h"
+#include "odeSphereGeom.h"
 
 //OdeGeom::GeomSurfaceMap OdeGeom::_geom_surface_map;
 //OdeGeom::GeomCollideIdMap OdeGeom::_geom_collide_id_map;

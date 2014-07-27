@@ -1863,26 +1863,34 @@ get_type(CPPType *type, bool global) {
 
   // First, check to see if it's already there.
   string true_name = type->get_local_name(&parser);
-  TypesByName::const_iterator tni = _types_by_name.find(true_name);
-  if (tni != _types_by_name.end()) {
-    // It's already here, so update the global flag.
-    index = (*tni).second;
-    if (index == 0) {
-      // This is an invalid type; we don't know anything about it.
-      return 0;
-    }
 
-    InterrogateType &itype = InterrogateDatabase::get_ptr()->update_type(index);
-    if (global) {
-      itype._flags |= InterrogateType::F_global;
-    }
+  if (true_name.empty()) {
+    // Whoops, it's an anonymous type.  That's okay, because we'll
+    // usually only encounter them once anyway, so let's go ahead and
+    // define it without checking in _types_by_name.
 
-    if ((itype._flags & InterrogateType::F_fully_defined) != 0) {
-      return index;
-    }
+  } else {
+    TypesByName::const_iterator tni = _types_by_name.find(true_name);
+    if (tni != _types_by_name.end()) {
+      // It's already here, so update the global flag.
+      index = (*tni).second;
+      if (index == 0) {
+        // This is an invalid type; we don't know anything about it.
+        return 0;
+      }
 
-    // But wait--it's not fully defined yet!  We'll go ahead and
-    // define it now.
+      InterrogateType &itype = InterrogateDatabase::get_ptr()->update_type(index);
+      if (global) {
+        itype._flags |= InterrogateType::F_global;
+      }
+
+      if ((itype._flags & InterrogateType::F_fully_defined) != 0) {
+        return index;
+      }
+
+      // But wait--it's not fully defined yet!  We'll go ahead and
+      // define it now.
+    }
   }
 
   bool forced = in_forcetype(true_name);
@@ -1890,7 +1898,9 @@ get_type(CPPType *type, bool global) {
   if (index == 0) {
     // It isn't already there, so we have to define it.
     index = InterrogateDatabase::get_ptr()->get_next_index();
-    _types_by_name[true_name] = index;
+    if (!true_name.empty()) {
+      _types_by_name[true_name] = index;
+    }
 
     InterrogateType itype;
     if (global) {
@@ -1904,7 +1914,7 @@ get_type(CPPType *type, bool global) {
     InterrogateDatabase::get_ptr()->update_type(index);
 
   itype._name = get_preferred_name(type);
-  
+
   int num_alt_names = type->get_num_alt_names();
   if (num_alt_names != 0) {
     itype._alt_names.clear();
@@ -1954,23 +1964,19 @@ get_type(CPPType *type, bool global) {
     }
   }
 
-  if (forced || !in_ignoretype(true_name)) 
-  {
+  if (forced || !in_ignoretype(true_name)) {
     itype._flags |= InterrogateType::F_fully_defined;
 
-    if (type->as_simple_type() != (CPPSimpleType *)NULL) 
-    {
+    if (type->as_simple_type() != (CPPSimpleType *)NULL) {
       define_atomic_type(itype, type->as_simple_type());
 
-    } else if (type->as_pointer_type() != (CPPPointerType *)NULL)
-    {
+    } else if (type->as_pointer_type() != (CPPPointerType *)NULL) {
       define_wrapped_type(itype, type->as_pointer_type());
 
     } else if (type->as_const_type() != (CPPConstType *)NULL) {
       define_wrapped_type(itype, type->as_const_type());
 
-    } else if (type->as_struct_type() != (CPPStructType *)NULL) 
-    {
+    } else if (type->as_struct_type() != (CPPStructType *)NULL) {
       define_struct_type(itype, type->as_struct_type(), index, forced);
 
     } else if (type->as_enum_type() != (CPPEnumType *)NULL) {
@@ -1984,7 +1990,9 @@ get_type(CPPType *type, bool global) {
 
       // Remove the type from the database.
       InterrogateDatabase::get_ptr()->remove_type(index);
-      _types_by_name[true_name] = 0;
+      if (!true_name.empty()) {
+        _types_by_name[true_name] = 0;
+      }
       index = 0;
     }
   }
@@ -2229,6 +2237,7 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
   for (di = scope->_declarations.begin();
        di != scope->_declarations.end();
        ++di) {
+
     if ((*di)->get_subtype() == CPPDeclaration::ST_instance) {
       CPPInstance *inst = (*di)->as_instance();
       if (inst->_type->get_subtype() == CPPDeclaration::ST_function) {
@@ -2243,15 +2252,12 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
         }
       }
 
-    } else if ((*di)->get_subtype() == CPPDeclaration::ST_type_declaration) 
-    {
+    } else if ((*di)->get_subtype() == CPPDeclaration::ST_type_declaration) {
       CPPType *type = (*di)->as_type_declaration()->_type;
 
-      if ((*di)->_vis <= min_vis || in_forcetype(type->get_local_name(&parser))) 
-      {
+      if ((*di)->_vis <= min_vis || in_forcetype(type->get_local_name(&parser))) {
         if (type->as_struct_type() != (CPPStructType *)NULL ||
-            type->as_enum_type() != (CPPEnumType *)NULL) 
-        {
+            type->as_enum_type() != (CPPEnumType *)NULL) {
           // Here's a nested class or enum definition.
           type->_vis = (*di)->_vis;
 
@@ -2259,12 +2265,19 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
           assert(nested_type != (CPPExtensionType *)NULL);
 
           // Only try to export named types.
-          if (nested_type->_ident != (CPPIdentifier *)NULL) 
-          {
+          if (nested_type->_ident != (CPPIdentifier *)NULL) {
             TypeIndex nested_index = get_type(nested_type, false);
             itype._nested_types.push_back(nested_index);
           }
         }
+      }
+    } else if ((*di)->get_subtype() == CPPDeclaration::ST_enum) {
+      CPPType *type = (*di)->as_enum_type();
+
+      // An anonymous enum type.
+      if ((*di)->_vis <= min_vis) {
+        TypeIndex nested_index = get_type(type, false);
+        itype._nested_types.push_back(nested_index);
       }
     }
   }

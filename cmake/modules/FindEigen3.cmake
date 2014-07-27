@@ -25,5 +25,6 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(Eigen3 DEFAULT_MSG EIGEN3_INCLUDE_DIR)
 
 if(EIGEN3_FOUND)
-	set(EIGEN_FOUND TRUE)
+  set(EIGEN_FOUND TRUE)
+  set(EIGEN_INCLUDE_DIR ${EIGEN3_INCLUDE_DIR})
 endif()

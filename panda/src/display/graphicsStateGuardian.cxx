@@ -218,7 +218,8 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _supports_two_sided_stencil = false;
   _supports_geometry_instancing = false;
 
-  _maximum_simultaneous_render_targets = 1;
+  // Assume a maximum of 1 render target in absence of MRT.
+  _max_color_targets = 1;
 
   _supported_geom_rendering = 0;
 
@@ -754,6 +755,17 @@ end_occlusion_query() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::dispatch_compute
+//       Access: Public, Virtual
+//  Description: Dispatches a currently bound compute shader using
+//               the given work group counts.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+dispatch_compute(int num_groups_x, int num_groups_y, int num_groups_z) {
+  nassertv(false /* Compute shaders not supported by GSG */);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_geom_munger
 //       Access: Public, Virtual
 //  Description: Looks up or creates a GeomMunger object to munge
@@ -1144,9 +1156,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &
     return &t;
   }
   case Shader::SMO_mat_constant_x: {
-    const NodePath &np = _target_shader->get_shader_input_nodepath(name);
-    nassertr(!np.is_empty(), &LMatrix4::ident_mat());
-    return &(np.node()->get_transform()->get_mat());
+    return &_target_shader->get_shader_input_matrix(name, t);
   }
   case Shader::SMO_vec_constant_x: {
     const LVecBase4 &input = _target_shader->get_shader_input_vector(name);
@@ -1168,8 +1178,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &
     return &(get_external_transform()->get_mat());
   }
   case Shader::SMO_view_to_model: {
-    // DANGER: SLOW AND NOT CACHEABLE!
-    t.invert_from(get_external_transform()->get_mat());
+    t = get_external_transform()->get_inverse()->get_mat();
     return &t;
   }
   case Shader::SMO_apiview_to_view: {
@@ -1215,7 +1224,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4::ident_mat());
     t = get_scene()->get_camera_transform()->get_mat() *
-      invert(np.get_net_transform()->get_mat());
+      np.get_net_transform()->get_inverse()->get_mat();
     return &t;
   }
   case Shader::SMO_apiview_x_to_view: {
@@ -1230,7 +1239,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4::ident_mat());
     t = (get_scene()->get_camera_transform()->get_mat() *
-         invert(np.get_net_transform()->get_mat()) *
+         np.get_net_transform()->get_inverse()->get_mat() *
          LMatrix4::convert_mat(_coordinate_system, _internal_coordinate_system));
     return &t;
   }
@@ -1251,21 +1260,35 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4 &
     nassertr(np.node()->is_of_type(LensNode::get_class_type()), &LMatrix4::ident_mat());
     Lens *lens = DCAST(LensNode, np.node())->get_lens();
     t = get_scene()->get_camera_transform()->get_mat() *
-      invert(np.get_net_transform()->get_mat()) *
+      np.get_net_transform()->get_inverse()->get_mat() *
       LMatrix4::convert_mat(_coordinate_system, lens->get_coordinate_system()) *
       lens->get_projection_mat(_current_stereo_channel);
     return &t;
   }
   case Shader::SMO_apiclip_x_to_view: {
-    // NOT IMPLEMENTED
-    return &LMatrix4::ident_mat();
+    const NodePath &np = _target_shader->get_shader_input_nodepath(name);
+    nassertr(!np.is_empty(), &LMatrix4::ident_mat());
+    nassertr(np.node()->is_of_type(LensNode::get_class_type()), &LMatrix4::ident_mat());
+    Lens *lens = DCAST(LensNode, np.node())->get_lens();
+    t = calc_projection_mat(lens)->get_inverse()->get_mat() *
+      get_cs_transform_for(lens->get_coordinate_system())->get_inverse()->get_mat() *
+      np.get_net_transform()->get_mat() *
+      get_scene()->get_world_transform()->get_mat();
+    return &t;
   }
   case Shader::SMO_view_to_apiclip_x: {
-    // NOT IMPLEMENTED
-    return &LMatrix4::ident_mat();
+    const NodePath &np = _target_shader->get_shader_input_nodepath(name);
+    nassertr(!np.is_empty(), &LMatrix4::ident_mat());
+    nassertr(np.node()->is_of_type(LensNode::get_class_type()), &LMatrix4::ident_mat());
+    Lens *lens = DCAST(LensNode, np.node())->get_lens();
+    t = get_scene()->get_camera_transform()->get_mat() *
+      np.get_net_transform()->get_inverse()->get_mat() *
+      get_cs_transform_for(lens->get_coordinate_system())->get_mat() *
+      calc_projection_mat(lens)->get_mat();
+    return &t;
   }
   default:
-    // should never get here
+    nassertr(false /*should never get here*/, &LMatrix4::ident_mat());
     return &LMatrix4::ident_mat();
   }
 }
@@ -1317,14 +1340,14 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
   case Lens::SC_left:
     _color_write_mask = dr->get_window()->get_left_eye_color_mask();
     if (_current_properties->is_stereo()) {
-      _stereo_buffer_mask = ~(RenderBuffer::T_front_right | RenderBuffer::T_back_right);
+      _stereo_buffer_mask = ~RenderBuffer::T_right;
     }
     break;
 
   case Lens::SC_right:
     _color_write_mask = dr->get_window()->get_right_eye_color_mask();
     if (_current_properties->is_stereo()) {
-      _stereo_buffer_mask = ~(RenderBuffer::T_front_left | RenderBuffer::T_back_left);
+      _stereo_buffer_mask = ~RenderBuffer::T_left;
     }
     break;
 
@@ -2150,7 +2173,7 @@ do_issue_light() {
 //               copy.
 ////////////////////////////////////////////////////////////////////
 bool GraphicsStateGuardian::
-framebuffer_copy_to_texture(Texture *, int, const DisplayRegion *,
+framebuffer_copy_to_texture(Texture *, int, int, const DisplayRegion *,
                             const RenderBuffer &) {
   return false;
 }
@@ -2167,7 +2190,7 @@ framebuffer_copy_to_texture(Texture *, int, const DisplayRegion *,
 //               indicated texture.
 ////////////////////////////////////////////////////////////////////
 bool GraphicsStateGuardian::
-framebuffer_copy_to_ram(Texture *, int, const DisplayRegion *,
+framebuffer_copy_to_ram(Texture *, int, int, const DisplayRegion *,
                         const RenderBuffer &) {
   return false;
 }
@@ -2722,7 +2745,7 @@ make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host) {
     for (int i = 0; i < 6; ++i) {
       PT(DisplayRegion) dr = sbuffer->make_mono_display_region(0, 1, 0, 1);
       dr->set_lens_index(i);
-      dr->set_target_tex_page(i, 0);
+      dr->set_target_tex_page(i);
       dr->set_camera(light_np);
       dr->set_clear_depth_active(true);
     }

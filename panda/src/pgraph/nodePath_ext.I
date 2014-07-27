@@ -12,6 +12,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "pandaNode_ext.h"
+
 #ifndef CPPPARSER
 #ifdef STDFLOAT_DOUBLE
 IMPORT_THIS struct Dtool_PyTypedObject Dtool_LPoint3d;
@@ -33,7 +35,7 @@ IMPORT_THIS struct Dtool_PyTypedObject Dtool_LPoint3f;
 INLINE void Extension<NodePath>::
 get_python_tag_keys(vector_string &keys) const {
   nassertv_always(!_this->is_empty());
-  _this->node()->get_python_tag_keys(keys);
+  invoke_extension(_this->node()).get_python_tag_keys(keys);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -49,7 +51,7 @@ get_tag_keys() const {
     Py_INCREF(Py_None);
     return Py_None;
   }
-  return _this->node()->get_tag_keys();
+  return invoke_extension(_this->node()).get_tag_keys();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -66,7 +68,7 @@ get_python_tag_keys() const {
     Py_INCREF(Py_None);
     return Py_None;
   }
-  return _this->node()->get_python_tag_keys();
+  return invoke_extension(_this->node()).get_python_tag_keys();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -85,7 +87,7 @@ get_python_tag_keys() const {
 INLINE void Extension<NodePath>::
 set_python_tag(const string &key, PyObject *value) {
   nassertv_always(!_this->is_empty());
-  _this->node()->set_python_tag(key, value);
+  invoke_extension(_this->node()).set_python_tag(key, value);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -104,7 +106,7 @@ get_python_tag(const string &key) const {
     Py_INCREF(Py_None);
     return Py_None;
   }
-  return _this->node()->get_python_tag(key);
+  return invoke_extension(_this->node()).get_python_tag(key);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -122,7 +124,7 @@ has_python_tag(const string &key) const {
   if (_this->is_empty()) {
     return false;
   }
-  return _this->node()->has_python_tag(key);
+  return invoke_extension(_this->node()).has_python_tag(key);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -136,7 +138,7 @@ has_python_tag(const string &key) const {
 INLINE void Extension<NodePath>::
 clear_python_tag(const string &key) {
   nassertv_always(!_this->is_empty());
-  _this->node()->clear_python_tag(key);
+  invoke_extension(_this->node()).clear_python_tag(key);
 }
 
 ////////////////////////////////////////////////////////////////////

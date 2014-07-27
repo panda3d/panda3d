@@ -107,6 +107,7 @@ public:
   int _num_default_parameters;
   Type _type;
   int _flags;
+  int _args_type;
   string _expression;
   string _function_signature;
   string _hash;

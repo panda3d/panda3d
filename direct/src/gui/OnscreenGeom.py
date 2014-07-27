@@ -113,8 +113,7 @@ class OnscreenGeom(DirectObject, NodePath):
         for option, value in kw.items():
             # Use option string to access setter function
             try:
-                setter = eval('self.set' +
-                              string.upper(option[0]) + option[1:])
+                setter = getattr(self, 'set' + option[0].upper() + option[1:])
                 if (((setter == self.setPos) or
                      (setter == self.setHpr) or
                      (setter == self.setScale)) and
@@ -133,7 +132,7 @@ class OnscreenGeom(DirectObject, NodePath):
     def cget(self, option):
         # Get current configuration setting.
         # This is for compatibility with DirectGui functions
-        getter = eval('self.get' + string.upper(option[0]) + option[1:])
+        getter = getattr(self, 'get' + option[0].upper() + option[1:])
         return getter()
 
     # Allow index style refererences

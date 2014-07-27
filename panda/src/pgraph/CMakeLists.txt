@@ -203,6 +203,12 @@ set(P3PGRAPH_IGATEEXT
   nodePath_ext.cxx
   nodePath_ext.h
   nodePath_ext.I
+  pandaNode_ext.cxx
+  pandaNode_ext.h
+  renderState_ext.cxx
+  renderState_ext.h
+  transformState_ext.cxx
+  transformState_ext.h
 )
 
 composite_sources(p3pgraph P3PGRAPH_SOURCES)

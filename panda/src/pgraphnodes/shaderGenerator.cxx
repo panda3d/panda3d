@@ -720,7 +720,7 @@ synthesize_shader(const RenderState *rs) {
     text << "\t out float4 l_eye_normal : " << eye_normal_freg << ",\n";
   }
   if (_map_index_height >= 0 || _need_world_normal || _need_eye_normal) {
-    text << "\t in float4 vtx_normal : NORMAL,\n";
+    text << "\t in float3 vtx_normal : NORMAL,\n";
   }
   if (_map_index_height >= 0) {
     text << "\t uniform float4 mspos_view,\n";
@@ -765,13 +765,13 @@ synthesize_shader(const RenderState *rs) {
     text << "\t l_world_position = mul(trans_model_to_world, vtx_position);\n";
   }
   if (_need_world_normal) {
-    text << "\t l_world_normal = mul(trans_model_to_world, vtx_normal);\n";
+    text << "\t l_world_normal = mul(trans_model_to_world, float4(vtx_normal, 0));\n";
   }
   if (_need_eye_position) {
     text << "\t l_eye_position = mul(trans_model_to_view, vtx_position);\n";
   }
   if (_need_eye_normal) {
-    text << "\t l_eye_normal.xyz = mul((float3x3)tpose_view_to_model, vtx_normal.xyz);\n";
+    text << "\t l_eye_normal.xyz = mul((float3x3)tpose_view_to_model, vtx_normal);\n";
     text << "\t l_eye_normal.w = 0;\n";
   }
   pmap<const InternalName *, char *>::const_iterator it;
@@ -806,7 +806,7 @@ synthesize_shader(const RenderState *rs) {
     text << "\t float3 eyedir = mspos_view.xyz - vtx_position.xyz;\n";
     text << "\t l_eyevec.x = dot(vtx_" << tangent_input << ".xyz, eyedir);\n";
     text << "\t l_eyevec.y = dot(vtx_" << binormal_input << ".xyz, eyedir);\n";
-    text << "\t l_eyevec.z = dot(vtx_normal.xyz, eyedir);\n";
+    text << "\t l_eyevec.z = dot(vtx_normal, eyedir);\n";
     text << "\t l_eyevec = normalize(l_eyevec);\n";
   }
   text << "}\n\n";

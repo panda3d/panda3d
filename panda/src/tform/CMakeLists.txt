@@ -25,7 +25,7 @@ set(P3TFORM_SOURCES
 )
 
 composite_sources(p3tform P3TFORM_SOURCES)
-add_library(p3tform ${P3TFORM_SOURCES} ${P3TFORM_HEADERS})
+add_library(p3tform ${P3TFORM_HEADERS} ${P3TFORM_SOURCES})
 target_link_libraries(p3tform p3device p3grutil)
 target_interrogate(p3tform ALL)
 

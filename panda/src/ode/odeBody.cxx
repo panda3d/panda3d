@@ -14,6 +14,7 @@
 
 #include "config_ode.h"
 #include "odeBody.h"
+#include "odeJoint.h"
 
 TypeHandle OdeBody::_type_handle;
 

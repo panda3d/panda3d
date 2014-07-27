@@ -510,6 +510,13 @@ ConfigVariableInt lens_geom_segments
           "lens; for a normal perspective or orthographic lens, the "
           "wireframe is not subdivided."));
 
+ConfigVariableString cg_glsl_version
+("cg-glsl-version", "",
+ PRC_DESC("If this is set, it forces the Cg compiler to generate GLSL "
+          "code conforming to the given GLSL version when using the "
+          "glslv, glslf or glslg profiles.  Use this when you are having "
+          "problems with these profiles.  Example values are 120 or 150."));
+
 ConfigureFn(config_gobj) {
   AnimateVerticesRequest::init_type();
   BufferContext::init_type();

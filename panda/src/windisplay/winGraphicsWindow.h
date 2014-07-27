@@ -135,6 +135,7 @@ private:
   void handle_raw_keyrelease(ButtonHandle key, double time);
   ButtonHandle lookup_key(WPARAM wparam) const;
   ButtonHandle lookup_raw_key(LPARAM lparam) const;
+  virtual ButtonMap *get_keyboard_map() const;
   INLINE int translate_mouse(int pos) const;
   INLINE void set_cursor_in_window();
   INLINE void set_cursor_out_of_window();

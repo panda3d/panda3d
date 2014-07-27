@@ -24,8 +24,10 @@
 
 NotifyCategoryDecl(grutil, EXPCL_PANDA_GRUTIL, EXPTP_PANDA_GRUTIL);
 
+extern ConfigVariableBool frame_rate_meter_milliseconds;
 extern ConfigVariableDouble frame_rate_meter_update_interval;
 extern ConfigVariableString frame_rate_meter_text_pattern;
+extern ConfigVariableString frame_rate_meter_ms_text_pattern;
 extern ConfigVariableInt frame_rate_meter_layer_sort;
 extern ConfigVariableDouble frame_rate_meter_scale;
 extern ConfigVariableDouble frame_rate_meter_side_margins;
@@ -40,7 +42,8 @@ extern ConfigVariableBool movies_sync_pages;
 extern ConfigVariableInt pfm_vis_max_vertices;
 extern ConfigVariableInt pfm_vis_max_indices;
 
-extern ConfigVariableDouble ae_undershift_factor;
+extern ConfigVariableDouble ae_undershift_factor_16;
+extern ConfigVariableDouble ae_undershift_factor_32;
 
 extern EXPCL_PANDA_GRUTIL void init_libgrutil();
 

@@ -1,0 +1,35 @@
+if(HAVE_OPENSSL)
+  add_executable(apply_patch apply_patch.cxx)
+  target_link_libraries(apply_patch p3downloader p3express p3pystub)
+  add_executable(build_patch build_patch.cxx)
+  target_link_libraries(build_patch p3downloader p3express p3pystub)
+  add_executable(show_ddb show_ddb.cxx)
+  target_link_libraries(show_ddb p3downloader p3express p3pystub)
+  add_executable(check_md5 check_md5.cxx)
+  target_link_libraries(check_md5 p3downloader p3express p3pystub)
+  add_executable(pencrypt pencrypt.cxx)
+  target_link_libraries(pencrypt p3downloader p3express p3pystub)
+  add_executable(pdecrypt pdecrypt.cxx)
+  target_link_libraries(pdecrypt p3downloader p3express p3pystub)
+
+  install(TARGETS apply_patch build_patch show_ddb check_md5 pencrypt pdecrypt
+          DESTINATION bin)
+endif()
+
+if(HAVE_ZLIB)
+  add_executable(check_adler check_adler.cxx)
+  target_link_libraries(check_adler p3downloader p3express p3pystub)
+  add_executable(check_crc check_crc.cxx)
+  target_link_libraries(check_crc p3downloader p3express p3pystub)
+  add_executable(pzip pzip.cxx)
+  target_link_libraries(pzip p3downloader p3express p3pystub)
+  add_executable(punzip punzip.cxx)
+  target_link_libraries(punzip p3downloader p3express p3pystub)
+
+  install(TARGETS check_adler check_crc pzip punzip
+          DESTINATION bin)
+endif()
+
+add_executable(multify multify.cxx)
+target_link_libraries(multify p3downloader p3express p3pystub)
+install(TARGETS multify DESTINATION bin)

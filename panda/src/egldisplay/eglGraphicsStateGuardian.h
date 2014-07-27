@@ -64,7 +64,7 @@ protected:
 
   virtual void query_gl_version();
   virtual void get_extra_extensions();
-  virtual void *do_get_extension_func(const char *prefix, const char *name);
+  virtual void *do_get_extension_func(const char *name);
 
 private:
   int _egl_version_major, _egl_version_minor;

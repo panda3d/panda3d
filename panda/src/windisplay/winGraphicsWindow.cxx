@@ -735,9 +735,9 @@ handle_reshape() {
     return;
   }
 
-  bool result = ClientToScreen(_hWnd, (POINT*)&view_rect.left);   // translates top,left pnt
+  bool result = (FALSE != ClientToScreen(_hWnd, (POINT*)&view_rect.left));   // translates top,left pnt
   if (result) {
-    result = ClientToScreen(_hWnd, (POINT*)&view_rect.right);  // translates right,bottom pnt
+    result = (FALSE != ClientToScreen(_hWnd, (POINT*)&view_rect.right));  // translates right,bottom pnt
   }
 
   if (!result) {
@@ -2495,7 +2495,10 @@ lookup_raw_key(LPARAM lparam) const {
   if (lparam & 0x1000000) {
     // Extended keys
     switch (vsc) {
+    case 28: return KeyboardButton::enter();
     case 29: return KeyboardButton::rcontrol();
+    case 53: return KeyboardButton::ascii_key('/');
+    case 55: return KeyboardButton::print_screen();
     case 56: return KeyboardButton::ralt();
     case 69: return KeyboardButton::num_lock();
     case 71: return KeyboardButton::home();
@@ -2508,6 +2511,9 @@ lookup_raw_key(LPARAM lparam) const {
     case 81: return KeyboardButton::page_down();
     case 82: return KeyboardButton::insert();
     case 83: return KeyboardButton::del();
+    case 91: return KeyboardButton::lmeta();
+    case 92: return KeyboardButton::rmeta();
+    case 93: return KeyboardButton::menu();
     }
   }
 
@@ -2605,11 +2611,72 @@ lookup_raw_key(LPARAM lparam) const {
   switch (vsc) {
   case 87: return KeyboardButton::f11();
   case 88: return KeyboardButton::f12();
-  case 91: return KeyboardButton::lmeta();
-  case 92: return KeyboardButton::rmeta();
-  case 93: return KeyboardButton::menu();
   default: return ButtonHandle::none();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::get_keyboard_map
+//       Access: Published, Virtual
+//  Description: Returns a ButtonMap containing the association
+//               between raw buttons and virtual buttons.
+//
+//               Note that on Windows, the pause button and numpad
+//               keys are not mapped reliably.
+////////////////////////////////////////////////////////////////////
+ButtonMap *WinGraphicsWindow::
+get_keyboard_map() const {
+  ButtonMap *map = new ButtonMap;
+
+  char text[256];
+  UINT vsc = 0;
+  unsigned short ex_vsc[] = {0x57, 0x58,
+    0x011c, 0x011d, 0x0135, 0x0137, 0x0138, 0x0145, 0x0147, 0x0148, 0x0149, 0x014b, 0x014d, 0x014f, 0x0150, 0x0151, 0x0152, 0x0153, 0x015b, 0x015c, 0x015d};
+
+  for (int k = 1; k < 84 + 17; ++k) {
+    if (k >= 84) {
+      vsc = ex_vsc[k - 84];
+    } else {
+      vsc = k;
+    }
+
+    UINT lparam = vsc << 16;
+    ButtonHandle raw_button = lookup_raw_key(lparam);
+    if (raw_button == ButtonHandle::none()) {
+      continue;
+    }
+
+    ButtonHandle button;
+    if (vsc == 0x45) {
+      button = KeyboardButton::pause();
+
+    } else if (vsc >= 0x47 && vsc <= 0x53) {
+      // The numpad keys are not mapped correctly, see KB72583
+      button = raw_button;
+
+    } else {
+      if (vsc == 0x145) {
+        // Don't ask why - I have no idea.
+        vsc = 0x45;
+      }
+      if (vsc & 0x0100) {
+        // MapVirtualKey recognizes extended codes differently.
+        vsc ^= 0xe100;
+      }
+
+      UINT vk = MapVirtualKeyA(vsc, MAPVK_VSC_TO_VK_EX);
+      button = lookup_key(vk);
+      if (button == ButtonHandle::none()) {
+        continue;
+      }
+    }
+
+    int len = GetKeyNameTextA(lparam, text, 256);
+    string label (text, len);
+    map->map_button(raw_button, button, label);
+  }
+
+  return map;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -14,7 +14,7 @@
      compose_matrix_src.cxx compose_matrix_src.h config_linmath.h  \
      coordinateSystem.h dbl2fltnames.h dblnames.h \
      deg_2_rad.h deg_2_rad.I \
-     flt2dblnames.h fltnames.h lcast_to.h lcast_to_src.h  \
+     flt2dblnames.h fltnames.h intnames.h lcast_to.h lcast_to_src.h  \
      lcast_to_src.I lmatrix.h lmatrix_ext.h lmatrix3_src.I  \
      lmatrix3_src.cxx lmatrix3_src.h lmatrix4_src.I  \
      lmatrix4_src.cxx lmatrix4_src.h lorientation.h  \
@@ -56,7 +56,7 @@
     compose_matrix_src.h config_linmath.h coordinateSystem.h \
     dbl2fltnames.h dblnames.h \
     deg_2_rad.h deg_2_rad.I \
-    flt2dblnames.h fltnames.h lcast_to.h lcast_to_src.I lcast_to_src.h \
+    flt2dblnames.h fltnames.h intnames.h lcast_to.h lcast_to_src.I lcast_to_src.h \
     lmat_ops.h lmat_ops_src.I lmat_ops_src.h lmatrix.h \
     lmatrix3_src.I lmatrix3_src.h lmatrix4_src.I \
     lmatrix4_src.h lorientation.h lorientation_src.I \

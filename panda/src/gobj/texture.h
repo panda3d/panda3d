@@ -85,7 +85,8 @@ PUBLISHED:
     T_unsigned_byte,
     T_unsigned_short,
     T_float,
-    T_unsigned_int_24_8,
+    T_unsigned_int_24_8,  // Packed
+    T_int,
   };
 
   enum Format {
@@ -132,6 +133,18 @@ PUBLISHED:
     F_r16,
     F_rg16,
     F_rgb16,
+
+    // These formats are in the sRGB color space.
+    // RGB is 2.2 gamma corrected, alpha is always linear.
+    F_srgb,
+    F_srgb_alpha,
+    F_sluminance,
+    F_sluminance_alpha,
+
+    F_r32i,  // 32-bit integer, used for atomic access
+    F_r32,
+    F_rg32,
+    F_rgb32,
   };
 
   enum FilterType {
@@ -160,7 +173,7 @@ PUBLISHED:
 
     // The OpenGL ARB_shadow extension can be thought of as a kind of filtering.
     FT_shadow,
-    
+
     // Default is usually linear, but it depends on format.
     // This was added at the end of the list to avoid bumping TXO version #.
     FT_default,
@@ -514,6 +527,7 @@ public:
   static bool is_specific(CompressionMode compression);
   static bool has_alpha(Format format);
   static bool has_binary_alpha(Format format);
+  static bool is_srgb(Format format);
 
   static bool adjust_size(int &x_size, int &y_size, const string &name,
                           bool for_padding, AutoTextureScale auto_texture_scale = ATS_unspecified);
@@ -742,19 +756,30 @@ private:
   static void filter_2d_unsigned_byte(unsigned char *&p, 
                                       const unsigned char *&q,
                                       size_t pixel_size, size_t row_size);
+  static void filter_2d_unsigned_byte_srgb(unsigned char *&p, 
+                                           const unsigned char *&q,
+                                           size_t pixel_size, size_t row_size);
   static void filter_2d_unsigned_short(unsigned char *&p, 
                                        const unsigned char *&q,
                                        size_t pixel_size, size_t row_size);
+  static void filter_2d_float(unsigned char *&p, const unsigned char *&q,
+                              size_t pixel_size, size_t row_size);
 
   static void filter_3d_unsigned_byte(unsigned char *&p, 
                                       const unsigned char *&q,
                                       size_t pixel_size, size_t row_size,
                                       size_t page_size);
+  static void filter_3d_unsigned_byte_srgb(unsigned char *&p, 
+                                           const unsigned char *&q,
+                                           size_t pixel_size, size_t row_size,
+                                           size_t page_size);
   static void filter_3d_unsigned_short(unsigned char *&p, 
                                        const unsigned char *&q,
                                        size_t pixel_size, size_t row_size,
                                        size_t page_size);
-  
+  static void filter_3d_float(unsigned char *&p, const unsigned char *&q,
+                              size_t pixel_size, size_t row_size, size_t page_size);
+
   bool do_squish(CData *cdata, CompressionMode compression, int squish_flags);
   bool do_unsquish(CData *cdata, int squish_flags);
 

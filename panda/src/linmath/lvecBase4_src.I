@@ -97,6 +97,16 @@ FLOATNAME(LVecBase4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LVecBase4::Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVecBase4)::
+FLOATNAME(LVecBase4)(const FLOATNAME(LVecBase3) &copy, FLOATTYPE w) {
+  set(copy[0], copy[1], copy[2], w);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::Destructor
 //       Access: Published
 //  Description:
@@ -162,7 +172,7 @@ unit_w() {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase4)::
 operator [](int i) const {
-  nassertr(i >= 0 && i < 4, 0.0);
+  nassertr(i >= 0 && i < 4, 0);
   return _v(i);
 }
 
@@ -195,8 +205,12 @@ size() {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LVecBase4)::
 is_nan() const {
+#ifdef FLOATTYPE_IS_INT
+  return false;
+#else
   TAU_PROFILE("bool LVecBase4::is_nan()", " ", TAU_USER);
   return cnan(_v(0)) || cnan(_v(1)) || cnan(_v(2)) || cnan(_v(3));
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -206,7 +220,7 @@ is_nan() const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase4)::
 get_cell(int i) const {
-  nassertr(i >= 0 && i < 4, 0.0);
+  nassertr(i >= 0 && i < 4, 0);
   return _v(i);
 }
 
@@ -453,18 +467,19 @@ set(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LVecBase4::length
+//     Function: LVecBase4::dot
 //       Access: Published
-//  Description: Returns the length of the vector, by the Pythagorean
-//               theorem.
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase4)::
-length() const {
-  TAU_PROFILE("FLOATTYPE LVecBase4::length()", " ", TAU_USER);
+dot(const FLOATNAME(LVecBase4) &other) const {
+  TAU_PROFILE("FLOATTYPE LVecBase4::dot()", " ", TAU_USER);
 #ifdef HAVE_EIGEN
-  return _v.norm();
+  return _v.dot(other._v);
 #else
-  return csqrt((*this).dot(*this));
+  return
+    _v(0) * other._v(0) + _v(1) * other._v(1) +
+    _v(2) * other._v(2) + _v(3) * other._v(3);
 #endif  // HAVE_EIGEN
 }
 
@@ -481,6 +496,23 @@ length_squared() const {
   return _v.squaredNorm();
 #else
   return (*this).dot(*this);
+#endif  // HAVE_EIGEN
+}
+
+#ifndef FLOATTYPE_IS_INT
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase4::length
+//       Access: Published
+//  Description: Returns the length of the vector, by the Pythagorean
+//               theorem.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase4)::
+length() const {
+  TAU_PROFILE("FLOATTYPE LVecBase4::length()", " ", TAU_USER);
+#ifdef HAVE_EIGEN
+  return _v.norm();
+#else
+  return csqrt((*this).dot(*this));
 #endif  // HAVE_EIGEN
 }
 
@@ -506,23 +538,6 @@ normalize() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LVecBase4::dot
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase4)::
-dot(const FLOATNAME(LVecBase4) &other) const {
-  TAU_PROFILE("FLOATTYPE LVecBase4::dot()", " ", TAU_USER);
-#ifdef HAVE_EIGEN
-  return _v.dot(other._v);
-#else
-  return
-    _v(0) * other._v(0) + _v(1) * other._v(1) +
-    _v(2) * other._v(2) + _v(3) * other._v(3);
-#endif  // HAVE_EIGEN
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::project
 //       Access: Published
 //  Description: Returns a new vector representing the projection of
@@ -533,6 +548,7 @@ INLINE_LINMATH FLOATNAME(LVecBase4) FLOATNAME(LVecBase4)::
 project(const FLOATNAME(LVecBase4) &onto) const {
   return onto * (dot(onto) / onto.length_squared());
 }
+#endif  // FLOATTYPE_IS_INT
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::operator <
@@ -586,9 +602,75 @@ operator != (const FLOATNAME(LVecBase4) &other) const {
 INLINE_LINMATH int FLOATNAME(LVecBase4)::
 compare_to(const FLOATNAME(LVecBase4) &other) const {
   TAU_PROFILE("int LVecBase4::compare_to(const LVecBase4 &)", " ", TAU_USER);
+#ifdef FLOATTYPE_IS_INT
+  if (_v(0) != other._v(0)) {
+    return (_v(0) < other._v(0)) ? -1 : 1;
+  }
+  if (_v(1) != other._v(1)) {
+    return (_v(1) < other._v(1)) ? -1 : 1;
+  }
+  if (_v(2) != other._v(2)) {
+    return (_v(2) < other._v(2)) ? -1 : 1;
+  }
+  if (_v(3) != other._v(3)) {
+    return (_v(3) < other._v(3)) ? -1 : 1;
+  }
+  return 0;
+#else
   return compare_to(other, NEARLY_ZERO(FLOATTYPE));
+#endif
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase4::get_hash
+//       Access: Published
+//  Description: Returns a suitable hash for phash_map.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH size_t FLOATNAME(LVecBase4)::
+get_hash() const {
+  TAU_PROFILE("size_t LVecBase4::get_hash()", " ", TAU_USER);
+  return add_hash(0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase4::add_hash
+//       Access: Published
+//  Description: Adds the vector into the running hash.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH size_t FLOATNAME(LVecBase4)::
+add_hash(size_t hash) const {
+  TAU_PROFILE("size_t LVecBase4::add_hash(size_t)", " ", TAU_USER);
+#ifdef FLOATTYPE_IS_INT
+  int_hash ihasher;
+  hash = ihasher.add_hash(hash, _v(0));
+  hash = ihasher.add_hash(hash, _v(1));
+  hash = ihasher.add_hash(hash, _v(2));
+  hash = ihasher.add_hash(hash, _v(3));
+  return hash;
+#else
+  return add_hash(hash, NEARLY_ZERO(FLOATTYPE));
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase4::generate_hash
+//       Access: Published
+//  Description: Adds the vector to the indicated hash generator.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LVecBase4)::
+generate_hash(ChecksumHashGenerator &hashgen) const {
+  TAU_PROFILE("LVecBase4::generate_hash(ChecksumHashGenerator &)", " ", TAU_USER);
+#ifdef FLOATTYPE_IS_INT
+  hashgen.add_int(_v(0));
+  hashgen.add_int(_v(1));
+  hashgen.add_int(_v(2));
+  hashgen.add_int(_v(3));
+#else
+  generate_hash(hashgen, NEARLY_ZERO(FLOATTYPE));
+#endif
+}
+
+#ifndef FLOATTYPE_IS_INT
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::compare_to
 //       Access: Published
@@ -622,31 +704,9 @@ compare_to(const FLOATNAME(LVecBase4) &other, FLOATTYPE threshold) const {
 //  Description: Returns a suitable hash for phash_map.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH size_t FLOATNAME(LVecBase4)::
-get_hash() const {
-  TAU_PROFILE("size_t LVecBase4::get_hash()", " ", TAU_USER);
-  return add_hash(0);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase4::get_hash
-//       Access: Published
-//  Description: Returns a suitable hash for phash_map.
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH size_t FLOATNAME(LVecBase4)::
 get_hash(FLOATTYPE threshold) const {
   TAU_PROFILE("size_t LVecBase4::get_hash(FLOATTYPE)", " ", TAU_USER);
   return add_hash(0, threshold);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase4::add_hash
-//       Access: Published
-//  Description: Adds the vector into the running hash.
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH size_t FLOATNAME(LVecBase4)::
-add_hash(size_t hash) const {
-  TAU_PROFILE("size_t LVecBase4::add_hash(size_t)", " ", TAU_USER);
-  return add_hash(hash, NEARLY_ZERO(FLOATTYPE));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -664,6 +724,21 @@ add_hash(size_t hash, FLOATTYPE threshold) const {
   hash = fhasher.add_hash(hash, _v(3));
   return hash;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase4::generate_hash
+//       Access: Published
+//  Description: Adds the vector to the indicated hash generator.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LVecBase4)::
+generate_hash(ChecksumHashGenerator &hashgen, FLOATTYPE threshold) const {
+  TAU_PROFILE("LVecBase4::generate_hash(ChecksumHashGenerator &, FLOATTYPE)", " ", TAU_USER);
+  hashgen.add_fp(_v(0), threshold);
+  hashgen.add_fp(_v(1), threshold);
+  hashgen.add_fp(_v(2), threshold);
+  hashgen.add_fp(_v(3), threshold);
+}
+#endif  // FLOATTYPE_IS_INT
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::unary -
@@ -737,8 +812,15 @@ operator * (FLOATTYPE scalar) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase4) FLOATNAME(LVecBase4)::
 operator / (FLOATTYPE scalar) const {
+#ifdef FLOATTYPE_IS_INT
+  return FLOATNAME(LVecBase4)(_v(0) / scalar,
+                              _v(1) / scalar,
+                              _v(2) / scalar,
+                              _v(3) / scalar);
+#else
   FLOATTYPE recip_scalar = 1.0f/scalar;
   return operator * (recip_scalar);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -799,8 +881,15 @@ operator *= (FLOATTYPE scalar) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase4)::
 operator /= (FLOATTYPE scalar) {
+#ifdef FLOATTYPE_IS_INT
+  _v(0) /= scalar;
+  _v(1) /= scalar;
+  _v(2) /= scalar;
+  _v(3) /= scalar;
+#else
   FLOATTYPE recip_scalar = 1.0f/scalar;
   operator *= (recip_scalar);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -872,31 +961,6 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LVecBase4::generate_hash
-//       Access: Published
-//  Description: Adds the vector to the indicated hash generator.
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH void FLOATNAME(LVecBase4)::
-generate_hash(ChecksumHashGenerator &hashgen) const {
-  TAU_PROFILE("LVecBase4::generate_hash(ChecksumHashGenerator &)", " ", TAU_USER);
-  generate_hash(hashgen, NEARLY_ZERO(FLOATTYPE));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVecBase4::generate_hash
-//       Access: Published
-//  Description: Adds the vector to the indicated hash generator.
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH void FLOATNAME(LVecBase4)::
-generate_hash(ChecksumHashGenerator &hashgen, FLOATTYPE threshold) const {
-  TAU_PROFILE("LVecBase4::generate_hash(ChecksumHashGenerator &, FLOATTYPE)", " ", TAU_USER);
-  hashgen.add_fp(_v(0), threshold);
-  hashgen.add_fp(_v(1), threshold);
-  hashgen.add_fp(_v(2), threshold);
-  hashgen.add_fp(_v(3), threshold);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::write_datagram_fixed
 //       Access: Published
 //  Description: Writes the vector to the Datagram using add_float32()
@@ -909,7 +973,12 @@ generate_hash(ChecksumHashGenerator &hashgen, FLOATTYPE threshold) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase4)::
 write_datagram_fixed(Datagram &destination) const {
-#if FLOATTOKEN == 'f'
+#if FLOATTOKEN == 'i'
+  destination.add_int32(_v(0));
+  destination.add_int32(_v(1));
+  destination.add_int32(_v(2));
+  destination.add_int32(_v(3));
+#elif FLOATTOKEN == 'f'
   destination.add_float32(_v(0));
   destination.add_float32(_v(1));
   destination.add_float32(_v(2));
@@ -930,7 +999,12 @@ write_datagram_fixed(Datagram &destination) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase4)::
 read_datagram_fixed(DatagramIterator &source) {
-#if FLOATTOKEN == 'f'
+#if FLOATTOKEN == 'i'
+  _v(0) = source.get_int32();
+  _v(1) = source.get_int32();
+  _v(2) = source.get_int32();
+  _v(3) = source.get_int32();
+#elif FLOATTOKEN == 'f'
   _v(0) = source.get_float32();
   _v(1) = source.get_float32();
   _v(2) = source.get_float32();
@@ -953,10 +1027,17 @@ read_datagram_fixed(DatagramIterator &source) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase4)::
 write_datagram(Datagram &destination) const {
+#if FLOATTOKEN == 'i'
+  destination.add_int32(_v(0));
+  destination.add_int32(_v(1));
+  destination.add_int32(_v(2));
+  destination.add_int32(_v(3));
+#else
   destination.add_stdfloat(_v(0));
   destination.add_stdfloat(_v(1));
   destination.add_stdfloat(_v(2));
   destination.add_stdfloat(_v(3));
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -966,10 +1047,17 @@ write_datagram(Datagram &destination) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase4)::
 read_datagram(DatagramIterator &source) {
+#if FLOATTOKEN == 'i'
+  _v(0) = source.get_int32();
+  _v(1) = source.get_int32();
+  _v(2) = source.get_int32();
+  _v(3) = source.get_int32();
+#else
   _v(0) = source.get_stdfloat();
   _v(1) = source.get_stdfloat();
   _v(2) = source.get_stdfloat();
   _v(3) = source.get_stdfloat();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1055,7 +1143,7 @@ set(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(UnalignedLVecBase4)::
 operator [](int i) const {
-  nassertr(i >= 0 && i < 4, 0.0);
+  nassertr(i >= 0 && i < 4, 0);
   return _v(i);
 }
 

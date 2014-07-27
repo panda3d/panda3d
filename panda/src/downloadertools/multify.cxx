@@ -202,8 +202,8 @@ help() {
 
     "  -C <extract_dir>\n"
 
-    "      With -x, change to the named directory before extracting files;\n"
-    "      that is, extract subfiles into the named directory.\n\n"
+    "      Change to the named directory before working on files;\n"
+    "      that is, extraction/creation/update and replace will be based on this path\n\n"
 
     "  -O\n"
     "      With -x, extract subfiles to standard output instead of to disk.\n\n"
@@ -417,6 +417,12 @@ add_files(const vector_string &params) {
   for (si = params.begin(); si != params.end(); ++si) {
     Filename subfile_name = Filename::from_os_specific(*si);
     filenames.push_back(subfile_name);
+  }
+
+  // Change current working directory, if requested.
+  if (got_chdir_to && !chdir_to.chdir()) {
+    cout << "Failed to chdir to " << chdir_to << ": " << strerror(errno) << endl;
+    return false;
   }
 
   bool okflag = do_add_files(multifile, filenames);

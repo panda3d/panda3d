@@ -76,6 +76,17 @@ FLOATNAME(LPoint4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LPoint4::Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LPoint4)::
+FLOATNAME(LPoint4)(const FLOATNAME(LVecBase3) &copy, FLOATTYPE w) :
+  FLOATNAME(LVecBase4)(copy, w)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LPoint4::zero Named Constructor
 //       Access: Public
 //  Description: Returns a zero-length point.
@@ -205,6 +216,7 @@ operator / (FLOATTYPE scalar) const {
   return FLOATNAME(LPoint4)(FLOATNAME(LVecBase4)::operator / (scalar));
 }
 
+#ifndef FLOATTYPE_IS_INT
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint4::project
 //       Access: Published
@@ -216,4 +228,4 @@ INLINE_LINMATH FLOATNAME(LPoint4) FLOATNAME(LPoint4)::
 project(const FLOATNAME(LVecBase4) &onto) const {
   return FLOATNAME(LVecBase4)::project(onto);
 }
-
+#endif  // FLOATTYPE_IS_INT

@@ -12,6 +12,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "config_ffmpeg.h"
 #include "ffmpegAudio.h"
 #include "ffmpegAudioCursor.h"
 #include "dcast.h"

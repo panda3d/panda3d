@@ -53,13 +53,11 @@ PosixGraphicsStateGuardian::
 //               not defined.
 ////////////////////////////////////////////////////////////////////
 void *PosixGraphicsStateGuardian::
-do_get_extension_func(const char *prefix, const char *name) {
-  nassertr(prefix != NULL, NULL);
+do_get_extension_func(const char *name) {
   nassertr(name != NULL, NULL);
-  string fullname = string(prefix) + string(name);
 
   if (glx_get_os_address) {
-    return get_system_func(fullname.c_str());
+    return get_system_func(name);
   }
 
   return NULL;

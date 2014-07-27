@@ -78,8 +78,11 @@ function(target_interrogate target)
     set(absolute_sources)
     set(absolute_extensions)
     foreach(source ${sources})
-      get_source_file_property(location "${source}" LOCATION)
-      list(APPEND absolute_sources ${location})
+      get_source_file_property(exclude "${source}" WRAP_EXCLUDE)
+      if(NOT exclude)
+        get_source_file_property(location "${source}" LOCATION)
+        list(APPEND absolute_sources ${location})
+      endif()
     endforeach(source)
     foreach(extension ${extensions})
       get_source_file_property(location "${extension}" LOCATION)
@@ -144,11 +147,6 @@ function(interrogate_sources target output database module)
           set(exclude ON)
         endif()
       endforeach(regex)
-
-      get_source_file_property(source_excluded ${source} WRAP_EXCLUDE)
-      if(source_excluded)
-        set(exclude ON)
-      endif()
 
       if(NOT exclude)
         # This file is to be scanned by Interrogate. In order to avoid
@@ -283,6 +281,8 @@ function(add_python_module module)
       set_target_properties(${module} PROPERTIES SUFFIX ".pyd")
     endif()
 
+    install(TARGETS ${module} DESTINATION "${PYTHON_ARCH_INSTALL_DIR}/panda3d")
+
     list(APPEND ALL_INTERROGATE_MODULES "${module}")
     set(ALL_INTERROGATE_MODULES "${ALL_INTERROGATE_MODULES}" CACHE INTERNAL "Internal variable")
   endif()
@@ -296,5 +296,5 @@ if(HAVE_PYTHON)
 
   # The Interrogate path needs to be installed to the architecture-dependent
   # Python directory.
-  install(DIRECTORY "${PROJECT_BINARY_DIR}/panda3d" DESTINATION "${PYTHON_ARCH_INSTALL_DIR}")
+  install(FILES "${PROJECT_BINARY_DIR}/panda3d/__init__.py" DESTINATION "${PYTHON_ARCH_INSTALL_DIR}/panda3d")
 endif()

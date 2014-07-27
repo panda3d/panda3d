@@ -66,7 +66,10 @@
 class TypedObject;
 
 #ifdef HAVE_PYTHON
-#include "Python.h"
+#ifndef PyObject_HEAD
+struct _object;
+typedef _object PyObject;
+#endif
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -127,15 +130,15 @@ PUBLISHED:
 
   INLINE TypeHandle get_parent_towards(TypeHandle ancestor,
                                        TypedObject *object = (TypedObject *)NULL) const;
-  
-  INLINE  int get_best_parent_from_Set(const std::set< int > &legal_vals) const;
+
+  INLINE int get_best_parent_from_Set(const std::set< int > &legal_vals) const;
 
 #ifdef DO_MEMORY_USAGE
   int get_memory_usage(MemoryClass memory_class) const;
   void inc_memory_usage(MemoryClass memory_class, int size);
   void dec_memory_usage(MemoryClass memory_class, int size);
 #else
-  INLINE int get_memory_usage(MemoryClass) const { return 0; }
+  CONSTEXPR int get_memory_usage(MemoryClass) const { return 0; }
   INLINE void inc_memory_usage(MemoryClass, int) { }
   INLINE void dec_memory_usage(MemoryClass, int) { }
 #endif  // DO_MEMORY_USAGE
@@ -170,4 +173,3 @@ EXPCL_DTOOL ostream &operator << (ostream &out, TypeHandle::MemoryClass mem_clas
 #include "typeHandle.I"
 
 #endif
-

@@ -45,6 +45,7 @@
 #include "copyOnWriteObject.h"
 #include "copyOnWritePointer.h"
 #include "lightReMutex.h"
+#include "extension.h"
 
 #ifdef HAVE_PYTHON
 
@@ -118,10 +119,8 @@ PUBLISHED:
   virtual PandaNode *make_copy() const;
   PT(PandaNode) copy_subgraph(Thread *current_thread = Thread::get_current_thread()) const;
 
-#ifdef HAVE_PYTHON
-  PT(PandaNode) __copy__() const;
-  PyObject *__deepcopy__(PyObject *self, PyObject *memo) const;
-#endif
+  EXTENSION(PT(PandaNode) __copy__() const);
+  EXTENSION(PyObject *__deepcopy__(PyObject *self, PyObject *memo) const);
 
   INLINE int get_num_parents(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE PandaNode *get_parent(int n, Thread *current_thread = Thread::get_current_thread()) const;
@@ -202,16 +201,15 @@ PUBLISHED:
   void clear_tag(const string &key,
                  Thread *current_thread = Thread::get_current_thread());
   void get_tag_keys(vector_string &keys) const;
-#ifdef HAVE_PYTHON
-  PyObject *get_tag_keys() const;
 
-  void set_python_tag(const string &key, PyObject *value);
-  PyObject *get_python_tag(const string &key) const;
-  bool has_python_tag(const string &key) const;
-  void clear_python_tag(const string &key);
-  void get_python_tag_keys(vector_string &keys) const;
-  PyObject *get_python_tag_keys() const;
-#endif  // HAVE_PYTHON
+  EXTENSION(PyObject *get_tag_keys() const);
+
+  EXTENSION(void set_python_tag(const string &key, PyObject *value));
+  EXTENSION(PyObject *get_python_tag(const string &key) const);
+  EXTENSION(bool has_python_tag(const string &key) const);
+  EXTENSION(void clear_python_tag(const string &key));
+  EXTENSION(void get_python_tag_keys(vector_string &keys) const);
+  EXTENSION(PyObject *get_python_tag_keys() const);
 
   INLINE bool has_tags() const;
   void copy_tags(PandaNode *other);
@@ -784,6 +782,7 @@ private:
   friend class WorkingNodePath;
   friend class PandaNodePipelineReader;
   friend class EggLoader;
+  friend class Extension<PandaNode>;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -801,7 +800,7 @@ public:
   INLINE ~PandaNodePipelineReader();
   ALLOC_DELETED_CHAIN(PandaNodePipelineReader);
 
-  INLINE const PandaNode *get_object() const;
+  INLINE const PandaNode *get_node() const;
   INLINE Thread *get_current_thread() const;
 
   INLINE void release();
@@ -811,7 +810,7 @@ public:
   INLINE void compose_draw_mask(DrawMask &running_draw_mask) const;
   INLINE bool compare_draw_mask(DrawMask running_draw_mask,
                                 DrawMask camera_mask) const;
-  
+
   INLINE int get_num_parents() const;
   INLINE PandaNode *get_parent(int n) const;
   INLINE int find_parent(PandaNode *node) const;
@@ -846,7 +845,7 @@ public:
   INLINE PandaNode::Parents get_parents() const;
 
 private:
-  const PandaNode *_object;
+  const PandaNode *_node;
   Thread *_current_thread;
 
   const PandaNode::CData *_cdata;

@@ -171,11 +171,11 @@ get_properties_advanced(FrameBufferProperties &properties,
   int iattrib_list[max_attrib_list];
   int ivalue_list[max_attrib_list];
   int ni = 0;
-  
+
   int acceleration_i, pixel_type_i, double_buffer_i, stereo_i,
     color_bits_i, alpha_bits_i, accum_bits_i, depth_bits_i, 
-    stencil_bits_i, multisamples_i;
-  
+    stencil_bits_i, multisamples_i, srgb_capable_i;
+
   iattrib_list[acceleration_i = ni++] = WGL_ACCELERATION_ARB;
   iattrib_list[pixel_type_i = ni++] = WGL_PIXEL_TYPE_ARB;
   iattrib_list[double_buffer_i = ni++] = WGL_DOUBLE_BUFFER_ARB;
@@ -185,43 +185,48 @@ get_properties_advanced(FrameBufferProperties &properties,
   iattrib_list[accum_bits_i = ni++] = WGL_ACCUM_BITS_ARB;
   iattrib_list[depth_bits_i = ni++] = WGL_DEPTH_BITS_ARB;
   iattrib_list[stencil_bits_i = ni++] = WGL_STENCIL_BITS_ARB;
-  
+  iattrib_list[srgb_capable_i = ni++] = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
+
   if (_supports_wgl_multisample) {
     iattrib_list[multisamples_i = ni++] = WGL_SAMPLES_ARB;
   }
-  
+
   // Terminate the list.
   nassertr(ni <= max_attrib_list, false);
-  
+
   if (!_wglGetPixelFormatAttribivARB(window_dc, pfnum, 0,
                                      ni, iattrib_list, ivalue_list)) {
     return false;
   }
-  
+
   properties.clear();
   properties.set_all_specified();
 
   int frame_buffer_mode = 0;
   if (ivalue_list[acceleration_i] == WGL_NO_ACCELERATION_ARB) {
-    properties.set_force_software(1);
+    properties.set_force_software(true);
   } else {
-    properties.set_force_hardware(1);
+    properties.set_force_hardware(true);
   }
-  
+
   if (ivalue_list[pixel_type_i] == WGL_TYPE_COLORINDEX_ARB) {
-    properties.set_indexed_color(1);
+    properties.set_indexed_color(true);
   } else {
-    properties.set_rgb_color(1);
+    properties.set_rgb_color(true);
   }
 
   if (ivalue_list[double_buffer_i]) {
     properties.set_back_buffers(1);
   }
-  
+
   if (ivalue_list[stereo_i]) {
-    properties.set_stereo(1);
+    properties.set_stereo(true);
   }
-  
+
+  if (ivalue_list[srgb_capable_i]) {
+    properties.set_srgb_color(true);
+  }
+
   if (ivalue_list[alpha_bits_i] != 0) {
     properties.set_alpha_bits(ivalue_list[alpha_bits_i]);
   }
@@ -229,7 +234,7 @@ get_properties_advanced(FrameBufferProperties &properties,
   if (ivalue_list[accum_bits_i] != 0) {
     properties.set_accum_bits(ivalue_list[accum_bits_i]);
   }
-  
+
   if (ivalue_list[depth_bits_i] != 0) {
     properties.set_depth_bits(ivalue_list[depth_bits_i]);
   }
@@ -243,9 +248,9 @@ get_properties_advanced(FrameBufferProperties &properties,
       properties.set_multisamples(ivalue_list[multisamples_i]);
     }
   }
-  
+
   properties.set_color_bits(ivalue_list[color_bits_i]);
-  
+
   return true;
 }
 
@@ -429,7 +434,11 @@ choose_pixel_format(const FrameBufferProperties &properties,
         }
       }
     }
-    
+
+    if (!properties.get_srgb_color()) {
+      best_prop.set_srgb_color(false);
+    }
+
     _pfnum = best_pfnum;
     _pfnum_supports_pbuffer = need_pbuffer;
     _pfnum_properties = best_prop;
@@ -583,9 +592,8 @@ get_extra_extensions() {
 //               not defined.
 ////////////////////////////////////////////////////////////////////
 void *wglGraphicsStateGuardian::
-do_get_extension_func(const char *prefix, const char *name) {
-  string fullname = string(prefix) + string(name);
-  return (void*) wglGetProcAddress(fullname.c_str());
+do_get_extension_func(const char *name) {
+  return (void*) wglGetProcAddress(name);
 }
 
 ////////////////////////////////////////////////////////////////////

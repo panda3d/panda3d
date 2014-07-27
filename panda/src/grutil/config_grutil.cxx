@@ -34,11 +34,17 @@ ConfigureFn(config_grutil) {
   init_libgrutil();
 }
 
+ConfigVariableBool frame_rate_meter_milliseconds
+("frame-rate-meter-milliseconds", false);
+
 ConfigVariableDouble frame_rate_meter_update_interval
 ("frame-rate-meter-update-interval", 1.5);
 
 ConfigVariableString frame_rate_meter_text_pattern
 ("frame-rate-meter-text-pattern", "%0.1f fps");
+
+ConfigVariableString frame_rate_meter_ms_text_pattern
+("frame-rate-meter-ms-text-pattern", "%0.1f ms");
 
 ConfigVariableInt frame_rate_meter_layer_sort
 ("frame-rate-meter-layer-sort", 1000);
@@ -84,10 +90,16 @@ ConfigVariableInt pfm_vis_max_indices
           "a single generated mesh.  If the mesh would require more than that, "
           "the mesh is subdivided into smaller pieces."));
 
-ConfigVariableDouble ae_undershift_factor
-("ae-undershift-factor", 1.004,
+ConfigVariableDouble ae_undershift_factor_16
+("ae-undershift-factor-16", 1.004,
  PRC_DESC("Specifies the factor by which After Effects under-applies the specified "
-          "maximum pixel shift when applying a displacement map.  This is used "
+          "maximum pixel shift when applying a displacement map, in a 16-bit project file.  This is used "
+          "to control PfmVizzer::make_displacement()."));
+
+ConfigVariableDouble ae_undershift_factor_32
+("ae-undershift-factor-32", 1.0,
+ PRC_DESC("Specifies the factor by which After Effects under-applies the specified "
+          "maximum pixel shift when applying a displacement map, in a 32-bit project file.  This is used "
           "to control PfmVizzer::make_displacement()."));
 
 ////////////////////////////////////////////////////////////////////
@@ -120,6 +132,6 @@ init_libgrutil() {
   MovieTexture::register_with_read_factory();
 
   TexturePool *ts = TexturePool::get_global_ptr();
-  ts->register_texture_type(MovieTexture::make_texture, "avi mov mpg mpeg mp4 wmv asf flv nut ogm mkv ogv");
+  ts->register_texture_type(MovieTexture::make_texture, "avi m2v mov mpg mpeg mp4 wmv asf flv nut ogm mkv ogv");
 #endif
 }

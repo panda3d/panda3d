@@ -19,7 +19,9 @@
 #include "filename.h"
 #include "pnotify.h"
 #include "windowHandle.h"
-   
+#include "lpoint2.h"
+#include "lvector2.h"
+
 ////////////////////////////////////////////////////////////////////
 //       Class : WindowProperties
 // Description : A container for the various kinds of properties we
@@ -57,14 +59,18 @@ PUBLISHED:
 
   void clear();
   INLINE bool is_any_specified() const;
-  
+
+  INLINE void set_origin(const LPoint2i &origin);
   INLINE void set_origin(int x_origin, int y_origin);
+  INLINE const LPoint2i &get_origin() const;
   INLINE int get_x_origin() const;
   INLINE int get_y_origin() const;
   INLINE bool has_origin() const;
   INLINE void clear_origin();
 
+  INLINE void set_size(const LVector2i &size);
   INLINE void set_size(int x_size, int y_size);
+  INLINE const LVector2i &get_size() const;
   INLINE int get_x_size() const;
   INLINE int get_y_size() const;
   INLINE bool has_size() const;
@@ -73,7 +79,7 @@ PUBLISHED:
   INLINE bool has_mouse_mode() const;
   INLINE void set_mouse_mode(MouseMode mode);
   INLINE MouseMode get_mouse_mode() const;
-  INLINE void clear_mouse_mode();  
+  INLINE void clear_mouse_mode();
 
   INLINE void set_title(const string &title);
   INLINE const string &get_title() const;
@@ -183,10 +189,8 @@ private:
   };
 
   int _specified;
-  int _x_origin;
-  int _y_origin;
-  int _x_size;
-  int _y_size;
+  LPoint2i _origin;
+  LVector2i _size;
   MouseMode _mouse_mode;
   string _title;
   Filename _cursor_filename;

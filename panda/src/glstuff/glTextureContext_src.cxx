@@ -16,6 +16,23 @@
 
 TypeHandle CLP(TextureContext)::_type_handle;
 
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(TextureContext)::Denstructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+CLP(TextureContext)::
+~CLP(TextureContext)() {
+  if (gl_enable_memory_barriers) {
+    _glgsg->_textures_needing_fetch_barrier.erase(this);
+    _glgsg->_textures_needing_image_access_barrier.erase(this);
+    _glgsg->_textures_needing_update_barrier.erase(this);
+    _glgsg->_textures_needing_framebuffer_barrier.erase(this);
+  }
+
+  glDeleteTextures(1, &_index);
+  _index = 0;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLTextureContext::evict_lru
@@ -35,7 +52,16 @@ TypeHandle CLP(TextureContext)::_type_handle;
 void CLP(TextureContext)::
 evict_lru() {
   dequeue_lru();
-  reset_data();
+
+  if (_handle != 0) {
+    if (_handle_resident) {
+      _glgsg->_glMakeTextureHandleNonResident(_handle);
+    }
+    _handle_resident = false;
+  } else {
+    reset_data();
+  }
+
   update_data_size_bytes(0);
   mark_unloaded();
 }
@@ -48,12 +74,113 @@ evict_lru() {
 ////////////////////////////////////////////////////////////////////
 void CLP(TextureContext)::
 reset_data() {
+  if (_handle != 0 && _handle_resident) {
+    _glgsg->_glMakeTextureHandleNonResident(_handle);
+  }
+
   // Free the texture resources.
-  GLP(DeleteTextures)(1, &_index);
+  glDeleteTextures(1, &_index);
 
   // We still need a valid index number, though, in case we want to
   // re-load the texture later.
-  GLP(GenTextures)(1, &_index);
+  glGenTextures(1, &_index);
 
-  _already_applied = false;
+  _handle = 0;
+  _handle_resident = false;
+  _needs_barrier = false;
+  _has_storage = false;
+  _immutable = false;
+
+#ifndef OPENGLES
+  // Mark the texture as coherent.
+  if (gl_enable_memory_barriers) {
+    _glgsg->_textures_needing_fetch_barrier.erase(this);
+    _glgsg->_textures_needing_image_access_barrier.erase(this);
+    _glgsg->_textures_needing_update_barrier.erase(this);
+    _glgsg->_textures_needing_framebuffer_barrier.erase(this);
+  }
+#endif
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLTextureContext::make_handle_resident
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void CLP(TextureContext)::
+make_handle_resident() {
+  if (_handle != 0) {
+    if (!_handle_resident) {
+      _glgsg->_glMakeTextureHandleResident(_handle);
+      _handle_resident = true;
+    }
+    set_resident(true);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(TextureContext)::get_handle
+//       Access: Public
+//  Description: Returns a handle for this texture.  Once this has
+//               been created, the texture data may still be updated,
+//               but its properties may not.
+////////////////////////////////////////////////////////////////////
+INLINE GLuint64 CLP(TextureContext)::
+get_handle() {
+#ifdef OPENGLES
+  return 0;
+#else
+  if (!_glgsg->_supports_bindless_texture) {
+    return false;
+  }
+
+  if (_handle == 0) {
+    _handle = _glgsg->_glGetTextureHandle(_index);
+  }
+
+  _immutable = true;
+  return _handle;
+#endif
+}
+
+#ifndef OPENGLES
+////////////////////////////////////////////////////////////////////
+//     Function: GLTextureContext::needs_barrier
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+bool CLP(TextureContext)::
+needs_barrier(GLbitfield barrier) {
+  if (!gl_enable_memory_barriers) {
+    return false;
+  }
+
+  return (((barrier & GL_TEXTURE_FETCH_BARRIER_BIT) &&
+           _glgsg->_textures_needing_fetch_barrier.count(this)))
+      || (((barrier & GL_SHADER_IMAGE_ACCESS_BARRIER_BIT) &&
+           _glgsg->_textures_needing_image_access_barrier.count(this)))
+      || (((barrier & GL_TEXTURE_UPDATE_BARRIER_BIT) &&
+           _glgsg->_textures_needing_update_barrier.count(this)))
+      || (((barrier & GL_FRAMEBUFFER_BARRIER_BIT) &&
+           _glgsg->_textures_needing_framebuffer_barrier.count(this)));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLTextureContext::mark_incoherent
+//       Access: Public
+//  Description: Mark a texture as needing a memory barrier, since
+//               a non-coherent write just happened to it.
+////////////////////////////////////////////////////////////////////
+void CLP(TextureContext)::
+mark_incoherent() {
+  if (!gl_enable_memory_barriers) {
+    return;
+  }
+
+  _glgsg->_textures_needing_fetch_barrier.insert(this);
+  _glgsg->_textures_needing_image_access_barrier.insert(this);
+  _glgsg->_textures_needing_update_barrier.insert(this);
+  _glgsg->_textures_needing_framebuffer_barrier.insert(this);
+}
+
+#endif // OPENGLES

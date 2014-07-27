@@ -56,10 +56,10 @@
 
 #ifdef IS_OSX
   #include <OpenGLES/ES1/gl.h>
-  #include <OpenGLES/ES1/glext.h>
+//  #include <OpenGLES/ES1/glext.h>
 #else
   #include <GLES/gl.h>
-  #include <GLES/glext.h>
+//  #include <GLES/glext.h>
 #endif
 
 #include "panda_esglext.h"
@@ -110,11 +110,15 @@
 #define GL_FUNC_SUBTRACT GL_FUNC_SUBTRACT_OES
 #define GL_FUNC_REVERSE_SUBTRACT GL_FUNC_REVERSE_SUBTRACT_OES
 #define GL_BGRA GL_BGRA_EXT
+#define GL_RGB16F GL_RGB16F_EXT
+#define GL_RGBA16F GL_RGBA16F_EXT
+#define GL_RGB32F GL_RGB32F_EXT
+#define GL_RGBA32F GL_RGBA32F_EXT
 
 #undef SUPPORT_IMMEDIATE_MODE
 #define APIENTRY
 #define APIENTRYP *
 
 #include "glstuff_src.h"
- 
+
 #endif  // GLESGSG_H

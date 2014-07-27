@@ -788,6 +788,43 @@ make_points_in_place() {
   nassertv(all_is_valid);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::make_patches_in_place
+//       Access: Published
+//  Description: Replaces the GeomPrimitives within this Geom with
+//               corresponding GeomPatches.  See
+//               GeomPrimitive::make_patches().
+//
+//               Don't call this in a downstream thread unless you
+//               don't mind it blowing away other changes you might
+//               have recently made in an upstream thread.
+////////////////////////////////////////////////////////////////////
+void Geom::
+make_patches_in_place() {
+  Thread *current_thread = Thread::get_current_thread();
+  CDWriter cdata(_cycler, true, current_thread);
+
+#ifndef NDEBUG
+  bool all_is_valid = true;
+#endif
+  Primitives::iterator pi;
+  for (pi = cdata->_primitives.begin(); pi != cdata->_primitives.end(); ++pi) {
+    CPT(GeomPrimitive) new_prim = (*pi).get_read_pointer()->make_patches();
+    (*pi) = (GeomPrimitive *)new_prim.p();
+
+#ifndef NDEBUG
+    if (!new_prim->check_valid(cdata->_data.get_read_pointer())) {
+      all_is_valid = false;
+    }
+#endif
+  }
+
+  cdata->_modified = Geom::get_next_modified();
+  reset_geom_rendering(cdata);
+  clear_cache_stage(current_thread);
+
+  nassertv(all_is_valid);
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::copy_primitives_from

@@ -90,6 +90,7 @@ struct { char *ver, *key; } maya_versions[] = {
   { "MAYA2013", "2013"},
   { "MAYA20135", "2013.5"},
   { "MAYA2014", "2014"},
+  { "MAYA2015", "2015"},
   { 0, 0 },
 };
 

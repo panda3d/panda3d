@@ -27,7 +27,7 @@
 INLINE bool CLP(GraphicsStateGuardian)::
 report_errors(int line, const char *source_file) {
 #ifndef NDEBUG
-  GLenum error_code = GLP(GetError)();
+  GLenum error_code = glGetError();
   if (error_code != GL_NO_ERROR) {
     int error_count = 0;
     return report_errors_loop(line, source_file, error_code, error_count);
@@ -45,8 +45,8 @@ report_errors(int line, const char *source_file) {
 INLINE void CLP(GraphicsStateGuardian)::
 report_my_errors(int line, const char *source_file) {
 #ifndef NDEBUG
-  if (_track_errors) {
-    GLenum error_code = GLP(GetError)();
+  if (_check_errors) {
+    GLenum error_code = glGetError();
     if (error_code != GL_NO_ERROR) {
       if (!report_errors_loop(line, source_file, error_code, _error_count)) {
         panic_deactivate();
@@ -69,7 +69,7 @@ report_my_errors(int line, const char *source_file) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool CLP(GraphicsStateGuardian)::
 clear_errors(int line, const char *source_file) {
-  GLenum error_code = GLP(GetError)();
+  GLenum error_code = glGetError();
   if (error_code != GL_NO_ERROR) {
     int error_count = 0;
     return report_errors_loop(line, source_file, error_code, error_count);
@@ -83,7 +83,7 @@ clear_errors(int line, const char *source_file) {
 //       Access: Public
 //  Description: This works like report_my_errors(), except that it
 //               always runs, even in the NDEBUG case (but not when
-//               _track_errors is false), and it never calls
+//               _check_errors is false), and it never calls
 //               panic_deactivate().  It is designed to be called when
 //               it is important to clear the error stack (for
 //               instance, because we want to be able to reliably
@@ -91,8 +91,8 @@ clear_errors(int line, const char *source_file) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
 clear_my_errors(int line, const char *source_file) {
-  if (_track_errors) {
-    GLenum error_code = GLP(GetError)();
+  if (_check_errors) {
+    GLenum error_code = glGetError();
     if (error_code != GL_NO_ERROR) {
       int error_count = 0;
       report_errors_loop(line, source_file, error_code, error_count);
@@ -161,8 +161,8 @@ get_gl_version_minor() const {
 INLINE void CLP(GraphicsStateGuardian)::
 maybe_gl_finish() const {
 #ifdef DO_PSTATS
-  if (CLP(finish)) {
-    GLP(Finish)();
+  if (gl_finish) {
+    glFinish();
   }
 #endif
 }
@@ -231,12 +231,12 @@ enable_multisample_antialias(bool val) {
       // Turn off antialias multisample.
       _multisample_mode &= ~MM_antialias;
       if (_multisample_mode == 0) {
-        GLP(Disable)(GL_MULTISAMPLE);
+        glDisable(GL_MULTISAMPLE);
       }
     } else if ((_multisample_mode & MM_antialias) == 0 && val) {
       // Turn on antialias multisample.
       if (_multisample_mode == 0) {
-        GLP(Enable)(GL_MULTISAMPLE);
+        glEnable(GL_MULTISAMPLE);
       }
       _multisample_mode |= MM_antialias;
     }
@@ -258,16 +258,16 @@ enable_multisample_alpha_one(bool val) {
     if ((_multisample_mode & MM_alpha_one) != 0 && !val) {
       // Turn off sample_alpha_to_one multisample.
       _multisample_mode &= ~MM_alpha_one;
-      GLP(Disable)(GL_SAMPLE_ALPHA_TO_ONE);
+      glDisable(GL_SAMPLE_ALPHA_TO_ONE);
       if (_multisample_mode == 0) {
-        GLP(Disable)(GL_MULTISAMPLE);
+        glDisable(GL_MULTISAMPLE);
       }
     } else if ((_multisample_mode & MM_alpha_one) == 0 && val) {
       // Turn on sample_alpha_to_one multisample.
       if (_multisample_mode == 0) {
-        GLP(Enable)(GL_MULTISAMPLE);
+        glEnable(GL_MULTISAMPLE);
       }
-      GLP(Enable)(GL_SAMPLE_ALPHA_TO_ONE);
+      glEnable(GL_SAMPLE_ALPHA_TO_ONE);
       _multisample_mode |= MM_alpha_one;
     }
   }
@@ -288,16 +288,16 @@ enable_multisample_alpha_mask(bool val) {
     if ((_multisample_mode & MM_alpha_mask) != 0 && !val) {
       // Turn off sample_alpha_to_mask multisample.
       _multisample_mode &= ~MM_alpha_mask;
-      GLP(Disable)(GL_SAMPLE_ALPHA_TO_COVERAGE);
+      glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
       if (_multisample_mode == 0) {
-        GLP(Disable)(GL_MULTISAMPLE);
+        glDisable(GL_MULTISAMPLE);
       }
     } else if ((_multisample_mode & MM_alpha_mask) == 0 && val) {
       // Turn on sample_alpha_to_mask multisample.
       if (_multisample_mode == 0) {
-        GLP(Enable)(GL_MULTISAMPLE);
+        glEnable(GL_MULTISAMPLE);
       }
-      GLP(Enable)(GL_SAMPLE_ALPHA_TO_COVERAGE);
+      glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
       _multisample_mode |= MM_alpha_mask;
     }
   }
@@ -316,9 +316,9 @@ enable_line_smooth(bool val) {
     _state_mask.clear_bit(TransparencyAttrib::get_class_slot());
     _line_smooth_enabled = val;
     if (val) {
-      GLP(Enable)(GL_LINE_SMOOTH);
+      glEnable(GL_LINE_SMOOTH);
     } else {
-      GLP(Disable)(GL_LINE_SMOOTH);
+      glDisable(GL_LINE_SMOOTH);
     }
   }
 #endif
@@ -336,9 +336,9 @@ enable_point_smooth(bool val) {
     _state_mask.clear_bit(TransparencyAttrib::get_class_slot());
     _point_smooth_enabled = val;
     if (val) {
-      GLP(Enable)(GL_POINT_SMOOTH);
+      glEnable(GL_POINT_SMOOTH);
     } else {
-      GLP(Disable)(GL_POINT_SMOOTH);
+      glDisable(GL_POINT_SMOOTH);
     }
   }
 #endif
@@ -355,9 +355,9 @@ enable_polygon_smooth(bool val) {
   if (_polygon_smooth_enabled != val) {
     _polygon_smooth_enabled = val;
     if (val) {
-      GLP(Enable)(GL_POLYGON_SMOOTH);
+      glEnable(GL_POLYGON_SMOOTH);
     } else {
-      GLP(Disable)(GL_POLYGON_SMOOTH);
+      glDisable(GL_POLYGON_SMOOTH);
     }
   }
 #endif  // OPENGLES
@@ -448,13 +448,13 @@ enable_stencil_test(bool val) {
       GLCAT.spam()
         << "glEnable(GL_STENCIL_TEST)" << endl;
 #endif
-      GLP(Enable)(GL_STENCIL_TEST);
+      glEnable(GL_STENCIL_TEST);
     } else {
 #ifdef GSG_VERBOSE
       GLCAT.spam()
         << "glDisable(GL_STENCIL_TEST)" << endl;
 #endif
-      GLP(Disable)(GL_STENCIL_TEST);
+      glDisable(GL_STENCIL_TEST);
     }
   }
 }
@@ -473,13 +473,13 @@ enable_blend(bool val) {
       GLCAT.spam()
         << "glEnable(GL_BLEND)" << endl;
 #endif
-      GLP(Enable)(GL_BLEND);
+      glEnable(GL_BLEND);
     } else {
 #ifdef GSG_VERBOSE
       GLCAT.spam()
         << "glDisable(GL_BLEND)" << endl;
 #endif
-      GLP(Disable)(GL_BLEND);
+      glDisable(GL_BLEND);
     }
   }
 }
@@ -498,13 +498,13 @@ enable_depth_test(bool val) {
       GLCAT.spam()
         << "glEnable(GL_DEPTH_TEST)" << endl;
 #endif
-      GLP(Enable)(GL_DEPTH_TEST);
+      glEnable(GL_DEPTH_TEST);
     } else {
 #ifdef GSG_VERBOSE
       GLCAT.spam()
         << "glDisable(GL_DEPTH_TEST)" << endl;
 #endif
-      GLP(Disable)(GL_DEPTH_TEST);
+      glDisable(GL_DEPTH_TEST);
     }
   }
 }
@@ -524,13 +524,13 @@ enable_fog(bool val) {
       GLCAT.spam()
         << "glEnable(GL_FOG)" << endl;
 #endif
-      GLP(Enable)(GL_FOG);
+      glEnable(GL_FOG);
     } else {
 #ifdef GSG_VERBOSE
       GLCAT.spam()
         << "glDisable(GL_FOG)" << endl;
 #endif
-      GLP(Disable)(GL_FOG);
+      glDisable(GL_FOG);
     }
   }
 #endif
@@ -551,13 +551,13 @@ enable_alpha_test(bool val) {
       GLCAT.spam()
         << "glEnable(GL_ALPHA_TEST)" << endl;
 #endif
-      GLP(Enable)(GL_ALPHA_TEST);
+      glEnable(GL_ALPHA_TEST);
     } else {
 #ifdef GSG_VERBOSE
       GLCAT.spam()
         << "glDisable(GL_ALPHA_TEST)" << endl;
 #endif
-      GLP(Disable)(GL_ALPHA_TEST);
+      glDisable(GL_ALPHA_TEST);
     }
   }
 #endif // OPENGLES_2
@@ -578,17 +578,17 @@ enable_polygon_offset(bool val) {
       GLCAT.spam()
         << "glEnable(GL_POLYGON_OFFSET_*)" << endl;
 #endif
-      GLP(Enable)(GL_POLYGON_OFFSET_FILL);
-      //GLP(Enable)(GL_POLYGON_OFFSET_LINE);  // not widely supported anyway
-      //GLP(Enable)(GL_POLYGON_OFFSET_POINT);
+      glEnable(GL_POLYGON_OFFSET_FILL);
+      //glEnable(GL_POLYGON_OFFSET_LINE);  // not widely supported anyway
+      //glEnable(GL_POLYGON_OFFSET_POINT);
     } else {
 #ifdef GSG_VERBOSE
       GLCAT.spam()
         << "glDisable(GL_POLYGON_OFFSET_*)" << endl;
 #endif
-      GLP(Disable)(GL_POLYGON_OFFSET_FILL);
-      //GLP(Disable)(GL_POLYGON_OFFSET_LINE);  // not widely supported anyway
-      //GLP(Disable)(GL_POLYGON_OFFSET_POINT);
+      glDisable(GL_POLYGON_OFFSET_FILL);
+      //glDisable(GL_POLYGON_OFFSET_LINE);  // not widely supported anyway
+      //glDisable(GL_POLYGON_OFFSET_POINT);
     }
   }
 }
@@ -603,10 +603,10 @@ INLINE void CLP(GraphicsStateGuardian)::
 call_glFogfv(GLenum pname, const LColor &color) {
 #ifndef OPENGLES_2
 #ifndef STDFLOAT_DOUBLE
-  GLP(Fogfv)(pname, color.get_data());
+  glFogfv(pname, color.get_data());
 #else  // STDFLOAT_DOUBLE
   LColorf fcolor = LCAST(float, color);
-  GLP(Fogfv)(pname, fcolor.get_data());
+  glFogfv(pname, fcolor.get_data());
 #endif  //  STDFLOAT_DOUBLE
 #endif
 }
@@ -621,10 +621,10 @@ INLINE void CLP(GraphicsStateGuardian)::
 call_glMaterialfv(GLenum face, GLenum pname, const LColor &color) {
 #ifndef OPENGLES_2
 #ifndef STDFLOAT_DOUBLE
-  GLP(Materialfv)(face, pname, color.get_data());
+  glMaterialfv(face, pname, color.get_data());
 #else  // STDFLOAT_DOUBLE
   LColorf fcolor = LCAST(float, color);
-  GLP(Materialfv)(face, pname, fcolor.get_data());
+  glMaterialfv(face, pname, fcolor.get_data());
 #endif  //  STDFLOAT_DOUBLE
 #endif
 }
@@ -639,10 +639,10 @@ INLINE void CLP(GraphicsStateGuardian)::
 call_glLightfv(GLenum light, GLenum pname, const LVecBase4 &value) {
 #ifndef OPENGLES_2
 #ifndef STDFLOAT_DOUBLE
-  GLP(Lightfv)(light, pname, value.get_data());
+  glLightfv(light, pname, value.get_data());
 #else  // STDFLOAT_DOUBLE
   LVecBase4f fvalue = LCAST(float, value);
-  GLP(Lightfv)(light, pname, fvalue.get_data());
+  glLightfv(light, pname, fvalue.get_data());
 #endif  //  STDFLOAT_DOUBLE
 #endif
 }
@@ -657,10 +657,10 @@ INLINE void CLP(GraphicsStateGuardian)::
 call_glLightfv(GLenum light, GLenum pname, const LVecBase3 &value) {
 #ifndef OPENGLES_2
 #ifndef STDFLOAT_DOUBLE
-  GLP(Lightfv)(light, pname, value.get_data());
+  glLightfv(light, pname, value.get_data());
 #else  // STDFLOAT_DOUBLE
   LVecBase3f fvalue = LCAST(float, value);
-  GLP(Lightfv)(light, pname, fvalue.get_data());
+  glLightfv(light, pname, fvalue.get_data());
 #endif  //  STDFLOAT_DOUBLE
 #endif
 }
@@ -675,10 +675,10 @@ INLINE void CLP(GraphicsStateGuardian)::
 call_glLightModelfv(GLenum pname, const LVecBase4 &value) {
 #ifndef OPENGLES_2
 #ifndef STDFLOAT_DOUBLE
-  GLP(LightModelfv)(pname, value.get_data());
+  glLightModelfv(pname, value.get_data());
 #else  // STDFLOAT_DOUBLE
   LVecBase4f fvalue = LCAST(float, value);
-  GLP(LightModelfv)(pname, fvalue.get_data());
+  glLightModelfv(pname, fvalue.get_data());
 #endif  //  STDFLOAT_DOUBLE
 #endif  // OPENGLES_2
 }
@@ -693,10 +693,10 @@ INLINE void CLP(GraphicsStateGuardian)::
 call_glTexEnvfv(GLenum target, GLenum pname, const LVecBase4 &value) {
 #ifndef OPENGLES_2
 #ifndef STDFLOAT_DOUBLE
-  GLP(TexEnvfv)(target, pname, value.get_data());
+  glTexEnvfv(target, pname, value.get_data());
 #else  // STDFLOAT_DOUBLE
   LVecBase4f fvalue = LCAST(float, value);
-  GLP(TexEnvfv)(target, pname, fvalue.get_data());
+  glTexEnvfv(target, pname, fvalue.get_data());
 #endif  //  STDFLOAT_DOUBLE
 #endif
 }
@@ -710,10 +710,10 @@ call_glTexEnvfv(GLenum target, GLenum pname, const LVecBase4 &value) {
 INLINE void CLP(GraphicsStateGuardian)::
 call_glTexParameterfv(GLenum target, GLenum pname, const LVecBase4 &value) {
 #ifndef STDFLOAT_DOUBLE
-  GLP(TexParameterfv)(target, pname, value.get_data());
+  glTexParameterfv(target, pname, value.get_data());
 #else  // STDFLOAT_DOUBLE
   LVecBase4f fvalue = LCAST(float, value);
-  GLP(TexParameterfv)(target, pname, fvalue.get_data());
+  glTexParameterfv(target, pname, fvalue.get_data());
 #endif  //  STDFLOAT_DOUBLE
 }
 

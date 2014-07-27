@@ -27,7 +27,7 @@ set(P3DEVICE_SOURCES
 )
 
 composite_sources(p3device P3DEVICE_SOURCES)
-add_library(p3device ${P3DEVICE_SOURCES} ${P3DEVICE_HEADERS})
+add_library(p3device ${P3DEVICE_HEADERS} ${P3DEVICE_SOURCES})
 target_link_libraries(p3device p3dgraph p3display)
 target_interrogate(p3device ALL)
 

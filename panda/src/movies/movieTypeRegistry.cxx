@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "movieTypeRegistry.h"
+#include "string_utils.h"
 #include "config_movies.h"
 #include "config_util.h"
 #include "load_dso.h"

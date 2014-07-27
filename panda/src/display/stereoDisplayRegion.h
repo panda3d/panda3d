@@ -51,7 +51,7 @@ PUBLISHED:
   virtual void set_pixel_zoom(PN_stdfloat pixel_zoom);
 
   // Inherited from DisplayRegion
-  virtual void set_dimensions(const LVecBase4 &dimensions);
+  virtual void set_dimensions(int i, const LVecBase4 &dimensions);
   virtual bool is_stereo() const;
   virtual void set_camera(const NodePath &camera);
   virtual void set_active(bool active);
@@ -61,7 +61,7 @@ PUBLISHED:
   virtual void set_incomplete_render(bool incomplete_render);
   virtual void set_texture_reload_priority(int texture_reload_priority);
   virtual void set_cull_traverser(CullTraverser *trav);
-  virtual void set_target_tex_page(int page, int view);
+  virtual void set_target_tex_page(int page);
 
   virtual void output(ostream &out) const;
   virtual PT(PandaNode) make_cull_result_graph();

@@ -50,6 +50,7 @@ FunctionRemap(const InterrogateType &itype, const InterrogateFunction &ifunc,
   _num_default_parameters = num_default_parameters;
   _type = T_normal;
   _flags = 0;
+  _args_type = 0;
   _wrapper_index = 0;
 
   _return_value_needs_management = false;
@@ -303,26 +304,6 @@ make_wrapper_entry(FunctionIndex function_index) {
     assert(!iwrapper._parameters.empty());
     iwrapper._parameters.front()._parameter_flags |=
       InterrogateFunctionWrapper::PF_is_this;
-
-    if (_parameters.size() >= 2 && _parameters[1]._name == "self" &&
-        TypeManager::is_pointer_to_PyObject(_parameters[1]._remap->get_orig_type())) {
-      // Here's a special case.  If the first parameter of a nonstatic
-      // method is a PyObject * called "self", then we will
-      // automatically fill it in from the this pointer, and remove it
-      // from the generated parameter list.
-      _parameters.erase(_parameters.begin() + 1);
-      _flags |= F_explicit_self;
-    }
-
-  } else if (_type == T_constructor) {
-    // We also allow "self" to be passed in to a constructor, even
-    // though the constructor doesn't normally accept a this pointer.
-    // But this makes sense to Python programmers.
-    if (_parameters.size() >= 1 && _parameters[0]._name == "self" &&
-        TypeManager::is_pointer_to_PyObject(_parameters[0]._remap->get_orig_type())) {
-      _parameters.erase(_parameters.begin() + 0);
-      _flags |= F_explicit_self;
-    }
   }
 
   if (!_void_return) {
@@ -650,12 +631,32 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
   }
 
   // Check for a special meaning by name and signature.
-  if (_type == T_normal) {
-    int first_param = 0;
-    if (_has_this) {
-      first_param = 1;
-    }
+  int first_param = 0;
+  if (_has_this) {
+    first_param = 1;
+  }
 
+  if (_has_this || _type == T_constructor) {
+    if (_parameters.size() > first_param && _parameters[first_param]._name == "self" &&
+        TypeManager::is_pointer_to_PyObject(_parameters[first_param]._remap->get_orig_type())) {
+      // Here's a special case.  If the first parameter of a nonstatic
+      // method is a PyObject * called "self", then we will
+      // automatically fill it in from the this pointer, and remove it
+      // from the generated parameter list.
+      _parameters.erase(_parameters.begin() + first_param);
+      _flags |= F_explicit_self;
+    }
+  }
+
+  if (_parameters.size() == first_param) {
+    _args_type = InterfaceMaker::AT_no_args;
+  } else if (_parameters.size() == first_param + 1) {
+    _args_type = InterfaceMaker::AT_single_arg;
+  } else {
+    _args_type = InterfaceMaker::AT_varargs;
+  }
+
+  if (_type == T_normal) {
     if (fname == "operator []" || fname == "__getitem__") {
       _flags |= F_getitem;
       if (_has_this && _parameters.size() == 2) {
@@ -671,6 +672,7 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
         if (TypeManager::is_integer(_parameters[1]._remap->get_new_type())) {
           // Its first parameter is an int parameter, presumably an index.
           _flags |= F_setitem_int;
+          _args_type = InterfaceMaker::AT_varargs;
         }
       }
 
@@ -681,55 +683,69 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
         _flags |= F_size;
       }
 
-    } else if (fname == "make_copy" ) {
+    } else if (fname == "make_copy") {
       if (_has_this && _parameters.size() == 1 &&
           TypeManager::is_pointer(_return_type->get_new_type())) {
         // It receives no parameters, and returns a pointer.
         _flags |= F_make_copy;
       }
 
-    } else if (fname == "__iter__" ) {
+    } else if (fname == "__iter__") {
       if (_has_this && _parameters.size() == 1 &&
           TypeManager::is_pointer(_return_type->get_new_type())) {
         // It receives no parameters, and returns a pointer.
         _flags |= F_iter;
       }
 
-    } else if (fname == "__getbuffer__" ) {
-      if (_has_this && _parameters.size() == 4 &&
+    } else if (fname == "__getbuffer__") {
+      if (_has_this && _parameters.size() == 3 &&
           TypeManager::is_integer(_return_type->get_new_type()) &&
-          TypeManager::is_pointer_to_PyObject(_parameters[1]._remap->get_orig_type()) &&
-          TypeManager::is_pointer_to_Py_buffer(_parameters[2]._remap->get_orig_type()) &&
-          TypeManager::is_integer(_parameters[3]._remap->get_orig_type())) {
+          TypeManager::is_pointer_to_Py_buffer(_parameters[1]._remap->get_orig_type()) &&
+          TypeManager::is_integer(_parameters[2]._remap->get_orig_type())) {
 
         _flags |= F_getbuffer;
       }
 
-    } else if (fname == "__releasebuffer__" ) {
-      if (_has_this && _parameters.size() == 3 &&
-          TypeManager::is_pointer_to_PyObject(_parameters[1]._remap->get_orig_type()) &&
-          TypeManager::is_pointer_to_Py_buffer(_parameters[2]._remap->get_orig_type())) {
+    } else if (fname == "__releasebuffer__") {
+      if (_has_this && _parameters.size() == 2 &&
+          TypeManager::is_pointer_to_Py_buffer(_parameters[1]._remap->get_orig_type())) {
 
         _flags |= F_releasebuffer;
       }
 
-    } else if (fname == "compare_to" ) {
+    } else if (fname == "compare_to") {
       if (_has_this && _parameters.size() == 2 &&
           TypeManager::is_integer(_return_type->get_new_type())) {
         // It receives one parameter, and returns an integer.
         _flags |= F_compare_to;
       }
+
+    } else if (fname == "operator ()" || fname == "__call__") {
+      // Call operators always take keyword arguments.
+      _args_type = InterfaceMaker::AT_keyword_args;
+
+    } else if (fname == "__setattr__" || fname == "__getattr__") {
+      // Just to prevent these from getting keyword arguments.
+
+    } else {
+      if (_args_type == InterfaceMaker::AT_varargs) {
+        // Every other method can take keyword arguments, if they
+        // take more than one argument.
+        _args_type = InterfaceMaker::AT_keyword_args;
+      }
     }
 
   } else if (_type == T_constructor) {
-    if (!_has_this && _parameters.size() == 1) {
-      if (TypeManager::unwrap(_parameters[0]._remap->get_orig_type()) ==
-          TypeManager::unwrap(_return_type->get_orig_type())) {
-        // If this is the only parameter, and it's the same as the
-        // "this" type, this is a copy constructor.
-        _flags |= F_copy_constructor;
-      }
+    if (!_has_this && _parameters.size() == 1 &&
+        TypeManager::unwrap(_parameters[0]._remap->get_orig_type()) ==
+        TypeManager::unwrap(_return_type->get_orig_type())) {
+      // If this is the only parameter, and it's the same as the
+      // "this" type, this is a copy constructor.
+      _flags |= F_copy_constructor;
+
     }
+    // Constructors always take varargs and keyword args.
+    _args_type = InterfaceMaker::AT_keyword_args;
   }
 
   return true;

@@ -20,10 +20,10 @@
 ////////////////////////////////////////////////////////////////////
 INLINE CopyOnWritePointer::
 CopyOnWritePointer(CopyOnWriteObject *object) :
-  _object(object)
+  _cow_object(object)
 {
-  if (_object != (CopyOnWriteObject *)NULL) {
-    _object->cache_ref();
+  if (_cow_object != (CopyOnWriteObject *)NULL) {
+    _cow_object->cache_ref();
   }
 }
 
@@ -34,10 +34,10 @@ CopyOnWritePointer(CopyOnWriteObject *object) :
 ////////////////////////////////////////////////////////////////////
 INLINE CopyOnWritePointer::
 CopyOnWritePointer(const CopyOnWritePointer &copy) :
-  _object(copy._object)
+  _cow_object(copy._cow_object)
 {
-  if (_object != (CopyOnWriteObject *)NULL) {
-    _object->cache_ref();
+  if (_cow_object != (CopyOnWriteObject *)NULL) {
+    _cow_object->cache_ref();
   }
 }
 
@@ -48,7 +48,7 @@ CopyOnWritePointer(const CopyOnWritePointer &copy) :
 ////////////////////////////////////////////////////////////////////
 INLINE void CopyOnWritePointer::
 operator = (const CopyOnWritePointer &copy) {
-  operator = (copy._object);
+  operator = (copy._cow_object);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -58,13 +58,13 @@ operator = (const CopyOnWritePointer &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CopyOnWritePointer::
 operator = (CopyOnWriteObject *object) {
-  if (_object != object) {
-    if (_object != (CopyOnWriteObject *)NULL) {
-      cache_unref_delete(_object);
+  if (_cow_object != object) {
+    if (_cow_object != (CopyOnWriteObject *)NULL) {
+      cache_unref_delete(_cow_object);
     }
-    _object = object;
-    if (_object != (CopyOnWriteObject *)NULL) {
-      _object->cache_ref();
+    _cow_object = object;
+    if (_cow_object != (CopyOnWriteObject *)NULL) {
+      _cow_object->cache_ref();
     }
   }
 }
@@ -76,8 +76,8 @@ operator = (CopyOnWriteObject *object) {
 ////////////////////////////////////////////////////////////////////
 INLINE CopyOnWritePointer::
 ~CopyOnWritePointer() {
-  if (_object != (CopyOnWriteObject *)NULL) {
-    cache_unref_delete(_object);
+  if (_cow_object != (CopyOnWriteObject *)NULL) {
+    cache_unref_delete(_cow_object);
   }
 }
 
@@ -88,7 +88,7 @@ INLINE CopyOnWritePointer::
 ////////////////////////////////////////////////////////////////////
 INLINE bool CopyOnWritePointer::
 operator == (const CopyOnWritePointer &other) const {
-  return _object == other._object;
+  return _cow_object == other._cow_object;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -98,7 +98,7 @@ operator == (const CopyOnWritePointer &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool CopyOnWritePointer::
 operator != (const CopyOnWritePointer &other) const {
-  return _object != other._object;
+  return _cow_object != other._cow_object;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -108,7 +108,7 @@ operator != (const CopyOnWritePointer &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool CopyOnWritePointer::
 operator < (const CopyOnWritePointer &other) const {
-  return _object < other._object;
+  return _cow_object < other._cow_object;
 }
 
 #ifndef COW_THREADED
@@ -124,7 +124,7 @@ operator < (const CopyOnWritePointer &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE const CopyOnWriteObject *CopyOnWritePointer::
 get_read_pointer() const {
-  return _object;
+  return _cow_object;
 }
 #endif  // COW_THREADED
 
@@ -144,16 +144,16 @@ get_read_pointer() const {
 ////////////////////////////////////////////////////////////////////
 INLINE CopyOnWriteObject *CopyOnWritePointer::
 get_write_pointer() {
-  if (_object == (CopyOnWriteObject *)NULL) {
+  if (_cow_object == (CopyOnWriteObject *)NULL) {
     return NULL;
   }
-  if (_object->get_cache_ref_count() > 1) {
-    PT(CopyOnWriteObject) new_object = _object->make_cow_copy();
-    cache_unref_delete(_object);
-    _object = new_object;
-    _object->cache_ref();
+  if (_cow_object->get_cache_ref_count() > 1) {
+    PT(CopyOnWriteObject) new_object = _cow_object->make_cow_copy();
+    cache_unref_delete(_cow_object);
+    _cow_object = new_object;
+    _cow_object->cache_ref();
   }
-  return _object;
+  return _cow_object;
 }
 #endif  // COW_THREADED
 
@@ -167,7 +167,7 @@ get_write_pointer() {
 ////////////////////////////////////////////////////////////////////
 INLINE CopyOnWriteObject *CopyOnWritePointer::
 get_unsafe_pointer() {
-  return _object;
+  return _cow_object;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -178,7 +178,7 @@ get_unsafe_pointer() {
 ////////////////////////////////////////////////////////////////////
 bool CopyOnWritePointer::
 is_null() const {
-  return (_object == (CopyOnWriteObject *)NULL);
+  return (_cow_object == (CopyOnWriteObject *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -188,10 +188,10 @@ is_null() const {
 ////////////////////////////////////////////////////////////////////
 void CopyOnWritePointer::
 clear() {
-  if (_object != (CopyOnWriteObject *)NULL) {
-    cache_unref_delete(_object);
+  if (_cow_object != (CopyOnWriteObject *)NULL) {
+    cache_unref_delete(_cow_object);
   }
-  _object = NULL;
+  _cow_object = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -203,8 +203,8 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool CopyOnWritePointer::
 test_ref_count_integrity() const {
-  nassertr(_object != (CopyOnWriteObject *)NULL, false);
-  return _object->test_ref_count_integrity();
+  nassertr(_cow_object != (CopyOnWriteObject *)NULL, false);
+  return _cow_object->test_ref_count_integrity();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -216,8 +216,8 @@ test_ref_count_integrity() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool CopyOnWritePointer::
 test_ref_count_nonzero() const {
-  nassertr(_object != (CopyOnWriteObject *)NULL, false);
-  return _object->test_ref_count_nonzero();
+  nassertr(_cow_object != (CopyOnWriteObject *)NULL, false);
+  return _cow_object->test_ref_count_nonzero();
 }
 
 #ifndef CPPPARSER

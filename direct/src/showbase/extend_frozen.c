@@ -1,3 +1,4 @@
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
 #ifdef _WIN32
@@ -105,7 +106,7 @@ py_extend_frozen_modules(PyObject *self, PyObject *args) {
     PyObject *tuple;
     const char *name;
     const char *code;
-    int size;
+    Py_ssize_t size;
 
     tuple = PySequence_GetItem(list, i);
     if (!PyArg_ParseTuple(tuple, "ss#", &name, &code, &size)) {
@@ -178,7 +179,7 @@ py_get_frozen_module_code(PyObject *self, PyObject *args) {
     if (strcmp(PyImport_FrozenModules[i].name, name) == 0) {
       int is_package = (PyImport_FrozenModules[i].size < 0);
       return Py_BuildValue("(s#i)", PyImport_FrozenModules[i].code,
-                           abs(PyImport_FrozenModules[i].size),
+                           (Py_ssize_t) abs(PyImport_FrozenModules[i].size),
                            is_package);
     }
     ++i;

@@ -119,7 +119,7 @@ __reduce_persist__(PyObject *self, PyObject *pickler) const {
     }
   }
 
-  PyObject *result = Py_BuildValue("(O(Os#))", func, this_class, bam_stream.data(), bam_stream.size());
+  PyObject *result = Py_BuildValue("(O(Os#))", func, this_class, bam_stream.data(), (Py_ssize_t) bam_stream.size());
   Py_DECREF(func);
   Py_DECREF(this_class);
   return result;
@@ -234,10 +234,10 @@ py_decode_TypedWritable_from_bam_stream_persist(PyObject *pickler, PyObject *thi
 
   PyObject *result;
   if (py_reader != NULL){
-    result = PyObject_CallFunction(func, (char *)"(s#O)", data.data(), data.size(), py_reader);
+    result = PyObject_CallFunction(func, (char *)"(s#O)", data.data(), (Py_ssize_t) data.size(), py_reader);
     Py_DECREF(py_reader);
   } else {
-    result = PyObject_CallFunction(func, (char *)"(s#)", data.data(), data.size());
+    result = PyObject_CallFunction(func, (char *)"(s#)", data.data(), (Py_ssize_t) data.size());
   }
 
   if (result == NULL) {

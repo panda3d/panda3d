@@ -660,9 +660,9 @@ get_data1i() {
 //               expressed as a 2-component value, and advances the
 //               read row.
 ////////////////////////////////////////////////////////////////////
-INLINE const int *GeomVertexReader::
+INLINE const LVecBase2i &GeomVertexReader::
 get_data2i() {
-  nassertr(has_column(), 0);
+  nassertr(has_column(), LVecBase2i::zero());
   return _packer->get_data2i(inc_pointer());
 }
 
@@ -673,9 +673,9 @@ get_data2i() {
 //               expressed as a 3-component value, and advances the
 //               read row.
 ////////////////////////////////////////////////////////////////////
-INLINE const int *GeomVertexReader::
+INLINE const LVecBase3i &GeomVertexReader::
 get_data3i() {
-  nassertr(has_column(), 0);
+  nassertr(has_column(), LVecBase3i::zero());
   return _packer->get_data3i(inc_pointer());
 }
 
@@ -686,9 +686,9 @@ get_data3i() {
 //               expressed as a 4-component value, and advances the
 //               read row.
 ////////////////////////////////////////////////////////////////////
-INLINE const int *GeomVertexReader::
+INLINE const LVecBase4i &GeomVertexReader::
 get_data4i() {
-  nassertr(has_column(), 0);
+  nassertr(has_column(), LVecBase4i::zero());
   return _packer->get_data4i(inc_pointer());
 }
 
