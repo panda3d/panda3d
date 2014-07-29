@@ -77,6 +77,59 @@ operator < (const ButtonHandle &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ButtonHandle::Ordering Operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool ButtonHandle::
+operator <= (const ButtonHandle &other) const {
+  return (_index <= other._index);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonHandle::Ordering Operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool ButtonHandle::
+operator > (const ButtonHandle &other) const {
+  return (_index > other._index);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonHandle::Ordering Operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool ButtonHandle::
+operator >= (const ButtonHandle &other) const {
+  return (_index >= other._index);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonHandle::compare_to
+//       Access: Published
+//  Description: Sorts ButtonHandles arbitrarily (according to <, >,
+//               etc.).  Returns a number less than 0 if this type
+//               sorts before the other one, greater than zero if it
+//               sorts after, 0 if they are equivalent.
+////////////////////////////////////////////////////////////////////
+INLINE int ButtonHandle::
+compare_to(const ButtonHandle &other) const {
+  return _index - other._index;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonHandle::get_hash
+//       Access: Published
+//  Description: Returns a hash code suitable for phash_map.
+////////////////////////////////////////////////////////////////////
+INLINE size_t ButtonHandle::
+get_hash() const {
+  return (size_t)_index;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ButtonHandle::has_ascii_equivalent
 //       Access: Published
 //  Description: Returns true if the button was created with an ASCII
