@@ -125,11 +125,13 @@ PUBLISHED:
   INLINE int get_num_parents(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE PandaNode *get_parent(int n, Thread *current_thread = Thread::get_current_thread()) const;
   INLINE int find_parent(PandaNode *node, Thread *current_thread = Thread::get_current_thread()) const;
+  MAKE_SEQ(get_parents, get_num_parents, get_parent);
 
   INLINE int get_num_children(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE PandaNode *get_child(int n, Thread *current_thread = Thread::get_current_thread()) const;
   INLINE int get_child_sort(int n, Thread *current_thread = Thread::get_current_thread()) const;
   INLINE int find_child(PandaNode *node, Thread *current_thread = Thread::get_current_thread()) const;
+  MAKE_SEQ(get_children, get_num_children, get_child);
 
   int count_num_descendants() const;
 
@@ -153,6 +155,7 @@ PUBLISHED:
   INLINE PandaNode *get_stashed(int n, Thread *current_thread = Thread::get_current_thread()) const;
   INLINE int get_stashed_sort(int n, Thread *current_thread = Thread::get_current_thread()) const;
   INLINE int find_stashed(PandaNode *node, Thread *current_thread = Thread::get_current_thread()) const;
+  MAKE_SEQ(get_stashed, get_num_stashed, get_stashed);
 
   void add_stashed(PandaNode *child_node, int sort = 0, Thread *current_thread = Thread::get_current_thread());
   void remove_stashed(int child_index, Thread *current_thread = Thread::get_current_thread());
