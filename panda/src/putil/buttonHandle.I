@@ -135,7 +135,7 @@ get_index() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonHandle::output
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void ButtonHandle::
 output(ostream &out) const {
@@ -151,4 +151,15 @@ output(ostream &out) const {
 INLINE ButtonHandle ButtonHandle::
 none() {
   return _none;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonHandle::operator bool
+//       Access: Published
+//  Description: ButtonHandle::none() evaluates to false, everything
+//               else evaluates to true.
+////////////////////////////////////////////////////////////////////
+INLINE ButtonHandle::
+operator bool () const {
+  return (_index != 0);
 }

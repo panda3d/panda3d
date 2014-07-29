@@ -146,6 +146,7 @@ PUBLISHED:
   INLINE int get_index() const;
   INLINE void output(ostream &out) const;
   INLINE static TypeHandle none();
+  INLINE operator bool () const;
 
 private:
   int _index;

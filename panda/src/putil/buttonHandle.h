@@ -51,6 +51,8 @@ PUBLISHED:
   INLINE void output(ostream &out) const;
   INLINE static ButtonHandle none();
 
+  INLINE operator bool () const;
+
 private:
   int _index;
   static ButtonHandle _none;
