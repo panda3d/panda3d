@@ -127,7 +127,9 @@ macro(target_use_packages target)
 
   foreach(lib ${libs})
     if(HAVE_${lib})
-      target_include_directories("${target}" PUBLIC "${${lib}_INCLUDE_DIRS};${${lib}_INCLUDE_DIR}")
+      # N.B. target_include_directories is new in CMake 2.8.11; we target 2.8.4.
+      #target_include_directories("${target}" PUBLIC "${${lib}_INCLUDE_DIRS};${${lib}_INCLUDE_DIR}")
+      include_directories("${${lib}_INCLUDE_DIRS};${${lib}_INCLUDE_DIR}")
       if(_${lib}_LIBRARIES)
         target_link_libraries("${target}" ${_${lib}_LIBRARIES})
       else()
