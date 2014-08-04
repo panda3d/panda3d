@@ -73,3 +73,31 @@ set_local_scale(const LVecBase3 &scale) {
   ptr()->setLocalScaling(LVecBase3_to_btVector3(scale));
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BulletShape::get_bounds
+//       Access: Published
+//  Description: Returns the current bounds of this collision shape.
+////////////////////////////////////////////////////////////////////
+BoundingSphere BulletShape::
+get_bounds() const {
+
+/*
+  btTransform tr;
+  tr.setIdentity();
+  btVector3 aabbMin,aabbMax;
+  ptr()->getAabb(tr,aabbMin,aabbMax);
+  btVector3 o = tr.getOrigin();
+cout << "aabbMin " << aabbMin.x() << " " << aabbMin.y() << " " << aabbMin.z() << endl;
+cout << "aabbMax " << aabbMax.x() << " " << aabbMax.y() << " " << aabbMax.z() << endl;
+cout << "origin " << aabbMin.x() << " " << aabbMin.y() << " " << aabbMin.z() << endl;
+*/
+
+  btVector3 center;
+  btScalar radius;
+
+  ptr()->getBoundingSphere(center, radius);
+  BoundingSphere bounds(btVector3_to_LPoint3(center), (PN_stdfloat)radius);
+
+  return bounds;
+}
+

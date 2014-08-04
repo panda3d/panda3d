@@ -20,6 +20,7 @@
 #include "bullet_includes.h"
 
 #include "typedReferenceCount.h"
+#include "boundingSphere.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BulletShape
@@ -42,6 +43,8 @@ PUBLISHED:
   const char *get_name() const;
 
   PN_stdfloat get_margin() const;
+
+  BoundingSphere get_bounds() const;
 
 public:
   virtual btCollisionShape *ptr() const = 0;
