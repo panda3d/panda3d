@@ -216,7 +216,7 @@ class AstronInternalRepository(ConnectionRepository):
         """
 
         dg = PyDatagram()
-        dg.addServerControlHeader(CONTROL_CLEAR_POST_REMOVE)
+        dg.addServerControlHeader(CONTROL_CLEAR_POST_REMOVES)
         dg.addUint64(self.ourChannel)
         self.send(dg)
 

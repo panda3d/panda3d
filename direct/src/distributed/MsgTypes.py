@@ -40,7 +40,7 @@ MsgName2Id = {
     'CONTROL_ADD_RANGE':                                9002,
     'CONTROL_REMOVE_RANGE':                             9003,
     'CONTROL_ADD_POST_REMOVE':                          9010,
-    'CONTROL_CLEAR_POST_REMOVE':                        9011,
+    'CONTROL_CLEAR_POST_REMOVES':                        9011,
 
     # State Server control messages:
     'STATESERVER_CREATE_OBJECT_WITH_REQUIRED':          2000,
@@ -139,7 +139,7 @@ MsgName2Id = {
 
 # create id->name table for debugging
 MsgId2Names = invertDictLossless(MsgName2Id)
-    
+
 # put msg names in module scope, assigned to msg value
 globals().update(MsgName2Id)
 
@@ -149,7 +149,7 @@ QUIET_ZONE_IGNORED_LIST = [
     # We mustn't ignore updates, because some updates for localToon
     # are always important.
     #CLIENT_OBJECT_UPDATE_FIELD,
-    
+
     # These are now handled. If it is a create for a class that is in the
     # uber zone, we should create it.
     #CLIENT_CREATE_OBJECT_REQUIRED,
