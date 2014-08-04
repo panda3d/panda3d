@@ -40,7 +40,7 @@ MsgName2Id = {
     'CONTROL_ADD_RANGE':                                9002,
     'CONTROL_REMOVE_RANGE':                             9003,
     'CONTROL_ADD_POST_REMOVE':                          9010,
-    'CONTROL_CLEAR_POST_REMOVES':                        9011,
+    'CONTROL_CLEAR_POST_REMOVES':                       9011,
 
     # State Server control messages:
     'STATESERVER_CREATE_OBJECT_WITH_REQUIRED':          2000,
