@@ -24,4 +24,7 @@
 #include "dblnames.h"
 #include "lvecBase3_ext_src.h"
 
+#include "intnames.h"
+#include "lvecBase3_ext_src.h"
+
 #endif

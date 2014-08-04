@@ -12,6 +12,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifndef CPPPARSER
+
 INLINE_LINMATH const FLOATNAME(LVecBase2) &
 lcast_to(FLOATTYPE *, const FLOATNAME(LVecBase2) &source);
 
@@ -85,3 +87,5 @@ INLINE_LINMATH FLOATNAME2(LMatrix4)
 lcast_to(FLOATTYPE2 *, const FLOATNAME(LMatrix4) &source);
 
 #include "lcast_to_src.I"
+
+#endif  // CPPPARSER

@@ -59,7 +59,7 @@ is_single_buffered() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool FrameBufferProperties::
 is_stereo() const {
-  return (_property[FBP_stereo] != 0);
+  return (_flags & FBF_stereo) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -189,9 +189,9 @@ get_back_buffers() const {
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE int FrameBufferProperties::
+INLINE bool FrameBufferProperties::
 get_indexed_color() const {
-  return _property[FBP_indexed_color];
+  return (_flags & FBF_indexed_color) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -199,9 +199,9 @@ get_indexed_color() const {
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE int FrameBufferProperties::
+INLINE bool FrameBufferProperties::
 get_rgb_color() const {
-  return _property[FBP_rgb_color];
+  return (_flags & FBF_rgb_color) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -209,9 +209,9 @@ get_rgb_color() const {
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE int FrameBufferProperties::
+INLINE bool FrameBufferProperties::
 get_stereo() const {
-  return _property[FBP_stereo];
+  return (_flags & FBF_stereo) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -219,9 +219,9 @@ get_stereo() const {
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE int FrameBufferProperties::
+INLINE bool FrameBufferProperties::
 get_force_hardware() const {
-  return _property[FBP_force_hardware];
+  return (_flags & FBF_force_hardware) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -229,9 +229,39 @@ get_force_hardware() const {
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE int FrameBufferProperties::
+INLINE bool FrameBufferProperties::
 get_force_software() const {
-  return _property[FBP_force_software];
+  return (_flags & FBF_force_software) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::get_srgb_color
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool FrameBufferProperties::
+get_srgb_color() const {
+  return (_flags & FBF_srgb_color) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::get_float_color
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool FrameBufferProperties::
+get_float_color() const {
+  return (_flags & FBF_float_color) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::get_float_depth
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool FrameBufferProperties::
+get_float_depth() const {
+  return (_flags & FBF_float_depth) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -365,9 +395,13 @@ set_back_buffers(int n) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void FrameBufferProperties::
-set_indexed_color(int n) {
-  _property[FBP_indexed_color] = n;
-  _specified[FBP_indexed_color] = true;
+set_indexed_color(bool n) {
+  if (n) {
+    _flags |= FBF_indexed_color;
+  } else {
+    _flags &= ~FBF_indexed_color;
+  }
+  _flags_specified |= FBF_indexed_color;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -376,9 +410,13 @@ set_indexed_color(int n) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void FrameBufferProperties::
-set_rgb_color(int n) {
-  _property[FBP_rgb_color] = n;
-  _specified[FBP_rgb_color] = true;
+set_rgb_color(bool n) {
+  if (n) {
+    _flags |= FBF_rgb_color;
+  } else {
+    _flags &= ~FBF_rgb_color;
+  }
+  _flags_specified |= FBF_rgb_color;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -387,9 +425,13 @@ set_rgb_color(int n) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void FrameBufferProperties::
-set_stereo(int n) {
-  _property[FBP_stereo] = n;
-  _specified[FBP_stereo] = true;
+set_stereo(bool n) {
+  if (n) {
+    _flags |= FBF_stereo;
+  } else {
+    _flags &= ~FBF_stereo;
+  }
+  _flags_specified |= FBF_stereo;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -398,9 +440,13 @@ set_stereo(int n) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void FrameBufferProperties::
-set_force_hardware(int n) {
-  _property[FBP_force_hardware] = n;
-  _specified[FBP_force_hardware] = true;
+set_force_hardware(bool n) {
+  if (n) {
+    _flags |= FBF_force_hardware;
+  } else {
+    _flags &= ~FBF_force_hardware;
+  }
+  _flags_specified |= FBF_force_hardware;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -409,7 +455,56 @@ set_force_hardware(int n) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void FrameBufferProperties::
-set_force_software(int n) {
-  _property[FBP_force_software] = n;
-  _specified[FBP_force_software] = true;
+set_force_software(bool n) {
+  if (n) {
+    _flags |= FBF_force_software;
+  } else {
+    _flags &= ~FBF_force_software;
+  }
+  _flags_specified |= FBF_force_software;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::set_srgb_color
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void FrameBufferProperties::
+set_srgb_color(bool n) {
+  if (n) {
+    _flags |= FBF_srgb_color;
+  } else {
+    _flags &= ~FBF_srgb_color;
+  }
+  _flags_specified |= FBF_srgb_color;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::set_float_color
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void FrameBufferProperties::
+set_float_color(bool n) {
+  if (n) {
+    _flags |= FBF_float_color;
+  } else {
+    _flags &= ~FBF_float_color;
+  }
+  _flags_specified |= FBF_float_color;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::set_float_depth
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void FrameBufferProperties::
+set_float_depth(bool n) {
+  if (n) {
+    _flags |= FBF_float_depth;
+  } else {
+    _flags &= ~FBF_float_depth;
+  }
+  _flags_specified |= FBF_float_depth;
 }

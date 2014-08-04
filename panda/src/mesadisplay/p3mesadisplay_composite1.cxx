@@ -1,5 +1,0 @@
-#include "config_mesadisplay.cxx"
-#include "osMesaGraphicsBuffer.cxx"
-#include "osMesaGraphicsPipe.cxx"
-#include "osMesaGraphicsStateGuardian.cxx"
-#include "mesagsg.cxx"

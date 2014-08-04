@@ -1093,7 +1093,58 @@ extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg) {
     return gsg->extract_texture_data(tex);
   }
 }
- 
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::dispatch_compute
+//       Access: Published
+//  Description: Asks the indicated GraphicsStateGuardian to dispatch
+//               the compute shader in the given ShaderAttrib using
+//               the given work group counts.  This can act as an
+//               interface for running a one-off compute shader,
+//               without having to store it in the scene graph using
+//               a ComputeNode.
+//
+//               Since this requires a round-trip to the draw thread,
+//               it may require waiting for the current thread to
+//               finish rendering if it is called in a multithreaded
+//               environment.  However, you can call this several
+//               consecutive times on different textures for little
+//               additional cost.
+//
+//               The return value is true if the operation is
+//               successful, false otherwise.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+dispatch_compute(const LVecBase3i &work_groups, const ShaderAttrib *sattr, GraphicsStateGuardian *gsg) {
+  ReMutexHolder holder(_lock);
+
+  CPT(RenderState) state = RenderState::make(sattr);
+
+  string draw_name = gsg->get_threading_model().get_draw_name();
+  if (draw_name.empty()) {
+    // A single-threaded environment.  No problem.
+
+  } else {
+    // A multi-threaded environment.  We have to wait until the draw
+    // thread has finished its current task.
+    WindowRenderer *wr = get_window_renderer(draw_name, 0);
+    RenderThread *thread = (RenderThread *)wr;
+    MutexHolder holder2(thread->_cv_mutex);
+      
+    while (thread->_thread_state != TS_wait) {
+      thread->_cv_done.wait();
+    }
+
+    // OK, now the draw thread is idle.  That's really good enough for
+    // our purposes; we don't *actually* need to make the draw thread
+    // do the work--it's sufficient that it's not doing anything else
+    // while we access the GSG.
+  }
+
+  gsg->set_state_and_transform(state, TransformState::make_identity());
+  gsg->dispatch_compute(work_groups[0], work_groups[1], work_groups[2]);
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::get_global_ptr
 //       Access: Published, Static

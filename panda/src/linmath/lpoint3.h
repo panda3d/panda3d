@@ -28,5 +28,7 @@
 #include "dblnames.h"
 #include "lpoint3_src.h"
 
+#include "intnames.h"
+#include "lpoint3_src.h"
 
 #endif

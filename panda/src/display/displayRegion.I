@@ -39,6 +39,34 @@ get_lens_index() const {
 }
 
 ///////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_num_regions
+//       Access: Published
+//  Description: Returns the number of regions, see set_num_regions.
+////////////////////////////////////////////////////////////////////
+INLINE int DisplayRegion::
+get_num_regions() const {
+  CDReader cdata(_cycler);
+  return cdata->_regions.size();
+}
+
+///////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::set_num_regions
+//       Access: Published
+//  Description: Sets the number of regions that this DisplayRegion
+//               indicates.  Usually, this number is 1 (and it is
+//               always at least 1), and only the first is used for
+//               rendering.  However, if more than one is provided,
+//               you may select which one to render into using a
+//               geometry shader (gl_ViewportIndex in GLSL).
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegion::
+set_num_regions(int i) {
+  nassertv(i >= 1);
+  CDWriter cdata(_cycler);
+  cdata->_regions.resize(i);
+}
+
+///////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::get_dimensions
 //       Access: Published
 //  Description: Retrieves the coordinates of the DisplayRegion's
@@ -47,11 +75,24 @@ get_lens_index() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DisplayRegion::
 get_dimensions(PN_stdfloat &l, PN_stdfloat &r, PN_stdfloat &b, PN_stdfloat &t) const {
+  get_dimensions(0, l, r, b, t);
+}
+
+///////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_dimensions
+//       Access: Published
+//  Description: Retrieves the coordinates of the DisplayRegion's
+//               rectangle within its GraphicsOutput.  These numbers
+//               will be in the range [0..1].
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegion::
+get_dimensions(int i, PN_stdfloat &l, PN_stdfloat &r, PN_stdfloat &b, PN_stdfloat &t) const {
   CDReader cdata(_cycler);
-  l = cdata->_dimensions[0];
-  r = cdata->_dimensions[1];
-  b = cdata->_dimensions[2];
-  t = cdata->_dimensions[3];
+  const Region &region = cdata->_regions[i];
+  l = region._dimensions[0];
+  r = region._dimensions[1];
+  b = region._dimensions[2];
+  t = region._dimensions[3];
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -62,9 +103,9 @@ get_dimensions(PN_stdfloat &l, PN_stdfloat &r, PN_stdfloat &b, PN_stdfloat &t) c
 //               will be in the range [0..1].
 ////////////////////////////////////////////////////////////////////
 INLINE LVecBase4 DisplayRegion::
-get_dimensions() const {
+get_dimensions(int i) const {
   CDReader cdata(_cycler);
-  return cdata->_dimensions;
+  return cdata->_regions[i]._dimensions;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -75,9 +116,9 @@ get_dimensions() const {
 //               will be in the range [0..1].
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat DisplayRegion::
-get_left() const {
+get_left(int i) const {
   CDReader cdata(_cycler);
-  return cdata->_dimensions[0];
+  return cdata->_regions[i]._dimensions[0];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -88,9 +129,9 @@ get_left() const {
 //               will be in the range [0..1].
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat DisplayRegion::
-get_right() const {
+get_right(int i) const {
   CDReader cdata(_cycler);
-  return cdata->_dimensions[1];
+  return cdata->_regions[i]._dimensions[1];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -101,9 +142,9 @@ get_right() const {
 //               number will be in the range [0..1].
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat DisplayRegion::
-get_bottom() const {
+get_bottom(int i) const {
   CDReader cdata(_cycler);
-  return cdata->_dimensions[2];
+  return cdata->_regions[i]._dimensions[2];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -114,9 +155,9 @@ get_bottom() const {
 //               will be in the range [0..1].
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat DisplayRegion::
-get_top() const {
+get_top(int i) const {
   CDReader cdata(_cycler);
-  return cdata->_dimensions[3];
+  return cdata->_regions[i]._dimensions[3];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -130,7 +171,35 @@ get_top() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DisplayRegion::
 set_dimensions(PN_stdfloat l, PN_stdfloat r, PN_stdfloat b, PN_stdfloat t) {
-  set_dimensions(LVecBase4(l, r, b, t));
+  set_dimensions(0, LVecBase4(l, r, b, t));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::set_dimensions
+//       Access: Published, Virtual
+//  Description: Changes the portion of the framebuffer this
+//               DisplayRegion corresponds to.  The parameters range
+//               from 0 to 1, where 0,0 is the lower left corner and
+//               1,1 is the upper right; (0, 1, 0, 1) represents the
+//               whole screen.
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegion::
+set_dimensions(int i, PN_stdfloat l, PN_stdfloat r, PN_stdfloat b, PN_stdfloat t) {
+  set_dimensions(i, LVecBase4(l, r, b, t));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::set_dimensions
+//       Access: Published, Virtual
+//  Description: Changes the portion of the framebuffer this
+//               DisplayRegion corresponds to.  The parameters range
+//               from 0 to 1, where 0,0 is the lower left corner and
+//               1,1 is the upper right; (0, 1, 0, 1) represents the
+//               whole screen.
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegion::
+set_dimensions(const LVecBase4 &dimensions) {
+  set_dimensions(0, dimensions);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -387,9 +456,9 @@ get_draw_callback() const {
 //  Description: Returns the width of the DisplayRegion in pixels.
 ////////////////////////////////////////////////////////////////////
 INLINE int DisplayRegion::
-get_pixel_width() const {
+get_pixel_width(int i) const {
   CDReader cdata(_cycler);
-  return cdata->_pr - cdata->_pl;
+  return cdata->_regions[i]._pixels[1] - cdata->_regions[i]._pixels[0];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -398,9 +467,9 @@ get_pixel_width() const {
 //  Description: Returns the height of the DisplayRegion in pixels.
 ////////////////////////////////////////////////////////////////////
 INLINE int DisplayRegion::
-get_pixel_height() const {
+get_pixel_height(int i) const {
   CDReader cdata(_cycler);
-  return cdata->_pt - cdata->_pb;
+  return cdata->_regions[i]._pixels[3] - cdata->_regions[i]._pixels[2];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -411,11 +480,23 @@ get_pixel_height() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DisplayRegion::
 get_pixels(int &pl, int &pr, int &pb, int &pt) const {
+  get_pixels(0, pl, pr, pb, pt);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_pixels
+//       Access: Public
+//  Description: Retrieves the coordinates of the DisplayRegion within
+//               its window, in pixels.
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegion::
+get_pixels(int i, int &pl, int &pr, int &pb, int &pt) const {
   CDReader cdata(_cycler);
-  pl = cdata->_pl;
-  pr = cdata->_pr;
-  pb = cdata->_pb;
-  pt = cdata->_pt;
+  const Region &region = cdata->_regions[i];
+  pl = region._pixels[0];
+  pr = region._pixels[1];
+  pb = region._pixels[2];
+  pt = region._pixels[3];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -427,11 +508,24 @@ get_pixels(int &pl, int &pr, int &pb, int &pt) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DisplayRegion::
 get_region_pixels(int &xo, int &yo, int &w, int &h) const {
+  get_region_pixels(0, xo, yo, w, h);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_region_pixels
+//       Access: Public
+//  Description: Retrieves the coordinates of the DisplayRegion within
+//               its window, as the pixel location of its bottom-left
+//               corner, along with a pixel width and height.
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegion::
+get_region_pixels(int i, int &xo, int &yo, int &w, int &h) const {
   CDReader cdata(_cycler);
-  xo = cdata->_pl;
-  yo = cdata->_pb;
-  w = cdata->_pr - cdata->_pl;
-  h = cdata->_pt - cdata->_pb;
+  const Region &region = cdata->_regions[i];
+  xo = region._pixels[0];
+  yo = region._pixels[2];
+  w = region._pixels[1] - xo;
+  h = region._pixels[3] - yo;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -444,11 +538,25 @@ get_region_pixels(int &xo, int &yo, int &w, int &h) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DisplayRegion::
 get_region_pixels_i(int &xo, int &yo, int &w, int &h) const {
+  get_region_pixels_i(0, xo, yo, w, h);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_region_pixels_i
+//       Access: Public
+//  Description: Similar to get_region_pixels(), but returns the upper
+//               left corner, and the pixel numbers are numbered from
+//               the top-left corner down, in the DirectX way of
+//               things.
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegion::
+get_region_pixels_i(int i, int &xo, int &yo, int &w, int &h) const {
   CDReader cdata(_cycler);
-  xo = cdata->_pl;
-  yo = cdata->_pti;
-  w = cdata->_pr - cdata->_pl;
-  h = cdata->_pbi - cdata->_pti;
+  const Region &region = cdata->_regions[i];
+  xo = region._pixels_i[0];
+  yo = region._pixels_i[2];
+  w = region._pixels_i[1] - xo;
+  h = region._pixels_i[3] - yo;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -520,6 +628,18 @@ get_cull_region_pcollector() {
 INLINE PStatCollector &DisplayRegion::
 get_draw_region_pcollector() {
   return _draw_region_pcollector;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::Region::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE DisplayRegion::Region::
+Region() :
+  _dimensions(0, 1, 0, 1),
+  _pixels(0),
+  _pixels_i(0) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -633,6 +753,16 @@ is_any_clear_active() const {
   return _object->is_any_clear_active();
 }
 
+///////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::get_num_regions
+//       Access: Published
+//  Description: Returns the number of regions, see set_num_regions.
+////////////////////////////////////////////////////////////////////
+INLINE int DisplayRegionPipelineReader::
+get_num_regions() const {
+  return _cdata->_regions.size();
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegionPipelineReader::get_dimensions
 //       Access: Public
@@ -642,10 +772,23 @@ is_any_clear_active() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DisplayRegionPipelineReader::
 get_dimensions(PN_stdfloat &l, PN_stdfloat &r, PN_stdfloat &b, PN_stdfloat &t) const {
-  l = _cdata->_dimensions[0];
-  r = _cdata->_dimensions[1];
-  b = _cdata->_dimensions[2];
-  t = _cdata->_dimensions[3];
+  return get_dimensions(0, l, r, b, t);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::get_dimensions
+//       Access: Public
+//  Description: Retrieves the coordinates of the DisplayRegion's
+//               rectangle within its GraphicsOutput.  These numbers
+//               will be in the range [0..1].
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegionPipelineReader::
+get_dimensions(int i, PN_stdfloat &l, PN_stdfloat &r, PN_stdfloat &b, PN_stdfloat &t) const {
+  const DisplayRegion::Region &region = _cdata->_regions[i];
+  l = region._dimensions[0];
+  r = region._dimensions[1];
+  b = region._dimensions[2];
+  t = region._dimensions[3];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -656,8 +799,8 @@ get_dimensions(PN_stdfloat &l, PN_stdfloat &r, PN_stdfloat &b, PN_stdfloat &t) c
 //               will be in the range [0..1].
 ////////////////////////////////////////////////////////////////////
 INLINE const LVecBase4 &DisplayRegionPipelineReader::
-get_dimensions() const {
-  return _cdata->_dimensions;
+get_dimensions(int i) const {
+  return _cdata->_regions[i]._dimensions;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -668,8 +811,8 @@ get_dimensions() const {
 //               will be in the range [0..1].
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat DisplayRegionPipelineReader::
-get_left() const {
-  return _cdata->_dimensions[0];
+get_left(int i) const {
+  return _cdata->_regions[i]._dimensions[0];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -680,8 +823,8 @@ get_left() const {
 //               will be in the range [0..1].
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat DisplayRegionPipelineReader::
-get_right() const {
-  return _cdata->_dimensions[1];
+get_right(int i) const {
+  return _cdata->_regions[i]._dimensions[1];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -692,8 +835,8 @@ get_right() const {
 //               number will be in the range [0..1].
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat DisplayRegionPipelineReader::
-get_bottom() const {
-  return _cdata->_dimensions[2];
+get_bottom(int i) const {
+  return _cdata->_regions[i]._dimensions[2];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -704,8 +847,8 @@ get_bottom() const {
 //               will be in the range [0..1].
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat DisplayRegionPipelineReader::
-get_top() const {
-  return _cdata->_dimensions[3];
+get_top(int i) const {
+  return _cdata->_regions[i]._dimensions[3];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -816,10 +959,22 @@ get_draw_callback() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DisplayRegionPipelineReader::
 get_pixels(int &pl, int &pr, int &pb, int &pt) const {
-  pl = _cdata->_pl;
-  pr = _cdata->_pr;
-  pb = _cdata->_pb;
-  pt = _cdata->_pt;
+  get_pixels(0, pl, pr, pb, pt);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::get_pixels
+//       Access: Public
+//  Description: Retrieves the coordinates of the DisplayRegion within
+//               its window, in pixels.
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegionPipelineReader::
+get_pixels(int i, int &pl, int &pr, int &pb, int &pt) const {
+  const DisplayRegion::Region &region = _cdata->_regions[i];
+  pl = region._pixels[0];
+  pr = region._pixels[1];
+  pb = region._pixels[2];
+  pt = region._pixels[3];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -831,10 +986,23 @@ get_pixels(int &pl, int &pr, int &pb, int &pt) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DisplayRegionPipelineReader::
 get_region_pixels(int &xo, int &yo, int &w, int &h) const {
-  xo = _cdata->_pl;
-  yo = _cdata->_pb;
-  w = _cdata->_pr - _cdata->_pl;
-  h = _cdata->_pt - _cdata->_pb;
+  get_region_pixels(0, xo, yo, w, h);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::get_region_pixels
+//       Access: Public
+//  Description: Retrieves the coordinates of the DisplayRegion within
+//               its window, as the pixel location of its bottom-left
+//               corner, along with a pixel width and height.
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegionPipelineReader::
+get_region_pixels(int i, int &xo, int &yo, int &w, int &h) const {
+  const DisplayRegion::Region &region = _cdata->_regions[i];
+  xo = region._pixels[0];
+  yo = region._pixels[2];
+  w = region._pixels[1] - xo;
+  h = region._pixels[3] - yo;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -847,10 +1015,24 @@ get_region_pixels(int &xo, int &yo, int &w, int &h) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DisplayRegionPipelineReader::
 get_region_pixels_i(int &xo, int &yo, int &w, int &h) const {
-  xo = _cdata->_pl;
-  yo = _cdata->_pti;
-  w = _cdata->_pr - _cdata->_pl;
-  h = _cdata->_pbi - _cdata->_pti;
+  get_region_pixels_i(0, xo, yo, w, h);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::get_region_pixels_i
+//       Access: Public
+//  Description: Similar to get_region_pixels(), but returns the upper
+//               left corner, and the pixel numbers are numbered from
+//               the top-left corner down, in the DirectX way of
+//               things.
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegionPipelineReader::
+get_region_pixels_i(int i, int &xo, int &yo, int &w, int &h) const {
+  const DisplayRegion::Region &region = _cdata->_regions[i];
+  xo = region._pixels_i[0];
+  yo = region._pixels_i[2];
+  w = region._pixels_i[1] - xo;
+  h = region._pixels_i[3] - yo;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -859,8 +1041,8 @@ get_region_pixels_i(int &xo, int &yo, int &w, int &h) const {
 //  Description: Returns the width of the DisplayRegion in pixels.
 ////////////////////////////////////////////////////////////////////
 INLINE int DisplayRegionPipelineReader::
-get_pixel_width() const {
-  return _cdata->_pr - _cdata->_pl;
+get_pixel_width(int i) const {
+  return _cdata->_regions[i]._pixels[1] - _cdata->_regions[i]._pixels[0];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -869,8 +1051,7 @@ get_pixel_width() const {
 //  Description: Gets the index into a lens_node lens array. 0 default
 ////////////////////////////////////////////////////////////////////
 INLINE int DisplayRegionPipelineReader::
-get_lens_index() const
-{
+get_lens_index() const {
   return _cdata->_lens_index;
 }
 
@@ -880,6 +1061,6 @@ get_lens_index() const
 //  Description: Returns the height of the DisplayRegion in pixels.
 ////////////////////////////////////////////////////////////////////
 INLINE int DisplayRegionPipelineReader::
-get_pixel_height() const {
-  return _cdata->_pt - _cdata->_pb;
+get_pixel_height(int i) const {
+  return _cdata->_regions[i]._pixels[3] - _cdata->_regions[i]._pixels[2];
 }

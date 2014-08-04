@@ -699,7 +699,7 @@ copy_from(const GeomVertexData *source, bool keep_data_objects,
           while (!from.is_at_end()) {
             const TransformBlend &blend = blend_table->get_blend(from.get_data1i());
             LVecBase4 weights = LVecBase4::zero();
-            int indices[4] = {0, 0, 0, 0};
+            LVecBase4i indices(0, 0, 0, 0);
             nassertv(blend.get_num_transforms() <= 4);
             
             for (int i = 0; i < blend.get_num_transforms(); i++) {

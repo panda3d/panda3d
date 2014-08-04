@@ -30,29 +30,29 @@
 ////////////////////////////////////////////////////////////////////
 CPT(CopyOnWriteObject) CopyOnWritePointer::
 get_read_pointer() const {
-  if (_object == (CopyOnWriteObject *)NULL) {
+  if (_cow_object == (CopyOnWriteObject *)NULL) {
     return NULL;
   }
 
   Thread *current_thread = Thread::get_current_thread();
 
-  MutexHolder holder(_object->_lock_mutex);
-  while (_object->_lock_status == CopyOnWriteObject::LS_locked_write) {
-    if (_object->_locking_thread == current_thread) {
-      return _object;
+  MutexHolder holder(_cow_object->_lock_mutex);
+  while (_cow_object->_lock_status == CopyOnWriteObject::LS_locked_write) {
+    if (_cow_object->_locking_thread == current_thread) {
+      return _cow_object;
     }
     if (util_cat.is_debug()) {
-      util_cat.debug() 
-        << *current_thread << " waiting on " << _object->get_type()
-        << " " << _object << ", held by " << *_object->_locking_thread
+      util_cat.debug()
+        << *current_thread << " waiting on " << _cow_object->get_type()
+        << " " << _cow_object << ", held by " << *_cow_object->_locking_thread
         << "\n";
     }
-    _object->_lock_cvar.wait();
+    _cow_object->_lock_cvar.wait();
   }
 
-  _object->_lock_status = CopyOnWriteObject::LS_locked_read;
-  _object->_locking_thread = current_thread;
-  return _object;
+  _cow_object->_lock_status = CopyOnWriteObject::LS_locked_read;
+  _cow_object->_locking_thread = current_thread;
+  return _cow_object;
 }
 #endif  // COW_THREADED
 
@@ -72,52 +72,52 @@ get_read_pointer() const {
 ////////////////////////////////////////////////////////////////////
 PT(CopyOnWriteObject) CopyOnWritePointer::
 get_write_pointer() {
-  if (_object == (CopyOnWriteObject *)NULL) {
+  if (_cow_object == (CopyOnWriteObject *)NULL) {
     return NULL;
   }
 
   Thread *current_thread = Thread::get_current_thread();
 
-  MutexHolder holder(_object->_lock_mutex);
-  while (_object->_lock_status == CopyOnWriteObject::LS_locked_write &&
-         _object->_locking_thread != current_thread) {
+  MutexHolder holder(_cow_object->_lock_mutex);
+  while (_cow_object->_lock_status == CopyOnWriteObject::LS_locked_write &&
+         _cow_object->_locking_thread != current_thread) {
     if (util_cat.is_debug()) {
-      util_cat.debug() 
-        << *current_thread << " waiting on " << _object->get_type()
-        << " " << _object << ", held by " << *_object->_locking_thread
+      util_cat.debug()
+        << *current_thread << " waiting on " << _cow_object->get_type()
+        << " " << _cow_object << ", held by " << *_cow_object->_locking_thread
         << "\n";
     }
-    _object->_lock_cvar.wait();
+    _cow_object->_lock_cvar.wait();
   }
 
-  if (_object->_lock_status == CopyOnWriteObject::LS_locked_read) {
-    nassertr(_object->get_ref_count() > _object->get_cache_ref_count(), NULL);
+  if (_cow_object->_lock_status == CopyOnWriteObject::LS_locked_read) {
+    nassertr(_cow_object->get_ref_count() > _cow_object->get_cache_ref_count(), NULL);
 
     if (util_cat.is_debug()) {
       util_cat.debug()
-        << "Making copy of " << _object->get_type()
+        << "Making copy of " << _cow_object->get_type()
         << " because it is locked in read mode.\n";
     }
-    PT(CopyOnWriteObject) new_object = _object->make_cow_copy();
-    cache_unref_delete(_object);
-    _object = new_object;
-    _object->cache_ref();
+    PT(CopyOnWriteObject) new_object = _cow_object->make_cow_copy();
+    cache_unref_delete(_cow_object);
+    _cow_object = new_object;
+    _cow_object->cache_ref();
 
-  } else if (_object->get_cache_ref_count() > 1) {
+  } else if (_cow_object->get_cache_ref_count() > 1) {
     // No one else has it specifically read-locked, but there are
     // other CopyOnWritePointers holding the same object, so we should
     // make our own writable copy anyway.
     if (util_cat.is_debug()) {
       util_cat.debug()
-        << "Making copy of " << _object->get_type()
-        << " because it is shared by " << _object->get_ref_count()
+        << "Making copy of " << _cow_object->get_type()
+        << " because it is shared by " << _cow_object->get_ref_count()
         << " pointers.\n";
     }
 
-    PT(CopyOnWriteObject) new_object = _object->make_cow_copy();
-    cache_unref_delete(_object);
-    _object = new_object;
-    _object->cache_ref();
+    PT(CopyOnWriteObject) new_object = _cow_object->make_cow_copy();
+    cache_unref_delete(_cow_object);
+    _cow_object = new_object;
+    _cow_object->cache_ref();
 
   } else {
     // No other thread has the pointer locked, and we're the only
@@ -128,9 +128,9 @@ get_write_pointer() {
     // references to it, though, since the creator of the object might
     // have saved himself a reference.
   }
-  _object->_lock_status = CopyOnWriteObject::LS_locked_write;
-  _object->_locking_thread = current_thread;
+  _cow_object->_lock_status = CopyOnWriteObject::LS_locked_write;
+  _cow_object->_locking_thread = current_thread;
 
-  return _object;
+  return _cow_object;
 }
 #endif  // COW_THREADED

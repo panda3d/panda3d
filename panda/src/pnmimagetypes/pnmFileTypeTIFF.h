@@ -55,6 +55,8 @@ public:
     Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number);
     virtual ~Reader();
 
+    virtual bool is_floating_point();
+    virtual bool read_pfm(PfmFile &pfm);
     virtual bool supports_read_row() const;
     virtual bool read_row(xel *array, xelval *alpha, int x_size, int y_size);
 
@@ -65,6 +67,7 @@ public:
     xelval next_sample_32(unsigned char *&buf_ptr, int &bits_left) const;
     xelval next_sample_general(unsigned char *&buf_ptr, int &bits_left) const;
 
+    unsigned short sample_format;
     unsigned short photomet;
     unsigned short bps, spp;
     unsigned short unassoc_alpha_sample, assoc_alpha_sample;
@@ -78,6 +81,9 @@ public:
   public:
     Writer(PNMFileType *type, ostream *file, bool owns_file);
 
+    virtual bool supports_floating_point();
+    virtual bool supports_integer();
+    virtual bool write_pfm(const PfmFile &pfm);
     virtual int write_data(xel *array, xelval *alpha);
   };
 

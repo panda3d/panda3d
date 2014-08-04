@@ -450,9 +450,17 @@ calc_max_v_displacement() const {
 //               Use calc_max_u_displacement() and
 //               calc_max_v_displacement() to compute suitable values
 //               for max_u and max_v.
+//
+//               This generates an integer 16-bit displacement image.
+//               It is a good idea, though not necessarily essential,
+//               to check "Preserve RGB" in the interpret footage
+//               section for each displacement image.  Set
+//               for_32bit true if this is meant to be used in a
+//               32-bit project file, and false if it is meant to be
+//               used in a 16-bit project file.
 ////////////////////////////////////////////////////////////////////
 void PfmVizzer::
-make_displacement(PNMImage &result, double max_u, double max_v) const {
+make_displacement(PNMImage &result, double max_u, double max_v, bool for_32bit) const {
   int x_size = _pfm.get_x_size();
   int y_size = _pfm.get_y_size();
   result.clear(x_size, y_size, 3, PNM_MAXMAXVAL);
@@ -462,10 +470,19 @@ make_displacement(PNMImage &result, double max_u, double max_v) const {
   // not exactly 0.5, because they round up.
   static const int midval = (PNM_MAXMAXVAL + 1) / 2;
 
-  // Empirically, After Effects seems to undershift by precisely this
-  // amount.  Curiously, this value is very close to, but not exactly,
-  // 256 / 255.
-  const double scale_factor = ae_undershift_factor;
+  double scale_factor;
+  if (for_32bit) {
+    // There doesn't appear to be an undershift needed on 32-bit
+    // projects, but we have the factor here anyway in case it
+    // develops.
+    scale_factor = ae_undershift_factor_32;
+  } else {
+    // Empirically, After Effects seems to undershift by precisely
+    // this amount (but only in a 16-bit project, not in a 32-bit
+    // project).  Curiously, this value is very close to, but not
+    // exactly, 256 / 255.
+    scale_factor = ae_undershift_factor_16;
+  }
 
   double u_scale = scale_factor * 0.5 * PNM_MAXMAXVAL / max_u;
   double v_scale = scale_factor * 0.5 * PNM_MAXMAXVAL / max_v;
@@ -517,6 +534,102 @@ make_displacement(PNMImage &result, double max_u, double max_v) const {
   for (int yi = 0; yi < y_size; ++yi) {
     for (int xi = 0; xi < x_size; ++xi) {
       result.set_blue_val(xi, yi, midval);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmVizzer::make_displacement
+//       Access: Published
+//  Description: Assuming the underlying PfmFile is a 2-d distortion
+//               mesh, with the U and V in the first two components
+//               and the third component unused, this computes an
+//               AfterEffects-style displacement map that represents
+//               the same distortion.  The indicated PNMImage will be
+//               filled in with a displacement map image, with
+//               horizontal shift in the red channel and vertical
+//               shift in the green channel, where a fully bright (or
+//               fully black) pixel indicates a shift of max_u or
+//               max_v pixels.
+//
+//               Use calc_max_u_displacement() and
+//               calc_max_v_displacement() to compute suitable values
+//               for max_u and max_v.
+//
+//               This generates a 32-bit floating-point displacement
+//               image.  It is essential to check "Preserve RGB" in
+//               the interpret footage section for each displacement
+//               image.  Set for_32bit true if this is meant to
+//               be used in a 32-bit project file, and false if it is
+//               meant to be used in a 16-bit project file.
+////////////////////////////////////////////////////////////////////
+void PfmVizzer::
+make_displacement(PfmFile &result, double max_u, double max_v, bool for_32bit) const {
+  int x_size = _pfm.get_x_size();
+  int y_size = _pfm.get_y_size();
+  result.clear(x_size, y_size, 3);
+
+  double scale_factor;
+  if (for_32bit) {
+    // There doesn't appear to be an undershift needed on 32-bit
+    // projects, but we have the factor here anyway in case it
+    // develops.
+    scale_factor = ae_undershift_factor_32;
+  } else {
+    // Empirically, After Effects seems to undershift by precisely
+    // this amount (but only in a 16-bit project, not in a 32-bit
+    // project).  Curiously, this value is very close to, but not
+    // exactly, 256 / 255.
+    scale_factor = ae_undershift_factor_16;
+  }
+
+  double u_scale = scale_factor * 0.5 / max_u;
+  double v_scale = scale_factor * 0.5 / max_v;
+
+  for (int yi = 0; yi < y_size; ++yi) {
+    for (int xi = 0; xi < x_size; ++xi) {
+      if (!_pfm.has_point(xi, yi)) {
+        continue;
+      }
+
+      const LPoint3f &point = _pfm.get_point(xi, yi);
+      double nxi = point[0] * (double)x_size - 0.5;
+      double nyi = point[1] * (double)y_size - 0.5;
+
+      double x_shift = (nxi - (double)xi);
+      double y_shift = (nyi - (double)yi);
+
+      float u_val = 0.5 + (float)(x_shift * u_scale);
+      float v_val = 0.5 + (float)(y_shift * v_scale);
+
+      // We use the blue channel to mark holes, so we can fill them in
+      // later.
+      result.set_point3(xi, yi, LVecBase3f(u_val, v_val, 0));
+    }
+  }
+
+  // Now fill in holes.
+  for (int yi = 0; yi < y_size; ++yi) {
+    for (int xi = 0; xi < x_size; ++xi) {
+      if (!_pfm.has_point(xi, yi)) {
+        continue;
+      }
+
+      const LPoint3f &point = _pfm.get_point(xi, yi);
+      double nxi = point[0] * (double)x_size - 0.5;
+      double nyi = point[1] * (double)y_size - 0.5;
+
+      r_fill_displacement(result, xi - 1, yi, nxi, nyi, u_scale, v_scale, 1);
+      r_fill_displacement(result, xi + 1, yi, nxi, nyi, u_scale, v_scale, 1);
+      r_fill_displacement(result, xi, yi - 1, nxi, nyi, u_scale, v_scale, 1);
+      r_fill_displacement(result, xi, yi + 1, nxi, nyi, u_scale, v_scale, 1);
+    }
+  }
+
+  // Finally, reset the blue channel for cleanliness.
+  for (int yi = 0; yi < y_size; ++yi) {
+    for (int xi = 0; xi < x_size; ++xi) {
+      result.set_channel(xi, yi, 2, 0.5);
     }
   }
 }
@@ -582,6 +695,45 @@ r_fill_displacement(PNMImage &result, int xi, int yi,
                        min(max(u_val, 0), PNM_MAXMAXVAL), 
                        min(max(v_val, 0), PNM_MAXMAXVAL), 
                        min(distance, PNM_MAXMAXVAL));
+
+    r_fill_displacement(result, xi - 1, yi, nxi, nyi, u_scale, v_scale, distance + 1);
+    r_fill_displacement(result, xi + 1, yi, nxi, nyi, u_scale, v_scale, distance + 1);
+    r_fill_displacement(result, xi, yi - 1, nxi, nyi, u_scale, v_scale, distance + 1);
+    r_fill_displacement(result, xi, yi + 1, nxi, nyi, u_scale, v_scale, distance + 1);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PfmVizzer::r_fill_displacement
+//       Access: Private
+//  Description: Recursively fills in holes with the color of their
+//               nearest neighbor after processing the image.  This
+//               avoids sudden discontinuities in the displacement map
+//               at the edge of the screen geometry.
+////////////////////////////////////////////////////////////////////
+void PfmVizzer::
+r_fill_displacement(PfmFile &result, int xi, int yi, 
+                    double nxi, double nyi, double u_scale, double v_scale,
+                    int distance) const {
+  if (xi < 0 || yi < 0 ||
+      xi >= result.get_x_size() || yi >= result.get_y_size()) {
+    // Stop at the edge.
+    return;
+  }
+
+  if (distance > 1000) {
+    // Avoid runaway recursion.
+    return;
+  }
+
+  float val = result.get_channel(xi, yi, 2);
+  if (val > (float)distance) {
+    // We've found a point that's closer.
+    double x_shift = (nxi - (double)xi);
+    double y_shift = (nyi - (double)yi);
+    float u_val = 0.5 + (float)(x_shift * u_scale);
+    float v_val = 0.5 + (float)(y_shift * v_scale);
+    result.set_point3(xi, yi, LVecBase3f(u_val, v_val, distance));
 
     r_fill_displacement(result, xi - 1, yi, nxi, nyi, u_scale, v_scale, distance + 1);
     r_fill_displacement(result, xi + 1, yi, nxi, nyi, u_scale, v_scale, distance + 1);

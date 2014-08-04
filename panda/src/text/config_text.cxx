@@ -181,7 +181,7 @@ ConfigVariableDouble text_default_underscore_height
           "to the text baseline, when underscoring is enabled."));
 
 ConfigVariableEnum<Texture::FilterType> text_minfilter
-("text-minfilter", Texture::FT_linear_mipmap_linear,
+("text-minfilter", Texture::FT_linear,
  PRC_DESC("The default texture minfilter type for dynamic text fonts"));
 ConfigVariableEnum<Texture::FilterType> text_magfilter
 ("text-magfilter", Texture::FT_linear,

@@ -532,6 +532,8 @@ estimate_texture_memory() const {
   case Texture::F_luminance:
   case Texture::F_luminance_alpha:
   case Texture::F_luminance_alphamask:
+  case Texture::F_sluminance:
+  case Texture::F_sluminance_alpha:
     bpp = 4;
     break;
 
@@ -541,12 +543,14 @@ estimate_texture_memory() const {
   case Texture::F_rgb:
   case Texture::F_rgb5:
   case Texture::F_rgba5:
+  case Texture::F_srgb:
     bpp = 4;
     break;
 
   case Texture::F_color_index:
   case Texture::F_rgb8:
   case Texture::F_rgba8:
+  case Texture::F_srgb_alpha:
     bpp = 4;
     break;
 
@@ -575,6 +579,20 @@ estimate_texture_memory() const {
     break;
   case Texture::F_rgb16:
     bpp = 6;
+    break;
+
+  case Texture::F_r32i:
+    bpp = 4;
+    break;
+
+  case Texture::F_r32:
+    bpp = 4;
+    break;
+  case Texture::F_rg32:
+    bpp = 8;
+    break;
+  case Texture::F_rgb32:
+    bpp = 12;
     break;
 
   default:
@@ -1593,6 +1611,10 @@ write(ostream &out, int indent_level) const {
     out << " floats";
     break;
 
+  case T_int:
+    out << " ints";
+    break;
+
   default:
     break;
   }
@@ -1689,6 +1711,33 @@ write(ostream &out, int indent_level) const {
     break;
   case F_rgb16:
     out << "rgb16";
+    break;
+
+  case F_srgb:
+    out << "srgb";
+    break;
+  case F_srgb_alpha:
+    out << "srgb_alpha";
+    break;
+  case F_sluminance:
+    out << "sluminance";
+    break;
+  case F_sluminance_alpha:
+    out << "sluminance_alpha";
+    break;
+
+  case F_r32i:
+    out << "r32i";
+    break;
+
+  case F_r32:
+    out << "r32";
+    break;
+  case F_rg32:
+    out << "rg32";
+    break;
+  case F_rgb32:
+    out << "rgb32";
     break;
   }
 
@@ -2017,6 +2066,8 @@ format_component_type(ComponentType ct) {
     return "float";
   case T_unsigned_int_24_8:
     return "unsigned_int_24_8";
+  case T_int:
+    return "int";
   }
 
   return "**invalid**";
@@ -2038,6 +2089,8 @@ string_component_type(const string &str) {
     return T_float;
   } else if (cmp_nocase(str, "unsigned_int_24_8") == 0) {
     return T_unsigned_int_24_8;
+  } else if (cmp_nocase(str, "int") == 0) {
+    return T_int;
   }
 
   gobj_cat->error()
@@ -2112,6 +2165,22 @@ format_format(Format format) {
     return "rg16";
   case F_rgb16:
     return "rgb16";
+  case F_srgb:
+    return "srgb";
+  case F_srgb_alpha:
+    return "srgb_alpha";
+  case F_sluminance:
+    return "sluminance";
+  case F_sluminance_alpha:
+    return "sluminance_alpha";
+  case F_r32i:
+    return "r32i";
+  case F_r32:
+    return "r32";
+  case F_rg32:
+    return "rg32";
+  case F_rgb32:
+    return "rgb32";
   }
   return "**invalid**";
 }
@@ -2182,6 +2251,22 @@ string_format(const string &str) {
     return F_rg16;
   } else if (cmp_nocase(str, "rgb16") == 0 || cmp_nocase(str, "r16g16b16") == 0) {
     return F_rgb16;
+  } else if (cmp_nocase(str, "srgb") == 0) {
+    return F_srgb;
+  } else if (cmp_nocase(str, "srgb_alpha") == 0) {
+    return F_srgb_alpha;
+  } else if (cmp_nocase(str, "sluminance") == 0) {
+    return F_sluminance;
+  } else if (cmp_nocase(str, "sluminance_alpha") == 0) {
+    return F_sluminance_alpha;
+  } else if (cmp_nocase(str, "r32i") == 0) {
+    return F_r32i;
+  } else if (cmp_nocase(str, "r32") == 0 || cmp_nocase(str, "red32") == 0) {
+    return F_r32;
+  } else if (cmp_nocase(str, "rg32") == 0 || cmp_nocase(str, "r32g32") == 0) {
+    return F_rg32;
+  } else if (cmp_nocase(str, "rgb32") == 0 || cmp_nocase(str, "r32g32b32") == 0) {
+    return F_rgb32;
   }
 
   gobj_cat->error()
@@ -2541,6 +2626,8 @@ has_alpha(Format format) {
   case F_rgba32:
   case F_luminance_alpha:
   case F_luminance_alphamask:
+  case F_srgb_alpha:
+  case F_sluminance_alpha:
     return true;
 
   default:
@@ -4487,6 +4574,8 @@ do_compress_ram_image(CData *cdata, Texture::CompressionMode compression,
     case Texture::F_rgb8:
     case Texture::F_rgb12:
     case Texture::F_rgb332:
+    case Texture::F_rgb16:
+    case Texture::F_rgb32:
       if (gsg == NULL || gsg->get_supports_compressed_texture_format(CM_dxt1)) {
         compression = CM_dxt1;
       } else if (gsg == NULL || gsg->get_supports_compressed_texture_format(CM_dxt3)) {
@@ -4743,6 +4832,7 @@ do_reconsider_image_properties(CData *cdata, int x_size, int y_size, int num_com
     // But only do this the first time the file is loaded, or if the
     // number of channels in the image changes on subsequent loads.
 
+    //TODO: handle sRGB properly
     switch (num_components) {
     case 1:
       if (component_type == T_float) {
@@ -4751,19 +4841,19 @@ do_reconsider_image_properties(CData *cdata, int x_size, int y_size, int num_com
         cdata->_format = F_luminance;
       }
       break;
-      
+
     case 2:
       cdata->_format = F_luminance_alpha;
       break;
-      
+
     case 3:
       cdata->_format = F_rgb;
       break;
-      
+
     case 4:
       cdata->_format = F_rgba;
       break;
-      
+
     default:
       // Eh?
       nassertr(false, false);
@@ -5023,12 +5113,17 @@ do_set_format(CData *cdata, Texture::Format format) {
   case F_alpha:
   case F_luminance:
   case F_r16:
+  case F_sluminance:
+  case F_r32i:
+  case F_r32:
     cdata->_num_components = 1;
     break;
 
   case F_luminance_alpha:
   case F_luminance_alphamask:
   case F_rg16:
+  case F_sluminance_alpha:
+  case F_rg32:
     cdata->_num_components = 2;
     break;
 
@@ -5038,6 +5133,8 @@ do_set_format(CData *cdata, Texture::Format format) {
   case F_rgb12:
   case F_rgb332:
   case F_rgb16:
+  case F_srgb:
+  case F_rgb32:
     cdata->_num_components = 3;
     break;
 
@@ -5049,6 +5146,7 @@ do_set_format(CData *cdata, Texture::Format format) {
   case F_rgba12:
   case F_rgba16:
   case F_rgba32:
+  case F_srgb_alpha:
     cdata->_num_components = 4;
     break;
   }
@@ -5077,6 +5175,10 @@ do_set_component_type(CData *cdata, Texture::ComponentType component_type) {
     break;
 
   case T_unsigned_int_24_8:
+    cdata->_component_width = 4;
+    break;
+
+  case T_int:
     cdata->_component_width = 4;
     break;
   }

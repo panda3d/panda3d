@@ -48,6 +48,7 @@ dot(const FLOATNAME(LVecBase2) &a, const FLOATNAME(LVecBase2) &b) {
   return a.dot(b);
 }
 
+#ifndef FLOATTYPE_IS_INT
 ////////////////////////////////////////////////////////////////////
 //     Function: length of a vector
 //  Description:
@@ -67,7 +68,7 @@ normalize(const FLOATNAME(LVector2) &v) {
   v1.normalize();
   return v1;
 }
-
+#endif  // FLOATTYPE_IS_INT
 
 ////////////////////////////////////////////////////////////////////
 //     Function: generic_write_datagram

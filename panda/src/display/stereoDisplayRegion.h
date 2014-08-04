@@ -51,7 +51,7 @@ PUBLISHED:
   virtual void set_pixel_zoom(PN_stdfloat pixel_zoom);
 
   // Inherited from DisplayRegion
-  virtual void set_dimensions(const LVecBase4 &dimensions);
+  virtual void set_dimensions(int i, const LVecBase4 &dimensions);
   virtual bool is_stereo() const;
   virtual void set_camera(const NodePath &camera);
   virtual void set_active(bool active);

@@ -61,6 +61,27 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, ConstPointerTo
 typedef PointerToArray<UnalignedLVecBase4d> PTA_LVecBase4d;
 typedef ConstPointerToArray<UnalignedLVecBase4d> CPTA_LVecBase4d;
 
+////////////////////////////////////////////////////////////////////
+//       Class : PTA_LVecBase4i
+// Description : A pta of LVecBase4is.  This class is defined once here,
+//               and exported to PANDA.DLL; other packages that want
+//               to use a pta of this type (whether they need to
+//               export it or not) should include this header file,
+//               rather than defining the pta again.
+//
+//               We actually wrap UnalignedLVecBase4i, in case we are
+//               building with SSE2 and LVecBase4i requires strict
+//               alignment.
+////////////////////////////////////////////////////////////////////
+
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToBase<ReferenceCountedVector<UnalignedLVecBase4i> >)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToArrayBase<UnalignedLVecBase4i>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToArray<UnalignedLVecBase4i>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, ConstPointerToArray<UnalignedLVecBase4i>)
+
+typedef PointerToArray<UnalignedLVecBase4i> PTA_LVecBase4i;
+typedef ConstPointerToArray<UnalignedLVecBase4i> CPTA_LVecBase4i;
+
 #ifndef STDFLOAT_DOUBLE
 typedef PTA_LVecBase4f PTA_LVecBase4;
 typedef CPTA_LVecBase4f CPTA_LVecBase4;

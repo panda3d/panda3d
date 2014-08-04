@@ -88,14 +88,17 @@ make_output(const string &name,
             GraphicsOutput *host,
             int retry,
             bool &precertify) {
-  
+
   if (!_is_valid) {
     return NULL;
   }
 
-  glxGraphicsStateGuardian *glxgsg = 0;
-  if (gsg != 0) {
-    DCAST_INTO_R(glxgsg, gsg, NULL);
+  // This may not be a GLX GSG; it might be a callback GSG.
+  PosixGraphicsStateGuardian *posixgsg = NULL;
+  glxGraphicsStateGuardian *glxgsg = NULL;
+  if (gsg != NULL) {
+    DCAST_INTO_R(posixgsg, gsg, NULL);
+    glxgsg = DCAST(glxGraphicsStateGuardian, posixgsg);
   }
 
   bool support_rtt;
@@ -103,15 +106,19 @@ make_output(const string &name,
   /*
     Currently, no support for glxGraphicsBuffer render-to-texture.
   if (glxgsg) {
-     support_rtt = 
-      glxgsg -> get_supports_render_texture() && 
+     support_rtt =
+      glxgsg -> get_supports_render_texture() &&
       support_render_texture;
-  }  
+  }
   */
 
   // First thing to try: a glxGraphicsWindow
 
   if (retry == 0) {
+    if (gsg != NULL && glxgsg == NULL) {
+      // We can't use a non-GLX GSG.
+      return NULL;
+    }
     if (((flags&BF_require_parasite)!=0)||
         ((flags&BF_refuse_window)!=0)||
         ((flags&BF_resizeable)!=0)||
@@ -125,7 +132,7 @@ make_output(const string &name,
     return new glxGraphicsWindow(engine, this, name, fb_prop, win_prop,
                                  flags, gsg, host);
   }
-  
+
   // Second thing to try: a GLGraphicsBuffer
 
   if (retry == 1) {
@@ -139,7 +146,7 @@ make_output(const string &name,
     // meet specs, we can bail out early.
     int _fbo_multisample = 0;
     if (!ConfigVariableBool("framebuffer-object-multisample", false, PRC_DESC("Enabled Multisample."))) {
-        _fbo_multisample = 16;
+      _fbo_multisample = 16;
     }
     if ((flags & BF_fb_props_optional)==0) {
       if ((fb_prop.get_indexed_color() > 0)||
@@ -151,11 +158,11 @@ make_output(const string &name,
     }
     // Early success - if we are sure that this buffer WILL
     // meet specs, we can precertify it.
-    if ((glxgsg != 0) &&
-        (glxgsg->is_valid()) &&
-        (!glxgsg->needs_reset()) &&
-        (glxgsg->_supports_framebuffer_object) &&
-        (glxgsg->_glDrawBuffers != 0)&&
+    if ((posixgsg != 0) &&
+        (posixgsg->is_valid()) &&
+        (!posixgsg->needs_reset()) &&
+        (posixgsg->_supports_framebuffer_object) &&
+        (posixgsg->_glDrawBuffers != 0)&&
         (fb_prop.is_basic())) {
       precertify = true;
     }

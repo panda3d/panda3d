@@ -12,7 +12,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef OPENGLES_1
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLShaderContext::valid
@@ -26,11 +25,10 @@
 INLINE bool CLP(ShaderContext)::
 valid() {
   if (_shader->get_error_flag()) return false;
-  if (_shader->get_language() == Shader::SL_none) return false;
-#if defined(HAVE_CG) && !defined(OPENGLES)
-  if (_cg_context) return true;
-#endif
-  if (_shader->get_language() == Shader::SL_GLSL && _glsl_program != 0) {
+  if (_shader->get_language() != Shader::SL_GLSL) {
+    return false;
+  }
+  if (_glsl_program != 0) {
     return true;
   }
   return false;
@@ -67,6 +65,3 @@ INLINE bool CLP(ShaderContext)::
 uses_custom_texture_bindings() {
   return true;
 }
-
-#endif  // OPENGLES_1
-

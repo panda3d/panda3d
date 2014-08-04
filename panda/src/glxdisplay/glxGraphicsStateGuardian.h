@@ -67,7 +67,7 @@ typedef int (* PFNGLXGETFBCONFIGATTRIBPROC) (X11_Display *dpy, GLXFBConfig confi
 typedef GLXPixmap (* PFNGLXCREATEPIXMAPPROC) (X11_Display *dpy, GLXFBConfig config, Pixmap pixmap, const int *attrib_list);
 typedef GLXPbuffer (* PFNGLXCREATEPBUFFERPROC) (X11_Display *dpy, GLXFBConfig config, const int *attrib_list);
 typedef void (* PFNGLXDESTROYPBUFFERPROC) (X11_Display *dpy, GLXPbuffer pbuf);
-
+typedef GLXContext ( *PFNGLXCREATECONTEXTATTRIBSARBPROC) (X11_Display *dpy, GLXFBConfig config, GLXContext share_context, Bool direct, const int *attrib_list);
 #endif  // __EDG__
 
 ////////////////////////////////////////////////////////////////////
@@ -91,8 +91,6 @@ public:
                            glxGraphicsStateGuardian *share_with);
 
   virtual ~glxGraphicsStateGuardian();
-
-  virtual void reset();
 
   bool glx_is_at_least_version(int major_version, int minor_version) const;
 
@@ -119,6 +117,7 @@ public:
   PFNGLXGETVISUALFROMFBCONFIGPROC _glXGetVisualFromFBConfig;
   PFNGLXGETFBCONFIGATTRIBPROC _glXGetFBConfigAttrib;
   PFNGLXCREATEPIXMAPPROC _glXCreatePixmap;
+  PFNGLXCREATECONTEXTATTRIBSARBPROC _glXCreateContextAttribs;
 
   bool _supports_pbuffer;  // true if the interface is available.
   bool _uses_sgix_pbuffer;
@@ -132,9 +131,10 @@ protected:
 
   virtual void query_gl_version();
   virtual void get_extra_extensions();
-  virtual void *do_get_extension_func(const char *prefix, const char *name);
+  virtual void *do_get_extension_func(const char *name);
 
 private:
+  void query_glx_extensions();
   void show_glx_client_string(const string &name, int id);
   void show_glx_server_string(const string &name, int id);
   void choose_temp_visual(const FrameBufferProperties &properties);

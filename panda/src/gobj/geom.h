@@ -102,6 +102,7 @@ PUBLISHED:
   INLINE PT(Geom) rotate() const;
   INLINE PT(Geom) unify(int max_indices, bool preserve_order) const;
   INLINE PT(Geom) make_points() const;
+  INLINE PT(Geom) make_patches() const;
 
   void decompose_in_place();
   void doubleside_in_place();
@@ -109,6 +110,7 @@ PUBLISHED:
   void rotate_in_place();
   void unify_in_place(int max_indices, bool preserve_order);
   void make_points_in_place();
+  void make_patches_in_place();
 
   virtual bool copy_primitives_from(const Geom *other);
 

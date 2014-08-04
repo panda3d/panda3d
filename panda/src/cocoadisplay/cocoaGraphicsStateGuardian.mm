@@ -276,10 +276,9 @@ query_gl_version() {
 //               not defined.
 ////////////////////////////////////////////////////////////////////
 void *CocoaGraphicsStateGuardian::
-do_get_extension_func(const char *prefix, const char *name) {
-  char* fullname = (char*) malloc(strlen(prefix) + strlen(name) + 2);
-  strcpy(fullname + 1, prefix);
-  strcpy(fullname + 1 + strlen(prefix), name);
+do_get_extension_func(const char *name) {
+  char* fullname = (char*) malloc(strlen(name) + 2);
+  strcpy(fullname + 1, name);
   fullname[0] = '_';
 
   // Believe it or not, but this is actually the
@@ -292,7 +291,7 @@ do_get_extension_func(const char *prefix, const char *name) {
   }
 
   cocoadisplay_cat.warning() <<
-    "do_get_extension_func failed for " << prefix << name << "!\n";
+    "do_get_extension_func failed for " << fullname << "!\n";
 
   free(fullname);
   return NULL;

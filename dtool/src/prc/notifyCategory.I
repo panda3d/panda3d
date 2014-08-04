@@ -106,7 +106,7 @@ is_debug() const {
 //               methods are redefined to be static to make it more
 //               obvious to the compiler.
 ////////////////////////////////////////////////////////////////////
-INLINE bool NotifyCategory::
+CONSTEXPR bool NotifyCategory::
 is_spam() {
   return false;
 }
@@ -119,7 +119,7 @@ is_spam() {
 //               methods are redefined to be static to make it more
 //               obvious to the compiler.
 ////////////////////////////////////////////////////////////////////
-INLINE bool NotifyCategory::
+CONSTEXPR bool NotifyCategory::
 is_debug() {
   return false;
 }

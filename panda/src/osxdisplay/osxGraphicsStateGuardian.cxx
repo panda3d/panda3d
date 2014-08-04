@@ -38,14 +38,14 @@ TypeHandle osxGraphicsStateGuardian::_type_handle;
 //               not defined.
 ////////////////////////////////////////////////////////////////////
 void *osxGraphicsStateGuardian::
-do_get_extension_func(const char *prefix, const char *name) {      
-  string fullname = "_" + string(prefix) + string(name);
+do_get_extension_func(const char *name) {
+  string fullname = "_" + string(name);
   NSSymbol symbol = NULL;
-  
-  if (NSIsSymbolNameDefined (fullname.c_str())) {
-    symbol = NSLookupAndBindSymbol (fullname.c_str());
+
+  if (NSIsSymbolNameDefined(fullname.c_str())) {
+    symbol = NSLookupAndBindSymbol(fullname.c_str());
   }
-  
+
   return symbol ? NSAddressOfSymbol(symbol) : NULL;
 }
 

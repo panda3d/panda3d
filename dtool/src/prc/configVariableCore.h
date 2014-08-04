@@ -66,15 +66,19 @@ PUBLISHED:
   bool has_value() const;
   int get_num_declarations() const;
   const ConfigDeclaration *get_declaration(int n) const;
+  MAKE_SEQ(get_declarations, get_num_declarations, get_declaration);
 
   INLINE int get_num_references() const;
   INLINE const ConfigDeclaration *get_reference(int n) const;
+  MAKE_SEQ(get_references, get_num_references, get_reference);
 
   INLINE int get_num_trusted_references() const;
   INLINE const ConfigDeclaration *get_trusted_reference(int n) const;
+  MAKE_SEQ(get_trusted_references, get_num_trusted_references, get_trusted_reference);
 
   INLINE int get_num_unique_references() const;
   INLINE const ConfigDeclaration *get_unique_reference(int n) const;
+  MAKE_SEQ(get_unique_references, get_num_unique_references, get_unique_reference);
 
   void output(ostream &out) const;
   void write(ostream &out) const;

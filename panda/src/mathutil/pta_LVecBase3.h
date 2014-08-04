@@ -53,6 +53,23 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, ConstPointerTo
 typedef PointerToArray<LVecBase3d> PTA_LVecBase3d;
 typedef ConstPointerToArray<LVecBase3d> CPTA_LVecBase3d;
 
+////////////////////////////////////////////////////////////////////
+//       Class : PTA_LVecBase3i
+// Description : A pta of LVecBase3is.  This class is defined once here,
+//               and exported to PANDA.DLL; other packages that want
+//               to use a pta of this type (whether they need to
+//               export it or not) should include this header file,
+//               rather than defining the pta again.
+////////////////////////////////////////////////////////////////////
+
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToBase<ReferenceCountedVector<LVecBase3i> >)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToArrayBase<LVecBase3i>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, PointerToArray<LVecBase3i>)
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_MATHUTIL, EXPTP_PANDA_MATHUTIL, ConstPointerToArray<LVecBase3i>)
+
+typedef PointerToArray<LVecBase3i> PTA_LVecBase3i;
+typedef ConstPointerToArray<LVecBase3i> CPTA_LVecBase3i;
+
 #ifndef STDFLOAT_DOUBLE
 typedef PTA_LVecBase3f PTA_LVecBase3;
 typedef CPTA_LVecBase3f CPTA_LVecBase3;

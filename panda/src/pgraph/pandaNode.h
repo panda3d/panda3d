@@ -800,7 +800,7 @@ public:
   INLINE ~PandaNodePipelineReader();
   ALLOC_DELETED_CHAIN(PandaNodePipelineReader);
 
-  INLINE const PandaNode *get_object() const;
+  INLINE const PandaNode *get_node() const;
   INLINE Thread *get_current_thread() const;
 
   INLINE void release();
@@ -810,7 +810,7 @@ public:
   INLINE void compose_draw_mask(DrawMask &running_draw_mask) const;
   INLINE bool compare_draw_mask(DrawMask running_draw_mask,
                                 DrawMask camera_mask) const;
-  
+
   INLINE int get_num_parents() const;
   INLINE PandaNode *get_parent(int n) const;
   INLINE int find_parent(PandaNode *node) const;
@@ -845,7 +845,7 @@ public:
   INLINE PandaNode::Parents get_parents() const;
 
 private:
-  const PandaNode *_object;
+  const PandaNode *_node;
   Thread *_current_thread;
 
   const PandaNode::CData *_cdata;

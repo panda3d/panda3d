@@ -19,6 +19,22 @@ IMPORT_THIS struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase3);
 IMPORT_THIS struct Dtool_PyTypedObject FLOATNAME(Dtool_LVecBase4);
 #endif
 
+#ifdef FLOATTYPE_IS_INT
+#if PY_MAJOR_VERSION >= 3
+#define PYNUMBER_FLOATTYPE PyNumber_Long
+#define PY_FROM_FLOATTYPE PyLong_FromLong
+#define PY_AS_FLOATTYPE PyLong_AS_LONG
+#else
+#define PYNUMBER_FLOATTYPE PyNumber_Int
+#define PY_FROM_FLOATTYPE PyInt_FromLong
+#define PY_AS_FLOATTYPE PyInt_AS_LONG
+#endif
+#else
+#define PYNUMBER_FLOATTYPE PyNumber_Float
+#define PY_FROM_FLOATTYPE PyFloat_FromDouble
+#define PY_AS_FLOATTYPE PyFloat_AsDouble
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase2::__setitem__
 //       Access: Public
@@ -59,8 +75,17 @@ __reduce__(PyObject *self) const {
     return NULL;
   }
 
+#if FLOATTOKEN == 'i'
+  PyObject *result = Py_BuildValue("(O(ii))", this_class,
+                                   (*_this)[0], (*_this)[1]);
+#elif FLOATTOKEN == 'f'
   PyObject *result = Py_BuildValue("(O(ff))", this_class,
                                    (*_this)[0], (*_this)[1]);
+#else
+  PyObject *result = Py_BuildValue("(O(dd))", this_class,
+                                   (*_this)[0], (*_this)[1]);
+#endif
+
   Py_DECREF(this_class);
   return result;
 }
@@ -81,7 +106,7 @@ __getattr__(const string &attr_name) const {
 
   switch (attr_name.size()) {
     case 1:
-      return PyFloat_FromDouble(_this->_v(attr_name[0] - 'x'));
+      return PY_FROM_FLOATTYPE(_this->_v(attr_name[0] - 'x'));
 
     case 2: {
       FLOATNAME(LVecBase2) *vec = new FLOATNAME(LVecBase2);
@@ -148,14 +173,18 @@ __setattr__(PyObject *self, const string &attr_name, PyObject *assign) {
     PyObject** items = PySequence_Fast_ITEMS(fast);
     for (size_t i = 0; i < attr_name.size(); ++i) {
 
-      PyObject* fl = PyNumber_Float(items[i]);
+      PyObject* fl = PYNUMBER_FLOATTYPE(items[i]);
       if (fl == NULL) {
         // Oh darn.  Not when we've come this far.
+#ifdef FLOATTYPE_IS_INT
+        PyErr_SetString(PyExc_ValueError, "a sequence of integers is required");
+#else
         PyErr_SetString(PyExc_ValueError, "a sequence of floats is required");
+#endif
         Py_DECREF(fast);
         return -1;
       }
-      double value = PyFloat_AS_DOUBLE(fl);
+      FLOATTYPE value = PY_AS_FLOATTYPE(fl);
       Py_DECREF(fl);
 
       _this->_v(attr_name[i] - 'x') = value;
@@ -165,19 +194,23 @@ __setattr__(PyObject *self, const string &attr_name, PyObject *assign) {
 
   } else {
     // Maybe it's a single floating-point value.
-    PyObject* fl = PyNumber_Float(assign);
+    PyObject* fl = PYNUMBER_FLOATTYPE(assign);
     if (fl == NULL) {
       // It's not a floating-point value either?
       // Sheesh, I don't know what to do with it then.
       if (attr_name.size() == 1) {
+#ifdef FLOATTYPE_IS_INT
+        PyErr_SetString(PyExc_ValueError, "an integer is required");
+#else
         PyErr_SetString(PyExc_ValueError, "a float is required");
+#endif
       } else {
         PyErr_Format(PyExc_ValueError, "'%.200s' object is not iterable",
           assign->ob_type->tp_name);
       }
       return -1;
     }
-    double value = PyFloat_AS_DOUBLE(fl);
+    FLOATTYPE value = PY_AS_FLOATTYPE(fl);
     Py_DECREF(fl);
 
     // Loop through the components in the attribute name,
@@ -189,3 +222,32 @@ __setattr__(PyObject *self, const string &attr_name, PyObject *assign) {
 
   return 0;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase2::__pow__
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVecBase2) Extension<FLOATNAME(LVecBase2)>::
+__pow__(FLOATTYPE exponent) const {
+  return FLOATNAME(LVecBase2)(
+    cpow(_this->_v(0), exponent),
+    cpow(_this->_v(1), exponent));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase2::__ipow__
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH PyObject *Extension<FLOATNAME(LVecBase2)>::
+__ipow__(PyObject *self, FLOATTYPE exponent) {
+  _this->_v(0) = cpow(_this->_v(0), exponent);
+  _this->_v(1) = cpow(_this->_v(1), exponent);
+  Py_INCREF(self);
+  return self;
+}
+
+#undef PYNUMBER_FLOATTYPE
+#undef PY_FROM_FLOATTYPE
+#undef PY_AS_FLOATTYPE

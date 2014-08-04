@@ -145,6 +145,7 @@ PUBLISHED:
   INLINE bool get_supports_basic_shaders() const;
   INLINE bool get_supports_geometry_shaders() const;
   INLINE bool get_supports_tessellation_shaders() const;
+  INLINE bool get_supports_compute_shaders() const;
   INLINE bool get_supports_glsl() const;
   INLINE bool get_supports_stencil() const;
   INLINE bool get_supports_two_sided_stencil() const;
@@ -224,6 +225,8 @@ public:
   virtual bool get_supports_occlusion_query() const;
   virtual void begin_occlusion_query();
   virtual PT(OcclusionQueryContext) end_occlusion_query();
+
+  virtual void dispatch_compute(int size_x, int size_y, int size_z);
 
   virtual PT(GeomMunger) get_geom_munger(const RenderState *state,
                                          Thread *current_thread);
@@ -487,10 +490,11 @@ protected:
   bool _supports_basic_shaders;
   bool _supports_geometry_shaders;
   bool _supports_tessellation_shaders;
+  bool _supports_compute_shaders;
   bool _supports_glsl;
   bool _supports_framebuffer_multisample;
   bool _supports_framebuffer_blit;
-  
+
   bool _supports_stencil;
   bool _supports_stencil_wrap;
   bool _supports_two_sided_stencil;

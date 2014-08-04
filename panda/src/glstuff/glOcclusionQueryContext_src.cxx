@@ -75,7 +75,7 @@ is_answer_ready() const {
 void CLP(OcclusionQueryContext)::
 waiting_for_answer() {
   PStatTimer timer(GraphicsStateGuardian::_wait_occlusion_pcollector);
-  GLP(Flush)();
+  glFlush();
 }
 
 ////////////////////////////////////////////////////////////////////

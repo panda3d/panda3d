@@ -36,9 +36,9 @@ CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state) :
 
   _flags = 0;
 
-  if (CLP(interleaved_arrays)) {
+  if (gl_interleaved_arrays) {
     _flags |= F_interleaved_arrays;
-  } else if (CLP(parallel_arrays)) {
+  } else if (gl_parallel_arrays) {
     _flags |= F_parallel_arrays;
   }
 }
@@ -46,7 +46,7 @@ CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CLP(GeomMunger)::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CLP(GeomMunger)::
 ~CLP(GeomMunger)() {
@@ -84,9 +84,13 @@ munge_format_impl(const GeomVertexFormat *orig,
   PT(GeomVertexFormat) new_format = new GeomVertexFormat(*orig);
   new_format->set_animation(animation);
 
+  CLP(GraphicsStateGuardian) *glgsg;
+  DCAST_INTO_R(glgsg, get_gsg(), NULL);
+
   const GeomVertexColumn *color_type = orig->get_color_column();
   if (color_type != (GeomVertexColumn *)NULL &&
-      color_type->get_numeric_type() == NT_packed_dabc) {
+      color_type->get_numeric_type() == NT_packed_dabc &&
+      !glgsg->_supports_packed_dabc) {
     // We need to convert the color format; OpenGL doesn't support the
     // byte order of DirectX's packed ARGB format.
     int color_array = orig->get_array_with(InternalName::get_color());
@@ -102,7 +106,7 @@ munge_format_impl(const GeomVertexFormat *orig,
   if (animation.get_animation_type() == AT_hardware) {
     // If we want hardware animation, we need to reserve space for the
     // blend weights.
-      
+
     // Make sure the old weights and indices are removed, just in
     // case.
     new_format->remove_column(InternalName::get_transform_weight());
@@ -116,11 +120,11 @@ munge_format_impl(const GeomVertexFormat *orig,
       new_array_format->add_column
         (InternalName::get_transform_weight(), animation.get_num_transforms() - 1,
          NT_stdfloat, C_other);
-      
+
       if (animation.get_indexed_transforms()) {
         // Also, if we'll be indexing into the transform table, reserve
         // space for the index.
-        
+
         // TODO: We should examine the maximum palette index so we can
         // decide whether we need 16-bit indices.  That implies saving
         // the maximum palette index, presumably in the AnimationSpec.
@@ -129,7 +133,7 @@ munge_format_impl(const GeomVertexFormat *orig,
         new_array_format->add_column
           (InternalName::get_transform_index(), animation.get_num_transforms(),
            NT_uint8, C_index);
-      }                                    
+      }
 
       new_format->add_array(new_array_format);
     }
@@ -149,16 +153,16 @@ munge_format_impl(const GeomVertexFormat *orig,
       new_format->add_array(new_array_format);
     }
     format = GeomVertexFormat::register_format(new_format);
-  
+
   } else if ((_flags & F_interleaved_arrays) != 0) {
     // Combine the primary data columns into a single array.
     new_format = new GeomVertexFormat(*format);
     PT(GeomVertexArrayFormat) new_array_format = new GeomVertexArrayFormat;
-  
+
     const GeomVertexColumn *column = format->get_vertex_column();
     if (column != (const GeomVertexColumn *)NULL) {
       new_array_format->add_column
-        (column->get_name(), column->get_num_components(), 
+        (column->get_name(), column->get_num_components(),
          column->get_numeric_type(), column->get_contents(),
          -1, column->get_column_alignment());
       new_format->remove_column(column->get_name());
@@ -167,7 +171,7 @@ munge_format_impl(const GeomVertexFormat *orig,
     column = format->get_normal_column();
     if (column != (const GeomVertexColumn *)NULL) {
       new_array_format->add_column
-        (column->get_name(), column->get_num_components(), 
+        (column->get_name(), column->get_num_components(),
          column->get_numeric_type(), column->get_contents(),
          -1, column->get_column_alignment());
       new_format->remove_column(column->get_name());
@@ -176,7 +180,7 @@ munge_format_impl(const GeomVertexFormat *orig,
     column = format->get_color_column();
     if (column != (const GeomVertexColumn *)NULL) {
       new_array_format->add_column
-        (column->get_name(), column->get_num_components(), 
+        (column->get_name(), column->get_num_components(),
          column->get_numeric_type(), column->get_contents(),
          -1, column->get_column_alignment());
       new_format->remove_column(column->get_name());
@@ -187,7 +191,7 @@ munge_format_impl(const GeomVertexFormat *orig,
     if (_texture != (TextureAttrib *)NULL) {
       typedef pset<const InternalName *> UsedStages;
       UsedStages used_stages;
-      
+
       int num_stages = _texture->get_num_on_stages();
       for (int i = 0; i < num_stages; ++i) {
         TextureStage *stage = _texture->get_on_stage(i);
@@ -197,7 +201,7 @@ munge_format_impl(const GeomVertexFormat *orig,
           if (used_stages.insert(name).second) {
             // This is the first time we've encountered this texcoord name.
             const GeomVertexColumn *texcoord_type = format->get_column(name);
-            
+
             if (texcoord_type != (const GeomVertexColumn *)NULL) {
               new_array_format->add_column
                 (name, texcoord_type->get_num_values(), NT_stdfloat, C_texcoord,
@@ -230,9 +234,13 @@ CPT(GeomVertexFormat) CLP(GeomMunger)::
 premunge_format_impl(const GeomVertexFormat *orig) {
   PT(GeomVertexFormat) new_format = new GeomVertexFormat(*orig);
 
+  CLP(GraphicsStateGuardian) *glgsg;
+  DCAST_INTO_R(glgsg, get_gsg(), NULL);
+
   const GeomVertexColumn *color_type = orig->get_color_column();
   if (color_type != (GeomVertexColumn *)NULL &&
-      color_type->get_numeric_type() == NT_packed_dabc) {
+      color_type->get_numeric_type() == NT_packed_dabc &&
+      !glgsg->_supports_packed_dabc) {
     // We need to convert the color format; OpenGL doesn't support the
     // byte order of DirectX's packed ARGB format.
     int color_array = orig->get_array_with(InternalName::get_color());
@@ -259,7 +267,7 @@ premunge_format_impl(const GeomVertexFormat *orig) {
       new_format->add_array(new_array_format);
     }
     format = GeomVertexFormat::register_format(new_format);
-  
+
   } else {
     // Combine the primary data columns into a single array.  Unlike
     // the munge case, above, in the premunge case, we do this even if
@@ -269,11 +277,11 @@ premunge_format_impl(const GeomVertexFormat *orig) {
     // at run time.
     new_format = new GeomVertexFormat(*format);
     PT(GeomVertexArrayFormat) new_array_format = new GeomVertexArrayFormat;
-  
+
     const GeomVertexColumn *column = format->get_vertex_column();
     if (column != (const GeomVertexColumn *)NULL) {
       new_array_format->add_column
-        (column->get_name(), column->get_num_components(), 
+        (column->get_name(), column->get_num_components(),
          column->get_numeric_type(), column->get_contents(),
          -1, column->get_column_alignment());
       new_format->remove_column(column->get_name());
@@ -282,7 +290,7 @@ premunge_format_impl(const GeomVertexFormat *orig) {
     column = format->get_normal_column();
     if (column != (const GeomVertexColumn *)NULL) {
       new_array_format->add_column
-        (column->get_name(), column->get_num_components(), 
+        (column->get_name(), column->get_num_components(),
          column->get_numeric_type(), column->get_contents(),
          -1, column->get_column_alignment());
       new_format->remove_column(column->get_name());
@@ -291,7 +299,7 @@ premunge_format_impl(const GeomVertexFormat *orig) {
     column = format->get_color_column();
     if (column != (const GeomVertexColumn *)NULL) {
       new_array_format->add_column
-        (column->get_name(), column->get_num_components(), 
+        (column->get_name(), column->get_num_components(),
          column->get_numeric_type(), column->get_contents(),
          -1, column->get_column_alignment());
       new_format->remove_column(column->get_name());
@@ -303,7 +311,7 @@ premunge_format_impl(const GeomVertexFormat *orig) {
     if (_texture != (TextureAttrib *)NULL) {
       typedef pset<const InternalName *> UsedStages;
       UsedStages used_stages;
-      
+
       int num_stages = _texture->get_num_on_stages();
       for (int i = 0; i < num_stages; ++i) {
         TextureStage *stage = _texture->get_on_stage(i);
@@ -313,7 +321,7 @@ premunge_format_impl(const GeomVertexFormat *orig) {
           if (used_stages.insert(name).second) {
             // This is the first time we've encountered this texcoord name.
             const GeomVertexColumn *texcoord_type = format->get_column(name);
-            
+
             if (texcoord_type != (const GeomVertexColumn *)NULL) {
               new_array_format->add_column
                 (name, texcoord_type->get_num_values(), NT_stdfloat, C_texcoord,

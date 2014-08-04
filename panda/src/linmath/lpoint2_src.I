@@ -185,6 +185,7 @@ operator / (FLOATTYPE scalar) const {
   return FLOATNAME(LPoint2)(FLOATNAME(LVecBase2)::operator / (scalar));
 }
 
+#ifndef FLOATTYPE_IS_INT
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint2::project
 //       Access: Published
@@ -196,3 +197,4 @@ INLINE_LINMATH FLOATNAME(LPoint2) FLOATNAME(LPoint2)::
 project(const FLOATNAME(LVecBase2) &onto) const {
   return FLOATNAME(LVecBase2)::project(onto);
 }
+#endif  // FLOATTYPE_IS_INT

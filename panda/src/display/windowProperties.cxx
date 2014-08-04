@@ -36,10 +36,8 @@ WindowProperties() {
 void WindowProperties::
 operator = (const WindowProperties &copy) {
   _specified = copy._specified;
-  _x_origin = copy._x_origin;
-  _y_origin = copy._y_origin;
-  _x_size = copy._x_size;
-  _y_size = copy._y_size;
+  _origin = copy._origin;
+  _size = copy._size;
   _title = copy._title;
   _icon_filename = copy._icon_filename;
   _cursor_filename = copy._cursor_filename;
@@ -169,10 +167,8 @@ bool WindowProperties::
 operator == (const WindowProperties &other) const {
   return (_specified == other._specified &&
           _flags == other._flags &&
-          _x_origin == other._x_origin &&
-          _y_origin == other._y_origin &&
-          _x_size == other._x_size &&
-          _y_size == other._y_size &&
+          _origin == other._origin &&
+          _size == other._size &&
           _z_order == other._z_order &&
           _title == other._title &&
           _icon_filename == other._icon_filename &&
@@ -191,10 +187,8 @@ operator == (const WindowProperties &other) const {
 void WindowProperties::
 clear() {
   _specified = 0;
-  _x_origin = 0;
-  _y_origin = 0;
-  _x_size = 0;
-  _y_size = 0;
+  _origin = LPoint2i::zero();
+  _size = LVector2i::zero();
   _title = string();
   _icon_filename = Filename();
   _cursor_filename = Filename();
@@ -244,10 +238,10 @@ set_parent_window(size_t parent) {
 void WindowProperties::
 add_properties(const WindowProperties &other) {
   if (other.has_origin()) {
-    set_origin(other.get_x_origin(), other.get_y_origin());
+    set_origin(other.get_origin());
   }
   if (other.has_size()) {
-    set_size(other.get_x_size(), other.get_y_size());
+    set_size(other.get_size());
   }
   if (other.has_title()) {
     set_title(other.get_title());

@@ -17,7 +17,7 @@
 #define __glext_h_
 #include <OpenGL/gl.h>
 #include <AGL/agl.h>
-        
+
 #include "pandabase.h"
 #include "glgsg.h"
 
@@ -38,20 +38,20 @@ public:
   virtual void reset();
 
   void draw_resize_box();
-  
+
   bool get_gamma_table();
   bool static_set_gamma(bool restore, PN_stdfloat gamma);
   bool set_gamma(PN_stdfloat gamma);
   void atexit_function();
   void restore_gamma();
-        
+
 protected:
-  virtual void *do_get_extension_func(const char *prefix, const char *name);
-  
+  virtual void *do_get_extension_func(const char *name);
+
 public:
   OSStatus build_gl(bool full_screen, bool pbuffer, FrameBufferProperties &fb_props);
   AGLContext get_context() { return _aglcontext; };
-  
+
   const AGLPixelFormat get_agl_pixel_format() const { return _aglPixFmt; };
 
 private:

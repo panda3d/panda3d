@@ -20,3 +20,5 @@
 #include "dblnames.h"
 #include "lvector2_src.cxx"
 
+#include "intnames.h"
+#include "lvector2_src.cxx"

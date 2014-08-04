@@ -26,6 +26,7 @@ TypeHandle bool_type_handle;
 TypeHandle double_type_handle;
 TypeHandle float_type_handle;
 TypeHandle string_type_handle;
+TypeHandle wstring_type_handle;
 
 TypeHandle long_p_type_handle;
 TypeHandle int_p_type_handle;
@@ -58,6 +59,7 @@ void init_system_type_handles() {
     register_type(double_type_handle, "double");
     register_type(float_type_handle, "float");
     register_type(string_type_handle, "string");
+    register_type(wstring_type_handle, "wstring");
 
     register_type(int_p_type_handle, "int*");
     register_type(short_p_type_handle, "short*");
@@ -75,5 +77,3 @@ void init_system_type_handles() {
     register_type(pset_type_handle, "pset");
   }
 }
-
-

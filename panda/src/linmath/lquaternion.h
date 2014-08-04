@@ -31,5 +31,4 @@
 #include "dblnames.h"
 #include "lquaternion_src.h"
 
-
 #endif /* __LQUATERNION_H__ */

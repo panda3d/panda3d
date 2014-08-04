@@ -20,8 +20,6 @@
 
 #ifdef HAVE_CG
 #include <Cg/cg.h>
-#define JCG_PROFILE_GLSLV ((CGprofile)7007)
-#define JCG_PROFILE_GLSLF ((CGprofile)7008)
 #endif
 
 TypeHandle Shader::_type_handle;
@@ -1428,6 +1426,14 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps, ShaderType typ
     compiler_args[nargs++] = "-po";
     compiler_args[nargs++] = "ATI_draw_buffers";
   }
+
+  char version_arg[16];
+  if (!cg_glsl_version.empty() && cgGetProfileProperty((CGprofile) active, CG_IS_GLSL_PROFILE)) {
+    snprintf(version_arg, 16, "version=%s", cg_glsl_version.c_str());
+    compiler_args[nargs++] = "-po";
+    compiler_args[nargs++] = version_arg;
+  }
+
   compiler_args[nargs] = 0;
 
   if ((active != (int)CG_PROFILE_UNKNOWN) && (active != ultimate)) {
@@ -2243,6 +2249,34 @@ load(const ShaderLanguage &lang, const Filename &vertex,
   return result;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::load_compute
+//       Access: Published, Static
+//  Description: Loads a compute shader.
+////////////////////////////////////////////////////////////////////
+PT(Shader) Shader::
+load_compute(const ShaderLanguage &lang, const Filename &fn) {
+  PT(ShaderFile) sfile = new ShaderFile(fn);
+  ShaderTable::const_iterator i = _load_table.find(sfile);
+  if (i != _load_table.end() && (lang == SL_none || lang == i->second->_language)) {
+    return i->second;
+  }
+
+  PT(ShaderFile) sbody = new ShaderFile;
+  sbody->_separate = true;
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  if (!vfs->read_file(fn, sbody->_compute, true)) {
+    gobj_cat.error()
+      << "Could not read compute shader file: " << fn << "\n";
+    return NULL;
+  }
+
+  PT(Shader) result = new Shader(sfile, sbody, lang);
+  result->_loaded = true;
+  _load_table[sfile] = result;
+  return result;
+}
+
 //////////////////////////////////////////////////////////////////////
 //     Function: Shader::make
 //       Access: Published, Static
@@ -2255,17 +2289,20 @@ make(const string &body, const ShaderLanguage &lang) {
   if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
     return i->second;
   }
+
   PT(ShaderFile) sfile = new ShaderFile("created-shader");
   PT(Shader) result = new Shader(sfile, sbody, lang);
   _make_table[sbody] = result;
+
   if (dump_generated_shaders) {
     ostringstream fns;
     int index = _shaders_generated ++;
     fns << "genshader" << index;
     string fn = fns.str();
     gobj_cat.warning() << "Dumping shader: " << fn << "\n";
+
     pofstream s;
-    s.open(fn.c_str());
+    s.open(fn.c_str(), ios::out | ios::trunc);
     s << body;
     s.close();
   }
@@ -2282,6 +2319,28 @@ make(const ShaderLanguage &lang, const string &vertex, const string &fragment,
      const string &geometry, const string &tess_control, 
      const string &tess_evaluation) {
   PT(ShaderFile) sbody = new ShaderFile(vertex, fragment, geometry, tess_control, tess_evaluation);
+
+  ShaderTable::const_iterator i = _make_table.find(sbody);
+  if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {
+    return i->second;
+  }
+
+  PT(ShaderFile) sfile = new ShaderFile("created-shader");
+  PT(Shader) result = new Shader(sfile, sbody, lang);
+  _make_table[sbody] = result;
+  return result;
+}
+
+//////////////////////////////////////////////////////////////////////
+//     Function: Shader::make_compute
+//       Access: Published, Static
+//  Description: Loads the compute shader from the given string.
+//////////////////////////////////////////////////////////////////////
+PT(Shader) Shader::
+make_compute(const ShaderLanguage &lang, const string &body) {
+  PT(ShaderFile) sbody = new ShaderFile;
+  sbody->_separate = true;
+  sbody->_compute = body;
 
   ShaderTable::const_iterator i = _make_table.find(sbody);
   if (i != _make_table.end() && (lang == SL_none || lang == i->second->_language)) {

@@ -58,9 +58,11 @@ PUBLISHED:
 
   int get_num_typehandles();
   TypeHandle get_typehandle(int n);
+  MAKE_SEQ(get_typehandles, get_num_typehandles, get_typehandle);
 
   int get_num_root_classes();
   TypeHandle get_root_class(int n);
+  MAKE_SEQ(get_root_classes, get_num_root_classes, get_root_class);
 
   int get_num_parent_classes(TypeHandle child,
                              TypedObject *child_object) const;

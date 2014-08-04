@@ -337,13 +337,35 @@ cpow(double x, double y) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: cpow
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE int
+cpow(int x, int y) {
+  int result = 1;
+
+  if (y >= 0) {
+    for(; y > 0; --y) {
+      result *= x;
+    }
+    return result;
+
+  } else {
+    for(; y < 0; ++y) {
+      result *= x;
+    }
+    return 1 / result;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: cnan
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE bool
 cnan(double v) {
 #ifndef _WIN32
-  return (isnan(v) != 0);
+  return (std::isnan(v) != 0);
 #else
   return (_isnan(v) != 0);
 #endif

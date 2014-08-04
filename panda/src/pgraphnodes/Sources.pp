@@ -14,6 +14,7 @@
   #define SOURCES \
     ambientLight.h ambientLight.I \
     callbackNode.h callbackNode.I \
+    computeNode.h computeNode.I \
     config_pgraphnodes.h \
     directionalLight.h directionalLight.I \
     fadeLodNode.I fadeLodNode.h fadeLodNodeData.h \
@@ -33,6 +34,7 @@
   #define INCLUDED_SOURCES \
     ambientLight.cxx \
     callbackNode.cxx \
+    computeNode.cxx \
     config_pgraphnodes.cxx \
     directionalLight.cxx \
     fadeLodNode.cxx fadeLodNodeData.cxx \
@@ -52,6 +54,7 @@
   #define INSTALL_HEADERS \
     ambientLight.h ambientLight.I \
     callbackNode.h callbackNode.I \
+    computeNode.h computeNode.I \
     config_pgraphnodes.h \
     directionalLight.h directionalLight.I \
     fadeLodNode.I fadeLodNode.h fadeLodNodeData.h \
