@@ -74,12 +74,12 @@ set_local_scale(const LVecBase3 &scale) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BulletShape::get_bounds
+//     Function: BulletShape::get_shape_bounds
 //       Access: Published
 //  Description: Returns the current bounds of this collision shape.
 ////////////////////////////////////////////////////////////////////
 BoundingSphere BulletShape::
-get_bounds() const {
+get_shape_bounds() const {
 
 /*
   btTransform tr;

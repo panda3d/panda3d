@@ -44,7 +44,7 @@ PUBLISHED:
 
   PN_stdfloat get_margin() const;
 
-  BoundingSphere get_bounds() const;
+  BoundingSphere get_shape_bounds() const;
 
 public:
   virtual btCollisionShape *ptr() const = 0;
