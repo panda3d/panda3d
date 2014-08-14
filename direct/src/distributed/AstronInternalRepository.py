@@ -426,7 +426,7 @@ class AstronInternalRepository(ConnectionRepository):
         do.doId = doId
         self.addDOToTables(do, location=(parentId, zoneId))
         do.sendGenerateWithRequired(self, parentId, zoneId, optionalFields)
-	do.generate()
+        do.generate()
 
     def requestDelete(self, do):
         """
