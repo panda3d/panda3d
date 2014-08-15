@@ -569,6 +569,6 @@ class DistributedObjectAI(DistributedObjectBase):
         """ This is a no-op on the AI. """
         pass
 		
-	def setAI(self, aiChannel):
-		self.air.setAI(self.doId, aiChannel)
+    def setAI(self, aiChannel):
+        self.air.setAI(self.doId, aiChannel)
     

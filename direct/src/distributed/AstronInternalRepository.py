@@ -422,12 +422,22 @@ class AstronInternalRepository(ConnectionRepository):
             dg.addString(str(arg))
         self.eventSocket.Send(dg.getMessage())
 		
-	def setAI(self, doID, aiChannel):
+    def setAI(self, doId, aiChannel):
+        """
+        Sets the AI of the specified DistributedObjectAI to be the specified channel.
+        Generally, you should not call this method, and instead call DistributedObjectAI.setAI.
+        """
+        dg = PyDatagram()
+        dg.addServerHeader(doId, aiChannel, STATESERVER_OBJECT_SET_AI)
+        dg.add_uint64(aiChannel)
+        self.send(dg)
+		
+	def eject(self, clientChannel, reasonCode, reason):
 		"""
-		Sets the AI of the specified DistributedObjectAI to be the specified channel.
-		Generally, you should not call this method, and instead call DistributedObjectAI.setAI.
+		Kicks the client residing at the specified clientChannel, using the specifed reasoning.
 		"""
 		dg = PyDatagram()
-		dg.addServerHeader(doID, aiChannel, MsgTypes.STATESERVER_OBJECT_SET_AI)
-		dg.add_uint64(aiChannel)
-		dg.send(dg)
+        dg.addServerHeader(clientChannel, self.ourChannel, CLIENTAGENT_EJECT)
+        dg.addUint16(reasonCode)
+        dg.addString(reason)
+        self.send(dg)
