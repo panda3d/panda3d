@@ -427,6 +427,7 @@ class AstronInternalRepository(ConnectionRepository):
         Sets the AI of the specified DistributedObjectAI to be the specified channel.
         Generally, you should not call this method, and instead call DistributedObjectAI.setAI.
         """
+        
         dg = PyDatagram()
         dg.addServerHeader(doId, aiChannel, STATESERVER_OBJECT_SET_AI)
         dg.add_uint64(aiChannel)
@@ -436,8 +437,20 @@ class AstronInternalRepository(ConnectionRepository):
 		"""
 		Kicks the client residing at the specified clientChannel, using the specifed reasoning.
 		"""
+        
 		dg = PyDatagram()
         dg.addServerHeader(clientChannel, self.ourChannel, CLIENTAGENT_EJECT)
-        dg.addUint16(reasonCode)
+        dg.add_uint16(reasonCode)
         dg.addString(reason)
+        self.send(dg)
+        
+    def setClientState(self, clientChannel, state):
+        """
+        Sets the state of the client on the CA.
+        Useful for logging in and logging out, and for little else.
+        """
+        
+        dg = PyDatagram()
+        dg.addServerHeader(cleintChannel, self.ourChannel, CLIENTAGENT_SET_STATE)
+        dg.add_uint16(state)
         self.send(dg)
