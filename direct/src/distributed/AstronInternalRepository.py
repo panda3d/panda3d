@@ -467,6 +467,20 @@ class AstronInternalRepository(ConnectionRepository):
         dg.add_uint32(doId)
         self.send(dg)
         
+    def clientAddInterest(self, clientChannel, interestId, parentId, zoneId):
+        """
+        Opens an interest on the behalf of the client. This, used in conjunction
+        with add_interest: visible (or preferably, disabled altogether), will mitigate
+        possible security risks.
+        """
+        
+        dg = PyDatagram()
+        dg.addServerHeader(clientChanel, self.ourChannel, CLIENTAGENT_ADD_INTEREST)
+        dg.add_uint16(interestId)
+        dg.add_uint32(parentId)
+        dg.add_uint32(zoneId)
+        self.send(dg)
+        
     def setOwner(self, doId, newOwner):
         """
         Sets the owner of a DistributedObject. This will enable the new owner to send "ownsend" fields,
