@@ -434,11 +434,11 @@ class AstronInternalRepository(ConnectionRepository):
         self.send(dg)
 		
     def eject(self, clientChannel, reasonCode, reason):
-		"""
-		Kicks the client residing at the specified clientChannel, using the specifed reasoning.
-		"""
-        
-		dg = PyDatagram()
+        """
+        Kicks the client residing at the specified clientChannel, using the specifed reasoning.
+        """
+
+        dg = PyDatagram()
         dg.addServerHeader(clientChannel, self.ourChannel, CLIENTAGENT_EJECT)
         dg.add_uint16(reasonCode)
         dg.addString(reason)
