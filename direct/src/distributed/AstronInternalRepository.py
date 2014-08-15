@@ -541,3 +541,73 @@ class AstronInternalRepository(ConnectionRepository):
         dg = PyDatagram()
         msgpack_encode(dg, log)
         self.eventSocket.Send(dg.getMessage())
+		
+    def setAI(self, doId, aiChannel):
+        """
+        Sets the AI of the specified DistributedObjectAI to be the specified channel.
+        Generally, you should not call this method, and instead call DistributedObjectAI.setAI.
+        """
+        
+        dg = PyDatagram()
+        dg.addServerHeader(doId, aiChannel, STATESERVER_OBJECT_SET_AI)
+        dg.add_uint64(aiChannel)
+        self.send(dg)
+		
+    def eject(self, clientChannel, reasonCode, reason):
+        """
+        Kicks the client residing at the specified clientChannel, using the specifed reasoning.
+        """
+
+        dg = PyDatagram()
+        dg.addServerHeader(clientChannel, self.ourChannel, CLIENTAGENT_EJECT)
+        dg.add_uint16(reasonCode)
+        dg.addString(reason)
+        self.send(dg)
+        
+    def setClientState(self, clientChannel, state):
+        """
+        Sets the state of the client on the CA.
+        Useful for logging in and logging out, and for little else.
+        """
+        
+        dg = PyDatagram()
+        dg.addServerHeader(clientChannel, self.ourChannel, CLIENTAGENT_SET_STATE)
+        dg.add_uint16(state)
+        self.send(dg)
+        
+    def clientAddSessionObject(self, clientChannel, doId):
+        """
+        Declares the specified DistributedObject to be a "session object",
+        meaning that it is destroyed when the client disconnects.
+        Generally used for avatars owned by the client.
+        """
+        
+        dg = PyDatagram()
+        dg.addServerHeader(clientChannel, self.ourChannel, CLIENTAGENT_ADD_SESSION_OBJECT)
+        dg.add_uint32(doId)
+        self.send(dg)
+        
+    def clientAddInterest(self, clientChannel, interestId, parentId, zoneId):
+        """
+        Opens an interest on the behalf of the client. This, used in conjunction
+        with add_interest: visible (or preferably, disabled altogether), will mitigate
+        possible security risks.
+        """
+        
+        dg = PyDatagram()
+        dg.addServerHeader(clientChanel, self.ourChannel, CLIENTAGENT_ADD_INTEREST)
+        dg.add_uint16(interestId)
+        dg.add_uint32(parentId)
+        dg.add_uint32(zoneId)
+        self.send(dg)
+        
+    def setOwner(self, doId, newOwner):
+        """
+        Sets the owner of a DistributedObject. This will enable the new owner to send "ownsend" fields,
+        and will generate an OwnerView.
+        """
+        
+        dg = PyDatagram()
+        dg.addServerHeader(doId, self.ourChannel, STATESERVER_OBJECT_SET_OWNER)
+        dg.add_uint64(newOwner)
+        self.send(dg)
