@@ -451,6 +451,18 @@ class AstronInternalRepository(ConnectionRepository):
         """
         
         dg = PyDatagram()
-        dg.addServerHeader(cleintChannel, self.ourChannel, CLIENTAGENT_SET_STATE)
+        dg.addServerHeader(clientChannel, self.ourChannel, CLIENTAGENT_SET_STATE)
         dg.add_uint16(state)
+        self.send(dg)
+        
+    def clientAddSessionObject(self, clientChannel, doId):
+        """
+        Declares the specified DistributedObject to be a "session object",
+        meaning that it is destroyed when the client disconnects.
+        Generally used for avatars owned by the client.
+        """
+        
+        dg = PyDatagram()
+        dg.addServerHeader(clientChannel, self.ourChannel, CLIENTAGENT_ADD_SESSION_OBJECT)
+        dg.add_uint32(doId)
         self.send(dg)
