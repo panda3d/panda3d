@@ -568,4 +568,7 @@ class DistributedObjectAI(DistributedObjectBase):
     def _retrieveCachedData(self):
         """ This is a no-op on the AI. """
         pass
+		
+    def setAI(self, aiChannel):
+        self.air.setAI(self.doId, aiChannel)
     
