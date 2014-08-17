@@ -1423,6 +1423,7 @@ reset() {
   }
 
   _glDrawBuffers = NULL;
+  _glClearBufferfv = NULL;
 #ifndef OPENGLES
   if (is_at_least_gl_version(2, 0)) {
     _glDrawBuffers = (PFNGLDRAWBUFFERSPROC)
@@ -1437,6 +1438,11 @@ reset() {
     GLint max_draw_buffers = 0;
     glGetIntegerv(GL_MAX_DRAW_BUFFERS, &max_draw_buffers);
     _max_color_targets = max_draw_buffers;
+  }
+
+  if (is_at_least_gl_version(3, 0)) {
+    _glClearBufferfv = (PFNGLCLEARBUFFERFVPROC)
+      get_extension_func("glClearBufferfv");
   }
 #endif  // OPENGLES
 
@@ -2178,9 +2184,7 @@ clear(DrawableRegion *clearable) {
   PStatTimer timer(_clear_pcollector);
   report_my_gl_errors();
 
-  if ((!clearable->get_clear_color_active())&&
-      (!clearable->get_clear_depth_active())&&
-      (!clearable->get_clear_stencil_active())) {
+  if (!clearable->is_any_clear_active()) {
     return;
   }
 
@@ -2188,56 +2192,110 @@ clear(DrawableRegion *clearable) {
 
   int mask = 0;
 
-  for (int i=0; i<_current_properties->get_aux_rgba(); i++) {
-    int layerid = GraphicsOutput::RTP_aux_rgba_0 + i;
-    int layerbit = RenderBuffer::T_aux_rgba_0 << i;
-    if (clearable->get_clear_active(layerid)) {
-      LColor v = clearable->get_clear_value(layerid);
-      glClearColor(v[0],v[1],v[2],v[3]);
-      set_draw_buffer(layerbit);
-      glClear(GL_COLOR_BUFFER_BIT);
-    }
-  }
-  for (int i=0; i<_current_properties->get_aux_hrgba(); i++) {
-    int layerid = GraphicsOutput::RTP_aux_hrgba_0 + i;
-    int layerbit = RenderBuffer::T_aux_hrgba_0 << i;
-    if (clearable->get_clear_active(layerid)) {
-      LColor v = clearable->get_clear_value(layerid);
-      glClearColor(v[0],v[1],v[2],v[3]);
-      set_draw_buffer(layerbit);
-      glClear(GL_COLOR_BUFFER_BIT);
-    }
-  }
-  for (int i=0; i<_current_properties->get_aux_float(); i++) {
-    int layerid = GraphicsOutput::RTP_aux_float_0 + i;
-    int layerbit = RenderBuffer::T_aux_float_0 << i;
-    if (clearable->get_clear_active(layerid)) {
-      LColor v = clearable->get_clear_value(layerid);
-      glClearColor(v[0],v[1],v[2],v[3]);
-      set_draw_buffer(layerbit);
-      glClear(GL_COLOR_BUFFER_BIT);
-    }
-  }
+#ifndef OPENGLES
+  if (_current_fbo != 0 && _glClearBufferfv != NULL) {
+    // We can use glClearBuffer to clear all the color attachments,
+    // which protects us from the overhead of having to call set_draw_buffer
+    // for every single attachment.
+    int index = 0;
 
-  // In the past, it was possible to set the draw buffer
-  // once in prepare_display_region and then forget about it.
-  // Now, with aux layers, it is necessary to occasionally
-  // change the draw buffer.  In time, I think there will need
-  // to be a draw buffer attrib.  Until then, this little hack
-  // to put things back the way they were after
-  // prepare_display_region will do.
-  
-  set_draw_buffer(_draw_buffer_type);
-
-  if (_current_properties->get_color_bits() > 0) {
-    if (clearable->get_clear_color_active()) {
-      LColor v = clearable->get_clear_color();
-      glClearColor(v[0],v[1],v[2],v[3]);
-      if (gl_color_mask) {
-        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    if (_current_properties->get_color_bits() > 0) {
+      if (_current_properties->is_stereo()) {
+        // Clear both left and right attachments.
+        if (clearable->get_clear_active(GraphicsOutput::RTP_color)) {
+          LColorf v = LCAST(float, clearable->get_clear_value(GraphicsOutput::RTP_color));
+          _glClearBufferfv(GL_COLOR, index, v.get_data());
+          _glClearBufferfv(GL_COLOR, index + 1, v.get_data());
+        }
+        index += 2;
+      } else {
+        if (clearable->get_clear_active(GraphicsOutput::RTP_color)) {
+          LColorf v = LCAST(float, clearable->get_clear_value(GraphicsOutput::RTP_color));
+          _glClearBufferfv(GL_COLOR, index, v.get_data());
+        }
+        ++index;
       }
-      _state_mask.clear_bit(ColorWriteAttrib::get_class_slot());
-      mask |= GL_COLOR_BUFFER_BIT;
+    }
+    for (int i = 0; i < _current_properties->get_aux_rgba(); ++i) {
+      int layerid = GraphicsOutput::RTP_aux_rgba_0 + i;
+      if (clearable->get_clear_active(layerid)) {
+        LColorf v = LCAST(float, clearable->get_clear_value(layerid));
+        _glClearBufferfv(GL_COLOR, index, v.get_data());
+      }
+      ++index;
+    }
+    for (int i = 0; i < _current_properties->get_aux_hrgba(); ++i) {
+      int layerid = GraphicsOutput::RTP_aux_hrgba_0 + i;
+      if (clearable->get_clear_active(layerid)) {
+        LColorf v = LCAST(float, clearable->get_clear_value(layerid));
+        _glClearBufferfv(GL_COLOR, index, v.get_data());
+      }
+      ++index;
+    }
+    for (int i = 0; i < _current_properties->get_aux_float(); ++i) {
+      int layerid = GraphicsOutput::RTP_aux_float_0 + i;
+      if (clearable->get_clear_active(layerid)) {
+        LColorf v = LCAST(float, clearable->get_clear_value(layerid));
+        _glClearBufferfv(GL_COLOR, index, v.get_data());
+      }
+      ++index;
+    }
+  } else
+#endif
+  {
+    if (_current_properties->get_aux_mask() != 0) {
+      for (int i = 0; i < _current_properties->get_aux_rgba(); ++i) {
+        int layerid = GraphicsOutput::RTP_aux_rgba_0 + i;
+        int layerbit = RenderBuffer::T_aux_rgba_0 << i;
+        if (clearable->get_clear_active(layerid)) {
+          LColor v = clearable->get_clear_value(layerid);
+          glClearColor(v[0], v[1], v[2], v[3]);
+          set_draw_buffer(layerbit);
+          glClear(GL_COLOR_BUFFER_BIT);
+        }
+      }
+      for (int i = 0; i < _current_properties->get_aux_hrgba(); ++i) {
+        int layerid = GraphicsOutput::RTP_aux_hrgba_0 + i;
+        int layerbit = RenderBuffer::T_aux_hrgba_0 << i;
+        if (clearable->get_clear_active(layerid)) {
+          LColor v = clearable->get_clear_value(layerid);
+          glClearColor(v[0], v[1], v[2], v[3]);
+          set_draw_buffer(layerbit);
+          glClear(GL_COLOR_BUFFER_BIT);
+        }
+      }
+      for (int i = 0; i < _current_properties->get_aux_float(); ++i) {
+        int layerid = GraphicsOutput::RTP_aux_float_0 + i;
+        int layerbit = RenderBuffer::T_aux_float_0 << i;
+        if (clearable->get_clear_active(layerid)) {
+          LColor v = clearable->get_clear_value(layerid);
+          glClearColor(v[0], v[1], v[2], v[3]);
+          set_draw_buffer(layerbit);
+          glClear(GL_COLOR_BUFFER_BIT);
+        }
+      }
+
+      // In the past, it was possible to set the draw buffer
+      // once in prepare_display_region and then forget about it.
+      // Now, with aux layers, it is necessary to occasionally
+      // change the draw buffer.  In time, I think there will need
+      // to be a draw buffer attrib.  Until then, this little hack
+      // to put things back the way they were after
+      // prepare_display_region will do.
+      
+      set_draw_buffer(_draw_buffer_type);
+    }
+
+    if (_current_properties->get_color_bits() > 0) {
+      if (clearable->get_clear_color_active()) {
+        LColor v = clearable->get_clear_color();
+        glClearColor(v[0], v[1], v[2], v[3]);
+        if (gl_color_mask) {
+          glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        }
+        _state_mask.clear_bit(ColorWriteAttrib::get_class_slot());
+        mask |= GL_COLOR_BUFFER_BIT;
+      }
     }
   }
   
@@ -6322,19 +6380,19 @@ set_draw_buffer(int rbtype) {
         ++index;
       }
     }
-    for (int i=0; i<_current_properties->get_aux_rgba(); i++) {
+    for (int i = 0; i < _current_properties->get_aux_rgba(); ++i) {
       if (rbtype & (RenderBuffer::T_aux_rgba_0 << i)) {
         buffers[nbuffers++] = GL_COLOR_ATTACHMENT0_EXT + index;
       }
       ++index;
     }
-    for (int i=0; i<_current_properties->get_aux_hrgba(); i++) {
+    for (int i = 0; i < _current_properties->get_aux_hrgba(); ++i) {
       if (rbtype & (RenderBuffer::T_aux_hrgba_0 << i)) {
         buffers[nbuffers++] = GL_COLOR_ATTACHMENT0_EXT + index;
       }
       ++index;
     }
-    for (int i=0; i<_current_properties->get_aux_float(); i++) {
+    for (int i = 0; i < _current_properties->get_aux_float(); ++i) {
       if (rbtype & (RenderBuffer::T_aux_float_0 << i)) {
         buffers[nbuffers++] = GL_COLOR_ATTACHMENT0_EXT + index;
       }
@@ -6423,19 +6481,19 @@ set_read_buffer(int rbtype) {
       }
       ++index;
     }
-    for (int i=0; i<_current_properties->get_aux_rgba(); i++) {
+    for (int i = 0; i < _current_properties->get_aux_rgba(); ++i) {
       if (rbtype & (RenderBuffer::T_aux_rgba_0 << i)) {
         buffer = GL_COLOR_ATTACHMENT0_EXT + index;
       }
       ++index;
     }
-    for (int i=0; i<_current_properties->get_aux_hrgba(); i++) {
+    for (int i = 0; i < _current_properties->get_aux_hrgba(); ++i) {
       if (rbtype & (RenderBuffer::T_aux_hrgba_0 << i)) {
         buffer = GL_COLOR_ATTACHMENT0_EXT + index;
       }
       ++index;
     }
-    for (int i=0; i<_current_properties->get_aux_float(); i++) {
+    for (int i = 0; i < _current_properties->get_aux_float(); ++i) {
       if (rbtype & (RenderBuffer::T_aux_float_0 << i)) {
         buffer = GL_COLOR_ATTACHMENT0_EXT + index;
       }
@@ -6486,8 +6544,6 @@ set_read_buffer(int rbtype) {
   report_my_gl_errors();
 #endif  // OPENGLES
 }
-
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::get_numeric_type

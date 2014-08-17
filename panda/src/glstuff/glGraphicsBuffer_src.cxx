@@ -1280,7 +1280,7 @@ open_buffer() {
   // A lot of code seems to depend on being able to get a
   // color buffer by just setting the rgb_color bit.
   if (_fb_properties.get_color_bits() == 0 &&
-      _fb_properties.get_rgb_color() > 0) {
+      _fb_properties.get_rgb_color()) {
     _fb_properties.set_color_bits(1);
   }
 
