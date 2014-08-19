@@ -31,7 +31,10 @@ INLINE ShaderInput::
 ShaderInput(const InternalName *name, int priority) :
   _name(name),
   _type(M_invalid),
-  _priority(priority)
+  _priority(priority),
+  _bind_layer(0),
+  _bind_level(0),
+  _access(A_read)
 {
 }
 
@@ -45,8 +48,40 @@ ShaderInput(const InternalName *name, Texture *tex, int priority) :
   _name(name),
   _type(M_texture),
   _priority(priority),
-  _stored_texture(tex)
+  _stored_texture(tex),
+  _bind_layer(0),
+  _bind_level(0),
+  _access(A_read | A_write | A_layered)
 {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderInput::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ShaderInput::
+ShaderInput(const InternalName *name, Texture *tex, bool read, bool write, int z, int n, int priority) :
+  _name(name),
+  _type(M_texture),
+  _priority(priority),
+  _stored_texture(tex),
+  _bind_layer(z),
+  _bind_level(n),
+  _access(0)
+{
+  if (read) {
+    _access |= A_read;
+  }
+  if (write) {
+    _access |= A_write;
+  }
+  if (z >= 0) {
+    _bind_layer = z;
+  } else {
+    _bind_layer = 0;
+    _access |= A_layered;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -59,7 +94,10 @@ ShaderInput(const InternalName *name, const NodePath &np, int priority) :
   _name(name),
   _type(M_nodepath),
   _priority(priority),
-  _stored_nodepath(np)
+  _stored_nodepath(np),
+  _bind_layer(0),
+  _bind_level(0),
+  _access(A_read)
 {
 }
 
@@ -73,7 +111,10 @@ ShaderInput(const InternalName *name, const PTA_float &ptr, int priority) :
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(ptr)
+  _stored_ptr(ptr),
+  _bind_layer(0),
+  _bind_level(0),
+  _access(A_read)
 {
 }
 
@@ -87,7 +128,10 @@ ShaderInput(const InternalName *name, const PTA_LVecBase4f &ptr, int priority) :
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(ptr)
+  _stored_ptr(ptr),
+  _bind_layer(0),
+  _bind_level(0),
+  _access(A_read)
 {
 }
 
@@ -101,7 +145,10 @@ ShaderInput(const InternalName *name, const PTA_LVecBase3f &ptr, int priority) :
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(ptr)
+  _stored_ptr(ptr),
+  _bind_layer(0),
+  _bind_level(0),
+  _access(A_read)
 {
 }
 
@@ -115,7 +162,10 @@ ShaderInput(const InternalName *name, const PTA_LVecBase2f &ptr, int priority) :
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(ptr)
+  _stored_ptr(ptr),
+  _bind_layer(0),
+  _bind_level(0),
+  _access(A_read)
 {
 }
 
@@ -130,7 +180,10 @@ ShaderInput(const InternalName *name, const LVecBase4f &vec, int priority) :
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(vec),
-  _stored_vector(LCAST(PN_stdfloat, vec))
+  _stored_vector(LCAST(PN_stdfloat, vec)),
+  _bind_layer(0),
+  _bind_level(0),
+  _access(A_read)
 {
 }
 
@@ -145,7 +198,10 @@ ShaderInput(const InternalName *name, const LVecBase3f &vec, int priority) :
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(vec),
-  _stored_vector(vec.get_x(), vec.get_y(), vec.get_z(), 0.0)
+  _stored_vector(vec.get_x(), vec.get_y(), vec.get_z(), 0.0),
+  _bind_layer(0),
+  _bind_level(0),
+  _access(A_read)
 {
 }
 
@@ -160,7 +216,10 @@ ShaderInput(const InternalName *name, const LVecBase2f &vec, int priority) :
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(vec),
-  _stored_vector(vec.get_x(), vec.get_y(), 0.0, 0.0)
+  _stored_vector(vec.get_x(), vec.get_y(), 0.0, 0.0),
+  _bind_layer(0),
+  _bind_level(0),
+  _access(A_read)
 {
 }
 
@@ -174,7 +233,10 @@ ShaderInput(const InternalName *name, const PTA_LMatrix4f &ptr, int priority) :
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(ptr)
+  _stored_ptr(ptr),
+  _bind_layer(0),
+  _bind_level(0),
+  _access(A_read)
 {
 }
 
@@ -188,7 +250,10 @@ ShaderInput(const InternalName *name, const PTA_LMatrix3f &ptr, int priority) :
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(ptr)
+  _stored_ptr(ptr),
+  _bind_layer(0),
+  _bind_level(0),
+  _access(A_read)
 {
 }
 
@@ -202,7 +267,10 @@ ShaderInput(const InternalName *name, const LMatrix4f &mat, int priority) :
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(mat)
+  _stored_ptr(mat),
+  _bind_layer(0),
+  _bind_level(0),
+  _access(A_read)
 {
 }
 
@@ -216,7 +284,10 @@ ShaderInput(const InternalName *name, const LMatrix3f &mat, int priority) :
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(mat)
+  _stored_ptr(mat),
+  _bind_layer(0),
+  _bind_level(0),
+  _access(A_read)
 {
 }
 
@@ -230,7 +301,10 @@ ShaderInput(const InternalName *name, const PTA_double &ptr, int priority) :
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(ptr)
+  _stored_ptr(ptr),
+  _bind_layer(0),
+  _bind_level(0),
+  _access(A_read)
 {
 }
 
@@ -244,7 +318,10 @@ ShaderInput(const InternalName *name, const PTA_LVecBase4d &ptr, int priority) :
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(ptr)
+  _stored_ptr(ptr),
+  _bind_layer(0),
+  _bind_level(0),
+  _access(A_read)
 {
 }
 
@@ -258,7 +335,10 @@ ShaderInput(const InternalName *name, const PTA_LVecBase3d &ptr, int priority) :
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(ptr)
+  _stored_ptr(ptr),
+  _bind_layer(0),
+  _bind_level(0),
+  _access(A_read)
 {
 }
 
@@ -272,7 +352,10 @@ ShaderInput(const InternalName *name, const PTA_LVecBase2d &ptr, int priority) :
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(ptr)
+  _stored_ptr(ptr),
+  _bind_layer(0),
+  _bind_level(0),
+  _access(A_read)
 {
 }
 
@@ -287,7 +370,10 @@ ShaderInput(const InternalName *name, const LVecBase4d &vec, int priority) :
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(vec),
-  _stored_vector(LCAST(PN_stdfloat, vec))
+  _stored_vector(LCAST(PN_stdfloat, vec)),
+  _bind_layer(0),
+  _bind_level(0),
+  _access(A_read)
 {
 }
 
@@ -302,7 +388,10 @@ ShaderInput(const InternalName *name, const LVecBase3d &vec, int priority) :
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(vec),
-  _stored_vector(vec.get_x(), vec.get_y(), vec.get_z(), 0.0)
+  _stored_vector(vec.get_x(), vec.get_y(), vec.get_z(), 0.0),
+  _bind_layer(0),
+  _bind_level(0),
+  _access(A_read)
 {
 }
 
@@ -317,7 +406,10 @@ ShaderInput(const InternalName *name, const LVecBase2d &vec, int priority) :
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(vec),
-  _stored_vector(vec.get_x(), vec.get_y(), 0.0, 0.0)
+  _stored_vector(vec.get_x(), vec.get_y(), 0.0, 0.0),
+  _bind_layer(0),
+  _bind_level(0),
+  _access(A_read)
 {
 }
 
@@ -331,7 +423,10 @@ ShaderInput(const InternalName *name, const PTA_LMatrix4d &ptr, int priority) :
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(ptr)
+  _stored_ptr(ptr),
+  _bind_layer(0),
+  _bind_level(0),
+  _access(A_read)
 {
 }
 
@@ -345,7 +440,10 @@ ShaderInput(const InternalName *name, const PTA_LMatrix3d &ptr, int priority) :
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(ptr)
+  _stored_ptr(ptr),
+  _bind_layer(0),
+  _bind_level(0),
+  _access(A_read)
 {
 }
 
@@ -359,7 +457,10 @@ ShaderInput(const InternalName *name, const LMatrix4d &mat, int priority) :
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(mat)
+  _stored_ptr(mat),
+  _bind_layer(0),
+  _bind_level(0),
+  _access(A_read)
 {
 }
 
@@ -373,7 +474,10 @@ ShaderInput(const InternalName *name, const LMatrix3d &mat, int priority) :
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(mat)
+  _stored_ptr(mat),
+  _bind_layer(0),
+  _bind_level(0),
+  _access(A_read)
 {
 }
 
@@ -387,7 +491,10 @@ ShaderInput(const InternalName *name, const PTA_int &ptr, int priority) :
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(ptr)
+  _stored_ptr(ptr),
+  _bind_layer(0),
+  _bind_level(0),
+  _access(A_read)
 {
 }
 
@@ -401,7 +508,10 @@ ShaderInput(const InternalName *name, const PTA_LVecBase4i &ptr, int priority) :
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(ptr)
+  _stored_ptr(ptr),
+  _bind_layer(0),
+  _bind_level(0),
+  _access(A_read)
 {
 }
 
@@ -415,7 +525,10 @@ ShaderInput(const InternalName *name, const PTA_LVecBase3i &ptr, int priority) :
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(ptr)
+  _stored_ptr(ptr),
+  _bind_layer(0),
+  _bind_level(0),
+  _access(A_read)
 {
 }
 
@@ -429,7 +542,10 @@ ShaderInput(const InternalName *name, const PTA_LVecBase2i &ptr, int priority) :
   _name(name),
   _type(M_numeric),
   _priority(priority),
-  _stored_ptr(ptr)
+  _stored_ptr(ptr),
+  _bind_layer(0),
+  _bind_level(0),
+  _access(A_read)
 {
 }
 
@@ -444,7 +560,10 @@ ShaderInput(const InternalName *name, const LVecBase4i &vec, int priority) :
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(vec),
-  _stored_vector((int)vec.get_x(), (int)vec.get_y(), (int)vec.get_z(), (int)vec.get_w())
+  _stored_vector((int)vec.get_x(), (int)vec.get_y(), (int)vec.get_z(), (int)vec.get_w()),
+  _bind_layer(0),
+  _bind_level(0),
+  _access(A_read)
 {
 }
 
@@ -459,7 +578,10 @@ ShaderInput(const InternalName *name, const LVecBase3i &vec, int priority) :
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(vec),
-  _stored_vector((int)vec.get_x(), (int)vec.get_y(), (int)vec.get_z(), 0.0)
+  _stored_vector((int)vec.get_x(), (int)vec.get_y(), (int)vec.get_z(), 0.0),
+  _bind_layer(0),
+  _bind_level(0),
+  _access(A_read)
 {
 }
 
@@ -474,7 +596,10 @@ ShaderInput(const InternalName *name, const LVecBase2i &vec, int priority) :
   _type(M_numeric),
   _priority(priority),
   _stored_ptr(vec),
-  _stored_vector((int)vec.get_x(), (int)vec.get_y(), 0.0, 0.0)
+  _stored_vector((int)vec.get_x(), (int)vec.get_y(), 0.0, 0.0),
+  _bind_layer(0),
+  _bind_level(0),
+  _access(A_read)
 {
 }
 
