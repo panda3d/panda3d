@@ -608,14 +608,26 @@ get_interocular_distance() const {
 //               PerspectiveLens.
 //
 //               This parameter must be greater than 0, but may be as
-//               large as you like.  It controls the amount to which
-//               the two eyes are directed inwards towards each other,
-//               which is a normal property of stereo vision.  It is a
-//               distance, not an angle; normally this should be set
-//               to the distance from the camera to the area of
-//               interest in your scene.  If you want to simulate
-//               parallel stereo, set this value to a very large
-//               number.
+//               large as you like.  It controls the distance at
+//               which the two stereo images will appear to converge,
+//               which is a normal property of stereo vision.  Normally
+//               this should be set to the distance from the camera to
+//               the area of interest in your scene.  Anything beyond
+//               this distance will appear to go into the screen, and
+//               anything closer will appear to come out of the screen.
+//               If you want to simulate parallel stereo, set this
+//               to infinity.
+//
+//               Note that this creates an off-axis frustum, which
+//               means that the lenses are still pointing in the
+//               same direction, which is usually more desirable
+//               than the more naive toe-in approach, where the
+//               two lenses are simply tilted toward each other.
+//
+//               Prior to Panda3D 1.9.0, the convergence was being
+//               calculated incorrectly.  It has since been corrected.
+//               To restore the legacy behavior you can set the
+//               stereo-lens-old-convergence variable to true.
 //
 //               Also see set_interocular_distance(), which relates.
 ////////////////////////////////////////////////////////////////////
@@ -807,7 +819,7 @@ do_adjust_comp_flags(CData *cdata, int clear_flags, int set_flags) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Lens::do_set_film_offset
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void Lens::
 do_set_film_offset(CData *cdata, const LVecBase2 &film_offset) {
@@ -819,7 +831,7 @@ do_set_film_offset(CData *cdata, const LVecBase2 &film_offset) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Lens::do_get_film_offset
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const LVector2 &Lens::
 do_get_film_offset(const CData *cdata) const {
@@ -829,7 +841,7 @@ do_get_film_offset(const CData *cdata) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Lens::do_set_near
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void Lens::
 do_set_near(CData *cdata, PN_stdfloat near_distance) {
@@ -841,7 +853,7 @@ do_set_near(CData *cdata, PN_stdfloat near_distance) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Lens::do_get_near
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat Lens::
 do_get_near(const CData *cdata) const {
@@ -851,7 +863,7 @@ do_get_near(const CData *cdata) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Lens::do_set_far
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void Lens::
 do_set_far(CData *cdata, PN_stdfloat far_distance) {
@@ -863,7 +875,7 @@ do_set_far(CData *cdata, PN_stdfloat far_distance) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Lens::do_get_far
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PN_stdfloat Lens::
 do_get_far(const CData *cdata) const {
@@ -873,7 +885,7 @@ do_get_far(const CData *cdata) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Lens::do_set_near_far
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void Lens::
 do_set_near_far(CData *cdata, PN_stdfloat near_distance, PN_stdfloat far_distance) {
