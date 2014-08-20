@@ -17,7 +17,6 @@
 #include "pythonCallbackObject.cxx"
 #include "simpleHashMap.cxx"
 #include "sparseArray.cxx"
-#include "string_utils.cxx"
 #include "timedCycle.cxx"
 #include "typedWritable.cxx"
 #include "typedWritableReferenceCount.cxx"
