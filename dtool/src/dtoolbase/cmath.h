@@ -68,13 +68,17 @@ INLINE int cpow(int x, int y);
 // or infinity.
 INLINE bool cnan(double v);
 
-// Returns NaN.
+// Returns true if the number is infinity.
+INLINE bool cinf(double v);
+
+// Return NaN and infinity, respectively.
 INLINE float make_nan(float);
 INLINE double make_nan(double);
+INLINE float make_inf(float);
+INLINE double make_inf(double);
 
 INLINE int cmod(int x, int y);
 
 #include "cmath.I"
 
 #endif
-
