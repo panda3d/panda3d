@@ -4,7 +4,7 @@
 #begin lib_target
   #define TARGET p3linmath
   #define LOCAL_LIBS \
-    p3putil
+    p3express p3pandabase
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
 
