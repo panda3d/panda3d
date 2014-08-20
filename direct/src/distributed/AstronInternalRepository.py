@@ -595,7 +595,7 @@ class AstronInternalRepository(ConnectionRepository):
         """
 
         dg = PyDatagram()
-        dg.addServerHeader(clientChanel, self.ourChannel, CLIENTAGENT_ADD_INTEREST)
+        dg.addServerHeader(clientChannel, self.ourChannel, CLIENTAGENT_ADD_INTEREST)
         dg.add_uint16(interestId)
         dg.add_uint32(parentId)
         dg.add_uint32(zoneId)
