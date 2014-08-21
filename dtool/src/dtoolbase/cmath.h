@@ -24,13 +24,8 @@
 #include "dtoolbase.h"
 
 #include <cmath>
-
-// Windows defines isnan() in a different place and with a different
-// name than everyone else.  Sheesh.
-#ifdef _WIN32
-#include <float.h>
+#include <cfloat>
 #include <limits>
-#endif
 
 INLINE float csqrt(float v);
 INLINE float csin(float v);
