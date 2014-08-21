@@ -430,6 +430,8 @@ def GetBison():
         # We don't strictly need it, so don't give an error
         return None
 
+    return BISON
+
 FLEX = None
 def GetFlex():
     global FLEX
@@ -444,6 +446,8 @@ def GetFlex():
     else:
         # We don't strictly need it, so don't give an error
         return None
+
+    return FLEX
 
 ########################################################################
 ##
@@ -1842,13 +1846,18 @@ def SdkLocatePython(force_use_sys_executable = False):
                 exit("Could not find %s!" % SDK["PYTHONEXEC"])
 
             # Determine which version it is by checking which dll is in the directory.
-            py_dlls = glob.glob(SDK["PYTHON"] + "/python[0-9][0-9].dll")
+            if (GetOptimize() <= 2):
+                py_dlls = glob.glob(SDK["PYTHON"] + "/python[0-9][0-9]_d.dll")
+            else:
+                py_dlls = glob.glob(SDK["PYTHON"] + "/python[0-9][0-9].dll")
+
             if len(py_dlls) == 0:
                 exit("Could not find the Python dll in %s." % (SDK["PYTHON"]))
             elif len(py_dlls) > 1:
                 exit("Found multiple Python dlls in %s." % (SDK["PYTHON"]))
 
-            SDK["PYTHONVERSION"] = "python" + py_dlls[0][-6] + "." + py_dlls[0][-5]
+            py_dll = os.path.basename(py_dlls[0])
+            SDK["PYTHONVERSION"] = "python" + py_dll[6] + "." + py_dll[7]
 
         elif (GetTarget() == 'windows'):
             SDK["PYTHON"] = os.path.dirname(sysconfig.get_python_inc())
@@ -2581,7 +2590,7 @@ def CalcLocation(fn, ipath):
         if (fn.endswith(".res")):   return OUTPUTDIR+"/tmp/"+fn
         if (fn.endswith(".tlb")):   return OUTPUTDIR+"/tmp/"+fn
         if (fn.endswith(".dll")):   return OUTPUTDIR+"/bin/"+fn[:-4]+dllext+".dll"
-        if (fn.endswith(".pyd")):   return OUTPUTDIR+"/panda3d/"+fn[:-4]+dllext+".pyd"
+        if (fn.endswith(".pyd")):   return OUTPUTDIR+"/panda3d/"+fn[:-4]+".pyd"
         if (fn.endswith(".ocx")):   return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".ocx"
         if (fn.endswith(".mll")):   return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".mll"
         if (fn.endswith(".dlo")):   return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".dlo"
