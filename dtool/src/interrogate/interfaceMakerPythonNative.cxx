@@ -2985,7 +2985,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
 
   int num_params = 0;
   bool only_pyobjects = true;
-  bool check_exceptions = false;
+  //bool check_exceptions = false;
 
   int pn;
   for (pn = 0; pn < (int)remap->_parameters.size(); ++pn) {
@@ -3232,7 +3232,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
 
       // It's reasonable to assume that a function taking a PyObject
       // might also throw a TypeError if the type is incorrect.
-      check_exceptions = true;
+      //check_exceptions = true;
 
     } else if (TypeManager::is_pointer_to_Py_buffer(type)) {
       if (args_type == AT_single_arg) {
@@ -3248,7 +3248,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
       extra_cleanup += "Py_XDECREF(" + param_name + "_buffer);";
       expected_params += "memoryview";
       ++num_params;
-      check_exceptions = true;
+      //check_exceptions = true;
 
     } else if (TypeManager::is_pointer(type)) {
       CPPType *obj_type = TypeManager::unwrap(TypeManager::resolve_type(type));
@@ -3351,9 +3351,9 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
 
   // If this is the only overload, don't bother checking for type errors.
   // Any type error that is raised will simply pass through to below.
-  if (func->_remaps.size() == 1) {
-    check_exceptions = false;
-  }
+  //if (func->_remaps.size() == 1) {
+  //  check_exceptions = false;
+  //}
 
   // Track how many curly braces we've opened.
   short open_scopes = 0;
@@ -3541,7 +3541,8 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
   }
 
   // If a method raises TypeError, continue.
-  if (check_exceptions) {
+  //if (check_exceptions) {
+  if (true) {
     indent(out, indent_level)
       << "if (PyErr_Occurred()) {\n";
     delete_return_value(out, indent_level, remap, return_expr);
