@@ -1514,7 +1514,7 @@ write_module_class(ostream &out, Object *obj) {
           // *need* to raise IndexError if we're out of bounds.  We have to
           // assume the bounds are 0 .. this->size() (this is the same
           // assumption that Python makes).
-          out << "  if (index < 0 || index >= local_this->size()) {\n";
+          out << "  if (index < 0 || index >= (Py_ssize_t) local_this->size()) {\n";
           out << "    PyErr_SetString(PyExc_IndexError, \"" << ClassName << " index out of range\");\n";
           out << "    return NULL;\n";
           out << "  }\n";
@@ -1554,7 +1554,7 @@ write_module_class(ostream &out, Object *obj) {
           out << "    return -1;\n";
           out << "  }\n\n";
 
-          out << "  if (index < 0 || index >= local_this->size()) {\n";
+          out << "  if (index < 0 || index >= (Py_ssize_t) local_this->size()) {\n";
           out << "    PyErr_SetString(PyExc_IndexError, \"" << ClassName << " index out of range\");\n";
           out << "    return -1;\n";
           out << "  }\n";
@@ -2485,12 +2485,9 @@ write_function_for_name(ostream &out1, InterfaceMaker::Object *obj, InterfaceMak
     switch (args_type) {
     case AT_keyword_args:
       indent(out, 2) << "int parameter_count = PyTuple_Size(args);\n";
-
-      if (args_type == AT_keyword_args) {
-        indent(out, 2) << "if (kwds != NULL && PyDict_Check(kwds)) {\n";
-        indent(out, 2) << "  parameter_count += PyDict_Size(kwds);\n";
-        indent(out, 2) << "}\n";
-      }
+      indent(out, 2) << "if (kwds != NULL) {\n";
+      indent(out, 2) << "  parameter_count += PyDict_Size(kwds);\n";
+      indent(out, 2) << "}\n";
       break;
 
     case AT_varargs:
@@ -2498,7 +2495,7 @@ write_function_for_name(ostream &out1, InterfaceMaker::Object *obj, InterfaceMak
       break;
 
     case AT_single_arg:
-      // It shouldń't get here, but we'll handle these cases nonetheless.
+      // It shouldn't get here, but we'll handle these cases nonetheless.
       indent(out, 2) << "const int parameter_count = 1;\n";
       break;
 
@@ -2575,10 +2572,46 @@ write_function_for_name(ostream &out1, InterfaceMaker::Object *obj, InterfaceMak
 
   } else {
     string expected_params = "";
-    for (mii = MapSets.begin(); mii != MapSets.end(); mii++) {
-      write_function_forset(out, obj, func, mii->second, expected_params, 2, is_inplace,
-                            coercion_allowed, coercion_attempted, args_type, return_int);
+    mii = MapSets.begin();
+
+    // If no parameters are accepted, we do need to check that the argument
+    // count is indeed 0, since we won't check that in write_function_instance.
+    if (mii->first == 0 && args_type != AT_no_args) {
+      switch (args_type) {
+      case AT_keyword_args:
+        out << "  if (PyTuple_Size(args) > 0 || (kwds != NULL && PyDict_Size(kwds) > 0)) {\n";
+        out << "    int parameter_count = PyTuple_Size(args);\n";
+        out << "    if (kwds != NULL) {\n";
+        out << "      parameter_count += PyDict_Size(kwds);\n";
+        out << "    }\n";
+        break;
+      case AT_varargs:
+        out << "  if (PyTuple_Size(args) > 0) {\n";
+        out << "    const int parameter_count = PyTuple_GET_SIZE(args);\n";
+        break;
+      case AT_single_arg:
+      default:
+        // Shouldn't happen, but let's handle this case nonetheless.
+        out << "  {\n";
+        out << "    const int parameter_count = 1;\n";
+        break;
+      }
+
+      out << "    PyErr_Format(PyExc_TypeError,\n"
+          << "                 \"" << methodNameFromCppName(func, "", false)
+          << "() takes no arguments (%d given)\",\n"
+          << "                 parameter_count);\n";
+
+      if (return_int) {
+        out << "    return -1;\n";
+      } else {
+        out << "    return (PyObject *) NULL;\n";
+      }
+      out << "  }\n";
     }
+
+    write_function_forset(out, obj, func, mii->second, expected_params, 2, is_inplace,
+                          coercion_allowed, coercion_attempted, args_type, return_int);
 
     out << "  if (!PyErr_Occurred()) {\n";
     out << "    PyErr_SetString(PyExc_TypeError,\n";
@@ -2921,7 +2954,6 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
   string extra_convert;
   string extra_param_check;
   string extra_cleanup;
-  string direct_assign;
 
   bool is_constructor = (remap->_type == FunctionRemap::T_constructor);
 
@@ -2999,12 +3031,11 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
         parameter_list += ", &" + param_name;
 
         extra_convert += " Py_ssize_t " + param_name + "_len = PyUnicode_GetSize((PyObject *)" + param_name + ");"
-                         " wchar_t *" + param_name + "_str = new wchar_t[" + param_name + "_len + 1];"
+                         " wchar_t *" + param_name + "_str = (wchar_t *)alloca(sizeof(wchar_t) * (" + param_name + "_len + 1));"
                          " PyUnicode_AsWideChar(" + param_name + ", " + param_name + "_str, " + param_name + "_len);"
                          " " + param_name + "_str[" + param_name + "_len] = 0;";
 
         pexpr_string = param_name + "_str";
-        extra_cleanup += " delete[] " + param_name + "_str;";
         expected_params += "unicode";
 
       } else if (TypeManager::is_wstring(orig_type)) {
@@ -3017,14 +3048,13 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
         parameter_list += ", &" + param_name;
 
         extra_convert += " Py_ssize_t " + param_name + "_len = PyUnicode_GetSize((PyObject *)" + param_name + ");"
-                         " wchar_t *" + param_name + "_str = new wchar_t[" + param_name + "_len];"
+                         " wchar_t *" + param_name + "_str = (wchar_t *)alloca(sizeof(wchar_t) * " + param_name + "_len);"
                          " PyUnicode_AsWideChar(" + param_name + ", " + param_name + "_str, " + param_name + "_len);";
 
-        pexpr_string = "basic_string<wchar_t>((wchar_t *)" +
+        pexpr_string = "basic_string<wchar_t>(" +
           param_name + "_str, " +
           param_name + "_len)";
 
-        extra_cleanup += " delete[] " + param_name + "_str;";
         expected_params += "unicode";
 
       } else if (TypeManager::is_const_ptr_to_basic_string_wchar(orig_type)) {
@@ -3037,14 +3067,13 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
         parameter_list += ", &" + param_name;
 
         extra_convert += " Py_ssize_t " + param_name + "_len = PyUnicode_GetSize((PyObject *)" + param_name + ");"
-                         " wchar_t *" + param_name + "_str = new wchar_t[" + param_name + "_len];"
+                         " wchar_t *" + param_name + "_str = (wchar_t *)alloca(sizeof(wchar_t) * " + param_name + "_len);"
                          " PyUnicode_AsWideChar(" + param_name + ", " + param_name + "_str, " + param_name + "_len);";
 
-        pexpr_string = "&basic_string<wchar_t>((wchar_t *)" +
+        pexpr_string = "&basic_string<wchar_t>(" +
           param_name + "_str, " +
           param_name + "_len)";
 
-        extra_cleanup += " delete[] " + param_name + "_str;";
         expected_params += "unicode";
 
       } else {
@@ -3056,7 +3085,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
             << param_name << "_str = PyUnicode_AsUTF8AndSize(arg, &"
             << param_name << "_len);\n";
           out << "#else\n";
-          indent(out, indent_level) << "if (PyString_AsStringAndSize(arg, &" 
+          indent(out, indent_level) << "if (PyString_AsStringAndSize(arg, &"
             << param_name << "_str, &" << param_name << "_len) == -1) {\n";
           indent(out, indent_level + 2) << param_name << "_str = NULL;\n";
           indent(out, indent_level) << "}\n";
@@ -3395,6 +3424,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
   }
 
   string return_expr;
+
   if (!remap->_void_return &&
       remap->_return_type->new_type_is_atomic_string()) {
     // Treat strings as a special case.  We don't want to format the
@@ -3474,6 +3504,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
         type->output_instance(out, "return_value", &parser);
         out << " = " << return_expr << ";\n";
       }
+
       if (track_interpreter) {
         indent(out, indent_level) << "in_interpreter = 1;\n";
       }
@@ -3486,13 +3517,24 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
       if (!extra_cleanup.empty()) {
         indent(out, indent_level) << extra_cleanup << "\n";
       }
-
-      if (!is_inplace) {
-        return_expr = manage_return_value(out, indent_level, remap, "return_value");
-      }
       if (coercion_possible) {
         indent(out, indent_level)
           << "Py_XDECREF(coerced);\n";
+      }
+      if (!is_inplace) {
+        if (remap->_return_type->return_value_needs_management()) {
+          // If a constructor returns NULL, that means allocation failed.
+          indent(out, indent_level) << "if (return_value == NULL) {\n";
+          if (return_int) {
+            indent(out, indent_level) << "  PyErr_NoMemory();\n";
+            indent(out, indent_level) << "  return -1;\n";
+          } else {
+            indent(out, indent_level) << "  return PyErr_NoMemory();\n";
+          }
+          indent(out, indent_level) << "}\n";
+        }
+
+        return_expr = manage_return_value(out, indent_level, remap, "return_value");
       }
       return_expr = remap->_return_type->temporary_to_return(return_expr);
     }
@@ -3502,10 +3544,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
   if (check_exceptions) {
     indent(out, indent_level)
       << "if (PyErr_Occurred()) {\n";
-    if (return_int && !return_expr.empty()) {
-      indent(out, indent_level + 2)
-        << "delete return_value;\n";
-    }
+    delete_return_value(out, indent_level, remap, return_expr);
     indent(out, indent_level)
       << "  if (PyErr_ExceptionMatches(PyExc_TypeError)) {\n";
     indent(out, indent_level)
@@ -3540,10 +3579,8 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
       << "PyErr_SetString(PyExc_AssertionError, notify->get_assert_error_message().c_str());\n";
     indent(out, indent_level + 2)
       << "notify->clear_assert_failed();\n";
+    delete_return_value(out, indent_level + 2, remap, return_expr);
     if (return_int) {
-      if (!return_expr.empty()) {
-        indent(out, indent_level + 2) << "delete return_value;\n";
-      }
       indent(out, indent_level + 2) << "return -1;\n";
     } else {
       indent(out, indent_level + 2) << "return (PyObject *)NULL;\n";

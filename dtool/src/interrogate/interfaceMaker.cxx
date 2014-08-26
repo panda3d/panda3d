@@ -838,6 +838,27 @@ manage_return_value(ostream &out, int indent_level,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: InterfaceMaker::delete_return_value
+//       Access: Protected
+//  Description: Cleans up the given return value by deleting it or
+//               decrementing its reference count or whatever is
+//               appropriate.
+////////////////////////////////////////////////////////////////////
+void InterfaceMaker::
+delete_return_value(ostream &out, int indent_level,
+                    FunctionRemap *remap, const string &return_expr) const {
+  if (remap->_manage_reference_count) {
+    // If we're managing reference counts, and we're about to return a
+    // reference countable object, then decrement its count.
+    output_unref(out, indent_level, remap, return_expr);
+
+  } else if (remap->_return_value_needs_management) {
+    // We should just delete it directly.
+    indent(out, indent_level) << "delete " << return_expr << ";\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: InterfaceMaker::output_ref
 //       Access: Protected
 //  Description: Outputs the code to increment the reference count for
@@ -859,9 +880,39 @@ output_ref(ostream &out, int indent_level, FunctionRemap *remap,
 
     indent(out, indent_level)
       << "if (" << varname << " != ("
-      << remap->_return_type->get_new_type()->get_local_name(&parser) << ")0) {\n";
+      << remap->_return_type->get_new_type()->get_local_name(&parser) << ")NULL) {\n";
     indent(out, indent_level + 2)
       << varname << "->ref();\n";
+    indent(out, indent_level)
+      << "}\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterfaceMaker::output_unref
+//       Access: Protected
+//  Description: Outputs the code to decrement the reference count for
+//               the indicated variable name.
+////////////////////////////////////////////////////////////////////
+void InterfaceMaker::
+output_unref(ostream &out, int indent_level, FunctionRemap *remap, 
+             const string &varname) const {
+  if (remap->_type == FunctionRemap::T_constructor ||
+      remap->_type == FunctionRemap::T_typecast) {
+    // In either of these cases, we can safely assume the pointer will
+    // never be NULL.
+    indent(out, indent_level)
+      << "unref_delete(" << varname << ");\n";
+
+  } else {
+    // However, in the general case, we have to check for that before
+    // we attempt to ref it.
+
+    indent(out, indent_level)
+      << "if (" << varname << " != ("
+      << remap->_return_type->get_new_type()->get_local_name(&parser) << ")NULL) {\n";
+    indent(out, indent_level + 2)
+      << "unref_delete(" << varname << ");\n";
     indent(out, indent_level)
       << "}\n";
   }

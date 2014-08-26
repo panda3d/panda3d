@@ -177,8 +177,14 @@ public:
   manage_return_value(ostream &out, int indent_level,
                       FunctionRemap *remap, const string &return_expr) const;
 
+  void
+  delete_return_value(ostream &out, int indent_level,
+                      FunctionRemap *remap, const string &return_expr) const;
+
   void output_ref(ostream &out, int indent_level, FunctionRemap *remap, 
                   const string &varname) const;
+  void output_unref(ostream &out, int indent_level, FunctionRemap *remap, 
+                    const string &varname) const;
   void write_spam_message(ostream &out, FunctionRemap *remap) const;
 
 protected:

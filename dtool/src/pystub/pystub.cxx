@@ -40,6 +40,7 @@ extern "C" {
   EXPCL_PYSTUB int PyErr_ExceptionMatches(...);
   EXPCL_PYSTUB int PyErr_Fetch(...);
   EXPCL_PYSTUB int PyErr_Format(...);
+  EXPCL_PYSTUB int PyErr_NoMemory(...);
   EXPCL_PYSTUB int PyErr_Occurred(...);
   EXPCL_PYSTUB int PyErr_Print(...);
   EXPCL_PYSTUB int PyErr_Restore(...);
@@ -214,6 +215,7 @@ int PyErr_Clear(...) { return 0; };
 int PyErr_ExceptionMatches(...) { return 0; };
 int PyErr_Fetch(...) { return 0; }
 int PyErr_Format(...) { return 0; };
+int PyErr_NoMemory(...) { return 0; }
 int PyErr_Occurred(...) { return 0; }
 int PyErr_Print(...) { return 0; }
 int PyErr_Restore(...) { return 0; }

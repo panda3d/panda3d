@@ -102,7 +102,8 @@ get_parameter_name(int n) const {
 //               are returning a value, or the empty string if we
 //               return nothing.
 ////////////////////////////////////////////////////////////////////
-string FunctionRemap::call_function(ostream &out, int indent_level, bool convert_result,
+string FunctionRemap::
+call_function(ostream &out, int indent_level, bool convert_result,
               const string &container, const vector_string &pexprs) const {
   string return_expr;
 
@@ -117,11 +118,11 @@ string FunctionRemap::call_function(ostream &out, int indent_level, bool convert
       InterfaceMaker::indent(out, indent_level)
         << "unref_delete(" << container << ");\n";
     } else {
-        if (inside_python_native) {
-          InterfaceMaker::indent(out, indent_level) << "Dtool_Py_Delete(self); \n";
-        } else {
-          InterfaceMaker::indent(out, indent_level) << " delete " << container << ";\n";
-        }
+      if (inside_python_native) {
+        InterfaceMaker::indent(out, indent_level) << "Dtool_Py_Delete(self);\n";
+      } else {
+        InterfaceMaker::indent(out, indent_level) << "delete " << container << ";\n";
+      }
     }
 
   } else if (_type == T_typecast_method) {
