@@ -1332,7 +1332,7 @@ generate_simple_ram_image() {
 
   size_t expected_page_size = (size_t)(x_size * y_size * 4);
   PTA_uchar image = PTA_uchar::empty_array(expected_page_size, get_class_type());
-  convert_from_pnmimage(image, expected_page_size, 0, scaled, 4, 1);
+  convert_from_pnmimage(image, expected_page_size, x_size, 0, 0, 0, scaled, 4, 1);
 
   do_set_simple_ram_image(cdata, image, x_size, y_size);
   cdata->_simple_image_date_generated = (PN_int32)time(NULL);
@@ -3368,7 +3368,7 @@ do_read_one(CData *cdata, const Filename &fullpath, const Filename &alpha_fullpa
         image.take_from(new_image);
       }
     }
-    
+
     if (!do_load_one(cdata, image, fullpath.get_basename(), z, n, options)) {
       return false;
     }
@@ -3438,14 +3438,16 @@ do_load_one(CData *cdata, const PNMImage &pnmimage, const string &name, int z, i
     Thread::consider_yield();
 
     convert_from_pnmimage(cdata->_ram_images[n]._image,
-                          do_get_expected_ram_mipmap_page_size(cdata, n), z,
-                          scaled, cdata->_num_components, cdata->_component_width);
+                          do_get_expected_ram_mipmap_page_size(cdata, n),
+                          x_size, 0, 0, z, scaled,
+                          cdata->_num_components, cdata->_component_width);
   } else {
     // Now copy the pixel data from the PNMImage into our internal
     // cdata->_image component.
     convert_from_pnmimage(cdata->_ram_images[n]._image,
-                          do_get_expected_ram_mipmap_page_size(cdata, n), z,
-                          pnmimage, cdata->_num_components, cdata->_component_width);
+                          do_get_expected_ram_mipmap_page_size(cdata, n),
+                          x_size, 0, 0, z, pnmimage,
+                          cdata->_num_components, cdata->_component_width);
   }
   Thread::consider_yield();
 
@@ -3516,6 +3518,40 @@ do_load_one(CData *cdata, const PfmFile &pfm, const string &name, int z, int n,
                      pfm, cdata->_num_components, cdata->_component_width);
   }
   Thread::consider_yield();
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_load_sub_image
+//       Access: Protected, Virtual
+//  Description: Internal method to load an image into a section of
+//               a texture page or mipmap level.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+do_load_sub_image(CData *cdata, const PNMImage &image, int x, int y, int z, int n) {
+  nassertr(n >= 0 && n < cdata->_ram_images.size(), false);
+
+  int tex_x_size = do_get_expected_mipmap_x_size(cdata, n);
+  int tex_y_size = do_get_expected_mipmap_y_size(cdata, n);
+  int tex_z_size = do_get_expected_mipmap_z_size(cdata, n);
+
+  nassertr(x >= 0 && x < tex_x_size, false);
+  nassertr(y >= 0 && y < tex_y_size, false);
+  nassertr(z >= 0 && z < tex_z_size, false);
+
+  nassertr(image.get_x_size() + x < tex_x_size, false);
+  nassertr(image.get_y_size() + y < tex_y_size, false);
+
+  // Flip y
+  y = cdata->_y_size - (image.get_y_size() + y);
+
+  cdata->inc_image_modified();
+  do_modify_ram_mipmap_image(cdata, n);
+  convert_from_pnmimage(cdata->_ram_images[n]._image,
+                        do_get_expected_ram_mipmap_page_size(cdata, n),
+                        tex_x_size, x, y, z, image,
+                        cdata->_num_components, cdata->_component_width);
 
   return true;
 }
@@ -6009,12 +6045,22 @@ do_get_bam_rawdata(CData *cdata) {
 //               indicated PNMImage into the given ram_image.
 ////////////////////////////////////////////////////////////////////
 void Texture::
-convert_from_pnmimage(PTA_uchar &image, size_t page_size, int z,
-                      const PNMImage &pnmimage,
-                      int num_components, int component_width) {
+convert_from_pnmimage(PTA_uchar &image, size_t page_size,
+                      int row_stride, int x, int y, int z,
+                      const PNMImage &pnmimage, int num_components,
+                      int component_width) {
   int x_size = pnmimage.get_x_size();
   int y_size = pnmimage.get_y_size();
   xelval maxval = pnmimage.get_maxval();
+  int pixel_size = num_components * component_width;
+
+  int row_skip = 0;
+  if (row_stride == 0) {
+    row_stride = x_size;
+  } else {
+    row_skip = (row_stride - x_size) * pixel_size;
+    nassertv(row_skip >= 0);
+  }
 
   bool is_grayscale = (num_components == 1 || num_components == 2);
   bool has_alpha = (num_components == 2 || num_components == 4);
@@ -6023,6 +6069,10 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size, int z,
   int idx = page_size * z;
   nassertv(idx + page_size <= image.size());
   unsigned char *p = &image[idx];
+
+  if (x != 0 || y != 0) {
+    p += (row_stride * y + x) * pixel_size;
+  }
 
   if (maxval == 255 && component_width == 1) {
     // Most common case: one byte per pixel, and the source image
@@ -6044,6 +6094,7 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size, int z,
           }
         }
       }
+      p += row_skip;
     }
 
   } else if (maxval == 65535 && component_width == 2) {
@@ -6052,7 +6103,7 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size, int z,
     for (int j = y_size-1; j >= 0; j--) {
       for (int i = 0; i < x_size; i++) {
         if (is_grayscale) {
-          store_unscaled_short(p, pnmimage.get_gray_val(i, j));
+           store_unscaled_short(p, pnmimage.get_gray_val(i, j));
         } else {
           store_unscaled_short(p, pnmimage.get_blue_val(i, j));
           store_unscaled_short(p, pnmimage.get_green_val(i, j));
@@ -6066,6 +6117,7 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size, int z,
           }
         }
       }
+      p += row_skip;
     }
 
   } else if (component_width == 1) {
@@ -6091,6 +6143,7 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size, int z,
           }
         }
       }
+      p += row_skip;
     }
 
   } else {  // component_width == 2
@@ -6116,10 +6169,9 @@ convert_from_pnmimage(PTA_uchar &image, size_t page_size, int z,
           }
         }
       }
+      p += row_skip;
     }
   }
-
-  nassertv(p == &image[idx] + page_size);
 }
 
 ////////////////////////////////////////////////////////////////////

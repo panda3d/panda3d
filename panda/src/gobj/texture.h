@@ -279,6 +279,7 @@ PUBLISHED:
   BLOCKING INLINE bool load(const PNMImage &pnmimage, int z, int n, const LoaderOptions &options = LoaderOptions());
   BLOCKING INLINE bool load(const PfmFile &pfm, const LoaderOptions &options = LoaderOptions());
   BLOCKING INLINE bool load(const PfmFile &pfm, int z, int n, const LoaderOptions &options = LoaderOptions());
+  BLOCKING INLINE bool load_sub_image(const PNMImage &pnmimage, int x, int y, int z=0, int n=0);
   BLOCKING INLINE bool store(PNMImage &pnmimage) const;
   BLOCKING INLINE bool store(PNMImage &pnmimage, int z, int n) const;
   BLOCKING INLINE bool store(PfmFile &pfm) const;
@@ -569,6 +570,8 @@ protected:
   virtual bool do_load_one(CData *cdata,
                            const PfmFile &pfm, const string &name,
                            int z, int n, const LoaderOptions &options);
+  virtual bool do_load_sub_image(CData *cdata, const PNMImage &image,
+                                 int x, int y, int z, int n);
   bool do_read_txo_file(CData *cdata, const Filename &fullpath);
   bool do_read_txo(CData *cdata, istream &in, const string &filename);
   bool do_read_dds_file(CData *cdata, const Filename &fullpath, bool header_only);
@@ -682,19 +685,20 @@ protected:
   };
 
 private:
-  static void convert_from_pnmimage(PTA_uchar &image, size_t page_size, 
-                                    int z, const PNMImage &pnmimage,
+  static void convert_from_pnmimage(PTA_uchar &image, size_t page_size,
+                                    int row_stride, int x, int y, int z,
+                                    const PNMImage &pnmimage,
                                     int num_components, int component_width);
-  static void convert_from_pfm(PTA_uchar &image, size_t page_size, 
-                               int z, const PfmFile &pfm, 
+  static void convert_from_pfm(PTA_uchar &image, size_t page_size,
+                               int z, const PfmFile &pfm,
                                int num_components, int component_width);
   static bool convert_to_pnmimage(PNMImage &pnmimage, int x_size, int y_size,
                                   int num_components, int component_width,
-                                  CPTA_uchar image, size_t page_size, 
+                                  CPTA_uchar image, size_t page_size,
                                   int z);
   static bool convert_to_pfm(PfmFile &pfm, int x_size, int y_size,
                              int num_components, int component_width,
-                             CPTA_uchar image, size_t page_size, 
+                             CPTA_uchar image, size_t page_size,
                              int z);
   static PTA_uchar read_dds_level_bgr8(Texture *tex, CData *cdata, const DDSHeader &header, 
                                        int n, istream &in);
