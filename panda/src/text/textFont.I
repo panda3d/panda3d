@@ -76,3 +76,20 @@ INLINE void TextFont::
 set_space_advance(PN_stdfloat space_advance) {
   _space_advance = space_advance;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::get_glyph
+//       Access: Public, Virtual
+//  Description: Gets the glyph associated with the given character
+//               code, as well as an optional scaling parameter that
+//               should be applied to the glyph's geometry and advance
+//               parameters.  Returns the glyph on success.  On failure,
+//               it may still return a printable glyph, or it may
+//               return NULL.
+////////////////////////////////////////////////////////////////////
+INLINE const TextGlyph *TextFont::
+get_glyph(int character) {
+  const TextGlyph *glyph = NULL;
+  get_glyph(character, glyph);
+  return glyph;
+}

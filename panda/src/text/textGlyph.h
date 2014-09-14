@@ -37,6 +37,7 @@ public:
   INLINE void operator = (const TextGlyph &copy);
   virtual ~TextGlyph();
 
+PUBLISHED:
   INLINE int get_character() const;
   INLINE PT(Geom) get_geom(Geom::UsageHint usage_hint) const;
   INLINE const RenderState *get_state() const;

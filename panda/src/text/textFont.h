@@ -78,6 +78,7 @@ PUBLISHED:
 
   INLINE PN_stdfloat get_space_advance() const;
   INLINE void set_space_advance(PN_stdfloat space_advance);
+  INLINE const TextGlyph *get_glyph(int character);
 
   virtual void write(ostream &out, int indent_level) const;
 
