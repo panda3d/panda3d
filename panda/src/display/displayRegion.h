@@ -38,6 +38,7 @@
 #include "cullTraverser.h"
 #include "callbackObject.h"
 #include "luse.h"
+#include "epvector.h"
 
 class GraphicsOutput;
 class GraphicsPipe;
@@ -172,7 +173,7 @@ public:
     LVecBase4i _pixels;
     LVecBase4i _pixels_i;
   };
-  typedef pvector<Region> Regions;
+  typedef epvector<Region> Regions;
 
 private:
   class CData;
@@ -214,10 +215,10 @@ private:
     Regions _regions;
 
     int _lens_index; // index into which lens of a camera is associated with this display region.  0 is default
-    
+
     NodePath _camera;
     Camera *_camera_node;
-    
+
     bool _active;
     int _sort;
     Lens::StereoChannel _stereo_channel;
