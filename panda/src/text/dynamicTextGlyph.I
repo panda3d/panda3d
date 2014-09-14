@@ -74,6 +74,17 @@ operator = (const DynamicTextGlyph &) {
   nassertv(false);
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextGlyph::get_page
+//       Access: Published
+//  Description: Returns the DynamicTextPage that this glyph is on.
+////////////////////////////////////////////////////////////////////
+INLINE DynamicTextPage *DynamicTextGlyph::
+get_page() const {
+  return _page;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DynamicTextGlyph::intersects
 //       Access: Published

@@ -44,6 +44,8 @@ private:
 PUBLISHED:
   virtual ~DynamicTextGlyph();
 
+  INLINE DynamicTextPage *get_page() const;
+
   INLINE bool intersects(int x, int y, int x_size, int y_size) const;
 
   INLINE PN_stdfloat get_top() const;
