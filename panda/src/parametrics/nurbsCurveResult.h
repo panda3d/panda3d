@@ -19,6 +19,7 @@
 #include "referenceCount.h"
 #include "nurbsBasisVector.h"
 #include "vector_stdfloat.h"
+#include "epvector.h"
 
 class NurbsVertex;
 
@@ -52,7 +53,7 @@ PUBLISHED:
   INLINE PN_stdfloat eval_extended_point(PN_stdfloat t, int d);
   INLINE bool eval_extended_points(PN_stdfloat t, int d, 
                                    PN_stdfloat result[], int num_values);
-  
+
   INLINE int get_num_segments() const;
   void eval_segment_point(int segment, PN_stdfloat t, LVecBase3 &point) const;
   void eval_segment_tangent(int segment, PN_stdfloat t, LVecBase3 &tangent) const;
@@ -67,14 +68,14 @@ PUBLISHED:
   INLINE const LPoint3 &get_sample_point(int n) const;
   MAKE_SEQ(get_sample_ts, get_num_samples, get_sample_t);
   MAKE_SEQ(get_sample_points, get_num_samples, get_sample_points);
-  
+
 private:
   int find_segment(PN_stdfloat t);
   int r_find_segment(PN_stdfloat t, int top, int bot) const;
 
-  void r_adaptive_sample(int segment, PN_stdfloat t0, const LPoint3 &p0, 
+  void r_adaptive_sample(int segment, PN_stdfloat t0, const LPoint3 &p0,
                          PN_stdfloat t1, const LPoint3 &p1, PN_stdfloat tolerance_2);
-  static PN_stdfloat sqr_dist_to_line(const LPoint3 &point, const LPoint3 &origin, 
+  static PN_stdfloat sqr_dist_to_line(const LPoint3 &point, const LPoint3 &origin,
                                 const LVector3 &vec);
 
   NurbsBasisVector _basis;

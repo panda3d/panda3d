@@ -18,6 +18,7 @@
 #include "collisionPolygon.h"
 #include "config_collide.h"
 #include "dcast.h"
+#include "epvector.h"
 
 TypeHandle CollisionHandlerPusher::_type_handle;
 
@@ -95,7 +96,7 @@ handle_entries() {
         // shove.  We hack around this by testing if two shove vectors
         // share nearly the same direction, and if so, we keep only the
         // longer of the two.
-        
+
         typedef epvector<ShoveData> Shoves;
         Shoves shoves;
 
@@ -110,13 +111,13 @@ handle_entries() {
           LPoint3 interior_point;
 
           if (!entry->get_all(def._target, surface_point, normal, interior_point)) {
-            #ifndef NDEBUG          
+#ifndef NDEBUG
             if (collide_cat.is_debug()) {
               collide_cat.debug()
                 << "Cannot shove on " << from_node_path << " for collision into "
                 << entry->get_into_node_path() << "; no normal/depth information.\n";
             }
-            #endif            
+#endif
           } else {
             // Shove it just enough to clear the volume.
             if (!surface_point.almost_equal(interior_point)) {

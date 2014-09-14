@@ -17,7 +17,7 @@
 
 #include "pandatoolbase.h"
 #include "pmap.h"
-#include "pvector.h"
+#include "epvector.h"
 #include "luse.h"
 #include "namable.h"
 

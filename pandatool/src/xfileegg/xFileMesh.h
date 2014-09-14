@@ -17,6 +17,7 @@
 
 #include "pandatoolbase.h"
 #include "pvector.h"
+#include "epvector.h"
 #include "pmap.h"
 #include "indirectCompareTo.h"
 #include "namable.h"

@@ -17,7 +17,7 @@
 
 #include "pandabase.h"
 #include "perlinNoise3.h"
-#include "pvector.h"
+#include "epvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : StackedPerlinNoise3

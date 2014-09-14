@@ -28,6 +28,7 @@
 #include "pta_LVecBase4.h"
 #include "pta_LVecBase3.h"
 #include "pta_LVecBase2.h"
+#include "epvector.h"
 
 #ifdef HAVE_CG
 // I don't want to include the Cg header file into panda as a
