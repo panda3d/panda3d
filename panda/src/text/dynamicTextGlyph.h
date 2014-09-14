@@ -74,6 +74,23 @@ public:
   int _margin;
   PN_stdfloat _top, _left, _bottom, _right;
   PN_stdfloat _uv_top, _uv_left, _uv_bottom, _uv_right;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    TextGlyph::init_type();
+    register_type(_type_handle, "DynamicTextGlyph",
+                  TextGlyph::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+private:
+  static TypeHandle _type_handle;
 };
 
 #include "dynamicTextGlyph.I"

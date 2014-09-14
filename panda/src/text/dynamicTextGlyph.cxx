@@ -28,6 +28,8 @@
 #include "renderState.h"
 #include "config_gobj.h"
 
+TypeHandle DynamicTextGlyph::_type_handle;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DynamicTextGlyph::Destructor
 //       Access: Public, Virtual
