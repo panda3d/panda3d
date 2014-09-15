@@ -279,7 +279,7 @@ get_sleep_damping() const {
 //               of mass.
 ////////////////////////////////////////////////////////////////////
 void PhysxBodyDesc::
-set_mass_local_mat(const LMatrix4f mat) {
+set_mass_local_mat(const LMatrix4f &mat) {
 
   _desc.massLocalPose = PhysxManager::mat4_to_nxMat34(mat);
 }
@@ -303,7 +303,7 @@ get_mass_local_mat() const {
 //               bodies mass frame.
 ////////////////////////////////////////////////////////////////////
 void PhysxBodyDesc::
-set_mass_space_inertia(const LVector3f inertia) {
+set_mass_space_inertia(const LVector3f &inertia) {
 
   _desc.massSpaceInertia = PhysxManager::vec3_to_nxVec3(inertia);
 }

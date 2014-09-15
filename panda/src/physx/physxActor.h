@@ -180,7 +180,7 @@ PUBLISHED:
   INLINE void ls(ostream &out, int indent_level=0) const;
 
 public:
-  void update_transform(const LMatrix4f m);
+  void update_transform(const LMatrix4f &m);
 
 ////////////////////////////////////////////////////////////////////
 PUBLISHED:

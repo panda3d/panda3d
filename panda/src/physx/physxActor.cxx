@@ -163,7 +163,7 @@ get_name() const {
 //               transform from the controller's transform.
 ////////////////////////////////////////////////////////////////////
 void PhysxActor::
-update_transform(const LMatrix4f m) {
+update_transform(const LMatrix4f &m) {
 
   // Active transforms are update AFTER scene.fetchResults() has
   // been called, and thus can contain removed objects. So either
