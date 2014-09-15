@@ -94,7 +94,6 @@ WinGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   _ime_open = false;
   _ime_active = false;
   _tracking_mouse_leaving = false;
-  _maximized = false;
   _cursor = 0;
   _lost_keypresses = false;
   _lshift_down = false;
@@ -1469,7 +1468,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             // When a fullscreen window goes inactive, it automatically
             // gets minimized.
             properties.set_minimized(true);
-    
+
             // It seems order is important here.  We must minimize the
             // window before restoring the display settings, or risk
             // losing the graphics context.
@@ -1483,31 +1482,18 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     adjust_z_order();
     system_changed_properties(properties);
     break;
-    
+
   case WM_SIZE:
     if (windisplay_cat.is_debug()) {
       windisplay_cat.debug()
         << "WM_SIZE: " << hwnd << ", " << wparam << "\n";
     }
-    // for maximized, unmaximize, need to call resize code
-    // artificially since no WM_EXITSIZEMOVE is generated.
-    if (wparam == SIZE_MAXIMIZED) {
-      _maximized = true;
-      handle_reshape();
-    
-    } else if (wparam == SIZE_RESTORED && _maximized) {
-      // SIZE_RESTORED might mean we restored to its original size
-      // before the maximize, but it might also be called while the
-      // user is resizing the window by hand.  Checking the _maximized
-      // flag that we set above allows us to differentiate the two
-      // cases.
-      _maximized = false;
-      handle_reshape();
-    }
+
+    handle_reshape();
     break;
 
   case WM_EXITSIZEMOVE:
-    handle_reshape();
+    //handle_reshape();
     break;
 
   case WM_WINDOWPOSCHANGED:
@@ -1526,7 +1512,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       _got_expose_event = true;
     }
     break;
-    
+
   case WM_LBUTTONDOWN:
     if (_lost_keypresses) {
       resend_lost_keypresses();
