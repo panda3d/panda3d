@@ -1160,7 +1160,7 @@ synthesize_shader(const RenderState *rs) {
       }
     }
     const LightRampAttrib *light_ramp = DCAST(LightRampAttrib, rs->get_attrib_def(LightRampAttrib::get_class_slot()));
-    if(_auto_ramp_on) {
+    if (_auto_ramp_on && _have_diffuse) {
       switch (light_ramp->get_mode()) {
       case LightRampAttrib::LRT_single_threshold:
         {
@@ -1406,7 +1406,7 @@ synthesize_shader(const RenderState *rs) {
       text << "\t result.rgb = result.rgb + tot_specular.rgb;\n";
     }
   }
-  if(_auto_ramp_on) {
+  if (_auto_ramp_on) {
     const LightRampAttrib *light_ramp = DCAST(LightRampAttrib, rs->get_attrib_def(LightRampAttrib::get_class_slot()));
     switch (light_ramp->get_mode()) {
     case LightRampAttrib::LRT_hdr0:
