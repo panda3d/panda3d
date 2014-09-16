@@ -171,7 +171,8 @@ bind_texture_to_pbuffer() {
       _pbuffer_bound->release(wglgsg->get_prepared_objects());
       _pbuffer_bound = 0;
     }
-    tex->set_size_padded(_x_size, _y_size);
+    tex->set_size_padded(get_x_size(), get_y_size());
+
     if (tex->get_match_framebuffer_format()) {
       if (_fb_properties.get_alpha_bits()) {
         tex->set_format(Texture::F_rgba);
@@ -449,19 +450,18 @@ rebuild_bitplanes() {
       release_pbuffer();
     }
   }
-  
+
   // Determine what pbuffer attributes are needed
   // for currently-applicable textures.
 
   if ((_host != 0)&&(_creation_flags & GraphicsPipe::BF_size_track_host)) {
-    if ((_host->get_x_size() != _x_size)||
-        (_host->get_y_size() != _y_size)) {
+    if (_host->get_size() != _size) {
       set_size_and_recalc(_host->get_x_size(),
                           _host->get_y_size());
     }
   }
-  int desired_x = _x_size;
-  int desired_y = _y_size;
+  int desired_x = get_x_size();
+  int desired_y = get_y_size();
   if ((bindtexture != 0)&&(Texture::get_textures_power_2() != ATS_none)) {
     desired_x = Texture::up_to_power_2(desired_x);
     desired_y = Texture::up_to_power_2(desired_y);
@@ -483,7 +483,7 @@ rebuild_bitplanes() {
   }
 
   // Release the old pbuffer, if there was one.
-  
+
   release_pbuffer();
 
   // Allocate the new pbuffer.
