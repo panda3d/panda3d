@@ -283,7 +283,7 @@ class FilterManager(DirectObject):
 
         winprops = WindowProperties()
         winprops.setSize(xsize, ysize)
-        props = FrameBufferProperties()
+        props = FrameBufferProperties(self.win.getFbProperties())
         props.setRgbColor(1)
         props.setDepthBits(depthbits)
         depthtex, colortex, auxtex0, auxtex1 = texgroup
