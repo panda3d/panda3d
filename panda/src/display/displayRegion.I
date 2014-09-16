@@ -332,6 +332,32 @@ get_target_tex_page() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::set_scissor_enabled
+//       Access: Published
+//  Description: Sets whether or not scissor testing is enabled
+//               for this region.  The default is true, except for
+//               the overlay display region.
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegion::
+set_scissor_enabled(bool scissor_enabled) {
+  CDWriter cdata(_cycler);
+  cdata->_scissor_enabled = scissor_enabled;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_scissor_enabled
+//       Access: Published
+//  Description: Returns whether or not scissor testing is enabled
+//               for this region.  The default is true, except for
+//               the overlay display region.
+////////////////////////////////////////////////////////////////////
+INLINE bool DisplayRegion::
+get_scissor_enabled() const {
+  CDReader cdata(_cycler);
+  return cdata->_scissor_enabled;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::set_cull_callback
 //       Access: Published
 //  Description: Sets the CallbackObject that will be notified when
@@ -939,6 +965,18 @@ get_tex_view_offset() {
 INLINE int DisplayRegionPipelineReader::
 get_target_tex_page() const {
   return _cdata->_target_tex_page;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::get_scissor_enabled
+//       Access: Published
+//  Description: Returns whether or not scissor testing is enabled
+//               for this region.  The default is true, except for
+//               the overlay display region.
+////////////////////////////////////////////////////////////////////
+INLINE bool DisplayRegionPipelineReader::
+get_scissor_enabled() const {
+  return _cdata->_scissor_enabled;
 }
 
 ////////////////////////////////////////////////////////////////////

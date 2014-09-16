@@ -42,18 +42,18 @@ class FilterManager(DirectObject):
 
         # Create the notify category
 
-        if (FilterManager.notify == None):
+        if FilterManager.notify is None:
             FilterManager.notify = directNotify.newCategory("FilterManager")
 
         # Find the appropriate display region.
         
         region = None
-        for i in range(win.getNumDisplayRegions()):
-            dr = win.getDisplayRegion(i)
+        for dr in win.getDisplayRegions():
             drcam = dr.getCamera()
-            if (drcam == cam): region=dr
+            if drcam == cam:
+                region = dr
 
-        if (region == None):
+        if region is None:
             self.notify.error('Could not find appropriate DisplayRegion to filter')
             return False
         
@@ -218,16 +218,18 @@ class FilterManager(DirectObject):
         
         self.region.setCamera(quadcam)
 
-        dr = buffer.getDisplayRegion(0)
-        self.setStackedClears(dr, self.rclears, self.wclears)
+        self.setStackedClears(buffer, self.rclears, self.wclears)
         if (auxtex0):
-            dr.setClearActive(GraphicsOutput.RTPAuxRgba0, 1)
-            dr.setClearValue(GraphicsOutput.RTPAuxRgba0, Vec4(0.5, 0.5, 1.0, 0.0))
+            buffer.setClearActive(GraphicsOutput.RTPAuxRgba0, 1)
+            buffer.setClearValue(GraphicsOutput.RTPAuxRgba0, Vec4(0.5, 0.5, 1.0, 0.0))
         if (auxtex1):
-            dr.setClearActive(GraphicsOutput.RTPAuxRgba1, 1)
+            buffer.setClearActive(GraphicsOutput.RTPAuxRgba1, 1)
         self.region.disableClears()
         if (self.isFullscreen()):
             self.win.disableClears()
+
+        dr = buffer.makeDisplayRegion()
+        dr.disableClears()
         dr.setCamera(self.camera)
         dr.setActive(1)
 
@@ -249,7 +251,7 @@ class FilterManager(DirectObject):
         winx, winy = self.getScaledSize(mul, div, align)
         
         depthbits = bool(depthtex != None)
-        
+
         buffer = self.createBuffer("filter-stage", winx, winy, texgroup, depthbits)
 
         if (buffer == None):
@@ -269,9 +271,18 @@ class FilterManager(DirectObject):
         lens.setNearFar(-1000, 1000)
         quadcamnode.setLens(lens)
         quadcam = quad.attachNewNode(quadcamnode)
-        
-        buffer.getDisplayRegion(0).setCamera(quadcam)
-        buffer.getDisplayRegion(0).setActive(1)
+
+        dr = buffer.makeDisplayRegion((0, 1, 0, 1))
+        dr.disableClears()
+        dr.setCamera(quadcam)
+        dr.setActive(True)
+        dr.setScissorEnabled(False)
+
+        # This clear stage is important if the buffer is padded, so that
+        # any pixels accidentally sampled in the padded region won't
+        # be reading from unititialised memory.
+        buffer.setClearColor((0, 0, 0, 1))
+        buffer.setClearColorActive(True)
 
         self.buffers.append(buffer)
         self.sizes.append((mul, div, align))
@@ -307,7 +318,6 @@ class FilterManager(DirectObject):
             buffer.addRenderTexture(auxtex1, GraphicsOutput.RTMBindOrCopy, GraphicsOutput.RTPAuxRgba1)
         buffer.setSort(self.nextsort)
         buffer.disableClears()
-        buffer.getDisplayRegion(0).disableClears()
         self.nextsort += 1
         return buffer
 
@@ -339,4 +349,3 @@ class FilterManager(DirectObject):
         self.nextsort = self.win.getSort() - 1000
         self.basex = 0
         self.basey = 0
-

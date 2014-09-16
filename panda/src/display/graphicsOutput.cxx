@@ -151,6 +151,7 @@ GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
   // clear() and get_screenshot().
   _overlay_display_region = make_mono_display_region(0.0f, 1.0f, 0.0f, 1.0f);
   _overlay_display_region->set_active(false);
+  _overlay_display_region->set_scissor_enabled(false);
 
   // Make sure the "active" flag is set true for pipeline stage 0.
   {

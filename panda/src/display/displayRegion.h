@@ -121,6 +121,9 @@ PUBLISHED:
   virtual void set_target_tex_page(int page);
   INLINE int get_target_tex_page() const;
 
+  INLINE void set_scissor_enabled(bool scissor_enabled);
+  INLINE bool get_scissor_enabled() const;
+
   INLINE void set_cull_callback(CallbackObject *object);
   INLINE void clear_cull_callback();
   INLINE CallbackObject *get_cull_callback() const;
@@ -224,6 +227,7 @@ private:
     Lens::StereoChannel _stereo_channel;
     int _tex_view_offset;
     int _target_tex_page;
+    bool _scissor_enabled;
 
     PT(CallbackObject) _cull_callback;
     PT(CallbackObject) _draw_callback;
@@ -324,6 +328,7 @@ public:
   INLINE int get_tex_view_offset();
   INLINE bool get_clear_depth_between_eyes() const;
   INLINE int get_target_tex_page() const;
+  INLINE bool get_scissor_enabled() const;
   INLINE CallbackObject *get_draw_callback() const;
 
   INLINE void get_pixels(int &pl, int &pr, int &pb, int &pt) const;

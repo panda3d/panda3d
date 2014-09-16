@@ -392,7 +392,7 @@ get_cull_traverser() {
 //       Access: Published, Virtual
 //  Description: This is a special parameter that is only used when
 //               rendering the faces of a cube map or multipage and/or
-//               multiview texture.  
+//               multiview texture.
 //
 //               This sets up the DisplayRegion to render to the ith
 //               page and jth view of its associated texture(s); the
@@ -832,7 +832,8 @@ CData() :
   _sort(0),
   _stereo_channel(Lens::SC_mono),
   _tex_view_offset(0),
-  _target_tex_page(-1)
+  _target_tex_page(-1),
+  _scissor_enabled(true)
 {
   _regions.push_back(Region());
 }
@@ -852,7 +853,8 @@ CData(const DisplayRegion::CData &copy) :
   _sort(copy._sort),
   _stereo_channel(copy._stereo_channel),
   _tex_view_offset(copy._tex_view_offset),
-  _target_tex_page(copy._target_tex_page)
+  _target_tex_page(copy._target_tex_page),
+  _scissor_enabled(copy._scissor_enabled)
 {
 }
 

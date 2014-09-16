@@ -33,7 +33,7 @@ static const unsigned short _bam_major_ver = 6;
 // Bumped to major version 6 on 2/11/06 to factor out PandaNode::CData.
 
 static const unsigned short _bam_first_minor_ver = 14;
-static const unsigned short _bam_minor_ver = 33;
+static const unsigned short _bam_minor_ver = 34;
 // Bumped to minor version 14 on 12/19/07 to change default ColorAttrib.
 // Bumped to minor version 15 on 4/9/08 to add TextureAttrib::_implicit_sort.
 // Bumped to minor version 16 on 5/13/08 to add Texture::_quality_level.
@@ -54,6 +54,6 @@ static const unsigned short _bam_minor_ver = 33;
 // Bumped to minor version 31 on 2/16/12 to add DepthOffsetAttrib::_min_value, _max_value.
 // Bumped to minor version 32 on 6/11/12 to add Texture::_has_read_mipmaps.
 // Bumped to minor version 33 on 8/17/13 to add UvScrollNode::_w_speed.
-
+// Bumped to minor version 34 on 9/16/14 to add ScissorAttrib::_off.
 
 #endif

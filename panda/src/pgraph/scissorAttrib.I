@@ -27,6 +27,18 @@ make(PN_stdfloat left, PN_stdfloat right, PN_stdfloat bottom, PN_stdfloat top) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ScissorAttrib::is_off
+//       Access: Published
+//  Description: Returns true if the ScissorAttrib is an 'off'
+//               ScissorAttrib, indicating that scissor testing is
+//               disabled.
+////////////////////////////////////////////////////////////////////
+INLINE bool ScissorAttrib::
+is_off() const {
+  return _off;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ScissorAttrib::get_frame
 //       Access: Published
 //  Description: Returns the left, right, bottom, top coordinates of

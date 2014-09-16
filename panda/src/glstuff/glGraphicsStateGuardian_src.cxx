@@ -2282,7 +2282,7 @@ clear(DrawableRegion *clearable) {
       // to be a draw buffer attrib.  Until then, this little hack
       // to put things back the way they were after
       // prepare_display_region will do.
-      
+
       set_draw_buffer(_draw_buffer_type);
     }
 
@@ -2298,7 +2298,7 @@ clear(DrawableRegion *clearable) {
       }
     }
   }
-  
+
   if (clearable->get_clear_depth_active()) {
 #ifdef OPENGLES
     glClearDepthf(clearable->get_clear_depth());
@@ -2369,12 +2369,16 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
   _draw_buffer_type |= _current_properties->get_aux_mask();
   set_draw_buffer(_draw_buffer_type);
 
-  glEnable(GL_SCISSOR_TEST);
+  if (dr->get_scissor_enabled()) {
+    glEnable(GL_SCISSOR_TEST);
+  } else {
+    glDisable(GL_SCISSOR_TEST);
+  }
 
   if (_supports_viewport_arrays) {
     int count = dr->get_num_regions();
-    GLfloat *viewports = new GLfloat[4 * count];
-    GLint *scissors = new GLint[4 * count];
+    GLfloat *viewports = (GLfloat *)alloca(sizeof(GLfloat) * 4 * count);
+    GLint *scissors = (GLint *)alloca(sizeof(GLint) * 4 * count);
 
     for (int i = 0; i < count; ++i) {
       GLint *sr = scissors + i * 4;
@@ -2386,13 +2390,15 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
       vr[3] = (GLfloat) sr[3];
     }
     _glViewportArrayv(0, count, viewports);
-    _glScissorArrayv(0, count, scissors);
-    delete[] viewports;
-    delete[] scissors;
+    if (dr->get_scissor_enabled()) {
+      _glScissorArrayv(0, count, scissors);
+    }
 
   } else {
-    glScissor(x, y, width, height);
     glViewport(x, y, width, height);
+    if (dr->get_scissor_enabled()) {
+      glScissor(x, y, width, height);
+    }
   }
 
   report_my_gl_errors();
@@ -11112,7 +11118,6 @@ bind_fbo(GLuint fbo) {
   _current_fbo = fbo;
 }
 
-
 ////////////////////////////////////////////////////////////////////
 //  GL stencil code section
 ////////////////////////////////////////////////////////////////////
@@ -11348,9 +11353,9 @@ do_issue_stencil() {
       }
     }
 
-    if (stencil -> get_render_state (StencilAttrib::SRS_clear)) {    
+    if (stencil -> get_render_state (StencilAttrib::SRS_clear)) {
       GLbitfield mask = 0;
-      
+
       // clear stencil buffer
       glClearStencil(stencil -> get_render_state (StencilAttrib::SRS_clear_value));
       mask |= GL_STENCIL_BUFFER_BIT;
@@ -11366,18 +11371,29 @@ do_issue_stencil() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::do_issue_scissor
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_scissor() {
   const ScissorAttrib *target_scissor = DCAST(ScissorAttrib, _target_rs->get_attrib_def(ScissorAttrib::get_class_slot()));
-  const LVecBase4 &frame = target_scissor->get_frame();
 
-  int x = (int)(_viewport_x + _viewport_width * frame[0] + 0.5f);
-  int y = (int)(_viewport_y + _viewport_height * frame[2] + 0.5f);
-  int width = (int)(_viewport_width * (frame[1] - frame[0]) + 0.5f);
-  int height = (int)(_viewport_height * (frame[3] - frame[2]) + 0.5f);
+  if (target_scissor->is_off()) {
+    if (_current_display_region->get_scissor_enabled()) {
+      glDisable(GL_SCISSOR_TEST);
+    }
+  } else {
+    if (!_current_display_region->get_scissor_enabled()) {
+      glEnable(GL_SCISSOR_TEST);
+    }
 
-  glEnable(GL_SCISSOR_TEST);
-  glScissor(x, y, width, height);
+    const LVecBase4 &frame = target_scissor->get_frame();
+
+    int x = (int)(_viewport_x + _viewport_width * frame[0] + 0.5f);
+    int y = (int)(_viewport_y + _viewport_height * frame[2] + 0.5f);
+    int width = (int)(_viewport_width * (frame[1] - frame[0]) + 0.5f);
+    int height = (int)(_viewport_height * (frame[3] - frame[2]) + 0.5f);
+
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(x, y, width, height);
+  }
 }
