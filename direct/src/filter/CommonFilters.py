@@ -39,6 +39,60 @@ float cartoon_thresh = saturate(dot(cartoon_mx - cartoon_mn, float4(3,3,0,0)) - 
 o_color = lerp(o_color, k_cartooncolor, cartoon_thresh);
 """
 
+# Some GPUs do not support variable-length loops.
+#
+# We fill in the actual value of numsamples in the loop limit
+# when the shader is configured.
+#
+SSAO_BODY="""//Cg
+
+void vshader(float4 vtx_position : POSITION,
+             out float4 l_position : POSITION,
+             out float2 l_texcoord : TEXCOORD0,
+             out float2 l_texcoordD : TEXCOORD1,
+             out float2 l_texcoordN : TEXCOORD2,
+             uniform float4 texpad_depth,
+             uniform float4 texpad_normal,
+             uniform float4x4 mat_modelproj)
+{
+  l_position = mul(mat_modelproj, vtx_position);
+  l_texcoord = vtx_position.xz;
+  l_texcoordD = (vtx_position.xz * texpad_depth.xy) + texpad_depth.xy;
+  l_texcoordN = (vtx_position.xz * texpad_normal.xy) + texpad_normal.xy;
+}
+
+float3 sphere[16] = float3[](float3(0.53812504, 0.18565957, -0.43192),float3(0.13790712, 0.24864247, 0.44301823),float3(0.33715037, 0.56794053, -0.005789503),float3(-0.6999805, -0.04511441, -0.0019965635),float3(0.06896307, -0.15983082, -0.85477847),float3(0.056099437, 0.006954967, -0.1843352),float3(-0.014653638, 0.14027752, 0.0762037),float3(0.010019933, -0.1924225, -0.034443386),float3(-0.35775623, -0.5301969, -0.43581226),float3(-0.3169221, 0.106360726, 0.015860917),float3(0.010350345, -0.58698344, 0.0046293875),float3(-0.08972908, -0.49408212, 0.3287904),float3(0.7119986, -0.0154690035, -0.09183723),float3(-0.053382345, 0.059675813, -0.5411899),float3(0.035267662, -0.063188605, 0.54602677),float3(-0.47761092, 0.2847911, -0.0271716));
+
+void fshader(out float4 o_color : COLOR,
+             uniform float4 k_params1,
+             uniform float4 k_params2,
+             float2 l_texcoord : TEXCOORD0,
+             float2 l_texcoordD : TEXCOORD1,
+             float2 l_texcoordN : TEXCOORD2,
+             uniform sampler2D k_random : TEXUNIT0,
+             uniform sampler2D k_depth : TEXUNIT1,
+             uniform sampler2D k_normal : TEXUNIT2)
+{
+  float pixel_depth = tex2D(k_depth, l_texcoordD).a;
+  float3 pixel_normal = (tex2D(k_normal, l_texcoordN).xyz * 2.0 - 1.0);
+  float3 random_vector = normalize((tex2D(k_random, l_texcoord * 18.0 + pixel_depth + pixel_normal.xy).xyz * 2.0) - float3(1.0)).xyz;
+  float occlusion = 0.0;
+  float radius = k_params1.z / pixel_depth;
+  float depth_difference;
+  float3 sample_normal;
+  float3 ray;
+  for(int i = 0; i < %d; ++i) {
+   ray = radius * reflect(sphere[i], random_vector);
+   sample_normal = (tex2D(k_normal, l_texcoordN + ray.xy).xyz * 2.0 - 1.0);
+   depth_difference =  (pixel_depth - tex2D(k_depth,l_texcoordD + ray.xy).r);
+   occlusion += step(k_params2.y, depth_difference) * (1.0 - dot(sample_normal.xyz, pixel_normal)) * (1.0 - smoothstep(k_params2.y, k_params2.x, depth_difference));
+  }
+  o_color.rgb = 1.0 + (occlusion * k_params1.y);
+  o_color.a = 1.0;
+}
+"""
+
+
 class FilterConfig:
     pass
 
@@ -140,7 +194,7 @@ class CommonFilters:
                 self.ssao[0].setShaderInput("depth", self.textures["depth"])
                 self.ssao[0].setShaderInput("normal", self.textures["aux"])
                 self.ssao[0].setShaderInput("random", loader.loadTexture("maps/random.rgb"))
-                self.ssao[0].setShader(self.loadShader("filter-ssao.sha"))
+                self.ssao[0].setShader(Shader.make(SSAO_BODY % configuration["AmbientOcclusion"].numsamples))
                 self.ssao[1].setShaderInput("src", ssao0)
                 self.ssao[1].setShader(self.loadShader("filter-blurx.sha"))
                 self.ssao[2].setShaderInput("src", ssao1)
@@ -431,6 +485,10 @@ class CommonFilters:
 
     def setAmbientOcclusion(self, numsamples = 16, radius = 0.05, amount = 2.0, strength = 0.01, falloff = 0.000002):
         fullrebuild = (("AmbientOcclusion" in self.configuration) == False)
+
+        if (not fullrebuild):
+            fullrebuild = (numsamples != self.configuration["AmbientOcclusion"].numsamples)
+
         newconfig = FilterConfig()
         newconfig.numsamples = numsamples
         newconfig.radius = radius
