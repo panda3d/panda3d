@@ -78,7 +78,8 @@ GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
                bool default_stereo_flags) :
   _lock("GraphicsOutput"),
   _cull_window_pcollector(_cull_pcollector, name),
-  _draw_window_pcollector(_draw_pcollector, name)
+  _draw_window_pcollector(_draw_pcollector, name),
+  _size(0, 0)
 {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
@@ -90,13 +91,11 @@ GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
   _fb_properties = fb_prop;
   _name = name;
   _creation_flags = flags;
-  _x_size = _y_size = 0;
   _has_size = win_prop.has_size();
   _is_nonzero_size = false;
   if (_has_size) {
-    _x_size = win_prop.get_x_size();
-    _y_size = win_prop.get_y_size();
-    _is_nonzero_size = (_x_size > 0 && _y_size > 0);
+    _size = win_prop.get_size();
+    _is_nonzero_size = (_size[0] > 0 && _size[1] > 0);
   }
   if (_creation_flags & GraphicsPipe::BF_size_track_host) {
     // If we're tracking the host size, we assume we'll be nonzero
@@ -546,14 +545,14 @@ set_inverted(bool inverted) {
   if (_inverted != inverted) {
     _inverted = inverted;
 
-    if (_y_size != 0) {
+    if (get_y_size() != 0) {
       // All of our DisplayRegions need to recompute their pixel
       // positions now.
       TotalDisplayRegions::iterator dri;
       for (dri = _total_display_regions.begin();
            dri != _total_display_regions.end();
            ++dri) {
-        (*dri)->compute_pixels(_x_size, _y_size);
+        (*dri)->compute_pixels(get_x_size(), get_y_size());
       }
     }
   }
@@ -1102,7 +1101,7 @@ make_cube_map(const string &name, int size, NodePath &camera_rig,
 NodePath GraphicsOutput::
 get_texture_card() {
   if (_texture_card == 0) {
-    PT(GeomVertexData) vdata = create_texture_card_vdata(_x_size, _y_size);
+    PT(GeomVertexData) vdata = create_texture_card_vdata(get_x_size(), get_y_size());
     PT(GeomTristrips) strip = new GeomTristrips(Geom::UH_static);
     strip->set_shade_model(Geom::SM_uniform);
     strip->add_next_vertices(4);
@@ -1262,11 +1261,10 @@ clear_pipe() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
 set_size_and_recalc(int x, int y) {
-  _x_size = x;
-  _y_size = y;
+  _size.set(x, y);
   _has_size = true;
 
-  _is_nonzero_size = (_x_size > 0 && _y_size > 0);
+  _is_nonzero_size = (x > 0 && y > 0);
 
   int fb_x_size = get_fb_x_size();
   int fb_y_size = get_fb_y_size();
@@ -1498,7 +1496,7 @@ process_events() {
 void GraphicsOutput::
 pixel_factor_changed() {
   if (_has_size) {
-    set_size_and_recalc(_x_size, _y_size);
+    set_size_and_recalc(get_x_size(), get_y_size());
   }
 }
 

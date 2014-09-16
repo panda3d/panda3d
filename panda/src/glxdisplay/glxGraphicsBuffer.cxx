@@ -178,7 +178,7 @@ open_buffer() {
     // new one that shares with the old gsg.
     DCAST_INTO_R(glxgsg, _gsg, false);
 
-    if (!glxgsg->_context_has_pbuffer || 
+    if (!glxgsg->_context_has_pbuffer ||
         !glxgsg->get_fb_properties().subsumes(_fb_properties)) {
       // We need a new pixel format, and hence a new GSG.
       glxgsg = new glxGraphicsStateGuardian(_engine, _pipe, glxgsg);
@@ -186,7 +186,7 @@ open_buffer() {
       _gsg = glxgsg;
     }
   }
-  
+
   if (glxgsg->_fbconfig == None || !glxgsg->_context_has_pbuffer) {
     // If we didn't use an fbconfig to create the GSG, or it doesn't
     // support buffers, we can't create a PBuffer.
@@ -204,15 +204,15 @@ open_buffer() {
     nassertr(n < max_attrib_list, false);
     attrib_list[n] = (int)None;
     _pbuffer = glxgsg->_glXCreateGLXPbufferSGIX(glxgsg->_display, glxgsg->_fbconfig,
-                                                _x_size, _y_size, attrib_list);
+                                                get_x_size(), get_y_size(), attrib_list);
   } else {
     // The official GLX 1.3 version passes in the size in the attrib
     // list.
     attrib_list[n++] = GLX_PBUFFER_WIDTH;
-    attrib_list[n++] = _x_size;
+    attrib_list[n++] = get_x_size();
     attrib_list[n++] = GLX_PBUFFER_HEIGHT;
-    attrib_list[n++] = _y_size;
-    
+    attrib_list[n++] = get_y_size();
+
     nassertr(n < max_attrib_list, false);
     attrib_list[n] = (int)None;
     _pbuffer = glxgsg->_glXCreatePbuffer(glxgsg->_display, glxgsg->_fbconfig,

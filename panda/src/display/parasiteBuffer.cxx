@@ -27,15 +27,15 @@ TypeHandle ParasiteBuffer::_type_handle;
 ParasiteBuffer::
 ParasiteBuffer(GraphicsOutput *host, const string &name,
                int x_size, int y_size, int flags) :
-  GraphicsOutput(host->get_engine(), host->get_pipe(), 
+  GraphicsOutput(host->get_engine(), host->get_pipe(),
                  name, host->get_fb_properties(),
-                 WindowProperties::size(x_size, y_size), flags, 
+                 WindowProperties::size(x_size, y_size), flags,
                  host->get_gsg(), host, false)
 {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
 #endif
-  
+
   if (display_cat.is_debug()) {
     display_cat.debug()
       << "Creating new parasite buffer " << get_name()
@@ -43,25 +43,24 @@ ParasiteBuffer(GraphicsOutput *host, const string &name,
   }
 
   _creation_flags = flags;
-  
+
   if (flags & GraphicsPipe::BF_size_track_host) {
-    x_size = host->get_x_size();
-    y_size = host->get_y_size();
+    _size = host->get_size();
+  } else {
+    _size.set(x_size, y_size);
   }
-  
-  _x_size = x_size;
-  _y_size = y_size;
+
   _has_size = true;
-  _overlay_display_region->compute_pixels(_x_size, _y_size);
+  _overlay_display_region->compute_pixels(_size.get_x(), _size.get_y());
   _is_valid = true;
-  
+
   set_inverted(host->get_gsg()->get_copy_texture_inverted());
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ParasiteBuffer::Destructor
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ParasiteBuffer::
 ~ParasiteBuffer() {
@@ -201,19 +200,18 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   }
 
   if (_creation_flags & GraphicsPipe::BF_size_track_host) {
-    if ((_host->get_x_size() != _x_size)||
-        (_host->get_y_size() != _y_size)) {
+    if (_host->get_size() != _size) {
       set_size_and_recalc(_host->get_x_size(),
                           _host->get_y_size());
     }
   } else {
-    if (_host->get_x_size() < _x_size ||
-        _host->get_y_size() < _y_size) {
-      set_size_and_recalc(min(_x_size, _host->get_x_size()),
-                          min(_y_size, _host->get_y_size()));
+    if (_host->get_x_size() < get_x_size() ||
+        _host->get_y_size() < get_y_size()) {
+      set_size_and_recalc(min(get_x_size(), _host->get_x_size()),
+                          min(get_y_size(), _host->get_y_size()));
     }
   }
-  
+
   clear_cube_map_selection();
   return true;
 }

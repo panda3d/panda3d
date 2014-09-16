@@ -155,8 +155,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
       }
     }
     if (_creation_flags & GraphicsPipe::BF_size_track_host) {
-      if ((_host->get_x_size() != _x_size)||
-          (_host->get_y_size() != _y_size)) {
+      if (_host->get_size() != _size) {
         // We also need to rebuild if we need to change size.
         _needs_rebuild = true;
       }
@@ -277,14 +276,14 @@ rebuild_bitplanes() {
 
   // Calculate bitplane size.  This can be larger than the buffer.
   if (_creation_flags & GraphicsPipe::BF_size_track_host) {
-    if ((_host->get_x_size() != _x_size)||
-        (_host->get_y_size() != _y_size)) {
+    if (_host->get_size() != _size) {
       set_size_and_recalc(_host->get_x_size(),
                           _host->get_y_size());
     }
   }
-  int bitplane_x = _x_size;
-  int bitplane_y = _y_size;
+
+  int bitplane_x = get_x_size();
+  int bitplane_y = get_y_size();
   if (Texture::get_textures_power_2() != ATS_none) {
     bitplane_x = Texture::up_to_power_2(bitplane_x);
     bitplane_y = Texture::up_to_power_2(bitplane_y);
@@ -602,7 +601,7 @@ bind_slot(int layer, bool rb_resize, Texture **attach, RenderTexturePlane slot, 
     if (tex->get_texture_type() != Texture::TT_cube_map && _rb_size_z > 1) {
       tex->set_z_size(_rb_size_z);
     }
-    tex->set_pad_size(_rb_size_x - _x_size, _rb_size_y - _y_size);
+    tex->set_pad_size(_rb_size_x - get_x_size(), _rb_size_y - get_y_size());
 
     // Adjust the texture format based on the requested framebuffer settings.
     switch (slot) {
@@ -1072,6 +1071,10 @@ attach_tex(int layer, int view, Texture *attach, GLenum attachpoint) {
   gtc->set_active(true);
   _texture_contexts.push_back(gtc);
 
+  // It seems that binding the texture is necessary before binding
+  // to a framebuffer attachment.
+  glgsg->apply_texture(gtc);
+
 #ifndef OPENGLES
   GLclampf priority = 1.0f;
   glPrioritizeTextures(1, &gtc->_index, &priority);
@@ -1191,7 +1194,7 @@ end_frame(FrameMode mode, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsBuffer)::
 set_size(int x, int y) {
-  if (_x_size != x || _y_size != y) {
+  if (_size.get_x() != x || _size.get_y() != y) {
     _needs_rebuild = true;
   }
 

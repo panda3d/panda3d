@@ -41,19 +41,19 @@ GraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
       << "Creating new offscreen buffer " << get_name() << "\n";
   }
 
-  _overlay_display_region->compute_pixels(_x_size, _y_size);
+  _overlay_display_region->compute_pixels(_size.get_x(), _size.get_y());
   _open_request = OR_none;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsBuffer::Destructor
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsBuffer::
 ~GraphicsBuffer() {
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsBuffer::set_size
 //       Access: Public, Virtual
