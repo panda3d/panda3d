@@ -1,3 +1,5 @@
+defconstruct TypeHandle new TypeHandle(TypeHandle::none())
+
 forcetype PandaSystem
 forcetype DSearchPath
 forcetype DSearchPath::Results
