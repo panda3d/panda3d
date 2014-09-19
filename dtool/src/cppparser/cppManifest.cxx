@@ -24,8 +24,8 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 CPPManifest::ExpansionNode::
-ExpansionNode(int parm_number) :
-  _parm_number(parm_number)
+ExpansionNode(int parm_number, bool stringify, bool paste) :
+  _parm_number(parm_number), _stringify(stringify), _paste(paste)
 {
 }
 
@@ -35,8 +35,8 @@ ExpansionNode(int parm_number) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 CPPManifest::ExpansionNode::
-ExpansionNode(const string &str) :
-  _parm_number(-1), _str(str)
+ExpansionNode(const string &str, bool paste) :
+  _parm_number(-1), _stringify(false), _paste(paste), _str(str)
 {
 }
 
@@ -46,7 +46,11 @@ ExpansionNode(const string &str) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 CPPManifest::
-CPPManifest(const string &args, const CPPFile &file) : _file(file) {
+CPPManifest(const string &args, const CPPFile &file) :
+  _file(file),
+  _variadic_param(-1),
+  _expr((CPPExpression *)NULL)
+{
   assert(!args.empty());
   assert(!isspace(args[0]));
 
@@ -69,6 +73,7 @@ CPPManifest(const string &args, const CPPFile &file) : _file(file) {
     _has_parameters = true;
     parse_parameters(args, p, parameter_names);
     _num_parameters = parameter_names.size();
+
     p++;
   } else {
     _has_parameters = false;
@@ -83,7 +88,6 @@ CPPManifest(const string &args, const CPPFile &file) : _file(file) {
   save_expansion(args.substr(p), parameter_names);
 }
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPManifest::Destructor
 //       Access: Public
@@ -96,7 +100,58 @@ CPPManifest::
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: CPPManifest::stringify
+//       Access: Public, Static
+//  Description: This implements the stringification operator, #.
+////////////////////////////////////////////////////////////////////
+string CPPManifest::
+stringify(const string &source) {
+  string result("\"");
 
+  enum {
+    S_escaped = 0x01,
+    S_single_quoted = 0x02,
+    S_double_quoted = 0x04,
+    S_quoted = 0x06,
+  };
+  int state = 0;
+
+  string::const_iterator it;
+  for (it = source.begin(); it != source.end(); ++it) {
+    char c = *it;
+
+    if ((state & S_escaped) == 0) {
+      switch (c) {
+      case '\\':
+        if (state & S_quoted) {
+          state |= S_escaped;
+          result += '\\';
+        }
+        break;
+
+      case '\'':
+        state ^= S_single_quoted;
+        break;
+
+      case '"':
+        state ^= S_double_quoted;
+        result += '\\';
+        break;
+      }
+    } else {
+      if (c == '\\' || c == '"') {
+        result += '\\';
+      }
+      state &= ~S_escaped;
+    }
+
+    result += c;
+  }
+
+  result += '"';
+  return result;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPManifest::expand
@@ -111,14 +166,45 @@ expand(const vector_string &args) const {
   for (ei = _expansion.begin(); ei != _expansion.end(); ++ei) {
     if ((*ei)._parm_number >= 0) {
       int i = (*ei)._parm_number;
+
+      string subst;
       if (i < (int)args.size()) {
-        result += " " + args[i] + " ";
-      } else {
-        result += " ";
+        subst = args[i];
+
+        if (i == _variadic_param) {
+          for (++i; i < (int)args.size(); ++i) {
+            subst += ", " + args[i];
+          }
+        }
+        if ((*ei)._stringify) {
+          subst = stringify(subst);
+        }
+      } else if (i == _variadic_param && (*ei)._paste) {
+        // Special case GCC behavior: if __VA_ARGS__ is pasted
+        // to a comma and no arguments are passed, the comma
+        // is removed.  MSVC does this automatically.  Not sure
+        // if we should allow MSVC behavior as well.
+        if (*result.rbegin() == ',') {
+          result.resize(result.size() - 1);
+        }
+      }
+
+      if (!subst.empty()) {
+        if (result.empty() || (*ei)._paste) {
+          result += subst;
+        } else {
+          result += ' ';
+          result += subst;
+        }
       }
     }
     if (!(*ei)._str.empty()) {
-      result += (*ei)._str;
+      if (result.empty() || (*ei)._paste) {
+        result += (*ei)._str;
+      } else {
+        result += ' ';
+        result += (*ei)._str;
+      }
     }
   }
 
@@ -151,28 +237,46 @@ output(ostream &out) const {
   if (_has_parameters) {
     out << "(";
     if (_num_parameters > 0) {
-      out << "$1";
+      if (_variadic_param == 0) {
+        out << "...";
+      } else {
+        out << "$1";
+      }
+
       for (int i = 1; i < _num_parameters; ++i) {
-        out << ", $" << i + 1;
+        if (_variadic_param == i) {
+          out << ", ...";
+        } else {
+          out << ", $" << i + 1;
+        }
       }
     }
     out << ")";
   }
 
-  out << " ";
-
   Expansion::const_iterator ei;
   for (ei = _expansion.begin(); ei != _expansion.end(); ++ei) {
+    if ((*ei)._paste) {
+      out << " ## ";
+    } else {
+      out << " ";
+    }
+
     if ((*ei)._parm_number >= 0) {
-      out << " $" << (*ei)._parm_number + 1 << " ";
+      if (stringify) {
+        out << "#";
+      }
+      if ((*ei)._parm_number == _variadic_param) {
+        out << "__VA_ARGS__";
+      } else {
+        out << "$" << (*ei)._parm_number + 1;
+      }
     }
     if (!(*ei)._str.empty()) {
       out << (*ei)._str;
     }
   }
 }
-
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPManifest::parse_parameters
@@ -197,7 +301,16 @@ parse_parameters(const string &args, size_t &p,
            args[p] != ')' && args[p] != ',') {
       p++;
     }
-    parameter_names.push_back(args.substr(q, p - q));
+
+    // Check if it's a variadic parameter by checking if it ends
+    // with "...".  This picks up both C99-style variadic macros
+    // and GCC-style variadic macros.
+    if (p - q >= 3 && args.compare(p - 3, 3, "...") == 0) {
+      _variadic_param = parameter_names.size();
+      parameter_names.push_back(args.substr(q, p - q - 3));
+    } else {
+      parameter_names.push_back(args.substr(q, p - q));
+    }
 
     // Skip whitespace after the parameter name.
     while (p < args.size() && isspace(args[p])) {
@@ -221,16 +334,12 @@ parse_parameters(const string &args, size_t &p,
 ////////////////////////////////////////////////////////////////////
 void CPPManifest::
 save_expansion(const string &exp, const vector_string &parameter_names) {
-  if (parameter_names.empty()) {
-    // No parameters; this is an easy case.
-    _expansion.push_back(ExpansionNode(exp));
-    return;
-  }
-
   // Walk through the expansion string.  For each substring that is an
   // identifier, check it against parameter_names.
   size_t p = 0;
   size_t last = 0;
+  bool stringify = false;
+  bool paste = false;
   while (p < exp.size()) {
     if (isalpha(exp[p]) || exp[p] == '_') {
       // Here's the start of an identifier.  Find the end of it.
@@ -244,26 +353,67 @@ save_expansion(const string &exp, const vector_string &parameter_names) {
 
       // Is this identifier one of our parameters?
       int pnum = -1;
-      for (int i = 0; pnum == -1 && i < (int)parameter_names.size(); ++i) {
-        if (parameter_names[i] == ident) {
-          pnum = i;
+      bool va_args = false;
+
+      if (ident == "__VA_ARGS__") {
+        va_args = true;
+        // C99-style variadics, ie. #define macro(...) __VA_ARGS__
+        pnum = _variadic_param;
+
+      } else {
+        for (int i = 0; pnum == -1 && i < (int)parameter_names.size(); ++i) {
+          const string &pname = parameter_names[i];
+          if (pname == ident) {
+            pnum = i;
+          }
         }
       }
 
       if (pnum != -1) {
         // Yep!
         if (last != q) {
-          _expansion.push_back(ExpansionNode(exp.substr(last, q - last)));
+          _expansion.push_back(ExpansionNode(exp.substr(last, q - last), paste));
+          paste = false;
         }
-        _expansion.push_back(pnum);
+        _expansion.push_back(ExpansionNode(pnum, stringify, paste));
+        stringify = false;
+        paste = false;
         last = p;
       }
+    } else if (exp[p] == '#') {
+      // This may be a stringification operator.
+      if (last != p) {
+        _expansion.push_back(ExpansionNode(exp.substr(last, p - last), paste));
+        paste = false;
+      }
+
+      ++p;
+
+      if (p < exp.size() && exp[p] == '#') {
+        // Woah, this is a token-pasting operator.
+        paste = true;
+        ++p;
+      } else {
+        // Mark that the next argument should be stringified.
+        stringify = true;
+      }
+      last = p;
+
+    } else if (isspace(exp[p])) {
+      if (last != p) {
+        _expansion.push_back(ExpansionNode(exp.substr(last, p - last), paste));
+        paste = false;
+      }
+
+      ++p;
+      last = p;
+
     } else {
-      p++;
+      ++p;
     }
   }
 
   if (last != p) {
-    _expansion.push_back(exp.substr(last, p - last));
+    _expansion.push_back(ExpansionNode(exp.substr(last, p - last), paste));
   }
 }

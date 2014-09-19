@@ -142,16 +142,17 @@ private:
   CPPToken get_identifier(int c);
   CPPToken expand_manifest(const CPPManifest *manifest);
   void extract_manifest_args(const string &name, int num_args,
-                             vector_string &args);
+                             int va_arg, vector_string &args);
   void expand_defined_function(string &expr, size_t q, size_t &p);
   void expand_manifest_inline(string &expr, size_t q, size_t &p,
                               const CPPManifest *manifest);
   void extract_manifest_args_inline(const string &name, int num_args,
-                                    vector_string &args,
+                                    int va_arg, vector_string &args,
                                     const string &expr, size_t &p);
 
   CPPToken get_number(int c, int c2 = 0);
   static int check_keyword(const string &name);
+  int scan_escape_sequence(int c);
   string scan_quoted(int c);
 
   bool should_ignore_manifest(const CPPManifest *manifest) const;
