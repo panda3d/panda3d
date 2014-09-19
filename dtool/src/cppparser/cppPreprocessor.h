@@ -64,6 +64,7 @@ public:
              CPPFile file = CPPFile());
 
   CPPCommentBlock *get_comment_before(int line, CPPFile file);
+  CPPCommentBlock *get_comment_on(int line, CPPFile file);
 
   int get_warning_count() const;
   int get_error_count() const;
@@ -75,7 +76,7 @@ public:
   DSearchPath _quote_include_path;
   DSearchPath _angle_include_path;
   bool _noangles;
-  
+
   CPPComments _comments;
 
   typedef set<CPPFile> ParsedFiles;

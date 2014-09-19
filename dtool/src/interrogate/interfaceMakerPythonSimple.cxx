@@ -270,21 +270,21 @@ void InterfaceMakerPythonSimple::write_function_instance(ostream &out, Interface
     CPPType *orig_type = remap->_parameters[pn]._remap->get_orig_type();
     CPPType *type = remap->_parameters[pn]._remap->get_new_type();
     string param_name = remap->get_parameter_name(pn);
-    
+
     // This is the string to convert our local variable to the
     // appropriate C++ type.  Normally this is just a cast.
     string pexpr_string =
       "(" + type->get_local_name(&parser) + ")" + param_name;
-    
+
     if (remap->_parameters[pn]._remap->new_type_is_atomic_string()) {
       if (TypeManager::is_char_pointer(orig_type)) {
         out << "char *" << param_name;
         format_specifiers += "s";
         parameter_list += ", &" + param_name;
-        
+
       } else if (TypeManager::is_wstring(orig_type)) {
         out << "Py_UNICODE *" << param_name
-            << "_str; int " << param_name << "_len";
+            << "_str; Py_ssize_t " << param_name << "_len";
         format_specifiers += "u#";
         parameter_list += ", &" + param_name
           + "_str, &" + param_name + "_len";
@@ -294,7 +294,7 @@ void InterfaceMakerPythonSimple::write_function_instance(ostream &out, Interface
 
       } else {
         out << "char *" << param_name
-            << "_str; int " << param_name << "_len";
+            << "_str; Py_ssize_t " << param_name << "_len";
         format_specifiers += "s#";
         parameter_list += ", &" + param_name
           + "_str, &" + param_name + "_len";
@@ -302,7 +302,7 @@ void InterfaceMakerPythonSimple::write_function_instance(ostream &out, Interface
           param_name + "_str, " +
           param_name + "_len)";
       }
-      
+
     } else if (TypeManager::is_bool(type)) {
       out << "PyObject *" << param_name;
       format_specifiers += "O";

@@ -1857,32 +1857,34 @@ named_enum:
 }
         ;
 
-enum_body:
+enum_body_trailing_comma:
         empty
-        | enum_body_no_trailing_comma
-        | enum_body_no_trailing_comma ','
-        ;
+        | enum_body_trailing_comma name ','
+{
+  assert(current_enum != NULL);
+  CPPInstance *inst = current_enum->add_element($2->get_simple_name());
+  current_scope->add_enum_value(inst, current_lexer, @2);
+}
+        | enum_body_trailing_comma name '=' const_expr ','
+{
+  assert(current_enum != NULL);
+  CPPInstance *inst = current_enum->add_element($2->get_simple_name(), $4);
+  current_scope->add_enum_value(inst, current_lexer, @2);
+};
 
-enum_body_no_trailing_comma:
-        name
+enum_body:
+        enum_body_trailing_comma
+        | enum_body_trailing_comma name
 {
   assert(current_enum != NULL);
-  current_enum->add_element($1->get_simple_name(), current_scope);
+  CPPInstance *inst = current_enum->add_element($2->get_simple_name());
+  current_scope->add_enum_value(inst, current_lexer, @2);
 }
-        | name '=' const_expr
+        | enum_body_trailing_comma name '=' const_expr
 {
   assert(current_enum != NULL);
-  current_enum->add_element($1->get_simple_name(), current_scope, $3);
-}
-        | enum_body_no_trailing_comma ',' name
-{
-  assert(current_enum != NULL);
-  current_enum->add_element($3->get_simple_name(), current_scope);
-}
-        | enum_body_no_trailing_comma ',' name '=' const_expr
-{
-  assert(current_enum != NULL);
-  current_enum->add_element($3->get_simple_name(), current_scope, $5);
+  CPPInstance *inst = current_enum->add_element($2->get_simple_name(), $4);
+  current_scope->add_enum_value(inst, current_lexer, @2);
 }
         ;
 

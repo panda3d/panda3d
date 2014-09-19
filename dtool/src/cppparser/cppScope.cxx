@@ -145,8 +145,20 @@ add_declaration(CPPDeclaration *decl, CPPScope *global_scope,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPScope::
-add_enum_value(CPPInstance *inst) {
+add_enum_value(CPPInstance *inst, CPPPreprocessor *preprocessor,
+               const cppyyltype &pos) {
   inst->_vis = _current_vis;
+
+  if (inst->_leading_comment == (CPPCommentBlock *)NULL) {
+    // Same-line comment?
+    inst->_leading_comment =
+      preprocessor->get_comment_on(pos.first_line, pos.file);
+
+    if (inst->_leading_comment == (CPPCommentBlock *)NULL) {
+      inst->_leading_comment =
+        preprocessor->get_comment_before(pos.first_line, pos.file);
+    }
+  }
 
   string name = inst->get_simple_name();
   if (!name.empty()) {

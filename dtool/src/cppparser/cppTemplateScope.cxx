@@ -51,10 +51,11 @@ add_declaration(CPPDeclaration *decl, CPPScope *global_scope,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPTemplateScope::
-add_enum_value(CPPInstance *inst) {
+add_enum_value(CPPInstance *inst, CPPPreprocessor *preprocessor,
+               const cppyyltype &pos) {
   inst->_template_scope = this;
   assert(_parent_scope != NULL);
-  _parent_scope->add_enum_value(inst);
+  _parent_scope->add_enum_value(inst, preprocessor, pos);
 }
 
 ////////////////////////////////////////////////////////////////////

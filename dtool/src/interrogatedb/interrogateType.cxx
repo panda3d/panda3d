@@ -15,6 +15,7 @@
 #include "interrogateType.h"
 #include "indexRemapper.h"
 #include "interrogate_datafile.h"
+#include "interrogateDatabase.h"
 
 #include <algorithm>
 
@@ -76,6 +77,7 @@ void InterrogateType::EnumValue::
 output(ostream &out) const {
   idf_output_string(out, _name);
   idf_output_string(out, _scoped_name);
+  idf_output_string(out, _comment, '\n');
   out << _value;
 }
 
@@ -88,6 +90,9 @@ void InterrogateType::EnumValue::
 input(istream &in) {
   idf_input_string(in, _name);
   idf_input_string(in, _scoped_name);
+  if (InterrogateDatabase::get_file_minor_version() >= 3) {
+    idf_input_string(in, _comment);
+  }
   in >> _value;
 }
 

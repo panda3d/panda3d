@@ -1358,7 +1358,7 @@ scan_element(CPPInstance *element, CPPStructType *struct_type,
   ielement._name = element->get_local_name(scope);
   ielement._scoped_name = descope(element->get_local_name(&parser));
 
-  // See if there happens to be a comment before the MAKE_PROPERTY macro.
+  // See if there happens to be a comment before the element.
   if (element->_leading_comment != (CPPCommentBlock *)NULL) {
     ielement._comment = trim_blanks(element->_leading_comment->_comment);
   }
@@ -1838,7 +1838,7 @@ get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type) {
   iproperty._getter = get_function(getter, "", struct_type,
                                    struct_type->get_scope(), 0);
 
-  // See if there happens to be a comment before the element.
+  // See if there happens to be a comment before the MAKE_PROPERTY macro.
   if (make_property->_leading_comment != (CPPCommentBlock *)NULL) {
     iproperty._comment = trim_blanks(make_property->_leading_comment->_comment);
   }
@@ -2660,6 +2660,10 @@ define_enum_type(InterrogateType &itype, CPPEnumType *cpptype) {
     InterrogateType::EnumValue evalue;
     evalue._name = element->get_simple_name();
     evalue._scoped_name = descope(element->get_local_name(&parser));
+
+    if (element->_leading_comment != (CPPCommentBlock *)NULL) {
+      evalue._comment = trim_blanks(element->_leading_comment->_comment);
+    }
 
     if (element->_initializer != (CPPExpression *)NULL) {
       CPPExpression::Result result = element->_initializer->evaluate();

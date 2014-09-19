@@ -529,6 +529,34 @@ get_comment_before(int line, CPPFile file) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPPreprocessor::get_comment_on
+//       Access: Public
+//  Description: Returns the CPPCommentBlock that starts on the
+//               indicated line, if any.  If there is no such
+//               comment, returns NULL.
+////////////////////////////////////////////////////////////////////
+CPPCommentBlock *CPPPreprocessor::
+get_comment_on(int line, CPPFile file) {
+  CPPComments::reverse_iterator ci;
+  ci = _comments.rbegin();
+
+  while (ci != _comments.rend()) {
+    CPPCommentBlock *comment = (*ci);
+    if (comment->_file == file) {
+      if (comment->_line_number == line) {
+        return comment;
+      } else if (comment->_line_number < line) {
+        return (CPPCommentBlock *)NULL;
+      }
+    }
+
+    ++ci;
+  }
+
+  return (CPPCommentBlock *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::init_cpp
 //       Access: Protected
 //  Description:
@@ -891,6 +919,10 @@ internal_get_next_token() {
     }
   }
 
+  // We skip whitespace here again, so that we can read any comments
+  // after this point before we parse this line.
+  _last_c = skip_whitespace(_last_c);
+
   return CPPToken(c, first_line, first_col, first_file);
 }
 
@@ -1019,11 +1051,19 @@ skip_cpp_comment(int c) {
   if (_save_comments) {
     CPPCommentBlock *comment;
 
-    if (_last_cpp_comment) {
+    int line_number = get_line_number();
+    if (c == '\n') {
+      // We have to subtract one from the line number as we just
+      // fetched a newline.
+      --line_number;
+    }
+
+    if (_last_cpp_comment && !_comments.empty() &&
+        _comments.back()->_last_line >= line_number - 1) {
       // If the last non-whitespace character read was also part of a
       // C++ comment, then this is just a continuation of that comment
-      // block.
-      assert(!_comments.empty());
+      // block.  However, if there was a line without comment in between,
+      // it starts a new block anyway.
       comment = _comments.back();
       assert(!comment->_c_style);
       comment->_comment += "//";
@@ -1033,8 +1073,8 @@ skip_cpp_comment(int c) {
       comment = new CPPCommentBlock;
 
       comment->_file = get_file();
-      comment->_line_number = get_line_number();
-      comment->_last_line = get_line_number();
+      comment->_line_number = line_number;
+      comment->_last_line = line_number;
       comment->_col_number = get_col_number() - 2;
       comment->_c_style = false;
       comment->_comment = "//";
@@ -1048,7 +1088,7 @@ skip_cpp_comment(int c) {
     }
 
     comment->_comment += '\n';
-    comment->_last_line = get_line_number();
+    comment->_last_line = line_number;
 
     _last_cpp_comment = true;
 
