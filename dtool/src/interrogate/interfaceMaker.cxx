@@ -88,6 +88,19 @@ MakeSeq(const string &name, CPPMakeSeq *cpp_make_seq) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: InterfaceMaker::Property::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+InterfaceMaker::Property::
+Property(const InterrogateElement &ielement) :
+  _ielement(ielement),
+  _getter(NULL),
+  _setter(NULL)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: InterfaceMaker::Object::Constructor
 //       Access: Public
 //  Description:
@@ -155,6 +168,8 @@ check_protocols() {
   if (flags & FunctionRemap::F_iter) {
     _protocol_types |= PT_iter;
   }
+
+  InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
 
   // Now are there any make_seq requests within this class?
   if (_itype._cpptype != NULL) {
@@ -230,9 +245,9 @@ InterfaceMaker::
     Object *object = (*oi).second;
     delete object;
   }
-  Functions::iterator fi;
+  FunctionsByIndex::iterator fi;
   for (fi = _functions.begin(); fi != _functions.end(); ++fi) {
-    delete (*fi);
+    delete (*fi).second;
   }
 }
 
@@ -501,9 +516,9 @@ wrap_global_functions() {
 ////////////////////////////////////////////////////////////////////
 void InterfaceMaker::
 get_function_remaps(vector<FunctionRemap *> &remaps) {
-  Functions::iterator fi;
+  FunctionsByIndex::iterator fi;
   for (fi = _functions.begin(); fi != _functions.end(); ++fi) {
-    Function *func = (*fi);
+    Function *func = (*fi).second;
     Function::Remaps::const_iterator ri;
     for (ri = func->_remaps.begin(); ri != func->_remaps.end(); ++ri) {
       FunctionRemap *remap = (*ri);
@@ -617,12 +632,17 @@ get_unique_prefix() {
 ////////////////////////////////////////////////////////////////////
 InterfaceMaker::Function *InterfaceMaker::
 record_function(const InterrogateType &itype, FunctionIndex func_index) {
+  if (_functions.count(func_index)) {
+    // Already exists.
+    return _functions[func_index];
+  }
+
   InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
   const InterrogateFunction &ifunc = idb->get_function(func_index);
 
   string wrapper_name = get_wrapper_name(itype, ifunc, func_index);
   Function *func = new Function(wrapper_name, itype, ifunc);
-  _functions.push_back(func);
+  _functions[func_index] = func;
 
 //  printf(" Function Name = %s\n", ifunc.get_name().c_str());
 

@@ -53,9 +53,9 @@ InterfaceMakerPythonSimple::
 ////////////////////////////////////////////////////////////////////
 void InterfaceMakerPythonSimple::
 write_prototypes(ostream &out,ostream *out_h) {
-  Functions::iterator fi;
+  FunctionsByIndex::iterator fi;
   for (fi = _functions.begin(); fi != _functions.end(); ++fi) {
-    Function *func = (*fi);
+    Function *func = (*fi).second;
     write_prototype_for(out, func);
   }
 
@@ -72,9 +72,9 @@ write_prototypes(ostream &out,ostream *out_h) {
 ////////////////////////////////////////////////////////////////////
 void InterfaceMakerPythonSimple::
 write_functions(ostream &out) {
-  Functions::iterator fi;
+  FunctionsByIndex::iterator fi;
   for (fi = _functions.begin(); fi != _functions.end(); ++fi) {
-    Function *func = (*fi);
+    Function *func = (*fi).second;
     write_function_for(out, func);
   }
 
@@ -93,9 +93,9 @@ write_module(ostream &out,ostream *out_h, InterrogateModuleDef *def) {
 
   out << "static PyMethodDef python_simple_funcs[] = {\n";
 
-  Functions::iterator fi;
+  FunctionsByIndex::iterator fi;
   for (fi = _functions.begin(); fi != _functions.end(); ++fi) {
-    Function *func = (*fi);
+    Function *func = (*fi).second;
     Function::Remaps::const_iterator ri;
     for (ri = func->_remaps.begin(); ri != func->_remaps.end(); ++ri) {
       FunctionRemap *remap = (*ri);

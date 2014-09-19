@@ -371,7 +371,8 @@ get_call_str(const string &container, const vector_string &pexprs) const {
     }
 
     call << " = ";
-    _parameters[0]._remap->pass_parameter(call, get_parameter_expr(_first_true_parameter, pexprs));
+    _parameters[_first_true_parameter]._remap->pass_parameter(call,
+                    get_parameter_expr(_first_true_parameter, pexprs));
 
   } else {
     const char *separator = "";

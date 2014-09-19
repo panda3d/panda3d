@@ -247,10 +247,6 @@ output(ostream &out) const {
     out << "RSHIFTEQUAL";
     break;
 
-  case TOKENPASTE:
-    out << "TOKENPASTE";
-    break;
-
   case KW_BOOL:
     out << "KW_BOOL";
     break;

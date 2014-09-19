@@ -817,9 +817,9 @@ write_functions(ostream &out) {
   out << "//********************************************************************\n";
   out << "//*** Functions for .. Global\n" ;
   out << "//********************************************************************\n";
-  Functions::iterator fi;
+  FunctionsByIndex::iterator fi;
   for (fi = _functions.begin(); fi != _functions.end(); ++fi) {
-    Function *func = (*fi);
+    Function *func = (*fi).second;
     if (!func->_itype.is_global() && is_function_legal(func)) {
       write_function_for_top(out, NULL, func);
     }
@@ -876,6 +876,23 @@ write_class_details(ostream &out, Object *obj) {
     }
   }
 
+  Properties::const_iterator pit;
+  for (pit = obj->_properties.begin(); pit != obj->_properties.end(); ++pit) {
+    Property *property = (*pit);
+    const InterrogateElement &ielem = property->_ielement;
+    bool coercion_attempted = false;
+
+    if (property->_getter != NULL) {
+      std::string fname = "PyObject *Dtool_" + ClassName + "_" + ielem.get_name() + "_Getter(PyObject *self, void *)";
+      write_function_for_name(out, obj, property->_getter, fname, true, coercion_attempted, AT_no_args, false, false);
+    }
+
+    if (property->_setter != NULL) {
+      std::string fname = "int Dtool_" + ClassName + "_" + ielem.get_name() + "_Setter(PyObject *self, PyObject *arg, void *)";
+      write_function_for_name(out, obj, property->_setter, fname, true, coercion_attempted, AT_single_arg, true, false);
+    }
+  }
+
   if (obj->_constructors.size() == 0) {
     out << "int Dtool_Init_" + ClassName + "(PyObject *self, PyObject *args, PyObject *kwds) {\n"
         << "  PyErr_SetString(PyExc_TypeError, \"cannot init constant class (" << cClassName << ")\");\n"
@@ -893,7 +910,7 @@ write_class_details(ostream &out, Object *obj) {
       Function *func = (*fi);
       std::string fname = "int Dtool_Init_" + ClassName + "(PyObject *self, PyObject *args, PyObject *kwds)";
 
-      write_function_for_name(out, obj, func, fname, true, coercion_attempted, AT_keyword_args, true);
+      write_function_for_name(out, obj, func, fname, true, coercion_attempted, AT_keyword_args, true, false);
     }
     if (coercion_attempted) {
       // If a coercion attempt was written into the above constructor,
@@ -903,7 +920,7 @@ write_class_details(ostream &out, Object *obj) {
         Function *func = (*fi);
         std::string fname = "int Dtool_InitNoCoerce_" + ClassName + "(PyObject *self, PyObject *args)";
 
-        write_function_for_name(out, obj, func, fname, false, coercion_attempted, AT_varargs, true);
+        write_function_for_name(out, obj, func, fname, false, coercion_attempted, AT_varargs, true, false);
       }
     } else {
       // Otherwise, since the above constructor didn't involve any
@@ -1114,9 +1131,9 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
   bool force_base_functions = true;
 
   out << "static PyMethodDef python_simple_funcs[] = {\n";
-  Functions::iterator fi;
+  FunctionsByIndex::iterator fi;
   for (fi = _functions.begin(); fi != _functions.end(); ++fi) {
-    Function *func = (*fi);
+    Function *func = (*fi).second;
     if (!func->_itype.is_global() && is_function_legal(func)) {
       string name1 = methodNameFromCppName(func, "", false);
       string name2 = methodNameFromCppName(func, "", true);
@@ -2078,6 +2095,44 @@ write_module_class(ostream &out, Object *obj) {
     out << "}\n\n";
   }
 
+  if (obj->_properties.size() > 0) {
+    // Write out the array of properties, telling Python which getter and setter
+    // to call when they are assigned or queried in Python code.
+    out << "PyGetSetDef Dtool_Properties_" << ClassName << "[] = {\n";
+
+    Properties::const_iterator pit;
+    for (pit = obj->_properties.begin(); pit != obj->_properties.end(); ++pit) {
+      Property *property = (*pit);
+      const InterrogateElement &ielem = property->_ielement;
+      if (property->_getter == NULL || !is_function_legal(property->_getter)) {
+        continue;
+      }
+
+      out << "  {(char *)\"" << ielem.get_name() << "\","
+          << " &Dtool_" << ClassName << "_" << ielem.get_name() << "_Getter,";
+
+      if (property->_setter == NULL || !is_function_legal(property->_setter)) {
+        out << " NULL,";
+      } else {
+        out << " &Dtool_" << ClassName << "_" << ielem.get_name() << "_Setter,";
+      }
+
+      if (ielem.has_comment()) {
+        out << "(char *)\n";
+        output_quoted(out, 4, ielem.get_comment());
+        out << ",\n    ";
+      } else {
+        out << " NULL, ";
+      }
+
+      // Extra void* argument; we don't make use of it.
+      out << "NULL},\n";
+    }
+
+    out << "  {NULL},\n";
+    out << "};\n\n";
+  }
+
   out << "void Dtool_PyModuleClassInit_" << ClassName << "(PyObject *module) {\n";
   out << "  static bool initdone = false;\n";
   out << "  if (!initdone) {\n";
@@ -2188,6 +2243,11 @@ write_module_class(ostream &out, Object *obj) {
   } else if (has_local_repr) {
     out << "    // __str__ Repr Proxy\n";
     out << "    Dtool_" << ClassName << ".As_PyTypeObject().tp_str = &Dtool_Repr_" << ClassName << ";\n";
+  }
+
+  if (obj->_properties.size() > 0) {
+    // GetSet descriptor slots.
+    out << "    Dtool_" << ClassName << ".As_PyTypeObject().tp_getset = Dtool_Properties_" << ClassName << ";\n";
   }
 
   int num_nested = obj->_itype.number_of_nested_types();
@@ -2395,7 +2455,7 @@ write_function_for_top(ostream &out, InterfaceMaker::Object *obj, InterfaceMaker
   fname += ")";
 
   bool coercion_attempted = false;
-  write_function_for_name(out, obj, func, fname, true, coercion_attempted, func->_args_type, false);
+  write_function_for_name(out, obj, func, fname, true, coercion_attempted, func->_args_type, false, true);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2407,7 +2467,7 @@ void InterfaceMakerPythonNative::
 write_function_for_name(ostream &out1, InterfaceMaker::Object *obj, InterfaceMaker::Function *func,
                         const std::string &function_name,
                         bool coercion_allowed, bool &coercion_attempted,
-                        ArgsType args_type, bool return_int) {
+                        ArgsType args_type, bool return_int, bool write_comment) {
   ostringstream out;
 
   std::map<int, std::set<FunctionRemap *> > MapSets;
@@ -2462,7 +2522,11 @@ write_function_for_name(ostream &out1, InterfaceMaker::Object *obj, InterfaceMak
       // Other functions should raise an exception if the this
       // pointer isn't set or is the wrong type.
       out << "    PyErr_SetString(PyExc_AttributeError, \"C++ object is not yet constructed, or already destructed.\");\n";
-      out << "    return NULL;\n";
+      if (return_int) {
+        out << "    return -1;\n";
+      } else {
+        out << "    return NULL;\n";
+      }
     }
     out << "  }\n";
   }
@@ -2639,7 +2703,7 @@ write_function_for_name(ostream &out1, InterfaceMaker::Object *obj, InterfaceMak
     FunctionComment = FunctionComment1 + "\n" + FunctionComment;
   }
 
-  if (!return_int) {
+  if (write_comment) {
     // Write out the function doc string.  We only do this if it is
     // not a constructor, since we don't have a place to put the
     // constructor doc string.
@@ -4004,13 +4068,30 @@ record_object(TypeIndex type_index) {
   for (int ei = 0; ei < num_elements; ei++) {
     ElementIndex element_index = itype.get_element(ei);
     const InterrogateElement &ielement = idb->get_element(element_index);
-    if (ielement.has_getter()) {
-      FunctionIndex func_index = ielement.get_getter();
-      record_function(itype, func_index);
-    }
+
+    Property *property = new Property(ielement);
+
     if (ielement.has_setter()) {
       FunctionIndex func_index = ielement.get_setter();
-      record_function(itype, func_index);
+      Function *setter = record_function(itype, func_index);
+      if (is_function_legal(setter)) {
+        property->_setter = setter;
+      }
+    }
+
+    if (ielement.has_getter()) {
+      FunctionIndex func_index = ielement.get_getter();
+      Function *getter = record_function(itype, func_index);
+      if (is_function_legal(getter)) {
+        property->_getter = getter;
+      }
+    }
+
+    if (property->_getter != NULL) {
+      object->_properties.push_back(property);
+    } else {
+      // No use exporting a property without a getter.
+      delete property;
     }
   }
 

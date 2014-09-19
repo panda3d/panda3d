@@ -47,6 +47,7 @@ class CPPExtensionType;
 class CPPStructType;
 class CPPEnumType;
 class CPPTypeProxy;
+class CPPMakeProperty;
 class CPPMakeSeq;
 class CPPClassTemplateParameter;
 class CPPTBDType;
@@ -69,6 +70,7 @@ public:
     ST_type,
     ST_namespace,
     ST_using,
+    ST_make_property,
     ST_make_seq,
 
     // Subtypes of CPPType
@@ -136,6 +138,7 @@ public:
   virtual CPPEnumType *as_enum_type();
   virtual CPPTBDType *as_tbd_type();
   virtual CPPTypeProxy *as_type_proxy();
+  virtual CPPMakeProperty *as_make_property();
   virtual CPPMakeSeq *as_make_seq();
 
   CPPVisibility _vis;
@@ -154,8 +157,4 @@ operator << (ostream &out, const CPPDeclaration &decl) {
   return out;
 }
 
-
 #endif
-
-
-
