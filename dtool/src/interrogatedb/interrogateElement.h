@@ -37,6 +37,9 @@ public:
   INLINE bool has_scoped_name() const;
   INLINE const string &get_scoped_name() const;
 
+  INLINE bool has_comment() const;
+  INLINE const string &get_comment() const;
+
   INLINE TypeIndex get_type() const;
   INLINE bool has_getter() const;
   INLINE FunctionIndex get_getter() const;
@@ -57,6 +60,7 @@ private:
 
   int _flags;
   string _scoped_name;
+  string _comment;
   TypeIndex _type;
   FunctionIndex _getter;
   FunctionIndex _setter;

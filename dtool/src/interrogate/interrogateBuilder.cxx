@@ -1357,6 +1357,11 @@ scan_element(CPPInstance *element, CPPStructType *struct_type,
   ielement._name = element->get_local_name(scope);
   ielement._scoped_name = descope(element->get_local_name(&parser));
 
+  // See if there happens to be a comment before the element.
+  if (element->_leading_comment != (CPPCommentBlock *)NULL) {
+    ielement._comment = trim_blanks(element->_leading_comment->_comment);
+  }
+
   ielement._type = get_type(TypeManager::unwrap_reference(element_type), false);
   if (ielement._type == 0) {
     // If we can't understand what type it is, forget it.
@@ -1641,6 +1646,7 @@ get_function(CPPInstance *function, string description,
              CPPStructType *struct_type,
              CPPScope *scope, int flags,
              const string &expression) {
+
   // Get a unique function signature.  Make sure we tell the function
   // where its native scope is, so we get a fully-scoped signature.
 
