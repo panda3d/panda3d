@@ -529,6 +529,7 @@ protected:
   PN_stdfloat _point_size;
   bool _point_perspective;
   bool _vertex_blending_enabled;
+  bool _scissor_enabled;
 
 #ifndef OPENGLES_1
   PT(Shader) _current_shader;

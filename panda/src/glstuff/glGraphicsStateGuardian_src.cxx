@@ -310,6 +310,8 @@ CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe) :
   _check_errors = gl_check_errors;
   _force_flush = gl_force_flush;
 
+  _scissor_enabled = false;
+
 #ifdef DO_PSTATS
   if (gl_finish) {
     GLCAT.warning()
@@ -2371,8 +2373,10 @@ prepare_display_region(DisplayRegionPipelineReader *dr) {
 
   if (dr->get_scissor_enabled()) {
     glEnable(GL_SCISSOR_TEST);
+    _scissor_enabled = true;
   } else {
     glDisable(GL_SCISSOR_TEST);
+    _scissor_enabled = false;
   }
 
   if (_supports_viewport_arrays) {
@@ -11378,12 +11382,14 @@ do_issue_scissor() {
   const ScissorAttrib *target_scissor = DCAST(ScissorAttrib, _target_rs->get_attrib_def(ScissorAttrib::get_class_slot()));
 
   if (target_scissor->is_off()) {
-    if (_current_display_region->get_scissor_enabled()) {
+    if (_scissor_enabled) {
       glDisable(GL_SCISSOR_TEST);
+      _scissor_enabled = false;
     }
   } else {
-    if (!_current_display_region->get_scissor_enabled()) {
+    if (!_scissor_enabled) {
       glEnable(GL_SCISSOR_TEST);
+      _scissor_enabled = true;
     }
 
     const LVecBase4 &frame = target_scissor->get_frame();
@@ -11393,7 +11399,6 @@ do_issue_scissor() {
     int width = (int)(_viewport_width * (frame[1] - frame[0]) + 0.5f);
     int height = (int)(_viewport_height * (frame[3] - frame[2]) + 0.5f);
 
-    glEnable(GL_SCISSOR_TEST);
     glScissor(x, y, width, height);
   }
 }
