@@ -1451,6 +1451,7 @@ INCLUDE_FILE_PATTERNS  =
 PREDEFINED             = TVOLATILE= \
                          INLINE=inline \
                          PUBLISHED=public \
+                         protected=private \
                          INLINE_LINMATH=inline \
                          INLINE_MATHUTIL=inline \
                          EXTENSION(x)= \
