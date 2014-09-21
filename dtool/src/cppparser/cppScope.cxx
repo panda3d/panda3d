@@ -151,12 +151,25 @@ add_enum_value(CPPInstance *inst, CPPPreprocessor *preprocessor,
 
   if (inst->_leading_comment == (CPPCommentBlock *)NULL) {
     // Same-line comment?
-    inst->_leading_comment =
+    CPPCommentBlock *comment =
       preprocessor->get_comment_on(pos.first_line, pos.file);
 
-    if (inst->_leading_comment == (CPPCommentBlock *)NULL) {
-      inst->_leading_comment =
+    if (comment == (CPPCommentBlock *)NULL) {
+      // Nope.  Check for a comment before this line.
+      comment =
         preprocessor->get_comment_before(pos.first_line, pos.file);
+
+      if (comment != NULL) {
+        // This is a bit of a hack, but it prevents us from picking
+        // up a same-line comment from the previous line.
+        if (comment->_line_number != pos.first_line - 1 ||
+            comment->_col_number <= pos.first_column) {
+
+          inst->_leading_comment = comment;
+        }
+      }
+    } else {
+      inst->_leading_comment = comment;
     }
   }
 
