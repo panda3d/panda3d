@@ -3234,14 +3234,9 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
       ++num_params;
 
     } else if (TypeManager::is_integer(type)) {
-      if (args_type == AT_single_arg) {
-        pexpr_string = "(" + type->get_local_name(&parser) + ")PyInt_AS_LONG(arg)";
-        extra_param_check += " && PyInt_Check(arg)";
-      } else {
-        indent(out, indent_level) << "int " << param_name << ";\n";
-        format_specifiers += "i";
-        parameter_list += ", &" + param_name;
-      }
+      indent(out, indent_level) << "int " << param_name << ";\n";
+      format_specifiers += "i";
+      parameter_list += ", &" + param_name;
       expected_params += "int";
       only_pyobjects = false;
       ++num_params;
