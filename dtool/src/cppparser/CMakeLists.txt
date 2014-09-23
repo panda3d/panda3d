@@ -7,7 +7,7 @@ set(P3CPPPARSER_HEADERS
 	cppExpressionParser.h cppExtensionType.h cppFile.h
 	cppFunctionGroup.h cppFunctionType.h cppGlobals.h
 	cppIdentifier.h cppInstance.h cppInstanceIdentifier.h
-	cppMakeSeq.h cppManifest.h
+  cppMakeProperty.h cppMakeSeq.h cppManifest.h
 	cppNameComponent.h cppNamespace.h
 	cppParameterList.h cppParser.h cppPointerType.h
 	cppPreprocessor.h cppReferenceType.h cppScope.h
@@ -25,7 +25,7 @@ set(P3CPPPARSER_SOURCES
 	cppExtensionType.cxx cppFile.cxx cppFunctionGroup.cxx
 	cppFunctionType.cxx cppGlobals.cxx cppIdentifier.cxx
 	cppInstance.cxx cppInstanceIdentifier.cxx
-	cppMakeSeq.cxx cppManifest.cxx
+  cppMakeProperty.cxx cppMakeSeq.cxx cppManifest.cxx
 	cppNameComponent.cxx cppNamespace.cxx cppParameterList.cxx
 	cppParser.cxx cppPointerType.cxx cppPreprocessor.cxx
 	cppReferenceType.cxx cppScope.cxx cppSimpleType.cxx

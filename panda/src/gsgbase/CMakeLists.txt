@@ -14,7 +14,7 @@ set(P3GSGBASE_SOURCES
 
 composite_sources(p3gsgbase P3GSGBASE_SOURCES)
 add_library(p3gsgbase ${P3GSGBASE_HEADERS} ${P3GSGBASE_SOURCES})
-target_link_libraries(p3gsgbase p3linmath)
+target_link_libraries(p3gsgbase p3putil p3linmath)
 target_interrogate(p3gsgbase ALL)
 
 install(TARGETS p3gsgbase DESTINATION lib)

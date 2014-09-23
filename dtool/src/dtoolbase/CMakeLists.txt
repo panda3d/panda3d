@@ -31,7 +31,8 @@ set(P3DTOOLBASE_HEADERS
     typeRegistryNode.I typeRegistryNode.h
     typedObject.I typedObject.h
     pallocator.T pallocator.h
-    pdeque.h plist.h pmap.h pset.h pvector.h
+    pdeque.h plist.h pmap.h pset.h
+    pvector.h epvector.h
     lookup3.h
 )
 

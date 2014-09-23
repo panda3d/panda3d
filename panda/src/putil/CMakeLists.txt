@@ -53,7 +53,6 @@ set(P3PUTIL_HEADERS
   pythonCallbackObject.h pythonCallbackObject.I
   simpleHashMap.I simpleHashMap.h
   sparseArray.I sparseArray.h
-  string_utils.I string_utils.h
   timedCycle.I timedCycle.h typedWritable.I
   typedWritable.h typedWritableReferenceCount.I
   typedWritableReferenceCount.h updateSeq.I updateSeq.h
@@ -103,7 +102,6 @@ set(P3PUTIL_SOURCES
   pythonCallbackObject.cxx
   simpleHashMap.cxx
   sparseArray.cxx
-  string_utils.cxx
   timedCycle.cxx typedWritable.cxx
   typedWritableReferenceCount.cxx updateSeq.cxx
   uniqueIdAllocator.cxx

@@ -16,6 +16,7 @@ set(P3DTOOLUTIL_HEADERS
 	panda_getopt.h panda_getopt_long.h panda_getopt_impl.h
 	pfstream.h pfstream.I pfstreamBuf.h
 	preprocess_argv.h
+  string_utils.h string_utils.I
 	stringDecoder.h stringDecoder.I
 	textEncoder.h textEncoder.I
 	unicodeLatinMap.h
@@ -41,6 +42,7 @@ set(P3DTOOLUTIL_SOURCES
 	panda_getopt_impl.cxx
 	pfstreamBuf.cxx pfstream.cxx
 	preprocess_argv.cxx
+  string_utils.cxx
 	stringDecoder.cxx
 	textEncoder.cxx
 	unicodeLatinMap.cxx
