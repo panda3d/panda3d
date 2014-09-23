@@ -327,7 +327,8 @@ class AstronInternalRepository(ConnectionRepository):
         """
         Send a field update for the given object.
 
-        You should probably use do.sendUpdate(...) instead.
+        You should use do.sendUpdate(...) instead. This is not meant to be
+        called directly unless you really know what you are doing.
         """
 
         self.sendUpdateToChannel(do, do.doId, fieldName, args)
@@ -339,7 +340,8 @@ class AstronInternalRepository(ConnectionRepository):
         This is useful for directing the update to a specific client or node,
         rather than at the State Server managing the object.
 
-        You should probably use do.sendUpdateToChannel(...) instead.
+        You should use do.sendUpdateToChannel(...) instead. This is not meant
+        to be called directly unless you really know what you are doing.
         """
 
         dclass = do.dclass
@@ -410,7 +412,8 @@ class AstronInternalRepository(ConnectionRepository):
         """
         Generate an object onto the State Server, choosing an ID from the pool.
 
-        You should probably use do.generateWithRequired(...) instead.
+        You should use do.generateWithRequired(...) instead. This is not meant
+        to be called directly unless you really know what you are doing.
         """
 
         doId = self.allocateChannel()
@@ -420,19 +423,20 @@ class AstronInternalRepository(ConnectionRepository):
         """
         Generate an object onto the State Server, specifying its ID and location.
 
-        You should probably use do.generateWithRequiredAndId(...) instead.
+        You should use do.generateWithRequiredAndId(...) instead. This is not
+        meant to be called directly unless you really know what you are doing.
         """
 
         do.doId = doId
         self.addDOToTables(do, location=(parentId, zoneId))
         do.sendGenerateWithRequired(self, parentId, zoneId, optionalFields)
-        do.generate()
 
     def requestDelete(self, do):
         """
         Request the deletion of an object that already exists on the State Server.
 
-        You should probably use do.requestDelete() instead.
+        You should use do.requestDelete() instead. This is not meant to be
+        called directly unless you really know what you are doing.
         """
 
         dg = PyDatagram()
