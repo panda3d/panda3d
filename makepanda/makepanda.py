@@ -2877,14 +2877,8 @@ TargetAdd('p3interrogatedb_composite2.obj', opts=OPTS, input='p3interrogatedb_co
 #
 
 OPTS=['DIR:dtool/metalibs/dtoolconfig', 'BUILDING:DTOOLCONFIG']
-if (PkgSkip("PYTHON")):
-  TargetAdd('p3dtoolconfig_pydtool.obj', opts=OPTS, input="null.cxx")
-else:
-  TargetAdd('p3dtoolconfig_pydtool.obj', opts=OPTS, input="pydtool.cxx")
 TargetAdd('p3dtoolconfig_dtoolconfig.obj', opts=OPTS, input='dtoolconfig.cxx')
-TargetAdd('p3dtoolconfig_pydtool.obj', dep='dtool_have_python.dat')
 TargetAdd('libp3dtoolconfig.dll', input='p3dtoolconfig_dtoolconfig.obj')
-TargetAdd('libp3dtoolconfig.dll', input='p3dtoolconfig_pydtool.obj')
 TargetAdd('libp3dtoolconfig.dll', input='p3interrogatedb_composite1.obj')
 TargetAdd('libp3dtoolconfig.dll', input='p3interrogatedb_composite2.obj')
 TargetAdd('libp3dtoolconfig.dll', input='p3dconfig_composite1.obj')
@@ -2892,6 +2886,13 @@ TargetAdd('libp3dtoolconfig.dll', input='p3prc_composite1.obj')
 TargetAdd('libp3dtoolconfig.dll', input='p3prc_composite2.obj')
 TargetAdd('libp3dtoolconfig.dll', input='libp3dtool.dll')
 TargetAdd('libp3dtoolconfig.dll', opts=['ADVAPI', 'OPENSSL', 'WINGDI', 'WINUSER'])
+
+if not PkgSkip("PYTHON"):
+  TargetAdd('dtoolconfig_pydtool.obj', opts=OPTS, input="pydtool.cxx")
+  TargetAdd('dtoolconfig.pyd', input='dtoolconfig_pydtool.obj')
+  TargetAdd('dtoolconfig.pyd', input='libp3dtoolconfig.dll')
+  TargetAdd('dtoolconfig.pyd', input='libp3dtool.dll')
+  TargetAdd('dtoolconfig.pyd', opts=['PYTHON'])
 
 #
 # DIRECTORY: dtool/src/pystub/

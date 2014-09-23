@@ -27,6 +27,7 @@
 #include "eggVertex.h"
 #include "eggTextureCollection.h"
 #include "eggMaterialCollection.h"
+#include "epvector.h"
 #include "pt_EggTexture.h"
 #include "pt_EggMaterial.h"
 #include "config_egg.h"

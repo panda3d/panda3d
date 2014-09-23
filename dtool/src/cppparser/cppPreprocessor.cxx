@@ -315,23 +315,6 @@ get_next_token0() {
   int first_col = token._lloc.first_column;
   CPPFile first_file = token._lloc.file;
 
-  if (token._token == '#') {
-    // Stringify.
-    token = internal_get_next_token();
-    if (token._token == SIMPLE_IDENTIFIER || 
-        token._token == INTEGER ||
-        token._token == REAL ||
-        token._token == STRING) {
-      token._token = STRING;
-    } else {
-      // Stringify nothing.
-
-      _saved_tokens.push_back(token);
-      token._token = STRING;
-      token._lval.str = "";
-    }
-  }
-
   if (_resolve_identifiers &&
       (token._token == SIMPLE_IDENTIFIER || token._token == SCOPE)) {
     // We will be returning a scoped identifier, or a scoping.  Keep
@@ -366,58 +349,40 @@ get_next_token0() {
       }
     }
 
-    while (token._token == SCOPE || token._token == TOKENPASTE) {
-      if (token._token == TOKENPASTE) {
-        // The token-pasting operator creates one continuous
-        // identifier across whitespace.
-        token = internal_get_next_token();
-        if (token._token == SIMPLE_IDENTIFIER ||
-            token._token == INTEGER ||
-            token._token == REAL) {
-          name += token._lval.str;
-          ident->_names.back().append_name(token._lval.str);
+    while (token._token == SCOPE) {
+      name += "::";
+      token = internal_get_next_token();
+      string token_prefix;
 
-          token = internal_get_next_token();
-
-        } else {
-          // Token-paste with nothing.
-        }
-
-      } else { // token._token == SCOPE
-        name += "::";
-        token = internal_get_next_token();
-        string token_prefix;
-
-        if (token._token == '~') {
-          // A scoping operator followed by a tilde can only be the
-          // start of a scoped destructor name.  Make the tilde be part
-          // of the name.
-          name += "~";
-          token_prefix = "~";
-          token = internal_get_next_token();
-        }
-
-        if (token._token != SIMPLE_IDENTIFIER) {
-          // The last useful token was a SCOPE, thus this is a scoping
-          // token.
-
-          if (token._token == KW_OPERATOR) {
-            // Unless the last token we came across was the "operator"
-            // keyword.  We make a special case for this, because it's
-            // occasionally scoped in normal use.
-            token._lval = result;
-            return token;
-          }
-          _saved_tokens.push_back(token);
-          return CPPToken(SCOPING, first_line, first_col, first_file,
-                          name, result);
-        }
-
-        name += token._lval.str;
-        ident->_names.push_back(token_prefix + token._lval.str);
-
+      if (token._token == '~') {
+        // A scoping operator followed by a tilde can only be the
+        // start of a scoped destructor name.  Make the tilde be part
+        // of the name.
+        name += "~";
+        token_prefix = "~";
         token = internal_get_next_token();
       }
+
+      if (token._token != SIMPLE_IDENTIFIER) {
+        // The last useful token was a SCOPE, thus this is a scoping
+        // token.
+
+        if (token._token == KW_OPERATOR) {
+          // Unless the last token we came across was the "operator"
+          // keyword.  We make a special case for this, because it's
+          // occasionally scoped in normal use.
+          token._lval = result;
+          return token;
+        }
+        _saved_tokens.push_back(token);
+        return CPPToken(SCOPING, first_line, first_col, first_file,
+                        name, result);
+      }
+
+      name += token._lval.str;
+      ident->_names.push_back(token_prefix + token._lval.str);
+
+      token = internal_get_next_token();
 
       if (token._token == '<') {
         // If the next token is an angle bracket and the current
@@ -553,6 +518,34 @@ get_comment_before(int line, CPPFile file) {
     } else {
       wrong_file_count++;
       if (wrong_file_count > 10) {
+        return (CPPCommentBlock *)NULL;
+      }
+    }
+
+    ++ci;
+  }
+
+  return (CPPCommentBlock *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CPPPreprocessor::get_comment_on
+//       Access: Public
+//  Description: Returns the CPPCommentBlock that starts on the
+//               indicated line, if any.  If there is no such
+//               comment, returns NULL.
+////////////////////////////////////////////////////////////////////
+CPPCommentBlock *CPPPreprocessor::
+get_comment_on(int line, CPPFile file) {
+  CPPComments::reverse_iterator ci;
+  ci = _comments.rbegin();
+
+  while (ci != _comments.rend()) {
+    CPPCommentBlock *comment = (*ci);
+    if (comment->_file == file) {
+      if (comment->_line_number == line) {
+        return comment;
+      } else if (comment->_line_number < line) {
         return (CPPCommentBlock *)NULL;
       }
     }
@@ -887,11 +880,6 @@ internal_get_next_token() {
   case '%':
     if (next_c == '=') return CPPToken(MODEQUAL, first_line, first_col, first_file);
     break;
-
-    // These are actually preprocessor operators, but it's useful to
-    // treat them as tokens.
-  case '#':
-    if (next_c == '#') return CPPToken(TOKENPASTE, first_line, first_col, first_file);
   }
 
   // It wasn't any of the two- or three-character tokens, so put back
@@ -931,6 +919,10 @@ internal_get_next_token() {
     }
   }
 
+  // We skip whitespace here again, so that we can read any comments
+  // after this point before we parse this line.
+  _last_c = skip_whitespace(_last_c);
+
   return CPPToken(c, first_line, first_col, first_file);
 }
 
@@ -945,11 +937,13 @@ skip_whitespace(int c) {
     c = skip_comment(c);
 
     if (c == '\\') {
-      // A backslash character is an unusual thing to encounter in the
-      // middle of unquoted C++ code.  But it seems to be legal, and
-      // it seems to mean the same thing it does within quotes: to
-      // escape the following character.  We simply ignore it.
+      // This does not usually occur in the middle of unquoted C++
+      // code, except before a newline character.
       c = get();
+      if (c != '\n') {
+        unget(c);
+        return '\\';
+      }
     }
 
     if (!isspace(c)) {
@@ -1057,11 +1051,19 @@ skip_cpp_comment(int c) {
   if (_save_comments) {
     CPPCommentBlock *comment;
 
-    if (_last_cpp_comment) {
+    int line_number = get_line_number();
+    if (c == '\n') {
+      // We have to subtract one from the line number as we just
+      // fetched a newline.
+      --line_number;
+    }
+
+    if (_last_cpp_comment && !_comments.empty() &&
+        _comments.back()->_last_line >= line_number - 1) {
       // If the last non-whitespace character read was also part of a
       // C++ comment, then this is just a continuation of that comment
-      // block.
-      assert(!_comments.empty());
+      // block.  However, if there was a line without comment in between,
+      // it starts a new block anyway.
       comment = _comments.back();
       assert(!comment->_c_style);
       comment->_comment += "//";
@@ -1071,8 +1073,8 @@ skip_cpp_comment(int c) {
       comment = new CPPCommentBlock;
 
       comment->_file = get_file();
-      comment->_line_number = get_line_number();
-      comment->_last_line = get_line_number();
+      comment->_line_number = line_number;
+      comment->_last_line = line_number;
       comment->_col_number = get_col_number() - 2;
       comment->_c_style = false;
       comment->_comment = "//";
@@ -1086,7 +1088,7 @@ skip_cpp_comment(int c) {
     }
 
     comment->_comment += '\n';
-    comment->_last_line = get_line_number();
+    comment->_last_line = line_number;
 
     _last_cpp_comment = true;
 
@@ -1633,7 +1635,8 @@ expand_manifest(const CPPManifest *manifest) {
 
   if (manifest->_has_parameters) {
     // Hmm, we're expecting arguments.
-    extract_manifest_args(manifest->_name, manifest->_num_parameters, args);
+    extract_manifest_args(manifest->_name, manifest->_num_parameters,
+                          manifest->_variadic_param, args);
   }
 
   string expanded = " " + manifest->expand(args) + " ";
@@ -1659,7 +1662,7 @@ expand_manifest(const CPPManifest *manifest) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
-extract_manifest_args(const string &name, int num_args,
+extract_manifest_args(const string &name, int num_args, int va_arg,
                       vector_string &args) {
   CPPFile first_file = get_file();
   int first_line = get_line_number();
@@ -1683,12 +1686,14 @@ extract_manifest_args(const string &name, int num_args,
 
   } else {
     // Skip paren.
-    c = get();
+    c = skip_whitespace(get());
+    int paren_level = 1;
     string arg;
-    while (c != EOF && c != ')') {
-      if (c == ',') {
+    while (c != EOF) {
+      if (c == ',' && paren_level == 1) {
         args.push_back(arg);
         arg = "";
+        c = get();
 
       } else if (c == '"' || c == '\'') {
         // Quoted string or character.
@@ -1706,35 +1711,55 @@ extract_manifest_args(const string &name, int num_args,
           }
         }
         arg += c;
+        c = get();
 
       } else if (c == '(') {
-        // Nested parens.
-        int paren_level = 1;
-        while (c != EOF && paren_level > 0) {
-          arg += c;
-          c = get();
-          if (c == '(') {
-            paren_level++;
-          } else if (c == ')') {
-            paren_level--;
-          }
+        arg += '(';
+        ++paren_level;
+        c = get();
+
+      } else if (c == ')') {
+        --paren_level;
+        if (paren_level == 0) {
+          break;
         }
-        if (c != EOF) {
-          arg += c;
+        arg += ')';
+        c = get();
+
+      } else if (isspace(c)) {
+        // Skip extra whitespace.
+        c = skip_whitespace(c);
+        if (!arg.empty()) {
+          arg += ' ';
+        }
+
+      } else if (c == '\\') {
+        // It could be a slash before a newline.
+        // If so, that's whitespace as well.
+        c = get();
+        if (c != '\n') {
+          arg += '\\';
+        } else if (!arg.empty()) {
+          arg += ' ';
+          c = skip_whitespace(get());
         }
 
       } else {
         arg += c;
+        c = get();
       }
-      c = get();
     }
     if (num_args != 0 || !arg.empty()) {
       args.push_back(arg);
     }
   }
 
-  if ((int)args.size() != num_args) {
-    warning("Wrong number of arguments for manifest " + name,
+  if ((int)args.size() < num_args) {
+    warning("Not enough arguments for manifest " + name,
+            first_line, first_col, first_file);
+
+  } else if (va_arg < 0 && (int)args.size() > num_args) {
+    warning("Too many arguments for manifest " + name,
             first_line, first_col, first_file);
   }
 }
@@ -1742,14 +1767,15 @@ extract_manifest_args(const string &name, int num_args,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::expand_defined_function
 //       Access: Private
-//  Description:
+//  Description: Expands the defined(manifest) function to either
+//               1 or 0, depending on whether the manifest exists.
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
 expand_defined_function(string &expr, size_t q, size_t &p) {
   string result;
 
   vector_string args;
-  extract_manifest_args_inline("defined", 1, args, expr, p);
+  extract_manifest_args_inline("defined", 1, -1, args, expr, p);
   if (args.size() >= 1) {
     const string &manifest_name = args[0];
     Manifests::const_iterator mi = _manifests.find(manifest_name);
@@ -1777,7 +1803,7 @@ expand_manifest_inline(string &expr, size_t q, size_t &p,
   vector_string args;
   if (manifest->_has_parameters) {
     extract_manifest_args_inline(manifest->_name, manifest->_num_parameters,
-                                 args, expr, p);
+                                 manifest->_variadic_param, args, expr, p);
   }
   string result = manifest->expand(args);
 
@@ -1792,7 +1818,7 @@ expand_manifest_inline(string &expr, size_t q, size_t &p,
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
 extract_manifest_args_inline(const string &name, int num_args,
-                             vector_string &args,
+                             int va_arg, vector_string &args,
                              const string &expr, size_t &p) {
   // Skip whitespace till paren.
   while (p < expr.size() && isspace(expr[p])) {
@@ -1819,7 +1845,7 @@ extract_manifest_args_inline(const string &name, int num_args,
       }
     }
     p++;
-    
+
   } else {
     // Skip paren.
     p++;
@@ -1850,8 +1876,11 @@ extract_manifest_args_inline(const string &name, int num_args,
     }
   }
 
-  if ((int)args.size() != num_args) {
-    warning("Wrong number of arguments for manifest " + name);
+  if ((int)args.size() < num_args) {
+    warning("Not enough arguments for manifest " + name);
+
+  } else if (va_arg < 0 && (int)args.size() > num_args) {
+    warning("Too many arguments for manifest " + name);
   }
 }
 
@@ -1998,6 +2027,7 @@ check_keyword(const string &name) {
   if (name == "inline") return KW_INLINE;
   if (name == "int") return KW_INT;
   if (name == "long") return KW_LONG;
+  if (name == "__make_property") return KW_MAKE_PROPERTY;
   if (name == "__make_seq") return KW_MAKE_SEQ;
   if (name == "mutable") return KW_MUTABLE;
   if (name == "namespace") return KW_NAMESPACE;
@@ -2036,6 +2066,90 @@ check_keyword(const string &name) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPPreprocessor::scan_escape_sequence
+//       Access: Private
+//  Description:
+////////////////////////////////////////////////////////////////////
+int CPPPreprocessor::
+scan_escape_sequence(int c) {
+  if (c != '\\') {
+    return c;
+  }
+
+  c = get();
+  switch (c) {
+  case 'a':
+    return '\a';
+
+  case 'b':
+    return '\b';
+
+  case 'f':
+    return '\f';
+
+  case 'n':
+    return '\n';
+
+  case 'r':
+    return '\r';
+
+  case 't':
+    return '\t';
+
+  case 'v':
+    return '\v';
+
+  case 'e':
+    // \e is non-standard, buT GCC supports it.
+    return '\x1B';
+
+  case 'x':
+    // hex character.
+    c = get();
+    if (isxdigit(c)) {
+      int val = hex_val(c);
+      c = get();
+      if (isxdigit(c)) {
+        val = (val << 4) | hex_val(c);
+      } else {
+        unget(c);
+      }
+      return val;
+    }
+    break;
+
+  case '0':
+  case '1':
+  case '2':
+  case '3':
+  case '4':
+  case '5':
+  case '6':
+  case '7':
+    // Octal character.
+    {
+      int val = (c - '0');
+      c = get();
+      if (c >= '0' && c <= '7') {
+        val = (val << 3) | (c - '0');
+        c = get();
+        if (c >= '0' && c <= '7') {
+          val = (val << 3) | (c - '0');
+        } else {
+          unget(c);
+        }
+      } else {
+        unget(c);
+      }
+      return val;
+    }
+  }
+
+  // Simply output the following character.
+  return c;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::scan_quoted
 //       Access: Private
 //  Description:
@@ -2049,62 +2163,7 @@ scan_quoted(int c) {
   while (c != EOF && c != '\n' && c != quote_mark) {
     if (c == '\\') {
       // Backslash means a special character follows.
-      c = get();
-      switch (c) {
-      case 'n':
-        c = '\n';
-        break;
-
-      case 't':
-        c = '\t';
-        break;
-
-      case 'r':
-        c = '\r';
-        break;
-
-      case 'x':
-        // hex character.
-        c = get();
-        if (isxdigit(c)) {
-          int val = hex_val(c);
-          c = get();
-          if (isxdigit(c)) {
-            val = (val << 4) | hex_val(c);
-          } else {
-            unget(c);
-          }
-          c = val;
-        }
-        break;
-
-      case '0':
-      case '1':
-      case '2':
-      case '3':
-      case '4':
-      case '5':
-      case '6':
-      case '7':
-        // Octal character.
-        {
-          int val = (c - '0');
-          c = get();
-          if (c >= '0' && c <= '7') {
-            val = (val << 3) | (c - '0');
-            c = get();
-            if (c >= '0' && c <= '7') {
-              val = (val << 3) | (c - '0');
-            } else {
-              unget(c);
-            }
-          } else {
-            unget(c);
-          }
-          c = val;
-        }
-        break;
-      }
+      c = scan_escape_sequence(c);
     }
 
     str += c;

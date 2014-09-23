@@ -87,7 +87,6 @@ reset_data() {
 
   _handle = 0;
   _handle_resident = false;
-  _needs_barrier = false;
   _has_storage = false;
   _immutable = false;
 
@@ -169,15 +168,25 @@ needs_barrier(GLbitfield barrier) {
 //     Function: GLTextureContext::mark_incoherent
 //       Access: Public
 //  Description: Mark a texture as needing a memory barrier, since
-//               a non-coherent write just happened to it.
+//               a non-coherent read or write just happened to it.
+//               If 'wrote' is true, it was written to.
 ////////////////////////////////////////////////////////////////////
 void CLP(TextureContext)::
-mark_incoherent() {
+mark_incoherent(bool wrote) {
   if (!gl_enable_memory_barriers) {
     return;
   }
 
-  _glgsg->_textures_needing_fetch_barrier.insert(this);
+  // If we only read from it, the next read operation won't need
+  // another barrier, since it'll be reading the same data.
+  if (wrote) {
+    _glgsg->_textures_needing_fetch_barrier.insert(this);
+  }
+
+  // We could still write to it before we read from it, so we have
+  // to always insert these barriers.  This could be slightly
+  // optimized so that we don't issue a barrier between consecutive
+  // image reads, but that may not be worth the trouble.
   _glgsg->_textures_needing_image_access_barrier.insert(this);
   _glgsg->_textures_needing_update_barrier.insert(this);
   _glgsg->_textures_needing_framebuffer_barrier.insert(this);

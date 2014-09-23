@@ -818,9 +818,9 @@ write_functions(ostream &out) {
   out << "//********************************************************************\n";
   out << "//*** Functions for .. Global\n" ;
   out << "//********************************************************************\n";
-  Functions::iterator fi;
+  FunctionsByIndex::iterator fi;
   for (fi = _functions.begin(); fi != _functions.end(); ++fi) {
-    Function *func = (*fi);
+    Function *func = (*fi).second;
     if (!func->_itype.is_global() && is_function_legal(func)) {
       write_function_for_top(out, NULL, func);
     }
@@ -877,6 +877,23 @@ write_class_details(ostream &out, Object *obj) {
     }
   }
 
+  Properties::const_iterator pit;
+  for (pit = obj->_properties.begin(); pit != obj->_properties.end(); ++pit) {
+    Property *property = (*pit);
+    const InterrogateElement &ielem = property->_ielement;
+    bool coercion_attempted = false;
+
+    if (property->_getter != NULL) {
+      std::string fname = "PyObject *Dtool_" + ClassName + "_" + ielem.get_name() + "_Getter(PyObject *self, void *)";
+      write_function_for_name(out, obj, property->_getter, fname, true, coercion_attempted, AT_no_args, false, false);
+    }
+
+    if (property->_setter != NULL) {
+      std::string fname = "int Dtool_" + ClassName + "_" + ielem.get_name() + "_Setter(PyObject *self, PyObject *arg, void *)";
+      write_function_for_name(out, obj, property->_setter, fname, true, coercion_attempted, AT_single_arg, true, false);
+    }
+  }
+
   if (obj->_constructors.size() == 0) {
     out << "int Dtool_Init_" + ClassName + "(PyObject *self, PyObject *args, PyObject *kwds) {\n"
         << "  PyErr_SetString(PyExc_TypeError, \"cannot init constant class (" << cClassName << ")\");\n"
@@ -894,7 +911,7 @@ write_class_details(ostream &out, Object *obj) {
       Function *func = (*fi);
       std::string fname = "int Dtool_Init_" + ClassName + "(PyObject *self, PyObject *args, PyObject *kwds)";
 
-      write_function_for_name(out, obj, func, fname, true, coercion_attempted, AT_keyword_args, true);
+      write_function_for_name(out, obj, func, fname, true, coercion_attempted, AT_keyword_args, true, false);
     }
     if (coercion_attempted) {
       // If a coercion attempt was written into the above constructor,
@@ -904,7 +921,7 @@ write_class_details(ostream &out, Object *obj) {
         Function *func = (*fi);
         std::string fname = "int Dtool_InitNoCoerce_" + ClassName + "(PyObject *self, PyObject *args)";
 
-        write_function_for_name(out, obj, func, fname, false, coercion_attempted, AT_varargs, true);
+        write_function_for_name(out, obj, func, fname, false, coercion_attempted, AT_varargs, true, false);
       }
     } else {
       // Otherwise, since the above constructor didn't involve any
@@ -1115,9 +1132,9 @@ write_module_support(ostream &out, ostream *out_h, InterrogateModuleDef *def) {
   bool force_base_functions = true;
 
   out << "static PyMethodDef python_simple_funcs[] = {\n";
-  Functions::iterator fi;
+  FunctionsByIndex::iterator fi;
   for (fi = _functions.begin(); fi != _functions.end(); ++fi) {
-    Function *func = (*fi);
+    Function *func = (*fi).second;
     if (!func->_itype.is_global() && is_function_legal(func)) {
       string name1 = methodNameFromCppName(func, "", false);
       string name2 = methodNameFromCppName(func, "", true);
@@ -1515,7 +1532,7 @@ write_module_class(ostream &out, Object *obj) {
           // *need* to raise IndexError if we're out of bounds.  We have to
           // assume the bounds are 0 .. this->size() (this is the same
           // assumption that Python makes).
-          out << "  if (index < 0 || index >= local_this->size()) {\n";
+          out << "  if (index < 0 || index >= (Py_ssize_t) local_this->size()) {\n";
           out << "    PyErr_SetString(PyExc_IndexError, \"" << ClassName << " index out of range\");\n";
           out << "    return NULL;\n";
           out << "  }\n";
@@ -1555,7 +1572,7 @@ write_module_class(ostream &out, Object *obj) {
           out << "    return -1;\n";
           out << "  }\n\n";
 
-          out << "  if (index < 0 || index >= local_this->size()) {\n";
+          out << "  if (index < 0 || index >= (Py_ssize_t) local_this->size()) {\n";
           out << "    PyErr_SetString(PyExc_IndexError, \"" << ClassName << " index out of range\");\n";
           out << "    return -1;\n";
           out << "  }\n";
@@ -2079,6 +2096,44 @@ write_module_class(ostream &out, Object *obj) {
     out << "}\n\n";
   }
 
+  if (obj->_properties.size() > 0) {
+    // Write out the array of properties, telling Python which getter and setter
+    // to call when they are assigned or queried in Python code.
+    out << "PyGetSetDef Dtool_Properties_" << ClassName << "[] = {\n";
+
+    Properties::const_iterator pit;
+    for (pit = obj->_properties.begin(); pit != obj->_properties.end(); ++pit) {
+      Property *property = (*pit);
+      const InterrogateElement &ielem = property->_ielement;
+      if (property->_getter == NULL || !is_function_legal(property->_getter)) {
+        continue;
+      }
+
+      out << "  {(char *)\"" << ielem.get_name() << "\","
+          << " &Dtool_" << ClassName << "_" << ielem.get_name() << "_Getter,";
+
+      if (property->_setter == NULL || !is_function_legal(property->_setter)) {
+        out << " NULL,";
+      } else {
+        out << " &Dtool_" << ClassName << "_" << ielem.get_name() << "_Setter,";
+      }
+
+      if (ielem.has_comment()) {
+        out << "(char *)\n";
+        output_quoted(out, 4, ielem.get_comment());
+        out << ",\n    ";
+      } else {
+        out << " NULL, ";
+      }
+
+      // Extra void* argument; we don't make use of it.
+      out << "NULL},\n";
+    }
+
+    out << "  {NULL},\n";
+    out << "};\n\n";
+  }
+
   out << "void Dtool_PyModuleClassInit_" << ClassName << "(PyObject *module) {\n";
   out << "  static bool initdone = false;\n";
   out << "  if (!initdone) {\n";
@@ -2189,6 +2244,11 @@ write_module_class(ostream &out, Object *obj) {
   } else if (has_local_repr) {
     out << "    // __str__ Repr Proxy\n";
     out << "    Dtool_" << ClassName << ".As_PyTypeObject().tp_str = &Dtool_Repr_" << ClassName << ";\n";
+  }
+
+  if (obj->_properties.size() > 0) {
+    // GetSet descriptor slots.
+    out << "    Dtool_" << ClassName << ".As_PyTypeObject().tp_getset = Dtool_Properties_" << ClassName << ";\n";
   }
 
   int num_nested = obj->_itype.number_of_nested_types();
@@ -2396,7 +2456,7 @@ write_function_for_top(ostream &out, InterfaceMaker::Object *obj, InterfaceMaker
   fname += ")";
 
   bool coercion_attempted = false;
-  write_function_for_name(out, obj, func, fname, true, coercion_attempted, func->_args_type, false);
+  write_function_for_name(out, obj, func, fname, true, coercion_attempted, func->_args_type, false, true);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2408,7 +2468,7 @@ void InterfaceMakerPythonNative::
 write_function_for_name(ostream &out1, InterfaceMaker::Object *obj, InterfaceMaker::Function *func,
                         const std::string &function_name,
                         bool coercion_allowed, bool &coercion_attempted,
-                        ArgsType args_type, bool return_int) {
+                        ArgsType args_type, bool return_int, bool write_comment) {
   ostringstream out;
 
   std::map<int, std::set<FunctionRemap *> > MapSets;
@@ -2463,7 +2523,11 @@ write_function_for_name(ostream &out1, InterfaceMaker::Object *obj, InterfaceMak
       // Other functions should raise an exception if the this
       // pointer isn't set or is the wrong type.
       out << "    PyErr_SetString(PyExc_AttributeError, \"C++ object is not yet constructed, or already destructed.\");\n";
-      out << "    return NULL;\n";
+      if (return_int) {
+        out << "    return -1;\n";
+      } else {
+        out << "    return NULL;\n";
+      }
     }
     out << "  }\n";
   }
@@ -2486,12 +2550,9 @@ write_function_for_name(ostream &out1, InterfaceMaker::Object *obj, InterfaceMak
     switch (args_type) {
     case AT_keyword_args:
       indent(out, 2) << "int parameter_count = PyTuple_Size(args);\n";
-
-      if (args_type == AT_keyword_args) {
-        indent(out, 2) << "if (kwds != NULL && PyDict_Check(kwds)) {\n";
-        indent(out, 2) << "  parameter_count += PyDict_Size(kwds);\n";
-        indent(out, 2) << "}\n";
-      }
+      indent(out, 2) << "if (kwds != NULL) {\n";
+      indent(out, 2) << "  parameter_count += PyDict_Size(kwds);\n";
+      indent(out, 2) << "}\n";
       break;
 
     case AT_varargs:
@@ -2499,7 +2560,7 @@ write_function_for_name(ostream &out1, InterfaceMaker::Object *obj, InterfaceMak
       break;
 
     case AT_single_arg:
-      // It shouldń't get here, but we'll handle these cases nonetheless.
+      // It shouldn't get here, but we'll handle these cases nonetheless.
       indent(out, 2) << "const int parameter_count = 1;\n";
       break;
 
@@ -2576,10 +2637,46 @@ write_function_for_name(ostream &out1, InterfaceMaker::Object *obj, InterfaceMak
 
   } else {
     string expected_params = "";
-    for (mii = MapSets.begin(); mii != MapSets.end(); mii++) {
-      write_function_forset(out, obj, func, mii->second, expected_params, 2, is_inplace,
-                            coercion_allowed, coercion_attempted, args_type, return_int);
+    mii = MapSets.begin();
+
+    // If no parameters are accepted, we do need to check that the argument
+    // count is indeed 0, since we won't check that in write_function_instance.
+    if (mii->first == 0 && args_type != AT_no_args) {
+      switch (args_type) {
+      case AT_keyword_args:
+        out << "  if (PyTuple_Size(args) > 0 || (kwds != NULL && PyDict_Size(kwds) > 0)) {\n";
+        out << "    int parameter_count = PyTuple_Size(args);\n";
+        out << "    if (kwds != NULL) {\n";
+        out << "      parameter_count += PyDict_Size(kwds);\n";
+        out << "    }\n";
+        break;
+      case AT_varargs:
+        out << "  if (PyTuple_Size(args) > 0) {\n";
+        out << "    const int parameter_count = PyTuple_GET_SIZE(args);\n";
+        break;
+      case AT_single_arg:
+      default:
+        // Shouldn't happen, but let's handle this case nonetheless.
+        out << "  {\n";
+        out << "    const int parameter_count = 1;\n";
+        break;
+      }
+
+      out << "    PyErr_Format(PyExc_TypeError,\n"
+          << "                 \"" << methodNameFromCppName(func, "", false)
+          << "() takes no arguments (%d given)\",\n"
+          << "                 parameter_count);\n";
+
+      if (return_int) {
+        out << "    return -1;\n";
+      } else {
+        out << "    return (PyObject *) NULL;\n";
+      }
+      out << "  }\n";
     }
+
+    write_function_forset(out, obj, func, mii->second, expected_params, 2, is_inplace,
+                          coercion_allowed, coercion_attempted, args_type, return_int);
 
     out << "  if (!PyErr_Occurred()) {\n";
     out << "    PyErr_SetString(PyExc_TypeError,\n";
@@ -2607,7 +2704,7 @@ write_function_for_name(ostream &out1, InterfaceMaker::Object *obj, InterfaceMak
     FunctionComment = FunctionComment1 + "\n" + FunctionComment;
   }
 
-  if (!return_int) {
+  if (write_comment) {
     // Write out the function doc string.  We only do this if it is
     // not a constructor, since we don't have a place to put the
     // constructor doc string.
@@ -2922,7 +3019,6 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
   string extra_convert;
   string extra_param_check;
   string extra_cleanup;
-  string direct_assign;
 
   bool is_constructor = (remap->_type == FunctionRemap::T_constructor);
 
@@ -2954,7 +3050,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
 
   int num_params = 0;
   bool only_pyobjects = true;
-  bool check_exceptions = false;
+  //bool check_exceptions = false;
 
   int pn;
   for (pn = 0; pn < (int)remap->_parameters.size(); ++pn) {
@@ -3000,12 +3096,11 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
         parameter_list += ", &" + param_name;
 
         extra_convert += " Py_ssize_t " + param_name + "_len = PyUnicode_GetSize((PyObject *)" + param_name + ");"
-                         " wchar_t *" + param_name + "_str = new wchar_t[" + param_name + "_len + 1];"
+                         " wchar_t *" + param_name + "_str = (wchar_t *)alloca(sizeof(wchar_t) * (" + param_name + "_len + 1));"
                          " PyUnicode_AsWideChar(" + param_name + ", " + param_name + "_str, " + param_name + "_len);"
                          " " + param_name + "_str[" + param_name + "_len] = 0;";
 
         pexpr_string = param_name + "_str";
-        extra_cleanup += " delete[] " + param_name + "_str;";
         expected_params += "unicode";
 
       } else if (TypeManager::is_wstring(orig_type)) {
@@ -3018,14 +3113,13 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
         parameter_list += ", &" + param_name;
 
         extra_convert += " Py_ssize_t " + param_name + "_len = PyUnicode_GetSize((PyObject *)" + param_name + ");"
-                         " wchar_t *" + param_name + "_str = new wchar_t[" + param_name + "_len];"
+                         " wchar_t *" + param_name + "_str = (wchar_t *)alloca(sizeof(wchar_t) * " + param_name + "_len);"
                          " PyUnicode_AsWideChar(" + param_name + ", " + param_name + "_str, " + param_name + "_len);";
 
-        pexpr_string = "basic_string<wchar_t>((wchar_t *)" +
+        pexpr_string = "basic_string<wchar_t>(" +
           param_name + "_str, " +
           param_name + "_len)";
 
-        extra_cleanup += " delete[] " + param_name + "_str;";
         expected_params += "unicode";
 
       } else if (TypeManager::is_const_ptr_to_basic_string_wchar(orig_type)) {
@@ -3038,14 +3132,13 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
         parameter_list += ", &" + param_name;
 
         extra_convert += " Py_ssize_t " + param_name + "_len = PyUnicode_GetSize((PyObject *)" + param_name + ");"
-                         " wchar_t *" + param_name + "_str = new wchar_t[" + param_name + "_len];"
+                         " wchar_t *" + param_name + "_str = (wchar_t *)alloca(sizeof(wchar_t) * " + param_name + "_len);"
                          " PyUnicode_AsWideChar(" + param_name + ", " + param_name + "_str, " + param_name + "_len);";
 
-        pexpr_string = "&basic_string<wchar_t>((wchar_t *)" +
+        pexpr_string = "&basic_string<wchar_t>(" +
           param_name + "_str, " +
           param_name + "_len)";
 
-        extra_cleanup += " delete[] " + param_name + "_str;";
         expected_params += "unicode";
 
       } else {
@@ -3057,7 +3150,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
             << param_name << "_str = PyUnicode_AsUTF8AndSize(arg, &"
             << param_name << "_len);\n";
           out << "#else\n";
-          indent(out, indent_level) << "if (PyString_AsStringAndSize(arg, &" 
+          indent(out, indent_level) << "if (PyString_AsStringAndSize(arg, &"
             << param_name << "_str, &" << param_name << "_len) == -1) {\n";
           indent(out, indent_level + 2) << param_name << "_str = NULL;\n";
           indent(out, indent_level) << "}\n";
@@ -3142,14 +3235,9 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
       ++num_params;
 
     } else if (TypeManager::is_integer(type)) {
-      if (args_type == AT_single_arg) {
-        pexpr_string = "(" + type->get_local_name(&parser) + ")PyInt_AS_LONG(arg)";
-        extra_param_check += " && PyInt_Check(arg)";
-      } else {
-        indent(out, indent_level) << "int " << param_name << ";\n";
-        format_specifiers += "i";
-        parameter_list += ", &" + param_name;
-      }
+      indent(out, indent_level) << "int " << param_name << ";\n";
+      format_specifiers += "i";
+      parameter_list += ", &" + param_name;
       expected_params += "int";
       only_pyobjects = false;
       ++num_params;
@@ -3204,7 +3292,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
 
       // It's reasonable to assume that a function taking a PyObject
       // might also throw a TypeError if the type is incorrect.
-      check_exceptions = true;
+      //check_exceptions = true;
 
     } else if (TypeManager::is_pointer_to_Py_buffer(type)) {
       if (args_type == AT_single_arg) {
@@ -3220,7 +3308,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
       extra_cleanup += "Py_XDECREF(" + param_name + "_buffer);";
       expected_params += "memoryview";
       ++num_params;
-      check_exceptions = true;
+      //check_exceptions = true;
 
     } else if (TypeManager::is_pointer(type)) {
       CPPType *obj_type = TypeManager::unwrap(TypeManager::resolve_type(type));
@@ -3323,9 +3411,9 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
 
   // If this is the only overload, don't bother checking for type errors.
   // Any type error that is raised will simply pass through to below.
-  if (func->_remaps.size() == 1) {
-    check_exceptions = false;
-  }
+  //if (func->_remaps.size() == 1) {
+  //  check_exceptions = false;
+  //}
 
   // Track how many curly braces we've opened.
   short open_scopes = 0;
@@ -3396,6 +3484,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
   }
 
   string return_expr;
+
   if (!remap->_void_return &&
       remap->_return_type->new_type_is_atomic_string()) {
     // Treat strings as a special case.  We don't want to format the
@@ -3475,6 +3564,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
         type->output_instance(out, "return_value", &parser);
         out << " = " << return_expr << ";\n";
       }
+
       if (track_interpreter) {
         indent(out, indent_level) << "in_interpreter = 1;\n";
       }
@@ -3487,26 +3577,35 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
       if (!extra_cleanup.empty()) {
         indent(out, indent_level) << extra_cleanup << "\n";
       }
-
-      if (!is_inplace) {
-        return_expr = manage_return_value(out, indent_level, remap, "return_value");
-      }
       if (coercion_possible) {
         indent(out, indent_level)
           << "Py_XDECREF(coerced);\n";
+      }
+      if (!is_inplace) {
+        if (remap->_return_type->return_value_needs_management()) {
+          // If a constructor returns NULL, that means allocation failed.
+          indent(out, indent_level) << "if (return_value == NULL) {\n";
+          if (return_int) {
+            indent(out, indent_level) << "  PyErr_NoMemory();\n";
+            indent(out, indent_level) << "  return -1;\n";
+          } else {
+            indent(out, indent_level) << "  return PyErr_NoMemory();\n";
+          }
+          indent(out, indent_level) << "}\n";
+        }
+
+        return_expr = manage_return_value(out, indent_level, remap, "return_value");
       }
       return_expr = remap->_return_type->temporary_to_return(return_expr);
     }
   }
 
   // If a method raises TypeError, continue.
-  if (check_exceptions) {
+  //if (check_exceptions) {
+  if (true) {
     indent(out, indent_level)
       << "if (PyErr_Occurred()) {\n";
-    if (return_int && !return_expr.empty()) {
-      indent(out, indent_level + 2)
-        << "delete return_value;\n";
-    }
+    delete_return_value(out, indent_level, remap, return_expr);
     indent(out, indent_level)
       << "  if (PyErr_ExceptionMatches(PyExc_TypeError)) {\n";
     indent(out, indent_level)
@@ -3541,10 +3640,8 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
       << "PyErr_SetString(PyExc_AssertionError, notify->get_assert_error_message().c_str());\n";
     indent(out, indent_level + 2)
       << "notify->clear_assert_failed();\n";
+    delete_return_value(out, indent_level + 2, remap, return_expr);
     if (return_int) {
-      if (!return_expr.empty()) {
-        indent(out, indent_level + 2) << "delete return_value;\n";
-      }
       indent(out, indent_level + 2) << "return -1;\n";
     } else {
       indent(out, indent_level + 2) << "return (PyObject *)NULL;\n";
@@ -3967,13 +4064,30 @@ record_object(TypeIndex type_index) {
   for (int ei = 0; ei < num_elements; ei++) {
     ElementIndex element_index = itype.get_element(ei);
     const InterrogateElement &ielement = idb->get_element(element_index);
-    if (ielement.has_getter()) {
-      FunctionIndex func_index = ielement.get_getter();
-      record_function(itype, func_index);
-    }
+
+    Property *property = new Property(ielement);
+
     if (ielement.has_setter()) {
       FunctionIndex func_index = ielement.get_setter();
-      record_function(itype, func_index);
+      Function *setter = record_function(itype, func_index);
+      if (is_function_legal(setter)) {
+        property->_setter = setter;
+      }
+    }
+
+    if (ielement.has_getter()) {
+      FunctionIndex func_index = ielement.get_getter();
+      Function *getter = record_function(itype, func_index);
+      if (is_function_legal(getter)) {
+        property->_getter = getter;
+      }
+    }
+
+    if (property->_getter != NULL) {
+      object->_properties.push_back(property);
+    } else {
+      // No use exporting a property without a getter.
+      delete property;
     }
   }
 

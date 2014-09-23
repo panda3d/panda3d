@@ -40,7 +40,7 @@ protected:
 
 PUBLISHED:
   virtual ~GraphicsBuffer();
-  void set_size(int x, int y);
+  virtual void set_size(int x, int y);
 
 public:
   virtual void request_open();

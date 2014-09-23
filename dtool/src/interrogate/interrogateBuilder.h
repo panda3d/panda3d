@@ -38,6 +38,7 @@ class CPPScope;
 class CPPIdentifier;
 class CPPNameComponent;
 class CPPManifest;
+class CPPMakeProperty;
 class CPPMakeSeq;
 class InterrogateType;
 class InterrogateFunction;
@@ -108,6 +109,9 @@ public:
                CPPStructType *struct_type, CPPScope *scope,
                int flags, const string &expression = string());
 
+  ElementIndex
+  get_make_property(CPPMakeProperty *make_property, CPPStructType *struct_type);
+
   MakeSeqIndex
   get_make_seq(CPPMakeSeq *make_seq, CPPStructType *struct_type);
 
@@ -132,10 +136,12 @@ public:
   typedef map<string, TypeIndex> TypesByName;
   typedef map<string, FunctionIndex> FunctionsByName;
   typedef map<string, MakeSeqIndex> MakeSeqsByName;
+  typedef map<string, ElementIndex> PropertiesByName;
 
   TypesByName _types_by_name;
   FunctionsByName _functions_by_name;
   MakeSeqsByName _make_seqs_by_name;
+  PropertiesByName _properties_by_name;
 
   typedef map<string, char> IncludeFiles;
   IncludeFiles _include_files;

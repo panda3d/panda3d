@@ -4,6 +4,7 @@
 #include "pfstream.cxx"
 #include "pfstreamBuf.cxx"
 #include "preprocess_argv.cxx"
+#include "string_utils.cxx"
 #include "stringDecoder.cxx"
 #include "textEncoder.cxx"
 #include "unicodeLatinMap.cxx"

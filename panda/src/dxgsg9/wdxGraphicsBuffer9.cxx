@@ -276,25 +276,24 @@ rebuild_bitplanes() {
   IDirect3DSurface9 *color_surf = 0;
   IDirect3DSurface9 *depth_surf = 0;
   DWORD render_target_index;
-  
+
   render_target_index = 0;
-  
+
   // Decide how big the bitplanes should be.
 
   if ((_host != 0)&&(_creation_flags & GraphicsPipe::BF_size_track_host)) {
-    if ((_host->get_x_size() != _x_size)||
-        (_host->get_y_size() != _y_size)) {
+    if (_host->get_size() != _size) {
       set_size_and_recalc(_host->get_x_size(),
                           _host->get_y_size());
     }
   }
-  int bitplane_x = _x_size;
-  int bitplane_y = _y_size;
+  int bitplane_x = get_x_size();
+  int bitplane_y = get_y_size();
   if (Texture::get_textures_power_2() != ATS_none) {
     bitplane_x = Texture::up_to_power_2(bitplane_x);
     bitplane_y = Texture::up_to_power_2(bitplane_y);
   }
-  
+
   // Find the color and depth textures.  Either may be present,
   // or neither.
   //
@@ -342,7 +341,7 @@ rebuild_bitplanes() {
           }
           break;
         }
-      }                
+      }
     }
   }
 
@@ -373,7 +372,7 @@ rebuild_bitplanes() {
       _color_backing_store = NULL;
     }
     color_tex = get_texture(color_tex_index);
-    color_tex->set_size_padded(_x_size, _y_size);
+    color_tex->set_size_padded(get_x_size(), get_y_size());
 //    color_tex->set_format(Texture::F_rgba);
     color_ctx =
       DCAST(DXTextureContext9,
@@ -445,14 +444,14 @@ rebuild_bitplanes() {
       _depth_backing_store = NULL;
     }
 
-    if (_shared_depth_buffer) {      
+    if (_shared_depth_buffer) {
       depth_tex = _shared_depth_buffer -> get_texture(depth_tex_index);
     }
-    if (depth_tex == 0) {        
+    if (depth_tex == 0) {
       depth_tex = get_texture(depth_tex_index);
     }
 
-    depth_tex->set_size_padded(_x_size, _y_size);
+    depth_tex->set_size_padded(get_x_size(), get_y_size());
     depth_tex->set_format(Texture::F_depth_stencil);
     depth_ctx =
       DCAST(DXTextureContext9,
@@ -855,7 +854,7 @@ share_depth_buffer(GraphicsOutput *graphics_output) {
     if (_debug) {
       printf ("share_depth_buffer\n");
     }
-    
+
     // check buffer sizes
     if (this -> get_x_size() != input_graphics_output -> get_x_size()) {    
       if (_debug) {

@@ -1,10 +1,8 @@
+/* A Bison parser, made by GNU Bison 2.7.  */
 
-/* A Bison parser, made by GNU Bison 2.4.1.  */
-
-/* Skeleton interface for Bison's Yacc-like parsers in C
+/* Bison interface for Yacc-like parsers in C
    
-      Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004, 2005, 2006
-   Free Software Foundation, Inc.
+      Copyright (C) 1984, 1989-1990, 2000-2012 Free Software Foundation, Inc.
    
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -32,6 +30,15 @@
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
+#ifndef YY_CPPYY_BUILT_TMP_CPPBISON_YXX_H_INCLUDED
+# define YY_CPPYY_BUILT_TMP_CPPBISON_YXX_H_INCLUDED
+/* Enabling traces.  */
+#ifndef YYDEBUG
+# define YYDEBUG 0
+#endif
+#if YYDEBUG
+extern int cppyydebug;
+#endif
 
 /* Tokens.  */
 #ifndef YYTOKENTYPE
@@ -79,35 +86,35 @@
      XOREQUAL = 295,
      LSHIFTEQUAL = 296,
      RSHIFTEQUAL = 297,
-     TOKENPASTE = 298,
-     KW_BEGIN_PUBLISH = 299,
-     KW_BLOCKING = 300,
-     KW_BOOL = 301,
-     KW_CATCH = 302,
-     KW_CHAR = 303,
-     KW_WCHAR_T = 304,
-     KW_CLASS = 305,
-     KW_CONST = 306,
-     KW_DELETE = 307,
-     KW_DOUBLE = 308,
-     KW_DYNAMIC_CAST = 309,
-     KW_ELSE = 310,
-     KW_END_PUBLISH = 311,
-     KW_ENUM = 312,
-     KW_EXTENSION = 313,
-     KW_EXTERN = 314,
-     KW_EXPLICIT = 315,
-     KW_PUBLISHED = 316,
-     KW_FALSE = 317,
-     KW_FLOAT = 318,
-     KW_FRIEND = 319,
-     KW_FOR = 320,
-     KW_GOTO = 321,
-     KW_IF = 322,
-     KW_INLINE = 323,
-     KW_INT = 324,
-     KW_LONG = 325,
-     KW_LONGLONG = 326,
+     KW_BEGIN_PUBLISH = 298,
+     KW_BLOCKING = 299,
+     KW_BOOL = 300,
+     KW_CATCH = 301,
+     KW_CHAR = 302,
+     KW_WCHAR_T = 303,
+     KW_CLASS = 304,
+     KW_CONST = 305,
+     KW_DELETE = 306,
+     KW_DOUBLE = 307,
+     KW_DYNAMIC_CAST = 308,
+     KW_ELSE = 309,
+     KW_END_PUBLISH = 310,
+     KW_ENUM = 311,
+     KW_EXTENSION = 312,
+     KW_EXTERN = 313,
+     KW_EXPLICIT = 314,
+     KW_PUBLISHED = 315,
+     KW_FALSE = 316,
+     KW_FLOAT = 317,
+     KW_FRIEND = 318,
+     KW_FOR = 319,
+     KW_GOTO = 320,
+     KW_IF = 321,
+     KW_INLINE = 322,
+     KW_INT = 323,
+     KW_LONG = 324,
+     KW_LONGLONG = 325,
+     KW_MAKE_PROPERTY = 326,
      KW_MAKE_SEQ = 327,
      KW_MUTABLE = 328,
      KW_NAMESPACE = 329,
@@ -183,35 +190,35 @@
 #define XOREQUAL 295
 #define LSHIFTEQUAL 296
 #define RSHIFTEQUAL 297
-#define TOKENPASTE 298
-#define KW_BEGIN_PUBLISH 299
-#define KW_BLOCKING 300
-#define KW_BOOL 301
-#define KW_CATCH 302
-#define KW_CHAR 303
-#define KW_WCHAR_T 304
-#define KW_CLASS 305
-#define KW_CONST 306
-#define KW_DELETE 307
-#define KW_DOUBLE 308
-#define KW_DYNAMIC_CAST 309
-#define KW_ELSE 310
-#define KW_END_PUBLISH 311
-#define KW_ENUM 312
-#define KW_EXTENSION 313
-#define KW_EXTERN 314
-#define KW_EXPLICIT 315
-#define KW_PUBLISHED 316
-#define KW_FALSE 317
-#define KW_FLOAT 318
-#define KW_FRIEND 319
-#define KW_FOR 320
-#define KW_GOTO 321
-#define KW_IF 322
-#define KW_INLINE 323
-#define KW_INT 324
-#define KW_LONG 325
-#define KW_LONGLONG 326
+#define KW_BEGIN_PUBLISH 298
+#define KW_BLOCKING 299
+#define KW_BOOL 300
+#define KW_CATCH 301
+#define KW_CHAR 302
+#define KW_WCHAR_T 303
+#define KW_CLASS 304
+#define KW_CONST 305
+#define KW_DELETE 306
+#define KW_DOUBLE 307
+#define KW_DYNAMIC_CAST 308
+#define KW_ELSE 309
+#define KW_END_PUBLISH 310
+#define KW_ENUM 311
+#define KW_EXTENSION 312
+#define KW_EXTERN 313
+#define KW_EXPLICIT 314
+#define KW_PUBLISHED 315
+#define KW_FALSE 316
+#define KW_FLOAT 317
+#define KW_FRIEND 318
+#define KW_FOR 319
+#define KW_GOTO 320
+#define KW_IF 321
+#define KW_INLINE 322
+#define KW_INT 323
+#define KW_LONG 324
+#define KW_LONGLONG 325
+#define KW_MAKE_PROPERTY 326
 #define KW_MAKE_SEQ 327
 #define KW_MUTABLE 328
 #define KW_NAMESPACE 329
@@ -247,14 +254,11 @@
 
 
 
-
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
 # define YYSTYPE_IS_DECLARED 1
 #endif
-
-
 
 #if ! defined YYLTYPE && ! defined YYLTYPE_IS_DECLARED
 typedef struct YYLTYPE
@@ -270,4 +274,18 @@ typedef struct YYLTYPE
 #endif
 
 
+#ifdef YYPARSE_PARAM
+#if defined __STDC__ || defined __cplusplus
+int cppyyparse (void *YYPARSE_PARAM);
+#else
+int cppyyparse ();
+#endif
+#else /* ! YYPARSE_PARAM */
+#if defined __STDC__ || defined __cplusplus
+int cppyyparse (void);
+#else
+int cppyyparse ();
+#endif
+#endif /* ! YYPARSE_PARAM */
 
+#endif /* !YY_CPPYY_BUILT_TMP_CPPBISON_YXX_H_INCLUDED  */

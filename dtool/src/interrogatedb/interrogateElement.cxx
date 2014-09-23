@@ -30,6 +30,7 @@ output(ostream &out) const {
       << _getter << " "
       << _setter << " ";
   idf_output_string(out, _scoped_name);
+  idf_output_string(out, _comment, '\n');
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -43,6 +44,10 @@ input(istream &in) {
   InterrogateComponent::input(in);
   in >> _flags >> _type >> _getter >> _setter;
   idf_input_string(in, _scoped_name);
+
+  if (InterrogateDatabase::get_file_minor_version() >= 3) {
+    idf_input_string(in, _comment);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

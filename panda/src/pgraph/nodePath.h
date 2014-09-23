@@ -615,6 +615,7 @@ PUBLISHED:
 
   void set_shader_input(const ShaderInput *inp);
   void set_shader_input(const InternalName *id, Texture *tex, int priority=0);
+  void set_shader_input(const InternalName *id, Texture *tex, bool read, bool write, int z=-1, int n=0, int priority=0);
   void set_shader_input(const InternalName *id, const NodePath &np, int priority=0);
   void set_shader_input(const InternalName *id, const PTA_float &v, int priority=0);
   void set_shader_input(const InternalName *id, const PTA_double &v, int priority=0);
@@ -640,41 +641,13 @@ PUBLISHED:
   void set_shader_input(const InternalName *id, PN_stdfloat n1, PN_stdfloat n2=0,
                         PN_stdfloat n3=0, PN_stdfloat n4=0, int priority=0);
 
-  void set_shader_input(const string &id, Texture *tex, int priority=0);
-  void set_shader_input(const string &id, const NodePath &np, int priority=0);
-  void set_shader_input(const string &id, const PTA_float &v, int priority=0);
-  void set_shader_input(const string &id, const PTA_double &v, int priority=0);
-  void set_shader_input(const string &id, const PTA_int &v, int priority=0);
-  void set_shader_input(const string &id, const PTA_LVecBase4 &v, int priority=0);
-  void set_shader_input(const string &id, const PTA_LVecBase3 &v, int priority=0);
-  void set_shader_input(const string &id, const PTA_LVecBase2 &v, int priority=0);
-  void set_shader_input(const string &id, const PTA_LMatrix4 &v, int priority=0);
-  void set_shader_input(const string &id, const PTA_LMatrix3 &v, int priority=0);
-  void set_shader_input(const string &id, const LVecBase4 &v, int priority=0);
-  void set_shader_input(const string &id, const LVecBase3 &v, int priority=0);
-  void set_shader_input(const string &id, const LVecBase2 &v, int priority=0);
-  void set_shader_input(const string &id, const LMatrix4 &v, int priority=0);
-  void set_shader_input(const string &id, const LMatrix3 &v, int priority=0);
-  void set_shader_input(const string &id, const PTA_LVecBase4i &v, int priority=0);
-  void set_shader_input(const string &id, const PTA_LVecBase3i &v, int priority=0);
-  void set_shader_input(const string &id, const PTA_LVecBase2i &v, int priority=0);
-  void set_shader_input(const string &id, const LVecBase4i &v, int priority=0);
-  void set_shader_input(const string &id, const LVecBase3i &v, int priority=0);
-  void set_shader_input(const string &id, const LVecBase2i &v, int priority=0);
-  void set_shader_input(const string &id, int n1, int n2=0, int n3=0,
-                                          int n4=0, int priority=0);
-  void set_shader_input(const string &id, PN_stdfloat n1, PN_stdfloat n2=0,
-                        PN_stdfloat n3=0, PN_stdfloat n4=0, int priority=0);
-
   void clear_shader_input(const InternalName *id);
-  void clear_shader_input(const string &id);
   void set_instance_count(int instance_count);
 
   const Shader *get_shader() const;
   const ShaderInput *get_shader_input(const InternalName *id) const;
-  const ShaderInput *get_shader_input(const string &id) const;
   const int get_instance_count() const;
-  
+
   void set_tex_transform(TextureStage *stage, const TransformState *transform);
   void clear_tex_transform();
   void clear_tex_transform(TextureStage *stage);

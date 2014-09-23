@@ -66,6 +66,7 @@ public:
   INLINE int number_of_enum_values() const;
   INLINE const string &get_enum_value_name(int n) const;
   INLINE const string &get_enum_value_scoped_name(int n) const;
+  INLINE const string &get_enum_value_comment(int n) const;
   INLINE int get_enum_value(int n) const;
 
   INLINE bool is_struct() const;
@@ -189,6 +190,7 @@ public:
 
     string _name;
     string _scoped_name;
+    string _comment;
     int _value;
   };
 

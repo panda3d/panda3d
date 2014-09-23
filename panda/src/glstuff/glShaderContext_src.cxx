@@ -267,6 +267,7 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
           if (size > 6 && matrix_name.compare(size - 6, 6, "Matrix") == 0) {
             Shader::ShaderMatSpec bind;
             bind._id = arg_id;
+            bind._func = Shader::SMF_compose;
             if (transpose) {
               bind._piece = Shader::SMP_transpose;
             } else {
@@ -274,9 +275,10 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
             }
             bind._arg[0] = NULL;
             bind._arg[1] = NULL;
+            bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
+            bind._dep[1] = Shader::SSD_general | Shader::SSD_transform;
 
             if (matrix_name == "ModelViewProjectionMatrix") {
-              bind._func = Shader::SMF_compose;
               if (inverse) {
                 bind._part[0] = Shader::SMO_apiclip_to_view;
                 bind._part[1] = Shader::SMO_view_to_model;
@@ -284,11 +286,8 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
                 bind._part[0] = Shader::SMO_model_to_view;
                 bind._part[1] = Shader::SMO_view_to_apiclip;
               }
-              bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
-              bind._dep[1] = Shader::SSD_general | Shader::SSD_transform;
 
             } else if (matrix_name == "ModelViewMatrix") {
-              bind._func = Shader::SMF_compose;
               if (inverse) {
                 bind._part[0] = Shader::SMO_apiview_to_view;
                 bind._part[1] = Shader::SMO_view_to_model;
@@ -296,11 +295,8 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
                 bind._part[0] = Shader::SMO_model_to_view;
                 bind._part[1] = Shader::SMO_view_to_apiview;
               }
-              bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
-              bind._dep[1] = Shader::SSD_general | Shader::SSD_transform;
 
             } else if (matrix_name == "ProjectionMatrix") {
-              bind._func = Shader::SMF_compose;
               if (inverse) {
                 bind._part[0] = Shader::SMO_apiclip_to_view;
                 bind._part[1] = Shader::SMO_view_to_apiview;
@@ -308,12 +304,9 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
                 bind._part[0] = Shader::SMO_apiview_to_view;
                 bind._part[1] = Shader::SMO_view_to_apiclip;
               }
-              bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
-              bind._dep[1] = Shader::SSD_general | Shader::SSD_transform;
 
             } else if (matrix_name == "NormalMatrix") {
               // This is really the upper 3x3 of the ModelViewMatrixInverseTranspose.
-              bind._func = Shader::SMF_compose;
               if (inverse) {
                 bind._part[0] = Shader::SMO_model_to_view;
                 bind._part[1] = Shader::SMO_view_to_apiview;
@@ -321,13 +314,38 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
                 bind._part[0] = Shader::SMO_apiview_to_view;
                 bind._part[1] = Shader::SMO_view_to_model;
               }
-              bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
-              bind._dep[1] = Shader::SSD_general | Shader::SSD_transform;
 
               if (transpose) {
                 bind._piece = Shader::SMP_upper3x3;
               } else {
                 bind._piece = Shader::SMP_transpose3x3;
+              }
+
+            } else if (matrix_name == "ModelMatrix") {
+              if (inverse) {
+                bind._part[0] = Shader::SMO_world_to_view;
+                bind._part[1] = Shader::SMO_view_to_model;
+              } else {
+                bind._part[0] = Shader::SMO_model_to_view;
+                bind._part[1] = Shader::SMO_view_to_world;
+              }
+
+            } else if (matrix_name == "ViewMatrix") {
+              if (inverse) {
+                bind._part[0] = Shader::SMO_apiview_to_view;
+                bind._part[1] = Shader::SMO_view_to_world;
+              } else {
+                bind._part[0] = Shader::SMO_world_to_view;
+                bind._part[1] = Shader::SMO_view_to_apiview;
+              }
+
+            } else if (matrix_name == "ViewProjectionMatrix") {
+              if (inverse) {
+                bind._part[0] = Shader::SMO_apiclip_to_view;
+                bind._part[1] = Shader::SMO_view_to_world;
+              } else {
+                bind._part[0] = Shader::SMO_world_to_view;
+                bind._part[1] = Shader::SMO_view_to_apiclip;
               }
 
             } else {
@@ -410,21 +428,21 @@ CLP(ShaderContext)(CLP(GraphicsStateGuardian) *glgsg, Shader *s) : ShaderContext
 
           if (param_name == "osg_ViewMatrix") {
             bind._piece = Shader::SMP_whole;
-            bind._func = Shader::SMF_first;
+            bind._func = Shader::SMF_compose;
             bind._part[0] = Shader::SMO_world_to_view;
-            bind._part[1] = Shader::SMO_identity;
+            bind._part[1] = Shader::SMO_view_to_apiview;
             bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
-            bind._dep[1] = Shader::SSD_NONE;
+            bind._dep[1] = Shader::SSD_general | Shader::SSD_transform;
             s->_mat_spec.push_back(bind);
             continue;
 
           } else if (param_name == "osg_InverseViewMatrix") {
             bind._piece = Shader::SMP_whole;
-            bind._func = Shader::SMF_first;
-            bind._part[0] = Shader::SMO_view_to_world;
-            bind._part[1] = Shader::SMO_identity;
+            bind._func = Shader::SMF_compose;
+            bind._part[0] = Shader::SMO_apiview_to_view;
+            bind._part[1] = Shader::SMO_view_to_world;
             bind._dep[0] = Shader::SSD_general | Shader::SSD_transform;
-            bind._dep[1] = Shader::SSD_NONE;
+            bind._dep[1] = Shader::SSD_general | Shader::SSD_transform;
             s->_mat_spec.push_back(bind);
             continue;
 
@@ -1135,9 +1153,14 @@ disable_shader_texture_bindings() {
 
     if (gl_enable_memory_barriers) {
       for (int i = 0; i < num_image_units; ++i) {
-        // We don't distinguish between read-only and read-write/write-only
-        // image access, so we have to assume that the shader wrote to it.
-        _glsl_img_textures[i]->mark_incoherent();
+        const InternalName *name = _glsl_img_inputs[i];
+        const ShaderInput *input = _glgsg->_target_shader->get_shader_input(name);
+
+        if ((input->_access & ShaderInput::A_write) != 0) {
+          _glsl_img_textures[i]->mark_incoherent(true);
+        } else {
+          _glsl_img_textures[i]->mark_incoherent(false);
+        }
         _glsl_img_textures[i] = NULL;
       }
     }
@@ -1175,21 +1198,18 @@ update_shader_texture_bindings(ShaderContext *prev) {
   int num_image_units = min(_glsl_img_inputs.size(), (size_t)_glgsg->_max_image_units);
 
   if (num_image_units > 0) {
-    GLuint *multi_img = NULL;
-    // If we support multi-bind, prepare an array.
-    if (_glgsg->_supports_multi_bind) {
-      multi_img = new GLuint[num_image_units];
-    }
-
     for (int i = 0; i < num_image_units; ++i) {
       const InternalName *name = _glsl_img_inputs[i];
-      Texture *tex = _glgsg->_target_shader->get_shader_input_texture(name);
+      const ShaderInput *input = _glgsg->_target_shader->get_shader_input(name);
+      Texture *tex = input->get_texture();
 
       GLuint gl_tex = 0;
+      CLP(TextureContext) *gtc;
+
       if (tex != NULL) {
         int view = _glgsg->get_current_tex_view_offset();
 
-        CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tex->prepare_now(view, _glgsg->_prepared_objects, _glgsg));
+        gtc = DCAST(CLP(TextureContext), tex->prepare_now(view, _glgsg->_prepared_objects, _glgsg));
         if (gtc != (TextureContext*)NULL) {
           _glsl_img_textures[i] = gtc;
 
@@ -1202,26 +1222,44 @@ update_shader_texture_bindings(ShaderContext *prev) {
         }
       }
 
-      if (multi_img != NULL) {
-        // Put in array so we can multi-bind later.
-        multi_img[i] = gl_tex;
-
+      if (gl_tex == 0) {
+        _glgsg->_glBindImageTexture(i, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R8);
       } else {
-        // We don't support multi-bind, so bind now in the same way that multi-bind would have done it.
-        if (gl_tex == 0) {
-          _glgsg->_glBindImageTexture(i, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R8);
-        } else {
-          //TODO: automatically convert to sized type instead of plain GL_RGBA
-          // If a base type is used, it will crash.
-          GLint internal_format = _glgsg->get_internal_image_format(tex);
-          _glgsg->_glBindImageTexture(i, gl_tex, 0, GL_TRUE, 0, GL_READ_WRITE, internal_format);
-        }
-      }
-    }
+        //TODO: automatically convert to sized type instead of plain GL_RGBA
+        // If a base type is used, it will crash.
+        if (gtc->_internal_format == GL_RGBA || gtc->_internal_format == GL_RGB) {
+          GLCAT.error()
+            << "Texture " << tex->get_name() << " has an unsized format.  Textures bound "
+            << "to a shader as an image need a sized format.\n";
 
-    if (multi_img != NULL) {
-      _glgsg->_glBindImageTextures(0, num_image_units, multi_img);
-      delete[] multi_img;
+          // This may not actually be right, but may still prevent a crash.
+          if (gtc->_internal_format == GL_RGBA) {
+            gtc->_internal_format = GL_RGBA8;
+          } else {
+            gtc->_internal_format = GL_RGB8;
+          }
+        }
+
+        GLenum access = GL_READ_ONLY;
+        GLboolean layered = (input->_access & ShaderInput::A_layered) != 0;
+
+        if ((input->_access & ShaderInput::A_read) != 0 &&
+            (input->_access & ShaderInput::A_write) != 0) {
+          access = GL_READ_WRITE;
+
+        } else if ((input->_access & ShaderInput::A_read) != 0) {
+          access = GL_READ_ONLY;
+
+        } else if ((input->_access & ShaderInput::A_write) != 0) {
+          access = GL_WRITE_ONLY;
+
+        } else {
+          access = GL_READ_ONLY;
+          gl_tex = 0;
+        }
+        _glgsg->_glBindImageTexture(i, gl_tex, input->_bind_level, layered,
+                                    input->_bind_layer, access, gtc->_internal_format);
+      }
     }
   }
 #endif
@@ -1314,7 +1352,7 @@ update_shader_texture_bindings(ShaderContext *prev) {
 
 #ifndef OPENGLES
   if (barriers != 0) {
-    // Issue a memory barrier.
+    // Issue a memory barrier prior to this shader's execution.
     _glgsg->issue_memory_barrier(barriers);
   }
 #endif

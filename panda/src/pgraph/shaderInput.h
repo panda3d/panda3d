@@ -43,10 +43,18 @@ public:
   INLINE ~ShaderInput();
 
 PUBLISHED:
+  // Used when binding texture images.
+  enum AccessFlags {
+    A_read    = 0x01,
+    A_write   = 0x02,
+    A_layered = 0x04,
+  };
+
   static const ShaderInput *get_blank();
   INLINE ShaderInput(const InternalName *id, int priority=0);
   INLINE ShaderInput(const InternalName *id, const NodePath &np, int priority=0);
   INLINE ShaderInput(const InternalName *id, Texture *tex, int priority=0);
+  INLINE ShaderInput(const InternalName *id, Texture *tex, bool read, bool write, int z=-1, int n=0, int priority=0);
   INLINE ShaderInput(const InternalName *id, const PTA_float &ptr, int priority=0);
   INLINE ShaderInput(const InternalName *id, const PTA_LVecBase4f &ptr, int priority=0);
   INLINE ShaderInput(const InternalName *id, const PTA_LVecBase3f &ptr, int priority=0);
@@ -85,9 +93,9 @@ PUBLISHED:
     M_nodepath,
     M_numeric
   };
-  
+
   INLINE const InternalName *get_name() const;
-  
+
   INLINE int get_value_type() const;
   INLINE int get_priority() const;
   INLINE Texture *get_texture() const;
@@ -106,6 +114,11 @@ private:
   PT(Texture) _stored_texture;
   NodePath _stored_nodepath;
   LVecBase4 _stored_vector;
+
+public:
+  int _bind_layer;
+  int _bind_level;
+  int _access;
 
 public:
   static TypeHandle get_class_type() {

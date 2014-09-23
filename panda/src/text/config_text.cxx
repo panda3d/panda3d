@@ -15,9 +15,11 @@
 #include "config_text.h"
 #include "staticTextFont.h"
 #include "textFont.h"
+#include "textGlyph.h"
 #include "textNode.h"
 #include "textProperties.h"
 #include "dynamicTextFont.h"
+#include "dynamicTextGlyph.h"
 #include "dynamicTextPage.h"
 #include "geomTextGlyph.h"
 #include "geomTextGlyph.h"
@@ -217,11 +219,13 @@ init_libtext() {
 
   StaticTextFont::init_type();
   TextFont::init_type();
+  TextGlyph::init_type();
   TextNode::init_type();
   TextProperties::init_type();
 
 #ifdef HAVE_FREETYPE
   DynamicTextFont::init_type();
+  DynamicTextGlyph::init_type();
   DynamicTextPage::init_type();
   GeomTextGlyph::init_type();
   GeomTextGlyph::init_type();

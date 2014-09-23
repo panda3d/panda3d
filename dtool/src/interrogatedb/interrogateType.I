@@ -264,6 +264,19 @@ get_enum_value_scoped_name(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: InterrogateType::get_enum_value_comment
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE const string &InterrogateType::
+get_enum_value_comment(int n) const {
+  if (n >= 0 && n < (int)_enum_values.size()) {
+    return _enum_values[n]._comment;
+  }
+  return _empty_string;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::get_enum_value
 //       Access: Public
 //  Description:

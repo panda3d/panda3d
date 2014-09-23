@@ -160,7 +160,6 @@ private:
   bool _ime_open;
   bool _ime_active;
   bool _tracking_mouse_leaving;
-  bool _maximized;
   bool _bCursor_in_WindowClientArea;
   HANDLE _input_device_handle[32];
   HCURSOR _cursor;

@@ -24,6 +24,7 @@
 #include "collideMask.h"
 #include "collisionNode.h"
 #include "transformState.h"
+#include "boundingSphere.h"
 
 class BulletShape;
 
@@ -47,6 +48,7 @@ PUBLISHED:
 
   LPoint3 get_shape_pos(int idx) const;
   LMatrix4 get_shape_mat(int idx) const;
+  BoundingSphere get_shape_bounds() const;
 
   void add_shapes_from_collision_solids(CollisionNode *cnode);
 

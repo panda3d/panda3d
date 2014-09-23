@@ -40,13 +40,14 @@ public:
   DynamicTextGlyph *slot_glyph(int character, 
                                int x_size, int y_size, int margin);
 
+PUBLISHED:
   INLINE int get_x_size() const;
   INLINE int get_y_size() const;
 
-  void fill_region(int x, int y, int x_size, int y_size, const LColor &color);
-
-PUBLISHED:
   INLINE bool is_empty() const;
+
+public:
+  void fill_region(int x, int y, int x_size, int y_size, const LColor &color);
 
 private:
   int garbage_collect(DynamicTextFont *font);

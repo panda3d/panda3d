@@ -668,3 +668,35 @@ set_transform_dirty() {
   transform_changed();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BulletBodyNode::get_shape_bounds
+//       Access: Published
+//  Description: Returns the current bounds of all collision shapes
+//               owned by this body.
+////////////////////////////////////////////////////////////////////
+BoundingSphere BulletBodyNode::
+get_shape_bounds() const {
+
+/*
+  btTransform tr;
+  tr.setIdentity();
+  btVector3 aabbMin,aabbMax;
+  ptr()->getAabb(tr,aabbMin,aabbMax);
+  btVector3 o = tr.getOrigin();
+cout << "aabbMin " << aabbMin.x() << " " << aabbMin.y() << " " << aabbMin.z() << endl;
+cout << "aabbMax " << aabbMax.x() << " " << aabbMax.y() << " " << aabbMax.z() << endl;
+cout << "origin " << aabbMin.x() << " " << aabbMin.y() << " " << aabbMin.z() << endl;
+*/
+
+  btVector3 center;
+  btScalar radius;
+
+  if (_shape) {
+    _shape->getBoundingSphere(center, radius);
+  }
+
+  BoundingSphere bounds(btVector3_to_LPoint3(center), (PN_stdfloat)radius);
+
+  return bounds;
+}
+

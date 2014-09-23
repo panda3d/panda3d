@@ -138,6 +138,8 @@ EXPCL_DTOOLCONFIG int interrogate_manifest_get_int_value(ManifestIndex manifest)
 
 EXPCL_DTOOLCONFIG const char *interrogate_element_name(ElementIndex element);
 EXPCL_DTOOLCONFIG const char *interrogate_element_scoped_name(ElementIndex element);
+EXPCL_DTOOLCONFIG bool interrogate_element_has_comment(ElementIndex element);
+EXPCL_DTOOLCONFIG const char *interrogate_element_comment(ElementIndex element);
 EXPCL_DTOOLCONFIG ElementIndex interrogate_get_element_by_name(const char *element_name);
 EXPCL_DTOOLCONFIG ElementIndex interrogate_get_element_by_scoped_name(const char *element_name);
 
@@ -454,6 +456,7 @@ EXPCL_DTOOLCONFIG bool interrogate_type_is_enum(TypeIndex type);
 EXPCL_DTOOLCONFIG int interrogate_type_number_of_enum_values(TypeIndex type);
 EXPCL_DTOOLCONFIG const char *interrogate_type_enum_value_name(TypeIndex type, int n);
 EXPCL_DTOOLCONFIG const char *interrogate_type_enum_value_scoped_name(TypeIndex type, int n);
+EXPCL_DTOOLCONFIG const char *interrogate_type_enum_value_comment(TypeIndex type, int n);
 EXPCL_DTOOLCONFIG int interrogate_type_enum_value(TypeIndex type, int n);
 
 // If none of the above is true, the type is some extension type.  It

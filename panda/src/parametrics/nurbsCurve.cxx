@@ -20,9 +20,9 @@
 #include "datagramIterator.h"
 #include "bamWriter.h"
 #include "bamReader.h"
+#include "epvector.h"
 
 TypeHandle NurbsCurve::_type_handle;
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurve::Constructor

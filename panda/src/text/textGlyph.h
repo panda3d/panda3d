@@ -28,7 +28,7 @@
 //               font.  This is a piece of renderable geometry of some
 //               kind.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_TEXT TextGlyph : public ReferenceCount {
+class EXPCL_PANDA_TEXT TextGlyph : public TypedReferenceCount {
 public:
   INLINE TextGlyph(int character);
   INLINE TextGlyph(int character, const Geom *geom, 
@@ -37,6 +37,7 @@ public:
   INLINE void operator = (const TextGlyph &copy);
   virtual ~TextGlyph();
 
+PUBLISHED:
   INLINE int get_character() const;
   INLINE PT(Geom) get_geom(Geom::UsageHint usage_hint) const;
   INLINE const RenderState *get_state() const;
@@ -49,6 +50,23 @@ protected:
   CPT(Geom) _geom;
   CPT(RenderState) _state;
   PN_stdfloat _advance;
+
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    TypedReferenceCount::init_type();
+    register_type(_type_handle, "TextGlyph",
+                  TypedReferenceCount::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+private:
+  static TypeHandle _type_handle;
 };
 
 #include "textGlyph.I"

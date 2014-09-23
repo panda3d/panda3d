@@ -510,6 +510,16 @@ ConfigVariableInt lens_geom_segments
           "lens; for a normal perspective or orthographic lens, the "
           "wireframe is not subdivided."));
 
+ConfigVariableBool stereo_lens_old_convergence
+("stereo-lens-old-convergence", false,
+ PRC_DESC("In Panda3D 1.8 and below, when using a stereo lens, Panda "
+          "generate an incorrect frustum skew for a given convergence "
+          "distance, meaning that the left-right images wouldn't "
+          "overlap at the configured distance.  This calculation has "
+          "since been corrected, but if your application relies on the "
+          "old, incorrect behavior, this may be set to 'true' to switch "
+          "back to the old calculation."));
+
 ConfigVariableString cg_glsl_version
 ("cg-glsl-version", "",
  PRC_DESC("If this is set, it forces the Cg compiler to generate GLSL "
@@ -604,10 +614,10 @@ operator << (ostream &out, ShaderUtilization sgc) {
   switch (sgc) {
   case SUT_none:
     return out << "none";
-   
+
   case SUT_basic:
     return out << "basic";
-    
+
   case SUT_advanced:
     return out << "advanced";
 

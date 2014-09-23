@@ -176,7 +176,7 @@ QT_AUTOBRIEF           = YES
 # The new default is to treat a multi-line C++ comment block as a detailed 
 # description. Set this tag to YES if you prefer the old behaviour instead.
 
-MULTILINE_CPP_IS_BRIEF = NO
+MULTILINE_CPP_IS_BRIEF = YES
 
 # If the INHERIT_DOCS tag is set to YES (the default) then an undocumented 
 # member inherits the documentation from any documented member that it 
@@ -612,8 +612,7 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories 
 # with spaces.
 
-INPUT                  = pandadoc.hpp \
-                         direct
+INPUT                  = pandadoc.hpp built/direct
 
 # This tag can be used to specify the character encoding of the source files 
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding, which is 
@@ -644,7 +643,15 @@ RECURSIVE              = YES
 # excluded from the INPUT source files. This way you can easily exclude a 
 # subdirectory from a directory tree whose root is specified with the INPUT tag.
 
-EXCLUDE                = direct/src/test
+EXCLUDE                = built/direct/test \
+                         built/direct/plugin \
+                         built/direct/plugin_npapi \
+                         built/direct/plugin_activex \
+                         built/direct/plugin_installer \
+                         built/direct/plugin_standalone \
+                         built/direct/extensions \
+                         built/direct/extensions_native \
+                         built/direct/directscripts
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or 
 # directories that are symbolic links (a Unix file system feature) are excluded 

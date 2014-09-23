@@ -29,6 +29,8 @@
 #include "renderState.h"
 #include "config_gobj.h"
 
+TypeHandle DynamicTextGlyph::_type_handle;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DynamicTextGlyph::Destructor
 //       Access: Public, Virtual
@@ -111,38 +113,42 @@ make_geom(int bitmap_top, int bitmap_left, PN_stdfloat advance, PN_stdfloat poly
   PN_stdfloat tex_poly_margin = poly_margin / tex_pixels_per_unit;
   PN_stdfloat origin_y = bitmap_top / font_pixels_per_unit;
   PN_stdfloat origin_x = bitmap_left / font_pixels_per_unit;
-  PN_stdfloat top = origin_y + tex_poly_margin;
-  PN_stdfloat left = origin_x - tex_poly_margin;
-  PN_stdfloat bottom = origin_y - tex_y_size / tex_pixels_per_unit - tex_poly_margin;
-  PN_stdfloat right = origin_x + tex_x_size / tex_pixels_per_unit + tex_poly_margin;
+  _top = origin_y + tex_poly_margin;
+  _left = origin_x - tex_poly_margin;
+  _bottom = origin_y - tex_y_size / tex_pixels_per_unit - tex_poly_margin;
+  _right = origin_x + tex_x_size / tex_pixels_per_unit + tex_poly_margin;
 
   // And the corresponding corners in UV units.  We add 0.5f to center
   // the UV in the middle of its texel, to minimize roundoff errors
   // when we are close to 1-to-1 pixel size.
-  PN_stdfloat uv_top = 1.0f - ((PN_stdfloat)(_y - poly_margin) + 0.5f) / _page->get_y_size();
-  PN_stdfloat uv_left = ((PN_stdfloat)(_x - poly_margin) + 0.5f) / _page->get_x_size();
-  PN_stdfloat uv_bottom = 1.0f - ((PN_stdfloat)(_y + poly_margin + tex_y_size) + 0.5f) / _page->get_y_size();
-  PN_stdfloat uv_right = ((PN_stdfloat)(_x + poly_margin + tex_x_size) + 0.5f) / _page->get_x_size();
+  _uv_top = 1.0f - ((PN_stdfloat)(_y - poly_margin) + 0.5f) / _page->get_y_size();
+  _uv_left = ((PN_stdfloat)(_x - poly_margin) + 0.5f) / _page->get_x_size();
+  _uv_bottom = 1.0f - ((PN_stdfloat)(_y + poly_margin + tex_y_size) + 0.5f) / _page->get_y_size();
+  _uv_right = ((PN_stdfloat)(_x + poly_margin + tex_x_size) + 0.5f) / _page->get_x_size();
+
   // Create a corresponding triangle pair.  We use a pair of indexed
   // triangles rather than a single triangle strip, to avoid the bad
   // vertex duplication behavior with lots of two-triangle strips.
   PT(GeomVertexData) vdata = new GeomVertexData
     (string(), GeomVertexFormat::get_v3t2(),
      Geom::UH_static);
+  vdata->unclean_set_num_rows(4);
+
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
   
-  vertex.add_data3(left, 0, top);
-  vertex.add_data3(left, 0, bottom);
-  vertex.add_data3(right, 0, top);
-  vertex.add_data3(right, 0, bottom);
+  vertex.add_data3(_left, 0, _top);
+  vertex.add_data3(_left, 0, _bottom);
+  vertex.add_data3(_right, 0, _top);
+  vertex.add_data3(_right, 0, _bottom);
   
-  texcoord.add_data2(uv_left, uv_top);
-  texcoord.add_data2(uv_left, uv_bottom);
-  texcoord.add_data2(uv_right, uv_top);
-  texcoord.add_data2(uv_right, uv_bottom);
+  texcoord.add_data2(_uv_left, _uv_top);
+  texcoord.add_data2(_uv_left, _uv_bottom);
+  texcoord.add_data2(_uv_right, _uv_top);
+  texcoord.add_data2(_uv_right, _uv_bottom);
   
   PT(GeomTriangles) tris = new GeomTriangles(Geom::UH_static);
+  tris->reserve_num_vertices(6);
   tris->add_vertex(0);
   tris->add_vertex(1);
   tris->add_vertex(2);
@@ -167,7 +173,6 @@ make_geom(int bitmap_top, int bitmap_left, PN_stdfloat advance, PN_stdfloat poly
   
   _advance = advance / font_pixels_per_unit;
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DynamicTextGlyph::set_geom
@@ -205,6 +210,5 @@ bool DynamicTextGlyph::
 is_whitespace() const {
   return (_page == (DynamicTextPage *)NULL);
 }
-
 
 #endif  // HAVE_FREETYPE

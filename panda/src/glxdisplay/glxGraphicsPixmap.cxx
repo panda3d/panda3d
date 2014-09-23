@@ -213,8 +213,8 @@ open_buffer() {
     }
   }
 
-  _x_pixmap = XCreatePixmap(_display, _drawable, 
-                            _x_size, _y_size, visual_info->depth);
+  _x_pixmap = XCreatePixmap(_display, _drawable,
+                            get_x_size(), get_y_size(), visual_info->depth);
   if (_x_pixmap == None) {
     glxdisplay_cat.error()
       << "Failed to create X pixmap.\n";

@@ -18,6 +18,7 @@
 #include "pandabase.h"
 #include "referenceCount.h"
 #include "nurbsBasisVector.h"
+#include "epvector.h"
 
 class NurbsVertex;
 
@@ -30,8 +31,8 @@ class NurbsVertex;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PARAMETRICS NurbsSurfaceResult : public ReferenceCount {
 public:
-  NurbsSurfaceResult(const NurbsBasisVector &u_basis, 
-                     const NurbsBasisVector &v_basis, 
+  NurbsSurfaceResult(const NurbsBasisVector &u_basis,
+                     const NurbsBasisVector &v_basis,
                      const LVecBase4 vecs[], const NurbsVertex *verts,
                      int num_u_vertices, int num_v_vertices);
 
@@ -47,9 +48,9 @@ PUBLISHED:
   INLINE bool eval_point(PN_stdfloat u, PN_stdfloat v, LVecBase3 &point);
   INLINE bool eval_normal(PN_stdfloat u, PN_stdfloat v, LVecBase3 &normal);
   INLINE PN_stdfloat eval_extended_point(PN_stdfloat u, PN_stdfloat v, int d);
-  INLINE bool eval_extended_points(PN_stdfloat u, PN_stdfloat v, int d, 
+  INLINE bool eval_extended_points(PN_stdfloat u, PN_stdfloat v, int d,
                                    PN_stdfloat result[], int num_values);
-  
+
   INLINE int get_num_u_segments() const;
   INLINE int get_num_v_segments() const;
   void eval_segment_point(int ui, int vi, PN_stdfloat u, PN_stdfloat v, LVecBase3 &point) const;
@@ -59,7 +60,7 @@ PUBLISHED:
                                     PN_stdfloat result[], int num_values) const;
   INLINE PN_stdfloat get_segment_u(int ui, PN_stdfloat u) const;
   INLINE PN_stdfloat get_segment_v(int vi, PN_stdfloat v) const;
-  
+
 private:
   INLINE int verti(int ui, int vi) const;
   INLINE int segi(int ui, int vi) const;

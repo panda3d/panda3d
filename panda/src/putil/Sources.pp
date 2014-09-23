@@ -63,7 +63,6 @@
     pythonCallbackObject.h pythonCallbackObject.I \
     simpleHashMap.I simpleHashMap.h \
     sparseArray.I sparseArray.h \
-    string_utils.I string_utils.N string_utils.h \
     timedCycle.I timedCycle.h typedWritable.I \
     typedWritable.h typedWritable_ext.h typedWritable_ext.cxx \
     typedWritableReferenceCount.I \
@@ -113,7 +112,6 @@
     pythonCallbackObject.cxx \
     simpleHashMap.cxx \
     sparseArray.cxx \
-    string_utils.cxx \
     timedCycle.cxx typedWritable.cxx \
     typedWritableReferenceCount.cxx updateSeq.cxx \
     uniqueIdAllocator.cxx \
@@ -175,7 +173,6 @@
     pythonCallbackObject.h pythonCallbackObject.I \
     simpleHashMap.I simpleHashMap.h \
     sparseArray.I sparseArray.h \
-    string_utils.I string_utils.h \
     timedCycle.I timedCycle.h typedWritable.I \
     typedWritable.h typedWritable_ext.h typedWritableReferenceCount.I \
     typedWritableReferenceCount.h updateSeq.I updateSeq.h \

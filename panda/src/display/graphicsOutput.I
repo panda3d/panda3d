@@ -151,6 +151,25 @@ get_rtm_mode(int i) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_size
+//       Access: Published
+//  Description: Returns the visible size of the window or buffer, if
+//               it is known.  In certain cases (e.g. fullscreen
+//               windows), the size may not be known until after the
+//               object has been fully created.  Check has_size()
+//               first.
+//
+//               Certain objects (like windows) may change size
+//               spontaneously; this method is not thread-safe.  To
+//               get the size of a window in a thread-safe manner,
+//               query get_properties().
+////////////////////////////////////////////////////////////////////
+INLINE const LVecBase2i &GraphicsOutput::
+get_size() const {
+  return _size;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::get_x_size
 //       Access: Published
 //  Description: Returns the visible width of the window or buffer, if
@@ -166,7 +185,7 @@ get_rtm_mode(int i) const {
 ////////////////////////////////////////////////////////////////////
 INLINE int GraphicsOutput::
 get_x_size() const {
-  return _x_size;
+  return _size.get_x();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -185,7 +204,7 @@ get_x_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int GraphicsOutput::
 get_y_size() const {
-  return _y_size;
+  return _size.get_y();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -198,7 +217,7 @@ get_y_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int GraphicsOutput::
 get_fb_x_size() const {
-  return max(int(_x_size * get_pixel_factor()), 1);
+  return max(int(_size.get_x() * get_pixel_factor()), 1);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -211,7 +230,7 @@ get_fb_x_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int GraphicsOutput::
 get_fb_y_size() const {
-  return max(int(_y_size * get_pixel_factor()), 1);
+  return max(int(_size.get_y() * get_pixel_factor()), 1);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -226,7 +245,7 @@ get_fb_y_size() const {
 INLINE int GraphicsOutput::
 get_sbs_left_x_size() const {
   PN_stdfloat left_w = _sbs_left_dimensions[1] - _sbs_left_dimensions[0];
-  return max(int(_x_size * left_w), 1);
+  return max(int(_size.get_x() * left_w), 1);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -241,7 +260,7 @@ get_sbs_left_x_size() const {
 INLINE int GraphicsOutput::
 get_sbs_left_y_size() const {
   PN_stdfloat left_h = _sbs_left_dimensions[3] - _sbs_left_dimensions[2];
-  return max(int(_y_size * left_h), 1);
+  return max(int(_size.get_y() * left_h), 1);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -256,7 +275,7 @@ get_sbs_left_y_size() const {
 INLINE int GraphicsOutput::
 get_sbs_right_x_size() const {
   PN_stdfloat right_w = _sbs_right_dimensions[1] - _sbs_right_dimensions[0];
-  return max(int(_x_size * right_w), 1);
+  return max(int(_size.get_x() * right_w), 1);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -271,7 +290,7 @@ get_sbs_right_x_size() const {
 INLINE int GraphicsOutput::
 get_sbs_right_y_size() const {
   PN_stdfloat right_h = _sbs_right_dimensions[3] - _sbs_right_dimensions[2];
-  return max(int(_y_size * right_h), 1);
+  return max(int(_size.get_y() * right_h), 1);
 }
 
 ////////////////////////////////////////////////////////////////////

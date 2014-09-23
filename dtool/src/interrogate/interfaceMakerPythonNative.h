@@ -95,7 +95,7 @@ private:
   void write_function_for_name(ostream &out, Object *obj, Function *func,
                                const std::string &name,
                                bool coercion_allowed, bool &coercion_attempted,
-                               ArgsType args_type, bool return_int);
+                               ArgsType args_type, bool return_int, bool write_comment);
 
   void write_function_forset(ostream &out, Object *obj, Function *func,
                              std::set<FunctionRemap*> &remaps, string &expected_params,

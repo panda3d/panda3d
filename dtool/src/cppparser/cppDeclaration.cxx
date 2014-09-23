@@ -357,6 +357,16 @@ as_type_proxy() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CPPDeclaration::as_make_property
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+CPPMakeProperty *CPPDeclaration::
+as_make_property() {
+  return (CPPMakeProperty *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CPPDeclaration::as_make_seq
 //       Access: Public, Virtual
 //  Description:
@@ -365,7 +375,6 @@ CPPMakeSeq *CPPDeclaration::
 as_make_seq() {
   return (CPPMakeSeq *)NULL;
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPDeclaration::is_equal

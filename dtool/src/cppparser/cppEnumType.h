@@ -35,8 +35,8 @@ public:
   CPPEnumType(CPPIdentifier *ident, CPPScope *current_scope,
               const CPPFile &file);
 
-  void add_element(const string &name, CPPScope *scope,
-                   CPPExpression *value = (CPPExpression *)NULL);
+  CPPInstance *add_element(const string &name,
+                           CPPExpression *value = (CPPExpression *)NULL);
 
   virtual bool is_incomplete() const;
 
