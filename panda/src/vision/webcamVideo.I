@@ -40,9 +40,20 @@ get_size_y() const {
 //               is a maximum theoretical: the actual performance
 //               will depend on the speed of the hardware.
 ////////////////////////////////////////////////////////////////////
-INLINE int WebcamVideo::
+INLINE double WebcamVideo::
 get_fps() const {
   return _fps;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WebcamVideo::get_pixel_format
+//       Access: Published
+//  Description: Returns the camera's pixel format, as a FourCC code,
+//               if known.
+////////////////////////////////////////////////////////////////////
+INLINE const string &WebcamVideo::
+get_pixel_format() const {
+  return _pixel_format;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -53,7 +64,13 @@ get_fps() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void WebcamVideo::
 output(ostream &out) const {
-  out << get_name() << ": " << get_size_x() << "x" << get_size_y() << " @ " << get_fps() << "Hz";
+  out << get_name() << ": " << get_size_x() << "x" << get_size_y();
+
+  if (!_pixel_format.empty()) {
+    out << " " << _pixel_format;
+  }
+
+  out << " @ " << get_fps() << "Hz";
 }
 
 INLINE ostream &operator << (ostream &out, const WebcamVideo &n) {

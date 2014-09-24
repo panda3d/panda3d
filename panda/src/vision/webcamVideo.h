@@ -33,7 +33,8 @@ PUBLISHED:
 
   INLINE int get_size_x() const;
   INLINE int get_size_y() const;
-  INLINE int get_fps() const;
+  INLINE double get_fps() const;
+  INLINE const string &get_pixel_format() const;
 
   virtual PT(MovieVideoCursor) open() = 0;
 
@@ -45,7 +46,8 @@ public:
 protected:
   int _size_x;
   int _size_y;
-  int _fps;
+  double _fps;
+  string _pixel_format;
 
   static pvector<PT(WebcamVideo)> _all_webcams;
 
