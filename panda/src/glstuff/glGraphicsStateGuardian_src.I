@@ -27,6 +27,7 @@
 INLINE bool CLP(GraphicsStateGuardian)::
 report_errors(int line, const char *source_file) {
 #ifndef NDEBUG
+  PStatTimer timer(_check_error_pcollector);
   GLenum error_code = glGetError();
   if (error_code != GL_NO_ERROR) {
     int error_count = 0;
@@ -46,6 +47,7 @@ INLINE void CLP(GraphicsStateGuardian)::
 report_my_errors(int line, const char *source_file) {
 #ifndef NDEBUG
   if (_check_errors) {
+    PStatTimer timer(_check_error_pcollector);
     GLenum error_code = glGetError();
     if (error_code != GL_NO_ERROR) {
       if (!report_errors_loop(line, source_file, error_code, _error_count)) {
@@ -69,6 +71,7 @@ report_my_errors(int line, const char *source_file) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool CLP(GraphicsStateGuardian)::
 clear_errors(int line, const char *source_file) {
+  PStatTimer timer(_check_error_pcollector);
   GLenum error_code = glGetError();
   if (error_code != GL_NO_ERROR) {
     int error_count = 0;
@@ -92,6 +95,7 @@ clear_errors(int line, const char *source_file) {
 INLINE void CLP(GraphicsStateGuardian)::
 clear_my_errors(int line, const char *source_file) {
   if (_check_errors) {
+    PStatTimer timer(_check_error_pcollector);
     GLenum error_code = glGetError();
     if (error_code != GL_NO_ERROR) {
       int error_count = 0;
@@ -743,7 +747,7 @@ get_clip_plane_id(int index) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::get_supports_framebuffer_multisample
 //       Access: Public
-//  Description: Returns if this glGsg supports multisample 
+//  Description: Returns if this glGsg supports multisample
 //               antialiasing for framebuffer objects.
 ////////////////////////////////////////////////////////////////////
 INLINE bool CLP(GraphicsStateGuardian)::
@@ -754,7 +758,7 @@ get_supports_framebuffer_multisample() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::get_supports_framebuffer_multisample
 //       Access: Public
-//  Description: Returns if this glGsg supports multisample 
+//  Description: Returns if this glGsg supports multisample
 //               antialiasing for framebuffer objects.
 ////////////////////////////////////////////////////////////////////
 INLINE bool CLP(GraphicsStateGuardian)::
@@ -766,7 +770,7 @@ get_supports_framebuffer_multisample_coverage_nv() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::get_supports_framebuffer_blit
 //       Access: Public
-//  Description: Returns if this glGsg supports multisample 
+//  Description: Returns if this glGsg supports multisample
 //               antialiasing for framebuffer objects.
 ////////////////////////////////////////////////////////////////////
 INLINE bool CLP(GraphicsStateGuardian)::
@@ -778,7 +782,7 @@ get_supports_framebuffer_blit() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::UsageTextureKey::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CLP(GraphicsStateGuardian)::UsageTextureKey::
 UsageTextureKey(int x_size, int y_size) :
@@ -792,7 +796,7 @@ UsageTextureKey(int x_size, int y_size) :
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::UsageTextureKey::operator <
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool CLP(GraphicsStateGuardian)::UsageTextureKey::
 operator < (const CLP(GraphicsStateGuardian)::UsageTextureKey &other) const {

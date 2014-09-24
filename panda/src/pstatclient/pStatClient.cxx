@@ -152,7 +152,7 @@ get_collector_fullname(int index) const {
   if (parent_index == 0) {
     return collector->get_name();
   } else {
-    return get_collector_fullname(parent_index) + ":" + 
+    return get_collector_fullname(parent_index) + ":" +
       collector->get_name();
   }
 }
@@ -180,7 +180,6 @@ get_main_thread() const {
   return PStatThread((PStatClient *)this, 0);
 }
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatClient::get_current_thread
 //       Access: Published
@@ -191,7 +190,7 @@ get_main_thread() const {
 PStatThread PStatClient::
 get_current_thread() const {
   if (!client_is_connected()) {
-    // No need to make the relatively expensive call to 
+    // No need to make the relatively expensive call to
     // Thread::get_current_thread() if we're not even connected.
     return get_main_thread();
   }
@@ -222,10 +221,10 @@ main_tick() {
 
 
     _mmap_size_pcollector.set_level(MemoryUsage::get_panda_mmap_size());
-    
+
     TypeRegistry *type_reg = TypeRegistry::ptr();
     int num_typehandles = type_reg->get_num_typehandles();
-    
+
     while ((int)type_handle_cols.size() < num_typehandles) {
       type_handle_cols.push_back(TypeHandleCollector());
     }
@@ -261,7 +260,7 @@ main_tick() {
         case TypeHandle::MC_limit:
           // Not used.
           break;
-        }          
+        }
       }
     }
     size_t min_usage = (single_total_usage + array_total_usage + dc_active_total_usage + dc_inactive_total_usage) / 1024;
@@ -288,7 +287,7 @@ main_tick() {
             case TypeHandle::MC_singleton:
               category = "Heap:Single";
               break;
-              
+
             case TypeHandle::MC_array:
               category = "Heap:Array";
               break;
@@ -315,11 +314,11 @@ main_tick() {
           case TypeHandle::MC_singleton:
             single_other_usage -= usage;
             break;
-            
+
           case TypeHandle::MC_array:
             array_other_usage -= usage;
             break;
-            
+
           case TypeHandle::MC_deleted_chain_active:
             dc_active_other_usage -= usage;
             break;
@@ -348,7 +347,7 @@ main_tick() {
 #endif  // DO_MEMORY_USAGE
 
   get_global_pstats()->client_main_tick();
-}  
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatClient::thread_tick
@@ -359,7 +358,7 @@ main_tick() {
 void PStatClient::
 thread_tick(const string &sync_name) {
   get_global_pstats()->client_thread_tick(sync_name);
-}  
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatClient::client_main_tick
@@ -383,8 +382,8 @@ client_main_tick() {
       _threads_by_sync_name.find("Main");
     if (ni != _threads_by_sync_name.end()) {
       const vector_int &indices = (*ni).second;
-      for (vector_int::const_iterator vi = indices.begin(); 
-           vi != indices.end(); 
+      for (vector_int::const_iterator vi = indices.begin();
+           vi != indices.end();
            ++vi) {
         _impl->new_frame(*vi);
       }
@@ -407,8 +406,8 @@ client_thread_tick(const string &sync_name) {
       _threads_by_sync_name.find(sync_name);
     if (ni != _threads_by_sync_name.end()) {
       const vector_int &indices = (*ni).second;
-      for (vector_int::const_iterator vi = indices.begin(); 
-           vi != indices.end(); 
+      for (vector_int::const_iterator vi = indices.begin();
+           vi != indices.end();
            ++vi) {
         _impl->new_frame(*vi);
       }
@@ -463,7 +462,7 @@ PStatClient *PStatClient::
 get_global_pstats() {
   if (_global_pstats == (PStatClient *)NULL) {
     _global_pstats = new PStatClient;
-    
+
     ClockObject::_start_clock_wait = start_clock_wait;
     ClockObject::_start_clock_busy_wait = start_clock_busy_wait;
     ClockObject::_stop_clock_wait = stop_clock_wait;
@@ -616,8 +615,8 @@ do_make_thread(Thread *thread) {
     // We have seen a thread with this name before.  Can we re-use any
     // of them?
     const vector_int &indices = (*ni).second;
-    for (vector_int::const_iterator vi = indices.begin(); 
-         vi != indices.end(); 
+    for (vector_int::const_iterator vi = indices.begin();
+         vi != indices.end();
          ++vi) {
       int index = (*vi);
       nassertr(index >= 0 && index < _num_threads, PStatThread());
@@ -637,20 +636,26 @@ do_make_thread(Thread *thread) {
   int new_index = _num_threads;
   thread->set_pstats_index(new_index);
   thread->set_pstats_callback(this);
-  _threads_by_name[thread->get_name()].push_back(new_index);
-  _threads_by_sync_name[thread->get_sync_name()].push_back(new_index);
-        
+
   InternalThread *pthread = new InternalThread(thread);
   add_thread(pthread);
 
-  // We need an additional PerThreadData for this thread in all of the
-  // collectors.
-  CollectorPointer *collectors = (CollectorPointer *)_collectors;
-  for (int ci = 0; ci < _num_collectors; ++ci) {
-    Collector *collector = collectors[ci];
-    collector->_per_thread.push_back(PerThreadData());
-    nassertr((int)collector->_per_thread.size() == _num_threads, PStatThread());
-  }
+  return PStatThread(this, new_index);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::make_gpu_thread
+//       Access: Private
+//  Description: Returns a PStatThread representing the GPU.
+//               This is normally called by the GSG only.
+////////////////////////////////////////////////////////////////////
+PStatThread PStatClient::
+make_gpu_thread(const string &name) {
+  ReMutexHolder holder(_lock);
+  int new_index = _num_threads;
+
+  InternalThread *pthread = new InternalThread(name, "GPU");
+  add_thread(pthread);
 
   return PStatThread(this, new_index);
 }
@@ -960,7 +965,7 @@ get_level(int collector_index, int thread_index) const {
 //  Description: This function is added as a hook into ClockObject, so
 //               that we may time the delay for
 //               ClockObject::wait_until(), used for certain special
-//               clock modes.  
+//               clock modes.
 //
 //               This callback is a hack around the fact that we can't
 //               let the ClockObject directly create a PStatCollector,
@@ -977,7 +982,7 @@ start_clock_wait() {
 //  Description: This function is added as a hook into ClockObject, so
 //               that we may time the delay for
 //               ClockObject::wait_until(), used for certain special
-//               clock modes.  
+//               clock modes.
 //
 //               This callback is a hack around the fact that we can't
 //               let the ClockObject directly create a PStatCollector,
@@ -995,7 +1000,7 @@ start_clock_busy_wait() {
 //  Description: This function is added as a hook into ClockObject, so
 //               that we may time the delay for
 //               ClockObject::wait_until(), used for certain special
-//               clock modes.  
+//               clock modes.
 //
 //               This callback is a hack around the fact that we can't
 //               let the ClockObject directly create a PStatCollector,
@@ -1051,6 +1056,9 @@ add_collector(PStatClient::Collector *collector) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 add_thread(PStatClient::InternalThread *thread) {
+  _threads_by_name[thread->_name].push_back(_num_threads);
+  _threads_by_sync_name[thread->_sync_name].push_back(_num_threads);
+
   if (_num_threads >= _threads_size) {
     // We need to grow the array.  We have to be careful here, because
     // there might be clients accessing the array right now who are
@@ -1071,12 +1079,21 @@ add_thread(PStatClient::InternalThread *thread) {
     // and then no more.)
 
     new_threads[_num_threads] = thread;
-    AtomicAdjust::inc(_num_threads);
 
   } else {
     ThreadPointer *threads = (ThreadPointer *)_threads;
     threads[_num_threads] = thread;
-    AtomicAdjust::inc(_num_threads);
+  }
+
+  AtomicAdjust::inc(_num_threads);
+
+  // We need an additional PerThreadData for this thread in all of the
+  // collectors.
+  CollectorPointer *collectors = (CollectorPointer *)_collectors;
+  for (int ci = 0; ci < _num_collectors; ++ci) {
+    Collector *collector = collectors[ci];
+    collector->_per_thread.push_back(PerThreadData());
+    nassertv((int)collector->_per_thread.size() == _num_threads);
   }
 }
 
@@ -1148,7 +1165,7 @@ make_def(const PStatClient *client, int this_index) {
   if (_def == (PStatCollectorDef *)NULL) {
     _def = new PStatCollectorDef(this_index, _name);
     if (_parent_index != this_index) {
-      const PStatCollectorDef *parent_def = 
+      const PStatCollectorDef *parent_def =
         client->get_collector_def(_parent_index);
       _def->set_parent(*parent_def);
     }
@@ -1157,9 +1174,9 @@ make_def(const PStatClient *client, int this_index) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PStatClient::Collector::make_def
+//     Function: PStatClient::InternalThread::Constructor
 //       Access: Private
-//  Description: Creates the new PStatCollectorDef for this collector.
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PStatClient::InternalThread::
 InternalThread(Thread *thread) :
@@ -1171,6 +1188,24 @@ InternalThread(Thread *thread) :
   _next_packet(0.0),
   _thread_active(true),
   _thread_lock(string("PStatClient::InternalThread ") + thread->get_name())
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::InternalThread::Constructor
+//       Access: Private
+//  Description:
+////////////////////////////////////////////////////////////////////
+PStatClient::InternalThread::
+InternalThread(const string &name, const string &sync_name) :
+  _thread(NULL),
+  _name(name),
+  _sync_name(sync_name),
+  _is_active(false),
+  _frame_number(0),
+  _next_packet(0.0),
+  _thread_active(true),
+  _thread_lock(string("PStatClient::InternalThread ") + name)
 {
 }
 

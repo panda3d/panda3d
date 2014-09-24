@@ -28,6 +28,7 @@
 #include "throw_event.h"
 #include "clockObject.h"
 #include "pStatTimer.h"
+#include "pStatGPUTimer.h"
 #include "geomTristrips.h"
 #include "geomTrifans.h"
 #include "geomLinestrips.h"
@@ -55,6 +56,7 @@
 #include "colorScaleAttrib.h"
 #include "clipPlaneAttrib.h"
 #include "fogAttrib.h"
+#include "config_pstats.h"
 
 #include <algorithm>
 #include <limits.h>
@@ -87,9 +89,19 @@ PStatCollector GraphicsStateGuardian::_draw_primitive_pcollector("Draw:Primitive
 PStatCollector GraphicsStateGuardian::_draw_set_state_pcollector("Draw:Set State");
 PStatCollector GraphicsStateGuardian::_clear_pcollector("Draw:Clear");
 PStatCollector GraphicsStateGuardian::_flush_pcollector("Draw:Flush");
+PStatCollector GraphicsStateGuardian::_compute_dispatch_pcollector("Draw:Compute dispatch");
 
 PStatCollector GraphicsStateGuardian::_wait_occlusion_pcollector("Wait:Occlusion");
+PStatCollector GraphicsStateGuardian::_wait_timer_pcollector("Wait:Timer Queries");
+PStatCollector GraphicsStateGuardian::_timer_queries_pcollector("Timer queries");
+PStatCollector GraphicsStateGuardian::_command_latency_pcollector("Command latency");
 
+PStatCollector GraphicsStateGuardian::_prepare_pcollector("Draw:Prepare");
+PStatCollector GraphicsStateGuardian::_prepare_texture_pcollector("Draw:Prepare:Texture");
+PStatCollector GraphicsStateGuardian::_prepare_geom_pcollector("Draw:Prepare:Geom");
+PStatCollector GraphicsStateGuardian::_prepare_shader_pcollector("Draw:Prepare:Shader");
+PStatCollector GraphicsStateGuardian::_prepare_vertex_buffer_pcollector("Draw:Prepare:Vertex buffer");
+PStatCollector GraphicsStateGuardian::_prepare_index_buffer_pcollector("Draw:Prepare:Index buffer");
 
 PStatCollector GraphicsStateGuardian::_draw_set_state_transform_pcollector("Draw:Set State:Transform");
 PStatCollector GraphicsStateGuardian::_draw_set_state_alpha_test_pcollector("Draw:Set State:Alpha test");
@@ -114,7 +126,6 @@ PStatCollector GraphicsStateGuardian::_draw_set_state_light_pcollector("Draw:Set
 PStatCollector GraphicsStateGuardian::_draw_set_state_stencil_pcollector("Draw:Set State:Stencil");
 PStatCollector GraphicsStateGuardian::_draw_set_state_fog_pcollector("Draw:Set State:Fog");
 PStatCollector GraphicsStateGuardian::_draw_set_state_scissor_pcollector("Draw:Set State:Scissor");
-
 
 PT(TextureStage) GraphicsStateGuardian::_alpha_scale_texture_stage = NULL;
 
@@ -197,6 +208,16 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _max_vertex_transform_indices = 0;
 
   _supports_occlusion_query = false;
+  _supports_timer_query = false;
+
+#ifdef DO_PSTATS
+  _timer_queries_active = false;
+  _last_query_frame = 0;
+  _last_num_queried = 0;
+  //_timer_delta = 0.0;
+
+  _pstats_gpu_thread = -1;
+#endif
 
   // Initially, we set this to false; a GSG that knows it has this
   // property should set it to true.
@@ -261,7 +282,7 @@ GraphicsStateGuardian::
     delete _stencil_render_states;
     _stencil_render_states = 0;
   }
-  
+
   if (_shader_generator) {
     delete _shader_generator;
     _shader_generator = 0;
@@ -322,7 +343,7 @@ get_supported_geom_rendering() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_supports_cg_profile
 //       Access: Published, Virtual
-//  Description: Returns true if this particular GSG supports the 
+//  Description: Returns true if this particular GSG supports the
 //               specified Cg Shader Profile.
 ////////////////////////////////////////////////////////////////////
 bool GraphicsStateGuardian::
@@ -405,7 +426,7 @@ get_prepared_objects() {
 ////////////////////////////////////////////////////////////////////
 bool GraphicsStateGuardian::
 set_gamma(PN_stdfloat gamma) {
-  _gamma = gamma;  
+  _gamma = gamma;
 
   return false;
 }
@@ -437,7 +458,7 @@ restore_gamma() {
 //               function returns false.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-traverse_prepared_textures(GraphicsStateGuardian::TextureCallback *func, 
+traverse_prepared_textures(GraphicsStateGuardian::TextureCallback *func,
                            void *callback_arg) {
   ReMutexHolder holder(_prepared_objects->_lock);
   PreparedGraphicsObjects::Textures::const_iterator ti;
@@ -703,20 +724,6 @@ release_index_buffer(IndexBufferContext *) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_supports_occlusion_query
-//       Access: Public, Virtual
-//  Description: Returns true if this GSG supports an occlusion query.
-//               If this is true, then begin_occlusion_query() and
-//               end_occlusion_query() may be called to bracket a
-//               sequence of draw_triangles() (or whatever) calls to
-//               measure pixels that pass the depth test.
-////////////////////////////////////////////////////////////////////
-bool GraphicsStateGuardian::
-get_supports_occlusion_query() const {
-  return _supports_occlusion_query;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::begin_occlusion_query
 //       Access: Public, Virtual
 //  Description: Begins a new occlusion query.  After this call, you
@@ -752,6 +759,17 @@ end_occlusion_query() {
   PT(OcclusionQueryContext) result = _current_occlusion_query;
   _current_occlusion_query = NULL;
   return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::issue_timer_query
+//       Access: Public, Virtual
+//  Description: Adds a timer query to the command stream, associated
+//               with the given PStats collector index.
+////////////////////////////////////////////////////////////////////
+PT(TimerQueryContext) GraphicsStateGuardian::
+issue_timer_query(int pstats_index) {
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -888,7 +906,7 @@ compute_distance_to(const LPoint3 &point) const {
 //               the need for a separate routine to fetch these values.
 //
 //               The "altered" bits indicate what parts of the
-//               state_and_transform have changed since the last 
+//               state_and_transform have changed since the last
 //               time this particular ShaderMatSpec was evaluated.
 //               This may allow data to be cached and not reevaluated.
 //
@@ -896,7 +914,7 @@ compute_distance_to(const LPoint3 &point) const {
 const LMatrix4 *GraphicsStateGuardian::
 fetch_specified_value(Shader::ShaderMatSpec &spec, int altered) {
   LVecBase3 v;
-  
+
   if (altered & spec._dep[0]) {
     const LMatrix4 *t = fetch_specified_part(spec._part[0], spec._arg[0], spec._cache[0]);
     if (t != &spec._cache[0]) {
@@ -909,7 +927,7 @@ fetch_specified_value(Shader::ShaderMatSpec &spec, int altered) {
       spec._cache[1] = *t;
     }
   }
-  
+
   switch(spec._func) {
   case Shader::SMF_compose:
     spec._value.multiply(spec._cache[0], spec._cache[1]);
@@ -1470,6 +1488,29 @@ begin_frame(Thread *current_thread) {
   _state_rs = RenderState::make_empty();
   _state_mask.clear();
 
+#ifdef DO_PSTATS
+  // We have to do this here instead of in GraphicsEngine because
+  // we need a current context to issue timer queries.
+  int frame = ClockObject::get_global_clock()->get_frame_count();
+  if (_last_query_frame < frame) {
+    _last_query_frame = frame;
+    _timer_queries_pcollector.clear_level();
+
+    // Now is a good time to flush previous frame's queries.  We
+    // may not actually have all of the previous frame's results
+    // in yet, but that's okay; the GPU data is allowed to lag a
+    // few frames behind.
+    flush_timer_queries();
+
+    if (_timer_queries_active) {
+      // Issue a stop and start event for collector 0, marking the
+      // beginning of the new frame.
+      issue_timer_query(0x8000);
+      issue_timer_query(0x0000);
+    }
+  }
+#endif
+
   return !_needs_reset;
 }
 
@@ -1564,6 +1605,138 @@ end_frame(Thread *current_thread) {
 
   // Evict any textures and/or vbuffers that exceed our texture memory.
   _prepared_objects->_graphics_memory_lru.begin_epoch();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::flush_timer_queries
+//       Access: Public
+//  Description: Called by the graphics engine on the draw thread
+//               to check the status of the running timer queries
+//               and submit their results to the PStats server.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+flush_timer_queries() {
+#ifdef DO_PSTATS
+  // This uses the lower-level PStats interfaces for now because
+  // of all the unnecessary overhead that would otherwise be incurred
+  // when adding such a large amount of data at once.
+
+  PStatClient *client = PStatClient::get_global_pstats();
+
+  if (!client->client_is_connected()) {
+    _timer_queries_active = false;
+    return;
+  }
+
+  if (!_timer_queries_active) {
+    if (pstats_gpu_timing && _supports_timer_query) {
+      // Check if timer queries should be enabled.
+      _timer_queries_active = true;
+    } else {
+      return;
+    }
+  }
+
+  // Currently, we use one thread per GSG, for convenience.  In the
+  // future, we may want to try and use one thread per graphics card.
+  if (_pstats_gpu_thread == -1) {
+    _pstats_gpu_thread = client->make_gpu_thread(get_driver_renderer()).get_index();
+  }
+  PStatThread gpu_thread(client, _pstats_gpu_thread);
+
+  // Get the results of all the timer queries.
+  int first = 0;
+  if (!_pending_timer_queries.empty()) {
+    int count = _pending_timer_queries.size();
+    if (count == 0) {
+      return;
+    }
+
+    PStatGPUTimer timer(this, _wait_timer_pcollector);
+
+    if (_last_num_queried > 0) {
+      // We know how many queries were available last frame, and this
+      // usually stays fairly constant, so use this as a starting point.
+      int i = min(_last_num_queried, count) - 1;
+
+      if (_pending_timer_queries[i]->is_answer_ready()) {
+        first = count;
+        while (i < count) {
+          if (!_pending_timer_queries[++i]->is_answer_ready()) {
+            first = i;
+            break;
+          }
+        }
+      } else {
+        first = 0;
+        while (i > 0) {
+          if (_pending_timer_queries[--i]->is_answer_ready()) {
+            first = i + 1;
+            break;
+          }
+        }
+      }
+    } else {
+      // We figure out which tasks the GPU has already finished by doing
+      // a binary search for the first query that does not have an answer
+      // ready.  We know then that everything before that must be ready.
+      while (count > 0) {
+        int step = count / 2;
+        int i = first + step;
+        if (_pending_timer_queries[i]->is_answer_ready()) {
+          first += step + 1;
+          count -= step + 1;
+        } else {
+          count = step;
+        }
+      }
+    }
+
+    if (first <= 0) {
+      return;
+    }
+
+    _last_num_queried = first;
+
+    int frame_index = ClockObject::get_global_clock()->get_frame_count();
+
+    for (int i = 0; i < first; ++i) {
+      CPT(TimerQueryContext) query = _pending_timer_queries[i];
+
+      double time_data = query->get_timestamp(); //  + _timer_delta;
+
+      if (query->_pstats_index == _command_latency_pcollector.get_index()) {
+        // Special case for the latency pcollector.
+        PStatCollectorDef *cdef;
+        cdef = client->get_collector_ptr(query->_pstats_index)->get_def(client, query->_pstats_index);
+        _pstats_gpu_data.add_level(query->_pstats_index, time_data * cdef->_factor);
+
+      } else if (query->_pstats_index & 0x8000) {
+        _pstats_gpu_data.add_stop(query->_pstats_index & 0x7fff, time_data);
+
+      } else {
+        _pstats_gpu_data.add_start(query->_pstats_index & 0x7fff, time_data);
+      }
+
+      // We found an end-frame marker (a stop event for collector 0).
+      // This means that the GPU actually caught up with that frame,
+      // and we can flush the GPU thread's frame data to the pstats server.
+      if (query->_pstats_index == 0x8000) {
+        gpu_thread.add_frame(_pstats_gpu_data);
+        _pstats_gpu_data.clear();
+      }
+    }
+  }
+
+  if (first > 0) {
+    // Do this out of the scope of _wait_timer_pcollector.
+    _pending_timer_queries.erase(
+      _pending_timer_queries.begin(),
+      _pending_timer_queries.begin() + first
+    );
+    _timer_queries_pcollector.add_level_now(first);
+  }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1819,7 +1992,7 @@ reset() {
     delete _stencil_render_states;
     _stencil_render_states = 0;
   }
-  _stencil_render_states = new StencilRenderStates (this);
+  _stencil_render_states = new StencilRenderStates(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1935,12 +2108,12 @@ do_issue_clip_plane() {
           enable_clip_planes(true);
           _clip_planes_enabled = true;
         }
-        
+
         enable_clip_plane(num_enabled, true);
         if (num_enabled == 0) {
           begin_bind_clip_planes();
         }
-        
+
         bind_clip_plane(plane, num_enabled);
         num_enabled++;
       }
@@ -2123,7 +2296,7 @@ do_issue_light() {
           if (num_enabled == 0) {
             begin_bind_lights();
           }
-          
+
           light_obj->bind(this, light, num_enabled);
           num_enabled++;
         }
@@ -2278,24 +2451,24 @@ create_gamma_table (PN_stdfloat gamma, unsigned short *red_table, unsigned short
     // avoid divide by zero and negative exponents
     gamma = 1.0;
   }
-  
+
   for (i = 0; i < 256; i++) {
     double g;
     double x;
     PN_stdfloat gamma_correction;
-    
+
     x = ((double) i / 255.0);
-    gamma_correction = 1.0 / gamma;    
+    gamma_correction = 1.0 / gamma;
     x = pow (x, (double) gamma_correction);
     if (x > 1.00) {
       x = 1.0;
     }
 
-    g = x * 65535.0;    
+    g = x * 65535.0;
     red_table [i] = (int)g;
     green_table [i] = (int)g;
     blue_table [i] = (int)g;
-  }    
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2638,7 +2811,7 @@ async_reload_texture(TextureContext *tc) {
 
   string task_name = string("reload:") + tc->get_texture()->get_name();
   PT(AsyncTaskManager) task_mgr = _loader->get_task_manager();
-  
+
   // See if we are already loading this task.
   AsyncTaskCollection orig_tasks = task_mgr->find_tasks(task_name);
   int num_tasks = orig_tasks.get_num_tasks();
@@ -2655,7 +2828,7 @@ async_reload_texture(TextureContext *tc) {
 
   // This texture has not yet been queued to be reloaded.  Queue it up
   // now.
-  PT(AsyncTask) request = 
+  PT(AsyncTask) request =
     new TextureReloadRequest(task_name,
                              _prepared_objects, tc->get_texture(),
                              _supports_compressed_texture);
@@ -2762,20 +2935,20 @@ make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_driver_vendor
 //       Access: Public, Virtual
-//  Description: Returns the vendor of the video card driver 
+//  Description: Returns the vendor of the video card driver
 ////////////////////////////////////////////////////////////////////
 string GraphicsStateGuardian::
 get_driver_vendor() {
-  return string("0");
+  return string();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_driver_vendor
+//     Function: GraphicsStateGuardian::get_driver_renderer
 //       Access: Public, Virtual
 //  Description: Returns GL_Renderer
 ////////////////////////////////////////////////////////////////////
 string GraphicsStateGuardian::get_driver_renderer() {
-  return string("0");
+  return string();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2783,12 +2956,12 @@ string GraphicsStateGuardian::get_driver_renderer() {
 //       Access: Public, Virtual
 //  Description: Returns driver version
 //               This has an implementation-defined meaning, and may
-//               be "0" if the particular graphics implementation
+//               be "" if the particular graphics implementation
 //               does not provide a way to query this information.
 ////////////////////////////////////////////////////////////////////
 string GraphicsStateGuardian::
 get_driver_version() {
-  return string("0");
+  return string();
 }
 
 ////////////////////////////////////////////////////////////////////

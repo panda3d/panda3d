@@ -35,6 +35,7 @@
 class PStatCollector;
 class PStatCollectorDef;
 class PStatThread;
+class GraphicsStateGuardian;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PStatClient
@@ -113,6 +114,7 @@ private:
   PStatThread do_get_current_thread() const;
   PStatThread make_thread(Thread *thread);
   PStatThread do_make_thread(Thread *thread);
+  PStatThread make_gpu_thread(const string &name);
 
   bool is_active(int collector_index, int thread_index) const;
   bool is_started(int collector_index, int thread_index) const;
@@ -171,7 +173,7 @@ private:
     INLINE const string &get_name() const;
     INLINE bool is_active() const;
     INLINE PStatCollectorDef *get_def(const PStatClient *client, int this_index) const;
-      
+
   private:
     void make_def(const PStatClient *client, int this_index);
 
@@ -201,6 +203,7 @@ private:
   class InternalThread {
   public:
     InternalThread(Thread *thread);
+    InternalThread(const string &name, const string &sync_name = "Main");
 
     WPT(Thread) _thread;
     string _name;
@@ -248,6 +251,7 @@ private:
   friend class PStatCollector;
   friend class PStatThread;
   friend class PStatClientImpl;
+  friend class GraphicsStateGuardian;
 };
 
 #include "pStatClient.I"
@@ -272,4 +276,3 @@ PUBLISHED:
 #endif  // DO_PSTATS
 
 #endif
-

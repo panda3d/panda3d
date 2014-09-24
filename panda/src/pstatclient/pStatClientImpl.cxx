@@ -47,7 +47,7 @@ PStatClientImpl(PStatClient *client) :
   _reader(this, 0),
   _writer(this, pstats_threaded_write ? 1 : 0)
 {
-  _writer.set_max_queue_size(pstats_max_queue_size); 
+  _writer.set_max_queue_size(pstats_max_queue_size);
   _reader.set_tcp_header_size(4);
   _writer.set_tcp_header_size(4);
   _is_connected = false;
@@ -201,10 +201,10 @@ new_frame(int thread_index) {
     // Fill up the level data for all the collectors who have level
     // data for this pthread.
     int num_collectors = _client->_num_collectors;
-    PStatClient::CollectorPointer *collectors = 
+    PStatClient::CollectorPointer *collectors =
       (PStatClient::CollectorPointer *)_client->_collectors;
     for (int i = 0; i < num_collectors; i++) {
-      const PStatClient::PerThreadData &ptd = 
+      const PStatClient::PerThreadData &ptd =
         collectors[i]->_per_thread[thread_index];
       if (ptd._has_level) {
         pthread->_frame_data.add_level(i, ptd._level);
@@ -219,13 +219,55 @@ new_frame(int thread_index) {
   _client->start(0, thread_index, frame_start);
 
   // Also record the time for the PStats operation itself.
+  int current_thread_index = Thread::get_current_thread()->get_pstats_index();
   int pstats_index = PStatClient::_pstats_pcollector.get_index();
-  _client->start(pstats_index, thread_index, frame_start);
+  _client->start(pstats_index, current_thread_index, frame_start);
 
   if (frame_number != -1) {
     transmit_frame_data(thread_index, frame_number, frame_data);
   }
-  _client->stop(pstats_index, thread_index, get_real_time());
+  _client->stop(pstats_index, current_thread_index, get_real_time());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatClientImpl::add_frame
+//       Access: Public
+//  Description: Slightly lower-level interface than new_frame that
+//               takes a set of frame data.
+////////////////////////////////////////////////////////////////////
+void PStatClientImpl::
+add_frame(int thread_index, const PStatFrameData &frame_data) {
+  nassertv(thread_index >= 0 && thread_index < _client->_num_threads);
+
+  PStatClient::InternalThread *pthread = _client->get_thread_ptr(thread_index);
+
+  // If we're the main thread, we should exchange control packets with
+  // the server.
+  if (thread_index == 0) {
+    transmit_control_data();
+  }
+
+  // If we've got the UDP port by the time the frame starts, it's
+  // time to become active and start actually tracking data.
+  if (_got_udp_port) {
+    pthread->_is_active = true;
+  }
+
+  if (!pthread->_is_active) {
+    return;
+  }
+
+  int frame_number = pthread->_frame_number++;
+
+  // Also record the time for the PStats operation itself.
+  int current_thread_index = Thread::get_current_thread()->get_pstats_index();
+  int pstats_index = PStatClient::_pstats_pcollector.get_index();
+  _client->start(pstats_index, current_thread_index);
+
+  if (frame_number != -1) {
+    transmit_frame_data(thread_index, frame_number, frame_data);
+  }
+  _client->stop(pstats_index, current_thread_index);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -235,7 +277,7 @@ new_frame(int thread_index) {
 //               transmit the latest data to the PStatServer.
 ////////////////////////////////////////////////////////////////////
 void PStatClientImpl::
-transmit_frame_data(int thread_index, int frame_number, 
+transmit_frame_data(int thread_index, int frame_number,
                     const PStatFrameData &frame_data) {
   nassertv(thread_index >= 0 && thread_index < _client->_num_threads);
   PStatClient::InternalThread *thread = _client->get_thread_ptr(thread_index);
@@ -397,7 +439,7 @@ report_new_collectors() {
   // single datagram.  So we limit ourselves here to sending only
   // half that many.
   static const int max_collectors_at_once = 700;
-  
+
   while (_is_connected && _collectors_reported < _client->_num_collectors) {
     PStatClientControlMessage message;
     message._type = PStatClientControlMessage::T_define_collectors;
@@ -408,7 +450,7 @@ report_new_collectors() {
       _collectors_reported++;
       i++;
     }
-    
+
     Datagram datagram;
     message.encode(datagram);
     _writer.send(datagram, _tcp_connection, true);
@@ -427,7 +469,7 @@ report_new_threads() {
     PStatClientControlMessage message;
     message._type = PStatClientControlMessage::T_define_threads;
     message._first_thread_index = _threads_reported;
-    PStatClient::ThreadPointer *threads = 
+    PStatClient::ThreadPointer *threads =
       (PStatClient::ThreadPointer *)_client->_threads;
     while (_threads_reported < _client->_num_threads) {
       message._names.push_back(threads[_threads_reported]->_name);

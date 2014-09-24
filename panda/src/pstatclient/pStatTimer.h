@@ -38,12 +38,12 @@ public:
   INLINE PStatTimer(PStatCollector &collector, Thread *current_thread);
   INLINE ~PStatTimer();
 
-private:
+protected:
   PStatCollector &_collector;
   PStatThread _thread;
 #else // DO_PSTATS
 
-  INLINE PStatTimer(PStatCollector &) { } 
+  INLINE PStatTimer(PStatCollector &) { }
   INLINE PStatTimer(PStatCollector &, Thread *) { }
   INLINE ~PStatTimer() { }
 

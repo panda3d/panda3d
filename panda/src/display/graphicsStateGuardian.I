@@ -1,6 +1,6 @@
 // Filename: graphicsStateGuardian.I
 // Created by:  drose (24Sep99)
-// Updated by: fperazzi, PandaSE (29Apr10) (added 
+// Updated by: fperazzi, PandaSE (29Apr10) (added
 // get_max_2d_texture_array_layers and related)
 //
 ////////////////////////////////////////////////////////////////////
@@ -334,10 +334,10 @@ get_max_3d_texture_dimension() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_max_2d_texture_array_layers
 //       Access: Published
-//  Description: Returns the largest possible number of pages, or -1 
+//  Description: Returns the largest possible number of pages, or -1
 //               if there is no particular limit. Returns 0 if 2-d
 //               texture arrays not supported.
-//               
+//
 //               The value returned may not be meaningful until after
 //               the graphics context has been fully created (e.g. the
 //               window has been opened).
@@ -711,6 +711,45 @@ get_supports_two_sided_stencil() const {
 INLINE bool GraphicsStateGuardian::
 get_supports_geometry_instancing() const {
   return _supports_geometry_instancing;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_occlusion_query
+//       Access: Published
+//  Description: Returns true if this GSG supports an occlusion query.
+//               If this is true, then begin_occlusion_query() and
+//               end_occlusion_query() may be called to bracket a
+//               sequence of draw_triangles() (or whatever) calls to
+//               measure pixels that pass the depth test.
+////////////////////////////////////////////////////////////////////
+bool GraphicsStateGuardian::
+get_supports_occlusion_query() const {
+  return _supports_occlusion_query;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_timer_query
+//       Access: Published
+//  Description: Returns true if this GSG supports a timer query.
+////////////////////////////////////////////////////////////////////
+bool GraphicsStateGuardian::
+get_supports_timer_query() const {
+  return _supports_timer_query;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_timer_queries_active
+//       Access: Published
+//  Description: Returns true if timer queries are currently
+//               enabled on this GSG.
+////////////////////////////////////////////////////////////////////
+bool GraphicsStateGuardian::
+get_timer_queries_active() const {
+#ifdef DO_PSTATS
+  return _timer_queries_active;
+#else
+  return false;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -44,6 +44,7 @@
 #include "textureReloadRequest.h"
 #include "textureStage.h"
 #include "textureContext.h"
+#include "timerQueryContext.h"
 #include "shader.h"
 #include "shaderContext.h"
 #include "transformBlend.h"
@@ -92,7 +93,7 @@ ConfigVariableInt texture_scale_limit
           "to both X and Y."));
 
 ConfigVariableList exclude_texture_scale
-("exclude-texture-scale", 
+("exclude-texture-scale",
  PRC_DESC("This is a list of glob patterns for texture filenames "
           "(excluding the directory part of the filename, but including "
           "the extension); for instance, 'digits_*.png'.  Any texture "
@@ -287,7 +288,7 @@ ConfigVariableInt vertex_column_alignment
           "this alignment for the vertex animation columns only."));
 
 ConfigVariableBool vertex_animation_align_16
-("vertex-animation-align-16", 
+("vertex-animation-align-16",
 #ifdef LINMATH_ALIGN
  true,
 #else
@@ -343,7 +344,7 @@ ConfigVariableInt simple_image_size
 
 ConfigVariableDouble simple_image_threshold
 ("simple-image-threshold", 0.1,
- PRC_DESC("This is a value that indicates how closely a texture's " 
+ PRC_DESC("This is a value that indicates how closely a texture's "
           "generated simple "
           "image should approximate the original image.  The smaller the "
           "number, the closer the match; small numbers will result in "
@@ -568,6 +569,7 @@ ConfigureFn(config_gobj) {
   TexturePoolFilter::init_type();
   TextureReloadRequest::init_type();
   TextureStage::init_type();
+  TimerQueryContext::init_type();
   TransformBlend::init_type();
   TransformBlendTable::init_type();
   TransformTable::init_type();

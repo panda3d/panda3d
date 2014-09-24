@@ -66,6 +66,7 @@
     textureReloadRequest.I textureReloadRequest.h \
     textureStage.I textureStage.h \
     textureStagePool.I textureStagePool.h \
+    timerQueryContext.I timerQueryContext.h \
     transformBlend.I transformBlend.h \
     transformBlendTable.I transformBlendTable.h \
     transformTable.I transformTable.h \
@@ -136,6 +137,7 @@
     textureReloadRequest.cxx \
     textureStage.cxx \
     textureStagePool.cxx \
+    timerQueryContext.cxx \
     transformBlend.cxx \
     transformBlendTable.cxx \
     transformTable.cxx \
@@ -208,6 +210,7 @@
     textureReloadRequest.I textureReloadRequest.h \
     textureStage.I textureStage.h \
     textureStagePool.I textureStagePool.h \
+    timerQueryContext.I timerQueryContext.h \
     transformBlend.I transformBlend.h \
     transformBlendTable.I transformBlendTable.h \
     transformTable.I transformTable.h \

@@ -26,7 +26,7 @@ PStatThread() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatThread::Constructor
-//       Access: Private
+//       Access: Published
 //  Description: Normally, this constructor is called only from
 //               PStatClient.  Use one of the constructors below to
 //               create your own Thread.
@@ -106,6 +106,19 @@ INLINE void PStatThread::
 new_frame() {
 #ifdef DO_PSTATS
   _client->get_impl()->new_frame(_index);
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatThread::add_frame
+//       Access: Public
+//  Description: This is a slightly lower-level version of new_frame
+//               that also specifies the data to send for this frame.
+////////////////////////////////////////////////////////////////////
+INLINE void PStatThread::
+add_frame(const PStatFrameData &frame_data) {
+#ifdef DO_PSTATS
+  _client->get_impl()->add_frame(_index, frame_data);
 #endif
 }
 
