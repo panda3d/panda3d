@@ -515,6 +515,7 @@ reset() {
     Geom::GR_point | Geom::GR_point_uniform_size |
     Geom::GR_indexed_other |
     Geom::GR_triangle_strip | Geom::GR_triangle_fan |
+    Geom::GR_line_strip |
     Geom::GR_flat_last_vertex;
 
   _supports_point_parameters = false;
@@ -549,6 +550,30 @@ reset() {
     // inconsistent.  Because of this, we don't advertise
     // GR_point_sprite_tex_matrix.
     _supported_geom_rendering |= Geom::GR_point_sprite;
+  }
+
+  _glPrimitiveRestartIndex = NULL;
+
+  if (is_at_least_gl_version(4, 3) || has_extension("GL_ARB_ES3_compatibility")) {
+    // As long as we enable this, OpenGL will always use the highest possible index
+    // for a numeric type as strip cut index, which coincides with our convention.
+    // This saves us a call to glPrimitiveRestartIndex.
+    glEnable(GL_PRIMITIVE_RESTART_FIXED_INDEX);
+    _supported_geom_rendering |= Geom::GR_strip_cut_index;
+
+  } else if (is_at_least_gl_version(3, 1)) {
+    glEnable(GL_PRIMITIVE_RESTART);
+    _supported_geom_rendering |= Geom::GR_strip_cut_index;
+
+    _glPrimitiveRestartIndex = (PFNGLPRIMITIVERESTARTINDEXPROC)
+      get_extension_func("glPrimitiveRestartIndex");
+
+  } else if (has_extension("GL_NV_primitive_restart")) {
+    glEnable(GL_PRIMITIVE_RESTART_NV);
+    _supported_geom_rendering |= Geom::GR_strip_cut_index;
+
+    _glPrimitiveRestartIndex = (PFNGLPRIMITIVERESTARTINDEXPROC)
+      get_extension_func("glPrimitiveRestartIndexNV");
   }
 
   _supports_vertex_blend = has_extension("GL_ARB_vertex_blend");
@@ -3800,7 +3825,113 @@ draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
 draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
-  return false;
+  PStatGPUTimer timer(this, _draw_primitive_pcollector, reader->get_current_thread());
+
+  report_my_gl_errors();
+
+#ifndef NDEBUG
+  if (GLCAT.is_spam()) {
+    GLCAT.spam() << "draw_linestrips: " << *(reader->get_object()) << "\n";
+  }
+#endif  // NDEBUG
+
+#ifdef SUPPORT_IMMEDIATE_MODE
+  if (_use_sender) {
+    draw_immediate_composite_primitives(reader, GL_LINE_STRIP);
+
+  } else
+#endif  // SUPPORT_IMMEDIATE_MODE
+  {
+    if (reader->is_indexed() &&
+        (_supported_geom_rendering & GeomEnums::GR_strip_cut_index) != 0) {
+      // One long triangle strip, connected by strip cut indices.
+      if (_glPrimitiveRestartIndex != NULL) {
+        _glPrimitiveRestartIndex(reader->get_strip_cut_index());
+      }
+
+      int num_vertices = reader->get_num_vertices();
+      _vertices_other_pcollector.add_level(num_vertices);
+      _primitive_batches_other_pcollector.add_level(1);
+
+      const unsigned char *client_pointer;
+      if (!setup_primitive(client_pointer, reader, force)) {
+        return false;
+      }
+#ifndef OPENGLES
+      if (_supports_geometry_instancing && _instance_count > 0) {
+        _glDrawElementsInstanced(GL_LINE_STRIP, num_vertices,
+                                 get_numeric_type(reader->get_index_type()),
+                                 client_pointer, _instance_count);
+      } else
+#endif
+      {
+        _glDrawRangeElements(GL_LINE_STRIP,
+                             reader->get_min_vertex(),
+                             reader->get_max_vertex(),
+                             num_vertices,
+                             get_numeric_type(reader->get_index_type()),
+                             client_pointer);
+      }
+    } else {
+      // Send the individual line strips, stepping over the
+      // strip-cut indices.
+      CPTA_int ends = reader->get_ends();
+
+      _primitive_batches_other_pcollector.add_level(ends.size());
+      if (reader->is_indexed()) {
+        const unsigned char *client_pointer;
+        if (!setup_primitive(client_pointer, reader, force)) {
+          return false;
+        }
+        int index_stride = reader->get_index_stride();
+        GeomVertexReader mins(reader->get_mins(), 0);
+        GeomVertexReader maxs(reader->get_maxs(), 0);
+        nassertr(reader->get_mins()->get_num_rows() == (int)ends.size() &&
+                 reader->get_maxs()->get_num_rows() == (int)ends.size(), false);
+
+        unsigned int start = 0;
+        for (size_t i = 0; i < ends.size(); i++) {
+          _vertices_other_pcollector.add_level(ends[i] - start);
+#ifndef OPENGLES
+          if (_supports_geometry_instancing && _instance_count > 0) {
+            _glDrawElementsInstanced(GL_LINE_STRIP, ends[i] - start,
+                                     get_numeric_type(reader->get_index_type()),
+                                     client_pointer + start * index_stride,
+                                     _instance_count);
+          } else
+#endif
+          {
+            _glDrawRangeElements(GL_LINE_STRIP,
+                                 mins.get_data1i(), maxs.get_data1i(),
+                                 ends[i] - start,
+                                 get_numeric_type(reader->get_index_type()),
+                                 client_pointer + start * index_stride);
+          }
+          start = ends[i] + 1;
+        }
+      } else {
+        unsigned int start = 0;
+        int first_vertex = reader->get_first_vertex();
+        for (size_t i = 0; i < ends.size(); i++) {
+          _vertices_other_pcollector.add_level(ends[i] - start);
+#ifndef OPENGLES
+          if (_supports_geometry_instancing && _instance_count > 0) {
+            _glDrawArraysInstanced(GL_LINE_STRIP, first_vertex + start,
+                                   ends[i] - start, _instance_count);
+          } else
+#endif
+          {
+            glDrawArrays(GL_LINE_STRIP, first_vertex + start,
+                            ends[i] - start);
+          }
+          start = ends[i] + 1;
+        }
+      }
+    }
+  }
+
+  report_my_gl_errors();
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

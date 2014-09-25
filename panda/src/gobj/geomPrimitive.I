@@ -129,7 +129,7 @@ get_first_vertex() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::get_num_vertices
 //       Access: Published
-//  Description: Returns the number of vertices used by all the
+//  Description: Returns the number of indices used by all the
 //               primitives in this object.
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomPrimitive::
@@ -308,6 +308,20 @@ INLINE int GeomPrimitive::
 get_index_stride() const {
   GeomPrimitivePipelineReader reader(this, Thread::get_current_thread());
   return reader.get_index_stride();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitive::get_strip_cut_index
+//       Access: Published
+//  Description: If relevant, returns the index value that may be
+//               used in some cases to signify the end of a
+//               primitive.  This is typically the highest value
+//               that the numeric type can store.
+////////////////////////////////////////////////////////////////////
+INLINE int GeomPrimitive::
+get_strip_cut_index() const {
+  CDReader cdata(_cycler);
+  return get_strip_cut_index(cdata->_index_type);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -677,6 +691,16 @@ get_vertices_reader() const {
 INLINE const unsigned char *GeomPrimitivePipelineReader::
 get_read_pointer(bool force) const {
   return _vertices_reader->get_read_pointer(force);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitivePipelineReader::get_strip_cut_index
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE int GeomPrimitivePipelineReader::
+get_strip_cut_index() const {
+  return GeomPrimitive::get_strip_cut_index(_cdata->_index_type);
 }
 
 ////////////////////////////////////////////////////////////////////

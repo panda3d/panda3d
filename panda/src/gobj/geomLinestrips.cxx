@@ -89,7 +89,11 @@ get_primitive_type() const {
 int GeomLinestrips::
 get_geom_rendering() const {
   if (is_indexed()) {
-    return GR_line_strip | GR_indexed_other;
+    if (get_num_primitives() > 1) {
+      return GR_line_strip | GR_indexed_other | GR_strip_cut_index; 
+    } else {
+      return GR_line_strip | GR_indexed_other;
+    }
   } else {
     return GR_line_strip;
   }
@@ -104,6 +108,20 @@ get_geom_rendering() const {
 int GeomLinestrips::
 get_min_num_vertices_per_primitive() const {
   return 2;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomLinestrips::get_num_unused_vertices_per_primitive
+//       Access: Public, Virtual
+//  Description: Returns the number of vertices that are added between
+//               primitives that aren't, strictly speaking, part of
+//               the primitives themselves.  This is used, for
+//               instance, to define degenerate triangles to connect
+//               otherwise disconnected triangle strips.
+////////////////////////////////////////////////////////////////////
+int GeomLinestrips::
+get_num_unused_vertices_per_primitive() const {
+  return 1;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -138,9 +156,13 @@ decompose_impl() const {
   lines->set_shade_model(get_shade_model());
   CPTA_int ends = get_ends();
 
-  int vi = 0;
+  int num_unused = get_num_unused_vertices_per_primitive();
+
+  int vi = -num_unused;
   int li = 0;
   while (li < (int)ends.size()) {
+    // Skip unused vertices between tristrips.
+    vi += num_unused;
     int end = ends[li];
     nassertr(vi + 1 <= end, lines.p());
     int v0 = get_vertex(vi);
@@ -208,6 +230,33 @@ rotate_impl() const {
     nassertr(to.is_at_end(), NULL);
   }
   return new_vertices;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomLinestrips::requires_unused_vertices
+//       Access: Protected, Virtual
+//  Description: Should be redefined to return true in any primitive
+//               that implements append_unused_vertices().
+////////////////////////////////////////////////////////////////////
+bool GeomLinestrips::
+requires_unused_vertices() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomLinestrips::append_unused_vertices
+//       Access: Protected, Virtual
+//  Description: Called when a new primitive is begun (other than the
+//               first primitive), this should add some degenerate
+//               vertices between primitives, if the primitive type
+//               requires that.  The second parameter is the first
+//               vertex that begins the new primitive.
+////////////////////////////////////////////////////////////////////
+void GeomLinestrips::
+append_unused_vertices(GeomVertexArrayData *vertices, int vertex) {
+  GeomVertexWriter to(vertices, 0);
+  to.set_row_unsafe(vertices->get_num_rows());
+  to.add_data1i(get_strip_cut_index());
 }
 
 ////////////////////////////////////////////////////////////////////

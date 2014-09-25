@@ -118,6 +118,7 @@ PUBLISHED:
   int get_primitive_start(int n) const;
   int get_primitive_end(int n) const;
   int get_primitive_num_vertices(int n) const;
+  int get_num_used_vertices() const;
 
   INLINE int get_num_faces() const;
   INLINE int get_primitive_num_faces(int n) const;
@@ -163,6 +164,7 @@ PUBLISHED:
   void set_nonindexed_vertices(int first_vertex, int num_vertices);
 
   INLINE int get_index_stride() const;
+  INLINE int get_strip_cut_index() const;
 
   INLINE CPTA_int get_ends() const;
   PTA_int modify_ends();
@@ -194,6 +196,7 @@ public:
 private:
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
   static int get_highest_index_value(NumericType index_type);
+  static int get_strip_cut_index(NumericType index_type);
 
 public:
   virtual bool draw(GraphicsStateGuardianBase *gsg,
@@ -358,6 +361,7 @@ public:
   INLINE int get_index_stride() const;
   INLINE const GeomVertexArrayDataHandle *get_vertices_reader() const;
   INLINE const unsigned char *get_read_pointer(bool force) const;
+  INLINE int get_strip_cut_index() const;
   INLINE CPTA_int get_ends() const;
   INLINE CPT(GeomVertexArrayData) get_mins() const;
   INLINE CPT(GeomVertexArrayData) get_maxs() const;

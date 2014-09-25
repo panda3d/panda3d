@@ -61,18 +61,18 @@ make_cow_copy() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GeomPrimitive::
 GeomPrimitive(GeomPrimitive::UsageHint usage_hint) {
   CDWriter cdata(_cycler, true);
   cdata->_usage_hint = usage_hint;
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::Copy Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GeomPrimitive::
 GeomPrimitive(const GeomPrimitive &copy) :
@@ -80,7 +80,7 @@ GeomPrimitive(const GeomPrimitive &copy) :
   _cycler(copy._cycler)
 {
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::Copy Assignment Operator
 //       Access: Published
@@ -98,7 +98,7 @@ operator = (const GeomPrimitive &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::Destructor
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GeomPrimitive::
 ~GeomPrimitive() {
@@ -197,7 +197,7 @@ add_vertex(int vertex) {
 
   int num_primitives = get_num_primitives();
   if (num_primitives > 0 &&
-      requires_unused_vertices() && 
+      requires_unused_vertices() &&
       get_num_vertices() == get_primitive_end(num_primitives - 1)) {
     // If we are beginning a new primitive, give the derived class a
     // chance to insert some degenerate vertices.
@@ -224,7 +224,7 @@ add_vertex(int vertex) {
       cdata->_got_minmax = false;
       return;
     }
-    
+
     // Otherwise, we need to suddenly become an indexed primitive.
     do_make_indexed(cdata);
   }
@@ -288,7 +288,7 @@ add_consecutive_vertices(int start, int num_vertices) {
       cdata->_got_minmax = false;
       return;
     }
-    
+
     // Otherwise, we need to suddenly become an indexed primitive.
     do_make_indexed(cdata);
   }
@@ -468,12 +468,18 @@ offset_vertices(int offset) {
       recompute_minmax(cdata);
       nassertv(cdata->_got_minmax);
     }
-    
+
     consider_elevate_index_type(cdata, cdata->_max_vertex + offset);
+
+    int strip_cut_index = get_strip_cut_index(cdata->_index_type);
 
     GeomVertexRewriter index(do_modify_vertices(cdata), 0);
     while (!index.is_at_end()) {
-      index.set_data1i(index.get_data1i() + offset);
+      int vertex = index.get_data1i();
+
+      if (vertex != strip_cut_index) {
+        index.set_data1i(vertex + offset);
+      }
     }
 
   } else {
@@ -483,7 +489,7 @@ offset_vertices(int offset) {
     cdata->_modified = Geom::get_next_modified();
     cdata->_got_minmax = false;
 
-    consider_elevate_index_type(cdata, 
+    consider_elevate_index_type(cdata,
                                 cdata->_first_vertex + cdata->_num_vertices - 1);
   }
 }
@@ -516,14 +522,19 @@ offset_vertices(int offset, int begin_row, int end_row) {
 
   if (is_indexed()) {
     CDWriter cdata(_cycler, true);
-    
+
+    int strip_cut_index = get_strip_cut_index(cdata->_index_type);
+
     // Calculate the maximum vertex over our range.
     int max_vertex = 0;
     {
       GeomVertexReader index_r(cdata->_vertices.get_read_pointer(), 0);
       index_r.set_row_unsafe(begin_row);
       for (int j = begin_row; j < end_row; ++j) {
-        max_vertex = max(max_vertex, index_r.get_data1i());
+        int vertex = index_r.get_data1i();
+        if (vertex != strip_cut_index) {
+          max_vertex = max(max_vertex, vertex);
+        }
       }
     }
 
@@ -532,7 +543,10 @@ offset_vertices(int offset, int begin_row, int end_row) {
     GeomVertexRewriter index(do_modify_vertices(cdata), 0);
     index.set_row_unsafe(begin_row);
     for (int j = begin_row; j < end_row; ++j) {
-      index.set_data1i(index.get_data1i() + offset);
+      int vertex = index.get_data1i();
+      if (vertex != strip_cut_index) {
+        index.set_data1i(vertex + offset);
+      }
     }
 
   } else {
@@ -544,7 +558,7 @@ offset_vertices(int offset, int begin_row, int end_row) {
     cdata->_modified = Geom::get_next_modified();
     cdata->_got_minmax = false;
 
-    consider_elevate_index_type(cdata, 
+    consider_elevate_index_type(cdata,
                                 cdata->_first_vertex + cdata->_num_vertices - 1);
   }
 }
@@ -554,17 +568,20 @@ offset_vertices(int offset, int begin_row, int end_row) {
 //       Access: Published
 //  Description: Converts the primitive from indexed to nonindexed by
 //               duplicating vertices as necessary into the indicated
-//               dest GeomVertexData.
+//               dest GeomVertexData.  Note: does not support
+//               primitives with strip cut indices.
 ////////////////////////////////////////////////////////////////////
 void GeomPrimitive::
 make_nonindexed(GeomVertexData *dest, const GeomVertexData *source) {
   Thread *current_thread = Thread::get_current_thread();
   int num_vertices = get_num_vertices();
   int dest_start = dest->get_num_rows();
+  int strip_cut_index = get_strip_cut_index();
 
   dest->set_num_rows(dest_start + num_vertices);
   for (int i = 0; i < num_vertices; ++i) {
     int v = get_vertex(i);
+    nassertd(v != strip_cut_index) continue;
     dest->copy_row_from(dest_start + i, source, v, current_thread);
   }
 
@@ -596,14 +613,18 @@ pack_vertices(GeomVertexData *dest, const GeomVertexData *source) {
 
     int num_vertices = get_num_vertices();
     int dest_start = dest->get_num_rows();
+    int strip_cut_index = get_strip_cut_index();
 
     for (int i = 0; i < num_vertices; ++i) {
       int v = get_vertex(i);
+      if (v == strip_cut_index) {
+        continue;
+      }
 
       // Try to add the relation { v : size() }.  If that succeeds,
       // great; if it doesn't, look up whatever we previously added
       // for v.
-      pair<CopiedIndices::iterator, bool> result = 
+      pair<CopiedIndices::iterator, bool> result =
         copied_indices.insert(CopiedIndices::value_type(v, (int)copied_indices.size()));
       int v2 = (*result.first).second + dest_start;
       index.add_data1i(v2);
@@ -613,7 +634,7 @@ pack_vertices(GeomVertexData *dest, const GeomVertexData *source) {
         dest->copy_row_from(v2, source, v, current_thread);
       }
     }
-    
+
     set_vertices(new_vertices);
   }
 }
@@ -643,7 +664,7 @@ make_indexed() {
 //     Function: GeomPrimitive::get_primitive_start
 //       Access: Published
 //  Description: Returns the element within the _vertices list at which
-//               the nth primitive starts.  
+//               the nth primitive starts.
 //
 //               If i is one more than the highest valid primitive
 //               vertex, the return value will be one more than the
@@ -723,12 +744,34 @@ get_primitive_num_vertices(int n) const {
     } else {
       int num_unused_vertices_per_primitive = get_num_unused_vertices_per_primitive();
       return cdata->_ends[n] - cdata->_ends[n - 1] - num_unused_vertices_per_primitive;
-    }      
+    }
 
   } else {
     // This is a simple primitive type like a triangle: each primitive
     // uses the same number of vertices.
     return num_vertices_per_primitive;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitive::get_num_used_vertices
+//       Access: Published
+//  Description: Returns the number of vertices used by all of the
+//               primitives.  This is the same as summing
+//               get_primitive_num_vertices(n) for n in
+//               get_num_primitives().  It is like get_num_vertices
+//               except that it excludes all of the degenerate
+//               vertices and strip-cut indices.
+////////////////////////////////////////////////////////////////////
+int GeomPrimitive::
+get_num_used_vertices() const {
+  int num_primitives = get_num_primitives();
+
+  if (num_primitives > 0) {
+    return get_num_vertices() - ((num_primitives - 1) *
+           get_num_unused_vertices_per_primitive());
+  } else {
+    return 0;
   }
 }
 
@@ -959,10 +1002,14 @@ make_points() const {
   int num_vertices = get_num_vertices();
   if (is_indexed()) {
     CPT(GeomVertexArrayData) vertices = get_vertices();
+    int strip_cut_index = get_strip_cut_index();
     GeomVertexReader index(vertices, 0);
     for (int vi = 0; vi < num_vertices; ++vi) {
       nassertr(!index.is_at_end(), NULL);
-      bits.set_bit(index.get_data1i());
+      int vertex = index.get_data1i();
+      if (vertex != strip_cut_index) {
+        bits.set_bit(vertex);
+      }
     }
   } else {
     int first_vertex = get_first_vertex();
@@ -996,14 +1043,13 @@ make_points() const {
 //       Access: Published
 //  Description: Decomposes a complex primitive type into a simpler
 //               primitive type, for instance triangle strips to
-//               triangles, puts these in a new GeomPatches objectand returns a pointer to the new primitive
+//               triangles, puts these in a new GeomPatches object
+//               and returns a pointer to the new primitive
 //               definition.  If the decomposition cannot be
 //               performed, this might return the original object.
 //
 //               This method is useful for application code that wants
-//               to iterate through the set of triangles on the
-//               primitive without having to write handlers for each
-//               possible kind of primitive type.
+//               to use tesselation shaders on arbitrary geometry.
 ////////////////////////////////////////////////////////////////////
 CPT(GeomPrimitive) GeomPrimitive::
 make_patches() const {
@@ -1079,7 +1125,7 @@ request_resident() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::output
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomPrimitive::
 output(ostream &out) const {
@@ -1090,7 +1136,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::write
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomPrimitive::
 write(ostream &out, int indent_level) const {
@@ -1448,7 +1494,7 @@ is_prepared(PreparedGraphicsObjects *prepared_objects) const {
 //               rendered.
 ////////////////////////////////////////////////////////////////////
 IndexBufferContext *GeomPrimitive::
-prepare_now(PreparedGraphicsObjects *prepared_objects, 
+prepare_now(PreparedGraphicsObjects *prepared_objects,
             GraphicsStateGuardianBase *gsg) {
   nassertr(is_indexed(), NULL);
 
@@ -1558,11 +1604,44 @@ clear_prepared(PreparedGraphicsObjects *prepared_objects) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::get_highest_index_value
 //       Access: Private, Static
-//  Description: Returns the largest index value that can be stored in
-//               an index of the indicated type.
+//  Description: Returns the largest index value that can be stored
+//               in an index of the indicated type, minus one (to
+//               leave room for a potential strip cut index)
 ////////////////////////////////////////////////////////////////////
 int GeomPrimitive::
 get_highest_index_value(NumericType index_type) {
+  // Reserve the highest possible index because implementations use
+  // this as a strip-cut index.
+  switch (index_type) {
+  case NT_uint8:
+    return 0xff - 1;
+
+  case NT_uint16:
+    return 0xffff - 1;
+
+  case NT_uint32:
+    // We don't actually allow use of the sign bit, since all of our
+    // functions receive an "int" instead of an "unsigned int".
+    return 0x7fffffff - 1;
+
+  default:
+    return 0;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitive::get_strip_cut_index
+//       Access: Private, Static
+//  Description: Returns the index of the indicated type that is
+//               reserved for use as a strip cut index, if enabled
+//               for the primitive.  When the renderer encounters
+//               this index, it will restart the primitive.  This
+//               is guaranteed not to point to an actual vertex.
+////////////////////////////////////////////////////////////////////
+int GeomPrimitive::
+get_strip_cut_index(NumericType index_type) {
+  // Reserve the highest possible index because implementations use
+  // this as a strip-cut index.
   switch (index_type) {
   case NT_uint8:
     return 0xff;
@@ -1571,12 +1650,8 @@ get_highest_index_value(NumericType index_type) {
     return 0xffff;
 
   case NT_uint32:
-    // We don't actually allow use of the sign bit, since all of our
-    // functions receive an "int" instead of an "unsigned int".
-    return 0x7fffffff;
-
   default:
-    return 0;
+    return -1;
   }
 }
 
@@ -1593,7 +1668,7 @@ get_highest_index_value(NumericType index_type) {
 ////////////////////////////////////////////////////////////////////
 void GeomPrimitive::
 calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
-                  bool &found_any, 
+                  bool &found_any,
                   const GeomVertexData *vertex_data,
                   bool got_mat, const LMatrix4 &mat,
                   const InternalName *column_name,
@@ -1613,7 +1688,7 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
       for (int i = 0; i < cdata->_num_vertices; i++) {
         reader.set_row_unsafe(cdata->_first_vertex + i);
         LPoint3 vertex = mat.xform_point(reader.get_data3());
-        
+
         if (found_any) {
           min_point.set(min(min_point[0], vertex[0]),
                         min(min_point[1], vertex[1]),
@@ -1631,7 +1706,7 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
       for (int i = 0; i < cdata->_num_vertices; i++) {
         reader.set_row_unsafe(cdata->_first_vertex + i);
         const LVecBase3 &vertex = reader.get_data3();
-        
+
         if (found_any) {
           min_point.set(min(min_point[0], vertex[0]),
                         min(min_point[1], vertex[1]),
@@ -1650,13 +1725,17 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
   } else {
     // Indexed case.
     GeomVertexReader index(cdata->_vertices.get_read_pointer(), 0, current_thread);
+    int strip_cut_index = get_strip_cut_index(cdata->_index_type);
 
     if (got_mat) {
       while (!index.is_at_end()) {
         int ii = index.get_data1i();
+        if (ii == strip_cut_index) {
+          continue;
+        }
         reader.set_row_unsafe(ii);
         LPoint3 vertex = mat.xform_point(reader.get_data3());
-        
+
         if (found_any) {
           min_point.set(min(min_point[0], vertex[0]),
                         min(min_point[1], vertex[1]),
@@ -1673,9 +1752,12 @@ calc_tight_bounds(LPoint3 &min_point, LPoint3 &max_point,
     } else {
       while (!index.is_at_end()) {
         int ii = index.get_data1i();
+        if (ii == strip_cut_index) {
+          continue;
+        }
         reader.set_row_unsafe(ii);
         const LVecBase3 &vertex = reader.get_data3();
-        
+
         if (found_any) {
           min_point.set(min(min_point[0], vertex[0]),
                         min(min_point[1], vertex[1]),
@@ -1797,63 +1879,77 @@ recompute_minmax(GeomPrimitive::CData *cdata) {
       cdata->_max_vertex = 0;
       cdata->_mins.clear();
       cdata->_maxs.clear();
-      
+
     } else if (get_num_vertices_per_primitive() == 0) {
       // This is a complex primitive type like a triangle strip; compute
       // the minmax of each primitive (as well as the overall minmax).
       GeomVertexReader index(cdata->_vertices.get_read_pointer(), 0);
-      
+
       cdata->_mins = make_index_data();
       cdata->_maxs = make_index_data();
-      
+
       GeomVertexWriter mins(cdata->_mins.get_write_pointer(), 0);
       mins.reserve_num_rows(cdata->_ends.size());
       GeomVertexWriter maxs(cdata->_maxs.get_write_pointer(), 0);
       maxs.reserve_num_rows(cdata->_ends.size());
-      
+
       int pi = 0;
-      
+
       unsigned int vertex = index.get_data1i();
       cdata->_min_vertex = vertex;
       cdata->_max_vertex = vertex;
       unsigned int min_prim = vertex;
       unsigned int max_prim = vertex;
-      
+
+      int num_unused_vertices = get_num_unused_vertices_per_primitive();
+
       for (int vi = 1; vi < num_vertices; ++vi) {
         nassertv(!index.is_at_end());
-        unsigned int vertex = index.get_data1i();
-        cdata->_min_vertex = min(cdata->_min_vertex, vertex);
-        cdata->_max_vertex = max(cdata->_max_vertex, vertex);
-
         nassertv(pi < (int)cdata->_ends.size());
+
+        unsigned int vertex;
+
         if (vi == cdata->_ends[pi]) {
+          // Skip unused vertices, since they won't be very relevant and
+          // may contain a strip-cut index, which would distort the result.
+          if (num_unused_vertices > 0) {
+            vi += num_unused_vertices;
+            index.set_row_unsafe(vi);
+          }
+          vertex = index.get_data1i();
+
           mins.add_data1i(min_prim);
           maxs.add_data1i(max_prim);
           min_prim = vertex;
           max_prim = vertex;
           ++pi;
-          
+
         } else {
+          vertex = index.get_data1i();
           min_prim = min(min_prim, vertex);
           max_prim = max(max_prim, vertex);
         }
+
+        cdata->_min_vertex = min(cdata->_min_vertex, vertex);
+        cdata->_max_vertex = max(cdata->_max_vertex, vertex);
       }
+
       mins.add_data1i(min_prim);
       maxs.add_data1i(max_prim);
       nassertv(mins.get_array_data()->get_num_rows() == (int)cdata->_ends.size());
-      
+
     } else {
       // This is a simple primitive type like a triangle; just compute
       // the overall minmax.
       GeomVertexReader index(cdata->_vertices.get_read_pointer(), 0);
-      
+
       cdata->_mins.clear();
       cdata->_maxs.clear();
-      
+
       unsigned int vertex = index.get_data1i();
       cdata->_min_vertex = vertex;
       cdata->_max_vertex = vertex;
-      
+
       for (int vi = 1; vi < num_vertices; ++vi) {
         nassertv(!index.is_at_end());
         unsigned int vertex = index.get_data1i();
@@ -1862,7 +1958,7 @@ recompute_minmax(GeomPrimitive::CData *cdata) {
       }
     }
   }
-    
+
   cdata->_got_minmax = true;
 }
 
@@ -1899,22 +1995,25 @@ do_make_indexed(CData *cdata) {
 ////////////////////////////////////////////////////////////////////
 void GeomPrimitive::
 consider_elevate_index_type(CData *cdata, int vertex) {
+  // Note that we reserve the highest possible index of a particular
+  // index type (ie. -1) because this is commonly used as a strip-cut
+  // (also known as primitive restart) index.
   switch (cdata->_index_type) {
   case NT_uint8:
-    if (vertex > 0xff) {
+    if (vertex >= 0xff) {
       do_set_index_type(cdata, NT_uint16);
     }
     break;
 
   case NT_uint16:
-    if (vertex > 0xffff) {
+    if (vertex >= 0xffff) {
       do_set_index_type(cdata, NT_uint32);
     }
     break;
 
   case NT_uint32:
     // Not much we can do here.
-    nassertv(vertex <= 0x7fffffff);
+    nassertv(vertex < 0x7fffffff);
     break;
 
   default:
@@ -1929,6 +2028,9 @@ consider_elevate_index_type(CData *cdata, int vertex) {
 ////////////////////////////////////////////////////////////////////
 void GeomPrimitive::
 do_set_index_type(CData *cdata, GeomPrimitive::NumericType index_type) {
+  int old_strip_cut_index = get_strip_cut_index(cdata->_index_type);
+  int new_strip_cut_index = get_strip_cut_index(index_type);
+
   cdata->_index_type = index_type;
 
   if (gobj_cat.is_debug()) {
@@ -1938,7 +2040,7 @@ do_set_index_type(CData *cdata, GeomPrimitive::NumericType index_type) {
 
   if (!cdata->_vertices.is_null()) {
     CPT(GeomVertexArrayFormat) new_format = get_index_format();
-    
+
     CPT(GeomVertexArrayData) array_obj = cdata->_vertices.get_read_pointer();
     if (array_obj->get_array_format() != new_format) {
       PT(GeomVertexArrayData) new_vertices = make_index_data();
@@ -1946,9 +2048,13 @@ do_set_index_type(CData *cdata, GeomPrimitive::NumericType index_type) {
 
       GeomVertexReader from(array_obj, 0);
       GeomVertexWriter to(new_vertices, 0);
-      
+
       while (!from.is_at_end()) {
-        to.set_data1i(from.get_data1i());
+        int index = from.get_data1i();
+        if (index == old_strip_cut_index) {
+          index = new_strip_cut_index;
+        }
+        to.set_data1i(index);
       }
       cdata->_vertices = new_vertices;
       cdata->_got_minmax = false;
@@ -2056,7 +2162,7 @@ int GeomPrimitive::CData::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = CycleData::complete_pointers(p_list, manager);
 
-  _vertices = DCAST(GeomVertexArrayData, p_list[pi++]);    
+  _vertices = DCAST(GeomVertexArrayData, p_list[pi++]);
 
   if (manager->get_file_minor_ver() < 6 && !_vertices.is_null()) {
     // Older bam files might have a meaningless number in
@@ -2106,7 +2212,7 @@ check_minmax() const {
 #ifdef DO_PIPELINING
       unref_delete((CycleData *)_cdata);
 #endif
-      GeomPrimitive::CDWriter fresh_cdata(((GeomPrimitive *)_object.p())->_cycler, 
+      GeomPrimitive::CDWriter fresh_cdata(((GeomPrimitive *)_object.p())->_cycler,
                                           false, _current_thread);
       ((GeomPrimitivePipelineReader *)this)->_cdata = fresh_cdata;
 #ifdef DO_PIPELINING
@@ -2132,7 +2238,7 @@ check_minmax() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitivePipelineReader::get_first_vertex
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int GeomPrimitivePipelineReader::
 get_first_vertex() const {
@@ -2170,7 +2276,7 @@ get_vertex(int i) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitivePipelineReader::get_num_primitives
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int GeomPrimitivePipelineReader::
 get_num_primitives() const {

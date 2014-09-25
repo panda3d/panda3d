@@ -1163,6 +1163,11 @@ extern "C" {
 /* reuse GL_TEXTURE_IMMUTABLE_FORMAT */
 #endif
 
+#ifndef GL_VERSION_4_3
+#define GL_VERSION_4_3 1
+#define GL_PRIMITIVE_RESTART_FIXED_INDEX  0x8D69
+#endif
+
 #ifndef GL_ARB_multitexture
 #define GL_TEXTURE0_ARB                   0x84C0
 #define GL_TEXTURE1_ARB                   0x84C1

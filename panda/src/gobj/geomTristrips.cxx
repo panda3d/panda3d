@@ -96,6 +96,17 @@ get_geom_rendering() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomTristrips::get_min_num_vertices_per_primitive
+//       Access: Public, Virtual
+//  Description: Returns the minimum number of vertices that must be
+//               added before close_primitive() may legally be called.
+////////////////////////////////////////////////////////////////////
+int GeomTristrips::
+get_min_num_vertices_per_primitive() const {
+  return 3;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomTristrips::get_num_unused_vertices_per_primitive
 //       Access: Public, Virtual
 //  Description: Returns the number of vertices that are added between
@@ -142,6 +153,7 @@ decompose_impl() const {
   CPTA_int ends = get_ends();
 
   int num_vertices = get_num_vertices();
+  int num_unused = get_num_unused_vertices_per_primitive();
 
   // We need a slightly different algorithm for SM_flat_first_vertex
   // than for SM_flat_last_vertex, to preserve the key vertex in the
@@ -150,11 +162,11 @@ decompose_impl() const {
   if (get_shade_model() == SM_flat_first_vertex) {
     // Preserve the first vertex of each component triangle as the
     // first vertex of each generated triangle.
-    int vi = -2;
+    int vi = -num_unused;
     int li = 0;
     while (li < (int)ends.size()) {
       // Skip unused vertices between tristrips.
-      vi += 2;
+      vi += num_unused;
       int end = ends[li];
       nassertr(vi + 2 <= end, NULL);
       int v0 = get_vertex(vi);
@@ -192,11 +204,11 @@ decompose_impl() const {
   } else {
     // Preserve the last vertex of each component triangle as the
     // last vertex of each generated triangle.
-    int vi = -2;
+    int vi = -num_unused;
     int li = 0;
     while (li < (int)ends.size()) {
       // Skip unused vertices between tristrips.
-      vi += 2;
+      vi += num_unused;
       int end = ends[li];
       nassertr(vi + 2 <= end, NULL);
       int v0 = get_vertex(vi);

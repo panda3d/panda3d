@@ -598,6 +598,8 @@ public:
   PFNGLPOINTPARAMETERFVPROC _glPointParameterfv;
   bool _supports_point_sprite;
 
+  PFNGLPRIMITIVERESTARTINDEXPROC _glPrimitiveRestartIndex;
+
   bool _supports_vertex_blend;
   PFNGLWEIGHTPOINTERARBPROC _glWeightPointer;
   PFNGLVERTEXBLENDARBPROC _glVertexBlend;
