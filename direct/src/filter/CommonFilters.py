@@ -20,21 +20,17 @@ from pandac.PandaModules import Point3, Vec3, Vec4, Point2
 from pandac.PandaModules import NodePath, PandaNode
 from pandac.PandaModules import Filename
 from pandac.PandaModules import AuxBitplaneAttrib
-from pandac.PandaModules import RenderState, Texture, Shader
+from pandac.PandaModules import RenderState, Texture, Shader, ATSNone
 import sys,os
 
 CARTOON_BODY="""
 float4 cartoondelta = k_cartoonseparation * texpix_txaux.xwyw;
-float4 cartoon_p0 = l_texcoordN + cartoondelta.xyzw;
-float4 cartoon_c0 = tex2D(k_txaux, cartoon_p0.xy);
-float4 cartoon_p1 = l_texcoordN - cartoondelta.xyzw;
-float4 cartoon_c1 = tex2D(k_txaux, cartoon_p1.xy);
-float4 cartoon_p2 = l_texcoordN + cartoondelta.wzyx;
-float4 cartoon_c2 = tex2D(k_txaux, cartoon_p2.xy);
-float4 cartoon_p3 = l_texcoordN - cartoondelta.wzyx;
-float4 cartoon_c3 = tex2D(k_txaux, cartoon_p3.xy);
-float4 cartoon_mx = max(cartoon_c0,max(cartoon_c1,max(cartoon_c2,cartoon_c3)));
-float4 cartoon_mn = min(cartoon_c0,min(cartoon_c1,min(cartoon_c2,cartoon_c3)));
+float4 cartoon_c0 = tex2D(k_txaux, %(texcoord)s + cartoondelta.xy);
+float4 cartoon_c1 = tex2D(k_txaux, %(texcoord)s - cartoondelta.xy);
+float4 cartoon_c2 = tex2D(k_txaux, %(texcoord)s + cartoondelta.wz);
+float4 cartoon_c3 = tex2D(k_txaux, %(texcoord)s - cartoondelta.wz);
+float4 cartoon_mx = max(cartoon_c0, max(cartoon_c1, max(cartoon_c2, cartoon_c3)));
+float4 cartoon_mn = min(cartoon_c0, min(cartoon_c1, min(cartoon_c2, cartoon_c3)));
 float cartoon_thresh = saturate(dot(cartoon_mx - cartoon_mn, float4(3,3,0,0)) - 0.5);
 o_color = lerp(o_color, k_cartooncolor, cartoon_thresh);
 """
@@ -137,36 +133,35 @@ class CommonFilters:
                 return
 
             auxbits = 0
-            needtex = {}
-            needtex["color"] = True
-            texcoords = ["l_texcoordC"]
+            needtex = set(["color"])
+            needtexcoord = set(["color"])
 
             if ("CartoonInk" in configuration):
-                needtex["aux"] = True
+                needtex.add("aux")
                 auxbits |= AuxBitplaneAttrib.ABOAuxNormal
-                texcoords.append("l_texcoordN")
+                needtexcoord.add("aux")
 
             if ("AmbientOcclusion" in configuration):
-                needtex["depth"] = True
-                needtex["ssao0"] = True
-                needtex["ssao1"] = True
-                needtex["ssao2"] = True
-                needtex["aux"] = True
+                needtex.add("depth")
+                needtex.add("ssao0")
+                needtex.add("ssao1")
+                needtex.add("ssao2")
+                needtex.add("aux")
                 auxbits |= AuxBitplaneAttrib.ABOAuxNormal
-                texcoords.append("l_texcoordAO")
+                needtexcoord.add("ssao2")
 
             if ("BlurSharpen" in configuration):
-                needtex["blur0"] = True
-                needtex["blur1"] = True
-                texcoords.append("l_texcoordBS")
+                needtex.add("blur0")
+                needtex.add("blur1")
+                needtexcoord.add("blur1")
 
             if ("Bloom" in configuration):
-                needtex["bloom0"] = True
-                needtex["bloom1"] = True
-                needtex["bloom2"] = True
-                needtex["bloom3"] = True
+                needtex.add("bloom0")
+                needtex.add("bloom1")
+                needtex.add("bloom2")
+                needtex.add("bloom3")
                 auxbits |= AuxBitplaneAttrib.ABOGlow
-                texcoords.append("l_texcoordB")
+                needtexcoord.add("bloom3")
 
             if ("ViewGlow" in configuration):
                 auxbits |= AuxBitplaneAttrib.ABOGlow
@@ -175,10 +170,9 @@ class CommonFilters:
                 needtex[configuration["VolumetricLighting"].source] = True
 
             for tex in needtex:
-                self.textures[tex] = Texture("scene-"+tex)
+                self.textures[tex] = Texture("scene-" + tex)
                 self.textures[tex].setWrapU(Texture.WMClamp)
                 self.textures[tex].setWrapV(Texture.WMClamp)
-                needtexpix = True
 
             self.finalQuad = self.manager.renderSceneInto(textures = self.textures, auxbits=auxbits)
             if (self.finalQuad == None):
@@ -239,101 +233,100 @@ class CommonFilters:
                 self.bloom[3].setShaderInput("src", bloom2)
                 self.bloom[3].setShader(self.loadShader("filter-bloomy.sha"))
 
+            texcoords = {}
+            texcoordPadding = {}
+
+            for tex in needtexcoord:
+                if self.textures[tex].getAutoTextureScale() != ATSNone or \
+                                           "HalfPixelShift" in configuration:
+                    texcoords[tex] = "l_texcoord_" + tex
+                    texcoordPadding["l_texcoord_" + tex] = tex
+                else:
+                    # Share unpadded texture coordinates.
+                    texcoords[tex] = "l_texcoord"
+                    texcoordPadding["l_texcoord"] = None
+
+            texcoordSets = list(enumerate(texcoordPadding.keys()))
+
             text = "//Cg\n"
             text += "void vshader(float4 vtx_position : POSITION,\n"
             text += "  out float4 l_position : POSITION,\n"
-            text += "  uniform float4 texpad_txcolor,\n"
-            text += "  uniform float4 texpix_txcolor,\n"
 
-            if ("CartoonInk" in configuration):
-                text += "  uniform float4 texpad_txaux,\n"
-                text += "  uniform float4 texpix_txaux,\n"
+            for texcoord, padTex in texcoordPadding.items():
+                if padTex is not None:
+                    text += "  uniform float4 texpad_tx%s,\n" % (padTex)
+                    if ("HalfPixelShift" in configuration):
+                        text += "  uniform float4 texpix_tx%s,\n" % (padTex)
 
-            if ("Bloom" in configuration):
-                text += "  uniform float4 texpad_txbloom3,\n"
-
-            if ("BlurSharpen" in configuration):
-                text += "  uniform float4 texpad_txblur1,\n"
-
-            if ("AmbientOcclusion" in configuration):
-                text += "  uniform float4 texpad_txssao2,\n"
-
-            for i, name in enumerate(texcoords):
-                text += "  out float4 %s : TEXCOORD%d,\n" % (name, i)
+            for i, name in texcoordSets:
+                text += "  out float2 %s : TEXCOORD%d,\n" % (name, i)
 
             text += "  uniform float4x4 mat_modelproj)\n"
             text += "{\n"
-            text += " l_position=mul(mat_modelproj, vtx_position);\n"
-            text += " l_texcoordC=(vtx_position.xzxz * texpad_txcolor) + texpad_txcolor;\n"
-            if ("CartoonInk" in configuration):
-                text += " l_texcoordN=(vtx_position.xzxz * texpad_txaux) + texpad_txaux;\n"
-            if ("Bloom" in configuration):
-                text += " l_texcoordB=(vtx_position.xzxz * texpad_txbloom3) + texpad_txbloom3;\n"
-            if ("BlurSharpen" in configuration):
-                text += " l_texcoordBS=(vtx_position.xzxz * texpad_txblur1) + texpad_txblur1;\n"
-            if ("AmbientOcclusion" in configuration):
-                text += " l_texcoordAO=(vtx_position.xzxz * texpad_txssao2) + texpad_txssao2;\n"
-            if ("HalfPixelShift" in configuration):
-                text += " l_texcoordC+=texpix_txcolor*0.5;\n"
-                if ("l_texcoordN" in texcoords):
-                    text += " l_texcoordN+=texpix_txaux*0.5;\n"
+            text += "  l_position = mul(mat_modelproj, vtx_position);\n"
+
+            for texcoord, padTex in texcoordPadding.items():
+                if padTex is None:
+                    text += "  %s = vtx_position.xz * float2(0.5, 0.5) + float2(0.5, 0.5);\n" % (texcoord)
+                else:
+                    text += "  %s = (vtx_position.xz * texpad_tx%s.xy) + texpad_tx%s.xy;\n" % (texcoord, padTex, padTex)
+
+                    if ("HalfPixelShift" in configuration):
+                        text += "  %s += texpix_tx%s.xy * 0.5;\n" % (texcoord, padTex)
+
             text += "}\n"
 
-
             text += "void fshader(\n"
-            text += "uniform float4 texpix_txcolor,\n"
 
-            if ("CartoonInk" in configuration):
-                text += "uniform float4 texpix_txaux,\n"
-
-            if ("BlurSharpen" in configuration):
-                text += "uniform float4 k_blurval,\n"
-
-            for i, name in enumerate(texcoords):
-                text += "  float4 %s : TEXCOORD%d,\n" % (name, i)
+            for i, name in texcoordSets:
+                text += "  float2 %s : TEXCOORD%d,\n" % (name, i)
 
             for key in self.textures:
-                text += "uniform sampler2D k_tx" + key + ",\n"
+                text += "  uniform sampler2D k_tx" + key + ",\n"
 
             if ("CartoonInk" in configuration):
-                text += "uniform float4 k_cartoonseparation,\n"
-                text += "uniform float4 k_cartooncolor,\n"
+                text += "  uniform float4 k_cartoonseparation,\n"
+                text += "  uniform float4 k_cartooncolor,\n"
+                text += "  uniform float4 texpix_txaux,\n"
 
-            if ("VolumetricLighting" in configuration):
-                text += "uniform float4 k_casterpos,\n"
-                text += "uniform float4 k_vlparams,\n"
-            text += "out float4 o_color : COLOR)\n"
-            text += "{\n"
-            text += " o_color = tex2D(k_txcolor, l_texcoordC.xy);\n"
-            if ("CartoonInk" in configuration):
-                text += CARTOON_BODY
-            if ("AmbientOcclusion" in configuration):
-                text += "o_color *= tex2D(k_txssao2, l_texcoordAO.xy).r;\n"
             if ("BlurSharpen" in configuration):
-                text += " o_color = lerp(tex2D(k_txblur1, l_texcoordBS.xy), o_color, k_blurval.x);\n"
-            if ("Bloom" in configuration):
-                text += "o_color = saturate(o_color);\n";
-                text += "float4 bloom = 0.5*tex2D(k_txbloom3, l_texcoordB.xy);\n"
-                text += "o_color = 1-((1-bloom)*(1-o_color));\n"
-            if ("ViewGlow" in configuration):
-                text += "o_color.r = o_color.a;\n"
+                text += "  uniform float4 k_blurval,\n"
+
             if ("VolumetricLighting" in configuration):
-                text += "float decay = 1.0f;\n"
-                text += "float2 curcoord = l_texcoordC.xy;\n"
-                text += "float2 lightdir = curcoord - k_casterpos.xy;\n"
-                text += "lightdir *= k_vlparams.x;\n"
-                text += "half4 sample = tex2D(k_txcolor, curcoord);\n"
-                text += "float3 vlcolor = sample.rgb * sample.a;\n"
-                text += "for (int i = 0; i < %s; i++) {\n" % (int(configuration["VolumetricLighting"].numsamples))
-                text += "  curcoord -= lightdir;\n"
-                text += "  sample = tex2D(k_tx%s, curcoord);\n" % (configuration["VolumetricLighting"].source)
-                text += "  sample *= sample.a * decay;//*weight\n"
-                text += "  vlcolor += sample.rgb;\n"
-                text += "  decay *= k_vlparams.y;\n"
-                text += "}\n"
-                text += "o_color += float4(vlcolor * k_vlparams.z, 1);\n"
+                text += "  uniform float4 k_casterpos,\n"
+                text += "  uniform float4 k_vlparams,\n"
+            text += "  out float4 o_color : COLOR)\n"
+            text += "{\n"
+            text += "  o_color = tex2D(k_txcolor, %s);\n" % (texcoords["color"])
+            if ("CartoonInk" in configuration):
+                text += CARTOON_BODY % {"texcoord" : texcoords["aux"]}
+            if ("AmbientOcclusion" in configuration):
+                text += "  o_color *= tex2D(k_txssao2, %s).r;\n" % (texcoords["ssao2"])
+            if ("BlurSharpen" in configuration):
+                text += "  o_color = lerp(tex2D(k_txblur1, %s), o_color, k_blurval.x);\n" % (texcoords["blur1"])
+            if ("Bloom" in configuration):
+                text += "  o_color = saturate(o_color);\n";
+                text += "  float4 bloom = 0.5 * tex2D(k_txbloom3, %s);\n" % (texcoords["bloom3"])
+                text += "  o_color = 1-((1-bloom)*(1-o_color));\n"
+            if ("ViewGlow" in configuration):
+                text += "  o_color.r = o_color.a;\n"
+            if ("VolumetricLighting" in configuration):
+                text += "  float decay = 1.0f;\n"
+                text += "  float2 curcoord = %s;\n" % (texcoords["color"])
+                text += "  float2 lightdir = curcoord - k_casterpos.xy;\n"
+                text += "  lightdir *= k_vlparams.x;\n"
+                text += "  half4 sample = tex2D(k_txcolor, curcoord);\n"
+                text += "  float3 vlcolor = sample.rgb * sample.a;\n"
+                text += "  for (int i = 0; i < %s; i++) {\n" % (int(configuration["VolumetricLighting"].numsamples))
+                text += "    curcoord -= lightdir;\n"
+                text += "    sample = tex2D(k_tx%s, curcoord);\n" % (configuration["VolumetricLighting"].source)
+                text += "    sample *= sample.a * decay;//*weight\n"
+                text += "    vlcolor += sample.rgb;\n"
+                text += "    decay *= k_vlparams.y;\n"
+                text += "  }\n"
+                text += "  o_color += float4(vlcolor * k_vlparams.z, 1);\n"
             if ("Inverted" in configuration):
-                text += "o_color = float4(1, 1, 1, 1) - o_color;\n"
+                text += "  o_color = float4(1, 1, 1, 1) - o_color;\n"
             text += "}\n"
             
             self.finalQuad.setShader(Shader.make(text))
