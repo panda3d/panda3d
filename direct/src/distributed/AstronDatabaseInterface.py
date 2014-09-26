@@ -142,7 +142,7 @@ class AstronDatabaseInterface:
                 self.notify.error('Received bad dclass %d in'
                                   ' DBSERVER_OBJECT_GET_ALL_RESP' % (dclassId))
 
-            if msgType == DBSERVER_OBJECT_GET_FIELD:
+            if msgType == DBSERVER_OBJECT_GET_FIELD_RESP:
                 fieldCount = 1
             else:
                 fieldCount = di.getUint16()
