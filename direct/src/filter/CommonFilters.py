@@ -125,7 +125,6 @@ class CommonFilters:
           self.task = None
 
     def reconfigure(self, fullrebuild, changed):
-
         """ Reconfigure is called whenever any configuration change is made. """
 
         configuration = self.configuration
@@ -140,9 +139,13 @@ class CommonFilters:
             auxbits = 0
             needtex = {}
             needtex["color"] = True
+            texcoords = ["l_texcoordC"]
+
             if ("CartoonInk" in configuration):
                 needtex["aux"] = True
                 auxbits |= AuxBitplaneAttrib.ABOAuxNormal
+                texcoords.append("l_texcoordN")
+
             if ("AmbientOcclusion" in configuration):
                 needtex["depth"] = True
                 needtex["ssao0"] = True
@@ -150,19 +153,27 @@ class CommonFilters:
                 needtex["ssao2"] = True
                 needtex["aux"] = True
                 auxbits |= AuxBitplaneAttrib.ABOAuxNormal
+                texcoords.append("l_texcoordAO")
+
             if ("BlurSharpen" in configuration):
                 needtex["blur0"] = True
                 needtex["blur1"] = True
+                texcoords.append("l_texcoordBS")
+
             if ("Bloom" in configuration):
                 needtex["bloom0"] = True
                 needtex["bloom1"] = True
                 needtex["bloom2"] = True
                 needtex["bloom3"] = True
                 auxbits |= AuxBitplaneAttrib.ABOGlow
+                texcoords.append("l_texcoordB")
+
             if ("ViewGlow" in configuration):
                 auxbits |= AuxBitplaneAttrib.ABOGlow
+
             if ("VolumetricLighting" in configuration):
                 needtex[configuration["VolumetricLighting"].source] = True
+
             for tex in needtex:
                 self.textures[tex] = Texture("scene-"+tex)
                 self.textures[tex].setWrapU(Texture.WMClamp)
@@ -230,24 +241,27 @@ class CommonFilters:
 
             text = "//Cg\n"
             text += "void vshader(float4 vtx_position : POSITION,\n"
-            text += " out float4 l_position : POSITION,\n"
-            text += " uniform float4 texpad_txcolor,\n"
-            text += " uniform float4 texpix_txcolor,\n"
-            text += " out float4 l_texcoordC : TEXCOORD0,\n"
+            text += "  out float4 l_position : POSITION,\n"
+            text += "  uniform float4 texpad_txcolor,\n"
+            text += "  uniform float4 texpix_txcolor,\n"
+
             if ("CartoonInk" in configuration):
-                text += " uniform float4 texpad_txaux,\n"
-                text += " uniform float4 texpix_txaux,\n"
-                text += " out float4 l_texcoordN : TEXCOORD1,\n"
+                text += "  uniform float4 texpad_txaux,\n"
+                text += "  uniform float4 texpix_txaux,\n"
+
             if ("Bloom" in configuration):
-                text += " uniform float4 texpad_txbloom3,\n"
-                text += " out float4 l_texcoordB : TEXCOORD2,\n"
+                text += "  uniform float4 texpad_txbloom3,\n"
+
             if ("BlurSharpen" in configuration):
-                text += " uniform float4 texpad_txblur1,\n"
-                text += " out float4 l_texcoordBS : TEXCOORD3,\n"
+                text += "  uniform float4 texpad_txblur1,\n"
+
             if ("AmbientOcclusion" in configuration):
-                text += " uniform float4 texpad_txssao2,\n"
-                text += " out float4 l_texcoordAO : TEXCOORD4,\n"
-            text += " uniform float4x4 mat_modelproj)\n"
+                text += "  uniform float4 texpad_txssao2,\n"
+
+            for i, name in enumerate(texcoords):
+                text += "  out float4 %s : TEXCOORD%d,\n" % (name, i)
+
+            text += "  uniform float4x4 mat_modelproj)\n"
             text += "{\n"
             text += " l_position=mul(mat_modelproj, vtx_position);\n"
             text += " l_texcoordC=(vtx_position.xzxz * texpad_txcolor) + texpad_txcolor;\n"
@@ -261,28 +275,30 @@ class CommonFilters:
                 text += " l_texcoordAO=(vtx_position.xzxz * texpad_txssao2) + texpad_txssao2;\n"
             if ("HalfPixelShift" in configuration):
                 text += " l_texcoordC+=texpix_txcolor*0.5;\n"
-                if ("CartoonInk" in configuration):
+                if ("l_texcoordN" in texcoords):
                     text += " l_texcoordN+=texpix_txaux*0.5;\n"
             text += "}\n"
 
+
             text += "void fshader(\n"
-            text += "float4 l_texcoordC : TEXCOORD0,\n"
             text += "uniform float4 texpix_txcolor,\n"
+
             if ("CartoonInk" in configuration):
-                text += "float4 l_texcoordN : TEXCOORD1,\n"
                 text += "uniform float4 texpix_txaux,\n"
-            if ("Bloom" in configuration):
-                text += "float4 l_texcoordB : TEXCOORD2,\n"
+
             if ("BlurSharpen" in configuration):
-                text += "float4 l_texcoordBS : TEXCOORD3,\n"
                 text += "uniform float4 k_blurval,\n"
-            if ("AmbientOcclusion" in configuration):
-                text += "float4 l_texcoordAO : TEXCOORD4,\n"
+
+            for i, name in enumerate(texcoords):
+                text += "  float4 %s : TEXCOORD%d,\n" % (name, i)
+
             for key in self.textures:
                 text += "uniform sampler2D k_tx" + key + ",\n"
+
             if ("CartoonInk" in configuration):
                 text += "uniform float4 k_cartoonseparation,\n"
                 text += "uniform float4 k_cartooncolor,\n"
+
             if ("VolumetricLighting" in configuration):
                 text += "uniform float4 k_casterpos,\n"
                 text += "uniform float4 k_vlparams,\n"
