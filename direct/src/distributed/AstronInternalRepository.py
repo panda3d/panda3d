@@ -233,6 +233,8 @@ class AstronInternalRepository(ConnectionRepository):
             self.handleObjLocation(di)
         elif msgType in (DBSERVER_CREATE_OBJECT_RESP,
                          DBSERVER_OBJECT_GET_ALL_RESP,
+                         DBSERVER_OBJECT_GET_FIELDS_RESP,
+                         DBSERVER_OBJECT_GET_FIELD_RESP,
                          DBSERVER_OBJECT_SET_FIELD_IF_EQUALS_RESP,
                          DBSERVER_OBJECT_SET_FIELDS_IF_EQUALS_RESP):
             self.dbInterface.handleDatagram(msgType, di)
