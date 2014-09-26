@@ -1178,12 +1178,11 @@ synthesize_shader(const RenderState *rs) {
           PN_stdfloat t1 = light_ramp->get_threshold(1);
           PN_stdfloat l0 = light_ramp->get_level(0);
           PN_stdfloat l1 = light_ramp->get_level(1);
-          PN_stdfloat l2 = light_ramp->get_level(2);
           text << "\t // Double-threshold light ramp\n";
           text << "\t float lr_in = dot(tot_diffuse.rgb, float3(0.33,0.34,0.33));\n";
-          text << "\t float lr_out = " << l0 << "\n";
-          text << "\t if (lr_in > " << t0 << ") lr_out=" << l1 << ";\n";
-          text << "\t if (lr_in > " << t1 << ") lr_out=" << l2 << ";\n";
+          text << "\t float lr_out = 0.0;\n";
+          text << "\t if (lr_in > " << t0 << ") lr_out=" << l0 << ";\n";
+          text << "\t if (lr_in > " << t1 << ") lr_out=" << l1 << ";\n";
           text << "\t tot_diffuse = tot_diffuse * (lr_out / lr_in);\n";
           break;
         }
