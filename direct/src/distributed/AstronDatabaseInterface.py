@@ -166,6 +166,7 @@ class AstronDatabaseInterface:
 
         finally:
             del self._callbacks[ctx]
+            del self._dclasses[ctx]
 
     def updateObject(self, databaseId, doId, dclass, newFields, oldFields=None, callback=None):
         """
