@@ -3168,6 +3168,7 @@ if (not RUNTIME):
   TargetAdd('libp3gobj.in', opts=['IMOD:panda3d.core', 'ILIB:libp3gobj', 'SRCDIR:panda/src/gobj'])
   TargetAdd('libp3gobj_igate.obj', input='libp3gobj.in', opts=["DEPENDENCYONLY"])
   TargetAdd('p3gobj_geomVertexArrayData_ext.obj', opts=OPTS, input='geomVertexArrayData_ext.cxx')
+  TargetAdd('p3gobj_internalName_ext.obj', opts=OPTS, input='internalName_ext.cxx')
 
 #
 # DIRECTORY: panda/src/pgraphnodes/
@@ -3539,6 +3540,7 @@ if (not RUNTIME):
   TargetAdd('libpanda.dll', input='p3putil_typedWritable_ext.obj')
   TargetAdd('libpanda.dll', input='p3pnmimage_pfmFile_ext.obj')
   TargetAdd('libpanda.dll', input='p3gobj_geomVertexArrayData_ext.obj')
+  TargetAdd('libpanda.dll', input='p3gobj_internalName_ext.obj')
   TargetAdd('libpanda.dll', input='p3pgraph_ext_composite.obj')
   TargetAdd('libpanda.dll', input='p3display_graphicsStateGuardian_ext.obj')
 

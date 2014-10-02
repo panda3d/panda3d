@@ -121,6 +121,8 @@ extern "C" {
   EXPCL_PYSTUB int PyString_AsStringAndSize(...);
   EXPCL_PYSTUB int PyString_FromString(...);
   EXPCL_PYSTUB int PyString_FromStringAndSize(...);
+  EXPCL_PYSTUB int PyString_InternFromString(...);
+  EXPCL_PYSTUB int PyString_InternInPlace(...);
   EXPCL_PYSTUB int PyString_Size(...);
   EXPCL_PYSTUB int PyString_Type(...);
   EXPCL_PYSTUB int PySys_GetObject(...);
@@ -152,6 +154,8 @@ extern "C" {
   EXPCL_PYSTUB int PyUnicode_FromStringAndSize(...);
   EXPCL_PYSTUB int PyUnicode_FromWideChar(...);
   EXPCL_PYSTUB int PyUnicode_GetSize(...);
+  EXPCL_PYSTUB int PyUnicode_InternFromString(...);
+  EXPCL_PYSTUB int PyUnicode_InternInPlace(...);
   EXPCL_PYSTUB int PyUnicode_Type(...);
   EXPCL_PYSTUB int Py_BuildValue(...);
   EXPCL_PYSTUB int Py_InitModule4(...);
@@ -296,6 +300,8 @@ int PyString_AsString(...) { return 0; }
 int PyString_AsStringAndSize(...) { return 0; }
 int PyString_FromString(...) { return 0; }
 int PyString_FromStringAndSize(...) { return 0; }
+int PyString_InternFromString(...) { return 0; }
+int PyString_InternInPlace(...) { return 0; }
 int PyString_Size(...) { return 0; }
 int PyString_Type(...) { return 0; }
 int PySys_GetObject(...) { return 0; }
@@ -327,6 +333,8 @@ int PyUnicode_FromString(...) { return 0; }
 int PyUnicode_FromStringAndSize(...) { return 0; }
 int PyUnicode_FromWideChar(...) { return 0; }
 int PyUnicode_GetSize(...) { return 0; }
+int PyUnicode_InternFromString(...) { return 0; }
+int PyUnicode_InternInPlace(...) { return 0; }
 int PyUnicode_Type(...) { return 0; }
 int Py_BuildValue(...) { return 0; }
 int Py_InitModule4(...) { return 0; }

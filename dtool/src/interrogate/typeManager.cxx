@@ -1199,8 +1199,52 @@ is_PyObject(CPPType *type) {
     return is_PyObject(type->as_const_type()->_wrapped_around);
 
   case CPPDeclaration::ST_extension:
+  case CPPDeclaration::ST_struct:
     return (type->get_local_name(&parser) == "PyObject" ||
-            type->get_local_name(&parser) == "_object");
+            type->get_local_name(&parser) == "PyTypeObject" ||
+            type->get_local_name(&parser) == "PyStringObject" ||
+            type->get_local_name(&parser) == "PyUnicodeObject" ||
+            type->get_local_name(&parser) == "_object" ||
+            type->get_local_name(&parser) == "_typeobject");
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_pointer_to_PyStringObject
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is PyStringObject *.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_pointer_to_PyStringObject(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_pointer_to_PyStringObject(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_pointer:
+    return is_PyStringObject(type->as_pointer_type()->_pointing_at);
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_PyStringObject
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is PyStringObject.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_PyStringObject(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_PyStringObject(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_extension:
+  case CPPDeclaration::ST_struct:
+    return (type->get_local_name(&parser) == "PyStringObject");
 
   default:
     return false;
@@ -1238,6 +1282,7 @@ is_Py_buffer(CPPType *type) {
     return is_Py_buffer(type->as_const_type()->_wrapped_around);
 
   case CPPDeclaration::ST_extension:
+  case CPPDeclaration::ST_struct:
     return (type->get_local_name(&parser) == "Py_buffer");
 
   default:
