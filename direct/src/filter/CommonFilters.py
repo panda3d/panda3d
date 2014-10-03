@@ -325,9 +325,20 @@ class CommonFilters:
                 text += "    decay *= k_vlparams.y;\n"
                 text += "  }\n"
                 text += "  o_color += float4(vlcolor * k_vlparams.z, 1);\n"
+
+            if ("GammaAdjust" in configuration):
+                gamma = configuration["GammaAdjust"]
+                if gamma == 0.5:
+                    text += "  o_color.rgb = sqrt(o_color.rgb);\n"
+                elif gamma == 2.0:
+                    text += "  o_color.rgb *= o_color.rgb;\n"
+                elif gamma != 1.0:
+                    text += "  o_color.rgb = pow(o_color.rgb, %ff);\n" % (gamma)
+
             if ("Inverted" in configuration):
                 text += "  o_color = float4(1, 1, 1, 1) - o_color;\n"
             text += "}\n"
+            print text
             
             self.finalQuad.setShader(Shader.make(text))
             for tex in self.textures:
@@ -513,3 +524,17 @@ class CommonFilters:
             return self.reconfigure(True, "AmbientOcclusion")
         return True
 
+    def setGammaAdjust(self, gamma):
+        """ Applies additional gamma correction to the image.  1.0 = no correction. """
+        old_gamma = self.configuration.get("GammaAdjust", 1.0)
+        if old_gamma != gamma:
+            self.configuration["GammaAdjust"] = gamma
+            return self.reconfigure(True, "GammaAdjust")
+        return True
+
+    def delGammaAdjust(self):
+        if ("GammaAdjust" in self.configuration):
+            old_gamma = self.configuration["GammaAdjust"]
+            del self.configuration["GammaAdjust"]
+            return self.reconfigure((old_gamma != 1.0), "GammaAdjust")
+        return True
