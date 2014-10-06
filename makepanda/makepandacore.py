@@ -37,6 +37,7 @@ HAS_TARGET_ARCH = False
 TOOLCHAIN_PREFIX = ""
 ANDROID_ABI = None
 SYS_LIB_DIRS = []
+DEBUG_DEPENDENCIES = False
 
 # Is the current Python a 32-bit or 64-bit build?  There doesn't
 # appear to be a universal test for this.
@@ -652,7 +653,10 @@ def NeedsBuild(files, others):
     for file in files:
         dates[file] = GetTimestamp(file)
         if not os.path.exists(file):
+            if DEBUG_DEPENDENCIES:
+                print("rebuilding %s because it does not exist" % (file))
             return True
+
     for file in others:
         dates[file] = GetTimestamp(file)
 
@@ -661,6 +665,16 @@ def NeedsBuild(files, others):
         cached = BUILTFROMCACHE[key]
         if cached == dates:
             return False
+        elif DEBUG_DEPENDENCIES:
+            print("rebuilding %s because:" % (key))
+            for key in frozenset(cached.keys()) | frozenset(dates.keys()):
+                if key not in cached:
+                    print("    new dependency: %s" % (key))
+                elif key not in dates:
+                    print("    removed dependency: %s" % (key))
+                elif cached[key] != dates[key]:
+                    print("    dependency changed: %s" % (key))
+
         if VERBOSE and frozenset(cached) != frozenset(dates):
             print("%sWARNING:%s file dependencies changed: %s%s%s" % (GetColor("red"), GetColor(), GetColor("green"), files, GetColor()))
 
@@ -1181,40 +1195,44 @@ def GetThirdpartyDir():
 ########################################################################
 
 def GetOutputDir():
-  return OUTPUTDIR
+    return OUTPUTDIR
 
 def IsCustomOutputDir():
-  return CUSTOM_OUTPUTDIR
+    return CUSTOM_OUTPUTDIR
 
 def SetOutputDir(outputdir):
-  global OUTPUTDIR, CUSTOM_OUTPUTDIR
-  OUTPUTDIR=outputdir
-  CUSTOM_OUTPUTDIR=True
+    global OUTPUTDIR, CUSTOM_OUTPUTDIR
+    OUTPUTDIR = outputdir
+    CUSTOM_OUTPUTDIR = True
 
 def GetOptimize():
-  return int(OPTIMIZE)
+    return int(OPTIMIZE)
 
 def SetOptimize(optimize):
-  global OPTIMIZE
-  OPTIMIZE=optimize
+    global OPTIMIZE
+    OPTIMIZE = optimize
 
 def GetVerbose():
-  return VERBOSE
+    return VERBOSE
 
 def SetVerbose(verbose):
-  global VERBOSE
-  VERBOSE=verbose
+    global VERBOSE
+    VERBOSE = verbose
+
+def SetDebugDependencies(dd = True):
+    global DEBUG_DEPENDENCIES
+    DEBUG_DEPENDENCIES = dd
 
 def GetLinkAllStatic():
-  return LINK_ALL_STATIC
+    return LINK_ALL_STATIC
 
 def SetLinkAllStatic(val = True):
-  global LINK_ALL_STATIC
-  LINK_ALL_STATIC = val
+    global LINK_ALL_STATIC
+    LINK_ALL_STATIC = val
 
 def UnsetLinkAllStatic():
-  global LINK_ALL_STATIC
-  LINK_ALL_STATIC = False
+    global LINK_ALL_STATIC
+    LINK_ALL_STATIC = False
 
 ########################################################################
 ##
@@ -1292,7 +1310,7 @@ def OverrideValue(parameter, value):
 def PkgConfigHavePkg(pkgname, tool = "pkg-config"):
     """Returns a bool whether the pkg-config package is installed."""
 
-    if (sys.platform == "win32" or not LocateBinary(tool)):
+    if (sys.platform == "win32" or CrossCompiling() or not LocateBinary(tool)):
         return False
     if (tool == "pkg-config"):
         handle = os.popen(LocateBinary("pkg-config") + " --silence-errors --modversion " + pkgname)
@@ -1307,7 +1325,7 @@ def PkgConfigHavePkg(pkgname, tool = "pkg-config"):
 def PkgConfigGetLibs(pkgname, tool = "pkg-config"):
     """Returns a list of libs for the package, prefixed by -l."""
 
-    if (sys.platform == "win32" or not LocateBinary(tool)):
+    if (sys.platform == "win32" or CrossCompiling() or not LocateBinary(tool)):
         return []
     if (tool == "pkg-config"):
         handle = os.popen(LocateBinary("pkg-config") + " --silence-errors --libs-only-l " + pkgname)
@@ -1338,7 +1356,7 @@ def PkgConfigGetLibs(pkgname, tool = "pkg-config"):
 def PkgConfigGetIncDirs(pkgname, tool = "pkg-config"):
     """Returns a list of includes for the package, NOT prefixed by -I."""
 
-    if (sys.platform == "win32" or not LocateBinary(tool)):
+    if (sys.platform == "win32" or CrossCompiling() or not LocateBinary(tool)):
         return []
     if (tool == "pkg-config"):
         handle = os.popen(LocateBinary("pkg-config") + " --silence-errors --cflags-only-I " + pkgname)
@@ -1359,7 +1377,7 @@ def PkgConfigGetIncDirs(pkgname, tool = "pkg-config"):
 def PkgConfigGetLibDirs(pkgname, tool = "pkg-config"):
     """Returns a list of library paths for the package, NOT prefixed by -L."""
 
-    if (sys.platform == "win32" or not LocateBinary(tool)):
+    if (sys.platform == "win32" or CrossCompiling() or not LocateBinary(tool)):
         return []
     if (tool == "pkg-config"):
         handle = os.popen(LocateBinary("pkg-config") + " --silence-errors --libs-only-L " + pkgname)
@@ -1379,7 +1397,7 @@ def PkgConfigGetLibDirs(pkgname, tool = "pkg-config"):
 def PkgConfigGetDefSymbols(pkgname, tool = "pkg-config"):
     """Returns a dictionary of preprocessor definitions."""
 
-    if (sys.platform == "win32" or not LocateBinary(tool)):
+    if (sys.platform == "win32" or CrossCompiling() or not LocateBinary(tool)):
         return []
     if (tool == "pkg-config"):
         handle = os.popen(LocateBinary("pkg-config") + " --silence-errors --cflags " + pkgname)
@@ -1411,7 +1429,6 @@ def PkgConfigEnable(opt, pkgname, tool = "pkg-config"):
 
 def LibraryExists(lib, lpath=[]):
     """ Returns True if this library was found in the given search path, False otherwise. """
-
     target = GetTarget()
 
     for dir in lpath:
@@ -1517,6 +1534,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
         for d, v in defs.values():
             DefSymbol(target_pkg, d, v)
         return
+
     elif (GetHost() == "darwin" and framework != None):
         if (os.path.isdir("/Library/Frameworks/%s.framework" % framework) or
             os.path.isdir("/System/Library/Frameworks/%s.framework" % framework) or
@@ -1532,6 +1550,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
             print("%sERROR:%s Could not locate framework %s, aborting build" % (GetColor("red"), GetColor(), framework))
             exit()
         return
+
     elif (LocateBinary(tool) != None and (tool != "pkg-config" or pkgconfig != None)):
         if (isinstance(pkgconfig, str) or tool != "pkg-config"):
             if (PkgConfigHavePkg(pkgconfig, tool)):
@@ -1553,6 +1572,7 @@ def SmartPkgEnable(pkg, pkgconfig = None, libs = None, incs = None, defs = None,
         else:
             print("%sERROR:%s Could not locate pkg-config package %s, aborting build" % (GetColor("red"), GetColor(), pkgconfig))
             exit()
+
     else:
         # Okay, our pkg-config attempts failed. Let's try locating the libs by ourselves.
         have_pkg = True
@@ -1825,55 +1845,81 @@ def SdkLocateMax():
                             SDK[version+"CS"] = top + subdir
 
 def SdkLocatePython(force_use_sys_executable = False):
-    if (PkgSkip("PYTHON")==0):
-        if GetTarget() != GetHost():
-            exit('Use --no-python when cross-compiling until support has been added')
+    if PkgSkip("PYTHON"):
+        SDK["PYTHONEXEC"] = os.path.realpath(sys.executable)
+        return
 
-        if (GetTarget() == 'windows' and not force_use_sys_executable):
-            SDK["PYTHON"] = GetThirdpartyBase()+"/win-python"
-            if (GetOptimize() <= 2):
-                SDK["PYTHON"] += "-dbg"
-            if (GetTargetArch() == 'x64' and os.path.isdir(SDK["PYTHON"] + "-x64")):
-                SDK["PYTHON"] += "-x64"
+    if CrossCompiling():
+        force_use_sys_executable = False
 
-            SDK["PYTHONEXEC"] = SDK["PYTHON"].replace('/', '\\') + "\\python"
-            if (GetOptimize() <= 2):
-                SDK["PYTHONEXEC"] += "_d.exe"
-            else:
-                SDK["PYTHONEXEC"] += ".exe"
+    if (GetTarget() == 'windows' and not force_use_sys_executable):
+        SDK["PYTHON"] = GetThirdpartyBase()+"/win-python"
+        if (GetOptimize() <= 2):
+            SDK["PYTHON"] += "-dbg"
+        if (GetTargetArch() == 'x64' and os.path.isdir(SDK["PYTHON"] + "-x64")):
+            SDK["PYTHON"] += "-x64"
 
-            if (not os.path.isfile(SDK["PYTHONEXEC"])):
-                exit("Could not find %s!" % SDK["PYTHONEXEC"])
-
-            # Determine which version it is by checking which dll is in the directory.
-            if (GetOptimize() <= 2):
-                py_dlls = glob.glob(SDK["PYTHON"] + "/python[0-9][0-9]_d.dll")
-            else:
-                py_dlls = glob.glob(SDK["PYTHON"] + "/python[0-9][0-9].dll")
-
-            if len(py_dlls) == 0:
-                exit("Could not find the Python dll in %s." % (SDK["PYTHON"]))
-            elif len(py_dlls) > 1:
-                exit("Found multiple Python dlls in %s." % (SDK["PYTHON"]))
-
-            py_dll = os.path.basename(py_dlls[0])
-            SDK["PYTHONVERSION"] = "python" + py_dll[6] + "." + py_dll[7]
-
-        elif (GetTarget() == 'windows'):
-            SDK["PYTHON"] = os.path.dirname(sysconfig.get_python_inc())
-            SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version()
-            SDK["PYTHONEXEC"] = sys.executable
-
+        SDK["PYTHONEXEC"] = SDK["PYTHON"].replace('/', '\\') + "\\python"
+        if (GetOptimize() <= 2):
+            SDK["PYTHONEXEC"] += "_d.exe"
         else:
-            SDK["PYTHON"] = sysconfig.get_python_inc()
-            SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version()
-            SDK["PYTHONEXEC"] = os.path.realpath(sys.executable)
+            SDK["PYTHONEXEC"] += ".exe"
 
-        if GetVerbose():
-            print("Using Python %s build located at %s" % (SDK["PYTHONVERSION"][6:9], SDK["PYTHON"]))
+        if (not os.path.isfile(SDK["PYTHONEXEC"])):
+            exit("Could not find %s!" % SDK["PYTHONEXEC"])
+
+        # Determine which version it is by checking which dll is in the directory.
+        if (GetOptimize() <= 2):
+            py_dlls = glob.glob(SDK["PYTHON"] + "/python[0-9][0-9]_d.dll")
+        else:
+            py_dlls = glob.glob(SDK["PYTHON"] + "/python[0-9][0-9].dll")
+
+        if len(py_dlls) == 0:
+            exit("Could not find the Python dll in %s." % (SDK["PYTHON"]))
+        elif len(py_dlls) > 1:
+            exit("Found multiple Python dlls in %s." % (SDK["PYTHON"]))
+
+        py_dll = os.path.basename(py_dlls[0])
+        SDK["PYTHONVERSION"] = "python" + py_dll[6] + "." + py_dll[7]
+
+    elif CrossCompiling():
+        tp_python = os.path.join(GetThirdpartyDir(), "python")
+        SDK["PYTHON"] = tp_python + "/include"
+
+        if GetTarget() == 'darwin':
+            py_libs = glob.glob(tp_python + "/lib/libpython[0-9].[0-9].dylib")
+        else:
+            py_libs = glob.glob(tp_python + "/lib/libpython[0-9].[0-9].so")
+
+        if len(py_libs) == 0:
+            py_libs = glob.glob(tp_python + "/lib/libpython[0-9].[0-9].a")
+
+        if len(py_libs) == 0:
+            exit("Could not find the Python library in %s." % (tp_python))
+        elif len(py_libs) > 1:
+            exit("Found multiple Python libraries in %s." % (tp_python))
+
+        py_lib = os.path.basename(py_libs[0])
+        SDK["PYTHONVERSION"] = "python" + py_lib[9] + "." + py_lib[11]
+
+    elif (GetTarget() == 'windows'):
+        SDK["PYTHON"] = os.path.dirname(sysconfig.get_python_inc())
+        SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version()
+        SDK["PYTHONEXEC"] = sys.executable
 
     else:
+        SDK["PYTHON"] = sysconfig.get_python_inc()
+        SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version()
         SDK["PYTHONEXEC"] = os.path.realpath(sys.executable)
+
+    if CrossCompiling():
+        SDK["PYTHONEXEC"] = sys.executable
+        host_version = "python" + sysconfig.get_python_version()
+        if SDK["PYTHONVERSION"] != host_version:
+            exit("Host Python version (%s) must be the same as target Python version (%s)!" % (host_version, SDK["PYTHONVERSION"]))
+
+    if GetVerbose():
+        print("Using Python %s build located at %s" % (SDK["PYTHONVERSION"][6:9], SDK["PYTHON"]))
 
 def SdkLocateVisualStudio():
     if (GetHost() != "windows"): return
@@ -2025,9 +2071,9 @@ def SdkLocateAndroid():
     SDK["ANDROID_NDK"] = ndk_root
 
     # Determine the toolchain location.
-    gcc_ver = '4.7'
+    gcc_ver = '4.8'
     arch = GetTargetArch()
-    if arch == 'armv7' or arch == 'arm':
+    if arch == 'armv7a' or arch == 'arm':
         arch = 'arm'
         toolchain = 'arm-linux-androideabi-' + gcc_ver
     elif arch == 'x86':
@@ -2045,8 +2091,10 @@ def SdkLocateAndroid():
     #IncDirectory("ALWAYS", os.path.join(SDK["SYSROOT"], 'usr', 'include'))
 
     stdlibc = os.path.join(ndk_root, 'sources', 'cxx-stl', 'gnu-libstdc++', gcc_ver)
-    IncDirectory("ALWAYS", os.path.join(stdlibc, 'include'))
-    IncDirectory("ALWAYS", os.path.join(stdlibc, 'libs', abi, 'include'))
+    SDK["ANDROID_STL"] = stdlibc
+
+    #IncDirectory("ALWAYS", os.path.join(stdlibc, 'include'))
+    #IncDirectory("ALWAYS", os.path.join(stdlibc, 'libs', abi, 'include'))
 
     stl_lib = os.path.join(stdlibc, 'libs', abi, 'libgnustl_shared.so')
     LibName("ALWAYS", stl_lib)
@@ -2231,7 +2279,9 @@ def SetupBuildEnvironment(compiler):
         global SYS_LIB_DIRS
 
         # gcc doesn't add this one, but we do want it:
-        SYS_LIB_DIRS.append('/usr/local/lib')
+        local_lib = SDK.get("SYSROOT", "") + "/usr/local/lib"
+        if os.path.isdir(local_lib):
+            SYS_LIB_DIRS.append(local_lib)
 
         cmd = GetCXX() + " -print-search-dirs"
 
@@ -2253,7 +2303,8 @@ def SetupBuildEnvironment(compiler):
         returnval = handle.close()
         if returnval != None and returnval != 0:
             print("%sWARNING:%s %s failed" % (GetColor("red"), GetColor(), cmd))
-            SYS_LIB_DIRS += ['/usr/lib']
+            SYS_LIB_DIRS += [SDK.get("SYSROOT", "") + "/usr/lib"]
+
         elif GetVerbose():
             print("System library search path: %s" % ':'.join(SYS_LIB_DIRS))
 

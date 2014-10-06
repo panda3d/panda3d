@@ -24,6 +24,8 @@
 #if defined(WIN32_VC) || defined(WIN64_VC)
 #include <winsock2.h>  // For gethostname()
 #include <Iphlpapi.h> // For GetAdaptersAddresses()
+#elif defined(ANDROID)
+#include <net/if.h>
 #else
 #include <net/if.h>
 #include <ifaddrs.h>
@@ -540,14 +542,14 @@ scan_interfaces() {
         TextEncoder encoder;
         encoder.set_wtext(wstring(p->FriendlyName));
         string friendly_name = encoder.get_text();
-        
+
         Interface iface;
         iface.set_name(friendly_name);
 
         if (p->PhysicalAddressLength > 0) {
           iface.set_mac_address(format_mac_address((const unsigned char *)p->PhysicalAddress, p->PhysicalAddressLength));
         }
-        
+
         if (p->OperStatus == IfOperStatusUp) {
           // Prefixes are a linked list, in the order Network IP,
           // Adapter IP, Broadcast IP (plus more).
@@ -583,6 +585,9 @@ scan_interfaces() {
     }
     PANDA_FREE_ARRAY(addresses);
   }
+
+#elif defined(ANDROID)
+  // TODO: implementation using netlink_socket?
 
 #else  // WIN32_VC
   struct ifaddrs *ifa;

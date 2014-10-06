@@ -663,21 +663,6 @@ if (COMPILER=="GCC"):
         IncDirectory("ALWAYS", "/usr/local/include")
         LibDirectory("ALWAYS", "/usr/local/lib")
 
-    if GetHost() != "darwin":
-        # Workaround for an issue where pkg-config does not include this path
-        if GetTargetArch() in ("x86_64", "amd64"):
-            if (os.path.isdir("/usr/lib64/glib-2.0/include")):
-                IncDirectory("GTK2", "/usr/lib64/glib-2.0/include")
-            if (os.path.isdir("/usr/lib64/gtk-2.0/include")):
-                IncDirectory("GTK2", "/usr/lib64/gtk-2.0/include")
-
-            if (os.path.isdir("/usr/X11R6/lib64")):
-                LibDirectory("ALWAYS", "/usr/X11R6/lib64")
-            else:
-                LibDirectory("ALWAYS", "/usr/X11R6/lib")
-        else:
-            LibDirectory("ALWAYS", "/usr/X11R6/lib")
-
     fcollada_libs = ("FColladaD", "FColladaSD", "FColladaS")
     # WARNING! The order of the ffmpeg libraries matters!
     ffmpeg_libs = ("libavformat", "libavcodec", "libavutil")
@@ -751,6 +736,22 @@ if (COMPILER=="GCC"):
             SmartPkgEnable("XRANDR", "xrandr", "Xrandr", "X11/extensions/Xrandr.h")
             SmartPkgEnable("XF86DGA", "xxf86dga", "Xxf86dga", "X11/extensions/xf86dga.h")
             SmartPkgEnable("XCURSOR", "xcursor", "Xcursor", "X11/Xcursor/Xcursor.h")
+
+    if GetHost() != "darwin":
+        # Workaround for an issue where pkg-config does not include this path
+        if GetTargetArch() in ("x86_64", "amd64"):
+            if (os.path.isdir("/usr/lib64/glib-2.0/include")):
+                IncDirectory("GTK2", "/usr/lib64/glib-2.0/include")
+            if (os.path.isdir("/usr/lib64/gtk-2.0/include")):
+                IncDirectory("GTK2", "/usr/lib64/gtk-2.0/include")
+
+            if not PkgSkip("X11"):
+                if (os.path.isdir("/usr/X11R6/lib64")):
+                    LibDirectory("ALWAYS", "/usr/X11R6/lib64")
+                else:
+                    LibDirectory("ALWAYS", "/usr/X11R6/lib")
+        elif not PkgSkip("X11"):
+            LibDirectory("ALWAYS", "/usr/X11R6/lib")
 
     if (RUNTIME):
         # For the runtime, all packages are required
@@ -1046,7 +1047,7 @@ def CompileCxx(obj,src,opts):
             
     if (COMPILER=="GCC"):
         if (src.endswith(".c")): cmd = GetCC() +' -fPIC -c -o ' + obj
-        else:                    cmd = GetCXX()+' -ftemplate-depth-30 -fPIC -c -o ' + obj
+        else:                    cmd = GetCXX()+' -ftemplate-depth-50 -fPIC -c -o ' + obj
         for (opt, dir) in INCDIRECTORIES:
             if (opt=="ALWAYS") or (opt in opts): cmd += ' -I' + BracketNameWithQuotes(dir)
         for (opt,var,val) in DEFSYMBOLS:
@@ -1070,9 +1071,12 @@ def CompileCxx(obj,src,opts):
             cmd += ' --sysroot=%s -no-canonical-prefixes' % (SDK["SYSROOT"])
 
         # Android-specific flags.
+        arch = GetTargetArch()
+
         if GetTarget() == "android":
+            cmd += ' -I%s/include' % (SDK["ANDROID_STL"])
+            cmd += ' -I%s/libs/%s/include' % (SDK["ANDROID_STL"], SDK["ANDROID_ABI"])
             cmd += ' -ffunction-sections -funwind-tables'
-            arch = GetTargetArch()
             if arch == 'armv7a':
                 cmd += ' -D__ARM_ARCH_5__ -D__ARM_ARCH_5T__ -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__'
                 cmd += ' -fstack-protector -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16'
@@ -1111,7 +1115,7 @@ def CompileCxx(obj,src,opts):
         else:
             cmd += " -pthread"
 
-        if PkgSkip("SSE2") == 0:
+        if PkgSkip("SSE2") == 0 and not arch.startswith("arm"):
             cmd += " -msse2"
         
         if (optlevel==1): cmd += " -ggdb -D_DEBUG"
@@ -1217,7 +1221,7 @@ def CompileIgate(woutd,wsrc,opts):
         # NOTE: this 1600 value is the version number for VC2010.
         cmd += ' -D_MSC_VER=1600 -D"_declspec(param)=" -D_near -D_far -D__near -D__far -D__stdcall'
     if (COMPILER=="GCC"):
-        cmd += ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -D__const=const'
+        cmd += ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -D__const=const -D__attribute__\(x\)='
         if GetTargetArch() in ("x86_64", "amd64"):
             cmd += ' -D_LP64'
         else:
@@ -1495,7 +1499,7 @@ def CompileLink(dll, obj, opts):
 
         # Android-specific flags.
         if GetTarget() == 'android':
-            cmd += " -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now"
+            cmd += " -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now"
             if GetTargetArch() == 'armv7a':
                 cmd += " -march=armv7-a -Wl,--fix-cortex-a8"
             cmd += ' -lc -lm'
@@ -3827,16 +3831,15 @@ if (PkgSkip("OPENSSL")==0 and not RTDIST and not RUNTIME and PkgSkip("DEPLOYTOOL
   TargetAdd('build_patch.exe', input=COMMON_PANDA_LIBS_PYSTUB)
   TargetAdd('build_patch.exe', opts=OPTS)
 
-  if not PkgSkip("ZLIB"):
-    TargetAdd('check_adler_check_adler.obj', opts=OPTS, input='check_adler.cxx')
-    TargetAdd('check_adler.exe', input=['check_adler_check_adler.obj'])
-    TargetAdd('check_adler.exe', input=COMMON_PANDA_LIBS_PYSTUB)
-    TargetAdd('check_adler.exe', opts=OPTS)
+  TargetAdd('check_adler_check_adler.obj', opts=OPTS, input='check_adler.cxx')
+  TargetAdd('check_adler.exe', input=['check_adler_check_adler.obj'])
+  TargetAdd('check_adler.exe', input=COMMON_PANDA_LIBS_PYSTUB)
+  TargetAdd('check_adler.exe', opts=OPTS)
 
-    TargetAdd('check_crc_check_crc.obj', opts=OPTS, input='check_crc.cxx')
-    TargetAdd('check_crc.exe', input=['check_crc_check_crc.obj'])
-    TargetAdd('check_crc.exe', input=COMMON_PANDA_LIBS_PYSTUB)
-    TargetAdd('check_crc.exe', opts=OPTS)
+  TargetAdd('check_crc_check_crc.obj', opts=OPTS, input='check_crc.cxx')
+  TargetAdd('check_crc.exe', input=['check_crc_check_crc.obj'])
+  TargetAdd('check_crc.exe', input=COMMON_PANDA_LIBS_PYSTUB)
+  TargetAdd('check_crc.exe', opts=OPTS)
 
   TargetAdd('check_md5_check_md5.obj', opts=OPTS, input='check_md5.cxx')
   TargetAdd('check_md5.exe', input=['check_md5_check_md5.obj'])
