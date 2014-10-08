@@ -57,7 +57,7 @@ get_fd(const Filename &file, off_t *start, off_t *length) const {
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileMountAndroidAsset::
 has_file(const Filename &file) const {
-  return (file.empty() || is_directory(file) || is_regular_file(file));
+  return (file.empty() || /*is_directory(file) ||*/ is_regular_file(file));
 }
 
 ////////////////////////////////////////////////////////////////////

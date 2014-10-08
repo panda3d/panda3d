@@ -326,7 +326,7 @@ open_window() {
     return false;
   }
 
-  //_fb_properties = androidgsg->get_fb_properties();
+  _fb_properties = androidgsg->get_fb_properties();
 
   androiddisplay_cat.error() << "open_window done\n";
 
@@ -434,7 +434,7 @@ handle_command(struct android_app *app, int32_t command) {
 void AndroidGraphicsWindow::
 ns_handle_command(int32_t command) {
   WindowProperties properties;
-  
+
   switch (command) {
     case APP_CMD_SAVE_STATE:
       // The system has asked us to save our current state.  Do so.
@@ -446,9 +446,16 @@ ns_handle_command(int32_t command) {
       // The window is being shown, get it ready.
       if (_app->window != NULL) {
         create_surface();
+        properties.set_size(ANativeWindow_getWidth(_app->window),
+                            ANativeWindow_getHeight(_app->window));
         properties.set_minimized(false);
         system_changed_properties(properties);
       }
+      break;
+    case APP_CMD_CONFIG_CHANGED:
+      properties.set_size(ANativeWindow_getWidth(_app->window),
+                          ANativeWindow_getHeight(_app->window));
+      system_changed_properties(properties);
       break;
     case APP_CMD_TERM_WINDOW:
       destroy_surface();
@@ -456,6 +463,8 @@ ns_handle_command(int32_t command) {
       system_changed_properties(properties);
       break;
     case APP_CMD_WINDOW_RESIZED:
+      properties.set_size(ANativeWindow_getWidth(_app->window),
+                          ANativeWindow_getHeight(_app->window));
       break;
     case APP_CMD_WINDOW_REDRAW_NEEDED:
       break;

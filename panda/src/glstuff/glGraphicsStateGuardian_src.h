@@ -598,7 +598,9 @@ public:
   PFNGLPOINTPARAMETERFVPROC _glPointParameterfv;
   bool _supports_point_sprite;
 
+#ifndef OPENGLES
   PFNGLPRIMITIVERESTARTINDEXPROC _glPrimitiveRestartIndex;
+#endif
 
   bool _supports_vertex_blend;
   PFNGLWEIGHTPOINTERARBPROC _glWeightPointer;
@@ -710,11 +712,13 @@ public:
   PFNGLGETQUERYIVPROC _glGetQueryiv;
   PFNGLGETQUERYOBJECTUIVPROC _glGetQueryObjectuiv;
 
+#ifndef OPENGLES
   PFNGLQUERYCOUNTERPROC _glQueryCounter;
   PFNGLGETQUERYOBJECTI64VPROC _glGetQueryObjecti64v;
   PFNGLGETQUERYOBJECTUI64VPROC _glGetQueryObjectui64v;
 
   PFNGLGETINTEGER64VPROC _glGetInteger64v;
+#endif
 
   PFNGLACTIVESTENCILFACEEXTPROC _glActiveStencilFaceEXT;
 

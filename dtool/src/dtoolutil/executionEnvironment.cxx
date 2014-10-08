@@ -613,7 +613,7 @@ read_environment_variables() {
 ////////////////////////////////////////////////////////////////////
 void ExecutionEnvironment::
 read_args() {
-
+#ifndef ANDROID
   // First, we need to fill in _dtool_name.  This contains
   // the full path to the p3dtool library.
 
@@ -835,7 +835,7 @@ read_args() {
   }
 #endif
 
-#ifndef WIN32
+#ifndef _WIN32
   // Try to use realpath to get cleaner paths.
 
   if (!_binary_name.empty()) {
@@ -851,7 +851,9 @@ read_args() {
       _dtool_name = newpath;
     }
   }
-#endif
+#endif  // _WIN32
+
+#endif  // ANDROID
 
   if (_dtool_name.empty()) {
     _dtool_name = _binary_name;

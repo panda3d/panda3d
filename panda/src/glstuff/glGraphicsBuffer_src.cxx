@@ -174,6 +174,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
     // In case of multisample rendering, we don't need to issue
     // the barrier until we call glBlitFramebuffer.
+#ifndef OPENGLES
     if (gl_enable_memory_barriers && _fbo_multisample == 0) {
       CLP(GraphicsStateGuardian) *glgsg;
       DCAST_INTO_R(glgsg, _gsg, false);
@@ -189,6 +190,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
         }
       }
     }
+#endif
   }
 
   _gsg->set_current_properties(&get_fb_properties());
@@ -443,6 +445,7 @@ rebuild_bitplanes() {
     if (_fbo[layer] == 0) {
       glgsg->_glGenFramebuffers(1, &_fbo[layer]);
 
+#ifndef OPENGLES
       if (glgsg->_use_object_labels) {
         if (num_fbos > 1) {
           GLchar name[128];
@@ -452,6 +455,7 @@ rebuild_bitplanes() {
           glgsg->_glObjectLabel(GL_FRAMEBUFFER, _fbo[layer], _name.size(), _name.data());
         }
       }
+#endif
 
       if (_fbo[layer] == 0) {
         report_my_gl_errors();
@@ -485,7 +489,7 @@ rebuild_bitplanes() {
       _have_any_color = true;
     }
 
-#ifndef OPENGLES
+#ifndef OPENGLES_1
     for (int i=0; i<_fb_properties.get_aux_rgba(); i++) {
       bind_slot(layer, rb_resize, attach, (RenderTexturePlane)(RTP_aux_rgba_0+i), next++);
       _have_any_color = true;
@@ -1630,6 +1634,7 @@ resolve_multisamples() {
 
   PStatGPUTimer timer(glgsg, _resolve_multisample_pcollector);
 
+#ifndef OPENGLES
   if (gl_enable_memory_barriers) {
     // Issue memory barriers as necessary to make sure that the
     // texture memory is synchronized before we blit to it.
@@ -1644,6 +1649,7 @@ resolve_multisamples() {
       }
     }
   }
+#endif
 
   glgsg->report_my_gl_errors();
   GLuint fbo = _fbo[0];
@@ -1692,6 +1698,7 @@ resolve_multisamples() {
                               GL_NEAREST);
   }
   // Now handle the other color buffers.
+#ifndef OPENGLES_1
   int next = GL_COLOR_ATTACHMENT1_EXT;
   if (_fb_properties.is_stereo()) {
     glReadBuffer(next);
@@ -1700,7 +1707,6 @@ resolve_multisamples() {
                               GL_COLOR_BUFFER_BIT, GL_NEAREST);
     next += 1;
   }
-#ifndef OPENGLES
   for (int i = 0; i < _fb_properties.get_aux_rgba(); ++i) {
     glReadBuffer(next);
     glDrawBuffer(next);
