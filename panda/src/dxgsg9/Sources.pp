@@ -22,7 +22,7 @@
     wdxGraphicsPipe9.I wdxGraphicsPipe9.h \
     wdxGraphicsWindow9.I wdxGraphicsWindow9.h \
     dxgsg9base.h config_dxgsg9.h dxGraphicsStateGuardian9.I dxGraphicsStateGuardian9.h \
-    dxVertexBufferContext9.h dxVertexbufferContext9.I \
+    dxVertexBufferContext9.h dxVertexBufferContext9.I \
     dxIndexBufferContext9.h dxIndexBufferContext9.I \
     dxTextureContext9.h dxTextureContext9.I \
     dxGeomMunger9.h dxGeomMunger9.I \

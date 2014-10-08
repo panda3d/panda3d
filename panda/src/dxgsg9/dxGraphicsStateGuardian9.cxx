@@ -224,6 +224,13 @@ apply_texture(int i, TextureContext *tc) {
   DXTextureContext9 *dtc = DCAST(DXTextureContext9, tc);
   Texture *tex = tc->get_texture();
 
+  //if (tex->get_color_space() == CS_srgb) {
+  if (Texture::is_srgb(tex->get_format())) {
+    set_sampler_state(i, D3DSAMP_SRGBTEXTURE, TRUE);
+  } else {
+    set_sampler_state(i, D3DSAMP_SRGBTEXTURE, FALSE);
+  }
+
   Texture::WrapMode wrap_u, wrap_v, wrap_w;
 
   DWORD address_u;
@@ -256,7 +263,7 @@ apply_texture(int i, TextureContext *tc) {
 
   int supports_anisotropic_mag_filter;
   D3DTEXTUREFILTERTYPE new_mag_filter;
-  
+
   supports_anisotropic_mag_filter = (_screen -> _d3dcaps.TextureFilterCaps & D3DPTFILTERCAPS_MAGFANISOTROPIC) != 0;
   if (aniso_degree <= 1 || supports_anisotropic_mag_filter == 0) {
     new_mag_filter = ((ft != Texture::FT_nearest) ? D3DTEXF_LINEAR : D3DTEXF_POINT);
@@ -268,8 +275,8 @@ apply_texture(int i, TextureContext *tc) {
   hr = set_sampler_state(i, D3DSAMP_MAGFILTER, new_mag_filter);
   if (hr != D3D_OK) {
     dxgsg9_cat.error()
-      << "ERROR: set_sampler_state (D3DSAMP_MAGFILTER, " 
-      << new_mag_filter << ") failed for texture:" << tex -> get_name() << endl;    
+      << "ERROR: set_sampler_state (D3DSAMP_MAGFILTER, "
+      << new_mag_filter << ") failed for texture:" << tex -> get_name() << endl;
   }
 
   // map Panda composite min+mip filter types to d3d's separate min & mip filter types
@@ -353,7 +360,7 @@ upload_texture(DXTextureContext9 *dtc, bool force) {
   dtc->delete_texture();
   dtc->update_data_size_bytes(0);
   dtc->mark_unloaded();
-  
+
   if (_effective_incomplete_render && !force) {
     bool has_image = _supports_compressed_texture ? tex->has_ram_image() : tex->has_uncompressed_ram_image();
     if (!has_image && tex->might_have_ram_image() &&
@@ -371,7 +378,7 @@ upload_texture(DXTextureContext9 *dtc, bool force) {
       }
     }
   }
-  
+
   return dtc->create_texture(*_screen);
 }
 
@@ -746,7 +753,7 @@ begin_occlusion_query() {
       << "Occlusion query failed.\n";
     return;
   }
-  
+
   PT(DXOcclusionQueryContext9) queryobj = new DXOcclusionQueryContext9(query);
 
   if (dxgsg9_cat.is_debug()) {
@@ -776,7 +783,7 @@ end_occlusion_query() {
   PT(OcclusionQueryContext) result = _current_occlusion_query;
 
   IDirect3DQuery9 *query = DCAST(DXOcclusionQueryContext9, result)->_query;
-    
+
   if (dxgsg9_cat.is_debug()) {
     dxgsg9_cat.debug()
       << "ending occlusion query " << query << "\n";
@@ -857,7 +864,7 @@ clear(DrawableRegion *clearable) {
           aux_flags |=  D3DCLEAR_ZBUFFER;
           HRESULT hr2 = _d3d_device->Clear(0, NULL, D3DCLEAR_ZBUFFER, color_clear_value,
                                            depth_clear_value, stencil_clear_value);
-          if (FAILED(hr2)) {          
+          if (FAILED(hr2)) {
             dxgsg9_cat.error()
               << "Unable to clear depth buffer; removing.\n";
             // This is really hacky code.
@@ -1038,6 +1045,12 @@ begin_frame(Thread *current_thread) {
       throw_event("panda3d-render-error");
     }
     return false;
+  }
+
+  if (_current_properties->get_srgb_color()) {
+    set_render_state(D3DRS_SRGBWRITEENABLE, TRUE);
+  } else {
+    set_render_state(D3DRS_SRGBWRITEENABLE, FALSE);
   }
 
   return true;
@@ -1343,14 +1356,14 @@ update_standard_vertex_arrays(bool force) {
       dxgsg9_cat.error() << "Unable to get reader for array " << array_index << "\n";
       return false;
     }
-  
+
     // Get the vertex buffer for this array.
     CLP(VertexBufferContext)* dvbc;
     if (!setup_array_data(dvbc, array_reader, force)) {
       dxgsg9_cat.error() << "Unable to setup vertex buffer for array " << array_index << "\n";
       return false;
     }
-  
+
     // Bind this array as the data source for the corresponding stream.
     const GeomVertexArrayFormat* array_format = array_reader->get_array_format();
     hr = _d3d_device->SetStreamSource( array_index, dvbc->_vbuffer, 0, array_format->get_stride() );
@@ -2315,7 +2328,7 @@ reset() {
   // want gsg to pass all state settings down so any non-matching defaults we set here get overwritten
 
   nassertv(_screen->_d3d9 != NULL);
-  
+
   if (_d3d_device == NULL) {
     return;
   }
@@ -2379,27 +2392,27 @@ reset() {
     _shader_caps._ultimate_fprofile = (int)CG_PROFILE_PS_2_0;
 */
   }
-  
+
   if (dxgsg9_cat.is_debug()) {
-    
+
     CGprofile vertex_profile;
     CGprofile pixel_profile;
-    
+
     vertex_profile = cgD3D9GetLatestVertexProfile();
     pixel_profile = cgD3D9GetLatestPixelProfile();
-    
+
     const char *vertex_profile_str =
       cgGetProfileString(vertex_profile);
     const char *pixel_profile_str =
       cgGetProfileString(pixel_profile);
-    
+
     if (vertex_profile_str == NULL) {
       vertex_profile_str = "(null)";
     }
     if (pixel_profile_str == NULL) {
       pixel_profile_str = "(null)";
     }
-    
+
     dxgsg9_cat.debug()
       << "\nCg vertex profile = " << vertex_profile_str << "  id = " << vertex_profile
       << "\nCg pixel profile = " << pixel_profile_str << "  id = " << pixel_profile
@@ -2495,7 +2508,7 @@ reset() {
       << "\nDirectX SDK version " DIRECTX_SDK_VERSION
       << "\n";
   }
-  
+
   // OVERRIDE SUPPORT SINCE IT DOES NOT WORK WELL
   _screen->_supports_automatic_mipmap_generation = false;
 
@@ -2618,12 +2631,19 @@ reset() {
 
   _last_testcooplevel_result = D3D_OK;
 
+  if (dxgsg9_cat.is_debug()) {
+    dxgsg9_cat.debug() << "Supported texture formats:\n";
+  }
+
   for(int i = 0; i < MAX_POSSIBLE_TEXFMTS; i++) {
     // look for all possible DX9 texture fmts
     D3DFORMAT_FLAG fmtflag = D3DFORMAT_FLAG(1 << i);
     hr = _screen->_d3d9->CheckDeviceFormat(_screen->_card_id, D3DDEVTYPE_HAL, _screen->_display_mode.Format,
                                           0x0, D3DRTYPE_TEXTURE, g_D3DFORMATmap[fmtflag]);
-    if (SUCCEEDED(hr)){
+    if (SUCCEEDED(hr)) {
+      if (dxgsg9_cat.is_debug()) {
+        dxgsg9_cat.debug() << "  " << D3DFormatStr(g_D3DFORMATmap[fmtflag]) << "\n";
+      }
       _screen->_supported_tex_formats_mask |= fmtflag;
     }
   }
@@ -2632,7 +2652,7 @@ reset() {
   #define CHECK_FOR_DXTVERSION(num) \
   if (_screen->_supported_tex_formats_mask & DXT##num##_FLAG) {\
     if (dxgsg9_cat.is_debug()) {\
-      dxgsg9_cat.debug() << "Compressed texture format DXT" << #num << " supported \n";\
+      dxgsg9_cat.debug() << "Compressed texture format DXT" << #num << " supported\n";\
     }\
     _supports_compressed_texture = true;\
     _compressed_texture_formats.set_bit(Texture::CM_dxt##num);\
@@ -2641,9 +2661,9 @@ reset() {
   if (_screen->_intel_compressed_texture_bug) {
     dxgsg9_cat.info()
       << "Buggy Intel driver detected; disabling compressed textures.\n";
-    _screen->_supported_tex_formats_mask &= 
+    _screen->_supported_tex_formats_mask &=
       ~(DXT1_FLAG | DXT2_FLAG | DXT3_FLAG | DXT4_FLAG | DXT5_FLAG);
-                                              
+
   } else {
     // Check for available compressed formats normally.
     CHECK_FOR_DXTVERSION(1);
@@ -2652,7 +2672,7 @@ reset() {
     CHECK_FOR_DXTVERSION(4);
     CHECK_FOR_DXTVERSION(5);
   }
-      
+
   #undef CHECK_FOR_DXTVERSION
 
   _screen->_supports_rgba16f_texture_format = false;
@@ -3292,7 +3312,7 @@ set_state_and_transform(const RenderState *target,
       !_state_mask.get_bit(transparency_slot) ||
       !_state_mask.get_bit(color_write_slot) ||
       !_state_mask.get_bit(color_blend_slot) ||
-      (_target_shader->get_flag(ShaderAttrib::F_disable_alpha_write) != 
+      (_target_shader->get_flag(ShaderAttrib::F_disable_alpha_write) !=
        _state_shader->get_flag(ShaderAttrib::F_disable_alpha_write))) {
     //PStatTimer timer(_draw_set_state_blending_pcollector);
     do_issue_blending();
@@ -3353,7 +3373,7 @@ set_state_and_transform(const RenderState *target,
     do_issue_stencil();
     _state_mask.set_bit(stencil_slot);
   }
-     
+
   int fog_slot = FogAttrib::get_class_slot();
   if (_target_rs->get_attrib(fog_slot) != _state_rs->get_attrib(fog_slot) ||
       !_state_mask.get_bit(fog_slot)) {
@@ -3446,22 +3466,22 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
     const LMatrix4 &light_mat = transform->get_mat();
     LMatrix4 rel_mat = light_mat * LMatrix4::convert_mat(CS_yup_left, CS_default);
     LVector3f dir = LCAST(float, light_obj->get_direction() * rel_mat);
-    
+
     D3DCOLORVALUE black;
     black.r = black.g = black.b = black.a = 0.0f;
-    
+
     ZeroMemory(&fdata, sizeof(D3DLIGHT9));
-    
+
     fdata.Type =  D3DLIGHT_DIRECTIONAL;
     fdata.Ambient  =  black ;
     LColorf color = LCAST(float, light_obj->get_specular_color());
     fdata.Specular = *(D3DCOLORVALUE *)(color.get_data());
-    
+
     fdata.Direction = *(D3DVECTOR *)dir.get_data();
-    
+
     fdata.Range =  __D3DLIGHT_RANGE_MAX;
     fdata.Falloff =  1.0f;
-    
+
     fdata.Attenuation0 = 1.0f;       // constant
     fdata.Attenuation1 = 0.0f;       // linear
     fdata.Attenuation2 = 0.0f;       // quadratic
@@ -4125,7 +4145,7 @@ close_gsg() {
 
   if (dxgsg9_cat.is_debug()) {
     dxgsg9_cat.debug()
-      << "Closing GSG, prepared_objects count = " 
+      << "Closing GSG, prepared_objects count = "
       << _prepared_objects->get_ref_count() << "\n";
   }
 
@@ -4210,9 +4230,9 @@ set_read_buffer(const RenderBuffer &rb) {
   if (rb._buffer_type & RenderBuffer::T_front) {
     _cur_read_pixel_buffer = RenderBuffer::T_front;
   } else  if (rb._buffer_type & RenderBuffer::T_back) {
-    _cur_read_pixel_buffer = RenderBuffer::T_back;      
+    _cur_read_pixel_buffer = RenderBuffer::T_back;
   } else  if (rb._buffer_type & RenderBuffer::T_aux_rgba_ALL) {
-    _cur_read_pixel_buffer = RenderBuffer::T_back;      
+    _cur_read_pixel_buffer = RenderBuffer::T_back;
   } else {
     dxgsg9_cat.error() << "Invalid or unimplemented Argument to set_read_buffer!\n";
   }
@@ -4816,7 +4836,7 @@ check_cooperative_level() {
   case D3DERR_DEVICELOST:
     // sleep while the device is lost to free up the CPU
     Sleep (10);
-    
+
     if (SUCCEEDED(_last_testcooplevel_result)) {
       if (_dx_is_ready) {
         _dx_is_ready = false;
@@ -4847,7 +4867,7 @@ show_frame() {
   if (_swap_chain) {
     DWORD flags;
     flags = 0;
-    
+
     hr = _swap_chain->Present((CONST RECT*)NULL, (CONST RECT*)NULL, (HWND)NULL, NULL, flags);
   } else {
     hr = _d3d_device->Present((CONST RECT*)NULL, (CONST RECT*)NULL, (HWND)NULL, NULL);
@@ -5220,7 +5240,7 @@ check_dx_allocation (HRESULT result, int allocation_size, int attempts)
         // increase the page out size as the number of attempts increases
         {
           size_t current_size = _prepared_objects->_graphics_memory_lru.get_total_size();
-          size_t target_size = max(current_size - allocation_size * attempts, 0);
+          size_t target_size = max(current_size - allocation_size * attempts, (size_t) 0);
           _prepared_objects->_graphics_memory_lru.evict_to(target_size);
           dxgsg9_cat.info()
             << "Evicted " << current_size - _prepared_objects->_graphics_memory_lru.get_total_size() << " bytes of texture memory to make room for more.\n";
@@ -5435,7 +5455,7 @@ do_issue_stencil() {
 ////////////////////////////////////////////////////////////////////
 //     Function: dxGraphicsStateGuardian9::do_issue_scissor
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 do_issue_scissor() {
@@ -5522,8 +5542,8 @@ void _create_gamma_table (PN_stdfloat gamma, unsigned short *original_red_table,
     // avoid divide by zero and negative exponents
     gamma = 1.0;
   }
-  gamma_correction = 1.0 / (double) gamma;    
-  
+  gamma_correction = 1.0 / (double) gamma;
+
   for (i = 0; i < 256; i++) {
     double r;
     double g;
@@ -5534,11 +5554,11 @@ void _create_gamma_table (PN_stdfloat gamma, unsigned short *original_red_table,
       g = (double) original_green_table [i] / GAMMA_1;
       b = (double) original_blue_table [i] / GAMMA_1;
     }
-    else {    
+    else {
       r = ((double) i / 255.0);
       g = r;
       b = r;
-    }    
+    }
 
     r = pow (r, gamma_correction);
     g = pow (g, gamma_correction);
@@ -5554,14 +5574,14 @@ void _create_gamma_table (PN_stdfloat gamma, unsigned short *original_red_table,
       b = 1.0;
     }
 
-    r = r * GAMMA_1;    
-    g = g * GAMMA_1;    
-    b = b * GAMMA_1;    
+    r = r * GAMMA_1;
+    g = g * GAMMA_1;
+    b = b * GAMMA_1;
 
     red_table [i] = r;
     green_table [i] = g;
     blue_table [i] = b;
-  }    
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5571,13 +5591,13 @@ void _create_gamma_table (PN_stdfloat gamma, unsigned short *original_red_table,
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian9::
 get_gamma_table(void) {
-  bool get;  
+  bool get;
 
   get = false;
   if (_gamma_table_initialized == false) {
     HDC hdc = GetDC(NULL);
 
-    if (hdc) {   
+    if (hdc) {
       if (GetDeviceGammaRamp (hdc, (LPVOID) _orignial_gamma_table)) {
         _gamma_table_initialized = true;
         get = true;
@@ -5586,26 +5606,26 @@ get_gamma_table(void) {
       ReleaseDC (NULL, hdc);
     }
   }
-  
+
   return get;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian9::static_set_gamma
 //       Access: Public, Static
-//  Description: Static function for setting gamma which is needed 
+//  Description: Static function for setting gamma which is needed
 //               for atexit.
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian9::
 static_set_gamma(bool restore, PN_stdfloat gamma) {
-  bool set;  
+  bool set;
   HDC hdc = GetDC(NULL);
 
   set = false;
-  if (hdc) {   
+  if (hdc) {
     unsigned short ramp [256 * 3];
 
-    if (restore && _gamma_table_initialized) {    
+    if (restore && _gamma_table_initialized) {
       _create_gamma_table (gamma, &_orignial_gamma_table [0], &_orignial_gamma_table [256], &_orignial_gamma_table [512], &ramp [0], &ramp [256], &ramp [512]);
     }
     else {
@@ -5615,7 +5635,7 @@ static_set_gamma(bool restore, PN_stdfloat gamma) {
     if (SetDeviceGammaRamp (hdc, ramp)) {
       set = true;
     }
-    
+
     ReleaseDC (NULL, hdc);
   }
 
@@ -5634,7 +5654,7 @@ set_gamma(PN_stdfloat gamma) {
 
   set = static_set_gamma(false, gamma);
   if (set) {
-    _gamma = gamma;  
+    _gamma = gamma;
   }
 
   return set;
@@ -5664,7 +5684,7 @@ atexit_function(void) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian9::get_supports_cg_profile
 //       Access: Public, Virtual
-//  Description: Returns true if this particular GSG supports the 
+//  Description: Returns true if this particular GSG supports the
 //               specified Cg Shader Profile.
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian9::
@@ -5673,7 +5693,7 @@ get_supports_cg_profile(const string &name) const {
   return false;
 #else
   CGprofile profile = cgGetProfile(name.c_str());
-  
+
   if (profile == CG_PROFILE_UNKNOWN) {
     dxgsg9_cat.error() << name <<", unknown Cg-profile\n";
     return false;

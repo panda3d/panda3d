@@ -492,7 +492,7 @@ if (COMPILER == "MSVC"):
                 LibName(pkg, 'dxerr.lib')
             else:
                 LibName(pkg, 'dxerrVNUM.lib'.replace("VNUM", vnum))
-            LibName(pkg, 'ddraw.lib')
+            #LibName(pkg, 'ddraw.lib')
             LibName(pkg, 'dxguid.lib')
     IncDirectory("ALWAYS", GetThirdpartyDir() + "extras/include")
     LibName("WINSOCK", "wsock32.lib")

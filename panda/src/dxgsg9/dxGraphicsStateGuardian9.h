@@ -36,9 +36,7 @@
 #include "vertexElementArray.h"
 #include "dxShaderContext9.h"
 
-
-enum GsgPageType
-{
+enum GsgPageType {
   GPT_Texture,
   GPT_VertexBuffer,
   GPT_IndexBuffer,
@@ -51,6 +49,8 @@ class Light;
 class DXTextureContext9;
 class DXVertexBufferContext9;
 class DXIndexBufferContext9;
+
+class wdxGraphicsBuffer9;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DXGraphicsStateGuardian9
@@ -265,7 +265,7 @@ protected:
 
 public:
   DXScreenData *_screen;
-  
+
 protected:
   LPDIRECT3DDEVICE9 _d3d_device;  // same as _screen->_d3d_device, cached for spd
   IDirect3DSwapChain9 *_swap_chain;
@@ -374,7 +374,7 @@ protected:
 
   list <wdxGraphicsBuffer9 **> _graphics_buffer_list;
 
-  int _supports_gamma_calibration;  
+  int _supports_gamma_calibration;
 
   static LPDIRECT3DDEVICE9 _cg_device;
 

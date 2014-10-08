@@ -413,7 +413,7 @@ handle_reshape() {
   GdiFlush();
   WinGraphicsWindow::handle_reshape();
 
-  if (_dxgsg != NULL) {
+  if (_dxgsg != NULL && _dxgsg->_d3d_device != NULL) {
     // create the new resized rendertargets
     WindowProperties props = get_properties();
     int x_size = props.get_x_size();
@@ -422,7 +422,7 @@ handle_reshape() {
     if (_wcontext._presentation_params.BackBufferWidth != x_size ||
         _wcontext._presentation_params.BackBufferHeight != y_size) {
       bool resize_succeeded = reset_device_resize_window(x_size, y_size);
-      
+
       if (wdxdisplay8_cat.is_debug()) {
         if (!resize_succeeded) {
           wdxdisplay8_cat.debug()
