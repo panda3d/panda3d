@@ -8,7 +8,7 @@ __all__ = ['ShowBase', 'WindowControls']
 #import VerboseImport
 
 from panda3d.core import *
-from panda3d.direct import getConfigShowbase
+from panda3d.direct import *
 
 # This needs to be available early for DirectGUI imports
 import __builtin__
