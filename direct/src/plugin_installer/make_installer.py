@@ -386,7 +386,7 @@ def makeInstaller():
         npapi = 'nppanda3d.dll'
         panda3d = 'panda3d.exe'
         panda3dw = 'panda3dw.exe'
-        baseFiles = [npapi, panda3d, panda3dw]
+        baseFiles = [ocx, npapi, panda3d, panda3dw]
     else:
         baseFiles = []
 
@@ -551,7 +551,7 @@ def makeInstaller():
         CMD += '/DINSTALL_DIR="' + options.install_dir + '" '
         CMD += '/DLICENSE_FILE="' + options.license + '" '
         CMD += '/DOCX="' + ocx + '" '
-        #CMD += '/DOCX_PATH="' + pluginFiles[ocx] + '" '
+        CMD += '/DOCX_PATH="' + pluginFiles[ocx] + '" '
         CMD += '/DNPAPI="' + npapi + '" '
         CMD += '/DNPAPI_PATH="' + pluginFiles[npapi] + '" '
         CMD += '/DPANDA3D="' + panda3d + '" '
