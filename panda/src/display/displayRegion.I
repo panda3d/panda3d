@@ -580,9 +580,9 @@ get_region_pixels_i(int i, int &xo, int &yo, int &w, int &h) const {
   CDReader cdata(_cycler);
   const Region &region = cdata->_regions[i];
   xo = region._pixels_i[0];
-  yo = region._pixels_i[2];
+  yo = region._pixels_i[3];
   w = region._pixels_i[1] - xo;
-  h = region._pixels_i[3] - yo;
+  h = region._pixels_i[2] - yo;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1068,9 +1068,9 @@ INLINE void DisplayRegionPipelineReader::
 get_region_pixels_i(int i, int &xo, int &yo, int &w, int &h) const {
   const DisplayRegion::Region &region = _cdata->_regions[i];
   xo = region._pixels_i[0];
-  yo = region._pixels_i[2];
+  yo = region._pixels_i[3];
   w = region._pixels_i[1] - xo;
-  h = region._pixels_i[3] - yo;
+  h = region._pixels_i[2] - yo;
 }
 
 ////////////////////////////////////////////////////////////////////
